@@ -208,6 +208,7 @@ Her yeni geliştirme başlamadan önce okunmalıdır.
 - `listing-images` bucket'i, demo auth kullanicilari ve demo tablo verileri gercek Supabase ortamina seed edildi.
 - `db:verify-demo` gercek Supabase ortami uzerinde basariyla calisti ve tablo/bucket sayimlari dogrulandi.
 - Admin audit gecmisi kartlari aksiyonu yapan admin profil adini gosterecek sekilde zenginlestirildi.
+- Admin audit gecmisi hedef tipi filtresine ek olarak aksiyon tipi filtresi ve serbest metin aramasi kazandi.
 
 ---
 
@@ -238,6 +239,7 @@ Her yeni geliştirme başlamadan önce okunmalıdır.
 - Moderasyon notu opsiyoneldir; girilirse en az 3 karakter olmali ve mevcut otomatik audit notunun yerini alir.
 - `db:*` scriptleri artik `.env.local` okuyarak calisir; Windows ortaminda `psql.exe` icin yaygin kurulum yollarini otomatik dener.
 - Admin aksiyon feed'i profile servisi uzerinden admin kimligini cozer; profil bulunamazsa guvenli fallback etiketi gosterir.
+- Audit gecmisi aramasi actor, hedef basligi, audit notu ve aksiyon etiketi uzerinden calisir.
 
 ---
 
@@ -255,6 +257,7 @@ Her yeni geliştirme başlamadan önce okunmalıdır.
 - Audit trail artik admin tarafindan girilen insan okunur karar notlarini da tasiyabiliyor.
 - Runtime persistence'in hedef Supabase projesi artik bos degil; schema + demo seed + verify operasyonu tamamlandi.
 - Audit trail kartlari artik hedef, not ve actor bilgisini birlikte tasir.
+- Admin audit trail paneli daha yogun kayit hacminde taranabilir olacak sekilde filtreleme ve arama ile guclendirildi.
 
 ---
 

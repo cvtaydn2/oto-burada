@@ -39,6 +39,7 @@ Sadece arabalar için tasarlanmış, mobil öncelikli ve güven odaklı ücretsi
 - Admin aksiyon geçmişi artık ilan/rapor filtresi ve ilgili ilan detayına hızlı geçiş bağlantıları içeriyor
 - Admin moderasyon aksiyonlarında opsiyonel karar notu girilebiliyor; bu not audit trail kaydına aynen yazılıyor
 - Admin audit geçmişi artık aksiyonu yapan admin profil adını da gösteriyor
+- Admin audit geçmişi artık hedef tipi, aksiyon tipi ve metin araması ile filtrelenebiliyor
 - Supabase schema, demo seed ve verify akisi gerçek proje üzerinde başarıyla doğrulandı
 - Lint, typecheck ve production build doğrulandı
 
