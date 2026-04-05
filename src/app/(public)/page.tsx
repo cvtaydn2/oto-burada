@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { ArrowRight, BadgeCheck, CarFront, ShieldCheck, Sparkles } from "lucide-react";
 
@@ -5,6 +6,22 @@ import { ListingCard } from "@/components/listings/listing-card";
 import { SectionHeader } from "@/components/shared/section-header";
 import { brandCatalog, cityOptions, featuredListings, latestListings } from "@/data";
 import { getCurrentUser } from "@/lib/auth/session";
+import { buildAbsoluteUrl } from "@/lib/seo";
+
+export const metadata: Metadata = {
+  title: "Ucretsiz araba ilanlari",
+  description:
+    "Sadece arabalar icin tasarlanmis, mobil odakli ve guven veren sade ikinci el araba ilan platformu.",
+  alternates: {
+    canonical: buildAbsoluteUrl("/"),
+  },
+  openGraph: {
+    description:
+      "Sadece arabalar icin tasarlanmis, mobil odakli ve guven veren sade ikinci el araba ilan platformu.",
+    title: "Ucretsiz araba ilanlari | Oto Burada",
+    url: buildAbsoluteUrl("/"),
+  },
+};
 
 const trustHighlights = [
   {

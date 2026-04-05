@@ -3,6 +3,7 @@
 import Link from "next/link";
 
 import { ListingCard } from "@/components/listings/listing-card";
+import { ListingsGridSkeleton } from "@/components/listings/listings-grid-skeleton";
 import { useFavorites } from "@/hooks/use-favorites";
 import type { Listing } from "@/types";
 
@@ -19,8 +20,12 @@ export function FavoritesPageClient({ listings }: FavoritesPageClientProps) {
 
   if (!hydrated) {
     return (
-      <section className="rounded-[2rem] border border-border/80 bg-background p-6 shadow-sm sm:p-8">
-        <p className="text-sm text-muted-foreground">Favoriler yükleniyor...</p>
+      <section className="space-y-5">
+        <div className="rounded-[1.75rem] border border-border/80 bg-background p-5 shadow-sm">
+          <div className="h-4 w-28 animate-pulse rounded bg-muted" />
+          <div className="mt-3 h-8 w-16 animate-pulse rounded bg-muted" />
+        </div>
+        <ListingsGridSkeleton count={4} />
       </section>
     );
   }

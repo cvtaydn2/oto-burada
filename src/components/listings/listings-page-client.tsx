@@ -1,17 +1,24 @@
 "use client";
 
 import {
-  startTransition,
   useDeferredValue,
   useMemo,
   useState,
+  useTransition,
 } from "react";
 import { SlidersHorizontal } from "lucide-react";
+import { usePathname, useRouter } from "next/navigation";
 
 import { ListingCard } from "@/components/listings/listing-card";
 import { ListingsFilterPanel } from "@/components/listings/listings-filter-panel";
 import { ListingsGridSkeleton } from "@/components/listings/listings-grid-skeleton";
-import { getDistrictsForCity, getModelsForBrand, filterListings, sortListings } from "@/services/listings/listing-filters";
+import {
+  createSearchParamsFromListingFilters,
+  filterListings,
+  getDistrictsForCity,
+  getModelsForBrand,
+  sortListings,
+} from "@/services/listings/listing-filters";
 import type { BrandCatalogItem, CityOption } from "@/data";
 import type { Listing, ListingFilters } from "@/types";
 
@@ -21,17 +28,18 @@ interface ListingsPageClientProps {
   listings: Listing[];
   brands: BrandCatalogItem[];
   cities: CityOption[];
+  initialFilters: ListingFilters;
 }
-
-const initialFilters: ListingFilters = {
-  sort: "newest",
-};
 
 export function ListingsPageClient({
   listings,
   brands,
   cities,
+  initialFilters,
 }: ListingsPageClientProps) {
+  const router = useRouter();
+  const pathname = usePathname();
+  const [isPending, startTransition] = useTransition();
   const [filters, setFilters] = useState<ListingFilters>(initialFilters);
   const [visibleCount, setVisibleCount] = useState(INITIAL_VISIBLE_COUNT);
   const [isFilterDrawerOpen, setIsFilterDrawerOpen] = useState(false);
@@ -52,8 +60,15 @@ export function ListingsPageClient({
     return sortListings(visibleListings, deferredFilters.sort);
   }, [deferredFilters, listings]);
 
-  const isLoading = deferredFilters !== filters;
+  const isLoading = isPending || deferredFilters !== filters;
   const hasMore = filteredListings.length > visibleCount;
+
+  const syncFiltersToUrl = (nextFilters: ListingFilters) => {
+    const searchParams = createSearchParamsFromListingFilters(nextFilters);
+    const nextUrl = searchParams.toString() ? `${pathname}?${searchParams.toString()}` : pathname;
+
+    router.replace(nextUrl, { scroll: false });
+  };
 
   const updateFilter = <K extends keyof ListingFilters>(
     key: K,
@@ -74,6 +89,7 @@ export function ListingsPageClient({
           nextFilters.district = undefined;
         }
 
+        syncFiltersToUrl(nextFilters);
         return nextFilters;
       });
       setVisibleCount(INITIAL_VISIBLE_COUNT);
@@ -82,8 +98,12 @@ export function ListingsPageClient({
 
   const resetFilters = () => {
     startTransition(() => {
-      setFilters(initialFilters);
+      const nextFilters: ListingFilters = {
+        sort: "newest",
+      };
+      setFilters(nextFilters);
       setVisibleCount(INITIAL_VISIBLE_COUNT);
+      syncFiltersToUrl(nextFilters);
     });
   };
 

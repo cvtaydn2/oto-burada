@@ -1,4 +1,5 @@
 import type { BrandCatalogItem, CityOption } from "@/data";
+import { listingFiltersSchema } from "@/lib/validators";
 import type { Listing, ListingFilters, ListingSortOption } from "@/types";
 
 function normalizeText(value: string) {
@@ -121,4 +122,64 @@ export function sortListings(
   });
 
   return sorted;
+}
+
+export function parseListingFiltersFromSearchParams(
+  searchParams?: Record<string, string | string[] | undefined>,
+) {
+  const normalizedSearchParams = Object.fromEntries(
+    Object.entries(searchParams ?? {}).flatMap(([key, value]) => {
+      if (typeof value === "string") {
+        return [[key, value]];
+      }
+
+      if (Array.isArray(value) && value.length > 0) {
+        return [[key, value[0]]];
+      }
+
+      return [];
+    }),
+  );
+
+  const parsed = listingFiltersSchema.safeParse(normalizedSearchParams);
+
+  if (!parsed.success) {
+    return { sort: "newest" } satisfies ListingFilters;
+  }
+
+  return {
+    ...parsed.data,
+    sort: parsed.data.sort ?? "newest",
+  } satisfies ListingFilters;
+}
+
+export function createSearchParamsFromListingFilters(filters: ListingFilters) {
+  const searchParams = new URLSearchParams();
+
+  const append = (key: string, value: string | number | undefined) => {
+    if (value === undefined || value === "" || Number.isNaN(value)) {
+      return;
+    }
+
+    searchParams.set(key, String(value));
+  };
+
+  append("query", filters.query);
+  append("brand", filters.brand);
+  append("model", filters.model);
+  append("city", filters.city);
+  append("district", filters.district);
+  append("minPrice", filters.minPrice);
+  append("maxPrice", filters.maxPrice);
+  append("minYear", filters.minYear);
+  append("maxYear", filters.maxYear);
+  append("maxMileage", filters.maxMileage);
+  append("fuelType", filters.fuelType);
+  append("transmission", filters.transmission);
+
+  if (filters.sort && filters.sort !== "newest") {
+    append("sort", filters.sort);
+  }
+
+  return searchParams;
 }

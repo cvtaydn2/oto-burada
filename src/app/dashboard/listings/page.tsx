@@ -16,6 +16,7 @@ export default async function DashboardListingsPage({ searchParams }: DashboardL
     phone?: string;
   };
   const resolvedSearchParams = searchParams ? await searchParams : undefined;
+  const hasRequestedEditListing = Boolean(resolvedSearchParams?.edit);
   const storedListings = await getStoredUserListings(user.id);
   const selectedListing = resolvedSearchParams?.edit
     ? storedListings.find(
@@ -77,6 +78,14 @@ export default async function DashboardListingsPage({ searchParams }: DashboardL
             ? "Formu guncellediginde ilan tekrar ayni durumuyla kaydedilir ve son degisiklik zamani yenilenir."
             : "Form sadece araba ilanlari icindir. Bilgileri net girdikce moderasyon sureci hizlanir ve alici guveni artar."}
         </p>
+
+        {hasRequestedEditListing && !selectedListing ? (
+          <div className="mt-6 rounded-[1.5rem] border border-destructive/20 bg-destructive/5 p-4 text-sm leading-6 text-destructive">
+            Duzenlemek istedigin ilan bulunamadi ya da artik duzenlenebilir durumda degil. Asagida
+            yeni ilan formu acildi; mevcut ilanlarindan gecerli olanlari listeden tekrar
+            secebilirsin.
+          </div>
+        ) : null}
 
         <div className="mt-6">
           <ListingCreateForm

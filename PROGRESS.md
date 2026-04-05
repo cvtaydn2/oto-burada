@@ -13,8 +13,8 @@ Her yeni geliştirme başlamadan önce okunmalıdır.
 ---
 
 ## Proje Durumu
-- Güncel faz: `Phase 5`
-- Güncel görev: `Task 5.3`
+- Güncel faz: `Phase 7`
+- Güncel görev: `Task 7.1`
 - Durum: tamamlandı
 
 ---
@@ -151,6 +151,26 @@ Her yeni geliştirme başlamadan önce okunmalıdır.
 - Admin paneline open/reviewing raporları listeleyen ikinci moderasyon alanı bağlandı.
 - Raporlar `reviewing`, `resolved` ve `dismissed` durumlarına geçirilebilir hale geldi.
 
+### Phase 6 / Task 6.1
+- Listings sayfası `searchParams` okuyup başlangıç filtrelerini URL üzerinden hydrate edecek hale getirildi.
+- Filtre state'i için parse/serialize yardımcıları servis katmanına taşındı.
+- Filtre değişiklikleri `router.replace` ile URL search params içine yazılmaya başlandı.
+- Sayfa yenileme, direkt link açma ve paylaşılmış filtre URL'leri artık aynı sonuç kümesini koruyor.
+- Varsayılan `sort=newest` durumu gereksiz query string üretmeden korunacak şekilde ayarlandı.
+
+### Phase 6 / Task 6.2
+- Root layout metadata yapısı `metadataBase`, canonical ve Open Graph alanlarıyla genişletildi.
+- Homepage için statik SEO metadata eklendi.
+- Listings index sayfası aktif filtrelere göre dinamik title/description üreten metadata akışına bağlandı.
+- Listing detail sayfası her ilan için fiyat, konum ve temel araç bilgilerini içeren dinamik metadata üretir hale geldi.
+- Filter URL'leri metadata tarafında da canonical/Open Graph adresine yansıtıldı.
+
+### Phase 7 / Task 7.1
+- Favoriler ekranının hydration/loading durumu skeleton görünümü ile güçlendirildi.
+- Dashboard listings ekranında geçersiz `edit` isteği için açık error state eklendi.
+- Majör async akışlar tekrar gözden geçirilerek loading, empty, error ve disabled durumları hizalandı.
+- Auth, listing create, image upload, favorites, admin moderation ve report moderation akışlarının durum davranışları doğrulandı.
+
 ---
 
 ## Alınan Kararlar
@@ -166,19 +186,21 @@ Her yeni geliştirme başlamadan önce okunmalıdır.
 - Admin yetkisi şimdilik Supabase Auth `user_metadata.role === "admin"` kontrolü ile belirleniyor.
 - Report persistence de MVP aşamasında cookie tabanlı tutuldu; ileride DB tablosuna taşınacak.
 - Aynı kullanıcı aynı ilan için acik veya incelemedeki raporu tekrar gönderirse mevcut rapor güncellenir.
+- URL filtreleme için canonical davranış `router.replace` üzerinden kuruldu; filtre güncellerken geçmiş yığını gereksiz büyütülmüyor.
+- SEO metadata üretimi için ortak helper katmanı kullanılıyor; sayfa bazlı kurallar burada merkezileştirildi.
 
 ---
 
 ## Bu Görevde Yapılacaklar
-- Kullanıcı tarafında ilan raporlama akışı eklendi.
-- Admin tarafında rapor listeleme ve durum güncelleme akışı kuruldu.
-- Report persistence ve validasyon katmanı tamamlandı.
+- SEO metadata katmanı homepage, listings ve detail sayfalarında tamamlandı.
+- Majör async ekranlarda eksik loading/error/disabled durumları güçlendirildi.
+- Durum denetimi sonrası UI davranışı lint/typecheck/build ile tekrar doğrulandı.
 
 ---
 
 ## Sonraki Görev
-- `Phase 6 / Task 6.1`
-- Filtreler URL search params ile tam paylaşılabilir hale getirilecek.
+- `Phase 7 / Task 7.2`
+- Erişilebilirlik ve responsive kullanım denetimi tamamlanacak.
 
 ---
 

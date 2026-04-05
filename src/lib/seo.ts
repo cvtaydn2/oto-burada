@@ -1,0 +1,97 @@
+import type { Metadata } from "next";
+
+import { createSearchParamsFromListingFilters } from "@/services/listings/listing-filters";
+import { formatCurrency, formatNumber } from "@/lib/utils";
+import type { Listing, ListingFilters } from "@/types";
+
+export function getAppUrl() {
+  return process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
+}
+
+export function buildAbsoluteUrl(path: string) {
+  return new URL(path, getAppUrl()).toString();
+}
+
+export function buildListingsMetadata(filters: ListingFilters): Metadata {
+  const segments: string[] = [];
+
+  if (filters.brand) {
+    segments.push(filters.brand);
+  }
+
+  if (filters.model) {
+    segments.push(filters.model);
+  }
+
+  if (filters.city) {
+    segments.push(filters.city);
+  }
+
+  if (filters.transmission) {
+    segments.push(filters.transmission);
+  }
+
+  if (filters.fuelType) {
+    segments.push(filters.fuelType);
+  }
+
+  const title =
+    segments.length > 0 ? `${segments.join(" ")} araba ilanlari` : "Araba ilanlari";
+
+  const descriptionParts = [
+    "Marka, model, sehir, fiyat ve teknik ozelliklere gore filtrelenebilen sade araba ilan listesi.",
+  ];
+
+  if (filters.maxPrice !== undefined) {
+    descriptionParts.push(`Maksimum fiyat ${formatCurrency(filters.maxPrice)}.`);
+  }
+
+  if (filters.maxMileage !== undefined) {
+    descriptionParts.push(`Maksimum kilometre ${formatNumber(filters.maxMileage)} km.`);
+  }
+
+  const canonicalSearchParams = createSearchParamsFromListingFilters(filters).toString();
+  const canonicalPath = canonicalSearchParams
+    ? `/listings?${canonicalSearchParams}`
+    : "/listings";
+
+  return {
+    title,
+    description: descriptionParts.join(" "),
+    alternates: {
+      canonical: buildAbsoluteUrl(canonicalPath),
+    },
+    openGraph: {
+      description: descriptionParts.join(" "),
+      title: `${title} | Oto Burada`,
+      type: "website",
+      url: buildAbsoluteUrl(canonicalPath),
+    },
+  };
+}
+
+export function buildListingDetailMetadata(listing: Listing): Metadata {
+  const title = `${listing.title} - ${formatCurrency(listing.price)}`;
+  const description = [
+    `${listing.city}/${listing.district} konumunda ${listing.year} model ${listing.brand} ${listing.model}.`,
+    `${formatNumber(listing.mileage)} km, ${listing.fuelType}, ${listing.transmission}.`,
+    listing.description,
+  ]
+    .join(" ")
+    .slice(0, 320);
+
+  return {
+    title,
+    description,
+    alternates: {
+      canonical: buildAbsoluteUrl(`/listing/${listing.slug}`),
+    },
+    openGraph: {
+      description,
+      images: listing.images[0]?.url ? [listing.images[0].url] : undefined,
+      title: `${title} | Oto Burada`,
+      type: "article",
+      url: buildAbsoluteUrl(`/listing/${listing.slug}`),
+    },
+  };
+}
