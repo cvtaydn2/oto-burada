@@ -17,6 +17,14 @@ Primary success criteria:
 
 ---
 
+## Workflow Rules
+- Work strictly in `TASKS.md` order.
+- Before starting any new development, read `PROGRESS.md` to avoid repeating completed work.
+- Update `PROGRESS.md` after each completed task with status, decisions, validations, and next step.
+- Keep documentation aligned with the current implementation state.
+
+---
+
 ## Non-negotiable Product Rules
 - This marketplace is **only for cars**.
 - Individual listings are free.

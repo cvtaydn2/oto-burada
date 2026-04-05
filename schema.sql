@@ -1,42 +1,29 @@
-# CODEX_MASTER_PROMPT.md
+-- Oto Burada
+-- Phase 0 baseline schema planning file
+-- This file is intentionally lightweight at bootstrap stage.
+-- Concrete table definitions will evolve alongside implementation tasks.
 
-Use the following prompt with Codex:
+-- Planned enums
+-- listing_status: draft, pending, approved, rejected, archived
+-- fuel_type: benzin, dizel, lpg, hibrit, elektrik
+-- transmission_type: manuel, otomatik, yari_otomatik
+-- report_reason: fake_listing, wrong_info, spam, other
+-- report_status: open, reviewing, resolved, dismissed
 
-You are implementing a production-lean MVP for a car-only classifieds marketplace.
+-- Planned tables
+-- profiles
+-- listings
+-- listing_images
+-- favorites
+-- reports
+-- admin_actions
 
-Before making changes:
-1. Read AGENTS.md
-2. Read TASKS.md
-3. Read UI_SYSTEM.md
-4. Read README.md
-5. Read schema.sql
+-- Planned storage buckets
+-- listing-images
+-- avatars
 
-Execution rules:
-- Work task-by-task in TASKS.md order
-- Do not skip dependencies
-- Keep the architecture simple and maintainable
-- Use TypeScript strict mode
-- Use reusable components
-- Handle loading, empty, and error states
-- Keep the UI mobile-first, clean, and high-trust
-- Use WhatsApp as the initial seller contact channel
-- Use Supabase for auth, database, and storage
-- Keep the product limited to car listings only
-
-For each completed task:
-- summarize the implementation
-- list changed files
-- run validation commands when possible
-- report results
-- update documentation if needed
-
-Validation commands:
-- npm run lint
-- npm run typecheck
-- npm run build
-- npm run test (if available)
-
-Definition of done:
-- the feature works end-to-end
-- validation passes or blockers are clearly documented
-- docs remain aligned with implementation
+-- Notes
+-- 1. Only car listings are supported.
+-- 2. Seller contact starts with WhatsApp CTA.
+-- 3. Admin moderation is mandatory before publish.
+-- 4. Public listing pages must remain SEO-friendly.
