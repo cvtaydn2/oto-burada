@@ -13,8 +13,8 @@ Her yeni geliştirme başlamadan önce okunmalıdır.
 ---
 
 ## Proje Durumu
-- Güncel faz: `Phase 1`
-- Güncel görev: `Task 1.2`
+- Güncel faz: `Phase 2`
+- Güncel görev: `Task 2.3`
 - Durum: tamamlandı
 
 ---
@@ -55,6 +55,26 @@ Her yeni geliştirme başlamadan önce okunmalıdır.
 - Gerçekçi Türkiye pazarı odaklı örnek ilanlar eklendi.
 - Seed veriler mevcut Zod şemalarıyla doğrulandı.
 
+### Phase 2 / Task 2.1
+- Public route grubu için ayrı global layout eklendi.
+- Header, footer ve mobil alt navigasyon oluşturuldu.
+- Public shell altında ortak sayfa yapısı tanımlandı.
+- `login` ve `register` için geçici ama uyumlu placeholder sayfalar eklendi.
+
+### Phase 2 / Task 2.2
+- Ana sayfa hero arama bloğu ile genişletildi.
+- Quick filter linkleri eklendi.
+- Reusable listing kart bileşeni oluşturuldu.
+- Öne çıkan ve yeni ilanlar bölümleri mock veri ile bağlandı.
+- Trust bölümü ve section header yapısı geliştirildi.
+
+### Phase 2 / Task 2.3
+- İlanlar sayfası gerçek sonuç görünümüne dönüştürüldü.
+- Desktop filtre paneli ve mobil filtre drawer yapısı eklendi.
+- Sıralama, filtreleme ve load-more akışı kuruldu.
+- Boş durum ve loading skeleton durumları eklendi.
+- Filtreleme kuralları servis katmanına taşındı.
+
 ---
 
 ## Alınan Kararlar
@@ -67,15 +87,15 @@ Her yeni geliştirme başlamadan önce okunmalıdır.
 ---
 
 ## Bu Görevde Yapılacaklar
-- Seed sabitleri ve mock veri katmanı eklendi.
-- Marka, model, şehir ve ilçe katalogları hazırlandı.
-- UI'ı besleyebilecek örnek kullanıcı ve ilan verileri oluşturuldu.
+- Listings sayfası filtrelenebilir sonuç deneyimine dönüştürüldü.
+- Loading, empty ve sonuç state'leri eklendi.
+- Filtreleme mantığı UI bileşenlerinden ayrıldı.
 
 ---
 
 ## Sonraki Görev
-- `Phase 2 / Task 2.1`
-- Global layout, header, mobile navigation ve footer oluşturulacak.
+- `Phase 2 / Task 2.4`
+- İlan detay sayfası galeri, fiyat, satıcı kartı, WhatsApp CTA ve benzer ilanlarla oluşturulacak.
 
 ---
 
