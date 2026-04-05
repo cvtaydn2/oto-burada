@@ -1,9 +1,11 @@
 import Link from "next/link";
 
 import { AdminListingsModeration } from "@/components/listings/admin-listings-moderation";
+import { AdminRecentActions } from "@/components/listings/admin-recent-actions";
 import { AdminReportsModeration } from "@/components/listings/admin-reports-moderation";
 import { AdminPersistencePanel } from "@/components/shared/admin-persistence-panel";
 import { getUserRole, requireAdminUser } from "@/lib/auth/session";
+import { getRecentAdminModerationActions } from "@/services/admin/moderation-actions";
 import { getPersistenceHealth } from "@/services/admin/persistence-health";
 import { getAllKnownListings } from "@/services/listings/marketplace-listings";
 import { getStoredListings } from "@/services/listings/listing-submissions";
@@ -22,6 +24,7 @@ export default async function AdminPage() {
   );
   const knownListings = await getAllKnownListings();
   const persistenceHealth = await getPersistenceHealth();
+  const recentActions = await getRecentAdminModerationActions();
   const listingTitleById = Object.fromEntries(
     knownListings.map((listing) => [listing.id, listing.title]),
   );
@@ -75,6 +78,7 @@ export default async function AdminPage() {
         </section>
 
         <AdminPersistencePanel health={persistenceHealth} />
+        <AdminRecentActions actions={recentActions} />
 
         <AdminListingsModeration pendingListings={pendingListings} />
         <AdminReportsModeration

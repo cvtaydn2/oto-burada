@@ -2,6 +2,7 @@ import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 
 import { requireAdminUser } from "@/lib/auth/session";
+import { createAdminModerationAction } from "@/services/admin/moderation-actions";
 import {
   getModeratableListingById,
   listingSubmissionsCookieName,
@@ -17,7 +18,7 @@ export async function POST(
   request: Request,
   context: { params: Promise<{ listingId: string }> },
 ) {
-  await requireAdminUser();
+  const adminUser = await requireAdminUser();
 
   let body: unknown;
 
@@ -41,6 +42,17 @@ export async function POST(
   );
 
   if (persistedListing) {
+    await createAdminModerationAction({
+      action: action === "approve" ? "approve" : "reject",
+      adminUserId: adminUser.id,
+      note:
+        action === "approve"
+          ? `${persistedListing.title} ilani onaylandi.`
+          : `${persistedListing.title} ilani reddedildi.`,
+      targetId: persistedListing.id,
+      targetType: "listing",
+    });
+
     return NextResponse.json({
       listing: {
         id: persistedListing.id,

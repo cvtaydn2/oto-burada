@@ -33,13 +33,22 @@ export const reportStatusLabels = {
 export const moderationTargetTypes = ["listing", "report"] as const;
 
 export const moderationActions = [
-  "approve_listing",
-  "reject_listing",
-  "archive_listing",
-  "review_report",
-  "resolve_report",
-  "dismiss_report",
+  "approve",
+  "reject",
+  "archive",
+  "review",
+  "resolve",
+  "dismiss",
 ] as const;
+
+export const moderationActionLabels = {
+  approve: "Onay",
+  reject: "Red",
+  archive: "Arsiv",
+  review: "Inceleme",
+  resolve: "Cozum",
+  dismiss: "Kapatma",
+} as const;
 
 export const listingSortOptions = [
   "newest",

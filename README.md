@@ -35,6 +35,7 @@ Sadece arabalar için tasarlanmış, mobil öncelikli ve güven odaklı ücretsi
 - Admin panelinde Supabase env ve tablo erişimini özetleyen persistence health görünümü eklendi
 - Repo içine Supabase schema uygulama ve demo seed komutları eklendi
 - Admin paneline migration runbook eklendi ve demo seed sonucu `db:verify-demo` ile doğrulanabilir hale geldi
+- Admin moderasyon kararları Supabase `admin_actions` audit trail tablosuna yazılıyor ve son aksiyonlar panelde listeleniyor
 - Lint, typecheck ve production build doğrulandı
 
 ## Kurulum

@@ -2,6 +2,7 @@ import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 
 import { requireAdminUser } from "@/lib/auth/session";
+import { createAdminModerationAction } from "@/services/admin/moderation-actions";
 import {
   getReportById,
   parseStoredReports,
@@ -20,7 +21,7 @@ export async function PATCH(
   request: Request,
   context: { params: Promise<{ reportId: string }> },
 ) {
-  await requireAdminUser();
+  const adminUser = await requireAdminUser();
 
   let body: unknown;
 
@@ -43,6 +44,15 @@ export async function PATCH(
   const persistedReport = await updateDatabaseReportStatus(reportId, status as ReportStatus);
 
   if (persistedReport) {
+    await createAdminModerationAction({
+      action:
+        status === "reviewing" ? "review" : status === "resolved" ? "resolve" : "dismiss",
+      adminUserId: adminUser.id,
+      note: `Rapor durumu ${status} olarak guncellendi.`,
+      targetId: persistedReport.id ?? reportId,
+      targetType: "report",
+    });
+
     return NextResponse.json({
       report: {
         id: persistedReport.id,

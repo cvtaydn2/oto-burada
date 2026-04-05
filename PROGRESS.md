@@ -198,6 +198,8 @@ Her yeni geliştirme başlamadan önce okunmalıdır.
 - Yeni scriptler Supabase schema uygulama ve demo auth/profile/listing seed akisini tekrar kullanilabilir hale getirdi.
 - `db:verify-demo` komutu eklendi; demo auth kullanicilari, tablo sayilari ve storage bucket durumu script seviyesinde kontrol ediliyor.
 - Admin panelindeki persistence bolumu migration runbook ile genisletildi; terminal komutlari ve legacy backfill sirasi artik UI uzerinden de gorunuyor.
+- Listing ve report moderasyon route'lari Supabase `admin_actions` tablosuna audit kaydi yazar hale getirildi.
+- Admin paneline son moderasyon kararlarini gosteren aksiyon gecmisi bolumu eklendi.
 
 ---
 
@@ -223,6 +225,7 @@ Her yeni geliştirme başlamadan önce okunmalıdır.
 - Admin panelindeki persistence health ozeti service-role client ile calisir; amaci migration hazirligini gormektir, kullaniciya acik bir ekran degildir.
 - `db:apply-schema` komutu `psql` ve `SUPABASE_DB_URL` bekler; demo seed ise service-role ile auth kullanicilari dahil seed atar.
 - `db:bootstrap-demo` akisi artik verify adimini da calistirir; boylece schema + seed sonrasi hizli bir kabul kontrolu uretilir.
+- Moderasyon action enum degerleri uygulama sabitleri ile `schema.sql` tarafindaki enum ile hizalandi.
 
 ---
 
@@ -235,6 +238,7 @@ Her yeni geliştirme başlamadan önce okunmalıdır.
 - Admin paneline tablo ve env sagligini gosteren migration readiness kartlari eklendi.
 - Supabase migration ve seed akisini komutlastiran scriptler eklendi, `.env.example` ve `README.md` buna gore guncellendi.
 - Migration readiness bolumu runbook mantigina genisletildi ve `db:verify-demo` dokumante edildi.
+- Admin audit trail akisi baglandi ve panel uzerinden gorunur hale getirildi.
 
 ---
 
