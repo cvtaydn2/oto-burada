@@ -20,3 +20,11 @@ export function formatCurrency(value: number) {
 export function formatNumber(value: number) {
   return numberFormatter.format(value);
 }
+
+export function formatDate(value: string) {
+  return new Intl.DateTimeFormat("tr-TR", {
+    day: "2-digit",
+    month: "long",
+    year: "numeric",
+  }).format(new Date(value));
+}

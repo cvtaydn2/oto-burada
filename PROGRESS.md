@@ -13,8 +13,8 @@ Her yeni geliştirme başlamadan önce okunmalıdır.
 ---
 
 ## Proje Durumu
-- Güncel faz: `Phase 2`
-- Güncel görev: `Task 2.3`
+- Güncel faz: `Phase 3`
+- Güncel görev: `Task 3.4`
 - Durum: tamamlandı
 
 ---
@@ -75,6 +75,38 @@ Her yeni geliştirme başlamadan önce okunmalıdır.
 - Boş durum ve loading skeleton durumları eklendi.
 - Filtreleme kuralları servis katmanına taşındı.
 
+### Phase 2 / Task 2.4
+- Dinamik ilan detay rotası oluşturuldu.
+- Galeri, fiyat/özellik blokları, açıklama ve satıcı kartı eklendi.
+- WhatsApp CTA, telefon aksiyonu ve şikayet bağlantısı eklendi.
+- Benzer ilanlar bölümü oluşturuldu.
+- Listing kartları detay sayfasına bağlandı.
+
+### Phase 3 / Task 3.1
+- Supabase Auth için browser/server/proxy yardımcıları oluşturuldu.
+- Giriş ve kayıt için server action tabanlı auth akışı eklendi.
+- `/auth/callback` rotası tanımlandı.
+- Korumalı route yönlendirmeleri eklendi.
+- Dashboard için giriş sonrası açılan ilk korumalı sayfa oluşturuldu.
+
+### Phase 3 / Task 3.2
+- Dashboard için ayrı layout ve shell oluşturuldu.
+- Desktop ve mobil dashboard navigasyonu eklendi.
+- Korumalı dashboard alt rotaları hazırlandı.
+- Genel bakış, favoriler, ilanlarım ve profil için temel sayfa iskeletleri eklendi.
+
+### Phase 3 / Task 3.3
+- Profil sayfası gerçek form ekranına dönüştürüldü.
+- Profil güncelleme için server action eklendi.
+- Ad soyad, telefon, şehir ve opsiyonel avatar URL doğrulaması eklendi.
+- Profil alanı auth kullanıcı metadata'sı ile bağlandı.
+
+### Phase 3 / Task 3.4
+- Favori akışı client-side persistence ile kuruldu.
+- Listing kartları ve detay sayfası favori butonu ile bağlandı.
+- Dashboard favoriler sayfası gerçek içerik ve empty state ile dolduruldu.
+- Favori state paylaşımı provider/hook katmanına taşındı.
+
 ---
 
 ## Alınan Kararlar
@@ -87,15 +119,15 @@ Her yeni geliştirme başlamadan önce okunmalıdır.
 ---
 
 ## Bu Görevde Yapılacaklar
-- Listings sayfası filtrelenebilir sonuç deneyimine dönüştürüldü.
-- Loading, empty ve sonuç state'leri eklendi.
-- Filtreleme mantığı UI bileşenlerinden ayrıldı.
+- Favori ekleme/çıkarma akışı eklendi.
+- Favoriler sayfası gerçek liste ve empty state ile tamamlandı.
+- Favori state'i reusable client katmanda toplandı.
 
 ---
 
 ## Sonraki Görev
-- `Phase 2 / Task 2.4`
-- İlan detay sayfası galeri, fiyat, satıcı kartı, WhatsApp CTA ve benzer ilanlarla oluşturulacak.
+- `Phase 4 / Task 4.1`
+- Araç ilanı oluşturma formu kurulacak.
 
 ---
 

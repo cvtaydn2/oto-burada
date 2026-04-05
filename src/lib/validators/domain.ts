@@ -65,6 +65,16 @@ export const profileSchema: z.ZodType<Profile> = z.object({
   updatedAt: timestampSchema,
 });
 
+export const profileUpdateSchema = z.object({
+  fullName: trimmedRequiredString,
+  phone: phoneSchema,
+  city: trimmedRequiredString,
+  avatarUrl: z.preprocess(
+    emptyStringToUndefined,
+    z.string().trim().url(invalidMessage).nullable().optional(),
+  ),
+});
+
 export const listingImageSchema: z.ZodType<ListingImage> = z.object({
   id: optionalTrimmedString,
   listingId: z
