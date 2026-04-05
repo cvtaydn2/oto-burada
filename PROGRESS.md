@@ -14,7 +14,7 @@ Her yeni geliştirme başlamadan önce okunmalıdır.
 
 ## Proje Durumu
 - Güncel faz: `Phase 1`
-- Güncel görev: `Task 1.1`
+- Güncel görev: `Task 1.2`
 - Durum: tamamlandı
 
 ---
@@ -48,6 +48,13 @@ Her yeni geliştirme başlamadan önce okunmalıdır.
 - Aynı alanlar için Zod doğrulayıcıları oluşturuldu.
 - `listingCreateSchema` zorunlu alanları ve minimum 3 görsel kuralını enforce edecek şekilde tanımlandı.
 
+### Phase 1 / Task 1.2
+- Marka-model kataloğu oluşturuldu.
+- Şehir ve ilçe mock verileri eklendi.
+- 1 admin ve 5 normal kullanıcıdan oluşan örnek kullanıcı verisi hazırlandı.
+- Gerçekçi Türkiye pazarı odaklı örnek ilanlar eklendi.
+- Seed veriler mevcut Zod şemalarıyla doğrulandı.
+
 ---
 
 ## Alınan Kararlar
@@ -60,15 +67,15 @@ Her yeni geliştirme başlamadan önce okunmalıdır.
 ---
 
 ## Bu Görevde Yapılacaklar
-- Ortak tipler ve validator katmanı eklendi.
-- Alan sabitleri tek merkezde toplandı.
-- Form ve sunucu tarafında tekrar kullanılabilir Zod şemaları hazırlandı.
+- Seed sabitleri ve mock veri katmanı eklendi.
+- Marka, model, şehir ve ilçe katalogları hazırlandı.
+- UI'ı besleyebilecek örnek kullanıcı ve ilan verileri oluşturuldu.
 
 ---
 
 ## Sonraki Görev
-- `Phase 1 / Task 1.2`
-- Seed sabitleri ve gerçekçi mock veriler oluşturulacak.
+- `Phase 2 / Task 2.1`
+- Global layout, header, mobile navigation ve footer oluşturulacak.
 
 ---
 
