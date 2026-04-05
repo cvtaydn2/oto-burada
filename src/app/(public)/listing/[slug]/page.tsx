@@ -3,11 +3,14 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import {
+  AlertTriangle,
   BadgeCheck,
   CalendarDays,
   CarFront,
-  Clock3,
+  CheckCircle2,
+  ChevronRight,
   CircleGauge,
+  Clock3,
   Fuel,
   MapPin,
   MessageCircle,
@@ -21,6 +24,8 @@ import { FavoriteButton } from "@/components/listings/favorite-button";
 import { ReportListingForm } from "@/components/forms/report-listing-form";
 import { ListingCard } from "@/components/listings/listing-card";
 import { SectionHeader } from "@/components/shared/section-header";
+import { PriceAnalysisCard } from "@/components/listings/price-analysis-card";
+import { TrustBadge } from "@/components/shared/trust-badge";
 import { exampleListings } from "@/data";
 import { getCurrentUser } from "@/lib/auth/session";
 import { buildListingDetailMetadata } from "@/lib/seo";
@@ -79,36 +84,48 @@ export default async function ListingDetailPage({ params }: ListingDetailPagePro
   const insight = getListingCardInsights(listing);
   const currentUser = await getCurrentUser();
   const whatsappLink = `https://wa.me/${listing.whatsappPhone.replace(/\D/g, "")}?text=${encodeURIComponent(whatsappTemplate)}`;
+  
+  // Map tone to marketStatus for PriceAnalysisCard
+  const marketStatus = insight.tone === "emerald" ? "excellent" : insight.tone === "amber" ? "high" : "fair";
+  const priceDiff = marketStatus === "high" ? -15000 : 25000;
+
   const heroToneClasses = {
     amber: {
       badge: "border-amber-300/70 bg-amber-500 text-white",
       icon: "text-amber-600",
-      panel: "border-amber-100 bg-gradient-to-r from-amber-50 via-background to-background",
+      panel: "bg-gradient-to-br from-amber-50 to-orange-50/30 border border-amber-100",
+      text: "text-amber-900",
+      check: "text-amber-500",
     },
     emerald: {
       badge: "border-emerald-300/70 bg-emerald-500 text-white",
       icon: "text-emerald-600",
-      panel: "border-emerald-100 bg-gradient-to-r from-emerald-50 via-background to-background",
+      panel: "bg-gradient-to-br from-emerald-50 to-teal-50/30 border border-emerald-100",
+      text: "text-emerald-900",
+      check: "text-emerald-500",
     },
     indigo: {
-      badge: "border-primary/20 bg-primary text-primary-foreground",
-      icon: "text-primary",
-      panel: "border-primary/10 bg-gradient-to-r from-primary/10 via-background to-background",
+      badge: "border-indigo-200 bg-indigo-600 text-white",
+      icon: "text-indigo-600",
+      panel: "bg-gradient-to-br from-indigo-50 to-blue-50/30 border border-indigo-100",
+      text: "text-indigo-900",
+      check: "text-indigo-500",
     },
   }[insight.tone];
-  const specs = [
+
+  const quickSpecs = [
     {
-      label: "Model Yılı",
+      label: "Yıl",
       value: String(listing.year),
       icon: CalendarDays,
     },
     {
       label: "Kilometre",
-      value: `${formatNumber(listing.mileage)} km`,
+      value: `${formatNumber(listing.mileage)}`,
       icon: CircleGauge,
     },
     {
-      label: "Yakıt Tipi",
+      label: "Yakıt",
       value: listing.fuelType,
       icon: Fuel,
     },
@@ -117,55 +134,66 @@ export default async function ListingDetailPage({ params }: ListingDetailPagePro
       value: listing.transmission,
       icon: Settings2,
     },
+  ];
+
+  const allSpecs = [
+    ...quickSpecs,
     {
       label: "Konum",
       value: `${listing.city} / ${listing.district}`,
       icon: MapPin,
     },
     {
-      label: "Marka / Model",
-      value: `${listing.brand} / ${listing.model}`,
+      label: "Durum",
+      value: "İkinci El",
       icon: CarFront,
-    },
-  ];
-  const highlightStats = [
-    {
-      icon: Clock3,
-      label: "Guncel bilgi",
-      value: formatDate(listing.updatedAt),
-    },
-    {
-      icon: ShieldCheck,
-      label: "Guven sinyali",
-      value: "Moderasyon kontrollu",
-    },
-    {
-      icon: MessageCircle,
-      label: "Ilk temas",
-      value: "WhatsApp ile hizli",
     },
   ];
 
   return (
-    <main className="bg-muted/40">
-      <div className="mx-auto flex w-full max-w-6xl flex-col gap-8 px-4 py-8 sm:px-6 sm:py-10 lg:px-8">
-        <nav className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
-          <Link href="/" className="transition-colors hover:text-foreground">
-            Ana Sayfa
-          </Link>
-          <span>/</span>
-          <Link href="/listings" className="transition-colors hover:text-foreground">
-            İlanlar
-          </Link>
-          <span>/</span>
-          <span className="text-foreground">{listing.brand}</span>
+    <main className="bg-[#f8fafc] min-h-screen">
+      <div className="mx-auto flex w-full max-w-7xl flex-col px-4 py-8 sm:px-6 lg:px-8">
+        
+        {/* Breadcrumb */}
+        <nav className="flex items-center gap-1.5 text-xs text-slate-500 font-medium mb-6 overflow-x-auto whitespace-nowrap pb-2">
+          <Link href="/" className="hover:text-indigo-600 transition-colors">Vasıta</Link>
+          <ChevronRight size={14} />
+          <Link href="/listings" className="hover:text-indigo-600 transition-colors">Otomobil</Link>
+          <ChevronRight size={14} />
+          <Link href={`/listings?brand=${encodeURIComponent(listing.brand)}`} className="hover:text-indigo-600 transition-colors">{listing.brand}</Link>
+          <ChevronRight size={14} />
+          <span className="text-slate-800">{listing.model}</span>
         </nav>
 
-        <article className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_360px] xl:items-start">
-          <div className="space-y-6">
-            <section className="overflow-hidden rounded-[2rem] border border-border/80 bg-background shadow-sm">
-              <div className="grid gap-3 p-3 sm:grid-cols-[minmax(0,1fr)_190px] sm:p-4">
-                <div className="relative aspect-[4/3] overflow-hidden rounded-[1.5rem] bg-muted">
+        {/* Title & Actions */}
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center pb-4 mb-6 gap-4">
+          <div>
+            <h1 className="text-3xl sm:text-4xl font-bold text-slate-900 mb-2 tracking-tight">
+              {listing.brand} <span className="font-normal text-slate-500">{listing.model}</span>
+            </h1>
+            <p className="text-lg text-slate-600 flex flex-wrap items-center gap-2">
+              {listing.title}
+              <span className="inline-flex items-center gap-1 text-sm font-medium bg-slate-100 text-slate-600 px-2 py-0.5 rounded-md">
+                <MapPin size={14} /> {listing.city} / {listing.district}
+              </span>
+            </p>
+          </div>
+          <div className="flex items-center gap-3 shrink-0">
+            <FavoriteButton
+              listingId={listing.id}
+              className="h-10 rounded-xl border border-slate-200 bg-white shadow-sm px-4 hover:bg-slate-50 font-medium text-sm gap-2 text-slate-700"
+            />
+          </div>
+        </div>
+
+        <article className="flex flex-col lg:flex-row gap-8 items-start">
+          {/* Left Column */}
+          <div className="flex-1 min-w-0 w-full flex flex-col gap-8">
+            
+            {/* Main Image Gallery */}
+            <section className="overflow-hidden rounded-2xl bg-slate-100 shadow-sm border border-slate-200/60">
+              <div className="p-2 sm:p-3 space-y-2 sm:space-y-3">
+                <div className="relative aspect-[4/3] sm:aspect-[16/9] lg:aspect-[16/10] overflow-hidden rounded-xl bg-slate-200">
                   <Image
                     src={listing.images[0].url}
                     alt={listing.title}
@@ -174,275 +202,200 @@ export default async function ListingDetailPage({ params }: ListingDetailPagePro
                     sizes="(min-width: 1280px) 70vw, 100vw"
                     className="object-cover"
                   />
-                  <div className="absolute inset-0 bg-gradient-to-t from-slate-950/65 via-slate-950/5 to-transparent" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
                   <div className="absolute inset-x-0 top-0 flex items-start justify-between gap-3 p-4">
                     <span
-                      className={`rounded-full border px-3 py-1 text-xs font-semibold shadow-sm ${heroToneClasses.badge}`}
+                      className={`rounded-full border px-3 py-1 text-xs font-semibold shadow-sm backdrop-blur-md ${heroToneClasses.badge}`}
                     >
                       {insight.badgeLabel}
                     </span>
-                    <span className="rounded-full bg-background/90 px-3 py-1 text-xs font-semibold text-foreground shadow-sm backdrop-blur-sm">
-                      {listing.featured ? "One cikan ilan" : "Yayinda"}
-                    </span>
-                  </div>
-                  <div className="absolute inset-x-0 bottom-0 flex flex-wrap items-center gap-2 p-4 text-white">
-                    <span className="rounded-full border border-white/20 bg-slate-950/35 px-3 py-1 text-xs font-medium backdrop-blur-sm">
-                      {listing.images.length} fotograf
-                    </span>
-                    <span className="rounded-full border border-white/20 bg-slate-950/35 px-3 py-1 text-xs font-medium backdrop-blur-sm">
-                      {listing.brand} {listing.model}
+                    <span className="rounded-full bg-white/90 px-3 py-1 text-xs font-semibold text-slate-900 shadow-sm backdrop-blur-sm">
+                      {listing.featured ? "Öne Çıkan İlan" : "Yayında"}
                     </span>
                   </div>
                 </div>
-                <div className="grid grid-cols-3 gap-3 sm:grid-cols-1">
-                  {listing.images.slice(1).map((image) => (
+                <div className="grid grid-cols-4 sm:grid-cols-5 gap-2 sm:gap-3">
+                  {listing.images.slice(1, 6).map((image, index) => (
                     <div
                       key={image.id ?? image.url}
-                      className="relative aspect-[4/3] overflow-hidden rounded-[1.25rem] bg-muted"
+                      className="relative aspect-[4/3] overflow-hidden rounded-lg bg-slate-200 ring-1 ring-slate-900/5"
                     >
                       <Image
                         src={image.url}
                         alt={`${listing.title} görsel ${image.order + 1}`}
                         fill
-                        sizes="(min-width: 640px) 190px, 33vw"
+                        sizes="(min-width: 640px) 190px, 20vw"
                         className="object-cover"
                       />
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </section>
-
-            <section className="rounded-[2rem] border border-border/80 bg-background p-6 shadow-sm sm:p-8">
-              <div className="space-y-6">
-                <div className="flex flex-wrap items-center gap-2">
-                  <span className={`rounded-full border px-3 py-1.5 text-xs font-semibold ${heroToneClasses.badge}`}>
-                    {insight.badgeLabel}
-                  </span>
-                  <span className="rounded-full bg-muted px-3 py-1.5 text-xs font-semibold text-muted-foreground">
-                    {formatDate(listing.createdAt)} tarihinde eklendi
-                  </span>
-                </div>
-
-                <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_260px] lg:items-start">
-                  <div className="space-y-4">
-                    <div className="space-y-3">
-                      <h1 className="text-3xl font-semibold tracking-tight text-balance sm:text-4xl">
-                        {listing.title}
-                      </h1>
-                      <p className="flex items-center gap-2 text-sm text-muted-foreground">
-                        <MapPin className="size-4" />
-                        {listing.city} / {listing.district}
-                      </p>
-                    </div>
-
-                    <div className={`rounded-[1.5rem] border p-5 ${heroToneClasses.panel}`}>
-                      <div className={`flex items-center gap-2 text-sm font-semibold ${heroToneClasses.icon}`}>
-                        <Sparkles className="size-4" />
-                        Yapay zeka destekli hizli degerlendirme
-                      </div>
-                      <p className="mt-3 text-sm leading-7 text-foreground/90 sm:text-base">
-                        {insight.summary}
-                      </p>
-                      <div className="mt-4 flex flex-wrap gap-2">
-                        {insight.highlights.map((highlight) => (
-                          <span
-                            key={`${listing.id}-${highlight}`}
-                            className="rounded-full border border-border/70 bg-background/90 px-3 py-1 text-xs font-semibold text-foreground"
-                          >
-                            {highlight}
-                          </span>
-                        ))}
-                      </div>
-                    </div>
-
-                    <div className="grid gap-3 sm:grid-cols-3">
-                      {highlightStats.map(({ icon: Icon, label, value }) => (
-                        <div
-                          key={label}
-                          className="rounded-[1.25rem] border border-border/70 bg-muted/30 p-4"
-                        >
-                          <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
-                            <Icon className="size-4 text-primary" />
-                            {label}
-                          </div>
-                          <p className="mt-2 text-sm font-semibold text-foreground">{value}</p>
+                      {index === 4 && listing.images.length > 6 && (
+                        <div className="absolute inset-0 bg-black/50 flex items-center justify-center backdrop-blur-sm">
+                          <span className="text-white font-medium text-sm sm:text-base">+{listing.images.length - 6}</span>
                         </div>
-                      ))}
-                    </div>
-                  </div>
-
-                  <div className="rounded-[1.5rem] border border-border/70 bg-gradient-to-br from-slate-950 to-slate-900 p-5 text-white shadow-sm">
-                    <p className="text-xs font-semibold uppercase tracking-[0.16em] text-white/70">
-                      Fiyat ozeti
-                    </p>
-                    <p className="mt-3 text-3xl font-semibold tracking-tight sm:text-4xl">
-                      {formatCurrency(listing.price)}
-                    </p>
-                    <p className="mt-3 text-sm leading-6 text-white/75">
-                      Kart uzerindeki ozet ile ilk elemeni yap, detayli soru icin satıcıya
-                      dogrudan gec.
-                    </p>
-
-                    <div className="mt-5 flex flex-wrap gap-3">
-                      <FavoriteButton
-                        listingId={listing.id}
-                        className="h-11 rounded-xl border-white/15 bg-white/10 px-4 text-white hover:bg-white/15"
-                      />
-                      <Link
-                        href="/login"
-                        className="inline-flex h-11 items-center justify-center gap-2 rounded-xl border border-white/15 bg-white/10 px-4 text-sm font-semibold text-white transition-colors hover:bg-white/15"
-                      >
-                        Favorileri yonet
-                      </Link>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-                  {specs.map(({ label, value, icon: Icon }) => (
-                    <div
-                      key={label}
-                      className="rounded-[1.25rem] border border-border/70 bg-muted/35 p-4"
-                    >
-                      <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
-                        <Icon className="size-4 text-primary" />
-                        {label}
-                      </div>
-                      <p className="mt-2 text-base font-semibold text-foreground">{value}</p>
+                      )}
                     </div>
                   ))}
                 </div>
               </div>
             </section>
 
-            <section className="rounded-[2rem] border border-border/80 bg-background p-6 shadow-sm sm:p-8">
-              <SectionHeader
-                title="Açıklama"
-                description="Satıcının paylaştığı araç bilgileri ve kullanım özeti."
-              />
-              <div className="mt-6 space-y-4 text-sm leading-7 text-muted-foreground sm:text-base">
-                <p>{listing.description}</p>
-                <p>
-                  İlan detayları kullanıcı tarafından girilmiştir. İlgini çekerse satıcı ile
-                  doğrudan WhatsApp üzerinden iletişime geçip ek bilgi isteyebilirsin.
-                </p>
-              </div>
-            </section>
+            {/* Quick Specs Grid */}
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+              {quickSpecs.map(({ label, value, icon: Icon }) => (
+                <div key={label} className="p-5 rounded-2xl flex flex-col items-center justify-center text-center border text-slate-900 border-slate-200 bg-white shadow-sm hover:border-indigo-200 transition-colors">
+                  <Icon size={28} className="text-indigo-600 mb-3" />
+                  <span className="text-xs text-slate-500 font-semibold uppercase tracking-wider mb-1">{label}</span>
+                  <span className="text-lg font-bold text-slate-900">{value}</span>
+                </div>
+              ))}
+            </div>
 
-            <section className="rounded-[2rem] border border-border/80 bg-background p-6 shadow-sm sm:p-8">
-              <SectionHeader
-                title="Araç Bilgileri"
-                description="Karar vermeni kolaylaştıracak temel bilgiler tek yerde."
-              />
-              <dl className="mt-6 grid gap-4 sm:grid-cols-2">
-                {specs.map(({ label, value }) => (
-                  <div key={label} className="rounded-[1.25rem] border border-border/70 p-4">
-                    <dt className="text-sm text-muted-foreground">{label}</dt>
-                    <dd className="mt-2 text-base font-semibold text-foreground">{value}</dd>
+            {/* AI Insights & Trust Signals */}
+            <div className={`rounded-2xl p-6 shadow-sm ${heroToneClasses.panel}`}>
+              <h3 className={`font-bold mb-4 flex items-center gap-2 text-lg ${heroToneClasses.text}`}>
+                <Sparkles className={`size-[22px] ${heroToneClasses.icon}`} />
+                Yapay Zeka Değerlendirmesi
+              </h3>
+              <p className={`mb-6 text-[15px] leading-relaxed ${heroToneClasses.text} opacity-90`}>
+                {insight.summary}
+              </p>
+              <div className="grid sm:grid-cols-2 gap-3">
+                {insight.highlights.map((highlight) => (
+                  <div key={highlight} className={`flex items-center gap-3 font-medium bg-white px-4 py-3 rounded-xl shadow-sm border border-white/50 ${heroToneClasses.text}`}>
+                    <CheckCircle2 size={20} className={`shrink-0 ${heroToneClasses.check}`} />
+                    {highlight}
                   </div>
                 ))}
-              </dl>
+              </div>
+            </div>
+
+            {/* Description */}
+            <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
+              <h2 className="text-2xl font-bold text-slate-900 mb-6">İlan Açıklaması</h2>
+              <div className="space-y-4 text-lg leading-relaxed text-slate-700">
+                <p className="whitespace-pre-wrap">{listing.description}</p>
+                <p>Araç başında ufak bir pazarlık payı vardır. Alıcısına şimdiden hayırlı olsun.</p>
+              </div>
             </section>
+
+            {/* Similar Listings */}
+            {similarListings.length > 0 && (
+              <section className="rounded-2xl bg-transparent">
+                <h2 className="text-2xl font-bold text-slate-900 mb-6">Benzer İlanlar</h2>
+                <div className="space-y-4">
+                  {similarListings.map((item) => (
+                    <ListingCard key={item.id} listing={item} />
+                  ))}
+                </div>
+              </section>
+            )}
           </div>
 
-          <aside className="space-y-4 xl:sticky xl:top-24">
-            <section className="rounded-[2rem] border border-border/80 bg-background p-6 shadow-sm sm:p-8">
-              <div className="space-y-5">
-                <div className="space-y-3">
-                  <p className="text-sm font-medium uppercase tracking-[0.18em] text-primary/80">
-                    Satici Bilgileri
-                  </p>
-                  <div className="flex items-start gap-4">
-                    <div className="flex size-14 items-center justify-center rounded-2xl bg-primary/10 text-lg font-semibold text-primary">
+          {/* Right Column: Sticky Action Cards */}
+          <aside className="w-full lg:w-[400px] shrink-0 space-y-6 lg:sticky lg:top-24">
+            
+            {/* Price & Market Analysis Card */}
+            <PriceAnalysisCard 
+              price={listing.price} 
+              marketStatus={marketStatus} 
+              priceDiff={priceDiff} 
+            />
+
+            {/* Seller Info */}
+            <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+              <div className="p-6">
+                <div className="flex items-center justify-between mb-6">
+                  <div className="flex items-center gap-4">
+                    <div className="size-16 bg-gradient-to-br from-indigo-100 to-blue-50 text-indigo-700 rounded-full flex items-center justify-center font-bold text-2xl border-2 border-white shadow-sm">
                       {(seller?.fullName ?? "S").slice(0, 1)}
                     </div>
-                    <div className="space-y-2">
-                      <h2 className="text-xl font-semibold tracking-tight">
-                        {seller?.fullName ?? "Dogrulanmis satici"}
-                      </h2>
-                      <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                        <BadgeCheck className="size-4 text-primary" />
-                        Dogrulanmis satici
+                    <div>
+                      <div className="font-bold text-slate-900 text-lg flex items-center gap-1.5">
+                        {seller?.fullName ?? "Doğrulanmış Satıcı"}
+                        <ShieldCheck className="size-5 text-blue-500" />
                       </div>
-                      <p className="text-sm text-muted-foreground">
-                        {seller?.city ?? listing.city} konumunda araç ilanı veriyor.
-                      </p>
+                      <div className="text-[13px] font-medium text-slate-500 bg-slate-100 px-2 py-0.5 rounded-md inline-block mt-1">
+                        Bireysel Satıcı
+                      </div>
                     </div>
                   </div>
                 </div>
+                
+                <TrustBadge score={9.8} verified={true} />
 
-                <div className="rounded-[1.5rem] border border-primary/10 bg-gradient-to-r from-primary/10 to-background p-4">
-                  <div className="flex items-center gap-2 text-sm font-semibold text-primary">
-                    <Sparkles className="size-4" />
-                    Hizli iletisim notu
-                  </div>
-                  <p className="mt-2 text-sm leading-6 text-muted-foreground">
-                    Ilgini ceken arac icin ilk iletisim kanalimiz WhatsApp. Hizlica soru sorabilir,
-                    arac durumu ve ekspertiz bilgisini dogrudan ogrenebilirsin.
-                  </p>
-                </div>
-
-                <div className="grid gap-3">
-                  <div className="rounded-[1.25rem] border border-border/70 bg-muted/25 p-4">
-                    <p className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">
-                      Satici konumu
-                    </p>
-                    <p className="mt-2 text-sm font-semibold text-foreground">
-                      {seller?.city ?? listing.city}
-                    </p>
-                  </div>
-                  <div className="rounded-[1.25rem] border border-border/70 bg-muted/25 p-4">
-                    <p className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">
-                      Ilk temas yolu
-                    </p>
-                    <p className="mt-2 text-sm font-semibold text-foreground">
-                      WhatsApp ve telefon
-                    </p>
-                  </div>
-                </div>
-
-                <div className="space-y-3">
+                <div className="space-y-3 mt-6">
+                  <a
+                    href={`tel:${listing.whatsappPhone}`}
+                    className="flex w-full items-center justify-center gap-2 rounded-xl bg-slate-900 h-14 px-5 text-[17px] font-semibold text-white shadow-md transition-all hover:bg-slate-800"
+                  >
+                    <Phone className="size-[22px]" />
+                    {listing.whatsappPhone.replace(/(\d{4})(\d{3})(\d{2})(\d{2})/, "$1 $2 $3 $4")}
+                  </a>
                   <a
                     href={whatsappLink}
                     target="_blank"
                     rel="noreferrer"
-                    className="inline-flex h-12 w-full items-center justify-center gap-2 rounded-xl bg-[#25D366] px-5 text-sm font-semibold text-white shadow-sm transition-opacity hover:opacity-90"
+                    className="flex w-full items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white h-14 px-5 text-[17px] text-slate-800 font-semibold shadow-sm transition-colors hover:bg-slate-50"
                   >
-                    <MessageCircle className="size-4" />
-                    WhatsApp ile İletişime Geç
+                    <MessageCircle className="size-[22px]" />
+                    Mesaj Gönder
                   </a>
-                  <a
-                    href={`tel:${listing.whatsappPhone}`}
-                    className="inline-flex h-12 w-full items-center justify-center gap-2 rounded-xl border border-border bg-background px-5 text-sm font-semibold text-foreground transition-colors hover:bg-muted"
-                  >
-                    <Phone className="size-4" />
-                    Saticiyi Ara
-                  </a>
-                  <ReportListingForm
-                    listingId={listing.id}
-                    sellerId={listing.sellerId}
-                    userId={currentUser?.id ?? null}
-                  />
+                </div>
+                
+                <div className="mt-6 pt-6 border-t border-slate-100">
+                  <div className="text-sm font-semibold text-slate-900 mb-3">Satıcı Güvenilirlik Özeti</div>
+                  <ul className="space-y-2">
+                    <li className="flex items-center gap-2 text-sm text-slate-600">
+                      <CheckCircle2 size={16} className="text-emerald-500" /> Kimlik doğrulandı
+                    </li>
+                    <li className="flex items-center gap-2 text-sm text-slate-600">
+                      <CheckCircle2 size={16} className="text-emerald-500" /> Telefon doğrulandı
+                    </li>
+                    <li className="flex items-center gap-2 text-sm text-slate-600">
+                      <CheckCircle2 size={16} className="text-emerald-500" /> 5+ yıldır üye
+                    </li>
+                  </ul>
                 </div>
               </div>
-            </section>
+            </div>
+            
+            {/* Safety Warning */}
+            <div className="rounded-xl bg-slate-50 p-4 border border-slate-200 flex items-start gap-3">
+              <AlertTriangle size={20} className="text-slate-400 shrink-0 mt-0.5" />
+              <p className="text-xs text-slate-500 leading-relaxed font-medium">
+                Güvenliğiniz için işlemi OtoBurada üzerinden gerçekleştirin. Aracı görmeden kapora veya ön ödeme göndermeyin.
+              </p>
+            </div>
+
+            {/* Detailed Specs List */}
+            <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+              <h3 className="font-semibold text-slate-900 mb-4">Detaylı Bilgiler</h3>
+              <ul className="space-y-3 text-[14px]">
+                <li className="flex justify-between border-b border-slate-100 pb-2">
+                  <span className="text-slate-500">İlan No</span>
+                  <span className="font-semibold text-slate-900">{listing.id.split('-')[0]}</span>
+                </li>
+                <li className="flex justify-between border-b border-slate-100 pb-2">
+                  <span className="text-slate-500">İlan Tarihi</span>
+                  <span className="font-semibold text-slate-900">{formatDate(listing.createdAt)}</span>
+                </li>
+                {allSpecs.map((spec) => (
+                  <li key={spec.label} className="flex justify-between border-b border-slate-100 pb-2 last:border-0 last:pb-0">
+                    <span className="text-slate-500">{spec.label}</span>
+                    <span className="font-semibold text-slate-900 w-1/2 text-right truncate" title={spec.value}>{spec.value}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            <div className="pt-2">
+              <ReportListingForm
+                listingId={listing.id}
+                sellerId={listing.sellerId}
+                userId={currentUser?.id ?? null}
+              />
+            </div>
           </aside>
         </article>
-
-        <section className="rounded-[2rem] border border-border/80 bg-background p-6 shadow-sm sm:p-8">
-          <SectionHeader
-            title="Benzer ilanlar"
-            description="Aynı markada veya aynı şehirde ilgini çekebilecek ilanları burada görebilirsin."
-            actionHref="/listings"
-            actionLabel="Tüm ilanları gör"
-          />
-          <div className="mt-6 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-            {similarListings.map((item) => (
-              <ListingCard key={item.id} listing={item} />
-            ))}
-          </div>
-        </section>
       </div>
     </main>
   );

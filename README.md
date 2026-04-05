@@ -49,6 +49,8 @@ Sadece arabalar için tasarlanmış, mobil öncelikli ve güven odaklı ücretsi
 - Admin moderasyon ekranlari ve dashboard favorites sayfasi da ayni AI Studio + Figma diline tasindi; metrik, karar ve ozet panelleri teklesmeye basladi
 - Admin aksiyon gecmisi, dashboard ilan yonetimi ve profil giris panelleri de ayni tasarim sistemine alindi; boylece ana dashboard akislarinda yuzey dili daha tutarli hale geldi
 - Ana sayfa hero yapisi Google AI Studio draft'ina daha yakin bir kompozisyona cekildi; sol filtre paneli, sag ana sahne ve spotlight ilan kurgusu canli hale geldi
+- Listing create formu, profile formu ve admin persistence paneli de AI Studio sahne dili ile Figma'nin daha duzenli section/component gucunu birlestiren yeni yuzeylere kavustu
+- Login ve register ekranlari da ayni AI Studio + Figma sistemine alindi; auth girisleri artik daha yonlendirici sahne, ozet kartlari ve net eylem alanlariyla aciliyor
 - Lint, typecheck ve production build doğrulandı
 
 ## Kurulum
@@ -160,4 +162,4 @@ Yeni geliştirmeye başlamadan önce şu dosyalar gözden geçirilmelidir:
 8. `schema.sql`
 
 ## Sonraki Adım
-`TASKS.md` içindeki sıralı MVP görevleri tamamlandı. Sonraki mantıklı genişleme, AI Studio gorsel dilini dashboard form ekranlari ve admin persistence/audit alt panellerine daha derin tasimak; operasyon tarafinda ise production benzeri Supabase ortaminda legacy cookie verilerini tabloya backfill etmektir.
+`TASKS.md` içindeki sıralı MVP görevleri tamamlandı. Sonraki mantıklı genişleme, AI Studio gorsel dilini auth sonrasi dashboard alt detay panellerine ve admin audit/persistence ic akislarina daha derin tasimak; operasyon tarafinda ise production benzeri Supabase ortaminda legacy cookie verilerini tabloya backfill etmektir.

@@ -11,6 +11,7 @@ export default function LoginPage() {
         submitLabel="Giriş Yap"
         alternateHref="/register"
         alternateLabel="Kayıt Ol"
+        mode="login"
       />
     </main>
   );

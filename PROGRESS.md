@@ -227,6 +227,9 @@ Her yeni geliştirme başlamadan önce okunmalıdır.
 - Dashboard `Ilanlarim` ve `Profil` ust alanlari AI Studio + Figma diline tasindi; metrik, ozet ve hazirlik panelleri teklesmeye devam etti.
 - Ana sayfa hero yapisi Google AI Studio draft'ina daha yakin hale getirildi; sol akilli filtre paneli, sag ana sahne ve spotlight ilan onizlemesi canli homepage'e tasindi.
 - Eski `home-market-insights` yardimci bileşeni kaldirildi; homepage ust deneyimi tek bir `home-ai-hero` bileşeni uzerinden ilerliyor.
+- `listing-create-form`, `profile-form` ve `admin-persistence-panel` daha yogun ekranlar olarak yeniden ele alindi; AI Studio sahne dili ile Figma'nin section/component duzeni burada birlestirildi.
+- Ilan formu artik ustte ozet paneller ve bolunmus section kartlari ile ilerliyor; profil ve persistence ekranlari da ayni panel mantigina yaklasti.
+- Login ve register ekranlari da ayni tasarim sistemine tasindi; auth formu iki kolonlu sahne, ozet kartlari ve mod bazli yardim katmani ile yeniden kuruldu.
 
 ---
 
@@ -266,6 +269,8 @@ Her yeni geliştirme başlamadan önce okunmalıdır.
 - Admin ve dashboard alt ekranlarinda da ayni ilke korunur: once karar veren veya yonlendiren paneller teklesir, sonra daha ince detay kartlari hizalanir.
 - Dashboard icinde formun kendisinden once kullanicinin kararini hizlandiran ozet ve hazirlik panelleri guncellenir; boylece agir formlar daha yonlendirici bir ust katmanla acilir.
 - Homepage icin karar, genel hero yerine AI Studio taslagindaki filtre paneli + ana sahne kompozisyonunu baz almaktir; spotlight ilan bu karar katmaninin parcasi olarak kullanilir.
+- Yogun form ekranlarinda Figma'nin duzenli section mantigi tercih edilirken, AI Studio'dan ozet kartlari ve sahne girisi alinir; boylece hem guclu bir ilk izlenim hem de okunabilir form akislar saglanir.
+- Auth ekranlarinda ayni prensip login/register modlari uzerinden uygulanir; tek form bileseni sahne icerigi ve autocomplete davranisini moda gore degistirir.
 
 ---
 
@@ -292,6 +297,8 @@ Her yeni geliştirme başlamadan önce okunmalıdır.
 - Admin moderasyon listeleri ve favorites ekrani da yeni gorsel dile tasindi; sonraki aday alan admin aksiyon feed'i ile dashboard profile/listings ekranlaridir.
 - Admin aksiyon feed'i ile dashboard profile/listings ekranlari da yeni gorsel dile tasindi; sonraki aday alan form yuzeyleri ve persistence panelleridir.
 - Homepage de AI Studio'ya daha yakin bir ust kompozisyona kavustu; sonraki aday alan agir form yuzeyleri ve persistence panelleridir.
+- Agir form ve persistence panelleri de yeni dile tasindi; sonraki aday alan admin alt detay ekranlari ve kalan ikincil panellerdir.
+- Auth ekranlari da yeni dile tasindi; sonraki aday alan dashboard alt detay panelleri ve admin audit/persistence ic yuzeyleridir.
 
 ---
 
@@ -306,6 +313,8 @@ Her yeni geliştirme başlamadan önce okunmalıdır.
 - UI tarafinda sonraki mantikli adim, admin recent actions akisi ile dashboard profile/listings sayfalarini ayni component sistemiyle hizalamaktir.
 - UI tarafinda sonraki mantikli adim, dashboard listing create formu ve admin persistence paneli gibi daha yogun bilgi/form yuzeylerini ayni tasarim sistemiyle inceltmektir.
 - UI tarafinda sonraki mantikli adim, listing create formu, profile formu ve admin persistence paneli gibi yogun form/bilgi alanlarini AI Studio diline daha yakin bir duzende sadeleştirmektir.
+- UI tarafinda sonraki mantikli adim, admin persistence alt detaylari, auth ekranlari ve dashboard profile/listings formlarinin ic alanlarini daha da rafine etmektir.
+- UI tarafinda sonraki mantikli adim, dashboard alt detay panelleri ile admin audit/persistence ic akislarindaki daha kucuk bilgi kartlarini ayni tasarim sistemine tamamen oturtmaktir.
 
 ---
 

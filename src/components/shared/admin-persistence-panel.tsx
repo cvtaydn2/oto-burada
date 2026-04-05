@@ -1,5 +1,6 @@
-import { DatabaseZap, TerminalSquare } from "lucide-react";
+import { DatabaseZap, ShieldCheck, TerminalSquare, TriangleAlert } from "lucide-react";
 
+import { DashboardMetricCard } from "@/components/shared/dashboard-metric-card";
 import type { PersistenceHealth } from "@/services/admin/persistence-health";
 
 interface AdminPersistencePanelProps {
@@ -82,59 +83,83 @@ export function AdminPersistencePanel({ health }: AdminPersistencePanelProps) {
     command: string;
     description: string;
     status: StepStatus;
-    title: string;
+      title: string;
   }>;
+  const readyEnvCount = Object.values(health.environment).filter(Boolean).length;
+  const accessibleTables = health.tables.filter((table) => table.count >= 0).length;
 
   return (
     <section className="rounded-[2rem] border border-border/80 bg-background p-6 shadow-sm sm:p-8">
-      <div className="flex items-start gap-3">
-        <div className="flex size-11 shrink-0 items-center justify-center rounded-2xl bg-primary/10 text-primary">
-          <DatabaseZap className="size-5" />
+      <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_280px] lg:items-start">
+        <div className="flex items-start gap-3">
+          <div className="flex size-11 shrink-0 items-center justify-center rounded-2xl bg-primary/10 text-primary">
+            <DatabaseZap className="size-5" />
+          </div>
+          <div className="space-y-2">
+            <p className="text-sm font-medium uppercase tracking-[0.18em] text-primary/80">
+              Persistence Durumu
+            </p>
+            <h2 className="text-2xl font-semibold tracking-tight">Supabase migration sagligi</h2>
+            <p className="text-sm leading-6 text-muted-foreground sm:text-base">{health.message}</p>
+          </div>
         </div>
-        <div className="space-y-2">
-          <p className="text-sm font-medium uppercase tracking-[0.18em] text-primary/80">
-            Persistence Durumu
+
+        <div className="rounded-[1.5rem] border border-primary/10 bg-gradient-to-br from-primary/10 via-background to-background p-5">
+          <div className="flex items-center gap-2 text-sm font-semibold text-primary">
+            <ShieldCheck className="size-4" />
+            Hazirlik ozeti
+          </div>
+          <p className="mt-3 text-3xl font-semibold tracking-tight text-foreground">
+            {readyEnvCount}/4
           </p>
-          <h2 className="text-2xl font-semibold tracking-tight">Supabase migration sagligi</h2>
-          <p className="text-sm leading-6 text-muted-foreground sm:text-base">{health.message}</p>
+          <p className="mt-2 text-sm leading-6 text-muted-foreground">
+            Kritik env alanlari hazir. Tablo kontrolu: {accessibleTables}/{health.tables.length}.
+          </p>
         </div>
       </div>
 
       <div className="mt-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-5">
-        <div className="rounded-[1.5rem] border border-border/70 bg-muted/30 p-5">
-          <p className="text-sm text-muted-foreground">Admin env</p>
-          <p className="mt-2 text-lg font-semibold tracking-tight">
-            {health.environment.adminEnv ? "Hazir" : "Eksik"}
-          </p>
-        </div>
-        <div className="rounded-[1.5rem] border border-border/70 bg-muted/30 p-5">
-          <p className="text-sm text-muted-foreground">Storage env</p>
-          <p className="mt-2 text-lg font-semibold tracking-tight">
-            {health.environment.storageEnv ? "Hazir" : "Eksik"}
-          </p>
-        </div>
-        <div className="rounded-[1.5rem] border border-border/70 bg-muted/30 p-5">
-          <p className="text-sm text-muted-foreground">DB URL env</p>
-          <p className="mt-2 text-lg font-semibold tracking-tight">
-            {health.environment.databaseUrlEnv ? "Hazir" : "Eksik"}
-          </p>
-        </div>
-        <div className="rounded-[1.5rem] border border-border/70 bg-muted/30 p-5">
-          <p className="text-sm text-muted-foreground">Demo seed env</p>
-          <p className="mt-2 text-lg font-semibold tracking-tight">
-            {health.environment.demoPasswordEnv ? "Hazir" : "Eksik"}
-          </p>
-        </div>
-        <div className="rounded-[1.5rem] border border-border/70 bg-muted/30 p-5">
-          <p className="text-sm text-muted-foreground">Storage bucket</p>
-          <p className="mt-2 text-lg font-semibold tracking-tight">
-            {health.storage.bucketAccessible === null
-              ? "Kontrol bekliyor"
+        <DashboardMetricCard
+          label="Admin env"
+          value={health.environment.adminEnv ? "Hazir" : "Eksik"}
+          helper="Service role ve admin client tarafinin calisma durumu."
+          icon={ShieldCheck}
+          tone={health.environment.adminEnv ? "emerald" : "amber"}
+        />
+        <DashboardMetricCard
+          label="Storage env"
+          value={health.environment.storageEnv ? "Hazir" : "Eksik"}
+          helper="Bucket ve storage konfigurasyonu."
+          icon={DatabaseZap}
+          tone={health.environment.storageEnv ? "emerald" : "amber"}
+        />
+        <DashboardMetricCard
+          label="DB URL env"
+          value={health.environment.databaseUrlEnv ? "Hazir" : "Eksik"}
+          helper="Schema uygulama komutlari icin gerekli baglanti."
+          icon={DatabaseZap}
+          tone={health.environment.databaseUrlEnv ? "emerald" : "amber"}
+        />
+        <DashboardMetricCard
+          label="Demo seed env"
+          value={health.environment.demoPasswordEnv ? "Hazir" : "Eksik"}
+          helper="Bootstrap ve verify icin gereken demo sifresi."
+          icon={ShieldCheck}
+          tone={health.environment.demoPasswordEnv ? "emerald" : "amber"}
+        />
+        <DashboardMetricCard
+          label="Storage bucket"
+          value={
+            health.storage.bucketAccessible === null
+              ? "Bekliyor"
               : health.storage.bucketAccessible
                 ? "Erisilebilir"
-                : "Kontrol gerekli"}
-          </p>
-        </div>
+                : "Kontrol et"
+          }
+          helper={health.storage.bucketName ?? "Bucket tanimsiz"}
+          icon={health.storage.bucketAccessible ? ShieldCheck : TriangleAlert}
+          tone={health.storage.bucketAccessible ? "emerald" : "amber"}
+        />
       </div>
 
       {health.tables.length > 0 ? (
@@ -142,7 +167,7 @@ export function AdminPersistencePanel({ health }: AdminPersistencePanelProps) {
           {health.tables.map((table) => (
             <div
               key={table.key}
-              className="rounded-[1.5rem] border border-border/70 bg-background p-5"
+              className="rounded-[1.5rem] border border-border/70 bg-muted/10 p-5"
             >
               <p className="text-sm text-muted-foreground">{table.label}</p>
               <p className="mt-2 text-3xl font-semibold tracking-tight">{table.count}</p>
@@ -151,8 +176,8 @@ export function AdminPersistencePanel({ health }: AdminPersistencePanelProps) {
         </div>
       ) : null}
 
-      <div className="mt-6 rounded-[1.5rem] border border-border/70 bg-muted/20 p-5">
-        <p className="text-sm font-semibold tracking-tight">Storage notu</p>
+      <div className="mt-6 rounded-[1.5rem] border border-primary/10 bg-gradient-to-r from-primary/10 to-background p-5">
+        <p className="text-sm font-semibold tracking-tight text-primary">Storage notu</p>
         <p className="mt-2 text-sm leading-6 text-muted-foreground">{health.storage.message}</p>
       </div>
 

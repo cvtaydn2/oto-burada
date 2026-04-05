@@ -11,6 +11,7 @@ export default function RegisterPage() {
         submitLabel="Hesap Oluştur"
         alternateHref="/login"
         alternateLabel="Giriş Yap"
+        mode="register"
       />
     </main>
   );

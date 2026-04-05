@@ -2,9 +2,13 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
+  CarFront,
   CheckCircle2,
+  FileText,
   ImagePlus,
   LoaderCircle,
+  MapPin,
+  MessageCircle,
   Plus,
   ShieldCheck,
   Trash2,
@@ -94,6 +98,33 @@ function buildDefaultValues(
           }))
         : Array.from({ length: minimumListingImages }, () => ({})),
   };
+}
+
+function FormSection({
+  children,
+  description,
+  icon: Icon,
+  title,
+}: {
+  children: React.ReactNode;
+  description: string;
+  icon: typeof ShieldCheck;
+  title: string;
+}) {
+  return (
+    <section className="rounded-[1.75rem] border border-border/80 bg-background p-5 shadow-sm sm:p-6">
+      <div className="flex items-start gap-3">
+        <div className="flex size-11 shrink-0 items-center justify-center rounded-2xl bg-primary/10 text-primary">
+          <Icon className="size-5" />
+        </div>
+        <div className="space-y-1">
+          <h3 className="text-lg font-semibold tracking-tight text-foreground">{title}</h3>
+          <p className="text-sm leading-6 text-muted-foreground">{description}</p>
+        </div>
+      </div>
+      <div className="mt-5">{children}</div>
+    </section>
+  );
 }
 
 function revokeBlobUrl(url?: string) {
@@ -409,7 +440,50 @@ export function ListingCreateForm({ initialListing, initialValues }: ListingCrea
         </div>
       </section>
 
-      <section className="grid gap-5 sm:grid-cols-2">
+      <section className="grid gap-4 lg:grid-cols-3">
+        <div className="rounded-[1.5rem] border border-border/70 bg-background p-4 shadow-sm">
+          <p className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+            Form modu
+          </p>
+          <p className="mt-2 text-lg font-semibold tracking-tight text-foreground">
+            {isEditing ? "Ilan duzenleme" : "Yeni ilan olusturma"}
+          </p>
+          <p className="mt-2 text-sm leading-6 text-muted-foreground">
+            {isEditing
+              ? "Sadece taslak veya incelemedeki ilanlari guncelleyebilirsin."
+              : "Yeni ilan once moderasyona gider, onay sonrasi yayina acilir."}
+          </p>
+        </div>
+        <div className="rounded-[1.5rem] border border-emerald-100 bg-emerald-50/70 p-4 shadow-sm">
+          <p className="text-xs font-semibold uppercase tracking-[0.14em] text-emerald-700">
+            Fotograf hazirligi
+          </p>
+          <p className="mt-2 text-lg font-semibold tracking-tight text-foreground">
+            {uploadedImageCount}/{Math.max(fields.length, minimumListingImages)} yuklendi
+          </p>
+          <p className="mt-2 text-sm leading-6 text-muted-foreground">
+            En az {minimumListingImages} fotograf ile guven sinyali artar, ilk fotograf kapak olur.
+          </p>
+        </div>
+        <div className="rounded-[1.5rem] border border-sky-100 bg-sky-50/70 p-4 shadow-sm">
+          <p className="text-xs font-semibold uppercase tracking-[0.14em] text-sky-700">
+            Hazir iletisim
+          </p>
+          <p className="mt-2 text-lg font-semibold tracking-tight text-foreground">
+            {initialValues.whatsappPhone || "Telefon bekleniyor"}
+          </p>
+          <p className="mt-2 text-sm leading-6 text-muted-foreground">
+            Profildeki telefon form icine otomatik tasinir, alicinin ilk temas noktasi burasidir.
+          </p>
+        </div>
+      </section>
+
+      <FormSection
+        icon={CarFront}
+        title="Temel arac bilgileri"
+        description="AI Studio sahnesindeki ilk karar katmani gibi, marka, model, yil ve fiyat bilgisini net tut."
+      >
+        <section className="grid gap-5 sm:grid-cols-2">
         <label className="block space-y-2 text-sm font-medium text-foreground sm:col-span-2">
           <span>Ilan basligi</span>
           <input
@@ -523,9 +597,16 @@ export function ListingCreateForm({ initialListing, initialValues }: ListingCrea
           />
           {errors.price ? <p className="text-sm text-destructive">{errors.price.message}</p> : null}
         </label>
-      </section>
+        </section>
+      </FormSection>
 
-      <section className="grid gap-5 rounded-[1.75rem] border border-border/80 bg-muted/30 p-5 sm:grid-cols-2">
+      <FormSection
+        icon={MapPin}
+        title="Konum ve iletisim"
+        description="Figma component mantigiyla gruplanmis bu alan, konum ve WhatsApp verisini daha duzenli gosterir."
+      >
+        <section className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_250px]">
+          <div className="grid gap-5 sm:grid-cols-2">
         <label className="block space-y-2 text-sm font-medium text-foreground">
           <span>Sehir</span>
           <select {...register("city")} className={inputClassName}>
@@ -591,9 +672,36 @@ export function ListingCreateForm({ initialListing, initialValues }: ListingCrea
             </p>
           )}
         </label>
-      </section>
+          </div>
 
-      <section className="space-y-4 rounded-[1.75rem] border border-border/80 bg-background p-5 shadow-sm">
+          <div className="rounded-[1.5rem] border border-primary/10 bg-gradient-to-br from-primary/10 via-background to-background p-5">
+            <div className="flex items-center gap-2 text-sm font-semibold text-primary">
+              <MessageCircle className="size-4" />
+              Alici ilk neyi gorecek?
+            </div>
+            <p className="mt-3 text-sm leading-6 text-muted-foreground">
+              Sehir, ilce ve WhatsApp alanlari ilan karti ve detay ekraninda guven sinyali olarak
+              kullanilir. Aciklamada boya, degisen, bakim ve ekspertiz bilgisi varsa onay daha
+              hizli ilerler.
+            </p>
+            <div className="mt-4 rounded-[1.25rem] border border-border/70 bg-background/90 p-4">
+              <p className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+                Varsayilan sehir
+              </p>
+              <p className="mt-2 text-sm font-semibold text-foreground">
+                {selectedCity || initialValues.city || "Henuz secilmedi"}
+              </p>
+            </div>
+          </div>
+        </section>
+      </FormSection>
+
+      <FormSection
+        icon={ImagePlus}
+        title="Fotograf studyosu"
+        description="AI Studio’daki spotlight kartlar gibi, gorselleri belirgin ve yonlendirici bir alanda topluyoruz."
+      >
+        <section className="space-y-4">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <h3 className="text-lg font-semibold tracking-tight">Fotograflar</h3>
@@ -745,7 +853,8 @@ export function ListingCreateForm({ initialListing, initialValues }: ListingCrea
           <Plus className="size-4" />
           Yeni fotograf alani ekle
         </button>
-      </section>
+        </section>
+      </FormSection>
 
       {submitState.status === "error" ? (
         <p className="rounded-xl border border-destructive/30 bg-destructive/5 px-4 py-3 text-sm text-destructive">
@@ -759,34 +868,51 @@ export function ListingCreateForm({ initialListing, initialValues }: ListingCrea
         </p>
       ) : null}
 
-      <div className="flex flex-col gap-3 sm:flex-row">
-        <button
-          type="submit"
-          disabled={isSubmitting || isUploadingAnyImage}
-          className="inline-flex h-12 w-full items-center justify-center gap-2 rounded-xl bg-primary px-5 text-sm font-semibold text-primary-foreground shadow-sm transition-colors hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-70 sm:w-auto"
-        >
-          {isSubmitting || isUploadingAnyImage ? <LoaderCircle className="size-4 animate-spin" /> : null}
-          {isSubmitting
-            ? isEditing
-              ? "Ilan guncelleniyor..."
-              : "Ilan gonderiliyor..."
-            : isUploadingAnyImage
-              ? "Fotograflar yukleniyor..."
-              : isEditing
-                ? "Degisiklikleri kaydet"
-                : "Ilani moderasyona gonder"}
-        </button>
+      <section className="rounded-[1.75rem] border border-border/80 bg-background p-5 shadow-sm">
+        <div className="flex items-start gap-3">
+          <div className="flex size-11 shrink-0 items-center justify-center rounded-2xl bg-primary/10 text-primary">
+            <FileText className="size-5" />
+          </div>
+          <div className="space-y-1">
+            <h3 className="text-lg font-semibold tracking-tight text-foreground">
+              Son kontrol ve gonderim
+            </h3>
+            <p className="text-sm leading-6 text-muted-foreground">
+              Fotograflar ve temel alanlar hazirsa ilani kaydet. Sistem gerekli dogrulamalari bu
+              adimda tekrar calistirir.
+            </p>
+          </div>
+        </div>
 
-        {isEditing ? (
+        <div className="mt-5 flex flex-col gap-3 sm:flex-row">
           <button
-            type="button"
-            onClick={() => router.replace("/dashboard/listings")}
-            className="inline-flex h-12 w-full items-center justify-center rounded-xl border border-border bg-background px-5 text-sm font-semibold text-foreground transition-colors hover:bg-muted sm:w-auto"
+            type="submit"
+            disabled={isSubmitting || isUploadingAnyImage}
+            className="inline-flex h-12 w-full items-center justify-center gap-2 rounded-xl bg-primary px-5 text-sm font-semibold text-primary-foreground shadow-sm transition-colors hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-70 sm:w-auto"
           >
-            Duzenlemeyi iptal et
+            {isSubmitting || isUploadingAnyImage ? <LoaderCircle className="size-4 animate-spin" /> : null}
+            {isSubmitting
+              ? isEditing
+                ? "Ilan guncelleniyor..."
+                : "Ilan gonderiliyor..."
+              : isUploadingAnyImage
+                ? "Fotograflar yukleniyor..."
+                : isEditing
+                  ? "Degisiklikleri kaydet"
+                  : "Ilani moderasyona gonder"}
           </button>
-        ) : null}
-      </div>
+
+          {isEditing ? (
+            <button
+              type="button"
+              onClick={() => router.replace("/dashboard/listings")}
+              className="inline-flex h-12 w-full items-center justify-center rounded-xl border border-border bg-background px-5 text-sm font-semibold text-foreground transition-colors hover:bg-muted sm:w-auto"
+            >
+              Duzenlemeyi iptal et
+            </button>
+          ) : null}
+        </div>
+      </section>
     </form>
   );
 }

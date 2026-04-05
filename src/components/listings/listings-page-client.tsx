@@ -206,112 +206,94 @@ export function ListingsPageClient({
   };
 
   return (
-    <main className="mx-auto w-full max-w-6xl px-4 py-10 sm:px-6 sm:py-14 lg:px-8">
-      <div className="flex flex-col gap-8">
-        <section className="rounded-[2rem] border border-border/80 bg-background p-6 shadow-sm sm:p-8">
-          <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
-            <div className="max-w-2xl space-y-3">
-              <p className="text-sm font-medium uppercase tracking-[0.18em] text-primary/80">
-                Arabaya göre filtrele
-              </p>
-              <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">
-                Sade arama, hızlı sonuç
-              </h1>
-              <p className="text-sm leading-6 text-muted-foreground sm:text-base">
-                Marka, şehir, fiyat ve araç özelliklerine göre filtrele. Karmaşık olmayan bir
-                akışla uygun ilanlara birkaç adımda ulaş.
-              </p>
-            </div>
-
-            <button
-              type="button"
-              onClick={() => setIsFilterDrawerOpen(true)}
-              aria-controls={mobileFilterDialogId}
-              aria-expanded={isFilterDrawerOpen}
-              className="inline-flex min-h-11 items-center justify-center gap-2 self-start rounded-xl border border-border bg-background px-4 py-2 text-sm font-semibold text-foreground transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 lg:hidden"
-            >
-              <SlidersHorizontal className="size-4" />
-              Filtreleri Aç
-            </button>
-          </div>
-
-          {smartSummary ? (
-            <div className="mt-6 rounded-[1.5rem] border border-primary/15 bg-primary/5 p-5">
-              <div className="flex items-start gap-3">
-                <div className="flex size-10 shrink-0 items-center justify-center rounded-2xl bg-background text-primary shadow-sm">
-                  <Sparkles className="size-5" />
-                </div>
-                <div className="space-y-2">
-                  <p className="text-sm font-semibold tracking-tight text-foreground">
-                    Akilli sonuc ozeti
-                  </p>
-                  <p className="text-sm leading-6 text-muted-foreground">
-                    Bu filtrede ortalama fiyat {smartSummary.averagePrice.toLocaleString("tr-TR")} TL.
-                    Dusuk kilometreli {smartSummary.lowMileageCount} ilan ve otomatik vitesli{" "}
-                    {smartSummary.automaticCount} ilan var. En erisilebilir secenek su an{" "}
-                    <span className="font-semibold text-foreground">
-                      {smartSummary.bestPriceListing.title}
-                    </span>
-                    .
-                  </p>
-                </div>
-              </div>
-            </div>
-          ) : null}
-        </section>
-
-        <div className="grid gap-6 lg:grid-cols-[300px_minmax(0,1fr)] lg:items-start">
-          <aside className="hidden lg:block">
+    <main className="mx-auto w-full max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+      <div className="flex flex-col lg:flex-row gap-8">
+        
+        {/* Smart Sidebar Filters */}
+        <aside className="w-full lg:w-[280px] flex-shrink-0">
+          <div className="sticky top-24">
             <ListingsFilterPanel
               brands={brands}
               cities={cities}
               filters={filters}
-              models={getModelsForBrand(brands, filters.brand)}
-              districts={getDistrictsForCity(cities, filters.city)}
+              models={models}
+              districts={districts}
               quickPresets={QUICK_PRESETS.map((preset) => ({ ...preset }))}
               onApplyPreset={applyQuickPreset}
               onFilterChange={updateFilter}
               onReset={resetFilters}
             />
-          </aside>
+          </div>
+        </aside>
 
-          <section className="space-y-5">
-            <div className="flex flex-col gap-3 rounded-[1.5rem] border border-border/80 bg-background p-4 shadow-sm sm:flex-row sm:items-center sm:justify-between">
+        {/* Main Listing Area */}
+        <div className="flex-1 min-w-0">
+          {/* Header & Smart Context */}
+          <div className="mb-8">
+            <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-6">
               <div>
-                <p className="text-sm text-muted-foreground">Görüntülenen sonuç</p>
-                <p className="text-lg font-semibold tracking-tight" aria-live="polite">
-                  {filteredListings.length} ilan bulundu
+                <h1 className="text-3xl font-semibold text-slate-900 tracking-tight">Otomobil İlanları</h1>
+                <p className="text-base text-slate-500 mt-2">
+                  Türkiye genelinde <span className="font-semibold text-slate-900">{filteredListings.length}</span> araç bulundu.
                 </p>
               </div>
 
-              <div className="flex flex-wrap gap-2 text-sm text-muted-foreground">
-                {filters.maxMileage === 80000 ? (
-                  <span className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-3 py-1.5 text-primary">
-                    <Gauge className="size-3.5" />
-                    Dusuk KM
-                  </span>
-                ) : null}
-                {filters.maxPrice === 1_000_000 ? (
-                  <span className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-3 py-1.5 text-primary">
-                    <TrendingDown className="size-3.5" />
-                    Butce Dostu
-                  </span>
-                ) : null}
-                {filters.brand ? (
-                  <span className="rounded-full bg-muted px-3 py-1.5">{filters.brand}</span>
-                ) : null}
-                {filters.city ? (
-                  <span className="rounded-full bg-muted px-3 py-1.5">{filters.city}</span>
-                ) : null}
-                {filters.transmission ? (
-                  <span className="rounded-full bg-muted px-3 py-1.5">{filters.transmission}</span>
-                ) : null}
-                {filters.fuelType ? (
-                  <span className="rounded-full bg-muted px-3 py-1.5">{filters.fuelType}</span>
-                ) : null}
+              <div className="flex items-center gap-3">
+                 <button
+                  type="button"
+                  onClick={() => setIsFilterDrawerOpen(true)}
+                  aria-controls={mobileFilterDialogId}
+                  aria-expanded={isFilterDrawerOpen}
+                  className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border border-border bg-background px-4 py-2 text-sm font-semibold text-foreground transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 lg:hidden"
+                >
+                  <SlidersHorizontal className="size-4" />
+                  Filtreleri Aç
+                </button>
               </div>
             </div>
 
+            {/* AI Context Banner */}
+            {smartSummary && (
+              <div className="bg-indigo-50/50 border border-indigo-100 rounded-2xl p-4 flex items-start gap-4">
+                <div className="w-10 h-10 bg-indigo-100 rounded-full flex items-center justify-center flex-shrink-0">
+                  <Sparkles className="text-indigo-600" size={20} />
+                </div>
+                <div>
+                  <h3 className="font-semibold text-indigo-900 mb-1">Yapay Zeka Özeti</h3>
+                  <p className="text-sm text-indigo-800/80 leading-relaxed">
+                    Aramanızdaki araçların ortalama fiyatı <span className="font-semibold">{smartSummary.averagePrice.toLocaleString('tr-TR')} TL</span>. 
+                    Şu anda piyasa ortalamasının altında yüksek beklentili düşük kilometreli {smartSummary.lowMileageCount} seçenek bulunuyor. 
+                    Özellikle {smartSummary.bestPriceListing.title} dikkat çekici fiyat avantajına sahip.
+                  </p>
+                </div>
+              </div>
+            )}
+            
+            <div className="mt-4 flex flex-wrap gap-2 text-sm text-muted-foreground">
+                {filters.maxMileage === 80000 ? (
+                  <span className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-3 py-1.5 text-primary font-medium">
+                    <Gauge className="size-3.5" />
+                    Düşük KM
+                  </span>
+                ) : null}
+                {filters.maxPrice === 1_000_000 ? (
+                  <span className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-3 py-1.5 text-primary font-medium">
+                    <TrendingDown className="size-3.5" />
+                    Bütçe Dostu
+                  </span>
+                ) : null}
+                {filters.brand ? (
+                  <span className="rounded-full bg-muted px-3 py-1.5 font-medium text-slate-700 border border-slate-200">{filters.brand}</span>
+                ) : null}
+                {filters.city ? (
+                  <span className="rounded-full bg-muted px-3 py-1.5 font-medium text-slate-700 border border-slate-200">{filters.city}</span>
+                ) : null}
+            </div>
+
+          </div>
+
+          {/* Listings List */}
+          <div className="space-y-5 pb-24">
             {isLoading ? (
               <ListingsGridSkeleton />
             ) : filteredListings.length === 0 ? (
@@ -332,46 +314,45 @@ export function ListingsPageClient({
                 </button>
               </div>
             ) : (
-              <>
-                <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-                  {filteredListings.slice(0, visibleCount).map((listing) => (
-                    <ListingCard key={listing.id} listing={listing} />
-                  ))}
-                </div>
-
-                {hasMore ? (
-                  <div className="flex justify-center">
-                    <button
-                      type="button"
-                      onClick={() =>
-                        startTransition(() => {
-                          setVisibleCount((current) => current + INITIAL_VISIBLE_COUNT);
-                        })
-                      }
-                      className="inline-flex h-11 items-center justify-center rounded-xl border border-border bg-background px-5 text-sm font-semibold text-foreground transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
-                    >
-                      Daha Fazla Göster
-                    </button>
-                  </div>
-                ) : null}
-              </>
+              <div className="flex flex-col gap-5">
+                {filteredListings.slice(0, visibleCount).map((listing) => (
+                  <ListingCard key={listing.id} listing={listing} />
+                ))}
+              </div>
             )}
-          </section>
+
+            {!isLoading && hasMore && (
+              <div className="mt-10 flex justify-center">
+                <button
+                  type="button"
+                  onClick={() =>
+                    startTransition(() => {
+                      setVisibleCount((current) => current + INITIAL_VISIBLE_COUNT);
+                    })
+                  }
+                  className="inline-flex h-11 items-center justify-center rounded-xl border border-slate-200 bg-white px-6 text-sm font-semibold text-slate-700 transition-colors hover:bg-slate-50 hover:text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary shadow-sm"
+                >
+                  Daha Fazla Göster
+                </button>
+              </div>
+            )}
+          </div>
         </div>
       </div>
 
+      {/* Mobile Drawer */}
       {isFilterDrawerOpen ? (
         <div
-          className="fixed inset-0 z-50 bg-black/45 px-4 py-6 lg:hidden"
+          className="fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-sm px-4 py-6 lg:hidden"
           onClick={() => setIsFilterDrawerOpen(false)}
         >
-          <div className="mx-auto max-w-lg">
+          <div className="mx-auto max-w-lg h-full overflow-y-auto">
             <div
               id={mobileFilterDialogId}
               role="dialog"
               aria-modal="true"
               aria-labelledby={mobileFilterTitleId}
-              className="space-y-3"
+              className="space-y-3 relative"
               onClick={(event) => event.stopPropagation()}
             >
               <div className="sr-only">
@@ -380,9 +361,9 @@ export function ListingsPageClient({
               <button
                 type="button"
                 onClick={() => setIsFilterDrawerOpen(false)}
-                className="rounded-xl bg-background px-4 py-2 text-sm font-semibold text-foreground shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
+                className="rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-900 shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
               >
-                Kapat
+                 Kapat
               </button>
               <ListingsFilterPanel
                 brands={brands}
