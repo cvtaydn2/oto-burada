@@ -1,4 +1,11 @@
 import Link from "next/link";
+import {
+  BadgeCheck,
+  FileClock,
+  ShieldAlert,
+  ShieldCheck,
+  TriangleAlert,
+} from "lucide-react";
 
 import {
   AdminListingsModeration,
@@ -9,6 +16,7 @@ import {
 } from "@/components/listings/admin-recent-actions";
 import { AdminReportsModeration } from "@/components/listings/admin-reports-moderation";
 import { AdminPersistencePanel } from "@/components/shared/admin-persistence-panel";
+import { DashboardMetricCard } from "@/components/shared/dashboard-metric-card";
 import { getUserRole, requireAdminUser } from "@/lib/auth/session";
 import { getRecentAdminModerationActions } from "@/services/admin/moderation-actions";
 import { getPersistenceHealth } from "@/services/admin/persistence-health";
@@ -32,7 +40,15 @@ export default async function AdminPage() {
   const persistenceHealth = await getPersistenceHealth();
   const recentActions = await getRecentAdminModerationActions();
   const listingById = Object.fromEntries(knownListings.map((listing) => [listing.id, listing]));
-  const listingTitleById = Object.fromEntries(knownListings.map((listing) => [listing.id, listing.title]));
+  const listingMetaById = Object.fromEntries(
+    knownListings.map((listing) => [
+      listing.id,
+      {
+        slug: listing.slug,
+        title: listing.title,
+      },
+    ]),
+  );
   const recentActionItems: AdminRecentActionItem[] = await Promise.all(
     recentActions.map(async (action) => {
       const actorProfile = await getStoredProfileById(action.adminUserId);
@@ -80,26 +96,41 @@ export default async function AdminPage() {
           </div>
 
           <div className="mt-6 grid gap-4 md:grid-cols-5">
-            <div className="rounded-[1.5rem] border border-border/70 bg-muted/30 p-5">
-              <p className="text-sm text-muted-foreground">Bekleyen ilan</p>
-              <p className="mt-2 text-3xl font-semibold tracking-tight">{pendingListings.length}</p>
-            </div>
-            <div className="rounded-[1.5rem] border border-border/70 bg-muted/30 p-5">
-              <p className="text-sm text-muted-foreground">Onaylanan ilan</p>
-              <p className="mt-2 text-3xl font-semibold tracking-tight">{approvedListings.length}</p>
-            </div>
-            <div className="rounded-[1.5rem] border border-border/70 bg-muted/30 p-5">
-              <p className="text-sm text-muted-foreground">Reddedilen ilan</p>
-              <p className="mt-2 text-3xl font-semibold tracking-tight">{rejectedListings.length}</p>
-            </div>
-            <div className="rounded-[1.5rem] border border-border/70 bg-muted/30 p-5">
-              <p className="text-sm text-muted-foreground">Acil rapor</p>
-              <p className="mt-2 text-3xl font-semibold tracking-tight">{actionableReports.length}</p>
-            </div>
-            <div className="rounded-[1.5rem] border border-border/70 bg-muted/30 p-5">
-              <p className="text-sm text-muted-foreground">Toplam rapor</p>
-              <p className="mt-2 text-3xl font-semibold tracking-tight">{storedReports.length}</p>
-            </div>
+            <DashboardMetricCard
+              label="Bekleyen ilan"
+              value={String(pendingListings.length)}
+              helper="Yayina alinmadan once gozden gecirilecek ilanlar."
+              icon={FileClock}
+              tone="amber"
+            />
+            <DashboardMetricCard
+              label="Onaylanan ilan"
+              value={String(approvedListings.length)}
+              helper="Yayinda olan ve moderasyon filtresini gecen ilanlar."
+              icon={BadgeCheck}
+              tone="emerald"
+            />
+            <DashboardMetricCard
+              label="Reddedilen ilan"
+              value={String(rejectedListings.length)}
+              helper="Kurallara uymadigi icin geri cevrilen ilanlar."
+              icon={ShieldAlert}
+              tone="slate"
+            />
+            <DashboardMetricCard
+              label="Acil rapor"
+              value={String(actionableReports.length)}
+              helper="Acik veya incelemede olan guvenlik bildirimleri."
+              icon={TriangleAlert}
+              tone="amber"
+            />
+            <DashboardMetricCard
+              label="Toplam rapor"
+              value={String(storedReports.length)}
+              helper="Tum kullanici raporlari bu toplam sayiya dahildir."
+              icon={ShieldCheck}
+              tone="indigo"
+            />
           </div>
         </section>
 
@@ -108,7 +139,7 @@ export default async function AdminPage() {
 
         <AdminListingsModeration pendingListings={pendingListings} />
         <AdminReportsModeration
-          listingTitleById={listingTitleById}
+          listingMetaById={listingMetaById}
           reports={actionableReports}
         />
       </div>

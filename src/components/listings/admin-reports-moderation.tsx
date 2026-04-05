@@ -1,7 +1,15 @@
 "use client";
 
+import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Eye, LoaderCircle, ShieldCheck, XCircle } from "lucide-react";
+import {
+  ArrowRight,
+  Eye,
+  LoaderCircle,
+  ShieldCheck,
+  Sparkles,
+  XCircle,
+} from "lucide-react";
 import { useState } from "react";
 
 import { reportReasonLabels, reportStatusLabels } from "@/lib/constants/domain";
@@ -9,7 +17,7 @@ import { formatDate } from "@/lib/utils";
 import type { Report, ReportStatus } from "@/types";
 
 interface AdminReportsModerationProps {
-  listingTitleById: Record<string, string>;
+  listingMetaById: Record<string, { slug: string; title: string }>;
   reports: Report[];
 }
 
@@ -21,7 +29,7 @@ const statusClassMap: Record<ReportStatus, string> = {
 };
 
 export function AdminReportsModeration({
-  listingTitleById,
+  listingMetaById,
   reports,
 }: AdminReportsModerationProps) {
   const router = useRouter();
@@ -102,17 +110,30 @@ export function AdminReportsModeration({
           const resolved = activeAction === `${report.id}:resolved`;
           const dismissed = activeAction === `${report.id}:dismissed`;
           const actionBusy = reviewing || resolved || dismissed;
+          const listingMeta = listingMetaById[report.listingId];
+          const severityTone =
+            report.reason === "fake_listing"
+              ? "border-amber-100 bg-gradient-to-r from-amber-50 to-background text-amber-700"
+              : report.reason === "wrong_info"
+                ? "border-primary/10 bg-gradient-to-r from-primary/10 to-background text-primary"
+                : "border-border/70 bg-gradient-to-r from-muted/30 to-background text-foreground";
+          const summary =
+            report.reason === "fake_listing"
+              ? "Kapora veya sahte ilan riski acisindan hizli onceliklendirme faydali olabilir."
+              : report.reason === "wrong_info"
+                ? "Ilandaki veri tutarliligini fiyat, kilometre ve aciklama bazinda kontrol et."
+                : "Tekrar, spam veya diger guvenlik sinyalleri icin aciklamayi gozden gecir.";
 
           return (
             <article
               key={report.id}
-              className="rounded-[1.5rem] border border-border/70 bg-muted/20 p-5"
+              className="rounded-[1.75rem] border border-border/70 bg-background p-5 shadow-sm"
             >
               <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
-                <div className="space-y-3">
+                <div className="min-w-0 space-y-4">
                   <div className="flex flex-wrap items-center gap-3">
                     <h3 className="text-lg font-semibold tracking-tight text-foreground">
-                      {listingTitleById[report.listingId] ?? "Bilinmeyen ilan"}
+                      {listingMeta?.title ?? "Bilinmeyen ilan"}
                     </h3>
                     <span
                       className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold ${statusClassMap[report.status]}`}
@@ -122,19 +143,27 @@ export function AdminReportsModeration({
                   </div>
 
                   <div className="flex flex-wrap gap-2 text-xs font-medium text-muted-foreground sm:text-sm">
-                    <span className="rounded-full bg-background px-3 py-1.5">
+                    <span className="rounded-full border border-border/70 bg-muted/30 px-3 py-1.5">
                       Neden: {reportReasonLabels[report.reason]}
                     </span>
-                    <span className="rounded-full bg-background px-3 py-1.5">
+                    <span className="rounded-full border border-border/70 bg-muted/30 px-3 py-1.5">
                       Rapor tarihi: {formatDate(report.createdAt)}
                     </span>
                   </div>
 
-                  <div className="rounded-2xl bg-background px-4 py-3 text-sm leading-6 text-muted-foreground">
+                  <div className={`rounded-[1.25rem] border p-4 ${severityTone}`}>
+                    <div className="flex items-center gap-2 text-sm font-semibold">
+                      <Sparkles className="size-4" />
+                      Hizli inceleme notu
+                    </div>
+                    <p className="mt-2 text-sm leading-6 text-foreground/90">{summary}</p>
+                  </div>
+
+                  <div className="rounded-2xl border border-border/70 bg-muted/20 px-4 py-3 text-sm leading-6 text-muted-foreground">
                     {report.description?.trim() ? report.description : "Ek aciklama girilmedi."}
                   </div>
 
-                  <div className="rounded-2xl bg-background px-4 py-3">
+                  <div className="rounded-2xl border border-border/70 bg-muted/20 px-4 py-3">
                     <label
                       htmlFor={`report-note-${report.id}`}
                       className="text-xs font-medium text-muted-foreground"
@@ -158,9 +187,19 @@ export function AdminReportsModeration({
                       Not girersen en az 3 karakter olmali ve audit kaydina eklenir.
                     </p>
                   </div>
+
+                  {listingMeta ? (
+                    <Link
+                      href={`/listing/${listingMeta.slug}`}
+                      className="inline-flex h-11 items-center justify-center gap-2 self-start rounded-xl border border-border bg-background px-4 text-sm font-semibold text-foreground transition-colors hover:bg-muted"
+                    >
+                      <ArrowRight className="size-4" />
+                      Ilani ac
+                    </Link>
+                  ) : null}
                 </div>
 
-                <div className="flex flex-col gap-2 sm:flex-row lg:flex-col">
+                <div className="flex flex-col gap-2 sm:flex-row lg:w-44 lg:flex-col">
                   <button
                     type="button"
                     disabled={actionBusy || report.status === "reviewing"}

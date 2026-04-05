@@ -46,6 +46,7 @@ Sadece arabalar için tasarlanmış, mobil öncelikli ve güven odaklı ücretsi
 - Figma component export'undaki kart/badge/stepper dili ana sayfa hero alanina canli pazar ozeti ve 3 adimli baslangic paneli olarak tasindi
 - Canli listing kartlari ve dashboard metrik kartlari AI Studio'nun ana gorsel dili baz alinarak yenilendi; Figma component mantigi ile tekrar eden kart yapilari temizlendi
 - Listing detail sayfasi AI Studio karar katmanina yaklastirildi; hero ozet paneli, seller karti ve rapor formu yeni tasarim diliyle hizalandi
+- Admin moderasyon ekranlari ve dashboard favorites sayfasi da ayni AI Studio + Figma diline tasindi; metrik, karar ve ozet panelleri teklesmeye basladi
 - Lint, typecheck ve production build doğrulandı
 
 ## Kurulum
@@ -157,4 +158,4 @@ Yeni geliştirmeye başlamadan önce şu dosyalar gözden geçirilmelidir:
 8. `schema.sql`
 
 ## Sonraki Adım
-`TASKS.md` içindeki sıralı MVP görevleri tamamlandı. Sonraki mantıklı genişleme, AI Studio gorsel dilini admin moderasyon listeleri ve dashboard alt ekranlarina tasimak; operasyon tarafinda ise production benzeri Supabase ortaminda legacy cookie verilerini tabloya backfill etmektir.
+`TASKS.md` içindeki sıralı MVP görevleri tamamlandı. Sonraki mantıklı genişleme, AI Studio gorsel dilini admin aksiyon gecmisi ve dashboard profile/listings alt ekranlarina da tasimak; operasyon tarafinda ise production benzeri Supabase ortaminda legacy cookie verilerini tabloya backfill etmektir.
