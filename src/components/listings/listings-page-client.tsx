@@ -2,6 +2,7 @@
 
 import {
   useDeferredValue,
+  useEffect,
   useMemo,
   useState,
   useTransition,
@@ -37,6 +38,8 @@ export function ListingsPageClient({
   cities,
   initialFilters,
 }: ListingsPageClientProps) {
+  const mobileFilterDialogId = "mobile-listing-filters";
+  const mobileFilterTitleId = "mobile-listing-filters-title";
   const router = useRouter();
   const pathname = usePathname();
   const [isPending, startTransition] = useTransition();
@@ -62,6 +65,27 @@ export function ListingsPageClient({
 
   const isLoading = isPending || deferredFilters !== filters;
   const hasMore = filteredListings.length > visibleCount;
+
+  useEffect(() => {
+    if (!isFilterDrawerOpen) {
+      return;
+    }
+
+    const originalOverflow = document.body.style.overflow;
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        setIsFilterDrawerOpen(false);
+      }
+    };
+
+    document.body.style.overflow = "hidden";
+    window.addEventListener("keydown", handleKeyDown);
+
+    return () => {
+      document.body.style.overflow = originalOverflow;
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [isFilterDrawerOpen]);
 
   const syncFiltersToUrl = (nextFilters: ListingFilters) => {
     const searchParams = createSearchParamsFromListingFilters(nextFilters);
@@ -128,7 +152,9 @@ export function ListingsPageClient({
             <button
               type="button"
               onClick={() => setIsFilterDrawerOpen(true)}
-              className="inline-flex items-center justify-center gap-2 self-start rounded-xl border border-border bg-background px-4 py-2 text-sm font-semibold text-foreground transition-colors hover:bg-muted lg:hidden"
+              aria-controls={mobileFilterDialogId}
+              aria-expanded={isFilterDrawerOpen}
+              className="inline-flex min-h-11 items-center justify-center gap-2 self-start rounded-xl border border-border bg-background px-4 py-2 text-sm font-semibold text-foreground transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 lg:hidden"
             >
               <SlidersHorizontal className="size-4" />
               Filtreleri Aç
@@ -153,7 +179,7 @@ export function ListingsPageClient({
             <div className="flex flex-col gap-3 rounded-[1.5rem] border border-border/80 bg-background p-4 shadow-sm sm:flex-row sm:items-center sm:justify-between">
               <div>
                 <p className="text-sm text-muted-foreground">Görüntülenen sonuç</p>
-                <p className="text-lg font-semibold tracking-tight">
+                <p className="text-lg font-semibold tracking-tight" aria-live="polite">
                   {filteredListings.length} ilan bulundu
                 </p>
               </div>
@@ -188,7 +214,7 @@ export function ListingsPageClient({
                 <button
                   type="button"
                   onClick={resetFilters}
-                  className="mt-5 inline-flex h-11 items-center justify-center rounded-xl bg-primary px-5 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90"
+                  className="mt-5 inline-flex h-11 items-center justify-center rounded-xl bg-primary px-5 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
                 >
                   Filtreleri Temizle
                 </button>
@@ -210,7 +236,7 @@ export function ListingsPageClient({
                           setVisibleCount((current) => current + INITIAL_VISIBLE_COUNT);
                         })
                       }
-                      className="inline-flex h-11 items-center justify-center rounded-xl border border-border bg-background px-5 text-sm font-semibold text-foreground transition-colors hover:bg-muted"
+                      className="inline-flex h-11 items-center justify-center rounded-xl border border-border bg-background px-5 text-sm font-semibold text-foreground transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
                     >
                       Daha Fazla Göster
                     </button>
@@ -223,27 +249,40 @@ export function ListingsPageClient({
       </div>
 
       {isFilterDrawerOpen ? (
-        <div className="fixed inset-0 z-50 bg-black/45 px-4 py-6 lg:hidden">
+        <div
+          className="fixed inset-0 z-50 bg-black/45 px-4 py-6 lg:hidden"
+          onClick={() => setIsFilterDrawerOpen(false)}
+        >
           <div className="mx-auto max-w-lg">
-            <div className="mb-3 flex justify-end">
+            <div
+              id={mobileFilterDialogId}
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby={mobileFilterTitleId}
+              className="space-y-3"
+              onClick={(event) => event.stopPropagation()}
+            >
+              <div className="sr-only">
+                <h2 id={mobileFilterTitleId}>Mobil filtre paneli</h2>
+              </div>
               <button
                 type="button"
                 onClick={() => setIsFilterDrawerOpen(false)}
-                className="rounded-xl bg-background px-4 py-2 text-sm font-semibold text-foreground shadow-sm"
+                className="rounded-xl bg-background px-4 py-2 text-sm font-semibold text-foreground shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
               >
                 Kapat
               </button>
+              <ListingsFilterPanel
+                brands={brands}
+                cities={cities}
+                filters={filters}
+                models={models}
+                districts={districts}
+                isMobile
+                onFilterChange={updateFilter}
+                onReset={resetFilters}
+              />
             </div>
-            <ListingsFilterPanel
-              brands={brands}
-              cities={cities}
-              filters={filters}
-              models={models}
-              districts={districts}
-              isMobile
-              onFilterChange={updateFilter}
-              onReset={resetFilters}
-            />
           </div>
         </div>
       ) : null}

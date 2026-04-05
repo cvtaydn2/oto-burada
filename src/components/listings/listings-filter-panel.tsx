@@ -50,7 +50,7 @@ export function ListingsFilterPanel({
         <button
           type="button"
           onClick={onReset}
-          className="rounded-xl border border-border bg-background px-3 py-2 text-sm font-semibold text-foreground transition-colors hover:bg-muted"
+          className="rounded-xl border border-border bg-background px-3 py-2 text-sm font-semibold text-foreground transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
         >
           Temizle
         </button>
@@ -63,7 +63,7 @@ export function ListingsFilterPanel({
             value={filters.query ?? ""}
             onChange={(event) => onFilterChange("query", event.target.value || undefined)}
             placeholder="Marka, model veya şehir"
-            className="h-11 w-full rounded-xl border border-input bg-background px-4 text-sm outline-none transition-colors focus:border-primary"
+            className="h-11 w-full rounded-xl border border-input bg-background px-4 text-sm outline-none transition-colors focus:border-primary focus-visible:ring-2 focus-visible:ring-primary/20"
           />
         </label>
 
@@ -72,7 +72,7 @@ export function ListingsFilterPanel({
           <select
             value={filters.sort ?? "newest"}
             onChange={(event) => onFilterChange("sort", event.target.value as ListingSortOption)}
-            className="h-11 w-full rounded-xl border border-input bg-background px-4 text-sm outline-none transition-colors focus:border-primary"
+            className="h-11 w-full rounded-xl border border-input bg-background px-4 text-sm outline-none transition-colors focus:border-primary focus-visible:ring-2 focus-visible:ring-primary/20"
           >
             {listingSortOptions.map((option) => (
               <option key={option} value={option}>
@@ -88,7 +88,7 @@ export function ListingsFilterPanel({
             <select
               value={filters.brand ?? ""}
               onChange={(event) => onFilterChange("brand", event.target.value || undefined)}
-              className="h-11 w-full rounded-xl border border-input bg-background px-4 text-sm outline-none transition-colors focus:border-primary"
+              className="h-11 w-full rounded-xl border border-input bg-background px-4 text-sm outline-none transition-colors focus:border-primary focus-visible:ring-2 focus-visible:ring-primary/20"
             >
               <option value="">Tümü</option>
               {brands.map((item) => (
@@ -105,7 +105,7 @@ export function ListingsFilterPanel({
               value={filters.model ?? ""}
               onChange={(event) => onFilterChange("model", event.target.value || undefined)}
               disabled={models.length === 0}
-              className="h-11 w-full rounded-xl border border-input bg-background px-4 text-sm outline-none transition-colors focus:border-primary disabled:cursor-not-allowed disabled:bg-muted"
+              className="h-11 w-full rounded-xl border border-input bg-background px-4 text-sm outline-none transition-colors focus:border-primary focus-visible:ring-2 focus-visible:ring-primary/20 disabled:cursor-not-allowed disabled:bg-muted"
             >
               <option value="">Tümü</option>
               {models.map((model) => (
@@ -123,7 +123,7 @@ export function ListingsFilterPanel({
             <select
               value={filters.city ?? ""}
               onChange={(event) => onFilterChange("city", event.target.value || undefined)}
-              className="h-11 w-full rounded-xl border border-input bg-background px-4 text-sm outline-none transition-colors focus:border-primary"
+              className="h-11 w-full rounded-xl border border-input bg-background px-4 text-sm outline-none transition-colors focus:border-primary focus-visible:ring-2 focus-visible:ring-primary/20"
             >
               <option value="">Tümü</option>
               {cities.map((item) => (
@@ -140,7 +140,7 @@ export function ListingsFilterPanel({
               value={filters.district ?? ""}
               onChange={(event) => onFilterChange("district", event.target.value || undefined)}
               disabled={districts.length === 0}
-              className="h-11 w-full rounded-xl border border-input bg-background px-4 text-sm outline-none transition-colors focus:border-primary disabled:cursor-not-allowed disabled:bg-muted"
+              className="h-11 w-full rounded-xl border border-input bg-background px-4 text-sm outline-none transition-colors focus:border-primary focus-visible:ring-2 focus-visible:ring-primary/20 disabled:cursor-not-allowed disabled:bg-muted"
             >
               <option value="">Tümü</option>
               {districts.map((district) => (
@@ -163,7 +163,7 @@ export function ListingsFilterPanel({
                   (event.target.value || undefined) as ListingFilters["fuelType"],
                 )
               }
-              className="h-11 w-full rounded-xl border border-input bg-background px-4 text-sm outline-none transition-colors focus:border-primary"
+              className="h-11 w-full rounded-xl border border-input bg-background px-4 text-sm outline-none transition-colors focus:border-primary focus-visible:ring-2 focus-visible:ring-primary/20"
             >
               <option value="">Tümü</option>
               {fuelTypes.map((item) => (
@@ -184,7 +184,7 @@ export function ListingsFilterPanel({
                   (event.target.value || undefined) as ListingFilters["transmission"],
                 )
               }
-              className="h-11 w-full rounded-xl border border-input bg-background px-4 text-sm outline-none transition-colors focus:border-primary"
+              className="h-11 w-full rounded-xl border border-input bg-background px-4 text-sm outline-none transition-colors focus:border-primary focus-visible:ring-2 focus-visible:ring-primary/20"
             >
               <option value="">Tümü</option>
               {transmissionTypes.map((item) => (
@@ -209,7 +209,7 @@ export function ListingsFilterPanel({
                   event.target.value ? Number(event.target.value) : undefined,
                 )
               }
-              className="h-11 w-full rounded-xl border border-input bg-background px-4 text-sm outline-none transition-colors focus:border-primary"
+              className="h-11 w-full rounded-xl border border-input bg-background px-4 text-sm outline-none transition-colors focus:border-primary focus-visible:ring-2 focus-visible:ring-primary/20"
             />
           </label>
 
@@ -225,7 +225,7 @@ export function ListingsFilterPanel({
                   event.target.value ? Number(event.target.value) : undefined,
                 )
               }
-              className="h-11 w-full rounded-xl border border-input bg-background px-4 text-sm outline-none transition-colors focus:border-primary"
+              className="h-11 w-full rounded-xl border border-input bg-background px-4 text-sm outline-none transition-colors focus:border-primary focus-visible:ring-2 focus-visible:ring-primary/20"
             />
           </label>
         </div>
@@ -244,7 +244,7 @@ export function ListingsFilterPanel({
                   event.target.value ? Number(event.target.value) : undefined,
                 )
               }
-              className="h-11 w-full rounded-xl border border-input bg-background px-4 text-sm outline-none transition-colors focus:border-primary"
+              className="h-11 w-full rounded-xl border border-input bg-background px-4 text-sm outline-none transition-colors focus:border-primary focus-visible:ring-2 focus-visible:ring-primary/20"
             />
           </label>
 
@@ -261,7 +261,7 @@ export function ListingsFilterPanel({
                   event.target.value ? Number(event.target.value) : undefined,
                 )
               }
-              className="h-11 w-full rounded-xl border border-input bg-background px-4 text-sm outline-none transition-colors focus:border-primary"
+              className="h-11 w-full rounded-xl border border-input bg-background px-4 text-sm outline-none transition-colors focus:border-primary focus-visible:ring-2 focus-visible:ring-primary/20"
             />
           </label>
         </div>
@@ -279,7 +279,7 @@ export function ListingsFilterPanel({
                 event.target.value ? Number(event.target.value) : undefined,
               )
             }
-            className="h-11 w-full rounded-xl border border-input bg-background px-4 text-sm outline-none transition-colors focus:border-primary"
+            className="h-11 w-full rounded-xl border border-input bg-background px-4 text-sm outline-none transition-colors focus:border-primary focus-visible:ring-2 focus-visible:ring-primary/20"
           />
         </label>
       </div>

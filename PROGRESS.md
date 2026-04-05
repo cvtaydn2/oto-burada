@@ -14,7 +14,7 @@ Her yeni geliştirme başlamadan önce okunmalıdır.
 
 ## Proje Durumu
 - Güncel faz: `Phase 7`
-- Güncel görev: `Task 7.1`
+- Güncel görev: `Task 7.2`
 - Durum: tamamlandı
 
 ---
@@ -171,6 +171,13 @@ Her yeni geliştirme başlamadan önce okunmalıdır.
 - Majör async akışlar tekrar gözden geçirilerek loading, empty, error ve disabled durumları hizalandı.
 - Auth, listing create, image upload, favorites, admin moderation ve report moderation akışlarının durum davranışları doğrulandı.
 
+### Phase 7 / Task 7.2
+- Mobil alt navigasyon, dashboard navigasyonu ve header linklerinde belirgin keyboard focus stilleri eklendi.
+- Listing kartı ve favori butonunda touch target ve disabled/focus davranışları iyileştirildi.
+- Listings mobil filtre drawer yapısı `aria` işaretleri, escape ile kapanma ve body scroll kilidi ile güçlendirildi.
+- Auth, filter ve report formlarında focus ring, `aria-live` ve hata/basarili mesaj semantikleri iyileştirildi.
+- Core akışlar mobil ve keyboard kullanım açısından tekrar doğrulandı.
+
 ---
 
 ## Alınan Kararlar
@@ -188,19 +195,20 @@ Her yeni geliştirme başlamadan önce okunmalıdır.
 - Aynı kullanıcı aynı ilan için acik veya incelemedeki raporu tekrar gönderirse mevcut rapor güncellenir.
 - URL filtreleme için canonical davranış `router.replace` üzerinden kuruldu; filtre güncellerken geçmiş yığını gereksiz büyütülmüyor.
 - SEO metadata üretimi için ortak helper katmanı kullanılıyor; sayfa bazlı kurallar burada merkezileştirildi.
+- Mobil filtre drawer kapandığında body scroll varsayılan haline geri dönmeli; keyboard kullanıcısı `Escape` ile drawer'ı kapatabilmeli.
 
 ---
 
 ## Bu Görevde Yapılacaklar
-- SEO metadata katmanı homepage, listings ve detail sayfalarında tamamlandı.
-- Majör async ekranlarda eksik loading/error/disabled durumları güçlendirildi.
-- Durum denetimi sonrası UI davranışı lint/typecheck/build ile tekrar doğrulandı.
+- Core navigasyon ve ana formlarda keyboard focus görünürlüğü artırıldı.
+- Mobil filtre drawer semantiği ve kapatma davranışı erişilebilir hale getirildi.
+- Responsive ve erişilebilirlik iyileştirmeleri lint/typecheck/build ile tekrar doğrulandı.
 
 ---
 
 ## Sonraki Görev
-- `Phase 7 / Task 7.2`
-- Erişilebilirlik ve responsive kullanım denetimi tamamlanacak.
+- `Phase 7 / Task 7.3`
+- Final temizlik, doküman hizalama ve isimlendirme tutarlılığı gözden geçirilecek.
 
 ---
 

@@ -27,7 +27,7 @@ export function ReportListingForm({ listingId, sellerId, userId }: ReportListing
     return (
       <Link
         href="/login"
-        className="inline-flex h-12 w-full items-center justify-center gap-2 rounded-xl border border-destructive/30 bg-destructive/5 px-5 text-sm font-semibold text-destructive transition-colors hover:bg-destructive/10"
+        className="inline-flex h-12 w-full items-center justify-center gap-2 rounded-xl border border-destructive/30 bg-destructive/5 px-5 text-sm font-semibold text-destructive transition-colors hover:bg-destructive/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-destructive/40 focus-visible:ring-offset-2"
       >
         <AlertTriangle className="size-4" />
         Supheli Ilani Bildir
@@ -97,7 +97,7 @@ export function ReportListingForm({ listingId, sellerId, userId }: ReportListing
         <select
           value={reason}
           onChange={(event) => setReason(event.target.value as (typeof reportReasons)[number])}
-          className="h-11 w-full rounded-xl border border-input bg-background px-4 text-sm outline-none transition-colors focus:border-primary"
+          className="h-11 w-full rounded-xl border border-input bg-background px-4 text-sm outline-none transition-colors focus:border-primary focus-visible:ring-2 focus-visible:ring-primary/20"
         >
           {reportReasons.map((value) => (
             <option key={value} value={value}>
@@ -114,22 +114,26 @@ export function ReportListingForm({ listingId, sellerId, userId }: ReportListing
           value={description}
           onChange={(event) => setDescription(event.target.value)}
           placeholder="Sorunu kisaca acikla. Aciklama girersen en az 5 karakter olmali."
-          className="w-full rounded-2xl border border-input bg-background px-4 py-3 text-sm outline-none transition-colors focus:border-primary"
+          className="w-full rounded-2xl border border-input bg-background px-4 py-3 text-sm outline-none transition-colors focus:border-primary focus-visible:ring-2 focus-visible:ring-primary/20"
         />
       </label>
 
       {submitState.status === "error" ? (
-        <p className="text-sm text-destructive">{submitState.message}</p>
+        <p role="alert" className="text-sm text-destructive">
+          {submitState.message}
+        </p>
       ) : null}
 
       {submitState.status === "success" ? (
-        <p className="text-sm text-primary">{submitState.message}</p>
+        <p aria-live="polite" className="text-sm text-primary">
+          {submitState.message}
+        </p>
       ) : null}
 
       <button
         type="submit"
         disabled={isSubmitting}
-        className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-xl border border-destructive/30 bg-background px-4 text-sm font-semibold text-destructive transition-colors hover:bg-destructive/10 disabled:cursor-not-allowed disabled:opacity-60"
+        className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-xl border border-destructive/30 bg-background px-4 text-sm font-semibold text-destructive transition-colors hover:bg-destructive/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-destructive/40 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
       >
         {isSubmitting ? <LoaderCircle className="size-4 animate-spin" /> : <AlertTriangle className="size-4" />}
         {isSubmitting ? "Rapor gonderiliyor..." : "Raporu gonder"}

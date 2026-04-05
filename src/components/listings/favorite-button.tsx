@@ -22,9 +22,10 @@ export function FavoriteButton({
       type="button"
       aria-label={active ? "Favorilerden çıkar" : "Favorilere ekle"}
       aria-pressed={active}
+      disabled={!hydrated}
       onClick={() => toggleFavorite(listingId)}
       className={cn(
-        "flex items-center justify-center rounded-full border border-border/70 bg-background/95 text-foreground shadow-sm transition-colors hover:bg-background",
+        "flex items-center justify-center rounded-full border border-border/70 bg-background/95 text-foreground shadow-sm transition-colors hover:bg-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60",
         active && "border-primary/30 bg-primary/10 text-primary",
         className,
       )}

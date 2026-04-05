@@ -48,7 +48,7 @@ export function AuthForm({
             defaultValue={state.fields?.email ?? ""}
             autoComplete="email"
             required
-            className="h-12 w-full rounded-xl border border-input bg-background px-4 text-sm outline-none transition-colors focus:border-primary"
+            className="h-12 w-full rounded-xl border border-input bg-background px-4 text-sm outline-none transition-colors focus:border-primary focus-visible:ring-2 focus-visible:ring-primary/20"
           />
         </label>
 
@@ -60,18 +60,24 @@ export function AuthForm({
             autoComplete="current-password"
             required
             minLength={6}
-            className="h-12 w-full rounded-xl border border-input bg-background px-4 text-sm outline-none transition-colors focus:border-primary"
+            className="h-12 w-full rounded-xl border border-input bg-background px-4 text-sm outline-none transition-colors focus:border-primary focus-visible:ring-2 focus-visible:ring-primary/20"
           />
         </label>
 
         {state.error ? (
-          <p className="rounded-xl border border-destructive/30 bg-destructive/5 px-4 py-3 text-sm text-destructive">
+          <p
+            role="alert"
+            className="rounded-xl border border-destructive/30 bg-destructive/5 px-4 py-3 text-sm text-destructive"
+          >
             {state.error}
           </p>
         ) : null}
 
         {state.success ? (
-          <p className="rounded-xl border border-primary/20 bg-primary/5 px-4 py-3 text-sm text-primary">
+          <p
+            aria-live="polite"
+            className="rounded-xl border border-primary/20 bg-primary/5 px-4 py-3 text-sm text-primary"
+          >
             {state.success}
           </p>
         ) : null}
@@ -82,13 +88,13 @@ export function AuthForm({
       <div className="mt-6 flex flex-col gap-3 sm:flex-row">
         <Link
           href={alternateHref}
-          className="inline-flex h-11 items-center justify-center rounded-xl border border-border bg-background px-5 text-sm font-semibold text-foreground transition-colors hover:bg-muted"
+          className="inline-flex h-11 items-center justify-center rounded-xl border border-border bg-background px-5 text-sm font-semibold text-foreground transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
         >
           {alternateLabel}
         </Link>
         <Link
           href="/listings"
-          className="inline-flex h-11 items-center justify-center rounded-xl border border-border bg-background px-5 text-sm font-semibold text-foreground transition-colors hover:bg-muted"
+          className="inline-flex h-11 items-center justify-center rounded-xl border border-border bg-background px-5 text-sm font-semibold text-foreground transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
         >
           İlanları İncele
         </Link>

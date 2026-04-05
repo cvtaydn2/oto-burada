@@ -36,7 +36,7 @@ export function ListingCard({ listing }: ListingCardProps) {
 
         <FavoriteButton
           listingId={listing.id}
-          className="absolute right-3 top-3 size-9"
+          className="absolute right-3 top-3 size-11"
         />
       </div>
 
@@ -73,7 +73,7 @@ export function ListingCard({ listing }: ListingCardProps) {
 
         <Link
           href={detailHref}
-          className="inline-flex h-11 items-center justify-center rounded-xl border border-border bg-background px-4 text-sm font-semibold text-foreground transition-colors hover:bg-muted"
+          className="inline-flex h-11 items-center justify-center rounded-xl border border-border bg-background px-4 text-sm font-semibold text-foreground transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
         >
           İlanı İncele
         </Link>

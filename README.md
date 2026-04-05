@@ -15,7 +15,7 @@ Sadece arabalar için tasarlanmış, mobil öncelikli ve güven odaklı ücretsi
 - Supabase Storage
 
 ## Mevcut Durum
-- `Phase 7 / Task 7.1` tamamlandı
+- `Phase 7 / Task 7.2` tamamlandı
 - Public listeleme ve ilan detay akışları hazır
 - Supabase Auth ile giriş, kayıt ve korumalı dashboard akışı çalışıyor
 - Profil güncelleme ve favori akışı aktif
@@ -25,6 +25,7 @@ Sadece arabalar için tasarlanmış, mobil öncelikli ve güven odaklı ücretsi
 - Listings filtreleri URL search params ile paylaşılabilir ve refresh dayanıklı hale geldi
 - Homepage, listings index ve listing detail için SEO metadata aktif
 - Majör async ekranlarda loading, empty, error ve disabled durumları gözden geçirildi
+- Core akışlarda klavye odağı, touch target ve mobil filtre drawer erişilebilirliği güçlendirildi
 - Lint, typecheck ve production build doğrulandı
 
 ## Kurulum
@@ -107,4 +108,4 @@ Yeni geliştirmeye başlamadan önce şu dosyalar gözden geçirilmelidir:
 8. `schema.sql`
 
 ## Sonraki Adım
-Sıradaki iş `Phase 7 / Task 7.2`: erişilebilirlik ve responsive kullanım denetiminin tamamlanması.
+Sıradaki iş `Phase 7 / Task 7.3`: final temizlik, dökümantasyon hizalama ve isimlendirme tutarlılığının gözden geçirilmesi.
