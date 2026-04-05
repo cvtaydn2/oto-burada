@@ -209,6 +209,8 @@ Her yeni geliştirme başlamadan önce okunmalıdır.
 - `db:verify-demo` gercek Supabase ortami uzerinde basariyla calisti ve tablo/bucket sayimlari dogrulandi.
 - Admin audit gecmisi kartlari aksiyonu yapan admin profil adini gosterecek sekilde zenginlestirildi.
 - Admin audit gecmisi hedef tipi filtresine ek olarak aksiyon tipi filtresi ve serbest metin aramasi kazandi.
+- Google AI Studio export icindeki landing/listing dili mevcut projeye `/ui-draft` preview route'u olarak tasindi.
+- Vite tabanli export'un tamami merge edilmek yerine, ana Home/listing deneyimi Next.js icinde izole bir taslak olarak uyarlandi.
 
 ---
 
@@ -240,6 +242,7 @@ Her yeni geliştirme başlamadan önce okunmalıdır.
 - `db:*` scriptleri artik `.env.local` okuyarak calisir; Windows ortaminda `psql.exe` icin yaygin kurulum yollarini otomatik dener.
 - Admin aksiyon feed'i profile servisi uzerinden admin kimligini cozer; profil bulunamazsa guvenli fallback etiketi gosterir.
 - Audit gecmisi aramasi actor, hedef basligi, audit notu ve aksiyon etiketi uzerinden calisir.
+- AI Studio entegrasyonunda once izole preview route tercih edildi; mevcut app router, auth ve persistence akislarina dogrudan mudahale edilmedi.
 
 ---
 
@@ -258,6 +261,7 @@ Her yeni geliştirme başlamadan önce okunmalıdır.
 - Runtime persistence'in hedef Supabase projesi artik bos degil; schema + demo seed + verify operasyonu tamamlandi.
 - Audit trail kartlari artik hedef, not ve actor bilgisini birlikte tasir.
 - Admin audit trail paneli daha yogun kayit hacminde taranabilir olacak sekilde filtreleme ve arama ile guclendirildi.
+- AI Studio taslagi icin mock verili bir deneme alani olusturuldu; uygun bloklar sonradan ana sayfa veya listings sayfasina parcali tasinabilir.
 
 ---
 

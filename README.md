@@ -41,6 +41,7 @@ Sadece arabalar için tasarlanmış, mobil öncelikli ve güven odaklı ücretsi
 - Admin audit geçmişi artık aksiyonu yapan admin profil adını da gösteriyor
 - Admin audit geçmişi artık hedef tipi, aksiyon tipi ve metin araması ile filtrelenebiliyor
 - Supabase schema, demo seed ve verify akisi gerçek proje üzerinde başarıyla doğrulandı
+- Google AI Studio export taslagi mevcut projeye `/ui-draft` preview route'u olarak entegre edildi
 - Lint, typecheck ve production build doğrulandı
 
 ## Kurulum
