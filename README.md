@@ -48,6 +48,7 @@ Sadece arabalar için tasarlanmış, mobil öncelikli ve güven odaklı ücretsi
 - Listing detail sayfasi AI Studio karar katmanina yaklastirildi; hero ozet paneli, seller karti ve rapor formu yeni tasarim diliyle hizalandi
 - Admin moderasyon ekranlari ve dashboard favorites sayfasi da ayni AI Studio + Figma diline tasindi; metrik, karar ve ozet panelleri teklesmeye basladi
 - Admin aksiyon gecmisi, dashboard ilan yonetimi ve profil giris panelleri de ayni tasarim sistemine alindi; boylece ana dashboard akislarinda yuzey dili daha tutarli hale geldi
+- Ana sayfa hero yapisi Google AI Studio draft'ina daha yakin bir kompozisyona cekildi; sol filtre paneli, sag ana sahne ve spotlight ilan kurgusu canli hale geldi
 - Lint, typecheck ve production build doğrulandı
 
 ## Kurulum
