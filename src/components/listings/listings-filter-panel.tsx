@@ -3,6 +3,12 @@ import { cn } from "@/lib/utils";
 import type { BrandCatalogItem, CityOption } from "@/data";
 import type { ListingFilters, ListingSortOption } from "@/types";
 
+interface QuickPreset {
+  description: string;
+  id: string;
+  label: string;
+}
+
 interface ListingsFilterPanelProps {
   brands: BrandCatalogItem[];
   cities: CityOption[];
@@ -10,6 +16,8 @@ interface ListingsFilterPanelProps {
   models: string[];
   districts: string[];
   isMobile?: boolean;
+  quickPresets?: QuickPreset[];
+  onApplyPreset?: (presetId: string) => void;
   onFilterChange: <K extends keyof ListingFilters>(
     key: K,
     value: ListingFilters[K],
@@ -32,6 +40,8 @@ export function ListingsFilterPanel({
   models,
   districts,
   isMobile = false,
+  quickPresets = [],
+  onApplyPreset,
   onFilterChange,
   onReset,
 }: ListingsFilterPanelProps) {
@@ -57,6 +67,32 @@ export function ListingsFilterPanel({
       </div>
 
       <div className="mt-5 space-y-4">
+        {quickPresets.length > 0 ? (
+          <div className="space-y-3 rounded-[1.25rem] border border-primary/10 bg-primary/5 p-4">
+            <div>
+              <h3 className="text-sm font-semibold tracking-tight">Akilli secimler</h3>
+              <p className="text-xs leading-5 text-muted-foreground">
+                Tek dokunusla sik kullanilan filtre kombinasyonlarini uygula.
+              </p>
+            </div>
+            <div className="grid gap-2">
+              {quickPresets.map((preset) => (
+                <button
+                  key={preset.id}
+                  type="button"
+                  onClick={() => onApplyPreset?.(preset.id)}
+                  className="rounded-xl border border-border/70 bg-background px-4 py-3 text-left transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
+                >
+                  <p className="text-sm font-semibold text-foreground">{preset.label}</p>
+                  <p className="mt-1 text-xs leading-5 text-muted-foreground">
+                    {preset.description}
+                  </p>
+                </button>
+              ))}
+            </div>
+          </div>
+        ) : null}
+
         <label className="block space-y-2 text-sm font-medium">
           <span>Arama</span>
           <input

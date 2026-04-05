@@ -7,7 +7,7 @@ import {
   useState,
   useTransition,
 } from "react";
-import { SlidersHorizontal } from "lucide-react";
+import { Gauge, SlidersHorizontal, Sparkles, TrendingDown } from "lucide-react";
 import { usePathname, useRouter } from "next/navigation";
 
 import { ListingCard } from "@/components/listings/listing-card";
@@ -24,6 +24,28 @@ import type { BrandCatalogItem, CityOption } from "@/data";
 import type { Listing, ListingFilters } from "@/types";
 
 const INITIAL_VISIBLE_COUNT = 6;
+const QUICK_PRESETS = [
+  {
+    description: "80.000 km altindaki ilanlari en dusuk kilometreden baslat.",
+    id: "low-mileage",
+    label: "Dusuk KM",
+  },
+  {
+    description: "Otomatik vites ilanlari tek dokunusla filtrele.",
+    id: "automatic",
+    label: "Otomatik",
+  },
+  {
+    description: "1.000.000 TL altindaki daha erisilebilir araclari one cikar.",
+    id: "budget",
+    label: "Butce Dostu",
+  },
+  {
+    description: "2020 ve sonrasi araclari yeni model odagiyla listele.",
+    id: "newer-models",
+    label: "Yeni Model",
+  },
+] as const;
 
 interface ListingsPageClientProps {
   listings: Listing[];
@@ -65,6 +87,27 @@ export function ListingsPageClient({
 
   const isLoading = isPending || deferredFilters !== filters;
   const hasMore = filteredListings.length > visibleCount;
+  const smartSummary = useMemo(() => {
+    if (filteredListings.length === 0) {
+      return null;
+    }
+
+    const averagePrice = Math.round(
+      filteredListings.reduce((sum, listing) => sum + listing.price, 0) / filteredListings.length,
+    );
+    const lowMileageCount = filteredListings.filter((listing) => listing.mileage <= 80000).length;
+    const automaticCount = filteredListings.filter(
+      (listing) => listing.transmission === "otomatik" || listing.transmission === "yari_otomatik",
+    ).length;
+    const bestPriceListing = [...filteredListings].sort((left, right) => left.price - right.price)[0];
+
+    return {
+      automaticCount,
+      averagePrice,
+      bestPriceListing,
+      lowMileageCount,
+    };
+  }, [filteredListings]);
 
   useEffect(() => {
     if (!isFilterDrawerOpen) {
@@ -131,6 +174,37 @@ export function ListingsPageClient({
     });
   };
 
+  const applyQuickPreset = (presetId: string) => {
+    startTransition(() => {
+      const nextFilters: ListingFilters = {
+        sort: "newest",
+      };
+
+      if (presetId === "low-mileage") {
+        nextFilters.maxMileage = 80000;
+        nextFilters.sort = "mileage_asc";
+      }
+
+      if (presetId === "automatic") {
+        nextFilters.transmission = "otomatik";
+      }
+
+      if (presetId === "budget") {
+        nextFilters.maxPrice = 1_000_000;
+        nextFilters.sort = "price_asc";
+      }
+
+      if (presetId === "newer-models") {
+        nextFilters.minYear = 2020;
+        nextFilters.sort = "year_desc";
+      }
+
+      setFilters(nextFilters);
+      setVisibleCount(INITIAL_VISIBLE_COUNT);
+      syncFiltersToUrl(nextFilters);
+    });
+  };
+
   return (
     <main className="mx-auto w-full max-w-6xl px-4 py-10 sm:px-6 sm:py-14 lg:px-8">
       <div className="flex flex-col gap-8">
@@ -160,6 +234,30 @@ export function ListingsPageClient({
               Filtreleri Aç
             </button>
           </div>
+
+          {smartSummary ? (
+            <div className="mt-6 rounded-[1.5rem] border border-primary/15 bg-primary/5 p-5">
+              <div className="flex items-start gap-3">
+                <div className="flex size-10 shrink-0 items-center justify-center rounded-2xl bg-background text-primary shadow-sm">
+                  <Sparkles className="size-5" />
+                </div>
+                <div className="space-y-2">
+                  <p className="text-sm font-semibold tracking-tight text-foreground">
+                    Akilli sonuc ozeti
+                  </p>
+                  <p className="text-sm leading-6 text-muted-foreground">
+                    Bu filtrede ortalama fiyat {smartSummary.averagePrice.toLocaleString("tr-TR")} TL.
+                    Dusuk kilometreli {smartSummary.lowMileageCount} ilan ve otomatik vitesli{" "}
+                    {smartSummary.automaticCount} ilan var. En erisilebilir secenek su an{" "}
+                    <span className="font-semibold text-foreground">
+                      {smartSummary.bestPriceListing.title}
+                    </span>
+                    .
+                  </p>
+                </div>
+              </div>
+            </div>
+          ) : null}
         </section>
 
         <div className="grid gap-6 lg:grid-cols-[300px_minmax(0,1fr)] lg:items-start">
@@ -170,6 +268,8 @@ export function ListingsPageClient({
               filters={filters}
               models={getModelsForBrand(brands, filters.brand)}
               districts={getDistrictsForCity(cities, filters.city)}
+              quickPresets={QUICK_PRESETS.map((preset) => ({ ...preset }))}
+              onApplyPreset={applyQuickPreset}
               onFilterChange={updateFilter}
               onReset={resetFilters}
             />
@@ -185,6 +285,18 @@ export function ListingsPageClient({
               </div>
 
               <div className="flex flex-wrap gap-2 text-sm text-muted-foreground">
+                {filters.maxMileage === 80000 ? (
+                  <span className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-3 py-1.5 text-primary">
+                    <Gauge className="size-3.5" />
+                    Dusuk KM
+                  </span>
+                ) : null}
+                {filters.maxPrice === 1_000_000 ? (
+                  <span className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-3 py-1.5 text-primary">
+                    <TrendingDown className="size-3.5" />
+                    Butce Dostu
+                  </span>
+                ) : null}
                 {filters.brand ? (
                   <span className="rounded-full bg-muted px-3 py-1.5">{filters.brand}</span>
                 ) : null}
@@ -279,6 +391,8 @@ export function ListingsPageClient({
                 models={models}
                 districts={districts}
                 isMobile
+                quickPresets={QUICK_PRESETS.map((preset) => ({ ...preset }))}
+                onApplyPreset={applyQuickPreset}
                 onFilterChange={updateFilter}
                 onReset={resetFilters}
               />

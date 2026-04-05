@@ -211,6 +211,8 @@ Her yeni geliştirme başlamadan önce okunmalıdır.
 - Admin audit gecmisi hedef tipi filtresine ek olarak aksiyon tipi filtresi ve serbest metin aramasi kazandi.
 - Google AI Studio export icindeki landing/listing dili mevcut projeye `/ui-draft` preview route'u olarak tasindi.
 - Vite tabanli export'un tamami merge edilmek yerine, ana Home/listing deneyimi Next.js icinde izole bir taslak olarak uyarlandi.
+- Canli `/listings` ekrani AI Studio dilinden uyarlanan akilli preset filtreler ile genisletildi.
+- Listings hero bolumune filtre sonucuna gore dinamik akilli ozet karti eklendi.
 
 ---
 
@@ -243,6 +245,7 @@ Her yeni geliştirme başlamadan önce okunmalıdır.
 - Admin aksiyon feed'i profile servisi uzerinden admin kimligini cozer; profil bulunamazsa guvenli fallback etiketi gosterir.
 - Audit gecmisi aramasi actor, hedef basligi, audit notu ve aksiyon etiketi uzerinden calisir.
 - AI Studio entegrasyonunda once izole preview route tercih edildi; mevcut app router, auth ve persistence akislarina dogrudan mudahale edilmedi.
+- Listings presetleri mevcut URL senkron filtre modelini bozmadan ayni arama parametre sistemine yazilir.
 
 ---
 
@@ -262,6 +265,7 @@ Her yeni geliştirme başlamadan önce okunmalıdır.
 - Audit trail kartlari artik hedef, not ve actor bilgisini birlikte tasir.
 - Admin audit trail paneli daha yogun kayit hacminde taranabilir olacak sekilde filtreleme ve arama ile guclendirildi.
 - AI Studio taslagi icin mock verili bir deneme alani olusturuldu; uygun bloklar sonradan ana sayfa veya listings sayfasina parcali tasinabilir.
+- AI Studio dilinin ilk canli tasimasi listings tarafinda yapildi; sonraki aday alan ana sayfa hero veya listing karti detay zenginlestirmesi olabilir.
 
 ---
 
