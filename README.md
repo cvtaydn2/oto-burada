@@ -33,6 +33,7 @@ Sadece arabalar için tasarlanmış, mobil öncelikli ve güven odaklı ücretsi
 - Legacy cookie verileri okunurken DB kayıtları ile merge edilerek geçiş sürecinde veri kaybı riski azaltıldı
 - Dashboard içinde legacy cookie verilerini Supabase'e taşıyan tek tık senkron kartı eklendi
 - Admin panelinde Supabase env ve tablo erişimini özetleyen persistence health görünümü eklendi
+- Repo içine Supabase schema uygulama ve demo seed komutları eklendi
 - Lint, typecheck ve production build doğrulandı
 
 ## Kurulum
@@ -62,6 +63,8 @@ Copy-Item .env.example .env.local
 - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
 - `SUPABASE_SERVICE_ROLE_KEY`
 - `SUPABASE_STORAGE_BUCKET_LISTINGS`
+- `SUPABASE_DB_URL`
+- `SUPABASE_DEMO_USER_PASSWORD`
 
 `SUPABASE_STORAGE_BUCKET_LISTINGS` bucket'inin public read erişimiyle açılması ve ilan görselleri için kullanılması beklenir.
 Uygulama tarafında `JPG`, `PNG`, `WebP` formatlari ve dosya basi maksimum `5 MB` kurali enforce edilir.
@@ -77,6 +80,27 @@ npm run lint
 npm run typecheck
 npm run build
 ```
+
+### 6. Supabase schema ve demo seed
+Schema'yi gerçek veritabanına uygulamak için:
+
+```bash
+npm run db:apply-schema
+```
+
+Demo auth kullanicilari, profiller, ilanlar, favoriler ve raporlar ile birlikte seed atmak icin:
+
+```bash
+npm run db:seed-demo
+```
+
+Tum akisi tek komutta calistirmak icin:
+
+```bash
+npm run db:bootstrap-demo
+```
+
+`db:apply-schema` komutu yerel ortamda `psql` aracinin PATH uzerinde olmasini bekler.
 
 ## Proje Yapısı
 ```txt
@@ -115,4 +139,4 @@ Yeni geliştirmeye başlamadan önce şu dosyalar gözden geçirilmelidir:
 8. `schema.sql`
 
 ## Sonraki Adım
-`TASKS.md` içindeki sıralı MVP görevleri tamamlandı. Sonraki mantıklı genişleme, gerçek Supabase migration/seed komutlarını repo içine script olarak ekleyip mevcut verileri tabloya taşımak olur.
+`TASKS.md` içindeki sıralı MVP görevleri tamamlandı. Sonraki mantıklı genişleme, bu yeni migration/seed komutlarini production benzeri bir Supabase ortaminda calistirip mevcut cookie verilerini tabloya tasimak olur.
