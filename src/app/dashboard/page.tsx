@@ -1,9 +1,16 @@
 import Link from "next/link";
 import { ArrowRight, ClipboardList, ShieldAlert, UserRoundCheck } from "lucide-react";
 
+import { LegacySyncCard } from "@/components/shared/legacy-sync-card";
 import { requireUser } from "@/lib/auth/session";
-import { getStoredUserListings } from "@/services/listings/listing-submissions";
-import { getStoredReportsByReporter } from "@/services/reports/report-submissions";
+import {
+  getLegacyStoredUserListings,
+  getStoredUserListings,
+} from "@/services/listings/listing-submissions";
+import {
+  getLegacyStoredReportsByReporter,
+  getStoredReportsByReporter,
+} from "@/services/reports/report-submissions";
 
 const dateFormatter = new Intl.DateTimeFormat("tr-TR", {
   day: "2-digit",
@@ -37,6 +44,8 @@ export default async function DashboardPage() {
   };
   const storedListings = await getStoredUserListings(user.id);
   const storedReports = await getStoredReportsByReporter(user.id);
+  const legacyListings = await getLegacyStoredUserListings(user.id);
+  const legacyReports = await getLegacyStoredReportsByReporter(user.id);
   const approvedListingsCount = storedListings.filter((listing) => listing.status === "approved").length;
   const pendingListingsCount = storedListings.filter((listing) => listing.status === "pending").length;
   const profileCompletion = Math.round(
@@ -89,6 +98,13 @@ export default async function DashboardPage() {
           </Link>
         </div>
       </section>
+
+      {legacyListings.length > 0 || legacyReports.length > 0 ? (
+        <LegacySyncCard
+          legacyListingsCount={legacyListings.length}
+          legacyReportsCount={legacyReports.length}
+        />
+      ) : null}
 
       <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
         <div className="rounded-[1.75rem] border border-border/80 bg-background p-5 shadow-sm">

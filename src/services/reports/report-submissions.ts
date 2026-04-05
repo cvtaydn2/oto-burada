@@ -200,6 +200,15 @@ export function serializeStoredReports(reports: Report[]) {
   return JSON.stringify(reports);
 }
 
+export async function getLegacyStoredReports() {
+  const cookieStore = await cookies();
+
+  return parseStoredReports(cookieStore.get(reportsCookieName)?.value).sort(
+    (left, right) =>
+      Date.parse(right.updatedAt ?? right.createdAt) - Date.parse(left.updatedAt ?? left.createdAt),
+  );
+}
+
 export function buildReport(
   input: ReportCreateInput,
   reporterId: string,
@@ -255,8 +264,7 @@ export function updateStoredReportStatus(existingReport: Report, status: ReportS
 }
 
 export async function getStoredReports() {
-  const cookieStore = await cookies();
-  const cookieReports = parseStoredReports(cookieStore.get(reportsCookieName)?.value);
+  const cookieReports = await getLegacyStoredReports();
   const databaseReports = await getDatabaseReports();
 
   if (databaseReports) {
@@ -282,4 +290,45 @@ export async function getStoredReportsByReporter(reporterId: string) {
         Date.parse(right.updatedAt ?? right.createdAt) -
         Date.parse(left.updatedAt ?? left.createdAt),
     );
+}
+
+export async function getLegacyStoredReportsByReporter(reporterId: string) {
+  return (await getLegacyStoredReports())
+    .filter((report) => report.reporterId === reporterId)
+    .sort(
+      (left, right) =>
+        Date.parse(right.updatedAt ?? right.createdAt) -
+        Date.parse(left.updatedAt ?? left.createdAt),
+    );
+}
+
+export async function upsertDatabaseReportRecord(report: Report) {
+  if (!hasSupabaseAdminEnv()) {
+    return null;
+  }
+
+  const admin = createSupabaseAdminClient();
+  const { data, error } = await admin
+    .from("reports")
+    .upsert(
+      {
+        created_at: report.createdAt,
+        description: report.description ?? null,
+        id: report.id,
+        listing_id: report.listingId,
+        reason: report.reason,
+        reporter_id: report.reporterId,
+        status: report.status,
+        updated_at: report.updatedAt ?? report.createdAt,
+      },
+      { onConflict: "id" },
+    )
+    .select("id, listing_id, reporter_id, reason, description, status, created_at, updated_at")
+    .single<ReportRow>();
+
+  if (error || !data) {
+    return null;
+  }
+
+  return mapReportRow(data);
 }

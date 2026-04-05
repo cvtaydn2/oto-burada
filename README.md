@@ -31,6 +31,7 @@ Sadece arabalar için tasarlanmış, mobil öncelikli ve güven odaklı ücretsi
 - Supabase tablo erişimi başarısız olursa listings/reports için mevcut cookie fallback korunuyor
 - Public listings, detail, admin ve dashboard favorites ekranları seed + runtime kayıtları birlikte okuyabiliyor
 - Legacy cookie verileri okunurken DB kayıtları ile merge edilerek geçiş sürecinde veri kaybı riski azaltıldı
+- Dashboard içinde legacy cookie verilerini Supabase'e taşıyan tek tık senkron kartı eklendi
 - Lint, typecheck ve production build doğrulandı
 
 ## Kurulum

@@ -191,6 +191,7 @@ Her yeni geliştirme başlamadan önce okunmalıdır.
 - Profil kaydi gerektiren persistence akislarinda auth kullanicisindan `profiles` satiri upsert edilerek foreign key uyumu saglandi.
 - Kullanilmayan `listing-details` servisi kaldirildi.
 - Listings ve reports okuma katmaninda DB + legacy cookie merge davranisi eklendi; gecis sirasinda ayni istekte veri surekliligi korundu.
+- `/api/migrations/legacy-sync` endpoint'i ve dashboard tetikleme karti ile mevcut browser cookie kayitlarini Supabase'e tasiyan elle calistirilabilir bir backfill araci eklendi.
 
 ---
 
@@ -212,6 +213,7 @@ Her yeni geliştirme başlamadan önce okunmalıdır.
 - Mobil filtre drawer kapandığında body scroll varsayılan haline geri dönmeli; keyboard kullanıcısı `Escape` ile drawer'ı kapatabilmeli.
 - Favoriler oturum acik kullanicida Supabase ile senkronize edilir; misafir kullanicida local saklama davranisi korunur.
 - Legacy cookie verileri bir anda silinmek yerine DB sonucu ile birlikte okunur; bu sayede kademeli migration daha guvenli ilerler.
+- Legacy sync basarili oldugunda kullanicinin kendi cookie tabanli ilan ve rapor kayitlari tarayicidan temizlenir.
 
 ---
 
@@ -220,6 +222,7 @@ Her yeni geliştirme başlamadan önce okunmalıdır.
 - Public ve dashboard ekranlari seed + runtime veri birlikte okuyacak sekilde guncellendi.
 - Okuma katmaninda merge davranisi eklenerek legacy cookie kayitlari ile yeni DB kayitlari ayni ekranda birlikte gorunur hale getirildi.
 - Persistence genislemesi sonrasi lint/typecheck/build tekrar dogrulandi.
+- Legacy verileri manuel olarak Supabase'e tasiyan dashboard kontrollu backfill akisi eklendi.
 
 ---
 

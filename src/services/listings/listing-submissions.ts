@@ -419,6 +419,14 @@ export function serializeStoredListings(listings: Listing[]) {
   return JSON.stringify(listings);
 }
 
+export async function getLegacyStoredListings() {
+  const cookieStore = await cookies();
+
+  return parseStoredListings(cookieStore.get(listingSubmissionsCookieName)?.value).sort(
+    (left, right) => Date.parse(right.updatedAt) - Date.parse(left.updatedAt),
+  );
+}
+
 export function buildPendingListing(
   input: ListingCreateInput,
   sellerId: string,
@@ -491,8 +499,7 @@ export function getModeratableListingById(listings: Listing[], listingId: string
 }
 
 export async function getStoredListings() {
-  const cookieStore = await cookies();
-  const cookieListings = parseStoredListings(cookieStore.get(listingSubmissionsCookieName)?.value);
+  const cookieListings = await getLegacyStoredListings();
   const databaseListings = await getDatabaseListings();
 
   if (databaseListings) {
@@ -507,10 +514,7 @@ export async function getStoredListings() {
 }
 
 export async function getStoredUserListings(sellerId: string) {
-  const cookieStore = await cookies();
-  const cookieListings = parseStoredListings(cookieStore.get(listingSubmissionsCookieName)?.value).filter(
-    (listing) => listing.sellerId === sellerId,
-  );
+  const cookieListings = (await getLegacyStoredListings()).filter((listing) => listing.sellerId === sellerId);
   const databaseListings = await getDatabaseListings({ sellerId });
 
   if (databaseListings) {
@@ -524,8 +528,7 @@ export async function getStoredUserListings(sellerId: string) {
 }
 
 export async function getStoredListingBySlug(slug: string) {
-  const cookieStore = await cookies();
-  const cookieListings = parseStoredListings(cookieStore.get(listingSubmissionsCookieName)?.value);
+  const cookieListings = await getLegacyStoredListings();
   const databaseListing = await getDatabaseListings({ slug });
 
   if (databaseListing?.[0]) {
@@ -540,8 +543,7 @@ export async function getStoredListingsByIds(ids: string[]) {
     return [];
   }
 
-  const cookieStore = await cookies();
-  const cookieListings = parseStoredListings(cookieStore.get(listingSubmissionsCookieName)?.value).filter(
+  const cookieListings = (await getLegacyStoredListings()).filter(
     (listing) => ids.includes(listing.id),
   );
   const databaseListings = await getDatabaseListings({ ids });
@@ -551,4 +553,22 @@ export async function getStoredListingsByIds(ids: string[]) {
   }
 
   return cookieListings;
+}
+
+export async function getLegacyStoredUserListings(sellerId: string) {
+  return (await getLegacyStoredListings()).filter((listing) => listing.sellerId === sellerId);
+}
+
+export async function upsertDatabaseListingRecord(listing: Listing) {
+  if (!hasSupabaseAdminEnv()) {
+    return null;
+  }
+
+  const updatedListing = await updateDatabaseListing(listing);
+
+  if (updatedListing) {
+    return updatedListing;
+  }
+
+  return createDatabaseListing(listing);
 }
