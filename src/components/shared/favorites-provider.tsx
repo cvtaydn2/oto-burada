@@ -4,7 +4,9 @@ import {
   createContext,
   type PropsWithChildren,
   useContext,
+  useEffect,
   useMemo,
+  useState,
   useSyncExternalStore,
 } from "react";
 
@@ -15,6 +17,10 @@ interface FavoritesContextValue {
   hydrated: boolean;
   isFavorite: (listingId: string) => boolean;
   toggleFavorite: (listingId: string) => void;
+}
+
+interface FavoritesProviderProps extends PropsWithChildren {
+  userId?: string | null;
 }
 
 const FavoritesContext = createContext<FavoritesContextValue | undefined>(undefined);
@@ -45,6 +51,7 @@ function getFavoritesSnapshot() {
   if (cachedFavoriteIds === null) {
     cachedFavoriteIds = typeof window !== "undefined" ? readFavoriteIds() : [];
   }
+
   return cachedFavoriteIds;
 }
 
@@ -56,37 +63,135 @@ function getHydrationSnapshot() {
   return SERVER_HYDRATED;
 }
 
-export function FavoritesProvider({ children }: PropsWithChildren) {
-  const favoriteIds = useSyncExternalStore(
+async function requestFavoriteUpdate(method: "DELETE" | "POST", listingId: string) {
+  const response = await fetch("/api/favorites", {
+    body: JSON.stringify({ listingId }),
+    headers: {
+      "Content-Type": "application/json",
+    },
+    method,
+  });
+
+  if (!response.ok) {
+    throw new Error("Favori durumu guncellenemedi.");
+  }
+
+  const payload = (await response.json()) as { favoriteIds?: string[] };
+  return payload.favoriteIds ?? [];
+}
+
+function broadcastFavoritesUpdate(nextIds: string[]) {
+  writeFavoriteIds(nextIds);
+  cachedFavoriteIds = nextIds;
+
+  if (typeof window !== "undefined") {
+    window.dispatchEvent(new Event(FAVORITES_EVENT));
+  }
+}
+
+export function FavoritesProvider({ children, userId }: FavoritesProviderProps) {
+  const localFavoriteIds = useSyncExternalStore(
     subscribe,
     getFavoritesSnapshot,
     getServerSnapshot,
   );
-  const hydrated = useSyncExternalStore(
+  const localHydrated = useSyncExternalStore(
     subscribe,
     () => true,
     getHydrationSnapshot,
   );
+  const [remoteFavoriteIds, setRemoteFavoriteIds] = useState<string[] | null>(null);
+  const [isSyncing, setIsSyncing] = useState(false);
+
+  useEffect(() => {
+    if (!userId) {
+      return;
+    }
+
+    let cancelled = false;
+
+    const syncFavorites = async () => {
+      try {
+        const response = await fetch("/api/favorites", { method: "GET" });
+        const payload = (await response.json().catch(() => null)) as
+          | { favoriteIds?: string[] }
+          | null;
+        const serverFavoriteIds = payload?.favoriteIds ?? [];
+        const localIds = readFavoriteIds();
+        const mergedIds = [...new Set([...serverFavoriteIds, ...localIds])];
+
+        if (mergedIds.length > serverFavoriteIds.length) {
+          await Promise.all(
+            mergedIds
+              .filter((listingId) => !serverFavoriteIds.includes(listingId))
+              .map((listingId) =>
+                requestFavoriteUpdate("POST", listingId).catch(() => serverFavoriteIds),
+              ),
+          );
+        }
+
+        if (!cancelled) {
+          broadcastFavoritesUpdate(mergedIds);
+          setRemoteFavoriteIds(mergedIds);
+        }
+      } catch {
+        if (!cancelled) {
+          setRemoteFavoriteIds(readFavoriteIds());
+        }
+      }
+    };
+
+    void syncFavorites();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [userId]);
+
+  const resolvedFavoriteIds = useMemo(
+    () => (userId ? remoteFavoriteIds ?? [] : localFavoriteIds),
+    [localFavoriteIds, remoteFavoriteIds, userId],
+  );
+  const resolvedHydrated = userId ? remoteFavoriteIds !== null && !isSyncing : localHydrated;
 
   const value = useMemo<FavoritesContextValue>(
     () => ({
-      favoriteIds,
-      hydrated,
-      isFavorite: (listingId) => favoriteIds.includes(listingId),
+      favoriteIds: resolvedFavoriteIds,
+      hydrated: resolvedHydrated,
+      isFavorite: (listingId) => resolvedFavoriteIds.includes(listingId),
       toggleFavorite: (listingId) => {
-        const nextIds = favoriteIds.includes(listingId)
-          ? favoriteIds.filter((id) => id !== listingId)
-          : [...favoriteIds, listingId];
+        const nextIds = resolvedFavoriteIds.includes(listingId)
+          ? resolvedFavoriteIds.filter((id) => id !== listingId)
+          : [...resolvedFavoriteIds, listingId];
 
-        writeFavoriteIds(nextIds);
-        cachedFavoriteIds = nextIds;
-
-        if (typeof window !== "undefined") {
-          window.dispatchEvent(new Event(FAVORITES_EVENT));
+        if (!userId) {
+          broadcastFavoritesUpdate(nextIds);
+          return;
         }
+
+        const previousIds = resolvedFavoriteIds;
+        setRemoteFavoriteIds(nextIds);
+        broadcastFavoritesUpdate(nextIds);
+        setIsSyncing(true);
+
+        void requestFavoriteUpdate(
+          previousIds.includes(listingId) ? "DELETE" : "POST",
+          listingId,
+        )
+          .then((serverFavoriteIds) => {
+            setRemoteFavoriteIds(serverFavoriteIds);
+            broadcastFavoritesUpdate(serverFavoriteIds);
+          })
+          .catch(() => {
+            setRemoteFavoriteIds(previousIds);
+            broadcastFavoritesUpdate(previousIds);
+          })
+          .finally(() => {
+            setIsSyncing(false);
+          });
       },
     }),
-    [favoriteIds, hydrated],
+    [resolvedFavoriteIds, resolvedHydrated, userId],
   );
 
   return <FavoritesContext.Provider value={value}>{children}</FavoritesContext.Provider>;

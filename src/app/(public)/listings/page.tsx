@@ -1,9 +1,10 @@
 import type { Metadata } from "next";
 
 import { ListingsPageClient } from "@/components/listings/listings-page-client";
-import { brandCatalog, cityOptions, exampleListings } from "@/data";
+import { brandCatalog, cityOptions } from "@/data";
 import { buildListingsMetadata } from "@/lib/seo";
 import { parseListingFiltersFromSearchParams } from "@/services/listings/listing-filters";
+import { getPublicMarketplaceListings } from "@/services/listings/marketplace-listings";
 
 interface ListingsPageProps {
   searchParams?: Promise<Record<string, string | string[] | undefined>>;
@@ -22,11 +23,12 @@ export default async function ListingsPage({ searchParams }: ListingsPageProps) 
   const resolvedSearchParams = searchParams ? await searchParams : undefined;
   const initialFilters = parseListingFiltersFromSearchParams(resolvedSearchParams);
   const initialFiltersKey = JSON.stringify(initialFilters);
+  const listings = await getPublicMarketplaceListings();
 
   return (
     <ListingsPageClient
       key={initialFiltersKey}
-      listings={exampleListings}
+      listings={listings}
       brands={brandCatalog}
       cities={cityOptions}
       initialFilters={initialFilters}

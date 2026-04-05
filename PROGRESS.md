@@ -13,8 +13,8 @@ Her yeni geliştirme başlamadan önce okunmalıdır.
 ---
 
 ## Proje Durumu
-- Güncel faz: `Phase 7`
-- Güncel görev: `Task 7.3`
+- Güncel faz: `Post-MVP`
+- Güncel görev: `Persistence Upgrade`
 - Durum: tamamlandı
 
 ---
@@ -184,6 +184,14 @@ Her yeni geliştirme başlamadan önce okunmalıdır.
 - `README.md` mevcut persistence davranışları ve tamamlanan MVP kapsamı ile hizalandı.
 - `schema.sql` hedef Supabase Postgres + RLS veri modelini gerçek tablo, enum, index ve policy tanımlarıyla yansıtacak şekilde genişletildi.
 
+### Post-MVP / Persistence Upgrade
+- Listings ve reports route handler'lari Supabase tablo yazma/guncelleme akisina alindi; DB basarisiz olursa mevcut cookie fallback korunuyor.
+- Favoriler icin yeni `/api/favorites` route'u eklendi ve provider oturum acik kullanicida Supabase favori kayitlarini senkronize eder hale geldi.
+- Public listings index, listing detail, admin paneli ve dashboard favorites ekranlari seed veriler ile runtime Supabase kayitlarini birlikte okur hale getirildi.
+- Profil kaydi gerektiren persistence akislarinda auth kullanicisindan `profiles` satiri upsert edilerek foreign key uyumu saglandi.
+- Kullanilmayan `listing-details` servisi kaldirildi.
+- Listings ve reports okuma katmaninda DB + legacy cookie merge davranisi eklendi; gecis sirasinda ayni istekte veri surekliligi korundu.
+
 ---
 
 ## Alınan Kararlar
@@ -197,25 +205,27 @@ Her yeni geliştirme başlamadan önce okunmalıdır.
 - Dosya yükleme kuralı tek yerde tutulacak: sadece JPG/PNG/WebP ve maksimum 5 MB.
 - Task 4.3 ve Phase 5 moderasyon işleri için ilan persistence modeli aynı cookie tabanlı katmanda sürdürüldü; DB entegrasyonu sonraki fazlara bırakıldı.
 - Admin yetkisi şimdilik Supabase Auth `user_metadata.role === "admin"` kontrolü ile belirleniyor.
-- Report persistence de MVP aşamasında cookie tabanlı tutuldu; ileride DB tablosuna taşınacak.
+- Runtime persistence artik Supabase-first ilerliyor; DB erisimi hata verirse listings/reports icin cookie fallback korunuyor.
 - Aynı kullanıcı aynı ilan için acik veya incelemedeki raporu tekrar gönderirse mevcut rapor güncellenir.
 - URL filtreleme için canonical davranış `router.replace` üzerinden kuruldu; filtre güncellerken geçmiş yığını gereksiz büyütülmüyor.
 - SEO metadata üretimi için ortak helper katmanı kullanılıyor; sayfa bazlı kurallar burada merkezileştirildi.
 - Mobil filtre drawer kapandığında body scroll varsayılan haline geri dönmeli; keyboard kullanıcısı `Escape` ile drawer'ı kapatabilmeli.
-- Runtime persistence halen kademeli: listings ve reports cookie tabanlı, favorites ise cihaz-local saklama ile ilerliyor.
+- Favoriler oturum acik kullanicida Supabase ile senkronize edilir; misafir kullanicida local saklama davranisi korunur.
+- Legacy cookie verileri bir anda silinmek yerine DB sonucu ile birlikte okunur; bu sayede kademeli migration daha guvenli ilerler.
 
 ---
 
 ## Bu Görevde Yapılacaklar
-- Dashboard genel bakışta placeholder dili kaldırılıp gerçek özet içeriği verildi.
-- Dokümanlar ve `schema.sql` güncel uygulama davranışı ile hizalandı.
-- Son temizlik sonrası lint/typecheck/build tekrar doğrulanacak.
+- Supabase tablo katmani listings, reports ve favorites akislari icin runtime'a baglandi.
+- Public ve dashboard ekranlari seed + runtime veri birlikte okuyacak sekilde guncellendi.
+- Okuma katmaninda merge davranisi eklenerek legacy cookie kayitlari ile yeni DB kayitlari ayni ekranda birlikte gorunur hale getirildi.
+- Persistence genislemesi sonrasi lint/typecheck/build tekrar dogrulandi.
 
 ---
 
 ## Sonraki Görev
 - `Final Definition of Done`
-- `TASKS.md` içindeki sıralı MVP kapsamı tamamlandı; bir sonraki genişleme alanı Supabase tablo persistence'ını runtime'a bağlamak olabilir.
+- `TASKS.md` icindeki sıralı MVP kapsami tamamlandi; sonraki mantikli is gercek migration/seed akisini calistirip mevcut verileri DB'ye tasimak olabilir.
 
 ---
 

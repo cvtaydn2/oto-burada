@@ -5,7 +5,11 @@ import { type PropsWithChildren, useState } from "react";
 
 import { FavoritesProvider } from "@/components/shared/favorites-provider";
 
-export function AppProviders({ children }: PropsWithChildren) {
+interface AppProvidersProps extends PropsWithChildren {
+  userId?: string | null;
+}
+
+export function AppProviders({ children, userId }: AppProvidersProps) {
   const [queryClient] = useState(
     () =>
       new QueryClient({
@@ -20,7 +24,7 @@ export function AppProviders({ children }: PropsWithChildren) {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <FavoritesProvider>{children}</FavoritesProvider>
+      <FavoritesProvider userId={userId}>{children}</FavoritesProvider>
     </QueryClientProvider>
   );
 }

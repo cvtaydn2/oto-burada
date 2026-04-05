@@ -22,7 +22,11 @@ import { exampleListings } from "@/data";
 import { getCurrentUser } from "@/lib/auth/session";
 import { buildListingDetailMetadata } from "@/lib/seo";
 import { formatCurrency, formatDate, formatNumber } from "@/lib/utils";
-import { getListingBySlug, getListingSeller, getSimilarListings } from "@/services/listings/listing-details";
+import {
+  getMarketplaceListingBySlug,
+  getMarketplaceSeller,
+  getSimilarMarketplaceListings,
+} from "@/services/listings/marketplace-listings";
 
 interface ListingDetailPageProps {
   params: Promise<{
@@ -42,7 +46,7 @@ export async function generateMetadata({
   params,
 }: ListingDetailPageProps): Promise<Metadata> {
   const { slug } = await params;
-  const listing = getListingBySlug(slug);
+  const listing = await getMarketplaceListingBySlug(slug);
 
   if (!listing) {
     return {
@@ -56,14 +60,18 @@ export async function generateMetadata({
 
 export default async function ListingDetailPage({ params }: ListingDetailPageProps) {
   const { slug } = await params;
-  const listing = getListingBySlug(slug);
+  const listing = await getMarketplaceListingBySlug(slug);
 
   if (!listing) {
     notFound();
   }
 
-  const seller = getListingSeller(listing.sellerId);
-  const similarListings = getSimilarListings(listing.slug, listing.brand, listing.city);
+  const seller = await getMarketplaceSeller(listing.sellerId);
+  const similarListings = await getSimilarMarketplaceListings(
+    listing.slug,
+    listing.brand,
+    listing.city,
+  );
   const currentUser = await getCurrentUser();
   const whatsappLink = `https://wa.me/${listing.whatsappPhone.replace(/\D/g, "")}?text=${encodeURIComponent(whatsappTemplate)}`;
   const specs = [

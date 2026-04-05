@@ -1,6 +1,8 @@
 import { FavoritesPageClient } from "@/components/listings/favorites-page-client";
-import { exampleListings } from "@/data";
+import { getPublicMarketplaceListings } from "@/services/listings/marketplace-listings";
 
-export default function DashboardFavoritesPage() {
-  return <FavoritesPageClient listings={exampleListings} />;
+export default async function DashboardFavoritesPage() {
+  const listings = await getPublicMarketplaceListings();
+
+  return <FavoritesPageClient listings={listings} />;
 }

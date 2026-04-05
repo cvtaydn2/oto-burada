@@ -5,11 +5,17 @@ export function hasSupabaseEnv() {
   );
 }
 
-export function hasSupabaseStorageEnv() {
+export function hasSupabaseAdminEnv() {
   return Boolean(
     process.env.NEXT_PUBLIC_SUPABASE_URL &&
       process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY &&
-      process.env.SUPABASE_SERVICE_ROLE_KEY &&
+      process.env.SUPABASE_SERVICE_ROLE_KEY,
+  );
+}
+
+export function hasSupabaseStorageEnv() {
+  return Boolean(
+    hasSupabaseAdminEnv() &&
       process.env.SUPABASE_STORAGE_BUCKET_LISTINGS,
   );
 }
@@ -30,11 +36,23 @@ export function getSupabaseEnv() {
 export function getSupabaseAdminEnv() {
   const { url } = getSupabaseEnv();
   const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+  if (!serviceRoleKey) {
+    throw new Error(
+      "Supabase admin ortam değişkenleri eksik. SUPABASE_SERVICE_ROLE_KEY gereklidir.",
+    );
+  }
+
+  return { serviceRoleKey, url };
+}
+
+export function getSupabaseStorageEnv() {
+  const { serviceRoleKey, url } = getSupabaseAdminEnv();
   const listingsBucket = process.env.SUPABASE_STORAGE_BUCKET_LISTINGS;
 
-  if (!serviceRoleKey || !listingsBucket) {
+  if (!listingsBucket) {
     throw new Error(
-      "Supabase storage ortam değişkenleri eksik. SUPABASE_SERVICE_ROLE_KEY ve SUPABASE_STORAGE_BUCKET_LISTINGS gereklidir.",
+      "Supabase storage ortam değişkenleri eksik. SUPABASE_STORAGE_BUCKET_LISTINGS gereklidir.",
     );
   }
 

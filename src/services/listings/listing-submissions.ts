@@ -1,5 +1,7 @@
 import { cookies } from "next/headers";
 
+import { createSupabaseAdminClient } from "@/lib/supabase/admin";
+import { hasSupabaseAdminEnv } from "@/lib/supabase/env";
 import { listingSchema } from "@/lib/validators";
 import type { Listing, ListingCreateInput } from "@/types";
 
@@ -26,6 +28,68 @@ export const listingSubmissionsCookieOptions = {
   path: "/",
   sameSite: "lax" as const,
 };
+
+interface ListingImageRow {
+  id: string;
+  is_cover: boolean;
+  listing_id: string;
+  public_url: string;
+  sort_order: number;
+  storage_path: string;
+}
+
+interface ListingRow {
+  brand: string;
+  city: string;
+  created_at: string;
+  description: string;
+  district: string;
+  featured: boolean;
+  fuel_type: Listing["fuelType"];
+  id: string;
+  listing_images?: ListingImageRow[] | null;
+  mileage: number;
+  model: string;
+  price: number;
+  seller_id: string;
+  slug: string;
+  status: Listing["status"];
+  title: string;
+  transmission: Listing["transmission"];
+  updated_at: string;
+  whatsapp_phone: string;
+  year: number;
+}
+
+const listingSelect = `
+  id,
+  seller_id,
+  slug,
+  title,
+  brand,
+  model,
+  year,
+  mileage,
+  fuel_type,
+  transmission,
+  price,
+  city,
+  district,
+  description,
+  whatsapp_phone,
+  status,
+  featured,
+  created_at,
+  updated_at,
+  listing_images (
+    id,
+    listing_id,
+    storage_path,
+    public_url,
+    sort_order,
+    is_cover
+  )
+`;
 
 function toSlugSegment(value: string) {
   return value
@@ -61,11 +125,12 @@ function buildListingRecord(
   existingListings: Listing[],
   options?: {
     existingListing?: Listing;
+    id?: string;
     status?: Listing["status"];
   },
 ) {
   const existingListing = options?.existingListing;
-  const id = existingListing?.id ?? `listing-${crypto.randomUUID()}`;
+  const id = existingListing?.id ?? options?.id ?? crypto.randomUUID();
   const slug = buildListingSlug(
     input,
     existingListing
@@ -103,6 +168,232 @@ function buildListingRecord(
       isCover: index === 0,
     })),
   });
+}
+
+function mapListingRow(row: ListingRow) {
+  return listingSchema.parse({
+    brand: row.brand,
+    city: row.city,
+    createdAt: row.created_at,
+    description: row.description,
+    district: row.district,
+    featured: row.featured,
+    fuelType: row.fuel_type,
+    id: row.id,
+    images: (row.listing_images ?? [])
+      .map((image) => ({
+        id: image.id,
+        isCover: image.is_cover,
+        listingId: image.listing_id,
+        order: image.sort_order,
+        storagePath: image.storage_path,
+        url: image.public_url,
+      }))
+      .sort((left, right) => left.order - right.order),
+    mileage: row.mileage,
+    model: row.model,
+    price: row.price,
+    sellerId: row.seller_id,
+    slug: row.slug,
+    status: row.status,
+    title: row.title,
+    transmission: row.transmission,
+    updatedAt: row.updated_at,
+    whatsappPhone: row.whatsapp_phone,
+    year: row.year,
+  });
+}
+
+async function getDatabaseListings(options?: {
+  ids?: string[];
+  listingId?: string;
+  sellerId?: string;
+  slug?: string;
+  statuses?: Listing["status"][];
+}) {
+  if (!hasSupabaseAdminEnv()) {
+    return null;
+  }
+
+  const admin = createSupabaseAdminClient();
+  let query = admin.from("listings").select(listingSelect).order("updated_at", { ascending: false });
+
+  if (options?.sellerId) {
+    query = query.eq("seller_id", options.sellerId);
+  }
+
+  if (options?.listingId) {
+    query = query.eq("id", options.listingId);
+  }
+
+  if (options?.slug) {
+    query = query.eq("slug", options.slug);
+  }
+
+  if (options?.ids?.length) {
+    query = query.in("id", options.ids);
+  }
+
+  if (options?.statuses?.length) {
+    query = query.in("status", options.statuses);
+  }
+
+  const { data, error } = await query.returns<ListingRow[]>();
+
+  if (error || !data) {
+    return null;
+  }
+
+  return data.map(mapListingRow);
+}
+
+function mapListingToDatabaseRow(listing: Listing) {
+  return {
+    brand: listing.brand,
+    city: listing.city,
+    created_at: listing.createdAt,
+    description: listing.description,
+    district: listing.district,
+    featured: listing.featured,
+    fuel_type: listing.fuelType,
+    id: listing.id,
+    mileage: listing.mileage,
+    model: listing.model,
+    price: listing.price,
+    seller_id: listing.sellerId,
+    slug: listing.slug,
+    status: listing.status,
+    title: listing.title,
+    transmission: listing.transmission,
+    updated_at: listing.updatedAt,
+    whatsapp_phone: listing.whatsappPhone,
+    year: listing.year,
+  };
+}
+
+function mapListingImagesToDatabaseRows(listing: Listing) {
+  return listing.images.map((image) => ({
+    is_cover: image.isCover,
+    listing_id: listing.id,
+    public_url: image.url,
+    sort_order: image.order,
+    storage_path: image.storagePath,
+  }));
+}
+
+function mergeListings(primary: Listing[], secondary: Listing[]) {
+  const listingMap = new Map<string, Listing>();
+
+  [...secondary, ...primary].forEach((listing) => {
+    listingMap.set(listing.id, listing);
+  });
+
+  return [...listingMap.values()];
+}
+
+export async function createDatabaseListing(listing: Listing) {
+  if (!hasSupabaseAdminEnv()) {
+    return null;
+  }
+
+  const admin = createSupabaseAdminClient();
+  const insertResult = await admin.from("listings").insert(mapListingToDatabaseRow(listing));
+
+  if (insertResult.error) {
+    return null;
+  }
+
+  const imageRows = mapListingImagesToDatabaseRows(listing);
+
+  if (imageRows.length > 0) {
+    const imageInsertResult = await admin.from("listing_images").insert(imageRows);
+
+    if (imageInsertResult.error) {
+      await admin.from("listings").delete().eq("id", listing.id);
+      return null;
+    }
+  }
+
+  return (await getDatabaseListings({ listingId: listing.id }))?.[0] ?? null;
+}
+
+export async function updateDatabaseListing(listing: Listing) {
+  if (!hasSupabaseAdminEnv()) {
+    return null;
+  }
+
+  const admin = createSupabaseAdminClient();
+  const updateResult = await admin
+    .from("listings")
+    .update(mapListingToDatabaseRow(listing))
+    .eq("id", listing.id);
+
+  if (updateResult.error) {
+    return null;
+  }
+
+  const deleteImagesResult = await admin.from("listing_images").delete().eq("listing_id", listing.id);
+
+  if (deleteImagesResult.error) {
+    return null;
+  }
+
+  const imageRows = mapListingImagesToDatabaseRows(listing);
+
+  if (imageRows.length > 0) {
+    const imageInsertResult = await admin.from("listing_images").insert(imageRows);
+
+    if (imageInsertResult.error) {
+      return null;
+    }
+  }
+
+  return (await getDatabaseListings({ listingId: listing.id }))?.[0] ?? null;
+}
+
+export async function archiveDatabaseListing(listingId: string) {
+  if (!hasSupabaseAdminEnv()) {
+    return null;
+  }
+
+  const admin = createSupabaseAdminClient();
+  const { error } = await admin
+    .from("listings")
+    .update({
+      status: "archived" satisfies Listing["status"],
+      updated_at: new Date().toISOString(),
+    })
+    .eq("id", listingId);
+
+  if (error) {
+    return null;
+  }
+
+  return (await getDatabaseListings({ listingId }))?.[0] ?? null;
+}
+
+export async function moderateDatabaseListing(
+  listingId: string,
+  status: Extract<Listing["status"], "approved" | "rejected">,
+) {
+  if (!hasSupabaseAdminEnv()) {
+    return null;
+  }
+
+  const admin = createSupabaseAdminClient();
+  const { error } = await admin
+    .from("listings")
+    .update({
+      status,
+      updated_at: new Date().toISOString(),
+    })
+    .eq("id", listingId);
+
+  if (error) {
+    return null;
+  }
+
+  return (await getDatabaseListings({ listingId }))?.[0] ?? null;
 }
 
 export function parseStoredListings(rawValue?: string | null) {
@@ -201,17 +492,63 @@ export function getModeratableListingById(listings: Listing[], listingId: string
 
 export async function getStoredListings() {
   const cookieStore = await cookies();
+  const cookieListings = parseStoredListings(cookieStore.get(listingSubmissionsCookieName)?.value);
+  const databaseListings = await getDatabaseListings();
 
-  return parseStoredListings(cookieStore.get(listingSubmissionsCookieName)?.value).sort(
+  if (databaseListings) {
+    return mergeListings(databaseListings, cookieListings).sort(
+      (left, right) => Date.parse(right.updatedAt) - Date.parse(left.updatedAt),
+    );
+  }
+
+  return cookieListings.sort(
     (left, right) => Date.parse(right.updatedAt) - Date.parse(left.updatedAt),
   );
 }
 
 export async function getStoredUserListings(sellerId: string) {
   const cookieStore = await cookies();
-  const listings = parseStoredListings(cookieStore.get(listingSubmissionsCookieName)?.value);
+  const cookieListings = parseStoredListings(cookieStore.get(listingSubmissionsCookieName)?.value).filter(
+    (listing) => listing.sellerId === sellerId,
+  );
+  const databaseListings = await getDatabaseListings({ sellerId });
 
-  return listings
-    .filter((listing) => listing.sellerId === sellerId)
+  if (databaseListings) {
+    return mergeListings(databaseListings, cookieListings).sort(
+      (left, right) => Date.parse(right.createdAt) - Date.parse(left.createdAt),
+    );
+  }
+
+  return cookieListings
     .sort((left, right) => Date.parse(right.createdAt) - Date.parse(left.createdAt));
+}
+
+export async function getStoredListingBySlug(slug: string) {
+  const cookieStore = await cookies();
+  const cookieListings = parseStoredListings(cookieStore.get(listingSubmissionsCookieName)?.value);
+  const databaseListing = await getDatabaseListings({ slug });
+
+  if (databaseListing?.[0]) {
+    return mergeListings(databaseListing, cookieListings).find((listing) => listing.slug === slug) ?? null;
+  }
+
+  return cookieListings.find((listing) => listing.slug === slug) ?? null;
+}
+
+export async function getStoredListingsByIds(ids: string[]) {
+  if (ids.length === 0) {
+    return [];
+  }
+
+  const cookieStore = await cookies();
+  const cookieListings = parseStoredListings(cookieStore.get(listingSubmissionsCookieName)?.value).filter(
+    (listing) => ids.includes(listing.id),
+  );
+  const databaseListings = await getDatabaseListings({ ids });
+
+  if (databaseListings) {
+    return mergeListings(databaseListings, cookieListings);
+  }
+
+  return cookieListings;
 }

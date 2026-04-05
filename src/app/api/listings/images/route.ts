@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
-import { getSupabaseAdminEnv, hasSupabaseStorageEnv } from "@/lib/supabase/env";
+import { getSupabaseStorageEnv, hasSupabaseStorageEnv } from "@/lib/supabase/env";
 import {
   buildListingImageStoragePath,
   validateListingImageFile,
@@ -52,7 +52,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ message: validationError }, { status: 400 });
   }
 
-  const { listingsBucket } = getSupabaseAdminEnv();
+  const { listingsBucket } = getSupabaseStorageEnv();
   const adminClient = createSupabaseAdminClient();
   const storagePath = buildListingImageStoragePath(user.id, file.name);
   const uploadResult = await adminClient.storage.from(listingsBucket).upload(storagePath, file, {
@@ -128,7 +128,7 @@ export async function DELETE(request: Request) {
     );
   }
 
-  const { listingsBucket } = getSupabaseAdminEnv();
+  const { listingsBucket } = getSupabaseStorageEnv();
   const adminClient = createSupabaseAdminClient();
   const removeResult = await adminClient.storage.from(listingsBucket).remove([storagePath]);
 

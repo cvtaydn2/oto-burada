@@ -5,6 +5,7 @@ import { hasSupabaseEnv } from "@/lib/supabase/env";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import {
   archiveStoredListing,
+  archiveDatabaseListing,
   getArchivableListingById,
   listingSubmissionsCookieName,
   listingSubmissionsCookieOptions,
@@ -41,6 +42,18 @@ export async function POST(
   }
 
   const { listingId } = await context.params;
+  const persistedListing = await archiveDatabaseListing(listingId);
+
+  if (persistedListing) {
+    return NextResponse.json({
+      listing: {
+        id: persistedListing.id,
+        status: persistedListing.status,
+      },
+      message: "Ilan arsive alindi.",
+    });
+  }
+
   const cookieStore = await cookies();
   const existingListings = parseStoredListings(cookieStore.get(listingSubmissionsCookieName)?.value);
   const existingListing = getArchivableListingById(existingListings, listingId, user.id);

@@ -1,5 +1,7 @@
 import { cookies } from "next/headers";
 
+import { createSupabaseAdminClient } from "@/lib/supabase/admin";
+import { hasSupabaseAdminEnv } from "@/lib/supabase/env";
 import { reportSchema } from "@/lib/validators";
 import type { Report, ReportCreateInput, ReportStatus } from "@/types";
 
@@ -11,6 +13,169 @@ export const reportsCookieOptions = {
   path: "/",
   sameSite: "lax" as const,
 };
+
+interface ReportRow {
+  created_at: string;
+  description: string | null;
+  id: string;
+  listing_id: string;
+  reason: Report["reason"];
+  reporter_id: string;
+  status: ReportStatus;
+  updated_at: string;
+}
+
+function mergeReports(primary: Report[], secondary: Report[]) {
+  const reportMap = new Map<string, Report>();
+
+  [...secondary, ...primary].forEach((report) => {
+    reportMap.set(report.id ?? `${report.listingId}-${report.createdAt}`, report);
+  });
+
+  return [...reportMap.values()];
+}
+
+function mapReportRow(row: ReportRow) {
+  return reportSchema.parse({
+    createdAt: row.created_at,
+    description: row.description,
+    id: row.id,
+    listingId: row.listing_id,
+    reason: row.reason,
+    reporterId: row.reporter_id,
+    status: row.status,
+    updatedAt: row.updated_at,
+  });
+}
+
+async function getDatabaseReports(options?: {
+  reporterId?: string;
+  reportId?: string;
+  statuses?: ReportStatus[];
+}) {
+  if (!hasSupabaseAdminEnv()) {
+    return null;
+  }
+
+  const admin = createSupabaseAdminClient();
+  let query = admin
+    .from("reports")
+    .select("id, listing_id, reporter_id, reason, description, status, created_at, updated_at")
+    .order("updated_at", { ascending: false });
+
+  if (options?.reporterId) {
+    query = query.eq("reporter_id", options.reporterId);
+  }
+
+  if (options?.reportId) {
+    query = query.eq("id", options.reportId);
+  }
+
+  if (options?.statuses?.length) {
+    query = query.in("status", options.statuses);
+  }
+
+  const { data, error } = await query.returns<ReportRow[]>();
+
+  if (error || !data) {
+    return null;
+  }
+
+  return data.map(mapReportRow);
+}
+
+export async function getDatabaseActiveReport(listingId: string, reporterId: string) {
+  if (!hasSupabaseAdminEnv()) {
+    return null;
+  }
+
+  const admin = createSupabaseAdminClient();
+  const { data, error } = await admin
+    .from("reports")
+    .select("id, listing_id, reporter_id, reason, description, status, created_at, updated_at")
+    .eq("listing_id", listingId)
+    .eq("reporter_id", reporterId)
+    .in("status", ["open", "reviewing"])
+    .maybeSingle<ReportRow>();
+
+  if (error || !data) {
+    return null;
+  }
+
+  return mapReportRow(data);
+}
+
+export async function createOrUpdateDatabaseReport(
+  input: ReportCreateInput,
+  reporterId: string,
+  existingReport?: Report | null,
+) {
+  if (!hasSupabaseAdminEnv()) {
+    return null;
+  }
+
+  const admin = createSupabaseAdminClient();
+  const timestamp = new Date().toISOString();
+
+  if (existingReport?.id) {
+    const { error } = await admin
+      .from("reports")
+      .update({
+        description: input.description ?? null,
+        reason: input.reason,
+        updated_at: timestamp,
+      })
+      .eq("id", existingReport.id);
+
+    if (error) {
+      return null;
+    }
+
+    return (await getDatabaseReports({ reportId: existingReport.id }))?.[0] ?? null;
+  }
+
+  const { data, error } = await admin
+    .from("reports")
+    .insert({
+      description: input.description ?? null,
+      listing_id: input.listingId,
+      reason: input.reason,
+      reporter_id: reporterId,
+      status: "open" satisfies ReportStatus,
+    })
+    .select("id, listing_id, reporter_id, reason, description, status, created_at, updated_at")
+    .single<ReportRow>();
+
+  if (error || !data) {
+    return null;
+  }
+
+  return mapReportRow({
+    ...data,
+    updated_at: data.updated_at ?? timestamp,
+  });
+}
+
+export async function updateDatabaseReportStatus(reportId: string, status: ReportStatus) {
+  if (!hasSupabaseAdminEnv()) {
+    return null;
+  }
+
+  const admin = createSupabaseAdminClient();
+  const { error } = await admin
+    .from("reports")
+    .update({
+      status,
+      updated_at: new Date().toISOString(),
+    })
+    .eq("id", reportId);
+
+  if (error) {
+    return null;
+  }
+
+  return (await getDatabaseReports({ reportId }))?.[0] ?? null;
+}
 
 export function parseStoredReports(rawValue?: string | null) {
   if (!rawValue) {
@@ -91,8 +256,30 @@ export function updateStoredReportStatus(existingReport: Report, status: ReportS
 
 export async function getStoredReports() {
   const cookieStore = await cookies();
+  const cookieReports = parseStoredReports(cookieStore.get(reportsCookieName)?.value);
+  const databaseReports = await getDatabaseReports();
 
-  return parseStoredReports(cookieStore.get(reportsCookieName)?.value).sort(
+  if (databaseReports) {
+    return mergeReports(databaseReports, cookieReports).sort(
+      (left, right) =>
+        Date.parse(right.updatedAt ?? right.createdAt) -
+        Date.parse(left.updatedAt ?? left.createdAt),
+    );
+  }
+
+  return cookieReports.sort(
     (left, right) => Date.parse(right.updatedAt ?? right.createdAt) - Date.parse(left.updatedAt ?? left.createdAt),
   );
+}
+
+export async function getStoredReportsByReporter(reporterId: string) {
+  const reports = await getStoredReports();
+
+  return reports
+    .filter((report) => report.reporterId === reporterId)
+    .sort(
+      (left, right) =>
+        Date.parse(right.updatedAt ?? right.createdAt) -
+        Date.parse(left.updatedAt ?? left.createdAt),
+    );
 }

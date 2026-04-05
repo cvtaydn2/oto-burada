@@ -15,7 +15,7 @@ Sadece arabalar için tasarlanmış, mobil öncelikli ve güven odaklı ücretsi
 - Supabase Storage
 
 ## Mevcut Durum
-- `Phase 7 / Task 7.2` tamamlandı
+- `Post-MVP / Persistence Upgrade` ilerletildi
 - Public listeleme ve ilan detay akışları hazır
 - Supabase Auth ile giriş, kayıt ve korumalı dashboard akışı çalışıyor
 - Profil güncelleme ve favori akışı aktif
@@ -27,7 +27,10 @@ Sadece arabalar için tasarlanmış, mobil öncelikli ve güven odaklı ücretsi
 - Majör async ekranlarda loading, empty, error ve disabled durumları gözden geçirildi
 - Core akışlarda klavye odağı, touch target ve mobil filtre drawer erişilebilirliği güçlendirildi
 - Dashboard genel bakış ekranı gerçek özet kartları ve hızlı yönlendirmeler ile tamamlandı
-- Listings ve reports akışı şu anda cookie tabanlı, favoriler ise cihaz-local saklama ile çalışıyor
+- Listings, reports ve favorites akışı artık Supabase-first persistence ile çalışıyor
+- Supabase tablo erişimi başarısız olursa listings/reports için mevcut cookie fallback korunuyor
+- Public listings, detail, admin ve dashboard favorites ekranları seed + runtime kayıtları birlikte okuyabiliyor
+- Legacy cookie verileri okunurken DB kayıtları ile merge edilerek geçiş sürecinde veri kaybı riski azaltıldı
 - Lint, typecheck ve production build doğrulandı
 
 ## Kurulum
@@ -110,4 +113,4 @@ Yeni geliştirmeye başlamadan önce şu dosyalar gözden geçirilmelidir:
 8. `schema.sql`
 
 ## Sonraki Adım
-`TASKS.md` içindeki sıralı MVP görevleri tamamlandı. Sonraki genişleme adımı olarak listings, reports ve favorites persistence katmanını tam Supabase tablo akışına taşıma düşünülebilir.
+`TASKS.md` içindeki sıralı MVP görevleri tamamlandı. Sonraki mantıklı genişleme, gerçek Supabase migration/seed akışını çalıştırıp mevcut cookie verilerini tabloya taşımak olur.

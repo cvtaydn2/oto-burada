@@ -2,12 +2,13 @@ import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 import type { ZodIssue } from "zod";
 
-import { exampleListings } from "@/data";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { hasSupabaseEnv } from "@/lib/supabase/env";
 import { reportCreateSchema } from "@/lib/validators";
 import {
   buildReport,
+  createOrUpdateDatabaseReport,
+  getDatabaseActiveReport,
   getExistingActiveReport,
   parseStoredReports,
   reportsCookieName,
@@ -15,7 +16,8 @@ import {
   replaceStoredReport,
   serializeStoredReports,
 } from "@/services/reports/report-submissions";
-import { getStoredListings } from "@/services/listings/listing-submissions";
+import { getAllKnownListings } from "@/services/listings/marketplace-listings";
+import { ensureProfileRecord } from "@/services/profile/profile-records";
 
 function issuesToFieldErrors(issues: ZodIssue[]) {
   return issues.reduce<Record<string, string>>((fieldErrors, issue) => {
@@ -74,8 +76,7 @@ export async function POST(request: Request) {
     );
   }
 
-  const storedListings = await getStoredListings();
-  const matchedListing = [...exampleListings, ...storedListings].find(
+  const matchedListing = (await getAllKnownListings()).find(
     (listing) => listing.id === parsed.data.listingId,
   );
 
@@ -92,6 +93,27 @@ export async function POST(request: Request) {
 
   const cookieStore = await cookies();
   const existingReports = parseStoredReports(cookieStore.get(reportsCookieName)?.value);
+  await ensureProfileRecord(user);
+
+  const activeDatabaseReport = await getDatabaseActiveReport(parsed.data.listingId, user.id);
+  const persistedReport = await createOrUpdateDatabaseReport(
+    parsed.data,
+    user.id,
+    activeDatabaseReport,
+  );
+
+  if (persistedReport) {
+    return NextResponse.json({
+      report: {
+        id: persistedReport.id,
+        status: persistedReport.status,
+      },
+      message: activeDatabaseReport
+        ? "Ayni ilan icin acik raporun guncellendi."
+        : "Raporun inceleme sirasina alindi.",
+    });
+  }
+
   const activeReport = getExistingActiveReport(existingReports, parsed.data.listingId, user.id);
   const nextReport = buildReport(parsed.data, user.id, activeReport);
   const response = NextResponse.json({

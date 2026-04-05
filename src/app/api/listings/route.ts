@@ -2,16 +2,19 @@ import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 import type { ZodIssue } from "zod";
 
+import { exampleListings } from "@/data";
 import { hasSupabaseEnv } from "@/lib/supabase/env";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { listingCreateFormSchema, listingCreateSchema } from "@/lib/validators";
 import {
   buildPendingListing,
+  createDatabaseListing,
   listingSubmissionsCookieName,
   listingSubmissionsCookieOptions,
   parseStoredListings,
   serializeStoredListings,
 } from "@/services/listings/listing-submissions";
+import { ensureProfileRecord } from "@/services/profile/profile-records";
 
 function issuesToFieldErrors(issues: ZodIssue[]) {
   return issues.reduce<Record<string, string>>((fieldErrors, issue) => {
@@ -105,8 +108,26 @@ export async function POST(request: Request) {
   const existingListings = parseStoredListings(
     cookieStore.get(listingSubmissionsCookieName)?.value,
   );
+  await ensureProfileRecord(user);
 
-  const createdListing = buildPendingListing(parsedListingInput.data, user.id, existingListings);
+  const createdListing = buildPendingListing(parsedListingInput.data, user.id, [
+    ...exampleListings,
+    ...existingListings,
+  ]);
+  const persistedListing = await createDatabaseListing(createdListing);
+
+  if (persistedListing) {
+    return NextResponse.json({
+      message: "İlanın kaydedildi ve moderasyon incelemesine gönderildi.",
+      listing: {
+        id: persistedListing.id,
+        slug: persistedListing.slug,
+        status: persistedListing.status,
+        title: persistedListing.title,
+      },
+    });
+  }
+
   const response = NextResponse.json({
     message: "İlanın kaydedildi ve moderasyon incelemesine gönderildi.",
     listing: {

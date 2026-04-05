@@ -6,6 +6,7 @@ import {
   getModeratableListingById,
   listingSubmissionsCookieName,
   listingSubmissionsCookieOptions,
+  moderateDatabaseListing,
   moderateStoredListing,
   parseStoredListings,
   replaceStoredListing,
@@ -34,6 +35,21 @@ export async function POST(
   }
 
   const { listingId } = await context.params;
+  const persistedListing = await moderateDatabaseListing(
+    listingId,
+    action === "approve" ? "approved" : "rejected",
+  );
+
+  if (persistedListing) {
+    return NextResponse.json({
+      listing: {
+        id: persistedListing.id,
+        status: persistedListing.status,
+      },
+      message: action === "approve" ? "Ilan onaylandi." : "Ilan reddedildi.",
+    });
+  }
+
   const cookieStore = await cookies();
   const existingListings = parseStoredListings(cookieStore.get(listingSubmissionsCookieName)?.value);
   const existingListing = getModeratableListingById(existingListings, listingId);

@@ -9,6 +9,7 @@ import {
   reportsCookieOptions,
   replaceStoredReport,
   serializeStoredReports,
+  updateDatabaseReportStatus,
   updateStoredReportStatus,
 } from "@/services/reports/report-submissions";
 import type { ReportStatus } from "@/types";
@@ -39,6 +40,18 @@ export async function PATCH(
   }
 
   const { reportId } = await context.params;
+  const persistedReport = await updateDatabaseReportStatus(reportId, status as ReportStatus);
+
+  if (persistedReport) {
+    return NextResponse.json({
+      report: {
+        id: persistedReport.id,
+        status: persistedReport.status,
+      },
+      message: "Rapor durumu guncellendi.",
+    });
+  }
+
   const cookieStore = await cookies();
   const existingReports = parseStoredReports(cookieStore.get(reportsCookieName)?.value);
   const existingReport = getReportById(existingReports, reportId);

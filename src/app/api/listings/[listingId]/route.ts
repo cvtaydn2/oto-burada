@@ -2,6 +2,7 @@ import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 import type { ZodIssue } from "zod";
 
+import { exampleListings } from "@/data";
 import { hasSupabaseEnv } from "@/lib/supabase/env";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { listingCreateFormSchema, listingCreateSchema } from "@/lib/validators";
@@ -13,6 +14,7 @@ import {
   parseStoredListings,
   replaceStoredListing,
   serializeStoredListings,
+  updateDatabaseListing,
 } from "@/services/listings/listing-submissions";
 
 function issuesToFieldErrors(issues: ZodIssue[]) {
@@ -121,8 +123,22 @@ export async function PATCH(
   const updatedListing = buildUpdatedListing(
     parsedListingInput.data,
     existingListing,
-    existingListings,
+    [...exampleListings, ...existingListings],
   );
+  const persistedListing = await updateDatabaseListing(updatedListing);
+
+  if (persistedListing) {
+    return NextResponse.json({
+      listing: {
+        id: persistedListing.id,
+        slug: persistedListing.slug,
+        status: persistedListing.status,
+        title: persistedListing.title,
+      },
+      message: "Ilan bilgilerin guncellendi.",
+    });
+  }
+
   const response = NextResponse.json({
     listing: {
       id: updatedListing.id,

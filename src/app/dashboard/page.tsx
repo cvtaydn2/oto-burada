@@ -3,7 +3,7 @@ import { ArrowRight, ClipboardList, ShieldAlert, UserRoundCheck } from "lucide-r
 
 import { requireUser } from "@/lib/auth/session";
 import { getStoredUserListings } from "@/services/listings/listing-submissions";
-import { getStoredReports } from "@/services/reports/report-submissions";
+import { getStoredReportsByReporter } from "@/services/reports/report-submissions";
 
 const dateFormatter = new Intl.DateTimeFormat("tr-TR", {
   day: "2-digit",
@@ -36,7 +36,7 @@ export default async function DashboardPage() {
     phone?: string;
   };
   const storedListings = await getStoredUserListings(user.id);
-  const storedReports = (await getStoredReports()).filter((report) => report.reporterId === user.id);
+  const storedReports = await getStoredReportsByReporter(user.id);
   const approvedListingsCount = storedListings.filter((listing) => listing.status === "approved").length;
   const pendingListingsCount = storedListings.filter((listing) => listing.status === "pending").length;
   const profileCompletion = Math.round(

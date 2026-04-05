@@ -2,8 +2,8 @@ import Link from "next/link";
 
 import { AdminListingsModeration } from "@/components/listings/admin-listings-moderation";
 import { AdminReportsModeration } from "@/components/listings/admin-reports-moderation";
-import { exampleListings } from "@/data";
 import { getUserRole, requireAdminUser } from "@/lib/auth/session";
+import { getAllKnownListings } from "@/services/listings/marketplace-listings";
 import { getStoredListings } from "@/services/listings/listing-submissions";
 import { getStoredReports } from "@/services/reports/report-submissions";
 
@@ -18,8 +18,9 @@ export default async function AdminPage() {
   const actionableReports = storedReports.filter(
     (report) => report.status === "open" || report.status === "reviewing",
   );
+  const knownListings = await getAllKnownListings();
   const listingTitleById = Object.fromEntries(
-    [...exampleListings, ...storedListings].map((listing) => [listing.id, listing.title]),
+    knownListings.map((listing) => [listing.id, listing.title]),
   );
 
   return (
