@@ -121,6 +121,12 @@ export interface Report {
   updatedAt?: string | null;
 }
 
+export interface ReportCreateInput {
+  listingId: string;
+  reason: ReportReason;
+  description?: string | null;
+}
+
 export interface AdminModerationAction {
   id?: string;
   adminUserId: string;

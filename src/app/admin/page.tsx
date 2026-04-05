@@ -1,16 +1,26 @@
 import Link from "next/link";
 
 import { AdminListingsModeration } from "@/components/listings/admin-listings-moderation";
+import { AdminReportsModeration } from "@/components/listings/admin-reports-moderation";
+import { exampleListings } from "@/data";
 import { getUserRole, requireAdminUser } from "@/lib/auth/session";
 import { getStoredListings } from "@/services/listings/listing-submissions";
+import { getStoredReports } from "@/services/reports/report-submissions";
 
 export default async function AdminPage() {
   const user = await requireAdminUser();
   const userRole = getUserRole(user);
   const storedListings = await getStoredListings();
+  const storedReports = await getStoredReports();
   const pendingListings = storedListings.filter((listing) => listing.status === "pending");
   const approvedListings = storedListings.filter((listing) => listing.status === "approved");
   const rejectedListings = storedListings.filter((listing) => listing.status === "rejected");
+  const actionableReports = storedReports.filter(
+    (report) => report.status === "open" || report.status === "reviewing",
+  );
+  const listingTitleById = Object.fromEntries(
+    [...exampleListings, ...storedListings].map((listing) => [listing.id, listing.title]),
+  );
 
   return (
     <main className="bg-muted/40">
@@ -36,7 +46,7 @@ export default async function AdminPage() {
             </Link>
           </div>
 
-          <div className="mt-6 grid gap-4 md:grid-cols-3">
+          <div className="mt-6 grid gap-4 md:grid-cols-5">
             <div className="rounded-[1.5rem] border border-border/70 bg-muted/30 p-5">
               <p className="text-sm text-muted-foreground">Bekleyen ilan</p>
               <p className="mt-2 text-3xl font-semibold tracking-tight">{pendingListings.length}</p>
@@ -49,10 +59,22 @@ export default async function AdminPage() {
               <p className="text-sm text-muted-foreground">Reddedilen ilan</p>
               <p className="mt-2 text-3xl font-semibold tracking-tight">{rejectedListings.length}</p>
             </div>
+            <div className="rounded-[1.5rem] border border-border/70 bg-muted/30 p-5">
+              <p className="text-sm text-muted-foreground">Acil rapor</p>
+              <p className="mt-2 text-3xl font-semibold tracking-tight">{actionableReports.length}</p>
+            </div>
+            <div className="rounded-[1.5rem] border border-border/70 bg-muted/30 p-5">
+              <p className="text-sm text-muted-foreground">Toplam rapor</p>
+              <p className="mt-2 text-3xl font-semibold tracking-tight">{storedReports.length}</p>
+            </div>
           </div>
         </section>
 
         <AdminListingsModeration pendingListings={pendingListings} />
+        <AdminReportsModeration
+          listingTitleById={listingTitleById}
+          reports={actionableReports}
+        />
       </div>
     </main>
   );

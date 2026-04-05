@@ -16,6 +16,20 @@ export const reportReasons = ["fake_listing", "wrong_info", "spam", "other"] as 
 
 export const reportStatuses = ["open", "reviewing", "resolved", "dismissed"] as const;
 
+export const reportReasonLabels = {
+  fake_listing: "Sahte ilan",
+  wrong_info: "Yanlis bilgi",
+  spam: "Spam veya tekrar",
+  other: "Diger",
+} as const;
+
+export const reportStatusLabels = {
+  open: "Yeni",
+  reviewing: "Inceleniyor",
+  resolved: "Cozuldu",
+  dismissed: "Kapatildi",
+} as const;
+
 export const moderationTargetTypes = ["listing", "report"] as const;
 
 export const moderationActions = [

@@ -29,3 +29,4 @@
 -- 4. Public listing pages must remain SEO-friendly.
 -- 5. listing-images bucket should support public read URLs for approved listing media.
 -- 6. Listing image uploads are constrained to JPG/PNG/WebP and 5 MB per file.
+-- 7. Reports should support open, reviewing, resolved and dismissed moderation states.

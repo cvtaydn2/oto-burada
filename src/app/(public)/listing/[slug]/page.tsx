@@ -2,7 +2,6 @@ import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import {
-  AlertTriangle,
   BadgeCheck,
   CalendarDays,
   CarFront,
@@ -15,9 +14,11 @@ import {
 } from "lucide-react";
 
 import { FavoriteButton } from "@/components/listings/favorite-button";
+import { ReportListingForm } from "@/components/forms/report-listing-form";
 import { ListingCard } from "@/components/listings/listing-card";
 import { SectionHeader } from "@/components/shared/section-header";
 import { exampleListings } from "@/data";
+import { getCurrentUser } from "@/lib/auth/session";
 import { formatCurrency, formatDate, formatNumber } from "@/lib/utils";
 import { getListingBySlug, getListingSeller, getSimilarListings } from "@/services/listings/listing-details";
 
@@ -45,6 +46,7 @@ export default async function ListingDetailPage({ params }: ListingDetailPagePro
 
   const seller = getListingSeller(listing.sellerId);
   const similarListings = getSimilarListings(listing.slug, listing.brand, listing.city);
+  const currentUser = await getCurrentUser();
   const whatsappLink = `https://wa.me/${listing.whatsappPhone.replace(/\D/g, "")}?text=${encodeURIComponent(whatsappTemplate)}`;
   const specs = [
     {
@@ -259,13 +261,11 @@ export default async function ListingDetailPage({ params }: ListingDetailPagePro
                     <Phone className="size-4" />
                     Satıcıyı Ara
                   </a>
-                  <Link
-                    href="/login"
-                    className="inline-flex h-12 w-full items-center justify-center gap-2 rounded-xl border border-destructive/30 bg-destructive/5 px-5 text-sm font-semibold text-destructive transition-colors hover:bg-destructive/10"
-                  >
-                    <AlertTriangle className="size-4" />
-                    Şüpheli İlanı Bildir
-                  </Link>
+                  <ReportListingForm
+                    listingId={listing.id}
+                    sellerId={listing.sellerId}
+                    userId={currentUser?.id ?? null}
+                  />
                 </div>
               </div>
             </section>

@@ -24,6 +24,7 @@ import type {
   ListingImage,
   Profile,
   Report,
+  ReportCreateInput,
 } from "@/types";
 
 const requiredMessage = "Bu alan zorunlu";
@@ -217,6 +218,15 @@ export const reportSchema: z.ZodType<Report> = z.object({
   updatedAt: z.preprocess(
     emptyStringToUndefined,
     z.string().trim().min(1, "Geçerli bir tarih gir").nullable().optional(),
+  ),
+});
+
+export const reportCreateSchema: z.ZodType<ReportCreateInput> = z.object({
+  listingId: trimmedRequiredString,
+  reason: z.enum(reportReasons),
+  description: z.preprocess(
+    emptyStringToUndefined,
+    z.string().trim().min(5, "Aciklama en az 5 karakter olmali").nullable().optional(),
   ),
 });
 

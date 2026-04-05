@@ -15,12 +15,13 @@ Sadece arabalar için tasarlanmış, mobil öncelikli ve güven odaklı ücretsi
 - Supabase Storage
 
 ## Mevcut Durum
-- `Phase 5 / Task 5.2` tamamlandı
+- `Phase 5 / Task 5.3` tamamlandı
 - Public listeleme ve ilan detay akışları hazır
 - Supabase Auth ile giriş, kayıt ve korumalı dashboard akışı çalışıyor
 - Profil güncelleme ve favori akışı aktif
 - Dashboard içinde ilan oluşturma, düzenleme, arşivleme ve durum izleme akışları aktif
-- Admin panelinde pending ilan moderasyonu ve rol bazlı erişim aktif
+- Kullanıcı tarafında şüpheli ilan raporlama akışı aktif
+- Admin panelinde ilan ve rapor moderasyonu aktif
 - Lint, typecheck ve production build doğrulandı
 
 ## Kurulum
@@ -103,4 +104,4 @@ Yeni geliştirmeye başlamadan önce şu dosyalar gözden geçirilmelidir:
 8. `schema.sql`
 
 ## Sonraki Adım
-Sıradaki iş `Phase 5 / Task 5.3`: report moderasyon ekranının ve rapor durum güncelleme akışının tamamlanması.
+Sıradaki iş `Phase 6 / Task 6.1`: filtrelerin URL search params ile tam paylaşılabilir hale getirilmesi.

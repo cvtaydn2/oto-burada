@@ -14,7 +14,7 @@ Her yeni geliştirme başlamadan önce okunmalıdır.
 
 ## Proje Durumu
 - Güncel faz: `Phase 5`
-- Güncel görev: `Task 5.2`
+- Güncel görev: `Task 5.3`
 - Durum: tamamlandı
 
 ---
@@ -143,6 +143,14 @@ Her yeni geliştirme başlamadan önce okunmalıdır.
 - Moderasyon kararı cookie tabanlı ilan persistence içine yazılacak şekilde güncellendi.
 - Admin tarafında yalnızca pending durumdaki ilanlar moderasyona açık bırakıldı.
 
+### Phase 5 / Task 5.3
+- `POST /api/reports` ile kullanıcıların ilan raporu oluşturma akışı eklendi.
+- Listing detay sayfasına oturum durumuna göre çalışan gerçek raporlama formu bağlandı.
+- Report persistence için cookie tabanlı ayrı saklama katmanı kuruldu.
+- `PATCH /api/admin/reports/[reportId]` route handler ile admin rapor durumu guncelleme akışı eklendi.
+- Admin paneline open/reviewing raporları listeleyen ikinci moderasyon alanı bağlandı.
+- Raporlar `reviewing`, `resolved` ve `dismissed` durumlarına geçirilebilir hale geldi.
+
 ---
 
 ## Alınan Kararlar
@@ -156,19 +164,21 @@ Her yeni geliştirme başlamadan önce okunmalıdır.
 - Dosya yükleme kuralı tek yerde tutulacak: sadece JPG/PNG/WebP ve maksimum 5 MB.
 - Task 4.3 ve Phase 5 moderasyon işleri için ilan persistence modeli aynı cookie tabanlı katmanda sürdürüldü; DB entegrasyonu sonraki fazlara bırakıldı.
 - Admin yetkisi şimdilik Supabase Auth `user_metadata.role === "admin"` kontrolü ile belirleniyor.
+- Report persistence de MVP aşamasında cookie tabanlı tutuldu; ileride DB tablosuna taşınacak.
+- Aynı kullanıcı aynı ilan için acik veya incelemedeki raporu tekrar gönderirse mevcut rapor güncellenir.
 
 ---
 
 ## Bu Görevde Yapılacaklar
-- Kullanıcının kendi ilanlarını listeleme, düzenleme ve arşivleme akışı eklendi.
-- Admin-only gate ve moderasyon paneli kuruldu.
-- Pending ilanlar için onay/red akışı persistence katmanına bağlandı.
+- Kullanıcı tarafında ilan raporlama akışı eklendi.
+- Admin tarafında rapor listeleme ve durum güncelleme akışı kuruldu.
+- Report persistence ve validasyon katmanı tamamlandı.
 
 ---
 
 ## Sonraki Görev
-- `Phase 5 / Task 5.3`
-- Report moderasyon ekranı ve rapor durum güncelleme akışı tamamlanacak.
+- `Phase 6 / Task 6.1`
+- Filtreler URL search params ile tam paylaşılabilir hale getirilecek.
 
 ---
 
