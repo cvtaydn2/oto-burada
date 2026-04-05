@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { hasSupabaseEnv } from "@/lib/supabase/env";
+import type { UserRole } from "@/types";
 
 export async function getCurrentUser() {
   if (!hasSupabaseEnv()) {
@@ -21,6 +22,24 @@ export async function requireUser() {
 
   if (!user) {
     redirect("/login");
+  }
+
+  return user;
+}
+
+export function getUserRole(user: Awaited<ReturnType<typeof requireUser>>): UserRole {
+  const metadata = user.user_metadata as {
+    role?: string;
+  };
+
+  return metadata.role === "admin" ? "admin" : "user";
+}
+
+export async function requireAdminUser() {
+  const user = await requireUser();
+
+  if (getUserRole(user) !== "admin") {
+    redirect("/dashboard");
   }
 
   return user;

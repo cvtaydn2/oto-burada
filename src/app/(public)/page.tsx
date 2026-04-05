@@ -4,6 +4,7 @@ import { ArrowRight, BadgeCheck, CarFront, ShieldCheck, Sparkles } from "lucide-
 import { ListingCard } from "@/components/listings/listing-card";
 import { SectionHeader } from "@/components/shared/section-header";
 import { brandCatalog, cityOptions, featuredListings, latestListings } from "@/data";
+import { getCurrentUser } from "@/lib/auth/session";
 
 const trustHighlights = [
   {
@@ -30,7 +31,10 @@ const quickFilters = [
   { label: "1.000.000 TL Altı", href: "/listings?maxPrice=1000000" },
 ];
 
-export default function HomePage() {
+export default async function HomePage() {
+  const user = await getCurrentUser();
+  const postListingHref = user ? "/dashboard/listings" : "/login";
+
   return (
     <main className="bg-muted/40">
       <section className="mx-auto flex w-full max-w-6xl flex-col gap-10 px-4 py-10 sm:px-6 sm:py-14 lg:px-8">
@@ -118,7 +122,7 @@ export default function HomePage() {
                   Uygun İlanları Bul
                 </button>
                 <Link
-                  href="/login"
+                  href={postListingHref}
                   className="inline-flex h-12 items-center justify-center rounded-xl border border-border bg-background px-5 text-sm font-semibold text-foreground transition-colors hover:bg-muted"
                 >
                   İlan Ver

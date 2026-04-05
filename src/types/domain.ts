@@ -79,6 +79,30 @@ export interface ListingCreateInput {
   images: ListingImage[];
 }
 
+export interface ListingCreateFormImage {
+  fileName?: string;
+  mimeType?: string;
+  size?: number;
+  storagePath?: string;
+  url?: string;
+}
+
+export interface ListingCreateFormValues {
+  title: string;
+  brand: string;
+  model: string;
+  year: number;
+  mileage: number;
+  fuelType: FuelType;
+  transmission: TransmissionType;
+  price: number;
+  city: string;
+  district: string;
+  description: string;
+  whatsappPhone: string;
+  images: ListingCreateFormImage[];
+}
+
 export interface Favorite {
   id?: string;
   userId: string;

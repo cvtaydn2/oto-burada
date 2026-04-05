@@ -95,6 +95,9 @@ export async function registerAction(
     ...parsed.data,
     options: {
       emailRedirectTo: getEmailRedirectUrl(),
+      data: {
+        role: "user",
+      },
     },
   });
 

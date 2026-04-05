@@ -3,8 +3,15 @@ import { ArrowRight, ShieldCheck } from "lucide-react";
 
 import { primaryNavigationItems } from "@/components/layout/public-navigation";
 import { brandCatalog } from "@/data";
+import { getCurrentUser, getUserRole } from "@/lib/auth/session";
 
-export function SiteHeader() {
+export async function SiteHeader() {
+  const user = await getCurrentUser();
+  const isAdmin = user ? getUserRole(user) === "admin" : false;
+  const accountHref = user ? "/dashboard" : "/login";
+  const accountLabel = user ? "Panelim" : "Giriş Yap";
+  const postListingHref = user ? "/dashboard/listings" : "/login";
+
   return (
     <header className="sticky top-0 z-40 border-b border-border/70 bg-background/95 backdrop-blur">
       <div className="mx-auto flex w-full max-w-6xl items-center justify-between gap-4 px-4 py-3 sm:px-6 lg:px-8">
@@ -39,14 +46,19 @@ export function SiteHeader() {
             <ShieldCheck className="size-4 text-primary" />
             Güvenli ve sade platform
           </div>
-          <Link
-            href="/login"
-            className="rounded-xl px-4 py-2 text-sm font-semibold text-foreground transition-colors hover:bg-muted"
-          >
-            Giriş Yap
+          <Link href={accountHref} className="rounded-xl px-4 py-2 text-sm font-semibold text-foreground transition-colors hover:bg-muted">
+            {accountLabel}
           </Link>
+          {isAdmin ? (
+            <Link
+              href="/admin"
+              className="rounded-xl px-4 py-2 text-sm font-semibold text-foreground transition-colors hover:bg-muted"
+            >
+              Admin
+            </Link>
+          ) : null}
           <Link
-            href="/login"
+            href={postListingHref}
             className="inline-flex items-center gap-2 rounded-xl bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground shadow-sm transition-colors hover:bg-primary/90"
           >
             İlan Ver

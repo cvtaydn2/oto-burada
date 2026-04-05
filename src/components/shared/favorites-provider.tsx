@@ -20,6 +20,10 @@ interface FavoritesContextValue {
 const FavoritesContext = createContext<FavoritesContextValue | undefined>(undefined);
 
 const FAVORITES_EVENT = "oto-burada:favorites-updated";
+const SERVER_SNAPSHOT: string[] = [];
+const SERVER_HYDRATED = false;
+
+let cachedFavoriteIds: string[] | null = null;
 
 function subscribe(onStoreChange: () => void) {
   if (typeof window === "undefined") {
@@ -38,11 +42,18 @@ function subscribe(onStoreChange: () => void) {
 }
 
 function getFavoritesSnapshot() {
-  return readFavoriteIds();
+  if (cachedFavoriteIds === null) {
+    cachedFavoriteIds = typeof window !== "undefined" ? readFavoriteIds() : [];
+  }
+  return cachedFavoriteIds;
 }
 
 function getServerSnapshot() {
-  return [] as string[];
+  return SERVER_SNAPSHOT;
+}
+
+function getHydrationSnapshot() {
+  return SERVER_HYDRATED;
 }
 
 export function FavoritesProvider({ children }: PropsWithChildren) {
@@ -54,7 +65,7 @@ export function FavoritesProvider({ children }: PropsWithChildren) {
   const hydrated = useSyncExternalStore(
     subscribe,
     () => true,
-    () => false,
+    getHydrationSnapshot,
   );
 
   const value = useMemo<FavoritesContextValue>(
@@ -68,6 +79,7 @@ export function FavoritesProvider({ children }: PropsWithChildren) {
           : [...favoriteIds, listingId];
 
         writeFavoriteIds(nextIds);
+        cachedFavoriteIds = nextIds;
 
         if (typeof window !== "undefined") {
           window.dispatchEvent(new Event(FAVORITES_EVENT));

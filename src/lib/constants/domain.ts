@@ -39,3 +39,5 @@ export const minimumListingImages = 3;
 export const minimumCarYear = 1950;
 export const maximumCarYear = new Date().getFullYear() + 1;
 export const maximumMileage = 1_000_000;
+export const listingImageAcceptedMimeTypes = ["image/jpeg", "image/png", "image/webp"] as const;
+export const listingImageMaxSizeInBytes = 5 * 1024 * 1024;

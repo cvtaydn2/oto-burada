@@ -13,8 +13,8 @@ Her yeni geliştirme başlamadan önce okunmalıdır.
 ---
 
 ## Proje Durumu
-- Güncel faz: `Phase 3`
-- Güncel görev: `Task 3.4`
+- Güncel faz: `Phase 5`
+- Güncel görev: `Task 5.2`
 - Durum: tamamlandı
 
 ---
@@ -107,6 +107,42 @@ Her yeni geliştirme başlamadan önce okunmalıdır.
 - Dashboard favoriler sayfası gerçek içerik ve empty state ile dolduruldu.
 - Favori state paylaşımı provider/hook katmanına taşındı.
 
+### Phase 4 / Task 4.1
+- Dashboard `İlanlarım` sayfası mobil öncelikli ilan oluşturma ekranına dönüştürüldü.
+- React Hook Form + Zod ile client-side doğrulama çalışan araç ilan formu eklendi.
+- `POST /api/listings` route handler ile server-side doğrulama ve submit akışı kuruldu.
+- Fotoğraflar için en az 3 bağlantı kuralı, önizleme alanı ve dinamik alan ekleme akışı hazırlandı.
+- Giriş yapan kullanıcılar için public `İlan Ver` CTA'ları doğrudan dashboard formuna bağlandı.
+- Oluşturulan ilanlar geçici olarak cookie tabanlı persistence ile `pending` durumunda saklanmaya başlandı.
+
+### Phase 4 / Task 4.2
+- Supabase Storage için admin client ve storage env yardımcıları eklendi.
+- `POST /api/listings/images` ile dosya upload, `DELETE /api/listings/images` ile temizleme akışı kuruldu.
+- İlan formu URL tabanlı görsel girişinden dosya seçimi + upload progress akışına taşındı.
+- JPG, PNG ve WebP dışındaki dosyalar ile 5 MB üzerindeki görseller client ve server tarafında reddedilir hale getirildi.
+- Yüklenen fotoğraflar anlık önizleme, ilerleme yüzdesi ve hazır durum göstergesi ile form içine bağlandı.
+- İlan submit akışı, yüklenen storage path ve public URL değerlerini kullanacak şekilde güncellendi.
+
+### Phase 4 / Task 4.3
+- Dashboard `İlanlarım` alanı gerçek kullanıcı ilan listesi ile dolduruldu.
+- Kullanıcı kendi ilanları için durum rozeti, tarih ve temel özet bilgilerini görür hale geldi.
+- Pending ve draft ilanlar için düzenleme modu aynı form üzerinde aktif edildi.
+- İlan arşivleme için route handler ve dashboard aksiyonu eklendi.
+- Liste yalnızca giriş yapan kullanıcıya ait cookie tabanlı ilanları gösterecek şekilde sınırlandı.
+
+### Phase 5 / Task 5.1
+- Auth session katmanına `getUserRole` ve `requireAdminUser` yardımcıları eklendi.
+- `/admin` rotası admin olmayan kullanıcılar için `/dashboard` yönlendirmesi ile korundu.
+- Kayıt olan yeni kullanıcılar Supabase metadata içinde varsayılan `user` rolü ile oluşturulacak şekilde güncellendi.
+- Header içine admin kullanıcılar için görünür `Admin` erişim bağlantısı eklendi.
+
+### Phase 5 / Task 5.2
+- Admin paneli pending, approved ve rejected sayaçları ile moderasyon merkezine dönüştürüldü.
+- Pending ilanlar için approve/reject aksiyonlarını çalışan admin moderasyon listesi eklendi.
+- `POST /api/admin/listings/[listingId]/moderate` route handler ile admin onay/red akışı kuruldu.
+- Moderasyon kararı cookie tabanlı ilan persistence içine yazılacak şekilde güncellendi.
+- Admin tarafında yalnızca pending durumdaki ilanlar moderasyona açık bırakıldı.
+
 ---
 
 ## Alınan Kararlar
@@ -115,19 +151,24 @@ Her yeni geliştirme başlamadan önce okunmalıdır.
 - Başlangıç aşamasında gereksiz backend karmaşıklığı eklenmeyecek.
 - Google Fonts bağımlılığı kaldırıldı; yerel sistem fontları kullanıldı.
 - Next.js Turbopack kök dizini repo ile sınırlandırıldı.
+- Task 4.1 için ilan submit akışı, tablo kurulumu gelene kadar cookie tabanlı geçici persistence ile ilerletildi.
+- Task 4.2 kapsamında `listing-images` bucket'i public read URL üretecek şekilde varsayıldı.
+- Dosya yükleme kuralı tek yerde tutulacak: sadece JPG/PNG/WebP ve maksimum 5 MB.
+- Task 4.3 ve Phase 5 moderasyon işleri için ilan persistence modeli aynı cookie tabanlı katmanda sürdürüldü; DB entegrasyonu sonraki fazlara bırakıldı.
+- Admin yetkisi şimdilik Supabase Auth `user_metadata.role === "admin"` kontrolü ile belirleniyor.
 
 ---
 
 ## Bu Görevde Yapılacaklar
-- Favori ekleme/çıkarma akışı eklendi.
-- Favoriler sayfası gerçek liste ve empty state ile tamamlandı.
-- Favori state'i reusable client katmanda toplandı.
+- Kullanıcının kendi ilanlarını listeleme, düzenleme ve arşivleme akışı eklendi.
+- Admin-only gate ve moderasyon paneli kuruldu.
+- Pending ilanlar için onay/red akışı persistence katmanına bağlandı.
 
 ---
 
 ## Sonraki Görev
-- `Phase 4 / Task 4.1`
-- Araç ilanı oluşturma formu kurulacak.
+- `Phase 5 / Task 5.3`
+- Report moderasyon ekranı ve rapor durum güncelleme akışı tamamlanacak.
 
 ---
 

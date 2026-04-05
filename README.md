@@ -15,10 +15,12 @@ Sadece arabalar için tasarlanmış, mobil öncelikli ve güven odaklı ücretsi
 - Supabase Storage
 
 ## Mevcut Durum
-- `Phase 0 / Task 0.1` tamamlandı
-- Proje iskeleti oluşturuldu
-- Temel klasör yapısı hazırlandı
-- shadcn/ui ve gerekli bağımlılıklar kuruldu
+- `Phase 5 / Task 5.2` tamamlandı
+- Public listeleme ve ilan detay akışları hazır
+- Supabase Auth ile giriş, kayıt ve korumalı dashboard akışı çalışıyor
+- Profil güncelleme ve favori akışı aktif
+- Dashboard içinde ilan oluşturma, düzenleme, arşivleme ve durum izleme akışları aktif
+- Admin panelinde pending ilan moderasyonu ve rol bazlı erişim aktif
 - Lint, typecheck ve production build doğrulandı
 
 ## Kurulum
@@ -48,6 +50,9 @@ Copy-Item .env.example .env.local
 - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
 - `SUPABASE_SERVICE_ROLE_KEY`
 - `SUPABASE_STORAGE_BUCKET_LISTINGS`
+
+`SUPABASE_STORAGE_BUCKET_LISTINGS` bucket'inin public read erişimiyle açılması ve ilan görselleri için kullanılması beklenir.
+Uygulama tarafında `JPG`, `PNG`, `WebP` formatlari ve dosya basi maksimum `5 MB` kurali enforce edilir.
 
 ### 4. Geliştirme sunucusunu başlat
 ```bash
@@ -98,4 +103,4 @@ Yeni geliştirmeye başlamadan önce şu dosyalar gözden geçirilmelidir:
 8. `schema.sql`
 
 ## Sonraki Adım
-Sıradaki iş `Phase 1 / Task 1.1`: ortak tiplerin ve Zod doğrulayıcılarının tanımlanması.
+Sıradaki iş `Phase 5 / Task 5.3`: report moderasyon ekranının ve rapor durum güncelleme akışının tamamlanması.
