@@ -223,6 +223,8 @@ Her yeni geliştirme başlamadan önce okunmalıdır.
 - Admin paneli ust metrik kartlari dashboard ile ayni varyant mantigina alindi; duz sayaç kutulari yerine daha okunur metric panelleri kullaniliyor.
 - Admin listing ve report moderasyon kartlari AI Studio karar diliyle zenginlestirildi; ozet, link ve inceleme baglami daha gorunur hale geldi.
 - Dashboard favorites ekrani ozet, ortalama fiyat ve hizli devam paneli ile zenginlestirildi.
+- Admin recent actions paneli de ayni kart sistemiyle guncellendi; arama ve filtreleme korunurken karar notu daha okunur hale getirildi.
+- Dashboard `Ilanlarim` ve `Profil` ust alanlari AI Studio + Figma diline tasindi; metrik, ozet ve hazirlik panelleri teklesmeye devam etti.
 
 ---
 
@@ -260,6 +262,7 @@ Her yeni geliştirme başlamadan önce okunmalıdır.
 - Gorsel yon artik AI Studio draft'taki ana kompozisyon ve kart vurgularini referans alir; Figma export'u ise ayni dili daha tutarli component yuzeylerine indirmek icin kullanilir.
 - Listing detail gibi ikincil ekranlarda once karar katmani ve CTA panelleri tasinir; boylece gorsel degisim kullanicinin en kritik eylem alanlarinda daha gorunur olur.
 - Admin ve dashboard alt ekranlarinda da ayni ilke korunur: once karar veren veya yonlendiren paneller teklesir, sonra daha ince detay kartlari hizalanir.
+- Dashboard icinde formun kendisinden once kullanicinin kararini hizlandiran ozet ve hazirlik panelleri guncellenir; boylece agir formlar daha yonlendirici bir ust katmanla acilir.
 
 ---
 
@@ -284,6 +287,7 @@ Her yeni geliştirme başlamadan önce okunmalıdır.
 - Listing karti ve dashboard metric kartlari yeni gorsel dile tasindi; sonraki aday alan listing detail ve admin/dashboard ic modulleridir.
 - Listing detail hero ve seller paneli de yeni gorsel dile tasindi; sonraki aday alan admin moderasyon listeleri ve dashboard alt akislaridir.
 - Admin moderasyon listeleri ve favorites ekrani da yeni gorsel dile tasindi; sonraki aday alan admin aksiyon feed'i ile dashboard profile/listings ekranlaridir.
+- Admin aksiyon feed'i ile dashboard profile/listings ekranlari da yeni gorsel dile tasindi; sonraki aday alan form yuzeyleri ve persistence panelleridir.
 
 ---
 
@@ -296,6 +300,7 @@ Her yeni geliştirme başlamadan önce okunmalıdır.
 - UI tarafinda sonraki mantikli adim, ayni AI Studio + Figma dilini listing detail hero, seller paneli ve admin moderasyon listelerine tasimaktir.
 - UI tarafinda sonraki mantikli adim, admin listing/report moderasyon listelerini ve dashboard favorites ekranini ayni component kurallariyla yeniden hizalamaktir.
 - UI tarafinda sonraki mantikli adim, admin recent actions akisi ile dashboard profile/listings sayfalarini ayni component sistemiyle hizalamaktir.
+- UI tarafinda sonraki mantikli adim, dashboard listing create formu ve admin persistence paneli gibi daha yogun bilgi/form yuzeylerini ayni tasarim sistemiyle inceltmektir.
 
 ---
 

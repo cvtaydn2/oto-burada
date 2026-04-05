@@ -2,10 +2,17 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Archive, LoaderCircle, PencilLine } from "lucide-react";
+import {
+  Archive,
+  ArrowRight,
+  LoaderCircle,
+  PencilLine,
+  Sparkles,
+} from "lucide-react";
 import { useState } from "react";
 
 import { formatCurrency, formatDate, formatNumber } from "@/lib/utils";
+import { getListingCardInsights } from "@/services/listings/listing-card-insights";
 import type { Listing } from "@/types";
 
 interface MyListingsPanelProps {
@@ -98,14 +105,21 @@ export function MyListingsPanel({ activeEditId, listings }: MyListingsPanelProps
         {listings.map((listing) => {
           const isEditable = listing.status === "draft" || listing.status === "pending";
           const isArchiving = archivingId === listing.id;
+          const insight = getListingCardInsights(listing);
+          const toneClasses = {
+            amber: "border-amber-100 bg-gradient-to-r from-amber-50 to-background text-amber-700",
+            emerald:
+              "border-emerald-100 bg-gradient-to-r from-emerald-50 to-background text-emerald-700",
+            indigo: "border-primary/10 bg-gradient-to-r from-primary/10 to-background text-primary",
+          }[insight.tone];
 
           return (
             <article
               key={listing.id}
-              className="rounded-[1.5rem] border border-border/70 bg-muted/20 p-5"
+              className="rounded-[1.75rem] border border-border/70 bg-background p-5 shadow-sm"
             >
               <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
-                <div className="space-y-3">
+                <div className="min-w-0 space-y-4">
                   <div className="flex flex-wrap items-center gap-3">
                     <h4 className="text-lg font-semibold tracking-tight text-foreground">
                       {listing.title}
@@ -120,35 +134,50 @@ export function MyListingsPanel({ activeEditId, listings }: MyListingsPanelProps
                         Duzenleniyor
                       </span>
                     ) : null}
+                    <span
+                      className={`inline-flex rounded-full border px-3 py-1 text-xs font-semibold ${toneClasses}`}
+                    >
+                      {insight.badgeLabel}
+                    </span>
                   </div>
 
                   <div className="flex flex-wrap gap-2 text-xs font-medium text-muted-foreground sm:text-sm">
-                    <span className="rounded-full bg-background px-3 py-1.5">{listing.year}</span>
-                    <span className="rounded-full bg-background px-3 py-1.5">
+                    <span className="rounded-full border border-border/70 bg-muted/30 px-3 py-1.5">
+                      {listing.year}
+                    </span>
+                    <span className="rounded-full border border-border/70 bg-muted/30 px-3 py-1.5">
                       {formatNumber(listing.mileage)} km
                     </span>
-                    <span className="rounded-full bg-background px-3 py-1.5">
+                    <span className="rounded-full border border-border/70 bg-muted/30 px-3 py-1.5">
                       {listing.city} / {listing.district}
                     </span>
-                    <span className="rounded-full bg-background px-3 py-1.5">
+                    <span className="rounded-full border border-border/70 bg-muted/30 px-3 py-1.5">
                       {listing.images.length} fotograf
                     </span>
                   </div>
 
+                  <div className={`rounded-[1.25rem] border p-4 ${toneClasses}`}>
+                    <div className="flex items-center gap-2 text-sm font-semibold">
+                      <Sparkles className="size-4" />
+                      Ilan ozeti
+                    </div>
+                    <p className="mt-2 text-sm leading-6 text-foreground/90">{insight.summary}</p>
+                  </div>
+
                   <div className="grid gap-3 sm:grid-cols-3">
-                    <div className="rounded-2xl bg-background px-4 py-3">
+                    <div className="rounded-2xl border border-border/70 bg-muted/20 px-4 py-3">
                       <p className="text-xs text-muted-foreground">Fiyat</p>
                       <p className="mt-1 text-sm font-semibold text-foreground">
                         {formatCurrency(listing.price)}
                       </p>
                     </div>
-                    <div className="rounded-2xl bg-background px-4 py-3">
+                    <div className="rounded-2xl border border-border/70 bg-muted/20 px-4 py-3">
                       <p className="text-xs text-muted-foreground">Olusturma</p>
                       <p className="mt-1 text-sm font-semibold text-foreground">
                         {formatDate(listing.createdAt)}
                       </p>
                     </div>
-                    <div className="rounded-2xl bg-background px-4 py-3">
+                    <div className="rounded-2xl border border-border/70 bg-muted/20 px-4 py-3">
                       <p className="text-xs text-muted-foreground">Son guncelleme</p>
                       <p className="mt-1 text-sm font-semibold text-foreground">
                         {formatDate(listing.updatedAt)}
@@ -157,7 +186,7 @@ export function MyListingsPanel({ activeEditId, listings }: MyListingsPanelProps
                   </div>
                 </div>
 
-                <div className="flex flex-col gap-2 sm:flex-row lg:flex-col">
+                <div className="flex flex-col gap-2 sm:flex-row lg:w-44 lg:flex-col">
                   {isEditable ? (
                     <Link
                       href={`/dashboard/listings?edit=${listing.id}`}
@@ -167,6 +196,14 @@ export function MyListingsPanel({ activeEditId, listings }: MyListingsPanelProps
                       Duzenle
                     </Link>
                   ) : null}
+
+                  <Link
+                    href={`/listing/${listing.slug}`}
+                    className="inline-flex h-11 items-center justify-center gap-2 rounded-xl border border-border bg-background px-4 text-sm font-semibold text-foreground transition-colors hover:bg-muted"
+                  >
+                    <ArrowRight className="size-4" />
+                    Ilani ac
+                  </Link>
 
                   <button
                     type="button"

@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useMemo, useState } from "react";
+import { ArrowRight, Search, Sparkles } from "lucide-react";
 
 import { moderationActionLabels } from "@/lib/constants/domain";
 import { formatDate } from "@/lib/utils";
@@ -149,14 +150,17 @@ export function AdminRecentActions({ actions }: AdminRecentActionsProps) {
         <label htmlFor="admin-action-search" className="sr-only">
           Aksiyon gecmisi icinde ara
         </label>
-        <input
-          id="admin-action-search"
-          type="search"
-          value={query}
-          onChange={(event) => setQuery(event.target.value)}
-          placeholder="Admin, ilan, rapor veya not icinde ara"
-          className="h-11 w-full rounded-xl border border-border bg-background px-4 text-sm text-foreground outline-none transition-colors placeholder:text-muted-foreground focus:border-primary"
-        />
+        <div className="relative">
+          <Search className="pointer-events-none absolute left-4 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+          <input
+            id="admin-action-search"
+            type="search"
+            value={query}
+            onChange={(event) => setQuery(event.target.value)}
+            placeholder="Admin, ilan, rapor veya not icinde ara"
+            className="h-11 w-full rounded-xl border border-border bg-background pl-11 pr-4 text-sm text-foreground outline-none transition-colors placeholder:text-muted-foreground focus:border-primary"
+          />
+        </div>
       </div>
 
       {filteredActions.length === 0 ? (
@@ -172,10 +176,10 @@ export function AdminRecentActions({ actions }: AdminRecentActionsProps) {
           return (
             <article
               key={action.id ?? `${action.targetType}-${action.targetId}-${action.createdAt}`}
-              className="rounded-[1.5rem] border border-border/70 bg-muted/20 p-5"
+              className="rounded-[1.75rem] border border-border/70 bg-background p-5 shadow-sm"
             >
               <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-                <div className="space-y-3">
+                <div className="min-w-0 space-y-4">
                   <div className="flex flex-wrap items-center gap-2">
                     <span className="inline-flex rounded-full bg-primary/10 px-3 py-1 text-xs font-semibold text-primary">
                       {moderationActionLabels[action.action]}
@@ -190,24 +194,32 @@ export function AdminRecentActions({ actions }: AdminRecentActionsProps) {
                       {item.targetLabel}
                     </p>
                     <p className="text-sm text-muted-foreground">Islemi yapan: {item.actorLabel}</p>
-                    {item.targetHref ? (
-                      <Link
-                        href={item.targetHref}
-                        className="inline-flex text-sm font-medium text-primary transition-colors hover:text-primary/80"
-                      >
-                        Ilgili ilana git
-                      </Link>
-                    ) : null}
                   </div>
 
-                  <p className="text-sm leading-6 text-muted-foreground">
-                    {action.note?.trim()
-                      ? action.note
-                      : `${targetTypeLabels[action.targetType]} icin moderasyon karari kaydedildi.`}
-                  </p>
+                  <div className="rounded-[1.25rem] border border-primary/10 bg-gradient-to-r from-primary/10 to-background p-4">
+                    <div className="flex items-center gap-2 text-sm font-semibold text-primary">
+                      <Sparkles className="size-4" />
+                      Karar notu
+                    </div>
+                    <p className="mt-2 text-sm leading-6 text-foreground/90">
+                      {action.note?.trim()
+                        ? action.note
+                        : `${targetTypeLabels[action.targetType]} icin moderasyon karari kaydedildi.`}
+                    </p>
+                  </div>
+
+                  {item.targetHref ? (
+                    <Link
+                      href={item.targetHref}
+                      className="inline-flex h-11 items-center justify-center gap-2 self-start rounded-xl border border-border bg-background px-4 text-sm font-semibold text-foreground transition-colors hover:bg-muted"
+                    >
+                      <ArrowRight className="size-4" />
+                      Ilgili ilana git
+                    </Link>
+                  ) : null}
                 </div>
 
-                <div className="rounded-2xl bg-background px-4 py-3 text-sm font-medium text-foreground">
+                <div className="rounded-2xl border border-border/70 bg-muted/20 px-4 py-3 text-sm font-medium text-foreground">
                   {formatDate(action.createdAt)}
                 </div>
               </div>
