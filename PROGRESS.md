@@ -14,7 +14,7 @@ Her yeni geliştirme başlamadan önce okunmalıdır.
 
 ## Proje Durumu
 - Güncel faz: `Phase 7`
-- Güncel görev: `Task 7.2`
+- Güncel görev: `Task 7.3`
 - Durum: tamamlandı
 
 ---
@@ -178,6 +178,12 @@ Her yeni geliştirme başlamadan önce okunmalıdır.
 - Auth, filter ve report formlarında focus ring, `aria-live` ve hata/basarili mesaj semantikleri iyileştirildi.
 - Core akışlar mobil ve keyboard kullanım açısından tekrar doğrulandı.
 
+### Phase 7 / Task 7.3
+- Dashboard genel bakış ekranı placeholder metinden çıkarılıp gerçek özet kartları, son hareketler ve hızlı yönlendirmeler ile tamamlandı.
+- Kullanılmayan `dashboard-placeholder` bileşeni kaldırıldı.
+- `README.md` mevcut persistence davranışları ve tamamlanan MVP kapsamı ile hizalandı.
+- `schema.sql` hedef Supabase Postgres + RLS veri modelini gerçek tablo, enum, index ve policy tanımlarıyla yansıtacak şekilde genişletildi.
+
 ---
 
 ## Alınan Kararlar
@@ -196,19 +202,20 @@ Her yeni geliştirme başlamadan önce okunmalıdır.
 - URL filtreleme için canonical davranış `router.replace` üzerinden kuruldu; filtre güncellerken geçmiş yığını gereksiz büyütülmüyor.
 - SEO metadata üretimi için ortak helper katmanı kullanılıyor; sayfa bazlı kurallar burada merkezileştirildi.
 - Mobil filtre drawer kapandığında body scroll varsayılan haline geri dönmeli; keyboard kullanıcısı `Escape` ile drawer'ı kapatabilmeli.
+- Runtime persistence halen kademeli: listings ve reports cookie tabanlı, favorites ise cihaz-local saklama ile ilerliyor.
 
 ---
 
 ## Bu Görevde Yapılacaklar
-- Core navigasyon ve ana formlarda keyboard focus görünürlüğü artırıldı.
-- Mobil filtre drawer semantiği ve kapatma davranışı erişilebilir hale getirildi.
-- Responsive ve erişilebilirlik iyileştirmeleri lint/typecheck/build ile tekrar doğrulandı.
+- Dashboard genel bakışta placeholder dili kaldırılıp gerçek özet içeriği verildi.
+- Dokümanlar ve `schema.sql` güncel uygulama davranışı ile hizalandı.
+- Son temizlik sonrası lint/typecheck/build tekrar doğrulanacak.
 
 ---
 
 ## Sonraki Görev
-- `Phase 7 / Task 7.3`
-- Final temizlik, doküman hizalama ve isimlendirme tutarlılığı gözden geçirilecek.
+- `Final Definition of Done`
+- `TASKS.md` içindeki sıralı MVP kapsamı tamamlandı; bir sonraki genişleme alanı Supabase tablo persistence'ını runtime'a bağlamak olabilir.
 
 ---
 

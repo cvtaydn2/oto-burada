@@ -26,6 +26,8 @@ Sadece arabalar için tasarlanmış, mobil öncelikli ve güven odaklı ücretsi
 - Homepage, listings index ve listing detail için SEO metadata aktif
 - Majör async ekranlarda loading, empty, error ve disabled durumları gözden geçirildi
 - Core akışlarda klavye odağı, touch target ve mobil filtre drawer erişilebilirliği güçlendirildi
+- Dashboard genel bakış ekranı gerçek özet kartları ve hızlı yönlendirmeler ile tamamlandı
+- Listings ve reports akışı şu anda cookie tabanlı, favoriler ise cihaz-local saklama ile çalışıyor
 - Lint, typecheck ve production build doğrulandı
 
 ## Kurulum
@@ -108,4 +110,4 @@ Yeni geliştirmeye başlamadan önce şu dosyalar gözden geçirilmelidir:
 8. `schema.sql`
 
 ## Sonraki Adım
-Sıradaki iş `Phase 7 / Task 7.3`: final temizlik, dökümantasyon hizalama ve isimlendirme tutarlılığının gözden geçirilmesi.
+`TASKS.md` içindeki sıralı MVP görevleri tamamlandı. Sonraki genişleme adımı olarak listings, reports ve favorites persistence katmanını tam Supabase tablo akışına taşıma düşünülebilir.
