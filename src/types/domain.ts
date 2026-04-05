@@ -1,0 +1,126 @@
+import type {
+  fuelTypes,
+  listingSortOptions,
+  listingStatuses,
+  moderationActions,
+  moderationTargetTypes,
+  reportReasons,
+  reportStatuses,
+  transmissionTypes,
+  userRoles,
+} from "@/lib/constants/domain";
+
+export type UserRole = (typeof userRoles)[number];
+export type ListingStatus = (typeof listingStatuses)[number];
+export type FuelType = (typeof fuelTypes)[number];
+export type TransmissionType = (typeof transmissionTypes)[number];
+export type ReportReason = (typeof reportReasons)[number];
+export type ReportStatus = (typeof reportStatuses)[number];
+export type ModerationTargetType = (typeof moderationTargetTypes)[number];
+export type ModerationAction = (typeof moderationActions)[number];
+export type ListingSortOption = (typeof listingSortOptions)[number];
+
+export interface Profile {
+  id: string;
+  fullName: string;
+  phone: string;
+  city: string;
+  avatarUrl?: string | null;
+  role: UserRole;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface ListingImage {
+  id?: string;
+  listingId?: string | null;
+  storagePath: string;
+  url: string;
+  order: number;
+  isCover: boolean;
+}
+
+export interface Listing {
+  id: string;
+  slug: string;
+  sellerId: string;
+  title: string;
+  brand: string;
+  model: string;
+  year: number;
+  mileage: number;
+  fuelType: FuelType;
+  transmission: TransmissionType;
+  price: number;
+  city: string;
+  district: string;
+  description: string;
+  whatsappPhone: string;
+  status: ListingStatus;
+  images: ListingImage[];
+  featured: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface ListingCreateInput {
+  title: string;
+  brand: string;
+  model: string;
+  year: number;
+  mileage: number;
+  fuelType: FuelType;
+  transmission: TransmissionType;
+  price: number;
+  city: string;
+  district: string;
+  description: string;
+  whatsappPhone: string;
+  images: ListingImage[];
+}
+
+export interface Favorite {
+  id?: string;
+  userId: string;
+  listingId: string;
+  createdAt: string;
+}
+
+export interface Report {
+  id?: string;
+  listingId: string;
+  reporterId: string;
+  reason: ReportReason;
+  description?: string | null;
+  status: ReportStatus;
+  createdAt: string;
+  updatedAt?: string | null;
+}
+
+export interface AdminModerationAction {
+  id?: string;
+  adminUserId: string;
+  targetType: ModerationTargetType;
+  targetId: string;
+  action: ModerationAction;
+  note?: string | null;
+  createdAt: string;
+}
+
+export interface ListingFilters {
+  query?: string;
+  brand?: string;
+  model?: string;
+  city?: string;
+  district?: string;
+  minPrice?: number;
+  maxPrice?: number;
+  minYear?: number;
+  maxYear?: number;
+  maxMileage?: number;
+  fuelType?: FuelType;
+  transmission?: TransmissionType;
+  sort?: ListingSortOption;
+  page?: number;
+  limit?: number;
+}

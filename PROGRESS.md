@@ -13,8 +13,8 @@ Her yeni geliştirme başlamadan önce okunmalıdır.
 ---
 
 ## Proje Durumu
-- Güncel faz: `Phase 0`
-- Güncel görev: `Task 0.2`
+- Güncel faz: `Phase 1`
+- Güncel görev: `Task 1.1`
 - Durum: tamamlandı
 
 ---
@@ -36,6 +36,18 @@ Her yeni geliştirme başlamadan önce okunmalıdır.
 - `npm run build` geçti
 - Yerel geliştirme sunucusu doğrulandı
 
+### Phase 0 / Task 0.2
+- `README.md` kurulum ve doğrulama adımlarıyla güncellendi.
+- `.env.example` eklendi.
+- `schema.sql` başlangıç seviyesinde anlamlı hale getirildi.
+- `PROGRESS.md` eklendi ve çalışma kuralı `AGENTS.md` içine işlendi.
+
+### Phase 1 / Task 1.1
+- Ortak domain sabitleri tanımlandı.
+- `profile`, `listing`, `listing image`, `favorite`, `report`, `admin moderation` ve `filters` için paylaşılan TypeScript tipleri eklendi.
+- Aynı alanlar için Zod doğrulayıcıları oluşturuldu.
+- `listingCreateSchema` zorunlu alanları ve minimum 3 görsel kuralını enforce edecek şekilde tanımlandı.
+
 ---
 
 ## Alınan Kararlar
@@ -48,16 +60,15 @@ Her yeni geliştirme başlamadan önce okunmalıdır.
 ---
 
 ## Bu Görevde Yapılacaklar
-- `README.md` kurulum adımlarıyla güncellendi.
-- `.env.example` eklendi.
-- `schema.sql` başlangıç planı ile düzeltildi.
-- İlerleme takibi için bu dosya kalıcı hale getirildi.
+- Ortak tipler ve validator katmanı eklendi.
+- Alan sabitleri tek merkezde toplandı.
+- Form ve sunucu tarafında tekrar kullanılabilir Zod şemaları hazırlandı.
 
 ---
 
 ## Sonraki Görev
-- `Phase 1 / Task 1.1`
-- Ortak domain tipleri ve Zod doğrulayıcıları oluşturulacak.
+- `Phase 1 / Task 1.2`
+- Seed sabitleri ve gerçekçi mock veriler oluşturulacak.
 
 ---
 
