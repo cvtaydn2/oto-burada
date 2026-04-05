@@ -1,12 +1,22 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { ArrowRight, BadgeCheck, CarFront, ShieldCheck, Sparkles } from "lucide-react";
+import {
+  ArrowRight,
+  BadgeCheck,
+  CarFront,
+  MapPinned,
+  ShieldCheck,
+  SlidersHorizontal,
+  Sparkles,
+} from "lucide-react";
 
 import { ListingCard } from "@/components/listings/listing-card";
+import { HomeMarketInsights } from "@/components/shared/home-market-insights";
 import { SectionHeader } from "@/components/shared/section-header";
-import { brandCatalog, cityOptions, featuredListings, latestListings } from "@/data";
+import { brandCatalog, cityOptions, exampleListings, featuredListings, latestListings } from "@/data";
 import { getCurrentUser } from "@/lib/auth/session";
 import { buildAbsoluteUrl } from "@/lib/seo";
+import { formatCurrency } from "@/lib/utils";
 
 export const metadata: Metadata = {
   title: "Ucretsiz araba ilanlari",
@@ -48,9 +58,61 @@ const quickFilters = [
   { label: "1.000.000 TL Altı", href: "/listings?maxPrice=1000000" },
 ];
 
+const journeySteps = [
+  {
+    id: "search",
+    title: "İhtiyacını seç",
+    description: "Marka, şehir veya bütçe ile üç alan içinde ilk sonucu daralt.",
+  },
+  {
+    id: "compare",
+    title: "Kartları kıyasla",
+    description: "Kilometre, vites ve fiyat özetleriyle ilanları hızlıca ele.",
+  },
+  {
+    id: "contact",
+    title: "Satıcıya geç",
+    description: "Uygun ilanı WhatsApp ile doğrudan satıcıya bağlanarak ilerlet.",
+  },
+];
+
 export default async function HomePage() {
   const user = await getCurrentUser();
   const postListingHref = user ? "/dashboard/listings" : "/login";
+  const averagePrice = Math.round(
+    exampleListings.reduce((total, listing) => total + listing.price, 0) / exampleListings.length,
+  );
+  const budgetFriendlyCount = exampleListings.filter((listing) => listing.price <= 1_000_000).length;
+  const easyDriveCount = exampleListings.filter((listing) =>
+    ["otomatik", "yari_otomatik"].includes(listing.transmission),
+  ).length;
+  const cityCoverageCount = new Set(exampleListings.map((listing) => listing.city)).size;
+  const marketSummary = [
+    {
+      label: "Ortalama fiyat",
+      value: formatCurrency(averagePrice),
+      helper: "Canlı seed ilan akışındaki genel fiyat bandını özetler.",
+      toneClassName: "sm:col-span-2",
+    },
+    {
+      label: "Bütçe dostu",
+      value: `${budgetFriendlyCount} ilan`,
+      helper: "1.000.000 TL altındaki araçları hızlı giriş için öne çıkarır.",
+      toneClassName: "bg-emerald-50/70",
+    },
+    {
+      label: "Kolay sürüş",
+      value: `${easyDriveCount} ilan`,
+      helper: "Otomatik ve yarı otomatik seçenekleri ilk bakışta ayırır.",
+      toneClassName: "bg-sky-50/80",
+    },
+    {
+      label: "Şehir kapsaması",
+      value: `${cityCoverageCount} şehir`,
+      helper: "İlan akışındaki aktif şehir dağılımını tek kartta gösterir.",
+      toneClassName: "bg-amber-50/80",
+    },
+  ];
 
   return (
     <main className="bg-muted/40">
@@ -176,48 +238,59 @@ export default async function HomePage() {
             </div>
           </div>
 
-          <div className="rounded-[2rem] border border-border/80 bg-background p-5 shadow-sm sm:p-6">
-            <div className="rounded-[1.5rem] border border-dashed border-primary/25 bg-primary/5 p-5">
-              <div className="space-y-2">
-                <p className="text-sm font-medium text-primary">Neden Oto Burada?</p>
-                <h2 className="text-2xl font-semibold tracking-tight">Araba aramak daha net olsun</h2>
-                <p className="text-sm leading-6 text-muted-foreground">
-                  İlan akışını hızlı tutan yapımız sayesinde daha az tıklama ile doğru sonuca
-                  ulaşabilir, ilanını ücretsiz şekilde yayına gönderebilirsin.
-                </p>
-              </div>
+          <HomeMarketInsights summaryItems={marketSummary} steps={journeySteps} />
+        </div>
+      </section>
 
-              <dl className="mt-6 grid gap-3 sm:grid-cols-2">
-                <div className="rounded-2xl bg-background p-4">
-                  <dt className="text-sm text-muted-foreground">İlan verme</dt>
-                  <dd className="mt-1 text-lg font-semibold">Ücretsiz ve hızlı</dd>
-                </div>
-                <div className="rounded-2xl bg-background p-4">
-                  <dt className="text-sm text-muted-foreground">İlk iletişim</dt>
-                  <dd className="mt-1 text-lg font-semibold">WhatsApp ile</dd>
-                </div>
-                <div className="rounded-2xl bg-background p-4">
-                  <dt className="text-sm text-muted-foreground">İlan inceleme</dt>
-                  <dd className="mt-1 text-lg font-semibold">Moderasyon kontrollü</dd>
-                </div>
-                <div className="rounded-2xl bg-background p-4">
-                  <dt className="text-sm text-muted-foreground">Deneyim</dt>
-                  <dd className="mt-1 text-lg font-semibold">Mobil öncelikli</dd>
-                </div>
-              </dl>
-
-              <div className="mt-6 rounded-2xl bg-background p-4">
-                <div className="flex items-center gap-2 text-sm font-semibold text-foreground">
-                  <Sparkles className="size-4 text-primary" />
-                  Hızlı başlangıç filtreleri
-                </div>
-                <p className="mt-2 text-sm leading-6 text-muted-foreground">
-                  Marka, şehir ve fiyat alanları ile üç etkileşim altında uygun ilana ulaşmayı
-                  hedefleyen sade bir giriş deneyimi sunuyoruz.
-                </p>
-              </div>
+      <section className="mx-auto w-full max-w-6xl px-4 pb-4 sm:px-6 lg:px-8">
+        <div className="grid gap-4 lg:grid-cols-3">
+          <article className="rounded-[1.5rem] border border-border/70 bg-background p-5 shadow-sm">
+            <div className="flex size-11 items-center justify-center rounded-2xl bg-primary/10 text-primary">
+              <Sparkles className="size-5" />
             </div>
-          </div>
+            <p className="mt-4 text-sm font-semibold uppercase tracking-[0.16em] text-primary/80">
+              Akıllı başlangıç
+            </p>
+            <h2 className="mt-2 text-xl font-semibold tracking-tight">
+              İlk filtreler daha karar verdirici
+            </h2>
+            <p className="mt-2 text-sm leading-6 text-muted-foreground">
+              AI Studio ve Figma taslaklarından uyarlanan kısa yollar sayesinde bütçe, şehir ve
+              vites odağını ilk ekranda netleştiriyoruz.
+            </p>
+          </article>
+
+          <article className="rounded-[1.5rem] border border-border/70 bg-background p-5 shadow-sm">
+            <div className="flex size-11 items-center justify-center rounded-2xl bg-emerald-500/10 text-emerald-600">
+              <SlidersHorizontal className="size-5" />
+            </div>
+            <p className="mt-4 text-sm font-semibold uppercase tracking-[0.16em] text-emerald-700">
+              Hızlı eleme
+            </p>
+            <h2 className="mt-2 text-xl font-semibold tracking-tight">
+              İlan kartı karar için yeterli olsun
+            </h2>
+            <p className="mt-2 text-sm leading-6 text-muted-foreground">
+              Fiyat, kilometre, yakıt ve şehir verisini kart üzerinde görünür tutarak gereksiz
+              detay sayfası ziyaretlerini azaltıyoruz.
+            </p>
+          </article>
+
+          <article className="rounded-[1.5rem] border border-border/70 bg-background p-5 shadow-sm">
+            <div className="flex size-11 items-center justify-center rounded-2xl bg-amber-500/10 text-amber-600">
+              <MapPinned className="size-5" />
+            </div>
+            <p className="mt-4 text-sm font-semibold uppercase tracking-[0.16em] text-amber-700">
+              Güvenli temas
+            </p>
+            <h2 className="mt-2 text-xl font-semibold tracking-tight">
+              Satıcıya geçiş daha net
+            </h2>
+            <p className="mt-2 text-sm leading-6 text-muted-foreground">
+              Moderasyon, raporlama ve doğrudan WhatsApp teması birlikte çalışarak daha kontrollü
+              bir ilk iletişim akışı kuruyor.
+            </p>
+          </article>
         </div>
       </section>
 

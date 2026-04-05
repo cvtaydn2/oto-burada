@@ -6,12 +6,15 @@ import {
   BadgeCheck,
   CalendarDays,
   CarFront,
+  Clock3,
   CircleGauge,
   Fuel,
   MapPin,
   MessageCircle,
   Phone,
   Settings2,
+  ShieldCheck,
+  Sparkles,
 } from "lucide-react";
 
 import { FavoriteButton } from "@/components/listings/favorite-button";
@@ -27,6 +30,7 @@ import {
   getMarketplaceSeller,
   getSimilarMarketplaceListings,
 } from "@/services/listings/marketplace-listings";
+import { getListingCardInsights } from "@/services/listings/listing-card-insights";
 
 interface ListingDetailPageProps {
   params: Promise<{
@@ -72,8 +76,26 @@ export default async function ListingDetailPage({ params }: ListingDetailPagePro
     listing.brand,
     listing.city,
   );
+  const insight = getListingCardInsights(listing);
   const currentUser = await getCurrentUser();
   const whatsappLink = `https://wa.me/${listing.whatsappPhone.replace(/\D/g, "")}?text=${encodeURIComponent(whatsappTemplate)}`;
+  const heroToneClasses = {
+    amber: {
+      badge: "border-amber-300/70 bg-amber-500 text-white",
+      icon: "text-amber-600",
+      panel: "border-amber-100 bg-gradient-to-r from-amber-50 via-background to-background",
+    },
+    emerald: {
+      badge: "border-emerald-300/70 bg-emerald-500 text-white",
+      icon: "text-emerald-600",
+      panel: "border-emerald-100 bg-gradient-to-r from-emerald-50 via-background to-background",
+    },
+    indigo: {
+      badge: "border-primary/20 bg-primary text-primary-foreground",
+      icon: "text-primary",
+      panel: "border-primary/10 bg-gradient-to-r from-primary/10 via-background to-background",
+    },
+  }[insight.tone];
   const specs = [
     {
       label: "Model Yılı",
@@ -106,6 +128,23 @@ export default async function ListingDetailPage({ params }: ListingDetailPagePro
       icon: CarFront,
     },
   ];
+  const highlightStats = [
+    {
+      icon: Clock3,
+      label: "Guncel bilgi",
+      value: formatDate(listing.updatedAt),
+    },
+    {
+      icon: ShieldCheck,
+      label: "Guven sinyali",
+      value: "Moderasyon kontrollu",
+    },
+    {
+      icon: MessageCircle,
+      label: "Ilk temas",
+      value: "WhatsApp ile hizli",
+    },
+  ];
 
   return (
     <main className="bg-muted/40">
@@ -135,6 +174,25 @@ export default async function ListingDetailPage({ params }: ListingDetailPagePro
                     sizes="(min-width: 1280px) 70vw, 100vw"
                     className="object-cover"
                   />
+                  <div className="absolute inset-0 bg-gradient-to-t from-slate-950/65 via-slate-950/5 to-transparent" />
+                  <div className="absolute inset-x-0 top-0 flex items-start justify-between gap-3 p-4">
+                    <span
+                      className={`rounded-full border px-3 py-1 text-xs font-semibold shadow-sm ${heroToneClasses.badge}`}
+                    >
+                      {insight.badgeLabel}
+                    </span>
+                    <span className="rounded-full bg-background/90 px-3 py-1 text-xs font-semibold text-foreground shadow-sm backdrop-blur-sm">
+                      {listing.featured ? "One cikan ilan" : "Yayinda"}
+                    </span>
+                  </div>
+                  <div className="absolute inset-x-0 bottom-0 flex flex-wrap items-center gap-2 p-4 text-white">
+                    <span className="rounded-full border border-white/20 bg-slate-950/35 px-3 py-1 text-xs font-medium backdrop-blur-sm">
+                      {listing.images.length} fotograf
+                    </span>
+                    <span className="rounded-full border border-white/20 bg-slate-950/35 px-3 py-1 text-xs font-medium backdrop-blur-sm">
+                      {listing.brand} {listing.model}
+                    </span>
+                  </div>
                 </div>
                 <div className="grid grid-cols-3 gap-3 sm:grid-cols-1">
                   {listing.images.slice(1).map((image) => (
@@ -156,40 +214,89 @@ export default async function ListingDetailPage({ params }: ListingDetailPagePro
             </section>
 
             <section className="rounded-[2rem] border border-border/80 bg-background p-6 shadow-sm sm:p-8">
-              <div className="space-y-4">
+              <div className="space-y-6">
                 <div className="flex flex-wrap items-center gap-2">
-                  <span className="rounded-full bg-primary/10 px-3 py-1.5 text-xs font-semibold text-primary">
-                    {listing.featured ? "Öne Çıkan İlan" : "Yayında"}
+                  <span className={`rounded-full border px-3 py-1.5 text-xs font-semibold ${heroToneClasses.badge}`}>
+                    {insight.badgeLabel}
                   </span>
                   <span className="rounded-full bg-muted px-3 py-1.5 text-xs font-semibold text-muted-foreground">
                     {formatDate(listing.createdAt)} tarihinde eklendi
                   </span>
                 </div>
 
-                <div className="space-y-3">
-                  <p className="text-3xl font-semibold tracking-tight text-primary sm:text-4xl">
-                    {formatCurrency(listing.price)}
-                  </p>
-                  <h1 className="text-3xl font-semibold tracking-tight text-balance sm:text-4xl">
-                    {listing.title}
-                  </h1>
-                  <p className="flex items-center gap-2 text-sm text-muted-foreground">
-                    <MapPin className="size-4" />
-                    {listing.city} / {listing.district}
-                  </p>
-                </div>
+                <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_260px] lg:items-start">
+                  <div className="space-y-4">
+                    <div className="space-y-3">
+                      <h1 className="text-3xl font-semibold tracking-tight text-balance sm:text-4xl">
+                        {listing.title}
+                      </h1>
+                      <p className="flex items-center gap-2 text-sm text-muted-foreground">
+                        <MapPin className="size-4" />
+                        {listing.city} / {listing.district}
+                      </p>
+                    </div>
 
-                <div className="flex flex-wrap gap-3">
-                  <FavoriteButton
-                    listingId={listing.id}
-                    className="h-11 rounded-xl px-4"
-                  />
-                  <Link
-                    href="/login"
-                    className="inline-flex h-11 items-center justify-center gap-2 rounded-xl border border-border bg-background px-4 text-sm font-semibold text-foreground transition-colors hover:bg-muted"
-                  >
-                    Favorileri yönet
-                  </Link>
+                    <div className={`rounded-[1.5rem] border p-5 ${heroToneClasses.panel}`}>
+                      <div className={`flex items-center gap-2 text-sm font-semibold ${heroToneClasses.icon}`}>
+                        <Sparkles className="size-4" />
+                        Yapay zeka destekli hizli degerlendirme
+                      </div>
+                      <p className="mt-3 text-sm leading-7 text-foreground/90 sm:text-base">
+                        {insight.summary}
+                      </p>
+                      <div className="mt-4 flex flex-wrap gap-2">
+                        {insight.highlights.map((highlight) => (
+                          <span
+                            key={`${listing.id}-${highlight}`}
+                            className="rounded-full border border-border/70 bg-background/90 px-3 py-1 text-xs font-semibold text-foreground"
+                          >
+                            {highlight}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+
+                    <div className="grid gap-3 sm:grid-cols-3">
+                      {highlightStats.map(({ icon: Icon, label, value }) => (
+                        <div
+                          key={label}
+                          className="rounded-[1.25rem] border border-border/70 bg-muted/30 p-4"
+                        >
+                          <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
+                            <Icon className="size-4 text-primary" />
+                            {label}
+                          </div>
+                          <p className="mt-2 text-sm font-semibold text-foreground">{value}</p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="rounded-[1.5rem] border border-border/70 bg-gradient-to-br from-slate-950 to-slate-900 p-5 text-white shadow-sm">
+                    <p className="text-xs font-semibold uppercase tracking-[0.16em] text-white/70">
+                      Fiyat ozeti
+                    </p>
+                    <p className="mt-3 text-3xl font-semibold tracking-tight sm:text-4xl">
+                      {formatCurrency(listing.price)}
+                    </p>
+                    <p className="mt-3 text-sm leading-6 text-white/75">
+                      Kart uzerindeki ozet ile ilk elemeni yap, detayli soru icin satıcıya
+                      dogrudan gec.
+                    </p>
+
+                    <div className="mt-5 flex flex-wrap gap-3">
+                      <FavoriteButton
+                        listingId={listing.id}
+                        className="h-11 rounded-xl border-white/15 bg-white/10 px-4 text-white hover:bg-white/15"
+                      />
+                      <Link
+                        href="/login"
+                        className="inline-flex h-11 items-center justify-center gap-2 rounded-xl border border-white/15 bg-white/10 px-4 text-sm font-semibold text-white transition-colors hover:bg-white/15"
+                      >
+                        Favorileri yonet
+                      </Link>
+                    </div>
+                  </div>
                 </div>
 
                 <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
@@ -244,7 +351,7 @@ export default async function ListingDetailPage({ params }: ListingDetailPagePro
               <div className="space-y-5">
                 <div className="space-y-3">
                   <p className="text-sm font-medium uppercase tracking-[0.18em] text-primary/80">
-                    Satıcı Bilgileri
+                    Satici Bilgileri
                   </p>
                   <div className="flex items-start gap-4">
                     <div className="flex size-14 items-center justify-center rounded-2xl bg-primary/10 text-lg font-semibold text-primary">
@@ -252,11 +359,11 @@ export default async function ListingDetailPage({ params }: ListingDetailPagePro
                     </div>
                     <div className="space-y-2">
                       <h2 className="text-xl font-semibold tracking-tight">
-                        {seller?.fullName ?? "Doğrulanmış satıcı"}
+                        {seller?.fullName ?? "Dogrulanmis satici"}
                       </h2>
                       <div className="flex items-center gap-2 text-sm text-muted-foreground">
                         <BadgeCheck className="size-4 text-primary" />
-                        Doğrulanmış satıcı
+                        Dogrulanmis satici
                       </div>
                       <p className="text-sm text-muted-foreground">
                         {seller?.city ?? listing.city} konumunda araç ilanı veriyor.
@@ -265,9 +372,34 @@ export default async function ListingDetailPage({ params }: ListingDetailPagePro
                   </div>
                 </div>
 
-                <div className="rounded-[1.5rem] bg-muted/35 p-4 text-sm leading-6 text-muted-foreground">
-                  İlgini çeken araç için ilk iletişim kanalımız WhatsApp. Hızlıca soru sorabilir,
-                  araç durumu ve ekspertiz bilgisini doğrudan öğrenebilirsin.
+                <div className="rounded-[1.5rem] border border-primary/10 bg-gradient-to-r from-primary/10 to-background p-4">
+                  <div className="flex items-center gap-2 text-sm font-semibold text-primary">
+                    <Sparkles className="size-4" />
+                    Hizli iletisim notu
+                  </div>
+                  <p className="mt-2 text-sm leading-6 text-muted-foreground">
+                    Ilgini ceken arac icin ilk iletisim kanalimiz WhatsApp. Hizlica soru sorabilir,
+                    arac durumu ve ekspertiz bilgisini dogrudan ogrenebilirsin.
+                  </p>
+                </div>
+
+                <div className="grid gap-3">
+                  <div className="rounded-[1.25rem] border border-border/70 bg-muted/25 p-4">
+                    <p className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+                      Satici konumu
+                    </p>
+                    <p className="mt-2 text-sm font-semibold text-foreground">
+                      {seller?.city ?? listing.city}
+                    </p>
+                  </div>
+                  <div className="rounded-[1.25rem] border border-border/70 bg-muted/25 p-4">
+                    <p className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+                      Ilk temas yolu
+                    </p>
+                    <p className="mt-2 text-sm font-semibold text-foreground">
+                      WhatsApp ve telefon
+                    </p>
+                  </div>
                 </div>
 
                 <div className="space-y-3">
@@ -285,7 +417,7 @@ export default async function ListingDetailPage({ params }: ListingDetailPagePro
                     className="inline-flex h-12 w-full items-center justify-center gap-2 rounded-xl border border-border bg-background px-5 text-sm font-semibold text-foreground transition-colors hover:bg-muted"
                   >
                     <Phone className="size-4" />
-                    Satıcıyı Ara
+                    Saticiyi Ara
                   </a>
                   <ReportListingForm
                     listingId={listing.id}

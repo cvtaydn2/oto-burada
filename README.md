@@ -43,6 +43,9 @@ Sadece arabalar için tasarlanmış, mobil öncelikli ve güven odaklı ücretsi
 - Supabase schema, demo seed ve verify akisi gerçek proje üzerinde başarıyla doğrulandı
 - Google AI Studio export taslagi mevcut projeye `/ui-draft` preview route'u olarak entegre edildi
 - Canli `/listings` sayfasi AI Studio taslagindan ilham alan akilli preset filtreler ve sonuc ozeti ile guclendirildi
+- Figma component export'undaki kart/badge/stepper dili ana sayfa hero alanina canli pazar ozeti ve 3 adimli baslangic paneli olarak tasindi
+- Canli listing kartlari ve dashboard metrik kartlari AI Studio'nun ana gorsel dili baz alinarak yenilendi; Figma component mantigi ile tekrar eden kart yapilari temizlendi
+- Listing detail sayfasi AI Studio karar katmanina yaklastirildi; hero ozet paneli, seller karti ve rapor formu yeni tasarim diliyle hizalandi
 - Lint, typecheck ve production build doğrulandı
 
 ## Kurulum
@@ -154,4 +157,4 @@ Yeni geliştirmeye başlamadan önce şu dosyalar gözden geçirilmelidir:
 8. `schema.sql`
 
 ## Sonraki Adım
-`TASKS.md` içindeki sıralı MVP görevleri tamamlandı. Sonraki mantıklı genişleme, bu yeni migration/seed komutlarini production benzeri bir Supabase ortaminda calistirip mevcut cookie verilerini tabloya tasimak olur.
+`TASKS.md` içindeki sıralı MVP görevleri tamamlandı. Sonraki mantıklı genişleme, AI Studio gorsel dilini admin moderasyon listeleri ve dashboard alt ekranlarina tasimak; operasyon tarafinda ise production benzeri Supabase ortaminda legacy cookie verilerini tabloya backfill etmektir.

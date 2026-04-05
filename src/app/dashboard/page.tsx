@@ -1,6 +1,14 @@
 import Link from "next/link";
-import { ArrowRight, ClipboardList, ShieldAlert, UserRoundCheck } from "lucide-react";
+import {
+  ArrowRight,
+  ClipboardList,
+  Clock3,
+  ShieldAlert,
+  TriangleAlert,
+  UserRoundCheck,
+} from "lucide-react";
 
+import { DashboardMetricCard } from "@/components/shared/dashboard-metric-card";
 import { LegacySyncCard } from "@/components/shared/legacy-sync-card";
 import { requireUser } from "@/lib/auth/session";
 import {
@@ -107,34 +115,34 @@ export default async function DashboardPage() {
       ) : null}
 
       <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-        <div className="rounded-[1.75rem] border border-border/80 bg-background p-5 shadow-sm">
-          <p className="text-sm text-muted-foreground">Toplam ilan</p>
-          <p className="mt-2 text-3xl font-semibold tracking-tight">{storedListings.length}</p>
-          <p className="mt-2 text-sm text-muted-foreground">
-            {approvedListingsCount} tanesi yayinda veya onayli.
-          </p>
-        </div>
-        <div className="rounded-[1.75rem] border border-border/80 bg-background p-5 shadow-sm">
-          <p className="text-sm text-muted-foreground">Moderasyon bekleyen</p>
-          <p className="mt-2 text-3xl font-semibold tracking-tight">{pendingListingsCount}</p>
-          <p className="mt-2 text-sm text-muted-foreground">
-            Bekleyen ilanlar gerekli ise duzenlenebilir.
-          </p>
-        </div>
-        <div className="rounded-[1.75rem] border border-border/80 bg-background p-5 shadow-sm">
-          <p className="text-sm text-muted-foreground">Gonderilen rapor</p>
-          <p className="mt-2 text-3xl font-semibold tracking-tight">{storedReports.length}</p>
-          <p className="mt-2 text-sm text-muted-foreground">
-            Yaptigin guvenlik bildirimleri burada sayilir.
-          </p>
-        </div>
-        <div className="rounded-[1.75rem] border border-border/80 bg-background p-5 shadow-sm">
-          <p className="text-sm text-muted-foreground">Profil tamamlama</p>
-          <p className="mt-2 text-3xl font-semibold tracking-tight">%{profileCompletion}</p>
-          <p className="mt-2 text-sm text-muted-foreground">
-            Ad soyad, telefon ve sehir bilgileri baz alinir.
-          </p>
-        </div>
+        <DashboardMetricCard
+          label="Toplam ilan"
+          value={String(storedListings.length)}
+          helper={`${approvedListingsCount} tanesi yayinda veya onayli.`}
+          icon={ClipboardList}
+          tone="indigo"
+        />
+        <DashboardMetricCard
+          label="Moderasyon bekleyen"
+          value={String(pendingListingsCount)}
+          helper="Bekleyen ilanlar gerekli ise duzenlenebilir."
+          icon={Clock3}
+          tone="amber"
+        />
+        <DashboardMetricCard
+          label="Gonderilen rapor"
+          value={String(storedReports.length)}
+          helper="Yaptigin guvenlik bildirimleri burada sayilir."
+          icon={TriangleAlert}
+          tone="emerald"
+        />
+        <DashboardMetricCard
+          label="Profil tamamlama"
+          value={`%${profileCompletion}`}
+          helper="Ad soyad, telefon ve sehir bilgileri baz alinir."
+          icon={UserRoundCheck}
+          tone="slate"
+        />
       </section>
 
       <section className="grid gap-6 xl:grid-cols-[minmax(0,1.25fr)_minmax(0,0.95fr)]">

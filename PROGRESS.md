@@ -213,6 +213,13 @@ Her yeni geliştirme başlamadan önce okunmalıdır.
 - Vite tabanli export'un tamami merge edilmek yerine, ana Home/listing deneyimi Next.js icinde izole bir taslak olarak uyarlandi.
 - Canli `/listings` ekrani AI Studio dilinden uyarlanan akilli preset filtreler ile genisletildi.
 - Listings hero bolumune filtre sonucuna gore dinamik akilli ozet karti eklendi.
+- Figma component export'u workspace icinde izole olarak acildi ve gecici import klasoru lint/git akisini kirletmeyecek sekilde ignore'a alindi.
+- Figma'daki kart, badge ve stepper dili ana sayfa hero alanina canli pazar ozeti ve 3 adimli baslangic paneli olarak tasindi.
+- AI Studio taslagi artik canli gorsel yon olarak baz aliniyor; listing kartlari bu dile yaklastirildi ve Figma component mantigi ile temizlenmis ozet panelleri dashboard'a tasindi.
+- Listing kartlari icin gorunur ozet/badge kararini tek yerde tutan paylasilabilir bir `listing-card-insights` servis yardimcisi eklendi.
+- Dashboard metrikleri icin tekrar eden kart yapisi ayri component'e alinip ton bazli varyant sistemi ile sadeleştirildi.
+- Listing detail sayfasi AI Studio diline yaklastirildi; hero alanina hizli degerlendirme katmani, trust istatistikleri ve daha guclu fiyat paneli eklendi.
+- Sticky seller karti ve rapor formu Figma component mantigina gore temizlenip ayni gorsel yuzeye hizalandi.
 
 ---
 
@@ -246,6 +253,9 @@ Her yeni geliştirme başlamadan önce okunmalıdır.
 - Audit gecmisi aramasi actor, hedef basligi, audit notu ve aksiyon etiketi uzerinden calisir.
 - AI Studio entegrasyonunda once izole preview route tercih edildi; mevcut app router, auth ve persistence akislarina dogrudan mudahale edilmedi.
 - Listings presetleri mevcut URL senkron filtre modelini bozmadan ayni arama parametre sistemine yazilir.
+- Figma export'u dogrudan merge edilmek yerine once gecici import klasorunde incelenir; canli uygulamaya sadece mevcut tasarim diliyle uyumlu parcalar parcali tasinir.
+- Gorsel yon artik AI Studio draft'taki ana kompozisyon ve kart vurgularini referans alir; Figma export'u ise ayni dili daha tutarli component yuzeylerine indirmek icin kullanilir.
+- Listing detail gibi ikincil ekranlarda once karar katmani ve CTA panelleri tasinir; boylece gorsel degisim kullanicinin en kritik eylem alanlarinda daha gorunur olur.
 
 ---
 
@@ -266,6 +276,9 @@ Her yeni geliştirme başlamadan önce okunmalıdır.
 - Admin audit trail paneli daha yogun kayit hacminde taranabilir olacak sekilde filtreleme ve arama ile guclendirildi.
 - AI Studio taslagi icin mock verili bir deneme alani olusturuldu; uygun bloklar sonradan ana sayfa veya listings sayfasina parcali tasinabilir.
 - AI Studio dilinin ilk canli tasimasi listings tarafinda yapildi; sonraki aday alan ana sayfa hero veya listing karti detay zenginlestirmesi olabilir.
+- Figma component setinin ilk canli tasimasi homepage hero tarafinda yapildi; sonraki aday alan listing karti veya dashboard ozet modulleridir.
+- Listing karti ve dashboard metric kartlari yeni gorsel dile tasindi; sonraki aday alan listing detail ve admin/dashboard ic modulleridir.
+- Listing detail hero ve seller paneli de yeni gorsel dile tasindi; sonraki aday alan admin moderasyon listeleri ve dashboard alt akislaridir.
 
 ---
 
@@ -274,6 +287,9 @@ Her yeni geliştirme başlamadan önce okunmalıdır.
 - `TASKS.md` icindeki sıralı MVP kapsami tamamlandi; sonraki mantikli is bu yeni migration/seed komutlarini production benzeri ortamda calistirip legacy cookie verisini backfill etmektir.
 - Sonrasindaki adim production benzeri Supabase ortaminda bootstrap + verify calistirip dashboard Legacy Sync ile kalan tarayici verisini tasimaktir.
 - Sonraki pratik adim, uygulamayi bu env ile acip dashboard Legacy Sync karti uzerinden mevcut tarayici cookie verilerini tabloya backfill etmektir.
+- UI tarafinda sonraki mantikli adim, Figma component kart dilini listing kartlari ve dashboard ozet panellerine parcali olarak uyarlamaktir.
+- UI tarafinda sonraki mantikli adim, ayni AI Studio + Figma dilini listing detail hero, seller paneli ve admin moderasyon listelerine tasimaktir.
+- UI tarafinda sonraki mantikli adim, admin listing/report moderasyon listelerini ve dashboard favorites ekranini ayni component kurallariyla yeniden hizalamaktir.
 
 ---
 
