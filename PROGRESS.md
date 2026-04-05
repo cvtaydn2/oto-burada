@@ -192,6 +192,8 @@ Her yeni geliştirme başlamadan önce okunmalıdır.
 - Kullanilmayan `listing-details` servisi kaldirildi.
 - Listings ve reports okuma katmaninda DB + legacy cookie merge davranisi eklendi; gecis sirasinda ayni istekte veri surekliligi korundu.
 - `/api/migrations/legacy-sync` endpoint'i ve dashboard tetikleme karti ile mevcut browser cookie kayitlarini Supabase'e tasiyan elle calistirilabilir bir backfill araci eklendi.
+- Admin paneline Supabase env ve tablo erisilebilirligini gosteren persistence health ozeti eklendi.
+- `profiles`, `listings`, `listing_images`, `favorites`, `reports` ve `admin_actions` tablolari icin sayim tabanli hazirlik kontrolu yapildi.
 
 ---
 
@@ -214,6 +216,7 @@ Her yeni geliştirme başlamadan önce okunmalıdır.
 - Favoriler oturum acik kullanicida Supabase ile senkronize edilir; misafir kullanicida local saklama davranisi korunur.
 - Legacy cookie verileri bir anda silinmek yerine DB sonucu ile birlikte okunur; bu sayede kademeli migration daha guvenli ilerler.
 - Legacy sync basarili oldugunda kullanicinin kendi cookie tabanli ilan ve rapor kayitlari tarayicidan temizlenir.
+- Admin panelindeki persistence health ozeti service-role client ile calisir; amaci migration hazirligini gormektir, kullaniciya acik bir ekran degildir.
 
 ---
 
@@ -223,12 +226,13 @@ Her yeni geliştirme başlamadan önce okunmalıdır.
 - Okuma katmaninda merge davranisi eklenerek legacy cookie kayitlari ile yeni DB kayitlari ayni ekranda birlikte gorunur hale getirildi.
 - Persistence genislemesi sonrasi lint/typecheck/build tekrar dogrulandi.
 - Legacy verileri manuel olarak Supabase'e tasiyan dashboard kontrollu backfill akisi eklendi.
+- Admin paneline tablo ve env sagligini gosteren migration readiness kartlari eklendi.
 
 ---
 
 ## Sonraki Görev
 - `Final Definition of Done`
-- `TASKS.md` icindeki sıralı MVP kapsami tamamlandi; sonraki mantikli is gercek migration/seed akisini calistirip mevcut verileri DB'ye tasimak olabilir.
+- `TASKS.md` icindeki sıralı MVP kapsami tamamlandi; sonraki mantikli is gercek migration/seed komutlarini repo icine script olarak eklemek ve production benzeri ortamda calistirmak olabilir.
 
 ---
 

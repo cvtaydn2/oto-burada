@@ -32,6 +32,7 @@ Sadece arabalar için tasarlanmış, mobil öncelikli ve güven odaklı ücretsi
 - Public listings, detail, admin ve dashboard favorites ekranları seed + runtime kayıtları birlikte okuyabiliyor
 - Legacy cookie verileri okunurken DB kayıtları ile merge edilerek geçiş sürecinde veri kaybı riski azaltıldı
 - Dashboard içinde legacy cookie verilerini Supabase'e taşıyan tek tık senkron kartı eklendi
+- Admin panelinde Supabase env ve tablo erişimini özetleyen persistence health görünümü eklendi
 - Lint, typecheck ve production build doğrulandı
 
 ## Kurulum
@@ -114,4 +115,4 @@ Yeni geliştirmeye başlamadan önce şu dosyalar gözden geçirilmelidir:
 8. `schema.sql`
 
 ## Sonraki Adım
-`TASKS.md` içindeki sıralı MVP görevleri tamamlandı. Sonraki mantıklı genişleme, gerçek Supabase migration/seed akışını çalıştırıp mevcut cookie verilerini tabloya taşımak olur.
+`TASKS.md` içindeki sıralı MVP görevleri tamamlandı. Sonraki mantıklı genişleme, gerçek Supabase migration/seed komutlarını repo içine script olarak ekleyip mevcut verileri tabloya taşımak olur.
