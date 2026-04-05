@@ -200,6 +200,13 @@ Her yeni geliştirme başlamadan önce okunmalıdır.
 - Admin panelindeki persistence bolumu migration runbook ile genisletildi; terminal komutlari ve legacy backfill sirasi artik UI uzerinden de gorunuyor.
 - Listing ve report moderasyon route'lari Supabase `admin_actions` tablosuna audit kaydi yazar hale getirildi.
 - Admin paneline son moderasyon kararlarini gosteren aksiyon gecmisi bolumu eklendi.
+- Aksiyon gecmisi ilan ve rapor bazinda filtrelenebilir hale getirildi.
+- Audit kayitlari uygun oldugunda ilgili public ilan detayina hizli gecis linki uretir hale geldi.
+- Admin moderasyon ekranlarina opsiyonel karar notu alani eklendi.
+- Listing ve report moderasyon route'lari kisa/gecersiz notu reddedip gecerli notu `admin_actions.note` alanina yazacak sekilde guncellendi.
+- Gercek Supabase projesine `schema.sql` basariyla uygulandi.
+- `listing-images` bucket'i, demo auth kullanicilari ve demo tablo verileri gercek Supabase ortamina seed edildi.
+- `db:verify-demo` gercek Supabase ortami uzerinde basariyla calisti ve tablo/bucket sayimlari dogrulandi.
 
 ---
 
@@ -226,6 +233,9 @@ Her yeni geliştirme başlamadan önce okunmalıdır.
 - `db:apply-schema` komutu `psql` ve `SUPABASE_DB_URL` bekler; demo seed ise service-role ile auth kullanicilari dahil seed atar.
 - `db:bootstrap-demo` akisi artik verify adimini da calistirir; boylece schema + seed sonrasi hizli bir kabul kontrolu uretilir.
 - Moderasyon action enum degerleri uygulama sabitleri ile `schema.sql` tarafindaki enum ile hizalandi.
+- Admin aksiyon gecmisi zenginlestirilirken listing/report hedef eslestirmesi admin sayfasinda yapiliyor; eksik hedefte guvenli fallback metni gosteriliyor.
+- Moderasyon notu opsiyoneldir; girilirse en az 3 karakter olmali ve mevcut otomatik audit notunun yerini alir.
+- `db:*` scriptleri artik `.env.local` okuyarak calisir; Windows ortaminda `psql.exe` icin yaygin kurulum yollarini otomatik dener.
 
 ---
 
@@ -239,6 +249,9 @@ Her yeni geliştirme başlamadan önce okunmalıdır.
 - Supabase migration ve seed akisini komutlastiran scriptler eklendi, `.env.example` ve `README.md` buna gore guncellendi.
 - Migration readiness bolumu runbook mantigina genisletildi ve `db:verify-demo` dokumante edildi.
 - Admin audit trail akisi baglandi ve panel uzerinden gorunur hale getirildi.
+- Admin audit trail paneli filtreleme ve hedef linkleri ile daha hizli inceleme akisina uyarlandi.
+- Audit trail artik admin tarafindan girilen insan okunur karar notlarini da tasiyabiliyor.
+- Runtime persistence'in hedef Supabase projesi artik bos degil; schema + demo seed + verify operasyonu tamamlandi.
 
 ---
 
@@ -246,6 +259,7 @@ Her yeni geliştirme başlamadan önce okunmalıdır.
 - `Final Definition of Done`
 - `TASKS.md` icindeki sıralı MVP kapsami tamamlandi; sonraki mantikli is bu yeni migration/seed komutlarini production benzeri ortamda calistirip legacy cookie verisini backfill etmektir.
 - Sonrasindaki adim production benzeri Supabase ortaminda bootstrap + verify calistirip dashboard Legacy Sync ile kalan tarayici verisini tasimaktir.
+- Sonraki pratik adim, uygulamayi bu env ile acip dashboard Legacy Sync karti uzerinden mevcut tarayici cookie verilerini tabloya backfill etmektir.
 
 ---
 
@@ -253,3 +267,6 @@ Her yeni geliştirme başlamadan önce okunmalıdır.
 - `npm run lint` geçti
 - `npm run typecheck` geçti
 - `npm run build` geçti
+- `node scripts/apply-supabase-schema.mjs` geçti
+- `node scripts/seed-supabase-demo.mjs` geçti
+- `node scripts/verify-supabase-demo.mjs` geçti

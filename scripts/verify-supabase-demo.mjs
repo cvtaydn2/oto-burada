@@ -2,6 +2,10 @@ import process from "node:process";
 
 import { createClient } from "@supabase/supabase-js";
 
+import { loadLocalEnv } from "./load-local-env.mjs";
+
+loadLocalEnv();
+
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 const storageBucket = process.env.SUPABASE_STORAGE_BUCKET_LISTINGS;

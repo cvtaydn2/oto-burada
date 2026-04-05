@@ -1,5 +1,9 @@
 import process from "node:process";
 
+import { loadLocalEnv } from "./load-local-env.mjs";
+
+loadLocalEnv();
+
 const requiredKeys = [
   "NEXT_PUBLIC_SUPABASE_URL",
   "NEXT_PUBLIC_SUPABASE_ANON_KEY",

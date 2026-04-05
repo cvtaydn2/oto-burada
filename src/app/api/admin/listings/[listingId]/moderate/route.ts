@@ -30,9 +30,18 @@ export async function POST(
 
   const action =
     typeof body === "object" && body !== null && "action" in body ? String(body.action ?? "") : "";
+  const note =
+    typeof body === "object" && body !== null && "note" in body ? String(body.note ?? "").trim() : "";
 
   if (action !== "approve" && action !== "reject") {
     return NextResponse.json({ message: "Gecersiz moderasyon aksiyonu." }, { status: 400 });
+  }
+
+  if (note.length > 0 && note.length < 3) {
+    return NextResponse.json(
+      { message: "Moderasyon notu girersen en az 3 karakter olmali." },
+      { status: 400 },
+    );
   }
 
   const { listingId } = await context.params;
@@ -46,9 +55,10 @@ export async function POST(
       action: action === "approve" ? "approve" : "reject",
       adminUserId: adminUser.id,
       note:
-        action === "approve"
+        note ||
+        (action === "approve"
           ? `${persistedListing.title} ilani onaylandi.`
-          : `${persistedListing.title} ilani reddedildi.`,
+          : `${persistedListing.title} ilani reddedildi.`),
       targetId: persistedListing.id,
       targetType: "listing",
     });

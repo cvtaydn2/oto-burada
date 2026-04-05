@@ -35,9 +35,18 @@ export async function PATCH(
     typeof body === "object" && body !== null && "status" in body
       ? String(body.status ?? "")
       : "";
+  const note =
+    typeof body === "object" && body !== null && "note" in body ? String(body.note ?? "").trim() : "";
 
   if (!allowedStatuses.includes(status as ReportStatus)) {
     return NextResponse.json({ message: "Gecersiz rapor durumu." }, { status: 400 });
+  }
+
+  if (note.length > 0 && note.length < 3) {
+    return NextResponse.json(
+      { message: "Moderasyon notu girersen en az 3 karakter olmali." },
+      { status: 400 },
+    );
   }
 
   const { reportId } = await context.params;
@@ -48,7 +57,7 @@ export async function PATCH(
       action:
         status === "reviewing" ? "review" : status === "resolved" ? "resolve" : "dismiss",
       adminUserId: adminUser.id,
-      note: `Rapor durumu ${status} olarak guncellendi.`,
+      note: note || `Rapor durumu ${status} olarak guncellendi.`,
       targetId: persistedReport.id ?? reportId,
       targetType: "report",
     });

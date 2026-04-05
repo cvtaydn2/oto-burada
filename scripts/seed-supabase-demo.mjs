@@ -2,6 +2,10 @@ import process from "node:process";
 
 import { createClient } from "@supabase/supabase-js";
 
+import { loadLocalEnv } from "./load-local-env.mjs";
+
+loadLocalEnv();
+
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 const demoPassword = process.env.SUPABASE_DEMO_USER_PASSWORD;
@@ -246,6 +250,32 @@ const demoAdminActions = [
     target_type: "report",
   },
 ];
+
+async function ensureListingsBucket() {
+  const bucketName = process.env.SUPABASE_STORAGE_BUCKET_LISTINGS;
+
+  if (!bucketName) {
+    throw new Error("SUPABASE_STORAGE_BUCKET_LISTINGS is required.");
+  }
+
+  const { data, error } = await supabase.storage.getBucket(bucketName);
+
+  if (!error && data) {
+    console.log(`Storage bucket ready: ${bucketName}`);
+    return;
+  }
+
+  const { error: createError } = await supabase.storage.createBucket(bucketName, {
+    fileSizeLimit: 5 * 1024 * 1024,
+    public: true,
+  });
+
+  if (createError) {
+    throw createError;
+  }
+
+  console.log(`Created storage bucket: ${bucketName}`);
+}
 
 async function listAllUsers() {
   const users = [];
@@ -494,6 +524,8 @@ async function upsertAdminActions(usersByEmail) {
 
 async function main() {
   console.log("Seeding Supabase demo data...");
+
+  await ensureListingsBucket();
 
   const usersByEmail = await ensureUsers();
 

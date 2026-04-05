@@ -15,6 +15,7 @@ export function AdminListingsModeration({ pendingListings }: AdminListingsModera
   const router = useRouter();
   const [activeAction, setActiveAction] = useState<string | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [notesByListingId, setNotesByListingId] = useState<Record<string, string>>({});
 
   if (pendingListings.length === 0) {
     return (
@@ -34,7 +35,10 @@ export function AdminListingsModeration({ pendingListings }: AdminListingsModera
 
     try {
       const response = await fetch(`/api/admin/listings/${listingId}/moderate`, {
-        body: JSON.stringify({ action }),
+        body: JSON.stringify({
+          action,
+          note: notesByListingId[listingId]?.trim() || undefined,
+        }),
         headers: {
           "Content-Type": "application/json",
         },
@@ -47,6 +51,10 @@ export function AdminListingsModeration({ pendingListings }: AdminListingsModera
         return;
       }
 
+      setNotesByListingId((current) => ({
+        ...current,
+        [listingId]: "",
+      }));
       router.refresh();
     } catch {
       setErrorMessage("Baglanti sirasinda bir hata olustu. Lutfen tekrar dene.");
@@ -131,6 +139,31 @@ export function AdminListingsModeration({ pendingListings }: AdminListingsModera
                         {listing.whatsappPhone}
                       </p>
                     </div>
+                  </div>
+
+                  <div className="rounded-2xl bg-background px-4 py-3">
+                    <label
+                      htmlFor={`listing-note-${listing.id}`}
+                      className="text-xs font-medium text-muted-foreground"
+                    >
+                      Moderasyon notu
+                    </label>
+                    <textarea
+                      id={`listing-note-${listing.id}`}
+                      value={notesByListingId[listing.id] ?? ""}
+                      onChange={(event) =>
+                        setNotesByListingId((current) => ({
+                          ...current,
+                          [listing.id]: event.target.value,
+                        }))
+                      }
+                      placeholder="Opsiyonel not: neden onaylandi veya reddedildi?"
+                      rows={3}
+                      className="mt-2 min-h-24 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm text-foreground outline-none transition-colors placeholder:text-muted-foreground focus:border-primary"
+                    />
+                    <p className="mt-2 text-xs text-muted-foreground">
+                      Not girersen en az 3 karakter olmali ve audit kaydina eklenir.
+                    </p>
                   </div>
                 </div>
 

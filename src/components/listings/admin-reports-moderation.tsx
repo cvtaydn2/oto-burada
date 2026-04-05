@@ -27,6 +27,7 @@ export function AdminReportsModeration({
   const router = useRouter();
   const [activeAction, setActiveAction] = useState<string | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [notesByReportId, setNotesByReportId] = useState<Record<string, string>>({});
 
   if (reports.length === 0) {
     return (
@@ -46,7 +47,10 @@ export function AdminReportsModeration({
 
     try {
       const response = await fetch(`/api/admin/reports/${reportId}`, {
-        body: JSON.stringify({ status }),
+        body: JSON.stringify({
+          note: notesByReportId[reportId]?.trim() || undefined,
+          status,
+        }),
         headers: {
           "Content-Type": "application/json",
         },
@@ -59,6 +63,10 @@ export function AdminReportsModeration({
         return;
       }
 
+      setNotesByReportId((current) => ({
+        ...current,
+        [reportId]: "",
+      }));
       router.refresh();
     } catch {
       setErrorMessage("Baglanti sirasinda bir hata olustu. Lutfen tekrar dene.");
@@ -124,6 +132,31 @@ export function AdminReportsModeration({
 
                   <div className="rounded-2xl bg-background px-4 py-3 text-sm leading-6 text-muted-foreground">
                     {report.description?.trim() ? report.description : "Ek aciklama girilmedi."}
+                  </div>
+
+                  <div className="rounded-2xl bg-background px-4 py-3">
+                    <label
+                      htmlFor={`report-note-${report.id}`}
+                      className="text-xs font-medium text-muted-foreground"
+                    >
+                      Moderasyon notu
+                    </label>
+                    <textarea
+                      id={`report-note-${report.id}`}
+                      value={notesByReportId[report.id ?? ""] ?? ""}
+                      onChange={(event) =>
+                        setNotesByReportId((current) => ({
+                          ...current,
+                          [report.id ?? ""]: event.target.value,
+                        }))
+                      }
+                      placeholder="Opsiyonel not: neden incelemeye alindi, cozuldu veya kapatildi?"
+                      rows={3}
+                      className="mt-2 min-h-24 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm text-foreground outline-none transition-colors placeholder:text-muted-foreground focus:border-primary"
+                    />
+                    <p className="mt-2 text-xs text-muted-foreground">
+                      Not girersen en az 3 karakter olmali ve audit kaydina eklenir.
+                    </p>
                   </div>
                 </div>
 

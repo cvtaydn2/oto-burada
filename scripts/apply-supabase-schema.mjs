@@ -1,9 +1,39 @@
 import { spawnSync } from "node:child_process";
+import fs from "node:fs";
 import path from "node:path";
 import process from "node:process";
 
+import { loadLocalEnv } from "./load-local-env.mjs";
+
+loadLocalEnv();
+
 const schemaPath = path.resolve(process.cwd(), "schema.sql");
 const databaseUrl = process.env.SUPABASE_DB_URL;
+
+function resolvePsqlCommand() {
+  const configuredPath = process.env.PSQL_PATH;
+
+  if (configuredPath && fs.existsSync(configuredPath)) {
+    return configuredPath;
+  }
+
+  if (process.platform === "win32") {
+    const candidates = [
+      "C:\\Program Files\\PostgreSQL\\17\\bin\\psql.exe",
+      "C:\\Program Files\\PostgreSQL\\16\\bin\\psql.exe",
+      "C:\\Program Files\\PostgreSQL\\15\\bin\\psql.exe",
+      "C:\\Program Files\\PostgreSQL\\14\\bin\\psql.exe",
+    ];
+
+    const discovered = candidates.find((candidate) => fs.existsSync(candidate));
+
+    if (discovered) {
+      return discovered;
+    }
+  }
+
+  return "psql";
+}
 
 if (!databaseUrl) {
   console.error("SUPABASE_DB_URL is required to apply schema.sql.");
@@ -11,12 +41,13 @@ if (!databaseUrl) {
 }
 
 console.log(`Applying schema from ${schemaPath}`);
+const psqlCommand = resolvePsqlCommand();
 
 const result = spawnSync(
-  "psql",
+  psqlCommand,
   [databaseUrl, "-v", "ON_ERROR_STOP=1", "-f", schemaPath],
   {
-    shell: process.platform === "win32",
+    shell: false,
     stdio: "inherit",
   },
 );

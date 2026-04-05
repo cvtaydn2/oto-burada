@@ -1,9 +1,20 @@
+"use client";
+
+import Link from "next/link";
+import { useMemo, useState } from "react";
+
 import { moderationActionLabels } from "@/lib/constants/domain";
 import { formatDate } from "@/lib/utils";
 import type { AdminModerationAction } from "@/types";
 
+export interface AdminRecentActionItem {
+  action: AdminModerationAction;
+  targetHref?: string | null;
+  targetLabel: string;
+}
+
 interface AdminRecentActionsProps {
-  actions: AdminModerationAction[];
+  actions: AdminRecentActionItem[];
 }
 
 const targetTypeLabels = {
@@ -11,7 +22,23 @@ const targetTypeLabels = {
   report: "Rapor",
 } as const;
 
+const filters = [
+  { label: "Tumu", value: "all" },
+  { label: "Ilan", value: "listing" },
+  { label: "Rapor", value: "report" },
+] as const;
+
 export function AdminRecentActions({ actions }: AdminRecentActionsProps) {
+  const [activeFilter, setActiveFilter] = useState<(typeof filters)[number]["value"]>("all");
+
+  const filteredActions = useMemo(
+    () =>
+      activeFilter === "all"
+        ? actions
+        : actions.filter((item) => item.action.targetType === activeFilter),
+    [actions, activeFilter],
+  );
+
   if (actions.length === 0) {
     return (
       <section className="rounded-[2rem] border border-border/80 bg-background p-6 shadow-sm sm:p-8">
@@ -43,8 +70,32 @@ export function AdminRecentActions({ actions }: AdminRecentActionsProps) {
         </div>
       </div>
 
+      <div className="mt-6 flex flex-wrap gap-2">
+        {filters.map((filter) => {
+          const isActive = activeFilter === filter.value;
+
+          return (
+            <button
+              key={filter.value}
+              type="button"
+              onClick={() => setActiveFilter(filter.value)}
+              className={
+                isActive
+                  ? "inline-flex h-10 items-center justify-center rounded-full bg-primary px-4 text-sm font-semibold text-primary-foreground"
+                  : "inline-flex h-10 items-center justify-center rounded-full border border-border bg-background px-4 text-sm font-semibold text-foreground transition-colors hover:bg-muted"
+              }
+            >
+              {filter.label}
+            </button>
+          );
+        })}
+      </div>
+
       <div className="mt-6 grid gap-4">
-        {actions.map((action) => (
+        {filteredActions.map((item) => {
+          const { action } = item;
+
+          return (
           <article
             key={action.id ?? `${action.targetType}-${action.targetId}-${action.createdAt}`}
             className="rounded-[1.5rem] border border-border/70 bg-muted/20 p-5"
@@ -60,6 +111,20 @@ export function AdminRecentActions({ actions }: AdminRecentActionsProps) {
                   </span>
                 </div>
 
+                <div className="space-y-2">
+                  <p className="text-base font-semibold tracking-tight text-foreground">
+                    {item.targetLabel}
+                  </p>
+                  {item.targetHref ? (
+                    <Link
+                      href={item.targetHref}
+                      className="inline-flex text-sm font-medium text-primary transition-colors hover:text-primary/80"
+                    >
+                      Ilgili ilana git
+                    </Link>
+                  ) : null}
+                </div>
+
                 <p className="text-sm leading-6 text-muted-foreground">
                   {action.note?.trim()
                     ? action.note
@@ -72,7 +137,8 @@ export function AdminRecentActions({ actions }: AdminRecentActionsProps) {
               </div>
             </div>
           </article>
-        ))}
+          );
+        })}
       </div>
     </section>
   );

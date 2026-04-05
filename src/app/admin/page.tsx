@@ -1,7 +1,12 @@
 import Link from "next/link";
 
-import { AdminListingsModeration } from "@/components/listings/admin-listings-moderation";
-import { AdminRecentActions } from "@/components/listings/admin-recent-actions";
+import {
+  AdminListingsModeration,
+} from "@/components/listings/admin-listings-moderation";
+import {
+  AdminRecentActions,
+  type AdminRecentActionItem,
+} from "@/components/listings/admin-recent-actions";
 import { AdminReportsModeration } from "@/components/listings/admin-reports-moderation";
 import { AdminPersistencePanel } from "@/components/shared/admin-persistence-panel";
 import { getUserRole, requireAdminUser } from "@/lib/auth/session";
@@ -25,9 +30,25 @@ export default async function AdminPage() {
   const knownListings = await getAllKnownListings();
   const persistenceHealth = await getPersistenceHealth();
   const recentActions = await getRecentAdminModerationActions();
-  const listingTitleById = Object.fromEntries(
-    knownListings.map((listing) => [listing.id, listing.title]),
-  );
+  const listingById = Object.fromEntries(knownListings.map((listing) => [listing.id, listing]));
+  const listingTitleById = Object.fromEntries(knownListings.map((listing) => [listing.id, listing.title]));
+  const recentActionItems: AdminRecentActionItem[] = recentActions.map((action) => {
+    const targetListing =
+      action.targetType === "listing"
+        ? listingById[action.targetId]
+        : listingById[storedReports.find((report) => report.id === action.targetId)?.listingId ?? ""];
+
+    return {
+      action,
+      targetHref: targetListing?.slug ? `/listing/${targetListing.slug}` : null,
+      targetLabel:
+        action.targetType === "listing"
+          ? targetListing?.title ?? "Ilan basligi bulunamadi"
+          : targetListing
+            ? `${targetListing.title} icin rapor`
+            : "Rapor hedef ilani bulunamadi",
+    };
+  });
 
   return (
     <main className="bg-muted/40">
@@ -78,7 +99,7 @@ export default async function AdminPage() {
         </section>
 
         <AdminPersistencePanel health={persistenceHealth} />
-        <AdminRecentActions actions={recentActions} />
+        <AdminRecentActions actions={recentActionItems} />
 
         <AdminListingsModeration pendingListings={pendingListings} />
         <AdminReportsModeration
