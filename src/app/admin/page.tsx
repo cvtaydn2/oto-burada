@@ -1,8 +1,8 @@
 import Link from "next/link";
-import { DatabaseZap } from "lucide-react";
 
 import { AdminListingsModeration } from "@/components/listings/admin-listings-moderation";
 import { AdminReportsModeration } from "@/components/listings/admin-reports-moderation";
+import { AdminPersistencePanel } from "@/components/shared/admin-persistence-panel";
 import { getUserRole, requireAdminUser } from "@/lib/auth/session";
 import { getPersistenceHealth } from "@/services/admin/persistence-health";
 import { getAllKnownListings } from "@/services/listings/marketplace-listings";
@@ -74,59 +74,7 @@ export default async function AdminPage() {
           </div>
         </section>
 
-        <section className="rounded-[2rem] border border-border/80 bg-background p-6 shadow-sm sm:p-8">
-          <div className="flex items-start gap-3">
-            <div className="flex size-11 shrink-0 items-center justify-center rounded-2xl bg-primary/10 text-primary">
-              <DatabaseZap className="size-5" />
-            </div>
-            <div className="space-y-2">
-              <p className="text-sm font-medium uppercase tracking-[0.18em] text-primary/80">
-                Persistence Durumu
-              </p>
-              <h2 className="text-2xl font-semibold tracking-tight">
-                Supabase migration sagligi
-              </h2>
-              <p className="text-sm leading-6 text-muted-foreground sm:text-base">
-                {persistenceHealth.message}
-              </p>
-            </div>
-          </div>
-
-          <div className="mt-6 grid gap-4 lg:grid-cols-3">
-            <div className="rounded-[1.5rem] border border-border/70 bg-muted/30 p-5">
-              <p className="text-sm text-muted-foreground">Admin env</p>
-              <p className="mt-2 text-lg font-semibold tracking-tight">
-                {persistenceHealth.environment.adminEnv ? "Hazir" : "Eksik"}
-              </p>
-            </div>
-            <div className="rounded-[1.5rem] border border-border/70 bg-muted/30 p-5">
-              <p className="text-sm text-muted-foreground">Storage env</p>
-              <p className="mt-2 text-lg font-semibold tracking-tight">
-                {persistenceHealth.environment.storageEnv ? "Hazir" : "Eksik"}
-              </p>
-            </div>
-            <div className="rounded-[1.5rem] border border-border/70 bg-muted/30 p-5">
-              <p className="text-sm text-muted-foreground">DB durum</p>
-              <p className="mt-2 text-lg font-semibold tracking-tight">
-                {persistenceHealth.ready ? "Erisilebilir" : "Kontrol gerekli"}
-              </p>
-            </div>
-          </div>
-
-          {persistenceHealth.tables.length > 0 ? (
-            <div className="mt-6 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-              {persistenceHealth.tables.map((table) => (
-                <div
-                  key={table.key}
-                  className="rounded-[1.5rem] border border-border/70 bg-background p-5"
-                >
-                  <p className="text-sm text-muted-foreground">{table.label}</p>
-                  <p className="mt-2 text-3xl font-semibold tracking-tight">{table.count}</p>
-                </div>
-              ))}
-            </div>
-          ) : null}
-        </section>
+        <AdminPersistencePanel health={persistenceHealth} />
 
         <AdminListingsModeration pendingListings={pendingListings} />
         <AdminReportsModeration

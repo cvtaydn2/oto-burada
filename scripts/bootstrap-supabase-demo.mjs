@@ -6,6 +6,7 @@ const scriptPaths = [
   "scripts/check-supabase-env.mjs",
   "scripts/apply-supabase-schema.mjs",
   "scripts/seed-supabase-demo.mjs",
+  "scripts/verify-supabase-demo.mjs",
 ];
 
 for (const relativePath of scriptPaths) {

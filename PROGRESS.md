@@ -196,6 +196,8 @@ Her yeni geliştirme başlamadan önce okunmalıdır.
 - `profiles`, `listings`, `listing_images`, `favorites`, `reports` ve `admin_actions` tablolari icin sayim tabanli hazirlik kontrolu yapildi.
 - Repo icine `db:check-env`, `db:apply-schema`, `db:seed-demo` ve `db:bootstrap-demo` komutlari eklendi.
 - Yeni scriptler Supabase schema uygulama ve demo auth/profile/listing seed akisini tekrar kullanilabilir hale getirdi.
+- `db:verify-demo` komutu eklendi; demo auth kullanicilari, tablo sayilari ve storage bucket durumu script seviyesinde kontrol ediliyor.
+- Admin panelindeki persistence bolumu migration runbook ile genisletildi; terminal komutlari ve legacy backfill sirasi artik UI uzerinden de gorunuyor.
 
 ---
 
@@ -220,6 +222,7 @@ Her yeni geliştirme başlamadan önce okunmalıdır.
 - Legacy sync basarili oldugunda kullanicinin kendi cookie tabanli ilan ve rapor kayitlari tarayicidan temizlenir.
 - Admin panelindeki persistence health ozeti service-role client ile calisir; amaci migration hazirligini gormektir, kullaniciya acik bir ekran degildir.
 - `db:apply-schema` komutu `psql` ve `SUPABASE_DB_URL` bekler; demo seed ise service-role ile auth kullanicilari dahil seed atar.
+- `db:bootstrap-demo` akisi artik verify adimini da calistirir; boylece schema + seed sonrasi hizli bir kabul kontrolu uretilir.
 
 ---
 
@@ -231,12 +234,14 @@ Her yeni geliştirme başlamadan önce okunmalıdır.
 - Legacy verileri manuel olarak Supabase'e tasiyan dashboard kontrollu backfill akisi eklendi.
 - Admin paneline tablo ve env sagligini gosteren migration readiness kartlari eklendi.
 - Supabase migration ve seed akisini komutlastiran scriptler eklendi, `.env.example` ve `README.md` buna gore guncellendi.
+- Migration readiness bolumu runbook mantigina genisletildi ve `db:verify-demo` dokumante edildi.
 
 ---
 
 ## Sonraki Görev
 - `Final Definition of Done`
 - `TASKS.md` icindeki sıralı MVP kapsami tamamlandi; sonraki mantikli is bu yeni migration/seed komutlarini production benzeri ortamda calistirip legacy cookie verisini backfill etmektir.
+- Sonrasindaki adim production benzeri Supabase ortaminda bootstrap + verify calistirip dashboard Legacy Sync ile kalan tarayici verisini tasimaktir.
 
 ---
 

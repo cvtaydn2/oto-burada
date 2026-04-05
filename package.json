@@ -11,6 +11,7 @@
     "db:check-env": "node scripts/check-supabase-env.mjs",
     "db:apply-schema": "node scripts/apply-supabase-schema.mjs",
     "db:seed-demo": "node scripts/seed-supabase-demo.mjs",
+    "db:verify-demo": "node scripts/verify-supabase-demo.mjs",
     "db:bootstrap-demo": "node scripts/bootstrap-supabase-demo.mjs"
   },
   "dependencies": {

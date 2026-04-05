@@ -34,6 +34,7 @@ Sadece arabalar için tasarlanmış, mobil öncelikli ve güven odaklı ücretsi
 - Dashboard içinde legacy cookie verilerini Supabase'e taşıyan tek tık senkron kartı eklendi
 - Admin panelinde Supabase env ve tablo erişimini özetleyen persistence health görünümü eklendi
 - Repo içine Supabase schema uygulama ve demo seed komutları eklendi
+- Admin paneline migration runbook eklendi ve demo seed sonucu `db:verify-demo` ile doğrulanabilir hale geldi
 - Lint, typecheck ve production build doğrulandı
 
 ## Kurulum
@@ -92,6 +93,12 @@ Demo auth kullanicilari, profiller, ilanlar, favoriler ve raporlar ile birlikte 
 
 ```bash
 npm run db:seed-demo
+```
+
+Seed sonrasi auth kullanicilari, tablo sayilari ve storage bucket durumunu dogrulamak icin:
+
+```bash
+npm run db:verify-demo
 ```
 
 Tum akisi tek komutta calistirmak icin:

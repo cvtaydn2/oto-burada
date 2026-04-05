@@ -1,5 +1,9 @@
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
-import { hasSupabaseAdminEnv, hasSupabaseStorageEnv } from "@/lib/supabase/env";
+import {
+  getSupabaseStorageEnv,
+  hasSupabaseAdminEnv,
+  hasSupabaseStorageEnv,
+} from "@/lib/supabase/env";
 
 interface TableHealth {
   count: number;
@@ -10,11 +14,24 @@ interface TableHealth {
 export interface PersistenceHealth {
   environment: {
     adminEnv: boolean;
+    databaseUrlEnv: boolean;
+    demoPasswordEnv: boolean;
     storageEnv: boolean;
   };
   message: string;
   ready: boolean;
+  storage: {
+    bucketAccessible: boolean | null;
+    bucketName: string | null;
+    message: string;
+  };
   tables: TableHealth[];
+}
+
+interface StorageHealth {
+  bucketAccessible: boolean | null;
+  bucketName: string | null;
+  message: string;
 }
 
 const tableDefinitions = [
@@ -29,7 +46,16 @@ const tableDefinitions = [
 export async function getPersistenceHealth(): Promise<PersistenceHealth> {
   const environment = {
     adminEnv: hasSupabaseAdminEnv(),
+    databaseUrlEnv: Boolean(process.env.SUPABASE_DB_URL),
+    demoPasswordEnv: Boolean(process.env.SUPABASE_DEMO_USER_PASSWORD),
     storageEnv: hasSupabaseStorageEnv(),
+  };
+  const storage: StorageHealth = {
+    bucketAccessible: null,
+    bucketName: environment.storageEnv ? getSupabaseStorageEnv().listingsBucket : null,
+    message: environment.storageEnv
+      ? "Bucket erisimi henuz kontrol edilmedi."
+      : "Storage ortam degiskenleri eksik.",
   };
 
   if (!environment.adminEnv) {
@@ -37,11 +63,21 @@ export async function getPersistenceHealth(): Promise<PersistenceHealth> {
       environment,
       message: "Supabase admin ortam degiskenleri eksik.",
       ready: false,
+      storage,
       tables: [],
     };
   }
 
   const admin = createSupabaseAdminClient();
+  if (environment.storageEnv && storage.bucketName) {
+    const { data, error } = await admin.storage.getBucket(storage.bucketName);
+
+    storage.bucketAccessible = !error && Boolean(data);
+    storage.message = error
+      ? `${storage.bucketName} bucket'i okunamadi: ${error.message}`
+      : `${storage.bucketName} bucket'i erisilebilir durumda.`;
+  }
+
   const results = await Promise.all(
     tableDefinitions.map(async (table) => {
       const { count, error } = await admin
@@ -73,6 +109,7 @@ export async function getPersistenceHealth(): Promise<PersistenceHealth> {
       environment,
       message: `${failedTable.label} tablosu okunamadi: ${failedTable.error}`,
       ready: false,
+      storage,
       tables: results.map((result) => ({
         count: result.count,
         key: result.key,
@@ -85,6 +122,7 @@ export async function getPersistenceHealth(): Promise<PersistenceHealth> {
     environment,
     message: "Supabase persistence tablolari erisilebilir durumda.",
     ready: true,
+    storage,
     tables: results.map((result) => ({
       count: result.count,
       key: result.key,
