@@ -9,6 +9,7 @@ import type { AdminModerationAction } from "@/types";
 
 export interface AdminRecentActionItem {
   action: AdminModerationAction;
+  actorLabel: string;
   targetHref?: string | null;
   targetLabel: string;
 }
@@ -115,6 +116,7 @@ export function AdminRecentActions({ actions }: AdminRecentActionsProps) {
                   <p className="text-base font-semibold tracking-tight text-foreground">
                     {item.targetLabel}
                   </p>
+                  <p className="text-sm text-muted-foreground">Islemi yapan: {item.actorLabel}</p>
                   {item.targetHref ? (
                     <Link
                       href={item.targetHref}

@@ -13,6 +13,7 @@ import { getUserRole, requireAdminUser } from "@/lib/auth/session";
 import { getRecentAdminModerationActions } from "@/services/admin/moderation-actions";
 import { getPersistenceHealth } from "@/services/admin/persistence-health";
 import { getAllKnownListings } from "@/services/listings/marketplace-listings";
+import { getStoredProfileById } from "@/services/profile/profile-records";
 import { getStoredListings } from "@/services/listings/listing-submissions";
 import { getStoredReports } from "@/services/reports/report-submissions";
 
@@ -32,23 +33,27 @@ export default async function AdminPage() {
   const recentActions = await getRecentAdminModerationActions();
   const listingById = Object.fromEntries(knownListings.map((listing) => [listing.id, listing]));
   const listingTitleById = Object.fromEntries(knownListings.map((listing) => [listing.id, listing.title]));
-  const recentActionItems: AdminRecentActionItem[] = recentActions.map((action) => {
-    const targetListing =
-      action.targetType === "listing"
-        ? listingById[action.targetId]
-        : listingById[storedReports.find((report) => report.id === action.targetId)?.listingId ?? ""];
-
-    return {
-      action,
-      targetHref: targetListing?.slug ? `/listing/${targetListing.slug}` : null,
-      targetLabel:
+  const recentActionItems: AdminRecentActionItem[] = await Promise.all(
+    recentActions.map(async (action) => {
+      const actorProfile = await getStoredProfileById(action.adminUserId);
+      const targetListing =
         action.targetType === "listing"
-          ? targetListing?.title ?? "Ilan basligi bulunamadi"
-          : targetListing
-            ? `${targetListing.title} icin rapor`
-            : "Rapor hedef ilani bulunamadi",
-    };
-  });
+          ? listingById[action.targetId]
+          : listingById[storedReports.find((report) => report.id === action.targetId)?.listingId ?? ""];
+
+      return {
+        action,
+        actorLabel: actorProfile?.fullName || actorProfile?.id || "Bilinmeyen admin",
+        targetHref: targetListing?.slug ? `/listing/${targetListing.slug}` : null,
+        targetLabel:
+          action.targetType === "listing"
+            ? targetListing?.title ?? "Ilan basligi bulunamadi"
+            : targetListing
+              ? `${targetListing.title} icin rapor`
+              : "Rapor hedef ilani bulunamadi",
+      };
+    }),
+  );
 
   return (
     <main className="bg-muted/40">

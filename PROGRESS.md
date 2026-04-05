@@ -207,6 +207,7 @@ Her yeni geliştirme başlamadan önce okunmalıdır.
 - Gercek Supabase projesine `schema.sql` basariyla uygulandi.
 - `listing-images` bucket'i, demo auth kullanicilari ve demo tablo verileri gercek Supabase ortamina seed edildi.
 - `db:verify-demo` gercek Supabase ortami uzerinde basariyla calisti ve tablo/bucket sayimlari dogrulandi.
+- Admin audit gecmisi kartlari aksiyonu yapan admin profil adini gosterecek sekilde zenginlestirildi.
 
 ---
 
@@ -236,6 +237,7 @@ Her yeni geliştirme başlamadan önce okunmalıdır.
 - Admin aksiyon gecmisi zenginlestirilirken listing/report hedef eslestirmesi admin sayfasinda yapiliyor; eksik hedefte guvenli fallback metni gosteriliyor.
 - Moderasyon notu opsiyoneldir; girilirse en az 3 karakter olmali ve mevcut otomatik audit notunun yerini alir.
 - `db:*` scriptleri artik `.env.local` okuyarak calisir; Windows ortaminda `psql.exe` icin yaygin kurulum yollarini otomatik dener.
+- Admin aksiyon feed'i profile servisi uzerinden admin kimligini cozer; profil bulunamazsa guvenli fallback etiketi gosterir.
 
 ---
 
@@ -252,6 +254,7 @@ Her yeni geliştirme başlamadan önce okunmalıdır.
 - Admin audit trail paneli filtreleme ve hedef linkleri ile daha hizli inceleme akisina uyarlandi.
 - Audit trail artik admin tarafindan girilen insan okunur karar notlarini da tasiyabiliyor.
 - Runtime persistence'in hedef Supabase projesi artik bos degil; schema + demo seed + verify operasyonu tamamlandi.
+- Audit trail kartlari artik hedef, not ve actor bilgisini birlikte tasir.
 
 ---
 
