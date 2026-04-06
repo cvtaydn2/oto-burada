@@ -293,7 +293,7 @@ export function ListingsPageClient({
           </div>
 
           {/* Listings List */}
-          <div className="space-y-5 pb-24">
+          <div className="pb-24">
             {isLoading ? (
               <ListingsGridSkeleton />
             ) : filteredListings.length === 0 ? (
@@ -314,15 +314,34 @@ export function ListingsPageClient({
                 </button>
               </div>
             ) : (
-              <div className="flex flex-col gap-5">
-                {filteredListings.slice(0, visibleCount).map((listing) => (
-                  <ListingCard key={listing.id} listing={listing} />
-                ))}
+              <div className="flex flex-col rounded-lg border border-slate-200 bg-white shadow-sm overflow-hidden">
+                {/* Table Header Row (Desktop Only) */}
+                <div className="hidden border-b border-slate-200 bg-slate-50 px-3 py-3 text-[12px] font-semibold text-slate-500 md:flex md:items-center">
+                  <div className="w-[150px] shrink-0 pl-2">Görsel</div>
+                  <div className="min-w-0 flex-1 pl-2">Seri / Model / İlan Başlığı</div>
+                  <div className="flex shrink-0 items-center">
+                    <div className="w-16 text-center">Yıl</div>
+                    <div className="w-24 text-right pr-2">KM</div>
+                    <div className="w-[88px] text-center">Yakıt</div>
+                    <div className="w-[88px] text-center">Vites</div>
+                    <div className="w-[130px] pl-4 text-right">Fiyat</div>
+                  </div>
+                  <div className="w-16 shrink-0 md:ml-4"></div>
+                </div>
+
+                {/* Listings */}
+                <div className="flex flex-col">
+                  {filteredListings.slice(0, visibleCount).map((listing, index) => (
+                    <div key={listing.id} className={index !== 0 ? "border-t border-slate-100" : ""}>
+                      <ListingCard listing={listing} />
+                    </div>
+                  ))}
+                </div>
               </div>
             )}
 
             {!isLoading && hasMore && (
-              <div className="mt-10 flex justify-center">
+              <div className="mt-8 flex justify-center">
                 <button
                   type="button"
                   onClick={() =>

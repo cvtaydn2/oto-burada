@@ -1,20 +1,9 @@
 import Image from "next/image";
 import Link from "next/link";
-import {
-  Calendar,
-  CheckCircle2,
-  Fuel,
-  Gauge,
-  MapPin,
-  Settings2,
-  ShieldCheck,
-  Sparkles,
-  TrendingDown,
-  TrendingUp,
-} from "lucide-react";
+import { AlertTriangle, ShieldCheck, Sparkles } from "lucide-react";
 
 import { FavoriteButton } from "@/components/listings/favorite-button";
-import { formatCurrency, formatNumber } from "@/lib/utils";
+import { formatCurrency, formatDate, formatNumber } from "@/lib/utils";
 import { getListingCardInsights } from "@/services/listings/listing-card-insights";
 import type { Listing } from "@/types";
 
@@ -27,151 +16,116 @@ export function ListingCard({ listing }: ListingCardProps) {
   const detailHref = `/listing/${listing.slug}`;
   const insight = getListingCardInsights(listing);
 
-  // Derive some "premium" and "trust" dummy flags for MVP UI
+  // Derive dummy flags
   const isPremium = listing.featured;
   const isSuspicious = insight.tone === "amber" && listing.price < 300000;
   
   return (
     <Link
       href={detailHref}
-      className={`group relative block overflow-hidden rounded-2xl border bg-white shadow-sm transition-all duration-300 hover:shadow-xl ${
-        isPremium ? "border-indigo-200" : "border-slate-200"
-      } ${isSuspicious ? "border-red-300" : ""}`}
+      className={`group flex flex-row bg-white transition-colors hover:bg-slate-50 relative ${
+        isPremium ? "bg-indigo-50/10" : ""
+      } ${isSuspicious ? "bg-red-50/20" : ""}`}
     >
-      {/* Compare Checkbox could go here if implemented, for now Favorite Button */}
-      <div className="absolute left-4 top-4 z-20">
+      {/* Mobile-only favorite button */}
+      <div className="absolute right-2 top-2 z-10 md:hidden">
         <FavoriteButton
           listingId={listing.id}
-          className="size-8 rounded-lg border border-slate-200 bg-white/90 shadow-sm backdrop-blur-md transition-colors hover:bg-slate-50"
+          className="size-7 rounded bg-white/90 shadow-sm backdrop-blur-md"
         />
       </div>
 
-      <div className="flex flex-col md:flex-row">
-        {/* Image Section */}
-        <div className="relative h-64 w-full shrink-0 overflow-hidden bg-slate-100 md:h-auto md:w-[340px]">
+      {/* Image Section */}
+      <div className="w-[110px] h-[82px] sm:w-[140px] sm:h-[105px] md:w-[150px] md:h-[114px] shrink-0 p-2 md:pr-0">
+        <div className="relative w-full h-full overflow-hidden rounded bg-slate-100">
           {coverImage ? (
             <Image
               src={coverImage.url}
               alt={listing.title}
               fill
-              sizes="(min-width: 768px) 340px, 100vw"
-              className="object-cover transition-transform duration-700 ease-out group-hover:scale-105"
+              sizes="(min-width: 768px) 150px, 110px"
+              className="object-cover"
             />
           ) : null}
-
-          {/* Gradient Overlay */}
-          <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-80" />
-
-          <div className="absolute right-4 top-4 z-10 flex flex-col items-end gap-2">
-            {insight.tone === "emerald" && (
-              <div className="flex items-center gap-1.5 rounded-full bg-green-500 px-3 py-1.5 text-xs font-bold text-white shadow-lg">
-                <TrendingDown size={14} /> IYI FIYAT
-              </div>
-            )}
-            {insight.tone === "amber" && (
-              <div className="flex items-center gap-1.5 rounded-full bg-amber-500 px-3 py-1.5 text-xs font-bold text-white shadow-lg">
-                <TrendingUp size={14} /> YUKSEK FIYAT
-              </div>
-            )}
+          <div className="absolute bottom-1 right-1 rounded bg-black/60 px-1 py-0.5 text-[9px] sm:text-[10px] text-white">
+            {listing.images.length}
           </div>
+        </div>
+      </div>
 
-          <div className="absolute bottom-4 left-4 right-4 z-10 flex items-end justify-between">
-            <div className="flex items-center gap-2">
-              <div className="rounded-lg border border-white/20 bg-black/40 px-2.5 py-1 text-xs font-medium text-white backdrop-blur-md">
-                1/{listing.images.length} Fotograf
-              </div>
+      {/* Content Section */}
+      <div className="flex min-w-0 flex-1 flex-col p-2 sm:p-3 justify-center md:justify-start">
+        <div className="flex flex-col md:flex-row md:items-center h-full">
+          
+          {/* Title and Badges Col */}
+          <div className="min-w-0 flex-1 pr-2 md:pr-4 flex flex-col justify-center">
+            <h2 className="truncate text-[13px] sm:text-[14px] font-semibold text-slate-900 transition-colors group-hover:text-indigo-700">
+              {listing.brand} <span className="font-normal">{listing.model}</span>
+            </h2>
+            <p className="mt-0.5 truncate text-[11px] sm:text-[13px] text-slate-500 md:text-slate-600">{listing.title}</p>
+            
+            <div className="mt-1 flex flex-wrap gap-1">
               {isPremium && (
-                <div className="flex items-center gap-1 rounded-lg border border-indigo-400/30 bg-indigo-500/90 px-2.5 py-1 text-xs font-medium text-white backdrop-blur-md">
-                  <Sparkles size={12} /> Premium
-                </div>
+                <span className="inline-flex items-center gap-1 rounded bg-indigo-100 px-1 py-0.5 text-[8px] sm:text-[10px] font-bold text-indigo-700">
+                  <Sparkles size={8} className="sm:w-2.5 sm:h-2.5" /> Öne Çıkan
+                </span>
               )}
+              {insight.tone === "emerald" && (
+                <span className="inline-flex items-center rounded bg-emerald-100 px-1 py-0.5 text-[8px] sm:text-[10px] font-bold text-emerald-800">
+                  İyi Fiyat
+                </span>
+              )}
+               {isSuspicious && (
+                <span className="hidden sm:inline-flex items-center gap-1 rounded bg-red-100 px-1 py-0.5 text-[10px] font-bold text-red-800">
+                  <AlertTriangle size={10} /> Uyarı
+                </span>
+              )}
+            </div>
+
+            {/* Mobile inline specs (Year / KM) */}
+            <div className="mt-1.5 flex items-center gap-2 text-[11px] font-medium text-slate-500 md:hidden">
+              <span>{listing.year}</span>
+              <span className="w-1 h-1 rounded-full bg-slate-300" />
+              <span>{formatNumber(listing.mileage)} km</span>
             </div>
           </div>
-        </div>
 
-        {/* Content Section */}
-        <div className="flex min-w-0 flex-1 flex-col justify-between bg-white p-6">
-          <div className="flex flex-col gap-6 lg:flex-row">
-            {/* Main Info */}
-            <div className="min-w-0 flex-1">
-              <div className="mb-3 flex items-start justify-between gap-4">
-                <div>
-                  <h2 className="truncate text-xl font-semibold text-slate-900 transition-colors group-hover:text-indigo-600">
-                    {listing.brand} <span className="font-normal text-slate-500">{listing.model}</span>
-                  </h2>
-                  <p className="line-clamp-1 mt-1 text-base text-slate-600">{listing.title}</p>
-                </div>
-              </div>
+          {/* Table-like Columns (Hidden on Mobile) */}
+          <div className="mt-3 hidden shrink-0 text-[13px] text-slate-700 md:col-span-1 md:mt-0 md:flex md:items-center">
+            <div className="w-16 text-center">{listing.year}</div>
+            <div className="w-24 text-right font-medium">{formatNumber(listing.mileage)}</div>
+            <div className="w-[88px] text-center">{listing.fuelType === "benzin" ? "Benzin" : listing.fuelType === "dizel" ? "Dizel" : listing.fuelType === "elektrik" ? "Elektrik" : listing.fuelType}</div>
+            <div className="w-[88px] text-center">{listing.transmission === "otomatik" ? "Otom." : listing.transmission === "manuel" ? "Manuel" : "Y.Otom."}</div>
+          </div>
 
-              {/* Quick Specs Grid */}
-              <div className="mb-5 flex flex-wrap items-center gap-2">
-                <div className="flex items-center gap-1.5 rounded-lg border border-slate-100 bg-slate-50 px-3 py-1.5 text-sm font-medium text-slate-700">
-                  <Calendar size={16} className="text-slate-400" /> {listing.year}
-                </div>
-                <div className="flex items-center gap-1.5 rounded-lg border border-slate-100 bg-slate-50 px-3 py-1.5 text-sm font-medium text-slate-700">
-                  <Gauge size={16} className="text-slate-400" /> {formatNumber(listing.mileage)} km
-                </div>
-                <div className="flex items-center gap-1.5 rounded-lg border border-slate-100 bg-slate-50 px-3 py-1.5 text-sm font-medium text-slate-700">
-                  <Fuel size={16} className="text-slate-400" /> {listing.fuelType}
-                </div>
-                <div className="flex items-center gap-1.5 rounded-lg border border-slate-100 bg-slate-50 px-3 py-1.5 text-sm font-medium text-slate-700">
-                  <Settings2 size={16} className="text-slate-400" /> {listing.transmission}
-                </div>
-              </div>
-
-              {/* AI Insights */}
-              {!isSuspicious && insight.highlights.length > 0 && (
-                <div className="rounded-xl border border-indigo-100/50 bg-gradient-to-r from-indigo-50 to-blue-50/30 p-4">
-                  <div className="mb-2 flex items-center gap-2">
-                    <Sparkles size={16} className="text-indigo-600" />
-                    <span className="text-sm font-semibold text-indigo-900">Yapay Zeka Analizi</span>
-                  </div>
-                  <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
-                    {insight.highlights.slice(0, 2).map((h, idx) => (
-                      <div key={idx} className="flex items-start gap-2 text-sm text-slate-700">
-                        <CheckCircle2 size={16} className="mt-0.5 shrink-0 text-indigo-500" />
-                        <span className="line-clamp-1">{h}</span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {isSuspicious && (
-                <div className="mt-2 rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-800">
-                  <strong className="font-semibold">Supheli Ilan Uyarisi:</strong> Fiyat piyasa ortalamasinin cok altinda. Kapora gondermeyin.
-                </div>
-              )}
+          {/* Price, Location, Date Column */}
+          <div className="mt-auto flex shrink-0 items-end justify-between md:mt-0 md:w-[130px] md:flex-col md:justify-center md:pl-4">
+            <div className="text-[14px] sm:text-[15px] font-bold text-slate-900 md:mb-1">
+              {formatCurrency(listing.price)}
             </div>
-
-            {/* Price & Trust Column */}
-            <div className="flex w-full shrink-0 flex-col items-start justify-between border-t border-slate-100 pt-4 lg:w-48 lg:items-end lg:border-l lg:border-t-0 lg:pl-6 lg:pt-0">
-              <div className="mb-4 w-full text-left lg:mb-0 lg:text-right">
-                <div className="text-2xl font-bold tracking-tight text-slate-900">
-                  {formatCurrency(listing.price)}
-                </div>
+            <div className="text-right hidden sm:block">
+              <div className="truncate text-[10px] sm:text-[11px] text-slate-500">
+                {listing.city} / {listing.district}
               </div>
-
-              <div className="w-full space-y-3">
-                <div className="flex items-center gap-2 text-sm text-slate-600">
-                  <MapPin size={16} className="text-slate-400" />
-                  <span className="truncate">
-                    {listing.city} / {listing.district}
-                  </span>
-                </div>
-                <div className="flex items-center gap-2 rounded-lg border border-slate-100 bg-slate-50 px-3 py-2 text-sm font-medium text-slate-900">
-                  <div className="flex size-6 items-center justify-center rounded-full bg-indigo-100 text-xs font-bold text-indigo-700">
-                    S
-                  </div>
-                  <span className="flex-1 truncate">Satici</span>
-                  <span title="Onaylı Satıcı" className="flex items-center">
-                    <ShieldCheck size={16} className="shrink-0 text-blue-500" />
-                  </span>
-                </div>
+              <div className="mt-0.5 text-[10px] sm:text-[11px] text-slate-400">
+                {formatDate(listing.createdAt)}
               </div>
+            </div>
+            {/* Mobile micro location */}
+            <div className="sm:hidden text-[10px] text-slate-400 truncate max-w-[80px]">
+              {listing.city}
             </div>
           </div>
+
         </div>
+      </div>
+
+      {/* Desktop Favorite Area */}
+      <div className="hidden shrink-0 items-center justify-center md:flex md:w-16 md:border-l md:border-slate-100">
+        <FavoriteButton
+          listingId={listing.id}
+          className="size-8 rounded text-slate-400 transition-colors hover:bg-slate-100 hover:text-indigo-600"
+        />
       </div>
     </Link>
   );

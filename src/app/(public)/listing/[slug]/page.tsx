@@ -46,7 +46,7 @@ interface ListingDetailPageProps {
 const whatsappTemplate = "Merhaba, ilanınızla ilgileniyorum.";
 
 export async function generateStaticParams() {
-  return exampleListings.map((listing) => ({
+  return exampleListings.map((listing: any) => ({
     slug: listing.slug,
   }));
 }
@@ -191,9 +191,9 @@ export default async function ListingDetailPage({ params }: ListingDetailPagePro
           <div className="flex-1 min-w-0 w-full flex flex-col gap-8">
             
             {/* Main Image Gallery */}
-            <section className="overflow-hidden rounded-2xl bg-slate-100 shadow-sm border border-slate-200/60">
-              <div className="p-2 sm:p-3 space-y-2 sm:space-y-3">
-                <div className="relative aspect-[4/3] sm:aspect-[16/9] lg:aspect-[16/10] overflow-hidden rounded-xl bg-slate-200">
+            <section className="overflow-hidden rounded-lg bg-white shadow-sm border border-slate-200">
+              <div className="p-3 space-y-3">
+                <div className="relative aspect-[4/3] sm:aspect-[16/9] lg:aspect-[16/10] overflow-hidden rounded-md bg-slate-100">
                   <Image
                     src={listing.images[0].url}
                     alt={listing.title}
@@ -215,10 +215,10 @@ export default async function ListingDetailPage({ params }: ListingDetailPagePro
                   </div>
                 </div>
                 <div className="grid grid-cols-4 sm:grid-cols-5 gap-2 sm:gap-3">
-                  {listing.images.slice(1, 6).map((image, index) => (
+                  {listing.images.slice(1, 6).map((image: any, index: number) => (
                     <div
                       key={image.id ?? image.url}
-                      className="relative aspect-[4/3] overflow-hidden rounded-lg bg-slate-200 ring-1 ring-slate-900/5"
+                      className="relative aspect-[4/3] overflow-hidden rounded bg-slate-100 border border-slate-200"
                     >
                       <Image
                         src={image.url}
@@ -239,29 +239,29 @@ export default async function ListingDetailPage({ params }: ListingDetailPagePro
             </section>
 
             {/* Quick Specs Grid */}
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
               {quickSpecs.map(({ label, value, icon: Icon }) => (
-                <div key={label} className="p-5 rounded-2xl flex flex-col items-center justify-center text-center border text-slate-900 border-slate-200 bg-white shadow-sm hover:border-indigo-200 transition-colors">
-                  <Icon size={28} className="text-indigo-600 mb-3" />
-                  <span className="text-xs text-slate-500 font-semibold uppercase tracking-wider mb-1">{label}</span>
-                  <span className="text-lg font-bold text-slate-900">{value}</span>
+                <div key={label} className="p-4 rounded-lg flex flex-col items-center justify-center text-center border text-slate-900 border-slate-200 bg-white shadow-sm transition-colors">
+                  <Icon size={24} className="text-indigo-600 mb-2" />
+                  <span className="text-[11px] text-slate-500 font-semibold uppercase tracking-wider mb-1">{label}</span>
+                  <span className="text-base font-bold text-slate-900">{value}</span>
                 </div>
               ))}
             </div>
 
             {/* AI Insights & Trust Signals */}
-            <div className={`rounded-2xl p-6 shadow-sm ${heroToneClasses.panel}`}>
-              <h3 className={`font-bold mb-4 flex items-center gap-2 text-lg ${heroToneClasses.text}`}>
-                <Sparkles className={`size-[22px] ${heroToneClasses.icon}`} />
+            <div className={`rounded-lg p-5 shadow-sm ${heroToneClasses.panel}`}>
+              <h3 className={`font-bold mb-3 flex items-center gap-2 text-base ${heroToneClasses.text}`}>
+                <Sparkles className={`size-5 ${heroToneClasses.icon}`} />
                 Yapay Zeka Değerlendirmesi
               </h3>
-              <p className={`mb-6 text-[15px] leading-relaxed ${heroToneClasses.text} opacity-90`}>
+              <p className={`mb-4 text-[14px] leading-relaxed ${heroToneClasses.text} opacity-90`}>
                 {insight.summary}
               </p>
-              <div className="grid sm:grid-cols-2 gap-3">
+              <div className="grid sm:grid-cols-2 gap-2">
                 {insight.highlights.map((highlight) => (
-                  <div key={highlight} className={`flex items-center gap-3 font-medium bg-white px-4 py-3 rounded-xl shadow-sm border border-white/50 ${heroToneClasses.text}`}>
-                    <CheckCircle2 size={20} className={`shrink-0 ${heroToneClasses.check}`} />
+                  <div key={highlight} className={`flex items-center gap-2 font-medium bg-white px-3 py-2.5 rounded-md shadow-sm border border-white/50 text-[13px] ${heroToneClasses.text}`}>
+                    <CheckCircle2 size={16} className={`shrink-0 ${heroToneClasses.check}`} />
                     {highlight}
                   </div>
                 ))}
@@ -269,9 +269,9 @@ export default async function ListingDetailPage({ params }: ListingDetailPagePro
             </div>
 
             {/* Description */}
-            <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
-              <h2 className="text-2xl font-bold text-slate-900 mb-6">İlan Açıklaması</h2>
-              <div className="space-y-4 text-lg leading-relaxed text-slate-700">
+            <section className="rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
+              <h2 className="text-xl font-bold text-slate-900 mb-4">İlan Açıklaması</h2>
+              <div className="space-y-4 text-[15px] leading-relaxed text-slate-700">
                 <p className="whitespace-pre-wrap">{listing.description}</p>
                 <p>Araç başında ufak bir pazarlık payı vardır. Alıcısına şimdiden hayırlı olsun.</p>
               </div>
@@ -279,11 +279,13 @@ export default async function ListingDetailPage({ params }: ListingDetailPagePro
 
             {/* Similar Listings */}
             {similarListings.length > 0 && (
-              <section className="rounded-2xl bg-transparent">
-                <h2 className="text-2xl font-bold text-slate-900 mb-6">Benzer İlanlar</h2>
-                <div className="space-y-4">
-                  {similarListings.map((item) => (
-                    <ListingCard key={item.id} listing={item} />
+              <section className="rounded-lg bg-transparent">
+                <h2 className="text-xl font-bold text-slate-900 mb-4">Benzer İlanlar</h2>
+                <div className="flex flex-col rounded-lg border border-slate-200 bg-white shadow-sm overflow-hidden">
+                  {similarListings.map((item, index) => (
+                    <div key={item.id} className={index !== 0 ? "border-t border-slate-100" : ""}>
+                      <ListingCard listing={item} />
+                    </div>
                   ))}
                 </div>
               </section>
@@ -301,15 +303,15 @@ export default async function ListingDetailPage({ params }: ListingDetailPagePro
             />
 
             {/* Seller Info */}
-            <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
-              <div className="p-6">
-                <div className="flex items-center justify-between mb-6">
-                  <div className="flex items-center gap-4">
-                    <div className="size-16 bg-gradient-to-br from-indigo-100 to-blue-50 text-indigo-700 rounded-full flex items-center justify-center font-bold text-2xl border-2 border-white shadow-sm">
+            <div className="overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm">
+              <div className="p-5">
+                <div className="flex items-center justify-between mb-5">
+                  <div className="flex items-center gap-3">
+                    <div className="size-14 bg-gradient-to-br from-indigo-100 to-blue-50 text-indigo-700 rounded flex items-center justify-center font-bold text-xl border border-slate-200 shadow-sm">
                       {(seller?.fullName ?? "S").slice(0, 1)}
                     </div>
                     <div>
-                      <div className="font-bold text-slate-900 text-lg flex items-center gap-1.5">
+                      <div className="font-bold text-slate-900 text-base flex items-center gap-1.5">
                         {seller?.fullName ?? "Doğrulanmış Satıcı"}
                         <ShieldCheck className="size-5 text-blue-500" />
                       </div>
@@ -322,27 +324,27 @@ export default async function ListingDetailPage({ params }: ListingDetailPagePro
                 
                 <TrustBadge score={9.8} verified={true} />
 
-                <div className="space-y-3 mt-6">
+                <div className="space-y-2.5 mt-5">
                   <a
                     href={`tel:${listing.whatsappPhone}`}
-                    className="flex w-full items-center justify-center gap-2 rounded-xl bg-slate-900 h-14 px-5 text-[17px] font-semibold text-white shadow-md transition-all hover:bg-slate-800"
+                    className="flex w-full items-center justify-center gap-2 rounded-lg bg-slate-900 h-12 px-4 text-[15px] font-semibold text-white shadow transition-all hover:bg-slate-800"
                   >
-                    <Phone className="size-[22px]" />
+                    <Phone className="size-5" />
                     {listing.whatsappPhone.replace(/(\d{4})(\d{3})(\d{2})(\d{2})/, "$1 $2 $3 $4")}
                   </a>
                   <a
                     href={whatsappLink}
                     target="_blank"
                     rel="noreferrer"
-                    className="flex w-full items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white h-14 px-5 text-[17px] text-slate-800 font-semibold shadow-sm transition-colors hover:bg-slate-50"
+                    className="flex w-full items-center justify-center gap-2 rounded-lg border border-slate-200 bg-white h-12 px-4 text-[15px] text-slate-800 font-semibold shadow-sm transition-colors hover:bg-slate-50"
                   >
-                    <MessageCircle className="size-[22px]" />
+                    <MessageCircle className="size-5" />
                     Mesaj Gönder
                   </a>
                 </div>
                 
-                <div className="mt-6 pt-6 border-t border-slate-100">
-                  <div className="text-sm font-semibold text-slate-900 mb-3">Satıcı Güvenilirlik Özeti</div>
+                <div className="mt-5 pt-5 border-t border-slate-100">
+                  <div className="text-sm font-semibold text-slate-900 mb-2">Satıcı Özeti</div>
                   <ul className="space-y-2">
                     <li className="flex items-center gap-2 text-sm text-slate-600">
                       <CheckCircle2 size={16} className="text-emerald-500" /> Kimlik doğrulandı
@@ -359,17 +361,17 @@ export default async function ListingDetailPage({ params }: ListingDetailPagePro
             </div>
             
             {/* Safety Warning */}
-            <div className="rounded-xl bg-slate-50 p-4 border border-slate-200 flex items-start gap-3">
-              <AlertTriangle size={20} className="text-slate-400 shrink-0 mt-0.5" />
-              <p className="text-xs text-slate-500 leading-relaxed font-medium">
-                Güvenliğiniz için işlemi OtoBurada üzerinden gerçekleştirin. Aracı görmeden kapora veya ön ödeme göndermeyin.
+            <div className="rounded-lg bg-slate-50 p-4 border border-slate-200 flex items-start gap-3">
+              <AlertTriangle size={18} className="text-slate-400 shrink-0 mt-0.5" />
+              <p className="text-[12px] text-slate-500 leading-relaxed font-medium">
+                Güvenliğiniz için işlemi OtoBurada üzerinden gerçekleştirin. Aracı görmeden kapora göndermeyin.
               </p>
             </div>
 
             {/* Detailed Specs List */}
-            <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-              <h3 className="font-semibold text-slate-900 mb-4">Detaylı Bilgiler</h3>
-              <ul className="space-y-3 text-[14px]">
+            <div className="rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
+              <h3 className="font-semibold text-slate-900 mb-4 text-base">Detaylı Bilgiler</h3>
+              <ul className="space-y-2.5 text-[13px]">
                 <li className="flex justify-between border-b border-slate-100 pb-2">
                   <span className="text-slate-500">İlan No</span>
                   <span className="font-semibold text-slate-900">{listing.id.split('-')[0]}</span>

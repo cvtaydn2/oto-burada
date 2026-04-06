@@ -48,7 +48,7 @@ export function ListingsFilterPanel({
   return (
     <div
       className={cn(
-        "rounded-[1.75rem] border border-border/80 bg-background p-5 shadow-sm",
+        "rounded-xl border border-slate-200 bg-white p-4 shadow-sm",
         isMobile && "max-h-[80vh] overflow-y-auto",
       )}
     >
@@ -97,9 +97,9 @@ export function ListingsFilterPanel({
           <span>Arama</span>
           <input
             value={filters.query ?? ""}
-            onChange={(event) => onFilterChange("query", event.target.value || undefined)}
+            onChange={(event: any) => onFilterChange("query", event.target.value || undefined)}
             placeholder="Marka, model veya şehir"
-            className="h-11 w-full rounded-xl border border-input bg-background px-4 text-sm outline-none transition-colors focus:border-primary focus-visible:ring-2 focus-visible:ring-primary/20"
+            className="h-9 w-full rounded-md border border-slate-200 bg-white px-3 text-[13px] outline-none transition-colors focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
           />
         </label>
 
@@ -107,8 +107,8 @@ export function ListingsFilterPanel({
           <span>Sıralama</span>
           <select
             value={filters.sort ?? "newest"}
-            onChange={(event) => onFilterChange("sort", event.target.value as ListingSortOption)}
-            className="h-11 w-full rounded-xl border border-input bg-background px-4 text-sm outline-none transition-colors focus:border-primary focus-visible:ring-2 focus-visible:ring-primary/20"
+            onChange={(event: any) => onFilterChange("sort", event.target.value as ListingSortOption)}
+            className="h-9 w-full rounded-md border border-slate-200 bg-white px-3 text-[13px] outline-none transition-colors focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
           >
             {listingSortOptions.map((option) => (
               <option key={option} value={option}>
@@ -123,8 +123,8 @@ export function ListingsFilterPanel({
             <span>Marka</span>
             <select
               value={filters.brand ?? ""}
-              onChange={(event) => onFilterChange("brand", event.target.value || undefined)}
-              className="h-11 w-full rounded-xl border border-input bg-background px-4 text-sm outline-none transition-colors focus:border-primary focus-visible:ring-2 focus-visible:ring-primary/20"
+              onChange={(event: any) => onFilterChange("brand", event.target.value || undefined)}
+              className="h-9 w-full rounded-md border border-slate-200 bg-white px-3 text-[13px] outline-none transition-colors focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
             >
               <option value="">Tümü</option>
               {brands.map((item) => (
@@ -139,9 +139,9 @@ export function ListingsFilterPanel({
             <span>Model</span>
             <select
               value={filters.model ?? ""}
-              onChange={(event) => onFilterChange("model", event.target.value || undefined)}
+              onChange={(event: any) => onFilterChange("model", event.target.value || undefined)}
               disabled={models.length === 0}
-              className="h-11 w-full rounded-xl border border-input bg-background px-4 text-sm outline-none transition-colors focus:border-primary focus-visible:ring-2 focus-visible:ring-primary/20 disabled:cursor-not-allowed disabled:bg-muted"
+              className="h-9 w-full rounded-md border border-slate-200 bg-white px-3 text-[13px] outline-none transition-colors focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 disabled:cursor-not-allowed disabled:bg-slate-50"
             >
               <option value="">Tümü</option>
               {models.map((model) => (
@@ -158,8 +158,8 @@ export function ListingsFilterPanel({
             <span>Şehir</span>
             <select
               value={filters.city ?? ""}
-              onChange={(event) => onFilterChange("city", event.target.value || undefined)}
-              className="h-11 w-full rounded-xl border border-input bg-background px-4 text-sm outline-none transition-colors focus:border-primary focus-visible:ring-2 focus-visible:ring-primary/20"
+              onChange={(event: any) => onFilterChange("city", event.target.value || undefined)}
+              className="h-9 w-full rounded-md border border-slate-200 bg-white px-3 text-[13px] outline-none transition-colors focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
             >
               <option value="">Tümü</option>
               {cities.map((item) => (
@@ -174,9 +174,9 @@ export function ListingsFilterPanel({
             <span>İlçe</span>
             <select
               value={filters.district ?? ""}
-              onChange={(event) => onFilterChange("district", event.target.value || undefined)}
+              onChange={(event: any) => onFilterChange("district", event.target.value || undefined)}
               disabled={districts.length === 0}
-              className="h-11 w-full rounded-xl border border-input bg-background px-4 text-sm outline-none transition-colors focus:border-primary focus-visible:ring-2 focus-visible:ring-primary/20 disabled:cursor-not-allowed disabled:bg-muted"
+              className="h-9 w-full rounded-md border border-slate-200 bg-white px-3 text-[13px] outline-none transition-colors focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 disabled:cursor-not-allowed disabled:bg-slate-50"
             >
               <option value="">Tümü</option>
               {districts.map((district) => (
@@ -193,13 +193,13 @@ export function ListingsFilterPanel({
             <span>Yakıt</span>
             <select
               value={filters.fuelType ?? ""}
-              onChange={(event) =>
+              onChange={(event: any) =>
                 onFilterChange(
                   "fuelType",
                   (event.target.value || undefined) as ListingFilters["fuelType"],
                 )
               }
-              className="h-11 w-full rounded-xl border border-input bg-background px-4 text-sm outline-none transition-colors focus:border-primary focus-visible:ring-2 focus-visible:ring-primary/20"
+              className="h-9 w-full rounded-md border border-slate-200 bg-white px-3 text-[13px] outline-none transition-colors focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
             >
               <option value="">Tümü</option>
               {fuelTypes.map((item) => (
@@ -214,13 +214,13 @@ export function ListingsFilterPanel({
             <span>Vites</span>
             <select
               value={filters.transmission ?? ""}
-              onChange={(event) =>
+              onChange={(event: any) =>
                 onFilterChange(
                   "transmission",
                   (event.target.value || undefined) as ListingFilters["transmission"],
                 )
               }
-              className="h-11 w-full rounded-xl border border-input bg-background px-4 text-sm outline-none transition-colors focus:border-primary focus-visible:ring-2 focus-visible:ring-primary/20"
+              className="h-9 w-full rounded-md border border-slate-200 bg-white px-3 text-[13px] outline-none transition-colors focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
             >
               <option value="">Tümü</option>
               {transmissionTypes.map((item) => (
@@ -239,13 +239,13 @@ export function ListingsFilterPanel({
               type="number"
               min="0"
               value={filters.minPrice ?? ""}
-              onChange={(event) =>
+              onChange={(event: any) =>
                 onFilterChange(
                   "minPrice",
                   event.target.value ? Number(event.target.value) : undefined,
                 )
               }
-              className="h-11 w-full rounded-xl border border-input bg-background px-4 text-sm outline-none transition-colors focus:border-primary focus-visible:ring-2 focus-visible:ring-primary/20"
+              className="h-9 w-full rounded-md border border-slate-200 bg-white px-3 text-[13px] outline-none transition-colors focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
             />
           </label>
 
@@ -255,13 +255,13 @@ export function ListingsFilterPanel({
               type="number"
               min="0"
               value={filters.maxPrice ?? ""}
-              onChange={(event) =>
+              onChange={(event: any) =>
                 onFilterChange(
                   "maxPrice",
                   event.target.value ? Number(event.target.value) : undefined,
                 )
               }
-              className="h-11 w-full rounded-xl border border-input bg-background px-4 text-sm outline-none transition-colors focus:border-primary focus-visible:ring-2 focus-visible:ring-primary/20"
+              className="h-9 w-full rounded-md border border-slate-200 bg-white px-3 text-[13px] outline-none transition-colors focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
             />
           </label>
         </div>
@@ -274,13 +274,13 @@ export function ListingsFilterPanel({
               min={minimumCarYear}
               max={maximumCarYear}
               value={filters.minYear ?? ""}
-              onChange={(event) =>
+              onChange={(event: any) =>
                 onFilterChange(
                   "minYear",
                   event.target.value ? Number(event.target.value) : undefined,
                 )
               }
-              className="h-11 w-full rounded-xl border border-input bg-background px-4 text-sm outline-none transition-colors focus:border-primary focus-visible:ring-2 focus-visible:ring-primary/20"
+              className="h-9 w-full rounded-md border border-slate-200 bg-white px-3 text-[13px] outline-none transition-colors focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
             />
           </label>
 
@@ -291,13 +291,13 @@ export function ListingsFilterPanel({
               min={minimumCarYear}
               max={maximumCarYear}
               value={filters.maxYear ?? ""}
-              onChange={(event) =>
+              onChange={(event: any) =>
                 onFilterChange(
                   "maxYear",
                   event.target.value ? Number(event.target.value) : undefined,
                 )
               }
-              className="h-11 w-full rounded-xl border border-input bg-background px-4 text-sm outline-none transition-colors focus:border-primary focus-visible:ring-2 focus-visible:ring-primary/20"
+              className="h-9 w-full rounded-md border border-slate-200 bg-white px-3 text-[13px] outline-none transition-colors focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
             />
           </label>
         </div>
@@ -309,13 +309,13 @@ export function ListingsFilterPanel({
             min="0"
             max={maximumMileage}
             value={filters.maxMileage ?? ""}
-            onChange={(event) =>
+            onChange={(event: any) =>
               onFilterChange(
                 "maxMileage",
                 event.target.value ? Number(event.target.value) : undefined,
               )
             }
-            className="h-11 w-full rounded-xl border border-input bg-background px-4 text-sm outline-none transition-colors focus:border-primary focus-visible:ring-2 focus-visible:ring-primary/20"
+            className="h-9 w-full rounded-md border border-slate-200 bg-white px-3 text-[13px] outline-none transition-colors focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
           />
         </label>
       </div>

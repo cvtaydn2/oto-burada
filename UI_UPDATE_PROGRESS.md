@@ -31,8 +31,16 @@
 
 ## Plan
 
-1. Migrate and strengthen shared components taking inputs from `.figma-import`.
-2. Update public facing pages (`Home`, `ListingDetail`, `Login`, `Register`).
-3. Update Auth/Dashboard pages (`Dashboard`, `Profile`, `Favorites`, `DashboardListings`, `CreateListing`).
-4. Implement new/missing screens if they fit the scope (like Seller Profile).
-5. Ensure responsive design and proper data wiring.
+- [x] Phase 1: Migrate and strengthen shared components.
+- [x] Phase 2: Update Auth/Dashboard pages.
+- [x] Phase 3: Marketplace Density & Layout Revamp (COMPLETED)
+- [x] Convert header to a compact, top-navigation style.
+- [x] Restructure `ListingsPageClient` to a list-view default layout.
+- [x] Compact filter sidebar (smaller heights, smaller text).
+- [x] Change `ListingCard` to a dense horizontal row format (`sahibinden.com` style) for desktop.
+- [x] Change `ListingCard` to a responsive, horizontally scrollable/compact row for mobile to ensure high density.
+- [x] Condense `ListingDetailPage` into a split-pane highly dense layout with sticky sidebars.
+- [x] Resolved component breakage during file modification in `listing-card.tsx`.
+- [x] Fixed all remaining TypeScript implicit any errors reported in `current_problems` (e.g. `listings-filter-panel.tsx` event types, `listing/[slug]/page.tsx` map parameter types).
+
+**Next Step:** Review application manually for any edge-case visual bugs, but the primary refactoring is functionally and structurally complete.
