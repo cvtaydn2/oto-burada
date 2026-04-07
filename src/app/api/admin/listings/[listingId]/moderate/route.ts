@@ -5,11 +5,31 @@ import { createAdminModerationAction } from "@/services/admin/moderation-actions
 import {
   moderateDatabaseListing,
 } from "@/services/listings/listing-submissions";
+import { rateLimitProfiles } from "@/lib/utils/rate-limit";
+import { checkRateLimit } from "@/lib/utils/rate-limit-middleware";
+import { headers } from "next/headers";
+import { sanitizeText } from "@/lib/utils/sanitize";
+
+async function getClientIp() {
+  const headersList = await headers();
+  const forwarded = headersList.get("x-forwarded-for");
+  const realIp = headersList.get("x-real-ip");
+  return (forwarded?.split(",")[0]?.trim() || realIp || "unknown");
+}
 
 export async function POST(
   request: Request,
   context: { params: Promise<{ listingId: string }> },
 ) {
+  const ipRateLimit = checkRateLimit(`admin:moderate:${getClientIp()}`, rateLimitProfiles.adminModerate);
+
+  if (!ipRateLimit.allowed) {
+    return NextResponse.json(
+      { message: "Cok fazla moderasyon istegi. Lutfen bekle." },
+      { status: 429, headers: { "Retry-After": "60" } },
+    );
+  }
+
   const adminUser = await requireAdminUser();
 
   let body: unknown;
@@ -22,8 +42,9 @@ export async function POST(
 
   const action =
     typeof body === "object" && body !== null && "action" in body ? String(body.action ?? "") : "";
-  const note =
+  const rawNote =
     typeof body === "object" && body !== null && "note" in body ? String(body.note ?? "").trim() : "";
+  const note = rawNote ? sanitizeText(rawNote) : "";
 
   if (action !== "approve" && action !== "reject") {
     return NextResponse.json({ message: "Gecersiz moderasyon aksiyonu." }, { status: 400 });

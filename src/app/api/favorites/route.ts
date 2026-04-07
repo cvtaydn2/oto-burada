@@ -7,7 +7,7 @@ import {
   getDatabaseFavoriteIds,
   removeDatabaseFavorite,
 } from "@/services/favorites/favorite-records";
-import { getAllKnownListings } from "@/services/listings/marketplace-listings";
+import { checkListingExistsById } from "@/services/listings/listing-submissions";
 import { ensureProfileRecord } from "@/services/profile/profile-records";
 
 function getListingIdFromBody(body: unknown) {
@@ -70,7 +70,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ message: "Gecerli bir ilan secmelisin." }, { status: 400 });
   }
 
-  const listingExists = (await getAllKnownListings()).some((listing) => listing.id === listingId);
+  const listingExists = await checkListingExistsById(listingId);
 
   if (!listingExists) {
     return NextResponse.json({ message: "Favoriye eklenecek ilan bulunamadi." }, { status: 404 });

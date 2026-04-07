@@ -97,6 +97,9 @@ export const rateLimitProfiles = {
   /** Report creation: 5 per hour per user */
   reportCreate: { limit: 5, windowMs: 60 * 60 * 1000 } satisfies RateLimitConfig,
 
+  /** Admin moderate: 30 per minute per IP */
+  adminModerate: { limit: 30, windowMs: 60 * 1000 } satisfies RateLimitConfig,
+
   /** General API: 60 per minute per IP */
   general: { limit: 60, windowMs: 60 * 1000 } satisfies RateLimitConfig,
 } as const;

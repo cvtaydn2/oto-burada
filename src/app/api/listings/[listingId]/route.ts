@@ -1,37 +1,18 @@
-import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
-import type { ZodIssue } from "zod";
 
 import { exampleListings } from "@/data";
 import { hasSupabaseEnv } from "@/lib/supabase/env";
 import { sanitizeText, sanitizeDescription } from "@/lib/utils/sanitize";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { listingCreateFormSchema, listingCreateSchema } from "@/lib/validators";
+import { issuesToFieldErrors } from "@/lib/utils/validation-helpers";
 import {
   buildUpdatedListing,
   deleteDatabaseListing,
   findEditableListingById,
   getStoredListings,
-  listingSubmissionsCookieName,
-  listingSubmissionsCookieOptions,
-  parseStoredListings,
-  replaceStoredListing,
-  serializeStoredListings,
   updateDatabaseListing,
 } from "@/services/listings/listing-submissions";
-
-function issuesToFieldErrors(issues: ZodIssue[]) {
-  return issues.reduce<Record<string, string>>((fieldErrors, issue) => {
-    const path = issue.path.join(".");
-
-    if (!path || fieldErrors[path]) {
-      return fieldErrors;
-    }
-
-    fieldErrors[path] = issue.message;
-    return fieldErrors;
-  }, {});
-}
 
 export async function PATCH(
   request: Request,
@@ -145,26 +126,10 @@ export async function PATCH(
     });
   }
 
-  const cookieStore = await cookies();
-  const cookieListings = parseStoredListings(cookieStore.get(listingSubmissionsCookieName)?.value);
-
-  const response = NextResponse.json({
-    listing: {
-      id: updatedListing.id,
-      slug: updatedListing.slug,
-      status: updatedListing.status,
-      title: updatedListing.title,
-    },
-    message: "Ilan bilgilerin guncellendi.",
-  });
-
-  response.cookies.set(
-    listingSubmissionsCookieName,
-    serializeStoredListings(replaceStoredListing(cookieListings, updatedListing)),
-    listingSubmissionsCookieOptions,
+  return NextResponse.json(
+    { message: "Ilan kaydedilemedi. Lutfen tekrar dene." },
+    { status: 500 },
   );
-
-  return response;
 }
 
 export async function DELETE(

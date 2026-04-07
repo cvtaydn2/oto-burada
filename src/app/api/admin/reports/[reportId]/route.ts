@@ -4,6 +4,17 @@ import { requireAdminUser } from "@/lib/auth/session";
 import { createAdminModerationAction } from "@/services/admin/moderation-actions";
 import { updateDatabaseReportStatus } from "@/services/reports/report-submissions";
 import type { ReportStatus } from "@/types";
+import { rateLimitProfiles } from "@/lib/utils/rate-limit";
+import { checkRateLimit } from "@/lib/utils/rate-limit-middleware";
+import { headers } from "next/headers";
+import { sanitizeText } from "@/lib/utils/sanitize";
+
+async function getClientIp() {
+  const headersList = await headers();
+  const forwarded = headersList.get("x-forwarded-for");
+  const realIp = headersList.get("x-real-ip");
+  return (forwarded?.split(",")[0]?.trim() || realIp || "unknown");
+}
 
 const allowedStatuses: ReportStatus[] = ["reviewing", "resolved", "dismissed"];
 
@@ -11,6 +22,15 @@ export async function PATCH(
   request: Request,
   context: { params: Promise<{ reportId: string }> },
 ) {
+  const ipRateLimit = checkRateLimit(`admin:report:${getClientIp()}`, rateLimitProfiles.adminModerate);
+
+  if (!ipRateLimit.allowed) {
+    return NextResponse.json(
+      { message: "Cok fazla rapor istegi. Lutfen bekle." },
+      { status: 429, headers: { "Retry-After": "60" } },
+    );
+  }
+
   const adminUser = await requireAdminUser();
 
   let body: unknown;
@@ -25,8 +45,9 @@ export async function PATCH(
     typeof body === "object" && body !== null && "status" in body
       ? String(body.status ?? "")
       : "";
-  const note =
+  const rawNote =
     typeof body === "object" && body !== null && "note" in body ? String(body.note ?? "").trim() : "";
+  const note = rawNote ? sanitizeText(rawNote) : "";
 
   if (!allowedStatuses.includes(status as ReportStatus)) {
     return NextResponse.json({ message: "Gecersiz rapor durumu." }, { status: 400 });

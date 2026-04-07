@@ -1,39 +1,18 @@
-import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
-import type { ZodIssue } from "zod";
 
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { hasSupabaseEnv } from "@/lib/supabase/env";
 import { rateLimitProfiles } from "@/lib/utils/rate-limit";
 import { enforceRateLimit, getRateLimitKey, getUserRateLimitKey } from "@/lib/utils/rate-limit-middleware";
 import { sanitizeDescription } from "@/lib/utils/sanitize";
+import { issuesToFieldErrors } from "@/lib/utils/validation-helpers";
 import { reportCreateSchema } from "@/lib/validators";
 import {
-  buildReport,
   createOrUpdateDatabaseReport,
   getDatabaseActiveReport,
-  getExistingActiveReport,
-  parseStoredReports,
-  reportsCookieName,
-  reportsCookieOptions,
-  replaceStoredReport,
-  serializeStoredReports,
 } from "@/services/reports/report-submissions";
-import { getAllKnownListings } from "@/services/listings/marketplace-listings";
+import { getStoredListingById } from "@/services/listings/listing-submissions";
 import { ensureProfileRecord } from "@/services/profile/profile-records";
-
-function issuesToFieldErrors(issues: ZodIssue[]) {
-  return issues.reduce<Record<string, string>>((fieldErrors, issue) => {
-    const path = issue.path.join(".");
-
-    if (!path || fieldErrors[path]) {
-      return fieldErrors;
-    }
-
-    fieldErrors[path] = issue.message;
-    return fieldErrors;
-  }, {});
-}
 
 export async function POST(request: Request) {
   const ipRateLimit = enforceRateLimit(
@@ -97,23 +76,19 @@ export async function POST(request: Request) {
     return userRateLimit.response;
   }
 
-  const matchedListing = (await getAllKnownListings()).find(
-    (listing) => listing.id === parsed.data.listingId,
-  );
+  const listing = await getStoredListingById(parsed.data.listingId);
 
-  if (!matchedListing) {
+  if (!listing) {
     return NextResponse.json({ message: "Raporlanacak ilan bulunamadi." }, { status: 404 });
   }
 
-  if (matchedListing.sellerId === user.id) {
+  if (listing.sellerId === user.id) {
     return NextResponse.json(
       { message: "Kendi ilanini raporlayamazsin." },
       { status: 400 },
     );
   }
 
-  const cookieStore = await cookies();
-  const existingReports = parseStoredReports(cookieStore.get(reportsCookieName)?.value);
   await ensureProfileRecord(user);
 
   const sanitizedData = {
@@ -128,35 +103,20 @@ export async function POST(request: Request) {
     activeDatabaseReport,
   );
 
-  if (persistedReport) {
-    return NextResponse.json({
-      report: {
-        id: persistedReport.id,
-        status: persistedReport.status,
-      },
-      message: activeDatabaseReport
-        ? "Ayni ilan icin acik raporun guncellendi."
-        : "Raporun inceleme sirasina alindi.",
-    });
+  if (!persistedReport) {
+    return NextResponse.json(
+      { message: "Rapor kaydedilemedi. Lutfen tekrar dene." },
+      { status: 500 },
+    );
   }
 
-  const activeReport = getExistingActiveReport(existingReports, parsed.data.listingId, user.id);
-  const nextReport = buildReport(parsed.data, user.id, activeReport);
-  const response = NextResponse.json({
+  return NextResponse.json({
     report: {
-      id: nextReport.id,
-      status: nextReport.status,
+      id: persistedReport.id,
+      status: persistedReport.status,
     },
-    message: activeReport
+    message: activeDatabaseReport
       ? "Ayni ilan icin acik raporun guncellendi."
       : "Raporun inceleme sirasina alindi.",
   });
-
-  response.cookies.set(
-    reportsCookieName,
-    serializeStoredReports(replaceStoredReport(existingReports, nextReport)),
-    reportsCookieOptions,
-  );
-
-  return response;
 }

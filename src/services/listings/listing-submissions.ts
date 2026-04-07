@@ -780,6 +780,16 @@ export async function getStoredListingBySlug(slug: string) {
   return databaseListings?.[0] ?? null;
 }
 
+export async function checkListingExistsById(listingId: string) {
+  const databaseListings = await getDatabaseListings({ ids: [listingId] });
+  return databaseListings && databaseListings.length > 0;
+}
+
+export async function getStoredListingById(listingId: string) {
+  const databaseListings = await getDatabaseListings({ ids: [listingId] });
+  return databaseListings?.[0] ?? null;
+}
+
 export async function getStoredListingsByIds(ids: string[]) {
   if (ids.length === 0) {
     return [];

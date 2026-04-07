@@ -401,10 +401,73 @@ Her yeni geliştirme başlamadan önce okunmalıdır.
 
 ---
 
+## Backend Deep Audit Tamamlananlar
+
+### C-01: Auth Actions Console.log Sızıntısı
+- **Çözüm:** `console.log` kaldırıldı, rate limiting eklendi.
+- **Dosya:** `src/lib/auth/actions.ts`
+- **Durum:** ✅ Tamamlandı
+
+### C-02: Auth Rate Limiting
+- **Çözüm:** `loginAction` ve `registerAction` IP tabanlı rate limiting ile korunuyor.
+- **Dosya:** `src/lib/auth/actions.ts`
+- **Durum:** ✅ Tamamlandı
+
+### C-03: Admin Endpoint Rate Limiting
+- **Çözüm:** `moderate` ve `report` endpoint'lerine IP tabanlı rate limiting eklendi.
+- **Dosyalar:** `src/app/api/admin/listings/[listingId]/moderate/route.ts`, `src/app/api/admin/reports/[reportId]/route.ts`
+- **Durum:** ✅ Tamamlandı
+
+### C-04/05/06: Cookie Fallback Temizliği
+- **Çözüm:** Admin moderate, report create ve listing create/update'ten cookie fallback kaldırıldı.
+- **Dosyalar:** `src/app/api/admin/listings/[listingId]/moderate/route.ts`, `src/app/api/reports/route.ts`, `src/app/api/listings/route.ts`, `src/app/api/listings/[listingId]/route.ts`
+- **Durum:** ✅ Tamamlandı
+
+### C-07/08: getAllKnownListings N+1 Performans Fix
+- **Çözüm:** Tüm ilanları çekmek yerine tekil DB sorgusu kullanılıyor. Yeni `checkListingExistsById` ve `getStoredListingById` fonksiyonları eklendi.
+- **Dosyalar:** `src/app/api/favorites/route.ts`, `src/app/api/reports/route.ts`
+- **Durum:** ✅ Tamamlandı
+
+### C-09/10: Cookie Secure Flag
+- **Çözüm:** Zaten mevcuttu (`secure: process.env.NODE_ENV === "production"`).
+- **Dosyalar:** `src/services/listings/listing-submissions.ts`, `src/services/reports/report-submissions.ts`
+- **Durum:** ✅ Zaten mevcut
+
+### I-01/02: Listing Cookie Write Kaldırıldı
+- **Çözüm:** DB başarısız olursa artık hata dönüyor, cookie'ye yazmıyor.
+- **Dosyalar:** `src/app/api/listings/route.ts`, `src/app/api/listings/[listingId]/route.ts`
+- **Durum:** ✅ Tamamlandı
+
+### I-03: issuesToFieldErrors Extract
+- **Çözüm:** `src/lib/utils/validation-helpers.ts` dosyasına taşındı.
+- **Dosyalar:** `src/app/api/listings/route.ts`, `src/app/api/listings/[listingId]/route.ts`, `src/app/api/reports/route.ts`
+- **Durum:** ✅ Tamamlandı
+
+### I-04: getAuthenticatedUser Helper
+- **Çözüm:** `src/lib/auth/session.ts`'e `getAuthenticatedUserOrThrow` eklendi.
+- **Dosya:** `src/lib/auth/session.ts`
+- **Durum:** ✅ Tamamlandı
+
+### I-05: Seed Data İzolasyonu
+- **Çözüm:** `process.env.NODE_ENV === "development"` kontrolü ile seed data izole edildi.
+- **Dosya:** `src/services/listings/marketplace-listings.ts`
+- **Durum:** ✅ Tamamlandı
+
+### I-08: Admin Note Sanitize
+- **Çözüm:** Admin note alanları `sanitizeText` ile sanitize ediliyor.
+- **Dosyalar:** `src/app/api/admin/listings/[listingId]/moderate/route.ts`, `src/app/api/admin/reports/[reportId]/route.ts`
+- **Durum:** ✅ Tamamlandı
+
+### I-10: Logout Cookie Write Kaldırıldı
+- **Çözüm:** Logout sırasında favorileri cookie'ye yazan kod kaldırıldı.
+- **Dosya:** `src/lib/auth/actions.ts`
+- **Durum:** ✅ Tamamlandı
+
+---
+
 ## Sonraki Görev
-- 🎉 **Tüm 12 backend geliştirme görevi tamamlandı!**
-- İsteğe bağlı: Mevcut endpoint'leri `apiSuccess`/`apiError` helper'larıyla refactor etme.
-- İsteğe bağlı: `logger` utility'sini mevcut servislere entegre etme.
+- 🎉 **Backend deep audit tamamlandı!**
+- İsteğe bağlı: CSRF protection, request size limits, magic bytes image kontrolü, price üst limit, WhatsApp phone auth-gate, CASCADE politikası gözden geçirme, archived ilan update engelleme, slug collision retry, structured error logging, security headers ekleme.
 
 ---
 

@@ -2,6 +2,8 @@ import { NextResponse } from "next/server";
 
 import { checkRateLimit, type RateLimitConfig, type RateLimitResult } from "@/lib/utils/rate-limit";
 
+export { checkRateLimit };
+
 /**
  * Extract a request identifier for rate limiting.
  * Uses X-Forwarded-For, X-Real-IP, or falls back to a generic key.

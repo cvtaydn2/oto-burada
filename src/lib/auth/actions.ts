@@ -1,11 +1,13 @@
 "use server";
 
 import { redirect } from "next/navigation";
+import { headers } from "next/headers";
 
 import { loginSchema, registerSchema } from "@/lib/validators";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { hasSupabaseEnv } from "@/lib/supabase/env";
-import { writeFavoriteIds } from "@/services/favorites/favorites-storage";
+import { rateLimitProfiles } from "@/lib/utils/rate-limit";
+import { checkRateLimit } from "@/lib/utils/rate-limit-middleware";
 
 export interface AuthActionState {
   error?: string;
@@ -22,11 +24,26 @@ function getEmailRedirectUrl() {
   return `${appUrl.replace(/\/$/, "")}/auth/callback`;
 }
 
+async function getClientIp() {
+  const headersList = await headers();
+  const forwarded = headersList.get("x-forwarded-for");
+  const realIp = headersList.get("x-real-ip");
+  return (forwarded?.split(",")[0]?.trim() || realIp || "unknown");
+}
+
 export async function loginAction(
   previousState: AuthActionState = initialState,
   formData: FormData,
 ): Promise<AuthActionState> {
   void previousState;
+
+  const ipRateLimit = checkRateLimit(`auth:login:${getClientIp()}`, rateLimitProfiles.auth);
+
+  if (!ipRateLimit.allowed) {
+    return {
+      error: "Çok fazla giriş denemesi yaptın. Lütfen biraz bekle ve tekrar dene.",
+    };
+  }
 
   const values = {
     email: String(formData.get("email") ?? ""),
@@ -69,6 +86,14 @@ export async function registerAction(
   formData: FormData,
 ): Promise<AuthActionState> {
   void previousState;
+
+  const ipRateLimit = checkRateLimit(`auth:register:${getClientIp()}`, rateLimitProfiles.auth);
+
+  if (!ipRateLimit.allowed) {
+    return {
+      error: "Çok fazla kayıt denemesi yaptın. Lütfen biraz bekle ve tekrar dene.",
+    };
+  }
 
   const values = {
     email: String(formData.get("email") ?? ""),
@@ -127,25 +152,6 @@ export async function logoutAction() {
   }
 
   const supabase = await createSupabaseServerClient();
-  
-  const { data: { user } } = await supabase.auth.getUser();
-  const userId = user?.id;
-
-  if (userId) {
-    try {
-      const { data: favorites } = await supabase
-        .from("favorites")
-        .select("listing_id")
-        .eq("user_id", userId);
-      
-      if (favorites && favorites.length > 0) {
-        const listingIds = favorites.map(f => f.listing_id);
-        writeFavoriteIds(listingIds);
-      }
-    } catch {
-      // Ignore migration errors during logout
-    }
-  }
 
   await supabase.auth.signOut();
   redirect("/");

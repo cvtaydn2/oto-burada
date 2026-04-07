@@ -7,6 +7,8 @@ import {
 } from "@/services/listings/listing-submissions";
 import type { Listing, Profile } from "@/types";
 
+const isDev = process.env.NODE_ENV === "development";
+
 function mergeListings(primary: Listing[], secondary: Listing[]) {
   const listingMap = new Map<string, Listing>();
 
@@ -19,6 +21,13 @@ function mergeListings(primary: Listing[], secondary: Listing[]) {
 
 export async function getAllKnownListings() {
   const storedListings = await getStoredListings();
+  
+  if (!isDev) {
+    return storedListings.sort(
+      (left, right) => Date.parse(right.updatedAt) - Date.parse(left.updatedAt),
+    );
+  }
+  
   return mergeListings(storedListings, exampleListings).sort(
     (left, right) => Date.parse(right.updatedAt) - Date.parse(left.updatedAt),
   );
@@ -32,6 +41,11 @@ export async function getPublicMarketplaceListings() {
 
 export async function getMarketplaceListingsByIds(ids: string[]) {
   const storedListings = await getStoredListingsByIds(ids);
+  
+  if (!isDev) {
+    return storedListings;
+  }
+
   const seedListings = exampleListings.filter((listing) => ids.includes(listing.id));
 
   return mergeListings(storedListings, seedListings);
@@ -44,6 +58,10 @@ export async function getMarketplaceListingBySlug(slug: string) {
     return storedListing;
   }
 
+  if (!isDev) {
+    return null;
+  }
+
   return exampleListings.find((listing) => listing.slug === slug) ?? null;
 }
 
@@ -52,6 +70,10 @@ export async function getMarketplaceSeller(sellerId: string): Promise<Profile | 
 
   if (storedProfile) {
     return storedProfile;
+  }
+
+  if (!isDev) {
+    return null;
   }
 
   return allUsers.find((user) => user.id === sellerId) ?? null;

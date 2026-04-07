@@ -1,4 +1,3 @@
-import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 import type { ZodIssue } from "zod";
 
@@ -7,30 +6,14 @@ import { hasSupabaseEnv } from "@/lib/supabase/env";
 import { rateLimitProfiles } from "@/lib/utils/rate-limit";
 import { enforceRateLimit, getRateLimitKey, getUserRateLimitKey } from "@/lib/utils/rate-limit-middleware";
 import { sanitizeText, sanitizeDescription } from "@/lib/utils/sanitize";
+import { issuesToFieldErrors } from "@/lib/utils/validation-helpers";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { listingCreateFormSchema, listingCreateSchema } from "@/lib/validators";
 import {
   buildPendingListing,
   createDatabaseListing,
-  listingSubmissionsCookieName,
-  listingSubmissionsCookieOptions,
-  parseStoredListings,
-  serializeStoredListings,
 } from "@/services/listings/listing-submissions";
 import { ensureProfileRecord } from "@/services/profile/profile-records";
-
-function issuesToFieldErrors(issues: ZodIssue[]) {
-  return issues.reduce<Record<string, string>>((fieldErrors, issue) => {
-    const path = issue.path.join(".");
-
-    if (!path || fieldErrors[path]) {
-      return fieldErrors;
-    }
-
-    fieldErrors[path] = issue.message;
-    return fieldErrors;
-  }, {});
-}
 
 export async function POST(request: Request) {
   const ipRateLimit = enforceRateLimit(
@@ -127,15 +110,10 @@ export async function POST(request: Request) {
     );
   }
 
-  const cookieStore = await cookies();
-  const existingListings = parseStoredListings(
-    cookieStore.get(listingSubmissionsCookieName)?.value,
-  );
   await ensureProfileRecord(user);
 
   const createdListing = buildPendingListing(parsedListingInput.data, user.id, [
     ...exampleListings,
-    ...existingListings,
   ]);
   const persistedListing = await createDatabaseListing(createdListing);
 
@@ -151,21 +129,8 @@ export async function POST(request: Request) {
     });
   }
 
-  const response = NextResponse.json({
-    message: "İlanın kaydedildi ve moderasyon incelemesine gönderildi.",
-    listing: {
-      id: createdListing.id,
-      slug: createdListing.slug,
-      status: createdListing.status,
-      title: createdListing.title,
-    },
-  });
-
-  response.cookies.set(
-    listingSubmissionsCookieName,
-    serializeStoredListings([createdListing, ...existingListings]),
-    listingSubmissionsCookieOptions,
+  return NextResponse.json(
+    { message: "İlan kaydedilemedi. Lütfen tekrar dene." },
+    { status: 500 },
   );
-
-  return response;
 }
