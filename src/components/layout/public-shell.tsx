@@ -6,13 +6,15 @@ import { SiteHeader } from "@/components/layout/site-header";
 
 export function PublicShell({ children }: PropsWithChildren) {
   return (
-    <>
+    <div className="min-h-screen flex flex-col">
       <SiteHeader />
-      <div className="flex min-h-[calc(100vh-73px)] flex-col">
-        <div className="flex-1 pb-24 lg:pb-0">{children}</div>
+      <div className="flex flex-col flex-1">
+        <main className="flex-1 pb-24 lg:pb-0" role="main">
+          {children}
+        </main>
         <SiteFooter />
       </div>
       <MobileNav />
-    </>
+    </div>
   );
 }

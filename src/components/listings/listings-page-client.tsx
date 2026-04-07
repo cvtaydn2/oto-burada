@@ -519,7 +519,7 @@ export function ListingsPageClient({
                     <div className="flex flex-col">
                       {filteredListings.slice(0, visibleCount).map((listing, index) => (
                         <div key={listing.id} className={index !== 0 ? "border-t border-slate-100" : ""}>
-                          <ListingCard listing={listing} />
+                          <ListingCard listing={listing} priority={index < 4} />
                         </div>
                       ))}
                     </div>

@@ -8,6 +8,9 @@
     "start": "next start",
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
+    "test": "playwright test",
+    "test:ui": "playwright test --ui",
+    "test:report": "playwright show-report",
     "db:check-env": "node scripts/check-supabase-env.mjs",
     "db:apply-schema": "node scripts/apply-supabase-schema.mjs",
     "db:seed-demo": "node scripts/seed-supabase-demo.mjs",
@@ -69,6 +72,7 @@
     "zod": "^4.3.6"
   },
   "devDependencies": {
+    "@playwright/test": "^1.59.1",
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
     "@types/react": "^19",

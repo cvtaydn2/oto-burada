@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 
 import { ListingsPageClient } from "@/components/listings/listings-page-client";
+import { ListingStructuredData, OrganizationStructuredData } from "@/components/seo/structured-data";
 import { brandCatalog, cityOptions } from "@/data";
 import { buildListingsMetadata } from "@/lib/seo";
 import { parseListingFiltersFromSearchParams } from "@/services/listings/listing-filters";
@@ -26,12 +27,20 @@ export default async function HomePage({ searchParams }: ListingsPageProps) {
   const listings = await getPublicMarketplaceListings();
 
   return (
-    <ListingsPageClient
-      key={initialFiltersKey}
-      listings={listings}
-      brands={brandCatalog}
-      cities={cityOptions}
-      initialFilters={initialFilters}
-    />
+    <>
+      <OrganizationStructuredData 
+        name="OtoBurada"
+        url="https://otoburada.com"
+        description="Türkiye'nin en güvenilir 2. el ve sıfır otomobil pazarı. Binlerce araç içinden hayalindeki arabayı bul."
+      />
+      <ListingStructuredData listings={listings} url="https://otoburada.com" />
+      <ListingsPageClient
+        key={initialFiltersKey}
+        listings={listings}
+        brands={brandCatalog}
+        cities={cityOptions}
+        initialFilters={initialFilters}
+      />
+    </>
   );
 }

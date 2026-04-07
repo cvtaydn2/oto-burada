@@ -22,6 +22,7 @@ import {
 
 import { FavoriteButton } from "@/components/listings/favorite-button";
 import { ListingGallery } from "@/components/listings/listing-gallery";
+import { ListingDetailStructuredData, BreadcrumbStructuredData } from "@/components/seo/structured-data";
 import { ReportListingForm } from "@/components/forms/report-listing-form";
 import { ShareButton } from "@/components/listings/share-button";
 import { ListingCard } from "@/components/listings/listing-card";
@@ -153,7 +154,15 @@ export default async function ListingDetailPage({ params }: ListingDetailPagePro
   ];
 
   return (
-    <main className="min-h-screen bg-slate-50/50">
+    <>
+      <ListingDetailStructuredData listing={listing} url={`https://otoburada.com/listing/${listing.slug}`} />
+      <BreadcrumbStructuredData items={[
+        { name: "Ana Sayfa", url: "https://otoburada.com" },
+        { name: "İlanlar", url: "https://otoburada.com/listings" },
+        { name: listing.brand, url: `https://otoburada.com/listings?brand=${encodeURIComponent(listing.brand)}` },
+        { name: `${listing.brand} ${listing.model}`, url: `https://otoburada.com/listing/${listing.slug}` }
+      ]} />
+      <main className="min-h-screen bg-slate-50/50" role="main">
       <div className="mx-auto flex w-full max-w-7xl flex-col px-4 py-6 sm:px-6 lg:px-8">
         
         {/* Breadcrumb */}
@@ -373,5 +382,6 @@ export default async function ListingDetailPage({ params }: ListingDetailPagePro
         </article>
       </div>
     </main>
+    </>
   );
 }
