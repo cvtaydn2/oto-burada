@@ -1,6 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
-import { AlertTriangle, Sparkles, Heart } from "lucide-react";
+import { AlertTriangle, Sparkles } from "lucide-react";
 
 import { FavoriteButton } from "@/components/listings/favorite-button";
 import { formatCurrency, formatDate, formatNumber } from "@/lib/utils";

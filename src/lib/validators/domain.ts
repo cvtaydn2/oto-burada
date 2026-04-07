@@ -48,17 +48,19 @@ const optionalTrimmedString = z.preprocess(
 const positiveCurrencySchema = z.coerce.number().finite().min(1, invalidMessage);
 const nonNegativeNumberSchema = z.coerce.number().finite().min(0, invalidMessage);
 
-const phoneSchema = z
+const timestampSchema = z.string().trim().min(1, "Geçerli bir tarih gir");
+
+const lenientPhoneSchema = z
   .string()
   .trim()
-  .regex(/^\+?[0-9\s]{10,15}$/, "Geçerli bir telefon numarası gir");
-
-const timestampSchema = z.string().trim().min(1, "Geçerli bir tarih gir");
+  .refine((val) => val === "" || /^\+?[0-9\s]{10,15}$/.test(val), {
+    message: "Geçerli bir telefon numarası gir",
+  });
 
 export const profileSchema: z.ZodType<Profile> = z.object({
   id: trimmedRequiredString,
   fullName: trimmedRequiredString,
-  phone: phoneSchema,
+  phone: lenientPhoneSchema,
   city: trimmedRequiredString,
   avatarUrl: z.string().trim().url(invalidMessage).nullable().optional(),
   role: z.enum(userRoles),
@@ -68,7 +70,7 @@ export const profileSchema: z.ZodType<Profile> = z.object({
 
 export const profileUpdateSchema = z.object({
   fullName: trimmedRequiredString,
-  phone: phoneSchema,
+  phone: lenientPhoneSchema,
   city: trimmedRequiredString,
   avatarUrl: z.preprocess(
     emptyStringToUndefined,
@@ -98,7 +100,7 @@ export const listingCreateSchema: z.ZodType<ListingCreateInput> = z.object({
   city: trimmedRequiredString,
   district: trimmedRequiredString,
   description: trimmedRequiredString.min(20, "Açıklama en az 20 karakter olmalı"),
-  whatsappPhone: phoneSchema,
+  whatsappPhone: lenientPhoneSchema,
   images: z
     .array(listingImageSchema)
     .min(minimumListingImages, "En az 3 fotoğraf eklemelisin"),
@@ -116,7 +118,7 @@ export const listingCreateFormSchema = z.object({
   city: trimmedRequiredString,
   district: trimmedRequiredString,
   description: trimmedRequiredString.min(20, "Açıklama en az 20 karakter olmalı"),
-  whatsappPhone: phoneSchema,
+  whatsappPhone: lenientPhoneSchema,
   images: z
     .array(
       z.object({
@@ -189,7 +191,7 @@ export const listingSchema: z.ZodType<Listing> = z.object({
   city: trimmedRequiredString,
   district: trimmedRequiredString,
   description: trimmedRequiredString,
-  whatsappPhone: phoneSchema,
+  whatsappPhone: lenientPhoneSchema,
   status: z.enum(listingStatuses),
   images: z.array(listingImageSchema),
   featured: z.boolean(),

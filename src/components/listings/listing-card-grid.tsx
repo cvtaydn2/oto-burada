@@ -1,5 +1,9 @@
+"use client";
+
+import React from "react";
+
 import Image from "next/image";
-import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { Sparkles } from "lucide-react";
 
 import { FavoriteButton } from "@/components/listings/favorite-button";
@@ -9,17 +13,28 @@ import type { Listing } from "@/types";
 
 interface ListingCardGridProps {
   listing: Listing;
+  priority?: boolean;
 }
 
-export function ListingCardGrid({ listing }: ListingCardGridProps) {
+export function ListingCardGrid({ listing, priority = false }: ListingCardGridProps) {
+  const router = useRouter();
   const coverImage = listing.images.find((image) => image.isCover) ?? listing.images[0];
   const detailHref = `/listing/${listing.slug}`;
   const insight = getListingCardInsights(listing);
 
+  const handleCardClick = (e: React.MouseEvent) => {
+    const target = e.target as HTMLElement;
+    if (target.closest("button")) return;
+    router.push(detailHref);
+  };
+
   return (
-    <Link
-      href={detailHref}
-      className="group relative flex flex-col bg-white rounded-2xl border border-slate-200/60 overflow-hidden transition-all hover:shadow-lg hover:border-indigo-200 hover:-translate-y-1"
+    <div
+      role="button"
+      tabIndex={0}
+      onClick={handleCardClick}
+      onKeyDown={(e) => e.key === "Enter" && router.push(detailHref)}
+      className="group relative flex flex-col bg-white rounded-2xl border border-slate-200/60 overflow-hidden transition-all hover:shadow-lg hover:border-indigo-200 hover:-translate-y-1 cursor-pointer"
     >
       {/* Image */}
       <div className="relative w-full aspect-[4/3] overflow-hidden bg-slate-100">
@@ -29,6 +44,7 @@ export function ListingCardGrid({ listing }: ListingCardGridProps) {
             alt={listing.title}
             fill
             sizes="(min-width: 1024px) 25vw, (min-width: 640px) 33vw, 50vw"
+            loading={priority ? "eager" : "lazy"}
             className="object-cover transition-transform duration-300 group-hover:scale-105"
           />
         ) : (
@@ -80,6 +96,6 @@ export function ListingCardGrid({ listing }: ListingCardGridProps) {
           className="size-8 rounded-full bg-white/90 shadow-md backdrop-blur-md flex items-center justify-center"
         />
       </div>
-    </Link>
+    </div>
   );
 }

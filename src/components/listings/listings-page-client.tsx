@@ -125,7 +125,9 @@ export function ListingsPageClient({
 
   const isLoading = isPending || deferredFilters !== filters;
   const hasMore = filteredListings.length > visibleCount;
-  const smartSummary = useMemo(() => {
+  
+  // Smart summary for future UI feature
+  const _smartSummary = useMemo(() => {
     if (filteredListings.length === 0) {
       return null;
     }
@@ -526,8 +528,8 @@ export function ListingsPageClient({
                   </div>
                 ) : (
                   <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                    {filteredListings.slice(0, visibleCount).map((listing) => (
-                      <ListingCardGrid key={listing.id} listing={listing} />
+                    {filteredListings.slice(0, visibleCount).map((listing, index) => (
+                      <ListingCardGrid key={listing.id} listing={listing} priority={index < 4} />
                     ))}
                   </div>
                 )}

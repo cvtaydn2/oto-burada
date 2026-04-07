@@ -2,46 +2,15 @@ import Link from "next/link";
 import {
   ArrowRight,
   ClipboardList,
-  Clock3,
-  ShieldAlert,
-  TriangleAlert,
-  UserRoundCheck,
+  Clock,
+  Heart,
+  User,
 } from "lucide-react";
 
-import { DashboardMetricCard } from "@/components/shared/dashboard-metric-card";
-import { LegacySyncCard } from "@/components/shared/legacy-sync-card";
 import { requireUser } from "@/lib/auth/session";
 import {
-  getLegacyStoredUserListings,
   getStoredUserListings,
 } from "@/services/listings/listing-submissions";
-import {
-  getLegacyStoredReportsByReporter,
-  getStoredReportsByReporter,
-} from "@/services/reports/report-submissions";
-
-const dateFormatter = new Intl.DateTimeFormat("tr-TR", {
-  day: "2-digit",
-  month: "short",
-});
-
-const listingStatusLabels = {
-  approved: "Yayinda",
-  archived: "Arsivde",
-  draft: "Taslak",
-  pending: "Incelemede",
-  rejected: "Reddedildi",
-} as const;
-
-function formatShortDate(value: string) {
-  const parsed = Date.parse(value);
-
-  if (Number.isNaN(parsed)) {
-    return "Tarih bilinmiyor";
-  }
-
-  return dateFormatter.format(new Date(parsed));
-}
 
 export default async function DashboardPage() {
   const user = await requireUser();
@@ -51,188 +20,106 @@ export default async function DashboardPage() {
     phone?: string;
   };
   const storedListings = await getStoredUserListings(user.id);
-  const storedReports = await getStoredReportsByReporter(user.id);
-  const legacyListings = await getLegacyStoredUserListings(user.id);
-  const legacyReports = await getLegacyStoredReportsByReporter(user.id);
-  const approvedListingsCount = storedListings.filter((listing) => listing.status === "approved").length;
-  const pendingListingsCount = storedListings.filter((listing) => listing.status === "pending").length;
+  const pendingListingsCount = storedListings.filter((l) => l.status === "pending").length;
   const profileCompletion = Math.round(
     ([metadata.full_name, metadata.phone, metadata.city].filter(Boolean).length / 3) * 100,
   );
-  const recentActivity = [
-    ...storedListings.map((listing) => ({
-      description: `${listing.title} ilanı ${listingStatusLabels[listing.status].toLowerCase()} durumunda.`,
-      id: listing.id,
-      timestamp: listing.updatedAt,
-      type: "listing" as const,
-    })),
-    ...storedReports.map((report) => ({
-      description: "Bir ilan raporu incelemeye gonderildi.",
-      id: report.id ?? `${report.listingId}-${report.createdAt}`,
-      timestamp: report.updatedAt ?? report.createdAt,
-      type: "report" as const,
-    })),
-  ]
-    .sort((left, right) => Date.parse(right.timestamp) - Date.parse(left.timestamp))
-    .slice(0, 4);
 
   return (
-    <div className="space-y-6">
-      <section className="rounded-[2rem] border border-border/80 bg-background p-6 shadow-sm sm:p-8">
-        <p className="text-sm font-medium uppercase tracking-[0.18em] text-primary/80">
-          Genel Bakis
-        </p>
-        <h1 className="mt-3 text-3xl font-semibold tracking-tight">
-          {metadata.full_name ? `${metadata.full_name}, hos geldin` : "Paneline hos geldin"}
-        </h1>
-        <p className="mt-3 max-w-3xl text-sm leading-6 text-muted-foreground sm:text-base">
-          Ilanlarini takip et, profil bilgilerini guncel tut ve moderasyon durumlarini tek
-          ekrandan izle. Ilk hedefimiz hizli ve anlasilir bir satis akisi sunmak.
-        </p>
+    <div className="space-y-5">
+      <section className="rounded-xl border border-border/80 bg-background p-4 sm:p-5">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <h2 className="text-lg font-semibold">
+              {metadata.full_name ? `${metadata.full_name}, hoş geldin` : "Hoş geldin"}
+            </h2>
+            <p className="text-sm text-muted-foreground">
+              İlanlarını ve favorilerini yönet
+            </p>
+          </div>
+          <div className="flex gap-2">
+            <Link
+              href="/dashboard/listings"
+              className="inline-flex h-9 items-center gap-2 rounded-lg bg-primary px-3 text-sm font-medium text-primary-foreground hover:bg-primary/90"
+            >
+              <ClipboardList className="size-4" />
+              İlanlarım
+            </Link>
+            <Link
+              href="/dashboard/favorites"
+              className="inline-flex h-9 items-center gap-2 rounded-lg border border-border bg-background px-3 text-sm font-medium hover:bg-muted"
+            >
+              <Heart className="size-4" />
+              Favoriler
+            </Link>
+          </div>
+        </div>
+      </section>
 
-        <div className="mt-6 flex flex-col gap-3 sm:flex-row">
+      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="rounded-xl border border-border/60 bg-background p-4">
+          <div className="flex items-center gap-2 text-xs font-medium uppercase text-muted-foreground">
+            <ClipboardList className="size-4 text-indigo-500" />
+            Toplam İlan
+          </div>
+          <p className="mt-2 text-2xl font-semibold">{storedListings.length}</p>
+          <p className="mt-1 text-xs text-muted-foreground">
+            {storedListings.filter((l) => l.status === "approved").length} yayında
+          </p>
+        </div>
+
+        <div className="rounded-xl border border-border/60 bg-background p-4">
+          <div className="flex items-center gap-2 text-xs font-medium uppercase text-muted-foreground">
+            <Clock className="size-4 text-amber-500" />
+            Bekleyen
+          </div>
+          <p className="mt-2 text-2xl font-semibold">{pendingListingsCount}</p>
+          <p className="mt-1 text-xs text-muted-foreground">Moderasyon sırası</p>
+        </div>
+
+        <div className="rounded-xl border border-border/60 bg-background p-4">
+          <div className="flex items-center gap-2 text-xs font-medium uppercase text-muted-foreground">
+            <Heart className="size-4 text-rose-500" />
+            Favoriler
+          </div>
+          <p className="mt-2 text-2xl font-semibold">-</p>
+          <p className="mt-1 text-xs text-muted-foreground">Kaydedilen ilanlar</p>
+        </div>
+
+        <div className="rounded-xl border border-border/60 bg-background p-4">
+          <div className="flex items-center gap-2 text-xs font-medium uppercase text-muted-foreground">
+            <User className="size-4 text-slate-500" />
+            Profil
+          </div>
+          <p className="mt-2 text-2xl font-semibold">{profileCompletion}%</p>
+          <p className="mt-1 text-xs text-muted-foreground">Tamamlandı</p>
+        </div>
+      </div>
+
+      <section className="rounded-xl border border-border/80 bg-background p-4 sm:p-5">
+        <h3 className="text-base font-semibold">Hızlı Erişim</h3>
+        <div className="mt-3 grid gap-2 sm:grid-cols-3">
           <Link
             href="/dashboard/listings"
-            className="inline-flex h-11 items-center justify-center gap-2 rounded-xl bg-primary px-5 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
+            className="flex items-center justify-between rounded-lg border border-border/60 bg-muted/30 px-3 py-2.5 text-sm hover:bg-muted"
           >
-            Ilanlarimi yonet
-            <ArrowRight className="size-4" />
+            <span>İlan Ekle</span>
+            <ArrowRight className="size-4 text-muted-foreground" />
+          </Link>
+          <Link
+            href="/dashboard/favorites"
+            className="flex items-center justify-between rounded-lg border border-border/60 bg-muted/30 px-3 py-2.5 text-sm hover:bg-muted"
+          >
+            <span>Favoriler</span>
+            <ArrowRight className="size-4 text-muted-foreground" />
           </Link>
           <Link
             href="/dashboard/profile"
-            className="inline-flex h-11 items-center justify-center rounded-xl border border-border bg-background px-5 text-sm font-semibold text-foreground transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
+            className="flex items-center justify-between rounded-lg border border-border/60 bg-muted/30 px-3 py-2.5 text-sm hover:bg-muted"
           >
-            Profili tamamla
+            <span>Profil</span>
+            <ArrowRight className="size-4 text-muted-foreground" />
           </Link>
-        </div>
-      </section>
-
-      {legacyListings.length > 0 || legacyReports.length > 0 ? (
-        <LegacySyncCard
-          legacyListingsCount={legacyListings.length}
-          legacyReportsCount={legacyReports.length}
-        />
-      ) : null}
-
-      <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-        <DashboardMetricCard
-          label="Toplam ilan"
-          value={String(storedListings.length)}
-          helper={`${approvedListingsCount} tanesi yayinda veya onayli.`}
-          icon={ClipboardList}
-          tone="indigo"
-        />
-        <DashboardMetricCard
-          label="Moderasyon bekleyen"
-          value={String(pendingListingsCount)}
-          helper="Bekleyen ilanlar gerekli ise duzenlenebilir."
-          icon={Clock3}
-          tone="amber"
-        />
-        <DashboardMetricCard
-          label="Gonderilen rapor"
-          value={String(storedReports.length)}
-          helper="Yaptigin guvenlik bildirimleri burada sayilir."
-          icon={TriangleAlert}
-          tone="emerald"
-        />
-        <DashboardMetricCard
-          label="Profil tamamlama"
-          value={`%${profileCompletion}`}
-          helper="Ad soyad, telefon ve sehir bilgileri baz alinir."
-          icon={UserRoundCheck}
-          tone="slate"
-        />
-      </section>
-
-      <section className="grid gap-6 xl:grid-cols-[minmax(0,1.25fr)_minmax(0,0.95fr)]">
-        <div className="rounded-[2rem] border border-border/80 bg-background p-6 shadow-sm sm:p-8">
-          <div className="flex items-start gap-3">
-            <ClipboardList className="mt-1 size-5 text-primary" />
-            <div>
-              <h2 className="text-2xl font-semibold tracking-tight">Son hareketler</h2>
-              <p className="mt-2 text-sm leading-6 text-muted-foreground sm:text-base">
-                Ilanlarin ve rapor bildirimlerin icin en guncel durumlar.
-              </p>
-            </div>
-          </div>
-
-          {recentActivity.length === 0 ? (
-            <div className="mt-6 rounded-[1.5rem] border border-dashed border-border bg-muted/20 p-5 text-sm leading-6 text-muted-foreground">
-              Henuz hareket kaydi yok. Ilk ilani olusturdugunda veya bir ilan raporu
-              gonderdiginde burada gorunecek.
-            </div>
-          ) : (
-            <div className="mt-6 space-y-3">
-              {recentActivity.map((item) => (
-                <div
-                  key={`${item.type}-${item.id}`}
-                  className="flex items-start justify-between gap-4 rounded-[1.5rem] border border-border/70 bg-muted/20 p-4"
-                >
-                  <div>
-                    <p className="text-sm font-semibold text-foreground">{item.description}</p>
-                    <p className="mt-1 text-sm text-muted-foreground">
-                      {item.type === "listing" ? "Ilan hareketi" : "Guvenlik bildirimi"}
-                    </p>
-                  </div>
-                  <span className="shrink-0 text-xs font-medium uppercase tracking-[0.16em] text-muted-foreground">
-                    {formatShortDate(item.timestamp)}
-                  </span>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-
-        <div className="space-y-6">
-          <section className="rounded-[2rem] border border-border/80 bg-background p-6 shadow-sm sm:p-8">
-            <div className="flex items-start gap-3">
-              <UserRoundCheck className="mt-1 size-5 text-primary" />
-              <div>
-                <h2 className="text-2xl font-semibold tracking-tight">Hizli yonlendirmeler</h2>
-                <p className="mt-2 text-sm leading-6 text-muted-foreground">
-                  Satici akisinda en sik kullanilan sayfalara hizli erisim.
-                </p>
-              </div>
-            </div>
-
-            <div className="mt-6 space-y-3">
-              <Link
-                href="/dashboard/listings"
-                className="flex items-center justify-between rounded-[1.5rem] border border-border/70 bg-muted/20 px-4 py-4 text-sm font-semibold text-foreground transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
-              >
-                Ilan olustur veya duzenle
-                <ArrowRight className="size-4" />
-              </Link>
-              <Link
-                href="/dashboard/favorites"
-                className="flex items-center justify-between rounded-[1.5rem] border border-border/70 bg-muted/20 px-4 py-4 text-sm font-semibold text-foreground transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
-              >
-                Favori ilanlari incele
-                <ArrowRight className="size-4" />
-              </Link>
-              <Link
-                href="/dashboard/profile"
-                className="flex items-center justify-between rounded-[1.5rem] border border-border/70 bg-muted/20 px-4 py-4 text-sm font-semibold text-foreground transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
-              >
-                Profil ve iletisim bilgisini guncelle
-                <ArrowRight className="size-4" />
-              </Link>
-            </div>
-          </section>
-
-          <section className="rounded-[2rem] border border-border/80 bg-background p-6 shadow-sm sm:p-8">
-            <div className="flex items-start gap-3">
-              <ShieldAlert className="mt-1 size-5 text-primary" />
-              <div>
-                <h2 className="text-2xl font-semibold tracking-tight">Guven notu</h2>
-                <p className="mt-2 text-sm leading-6 text-muted-foreground">
-                  Ilan olustururken net fotograf, dogru fiyat ve guncel iletisim bilgisi guven
-                  donusumunu artirir.
-                </p>
-              </div>
-            </div>
-          </section>
         </div>
       </section>
     </div>

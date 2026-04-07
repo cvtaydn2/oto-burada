@@ -13,10 +13,8 @@ envFile.split("\n").forEach(line => {
 });
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
-// Use anon key for regular operations
-const supabase = createClient(supabaseUrl, anonKey);
+// Use anon key for regular operations (kept for reference, using fetch below)
 
 async function createUser(email, password, metadata) {
   // Using the public sign up endpoint

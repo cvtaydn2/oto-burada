@@ -2,10 +2,11 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { Menu, X, Search, User, Heart, PlusCircle } from "lucide-react";
+import { Menu, X, Search, User as UserIcon, Heart, PlusCircle } from "lucide-react";
+import type { User } from "@supabase/supabase-js";
 
 interface HeaderMobileNavProps {
-  user: any;
+  user: User | null;
   isAdmin: boolean;
   accountHref: string;
   postListingHref: string;
@@ -42,7 +43,7 @@ export function HeaderMobileNav({ user, isAdmin, accountHref, postListingHref }:
                 onClick={() => setIsOpen(false)}
                 className="flex items-center h-12 px-4 rounded-xl text-sm font-semibold text-slate-700 hover:bg-slate-100 transition-all"
               >
-                <User size={18} className="mr-3" />
+                <UserIcon size={18} className="mr-3" />
                 {user ? "Hesabım" : "Giriş Yap"}
               </Link>
               <Link 

@@ -26,7 +26,7 @@ const supabaseAdmin = createClient(supabaseUrl, serviceRoleKey, {
   auth: { autoRefreshToken: false, persistSession: false }
 });
 
-async function executePostgres(query) {
+async function _executePostgres(query) {
   // Use postgrest API to execute SQL through the anon key with service role
   const response = await fetch(`${supabaseUrl}/rest/v1/rpc/exec_sql`, {
     method: "POST",
@@ -49,8 +49,8 @@ async function executePostgres(query) {
 async function createTables() {
   console.log("Creating tables via SQL...");
   
-  // Create tables using SQL directly via REST
-  const tablesSQL = `
+  // Create tables using SQL directly via REST (prepared for future use)
+  const _tablesSQL = `
     CREATE TABLE IF NOT EXISTS profiles (
       id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
       email TEXT UNIQUE NOT NULL,

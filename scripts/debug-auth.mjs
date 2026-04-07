@@ -1,4 +1,3 @@
-import { createClient } from "@supabase/supabase-js";
 import fetch from "node-fetch";
 
 const SUPABASE_URL = "https://yagcxhrhtfhwaxzhyrkj.supabase.co";

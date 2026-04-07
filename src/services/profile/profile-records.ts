@@ -40,16 +40,27 @@ export function buildProfileFromAuthUser(user: User) {
   };
   const timestamp = new Date().toISOString();
 
-  return profileSchema.parse({
-    avatarUrl: metadata.avatar_url ?? null,
-    city: metadata.city ?? "",
-    createdAt: user.created_at ?? timestamp,
-    fullName: metadata.full_name ?? "",
+  const rawProfile = {
     id: user.id,
+    fullName: metadata.full_name ?? "",
     phone: metadata.phone ?? "",
-    role: metadata.role === "admin" ? "admin" : "user",
+    city: metadata.city ?? "",
+    avatarUrl: metadata.avatar_url ?? null,
+    role: (metadata.role === "admin" ? "admin" : "user") as Profile["role"],
+    createdAt: user.created_at ?? timestamp,
     updatedAt: timestamp,
-  });
+  };
+
+  try {
+    return profileSchema.parse(rawProfile);
+  } catch {
+    return {
+      ...rawProfile,
+      fullName: "Kullanıcı",
+      phone: "",
+      city: "",
+    };
+  }
 }
 
 export async function ensureProfileRecord(user: User) {

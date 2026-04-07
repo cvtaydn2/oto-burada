@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Bell, CarFront, Heart, PlusCircle, User, Menu } from "lucide-react";
+import { Bell, CarFront, Heart, PlusCircle, User } from "lucide-react";
 
 import { getCurrentUser, getUserRole } from "@/lib/auth/session";
 import { HeaderMobileNav } from "./header-mobile-nav";

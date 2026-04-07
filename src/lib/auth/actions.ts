@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 import { loginSchema, registerSchema } from "@/lib/validators";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { hasSupabaseEnv } from "@/lib/supabase/env";
+import { writeFavoriteIds } from "@/services/favorites/favorites-storage";
 
 export interface AuthActionState {
   error?: string;
@@ -53,7 +54,7 @@ export async function loginAction(
   
   console.log("Login attempt:", values.email);
   
-  const { data, error } = await supabase.auth.signInWithPassword(parsed.data);
+  const { error } = await supabase.auth.signInWithPassword(parsed.data);
 
   if (error) {
     console.log("Login error:", error.message, error.status);
@@ -129,6 +130,26 @@ export async function logoutAction() {
   }
 
   const supabase = await createSupabaseServerClient();
+  
+  const { data: { user } } = await supabase.auth.getUser();
+  const userId = user?.id;
+
+  if (userId) {
+    try {
+      const { data: favorites } = await supabase
+        .from("favorites")
+        .select("listing_id")
+        .eq("user_id", userId);
+      
+      if (favorites && favorites.length > 0) {
+        const listingIds = favorites.map(f => f.listing_id);
+        writeFavoriteIds(listingIds);
+      }
+    } catch {
+      // Ignore migration errors during logout
+    }
+  }
+
   await supabase.auth.signOut();
   redirect("/");
 }

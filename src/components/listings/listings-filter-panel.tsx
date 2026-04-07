@@ -246,7 +246,7 @@ export function ListingsFilterPanel({
           <div className="grid grid-cols-2 gap-3">
             <select
               value={filters.fuelType ?? ""}
-              onChange={(event: any) =>
+              onChange={(event) =>
                 onFilterChange("fuelType", (event.target.value || undefined) as ListingFilters["fuelType"])
               }
               className="h-10 rounded-xl border border-slate-200 bg-slate-50 px-3 text-sm outline-none transition-all focus:bg-white focus:border-indigo-500"
@@ -260,7 +260,7 @@ export function ListingsFilterPanel({
             </select>
             <select
               value={filters.transmission ?? ""}
-              onChange={(event: any) =>
+              onChange={(event) =>
                 onFilterChange("transmission", (event.target.value || undefined) as ListingFilters["transmission"])
               }
               className="h-10 rounded-xl border border-slate-200 bg-slate-50 px-3 text-sm outline-none transition-all focus:bg-white focus:border-indigo-500"
@@ -282,7 +282,7 @@ export function ListingsFilterPanel({
                 type="number"
                 placeholder="Min"
                 value={filters.minPrice ?? ""}
-                onChange={(event: any) =>
+                onChange={(event) =>
                   onFilterChange("minPrice", event.target.value ? Number(event.target.value) : undefined)
                 }
                 className="h-10 w-full rounded-xl border border-slate-200 bg-slate-50 pl-3 pr-8 text-sm outline-none transition-all focus:bg-white focus:border-indigo-500"
@@ -294,7 +294,7 @@ export function ListingsFilterPanel({
                 type="number"
                 placeholder="Max"
                 value={filters.maxPrice ?? ""}
-                onChange={(event: any) =>
+                onChange={(event) =>
                   onFilterChange("maxPrice", event.target.value ? Number(event.target.value) : undefined)
                 }
                 className="h-10 w-full rounded-xl border border-slate-200 bg-slate-50 pl-3 pr-8 text-sm outline-none transition-all focus:bg-white focus:border-indigo-500"
@@ -313,7 +313,7 @@ export function ListingsFilterPanel({
                 min={minimumCarYear}
                 max={maximumCarYear}
                 value={filters.minYear ?? ""}
-                onChange={(event: any) =>
+                onChange={(event) =>
                   onFilterChange("minYear", event.target.value ? Number(event.target.value) : undefined)
                 }
                 className="h-10 rounded-xl border border-slate-200 bg-slate-50 px-3 text-sm outline-none transition-all focus:bg-white focus:border-indigo-500"
@@ -324,7 +324,7 @@ export function ListingsFilterPanel({
                 min={minimumCarYear}
                 max={maximumCarYear}
                 value={filters.maxYear ?? ""}
-                onChange={(event: any) =>
+                onChange={(event) =>
                   onFilterChange("maxYear", event.target.value ? Number(event.target.value) : undefined)
                 }
                 className="h-10 rounded-xl border border-slate-200 bg-slate-50 px-3 text-sm outline-none transition-all focus:bg-white focus:border-indigo-500"
@@ -337,7 +337,7 @@ export function ListingsFilterPanel({
                 min="0"
                 max={maximumMileage}
                 value={filters.maxMileage ?? ""}
-                onChange={(event: any) =>
+                onChange={(event) =>
                   onFilterChange("maxMileage", event.target.value ? Number(event.target.value) : undefined)
                 }
                 className="h-10 w-full rounded-xl border border-slate-200 bg-slate-50 pl-3 pr-12 text-sm outline-none transition-all focus:bg-white focus:border-indigo-500"

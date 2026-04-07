@@ -19,7 +19,24 @@ export default function DashboardSavedSearchesPage() {
       </div>
 
       <div className="grid gap-4">
-        {savedSearches.map((search) => (
+        {savedSearches.length === 0 ? (
+          <div className="rounded-[2rem] border border-dashed border-border/70 bg-background p-12 text-center shadow-sm">
+            <div className="mx-auto w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mb-4">
+              <Search size={32} className="text-primary" />
+            </div>
+            <h3 className="text-xl font-bold text-foreground">Kayitli arama yok</h3>
+            <p className="mt-2 text-sm text-muted-foreground max-w-md mx-auto">
+              listings sayfasinda arama yapip &quot;Bildirim Ac&quot; butonuna tikladiginda kaydedilir.
+            </p>
+            <Link
+              href="/listings"
+              className="mt-6 inline-flex h-11 items-center justify-center rounded-xl bg-primary px-5 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90"
+            >
+              Ilanlari incele
+            </Link>
+          </div>
+        ) : (
+          savedSearches.map((search) => (
           <div
             key={search.id}
             className="group flex flex-col items-start justify-between gap-4 rounded-[1.75rem] border border-border/70 bg-background p-5 shadow-sm transition-colors hover:border-primary/50 sm:flex-row sm:items-center"
@@ -57,11 +74,12 @@ export default function DashboardSavedSearchesPage() {
                 className="flex size-11 items-center justify-center rounded-xl bg-muted/50 text-muted-foreground transition-colors hover:bg-primary/10 hover:text-primary"
                 title="Aramaya Git"
               >
-                <ChevronRight className="size-5" />
-              </Link>
+<ChevronRight className="size-5" />
+                </Link>
+              </div>
             </div>
-          </div>
-        ))}
+          ))
+        )}
       </div>
     </section>
   );

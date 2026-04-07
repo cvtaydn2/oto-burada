@@ -33,64 +33,31 @@ export function DashboardNavigation() {
   const pathname = usePathname();
 
   return (
-    <>
-      <nav aria-label="Dashboard menü" className="hidden xl:block">
-        <div className="rounded-[1.75rem] border border-border/80 bg-background p-4 shadow-sm">
-          <ul className="space-y-2">
-            {dashboardNavItems.map((item) => {
-              const isActive = pathname === item.href;
-              const Icon = item.icon;
+    <nav aria-label="Dashboard menü" className="overflow-x-auto">
+      <ul className="flex gap-2">
+        {dashboardNavItems.map((item) => {
+          const isActive = pathname === item.href;
+          const Icon = item.icon;
 
-              return (
-                <li key={item.href}>
-                  <Link
-                    href={item.href}
-                    aria-current={isActive ? "page" : undefined}
-                    className={cn(
-                      "flex items-center gap-3 rounded-2xl px-4 py-3 text-sm font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2",
-                      isActive
-                        ? "bg-primary text-primary-foreground shadow-sm"
-                        : "text-muted-foreground hover:bg-muted hover:text-foreground",
-                    )}
-                  >
-                    <Icon className="size-4" />
-                    <span>{item.label}</span>
-                  </Link>
-                </li>
-              );
-            })}
-          </ul>
-        </div>
-      </nav>
-
-      <nav aria-label="Dashboard mobil menü" className="xl:hidden">
-        <div className="overflow-x-auto pb-1">
-          <ul className="flex gap-2">
-            {dashboardNavItems.map((item) => {
-              const isActive = pathname === item.href;
-              const Icon = item.icon;
-
-              return (
-                <li key={item.href} className="shrink-0">
-                  <Link
-                    href={item.href}
-                    aria-current={isActive ? "page" : undefined}
-                    className={cn(
-                      "inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2",
-                      isActive
-                        ? "bg-primary text-primary-foreground shadow-sm"
-                        : "border border-border bg-background text-muted-foreground hover:bg-muted hover:text-foreground",
-                    )}
-                  >
-                    <Icon className="size-4" />
-                    <span>{item.label}</span>
-                  </Link>
-                </li>
-              );
-            })}
-          </ul>
-        </div>
-      </nav>
-    </>
+          return (
+            <li key={item.href} className="shrink-0">
+              <Link
+                href={item.href}
+                aria-current={isActive ? "page" : undefined}
+                className={cn(
+                  "inline-flex items-center gap-2 rounded-lg px-4 py-2.5 text-sm font-medium transition-colors",
+                  isActive
+                    ? "bg-primary text-primary-foreground"
+                    : "bg-background text-muted-foreground hover:bg-muted hover:text-foreground border border-border",
+                )}
+              >
+                <Icon className="size-4" />
+                <span>{item.label}</span>
+              </Link>
+            </li>
+          );
+        })}
+      </ul>
+    </nav>
   );
 }

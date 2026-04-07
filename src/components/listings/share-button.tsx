@@ -21,7 +21,7 @@ export function ShareButton({ title, price }: ShareButtonProps) {
           text: `${title} - ${price.toLocaleString('tr-TR')} TL`,
           url: url,
         });
-      } catch (err) {
+      } catch {
         // User cancelled or error
       }
     } else {
