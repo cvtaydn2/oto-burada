@@ -275,3 +275,102 @@ with check (public.is_admin());
 -- 1. Create a public-read bucket named `listing-images` for listing media.
 -- 2. Optionally create an `avatars` bucket for profile images.
 -- 3. Enforce JPG/PNG/WebP and 5 MB upload validation from the application layer.
+
+-- ── B-09: Full-Text Search ──────────────────────────────────────────────
+-- Generated tsvector column for fast text search across listing fields.
+
+alter table public.listings add column if not exists
+  search_vector tsvector generated always as (
+    to_tsvector('simple',
+      coalesce(title, '') || ' ' ||
+      coalesce(brand, '') || ' ' ||
+      coalesce(model, '') || ' ' ||
+      coalesce(city, '')  || ' ' ||
+      coalesce(district, '') || ' ' ||
+      coalesce(description, '')
+    )
+  ) stored;
+
+create index if not exists listings_search_vector_idx
+  on public.listings using gin (search_vector);
+
+-- Additional performance indexes for filtering
+create index if not exists listings_brand_idx on public.listings (brand);
+create index if not exists listings_city_idx on public.listings (city);
+create index if not exists listings_price_idx on public.listings (price);
+create index if not exists listings_year_idx on public.listings (year);
+create index if not exists listings_mileage_idx on public.listings (mileage);
+
+-- ── B-08: Listing View Counter ──────────────────────────────────────────
+
+create table if not exists public.listing_views (
+  id uuid primary key default gen_random_uuid(),
+  listing_id uuid not null references public.listings (id) on delete cascade,
+  viewer_id uuid references public.profiles (id) on delete set null,
+  viewer_ip text,
+  created_at timestamptz not null default timezone('utc', now())
+);
+
+-- Prevent duplicate views from same user/IP within 24 hours
+create unique index if not exists listing_views_user_dedup_idx
+  on public.listing_views (listing_id, viewer_id)
+  where viewer_id is not null;
+
+create index if not exists listing_views_listing_idx
+  on public.listing_views (listing_id, created_at desc);
+
+-- Materialized count for fast reads (optional, can use COUNT() directly for MVP)
+alter table public.listings add column if not exists view_count integer not null default 0;
+
+alter table public.listing_views enable row level security;
+
+-- Anyone can insert a view (anonymous or authenticated)
+drop policy if exists "listing_views_insert_anyone" on public.listing_views;
+create policy "listing_views_insert_anyone"
+on public.listing_views
+for insert
+with check (true);
+
+-- Only admins and listing owners can read views
+drop policy if exists "listing_views_select_owner_or_admin" on public.listing_views;
+create policy "listing_views_select_owner_or_admin"
+on public.listing_views
+for select
+using (
+  public.is_admin() or
+  exists (
+    select 1 from public.listings
+    where listings.id = listing_views.listing_id
+      and listings.seller_id = auth.uid()
+  )
+);
+
+-- ── B-12: Listing Delete Policies ───────────────────────────────────────
+
+drop policy if exists "listings_delete_owner_archived_or_admin" on public.listings;
+create policy "listings_delete_owner_archived_or_admin"
+on public.listings
+for delete
+using (
+  (auth.uid() = seller_id and status = 'archived')
+  or public.is_admin()
+);
+
+-- ── B-12: Storage Bucket Policies ───────────────────────────────────────
+-- These are created via Supabase Dashboard or SQL. Listed here for documentation.
+--
+-- Bucket: listing-images (public read)
+--
+-- INSERT policy: Users can upload to their own folder
+--   bucket_id = 'listing-images'
+--   (storage.foldername(name))[1] = 'listings'
+--   AND (storage.foldername(name))[2] = auth.uid()::text
+--
+-- DELETE policy: Users can delete from their own folder
+--   bucket_id = 'listing-images'
+--   (storage.foldername(name))[1] = 'listings'
+--   AND (storage.foldername(name))[2] = auth.uid()::text
+--
+-- SELECT policy: Public read
+--   bucket_id = 'listing-images'
+--   true

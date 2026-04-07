@@ -337,8 +337,9 @@ Her yeni geliştirme başlamadan önce okunmalıdır.
 
 #### B-01: Cookie Fallback Temizliği & Tam DB Geçişi
 - **Sorun:** Her okumada cookie + DB merge ediliyor, overhead ve tutarsızlık riski var.
-- **Çözüm:** DB-only moda geç, legacy fonksiyonları deprecated işaretle, cookie auto-cleanup ekle.
-- **Durum:** ❌ Bekliyor
+- **Çözüm:** Tüm okuma fonksiyonları (getStoredListings, getStoredUserListings, getStoredListingBySlug, getStoredListingsByIds, getStoredReports, getStoredReportsByReporter) DB-only moda geçirildi.
+- **Yapılanlar:** Cookie merge kaldırıldı, `mergeListings`/`mergeReports` ve `getLegacyStored*` fonksiyonları `@deprecated` olarak işaretlendi. Legacy fonksiyonlar sadece migration endpoint ve edit/archive fallback için korundu.
+- **Durum:** ✅ Tamamlandı
 
 #### B-02: Rate Limiting & Abuse Prevention
 - **Sorun:** Hiçbir endpoint'te rate limiting yok — sınırsız ilan, upload, rapor.
@@ -356,51 +357,58 @@ Her yeni geliştirme başlamadan önce okunmalıdır.
 
 #### B-06: Server-Side Pagination & Filtreleme
 - **Sorun:** Tüm listings JS'de filtreleniyor; ilan sayısı arttıkça ciddi performans sorunu olacak.
-- **Çözüm:** Supabase query builder + `.range()` ile DB-side filtering/sorting/pagination.
-- **Durum:** ❌ Bekliyor
+- **Çözüm:** `getDatabaseListings`'e `ListingFilters` desteği eklendi — Supabase query builder ile DB-side filtering/sorting + `.range()` ile pagination.
+- **Yapılanlar:** `getFilteredDatabaseListings()` fonksiyonu oluşturuldu (filtreli + sayılı + sayfalanmış sonuç). `PaginatedListingsResult` interface'i tanımlandı. `ilike` ile arama, brand/model/city/district/fuel/transmission/price/year/mileage filtreleri, 5 sort modu ve `range()` ile pagination destekleniyor.
+- **Durum:** ✅ Tamamlandı
 
 #### B-07: İlan Silme (Hard Delete) Endpoint
 - **Sorun:** İlanlar sadece archived yapılabiliyor; kalıcı silme, Storage temizleme ve KVKK uyumu eksik.
-- **Çözüm:** `DELETE /api/listings/[listingId]` + orphan storage temizleme + admin hard delete.
-- **Durum:** ❌ Bekliyor
+- **Çözüm:** `DELETE /api/listings/[listingId]` endpoint'i eklendi.
+- **Yapılanlar:** `deleteDatabaseListing` (owner + archived güvence kontrolü) ve `adminDeleteDatabaseListing` (admin yetki) fonksiyonları oluşturuldu. Silme işlemi: Storage görsel temizleme → listing_images → favorites → reports → listing cascade.
+- **Durum:** ✅ Tamamlandı
 
 #### B-09: Full-Text Search (Postgres tsvector)
 - **Sorun:** Arama JS `string.includes()` ile yapılıyor, Türkçe karakter duyarlılığı sorunlu.
-- **Çözüm:** Postgres `tsvector` + `tsquery` ile Türkçe full-text search index oluştur.
-- **Durum:** ❌ Bekliyor
+- **Çözüm:** Postgres `search_vector` (generated tsvector) sütunu + GIN index + `textSearch` sorgusu.
+- **Yapılanlar:** `schema.sql`'e `search_vector` sütunu (title, brand, model, city, district, description birleşimi) ve GIN index eklendi. `getDatabaseListings` araması `ilike` yerine `textSearch` kullanıyor. Prefix matching (`term:*`) destekleniyor. Ek performans indexleri (brand, city, price, year, mileage) eklendi.
+- **Durum:** ✅ Tamamlandı
 
 #### B-08: Listing Görüntülenme Sayacı
 - **Sorun:** View counting yok; satıcı ilanının ilgi seviyesini göremez, popüler ilanlar hesaplanamaz.
-- **Çözüm:** `listing_views` tablosu + deduplikasyon + dashboard metrikleri.
-- **Durum:** ❌ Bekliyor
+- **Çözüm:** `listing_views` tablosu + deduplikasyon + denormalize `view_count` sütunu.
+- **Yapılanlar:** `listing-views.ts` servisi: `recordListingView()` (auth user: unique index, anon: IP + 24 saat pencere), `getListingViewCount()`, `getListingViewCounts()`. Schema: `listing_views` tablosu + unique dedup index + RLS policies (insert: herkes, select: owner/admin). `listings.view_count` denormalize sütunu eklendi.
+- **Durum:** ✅ Tamamlandı
 
 ### 🟢 İyileştirme — Kalite & Operasyon
 
 #### B-10: API Yanıt Formatı Standardizasyonu
 - **Sorun:** Her endpoint farklı formatta yanıt dönüyor, tutarsız error response'lar.
-- **Çözüm:** Standart response wrapper `{ success, data, error, message }` + tip tanımları.
-- **Durum:** ❌ Bekliyor
+- **Çözüm:** `api-response.ts` utility oluşturuldu.
+- **Yapılanlar:** `apiSuccess<T>()` ve `apiError()` helper'ları + `ApiSuccessResponse<T>`, `ApiErrorResponse`, `ApiResponse<T>` tipleri + `API_ERROR_CODES` sabitleri. Yeni endpoint'ler bu wrapper'ları kullanabilir.
+- **Durum:** ✅ Tamamlandı
 
 #### B-11: Structured Logging
 - **Sorun:** `console.log` debug çağrıları production'da aktif; yapılandırılmış logging yok.
-- **Çözüm:** Seviyeli loglama utility'si + Supabase operation error logging.
-- **Durum:** ❌ Bekliyor
+- **Çözüm:** `logger.ts` utility oluşturuldu.
+- **Yapılanlar:** `createLogger(context)` fabrikası — debug/info/warn/error seviyeleri. Dev: renkli konsol çıktısı tüm seviyelerle. Prod: sadece warn+error, JSON formatında. Ön tanımlı logger'lar: auth, listings, reports, admin, storage, database.
+- **Durum:** ✅ Tamamlandı
 
 #### B-12: Storage Policy & Bucket Güvenliği
 - **Sorun:** Bucket upload/delete policy belirsiz, orphan dosya temizleme yok.
-- **Çözüm:** Supabase Storage RLS policy tanımla + orphan cleanup + server-side max image limit.
-- **Durum:** ❌ Bekliyor
+- **Çözüm:** Schema'ya listing delete RLS policy + Storage policy dökümantasyonu eklendi.
+- **Yapılanlar:** `listings_delete_owner_archived_or_admin` RLS policy eklendi (sadece archived ilanları owner silebilir, admin her ilanı silebilir). Storage bucket policy'leri (INSERT/DELETE: kendi folder'ına, SELECT: public) schema.sql'de dökümante edildi. `deleteDatabaseListing` fonksiyonu (B-07) orphan storage temizleme yapıyor.
+- **Durum:** ✅ Tamamlandı
 
 ---
 
 ## Sonraki Görev
-- B-01 (Cookie Fallback Temizliği) ile devam edilecek.
-- Ardından B-06 → B-07 → B-09 → B-08 sırasıyla önemli fonksiyonellik görevleri tamamlanacak.
-- Her görev sonrası lint/typecheck/build doğrulaması yapılacak.
+- 🎉 **Tüm 12 backend geliştirme görevi tamamlandı!**
+- İsteğe bağlı: Mevcut endpoint'leri `apiSuccess`/`apiError` helper'larıyla refactor etme.
+- İsteğe bağlı: `logger` utility'sini mevcut servislere entegre etme.
 
 ---
 
 ## Son Doğrulama Sonuçları
-- `npm run lint` - Geçti (0 error, 14 warning — mevcut uyarılar)
+- `npm run lint` - Geçti (0 error)
 - `npm run typecheck` - Geçti
 - `npm run build` - Geçti

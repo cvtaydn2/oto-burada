@@ -51,13 +51,10 @@ export async function loginAction(
   }
 
   const supabase = await createSupabaseServerClient();
-  
-  console.log("Login attempt:", values.email);
-  
+
   const { error } = await supabase.auth.signInWithPassword(parsed.data);
 
   if (error) {
-    console.log("Login error:", error.message, error.status);
     return {
       error: "Giriş yapılamadı. E-posta veya şifreyi kontrol et.",
       fields: { email: values.email },

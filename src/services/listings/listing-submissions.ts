@@ -3,7 +3,7 @@ import { cookies } from "next/headers";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { hasSupabaseAdminEnv } from "@/lib/supabase/env";
 import { listingSchema } from "@/lib/validators";
-import type { Listing, ListingCreateInput } from "@/types";
+import type { Listing, ListingCreateInput, ListingFilters } from "@/types";
 
 const turkishCharacterMap: Record<string, string> = {
   ç: "c",
@@ -27,6 +27,7 @@ export const listingSubmissionsCookieOptions = {
   maxAge: 60 * 60 * 24 * 30,
   path: "/",
   sameSite: "lax" as const,
+  secure: process.env.NODE_ENV === "production",
 };
 
 interface ListingImageRow {
@@ -210,13 +211,14 @@ async function getDatabaseListings(options?: {
   sellerId?: string;
   slug?: string;
   statuses?: Listing["status"][];
+  filters?: ListingFilters;
 }) {
   if (!hasSupabaseAdminEnv()) {
     return null;
   }
 
   const admin = createSupabaseAdminClient();
-  let query = admin.from("listings").select(listingSelect).order("updated_at", { ascending: false });
+  let query = admin.from("listings").select(listingSelect);
 
   if (options?.sellerId) {
     query = query.eq("seller_id", options.sellerId);
@@ -238,6 +240,92 @@ async function getDatabaseListings(options?: {
     query = query.in("status", options.statuses);
   }
 
+  const filters = options?.filters;
+
+  if (filters) {
+    if (filters.brand) {
+      query = query.eq("brand", filters.brand);
+    }
+
+    if (filters.model) {
+      query = query.eq("model", filters.model);
+    }
+
+    if (filters.city) {
+      query = query.eq("city", filters.city);
+    }
+
+    if (filters.district) {
+      query = query.eq("district", filters.district);
+    }
+
+    if (filters.fuelType) {
+      query = query.eq("fuel_type", filters.fuelType);
+    }
+
+    if (filters.transmission) {
+      query = query.eq("transmission", filters.transmission);
+    }
+
+    if (filters.minPrice !== undefined) {
+      query = query.gte("price", filters.minPrice);
+    }
+
+    if (filters.maxPrice !== undefined) {
+      query = query.lte("price", filters.maxPrice);
+    }
+
+    if (filters.minYear !== undefined) {
+      query = query.gte("year", filters.minYear);
+    }
+
+    if (filters.maxYear !== undefined) {
+      query = query.lte("year", filters.maxYear);
+    }
+
+    if (filters.maxMileage !== undefined) {
+      query = query.lte("mileage", filters.maxMileage);
+    }
+
+    if (filters.query) {
+      const terms = filters.query.trim().split(/\s+/).filter(Boolean);
+
+      if (terms.length > 0) {
+        // Use Postgres full-text search via the generated search_vector column
+        const tsQuery = terms.map((t) => `${t}:*`).join(" & ");
+        query = query.textSearch("search_vector", tsQuery);
+      }
+    }
+  }
+
+  // Apply sorting
+  const sort = filters?.sort ?? "newest";
+  switch (sort) {
+    case "price_asc":
+      query = query.order("price", { ascending: true });
+      break;
+    case "price_desc":
+      query = query.order("price", { ascending: false });
+      break;
+    case "mileage_asc":
+      query = query.order("mileage", { ascending: true });
+      break;
+    case "year_desc":
+      query = query.order("year", { ascending: false });
+      break;
+    case "newest":
+    default:
+      query = query.order("updated_at", { ascending: false });
+      break;
+  }
+
+  // Apply pagination
+  const page = filters?.page ?? 1;
+  const limit = filters?.limit ?? 50;
+  const from = (page - 1) * limit;
+  const to = from + limit - 1;
+  query = query.range(from, to);
+
   const { data, error } = await query.returns<ListingRow[]>();
 
   if (error || !data) {
@@ -245,6 +333,63 @@ async function getDatabaseListings(options?: {
   }
 
   return data.map(mapListingRow);
+}
+
+export interface PaginatedListingsResult {
+  listings: Listing[];
+  total: number;
+  page: number;
+  limit: number;
+  hasMore: boolean;
+}
+
+export async function getFilteredDatabaseListings(
+  filters: ListingFilters,
+): Promise<PaginatedListingsResult> {
+  const page = filters.page ?? 1;
+  const limit = filters.limit ?? 24;
+
+  const listings = await getDatabaseListings({
+    statuses: ["approved"],
+    filters: { ...filters, page, limit },
+  });
+
+  // Get total count with same filters but no pagination
+  const countAdmin = createSupabaseAdminClient();
+  let countQuery = countAdmin.from("listings").select("id", { count: "exact", head: true });
+  countQuery = countQuery.eq("status", "approved");
+
+  if (filters.brand) countQuery = countQuery.eq("brand", filters.brand);
+  if (filters.model) countQuery = countQuery.eq("model", filters.model);
+  if (filters.city) countQuery = countQuery.eq("city", filters.city);
+  if (filters.district) countQuery = countQuery.eq("district", filters.district);
+  if (filters.fuelType) countQuery = countQuery.eq("fuel_type", filters.fuelType);
+  if (filters.transmission) countQuery = countQuery.eq("transmission", filters.transmission);
+  if (filters.minPrice !== undefined) countQuery = countQuery.gte("price", filters.minPrice);
+  if (filters.maxPrice !== undefined) countQuery = countQuery.lte("price", filters.maxPrice);
+  if (filters.minYear !== undefined) countQuery = countQuery.gte("year", filters.minYear);
+  if (filters.maxYear !== undefined) countQuery = countQuery.lte("year", filters.maxYear);
+  if (filters.maxMileage !== undefined) countQuery = countQuery.lte("mileage", filters.maxMileage);
+
+  if (filters.query) {
+    const terms = filters.query.trim().split(/\s+/).filter(Boolean);
+
+    if (terms.length > 0) {
+      const tsQuery = terms.map((t) => `${t}:*`).join(" & ");
+      countQuery = countQuery.textSearch("search_vector", tsQuery);
+    }
+  }
+
+  const { count: total } = await countQuery;
+  const totalCount = total ?? 0;
+
+  return {
+    listings: listings ?? [],
+    total: totalCount,
+    page,
+    limit,
+    hasMore: page * limit < totalCount,
+  };
 }
 
 function mapListingToDatabaseRow(listing: Listing) {
@@ -281,6 +426,7 @@ function mapListingImagesToDatabaseRows(listing: Listing) {
   }));
 }
 
+/** @deprecated No longer used in read path. Kept for legacy-sync migration. */
 function mergeListings(primary: Listing[], secondary: Listing[]) {
   const listingMap = new Map<string, Listing>();
 
@@ -372,6 +518,89 @@ export async function archiveDatabaseListing(listingId: string) {
   return (await getDatabaseListings({ listingId }))?.[0] ?? null;
 }
 
+export async function deleteDatabaseListing(listingId: string, sellerId: string) {
+  if (!hasSupabaseAdminEnv()) {
+    return null;
+  }
+
+  const admin = createSupabaseAdminClient();
+
+  // Verify listing exists and belongs to seller, and is archived
+  const listing = (await getDatabaseListings({ listingId, sellerId }))?.[0];
+
+  if (!listing || listing.status !== "archived") {
+    return null;
+  }
+
+  // Delete images from storage
+  if (listing.images.length > 0) {
+    const storagePaths = listing.images
+      .map((img) => img.storagePath)
+      .filter((path) => path.length > 0);
+
+    if (storagePaths.length > 0) {
+      const bucketName = process.env.SUPABASE_STORAGE_BUCKET_LISTINGS ?? "listing-images";
+      await admin.storage.from(bucketName).remove(storagePaths);
+    }
+  }
+
+  // Delete listing_images rows
+  await admin.from("listing_images").delete().eq("listing_id", listingId);
+
+  // Delete related favorites
+  await admin.from("favorites").delete().eq("listing_id", listingId);
+
+  // Delete related reports
+  await admin.from("reports").delete().eq("listing_id", listingId);
+
+  // Delete the listing
+  const { error } = await admin.from("listings").delete().eq("id", listingId);
+
+  if (error) {
+    return null;
+  }
+
+  return { id: listingId, deleted: true };
+}
+
+export async function adminDeleteDatabaseListing(listingId: string) {
+  if (!hasSupabaseAdminEnv()) {
+    return null;
+  }
+
+  const admin = createSupabaseAdminClient();
+
+  const listing = (await getDatabaseListings({ listingId }))?.[0];
+
+  if (!listing) {
+    return null;
+  }
+
+  // Delete images from storage
+  if (listing.images.length > 0) {
+    const storagePaths = listing.images
+      .map((img) => img.storagePath)
+      .filter((path) => path.length > 0);
+
+    if (storagePaths.length > 0) {
+      const bucketName = process.env.SUPABASE_STORAGE_BUCKET_LISTINGS ?? "listing-images";
+      await admin.storage.from(bucketName).remove(storagePaths);
+    }
+  }
+
+  await admin.from("listing_images").delete().eq("listing_id", listingId);
+  await admin.from("favorites").delete().eq("listing_id", listingId);
+  await admin.from("reports").delete().eq("listing_id", listingId);
+
+  const { error } = await admin.from("listings").delete().eq("id", listingId);
+
+  if (error) {
+    return null;
+  }
+
+  return { id: listingId, deleted: true };
+}
+
 export async function moderateDatabaseListing(
   listingId: string,
   status: Extract<Listing["status"], "approved" | "rejected">,
@@ -419,6 +648,7 @@ export function serializeStoredListings(listings: Listing[]) {
   return JSON.stringify(listings);
 }
 
+/** @deprecated Only used by legacy-sync migration endpoint and edit/archive fallback. */
 export async function getLegacyStoredListings() {
   const cookieStore = await cookies();
 
@@ -532,43 +762,22 @@ export function getModeratableListingById(listings: Listing[], listingId: string
 }
 
 export async function getStoredListings() {
-  const cookieListings = await getLegacyStoredListings();
   const databaseListings = await getDatabaseListings();
-
-  if (databaseListings) {
-    return mergeListings(databaseListings, cookieListings).sort(
-      (left, right) => Date.parse(right.updatedAt) - Date.parse(left.updatedAt),
-    );
-  }
-
-  return cookieListings.sort(
+  return (databaseListings ?? []).sort(
     (left, right) => Date.parse(right.updatedAt) - Date.parse(left.updatedAt),
   );
 }
 
 export async function getStoredUserListings(sellerId: string) {
-  const cookieListings = (await getLegacyStoredListings()).filter((listing) => listing.sellerId === sellerId);
   const databaseListings = await getDatabaseListings({ sellerId });
-
-  if (databaseListings) {
-    return mergeListings(databaseListings, cookieListings).sort(
-      (left, right) => Date.parse(right.createdAt) - Date.parse(left.createdAt),
-    );
-  }
-
-  return cookieListings
-    .sort((left, right) => Date.parse(right.createdAt) - Date.parse(left.createdAt));
+  return (databaseListings ?? []).sort(
+    (left, right) => Date.parse(right.createdAt) - Date.parse(left.createdAt),
+  );
 }
 
 export async function getStoredListingBySlug(slug: string) {
-  const cookieListings = await getLegacyStoredListings();
-  const databaseListing = await getDatabaseListings({ slug });
-
-  if (databaseListing?.[0]) {
-    return mergeListings(databaseListing, cookieListings).find((listing) => listing.slug === slug) ?? null;
-  }
-
-  return cookieListings.find((listing) => listing.slug === slug) ?? null;
+  const databaseListings = await getDatabaseListings({ slug });
+  return databaseListings?.[0] ?? null;
 }
 
 export async function getStoredListingsByIds(ids: string[]) {
@@ -576,18 +785,11 @@ export async function getStoredListingsByIds(ids: string[]) {
     return [];
   }
 
-  const cookieListings = (await getLegacyStoredListings()).filter(
-    (listing) => ids.includes(listing.id),
-  );
   const databaseListings = await getDatabaseListings({ ids });
-
-  if (databaseListings) {
-    return mergeListings(databaseListings, cookieListings);
-  }
-
-  return cookieListings;
+  return databaseListings ?? [];
 }
 
+/** @deprecated Only used by legacy-sync migration endpoint. */
 export async function getLegacyStoredUserListings(sellerId: string) {
   return (await getLegacyStoredListings()).filter((listing) => listing.sellerId === sellerId);
 }

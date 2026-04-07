@@ -1,17 +1,9 @@
-import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 
 import { requireAdminUser } from "@/lib/auth/session";
 import { createAdminModerationAction } from "@/services/admin/moderation-actions";
 import {
-  getModeratableListingById,
-  listingSubmissionsCookieName,
-  listingSubmissionsCookieOptions,
   moderateDatabaseListing,
-  moderateStoredListing,
-  parseStoredListings,
-  replaceStoredListing,
-  serializeStoredListings,
 } from "@/services/listings/listing-submissions";
 
 export async function POST(
@@ -50,53 +42,28 @@ export async function POST(
     action === "approve" ? "approved" : "rejected",
   );
 
-  if (persistedListing) {
-    await createAdminModerationAction({
-      action: action === "approve" ? "approve" : "reject",
-      adminUserId: adminUser.id,
-      note:
-        note ||
-        (action === "approve"
-          ? `${persistedListing.title} ilani onaylandi.`
-          : `${persistedListing.title} ilani reddedildi.`),
-      targetId: persistedListing.id,
-      targetType: "listing",
-    });
-
-    return NextResponse.json({
-      listing: {
-        id: persistedListing.id,
-        status: persistedListing.status,
-      },
-      message: action === "approve" ? "Ilan onaylandi." : "Ilan reddedildi.",
-    });
-  }
-
-  const cookieStore = await cookies();
-  const existingListings = parseStoredListings(cookieStore.get(listingSubmissionsCookieName)?.value);
-  const existingListing = getModeratableListingById(existingListings, listingId);
-
-  if (!existingListing) {
+  if (!persistedListing) {
     return NextResponse.json({ message: "Incelenecek ilan bulunamadi." }, { status: 404 });
   }
 
-  const moderatedListing = moderateStoredListing(
-    existingListing,
-    action === "approve" ? "approved" : "rejected",
-  );
-  const response = NextResponse.json({
+  await createAdminModerationAction({
+    action: action === "approve" ? "approve" : "reject",
+    adminUserId: adminUser.id,
+    note:
+      note ||
+      (action === "approve"
+        ? `${persistedListing.title} ilani onaylandi.`
+        : `${persistedListing.title} ilani reddedildi.`),
+    targetId: persistedListing.id,
+    targetType: "listing",
+  });
+
+  return NextResponse.json({
     listing: {
-      id: moderatedListing.id,
-      status: moderatedListing.status,
+      id: persistedListing.id,
+      status: persistedListing.status,
     },
     message: action === "approve" ? "Ilan onaylandi." : "Ilan reddedildi.",
   });
-
-  response.cookies.set(
-    listingSubmissionsCookieName,
-    serializeStoredListings(replaceStoredListing(existingListings, moderatedListing)),
-    listingSubmissionsCookieOptions,
-  );
-
-  return response;
 }
+

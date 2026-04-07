@@ -9,6 +9,7 @@ import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { listingCreateFormSchema, listingCreateSchema } from "@/lib/validators";
 import {
   buildUpdatedListing,
+  deleteDatabaseListing,
   findEditableListingById,
   getStoredListings,
   listingSubmissionsCookieName,
@@ -164,4 +165,47 @@ export async function PATCH(
   );
 
   return response;
+}
+
+export async function DELETE(
+  _request: Request,
+  context: { params: Promise<{ listingId: string }> },
+) {
+  if (!hasSupabaseEnv()) {
+    return NextResponse.json(
+      {
+        message:
+          "Supabase ortam degiskenleri eksik. Ilan silmek icin .env.local dosyasini tamamlamalisin.",
+      },
+      { status: 503 },
+    );
+  }
+
+  const supabase = await createSupabaseServerClient();
+  const {
+    data: { user },
+    error: userError,
+  } = await supabase.auth.getUser();
+
+  if (userError || !user) {
+    return NextResponse.json(
+      { message: "Oturum dogrulanamadi. Lutfen tekrar giris yap." },
+      { status: 401 },
+    );
+  }
+
+  const { listingId } = await context.params;
+  const result = await deleteDatabaseListing(listingId, user.id);
+
+  if (!result) {
+    return NextResponse.json(
+      { message: "Silinecek ilan bulunamadi. Sadece arsivlenmis ilanlar silinebilir." },
+      { status: 404 },
+    );
+  }
+
+  return NextResponse.json({
+    message: "Ilan kalici olarak silindi.",
+    deleted: true,
+  });
 }

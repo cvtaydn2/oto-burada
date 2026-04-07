@@ -12,6 +12,7 @@ export const reportsCookieOptions = {
   maxAge: 60 * 60 * 24 * 30,
   path: "/",
   sameSite: "lax" as const,
+  secure: process.env.NODE_ENV === "production",
 };
 
 interface ReportRow {
@@ -25,6 +26,7 @@ interface ReportRow {
   updated_at: string;
 }
 
+/** @deprecated No longer used in read path. Kept for legacy-sync migration. */
 function mergeReports(primary: Report[], secondary: Report[]) {
   const reportMap = new Map<string, Report>();
 
@@ -200,6 +202,7 @@ export function serializeStoredReports(reports: Report[]) {
   return JSON.stringify(reports);
 }
 
+/** @deprecated Only used by legacy-sync migration endpoint. */
 export async function getLegacyStoredReports() {
   const cookieStore = await cookies();
 
@@ -264,34 +267,24 @@ export function updateStoredReportStatus(existingReport: Report, status: ReportS
 }
 
 export async function getStoredReports() {
-  const cookieReports = await getLegacyStoredReports();
   const databaseReports = await getDatabaseReports();
-
-  if (databaseReports) {
-    return mergeReports(databaseReports, cookieReports).sort(
-      (left, right) =>
-        Date.parse(right.updatedAt ?? right.createdAt) -
-        Date.parse(left.updatedAt ?? left.createdAt),
-    );
-  }
-
-  return cookieReports.sort(
-    (left, right) => Date.parse(right.updatedAt ?? right.createdAt) - Date.parse(left.updatedAt ?? left.createdAt),
+  return (databaseReports ?? []).sort(
+    (left, right) =>
+      Date.parse(right.updatedAt ?? right.createdAt) -
+      Date.parse(left.updatedAt ?? left.createdAt),
   );
 }
 
 export async function getStoredReportsByReporter(reporterId: string) {
-  const reports = await getStoredReports();
-
-  return reports
-    .filter((report) => report.reporterId === reporterId)
-    .sort(
-      (left, right) =>
-        Date.parse(right.updatedAt ?? right.createdAt) -
-        Date.parse(left.updatedAt ?? left.createdAt),
-    );
+  const databaseReports = await getDatabaseReports({ reporterId });
+  return (databaseReports ?? []).sort(
+    (left, right) =>
+      Date.parse(right.updatedAt ?? right.createdAt) -
+      Date.parse(left.updatedAt ?? left.createdAt),
+  );
 }
 
+/** @deprecated Only used by legacy-sync migration endpoint. */
 export async function getLegacyStoredReportsByReporter(reporterId: string) {
   return (await getLegacyStoredReports())
     .filter((report) => report.reporterId === reporterId)
