@@ -13,9 +13,9 @@ Her yeni geliştirme başlamadan önce okunmalıdır.
 ---
 
 ## Proje Durumu
-- Güncel faz: `Post-MVP`
-- Güncel görev: `Persistence Upgrade`
-- Durum: tamamlandı
+- Güncel faz: `UI Modernization`
+- Güncel görev: `UI Update - Documentation Alignment`
+- Durum: devam ediyor
 
 ---
 
@@ -300,21 +300,30 @@ Her yeni geliştirme başlamadan önce okunmalıdır.
 - Agir form ve persistence panelleri de yeni dile tasindi; sonraki aday alan admin alt detay ekranlari ve kalan ikincil panellerdir.
 - Auth ekranlari da yeni dile tasindi; sonraki aday alan dashboard alt detay panelleri ve admin audit/persistence ic yuzeyleridir.
 
+### Post-MVP / UI Modernization
+- Site header modern glass effect ve blur ile yenilendi.
+- Gradient logo ve gelişmiş arama kutusu eklendi.
+- Mobil navigasyon ayrı client component olarak tasındı.
+- Footer 4 kolonlu modern düzen, popüler marka linkleri ve güven özellikleriyle güncellendi.
+- Listing kartları rounded-2xl, hover efektleri, premium badge ile yenilendi.
+- Listings sayfasına hero section (sadece ana sayfada), hızlı istatistikler, view toggle (list/grid) eklendi.
+- Items per page selector (12, 24, 48, 96) ve sortable table headers (Yıl, KM, Fiyat) eklendi.
+- Listing detail sayfasına image slider (önceki/sonraki ok), thumbnail strip ve lightbox modal eklendi.
+- Share button ve WhatsApp CTA görsel olarak ayrıştırıldı (yeşil gradient).
+- Filter panel collapsible sections (Marka, Konum, Özellikler, Fiyat, Yıl&KM) ile güncellendi.
+- Satıcı profili sayfası modern header, avatar, istatistik kartları ve grid layout ile yenilendi.
+- Bildirimler sayfası okunmamış filtreleme, tümünü oku butonu ve temiz tasarım ile güncellendi.
+- Form error mesajları basit Türkçe'ye güncellendi.
+- UI_SYSTEM.md ve BRAND_SYSTEM.md kurallarına göre eksiklikler giderildi.
+- Empty states ve loading states tüm major sayfalarda doğrulandı.
+
 ---
 
 ## Sonraki Görev
-- `Final Definition of Done`
-- `TASKS.md` icindeki sıralı MVP kapsami tamamlandi; sonraki mantikli is bu yeni migration/seed komutlarini production benzeri ortamda calistirip legacy cookie verisini backfill etmektir.
-- Sonrasindaki adim production benzeri Supabase ortaminda bootstrap + verify calistirip dashboard Legacy Sync ile kalan tarayici verisini tasimaktir.
-- Sonraki pratik adim, uygulamayi bu env ile acip dashboard Legacy Sync karti uzerinden mevcut tarayici cookie verilerini tabloya backfill etmektir.
-- UI tarafinda sonraki mantikli adim, Figma component kart dilini listing kartlari ve dashboard ozet panellerine parcali olarak uyarlamaktir.
-- UI tarafinda sonraki mantikli adim, ayni AI Studio + Figma dilini listing detail hero, seller paneli ve admin moderasyon listelerine tasimaktir.
-- UI tarafinda sonraki mantikli adim, admin listing/report moderasyon listelerini ve dashboard favorites ekranini ayni component kurallariyla yeniden hizalamaktir.
-- UI tarafinda sonraki mantikli adim, admin recent actions akisi ile dashboard profile/listings sayfalarini ayni component sistemiyle hizalamaktir.
-- UI tarafinda sonraki mantikli adim, dashboard listing create formu ve admin persistence paneli gibi daha yogun bilgi/form yuzeylerini ayni tasarim sistemiyle inceltmektir.
-- UI tarafinda sonraki mantikli adim, listing create formu, profile formu ve admin persistence paneli gibi yogun form/bilgi alanlarini AI Studio diline daha yakin bir duzende sadeleştirmektir.
-- UI tarafinda sonraki mantikli adim, admin persistence alt detaylari, auth ekranlari ve dashboard profile/listings formlarinin ic alanlarini daha da rafine etmektir.
-- UI tarafinda sonraki mantikli adim, dashboard alt detay panelleri ile admin audit/persistence ic akislarindaki daha kucuk bilgi kartlarini ayni tasarim sistemine tamamen oturtmaktir.
+- UI_SYSTEM.md, BRAND_SYSTEM.md ve AGENTS.md kurallarına göre tüm ekranlar modernize edildi.
+- Eksiklikler tespit edilip giderildi: WhatsApp CTA ayrıştırma, empty/loading states, trust signals, error messages.
+- PROGRESS.md güncellendi.
+- Sonraki adım: Build/lint/typecheck doğrulaması yapmak.
 
 ---
 

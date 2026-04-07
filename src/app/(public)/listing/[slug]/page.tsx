@@ -21,7 +21,9 @@ import {
 } from "lucide-react";
 
 import { FavoriteButton } from "@/components/listings/favorite-button";
+import { ListingGallery } from "@/components/listings/listing-gallery";
 import { ReportListingForm } from "@/components/forms/report-listing-form";
+import { ShareButton } from "@/components/listings/share-button";
 import { ListingCard } from "@/components/listings/listing-card";
 import { SectionHeader } from "@/components/shared/section-header";
 import { PriceAnalysisCard } from "@/components/listings/price-analysis-card";
@@ -151,92 +153,63 @@ export default async function ListingDetailPage({ params }: ListingDetailPagePro
   ];
 
   return (
-    <main className="bg-[#f8fafc] min-h-screen">
-      <div className="mx-auto flex w-full max-w-7xl flex-col px-4 py-8 sm:px-6 lg:px-8">
+    <main className="min-h-screen bg-slate-50/50">
+      <div className="mx-auto flex w-full max-w-7xl flex-col px-4 py-6 sm:px-6 lg:px-8">
         
         {/* Breadcrumb */}
-        <nav className="flex items-center gap-1.5 text-xs text-slate-500 font-medium mb-6 overflow-x-auto whitespace-nowrap pb-2">
-          <Link href="/" className="hover:text-indigo-600 transition-colors">Vasıta</Link>
-          <ChevronRight size={14} />
-          <Link href="/listings" className="hover:text-indigo-600 transition-colors">Otomobil</Link>
-          <ChevronRight size={14} />
+        <nav className="flex items-center gap-2 text-sm text-slate-500 mb-6 overflow-x-auto whitespace-nowrap">
+          <Link href="/" className="hover:text-indigo-600 transition-colors flex items-center gap-1">
+            <span>Ana Sayfa</span>
+          </Link>
+          <ChevronRight size={14} className="text-slate-300" />
+          <Link href="/listings" className="hover:text-indigo-600 transition-colors">İlanlar</Link>
+          <ChevronRight size={14} className="text-slate-300" />
           <Link href={`/listings?brand=${encodeURIComponent(listing.brand)}`} className="hover:text-indigo-600 transition-colors">{listing.brand}</Link>
-          <ChevronRight size={14} />
-          <span className="text-slate-800">{listing.model}</span>
+          <ChevronRight size={14} className="text-slate-300" />
+          <span className="text-slate-800 font-medium">{listing.model}</span>
         </nav>
 
-        {/* Title & Actions */}
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center pb-4 mb-6 gap-4">
-          <div>
-            <h1 className="text-3xl sm:text-4xl font-bold text-slate-900 mb-2 tracking-tight">
-              {listing.brand} <span className="font-normal text-slate-500">{listing.model}</span>
-            </h1>
-            <p className="text-lg text-slate-600 flex flex-wrap items-center gap-2">
-              {listing.title}
-              <span className="inline-flex items-center gap-1 text-sm font-medium bg-slate-100 text-slate-600 px-2 py-0.5 rounded-md">
-                <MapPin size={14} /> {listing.city} / {listing.district}
-              </span>
-            </p>
-          </div>
-          <div className="flex items-center gap-3 shrink-0">
-            <FavoriteButton
-              listingId={listing.id}
-              className="h-10 rounded-xl border border-slate-200 bg-white shadow-sm px-4 hover:bg-slate-50 font-medium text-sm gap-2 text-slate-700"
-            />
+        {/* Title Section */}
+        <div className="bg-white rounded-3xl border border-slate-200/60 p-6 mb-6">
+          <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
+            <div className="space-y-2">
+              <div className="flex items-center gap-3">
+                <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-slate-900">
+                  {listing.brand} <span className="font-medium text-slate-500">{listing.model}</span>
+                </h1>
+                {listing.featured && (
+                  <span className="inline-flex items-center gap-1 rounded-full bg-gradient-to-r from-amber-500 to-orange-500 px-3 py-1 text-xs font-bold text-white shadow-md">
+                    <Sparkles size={12} />
+                    Öne Çıkan
+                  </span>
+                )}
+              </div>
+              <p className="text-base text-slate-600 flex flex-wrap items-center gap-2">
+                {listing.title}
+              </p>
+              <div className="flex items-center gap-2 mt-2">
+                <span className="inline-flex items-center gap-1.5 text-sm font-medium bg-slate-100 text-slate-600 px-3 py-1.5 rounded-full">
+                  <MapPin size={14} className="text-indigo-500" />
+                  {listing.city} / {listing.district}
+                </span>
+              </div>
+            </div>
+            <div className="flex items-center gap-3">
+              <FavoriteButton
+                listingId={listing.id}
+                className="h-11 rounded-xl border border-slate-200 bg-white shadow-sm px-5 hover:bg-slate-50 font-medium text-sm gap-2 text-slate-700 flex items-center"
+              />
+              <ShareButton title={`${listing.brand} ${listing.model} - ${listing.title}`} price={listing.price} />
+            </div>
           </div>
         </div>
 
         <article className="flex flex-col lg:flex-row gap-8 items-start">
           {/* Left Column */}
-          <div className="flex-1 min-w-0 w-full flex flex-col gap-8">
+          <div className="flex-1 min-w-0 w-full flex flex-col gap-6">
             
-            {/* Main Image Gallery */}
-            <section className="overflow-hidden rounded-lg bg-white shadow-sm border border-slate-200">
-              <div className="p-3 space-y-3">
-                <div className="relative aspect-[4/3] sm:aspect-[16/9] lg:aspect-[16/10] overflow-hidden rounded-md bg-slate-100">
-                  <Image
-                    src={listing.images[0].url}
-                    alt={listing.title}
-                    fill
-                    priority
-                    sizes="(min-width: 1280px) 70vw, 100vw"
-                    className="object-cover"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
-                  <div className="absolute inset-x-0 top-0 flex items-start justify-between gap-3 p-4">
-                    <span
-                      className={`rounded-full border px-3 py-1 text-xs font-semibold shadow-sm backdrop-blur-md ${heroToneClasses.badge}`}
-                    >
-                      {insight.badgeLabel}
-                    </span>
-                    <span className="rounded-full bg-white/90 px-3 py-1 text-xs font-semibold text-slate-900 shadow-sm backdrop-blur-sm">
-                      {listing.featured ? "Öne Çıkan İlan" : "Yayında"}
-                    </span>
-                  </div>
-                </div>
-                <div className="grid grid-cols-4 sm:grid-cols-5 gap-2 sm:gap-3">
-                  {listing.images.slice(1, 6).map((image: any, index: number) => (
-                    <div
-                      key={image.id ?? image.url}
-                      className="relative aspect-[4/3] overflow-hidden rounded bg-slate-100 border border-slate-200"
-                    >
-                      <Image
-                        src={image.url}
-                        alt={`${listing.title} görsel ${image.order + 1}`}
-                        fill
-                        sizes="(min-width: 640px) 190px, 20vw"
-                        className="object-cover"
-                      />
-                      {index === 4 && listing.images.length > 6 && (
-                        <div className="absolute inset-0 bg-black/50 flex items-center justify-center backdrop-blur-sm">
-                          <span className="text-white font-medium text-sm sm:text-base">+{listing.images.length - 6}</span>
-                        </div>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </section>
+            {/* Image Gallery with Slider */}
+            <ListingGallery images={listing.images} title={listing.title} />
 
             {/* Quick Specs Grid */}
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
@@ -327,7 +300,7 @@ export default async function ListingDetailPage({ params }: ListingDetailPagePro
                 <div className="space-y-2.5 mt-5">
                   <a
                     href={`tel:${listing.whatsappPhone}`}
-                    className="flex w-full items-center justify-center gap-2 rounded-lg bg-slate-900 h-12 px-4 text-[15px] font-semibold text-white shadow transition-all hover:bg-slate-800"
+                    className="flex w-full items-center justify-center gap-2 rounded-xl bg-slate-900 h-12 px-4 text-[15px] font-semibold text-white shadow-lg transition-all hover:bg-slate-800 hover:shadow-xl"
                   >
                     <Phone className="size-5" />
                     {listing.whatsappPhone.replace(/(\d{4})(\d{3})(\d{2})(\d{2})/, "$1 $2 $3 $4")}
@@ -336,10 +309,10 @@ export default async function ListingDetailPage({ params }: ListingDetailPagePro
                     href={whatsappLink}
                     target="_blank"
                     rel="noreferrer"
-                    className="flex w-full items-center justify-center gap-2 rounded-lg border border-slate-200 bg-white h-12 px-4 text-[15px] text-slate-800 font-semibold shadow-sm transition-colors hover:bg-slate-50"
+                    className="flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-green-500 to-emerald-600 h-12 px-4 text-[15px] text-white font-semibold shadow-lg shadow-green-500/25 transition-all hover:from-green-600 hover:to-emerald-700 hover:shadow-green-500/40"
                   >
                     <MessageCircle className="size-5" />
-                    Mesaj Gönder
+                    WhatsApp ile İletişime Geç
                   </a>
                 </div>
                 

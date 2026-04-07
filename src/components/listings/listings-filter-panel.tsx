@@ -1,4 +1,8 @@
+"use client";
+
+import { useState, useMemo } from "react";
 import { fuelTypes, listingSortOptions, maximumCarYear, maximumMileage, minimumCarYear, transmissionTypes } from "@/lib/constants/domain";
+import { SlidersHorizontal, ChevronDown, ChevronUp, Search, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { BrandCatalogItem, CityOption } from "@/data";
 import type { ListingFilters, ListingSortOption } from "@/types";
@@ -33,6 +37,38 @@ const sortLabels: Record<ListingSortOption, string> = {
   year_desc: "Model yılı yeni",
 };
 
+interface FilterSectionProps {
+  title: string;
+  defaultOpen?: boolean;
+  children: React.ReactNode;
+  activeCount?: number;
+}
+
+function FilterSection({ title, defaultOpen = true, children, activeCount }: FilterSectionProps) {
+  const [isOpen, setIsOpen] = useState(defaultOpen);
+
+  return (
+    <div className="border-b border-slate-100 last:border-0">
+      <button
+        type="button"
+        onClick={() => setIsOpen(!isOpen)}
+        className="flex w-full items-center justify-between py-3 text-sm font-semibold text-slate-900 hover:text-indigo-600 transition-colors"
+      >
+        <span className="flex items-center gap-2">
+          {title}
+          {activeCount !== undefined && activeCount > 0 && (
+            <span className="rounded-full bg-indigo-100 px-2 py-0.5 text-xs font-medium text-indigo-700">
+              {activeCount}
+            </span>
+          )}
+        </span>
+        {isOpen ? <ChevronUp size={18} className="text-slate-400" /> : <ChevronDown size={18} className="text-slate-400" />}
+      </button>
+      {isOpen && <div className="pb-4 space-y-3">{children}</div>}
+    </div>
+  );
+}
+
 export function ListingsFilterPanel({
   brands,
   cities,
@@ -45,70 +81,94 @@ export function ListingsFilterPanel({
   onFilterChange,
   onReset,
 }: ListingsFilterPanelProps) {
+  const activeFiltersCount = useMemo(() => {
+    let count = 0;
+    if (filters.query) count++;
+    if (filters.brand) count++;
+    if (filters.model) count++;
+    if (filters.city) count++;
+    if (filters.district) count++;
+    if (filters.fuelType) count++;
+    if (filters.transmission) count++;
+    if (filters.minPrice || filters.maxPrice) count++;
+    if (filters.minYear || filters.maxYear) count++;
+    if (filters.maxMileage) count++;
+    return count;
+  }, [filters]);
+
+  const brandCount = filters.brand ? 1 : 0;
+  const locationCount = (filters.city ? 1 : 0) + (filters.district ? 1 : 0);
+  const specsCount = (filters.fuelType ? 1 : 0) + (filters.transmission ? 1 : 0);
+  const priceCount = (filters.minPrice ? 1 : 0) + (filters.maxPrice ? 1 : 0);
+  const yearCount = (filters.minYear ? 1 : 0) + (filters.maxYear ? 1 : 0) + (filters.maxMileage ? 1 : 0);
+
   return (
     <div
       className={cn(
-        "rounded-xl border border-slate-200 bg-white p-4 shadow-sm",
-        isMobile && "max-h-[80vh] overflow-y-auto",
+        "rounded-2xl bg-white border border-slate-200/60 p-5 shadow-sm",
+        isMobile && "max-h-[85vh] overflow-y-auto rounded-t-2xl",
       )}
     >
-      <div className="flex items-center justify-between gap-3">
-        <div>
-          <h2 className="text-lg font-semibold tracking-tight">Filtreler</h2>
-          <p className="text-sm text-muted-foreground">Aradığın aracı daha hızlı bul.</p>
+      <div className="flex items-center justify-between gap-3 mb-5">
+        <div className="flex items-center gap-2">
+          <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-r from-indigo-500 to-indigo-600 text-white">
+            <SlidersHorizontal size={18} />
+          </div>
+          <div>
+            <h2 className="text-lg font-bold text-slate-900">Filtrele</h2>
+            <p className="text-xs text-slate-500">
+              {activeFiltersCount > 0 ? `${activeFiltersCount} aktif filtre` : "Aradığın aracı bul"}
+            </p>
+          </div>
         </div>
-        <button
-          type="button"
-          onClick={onReset}
-          className="rounded-xl border border-border bg-background px-3 py-2 text-sm font-semibold text-foreground transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
-        >
-          Temizle
-        </button>
+        {activeFiltersCount > 0 && (
+          <button
+            type="button"
+            onClick={onReset}
+            className="flex items-center gap-1 text-sm font-medium text-indigo-600 hover:text-indigo-700 transition-colors"
+          >
+            <X size={14} />
+            Temizle
+          </button>
+        )}
       </div>
 
-      <div className="mt-5 space-y-4">
-        {quickPresets.length > 0 ? (
-          <div className="space-y-3 rounded-[1.25rem] border border-primary/10 bg-primary/5 p-4">
-            <div>
-              <h3 className="text-sm font-semibold tracking-tight">Akilli secimler</h3>
-              <p className="text-xs leading-5 text-muted-foreground">
-                Tek dokunusla sik kullanilan filtre kombinasyonlarini uygula.
-              </p>
-            </div>
-            <div className="grid gap-2">
-              {quickPresets.map((preset) => (
-                <button
-                  key={preset.id}
-                  type="button"
-                  onClick={() => onApplyPreset?.(preset.id)}
-                  className="rounded-xl border border-border/70 bg-background px-4 py-3 text-left transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
-                >
-                  <p className="text-sm font-semibold text-foreground">{preset.label}</p>
-                  <p className="mt-1 text-xs leading-5 text-muted-foreground">
-                    {preset.description}
-                  </p>
-                </button>
-              ))}
-            </div>
+      {quickPresets.length > 0 && (
+        <div className="mb-5 p-4 bg-gradient-to-r from-indigo-50 to-blue-50 rounded-xl border border-indigo-100">
+          <h3 className="text-sm font-bold text-indigo-900 mb-2">Hızlı Seçimler</h3>
+          <div className="flex flex-wrap gap-2">
+            {quickPresets.map((preset) => (
+              <button
+                key={preset.id}
+                type="button"
+                onClick={() => onApplyPreset?.(preset.id)}
+                className="px-3 py-1.5 bg-white rounded-full text-xs font-medium text-slate-700 border border-slate-200 hover:border-indigo-300 hover:text-indigo-600 transition-all"
+              >
+                {preset.label}
+              </button>
+            ))}
           </div>
-        ) : null}
+        </div>
+      )}
 
-        <label className="block space-y-2 text-sm font-medium">
-          <span>Arama</span>
-          <input
-            value={filters.query ?? ""}
-            onChange={(event: any) => onFilterChange("query", event.target.value || undefined)}
-            placeholder="Marka, model veya şehir"
-            className="h-9 w-full rounded-md border border-slate-200 bg-white px-3 text-[13px] outline-none transition-colors focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
-          />
-        </label>
+      <div className="space-y-1">
+        <FilterSection title="Arama">
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+            <input
+              value={filters.query ?? ""}
+              onChange={(event: any) => onFilterChange("query", event.target.value || undefined)}
+              placeholder="Marka, model veya şehir"
+              className="h-10 w-full pl-9 pr-3 rounded-xl border border-slate-200 bg-slate-50 text-sm outline-none transition-all focus:bg-white focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20"
+            />
+          </div>
+        </FilterSection>
 
-        <label className="block space-y-2 text-sm font-medium">
-          <span>Sıralama</span>
+        <FilterSection title="Sıralama">
           <select
             value={filters.sort ?? "newest"}
             onChange={(event: any) => onFilterChange("sort", event.target.value as ListingSortOption)}
-            className="h-9 w-full rounded-md border border-slate-200 bg-white px-3 text-[13px] outline-none transition-colors focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
+            className="h-10 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 text-sm outline-none transition-all focus:bg-white focus:border-indigo-500"
           >
             {listingSortOptions.map((option) => (
               <option key={option} value={option}>
@@ -116,208 +176,176 @@ export function ListingsFilterPanel({
               </option>
             ))}
           </select>
-        </label>
+        </FilterSection>
 
-        <div className="grid gap-4 sm:grid-cols-2">
-          <label className="block space-y-2 text-sm font-medium">
-            <span>Marka</span>
+        <FilterSection title="Marka & Model" activeCount={brandCount}>
+          <div className="space-y-3">
             <select
               value={filters.brand ?? ""}
               onChange={(event: any) => onFilterChange("brand", event.target.value || undefined)}
-              className="h-9 w-full rounded-md border border-slate-200 bg-white px-3 text-[13px] outline-none transition-colors focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
+              className="h-10 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 text-sm outline-none transition-all focus:bg-white focus:border-indigo-500"
             >
-              <option value="">Tümü</option>
+              <option value="">Tüm Markalar</option>
               {brands.map((item) => (
                 <option key={item.brand} value={item.brand}>
                   {item.brand}
                 </option>
               ))}
             </select>
-          </label>
+            {filters.brand && (
+              <select
+                value={filters.model ?? ""}
+                onChange={(event: any) => onFilterChange("model", event.target.value || undefined)}
+                disabled={models.length === 0}
+                className="h-10 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 text-sm outline-none transition-all focus:bg-white focus:border-indigo-500 disabled:opacity-50"
+              >
+                <option value="">Tüm Modeller</option>
+                {models.map((model) => (
+                  <option key={model} value={model}>
+                    {model}
+                  </option>
+                ))}
+              </select>
+            )}
+          </div>
+        </FilterSection>
 
-          <label className="block space-y-2 text-sm font-medium">
-            <span>Model</span>
-            <select
-              value={filters.model ?? ""}
-              onChange={(event: any) => onFilterChange("model", event.target.value || undefined)}
-              disabled={models.length === 0}
-              className="h-9 w-full rounded-md border border-slate-200 bg-white px-3 text-[13px] outline-none transition-colors focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 disabled:cursor-not-allowed disabled:bg-slate-50"
-            >
-              <option value="">Tümü</option>
-              {models.map((model) => (
-                <option key={model} value={model}>
-                  {model}
-                </option>
-              ))}
-            </select>
-          </label>
-        </div>
-
-        <div className="grid gap-4 sm:grid-cols-2">
-          <label className="block space-y-2 text-sm font-medium">
-            <span>Şehir</span>
+        <FilterSection title="Konum" activeCount={locationCount}>
+          <div className="space-y-3">
             <select
               value={filters.city ?? ""}
               onChange={(event: any) => onFilterChange("city", event.target.value || undefined)}
-              className="h-9 w-full rounded-md border border-slate-200 bg-white px-3 text-[13px] outline-none transition-colors focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
+              className="h-10 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 text-sm outline-none transition-all focus:bg-white focus:border-indigo-500"
             >
-              <option value="">Tümü</option>
+              <option value="">Tüm Şehirler</option>
               {cities.map((item) => (
                 <option key={item.city} value={item.city}>
                   {item.city}
                 </option>
               ))}
             </select>
-          </label>
+            {filters.city && (
+              <select
+                value={filters.district ?? ""}
+                onChange={(event: any) => onFilterChange("district", event.target.value || undefined)}
+                disabled={districts.length === 0}
+                className="h-10 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 text-sm outline-none transition-all focus:bg-white focus:border-indigo-500 disabled:opacity-50"
+              >
+                <option value="">Tüm İlçeler</option>
+                {districts.map((district) => (
+                  <option key={district} value={district}>
+                    {district}
+                  </option>
+                ))}
+              </select>
+            )}
+          </div>
+        </FilterSection>
 
-          <label className="block space-y-2 text-sm font-medium">
-            <span>İlçe</span>
-            <select
-              value={filters.district ?? ""}
-              onChange={(event: any) => onFilterChange("district", event.target.value || undefined)}
-              disabled={districts.length === 0}
-              className="h-9 w-full rounded-md border border-slate-200 bg-white px-3 text-[13px] outline-none transition-colors focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 disabled:cursor-not-allowed disabled:bg-slate-50"
-            >
-              <option value="">Tümü</option>
-              {districts.map((district) => (
-                <option key={district} value={district}>
-                  {district}
-                </option>
-              ))}
-            </select>
-          </label>
-        </div>
-
-        <div className="grid gap-4 sm:grid-cols-2">
-          <label className="block space-y-2 text-sm font-medium">
-            <span>Yakıt</span>
+        <FilterSection title="Özellikler" activeCount={specsCount}>
+          <div className="grid grid-cols-2 gap-3">
             <select
               value={filters.fuelType ?? ""}
               onChange={(event: any) =>
-                onFilterChange(
-                  "fuelType",
-                  (event.target.value || undefined) as ListingFilters["fuelType"],
-                )
+                onFilterChange("fuelType", (event.target.value || undefined) as ListingFilters["fuelType"])
               }
-              className="h-9 w-full rounded-md border border-slate-200 bg-white px-3 text-[13px] outline-none transition-colors focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
+              className="h-10 rounded-xl border border-slate-200 bg-slate-50 px-3 text-sm outline-none transition-all focus:bg-white focus:border-indigo-500"
             >
-              <option value="">Tümü</option>
+              <option value="">Yakıt Türü</option>
               {fuelTypes.map((item) => (
                 <option key={item} value={item}>
                   {item}
                 </option>
               ))}
             </select>
-          </label>
-
-          <label className="block space-y-2 text-sm font-medium">
-            <span>Vites</span>
             <select
               value={filters.transmission ?? ""}
               onChange={(event: any) =>
-                onFilterChange(
-                  "transmission",
-                  (event.target.value || undefined) as ListingFilters["transmission"],
-                )
+                onFilterChange("transmission", (event.target.value || undefined) as ListingFilters["transmission"])
               }
-              className="h-9 w-full rounded-md border border-slate-200 bg-white px-3 text-[13px] outline-none transition-colors focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
+              className="h-10 rounded-xl border border-slate-200 bg-slate-50 px-3 text-sm outline-none transition-all focus:bg-white focus:border-indigo-500"
             >
-              <option value="">Tümü</option>
+              <option value="">Vites</option>
               {transmissionTypes.map((item) => (
                 <option key={item} value={item}>
                   {item}
                 </option>
               ))}
             </select>
-          </label>
-        </div>
+          </div>
+        </FilterSection>
 
-        <div className="grid gap-4 sm:grid-cols-2">
-          <label className="block space-y-2 text-sm font-medium">
-            <span>Min. fiyat</span>
-            <input
-              type="number"
-              min="0"
-              value={filters.minPrice ?? ""}
-              onChange={(event: any) =>
-                onFilterChange(
-                  "minPrice",
-                  event.target.value ? Number(event.target.value) : undefined,
-                )
-              }
-              className="h-9 w-full rounded-md border border-slate-200 bg-white px-3 text-[13px] outline-none transition-colors focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
-            />
-          </label>
+        <FilterSection title="Fiyat" activeCount={priceCount}>
+          <div className="grid grid-cols-2 gap-3">
+            <div className="relative">
+              <input
+                type="number"
+                placeholder="Min"
+                value={filters.minPrice ?? ""}
+                onChange={(event: any) =>
+                  onFilterChange("minPrice", event.target.value ? Number(event.target.value) : undefined)
+                }
+                className="h-10 w-full rounded-xl border border-slate-200 bg-slate-50 pl-3 pr-8 text-sm outline-none transition-all focus:bg-white focus:border-indigo-500"
+              />
+              <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-slate-400">TL</span>
+            </div>
+            <div className="relative">
+              <input
+                type="number"
+                placeholder="Max"
+                value={filters.maxPrice ?? ""}
+                onChange={(event: any) =>
+                  onFilterChange("maxPrice", event.target.value ? Number(event.target.value) : undefined)
+                }
+                className="h-10 w-full rounded-xl border border-slate-200 bg-slate-50 pl-3 pr-8 text-sm outline-none transition-all focus:bg-white focus:border-indigo-500"
+              />
+              <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-slate-400">TL</span>
+            </div>
+          </div>
+        </FilterSection>
 
-          <label className="block space-y-2 text-sm font-medium">
-            <span>Maks. fiyat</span>
-            <input
-              type="number"
-              min="0"
-              value={filters.maxPrice ?? ""}
-              onChange={(event: any) =>
-                onFilterChange(
-                  "maxPrice",
-                  event.target.value ? Number(event.target.value) : undefined,
-                )
-              }
-              className="h-9 w-full rounded-md border border-slate-200 bg-white px-3 text-[13px] outline-none transition-colors focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
-            />
-          </label>
-        </div>
-
-        <div className="grid gap-4 sm:grid-cols-2">
-          <label className="block space-y-2 text-sm font-medium">
-            <span>Min. yıl</span>
-            <input
-              type="number"
-              min={minimumCarYear}
-              max={maximumCarYear}
-              value={filters.minYear ?? ""}
-              onChange={(event: any) =>
-                onFilterChange(
-                  "minYear",
-                  event.target.value ? Number(event.target.value) : undefined,
-                )
-              }
-              className="h-9 w-full rounded-md border border-slate-200 bg-white px-3 text-[13px] outline-none transition-colors focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
-            />
-          </label>
-
-          <label className="block space-y-2 text-sm font-medium">
-            <span>Maks. yıl</span>
-            <input
-              type="number"
-              min={minimumCarYear}
-              max={maximumCarYear}
-              value={filters.maxYear ?? ""}
-              onChange={(event: any) =>
-                onFilterChange(
-                  "maxYear",
-                  event.target.value ? Number(event.target.value) : undefined,
-                )
-              }
-              className="h-9 w-full rounded-md border border-slate-200 bg-white px-3 text-[13px] outline-none transition-colors focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
-            />
-          </label>
-        </div>
-
-        <label className="block space-y-2 text-sm font-medium">
-          <span>Maks. kilometre</span>
-          <input
-            type="number"
-            min="0"
-            max={maximumMileage}
-            value={filters.maxMileage ?? ""}
-            onChange={(event: any) =>
-              onFilterChange(
-                "maxMileage",
-                event.target.value ? Number(event.target.value) : undefined,
-              )
-            }
-            className="h-9 w-full rounded-md border border-slate-200 bg-white px-3 text-[13px] outline-none transition-colors focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
-          />
-        </label>
+        <FilterSection title="Yıl & KM" activeCount={yearCount}>
+          <div className="space-y-3">
+            <div className="grid grid-cols-2 gap-3">
+              <input
+                type="number"
+                placeholder="Min Yıl"
+                min={minimumCarYear}
+                max={maximumCarYear}
+                value={filters.minYear ?? ""}
+                onChange={(event: any) =>
+                  onFilterChange("minYear", event.target.value ? Number(event.target.value) : undefined)
+                }
+                className="h-10 rounded-xl border border-slate-200 bg-slate-50 px-3 text-sm outline-none transition-all focus:bg-white focus:border-indigo-500"
+              />
+              <input
+                type="number"
+                placeholder="Max Yıl"
+                min={minimumCarYear}
+                max={maximumCarYear}
+                value={filters.maxYear ?? ""}
+                onChange={(event: any) =>
+                  onFilterChange("maxYear", event.target.value ? Number(event.target.value) : undefined)
+                }
+                className="h-10 rounded-xl border border-slate-200 bg-slate-50 px-3 text-sm outline-none transition-all focus:bg-white focus:border-indigo-500"
+              />
+            </div>
+            <div className="relative">
+              <input
+                type="number"
+                placeholder="Max KM"
+                min="0"
+                max={maximumMileage}
+                value={filters.maxMileage ?? ""}
+                onChange={(event: any) =>
+                  onFilterChange("maxMileage", event.target.value ? Number(event.target.value) : undefined)
+                }
+                className="h-10 w-full rounded-xl border border-slate-200 bg-slate-50 pl-3 pr-12 text-sm outline-none transition-all focus:bg-white focus:border-indigo-500"
+              />
+              <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-slate-400">km</span>
+            </div>
+          </div>
+        </FilterSection>
       </div>
     </div>
   );

@@ -1,6 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
-import { AlertTriangle, ShieldCheck, Sparkles } from "lucide-react";
+import { AlertTriangle, Sparkles, Heart } from "lucide-react";
 
 import { FavoriteButton } from "@/components/listings/favorite-button";
 import { formatCurrency, formatDate, formatNumber } from "@/lib/utils";
@@ -16,115 +16,117 @@ export function ListingCard({ listing }: ListingCardProps) {
   const detailHref = `/listing/${listing.slug}`;
   const insight = getListingCardInsights(listing);
 
-  // Derive dummy flags
   const isPremium = listing.featured;
   const isSuspicious = insight.tone === "amber" && listing.price < 300000;
   
   return (
     <Link
       href={detailHref}
-      className={`group flex flex-row bg-white transition-colors hover:bg-slate-50 relative ${
-        isPremium ? "bg-indigo-50/10" : ""
-      } ${isSuspicious ? "bg-red-50/20" : ""}`}
+      className="group relative flex flex-col sm:flex-row bg-white rounded-2xl border border-slate-200/60 overflow-hidden transition-all hover:shadow-lg hover:border-indigo-200 hover:-translate-y-0.5"
     >
-      {/* Mobile-only favorite button */}
-      <div className="absolute right-2 top-2 z-10 md:hidden">
+      {/* Mobile Favorite Button */}
+      <div className="absolute right-3 top-3 z-10 sm:hidden">
         <FavoriteButton
           listingId={listing.id}
-          className="size-7 rounded bg-white/90 shadow-sm backdrop-blur-md"
+          className="size-9 rounded-full bg-white/90 shadow-md backdrop-blur-md flex items-center justify-center"
         />
       </div>
 
       {/* Image Section */}
-      <div className="w-[110px] h-[82px] sm:w-[140px] sm:h-[105px] md:w-[150px] md:h-[114px] shrink-0 p-2 md:pr-0">
-        <div className="relative w-full h-full overflow-hidden rounded bg-slate-100">
-          {coverImage ? (
-            <Image
-              src={coverImage.url}
-              alt={listing.title}
-              fill
-              sizes="(min-width: 768px) 150px, 110px"
-              className="object-cover"
-            />
-          ) : null}
-          <div className="absolute bottom-1 right-1 rounded bg-black/60 px-1 py-0.5 text-[9px] sm:text-[10px] text-white">
-            {listing.images.length}
+      <div className="relative w-full sm:w-[180px] h-[160px] sm:h-[140px] shrink-0 overflow-hidden bg-slate-100">
+        {coverImage ? (
+          <Image
+            src={coverImage.url}
+            alt={listing.title}
+            fill
+            sizes="(min-width: 640px) 180px, 100vw"
+            className="object-cover transition-transform duration-300 group-hover:scale-105"
+          />
+        ) : (
+          <div className="w-full h-full flex items-center justify-center text-slate-400">
+            <span>Resim yok</span>
           </div>
+        )}
+        {/* Image count badge */}
+        <div className="absolute bottom-2 right-2 rounded-lg bg-black/60 px-2 py-1 text-xs font-medium text-white flex items-center gap-1">
+          <span>{listing.images.length}</span>
+          <span className="text-[10px] opacity-80">foto</span>
         </div>
+        {/* Premium badge */}
+        {isPremium && (
+          <div className="absolute top-2 left-2 rounded-lg bg-gradient-to-r from-amber-500 to-orange-500 px-2 py-1 text-xs font-bold text-white shadow-md flex items-center gap-1">
+            <Sparkles size={10} />
+            Öne Çıkan
+          </div>
+        )}
       </div>
 
       {/* Content Section */}
-      <div className="flex min-w-0 flex-1 flex-col p-2 sm:p-3 justify-center md:justify-start">
-        <div className="flex flex-col md:flex-row md:items-center h-full">
+      <div className="flex flex-1 flex-col p-4 justify-between min-w-0">
+        <div className="space-y-2">
+          {/* Title */}
+          <h2 className="text-base font-bold text-slate-900 truncate group-hover:text-indigo-600 transition-colors">
+            {listing.brand} <span className="font-medium">{listing.model}</span>
+          </h2>
           
-          {/* Title and Badges Col */}
-          <div className="min-w-0 flex-1 pr-2 md:pr-4 flex flex-col justify-center">
-            <h2 className="truncate text-[13px] sm:text-[14px] font-semibold text-slate-900 transition-colors group-hover:text-indigo-700">
-              {listing.brand} <span className="font-normal">{listing.model}</span>
-            </h2>
-            <p className="mt-0.5 truncate text-[11px] sm:text-[13px] text-slate-500 md:text-slate-600">{listing.title}</p>
-            
-            <div className="mt-1 flex flex-wrap gap-1">
-              {isPremium && (
-                <span className="inline-flex items-center gap-1 rounded bg-indigo-100 px-1 py-0.5 text-[8px] sm:text-[10px] font-bold text-indigo-700">
-                  <Sparkles size={8} className="sm:w-2.5 sm:h-2.5" /> Öne Çıkan
-                </span>
-              )}
-              {insight.tone === "emerald" && (
-                <span className="inline-flex items-center rounded bg-emerald-100 px-1 py-0.5 text-[8px] sm:text-[10px] font-bold text-emerald-800">
-                  İyi Fiyat
-                </span>
-              )}
-               {isSuspicious && (
-                <span className="hidden sm:inline-flex items-center gap-1 rounded bg-red-100 px-1 py-0.5 text-[10px] font-bold text-red-800">
-                  <AlertTriangle size={10} /> Uyarı
-                </span>
-              )}
-            </div>
-
-            {/* Mobile inline specs (Year / KM) */}
-            <div className="mt-1.5 flex items-center gap-2 text-[11px] font-medium text-slate-500 md:hidden">
+          {/* Subtitle */}
+          <p className="text-sm text-slate-500 truncate">{listing.title}</p>
+          
+          {/* Specs Row */}
+          <div className="flex items-center gap-3 text-xs font-medium text-slate-600">
+            <span className="flex items-center gap-1 bg-slate-100 px-2 py-1 rounded-md">
               <span>{listing.year}</span>
-              <span className="w-1 h-1 rounded-full bg-slate-300" />
+            </span>
+            <span className="flex items-center gap-1 bg-slate-100 px-2 py-1 rounded-md">
               <span>{formatNumber(listing.mileage)} km</span>
-            </div>
+            </span>
+            <span className="hidden sm:flex items-center gap-1 bg-slate-100 px-2 py-1 rounded-md">
+              <span>{listing.fuelType === "benzin" ? "Benzin" : listing.fuelType === "dizel" ? "Dizel" : listing.fuelType === "elektrik" ? "Elektrik" : listing.fuelType}</span>
+            </span>
+            <span className="hidden sm:flex items-center gap-1 bg-slate-100 px-2 py-1 rounded-md">
+              <span>{listing.transmission === "otomatik" ? "Otomatik" : listing.transmission === "manuel" ? "Manuel" : "Yarı Otomatik"}</span>
+            </span>
           </div>
 
-          {/* Table-like Columns (Hidden on Mobile) */}
-          <div className="mt-3 hidden shrink-0 text-[13px] text-slate-700 md:col-span-1 md:mt-0 md:flex md:items-center">
-            <div className="w-16 text-center">{listing.year}</div>
-            <div className="w-24 text-right font-medium">{formatNumber(listing.mileage)}</div>
-            <div className="w-[88px] text-center">{listing.fuelType === "benzin" ? "Benzin" : listing.fuelType === "dizel" ? "Dizel" : listing.fuelType === "elektrik" ? "Elektrik" : listing.fuelType}</div>
-            <div className="w-[88px] text-center">{listing.transmission === "otomatik" ? "Otom." : listing.transmission === "manuel" ? "Manuel" : "Y.Otom."}</div>
+          {/* Badges */}
+          <div className="flex flex-wrap gap-1.5">
+            {insight.tone === "emerald" && (
+              <span className="inline-flex items-center rounded-full bg-emerald-50 px-2.5 py-1 text-xs font-semibold text-emerald-700 border border-emerald-100">
+                İyi Fiyat
+              </span>
+            )}
+            {isSuspicious && (
+              <span className="inline-flex items-center rounded-full bg-red-50 px-2.5 py-1 text-xs font-semibold text-red-700 border border-red-100">
+                <AlertTriangle size={10} className="mr-1" />
+                Dikkat
+              </span>
+            )}
           </div>
+        </div>
 
-          {/* Price, Location, Date Column */}
-          <div className="mt-auto flex shrink-0 items-end justify-between md:mt-0 md:w-[130px] md:flex-col md:justify-center md:pl-4">
-            <div className="text-[14px] sm:text-[15px] font-bold text-slate-900 md:mb-1">
+        <div className="flex items-end justify-between mt-3 pt-3 border-t border-slate-100">
+          <div>
+            <p className="text-xl font-bold text-slate-900">
               {formatCurrency(listing.price)}
-            </div>
-            <div className="text-right hidden sm:block">
-              <div className="truncate text-[10px] sm:text-[11px] text-slate-500">
-                {listing.city} / {listing.district}
-              </div>
-              <div className="mt-0.5 text-[10px] sm:text-[11px] text-slate-400">
-                {formatDate(listing.createdAt)}
-              </div>
-            </div>
-            {/* Mobile micro location */}
-            <div className="sm:hidden text-[10px] text-slate-400 truncate max-w-[80px]">
-              {listing.city}
-            </div>
+              <span className="text-xs font-medium text-slate-500 ml-1">TL</span>
+            </p>
           </div>
-
+          <div className="text-right">
+            <p className="text-xs font-medium text-slate-500">
+              {listing.city}
+            </p>
+            <p className="text-[10px] text-slate-400">
+              {formatDate(listing.createdAt)}
+            </p>
+          </div>
         </div>
       </div>
 
-      {/* Desktop Favorite Area */}
-      <div className="hidden shrink-0 items-center justify-center md:flex md:w-16 md:border-l md:border-slate-100">
+      {/* Desktop Favorite */}
+      <div className="hidden sm:flex absolute right-3 top-3">
         <FavoriteButton
           listingId={listing.id}
-          className="size-8 rounded text-slate-400 transition-colors hover:bg-slate-100 hover:text-indigo-600"
+          className="size-9 rounded-full bg-white/90 shadow-md backdrop-blur-md flex items-center justify-center"
         />
       </div>
     </Link>

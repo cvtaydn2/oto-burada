@@ -34,125 +34,106 @@ export function AuthForm({
   const [state, formAction] = useActionState(action, initialState);
 
   return (
-    <div className="flex min-h-[80vh] items-center justify-center bg-slate-50/50 py-12">
-      <div className="w-full max-w-md space-y-8 rounded-3xl border border-border/60 bg-background p-8 shadow-xl sm:p-10">
-        <div className="text-center">
-          <div className="mx-auto mb-6 flex size-14 items-center justify-center rounded-2xl bg-primary text-primary-foreground shadow-lg shadow-primary/20">
-            <CarFront className="size-8" />
-          </div>
-          <h2 className="text-2xl font-bold tracking-tight text-foreground sm:text-3xl">
-            {description}
-          </h2>
-          <p className="mt-3 text-sm text-muted-foreground">
-            Veya{" "}
-            <Link
-              href={alternateHref}
-              className="font-semibold text-primary transition-colors hover:text-primary/80"
-            >
-              {alternateLabel.toLowerCase()}
-            </Link>
-          </p>
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 via-white to-indigo-50/30 px-4 py-12">
+      <div className="w-full max-w-md">
+        <div className="text-center mb-8">
+          <Link href="/" className="inline-flex items-center gap-2.5 group mb-6">
+            <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-indigo-500 to-indigo-600 text-white shadow-xl shadow-indigo-500/30 transition-transform group-hover:scale-105">
+              <CarFront className="h-7 w-7" />
+            </div>
+          </Link>
+          <h1 className="text-3xl font-bold text-slate-900">{title}</h1>
+          <p className="mt-2 text-slate-600">{description}</p>
         </div>
 
-        <form action={formAction} className="mt-8 space-y-6">
-          <div className="space-y-5">
-            <label className="block space-y-2 text-sm font-medium text-foreground">
-              <span>E-posta adresi</span>
-              <input
-                type="email"
-                name="email"
-                defaultValue={state.fields?.email ?? ""}
-                autoComplete="email"
-                placeholder="ornek@email.com"
-                required
-                className="h-12 w-full rounded-xl border border-input bg-background px-4 text-sm outline-none transition-all focus:border-primary focus-visible:ring-2 focus-visible:ring-primary/20"
-              />
-            </label>
+        <div className="bg-white rounded-3xl border border-slate-200/60 shadow-xl shadow-slate-200/50 p-8">
+          <form action={formAction} className="space-y-5">
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-semibold text-slate-700 mb-2">
+                  E-posta adresi
+                </label>
+                <input
+                  type="email"
+                  name="email"
+                  defaultValue={state.fields?.email ?? ""}
+                  autoComplete="email"
+                  placeholder="ornek@email.com"
+                  required
+                  className="h-12 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 text-sm text-slate-900 placeholder:text-slate-400 outline-none transition-all focus:border-indigo-500 focus:bg-white focus:ring-2 focus:ring-indigo-500/20"
+                />
+              </div>
 
-            <label className="block space-y-2 text-sm font-medium text-foreground">
-              <span>Şifre</span>
-              <input
-                type="password"
-                name="password"
-                autoComplete={mode === "login" ? "current-password" : "new-password"}
-                placeholder="••••••••"
-                required
-                minLength={6}
-                className="h-12 w-full rounded-xl border border-input bg-background px-4 text-sm outline-none transition-all focus:border-primary focus-visible:ring-2 focus-visible:ring-primary/20"
-              />
-            </label>
-          </div>
-
-          <div className="flex items-center justify-between">
-            <div className="flex items-center">
-              <input
-                id="remember-me"
-                name="remember-me"
-                type="checkbox"
-                className="size-4 rounded border-input text-primary transition-colors focus:ring-primary"
-              />
-              <label
-                htmlFor="remember-me"
-                className="ml-2 block text-sm font-medium text-muted-foreground"
-              >
-                Beni hatırla
-              </label>
+              <div>
+                <label className="block text-sm font-semibold text-slate-700 mb-2">
+                  Şifre
+                </label>
+                <input
+                  type="password"
+                  name="password"
+                  autoComplete={mode === "login" ? "current-password" : "new-password"}
+                  placeholder="••••••••"
+                  required
+                  minLength={6}
+                  className="h-12 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 text-sm text-slate-900 placeholder:text-slate-400 outline-none transition-all focus:border-indigo-500 focus:bg-white focus:ring-2 focus:ring-indigo-500/20"
+                />
+              </div>
             </div>
 
-            {mode === "login" && (
-              <div className="text-sm">
+            <div className="flex items-center justify-between">
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input
+                  id="remember-me"
+                  name="remember-me"
+                  type="checkbox"
+                  className="size-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500"
+                />
+                <span className="text-sm text-slate-600">Beni hatırla</span>
+              </label>
+
+              {mode === "login" && (
                 <Link
                   href="#"
-                  className="font-semibold text-primary transition-colors hover:text-primary/80"
+                  className="text-sm font-semibold text-indigo-600 hover:text-indigo-700 transition-colors"
                 >
-                  Şifrenizi mi unuttunuz?
+                  Şifremi unuttum
                 </Link>
+              )}
+            </div>
+
+            {state.error ? (
+              <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-600">
+                {state.error}
               </div>
-            )}
-          </div>
+            ) : null}
 
-          {state.error ? (
-            <p
-              role="alert"
-              className="rounded-xl border border-destructive/30 bg-destructive/5 px-4 py-3 text-sm text-destructive"
-            >
-              {state.error}
-            </p>
-          ) : null}
+            {state.success ? (
+              <div className="rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-600">
+                {state.success}
+              </div>
+            ) : null}
 
-          {state.success ? (
-            <p
-              aria-live="polite"
-              className="rounded-xl border border-primary/20 bg-primary/5 px-4 py-3 text-sm text-primary"
-            >
-              {state.success}
-            </p>
-          ) : null}
-
-          <div className="pt-2">
             <AuthSubmitButton label={submitLabel} />
-          </div>
-        </form>
+          </form>
 
-        {mode === "login" && (
           <div className="mt-8">
             <div className="relative">
               <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-border" />
+                <div className="w-full border-t border-slate-200" />
               </div>
               <div className="relative flex justify-center text-sm">
-                <span className="bg-background px-4 font-medium text-muted-foreground">
-                  Veya şununla devam edin
+                <span className="bg-white px-4 font-medium text-slate-500">
+                  veya
                 </span>
               </div>
             </div>
 
-            <div className="mt-6 flex flex-col gap-3">
+            <div className="mt-6">
               <button
                 type="button"
-                className="inline-flex h-12 w-full items-center justify-center gap-2 rounded-xl border border-border bg-background px-5 text-sm font-semibold text-foreground shadow-sm transition-colors hover:bg-muted"
+                className="inline-flex h-12 w-full items-center justify-center gap-3 rounded-xl border border-slate-200 bg-white px-5 text-sm font-semibold text-slate-700 shadow-sm transition-all hover:bg-slate-50 hover:shadow-md"
               >
-                <svg className="size-5" aria-hidden="true" viewBox="0 0 24 24">
+                <svg className="h-5 w-5" aria-hidden="true" viewBox="0 0 24 24">
                   <path
                     d="M12.0003 4.75C13.7703 4.75 15.3553 5.36002 16.6053 6.54998L20.0303 3.125C17.9502 1.19 15.2353 0 12.0003 0C7.31028 0 3.25527 2.69 1.28027 6.60998L5.27028 9.70498C6.21525 6.86002 8.87028 4.75 12.0003 4.75Z"
                     fill="#EA4335"
@@ -170,13 +151,22 @@ export function AuthForm({
                     fill="#34A853"
                   />
                 </svg>
-                Google ile Giriş Yap
+                Google ile devam et
               </button>
             </div>
           </div>
-        )}
+        </div>
+
+        <p className="mt-6 text-center text-sm text-slate-500">
+          {mode === "login" ? "Hesabın yok mu?" : "Zaten hesabın var mı?"}{" "}
+          <Link
+            href={alternateHref}
+            className="font-semibold text-indigo-600 hover:text-indigo-700 transition-colors"
+          >
+            {alternateLabel}
+          </Link>
+        </p>
       </div>
     </div>
   );
 }
-
