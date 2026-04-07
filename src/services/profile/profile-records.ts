@@ -107,3 +107,35 @@ export async function getStoredProfileById(profileId: string) {
 
   return allUsers.find((user) => user.id === profileId) ?? null;
 }
+
+export async function updateProfileTable(
+  userId: string,
+  data: {
+    fullName: string;
+    phone: string;
+    city: string;
+    avatarUrl?: string | null;
+  },
+) {
+  if (!hasSupabaseAdminEnv()) {
+    return null;
+  }
+
+  const admin = createSupabaseAdminClient();
+  const { error } = await admin
+    .from("profiles")
+    .update({
+      avatar_url: data.avatarUrl ?? null,
+      city: data.city,
+      full_name: data.fullName,
+      phone: data.phone,
+      updated_at: new Date().toISOString(),
+    })
+    .eq("id", userId);
+
+  if (error) {
+    return null;
+  }
+
+  return getStoredProfileById(userId);
+}

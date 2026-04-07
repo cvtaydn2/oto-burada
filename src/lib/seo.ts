@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 
 import { createSearchParamsFromListingFilters } from "@/services/listings/listing-filters";
 import { formatCurrency, formatNumber } from "@/lib/utils";
+import { sanitizeForMeta } from "@/lib/utils/sanitize";
 import type { Listing, ListingFilters } from "@/types";
 
 export function getAppUrl() {
@@ -71,14 +72,14 @@ export function buildListingsMetadata(filters: ListingFilters): Metadata {
 }
 
 export function buildListingDetailMetadata(listing: Listing): Metadata {
-  const title = `${listing.title} - ${formatCurrency(listing.price)}`;
-  const description = [
+  const title = sanitizeForMeta(`${listing.title} - ${formatCurrency(listing.price)}`);
+  const description = sanitizeForMeta([
     `${listing.city}/${listing.district} konumunda ${listing.year} model ${listing.brand} ${listing.model}.`,
     `${formatNumber(listing.mileage)} km, ${listing.fuelType}, ${listing.transmission}.`,
     listing.description,
   ]
     .join(" ")
-    .slice(0, 320);
+    .slice(0, 320));
 
   return {
     title,

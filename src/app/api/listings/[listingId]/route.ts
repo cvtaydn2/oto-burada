@@ -4,11 +4,13 @@ import type { ZodIssue } from "zod";
 
 import { exampleListings } from "@/data";
 import { hasSupabaseEnv } from "@/lib/supabase/env";
+import { sanitizeText, sanitizeDescription } from "@/lib/utils/sanitize";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { listingCreateFormSchema, listingCreateSchema } from "@/lib/validators";
 import {
   buildUpdatedListing,
-  getEditableListingById,
+  findEditableListingById,
+  getStoredListings,
   listingSubmissionsCookieName,
   listingSubmissionsCookieOptions,
   parseStoredListings,
@@ -81,9 +83,8 @@ export async function PATCH(
   }
 
   const { listingId } = await context.params;
-  const cookieStore = await cookies();
-  const existingListings = parseStoredListings(cookieStore.get(listingSubmissionsCookieName)?.value);
-  const existingListing = getEditableListingById(existingListings, listingId, user.id);
+
+  const existingListing = await findEditableListingById(listingId, user.id);
 
   if (!existingListing) {
     return NextResponse.json(
@@ -94,6 +95,8 @@ export async function PATCH(
 
   const normalizedInput = {
     ...parsedFormValues.data,
+    title: sanitizeText(parsedFormValues.data.title),
+    description: sanitizeDescription(parsedFormValues.data.description),
     images: parsedFormValues.data.images
       .filter(
         (image) =>
@@ -120,10 +123,12 @@ export async function PATCH(
     );
   }
 
+  const allListings = [...exampleListings, ...(await getStoredListings())];
+
   const updatedListing = buildUpdatedListing(
     parsedListingInput.data,
     existingListing,
-    [...exampleListings, ...existingListings],
+    allListings,
   );
   const persistedListing = await updateDatabaseListing(updatedListing);
 
@@ -139,6 +144,9 @@ export async function PATCH(
     });
   }
 
+  const cookieStore = await cookies();
+  const cookieListings = parseStoredListings(cookieStore.get(listingSubmissionsCookieName)?.value);
+
   const response = NextResponse.json({
     listing: {
       id: updatedListing.id,
@@ -151,7 +159,7 @@ export async function PATCH(
 
   response.cookies.set(
     listingSubmissionsCookieName,
-    serializeStoredListings(replaceStoredListing(existingListings, updatedListing)),
+    serializeStoredListings(replaceStoredListing(cookieListings, updatedListing)),
     listingSubmissionsCookieOptions,
   );
 

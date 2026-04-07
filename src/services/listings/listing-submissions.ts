@@ -494,6 +494,39 @@ export function getArchivableListingById(listings: Listing[], listingId: string,
   );
 }
 
+export async function findEditableListingById(listingId: string, sellerId: string) {
+  const dbListings = await getDatabaseListings({
+    listingId,
+    sellerId,
+    statuses: ["draft", "pending"],
+  });
+
+  if (dbListings && dbListings.length > 0) {
+    return dbListings[0];
+  }
+
+  const cookieListings = await getLegacyStoredListings();
+  return getEditableListingById(cookieListings, listingId, sellerId) ?? null;
+}
+
+export async function findArchivableListingById(listingId: string, sellerId: string) {
+  const dbListings = await getDatabaseListings({
+    listingId,
+    sellerId,
+  });
+
+  if (dbListings && dbListings.length > 0) {
+    const listing = dbListings[0];
+    if (listing.status !== "archived") {
+      return listing;
+    }
+    return null;
+  }
+
+  const cookieListings = await getLegacyStoredListings();
+  return getArchivableListingById(cookieListings, listingId, sellerId) ?? null;
+}
+
 export function getModeratableListingById(listings: Listing[], listingId: string) {
   return listings.find((listing) => listing.id === listingId && listing.status === "pending");
 }

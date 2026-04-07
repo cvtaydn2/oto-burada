@@ -3,6 +3,7 @@
 import { profileUpdateSchema } from "@/lib/validators";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { hasSupabaseEnv } from "@/lib/supabase/env";
+import { updateProfileTable } from "@/services/profile/profile-records";
 
 export interface ProfileActionState {
   error?: string;
@@ -76,6 +77,13 @@ export async function updateProfileAction(
     };
   }
 
+  await updateProfileTable(user.id, {
+    fullName: parsed.data.fullName,
+    phone: parsed.data.phone,
+    city: parsed.data.city,
+    avatarUrl: parsed.data.avatarUrl ?? null,
+  });
+
   return {
     success: "Profil bilgilerin güncellendi.",
     fields: {
@@ -86,3 +94,4 @@ export async function updateProfileAction(
     },
   };
 }
+

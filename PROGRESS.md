@@ -319,20 +319,88 @@ Her yeni geliştirme başlamadan önce okunmalıdır.
 
 ---
 
+## Backend Geliştirme Planı
+
+### 🔴 Kritik — Güvenlik & Veri Bütünlüğü
+
+#### B-05: Listing Update/Archive API DB Fix
+- **Sorun:** `PATCH /api/listings/[listingId]` ve archive endpoint'i sadece cookie store'dan ilan arıyor; DB'ye kaydedilmiş ilanlar güncellenemiyor.
+- **Çözüm:** `findEditableListingById` ve `findArchivableListingById` async fonksiyonları eklendi — önce DB, yoksa cookie.
+- **Yapılanlar:** Listing update route DB-first lookup'a geçirildi. Archive endpoint'ine ownership kontrolü eklendi.
+- **Durum:** ✅ Tamamlandı
+
+#### B-04: Profil Verisi DB-Auth Senkronizasyonu
+- **Sorun:** Profil güncelleme yalnızca auth metadata'sına yazıyor, `profiles` tablosu güncellenmeyebiliyor.
+- **Çözüm:** `updateProfileTable` fonksiyonu eklendi; `updateProfileAction` sonrası `profiles` tablosu da güncelleniyor.
+- **Yapılanlar:** `profile-records.ts`'e `updateProfileTable` eklendi, `profile-actions.ts` auth güncelleme sonrası DB sync yapıyor.
+- **Durum:** ✅ Tamamlandı
+
+#### B-01: Cookie Fallback Temizliği & Tam DB Geçişi
+- **Sorun:** Her okumada cookie + DB merge ediliyor, overhead ve tutarsızlık riski var.
+- **Çözüm:** DB-only moda geç, legacy fonksiyonları deprecated işaretle, cookie auto-cleanup ekle.
+- **Durum:** ❌ Bekliyor
+
+#### B-02: Rate Limiting & Abuse Prevention
+- **Sorun:** Hiçbir endpoint'te rate limiting yok — sınırsız ilan, upload, rapor.
+- **Çözüm:** In-memory sliding window rate limiter + endpoint bazlı profiller oluşturuldu.
+- **Yapılanlar:** `rate-limit.ts` (core limiter), `rate-limit-middleware.ts` (Next.js entegrasyon). Listing create (10/saat), image upload (30/saat), report create (5/saat), genel IP limiti (60/dk) uygulandı. 429 + Retry-After header desteği eklendi.
+- **Durum:** ✅ Tamamlandı
+
+#### B-03: Input Sanitization & XSS Prevention
+- **Sorun:** Zod validation var ancak çıktı sanitizasyonu eksik; script enjeksiyonu riski mevcut.
+- **Çözüm:** `sanitize.ts` utility oluşturuldu — `escapeHtml`, `stripTags`, `sanitizeText`, `sanitizeDescription`, `sanitizeForMeta`.
+- **Yapılanlar:** Listing create/update `title` ve `description` alanları sanitize ediliyor. Report `description` sanitize ediliyor. SEO metadata helper sanitize edilmiş veri kullanıyor.
+- **Durum:** ✅ Tamamlandı
+
+### 🟡 Önemli — Fonksiyonellik & Performans
+
+#### B-06: Server-Side Pagination & Filtreleme
+- **Sorun:** Tüm listings JS'de filtreleniyor; ilan sayısı arttıkça ciddi performans sorunu olacak.
+- **Çözüm:** Supabase query builder + `.range()` ile DB-side filtering/sorting/pagination.
+- **Durum:** ❌ Bekliyor
+
+#### B-07: İlan Silme (Hard Delete) Endpoint
+- **Sorun:** İlanlar sadece archived yapılabiliyor; kalıcı silme, Storage temizleme ve KVKK uyumu eksik.
+- **Çözüm:** `DELETE /api/listings/[listingId]` + orphan storage temizleme + admin hard delete.
+- **Durum:** ❌ Bekliyor
+
+#### B-09: Full-Text Search (Postgres tsvector)
+- **Sorun:** Arama JS `string.includes()` ile yapılıyor, Türkçe karakter duyarlılığı sorunlu.
+- **Çözüm:** Postgres `tsvector` + `tsquery` ile Türkçe full-text search index oluştur.
+- **Durum:** ❌ Bekliyor
+
+#### B-08: Listing Görüntülenme Sayacı
+- **Sorun:** View counting yok; satıcı ilanının ilgi seviyesini göremez, popüler ilanlar hesaplanamaz.
+- **Çözüm:** `listing_views` tablosu + deduplikasyon + dashboard metrikleri.
+- **Durum:** ❌ Bekliyor
+
+### 🟢 İyileştirme — Kalite & Operasyon
+
+#### B-10: API Yanıt Formatı Standardizasyonu
+- **Sorun:** Her endpoint farklı formatta yanıt dönüyor, tutarsız error response'lar.
+- **Çözüm:** Standart response wrapper `{ success, data, error, message }` + tip tanımları.
+- **Durum:** ❌ Bekliyor
+
+#### B-11: Structured Logging
+- **Sorun:** `console.log` debug çağrıları production'da aktif; yapılandırılmış logging yok.
+- **Çözüm:** Seviyeli loglama utility'si + Supabase operation error logging.
+- **Durum:** ❌ Bekliyor
+
+#### B-12: Storage Policy & Bucket Güvenliği
+- **Sorun:** Bucket upload/delete policy belirsiz, orphan dosya temizleme yok.
+- **Çözüm:** Supabase Storage RLS policy tanımla + orphan cleanup + server-side max image limit.
+- **Durum:** ❌ Bekliyor
+
+---
+
 ## Sonraki Görev
-- UI_SYSTEM.md, BRAND_SYSTEM.md ve AGENTS.md kurallarına göre tüm ekranlar modernize edildi.
-- Eksiklikler tespit edilip giderildi: WhatsApp CTA ayrıştırma, empty/loading states, trust signals, error messages.
-- PROGRESS.md güncellendi.
-- Kod kalitesi iyileştirmeleri yapıldı.
-- Manuel visual edge case review tamamlandı.
-- Sonraki adım: Production deployment hazırlığı.
+- B-01 (Cookie Fallback Temizliği) ile devam edilecek.
+- Ardından B-06 → B-07 → B-09 → B-08 sırasıyla önemli fonksiyonellik görevleri tamamlanacak.
+- Her görev sonrası lint/typecheck/build doğrulaması yapılacak.
 
 ---
 
 ## Son Doğrulama Sonuçları
-- `npm run lint` - TypeScript errors düzeltildi, kalan uyarılar (warnings) mevcut
+- `npm run lint` - Geçti (0 error, 14 warning — mevcut uyarılar)
 - `npm run typecheck` - Geçti
 - `npm run build` - Geçti
-- `node scripts/apply-supabase-schema.mjs` - Geçti
-- `node scripts/seed-supabase-demo.mjs` - Geçti
-- `node scripts/verify-supabase-demo.mjs` - Geçti

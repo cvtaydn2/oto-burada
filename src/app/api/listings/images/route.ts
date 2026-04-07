@@ -3,6 +3,8 @@ import { NextResponse } from "next/server";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { getSupabaseStorageEnv, hasSupabaseStorageEnv } from "@/lib/supabase/env";
+import { rateLimitProfiles } from "@/lib/utils/rate-limit";
+import { enforceRateLimit, getRateLimitKey, getUserRateLimitKey } from "@/lib/utils/rate-limit-middleware";
 import {
   buildListingImageStoragePath,
   validateListingImageFile,
@@ -13,6 +15,15 @@ function userOwnsStoragePath(userId: string, storagePath: string) {
 }
 
 export async function POST(request: Request) {
+  const ipRateLimit = enforceRateLimit(
+    getRateLimitKey(request, "api:images:upload"),
+    rateLimitProfiles.general,
+  );
+
+  if (ipRateLimit) {
+    return ipRateLimit.response;
+  }
+
   if (!hasSupabaseStorageEnv()) {
     return NextResponse.json(
       {
@@ -34,6 +45,15 @@ export async function POST(request: Request) {
       { message: "Oturum dogrulanamadi. Lutfen tekrar giris yap." },
       { status: 401 },
     );
+  }
+
+  const userRateLimit = enforceRateLimit(
+    getUserRateLimitKey(user.id, "images:upload"),
+    rateLimitProfiles.imageUpload,
+  );
+
+  if (userRateLimit) {
+    return userRateLimit.response;
   }
 
   const formData = await request.formData();

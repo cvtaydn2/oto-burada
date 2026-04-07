@@ -6,7 +6,7 @@ import { createSupabaseServerClient } from "@/lib/supabase/server";
 import {
   archiveStoredListing,
   archiveDatabaseListing,
-  getArchivableListingById,
+  findArchivableListingById,
   listingSubmissionsCookieName,
   listingSubmissionsCookieOptions,
   parseStoredListings,
@@ -42,6 +42,16 @@ export async function POST(
   }
 
   const { listingId } = await context.params;
+
+  const archivableListing = await findArchivableListingById(listingId, user.id);
+
+  if (!archivableListing) {
+    return NextResponse.json(
+      { message: "Arsivlenecek ilan bulunamadi." },
+      { status: 404 },
+    );
+  }
+
   const persistedListing = await archiveDatabaseListing(listingId);
 
   if (persistedListing) {
@@ -54,18 +64,10 @@ export async function POST(
     });
   }
 
+  const archivedListing = archiveStoredListing(archivableListing);
   const cookieStore = await cookies();
-  const existingListings = parseStoredListings(cookieStore.get(listingSubmissionsCookieName)?.value);
-  const existingListing = getArchivableListingById(existingListings, listingId, user.id);
+  const cookieListings = parseStoredListings(cookieStore.get(listingSubmissionsCookieName)?.value);
 
-  if (!existingListing) {
-    return NextResponse.json(
-      { message: "Arsivlenecek ilan bulunamadi." },
-      { status: 404 },
-    );
-  }
-
-  const archivedListing = archiveStoredListing(existingListing);
   const response = NextResponse.json({
     listing: {
       id: archivedListing.id,
@@ -76,7 +78,7 @@ export async function POST(
 
   response.cookies.set(
     listingSubmissionsCookieName,
-    serializeStoredListings(replaceStoredListing(existingListings, archivedListing)),
+    serializeStoredListings(replaceStoredListing(cookieListings, archivedListing)),
     listingSubmissionsCookieOptions,
   );
 

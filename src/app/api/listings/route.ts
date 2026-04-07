@@ -4,6 +4,9 @@ import type { ZodIssue } from "zod";
 
 import { exampleListings } from "@/data";
 import { hasSupabaseEnv } from "@/lib/supabase/env";
+import { rateLimitProfiles } from "@/lib/utils/rate-limit";
+import { enforceRateLimit, getRateLimitKey, getUserRateLimitKey } from "@/lib/utils/rate-limit-middleware";
+import { sanitizeText, sanitizeDescription } from "@/lib/utils/sanitize";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { listingCreateFormSchema, listingCreateSchema } from "@/lib/validators";
 import {
@@ -30,6 +33,15 @@ function issuesToFieldErrors(issues: ZodIssue[]) {
 }
 
 export async function POST(request: Request) {
+  const ipRateLimit = enforceRateLimit(
+    getRateLimitKey(request, "api:listings:create"),
+    rateLimitProfiles.general,
+  );
+
+  if (ipRateLimit) {
+    return ipRateLimit.response;
+  }
+
   if (!hasSupabaseEnv()) {
     return NextResponse.json(
       {
@@ -76,8 +88,19 @@ export async function POST(request: Request) {
     );
   }
 
+  const userRateLimit = enforceRateLimit(
+    getUserRateLimitKey(user.id, "listings:create"),
+    rateLimitProfiles.listingCreate,
+  );
+
+  if (userRateLimit) {
+    return userRateLimit.response;
+  }
+
   const normalizedInput = {
     ...parsedFormValues.data,
+    title: sanitizeText(parsedFormValues.data.title),
+    description: sanitizeDescription(parsedFormValues.data.description),
     images: parsedFormValues.data.images
       .filter(
         (image) =>

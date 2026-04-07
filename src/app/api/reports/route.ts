@@ -4,6 +4,9 @@ import type { ZodIssue } from "zod";
 
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { hasSupabaseEnv } from "@/lib/supabase/env";
+import { rateLimitProfiles } from "@/lib/utils/rate-limit";
+import { enforceRateLimit, getRateLimitKey, getUserRateLimitKey } from "@/lib/utils/rate-limit-middleware";
+import { sanitizeDescription } from "@/lib/utils/sanitize";
 import { reportCreateSchema } from "@/lib/validators";
 import {
   buildReport,
@@ -33,6 +36,15 @@ function issuesToFieldErrors(issues: ZodIssue[]) {
 }
 
 export async function POST(request: Request) {
+  const ipRateLimit = enforceRateLimit(
+    getRateLimitKey(request, "api:reports:create"),
+    rateLimitProfiles.general,
+  );
+
+  if (ipRateLimit) {
+    return ipRateLimit.response;
+  }
+
   if (!hasSupabaseEnv()) {
     return NextResponse.json(
       {
@@ -76,6 +88,15 @@ export async function POST(request: Request) {
     );
   }
 
+  const userRateLimit = enforceRateLimit(
+    getUserRateLimitKey(user.id, "reports:create"),
+    rateLimitProfiles.reportCreate,
+  );
+
+  if (userRateLimit) {
+    return userRateLimit.response;
+  }
+
   const matchedListing = (await getAllKnownListings()).find(
     (listing) => listing.id === parsed.data.listingId,
   );
@@ -95,9 +116,14 @@ export async function POST(request: Request) {
   const existingReports = parseStoredReports(cookieStore.get(reportsCookieName)?.value);
   await ensureProfileRecord(user);
 
-  const activeDatabaseReport = await getDatabaseActiveReport(parsed.data.listingId, user.id);
+  const sanitizedData = {
+    ...parsed.data,
+    description: parsed.data.description ? sanitizeDescription(parsed.data.description) : parsed.data.description,
+  };
+
+  const activeDatabaseReport = await getDatabaseActiveReport(sanitizedData.listingId, user.id);
   const persistedReport = await createOrUpdateDatabaseReport(
-    parsed.data,
+    sanitizedData,
     user.id,
     activeDatabaseReport,
   );
