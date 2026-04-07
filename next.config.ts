@@ -18,9 +18,6 @@ const nextConfig: NextConfig = {
   compress: true,
   poweredByHeader: false,
   generateEtags: true,
-  httpAgent: {
-    keepAlive: true,
-  },
 };
 
 export default nextConfig;

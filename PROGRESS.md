@@ -323,14 +323,15 @@ Her yeni geliştirme başlamadan önce okunmalıdır.
 - UI_SYSTEM.md, BRAND_SYSTEM.md ve AGENTS.md kurallarına göre tüm ekranlar modernize edildi.
 - Eksiklikler tespit edilip giderildi: WhatsApp CTA ayrıştırma, empty/loading states, trust signals, error messages.
 - PROGRESS.md güncellendi.
-- Sonraki adım: Build/lint/typecheck doğrulaması yapmak.
+- Kod kalitesi iyileştirmeleri yapıldı.
+- Sonraki adım: Manuel visual edge case review.
 
 ---
 
 ## Son Doğrulama Sonuçları
-- `npm run lint` geçti
-- `npm run typecheck` geçti
-- `npm run build` geçti
-- `node scripts/apply-supabase-schema.mjs` geçti
-- `node scripts/seed-supabase-demo.mjs` geçti
-- `node scripts/verify-supabase-demo.mjs` geçti
+- `npm run lint` - TypeScript errors düzeltildi, kalan uyarılar (warnings) mevcut
+- `npm run typecheck` - Geçti
+- `npm run build` - Geçti
+- `node scripts/apply-supabase-schema.mjs` - Geçti
+- `node scripts/seed-supabase-demo.mjs` - Geçti
+- `node scripts/verify-supabase-demo.mjs` - Geçti

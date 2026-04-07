@@ -1,16 +1,13 @@
-import Image from "next/image";
 import Link from "next/link";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import {
   AlertTriangle,
-  BadgeCheck,
   CalendarDays,
   CarFront,
   CheckCircle2,
   ChevronRight,
   CircleGauge,
-  Clock3,
   Fuel,
   MapPin,
   MessageCircle,
@@ -29,7 +26,8 @@ import { ListingCard } from "@/components/listings/listing-card";
 import { SectionHeader } from "@/components/shared/section-header";
 import { PriceAnalysisCard } from "@/components/listings/price-analysis-card";
 import { TrustBadge } from "@/components/shared/trust-badge";
-import { exampleListings } from "@/data";
+import { exampleListings } from "@/data/listings";
+import type { Listing } from "@/types";
 import { getCurrentUser } from "@/lib/auth/session";
 import { buildListingDetailMetadata } from "@/lib/seo";
 import { formatCurrency, formatDate, formatNumber } from "@/lib/utils";
@@ -49,7 +47,7 @@ interface ListingDetailPageProps {
 const whatsappTemplate = "Merhaba, ilanınızla ilgileniyorum.";
 
 export async function generateStaticParams() {
-  return exampleListings.map((listing: any) => ({
+  return exampleListings.map((listing: Listing) => ({
     slug: listing.slug,
   }));
 }

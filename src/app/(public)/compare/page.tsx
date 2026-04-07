@@ -1,6 +1,6 @@
 import { CheckCircle2, ChevronLeft, X } from "lucide-react";
-import Link from "next/link";
 import Image from "next/image";
+import Link from "next/link";
 
 import { getPublicMarketplaceListings } from "@/services/listings/marketplace-listings";
 import { formatCurrency, formatNumber } from "@/lib/utils";
@@ -34,7 +34,7 @@ export default async function ComparePage({ searchParams }: ComparePageProps) {
     cars = allListings.slice(0, 3);
   }
 
-  const features: Array<{ label: string; key: keyof Listing | "coverImage"; format?: (val: any) => string }> = [
+  const features: Array<{ label: string; key: keyof Listing | "coverImage"; format?: (val: Listing[keyof Listing]) => string }> = [
     { label: "Yil", key: "year" },
     { label: "Kilometre", key: "mileage", format: (val) => `${formatNumber(val as number)} km` },
     { label: "Yakit", key: "fuelType" },

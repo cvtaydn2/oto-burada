@@ -137,7 +137,7 @@ export function ListingDetailStructuredData({ listing, url }: ListingDetailStruc
       "url": url,
       "seller": {
         "@type": "Person",
-        "name": listing.seller?.fullName || "Satıcı"
+        "name": "Satıcı"
       }
     },
     "image": listing.images.map(img => img.url)

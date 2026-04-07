@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useRef, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { Search, X, TrendingUp, ArrowRight } from "lucide-react";
 import { useKeyboardShortcuts } from "@/hooks/use-keyboard-shortcuts";
@@ -27,38 +27,33 @@ const popularSearches = [
 
 export function SearchWithSuggestions({ placeholder = "Marka, model veya şehir ara...", className = "" }: SearchWithSuggestionsProps) {
   const [query, setQuery] = useState("");
-  const [isOpen, setIsOpen] = useState(false);
-  const [suggestions, setSuggestions] = useState<SearchSuggestion[]>([]);
   const inputRef = useRef<HTMLInputElement>(null);
   const router = useRouter();
 
-  useEffect(() => {
-    if (query.length >= 1) {
-      const matchedSuggestions: SearchSuggestion[] = [];
-      
-      brandCatalog.forEach(brand => {
-        if (brand.brand.toLowerCase().includes(query.toLowerCase())) {
-          matchedSuggestions.push({ type: "brand", label: brand.brand, value: brand.brand });
-          brand.models.forEach(model => {
-            if (model.toLowerCase().includes(query.toLowerCase())) {
-              matchedSuggestions.push({ type: "model", label: `${brand.brand} ${model}`, value: `${brand.brand} ${model}` });
-            }
-          });
-        }
-      });
-
-      setSuggestions(matchedSuggestions.slice(0, 6));
-      setIsOpen(true);
-    } else {
-      setSuggestions([]);
-      setIsOpen(false);
+  const filteredSuggestions = useMemo(() => {
+    if (query.length < 1) {
+      return [];
     }
+    const matchedSuggestions: SearchSuggestion[] = [];
+    
+    brandCatalog.forEach(brand => {
+      if (brand.brand.toLowerCase().includes(query.toLowerCase())) {
+        matchedSuggestions.push({ type: "brand", label: brand.brand, value: brand.brand });
+        brand.models.forEach(model => {
+          if (model.toLowerCase().includes(query.toLowerCase())) {
+            matchedSuggestions.push({ type: "model", label: `${brand.brand} ${model}`, value: `${brand.brand} ${model}` });
+          }
+        });
+      }
+    });
+    return matchedSuggestions.slice(0, 6);
   }, [query]);
+
+  const hasSuggestions = query.length >= 1;
 
   const handleSearch = (searchQuery: string) => {
     if (searchQuery.trim()) {
       router.push(`/listings?query=${encodeURIComponent(searchQuery.trim())}`);
-      setIsOpen(false);
       setQuery("");
     }
   };
@@ -73,7 +68,7 @@ export function SearchWithSuggestions({ placeholder = "Marka, model veya şehir 
     {
       key: "Escape",
       action: () => {
-        setIsOpen(false);
+        setQuery("");
         inputRef.current?.blur();
       }
     },
@@ -92,16 +87,16 @@ export function SearchWithSuggestions({ placeholder = "Marka, model veya şehir 
           type="search"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
-          onFocus={() => query.length >= 1 && setIsOpen(true)}
+          onFocus={() => {}}
           placeholder={placeholder}
           aria-label="Ara"
-          aria-expanded={isOpen}
+          aria-expanded={hasSuggestions}
           aria-controls="search-suggestions"
           className="w-full h-10 pl-11 pr-10 bg-slate-50/80 border border-slate-200/60 rounded-xl text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:bg-white focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 transition-all"
         />
         {query && (
           <button
-            onClick={() => { setQuery(""); setIsOpen(false); inputRef.current?.focus(); }}
+            onClick={() => { setQuery(""); inputRef.current?.focus(); }}
             className="absolute right-3 top-1/2 -translate-y-1/2 p-1 rounded-full hover:bg-slate-100"
             aria-label="Temizle"
           >
@@ -113,16 +108,16 @@ export function SearchWithSuggestions({ placeholder = "Marka, model veya şehir 
         </span>
       </div>
 
-      {isOpen && (
+      {hasSuggestions && (
         <div
-          id="search-suggestions"
+          id="search-filteredSuggestions"
           role="listbox"
           className="absolute top-full left-0 right-0 mt-2 bg-white rounded-xl border border-slate-200 shadow-lg z-50 overflow-hidden"
         >
-          {suggestions.length > 0 ? (
+          {filteredSuggestions.length > 0 ? (
             <div className="py-2">
               <p className="px-4 py-1 text-xs font-medium text-slate-400 uppercase">Öneriler</p>
-              {suggestions.map((s, i) => (
+              {filteredSuggestions.map((s, i) => (
                 <button
                   key={i}
                   role="option"
@@ -154,10 +149,10 @@ export function SearchWithSuggestions({ placeholder = "Marka, model veya şehir 
         </div>
       )}
 
-      {isOpen && (
+      {hasSuggestions && (
         <div 
           className="fixed inset-0 z-40" 
-          onClick={() => setIsOpen(false)} 
+          onClick={() => setQuery("")} 
           aria-hidden="true"
         />
       )}

@@ -61,7 +61,7 @@ export default async function SellerProfilePage({ params }: SellerProfilePagePro
                 </span>
                 <span className="flex items-center gap-1.5">
                   <Calendar size={14} className="text-indigo-500" /> 
-                  {new Date(seller.createdAt).getFullYear()}'den beri üye
+                  {new Date(seller.createdAt).getFullYear()} den beri uye
                 </span>
                 <span className="inline-flex items-center rounded-full bg-slate-100 px-3 py-1 text-xs font-medium text-slate-600">
                   Bireysel Satıcı

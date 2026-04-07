@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, type ChangeEvent } from "react";
 import { fuelTypes, listingSortOptions, maximumCarYear, maximumMileage, minimumCarYear, transmissionTypes } from "@/lib/constants/domain";
 import { SlidersHorizontal, ChevronDown, ChevronUp, Search, X } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -157,7 +157,7 @@ export function ListingsFilterPanel({
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
             <input
               value={filters.query ?? ""}
-              onChange={(event: any) => onFilterChange("query", event.target.value || undefined)}
+              onChange={(event: ChangeEvent<HTMLInputElement | HTMLSelectElement>) => onFilterChange("query", event.target.value || undefined)}
               placeholder="Marka, model veya şehir"
               className="h-10 w-full pl-9 pr-3 rounded-xl border border-slate-200 bg-slate-50 text-sm outline-none transition-all focus:bg-white focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20"
             />
@@ -167,7 +167,7 @@ export function ListingsFilterPanel({
         <FilterSection title="Sıralama">
           <select
             value={filters.sort ?? "newest"}
-            onChange={(event: any) => onFilterChange("sort", event.target.value as ListingSortOption)}
+            onChange={(event: ChangeEvent<HTMLInputElement | HTMLSelectElement>) => onFilterChange("sort", event.target.value as ListingSortOption)}
             className="h-10 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 text-sm outline-none transition-all focus:bg-white focus:border-indigo-500"
           >
             {listingSortOptions.map((option) => (
@@ -182,7 +182,7 @@ export function ListingsFilterPanel({
           <div className="space-y-3">
             <select
               value={filters.brand ?? ""}
-              onChange={(event: any) => onFilterChange("brand", event.target.value || undefined)}
+              onChange={(event: ChangeEvent<HTMLInputElement | HTMLSelectElement>) => onFilterChange("brand", event.target.value || undefined)}
               className="h-10 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 text-sm outline-none transition-all focus:bg-white focus:border-indigo-500"
             >
               <option value="">Tüm Markalar</option>
@@ -195,7 +195,7 @@ export function ListingsFilterPanel({
             {filters.brand && (
               <select
                 value={filters.model ?? ""}
-                onChange={(event: any) => onFilterChange("model", event.target.value || undefined)}
+                onChange={(event: ChangeEvent<HTMLInputElement | HTMLSelectElement>) => onFilterChange("model", event.target.value || undefined)}
                 disabled={models.length === 0}
                 className="h-10 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 text-sm outline-none transition-all focus:bg-white focus:border-indigo-500 disabled:opacity-50"
               >
@@ -214,7 +214,7 @@ export function ListingsFilterPanel({
           <div className="space-y-3">
             <select
               value={filters.city ?? ""}
-              onChange={(event: any) => onFilterChange("city", event.target.value || undefined)}
+              onChange={(event: ChangeEvent<HTMLInputElement | HTMLSelectElement>) => onFilterChange("city", event.target.value || undefined)}
               className="h-10 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 text-sm outline-none transition-all focus:bg-white focus:border-indigo-500"
             >
               <option value="">Tüm Şehirler</option>
@@ -227,7 +227,7 @@ export function ListingsFilterPanel({
             {filters.city && (
               <select
                 value={filters.district ?? ""}
-                onChange={(event: any) => onFilterChange("district", event.target.value || undefined)}
+                onChange={(event: ChangeEvent<HTMLInputElement | HTMLSelectElement>) => onFilterChange("district", event.target.value || undefined)}
                 disabled={districts.length === 0}
                 className="h-10 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 text-sm outline-none transition-all focus:bg-white focus:border-indigo-500 disabled:opacity-50"
               >

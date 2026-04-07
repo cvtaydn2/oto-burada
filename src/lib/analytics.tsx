@@ -7,6 +7,7 @@ type EventCategory = "pageview" | "search" | "listing" | "action" | "error";
 type EventAction = 
   | "view" 
   | "click_favorite" 
+  | "remove_favorite"
   | "click_whatsapp" 
   | "search" 
   | "filter" 
@@ -25,8 +26,8 @@ interface AnalyticsEvent {
 
 declare global {
   interface Window {
-    gtag: (...args: any[]) => void;
-    dataLayer: any[];
+    gtag: (...args: unknown[]) => void;
+    dataLayer: unknown[];
   }
 }
 
@@ -47,7 +48,7 @@ export function trackEvent({ category, action, label, value, metadata }: Analyti
   if (value) eventData.value = value;
   if (metadata) {
     Object.entries(metadata).forEach(([key, val]) => {
-      eventData[key] = val;
+      eventData[key] = String(val);
     });
   }
 
@@ -63,7 +64,7 @@ export function trackPageView(url: string, title?: string) {
     category: "pageview",
     action: "view",
     label: title || url,
-    metadata: { url, title },
+    metadata: { url: url, title: title || "" },
   });
 }
 
@@ -122,8 +123,8 @@ export function initAnalytics() {
 
   window.dataLayer = window.dataLayer || [];
   
-  window.gtag = function() {
-    window.dataLayer.push(arguments);
+  window.gtag = function(...args: unknown[]) {
+    window.dataLayer.push(args);
   };
   
   window.gtag("js", new Date());

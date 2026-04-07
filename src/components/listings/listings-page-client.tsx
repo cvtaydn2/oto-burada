@@ -93,7 +93,7 @@ export function ListingsPageClient({
     
     if (sortColumn) {
       visibleListings = [...visibleListings].sort((a, b) => {
-        let aVal: any, bVal: any;
+        let aVal: string | number, bVal: string | number;
         switch (sortColumn) {
           case "title":
             aVal = `${a.brand} ${a.model} ${a.title}`.toLowerCase();
@@ -256,8 +256,8 @@ export function ListingsPageClient({
                 Hayalindeki Arabayı Bul
               </h1>
               <p className="mt-4 text-lg text-indigo-100 sm:text-xl">
-                Türkiye'nin en güvenilir 2. el ve sıfır otomobil pazarı. 
-                Binlerce araç, tek tık uzakta.
+                Turkiye nin en guvenilir 2. el ve sifir otomobil pazarı. 
+                Binlerce ara tek tik uzakta.
               </p>
               
               <div className="mt-8 flex flex-wrap justify-center gap-3">
