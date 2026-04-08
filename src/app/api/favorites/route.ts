@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 
 import { createSupabaseServerClient } from "@/lib/supabase/server";
-import { hasSupabaseEnv } from "@/lib/supabase/env";
+import { hasSupabaseEnv, hasSupabaseAdminEnv } from "@/lib/supabase/env";
 import {
   addDatabaseFavorite,
   getDatabaseFavoriteIds,
@@ -37,9 +37,17 @@ async function getAuthenticatedUser() {
 }
 
 export async function GET() {
+  if (!hasSupabaseEnv()) {
+    return NextResponse.json({ favoriteIds: [] });
+  }
+
   const user = await getAuthenticatedUser();
 
   if (!user) {
+    return NextResponse.json({ favoriteIds: [] });
+  }
+
+  if (!hasSupabaseAdminEnv()) {
     return NextResponse.json({ favoriteIds: [] });
   }
 
@@ -50,10 +58,18 @@ export async function GET() {
 }
 
 export async function POST(request: Request) {
+  if (!hasSupabaseEnv()) {
+    return NextResponse.json({ message: "Servis暂时不可用." }, { status: 503 });
+  }
+
   const user = await getAuthenticatedUser();
 
   if (!user) {
     return NextResponse.json({ message: "Favori eklemek icin giris yapmalisin." }, { status: 401 });
+  }
+
+  if (!hasSupabaseAdminEnv()) {
+    return NextResponse.json({ message: "Servis暂时不可用." }, { status: 503 });
   }
 
   let body: unknown;
@@ -73,7 +89,11 @@ export async function POST(request: Request) {
   const listingExists = await checkListingExistsById(listingId);
 
   if (!listingExists) {
-    return NextResponse.json({ message: "Favoriye eklenecek ilan bulunamadi." }, { status: 404 });
+    const { exampleListings } = await import("@/data");
+    const existsInSeed = exampleListings.some((l) => l.id === listingId);
+    if (!existsInSeed) {
+      return NextResponse.json({ message: "Favoriye eklenecek ilan bulunamadi." }, { status: 404 });
+    }
   }
 
   await ensureProfileRecord(user);
@@ -87,10 +107,18 @@ export async function POST(request: Request) {
 }
 
 export async function DELETE(request: Request) {
+  if (!hasSupabaseEnv()) {
+    return NextResponse.json({ message: "Servis暂时不可用." }, { status: 503 });
+  }
+
   const user = await getAuthenticatedUser();
 
   if (!user) {
     return NextResponse.json({ message: "Favori guncellemek icin giris yapmalisin." }, { status: 401 });
+  }
+
+  if (!hasSupabaseAdminEnv()) {
+    return NextResponse.json({ message: "Servis暂时不可用." }, { status: 503 });
   }
 
   let body: unknown;

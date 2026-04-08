@@ -41,7 +41,7 @@ export async function SiteHeader() {
               </Link>
             )}
             <Link 
-              href="/favorites" 
+              href="/dashboard/favorites" 
               className="flex items-center justify-center w-10 h-10 rounded-xl text-slate-500 hover:text-indigo-600 hover:bg-indigo-50/80 transition-all"
               title="Favoriler"
             >

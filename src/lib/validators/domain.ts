@@ -14,6 +14,9 @@ import {
   reportStatuses,
   transmissionTypes,
   userRoles,
+  maximumListingPrice,
+  maximumDescriptionLength,
+  maximumNoteLength,
 } from "@/lib/constants/domain";
 import type {
   AdminModerationAction,
@@ -89,17 +92,19 @@ export const listingImageSchema: z.ZodType<ListingImage> = z.object({
 });
 
 export const listingCreateSchema: z.ZodType<ListingCreateInput> = z.object({
-  title: trimmedRequiredString,
+  title: trimmedRequiredString.max(200, "Baslik en fazla 200 karakter olabilir"),
   brand: trimmedRequiredString,
   model: trimmedRequiredString,
   year: z.coerce.number().int().min(minimumCarYear, invalidMessage).max(maximumCarYear, invalidMessage),
   mileage: nonNegativeNumberSchema.max(maximumMileage, invalidMessage),
   fuelType: z.enum(fuelTypes),
   transmission: z.enum(transmissionTypes),
-  price: positiveCurrencySchema,
+  price: positiveCurrencySchema.max(maximumListingPrice, `Fiyat en fazla ${maximumListingPrice.toLocaleString("tr-TR")} TL olabilir`),
   city: trimmedRequiredString,
   district: trimmedRequiredString,
-  description: trimmedRequiredString.min(20, "Açıklama en az 20 karakter olmalı"),
+  description: trimmedRequiredString
+    .min(20, "Açıklama en az 20 karakter olmalı")
+    .max(maximumDescriptionLength, `Açıklama en fazla ${maximumDescriptionLength} karakter olabilir`),
   whatsappPhone: lenientPhoneSchema,
   images: z
     .array(listingImageSchema)
@@ -107,17 +112,19 @@ export const listingCreateSchema: z.ZodType<ListingCreateInput> = z.object({
 });
 
 export const listingCreateFormSchema = z.object({
-  title: trimmedRequiredString,
+  title: trimmedRequiredString.max(200, "Baslik en fazla 200 karakter olabilir"),
   brand: trimmedRequiredString,
   model: trimmedRequiredString,
   year: z.coerce.number().int().min(minimumCarYear, invalidMessage).max(maximumCarYear, invalidMessage),
   mileage: nonNegativeNumberSchema.max(maximumMileage, invalidMessage),
   fuelType: z.enum(fuelTypes),
   transmission: z.enum(transmissionTypes),
-  price: positiveCurrencySchema,
+  price: positiveCurrencySchema.max(maximumListingPrice, `Fiyat en fazla ${maximumListingPrice.toLocaleString("tr-TR")} TL olabilir`),
   city: trimmedRequiredString,
   district: trimmedRequiredString,
-  description: trimmedRequiredString.min(20, "Açıklama en az 20 karakter olmalı"),
+  description: trimmedRequiredString
+    .min(20, "Açıklama en az 20 karakter olmalı")
+    .max(maximumDescriptionLength, `Açıklama en fazla ${maximumDescriptionLength} karakter olabilir`),
   whatsappPhone: lenientPhoneSchema,
   images: z
     .array(
@@ -240,7 +247,13 @@ export const adminModerationActionSchema: z.ZodType<AdminModerationAction> = z.o
   action: z.enum(moderationActions),
   note: z.preprocess(
     emptyStringToUndefined,
-    z.string().trim().min(3, "Not en az 3 karakter olmalı").nullable().optional(),
+    z
+      .string()
+      .trim()
+      .min(3, "Not en az 3 karakter olmalı")
+      .max(maximumNoteLength, `Not en fazla ${maximumNoteLength} karakter olabilir`)
+      .nullable()
+      .optional(),
   ),
   createdAt: timestampSchema,
 });

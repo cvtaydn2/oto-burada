@@ -51,6 +51,9 @@ Sadece arabalar için tasarlanmış, mobil öncelikli ve güven odaklı ücretsi
 - Ana sayfa hero yapisi Google AI Studio draft'ina daha yakin bir kompozisyona cekildi; sol filtre paneli, sag ana sahne ve spotlight ilan kurgusu canli hale geldi
 - Listing create formu, profile formu ve admin persistence paneli de AI Studio sahne dili ile Figma'nin daha duzenli section/component gucunu birlestiren yeni yuzeylere kavustu
 - Login ve register ekranlari da ayni AI Studio + Figma sistemine alindi; auth girisleri artik daha yonlendirici sahne, ozet kartlari ve net eylem alanlariyla aciliyor
+- Backend deep audit tamamlandi: auth rate limiting, admin rate limiting, cookie fallback temizligi, N+1 performans duzeltmeleri, admin note sanitize, validation helper extract, seed data izolasyonu ve logout cookie write kaldirildi
+- /listings sayfasi eklendi (onceden sadece homepage uzerinden erisilebiliyordu)
+- Test scriptleri eklendi: test-api.js ve test-filters.js
 - Lint, typecheck ve production build doğrulandı
 
 ## Kurulum
@@ -160,6 +163,36 @@ Yeni geliştirmeye başlamadan önce şu dosyalar gözden geçirilmelidir:
 6. `CONTENT_COPY.md`
 7. `SEED_PLAN.md`
 8. `schema.sql`
+
+## Test Komutları
+
+### Playwright E2E Testleri
+```bash
+npm run test
+```
+Tüm tarayıcı testlerini (chromium + mobile) çalıştırır.
+
+```bash
+npm run test:ui
+```
+Playwright UI modunda interaktif test çalıştırır.
+
+```bash
+npm run test:report
+```
+Son test sonuçlarını HTML rapor olarak açar.
+
+### API Test
+```bash
+node scripts/test-api.js
+```
+Tüm API endpoint'lerini test eder: public routes, favorites, listings, reports, images.
+
+### Filtre Test
+```bash
+node scripts/test-filters.js
+```
+Listings filtreleme ve URL search params test eder.
 
 ## Sonraki Adım
 `TASKS.md` içindeki sıralı MVP görevleri tamamlandı. Sonraki mantıklı genişleme, AI Studio gorsel dilini auth sonrasi dashboard alt detay panellerine ve admin audit/persistence ic akislarina daha derin tasimak; operasyon tarafinda ise production benzeri Supabase ortaminda legacy cookie verilerini tabloya backfill etmektir.

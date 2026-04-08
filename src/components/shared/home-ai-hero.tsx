@@ -291,6 +291,7 @@ export function HomeAiHero({
                       src={spotlightImage.url}
                       alt={spotlightListing.title}
                       fill
+                      priority
                       sizes="(min-width: 1024px) 340px, 100vw"
                       className="object-cover"
                     />

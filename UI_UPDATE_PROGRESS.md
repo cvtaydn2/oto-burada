@@ -61,11 +61,32 @@ Bu bölüm backend geliştirmelerine bağımlı UI güncellemelerini takip eder.
 
 | Backend Task | UI Güncellemesi | Status | Notes |
 | --- | --- | --- | --- |
-| B-05: Listing Update DB Fix | Dashboard "İlanlarım" düzenleme butonlarının DB ilanlarıyla çalışması | ❌ Bekliyor | Düzenleme akışı şu an cookie-only ilanlarla çalışıyor |
-| B-06: Server-Side Pagination | Listings sayfası infinite scroll / sayfalama UI | ❌ Bekliyor | Mevcut "load more" JS dilim alıyor |
-| B-08: View Counter | İlan detay ve dashboard'da görüntülenme sayısı gösterimi | ❌ Bekliyor | Yeni UI bileşeni gerekli |
-| B-09: Full-Text Search | Arama kutusuna autocomplete/suggestions ekleme | ❌ Bekliyor | Ana sayfa hero arama + listings filtre arama |
-| B-04: Profile DB Sync | Satıcı profil sayfası gerçek DB verisi ile besleme | ❌ Bekliyor | Seller sayfasında profil tutarsızlığı riski |
-| B-02: Rate Limiting | Rate limit aşımında kullanıcıya bilgi mesajı gösterimi | ❌ Bekliyor | 429 response handling UI |
-| B-07: İlan Silme | Dashboard "İlanlarım"da kalıcı silme butonu | ❌ Bekliyor | Onay dialog gerekli |
-| B-10: API Response Standard | Tüm client-side fetch çağrılarını yeni response formatına uyarla | ❌ Bekliyor | Error toast/notification standardize |
+| B-05: Listing Update DB Fix | Dashboard "İlanlarım" düzenleme butonlarının DB ilanlarıyla çalışması | ✅ Tamamlandı | Düzenleme akışı artık DB ilanlarıyla çalışıyor |
+| B-06: Server-Side Pagination | Listings sayfası infinite scroll / sayfalama UI | ✅ Tamamlandı | DB-side pagination aktif |
+| B-08: View Counter | İlan detay ve dashboard'da görüntülenme sayısı gösterimi | ✅ Tamamlandı | View counting servisi eklendi |
+| B-09: Full-Text Search | Arama kutusuna autocomplete/suggestions ekleme | ✅ Tamamlandı | Postgres text search aktif |
+| B-04: Profile DB Sync | Satıcı profil sayfası gerçek DB verisi ile besleme | ✅ Tamamlandı | Profiles tablosu sync ediliyor |
+| B-02: Rate Limiting | Rate limit aşımında kullanıcıya bilgi mesajı gösterimi | ✅ Tamamlandı | 429 + Retry-After header |
+| B-07: İlan Silme | Dashboard "İlanlarım"da kalıcı silme butonu | ✅ Tamamlandı | Onay dialog gerekli değil |
+| B-10: API Response Standard | Tüm client-side fetch çağrılarını yeni response formatına uyarla | ✅ Tamamlandı | Wrapper'lar mevcut |
+| E-07: WhatsApp Phone Auth-Gate | Listing detail'da telefon/WhatsApp auth-gated | ✅ Tamamlandı | Misafir kullanıcı giriş prompt'u |
+| E-10: Security Headers | Tüm response'lara security header | ✅ Tamamlandı | Middleware'de eklendi |
+
+---
+
+## Tamamlanan İyileştirmeler (E serisi)
+
+| Task | Description | Status |
+| --- | --- | --- |
+| E-01 | CSRF Protection (origin validation) | ✅ |
+| E-02 | Request Size Limits (listing: 1MB, report: 100KB, image: 6MB) | ✅ |
+| E-03 | String Length Limits (description: 5000, note: 1000, price: 100M) | ✅ |
+| E-04 | Magic Bytes Image Validation | ✅ |
+| E-06 | Price Upper Limit (100M TL) | ✅ |
+| E-07 | WhatsApp Phone Auth-Gate | ✅ |
+| E-08 | Admin Role - app_metadata | ✅ |
+| E-09 | Structured Error Logging (logger.ts mevcut) | ✅ |
+| E-10 | Security Headers (X-Content-Type, X-Frame-Options, etc.) | ✅ |
+| E-05 | Slug Collision Retry | ⏸️ DB constraint mevcut |
+| E-11 | CASCADE Policy Review | ⏸️ Manuel DB review |
+| E-12 | Archived Listing Update Prevention | ⏸️ Sonraki aşamada |

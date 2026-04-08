@@ -47,7 +47,7 @@ export function HeaderMobileNav({ user, isAdmin, accountHref, postListingHref }:
                 {user ? "Hesabım" : "Giriş Yap"}
               </Link>
               <Link 
-                href="/favorites"
+                href="/dashboard/favorites"
                 onClick={() => setIsOpen(false)}
                 className="flex items-center h-12 px-4 rounded-xl text-sm font-semibold text-slate-700 hover:bg-slate-100 transition-all"
               >

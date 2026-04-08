@@ -116,13 +116,14 @@ export function ListingGallery({ images, title }: ListingGalleryProps) {
                     ? "border-indigo-500 ring-2 ring-indigo-500/30" 
                     : "border-transparent hover:border-slate-300"
                 }`}
-              >
+                >
                 <Image
                   src={image.url}
                   alt={`${title} - ${index + 1}`}
                   fill
                   sizes="100px"
                   className="object-cover"
+                  loading="lazy"
                 />
                 {index === currentIndex && (
                   <div className="absolute inset-0 bg-indigo-500/20" />
@@ -194,13 +195,14 @@ export function ListingGallery({ images, title }: ListingGalleryProps) {
                     ? "border-white ring-2 ring-indigo-500" 
                     : "border-transparent opacity-60 hover:opacity-100"
                 }`}
-              >
+                >
                 <Image
                   src={image.url}
                   alt={`${title} - ${index + 1}`}
                   fill
                   sizes="64px"
                   className="object-cover"
+                  loading="lazy"
                 />
               </button>
             ))}

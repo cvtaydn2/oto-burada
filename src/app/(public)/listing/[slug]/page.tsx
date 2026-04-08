@@ -15,6 +15,7 @@ import {
   Settings2,
   ShieldCheck,
   Sparkles,
+  Lock,
 } from "lucide-react";
 
 import { FavoriteButton } from "@/components/listings/favorite-button";
@@ -27,8 +28,8 @@ import { SectionHeader } from "@/components/shared/section-header";
 import { PriceAnalysisCard } from "@/components/listings/price-analysis-card";
 import { TrustBadge } from "@/components/shared/trust-badge";
 import { exampleListings } from "@/data/listings";
-import type { Listing } from "@/types";
 import { getCurrentUser } from "@/lib/auth/session";
+import type { Listing } from "@/types";
 import { buildListingDetailMetadata } from "@/lib/seo";
 import { formatCurrency, formatDate, formatNumber } from "@/lib/utils";
 import {
@@ -304,24 +305,44 @@ export default async function ListingDetailPage({ params }: ListingDetailPagePro
                 
                 <TrustBadge score={9.8} verified={true} />
 
-                <div className="space-y-2.5 mt-5">
-                  <a
-                    href={`tel:${listing.whatsappPhone}`}
-                    className="flex w-full items-center justify-center gap-2 rounded-xl bg-slate-900 h-12 px-4 text-[15px] font-semibold text-white shadow-lg transition-all hover:bg-slate-800 hover:shadow-xl"
-                  >
-                    <Phone className="size-5" />
-                    {listing.whatsappPhone.replace(/(\d{4})(\d{3})(\d{2})(\d{2})/, "$1 $2 $3 $4")}
-                  </a>
-                  <a
-                    href={whatsappLink}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-green-500 to-emerald-600 h-12 px-4 text-[15px] text-white font-semibold shadow-lg shadow-green-500/25 transition-all hover:from-green-600 hover:to-emerald-700 hover:shadow-green-500/40"
-                  >
-                    <MessageCircle className="size-5" />
-                    WhatsApp ile İletişime Geç
-                  </a>
-                </div>
+                {currentUser ? (
+                  <div className="space-y-2.5 mt-5">
+                    <a
+                      href={`tel:${listing.whatsappPhone}`}
+                      className="flex w-full items-center justify-center gap-2 rounded-xl bg-slate-900 h-12 px-4 text-[15px] font-semibold text-white shadow-lg transition-all hover:bg-slate-800 hover:shadow-xl"
+                    >
+                      <Phone className="size-5" />
+                      {listing.whatsappPhone.replace(/(\d{4})(\d{3})(\d{2})(\d{2})/, "$1 $2 $3 $4")}
+                    </a>
+                    <a
+                      href={whatsappLink}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-green-500 to-emerald-600 h-12 px-4 text-[15px] text-white font-semibold shadow-lg shadow-green-500/25 transition-all hover:from-green-600 hover:to-emerald-700 hover:shadow-green-500/40"
+                    >
+                      <MessageCircle className="size-5" />
+                      WhatsApp ile İletişime Geç
+                    </a>
+                  </div>
+                ) : (
+                  <div className="mt-5 space-y-3">
+                    <div className="rounded-lg bg-indigo-50 border border-indigo-100 p-4 text-center">
+                      <Lock className="size-5 text-indigo-600 mx-auto mb-2" />
+                      <p className="text-sm font-medium text-indigo-900">
+                        İletişim bilgilerini görmek için
+                      </p>
+                      <Link
+                        href={`/login?next=${encodeURIComponent(`/listing/${listing.slug}`)}`}
+                        className="mt-2 inline-flex items-center justify-center gap-1.5 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-700 transition-colors"
+                      >
+                        Giriş Yap
+                      </Link>
+                    </div>
+                    <p className="text-xs text-center text-slate-500">
+                      veya <Link href="/register" className="text-indigo-600 hover:underline">kayıt ol</Link> ücretsiz ilan oluştur
+                    </p>
+                  </div>
+                )}
                 
                 <div className="mt-5 pt-5 border-t border-slate-100">
                   <div className="text-sm font-semibold text-slate-900 mb-2">Satıcı Özeti</div>

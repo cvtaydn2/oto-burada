@@ -6,6 +6,14 @@ import { getSupabaseEnv, hasSupabaseEnv } from "@/lib/supabase/env";
 const protectedPrefixes = ["/dashboard", "/admin"];
 const authRoutes = ["/login", "/register"];
 
+const SECURITY_HEADERS = {
+  "X-Content-Type-Options": "nosniff",
+  "X-Frame-Options": "DENY",
+  "X-XSS-Protection": "1; mode=block",
+  "Referrer-Policy": "strict-origin-when-cross-origin",
+  "Permissions-Policy": "camera=(), microphone=(), geolocation=()",
+};
+
 export async function updateSession(request: NextRequest) {
   if (!hasSupabaseEnv()) {
     return NextResponse.next({ request });
@@ -55,6 +63,10 @@ export async function updateSession(request: NextRequest) {
     redirectUrl.pathname = "/dashboard";
     redirectUrl.search = "";
     return NextResponse.redirect(redirectUrl);
+  }
+
+  for (const [key, value] of Object.entries(SECURITY_HEADERS)) {
+    response.headers.set(key, value);
   }
 
   return response;

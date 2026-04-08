@@ -4,11 +4,12 @@ import {
   useDeferredValue,
   useEffect,
   useMemo,
+  useRef,
   useState,
   useTransition,
 } from "react";
 import { Gauge, LayoutGrid, List, Search, SlidersHorizontal, TrendingDown, ArrowUpDown, ArrowUp, ArrowDown } from "lucide-react";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 
 import { ListingCard } from "@/components/listings/listing-card";
@@ -21,6 +22,7 @@ import {
   getDistrictsForCity,
   getModelsForBrand,
   sortListings,
+  parseListingFiltersFromSearchParams,
 } from "@/services/listings/listing-filters";
 import { brandCatalog, cityOptions } from "@/data";
 import type { BrandCatalogItem, CityOption } from "@/data";
@@ -67,6 +69,7 @@ export function ListingsPageClient({
   const mobileFilterTitleId = "mobile-listing-filters-title";
   const router = useRouter();
   const pathname = usePathname();
+  const searchParams = useSearchParams();
   const [isPending, startTransition] = useTransition();
   const [filters, setFilters] = useState<ListingFilters>(initialFilters);
   const [visibleCount, setVisibleCount] = useState(INITIAL_VISIBLE_COUNT);
@@ -74,9 +77,27 @@ export function ListingsPageClient({
   const [viewMode, setViewMode] = useState<"list" | "grid">("list");
   const [sortColumn, setSortColumn] = useState<string | null>(null);
   const [sortDirection, setSortDirection] = useState<"asc" | "desc">("desc");
+  const [isHydrated, setIsHydrated] = useState(false);
+  const lastSyncedFilterRef = useRef<string>("");
 
   const deferredFilters = useDeferredValue(filters);
   const isHomePage = pathname === "/" || pathname === "/listings";
+
+  useEffect(() => {
+    setIsHydrated(true);
+  }, []);
+
+  useEffect(() => {
+    if (!isHydrated || !searchParams) return;
+    
+    const urlFilters = parseListingFiltersFromSearchParams(
+      Object.fromEntries(searchParams.entries()) as Record<string, string>
+    );
+    
+    if (JSON.stringify(urlFilters) !== JSON.stringify(filters)) {
+      setFilters(urlFilters);
+    }
+  }, [searchParams, isHydrated, filters]);
 
   const models = useMemo(
     () => getModelsForBrand(brands, filters.brand),
@@ -196,10 +217,13 @@ export function ListingsPageClient({
           nextFilters.district = undefined;
         }
 
-        syncFiltersToUrl(nextFilters);
         return nextFilters;
       });
       setVisibleCount(INITIAL_VISIBLE_COUNT);
+      
+      setTimeout(() => {
+        syncFiltersToUrl({ ...filters, [key]: value });
+      }, 0);
     });
   };
 

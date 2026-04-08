@@ -64,3 +64,6 @@ export const maximumCarYear = new Date().getFullYear() + 1;
 export const maximumMileage = 1_000_000;
 export const listingImageAcceptedMimeTypes = ["image/jpeg", "image/png", "image/webp"] as const;
 export const listingImageMaxSizeInBytes = 5 * 1024 * 1024;
+export const maximumListingPrice = 100_000_000;
+export const maximumDescriptionLength = 5000;
+export const maximumNoteLength = 1000;

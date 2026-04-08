@@ -28,11 +28,11 @@ export async function requireUser() {
 }
 
 export function getUserRole(user: Awaited<ReturnType<typeof requireUser>>): UserRole {
-  const metadata = user.user_metadata as {
+  const appMetadata = user.app_metadata as {
     role?: string;
   };
 
-  return metadata.role === "admin" ? "admin" : "user";
+  return appMetadata.role === "admin" ? "admin" : "user";
 }
 
 export async function requireAdminUser() {

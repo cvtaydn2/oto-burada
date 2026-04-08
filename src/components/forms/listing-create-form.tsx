@@ -275,7 +275,7 @@ export function ListingCreateForm({ initialListing, initialValues }: ListingCrea
       return;
     }
 
-    const fileError = validateListingImageFile(file);
+    const fileError = await validateListingImageFile(file);
 
     if (fileError) {
       setError(`images.${index}.url` as FieldPath<ListingCreateFormSchemaInput>, {
