@@ -24,18 +24,18 @@ import { ListingDetailStructuredData, BreadcrumbStructuredData } from "@/compone
 import { ReportListingForm } from "@/components/forms/report-listing-form";
 import { ShareButton } from "@/components/listings/share-button";
 import { ListingCard } from "@/components/listings/listing-card";
-import { SectionHeader } from "@/components/shared/section-header";
 import { PriceAnalysisCard } from "@/components/listings/price-analysis-card";
 import { TrustBadge } from "@/components/shared/trust-badge";
-import { exampleListings } from "@/data/listings";
+import { ExpertInspectionCard } from "@/components/listings/expert-inspection-card";
 import { getCurrentUser } from "@/lib/auth/session";
 import type { Listing } from "@/types";
 import { buildListingDetailMetadata } from "@/lib/seo";
-import { formatCurrency, formatDate, formatNumber } from "@/lib/utils";
+import { formatDate, formatNumber } from "@/lib/utils";
 import {
   getMarketplaceListingBySlug,
   getMarketplaceSeller,
   getSimilarMarketplaceListings,
+  getPublicMarketplaceListings,
 } from "@/services/listings/marketplace-listings";
 import { getListingCardInsights } from "@/services/listings/listing-card-insights";
 
@@ -47,8 +47,11 @@ interface ListingDetailPageProps {
 
 const whatsappTemplate = "Merhaba, ilanınızla ilgileniyorum.";
 
+export const revalidate = 60;
+
 export async function generateStaticParams() {
-  return exampleListings.map((listing: Listing) => ({
+  const listings = await getPublicMarketplaceListings();
+  return listings.map((listing: Listing) => ({
     slug: listing.slug,
   }));
 }
@@ -257,6 +260,9 @@ export default async function ListingDetailPage({ params }: ListingDetailPagePro
                 <p>Araç başında ufak bir pazarlık payı vardır. Alıcısına şimdiden hayırlı olsun.</p>
               </div>
             </section>
+
+            {/* Expert Inspection */}
+            <ExpertInspectionCard expertInspection={listing.expertInspection} />
 
             {/* Similar Listings */}
             {similarListings.length > 0 && (

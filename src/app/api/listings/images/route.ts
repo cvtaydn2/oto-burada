@@ -64,7 +64,7 @@ export async function POST(request: Request) {
     return apiError(API_ERROR_CODES.BAD_REQUEST, "Yüklenecek fotoğraf bulunamadı.", 400);
   }
 
-  const validationError = validateListingImageFile(file);
+  const validationError = await validateListingImageFile(file);
 
   if (validationError) {
     return apiError(API_ERROR_CODES.BAD_REQUEST, validationError, 400);

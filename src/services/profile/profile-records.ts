@@ -1,6 +1,5 @@
 import type { User } from "@supabase/supabase-js";
 
-import { allUsers } from "@/data";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { hasSupabaseAdminEnv } from "@/lib/supabase/env";
 import { profileSchema } from "@/lib/validators";
@@ -92,20 +91,22 @@ export async function ensureProfileRecord(user: User) {
 }
 
 export async function getStoredProfileById(profileId: string) {
-  if (hasSupabaseAdminEnv()) {
-    const admin = createSupabaseAdminClient();
-    const { data, error } = await admin
-      .from("profiles")
-      .select("id, full_name, phone, city, avatar_url, role, created_at, updated_at")
-      .eq("id", profileId)
-      .maybeSingle<ProfileRow>();
-
-    if (!error && data) {
-      return mapProfileRow(data);
-    }
+  if (!hasSupabaseAdminEnv()) {
+    return null;
   }
 
-  return allUsers.find((user) => user.id === profileId) ?? null;
+  const admin = createSupabaseAdminClient();
+  const { data, error } = await admin
+    .from("profiles")
+    .select("id, full_name, phone, city, avatar_url, role, created_at, updated_at")
+    .eq("id", profileId)
+    .maybeSingle<ProfileRow>();
+
+  if (!error && data) {
+    return mapProfileRow(data);
+  }
+
+  return null;
 }
 
 export async function updateProfileTable(

@@ -7,6 +7,8 @@ import { buildListingsMetadata } from "@/lib/seo";
 import { parseListingFiltersFromSearchParams } from "@/services/listings/listing-filters";
 import { getPublicMarketplaceListings } from "@/services/listings/marketplace-listings";
 
+export const revalidate = 60;
+
 interface ListingsPageProps {
   searchParams?: Promise<Record<string, string | string[] | undefined>>;
 }

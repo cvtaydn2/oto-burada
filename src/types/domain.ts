@@ -8,6 +8,8 @@ import type {
   reportStatuses,
   transmissionTypes,
   userRoles,
+  expertInspectionGrades,
+  expertInspectionStatuses,
 } from "@/lib/constants/domain";
 
 export type UserRole = (typeof userRoles)[number];
@@ -19,6 +21,8 @@ export type ReportStatus = (typeof reportStatuses)[number];
 export type ModerationTargetType = (typeof moderationTargetTypes)[number];
 export type ModerationAction = (typeof moderationActions)[number];
 export type ListingSortOption = (typeof listingSortOptions)[number];
+export type ExpertInspectionGrade = (typeof expertInspectionGrades)[number];
+export type ExpertInspectionStatus = (typeof expertInspectionStatuses)[number];
 
 export interface Profile {
   id: string;
@@ -59,6 +63,7 @@ export interface Listing {
   status: ListingStatus;
   images: ListingImage[];
   featured: boolean;
+  expertInspection?: ExpertInspection;
   createdAt: string;
   updatedAt: string;
 }
@@ -77,6 +82,7 @@ export interface ListingCreateInput {
   description: string;
   whatsappPhone: string;
   images: ListingImage[];
+  expertInspection?: ExpertInspection;
 }
 
 export interface ListingCreateFormImage {
@@ -101,6 +107,7 @@ export interface ListingCreateFormValues {
   description: string;
   whatsappPhone: string;
   images: ListingCreateFormImage[];
+  expertInspection?: ExpertInspection;
 }
 
 export interface Favorite {
@@ -154,3 +161,38 @@ export interface ListingFilters {
   page?: number;
   limit?: number;
 }
+
+export interface ExpertInspection {
+  hasInspection: boolean;
+  inspectionDate?: string;
+  overallGrade?: ExpertInspectionGrade;
+  totalScore?: number;
+  
+  damageRecord: ExpertInspectionStatus;
+  bodyPaint: ExpertInspectionStatus;
+  engine: ExpertInspectionStatus;
+  transmission: ExpertInspectionStatus;
+  suspension: ExpertInspectionStatus;
+  brakes: ExpertInspectionStatus;
+  electrical: ExpertInspectionStatus;
+  interior: ExpertInspectionStatus;
+  tires: ExpertInspectionStatus;
+  acHeating: ExpertInspectionStatus;
+  
+  notes?: string;
+  inspectedBy?: string;
+}
+
+export const expertInspectionGradeInfo: { grade: ExpertInspectionGrade; label: string; color: string }[] = [
+  { grade: "a", label: "A Mükemmel", color: "#22c55e" },
+  { grade: "b", label: "B İyi", color: "#84cc16" },
+  { grade: "c", label: "C Orta", color: "#eab308" },
+  { grade: "d", label: "D Zayıf", color: "#f97316" },
+  { grade: "e", label: "E Kötü", color: "#ef4444" },
+];
+
+export const expertInspectionStatusLabels: { status: ExpertInspectionStatus; label: string }[] = [
+  { status: "var", label: "Değişmemiş" },
+  { status: "yok", label: "Değişmiş/Onarılmış" },
+  { status: "bilinmiyor", label: "Bilinmiyor" },
+];

@@ -18,7 +18,7 @@ function log(status, method, path, duration, details = "") {
   console.log(`${statusIcon} ${method} ${path} ${status} (${duration}ms) ${details}`);
 }
 
-async function testEndpoint(method, path, body = null, auth = false) {
+async function testEndpoint(method, path, body = null) {
   const start = Date.now();
   try {
     const options = { method, headers };
@@ -67,18 +67,18 @@ async function runTests() {
   console.log("\n🚗 Listings API");
   
   await testEndpoint("GET", "/api/listings");
-  await testEndpoint("POST", "/api/listings", {}, true); // Should fail without real auth
+  await testEndpoint("POST", "/api/listings", {}); // Should fail without real auth
 
   // Test 5: Reports (auth required)
   console.log("\n🚨 Reports API");
   
-  await testEndpoint("POST", "/api/reports", { listingId: "test", reason: "spam" }, true);
+  await testEndpoint("POST", "/api/reports", { listingId: "test", reason: "spam" });
 
   // Test 6: Images (auth required)
   console.log("\n🖼️ Images API");
   
   // POST /api/listings/images requires FormData - skip for now
-  await testEndpoint("DELETE", "/api/listings/images", { storagePath: "" }, true);
+  await testEndpoint("DELETE", "/api/listings/images", { storagePath: "" });
 
   // Performance Summary
   console.log("\n" + "=".repeat(60));

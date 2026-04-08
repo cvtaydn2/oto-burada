@@ -1,25 +1,10 @@
-import { allUsers, exampleListings } from "@/data";
+import { getStoredListingBySlug, getStoredListings, getStoredListingsByIds } from "@/services/listings/listing-submissions";
 import { getStoredProfileById } from "@/services/profile/profile-records";
-import {
-  getStoredListingBySlug,
-  getStoredListings,
-  getStoredListingsByIds,
-} from "@/services/listings/listing-submissions";
-import type { Listing, Profile } from "@/types";
-
-function mergeListings(primary: Listing[], secondary: Listing[]) {
-  const listingMap = new Map<string, Listing>();
-
-  [...secondary, ...primary].forEach((listing) => {
-    listingMap.set(listing.id, listing);
-  });
-
-  return [...listingMap.values()];
-}
+import type { Profile } from "@/types";
 
 export async function getAllKnownListings() {
   const storedListings = await getStoredListings();
-  return mergeListings(storedListings, exampleListings).sort(
+  return storedListings.sort(
     (left, right) => Date.parse(right.updatedAt) - Date.parse(left.updatedAt),
   );
 }
@@ -32,9 +17,7 @@ export async function getPublicMarketplaceListings() {
 
 export async function getMarketplaceListingsByIds(ids: string[]) {
   const storedListings = await getStoredListingsByIds(ids);
-  const seedListings = exampleListings.filter((listing) => ids.includes(listing.id));
-
-  return mergeListings(storedListings, seedListings);
+  return storedListings;
 }
 
 export async function getMarketplaceListingBySlug(slug: string) {
@@ -44,17 +27,13 @@ export async function getMarketplaceListingBySlug(slug: string) {
     return storedListing;
   }
 
-  return exampleListings.find((listing) => listing.slug === slug) ?? null;
+  return null;
 }
 
 export async function getMarketplaceSeller(sellerId: string): Promise<Profile | null> {
   const storedProfile = await getStoredProfileById(sellerId);
 
-  if (storedProfile) {
-    return storedProfile;
-  }
-
-  return allUsers.find((user) => user.id === sellerId) ?? null;
+  return storedProfile;
 }
 
 export async function getSimilarMarketplaceListings(slug: string, brand: string, city: string) {

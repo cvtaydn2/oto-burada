@@ -58,6 +58,10 @@ export const listingSortOptions = [
   "year_desc",
 ] as const;
 
+export const expertInspectionGrades = ["a", "b", "c", "d", "e"] as const;
+
+export const expertInspectionStatuses = ["var", "yok", "bilinmiyor"] as const;
+
 export const minimumListingImages = 3;
 export const minimumCarYear = 1950;
 export const maximumCarYear = new Date().getFullYear() + 1;

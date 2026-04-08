@@ -1,4 +1,4 @@
-import { CheckCircle2, ChevronLeft, X } from "lucide-react";
+import { CheckCircle2, ChevronLeft } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 

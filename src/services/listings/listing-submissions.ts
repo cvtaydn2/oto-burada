@@ -426,17 +426,6 @@ function mapListingImagesToDatabaseRows(listing: Listing) {
   }));
 }
 
-/** @deprecated No longer used in read path. Kept for legacy-sync migration. */
-function mergeListings(primary: Listing[], secondary: Listing[]) {
-  const listingMap = new Map<string, Listing>();
-
-  [...secondary, ...primary].forEach((listing) => {
-    listingMap.set(listing.id, listing);
-  });
-
-  return [...listingMap.values()];
-}
-
 interface CreateListingResult {
   listing?: Listing;
   error?: "slug_collision" | "database_error" | null;

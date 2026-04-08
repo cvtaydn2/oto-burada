@@ -12,6 +12,9 @@ import {
   getStoredUserListings,
 } from "@/services/listings/listing-submissions";
 
+export const dynamic = "force-dynamic";
+export const revalidate = 60;
+
 export default async function DashboardPage() {
   const user = await requireUser();
   const metadata = user.user_metadata as {

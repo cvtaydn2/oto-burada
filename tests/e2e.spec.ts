@@ -64,7 +64,12 @@ test.describe("API Endpoints", () => {
     const res = await request.get("/api/favorites");
     expect(res.status()).toBe(200);
     const data = await res.json();
-    expect(data).toHaveProperty("favoriteIds");
+    expect(data).toMatchObject({
+      success: true,
+      data: {
+        favoriteIds: [],
+      },
+    });
   });
 
   test("POST /api/favorites without auth should return 401", async ({ request }) => {

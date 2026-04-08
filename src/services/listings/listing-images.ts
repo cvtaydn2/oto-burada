@@ -35,7 +35,7 @@ function matchesMagicBytes(header: number[], magicBytes: number[]): boolean {
 async function validateMagicBytes(file: File): Promise<boolean> {
   const header = await readFileHeader(file);
 
-  for (const [mimeType, magicBytes] of Object.entries(MAGIC_BYTES)) {
+  for (const magicBytes of Object.values(MAGIC_BYTES)) {
     if (matchesMagicBytes(header, magicBytes)) {
       return true;
     }

@@ -29,7 +29,7 @@ async function checkAndCreateUsers() {
   
   // Try to select from profiles
   try {
-    const { data: profiles, error } = await supabaseAdmin.from("profiles").select("*").limit(1);
+    const { error } = await supabaseAdmin.from("profiles").select("*").limit(1);
     console.log("Profiles table exists, error:", error?.message || "none");
   } catch (e) {
     console.log("Profiles table doesn't exist or error:", e.message);

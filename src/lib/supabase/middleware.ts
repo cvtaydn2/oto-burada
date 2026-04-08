@@ -69,5 +69,7 @@ export async function updateSession(request: NextRequest) {
     response.headers.set(key, value);
   }
 
+  response.headers.set("Cache-Control", "private, max-age=0, no-cache");
+
   return response;
 }

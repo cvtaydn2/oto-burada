@@ -26,17 +26,6 @@ interface ReportRow {
   updated_at: string;
 }
 
-/** @deprecated No longer used in read path. Kept for legacy-sync migration. */
-function mergeReports(primary: Report[], secondary: Report[]) {
-  const reportMap = new Map<string, Report>();
-
-  [...secondary, ...primary].forEach((report) => {
-    reportMap.set(report.id ?? `${report.listingId}-${report.createdAt}`, report);
-  });
-
-  return [...reportMap.values()];
-}
-
 function mapReportRow(row: ReportRow) {
   return reportSchema.parse({
     createdAt: row.created_at,

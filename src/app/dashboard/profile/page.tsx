@@ -4,6 +4,9 @@ import { updateProfileAction } from "@/lib/auth/profile-actions";
 import { requireUser } from "@/lib/auth/session";
 import { CheckCircle2, Circle, User, Phone, MapPin, Mail } from "lucide-react";
 
+export const dynamic = "force-dynamic";
+export const revalidate = 60;
+
 export default async function DashboardProfilePage() {
   const user = await requireUser();
   const metadata = user.user_metadata as {

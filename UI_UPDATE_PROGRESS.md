@@ -90,3 +90,22 @@ Bu bölüm backend geliştirmelerine bağımlı UI güncellemelerini takip eder.
 | E-05 | Slug Collision Retry | ✅ | 409 Conflict yanıtı ile kullanıcı bilgilendirme |
 | E-11 | CASCADE Policy Review | ⏸️ Manuel DB review |
 | E-12 | Archived Listing Update Prevention | ✅ | Arşivlenmiş ilanlar güncellenemez |
+
+---
+
+## 2026-04-08 UI / Test Uyumluluk Audit
+
+### Tamamlanan uyumluluk güncellemeleri
+- `ListingsPageClient` filtre state akışı React lint kurallarına uygun hale getirildi; URL sync davranışı sadeleştirildi
+- Arama öneri bileşeninde combobox/listbox erişilebilirlik nitelikleri düzeltildi
+- E2E testlerde `/api/favorites` beklentisi yeni response standardına uyarlandı
+- Playwright web server akışı production build + start modeline çekildi; UI smoke testleri dev-server kırılganlığından ayrıldı
+
+### Doğrulama sonucu
+- Homepage, listings, listing detail, login/register ve compare rotaları smoke testte geçti
+- API smoke kontrolleri yeni response zarfı ile uyumlu hale geldi
+- Mobil ve desktop Playwright senaryoları toplam `24/24` geçti
+
+### Not
+- UI tarafı production build altında doğrulandı
+- Ayrı bir geliştirme konusu olarak repo kökündeki `nul` artefact’ı Turbopack tabanlı `next dev` akışını etkileyebilir; bu auditte test hattı production server ile stabilize edildi

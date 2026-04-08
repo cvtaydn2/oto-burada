@@ -99,19 +99,15 @@ function log(
 
   switch (level) {
     case "debug":
-      // eslint-disable-next-line no-console
       console.debug(formatted, data ?? "");
       break;
     case "info":
-      // eslint-disable-next-line no-console
       console.info(formatted, data ?? "");
       break;
     case "warn":
-      // eslint-disable-next-line no-console
       console.warn(formatted, data ?? "");
       break;
     case "error":
-      // eslint-disable-next-line no-console
       console.error(formatted, entry.error ?? data ?? "");
       break;
   }

@@ -1,8 +1,6 @@
 import { Calendar, CheckCircle2, MapPin, MessageSquare, Phone, ShieldCheck, Star, Car, Clock } from "lucide-react";
 import { notFound } from "next/navigation";
-import Link from "next/link";
 
-import { ListingCard } from "@/components/listings/listing-card";
 import { ListingCardGrid } from "@/components/listings/listing-card-grid";
 import { TrustBadge } from "@/components/shared/trust-badge";
 import { getMarketplaceSeller, getPublicMarketplaceListings } from "@/services/listings/marketplace-listings";

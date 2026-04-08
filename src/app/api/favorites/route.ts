@@ -9,6 +9,9 @@ import {
 import { checkListingExistsById } from "@/services/listings/listing-submissions";
 import { ensureProfileRecord } from "@/services/profile/profile-records";
 
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 function getListingIdFromBody(body: unknown) {
   if (typeof body !== "object" || body === null || !("listingId" in body)) {
     return "";
@@ -88,11 +91,7 @@ export async function POST(request: Request) {
   const listingExists = await checkListingExistsById(listingId);
 
   if (!listingExists) {
-    const { exampleListings } = await import("@/data");
-    const existsInSeed = exampleListings.some((l) => l.id === listingId);
-    if (!existsInSeed) {
-      return apiError(API_ERROR_CODES.NOT_FOUND, "Favoriye eklenecek ilan bulunamadı.", 404);
-    }
+    return apiError(API_ERROR_CODES.NOT_FOUND, "Favoriye eklenecek ilan bulunamadı.", 404);
   }
 
   await ensureProfileRecord(user);

@@ -1,6 +1,3 @@
-import { NextResponse } from "next/server";
-
-import { exampleListings } from "@/data";
 import { hasSupabaseEnv } from "@/lib/supabase/env";
 import { sanitizeText, sanitizeDescription } from "@/lib/utils/sanitize";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
@@ -97,7 +94,7 @@ export async function PATCH(
     );
   }
 
-  const allListings = [...exampleListings, ...(await getStoredListings())];
+  const allListings = await getStoredListings();
 
   const updatedListing = buildUpdatedListing(
     parsedListingInput.data,

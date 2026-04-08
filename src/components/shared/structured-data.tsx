@@ -4,10 +4,9 @@ import type { Listing } from "@/types";
 
 interface ListingJsonLdProps {
   listing: Listing;
-  canonicalUrl: string;
 }
 
-export function ListingJsonLd({ listing, canonicalUrl }: ListingJsonLdProps) {
+export function ListingJsonLd({ listing }: ListingJsonLdProps) {
   const structuredData = {
     "@context": "https://schema.org",
     "@type": "Product",

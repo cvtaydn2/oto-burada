@@ -29,6 +29,7 @@ export function SearchWithSuggestions({ placeholder = "Marka, model veya şehir 
   const [query, setQuery] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
   const router = useRouter();
+  const suggestionsId = "search-suggestions";
 
   const filteredSuggestions = useMemo(() => {
     if (query.length < 1) {
@@ -85,13 +86,16 @@ export function SearchWithSuggestions({ placeholder = "Marka, model veya şehir 
         <input
           ref={inputRef}
           type="search"
+          role="combobox"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           onFocus={() => {}}
           placeholder={placeholder}
           aria-label="Ara"
+          aria-autocomplete="list"
           aria-expanded={hasSuggestions}
-          aria-controls="search-suggestions"
+          aria-controls={suggestionsId}
+          aria-haspopup="listbox"
           className="w-full h-10 pl-11 pr-10 bg-slate-50/80 border border-slate-200/60 rounded-xl text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:bg-white focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 transition-all"
         />
         {query && (
@@ -110,7 +114,7 @@ export function SearchWithSuggestions({ placeholder = "Marka, model veya şehir 
 
       {hasSuggestions && (
         <div
-          id="search-filteredSuggestions"
+          id={suggestionsId}
           role="listbox"
           className="absolute top-full left-0 right-0 mt-2 bg-white rounded-xl border border-slate-200 shadow-lg z-50 overflow-hidden"
         >
@@ -121,6 +125,7 @@ export function SearchWithSuggestions({ placeholder = "Marka, model veya şehir 
                 <button
                   key={i}
                   role="option"
+                  aria-selected="false"
                   onClick={() => handleSearch(s.value)}
                   className="w-full px-4 py-2.5 text-left hover:bg-slate-50 flex items-center gap-3"
                 >

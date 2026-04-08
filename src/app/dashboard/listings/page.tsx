@@ -4,6 +4,9 @@ import { requireUser } from "@/lib/auth/session";
 import { getStoredUserListings } from "@/services/listings/listing-submissions";
 import { Plus, ListChecks } from "lucide-react";
 
+export const dynamic = "force-dynamic";
+export const revalidate = 60;
+
 interface DashboardListingsPageProps {
   searchParams?: Promise<{
     edit?: string;

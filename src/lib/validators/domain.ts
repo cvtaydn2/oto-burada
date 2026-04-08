@@ -17,9 +17,12 @@ import {
   maximumListingPrice,
   maximumDescriptionLength,
   maximumNoteLength,
+  expertInspectionGrades,
+  expertInspectionStatuses,
 } from "@/lib/constants/domain";
 import type {
   AdminModerationAction,
+  ExpertInspection,
   Favorite,
   Listing,
   ListingCreateInput,
@@ -91,6 +94,25 @@ export const listingImageSchema: z.ZodType<ListingImage> = z.object({
   isCover: z.boolean(),
 });
 
+export const expertInspectionSchema: z.ZodType<ExpertInspection> = z.object({
+  hasInspection: z.boolean(),
+  inspectionDate: optionalTrimmedString,
+  overallGrade: z.enum(expertInspectionGrades).optional(),
+  totalScore: z.coerce.number().int().min(0).max(100).optional(),
+  damageRecord: z.enum(expertInspectionStatuses),
+  bodyPaint: z.enum(expertInspectionStatuses),
+  engine: z.enum(expertInspectionStatuses),
+  transmission: z.enum(expertInspectionStatuses),
+  suspension: z.enum(expertInspectionStatuses),
+  brakes: z.enum(expertInspectionStatuses),
+  electrical: z.enum(expertInspectionStatuses),
+  interior: z.enum(expertInspectionStatuses),
+  tires: z.enum(expertInspectionStatuses),
+  acHeating: z.enum(expertInspectionStatuses),
+  notes: optionalTrimmedString,
+  inspectedBy: optionalTrimmedString,
+});
+
 export const listingCreateSchema: z.ZodType<ListingCreateInput> = z.object({
   title: trimmedRequiredString.max(200, "Baslik en fazla 200 karakter olabilir"),
   brand: trimmedRequiredString,
@@ -109,6 +131,7 @@ export const listingCreateSchema: z.ZodType<ListingCreateInput> = z.object({
   images: z
     .array(listingImageSchema)
     .min(minimumListingImages, "En az 3 fotoğraf eklemelisin"),
+  expertInspection: expertInspectionSchema.optional(),
 });
 
 export const listingCreateFormSchema = z.object({
@@ -181,6 +204,26 @@ export const listingCreateFormSchema = z.object({
         }
       });
     }),
+  expertInspection: z
+    .object({
+      hasInspection: z.boolean(),
+      inspectionDate: optionalTrimmedString,
+      overallGrade: z.enum(expertInspectionGrades).optional(),
+      totalScore: z.coerce.number().int().min(0).max(100).optional(),
+      damageRecord: z.enum(expertInspectionStatuses),
+      bodyPaint: z.enum(expertInspectionStatuses),
+      engine: z.enum(expertInspectionStatuses),
+      transmission: z.enum(expertInspectionStatuses),
+      suspension: z.enum(expertInspectionStatuses),
+      brakes: z.enum(expertInspectionStatuses),
+      electrical: z.enum(expertInspectionStatuses),
+      interior: z.enum(expertInspectionStatuses),
+      tires: z.enum(expertInspectionStatuses),
+      acHeating: z.enum(expertInspectionStatuses),
+      notes: optionalTrimmedString,
+      inspectedBy: optionalTrimmedString,
+    })
+    .optional(),
 });
 
 export const listingSchema: z.ZodType<Listing> = z.object({
@@ -202,6 +245,7 @@ export const listingSchema: z.ZodType<Listing> = z.object({
   status: z.enum(listingStatuses),
   images: z.array(listingImageSchema),
   featured: z.boolean(),
+  expertInspection: expertInspectionSchema.optional(),
   createdAt: timestampSchema,
   updatedAt: timestampSchema,
 });

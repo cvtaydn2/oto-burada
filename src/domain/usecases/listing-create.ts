@@ -1,7 +1,11 @@
 import type { ListingCreateInput } from "@/types";
 
+export interface PendingListingCreatePayload extends ListingCreateInput {
+  sellerId: string;
+}
+
 export interface ListingRepository {
-  createPendingListing(input: any): Promise<any>;
+  createPendingListing(input: PendingListingCreatePayload): Promise<unknown>;
 }
 
 export async function executeListingCreate(

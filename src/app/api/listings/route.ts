@@ -1,7 +1,3 @@
-import { NextResponse } from "next/server";
-import type { ZodIssue } from "zod";
-
-import { exampleListings } from "@/data";
 import { hasSupabaseEnv } from "@/lib/supabase/env";
 import { rateLimitProfiles } from "@/lib/utils/rate-limit";
 import { enforceRateLimit, getRateLimitKey, getUserRateLimitKey } from "@/lib/utils/rate-limit-middleware";
@@ -13,6 +9,7 @@ import { apiSuccess, apiError, API_ERROR_CODES } from "@/lib/utils/api-response"
 import {
   buildPendingListing,
   createDatabaseListing,
+  getStoredListings,
 } from "@/services/listings/listing-submissions";
 import { ensureProfileRecord } from "@/services/profile/profile-records";
 
@@ -103,9 +100,8 @@ export async function POST(request: Request) {
 
   await ensureProfileRecord(user);
 
-  const createdListing = buildPendingListing(parsedListingInput.data, user.id, [
-    ...exampleListings,
-  ]);
+  const existingListings = await getStoredListings();
+  const createdListing = buildPendingListing(parsedListingInput.data, user.id, existingListings);
   const result = await createDatabaseListing(createdListing);
 
   if (result.error === "slug_collision") {
