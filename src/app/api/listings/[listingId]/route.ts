@@ -6,6 +6,7 @@ import { sanitizeText, sanitizeDescription } from "@/lib/utils/sanitize";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { listingCreateFormSchema, listingCreateSchema } from "@/lib/validators";
 import { issuesToFieldErrors } from "@/lib/utils/validation-helpers";
+import { apiSuccess, apiError, API_ERROR_CODES } from "@/lib/utils/api-response";
 import {
   buildUpdatedListing,
   deleteDatabaseListing,
@@ -19,12 +20,10 @@ export async function PATCH(
   context: { params: Promise<{ listingId: string }> },
 ) {
   if (!hasSupabaseEnv()) {
-    return NextResponse.json(
-      {
-        message:
-          "Supabase ortam degiskenleri eksik. Ilan guncellemek icin .env.local dosyasini tamamlamalisin.",
-      },
-      { status: 503 },
+    return apiError(
+      API_ERROR_CODES.SERVICE_UNAVAILABLE,
+      "Supabase ortam değişkenleri eksik. İlan güncellemek için .env.local dosyasını tamamlamalısın.",
+      503,
     );
   }
 
@@ -33,21 +32,17 @@ export async function PATCH(
   try {
     body = await request.json();
   } catch {
-    return NextResponse.json(
-      { message: "Gonderilen form verisi okunamadi. Lutfen tekrar dene." },
-      { status: 400 },
-    );
+    return apiError(API_ERROR_CODES.BAD_REQUEST, "Gönderilen form verisi okunamadı. Lütfen tekrar dene.", 400);
   }
 
   const parsedFormValues = listingCreateFormSchema.safeParse(body);
 
   if (!parsedFormValues.success) {
-    return NextResponse.json(
-      {
-        message: parsedFormValues.error.issues[0]?.message ?? "Form alanlarini kontrol et.",
-        fieldErrors: issuesToFieldErrors(parsedFormValues.error.issues),
-      },
-      { status: 400 },
+    return apiError(
+      API_ERROR_CODES.VALIDATION_ERROR,
+      parsedFormValues.error.issues[0]?.message ?? "Form alanlarını kontrol et.",
+      400,
+      issuesToFieldErrors(parsedFormValues.error.issues),
     );
   }
 
@@ -58,10 +53,7 @@ export async function PATCH(
   } = await supabase.auth.getUser();
 
   if (userError || !user) {
-    return NextResponse.json(
-      { message: "Oturum dogrulanamadi. Lutfen tekrar giris yap." },
-      { status: 401 },
-    );
+    return apiError(API_ERROR_CODES.UNAUTHORIZED, "Oturum doğrulanamadı. Lütfen tekrar giriş yap.", 401);
   }
 
   const { listingId } = await context.params;
@@ -69,10 +61,11 @@ export async function PATCH(
   const existingListing = await findEditableListingById(listingId, user.id);
 
   if (!existingListing) {
-    return NextResponse.json(
-      { message: "Duzenlenebilir ilan bulunamadi." },
-      { status: 404 },
-    );
+    return apiError(API_ERROR_CODES.NOT_FOUND, "Düzenlenebilir ilan bulunamadı.", 404);
+  }
+
+  if (existingListing.status === "archived") {
+    return apiError(API_ERROR_CODES.FORBIDDEN, "Arşivlenmiş ilanlar düzenlenemez.", 403);
   }
 
   const normalizedInput = {
@@ -96,12 +89,11 @@ export async function PATCH(
   const parsedListingInput = listingCreateSchema.safeParse(normalizedInput);
 
   if (!parsedListingInput.success) {
-    return NextResponse.json(
-      {
-        message: parsedListingInput.error.issues[0]?.message ?? "Ilan bilgileri dogrulanamadi.",
-        fieldErrors: issuesToFieldErrors(parsedListingInput.error.issues),
-      },
-      { status: 400 },
+    return apiError(
+      API_ERROR_CODES.VALIDATION_ERROR,
+      parsedListingInput.error.issues[0]?.message ?? "İlan bilgileri doğrulanamadı.",
+      400,
+      issuesToFieldErrors(parsedListingInput.error.issues),
     );
   }
 
@@ -112,24 +104,27 @@ export async function PATCH(
     existingListing,
     allListings,
   );
-  const persistedListing = await updateDatabaseListing(updatedListing);
+  const result = await updateDatabaseListing(updatedListing);
 
-  if (persistedListing) {
-    return NextResponse.json({
-      listing: {
-        id: persistedListing.id,
-        slug: persistedListing.slug,
-        status: persistedListing.status,
-        title: persistedListing.title,
-      },
-      message: "Ilan bilgilerin guncellendi.",
-    });
+  if (result.error === "slug_collision") {
+    return apiError(API_ERROR_CODES.BAD_REQUEST, "Bu başlıkla başka bir ilan zaten mevcut. Lütfen başlığı değiştir.", 409);
   }
 
-  return NextResponse.json(
-    { message: "Ilan kaydedilemedi. Lutfen tekrar dene." },
-    { status: 500 },
-  );
+  if (result.listing) {
+    return apiSuccess(
+      {
+        listing: {
+          id: result.listing.id,
+          slug: result.listing.slug,
+          status: result.listing.status,
+          title: result.listing.title,
+        },
+      },
+      "İlan bilgilerin güncellendi.",
+    );
+  }
+
+  return apiError(API_ERROR_CODES.INTERNAL_ERROR, "İlan kaydedilemedi. Lütfen tekrar dene.", 500);
 }
 
 export async function DELETE(
@@ -137,12 +132,10 @@ export async function DELETE(
   context: { params: Promise<{ listingId: string }> },
 ) {
   if (!hasSupabaseEnv()) {
-    return NextResponse.json(
-      {
-        message:
-          "Supabase ortam degiskenleri eksik. Ilan silmek icin .env.local dosyasini tamamlamalisin.",
-      },
-      { status: 503 },
+    return apiError(
+      API_ERROR_CODES.SERVICE_UNAVAILABLE,
+      "Supabase ortam değişkenleri eksik. İlan silmek için .env.local dosyasını tamamlamalısın.",
+      503,
     );
   }
 
@@ -153,24 +146,15 @@ export async function DELETE(
   } = await supabase.auth.getUser();
 
   if (userError || !user) {
-    return NextResponse.json(
-      { message: "Oturum dogrulanamadi. Lutfen tekrar giris yap." },
-      { status: 401 },
-    );
+    return apiError(API_ERROR_CODES.UNAUTHORIZED, "Oturum doğrulanamadı. Lütfen tekrar giriş yap.", 401);
   }
 
   const { listingId } = await context.params;
   const result = await deleteDatabaseListing(listingId, user.id);
 
   if (!result) {
-    return NextResponse.json(
-      { message: "Silinecek ilan bulunamadi. Sadece arsivlenmis ilanlar silinebilir." },
-      { status: 404 },
-    );
+    return apiError(API_ERROR_CODES.NOT_FOUND, "Silinecek ilan bulunamadı. Sadece arşivlenmiş ilanlar silinebilir.", 404);
   }
 
-  return NextResponse.json({
-    message: "Ilan kalici olarak silindi.",
-    deleted: true,
-  });
+  return apiSuccess({ deleted: true }, "İlan kalıcı olarak silindi.");
 }

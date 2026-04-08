@@ -64,10 +64,10 @@ export function AdminReportsModeration({
         },
         method: "PATCH",
       });
-      const payload = (await response.json().catch(() => null)) as { message?: string } | null;
+      const payload = await response.json().catch(() => null) as { success?: boolean; error?: { message: string } } | null;
 
-      if (!response.ok) {
-        setErrorMessage(payload?.message ?? "Rapor durumu guncellenemedi.");
+      if (!response.ok || !payload?.success) {
+        setErrorMessage(payload?.error?.message ?? "Rapor durumu güncellenemedi.");
         return;
       }
 
@@ -77,7 +77,7 @@ export function AdminReportsModeration({
       }));
       router.refresh();
     } catch {
-      setErrorMessage("Baglanti sirasinda bir hata olustu. Lutfen tekrar dene.");
+      setErrorMessage("Bağlantı sırasında bir hata oluştu. Lütfen tekrar dene.");
     } finally {
       setActiveAction(null);
     }

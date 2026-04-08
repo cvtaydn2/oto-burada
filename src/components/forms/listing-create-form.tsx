@@ -151,18 +151,18 @@ function uploadImageRequest(file: File, onProgress: (progress: number) => void) 
     });
 
     xhr.addEventListener("load", () => {
-      const payload = xhr.response as UploadedImagePayload | { message?: string } | null;
+      const payload = xhr.response as { success?: boolean; data?: { image: UploadedImagePayload["image"] }; error?: { message: string } } | null;
 
-      if (xhr.status >= 200 && xhr.status < 300 && payload && "image" in payload) {
-        resolve(payload);
+      if (xhr.status >= 200 && xhr.status < 300 && payload?.success && payload.data?.image) {
+        resolve({ image: payload.data.image, message: "Fotoğraf yüklendi." });
         return;
       }
 
-      reject(new Error(payload?.message ?? "Fotograf yuklenemedi. Lutfen tekrar dene."));
+      reject(new Error(payload?.error?.message ?? "Fotoğraf yüklenemedi. Lütfen tekrar dene."));
     });
 
     xhr.addEventListener("error", () => {
-      reject(new Error("Baglanti sirasinda bir hata olustu. Lutfen tekrar dene."));
+      reject(new Error("Bağlantı sırasında bir hata oluştu. Lütfen tekrar dene."));
     });
 
     xhr.send(formData);
@@ -378,15 +378,17 @@ export function ListingCreateForm({ initialListing, initialValues }: ListingCrea
         method: isEditing ? "PATCH" : "POST",
       });
 
-      const payload = (await response.json().catch(() => null)) as
-        | {
-            fieldErrors?: Record<string, string>;
-            message?: string;
-          }
-        | null;
+      const payload = await response.json().catch(() => null) as {
+        success?: boolean;
+        error?: { code: string; message: string; fieldErrors?: Record<string, string> };
+        data?: { message?: string; listing?: { id: string; slug: string } };
+      } | null;
 
-      if (!response.ok) {
-        Object.entries(payload?.fieldErrors ?? {}).forEach(([path, message]) => {
+      if (!response.ok || !payload?.success) {
+        const fieldErrors = payload?.error?.fieldErrors;
+        const errorMessage = payload?.error?.message ?? "İlan oluşturulamadi. Lütfen alanlari kontrol et.";
+
+        Object.entries(fieldErrors ?? {}).forEach(([path, message]) => {
           setError(path as FieldPath<ListingCreateFormSchemaInput>, {
             message,
             type: "server",
@@ -394,7 +396,7 @@ export function ListingCreateForm({ initialListing, initialValues }: ListingCrea
         });
 
         setSubmitState({
-          message: payload?.message ?? "Ilan olusturulamadi. Lutfen alanlari kontrol et.",
+          message: errorMessage,
           status: "error",
         });
         return;
@@ -406,7 +408,7 @@ export function ListingCreateForm({ initialListing, initialValues }: ListingCrea
       setUploadStates({});
       reset(buildDefaultValues(initialValues));
       setSubmitState({
-        message: payload?.message ?? "Ilanin kaydedildi.",
+        message: payload?.data?.message ?? "İlanin kaydedildi.",
         status: "success",
       });
       if (isEditing) {
@@ -415,7 +417,7 @@ export function ListingCreateForm({ initialListing, initialValues }: ListingCrea
       router.refresh();
     } catch {
       setSubmitState({
-        message: "Baglanti sirasinda bir hata olustu. Lutfen tekrar dene.",
+        message: "Bağlantı sırasında bir hata oluştu. Lütfen tekrar dene.",
         status: "error",
       });
     }

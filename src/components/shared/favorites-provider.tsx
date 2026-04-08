@@ -73,11 +73,12 @@ async function requestFavoriteUpdate(method: "DELETE" | "POST", listingId: strin
   });
 
   if (!response.ok) {
-    throw new Error("Favori durumu guncellenemedi.");
+    const payload = await response.json().catch(() => null) as { error?: { message: string } };
+    throw new Error(payload?.error?.message ?? "Favori durumu güncellenemedi.");
   }
 
-  const payload = (await response.json()) as { favoriteIds?: string[] };
-  return payload.favoriteIds ?? [];
+  const payload = await response.json() as { success?: boolean; data?: { favoriteIds?: string[] } };
+  return payload?.data?.favoriteIds ?? [];
 }
 
 function broadcastFavoritesUpdate(nextIds: string[]) {
@@ -113,10 +114,8 @@ export function FavoritesProvider({ children, userId }: FavoritesProviderProps) 
     const syncFavorites = async () => {
       try {
         const response = await fetch("/api/favorites", { method: "GET" });
-        const payload = (await response.json().catch(() => null)) as
-          | { favoriteIds?: string[] }
-          | null;
-        const serverFavoriteIds = payload?.favoriteIds ?? [];
+        const payload = await response.json().catch(() => null) as { success?: boolean; data?: { favoriteIds?: string[] } };
+        const serverFavoriteIds = payload?.data?.favoriteIds ?? [];
         const localIds = readFavoriteIds();
         const mergedIds = [...new Set([...serverFavoriteIds, ...localIds])];
 

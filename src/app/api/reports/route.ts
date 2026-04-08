@@ -1,5 +1,3 @@
-import { NextResponse } from "next/server";
-
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { hasSupabaseEnv } from "@/lib/supabase/env";
 import { rateLimitProfiles } from "@/lib/utils/rate-limit";
@@ -7,6 +5,7 @@ import { enforceRateLimit, getRateLimitKey, getUserRateLimitKey } from "@/lib/ut
 import { sanitizeDescription } from "@/lib/utils/sanitize";
 import { issuesToFieldErrors } from "@/lib/utils/validation-helpers";
 import { reportCreateSchema } from "@/lib/validators";
+import { apiSuccess, apiError, API_ERROR_CODES } from "@/lib/utils/api-response";
 import {
   createOrUpdateDatabaseReport,
   getDatabaseActiveReport,
@@ -25,12 +24,10 @@ export async function POST(request: Request) {
   }
 
   if (!hasSupabaseEnv()) {
-    return NextResponse.json(
-      {
-        message:
-          "Supabase ortam degiskenleri eksik. Rapor gonderebilmek icin .env.local dosyasini tamamlamalisin.",
-      },
-      { status: 503 },
+    return apiError(
+      API_ERROR_CODES.SERVICE_UNAVAILABLE,
+      "Supabase ortam değişkenleri eksik. Rapor göndermek için .env.local dosyasını tamamlamalısın.",
+      503,
     );
   }
 
@@ -39,18 +36,17 @@ export async function POST(request: Request) {
   try {
     body = await request.json();
   } catch {
-    return NextResponse.json({ message: "Gonderilen form verisi okunamadi." }, { status: 400 });
+    return apiError(API_ERROR_CODES.BAD_REQUEST, "Gönderilen form verisi okunamadı.", 400);
   }
 
   const parsed = reportCreateSchema.safeParse(body);
 
   if (!parsed.success) {
-    return NextResponse.json(
-      {
-        message: parsed.error.issues[0]?.message ?? "Form alanlarini kontrol et.",
-        fieldErrors: issuesToFieldErrors(parsed.error.issues),
-      },
-      { status: 400 },
+    return apiError(
+      API_ERROR_CODES.VALIDATION_ERROR,
+      parsed.error.issues[0]?.message ?? "Form alanlarını kontrol et.",
+      400,
+      issuesToFieldErrors(parsed.error.issues),
     );
   }
 
@@ -61,10 +57,7 @@ export async function POST(request: Request) {
   } = await supabase.auth.getUser();
 
   if (userError || !user) {
-    return NextResponse.json(
-      { message: "Rapor gonderebilmek icin giris yapmalisin." },
-      { status: 401 },
-    );
+    return apiError(API_ERROR_CODES.UNAUTHORIZED, "Rapor göndermek için giriş yapmalısın.", 401);
   }
 
   const userRateLimit = enforceRateLimit(
@@ -79,14 +72,11 @@ export async function POST(request: Request) {
   const listing = await getStoredListingById(parsed.data.listingId);
 
   if (!listing) {
-    return NextResponse.json({ message: "Raporlanacak ilan bulunamadi." }, { status: 404 });
+    return apiError(API_ERROR_CODES.NOT_FOUND, "Raporlanacak ilan bulunamadı.", 404);
   }
 
   if (listing.sellerId === user.id) {
-    return NextResponse.json(
-      { message: "Kendi ilanini raporlayamazsin." },
-      { status: 400 },
-    );
+    return apiError(API_ERROR_CODES.FORBIDDEN, "Kendi ilanını raporlayamazsın.", 403);
   }
 
   await ensureProfileRecord(user);
@@ -104,19 +94,19 @@ export async function POST(request: Request) {
   );
 
   if (!persistedReport) {
-    return NextResponse.json(
-      { message: "Rapor kaydedilemedi. Lutfen tekrar dene." },
-      { status: 500 },
-    );
+    return apiError(API_ERROR_CODES.INTERNAL_ERROR, "Rapor kaydedilemedi. Lütfen tekrar dene.", 500);
   }
 
-  return NextResponse.json({
-    report: {
-      id: persistedReport.id,
-      status: persistedReport.status,
+  return apiSuccess(
+    {
+      report: {
+        id: persistedReport.id,
+        status: persistedReport.status,
+      },
     },
-    message: activeDatabaseReport
-      ? "Ayni ilan icin acik raporun guncellendi."
-      : "Raporun inceleme sirasina alindi.",
-  });
+    activeDatabaseReport
+      ? "Aynı ilan için açık raporun güncellendi."
+      : "Raporun inceleme sırasına alındı.",
+    201,
+  );
 }

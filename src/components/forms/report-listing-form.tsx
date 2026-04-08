@@ -60,11 +60,11 @@ export function ReportListingForm({ listingId, sellerId, userId }: ReportListing
         },
         method: "POST",
       });
-      const payload = (await response.json().catch(() => null)) as { message?: string } | null;
+      const payload = await response.json().catch(() => null) as { success?: boolean; error?: { message: string }; data?: { message?: string } } | null;
 
-      if (!response.ok) {
+      if (!response.ok || !payload?.success) {
         setSubmitState({
-          message: payload?.message ?? "Rapor gonderilemedi.",
+          message: payload?.error?.message ?? "Rapor gönderilemedi.",
           status: "error",
         });
         return;
@@ -72,12 +72,12 @@ export function ReportListingForm({ listingId, sellerId, userId }: ReportListing
 
       setDescription("");
       setSubmitState({
-        message: payload?.message ?? "Raporun incelemeye alindi.",
+        message: payload?.data?.message ?? "Raporun incelemeye alındı.",
         status: "success",
       });
     } catch {
       setSubmitState({
-        message: "Baglanti sirasinda bir hata olustu. Lutfen tekrar dene.",
+        message: "Bağlantı sırasında bir hata oluştu. Lütfen tekrar dene.",
         status: "error",
       });
     } finally {

@@ -1,5 +1,3 @@
-import { NextResponse } from "next/server";
-
 import { requireAdminUser } from "@/lib/auth/session";
 import { createAdminModerationAction } from "@/services/admin/moderation-actions";
 import {
@@ -9,6 +7,7 @@ import { rateLimitProfiles } from "@/lib/utils/rate-limit";
 import { checkRateLimit } from "@/lib/utils/rate-limit-middleware";
 import { headers } from "next/headers";
 import { sanitizeText } from "@/lib/utils/sanitize";
+import { apiSuccess, apiError, API_ERROR_CODES } from "@/lib/utils/api-response";
 
 async function getClientIp() {
   const headersList = await headers();
@@ -24,10 +23,7 @@ export async function POST(
   const ipRateLimit = checkRateLimit(`admin:moderate:${getClientIp()}`, rateLimitProfiles.adminModerate);
 
   if (!ipRateLimit.allowed) {
-    return NextResponse.json(
-      { message: "Cok fazla moderasyon istegi. Lutfen bekle." },
-      { status: 429, headers: { "Retry-After": "60" } },
-    );
+    return apiError(API_ERROR_CODES.RATE_LIMITED, "Çok fazla moderasyon isteği. Lütfen bekle.", 429);
   }
 
   const adminUser = await requireAdminUser();
@@ -37,7 +33,7 @@ export async function POST(
   try {
     body = await request.json();
   } catch {
-    return NextResponse.json({ message: "Moderasyon istegi okunamadi." }, { status: 400 });
+    return apiError(API_ERROR_CODES.BAD_REQUEST, "Moderasyon isteği okunamadı.", 400);
   }
 
   const action =
@@ -47,14 +43,11 @@ export async function POST(
   const note = rawNote ? sanitizeText(rawNote) : "";
 
   if (action !== "approve" && action !== "reject") {
-    return NextResponse.json({ message: "Gecersiz moderasyon aksiyonu." }, { status: 400 });
+    return apiError(API_ERROR_CODES.BAD_REQUEST, "Geçersiz moderasyon aksiyonu.", 400);
   }
 
   if (note.length > 0 && note.length < 3) {
-    return NextResponse.json(
-      { message: "Moderasyon notu girersen en az 3 karakter olmali." },
-      { status: 400 },
-    );
+    return apiError(API_ERROR_CODES.BAD_REQUEST, "Moderasyon notu girersen en az 3 karakter olmalı.", 400);
   }
 
   const { listingId } = await context.params;
@@ -64,7 +57,7 @@ export async function POST(
   );
 
   if (!persistedListing) {
-    return NextResponse.json({ message: "Incelenecek ilan bulunamadi." }, { status: 404 });
+    return apiError(API_ERROR_CODES.NOT_FOUND, "İncelenecek ilan bulunamadı.", 404);
   }
 
   await createAdminModerationAction({
@@ -73,18 +66,19 @@ export async function POST(
     note:
       note ||
       (action === "approve"
-        ? `${persistedListing.title} ilani onaylandi.`
-        : `${persistedListing.title} ilani reddedildi.`),
+        ? `${persistedListing.title} ilanı onaylandı.`
+        : `${persistedListing.title} ilanı reddedildi.`),
     targetId: persistedListing.id,
     targetType: "listing",
   });
 
-  return NextResponse.json({
-    listing: {
-      id: persistedListing.id,
-      status: persistedListing.status,
+  return apiSuccess(
+    {
+      listing: {
+        id: persistedListing.id,
+        status: persistedListing.status,
+      },
     },
-    message: action === "approve" ? "Ilan onaylandi." : "Ilan reddedildi.",
-  });
+    action === "approve" ? "İlan onaylandı." : "İlan reddedildi.",
+  );
 }
-

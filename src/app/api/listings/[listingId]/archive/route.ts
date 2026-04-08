@@ -1,8 +1,8 @@
 import { cookies } from "next/headers";
-import { NextResponse } from "next/server";
 
 import { hasSupabaseEnv } from "@/lib/supabase/env";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { apiSuccess, apiError, API_ERROR_CODES } from "@/lib/utils/api-response";
 import {
   archiveStoredListing,
   archiveDatabaseListing,
@@ -19,12 +19,10 @@ export async function POST(
   context: { params: Promise<{ listingId: string }> },
 ) {
   if (!hasSupabaseEnv()) {
-    return NextResponse.json(
-      {
-        message:
-          "Supabase ortam degiskenleri eksik. Ilan arsivlemek icin .env.local dosyasini tamamlamalisin.",
-      },
-      { status: 503 },
+    return apiError(
+      API_ERROR_CODES.SERVICE_UNAVAILABLE,
+      "Supabase ortam değişkenleri eksik. İlan arşivlemek için .env.local dosyasını tamamlamalısın.",
+      503,
     );
   }
 
@@ -35,10 +33,7 @@ export async function POST(
   } = await supabase.auth.getUser();
 
   if (userError || !user) {
-    return NextResponse.json(
-      { message: "Oturum dogrulanamadi. Lutfen tekrar giris yap." },
-      { status: 401 },
-    );
+    return apiError(API_ERROR_CODES.UNAUTHORIZED, "Oturum doğrulanamadı. Lütfen tekrar giriş yap.", 401);
   }
 
   const { listingId } = await context.params;
@@ -46,35 +41,36 @@ export async function POST(
   const archivableListing = await findArchivableListingById(listingId, user.id);
 
   if (!archivableListing) {
-    return NextResponse.json(
-      { message: "Arsivlenecek ilan bulunamadi." },
-      { status: 404 },
-    );
+    return apiError(API_ERROR_CODES.NOT_FOUND, "Arşivlenecek ilan bulunamadı.", 404);
   }
 
   const persistedListing = await archiveDatabaseListing(listingId);
 
   if (persistedListing) {
-    return NextResponse.json({
-      listing: {
-        id: persistedListing.id,
-        status: persistedListing.status,
+    return apiSuccess(
+      {
+        listing: {
+          id: persistedListing.id,
+          status: persistedListing.status,
+        },
       },
-      message: "Ilan arsive alindi.",
-    });
+      "İlan arşive alındı.",
+    );
   }
 
   const archivedListing = archiveStoredListing(archivableListing);
   const cookieStore = await cookies();
   const cookieListings = parseStoredListings(cookieStore.get(listingSubmissionsCookieName)?.value);
 
-  const response = NextResponse.json({
-    listing: {
-      id: archivedListing.id,
-      status: archivedListing.status,
+  const response = apiSuccess(
+    {
+      listing: {
+        id: archivedListing.id,
+        status: archivedListing.status,
+      },
     },
-    message: "Ilan arsive alindi.",
-  });
+    "İlan arşive alındı.",
+  );
 
   response.cookies.set(
     listingSubmissionsCookieName,

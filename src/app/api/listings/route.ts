@@ -9,6 +9,7 @@ import { sanitizeText, sanitizeDescription } from "@/lib/utils/sanitize";
 import { issuesToFieldErrors } from "@/lib/utils/validation-helpers";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { listingCreateFormSchema, listingCreateSchema } from "@/lib/validators";
+import { apiSuccess, apiError, API_ERROR_CODES } from "@/lib/utils/api-response";
 import {
   buildPendingListing,
   createDatabaseListing,
@@ -26,12 +27,10 @@ export async function POST(request: Request) {
   }
 
   if (!hasSupabaseEnv()) {
-    return NextResponse.json(
-      {
-        message:
-          "Supabase ortam değişkenleri eksik. İlan oluşturmak için .env.local dosyasını tamamlamalısın.",
-      },
-      { status: 503 },
+    return apiError(
+      API_ERROR_CODES.SERVICE_UNAVAILABLE,
+      "Supabase ortam değişkenleri eksik. İlan oluşturmak için .env.local dosyasını tamamlamalısın.",
+      503,
     );
   }
 
@@ -40,21 +39,17 @@ export async function POST(request: Request) {
   try {
     body = await request.json();
   } catch {
-    return NextResponse.json(
-      { message: "Gönderilen form verisi okunamadı. Lütfen tekrar dene." },
-      { status: 400 },
-    );
+    return apiError(API_ERROR_CODES.BAD_REQUEST, "Gönderilen form verisi okunamadı. Lütfen tekrar dene.", 400);
   }
 
   const parsedFormValues = listingCreateFormSchema.safeParse(body);
 
   if (!parsedFormValues.success) {
-    return NextResponse.json(
-      {
-        message: parsedFormValues.error.issues[0]?.message ?? "Form alanlarını kontrol et.",
-        fieldErrors: issuesToFieldErrors(parsedFormValues.error.issues),
-      },
-      { status: 400 },
+    return apiError(
+      API_ERROR_CODES.VALIDATION_ERROR,
+      parsedFormValues.error.issues[0]?.message ?? "Form alanlarını kontrol et.",
+      400,
+      issuesToFieldErrors(parsedFormValues.error.issues),
     );
   }
 
@@ -65,10 +60,7 @@ export async function POST(request: Request) {
   } = await supabase.auth.getUser();
 
   if (userError || !user) {
-    return NextResponse.json(
-      { message: "Oturum doğrulanamadı. Lütfen tekrar giriş yap." },
-      { status: 401 },
-    );
+    return apiError(API_ERROR_CODES.UNAUTHORIZED, "Oturum doğrulanamadı. Lütfen tekrar giriş yap.", 401);
   }
 
   const userRateLimit = enforceRateLimit(
@@ -101,12 +93,11 @@ export async function POST(request: Request) {
   const parsedListingInput = listingCreateSchema.safeParse(normalizedInput);
 
   if (!parsedListingInput.success) {
-    return NextResponse.json(
-      {
-        message: parsedListingInput.error.issues[0]?.message ?? "İlan bilgileri doğrulanamadı.",
-        fieldErrors: issuesToFieldErrors(parsedListingInput.error.issues),
-      },
-      { status: 400 },
+    return apiError(
+      API_ERROR_CODES.VALIDATION_ERROR,
+      parsedListingInput.error.issues[0]?.message ?? "İlan bilgileri doğrulanamadı.",
+      400,
+      issuesToFieldErrors(parsedListingInput.error.issues),
     );
   }
 
@@ -115,22 +106,27 @@ export async function POST(request: Request) {
   const createdListing = buildPendingListing(parsedListingInput.data, user.id, [
     ...exampleListings,
   ]);
-  const persistedListing = await createDatabaseListing(createdListing);
+  const result = await createDatabaseListing(createdListing);
 
-  if (persistedListing) {
-    return NextResponse.json({
-      message: "İlanın kaydedildi ve moderasyon incelemesine gönderildi.",
-      listing: {
-        id: persistedListing.id,
-        slug: persistedListing.slug,
-        status: persistedListing.status,
-        title: persistedListing.title,
-      },
-    });
+  if (result.error === "slug_collision") {
+    return apiError(API_ERROR_CODES.BAD_REQUEST, "Bu başlıkla bir ilan zaten mevcut. Lütfen başlığı değiştir.", 409);
   }
 
-  return NextResponse.json(
-    { message: "İlan kaydedilemedi. Lütfen tekrar dene." },
-    { status: 500 },
-  );
+  if (result.listing) {
+    return apiSuccess(
+      {
+        message: "İlanın kaydedildi ve moderasyon incelemesine gönderildi.",
+        listing: {
+          id: result.listing.id,
+          slug: result.listing.slug,
+          status: result.listing.status,
+          title: result.listing.title,
+        },
+      },
+      undefined,
+      201,
+    );
+  }
+
+  return apiError(API_ERROR_CODES.INTERNAL_ERROR, "İlan kaydedilemedi. Lütfen tekrar dene.", 500);
 }

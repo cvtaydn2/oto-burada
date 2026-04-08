@@ -532,12 +532,46 @@ Her yeni geliştirme başlamadan önce okunmalıdır.
 - **Durum:** ✅ Tamamlandı
 
 ### E-11: CASCADE Policy Review
-- **Çözüm:** DB'de review gerekli, schema.sql'de değişiklik lazım.
-- **Durum:** ⏸️ Manuel DB review gerekli
+- **Çözüm:** schema.sql'de tüm foreign key'ler için `ON DELETE CASCADE` tanımlandı. İlan silindiğinde ilişkili kayıtlar (listing_images, favorites, reports) otomatik olarak silinir.
+- **Dosya:** `schema.sql`
+- **Durum:** ✅ Tamamlandı
 
 ### E-12: Archived Listing Update Prevention
-- **Çözüm:** Archive status kontrolü PATCH endpoint'ine eklenebilir.
-- **Durum:** ⏸️ Sonraki aşamada
+- **Çözüm:** PATCH endpoint'ine archived durumu kontrolü eklendi — arşivlenmiş ilanlar artık güncellenemez.
+- **Dosya:** `src/app/api/listings/[listingId]/route.ts`
+- **Durum:** ✅ Tamamlandı
+
+### E-05: Slug Collision Retry
+- **Çözüm:** Slug çakışması durumunda 409 Conflict yanıtı ile kullanıcıya bilgi mesajı gösteriliyor.
+- **Dosyalar:** `src/services/listings/listing-submissions.ts`, `src/app/api/listings/route.ts`, `src/app/api/listings/[listingId]/route.ts`
+- **Durum:** ✅ Tamamlandı
+
+### Phase 8 — Domain & Security Improvements
+- **Amaç:** Domain katmanı güçlendirme ve güvenlik iyileştirmeleri.
+- **Yapılanlar:**
+  - `src/domain/guards.ts` ile authorization guard'ları merkeziye taşındı.
+  - `src/domain/usecases/` altında use-case yapısı güçlendirildi.
+  - Arşivlenmiş ilan güncelleme önleme (E-12) eklendi.
+  - Slug çakışma hata yönetimi (E-05) iyileştirildi.
+  - API Response standardizasyonu tüm endpoint'lere uygulandı.
+  - Dosya adı sanitization (path traversal koruması) eklendi.
+  - CASCADE policy review tamamlandı.
+
+### Phase 9 — Client-Side Improvements
+- **Amaç:** Frontend deneyimini iyileştirme ve tutarlılık sağlamak.
+- **Yapılanlar:**
+  - `src/lib/utils/api-client.ts` ile standart API istemci wrapper'ı eklendi.
+  - Frontend bileşenleri yeni API response formatına uyumlu hale getirildi:
+    - `listing-create-form.tsx` - image upload ve form submission
+    - `favorites-provider.tsx` - favori yönetimi
+    - `admin-listings-moderation.tsx` - ilan moderasyonu
+    - `admin-reports-moderation.tsx` - rapor moderasyonu
+    - `report-listing-form.tsx` - rapor gönderimi
+  - Error boundary bileşeni eklendi (`src/components/shared/error-boundary.tsx`).
+  - SEO için JSON-LD structured data bileşenleri eklendi.
+- **Sonraki adımlar:**
+  - Performans optimizasyonları (lazy loading, code splitting).
+  - Mobil UX iyileştirmeleri.
 
 ---
 

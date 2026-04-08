@@ -87,6 +87,6 @@ Bu bölüm backend geliştirmelerine bağımlı UI güncellemelerini takip eder.
 | E-08 | Admin Role - app_metadata | ✅ |
 | E-09 | Structured Error Logging (logger.ts mevcut) | ✅ |
 | E-10 | Security Headers (X-Content-Type, X-Frame-Options, etc.) | ✅ |
-| E-05 | Slug Collision Retry | ⏸️ DB constraint mevcut |
+| E-05 | Slug Collision Retry | ✅ | 409 Conflict yanıtı ile kullanıcı bilgilendirme |
 | E-11 | CASCADE Policy Review | ⏸️ Manuel DB review |
-| E-12 | Archived Listing Update Prevention | ⏸️ Sonraki aşamada |
+| E-12 | Archived Listing Update Prevention | ✅ | Arşivlenmiş ilanlar güncellenemez |

@@ -1,7 +1,6 @@
-import { NextResponse } from "next/server";
-
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { hasSupabaseEnv, hasSupabaseAdminEnv } from "@/lib/supabase/env";
+import { apiSuccess, apiError, API_ERROR_CODES } from "@/lib/utils/api-response";
 import {
   addDatabaseFavorite,
   getDatabaseFavoriteIds,
@@ -38,38 +37,38 @@ async function getAuthenticatedUser() {
 
 export async function GET() {
   if (!hasSupabaseEnv()) {
-    return NextResponse.json({ favoriteIds: [] });
+    return apiSuccess({ favoriteIds: [] });
   }
 
   const user = await getAuthenticatedUser();
 
   if (!user) {
-    return NextResponse.json({ favoriteIds: [] });
+    return apiSuccess({ favoriteIds: [] });
   }
 
   if (!hasSupabaseAdminEnv()) {
-    return NextResponse.json({ favoriteIds: [] });
+    return apiSuccess({ favoriteIds: [] });
   }
 
   await ensureProfileRecord(user);
   const favoriteIds = (await getDatabaseFavoriteIds(user.id)) ?? [];
 
-  return NextResponse.json({ favoriteIds });
+  return apiSuccess({ favoriteIds });
 }
 
 export async function POST(request: Request) {
   if (!hasSupabaseEnv()) {
-    return NextResponse.json({ message: "Servis暂时不可用." }, { status: 503 });
+    return apiError(API_ERROR_CODES.SERVICE_UNAVAILABLE, "Servis kullanılamıyor.", 503);
   }
 
   const user = await getAuthenticatedUser();
 
   if (!user) {
-    return NextResponse.json({ message: "Favori eklemek icin giris yapmalisin." }, { status: 401 });
+    return apiError(API_ERROR_CODES.UNAUTHORIZED, "Favori eklemek için giriş yapmalısın.", 401);
   }
 
   if (!hasSupabaseAdminEnv()) {
-    return NextResponse.json({ message: "Servis暂时不可用." }, { status: 503 });
+    return apiError(API_ERROR_CODES.SERVICE_UNAVAILABLE, "Servis kullanılamıyor.", 503);
   }
 
   let body: unknown;
@@ -77,13 +76,13 @@ export async function POST(request: Request) {
   try {
     body = await request.json();
   } catch {
-    return NextResponse.json({ message: "Favori istegi okunamadi." }, { status: 400 });
+    return apiError(API_ERROR_CODES.BAD_REQUEST, "Favori isteği okunamadı.", 400);
   }
 
   const listingId = getListingIdFromBody(body);
 
   if (!listingId) {
-    return NextResponse.json({ message: "Gecerli bir ilan secmelisin." }, { status: 400 });
+    return apiError(API_ERROR_CODES.BAD_REQUEST, "Geçerli bir ilan seçmelisin.", 400);
   }
 
   const listingExists = await checkListingExistsById(listingId);
@@ -92,7 +91,7 @@ export async function POST(request: Request) {
     const { exampleListings } = await import("@/data");
     const existsInSeed = exampleListings.some((l) => l.id === listingId);
     if (!existsInSeed) {
-      return NextResponse.json({ message: "Favoriye eklenecek ilan bulunamadi." }, { status: 404 });
+      return apiError(API_ERROR_CODES.NOT_FOUND, "Favoriye eklenecek ilan bulunamadı.", 404);
     }
   }
 
@@ -100,25 +99,25 @@ export async function POST(request: Request) {
   const favoriteIds = await addDatabaseFavorite(user.id, listingId);
 
   if (!favoriteIds) {
-    return NextResponse.json({ message: "Favori eklenemedi." }, { status: 500 });
+    return apiError(API_ERROR_CODES.INTERNAL_ERROR, "Favori eklenemedi.", 500);
   }
 
-  return NextResponse.json({ favoriteIds, message: "Ilan favorilere eklendi." });
+  return apiSuccess({ favoriteIds }, "İlan favorilere eklendi.");
 }
 
 export async function DELETE(request: Request) {
   if (!hasSupabaseEnv()) {
-    return NextResponse.json({ message: "Servis暂时不可用." }, { status: 503 });
+    return apiError(API_ERROR_CODES.SERVICE_UNAVAILABLE, "Servis kullanılamıyor.", 503);
   }
 
   const user = await getAuthenticatedUser();
 
   if (!user) {
-    return NextResponse.json({ message: "Favori guncellemek icin giris yapmalisin." }, { status: 401 });
+    return apiError(API_ERROR_CODES.UNAUTHORIZED, "Favori güncellemek için giriş yapmalısın.", 401);
   }
 
   if (!hasSupabaseAdminEnv()) {
-    return NextResponse.json({ message: "Servis暂时不可用." }, { status: 503 });
+    return apiError(API_ERROR_CODES.SERVICE_UNAVAILABLE, "Servis kullanılamıyor.", 503);
   }
 
   let body: unknown;
@@ -126,21 +125,21 @@ export async function DELETE(request: Request) {
   try {
     body = await request.json();
   } catch {
-    return NextResponse.json({ message: "Favori istegi okunamadi." }, { status: 400 });
+    return apiError(API_ERROR_CODES.BAD_REQUEST, "Favori isteği okunamadı.", 400);
   }
 
   const listingId = getListingIdFromBody(body);
 
   if (!listingId) {
-    return NextResponse.json({ message: "Gecerli bir ilan secmelisin." }, { status: 400 });
+    return apiError(API_ERROR_CODES.BAD_REQUEST, "Geçerli bir ilan seçmelisin.", 400);
   }
 
   await ensureProfileRecord(user);
   const favoriteIds = await removeDatabaseFavorite(user.id, listingId);
 
   if (!favoriteIds) {
-    return NextResponse.json({ message: "Favori kaldirilamadi." }, { status: 500 });
+    return apiError(API_ERROR_CODES.INTERNAL_ERROR, "Favori kaldırılamadı.", 500);
   }
 
-  return NextResponse.json({ favoriteIds, message: "Ilan favorilerden kaldirildi." });
+  return apiSuccess({ favoriteIds }, "İlan favorilerden kaldırıldı.");
 }

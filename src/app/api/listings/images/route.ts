@@ -1,14 +1,20 @@
-import { NextResponse } from "next/server";
-
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { getSupabaseStorageEnv, hasSupabaseStorageEnv } from "@/lib/supabase/env";
 import { rateLimitProfiles } from "@/lib/utils/rate-limit";
 import { enforceRateLimit, getRateLimitKey, getUserRateLimitKey } from "@/lib/utils/rate-limit-middleware";
+import { apiSuccess, apiError, API_ERROR_CODES } from "@/lib/utils/api-response";
 import {
   buildListingImageStoragePath,
   validateListingImageFile,
 } from "@/services/listings/listing-images";
+
+function sanitizeFileName(fileName: string): string {
+  return fileName
+    .replace(/[^a-zA-Z0-9._-]/g, "_")
+    .replace(/\.+/g, ".")
+    .substring(0, 200);
+}
 
 function userOwnsStoragePath(userId: string, storagePath: string) {
   return storagePath.startsWith(`listings/${userId}/`);
@@ -25,12 +31,10 @@ export async function POST(request: Request) {
   }
 
   if (!hasSupabaseStorageEnv()) {
-    return NextResponse.json(
-      {
-        message:
-          "Supabase Storage ortam degiskenleri eksik. Yukleme icin .env.local dosyasini tamamlamalisin.",
-      },
-      { status: 503 },
+    return apiError(
+      API_ERROR_CODES.SERVICE_UNAVAILABLE,
+      "Supabase Storage ortam değişkenleri eksik. Yükleme için .env.local dosyasını tamamlamalısın.",
+      503,
     );
   }
 
@@ -41,10 +45,7 @@ export async function POST(request: Request) {
   } = await supabase.auth.getUser();
 
   if (userError || !user) {
-    return NextResponse.json(
-      { message: "Oturum dogrulanamadi. Lutfen tekrar giris yap." },
-      { status: 401 },
-    );
+    return apiError(API_ERROR_CODES.UNAUTHORIZED, "Oturum doğrulanamadı. Lütfen tekrar giriş yap.", 401);
   }
 
   const userRateLimit = enforceRateLimit(
@@ -60,21 +61,19 @@ export async function POST(request: Request) {
   const file = formData.get("file");
 
   if (!(file instanceof File)) {
-    return NextResponse.json(
-      { message: "Yuklenecek fotograf bulunamadi." },
-      { status: 400 },
-    );
+    return apiError(API_ERROR_CODES.BAD_REQUEST, "Yüklenecek fotoğraf bulunamadı.", 400);
   }
 
   const validationError = validateListingImageFile(file);
 
   if (validationError) {
-    return NextResponse.json({ message: validationError }, { status: 400 });
+    return apiError(API_ERROR_CODES.BAD_REQUEST, validationError, 400);
   }
 
+  const sanitizedFileName = sanitizeFileName(file.name);
   const { listingsBucket } = getSupabaseStorageEnv();
   const adminClient = createSupabaseAdminClient();
-  const storagePath = buildListingImageStoragePath(user.id, file.name);
+  const storagePath = buildListingImageStoragePath(user.id, sanitizedFileName);
   const uploadResult = await adminClient.storage.from(listingsBucket).upload(storagePath, file, {
     cacheControl: "3600",
     contentType: file.type,
@@ -82,36 +81,34 @@ export async function POST(request: Request) {
   });
 
   if (uploadResult.error) {
-    return NextResponse.json(
-      { message: "Fotograf yuklenemedi. Lutfen tekrar dene." },
-      { status: 500 },
-    );
+    return apiError(API_ERROR_CODES.INTERNAL_ERROR, "Fotoğraf yüklenemedi. Lütfen tekrar dene.", 500);
   }
 
   const {
     data: { publicUrl },
   } = adminClient.storage.from(listingsBucket).getPublicUrl(storagePath);
 
-  return NextResponse.json({
-    image: {
-      fileName: file.name,
-      mimeType: file.type,
-      size: file.size,
-      storagePath,
-      url: publicUrl,
+  return apiSuccess(
+    {
+      image: {
+        fileName: sanitizedFileName,
+        mimeType: file.type,
+        size: file.size,
+        storagePath,
+        url: publicUrl,
+      },
     },
-    message: "Fotograf yuklendi.",
-  });
+    "Fotoğraf yüklendi.",
+    201,
+  );
 }
 
 export async function DELETE(request: Request) {
   if (!hasSupabaseStorageEnv()) {
-    return NextResponse.json(
-      {
-        message:
-          "Supabase Storage ortam degiskenleri eksik. Fotograf silmek icin .env.local dosyasini tamamlamalisin.",
-      },
-      { status: 503 },
+    return apiError(
+      API_ERROR_CODES.SERVICE_UNAVAILABLE,
+      "Supabase Storage ortam değişkenleri eksik. Fotoğraf silmek için .env.local dosyasını tamamlamalısın.",
+      503,
     );
   }
 
@@ -122,10 +119,7 @@ export async function DELETE(request: Request) {
   } = await supabase.auth.getUser();
 
   if (userError || !user) {
-    return NextResponse.json(
-      { message: "Oturum dogrulanamadi. Lutfen tekrar giris yap." },
-      { status: 401 },
-    );
+    return apiError(API_ERROR_CODES.UNAUTHORIZED, "Oturum doğrulanamadı. Lütfen tekrar giriş yap.", 401);
   }
 
   let body: unknown;
@@ -133,7 +127,7 @@ export async function DELETE(request: Request) {
   try {
     body = await request.json();
   } catch {
-    return NextResponse.json({ message: "Silme istegi okunamadi." }, { status: 400 });
+    return apiError(API_ERROR_CODES.BAD_REQUEST, "Silme isteği okunamadı.", 400);
   }
 
   const storagePath =
@@ -142,10 +136,7 @@ export async function DELETE(request: Request) {
       : "";
 
   if (!storagePath || !userOwnsStoragePath(user.id, storagePath)) {
-    return NextResponse.json(
-      { message: "Fotograf yolu gecersiz." },
-      { status: 400 },
-    );
+    return apiError(API_ERROR_CODES.BAD_REQUEST, "Fotoğraf yolu geçersiz.", 400);
   }
 
   const { listingsBucket } = getSupabaseStorageEnv();
@@ -153,11 +144,8 @@ export async function DELETE(request: Request) {
   const removeResult = await adminClient.storage.from(listingsBucket).remove([storagePath]);
 
   if (removeResult.error) {
-    return NextResponse.json(
-      { message: "Fotograf silinemedi. Lutfen tekrar dene." },
-      { status: 500 },
-    );
+    return apiError(API_ERROR_CODES.INTERNAL_ERROR, "Fotoğraf silinemedi. Lütfen tekrar dene.", 500);
   }
 
-  return NextResponse.json({ message: "Fotograf kaldirildi." });
+  return apiSuccess(null, "Fotoğraf kaldırıldı.");
 }

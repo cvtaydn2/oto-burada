@@ -54,10 +54,10 @@ export function AdminListingsModeration({ pendingListings }: AdminListingsModera
         },
         method: "POST",
       });
-      const payload = (await response.json().catch(() => null)) as { message?: string } | null;
+      const payload = await response.json().catch(() => null) as { success?: boolean; error?: { message: string } } | null;
 
-      if (!response.ok) {
-        setErrorMessage(payload?.message ?? "Moderasyon islemi tamamlanamadi.");
+      if (!response.ok || !payload?.success) {
+        setErrorMessage(payload?.error?.message ?? "Moderasyon işlemi tamamlanamadı.");
         return;
       }
 
@@ -67,7 +67,7 @@ export function AdminListingsModeration({ pendingListings }: AdminListingsModera
       }));
       router.refresh();
     } catch {
-      setErrorMessage("Baglanti sirasinda bir hata olustu. Lutfen tekrar dene.");
+      setErrorMessage("Bağlantı sırasında bir hata oluştu. Lütfen tekrar dene.");
     } finally {
       setActiveAction(null);
     }

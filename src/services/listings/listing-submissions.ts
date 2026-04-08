@@ -437,16 +437,24 @@ function mergeListings(primary: Listing[], secondary: Listing[]) {
   return [...listingMap.values()];
 }
 
-export async function createDatabaseListing(listing: Listing) {
+interface CreateListingResult {
+  listing?: Listing;
+  error?: "slug_collision" | "database_error" | null;
+}
+
+export async function createDatabaseListing(listing: Listing): Promise<CreateListingResult> {
   if (!hasSupabaseAdminEnv()) {
-    return null;
+    return { error: "database_error" };
   }
 
   const admin = createSupabaseAdminClient();
   const insertResult = await admin.from("listings").insert(mapListingToDatabaseRow(listing));
 
   if (insertResult.error) {
-    return null;
+    if (insertResult.error.message.includes("slug_unique") || insertResult.error.code === "23505") {
+      return { error: "slug_collision" };
+    }
+    return { error: "database_error" };
   }
 
   const imageRows = mapListingImagesToDatabaseRows(listing);
@@ -456,16 +464,22 @@ export async function createDatabaseListing(listing: Listing) {
 
     if (imageInsertResult.error) {
       await admin.from("listings").delete().eq("id", listing.id);
-      return null;
+      return { error: "database_error" };
     }
   }
 
-  return (await getDatabaseListings({ listingId: listing.id }))?.[0] ?? null;
+  const createdListing = (await getDatabaseListings({ listingId: listing.id }))?.[0];
+  return { listing: createdListing };
 }
 
-export async function updateDatabaseListing(listing: Listing) {
+interface UpdateListingResult {
+  listing?: Listing | null;
+  error?: "slug_collision" | "database_error" | null;
+}
+
+export async function updateDatabaseListing(listing: Listing): Promise<UpdateListingResult> {
   if (!hasSupabaseAdminEnv()) {
-    return null;
+    return { error: "database_error" };
   }
 
   const admin = createSupabaseAdminClient();
@@ -475,13 +489,16 @@ export async function updateDatabaseListing(listing: Listing) {
     .eq("id", listing.id);
 
   if (updateResult.error) {
-    return null;
+    if (updateResult.error.message.includes("slug_unique") || updateResult.error.code === "23505") {
+      return { error: "slug_collision" };
+    }
+    return { error: "database_error" };
   }
 
   const deleteImagesResult = await admin.from("listing_images").delete().eq("listing_id", listing.id);
 
   if (deleteImagesResult.error) {
-    return null;
+    return { error: "database_error" };
   }
 
   const imageRows = mapListingImagesToDatabaseRows(listing);
@@ -490,11 +507,12 @@ export async function updateDatabaseListing(listing: Listing) {
     const imageInsertResult = await admin.from("listing_images").insert(imageRows);
 
     if (imageInsertResult.error) {
-      return null;
+      return { error: "database_error" };
     }
   }
 
-  return (await getDatabaseListings({ listingId: listing.id }))?.[0] ?? null;
+  const updatedListing = (await getDatabaseListings({ listingId: listing.id }))?.[0];
+  return { listing: updatedListing };
 }
 
 export async function archiveDatabaseListing(listingId: string) {
