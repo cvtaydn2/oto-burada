@@ -30,22 +30,27 @@ function mapProfileRow(row: ProfileRow) {
 }
 
 export function buildProfileFromAuthUser(user: User) {
-  const metadata = user.user_metadata as {
+  const userMetadata = user.user_metadata as {
     avatar_url?: string;
     city?: string;
     full_name?: string;
     phone?: string;
     role?: string;
   };
+  const appMetadata = user.app_metadata as {
+    role?: string;
+  };
   const timestamp = new Date().toISOString();
+  const resolvedRole =
+    appMetadata.role === "admin" || userMetadata.role === "admin" ? "admin" : "user";
 
   const rawProfile = {
     id: user.id,
-    fullName: metadata.full_name ?? "",
-    phone: metadata.phone ?? "",
-    city: metadata.city ?? "",
-    avatarUrl: metadata.avatar_url ?? null,
-    role: (metadata.role === "admin" ? "admin" : "user") as Profile["role"],
+    fullName: userMetadata.full_name ?? "",
+    phone: userMetadata.phone ?? "",
+    city: userMetadata.city ?? "",
+    avatarUrl: userMetadata.avatar_url ?? null,
+    role: resolvedRole as Profile["role"],
     createdAt: user.created_at ?? timestamp,
     updatedAt: timestamp,
   };

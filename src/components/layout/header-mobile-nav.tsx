@@ -9,10 +9,11 @@ interface HeaderMobileNavProps {
   user: User | null;
   isAdmin: boolean;
   accountHref: string;
+  favoritesHref: string;
   postListingHref: string;
 }
 
-export function HeaderMobileNav({ user, isAdmin, accountHref, postListingHref }: HeaderMobileNavProps) {
+export function HeaderMobileNav({ user, isAdmin, accountHref, favoritesHref, postListingHref }: HeaderMobileNavProps) {
   const [isOpen, setIsOpen] = useState(false);
 
   return (
@@ -47,7 +48,7 @@ export function HeaderMobileNav({ user, isAdmin, accountHref, postListingHref }:
                 {user ? "Hesabım" : "Giriş Yap"}
               </Link>
               <Link 
-                href="/dashboard/favorites"
+                href={favoritesHref}
                 onClick={() => setIsOpen(false)}
                 className="flex items-center h-12 px-4 rounded-xl text-sm font-semibold text-slate-700 hover:bg-slate-100 transition-all"
               >

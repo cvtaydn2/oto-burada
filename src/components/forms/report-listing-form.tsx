@@ -60,7 +60,12 @@ export function ReportListingForm({ listingId, sellerId, userId }: ReportListing
         },
         method: "POST",
       });
-      const payload = await response.json().catch(() => null) as { success?: boolean; error?: { message: string }; data?: { message?: string } } | null;
+      const payload = await response.json().catch(() => null) as {
+        success?: boolean;
+        error?: { message: string };
+        message?: string;
+        data?: { message?: string };
+      } | null;
 
       if (!response.ok || !payload?.success) {
         setSubmitState({
@@ -72,7 +77,7 @@ export function ReportListingForm({ listingId, sellerId, userId }: ReportListing
 
       setDescription("");
       setSubmitState({
-        message: payload?.data?.message ?? "Raporun incelemeye alındı.",
+        message: payload?.message ?? "Raporun incelemeye alındı.",
         status: "success",
       });
     } catch {

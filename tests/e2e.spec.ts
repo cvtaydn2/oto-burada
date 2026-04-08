@@ -57,6 +57,18 @@ test.describe("Navigation", () => {
     await page.goto("/compare");
     await expect(page.getByRole("heading", { level: 1 })).toBeVisible({ timeout: 10000 });
   });
+
+  test("should show public favorites page for guests", async ({ page }) => {
+    await page.goto("/");
+    const favoriteButton = page.locator("button[aria-label='Favorilere ekle']:visible").first();
+    await expect(favoriteButton).toBeEnabled({ timeout: 10000 });
+    await favoriteButton.click();
+    await page.goto("/favorites");
+    await expect(page).toHaveURL(/\/favorites/);
+    await expect(page.getByRole("heading", { name: "Kaydettigin ilanlar" })).toBeVisible();
+    await expect(page.getByText("Favorilerin bu cihazda saklanir")).toBeVisible();
+    await expect(page.locator("article").first()).toBeVisible({ timeout: 10000 });
+  });
 });
 
 test.describe("API Endpoints", () => {

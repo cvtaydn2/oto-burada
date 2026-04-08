@@ -15,6 +15,7 @@ import { readFavoriteIds, writeFavoriteIds } from "@/services/favorites/favorite
 interface FavoritesContextValue {
   favoriteIds: string[];
   hydrated: boolean;
+  isAuthenticated: boolean;
   isFavorite: (listingId: string) => boolean;
   toggleFavorite: (listingId: string) => void;
 }
@@ -157,6 +158,7 @@ export function FavoritesProvider({ children, userId }: FavoritesProviderProps) 
     () => ({
       favoriteIds: resolvedFavoriteIds,
       hydrated: resolvedHydrated,
+      isAuthenticated: Boolean(userId),
       isFavorite: (listingId) => resolvedFavoriteIds.includes(listingId),
       toggleFavorite: (listingId) => {
         const nextIds = resolvedFavoriteIds.includes(listingId)

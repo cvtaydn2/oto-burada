@@ -17,7 +17,7 @@ export function FavoriteButton({
   className,
   showGuestHint = true,
 }: FavoriteButtonProps) {
-  const { hydrated, isFavorite, toggleFavorite } = useFavorites();
+  const { hydrated, isAuthenticated, isFavorite, toggleFavorite } = useFavorites();
   const active = hydrated && isFavorite(listingId);
 
   const handleClick = () => {
@@ -40,12 +40,12 @@ export function FavoriteButton({
       >
         <Heart className={cn("size-4", active && "fill-current")} />
       </button>
-      {showGuestHint && (
-        <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-2 bg-slate-900 text-white text-xs rounded-xl whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
-          Favori olarak kaydetmek için giriş yap
+      {showGuestHint && !isAuthenticated && (
+        <div className="absolute bottom-full left-1/2 z-20 mb-2 w-56 -translate-x-1/2 rounded-xl bg-slate-900 px-3 py-2 text-xs text-white opacity-0 shadow-lg transition-opacity group-hover:opacity-100">
+          Bu cihazda kaydedilir. Giriş yaparsan favorilerin tüm cihazlarda senkronize olur.
           <Link
             href="/login"
-            className="ml-2 inline-flex items-center text-indigo-300 hover:text-white"
+            className="mt-2 inline-flex items-center text-indigo-300 hover:text-white"
           >
             <LogIn className="size-3 mr-1" />
             Giriş

@@ -21,7 +21,8 @@ export async function PATCH(
   request: Request,
   context: { params: Promise<{ reportId: string }> },
 ) {
-  const ipRateLimit = checkRateLimit(`admin:report:${getClientIp()}`, rateLimitProfiles.adminModerate);
+  const clientIp = await getClientIp();
+  const ipRateLimit = checkRateLimit(`admin:report:${clientIp}`, rateLimitProfiles.adminModerate);
 
   if (!ipRateLimit.allowed) {
     return apiError(API_ERROR_CODES.RATE_LIMITED, "Çok fazla rapor isteği. Lütfen bekle.", 429);

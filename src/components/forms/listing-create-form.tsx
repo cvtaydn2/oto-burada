@@ -381,6 +381,7 @@ export function ListingCreateForm({ initialListing, initialValues }: ListingCrea
       const payload = await response.json().catch(() => null) as {
         success?: boolean;
         error?: { code: string; message: string; fieldErrors?: Record<string, string> };
+        message?: string;
         data?: { message?: string; listing?: { id: string; slug: string } };
       } | null;
 
@@ -408,7 +409,7 @@ export function ListingCreateForm({ initialListing, initialValues }: ListingCrea
       setUploadStates({});
       reset(buildDefaultValues(initialValues));
       setSubmitState({
-        message: payload?.data?.message ?? "İlanin kaydedildi.",
+        message: payload?.message ?? "İlanin kaydedildi.",
         status: "success",
       });
       if (isEditing) {

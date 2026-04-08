@@ -16,7 +16,7 @@ interface FavoritesPageClientProps {
 
 export function FavoritesPageClient({ listings, userId }: FavoritesPageClientProps) {
   const { favoriteIds, hydrated } = useFavorites();
-  const isGuest = !userId && hydrated;
+  const isGuest = !userId;
 
   const favoriteListings = listings.filter((listing) =>
     favoriteIds.includes(listing.id),
@@ -33,46 +33,67 @@ export function FavoritesPageClient({ listings, userId }: FavoritesPageClientPro
     return <ListingsGridSkeleton count={4} />;
   }
 
-  if (isGuest) {
+  if (favoriteListings.length === 0) {
     return (
-      <div className="rounded-xl border border-amber-200/60 bg-amber-50/50 p-6 text-center">
-        <LogIn className="mx-auto size-8 text-amber-600" />
-        <h2 className="mt-3 text-lg font-semibold">Giriş yapmadınız</h2>
-        <p className="mt-2 text-sm text-muted-foreground">
-          Favorileriniz cihazlar arasında senkronize olması için giriş yapın.
-        </p>
-        <div className="mt-4 flex justify-center gap-2">
+      <div className="space-y-4">
+        {isGuest ? (
+          <div className="rounded-xl border border-amber-200/60 bg-amber-50/50 p-6 text-center">
+            <LogIn className="mx-auto size-8 text-amber-600" />
+            <h2 className="mt-3 text-lg font-semibold">Favorilerin bu cihazda saklanir</h2>
+            <p className="mt-2 text-sm text-muted-foreground">
+              Begendigin ilanlari kalp ikonuyla kaydedebilirsin. Giris yaparsan cihazlar arasinda
+              senkronize edilir.
+            </p>
+            <div className="mt-4 flex justify-center gap-2">
+              <Link
+                href="/login"
+                className="inline-flex h-9 items-center gap-2 rounded-lg bg-primary px-4 text-sm font-medium text-primary-foreground hover:bg-primary/90"
+              >
+                Giriş Yap
+              </Link>
+            </div>
+          </div>
+        ) : null}
+        <div className="rounded-xl border border-dashed border-border p-6 text-center">
+          <Heart className="mx-auto size-8 text-muted-foreground/50" />
+          <h2 className="mt-3 text-lg font-semibold">Favori yok</h2>
+          <p className="mt-2 text-sm text-muted-foreground">
+            {isGuest
+              ? "İlanları inceleyip beğendiklerini bu cihazda kaydedebilirsin."
+              : "İlanları inceleyip beğendiklerinizi kaydedebilirsiniz."}
+          </p>
           <Link
-            href="/login"
-            className="inline-flex h-9 items-center gap-2 rounded-lg bg-primary px-4 text-sm font-medium text-primary-foreground hover:bg-primary/90"
+            href="/listings"
+            className="mt-4 inline-flex h-9 items-center gap-2 rounded-lg bg-primary px-4 text-sm font-medium text-primary-foreground hover:bg-primary/90"
           >
-            Giriş Yap
+            İlanlara Git
           </Link>
         </div>
       </div>
     );
   }
 
-  if (favoriteListings.length === 0) {
-    return (
-      <div className="rounded-xl border border-dashed border-border p-6 text-center">
-        <Heart className="mx-auto size-8 text-muted-foreground/50" />
-        <h2 className="mt-3 text-lg font-semibold">Favori yok</h2>
-        <p className="mt-2 text-sm text-muted-foreground">
-          İlanları inceleyip beğendiklerinizi kaydedebilirsiniz.
-        </p>
-        <Link
-          href="/listings"
-          className="mt-4 inline-flex h-9 items-center gap-2 rounded-lg bg-primary px-4 text-sm font-medium text-primary-foreground hover:bg-primary/90"
-        >
-          İlanlara Git
-        </Link>
-      </div>
-    );
-  }
-
   return (
     <div className="space-y-4">
+      {isGuest ? (
+        <div className="rounded-xl border border-amber-200/60 bg-amber-50/50 p-5">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <p className="text-sm font-semibold text-amber-800">Favorilerin bu cihazda saklanir</p>
+              <p className="mt-1 text-sm text-amber-900/80">
+                Giris yaparsan kaydettigin ilanlar tum cihazlarda senkronize olur.
+              </p>
+            </div>
+            <Link
+              href="/login"
+              className="inline-flex h-9 items-center justify-center gap-2 rounded-lg bg-primary px-4 text-sm font-medium text-primary-foreground hover:bg-primary/90"
+            >
+              Giriş Yap
+            </Link>
+          </div>
+        </div>
+      ) : null}
+
       <div className="grid gap-3 sm:grid-cols-3">
         <div className="rounded-xl border border-border/60 bg-background p-4">
           <div className="text-xs font-medium uppercase text-muted-foreground">

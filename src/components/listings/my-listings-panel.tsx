@@ -32,6 +32,7 @@ const statusClassMap: Record<Listing["status"], string> = {
 export function MyListingsPanel({ activeEditId, listings }: MyListingsPanelProps) {
   const router = useRouter();
   const [archivingId, setArchivingId] = useState<string | null>(null);
+  const [archiveError, setArchiveError] = useState<string | null>(null);
 
   if (listings.length === 0) {
     return (
@@ -47,8 +48,17 @@ export function MyListingsPanel({ activeEditId, listings }: MyListingsPanelProps
 
   const handleArchive = async (listingId: string) => {
     setArchivingId(listingId);
+    setArchiveError(null);
+
     try {
-      await fetch(`/api/listings/${listingId}/archive`, { method: "POST" });
+      const response = await fetch(`/api/listings/${listingId}/archive`, { method: "POST" });
+      const payload = await response.json().catch(() => null) as { success?: boolean; error?: { message: string } } | null;
+
+      if (!response.ok || !payload?.success) {
+        setArchiveError(payload?.error?.message ?? "İlan arşive alınamadı. Lütfen tekrar dene.");
+        return;
+      }
+
       router.refresh();
     } finally {
       setArchivingId(null);
@@ -62,6 +72,12 @@ export function MyListingsPanel({ activeEditId, listings }: MyListingsPanelProps
           {listings.length} ilan
         </h3>
       </div>
+
+      {archiveError ? (
+        <p className="rounded-lg border border-destructive/30 bg-destructive/5 px-3 py-2 text-sm text-destructive">
+          {archiveError}
+        </p>
+      ) : null}
 
       <div className="divide-y divide-border/60">
         {listings.map((listing) => {

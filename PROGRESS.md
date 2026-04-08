@@ -23,7 +23,7 @@ Her yeni geliştirme başlamadan önce okunmalıdır.
 - `npm run lint` - Geçti (0 error)
 - `npm run typecheck` - Geçti
 - `npm run build` - Geçti
-- `npm run test` - 24/24 geçti
+- `npm run test` - 26/26 geçti
 
 ---
 
@@ -68,3 +68,83 @@ Her yeni geliştirme başlamadan önce okunmalıdır.
 - Supabase MCP config girişini gerçek `url = "..."`
   formatına çevirip remote MCP client desteğini etkinleştir
 - İstersen ikinci adımda `npm run dev` akışını da ayrıca audit edip kökteki `nul` artefact’ının Turbopack üzerindeki etkisini temizleyelim
+
+---
+
+## 2026-04-09 Derin Proje Audit
+
+### Kapsam
+- Frontend, backend, auth, favorites, dashboard ve test altyapısı birlikte yeniden tarandı
+- "Geçiyor ama risk taşıyor" sınıfındaki davranışsal sorunlar özellikle incelendi
+- Dokümantasyonlar yeni gerçek durumla hizalandı
+
+### Tespit Edilen ve Düzeltilen Sorunlar
+- Auth rate limiting anahtarı `getClientIp()` sonucunu beklemeden stringe gömüyordu; login/register rate limit'i fiilen IP-bazlı çalışmıyordu
+- Dashboard favorites sayfası authenticated route olmasına rağmen `userId={undefined}` geçtiği için istemci tarafı misafir davranışına düşebiliyordu
+- Dashboard ana ekranındaki favori metriği gerçek veri yerine sabit `-` gösteriyordu
+- "İlanlarım" panelindeki arşivleme akışı API response hata gövdesini kontrol etmiyor, başarısız isteklerde sessizce refresh ediyordu
+- Profil tablosuna sync edilen rol değeri yalnızca `user_metadata` üzerinden okunuyordu; admin gate ile aynı kaynak kullanılmıyordu
+- ESLint üretilen `playwright-report` ve `test-results` klasörlerine girebildiği için eşzamanlı doğrulamalarda yalancı ENOENT hatası verebiliyordu
+- Playwright eski server reuse davranışı ve varsayılan port yüzünden stale Next sürecine bağlanıp suite'i kararsız hale getirebiliyordu
+
+### Yapılan Geliştirmeler
+- `src/lib/auth/actions.ts`: login/register rate limit IP anahtarı gerçek `await getClientIp()` ile düzeltildi
+- `src/app/dashboard/favorites/page.tsx`: dashboard favorites route artık gerçek kullanıcı kimliğini geçiriyor
+- `src/app/dashboard/page.tsx`: favori sayısı gerçek DB kaydından gösteriliyor
+- `src/services/favorites/favorite-records.ts`: favori sayısı için küçük servis yardımcı fonksiyonu eklendi
+- `src/components/listings/my-listings-panel.tsx`: arşivleme hataları kullanıcıya görünür hale getirildi
+- `src/services/profile/profile-records.ts`: profil rol senkronizasyonu `app_metadata` öncelikli olacak şekilde hizalandı
+- `eslint.config.mjs`: generated output klasörleri lint taramasından çıkarıldı
+- `playwright.config.ts`: testler izole `127.0.0.1:3100` portuna taşındı, `reuseExistingServer` kapatıldı; suite daha deterministik hale geldi
+
+### Doğrulama
+- `npm run lint` - Geçti
+- `npm run typecheck` - Geçti
+- `npm run build` - Geçti
+- `npm run test` - 24/24 geçti
+
+### Karar
+- Bu turda yeni feature eklemek yerine veri doğruluğu, auth davranışı ve test kararlılığı güçlendirildi
+- Görev sırasını bozan yeni faz atlaması yapılmadı; düzeltmeler mevcut MVP akışlarının güvenilirliğini artırmaya odaklandı
+
+### Sonraki Adım
+- İstersen bir sonraki turda Supabase-first gerçek akışlar için API ve admin moderasyon katmanına daha derin entegrasyon testleri ekleyelim
+- Alternatif olarak dashboard/profile/favorites akışlarında kullanıcı deneyimi iyileştirmelerine geçebiliriz
+
+---
+
+## 2026-04-09 Audit Devam Turu
+
+### Tespit Edilen Ek Sorunlar
+- Admin listing/report moderasyon endpoint'leri rate-limit anahtarını yine `getClientIp()` Promise değeriyle kuruyordu; IP bazlı sınırlama bu iki kritik route'ta da fiilen boşa düşüyordu
+- Listing create ve report form başarı mesajları API'nin üst seviye `message` alanı yerine `data.message` bekliyordu; başarılı işlemlerde özel geri bildirim kullanıcıya yansımıyordu
+- Favori butonu authenticated kullanıcıda da varsayılan misafir tooltip'ini göstermeye devam edebiliyordu
+
+### Yapılan Düzeltmeler
+- `src/app/api/admin/listings/[listingId]/moderate/route.ts`: admin moderasyon rate-limit anahtarı gerçek istemci IP'si ile düzeltildi
+- `src/app/api/admin/reports/[reportId]/route.ts`: rapor moderasyon rate-limit anahtarı gerçek istemci IP'si ile düzeltildi
+- `src/components/forms/listing-create-form.tsx`: başarılı ilan create/update mesajı API response sözleşmesi ile hizalandı
+- `src/components/forms/report-listing-form.tsx`: başarılı rapor gönderimi mesajı doğru response alanından okunur hale getirildi
+- `src/components/shared/favorites-provider.tsx` ve `src/components/listings/favorite-button.tsx`: favori tooltip'i sadece misafir kullanıcılar için görünür hale getirildi
+
+---
+
+## 2026-04-09 Favoriler Akış Hizalama
+
+### Tespit Edilen Ek Sorun
+- Misafir kullanıcılar lokal favori ekleyebildiği halde `/favorites` sayfası doğrudan dashboard'a yönleniyordu; bu yüzden kaydedilen favoriler görülemiyor ve ürün davranışı kendi içinde çelişiyordu
+- Header ve mobile nav favori bağlantıları da misafir kullanıcıyı aynı kapalı route'a götürüyordu
+- Favori tooltip metni "giriş yapmadan kaydedemezsin" gibi algılanıyordu; oysa sistem misafir için cihaz içi kaydı zaten destekliyordu
+
+### Yapılan Düzeltmeler
+- `src/app/(public)/favorites/page.tsx`: public favoriler sayfası gerçek içerik gösterecek şekilde açıldı
+- `src/components/listings/favorites-page-client.tsx`: misafir kullanıcı için engelleyici login ekranı kaldırıldı; lokal favoriler listelenirken senkronizasyon banner'ı gösterilir hale getirildi
+- `src/components/layout/site-header.tsx` ve `src/components/layout/header-mobile-nav.tsx`: favori linkleri auth durumuna göre `"/favorites"` veya `"/dashboard/favorites"` olacak şekilde ayrıldı
+- `src/components/listings/favorite-button.tsx`: misafir tooltip kopyası ürün davranışıyla hizalandı ve login linki etkileşimli hale getirildi
+- `tests/e2e.spec.ts`: misafir favori akışı için yeni Playwright senaryosu eklendi
+
+### Doğrulama
+- `npm run lint` - Geçti
+- `npm run typecheck` - Geçti
+- `npm run build` - Geçti
+- `npm run test` - 26/26 geçti

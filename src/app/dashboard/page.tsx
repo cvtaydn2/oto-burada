@@ -8,6 +8,7 @@ import {
 } from "lucide-react";
 
 import { requireUser } from "@/lib/auth/session";
+import { getDatabaseFavoriteCount } from "@/services/favorites/favorite-records";
 import {
   getStoredUserListings,
 } from "@/services/listings/listing-submissions";
@@ -23,6 +24,7 @@ export default async function DashboardPage() {
     phone?: string;
   };
   const storedListings = await getStoredUserListings(user.id);
+  const favoriteCount = await getDatabaseFavoriteCount(user.id);
   const pendingListingsCount = storedListings.filter((l) => l.status === "pending").length;
   const profileCompletion = Math.round(
     ([metadata.full_name, metadata.phone, metadata.city].filter(Boolean).length / 3) * 100,
@@ -85,7 +87,7 @@ export default async function DashboardPage() {
             <Heart className="size-4 text-rose-500" />
             Favoriler
           </div>
-          <p className="mt-2 text-2xl font-semibold">-</p>
+          <p className="mt-2 text-2xl font-semibold">{favoriteCount}</p>
           <p className="mt-1 text-xs text-muted-foreground">Kaydedilen ilanlar</p>
         </div>
 

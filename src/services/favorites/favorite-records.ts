@@ -25,6 +25,11 @@ export async function getDatabaseFavoriteIds(userId: string) {
   return data.map((favorite) => favorite.listing_id);
 }
 
+export async function getDatabaseFavoriteCount(userId: string) {
+  const favoriteIds = await getDatabaseFavoriteIds(userId);
+  return favoriteIds?.length ?? 0;
+}
+
 export async function addDatabaseFavorite(userId: string, listingId: string) {
   if (!hasSupabaseAdminEnv()) {
     return null;

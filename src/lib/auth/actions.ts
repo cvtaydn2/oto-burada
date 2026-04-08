@@ -37,7 +37,8 @@ export async function loginAction(
 ): Promise<AuthActionState> {
   void previousState;
 
-  const ipRateLimit = checkRateLimit(`auth:login:${getClientIp()}`, rateLimitProfiles.auth);
+  const clientIp = await getClientIp();
+  const ipRateLimit = checkRateLimit(`auth:login:${clientIp}`, rateLimitProfiles.auth);
 
   if (!ipRateLimit.allowed) {
     return {
@@ -87,7 +88,8 @@ export async function registerAction(
 ): Promise<AuthActionState> {
   void previousState;
 
-  const ipRateLimit = checkRateLimit(`auth:register:${getClientIp()}`, rateLimitProfiles.auth);
+  const clientIp = await getClientIp();
+  const ipRateLimit = checkRateLimit(`auth:register:${clientIp}`, rateLimitProfiles.auth);
 
   if (!ipRateLimit.allowed) {
     return {

@@ -109,3 +109,46 @@ Bu bölüm backend geliştirmelerine bağımlı UI güncellemelerini takip eder.
 ### Not
 - UI tarafı production build altında doğrulandı
 - Ayrı bir geliştirme konusu olarak repo kökündeki `nul` artefact’ı Turbopack tabanlı `next dev` akışını etkileyebilir; bu auditte test hattı production server ile stabilize edildi
+
+---
+
+## 2026-04-09 Dashboard / Test Stabilizasyonu
+
+### Tamamlanan düzeltmeler
+- Dashboard favorites sayfası artık gerçek authenticated `userId` ile çalışıyor; misafir boş durumuna yanlış düşmüyor
+- Dashboard ana kartlarındaki favori metriği gerçek veriyle beslenecek şekilde güncellendi
+- "İlanlarım" arşivleme akışında API hata mesajları kullanıcıya gösteriliyor
+- Playwright test sunucusu izole `127.0.0.1:3100` portuna taşındı ve stale server reuse davranışı kapatıldı
+- ESLint generated test/report klasörlerini ignore edecek şekilde güçlendirildi
+
+### Doğrulama sonucu
+- Lint, typecheck, build yeniden geçti
+- Playwright suite yeniden `24/24` geçti
+- Test altyapısı önceki stale server ve artefact klasörü kırılganlıklarından ayrıştırıldı
+
+---
+
+## 2026-04-09 UI Davranış Hizalama
+
+### Tamamlanan düzeltmeler
+- Favori butonundaki "giriş yap" tooltip'i artık sadece misafir kullanıcıya gösteriliyor
+- İlan oluşturma/düzenleme başarı mesajları API'nin gerçek success message alanıyla hizalandı
+- Şüpheli ilan raporlama formu başarılı gönderim sonrası doğru moderasyon mesajını gösteriyor
+
+### Backend etkisi
+- Admin moderasyon ve rapor güncelleme endpoint'lerindeki IP bazlı rate-limit davranışı frontend aksiyonlarıyla tutarlı hale getirildi
+
+---
+
+## 2026-04-09 Favoriler UX Hizalama
+
+### Tamamlanan düzeltmeler
+- Misafir kullanıcılar için public `/favorites` sayfası erişilebilir hale getirildi
+- Header ve mobile nav üzerindeki favoriler linki auth durumuna göre doğru route'a yönleniyor
+- Favori tooltip'i artık "bu cihazda kaydolur, giriş yaparsan senkronize olur" davranışını net anlatıyor
+- Favoriler sayfasında misafir kullanıcı için bloklayıcı ekran yerine açıklayıcı banner ve gerçek liste görünümü kullanılıyor
+- Bu akış için yeni Playwright senaryosu eklendi
+
+### Doğrulama sonucu
+- Lint, typecheck ve build yeniden geçti
+- Playwright suite `26/26` geçti

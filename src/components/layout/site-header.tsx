@@ -9,6 +9,7 @@ export async function SiteHeader() {
   const user = await getCurrentUser();
   const isAdmin = user ? getUserRole(user) === "admin" : false;
   const accountHref = user ? "/dashboard" : "/login";
+  const favoritesHref = user ? "/dashboard/favorites" : "/favorites";
   const postListingHref = user ? "/dashboard/listings" : "/login";
 
   return (
@@ -41,7 +42,7 @@ export async function SiteHeader() {
               </Link>
             )}
             <Link 
-              href="/dashboard/favorites" 
+              href={favoritesHref} 
               className="flex items-center justify-center w-10 h-10 rounded-xl text-slate-500 hover:text-indigo-600 hover:bg-indigo-50/80 transition-all"
               title="Favoriler"
             >
@@ -71,7 +72,7 @@ export async function SiteHeader() {
             </Link>
           </nav>
 
-          <HeaderMobileNav user={user} isAdmin={isAdmin} accountHref={accountHref} postListingHref={postListingHref} />
+          <HeaderMobileNav user={user} isAdmin={isAdmin} accountHref={accountHref} favoritesHref={favoritesHref} postListingHref={postListingHref} />
         </div>
       </div>
     </header>
