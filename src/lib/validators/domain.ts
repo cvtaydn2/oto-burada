@@ -132,6 +132,8 @@ export const listingCreateSchema: z.ZodType<ListingCreateInput> = z.object({
     .min(20, "Açıklama en az 20 karakter olmalı")
     .max(maximumDescriptionLength, `Açıklama en fazla ${maximumDescriptionLength} karakter olabilir`),
   whatsappPhone: lenientPhoneSchema,
+  tramerAmount: nonNegativeNumberSchema.nullable().optional(),
+  damageStatusJson: z.record(z.string(), z.any()).nullable().optional(),
   images: z
     .array(listingImageSchema)
     .min(minimumListingImages, "En az 3 fotoğraf eklemelisin"),
@@ -153,6 +155,8 @@ export const listingCreateFormSchema = z.object({
     .min(20, "Açıklama en az 20 karakter olmalı")
     .max(maximumDescriptionLength, `Açıklama en fazla ${maximumDescriptionLength} karakter olabilir`),
   whatsappPhone: lenientPhoneSchema,
+  tramerAmount: nonNegativeNumberSchema.nullable().optional(),
+  damageStatusJson: z.record(z.string(), z.any()).nullable().optional(),
   images: z
     .array(
       z.object({
@@ -246,6 +250,8 @@ export const listingSchema: z.ZodType<Listing> = z.object({
   district: trimmedRequiredString,
   description: trimmedRequiredString,
   whatsappPhone: lenientPhoneSchema,
+  tramerAmount: z.coerce.number().int().min(0).nullable().optional(),
+  damageStatusJson: z.record(z.string(), z.any()).nullable().optional(),
   status: z.enum(listingStatuses),
   images: z.array(listingImageSchema),
   featured: z.boolean(),

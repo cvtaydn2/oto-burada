@@ -253,3 +253,27 @@ Her yeni geliştirme başlamadan önce okunmalıdır.
 ### Karar
 - Dashboard tarafinda mock kalan temel tekrar ziyaret ekranlari artik kalmadi; `saved-searches` ve `notifications` canli DB ile calisiyor
 - Bir sonraki sprintte odak, kullanicinin "neden bu ilana guveneyim" sorusunu cevaplayan trust sinyalleri ve smoke test otesi servis/integration korumalari olmali
+
+---
+
+## 2026-04-09 Trust Features Phase 1 - Veri Katmanı (Data Modeling)
+
+### Kapsam
+- OtoBurada Trust Building inisiyatifi kapsamında \`listings\` tablosuna \`tramer_amount\` ve \`damage_status_json\` alanları eklendi
+- Typescript domain yapıları yeni nesne modeliyle hizalanarak validation (zod) entegrasyonu tamamlandı
+- UI bileşenleri öncesi core data modeling işlemi Production-Ready düzeyde bağlandı
+
+### Yapılan Geliştirmeler
+- \`schema.sql\`: \`tramer_amount\` (bigint) ve \`damage_status_json\` (jsonb) eklendi
+- \`src/types/domain.ts\`: Alanlar \`Listing\`, \`ListingCreateInput\` arabirimlerine opsiyonel \`tramerAmount\`, \`damageStatusJson\` olarak eklendi
+- \`src/lib/validators/domain.ts\`: Zod schema'larına non-negative integer formülleri ile eklendi
+- \`src/services/listings/listing-submissions.ts\`: Frontend ile Supabase arasında dbRow mapping işlemleri bu yeni alanları algılayacak şekilde güçlendirildi
+- MCP üzerinden SQL Migration DB'ye direk canlı uygulandı
+
+### Doğrulama
+- \`npx tsc --noEmit\` Typescript Build Geçti
+
+### Sonraki Adım
+- İlan oluşturma ekranında (\`ListingCreateForm\`) Tramer ve Boya/Değişen seçim UI'larının tasarlanıp bağlanması
+- İlan detay sayfasında bu verilerin şeffaflık oluşturacak güzel grafik/rozet UI bileşenleriyle gösterilmesi
+- WhatsApp yönlendirmesi öncesi Güvenlik Modalı (Fraud Alert) eklentisi

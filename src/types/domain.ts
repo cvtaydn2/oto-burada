@@ -62,6 +62,8 @@ export interface Listing {
   district: string;
   description: string;
   whatsappPhone: string;
+  tramerAmount?: number | null;
+  damageStatusJson?: Record<string, any> | null;
   status: ListingStatus;
   images: ListingImage[];
   featured: boolean;
@@ -83,6 +85,8 @@ export interface ListingCreateInput {
   district: string;
   description: string;
   whatsappPhone: string;
+  tramerAmount?: number | null;
+  damageStatusJson?: Record<string, any> | null;
   images: ListingImage[];
   expertInspection?: ExpertInspection;
 }
@@ -108,6 +112,8 @@ export interface ListingCreateFormValues {
   district: string;
   description: string;
   whatsappPhone: string;
+  tramerAmount?: number | null;
+  damageStatusJson?: Record<string, any> | null;
   images: ListingCreateFormImage[];
   expertInspection?: ExpertInspection;
 }

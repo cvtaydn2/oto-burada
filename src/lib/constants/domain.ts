@@ -73,3 +73,51 @@ export const listingImageMaxSizeInBytes = 5 * 1024 * 1024;
 export const maximumListingPrice = 100_000_000;
 export const maximumDescriptionLength = 5000;
 export const maximumNoteLength = 1000;
+
+export const carPartDamageStatuses = [
+  "orjinal",
+  "boyali",
+  "lokal_boyali",
+  "degisen",
+  "bilinmiyor"
+] as const;
+
+export const carPartDamageStatusLabels: Record<typeof carPartDamageStatuses[number], string> = {
+  orjinal: "Orijinal",
+  boyali: "Boyalı",
+  lokal_boyali: "Lokal Boyalı",
+  degisen: "Değişen",
+  bilinmiyor: "Bilinmiyor"
+};
+
+export const carParts = [
+  "kaput",
+  "tavan",
+  "bagaj",
+  "sol_on_camurluk",
+  "sol_on_kapi",
+  "sol_arka_kapi",
+  "sol_arka_camurluk",
+  "sag_on_camurluk",
+  "sag_on_kapi",
+  "sag_arka_kapi",
+  "sag_arka_camurluk",
+  "on_tampon",
+  "arka_tampon"
+] as const;
+
+export const carPartLabels: Record<typeof carParts[number], string> = {
+  kaput: "Kaput",
+  tavan: "Tavan",
+  bagaj: "Bagaj",
+  sol_on_camurluk: "Sol Ön Çamurluk",
+  sol_on_kapi: "Sol Ön Kapı",
+  sol_arka_kapi: "Sol Arka Kapı",
+  sol_arka_camurluk: "Sol Arka Çamurluk",
+  sag_on_camurluk: "Sağ Ön Çamurluk",
+  sag_on_kapi: "Sağ Ön Kapı",
+  sag_arka_kapi: "Sağ Arka Kapı",
+  sag_arka_camurluk: "Sağ Arka Çamurluk",
+  on_tampon: "Ön Tampon",
+  arka_tampon: "Arka Tampon"
+};

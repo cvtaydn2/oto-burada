@@ -90,6 +90,8 @@ create table if not exists public.listings (
   district text not null,
   description text not null,
   whatsapp_phone text not null,
+  tramer_amount bigint,
+  damage_status_json jsonb,
   status public.listing_status not null default 'pending',
   featured boolean not null default false,
   expert_inspection jsonb,
