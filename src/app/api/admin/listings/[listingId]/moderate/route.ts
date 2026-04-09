@@ -3,6 +3,7 @@ import { createAdminModerationAction } from "@/services/admin/moderation-actions
 import {
   moderateDatabaseListing,
 } from "@/services/listings/listing-submissions";
+import { createDatabaseNotification } from "@/services/notifications/notification-records";
 import { rateLimitProfiles } from "@/lib/utils/rate-limit";
 import { checkRateLimit } from "@/lib/utils/rate-limit-middleware";
 import { headers } from "next/headers";
@@ -71,6 +72,17 @@ export async function POST(
         : `${persistedListing.title} ilanı reddedildi.`),
     targetId: persistedListing.id,
     targetType: "listing",
+  });
+
+  await createDatabaseNotification({
+    href: `/dashboard/listings?edit=${persistedListing.id}`,
+    message:
+      action === "approve"
+        ? `"${persistedListing.title}" ilanin yayinlandi. Artik public listede gorunuyor.`
+        : `"${persistedListing.title}" ilanin moderasyon tarafindan reddedildi. Notlari inceleyip guncelleyebilirsin.`,
+    title: action === "approve" ? "Ilanin onaylandi" : "Ilanin reddedildi",
+    type: "moderation",
+    userId: persistedListing.sellerId,
   });
 
   return apiSuccess(

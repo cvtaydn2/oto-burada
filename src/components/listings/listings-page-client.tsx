@@ -15,6 +15,7 @@ import { ListingCard } from "@/components/listings/listing-card";
 import { ListingCardGrid } from "@/components/listings/listing-card-grid";
 import { ListingsFilterPanel } from "@/components/listings/listings-filter-panel";
 import { ListingsGridSkeleton } from "@/components/listings/listings-grid-skeleton";
+import { SaveSearchButton } from "@/components/listings/save-search-button";
 import {
   createSearchParamsFromListingFilters,
   filterListings,
@@ -55,6 +56,7 @@ interface ListingsPageClientProps {
   brands: BrandCatalogItem[];
   cities: CityOption[];
   initialFilters: ListingFilters;
+  userId?: string | null;
 }
 
 export function ListingsPageClient({
@@ -62,6 +64,7 @@ export function ListingsPageClient({
   brands,
   cities,
   initialFilters,
+  userId,
 }: ListingsPageClientProps) {
   const mobileFilterDialogId = "mobile-listing-filters";
   const mobileFilterTitleId = "mobile-listing-filters-title";
@@ -305,6 +308,11 @@ export function ListingsPageClient({
                   <span className="font-semibold text-slate-900">{filteredListings.length}</span> araç bulundu
                 </p>
               </div>
+              <SaveSearchButton
+                filters={filters}
+                resultCount={filteredListings.length}
+                userId={userId}
+              />
 
               <div className="flex items-center gap-3">
                 {/* View Toggle */}

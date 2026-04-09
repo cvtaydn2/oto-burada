@@ -26,6 +26,10 @@ test.describe("Listings Page", () => {
   test("should load listings page", async ({ page }) => {
     await expect(page).toHaveURL(/\/listings/);
   });
+
+  test("should show save search call-to-action for guests", async ({ page }) => {
+    await expect(page.getByRole("link", { name: /Giris yap ve aramayi kaydet/i })).toBeVisible();
+  });
 });
 
 test.describe("Listing Detail", () => {
@@ -88,6 +92,30 @@ test.describe("API Endpoints", () => {
     const res = await request.post("/api/favorites", {
       data: { listingId: "test-id" },
     });
+    expect(res.status()).toBe(401);
+  });
+
+  test("GET /api/saved-searches without auth should return 401", async ({ request }) => {
+    const res = await request.get("/api/saved-searches");
+    expect(res.status()).toBe(401);
+  });
+
+  test("POST /api/saved-searches without auth should return 401", async ({ request }) => {
+    const res = await request.post("/api/saved-searches", {
+      data: {
+        filters: { brand: "Volkswagen", sort: "newest" },
+      },
+    });
+    expect(res.status()).toBe(401);
+  });
+
+  test("GET /api/notifications without auth should return 401", async ({ request }) => {
+    const res = await request.get("/api/notifications");
+    expect(res.status()).toBe(401);
+  });
+
+  test("PATCH /api/notifications without auth should return 401", async ({ request }) => {
+    const res = await request.patch("/api/notifications");
     expect(res.status()).toBe(401);
   });
 

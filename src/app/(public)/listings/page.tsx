@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import { ListingsPageClient } from "@/components/listings/listings-page-client";
 import { ListingStructuredData, OrganizationStructuredData } from "@/components/seo/structured-data";
 import { brandCatalog, cityOptions } from "@/data";
+import { getCurrentUser } from "@/lib/auth/session";
 import { buildListingsMetadata } from "@/lib/seo";
 import { parseListingFiltersFromSearchParams } from "@/services/listings/listing-filters";
 import { getPublicMarketplaceListings } from "@/services/listings/marketplace-listings";
@@ -26,7 +27,10 @@ export default async function ListingsPage({ searchParams }: ListingsPageProps) 
   const resolvedSearchParams = searchParams ? await searchParams : undefined;
   const initialFilters = parseListingFiltersFromSearchParams(resolvedSearchParams);
   const initialFiltersKey = JSON.stringify(initialFilters);
-  const listings = await getPublicMarketplaceListings();
+  const [currentUser, listings] = await Promise.all([
+    getCurrentUser(),
+    getPublicMarketplaceListings(),
+  ]);
 
   return (
     <>
@@ -42,6 +46,7 @@ export default async function ListingsPage({ searchParams }: ListingsPageProps) 
         brands={brandCatalog}
         cities={cityOptions}
         initialFilters={initialFilters}
+        userId={currentUser?.id}
       />
     </>
   );

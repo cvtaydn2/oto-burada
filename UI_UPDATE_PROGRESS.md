@@ -152,3 +152,57 @@ Bu bölüm backend geliştirmelerine bağımlı UI güncellemelerini takip eder.
 ### Doğrulama sonucu
 - Lint, typecheck ve build yeniden geçti
 - Playwright suite `26/26` geçti
+
+---
+
+## 2026-04-09 UI Roadmap - Pazar Hazirlik
+
+### Mevcut UI Aciklari
+- Listing detail ve seller profilinde guven sinyali katmani hala zayif; kullanicinin "bu ilani neden ciddiye alayim" sorusuna daha net cevap verilmeli
+- Admin moderasyon ekranlari calisiyor ama operasyon hizlandiran karar yardimcilari ve queue ergonomisi eksik
+
+### UI Oncelik Sirasi
+- 1. Listing detail ve seller sayfasinda guven / ekspertiz / profil tamamlilik / tazelik panelleri
+- 2. Admin moderasyon ekraninda yuksek risk sinyali, hizli filtre ve preset karar notlari
+- 3. Listing create akisinda kaliteyi artiran yardimci metinler ve guven checklist'i
+- 4. Tekrar ziyaret ve karar vermeyi kolaylastiran compare/favorites ozet kartlari
+- 5. Daha derin API / integration testleri ile UI davranislarini backend olaylariyla birlikte kilitlemek
+
+### UX Hedefi
+- Kullanici ilk 30 saniyede platformun "daha sade ama daha guvenli" oldugunu anlamali
+- Misafir kullanici kaybolmadan favori, arama ve ilan detay akislarinda deger gormeli
+- Satici ilan verirken hangi bilginin guven arttirdigini acikca anlamali
+
+---
+
+## 2026-04-09 Saved Searches UI
+
+### Tamamlanan düzeltmeler
+- Listings sonuc ekranina auth durumuna gore degisen "Aramayi Kaydet" CTA'si eklendi
+- Dashboard `saved-searches` ekrani sabit mock kartlardan cikarak gercek persistence verisine baglandi
+- Kullanici kayitli arama uzerinden bildirim ac/kapat, sil ve ilgili filtre sonucuna don akisini kullanabiliyor
+- Guest kullanici listings ekraninda kayitli arama ozelligi icin net login CTA'si goruyor
+
+### Doğrulama sonucu
+- Listings guest CTA ve saved-search API auth davranislari Playwright ile koruma altina alindi
+- Playwright suite `32/32` geçti
+
+### Sonraki UI odağı
+- Kayitli aramalar tamamlandigi icin siradaki UI sprinti listing detail ve seller sayfasindaki guven sinyallerini guclendirmeli
+
+---
+
+## 2026-04-09 Notifications UI
+
+### Tamamlanan düzeltmeler
+- Dashboard `notifications` ekrani sabit mock kartlardan cikarak gercek persistence verisine baglandi
+- Kullanici bildirimlerini listeleme, tekil okundu, tumunu okundu ve silme akislarini ayni panelden kullanabiliyor
+- Favori, ilan moderasyonu ve rapor durumu olaylari kullaniciya geri donen anlamli bildirimlere donustu
+- Hata durumlari kullaniciya gorunur hale getirildi; bildirim paneli basarisiz API cagrisini sessizce yutmuyor
+
+### Doğrulama sonucu
+- Notifications auth korumalari Playwright ile kapsandi
+- Playwright suite `36/36` geçti
+
+### Kalan UI boslugu
+- Dashboard tekrar ziyaret akislarinda mock kalan ana ekran yok; siradaki bosluk trust sinyalleri ve karar hizlandiran detay panelleri

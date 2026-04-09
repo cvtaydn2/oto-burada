@@ -23,7 +23,7 @@ Her yeni geliştirme başlamadan önce okunmalıdır.
 - `npm run lint` - Geçti (0 error)
 - `npm run typecheck` - Geçti
 - `npm run build` - Geçti
-- `npm run test` - 26/26 geçti
+- `npm run test` - 36/36 geçti
 
 ---
 
@@ -148,3 +148,108 @@ Her yeni geliştirme başlamadan önce okunmalıdır.
 - `npm run typecheck` - Geçti
 - `npm run build` - Geçti
 - `npm run test` - 26/26 geçti
+
+---
+
+## 2026-04-09 Pazar Hazirlik Degerlendirmesi
+
+### Genel Durum
+- Uygulama artik "teknik olarak ayakta duran car-only MVP" seviyesinde
+- Temel create, browse, favorite, report ve admin moderation akislarinin iskeleti mevcut
+- Ancak mevcut hal, guven, likidite ve operasyon derinligi acisindan "insanlar burada gonul rahatligiyla arac alip satar" seviyesine henuz gelmedi
+
+### Kritik Eksikler
+- Guven katmani eksik: satici dogrulama, ilan kalitesi puani, ekspertiz/proof baglantisi, ilan tazeligi ve dolandiricilik sinyalleri zayif
+- Dashboard `notifications` ve `saved-searches` sayfalari gercek persistence yerine sabit ornek veriyle calisiyor; kullaniciya vaat edilen tekrar gelme nedeni henuz backend tarafinda yok
+- Admin operasyonu tek ekranda manuel yurutuluyor; queue onceliklendirme, bulk aksiyon, karar sebebi sablonlari ve SLA benzeri operasyon yardimcilari eksik
+- Test katmani agirlikli olarak smoke E2E seviyesinde; kritik is kurallari icin API/integration seviyesinde daha derin koruma yok
+- Arac satma/alma kararini hizlandiran guven sinyalleri yetersiz: "neden bu ilana guveneyim", "satici kim", "ilan ne kadar saglikli" sorularina guclu cevap verilmiyor
+- Acquisition/discovery tarafi MVP duzeyinde; SEO landing depth, kayitli arama bildirimleri ve geri donus dongusu yetersiz
+
+### Oncelikli Gelistirme Plani
+
+#### Dalga 1 - Transaction Readiness
+- Gercek `saved searches` persistence modeli kur
+- Gercek `notifications` veri modeli ve event uretimi kur
+- Listing detail ve seller profilinde guven sinyallerini artir: uye olma tarihi, profil tamamlilik, ilan tazelik bilgisi, ekspertiz durumu, cevap beklentisi
+- Listing create akisina kalite bariyerleri ekle: zorunlu guven alanlari, aciklama yonlendirmesi, kapora/dolandiricilik uyari dili
+- Admin moderasyona hizli karar araclari ekle: filtreler, note presets, yuksek risk kuyruğu
+
+#### Dalga 2 - Trust ve Operasyon
+- Dolandiricilik heuristics ve duplicate listing kontrolleri ekle
+- Ilan yenileme / sure dolumu / arsiv yasami gibi lifecycle kurallarini netlestir
+- Moderasyon audit trail uzerine raporlanabilir operasyon panelleri kur
+- Favori, rapor ve ilan aksiyonlari icin event tabanli backend akislarini standartlastir
+- Kritik backend servisleri icin integration test seti olustur
+
+#### Dalga 3 - Discovery ve Donusum
+- SEO odakli marka/sehir/model landing stratejisini derinlestir
+- Kayitli arama bildirimleri ve geri donus mekanizmasi ile tekrar ziyaret dongusu kur
+- Compare, favorites ve search akislarinda "karar vermeyi hizlandiran" veri panelleri ekle
+- Listing create surecini 2 dakikanin altina indirecek friction audit ve funnel optimizasyonu yap
+
+### Karar
+- `sahibinden.com` ile dogrudan platform genisligi yarisi yerine, once "araba ozelinde daha sade ve daha guven veren deneyim" kanitlanmali
+- Sonraki gelistirme sprintleri placeholder dashboard ekranlarini gercek veriyle baglamaya ve guven katmanini kalinlastirmaya odaklanmali
+
+### Sonraki Uygulanabilir Adim
+- Ilk sprintte `saved-searches + notifications persistence + guven sinyali audit` paketi ele alinacak
+
+---
+
+## 2026-04-09 Saved Searches Sprinti
+
+### Kapsam
+- Roadmap'in ilk parcası olarak `saved-searches` akisi mock seviyesinden gercek persistence katmanina tasindi
+- Listings sayfasindan arama kaydetme, dashboard'da kayitli aramalari gorme, bildirim tercihi degistirme ve silme akislari eklendi
+- Schema niyeti ve persistence health ozeti yeni tabloyu kapsayacak sekilde guncellendi
+
+### Yapılan Geliştirmeler
+- `src/types/domain.ts` ve `src/lib/validators/domain.ts`: `SavedSearch` domain tipi ve create/update validator'lari eklendi
+- `src/services/saved-searches/saved-search-utils.ts`: filtre normalize etme, signature, baslik ve ozet yardimcilari eklendi
+- `src/services/saved-searches/saved-search-records.ts`: Supabase-backed kayitli arama CRUD servisi eklendi
+- `src/app/api/saved-searches/route.ts` ve `src/app/api/saved-searches/[searchId]/route.ts`: listeleme, olusturma, guncelleme ve silme endpoint'leri eklendi
+- `src/components/listings/save-search-button.tsx`: listings sonuc ekranina arama kaydetme CTA'si eklendi
+- `src/app/dashboard/saved-searches/page.tsx` ve `src/components/listings/saved-searches-panel.tsx`: dashboard saved searches ekrani mock veriden gercek persistence modeline baglandi
+- `schema.sql`: `saved_searches` tablosu, RLS policy'leri ve `is_admin()` fonksiyonunda `app_metadata` kullanan daha guvenli yetki kontrolu eklendi
+- `src/services/admin/persistence-health.ts`: admin persistence ozeti yeni tabloyu gosterecek sekilde guncellendi
+
+### Doğrulama
+- `npm run lint` - Geçti
+- `npm run typecheck` - Geçti
+- `npm run build` - Geçti
+- `npm run test` - 32/32 geçti
+
+### Kalan Sonraki Adım
+- Saved searches tamamlandigi icin siradaki odak alanı guven sinyalleri, event standardizasyonu ve daha derin integration testleri olmali
+
+---
+
+## 2026-04-09 Notifications Sprinti
+
+### Kapsam
+- `dashboard/notifications` ekrani mock listeden cikarilarak gercek Supabase persistence modeline tasindi
+- Favori, admin listing moderasyonu ve rapor durumu guncelleme olaylari bildirim uretecek sekilde backend'e baglandi
+- Bildirim listeleme, tekil okundu, tumunu okundu ve silme akislarina API ve UI katmani eklendi
+
+### Yapılan Geliştirmeler
+- `src/types/domain.ts`, `src/lib/constants/domain.ts` ve `src/lib/validators/domain.ts`: `Notification` domain tipi, enum ve validator katmani eklendi
+- `src/services/notifications/notification-records.ts`: Supabase-backed bildirim CRUD servisi eklendi
+- `src/app/api/notifications/route.ts` ve `src/app/api/notifications/[notificationId]/route.ts`: listeleme, tumunu okundu, tekil okundu ve silme endpoint'leri eklendi
+- `src/app/dashboard/notifications/page.tsx` ve `src/components/shared/notifications-panel.tsx`: dashboard notifications ekrani mock veriden cikarak gercek persistence modeline baglandi
+- `src/app/api/favorites/route.ts`: bir kullanici baskasinin ilanini favorilere eklediginde saticiya bildirim uretiliyor
+- `src/app/api/admin/listings/[listingId]/moderate/route.ts`: ilan onay/red kararlarinda saticiya moderasyon bildirimi uretiliyor
+- `src/app/api/admin/reports/[reportId]/route.ts`: rapor durumu degistiginde raporu gonderen kullaniciya geri bildirim bildirimi uretiliyor
+- `schema.sql`: `notification_type` enum'u, `notifications` tablosu, index, trigger ve RLS policy'leri eklendi
+- `src/services/admin/persistence-health.ts`: admin persistence ozeti `notifications` tablosunu da raporlar hale getirildi
+- `tests/e2e.spec.ts`: notifications endpoint'leri icin auth koruma testleri eklendi
+
+### Doğrulama
+- `npm run lint` - Geçti
+- `npm run typecheck` - Geçti
+- `npm run build` - Geçti
+- `npm run test` - 36/36 geçti
+
+### Karar
+- Dashboard tarafinda mock kalan temel tekrar ziyaret ekranlari artik kalmadi; `saved-searches` ve `notifications` canli DB ile calisiyor
+- Bir sonraki sprintte odak, kullanicinin "neden bu ilana guveneyim" sorusunu cevaplayan trust sinyalleri ve smoke test otesi servis/integration korumalari olmali

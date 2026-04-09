@@ -31,6 +31,10 @@ begin
     create type public.report_status as enum ('open', 'reviewing', 'resolved', 'dismissed');
   end if;
 
+  if not exists (select 1 from pg_type where typname = 'notification_type') then
+    create type public.notification_type as enum ('favorite', 'moderation', 'report', 'system');
+  end if;
+
   if not exists (select 1 from pg_type where typname = 'moderation_target_type') then
     create type public.moderation_target_type as enum ('listing', 'report');
   end if;
@@ -46,7 +50,7 @@ returns boolean
 language sql
 stable
 as $$
-  select coalesce((auth.jwt() -> 'user_metadata' ->> 'role') = 'admin', false);
+  select coalesce((auth.jwt() -> 'app_metadata' ->> 'role') = 'admin', false);
 $$;
 
 create or replace function public.set_updated_at()
@@ -112,6 +116,28 @@ create table if not exists public.favorites (
   primary key (user_id, listing_id)
 );
 
+create table if not exists public.saved_searches (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid not null references public.profiles (id) on delete cascade,
+  title text not null,
+  filters jsonb not null default '{}'::jsonb,
+  notifications_enabled boolean not null default true,
+  created_at timestamptz not null default timezone('utc', now()),
+  updated_at timestamptz not null default timezone('utc', now())
+);
+
+create table if not exists public.notifications (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid not null references public.profiles (id) on delete cascade,
+  type public.notification_type not null,
+  title text not null,
+  message text not null,
+  href text,
+  read boolean not null default false,
+  created_at timestamptz not null default timezone('utc', now()),
+  updated_at timestamptz not null default timezone('utc', now())
+);
+
 create table if not exists public.reports (
   id uuid primary key default gen_random_uuid(),
   listing_id uuid not null references public.listings (id) on delete cascade,
@@ -139,6 +165,8 @@ create unique index if not exists reports_active_per_user_listing_idx
 
 create index if not exists listings_status_idx on public.listings (status, updated_at desc);
 create index if not exists listings_seller_idx on public.listings (seller_id, updated_at desc);
+create index if not exists saved_searches_user_idx on public.saved_searches (user_id, updated_at desc);
+create index if not exists notifications_user_idx on public.notifications (user_id, created_at desc);
 create index if not exists reports_status_idx on public.reports (status, updated_at desc);
 create index if not exists listing_images_listing_idx on public.listing_images (listing_id, sort_order);
 
@@ -160,10 +188,24 @@ before update on public.reports
 for each row
 execute function public.set_updated_at();
 
+drop trigger if exists saved_searches_set_updated_at on public.saved_searches;
+create trigger saved_searches_set_updated_at
+before update on public.saved_searches
+for each row
+execute function public.set_updated_at();
+
+drop trigger if exists notifications_set_updated_at on public.notifications;
+create trigger notifications_set_updated_at
+before update on public.notifications
+for each row
+execute function public.set_updated_at();
+
 alter table public.profiles enable row level security;
 alter table public.listings enable row level security;
 alter table public.listing_images enable row level security;
 alter table public.favorites enable row level security;
+alter table public.saved_searches enable row level security;
+alter table public.notifications enable row level security;
 alter table public.reports enable row level security;
 alter table public.admin_actions enable row level security;
 
@@ -242,6 +284,20 @@ with check (
 drop policy if exists "favorites_manage_own" on public.favorites;
 create policy "favorites_manage_own"
 on public.favorites
+for all
+using (auth.uid() = user_id)
+with check (auth.uid() = user_id);
+
+drop policy if exists "saved_searches_manage_own" on public.saved_searches;
+create policy "saved_searches_manage_own"
+on public.saved_searches
+for all
+using (auth.uid() = user_id)
+with check (auth.uid() = user_id);
+
+drop policy if exists "notifications_manage_own" on public.notifications;
+create policy "notifications_manage_own"
+on public.notifications
 for all
 using (auth.uid() = user_id)
 with check (auth.uid() = user_id);

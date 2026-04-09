@@ -6,8 +6,9 @@ import {
   getDatabaseFavoriteIds,
   removeDatabaseFavorite,
 } from "@/services/favorites/favorite-records";
-import { checkListingExistsById } from "@/services/listings/listing-submissions";
-import { ensureProfileRecord } from "@/services/profile/profile-records";
+import { getStoredListingById } from "@/services/listings/listing-submissions";
+import { createDatabaseNotification } from "@/services/notifications/notification-records";
+import { ensureProfileRecord, getStoredProfileById } from "@/services/profile/profile-records";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -88,9 +89,9 @@ export async function POST(request: Request) {
     return apiError(API_ERROR_CODES.BAD_REQUEST, "Geçerli bir ilan seçmelisin.", 400);
   }
 
-  const listingExists = await checkListingExistsById(listingId);
+  const listing = await getStoredListingById(listingId);
 
-  if (!listingExists) {
+  if (!listing) {
     return apiError(API_ERROR_CODES.NOT_FOUND, "Favoriye eklenecek ilan bulunamadı.", 404);
   }
 
@@ -99,6 +100,18 @@ export async function POST(request: Request) {
 
   if (!favoriteIds) {
     return apiError(API_ERROR_CODES.INTERNAL_ERROR, "Favori eklenemedi.", 500);
+  }
+
+  if (listing.sellerId !== user.id) {
+    const actorProfile = await getStoredProfileById(user.id);
+
+    await createDatabaseNotification({
+      href: `/listing/${listing.slug}`,
+      message: `"${listing.title}" ilanini ${actorProfile?.fullName || "Bir kullanici"} favorilerine ekledi.`,
+      title: "Ilanin favorilere eklendi",
+      type: "favorite",
+      userId: listing.sellerId,
+    });
   }
 
   return apiSuccess({ favoriteIds }, "İlan favorilere eklendi.");

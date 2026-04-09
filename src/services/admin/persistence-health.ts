@@ -39,6 +39,8 @@ const tableDefinitions = [
   { key: "listings", label: "Ilanlar" },
   { key: "listing_images", label: "Ilan gorselleri" },
   { key: "favorites", label: "Favoriler" },
+  { key: "saved_searches", label: "Kayitli aramalar" },
+  { key: "notifications", label: "Bildirimler" },
   { key: "reports", label: "Raporlar" },
   { key: "admin_actions", label: "Admin aksiyonlari" },
 ] as const;

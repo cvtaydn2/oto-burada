@@ -6,6 +6,7 @@ import type {
   moderationTargetTypes,
   reportReasons,
   reportStatuses,
+  notificationTypes,
   transmissionTypes,
   userRoles,
   expertInspectionGrades,
@@ -18,6 +19,7 @@ export type FuelType = (typeof fuelTypes)[number];
 export type TransmissionType = (typeof transmissionTypes)[number];
 export type ReportReason = (typeof reportReasons)[number];
 export type ReportStatus = (typeof reportStatuses)[number];
+export type NotificationType = (typeof notificationTypes)[number];
 export type ModerationTargetType = (typeof moderationTargetTypes)[number];
 export type ModerationAction = (typeof moderationActions)[number];
 export type ListingSortOption = (typeof listingSortOptions)[number];
@@ -115,6 +117,34 @@ export interface Favorite {
   userId: string;
   listingId: string;
   createdAt: string;
+}
+
+export interface SavedSearch {
+  id?: string;
+  userId: string;
+  title: string;
+  filters: ListingFilters;
+  notificationsEnabled: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface SavedSearchCreateInput {
+  title?: string;
+  filters: ListingFilters;
+  notificationsEnabled?: boolean;
+}
+
+export interface Notification {
+  id?: string;
+  userId: string;
+  type: NotificationType;
+  title: string;
+  message: string;
+  href?: string | null;
+  read: boolean;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface Report {

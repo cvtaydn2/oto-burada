@@ -28,6 +28,7 @@ Sadece arabalar için tasarlanmış, mobil öncelikli ve güven odaklı ücretsi
 - Core akışlarda klavye odağı, touch target ve mobil filtre drawer erişilebilirliği güçlendirildi
 - Dashboard genel bakış ekranı gerçek özet kartları ve hızlı yönlendirmeler ile tamamlandı
 - Listings, reports ve favorites akışı artık Supabase-first persistence ile çalışıyor
+- Saved searches ve notifications akışı Supabase-first persistence ile çalışıyor; listings sayfasından arama kaydedilip dashboard'dan yönetilebiliyor, dashboard bildirimleri de canlı olaylardan besleniyor
 - Supabase tablo erişimi başarısız olursa listings/reports için mevcut cookie fallback korunuyor
 - Public listings, detail, admin ve dashboard favorites ekranları seed + runtime kayıtları birlikte okuyabiliyor
 - Legacy cookie verileri okunurken DB kayıtları ile merge edilerek geçiş sürecinde veri kaybı riski azaltıldı
@@ -55,6 +56,7 @@ Sadece arabalar için tasarlanmış, mobil öncelikli ve güven odaklı ücretsi
 - /listings sayfasi eklendi (onceden sadece homepage uzerinden erisilebiliyordu)
 - Test scriptleri eklendi: test-api.js ve test-filters.js
 - Lint, typecheck ve production build doğrulandı
+- Dashboard `saved-searches` ve `notifications` ekranlari artik mock degil; ikisi de gercek DB verisiyle calisir
 
 ## Kurulum
 
@@ -195,4 +197,10 @@ node scripts/test-filters.js
 Listings filtreleme ve URL search params test eder.
 
 ## Sonraki Adım
-`TASKS.md` içindeki sıralı MVP görevleri tamamlandı. Sonraki mantıklı genişleme, AI Studio gorsel dilini auth sonrasi dashboard alt detay panellerine ve admin audit/persistence ic akislarina daha derin tasimak; operasyon tarafinda ise production benzeri Supabase ortaminda legacy cookie verilerini tabloya backfill etmektir.
+MVP temel olarak ayakta olsa da pazar hazirligi icin en kritik genisleme alani artik guven, karar hizi ve operasyon derinligi:
+- listing detail ve seller profilinde daha guclu guven sinyalleri eklemek
+- admin moderasyon akislarini operasyonel olarak hizlandirmak
+- smoke E2E'nin yanina daha derin API / integration testleri eklemek
+- ilan olusturma akisinda kalite bariyerleri ve guven checklist'i ile donusumu iyilestirmek
+
+Hedef, genis bir genel ilan platformunu taklit etmek degil; araba ozelinde daha sade, daha hizli ve daha guvenli bir deneyimi once kucuk ama memnun bir kullanici kitlesinde kanitlamak.

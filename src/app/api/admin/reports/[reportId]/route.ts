@@ -1,6 +1,8 @@
 import { requireAdminUser } from "@/lib/auth/session";
 import { createAdminModerationAction } from "@/services/admin/moderation-actions";
 import { updateDatabaseReportStatus } from "@/services/reports/report-submissions";
+import { getStoredListingById } from "@/services/listings/listing-submissions";
+import { createDatabaseNotification } from "@/services/notifications/notification-records";
 import type { ReportStatus } from "@/types";
 import { rateLimitProfiles } from "@/lib/utils/rate-limit";
 import { checkRateLimit } from "@/lib/utils/rate-limit-middleware";
@@ -68,6 +70,25 @@ export async function PATCH(
     note: note || `Rapor durumu ${status} olarak güncellendi.`,
     targetId: persistedReport.id ?? reportId,
     targetType: "report",
+  });
+
+  const relatedListing = await getStoredListingById(persistedReport.listingId);
+  const reportHref = relatedListing?.slug ? `/listing/${relatedListing.slug}` : null;
+  const reportStatusMessage =
+    status === "reviewing"
+      ? "incelemeye alindi"
+      : status === "resolved"
+        ? "cozuldu"
+        : "kapatildi";
+
+  await createDatabaseNotification({
+    href: reportHref,
+    message: relatedListing
+      ? `"${relatedListing.title}" ilanı icin gonderdigin rapor ${reportStatusMessage}.`
+      : `Gonderdigin rapor ${reportStatusMessage}.`,
+    title: "Rapor durumun guncellendi",
+    type: "report",
+    userId: persistedReport.reporterId,
   });
 
   return apiSuccess(
