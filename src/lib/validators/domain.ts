@@ -157,6 +157,7 @@ export const listingCreateFormSchema = z.object({
   whatsappPhone: lenientPhoneSchema,
   tramerAmount: nonNegativeNumberSchema.nullable().optional(),
   damageStatusJson: z.record(z.string(), z.any()).nullable().optional(),
+  expertInspection: expertInspectionSchema.optional(),
   images: z
     .array(
       z.object({
@@ -212,26 +213,6 @@ export const listingCreateFormSchema = z.object({
         }
       });
     }),
-  expertInspection: z
-    .object({
-      hasInspection: z.boolean(),
-      inspectionDate: optionalTrimmedString,
-      overallGrade: z.enum(expertInspectionGrades).optional(),
-      totalScore: z.coerce.number().int().min(0).max(100).optional(),
-      damageRecord: z.enum(expertInspectionStatuses),
-      bodyPaint: z.enum(expertInspectionStatuses),
-      engine: z.enum(expertInspectionStatuses),
-      transmission: z.enum(expertInspectionStatuses),
-      suspension: z.enum(expertInspectionStatuses),
-      brakes: z.enum(expertInspectionStatuses),
-      electrical: z.enum(expertInspectionStatuses),
-      interior: z.enum(expertInspectionStatuses),
-      tires: z.enum(expertInspectionStatuses),
-      acHeating: z.enum(expertInspectionStatuses),
-      notes: optionalTrimmedString,
-      inspectedBy: optionalTrimmedString,
-    })
-    .optional(),
 });
 
 export const listingSchema: z.ZodType<Listing> = z.object({
@@ -252,6 +233,8 @@ export const listingSchema: z.ZodType<Listing> = z.object({
   whatsappPhone: lenientPhoneSchema,
   tramerAmount: z.coerce.number().int().min(0).nullable().optional(),
   damageStatusJson: z.record(z.string(), z.any()).nullable().optional(),
+  fraudScore: z.coerce.number().int().min(0).max(100).optional(),
+  fraudReason: z.string().nullable().optional(),
   status: z.enum(listingStatuses),
   images: z.array(listingImageSchema),
   featured: z.boolean(),

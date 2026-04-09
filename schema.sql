@@ -63,6 +63,21 @@ begin
 end;
 $$;
 
+create extension if not exists pg_cron;
+
+-- Automatically archive approved listings older than 30 days
+select cron.schedule(
+  'expire-old-listings',
+  '0 2 * * *',
+  $$
+    update public.listings
+    set status = 'archived',
+        updated_at = timezone('utc', now())
+    where status = 'approved' 
+      and published_at < now() - interval '30 days';
+  $$
+);
+
 create table if not exists public.profiles (
   id uuid primary key references auth.users (id) on delete cascade,
   full_name text not null default '',
@@ -92,6 +107,8 @@ create table if not exists public.listings (
   whatsapp_phone text not null,
   tramer_amount bigint,
   damage_status_json jsonb,
+  fraud_score integer not null default 0 check (fraud_score between 0 and 100),
+  fraud_reason text,
   status public.listing_status not null default 'pending',
   featured boolean not null default false,
   expert_inspection jsonb,

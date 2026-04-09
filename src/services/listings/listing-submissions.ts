@@ -120,6 +120,34 @@ function buildListingSlug(input: ListingCreateInput, existingListings: Listing[]
   return `${baseSlug}-${suffix}`;
 }
 
+function calculateFraudScore(input: ListingCreateInput, existingListings: Listing[]): { fraudScore: number, fraudReason: string | null } {
+  let score = 0;
+  const reasons: string[] = [];
+
+  const isDuplicate = existingListings.some(
+    (l) => l.brand === input.brand && l.model === input.model && l.year === input.year && l.mileage === input.mileage && l.price === input.price && l.sellerId !== "" // Assuming seller constraints
+  );
+  if (isDuplicate) {
+    score += 50;
+    reasons.push("Mükerrer ilan şüphesi");
+  }
+
+  if (input.year >= 2018 && input.price < 300000) {
+    score += 60;
+    reasons.push("Pazar ortalamasının çok altında şüpheli fiyat");
+  }
+
+  if (input.damageStatusJson && input.tramerAmount === 0) {
+    const changedPartsCount = Object.values(input.damageStatusJson).filter(s => s === "degisen" || s === "boyali").length;
+    if (changedPartsCount >= 3) {
+      score += 20;
+      reasons.push("Çoklu boya/değişen kaydına rağmen hasar kaydı 0");
+    }
+  }
+
+  return { fraudScore: Math.min(score, 100), fraudReason: reasons.length > 0 ? reasons.join(", ") : null };
+}
+
 function buildListingRecord(
   input: ListingCreateInput,
   sellerId: string,

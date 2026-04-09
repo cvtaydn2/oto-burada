@@ -64,6 +64,8 @@ export interface Listing {
   whatsappPhone: string;
   tramerAmount?: number | null;
   damageStatusJson?: Record<string, any> | null;
+  fraudScore?: number;
+  fraudReason?: string | null;
   status: ListingStatus;
   images: ListingImage[];
   featured: boolean;
@@ -204,19 +206,20 @@ export interface ExpertInspection {
   overallGrade?: ExpertInspectionGrade;
   totalScore?: number;
   
-  damageRecord: ExpertInspectionStatus;
-  bodyPaint: ExpertInspectionStatus;
-  engine: ExpertInspectionStatus;
-  transmission: ExpertInspectionStatus;
-  suspension: ExpertInspectionStatus;
-  brakes: ExpertInspectionStatus;
-  electrical: ExpertInspectionStatus;
-  interior: ExpertInspectionStatus;
-  tires: ExpertInspectionStatus;
-  acHeating: ExpertInspectionStatus;
+  damageRecord?: ExpertInspectionStatus;
+  bodyPaint?: ExpertInspectionStatus;
+  engine?: ExpertInspectionStatus;
+  transmission?: ExpertInspectionStatus;
+  suspension?: ExpertInspectionStatus;
+  brakes?: ExpertInspectionStatus;
+  electrical?: ExpertInspectionStatus;
+  interior?: ExpertInspectionStatus;
+  tires?: ExpertInspectionStatus;
+  acHeating?: ExpertInspectionStatus;
   
   notes?: string;
   inspectedBy?: string;
+  documentUrl?: string; // Tramer/Ekspertiz Kanıt Dosyası
 }
 
 export const expertInspectionGradeInfo: { grade: ExpertInspectionGrade; label: string; color: string }[] = [

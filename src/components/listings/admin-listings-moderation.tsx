@@ -9,6 +9,7 @@ import {
   MapPin,
   MessageCircle,
   Sparkles,
+  TriangleAlert,
   XCircle,
 } from "lucide-react";
 import { useState } from "react";
@@ -127,6 +128,20 @@ export function AdminListingsModeration({ pendingListings }: AdminListingsModera
                       {insight.badgeLabel}
                     </span>
                   </div>
+                  
+                  {(listing.fraudScore ?? 0) > 0 && (
+                    <div className="rounded-xl border border-rose-200 bg-rose-50/50 p-4">
+                      <div className="flex items-center gap-2 text-sm font-bold text-rose-700">
+                        <TriangleAlert className="size-5" />
+                        Sistem Güvenlik Skoru (Yüksek Risk): {listing.fraudScore} Puan
+                      </div>
+                      {listing.fraudReason && (
+                        <p className="mt-1.5 text-xs font-medium text-rose-600">
+                          {listing.fraudReason}
+                        </p>
+                      )}
+                    </div>
+                  )}
 
                   <div className="flex flex-wrap gap-2 text-xs font-medium text-muted-foreground sm:text-sm">
                     <span className="rounded-full border border-border/70 bg-muted/30 px-3 py-1.5">

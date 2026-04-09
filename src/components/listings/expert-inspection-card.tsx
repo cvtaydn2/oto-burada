@@ -168,6 +168,30 @@ export function ExpertInspectionCard({
           </p>
         </div>
       )}
+
+      {expertInspection.documentUrl && (
+        <div className="border-t border-border/60 bg-emerald-50/50 px-5 py-4">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div>
+              <p className="text-sm font-semibold text-emerald-800 flex items-center gap-2">
+                <CheckCircle2 className="size-4" />
+                Doğrulanmış Ekspertiz Belgesi
+              </p>
+              <p className="text-xs text-emerald-600/80 mt-0.5">
+                Bu araç için sisteme bağımsız ekspertiz raporu/kanıtı yüklenmiştir.
+              </p>
+            </div>
+            <a
+              href={expertInspection.documentUrl}
+              target="_blank"
+              rel="noreferrer"
+              className="inline-flex shrink-0 items-center justify-center gap-2 rounded-xl bg-emerald-600 px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-emerald-700"
+            >
+              Raporu Görüntüle
+            </a>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
