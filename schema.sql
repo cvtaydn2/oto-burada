@@ -113,6 +113,7 @@ create table if not exists public.listings (
   featured boolean not null default false,
   expert_inspection jsonb,
   published_at timestamptz,
+  bumped_at timestamptz,
   created_at timestamptz not null default timezone('utc', now()),
   updated_at timestamptz not null default timezone('utc', now())
 );

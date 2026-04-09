@@ -13,8 +13,9 @@ Her yeni geliştirme başlamadan önce okunmalıdır.
 ---
 
 ## Proje Durumu
-- Güncel faz: `Data & Feature Expansion`
-- Güncel görev: `Tamamlandı - Car Catalog, Locations, Expert Inspection`
+- Güncel faz: `Trust & Operasyon (Dalga 2) Tamamlandı`
+- Güncel görev: `Ekspertiz Yükleme + Moderasyon Şablonları + Fraud Heuristics tamamlandı`
+- Sonraki hedef: `Dalga 2.5 (Bump sistemi) veya Dalga 3 (SEO altyapısı)`
 - Durum: completed
 
 ---

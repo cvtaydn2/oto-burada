@@ -4,7 +4,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { Archive, Loader2, Pencil, Plus, RotateCcw, X } from "lucide-react";
+import { Archive, ArrowUpCircle, Loader2, Pencil, Plus, RotateCcw, X } from "lucide-react";
 
 import { formatCurrency, formatNumber } from "@/lib/utils";
 import type { Listing } from "@/types";
@@ -36,6 +36,8 @@ export function MyListingsPanel({ activeEditId, listings, children }: MyListings
   const [showForm, setShowForm] = useState(!!activeEditId);
   const [archivingId, setArchivingId] = useState<string | null>(null);
   const [archiveError, setArchiveError] = useState<string | null>(null);
+  const [bumpingId, setBumpingId] = useState<string | null>(null);
+  const [bumpMessage, setBumpMessage] = useState<string | null>(null);
 
   const handleArchive = async (listingId: string) => {
     setArchivingId(listingId);
@@ -56,11 +58,37 @@ export function MyListingsPanel({ activeEditId, listings, children }: MyListings
     }
   };
 
+  const handleBump = async (listingId: string) => {
+    setBumpingId(listingId);
+    setBumpMessage(null);
+
+    try {
+      const response = await fetch(`/api/listings/${listingId}/bump`, { method: "POST" });
+      const payload = await response.json().catch(() => null) as { success?: boolean; message?: string; error?: { message: string } } | null;
+
+      if (!response.ok || !payload?.success) {
+        setBumpMessage(payload?.error?.message ?? "İlan yenilenemedi.");
+        return;
+      }
+
+      setBumpMessage(payload.message ?? "İlan yenilendi!");
+      router.refresh();
+    } finally {
+      setBumpingId(null);
+    }
+  };
+
   return (
     <div className="space-y-4">
       {archiveError ? (
         <p className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
           {archiveError}
+        </p>
+      ) : null}
+
+      {bumpMessage ? (
+        <p className="rounded-lg border border-blue-200 bg-blue-50 px-4 py-3 text-sm text-blue-700">
+          {bumpMessage}
         </p>
       ) : null}
 
@@ -107,7 +135,9 @@ export function MyListingsPanel({ activeEditId, listings, children }: MyListings
                 key={listing.id}
                 listing={listing}
                 isArchiving={archivingId === listing.id}
+                isBumping={bumpingId === listing.id}
                 onArchive={handleArchive}
+                onBump={handleBump}
               />
             ))}
           </div>
@@ -120,13 +150,28 @@ export function MyListingsPanel({ activeEditId, listings, children }: MyListings
 function ListingCard({
   listing,
   isArchiving,
+  isBumping,
   onArchive,
+  onBump,
 }: {
   listing: Listing;
   isArchiving: boolean;
+  isBumping: boolean;
   onArchive: (id: string) => void;
+  onBump: (id: string) => void;
 }) {
   const isArchived = listing.status === "archived";
+  const isApproved = listing.status === "approved";
+
+  const canBump = isApproved && (() => {
+    if (!listing.bumpedAt) return true;
+    const cooldownEnd = new Date(new Date(listing.bumpedAt).getTime() + 7 * 24 * 60 * 60 * 1000);
+    return new Date() >= cooldownEnd;
+  })();
+
+  const bumpCooldownDays = listing.bumpedAt
+    ? Math.max(0, Math.ceil((new Date(listing.bumpedAt).getTime() + 7 * 24 * 60 * 60 * 1000 - Date.now()) / (24 * 60 * 60 * 1000)))
+    : 0;
 
   return (
     <div className={`flex gap-3 rounded-xl border border-gray-200 bg-white p-3 shadow-sm ${isArchived ? "opacity-60" : ""}`}>
@@ -170,6 +215,22 @@ function ListingCard({
           <Pencil className="size-4" />
           Düzenle
         </Link>
+        {isApproved && (
+          <button
+            type="button"
+            onClick={() => onBump(listing.id)}
+            disabled={isBumping || !canBump}
+            title={canBump ? "İlanı listenin üstüne taşı" : `${bumpCooldownDays} gün sonra yenileyebilirsin`}
+            className="flex items-center justify-center gap-1 rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm font-semibold text-emerald-700 hover:bg-emerald-100 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {isBumping ? (
+              <Loader2 className="size-4 animate-spin" />
+            ) : (
+              <ArrowUpCircle className="size-4" />
+            )}
+            {canBump ? "Yenile" : `${bumpCooldownDays}g`}
+          </button>
+        )}
         {isArchived ? (
           <span className="flex items-center justify-center gap-1 rounded-lg bg-gray-100 px-3 py-2 text-sm text-gray-500">
             <RotateCcw className="size-4" />

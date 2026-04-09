@@ -70,6 +70,7 @@ export interface Listing {
   images: ListingImage[];
   featured: boolean;
   expertInspection?: ExpertInspection;
+  bumpedAt?: string | null;
   createdAt: string;
   updatedAt: string;
 }

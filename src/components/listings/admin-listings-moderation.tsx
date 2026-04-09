@@ -212,6 +212,31 @@ export function AdminListingsModeration({ pendingListings }: AdminListingsModera
                     >
                       Moderasyon notu
                     </label>
+                    <div className="mt-2 flex flex-wrap gap-1.5">
+                      {[
+                        "Kurallara uygun, onaylandı",
+                        "Eksik veya düşük kaliteli fotoğraf",
+                        "Yanıltıcı veya tutarsız bilgi",
+                        "Mükerrer/tekrar ilan",
+                        "Uygunsuz içerik veya dil",
+                        "Şüpheli fiyat (dolandırıcılık riski)",
+                        "WhatsApp numarası doğrulanamadı",
+                      ].map((preset) => (
+                        <button
+                          key={preset}
+                          type="button"
+                          onClick={() =>
+                            setNotesByListingId((current) => ({
+                              ...current,
+                              [listing.id]: preset,
+                            }))
+                          }
+                          className="rounded-full border border-border/60 bg-background px-2.5 py-1 text-[11px] font-medium text-muted-foreground transition-colors hover:border-primary/40 hover:text-primary"
+                        >
+                          {preset}
+                        </button>
+                      ))}
+                    </div>
                     <textarea
                       id={`listing-note-${listing.id}`}
                       value={notesByListingId[listing.id] ?? ""}

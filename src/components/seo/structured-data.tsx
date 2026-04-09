@@ -150,3 +150,31 @@ export function ListingDetailStructuredData({ listing, url }: ListingDetailStruc
     />
   );
 }
+
+interface WebSiteStructuredDataProps {
+  url: string;
+}
+
+export function WebSiteStructuredData({ url }: WebSiteStructuredDataProps) {
+  const schema = {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    "name": "OtoBurada",
+    "url": url,
+    "potentialAction": {
+      "@type": "SearchAction",
+      "target": {
+        "@type": "EntryPoint",
+        "urlTemplate": `${url}/listings?query={search_term_string}`,
+      },
+      "query-input": "required name=search_term_string",
+    },
+  };
+
+  return (
+    <script
+      type="application/ld+json"
+      dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }}
+    />
+  );
+}

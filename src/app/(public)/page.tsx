@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
 
 import { ListingsPageClient } from "@/components/listings/listings-page-client";
-import { ListingStructuredData, OrganizationStructuredData } from "@/components/seo/structured-data";
+import { ListingStructuredData, OrganizationStructuredData, WebSiteStructuredData } from "@/components/seo/structured-data";
 import { brandCatalog, cityOptions } from "@/data";
-import { buildListingsMetadata } from "@/lib/seo";
+import { buildListingsMetadata, getAppUrl } from "@/lib/seo";
 import { parseListingFiltersFromSearchParams } from "@/services/listings/listing-filters";
 import { getPublicMarketplaceListings } from "@/services/listings/marketplace-listings";
 
@@ -27,15 +27,17 @@ export default async function HomePage({ searchParams }: ListingsPageProps) {
   const initialFilters = parseListingFiltersFromSearchParams(resolvedSearchParams);
   const initialFiltersKey = JSON.stringify(initialFilters);
   const listings = await getPublicMarketplaceListings();
+  const appUrl = getAppUrl();
 
   return (
     <>
+      <WebSiteStructuredData url={appUrl} />
       <OrganizationStructuredData 
         name="OtoBurada"
-        url="https://otoburada.com"
+        url={appUrl}
         description="Türkiye'nin en güvenilir 2. el ve sıfır otomobil pazarı. Binlerce araç içinden hayalindeki arabayı bul."
       />
-      <ListingStructuredData listings={listings} url="https://otoburada.com" />
+      <ListingStructuredData listings={listings} url={appUrl} />
       <ListingsPageClient
         key={initialFiltersKey}
         listings={listings}

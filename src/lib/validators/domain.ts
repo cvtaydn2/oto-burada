@@ -239,6 +239,7 @@ export const listingSchema: z.ZodType<Listing> = z.object({
   images: z.array(listingImageSchema),
   featured: z.boolean(),
   expertInspection: expertInspectionSchema.optional(),
+  bumpedAt: timestampSchema.nullable().optional(),
   createdAt: timestampSchema,
   updatedAt: timestampSchema,
 });

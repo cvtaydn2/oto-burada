@@ -211,6 +211,12 @@ export default async function ListingDetailPage({ params }: ListingDetailPagePro
                 className="h-11 rounded-xl border border-slate-200 bg-white shadow-sm px-5 hover:bg-slate-50 font-medium text-sm gap-2 text-slate-700 flex items-center"
               />
               <ShareButton title={`${listing.brand} ${listing.model} - ${listing.title}`} price={listing.price} />
+              <Link
+                href={`/compare?ids=${listing.id}`}
+                className="h-11 rounded-xl border border-indigo-200 bg-indigo-50 shadow-sm px-4 hover:bg-indigo-100 font-medium text-sm gap-1.5 text-indigo-700 flex items-center transition-colors"
+              >
+                Karşılaştır
+              </Link>
             </div>
           </div>
         </div>

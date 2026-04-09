@@ -58,6 +58,7 @@ interface ListingRow {
   title: string;
   transmission: Listing["transmission"];
   updated_at: string;
+  bumped_at: string | null;
   whatsapp_phone: string;
   year: number;
 }
@@ -82,6 +83,7 @@ const listingSelect = `
   featured,
   created_at,
   updated_at,
+  bumped_at,
   listing_images (
     id,
     listing_id,
@@ -228,6 +230,7 @@ function mapListingRow(row: ListingRow) {
     title: row.title,
     transmission: row.transmission,
     updatedAt: row.updated_at,
+    bumpedAt: row.bumped_at ?? null,
     whatsappPhone: row.whatsapp_phone,
     year: row.year,
   });
