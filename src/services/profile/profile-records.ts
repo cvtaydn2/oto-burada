@@ -17,9 +17,9 @@ interface ProfileRow {
 }
 
 function mapProfileRow(row: ProfileRow) {
-  return profileSchema.parse({
+  const parsed = profileSchema.safeParse({
     avatarUrl: row.avatar_url,
-    city: row.city,
+    city: row.city || "",
     createdAt: row.created_at,
     fullName: row.full_name,
     id: row.id,
@@ -27,6 +27,21 @@ function mapProfileRow(row: ProfileRow) {
     role: row.role,
     updatedAt: row.updated_at,
   });
+
+  if (parsed.success) {
+    return parsed.data;
+  }
+
+  return {
+    id: row.id,
+    fullName: row.full_name || "Kullanıcı",
+    phone: row.phone || "",
+    city: "",
+    avatarUrl: row.avatar_url,
+    role: row.role || "user",
+    createdAt: row.created_at,
+    updatedAt: row.updated_at,
+  };
 }
 
 export function buildProfileFromAuthUser(user: User) {

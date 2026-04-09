@@ -735,7 +735,7 @@ export async function findEditableListingById(listingId: string, sellerId: strin
   const dbListings = await getDatabaseListings({
     listingId,
     sellerId,
-    statuses: ["draft", "pending"],
+    statuses: ["draft", "pending", "approved", "rejected"],
   });
 
   if (dbListings && dbListings.length > 0) {

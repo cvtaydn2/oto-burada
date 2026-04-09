@@ -12,6 +12,7 @@ import {
   getStoredListings,
 } from "@/services/listings/listing-submissions";
 import { ensureProfileRecord } from "@/services/profile/profile-records";
+import { checkListingLimit } from "@/services/listings/listing-limits";
 
 export async function POST(request: Request) {
   const ipRateLimit = enforceRateLimit(
@@ -58,6 +59,11 @@ export async function POST(request: Request) {
 
   if (userError || !user) {
     return apiError(API_ERROR_CODES.UNAUTHORIZED, "Oturum doğrulanamadı. Lütfen tekrar giriş yap.", 401);
+  }
+
+  const listingLimit = await checkListingLimit(user.id);
+  if (!listingLimit.allowed) {
+    return apiError(API_ERROR_CODES.FORBIDDEN, listingLimit.reason ?? "İlan sınırına ulaştın.", 403);
   }
 
   const userRateLimit = enforceRateLimit(

@@ -61,10 +61,6 @@ export async function PATCH(
     return apiError(API_ERROR_CODES.NOT_FOUND, "Düzenlenebilir ilan bulunamadı.", 404);
   }
 
-  if (existingListing.status === "archived") {
-    return apiError(API_ERROR_CODES.FORBIDDEN, "Arşivlenmiş ilanlar düzenlenemez.", 403);
-  }
-
   const normalizedInput = {
     ...parsedFormValues.data,
     title: sanitizeText(parsedFormValues.data.title),
