@@ -1,4 +1,4 @@
-import { requireAdminUser } from "@/lib/auth/session";
+import { requireApiAdminUser } from "@/lib/auth/api-admin";
 import { createAdminModerationAction } from "@/services/admin/moderation-actions";
 import { updateDatabaseReportStatus } from "@/services/reports/report-submissions";
 import { getStoredListingById } from "@/services/listings/listing-submissions";
@@ -30,7 +30,11 @@ export async function PATCH(
     return apiError(API_ERROR_CODES.RATE_LIMITED, "Çok fazla rapor isteği. Lütfen bekle.", 429);
   }
 
-  const adminUser = await requireAdminUser();
+  const adminUser = await requireApiAdminUser();
+
+  if (adminUser instanceof Response) {
+    return adminUser;
+  }
 
   let body: unknown;
 

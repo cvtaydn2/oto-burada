@@ -28,13 +28,18 @@ interface AdminListingsModerationProps {
 export function AdminListingsModeration({ pendingListings }: AdminListingsModerationProps) {
   const router = useRouter();
   const [activeAction, setActiveAction] = useState<string | null>(null);
+  const [activeBulkAction, setActiveBulkAction] = useState<"approve" | "reject" | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [notesByListingId, setNotesByListingId] = useState<Record<string, string>>({});
+  const [selectedListingIds, setSelectedListingIds] = useState<string[]>([]);
+  const [bulkNote, setBulkNote] = useState("");
 
   const [editingListingId, setEditingListingId] = useState<string | null>(null);
   const [editValues, setEditValues] = useState<{ title: string; price: number; description: string } | null>(null);
   const [isSavingEdit, setIsSavingEdit] = useState(false);
+  const allPendingListingIds = pendingListings.map((listing) => listing.id);
+  const allSelected = pendingListings.length > 0 && selectedListingIds.length === pendingListings.length;
 
   if (pendingListings.length === 0) {
     return (
@@ -51,6 +56,7 @@ export function AdminListingsModeration({ pendingListings }: AdminListingsModera
   const handleModeration = async (listingId: string, action: "approve" | "reject") => {
     setActiveAction(`${listingId}:${action}`);
     setErrorMessage(null);
+    setSuccessMessage(null);
 
     try {
       const response = await fetch(`/api/admin/listings/${listingId}/moderate`, {
@@ -74,11 +80,79 @@ export function AdminListingsModeration({ pendingListings }: AdminListingsModera
         ...current,
         [listingId]: "",
       }));
+      setSelectedListingIds((current) => current.filter((id) => id !== listingId));
+      setSuccessMessage(action === "approve" ? "İlan onaylandı." : "İlan reddedildi.");
       router.refresh();
     } catch {
       setErrorMessage("Bağlantı sırasında bir hata oluştu. Lütfen tekrar dene.");
     } finally {
       setActiveAction(null);
+    }
+  };
+
+  const toggleListingSelection = (listingId: string) => {
+    setSelectedListingIds((current) =>
+      current.includes(listingId)
+        ? current.filter((id) => id !== listingId)
+        : [...current, listingId],
+    );
+  };
+
+  const handleBulkModeration = async (
+    action: "approve" | "reject",
+    listingIds: string[],
+  ) => {
+    const uniqueListingIds = [...new Set(listingIds)];
+
+    if (uniqueListingIds.length === 0) {
+      setErrorMessage("Toplu moderasyon için en az bir ilan seç.");
+      return;
+    }
+
+    setActiveBulkAction(action);
+    setErrorMessage(null);
+    setSuccessMessage(null);
+
+    try {
+      const response = await fetch("/api/admin/listings/bulk-moderate", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          action,
+          listingIds: uniqueListingIds,
+          note: bulkNote.trim() || undefined,
+        }),
+      });
+      const payload = (await response.json().catch(() => null)) as
+        | {
+            success?: boolean;
+            message?: string;
+            data?: { moderatedListingIds?: string[]; skippedListingIds?: string[] };
+            error?: { message?: string };
+          }
+        | null;
+
+      if (!response.ok || !payload?.success) {
+        setErrorMessage(payload?.error?.message ?? "Toplu moderasyon işlemi tamamlanamadı.");
+        return;
+      }
+
+      const moderatedIds = payload.data?.moderatedListingIds ?? [];
+      const skippedIds = payload.data?.skippedListingIds ?? [];
+      setSelectedListingIds((current) => current.filter((id) => !moderatedIds.includes(id)));
+      setBulkNote("");
+      setSuccessMessage(
+        skippedIds.length > 0
+          ? `${payload.message ?? "Toplu moderasyon tamamlandı."} ${skippedIds.length} ilan atlandı.`
+          : payload.message ?? "Toplu moderasyon tamamlandı.",
+      );
+      router.refresh();
+    } catch {
+      setErrorMessage("Toplu moderasyon sırasında bağlantı hatası oluştu.");
+    } finally {
+      setActiveBulkAction(null);
     }
   };
 
@@ -158,6 +232,80 @@ export function AdminListingsModeration({ pendingListings }: AdminListingsModera
       )}
 
       <div className="mt-6 space-y-6">
+        <div className="rounded-[1.5rem] border border-border/70 bg-muted/20 p-4">
+          <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+            <div className="space-y-2">
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="rounded-full border border-border/70 bg-background px-3 py-1 text-xs font-semibold text-foreground">
+                  {selectedListingIds.length} secili ilan
+                </span>
+                <button
+                  type="button"
+                  onClick={() => setSelectedListingIds(allSelected ? [] : allPendingListingIds)}
+                  className="rounded-full border border-border/70 bg-background px-3 py-1 text-xs font-semibold text-muted-foreground transition-colors hover:border-primary/40 hover:text-primary"
+                >
+                  {allSelected ? "Secimi temizle" : "Tumunu sec"}
+                </button>
+              </div>
+              <p className="text-sm text-muted-foreground">
+                Secili bekleyen ilanlari tek hamlede onayla ya da reddet.
+              </p>
+            </div>
+
+            <div className="flex flex-wrap gap-2">
+              <button
+                type="button"
+                disabled={activeBulkAction !== null || selectedListingIds.length === 0}
+                onClick={() => void handleBulkModeration("approve", selectedListingIds)}
+                className="inline-flex h-11 items-center justify-center gap-2 rounded-xl bg-primary px-4 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-60"
+              >
+                {activeBulkAction === "approve" ? (
+                  <LoaderCircle className="size-4 animate-spin" />
+                ) : (
+                  <CheckCircle2 className="size-4" />
+                )}
+                Secilenleri onayla
+              </button>
+              <button
+                type="button"
+                disabled={activeBulkAction !== null || selectedListingIds.length === 0}
+                onClick={() => void handleBulkModeration("reject", selectedListingIds)}
+                className="inline-flex h-11 items-center justify-center gap-2 rounded-xl border border-border bg-background px-4 text-sm font-semibold text-foreground transition-colors hover:bg-muted disabled:cursor-not-allowed disabled:opacity-60"
+              >
+                {activeBulkAction === "reject" ? (
+                  <LoaderCircle className="size-4 animate-spin" />
+                ) : (
+                  <XCircle className="size-4" />
+                )}
+                Secilenleri reddet
+              </button>
+              <button
+                type="button"
+                disabled={activeBulkAction !== null || pendingListings.length === 0}
+                onClick={() => void handleBulkModeration("approve", allPendingListingIds)}
+                className="inline-flex h-11 items-center justify-center gap-2 rounded-xl border border-emerald-200 bg-emerald-50 px-4 text-sm font-semibold text-emerald-700 transition-colors hover:bg-emerald-100 disabled:cursor-not-allowed disabled:opacity-60"
+              >
+                <Sparkles className="size-4" />
+                Tumunu onayla
+              </button>
+            </div>
+          </div>
+
+          <div className="mt-4">
+            <label htmlFor="bulk-moderation-note" className="text-xs font-medium text-muted-foreground">
+              Toplu moderasyon notu
+            </label>
+            <textarea
+              id="bulk-moderation-note"
+              value={bulkNote}
+              onChange={(event) => setBulkNote(event.target.value)}
+              placeholder="Opsiyonel not: secili ilanlar icin ortak moderasyon notu"
+              rows={3}
+              className="mt-2 min-h-24 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm text-foreground outline-none transition-colors placeholder:text-muted-foreground focus:border-primary"
+            />
+          </div>
+        </div>
+
         {pendingListings.map((listing) => {
           const approving = activeAction === `${listing.id}:approve`;
           const rejecting = activeAction === `${listing.id}:reject`;
@@ -177,6 +325,22 @@ export function AdminListingsModeration({ pendingListings }: AdminListingsModera
             >
               <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
                 <div className="min-w-0 space-y-4">
+                  <div className="flex items-center gap-3">
+                    <input
+                      id={`listing-select-${listing.id}`}
+                      type="checkbox"
+                      checked={selectedListingIds.includes(listing.id)}
+                      onChange={() => toggleListingSelection(listing.id)}
+                      className="size-4 rounded border-border text-primary focus:ring-primary"
+                    />
+                    <label
+                      htmlFor={`listing-select-${listing.id}`}
+                      className="text-sm font-medium text-muted-foreground"
+                    >
+                      Toplu moderasyona dahil et
+                    </label>
+                  </div>
+
                   <div className="flex flex-wrap items-center gap-3">
                     <span className="inline-flex rounded-full bg-sky-100 px-3 py-1 text-xs font-semibold text-sky-700">
                       Incelemede

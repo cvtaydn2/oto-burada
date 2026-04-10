@@ -2,8 +2,10 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { Menu, X, Search, User as UserIcon, Heart, PlusCircle } from "lucide-react";
+import { Menu, X, User as UserIcon, Heart, PlusCircle } from "lucide-react";
 import type { User } from "@supabase/supabase-js";
+import { SearchWithSuggestions } from "@/components/ui/search-with-suggestions";
+import type { SearchSuggestionItem } from "@/types";
 
 interface HeaderMobileNavProps {
   user: User | null;
@@ -11,9 +13,24 @@ interface HeaderMobileNavProps {
   accountHref: string;
   favoritesHref: string;
   postListingHref: string;
+  searchSuggestions: SearchSuggestionItem[];
 }
 
-export function HeaderMobileNav({ user, isAdmin, accountHref, favoritesHref, postListingHref }: HeaderMobileNavProps) {
+const mobileQuickLinks = [
+  { href: "/listings", label: "Tüm İlanlar" },
+  { href: "/listings?transmission=otomatik", label: "Otomatik" },
+  { href: "/listings?maxMileage=80000&sort=mileage_asc", label: "Düşük KM" },
+  { href: "/listings?minYear=2020&sort=year_desc", label: "Yeni Model" },
+] as const;
+
+export function HeaderMobileNav({
+  user,
+  isAdmin,
+  accountHref,
+  favoritesHref,
+  postListingHref,
+  searchSuggestions,
+}: HeaderMobileNavProps) {
   const [isOpen, setIsOpen] = useState(false);
 
   return (
@@ -29,14 +46,10 @@ export function HeaderMobileNav({ user, isAdmin, accountHref, favoritesHref, pos
       {isOpen && (
         <div className="absolute top-16 left-0 right-0 bg-white border-b border-slate-200 shadow-xl animate-in slide-in-from-top-2">
           <div className="p-4 space-y-4">
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
-              <input 
-                type="text" 
-                placeholder="Marka, model ara..." 
-                className="w-full h-11 pl-10 pr-4 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:border-indigo-500"
-              />
-            </div>
+            <SearchWithSuggestions
+              placeholder="Marka, model veya şehir ara..."
+              suggestions={searchSuggestions}
+            />
 
             <div className="flex flex-col gap-2">
               <Link 
@@ -76,15 +89,16 @@ export function HeaderMobileNav({ user, isAdmin, accountHref, favoritesHref, pos
 
             <div className="pt-2 border-t border-slate-100">
               <div className="flex gap-2 overflow-x-auto pb-2">
-                <Link href="/" className="shrink-0 px-4 py-2 rounded-full bg-indigo-50 text-indigo-700 text-sm font-medium">
-                  Otomobil
-                </Link>
-                <Link href="/?category=suv" className="shrink-0 px-4 py-2 rounded-full bg-slate-100 text-slate-600 text-sm font-medium">
-                  SUV
-                </Link>
-                <Link href="/?category=elektrikli" className="shrink-0 px-4 py-2 rounded-full bg-slate-100 text-slate-600 text-sm font-medium">
-                  Elektrikli
-                </Link>
+                {mobileQuickLinks.map((item) => (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    onClick={() => setIsOpen(false)}
+                    className="shrink-0 px-4 py-2 rounded-full bg-slate-100 text-slate-600 text-sm font-medium"
+                  >
+                    {item.label}
+                  </Link>
+                ))}
               </div>
             </div>
           </div>

@@ -1,9 +1,5 @@
-import { requireAdminUser } from "@/lib/auth/session";
-import { createAdminModerationAction } from "@/services/admin/moderation-actions";
-import {
-  moderateDatabaseListing,
-} from "@/services/listings/listing-submissions";
-import { createDatabaseNotification } from "@/services/notifications/notification-records";
+import { requireApiAdminUser } from "@/lib/auth/api-admin";
+import { moderateListingWithSideEffects } from "@/services/admin/listing-moderation";
 import { rateLimitProfiles } from "@/lib/utils/rate-limit";
 import { checkRateLimit } from "@/lib/utils/rate-limit-middleware";
 import { headers } from "next/headers";
@@ -28,7 +24,11 @@ export async function POST(
     return apiError(API_ERROR_CODES.RATE_LIMITED, "Çok fazla moderasyon isteği. Lütfen bekle.", 429);
   }
 
-  const adminUser = await requireAdminUser();
+  const adminUser = await requireApiAdminUser();
+
+  if (adminUser instanceof Response) {
+    return adminUser;
+  }
 
   let body: unknown;
 
@@ -53,37 +53,16 @@ export async function POST(
   }
 
   const { listingId } = await context.params;
-  const persistedListing = await moderateDatabaseListing(
+  const persistedListing = await moderateListingWithSideEffects({
+    action,
+    adminUserId: adminUser.id,
     listingId,
-    action === "approve" ? "approved" : "rejected",
-  );
+    note,
+  });
 
   if (!persistedListing) {
     return apiError(API_ERROR_CODES.NOT_FOUND, "İncelenecek ilan bulunamadı.", 404);
   }
-
-  await createAdminModerationAction({
-    action: action === "approve" ? "approve" : "reject",
-    adminUserId: adminUser.id,
-    note:
-      note ||
-      (action === "approve"
-        ? `${persistedListing.title} ilanı onaylandı.`
-        : `${persistedListing.title} ilanı reddedildi.`),
-    targetId: persistedListing.id,
-    targetType: "listing",
-  });
-
-  await createDatabaseNotification({
-    href: `/dashboard/listings?edit=${persistedListing.id}`,
-    message:
-      action === "approve"
-        ? `"${persistedListing.title}" ilanin yayinlandi. Artik public listede gorunuyor.`
-        : `"${persistedListing.title}" ilanin moderasyon tarafindan reddedildi. Notlari inceleyip guncelleyebilirsin.`,
-    title: action === "approve" ? "Ilanin onaylandi" : "Ilanin reddedildi",
-    type: "moderation",
-    userId: persistedListing.sellerId,
-  });
 
   return apiSuccess(
     {

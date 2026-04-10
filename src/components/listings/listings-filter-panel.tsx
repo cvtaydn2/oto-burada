@@ -4,8 +4,8 @@ import { useState, useMemo, type ChangeEvent } from "react";
 import { fuelTypes, listingSortOptions, maximumCarYear, maximumMileage, minimumCarYear, transmissionTypes } from "@/lib/constants/domain";
 import { SlidersHorizontal, ChevronDown, ChevronUp, Search, X } from "lucide-react";
 import { cn } from "@/lib/utils";
-import type { BrandCatalogItem, CityOption } from "@/data";
 import type { ListingFilters, ListingSortOption } from "@/types";
+import type { BrandCatalogItem, CityOption } from "@/types";
 
 interface QuickPreset {
   description: string;

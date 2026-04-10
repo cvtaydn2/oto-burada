@@ -59,8 +59,8 @@ Moderasyon ve satıcı deneyimini olgunlaştırmak.
   - [ ] Admin'in ilan başlığı, fiyat veya açıklamasını direkt düzenleyebilmesi (küçük düzeltmeler)
   - [ ] Düzenleme yapıldığında audit log'a "edit" aksiyonu kaydedilmesi
 - [ ] **Toplu Moderasyon:**
-  - [ ] Birden fazla ilanı seçip tek tuşla onaylama/reddetme
-  - [ ] "Tümünü onayla" ve "Seçilenleri reddet" butonları
+  - [x] Birden fazla ilanı seçip tek tuşla onaylama/reddetme
+  - [x] "Tümünü onayla" ve "Seçilenleri reddet" butonları
 - [ ] **E-posta Bildirimleri:**
   - [ ] İlan onaylandığında satıcıya e-posta
   - [ ] İlan reddedildiğinde satıcıya sebepli e-posta

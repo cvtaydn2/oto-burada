@@ -51,7 +51,26 @@
 - Filter reset buttons work correctly
 - Mobile responsive breakpoints verified
 
-**Production Readiness:** Project passes lint, typecheck, and build verification. Playwright smoke suite live DB bos olabildigi durumlara gore dayanikli hale getirildi; son durumda `32 passed / 4 skipped`.
+**Production Readiness:** Project passes lint, typecheck, build ve Playwright verification. Son durumda suite `44/44` geçti.
+
+---
+
+## 2026-04-11 Canli Referans Verisi UI Temizligi
+
+### Tamamlanan duzeltmeler
+- Header arama onerileri artik statik katalogdan degil, canli ilanlardan turetilen marka/model/sehir suggestion setinden besleniyor
+- Mobil menu icindeki arama alanı ayni canlı suggestion zincirine baglandi; bos input hissi veren fake kutu kaldirildi
+- Mobil quick link'lerde desteklenmeyen `category` parametreleri yerine gercek filtre query'leri kullanildi
+- Footer marka/sehir sayaçları ve populer marka listesi canli DB referanslariyla hizalandi
+- Dashboard profil ekranindaki sehir secimi ve dashboard ilan formundaki marka/model/sehir/ilce select'leri canli DB-first hale getirildi
+- Duzenlenen ilanin markasi, modeli, sehri veya ilcesi canli referans setinde yoksa form icinde korunarak veri kaybi engellendi
+
+### Dogrulama sonucu
+- Lint, typecheck ve build yeniden gecti
+- Playwright suite `44/44` gecti
+
+### Sonraki UI notu
+- Tamamen bos DB senaryosunda create/profile form select'leri daha zayif kalabilir; ileride ayri reference table veya admin referans yonetimi dusunulmeli
 
 ---
 
@@ -235,9 +254,48 @@ Bu bölüm backend geliştirmelerine bağımlı UI güncellemelerini takip eder.
 ### Sonraki UI odağı
 - Dalga 2.5 kapsaminda admin edit semantigi ve toplu moderasyon ergonomisi
 
-### Doğrulama sonucu
-- Lint, typecheck ve build yeniden geçti
-- Playwright suite `32 passed / 4 skipped` sonucuna geldi
+---
 
-### Kalan UI boslugu
-- Gercek kimlik, telefon ve e-posta verification rozetleri icin profile seviyesinde ayrik verification alanlari ve bu alanlari besleyen operasyon akisi henuz yok
+## 2026-04-11 Admin Moderasyon Ergonomisi
+
+### Tamamlanan düzeltmeler
+- Admin bekleyen ilanlar ekranina secmeli toplu moderasyon akisi eklendi
+- `Secilenleri onayla`, `Secilenleri reddet` ve `Tumunu onayla` aksiyonlari ayni panelden calisiyor
+- Ortak toplu moderasyon notu desteği eklendi
+- Admin API route'lari redirect yerine gercek `401/403` cevaplariyla calisir hale getirildi; UI tarafi artik auth kırığında daha tutarlı davranacak
+
+### Doğrulama sonucu
+- Lint, typecheck ve build yeniden gecti
+- Playwright suite `40 passed / 4 skipped`
+
+### Sonraki UI odağı
+- Admin edit aksiyonunu gerçek `edit` audit semantiğine taşımak
+- Moderasyon kuyruğunda daha ileri filtre ve toplu preset not akışları
+
+---
+
+## Ertelenen UI Notlari
+
+Kullanici talebiyle bu turda UI koduna yeni mudahale yapilmadi. Sonraki UI sprintleri icin not edilen eksikler:
+
+- Admin moderasyon kuyruğunda daha ileri filtreleme ve preset bazli toplu not deneyimi
+- Admin edit aksiyonunun UI tarafinda gercek `edit` audit semantigi ile gorunsel olarak ayrismasi
+- Marka / sehir / model landing page yuzeyleri
+- Breadcrumb, canonical ve daha derin SEO yardimci yuzeyleri
+- Listing create funnel tarafinda plaka ile otomatik doldurma, foto sikistirma ve multi-step UX
+- Gercek kimlik dogrulama operasyonu varsa bunu acik anlatan UI yuzeyleri
+
+---
+
+## 2026-04-11 Public Listing Visibility Fix
+
+### Tamamlanan düzeltmeler
+- Ana sayfa ve `/listings` ekranında `0 ilan` görünmesine neden olan canlı veri görünürlüğü problemi giderildi
+- UI tarafında yeni mock veri eklenmedi; görünürlük sorunu canlı Supabase sorgu fallback'i ile düzeltildi
+- Legacy Supabase şemasında eksik kolon olsa bile public listing kartları ve detail akışı tekrar render olur hale geldi
+
+### Doğrulama sonucu
+- Playwright suite artık skip olmadan `44/44` geçti
+
+### Not
+- Bu düzeltme UI stilini değil veri görünürlüğünü hedefledi

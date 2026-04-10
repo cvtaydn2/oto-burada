@@ -1,8 +1,8 @@
 import { ProfileForm } from "@/components/forms/profile-form";
-import { cityOptions } from "@/data";
 import { updateProfileAction } from "@/lib/auth/profile-actions";
 import { requireUser } from "@/lib/auth/session";
 import { buildProfileFromAuthUser, getStoredProfileById } from "@/services/profile/profile-records";
+import { getLiveMarketplaceReferenceData, mergeCityOptions } from "@/services/reference/live-reference-data";
 import { CheckCircle2, Circle, User, Phone, MapPin, Mail, ShieldCheck } from "lucide-react";
 
 export const dynamic = "force-dynamic";
@@ -11,6 +11,8 @@ export const revalidate = 60;
 export default async function DashboardProfilePage() {
   const user = await requireUser();
   const profile = (await getStoredProfileById(user.id)) ?? buildProfileFromAuthUser(user);
+  const references = await getLiveMarketplaceReferenceData();
+  const cityOptions = mergeCityOptions(references.cities, [profile.city]);
 
   const hasFullName = Boolean(profile.fullName);
   const hasPhone = Boolean(profile.phone);

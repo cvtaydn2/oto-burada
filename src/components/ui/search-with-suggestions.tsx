@@ -4,10 +4,10 @@ import { useState, useRef, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { Search, X, TrendingUp, ArrowRight } from "lucide-react";
 import { useKeyboardShortcuts } from "@/hooks/use-keyboard-shortcuts";
-import { brandCatalog } from "@/data";
+import type { SearchSuggestionItem } from "@/types";
 
 interface SearchSuggestion {
-  type: "brand" | "model" | "recent";
+  type: "brand" | "city" | "model";
   label: string;
   value: string;
 }
@@ -15,17 +15,14 @@ interface SearchSuggestion {
 interface SearchWithSuggestionsProps {
   placeholder?: string;
   className?: string;
+  suggestions?: SearchSuggestionItem[];
 }
 
-const popularSearches = [
-  { label: "Volkswagen Golf", value: "Volkswagen Golf" },
-  { label: "Renault Clio", value: "Renault Clio" },
-  { label: "Toyota Corolla", value: "Toyota Corolla" },
-  { label: "BMW 3 Serisi", value: "BMW 3 Serisi" },
-  { label: "Mercedes A Serisi", value: "Mercedes-Benz A Serisi" },
-];
-
-export function SearchWithSuggestions({ placeholder = "Marka, model veya şehir ara...", className = "" }: SearchWithSuggestionsProps) {
+export function SearchWithSuggestions({
+  placeholder = "Marka, model veya şehir ara...",
+  className = "",
+  suggestions = [],
+}: SearchWithSuggestionsProps) {
   const [query, setQuery] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
   const router = useRouter();
@@ -35,20 +32,24 @@ export function SearchWithSuggestions({ placeholder = "Marka, model veya şehir 
     if (query.length < 1) {
       return [];
     }
-    const matchedSuggestions: SearchSuggestion[] = [];
-    
-    brandCatalog.forEach(brand => {
-      if (brand.brand.toLowerCase().includes(query.toLowerCase())) {
-        matchedSuggestions.push({ type: "brand", label: brand.brand, value: brand.brand });
-        brand.models.forEach(model => {
-          if (model.toLowerCase().includes(query.toLowerCase())) {
-            matchedSuggestions.push({ type: "model", label: `${brand.brand} ${model}`, value: `${brand.brand} ${model}` });
-          }
-        });
-      }
-    });
-    return matchedSuggestions.slice(0, 6);
-  }, [query]);
+    const normalizedQuery = query.toLocaleLowerCase("tr-TR");
+
+    return suggestions
+      .filter((suggestion) =>
+        suggestion.label.toLocaleLowerCase("tr-TR").includes(normalizedQuery),
+      )
+      .slice(0, 6)
+      .map<SearchSuggestion>((suggestion) => ({
+        label: suggestion.label,
+        type: suggestion.type,
+        value: suggestion.value,
+      }));
+  }, [query, suggestions]);
+
+  const fallbackSuggestions = useMemo(
+    () => suggestions.slice(0, 5),
+    [suggestions],
+  );
 
   const hasSuggestions = query.length >= 1;
 
@@ -131,14 +132,18 @@ export function SearchWithSuggestions({ placeholder = "Marka, model veya şehir 
                 >
                   <Search size={16} className="text-slate-400" />
                   <span className="text-sm text-slate-700">{s.label}</span>
-                  <span className="ml-auto text-xs text-slate-400">{s.type === "brand" ? "Marka" : "Model"}</span>
+                  <span className="ml-auto text-xs text-slate-400">
+                    {s.type === "brand" ? "Marka" : s.type === "city" ? "Şehir" : "Model"}
+                  </span>
                 </button>
               ))}
             </div>
           ) : (
             <div className="py-4">
-              <p className="px-4 py-1 text-xs font-medium text-slate-400 uppercase">Popüler Aramalar</p>
-              {popularSearches.map((s, i) => (
+              <p className="px-4 py-1 text-xs font-medium text-slate-400 uppercase">
+                Canlı öneriler
+              </p>
+              {fallbackSuggestions.map((s, i) => (
                 <button
                   key={i}
                   onClick={() => handleSearch(s.value)}

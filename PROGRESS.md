@@ -14,8 +14,8 @@ Her yeni geliştirme başlamadan önce okunmalıdır.
 
 ## Proje Durumu
 - Güncel faz: `Trust & Operasyon (Dalga 2) Tamamlandı`
-- Güncel görev: `Güven sinyalleri Supabase Auth doğrulama durumuna bağlandı`
-- Sonraki hedef: `Dalga 2.5 admin edit enum semantiği + toplu moderasyon`
+- Güncel görev: `Runtime referans verileri canlı DB-first akışa taşındı`
+- Sonraki hedef: `Dalga 2.5 admin edit enum migrationı + gerçek schema hizalama`
 - Durum: completed
 
 ---
@@ -24,7 +24,136 @@ Her yeni geliştirme başlamadan önce okunmalıdır.
 - `npm run lint` - Geçti (0 error)
 - `npm run typecheck` - Geçti
 - `npm run build` - Geçti
-- `npm run test` - 32 geçti / 4 skip (live DB'de public ilan yoksa koşullu skip)
+- `npm run test` - 44 geçti
+
+---
+
+## 2026-04-11 Canli DB-First Referans Verisi Temizligi
+
+### Kapsam
+- Kullanıcının sahte veri istemediği netleştirildiği için runtime `src/data` bağımlılıkları tekrar tarandı
+- Public arama, footer sayaçları, dashboard profil ve ilan oluşturma akışlarındaki statik katalog kullanımı kaldırıldı
+- Mobil header üzerindeki anlamsız arama/preset yüzeyleri gerçek filtre ve canlı öneri akışına çekildi
+
+### Tespit Edilen Sorunlar
+- Homepage/listings görünürlüğü düzelmiş olsa da header arama önerileri, footer marka/şehir sayaçları ve dashboard form select'leri hâlâ dosya içi statik katalogdan besleniyordu
+- Mobil header'daki arama alanı gerçek suggestion/veri zincirine bağlı değildi
+- Mobil quick link'lerde uygulamanın desteklemediği `category` query parametreleri vardı; bu da sahte çalışan UI hissi üretiyordu
+
+### Yapılan Geliştirmeler
+- `src/services/reference/live-reference-data.ts`: canlı ilanlardan türetilen marka, model, şehir, ilçe ve arama önerileri servisi runtime yüzeylerde ana kaynak haline getirildi
+- `src/components/layout/site-header.tsx`, `src/components/ui/search-with-suggestions.tsx`, `src/components/layout/header-mobile-nav.tsx`: desktop + mobile arama önerileri canlı DB referanslarıyla beslenecek şekilde güncellendi
+- `src/components/layout/site-footer.tsx`: footer içindeki marka/şehir sayaçları ve popüler marka listesi canlı DB referanslarından okunur hale getirildi
+- `src/app/dashboard/profile/page.tsx`: profil şehir seçenekleri canlı şehir setinden, mevcut kullanıcı şehri korunarak üretildi
+- `src/app/dashboard/listings/page.tsx`, `src/components/forms/listing-create-form.tsx`: ilan oluşturma/düzenleme formundaki marka/model/şehir/ilçe seçenekleri canlı DB referansına bağlandı; düzenlenen ilanın mevcut değeri referanslarda yoksa formda korunuyor
+- `src/components/listings/listings-filter-panel.tsx`: kalan legacy type import'u da `@/types` üstüne taşındı
+- Mobil header quick link'leri desteklenmeyen kategori query'leri yerine gerçek filtre parametrelerine çevrildi
+
+### Doğrulama
+- `npm run lint` - Geçti
+- `npm run typecheck` - Geçti
+- `npm run build` - Geçti
+- `npm run test` - `44 passed`
+
+### Kalan Net Risk
+- Canlı referanslar aktif ilanlardan türetildiği için tamamen boş veritabanında create/profile select seçenekleri de daralır; uzun vadede bunun için ayrı bir DB-backed reference table düşünülmeli
+- Repo `schema.sql` ile canlı Supabase şeması arasında hâlâ drift riski var; özellikle yeni listing kolonları için kontrollü migration akışı eksik
+
+---
+
+## 2026-04-11 Toplu Moderasyon ve Admin API Guard
+
+### Kapsam
+- Admin ilan moderasyon akışı operasyon hızı ve API auth semantiği açısından tekrar tarandı
+- Bulk approve / reject ihtiyacı ve admin route'larda redirect yerine gerçek API response davranışı ele alındı
+
+### Tespit Edilen ve Düzeltilen Sorunlar
+- Yeni eklenen bulk moderasyon endpoint'i dahil olmak üzere admin API'lerde `requireAdminUser()` kullanımı route handler seviyesinde redirect davranışına kayabiliyordu; bu da beklenen `401/403` yerine anlamsız başarılı response üretme riski taşıyordu
+- Pending ilan moderasyonu tek tek ilerliyordu; çoklu seçme ve tek hamlede karar verme akışı yoktu
+- `moderateDatabaseListing()` güncellemesi bekleyen durum filtresi olmadan çalıştığı için stale UI veya tekrar isteklerinde pending olmayan ilanlar da teorik olarak tekrar güncellenebilirdi
+
+### Yapılan Geliştirmeler
+- `src/lib/auth/api-admin.ts`: admin API'ler için redirect yerine gerçek `401/403/503` dönen ortak auth helper eklendi
+- `src/app/api/admin/listings/[listingId]/moderate/route.ts`, `src/app/api/admin/listings/[listingId]/edit/route.ts`, `src/app/api/admin/reports/[reportId]/route.ts`, `src/app/api/admin/listings/bulk-moderate/route.ts`: admin auth doğrulaması ortak helper ile hizalandı
+- `src/services/admin/listing-moderation.ts`: tekil ve toplu ilan moderasyonu için reusable side-effect katmanı eklendi; audit ve notification üretimi tek noktaya taşındı
+- `src/services/listings/listing-submissions.ts`: DB moderasyon güncellemesi yalnızca `pending` durumundaki ilanları etkileyecek şekilde sertleştirildi
+- `src/components/listings/admin-listings-moderation.tsx`: checkbox seçimi, ortak not alanı, `Seçilenleri onayla`, `Seçilenleri reddet` ve `Tümünü onayla` akışları eklendi
+- `tests/e2e.spec.ts`: admin moderate / edit / report / bulk-moderate endpoint'lerinin auth guard'ı smoke test ile kapsandı
+
+### Doğrulama
+- `npm run lint` - Geçti
+- `npm run typecheck` - Geçti
+- `npm run build` - Geçti
+- `npm run test` - `40 passed`, `4 skipped`
+
+### Kalan Net Risk
+- Admin edit akışı hâlâ audit trail'e gerçek `edit` enum değeri yazmıyor; bu iş canlı DB enum migration'ı gerektiriyor
+- Bulk moderasyon şu an toplu notu tüm seçili ilanlara aynen uygular; daha gelişmiş operasyon senaryoları için preset bazlı grup notları ileride eklenebilir
+
+---
+
+## 2026-04-11 Supabase Demo Durumu ve Seed Operasyonu
+
+### Kapsam
+- Kullanıcının "hiç ilan yok gibi" geri bildirimi üzerine Supabase demo state'i yeniden doğrulandı
+- Örnek ilan kurulum scripti operasyonel açıdan iyileştirildi
+- UI'a dokunmadan eksik UI yüzeyleri ayrı not olarak kaydedildi
+
+### Tespitler
+- Supabase MCP bu oturumda hâlâ `Auth required` verdiği için canlı DB incelemesi MCP üzerinden yapılamadı
+- Buna rağmen repo içindeki resmi doğrulama scripti canlı Supabase state'inde demo içeriğin mevcut olduğunu doğruladı:
+  - `listings: 3`
+  - `listing_images: 9`
+  - `profiles: 4`
+  - `reports: 1`
+- Sorun DB boşluğu değil; örnek ilanlar canlı DB'de hazır
+- `db:seed-demo` scripti mevcut demo kullanıcıları zaten varsa bile `SUPABASE_DEMO_USER_PASSWORD` eksik olduğunda gereksiz yere bloklanıyordu
+
+### Yapılan Geliştirmeler
+- `scripts/seed-supabase-demo.mjs`: seed akışı mevcut demo kullanıcıları varsa parola olmadan metadata doğrulayıp ilan/favori/rapor/admin action seed etmeye devam edecek şekilde düzeltildi
+- `npm run db:seed-demo`: başarıyla yeniden çalıştırıldı
+- `npm run db:verify-demo`: seed sonrası tekrar geçti
+
+### Canlı Doğrulama
+- `npm run db:check-env` - Geçti
+  - Not: `SUPABASE_DEMO_USER_PASSWORD` hâlâ eksik, ama artık yalnızca eksik demo kullanıcı oluşturulacaksa gerekiyor
+- `npm run db:seed-demo` - Geçti
+- `npm run db:verify-demo` - Geçti
+
+### UI İçin Sonraya Not
+- Admin moderasyon kuyruğunda daha ileri filtreler ve preset bazlı toplu not UX'i
+- Brand/city/model landing page yüzeyleri
+- Breadcrumb + canonical + daha derin SEO detay yüzeyleri
+- Listing create funnel için plaka doldurma / foto sıkıştırma / multi-step UX
+
+---
+
+## 2026-04-11 Public Listing Gorunurluk Duzeltmesi
+
+### Kapsam
+- Kullanıcının ekran görüntüsündeki `0+ ilan` problemi public data zincirinde incelendi
+- UI görünümü düzeltilirken canlı Supabase veri kaynağı korunmaya devam edildi; mock fallback eklenmedi
+
+### Kök Neden
+- Canlı Supabase projesindeki `listings` tablosu henüz `expert_inspection` kolonuna sahip değildi
+- `src/services/listings/listing-submissions.ts` içindeki select sorgusu bu kolonu zorunlu istediği için query komple hata veriyor ve public sayfalar `0 ilan` görüyordu
+- Bu yüzden DB'de örnek ilanlar olmasına rağmen ana sayfa ve listings ekranı boş görünüyordu
+
+### Yapılan Geliştirmeler
+- `src/services/listings/listing-submissions.ts`: modern kolonları içeren select korunurken legacy şema için ikinci bir fallback select eklendi
+- Aynı servis içinde opsiyonel alan mapping'i legacy DB'lerle uyumlu hale getirildi
+- Public ilanlar yine canlı Supabase DB'den geliyor; sadece kolon drift durumunda sorgu tamamen çökmesin diye fallback eklendi
+
+### Doğrulama
+- `npm run db:verify-demo` - Geçti (`listings: 3`, `listing_images: 9`)
+- `npm run lint` - Geçti
+- `npm run typecheck` - Geçti
+- `npm run build` - Geçti
+- `npm run test` - `44 passed`
+
+### Kalan Net Risk
+- Canlı DB şeması repo `schema.sql` ile tam hizalı değil; özellikle `expert_inspection` gibi yeni kolonlar için schema apply / migration hâlâ gerekli
+- Fallback görünürlüğü düzeltiyor ama kalıcı çözüm canlı Supabase şemasını repo şemasıyla eşitlemek
 
 ---
 

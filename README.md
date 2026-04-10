@@ -59,6 +59,9 @@ Sadece arabalar için tasarlanmış, mobil öncelikli ve güven odaklı ücretsi
 - Dashboard `saved-searches` ve `notifications` ekranlari artik mock degil; ikisi de gercek DB verisiyle calisir
 - Satıcı trust rozetleri artık sabit skor yerine Supabase Auth doğrulama durumu ve gerçek profil sinyallerinden türetilir
 - Dashboard profil ekranında canlı e-posta / telefon / kimlik doğrulama durumları gösterilir
+- Admin moderasyon ekranı tekil kararların yanında toplu onay / toplu red akışını da destekler
+- Public listing ekranları canlı Supabase şemasında bazı yeni kolonlar eksik olsa bile legacy-compatible fallback ile ilanları göstermeye devam eder
+- Header arama önerileri, footer sayaçları, profil şehir seçenekleri ve ilan oluşturma formu artık statik katalog yerine canlı DB'den türetilen referans verileri kullanır
 
 ## Kurulum
 
@@ -117,6 +120,8 @@ Demo auth kullanicilari, profiller, ilanlar, favoriler ve raporlar ile birlikte 
 ```bash
 npm run db:seed-demo
 ```
+
+Mevcut demo auth kullanicilari zaten varsa bu komut artik `SUPABASE_DEMO_USER_PASSWORD` olmadan da ornek ilan/favori/rapor kayitlarini tekrar kurabilir. Eksik demo kullanici olusturulacaksa parola hala gereklidir.
 
 Seed sonrasi auth kullanicilari, tablo sayilari ve storage bucket durumunu dogrulamak icin:
 
@@ -203,6 +208,6 @@ MVP temel olarak ayakta olsa da pazar hazirligi icin en kritik genisleme alani a
 - listing detail ve seller profilinde daha guclu guven sinyalleri eklemek
 - admin moderasyon akislarini operasyonel olarak hizlandirmak
 - smoke E2E'nin yanina daha derin API / integration testleri eklemek
-- ilan olusturma akisinda kalite bariyerleri ve guven checklist'i ile donusumu iyilestirmek
+- repo `schema.sql` ile canli Supabase arasindaki drift'i migration ile kapatmak
 
 Hedef, genis bir genel ilan platformunu taklit etmek degil; araba ozelinde daha sade, daha hizli ve daha guvenli bir deneyimi once kucuk ama memnun bir kullanici kitlesinde kanitlamak.

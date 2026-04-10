@@ -143,6 +143,43 @@ test.describe("API Endpoints", () => {
     expect(res.status()).toBe(401);
   });
 
+  test("POST /api/admin/listings/test-id/moderate without auth should return 401", async ({ request }) => {
+    const res = await request.post("/api/admin/listings/test-id/moderate", {
+      data: {
+        action: "approve",
+      },
+    });
+    expect(res.status()).toBe(401);
+  });
+
+  test("PATCH /api/admin/listings/test-id/edit without auth should return 401", async ({ request }) => {
+    const res = await request.patch("/api/admin/listings/test-id/edit", {
+      data: {
+        title: "Guncel baslik",
+      },
+    });
+    expect(res.status()).toBe(401);
+  });
+
+  test("PATCH /api/admin/reports/test-id without auth should return 401", async ({ request }) => {
+    const res = await request.patch("/api/admin/reports/test-id", {
+      data: {
+        status: "reviewing",
+      },
+    });
+    expect(res.status()).toBe(401);
+  });
+
+  test("POST /api/admin/listings/bulk-moderate without auth should return 401", async ({ request }) => {
+    const res = await request.post("/api/admin/listings/bulk-moderate", {
+      data: {
+        action: "approve",
+        listingIds: ["11111111-1111-1111-1111-111111111111"],
+      },
+    });
+    expect(res.status()).toBe(401);
+  });
+
   test("POST /api/listings requires auth", async ({ request }) => {
     const res = await request.post("/api/listings", {
       data: {},

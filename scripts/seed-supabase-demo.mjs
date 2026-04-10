@@ -15,11 +15,6 @@ if (!supabaseUrl || !serviceRoleKey) {
   process.exit(1);
 }
 
-if (!demoPassword) {
-  console.error("SUPABASE_DEMO_USER_PASSWORD is required.");
-  process.exit(1);
-}
-
 const supabase = createClient(supabaseUrl, serviceRoleKey, {
   auth: {
     autoRefreshToken: false,
@@ -315,6 +310,12 @@ async function ensureUsers() {
     let user = existingUsers.get(entry.email);
 
     if (!user) {
+      if (!demoPassword) {
+        throw new Error(
+          `SUPABASE_DEMO_USER_PASSWORD is required to create missing demo user ${entry.email}.`,
+        );
+      }
+
       const { data, error } = await supabase.auth.admin.createUser({
         email: entry.email,
         email_confirm: true,
@@ -332,20 +333,29 @@ async function ensureUsers() {
       user = data.user;
       console.log(`Created auth user ${entry.email}`);
     } else {
-      const { error } = await supabase.auth.admin.updateUserById(user.id, {
+      const updatePayload = {
         email_confirm: true,
-        password: demoPassword,
         user_metadata: {
           full_name: entry.fullName,
           role: entry.role,
         },
-      });
+      };
+
+      if (demoPassword) {
+        updatePayload.password = demoPassword;
+      }
+
+      const { error } = await supabase.auth.admin.updateUserById(user.id, updatePayload);
 
       if (error) {
         throw error;
       }
 
-      console.log(`Updated auth user ${entry.email}`);
+      console.log(
+        demoPassword
+          ? `Updated auth user ${entry.email}`
+          : `Verified auth user metadata ${entry.email}`,
+      );
     }
 
     ensuredUsers.set(entry.email, user);

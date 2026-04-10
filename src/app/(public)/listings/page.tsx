@@ -2,11 +2,11 @@ import type { Metadata } from "next";
 
 import { ListingsPageClient } from "@/components/listings/listings-page-client";
 import { ListingStructuredData, OrganizationStructuredData } from "@/components/seo/structured-data";
-import { brandCatalog, cityOptions } from "@/data";
 import { getCurrentUser } from "@/lib/auth/session";
 import { buildListingsMetadata } from "@/lib/seo";
 import { parseListingFiltersFromSearchParams } from "@/services/listings/listing-filters";
 import { getPublicMarketplaceListings } from "@/services/listings/marketplace-listings";
+import { getLiveMarketplaceReferenceData } from "@/services/reference/live-reference-data";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 60;
@@ -28,9 +28,10 @@ export default async function ListingsPage({ searchParams }: ListingsPageProps) 
   const resolvedSearchParams = searchParams ? await searchParams : undefined;
   const initialFilters = parseListingFiltersFromSearchParams(resolvedSearchParams);
   const initialFiltersKey = JSON.stringify(initialFilters);
-  const [currentUser, listings] = await Promise.all([
+  const [currentUser, listings, references] = await Promise.all([
     getCurrentUser(),
     getPublicMarketplaceListings(),
+    getLiveMarketplaceReferenceData(),
   ]);
 
   return (
@@ -44,8 +45,8 @@ export default async function ListingsPage({ searchParams }: ListingsPageProps) 
       <ListingsPageClient
         key={initialFiltersKey}
         listings={listings}
-        brands={brandCatalog}
-        cities={cityOptions}
+        brands={references.brands}
+        cities={references.cities}
         initialFilters={initialFilters}
         userId={currentUser?.id}
       />

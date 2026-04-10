@@ -23,9 +23,7 @@ import {
   getModelsForBrand,
   sortListings,
 } from "@/services/listings/listing-filters";
-import { brandCatalog, cityOptions } from "@/data";
-import type { BrandCatalogItem, CityOption } from "@/data";
-import type { Listing, ListingFilters } from "@/types";
+import type { BrandCatalogItem, CityOption, Listing, ListingFilters } from "@/types";
 
 const INITIAL_VISIBLE_COUNT = 6;
 const QUICK_PRESETS = [
@@ -241,7 +239,7 @@ export function ListingsPageClient({
               </p>
               
               <div className="mt-8 flex flex-wrap justify-center gap-3">
-                {brandCatalog.slice(0, 5).map((brand) => (
+                {brands.slice(0, 5).map((brand) => (
                   <Link
                     key={brand.brand}
                     href={`/listings?brand=${encodeURIComponent(brand.brand)}`}
@@ -261,11 +259,11 @@ export function ListingsPageClient({
               <p className="text-xs font-medium text-slate-500">İlan</p>
             </div>
             <div className="rounded-2xl bg-white p-4 shadow-sm border border-slate-100">
-              <p className="text-2xl font-bold text-emerald-600">{brandCatalog.length}</p>
+              <p className="text-2xl font-bold text-emerald-600">{brands.length}</p>
               <p className="text-xs font-medium text-slate-500">Marka</p>
             </div>
             <div className="rounded-2xl bg-white p-4 shadow-sm border border-slate-100">
-              <p className="text-2xl font-bold text-amber-600">{cityOptions.length}</p>
+              <p className="text-2xl font-bold text-amber-600">{cities.length}</p>
               <p className="text-xs font-medium text-slate-500">Şehir</p>
             </div>
             <div className="rounded-2xl bg-white p-4 shadow-sm border border-slate-100">

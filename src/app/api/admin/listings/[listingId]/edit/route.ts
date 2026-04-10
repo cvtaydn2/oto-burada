@@ -1,8 +1,8 @@
-import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { hasSupabaseAdminEnv } from "@/lib/supabase/env";
 import { createAdminModerationAction } from "@/services/admin/moderation-actions";
 import { apiSuccess, apiError, API_ERROR_CODES } from "@/lib/utils/api-response";
+import { requireApiAdminUser } from "@/lib/auth/api-admin";
 import { z } from "zod";
 
 const adminEditSchema = z.object({
@@ -21,27 +21,13 @@ export async function PATCH(
     return apiError(API_ERROR_CODES.SERVICE_UNAVAILABLE, "Servis kullanılamıyor.", 503);
   }
 
-  const supabase = await createSupabaseServerClient();
-  const {
-    data: { user },
-    error: userError,
-  } = await supabase.auth.getUser();
+  const user = await requireApiAdminUser();
 
-  if (userError || !user) {
-    return apiError(API_ERROR_CODES.UNAUTHORIZED, "Oturum doğrulanamadı.", 401);
+  if (user instanceof Response) {
+    return user;
   }
 
-  // Check admin role
   const admin = createSupabaseAdminClient();
-  const { data: profile } = await admin
-    .from("profiles")
-    .select("role")
-    .eq("id", user.id)
-    .single();
-
-  if (!profile || profile.role !== "admin") {
-    return apiError(API_ERROR_CODES.FORBIDDEN, "Admin yetkisi gerekli.", 403);
-  }
 
   // Parse body
   const body = await request.json().catch(() => null);

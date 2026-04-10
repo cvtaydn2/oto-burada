@@ -1,6 +1,5 @@
-import type { BrandCatalogItem, CityOption } from "@/data";
 import { listingFiltersSchema } from "@/lib/validators";
-import type { Listing, ListingFilters, ListingSortOption } from "@/types";
+import type { BrandCatalogItem, CityOption, Listing, ListingFilters, ListingSortOption } from "@/types";
 
 function normalizeText(value: string) {
   return value.toLocaleLowerCase("tr-TR");

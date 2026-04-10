@@ -1,7 +1,6 @@
 import Link from "next/link";
 import { CarFront, CheckCircle2, MessageCircle, Shield, Users } from "lucide-react";
-
-import { brandCatalog, cityOptions } from "@/data";
+import { getLiveMarketplaceReferenceData } from "@/services/reference/live-reference-data";
 
 const quickLinks = [
   { href: "/", label: "Ana Sayfa" },
@@ -17,7 +16,9 @@ const trustFeatures = [
   { icon: CheckCircle2, label: "Ücretsiz", description: "İlan vermek bedava" },
 ];
 
-export function SiteFooter() {
+export async function SiteFooter() {
+  const references = await getLiveMarketplaceReferenceData();
+
   return (
     <footer className="border-t border-slate-200/60 bg-slate-50/50">
       <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
@@ -35,10 +36,10 @@ export function SiteFooter() {
             </p>
             <div className="mt-6 flex flex-wrap gap-2">
               <span className="inline-flex items-center rounded-full bg-indigo-100 px-3 py-1.5 text-xs font-semibold text-indigo-700">
-                {brandCatalog.length}+ Marka
+                {references.brands.length}+ Marka
               </span>
               <span className="inline-flex items-center rounded-full bg-emerald-100 px-3 py-1.5 text-xs font-semibold text-emerald-700">
-                {cityOptions.length} Şehir
+                {references.cities.length} Şehir
               </span>
               <span className="inline-flex items-center rounded-full bg-amber-100 px-3 py-1.5 text-xs font-semibold text-amber-700">
                 Ücretsiz İlan
@@ -66,7 +67,7 @@ export function SiteFooter() {
               Popüler Markalar
             </h3>
             <ul className="mt-5 space-y-3">
-              {brandCatalog.slice(0, 6).map((brand) => (
+              {references.brands.slice(0, 6).map((brand) => (
                 <li key={brand.brand}>
                   <Link 
                     href={`/listings?brand=${encodeURIComponent(brand.brand)}`} 

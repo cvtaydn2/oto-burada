@@ -43,13 +43,13 @@ interface ListingRow {
   brand: string;
   city: string;
   created_at: string;
-  damage_status_json: Record<string, unknown> | null;
+  damage_status_json?: Record<string, unknown> | null;
   description: string;
   district: string;
-  expert_inspection: Listing["expertInspection"] | null;
+  expert_inspection?: Listing["expertInspection"] | null;
   featured: boolean;
-  fraud_reason: string | null;
-  fraud_score: number;
+  fraud_reason?: string | null;
+  fraud_score?: number | null;
   fuel_type: Listing["fuelType"];
   id: string;
   listing_images?: ListingImageRow[] | null;
@@ -60,10 +60,10 @@ interface ListingRow {
   slug: string;
   status: Listing["status"];
   title: string;
-  tramer_amount: number | null;
+  tramer_amount?: number | null;
   transmission: Listing["transmission"];
   updated_at: string;
-  bumped_at: string | null;
+  bumped_at?: string | null;
   whatsapp_phone: string;
   year: number;
 }
@@ -94,6 +94,36 @@ const listingSelect = `
   created_at,
   updated_at,
   bumped_at,
+  listing_images (
+    id,
+    listing_id,
+    storage_path,
+    public_url,
+    sort_order,
+    is_cover
+  )
+`;
+
+const legacyListingSelect = `
+  id,
+  seller_id,
+  slug,
+  title,
+  brand,
+  model,
+  year,
+  mileage,
+  fuel_type,
+  transmission,
+  price,
+  city,
+  district,
+  description,
+  whatsapp_phone,
+  status,
+  featured,
+  created_at,
+  updated_at,
   listing_images (
     id,
     listing_id,
@@ -276,121 +306,130 @@ async function getDatabaseListings(options?: {
   }
 
   const admin = createSupabaseAdminClient();
-  let query = admin.from("listings").select(listingSelect);
+  const applyListingQueryOptions = (selectClause: string) => {
+    let query = admin.from("listings").select(selectClause);
 
-  if (options?.sellerId) {
-    query = query.eq("seller_id", options.sellerId);
-  }
-
-  if (options?.listingId) {
-    query = query.eq("id", options.listingId);
-  }
-
-  if (options?.slug) {
-    query = query.eq("slug", options.slug);
-  }
-
-  if (options?.ids?.length) {
-    query = query.in("id", options.ids);
-  }
-
-  if (options?.statuses?.length) {
-    query = query.in("status", options.statuses);
-  }
-
-  const filters = options?.filters;
-
-  if (filters) {
-    if (filters.brand) {
-      query = query.eq("brand", filters.brand);
+    if (options?.sellerId) {
+      query = query.eq("seller_id", options.sellerId);
     }
 
-    if (filters.model) {
-      query = query.eq("model", filters.model);
+    if (options?.listingId) {
+      query = query.eq("id", options.listingId);
     }
 
-    if (filters.city) {
-      query = query.eq("city", filters.city);
+    if (options?.slug) {
+      query = query.eq("slug", options.slug);
     }
 
-    if (filters.district) {
-      query = query.eq("district", filters.district);
+    if (options?.ids?.length) {
+      query = query.in("id", options.ids);
     }
 
-    if (filters.fuelType) {
-      query = query.eq("fuel_type", filters.fuelType);
+    if (options?.statuses?.length) {
+      query = query.in("status", options.statuses);
     }
 
-    if (filters.transmission) {
-      query = query.eq("transmission", filters.transmission);
-    }
+    const filters = options?.filters;
 
-    if (filters.minPrice !== undefined) {
-      query = query.gte("price", filters.minPrice);
-    }
+    if (filters) {
+      if (filters.brand) {
+        query = query.eq("brand", filters.brand);
+      }
 
-    if (filters.maxPrice !== undefined) {
-      query = query.lte("price", filters.maxPrice);
-    }
+      if (filters.model) {
+        query = query.eq("model", filters.model);
+      }
 
-    if (filters.minYear !== undefined) {
-      query = query.gte("year", filters.minYear);
-    }
+      if (filters.city) {
+        query = query.eq("city", filters.city);
+      }
 
-    if (filters.maxYear !== undefined) {
-      query = query.lte("year", filters.maxYear);
-    }
+      if (filters.district) {
+        query = query.eq("district", filters.district);
+      }
 
-    if (filters.maxMileage !== undefined) {
-      query = query.lte("mileage", filters.maxMileage);
-    }
+      if (filters.fuelType) {
+        query = query.eq("fuel_type", filters.fuelType);
+      }
 
-    if (filters.query) {
-      const terms = filters.query.trim().split(/\s+/).filter(Boolean);
+      if (filters.transmission) {
+        query = query.eq("transmission", filters.transmission);
+      }
 
-      if (terms.length > 0) {
-        // Use Postgres full-text search via the generated search_vector column
-        const tsQuery = terms.map((t) => `${t}:*`).join(" & ");
-        query = query.textSearch("search_vector", tsQuery);
+      if (filters.minPrice !== undefined) {
+        query = query.gte("price", filters.minPrice);
+      }
+
+      if (filters.maxPrice !== undefined) {
+        query = query.lte("price", filters.maxPrice);
+      }
+
+      if (filters.minYear !== undefined) {
+        query = query.gte("year", filters.minYear);
+      }
+
+      if (filters.maxYear !== undefined) {
+        query = query.lte("year", filters.maxYear);
+      }
+
+      if (filters.maxMileage !== undefined) {
+        query = query.lte("mileage", filters.maxMileage);
+      }
+
+      if (filters.query) {
+        const terms = filters.query.trim().split(/\s+/).filter(Boolean);
+
+        if (terms.length > 0) {
+          const tsQuery = terms.map((t) => `${t}:*`).join(" & ");
+          query = query.textSearch("search_vector", tsQuery);
+        }
       }
     }
+
+    const sort = filters?.sort ?? "newest";
+    switch (sort) {
+      case "price_asc":
+        query = query.order("price", { ascending: true });
+        break;
+      case "price_desc":
+        query = query.order("price", { ascending: false });
+        break;
+      case "mileage_asc":
+        query = query.order("mileage", { ascending: true });
+        break;
+      case "year_desc":
+        query = query.order("year", { ascending: false });
+        break;
+      case "newest":
+      default:
+        query = query.order("updated_at", { ascending: false });
+        break;
+    }
+
+    const page = filters?.page ?? 1;
+    const limit = filters?.limit ?? 50;
+    const from = (page - 1) * limit;
+    const to = from + limit - 1;
+    return query.range(from, to);
+  };
+
+  const primaryResult = await applyListingQueryOptions(listingSelect).returns<ListingRow[]>();
+
+  if (!primaryResult.error && primaryResult.data) {
+    return primaryResult.data.map(mapListingRow);
   }
 
-  // Apply sorting
-  const sort = filters?.sort ?? "newest";
-  switch (sort) {
-    case "price_asc":
-      query = query.order("price", { ascending: true });
-      break;
-    case "price_desc":
-      query = query.order("price", { ascending: false });
-      break;
-    case "mileage_asc":
-      query = query.order("mileage", { ascending: true });
-      break;
-    case "year_desc":
-      query = query.order("year", { ascending: false });
-      break;
-    case "newest":
-    default:
-      query = query.order("updated_at", { ascending: false });
-      break;
-  }
-
-  // Apply pagination
-  const page = filters?.page ?? 1;
-  const limit = filters?.limit ?? 50;
-  const from = (page - 1) * limit;
-  const to = from + limit - 1;
-  query = query.range(from, to);
-
-  const { data, error } = await query.returns<ListingRow[]>();
-
-  if (error || !data) {
+  if (!primaryResult.error?.message?.includes("column listings.")) {
     return null;
   }
 
-  return data.map(mapListingRow);
+  const fallbackResult = await applyListingQueryOptions(legacyListingSelect).returns<ListingRow[]>();
+
+  if (fallbackResult.error || !fallbackResult.data) {
+    return null;
+  }
+
+  return fallbackResult.data.map(mapListingRow);
 }
 
 export interface PaginatedListingsResult {
@@ -681,15 +720,18 @@ export async function moderateDatabaseListing(
   }
 
   const admin = createSupabaseAdminClient();
-  const { error } = await admin
+  const { data, error } = await admin
     .from("listings")
     .update({
       status,
       updated_at: new Date().toISOString(),
     })
-    .eq("id", listingId);
+    .eq("id", listingId)
+    .eq("status", "pending")
+    .select("id")
+    .maybeSingle<{ id: string }>();
 
-  if (error) {
+  if (error || !data) {
     return null;
   }
 

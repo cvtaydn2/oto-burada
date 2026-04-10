@@ -2,6 +2,7 @@ import { MyListingsPanel } from "@/components/listings/my-listings-panel";
 import { ListingCreateForm } from "@/components/forms/listing-create-form";
 import { requireUser } from "@/lib/auth/session";
 import { getStoredUserListings } from "@/services/listings/listing-submissions";
+import { getLiveMarketplaceReferenceData, mergeCityOptions } from "@/services/reference/live-reference-data";
 import { ListChecks } from "lucide-react";
 
 export const dynamic = "force-dynamic";
@@ -22,9 +23,25 @@ export default async function DashboardListingsPage({ searchParams }: DashboardL
   const resolvedSearchParams = searchParams ? await searchParams : undefined;
   const hasRequestedEdit = Boolean(resolvedSearchParams?.edit);
   const storedListings = await getStoredUserListings(user.id);
+  const references = await getLiveMarketplaceReferenceData();
   const selectedListing = resolvedSearchParams?.edit
     ? storedListings.find((l) => l.id === resolvedSearchParams.edit) ?? null
     : null;
+  const mergedBrands = references.brands.some((item) => item.brand === selectedListing?.brand)
+    ? references.brands
+    : selectedListing?.brand
+      ? [
+          ...references.brands,
+          {
+            brand: selectedListing.brand,
+            models: selectedListing.model ? [selectedListing.model] : [],
+          },
+        ].sort((left, right) => left.brand.localeCompare(right.brand, "tr"))
+      : references.brands;
+  const mergedCities = mergeCityOptions(references.cities, [
+    metadata.city ?? "",
+    selectedListing?.city ?? "",
+  ]);
 
   const isEditingExisting = selectedListing !== null;
 
@@ -61,6 +78,8 @@ export default async function DashboardListingsPage({ searchParams }: DashboardL
               city: metadata.city ?? "",
               whatsappPhone: metadata.phone ?? "",
             }}
+            brands={mergedBrands}
+            cities={mergedCities}
           />
         </div>
       </MyListingsPanel>

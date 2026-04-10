@@ -15,11 +15,10 @@ import {
   Upload,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useFieldArray, useForm, useWatch, type FieldPath } from "react-hook-form";
 import type { z } from "zod";
 
-import { brandCatalog, cityOptions } from "@/data";
 import {
   fuelTypes,
   listingImageAcceptedMimeTypes,
@@ -35,13 +34,15 @@ import {
   getListingImageConstraintsText,
   validateListingImageFile,
 } from "@/services/listings/listing-images";
-import type { Listing, ListingCreateFormValues } from "@/types";
+import type { BrandCatalogItem, CityOption, Listing, ListingCreateFormValues } from "@/types";
 
 interface ListingCreateFormProps {
   initialValues: {
     city: string;
     whatsappPhone: string;
   };
+  brands: BrandCatalogItem[];
+  cities: CityOption[];
   initialListing?: Listing | null;
 }
 
@@ -179,7 +180,12 @@ const initialSubmitState: SubmitState = {
 type ListingCreateFormSchemaInput = z.input<typeof listingCreateFormSchema>;
 type ListingCreateFormSchemaOutput = z.output<typeof listingCreateFormSchema>;
 
-export function ListingCreateForm({ initialListing, initialValues }: ListingCreateFormProps) {
+export function ListingCreateForm({
+  brands,
+  cities,
+  initialListing,
+  initialValues,
+}: ListingCreateFormProps) {
   const router = useRouter();
   const isEditing = Boolean(initialListing);
   const [submitState, setSubmitState] = useState<SubmitState>(initialSubmitState);
@@ -218,27 +224,95 @@ export function ListingCreateForm({ initialListing, initialValues }: ListingCrea
     (image) => (image.url ?? "").trim().length > 0 && (image.storagePath ?? "").trim().length > 0,
   ).length;
   const isUploadingAnyImage = fields.some((field) => uploadStates[field.id]?.status === "uploading");
-  const modelOptions = brandCatalog.find((item) => item.brand === selectedBrand)?.models ?? [];
-  const districtOptions = cityOptions.find((item) => item.city === selectedCity)?.districts ?? [];
+  const availableBrands = useMemo(() => {
+    if (!initialListing?.brand) {
+      return brands;
+    }
+
+    const existingBrand = brands.find((item) => item.brand === initialListing.brand);
+
+    if (!existingBrand) {
+      return [
+        ...brands,
+        {
+          brand: initialListing.brand,
+          models: initialListing.model ? [initialListing.model] : [],
+        },
+      ].sort((left, right) => left.brand.localeCompare(right.brand, "tr"));
+    }
+
+    if (!initialListing.model || existingBrand.models.includes(initialListing.model)) {
+      return brands;
+    }
+
+    return brands.map((item) =>
+      item.brand === initialListing.brand
+        ? {
+            ...item,
+            models: [...item.models, initialListing.model].sort((left, right) =>
+              left.localeCompare(right, "tr"),
+            ),
+          }
+        : item,
+    );
+  }, [brands, initialListing]);
+  const availableCities = useMemo(() => {
+    if (!initialListing?.city) {
+      return cities;
+    }
+
+    const existingCity = cities.find((item) => item.city === initialListing.city);
+
+    if (!existingCity) {
+      return [
+        ...cities,
+        {
+          city: initialListing.city,
+          cityPlate: null,
+          districts: initialListing.district ? [initialListing.district] : [],
+        },
+      ].sort((left, right) => left.city.localeCompare(right.city, "tr"));
+    }
+
+    if (!initialListing.district || existingCity.districts.includes(initialListing.district)) {
+      return cities;
+    }
+
+    return cities.map((item) =>
+      item.city === initialListing.city
+        ? {
+            ...item,
+            districts: [...item.districts, initialListing.district].sort((left, right) =>
+              left.localeCompare(right, "tr"),
+            ),
+          }
+        : item,
+    );
+  }, [cities, initialListing]);
+  const modelOptions =
+    availableBrands.find((item) => item.brand === selectedBrand)?.models ?? [];
+  const districtOptions =
+    availableCities.find((item) => item.city === selectedCity)?.districts ?? [];
 
   useEffect(() => {
-    const nextModelOptions = brandCatalog.find((item) => item.brand === selectedBrand)?.models ?? [];
+    const nextModelOptions =
+      availableBrands.find((item) => item.brand === selectedBrand)?.models ?? [];
     const currentModel = getValues("model");
 
     if (currentModel && !nextModelOptions.includes(currentModel)) {
       setValue("model", "", { shouldDirty: true, shouldValidate: true });
     }
-  }, [getValues, selectedBrand, setValue]);
+  }, [availableBrands, getValues, selectedBrand, setValue]);
 
   useEffect(() => {
     const nextDistrictOptions =
-      cityOptions.find((item) => item.city === selectedCity)?.districts ?? [];
+      availableCities.find((item) => item.city === selectedCity)?.districts ?? [];
     const currentDistrict = getValues("district");
 
     if (currentDistrict && !nextDistrictOptions.includes(currentDistrict)) {
       setValue("district", "", { shouldDirty: true, shouldValidate: true });
     }
-  }, [getValues, selectedCity, setValue]);
+  }, [availableCities, getValues, selectedCity, setValue]);
 
   useEffect(() => {
     uploadStatesRef.current = uploadStates;
@@ -407,7 +481,7 @@ export function ListingCreateForm({ initialListing, initialValues }: ListingCrea
         revokeBlobUrl(state.previewUrl);
       });
       setUploadStates({});
-      reset(buildDefaultValues(initialValues));
+      reset(buildDefaultValues(initialValues, initialListing));
       setSubmitState({
         message: payload?.message ?? "İlanin kaydedildi.",
         status: "success",
@@ -502,7 +576,7 @@ export function ListingCreateForm({ initialListing, initialValues }: ListingCrea
           <span>Marka</span>
           <select {...register("brand")} className={inputClassName}>
             <option value="">Marka sec</option>
-            {brandCatalog.map((item) => (
+            {availableBrands.map((item) => (
               <option key={item.brand} value={item.brand}>
                 {item.brand}
               </option>
@@ -614,7 +688,7 @@ export function ListingCreateForm({ initialListing, initialValues }: ListingCrea
           <span>Sehir</span>
           <select {...register("city")} className={inputClassName}>
             <option value="">Sehir sec</option>
-            {cityOptions.map((item) => (
+            {availableCities.map((item) => (
               <option key={item.city} value={item.city}>
                 {item.city}
               </option>

@@ -2,11 +2,13 @@ import Link from "next/link";
 import { Bell, CarFront, Heart, PlusCircle, User } from "lucide-react";
 
 import { getCurrentUser, getUserRole } from "@/lib/auth/session";
+import { getLiveMarketplaceReferenceData } from "@/services/reference/live-reference-data";
 import { HeaderMobileNav } from "./header-mobile-nav";
 import { SearchWithSuggestions } from "@/components/ui/search-with-suggestions";
 
 export async function SiteHeader() {
   const user = await getCurrentUser();
+  const references = await getLiveMarketplaceReferenceData();
   const isAdmin = user ? getUserRole(user) === "admin" : false;
   const accountHref = user ? "/dashboard" : "/login";
   const favoritesHref = user ? "/dashboard/favorites" : "/favorites";
@@ -28,7 +30,10 @@ export async function SiteHeader() {
           </div>
 
           <div className="hidden md:flex flex-1 max-w-xl mx-8">
-            <SearchWithSuggestions placeholder="Marka, model veya şehir ara..." />
+            <SearchWithSuggestions
+              placeholder="Marka, model veya şehir ara..."
+              suggestions={references.searchSuggestions}
+            />
           </div>
 
           <nav className="hidden md:flex items-center gap-1" aria-label="Ana navigasyon">
@@ -72,7 +77,14 @@ export async function SiteHeader() {
             </Link>
           </nav>
 
-          <HeaderMobileNav user={user} isAdmin={isAdmin} accountHref={accountHref} favoritesHref={favoritesHref} postListingHref={postListingHref} />
+          <HeaderMobileNav
+            user={user}
+            isAdmin={isAdmin}
+            accountHref={accountHref}
+            favoritesHref={favoritesHref}
+            postListingHref={postListingHref}
+            searchSuggestions={references.searchSuggestions}
+          />
         </div>
       </div>
     </header>
