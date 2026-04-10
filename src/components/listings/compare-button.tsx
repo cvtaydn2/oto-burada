@@ -12,22 +12,27 @@ interface CompareButtonProps {
 
 export function CompareButton({ listingId, className = "" }: CompareButtonProps) {
   const router = useRouter();
-  const { isInCompare, addToCompare, removeFromCompare } = useCompare();
+  const { compareIds, isInCompare, addToCompare, removeFromCompare } = useCompare();
   const inCompare = isInCompare(listingId);
 
   const handleClick = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
 
+    let nextIds = compareIds;
+
     if (inCompare) {
       removeFromCompare(listingId);
+      nextIds = compareIds.filter((id) => id !== listingId);
     } else {
       const added = addToCompare(listingId);
       if (!added) {
         return;
       }
+      nextIds = [...compareIds, listingId];
     }
-    router.push(`/compare?ids=${listingId}`);
+
+    router.push(nextIds.length > 0 ? `/compare?ids=${nextIds.join(",")}` : "/compare");
   };
 
   return (

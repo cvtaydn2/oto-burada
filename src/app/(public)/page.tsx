@@ -3,10 +3,12 @@ import type { Metadata } from "next";
 import { ListingsPageClient } from "@/components/listings/listings-page-client";
 import { ListingStructuredData, OrganizationStructuredData, WebSiteStructuredData } from "@/components/seo/structured-data";
 import { brandCatalog, cityOptions } from "@/data";
+import { getCurrentUser } from "@/lib/auth/session";
 import { buildListingsMetadata, getAppUrl } from "@/lib/seo";
 import { parseListingFiltersFromSearchParams } from "@/services/listings/listing-filters";
 import { getPublicMarketplaceListings } from "@/services/listings/marketplace-listings";
 
+export const dynamic = "force-dynamic";
 export const revalidate = 60;
 
 interface ListingsPageProps {
@@ -21,12 +23,14 @@ export async function generateMetadata({
 
   return buildListingsMetadata(filters);
 }
-
 export default async function HomePage({ searchParams }: ListingsPageProps) {
   const resolvedSearchParams = searchParams ? await searchParams : undefined;
   const initialFilters = parseListingFiltersFromSearchParams(resolvedSearchParams);
   const initialFiltersKey = JSON.stringify(initialFilters);
-  const listings = await getPublicMarketplaceListings();
+  const [listings, user] = await Promise.all([
+    getPublicMarketplaceListings(),
+    getCurrentUser(),
+  ]);
   const appUrl = getAppUrl();
 
   return (
@@ -44,6 +48,7 @@ export default async function HomePage({ searchParams }: ListingsPageProps) {
         brands={brandCatalog}
         cities={cityOptions}
         initialFilters={initialFilters}
+        userId={user?.id}
       />
     </>
   );

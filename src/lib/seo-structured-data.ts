@@ -1,5 +1,4 @@
 import type { Listing } from "@/types";
-import { formatCurrency } from "@/lib/utils";
 import { buildAbsoluteUrl } from "@/lib/seo";
 
 export function buildVehicleJsonLd(listing: Listing) {

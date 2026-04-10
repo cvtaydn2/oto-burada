@@ -8,6 +8,7 @@ import { buildListingsMetadata } from "@/lib/seo";
 import { parseListingFiltersFromSearchParams } from "@/services/listings/listing-filters";
 import { getPublicMarketplaceListings } from "@/services/listings/marketplace-listings";
 
+export const dynamic = "force-dynamic";
 export const revalidate = 60;
 
 interface ListingsPageProps {

@@ -3,7 +3,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Archive, ArrowUpCircle, Loader2, Pencil, Plus, RotateCcw, X } from "lucide-react";
 
 import { formatCurrency, formatNumber } from "@/lib/utils";
@@ -38,6 +38,17 @@ export function MyListingsPanel({ activeEditId, listings, children }: MyListings
   const [archiveError, setArchiveError] = useState<string | null>(null);
   const [bumpingId, setBumpingId] = useState<string | null>(null);
   const [bumpMessage, setBumpMessage] = useState<string | null>(null);
+  const [currentTime, setCurrentTime] = useState(() => Date.now());
+
+  useEffect(() => {
+    const intervalId = window.setInterval(() => {
+      setCurrentTime(Date.now());
+    }, 60_000);
+
+    return () => {
+      window.clearInterval(intervalId);
+    };
+  }, []);
 
   const handleArchive = async (listingId: string) => {
     setArchivingId(listingId);
@@ -109,7 +120,7 @@ export function MyListingsPanel({ activeEditId, listings, children }: MyListings
         </div>
       )}
 
-      {!showForm && listings.length > 0 && (
+      {!showForm && (
         <button
           onClick={() => setShowForm(true)}
           className="flex w-full items-center justify-center gap-2 rounded-xl border-2 border-dashed border-primary/30 bg-primary/5 py-4 text-base font-semibold text-primary transition-colors hover:bg-primary/10"
@@ -119,12 +130,13 @@ export function MyListingsPanel({ activeEditId, listings, children }: MyListings
         </button>
       )}
 
-      {listings.length === 0 && !showForm ? (
-        <div className="rounded-xl border border-dashed border-gray-300 p-8 text-center">
+      {listings.length === 0 && !showForm && (
+        <div className="rounded-xl border border-dashed border-gray-300 p-8 text-center bg-slate-50/50">
           <h3 className="text-base font-medium">Henüz ilanın yok</h3>
-          <p className="mt-1 text-sm text-gray-500">Yukarıdaki butonla ilk arabanı ekle</p>
+          <p className="mt-1 text-sm text-gray-500">Hemen ilk arabanı ekle!</p>
         </div>
-      ) : (
+      )}
+      {listings.length > 0 && (
         <div className="space-y-3">
           <h3 className="text-sm font-medium text-gray-500">
             {listings.length} ilan
@@ -136,6 +148,7 @@ export function MyListingsPanel({ activeEditId, listings, children }: MyListings
                 listing={listing}
                 isArchiving={archivingId === listing.id}
                 isBumping={bumpingId === listing.id}
+                currentTime={currentTime}
                 onArchive={handleArchive}
                 onBump={handleBump}
               />
@@ -151,12 +164,14 @@ function ListingCard({
   listing,
   isArchiving,
   isBumping,
+  currentTime,
   onArchive,
   onBump,
 }: {
   listing: Listing;
   isArchiving: boolean;
   isBumping: boolean;
+  currentTime: number;
   onArchive: (id: string) => void;
   onBump: (id: string) => void;
 }) {
@@ -170,7 +185,7 @@ function ListingCard({
   })();
 
   const bumpCooldownDays = listing.bumpedAt
-    ? Math.max(0, Math.ceil((new Date(listing.bumpedAt).getTime() + 7 * 24 * 60 * 60 * 1000 - Date.now()) / (24 * 60 * 60 * 1000)))
+    ? Math.max(0, Math.ceil((new Date(listing.bumpedAt).getTime() + 7 * 24 * 60 * 60 * 1000 - currentTime) / (24 * 60 * 60 * 1000)))
     : 0;
 
   return (

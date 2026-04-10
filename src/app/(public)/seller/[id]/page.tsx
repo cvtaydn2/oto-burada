@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { ListingCardGrid } from "@/components/listings/listing-card-grid";
 import { TrustBadge } from "@/components/shared/trust-badge";
 import { getMarketplaceSeller, getPublicMarketplaceListings } from "@/services/listings/marketplace-listings";
+import { getSellerTrustSummary } from "@/services/profile/profile-trust";
 
 interface SellerProfilePageProps {
   params: Promise<{
@@ -23,7 +24,9 @@ export default async function SellerProfilePage({ params }: SellerProfilePagePro
   const allListings = await getPublicMarketplaceListings();
   const sellerListings = allListings.filter((l) => l.sellerId === sellerId);
   const totalListingsCount = sellerListings.length;
-  const soldCount = totalListingsCount > 1 ? Math.floor(totalListingsCount * 1.5) : 3;
+  const featuredListingCount = sellerListings.filter((listing) => listing.featured).length;
+  const trustSummary = getSellerTrustSummary(seller, totalListingsCount);
+  const memberSinceYear = new Date(seller.createdAt).getFullYear();
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8 space-y-8">
@@ -59,7 +62,7 @@ export default async function SellerProfilePage({ params }: SellerProfilePagePro
                 </span>
                 <span className="flex items-center gap-1.5">
                   <Calendar size={14} className="text-indigo-500" /> 
-                  {new Date(seller.createdAt).getFullYear()} den beri uye
+                  {memberSinceYear} den beri uye
                 </span>
                 <span className="inline-flex items-center rounded-full bg-slate-100 px-3 py-1 text-xs font-medium text-slate-600">
                   Bireysel Satıcı
@@ -107,8 +110,8 @@ export default async function SellerProfilePage({ params }: SellerProfilePagePro
                   <CheckCircle2 size={20} />
                 </div>
                 <div>
-                  <div className="text-2xl font-bold text-slate-900">{soldCount}</div>
-                  <div className="text-xs font-medium text-slate-500">Satılan Araç</div>
+                  <div className="text-2xl font-bold text-slate-900">{featuredListingCount}</div>
+                  <div className="text-xs font-medium text-slate-500">Öne Çıkan İlan</div>
                 </div>
               </div>
             </div>
@@ -119,8 +122,8 @@ export default async function SellerProfilePage({ params }: SellerProfilePagePro
                   <Clock size={20} />
                 </div>
                 <div>
-                  <div className="text-2xl font-bold text-slate-900">&lt; 3</div>
-                  <div className="text-xs font-medium text-slate-500">Ort. Satış (Gün)</div>
+                  <div className="text-2xl font-bold text-slate-900">{memberSinceYear}</div>
+                  <div className="text-xs font-medium text-slate-500">Üyelik Başlangıcı</div>
                 </div>
               </div>
             </div>
@@ -130,19 +133,16 @@ export default async function SellerProfilePage({ params }: SellerProfilePagePro
           <div className="mt-6 p-5 bg-slate-50 rounded-2xl">
             <h3 className="text-sm font-bold text-slate-900 mb-4">Güvenilirlik Özeti</h3>
             <div className="flex flex-wrap gap-4">
-              <div className="flex items-center gap-2 text-sm font-medium text-emerald-700">
-                <CheckCircle2 size={18} className="text-emerald-500" /> 
-                Kimlik doğrulandı
-              </div>
-              <div className="flex items-center gap-2 text-sm font-medium text-emerald-700">
-                <CheckCircle2 size={18} className="text-emerald-500" /> 
-                Telefon doğrulandı
-              </div>
-              <div className="flex items-center gap-2 text-sm font-medium text-emerald-700">
-                <CheckCircle2 size={18} className="text-emerald-500" /> 
-                E-posta doğrulandı
-              </div>
-              <TrustBadge score={9.8} verified={true} />
+              {trustSummary.signals.map((signal) => (
+                <div key={signal} className="flex items-center gap-2 text-sm font-medium text-emerald-700">
+                  <CheckCircle2 size={18} className="text-emerald-500" />
+                  {signal}
+                </div>
+              ))}
+              <TrustBadge
+                badgeLabel={trustSummary.badgeLabel}
+                score={trustSummary.score}
+              />
             </div>
           </div>
         </div>

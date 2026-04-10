@@ -52,7 +52,7 @@ export function SafeWhatsAppButton({ whatsappLink }: SafeWhatsAppButtonProps) {
                 </li>
                 <li className="flex gap-2">
                   <AlertTriangle className="size-4 shrink-0 text-amber-500 mt-0.5" />
-                  <span>Aşırı düşük fiyatlı "fırsat" gibi görünen ilanlara karşı özellikle temkinli yaklaşın.</span>
+                  <span>Aşırı düşük fiyatlı &quot;fırsat&quot; gibi görünen ilanlara karşı özellikle temkinli yaklaşın.</span>
                 </li>
               </ul>
             </div>

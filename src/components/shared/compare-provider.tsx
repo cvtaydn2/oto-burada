@@ -4,7 +4,6 @@ import {
   createContext,
   type PropsWithChildren,
   useContext,
-  useEffect,
   useMemo,
   useSyncExternalStore,
 } from "react";
@@ -45,7 +44,7 @@ interface CompareContextValue {
   clearCompare: () => void;
 }
 
-interface CompareProviderProps extends PropsWithChildren {}
+type CompareProviderProps = PropsWithChildren;
 
 const CompareContext = createContext<CompareContextValue | undefined>(undefined);
 

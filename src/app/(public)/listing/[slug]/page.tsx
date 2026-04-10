@@ -13,7 +13,6 @@ import {
   MessageCircle,
   Phone,
   Settings2,
-  ShieldCheck,
   Sparkles,
   Lock,
 } from "lucide-react";
@@ -29,7 +28,6 @@ import { PriceAnalysisCard } from "@/components/listings/price-analysis-card";
 import { TrustBadge } from "@/components/shared/trust-badge";
 import { ExpertInspectionCard } from "@/components/listings/expert-inspection-card";
 import { getCurrentUser } from "@/lib/auth/session";
-import type { Listing } from "@/types";
 import { buildListingDetailMetadata } from "@/lib/seo";
 import { formatDate, formatNumber } from "@/lib/utils";
 import {
@@ -39,6 +37,7 @@ import {
   getPublicMarketplaceListings,
 } from "@/services/listings/marketplace-listings";
 import { getListingCardInsights } from "@/services/listings/listing-card-insights";
+import { getSellerTrustSummary } from "@/services/profile/profile-trust";
 
 interface ListingDetailPageProps {
   params: Promise<{
@@ -48,14 +47,8 @@ interface ListingDetailPageProps {
 
 const whatsappTemplate = "Merhaba, ilanınızla ilgileniyorum.";
 
+export const dynamic = "force-dynamic";
 export const revalidate = 60;
-
-export async function generateStaticParams() {
-  const listings = await getPublicMarketplaceListings();
-  return listings.map((listing: Listing) => ({
-    slug: listing.slug,
-  }));
-}
 
 export async function generateMetadata({
   params,
@@ -87,7 +80,11 @@ export default async function ListingDetailPage({ params }: ListingDetailPagePro
     listing.brand,
     listing.city,
   );
+  const activeListingCount = (
+    await getPublicMarketplaceListings()
+  ).filter((item) => item.sellerId === listing.sellerId).length;
   const insight = getListingCardInsights(listing);
+  const trustSummary = getSellerTrustSummary(seller, activeListingCount);
   const currentUser = await getCurrentUser();
   const whatsappLink = `https://wa.me/${listing.whatsappPhone.replace(/\D/g, "")}?text=${encodeURIComponent(whatsappTemplate)}`;
   
@@ -262,7 +259,6 @@ export default async function ListingDetailPage({ params }: ListingDetailPagePro
               <h2 className="text-xl font-bold text-slate-900 mb-4">İlan Açıklaması</h2>
               <div className="space-y-4 text-[15px] leading-relaxed text-slate-700">
                 <p className="whitespace-pre-wrap">{listing.description}</p>
-                <p>Araç başında ufak bir pazarlık payı vardır. Alıcısına şimdiden hayırlı olsun.</p>
               </div>
             </section>
 
@@ -304,8 +300,7 @@ export default async function ListingDetailPage({ params }: ListingDetailPagePro
                     </div>
                     <div>
                       <div className="font-bold text-slate-900 text-base flex items-center gap-1.5">
-                        {seller?.fullName ?? "Doğrulanmış Satıcı"}
-                        <ShieldCheck className="size-5 text-blue-500" />
+                        {seller?.fullName ?? "Satıcı"}
                       </div>
                       <div className="text-[13px] font-medium text-slate-500 bg-slate-100 px-2 py-0.5 rounded-md inline-block mt-1">
                         Bireysel Satıcı
@@ -314,7 +309,10 @@ export default async function ListingDetailPage({ params }: ListingDetailPagePro
                   </div>
                 </div>
                 
-                <TrustBadge score={9.8} verified={true} />
+                <TrustBadge
+                  badgeLabel={trustSummary.badgeLabel}
+                  score={trustSummary.score}
+                />
 
                 {currentUser ? (
                   <div className="space-y-2.5 mt-5">

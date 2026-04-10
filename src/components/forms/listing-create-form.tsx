@@ -35,7 +35,7 @@ import {
   getListingImageConstraintsText,
   validateListingImageFile,
 } from "@/services/listings/listing-images";
-import type { ExpertInspection, Listing, ListingCreateFormValues } from "@/types";
+import type { Listing, ListingCreateFormValues } from "@/types";
 
 interface ListingCreateFormProps {
   initialValues: {
@@ -220,10 +220,6 @@ export function ListingCreateForm({ initialListing, initialValues }: ListingCrea
   const isUploadingAnyImage = fields.some((field) => uploadStates[field.id]?.status === "uploading");
   const modelOptions = brandCatalog.find((item) => item.brand === selectedBrand)?.models ?? [];
   const districtOptions = cityOptions.find((item) => item.city === selectedCity)?.districts ?? [];
-  const [expertDocUploading, setExpertDocUploading] = useState(false);
-  const [expertDocError, setExpertDocError] = useState<string | null>(null);
-  const watchedExpertInspection = useWatch({ control, name: "expertInspection" });
-  const watchedExpertDocUrl = (watchedExpertInspection as ExpertInspection | undefined)?.documentUrl;
 
   useEffect(() => {
     const nextModelOptions = brandCatalog.find((item) => item.brand === selectedBrand)?.models ?? [];

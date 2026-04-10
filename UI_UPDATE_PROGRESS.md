@@ -51,7 +51,7 @@
 - Filter reset buttons work correctly
 - Mobile responsive breakpoints verified
 
-**Production Readiness:** Project passes lint, typecheck, and build verification. Ready for edge case handling in production.
+**Production Readiness:** Project passes lint, typecheck, and build verification. Playwright smoke suite live DB bos olabildigi durumlara gore dayanikli hale getirildi; son durumda `32 passed / 4 skipped`.
 
 ---
 
@@ -206,3 +206,21 @@ Bu bölüm backend geliştirmelerine bağımlı UI güncellemelerini takip eder.
 
 ### Kalan UI boslugu
 - Dashboard tekrar ziyaret akislarinda mock kalan ana ekran yok; siradaki bosluk trust sinyalleri ve karar hizlandiran detay panelleri
+
+---
+
+## 2026-04-10 Public Runtime ve Trust UI Duzeltmeleri
+
+### Tamamlanan düzeltmeler
+- Public homepage, listings ve listing detail route'lari production build altinda auth kaynakli runtime hataya dusmeyecek sekilde hizalandi
+- Compare akisi tek arac query'sine dusmek yerine secili tum araclari route'a tasiyacak sekilde duzeltildi
+- Listing detail ve seller profile ekranlarindaki sahte "onayli satici / 9.8 puan" dili kaldirildi; yerine gercek profil ve ilan verilerinden turetilen daha durust trust sinyalleri geldi
+- Seller profile ekranindaki fake satis ve sure metrikleri kaldirilarak gercek aktif/featured/uyelik verileriyle degistirildi
+- Public smoke testler demo veriye bagli olmaktan cikarildi; live DB'de ilan yoksa uygun empty state veya skip davranisi kullaniliyor
+
+### Doğrulama sonucu
+- Lint, typecheck ve build yeniden geçti
+- Playwright suite `32 passed / 4 skipped` sonucuna geldi
+
+### Kalan UI boslugu
+- Gercek kimlik, telefon ve e-posta verification rozetleri icin profile seviyesinde ayrik verification alanlari ve bu alanlari besleyen operasyon akisi henuz yok

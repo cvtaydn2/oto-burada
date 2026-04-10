@@ -43,9 +43,13 @@ interface ListingRow {
   brand: string;
   city: string;
   created_at: string;
+  damage_status_json: Record<string, unknown> | null;
   description: string;
   district: string;
+  expert_inspection: Listing["expertInspection"] | null;
   featured: boolean;
+  fraud_reason: string | null;
+  fraud_score: number;
   fuel_type: Listing["fuelType"];
   id: string;
   listing_images?: ListingImageRow[] | null;
@@ -56,6 +60,7 @@ interface ListingRow {
   slug: string;
   status: Listing["status"];
   title: string;
+  tramer_amount: number | null;
   transmission: Listing["transmission"];
   updated_at: string;
   bumped_at: string | null;
@@ -79,8 +84,13 @@ const listingSelect = `
   district,
   description,
   whatsapp_phone,
+  tramer_amount,
+  damage_status_json,
+  fraud_score,
+  fraud_reason,
   status,
   featured,
+  expert_inspection,
   created_at,
   updated_at,
   bumped_at,
@@ -168,6 +178,12 @@ function buildListingRecord(
       ? existingListings.filter((listing) => listing.id !== existingListing.id)
       : existingListings,
   );
+  const fraudAssessment = calculateFraudScore(
+    input,
+    existingListing
+      ? existingListings.filter((listing) => listing.id !== existingListing.id)
+      : existingListings,
+  );
   const timestamp = new Date().toISOString();
 
   return listingSchema.parse({
@@ -186,8 +202,14 @@ function buildListingRecord(
     district: input.district,
     description: input.description,
     whatsappPhone: input.whatsappPhone,
+    tramerAmount: input.tramerAmount ?? null,
+    damageStatusJson: input.damageStatusJson ?? null,
+    fraudScore: fraudAssessment.fraudScore,
+    fraudReason: fraudAssessment.fraudReason,
     status: options?.status ?? existingListing?.status ?? "pending",
     featured: existingListing?.featured ?? false,
+    expertInspection: input.expertInspection,
+    bumpedAt: existingListing?.bumpedAt ?? null,
     createdAt: existingListing?.createdAt ?? timestamp,
     updatedAt: timestamp,
     images: input.images.map((image, index) => ({
@@ -206,9 +228,13 @@ function mapListingRow(row: ListingRow) {
     brand: row.brand,
     city: row.city,
     createdAt: row.created_at,
+    damageStatusJson: row.damage_status_json ?? null,
     description: row.description,
     district: row.district,
+    expertInspection: row.expert_inspection ?? undefined,
     featured: row.featured,
+    fraudReason: row.fraud_reason ?? null,
+    fraudScore: row.fraud_score ?? 0,
     fuelType: row.fuel_type,
     id: row.id,
     images: (row.listing_images ?? [])
@@ -228,6 +254,7 @@ function mapListingRow(row: ListingRow) {
     slug: row.slug,
     status: row.status,
     title: row.title,
+    tramerAmount: row.tramer_amount ?? null,
     transmission: row.transmission,
     updatedAt: row.updated_at,
     bumpedAt: row.bumped_at ?? null,
@@ -428,9 +455,13 @@ function mapListingToDatabaseRow(listing: Listing) {
     brand: listing.brand,
     city: listing.city,
     created_at: listing.createdAt,
+    damage_status_json: listing.damageStatusJson ?? null,
     description: listing.description,
     district: listing.district,
+    expert_inspection: listing.expertInspection ?? null,
     featured: listing.featured,
+    fraud_reason: listing.fraudReason ?? null,
+    fraud_score: listing.fraudScore ?? 0,
     fuel_type: listing.fuelType,
     id: listing.id,
     mileage: listing.mileage,
@@ -440,8 +471,10 @@ function mapListingToDatabaseRow(listing: Listing) {
     slug: listing.slug,
     status: listing.status,
     title: listing.title,
+    tramer_amount: listing.tramerAmount ?? null,
     transmission: listing.transmission,
     updated_at: listing.updatedAt,
+    bumped_at: listing.bumpedAt ?? null,
     whatsapp_phone: listing.whatsappPhone,
     year: listing.year,
   };

@@ -1,11 +1,11 @@
 import { ShieldCheck } from "lucide-react";
 
 interface TrustBadgeProps {
+  badgeLabel?: string | null;
   score: number;
-  verified: boolean;
 }
 
-export function TrustBadge({ score, verified }: TrustBadgeProps) {
+export function TrustBadge({ badgeLabel, score }: TrustBadgeProps) {
   return (
     <div className="flex items-center justify-between mb-6">
       <div className="flex items-center gap-2">
@@ -18,12 +18,12 @@ export function TrustBadge({ score, verified }: TrustBadgeProps) {
           </div>
         </div>
       </div>
-      {verified && (
+      {badgeLabel ? (
         <div className="flex items-center gap-1.5 text-sm font-medium text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20 px-3 py-1.5 rounded-[0.75rem] border border-blue-100 dark:border-blue-800/50">
           <ShieldCheck size={18} />
-          Onaylı Satıcı
+          {badgeLabel}
         </div>
-      )}
+      ) : null}
     </div>
   );
 }

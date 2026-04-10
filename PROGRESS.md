@@ -15,7 +15,7 @@ Her yeni geliştirme başlamadan önce okunmalıdır.
 ## Proje Durumu
 - Güncel faz: `Trust & Operasyon (Dalga 2) Tamamlandı`
 - Güncel görev: `Ekspertiz Yükleme + Moderasyon Şablonları + Fraud Heuristics tamamlandı`
-- Sonraki hedef: `Dalga 2.5 (Bump sistemi) veya Dalga 3 (SEO altyapısı)`
+- Sonraki hedef: `Dalga 2.5 operasyon düzeltmeleri + güven sinyallerinin gerçek verification verisine bağlanması`
 - Durum: completed
 
 ---
@@ -24,7 +24,46 @@ Her yeni geliştirme başlamadan önce okunmalıdır.
 - `npm run lint` - Geçti (0 error)
 - `npm run typecheck` - Geçti
 - `npm run build` - Geçti
-- `npm run test` - 36/36 geçti
+- `npm run test` - 32 geçti / 4 skip (live DB'de public ilan yoksa koşullu skip)
+
+---
+
+## 2026-04-10 Semantik Audit ve Stabilizasyon
+
+### Kapsam
+- `AGENTS.md`, `CONTENT_COPY.md`, `TASKS.md`, `PROGRESS.md`, `UI_UPDATE_PROGRESS.md` ve `TODO.md` tekrar okundu
+- Public route'lar, compare akışı, admin edit semantiği, trust sinyalleri ve lint/test zinciri gerçek runtime üzerinden doğrulandı
+- Supabase şeması ile listing persistence katmanı arasındaki ayrışmalar tarandı
+
+### Tespit Edilen ve Düzeltilen Sorunlar
+- Repo kökündeki `eslint.config.mjs` kayıptı; `npm run lint` fiilen çalışmıyordu
+- `/`, `/listings` ve `/listing/[slug]` public route'ları `getCurrentUser()` nedeniyle production build altında `DYNAMIC_SERVER_USAGE` hatasına düşebiliyordu
+- Playwright smoke suite canlı DB yokken demo veri varmış gibi davranıyordu; public listing ve favori testleri bu yüzden kırılgandı
+- Compare butonu local state'e çoklu araç eklese bile route'a sadece son `listingId` ile gidiyordu; gerçek çoklu karşılaştırma akışı boşa düşüyordu
+- Admin edit endpoint'i audit trail'e `approve` aksiyonu yazıyor, yani düzenlemeleri onay gibi raporluyordu
+- Listing detail ve seller profile ekranları sabit `9.8` güven puanı ve sahte doğrulama etiketleri gösteriyordu
+- `schema.sql` içinde bulunan `tramer_amount`, `damage_status_json`, `fraud_score`, `fraud_reason`, `expert_inspection` ve `bumped_at` alanları listing persistence mapping'inde eksikti; bazı güven alanları runtime'da fiilen taşınmıyordu
+
+### Yapılan Geliştirmeler
+- `eslint.config.mjs`: Next 16 flat config geri getirildi; generated/test klasörleri ignore edildi
+- `src/app/(public)/page.tsx`, `src/app/(public)/listings/page.tsx`, `src/app/(public)/listing/[slug]/page.tsx`: public auth okuyan sayfalar dinamik render uyumuna çekildi
+- `tests/e2e.spec.ts`: smoke testler canlı DB boş olma ihtimaline göre dayanıklı hale getirildi; ilan yoksa empty-state veya koşullu skip kullanılıyor
+- `src/components/shared/compare-provider.tsx` ve `src/components/listings/compare-button.tsx`: compare query artık tüm seçili araçları taşıyor
+- `src/app/api/admin/listings/[listingId]/edit/route.ts`: edit audit semantiği `approve` yerine `review` not akışıyla hizalandı ve bulunamayan ilan için 404 koruması eklendi
+- `src/services/profile/profile-trust.ts`, `src/components/shared/trust-badge.tsx`, `src/app/(public)/listing/[slug]/page.tsx`, `src/app/(public)/seller/[id]/page.tsx`: sahte verification rozetleri kaldırıldı; güven sinyalleri gerçek profil/ilan verisinden türetilir hale getirildi
+- `src/services/listings/listing-submissions.ts`: trust/fraud/tramer/ekspertiz alanları DB select, map ve insert/update akışına bağlandı; fraud değerlendirmesi artık gerçekten listing record'a yazılıyor
+- `src/components/listings/safe-whatsapp-button.tsx`, `src/components/listings/my-listings-panel.tsx`, `src/components/forms/listing-create-form.tsx`, `src/types/domain.ts`, `postcss.config.mjs`: lint ve render saflığı sorunları temizlendi
+
+### Doğrulama
+- `npm run lint` - Geçti
+- `npm run typecheck` - Geçti
+- `npm run build` - Geçti
+- `npm run test` - `32 passed`, `4 skipped`
+
+### Kalan Net Risk
+- Admin edit akışı için gerçek `edit` enum/policy kaydı hâlâ DB migration seviyesi bir iş; şimdilik yanlış `approve` yerine daha güvenli `review` not akışı kullanılıyor
+- Trust badge artık sahte verification göstermiyor ama gerçek kimlik/telefon/e-posta doğrulama bayrakları için ayrı profile alanları henüz yok
+- Public filter option kaynakları hâlâ `src/data` katalog dosyalarından geliyor; tüm referans veriler henüz DB-driven değil
 
 ---
 

@@ -1,5 +1,3 @@
-import { NextResponse } from "next/server";
-
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { hasSupabaseAdminEnv } from "@/lib/supabase/env";
@@ -67,10 +65,16 @@ export async function PATCH(
   if (updates.price !== undefined) dbUpdates.price = updates.price;
   if (updates.description !== undefined) dbUpdates.description = updates.description;
 
-  const { error: updateError } = await admin
+  const { data: updatedListing, error: updateError } = await admin
     .from("listings")
     .update(dbUpdates)
-    .eq("id", listingId);
+    .eq("id", listingId)
+    .select("id")
+    .maybeSingle<{ id: string }>();
+
+  if (!updateError && !updatedListing) {
+    return apiError(API_ERROR_CODES.NOT_FOUND, "İlan bulunamadı.", 404);
+  }
 
   if (updateError) {
     return apiError(API_ERROR_CODES.INTERNAL_ERROR, "İlan düzenlenemedi.", 500);
@@ -79,7 +83,7 @@ export async function PATCH(
   // Audit log
   const changedFields = Object.keys(updates).join(", ");
   await createAdminModerationAction({
-    action: "approve",
+    action: "review",
     adminUserId: user.id,
     note: `Admin düzenleme: ${changedFields} güncellendi`,
     targetId: listingId,
