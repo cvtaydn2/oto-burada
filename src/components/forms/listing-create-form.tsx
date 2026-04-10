@@ -105,6 +105,19 @@ function buildDefaultValues(
             url: image.url,
           }))
         : Array.from({ length: minimumListingImages }, () => ({})),
+    expertInspection: initialListing?.expertInspection ?? {
+      hasInspection: false,
+      damageRecord: "bilinmiyor",
+      bodyPaint: "bilinmiyor",
+      engine: "bilinmiyor",
+      transmission: "bilinmiyor",
+      suspension: "bilinmiyor",
+      brakes: "bilinmiyor",
+      electrical: "bilinmiyor",
+      interior: "bilinmiyor",
+      tires: "bilinmiyor",
+      acHeating: "bilinmiyor",
+    },
   };
 }
 
@@ -190,6 +203,7 @@ type ListingCreateFormSchemaOutput = z.output<typeof listingCreateFormSchema>;
 const STEP_LABELS = [
   "Temel Bilgiler",
   "Konum ve Detaylar",
+  "Ekspertiz ve Kondisyon",
   "Fotoğraflar ve Gönderim",
 ] as const;
 
@@ -348,7 +362,10 @@ export function ListingCreateForm({
       valid = await trigger(["title", "brand", "model", "year", "mileage", "fuelType", "transmission", "price"]);
     } else if (currentStep === 1) {
       valid = await trigger(["city", "district", "whatsappPhone", "description"]);
+    } else if (currentStep === 2) {
+      valid = await trigger(["expertInspection"]);
     }
+
     if (valid) {
       setCurrentStep((prev) => Math.min(prev + 1, totalSteps - 1));
       window.scrollTo({ top: 0, behavior: "smooth" });
@@ -914,9 +931,78 @@ export function ListingCreateForm({
         )}
 
         {/* ════════════════════════════════════════════════
-            STEP 2 — Fotoğraflar ve Gönderim
+            STEP 2 — Ekspertiz ve Kondisyon
         ════════════════════════════════════════════════ */}
         {currentStep === 2 && (
+          <>
+            <FormSection
+              icon={ShieldCheck}
+              title="Detaylı kondisyon ve ekspertiz"
+              description="Motor, şanzıman ve mekanik aksamın durumunu belirt — bu bilgiler profesyonel alıcılar için kritiktir."
+            >
+              <div className="space-y-6">
+                <div className="flex items-center gap-4 rounded-2xl border border-slate-100 bg-slate-50/50 p-4">
+                  <div className="flex-1">
+                    <p className="text-sm font-semibold text-foreground">Profesyonel ekspertiz raporu var mı?</p>
+                    <p className="text-xs text-muted-foreground mt-1">TSB onaylı bir kurumdan rapor aldıysan işaretleyebilirsin.</p>
+                  </div>
+                  <Controller
+                    control={control}
+                    name={"expertInspection.hasInspection" as any}
+                    render={({ field }) => (
+                      <input
+                        type="checkbox"
+                        checked={field.value}
+                        onChange={(e) => field.onChange(e.target.checked)}
+                        className="size-6 rounded-lg border-input text-primary transition-all focus:ring-primary"
+                      />
+                    )}
+                  />
+                </div>
+
+                <div className="grid gap-6 sm:grid-cols-2">
+                  {[
+                    { label: "Motor", name: "expertInspection.engine" },
+                    { label: "Şanzıman", name: "expertInspection.transmission" },
+                    { label: "Alt Takım / Süspansiyon", name: "expertInspection.suspension" },
+                    { label: "Fren Sistemi", name: "expertInspection.brakes" },
+                    { label: "Elektrik Sistemi", name: "expertInspection.electrical" },
+                    { label: "İç Kondisyon", name: "expertInspection.interior" },
+                    { label: "Lastikler", name: "expertInspection.tires" },
+                    { label: "Klima / Isıtma", name: "expertInspection.acHeating" },
+                  ].map((field) => (
+                    <label key={field.name} className="block space-y-2 text-sm font-medium text-foreground">
+                      <span>{field.label}</span>
+                      <select
+                        {...register(field.name as any)}
+                        className={inputClassName}
+                      >
+                        <option value="bilinmiyor">Bilinmiyor / Belirtilmemiş</option>
+                        <option value="var">Sorunsuz / Kusursuz</option>
+                        <option value="yok">Bakım Gerektiriyor / Arızalı</option>
+                      </select>
+                    </label>
+                  ))}
+                </div>
+
+                <label className="block space-y-2 text-sm font-medium text-foreground">
+                  <span>Ekstra Ekspertiz Notları</span>
+                  <textarea
+                    rows={4}
+                    {...register("expertInspection.notes" as any)}
+                    placeholder="Ekspertizde özellikle belirtilen bir durum varsa buraya yazabilirsiniz. (Örn: Motor performansı %92 çıktı)"
+                    className="w-full rounded-2xl border border-input bg-background px-4 py-3 text-sm outline-none transition-colors focus:border-primary"
+                  />
+                </label>
+              </div>
+            </FormSection>
+          </>
+        )}
+
+        {/* ════════════════════════════════════════════════
+            STEP 3 — Fotoğraflar ve Gönderim
+        ════════════════════════════════════════════════ */}
+        {currentStep === 3 && (
           <>
             <FormSection
               icon={ImagePlus}
@@ -1110,7 +1196,7 @@ export function ListingCreateForm({
           </div>
 
           <div className="flex flex-col gap-3 sm:flex-row">
-            {isEditing && currentStep === 2 ? (
+            {isEditing && currentStep === 3 ? (
               <button
                 type="button"
                 onClick={() => router.replace("/dashboard/listings")}

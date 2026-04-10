@@ -23,7 +23,7 @@ export function DamageReportCard({ damageStatus, tramerAmount }: DamageReportCar
         <p className="text-sm text-slate-500">
           Satıcı tarafından belirtilen herhangi bir kaza, boya veya değişen parça bulunmamaktadır.
         </p>
-        {tramerAmount !== undefined && (
+        {tramerAmount != null && (
           <div className="mt-4 pt-4 border-t border-slate-100 flex justify-between items-center text-sm">
             <span className="text-slate-500">Tramer Kaydı</span>
             <span className="font-bold text-slate-900">
@@ -72,7 +72,7 @@ export function DamageReportCard({ damageStatus, tramerAmount }: DamageReportCar
             )}
             <h3 className="font-bold text-slate-900 text-base">Ekspertiz Özet Durumu</h3>
           </div>
-          {tramerAmount !== undefined && (
+          {tramerAmount != null && (
             <div className="text-right">
               <div className="text-[11px] font-bold text-slate-400 uppercase tracking-tight">Tramer</div>
               <div className="text-sm font-bold text-slate-900">

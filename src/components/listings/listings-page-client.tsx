@@ -10,6 +10,7 @@ import {
 import { Gauge, LayoutGrid, List, Search, SlidersHorizontal, TrendingDown, ArrowUpDown, ArrowUp, ArrowDown } from "lucide-react";
 import { usePathname, useRouter } from "next/navigation";
 import Link from "next/link";
+import { Drawer } from "vaul";
 
 import { ListingCard } from "@/components/listings/listing-card";
 import { ListingCardGrid } from "@/components/listings/listing-card-grid";
@@ -55,6 +56,8 @@ interface ListingsPageClientProps {
   cities: CityOption[];
   initialFilters: ListingFilters;
   userId?: string | null;
+  hideFiltersOnLanding?: boolean;
+  hideHero?: boolean;
 }
 
 export function ListingsPageClient({
@@ -63,6 +66,8 @@ export function ListingsPageClient({
   cities,
   initialFilters,
   userId,
+  hideFiltersOnLanding = false,
+  hideHero = false,
 }: ListingsPageClientProps) {
   const mobileFilterDialogId = "mobile-listing-filters";
   const mobileFilterTitleId = "mobile-listing-filters-title";
@@ -77,7 +82,7 @@ export function ListingsPageClient({
   const [sortDirection, setSortDirection] = useState<"asc" | "desc">("desc");
 
   const deferredFilters = useDeferredValue(filters);
-  const isHomePage = pathname === "/" || pathname === "/listings";
+  const isHomePage = (pathname === "/" || pathname === "/listings") && !hideHero;
 
   const models = useMemo(
     () => getModelsForBrand(brands, filters.brand),
@@ -541,31 +546,30 @@ export function ListingsPageClient({
         </div>
       </div>
 
-      {/* Mobile Drawer */}
-      {isFilterDrawerOpen ? (
-        <div
-          className="fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-sm px-4 py-6 lg:hidden"
-          onClick={() => setIsFilterDrawerOpen(false)}
-        >
-          <div className="mx-auto max-w-lg h-full overflow-y-auto">
-            <div
-              id={mobileFilterDialogId}
-              role="dialog"
-              aria-modal="true"
-              aria-labelledby={mobileFilterTitleId}
-              className="space-y-3 relative"
-              onClick={(event) => event.stopPropagation()}
-            >
-              <div className="sr-only">
-                <h2 id={mobileFilterTitleId}>Mobil filtre paneli</h2>
+      {/* Mobile Drawer Filter */}
+      <Drawer.Root open={isFilterDrawerOpen} onOpenChange={setIsFilterDrawerOpen}>
+        <Drawer.Portal>
+          <Drawer.Overlay className="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm lg:hidden" />
+          <Drawer.Content className="fixed bottom-0 left-0 right-0 z-50 mt-24 flex h-[90%] flex-col rounded-t-[32px] bg-white shadow-2xl outline-none ring-0 lg:hidden">
+            <div className="flex-1 overflow-y-auto rounded-t-[32px] bg-white p-4">
+              <div className="mx-auto mb-6 h-1.5 w-12 shrink-0 rounded-full bg-slate-200" />
+              
+              <div className="flex items-center justify-between mb-6 px-2">
+                <div>
+                  <Drawer.Title className="text-xl font-bold text-slate-900">Filtrele</Drawer.Title>
+                  <Drawer.Description className="text-sm text-slate-500">
+                    {filteredListings.length} araç bulundu
+                  </Drawer.Description>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setIsFilterDrawerOpen(false)}
+                  className="rounded-full bg-slate-100 p-2 text-slate-500 hover:bg-slate-200"
+                >
+                  <Search className="size-5" />
+                </button>
               </div>
-              <button
-                type="button"
-                onClick={() => setIsFilterDrawerOpen(false)}
-                className="rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-900 shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
-              >
-                 Kapat
-              </button>
+
               <ListingsFilterPanel
                 brands={brands}
                 cities={cities}
@@ -579,9 +583,19 @@ export function ListingsPageClient({
                 onReset={resetFilters}
               />
             </div>
-          </div>
-        </div>
-      ) : null}
+            
+            <div className="border-t border-slate-100 bg-slate-50/50 p-4 pb-8">
+              <button
+                type="button"
+                onClick={() => setIsFilterDrawerOpen(false)}
+                className="flex w-full items-center justify-center h-12 rounded-2xl bg-indigo-600 text-sm font-bold text-white shadow-lg shadow-indigo-200 transition-all active:scale-95"
+              >
+                {filteredListings.length} İlanı Gör
+              </button>
+            </div>
+          </Drawer.Content>
+        </Drawer.Portal>
+      </Drawer.Root>
     </main>
   );
 }

@@ -5,6 +5,7 @@ import { getCurrentUser, getUserRole } from "@/lib/auth/session";
 import { getLiveMarketplaceReferenceData } from "@/services/reference/live-reference-data";
 import { HeaderMobileNav } from "./header-mobile-nav";
 import { SearchWithSuggestions } from "@/components/ui/search-with-suggestions";
+import { ThemeToggle } from "@/components/shared/theme-toggle";
 
 export async function SiteHeader() {
   const user = await getCurrentUser();
@@ -15,7 +16,7 @@ export async function SiteHeader() {
   const postListingHref = user ? "/dashboard/listings" : "/login";
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b border-black/5 bg-white/80 backdrop-blur-xl" role="banner">
+    <header className="sticky top-0 z-50 w-full border-b border-border bg-background/80 backdrop-blur-xl" role="banner">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="flex h-16 items-center justify-between gap-4">
           <div className="flex items-center gap-3">
@@ -23,7 +24,7 @@ export async function SiteHeader() {
               <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-500 to-indigo-600 text-white shadow-lg shadow-indigo-500/25 transition-transform group-hover:scale-105" aria-hidden="true">
                 <CarFront size={20} />
               </div>
-              <span className="text-xl font-bold bg-gradient-to-r from-slate-900 to-slate-700 bg-clip-text text-transparent hidden sm:block">
+              <span className="text-xl font-bold bg-gradient-to-r from-foreground to-foreground/80 bg-clip-text text-transparent hidden sm:block">
                 OtoBurada
               </span>
             </Link>
@@ -37,10 +38,11 @@ export async function SiteHeader() {
           </div>
 
           <nav className="hidden md:flex items-center gap-1" aria-label="Ana navigasyon">
+            <ThemeToggle />
             {user && (
               <Link 
                 href="/dashboard/notifications" 
-                className="flex items-center justify-center w-10 h-10 rounded-xl text-slate-500 hover:text-indigo-600 hover:bg-indigo-50/80 transition-all"
+                className="flex items-center justify-center w-10 h-10 rounded-xl text-muted-foreground hover:text-indigo-600 hover:bg-indigo-50/80 transition-all dark:hover:bg-indigo-900/30"
                 title="Bildirimler"
               >
                 <Bell size={20} />
@@ -48,7 +50,7 @@ export async function SiteHeader() {
             )}
             <Link 
               href={favoritesHref} 
-              className="flex items-center justify-center w-10 h-10 rounded-xl text-slate-500 hover:text-indigo-600 hover:bg-indigo-50/80 transition-all"
+              className="flex items-center justify-center w-10 h-10 rounded-xl text-muted-foreground hover:text-indigo-600 hover:bg-indigo-50/80 transition-all dark:hover:bg-indigo-900/30"
               title="Favoriler"
             >
               <Heart size={20} />
@@ -56,14 +58,14 @@ export async function SiteHeader() {
             {isAdmin && (
               <Link 
                 href="/admin" 
-                className="flex items-center justify-center h-10 px-4 rounded-xl text-sm font-semibold text-slate-600 hover:text-indigo-600 hover:bg-indigo-50/80 transition-all"
+                className="flex items-center justify-center h-10 px-4 rounded-xl text-sm font-semibold text-muted-foreground hover:text-indigo-600 hover:bg-indigo-50/80 transition-all dark:hover:bg-indigo-900/30"
               >
                 Admin
               </Link>
             )}
             <Link 
               href={accountHref}
-              className="flex items-center justify-center h-10 px-5 rounded-xl text-sm font-semibold text-slate-700 hover:bg-slate-100 transition-all"
+              className="flex items-center justify-center h-10 px-5 rounded-xl text-sm font-semibold text-foreground hover:bg-muted transition-all"
             >
               <User size={18} className="mr-2" />
               {user ? "Hesabım" : "Giriş"}

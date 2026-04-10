@@ -46,6 +46,8 @@ export function ListingGallery({ images, title }: ListingGalleryProps) {
                 fill
                 priority
                 sizes="(min-width: 1280px) 65vw, 100vw"
+                placeholder="blur"
+                blurDataURL="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mN8/+F9PQAI8AOB969n9wAAAABJRU5ErkJggg=="
                 className="object-cover cursor-pointer transition-transform duration-500 hover:scale-105"
                 onClick={() => setIsLightboxOpen(true)}
               />
@@ -122,6 +124,8 @@ export function ListingGallery({ images, title }: ListingGalleryProps) {
                   alt={`${title} - ${index + 1}`}
                   fill
                   sizes="100px"
+                  placeholder="blur"
+                  blurDataURL="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mN8/+F9PQAI8AOB969n9wAAAABJRU5ErkJggg=="
                   className="object-cover"
                   loading="lazy"
                 />

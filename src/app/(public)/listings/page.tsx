@@ -1,9 +1,10 @@
 import type { Metadata } from "next";
 
 import { ListingsPageClient } from "@/components/listings/listings-page-client";
-import { ListingStructuredData, OrganizationStructuredData } from "@/components/seo/structured-data";
+import { ListingStructuredData, OrganizationStructuredData, BreadcrumbStructuredData } from "@/components/seo/structured-data";
+import { Breadcrumbs } from "@/components/shared/breadcrumbs";
 import { getCurrentUser } from "@/lib/auth/session";
-import { buildListingsMetadata } from "@/lib/seo";
+import { buildListingsMetadata, buildAbsoluteUrl } from "@/lib/seo";
 import { parseListingFiltersFromSearchParams } from "@/services/listings/listing-filters";
 import { getPublicMarketplaceListings } from "@/services/listings/marketplace-listings";
 import { getLiveMarketplaceReferenceData } from "@/services/reference/live-reference-data";
@@ -34,14 +35,26 @@ export default async function ListingsPage({ searchParams }: ListingsPageProps) 
     getLiveMarketplaceReferenceData(),
   ]);
 
+  const breadcrumbs = [
+    { name: "Tüm İlanlar", url: "/listings" }
+  ];
+
   return (
     <>
       <OrganizationStructuredData 
         name="OtoBurada"
-        url="https://otoburada.com"
+        url={buildAbsoluteUrl("/")}
         description="Türkiye'nin en güvenilir 2. el ve sıfır otomobil pazarı. Binlerce araç içinden hayalindeki arabayı bul."
       />
-      <ListingStructuredData listings={listings} url="https://otoburada.com/listings" />
+      <BreadcrumbStructuredData items={breadcrumbs.map(b => ({ name: b.name, url: buildAbsoluteUrl(b.url) }))} />
+      <ListingStructuredData listings={listings} url={buildAbsoluteUrl("/listings")} />
+      
+      <div className="bg-slate-50 border-b border-slate-200">
+        <div className="mx-auto max-w-7xl px-4 py-4 sm:px-6 lg:px-8">
+          <Breadcrumbs items={breadcrumbs} />
+        </div>
+      </div>
+
       <ListingsPageClient
         key={initialFiltersKey}
         listings={listings}

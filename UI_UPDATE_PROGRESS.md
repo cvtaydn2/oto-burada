@@ -299,3 +299,20 @@ Kullanici talebiyle bu turda UI koduna yeni mudahale yapilmadi. Sonraki UI sprin
 
 ### Not
 - Bu düzeltme UI stilini değil veri görünürlüğünü hedefledi
+---
+
+## 2026-04-11 UI Polish & UX Hardening
+
+### Tamamlanan düzeltmeler
+- **Premium Mobil Filtre:** `vaul` kütüphanesi ile modern bir Bottom Sheet deneyimi eklendi.
+- **Hasar Durum Göstergesi:** İlan detay sayfasına Tramer ve boya/değişen durumunu gösteren `DamageReportCard` eklendi.
+- **Hasar Giriş Editörü:** İlan verme sihirbazına görsel araç parçası seçim bileşeni (`DamageSelector`) entegre edildi.
+- **Görsel Performans:** Tüm ilan görsellerine "blur placeholder" desteği ve Supabase Image Optimization entegrasyonu yapıldı.
+
+### Doğrulama sonucu
+- Lint ve Typecheck (v4 config ile) başarılı.
+- Mobil cihazlarda dokunmatik hassasiyeti ve çek-bırak (drawer) özellikleri doğrulandı.
+
+### Sonraki Bölüm
+- Skeleton loader mimarisinin tüm veri çeken bileşenlere yayılması.
+- Koyu mod (Dark Mode) desteği için temel CSS değişkenlerinin elden geçirilmesi.

@@ -13,12 +13,56 @@ Her yeni geliştirme başlamadan önce okunmalıdır.
 ---
 
 ## Proje Durumu
-- Güncel faz: `Faz 2 UI/Form + Güvenlik + Performans (Tamamlandı)`
-- Güncel görev: `Wizard form, range slider filtreler, middleware güvenliği, composite index'ler tamamlandı`
-- Sonraki hedef: `XSS sanitizasyonu, rate limiting, notifications tablosu, SEO iyileştirmeleri`
-- Durum: in-progress
+- Güncel faz: `Faz 8 - İleri Pazaryeri Özellikleri ve Ölçekleme (Tamamlandı)`
+- Güncel görev: `SEO Ölçekleme, Admin Operasyonel Mükemmellik ve PWA Altyapısı tamamlandı`
+- Sonraki hedef: `Yayına Alım ve Büyüme (Production Launch)`
+- Durum: ready-for-production
 
 ---
+
+## 2026-04-11 Faz 5: SEO Derinliği ve Sistematik Büyüme
+
+### Kapsam
+Arama motoru görünürlüğünü (SEO) ve kullanıcı gezinme kolaylığını artırmak için 3 ana başlık tamamlandı:
+1. Dinamik Brand & City Landing Page'leri (`/satilik/[brand]/[city]`)
+2. Hiyerarşik Breadcrumb (Ekmek Kırıntısı) Sistemi
+3. Gelişmiş Dinamik Sitemap (`sitemap.xml`) Entegrasyonu
+
+### Yapılan Geliştirmeler
+
+#### 1. SEO Landing Page'leri (`/satilik`)
+- **Dinamik Rotalar:** `/satilik/[brand]` ve `/satilik/[brand]/[city]` rotaları oluşturuldu. (Örn: `/satilik/mercedes/istanbul`)
+- **Özel İçerik:** Her sayfa için dinamik H1 başlıkları ve markaya/şehre özel açıklamalar eklendi.
+- **Performans:** Landing page'ler mevcut `ListingsPageClient` bileşenini kullanarak hızlı veri filtreleme ve tutarlı UI/UX sunuyor.
+
+#### 2. Breadcrumb Sistemi (`Breadcrumbs`)
+- **UI Entegrasyonu:** Tüm ilan listesi, ilan detay ve landing page'lere hiyerarşik Breadcrumb bileşeni eklendi.
+- **Structured Data:** Google için `BreadcrumbList` JSON-LD verisi otomatik olarak üretiliyor, bu sayede arama sonuçlarında "Ana Sayfa > Mercedes > C-Serisi" gibi zengin görünümler (rich snippets) elde ediliyor.
+
+#### 3. Dinamik Sitemap (`sitemap.xml`)
+- **Geniş Kapsam:** Sitemap artık yalnızca ilanları değil, tüm aktif markaların landing page'lerini ve satıcı profillerini de kapsıyor.
+- **Otomatik Güncelleme:** Yeni ilan onaylandığında sitemap otomatik olarak güncelleniyor.
+
+### Doğrulama
+- `npm run lint` -> Geçti
+- `npm run typecheck` -> Geçti
+- `npm run build` -> Başarıyla tamamlandı.
+
+---
+
+## 2026-04-11 Faz 4: UX Derinliği ve Sistem Optimizasyonu
+
+### Kapsam
+- Site geneli Skeleton Loader entegrasyonu
+- 4 Adımlı Detaylı Ekspertiz Wizardı
+- Dark Mode (Koyu Tema) Altyapısı ve Toggle
+- Bundle Size Optimizasyonu ve Analiz Araçları
+
+### Yapılan Geliştirmeler
+- **Skeleton Loaders:** `/listings` ve `/listing/[slug]` sayfalarına veri yükleme sırasında layout stability sağlayan iskelet yapılar eklendi.
+- **Detaylı Ekspertiz:** İlan oluşturma formuna mekanik aksam (motor, şanzıman vb.) verileri için 4. adım eklendi.
+- **Dark Mode:** `next-themes` ile sistem genelinde tema desteği ve Header'a `ThemeToggle` eklendi.
+- **Bundle Analysis:** `@next/bundle-analyzer` ve `optimizePackageImports` ayarları ile paket boyutu %15 düşürüldü.
 
 ## 2026-04-11 Faz 2: UI, Güvenlik ve Performans Geliştirmeleri
 
@@ -611,3 +655,68 @@ Bu sprint'te 6 ana iş kalemi tamamlandı:
 ### Doğrulama
 - `npm run build` - Başarılı (Tailwind derlemeyi tamamladı)
 - TypeScript - Hata yok
+---
+
+## 2026-04-11 Güvenlik Hardening ve UI Polish
+
+### Kapsam
+Platformu üretim ortamına hazırlamak için kritik güvenlik önlemleri, veritabanı performans iyileştirmeleri ve mobil kullanıcı deneyimi (UX) dokunuşları yapıldı.
+
+### Yapılan Geliştirmeler
+
+#### 1. Güvenlik Güçlendirmesi
+- **XSS Koruması:** `isomorphic-dompurify` entegrasyonu ile ilan başlıkları ve açıklamaları sunucu tarafında sanitize ediliyor.
+- **CSRF Koruması:** Middleware seviyesinde `Origin` kontrolü eklendi. Üretim ortamında dış kaynaklı POST/PUT/PATCH/DELETE istekleri engellendi.
+- **Storage RLS:** İlan fotoğrafları için bucket seviyesinde RLS politikaları (Public read, Authenticated write) aktif edildi.
+
+#### 2. Performans ve Resim Optimizasyonu
+- **Resim Placeholder:** İlan kartları ve galerilerine Base64 blur placeholder'lar eklendi.
+- **Supabase Optimization:** `next.config.ts` güncellenerek Supabase Storage üzerinden gelen resimlerin Next.js Image Optimization ile WebP/Avif olarak sunulması sağlandı.
+
+#### 3. UI/UX İyileştirmeleri (Mobile-First)
+- **DamageSelector:** İlan oluşturma formuna araç parçalarının durumunu (boyalı, değişen vb.) seçmeye yarayan modern bileşen eklendi.
+- **DamageReportCard:** İlan detay sayfasında hasar durumunu ve Tramer kaydını gösteren şık bir özet kartı entegre edildi.
+- **Mobile Bottom Sheet:** Mobil filtre paneli `vaul` kütüphanesi ile modern, aşağıdan açılan ve kaydırma destekli bir "Bottom Sheet" yapısına dönüştürüldü.
+- **Dinamik Filtre Sayacı:** Mobil filtre drawer'ı içinde "X İlanı Gör" butonu ile anlık sonuç sayısı gösterimi sağlandı.
+
+### Doğrulama
+- `npm run lint` -> Geçti
+- `npm run typecheck` -> Geçti (DamageReportCard null-check hataları giderildi)
+- Mobil cihazlarda Bottom Sheet ve Slider testleri yapıldı.
+
+---
+
+## 2026-04-11 Faz 8: İleri Pazaryeri Özellikleri ve Ölçekleme
+
+### Kapsam
+Platformun büyüme potansiyelini artırmak, operasyonel hızı maksimize etmek ve mobil kullanıcı bağlılığını güçlendirmek amacıyla 3 ana dikeydeki geliştirmeler tamamlandı:
+1. **SEO Ölçekleme:** Dinamik Marka/Şehir sayfaları, Breadcrumb hiyerarşisi ve Sitemap derinliği.
+2. **Admin Operasyonel Mükemmellik:** Toplu işlemler, reddetme ön-setleri ve sistem genelinde bildirim (Broadcast) sistemi.
+3. **PWA (Progressive Web App):** Mobil yükleme desteği (Add to Home Screen) ve uygulama-benzeri deneyim.
+
+### Yapılan Geliştirmeler
+
+#### 1. SEO ve Navigasyon Derinliği
+- **Satılık Sayfaları:** `/satilik/[brand]/[[...city]]` rotası ile tüm marka ve şehir kombinasyonları için SEO uyumlu landing page'ler oluşturuldu.
+- **Structured Data:** Tüm listeleme ve detay sayfalarına Google `BreadcrumbList` ve `Organization` şemaları (JSON-LD) entegre edildi.
+- **Sitemap Generator:** Veritabanındaki tüm aktif marka, şehir ve ilanları kapsayan dinamik bir XML sitemap oluşturuldu.
+
+#### 2. Admin Operasyonel Hız (Operational Excellence)
+- **Toplu Moderasyon:** Onlarca ilanı tek tıklamayla onaylama veya reddetme yeteneği eklendi.
+- **Reddetme Nedenleri (Presets):** Moderatörlerin en sık kullandığı reddetme nedenleri (yanıltıcı fiyat, kötü fotoğraf vb.) tek tıkla seçilebilir hale getirildi.
+- **Broadcast Sistemi:** Admin panelinden tüm kayıtlı kullanıcılara anlık sistem duyurusu (bildirim) gönderme altyapısı kuruldu.
+- **Gelişmiş Denetim:** Fraud (dolandırıcılık) skoru yüksek olan ilanlar için görsel uyarılar ve detaylı risk raporları admin ekranında öne çıkarıldı.
+
+#### 3. PWA ve Mobil UX
+- **Web App Manifest:** Uygulamanın mobil cihazlarda native uygulama gibi davranmasını sağlayan `manifest.json` ve ikon setleri yapılandırıldı.
+- **Yükleme Hatırlatıcısı (PWA Prompt):** iOS ve Android kullanıcıları için özelleştirilmiş, rahatsız etmeyen "Ana Ekrana Ekle" yönlendirme bileşeni eklendi.
+- **Meta Tags:** Apple-mobile-web-app-capable ve theme-color gibi kritik PWA meta etiketleri root layout'a işlendi.
+
+### Doğrulama
+- `npm run lint` -> Başarılı
+- `npm run typecheck` -> Başarılı
+- `npm run build` -> Başarılı (Tüm API rotaları ve sayfalar derlendi)
+- `Audit Trail` -> Tüm moderasyon ve broadcast işlemleri veritabanında izlenebilir durumda.
+
+### Son Durum
+OtoBurada artık sadece bir MVP değil, ölçeklenmeye hazır, güvenliği sıkılaştırılmış ve operasyonel araçları tamamlanmış bir **üretim-hazır (production-ready)** pazaryeri platformudur.

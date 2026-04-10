@@ -15,6 +15,7 @@ import {
   type AdminRecentActionItem,
 } from "@/components/listings/admin-recent-actions";
 import { AdminReportsModeration } from "@/components/listings/admin-reports-moderation";
+import { AdminBroadcastPanel } from "@/components/shared/admin-broadcast-panel";
 import { AdminPersistencePanel } from "@/components/shared/admin-persistence-panel";
 import { DashboardMetricCard } from "@/components/shared/dashboard-metric-card";
 import { getUserRole, requireAdminUser } from "@/lib/auth/session";
@@ -72,7 +73,7 @@ export default async function AdminPage() {
   );
 
   return (
-    <main className="bg-muted/40">
+    <main className="bg-muted/40 text-foreground">
       <div className="mx-auto flex w-full max-w-6xl flex-col gap-6 px-4 py-8 sm:px-6 sm:py-10 lg:px-8">
         <section className="rounded-[2rem] border border-border/80 bg-background p-6 shadow-sm sm:p-8">
           <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
@@ -80,7 +81,7 @@ export default async function AdminPage() {
               <p className="text-sm font-medium uppercase tracking-[0.18em] text-primary/80">
                 Admin Paneli
               </p>
-              <h1 className="text-3xl font-semibold tracking-tight">Ilan moderasyon merkezi</h1>
+              <h1 className="text-3xl font-semibold tracking-tight">İlan moderasyon merkezi</h1>
               <p className="text-sm leading-6 text-muted-foreground sm:text-base">
                 {user.email ?? "Admin kullanici"} hesabiyla giris yaptin. Bu alan yalnizca{" "}
                 {userRole} rolundeki kullanicilar icin aciktir.
@@ -91,11 +92,11 @@ export default async function AdminPage() {
               href="/dashboard"
               className="inline-flex h-11 items-center justify-center rounded-xl border border-border bg-background px-5 text-sm font-semibold text-foreground transition-colors hover:bg-muted"
             >
-              Kullanici paneline don
+              Kullanıcı paneline dön
             </Link>
           </div>
 
-          <div className="mt-6 grid gap-4 md:grid-cols-5">
+          <div className="mt-6 grid gap-4 md:grid-cols-5 text-foreground">
             <DashboardMetricCard
               label="Bekleyen ilan"
               value={String(pendingListings.length)}
@@ -135,7 +136,11 @@ export default async function AdminPage() {
         </section>
 
         <AdminPersistencePanel health={persistenceHealth} />
-        <AdminRecentActions actions={recentActionItems} />
+        
+        <div className="grid lg:grid-cols-2 gap-6">
+          <AdminRecentActions actions={recentActionItems} />
+          <AdminBroadcastPanel />
+        </div>
 
         <AdminListingsModeration pendingListings={pendingListings} />
         <AdminReportsModeration

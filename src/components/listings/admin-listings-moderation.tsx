@@ -47,7 +47,7 @@ export function AdminListingsModeration({ pendingListings }: AdminListingsModera
         <p className="text-sm font-medium uppercase tracking-[0.18em] text-primary/80">Moderasyon</p>
         <h2 className="mt-3 text-2xl font-semibold tracking-tight">Bekleyen ilan yok</h2>
         <p className="mt-3 max-w-2xl text-sm leading-6 text-muted-foreground sm:text-base">
-          Yeni ilanlar geldikce burada inceleme sirasi olusacak.
+          Yeni ilanlar geldikçe burada inceleme sırası oluşacak.
         </p>
       </section>
     );
@@ -158,19 +158,12 @@ export function AdminListingsModeration({ pendingListings }: AdminListingsModera
 
   const startEditing = (listing: Listing) => {
     setEditingListingId(listing.id);
-    setEditValues({
-      title: listing.brand + " " + listing.model, // Note: combining for UI but API might need them split or listing might have 'title'
+    const initialValues = {
+      title: listing.title || (listing.brand + " " + listing.model),
       price: listing.price,
       description: listing.description,
-    });
-    // Use actual listing title if available, the schema has 'title' separate from brand/model
-    if (listing.title) {
-      setEditValues({
-        title: listing.title,
-        price: listing.price,
-        description: listing.description,
-      });
-    }
+    };
+    setEditValues(initialValues);
   };
 
   const handleSaveEdit = async () => {
@@ -211,7 +204,7 @@ export function AdminListingsModeration({ pendingListings }: AdminListingsModera
           <p className="text-sm font-medium uppercase tracking-[0.18em] text-primary/80">Moderasyon</p>
           <h2 className="mt-3 text-2xl font-semibold tracking-tight">Bekleyen ilanlar</h2>
           <p className="mt-3 max-w-3xl text-sm leading-6 text-muted-foreground sm:text-base">
-            Ilanlari kontrol ederek yayinlama ya da reddetme kararini buradan verebilirsin.
+            İlanları kontrol ederek yayınlama ya da reddetme kararını buradan verebilirsin.
           </p>
         </div>
         <div className="rounded-full border border-border bg-muted/40 px-4 py-2 text-sm font-medium text-muted-foreground">
@@ -237,18 +230,18 @@ export function AdminListingsModeration({ pendingListings }: AdminListingsModera
             <div className="space-y-2">
               <div className="flex flex-wrap items-center gap-2">
                 <span className="rounded-full border border-border/70 bg-background px-3 py-1 text-xs font-semibold text-foreground">
-                  {selectedListingIds.length} secili ilan
+                  {selectedListingIds.length} seçili ilan
                 </span>
                 <button
                   type="button"
                   onClick={() => setSelectedListingIds(allSelected ? [] : allPendingListingIds)}
                   className="rounded-full border border-border/70 bg-background px-3 py-1 text-xs font-semibold text-muted-foreground transition-colors hover:border-primary/40 hover:text-primary"
                 >
-                  {allSelected ? "Secimi temizle" : "Tumunu sec"}
+                  {allSelected ? "Seçimi temizle" : "Tümünü seç"}
                 </button>
               </div>
               <p className="text-sm text-muted-foreground">
-                Secili bekleyen ilanlari tek hamlede onayla ya da reddet.
+                Seçili bekleyen ilanları tek hamlede onayla ya da reddet.
               </p>
             </div>
 
@@ -264,7 +257,7 @@ export function AdminListingsModeration({ pendingListings }: AdminListingsModera
                 ) : (
                   <CheckCircle2 className="size-4" />
                 )}
-                Secilenleri onayla
+                Seçilenleri onayla
               </button>
               <button
                 type="button"
@@ -277,7 +270,7 @@ export function AdminListingsModeration({ pendingListings }: AdminListingsModera
                 ) : (
                   <XCircle className="size-4" />
                 )}
-                Secilenleri reddet
+                Seçilenleri reddet
               </button>
               <button
                 type="button"
@@ -286,20 +279,48 @@ export function AdminListingsModeration({ pendingListings }: AdminListingsModera
                 className="inline-flex h-11 items-center justify-center gap-2 rounded-xl border border-emerald-200 bg-emerald-50 px-4 text-sm font-semibold text-emerald-700 transition-colors hover:bg-emerald-100 disabled:cursor-not-allowed disabled:opacity-60"
               >
                 <Sparkles className="size-4" />
-                Tumunu onayla
+                Tümünü onayla
               </button>
             </div>
           </div>
 
           <div className="mt-4">
-            <label htmlFor="bulk-moderation-note" className="text-xs font-medium text-muted-foreground">
-              Toplu moderasyon notu
-            </label>
+            <div className="flex items-center justify-between">
+              <label htmlFor="bulk-moderation-note" className="text-xs font-medium text-muted-foreground">
+                Toplu moderasyon notu
+              </label>
+              <button 
+                type="button" 
+                onClick={() => setBulkNote("")}
+                className="text-[11px] font-medium text-primary hover:underline"
+              >
+                Temizle
+              </button>
+            </div>
+            <div className="mt-2 flex flex-wrap gap-1.5 overflow-x-auto pb-1">
+              {[
+                "Eksik/Düşük Kalite Fotoğraf",
+                "Yanıltıcı Bilgi/Fiyat",
+                "Uygunsuz İlan Başlığı",
+                "Mükerrer İlan",
+                "Hatalı Kategori",
+                "İletişim Bilgisi Hatalı"
+              ].map((preset) => (
+                <button
+                  key={preset}
+                  type="button"
+                  onClick={() => setBulkNote(preset)}
+                  className="whitespace-nowrap rounded-full border border-border/60 bg-background px-3 py-1 text-[11px] font-medium text-muted-foreground transition-colors hover:border-primary/40 hover:text-primary"
+                >
+                  {preset}
+                </button>
+              ))}
+            </div>
             <textarea
               id="bulk-moderation-note"
               value={bulkNote}
               onChange={(event) => setBulkNote(event.target.value)}
-              placeholder="Opsiyonel not: secili ilanlar icin ortak moderasyon notu"
+              placeholder="Opsiyonel not: seçili ilanlar için ortak moderasyon notu"
               rows={3}
               className="mt-2 min-h-24 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm text-foreground outline-none transition-colors placeholder:text-muted-foreground focus:border-primary"
             />
@@ -343,7 +364,7 @@ export function AdminListingsModeration({ pendingListings }: AdminListingsModera
 
                   <div className="flex flex-wrap items-center gap-3">
                     <span className="inline-flex rounded-full bg-sky-100 px-3 py-1 text-xs font-semibold text-sky-700">
-                      Incelemede
+                      İncelemede
                     </span>
                     <span
                       className={`inline-flex rounded-full border px-3 py-1 text-xs font-semibold ${toneClasses}`}
@@ -438,14 +459,14 @@ export function AdminListingsModeration({ pendingListings }: AdminListingsModera
                       {listing.city} / {listing.district}
                     </span>
                     <span className="rounded-full border border-border/70 bg-muted/30 px-3 py-1.5">
-                      {listing.images.length} fotograf
+                      {listing.images.length} fotoğraf
                     </span>
                   </div>
 
                   <div className={`rounded-[1.25rem] border p-4 ${toneClasses}`}>
                     <div className="flex items-center gap-2 text-sm font-semibold">
                       <Sparkles className="size-4" />
-                      Hizli moderasyon ozeti
+                      Hızlı moderasyon özeti
                     </div>
                     <p className="mt-2 text-sm leading-6 text-foreground/90">{insight.summary}</p>
                     <div className="mt-3 flex flex-wrap gap-2">
@@ -475,7 +496,7 @@ export function AdminListingsModeration({ pendingListings }: AdminListingsModera
 
                   <div className="grid gap-3 sm:grid-cols-3">
                     <div className="rounded-2xl border border-border/70 bg-muted/20 px-4 py-3">
-                      <p className="text-xs text-muted-foreground">Gonderim tarihi</p>
+                      <p className="text-xs text-muted-foreground">Gönderim tarihi</p>
                       <p className="mt-1 text-sm font-semibold text-foreground">
                         {formatDate(listing.createdAt)}
                       </p>
@@ -536,12 +557,12 @@ export function AdminListingsModeration({ pendingListings }: AdminListingsModera
                           [listing.id]: event.target.value,
                         }))
                       }
-                      placeholder="Opsiyonel not: neden onaylandi veya reddedildi?"
+                      placeholder="Opsiyonel not: neden onaylandı veya reddedildi?"
                       rows={3}
                       className="mt-2 min-h-24 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm text-foreground outline-none transition-colors placeholder:text-muted-foreground focus:border-primary"
                     />
                     <p className="mt-2 text-xs text-muted-foreground">
-                      Not girersen en az 3 karakter olmali ve audit kaydina eklenir.
+                      Not girersen en az 3 karakter olmalı ve audit kaydına eklenir.
                     </p>
                   </div>
 
@@ -551,7 +572,7 @@ export function AdminListingsModeration({ pendingListings }: AdminListingsModera
                       className="inline-flex h-11 items-center justify-center gap-2 rounded-xl border border-border bg-background px-4 text-sm font-semibold text-foreground transition-colors hover:bg-muted"
                     >
                       <ArrowRight className="size-4" />
-                      Public ilani ac
+                      Public ilanı aç
                     </Link>
                     <a
                       href={`https://wa.me/${listing.whatsappPhone.replace(/\D/g, "")}`}
@@ -560,7 +581,7 @@ export function AdminListingsModeration({ pendingListings }: AdminListingsModera
                       className="inline-flex h-11 items-center justify-center gap-2 rounded-xl border border-border bg-background px-4 text-sm font-semibold text-foreground transition-colors hover:bg-muted"
                     >
                       <MessageCircle className="size-4" />
-                      WhatsApp kontrolu
+                      WhatsApp kontrolü
                     </a>
                   </div>
                 </div>

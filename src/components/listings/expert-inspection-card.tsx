@@ -1,4 +1,5 @@
 "use client";
+import { useMemo } from "react";
 
 import {
   CheckCircle2,
@@ -62,7 +63,13 @@ export function ExpertInspectionCard({
   expertInspection,
   className,
 }: ExpertInspectionCardProps) {
-  if (!expertInspection?.hasInspection) {
+  const hasData = useMemo(() => {
+    if (!expertInspection) return false;
+    const items = inspectionItems.map(i => expertInspection[i.key as keyof ExpertInspection]);
+    return items.some(v => v === "var" || v === "yok") || expertInspection.hasInspection;
+  }, [expertInspection]);
+
+  if (!hasData || !expertInspection) {
     return null;
   }
 
@@ -74,29 +81,48 @@ export function ExpertInspectionCard({
     return statusConfig[status as keyof typeof statusConfig] || statusConfig.bilinmiyor;
   };
 
+  const isVerified = expertInspection.hasInspection;
+
   return (
     <div
       className={cn(
-        "overflow-hidden rounded-3xl border border-border/60 bg-gradient-to-br from-background to-muted/20",
+        "overflow-hidden rounded-3xl border shadow-sm transition-all hover:shadow-md",
+        isVerified 
+          ? "border-emerald-200 bg-gradient-to-br from-emerald-50/30 to-background" 
+          : "border-slate-200 bg-white",
         className
       )}
     >
-      <div className="flex items-center justify-between border-b border-border/60 bg-muted/30 px-5 py-4">
+      <div className={cn(
+        "flex items-center justify-between border-b px-5 py-4",
+        isVerified ? "border-emerald-100 bg-emerald-50/50" : "border-slate-100 bg-slate-50/50"
+      )}>
         <div className="flex items-center gap-2.5">
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10">
-            <ClipboardList className="size-5 text-primary" />
+          <div className={cn(
+            "flex h-10 w-10 items-center justify-center rounded-xl",
+            isVerified ? "bg-emerald-100" : "bg-slate-200/50"
+          )}>
+            <ClipboardList className={cn("size-5", isVerified ? "text-emerald-700" : "text-slate-600")} />
           </div>
           <div>
-            <h3 className="font-semibold text-foreground">Ekspertiz Raporu</h3>
+            <h3 className="font-bold text-foreground">
+              {isVerified ? "Ekspertiz Raporu (Onaylı)" : "Satıcı Beyanı — Teknik Durum"}
+            </h3>
             {expertInspection.inspectionDate && (
               <p className="text-xs text-muted-foreground">
                 Tarih: {formatDate(expertInspection.inspectionDate)}
               </p>
             )}
+            {!isVerified && (
+              <p className="text-xs text-amber-600 flex items-center gap-1 mt-0.5">
+                <Info size={12} />
+                Satıcının kendi beyanıdır
+              </p>
+            )}
           </div>
         </div>
 
-        {gradeInfo && (
+        {isVerified && gradeInfo && (
           <div
             className="flex items-center gap-2 rounded-full px-4 py-2"
             style={{ backgroundColor: `${gradeInfo.color}15` }}

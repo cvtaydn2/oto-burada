@@ -6,6 +6,7 @@ import { Menu, X, User as UserIcon, Heart, PlusCircle } from "lucide-react";
 import type { User } from "@supabase/supabase-js";
 import { SearchWithSuggestions } from "@/components/ui/search-with-suggestions";
 import type { SearchSuggestionItem } from "@/types";
+import { ThemeToggle } from "@/components/shared/theme-toggle";
 
 interface HeaderMobileNavProps {
   user: User | null;
@@ -34,17 +35,18 @@ export function HeaderMobileNav({
   const [isOpen, setIsOpen] = useState(false);
 
   return (
-    <div className="md:hidden">
+    <div className="md:hidden flex items-center gap-2">
+      <ThemeToggle />
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center justify-center w-10 h-10 rounded-xl text-slate-600 hover:bg-slate-100 transition-all"
+        className="flex items-center justify-center w-10 h-10 rounded-xl text-foreground hover:bg-muted transition-all"
         aria-label="Menüyü aç"
       >
         {isOpen ? <X size={24} /> : <Menu size={24} />}
       </button>
 
       {isOpen && (
-        <div className="absolute top-16 left-0 right-0 bg-white border-b border-slate-200 shadow-xl animate-in slide-in-from-top-2">
+        <div className="absolute top-16 left-0 right-0 bg-background border-b border-border shadow-xl animate-in slide-in-from-top-2">
           <div className="p-4 space-y-4">
             <SearchWithSuggestions
               placeholder="Marka, model veya şehir ara..."
@@ -55,7 +57,7 @@ export function HeaderMobileNav({
               <Link 
                 href={accountHref}
                 onClick={() => setIsOpen(false)}
-                className="flex items-center h-12 px-4 rounded-xl text-sm font-semibold text-slate-700 hover:bg-slate-100 transition-all"
+                className="flex items-center h-12 px-4 rounded-xl text-sm font-semibold text-foreground hover:bg-muted transition-all"
               >
                 <UserIcon size={18} className="mr-3" />
                 {user ? "Hesabım" : "Giriş Yap"}
@@ -63,7 +65,7 @@ export function HeaderMobileNav({
               <Link 
                 href={favoritesHref}
                 onClick={() => setIsOpen(false)}
-                className="flex items-center h-12 px-4 rounded-xl text-sm font-semibold text-slate-700 hover:bg-slate-100 transition-all"
+                className="flex items-center h-12 px-4 rounded-xl text-sm font-semibold text-foreground hover:bg-muted transition-all"
               >
                 <Heart size={18} className="mr-3" />
                 Favoriler
@@ -72,7 +74,7 @@ export function HeaderMobileNav({
                 <Link 
                   href="/admin"
                   onClick={() => setIsOpen(false)}
-                  className="flex items-center h-12 px-4 rounded-xl text-sm font-semibold text-slate-700 hover:bg-slate-100 transition-all"
+                  className="flex items-center h-12 px-4 rounded-xl text-sm font-semibold text-foreground hover:bg-muted transition-all"
                 >
                   Admin Panel
                 </Link>
@@ -87,14 +89,14 @@ export function HeaderMobileNav({
               </Link>
             </div>
 
-            <div className="pt-2 border-t border-slate-100">
+            <div className="pt-2 border-t border-border">
               <div className="flex gap-2 overflow-x-auto pb-2">
                 {mobileQuickLinks.map((item) => (
                   <Link
                     key={item.href}
                     href={item.href}
                     onClick={() => setIsOpen(false)}
-                    className="shrink-0 px-4 py-2 rounded-full bg-slate-100 text-slate-600 text-sm font-medium"
+                    className="shrink-0 px-4 py-2 rounded-full bg-muted text-muted-foreground text-sm font-medium"
                   >
                     {item.label}
                   </Link>

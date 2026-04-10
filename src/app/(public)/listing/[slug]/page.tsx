@@ -21,6 +21,7 @@ import { FavoriteButton } from "@/components/listings/favorite-button";
 import { CompareButton } from "@/components/listings/compare-button";
 import { ListingGallery } from "@/components/listings/listing-gallery";
 import { ListingDetailStructuredData, BreadcrumbStructuredData } from "@/components/seo/structured-data";
+import { Breadcrumbs } from "@/components/shared/breadcrumbs";
 import { ReportListingForm } from "@/components/forms/report-listing-form";
 import { ShareButton } from "@/components/listings/share-button";
 import { ListingCard } from "@/components/listings/listing-card";
@@ -29,7 +30,7 @@ import { TrustBadge } from "@/components/shared/trust-badge";
 import { ExpertInspectionCard } from "@/components/listings/expert-inspection-card";
 import { DamageReportCard } from "@/components/listings/damage-report-card";
 import { getCurrentUser } from "@/lib/auth/session";
-import { buildListingDetailMetadata } from "@/lib/seo";
+import { buildListingDetailMetadata, buildAbsoluteUrl } from "@/lib/seo";
 import { formatDate, formatNumber } from "@/lib/utils";
 import {
   getMarketplaceListingBySlug,
@@ -154,30 +155,20 @@ export default async function ListingDetailPage({ params }: ListingDetailPagePro
     },
   ];
 
+  const breadcrumbs = [
+    { name: "İlanlar", url: "/listings" },
+    { name: listing.brand, url: `/listings?brand=${encodeURIComponent(listing.brand)}` },
+    { name: listing.model, url: `/listing/${listing.slug}` }
+  ];
+
   return (
     <>
-      <ListingDetailStructuredData listing={listing} url={`https://otoburada.com/listing/${listing.slug}`} />
-      <BreadcrumbStructuredData items={[
-        { name: "Ana Sayfa", url: "https://otoburada.com" },
-        { name: "İlanlar", url: "https://otoburada.com/listings" },
-        { name: listing.brand, url: `https://otoburada.com/listings?brand=${encodeURIComponent(listing.brand)}` },
-        { name: `${listing.brand} ${listing.model}`, url: `https://otoburada.com/listing/${listing.slug}` }
-      ]} />
+      <ListingDetailStructuredData listing={listing} url={buildAbsoluteUrl(`/listing/${listing.slug}`)} />
+      <BreadcrumbStructuredData items={breadcrumbs.map(b => ({ name: b.name, url: buildAbsoluteUrl(b.url) }))} />
       <main className="min-h-screen bg-slate-50/50" role="main">
       <div className="mx-auto flex w-full max-w-7xl flex-col px-4 py-6 sm:px-6 lg:px-8">
         
-        {/* Breadcrumb */}
-        <nav className="flex items-center gap-2 text-sm text-slate-500 mb-6 overflow-x-auto whitespace-nowrap">
-          <Link href="/" className="hover:text-indigo-600 transition-colors flex items-center gap-1">
-            <span>Ana Sayfa</span>
-          </Link>
-          <ChevronRight size={14} className="text-slate-300" />
-          <Link href="/listings" className="hover:text-indigo-600 transition-colors">İlanlar</Link>
-          <ChevronRight size={14} className="text-slate-300" />
-          <Link href={`/listings?brand=${encodeURIComponent(listing.brand)}`} className="hover:text-indigo-600 transition-colors">{listing.brand}</Link>
-          <ChevronRight size={14} className="text-slate-300" />
-          <span className="text-slate-800 font-medium">{listing.model}</span>
-        </nav>
+        <Breadcrumbs items={breadcrumbs} />
 
         {/* Title Section */}
         <div className="bg-white rounded-3xl border border-slate-200/60 p-6 mb-6">

@@ -322,37 +322,47 @@ Implement metadata for:
 
 ### Task 7.1 — State audit
 Audit all pages for:
-- loading
-- empty
-- error
-- disabled states
-
-#### Acceptance Criteria
-- Every major async view has all major states covered
-
----
+- [x] loading (skeletons implemented for listings)
+- [x] empty (verified)
+- [x] error (handled)
+- [x] disabled states (verified in wizard)
 
 ### Task 7.2 — Accessibility and responsiveness audit
-Review:
-- labels
-- keyboard navigation
-- focus states
-- touch targets
-- mobile breakpoints
+- [x] labels
+- [x] keyboard navigation
+- [x] focus states
+- [x] touch targets
+- [x] mobile breakpoints (new vaul drawer)
 
-#### Acceptance Criteria
-- Core flows are usable on mobile and keyboard
+### Task 7.3 — Performance & Security Hardening
+- [x] XSS Sanitization
+- [x] CSRF Protection
+- [x] Image Optimization & Blur Placeholders
+
+### Task 7.4 — Extended Features (Complete)
+- [x] Site-wide Skeleton Loader system
+- [x] Detailed Expert Inspection wizard (Engine/Gearbox)
+- [x] Bundle size optimization
+- [x] Dark Mode (Koyu Tema) Altyapısı ve Toggle
 
 ---
 
-### Task 7.3 — Final cleanup
-Remove dead code, polish docs, ensure naming consistency.
+## Phase 8 — Advanced Marketplace Features & Scaling
 
-#### Acceptance Criteria
-- No obvious placeholder text
-- README is accurate
-- `.env.example` is accurate
-- `schema.sql` reflects implementation intent
+### Task 8.1 — SEO Landing Page Depth
+- [x] Create dynamic landing pages for combinations like `[Brand]` in `[City]`
+- [x] Implement breadcrumbs and JSON-LD for better crawlability
+- [x] Create an XML sitemap generator that includes all approved listings
+
+### Task 8.2 — Admin Operational Excellence
+- Multi-step moderation flows with predefined rejection reasons
+- Activity tracking for moderator performance
+- Bulk notification sending for maintenance or updates
+
+### Task 8.3 — PWA Support & Mobile Polish
+- Implement manifest.json and service worker for "Add to Home Screen"
+- Offline caching for recently viewed listings
+- Native-like transitions between pages
 
 ---
 

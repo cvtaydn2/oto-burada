@@ -45,6 +45,8 @@ export function ListingCard({ listing, priority = false }: ListingCardProps) {
             sizes="(min-width: 640px) 180px, 100vw"
             loading={priority ? "eager" : "lazy"}
             decoding="async"
+            placeholder="blur"
+            blurDataURL="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mN8/+F9PQAI8AOB969n9wAAAABJRU5ErkJggg=="
             className="object-cover transition-transform duration-300 group-hover:scale-105"
           />
         ) : (
