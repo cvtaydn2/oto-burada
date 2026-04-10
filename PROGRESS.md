@@ -275,6 +275,42 @@ Her yeni geliştirme başlamadan önce okunmalıdır.
 - \`npx tsc --noEmit\` Typescript Build Geçti
 
 ### Sonraki Adım
-- İlan oluşturma ekranında (\`ListingCreateForm\`) Tramer ve Boya/Değişen seçim UI'larının tasarlanıp bağlanması
+- İlan oluşturma ekranında (`ListingCreateForm`) Tramer ve Boya/Değişen seçim UI'larının tasarlanıp bağlanması
 - İlan detay sayfasında bu verilerin şeffaflık oluşturacak güzel grafik/rozet UI bileşenleriyle gösterilmesi
 - WhatsApp yönlendirmesi öncesi Güvenlik Modalı (Fraud Alert) eklentisi
+
+---
+
+## 2026-04-10 Karşılaştırma (Compare) Özelliği Aktifleştirme
+
+### Kapsam
+- `/compare` sayfası artık gerçek veriyle çalışıyor
+- ListingCard ve ListingDetail sayfasına "Karşılaştır" butonu eklendi
+- Karşılaştırma listesi localStorage üzerinde tutuluyor (max 4 araç)
+
+### Yapılan Geliştirmeler
+- `src/components/shared/compare-provider.tsx`: Karşılaştırma liste yönetimi için CompareProvider (favoriler gibi localStorage tabanlı)
+- `src/components/listings/compare-button.tsx`: ListingCard ve listing detail'da kullanılacak buton
+- `src/components/listings/listing-card.tsx`: Hem mobil hem desktop için Karşılaştır butonu eklendi
+- `src/app/(public)/listing/[slug]/page.tsx`: Mevcut statik Link yerine CompareButton kullanılıyor
+- `src/components/shared/app-providers.tsx`: CompareProvider eklendi
+- `src/app/globals.css`: CSS import sorunu çözüldü (shadcn ve tw-animate CSS dosyaları lib/styles'a kopyalandı)
+
+### Doğrulama
+- `npm run typecheck` - Geçti
+- `npm run build` - Geçti
+- `npm run dev` - Geçti (dev server 200 OK döndürüyor)
+
+---
+
+## 2026-04-10 Admin İlan Düzenleme & CSS İyileştirmeleri
+
+### Yapılan Geliştirmeler
+- **CSS Onarımı**: Tailwind v4 için `postcss.config.mjs` eksikliği giderildi ve `globals.css` içindeki aliaslı importlar relative yollarla güncellendi.
+- **Admin İlan Düzenleme API**: `PATCH /api/admin/listings/[listingId]/edit` rotası oluşturuldu.
+- **Moderasyon UI Güncellemesi**: Admin panelinde ilanları onaylamadan önce başlık, fiyat ve açıklamayı inline düzenleme yeteneği eklendi.
+- **Compare UX**: Karşılaştırma butonları ve provider entegrasyonu tamamlandı.
+
+### Doğrulama
+- `npm run build` - Başarılı (Tailwind derlemeyi tamamladı)
+- TypeScript - Hata yok

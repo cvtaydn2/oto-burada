@@ -8,8 +8,11 @@ import {
   LoaderCircle,
   MapPin,
   MessageCircle,
+  Pencil,
+  Save,
   Sparkles,
   TriangleAlert,
+  X,
   XCircle,
 } from "lucide-react";
 import { useState } from "react";
@@ -26,7 +29,12 @@ export function AdminListingsModeration({ pendingListings }: AdminListingsModera
   const router = useRouter();
   const [activeAction, setActiveAction] = useState<string | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [notesByListingId, setNotesByListingId] = useState<Record<string, string>>({});
+
+  const [editingListingId, setEditingListingId] = useState<string | null>(null);
+  const [editValues, setEditValues] = useState<{ title: string; price: number; description: string } | null>(null);
+  const [isSavingEdit, setIsSavingEdit] = useState(false);
 
   if (pendingListings.length === 0) {
     return (
@@ -74,6 +82,54 @@ export function AdminListingsModeration({ pendingListings }: AdminListingsModera
     }
   };
 
+  const startEditing = (listing: Listing) => {
+    setEditingListingId(listing.id);
+    setEditValues({
+      title: listing.brand + " " + listing.model, // Note: combining for UI but API might need them split or listing might have 'title'
+      price: listing.price,
+      description: listing.description,
+    });
+    // Use actual listing title if available, the schema has 'title' separate from brand/model
+    if (listing.title) {
+      setEditValues({
+        title: listing.title,
+        price: listing.price,
+        description: listing.description,
+      });
+    }
+  };
+
+  const handleSaveEdit = async () => {
+    if (!editingListingId || !editValues) return;
+    setIsSavingEdit(true);
+    setErrorMessage(null);
+    setSuccessMessage(null);
+
+    try {
+      const response = await fetch(`/api/admin/listings/${editingListingId}/edit`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(editValues),
+      });
+
+      const payload = await response.json();
+
+      if (!response.ok || !payload.success) {
+        setErrorMessage(payload.error?.message ?? "Düzenleme kaydedilemedi.");
+        return;
+      }
+
+      setSuccessMessage("İlan güncellendi.");
+      setEditingListingId(null);
+      setEditValues(null);
+      router.refresh();
+    } catch {
+      setErrorMessage("Bağlantı hatası.");
+    } finally {
+      setIsSavingEdit(false);
+    }
+  };
+
   return (
     <section className="rounded-[2rem] border border-border/80 bg-background p-6 shadow-sm sm:p-8">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
@@ -89,13 +145,19 @@ export function AdminListingsModeration({ pendingListings }: AdminListingsModera
         </div>
       </div>
 
-      {errorMessage ? (
-        <p className="mt-5 rounded-xl border border-destructive/30 bg-destructive/5 px-4 py-3 text-sm text-destructive">
+      {errorMessage && (
+        <div className="mt-5 rounded-2xl border border-red-200 bg-red-50 p-4 text-sm font-medium text-red-700">
           {errorMessage}
-        </p>
-      ) : null}
+        </div>
+      )}
 
-      <div className="mt-6 grid gap-4">
+      {successMessage && (
+        <div className="mt-5 rounded-2xl border border-emerald-200 bg-emerald-50 p-4 text-sm font-medium text-emerald-700">
+          {successMessage}
+        </div>
+      )}
+
+      <div className="mt-6 space-y-6">
         {pendingListings.map((listing) => {
           const approving = activeAction === `${listing.id}:approve`;
           const rejecting = activeAction === `${listing.id}:reject`;
@@ -116,9 +178,6 @@ export function AdminListingsModeration({ pendingListings }: AdminListingsModera
               <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
                 <div className="min-w-0 space-y-4">
                   <div className="flex flex-wrap items-center gap-3">
-                    <h3 className="text-lg font-semibold tracking-tight text-foreground">
-                      {listing.title}
-                    </h3>
                     <span className="inline-flex rounded-full bg-sky-100 px-3 py-1 text-xs font-semibold text-sky-700">
                       Incelemede
                     </span>
@@ -143,10 +202,68 @@ export function AdminListingsModeration({ pendingListings }: AdminListingsModera
                     </div>
                   )}
 
+                  <div className="flex items-center justify-between">
+                    {editingListingId === listing.id ? (
+                      <div className="flex-1 space-y-3">
+                        <input
+                          type="text"
+                          value={editValues?.title}
+                          onChange={(e) => setEditValues(v => v ? { ...v, title: e.target.value } : null)}
+                          className="w-full rounded-xl border border-primary/30 bg-background px-3 py-2 text-lg font-bold focus:ring-2 focus:ring-primary/20"
+                        />
+                        <div className="flex items-center gap-2">
+                          <input
+                            type="number"
+                            value={editValues?.price}
+                            onChange={(e) => setEditValues(v => v ? { ...v, price: Number(e.target.value) } : null)}
+                            className="w-32 rounded-lg border border-primary/30 bg-background px-3 py-1.5 font-bold text-primary focus:ring-2 focus:ring-primary/20"
+                          />
+                          <span className="text-sm font-bold text-primary">TL</span>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="flex-1">
+                        <h3 className="text-lg font-bold text-foreground">
+                          {listing.title || `${listing.brand} ${listing.model}`}
+                        </h3>
+                        <p className="mt-1 text-2xl font-bold text-primary">
+                          {formatCurrency(listing.price)}
+                        </p>
+                      </div>
+                    )}
+                    
+                    <div className="flex items-center gap-2">
+                      {editingListingId === listing.id ? (
+                        <>
+                          <button
+                            onClick={handleSaveEdit}
+                            disabled={isSavingEdit}
+                            className="flex items-center gap-1.5 rounded-xl bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
+                          >
+                            {isSavingEdit ? <LoaderCircle className="size-4 animate-spin" /> : <Save className="size-4" />}
+                            Kaydet
+                          </button>
+                          <button
+                            onClick={() => { setEditingListingId(null); setEditValues(null); }}
+                            className="flex items-center gap-1.5 rounded-xl border border-border bg-background px-4 py-2 text-sm font-semibold text-foreground hover:bg-muted"
+                          >
+                            <X className="size-4" />
+                            İptal
+                          </button>
+                        </>
+                      ) : (
+                        <button
+                          onClick={() => startEditing(listing)}
+                          className="flex items-center gap-1.5 rounded-xl border border-indigo-200 bg-indigo-50 px-4 py-2 text-sm font-semibold text-indigo-700 hover:bg-indigo-100 transition-colors"
+                        >
+                          <Pencil className="size-4" />
+                          Düzenle
+                        </button>
+                      )}
+                    </div>
+                  </div>
+
                   <div className="flex flex-wrap gap-2 text-xs font-medium text-muted-foreground sm:text-sm">
-                    <span className="rounded-full border border-border/70 bg-muted/30 px-3 py-1.5">
-                      {formatCurrency(listing.price)}
-                    </span>
                     <span className="rounded-full border border-border/70 bg-muted/30 px-3 py-1.5">
                       {listing.year}
                     </span>
@@ -179,9 +296,18 @@ export function AdminListingsModeration({ pendingListings }: AdminListingsModera
                     </div>
                   </div>
 
-                  <p className="max-w-3xl text-sm leading-6 text-muted-foreground">
-                    {listing.description}
-                  </p>
+                  {editingListingId === listing.id ? (
+                    <textarea
+                      value={editValues?.description}
+                      onChange={(e) => setEditValues(v => v ? { ...v, description: e.target.value } : null)}
+                      rows={5}
+                      className="w-full rounded-xl border border-primary/30 bg-background p-4 text-sm leading-6 focus:ring-2 focus:ring-primary/20"
+                    />
+                  ) : (
+                    <p className="max-w-3xl text-sm leading-6 text-muted-foreground">
+                      {listing.description}
+                    </p>
+                  )}
 
                   <div className="grid gap-3 sm:grid-cols-3">
                     <div className="rounded-2xl border border-border/70 bg-muted/20 px-4 py-3">

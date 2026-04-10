@@ -81,12 +81,12 @@ Kullanıcı alımını (Acquisition) ve UX kalitesini en üst noktaya taşımak.
   - [x] Her sayfaya `<title>`, `<meta description>`, Open Graph etiketleri
   - [ ] Breadcrumb navigasyonu ve JSON-LD Structured Data (Vehicle, Product) detaylandırma
   - [ ] Canonical URL'ler
-- [ ] **Karşılaştırma (Compare) Ekranı Aktivasyonu:**
-  - [ ] `/compare` sayfasının gerçek veriye bağlanması (şu an statik/placeholder)
-  - [ ] Listing kartlarına ve detay sayfasına "Karşılaştır" CTA butonu
-  - [ ] Karşılaştırma tablosunda Tramer, Yıl, KM, Fiyat, Ekspertiz farkları
-  - [ ] URL'de karşılaştırılan ilan ID'lerinin query param olarak tutulması
-- [ ] **Listing Create Funnel Optimizasyonu:**
+  - [x] **Karşılaştırma (Compare) Ekranı Aktivasyonu:**
+    - [x] `/compare` sayfasının gerçek veriye bağlanması (şu an statik/placeholder)
+    - [x] Listing kartlarına ve detay sayfasına "Karşılaştır" CTA butonu
+    - [x] Karşılaştırma tablosunda Tramer, Yıl, KM, Fiyat, Ekspertiz farkları
+    - [x] URL'de karşılaştırılan ilan ID'lerinin query param olarak tutulması
+  - [ ] **Listing Create Funnel Optimizasyonu:**
   - [ ] Plaka ile otomatik araç bilgisi doldurma (Marka/Model/Yıl) — 3rd party API
   - [ ] Client-side fotoğraf sıkıştırma (browser-image-compression veya compressorjs)
   - [ ] Multi-step (adım adım) form wizard UX'i (opsiyonel)

@@ -3,6 +3,7 @@ import Link from "next/link";
 import { AlertTriangle, Sparkles } from "lucide-react";
 
 import { FavoriteButton } from "@/components/listings/favorite-button";
+import { CompareButton } from "@/components/listings/compare-button";
 import { formatCurrency, formatDate, formatNumber } from "@/lib/utils";
 import { getListingCardInsights } from "@/services/listings/listing-card-insights";
 import type { Listing } from "@/types";
@@ -22,11 +23,15 @@ export function ListingCard({ listing, priority = false }: ListingCardProps) {
   
   return (
     <article className="group relative flex flex-col sm:flex-row bg-white rounded-2xl border border-slate-200/60 overflow-hidden transition-all hover:shadow-lg hover:border-indigo-200 hover:-translate-y-0.5">
-      {/* Mobile Favorite Button */}
-      <div className="absolute right-3 top-3 z-10 sm:hidden">
+      {/* Mobile Favorite + Compare Buttons */}
+      <div className="absolute right-3 top-3 z-10 flex gap-2 sm:hidden">
         <FavoriteButton
           listingId={listing.id}
           className="size-9 rounded-full bg-white/90 shadow-md backdrop-blur-md flex items-center justify-center"
+        />
+        <CompareButton
+          listingId={listing.id}
+          className="size-9 rounded-full bg-white/90 shadow-md backdrop-blur-md flex items-center justify-center text-indigo-600"
         />
       </div>
 
@@ -126,11 +131,15 @@ export function ListingCard({ listing, priority = false }: ListingCardProps) {
         </div>
       </Link>
 
-      {/* Desktop Favorite */}
-      <div className="hidden sm:flex absolute right-3 top-3">
+      {/* Desktop Actions */}
+      <div className="hidden sm:flex absolute right-3 top-3 gap-2">
         <FavoriteButton
           listingId={listing.id}
           className="size-9 rounded-full bg-white/90 shadow-md backdrop-blur-md flex items-center justify-center"
+        />
+        <CompareButton
+          listingId={listing.id}
+          className="size-9 rounded-full bg-white/90 shadow-md backdrop-blur-md flex items-center justify-center text-indigo-600"
         />
       </div>
     </article>
