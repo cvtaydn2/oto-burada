@@ -4,10 +4,18 @@ import Link from "next/link";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { Archive, ArrowUpCircle, Loader2, Pencil, Plus, RotateCcw, X } from "lucide-react";
+import { Archive, ArrowUpCircle, Loader2, Pencil, Plus, Rocket, RotateCcw, X } from "lucide-react";
 
 import { formatCurrency, formatNumber } from "@/lib/utils";
 import type { Listing } from "@/types";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { ListingDopingPanel } from "./listing-doping-panel";
 
 interface MyListingsPanelProps {
   activeEditId?: string;
@@ -230,6 +238,25 @@ function ListingCard({
           <Pencil className="size-4" />
           Düzenle
         </Link>
+        {isApproved && (
+          <Dialog>
+            <DialogTrigger asChild>
+              <button
+                type="button"
+                className="flex items-center justify-center gap-1 rounded-lg border border-primary/20 bg-primary/5 px-3 py-2 text-sm font-semibold text-primary hover:bg-primary/10"
+              >
+                <Rocket className="size-4" />
+                Hızlandır
+              </button>
+            </DialogTrigger>
+            <DialogContent className="sm:max-w-xl">
+              <DialogHeader>
+                <DialogTitle>İlanını Öne Çıkar</DialogTitle>
+              </DialogHeader>
+              <ListingDopingPanel listingId={listing.id} listingTitle={listing.title} />
+            </DialogContent>
+          </Dialog>
+        )}
         {isApproved && (
           <button
             type="button"

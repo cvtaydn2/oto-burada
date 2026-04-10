@@ -36,6 +36,9 @@ export interface Profile {
   phoneVerified: boolean;
   identityVerified: boolean;
   role: UserRole;
+  userType: "individual" | "professional";
+  balanceCredits: number;
+  isVerified: boolean;
   createdAt: string;
   updatedAt: string;
 }

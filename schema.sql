@@ -7,6 +7,10 @@ create extension if not exists pgcrypto;
 
 do $$
 begin
+  if not exists (select 1 from pg_type where typname = 'user_type') then
+    create type public.user_type as enum ('individual', 'professional');
+  end if;
+
   if not exists (select 1 from pg_type where typname = 'user_role') then
     create type public.user_role as enum ('user', 'admin');
   end if;
@@ -99,6 +103,9 @@ create table if not exists public.profiles (
   city text not null default '',
   avatar_url text,
   role public.user_role not null default 'user',
+  user_type public.user_type not null default 'individual',
+  balance_credits integer not null default 0,
+  is_verified boolean not null default false,
   created_at timestamptz not null default timezone('utc', now()),
   updated_at timestamptz not null default timezone('utc', now())
 );
@@ -128,6 +135,9 @@ create table if not exists public.listings (
   expert_inspection jsonb,
   published_at timestamptz,
   bumped_at timestamptz,
+  featured_until timestamptz,
+  urgent_until timestamptz,
+  highlighted_until timestamptz,
   created_at timestamptz not null default timezone('utc', now()),
   updated_at timestamptz not null default timezone('utc', now())
 );
@@ -228,6 +238,34 @@ create table if not exists public.admin_actions (
   created_at timestamptz not null default timezone('utc', now())
 );
 
+
+create table if not exists public.payments (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid not null references public.profiles (id) on delete cascade,
+  amount decimal(12,2) not null,
+  currency text not null default 'TRY',
+  provider text not null, -- 'stripe', 'iyzico', 'manual'
+  status text not null, -- 'pending', 'completed', 'failed'
+  description text,
+  metadata jsonb,
+  created_at timestamptz not null default timezone('utc', now())
+);
+
+create table if not exists public.pricing_plans (
+  id uuid primary key default gen_random_uuid(),
+  name text not null,
+  price decimal(12,2) not null,
+  credits integer not null,
+  features jsonb,
+  is_active boolean not null default true
+);
+
+alter table public.payments enable row level security;
+alter table public.pricing_plans enable row level security;
+
+create policy "payments_select_own" on public.payments for select using ((select auth.uid()) = user_id or (select public.is_admin()));
+create policy "pricing_plans_select_all" on public.pricing_plans for select using (true);
+
 create unique index if not exists reports_active_per_user_listing_idx
   on public.reports (listing_id, reporter_id)
   where status in ('open', 'reviewing');
@@ -286,7 +324,7 @@ drop policy if exists "profiles_select_self_or_admin" on public.profiles;
 create policy "profiles_select_self_or_admin"
 on public.profiles
 for select
-using (auth.uid() = id or public.is_admin());
+using ((select auth.uid()) = id or (select public.is_admin()));
 
 drop policy if exists "brands_select_public" on public.brands;
 create policy "brands_select_public" on public.brands for select using (true);
@@ -304,33 +342,33 @@ drop policy if exists "profiles_insert_self_or_admin" on public.profiles;
 create policy "profiles_insert_self_or_admin"
 on public.profiles
 for insert
-with check (auth.uid() = id or public.is_admin());
+with check ((select auth.uid()) = id or (select public.is_admin()));
 
 drop policy if exists "profiles_update_self_or_admin" on public.profiles;
 create policy "profiles_update_self_or_admin"
 on public.profiles
 for update
-using (auth.uid() = id or public.is_admin())
-with check (auth.uid() = id or public.is_admin());
+using ((select auth.uid()) = id or (select public.is_admin()))
+with check ((select auth.uid()) = id or (select public.is_admin()));
 
 drop policy if exists "listings_select_visible" on public.listings;
 create policy "listings_select_visible"
 on public.listings
 for select
-using (status = 'approved' or auth.uid() = seller_id or public.is_admin());
+using (status = 'approved' or (select auth.uid()) = seller_id or (select public.is_admin()));
 
 drop policy if exists "listings_insert_owner_or_admin" on public.listings;
 create policy "listings_insert_owner_or_admin"
 on public.listings
 for insert
-with check (auth.uid() = seller_id or public.is_admin());
+with check ((select auth.uid()) = seller_id or (select public.is_admin()));
 
 drop policy if exists "listings_update_owner_or_admin" on public.listings;
 create policy "listings_update_owner_or_admin"
 on public.listings
 for update
-using (auth.uid() = seller_id or public.is_admin())
-with check (auth.uid() = seller_id or public.is_admin());
+using ((select auth.uid()) = seller_id or (select public.is_admin()))
+with check ((select auth.uid()) = seller_id or (select public.is_admin()));
 
 drop policy if exists "listing_images_select_visible" on public.listing_images;
 create policy "listing_images_select_visible"
@@ -341,7 +379,7 @@ using (
     select 1
     from public.listings
     where listings.id = listing_images.listing_id
-      and (listings.status = 'approved' or listings.seller_id = auth.uid() or public.is_admin())
+      and (listings.status = 'approved' or listings.seller_id = (select auth.uid()) or (select public.is_admin()))
   )
 );
 
@@ -354,7 +392,7 @@ using (
     select 1
     from public.listings
     where listings.id = listing_images.listing_id
-      and (listings.seller_id = auth.uid() or public.is_admin())
+      and (listings.seller_id = (select auth.uid()) or (select public.is_admin()))
   )
 )
 with check (
@@ -362,7 +400,7 @@ with check (
     select 1
     from public.listings
     where listings.id = listing_images.listing_id
-      and (listings.seller_id = auth.uid() or public.is_admin())
+      and (listings.seller_id = (select auth.uid()) or (select public.is_admin()))
   )
 );
 
@@ -370,48 +408,48 @@ drop policy if exists "favorites_manage_own" on public.favorites;
 create policy "favorites_manage_own"
 on public.favorites
 for all
-using (auth.uid() = user_id)
-with check (auth.uid() = user_id);
+using ((select auth.uid()) = user_id)
+with check ((select auth.uid()) = user_id);
 
 drop policy if exists "saved_searches_manage_own" on public.saved_searches;
 create policy "saved_searches_manage_own"
 on public.saved_searches
 for all
-using (auth.uid() = user_id)
-with check (auth.uid() = user_id);
+using ((select auth.uid()) = user_id)
+with check ((select auth.uid()) = user_id);
 
 drop policy if exists "notifications_manage_own" on public.notifications;
 create policy "notifications_manage_own"
 on public.notifications
 for all
-using (auth.uid() = user_id)
-with check (auth.uid() = user_id);
+using ((select auth.uid()) = user_id)
+with check ((select auth.uid()) = user_id);
 
 drop policy if exists "reports_select_self_or_admin" on public.reports;
 create policy "reports_select_self_or_admin"
 on public.reports
 for select
-using (auth.uid() = reporter_id or public.is_admin());
+using ((select auth.uid()) = reporter_id or (select public.is_admin()));
 
 drop policy if exists "reports_insert_self" on public.reports;
 create policy "reports_insert_self"
 on public.reports
 for insert
-with check (auth.uid() = reporter_id);
+with check ((select auth.uid()) = reporter_id);
 
 drop policy if exists "reports_update_admin_only" on public.reports;
 create policy "reports_update_admin_only"
 on public.reports
 for update
-using (public.is_admin())
-with check (public.is_admin());
+using ((select public.is_admin()))
+with check ((select public.is_admin()));
 
 drop policy if exists "admin_actions_admin_only" on public.admin_actions;
 create policy "admin_actions_admin_only"
 on public.admin_actions
 for all
-using (public.is_admin())
-with check (public.is_admin());
+using ((select public.is_admin()))
+with check ((select public.is_admin()));
 
 -- Storage intent:
 -- 1. Create a public-read bucket named `listing-images` for listing media.
@@ -483,7 +521,7 @@ using (
   exists (
     select 1 from public.listings
     where listings.id = listing_views.listing_id
-      and listings.seller_id = auth.uid()
+      and listings.seller_id = (select auth.uid())
   )
 );
 
@@ -494,8 +532,8 @@ create policy "listings_delete_owner_archived_or_admin"
 on public.listings
 for delete
 using (
-  (auth.uid() = seller_id and status = 'archived')
-  or public.is_admin()
+  ((select auth.uid()) = seller_id and status = 'archived')
+  or (select public.is_admin())
 );
 
 -- ── B-12: Storage Bucket Policies ───────────────────────────────────────
@@ -532,4 +570,7 @@ CREATE INDEX IF NOT EXISTS idx_favorites_user_id ON public.favorites (user_id);
 CREATE INDEX IF NOT EXISTS idx_reports_status ON public.reports (status, created_at DESC);
 CREATE INDEX IF NOT EXISTS idx_models_brand_id ON public.models (brand_id);
 CREATE INDEX IF NOT EXISTS idx_districts_city_id ON public.districts (city_id);
+CREATE INDEX IF NOT EXISTS idx_admin_actions_admin_user_id ON public.admin_actions (admin_user_id);
+CREATE INDEX IF NOT EXISTS idx_profiles_role ON public.profiles (role);
+CREATE INDEX IF NOT EXISTS idx_notifications_unread_user ON public.notifications (user_id) WHERE read = false;
 

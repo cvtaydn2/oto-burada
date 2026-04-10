@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Heart, LayoutGrid, ListChecks, UserCircle2 } from "lucide-react";
+import { CreditCard, Heart, LayoutGrid, ListChecks, UserCircle2, Zap } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 
@@ -26,6 +26,11 @@ const dashboardNavItems = [
     href: "/dashboard/profile",
     label: "Profil",
     icon: UserCircle2,
+  },
+  {
+    href: "/dashboard/pricing",
+    label: "Paketler",
+    icon: Zap,
   },
 ] as const;
 
