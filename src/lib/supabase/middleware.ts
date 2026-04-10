@@ -4,6 +4,7 @@ import { NextResponse, type NextRequest } from "next/server";
 import { getSupabaseEnv, hasSupabaseEnv } from "@/lib/supabase/env";
 
 const protectedPrefixes = ["/dashboard", "/admin"];
+const adminPrefixes = ["/admin"];
 const authRoutes = ["/login", "/register"];
 
 const SECURITY_HEADERS = {
@@ -49,8 +50,12 @@ export async function updateSession(request: NextRequest) {
   const isProtectedRoute = protectedPrefixes.some((prefix) =>
     pathname.startsWith(prefix),
   );
+  const isAdminRoute = adminPrefixes.some((prefix) =>
+    pathname.startsWith(prefix),
+  );
   const isAuthRoute = authRoutes.includes(pathname);
 
+  // Redirect unauthenticated users away from protected routes
   if (!user && isProtectedRoute) {
     const redirectUrl = request.nextUrl.clone();
     redirectUrl.pathname = "/login";
@@ -58,11 +63,56 @@ export async function updateSession(request: NextRequest) {
     return NextResponse.redirect(redirectUrl);
   }
 
+  // Redirect non-admin users away from admin routes
+  if (user && isAdminRoute) {
+    const appMetadata = user.app_metadata as { role?: string } | undefined;
+    const isAdmin = appMetadata?.role === "admin";
+
+    if (!isAdmin) {
+      const redirectUrl = request.nextUrl.clone();
+      redirectUrl.pathname = "/dashboard";
+      redirectUrl.search = "";
+      return NextResponse.redirect(redirectUrl);
+    }
+  }
+
+  // Redirect authenticated users away from auth routes
   if (user && isAuthRoute) {
     const redirectUrl = request.nextUrl.clone();
     redirectUrl.pathname = "/dashboard";
     redirectUrl.search = "";
     return NextResponse.redirect(redirectUrl);
+  }
+
+  // CSRF Protection for API routes
+  if (pathname.startsWith("/api") && ["POST", "PUT", "PATCH", "DELETE"].includes(request.method)) {
+    const origin = request.headers.get("origin");
+    const host = request.headers.get("host");
+    const appUrl = process.env.NEXT_PUBLIC_APP_URL;
+    
+    // In production, enforce origin check
+    if (process.env.NODE_ENV === "production" && appUrl) {
+      const allowedOrigin = new URL(appUrl).origin;
+      if (origin !== allowedOrigin) {
+        return new NextResponse(
+          JSON.stringify({ error: "Invalid origin" }),
+          { status: 403, headers: { "Content-Type": "application/json" } }
+        );
+      }
+    } else if (origin && host) {
+      // In dev, at least check if origin matches host if both are present
+      try {
+        const originHost = new URL(origin).host;
+        if (originHost !== host) {
+          return new NextResponse(
+            JSON.stringify({ error: "CSRF mismatch" }),
+            { status: 403, headers: { "Content-Type": "application/json" } }
+          );
+        }
+      } catch {
+        // Ignore invalid URLs in origin if they happen
+      }
+    }
   }
 
   for (const [key, value] of Object.entries(SECURITY_HEADERS)) {
@@ -73,3 +123,4 @@ export async function updateSession(request: NextRequest) {
 
   return response;
 }
+

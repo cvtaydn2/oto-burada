@@ -1,102 +1,61 @@
-import { getStoredListings } from "@/services/listings/listing-submissions";
-import type { BrandCatalogItem, CityOption, Listing, SearchSuggestionItem } from "@/types";
+import { createSupabaseServerClient } from "@/lib/supabase/server";
+import type { BrandCatalogItem, CityOption, SearchSuggestionItem } from "@/types";
 
 function sortLocale(values: string[]) {
   return [...values].sort((left, right) => left.localeCompare(right, "tr"));
 }
 
-function deriveBrandCatalog(listings: Listing[]): BrandCatalogItem[] {
-  const brandMap = new Map<string, Set<string>>();
-
-  for (const listing of listings) {
-    if (!listing.brand.trim()) {
-      continue;
-    }
-
-    const models = brandMap.get(listing.brand) ?? new Set<string>();
-
-    if (listing.model.trim()) {
-      models.add(listing.model);
-    }
-
-    brandMap.set(listing.brand, models);
-  }
-
-  return sortLocale([...brandMap.keys()]).map((brand) => ({
-    brand,
-    models: sortLocale([...(brandMap.get(brand) ?? new Set<string>())]),
-  }));
-}
-
-function deriveCityOptions(listings: Listing[]): CityOption[] {
-  const cityMap = new Map<string, Set<string>>();
-
-  for (const listing of listings) {
-    if (!listing.city.trim()) {
-      continue;
-    }
-
-    const districts = cityMap.get(listing.city) ?? new Set<string>();
-
-    if (listing.district.trim()) {
-      districts.add(listing.district);
-    }
-
-    cityMap.set(listing.city, districts);
-  }
-
-  return sortLocale([...cityMap.keys()]).map((city) => ({
-    city,
-    cityPlate: null,
-    districts: sortLocale([...(cityMap.get(city) ?? new Set<string>())]),
-  }));
-}
-
-function deriveSearchSuggestions(listings: Listing[]): SearchSuggestionItem[] {
-  const uniqueSuggestions = new Map<string, SearchSuggestionItem>();
-
-  for (const listing of listings) {
-    if (listing.brand.trim()) {
-      uniqueSuggestions.set(`brand:${listing.brand}`, {
-        label: listing.brand,
-        type: "brand",
-        value: listing.brand,
-      });
-    }
-
-    if (listing.city.trim()) {
-      uniqueSuggestions.set(`city:${listing.city}`, {
-        label: listing.city,
-        type: "city",
-        value: listing.city,
-      });
-    }
-
-    if (listing.brand.trim() && listing.model.trim()) {
-      const value = `${listing.brand} ${listing.model}`;
-      uniqueSuggestions.set(`model:${value}`, {
-        label: value,
-        type: "model",
-        value,
-      });
-    }
-  }
-
-  return [...uniqueSuggestions.values()]
-    .sort((left, right) => left.label.localeCompare(right.label, "tr"))
-    .slice(0, 12);
-}
+type DBBrand = { id: string; name: string };
+type DBModel = { brand_id: string; name: string };
+type DBCity = { id: string; name: string; plate_code: number };
+type DBDistrict = { city_id: string; name: string };
 
 export async function getLiveMarketplaceReferenceData() {
-  const listings = await getStoredListings();
-  const approvedListings = listings.filter((listing) => listing.status === "approved");
-  const sourceListings = approvedListings.length > 0 ? approvedListings : listings;
+  const supabase = await createSupabaseServerClient();
 
-  return {
-    brands: deriveBrandCatalog(sourceListings),
-    cities: deriveCityOptions(sourceListings),
-    searchSuggestions: deriveSearchSuggestions(sourceListings),
-  };
+  const [
+    { data: brandsData },
+    { data: modelsData },
+    { data: citiesData },
+    { data: districtsData }
+  ] = await Promise.all([
+    supabase.from("brands").select("id, name").eq("is_active", true).order("sort_order", { ascending: true }),
+    supabase.from("models").select("brand_id, name").eq("is_active", true).order("sort_order", { ascending: true }),
+    supabase.from("cities").select("id, name, plate_code").eq("is_active", true).order("name", { ascending: true }),
+    supabase.from("districts").select("city_id, name").eq("is_active", true).order("name", { ascending: true })
+  ]);
+
+  const brands: BrandCatalogItem[] = (brandsData || []).map((b: DBBrand) => ({
+    brand: b.name,
+    models: sortLocale((modelsData || []).filter((m: DBModel) => m.brand_id === b.id).map((m: DBModel) => m.name))
+  }));
+
+  const cities: CityOption[] = (citiesData || []).map((c: DBCity) => ({
+    city: c.name,
+    cityPlate: c.plate_code,
+    districts: sortLocale((districtsData || []).filter((d: DBDistrict) => d.city_id === c.id).map((d: DBDistrict) => d.name))
+  }));
+
+  const uniqueSuggestions = new Map<string, SearchSuggestionItem>();
+  
+  for (const b of (brandsData || []).slice(0, 10)) {
+    uniqueSuggestions.set(`brand:${b.name}`, { label: b.name, type: "brand", value: b.name });
+    const topModels = (modelsData || []).filter((m: DBModel) => m.brand_id === b.id).slice(0, 3);
+    for (const m of topModels) {
+      const val = `${b.name} ${m.name}`;
+      uniqueSuggestions.set(`model:${val}`, { label: val, type: "model", value: val });
+    }
+  }
+
+  for (const c of (citiesData || []).slice(0, 10)) {
+    uniqueSuggestions.set(`city:${c.name}`, { label: c.name, type: "city", value: c.name });
+  }
+
+  const searchSuggestions = [...uniqueSuggestions.values()]
+    .sort((left, right) => left.label.localeCompare(right.label, "tr"))
+    .slice(0, 15);
+
+  return { brands, cities, searchSuggestions };
 }
 
 export function mergeCityOptions(cities: CityOption[], extraCities: string[]) {

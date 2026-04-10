@@ -27,6 +27,7 @@ import { ListingCard } from "@/components/listings/listing-card";
 import { PriceAnalysisCard } from "@/components/listings/price-analysis-card";
 import { TrustBadge } from "@/components/shared/trust-badge";
 import { ExpertInspectionCard } from "@/components/listings/expert-inspection-card";
+import { DamageReportCard } from "@/components/listings/damage-report-card";
 import { getCurrentUser } from "@/lib/auth/session";
 import { buildListingDetailMetadata } from "@/lib/seo";
 import { formatDate, formatNumber } from "@/lib/utils";
@@ -253,6 +254,12 @@ export default async function ListingDetailPage({ params }: ListingDetailPagePro
                 ))}
               </div>
             </div>
+
+            {/* Damage & Tramer Report */}
+            <DamageReportCard 
+              damageStatus={listing.damageStatusJson} 
+              tramerAmount={listing.tramerAmount} 
+            />
 
             {/* Description */}
             <section className="rounded-lg border border-slate-200 bg-white p-5 shadow-sm">

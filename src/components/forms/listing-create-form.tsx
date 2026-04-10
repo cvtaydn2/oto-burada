@@ -4,8 +4,11 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import {
   CarFront,
   CheckCircle2,
+  ChevronLeft,
+  ChevronRight,
   FileText,
   ImagePlus,
+  Info,
   LoaderCircle,
   MapPin,
   MessageCircle,
@@ -13,10 +16,11 @@ import {
   ShieldCheck,
   Trash2,
   Upload,
+  AlertCircle,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { useFieldArray, useForm, useWatch, type FieldPath } from "react-hook-form";
+import { Controller, useFieldArray, useForm, useWatch, type FieldPath } from "react-hook-form";
 import type { z } from "zod";
 
 import {
@@ -35,6 +39,7 @@ import {
   validateListingImageFile,
 } from "@/services/listings/listing-images";
 import type { BrandCatalogItem, CityOption, Listing, ListingCreateFormValues } from "@/types";
+import { DamageSelector } from "./damage-selector";
 
 interface ListingCreateFormProps {
   initialValues: {
@@ -90,6 +95,8 @@ function buildDefaultValues(
     district: initialListing?.district ?? "",
     description: initialListing?.description ?? "",
     whatsappPhone: initialListing?.whatsappPhone ?? initialValues.whatsappPhone,
+    tramerAmount: initialListing?.tramerAmount ?? 0,
+    damageStatusJson: initialListing?.damageStatusJson ?? {},
     images:
       sortedImages.length > 0
         ? sortedImages.map((image) => ({
@@ -180,6 +187,12 @@ const initialSubmitState: SubmitState = {
 type ListingCreateFormSchemaInput = z.input<typeof listingCreateFormSchema>;
 type ListingCreateFormSchemaOutput = z.output<typeof listingCreateFormSchema>;
 
+const STEP_LABELS = [
+  "Temel Bilgiler",
+  "Konum ve Detaylar",
+  "Fotoğraflar ve Gönderim",
+] as const;
+
 export function ListingCreateForm({
   brands,
   cities,
@@ -190,6 +203,8 @@ export function ListingCreateForm({
   const isEditing = Boolean(initialListing);
   const [submitState, setSubmitState] = useState<SubmitState>(initialSubmitState);
   const [uploadStates, setUploadStates] = useState<Record<string, UploadState>>({});
+  const [currentStep, setCurrentStep] = useState(0);
+  const totalSteps = STEP_LABELS.length;
   const uploadStatesRef = useRef<Record<string, UploadState>>({});
   const {
     control,
@@ -201,6 +216,7 @@ export function ListingCreateForm({
     reset,
     setError,
     setValue,
+    trigger,
   } = useForm<
     ListingCreateFormSchemaInput,
     undefined,
@@ -326,6 +342,24 @@ export function ListingCreateForm({
     };
   }, []);
 
+  const handleNextStep = async () => {
+    let valid = true;
+    if (currentStep === 0) {
+      valid = await trigger(["title", "brand", "model", "year", "mileage", "fuelType", "transmission", "price"]);
+    } else if (currentStep === 1) {
+      valid = await trigger(["city", "district", "whatsappPhone", "description"]);
+    }
+    if (valid) {
+      setCurrentStep((prev) => Math.min(prev + 1, totalSteps - 1));
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+  };
+
+  const handlePrevStep = () => {
+    setCurrentStep((prev) => Math.max(prev - 1, 0));
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
   const updateUploadState = (fieldId: string, nextState: UploadState) => {
     setUploadStates((current) => ({ ...current, [fieldId]: nextState }));
   };
@@ -365,7 +399,26 @@ export function ListingCreateForm({
     }
 
     const previousImage = getValues(`images.${index}`);
-    const previewUrl = URL.createObjectURL(file);
+
+    updateUploadState(fieldId, {
+      message: "Fotograf sikistiriliyor...",
+      progress: 0,
+      status: "uploading",
+    });
+
+    let compressibleFile = file;
+    try {
+      const { default: imageCompression } = await import("browser-image-compression");
+      compressibleFile = await imageCompression(file, {
+        maxSizeMB: 1,
+        maxWidthOrHeight: 1920,
+        useWebWorker: true,
+      });
+    } catch {
+      // Fallback to original file
+    }
+
+    const previewUrl = URL.createObjectURL(compressibleFile);
 
     clearErrors([
       "images",
@@ -380,7 +433,7 @@ export function ListingCreateForm({
     });
 
     try {
-      const payload = await uploadImageRequest(file, (progress) => {
+      const payload = await uploadImageRequest(compressibleFile, (progress) => {
         updateUploadState(fieldId, {
           message: "Fotograf yukleniyor...",
           previewUrl,
@@ -499,497 +552,604 @@ export function ListingCreateForm({
   });
 
   return (
-    <form onSubmit={onSubmit} className="space-y-8">
-      <section className="rounded-[1.75rem] border border-primary/15 bg-primary/5 p-5">
-        <div className="flex items-start gap-3">
-          <div className="flex size-11 shrink-0 items-center justify-center rounded-2xl bg-background text-primary shadow-sm">
-            <ShieldCheck className="size-5" />
-          </div>
-          <div className="space-y-2">
-            <p className="text-sm font-semibold text-foreground">
-              {isEditing ? "Ilanini guncelliyorsun" : "Ilanin once moderasyona gider"}
-            </p>
-            <p className="text-sm leading-6 text-muted-foreground">
-              Net baslik, dogru kilometre ve aciklayici fotograflar daha hizli onay almani
-              saglar. Yuklemelerde {getListingImageConstraintsText()} kurali uygulanir.
-            </p>
-          </div>
+    <div className="space-y-6">
+      {/* ── Step Progress Indicator ── */}
+      <div className="space-y-4">
+        <div className="flex items-center justify-between">
+          <h2 className="text-lg font-bold tracking-tight text-foreground sm:text-xl">
+            Adım {currentStep + 1}: {STEP_LABELS[currentStep]}
+          </h2>
+          <span className="shrink-0 rounded-full bg-primary/10 px-3 py-1 text-xs font-semibold text-primary">
+            {currentStep + 1} / {totalSteps}
+          </span>
         </div>
-      </section>
-
-      <section className="grid gap-4 lg:grid-cols-3">
-        <div className="rounded-[1.5rem] border border-border/70 bg-background p-4 shadow-sm">
-          <p className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">
-            Form modu
-          </p>
-          <p className="mt-2 text-lg font-semibold tracking-tight text-foreground">
-            {isEditing ? "Ilan duzenleme" : "Yeni ilan olusturma"}
-          </p>
-          <p className="mt-2 text-sm leading-6 text-muted-foreground">
-            {isEditing
-              ? "Sadece taslak veya incelemedeki ilanlari guncelleyebilirsin."
-              : "Yeni ilan once moderasyona gider, onay sonrasi yayina acilir."}
-          </p>
+        <div className="flex gap-2">
+          {STEP_LABELS.map((label, idx) => (
+            <button
+              key={label}
+              type="button"
+              onClick={() => {
+                if (idx < currentStep) setCurrentStep(idx);
+              }}
+              className={`h-2 flex-1 rounded-full transition-colors ${
+                idx <= currentStep ? "bg-primary" : "bg-muted"
+              } ${idx < currentStep ? "cursor-pointer hover:bg-primary/80" : "cursor-default"}`}
+              aria-label={`Adım ${idx + 1}: ${label}`}
+            />
+          ))}
         </div>
-        <div className="rounded-[1.5rem] border border-emerald-100 bg-emerald-50/70 p-4 shadow-sm">
-          <p className="text-xs font-semibold uppercase tracking-[0.14em] text-emerald-700">
-            Fotograf hazirligi
-          </p>
-          <p className="mt-2 text-lg font-semibold tracking-tight text-foreground">
-            {uploadedImageCount}/{Math.max(fields.length, minimumListingImages)} yuklendi
-          </p>
-          <p className="mt-2 text-sm leading-6 text-muted-foreground">
-            En az {minimumListingImages} fotograf ile guven sinyali artar, ilk fotograf kapak olur.
-          </p>
-        </div>
-        <div className="rounded-[1.5rem] border border-sky-100 bg-sky-50/70 p-4 shadow-sm">
-          <p className="text-xs font-semibold uppercase tracking-[0.14em] text-sky-700">
-            Hazir iletisim
-          </p>
-          <p className="mt-2 text-lg font-semibold tracking-tight text-foreground">
-            {initialValues.whatsappPhone || "Telefon bekleniyor"}
-          </p>
-          <p className="mt-2 text-sm leading-6 text-muted-foreground">
-            Profildeki telefon form icine otomatik tasinir, alicinin ilk temas noktasi burasidir.
-          </p>
-        </div>
-      </section>
+      </div>
 
-      <FormSection
-        icon={CarFront}
-        title="Temel arac bilgileri"
-        description="AI Studio sahnesindeki ilk karar katmani gibi, marka, model, yil ve fiyat bilgisini net tut."
-      >
-        <section className="grid gap-5 sm:grid-cols-2">
-        <label className="block space-y-2 text-sm font-medium text-foreground sm:col-span-2">
-          <span>Ilan basligi</span>
-          <input
-            type="text"
-            {...register("title")}
-            placeholder="Orn. 2020 Renault Clio 1.0 TCe Touch"
-            className={inputClassName}
-          />
-          {errors.title ? <p className="text-sm text-destructive">{errors.title.message}</p> : null}
-        </label>
-
-        <label className="block space-y-2 text-sm font-medium text-foreground">
-          <span>Marka</span>
-          <select {...register("brand")} className={inputClassName}>
-            <option value="">Marka sec</option>
-            {availableBrands.map((item) => (
-              <option key={item.brand} value={item.brand}>
-                {item.brand}
-              </option>
-            ))}
-          </select>
-          {errors.brand ? <p className="text-sm text-destructive">{errors.brand.message}</p> : null}
-        </label>
-
-        <label className="block space-y-2 text-sm font-medium text-foreground">
-          <span>Model</span>
-          <select
-            {...register("model")}
-            disabled={modelOptions.length === 0}
-            className={inputClassName}
-          >
-            <option value="">{selectedBrand ? "Model sec" : "Once marka sec"}</option>
-            {modelOptions.map((model) => (
-              <option key={model} value={model}>
-                {model}
-              </option>
-            ))}
-          </select>
-          {errors.model ? <p className="text-sm text-destructive">{errors.model.message}</p> : null}
-        </label>
-
-        <label className="block space-y-2 text-sm font-medium text-foreground">
-          <span>Yil</span>
-          <input
-            type="number"
-            min={minimumCarYear}
-            max={maximumCarYear}
-            inputMode="numeric"
-            {...register("year", { valueAsNumber: true })}
-            className={inputClassName}
-          />
-          {errors.year ? <p className="text-sm text-destructive">{errors.year.message}</p> : null}
-        </label>
-
-        <label className="block space-y-2 text-sm font-medium text-foreground">
-          <span>Kilometre</span>
-          <input
-            type="number"
-            min={0}
-            max={1_000_000}
-            inputMode="numeric"
-            {...register("mileage", { valueAsNumber: true })}
-            className={inputClassName}
-          />
-          {errors.mileage ? (
-            <p className="text-sm text-destructive">{errors.mileage.message}</p>
-          ) : (
-            <p className="text-xs text-muted-foreground">
-              Mevcut deger: {formatNumber(Number(mileageValue || 0))} km
-            </p>
-          )}
-        </label>
-
-        <label className="block space-y-2 text-sm font-medium text-foreground">
-          <span>Yakit tipi</span>
-          <select {...register("fuelType")} className={inputClassName}>
-            {fuelTypes.map((fuelType) => (
-              <option key={fuelType} value={fuelType}>
-                {fuelType}
-              </option>
-            ))}
-          </select>
-          {errors.fuelType ? (
-            <p className="text-sm text-destructive">{errors.fuelType.message}</p>
-          ) : null}
-        </label>
-
-        <label className="block space-y-2 text-sm font-medium text-foreground">
-          <span>Vites</span>
-          <select {...register("transmission")} className={inputClassName}>
-            {transmissionTypes.map((transmission) => (
-              <option key={transmission} value={transmission}>
-                {transmission}
-              </option>
-            ))}
-          </select>
-          {errors.transmission ? (
-            <p className="text-sm text-destructive">{errors.transmission.message}</p>
-          ) : null}
-        </label>
-
-        <label className="block space-y-2 text-sm font-medium text-foreground sm:col-span-2">
-          <span>Fiyat</span>
-          <input
-            type="number"
-            min={1}
-            inputMode="numeric"
-            {...register("price", { valueAsNumber: true })}
-            placeholder="Orn. 925000"
-            className={inputClassName}
-          />
-          {errors.price ? <p className="text-sm text-destructive">{errors.price.message}</p> : null}
-        </label>
-        </section>
-      </FormSection>
-
-      <FormSection
-        icon={MapPin}
-        title="Konum ve iletisim"
-        description="Figma component mantigiyla gruplanmis bu alan, konum ve WhatsApp verisini daha duzenli gosterir."
-      >
-        <section className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_250px]">
-          <div className="grid gap-5 sm:grid-cols-2">
-        <label className="block space-y-2 text-sm font-medium text-foreground">
-          <span>Sehir</span>
-          <select {...register("city")} className={inputClassName}>
-            <option value="">Sehir sec</option>
-            {availableCities.map((item) => (
-              <option key={item.city} value={item.city}>
-                {item.city}
-              </option>
-            ))}
-          </select>
-          {errors.city ? <p className="text-sm text-destructive">{errors.city.message}</p> : null}
-        </label>
-
-        <label className="block space-y-2 text-sm font-medium text-foreground">
-          <span>Ilce</span>
-          <select
-            {...register("district")}
-            disabled={districtOptions.length === 0}
-            className={inputClassName}
-          >
-            <option value="">{selectedCity ? "Ilce sec" : "Once sehir sec"}</option>
-            {districtOptions.map((district) => (
-              <option key={district} value={district}>
-                {district}
-              </option>
-            ))}
-          </select>
-          {errors.district ? (
-            <p className="text-sm text-destructive">{errors.district.message}</p>
-          ) : null}
-        </label>
-
-        <label className="block space-y-2 text-sm font-medium text-foreground sm:col-span-2">
-          <span>WhatsApp telefonu</span>
-          <input
-            type="tel"
-            {...register("whatsappPhone")}
-            placeholder="+90 5xx xxx xx xx"
-            className={inputClassName}
-          />
-          {errors.whatsappPhone ? (
-            <p className="text-sm text-destructive">{errors.whatsappPhone.message}</p>
-          ) : (
-            <p className="text-xs text-muted-foreground">
-              Alicilarin ilk temas noktasi bu numara olacak.
-            </p>
-          )}
-        </label>
-
-        <label className="block space-y-2 text-sm font-medium text-foreground sm:col-span-2">
-          <span>Aciklama</span>
-          <textarea
-            rows={6}
-            {...register("description")}
-            placeholder="Bakim gecmisi, boya/degisen durumu ve one cikan ozellikleri kisaca anlat."
-            className="w-full rounded-2xl border border-input bg-background px-4 py-3 text-sm outline-none transition-colors focus:border-primary"
-          />
-          {errors.description ? (
-            <p className="text-sm text-destructive">{errors.description.message}</p>
-          ) : (
-            <p className="text-xs text-muted-foreground">
-              En az 20 karakter ile guven veren net bir aciklama yaz.
-            </p>
-          )}
-        </label>
-          </div>
-
-          <div className="rounded-[1.5rem] border border-primary/10 bg-gradient-to-br from-primary/10 via-background to-background p-5">
-            <div className="flex items-center gap-2 text-sm font-semibold text-primary">
-              <MessageCircle className="size-4" />
-              Alici ilk neyi gorecek?
+      <form onSubmit={onSubmit} className="space-y-8">
+        {/* ── Info Banner ── */}
+        <section className="rounded-[1.75rem] border border-primary/15 bg-primary/5 p-5">
+          <div className="flex items-start gap-3">
+            <div className="flex size-11 shrink-0 items-center justify-center rounded-2xl bg-background text-primary shadow-sm">
+              <ShieldCheck className="size-5" />
             </div>
-            <p className="mt-3 text-sm leading-6 text-muted-foreground">
-              Sehir, ilce ve WhatsApp alanlari ilan karti ve detay ekraninda guven sinyali olarak
-              kullanilir. Aciklamada boya, degisen, bakim ve ekspertiz bilgisi varsa onay daha
-              hizli ilerler.
-            </p>
-            <div className="mt-4 rounded-[1.25rem] border border-border/70 bg-background/90 p-4">
-              <p className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">
-                Varsayilan sehir
+            <div className="space-y-2">
+              <p className="text-sm font-semibold text-foreground">
+                {isEditing ? "İlanını güncelliyorsun" : "İlanın önce moderasyona gider"}
               </p>
-              <p className="mt-2 text-sm font-semibold text-foreground">
-                {selectedCity || initialValues.city || "Henuz secilmedi"}
+              <p className="text-sm leading-6 text-muted-foreground">
+                Net başlık, doğru kilometre ve açıklayıcı fotoğraflar daha hızlı onay almanı
+                sağlar. Yüklemelerde {getListingImageConstraintsText()} kuralı uygulanır.
               </p>
             </div>
           </div>
         </section>
-      </FormSection>
 
-      <FormSection
-        icon={ImagePlus}
-        title="Fotograf studyosu"
-        description="AI Studio’daki spotlight kartlar gibi, gorselleri belirgin ve yonlendirici bir alanda topluyoruz."
-      >
-        <section className="space-y-4">
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <div>
-            <h3 className="text-lg font-semibold tracking-tight">Fotograflar</h3>
-            <p className="mt-1 text-sm text-muted-foreground">
-              En az {minimumListingImages} fotograf yukle. Ilk fotograf kapak gorseli olarak
-              kullanilir.
-            </p>
-          </div>
+        {/* ════════════════════════════════════════════════
+            STEP 0 — Temel Araç Bilgileri
+        ════════════════════════════════════════════════ */}
+        {currentStep === 0 && (
+          <>
+            <section className="grid gap-4 lg:grid-cols-3">
+              <div className="rounded-[1.5rem] border border-border/70 bg-background p-4 shadow-sm">
+                <p className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+                  Form modu
+                </p>
+                <p className="mt-2 text-lg font-semibold tracking-tight text-foreground">
+                  {isEditing ? "İlan düzenleme" : "Yeni ilan oluşturma"}
+                </p>
+                <p className="mt-2 text-sm leading-6 text-muted-foreground">
+                  {isEditing
+                    ? "Sadece taslak veya incelemedeki ilanları güncelleyebilirsin."
+                    : "Yeni ilan önce moderasyona gider, onay sonrası yayına açılır."}
+                </p>
+              </div>
+              <div className="rounded-[1.5rem] border border-emerald-100 bg-emerald-50/70 p-4 shadow-sm">
+                <p className="text-xs font-semibold uppercase tracking-[0.14em] text-emerald-700">
+                  Fotoğraf hazırlığı
+                </p>
+                <p className="mt-2 text-lg font-semibold tracking-tight text-foreground">
+                  {uploadedImageCount}/{Math.max(fields.length, minimumListingImages)} yüklendi
+                </p>
+                <p className="mt-2 text-sm leading-6 text-muted-foreground">
+                  En az {minimumListingImages} fotoğraf ile güven sinyali artar, ilk fotoğraf kapak olur.
+                </p>
+              </div>
+              <div className="rounded-[1.5rem] border border-sky-100 bg-sky-50/70 p-4 shadow-sm">
+                <p className="text-xs font-semibold uppercase tracking-[0.14em] text-sky-700">
+                  Hazır iletişim
+                </p>
+                <p className="mt-2 text-lg font-semibold tracking-tight text-foreground">
+                  {initialValues.whatsappPhone || "Telefon bekleniyor"}
+                </p>
+                <p className="mt-2 text-sm leading-6 text-muted-foreground">
+                  Profildeki telefon form içine otomatik taşınır, alıcının ilk temas noktası burasıdır.
+                </p>
+              </div>
+            </section>
 
-          <div className="inline-flex items-center gap-2 rounded-full border border-border bg-muted/40 px-3 py-2 text-sm font-medium text-muted-foreground">
-            <ImagePlus className="size-4 text-primary" />
-            {uploadedImageCount}/{Math.max(fields.length, minimumListingImages)} fotograf hazir
-          </div>
-        </div>
+            <FormSection
+              icon={CarFront}
+              title="Temel araç bilgileri"
+              description="Marka, model, yıl ve fiyat bilgisini net tut — bu alanlar ilk filtreleme katmanıdır."
+            >
+              <section className="grid gap-5 sm:grid-cols-2">
+                <label className="block space-y-2 text-sm font-medium text-foreground sm:col-span-2">
+                  <span>İlan başlığı</span>
+                  <input
+                    type="text"
+                    {...register("title")}
+                    placeholder="Örn. 2020 Renault Clio 1.0 TCe Touch"
+                    className={inputClassName}
+                  />
+                  {errors.title ? <p className="text-sm text-destructive">{errors.title.message}</p> : null}
+                </label>
 
-        {typeof errors.images?.message === "string" ? (
-          <p className="rounded-xl border border-destructive/30 bg-destructive/5 px-4 py-3 text-sm text-destructive">
-            {errors.images.message}
-          </p>
-        ) : null}
+                <label className="block space-y-2 text-sm font-medium text-foreground">
+                  <span>Marka</span>
+                  <select {...register("brand")} className={inputClassName}>
+                    <option value="">Marka seç</option>
+                    {availableBrands.map((item) => (
+                      <option key={item.brand} value={item.brand}>
+                        {item.brand}
+                      </option>
+                    ))}
+                  </select>
+                  {errors.brand ? <p className="text-sm text-destructive">{errors.brand.message}</p> : null}
+                </label>
 
-        <div className="grid gap-4">
-          {fields.map((field, index) => {
-            const imageValue = imageValues[index];
-            const uploadState = uploadStates[field.id];
-            const previewUrl = uploadState?.previewUrl ?? imageValue?.url;
-            const isUploading = uploadState?.status === "uploading";
-            const isUploaded =
-              uploadState?.status === "uploaded" ||
-              Boolean((imageValue?.url ?? "").trim() && (imageValue?.storagePath ?? "").trim());
+                <label className="block space-y-2 text-sm font-medium text-foreground">
+                  <span>Model</span>
+                  <select
+                    {...register("model")}
+                    disabled={modelOptions.length === 0}
+                    className={inputClassName}
+                  >
+                    <option value="">{selectedBrand ? "Model seç" : "Önce marka seç"}</option>
+                    {modelOptions.map((model) => (
+                      <option key={model} value={model}>
+                        {model}
+                      </option>
+                    ))}
+                  </select>
+                  {errors.model ? <p className="text-sm text-destructive">{errors.model.message}</p> : null}
+                </label>
 
-            return (
-              <div
-                key={field.id}
-                className="grid gap-4 rounded-[1.5rem] border border-border/70 bg-muted/20 p-4 lg:grid-cols-[220px_minmax(0,1fr)]"
-              >
-                <div className="overflow-hidden rounded-[1.25rem] border border-dashed border-border bg-muted/50">
-                  {previewUrl ? (
-                    <div
-                      className="aspect-[4/3] bg-cover bg-center"
-                      style={{ backgroundImage: `url(${previewUrl})` }}
-                    />
+                <label className="block space-y-2 text-sm font-medium text-foreground">
+                  <span>Yıl</span>
+                  <input
+                    type="number"
+                    min={minimumCarYear}
+                    max={maximumCarYear}
+                    inputMode="numeric"
+                    {...register("year", { valueAsNumber: true })}
+                    className={inputClassName}
+                  />
+                  {errors.year ? <p className="text-sm text-destructive">{errors.year.message}</p> : null}
+                </label>
+
+                <label className="block space-y-2 text-sm font-medium text-foreground">
+                  <span>Kilometre</span>
+                  <input
+                    type="number"
+                    min={0}
+                    max={1_000_000}
+                    inputMode="numeric"
+                    {...register("mileage", { valueAsNumber: true })}
+                    className={inputClassName}
+                  />
+                  {errors.mileage ? (
+                    <p className="text-sm text-destructive">{errors.mileage.message}</p>
                   ) : (
-                    <div className="flex aspect-[4/3] flex-col items-center justify-center gap-2 px-4 text-center text-sm text-muted-foreground">
-                      <ImagePlus className="size-5 text-primary" />
-                      <span>Bir fotograf sectiginde onizleme burada gorunur.</span>
-                    </div>
-                  )}
-                </div>
-
-                <div className="space-y-3">
-                  <div className="flex items-center justify-between gap-3">
-                    <p className="text-sm font-semibold text-foreground">
-                      Fotograf {index + 1} {index === 0 ? "(Kapak)" : ""}
+                    <p className="text-xs text-muted-foreground">
+                      Mevcut değer: {formatNumber(Number(mileageValue || 0))} km
                     </p>
-                    <button
-                      type="button"
-                      onClick={() => void handleRemoveImage(index, field.id)}
-                      disabled={fields.length <= minimumListingImages || isUploading}
-                      className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-border bg-background px-3 text-sm font-semibold text-foreground transition-colors hover:bg-muted disabled:cursor-not-allowed disabled:opacity-50"
-                    >
-                      <Trash2 className="size-4" />
-                      Kaldir
-                    </button>
-                  </div>
+                  )}
+                </label>
+
+                <label className="block space-y-2 text-sm font-medium text-foreground">
+                  <span>Yakıt tipi</span>
+                  <select {...register("fuelType")} className={inputClassName}>
+                    {fuelTypes.map((fuelType) => (
+                      <option key={fuelType} value={fuelType}>
+                        {fuelType}
+                      </option>
+                    ))}
+                  </select>
+                  {errors.fuelType ? (
+                    <p className="text-sm text-destructive">{errors.fuelType.message}</p>
+                  ) : null}
+                </label>
+
+                <label className="block space-y-2 text-sm font-medium text-foreground">
+                  <span>Vites</span>
+                  <select {...register("transmission")} className={inputClassName}>
+                    {transmissionTypes.map((transmission) => (
+                      <option key={transmission} value={transmission}>
+                        {transmission}
+                      </option>
+                    ))}
+                  </select>
+                  {errors.transmission ? (
+                    <p className="text-sm text-destructive">{errors.transmission.message}</p>
+                  ) : null}
+                </label>
+
+                <label className="block space-y-2 text-sm font-medium text-foreground sm:col-span-2">
+                  <span>Fiyat</span>
+                  <input
+                    type="number"
+                    min={1}
+                    inputMode="numeric"
+                    {...register("price", { valueAsNumber: true })}
+                    placeholder="Örn. 925000"
+                    className={inputClassName}
+                  />
+                  {errors.price ? <p className="text-sm text-destructive">{errors.price.message}</p> : null}
+                </label>
+              </section>
+            </FormSection>
+          </>
+        )}
+
+        {/* ════════════════════════════════════════════════
+            STEP 1 — Konum, İletişim, Açıklama
+        ════════════════════════════════════════════════ */}
+        {currentStep === 1 && (
+          <>
+            <FormSection
+              icon={MapPin}
+              title="Konum ve iletişim"
+              description="Şehir, ilçe ve WhatsApp verisini doğru girmek güven sinyalini artırır."
+            >
+              <section className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_250px]">
+                <div className="grid gap-5 sm:grid-cols-2">
+                  <label className="block space-y-2 text-sm font-medium text-foreground">
+                    <span>Şehir</span>
+                    <select {...register("city")} className={inputClassName}>
+                      <option value="">Şehir seç</option>
+                      {availableCities.map((item) => (
+                        <option key={item.city} value={item.city}>
+                          {item.city}
+                        </option>
+                      ))}
+                    </select>
+                    {errors.city ? <p className="text-sm text-destructive">{errors.city.message}</p> : null}
+                  </label>
 
                   <label className="block space-y-2 text-sm font-medium text-foreground">
-                    <span>Fotograf sec</span>
-                    <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-                      <label className="inline-flex h-11 cursor-pointer items-center justify-center gap-2 rounded-xl border border-border bg-background px-4 text-sm font-semibold text-foreground transition-colors hover:bg-muted">
-                        <Upload className="size-4" />
-                        Dosya sec ve yukle
-                        <input
-                          type="file"
-                          accept={listingImageAcceptedMimeTypes.join(",")}
-                          className="sr-only"
-                          onChange={(event) => {
-                            void handleImageUpload(index, field.id, event.target.files?.[0] ?? null);
-                            event.currentTarget.value = "";
-                          }}
-                        />
-                      </label>
-
-                      {isUploaded ? (
-                        <span className="inline-flex items-center gap-2 text-sm font-medium text-primary">
-                          <CheckCircle2 className="size-4" />
-                          Yukleme hazir
-                        </span>
-                      ) : null}
-                    </div>
-
-                    {isUploading ? (
-                      <div className="space-y-2">
-                        <div className="h-2 overflow-hidden rounded-full bg-muted">
-                          <div
-                            className="h-full rounded-full bg-primary transition-[width]"
-                            style={{ width: `${uploadState?.progress ?? 0}%` }}
-                          />
-                        </div>
-                        <p className="text-xs text-muted-foreground">
-                          Yukleme ilerlemesi: %{uploadState?.progress ?? 0}
-                        </p>
-                      </div>
+                    <span>İlçe</span>
+                    <select
+                      {...register("district")}
+                      disabled={districtOptions.length === 0}
+                      className={inputClassName}
+                    >
+                      <option value="">{selectedCity ? "İlçe seç" : "Önce şehir seç"}</option>
+                      {districtOptions.map((district) => (
+                        <option key={district} value={district}>
+                          {district}
+                        </option>
+                      ))}
+                    </select>
+                    {errors.district ? (
+                      <p className="text-sm text-destructive">{errors.district.message}</p>
                     ) : null}
+                  </label>
 
-                    {errors.images?.[index]?.url ? (
-                      <p className="text-sm text-destructive">
-                        {errors.images[index]?.url?.message}
-                      </p>
+                  <label className="block space-y-2 text-sm font-medium text-foreground sm:col-span-2">
+                    <span>WhatsApp telefonu</span>
+                    <input
+                      type="tel"
+                      {...register("whatsappPhone")}
+                      placeholder="+90 5xx xxx xx xx"
+                      className={inputClassName}
+                    />
+                    {errors.whatsappPhone ? (
+                      <p className="text-sm text-destructive">{errors.whatsappPhone.message}</p>
                     ) : (
                       <p className="text-xs text-muted-foreground">
-                        {getListingImageConstraintsText()} desteklenir.
+                        Alıcıların ilk temas noktası bu numara olacak.
                       </p>
                     )}
                   </label>
 
-                  {imageValue?.fileName ? (
-                    <div className="rounded-2xl border border-border/70 bg-background px-4 py-3 text-sm text-muted-foreground">
-                      <p className="font-semibold text-foreground">{imageValue.fileName}</p>
-                      <p className="mt-1">
-                        {imageValue.mimeType ?? "image"} ·{" "}
-                        {typeof imageValue.size === "number" ? formatFileSize(imageValue.size) : "-"}
+                  <label className="block space-y-2 text-sm font-medium text-foreground sm:col-span-2">
+                    <span>Açıklama</span>
+                    <textarea
+                      rows={6}
+                      {...register("description")}
+                      placeholder="Bakım geçmişi, boya/değişen durumu ve öne çıkan özellikleri kısaca anlat."
+                      className="w-full rounded-2xl border border-input bg-background px-4 py-3 text-sm outline-none transition-colors focus:border-primary"
+                    />
+                    {errors.description ? (
+                      <p className="text-sm text-destructive">{errors.description.message}</p>
+                    ) : (
+                      <p className="text-xs text-muted-foreground">
+                        En az 20 karakter ile güven veren net bir açıklama yaz.
                       </p>
-                    </div>
-                  ) : null}
-
-                  {uploadState?.message ? (
-                    <p
-                      className={
-                        uploadState.status === "error"
-                          ? "text-sm text-destructive"
-                          : "text-sm text-muted-foreground"
-                      }
-                    >
-                      {uploadState.message}
-                    </p>
-                  ) : null}
+                    )}
+                  </label>
                 </div>
-              </div>
-            );
-          })}
-        </div>
 
-        <button
-          type="button"
-          onClick={() => append({})}
-          className="inline-flex h-11 items-center justify-center gap-2 rounded-xl border border-border bg-background px-4 text-sm font-semibold text-foreground transition-colors hover:bg-muted"
-        >
-          <Plus className="size-4" />
-          Yeni fotograf alani ekle
-        </button>
-        </section>
-      </FormSection>
+                <div className="rounded-[1.5rem] border border-primary/10 bg-gradient-to-br from-primary/10 via-background to-background p-5">
+                  <div className="flex items-center gap-2 text-sm font-semibold text-primary">
+                    <MessageCircle className="size-4" />
+                    Alıcı ilk neyi görecek?
+                  </div>
+                  <p className="mt-3 text-sm leading-6 text-muted-foreground">
+                    Şehir, ilçe ve WhatsApp alanları ilan kartı ve detay ekranında güven sinyali olarak
+                    kullanılır. Açıklamada boya, değişen, bakım ve ekspertiz bilgisi varsa onay daha
+                    hızlı ilerler.
+                  </p>
+                  <div className="mt-4 rounded-[1.25rem] border border-border/70 bg-background/90 p-4">
+                    <p className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+                      Varsayılan şehir
+                    </p>
+                    <p className="mt-2 text-sm font-semibold text-foreground">
+                      {selectedCity || initialValues.city || "Henüz seçilmedi"}
+                    </p>
+                  </div>
+                </div>
+              </section>
+            </FormSection>
 
-      {submitState.status === "error" ? (
-        <p className="rounded-xl border border-destructive/30 bg-destructive/5 px-4 py-3 text-sm text-destructive">
-          {submitState.message}
-        </p>
-      ) : null}
-
-      {submitState.status === "success" ? (
-        <p className="rounded-xl border border-primary/20 bg-primary/5 px-4 py-3 text-sm text-primary">
-          {submitState.message}
-        </p>
-      ) : null}
-
-      <section className="rounded-[1.75rem] border border-border/80 bg-background p-5 shadow-sm">
-        <div className="flex items-start gap-3">
-          <div className="flex size-11 shrink-0 items-center justify-center rounded-2xl bg-primary/10 text-primary">
-            <FileText className="size-5" />
-          </div>
-          <div className="space-y-1">
-            <h3 className="text-lg font-semibold tracking-tight text-foreground">
-              Son kontrol ve gonderim
-            </h3>
-            <p className="text-sm leading-6 text-muted-foreground">
-              Fotograflar ve temel alanlar hazirsa ilani kaydet. Sistem gerekli dogrulamalari bu
-              adimda tekrar calistirir.
-            </p>
-          </div>
-        </div>
-
-        <div className="mt-5 flex flex-col gap-3 sm:flex-row">
-          <button
-            type="submit"
-            disabled={isSubmitting || isUploadingAnyImage}
-            className="inline-flex h-12 w-full items-center justify-center gap-2 rounded-xl bg-primary px-5 text-sm font-semibold text-primary-foreground shadow-sm transition-colors hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-70 sm:w-auto"
-          >
-            {isSubmitting || isUploadingAnyImage ? <LoaderCircle className="size-4 animate-spin" /> : null}
-            {isSubmitting
-              ? isEditing
-                ? "Ilan guncelleniyor..."
-                : "Ilan gonderiliyor..."
-              : isUploadingAnyImage
-                ? "Fotograflar yukleniyor..."
-                : isEditing
-                  ? "Degisiklikleri kaydet"
-                  : "Ilani moderasyona gonder"}
-          </button>
-
-          {isEditing ? (
-            <button
-              type="button"
-              onClick={() => router.replace("/dashboard/listings")}
-              className="inline-flex h-12 w-full items-center justify-center rounded-xl border border-border bg-background px-5 text-sm font-semibold text-foreground transition-colors hover:bg-muted sm:w-auto"
+            <FormSection
+              icon={AlertCircle}
+              title="Boya ve değişen durumu"
+              description="Her bir parçanın durumunu seç — seçmediğin parçalar 'Orijinal' sayılacaktır."
             >
-              Duzenlemeyi iptal et
-            </button>
-          ) : null}
-        </div>
-      </section>
-    </form>
+              <Controller
+                name="damageStatusJson"
+                control={control}
+                render={({ field }) => (
+                  <DamageSelector
+                    value={(field.value as Record<string, string>) || {}}
+                    onChange={field.onChange}
+                  />
+                )}
+              />
+            </FormSection>
+
+            <FormSection
+              icon={FileText}
+              title="Tramer kaydı"
+              description="Şeffaflık güven yaratır. Doğru Tramer bilgisi girmek aracınızın daha hızlı satılmasını sağlar."
+            >
+              <section className="grid gap-5 sm:grid-cols-2">
+                <label className="block space-y-2 text-sm font-medium text-foreground sm:col-span-2">
+                  <span>Tramer Kaydı Toplamı (TL)</span>
+                  <input
+                    type="number"
+                    min={0}
+                    inputMode="numeric"
+                    {...register("tramerAmount", { valueAsNumber: true })}
+                    placeholder="0 veya miktar giriniz. (Yoksa 0 bırakın)"
+                    className={inputClassName}
+                  />
+                  {errors.tramerAmount ? (
+                    <p className="text-sm text-destructive">{errors.tramerAmount.message}</p>
+                  ) : (
+                    <p className="text-xs text-muted-foreground">
+                      Tramer kaydı olmayan araçlar için 0 girin.
+                    </p>
+                  )}
+                </label>
+              </section>
+            </FormSection>
+          </>
+        )}
+
+        {/* ════════════════════════════════════════════════
+            STEP 2 — Fotoğraflar ve Gönderim
+        ════════════════════════════════════════════════ */}
+        {currentStep === 2 && (
+          <>
+            <FormSection
+              icon={ImagePlus}
+              title="Fotoğraf stüdyosu"
+              description="Görseller alıcının güvenini belirler. Net, iyi ışıklı fotoğraflar yükle."
+            >
+              <section className="space-y-4">
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                  <div>
+                    <h3 className="text-lg font-semibold tracking-tight">Fotoğraflar</h3>
+                    <p className="mt-1 text-sm text-muted-foreground">
+                      En az {minimumListingImages} fotoğraf yükle. İlk fotoğraf kapak görseli olarak
+                      kullanılır.
+                    </p>
+                  </div>
+
+                  <div className="inline-flex items-center gap-2 rounded-full border border-border bg-muted/40 px-3 py-2 text-sm font-medium text-muted-foreground">
+                    <ImagePlus className="size-4 text-primary" />
+                    {uploadedImageCount}/{Math.max(fields.length, minimumListingImages)} fotoğraf hazır
+                  </div>
+                </div>
+
+                {typeof errors.images?.message === "string" ? (
+                  <p className="rounded-xl border border-destructive/30 bg-destructive/5 px-4 py-3 text-sm text-destructive">
+                    {errors.images.message}
+                  </p>
+                ) : null}
+
+                <div className="grid gap-4">
+                  {fields.map((field, index) => {
+                    const imageValue = imageValues[index];
+                    const uploadState = uploadStates[field.id];
+                    const previewUrl = uploadState?.previewUrl ?? imageValue?.url;
+                    const isUploading = uploadState?.status === "uploading";
+                    const isUploaded =
+                      uploadState?.status === "uploaded" ||
+                      Boolean((imageValue?.url ?? "").trim() && (imageValue?.storagePath ?? "").trim());
+
+                    return (
+                      <div
+                        key={field.id}
+                        className="grid gap-4 rounded-[1.5rem] border border-border/70 bg-muted/20 p-4 lg:grid-cols-[220px_minmax(0,1fr)]"
+                      >
+                        <div className="overflow-hidden rounded-[1.25rem] border border-dashed border-border bg-muted/50">
+                          {previewUrl ? (
+                            <div
+                              className="aspect-[4/3] bg-cover bg-center"
+                              style={{ backgroundImage: `url(${previewUrl})` }}
+                            />
+                          ) : (
+                            <div className="flex aspect-[4/3] flex-col items-center justify-center gap-2 px-4 text-center text-sm text-muted-foreground">
+                              <ImagePlus className="size-5 text-primary" />
+                              <span>Bir fotoğraf seçtiğinde önizleme burada görünür.</span>
+                            </div>
+                          )}
+                        </div>
+
+                        <div className="space-y-3">
+                          <div className="flex items-center justify-between gap-3">
+                            <p className="text-sm font-semibold text-foreground">
+                              Fotoğraf {index + 1} {index === 0 ? "(Kapak)" : ""}
+                            </p>
+                            <button
+                              type="button"
+                              onClick={() => void handleRemoveImage(index, field.id)}
+                              disabled={fields.length <= minimumListingImages || isUploading}
+                              className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-border bg-background px-3 text-sm font-semibold text-foreground transition-colors hover:bg-muted disabled:cursor-not-allowed disabled:opacity-50"
+                            >
+                              <Trash2 className="size-4" />
+                              Kaldır
+                            </button>
+                          </div>
+
+                          <label className="block space-y-2 text-sm font-medium text-foreground">
+                            <span>Fotoğraf seç</span>
+                            <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+                              <label className="inline-flex h-11 cursor-pointer items-center justify-center gap-2 rounded-xl border border-border bg-background px-4 text-sm font-semibold text-foreground transition-colors hover:bg-muted">
+                                <Upload className="size-4" />
+                                Dosya seç ve yükle
+                                <input
+                                  type="file"
+                                  accept={listingImageAcceptedMimeTypes.join(",")}
+                                  className="sr-only"
+                                  onChange={(event) => {
+                                    void handleImageUpload(index, field.id, event.target.files?.[0] ?? null);
+                                    event.currentTarget.value = "";
+                                  }}
+                                />
+                              </label>
+
+                              {isUploaded ? (
+                                <span className="inline-flex items-center gap-2 text-sm font-medium text-primary">
+                                  <CheckCircle2 className="size-4" />
+                                  Yükleme hazır
+                                </span>
+                              ) : null}
+                            </div>
+
+                            {isUploading ? (
+                              <div className="space-y-2">
+                                <div className="h-2 overflow-hidden rounded-full bg-muted">
+                                  <div
+                                    className="h-full rounded-full bg-primary transition-[width]"
+                                    style={{ width: `${uploadState?.progress ?? 0}%` }}
+                                  />
+                                </div>
+                                <p className="text-xs text-muted-foreground">
+                                  Yükleme ilerlemesi: %{uploadState?.progress ?? 0}
+                                </p>
+                              </div>
+                            ) : null}
+
+                            {errors.images?.[index]?.url ? (
+                              <p className="text-sm text-destructive">
+                                {errors.images[index]?.url?.message}
+                              </p>
+                            ) : (
+                              <p className="text-xs text-muted-foreground">
+                                {getListingImageConstraintsText()} desteklenir.
+                              </p>
+                            )}
+                          </label>
+
+                          {imageValue?.fileName ? (
+                            <div className="rounded-2xl border border-border/70 bg-background px-4 py-3 text-sm text-muted-foreground">
+                              <p className="font-semibold text-foreground">{imageValue.fileName}</p>
+                              <p className="mt-1">
+                                {imageValue.mimeType ?? "image"} ·{" "}
+                                {typeof imageValue.size === "number" ? formatFileSize(imageValue.size) : "-"}
+                              </p>
+                            </div>
+                          ) : null}
+
+                          {uploadState?.message ? (
+                            <p
+                              className={
+                                uploadState.status === "error"
+                                  ? "text-sm text-destructive"
+                                  : "text-sm text-muted-foreground"
+                              }
+                            >
+                              {uploadState.message}
+                            </p>
+                          ) : null}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => append({})}
+                  className="inline-flex h-11 items-center justify-center gap-2 rounded-xl border border-border bg-background px-4 text-sm font-semibold text-foreground transition-colors hover:bg-muted"
+                >
+                  <Plus className="size-4" />
+                  Yeni fotoğraf alanı ekle
+                </button>
+              </section>
+            </FormSection>
+
+            {submitState.status === "error" ? (
+              <p className="rounded-xl border border-destructive/30 bg-destructive/5 px-4 py-3 text-sm text-destructive">
+                {submitState.message}
+              </p>
+            ) : null}
+
+            {submitState.status === "success" ? (
+              <p className="rounded-xl border border-primary/20 bg-primary/5 px-4 py-3 text-sm text-primary">
+                {submitState.message}
+              </p>
+            ) : null}
+          </>
+        )}
+
+        {/* ── Navigation Buttons ── */}
+        <section className="flex flex-col gap-3 rounded-[1.75rem] border border-border/80 bg-background p-5 shadow-sm sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            {currentStep > 0 ? (
+              <button
+                type="button"
+                onClick={handlePrevStep}
+                className="inline-flex h-12 items-center justify-center gap-2 rounded-xl border border-border bg-background px-5 text-sm font-semibold text-foreground transition-colors hover:bg-muted"
+              >
+                <ChevronLeft className="size-4" />
+                Önceki adım
+              </button>
+            ) : (
+              <div />
+            )}
+          </div>
+
+          <div className="flex flex-col gap-3 sm:flex-row">
+            {isEditing && currentStep === 2 ? (
+              <button
+                type="button"
+                onClick={() => router.replace("/dashboard/listings")}
+                className="inline-flex h-12 items-center justify-center rounded-xl border border-border bg-background px-5 text-sm font-semibold text-foreground transition-colors hover:bg-muted"
+              >
+                Düzenlemeyi iptal et
+              </button>
+            ) : null}
+
+            {currentStep < totalSteps - 1 ? (
+              <button
+                type="button"
+                onClick={() => void handleNextStep()}
+                className="inline-flex h-12 items-center justify-center gap-2 rounded-xl bg-primary px-8 text-sm font-semibold text-primary-foreground shadow-sm transition-colors hover:bg-primary/90"
+              >
+                Sonraki adım
+                <ChevronRight className="size-4" />
+              </button>
+            ) : (
+              <button
+                type="submit"
+                disabled={isSubmitting || isUploadingAnyImage}
+                className="inline-flex h-12 items-center justify-center gap-2 rounded-xl bg-primary px-8 text-sm font-semibold text-primary-foreground shadow-sm transition-colors hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-70"
+              >
+                {isSubmitting || isUploadingAnyImage ? <LoaderCircle className="size-4 animate-spin" /> : null}
+                {isSubmitting
+                  ? isEditing
+                    ? "İlan güncelleniyor..."
+                    : "İlan gönderiliyor..."
+                  : isUploadingAnyImage
+                    ? "Fotoğraflar yükleniyor..."
+                    : isEditing
+                      ? "Değişiklikleri kaydet"
+                      : "İlanı moderasyona gönder"}
+              </button>
+            )}
+          </div>
+        </section>
+      </form>
+    </div>
   );
 }

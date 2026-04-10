@@ -93,6 +93,14 @@ export function buildListingDetailMetadata(listing: Listing): Metadata {
       title: `${title} | Oto Burada`,
       type: "article",
       url: buildAbsoluteUrl(`/listing/${listing.slug}`),
+      siteName: "Oto Burada",
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: `${title} | Oto Burada`,
+      description,
+      images: listing.images[0]?.url ? [listing.images[0].url] : undefined,
     },
   };
 }
+

@@ -40,8 +40,22 @@ begin
   end if;
 
   if not exists (select 1 from pg_type where typname = 'moderation_action') then
-    create type public.moderation_action as enum ('approve', 'reject', 'review', 'resolve', 'dismiss', 'archive');
+    create type public.moderation_action as enum ('approve', 'reject', 'review', 'resolve', 'dismiss', 'archive', 'edit');
   end if;
+end
+$$;
+
+do $$
+begin
+  if not exists (
+    select 1 from pg_enum 
+    where enumtypid = 'public.moderation_action'::regtype 
+    and enumlabel = 'edit'
+  ) then
+    alter type public.moderation_action add value 'edit';
+  end if;
+exception
+  when duplicate_object then null;
 end
 $$;
 
@@ -169,6 +183,41 @@ create table if not exists public.reports (
   updated_at timestamptz not null default timezone('utc', now())
 );
 
+create table if not exists public.brands (
+  id uuid primary key default gen_random_uuid(),
+  name text not null unique,
+  slug text not null unique,
+  is_active boolean not null default true,
+  sort_order integer not null default 0
+);
+
+create table if not exists public.models (
+  id uuid primary key default gen_random_uuid(),
+  brand_id uuid not null references public.brands (id) on delete cascade,
+  name text not null,
+  slug text not null,
+  is_active boolean not null default true,
+  sort_order integer not null default 0,
+  unique (brand_id, name)
+);
+
+create table if not exists public.cities (
+  id uuid primary key default gen_random_uuid(),
+  name text not null unique,
+  slug text not null unique,
+  is_active boolean not null default true,
+  plate_code integer not null unique
+);
+
+create table if not exists public.districts (
+  id uuid primary key default gen_random_uuid(),
+  city_id uuid not null references public.cities (id) on delete cascade,
+  name text not null,
+  slug text not null,
+  is_active boolean not null default true
+);
+
+
 create table if not exists public.admin_actions (
   id uuid primary key default gen_random_uuid(),
   admin_user_id uuid not null references public.profiles (id) on delete cascade,
@@ -228,12 +277,28 @@ alter table public.saved_searches enable row level security;
 alter table public.notifications enable row level security;
 alter table public.reports enable row level security;
 alter table public.admin_actions enable row level security;
+alter table public.brands enable row level security;
+alter table public.models enable row level security;
+alter table public.cities enable row level security;
+alter table public.districts enable row level security;
 
 drop policy if exists "profiles_select_self_or_admin" on public.profiles;
 create policy "profiles_select_self_or_admin"
 on public.profiles
 for select
 using (auth.uid() = id or public.is_admin());
+
+drop policy if exists "brands_select_public" on public.brands;
+create policy "brands_select_public" on public.brands for select using (true);
+
+drop policy if exists "models_select_public" on public.models;
+create policy "models_select_public" on public.models for select using (true);
+
+drop policy if exists "cities_select_public" on public.cities;
+create policy "cities_select_public" on public.cities for select using (true);
+
+drop policy if exists "districts_select_public" on public.districts;
+create policy "districts_select_public" on public.districts for select using (true);
 
 drop policy if exists "profiles_insert_self_or_admin" on public.profiles;
 create policy "profiles_insert_self_or_admin"
@@ -451,3 +516,20 @@ using (
 -- SELECT policy: Public read
 --   bucket_id = 'listing-images'
 --   true
+
+-- ── Performance: Composite Indexes ─────────────────────────────────────
+
+CREATE INDEX IF NOT EXISTS idx_listings_status_brand ON public.listings (status, brand);
+CREATE INDEX IF NOT EXISTS idx_listings_status_city ON public.listings (status, city);
+CREATE INDEX IF NOT EXISTS idx_listings_status_price ON public.listings (status, price);
+CREATE INDEX IF NOT EXISTS idx_listings_status_year ON public.listings (status, year);
+CREATE INDEX IF NOT EXISTS idx_listings_status_mileage ON public.listings (status, mileage);
+CREATE INDEX IF NOT EXISTS idx_listings_status_created_at ON public.listings (status, created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_listings_status_fuel_type ON public.listings (status, fuel_type);
+CREATE INDEX IF NOT EXISTS idx_listings_status_transmission ON public.listings (status, transmission);
+CREATE INDEX IF NOT EXISTS idx_listings_seller_id_status ON public.listings (seller_id, status);
+CREATE INDEX IF NOT EXISTS idx_favorites_user_id ON public.favorites (user_id);
+CREATE INDEX IF NOT EXISTS idx_reports_status ON public.reports (status, created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_models_brand_id ON public.models (brand_id);
+CREATE INDEX IF NOT EXISTS idx_districts_city_id ON public.districts (city_id);
+

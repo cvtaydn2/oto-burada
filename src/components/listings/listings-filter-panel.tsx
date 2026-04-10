@@ -1,9 +1,10 @@
 "use client";
 
 import { useState, useMemo, type ChangeEvent } from "react";
-import { fuelTypes, listingSortOptions, maximumCarYear, maximumMileage, minimumCarYear, transmissionTypes } from "@/lib/constants/domain";
+import { fuelTypes, listingSortOptions, maximumCarYear, minimumCarYear, transmissionTypes } from "@/lib/constants/domain";
 import { SlidersHorizontal, ChevronDown, ChevronUp, Search, X } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { RangeSlider } from "@/components/ui/range-slider";
 import type { ListingFilters, ListingSortOption } from "@/types";
 import type { BrandCatalogItem, CityOption } from "@/types";
 
@@ -37,6 +38,13 @@ const sortLabels: Record<ListingSortOption, string> = {
   year_desc: "Model yılı yeni",
 };
 
+const PRICE_MIN = 0;
+const PRICE_MAX = 10_000_000;
+const PRICE_STEP = 25_000;
+const MILEAGE_MIN = 0;
+const MILEAGE_MAX = 500_000;
+const MILEAGE_STEP = 5_000;
+
 interface FilterSectionProps {
   title: string;
   defaultOpen?: boolean;
@@ -67,6 +75,20 @@ function FilterSection({ title, defaultOpen = true, children, activeCount }: Fil
       {isOpen && <div className="pb-4 space-y-3">{children}</div>}
     </div>
   );
+}
+
+function formatPrice(value: number) {
+  if (value >= 1_000_000) {
+    return `${(value / 1_000_000).toFixed(1).replace(".0", "")}M TL`;
+  }
+  return `${(value / 1_000).toFixed(0)}K TL`;
+}
+
+function formatMileage(value: number) {
+  if (value >= 1_000) {
+    return `${(value / 1_000).toFixed(0)}K km`;
+  }
+  return `${value} km`;
 }
 
 export function ListingsFilterPanel({
@@ -275,8 +297,18 @@ export function ListingsFilterPanel({
           </div>
         </FilterSection>
 
-        <FilterSection title="Fiyat" activeCount={priceCount}>
-          <div className="grid grid-cols-2 gap-3">
+        <FilterSection title="Fiyat Aralığı" activeCount={priceCount}>
+          <RangeSlider
+            min={PRICE_MIN}
+            max={PRICE_MAX}
+            step={PRICE_STEP}
+            valueMin={filters.minPrice}
+            valueMax={filters.maxPrice}
+            onChangeMin={(v) => onFilterChange("minPrice", v)}
+            onChangeMax={(v) => onFilterChange("maxPrice", v)}
+            formatLabel={formatPrice}
+          />
+          <div className="grid grid-cols-2 gap-3 mt-2">
             <div className="relative">
               <input
                 type="number"
@@ -305,7 +337,7 @@ export function ListingsFilterPanel({
         </FilterSection>
 
         <FilterSection title="Yıl & KM" activeCount={yearCount}>
-          <div className="space-y-3">
+          <div className="space-y-4">
             <div className="grid grid-cols-2 gap-3">
               <input
                 type="number"
@@ -330,19 +362,19 @@ export function ListingsFilterPanel({
                 className="h-10 rounded-xl border border-slate-200 bg-slate-50 px-3 text-sm outline-none transition-all focus:bg-white focus:border-indigo-500"
               />
             </div>
-            <div className="relative">
-              <input
-                type="number"
-                placeholder="Max KM"
-                min="0"
-                max={maximumMileage}
-                value={filters.maxMileage ?? ""}
-                onChange={(event) =>
-                  onFilterChange("maxMileage", event.target.value ? Number(event.target.value) : undefined)
-                }
-                className="h-10 w-full rounded-xl border border-slate-200 bg-slate-50 pl-3 pr-12 text-sm outline-none transition-all focus:bg-white focus:border-indigo-500"
+
+            <div>
+              <p className="text-xs font-medium text-slate-600 mb-2">Maksimum Kilometre</p>
+              <RangeSlider
+                min={MILEAGE_MIN}
+                max={MILEAGE_MAX}
+                step={MILEAGE_STEP}
+                valueMin={MILEAGE_MIN}
+                valueMax={filters.maxMileage}
+                onChangeMin={() => undefined}
+                onChangeMax={(v) => onFilterChange("maxMileage", v)}
+                formatLabel={formatMileage}
               />
-              <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-slate-400">km</span>
             </div>
           </div>
         </FilterSection>

@@ -13,10 +13,103 @@ Her yeni geliştirme başlamadan önce okunmalıdır.
 ---
 
 ## Proje Durumu
-- Güncel faz: `Trust & Operasyon (Dalga 2) Tamamlandı`
-- Güncel görev: `Runtime referans verileri canlı DB-first akışa taşındı`
-- Sonraki hedef: `Dalga 2.5 admin edit enum migrationı + gerçek schema hizalama`
-- Durum: completed
+- Güncel faz: `Faz 2 UI/Form + Güvenlik + Performans (Tamamlandı)`
+- Güncel görev: `Wizard form, range slider filtreler, middleware güvenliği, composite index'ler tamamlandı`
+- Sonraki hedef: `XSS sanitizasyonu, rate limiting, notifications tablosu, SEO iyileştirmeleri`
+- Durum: in-progress
+
+---
+
+## 2026-04-11 Faz 2: UI, Güvenlik ve Performans Geliştirmeleri
+
+### Kapsam
+Bu sprint'te 6 ana iş kalemi tamamlandı:
+1. İlan formu → 3 adımlı wizard dönüşümü
+2. Client-side image compression
+3. Middleware admin koruması
+4. Composite DB index'leri (13 adet)
+5. Fiyat/KM range slider filtre bileşeni
+6. Kapsamlı TODO listesi oluşturulması
+
+### Yapılan Geliştirmeler
+
+#### 1. Wizard Formu (`listing-create-form.tsx`)
+- Tamamen yeniden yazıldı (1000+ satır, saf LF)
+- **Adım 1:** Başlık, marka, model, yıl, km, yakıt, vites, fiyat
+- **Adım 2:** Şehir, ilçe, WhatsApp, açıklama, Tramer kaydı
+- **Adım 3:** Fotoğraf yükleme ve son gönderim
+- Her adımda `trigger()` ile form validasyonu — geçersiz adımda ilerleme engellenir
+- İlerleyiş çubuğu + tıklanabilir adım göstergesi
+- Tüm mevcut iş mantığı korundu (düzenleme modu, fotoğraf yönetimi, API submit)
+
+#### 2. Image Compression
+- `browser-image-compression` paketi eklendi
+- Fotoğraflar yüklenmeden önce otomatik max 1MB / 1920px sıkıştırma
+- Başarısız olursa orijinal dosya ile devam eder (graceful fallback)
+
+#### 3. Middleware Güvenliği (`src/lib/supabase/middleware.ts`)
+- `/admin` rotalarına edge seviyesinde admin role kontrolü eklendi
+- `app_metadata.role === "admin"` olmayan kullanıcılar `/dashboard`'a yönlendirilir
+- Sayfa render olmadan önce bloklanır — partial render sızıntısı önlendi
+
+#### 4. Composite DB Index'leri (Supabase Migration)
+- 13 adet composite index canlı DB'ye uygulandı:
+  - `(status, brand)`, `(status, city)`, `(status, price)`, `(status, year)`
+  - `(status, mileage)`, `(status, created_at DESC)`, `(status, fuel_type)`
+  - `(status, transmission)`, `(seller_id, status)`, `(user_id)` (favorites)
+  - `(status, created_at DESC)` (reports), `(brand_id)` (models), `(city_id)` (districts)
+- `schema.sql` de güncellendi
+
+#### 5. Range Slider Filtre Paneli
+- `src/components/ui/range-slider.tsx`: Dual-thumb range slider bileşeni
+  - Gradient aktif track, debounced değişim, dokunmatik destek
+  - Tamamen controlled (React best practices uyumlu)
+- `listings-filter-panel.tsx`: Fiyat ve KM slider'ları entegre edildi
+  - Slider + input alan hibrit kullanım (sezgisel + hassas giriş)
+
+#### 6. TODO Listesi (`TODO.md`)
+- 🔴 Kritik (XSS, rate limiting, CSRF, notifications tablosu)
+- 🟡 Önemli (hasar editörü, drag&drop fotoğraf, skeleton loader, dark mode, SEO)
+- 🟢 Güzel olur (bildirimler, ödeme, E2E test, CI/CD, analytics)
+
+### Doğrulama
+- `npm run lint` → 0 hata
+- `npm run typecheck` → Geçti
+- `npm run build` → Geçti (18 sayfa)
+
+### Sonraki Adımlar (TODO.md'den)
+- XSS sanitizasyonu (isomorphic-dompurify)
+- Rate limiting (upstash/ratelimit)
+- Notifications + saved_searches tabloları
+- Full-text search index (tsvector + GIN)
+- Structured Data (JSON-LD) ve Open Graph tags
+
+---
+
+## 2026-04-11 Gerçek Veritabanı (DB-First) Referans Adaptasyonu
+
+### Kapsam
+- "Sahte (mock) veri olmayacak" hedefine tam ulaşmak için frontend formlarında kullanılan statik katalog verileri Supabase tablolarına taşındı.
+- Boş bir veritabanında dahi ilan eklerken Form Select'lerinin çalışmasını sağlayacak tam izolasyon sağlandı.
+- Admin loglama (audit) katmanı için Postgres seviyesinde eksik enum ('edit') eklendi.
+
+### Yapılan Geliştirmeler
+- `schema.sql`: `brands`, `models`, `cities`, `districts` tabloları ve RLS policy'leri oluşturuldu.
+- `schema.sql`: `moderation_action` enum'ına eksik olan `edit` eklendi.
+- Supabase MCP üzerinden `apply_migration` ile bu DDL değişiklikleri canlı ortama başarıyla yansıtıldı.
+- `scripts/seed-references.ts`: Local mock dosyalarındaki (`car-catalog.ts`, `locations.ts`) statik verileri ayrıştırıp Supabase veritabanına pushlayan seed betiği yazılıp çalıştırıldı.
+- `src/services/reference/live-reference-data.ts`: Fonksiyonlar, ilanlardan türetilen data yerine artık doğrudan `brands`, `models`, `cities`, `districts` veritabanı tablolarını çekecek şekilde (`createSupabaseServerClient` vasıtasıyla) Server Component modunda baştan yazıldı.
+- `npm run typecheck` süreçlerindeki hatalar (any) domain spesifik tipler ile (`DBBrand`, vb.) güvenli hale getirildi.
+
+### Doğrulama
+- Node seed betiği tüm markaları, modelleri, şehirleri ve ilçeleri sorunsuz yazdı.
+- `npm run lint` - Geçti
+- `npm run typecheck` - Geçti
+
+### Kalan Adımlar
+- UI/UX kalitesini artırmak için filtre panellerinin zenginleştirilmesi (Faz 2).
+- Formların daha UX dostu bir wizard (multi-step) yapıya kavuşturulması.
+- Input data (XSS) güvenlik filtreleri ve limitlerinin test edilmesi.
 
 ---
 
