@@ -2,23 +2,19 @@ import { ProfileForm } from "@/components/forms/profile-form";
 import { cityOptions } from "@/data";
 import { updateProfileAction } from "@/lib/auth/profile-actions";
 import { requireUser } from "@/lib/auth/session";
-import { CheckCircle2, Circle, User, Phone, MapPin, Mail } from "lucide-react";
+import { buildProfileFromAuthUser, getStoredProfileById } from "@/services/profile/profile-records";
+import { CheckCircle2, Circle, User, Phone, MapPin, Mail, ShieldCheck } from "lucide-react";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 60;
 
 export default async function DashboardProfilePage() {
   const user = await requireUser();
-  const metadata = user.user_metadata as {
-    full_name?: string;
-    phone?: string;
-    city?: string;
-    avatar_url?: string;
-  };
+  const profile = (await getStoredProfileById(user.id)) ?? buildProfileFromAuthUser(user);
 
-  const hasFullName = Boolean(metadata.full_name);
-  const hasPhone = Boolean(metadata.phone);
-  const hasCity = Boolean(metadata.city);
+  const hasFullName = Boolean(profile.fullName);
+  const hasPhone = Boolean(profile.phone);
+  const hasCity = Boolean(profile.city);
   const completion = Math.round(
     ([hasFullName, hasPhone, hasCity].filter(Boolean).length / 3) * 100,
   );
@@ -79,6 +75,43 @@ export default async function DashboardProfilePage() {
           <Mail className="size-4 text-muted-foreground" />
           <span className="text-sm text-muted-foreground">{user.email}</span>
         </div>
+
+        <div className="mt-4 rounded-lg border border-border/60 bg-background p-4">
+          <div className="flex items-center gap-2">
+            <ShieldCheck className="size-4 text-primary" />
+            <h3 className="text-sm font-semibold">Doğrulama Durumu</h3>
+          </div>
+          <div className="mt-3 grid gap-3 sm:grid-cols-3">
+            <div className="flex items-center justify-between rounded-lg bg-muted/40 p-3">
+              <span className="text-sm font-medium">E-posta</span>
+              {profile.emailVerified ? (
+                <CheckCircle2 className="size-5 text-emerald-500" />
+              ) : (
+                <Circle className="size-5 text-muted-foreground/40" />
+              )}
+            </div>
+            <div className="flex items-center justify-between rounded-lg bg-muted/40 p-3">
+              <span className="text-sm font-medium">Telefon</span>
+              {profile.phoneVerified ? (
+                <CheckCircle2 className="size-5 text-emerald-500" />
+              ) : (
+                <Circle className="size-5 text-muted-foreground/40" />
+              )}
+            </div>
+            <div className="flex items-center justify-between rounded-lg bg-muted/40 p-3">
+              <span className="text-sm font-medium">Kimlik</span>
+              {profile.identityVerified ? (
+                <CheckCircle2 className="size-5 text-emerald-500" />
+              ) : (
+                <Circle className="size-5 text-muted-foreground/40" />
+              )}
+            </div>
+          </div>
+          <p className="mt-3 text-xs text-muted-foreground">
+            E-posta ve telefon rozetleri Supabase Auth durumundan, kimlik rozeti ise mevcut
+            kullanıcı metadata&apos;sından okunur.
+          </p>
+        </div>
       </section>
 
       <section className="rounded-xl border border-border/60 bg-white p-5">
@@ -88,10 +121,10 @@ export default async function DashboardProfilePage() {
           <ProfileForm
             action={updateProfileAction}
             initialValues={{
-              fullName: metadata.full_name ?? "",
-              phone: metadata.phone ?? "",
-              city: metadata.city ?? "",
-              avatarUrl: metadata.avatar_url ?? "",
+              fullName: profile.fullName,
+              phone: profile.phone,
+              city: profile.city,
+              avatarUrl: profile.avatarUrl ?? "",
             }}
             cityOptions={cityOptions.map((item) => item.city)}
           />

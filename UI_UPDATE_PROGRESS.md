@@ -218,6 +218,23 @@ Bu bölüm backend geliştirmelerine bağımlı UI güncellemelerini takip eder.
 - Seller profile ekranindaki fake satis ve sure metrikleri kaldirilarak gercek aktif/featured/uyelik verileriyle degistirildi
 - Public smoke testler demo veriye bagli olmaktan cikarildi; live DB'de ilan yoksa uygun empty state veya skip davranisi kullaniliyor
 
+---
+
+## 2026-04-11 Verification UI Hizalama
+
+### Tamamlanan düzeltmeler
+- Listing detail seller ozeti artik sabit `kimlik/telefon dogrulandi` satirlari basmiyor; gercek trust sinyalleri neyse onlar gosteriliyor
+- Seller profile ve trust badge dili Supabase Auth tabanli dogrulama alanlariyla hizalandi
+- Dashboard profil ekranina canli `Dogrulama Durumu` paneli eklendi; e-posta, telefon ve kimlik durumlari tek yerde gorunuyor
+- Footer uzerindeki guven kopyasi mevcut urun davranisini asiri vaat etmeyecek sekilde sadeleştirildi
+
+### Doğrulama sonucu
+- Lint, typecheck ve build yeniden gecti
+- Playwright suite yine `32 passed / 4 skipped`
+
+### Sonraki UI odağı
+- Dalga 2.5 kapsaminda admin edit semantigi ve toplu moderasyon ergonomisi
+
 ### Doğrulama sonucu
 - Lint, typecheck ve build yeniden geçti
 - Playwright suite `32 passed / 4 skipped` sonucuna geldi

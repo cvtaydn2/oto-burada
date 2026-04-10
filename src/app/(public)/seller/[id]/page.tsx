@@ -1,4 +1,4 @@
-import { Calendar, CheckCircle2, MapPin, MessageSquare, Phone, ShieldCheck, Star, Car, Clock } from "lucide-react";
+import { Calendar, CheckCircle2, MapPin, MessageSquare, Phone, Star, Car, Clock } from "lucide-react";
 import { notFound } from "next/navigation";
 
 import { ListingCardGrid } from "@/components/listings/listing-card-grid";
@@ -47,11 +47,10 @@ export default async function SellerProfilePage({ params }: SellerProfilePagePro
                 <h1 className="text-2xl sm:text-3xl font-bold text-slate-900">
                   {seller.fullName || "İsimsiz Satıcı"}
                 </h1>
-                <ShieldCheck className="size-6 text-blue-500" />
                 {sellerListings.some(l => l.featured) && (
                   <span className="inline-flex items-center gap-1 rounded-full bg-amber-100 px-2.5 py-1 text-xs font-bold text-amber-700">
                     <Star size={12} />
-                    Premium Satıcı
+                    Öne çıkan ilanı var
                   </span>
                 )}
               </div>

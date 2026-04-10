@@ -14,8 +14,8 @@ Her yeni geliştirme başlamadan önce okunmalıdır.
 
 ## Proje Durumu
 - Güncel faz: `Trust & Operasyon (Dalga 2) Tamamlandı`
-- Güncel görev: `Ekspertiz Yükleme + Moderasyon Şablonları + Fraud Heuristics tamamlandı`
-- Sonraki hedef: `Dalga 2.5 operasyon düzeltmeleri + güven sinyallerinin gerçek verification verisine bağlanması`
+- Güncel görev: `Güven sinyalleri Supabase Auth doğrulama durumuna bağlandı`
+- Sonraki hedef: `Dalga 2.5 admin edit enum semantiği + toplu moderasyon`
 - Durum: completed
 
 ---
@@ -25,6 +25,42 @@ Her yeni geliştirme başlamadan önce okunmalıdır.
 - `npm run typecheck` - Geçti
 - `npm run build` - Geçti
 - `npm run test` - 32 geçti / 4 skip (live DB'de public ilan yoksa koşullu skip)
+
+---
+
+## 2026-04-11 Gercek Verification Sinyalleri
+
+### Kapsam
+- Seller trust katmani, dashboard profil ekranı ve genel güven kopyaları tekrar tarandı
+- Sahte veya aşırı iddialı verification dili ayıklandı
+- Supabase Auth kullanıcı durumu, public seller trust yüzeylerine bağlandı
+
+### Tespit Edilen ve Düzeltilen Sorunlar
+- `Profile` modeli e-posta / telefon / kimlik doğrulama durumu taşımıyordu; bu yüzden güven rozetleri ancak dolaylı ve eksik veriyle üretilebiliyordu
+- Listing detail sayfasında seller summary bölümü hâlâ sabit `Kimlik doğrulandı`, `Telefon doğrulandı`, `5+ yıldır üye` satırları basıyordu
+- Seller profile başlığındaki `Premium Satıcı` etiketi gerçekte yalnızca öne çıkan ilan varlığından türetiliyordu; dil gereğinden güçlüydü
+- Dashboard profil ekranı kullanıcıya gerçek verification durumunu göstermiyordu
+- Footer kopyasında `Satıcı kimlikleri teyit edilir` ifadesi mevcut ürün davranışını olduğundan daha ileri gösteriyordu
+
+### Yapılan Geliştirmeler
+- `src/types/domain.ts` ve `src/lib/validators/domain.ts`: profile modeline `emailVerified`, `phoneVerified`, `identityVerified` alanları eklendi
+- `src/services/profile/profile-records.ts`: Supabase Auth user kaydından e-posta/telefon doğrulama durumu ve `app_metadata.identity_verified` bilgisi profile modeline merge edildi
+- `src/services/profile/profile-trust.ts`: trust skoru ve badge dili artık gerçek verification alanlarına göre hesaplanıyor
+- `src/app/(public)/listing/[slug]/page.tsx`: satıcı özeti sabit doğrulama satırları yerine canlı trust sinyallerini gösterir hale geldi
+- `src/app/(public)/seller/[id]/page.tsx`: gereğinden iddialı `Premium Satıcı` kopyası daha dürüst bir etikete çevrildi
+- `src/app/dashboard/profile/page.tsx`: dashboard profil ekranına canlı `Doğrulama Durumu` paneli eklendi
+- `src/components/layout/site-footer.tsx`: güven vaatleri gerçek ürün davranışıyla hizalandı
+
+### Doğrulama
+- `npm run lint` - Geçti
+- `npm run typecheck` - Geçti
+- `npm run build` - Geçti
+- `npm run test` - `32 passed`, `4 skipped`
+
+### Kalan Net Risk
+- `identityVerified` alanı şimdilik yalnızca mevcut `app_metadata.identity_verified` varsa görünür; ayrı bir KYC/kimlik doğrulama akışı henüz yok
+- Admin edit akışı için gerçek `edit` enum/policy kaydı hâlâ DB migration seviyesi ayrı bir iş
+- Toplu moderasyon ve operasyon hızlandırıcıları hâlâ eksik
 
 ---
 

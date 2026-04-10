@@ -12,7 +12,7 @@ const quickLinks = [
 
 const trustFeatures = [
   { icon: Shield, label: "Moderasyon", description: "Tüm ilanlar kontrol edilir" },
-  { icon: Users, label: "Doğrulanmış", description: "Satıcı kimlikleri teyit edilir" },
+  { icon: Users, label: "Güven Sinyalleri", description: "Profil ve ilan bilgileri görünür" },
   { icon: MessageCircle, label: "WhatsApp", description: "Direkt iletişim" },
   { icon: CheckCircle2, label: "Ücretsiz", description: "İlan vermek bedava" },
 ];
@@ -30,7 +30,8 @@ export function SiteFooter() {
               <span className="text-xl font-bold text-slate-900">OtoBurada</span>
             </Link>
             <p className="mt-4 text-sm leading-relaxed text-slate-600">
-              Turkiye nin en guvenilir 2. el ve sifir otomobil pazarı. Arabanı sat, hayalindeki arabayı bul.
+              Arabalar için sade, güven odaklı ve ücretsiz ilan deneyimi. Arabanı sat,
+              hayalindeki arabayı bul.
             </p>
             <div className="mt-6 flex flex-wrap gap-2">
               <span className="inline-flex items-center rounded-full bg-indigo-100 px-3 py-1.5 text-xs font-semibold text-indigo-700">

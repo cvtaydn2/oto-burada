@@ -57,6 +57,8 @@ Sadece arabalar için tasarlanmış, mobil öncelikli ve güven odaklı ücretsi
 - Test scriptleri eklendi: test-api.js ve test-filters.js
 - Lint, typecheck ve production build doğrulandı
 - Dashboard `saved-searches` ve `notifications` ekranlari artik mock degil; ikisi de gercek DB verisiyle calisir
+- Satıcı trust rozetleri artık sabit skor yerine Supabase Auth doğrulama durumu ve gerçek profil sinyallerinden türetilir
+- Dashboard profil ekranında canlı e-posta / telefon / kimlik doğrulama durumları gösterilir
 
 ## Kurulum
 

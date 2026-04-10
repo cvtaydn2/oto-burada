@@ -16,14 +16,37 @@ interface ProfileRow {
   updated_at: string;
 }
 
-function mapProfileRow(row: ProfileRow) {
+function getVerificationState(user: User | null | undefined) {
+  const appMetadata = (user?.app_metadata as {
+    email_verified?: boolean;
+    identity_verified?: boolean;
+    phone_verified?: boolean;
+  } | undefined) ?? {
+    email_verified: false,
+    identity_verified: false,
+    phone_verified: false,
+  };
+  const authUser = user as (User & { phone_confirmed_at?: string | null }) | null | undefined;
+
+  return {
+    emailVerified: Boolean(appMetadata.email_verified ?? user?.email_confirmed_at ?? user?.confirmed_at),
+    identityVerified: appMetadata.identity_verified === true,
+    phoneVerified: Boolean(appMetadata.phone_verified ?? authUser?.phone_confirmed_at),
+  };
+}
+
+function mapProfileRow(row: ProfileRow, authUser?: User | null) {
+  const verificationState = getVerificationState(authUser);
   const parsed = profileSchema.safeParse({
     avatarUrl: row.avatar_url,
     city: row.city || "",
     createdAt: row.created_at,
+    emailVerified: verificationState.emailVerified,
     fullName: row.full_name,
     id: row.id,
+    identityVerified: verificationState.identityVerified,
     phone: row.phone,
+    phoneVerified: verificationState.phoneVerified,
     role: row.role,
     updatedAt: row.updated_at,
   });
@@ -38,7 +61,10 @@ function mapProfileRow(row: ProfileRow) {
     phone: row.phone || "",
     city: "",
     avatarUrl: row.avatar_url,
+    emailVerified: verificationState.emailVerified,
     role: row.role || "user",
+    identityVerified: verificationState.identityVerified,
+    phoneVerified: verificationState.phoneVerified,
     createdAt: row.created_at,
     updatedAt: row.updated_at,
   };
@@ -53,18 +79,23 @@ export function buildProfileFromAuthUser(user: User) {
     role?: string;
   };
   const appMetadata = user.app_metadata as {
+    identity_verified?: boolean;
     role?: string;
   };
+  const verificationState = getVerificationState(user);
   const timestamp = new Date().toISOString();
   const resolvedRole =
     appMetadata.role === "admin" || userMetadata.role === "admin" ? "admin" : "user";
 
   const rawProfile = {
+    avatarUrl: userMetadata.avatar_url ?? null,
     id: user.id,
     fullName: userMetadata.full_name ?? "",
     phone: userMetadata.phone ?? "",
     city: userMetadata.city ?? "",
-    avatarUrl: userMetadata.avatar_url ?? null,
+    emailVerified: verificationState.emailVerified,
+    phoneVerified: verificationState.phoneVerified,
+    identityVerified: verificationState.identityVerified,
     role: resolvedRole as Profile["role"],
     createdAt: user.created_at ?? timestamp,
     updatedAt: timestamp,
@@ -123,7 +154,11 @@ export async function getStoredProfileById(profileId: string) {
     .maybeSingle<ProfileRow>();
 
   if (!error && data) {
-    return mapProfileRow(data);
+    const {
+      data: { user },
+    } = await admin.auth.admin.getUserById(profileId);
+
+    return mapProfileRow(data, user);
   }
 
   return null;

@@ -42,6 +42,7 @@ Her madde öncelik sırasına göre dalga (wave) bazlı gruplandırılmıştır.
 - [x] ExpertInspectionCard içinde "Doğrulanmış Ekspertiz Belgesi" rozeti + görüntüle
 - [x] Moderasyon ret/onay şablonları (hazır not chip'leri)
 - [x] İlan Bump (Yenileme) sistemi — API + cooldown (7 gün) + Dashboard UI
+- [x] Trust rozetlerini gerçek Supabase Auth doğrulama durumuna hizalama
 
 ---
 

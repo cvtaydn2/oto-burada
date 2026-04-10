@@ -32,6 +32,9 @@ export interface Profile {
   phone: string;
   city: string;
   avatarUrl?: string | null;
+  emailVerified: boolean;
+  phoneVerified: boolean;
+  identityVerified: boolean;
   role: UserRole;
   createdAt: string;
   updatedAt: string;

@@ -355,17 +355,19 @@ export default async function ListingDetailPage({ params }: ListingDetailPagePro
                 
                 <div className="mt-5 pt-5 border-t border-slate-100">
                   <div className="text-sm font-semibold text-slate-900 mb-2">Satıcı Özeti</div>
-                  <ul className="space-y-2">
-                    <li className="flex items-center gap-2 text-sm text-slate-600">
-                      <CheckCircle2 size={16} className="text-emerald-500" /> Kimlik doğrulandı
-                    </li>
-                    <li className="flex items-center gap-2 text-sm text-slate-600">
-                      <CheckCircle2 size={16} className="text-emerald-500" /> Telefon doğrulandı
-                    </li>
-                    <li className="flex items-center gap-2 text-sm text-slate-600">
-                      <CheckCircle2 size={16} className="text-emerald-500" /> 5+ yıldır üye
-                    </li>
-                  </ul>
+                  {trustSummary.signals.length > 0 ? (
+                    <ul className="space-y-2">
+                      {trustSummary.signals.map((signal) => (
+                        <li key={signal} className="flex items-center gap-2 text-sm text-slate-600">
+                          <CheckCircle2 size={16} className="text-emerald-500" /> {signal}
+                        </li>
+                      ))}
+                    </ul>
+                  ) : (
+                    <p className="text-sm text-slate-500">
+                      Satıcı henüz ek güven sinyali paylaşmadı.
+                    </p>
+                  )}
                 </div>
               </div>
             </div>

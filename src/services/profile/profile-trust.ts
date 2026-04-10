@@ -30,9 +30,22 @@ export function getSellerTrustSummary(
     score += 1.2;
   }
 
-  if (seller.phone.trim().length > 0) {
+  if (seller.identityVerified) {
+    signals.push("Kimlik doğrulandı");
+    score += 2;
+  }
+
+  if (seller.phoneVerified) {
+    signals.push("Telefon doğrulandı");
+    score += 1.8;
+  } else if (seller.phone.trim().length > 0) {
     signals.push("Telefon bilgisi mevcut");
-    score += 1.5;
+    score += 1.1;
+  }
+
+  if (seller.emailVerified) {
+    signals.push("E-posta doğrulandı");
+    score += 0.8;
   }
 
   if (seller.city.trim().length > 0) {
@@ -56,7 +69,16 @@ export function getSellerTrustSummary(
   }
 
   return {
-    badgeLabel: seller.phone.trim().length > 0 ? "Profil bilgileri mevcut" : null,
+    badgeLabel:
+      seller.identityVerified
+        ? "Kimliği doğrulanmış satıcı"
+        : seller.phoneVerified && seller.emailVerified
+          ? "İletişim bilgileri doğrulanmış"
+          : seller.phoneVerified
+            ? "Telefonu doğrulanmış"
+            : seller.phone.trim().length > 0
+              ? "Profil bilgileri mevcut"
+              : null,
     score: roundToSingleDecimal(Math.min(score, 9.9)),
     signals: signals.slice(0, 4),
   };
