@@ -1,4 +1,7 @@
+"use server";
+
 import { cookies } from "next/headers";
+
 
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { hasSupabaseAdminEnv } from "@/lib/supabase/env";
