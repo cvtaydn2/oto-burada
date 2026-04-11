@@ -54,12 +54,7 @@ export default async function LandingPage({ params }: LandingPageProps) {
   const { brand: brandSlug, city: cityParts } = resolvedParams;
   const citySlug = cityParts?.[0];
 
-  const [currentUser, listings, references] = await Promise.all([
-    getCurrentUser(),
-    getPublicMarketplaceListings(),
-    getLiveMarketplaceReferenceData(),
-  ]);
-
+  const references = await getLiveMarketplaceReferenceData();
   const brand = references.brands.find(b => b.brand.toLowerCase() === brandSlug.toLowerCase())?.brand;
   
   if (!brand) {
@@ -73,6 +68,11 @@ export default async function LandingPage({ params }: LandingPageProps) {
     city,
     sort: "newest",
   };
+
+  const [currentUser, listings] = await Promise.all([
+    getCurrentUser(),
+    getPublicMarketplaceListings(initialFilters),
+  ]);
 
   const breadcrumbs = [
     { name: "Ana Sayfa", url: "/" },
@@ -88,7 +88,7 @@ export default async function LandingPage({ params }: LandingPageProps) {
     <>
       <BreadcrumbStructuredData items={breadcrumbs.map(b => ({ name: b.name, url: buildAbsoluteUrl(b.url) }))} />
       <ListingStructuredData 
-        listings={listings.filter(l => l.brand === brand && (!city || l.city === city))} 
+        listings={listings.listings.filter(l => l.brand === brand && (!city || l.city === city))} 
         url={buildAbsoluteUrl(`/satilik/${brandSlug}${citySlug ? `/${citySlug}` : ""}`)} 
       />
       
@@ -105,12 +105,11 @@ export default async function LandingPage({ params }: LandingPageProps) {
       </div>
 
       <ListingsPageClient
-        listings={listings}
+        initialResult={listings}
         brands={references.brands}
         cities={references.cities}
         initialFilters={initialFilters}
         userId={currentUser?.id}
-        hideFiltersOnLanding={true}
       />
     </>
   );

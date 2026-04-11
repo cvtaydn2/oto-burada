@@ -32,7 +32,7 @@ async function getAuthenticatedUser() {
 }
 
 export async function GET(request: Request) {
-  const ipRateLimit = enforceRateLimit(
+  const ipRateLimit = await enforceRateLimit(
     getRateLimitKey(request, "api:notifications:list"),
     rateLimitProfiles.general,
   );
@@ -62,7 +62,7 @@ export async function GET(request: Request) {
 }
 
 export async function PATCH(request: Request) {
-  const ipRateLimit = enforceRateLimit(
+  const ipRateLimit = await enforceRateLimit(
     getRateLimitKey(request, "api:notifications:mark-all-read"),
     rateLimitProfiles.general,
   );
@@ -81,7 +81,7 @@ export async function PATCH(request: Request) {
     return apiError(API_ERROR_CODES.UNAUTHORIZED, "Bildirimleri güncellemek için giriş yapmalısın.", 401);
   }
 
-  const userRateLimit = enforceRateLimit(
+  const userRateLimit = await enforceRateLimit(
     getUserRateLimitKey(user.id, "notifications:mark-all-read"),
     rateLimitProfiles.general,
   );

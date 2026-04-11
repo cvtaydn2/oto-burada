@@ -18,7 +18,7 @@ export async function POST(
   context: { params: Promise<{ listingId: string }> },
 ) {
   const clientIp = await getClientIp();
-  const ipRateLimit = checkRateLimit(`admin:moderate:${clientIp}`, rateLimitProfiles.adminModerate);
+  const ipRateLimit = await checkRateLimit(`admin:moderate:${clientIp}`, rateLimitProfiles.adminModerate);
 
   if (!ipRateLimit.allowed) {
     return apiError(API_ERROR_CODES.RATE_LIMITED, "Çok fazla moderasyon isteği. Lütfen bekle.", 429);

@@ -7,32 +7,6 @@
  * the MVP and saves an external dependency.
  */
 
-interface RateLimitEntry {
-  count: number;
-  resetAt: number;
-}
-
-const store = new Map<string, RateLimitEntry>();
-
-const CLEANUP_INTERVAL_MS = 60_000;
-let lastCleanup = Date.now();
-
-function cleanup() {
-  const now = Date.now();
-
-  if (now - lastCleanup < CLEANUP_INTERVAL_MS) {
-    return;
-  }
-
-  lastCleanup = now;
-
-  for (const [key, entry] of store) {
-    if (entry.resetAt <= now) {
-      store.delete(key);
-    }
-  }
-}
-
 export interface RateLimitConfig {
   /** Maximum requests allowed in the window. */
   limit: number;
@@ -47,18 +21,58 @@ export interface RateLimitResult {
   resetAt: number;
 }
 
+interface RateLimitEntry {
+  count: number;
+  resetAt: number;
+}
+
+import { createSupabaseAdminClient } from "@/lib/supabase/admin";
+import { hasSupabaseAdminEnv } from "@/lib/supabase/env";
+
+const inMemoryStore = new Map<string, RateLimitEntry>();
+
+function cleanupInMemory() {
+  const now = Date.now();
+  for (const [key, entry] of inMemoryStore) {
+    if (entry.resetAt <= now) {
+      inMemoryStore.delete(key);
+    }
+  }
+}
+
 /**
  * Check whether a given key (IP, userId, etc.) exceeds the configured rate limit.
+ * Uses persistent Supabase (SQL) rate limiting if available, otherwise falls back to in-memory.
  */
-export function checkRateLimit(key: string, config: RateLimitConfig): RateLimitResult {
-  cleanup();
+export async function checkRateLimit(key: string, config: RateLimitConfig): Promise<RateLimitResult> {
+  // Use Database-backed limiting if possible (Highly recommended for Serverless/Vercel)
+  if (hasSupabaseAdminEnv()) {
+    try {
+      const admin = createSupabaseAdminClient();
+      const { data, error } = await admin.rpc("check_api_rate_limit", {
+        p_key: key,
+        p_limit: config.limit,
+        p_window_ms: config.windowMs,
+      });
 
+      if (!error && data) {
+        return data as RateLimitResult;
+      }
+      
+      console.warn("Rate limit DB error, falling back to in-memory:", error);
+    } catch (e) {
+      console.warn("Rate limit DB exception, falling back to in-memory:", e);
+    }
+  }
+
+  // Fallback to in-memory (Broken in serverless, but works in local dev)
+  cleanupInMemory();
   const now = Date.now();
-  const existing = store.get(key);
+  const existing = inMemoryStore.get(key);
 
   if (!existing || existing.resetAt <= now) {
     const resetAt = now + config.windowMs;
-    store.set(key, { count: 1, resetAt });
+    inMemoryStore.set(key, { count: 1, resetAt });
     return { allowed: true, limit: config.limit, remaining: config.limit - 1, resetAt };
   }
 

@@ -36,8 +36,6 @@ export default async function AdminPage() {
   const storedListings = await getStoredListings();
   const storedReports = await getStoredReports();
   const pendingListings = storedListings.filter((listing) => listing.status === "pending");
-  const approvedListings = storedListings.filter((listing) => listing.status === "approved");
-  const rejectedListings = storedListings.filter((listing) => listing.status === "rejected");
   const actionableReports = storedReports.filter(
     (report) => report.status === "open" || report.status === "reviewing",
   );
@@ -77,7 +75,7 @@ export default async function AdminPage() {
   );
 
   return (
-    <main className="bg-muted/40 text-foreground">
+    <main className="bg-muted/40 text-foreground min-h-screen">
       <div className="mx-auto flex w-full max-w-6xl flex-col gap-6 px-4 py-8 sm:px-6 sm:py-10 lg:px-8">
         <section className="rounded-[2rem] border border-border/80 bg-background p-6 shadow-sm sm:p-8">
           <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
@@ -100,24 +98,24 @@ export default async function AdminPage() {
             </Link>
           </div>
 
-          <div className="mt-6 grid gap-4 md:grid-cols-5 text-foreground">
+          <div className="mt-8 grid gap-4 md:grid-cols-5 text-foreground">
             <DashboardMetricCard
               label="Bekleyen ilan"
-              value={String(pendingListings.length)}
+              value={String(analyticsData?.listingsByStatus.find(s => s.status === "pending")?.count ?? 0)}
               helper="Yayina alinmadan once gozden gecirilecek ilanlar."
               icon={FileClock}
               tone="amber"
             />
             <DashboardMetricCard
               label="Onaylanan ilan"
-              value={String(approvedListings.length)}
+              value={String(analyticsData?.listingsByStatus.find(s => s.status === "approved")?.count ?? 0)}
               helper="Yayinda olan ve moderasyon filtresini gecen ilanlar."
               icon={BadgeCheck}
               tone="emerald"
             />
             <DashboardMetricCard
               label="Reddedilen ilan"
-              value={String(rejectedListings.length)}
+              value={String(analyticsData?.listingsByStatus.find(s => s.status === "rejected")?.count ?? 0)}
               helper="Kurallara uymadigi icin geri cevrilen ilanlar."
               icon={ShieldAlert}
               tone="slate"
@@ -131,7 +129,7 @@ export default async function AdminPage() {
             />
             <DashboardMetricCard
               label="Toplam rapor"
-              value={String(storedReports.length)}
+              value={String(analyticsData?.totalReports ?? 0)}
               helper="Tum kullanici raporlari bu toplam sayiya dahildir."
               icon={ShieldCheck}
               tone="indigo"

@@ -28,6 +28,7 @@ interface ListingsFilterPanelProps {
     value: ListingFilters[K],
   ) => void;
   onReset: () => void;
+  disabled?: boolean;
 }
 
 const sortLabels: Record<ListingSortOption, string> = {
@@ -50,9 +51,10 @@ interface FilterSectionProps {
   defaultOpen?: boolean;
   children: React.ReactNode;
   activeCount?: number;
+  disabled?: boolean;
 }
 
-function FilterSection({ title, defaultOpen = true, children, activeCount }: FilterSectionProps) {
+function FilterSection({ title, defaultOpen = true, children, activeCount, disabled }: FilterSectionProps) {
   const [isOpen, setIsOpen] = useState(defaultOpen);
 
   return (
@@ -60,7 +62,8 @@ function FilterSection({ title, defaultOpen = true, children, activeCount }: Fil
       <button
         type="button"
         onClick={() => setIsOpen(!isOpen)}
-        className="flex w-full items-center justify-between py-3 text-sm font-semibold text-slate-900 hover:text-indigo-600 transition-colors"
+        disabled={disabled}
+        className="flex w-full items-center justify-between py-3 text-sm font-semibold text-slate-900 hover:text-indigo-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
       >
         <span className="flex items-center gap-2">
           {title}
@@ -102,6 +105,7 @@ export function ListingsFilterPanel({
   onApplyPreset,
   onFilterChange,
   onReset,
+  disabled = false,
 }: ListingsFilterPanelProps) {
   const activeFiltersCount = useMemo(() => {
     let count = 0;
@@ -129,6 +133,7 @@ export function ListingsFilterPanel({
       className={cn(
         "rounded-2xl bg-white border border-slate-200/60 p-5 shadow-sm",
         isMobile && "max-h-[85vh] overflow-y-auto rounded-t-2xl",
+        disabled && "pointer-events-none opacity-80"
       )}
     >
       <div className="flex items-center justify-between gap-3 mb-5">

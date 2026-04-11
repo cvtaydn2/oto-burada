@@ -70,6 +70,7 @@ export interface Listing {
   district: string;
   description: string;
   whatsappPhone: string;
+  vin?: string | null;
   tramerAmount?: number | null;
   damageStatusJson?: Record<string, string> | null;
   fraudScore?: number;
@@ -101,6 +102,7 @@ export interface ListingCreateInput {
   district: string;
   description: string;
   whatsappPhone: string;
+  vin: string;
   tramerAmount?: number | null;
   damageStatusJson?: Record<string, string> | null;
   images: ListingImage[];
@@ -128,6 +130,7 @@ export interface ListingCreateFormValues {
   district: string;
   description: string;
   whatsappPhone: string;
+  vin: string;
   licensePlate?: string | null;
   tramerAmount?: number | null;
   damageStatusJson?: Record<string, string> | null;
@@ -213,6 +216,7 @@ export interface ListingFilters {
   sort?: ListingSortOption;
   page?: number;
   limit?: number;
+  sellerId?: string;
 }
 
 export interface ExpertInspection {

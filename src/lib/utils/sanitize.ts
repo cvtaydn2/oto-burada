@@ -1,17 +1,16 @@
 /**
  * Input sanitization utilities.
- *
- * Uses regex-based stripping for robust HTML sanitization.
+ * 
+ * Hardened for production: strictly strips all HTML and escapes sensitive characters.
  */
 
 /**
  * Sanitize a user-provided string for safe storage and rendering.
  * Removes all HTML tags and returns plain text.
- * Optimized for server-side to avoid heavy jsdom/DOMPurify when doing simple text stripping.
  */
 export function sanitizeText(value: string): string {
-  // If we only want to strip all tags, regex is much faster and safer for server environments
-  return stripTagsFallback(value);
+  if (!value) return "";
+  return stripAllHtml(value);
 }
 
 /**
@@ -19,8 +18,9 @@ export function sanitizeText(value: string): string {
  * Allows only line breaks for readability, strips everything else.
  */
 export function sanitizeDescription(value: string): string {
-  // If we only want to strip all tags, regex is much faster and safer for server environments
-  return stripTagsFallback(value);
+  if (!value) return "";
+  // We keep newlines as-is, but strip all HTML tags
+  return stripAllHtml(value);
 }
 
 /**
@@ -35,8 +35,8 @@ export function sanitizeForMeta(value: string): string {
 }
 
 /**
- * Escape the five basic HTML-significant characters so they render as text
- * rather than being interpreted as markup.
+ * Escape the basic HTML-significant characters.
+ * Essential for rendering untrusted content in non-JSX contexts.
  */
 export function escapeHtml(value: string): string {
   const HTML_ENTITY_MAP: Record<string, string> = {
@@ -50,11 +50,21 @@ export function escapeHtml(value: string): string {
 }
 
 /**
- * Fallback regex-based tag stripping if DOMPurify isn't available.
+ * Strictly remove all HTML tags from a string.
+ * This is a 'greedy' strip that removes anything between < and >.
  */
-function stripTagsFallback(value: string): string {
+function stripAllHtml(value: string): string {
   return value
+    // 1. Remove script tags and their content entirey
     .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, "")
+    // 2. Remove style tags and their content entirely
+    .replace(/<style\b[^<]*(?:(?!<\/style>)<[^<]*)*<\/style>/gi, "")
+    // 3. Remove all other tags
+    .replace(/<[^>]*>/g, "")
+    // 4. Decode any basic entities if they were trying to be smart
+    .replace(/&lt;/g, "<")
+    .replace(/&gt;/g, ">")
+    // 5. One last pass to ensure no tags were hidden inside entities
     .replace(/<[^>]*>/g, "")
     .trim();
 }

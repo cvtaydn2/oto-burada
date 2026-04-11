@@ -18,12 +18,12 @@ export default async function DashboardSavedSearchesPage() {
   const user = await requireUser();
   const [savedSearches, listings] = await Promise.all([
     getStoredSavedSearchesByUser(user.id),
-    getPublicMarketplaceListings(),
+    getPublicMarketplaceListings({ limit: 100, page: 1, sort: "newest" }),
   ]);
   const resultCountBySignature = new Map(
     savedSearches.map((search) => [
       getSavedSearchSignature(search.filters),
-      filterListings(listings, search.filters).length,
+      filterListings(listings.listings, search.filters).length,
     ]),
   );
   const savedSearchItems = savedSearches.map((search) => {

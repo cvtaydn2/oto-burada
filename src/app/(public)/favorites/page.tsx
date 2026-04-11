@@ -8,7 +8,7 @@ export const revalidate = 60;
 export default async function FavoritesPage() {
   const [user, listings] = await Promise.all([
     getCurrentUser(),
-    getPublicMarketplaceListings(),
+    getPublicMarketplaceListings({ limit: 100, page: 1, sort: "newest" }),
   ]);
 
   return (
@@ -26,7 +26,7 @@ export default async function FavoritesPage() {
         </p>
       </div>
 
-      <FavoritesPageClient listings={listings} userId={user?.id} />
+      <FavoritesPageClient listings={listings.listings} userId={user?.id} />
     </section>
   );
 }

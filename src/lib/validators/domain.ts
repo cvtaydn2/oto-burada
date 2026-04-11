@@ -141,6 +141,11 @@ export const listingCreateSchema: z.ZodType<ListingCreateInput> = z.object({
     .min(20, "Açıklama en az 20 karakter olmalı")
     .max(maximumDescriptionLength, `Açıklama en fazla ${maximumDescriptionLength} karakter olabilir`),
   whatsappPhone: lenientPhoneSchema,
+  vin: z
+    .string()
+    .trim()
+    .length(17, "Şasi numarası (VIN) tam olarak 17 karakter olmalıdır")
+    .regex(/^[A-HJ-NPR-Z0-9]+$/i, "Geçersiz şasi numarası formatı (I, O, Q harfleri içermez)"),
   licensePlate: z.string().trim().min(5, "Geçerli bir plaka gir").max(12, "Gecersiz plaka").nullable().optional(),
   tramerAmount: nonNegativeNumberSchema.nullable().optional(),
   damageStatusJson: z.record(z.string(), z.any()).nullable().optional(),
@@ -165,6 +170,11 @@ export const listingCreateFormSchema: z.ZodType<ListingCreateFormValues> = z.obj
     .min(20, "Açıklama en az 20 karakter olmalı")
     .max(maximumDescriptionLength, `Açıklama en fazla ${maximumDescriptionLength} karakter olabilir`),
   whatsappPhone: lenientPhoneSchema,
+  vin: z
+    .string()
+    .trim()
+    .length(17, "Şasi numarası (VIN) tam olarak 17 karakter olmalıdır")
+    .regex(/^[A-HJ-NPR-Z0-9]+$/i, "Geçersiz şasi numarası formatı (I, O, Q harfleri içermez)"),
   licensePlate: z.string().trim().min(5, "Geçerli bir plaka gir").max(12, "Gecersiz plaka").nullable().optional(),
   tramerAmount: nonNegativeNumberSchema.nullable().optional(),
   damageStatusJson: z.record(z.string(), z.any()).nullable().optional(),
@@ -242,6 +252,7 @@ export const listingSchema: z.ZodType<Listing> = z.object({
   district: trimmedRequiredString,
   description: trimmedRequiredString,
   whatsappPhone: lenientPhoneSchema,
+  vin: z.string().trim().length(17).optional().nullable(),
   licensePlate: z.string().trim().min(5, "Geçerli bir plaka gir").max(12, "Gecersiz plaka").nullable().optional(),
   tramerAmount: z.coerce.number().int().min(0).nullable().optional(),
   damageStatusJson: z.record(z.string(), z.any()).nullable().optional(),

@@ -21,7 +21,7 @@ function userOwnsStoragePath(userId: string, storagePath: string) {
 }
 
 export async function POST(request: Request) {
-  const ipRateLimit = enforceRateLimit(
+  const ipRateLimit = await enforceRateLimit(
     getRateLimitKey(request, "api:images:upload"),
     rateLimitProfiles.general,
   );
@@ -48,7 +48,7 @@ export async function POST(request: Request) {
     return apiError(API_ERROR_CODES.UNAUTHORIZED, "Oturum doğrulanamadı. Lütfen tekrar giriş yap.", 401);
   }
 
-  const userRateLimit = enforceRateLimit(
+  const userRateLimit = await enforceRateLimit(
     getUserRateLimitKey(user.id, "images:upload"),
     rateLimitProfiles.imageUpload,
   );

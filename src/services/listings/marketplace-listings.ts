@@ -1,18 +1,17 @@
-import { getStoredListingBySlug, getStoredListings, getStoredListingsByIds } from "@/services/listings/listing-submissions";
+import { 
+  getStoredListingBySlug, 
+  getStoredListingsByIds, 
+  getFilteredDatabaseListings,
+  type PaginatedListingsResult 
+} from "@/services/listings/listing-submissions";
 import { getStoredProfileById } from "@/services/profile/profile-records";
-import type { Profile } from "@/types";
+import type { Profile, ListingFilters } from "@/types";
 
-export async function getAllKnownListings() {
-  const storedListings = await getStoredListings();
-  return storedListings.sort(
-    (left, right) => Date.parse(right.updatedAt) - Date.parse(left.updatedAt),
-  );
-}
-
-export async function getPublicMarketplaceListings() {
-  const listings = await getAllKnownListings();
-
-  return listings.filter((listing) => listing.status === "approved");
+export async function getFilteredMarketplaceListings(
+  filters: ListingFilters
+): Promise<PaginatedListingsResult> {
+  const result = await getFilteredDatabaseListings(filters);
+  return result;
 }
 
 export async function getMarketplaceListingsByIds(ids: string[]) {
@@ -36,8 +35,30 @@ export async function getMarketplaceSeller(sellerId: string): Promise<Profile | 
   return storedProfile;
 }
 
+export async function getPublicMarketplaceListings(filters: ListingFilters = { page: 1, limit: 12, sort: "newest" }) {
+  return getFilteredMarketplaceListings(filters);
+}
+
+export async function getAllKnownListings() {
+  const result = await getFilteredDatabaseListings({
+    limit: 100,
+    page: 1,
+    sort: "newest"
+  });
+  return result.listings;
+}
+
 export async function getSimilarMarketplaceListings(slug: string, brand: string, city: string) {
-  const listings = await getPublicMarketplaceListings();
+  // We can fetch a small set for similarity
+  const result = await getFilteredDatabaseListings({
+    brand,
+    limit: 10,
+    page: 1,
+    sort: "newest"
+  });
+
+  const listings = result.listings;
+  
   const similarByBrand = listings.filter(
     (listing) => listing.slug !== slug && listing.brand === brand,
   );
@@ -46,7 +67,15 @@ export async function getSimilarMarketplaceListings(slug: string, brand: string,
     return similarByBrand.slice(0, 3);
   }
 
-  const similarByCity = listings.filter(
+  // Fallback to city search if not enough brand matches
+  const cityResult = await getFilteredDatabaseListings({
+    city,
+    limit: 10,
+    page: 1,
+    sort: "newest"
+  });
+
+  const similarByCity = cityResult.listings.filter(
     (listing) =>
       listing.slug !== slug &&
       listing.city === city &&

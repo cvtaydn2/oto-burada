@@ -51,10 +51,11 @@ export function buildListingsMetadata(filters: ListingFilters): Metadata {
     descriptionParts.push(`Maksimum kilometre ${formatNumber(filters.maxMileage)} km.`);
   }
 
-  const canonicalSearchParams = createSearchParamsFromListingFilters(filters).toString();
-  const canonicalPath = canonicalSearchParams
-    ? `/listings?${canonicalSearchParams}`
-    : "/listings";
+  // SEO Fix: Canonical should point to the most specific "Page" (Brand/City), 
+  // not to every single filter permutation which creates duplicate content.
+  let canonicalPath = "/listings";
+  if (filters.brand && !filters.city) canonicalPath = `/satilik/${filters.brand.toLowerCase()}`;
+  else if (filters.brand && filters.city) canonicalPath = `/satilik/${filters.brand.toLowerCase()}/${filters.city.toLowerCase()}`;
 
   return {
     title,

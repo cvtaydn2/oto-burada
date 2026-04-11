@@ -67,6 +67,33 @@ export function VehicleInfoStep({
             )}
           </div>
 
+          {/* VIN (Chassis Number) */}
+          <div className="space-y-2">
+            <label htmlFor="vin" className="text-sm font-semibold ml-1">Şasi Numarası (VIN)</label>
+            <input
+              {...register("vin")}
+              id="vin"
+              autoComplete="off"
+              placeholder="17 Haneli Şasi No"
+              className={`h-12 w-full rounded-xl border ${errors.vin ? 'border-red-500 bg-red-50/30' : 'border-input'} bg-background px-4 text-sm outline-none transition-colors focus:border-primary uppercase tracking-wider font-mono`}
+            />
+            <div className="flex justify-between items-center px-1">
+              <p className="text-[11px] text-slate-500">
+                Güvenlik ve ilan doğruluğu için 17 haneli şasi numarası zorunludur.
+              </p>
+              {form.watch("vin")?.length > 0 && (
+                 <span className={`text-[11px] font-bold ${form.watch("vin")?.length === 17 ? 'text-emerald-600' : 'text-slate-400'}`}>
+                   {form.watch("vin")?.length}/17
+                 </span>
+              )}
+            </div>
+            {errors.vin && (
+              <p className="text-xs font-medium text-red-500 flex items-center gap-1.5 ml-1 animate-in fade-in slide-in-from-left-2">
+                <AlertCircle size={12} /> {(errors.vin?.message as string)}
+              </p>
+            )}
+          </div>
+
           <div className="grid sm:grid-cols-2 gap-4">
             <div className="space-y-2">
               <label htmlFor="brand" className="text-sm font-semibold ml-1">Marka</label>

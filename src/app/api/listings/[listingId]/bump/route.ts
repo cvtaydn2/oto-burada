@@ -27,7 +27,7 @@ export async function POST(
     return apiError(API_ERROR_CODES.UNAUTHORIZED, "Oturum doğrulanamadı.", 401);
   }
 
-  const rateLimit = enforceRateLimit(
+  const rateLimit = await enforceRateLimit(
     getUserRateLimitKey(user.id, "listings:bump"),
     rateLimitProfiles.general,
   );

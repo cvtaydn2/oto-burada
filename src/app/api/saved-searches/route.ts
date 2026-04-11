@@ -35,7 +35,7 @@ async function getAuthenticatedUser() {
 }
 
 export async function GET(request: Request) {
-  const ipRateLimit = enforceRateLimit(
+  const ipRateLimit = await enforceRateLimit(
     getRateLimitKey(request, "api:saved-searches:list"),
     rateLimitProfiles.general,
   );
@@ -65,7 +65,7 @@ export async function GET(request: Request) {
 }
 
 export async function POST(request: Request) {
-  const ipRateLimit = enforceRateLimit(
+  const ipRateLimit = await enforceRateLimit(
     getRateLimitKey(request, "api:saved-searches:create"),
     rateLimitProfiles.general,
   );
@@ -84,7 +84,7 @@ export async function POST(request: Request) {
     return apiError(API_ERROR_CODES.UNAUTHORIZED, "Arama kaydetmek için giriş yapmalısın.", 401);
   }
 
-  const userRateLimit = enforceRateLimit(
+  const userRateLimit = await enforceRateLimit(
     getUserRateLimitKey(user.id, "saved-searches:create"),
     rateLimitProfiles.general,
   );

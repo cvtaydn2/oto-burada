@@ -5,6 +5,7 @@ import { ListingCardGrid } from "@/components/listings/listing-card-grid";
 import { TrustBadge } from "@/components/shared/trust-badge";
 import { getMarketplaceSeller, getPublicMarketplaceListings } from "@/services/listings/marketplace-listings";
 import { getSellerTrustSummary } from "@/services/profile/profile-trust";
+import type { Listing } from "@/types";
 
 interface SellerProfilePageProps {
   params: Promise<{
@@ -21,10 +22,16 @@ export default async function SellerProfilePage({ params }: SellerProfilePagePro
     notFound();
   }
 
-  const allListings = await getPublicMarketplaceListings();
-  const sellerListings = allListings.filter((l) => l.sellerId === sellerId);
-  const totalListingsCount = sellerListings.length;
-  const featuredListingCount = sellerListings.filter((listing) => listing.featured).length;
+  const listingsResult = await getPublicMarketplaceListings({ 
+    sellerId, 
+    limit: 100, // Fetch up to 100 listings for the profile
+    page: 1,
+    sort: "newest"
+  });
+  
+  const sellerListings = listingsResult.listings;
+  const totalListingsCount = listingsResult.total;
+  const featuredListingCount = sellerListings.filter((listing: Listing) => listing.featured).length;
   const trustSummary = getSellerTrustSummary(seller, totalListingsCount);
   const memberSinceYear = new Date(seller.createdAt).getFullYear();
 

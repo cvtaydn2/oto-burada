@@ -14,7 +14,7 @@ import { getStoredListingById } from "@/services/listings/listing-submissions";
 import { ensureProfileRecord } from "@/services/profile/profile-records";
 
 export async function POST(request: Request) {
-  const ipRateLimit = enforceRateLimit(
+  const ipRateLimit = await enforceRateLimit(
     getRateLimitKey(request, "api:reports:create"),
     rateLimitProfiles.general,
   );
@@ -60,7 +60,7 @@ export async function POST(request: Request) {
     return apiError(API_ERROR_CODES.UNAUTHORIZED, "Rapor göndermek için giriş yapmalısın.", 401);
   }
 
-  const userRateLimit = enforceRateLimit(
+  const userRateLimit = await enforceRateLimit(
     getUserRateLimitKey(user.id, "reports:create"),
     rateLimitProfiles.reportCreate,
   );

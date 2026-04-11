@@ -71,6 +71,7 @@ interface ListingRow {
   market_price_index?: number | null;
   whatsapp_phone: string;
   year: number;
+  vin?: string | null;
 }
 
 const listingSelect = `
@@ -89,6 +90,7 @@ const listingSelect = `
   district,
   description,
   whatsapp_phone,
+  vin,
   tramer_amount,
   damage_status_json,
   fraud_score,
@@ -184,6 +186,14 @@ function calculateFraudScore(input: ListingCreateInput, existingListings: Listin
     reasons.push("Mükerrer ilan şüphesi");
   }
 
+  const vinDuplicate = existingListings.find(
+    (l) => l.vin === input.vin && l.sellerId !== "" && l.status !== "archived" && l.status !== "rejected"
+  );
+  if (vinDuplicate) {
+    score += 100;
+    reasons.push("Aynı şasi numaralı başka bir aktif ilan mevcut (VIN clone)");
+  }
+
   if (input.year >= 2018 && input.price < 300000) {
     score += 60;
     reasons.push("Pazar ortalamasının çok altında şüpheli fiyat");
@@ -242,6 +252,7 @@ function buildListingRecord(
     district: input.district,
     description: input.description,
     whatsappPhone: input.whatsappPhone,
+    vin: input.vin,
     tramerAmount: input.tramerAmount ?? null,
     damageStatusJson: input.damageStatusJson ?? null,
     fraudScore: fraudAssessment.fraudScore,
@@ -309,6 +320,7 @@ function mapListingRow(row: ListingRow) {
     eidsVerificationJson: (row.eids_verification_json as Record<string, unknown> | null) ?? null,
     marketPriceIndex: row.market_price_index ? Number(row.market_price_index) : null,
     whatsappPhone: row.whatsapp_phone,
+    vin: row.vin ?? null,
     year: row.year,
   });
 }
@@ -329,8 +341,9 @@ async function getDatabaseListings(options?: {
   const applyListingQueryOptions = (selectClause: string) => {
     let query = admin.from("listings").select(selectClause);
 
-    if (options?.sellerId) {
-      query = query.eq("seller_id", options.sellerId);
+    const sellerId = options?.sellerId ?? options?.filters?.sellerId;
+    if (sellerId) {
+      query = query.eq("seller_id", sellerId);
     }
 
     if (options?.listingId) {
@@ -476,6 +489,7 @@ export async function getFilteredDatabaseListings(
   let countQuery = countAdmin.from("listings").select("id", { count: "exact", head: true });
   countQuery = countQuery.eq("status", "approved");
 
+  if (filters.sellerId) countQuery = countQuery.eq("seller_id", filters.sellerId);
   if (filters.brand) countQuery = countQuery.eq("brand", filters.brand);
   if (filters.model) countQuery = countQuery.eq("model", filters.model);
   if (filters.city) countQuery = countQuery.eq("city", filters.city);
@@ -541,6 +555,7 @@ function mapListingToDatabaseRow(listing: Listing) {
     market_price_index: listing.marketPriceIndex ?? null,
     whatsapp_phone: listing.whatsappPhone,
     year: listing.year,
+    vin: listing.vin ?? null,
   };
 }
 

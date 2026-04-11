@@ -35,7 +35,7 @@ export async function PATCH(
   request: Request,
   context: { params: Promise<{ notificationId: string }> },
 ) {
-  const ipRateLimit = enforceRateLimit(
+  const ipRateLimit = await enforceRateLimit(
     getRateLimitKey(request, "api:notifications:update"),
     rateLimitProfiles.general,
   );
@@ -54,7 +54,7 @@ export async function PATCH(
     return apiError(API_ERROR_CODES.UNAUTHORIZED, "Bildirimleri güncellemek için giriş yapmalısın.", 401);
   }
 
-  const userRateLimit = enforceRateLimit(
+  const userRateLimit = await enforceRateLimit(
     getUserRateLimitKey(user.id, "notifications:update"),
     rateLimitProfiles.general,
   );
@@ -82,7 +82,7 @@ export async function DELETE(
   request: Request,
   context: { params: Promise<{ notificationId: string }> },
 ) {
-  const ipRateLimit = enforceRateLimit(
+  const ipRateLimit = await enforceRateLimit(
     getRateLimitKey(request, "api:notifications:delete"),
     rateLimitProfiles.general,
   );

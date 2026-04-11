@@ -3,7 +3,10 @@ import { CheckCircle2, ChevronLeft, ShieldCheck, AlertTriangle } from "lucide-re
 import Image from "next/image";
 import Link from "next/link";
 
-import { getPublicMarketplaceListings } from "@/services/listings/marketplace-listings";
+import { 
+  getPublicMarketplaceListings,
+  getMarketplaceListingsByIds 
+} from "@/services/listings/marketplace-listings";
 import { formatCurrency, formatNumber } from "@/lib/utils";
 import type { Listing } from "@/types";
 import { CompareRemoveButton } from "@/components/listings/compare-remove-button";
@@ -31,12 +34,9 @@ export default async function ComparePage({ searchParams }: ComparePageProps) {
     }
   }
 
-  const allListings = await getPublicMarketplaceListings();
-  let cars: Listing[] = [];
-
-  if (idsToCompare.length > 0) {
-    cars = allListings.filter((l) => idsToCompare.includes(l.id));
-  }
+  const cars = idsToCompare.length > 0 
+    ? await getMarketplaceListingsByIds(idsToCompare)
+    : [];
 
   if (cars.length === 0) {
     return (

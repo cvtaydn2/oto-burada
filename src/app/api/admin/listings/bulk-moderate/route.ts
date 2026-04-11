@@ -23,7 +23,7 @@ async function getClientIp() {
 
 export async function POST(request: Request) {
   const clientIp = await getClientIp();
-  const ipRateLimit = checkRateLimit(`admin:bulk-moderate:${clientIp}`, rateLimitProfiles.adminModerate);
+  const ipRateLimit = await checkRateLimit(`admin:bulk-moderate:${clientIp}`, rateLimitProfiles.adminModerate);
 
   if (!ipRateLimit.allowed) {
     return apiError(API_ERROR_CODES.RATE_LIMITED, "Çok fazla moderasyon isteği. Lütfen bekle.", 429);

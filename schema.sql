@@ -138,6 +138,7 @@ create table if not exists public.listings (
   market_price_index decimal(12,2), -- Estimated fair market value for comparison
   featured boolean not null default false,
   expert_inspection jsonb,
+  vin text, -- Vehicle Identification Number (mandatory for data integrity)
   published_at timestamptz,
   bumped_at timestamptz,
   featured_until timestamptz,
@@ -146,6 +147,11 @@ create table if not exists public.listings (
   created_at timestamptz not null default timezone('utc', now()),
   updated_at timestamptz not null default timezone('utc', now())
 );
+
+-- Ensure VIN is unique among active listings to prevent cloning
+create unique index if not exists listings_vin_active_idx
+  on public.listings (vin)
+  where status in ('approved', 'pending');
 
 create table if not exists public.listing_images (
   id uuid primary key default gen_random_uuid(),

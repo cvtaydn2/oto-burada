@@ -10,8 +10,6 @@ import {
   CircleGauge,
   Fuel,
   MapPin,
-  MessageCircle,
-  Phone,
   Settings2,
   Sparkles,
   Lock,
@@ -27,7 +25,7 @@ import { ShareButton } from "@/components/listings/share-button";
 import { ListingCard } from "@/components/listings/listing-card";
 import { PriceAnalysisCard } from "@/components/listings/price-analysis-card";
 import { TrustBadge } from "@/components/shared/trust-badge";
-import { SafeWhatsAppButton } from "@/components/listings/safe-whatsapp-button";
+import { ContactActions } from "@/components/listings/contact-actions";
 import { ExpertInspectionCard } from "@/components/listings/expert-inspection-card";
 import { DamageReportCard } from "@/components/listings/damage-report-card";
 import { EIDSBadge } from "@/components/shared/eids-badge";
@@ -86,11 +84,10 @@ export default async function ListingDetailPage({ params }: ListingDetailPagePro
   );
   const activeListingCount = (
     await getPublicMarketplaceListings()
-  ).filter((item) => item.sellerId === listing.sellerId).length;
+  ).listings.filter((item) => item.sellerId === listing.sellerId).length;
   const insight = getListingCardInsights(listing);
   const trustSummary = getSellerTrustSummary(seller, activeListingCount);
   const currentUser = await getCurrentUser();
-  const whatsappLink = `https://wa.me/${listing.whatsappPhone.replace(/\D/g, "")}?text=${encodeURIComponent(whatsappTemplate)}`;
   
   // Use real market data if available, otherwise fallback to mock insights
   const marketPriceIndex = listing.marketPriceIndex || 1.0;
@@ -329,15 +326,11 @@ export default async function ListingDetailPage({ params }: ListingDetailPagePro
                 />
 
                 {currentUser ? (
-                  <div className="space-y-2.5 mt-5">
-                    <a
-                      href={`tel:${listing.whatsappPhone}`}
-                      className="flex w-full items-center justify-center gap-2 rounded-xl bg-slate-900 h-12 px-4 text-[15px] font-semibold text-white shadow-lg transition-all hover:bg-slate-800 hover:shadow-xl"
-                    >
-                      <Phone className="size-5" />
-                      {listing.whatsappPhone.replace(/(\d{4})(\d{3})(\d{2})(\d{2})/, "$1 $2 $3 $4")}
-                    </a>
-                    <SafeWhatsAppButton whatsappLink={whatsappLink} />
+                  <div className="mt-5">
+                    <ContactActions
+                      listingId={listing.id}
+                      phone={listing.whatsappPhone}
+                    />
                   </div>
                 ) : (
                   <div className="mt-5 space-y-3">

@@ -13,9 +13,31 @@ import {
 } from "@/services/listings/listing-submissions";
 import { ensureProfileRecord } from "@/services/profile/profile-records";
 import { checkListingLimit } from "@/services/listings/listing-limits";
+import { parseListingFiltersFromSearchParams } from "@/services/listings/listing-filters";
+import { getFilteredMarketplaceListings } from "@/services/listings/marketplace-listings";
+
+export async function GET(request: Request) {
+  const { searchParams } = new URL(request.url);
+  
+  // Convert URLSearchParams to a key-value object
+  const paramsObj: Record<string, string> = {};
+  searchParams.forEach((value, key) => {
+    paramsObj[key] = value;
+  });
+
+  const filters = parseListingFiltersFromSearchParams(paramsObj);
+  
+  try {
+    const result = await getFilteredMarketplaceListings(filters);
+    return apiSuccess(result);
+  } catch (error) {
+    console.error("GET /api/listings error:", error);
+    return apiError(API_ERROR_CODES.INTERNAL_ERROR, "İlanlar yüklenirken bir hata oluştu.", 500);
+  }
+}
 
 export async function POST(request: Request) {
-  const ipRateLimit = enforceRateLimit(
+  const ipRateLimit = await enforceRateLimit(
     getRateLimitKey(request, "api:listings:create"),
     rateLimitProfiles.general,
   );
@@ -66,7 +88,7 @@ export async function POST(request: Request) {
     return apiError(API_ERROR_CODES.FORBIDDEN, listingLimit.reason ?? "İlan sınırına ulaştın.", 403);
   }
 
-  const userRateLimit = enforceRateLimit(
+  const userRateLimit = await enforceRateLimit(
     getUserRateLimitKey(user.id, "listings:create"),
     rateLimitProfiles.listingCreate,
   );

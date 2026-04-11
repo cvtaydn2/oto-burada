@@ -84,6 +84,7 @@ function buildDefaultValues(
     district: initialListing?.district ?? "",
     description: initialListing?.description ?? "",
     whatsappPhone: initialListing?.whatsappPhone ?? initialValues.whatsappPhone,
+    vin: initialListing?.vin ?? "",
     tramerAmount: initialListing?.tramerAmount ?? 0,
     damageStatusJson: initialListing?.damageStatusJson ?? {},
     images:
@@ -288,7 +289,7 @@ export function ListingCreateForm({
 
   const handleNextStep = async () => {
     let fieldsToValidate: FieldPath<ListingCreateFormValues>[] = [];
-    if (currentStep === 0) fieldsToValidate = ["brand", "model", "year", "mileage"];
+    if (currentStep === 0) fieldsToValidate = ["brand", "model", "year", "mileage", "vin"];
     if (currentStep === 1) fieldsToValidate = ["city", "district", "title", "description", "price"];
     if (currentStep === 2) {
       fieldsToValidate = [

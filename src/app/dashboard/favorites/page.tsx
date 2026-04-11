@@ -7,7 +7,7 @@ export const revalidate = 60;
 
 export default async function DashboardFavoritesPage() {
   const user = await requireUser();
-  const listings = await getPublicMarketplaceListings();
+  const listings = await getPublicMarketplaceListings({ limit: 100, page: 1, sort: "newest" });
 
-  return <FavoritesPageClient listings={listings} userId={user.id} />;
+  return <FavoritesPageClient listings={listings.listings} userId={user.id} />;
 }

@@ -26,11 +26,11 @@ export function getUserRateLimitKey(userId: string, prefix: string) {
  * Check rate limit and return a 429 response if exceeded.
  * Returns null if the request is within limits.
  */
-export function enforceRateLimit(
+export async function enforceRateLimit(
   key: string,
   config: RateLimitConfig,
-): { response: NextResponse; result: RateLimitResult } | null {
-  const result = checkRateLimit(key, config);
+): Promise<{ response: NextResponse; result: RateLimitResult } | null> {
+  const result = await checkRateLimit(key, config);
 
   if (!result.allowed) {
     const retryAfter = Math.ceil((result.resetAt - Date.now()) / 1000);

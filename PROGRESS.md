@@ -13,6 +13,50 @@ Her yeni geliştirme başlamadan önce okunmalıdır.
 ---
 
 ## Proje Durumu
+### 2026-04-11 Phase 13: Senior Audit & Production Hardening (Current)
+- **Senior UX/Technical Audit**: Conducted a brutal honesty audit resulting in a critical remediation roadmap.
+- **Persistent SQL Rate Limiting**: Successfully migrated from local memory to a persistent, atomic SQL-backed rate limiting system using Supabase RPC (`check_api_rate_limit`). This ensures protection across serverless cold starts and multiple instances.
+- **Pagination-First Architecture**: Refactored the core listings data flow to use `PaginatedListingsResult` across all public and dashboard views. This optimizes memory usage and enables scalable high-traffic growth.
+- **Admin Dashboard Restoration**: Rebuilt the corrupted admin management interface, integrating real-time analytics for system metrics and restoring full moderation capabilities.
+- **Type-Safety Enforcement**: Resolved over 50+ build-breaking TypeScript errors introduced during architectural transitions, ensuring a stable and maintainable codebase.
+- **Security Hardening**: Enforced mandatory VIN uniqueness at the database level and updated the fraud detection algorithm to prevent listing cloning.
+- **Infrastructure Verification**: Verified 100% production build success and passed core E2E smoke tests.
+
+---
+
+### 2026-04-11 Phase 12: Scaling, Anti-Scraping & Data Integrity - Tamamlandı
+
+### Kapsam
+Marketplace altyapısını 1 milyon kullanıcıyı destekleyecek performans seviyesine taşımak, veri güvenliğini (anti-scraping) artırmak ve araç mükerrerlik/kopya ilan (cloning) risklerini veritabanı seviyesinde engellemek için altyapı sertleştirme çalışması yapıldı.
+
+### Yapılan Geliştirmeler
+1. **Yüksek Performanslı Arama (API-First Search):**
+   - İlan listeleme sayfasındaki filtreleme ve sayfalama mantığı tamamen `GET /api/listings` endpoint'ine taşındı.
+   - "Daha Fazla Yükle" (infinite scroll) özelliği bu API üzerinden sunucu tarafında (Supabase/Postgres) verimli şekilde çalışacak şekilde modernize edildi.
+   - İstemci tarafındaki ağır filtreleme mantığı kaldırılarak bundle size düşürüldü ve ilk yükleme (TTFB) hızı artırıldı.
+
+2. **Veri Güvenliği ve Anti-Scraping:**
+   - İletişim butonları `ContactActions` bileşeniyle "Tıkla ve Göster" (Reveal) mekanizmasına dönüştürüldü.
+   - Telefon numaraları ve WhatsApp linkleri botlar tarafından doğrudan taranamayacak şekilde friction layer (etkileşim katmanı) ile korundu.
+   - İletişim öncesi güvenlik uyarıları ("Asla kapora göndermeyin") kullanıcıya zorunlu olarak gösterilmeye başlandı.
+
+3. **Veri Bütünlüğü ve VIN (Şasi No) Zorunluluğu:**
+   - Tüm ilanlar için 17 haneli Şasi Numarası (VIN) alanı zorunlu hale getirildi.
+   - Veritabanı seviyesinde **Partial Unique Index** (`listings_vin_active_idx`) eklenerek aynı aracın aynı anda birden fazla aktif ilanda yer alması (kopya ilan / cloning) engellendi.
+   - İlan oluşturma sihirbazına (Wizard) regex doğrulamalı VIN girişi ve karakter sayacı eklendi.
+
+4. **Gelişmiş Fraud Algoritması:**
+   - İlan gönderim servisi (`calculateFraudScore`), aynı VIN ile gelen mükerrer profil denemelerini anında tespit edip ilan skorunu 100 (Engellenmiş) seviyesine çekecek şekilde güncellendi.
+
+### Doğrulama
+- `npm run typecheck` Başarılı.
+- Vin Uniqueness Test (DB Level) Başarılı.
+- Infinite Scroll (API Pagination) Başarılı.
+- RLS Policy Audit (17 Tablo) Başarılı.
+
+### Sonraki Adım
+- Gelişmiş AI Image Background Cleaner entegrasyonu (Growth tasks).
+
 ### 2026-04-11 Phase 11: Production UX Hardening & Audit - Tamamlandı
 
 ### Kapsam

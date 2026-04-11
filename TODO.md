@@ -5,6 +5,15 @@
 
 ---
 
+## 🚨 Acil (Üretim Öncesi Engelleyiciler)
+
+- [ ] **SMS Verification (OTP)**: Sahte ilanları engellemek için telefon doğrulama.
+- [ ] **Upstash Redis Rate Limiting**: Serverless ortamda gerçek istek sınırlama.
+- [ ] **EİDS Entegrasyonu**: E-Devlet üzerinden araç sahibi doğrulaması.
+- [ ] **Schema Bütünlüğü**: `schema.sql` ve canlı veritabanı senkronizasyonu.
+
+---
+
 ## 🔴 Kritik (Güvenlik & Stabilite) - TAMAMLANDI ✅
 
 ### Güvenlik
@@ -61,8 +70,10 @@
 - [ ] **E2E testleri**: Playwright ile kritik akışların otomasyonu
   - İlan oluşturma, moderasyon, arama, favori ekleme
 - [ ] **CI/CD pipeline**: GitHub Actions ile lint → typecheck → build → deploy
-- [ ] **Error tracking**: Sentry entegrasyonu
-- [ ] **Analytics**: Vercel Analytics veya PostHog
+- [ ] **Kritik**: SMS Verification (OTP) entegrasyonu (Sahte numaraları engellemek için)
+- [ ] **Kritik**: Upstash Redis Rate Limiting (Serverless ortamda in-memory Map'in çalışmaması sorunu)
+- [ ] **Önemli**: EİDS (E-Devlet) İlan Doğrulama API prototipi
+- [ ] **Önemli**: Güvenli Ödeme (Iyzico/Stripe) ve İlan Boost akışı
 - [ ] **Staging ortamı**: Supabase branch + Vercel preview deployment
 
 ---

@@ -23,6 +23,7 @@ export async function generateMetadata({
 
   return buildListingsMetadata(filters);
 }
+
 export default async function HomePage({ searchParams }: ListingsPageProps) {
   const resolvedSearchParams = searchParams ? await searchParams : undefined;
   const initialFilters = parseListingFiltersFromSearchParams(resolvedSearchParams);
@@ -42,10 +43,10 @@ export default async function HomePage({ searchParams }: ListingsPageProps) {
         url={appUrl}
         description="Türkiye'nin en güvenilir 2. el ve sıfır otomobil pazarı. Binlerce araç içinden hayalindeki arabayı bul."
       />
-      <ListingStructuredData listings={listings} url={appUrl} />
+      <ListingStructuredData listings={listings.listings} url={appUrl} />
       <ListingsPageClient
         key={initialFiltersKey}
-        listings={listings}
+        initialResult={listings}
         brands={references.brands}
         cities={references.cities}
         initialFilters={initialFilters}

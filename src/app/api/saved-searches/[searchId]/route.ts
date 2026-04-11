@@ -37,7 +37,7 @@ export async function PATCH(
   request: Request,
   context: { params: Promise<{ searchId: string }> },
 ) {
-  const ipRateLimit = enforceRateLimit(
+  const ipRateLimit = await enforceRateLimit(
     getRateLimitKey(request, "api:saved-searches:update"),
     rateLimitProfiles.general,
   );
@@ -56,7 +56,7 @@ export async function PATCH(
     return apiError(API_ERROR_CODES.UNAUTHORIZED, "Kayitli aramayi guncellemek icin giris yapmalisin.", 401);
   }
 
-  const userRateLimit = enforceRateLimit(
+  const userRateLimit = await enforceRateLimit(
     getUserRateLimitKey(user.id, "saved-searches:update"),
     rateLimitProfiles.general,
   );
@@ -103,7 +103,7 @@ export async function DELETE(
   request: Request,
   context: { params: Promise<{ searchId: string }> },
 ) {
-  const ipRateLimit = enforceRateLimit(
+  const ipRateLimit = await enforceRateLimit(
     getRateLimitKey(request, "api:saved-searches:delete"),
     rateLimitProfiles.general,
   );
