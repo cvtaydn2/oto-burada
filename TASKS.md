@@ -360,9 +360,15 @@ Audit all pages for:
 - Bulk notification sending for maintenance or updates
 
 ### Task 8.3 — PWA Support & Mobile Polish
-- Implement manifest.json and service worker for "Add to Home Screen"
-- Offline caching for recently viewed listings
-- Native-like transitions between pages
+- [x] Implement manifest.json and service worker for "Add to Home Screen"
+- [x] Offline caching for recently viewed listings
+- [x] Native-like transitions between pages
+
+### Task 8.4 — Transparency & EİDS Compliance (Complete)
+- [x] Implement Market Price Indexing service
+- [x] Integrate EİDS (E-Devlet) verification mock & audit logs
+- [x] Synchronize domain types with regulation-ready schema
+- [x] Resolve all data-layer lint/type inconsistencies
 
 ---
 

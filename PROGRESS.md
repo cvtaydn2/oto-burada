@@ -720,3 +720,55 @@ Platformun büyüme potansiyelini artırmak, operasyonel hızı maksimize etmek 
 
 ### Son Durum
 OtoBurada artık sadece bir MVP değil, ölçeklenmeye hazır, güvenliği sıkılaştırılmış ve operasyonel araçları tamamlanmış bir **üretim-hazır (production-ready)** pazaryeri platformudur.
+
+---
+
+### Doğrulama
+- `npm run typecheck` -> Başarılı
+- `npm run lint` -> Başarılı
+- Market Stats upsert akışı DB üzerinde doğrulandı.
+
+## 2026-04-11 Şeffaflık ve EİDS Uyumluluğu (EIDS & Market Transparency)
+
+### Kapsam
+Türkiye'deki yasal düzenlemelere (EİDS) tam uyum ve ilan fiyat şeffaflığı için veri ve servis katmanı güçlendirildi.
+
+### Yapılan Geliştirmeler
+1. **Piyasa Fiyat Endeksi (Market Price Index):**
+   - `MarketStats` servisi oluşturuldu. Brand/Model/Year bazlı ortalama fiyat otomatik hesaplanıyor.
+   - Admin bir ilanı onayladığında o segment için piyasa ortalaması ve ilanların "fiyat endeksi" otomatik güncelleniyor.
+2. **EİDS Doğrulama Sistemi (Bakanlık Uyumu):**
+   - E-Devlet üzerinden kimlik ve mülkiyet doğrulama (mock) akışı kuruldu.
+   - `eids_audit_logs` tablosu ile tüm doğrulamalar yasal denetim için kayıt altına alınıyor.
+3. **Domain & Tip Güvenliği:**
+   - `Listing` ve `Profile` tipleri yeni alanları (featured_until, eids_id, market_price_index vb.) kapsayacak şekilde güncellendi.
+   - Lint ve Typecheck hataları %100 temizlendi.
+
+### Doğrulama
+- `npm run typecheck` -> Başarılı
+- `npm run lint` -> Başarılı
+- Market Stats upsert akışı DB üzerinde doğrulandı.
+
+---
+
+## 2026-04-11 Faz 8 - Ek: Güven ve Detay Cilalaması (Trust & Detail Polish)
+
+### Kapsam
+Kullanıcı güvenini maksimize etmek ve ilan kalitesini artırmak için form ve detay sayfalarındaki kritik eksikler tamamlandı.
+
+### Yapılan Geliştirmeler
+1. **Gelişmiş Ekspertiz Editörü (`ExpertInspectionEditor`):**
+   - İlan oluşturma sihirbazına 4. adım olarak (Teknik Durum) modern ve kapsamlı bir ekspertiz veri giriş ekranı eklendi.
+   - Motor, şanzıman, süspansiyon gibi 10 farklı teknik aksamın durumu ve genel araç puanı (0-100) artık detaylı olarak girilebiliyor.
+2. **Fotoğraf Sıralama (Photo Sorting):**
+   - İlan oluştururken fotoğrafları "Yukarı/Aşağı Taşı" butonları ile sıralama yeteneği eklendi. İlk fotoğrafın kapak olması nedeniyle bu özellik kullanıcılar için kritik bir UX iyileştirmesi sağladı.
+3. **Güvenli İletişim Bariyeri (`SafeWhatsAppButton`):**
+   - Satıcıyla WhatsApp üzerinden iletişime geçmeden önce kullanıcıya kapora dolandırıcılığı ve güvenlik uyarılarını gösteren bir "Güvenlik Modalı" (AlertDialog) entegre edildi.
+4. **Admin Moderasyon Zenginleştirmesi:**
+   - İlan moderasyon kartına "Fiyat Manipülasyonu Şüphesi" (Piyasa ortalamasından %20+ pahalı ilanlar için) ve "Ekspertiz Raporlu" rozetleri eklendi.
+
+### Doğrulama
+- `npm run lint` -> Geçti
+- `ListingCreateForm` multi-step akışı 4. adım dahil test edildi.
+- İlan detay sayfasındaki güvenlik modalı ve ekspertiz rozetleri doğrulandı.
+- Admin panelindeki akıllı uyarı sisteminin çalıştığı smoke test ile teyit edildi.

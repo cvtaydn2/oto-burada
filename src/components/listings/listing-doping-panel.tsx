@@ -75,12 +75,27 @@ export function ListingDopingPanel({ listingId, listingTitle }: ListingDopingPan
     );
   };
 
-  const handleApply = () => {
+  const handleApply = async () => {
     setLoading(true);
-    setTimeout(() => {
-      alert(`${totalPrice}₺ tutarındaki dopingler ilanınıza uygulanmak üzere sepete eklendi.`);
+    try {
+      const response = await fetch(`/api/listings/${listingId}/doping`, {
+        method: "POST",
+        body: JSON.stringify({ dopingTypes: selected }),
+        headers: { "Content-Type": "application/json" },
+      });
+      const result = await response.json();
+      
+      if (result.success) {
+        alert(result.message);
+        window.location.reload();
+      } else {
+        alert(result.message || "İşlem başarısız oldu.");
+      }
+    } catch (error) {
+      alert("Bir hata oluştu.");
+    } finally {
       setLoading(false);
-    }, 1000);
+    }
   };
 
   return (

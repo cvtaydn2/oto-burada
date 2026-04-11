@@ -50,6 +50,12 @@ async function createModerationSideEffects(
     type: "moderation",
     userId: listing.sellerId,
   });
+
+  // If approved, recalculate market stats for this segment to keep the index fresh
+  if (action === "approve") {
+    const { updateMarketStats } = await import("@/services/market/market-stats");
+    updateMarketStats(listing.brand, listing.model, listing.year).catch(console.error);
+  }
 }
 
 export async function moderateListingWithSideEffects({

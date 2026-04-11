@@ -27,12 +27,12 @@ begin
     create type public.transmission_type as enum ('manuel', 'otomatik', 'yari_otomatik');
   end if;
 
-  if not exists (select 1 from pg_type where typname = 'report_reason') then
-    create type public.report_reason as enum ('fake_listing', 'wrong_info', 'spam', 'other');
-  end if;
-
   if not exists (select 1 from pg_type where typname = 'report_status') then
     create type public.report_status as enum ('open', 'reviewing', 'resolved', 'dismissed');
+  end if;
+
+  if not exists (select 1 from pg_type where typname = 'report_reason') then
+    create type public.report_reason as enum ('fake_listing', 'wrong_info', 'spam', 'price_manipulation', 'invalid_eids', 'other');
   end if;
 
   if not exists (select 1 from pg_type where typname = 'notification_type') then
@@ -106,6 +106,8 @@ create table if not exists public.profiles (
   user_type public.user_type not null default 'individual',
   balance_credits integer not null default 0,
   is_verified boolean not null default false,
+  tc_verified_at timestamptz,
+  eids_id text unique, -- E-Devlet provider ID
   created_at timestamptz not null default timezone('utc', now()),
   updated_at timestamptz not null default timezone('utc', now())
 );
@@ -131,6 +133,8 @@ create table if not exists public.listings (
   fraud_score integer not null default 0 check (fraud_score between 0 and 100),
   fraud_reason text,
   status public.listing_status not null default 'pending',
+  eids_verification_json jsonb, -- Logs for EİDS verification (owner_check, death_check, etc.)
+  market_price_index decimal(12,2), -- Estimated fair market value for comparison
   featured boolean not null default false,
   expert_inspection jsonb,
   published_at timestamptz,
@@ -265,6 +269,32 @@ alter table public.pricing_plans enable row level security;
 
 create policy "payments_select_own" on public.payments for select using ((select auth.uid()) = user_id or (select public.is_admin()));
 create policy "pricing_plans_select_all" on public.pricing_plans for select using (true);
+
+create table if not exists public.eids_audit_logs (
+  id uuid primary key default gen_random_uuid(),
+  listing_id uuid not null references public.listings (id) on delete cascade,
+  verified_by uuid not null references public.profiles (id),
+  verification_method text not null, -- 'e-devlet', 'manual'
+  status text not null, -- 'success', 'denied'
+  raw_response jsonb, -- Sanitized response from gov gateway
+  created_at timestamptz not null default timezone('utc', now())
+);
+
+create table if not exists public.market_stats (
+  id uuid primary key default gen_random_uuid(),
+  brand text not null,
+  model text not null,
+  year integer not null,
+  avg_price decimal(12,2) not null,
+  listing_count integer not null,
+  calculated_at timestamptz not null default timezone('utc', now())
+);
+
+alter table public.eids_audit_logs enable row level security;
+alter table public.market_stats enable row level security;
+
+create policy "eids_audit_select_admin" on public.eids_audit_logs for select using ((select public.is_admin()));
+create policy "market_stats_select_all" on public.market_stats for select using (true);
 
 create unique index if not exists reports_active_per_user_listing_idx
   on public.reports (listing_id, reporter_id)

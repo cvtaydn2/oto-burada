@@ -64,6 +64,11 @@ interface ListingRow {
   transmission: Listing["transmission"];
   updated_at: string;
   bumped_at?: string | null;
+  featured_until?: string | null;
+  urgent_until?: string | null;
+  highlighted_until?: string | null;
+  eids_verification_json?: Record<string, unknown> | null;
+  market_price_index?: number | null;
   whatsapp_phone: string;
   year: number;
 }
@@ -94,6 +99,11 @@ const listingSelect = `
   created_at,
   updated_at,
   bumped_at,
+  featured_until,
+  urgent_until,
+  highlighted_until,
+  eids_verification_json,
+  market_price_index,
   listing_images (
     id,
     listing_id,
@@ -240,6 +250,11 @@ function buildListingRecord(
     featured: existingListing?.featured ?? false,
     expertInspection: input.expertInspection,
     bumpedAt: existingListing?.bumpedAt ?? null,
+    featuredUntil: existingListing?.featuredUntil ?? null,
+    urgentUntil: existingListing?.urgentUntil ?? null,
+    highlightedUntil: existingListing?.highlightedUntil ?? null,
+    eidsVerificationJson: (existingListing as any)?.eidsVerificationJson ?? null,
+    marketPriceIndex: existingListing?.marketPriceIndex ?? null,
     createdAt: existingListing?.createdAt ?? timestamp,
     updatedAt: timestamp,
     images: input.images.map((image, index) => ({
@@ -288,6 +303,11 @@ function mapListingRow(row: ListingRow) {
     transmission: row.transmission,
     updatedAt: row.updated_at,
     bumpedAt: row.bumped_at ?? null,
+    featuredUntil: row.featured_until ?? null,
+    urgentUntil: row.urgent_until ?? null,
+    highlightedUntil: row.highlighted_until ?? null,
+    eidsVerificationJson: (row.eids_verification_json as any) ?? null,
+    marketPriceIndex: row.market_price_index ? Number(row.market_price_index) : null,
     whatsappPhone: row.whatsapp_phone,
     year: row.year,
   });
@@ -514,6 +534,11 @@ function mapListingToDatabaseRow(listing: Listing) {
     transmission: listing.transmission,
     updated_at: listing.updatedAt,
     bumped_at: listing.bumpedAt ?? null,
+    featured_until: listing.featuredUntil ?? null,
+    urgent_until: listing.urgentUntil ?? null,
+    highlighted_until: listing.highlightedUntil ?? null,
+    eids_verification_json: listing.eidsVerificationJson ?? null,
+    market_price_index: listing.marketPriceIndex ?? null,
     whatsapp_phone: listing.whatsappPhone,
     year: listing.year,
   };

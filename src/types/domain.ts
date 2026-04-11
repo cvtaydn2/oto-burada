@@ -36,9 +36,11 @@ export interface Profile {
   phoneVerified: boolean;
   identityVerified: boolean;
   role: UserRole;
-  userType: "individual" | "professional";
-  balanceCredits: number;
+  userType?: "individual" | "business" | "staff";
+  balanceCredits?: number;
   isVerified: boolean;
+  tcVerifiedAt?: string | null;
+  eidsId?: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -75,6 +77,11 @@ export interface Listing {
   status: ListingStatus;
   images: ListingImage[];
   featured: boolean;
+  featuredUntil?: string | null;
+  urgentUntil?: string | null;
+  highlightedUntil?: string | null;
+  eidsVerificationJson?: Record<string, any> | null;
+  marketPriceIndex?: number | null;
   expertInspection?: ExpertInspection;
   bumpedAt?: string | null;
   createdAt: string;

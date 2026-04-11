@@ -13,6 +13,11 @@ interface ProfileRow {
   id: string;
   phone: string;
   role: Profile["role"];
+  user_type: "individual" | "business" | "staff";
+  balance_credits: number;
+  is_verified: boolean;
+  tc_verified_at: string | null;
+  eids_id: string | null;
   updated_at: string;
 }
 
@@ -48,6 +53,11 @@ function mapProfileRow(row: ProfileRow, authUser?: User | null) {
     phone: row.phone,
     phoneVerified: verificationState.phoneVerified,
     role: row.role,
+    userType: row.user_type,
+    balanceCredits: row.balance_credits,
+    isVerified: row.is_verified,
+    tcVerifiedAt: row.tc_verified_at,
+    eidsId: row.eids_id,
     updatedAt: row.updated_at,
   });
 
@@ -65,6 +75,11 @@ function mapProfileRow(row: ProfileRow, authUser?: User | null) {
     role: row.role || "user",
     identityVerified: verificationState.identityVerified,
     phoneVerified: verificationState.phoneVerified,
+    userType: row.user_type || "individual",
+    balanceCredits: row.balance_credits || 0,
+    isVerified: row.is_verified || false,
+    tcVerifiedAt: row.tc_verified_at,
+    eidsId: row.eids_id,
     createdAt: row.created_at,
     updatedAt: row.updated_at,
   };
@@ -96,7 +111,12 @@ export function buildProfileFromAuthUser(user: User) {
     emailVerified: verificationState.emailVerified,
     phoneVerified: verificationState.phoneVerified,
     identityVerified: verificationState.identityVerified,
+    isVerified: verificationState.identityVerified, // Default to matching identity verification
     role: resolvedRole as Profile["role"],
+    userType: "individual" as const,
+    balanceCredits: 0,
+    tcVerifiedAt: null,
+    eidsId: null,
     createdAt: user.created_at ?? timestamp,
     updatedAt: timestamp,
   };
@@ -109,6 +129,7 @@ export function buildProfileFromAuthUser(user: User) {
       fullName: "Kullanıcı",
       phone: "",
       city: "",
+      isVerified: false,
     };
   }
 }
@@ -129,6 +150,9 @@ export async function ensureProfileRecord(user: User) {
       id: profile.id,
       phone: profile.phone,
       role: profile.role,
+      user_type: profile.userType ?? "individual",
+      balance_credits: profile.balanceCredits ?? 0,
+      is_verified: profile.isVerified ?? false,
       updated_at: profile.updatedAt,
     },
     { onConflict: "id" },
@@ -149,7 +173,7 @@ export async function getStoredProfileById(profileId: string) {
   const admin = createSupabaseAdminClient();
   const { data, error } = await admin
     .from("profiles")
-    .select("id, full_name, phone, city, avatar_url, role, created_at, updated_at")
+    .select("id, full_name, phone, city, avatar_url, role, user_type, balance_credits, is_verified, tc_verified_at, eids_id, created_at, updated_at")
     .eq("id", profileId)
     .maybeSingle<ProfileRow>();
 

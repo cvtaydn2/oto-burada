@@ -27,8 +27,10 @@ import { ShareButton } from "@/components/listings/share-button";
 import { ListingCard } from "@/components/listings/listing-card";
 import { PriceAnalysisCard } from "@/components/listings/price-analysis-card";
 import { TrustBadge } from "@/components/shared/trust-badge";
+import { SafeWhatsAppButton } from "@/components/listings/safe-whatsapp-button";
 import { ExpertInspectionCard } from "@/components/listings/expert-inspection-card";
 import { DamageReportCard } from "@/components/listings/damage-report-card";
+import { EIDSBadge } from "@/components/shared/eids-badge";
 import { getCurrentUser } from "@/lib/auth/session";
 import { buildListingDetailMetadata, buildAbsoluteUrl } from "@/lib/seo";
 import { formatDate, formatNumber } from "@/lib/utils";
@@ -90,9 +92,11 @@ export default async function ListingDetailPage({ params }: ListingDetailPagePro
   const currentUser = await getCurrentUser();
   const whatsappLink = `https://wa.me/${listing.whatsappPhone.replace(/\D/g, "")}?text=${encodeURIComponent(whatsappTemplate)}`;
   
-  // Map tone to marketStatus for PriceAnalysisCard
-  const marketStatus = insight.tone === "emerald" ? "excellent" : insight.tone === "amber" ? "high" : "fair";
-  const priceDiff = marketStatus === "high" ? -15000 : 25000;
+  // Use real market data if available, otherwise fallback to mock insights
+  const marketPriceIndex = listing.marketPriceIndex || 1.0;
+  const marketStatus = marketPriceIndex <= 0.95 ? "excellent" : marketPriceIndex >= 1.05 ? "high" : "fair";
+  const marketAverage = listing.price / marketPriceIndex;
+  const priceDiff = marketAverage - listing.price;
 
   const heroToneClasses = {
     amber: {
@@ -175,9 +179,12 @@ export default async function ListingDetailPage({ params }: ListingDetailPagePro
           <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
             <div className="space-y-2">
               <div className="flex items-center gap-3">
-                <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-slate-900">
+                <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-slate-900 leading-tight">
                   {listing.brand} <span className="font-medium text-slate-500">{listing.model}</span>
                 </h1>
+                {listing.eidsVerificationJson && (
+                  <EIDSBadge isVerified={true} className="scale-110 shadow-emerald-500/20 shadow-lg" />
+                )}
                 {listing.featured && (
                   <span className="inline-flex items-center gap-1 rounded-full bg-gradient-to-r from-amber-500 to-orange-500 px-3 py-1 text-xs font-bold text-white shadow-md">
                     <Sparkles size={12} />
@@ -286,6 +293,7 @@ export default async function ListingDetailPage({ params }: ListingDetailPagePro
               price={listing.price} 
               marketStatus={marketStatus} 
               priceDiff={priceDiff} 
+              marketPriceIndex={listing.marketPriceIndex ?? undefined}
             />
 
             {/* Seller Info */}
@@ -297,8 +305,9 @@ export default async function ListingDetailPage({ params }: ListingDetailPagePro
                       {(seller?.fullName ?? "S").slice(0, 1)}
                     </div>
                     <div>
-                      <div className="font-bold text-slate-900 text-base flex items-center gap-1.5">
+                      <div className="font-bold text-slate-900 text-base flex items-center gap-2">
                         {seller?.fullName ?? "Satıcı"}
+                        <EIDSBadge isVerified={!!seller?.eidsId} />
                       </div>
                       <div className="text-[13px] font-medium text-slate-500 bg-slate-100 px-2 py-0.5 rounded-md inline-block mt-1">
                         Bireysel Satıcı
@@ -321,15 +330,7 @@ export default async function ListingDetailPage({ params }: ListingDetailPagePro
                       <Phone className="size-5" />
                       {listing.whatsappPhone.replace(/(\d{4})(\d{3})(\d{2})(\d{2})/, "$1 $2 $3 $4")}
                     </a>
-                    <a
-                      href={whatsappLink}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-green-500 to-emerald-600 h-12 px-4 text-[15px] text-white font-semibold shadow-lg shadow-green-500/25 transition-all hover:from-green-600 hover:to-emerald-700 hover:shadow-green-500/40"
-                    >
-                      <MessageCircle className="size-5" />
-                      WhatsApp ile İletişime Geç
-                    </a>
+                    <SafeWhatsAppButton whatsappLink={whatsappLink} />
                   </div>
                 ) : (
                   <div className="mt-5 space-y-3">

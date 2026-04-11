@@ -6,6 +6,8 @@ import {
   CheckCircle2,
   ChevronLeft,
   ChevronRight,
+  ChevronDown,
+  ChevronUp,
   FileText,
   ImagePlus,
   Info,
@@ -40,6 +42,7 @@ import {
 } from "@/services/listings/listing-images";
 import type { BrandCatalogItem, CityOption, Listing, ListingCreateFormValues } from "@/types";
 import { DamageSelector } from "./damage-selector";
+import { ExpertInspectionEditor } from "./expert-inspection-editor";
 
 interface ListingCreateFormProps {
   initialValues: {
@@ -220,6 +223,16 @@ export function ListingCreateForm({
   const [currentStep, setCurrentStep] = useState(0);
   const totalSteps = STEP_LABELS.length;
   const uploadStatesRef = useRef<Record<string, UploadState>>({});
+  const form = useForm<
+    ListingCreateFormSchemaInput,
+    undefined,
+    ListingCreateFormSchemaOutput
+  >({
+    defaultValues: buildDefaultValues(initialValues, initialListing),
+    mode: "onBlur",
+    resolver: zodResolver(listingCreateFormSchema),
+  });
+
   const {
     control,
     clearErrors,
@@ -231,17 +244,9 @@ export function ListingCreateForm({
     setError,
     setValue,
     trigger,
-  } = useForm<
-    ListingCreateFormSchemaInput,
-    undefined,
-    ListingCreateFormSchemaOutput
-  >({
-    defaultValues: buildDefaultValues(initialValues, initialListing),
-    mode: "onBlur",
-    resolver: zodResolver(listingCreateFormSchema),
-  });
+  } = form;
 
-  const { append, fields, remove } = useFieldArray({
+  const { append, fields, remove, move } = useFieldArray({
     control,
     name: "images",
   });
@@ -934,69 +939,13 @@ export function ListingCreateForm({
             STEP 2 — Ekspertiz ve Kondisyon
         ════════════════════════════════════════════════ */}
         {currentStep === 2 && (
-          <>
-            <FormSection
-              icon={ShieldCheck}
-              title="Detaylı kondisyon ve ekspertiz"
-              description="Motor, şanzıman ve mekanik aksamın durumunu belirt — bu bilgiler profesyonel alıcılar için kritiktir."
-            >
-              <div className="space-y-6">
-                <div className="flex items-center gap-4 rounded-2xl border border-slate-100 bg-slate-50/50 p-4">
-                  <div className="flex-1">
-                    <p className="text-sm font-semibold text-foreground">Profesyonel ekspertiz raporu var mı?</p>
-                    <p className="text-xs text-muted-foreground mt-1">TSB onaylı bir kurumdan rapor aldıysan işaretleyebilirsin.</p>
-                  </div>
-                  <Controller
-                    control={control}
-                    name={"expertInspection.hasInspection" as any}
-                    render={({ field }) => (
-                      <input
-                        type="checkbox"
-                        checked={field.value}
-                        onChange={(e) => field.onChange(e.target.checked)}
-                        className="size-6 rounded-lg border-input text-primary transition-all focus:ring-primary"
-                      />
-                    )}
-                  />
-                </div>
-
-                <div className="grid gap-6 sm:grid-cols-2">
-                  {[
-                    { label: "Motor", name: "expertInspection.engine" },
-                    { label: "Şanzıman", name: "expertInspection.transmission" },
-                    { label: "Alt Takım / Süspansiyon", name: "expertInspection.suspension" },
-                    { label: "Fren Sistemi", name: "expertInspection.brakes" },
-                    { label: "Elektrik Sistemi", name: "expertInspection.electrical" },
-                    { label: "İç Kondisyon", name: "expertInspection.interior" },
-                    { label: "Lastikler", name: "expertInspection.tires" },
-                    { label: "Klima / Isıtma", name: "expertInspection.acHeating" },
-                  ].map((field) => (
-                    <label key={field.name} className="block space-y-2 text-sm font-medium text-foreground">
-                      <span>{field.label}</span>
-                      <select
-                        {...register(field.name as any)}
-                        className={inputClassName}
-                      >
-                        <option value="bilinmiyor">Bilinmiyor / Belirtilmemiş</option>
-                        <option value="var">Sorunsuz / Kusursuz</option>
-                        <option value="yok">Bakım Gerektiriyor / Arızalı</option>
-                      </select>
-                    </label>
-                  ))}
-                </div>
-
-                <label className="block space-y-2 text-sm font-medium text-foreground">
-                  <span>Ekstra Ekspertiz Notları</span>
-                  <textarea
-                    rows={4}
-                    {...register("expertInspection.notes" as any)}
-                    placeholder="Ekspertizde özellikle belirtilen bir durum varsa buraya yazabilirsiniz. (Örn: Motor performansı %92 çıktı)"
-                    className="w-full rounded-2xl border border-input bg-background px-4 py-3 text-sm outline-none transition-colors focus:border-primary"
-                  />
-                </label>
-              </div>
-            </FormSection>
-          </>
+          <FormSection
+            icon={ShieldCheck}
+            title="Detaylı kondisyon ve ekspertiz"
+            description="Motor, şanzıman ve mekanik aksamın durumunu belirt — bu bilgiler profesyonel alıcılar için kritiktir."
+          >
+            <ExpertInspectionEditor form={form as any} />
+          </FormSection>
         )}
 
         {/* ════════════════════════════════════════════════
@@ -1065,15 +1014,37 @@ export function ListingCreateForm({
                             <p className="text-sm font-semibold text-foreground">
                               Fotoğraf {index + 1} {index === 0 ? "(Kapak)" : ""}
                             </p>
-                            <button
-                              type="button"
-                              onClick={() => void handleRemoveImage(index, field.id)}
-                              disabled={fields.length <= minimumListingImages || isUploading}
-                              className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-border bg-background px-3 text-sm font-semibold text-foreground transition-colors hover:bg-muted disabled:cursor-not-allowed disabled:opacity-50"
-                            >
-                              <Trash2 className="size-4" />
-                              Kaldır
-                            </button>
+                            <div className="flex items-center gap-2">
+                              {index > 0 && (
+                                <button
+                                  type="button"
+                                  onClick={() => move(index, index - 1)}
+                                  className="size-10 flex items-center justify-center rounded-xl border border-border bg-background hover:bg-muted text-foreground transition-colors"
+                                  title="Yukarı taşı"
+                                >
+                                  <ChevronUp className="size-4" />
+                                </button>
+                              )}
+                              {index < fields.length - 1 && (
+                                <button
+                                  type="button"
+                                  onClick={() => move(index, index + 1)}
+                                  className="size-10 flex items-center justify-center rounded-xl border border-border bg-background hover:bg-muted text-foreground transition-colors"
+                                  title="Aşağı taşı"
+                                >
+                                  <ChevronDown className="size-4" />
+                                </button>
+                              )}
+                              <button
+                                type="button"
+                                onClick={() => void handleRemoveImage(index, field.id)}
+                                disabled={fields.length <= minimumListingImages || isUploading}
+                                className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-border bg-background px-3 text-sm font-semibold text-foreground transition-colors hover:bg-muted disabled:cursor-not-allowed disabled:opacity-50"
+                              >
+                                <Trash2 className="size-4" />
+                                Kaldır
+                              </button>
+                            </div>
                           </div>
 
                           <label className="block space-y-2 text-sm font-medium text-foreground">

@@ -4,7 +4,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { Archive, ArrowUpCircle, Loader2, Pencil, Plus, Rocket, RotateCcw, X } from "lucide-react";
+import { Archive, ArrowUpCircle, Loader2, Pencil, Plus, Rocket, RotateCcw, ShieldCheck, X } from "lucide-react";
 
 import { formatCurrency, formatNumber } from "@/lib/utils";
 import type { Listing } from "@/types";
@@ -45,6 +45,7 @@ export function MyListingsPanel({ activeEditId, listings, children }: MyListings
   const [archivingId, setArchivingId] = useState<string | null>(null);
   const [archiveError, setArchiveError] = useState<string | null>(null);
   const [bumpingId, setBumpingId] = useState<string | null>(null);
+  const [verifyingId, setVerifyingId] = useState<string | null>(null);
   const [bumpMessage, setBumpMessage] = useState<string | null>(null);
   const [currentTime, setCurrentTime] = useState(() => Date.now());
 
@@ -94,6 +95,26 @@ export function MyListingsPanel({ activeEditId, listings, children }: MyListings
       router.refresh();
     } finally {
       setBumpingId(null);
+    }
+  };
+  
+  const handleVerifyEIDS = async (id: string) => {
+    setVerifyingId(id);
+    try {
+      const response = await fetch(`/api/listings/${id}/verify-eids`, {
+        method: "POST",
+      });
+      const result = await response.json();
+      
+      if (result.success) {
+        router.refresh();
+      } else {
+        alert(result.message || "Doğrulama başarısız oldu.");
+      }
+    } catch (error) {
+      alert("Bir hata oluştu.");
+    } finally {
+      setVerifyingId(null);
     }
   };
 
@@ -156,9 +177,11 @@ export function MyListingsPanel({ activeEditId, listings, children }: MyListings
                 listing={listing}
                 isArchiving={archivingId === listing.id}
                 isBumping={bumpingId === listing.id}
+                isVerifying={verifyingId === listing.id}
                 currentTime={currentTime}
                 onArchive={handleArchive}
                 onBump={handleBump}
+                onVerifyEIDS={handleVerifyEIDS}
               />
             ))}
           </div>
@@ -175,6 +198,8 @@ function ListingCard({
   currentTime,
   onArchive,
   onBump,
+  onVerifyEIDS,
+  isVerifying,
 }: {
   listing: Listing;
   isArchiving: boolean;
@@ -182,6 +207,8 @@ function ListingCard({
   currentTime: number;
   onArchive: (id: string) => void;
   onBump: (id: string) => void;
+  onVerifyEIDS: (id: string) => Promise<void>;
+  isVerifying: boolean;
 }) {
   const isArchived = listing.status === "archived";
   const isApproved = listing.status === "approved";
@@ -218,6 +245,12 @@ function ListingCard({
           <span className={`text-xs font-medium px-2 py-0.5 rounded border ${statusClassMap[listing.status]}`}>
             {statusLabelMap[listing.status]}
           </span>
+          {listing.eidsVerificationJson && (
+            <span className="flex items-center gap-1 rounded border border-emerald-200 bg-emerald-50 px-2 py-0.5 text-[10px] font-bold text-emerald-700">
+              <ShieldCheck className="size-3" />
+              EİDS DOĞRULANDI
+            </span>
+          )}
         </div>
         <p className="mt-1 font-medium text-gray-900 truncate">{listing.title}</p>
         <p className="text-sm font-semibold text-gray-900">
@@ -238,6 +271,21 @@ function ListingCard({
           <Pencil className="size-4" />
           Düzenle
         </Link>
+        {isApproved && !listing.eidsVerificationJson && (
+          <button
+            type="button"
+            disabled={isVerifying}
+            onClick={() => onVerifyEIDS(listing.id)}
+            className="flex items-center justify-center gap-1 rounded-lg border border-emerald-600 bg-emerald-600 px-3 py-2 text-sm font-semibold text-white hover:bg-emerald-700 disabled:opacity-50"
+          >
+            {isVerifying ? (
+              <Loader2 className="size-4 animate-spin" />
+            ) : (
+              <ShieldCheck className="size-4" />
+            )}
+            EİDS ile Doğrula
+          </button>
+        )}
         {isApproved && (
           <Dialog>
             <DialogTrigger asChild>

@@ -12,6 +12,7 @@ import {
   Save,
   Sparkles,
   TriangleAlert,
+  ShieldCheck,
   X,
   XCircle,
 } from "lucide-react";
@@ -371,6 +372,12 @@ export function AdminListingsModeration({ pendingListings }: AdminListingsModera
                     >
                       {insight.badgeLabel}
                     </span>
+                    {listing.expertInspection?.hasInspection && (
+                      <span className="inline-flex items-center gap-1 rounded-full bg-emerald-100 px-3 py-1 text-xs font-bold text-emerald-700">
+                        <ShieldCheck className="size-3" />
+                        Ekspertiz Raporu Mevcut
+                      </span>
+                    )}
                   </div>
                   
                   {(listing.fraudScore ?? 0) > 0 && (
@@ -384,6 +391,19 @@ export function AdminListingsModeration({ pendingListings }: AdminListingsModera
                           {listing.fraudReason}
                         </p>
                       )}
+                    </div>
+                  )}
+
+                  {(listing.marketPriceIndex ?? 1) > 1.2 && (
+                    <div className="rounded-xl border border-amber-200 bg-amber-50/50 p-4">
+                      <div className="flex items-center gap-2 text-sm font-bold text-amber-700">
+                        <TriangleAlert className="size-5" />
+                        Fiyat Manüpilasyonu Şüphesi
+                      </div>
+                      <p className="mt-1.5 text-xs font-medium text-amber-600">
+                        İlan fiyatı piyasa ortalamasının %{Math.round(((listing.marketPriceIndex ?? 1) - 1) * 100)} üzerindedir. 
+                        Lütfen fiyat ve araç kondisyonu arasındaki tutarlılığı inceleyin.
+                      </p>
                     </div>
                   )}
 
