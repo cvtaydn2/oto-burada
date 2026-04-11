@@ -37,8 +37,8 @@ export function SmartFilters({
     )
   }
 
-  const brandOptions = [{ value: "", label: "Tüm Markalar" }, ...brands.map(b => ({ value: b.brand, label: b.brand }))]
-  const modelOptions = [{ value: "", label: "Tüm Modeller" }, ...models.map(m => ({ value: m, label: m }))]
+  const brandOptions = [{ value: "all", label: "Tüm Markalar" }, ...brands.map(b => ({ value: b.brand, label: b.brand }))]
+  const modelOptions = [{ value: "all", label: "Tüm Modeller" }, ...models.map(m => ({ value: m, label: m }))]
   
   return (
     <div className="flex flex-col gap-6">
@@ -76,16 +76,16 @@ export function SmartFilters({
         >
           <div className="space-y-3">
             <FilterSelect
-              value={filters.brand}
-              onValueChange={(v) => onFilterChange("brand", v || undefined)}
+              value={filters.brand || "all"}
+              onValueChange={(v) => onFilterChange("brand", v === "all" ? undefined : v)}
               placeholder="Marka seç"
               options={brandOptions}
               className="bg-white rounded-xl border-border"
             />
             {filters.brand && models.length > 0 && (
               <FilterSelect
-                value={filters.model}
-                onValueChange={(v) => onFilterChange("model", v || undefined)}
+                value={filters.model || "all"}
+                onValueChange={(v) => onFilterChange("model", v === "all" ? undefined : v)}
                 placeholder="Model seç"
                 options={modelOptions}
                 className="bg-white rounded-xl border-border animate-in fade-in slide-in-from-top-2"

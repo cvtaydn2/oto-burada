@@ -101,10 +101,10 @@ export function ListingsFilterPanel({
   const yearCount = (filters.minYear ? 1 : 0) + (filters.maxYear ? 1 : 0) + (filters.maxMileage ? 1 : 0)
   const activeFiltersCount = brandCount + locationCount + specsCount + priceCount + yearCount + (filters.query ? 1 : 0)
 
-  const brandOptions = [{ value: "", label: "Tüm Markalar" }, ...brands.map(b => ({ value: b.brand, label: b.brand }))]
-  const modelOptions = [{ value: "", label: "Tüm Modeller" }, ...models.map(m => ({ value: m, label: m }))]
-  const cityOptions = [{ value: "", label: "Tüm Şehirler" }, ...cities.map(c => ({ value: c.city, label: c.city }))]
-  const districtOptions = [{ value: "", label: "Tüm İlçeler" }, ...districts.map(d => ({ value: d, label: d }))]
+  const brandOptions = [{ value: "all", label: "Tüm Markalar" }, ...brands.map(b => ({ value: b.brand, label: b.brand }))]
+  const modelOptions = [{ value: "all", label: "Tüm Modeller" }, ...models.map(m => ({ value: m, label: m }))]
+  const cityOptions = [{ value: "all", label: "Tüm Şehirler" }, ...cities.map(c => ({ value: c.city, label: c.city }))]
+  const districtOptions = [{ value: "all", label: "Tüm İlçeler" }, ...districts.map(d => ({ value: d, label: d }))]
 
   return (
     <div className={cn(
@@ -170,15 +170,15 @@ export function ListingsFilterPanel({
         {/* Brand & Model */}
         <FilterSection title="Marka" icon={undefined} activeCount={brandCount}>
           <FilterSelect
-            value={filters.brand}
-            onValueChange={(v) => onFilterChange("brand", v || undefined)}
+            value={filters.brand || "all"}
+            onValueChange={(v) => onFilterChange("brand", v === "all" ? undefined : v)}
             placeholder="Marka seç"
             options={brandOptions}
           />
           {filters.brand && models.length > 0 && (
             <FilterSelect
-              value={filters.model}
-              onValueChange={(v) => onFilterChange("model", v || undefined)}
+              value={filters.model || "all"}
+              onValueChange={(v) => onFilterChange("model", v === "all" ? undefined : v)}
               placeholder="Model seç"
               options={modelOptions}
             />
@@ -188,15 +188,15 @@ export function ListingsFilterPanel({
         {/* Location */}
         <FilterSection title="Konum" icon={MapPin} activeCount={locationCount}>
           <FilterSelect
-            value={filters.city}
-            onValueChange={(v) => onFilterChange("city", v || undefined)}
+            value={filters.city || "all"}
+            onValueChange={(v) => onFilterChange("city", v === "all" ? undefined : v)}
             placeholder="Şehir seç"
             options={cityOptions}
           />
           {filters.city && districts.length > 0 && (
             <FilterSelect
-              value={filters.district}
-              onValueChange={(v) => onFilterChange("district", v || undefined)}
+              value={filters.district || "all"}
+              onValueChange={(v) => onFilterChange("district", v === "all" ? undefined : v)}
               placeholder="İlçe seç"
               options={districtOptions}
             />
