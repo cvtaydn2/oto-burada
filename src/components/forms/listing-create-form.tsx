@@ -15,10 +15,14 @@ import {
   MapPin,
   MessageCircle,
   Plus,
+  Search,
   ShieldCheck,
   Trash2,
   Upload,
   AlertCircle,
+  Car,
+  Sparkles,
+  Wand2,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
@@ -33,13 +37,14 @@ import {
   minimumListingImages,
   transmissionTypes,
 } from "@/lib/constants/domain";
-import { formatNumber } from "@/lib/utils";
+import { cn, formatNumber } from "@/lib/utils";
 import { listingCreateFormSchema } from "@/lib/validators";
 import {
   formatFileSize,
   getListingImageConstraintsText,
   validateListingImageFile,
 } from "@/services/listings/listing-images";
+import { lookupVehicleByPlate } from "@/services/listings/plate-lookup";
 import type { BrandCatalogItem, CityOption, Listing, ListingCreateFormValues } from "@/types";
 import { DamageSelector } from "./damage-selector";
 import { ExpertInspectionEditor } from "./expert-inspection-editor";
@@ -220,6 +225,7 @@ export function ListingCreateForm({
   const isEditing = Boolean(initialListing);
   const [submitState, setSubmitState] = useState<SubmitState>(initialSubmitState);
   const [uploadStates, setUploadStates] = useState<Record<string, UploadState>>({});
+  const [isPlateLoading, setIsPlateLoading] = useState(false);
   const [currentStep, setCurrentStep] = useState(0);
   const totalSteps = STEP_LABELS.length;
   const uploadStatesRef = useRef<Record<string, UploadState>>({});
@@ -258,6 +264,7 @@ export function ListingCreateForm({
   const uploadedImageCount = imageValues.filter(
     (image) => (image.url ?? "").trim().length > 0 && (image.storagePath ?? "").trim().length > 0,
   ).length;
+  const plateValue = useWatch({ control, name: "licensePlate" });
   const isUploadingAnyImage = fields.some((field) => uploadStates[field.id]?.status === "uploading");
   const availableBrands = useMemo(() => {
     if (!initialListing?.brand) {
@@ -324,6 +331,53 @@ export function ListingCreateForm({
         : item,
     );
   }, [cities, initialListing]);
+
+  const handlePlateLookup = async () => {
+    const plate = (plateValue || "").replace(/\s/g, "").toUpperCase();
+    if (plate.length < 5) {
+      setError("licensePlate", { message: "Lütfen geçerli bir plaka gir" });
+      return;
+    }
+
+    setIsPlateLoading(true);
+    clearErrors("licensePlate");
+
+    try {
+      const result = await lookupVehicleByPlate(plate);
+      if (result) {
+        // Marka öncelikli çünkü modeller markaya bağlı
+        setValue("brand", result.brand, { shouldDirty: true, shouldValidate: true });
+        
+        // Marka değişiminin yansıması için küçük bir bekleme gerekebilir 
+        // veya react-hook-form'un state güncellenmesini beklemeliyiz.
+        // Ama setValue senkrondur, altındaki model setleme çalışacaktır.
+        setValue("model", result.model, { shouldDirty: true, shouldValidate: true });
+        setValue("year", result.year, { shouldDirty: true, shouldValidate: true });
+        
+        // Yakıt ve Vites tiplerini eşleştir (string mapping gerekebilir)
+        setValue("fuelType", result.fuelType as any, { shouldDirty: true, shouldValidate: true });
+        setValue("transmission", result.transmission as any, { shouldDirty: true, shouldValidate: true });
+        
+        // Başlık da plaka verisinden oluşturulabilir (Opsiyonel)
+        const brandLabel = availableBrands.find(b => b.brand === result.brand)?.brand || result.brand;
+        setValue("title", `${result.year} ${brandLabel} ${result.model}`, { shouldDirty: true, shouldValidate: true });
+
+        setSubmitState({
+          status: "success",
+          message: "Araç bilgileri başarıyla getirildi ve dolduruldu ✨",
+        });
+        setTimeout(() => setSubmitState(initialSubmitState), 3000);
+      } else {
+        setError("licensePlate", { message: "Bu plaka ile araç bilgisi bulunamadı." });
+      }
+    } catch (err) {
+      console.error("Plate lookup error:", err);
+      setError("licensePlate", { message: "Sorgulama sırasında bir hata oluştu." });
+    } finally {
+      setIsPlateLoading(false);
+    }
+  };
+
   const modelOptions =
     availableBrands.find((item) => item.brand === selectedBrand)?.models ?? [];
   const districtOptions =
@@ -669,6 +723,52 @@ export function ListingCreateForm({
               title="Temel araç bilgileri"
               description="Marka, model, yıl ve fiyat bilgisini net tut — bu alanlar ilk filtreleme katmanıdır."
             >
+              <div className="mb-8 rounded-2xl bg-primary/5 p-4 border border-primary/10">
+                <div className="flex flex-col gap-4 sm:flex-row sm:items-end">
+                  <label className="flex-1 space-y-2 text-sm font-medium text-foreground">
+                    <div className="flex items-center gap-2">
+                      <Sparkles className="size-4 text-primary" />
+                      <span>Plaka ile Otomatik Doldur (Örn: 34ABC123)</span>
+                    </div>
+                    <div className="relative">
+                      <input
+                        type="text"
+                        {...register("licensePlate")}
+                        placeholder="34 ABC 123"
+                        className={`${inputClassName} uppercase placeholder:normal-case`}
+                      />
+                      <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-2">
+                        {isPlateLoading ? (
+                          <LoaderCircle className="size-4 animate-spin text-primary" />
+                        ) : (
+                          <Car className="size-4 text-muted-foreground/50" />
+                        )}
+                      </div>
+                    </div>
+                  </label>
+                  <button
+                    type="button"
+                    onClick={handlePlateLookup}
+                    disabled={isPlateLoading || !plateValue}
+                    className="h-12 px-6 rounded-xl bg-primary text-primary-foreground font-semibold text-sm hover:bg-primary/90 transition-colors disabled:opacity-50 flex items-center justify-center gap-2 whitespace-nowrap"
+                  >
+                    {isPlateLoading ? (
+                      <LoaderCircle className="size-4 animate-spin" />
+                    ) : (
+                      <Wand2 className="size-4" />
+                    )}
+                    Bilgileri Getir
+                  </button>
+                </div>
+                {errors.licensePlate ? (
+                  <p className="mt-2 text-sm text-destructive">{errors.licensePlate.message}</p>
+                ) : (
+                  <p className="mt-2 text-xs text-muted-foreground">
+                    Plaka girerek marka, model, yıl ve paket bilgilerini saniyeler içinde doldurabilirsin.
+                  </p>
+                )}
+              </div>
+
               <section className="grid gap-5 sm:grid-cols-2">
                 <label className="block space-y-2 text-sm font-medium text-foreground sm:col-span-2">
                   <span>İlan başlığı</span>
@@ -911,26 +1011,56 @@ export function ListingCreateForm({
               title="Tramer kaydı"
               description="Şeffaflık güven yaratır. Doğru Tramer bilgisi girmek aracınızın daha hızlı satılmasını sağlar."
             >
-              <section className="grid gap-5 sm:grid-cols-2">
-                <label className="block space-y-2 text-sm font-medium text-foreground sm:col-span-2">
+              <div className="space-y-4">
+                <label className="block space-y-2 text-sm font-medium text-foreground">
                   <span>Tramer Kaydı Toplamı (TL)</span>
-                  <input
-                    type="number"
-                    min={0}
-                    inputMode="numeric"
-                    {...register("tramerAmount", { valueAsNumber: true })}
-                    placeholder="0 veya miktar giriniz. (Yoksa 0 bırakın)"
-                    className={inputClassName}
-                  />
+                  <div className="relative">
+                    <input
+                      type="number"
+                      min={0}
+                      inputMode="numeric"
+                      {...register("tramerAmount", { valueAsNumber: true })}
+                      placeholder="0 veya miktar giriniz."
+                      className={cn(inputClassName, "pl-12")}
+                    />
+                    <div className="absolute left-4 top-1/2 -translate-y-1/2 font-bold text-slate-400">
+                      ₺
+                    </div>
+                  </div>
                   {errors.tramerAmount ? (
                     <p className="text-sm text-destructive">{errors.tramerAmount.message}</p>
                   ) : (
-                    <p className="text-xs text-muted-foreground">
-                      Tramer kaydı olmayan araçlar için 0 girin.
-                    </p>
+                    <div className="flex items-center justify-between">
+                      <p className="text-xs text-muted-foreground">
+                        Tramer kaydı olmayan araçlar için 0 girin.
+                      </p>
+                      {(getValues("tramerAmount") as number) > 0 && (
+                        <p className="text-xs font-bold text-indigo-600">
+                          Girdiğiniz tutar: {formatNumber(getValues("tramerAmount") as number)} TL
+                        </p>
+                      )}
+                    </div>
                   )}
                 </label>
-              </section>
+
+                <div className="flex flex-wrap gap-2">
+                  {[0, 5000, 15000, 50000].map((amount) => (
+                    <button
+                      key={amount}
+                      type="button"
+                      onClick={() => setValue("tramerAmount", amount, { shouldDirty: true, shouldValidate: true })}
+                      className={cn(
+                        "rounded-xl border px-4 py-2 text-xs font-bold transition-all",
+                        getValues("tramerAmount") === amount
+                          ? "border-primary bg-primary text-primary-foreground shadow-md shadow-primary/20"
+                          : "border-slate-200 bg-white text-slate-600 hover:border-primary/50 hover:bg-slate-50"
+                      )}
+                    >
+                      {amount === 0 ? "Hasarsız (0 ₺)" : `${formatNumber(amount)}+ ₺`}
+                    </button>
+                  ))}
+                </div>
+              </div>
             </FormSection>
           </>
         )}
@@ -980,7 +1110,7 @@ export function ListingCreateForm({
                   </p>
                 ) : null}
 
-                <div className="grid gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                   {fields.map((field, index) => {
                     const imageValue = imageValues[index];
                     const uploadState = uploadStates[field.id];
@@ -993,66 +1123,57 @@ export function ListingCreateForm({
                     return (
                       <div
                         key={field.id}
-                        className="grid gap-4 rounded-[1.5rem] border border-border/70 bg-muted/20 p-4 lg:grid-cols-[220px_minmax(0,1fr)]"
+                        className={cn(
+                          "group relative aspect-[4/3] overflow-hidden rounded-[1.5rem] border-2 transition-all",
+                          index === 0 
+                            ? "border-primary shadow-lg shadow-primary/5 ring-4 ring-primary/5" 
+                            : "border-border/60 bg-muted/30 hover:border-border"
+                        )}
                       >
-                        <div className="overflow-hidden rounded-[1.25rem] border border-dashed border-border bg-muted/50">
-                          {previewUrl ? (
+                        {/* ── Image/Preview ── */}
+                        {previewUrl ? (
+                          <>
                             <div
-                              className="aspect-[4/3] bg-cover bg-center"
+                              className="absolute inset-0 bg-cover bg-center transition-transform duration-500 group-hover:scale-105"
                               style={{ backgroundImage: `url(${previewUrl})` }}
                             />
-                          ) : (
-                            <div className="flex aspect-[4/3] flex-col items-center justify-center gap-2 px-4 text-center text-sm text-muted-foreground">
-                              <ImagePlus className="size-5 text-primary" />
-                              <span>Bir fotoğraf seçtiğinde önizleme burada görünür.</span>
-                            </div>
-                          )}
-                        </div>
-
-                        <div className="space-y-3">
-                          <div className="flex items-center justify-between gap-3">
-                            <p className="text-sm font-semibold text-foreground">
-                              Fotoğraf {index + 1} {index === 0 ? "(Kapak)" : ""}
-                            </p>
-                            <div className="flex items-center gap-2">
-                              {index > 0 && (
+                            {/* Overlay Controls */}
+                            <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col justify-between p-3">
+                              <div className="flex justify-end gap-2">
+                                {index > 0 && (
+                                  <button
+                                    type="button"
+                                    onClick={() => move(index, index - 1)}
+                                    className="size-10 flex items-center justify-center rounded-xl bg-white/90 text-slate-900 hover:bg-white transition-colors"
+                                    title="Sola/Yukarı taşı"
+                                  >
+                                    <ChevronLeft className="size-4" />
+                                  </button>
+                                )}
+                                {index < fields.length - 1 && (
+                                  <button
+                                    type="button"
+                                    onClick={() => move(index, index + 1)}
+                                    className="size-10 flex items-center justify-center rounded-xl bg-white/90 text-slate-900 hover:bg-white transition-colors"
+                                    title="Sağa/Aşağı taşı"
+                                  >
+                                    <ChevronRight className="size-4" />
+                                  </button>
+                                )}
                                 <button
                                   type="button"
-                                  onClick={() => move(index, index - 1)}
-                                  className="size-10 flex items-center justify-center rounded-xl border border-border bg-background hover:bg-muted text-foreground transition-colors"
-                                  title="Yukarı taşı"
+                                  onClick={() => void handleRemoveImage(index, field.id)}
+                                  className="size-10 flex items-center justify-center rounded-xl bg-rose-500/90 text-white hover:bg-rose-500 transition-colors"
+                                  title="Kaldır"
                                 >
-                                  <ChevronUp className="size-4" />
+                                  <Trash2 className="size-4" />
                                 </button>
-                              )}
-                              {index < fields.length - 1 && (
-                                <button
-                                  type="button"
-                                  onClick={() => move(index, index + 1)}
-                                  className="size-10 flex items-center justify-center rounded-xl border border-border bg-background hover:bg-muted text-foreground transition-colors"
-                                  title="Aşağı taşı"
-                                >
-                                  <ChevronDown className="size-4" />
-                                </button>
-                              )}
-                              <button
-                                type="button"
-                                onClick={() => void handleRemoveImage(index, field.id)}
-                                disabled={fields.length <= minimumListingImages || isUploading}
-                                className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-border bg-background px-3 text-sm font-semibold text-foreground transition-colors hover:bg-muted disabled:cursor-not-allowed disabled:opacity-50"
-                              >
-                                <Trash2 className="size-4" />
-                                Kaldır
-                              </button>
-                            </div>
-                          </div>
-
-                          <label className="block space-y-2 text-sm font-medium text-foreground">
-                            <span>Fotoğraf seç</span>
-                            <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-                              <label className="inline-flex h-11 cursor-pointer items-center justify-center gap-2 rounded-xl border border-border bg-background px-4 text-sm font-semibold text-foreground transition-colors hover:bg-muted">
-                                <Upload className="size-4" />
-                                Dosya seç ve yükle
+                              </div>
+                              <label className="w-full">
+                                <span className="flex h-10 w-full cursor-pointer items-center justify-center gap-2 rounded-xl bg-white/90 text-slate-900 text-xs font-bold hover:bg-white transition-colors">
+                                  <Upload className="size-4" />
+                                  Değiştir
+                                </span>
                                 <input
                                   type="file"
                                   accept={listingImageAcceptedMimeTypes.join(",")}
@@ -1063,75 +1184,70 @@ export function ListingCreateForm({
                                   }}
                                 />
                               </label>
-
-                              {isUploaded ? (
-                                <span className="inline-flex items-center gap-2 text-sm font-medium text-primary">
-                                  <CheckCircle2 className="size-4" />
-                                  Yükleme hazır
-                                </span>
-                              ) : null}
                             </div>
-
-                            {isUploading ? (
-                              <div className="space-y-2">
-                                <div className="h-2 overflow-hidden rounded-full bg-muted">
-                                  <div
-                                    className="h-full rounded-full bg-primary transition-[width]"
-                                    style={{ width: `${uploadState?.progress ?? 0}%` }}
-                                  />
-                                </div>
-                                <p className="text-xs text-muted-foreground">
-                                  Yükleme ilerlemesi: %{uploadState?.progress ?? 0}
-                                </p>
-                              </div>
-                            ) : null}
-
-                            {errors.images?.[index]?.url ? (
-                              <p className="text-sm text-destructive">
-                                {errors.images[index]?.url?.message}
+                          </>
+                        ) : (
+                          <label className="absolute inset-0 flex cursor-pointer flex-col items-center justify-center gap-3 p-4 text-center">
+                            <div className="size-12 flex items-center justify-center rounded-2xl bg-primary/10 text-primary group-hover:bg-primary group-hover:text-white transition-all">
+                              <ImagePlus className="size-6" />
+                            </div>
+                            <div className="space-y-1">
+                              <p className="text-sm font-bold text-foreground">Fotoğraf Ekle</p>
+                              <p className="text-[10px] text-muted-foreground uppercase tracking-widest font-semibold">
+                                {index === 0 ? "Kapak Fotoğrafı" : `Fotoğraf ${index + 1}`}
                               </p>
-                            ) : (
-                              <p className="text-xs text-muted-foreground">
-                                {getListingImageConstraintsText()} desteklenir.
-                              </p>
-                            )}
+                            </div>
+                            <input
+                              type="file"
+                              accept={listingImageAcceptedMimeTypes.join(",")}
+                              className="sr-only"
+                              onChange={(event) => {
+                                void handleImageUpload(index, field.id, event.target.files?.[0] ?? null);
+                                event.currentTarget.value = "";
+                              }}
+                            />
                           </label>
+                        )}
 
-                          {imageValue?.fileName ? (
-                            <div className="rounded-2xl border border-border/70 bg-background px-4 py-3 text-sm text-muted-foreground">
-                              <p className="font-semibold text-foreground">{imageValue.fileName}</p>
-                              <p className="mt-1">
-                                {imageValue.mimeType ?? "image"} ·{" "}
-                                {typeof imageValue.size === "number" ? formatFileSize(imageValue.size) : "-"}
-                              </p>
-                            </div>
-                          ) : null}
-
-                          {uploadState?.message ? (
-                            <p
-                              className={
-                                uploadState.status === "error"
-                                  ? "text-sm text-destructive"
-                                  : "text-sm text-muted-foreground"
-                              }
-                            >
-                              {uploadState.message}
-                            </p>
-                          ) : null}
+                        {/* ── Status Badges ── */}
+                        <div className="absolute left-3 top-3 flex flex-col gap-2 pointer-events-none">
+                          {index === 0 && (
+                            <span className="inline-flex items-center gap-1.5 rounded-lg bg-primary px-2.5 py-1 text-[10px] font-black uppercase tracking-wider text-white shadow-lg">
+                              <Sparkles className="size-3" />
+                              Kapak
+                            </span>
+                          )}
+                          {isUploading && (
+                            <span className="inline-flex items-center gap-1.5 rounded-lg bg-white/90 px-2.5 py-1 text-[10px] font-bold text-primary shadow-lg backdrop-blur-sm">
+                              <LoaderCircle className="size-3 animate-spin" />
+                              {uploadState?.progress}%
+                            </span>
+                          )}
+                          {isUploaded && !isUploading && (
+                            <span className="inline-flex items-center gap-1.5 rounded-lg bg-emerald-500 px-2.5 py-1 text-[10px] font-bold text-white shadow-lg">
+                              <CheckCircle2 className="size-3" />
+                              Hazır
+                            </span>
+                          )}
                         </div>
                       </div>
                     );
                   })}
-                </div>
 
-                <button
-                  type="button"
-                  onClick={() => append({})}
-                  className="inline-flex h-11 items-center justify-center gap-2 rounded-xl border border-border bg-background px-4 text-sm font-semibold text-foreground transition-colors hover:bg-muted"
-                >
-                  <Plus className="size-4" />
-                  Yeni fotoğraf alanı ekle
-                </button>
+                  {/* ── Add More Slot ── */}
+                  {fields.length < 20 && (
+                    <button
+                      type="button"
+                      onClick={() => append({})}
+                      className="group flex aspect-[4/3] flex-col items-center justify-center gap-3 rounded-[1.5rem] border-2 border-dashed border-border/60 bg-muted/10 hover:border-primary/50 hover:bg-primary/5 transition-all"
+                    >
+                      <div className="size-12 flex items-center justify-center rounded-2xl border-2 border-dashed border-border group-hover:border-primary transition-all">
+                        <Plus className="size-6 text-muted-foreground group-hover:text-primary transition-colors" />
+                      </div>
+                      <span className="text-sm font-bold text-muted-foreground group-hover:text-primary transition-colors">Yeni Slot Ekle</span>
+                    </button>
+                  )}
+                </div>
               </section>
             </FormSection>
 
@@ -1148,6 +1264,7 @@ export function ListingCreateForm({
             ) : null}
           </>
         )}
+
 
         {/* ── Navigation Buttons ── */}
         <section className="flex flex-col gap-3 rounded-[1.75rem] border border-border/80 bg-background p-5 shadow-sm sm:flex-row sm:items-center sm:justify-between">

@@ -1,5 +1,6 @@
 import { TrendingDown, TrendingUp, CheckCircle2 } from "lucide-react";
 import { formatCurrency } from "@/lib/utils";
+import { MarketPriceBar } from "./market-price-bar";
 
 interface PriceAnalysisCardProps {
   price: number;
@@ -12,11 +13,10 @@ export function PriceAnalysisCard({
   price,
   marketStatus,
   priceDiff,
-  marketPriceIndex,
+  marketPriceIndex = 1.0,
 }: PriceAnalysisCardProps) {
   const isManipulated = marketPriceIndex && price > marketPriceIndex * 1.3;
-  const avgPrice =
-    marketStatus === "high" ? price - priceDiff : price + Math.abs(priceDiff);
+  const avgPrice = price / (marketPriceIndex || 1.0);
 
   return (
     <div className="overflow-hidden rounded-[2rem] border border-border/80 bg-background shadow-sm">
@@ -31,7 +31,7 @@ export function PriceAnalysisCard({
 
         {/* Market Analysis Visual */}
         <div className="rounded-[1.5rem] border border-border/70 bg-muted/30 p-5">
-          <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <span className="flex items-center gap-1.5 text-sm font-semibold text-foreground">
               Yapay Zeka Fiyat Analizi
             </span>
@@ -52,58 +52,7 @@ export function PriceAnalysisCard({
             )}
           </div>
 
-          {/* Visual Graph Simulation */}
-          <div className="relative mb-6 mt-4 h-16 w-full">
-            {/* Background distribution bars */}
-            <div className="absolute bottom-0 left-0 flex h-full w-full items-end justify-between gap-1 opacity-20">
-              {[20, 30, 45, 60, 80, 100, 85, 65, 40, 25, 15].map((h, i) => (
-                <div
-                  key={i}
-                  className="w-full rounded-t-sm bg-muted-foreground"
-                  style={{ height: `${h}%` }}
-                />
-              ))}
-            </div>
-
-            {/* Average Price Marker */}
-            <div className="absolute bottom-0 left-1/2 top-0 z-10 flex w-px flex-col items-center justify-start border-l border-dashed border-muted-foreground bg-muted-foreground">
-              <div className="absolute -top-6 whitespace-nowrap rounded bg-foreground px-1.5 py-0.5 text-[10px] font-bold text-background">
-                Ortalama: {formatCurrency(avgPrice)}
-              </div>
-            </div>
-
-            {/* Current Price Marker */}
-            <div
-              className={`absolute bottom-0 top-0 z-20 flex w-0.5 flex-col items-center justify-start ${
-                marketStatus === "excellent"
-                  ? "left-1/4 bg-emerald-500"
-                  : marketStatus === "fair"
-                    ? "left-1/2 bg-blue-500"
-                    : "left-3/4 bg-amber-500"
-              }`}
-            >
-              <div
-                className={`absolute -top-6 whitespace-nowrap rounded px-1.5 py-0.5 text-[10px] font-bold text-white ${
-                  marketStatus === "excellent"
-                    ? "bg-emerald-600"
-                    : marketStatus === "fair"
-                      ? "bg-blue-600"
-                      : "bg-amber-600"
-                }`}
-              >
-                Bu İlan
-              </div>
-              <div
-                className={`absolute left-1/2 top-1/2 h-3 w-3 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-background ${
-                  marketStatus === "excellent"
-                    ? "bg-emerald-500"
-                    : marketStatus === "fair"
-                      ? "bg-blue-500"
-                      : "bg-amber-500"
-                }`}
-              />
-            </div>
-          </div>
+          <MarketPriceBar currentPrice={price} averagePrice={avgPrice} className="mb-6" />
 
           <div className="rounded-xl border border-border/50 bg-background p-3 shadow-sm">
             <p className="text-sm leading-relaxed text-muted-foreground">

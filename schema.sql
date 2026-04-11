@@ -128,6 +128,7 @@ create table if not exists public.listings (
   district text not null,
   description text not null,
   whatsapp_phone text not null,
+  license_plate text,
   tramer_amount bigint,
   damage_status_json jsonb,
   fraud_score integer not null default 0 check (fraud_score between 0 and 100),

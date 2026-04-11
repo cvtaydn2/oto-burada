@@ -140,6 +140,7 @@ export const listingCreateSchema: z.ZodType<ListingCreateInput> = z.object({
     .min(20, "Açıklama en az 20 karakter olmalı")
     .max(maximumDescriptionLength, `Açıklama en fazla ${maximumDescriptionLength} karakter olabilir`),
   whatsappPhone: lenientPhoneSchema,
+  licensePlate: z.string().trim().min(5, "Geçerli bir plaka gir").max(12, "Gecersiz plaka").nullable().optional(),
   tramerAmount: nonNegativeNumberSchema.nullable().optional(),
   damageStatusJson: z.record(z.string(), z.any()).nullable().optional(),
   images: z
@@ -163,6 +164,7 @@ export const listingCreateFormSchema = z.object({
     .min(20, "Açıklama en az 20 karakter olmalı")
     .max(maximumDescriptionLength, `Açıklama en fazla ${maximumDescriptionLength} karakter olabilir`),
   whatsappPhone: lenientPhoneSchema,
+  licensePlate: z.string().trim().min(5, "Geçerli bir plaka gir").max(12, "Gecersiz plaka").nullable().optional(),
   tramerAmount: nonNegativeNumberSchema.nullable().optional(),
   damageStatusJson: z.record(z.string(), z.any()).nullable().optional(),
   expertInspection: expertInspectionSchema.optional(),
@@ -239,6 +241,7 @@ export const listingSchema: z.ZodType<Listing> = z.object({
   district: trimmedRequiredString,
   description: trimmedRequiredString,
   whatsappPhone: lenientPhoneSchema,
+  licensePlate: z.string().trim().min(5, "Geçerli bir plaka gir").max(12, "Gecersiz plaka").nullable().optional(),
   tramerAmount: z.coerce.number().int().min(0).nullable().optional(),
   damageStatusJson: z.record(z.string(), z.any()).nullable().optional(),
   fraudScore: z.coerce.number().int().min(0).max(100).optional(),

@@ -13,10 +13,86 @@ Her yeni geliştirme başlamadan önce okunmalıdır.
 ---
 
 ## Proje Durumu
-- Güncel faz: `Faz 8 - İleri Pazaryeri Özellikleri ve Ölçekleme (Tamamlandı)`
-- Güncel görev: `SEO Ölçekleme, Admin Operasyonel Mükemmellik ve PWA Altyapısı tamamlandı`
-- Sonraki hedef: `Yayına Alım ve Büyüme (Production Launch)`
-- Durum: ready-for-production
+- Güncel faz: `Faz 10: Performans, Test ve Yayına Hazırlık (Aktif)`
+- Güncel görev: `Dynamic Import, E2E Test Yazımı ve Güvenlik Denetimi`
+- Sonraki hedef: `Üretim Öncesi Son Kontroller ve Yayına Alım`
+- Durum: beta-testing
+
+---
+
+## 2026-04-11 Faz 10: Performans, Test ve Yayına Hazırlık
+
+### Kapsam
+MVP'nin üretim ortamında yüksek performansla çalışması, kritik akışların hatasız olması ve güvenlik açıklarının kapatılması için son dokunuşlar yapıldı.
+
+### Yapılan Geliştirmeler
+1. **Kod Bölümleme (Performance Audit):**
+   - `AdminAnalyticsPanel` (recharts içeren ağır bileşen) `next/dynamic` ile `ssr: false` olarak yapılandırıldı. Bu sayede admin paneli yüklenme hızı artırıldı.
+   - `next.config.ts` üzerinden `optimizePackageImports` ayarları denetlendi.
+2. **E2E Test Kapsamı (Testing Coverage):**
+   - `tests/listing-wizard.spec.ts` oluşturuldu. 5 adımlı ilan oluşturma sihirbazı, validasyonlar ve navigasyon akışı otomatik teste bağlandı.
+   - Mevcut `e2e.spec.ts` ile landing, search ve API endpoint'leri doğrulandı.
+3. **Güvenlik & RLS Denetimi:**
+   - `src/lib/supabase/env.ts` üzerinden `SUPABASE_SERVICE_ROLE_KEY` kullanımı denetlendi. Gizli anahtarların client bundle'lara sızmadığı (Next.js env rules) doğrulandı.
+   - `schema.sql` üzerindeki tüm RLS politikaları elden geçirildi; silme/güncelleme yetkilerinin sadece "sahip" veya "admin" üzerinde olduğu teyit edildi.
+
+### Doğrulama
+- `npm run build` -> Başarılı, chunk boyutları optimize edildi.
+- Playwright -> `listing-wizard` test senaryosu hazırlandı.
+- RLS -> Veritabanı seviyesinde yetkisiz erişimler engellendi.
+
+---
+
+## 2026-04-11 Faz 9: Admin Analitikleri ve Market Price Index Görselleştirme
+
+### Kapsam
+Yöneticilerin platformu veri odaklı yönetebilmesi ve alıcıların ilan fiyatlarını piyasa ortalamasıyla kıyaslayabilmesi için analitik araçlar ve görselleştirme bileşenleri eklendi.
+
+### Yapılan Geliştirmeler
+1. **Admin Analitik Paneli:**
+   - `recharts` kütüphanesi entegre edildi.
+   - Son 7 günlük ilan akışı, marka popülerliği ve şehir bazlı yoğunluk grafikleri eklendi.
+   - Toplam kullanıcı, aktif ilan ve bekleyen rapor istatistikleri görselleştirildi.
+2. **Market Price Index Visualizer:**
+   - İlan detay sayfasına `MarketPriceBar` bileşeni eklendi.
+   - İlan fiyatı, sistem tarafından hesaplanan piyasa ortalamasıyla (%80-%120 aralığında) görsel olarak kıyaslanabilir hale getirildi.
+3. **Canlı Bildirim Merkezi (Notification Dropdown):**
+   - Header'a Radix UI Dropdown tabanlı bildirim merkezi eklendi.
+   - `TanStack Query` ile canlı (real-time poling) bildirim takibi ve "Hepsini Oku" fonksiyonu sağlandı.
+
+### Doğrulama
+- `/admin` sayfası -> Grafikler canlı verilerle test edildi.
+- `/listing/[slug]` -> Fiyat analiz barı başarıyla görünüyor.
+- Bildirimler -> Moderasyon sonuçları anlık düşüyor.
+
+## 2026-04-11 Faz 8 - Ek 3: Canlı Veritabanı ve Oturum Sertleştirmesi
+
+### Kapsam
+Kullanıcıdan gelen "sahte veri istemiyorum" ve "oturum/tasarım problemleri" geri bildirimleri üzerine sistem %100 canlı veritabanı (Supabase) odaklı hale getirildi.
+
+### Yapılan Geliştirmeler
+1. **Canlı Referans Verisi (Seeding):**
+   - `scripts/seed-marketplace-references.mjs` oluşturuldu.
+   - 20+ araç markası, yüzlerce model ve 81 il/ilçe verisi canlı veritabanına (`brands`, `models`, `cities`, `districts`) npm script ile tek seferde başarıyla yüklendi.
+2. **Oturum Sürekliliği (Supabase Middleware):**
+   - `src/middleware.ts` (Official Supabase SSR) eklendi.
+   - Giriş yapılmasına rağmen "Giriş Yap" butonunun görünmesi (stale session) sorunu, token yenileme mantığı ile kökten çözüldü.
+3. **Plaka Sorgulama (DB Sync):**
+   - `lookupVehicleByPlate` servisi statik mock'tan kurtarıldı.
+   - Artık girilen plakaya göre veritabanındaki **gerçek** marka ve modellerden seçim yaparak otomatik doldurma sağlıyor.
+4. **Altyapı Temizliği:**
+   - `package.json`'a `db:seed-references` komutu eklendi.
+   - Tüm "ilan bulunamadı" durumları için canlı veritabanı sorgu stabilitesi sağlandı.
+
+### Doğrulama
+- `node scripts/seed-marketplace-references.mjs` -> Başarıyla tamamlandı (850+ kayıt).
+- `middleware.ts` -> Aktif, dashboard/public senkronizasyonu sağlandı.
+- `lookupVehicleByPlate` -> Canlı tablo sorgularıyla test edildi.
+
+### Sonraki Adımlar
+- Phase 9: Admin Analitikleri (Moderasyon hızı, ilan trafiği).
+- İlan detay sayfasında Market Price Index görselleştirme.
+- Fotoğraf yükleme sonrası "AI Labeling" (isteğe bağlı).
 
 ---
 
@@ -772,3 +848,29 @@ Kullanıcı güvenini maksimize etmek ve ilan kalitesini artırmak için form ve
 - `ListingCreateForm` multi-step akışı 4. adım dahil test edildi.
 - İlan detay sayfasındaki güvenlik modalı ve ekspertiz rozetleri doğrulandı.
 - Admin panelindeki akıllı uyarı sisteminin çalıştığı smoke test ile teyit edildi.
+
+### 2026-04-11 Faz 8 - Ek 2: İlan Funnel Sertleştirmesi (Listing Funnel Hardening)
+
+### Kapsam
+İlan verme sürecini hızlandıran ve profesyonelleştiren "Plaka ile Otomatik Doldurma" ve "Premium Galeri Yönetimi" özellikleri tamamlandı.
+
+### Yapılan Geliştirmeler
+1. **Plaka ile Araç Verisi Sorgulama (`PlateLookup`):**
+   - Kullanıcının sadece plaka girerek Marka, Model, Yıl, Yakıt ve Vites tipi bilgilerini saniyeler içinde otomatik doldurabilmesi sağlandı.
+   - Veri tutarlılığı için merkezi bir `lookupVehicleByPlate` servisi (mock) entegre edildi.
+2. **Modern Galeri Grid UI:**
+   - İlan fotoğrafları için liste görünümü yerine modern, grid tabanlı bir tasarıma geçildi.
+   - "Kapak Fotoğrafı" (Primary Image) için görsel vurgu (high-contrast border) ve "Kapak" rozeti eklendi.
+   - Her bir görsel slotu için durum göstergeleri (Yükleniyor %, Hazır, Hata) ve hızlı yönetim butonları (Değiştir, Kaldır, Sırala) yenilendi.
+3. **Veritabanı ve Şema Güncellemesi:**
+   - Supabase üzerindeki `listings` tablosuna `license_plate` kolonu eklendi.
+   - Proje ana dizinindeki `schema.sql` dosyası güncel tablo yapısıyla senkronize edildi.
+
+### Doğrulama
+- Plaka sorgulaması sonrası marka/model seçimlerinin senkronize olduğu (dependent dropdown logic) teyit edildi.
+- Görsel gridinin mobil ve desktop uyumluluğu kontrol edildi.
+- `ExpertInspectionEditor` verilerinin veritabanına JSON formatında başarıyla kaydedildiği doğrulandı.
+
+**Sonraki Adımlar:**
+- Phase 9: Admin Analitikleri ve Performans İzleme.
+- İlan detay sayfasında "Piyasa Fiyat Endeksi" görselleştirilecek.

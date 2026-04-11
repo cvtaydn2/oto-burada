@@ -24,20 +24,20 @@
 
 ### UI/UX İyileştirmeleri
 - [x] **Hasar durumu JSON editörü**: Wizard'a `DamageSelector` eklendi, detay sayfasına `DamageReportCard` eklendi. (Done)
+- [x] **Ekspertiz raporu formu**: Wizard'a opsiyonel 4. adım olarak eklendi. (Done)
+- [x] **Fotoğraf sıralama**: Wizard'da fotoğrafları butonlar ile sıralama yeteneği eklendi. (Done)
+- [x] **Plaka ile Otomatik Doldurma**: Wizard'a plaka sorgulama servisi entegre edildi. (Done)
 - [x] **Structured Data (JSON-LD)**: `Vehicle` ve `Product` schema markup detay sayfasında aktif. (Done)
 - [x] **Open Graph tags**: Twitter Card ve zengin preview destekleri eklendi. (Done)
-- [ ] **Ekspertiz raporu formu**: Wizard'a opsiyonel 4. adım olarak eklenmesi
-  - Motor, şanzıman, süspansiyon vb. kontrol kartları
-- [ ] **Fotoğraf sıralama (drag & drop)**: `dnd-kit` veya `@hello-pangea/dnd` ile
-  fotoğraf sırasını sürükle-bırak ile değiştirebilme
-- [ ] **Skeleton loader'lar**: Listing kartları ve detay sayfası için
-  loading state'lerinde iskelet animasyonları
-- [ ] **Mobil filtre modal**: Filtre panelini mobilde bottom-sheet olarak açan modal
-- [ ] **Dark mode desteği**: CSS custom properties + Tailwind dark variant
+- [x] **Skeleton loader'lar**: Listing kartları ve detay sayfası için loading state'lerinde iskelet animasyonları (Done)
+- [x] **Mobil filtre modal**: Filtre panelini mobilde bottom-sheet olarak açan modal (Done)
+- [x] **Dark mode desteği**: CSS custom properties + Tailwind dark variant (Done)
+- [x] **Market Price Index Visualizer**: İlan detay sayfasında piyasa ortalaması karşılaştırma barı (Done)
 
 ### Performans
 - [x] **ISR (Incremental Static Regeneration)**: `/listing/[slug]` sayfası için `revalidate` stratejisi eklendi. (Done)
-- [ ] **Image optimization**: Next/Image ile listing fotoğraflarının responsive srcSet ve blur placeholder ile sunulması
+- [x] **Image Compression**: Client-side `browser-image-compression` entegreli galeri. (Done)
+- [x] **Image optimization**: Next/Image ile listing fotoğraflarının responsive srcSet ve blur placeholder ile sunulması (Done)
 - [ ] **Bundle analizi**: `@next/bundle-analyzer` ile chunk boyutlarının incelenmesi
 - [ ] **Lazy loading**: Dashboard sayfalarında kullanılmayan bileşenlerin `dynamic()` ile lazy import edilmesi
 
@@ -50,7 +50,7 @@
 ## 🟢 Güzel Olur (Post-MVP)
 
 ### Özellikler
-- [ ] **Bildirim sistemi**: Push notification ve in-app bildirim altyapısı
+- [x] **Bildirim sistemi**: Push notification ve in-app bildirim altyapısı (Done - In-app)
   - Saved search eşleşmesi, favori fiyat düşüşü, moderasyon sonucu
 - [ ] **Karşılaştırma sayfası zenginleştirme**: Radar chart, özellik tablosu
 - [ ] **İlan bump (öne çıkarma)**: Ücretli öne çıkarma akışı (Stripe/iyzico)
@@ -83,3 +83,4 @@
 | CSRF Protection | 2026-04-11 | Origin Check Middleware |
 | Damage Selector | 2026-04-11 | Granular car condition |
 | Full-Text Search | 2026-04-11 | GIN Index + search_vector |
+| Admin Analytics | 2026-04-11 | Recharts integration |

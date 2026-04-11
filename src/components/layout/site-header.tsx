@@ -6,6 +6,7 @@ import { getLiveMarketplaceReferenceData } from "@/services/reference/live-refer
 import { HeaderMobileNav } from "./header-mobile-nav";
 import { SearchWithSuggestions } from "@/components/ui/search-with-suggestions";
 import { ThemeToggle } from "@/components/shared/theme-toggle";
+import { NotificationDropdown } from "@/components/shared/notification-dropdown";
 
 export async function SiteHeader() {
   const user = await getCurrentUser();
@@ -39,15 +40,7 @@ export async function SiteHeader() {
 
           <nav className="hidden md:flex items-center gap-1" aria-label="Ana navigasyon">
             <ThemeToggle />
-            {user && (
-              <Link 
-                href="/dashboard/notifications" 
-                className="flex items-center justify-center w-10 h-10 rounded-xl text-muted-foreground hover:text-indigo-600 hover:bg-indigo-50/80 transition-all dark:hover:bg-indigo-900/30"
-                title="Bildirimler"
-              >
-                <Bell size={20} />
-              </Link>
-            )}
+            {user && <NotificationDropdown />}
             <Link 
               href={favoritesHref} 
               className="flex items-center justify-center w-10 h-10 rounded-xl text-muted-foreground hover:text-indigo-600 hover:bg-indigo-50/80 transition-all dark:hover:bg-indigo-900/30"
