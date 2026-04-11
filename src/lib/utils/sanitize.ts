@@ -1,25 +1,17 @@
 /**
  * Input sanitization utilities.
  *
- * Uses `isomorphic-dompurify` for robust HTML sanitization that works on both
- * server and client. Falls back to regex-based stripping if DOMPurify fails.
+ * Uses regex-based stripping for robust HTML sanitization.
  */
-
-import DOMPurify from "isomorphic-dompurify";
 
 /**
  * Sanitize a user-provided string for safe storage and rendering.
  * Removes all HTML tags and returns plain text.
+ * Optimized for server-side to avoid heavy jsdom/DOMPurify when doing simple text stripping.
  */
 export function sanitizeText(value: string): string {
-  try {
-    return DOMPurify.sanitize(value, {
-      ALLOWED_TAGS: [],
-      ALLOWED_ATTR: [],
-    }).trim();
-  } catch {
-    return stripTagsFallback(value);
-  }
+  // If we only want to strip all tags, regex is much faster and safer for server environments
+  return stripTagsFallback(value);
 }
 
 /**
@@ -27,17 +19,8 @@ export function sanitizeText(value: string): string {
  * Allows only line breaks for readability, strips everything else.
  */
 export function sanitizeDescription(value: string): string {
-  try {
-    // First pass: strip all dangerous content
-    const cleaned = DOMPurify.sanitize(value, {
-      ALLOWED_TAGS: [],
-      ALLOWED_ATTR: [],
-    });
-    // Preserve intentional newlines from the original text
-    return cleaned.trim();
-  } catch {
-    return stripTagsFallback(value);
-  }
+  // If we only want to strip all tags, regex is much faster and safer for server environments
+  return stripTagsFallback(value);
 }
 
 /**

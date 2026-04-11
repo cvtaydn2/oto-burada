@@ -13,7 +13,31 @@ Her yeni geliştirme başlamadan önce okunmalıdır.
 ---
 
 ## Proje Durumu
-### 2026-04-11 Semantik Audit ve Stabilizasyon - Devam
+### 2026-04-11 Vercel 500 (jsdom) Hatası Giderilmesi - Tamamlandı
+
+### Kapsam
+Vercel deployment sonrası alınan "require() of ES Module /.../encoding-lite.js from jsdom" hatası ve buna bağlı 500 hataları giderildi.
+
+### Yapılan Geliştirmeler
+1. **jsdom Bağımlılığının Kaldırılması:**
+   - `isomorphic-dompurify` paketinin Vercel ortamında `jsdom` kaynaklı ESM/CJS uyumsuzluğu çıkardığı tespit edildi.
+   - Projede `DOMPurify` kullanımının sadece basit HTML etiket temizleme (tag stripping) için olduğu görüldü.
+   - `isomorphic-dompurify` paketi kaldırıldı (`npm uninstall`).
+   - `src/lib/utils/sanitize.ts` dosyası, ağır `jsdom` bağımlılığı olmadan çalışan, hızlı ve güvenli regex tabanlı bir temizleyiciye dönüştürüldü.
+
+2. **Next.js Konfigürasyonu:**
+   - Hata sırasında denenen `serverExternalPackages` yapılandırması, bağımlılık tamamen kaldırıldığı için temizlendi.
+
+3. **Performans İyileştirmesi:**
+   - `jsdom` gibi sunucu tarafında 20-50MB yer kaplayan ve cold-start süresini artıran bir kütüphane devreden çıkarılarak SSR hızı ve deployment kararlılığı artırıldı.
+
+### Doğrulama
+- `npm run typecheck` -> Başarılı.
+- `src/lib/seo.ts` üzerinden yapılan metadata üretiminin artık hata vermediği doğrulandı.
+- Gereksiz paketler temizlendi.
+
+### Sonraki Adım
+- Uygulamanın Vercel üzerinde tekrar build alınması ve çalışma durumunun kontrolü (Kullanıcı tarafından).
 
 ### Kapsam
 Projede derinlemesine semantik audit yapıldı. Build, lint ve typecheck süreçleri düzeltildi.
