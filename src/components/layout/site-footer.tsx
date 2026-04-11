@@ -105,9 +105,9 @@ export async function SiteFooter() {
             © {new Date().getFullYear()} OtoBurada. Tüm hakları saklıdır.
           </p>
           <div className="flex items-center gap-6 text-sm text-slate-500">
-            <Link href="#" className="hover:text-indigo-600 transition-colors">Gizlilik Politikası</Link>
-            <Link href="#" className="hover:text-indigo-600 transition-colors">Kullanım Şartları</Link>
-            <Link href="#" className="hover:text-indigo-600 transition-colors">İletişim</Link>
+            <Link href="/legal/privacy" className="hover:text-indigo-600 transition-colors">Gizlilik Politikası</Link>
+            <Link href="/legal/terms" className="hover:text-indigo-600 transition-colors">Kullanım Şartları</Link>
+            <Link href="/contact" className="hover:text-indigo-600 transition-colors">İletişim</Link>
           </div>
         </div>
       </div>

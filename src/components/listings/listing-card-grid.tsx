@@ -41,7 +41,7 @@ export function ListingCardGrid({ listing, priority = false }: ListingCardGridPr
         {coverImage ? (
           <Image
             src={coverImage.url}
-            alt={listing.title}
+            alt={`${listing.brand} ${listing.model} ${listing.year} - ${listing.title}`}
             fill
             sizes="(min-width: 1024px) 25vw, (min-width: 640px) 33vw, 50vw"
             loading={priority ? "eager" : "lazy"}

@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 
 import { AppProviders } from "@/components/shared/app-providers";
+import { CookieConsent } from "@/components/shared/cookie-consent";
 import { PWAInstallPrompt } from "@/components/shared/pwa-install-prompt";
 import { getCurrentUser } from "@/lib/auth/session";
 import { getAppUrl } from "@/lib/seo";
@@ -45,6 +46,7 @@ export default async function RootLayout({
       <body className="min-h-full bg-background text-foreground">
         <AppProviders userId={currentUser?.id ?? null}>
           {children}
+          <CookieConsent />
           <PWAInstallPrompt />
           <SpeedInsights />
         </AppProviders>

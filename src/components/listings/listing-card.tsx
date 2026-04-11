@@ -41,7 +41,7 @@ export function ListingCard({ listing, priority = false }: ListingCardProps) {
         {coverImage ? (
           <Image
             src={coverImage.url}
-            alt={`${listing.brand} ${listing.model} - ${listing.year}`}
+            alt={`${listing.brand} ${listing.model} ${listing.year} - ${listing.title}`}
             fill
             sizes="(min-width: 640px) 180px, 100vw"
             loading={priority ? "eager" : "lazy"}
