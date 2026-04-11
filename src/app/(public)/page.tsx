@@ -39,12 +39,7 @@ export default async function HomePage() {
 
       <main className="flex-1 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
         {/* Modern Hero */}
-        <HomeHero 
-          brands={references.brands} 
-          query="" 
-          onSearch={() => {}} 
-          onBrandSelect={() => {}} 
-        />
+        <HomeHero brands={references.brands} />
 
         {/* Featured Section */}
         {featuredListings.length > 0 && (

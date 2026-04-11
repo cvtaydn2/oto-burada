@@ -1,19 +1,31 @@
 "use client"
 
+import { useState } from "react"
+import { useRouter } from "next/navigation"
 import { Search, Shield, Zap, CheckCircle2, Star } from "lucide-react"
 import { type BrandCatalogItem } from "@/types"
 import Image from "next/image"
 
 interface HomeHeroProps {
-  onSearch: (query: string) => void
-  query: string
   brands: BrandCatalogItem[]
-  onBrandSelect: (brand: string) => void
 }
 
 const POPULAR_BRANDS = ["Volkswagen", "BMW", "Mercedes-Benz", "Audi", "Toyota", "Renault", "Fiat"]
 
-export function HomeHero({ onSearch, query, brands, onBrandSelect }: HomeHeroProps) {
+export function HomeHero({ brands }: HomeHeroProps) {
+  const router = useRouter()
+  const [query, setQuery] = useState("")
+
+  const handleSearch = (e?: React.FormEvent) => {
+    e?.preventDefault()
+    if (query.trim()) {
+      router.push(`/listings?query=${encodeURIComponent(query.trim())}`)
+    }
+  }
+
+  const handleBrandSelect = (brand: string) => {
+    router.push(`/listings?brand=${encodeURIComponent(brand)}`)
+  }
   return (
     <section className="relative w-full py-12 lg:py-24 overflow-hidden rounded-3xl mb-12 bg-[#0A0D14]">
       {/* Background Decorative Elements */}
@@ -55,7 +67,10 @@ export function HomeHero({ onSearch, query, brands, onBrandSelect }: HomeHeroPro
         </p>
 
         {/* The Power Search Bar */}
-        <div className="w-full max-w-3xl glass p-2 rounded-2xl shadow-2xl mb-8 group transition-all hover:bg-white/10 border-white/20">
+        <form 
+          onSubmit={handleSearch}
+          className="w-full max-w-3xl glass p-2 rounded-2xl shadow-2xl mb-8 group transition-all hover:bg-white/10 border-white/20"
+        >
           <div className="relative flex items-center bg-white rounded-xl h-16 sm:h-20 shadow-inner px-2">
             <div className="hidden sm:flex items-center px-4 border-r border-slate-100 h-10 gap-2 text-slate-400">
                <Shield size={18} />
@@ -67,28 +82,32 @@ export function HomeHero({ onSearch, query, brands, onBrandSelect }: HomeHeroPro
               type="text" 
               placeholder="Marka, model, özellik veya şehir yazın..." 
               value={query}
-              onChange={(e) => onSearch(e.target.value)}
+              onChange={(e) => setQuery(e.target.value)}
               className="flex-1 h-full px-4 text-lg font-medium text-slate-900 placeholder:text-slate-400 focus:outline-none bg-transparent"
             />
             
-            <button className="h-12 sm:h-16 px-6 sm:px-10 rounded-lg bg-primary text-white font-black text-lg hover:scale-[1.02] active:scale-95 transition-all shadow-lg shadow-primary/30">
+            <button 
+              type="submit"
+              className="h-12 sm:h-16 px-6 sm:px-10 rounded-lg bg-primary text-white font-black text-lg hover:scale-[1.02] active:scale-95 transition-all shadow-lg shadow-primary/30"
+            >
               Ara
             </button>
           </div>
-        </div>
+        </form>
 
         {/* Quick Brands with SVG Logos (Simulated with Text for now to be safe) */}
         <div className="w-full flex flex-wrap justify-center gap-3">
            {POPULAR_BRANDS.map(brand => (
              <button 
                key={brand}
-               onClick={() => onBrandSelect(brand)}
+               onClick={() => handleBrandSelect(brand)}
                className="h-10 px-5 rounded-full bg-white/5 border border-white/10 text-white text-sm font-bold hover:bg-white hover:text-black transition-all flex items-center gap-2"
              >
                 {brand}
              </button>
            ))}
         </div>
+
       </div>
     </section>
   )

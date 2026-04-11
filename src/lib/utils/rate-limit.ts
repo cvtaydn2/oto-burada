@@ -28,6 +28,7 @@ interface RateLimitEntry {
 
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { hasSupabaseAdminEnv } from "@/lib/supabase/env";
+import { redis } from "@/lib/redis";
 
 const inMemoryStore = new Map<string, RateLimitEntry>();
 
@@ -42,10 +43,41 @@ function cleanupInMemory() {
 
 /**
  * Check whether a given key (IP, userId, etc.) exceeds the configured rate limit.
- * Uses persistent Supabase (SQL) rate limiting if available, otherwise falls back to in-memory.
+ * Priority: 
+ * 1. Redis (Persistent, Fast, Distributed)
+ * 2. Supabase RPC (Persistent, Reliable)
+ * 3. In-memory (Ephemeral, Fallback)
  */
 export async function checkRateLimit(key: string, config: RateLimitConfig): Promise<RateLimitResult> {
-  // Use Database-backed limiting if possible (Highly recommended for Serverless/Vercel)
+  const fullKey = `ratelimit:${key}`;
+
+  // 1. Redis Tier (Highly optimized)
+  if (redis) {
+    try {
+      const now = Date.now();
+      const multi = redis.multi();
+      multi.incr(fullKey);
+      multi.pexpire(fullKey, config.windowMs);
+      
+      const results = await multi.exec();
+      if (results && results[0] && results[0][1] !== null) {
+        const count = results[0][1] as number;
+        const ttl = await redis.pttl(fullKey);
+        const resetAt = now + (ttl > 0 ? ttl : config.windowMs);
+        
+        return {
+          allowed: count <= config.limit,
+          limit: config.limit,
+          remaining: Math.max(0, config.limit - count),
+          resetAt,
+        };
+      }
+    } catch (e) {
+      console.warn("Redis rate limit error, falling back:", e);
+    }
+  }
+
+  // 2. Supabase Tier
   if (hasSupabaseAdminEnv()) {
     try {
       const admin = createSupabaseAdminClient();
