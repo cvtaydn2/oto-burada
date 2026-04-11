@@ -19,7 +19,7 @@ export function TrustBadge({ badgeLabel, score }: TrustBadgeProps) {
         </div>
       </div>
       {badgeLabel ? (
-        <div className="flex items-center gap-1.5 text-sm font-medium text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20 px-3 py-1.5 rounded-[0.75rem] border border-blue-100 dark:border-blue-800/50">
+        <div className="flex items-center gap-1.5 text-sm font-medium text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/20 px-3 py-1.5 rounded-[0.75rem] border border-indigo-100 dark:border-indigo-800/50">
           <ShieldCheck size={18} />
           {badgeLabel}
         </div>

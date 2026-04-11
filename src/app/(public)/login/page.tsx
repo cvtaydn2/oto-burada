@@ -3,7 +3,7 @@ import { loginAction } from "@/lib/auth/actions";
 
 export default function LoginPage() {
   return (
-    <main className="mx-auto w-full max-w-6xl px-4 py-10 sm:px-6 sm:py-14 lg:px-8">
+    <div className="flex-1 flex flex-col">
       <AuthForm
         action={loginAction}
         title="Giriş"
@@ -13,6 +13,6 @@ export default function LoginPage() {
         alternateLabel="Kayıt Ol"
         mode="login"
       />
-    </main>
+    </div>
   );
 }

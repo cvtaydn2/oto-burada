@@ -32,6 +32,7 @@ export function ListingCard({ listing, priority = false }: ListingCardProps) {
         <CompareButton
           listingId={listing.id}
           className="size-9 rounded-full bg-white/90 shadow-md backdrop-blur-md flex items-center justify-center text-indigo-600"
+          hideLabel={true}
         />
       </div>
 
@@ -142,6 +143,7 @@ export function ListingCard({ listing, priority = false }: ListingCardProps) {
         <CompareButton
           listingId={listing.id}
           className="size-9 rounded-full bg-white/90 shadow-md backdrop-blur-md flex items-center justify-center text-indigo-600"
+          hideLabel={true}
         />
       </div>
     </article>

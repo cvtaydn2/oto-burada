@@ -239,8 +239,8 @@ export function ListingsPageClient({
                 Hayalindeki Arabayı Bul
               </h1>
               <p className="mt-4 text-lg text-indigo-100 sm:text-xl">
-                Turkiye nin en guvenilir 2. el ve sifir otomobil pazarı. 
-                Binlerce ara tek tik uzakta.
+                Türkiye&apos;nin en güvenilir 2. el ve sıfır otomobil pazarı.
+                Binlerce araç tek tık uzakta.
               </p>
               
               <div className="mt-8 flex flex-wrap justify-center gap-3">
@@ -282,7 +282,7 @@ export function ListingsPageClient({
       <div className="flex flex-col lg:flex-row gap-8">
         
         {/* Smart Sidebar Filters */}
-        <aside className="w-full lg:w-[280px] flex-shrink-0">
+        <aside className="hidden lg:block lg:w-[280px] flex-shrink-0">
           <div className="sticky top-24">
             <ListingsFilterPanel
               brands={brands}

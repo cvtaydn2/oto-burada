@@ -27,7 +27,7 @@ export function SaveSearchButton({
   const handleSave = async () => {
     if (!canSave) {
       setStatus("error");
-      setMessage("Arama kaydetmek icin en az bir filtre secmelisin.");
+      setMessage("Arama kaydetmek için en az bir filtre seçmelisin.");
       return;
     }
 
@@ -62,7 +62,7 @@ export function SaveSearchButton({
       setMessage(payload.message ?? "Araman kaydedildi.");
     } catch {
       setStatus("error");
-      setMessage("Baglanti sirasinda bir hata olustu. Lutfen tekrar dene.");
+      setMessage("Bağlantı sırasında bir hata oluştu. Lütfen tekrar dene.");
     } finally {
       setIsSaving(false);
     }
@@ -76,10 +76,10 @@ export function SaveSearchButton({
           className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-4 text-sm font-semibold text-slate-700 transition-all hover:bg-slate-50"
         >
           <LogIn className="size-4" />
-          Giris yap ve aramayi kaydet
+          Giriş yap ve aramayı kaydet
         </Link>
         <p className="text-xs text-slate-500">
-          Kayitli aramalar yeni sonuclari dashboard&apos;dan takip etmeni saglar.
+          Kayıtlı aramalar yeni sonuçları dashboard&apos;dan takip etmeni sağlar.
         </p>
       </div>
     );
@@ -94,7 +94,7 @@ export function SaveSearchButton({
         className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-4 text-sm font-semibold text-slate-700 transition-all hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-60"
       >
         {isSaving ? <LoaderCircle className="size-4 animate-spin" /> : <BellRing className="size-4" />}
-        {isSaving ? "Kaydediliyor..." : `Aramayi Kaydet (${resultCount})`}
+        {isSaving ? "Kaydediliyor..." : `Aramayı Kaydet (${resultCount})`}
       </button>
 
       {message ? (
@@ -109,7 +109,7 @@ export function SaveSearchButton({
         </p>
       ) : (
         <p className="text-xs text-slate-500">
-          Mevcut filtre kombinasyonunu kaydedip yeni uygun ilanlar geldiginde tekrar don.
+          Mevcut filtre kombinasyonunu kaydedip yeni uygun ilanlar geldiğinde tekrar dön.
         </p>
       )}
     </div>

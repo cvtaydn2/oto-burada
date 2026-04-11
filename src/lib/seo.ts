@@ -37,10 +37,10 @@ export function buildListingsMetadata(filters: ListingFilters): Metadata {
   }
 
   const title =
-    segments.length > 0 ? `${segments.join(" ")} araba ilanlari` : "Araba ilanlari";
+    segments.length > 0 ? `${segments.join(" ")} araba ilanları` : "Araba ilanları";
 
   const descriptionParts = [
-    "Marka, model, sehir, fiyat ve teknik ozelliklere gore filtrelenebilen sade araba ilan listesi.",
+    "Marka, model, şehir, fiyat ve teknik özelliklere göre filtrelenebilen sade araba ilan listesi.",
   ];
 
   if (filters.maxPrice !== undefined) {

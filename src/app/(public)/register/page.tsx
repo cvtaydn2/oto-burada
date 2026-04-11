@@ -3,7 +3,7 @@ import { registerAction } from "@/lib/auth/actions";
 
 export default function RegisterPage() {
   return (
-    <main className="mx-auto w-full max-w-6xl px-4 py-10 sm:px-6 sm:py-14 lg:px-8">
+    <div className="flex-1 flex flex-col">
       <AuthForm
         action={registerAction}
         title="Kayıt Ol"
@@ -13,6 +13,6 @@ export default function RegisterPage() {
         alternateLabel="Giriş Yap"
         mode="register"
       />
-    </main>
+    </div>
   );
 }

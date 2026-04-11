@@ -8,9 +8,14 @@ import { useCompare } from "@/components/shared/compare-provider";
 interface CompareButtonProps {
   listingId: string;
   className?: string;
+  hideLabel?: boolean;
 }
 
-export function CompareButton({ listingId, className = "" }: CompareButtonProps) {
+export function CompareButton({
+  listingId,
+  className = "",
+  hideLabel = false,
+}: CompareButtonProps) {
   const router = useRouter();
   const { compareIds, isInCompare, addToCompare, removeFromCompare } = useCompare();
   const inCompare = isInCompare(listingId);
@@ -45,12 +50,12 @@ export function CompareButton({ listingId, className = "" }: CompareButtonProps)
       {inCompare ? (
         <>
           <Check size={16} />
-          <span>Eklendi</span>
+          {!hideLabel && <span>Eklendi</span>}
         </>
       ) : (
         <>
           <Plus size={16} />
-          <span>Karşılaştır</span>
+          {!hideLabel && <span>Karşılaştır</span>}
         </>
       )}
     </button>
