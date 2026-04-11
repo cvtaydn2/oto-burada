@@ -162,14 +162,30 @@ const STEP_LABELS = [
   "Fotoğraflar ve Gönderim",
 ] as const;
 
+interface ListingCreateFormProps {
+  initialValues: {
+    city: string;
+    whatsappPhone: string;
+  };
+  brands: BrandCatalogItem[];
+  cities: CityOption[];
+  initialListing?: Listing | null;
+  isPhoneVerified?: boolean;
+}
+
+import { PhoneVerificationDialog } from "@/components/auth/phone-verification-dialog";
+
 export function ListingCreateForm({
   brands,
   cities,
   initialListing,
   initialValues,
+  isPhoneVerified = false,
 }: ListingCreateFormProps) {
   const router = useRouter();
   const isEditing = Boolean(initialListing);
+  const [isPhoneVerifiedLocally, setIsPhoneVerifiedLocally] = useState(isPhoneVerified);
+  const [isVerifyDialogOpen, setIsVerifyDialogOpen] = useState(false);
   const [submitState, setSubmitState] = useState<SubmitState>(initialSubmitState);
   const [uploadStates, setUploadStates] = useState<Record<string, UploadState>>({});
   const [isPlateLoading, setIsPlateLoading] = useState(false);
@@ -377,6 +393,11 @@ export function ListingCreateForm({
   };
 
   const onSubmit = handleSubmit(async (values) => {
+    if (!isPhoneVerifiedLocally) {
+      setIsVerifyDialogOpen(true);
+      return;
+    }
+    
     clearErrors();
     setSubmitState(initialSubmitState);
     try {
@@ -493,6 +514,18 @@ export function ListingCreateForm({
           )}
         </div>
       </form>
+
+      <PhoneVerificationDialog
+        isOpen={isVerifyDialogOpen}
+        onOpenChange={setIsVerifyDialogOpen}
+        initialPhone={getValues("whatsappPhone")}
+        onSuccess={() => {
+          setIsPhoneVerifiedLocally(true);
+          setIsVerifyDialogOpen(false);
+          // Auto-submit after verification
+          onSubmit();
+        }}
+      />
     </div>
   );
 }

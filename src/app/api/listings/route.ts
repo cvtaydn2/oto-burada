@@ -11,7 +11,7 @@ import {
   createDatabaseListing,
   getStoredListings,
 } from "@/services/listings/listing-submissions";
-import { ensureProfileRecord } from "@/services/profile/profile-records";
+import { ensureProfileRecord, getStoredProfileById } from "@/services/profile/profile-records";
 import { checkListingLimit } from "@/services/listings/listing-limits";
 import { parseListingFiltersFromSearchParams } from "@/services/listings/listing-filters";
 import { getFilteredMarketplaceListings } from "@/services/listings/marketplace-listings";
@@ -127,6 +127,11 @@ export async function POST(request: Request) {
   }
 
   await ensureProfileRecord(user);
+  const profile = await getStoredProfileById(user.id);
+  
+  if (!profile || !profile.isVerified) {
+    return apiError(API_ERROR_CODES.FORBIDDEN, "İlan verebilmek için telefon numaranızı doğrulamanız gerekmektedir.", 403);
+  }
 
   const existingListings = await getStoredListings();
   const createdListing = buildPendingListing(parsedListingInput.data, user.id, existingListings);

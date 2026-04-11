@@ -13,6 +13,14 @@ Her yeni geliştirme başlamadan önce okunmalıdır.
 ---
 
 ## Proje Durumu
+### 2026-04-12 Phase 18: Production SMS OTP & Security Hardening (Completed)
+- **SMS OTP Verification**: Implemented a robust phone verification system using Upstash Redis for OTP storage and TTL management. 
+- **Verification UI**: Developed `PhoneVerificationDialog` and integrated it into the Profile page and Listing Wizard to ensure only verified sellers can publish.
+- **Backend Enforcement**: Hardened `POST /api/listings` to strictly reject submissions from unverified profiles, preventing UI bypasses.
+- **Security & RLS Audit**: Verified all 17+ tables have active Row Level Security (RLS) policies. Confirmed ownership isolation for Listings, Profiles, and Favorited items.
+- **CI/CD Pipeline**: Established a GitHub Actions workflow `.github/workflows/ci.yml` for automated linting, typechecking, building, and E2E testing.
+- **Schema Validation**: Audited `schema.sql` against the current codebase to ensure all indexing and constraints (VIN uniqueness, partial indexes) are correctly defined for production.
+
 ### 2026-04-12 Phase 17: Corporate Gallery Infrastructure & AI UX (Completed)
 - **Corporate Account Layer**: Established a dedicated data model and UI for professional galleries, including verified business fields (tax ID, tax office, website, business slug).
 - **Professional Storefronts**: Developed SEO-optimized `/gallery/[slug]` pages for each professional account, providing a personalized branded space for inventory.

@@ -6,6 +6,11 @@ import { useActionState } from "react";
 import type { ProfileActionState } from "@/lib/auth/profile-actions";
 import { AuthSubmitButton } from "@/components/forms/auth-submit-button";
 
+import { PhoneVerificationDialog } from "@/components/auth/phone-verification-dialog";
+import { useState } from "react";
+import { CheckCircle2, AlertCircle } from "lucide-react";
+import { Label } from "@/components/ui/label";
+
 interface ProfileFormProps {
   action: (
     state: ProfileActionState | undefined,
@@ -18,6 +23,7 @@ interface ProfileFormProps {
     avatarUrl: string;
   };
   cityOptions: string[];
+  isPhoneVerified?: boolean;
 }
 
 const initialState: ProfileActionState = {};
@@ -26,8 +32,12 @@ export function ProfileForm({
   action,
   initialValues,
   cityOptions,
+  isPhoneVerified = false,
 }: ProfileFormProps) {
   const [state, formAction] = useActionState(action, initialState);
+  const [isVerifyDialogOpen, setIsVerifyDialogOpen] = useState(false);
+  const [isVerifiedLocally, setIsVerifiedLocally] = useState(isPhoneVerified);
+
   const values = {
     fullName: state.fields?.fullName ?? initialValues.fullName,
     phone: state.fields?.phone ?? initialValues.phone,
@@ -36,84 +46,104 @@ export function ProfileForm({
   };
 
   return (
-    <form action={formAction} className="space-y-5">
-      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        <div className="rounded-[1.25rem] border border-border/70 bg-muted/20 p-4">
-          <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
-            <UserRound className="size-4 text-primary" />
-            Tam ad
+    <>
+      <form action={formAction} className="space-y-5">
+        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+          <div className="rounded-[1.25rem] border border-border/70 bg-muted/20 p-4">
+            <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
+              <UserRound className="size-4 text-primary" />
+              Tam ad
+            </div>
+            <p className="mt-2 text-sm font-semibold text-foreground">
+              {values.fullName || "Henuz eklenmedi"}
+            </p>
           </div>
-          <p className="mt-2 text-sm font-semibold text-foreground">
-            {values.fullName || "Henuz eklenmedi"}
-          </p>
-        </div>
-        <div className="rounded-[1.25rem] border border-border/70 bg-muted/20 p-4">
-          <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
-            <Phone className="size-4 text-primary" />
-            Telefon
+          <div className="rounded-[1.25rem] border border-border/70 bg-muted/20 p-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
+                <Phone className="size-4 text-primary" />
+                Telefon
+              </div>
+              {isVerifiedLocally ? (
+                <CheckCircle2 className="size-4 text-emerald-500" />
+              ) : (
+                <AlertCircle className="size-4 text-amber-500" />
+              )}
+            </div>
+            <p className="mt-2 text-sm font-semibold text-foreground">
+              {values.phone || "Henuz eklenmedi"}
+            </p>
           </div>
-          <p className="mt-2 text-sm font-semibold text-foreground">
-            {values.phone || "Henuz eklenmedi"}
-          </p>
-        </div>
-        <div className="rounded-[1.25rem] border border-border/70 bg-muted/20 p-4">
-          <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
-            <MapPin className="size-4 text-primary" />
-            Sehir
+          <div className="rounded-[1.25rem] border border-border/70 bg-muted/20 p-4">
+            <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
+              <MapPin className="size-4 text-primary" />
+              Sehir
+            </div>
+            <p className="mt-2 text-sm font-semibold text-foreground">
+              {values.city || "Henuz eklenmedi"}
+            </p>
           </div>
-          <p className="mt-2 text-sm font-semibold text-foreground">
-            {values.city || "Henuz eklenmedi"}
-          </p>
-        </div>
-        <div className="rounded-[1.25rem] border border-primary/10 bg-gradient-to-br from-primary/10 via-background to-background p-4">
-          <div className="flex items-center gap-2 text-sm font-medium text-primary">
-            <Camera className="size-4" />
-            Avatar
-          </div>
-          <p className="mt-2 text-sm font-semibold text-foreground">
-            {values.avatarUrl ? "URL hazir" : "Opsiyonel"}
-          </p>
-        </div>
-      </div>
-
-      <section className="rounded-[1.75rem] border border-border/80 bg-background p-5 shadow-sm sm:p-6">
-        <div className="flex items-start gap-3">
-          <div className="flex size-11 shrink-0 items-center justify-center rounded-2xl bg-primary/10 text-primary">
-            <UserRound className="size-5" />
-          </div>
-          <div className="space-y-1">
-            <h3 className="text-lg font-semibold tracking-tight text-foreground">
-              Temel profil bilgileri
-            </h3>
-            <p className="text-sm leading-6 text-muted-foreground">
-              Guven hissi icin ad, telefon ve sehir alanlarini net tut. Bu bilgiler ilan
-              akislarinda destekleyici sinyal olarak kullanilir.
+          <div className="rounded-[1.25rem] border border-primary/10 bg-gradient-to-br from-primary/10 via-background to-background p-4">
+            <div className="flex items-center gap-2 text-sm font-medium text-primary">
+              <Camera className="size-4" />
+              Avatar
+            </div>
+            <p className="mt-2 text-sm font-semibold text-foreground">
+              {values.avatarUrl ? "URL hazir" : "Opsiyonel"}
             </p>
           </div>
         </div>
 
-        <div className="mt-5 grid gap-5 sm:grid-cols-2">
-          <label className="block space-y-2 text-sm font-medium text-foreground sm:col-span-2">
-            <span>Ad Soyad</span>
-            <input
-              type="text"
-              name="fullName"
-              defaultValue={values.fullName}
-              required
-              className="h-12 w-full rounded-xl border border-input bg-background px-4 text-sm outline-none transition-colors focus:border-primary"
-            />
-          </label>
+        <section className="rounded-[1.75rem] border border-border/80 bg-background p-5 shadow-sm sm:p-6">
+          <div className="flex items-start gap-3">
+            <div className="flex size-11 shrink-0 items-center justify-center rounded-2xl bg-primary/10 text-primary">
+              <UserRound className="size-5" />
+            </div>
+            <div className="space-y-1">
+              <h3 className="text-lg font-semibold tracking-tight text-foreground">
+                Temel profil bilgileri
+              </h3>
+              <p className="text-sm leading-6 text-muted-foreground">
+                Guven hissi icin ad, telefon ve sehir alanlarini net tut. Bu bilgiler ilan
+                akislarinda destekleyici sinyal olarak kullanilir.
+              </p>
+            </div>
+          </div>
 
-          <label className="block space-y-2 text-sm font-medium text-foreground">
-            <span>Telefon</span>
-            <input
-              type="tel"
-              name="phone"
-              defaultValue={values.phone}
-              required
-              className="h-12 w-full rounded-xl border border-input bg-background px-4 text-sm outline-none transition-colors focus:border-primary"
-            />
-          </label>
+          <div className="mt-5 grid gap-5 sm:grid-cols-2">
+            <label className="block space-y-2 text-sm font-medium text-foreground sm:col-span-2">
+              <span>Ad Soyad</span>
+              <input
+                type="text"
+                name="fullName"
+                defaultValue={values.fullName}
+                required
+                className="h-12 w-full rounded-xl border border-input bg-background px-4 text-sm outline-none transition-colors focus:border-primary"
+              />
+            </label>
+
+            <div className="space-y-2 text-sm font-medium text-foreground">
+              <div className="flex items-center justify-between">
+                <Label htmlFor="phone">Telefon</Label>
+                {values.phone && !isVerifiedLocally && (
+                  <button
+                    type="button"
+                    onClick={() => setIsVerifyDialogOpen(true)}
+                    className="text-xs font-bold text-primary hover:underline"
+                  >
+                    Hemen Doğrula
+                  </button>
+                )}
+              </div>
+              <input
+                id="phone"
+                type="tel"
+                name="phone"
+                defaultValue={values.phone}
+                required
+                className="h-12 w-full rounded-xl border border-input bg-background px-4 text-sm outline-none transition-colors focus:border-primary"
+              />
+            </div>
 
           <label className="block space-y-2 text-sm font-medium text-foreground">
             <span>Şehir</span>
@@ -187,5 +217,16 @@ export function ProfileForm({
 
       <AuthSubmitButton label="Profili Güncelle" />
     </form>
-  );
+    
+    <PhoneVerificationDialog 
+      isOpen={isVerifyDialogOpen}
+      onOpenChange={setIsVerifyDialogOpen}
+      initialPhone={values.phone}
+      onSuccess={() => {
+        setIsVerifiedLocally(true);
+        setIsVerifyDialogOpen(false);
+      }}
+    />
+  </>
+);
 }

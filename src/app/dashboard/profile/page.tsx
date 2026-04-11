@@ -137,6 +137,7 @@ export default async function DashboardProfilePage() {
               avatarUrl: profile.avatarUrl ?? "",
             }}
             cityOptions={cityOptions.map((item) => item.city)}
+            isPhoneVerified={profile.phoneVerified}
           />
         </div>
       </section>

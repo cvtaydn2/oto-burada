@@ -2,6 +2,7 @@ import { MyListingsPanel } from "@/components/listings/my-listings-panel";
 import { ListingCreateForm } from "@/components/forms/listing-create-form";
 import { requireUser } from "@/lib/auth/session";
 import { getStoredUserListings } from "@/services/listings/listing-submissions";
+import { getStoredProfileById } from "@/services/profile/profile-records";
 import { getLiveMarketplaceReferenceData, mergeCityOptions } from "@/services/reference/live-reference-data";
 import { ListChecks } from "lucide-react";
 
@@ -38,9 +39,13 @@ export default async function DashboardListingsPage({ searchParams }: DashboardL
           },
         ].sort((left, right) => left.brand.localeCompare(right.brand, "tr"))
       : references.brands;
+  const profile = await getStoredProfileById(user.id);
+  const isPhoneVerified = profile?.phoneVerified ?? false;
+
   const mergedCities = mergeCityOptions(references.cities, [
     metadata.city ?? "",
     selectedListing?.city ?? "",
+    profile?.city ?? "",
   ]);
 
   const isEditingExisting = selectedListing !== null;
@@ -80,6 +85,7 @@ export default async function DashboardListingsPage({ searchParams }: DashboardL
             }}
             brands={mergedBrands}
             cities={mergedCities}
+            isPhoneVerified={isPhoneVerified}
           />
         </div>
       </MyListingsPanel>

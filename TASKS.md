@@ -394,8 +394,8 @@ Audit all pages for:
 
 ### Task 10.3 — Final Security & RLS Audit
 - [x] Ensure Service Role keys are NOT exposed in client bundles
-- [ ] Verify all tables have RLS enabled
-- [ ] Test edge cases for "Profile" and "Listing" ownership
+- [x] Verify all tables have RLS enabled
+- [x] Test edge cases for "Profile" and "Listing" ownership
 
 #### Acceptance Criteria
 - No RLS gaps found
