@@ -14,34 +14,41 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 
+import { revealListingPhone } from "@/services/listings/listing-actions";
+
 interface ContactActionsProps {
   listingId: string;
-  phone: string;
 }
 
-export function ContactActions({ listingId, phone }: ContactActionsProps) {
+export function ContactActions({ listingId }: ContactActionsProps) {
   const [isRevealed, setIsRevealed] = useState(false);
+  const [revealedPhone, setRevealedPhone] = useState<string | null>(null);
   const [isLogging, setIsLogging] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const formatPhone = (p: string) => {
     return p.replace(/(\d{4})(\d{3})(\d{2})(\d{2})/, "$1 $2 $3 $4");
   };
 
   const handleReveal = async () => {
-    if (isRevealed) return;
+    if (isRevealed || isLogging) return;
     
     setIsLogging(true);
+    setError(null);
     try {
-      // Mock logging interaction to prevent easy bulk scaling
-      // In a real production app, this would hit an API route that implements IP-based rate limiting
-      await new Promise(resolve => setTimeout(resolve, 600));
+      const result = await revealListingPhone(listingId);
+      setRevealedPhone(result.phone);
       setIsRevealed(true);
+    } catch (err: any) {
+      setError(err.message || "Bir hata oluştu");
     } finally {
       setIsLogging(false);
     }
   };
 
-  const whatsappLink = `https://wa.me/${phone.replace(/\D/g, "")}?text=${encodeURIComponent("Merhaba, OtoBurada üzerinden ilanınızla ilgileniyorum.")}`;
+  const whatsappLink = revealedPhone 
+    ? `https://wa.me/${revealedPhone.replace(/\D/g, "")}?text=${encodeURIComponent("Merhaba, OtoBurada üzerinden ilanınızla ilgileniyorum.")}`
+    : "#";
 
   return (
     <div className="space-y-3">
@@ -64,11 +71,11 @@ export function ContactActions({ listingId, phone }: ContactActionsProps) {
           </button>
         ) : (
           <a
-            href={`tel:${phone}`}
+            href={`tel:${revealedPhone}`}
             className="flex w-full items-center justify-center gap-2 rounded-xl bg-slate-100 h-12 px-4 text-[15px] font-bold text-slate-900 border border-slate-200 animate-in fade-in zoom-in-95 duration-200"
           >
             <Phone className="size-5 text-indigo-600" />
-            {formatPhone(phone)}
+            {revealedPhone ? formatPhone(revealedPhone) : "N/A"}
           </a>
         )}
       </div>
@@ -111,20 +118,36 @@ export function ContactActions({ listingId, phone }: ContactActionsProps) {
             <AlertDialogCancel className="w-full sm:flex-1 h-12 rounded-xl border border-slate-200 text-slate-600 font-semibold">
               Vazgeç
             </AlertDialogCancel>
-            <AlertDialogAction asChild className="w-full sm:flex-1 h-12 p-0 bg-transparent hover:bg-transparent">
-              <a
-                href={whatsappLink}
-                target="_blank"
-                rel="noreferrer"
-                className="flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-green-500 to-emerald-600 w-full h-12 px-6 text-[15px] text-white font-bold shadow-sm"
-              >
-                Görüntüle
-                <MessageCircle className="size-4" />
-              </a>
-            </AlertDialogAction>
+            <AlertDialogAction 
+               asChild 
+               className="w-full sm:flex-1 h-12 p-0 bg-transparent hover:bg-transparent"
+               onClick={(e) => {
+                 if (!isRevealed) {
+                   e.preventDefault();
+                   handleReveal();
+                 }
+               }}
+             >
+               <a
+                 href={isRevealed ? whatsappLink : "#"}
+                 target={isRevealed ? "_blank" : undefined}
+                 rel="noreferrer"
+                 className="flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-green-500 to-emerald-600 w-full h-12 px-6 text-[15px] text-white font-bold shadow-sm"
+               >
+                 {isLogging ? <Loader2 className="animate-spin size-4" /> : isRevealed ? "Mesaj Gönder" : "Numarayı Gör ve İlerle"}
+                 <MessageCircle className="size-4" />
+               </a>
+             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {error && (
+        <div className="flex items-center gap-2 text-red-600 text-[13px] font-medium bg-red-50 p-3 rounded-lg border border-red-100 animate-in fade-in slide-in-from-top-1">
+          <AlertTriangle className="size-4 shrink-0" />
+          {error}
+        </div>
+      )}
     </div>
   );
 }

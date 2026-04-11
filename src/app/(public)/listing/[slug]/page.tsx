@@ -29,6 +29,7 @@ import { ContactActions } from "@/components/listings/contact-actions";
 import { ExpertInspectionCard } from "@/components/listings/expert-inspection-card";
 import { DamageReportCard } from "@/components/listings/damage-report-card";
 import { EIDSBadge } from "@/components/shared/eids-badge";
+import { MobileStickyActions } from "@/components/listings/mobile-sticky-actions";
 import { getCurrentUser } from "@/lib/auth/session";
 import { buildListingDetailMetadata, buildAbsoluteUrl } from "@/lib/seo";
 import { formatDate, formatNumber } from "@/lib/utils";
@@ -166,7 +167,16 @@ export default async function ListingDetailPage({ params }: ListingDetailPagePro
     <>
       <ListingDetailStructuredData listing={listing} url={buildAbsoluteUrl(`/listing/${listing.slug}`)} />
       <BreadcrumbStructuredData items={breadcrumbs.map(b => ({ name: b.name, url: buildAbsoluteUrl(b.url) }))} />
-      <main className="min-h-screen bg-slate-50/50" role="main">
+      
+      <MobileStickyActions 
+          listingId={listing.id}
+          price={listing.price}
+          title={listing.title}
+          isLoggedIn={!!currentUser}
+          loginUrl={`/login?next=${encodeURIComponent(`/listing/${listing.slug}`)}`}
+      />
+
+      <main className="min-h-screen bg-slate-50/50 pb-20 lg:pb-0" role="main">
       <div className="mx-auto flex w-full max-w-7xl flex-col px-4 py-6 sm:px-6 lg:px-8">
         
         <Breadcrumbs items={breadcrumbs} />
@@ -329,7 +339,6 @@ export default async function ListingDetailPage({ params }: ListingDetailPagePro
                   <div className="mt-5">
                     <ContactActions
                       listingId={listing.id}
-                      phone={listing.whatsappPhone}
                     />
                   </div>
                 ) : (
