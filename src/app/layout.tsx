@@ -5,6 +5,8 @@ import { PWAInstallPrompt } from "@/components/shared/pwa-install-prompt";
 import { getCurrentUser } from "@/lib/auth/session";
 import { getAppUrl } from "@/lib/seo";
 
+import { SpeedInsights } from "@vercel/speed-insights/next";
+
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -44,6 +46,7 @@ export default async function RootLayout({
         <AppProviders userId={currentUser?.id ?? null}>
           {children}
           <PWAInstallPrompt />
+          <SpeedInsights />
         </AppProviders>
       </body>
     </html>
