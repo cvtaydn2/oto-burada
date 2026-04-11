@@ -63,7 +63,7 @@ const demoListings = [
     city: "Istanbul",
     createdAt: "2026-04-04T09:30:00Z",
     description:
-      "Family-owned Golf with regular maintenance history, clean interior, and ready-to-drive condition.",
+      "Sahibinden düzenli bakımlı, içi tertemiz ve masrafsız Golf. Sigara içilmemiştir, yedek anahtarı mevcuttur.",
     district: "Kadikoy",
     featured: true,
     fuelType: "dizel",
@@ -86,7 +86,7 @@ const demoListings = [
     city: "Ankara",
     createdAt: "2026-04-03T13:10:00Z",
     description:
-      "Low-mileage Clio with efficient petrol engine, clean history, and easy city-driving manners.",
+      "Düşük kilometreli, yakıt cimrisi Clio. Şehir içi kullanımı çok rahat, park sensörü ve dokunmatik ekran mevcut.",
     district: "Cankaya",
     featured: true,
     fuelType: "benzin",
@@ -109,7 +109,7 @@ const demoListings = [
     city: "Izmir",
     createdAt: "2026-03-31T11:00:00Z",
     description:
-      "Well-kept 320i with automatic transmission, strong driving feel, and recent maintenance records.",
+      "Borusan bakımlı, tam otomatik vitesi sorunsuz 320i. Kondisyonu çok iyi durumdadır, deri koltuklarda deformasyon yoktur.",
     district: "Bornova",
     featured: true,
     fuelType: "benzin",
@@ -135,7 +135,7 @@ const demoListingImages = [
     isCover: true,
     listingId: "2f240bf5-7e85-4dd7-9df6-2b8bbf3d6dc1",
     publicUrl:
-      "https://images.unsplash.com/photo-1494976388531-d1058494cdd8?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1541899481282-d53bffe3c35d?auto=format&fit=crop&w=1200&q=80",
     sortOrder: 0,
     storagePath: "seed/listings/2018-volkswagen-golf-1-6-tdi-comfortline-1.jpg",
   },
@@ -144,7 +144,7 @@ const demoListingImages = [
     isCover: false,
     listingId: "2f240bf5-7e85-4dd7-9df6-2b8bbf3d6dc1",
     publicUrl:
-      "https://images.unsplash.com/photo-1503376780353-7e6692767b70?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1494905998402-395d579af36f?auto=format&fit=crop&w=1200&q=80",
     sortOrder: 1,
     storagePath: "seed/listings/2018-volkswagen-golf-1-6-tdi-comfortline-2.jpg",
   },
@@ -153,7 +153,7 @@ const demoListingImages = [
     isCover: false,
     listingId: "2f240bf5-7e85-4dd7-9df6-2b8bbf3d6dc1",
     publicUrl:
-      "https://images.unsplash.com/photo-1542282088-fe8426682b8f?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1506469717960-433cebe3f181?auto=format&fit=crop&w=1200&q=80",
     sortOrder: 2,
     storagePath: "seed/listings/2018-volkswagen-golf-1-6-tdi-comfortline-3.jpg",
   },
@@ -162,7 +162,7 @@ const demoListingImages = [
     isCover: true,
     listingId: "ff43d0df-4f47-4338-b2e9-7f9cb944d80d",
     publicUrl:
-      "https://images.unsplash.com/photo-1552519507-da3b142c6e3d?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1619405399517-d7fce0f13302?auto=format&fit=crop&w=1200&q=80",
     sortOrder: 0,
     storagePath: "seed/listings/2020-renault-clio-1-0-tce-touch-1.jpg",
   },
@@ -171,7 +171,7 @@ const demoListingImages = [
     isCover: false,
     listingId: "ff43d0df-4f47-4338-b2e9-7f9cb944d80d",
     publicUrl:
-      "https://images.unsplash.com/photo-1511919884226-fd3cad34687c?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1590362891991-f776e947f1b2?auto=format&fit=crop&w=1200&q=80",
     sortOrder: 1,
     storagePath: "seed/listings/2020-renault-clio-1-0-tce-touch-2.jpg",
   },
@@ -180,7 +180,7 @@ const demoListingImages = [
     isCover: false,
     listingId: "ff43d0df-4f47-4338-b2e9-7f9cb944d80d",
     publicUrl:
-      "https://images.unsplash.com/photo-1583121274602-3e2820c69888?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1593367807023-952410a83c39?auto=format&fit=crop&w=1200&q=80",
     sortOrder: 2,
     storagePath: "seed/listings/2020-renault-clio-1-0-tce-touch-3.jpg",
   },
@@ -189,7 +189,7 @@ const demoListingImages = [
     isCover: true,
     listingId: "8e85f7fc-bbff-4058-8ae1-a95357c67bd4",
     publicUrl:
-      "https://images.unsplash.com/photo-1494976388531-d1058494cdd8?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1555215695-3004980ad54e?auto=format&fit=crop&w=1200&q=80",
     sortOrder: 0,
     storagePath: "seed/listings/2016-bmw-320i-ed-luxury-line-1.jpg",
   },
@@ -198,7 +198,7 @@ const demoListingImages = [
     isCover: false,
     listingId: "8e85f7fc-bbff-4058-8ae1-a95357c67bd4",
     publicUrl:
-      "https://images.unsplash.com/photo-1503376780353-7e6692767b70?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1523983388277-336a66bf9bcd?auto=format&fit=crop&w=1200&q=80",
     sortOrder: 1,
     storagePath: "seed/listings/2016-bmw-320i-ed-luxury-line-2.jpg",
   },
@@ -207,7 +207,7 @@ const demoListingImages = [
     isCover: false,
     listingId: "8e85f7fc-bbff-4058-8ae1-a95357c67bd4",
     publicUrl:
-      "https://images.unsplash.com/photo-1542282088-fe8426682b8f?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1520116468816-95b69f847357?auto=format&fit=crop&w=1200&q=80",
     sortOrder: 2,
     storagePath: "seed/listings/2016-bmw-320i-ed-luxury-line-3.jpg",
   },

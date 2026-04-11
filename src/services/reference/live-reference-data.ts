@@ -38,22 +38,36 @@ export async function getLiveMarketplaceReferenceData() {
 
   const uniqueSuggestions = new Map<string, SearchSuggestionItem>();
   
-  for (const b of (brandsData || []).slice(0, 10)) {
-    uniqueSuggestions.set(`brand:${b.name}`, { label: b.name, type: "brand", value: b.name });
-    const topModels = (modelsData || []).filter((m: DBModel) => m.brand_id === b.id).slice(0, 3);
-    for (const m of topModels) {
+  // Include all active brands
+  for (const b of (brandsData || [])) {
+    uniqueSuggestions.set(`brand:${b.name.toLowerCase()}`, { label: b.name, type: "brand", value: b.name });
+    
+    // Add first 10 models for EACH brand to increase coverage
+    const brandModels = (modelsData || []).filter((m: DBModel) => m.brand_id === b.id).slice(0, 5);
+    for (const m of brandModels) {
       const val = `${b.name} ${m.name}`;
-      uniqueSuggestions.set(`model:${val}`, { label: val, type: "model", value: val });
+      uniqueSuggestions.set(`model:${val.toLowerCase()}`, { label: val, type: "model", value: val });
     }
   }
 
-  for (const c of (citiesData || []).slice(0, 10)) {
-    uniqueSuggestions.set(`city:${c.name}`, { label: c.name, type: "city", value: c.name });
+  // Include top cities
+  for (const c of (citiesData || [])) {
+    uniqueSuggestions.set(`city:${c.name.toLowerCase()}`, { label: c.name, type: "city", value: c.name });
   }
 
+  // Frontend will handle the filtering by query, but we return a large enough pool
   const searchSuggestions = [...uniqueSuggestions.values()]
-    .sort((left, right) => left.label.localeCompare(right.label, "tr"))
-    .slice(0, 15);
+    .sort((left, right) => {
+      // Prioritize brands/models over cities in the default list
+      if (left.type !== right.type) {
+        if (left.type === "brand") return -1;
+        if (right.type === "brand") return 1;
+        if (left.type === "model") return -1;
+        if (right.type === "model") return 1;
+      }
+      return left.label.localeCompare(right.label, "tr");
+    })
+    .slice(0, 100); // Return top 100 to let frontend filter effectively
 
   return { brands, cities, searchSuggestions };
 }

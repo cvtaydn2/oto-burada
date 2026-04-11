@@ -6,6 +6,7 @@ import { PWAInstallPrompt } from "@/components/shared/pwa-install-prompt";
 import { getCurrentUser } from "@/lib/auth/session";
 import { getAppUrl } from "@/lib/seo";
 
+import { Analytics } from "@vercel/analytics/next";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 
 import "./globals.css";
@@ -48,6 +49,7 @@ export default async function RootLayout({
           {children}
           <CookieConsent />
           <PWAInstallPrompt />
+          <Analytics />
           <SpeedInsights />
         </AppProviders>
       </body>

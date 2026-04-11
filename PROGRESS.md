@@ -13,14 +13,15 @@ Her yeni geliştirme başlamadan önce okunmalıdır.
 ---
 
 ## Proje Durumu
-### 2026-04-11 Phase 13: Senior Audit & Production Hardening (Current)
-- **Senior UX/Technical Audit**: Conducted a brutal honesty audit resulting in a critical remediation roadmap.
-- **Persistent SQL Rate Limiting**: Successfully migrated from local memory to a persistent, atomic SQL-backed rate limiting system using Supabase RPC (`check_api_rate_limit`). This ensures protection across serverless cold starts and multiple instances.
-- **Pagination-First Architecture**: Refactored the core listings data flow to use `PaginatedListingsResult` across all public and dashboard views. This optimizes memory usage and enables scalable high-traffic growth.
-- **Admin Dashboard Restoration**: Rebuilt the corrupted admin management interface, integrating real-time analytics for system metrics and restoring full moderation capabilities.
-- **Type-Safety Enforcement**: Resolved over 50+ build-breaking TypeScript errors introduced during architectural transitions, ensuring a stable and maintainable codebase.
-- **Security Hardening**: Enforced mandatory VIN uniqueness at the database level and updated the fraud detection algorithm to prevent listing cloning.
-- **Infrastructure Verification**: Verified 100% production build success and passed core E2E smoke tests.
+### 2026-04-12 Phase 15: Infrastructure Hardening Remediation (Current)
+- **Search Suggestion Precision**: Fixed logic in `live-reference-data.ts` to increase suggestion pool size and prioritize Brands/Models over Cities, resolving failures on brand-specific queries (e.g., 'Tesla').
+- **Data Integrity & Visuals**: Corrected seed data in `seed-supabase-demo.mjs` to resolve image-listing mismatches and translated all descriptions to Turkish.
+- **Legal & Compliance**: Created `Contact`, `Terms of Use`, and `Privacy Policy` pages to eliminate footer 404s and establish professional trust.
+- **Edge Security**: Integrated Redis-based rate limiting into the core middleware, protecting against scrapers.
+
+### 2026-04-11 Phase 14: Enterprise Infrastructure & Security - Tamamlandı
+- **Distributed Security**: Migrated to Upstash Redis for global, low-latency rate limiting at the edge.
+- **Marketplace Audit**: Conducted a brutal live-site audit identifying critical friction points and data gaps.
 
 ---
 

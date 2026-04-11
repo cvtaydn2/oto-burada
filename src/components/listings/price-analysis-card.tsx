@@ -57,19 +57,27 @@ export function PriceAnalysisCard({
           <div className="rounded-xl border border-border/50 bg-background p-3 shadow-sm">
             <p className="text-sm leading-relaxed text-muted-foreground">
               Bu araç, benzer özelliklerdeki ilanların analizine göre piyasa
-              ortalamasından
-              <strong
-                className={`ml-1 ${
-                  marketStatus === "excellent"
-                    ? "text-emerald-600 dark:text-emerald-500"
-                    : marketStatus === "high"
-                      ? "text-amber-600 dark:text-amber-500"
-                      : "text-foreground"
-                }`}
-              >
-                {formatCurrency(Math.abs(priceDiff))}
-                {marketStatus === "high" ? " daha yüksek" : " daha ucuz"}
-              </strong>
+              {priceDiff === 0 ? (
+                <strong className="ml-1 text-blue-600 dark:text-blue-500">
+                  ortalamasında (Adil Fiyat)
+                </strong>
+              ) : (
+                <>
+                  {" "}ortalamasından
+                  <strong
+                    className={`ml-1 ${
+                      marketStatus === "excellent"
+                        ? "text-emerald-600 dark:text-emerald-500"
+                        : marketStatus === "high"
+                          ? "text-amber-600 dark:text-amber-500"
+                          : "text-foreground"
+                    }`}
+                  >
+                    {formatCurrency(Math.abs(priceDiff))}
+                    {marketStatus === "high" ? " daha yüksek" : " daha ucuz"}
+                  </strong>
+                </>
+              )}
               .
             </p>
           </div>
