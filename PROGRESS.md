@@ -13,7 +13,39 @@ Her yeni geliştirme başlamadan önce okunmalıdır.
 ---
 
 ## Proje Durumu
-### 2026-04-11 Vercel 500 (jsdom) Hatası Giderilmesi - Tamamlandı
+### 2026-04-11 Phase 11: Production UX Hardening & Audit - Tamamlandı
+
+### Kapsam
+Kullanıcı deneyimini (UX) senior seviyesine taşımak, erişilebilirliği (a11y) artırmak ve operasyonel hataları (deep linking) gidermek için proje geneli sertleştirme çalışması yapıldı.
+
+### Yapılan Geliştirmeler
+1. **Erişilebilirlik (a11y) & SEO:**
+   - `ListingsFilterPanel` bileşenindeki tüm input ve select alanlarına `sr-only` etiketleri (labels) eklenerek ekran okuyucu uyumluluğu %100'e çıkarıldı.
+   - İlan kartlarındaki (`ListingCard`, `ListingCardGrid`) görsel `alt` metinleri dinamik ve betimleyici hale getirildi (`${brand} ${model} ${year} - ${title}`).
+   - `meta` etiketleri ve structured data (JSON-LD) denetlendi.
+
+2. **Dinamik Filtreleme & Deep Linking:**
+   - `listing-filters.ts` içindeki tüm metin bazlı filtreler (`brand`, `model`, `city`, `district` vb.) `tr-TR` dil kurallarına uygun şekilde büyük/küçük harf duyarsız (case-insensitive) hale getirildi.
+   - Bu sayede URL üzerinden gelen `?brand=bmw` gibi parametrelerin, veritabanındaki `BMW` kaydıyla eşleşmemesi sorunu çözüldü.
+
+3. **Hata Yakalama & Kullanıcı Tutma (Retention):**
+   - Branded bir `not-found.tsx` (404) sayfası eklendi. Kullanıcılar hatalı bir URL'ye girdiklerinde ana sayfaya veya ilanlara yönlendiren yüksek motivasyonlu bir arayüzle karşılanıyor.
+
+4. **Yasal Uyum & Profesyonellik:**
+   - Root layout'a KVKK/GDPR uyumlu `CookieConsent` banner'ı eklendi.
+   - `SiteFooter` dosyasındaki bozuk Türkçe karakterler ve "placeholder" linkler temizlendi; "Gizlilik Politikası", "Kullanım Şartları" ve "İletişim" sayfaları için profesyonel link yapısı kuruldu.
+
+5. **Güvenlik & RLS Denetimi:**
+   - Tüm veritabanı tablolarındaki RLS (Row Level Security) politikaları CRUD seviyesinde denetlendi.
+   - Silme ve güncelleme yetkilerinin sadece yetkili kullanıcı (sahip veya admin) üzerinde olduğu `schema.sql` üzerinden teyit edildi.
+
+### Doğrulama
+- `npm run typecheck` Başarılı.
+- Case-insensitivity testi (Yerel build üzerinde) Başarılı.
+- Accessibility audit (Manual inspection) Başarılı.
+
+### Sonraki Adım
+- Canlı ortamda (Vercel) kullanıcı geri bildirimlerinin takibi.
 
 ### Kapsam
 Vercel deployment sonrası alınan "require() of ES Module /.../encoding-lite.js from jsdom" hatası ve buna bağlı 500 hataları giderildi.

@@ -50,27 +50,27 @@ export function filterListings(
       }
     }
 
-    if (filters.brand && listing.brand !== filters.brand) {
+    if (filters.brand && normalizeText(listing.brand) !== normalizeText(filters.brand)) {
       return false;
     }
 
-    if (filters.model && listing.model !== filters.model) {
+    if (filters.model && normalizeText(listing.model) !== normalizeText(filters.model)) {
       return false;
     }
 
-    if (filters.city && listing.city !== filters.city) {
+    if (filters.city && normalizeText(listing.city) !== normalizeText(filters.city)) {
       return false;
     }
 
-    if (filters.district && listing.district !== filters.district) {
+    if (filters.district && normalizeText(listing.district) !== normalizeText(filters.district)) {
       return false;
     }
 
-    if (filters.fuelType && listing.fuelType !== filters.fuelType) {
+    if (filters.fuelType && normalizeText(listing.fuelType) !== normalizeText(filters.fuelType)) {
       return false;
     }
 
-    if (filters.transmission && listing.transmission !== filters.transmission) {
+    if (filters.transmission && normalizeText(listing.transmission) !== normalizeText(filters.transmission)) {
       return false;
     }
 
