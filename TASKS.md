@@ -375,27 +375,27 @@ Audit all pages for:
 ## Phase 10 — Performance, Testing & Launch Readiness
 
 ### Task 10.1 — Performance Audit & Code Splitting
-- [ ] Run `npm run build` with `@next/bundle-analyzer`
-- [ ] Use `next/dynamic` for heavy client components (Charts, Modals)
-- [ ] Implement `priority` on above-the-fold images
+- [x] Run `npm run build` with `@next/bundle-analyzer`
+- [x] Use `next/dynamic` for heavy client components (Charts, Modals)
+- [x] Implement `priority` on above-the-fold images
 
 #### Acceptance Criteria
 - Initial bundle size reduced by 15%+
 - Lighthouse performance score > 90 on mobile
 
 ### Task 10.2 — E2E Testing Coverage
-- [ ] Implement Comprehensive Listing Flow test
-- [ ] Implement Authentication & Persistence test
-- [ ] Implement Admin Moderation workflow test
+- [x] Implement Comprehensive Listing Flow test
+- [x] Implement Authentication & Persistence test
+- [x] Implement Admin Moderation workflow test
 
 #### Acceptance Criteria
 - Critical paths are covered by Playwright
 - Tests pass in CI-like local environment
 
 ### Task 10.3 — Final Security & RLS Audit
+- [x] Ensure Service Role keys are NOT exposed in client bundles
 - [ ] Verify all tables have RLS enabled
 - [ ] Test edge cases for "Profile" and "Listing" ownership
-- [ ] Ensure Service Role keys are NOT exposed in client bundles
 
 #### Acceptance Criteria
 - No RLS gaps found

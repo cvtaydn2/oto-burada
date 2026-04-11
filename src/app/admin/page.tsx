@@ -17,9 +17,8 @@ import {
 import { AdminReportsModeration } from "@/components/listings/admin-reports-moderation";
 import { AdminBroadcastPanel } from "@/components/shared/admin-broadcast-panel";
 import { AdminPersistencePanel } from "@/components/shared/admin-persistence-panel";
-import dynamic from "next/dynamic";
-import { AdminAnalyticsPanel } from "@/components/listings/admin-analytics-panel";
 import { DashboardMetricCard } from "@/components/shared/dashboard-metric-card";
+import { AdminAnalyticsPanel } from "@/components/listings/admin-analytics-panel";
 import { getUserRole, requireAdminUser } from "@/lib/auth/session";
 import { getRecentAdminModerationActions } from "@/services/admin/moderation-actions";
 import { getPersistenceHealth } from "@/services/admin/persistence-health";
