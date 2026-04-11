@@ -1,19 +1,46 @@
-import { Redis } from "@upstash/redis";
+import Redis from "ioredis";
 
-const redisUrl = process.env.UPSTASH_REDIS_REST_URL;
-const redisToken = process.env.UPSTASH_REDIS_REST_TOKEN;
+const getRedisUrl = () => {
+  if (process.env.REDIS_URL) return process.env.REDIS_URL;
+  if (process.env.UPSTASH_REDIS_REST_URL) return process.env.UPSTASH_REDIS_REST_URL; // Fallback
+  
+  const host = process.env.REDIS_HOST;
+  const port = process.env.REDIS_PORT || "6379";
+  const password = process.env.REDIS_PASSWORD;
+  const user = process.env.REDIS_USER || "default";
 
-// Initialize Redis only if env vars are present to avoid build crashes
-export const redis = (redisUrl && redisToken) 
-  ? new Redis({ url: redisUrl, token: redisToken })
-  : null;
+  if (host) {
+    return `redis://${user}:${password}@${host}:${port}`;
+  }
+
+  return null;
+};
+
+const redisUrl = getRedisUrl();
+
+// Initialize Redis only if redisUrl is present
+export const redis = redisUrl ? new Redis(redisUrl, {
+  maxRetriesPerRequest: 3,
+  retryStrategy(times) {
+    const delay = Math.min(times * 50, 2000);
+    return delay;
+  }
+}) : null;
+
+if (redis) {
+  redis.on("error", (err) => {
+    // Only log once to avoid log spam, or use a logger
+    console.error("Redis Connection Error");
+  });
+}
 
 export async function getCachedData<T>(key: string): Promise<T | null> {
   if (!redis) return null;
   try {
-    return await redis.get<T>(key);
+    const data = await redis.get(key);
+    if (!data) return null;
+    return JSON.parse(data) as T;
   } catch (error) {
-    console.error("Redis Get Error:", error);
     return null;
   }
 }
@@ -21,9 +48,10 @@ export async function getCachedData<T>(key: string): Promise<T | null> {
 export async function setCachedData(key: string, data: any, ttlSeconds: number = 3600) {
   if (!redis) return;
   try {
-    await redis.set(key, data, { ex: ttlSeconds });
+    const stringified = JSON.stringify(data);
+    await redis.set(key, stringified, "EX", ttlSeconds);
   } catch (error) {
-    console.error("Redis Set Error:", error);
+    // Silent fail
   }
 }
 
@@ -32,6 +60,6 @@ export async function invalidateCache(key: string) {
   try {
     await redis.del(key);
   } catch (error) {
-    console.error("Redis Delete Error:", error);
+    // Silent fail
   }
 }
