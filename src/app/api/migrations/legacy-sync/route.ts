@@ -6,11 +6,10 @@ import { ensureProfileRecord } from "@/services/profile/profile-records";
 import {
   getLegacyStoredListings,
   getLegacyStoredUserListings,
-  listingSubmissionsCookieName,
-  listingSubmissionsCookieOptions,
   serializeStoredListings,
   upsertDatabaseListingRecord,
 } from "@/services/listings/listing-submissions";
+import { listingSubmissionsCookieName, listingSubmissionsCookieOptions } from "@/services/listings/constants";
 import {
   getLegacyStoredReports,
   getLegacyStoredReportsByReporter,

@@ -1,12 +1,10 @@
-"use server";
-
 import { cookies } from "next/headers";
-
 
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { hasSupabaseAdminEnv } from "@/lib/supabase/env";
 import { listingSchema } from "@/lib/validators";
 import type { Listing, ListingCreateInput, ListingFilters } from "@/types";
+import { listingSubmissionsCookieName, listingSubmissionsCookieOptions } from "./constants";
 
 const turkishCharacterMap: Record<string, string> = {
   ç: "c",
@@ -21,16 +19,6 @@ const turkishCharacterMap: Record<string, string> = {
   Ş: "s",
   ü: "u",
   Ü: "u",
-};
-
-export const listingSubmissionsCookieName = "oto-burada-listing-submissions";
-
-export const listingSubmissionsCookieOptions = {
-  httpOnly: true,
-  maxAge: 60 * 60 * 24 * 30,
-  path: "/",
-  sameSite: "lax" as const,
-  secure: process.env.NODE_ENV === "production",
 };
 
 interface ListingImageRow {
@@ -496,6 +484,14 @@ export async function getFilteredDatabaseListings(
 ): Promise<PaginatedListingsResult> {
   const page = filters.page ?? 1;
   const limit = filters.limit ?? 24;
+  const isDefaultView = !filters.query && !filters.brand && !filters.model && !filters.city && page === 1;
+  const cacheKey = "listings:approved:default";
+
+  if (isDefaultView) {
+    const { getCachedData } = await import("@/lib/redis/client");
+    const cached = await getCachedData<PaginatedListingsResult>(cacheKey);
+    if (cached) return cached;
+  }
 
   const listings = await getDatabaseListings({
     statuses: ["approved"],
@@ -532,13 +528,20 @@ export async function getFilteredDatabaseListings(
   const { count: total } = await countQuery;
   const totalCount = total ?? 0;
 
-  return {
+  const result = {
     listings: listings ?? [],
     total: totalCount,
     page,
     limit,
     hasMore: page * limit < totalCount,
   };
+
+  if (isDefaultView) {
+    const { setCachedData } = await import("@/lib/redis/client");
+    setCachedData(cacheKey, result, 600).catch(console.error); // 10 min cache
+  }
+
+  return result;
 }
 
 function mapListingToDatabaseRow(listing: Listing) {

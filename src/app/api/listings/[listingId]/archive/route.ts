@@ -7,12 +7,11 @@ import {
   archiveStoredListing,
   archiveDatabaseListing,
   findArchivableListingById,
-  listingSubmissionsCookieName,
-  listingSubmissionsCookieOptions,
   parseStoredListings,
   replaceStoredListing,
   serializeStoredListings,
 } from "@/services/listings/listing-submissions";
+import { listingSubmissionsCookieName, listingSubmissionsCookieOptions } from "@/services/listings/constants";
 
 export async function POST(
   _request: Request,

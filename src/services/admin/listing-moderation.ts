@@ -51,8 +51,11 @@ async function createModerationSideEffects(
     userId: listing.sellerId,
   });
 
-  // If approved, recalculate market stats for this segment to keep the index fresh
+  // If approved, recalculate market stats and invalidate cache
   if (action === "approve") {
+    const { invalidateCache } = await import("@/lib/redis/client");
+    invalidateCache("listings:approved").catch(console.error);
+
     const { updateMarketStats } = await import("@/services/market/market-stats");
     updateMarketStats(listing.brand, listing.model, listing.year).catch(console.error);
   }
