@@ -13,7 +13,16 @@ Her yeni geliştirme başlamadan önce okunmalıdır.
 ---
 
 ## Proje Durumu
-### 2026-04-12 Phase 16: Brutal UI/UX Transformation & Conversion Hardening (Current)
+### 2026-04-12 Phase 17: Corporate Gallery Infrastructure & AI UX (Completed)
+- **Corporate Account Layer**: Established a dedicated data model and UI for professional galleries, including verified business fields (tax ID, tax office, website, business slug).
+- **Professional Storefronts**: Developed SEO-optimized `/gallery/[slug]` pages for each professional account, providing a personalized branded space for inventory.
+- **Doping System Hardening**: Redesigned the search service to always prioritize "Featured" listings, ensuring paid gallery boosts are consistently effective.
+- **Bulk Inventory Management**: Built a bulk-archive API and enhanced the dashboard with a professional management UI (multi-select, one-click archive), optimized for users with 100+ listings.
+- **Premium UI Overhaul**: Upgraded `MyListingsPanel` with high-density, boutique design aesthetics, tracking-tighter typography, and improved interactive states.
+- **AI Visual Specialist (Mock)**: Integrated an "AI Context Clean" feature in the listing wizard, allowing professional sellers to simulate high-end studio background removal for their vehicles.
+- **Search Logic Realism**: Updated search sorting to use `bumped_at` for better freshness control, rewarding active gallery maintenance.
+
+### 2026-04-12 Phase 16: Brutal UI/UX Transformation & Conversion Hardening - Tamamlandı
 - **Design System Overhaul**: Implemented a modern, high-contrast design system using OKLCH colors and premium typography (Outfit for headings, Inter for UI). Replaced "Junior Indigo" with a vibrant, production-grade brand blue.
 - **Homepage Redesign**: Transformed the index page from a simple grid into a high-conversion landing page. Added a premium `HomeHero` with brand quick-filters and a smart search bar.
 - **CarCard Premium**: Developed a modular, high-density listing card (`CarCard`) that prioritizes scannable data (Year, KM, Price, Trust Badges) and eliminates UI clutter.

@@ -3,7 +3,8 @@ import { updateProfileAction } from "@/lib/auth/profile-actions";
 import { requireUser } from "@/lib/auth/session";
 import { buildProfileFromAuthUser, getStoredProfileById } from "@/services/profile/profile-records";
 import { getLiveMarketplaceReferenceData, mergeCityOptions } from "@/services/reference/live-reference-data";
-import { CheckCircle2, Circle, User, Phone, MapPin, Mail, ShieldCheck } from "lucide-react";
+import { CheckCircle2, Circle, User, Phone, MapPin, Mail, ShieldCheck, Building2 } from "lucide-react";
+import Link from "next/link";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 60;
@@ -31,6 +32,13 @@ export default async function DashboardProfilePage() {
               İlanlarınızda görünecek bilgiler
             </p>
           </div>
+          <Link 
+            href="/dashboard/profile/corporate"
+            className="hidden sm:flex items-center gap-2 rounded-xl bg-indigo-600 px-4 py-2 text-[10px] font-black text-white hover:bg-indigo-700 transition-all uppercase italic tracking-tighter shadow-lg shadow-indigo-200"
+          >
+            <Building2 size={14} />
+            Kurumsal Mağaza Yönetimi
+          </Link>
           <div className="text-right">
             <p className="text-2xl font-bold">{completion}%</p>
             <p className="text-xs text-muted-foreground">tamamlandı</p>

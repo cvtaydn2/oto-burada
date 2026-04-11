@@ -1,11 +1,12 @@
 "use client";
 
 import { UseFormReturn, UseFieldArrayReturn } from "react-hook-form";
-import { ImagePlus, Upload, Trash2, CheckCircle2, LoaderCircle } from "lucide-react";
+import { ImagePlus, Upload, Trash2, CheckCircle2, LoaderCircle, Sparkles, Wand2 } from "lucide-react";
 import Image from "next/image";
 import { cn } from "@/lib/utils";
 import { minimumListingImages } from "@/lib/constants/domain";
 import { ListingCreateFormValues } from "@/types";
+import { useState } from "react";
 
 interface PhotosStepProps {
   form: UseFormReturn<ListingCreateFormValues, unknown, ListingCreateFormValues>;
@@ -24,6 +25,19 @@ export function PhotosStep({
 }: PhotosStepProps) {
   const { fields } = fieldArray;
   const watchImages = form.watch("images");
+  const [cleaningIndices, setCleaningIndices] = useState<number[]>([]);
+
+  const handleCleanBackground = async (index: number) => {
+    if (cleaningIndices.includes(index)) return;
+    setCleaningIndices(prev => [...prev, index]);
+    
+    // Simulate AI processing delay
+    await new Promise(resolve => setTimeout(resolve, 2000));
+    
+    // In a real app, this would refresh the image URL with a white background version
+    setCleaningIndices(prev => prev.filter(i => i !== index));
+    // form.setValue(`images.${index}.url`, ...);
+  };
 
   return (
     <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
@@ -47,7 +61,7 @@ export function PhotosStep({
               <div
                 key={field.id}
                 className={cn(
-                  "relative aspect-[4/3] rounded-2xl border-2 border-dashed border-slate-200 transition-all overflow-hidden bg-slate-50",
+                  "relative group aspect-[4/3] rounded-2xl border-2 border-dashed border-slate-200 transition-all overflow-hidden bg-slate-50",
                   hasUrl && "border-solid border-indigo-200 shadow-sm",
                   uploadState?.status === "error" && "border-red-200 bg-red-50"
                 )}
@@ -60,15 +74,33 @@ export function PhotosStep({
                       fill
                       className="object-cover"
                     />
-                    <div className="absolute inset-0 bg-black/20 opacity-0 hover:opacity-100 transition-opacity flex items-center justify-center">
+                    <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
+                      <button
+                        type="button"
+                        onClick={() => handleCleanBackground(index)}
+                        disabled={cleaningIndices.includes(index)}
+                        className="p-2 bg-white rounded-full text-indigo-600 shadow-lg hover:bg-indigo-600 hover:text-white transition-all disabled:opacity-50"
+                        title="Arka Planı Temizle (AI)"
+                      >
+                        {cleaningIndices.includes(index) ? <LoaderCircle size={18} className="animate-spin" /> : <Wand2 size={18} />}
+                      </button>
                       <button
                         type="button"
                         onClick={() => onRemoveImage(index)}
-                        className="p-2 bg-white rounded-full text-red-500 shadow-lg hover:scale-110 transition-transform"
+                        className="p-2 bg-white rounded-full text-red-500 shadow-lg hover:bg-red-500 hover:text-white transition-all"
+                        title="Sil"
                       >
                         <Trash2 size={18} />
                       </button>
                     </div>
+
+                    {cleaningIndices.includes(index) && (
+                      <div className="absolute inset-0 bg-indigo-600/60 backdrop-blur-[2px] flex flex-col items-center justify-center text-white p-2">
+                         <Sparkles className="size-6 animate-pulse mb-1" />
+                         <span className="text-[10px] font-black uppercase italic tracking-tighter">AI Temizliyor...</span>
+                      </div>
+                    )}
+
                     {index === 0 && (
                       <div className="absolute top-2 left-2 bg-indigo-600 text-white text-[10px] font-bold px-2 py-1 rounded-md shadow-md">
                         KAPAK

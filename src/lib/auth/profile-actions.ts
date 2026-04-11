@@ -13,6 +13,16 @@ export interface ProfileActionState {
     phone?: string;
     city?: string;
     avatarUrl?: string;
+    
+    // Corporate fields
+    businessName?: string;
+    businessSlug?: string;
+    businessAddress?: string;
+    businessDescription?: string;
+    taxId?: string;
+    taxOffice?: string;
+    websiteUrl?: string;
+    businessLogoUrl?: string;
   };
 }
 
@@ -92,6 +102,75 @@ export async function updateProfileAction(
       city: parsed.data.city,
       avatarUrl: parsed.data.avatarUrl ?? "",
     },
+  };
+}
+
+export async function updateCorporateProfileAction(
+  previousState: ProfileActionState = initialState,
+  formData: FormData,
+): Promise<ProfileActionState> {
+  const values = {
+    businessName: String(formData.get("businessName") ?? ""),
+    businessSlug: String(formData.get("businessSlug") ?? ""),
+    businessAddress: String(formData.get("businessAddress") ?? ""),
+    businessDescription: String(formData.get("businessDescription") ?? ""),
+    taxId: String(formData.get("taxId") ?? ""),
+    taxOffice: String(formData.get("taxOffice") ?? ""),
+    websiteUrl: String(formData.get("websiteUrl") ?? ""),
+    businessLogoUrl: String(formData.get("businessLogoUrl") ?? ""),
+  };
+
+  const { corporateProfileSchema } = await import("@/lib/validators");
+  const parsed = corporateProfileSchema.safeParse(values);
+
+  if (!parsed.success) {
+    return {
+      error: parsed.error.issues[0]?.message ?? "Bir hata oluştu.",
+      fields: values as any,
+    };
+  }
+
+  const supabase = await createSupabaseServerClient();
+  const { data: { user } } = await supabase.auth.getUser();
+
+  if (!user) {
+    return { error: "Oturum dogrulanamadi.", fields: values as any };
+  }
+
+  // Update metadata for quick access
+  await supabase.auth.updateUser({
+    data: {
+      business_name: parsed.data.businessName,
+      business_slug: parsed.data.businessSlug,
+    }
+  });
+
+  // Update table
+  const { error } = await supabase
+    .from("profiles")
+    .update({
+      business_name: parsed.data.businessName,
+      business_slug: parsed.data.businessSlug,
+      business_address: parsed.data.businessAddress,
+      business_description: parsed.data.businessDescription,
+      tax_id: parsed.data.taxId,
+      tax_office: parsed.data.taxOffice,
+      website_url: parsed.data.websiteUrl,
+      business_logo_url: parsed.data.businessLogoUrl,
+      user_type: 'professional' // Auto-upgrade to professional on filling these
+    })
+    .eq("id", user.id);
+
+  if (error) {
+    if (error.code === '23505') {
+       return { error: "Bu mağaza URL'i (slug) zaten kullanımda.", fields: values as any };
+    }
+    return { error: "Guncelleme sirasinda bir hata olustu.", fields: values as any };
+  }
+
+  return {
+    success: "Kurumsal bilgileriniz başarıyla güncellendi.",
+    fields: values as any,
   };
 }
 

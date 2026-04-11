@@ -13,7 +13,7 @@ interface ProfileRow {
   id: string;
   phone: string;
   role: Profile["role"];
-  user_type: "individual" | "business" | "staff";
+  user_type: "individual" | "professional" | "staff";
   balance_credits: number;
   is_verified: boolean;
   tc_verified_at: string | null;

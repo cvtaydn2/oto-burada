@@ -36,13 +36,30 @@ export interface Profile {
   phoneVerified: boolean;
   identityVerified: boolean;
   role: UserRole;
-  userType?: "individual" | "business" | "staff";
+  userType?: "individual" | "professional" | "staff";
   balanceCredits?: number;
   isVerified: boolean;
   tcVerifiedAt?: string | null;
   eidsId?: string | null;
+  
+  // Corporate Fields
+  businessName?: string | null;
+  businessAddress?: string | null;
+  businessLogoUrl?: string | null;
+  businessDescription?: string | null;
+  taxId?: string | null;
+  taxOffice?: string | null;
+  websiteUrl?: string | null;
+  verifiedBusiness?: boolean;
+  businessSlug?: string | null;
+  
   createdAt: string;
   updatedAt: string;
+}
+
+export interface BusinessProfile extends Profile {
+  userType: "professional";
+  businessName: string;
 }
 
 export interface ListingImage {
@@ -84,6 +101,7 @@ export interface Listing {
   eidsVerificationJson?: Record<string, unknown> | null;
   marketPriceIndex?: number | null;
   expertInspection?: ExpertInspection;
+  seller?: Partial<Profile>;
   bumpedAt?: string | null;
   createdAt: string;
   updatedAt: string;

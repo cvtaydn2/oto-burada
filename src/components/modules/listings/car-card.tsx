@@ -2,7 +2,7 @@
 
 import Image from "next/image"
 import Link from "next/link"
-import { CarFront, Calendar, Gauge, MapPin, Sparkles, TrendingDown, Clock, ShieldCheck, Camera } from "lucide-react"
+import { CarFront, Calendar, Gauge, MapPin, Sparkles, TrendingDown, Clock, ShieldCheck, Camera, Zap } from "lucide-react"
 import { formatNumber } from "@/lib/utils"
 import { type Listing } from "@/types"
 import { Badge } from "@/components/ui/badge"
@@ -31,6 +31,8 @@ export function CarCard({ listing, priority = false, variant = "grid" }: CarCard
   
   // Logic for Trust (Conversion Booster)
   const isHighTrust = (listing.fraudScore ?? 0) < 10
+
+  const isUrgent = listing.urgentUntil ? new Date(listing.urgentUntil) > new Date() : false
 
   if (variant === "list") {
     return (
@@ -78,6 +80,27 @@ export function CarCard({ listing, priority = false, variant = "grid" }: CarCard
               Vitrin
             </Badge>
           )}
+          {isUrgent && (
+            <Badge className="bg-red-600/90 hover:bg-red-600 backdrop-blur-md text-white border-none shadow-sm px-2 py-1 font-black animate-pulse">
+              <Zap className="w-3 h-3 mr-1 fill-current" />
+              ACİL
+            </Badge>
+          )}
+          {listing.seller?.userType === "professional" ? (
+            <Badge className="bg-indigo-600/90 hover:bg-indigo-600 backdrop-blur-md text-white border-none shadow-sm px-2 py-1">
+              Galeriden
+            </Badge>
+          ) : (
+            <Badge className="bg-slate-700/80 hover:bg-slate-700 backdrop-blur-md text-white border-none shadow-sm px-2 py-1">
+              Sahibinden
+            </Badge>
+          )}
+          {listing.seller?.identityVerified && (
+            <Badge className="bg-blue-500/90 hover:bg-blue-500 backdrop-blur-md text-white border-none shadow-sm px-2 py-1">
+              <ShieldCheck className="w-3 h-3 mr-1" />
+              EİDS Doğrulanmış
+            </Badge>
+          )}
           {isAdvantageous && (
             <Badge className="bg-emerald-500/90 hover:bg-emerald-500 backdrop-blur-md text-white border-none shadow-sm px-2 py-1">
               <TrendingDown className="w-3 h-3 mr-1" />
@@ -112,8 +135,10 @@ export function CarCard({ listing, priority = false, variant = "grid" }: CarCard
           )}
         </div>
         
-        <p className="text-xs text-muted-foreground line-clamp-1 mb-3 font-medium">
-          {listing.title}
+        <p className="text-[11px] text-muted-foreground line-clamp-1 mb-3 font-medium uppercase tracking-tighter italic">
+          {listing.seller?.userType === "professional" 
+            ? (listing.seller.businessName || listing.seller.fullName)
+            : listing.title}
         </p>
 
         {/* High-Scannable Specs Group */}

@@ -68,7 +68,7 @@ const lenientPhoneSchema = z
     message: "Geçerli bir telefon numarası gir",
   });
 
-export const profileSchema: z.ZodType<Profile> = z.object({
+export const profileSchema = z.object({
   id: trimmedRequiredString,
   fullName: trimmedRequiredString,
   phone: lenientPhoneSchema,
@@ -78,11 +78,23 @@ export const profileSchema: z.ZodType<Profile> = z.object({
   phoneVerified: z.boolean(),
   identityVerified: z.boolean(),
   isVerified: z.boolean(),
-  userType: z.enum(["individual", "business", "staff"]).optional(),
+  userType: z.enum(["individual", "professional", "staff"]).optional(),
   balanceCredits: z.number().int().min(0).optional(),
   tcVerifiedAt: timestampSchema.nullable().optional(),
   eidsId: z.string().nullable().optional(),
   role: z.enum(userRoles),
+  
+  // Corporate Fields
+  businessName: z.string().trim().nullable().optional(),
+  businessAddress: z.string().trim().nullable().optional(),
+  businessLogoUrl: z.string().trim().url(invalidMessage).nullable().optional(),
+  businessDescription: z.string().trim().nullable().optional(),
+  taxId: z.string().trim().nullable().optional(),
+  taxOffice: z.string().trim().nullable().optional(),
+  websiteUrl: z.string().trim().url(invalidMessage).nullable().optional(),
+  verifiedBusiness: z.boolean().optional(),
+  businessSlug: z.string().trim().nullable().optional(),
+
   createdAt: timestampSchema,
   updatedAt: timestampSchema,
 });
@@ -95,6 +107,17 @@ export const profileUpdateSchema = z.object({
     emptyStringToUndefined,
     z.string().trim().url(invalidMessage).nullable().optional(),
   ),
+});
+
+export const corporateProfileSchema = z.object({
+  businessName: trimmedRequiredString,
+  businessSlug: trimmedRequiredString.regex(/^[a-z0-9-]+$/, "Slug sadece kucuk harf, rakam ve tire icerebilir"),
+  businessAddress: optionalTrimmedString,
+  businessDescription: optionalTrimmedString,
+  taxId: optionalTrimmedString,
+  taxOffice: optionalTrimmedString,
+  websiteUrl: z.preprocess(emptyStringToUndefined, z.string().trim().url(invalidMessage).optional()),
+  businessLogoUrl: z.preprocess(emptyStringToUndefined, z.string().trim().url(invalidMessage).optional()),
 });
 
 export const listingImageSchema: z.ZodType<ListingImage> = z.object({
@@ -262,6 +285,7 @@ export const listingSchema: z.ZodType<Listing> = z.object({
   images: z.array(listingImageSchema),
   featured: z.boolean(),
   expertInspection: expertInspectionSchema.optional(),
+  seller: profileSchema.partial().optional(),
   bumpedAt: timestampSchema.nullable().optional(),
   createdAt: timestampSchema,
   updatedAt: timestampSchema,

@@ -4,7 +4,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { Archive, ArrowUpCircle, Loader2, Pencil, Plus, Rocket, RotateCcw, ShieldCheck, X } from "lucide-react";
+import { Archive, ArrowUpCircle, Loader2, Pencil, Plus, Rocket, RotateCcw, ShieldCheck, X, CheckSquare, Square } from "lucide-react";
 
 import { formatCurrency, formatNumber } from "@/lib/utils";
 import type { Listing } from "@/types";
@@ -16,6 +16,8 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { ListingDopingPanel } from "./listing-doping-panel";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Button } from "@/components/ui/button";
 
 interface MyListingsPanelProps {
   activeEditId?: string;
@@ -48,6 +50,10 @@ export function MyListingsPanel({ activeEditId, listings, children }: MyListings
   const [verifyingId, setVerifyingId] = useState<string | null>(null);
   const [bumpMessage, setBumpMessage] = useState<string | null>(null);
   const [currentTime, setCurrentTime] = useState(() => Date.now());
+  
+  // Bulk selection state
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
+  const [isBulkArchiving, setIsBulkArchiving] = useState(false);
 
   useEffect(() => {
     const intervalId = window.setInterval(() => {
@@ -75,6 +81,46 @@ export function MyListingsPanel({ activeEditId, listings, children }: MyListings
       router.refresh();
     } finally {
       setArchivingId(null);
+    }
+  };
+
+  const handleBulkArchive = async () => {
+    if (selectedIds.length === 0) return;
+    setIsBulkArchiving(true);
+    setArchiveError(null);
+
+    try {
+      const response = await fetch("/api/listings/bulk-archive", {
+        method: "POST",
+        body: JSON.stringify({ ids: selectedIds }),
+        headers: { "Content-Type": "application/json" },
+      });
+      const payload = await response.json();
+
+      if (payload.success) {
+        setSelectedIds([]);
+        router.refresh();
+      } else {
+        setArchiveError(payload.message || "Toplu arşivleme sırasında hata oluştu.");
+      }
+    } catch (error) {
+      setArchiveError("Bir hata oluştu.");
+    } finally {
+      setIsBulkArchiving(false);
+    }
+  };
+
+  const toggleSelect = (id: string) => {
+    setSelectedIds(prev => 
+      prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]
+    );
+  };
+
+  const toggleSelectAll = () => {
+    if (selectedIds.length === listings.length) {
+      setSelectedIds([]);
+    } else {
+      setSelectedIds(listings.map(l => l.id));
     }
   };
 
@@ -121,13 +167,13 @@ export function MyListingsPanel({ activeEditId, listings, children }: MyListings
   return (
     <div className="space-y-4">
       {archiveError ? (
-        <p className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+        <p className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 font-bold">
           {archiveError}
         </p>
       ) : null}
 
       {bumpMessage ? (
-        <p className="rounded-lg border border-blue-200 bg-blue-50 px-4 py-3 text-sm text-blue-700">
+        <p className="rounded-lg border border-indigo-200 bg-indigo-50 px-4 py-3 text-sm text-indigo-700 font-bold">
           {bumpMessage}
         </p>
       ) : null}
@@ -135,7 +181,7 @@ export function MyListingsPanel({ activeEditId, listings, children }: MyListings
       {showForm && children && (
         <div className="rounded-xl border border-primary/20 bg-primary/5 p-4">
           <div className="mb-4 flex items-center justify-between">
-            <h3 className="text-base font-semibold">
+            <h3 className="text-base font-black uppercase italic italic tracking-tighter">
               {activeEditId ? "İlanı Düzenle" : "Yeni İlan Ver"}
             </h3>
             <button
@@ -152,29 +198,61 @@ export function MyListingsPanel({ activeEditId, listings, children }: MyListings
       {!showForm && (
         <button
           onClick={() => setShowForm(true)}
-          className="flex w-full items-center justify-center gap-2 rounded-xl border-2 border-dashed border-primary/30 bg-primary/5 py-4 text-base font-semibold text-primary transition-colors hover:bg-primary/10"
+          className="flex w-full items-center justify-center gap-2 rounded-xl border-2 border-dashed border-primary/30 bg-primary/5 py-4 text-base font-bold text-primary transition-all hover:bg-primary/10 active:scale-[0.98]"
         >
           <Plus className="size-5" />
-          Yeni İlan Ver
+          YENİ İLAN VER
         </button>
       )}
 
       {listings.length === 0 && !showForm && (
-        <div className="rounded-xl border border-dashed border-gray-300 p-8 text-center bg-slate-50/50">
-          <h3 className="text-base font-medium">Henüz ilanın yok</h3>
-          <p className="mt-1 text-sm text-gray-500">Hemen ilk arabanı ekle!</p>
+        <div className="rounded-[2rem] border border-dashed border-slate-200 p-12 text-center bg-white shadow-sm">
+          <div className="size-16 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-4 text-slate-300">
+             <Plus size={32} />
+          </div>
+          <h3 className="text-xl font-black uppercase italic tracking-tighter text-slate-400">Henüz İlanın Yok</h3>
+          <p className="mt-1 text-sm text-slate-400 font-medium tracking-tight">Hemen ilk arabanı ekleyerek satışa başla!</p>
         </div>
       )}
+
       {listings.length > 0 && (
-        <div className="space-y-3">
-          <h3 className="text-sm font-medium text-gray-500">
-            {listings.length} ilan
-          </h3>
+        <div className="space-y-4">
+          <div className="flex items-center justify-between px-1">
+            <div className="flex items-center gap-4">
+               <button 
+                 onClick={toggleSelectAll}
+                 className="flex items-center gap-2 text-xs font-bold text-slate-500 hover:text-primary transition-colors"
+               >
+                 {selectedIds.length === listings.length ? <CheckSquare size={16} /> : <Square size={16} />}
+                 Tümünü Seç ({listings.length})
+               </button>
+               {selectedIds.length > 0 && (
+                 <div className="flex items-center gap-2 animate-in fade-in slide-in-from-left-2 duration-300">
+                    <Button 
+                      variant="destructive" 
+                      size="sm" 
+                      onClick={handleBulkArchive}
+                      disabled={isBulkArchiving}
+                      className="h-8 px-3 text-[10px] font-black uppercase tracking-tighter italic"
+                    >
+                      {isBulkArchiving ? <Loader2 className="size-3 animate-spin mr-1" /> : <Archive size={12} className="mr-1" />}
+                      {selectedIds.length} İLANı ARŞİVLE
+                    </Button>
+                 </div>
+               )}
+            </div>
+            <h3 className="text-[11px] font-black text-slate-400 uppercase tracking-widest italic">
+              {listings.length} Toplam İlan
+            </h3>
+          </div>
+
           <div className="space-y-3">
             {listings.map((listing) => (
               <ListingCard
                 key={listing.id}
                 listing={listing}
+                isSelected={selectedIds.includes(listing.id)}
+                onToggleSelect={() => toggleSelect(listing.id)}
                 isArchiving={archivingId === listing.id}
                 isBumping={bumpingId === listing.id}
                 isVerifying={verifyingId === listing.id}
@@ -193,6 +271,8 @@ export function MyListingsPanel({ activeEditId, listings, children }: MyListings
 
 function ListingCard({
   listing,
+  isSelected,
+  onToggleSelect,
   isArchiving,
   isBumping,
   currentTime,
@@ -202,6 +282,8 @@ function ListingCard({
   isVerifying,
 }: {
   listing: Listing;
+  isSelected: boolean;
+  onToggleSelect: () => void;
   isArchiving: boolean;
   isBumping: boolean;
   currentTime: number;
@@ -224,123 +306,121 @@ function ListingCard({
     : 0;
 
   return (
-    <div className={`flex gap-3 rounded-xl border border-gray-200 bg-white p-3 shadow-sm ${isArchived ? "opacity-60" : ""}`}>
-      <div className="relative h-20 w-28 shrink-0 overflow-hidden rounded-lg bg-gray-100">
+    <div className={`group flex gap-3 rounded-[1.5rem] border transition-all duration-300 ${isSelected ? 'border-primary bg-primary/5 ring-1 ring-primary/20' : 'border-slate-100 bg-white hover:border-slate-200 hover:shadow-md'} p-3 ${isArchived ? "opacity-60" : ""}`}>
+      {/* Checkbox Overlay for Selection */}
+      <div className="flex items-center pr-1">
+         <Checkbox 
+           checked={isSelected} 
+           onCheckedChange={onToggleSelect} 
+           className="size-5 rounded-md border-slate-300 data-[state=checked]:bg-primary data-[state=checked]:border-primary"
+         />
+      </div>
+
+      <div className="relative h-24 w-32 shrink-0 overflow-hidden rounded-2xl bg-slate-50 border border-slate-100">
         {listing.images?.[0]?.url ? (
           <Image
             src={listing.images[0].url}
             alt=""
             fill
-            className="object-cover"
+            className="object-cover group-hover:scale-105 transition-transform duration-500"
           />
         ) : (
-          <div className="flex h-full items-center justify-center text-gray-400">
-            <span className="text-xs">Fotoğraf yok</span>
+          <div className="flex h-full items-center justify-center text-slate-300">
+             <Rocket size={24} />
+          </div>
+        )}
+        {listing.featured && (
+          <div className="absolute top-1.5 left-1.5 px-1.5 py-0.5 rounded-lg bg-amber-500 text-white text-[8px] font-black uppercase tracking-tighter">
+             VİTRİN
           </div>
         )}
       </div>
 
-      <div className="min-w-0 flex-1">
-        <div className="flex items-center gap-2">
-          <span className={`text-xs font-medium px-2 py-0.5 rounded border ${statusClassMap[listing.status]}`}>
+      <div className="min-w-0 flex-1 flex flex-col pt-1">
+        <div className="flex items-center gap-2 mb-1.5">
+          <span className={`text-[9px] font-black uppercase italic tracking-widest px-2 py-0.5 rounded-full border ${statusClassMap[listing.status]} shadow-sm`}>
             {statusLabelMap[listing.status]}
           </span>
           {listing.eidsVerificationJson && (
-            <span className="flex items-center gap-1 rounded border border-emerald-200 bg-emerald-50 px-2 py-0.5 text-[10px] font-bold text-emerald-700">
-              <ShieldCheck className="size-3" />
+            <span className="flex items-center gap-1.5 rounded-full border border-emerald-200 bg-emerald-50 px-2 py-0.5 text-[9px] font-black text-emerald-700 italic tracking-tighter">
+              <ShieldCheck className="size-2.5" />
               EİDS DOĞRULANDI
             </span>
           )}
         </div>
-        <p className="mt-1 font-medium text-gray-900 truncate">{listing.title}</p>
-        <p className="text-sm font-semibold text-gray-900">
-          {formatCurrency(listing.price)}
+        <p className="font-bold text-slate-900 truncate tracking-tight text-sm line-clamp-1">{listing.title}</p>
+        <p className="text-xl font-black text-slate-900 tracking-tighter leading-tight">
+          ₺{formatCurrency(listing.price)}
         </p>
-        <div className="mt-1 flex items-center gap-2 text-xs text-gray-500">
+        <div className="mt-auto flex items-center gap-2 text-[10px] text-slate-400 font-bold uppercase tracking-tight">
           <span>{listing.year}</span>
-          <span>•</span>
+          <span className="text-slate-200">|</span>
           <span>{formatNumber(listing.mileage)} km</span>
+          <span className="text-slate-200">|</span>
+          <span className="truncate">{listing.city}</span>
         </div>
       </div>
 
-      <div className="flex flex-col gap-2">
+      <div className="flex flex-col gap-2 justify-center ml-2 border-l border-slate-50 pl-4 py-1">
         <Link
           href={`/dashboard/listings?edit=${listing.id}`}
-          className="flex items-center gap-1 rounded-lg bg-blue-600 px-3 py-2 text-sm font-semibold text-white hover:bg-blue-700"
+          className="flex items-center justify-center size-9 rounded-xl bg-slate-100 text-slate-600 hover:bg-primary hover:text-white transition-all shadow-sm"
+          title="Düzenle"
         >
           <Pencil className="size-4" />
-          Düzenle
         </Link>
-        {isApproved && !listing.eidsVerificationJson && (
-          <button
-            type="button"
-            disabled={isVerifying}
-            onClick={() => onVerifyEIDS(listing.id)}
-            className="flex items-center justify-center gap-1 rounded-lg border border-emerald-600 bg-emerald-600 px-3 py-2 text-sm font-semibold text-white hover:bg-emerald-700 disabled:opacity-50"
-          >
-            {isVerifying ? (
-              <Loader2 className="size-4 animate-spin" />
-            ) : (
-              <ShieldCheck className="size-4" />
-            )}
-            EİDS ile Doğrula
-          </button>
-        )}
+
         {isApproved && (
           <Dialog>
             <DialogTrigger asChild>
               <button
                 type="button"
-                className="flex items-center justify-center gap-1 rounded-lg border border-primary/20 bg-primary/5 px-3 py-2 text-sm font-semibold text-primary hover:bg-primary/10"
+                className="flex items-center justify-center size-9 rounded-xl bg-amber-50 text-amber-600 hover:bg-amber-500 hover:text-white transition-all shadow-sm"
+                title="Hızlandır (Doping)"
               >
                 <Rocket className="size-4" />
-                Hızlandır
               </button>
             </DialogTrigger>
-            <DialogContent className="sm:max-w-xl">
+            <DialogContent className="sm:max-w-xl rounded-[2rem] border-none">
               <DialogHeader>
-                <DialogTitle>İlanını Öne Çıkar</DialogTitle>
+                <DialogTitle className="text-2xl font-black italic uppercase tracking-tighter">İlanını <span className="text-primary">Göklerde</span> Gör</DialogTitle>
               </DialogHeader>
               <ListingDopingPanel listingId={listing.id} listingTitle={listing.title} />
             </DialogContent>
           </Dialog>
         )}
+
         {isApproved && (
           <button
             type="button"
             onClick={() => onBump(listing.id)}
             disabled={isBumping || !canBump}
-            title={canBump ? "İlanı listenin üstüne taşı" : `${bumpCooldownDays} gün sonra yenileyebilirsin`}
-            className="flex items-center justify-center gap-1 rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm font-semibold text-emerald-700 hover:bg-emerald-100 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="flex items-center justify-center size-9 rounded-xl bg-emerald-50 text-emerald-600 hover:bg-emerald-500 hover:text-white transition-all disabled:opacity-30 shadow-sm"
+            title={canBump ? "İlanı üste taşı" : `${bumpCooldownDays} gün beklemelisin`}
           >
             {isBumping ? (
               <Loader2 className="size-4 animate-spin" />
             ) : (
-              <ArrowUpCircle className="size-4" />
+               <ArrowUpCircle className="size-4" />
             )}
-            {canBump ? "Yenile" : `${bumpCooldownDays}g`}
           </button>
         )}
-        {isArchived ? (
-          <span className="flex items-center justify-center gap-1 rounded-lg bg-gray-100 px-3 py-2 text-sm text-gray-500">
+
+        <button
+          type="button"
+          onClick={() => onArchive(listing.id)}
+          disabled={isArchiving}
+          className={`flex items-center justify-center size-9 rounded-xl ${isArchived ? 'bg-slate-50 text-slate-300' : 'bg-rose-50 text-rose-500 hover:bg-rose-500 hover:text-white'} transition-all disabled:opacity-30 shadow-sm`}
+          title={isArchived ? "Arşivde" : "Arşivle"}
+        >
+          {isArchiving ? (
+            <Loader2 className="size-4 animate-spin" />
+          ) : isArchived ? (
             <RotateCcw className="size-4" />
-            Arşivde
-          </span>
-        ) : (
-          <button
-            type="button"
-            onClick={() => onArchive(listing.id)}
-            disabled={isArchiving}
-            className="flex items-center justify-center gap-1 rounded-lg border border-gray-200 px-3 py-2 text-sm text-gray-500 hover:bg-gray-50 disabled:opacity-50"
-          >
-            {isArchiving ? (
-              <Loader2 className="size-4 animate-spin" />
-            ) : (
-              <Archive className="size-4" />
-            )}
-            Arşivle
-          </button>
-        )}
+          ) : (
+            <Archive className="size-4" />
+          )}
+        </button>
       </div>
     </div>
   );

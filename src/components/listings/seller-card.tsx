@@ -6,6 +6,7 @@ import { EIDSBadge } from "@/components/shared/eids-badge"
 import { TrustBadge } from "@/components/shared/trust-badge"
 import { ContactActions } from "@/components/listings/contact-actions"
 import type { Profile } from "@/types"
+import { cn } from "@/lib/utils"
 
 interface SellerCardProps {
   seller: Profile | null
@@ -31,17 +32,36 @@ export function SellerCard({
       <div className="p-5">
         {/* Seller Header */}
         <div className="flex items-center gap-3 mb-4">
-          <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-100 to-blue-50 text-blue-700 flex items-center justify-center font-bold text-lg border border-slate-200">
-            {(seller?.fullName ?? "S").slice(0, 1)}
+          <div className="size-12 rounded-xl bg-gradient-to-br from-blue-100 to-blue-50 text-blue-700 flex items-center justify-center font-black text-lg border border-slate-200 shrink-0 overflow-hidden">
+            {seller?.businessLogoUrl ? (
+              <img src={seller.businessLogoUrl} alt={seller.businessName || seller.fullName} className="size-full object-contain p-1" />
+            ) : (
+              (seller?.businessName || seller?.fullName || "S").slice(0, 1)
+            )}
           </div>
-          <div>
+          <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2">
-              <span className="font-semibold text-slate-900">{seller?.fullName ?? "Satıcı"}</span>
+              <span className="font-bold text-slate-900 truncate">
+                {seller?.businessName || seller?.fullName || "Satıcı"}
+              </span>
               <EIDSBadge isVerified={!!seller?.eidsId} />
             </div>
-            <span className="text-xs font-medium text-slate-500 bg-slate-100 px-2 py-0.5 rounded">
-              Bireysel Satıcı
-            </span>
+            <div className="flex items-center gap-2 mt-0.5">
+              <span className={cn(
+                "text-[10px] font-black uppercase px-1.5 py-0.5 rounded-md tracking-tighter",
+                seller?.userType === "professional" ? "bg-indigo-100 text-indigo-700" : "bg-slate-100 text-slate-500"
+              )}>
+                {seller?.userType === "professional" ? "Kurumsal Galeri" : "Bireysel Satıcı"}
+              </span>
+              {seller?.businessSlug && (
+                <Link 
+                  href={`/gallery/${seller.businessSlug}`}
+                  className="text-[10px] font-black uppercase text-primary hover:underline"
+                >
+                  Mağazayı Gez
+                </Link>
+              )}
+            </div>
           </div>
         </div>
 

@@ -53,6 +53,19 @@ interface ListingRow {
   fuel_type: Listing["fuelType"];
   id: string;
   listing_images?: ListingImageRow[] | null;
+  profiles?: {
+    full_name: string;
+    phone: string;
+    city: string;
+    avatar_url: string | null;
+    role: string;
+    user_type: string;
+    business_name: string | null;
+    business_logo_url: string | null;
+    identity_verified: boolean;
+    verified_business: boolean;
+    business_slug: string | null;
+  } | null;
   mileage: number;
   model: string;
   price: number;
@@ -75,37 +88,7 @@ interface ListingRow {
 }
 
 const listingSelect = `
-  id,
-  seller_id,
-  slug,
-  title,
-  brand,
-  model,
-  year,
-  mileage,
-  fuel_type,
-  transmission,
-  price,
-  city,
-  district,
-  description,
-  whatsapp_phone,
-  vin,
-  tramer_amount,
-  damage_status_json,
-  fraud_score,
-  fraud_reason,
-  status,
-  featured,
-  expert_inspection,
-  created_at,
-  updated_at,
-  bumped_at,
-  featured_until,
-  urgent_until,
-  highlighted_until,
-  eids_verification_json,
-  market_price_index,
+  *,
   listing_images (
     id,
     listing_id,
@@ -113,6 +96,19 @@ const listingSelect = `
     public_url,
     sort_order,
     is_cover
+  ),
+  profiles:seller_id (
+    full_name,
+    phone,
+    city,
+    avatar_url,
+    role,
+    user_type,
+    business_name,
+    business_logo_url,
+    identity_verified,
+    verified_business,
+    business_slug
   )
 `;
 
@@ -279,12 +275,12 @@ function buildListingRecord(
   });
 }
 
-function mapListingRow(row: ListingRow) {
-  return listingSchema.parse({
+function mapListingRow(row: ListingRow): Listing {
+  return {
     brand: row.brand,
     city: row.city,
     createdAt: row.created_at,
-    damageStatusJson: row.damage_status_json ?? null,
+    damageStatusJson: (row.damage_status_json as Record<string, string> | null) ?? null,
     description: row.description,
     district: row.district,
     expertInspection: row.expert_inspection ?? undefined,
@@ -307,6 +303,19 @@ function mapListingRow(row: ListingRow) {
     model: row.model,
     price: row.price,
     sellerId: row.seller_id,
+    seller: row.profiles ? {
+      fullName: row.profiles.full_name,
+      phone: row.profiles.phone,
+      city: row.profiles.city,
+      avatarUrl: row.profiles.avatar_url,
+      role: row.profiles.role as any,
+      userType: row.profiles.user_type as any,
+      businessName: row.profiles.business_name,
+      businessLogoUrl: row.profiles.business_logo_url,
+      identityVerified: row.profiles.identity_verified,
+      verifiedBusiness: row.profiles.verified_business,
+      businessSlug: row.profiles.business_slug
+    } : undefined,
     slug: row.slug,
     status: row.status,
     title: row.title,
@@ -322,7 +331,7 @@ function mapListingRow(row: ListingRow) {
     whatsappPhone: row.whatsapp_phone,
     vin: row.vin ?? null,
     year: row.year,
-  });
+  };
 }
 
 async function getDatabaseListings(options?: {
@@ -420,6 +429,10 @@ async function getDatabaseListings(options?: {
     }
 
     const sort = filters?.sort ?? "newest";
+    
+    // Always prioritize featured listings
+    query = query.order("featured", { ascending: false });
+
     switch (sort) {
       case "price_asc":
         query = query.order("price", { ascending: true });
@@ -435,7 +448,9 @@ async function getDatabaseListings(options?: {
         break;
       case "newest":
       default:
-        query = query.order("updated_at", { ascending: false });
+        // Use bumped_at if available for improved recency
+        query = query.order("bumped_at", { ascending: false, nullsFirst: false })
+                     .order("created_at", { ascending: false });
         break;
     }
 
