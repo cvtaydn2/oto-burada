@@ -1,4 +1,5 @@
 import { z } from "zod";
+import type { ListingCreateFormValues } from "@/types";
 
 import {
   fuelTypes,
@@ -149,7 +150,7 @@ export const listingCreateSchema: z.ZodType<ListingCreateInput> = z.object({
   expertInspection: expertInspectionSchema.optional(),
 });
 
-export const listingCreateFormSchema = z.object({
+export const listingCreateFormSchema: z.ZodType<ListingCreateFormValues> = z.object({
   title: trimmedRequiredString.max(200, "Baslik en fazla 200 karakter olabilir"),
   brand: trimmedRequiredString,
   model: trimmedRequiredString,

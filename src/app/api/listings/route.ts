@@ -81,11 +81,11 @@ export async function POST(request: Request) {
     description: sanitizeDescription(parsedFormValues.data.description),
     images: parsedFormValues.data.images
       .filter(
-        (image) =>
+        (image: { url?: string; storagePath?: string }) =>
           (image.url ?? "").trim().length > 0 &&
           (image.storagePath ?? "").trim().length > 0,
       )
-      .map((image, index) => ({
+      .map((image: { url?: string; storagePath?: string }, index: number) => ({
         storagePath: image.storagePath?.trim() ?? "",
         url: image.url?.trim() ?? "",
         order: index,

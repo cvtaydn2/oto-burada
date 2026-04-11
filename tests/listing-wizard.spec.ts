@@ -21,54 +21,71 @@ test.describe("Listing Creation Wizard", () => {
     // 1. İlan formuna git
     await page.goto("/dashboard/listings");
     
-    // Eğer mobil görünümdeyse sidebar farklı olabilir, direkt linke gitmek daha güvenli
-    const createBtn = page.getByRole("link", { name: /İlan Ver/i });
-    if (await createBtn.isVisible()) {
-      await createBtn.click();
-    } else {
-      await page.goto("/dashboard/listings/create");
-    }
+    // "Yeni İlan Ver" butonuna tıkla (MyListingsPanel içindeki buton)
+    await page.getByRole("button", { name: /Yeni İlan Ver/i }).click();
 
     await expect(page.getByText(/Araç Bilgileri/i)).toBeVisible();
 
     // STEP 1: Araç Bilgileri
-    await page.getByPlaceholder(/34 ABC 123/i).fill("34 OTO 2026");
-    await page.getByLabel(/Marka/i).selectOption({ label: "Volkswagen" });
-    await page.getByLabel(/Model/i).selectOption({ label: "Golf" });
+    await page.getByLabel(/Plaka/i).fill("34 OTO 2026");
+    
+    // Marka ve Model seçimi (Native select)
+    await page.getByLabel(/Marka/i).selectOption("Volkswagen");
+    await page.getByLabel(/Model/i).selectOption("Golf");
+
     await page.getByLabel(/Yıl/i).fill("2020");
     await page.getByLabel(/Kilometre/i).fill("50000");
-    await page.getByRole("button", { name: /Devam Et/i }).click();
+    await page.getByRole("button", { name: /Sonraki Adım/i }).click();
 
-    // STEP 2: Teknik Detaylar
-    await expect(page.getByText(/Teknik Detaylar/i)).toBeVisible();
-    // Yakıt ve Vites varsayılanları seçili gelebilir, kontrol et
-    await page.getByRole("button", { name: /Devam Et/i }).click();
-
-    // STEP 3: Açıklama ve Fiyat
-    await expect(page.getByText(/İlan Başlığı/i)).toBeVisible();
-    await page.getByLabel(/İlan Başlığı/i).fill("Temiz ve Bakımlı Golf - E2E Test");
-    await page.getByLabel(/Açıklama/i).fill("Bu ilan Playwright E2E testi tarafından otomatik oluşturulmuştur.");
-    await page.getByLabel(/Fiyat/i).fill("1250000");
-    await page.getByRole("button", { name: /Devam Et/i }).click();
-
-    // STEP 4: Ekspertiz ve Durum
-    await expect(page.getByText(/Ekspertiz Bilgileri/i)).toBeVisible();
-    // Bazı parçaları işaretle
-    const kaput = page.getByText(/Kaput/i);
-    await kaput.click(); // Boyalı seçeneğine tıkla (DamageSelector içindeki mantığa göre)
+    // STEP 2: Teknik Detaylar / Konum
+    await expect(page.getByText(/Konum ve Teknik Detaylar/i)).toBeVisible();
     
-    await page.getByRole("button", { name: /Devam Et/i }).click();
+    // Şehir ve İlçe seçimi (Native select)
+    await page.getByLabel(/Şehir/i).selectOption("İstanbul");
+    await page.getByLabel(/İlçe/i).selectOption("Beşiktaş");
 
-    // STEP 5: Fotoğraflar
+    // Yakıt ve Vites (Native select)
+    await page.getByLabel(/Yakıt Tipi/i).selectOption("benzin");
+    await page.getByLabel(/Vites Tipi/i).selectOption("otomatik");
+
+    // Başlık, Açıklama ve Fiyat (Native inputs)
+    await page.getByLabel(/İlan Başlığı/i).fill("Temiz ve Bakımlı Golf - E2E Test");
+    await page.getByLabel(/İçerik \/ Açıklama/i).fill("Bu ilan Playwright E2E testi tarafından otomatik oluşturulmuştur.");
+    await page.getByLabel(/Fiyat/i).fill("1250000");
+
+    await page.getByRole("button", { name: /Sonraki Adım/i }).click();
+
+    // STEP 3: Ekspertiz ve Durum
+    await expect(page.getByText(/Expertiz Kontrolü/i)).toBeVisible();
+    // Parçaları tıklayarak durum değiştirme (DamageSelector)
+    // Kaput'a tıklayalım
+    await page.getByText(/Kaput/i).click(); 
+    
+    await page.getByRole("button", { name: /Sonraki Adım/i }).click();
+
+    // STEP 4: Fotoğraflar
     await expect(page.getByText(/Fotoğraflar/i)).toBeVisible();
-    await expect(page.getByText(/En az 3 adet/i)).toBeVisible();
+    
+    // Dosya yükleme
+    const fileInput = page.locator('input[type="file"]').first();
+    await fileInput.setInputFiles('tests/assets/test-car.jpg');
+    
+    // Fotoğrafın hazır olduğunu bekle
+    await expect(page.getByText(/HAZIR/i).first()).toBeVisible({ timeout: 15000 });
 
-    // Not: Dosya yükleme E2E'de biraz daha karmaşık olabilir ama input'u kontrol edebiliriz
-    const fileInput = page.locator('input[type="file"]');
-    await expect(fileInput).toBeAttached();
+    // Minimum 3 fotoğraf kuralı için diğerlerini de yükle
+    const fileInput2 = page.locator('input[type="file"]').nth(1);
+    await fileInput2.setInputFiles('tests/assets/test-car.jpg');
+    const fileInput3 = page.locator('input[type="file"]').nth(2);
+    await fileInput3.setInputFiles('tests/assets/test-car.jpg');
 
-    // Formu gönder butonunun varlığını doğrula (Fotoğraf eksik olduğu için muhtemelen disabled olacak)
+    // Yayınla butonu
     const submitBtn = page.getByRole("button", { name: /İlanı Yayınla/i });
-    await expect(submitBtn).toBeVisible();
+    await expect(submitBtn).toBeEnabled();
+    
+    await submitBtn.click();
+
+    // Başarı mesajı
+    await expect(page.getByText(/İlan başarıyla kaydedildi/i)).toBeVisible({ timeout: 30000 });
   });
 });

@@ -109,7 +109,9 @@ export function NotificationDropdown() {
                       notification.read ? "bg-background hover:bg-muted/30" : "bg-indigo-50/50 hover:bg-indigo-50 dark:bg-indigo-900/10 dark:hover:bg-indigo-900/20"
                     )}
                     onClick={() => {
-                      if (!notification.read) markReadMutation.mutate(notification.id);
+                      if (!notification.read && notification.id) {
+                        markReadMutation.mutate(notification.id);
+                      }
                       if (notification.href) window.location.href = notification.href;
                     }}
                   >

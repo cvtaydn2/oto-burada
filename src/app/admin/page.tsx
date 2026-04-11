@@ -18,6 +18,7 @@ import { AdminReportsModeration } from "@/components/listings/admin-reports-mode
 import { AdminBroadcastPanel } from "@/components/shared/admin-broadcast-panel";
 import { AdminPersistencePanel } from "@/components/shared/admin-persistence-panel";
 import dynamic from "next/dynamic";
+import { AdminAnalyticsPanel } from "@/components/listings/admin-analytics-panel";
 import { DashboardMetricCard } from "@/components/shared/dashboard-metric-card";
 import { getUserRole, requireAdminUser } from "@/lib/auth/session";
 import { getRecentAdminModerationActions } from "@/services/admin/moderation-actions";
@@ -28,15 +29,6 @@ import { getStoredProfileById } from "@/services/profile/profile-records";
 import { getStoredListings } from "@/services/listings/listing-submissions";
 import { getStoredReports } from "@/services/reports/report-submissions";
 
-const AdminAnalyticsPanel = dynamic(
-  () => import("@/components/listings/admin-analytics-panel").then((mod) => mod.AdminAnalyticsPanel),
-  {
-    ssr: false,
-    loading: () => (
-      <div className="h-96 w-full animate-pulse rounded-[2rem] bg-muted/20" />
-    ),
-  },
-);
 
 export default async function AdminPage() {
   const user = await requireAdminUser();

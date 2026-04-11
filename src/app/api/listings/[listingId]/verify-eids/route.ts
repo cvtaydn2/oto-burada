@@ -5,15 +5,16 @@ import { apiError, apiSuccess, API_ERROR_CODES } from "@/lib/utils/api-response"
 
 export async function POST(
   req: Request,
-  { params }: { params: { listingId: string } }
+  { params }: { params: Promise<{ listingId: string }> }
 ) {
+  const { listingId } = await params;
   const user = await getCurrentUser();
   if (!user) {
     return apiError(API_ERROR_CODES.UNAUTHORIZED, "Yetkisiz erişim. Lütfen giriş yapın.", 401);
   }
 
   try {
-    const result = await verifyListingWithEIDS(params.listingId, user.id);
+    const result = await verifyListingWithEIDS(listingId, user.id);
     
     if (result.success) {
       return apiSuccess(result.data, result.message);

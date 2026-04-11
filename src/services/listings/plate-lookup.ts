@@ -1,4 +1,4 @@
-import { createSupabaseServerClient } from "@/lib/supabase/server";
+"use server";
 
 export interface PlateLookupResult {
   brand: string;
@@ -28,6 +28,7 @@ export async function lookupVehicleByPlate(plate: string): Promise<PlateLookupRe
   await new Promise((resolve) => setTimeout(resolve, 1000));
 
   try {
+    const { createSupabaseServerClient } = await import("@/lib/supabase/server");
     const supabase = await createSupabaseServerClient();
 
     // Fetch a random brand from live DB

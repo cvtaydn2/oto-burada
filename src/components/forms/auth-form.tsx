@@ -50,10 +50,11 @@ export function AuthForm({
           <form action={formAction} className="space-y-5">
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-semibold text-slate-700 mb-2">
+                <label htmlFor="email" className="block text-sm font-semibold text-slate-700 mb-2">
                   E-posta adresi
                 </label>
                 <input
+                  id="email"
                   type="email"
                   name="email"
                   defaultValue={state.fields?.email ?? ""}
@@ -65,10 +66,11 @@ export function AuthForm({
               </div>
 
               <div>
-                <label className="block text-sm font-semibold text-slate-700 mb-2">
+                <label htmlFor="password" className="block text-sm font-semibold text-slate-700 mb-2">
                   Şifre
                 </label>
                 <input
+                  id="password"
                   type="password"
                   name="password"
                   autoComplete={mode === "login" ? "current-password" : "new-password"}

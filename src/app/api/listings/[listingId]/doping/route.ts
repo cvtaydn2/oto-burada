@@ -5,8 +5,9 @@ import { apiError, apiSuccess, API_ERROR_CODES } from "@/lib/utils/api-response"
 
 export async function POST(
   req: Request,
-  { params }: { params: { listingId: string } }
+  { params }: { params: Promise<{ listingId: string }> }
 ) {
+  const { listingId } = await params;
   const user = await getCurrentUser();
   if (!user) {
     return apiError(API_ERROR_CODES.UNAUTHORIZED, "Yetkisiz erişim.", 401);
@@ -20,7 +21,7 @@ export async function POST(
     }
 
     const result = await applyDopingToListing(
-      params.listingId, 
+      listingId, 
       user.id, 
       dopingTypes as DopingType[]
     );

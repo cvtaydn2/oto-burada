@@ -128,6 +128,7 @@ export interface ListingCreateFormValues {
   district: string;
   description: string;
   whatsappPhone: string;
+  licensePlate?: string | null;
   tramerAmount?: number | null;
   damageStatusJson?: Record<string, unknown> | null;
   images: ListingCreateFormImage[];
