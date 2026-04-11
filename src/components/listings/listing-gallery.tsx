@@ -90,15 +90,15 @@ export function ListingGallery({ images, title }: ListingGalleryProps) {
 
             {/* Slide Indicators */}
             {images.length > 1 && (
-              <div className="absolute bottom-20 left-1/2 -translate-x-1/2 flex items-center gap-1.5">
+              <div className="absolute bottom-16 left-1/2 -translate-x-1/2 flex items-center gap-2 px-3 py-1.5 rounded-full bg-black/20 backdrop-blur-sm sm:bottom-20">
                 {images.map((_, index) => (
                   <button
                     key={index}
                     onClick={() => goToSlide(index)}
-                    className={`w-2 h-2 rounded-full transition-all ${
+                    className={`h-1.5 rounded-full transition-all ${
                       index === currentIndex 
-                        ? "bg-white w-6" 
-                        : "bg-white/50 hover:bg-white/80"
+                        ? "bg-white w-5" 
+                        : "bg-white/40 hover:bg-white/60 w-1.5"
                     }`}
                     aria-label={`Görsel ${index + 1}`}
                   />

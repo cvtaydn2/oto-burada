@@ -1,6 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
-import { AlertTriangle, Sparkles } from "lucide-react";
+import { AlertTriangle, CarFront, Sparkles } from "lucide-react";
 
 import { FavoriteButton } from "@/components/listings/favorite-button";
 import { CompareButton } from "@/components/listings/compare-button";
@@ -51,8 +51,9 @@ export function ListingCard({ listing, priority = false }: ListingCardProps) {
             className="object-cover transition-transform duration-300 group-hover:scale-105"
           />
         ) : (
-          <div className="w-full h-full flex items-center justify-center text-slate-400" role="img" aria-label="Görsel yok">
-            <span>Resim yok</span>
+          <div className="w-full h-full flex flex-col items-center justify-center bg-slate-50 text-slate-300 gap-2" role="img" aria-label="Görsel yok">
+            <CarFront size={32} strokeWidth={1.5} />
+            <span className="text-[10px] uppercase font-bold tracking-widest text-slate-400">Görsel Yok</span>
           </div>
         )}
         {/* Image count badge */}

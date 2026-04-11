@@ -4,7 +4,7 @@ import React from "react";
 
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { Sparkles } from "lucide-react";
+import { CarFront, Sparkles } from "lucide-react";
 
 import { FavoriteButton } from "@/components/listings/favorite-button";
 import { formatCurrency, formatNumber } from "@/lib/utils";
@@ -48,8 +48,9 @@ export function ListingCardGrid({ listing, priority = false }: ListingCardGridPr
             className="object-cover transition-transform duration-300 group-hover:scale-105"
           />
         ) : (
-          <div className="w-full h-full flex items-center justify-center text-slate-400 text-sm">
-            Resim yok
+          <div className="w-full h-full flex flex-col items-center justify-center bg-slate-50 text-slate-300 gap-1.5" role="img" aria-label="Görsel yok">
+            <CarFront size={28} strokeWidth={1.5} />
+            <span className="text-[9px] uppercase font-bold tracking-widest text-slate-400">Görsel Yok</span>
           </div>
         )}
         <div className="absolute top-2 right-2 rounded-lg bg-black/60 px-2 py-1 text-xs font-medium text-white">

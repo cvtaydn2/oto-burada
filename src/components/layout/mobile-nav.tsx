@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { Plus } from "lucide-react";
 
 import { mobileNavigationItems } from "@/components/layout/public-navigation";
 import { cn } from "@/lib/utils";
@@ -10,34 +11,45 @@ export function MobileNav() {
   const pathname = usePathname();
 
   return (
-    <nav
-      aria-label="Mobil alt navigasyon"
-      className="fixed inset-x-0 bottom-0 z-40 border-t border-border/70 bg-background/95 px-2 py-2 shadow-[0_-12px_32px_rgba(15,23,42,0.08)] backdrop-blur lg:hidden"
-    >
-      <ul className="mx-auto grid max-w-2xl grid-cols-4 gap-1">
-        {mobileNavigationItems.map((item) => {
-          const isActive = pathname === item.href;
-          const Icon = item.icon;
+    <div className="lg:hidden">
+      {/* Mobile FAB */}
+      <Link
+        href="/dashboard/listings/create"
+        className="fixed bottom-20 right-6 z-50 flex h-14 w-14 items-center justify-center rounded-full bg-indigo-600 text-white shadow-2xl shadow-indigo-500/40 transition-transform active:scale-90"
+        aria-label="İlan Ver"
+      >
+        <Plus className="size-6" />
+      </Link>
 
-          return (
-            <li key={item.href}>
-              <Link
-                href={item.href}
-                aria-current={isActive ? "page" : undefined}
-                className={cn(
-                  "flex min-h-14 flex-col items-center justify-center gap-1 rounded-2xl px-2 py-2 text-[11px] font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2",
-                  isActive
-                    ? "bg-primary text-primary-foreground shadow-sm"
-                    : "text-muted-foreground hover:bg-muted hover:text-foreground",
-                )}
-              >
-                <Icon className="size-4" />
-                <span>{item.label}</span>
-              </Link>
-            </li>
-          );
-        })}
-      </ul>
-    </nav>
+      <nav
+        aria-label="Mobil alt navigasyon"
+        className="fixed inset-x-0 bottom-0 z-40 border-t border-border/70 bg-background/95 px-2 py-2 pb-6 shadow-[0_-12px_32px_rgba(15,23,42,0.08)] backdrop-blur lg:hidden"
+      >
+        <ul className="mx-auto grid max-w-2xl grid-cols-4 gap-1">
+          {mobileNavigationItems.map((item) => {
+            const isActive = pathname === item.href;
+            const Icon = item.icon;
+
+            return (
+              <li key={item.href}>
+                <Link
+                  href={item.href}
+                  aria-current={isActive ? "page" : undefined}
+                  className={cn(
+                    "flex min-h-14 flex-col items-center justify-center gap-1 rounded-2xl px-2 py-2 text-[11px] font-bold transition-all focus-visible:outline-none",
+                    isActive
+                      ? "text-indigo-600"
+                      : "text-slate-400 hover:text-slate-600",
+                  )}
+                >
+                  <Icon className={cn("size-5", isActive ? "text-indigo-600" : "text-slate-400")} />
+                  <span>{item.label}</span>
+                </Link>
+              </li>
+            );
+          })}
+        </ul>
+      </nav>
+    </div>
   );
 }

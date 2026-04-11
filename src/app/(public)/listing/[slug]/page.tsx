@@ -178,28 +178,35 @@ export default async function ListingDetailPage({ params }: ListingDetailPagePro
         <div className="bg-white rounded-3xl border border-slate-200/60 p-6 mb-6">
           <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
             <div className="space-y-2">
-              <div className="flex items-center gap-3">
+              <div className="flex flex-wrap items-center gap-3">
                 <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-slate-900 leading-tight">
                   {listing.brand} <span className="font-medium text-slate-500">{listing.model}</span>
                 </h1>
-                {listing.eidsVerificationJson && (
-                  <EIDSBadge isVerified={true} className="scale-110 shadow-emerald-500/20 shadow-lg" />
-                )}
-                {listing.featured && (
-                  <span className="inline-flex items-center gap-1 rounded-full bg-gradient-to-r from-amber-500 to-orange-500 px-3 py-1 text-xs font-bold text-white shadow-md">
-                    <Sparkles size={12} />
-                    Öne Çıkan
-                  </span>
-                )}
+                <div className="flex items-center gap-2">
+                  {listing.eidsVerificationJson && (
+                    <EIDSBadge isVerified={true} className="scale-110 shadow-emerald-500/20 shadow-lg" />
+                  )}
+                  {listing.featured && (
+                    <span className="inline-flex items-center gap-1 rounded-full bg-gradient-to-r from-amber-500 to-orange-500 px-3 py-1 text-xs font-bold text-white shadow-md">
+                      <Sparkles size={12} />
+                      Öne Çıkan
+                    </span>
+                  )}
+                </div>
               </div>
-              <p className="text-base text-slate-600 flex flex-wrap items-center gap-2">
+              <p className="text-base text-slate-600">
                 {listing.title}
               </p>
-              <div className="flex items-center gap-2 mt-2">
-                <span className="inline-flex items-center gap-1.5 text-sm font-medium bg-slate-100 text-slate-600 px-3 py-1.5 rounded-full">
-                  <MapPin size={14} className="text-indigo-500" />
-                  {listing.city} / {listing.district}
-                </span>
+              <div className="flex flex-wrap items-center gap-4 mt-4">
+                <div className="text-3xl font-bold text-indigo-600">
+                  {new Intl.NumberFormat("tr-TR").format(listing.price)} <span className="text-lg font-semibold text-slate-400">TL</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="inline-flex items-center gap-1.5 text-sm font-medium bg-slate-100 text-slate-600 px-3 py-1.5 rounded-full">
+                    <MapPin size={14} className="text-indigo-500" />
+                    {listing.city} / {listing.district}
+                  </span>
+                </div>
               </div>
             </div>
             <div className="flex items-center gap-3">

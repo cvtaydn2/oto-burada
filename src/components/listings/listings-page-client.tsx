@@ -243,15 +243,31 @@ export function ListingsPageClient({
                 Binlerce araç tek tık uzakta.
               </p>
               
-              <div className="mt-8 flex flex-wrap justify-center gap-3">
-                {brands.slice(0, 5).map((brand) => (
-                  <Link
+              <div className="mt-10 mx-auto max-w-xl">
+                <div className="relative group">
+                  <div className="absolute inset-y-0 left-4 flex items-center pointer-events-none">
+                    <Search className="size-5 text-indigo-300 group-focus-within:text-white transition-colors" />
+                  </div>
+                  <input
+                    type="text"
+                    placeholder="Marka, model veya ilan başlığı ara..."
+                    className="w-full h-14 pl-12 pr-4 rounded-2xl bg-white/10 border border-white/20 text-white placeholder:text-indigo-200 focus:outline-none focus:ring-2 focus:ring-white/30 focus:bg-white/20 transition-all backdrop-blur-md"
+                    value={filters.query || ""}
+                    onChange={(e) => updateFilter("query", e.target.value)}
+                  />
+                </div>
+              </div>
+
+              <div className="mt-8 flex flex-wrap justify-center gap-2">
+                <span className="w-full text-xs font-semibold text-indigo-200 uppercase tracking-widest mb-2">Popüler Markalar</span>
+                {brands.slice(0, 6).map((brand) => (
+                  <button
                     key={brand.brand}
-                    href={`/listings?brand=${encodeURIComponent(brand.brand)}`}
-                    className="inline-flex items-center rounded-full bg-white/20 px-4 py-2 text-sm font-medium text-white backdrop-blur-sm transition-all hover:bg-white/30 hover:scale-105"
+                    onClick={() => updateFilter("brand", brand.brand)}
+                    className="inline-flex items-center rounded-xl bg-white/10 px-4 py-2 text-sm font-medium text-white backdrop-blur-sm transition-all hover:bg-white/20 hover:scale-105 border border-white/5 shadow-sm"
                   >
                     {brand.brand}
-                  </Link>
+                  </button>
                 ))}
               </div>
             </div>
@@ -274,6 +290,36 @@ export function ListingsPageClient({
             <div className="rounded-2xl bg-white p-4 shadow-sm border border-slate-100">
               <p className="text-2xl font-bold text-blue-600">%100</p>
               <p className="text-xs font-medium text-slate-500">Ücretsiz</p>
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* Condensed Header for Listings Page */}
+      {!isHomePage && (
+        <section className="mb-8 p-6 rounded-3xl bg-white border border-slate-200 overflow-hidden relative">
+          <div className="absolute top-0 right-0 w-64 h-64 bg-indigo-50 rounded-full -mr-32 -mt-32 opacity-50 blur-3xl pointer-events-none" />
+          <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
+            <div>
+              <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 tracking-tight">
+                Otomobil İlanları
+              </h1>
+              <p className="text-sm text-slate-500 mt-1">
+                <span className="font-semibold text-slate-900">{filteredListings.length}</span> ilan sizin için listeleniyor
+              </p>
+            </div>
+            
+            <div className="flex-1 max-w-md">
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-slate-400" />
+                <input
+                  type="text"
+                  placeholder="İlanlar içinde ara..."
+                  className="w-full h-11 pl-10 pr-4 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all text-sm"
+                  value={filters.query || ""}
+                  onChange={(e) => updateFilter("query", e.target.value)}
+                />
+              </div>
             </div>
           </div>
         </section>
@@ -303,14 +349,16 @@ export function ListingsPageClient({
           {/* Header */}
           <div className="mb-6">
             <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-5">
-              <div>
-                <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 tracking-tight">
-                  {isHomePage ? "Tüm İlanlar" : "Otomobil İlanları"}
-                </h1>
-                <p className="text-sm text-slate-500 mt-1.5">
-                  <span className="font-semibold text-slate-900">{filteredListings.length}</span> araç bulundu
-                </p>
-              </div>
+              {isHomePage && (
+                <div>
+                  <h2 className="text-2xl sm:text-3xl font-bold text-slate-900 tracking-tight">
+                    Öne Çıkanlar
+                  </h2>
+                  <p className="text-sm text-slate-500 mt-1.5">
+                    En yeni ve popüler ilanları inceleyin
+                  </p>
+                </div>
+              )}
               <SaveSearchButton
                 filters={filters}
                 resultCount={filteredListings.length}

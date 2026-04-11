@@ -58,17 +58,17 @@ export async function SiteHeader() {
             )}
             <Link 
               href={accountHref}
-              className="flex items-center justify-center h-10 px-5 rounded-xl text-sm font-semibold text-foreground hover:bg-muted transition-all"
+              className="flex items-center justify-center h-10 px-5 rounded-xl text-sm font-semibold text-slate-700 border border-slate-200 hover:bg-slate-50 hover:border-indigo-200 transition-all dark:text-slate-200 dark:border-slate-800 dark:hover:bg-slate-800"
             >
-              <User size={18} className="mr-2" />
-              {user ? "Hesabım" : "Giriş"}
+              <User size={18} className="mr-2 text-slate-400" />
+              {user ? "Hesabım" : "Giriş Yap"}
             </Link>
             <Link 
               href={postListingHref} 
-              className="flex items-center justify-center h-10 px-5 rounded-xl text-sm font-semibold text-white bg-gradient-to-r from-indigo-500 to-indigo-600 hover:from-indigo-600 hover:to-indigo-700 shadow-lg shadow-indigo-500/25 hover:shadow-indigo-500/40 transition-all ml-1"
+              className="flex items-center justify-center h-10 px-6 rounded-xl text-sm font-bold text-white bg-indigo-600 hover:bg-indigo-700 shadow-lg shadow-indigo-600/20 active:scale-95 transition-all ml-2"
             >
               <PlusCircle size={18} className="mr-2" />
-              İlan Ver
+              Ücretsiz İlan Ver
             </Link>
           </nav>
 
