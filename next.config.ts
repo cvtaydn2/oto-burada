@@ -22,6 +22,7 @@ const nextConfig: NextConfig = {
   compress: true,
   poweredByHeader: false,
   generateEtags: true,
+  output: "standalone",
 };
 
 export default nextConfig;
