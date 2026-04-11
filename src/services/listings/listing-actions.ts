@@ -9,23 +9,30 @@ import { headers } from "next/headers";
  * Server Action to reveal a listing's phone number with security checks.
  * This prevents mass scraping by not including the phone number in the initial page payload.
  */
+/**
+ * Server Action to reveal a listing's phone number with security checks.
+ * This prevents mass scraping by not including the phone number in the initial page payload.
+ * Guests can reveal up to 5 numbers per hour, while logged-in users get more.
+ */
 export async function revealListingPhone(listingId: string) {
   const user = await getCurrentUser();
+  const headersList = await headers();
+  const ip = headersList.get("x-forwarded-for") || "unknown";
   
-  if (!user) {
-    throw new Error("Bu işlemi gerçekleştirmek için giriş yapmalısınız.");
-  }
-
-  // Identity-based rate limiting (prevent one user from scraping many)
-  const identifier = `reveal-phone:${user.id}`;
-  const rateLimit = await checkRateLimit(identifier, { limit: 10, windowMs: 60 * 60 * 1000 }); // 10 reveals per hour
+  // High-Conversion Policy: Allow guests but limit them more strictly
+  const identifier = user ? `reveal-phone:user:${user.id}` : `reveal-phone:ip:${ip}`;
+  const limit = user ? 20 : 5; // Guests get 5, users get 20
+  
+  const rateLimit = await checkRateLimit(identifier, { limit, windowMs: 60 * 60 * 1000 });
   
   if (!rateLimit.allowed) {
-    throw new Error("Çok fazla görüntüleme yaptınız. Lütfen daha sonra tekrar deneyin.");
+    if (!user) {
+      throw new Error("Çok fazla görüntüleme yaptınız. Daha fazlası için giriş yapın.");
+    }
+    throw new Error("Lütfen bir saat sonra tekrar deneyin.");
   }
 
-  // Fetch only the phone number using admin client to ensure we get it even if RLS is tight,
-  // but strictly controlled by this server-side logic.
+  // Fetch only the phone number using admin client
   const admin = createSupabaseAdminClient();
   const { data, error } = await admin
     .from("listings")
@@ -41,3 +48,4 @@ export async function revealListingPhone(listingId: string) {
     phone: data.whatsapp_phone
   };
 }
+

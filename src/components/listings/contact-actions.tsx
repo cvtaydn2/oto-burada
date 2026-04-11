@@ -39,8 +39,9 @@ export function ContactActions({ listingId }: ContactActionsProps) {
       const result = await revealListingPhone(listingId);
       setRevealedPhone(result.phone);
       setIsRevealed(true);
-    } catch (err: any) {
-      setError(err.message || "Bir hata oluştu");
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Bir hata oluştu";
+      setError(message);
     } finally {
       setIsLogging(false);
     }

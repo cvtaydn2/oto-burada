@@ -13,11 +13,20 @@ Her yeni geliştirme başlamadan önce okunmalıdır.
 ---
 
 ## Proje Durumu
-### 2026-04-12 Phase 15: Infrastructure Hardening Remediation (Current)
-- **Search Suggestion Precision**: Fixed logic in `live-reference-data.ts` to increase suggestion pool size and prioritize Brands/Models over Cities, resolving failures on brand-specific queries (e.g., 'Tesla').
-- **Data Integrity & Visuals**: Corrected seed data in `seed-supabase-demo.mjs` to resolve image-listing mismatches and translated all descriptions to Turkish.
-- **Legal & Compliance**: Created `Contact`, `Terms of Use`, and `Privacy Policy` pages to eliminate footer 404s and establish professional trust.
-- **Edge Security**: Integrated Redis-based rate limiting into the core middleware, protecting against scrapers.
+### 2026-04-12 Phase 16: Brutal UI/UX Transformation & Conversion Hardening (Current)
+- **Design System Overhaul**: Implemented a modern, high-contrast design system using OKLCH colors and premium typography (Outfit for headings, Inter for UI). Replaced "Junior Indigo" with a vibrant, production-grade brand blue.
+- **Homepage Redesign**: Transformed the index page from a simple grid into a high-conversion landing page. Added a premium `HomeHero` with brand quick-filters and a smart search bar.
+- **CarCard Premium**: Developed a modular, high-density listing card (`CarCard`) that prioritizes scannable data (Year, KM, Price, Trust Badges) and eliminates UI clutter.
+- **Smart Filter Sidebar**: Refactored the marketplace filtering interface with a high-efficiency interaction model, better groupings, and a senior-grade aesthetic.
+- **Listing Detail Redesign**: Overhauled the detail page with a focus on visual hierarchy, sticky action bars, and combined trust signals (EİDS, AI Analysis, Seller Score).
+- **Conversion Booster (Guest Reveal)**: Removed the login requirement to view seller phone numbers. Implemented IP-based rate limiting to maintain security while maximizing lead generation for sellers.
+- **Header Clean-up**: Simplified global navigation and branding, removing redundant search triggers on the landing page to improve user focus.
+
+### 2026-04-12 Phase 15: Infrastructure Hardening Remediation - Tamamlandı
+- **Search Suggestion Precision**: Fixed logic in `live-reference-data.ts` to increase suggestion pool size and prioritize Brands/Models over Cities.
+- **Data Integrity & Visuals**: Corrected seed data in `seed-supabase-demo.mjs` to resolve image-listing mismatches.
+- **Legal & Compliance**: Created `Contact`, `Terms of Use`, and `Privacy Policy` pages.
+- **Edge Security**: Integrated Redis-based rate limiting into the core middleware.
 
 ### 2026-04-11 Phase 14: Enterprise Infrastructure & Security - Tamamlandı
 - **Distributed Security**: Migrated to Upstash Redis for global, low-latency rate limiting at the edge.

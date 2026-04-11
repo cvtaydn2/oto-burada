@@ -1,5 +1,6 @@
 import Link from "next/link";
-import { Bell, CarFront, Heart, PlusCircle, User } from "lucide-react";
+import { headers } from "next/headers";
+import { Bell, CarFront, Heart, PlusCircle, User, Zap } from "lucide-react";
 
 import { getCurrentUser, getUserRole } from "@/lib/auth/session";
 import { getLiveMarketplaceReferenceData } from "@/services/reference/live-reference-data";
@@ -12,6 +13,13 @@ export async function SiteHeader() {
   const user = await getCurrentUser();
   const references = await getLiveMarketplaceReferenceData();
   const isAdmin = user ? getUserRole(user) === "admin" : false;
+  
+  const headersList = await headers();
+  const pathname = headersList.get("x-pathname") || ""; 
+  // Note: x-pathname needs to be set in middleware if not available. 
+  // If not available, we can use a Client Component wrapper.
+  // For now, let's assume we want to show it everywhere EXCEPT homepage hero.
+  
   const accountHref = user ? "/dashboard" : "/login";
   const favoritesHref = user ? "/dashboard/favorites" : "/favorites";
   const postListingHref = user ? "/dashboard/listings" : "/login";
@@ -21,54 +29,61 @@ export async function SiteHeader() {
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="flex h-16 items-center justify-between gap-4">
           <div className="flex items-center gap-3">
-            <Link href="/" className="flex items-center gap-2.5 group" aria-label="OtoBurada - Ana Sayfa">
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-500 to-indigo-600 text-white shadow-lg shadow-indigo-500/25 transition-transform group-hover:scale-105" aria-hidden="true">
-                <CarFront size={20} />
+            <Link href="/" className="flex items-center gap-2 group" aria-label="OtoBurada - Ana Sayfa">
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary text-white shadow-lg shadow-primary/20 transition-all group-hover:scale-105 group-active:scale-95" aria-hidden="true">
+                <CarFront size={22} className="stroke-[2]" />
               </div>
-              <span className="text-xl font-bold bg-gradient-to-r from-foreground to-foreground/80 bg-clip-text text-transparent hidden sm:block">
-                OtoBurada
+              <span className="text-xl font-black tracking-tighter text-foreground hidden sm:block">
+                Oto<span className="text-primary italic">Burada</span>
               </span>
             </Link>
           </div>
 
-          <div className="hidden md:flex flex-1 max-w-xl mx-8">
+          <div className="hidden md:flex flex-1 max-w-md mx-4 lg:mx-8">
+            {/* We'll keep it here but better styled, it will only look redundant if the Hero search is visible at the same time */}
             <SearchWithSuggestions
-              placeholder="Marka, model veya şehir ara..."
+              placeholder="Marka, model ara..."
               suggestions={references.searchSuggestions}
             />
           </div>
 
-          <nav className="hidden md:flex items-center gap-1" aria-label="Ana navigasyon">
+          <nav className="hidden md:flex items-center gap-1.5" aria-label="Ana navigasyon">
             <ThemeToggle />
             {user && <NotificationDropdown />}
+            
             <Link 
               href={favoritesHref} 
-              className="flex items-center justify-center w-10 h-10 rounded-xl text-muted-foreground hover:text-indigo-600 hover:bg-indigo-50/80 transition-all dark:hover:bg-indigo-900/30"
+              className="flex items-center justify-center w-10 h-10 rounded-xl text-muted-foreground hover:text-primary hover:bg-primary/5 transition-all"
               title="Favoriler"
             >
               <Heart size={20} />
             </Link>
+
             {isAdmin && (
               <Link 
                 href="/admin" 
-                className="flex items-center justify-center h-10 px-4 rounded-xl text-sm font-semibold text-muted-foreground hover:text-indigo-600 hover:bg-indigo-50/80 transition-all dark:hover:bg-indigo-900/30"
+                className="flex items-center justify-center h-10 px-4 rounded-xl text-sm font-bold text-muted-foreground hover:text-primary hover:bg-primary/5 transition-all"
               >
                 Admin
               </Link>
             )}
+
+            <div className="h-6 w-px bg-border mx-2" />
+
             <Link 
               href={accountHref}
-              className="flex items-center justify-center h-10 px-5 rounded-xl text-sm font-semibold text-slate-700 border border-slate-200 hover:bg-slate-50 hover:border-indigo-200 transition-all dark:text-slate-200 dark:border-slate-800 dark:hover:bg-slate-800"
+              className="flex items-center justify-center h-10 px-4 rounded-xl text-sm font-bold text-foreground border border-border hover:bg-secondary transition-all"
             >
-              <User size={18} className="mr-2 text-slate-400" />
-              {user ? "Hesabım" : "Giriş Yap"}
+              <User size={18} className="mr-2 text-muted-foreground" />
+              {user ? "Hesabım" : "Giriş"}
             </Link>
+
             <Link 
               href={postListingHref} 
-              className="flex items-center justify-center h-10 px-6 rounded-xl text-sm font-bold text-white bg-indigo-600 hover:bg-indigo-700 shadow-lg shadow-indigo-600/20 active:scale-95 transition-all ml-2"
+              className="flex items-center justify-center h-10 px-6 rounded-xl text-sm font-black text-white bg-primary hover:bg-primary/90 shadow-xl shadow-primary/20 active:scale-95 transition-all ml-1"
             >
               <PlusCircle size={18} className="mr-2" />
-              Ücretsiz İlan Ver
+              İlan Ver
             </Link>
           </nav>
 
@@ -85,3 +100,4 @@ export async function SiteHeader() {
     </header>
   );
 }
+

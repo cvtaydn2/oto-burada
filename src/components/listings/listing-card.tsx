@@ -1,152 +1,133 @@
-import Image from "next/image";
-import Link from "next/link";
-import { AlertTriangle, CarFront, Sparkles } from "lucide-react";
+"use client"
 
-import { FavoriteButton } from "@/components/listings/favorite-button";
-import { CompareButton } from "@/components/listings/compare-button";
-import { formatCurrency, formatDate, formatNumber } from "@/lib/utils";
-import { getListingCardInsights } from "@/services/listings/listing-card-insights";
-import type { Listing } from "@/types";
+import Image from "next/image"
+import Link from "next/link"
+import { 
+  Calendar, 
+  CircleGauge, 
+  Fuel, 
+  MapPin, 
+  Settings2, 
+  Sparkles,
+  TrendingDown
+} from "lucide-react"
+import { formatNumber } from "@/lib/utils"
+import { type Listing } from "@/types"
+import { Badge } from "@/components/ui/badge"
 
 interface ListingCardProps {
-  listing: Listing;
-  priority?: boolean;
+  listing: Listing
+  priority?: boolean
+}
+
+function formatPrice(price: number): string {
+  return new Intl.NumberFormat("tr-TR", {
+    maximumFractionDigits: 0,
+  }).format(price)
 }
 
 export function ListingCard({ listing, priority = false }: ListingCardProps) {
-  const coverImage = listing.images.find((image) => image.isCover) ?? listing.images[0];
-  const detailHref = `/listing/${listing.slug}`;
-  const insight = getListingCardInsights(listing);
+  const coverImage = listing.images.find(img => img.isCover) || listing.images[0]
+  const isAdvantageous = (listing.marketPriceIndex ?? 1) < 0.95
+  const detailHref = `/listing/${listing.slug}`
 
-  const isPremium = listing.featured;
-  const isSuspicious = insight.tone === "amber" && listing.price < 300000;
-  
   return (
-    <article className="group relative flex flex-col sm:flex-row bg-white rounded-2xl border border-slate-200/60 overflow-hidden transition-all hover:shadow-lg hover:border-indigo-200 hover:-translate-y-0.5">
-      {/* Mobile Favorite + Compare Buttons */}
-      <div className="absolute right-3 top-3 z-10 flex gap-2 sm:hidden">
-        <FavoriteButton
-          listingId={listing.id}
-          className="size-9 rounded-full bg-white/90 shadow-md backdrop-blur-md flex items-center justify-center"
-        />
-        <CompareButton
-          listingId={listing.id}
-          className="size-9 rounded-full bg-white/90 shadow-md backdrop-blur-md flex items-center justify-center text-indigo-600"
-          hideLabel={true}
-        />
-      </div>
-
-      {/* Image Section */}
-      <div className="relative w-full sm:w-[180px] h-[160px] sm:h-[140px] shrink-0 overflow-hidden bg-slate-100">
-        {coverImage ? (
-          <Image
-            src={coverImage.url}
-            alt={`${listing.brand} ${listing.model} ${listing.year} - ${listing.title}`}
-            fill
-            sizes="(min-width: 640px) 180px, 100vw"
-            loading={priority ? "eager" : "lazy"}
-            decoding="async"
-            placeholder="blur"
-            blurDataURL="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mN8/+F9PQAI8AOB969n9wAAAABJRU5ErkJggg=="
-            className="object-cover transition-transform duration-300 group-hover:scale-105"
-          />
-        ) : (
-          <div className="w-full h-full flex flex-col items-center justify-center bg-slate-50 text-slate-300 gap-2" role="img" aria-label="Görsel yok">
-            <CarFront size={32} strokeWidth={1.5} />
-            <span className="text-[10px] uppercase font-bold tracking-widest text-slate-400">Görsel Yok</span>
-          </div>
-        )}
-        {/* Image count badge */}
-        <div className="absolute bottom-2 right-2 rounded-lg bg-black/60 px-2 py-1 text-xs font-medium text-white flex items-center gap-1" aria-label={`${listing.images.length} fotoğraf`}>
-          <span>{listing.images.length}</span>
-          <span className="text-[10px] opacity-80">foto</span>
-        </div>
-        {/* Premium badge */}
-        {isPremium && (
-          <div className="absolute top-2 left-2 rounded-lg bg-gradient-to-r from-amber-500 to-orange-500 px-2 py-1 text-xs font-bold text-white shadow-md flex items-center gap-1" aria-label="Öne çıkan ilan">
-            <Sparkles size={10} aria-hidden="true" />
-            Öne Çıkan
-          </div>
-        )}
-      </div>
-
-      {/* Content Section */}
-      <Link 
-        href={detailHref}
-        className="flex flex-1 flex-col p-4 justify-between min-w-0"
-        aria-label={`${listing.brand} ${listing.model} - ${formatCurrency(listing.price)}`}
-      >
-        <div className="space-y-2">
-          {/* Title */}
-          <h2 className="text-base font-bold text-slate-900 truncate group-hover:text-indigo-600 transition-colors">
-            {listing.brand} <span className="font-medium">{listing.model}</span>
-          </h2>
+    <Link 
+      href={detailHref}
+      className="group block bg-white rounded-xl border border-slate-200 overflow-hidden hover:border-blue-300 hover:shadow-md transition-all duration-200"
+    >
+      <div className="flex flex-col sm:flex-row">
+        {/* Image Section */}
+        <div className="relative w-full sm:w-[240px] aspect-[4/3] sm:aspect-auto shrink-0 bg-slate-100">
+          {coverImage ? (
+            <Image
+              src={coverImage.url}
+              alt={listing.title}
+              fill
+              sizes="(min-width: 640px) 240px, 100vw"
+              className="object-cover group-hover:scale-105 transition-transform duration-300"
+              priority={priority}
+            />
+          ) : (
+            <div className="flex items-center justify-center h-full text-slate-400">
+              <span className="text-sm">Görsel yok</span>
+            </div>
+          )}
           
-          {/* Subtitle */}
-          <p className="text-sm text-slate-500 truncate">{listing.title}</p>
-          
-          {/* Specs Row */}
-          <div className="flex items-center gap-3 text-xs font-medium text-slate-600">
-            <span className="flex items-center gap-1 bg-slate-100 px-2 py-1 rounded-md" aria-label={`Yıl: ${listing.year}`}>
-              <span>{listing.year}</span>
-            </span>
-            <span className="flex items-center gap-1 bg-slate-100 px-2 py-1 rounded-md" aria-label={`Kilometre: ${formatNumber(listing.mileage)}`}>
-              <span>{formatNumber(listing.mileage)} km</span>
-            </span>
-            <span className="hidden sm:flex items-center gap-1 bg-slate-100 px-2 py-1 rounded-md" aria-label={`Yakıt: ${listing.fuelType}`}>
-              <span>{listing.fuelType === "benzin" ? "Benzin" : listing.fuelType === "dizel" ? "Dizel" : listing.fuelType === "elektrik" ? "Elektrik" : listing.fuelType}</span>
-            </span>
-            <span className="hidden sm:flex items-center gap-1 bg-slate-100 px-2 py-1 rounded-md" aria-label={`Vites: ${listing.transmission}`}>
-              <span>{listing.transmission === "otomatik" ? "Otomatik" : listing.transmission === "manuel" ? "Manuel" : "Yarı Otomatik"}</span>
-            </span>
-          </div>
-
           {/* Badges */}
-          <div className="flex flex-wrap gap-1.5" role="status" aria-live="polite">
-            {insight.tone === "emerald" && (
-              <span className="inline-flex items-center rounded-full bg-emerald-50 px-2.5 py-1 text-xs font-semibold text-emerald-700 border border-emerald-100">
-                İyi Fiyat
-              </span>
+          <div className="absolute top-3 left-3 flex gap-2">
+            {listing.featured && (
+              <Badge className="bg-amber-500 text-white text-xs font-medium px-2 py-0.5">
+                <Sparkles className="w-3 h-3 mr-1" />
+                Vitrin
+              </Badge>
             )}
-            {isSuspicious && (
-              <span className="inline-flex items-center rounded-full bg-red-50 px-2.5 py-1 text-xs font-semibold text-red-700 border border-red-100" role="alert">
-                <AlertTriangle size={10} className="mr-1" aria-hidden="true" />
-                Dikkat
-              </span>
+            {isAdvantageous && (
+              <Badge className="bg-emerald-500 text-white text-xs font-medium px-2 py-0.5">
+                <TrendingDown className="w-3 h-3 mr-1" />
+                Avantajlı
+              </Badge>
             )}
+          </div>
+
+          {/* Image Count */}
+          <div className="absolute bottom-3 left-3 px-2 py-1 bg-black/60 rounded text-xs text-white font-medium">
+            {listing.images.length} fotoğraf
           </div>
         </div>
 
-        <div className="flex items-end justify-between mt-3 pt-3 border-t border-slate-100">
-          <div aria-label={`Fiyat: ${formatCurrency(listing.price)} TL`}>
-            <p className="text-xl font-bold text-slate-900">
-              {formatCurrency(listing.price)}
-              <span className="text-xs font-medium text-slate-500 ml-1">TL</span>
-            </p>
+        {/* Content Section */}
+        <div className="flex-1 p-4 min-w-0 flex flex-col justify-between">
+          <div className="space-y-2">
+            {/* Title & Price */}
+            <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2">
+              <div className="min-w-0">
+                <h3 className="text-lg font-semibold text-slate-900 truncate group-hover:text-blue-600 transition-colors">
+                  {listing.brand} {listing.model}
+                </h3>
+                <p className="text-sm text-slate-500 truncate">{listing.title}</p>
+              </div>
+              <div className="shrink-0 text-left sm:text-right">
+                <span className="text-xl font-bold text-blue-600">
+                  {formatPrice(listing.price)}
+                </span>
+                <span className="text-xs text-slate-400 ml-1">TL</span>
+              </div>
+            </div>
+
+            {/* Specs - Compact Grid */}
+            <div className="flex flex-wrap gap-3 pt-2">
+              <div className="flex items-center gap-1.5 text-sm text-slate-600">
+                <Calendar className="w-4 h-4 text-slate-400" />
+                <span className="font-medium">{listing.year}</span>
+              </div>
+              <div className="flex items-center gap-1.5 text-sm text-slate-600">
+                <CircleGauge className="w-4 h-4 text-slate-400" />
+                <span className="font-medium">{formatNumber(listing.mileage)} km</span>
+              </div>
+              <div className="flex items-center gap-1.5 text-sm text-slate-600">
+                <Fuel className="w-4 h-4 text-slate-400" />
+                <span className="font-medium">{listing.fuelType}</span>
+              </div>
+              <div className="flex items-center gap-1.5 text-sm text-slate-600">
+                <Settings2 className="w-4 h-4 text-slate-400" />
+                <span className="font-medium">{listing.transmission}</span>
+              </div>
+            </div>
           </div>
-          <div className="text-right">
-            <p className="text-xs font-medium text-slate-500" aria-label={`Konum: ${listing.city}`}>
-              {listing.city}
-            </p>
-            <p className="text-[10px] text-slate-400">
-              {formatDate(listing.createdAt)}
-            </p>
+
+          {/* Footer */}
+          <div className="flex items-center justify-between pt-3 mt-2 border-t border-slate-100">
+            <div className="flex items-center gap-1.5 text-sm text-slate-500">
+              <MapPin className="w-4 h-4 text-blue-500" />
+              <span>{listing.city}</span>
+            </div>
+            <span className="text-sm text-slate-400 font-medium">
+              Detay &rarr;
+            </span>
           </div>
         </div>
-      </Link>
-
-      {/* Desktop Actions */}
-      <div className="hidden sm:flex absolute right-3 top-3 gap-2">
-        <FavoriteButton
-          listingId={listing.id}
-          className="size-9 rounded-full bg-white/90 shadow-md backdrop-blur-md flex items-center justify-center"
-        />
-        <CompareButton
-          listingId={listing.id}
-          className="size-9 rounded-full bg-white/90 shadow-md backdrop-blur-md flex items-center justify-center text-indigo-600"
-          hideLabel={true}
-        />
       </div>
-    </article>
-  );
+    </Link>
+  )
 }
