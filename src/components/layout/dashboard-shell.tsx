@@ -3,13 +3,16 @@ import Link from "next/link";
 
 import { logoutAction } from "@/lib/auth/actions";
 import { DashboardNavigation } from "@/components/layout/dashboard-navigation";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, ShieldCheck, Settings } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 
 interface DashboardShellProps extends PropsWithChildren {
   email: string | null;
+  isAdmin?: boolean;
 }
 
-export function DashboardShell({ children, email }: DashboardShellProps) {
+export function DashboardShell({ children, email, isAdmin }: DashboardShellProps) {
   return (
     <main className="bg-muted/40 min-h-screen">
       <div className="mx-auto flex w-full max-w-6xl flex-col gap-6 px-4 py-6 sm:px-6 sm:py-8 lg:px-8">
@@ -34,14 +37,24 @@ export function DashboardShell({ children, email }: DashboardShellProps) {
               </div>
             </div>
 
-            <form action={logoutAction}>
-              <button
-                type="submit"
-                className="inline-flex h-10 items-center justify-center rounded-lg border border-border bg-background px-4 text-sm font-medium text-foreground transition-colors hover:bg-muted"
-              >
-                Çıkış
-              </button>
-            </form>
+            <div className="flex items-center gap-2">
+              {isAdmin && (
+                <Link href="/admin">
+                  <Button variant="outline" className="h-10 border-indigo-200 bg-indigo-50 text-indigo-700 hover:bg-indigo-100 gap-2 font-bold rounded-lg shadow-sm">
+                    <ShieldCheck size={16} />
+                    Admin Paneline Geç
+                  </Button>
+                </Link>
+              )}
+              <form action={logoutAction}>
+                <button
+                  type="submit"
+                  className="inline-flex h-10 items-center justify-center rounded-lg border border-border bg-background px-4 text-sm font-medium text-foreground transition-colors hover:bg-muted"
+                >
+                  Çıkış
+                </button>
+              </form>
+            </div>
           </div>
         </section>
 

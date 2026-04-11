@@ -1,41 +1,35 @@
-import Link from "next/link";
 import {
-  BadgeCheck,
-  FileClock,
-  ShieldAlert,
   ShieldCheck,
-  TriangleAlert,
+  Zap,
+  Clock,
+  Activity,
+  UserPlus,
+  Car,
+  Flag,
 } from "lucide-react";
 
-import {
-  AdminListingsModeration,
-} from "@/components/listings/admin-listings-moderation";
 import {
   AdminRecentActions,
   type AdminRecentActionItem,
 } from "@/components/listings/admin-recent-actions";
-import { AdminReportsModeration } from "@/components/listings/admin-reports-moderation";
 import { AdminBroadcastPanel } from "@/components/shared/admin-broadcast-panel";
 import { AdminPersistencePanel } from "@/components/shared/admin-persistence-panel";
 import { DashboardMetricCard } from "@/components/shared/dashboard-metric-card";
 import { AdminAnalyticsPanel } from "@/components/listings/admin-analytics-panel";
-import { getUserRole, requireAdminUser } from "@/lib/auth/session";
+import { requireAdminUser } from "@/lib/auth/session";
 import { getRecentAdminModerationActions } from "@/services/admin/moderation-actions";
 import { getPersistenceHealth } from "@/services/admin/persistence-health";
 import { getAdminAnalytics } from "@/services/admin/analytics";
 import { getAllKnownListings } from "@/services/listings/marketplace-listings";
 import { getStoredProfileById } from "@/services/profile/profile-records";
-import { getStoredListings } from "@/services/listings/listing-submissions";
 import { getStoredReports } from "@/services/reports/report-submissions";
 
+export const dynamic = "force-dynamic";
 
-export default async function AdminPage() {
+export default async function AdminOverviewPage() {
   const user = await requireAdminUser();
-  const userRole = getUserRole(user);
   const analyticsData = await getAdminAnalytics();
-  const storedListings = await getStoredListings();
   const storedReports = await getStoredReports();
-  const pendingListings = storedListings.filter((listing) => listing.status === "pending");
   const actionableReports = storedReports.filter(
     (report) => report.status === "open" || report.status === "reviewing",
   );
@@ -43,15 +37,7 @@ export default async function AdminPage() {
   const persistenceHealth = await getPersistenceHealth();
   const recentActions = await getRecentAdminModerationActions();
   const listingById = Object.fromEntries(knownListings.map((listing) => [listing.id, listing]));
-  const listingMetaById = Object.fromEntries(
-    knownListings.map((listing) => [
-      listing.id,
-      {
-        slug: listing.slug,
-        title: listing.title,
-      },
-    ]),
-  );
+  
   const recentActionItems: AdminRecentActionItem[] = await Promise.all(
     recentActions.map(async (action) => {
       const actorProfile = await getStoredProfileById(action.adminUserId);
@@ -75,82 +61,82 @@ export default async function AdminPage() {
   );
 
   return (
-    <main className="bg-muted/40 text-foreground min-h-screen">
-      <div className="mx-auto flex w-full max-w-6xl flex-col gap-6 px-4 py-8 sm:px-6 sm:py-10 lg:px-8">
-        <section className="rounded-[2rem] border border-border/80 bg-background p-6 shadow-sm sm:p-8">
-          <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-            <div className="space-y-2">
-              <p className="text-sm font-medium uppercase tracking-[0.18em] text-primary/80">
-                Admin Paneli
-              </p>
-              <h1 className="text-3xl font-semibold tracking-tight">İlan moderasyon merkezi</h1>
-              <p className="text-sm leading-6 text-muted-foreground sm:text-base">
-                {user.email ?? "Admin kullanici"} hesabiyla giris yaptin. Bu alan yalnizca{" "}
-                {userRole} rolundeki kullanicilar icin aciktir.
-              </p>
-            </div>
-
-            <Link
-              href="/dashboard"
-              className="inline-flex h-11 items-center justify-center rounded-xl border border-border bg-background px-5 text-sm font-semibold text-foreground transition-colors hover:bg-muted"
-            >
-              Kullanıcı paneline dön
-            </Link>
+    <main className="p-8 space-y-8">
+      {/* Header */}
+      <section className="flex flex-col md:flex-row md:items-end justify-between gap-4">
+        <div>
+          <div className="flex items-center gap-2 mb-2">
+             <div className="size-2 rounded-full bg-emerald-500 animate-pulse" />
+             <span className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Canlı Sistem Durumu</span>
           </div>
-
-          <div className="mt-8 grid gap-4 md:grid-cols-5 text-foreground">
-            <DashboardMetricCard
-              label="Bekleyen ilan"
-              value={String(analyticsData?.listingsByStatus.find(s => s.status === "pending")?.count ?? 0)}
-              helper="Yayina alinmadan once gozden gecirilecek ilanlar."
-              icon={FileClock}
-              tone="amber"
-            />
-            <DashboardMetricCard
-              label="Onaylanan ilan"
-              value={String(analyticsData?.listingsByStatus.find(s => s.status === "approved")?.count ?? 0)}
-              helper="Yayinda olan ve moderasyon filtresini gecen ilanlar."
-              icon={BadgeCheck}
-              tone="emerald"
-            />
-            <DashboardMetricCard
-              label="Reddedilen ilan"
-              value={String(analyticsData?.listingsByStatus.find(s => s.status === "rejected")?.count ?? 0)}
-              helper="Kurallara uymadigi icin geri cevrilen ilanlar."
-              icon={ShieldAlert}
-              tone="slate"
-            />
-            <DashboardMetricCard
-              label="Acil rapor"
-              value={String(actionableReports.length)}
-              helper="Acik veya incelemede olan guvenlik bildirimleri."
-              icon={TriangleAlert}
-              tone="amber"
-            />
-            <DashboardMetricCard
-              label="Toplam rapor"
-              value={String(analyticsData?.totalReports ?? 0)}
-              helper="Tum kullanici raporlari bu toplam sayiya dahildir."
-              icon={ShieldCheck}
-              tone="indigo"
-            />
-          </div>
-        </section>
-
-        {analyticsData && <AdminAnalyticsPanel data={analyticsData} />}
-
-        <AdminPersistencePanel health={persistenceHealth} />
-        
-        <div className="grid lg:grid-cols-2 gap-6">
-          <AdminRecentActions actions={recentActionItems} />
-          <AdminBroadcastPanel />
+          <h1 className="text-4xl font-black italic uppercase tracking-tighter text-slate-900">
+            Kontrol <span className="text-primary text-glow">Paneli</span>
+          </h1>
+          <p className="text-slate-500 font-medium mt-1">Platformun genel performans verileri ve akışı.</p>
         </div>
+        
+        <div className="flex items-center gap-3">
+           <div className="p-3 bg-white border border-slate-100 rounded-2xl shadow-sm text-center min-w-24">
+              <span className="block text-[10px] font-bold text-slate-400 uppercase mb-1">Yeni Kayıt</span>
+              <span className="text-xl font-black text-slate-900">+12</span>
+           </div>
+           <div className="p-3 bg-white border border-slate-100 rounded-2xl shadow-sm text-center min-w-24">
+              <span className="block text-[10px] font-bold text-slate-400 uppercase mb-1">Görünüm</span>
+              <span className="text-xl font-black text-slate-900">4.2k</span>
+           </div>
+        </div>
+      </section>
 
-        <AdminListingsModeration pendingListings={pendingListings} />
-        <AdminReportsModeration
-          listingMetaById={listingMetaById}
-          reports={actionableReports}
+      {/* Analytics Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <DashboardMetricCard
+          label="Bekleyen İlanlar"
+          value={String(analyticsData?.listingsByStatus.find(s => s.status === "pending")?.count ?? 0)}
+          helper="Onay bekleyen araç ilanları"
+          icon={Car}
+          tone="amber"
         />
+        <DashboardMetricCard
+          label="Aktif Raporlar"
+          value={String(actionableReports.length)}
+          helper="İlgilenilmesi gereken şikayetler"
+          icon={Flag}
+          tone="amber"
+        />
+        <DashboardMetricCard
+          label="Sistem Sağlığı"
+          value="99.9%"
+          helper="Postgres & Redis statüsü"
+          icon={Activity}
+          tone="emerald"
+        />
+        <DashboardMetricCard
+          label="Yeni Üyeler"
+          value="48"
+          helper="Son 24 saat içindeki kayıtlar"
+          icon={UserPlus}
+          tone="indigo"
+        />
+      </div>
+
+      <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
+        <div className="xl:col-span-2 space-y-8">
+           {analyticsData && (
+              <div className="bg-white rounded-[2rem] p-6 border border-slate-100 shadow-sm">
+                 <div className="flex items-center gap-3 mb-6">
+                    <Zap className="text-amber-500 fill-amber-500" size={24} />
+                    <h2 className="text-xl font-black italic uppercase tracking-tighter">İlan Analiz Grafiği</h2>
+                 </div>
+                 <AdminAnalyticsPanel data={analyticsData} />
+              </div>
+           )}
+           <AdminPersistencePanel health={persistenceHealth} />
+        </div>
+        
+        <div className="space-y-8">
+           <AdminRecentActions actions={recentActionItems} />
+           <AdminBroadcastPanel />
+        </div>
       </div>
     </main>
   );

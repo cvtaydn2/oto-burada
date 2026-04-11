@@ -6,5 +6,12 @@ import { requireUser } from "@/lib/auth/session";
 export default async function DashboardLayout({ children }: PropsWithChildren) {
   const user = await requireUser();
 
-  return <DashboardShell email={user.email ?? null}>{children}</DashboardShell>;
+  return (
+    <DashboardShell 
+      email={user.email ?? null} 
+      isAdmin={user.role === "admin"}
+    >
+      {children}
+    </DashboardShell>
+  );
 }
