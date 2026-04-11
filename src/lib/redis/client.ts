@@ -63,3 +63,5 @@ export async function invalidateCache(key: string) {
     // Silent fail
   }
 }
+
+export default redis;
