@@ -53,7 +53,7 @@ interface ListingRow {
     user_type: string;
     business_name: string | null;
     business_logo_url: string | null;
-    identity_verified: boolean;
+    is_verified: boolean;
     verified_business: boolean;
     business_slug: string | null;
   } | null;
@@ -97,7 +97,7 @@ const listingSelect = `
     user_type,
     business_name,
     business_logo_url,
-    identity_verified,
+    is_verified,
     verified_business,
     business_slug
   )
@@ -303,7 +303,7 @@ function mapListingRow(row: ListingRow): Listing {
       userType: row.profiles.user_type as any,
       businessName: row.profiles.business_name,
       businessLogoUrl: row.profiles.business_logo_url,
-      identityVerified: row.profiles.identity_verified,
+      identityVerified: row.profiles.is_verified,
       verifiedBusiness: row.profiles.verified_business,
       businessSlug: row.profiles.business_slug
     } : undefined,
@@ -454,7 +454,16 @@ async function getDatabaseListings(options?: {
 
   const primaryResult = await applyListingQueryOptions(listingSelect).returns<ListingRow[]>();
 
-  if (!primaryResult.error && primaryResult.data) {
+  if (primaryResult.error) {
+    console.error("DEBUG - Database Listings Error:", primaryResult.error);
+  } else {
+    console.log("DEBUG - Primary Result Data Length:", primaryResult.data?.length ?? 0);
+    if (primaryResult.data && primaryResult.data.length > 0) {
+      console.log("DEBUG - Sample Row ID:", primaryResult.data[0].id);
+    }
+  }
+
+  if (!primaryResult.error && primaryResult.data && primaryResult.data.length > 0) {
     return primaryResult.data.map(mapListingRow);
   }
 
