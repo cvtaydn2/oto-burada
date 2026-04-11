@@ -6,7 +6,7 @@ import { AlertCircle, CheckCircle2, ChevronDown, ChevronUp, Info } from "lucide-
 import { useState } from "react";
 
 interface DamageReportCardProps {
-  damageStatus?: Record<string, any> | null;
+  damageStatus?: Record<string, string> | null;
   tramerAmount?: number | null;
 }
 

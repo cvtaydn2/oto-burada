@@ -83,9 +83,9 @@ export function PriceAnalysisCard({
             <TrendingUp size={18} className="mt-0.5 shrink-0 text-red-500" />
             <div>
               <div className="text-sm font-bold text-red-700">Fiyat Manipülasyonu Şüphesi</div>
-              <p className="text-xs text-red-600/80 mt-1 leading-relaxed">
-                Bu ilan fiyatı piyasa ortalamasının çok üzerindedir. Lütfen "Fiyat Manipülasyonu" olarak bildirin.
-              </p>
+                <p className="text-xs text-red-600/80 mt-1 leading-relaxed">
+                  Bu ilan fiyatı piyasa ortalamasının çok üzerindedir. Lütfen &quot;Fiyat Manipülasyonu&quot; olarak bildirin.
+                </p>
             </div>
           </div>
         ) : (

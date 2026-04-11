@@ -71,7 +71,7 @@ export interface Listing {
   description: string;
   whatsappPhone: string;
   tramerAmount?: number | null;
-  damageStatusJson?: Record<string, unknown> | null;
+  damageStatusJson?: Record<string, string> | null;
   fraudScore?: number;
   fraudReason?: string | null;
   status: ListingStatus;
@@ -80,7 +80,7 @@ export interface Listing {
   featuredUntil?: string | null;
   urgentUntil?: string | null;
   highlightedUntil?: string | null;
-  eidsVerificationJson?: Record<string, any> | null;
+  eidsVerificationJson?: Record<string, unknown> | null;
   marketPriceIndex?: number | null;
   expertInspection?: ExpertInspection;
   bumpedAt?: string | null;
@@ -102,7 +102,7 @@ export interface ListingCreateInput {
   description: string;
   whatsappPhone: string;
   tramerAmount?: number | null;
-  damageStatusJson?: Record<string, unknown> | null;
+  damageStatusJson?: Record<string, string> | null;
   images: ListingImage[];
   expertInspection?: ExpertInspection;
 }
@@ -130,7 +130,7 @@ export interface ListingCreateFormValues {
   whatsappPhone: string;
   licensePlate?: string | null;
   tramerAmount?: number | null;
-  damageStatusJson?: Record<string, unknown> | null;
+  damageStatusJson?: Record<string, string> | null;
   images: ListingCreateFormImage[];
   expertInspection?: ExpertInspection;
 }

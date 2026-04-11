@@ -12,7 +12,6 @@ import {
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useFieldArray, useForm, useWatch, type FieldPath } from "react-hook-form";
-import type { z } from "zod";
 
 import {
   maximumCarYear,
@@ -177,10 +176,10 @@ export function ListingCreateForm({
   const totalSteps = STEP_LABELS.length;
   const uploadStatesRef = useRef<Record<string, UploadState>>({});
   
-  const form = useForm<ListingCreateFormValues>({
+  const form = useForm<ListingCreateFormValues, unknown, ListingCreateFormValues>({
     defaultValues: buildDefaultValues(initialValues, initialListing),
     mode: "onBlur",
-    resolver: zodResolver(listingCreateFormSchema as any),
+    resolver: zodResolver(listingCreateFormSchema as never),
   });
 
   const {
@@ -291,6 +290,15 @@ export function ListingCreateForm({
     let fieldsToValidate: FieldPath<ListingCreateFormValues>[] = [];
     if (currentStep === 0) fieldsToValidate = ["brand", "model", "year", "mileage"];
     if (currentStep === 1) fieldsToValidate = ["city", "district", "title", "description", "price"];
+    if (currentStep === 2) {
+      fieldsToValidate = [
+        "damageStatusJson",
+        "tramerAmount",
+        "expertInspection.hasInspection",
+        "expertInspection.inspectionDate",
+        "expertInspection.inspectedBy",
+      ];
+    }
     
     const isValid = await trigger(fieldsToValidate);
     if (isValid) {

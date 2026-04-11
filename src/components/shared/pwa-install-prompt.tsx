@@ -5,20 +5,18 @@ import { Download, X, Share } from "lucide-react";
 
 export function PWAInstallPrompt() {
   const [isVisible, setIsVisible] = useState(false);
-  const [platform, setPlatform] = useState<"ios" | "android" | "other">("other");
+  const [platform, setPlatform] = useState<"ios" | "android" | "other">(() => {
+    if (typeof window === "undefined") return "other";
+    const userAgent = window.navigator.userAgent.toLowerCase();
+    if (/iphone|ipad|ipod/.test(userAgent)) return "ios";
+    if (/android/.test(userAgent)) return "android";
+    return "other";
+  });
 
   useEffect(() => {
     // Check if already installed
     const isStandalone = window.matchMedia("(display-mode: standalone)").matches;
     if (isStandalone) return;
-
-    // Detect platform
-    const userAgent = window.navigator.userAgent.toLowerCase();
-    if (/iphone|ipad|ipod/.test(userAgent)) {
-      setPlatform("ios");
-    } else if (/android/.test(userAgent)) {
-      setPlatform("android");
-    }
 
     // Delay showing the prompt
     const timer = setTimeout(() => {
@@ -53,7 +51,7 @@ export function PWAInstallPrompt() {
             <Download className="text-white" size={24} />
           </div>
           <div className="flex-1">
-            <h3 className="font-bold text-slate-900 leading-tight">OtoBurada'yı Uygulama Olarak Ekle</h3>
+            <h3 className="font-bold text-slate-900 leading-tight">OtoBurada&apos;yı Uygulama Olarak Ekle</h3>
             <p className="text-xs text-slate-500 mt-1">İlanlara daha hızlı ulaşmak için ana ekranına ekle.</p>
           </div>
         </div>
@@ -65,7 +63,7 @@ export function PWAInstallPrompt() {
               <div className="p-1 bg-slate-100 rounded text-slate-900">
                 <Share size={14} />
               </div>
-              <span>butonuna basıp "Ana Ekrana Ekle"yi seçin.</span>
+              <span>butonuna basıp &quot;Ana Ekrana Ekle&quot;yi seçin.</span>
             </div>
           ) : (
             <button

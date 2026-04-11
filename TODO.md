@@ -38,8 +38,7 @@
 - [x] **ISR (Incremental Static Regeneration)**: `/listing/[slug]` sayfası için `revalidate` stratejisi eklendi. (Done)
 - [x] **Image Compression**: Client-side `browser-image-compression` entegreli galeri. (Done)
 - [x] **Image optimization**: Next/Image ile listing fotoğraflarının responsive srcSet ve blur placeholder ile sunulması (Done)
-- [ ] **Bundle analizi**: `@next/bundle-analyzer` ile chunk boyutlarının incelenmesi
-- [ ] **Lazy loading**: Dashboard sayfalarında kullanılmayan bileşenlerin `dynamic()` ile lazy import edilmesi
+- [x] **Semantik Audit ve Build Fix**: TypeScript, lint, React anti-pattern ve JSX escape düzeltmeleri tamamlandı. (2026-04-11)
 
 ### SEO
 - [x] **Canonical URL'ler**: Yinelenen içerik sorunlarını önlemek için canonical tag'leri eklendi. (Done)

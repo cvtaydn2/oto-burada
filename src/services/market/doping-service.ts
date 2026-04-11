@@ -8,6 +8,13 @@ export interface DopingResult {
   message: string;
 }
 
+interface DopingUpdates {
+  featured?: boolean;
+  featured_until?: string | null;
+  urgent_until?: string | null;
+  highlighted_until?: string | null;
+}
+
 /**
  * Applies premium doping effects to a listing.
  * Extends the visibility of the listing based on the doping type.
@@ -24,7 +31,7 @@ export async function applyDopingToListing(
   const SevenDaysLater = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000).toISOString();
   const FifteenDaysLater = new Date(now.getTime() + 15 * 24 * 60 * 60 * 1000).toISOString();
 
-  const updates: any = {};
+  const updates: DopingUpdates = {};
   
   if (dopingTypes.includes("featured")) {
     updates.featured = true;

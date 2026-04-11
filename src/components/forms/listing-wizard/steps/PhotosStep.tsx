@@ -8,7 +8,7 @@ import { minimumListingImages } from "@/lib/constants/domain";
 import { ListingCreateFormValues } from "@/types";
 
 interface PhotosStepProps {
-  form: UseFormReturn<ListingCreateFormValues>;
+  form: UseFormReturn<ListingCreateFormValues, unknown, ListingCreateFormValues>;
   fieldArray: UseFieldArrayReturn<ListingCreateFormValues, "images", "id">;
   uploadStates: Record<string, { status: string; progress: number; message?: string; previewUrl?: string }>;
   onImageChange: (index: number, file: File | null) => void;

@@ -6,7 +6,7 @@ import { ListingCreateFormValues, BrandCatalogItem } from "@/types";
 import { maximumCarYear, minimumCarYear } from "@/lib/constants/domain";
 
 interface VehicleInfoStepProps {
-  form: UseFormReturn<ListingCreateFormValues>;
+  form: UseFormReturn<ListingCreateFormValues, unknown, ListingCreateFormValues>;
   brands: BrandCatalogItem[];
   isPlateLoading: boolean;
   onPlateLookup: () => void;

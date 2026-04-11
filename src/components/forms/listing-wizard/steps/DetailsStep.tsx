@@ -6,7 +6,7 @@ import { CityOption, ListingCreateFormValues } from "@/types";
 import { fuelTypes, transmissionTypes } from "@/lib/constants/domain";
 
 interface DetailsStepProps {
-  form: UseFormReturn<ListingCreateFormValues>;
+  form: UseFormReturn<ListingCreateFormValues, unknown, ListingCreateFormValues>;
   cities: CityOption[];
 }
 

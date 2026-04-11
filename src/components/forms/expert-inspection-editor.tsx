@@ -3,8 +3,6 @@
 import { UseFormReturn } from "react-hook-form";
 import { 
   ShieldCheck, 
-  ChevronDown, 
-  AlertCircle, 
   CheckCircle2, 
   XCircle, 
   HelpCircle,
@@ -13,12 +11,13 @@ import {
   FileText,
   Star
 } from "lucide-react";
+import { ExpertInspectionGrade, ExpertInspectionStatus } from "@/types";
 
 import { 
   expertInspectionGradeInfo, 
-  expertInspectionStatusLabels 
+  expertInspectionStatusLabels, 
+  ListingCreateFormValues 
 } from "@/types/domain";
-import { ListingCreateFormValues } from "@/types";
 import { Label } from "@/components/ui/label";
 import { 
   Select, 
@@ -126,7 +125,7 @@ export function ExpertInspectionEditor({ form }: ExpertInspectionEditorProps) {
                 Genel Değerlendirme
               </Label>
               <Select 
-                onValueChange={(val) => setValue("expertInspection.overallGrade", val as any)}
+                onValueChange={(val) => setValue("expertInspection.overallGrade", val as ExpertInspectionGrade)}
                 value={watch("expertInspection.overallGrade") || undefined}
               >
                 <SelectTrigger className="rounded-xl h-11 border-border focus:border-primary">
@@ -174,9 +173,9 @@ export function ExpertInspectionEditor({ form }: ExpertInspectionEditorProps) {
                       <button
                         key={s.status}
                         type="button"
-                        onClick={() => setValue(`expertInspection.${field.name as "damageRecord"}` as any, s.status)}
+                        onClick={() => setValue(`expertInspection.${field.name}` as "expertInspection.damageRecord", s.status as ExpertInspectionStatus)}
                         className={`flex-1 py-1 px-1.5 rounded-md text-[10px] font-bold transition-all flex items-center justify-center gap-1 ${
-                          watch(`expertInspection.${field.name}` as any) === s.status
+                          watch(`expertInspection.${field.name}` as "expertInspection.damageRecord") === s.status
                             ? s.status === "var" 
                               ? "bg-emerald-100 text-emerald-700" 
                               : s.status === "yok"
@@ -185,7 +184,7 @@ export function ExpertInspectionEditor({ form }: ExpertInspectionEditorProps) {
                             : "text-muted-foreground/60 hover:text-muted-foreground"
                         }`}
                       >
-                        {watch(`expertInspection.${field.name}` as any) === s.status && (
+                        {watch(`expertInspection.${field.name}` as "expertInspection.damageRecord") === s.status && (
                           s.status === "var" ? <CheckCircle2 size={10} /> : s.status === "yok" ? <XCircle size={10} /> : <HelpCircle size={10} />
                         )}
                         {s.label}

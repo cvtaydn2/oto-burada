@@ -19,29 +19,15 @@ import type { AdminAnalyticsData } from "@/services/admin/analytics";
 
 const COLORS = ["#4f46e5", "#10b981", "#f59e0b", "#ef4444", "#8b5cf6"];
 
-import { useEffect, useState } from "react";
-
 interface AdminAnalyticsPanelProps {
   data: AdminAnalyticsData;
 }
 
 export function AdminAnalyticsPanel({ data }: AdminAnalyticsPanelProps) {
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
-
   const statusData = data.listingsByStatus.map((s) => ({
     name: s.status === "approved" ? "Onaylı" : s.status === "pending" ? "Bekleyen" : "Reddedilen",
     value: s.count,
   }));
-
-  if (!mounted) {
-    return (
-      <div className="h-96 w-full animate-pulse rounded-[2rem] bg-muted/20" />
-    );
-  }
 
   return (
     <div className="space-y-6">
@@ -210,7 +196,14 @@ export function AdminAnalyticsPanel({ data }: AdminAnalyticsPanelProps) {
   );
 }
 
-function StatCard({ title, value, icon: Icon, description }: any) {
+interface StatCardProps {
+  title: string;
+  value: string | number;
+  icon: React.ComponentType<{ size?: number; className?: string }>;
+  description: string;
+}
+
+function StatCard({ title, value, icon: Icon, description }: StatCardProps) {
   return (
     <div className="rounded-[2rem] border border-border/80 bg-background p-6 shadow-sm">
       <div className="flex items-center justify-between mb-2">

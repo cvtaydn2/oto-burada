@@ -7,7 +7,7 @@ import { DamageSelector } from "../../damage-selector";
 import { ExpertInspectionEditor } from "../../expert-inspection-editor";
 
 interface InspectionStepProps {
-  form: UseFormReturn<ListingCreateFormValues>;
+  form: UseFormReturn<ListingCreateFormValues, unknown, ListingCreateFormValues>;
 }
 
 export function InspectionStep({ form }: InspectionStepProps) {
