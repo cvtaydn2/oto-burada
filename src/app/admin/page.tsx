@@ -105,7 +105,7 @@ export default async function AdminOverviewPage() {
         />
         <DashboardMetricCard
           label="Sistem Sağlığı"
-          value="99.9%"
+          value={`${persistenceHealth.healthScore}%`}
           helper="Postgres & Redis statüsü"
           icon={Activity}
           tone="emerald"

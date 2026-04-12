@@ -10,6 +10,20 @@ type DBModel = { brand_id: string; name: string };
 type DBCity = { id: string; name: string; plate_code: number };
 type DBDistrict = { city_id: string; name: string };
 
+const POPULAR_BRANDS: BrandCatalogItem[] = [
+  { brand: "Volkswagen", models: ["Passat", "Golf", "Polo", "Tiguan", "T-Roc"] },
+  { brand: "Renault", models: ["Clio", "Megane", "Symbol", "Kadjar", "Fluence"] },
+  { brand: "Fiat", models: ["Egea", "Linea", "Doblo", "Fiorino", "500"] },
+  { brand: "Toyota", models: ["Corolla", "Auris", "Yaris", "Rav4", "CH-R"] },
+  { brand: "BMW", models: ["3 Serisi", "5 Serisi", "1 Serisi", "X5", "X3"] },
+];
+
+const POPULAR_CITIES: CityOption[] = [
+  { city: "İstanbul", cityPlate: 34, districts: ["Kadıköy", "Beşiktaş", "Şişli", "Üsküdar"] },
+  { city: "Ankara", cityPlate: 6, districts: ["Çankaya", "Keçiören", "Yenimahalle"] },
+  { city: "İzmir", cityPlate: 35, districts: ["Konak", "Karşıyaka", "Bornova"] },
+];
+
 export async function getLiveMarketplaceReferenceData() {
   const supabase = await createSupabaseServerClient();
 
@@ -69,7 +83,11 @@ export async function getLiveMarketplaceReferenceData() {
     })
     .slice(0, 100); // Return top 100 to let frontend filter effectively
 
-  return { brands, cities, searchSuggestions };
+  return { 
+    brands: brands.length > 0 ? brands : POPULAR_BRANDS, 
+    cities: cities.length > 0 ? cities : POPULAR_CITIES, 
+    searchSuggestions 
+  };
 }
 
 export function mergeCityOptions(cities: CityOption[], extraCities: string[]) {

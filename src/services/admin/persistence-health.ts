@@ -4,6 +4,7 @@ import {
   hasSupabaseAdminEnv,
   hasSupabaseStorageEnv,
 } from "@/lib/supabase/env";
+import { Redis } from "@upstash/redis";
 
 interface TableHealth {
   count: number;
@@ -17,7 +18,9 @@ export interface PersistenceHealth {
     databaseUrlEnv: boolean;
     demoPasswordEnv: boolean;
     storageEnv: boolean;
+    redisEnv: boolean;
   };
+  healthScore: number;
   message: string;
   ready: boolean;
   storage: {
@@ -51,7 +54,9 @@ export async function getPersistenceHealth(): Promise<PersistenceHealth> {
     databaseUrlEnv: Boolean(process.env.SUPABASE_DB_URL),
     demoPasswordEnv: Boolean(process.env.SUPABASE_DEMO_USER_PASSWORD),
     storageEnv: hasSupabaseStorageEnv(),
+    redisEnv: Boolean(process.env.UPSTASH_REDIS_REST_URL),
   };
+  
   const storage: StorageHealth = {
     bucketAccessible: null,
     bucketName: environment.storageEnv ? getSupabaseStorageEnv().listingsBucket : null,
@@ -60,9 +65,29 @@ export async function getPersistenceHealth(): Promise<PersistenceHealth> {
       : "Storage ortam degiskenleri eksik.",
   };
 
+  let checksCount = 0;
+  let successCount = 0;
+
+  // Check 1: Admin API
+  checksCount++;
+  if (environment.adminEnv) successCount++;
+
+  // Check 2: Redis
+  checksCount++;
+  if (environment.redisEnv) {
+    try {
+      const redis = Redis.fromEnv();
+      const ping = await redis.ping();
+      if (ping === "PONG") successCount++;
+    } catch {
+      // Failed redis check
+    }
+  }
+
   if (!environment.adminEnv) {
     return {
       environment,
+      healthScore: (successCount / checksCount) * 100,
       message: "Supabase admin ortam degiskenleri eksik.",
       ready: false,
       storage,
@@ -71,10 +96,13 @@ export async function getPersistenceHealth(): Promise<PersistenceHealth> {
   }
 
   const admin = createSupabaseAdminClient();
+  
+  // Check 3: Storage
+  checksCount++;
   if (environment.storageEnv && storage.bucketName) {
     const { data, error } = await admin.storage.getBucket(storage.bucketName);
-
     storage.bucketAccessible = !error && Boolean(data);
+    if (storage.bucketAccessible) successCount++;
     storage.message = error
       ? `${storage.bucketName} bucket'i okunamadi: ${error.message}`
       : `${storage.bucketName} bucket'i erisilebilir durumda.`;
@@ -86,44 +114,29 @@ export async function getPersistenceHealth(): Promise<PersistenceHealth> {
         .from(table.key)
         .select("*", { count: "exact", head: true });
 
-      if (error) {
-        return {
-          count: 0,
-          error: error.message,
-          key: table.key,
-          label: table.label,
-        };
-      }
-
       return {
         count: count ?? 0,
-        error: null,
+        error: error ? error.message : null,
         key: table.key,
         label: table.label,
       };
     }),
   );
 
-  const failedTable = results.find((result) => result.error);
+  // Check 4: Tables
+  checksCount += tableDefinitions.length;
+  successCount += results.filter(r => !r.error).length;
 
-  if (failedTable) {
-    return {
-      environment,
-      message: `${failedTable.label} tablosu okunamadi: ${failedTable.error}`,
-      ready: false,
-      storage,
-      tables: results.map((result) => ({
-        count: result.count,
-        key: result.key,
-        label: result.label,
-      })),
-    };
-  }
+  const healthScore = Math.round((successCount / checksCount) * 100);
+  const failedTable = results.find((result) => result.error);
 
   return {
     environment,
-    message: "Supabase persistence tablolari erisilebilir durumda.",
-    ready: true,
+    healthScore,
+    message: failedTable 
+      ? `${failedTable.label} tablosu okunamadi: ${failedTable.error}`
+      : "Sistem bileşenleri sağlıklı şekilde çalışıyor.",
+    ready: !failedTable && environment.adminEnv,
     storage,
     tables: results.map((result) => ({
       count: result.count,

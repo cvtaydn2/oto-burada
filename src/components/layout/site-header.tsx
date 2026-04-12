@@ -40,11 +40,12 @@ export async function SiteHeader() {
           </div>
 
           <div className="hidden md:flex flex-1 max-w-md mx-4 lg:mx-8">
-            {/* We'll keep it here but better styled, it will only look redundant if the Hero search is visible at the same time */}
-            <SearchWithSuggestions
-              placeholder="Marka, model ara..."
-              suggestions={references.searchSuggestions}
-            />
+            {pathname !== "/" && (
+              <SearchWithSuggestions
+                placeholder="Marka, model ara..."
+                suggestions={references.searchSuggestions}
+              />
+            )}
           </div>
 
           <nav className="hidden md:flex items-center gap-1.5" aria-label="Ana navigasyon">

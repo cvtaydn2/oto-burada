@@ -120,6 +120,7 @@ export async function updateSession(request: NextRequest) {
   }
 
   response.headers.set("Cache-Control", "private, max-age=0, no-cache");
+  response.headers.set("x-pathname", pathname);
 
   return response;
 }
