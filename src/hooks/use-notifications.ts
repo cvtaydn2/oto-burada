@@ -55,10 +55,11 @@ export function useNotifications(userId?: string) {
     };
   }, [userId, supabase, queryClient]);
 
-  const unreadCount = notifications.filter((n) => !n.read).length;
+  const notificationsList = notifications || [];
+  const unreadCount = notificationsList.filter((n) => !n.read).length;
 
   return {
-    notifications,
+    notifications: notificationsList,
     unreadCount,
     isLoading,
   };
