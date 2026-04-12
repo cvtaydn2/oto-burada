@@ -1,5 +1,5 @@
 "use client"
- 
+
 import { useState, useTransition, useEffect, useRef } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
 import { LayoutGrid, List, SlidersHorizontal, ArrowDownWideNarrow, ChevronDown } from "lucide-react"
@@ -112,58 +112,71 @@ export function ListingsPageClient({
     : "Tüm Satılık İlanlar"
 
   return (
-    <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8">
+    <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 pt-12 pb-24">
       
-      {/* Page Header Area */}
-      <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-10">
-         <div>
-            <div className="flex items-center gap-3 mb-2">
-               <h1 className="text-3xl font-black tracking-tight italic">
-                  {pageTitle.split(" ").map((word, i, arr) => (
-                    i === arr.length - 1 ? <span key={i} className="text-primary">{word}</span> : word + " "
-                  ))}
-               </h1>
-               <Badge className="bg-primary/10 text-primary border-none font-black px-2 py-0.5 mt-1">
-                  {initialResult.total} Araç
-               </Badge>
+      {/* Showroom Header */}
+      <div className="flex flex-col md:flex-row md:items-end justify-between gap-10 mb-16">
+         <div className="max-w-2xl">
+            <div className="flex items-center gap-4 mb-4">
+               <div className="h-px w-12 bg-primary" />
+               <span className="text-[10px] font-black uppercase tracking-[0.3em] text-primary italic">Dijital Showroom</span>
             </div>
-            <p className="text-sm font-medium text-muted-foreground italic">
-               {filters.brand 
-                 ? `${filters.brand} markasının en güncel ve güvenilir ilanlarını keşfedin.` 
-                 : "Türkiye genelindeki en güncel car market ilanlarını keşfedin."}
-            </p>
+            <h1 className="text-4xl md:text-6xl font-black tracking-tightest leading-[0.9] uppercase italic mb-6">
+               {pageTitle.split(" ").map((word, i, arr) => (
+                 <span key={i} className={cn(i === arr.length - 1 && "text-primary block md:inline")}>
+                   {word}{" "}
+                 </span>
+               ))}
+            </h1>
+            <div className="flex items-center gap-6">
+               <div className="flex items-center gap-2 px-4 py-2 rounded-2xl bg-secondary/50 border border-border/40">
+                  <span className="text-2xl font-black italic tracking-tighter leading-none">{initialResult.total}</span>
+                  <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/60 italic leading-none">ARAÇ</span>
+               </div>
+               <p className="text-sm font-bold text-muted-foreground/40 italic leading-relaxed max-w-sm uppercase tracking-tighter">
+                  {filters.brand 
+                    ? `${filters.brand} markasının seçkin ve doğrulanmış ilanlarını keşfedin.` 
+                    : "Türkiye genelindeki en premium araç parkurunu keşfedin."}
+               </p>
+            </div>
          </div>
 
          {/* View Controls & Sort */}
-         <div className="flex items-center gap-3 p-1 bg-secondary/50 rounded-2xl border border-border">
+         <div className="flex items-center gap-3 p-1.5 bg-secondary/30 rounded-3xl border border-border/40 backdrop-blur-md">
             <button 
               onClick={() => setViewMode("grid")}
-              className={cn("p-2 px-3 rounded-xl transition-all flex items-center gap-2 text-xs font-black uppercase italic", viewMode === "grid" ? "bg-white shadow-sm text-primary" : "text-muted-foreground hover:text-foreground")}
+              className={cn(
+                "p-3 px-5 rounded-2xl transition-all flex items-center gap-2 text-[10px] font-black uppercase italic tracking-widest",
+                viewMode === "grid" ? "bg-white text-primary shadow-xl shadow-primary/10" : "text-muted-foreground hover:text-foreground"
+              )}
             >
                <LayoutGrid size={16} />
-               <span className="hidden sm:inline">Kutucuk</span>
+               <span className="hidden sm:inline">KUTUCUK</span>
             </button>
             <button 
               onClick={() => setViewMode("list")}
-              className={cn("p-2 px-3 rounded-xl transition-all flex items-center gap-2 text-xs font-black uppercase italic", viewMode === "list" ? "bg-white shadow-sm text-primary" : "text-muted-foreground hover:text-foreground")}
+              className={cn(
+                "p-3 px-5 rounded-2xl transition-all flex items-center gap-2 text-[10px] font-black uppercase italic tracking-widest",
+                viewMode === "list" ? "bg-white text-primary shadow-xl shadow-primary/10" : "text-muted-foreground hover:text-foreground"
+              )}
             >
                <List size={16} />
-               <span className="hidden sm:inline">Liste</span>
+               <span className="hidden sm:inline">LİSTE</span>
             </button>
-<div className="w-px h-6 bg-border mx-1" />
+            <div className="w-px h-8 bg-border/40 mx-2" />
             
             <div className="relative">
               <button 
                 onClick={() => setIsSortOpen(!isSortOpen)}
-                className="p-2 px-3 rounded-xl text-muted-foreground hover:text-foreground transition-all flex items-center gap-2 text-xs font-black uppercase italic"
+                className="p-3 px-5 rounded-2xl text-muted-foreground hover:text-foreground transition-all flex items-center gap-2 text-[10px] font-black uppercase italic tracking-widest"
               >
                 <ArrowDownWideNarrow size={16} />
-                <span className="hidden sm:inline">Sıralama</span>
+                <span className="hidden sm:inline">SIRALAMA</span>
                 <ChevronDown size={14} className={cn("transition-transform", isSortOpen && "rotate-180")} />
               </button>
               
               {isSortOpen && (
-                <div className="absolute right-0 top-full mt-2 w-48 bg-background border rounded-xl shadow-lg z-20 py-2">
+                <div className="absolute right-0 top-full mt-3 w-56 bg-white/80 backdrop-blur-2xl border border-white/20 rounded-3xl shadow-3xl z-50 py-3 animate-in fade-in zoom-in-95 duration-200">
                   {SORT_OPTIONS.map((option) => (
                     <button
                       key={option.value}
@@ -172,8 +185,8 @@ export function ListingsPageClient({
                         setIsSortOpen(false);
                       }}
                       className={cn(
-                        "w-full px-4 py-2 text-left text-sm hover:bg-muted",
-                        filters.sort === option.value && "bg-primary/5 text-primary font-medium"
+                        "w-full px-6 py-3 text-left text-[11px] font-black uppercase italic tracking-widest hover:bg-primary/5 transition-colors",
+                        filters.sort === option.value ? "text-primary bg-primary/5" : "text-muted-foreground/60"
                       )}
                     >
                       {option.label}
@@ -185,11 +198,11 @@ export function ListingsPageClient({
          </div>
       </div>
 
-      <div className="flex flex-col lg:flex-row gap-10 items-start">
+      <div className="flex flex-col lg:flex-row gap-12 items-start">
         
-        {/* Modern Sidebar Filters */}
-        <aside className="hidden lg:block w-[280px] shrink-0 sticky top-24">
-           <div className="p-6 rounded-[32px] bg-white border border-border card-shadow">
+        {/* Elite Sidebar Filters */}
+        <aside className="hidden lg:block w-[320px] shrink-0 sticky top-24">
+           <div className="p-8 rounded-[40px] bg-card border border-border/40 showroom-card">
               <SmartFilters 
                 brands={brands}
                 cities={cities}
@@ -204,20 +217,20 @@ export function ListingsPageClient({
            </div>
         </aside>
 
-        {/* Results Grid */}
+        {/* Results Stream */}
         <div className="flex-1 min-w-0 w-full">
            
            {/* Mobile Filter Trigger */}
            <button 
              onClick={() => setIsFilterOpen(true)}
-             className="lg:hidden w-full h-14 rounded-2xl bg-white border border-border card-shadow mb-6 flex items-center justify-between px-6 font-black italic uppercase tracking-tighter"
+             className="lg:hidden w-full h-16 rounded-[32px] bg-card border border-border/40 showroom-card mb-8 flex items-center justify-between px-8 font-black italic uppercase tracking-[0.2em] text-[11px]"
            >
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-3">
                  <SlidersHorizontal size={18} className="text-primary" />
-                 Filtreler
+                 FİLTRE SİSTEMİ
               </div>
               {activeFiltersCount > 0 && (
-                 <span className="h-6 px-2 rounded-lg bg-primary text-white text-[10px] flex items-center font-black">
+                 <span className="h-7 px-3 rounded-full bg-primary text-white text-[9px] flex items-center font-black tracking-widest">
                     {activeFiltersCount} AKTİF
                  </span>
               )}
@@ -227,10 +240,10 @@ export function ListingsPageClient({
               <ListingsGridSkeleton />
            ) : initialResult.listings.length > 0 ? (
               <div className={cn(
-                "animate-in fade-in duration-500",
+                "animate-in fade-in duration-700",
                 viewMode === "grid" 
-                  ? "grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-6" 
-                  : "flex flex-col gap-4"
+                  ? "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-8" 
+                  : "flex flex-col gap-8"
               )}>
                  {initialResult.listings.map((listing) => (
                     <CarCard 
@@ -241,19 +254,19 @@ export function ListingsPageClient({
                  ))}
               </div>
            ) : (
-              <div className="flex flex-col items-center justify-center py-20 text-center space-y-4">
-                 <div className="size-20 bg-secondary rounded-full flex items-center justify-center text-muted-foreground">
-                    <SlidersHorizontal size={32} />
+              <div className="flex flex-col items-center justify-center py-32 text-center">
+                 <div className="size-24 bg-secondary/30 rounded-full flex items-center justify-center text-muted-foreground/20 mb-8 border border-border/40">
+                    <SlidersHorizontal size={40} />
                  </div>
-                 <h3 className="text-2xl font-black italic uppercase tracking-tighter">İlan Bulunamadı</h3>
-                 <p className="text-muted-foreground font-medium max-w-sm">
-                    Kriterlerinize uygun araç bulamadık. Daha geniş filtreler denemeye ne dersiniz?
+                 <h3 className="text-3xl font-black italic uppercase tracking-tightest mb-4">SONUÇ BULUNAMADI</h3>
+                 <p className="text-muted-foreground/40 font-bold uppercase tracking-widest text-[11px] max-w-sm mb-10 leading-relaxed">
+                    Aradığınız kriterlere uygun bir araç şu an dijital showroomumuzda bulunmuyor.
                  </p>
                  <button 
                    onClick={handleReset}
-                   className="h-12 px-8 rounded-xl bg-primary text-white font-black uppercase text-sm italic shadow-lg shadow-primary/20"
+                   className="h-14 px-10 rounded-2xl bg-primary text-white font-black uppercase text-[11px] italic tracking-[0.2em] shadow-2xl shadow-primary/40 hover:scale-105 active:scale-95 transition-all"
                  >
-                    Aramayı Sıfırla
+                    KRİTERLERİ SIFIRLA
                  </button>
               </div>
            )}

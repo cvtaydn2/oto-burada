@@ -7,9 +7,9 @@ import { ScrollToTop } from "@/components/shared/scroll-to-top";
 
 export function PublicShell({ children }: PropsWithChildren) {
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="min-h-screen flex flex-col bg-mesh">
       <SiteHeader />
-      <div className="flex flex-col flex-1">
+      <div className="flex flex-col flex-1 pt-28">
         <main className="flex-1 pb-24 lg:pb-0" role="main">
           {children}
         </main>

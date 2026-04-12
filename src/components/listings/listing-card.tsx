@@ -9,7 +9,8 @@ import {
   MapPin, 
   Settings2, 
   Sparkles,
-  TrendingDown
+  TrendingDown,
+  ArrowRight
 } from "lucide-react"
 import { formatNumber } from "@/lib/utils"
 import { type Listing } from "@/types"
@@ -34,97 +35,136 @@ export function ListingCard({ listing, priority = false }: ListingCardProps) {
   return (
     <Link 
       href={detailHref}
-      className="group block bg-white rounded-xl border border-slate-200 overflow-hidden hover:border-blue-300 hover:shadow-md transition-all duration-200"
+      className="group block showroom-card rounded-[24px] overflow-hidden"
     >
       <div className="flex flex-col sm:flex-row">
-        {/* Image Section */}
-        <div className="relative w-full sm:w-[240px] aspect-[4/3] sm:aspect-auto shrink-0 bg-slate-100">
+        {/* Image Section - The "Showroom" Frame */}
+        <div className="relative w-full sm:w-[300px] aspect-[16/10] sm:aspect-auto shrink-0 bg-secondary/30 overflow-hidden">
           {coverImage ? (
             <Image
               src={coverImage.url}
               alt={listing.title}
               fill
-              sizes="(min-width: 640px) 240px, 100vw"
-              className="object-cover group-hover:scale-105 transition-transform duration-300"
+              sizes="(min-width: 640px) 300px, 100vw"
+              className="object-cover group-hover:scale-110 transition-transform duration-700 ease-out"
               priority={priority}
             />
           ) : (
-            <div className="flex items-center justify-center h-full text-slate-400">
-              <span className="text-sm">Görsel yok</span>
+            <div className="flex items-center justify-center h-full text-muted-foreground/40">
+              <CarFront size={48} className="stroke-[1]" />
             </div>
           )}
           
-          {/* Badges */}
-          <div className="absolute top-3 left-3 flex gap-2">
+          {/* Elite Badges */}
+          <div className="absolute top-4 left-4 flex flex-col gap-2">
             {listing.featured && (
-              <Badge className="bg-amber-500 text-white text-xs font-medium px-2 py-0.5">
-                <Sparkles className="w-3 h-3 mr-1" />
-                Vitrin
-              </Badge>
+              <div className="bg-primary/95 backdrop-blur shadow-xl text-white text-[10px] font-black uppercase tracking-widest px-3 py-1.5 rounded-lg flex items-center gap-1.5 animate-in fade-in slide-in-from-left-2 transition-all group-hover:bg-primary">
+                <Sparkles className="w-3.5 h-3.5 fill-white/20" />
+                VİTRİN
+              </div>
             )}
             {isAdvantageous && (
-              <Badge className="bg-emerald-500 text-white text-xs font-medium px-2 py-0.5">
-                <TrendingDown className="w-3 h-3 mr-1" />
-                Avantajlı
-              </Badge>
+              <div className="bg-accent/95 backdrop-blur shadow-xl text-white text-[10px] font-black uppercase tracking-widest px-3 py-1.5 rounded-lg flex items-center gap-1.5 animate-in fade-in slide-in-from-left-2 transition-all">
+                <TrendingDown className="w-3.5 h-3.5" />
+                AVANTAJLI
+              </div>
             )}
           </div>
 
-          {/* Image Count */}
-          <div className="absolute bottom-3 left-3 px-2 py-1 bg-black/60 rounded text-xs text-white font-medium">
-            {listing.images.length} fotoğraf
+          <div className="absolute bottom-4 right-4 px-2.5 py-1.5 bg-black/40 backdrop-blur-md rounded-lg text-[10px] text-white/90 font-black uppercase tracking-widest">
+            {listing.images.length} FOTO
           </div>
+          
+          {/* Overlay gradient */}
+          <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
         </div>
 
-        {/* Content Section */}
-        <div className="flex-1 p-4 min-w-0 flex flex-col justify-between">
-          <div className="space-y-2">
-            {/* Title & Price */}
-            <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2">
-              <div className="min-w-0">
-                <h3 className="text-lg font-semibold text-slate-900 truncate group-hover:text-blue-600 transition-colors">
-                  {listing.brand} {listing.model}
+        {/* Content Section - Editorial Density */}
+        <div className="flex-1 p-6 min-w-0 flex flex-col justify-between bg-card group-hover:bg-secondary/20 transition-colors duration-500">
+          <div className="space-y-4">
+            {/* Title & Price - Elite Pairing */}
+            <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
+              <div className="min-w-0 flex-1">
+                <div className="text-[10px] font-black text-primary/60 uppercase tracking-[0.2em] mb-1 italic">
+                  {listing.brand}
+                </div>
+                <h3 className="text-xl md:text-2xl font-black text-foreground tracking-tight leading-tight truncate group-hover:text-primary transition-colors">
+                  {listing.model}
                 </h3>
-                <p className="text-sm text-slate-500 truncate">{listing.title}</p>
+                <p className="text-sm text-muted-foreground font-medium truncate mt-1">
+                  {listing.title}
+                </p>
               </div>
-              <div className="shrink-0 text-left sm:text-right">
-                <span className="text-xl font-bold text-blue-600">
-                  {formatPrice(listing.price)}
-                </span>
-                <span className="text-xs text-slate-400 ml-1">TL</span>
+              <div className="shrink-0 text-left sm:text-right flex flex-col items-end">
+                <div className="flex items-baseline gap-1.5">
+                  <span className="text-2xl sm:text-3xl font-black tracking-tightest text-primary italic">
+                    {formatPrice(listing.price)}
+                  </span>
+                  <span className="text-xs font-black text-primary/40 italic">TL</span>
+                </div>
+                {isAdvantageous && (
+                  <span className="text-[9px] font-black text-accent uppercase tracking-widest mt-1">PAZAR LİDERİ FİYAT</span>
+                )}
               </div>
             </div>
 
-            {/* Specs - Compact Grid */}
-            <div className="flex flex-wrap gap-3 pt-2">
-              <div className="flex items-center gap-1.5 text-sm text-slate-600">
-                <Calendar className="w-4 h-4 text-slate-400" />
-                <span className="font-medium">{listing.year}</span>
+            {/* Smart Specs Overlay */}
+            <div className="flex flex-wrap gap-x-6 gap-y-3 pt-2">
+              <div className="flex items-center gap-2 group/spec">
+                <div className="size-8 rounded-lg bg-secondary flex items-center justify-center text-muted-foreground group-hover/spec:bg-primary/10 group-hover/spec:text-primary transition-colors">
+                  <Calendar className="size-4" />
+                </div>
+                <div className="flex flex-col">
+                  <span className="text-[9px] font-bold text-muted-foreground/60 uppercase tracking-widest">MODEL</span>
+                  <span className="text-xs font-black">{listing.year}</span>
+                </div>
               </div>
-              <div className="flex items-center gap-1.5 text-sm text-slate-600">
-                <CircleGauge className="w-4 h-4 text-slate-400" />
-                <span className="font-medium">{formatNumber(listing.mileage)} km</span>
+
+              <div className="flex items-center gap-2 group/spec">
+                <div className="size-8 rounded-lg bg-secondary flex items-center justify-center text-muted-foreground group-hover/spec:bg-primary/10 group-hover/spec:text-primary transition-colors">
+                  <CircleGauge className="size-4" />
+                </div>
+                <div className="flex flex-col">
+                  <span className="text-[9px] font-bold text-muted-foreground/60 uppercase tracking-widest">MESAFE</span>
+                  <span className="text-xs font-black">{formatNumber(listing.mileage)} <span className="text-[9px]">KM</span></span>
+                </div>
               </div>
-              <div className="flex items-center gap-1.5 text-sm text-slate-600">
-                <Fuel className="w-4 h-4 text-slate-400" />
-                <span className="font-medium">{listing.fuelType}</span>
+
+              <div className="flex items-center gap-2 group/spec">
+                <div className="size-8 rounded-lg bg-secondary flex items-center justify-center text-muted-foreground group-hover/spec:bg-primary/10 group-hover/spec:text-primary transition-colors">
+                  <Settings2 className="size-4" />
+                </div>
+                <div className="flex flex-col">
+                  <span className="text-[9px] font-bold text-muted-foreground/60 uppercase tracking-widest">VİTES</span>
+                  <span className="text-xs font-black">{listing.transmission}</span>
+                </div>
               </div>
-              <div className="flex items-center gap-1.5 text-sm text-slate-600">
-                <Settings2 className="w-4 h-4 text-slate-400" />
-                <span className="font-medium">{listing.transmission}</span>
+
+              <div className="flex items-center gap-2 group/spec">
+                <div className="size-8 rounded-lg bg-secondary flex items-center justify-center text-muted-foreground group-hover/spec:bg-primary/10 group-hover/spec:text-primary transition-colors">
+                  <Fuel className="size-4" />
+                </div>
+                <div className="flex flex-col">
+                  <span className="text-[9px] font-bold text-muted-foreground/60 uppercase tracking-widest">YAKIT</span>
+                  <span className="text-xs font-black">{listing.fuelType}</span>
+                </div>
               </div>
             </div>
           </div>
 
-          {/* Footer */}
-          <div className="flex items-center justify-between pt-3 mt-2 border-t border-slate-100">
-            <div className="flex items-center gap-1.5 text-sm text-slate-500">
-              <MapPin className="w-4 h-4 text-blue-500" />
-              <span>{listing.city}</span>
+          {/* Footer UI */}
+          <div className="flex items-center justify-between pt-5 mt-4 border-t border-border/40">
+            <div className="flex items-center gap-2 cursor-pointer hover:text-primary transition-colors">
+              <div className="size-7 rounded-full bg-secondary flex items-center justify-center">
+                <MapPin className="size-3.5 text-primary" />
+              </div>
+              <span className="text-xs font-black uppercase tracking-widest">{listing.city}</span>
             </div>
-            <span className="text-sm text-slate-400 font-medium">
-              Detay &rarr;
-            </span>
+            
+            <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-primary group-hover:gap-4 transition-all duration-300 italic">
+              DETAYLI İNCELE
+              <ArrowRight size={14} className="animate-pulse" />
+            </div>
           </div>
         </div>
       </div>
