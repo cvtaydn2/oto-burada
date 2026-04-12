@@ -41,6 +41,7 @@ export interface Profile {
   isVerified: boolean;
   tcVerifiedAt?: string | null;
   eidsId?: string | null;
+  isBanned?: boolean;
   
   // Corporate Fields
   businessName?: string | null;

@@ -1,4 +1,4 @@
-const Redis = require("ioredis");
+import Redis from "ioredis";
 
 const redisUrl = "redis://default:kbkgaxjrgX1IGVTTQyLOoDgRKfhJCAcg@redis-16657.c89.us-east-1-3.ec2.cloud.redislabs.com:16657";
 const redis = new Redis(redisUrl);

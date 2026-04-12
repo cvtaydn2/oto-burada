@@ -34,9 +34,9 @@ export function CompareRadarChart({ cars }: CompareRadarChartProps) {
   const maxTramer = Math.max(...cars.map(c => c.tramerAmount || 0), 1);
 
   const data = categories.map(cat => {
-    const row: any = { subject: cat.label };
+    const row: Record<string, number | string> = { subject: cat.label };
     
-    cars.forEach(car => {
+    cars.forEach((car) => {
       let value = 0;
       if (cat.key === "price") {
         // Higher score for lower price

@@ -4,16 +4,29 @@ import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 
+interface AdminActionWithProfile {
+  id: string;
+  action: string;
+  admin_user_id: string;
+  target_id: string;
+  target_type: string;
+  note: string | null;
+  created_at: string;
+  profile?: {
+    full_name: string | null;
+  } | null;
+}
+
 export const dynamic = "force-dynamic";
 
 export default async function AdminAuditPage() {
   await requireAdminUser();
   const supabase = await createSupabaseServerClient();
 
-  const { data: actions, error } = await supabase
+  const { data: actions } = await supabase
     .from("admin_actions")
-    .select("*, profile:profiles(*)")
-    .order("created_at", { ascending: false });
+    .select("*, profile:profiles(full_name)")
+    .order("created_at", { ascending: false }) as { data: AdminActionWithProfile[] | null };
 
   return (
     <main className="p-8 space-y-8">
@@ -61,7 +74,7 @@ export default async function AdminAuditPage() {
                         <div className="size-6 rounded-full bg-slate-100 border border-slate-200 flex items-center justify-center">
                            <ShieldCheck size={12} className="text-slate-400" />
                         </div>
-                        <span className="text-xs font-bold text-slate-900">{(action as any).profile?.fullName || "Bilinmeyen Admin"}</span>
+                        <span className="text-xs font-bold text-slate-900">{action.profile?.full_name || "Bilinmeyen Admin"}</span>
                      </div>
                   </td>
                   <td className="px-6 py-4">

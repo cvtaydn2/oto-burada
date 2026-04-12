@@ -21,7 +21,8 @@ export async function POST(req: Request) {
     if (error) throw error;
 
     return NextResponse.json({ success: true, message: "İlanlar taslağa çekildi." });
-  } catch (error: any) {
-    return NextResponse.json({ success: false, message: error.message }, { status: 500 });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "İşlem sırasında bir hata oluştu.";
+    return NextResponse.json({ success: false, message }, { status: 500 });
   }
 }

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { createSupabaseBrowserClient } from "@/lib/supabase/browser";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import type { Notification } from "@/types";
@@ -35,7 +35,7 @@ export function useNotifications(userId?: string) {
           table: "notifications",
           filter: `user_id=eq.${userId}`,
         },
-        (payload: any) => {
+        (payload: { new: { title: string; message: string } }) => {
           console.log("New notification received:", payload.new);
           // Invalidate query to refetch or manually update cache
           queryClient.invalidateQueries({ queryKey: ["notifications", userId] });

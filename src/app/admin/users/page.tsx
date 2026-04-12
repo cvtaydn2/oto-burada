@@ -55,12 +55,12 @@ export default async function AdminUsersPage() {
                           <UserCircle className="text-slate-400" size={20} />
                        </div>
                        <div className="flex flex-col">
-                          <div className="flex items-center gap-2">
-                             <span className="text-sm font-bold text-slate-900">{user.fullName || "İsimsiz Kullanıcı"}</span>
-                             {(user as any).isBanned && (
-                               <Badge className="bg-rose-500 text-white rounded-md text-[8px] px-1 hover:bg-rose-500 border-none h-4">ENGELLEMİŞ</Badge>
-                             )}
-                          </div>
+<div className="flex items-center gap-2">
+                              <span className="text-sm font-bold text-slate-900">{user.fullName || "İsimsiz Kullanıcı"}</span>
+                              {user.isBanned && (
+                                <Badge className="bg-rose-500 text-white rounded-md text-[8px] px-1 hover:bg-rose-500 border-none h-4">ENGELLEMİŞ</Badge>
+                              )}
+                           </div>
                           <span className="text-xs text-slate-400">{user.id.substring(0, 8)}...</span>
                        </div>
                     </div>
@@ -68,13 +68,13 @@ export default async function AdminUsersPage() {
                   <td className="px-6 py-4">
                     {user.userType === "professional" ? (
                       <div className="flex flex-col gap-1">
-                         <Badge className="bg-amber-100 text-amber-700 hover:bg-amber-100 border-transparent rounded-lg font-black uppercase text-[10px] tracking-tighter w-fit">Galeri</Badge>
-                         {(user as any).verified_business && (
-                            <div className="flex items-center gap-1 text-[9px] font-bold text-emerald-600">
-                               <CheckCircle2 size={10} />
-                               DOĞRULANMIŞ
-                            </div>
-                         )}
+<Badge className="bg-amber-100 text-amber-700 hover:bg-amber-100 border-transparent rounded-lg font-black uppercase text-[10px] tracking-tighter w-fit">Galeri</Badge>
+                          {user.verifiedBusiness && (
+                             <div className="flex items-center gap-1 text-[9px] font-bold text-emerald-600">
+                                <CheckCircle2 size={10} />
+                                DOĞRULANMIŞ
+                             </div>
+                          )}
                       </div>
                     ) : user.role === "admin" ? (
                       <Badge className="bg-rose-100 text-rose-700 hover:bg-rose-100 border-transparent rounded-lg font-black uppercase text-[10px] tracking-tighter flex w-fit gap-1 items-center">
@@ -96,13 +96,13 @@ export default async function AdminUsersPage() {
                     {new Date(user.createdAt).toLocaleDateString("tr-TR")}
                   </td>
                   <td className="px-6 py-4 text-right">
-                    <UserActions 
+<UserActions 
                        userId={user.id} 
                        userName={user.fullName || "İsimsiz Kullanıcı"} 
                        userType={user.userType || "individual"}
-                       isBanned={(user as any).isBanned}
-                       isVerified={(user as any).verified_business}
-                    />
+                       isBanned={user.isBanned}
+                       isVerified={user.verifiedBusiness}
+                     />
                   </td>
                 </tr>
               ))}

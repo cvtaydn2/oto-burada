@@ -31,10 +31,10 @@ export async function GET(request: Request) {
 
   return apiSuccess({ 
     brands: brands || [], 
-    models: (models || []).map((m: any) => ({
+    models: (models || []).map((m: { name: string; slug: string; brands?: { name: string }[] | null }) => ({
       name: m.name,
       slug: m.slug,
-      brandName: m.brands?.name
+      brandName: m.brands?.[0]?.name
     }))
   });
 }

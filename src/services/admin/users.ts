@@ -34,13 +34,12 @@ export async function updateUserRole(userId: string, role: "user" | "admin" | "p
 export async function banUser(userId: string, reason: string) {
   const supabase = await createSupabaseServerClient();
   
-  // In a real app we might have a 'banned' boolean or status column
   const { error } = await supabase
     .from("profiles")
     .update({ 
        is_banned: true,
        ban_reason: reason 
-    } as any) // Assuming these columns might need to be added or handled gracefully
+    })
     .eq("id", userId);
 
   if (error) throw new Error(`Kullanıcı engellenemedi: ${error.message}`);
@@ -54,7 +53,7 @@ export async function verifyUserBusiness(userId: string) {
     .from("profiles")
     .update({ 
        verified_business: true 
-    } as any)
+    })
     .eq("id", userId);
 
   if (error) throw new Error(`İşletme doğrulanamadı: ${error.message}`);

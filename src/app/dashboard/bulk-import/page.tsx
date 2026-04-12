@@ -20,7 +20,7 @@ export default async function BulkImportPage() {
             className="flex items-center gap-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors mb-2"
           >
             <ArrowLeft size={16} />
-            Dashboard'a Dön
+            Dashboard&apos;a Dön
           </Link>
           <h1 className="text-4xl font-black italic tracking-tight uppercase">Toplu İlan Yükleme</h1>
           <p className="text-muted-foreground font-medium">Profesyonel satıcılar için hızlı araç girişi</p>

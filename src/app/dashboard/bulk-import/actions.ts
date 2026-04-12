@@ -10,7 +10,7 @@ import type { ListingCreateInput } from "@/types";
  * Server Action for Bulk Listing Creation
  * Processes an array of validated listing inputs from the CSV parser.
  */
-export async function processBulkListings(inputs: any[], sellerId: string) {
+export async function processBulkListings(inputs: ListingCreateInput[], sellerId: string) {
   if (!hasSupabaseAdminEnv()) return { success: false, error: "Veritabanı bağlantısı yok." };
   
   const admin = createSupabaseAdminClient();
@@ -22,26 +22,7 @@ export async function processBulkListings(inputs: any[], sellerId: string) {
 
     // 2. Map and build records
     const preparedListings = inputs.map(input => {
-      const createInput: ListingCreateInput = {
-        title: input.title,
-        brand: input.brand,
-        model: input.model,
-        year: Number(input.year),
-        mileage: Number(input.mileage),
-        fuelType: input.fuel_type.toLowerCase() as any,
-        transmission: input.transmission.toLowerCase() as any,
-        price: Number(input.price),
-        city: input.city,
-        district: input.district,
-        description: input.description,
-        whatsappPhone: String(input.whatsapp_phone),
-        vin: input.vin,
-        images: [], // Images are added later in dashboard
-        tramerAmount: 0,
-        damageStatusJson: {},
-      };
-      
-      return buildListingRecord(createInput, sellerId, existingListings);
+      return buildListingRecord(input, sellerId, existingListings);
     });
 
     // 3. Perform atomic bulk insert
@@ -60,10 +41,11 @@ export async function processBulkListings(inputs: any[], sellerId: string) {
       message: `${preparedListings.length} ilan başarıyla oluşturuldu.`
     };
 
-  } catch (err: any) {
+  } catch (err) {
+    const errorMessage = err instanceof Error ? err.message : "Beklenmedik bir hata oluştu.";
     return { 
       success: false, 
-      error: err.message || "Beklenmedik bir hata oluştu." 
+      error: errorMessage
     };
   }
 }

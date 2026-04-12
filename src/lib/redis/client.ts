@@ -45,7 +45,7 @@ export async function getCachedData<T>(key: string): Promise<T | null> {
   }
 }
 
-export async function setCachedData(key: string, data: any, ttlSeconds: number = 3600) {
+export async function setCachedData<T>(key: string, data: T, ttlSeconds: number = 3600) {
   if (!redis) return;
   try {
     const stringified = JSON.stringify(data);

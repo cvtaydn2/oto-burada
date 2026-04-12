@@ -22,8 +22,8 @@ import { PriceEstimationResult } from "@/services/market/price-estimation";
 const valuationSchema = z.object({
   brand: z.string().min(1, "Marka seçiniz"),
   model: z.string().min(1, "Model seçiniz"),
-  year: z.string().transform(v => parseInt(v, 10)).pipe(z.number().min(1950).max(new Date().getFullYear())),
-  mileage: z.string().transform(v => v.replace(/\D/g, "")).transform(v => parseInt(v, 10)).pipe(z.number().min(0)),
+  year: z.number().min(1950).max(new Date().getFullYear()),
+  mileage: z.number().min(0),
 });
 
 type ValuationValues = z.infer<typeof valuationSchema>;
@@ -45,16 +45,17 @@ export function ValuationForm({ brands }: ValuationFormProps) {
     setValue,
     formState: { errors, isValid },
   } = useForm<ValuationValues>({
-    resolver: zodResolver(valuationSchema as any),
+    resolver: zodResolver(valuationSchema),
     defaultValues: {
       brand: "",
       model: "",
       year: new Date().getFullYear(),
-      mileage: 0 as any,
+      mileage: 0,
     },
   });
 
   const selectedBrand = useWatch({ control, name: "brand" });
+  const selectedModel = useWatch({ control, name: "model" });
   const modelOptions = brands.find(b => b.brand === selectedBrand)?.models || [];
 
   const onSubmit = async (data: ValuationValues) => {
@@ -78,8 +79,9 @@ export function ValuationForm({ brands }: ValuationFormProps) {
       }
 
       setResult(json.data);
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Beklenmedik bir hata oluştu.";
+      setError(message);
     } finally {
       setLoading(false);
     }
@@ -137,7 +139,7 @@ export function ValuationForm({ brands }: ValuationFormProps) {
            </Button>
            <Button 
               className="h-14 rounded-2xl font-bold italic shadow-lg shadow-primary/20"
-              onClick={() => window.location.href = `/listings?brand=${encodeURIComponent(selectedBrand)}&model=${encodeURIComponent(useWatch({ control, name: 'model' }))}`}
+              onClick={() => window.location.href = `/listings?brand=${encodeURIComponent(selectedBrand)}&model=${encodeURIComponent(selectedModel)}`}
            >
               Piyasayi Gor
            </Button>

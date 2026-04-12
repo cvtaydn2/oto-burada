@@ -1,13 +1,14 @@
 import { useEffect, useState, useRef } from "react";
 import { createSupabaseBrowserClient } from "@/lib/supabase/browser";
 import type { Message } from "@/types";
+import type { RealtimeChannel } from "@supabase/supabase-js";
 
 export function useChatRealtime(chatId: string, currentUserId: string) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [isTyping, setIsTyping] = useState(false);
   const [onlineUsers, setOnlineUsers] = useState<string[]>([]);
   const supabase = createSupabaseBrowserClient();
-  const channelRef = useRef<any>(null);
+  const channelRef = useRef<RealtimeChannel | null>(null);
 
   useEffect(() => {
     if (!chatId) return;
@@ -40,7 +41,7 @@ export function useChatRealtime(chatId: string, currentUserId: string) {
           table: "messages",
           filter: `chat_id=eq.${chatId}`,
         },
-        (payload: any) => {
+        (payload: { new: Message }) => {
           const newMessage = payload.new as Message;
           
           setMessages((prev) => {
@@ -70,7 +71,7 @@ export function useChatRealtime(chatId: string, currentUserId: string) {
         setOnlineUsers(users);
       })
       // 4. Listen for Typing Indicators (Broadcast)
-      .on("broadcast", { event: "typing" }, ({ payload }: any) => {
+      .on("broadcast", { event: "typing" }, ({ payload }: { payload: { userId: string; typing: boolean } }) => {
         if (payload.userId !== currentUserId) {
           setIsTyping(payload.typing);
         }
@@ -80,7 +81,7 @@ export function useChatRealtime(chatId: string, currentUserId: string) {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [chatId, currentUserId]);
+  }, [chatId, currentUserId, supabase]);
 
   // Helper to broadcast typing state
   const sendTypingStatus = (typing: boolean) => {

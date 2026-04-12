@@ -63,7 +63,7 @@ export function GalleryHeader({ profile }: GalleryHeaderProps) {
                 )}
                 <div className="flex items-center gap-1.5">
                   <Calendar size={16} className="text-slate-400" />
-                  {new Date(profile.createdAt).getFullYear()}'den beri üye
+                  {new Date(profile.createdAt).getFullYear()}&apos;den beri üye
                 </div>
               </div>
             </div>

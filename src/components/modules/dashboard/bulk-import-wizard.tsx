@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { processBulkListings } from "@/app/dashboard/bulk-import/actions";
+import type { ListingCreateInput } from "@/types";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -43,6 +44,9 @@ interface ListingRow {
   vin: string;
   isValid: boolean;
   errors: string[];
+  fuelType: string;
+  whatsappPhone: string;
+  images: unknown[];
 }
 
 export function BulkImportWizard({ sellerId }: { sellerId: string }) {
@@ -59,19 +63,17 @@ export function BulkImportWizard({ sellerId }: { sellerId: string }) {
     const dataLines = lines.slice(1);
 
     return dataLines.map((line, index) => {
-      // Basic CSV parse (handling quoted strings with commas is complex without a lib, but we'll try basic split first)
-      // For a production MVP, using a regex or a simple iterate-over-chars for quotes is better.
       const values = line.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/).map(v => v.trim().replace(/^"|"$/g, ""));
       
-      const rowData: any = { id: `row-${index}` };
+      const rowData: Record<string, string> = {};
       headers.forEach((header, i) => {
         rowData[header] = values[i];
       });
 
       const errors: string[] = [];
-      const year = parseInt(rowData.year);
-      const price = parseInt(rowData.price);
-      const mileage = parseInt(rowData.mileage);
+      const year = parseInt(rowData.year || "");
+      const price = parseInt(rowData.price || "");
+      const mileage = parseInt(rowData.mileage || "");
 
       if (!rowData.title) errors.push("Başlık eksik");
       if (!rowData.brand) errors.push("Marka eksik");
@@ -84,10 +86,23 @@ export function BulkImportWizard({ sellerId }: { sellerId: string }) {
       if (!rowData.vin || rowData.vin.length < 5) errors.push("Geçersiz VIN");
 
       return {
-        ...rowData,
+        id: `row-${index}`,
+        title: rowData.title || "",
+        brand: rowData.brand || "",
+        model: rowData.model || "",
         year: isNaN(year) ? 0 : year,
         price: isNaN(price) ? 0 : price,
         mileage: isNaN(mileage) ? 0 : mileage,
+        fuel_type: rowData.fuel_type || "",
+        transmission: rowData.transmission || "",
+        city: rowData.city || "",
+        district: rowData.district || "",
+        whatsapp_phone: rowData.whatsapp_phone || "",
+        description: rowData.description || "",
+        vin: rowData.vin || "",
+        fuelType: rowData.fuel_type || "",
+        whatsappPhone: rowData.whatsapp_phone || "",
+        images: [],
         isValid: errors.length === 0,
         errors
       } as ListingRow;
@@ -130,7 +145,23 @@ export function BulkImportWizard({ sellerId }: { sellerId: string }) {
 
     setIsUploading(true);
     try {
-      const result = await processBulkListings(validRows, sellerId);
+      const transformedInputs: ListingCreateInput[] = validRows.map(row => ({
+        title: row.title,
+        brand: row.brand,
+        model: row.model,
+        year: row.year,
+        mileage: row.mileage,
+        fuelType: row.fuel_type.toLowerCase() as ListingCreateInput["fuelType"],
+        transmission: row.transmission.toLowerCase() as ListingCreateInput["transmission"],
+        price: row.price,
+        city: row.city,
+        district: row.district,
+        description: row.description,
+        whatsappPhone: row.whatsapp_phone,
+        vin: row.vin,
+        images: [],
+      }));
+      const result = await processBulkListings(transformedInputs, sellerId);
       
       if (result.success) {
         toast.success(result.message);

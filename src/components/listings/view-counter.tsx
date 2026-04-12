@@ -16,7 +16,7 @@ export function ViewCounter({ listingId, initialCount }: ViewCounterProps) {
   const queryClient = useQueryClient();
 
   useEffect(() => {
-    let channel: any;
+    let channel: ReturnType<typeof supabase.channel> | undefined;
 
     const setup = async () => {
       // 1. Increment view count
@@ -34,11 +34,10 @@ export function ViewCounter({ listingId, initialCount }: ViewCounterProps) {
       }
 
       // 2. Setup Realtime Channel
-      // Ensure any existing channel with this name is removed first to avoid callback errors
       const channelName = `lv_${listingId.slice(0, 8)}`;
       
       // Attempt to clean up any existing instance of this channel
-      const existingChannel = supabase.getChannels().find((c: any) => c.name === channelName);
+      const existingChannel = supabase.getChannels().find((c: { name: string }) => c.name === channelName);
       if (existingChannel) {
         await supabase.removeChannel(existingChannel);
       }
@@ -53,9 +52,10 @@ export function ViewCounter({ listingId, initialCount }: ViewCounterProps) {
             table: "listings",
             filter: `id=eq.${listingId}`,
           },
-          (payload: any) => {
-            if (payload.new && typeof payload.new.view_count === "number") {
-              setCount(payload.new.view_count);
+          (payload: { new: unknown }) => {
+            const newRecord = payload.new as { view_count?: number } | null;
+            if (newRecord && typeof newRecord.view_count === "number") {
+              setCount(newRecord.view_count);
             }
           }
         )

@@ -22,10 +22,11 @@ export async function POST(req: Request) {
       message: `${successCount} ilan başarıyla silindi.`,
       count: successCount 
     });
-  } catch (error: any) {
+  } catch (error) {
     console.error("Bulk Delete API Error:", error);
+    const message = error instanceof Error ? error.message : "İşlem sırasında bir hata oluştu.";
     return NextResponse.json(
-      { success: false, message: error.message || "İşlem sırasında bir hata oluştu." },
+      { success: false, message },
       { status: 500 }
     );
   }

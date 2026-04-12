@@ -43,8 +43,9 @@ export function InventoryTable({ listings }: InventoryTableProps) {
       await forceActionOnListing(listingId, action);
       toast.success("İşlem başarıyla gerçekleştirildi");
       router.refresh();
-    } catch (error: any) {
-      toast.error("İşlem hatası: " + error.message);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "İşlem başarısız oldu";
+      toast.error("İşlem hatası: " + message);
     } finally {
       setIsLoading(false);
     }

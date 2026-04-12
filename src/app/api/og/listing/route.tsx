@@ -114,8 +114,9 @@ export async function GET(request: Request) {
         height: 630,
       }
     );
-  } catch (e: any) {
-    console.log(`${e.message}`);
+  } catch (e) {
+    const message = e instanceof Error ? e.message : "Beklenmedik hata";
+    console.log(message);
     return new Response(`Failed to generate the image`, {
       status: 500,
     });

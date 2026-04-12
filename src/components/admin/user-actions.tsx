@@ -35,14 +35,15 @@ export function UserActions({ userId, userName, userType, isBanned, isVerified }
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
 
-  const handleAction = async (action: () => Promise<any>, successMsg: string) => {
+  const handleAction = async (action: () => Promise<{ success: boolean }>, successMsg: string) => {
     setIsLoading(true);
     try {
       await action();
       toast.success(successMsg);
       router.refresh();
-    } catch (error: any) {
-      toast.error(error.message || "İşlem başarısız oldu");
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "İşlem başarısız oldu";
+      toast.error(message);
     } finally {
       setIsLoading(false);
     }

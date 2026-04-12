@@ -126,7 +126,7 @@ export async function updateCorporateProfileAction(
   if (!parsed.success) {
     return {
       error: parsed.error.issues[0]?.message ?? "Bir hata oluştu.",
-      fields: values as any,
+      fields: values,
     };
   }
 
@@ -134,7 +134,7 @@ export async function updateCorporateProfileAction(
   const { data: { user } } = await supabase.auth.getUser();
 
   if (!user) {
-    return { error: "Oturum dogrulanamadi.", fields: values as any };
+    return { error: "Oturum dogrulanamadi.", fields: values };
   }
 
   // Update metadata for quick access
@@ -163,14 +163,14 @@ export async function updateCorporateProfileAction(
 
   if (error) {
     if (error.code === '23505') {
-       return { error: "Bu mağaza URL'i (slug) zaten kullanımda.", fields: values as any };
+       return { error: "Bu mağaza URL'i (slug) zaten kullanımda.", fields: values };
     }
-    return { error: "Guncelleme sirasinda bir hata olustu.", fields: values as any };
+    return { error: "Guncelleme sirasinda bir hata olustu.", fields: values };
   }
 
   return {
     success: "Kurumsal bilgileriniz başarıyla güncellendi.",
-    fields: values as any,
+    fields: values,
   };
 }
 
