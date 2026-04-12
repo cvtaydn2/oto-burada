@@ -7,13 +7,14 @@ import { Badge } from "@/components/ui/badge"
 import { Car } from "lucide-react"
 
 interface GalleryPageProps {
-  params: {
+  params: Promise<{
     slug: string
-  }
+  }>
 }
 
 export async function generateMetadata({ params }: GalleryPageProps): Promise<Metadata> {
-  const data = await getGalleryBySlug(params.slug)
+  const { slug } = await params
+  const data = await getGalleryBySlug(slug)
   if (!data) return { title: "Galeri Bulunamadı | OtoBurada" }
 
   const name = data.profile.businessName || data.profile.fullName
@@ -24,7 +25,8 @@ export async function generateMetadata({ params }: GalleryPageProps): Promise<Me
 }
 
 export default async function GalleryPage({ params }: GalleryPageProps) {
-  const data = await getGalleryBySlug(params.slug)
+  const { slug } = await params
+  const data = await getGalleryBySlug(slug)
   
   if (!data) {
     notFound()

@@ -28,6 +28,11 @@ export const metadata: Metadata = {
     siteName: "Oto Burada",
     type: "website",
   },
+  icons: {
+    icon: "/icons/icon-32x32.png",
+    apple: "/icons/apple-touch-icon.png",
+  },
+  manifest: "/manifest.json",
   other: {
     "theme-color": "#4f46e5",
     "mobile-web-app-capable": "yes",
