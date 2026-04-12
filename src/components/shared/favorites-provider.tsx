@@ -118,14 +118,17 @@ export function FavoritesProvider({ children, userId }: FavoritesProviderProps) 
         const payload = await response.json().catch(() => null) as { success?: boolean; data?: { favoriteIds?: string[] } };
         const serverFavoriteIds = payload?.data?.favoriteIds ?? [];
         const localIds = readFavoriteIds();
-        const mergedIds = [...new Set([...serverFavoriteIds, ...localIds])];
+        
+        // Defensive: Ensure serverFavoriteIds is an array before filtering
+        const safeServerIds = Array.isArray(serverFavoriteIds) ? serverFavoriteIds : [];
+        const mergedIds = [...new Set([...safeServerIds, ...localIds])];
 
-        if (mergedIds.length > serverFavoriteIds.length) {
+        if (mergedIds.length > safeServerIds.length) {
           await Promise.all(
             mergedIds
-              .filter((listingId) => !serverFavoriteIds.includes(listingId))
+              .filter((listingId) => !safeServerIds.includes(listingId))
               .map((listingId) =>
-                requestFavoriteUpdate("POST", listingId).catch(() => serverFavoriteIds),
+                requestFavoriteUpdate("POST", listingId).catch(() => safeServerIds),
               ),
           );
         }
@@ -159,18 +162,19 @@ export function FavoritesProvider({ children, userId }: FavoritesProviderProps) 
       favoriteIds: resolvedFavoriteIds,
       hydrated: resolvedHydrated,
       isAuthenticated: Boolean(userId),
-      isFavorite: (listingId) => resolvedFavoriteIds.includes(listingId),
+      isFavorite: (listingId) => (Array.isArray(resolvedFavoriteIds) ? resolvedFavoriteIds.includes(listingId) : false),
       toggleFavorite: (listingId) => {
-        const nextIds = resolvedFavoriteIds.includes(listingId)
-          ? resolvedFavoriteIds.filter((id) => id !== listingId)
-          : [...resolvedFavoriteIds, listingId];
+        const ids = Array.isArray(resolvedFavoriteIds) ? resolvedFavoriteIds : [];
+        const nextIds = ids.includes(listingId)
+          ? ids.filter((id) => id !== listingId)
+          : [...ids, listingId];
 
         if (!userId) {
           broadcastFavoritesUpdate(nextIds);
           return;
         }
 
-        const previousIds = resolvedFavoriteIds;
+        const previousIds = ids;
         setRemoteFavoriteIds(nextIds);
         broadcastFavoritesUpdate(nextIds);
         setIsSyncing(true);
@@ -180,8 +184,9 @@ export function FavoritesProvider({ children, userId }: FavoritesProviderProps) 
           listingId,
         )
           .then((serverFavoriteIds) => {
-            setRemoteFavoriteIds(serverFavoriteIds);
-            broadcastFavoritesUpdate(serverFavoriteIds);
+            const safeServerIds = Array.isArray(serverFavoriteIds) ? serverFavoriteIds : [];
+            setRemoteFavoriteIds(safeServerIds);
+            broadcastFavoritesUpdate(safeServerIds);
           })
           .catch(() => {
             setRemoteFavoriteIds(previousIds);

@@ -34,7 +34,7 @@ export function SearchWithSuggestions({
     }
     const normalizedQuery = query.toLocaleLowerCase("tr-TR");
 
-    const list = suggestions || [];
+    const list = Array.isArray(suggestions) ? suggestions : [];
     return list
       .filter((suggestion) =>
         suggestion.label.toLocaleLowerCase("tr-TR").includes(normalizedQuery),
@@ -48,7 +48,7 @@ export function SearchWithSuggestions({
   }, [query, suggestions]);
 
   const fallbackSuggestions = useMemo(
-    () => (suggestions || []).slice(0, 5),
+    () => (Array.isArray(suggestions) ? suggestions : []).slice(0, 5),
     [suggestions],
   );
 

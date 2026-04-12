@@ -39,25 +39,30 @@ export async function getLiveMarketplaceReferenceData() {
     supabase.from("districts").select("city_id, name").eq("is_active", true).order("name", { ascending: true })
   ]);
 
-  const brands: BrandCatalogItem[] = (brandsData || []).map((b: DBBrand) => ({
+  const safeBrandsData = Array.isArray(brandsData) ? brandsData : [];
+  const safeModelsData = Array.isArray(modelsData) ? modelsData : [];
+  const safeCitiesData = Array.isArray(citiesData) ? citiesData : [];
+  const safeDistrictsData = Array.isArray(districtsData) ? districtsData : [];
+
+  const brands: BrandCatalogItem[] = safeBrandsData.map((b: DBBrand) => ({
     brand: b.name,
-    models: sortLocale((modelsData || []).filter((m: DBModel) => m.brand_id === b.id).map((m: DBModel) => m.name))
+    models: sortLocale(safeModelsData.filter((m: DBModel) => m.brand_id === b.id).map((m: DBModel) => m.name))
   }));
 
-  const cities: CityOption[] = (citiesData || []).map((c: DBCity) => ({
+  const cities: CityOption[] = safeCitiesData.map((c: DBCity) => ({
     city: c.name,
     cityPlate: c.plate_code,
-    districts: sortLocale((districtsData || []).filter((d: DBDistrict) => d.city_id === c.id).map((d: DBDistrict) => d.name))
+    districts: sortLocale(safeDistrictsData.filter((d: DBDistrict) => d.city_id === c.id).map((d: DBDistrict) => d.name))
   }));
 
   const uniqueSuggestions = new Map<string, SearchSuggestionItem>();
   
   // Include all active brands
-  for (const b of (brandsData || [])) {
+  for (const b of safeBrandsData) {
     uniqueSuggestions.set(`brand:${b.name.toLowerCase()}`, { label: b.name, type: "brand", value: b.name });
     
-    // Add first 10 models for EACH brand to increase coverage
-    const brandModels = (modelsData || []).filter((m: DBModel) => m.brand_id === b.id).slice(0, 5);
+    // Add first 5 models for EACH brand to increase coverage
+    const brandModels = safeModelsData.filter((m: DBModel) => m.brand_id === b.id).slice(0, 5);
     for (const m of brandModels) {
       const val = `${b.name} ${m.name}`;
       uniqueSuggestions.set(`model:${val.toLowerCase()}`, { label: val, type: "model", value: val });
@@ -65,7 +70,7 @@ export async function getLiveMarketplaceReferenceData() {
   }
 
   // Include top cities
-  for (const c of (citiesData || [])) {
+  for (const c of safeCitiesData) {
     uniqueSuggestions.set(`city:${c.name.toLowerCase()}`, { label: c.name, type: "city", value: c.name });
   }
 
@@ -84,9 +89,9 @@ export async function getLiveMarketplaceReferenceData() {
     .slice(0, 100); // Return top 100 to let frontend filter effectively
 
   return { 
-    brands: brands.length > 0 ? brands : POPULAR_BRANDS, 
-    cities: cities.length > 0 ? cities : POPULAR_CITIES, 
-    searchSuggestions 
+    brands: Array.isArray(brands) && brands.length > 0 ? brands : POPULAR_BRANDS, 
+    cities: Array.isArray(cities) && cities.length > 0 ? cities : POPULAR_CITIES, 
+    searchSuggestions: Array.isArray(searchSuggestions) ? searchSuggestions : []
   };
 }
 

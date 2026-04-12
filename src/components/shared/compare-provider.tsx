@@ -110,7 +110,7 @@ export function CompareProvider({ children }: CompareProviderProps) {
     () => ({
       compareIds: localCompareIds,
       hydrated: localHydrated,
-      isInCompare: (listingId) => localCompareIds.includes(listingId),
+      isInCompare: (listingId) => (Array.isArray(localCompareIds) ? localCompareIds.includes(listingId) : false),
       addToCompare: (listingId) => {
         if (localCompareIds.includes(listingId)) {
           return false;
@@ -123,7 +123,8 @@ export function CompareProvider({ children }: CompareProviderProps) {
         return true;
       },
       removeFromCompare: (listingId) => {
-        const nextIds = localCompareIds.filter((id) => id !== listingId);
+        const ids = Array.isArray(localCompareIds) ? localCompareIds : [];
+        const nextIds = ids.filter((id) => id !== listingId);
         broadcastCompareUpdate(nextIds);
       },
       clearCompare: () => {

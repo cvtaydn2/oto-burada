@@ -55,7 +55,7 @@ export function useNotifications(userId?: string) {
     };
   }, [userId, supabase, queryClient]);
 
-  const notificationsList = notifications || [];
+  const notificationsList = Array.isArray(notifications) ? notifications : [];
   const unreadCount = notificationsList.filter((n) => !n.read).length;
 
   return {
