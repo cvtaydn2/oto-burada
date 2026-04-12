@@ -56,7 +56,8 @@ export function ListingsPageClient({
      return val !== undefined && val !== ""
   }).length
 
-  const filteredModels = (brands.find(b => b.brand === filters.brand)?.models || []);
+  const filteredModels = (brands.find(b => b.brand === filters.brand)?.models || []).map(m => m.name);
+  const filteredTrims = (brands.find(b => b.brand === filters.brand)?.models?.find(m => m.name === filters.model)?.trims || []);
   const filteredDistricts = (cities.find(c => c.city === filters.city)?.districts || []);
 
   const handleFilterChange = <K extends keyof ListingFilters>(key: K, value: ListingFilters[K]) => {
@@ -162,6 +163,7 @@ export function ListingsPageClient({
                 cities={cities}
                 filters={filters}
                 models={filteredModels}
+                trims={filteredTrims}
                 districts={filteredDistricts}
                 onFilterChange={handleFilterChange}
                 onReset={handleReset}

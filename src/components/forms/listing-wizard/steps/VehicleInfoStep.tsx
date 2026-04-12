@@ -94,7 +94,7 @@ export function VehicleInfoStep({
             )}
           </div>
 
-          <div className="grid sm:grid-cols-2 gap-4">
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
             <div className="space-y-2">
               <label htmlFor="brand" className="text-sm font-semibold ml-1">Marka</label>
               <select
@@ -118,7 +118,21 @@ export function VehicleInfoStep({
               >
                 <option value="">Seçiniz</option>
                 {(brands.find(b => b.brand === form.watch("brand"))?.models || []).map(m => (
-                  <option key={m} value={m}>{m}</option>
+                  <option key={m.name} value={m.name}>{m.name}</option>
+                ))}
+              </select>
+            </div>
+
+            <div className="space-y-2 lg:col-span-1 sm:col-span-2 lg:mt-0 mt-2">
+              <label htmlFor="carTrim" className="text-sm font-semibold ml-1">Paket / Donanım</label>
+              <select
+                {...register("carTrim")}
+                id="carTrim"
+                className="h-12 w-full rounded-xl border border-input bg-background px-4 text-sm outline-none transition-colors focus:border-primary"
+              >
+                <option value="">Seçiniz (Opsiyonel)</option>
+                {(brands.find(b => b.brand === form.watch("brand"))?.models?.find(m => m.name === form.watch("model"))?.trims || []).map(t => (
+                  <option key={t} value={t}>{t}</option>
                 ))}
               </select>
             </div>

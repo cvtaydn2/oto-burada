@@ -82,6 +82,7 @@ export interface Listing {
   title: string;
   brand: string;
   model: string;
+  carTrim?: string | null;
   year: number;
   mileage: number;
   fuelType: FuelType;
@@ -116,6 +117,7 @@ export interface ListingCreateInput {
   title: string;
   brand: string;
   model: string;
+  carTrim?: string | null;
   year: number;
   mileage: number;
   fuelType: FuelType;
@@ -145,6 +147,7 @@ export interface ListingCreateFormValues {
   title: string;
   brand: string;
   model: string;
+  carTrim?: string | null;
   year: number;
   mileage: number;
   fuelType: FuelType;
@@ -228,6 +231,7 @@ export interface ListingFilters {
   query?: string;
   brand?: string;
   model?: string;
+  carTrim?: string;
   city?: string;
   citySlug?: string;
   district?: string;

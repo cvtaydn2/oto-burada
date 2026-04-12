@@ -6,16 +6,27 @@ function sortLocale(values: string[]) {
 }
 
 type DBBrand = { id: string; name: string };
-type DBModel = { brand_id: string; name: string };
+type DBModel = { id: string; brand_id: string; name: string };
+type DBTrim = { model_id: string; name: string };
 type DBCity = { id: string; name: string; plate_code: number };
 type DBDistrict = { city_id: string; name: string };
 
 const POPULAR_BRANDS: BrandCatalogItem[] = [
-  { brand: "Volkswagen", slug: "volkswagen", name: "Volkswagen", models: ["Passat", "Golf", "Polo", "Tiguan", "T-Roc"] },
-  { brand: "Renault", slug: "renault", name: "Renault", models: ["Clio", "Megane", "Symbol", "Kadjar", "Fluence"] },
-  { brand: "Fiat", slug: "fiat", name: "Fiat", models: ["Egea", "Linea", "Doblo", "Fiorino", "500"] },
-  { brand: "Toyota", slug: "toyota", name: "Toyota", models: ["Corolla", "Auris", "Yaris", "Rav4", "CH-R"] },
-  { brand: "BMW", slug: "bmw", name: "BMW", models: ["3 Serisi", "5 Serisi", "1 Serisi", "X5", "X3"] },
+  { brand: "Volkswagen", slug: "volkswagen", name: "Volkswagen", models: [
+    { name: "Passat", trims: ["Business", "Elegance", "R-Line"] },
+    { name: "Golf", trims: ["Life", "Style", "R-Line"] },
+    { name: "Polo", trims: ["Life", "Style"] }
+  ]},
+  { brand: "Renault", slug: "renault", name: "Renault", models: [
+    { name: "Clio", trims: ["Joy", "Touch", "Icon"] },
+    { name: "Megane", trims: ["Joy", "Touch", "Icon"] }
+  ]},
+  { brand: "Fiat", slug: "fiat", name: "Fiat", models: [
+    { name: "Egea", trims: ["Easy", "Urban", "Lounge"] }
+  ]},
+  { brand: "BMW", slug: "bmw", name: "BMW", models: [
+    { name: "3 Serisi", trims: ["M Sport", "Sport Line", "Luxury Line"] }
+  ]},
 ];
 
 const POPULAR_CITIES: CityOption[] = [
@@ -30,25 +41,34 @@ export async function getLiveMarketplaceReferenceData() {
   const [
     { data: brandsData },
     { data: modelsData },
+    { data: trimsData },
     { data: citiesData },
     { data: districtsData }
   ] = await Promise.all([
     supabase.from("brands").select("id, name").eq("is_active", true).order("sort_order", { ascending: true }),
-    supabase.from("models").select("brand_id, name").eq("is_active", true).order("sort_order", { ascending: true }),
+    supabase.from("models").select("id, brand_id, name").eq("is_active", true).order("sort_order", { ascending: true }),
+    supabase.from("car_trims").select("model_id, name").eq("is_active", true).order("sort_order", { ascending: true }),
     supabase.from("cities").select("id, name, plate_code").eq("is_active", true).order("name", { ascending: true }),
     supabase.from("districts").select("city_id, name").eq("is_active", true).order("name", { ascending: true })
   ]);
 
-  const safeBrandsData = Array.isArray(brandsData) ? brandsData : [];
-  const safeModelsData = Array.isArray(modelsData) ? modelsData : [];
-  const safeCitiesData = Array.isArray(citiesData) ? citiesData : [];
-  const safeDistrictsData = Array.isArray(districtsData) ? districtsData : [];
+  const safeBrandsData = Array.isArray(brandsData) ? (brandsData as DBBrand[]) : [];
+  const safeModelsData = Array.isArray(modelsData) ? (modelsData as DBModel[]) : [];
+  const safeTrimsData = Array.isArray(trimsData) ? (trimsData as DBTrim[]) : [];
+  const safeCitiesData = Array.isArray(citiesData) ? (citiesData as DBCity[]) : [];
+  const safeDistrictsData = Array.isArray(districtsData) ? (districtsData as DBDistrict[]) : [];
 
   const brands: BrandCatalogItem[] = safeBrandsData.map((b: DBBrand) => ({
     brand: b.name,
     slug: b.name.toLowerCase().replace(/[^a-z0-9]/g, "-"),
     name: b.name,
-    models: sortLocale(safeModelsData.filter((m: DBModel) => m.brand_id === b.id).map((m: DBModel) => m.name))
+    models: safeModelsData
+      .filter((m: DBModel) => m.brand_id === b.id)
+      .map(m => ({
+        name: m.name,
+        trims: sortLocale(safeTrimsData.filter(t => t.model_id === m.id).map(t => t.name))
+      }))
+      .sort((left, right) => left.name.localeCompare(right.name, "tr"))
   }));
 
   const cities: CityOption[] = safeCitiesData.map((c: DBCity) => ({

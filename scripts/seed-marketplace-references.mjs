@@ -36,26 +36,33 @@ async function seedReferences() {
   // Minimal datasets for seeding if we can't parse easily
   // Actually I'll just hardcode the most important ones to be safe and fast
   const brands = [
-    { name: "Volkswagen", models: ["Polo", "Golf", "Passat", "Tiguan", "T-Roc", "Arteon"] },
-    { name: "Renault", models: ["Clio", "Megane", "Taliant", "Captur", "Koleos"] },
-    { name: "Fiat", models: ["Egea", "500", "Panda", "Doblo", "Fiorino"] },
-    { name: "Toyota", models: ["Corolla", "C-HR", "Yaris", "RAV4", "Hilux"] },
-    { name: "Ford", models: ["Focus", "Fiesta", "Puma", "Kuga", "Transit"] },
-    { name: "BMW", models: ["1 Serisi", "3 Serisi", "5 Serisi", "X1", "X5"] },
-    { name: "Mercedes-Benz", models: ["A Serisi", "C Serisi", "E Serisi", "GLA", "CLA"] },
-    { name: "Peugeot", models: ["208", "308", "2008", "3008", "5008"] },
-    { name: "Honda", models: ["Civic", "City", "HR-V", "CR-V", "Accord"] },
-    { name: "Audi", models: ["A1", "A3", "A4", "A6", "Q3"] },
-    { name: "Skoda", models: ["Fabia", "Scala", "Octavia", "Superb", "Kodiaq"] },
-    { name: "Dacia", models: ["Sandero", "Duster", "Jogger", "Lodgy"] },
-    { name: "Hyundai", models: ["i10", "i20", "i30", "Bayon", "Tucson", "Kona"] },
-    { name: "Kia", models: ["Picanto", "Rio", "Ceed", "Stonic", "Sportage"] },
-    { name: "Opel", models: ["Corsa", "Astra", "Mokka", "Crossland", "Grandland"] },
-    { name: "Volvo", models: ["S60", "S90", "V60", "XC40", "XC60", "XC90"] },
-    { name: "Nisan", models: ["Micra", "Juke", "Qashqai", "X-Trail"] },
-    { name: "Seat", models: ["Ibiza", "Leon", "Arona", "Ateca", "Tarraco"] },
-    { name: "Togg", models: ["T10X"] },
-    { name: "Tesla", models: ["Model 3", "Model Y"] },
+    { name: "Volkswagen", models: [
+      { name: "Polo", trims: ["Life", "Style"] },
+      { name: "Golf", trims: ["Life", "Style", "R-Line"] },
+      { name: "Passat", trims: ["Business", "Elegance", "R-Line"] },
+      { name: "Tiguan", trims: ["Life", "Style", "R-Line"] }
+    ]},
+    { name: "Renault", models: [
+      { name: "Clio", trims: ["Joy", "Touch", "Icon"] },
+      { name: "Megane", trims: ["Joy", "Touch", "Icon"] }
+    ]},
+    { name: "Fiat", models: [
+      { name: "Egea", trims: ["Easy", "Urban", "Lounge"] }
+    ]},
+    { name: "BMW", models: [
+      { name: "1 Serisi", trims: ["Sport Line", "M Sport"] },
+      { name: "3 Serisi", trims: ["Sport Line", "Luxury Line", "M Sport"] },
+      { name: "5 Serisi", trims: ["Luxury Line", "M Sport"] }
+    ]},
+    { name: "Mercedes-Benz", models: [
+      { name: "C Serisi", trims: ["Comfort", "AMG"] },
+      { name: "E Serisi", trims: ["Edition 1", "AMG"] }
+    ]},
+    { name: "Seat", models: [
+      { name: "Ibiza", trims: ["Style", "FR"] },
+      { name: "Leon", trims: ["Style", "FR", "Xperience"] },
+      { name: "Arona", trims: ["Style", "Xperience", "Style Plus"] }
+    ]},
   ];
 
   const cities = [
@@ -86,14 +93,31 @@ async function seedReferences() {
       continue;
     }
 
-    const modelsToInsert = bData.models.map(mName => ({
-      brand_id: brand.id,
-      name: mName,
-      slug: slugify(mName),
-    }));
+    for (const mData of bData.models) {
+      const { data: model, error: modelError } = await supabase
+        .from("models")
+        .upsert({ 
+          brand_id: brand.id, 
+          name: mData.name, 
+          slug: slugify(mData.name) 
+        }, { onConflict: 'brand_id,name' })
+        .select()
+        .single();
 
-    if (modelsToInsert.length > 0) {
-      await supabase.from("models").upsert(modelsToInsert, { onConflict: 'brand_id,name' });
+      if (modelError || !model) {
+        console.error(`Error model ${mData.name}:`, modelError?.message);
+        continue;
+      }
+
+      if (mData.trims && mData.trims.length > 0) {
+        const trimsToInsert = mData.trims.map(tName => ({
+          model_id: model.id,
+          name: tName,
+          slug: slugify(tName),
+        }));
+
+        await supabase.from("car_trims").upsert(trimsToInsert, { onConflict: 'model_id,name' });
+      }
     }
   }
 

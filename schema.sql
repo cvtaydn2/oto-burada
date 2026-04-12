@@ -128,8 +128,10 @@ create table if not exists public.listings (
   district text not null,
   description text not null,
   whatsapp_phone text not null,
+  vin text,
   license_plate text,
-  tramer_amount bigint,
+  car_trim text,
+  tramer_amount numeric default 0,
   damage_status_json jsonb,
   fraud_score integer not null default 0 check (fraud_score between 0 and 100),
   fraud_reason text,
@@ -138,7 +140,6 @@ create table if not exists public.listings (
   market_price_index decimal(12,2), -- Estimated fair market value for comparison
   featured boolean not null default false,
   expert_inspection jsonb,
-  vin text, -- Vehicle Identification Number (mandatory for data integrity)
   published_at timestamptz,
   bumped_at timestamptz,
   featured_until timestamptz,
@@ -220,6 +221,19 @@ create table if not exists public.models (
   is_active boolean not null default true,
   sort_order integer not null default 0,
   unique (brand_id, name)
+);
+
+-- Car Trims (Levels within a model, e.g., BMW 320i -> M Sport, Sport Line)
+CREATE TABLE IF NOT EXISTS public.car_trims (
+  id uuid primary key default gen_random_uuid(),
+  model_id uuid not null references public.models(id) on delete cascade,
+  name text not null,
+  slug text not null,
+  is_active boolean default true,
+  sort_order integer default 0,
+  created_at timestamp with time zone default now(),
+  updated_at timestamp with time zone default now(),
+  unique(model_id, name)
 );
 
 create table if not exists public.cities (
@@ -594,8 +608,10 @@ using (
 
 -- ── Performance: Composite Indexes ─────────────────────────────────────
 
-CREATE INDEX IF NOT EXISTS idx_listings_status_brand ON public.listings (status, brand);
-CREATE INDEX IF NOT EXISTS idx_listings_status_city ON public.listings (status, city);
+CREATE INDEX IF NOT EXISTS idx_listings_brand ON public.listings(brand);
+CREATE INDEX IF NOT EXISTS idx_listings_model ON public.listings(model);
+CREATE INDEX IF NOT EXISTS idx_listings_car_trim ON public.listings(car_trim);
+CREATE INDEX IF NOT EXISTS idx_listings_city ON public.listings(city);
 CREATE INDEX IF NOT EXISTS idx_listings_status_price ON public.listings (status, price);
 CREATE INDEX IF NOT EXISTS idx_listings_status_year ON public.listings (status, year);
 CREATE INDEX IF NOT EXISTS idx_listings_status_mileage ON public.listings (status, mileage);
@@ -605,9 +621,17 @@ CREATE INDEX IF NOT EXISTS idx_listings_status_transmission ON public.listings (
 CREATE INDEX IF NOT EXISTS idx_listings_seller_id_status ON public.listings (seller_id, status);
 CREATE INDEX IF NOT EXISTS idx_favorites_user_id ON public.favorites (user_id);
 CREATE INDEX IF NOT EXISTS idx_reports_status ON public.reports (status, created_at DESC);
+
+CREATE POLICY "Allow public read-only access for models" ON public.models
+  FOR SELECT USING (is_active = true);
+
+-- Policies for car_trims
+ALTER TABLE public.car_trims ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Allow public read-only access for car_trims" ON public.car_trims
+  FOR SELECT USING (is_active = true);
+
 CREATE INDEX IF NOT EXISTS idx_models_brand_id ON public.models (brand_id);
 CREATE INDEX IF NOT EXISTS idx_districts_city_id ON public.districts (city_id);
 CREATE INDEX IF NOT EXISTS idx_admin_actions_admin_user_id ON public.admin_actions (admin_user_id);
 CREATE INDEX IF NOT EXISTS idx_profiles_role ON public.profiles (role);
 CREATE INDEX IF NOT EXISTS idx_notifications_unread_user ON public.notifications (user_id) WHERE read = false;
-

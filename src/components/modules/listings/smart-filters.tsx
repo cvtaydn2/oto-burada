@@ -13,6 +13,7 @@ interface SmartFiltersProps {
   cities: CityOption[]
   filters: ListingFilters
   models: string[]
+  trims: string[]
   districts: string[]
   onFilterChange: <K extends keyof ListingFilters>(key: K, value: ListingFilters[K]) => void
   onReset: () => void
@@ -24,6 +25,7 @@ export function SmartFilters({
   cities,
   filters,
   models,
+  trims,
   districts,
   onFilterChange,
   onReset,
@@ -39,6 +41,7 @@ export function SmartFilters({
 
   const brandOptions = [{ value: "all", label: "Tüm Markalar" }, ...brands.map(b => ({ value: b.brand, label: b.brand }))]
   const modelOptions = [{ value: "all", label: "Tüm Modeller" }, ...models.map(m => ({ value: m, label: m }))]
+  const trimOptions = [{ value: "all", label: "Tüm Paketler" }, ...trims.map(t => ({ value: t, label: t }))]
   
   return (
     <div className="flex flex-col gap-6">
@@ -85,9 +88,21 @@ export function SmartFilters({
             {filters.brand && models.length > 0 && (
               <FilterSelect
                 value={filters.model || "all"}
-                onValueChange={(v) => onFilterChange("model", v === "all" ? undefined : v)}
+                onValueChange={(v) => {
+                  onFilterChange("model", v === "all" ? undefined : v);
+                  onFilterChange("carTrim", undefined); // Reset trim when model changes
+                }}
                 placeholder="Model seç"
                 options={modelOptions}
+                className="bg-white rounded-xl border-border animate-in fade-in slide-in-from-top-2"
+              />
+            )}
+            {filters.model && trims.length > 0 && (
+              <FilterSelect
+                value={filters.carTrim || "all"}
+                onValueChange={(v) => onFilterChange("carTrim", v === "all" ? undefined : v)}
+                placeholder="Paket seç"
+                options={trimOptions}
                 className="bg-white rounded-xl border-border animate-in fade-in slide-in-from-top-2"
               />
             )}

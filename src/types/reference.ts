@@ -2,7 +2,10 @@ export interface BrandCatalogItem {
   brand: string;
   slug: string;
   name: string;
-  models: string[];
+  models: {
+    name: string;
+    trims: string[];
+  }[];
 }
 
 export interface CityOption {

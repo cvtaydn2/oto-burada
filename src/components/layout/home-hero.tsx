@@ -9,16 +9,17 @@ interface HomeHeroProps {
   brands: BrandCatalogItem[]
 }
 
-const POPULAR_BRANDS = ["Volkswagen", "BMW", "Mercedes-Benz", "Audi", "Toyota", "Renault", "Fiat"]
+const POPULAR_BRANDS = ["Volkswagen", "BMW", "Mercedes-Benz", "Audi", "Renault", "Fiat", "Seat"]
 
 const BRAND_COLORS: Record<string, string> = {
-  "Volkswagen": "hover:bg-[#1E3C5F]",
-  "BMW": "hover:bg-[#2E475D]",
-  "Mercedes-Benz": "hover:bg-[#1F2937]",
-  "Audi": "hover:bg-[#162F47]",
+  "Volkswagen": "hover:bg-[#001e50]",
+  "BMW": "hover:bg-[#1C69D4]",
+  "Mercedes-Benz": "hover:bg-[#000000]",
+  "Audi": "hover:bg-[#BB0A30]",
   "Toyota": "hover:bg-[#EB2527]",
-  "Renault": "hover:bg-[#F4C4D8]",
-  "Fiat": "hover:bg-[#B8C4D6]",
+  "Renault": "hover:bg-[#FFCC33]",
+  "Fiat": "hover:bg-[#8B0000]",
+  "Seat": "hover:bg-[#2F3237]",
 }
 
 function getBrandColor(brand: string): string {
@@ -61,9 +62,9 @@ export function HomeHero({ brands }: HomeHeroProps) {
               <div className="flex gap-0.5">
                  {[1,2,3,4,5].map(i => <Star key={i} size={12} className="fill-amber-400 text-amber-400" />)}
               </div>
-              <span className="text-sm font-medium text-slate-400">
-                 <span className="text-white font-bold">12,000+</span> kişi aracını burada buldu
-              </span>
+               <span className="text-sm font-medium text-slate-400">
+                  <span className="text-white font-bold">12,000+</span> kişi aracını burada buldu
+               </span>
            </div>
         </div>
 
@@ -116,8 +117,8 @@ export function HomeHero({ brands }: HomeHeroProps) {
                onClick={() => handleBrandSelect(brand.toLowerCase().replace(/[^a-z]/g, "-"))}
                className={`h-12 px-6 rounded-xl bg-white/5 border border-white/10 text-white/80 text-sm font-bold hover:bg-white hover:text-black transition-all flex items-center gap-3 ${getBrandColor(brand)}`}
              >
-                <span className="w-8 h-8 rounded-lg bg-white/10 flex items-center justify-center text-xs font-black">
-                  {brand.slice(0, 2).toUpperCase()}
+                <span className="w-8 h-8 rounded-lg bg-white/10 flex items-center justify-center text-[10px] font-black group-hover:bg-white/20 transition-colors border border-white/5">
+                  {brand === "Mercedes-Benz" ? "MB" : brand.slice(0, 2).toUpperCase()}
                 </span>
                 {brand}
              </button>
