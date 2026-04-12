@@ -43,6 +43,9 @@ export function ListingsPageClient({
      return val !== undefined && val !== ""
   }).length
 
+  const filteredModels = (brands.find(b => b.brand === filters.brand)?.models || []);
+  const filteredDistricts = (cities.find(c => c.city === filters.city)?.districts || []);
+
   const handleFilterChange = <K extends keyof ListingFilters>(key: K, value: ListingFilters[K]) => {
     const newFilters = { ...filters, [key]: value }
     setFilters(newFilters)
@@ -118,8 +121,8 @@ export function ListingsPageClient({
                 brands={brands}
                 cities={cities}
                 filters={filters}
-                models={[]} // Would need model logic here if we wanted to fetch them
-                districts={[]}
+                models={filteredModels}
+                districts={filteredDistricts}
                 onFilterChange={handleFilterChange}
                 onReset={handleReset}
                 activeCount={activeFiltersCount}
