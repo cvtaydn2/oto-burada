@@ -118,7 +118,7 @@ const demoListings = [
     id: "8e85f7fc-bbff-4058-8ae1-a95357c67bd4",
     mileage: 132000,
     model: "320i",
-    carTrim: "Luxury Line",
+    carTrim: "First Edition Luxury Line",
     price: 1495000,
     publishedAt: "2026-03-31T11:00:00Z",
     sellerEmail: "burak@otoburada.demo",

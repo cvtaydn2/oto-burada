@@ -50,13 +50,19 @@ async function seedReferences() {
       { name: "Egea", trims: ["Easy", "Urban", "Lounge"] }
     ]},
     { name: "BMW", models: [
-      { name: "1 Serisi", trims: ["Sport Line", "M Sport"] },
-      { name: "3 Serisi", trims: ["Sport Line", "Luxury Line", "M Sport"] },
-      { name: "5 Serisi", trims: ["Luxury Line", "M Sport"] }
+      { name: "116d", trims: ["Premium", "Joy"] },
+      { name: "118i", trims: ["Sport Line", "M Sport"] },
+      { name: "318d", trims: ["Prestige", "Premium"] },
+      { name: "320i", trims: ["First Edition Sport Line", "First Edition Luxury Line", "First Edition M Sport"] },
+      { name: "520d", trims: ["Luxury Line", "M Sport"] },
+      { name: "X5", trims: ["xDrive25d", "xDrive40d"] }
     ]},
     { name: "Mercedes-Benz", models: [
-      { name: "C Serisi", trims: ["Comfort", "AMG"] },
-      { name: "E Serisi", trims: ["Edition 1", "AMG"] }
+      { name: "A 180", trims: ["Style", "AMG"] },
+      { name: "C 180", trims: ["Comfort", "Fascination", "AMG"] },
+      { name: "C 200d", trims: ["Comfort", "Exclusive", "AMG"] },
+      { name: "E 200d", trims: ["Exclusive", "AMG"] },
+      { name: "CLA 180d", trims: ["Style", "AMG"] }
     ]},
     { name: "Seat", models: [
       { name: "Ibiza", trims: ["Style", "FR"] },

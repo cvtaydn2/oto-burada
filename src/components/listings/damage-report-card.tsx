@@ -2,8 +2,9 @@
 
 import { carPartDamageStatusLabels, carPartLabels, carParts } from "@/lib/constants/domain";
 import { cn } from "@/lib/utils";
-import { AlertCircle, CheckCircle2, ChevronDown, ChevronUp, Info } from "lucide-react";
+import { AlertCircle, CheckCircle2, ChevronDown, ChevronUp, Info, Map as MapIcon } from "lucide-react";
 import { useState } from "react";
+import { VisualDamageMap } from "./visual-damage-map";
 
 interface DamageReportCardProps {
   damageStatus?: Record<string, string> | null;
@@ -63,51 +64,61 @@ export function DamageReportCard({ damageStatus, tramerAmount }: DamageReportCar
   return (
     <div className="rounded-2xl border border-slate-200 bg-white overflow-hidden shadow-sm">
       <div className="p-5">
-        <div className="flex items-center justify-between mb-4">
-          <div className="flex items-center gap-2">
-            {hasIssues ? (
-              <AlertCircle size={20} className="text-amber-500" />
-            ) : (
-              <CheckCircle2 size={20} className="text-emerald-500" />
-            )}
-            <h3 className="font-bold text-slate-900 text-base">Ekspertiz Özet Durumu</h3>
-          </div>
-          {tramerAmount != null && (
-            <div className="text-right">
-              <div className="text-[11px] font-bold text-slate-400 uppercase tracking-tight">Tramer</div>
-              <div className="text-sm font-bold text-slate-900">
-                {tramerAmount === 0 ? "Hasar Kayıtsız" : `${tramerAmount.toLocaleString("tr-TR")} TL`}
+        <div className="flex flex-col md:flex-row gap-8">
+          {/* Legend and Overview */}
+          <div className="flex-1 space-y-4">
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-2">
+                {hasIssues ? (
+                  <AlertCircle size={20} className="text-amber-500" />
+                ) : (
+                  <CheckCircle2 size={20} className="text-emerald-500" />
+                )}
+                <h3 className="font-bold text-slate-900 text-base italic">Ekspertiz Özet Durumu</h3>
+              </div>
+              {tramerAmount != null && (
+                <div className="text-right">
+                  <div className="text-[10px] font-black text-slate-400 uppercase tracking-widest italic leading-none mb-1">Tramer</div>
+                  <div className="text-sm font-black text-slate-900 leading-none">
+                    {tramerAmount === 0 ? "Hasar Kayıtsız" : `${tramerAmount.toLocaleString("tr-TR")} TL`}
+                  </div>
+                </div>
+              )}
+            </div>
+
+            <div className="grid grid-cols-2 gap-2 mb-4">
+              <div className="bg-emerald-50 rounded-xl p-3 text-center border border-emerald-100 flex flex-col justify-center">
+                <div className="text-xl font-black text-emerald-700">{statusCounts.orjinal}</div>
+                <div className="text-[9px] font-black text-emerald-600 uppercase tracking-widest">Orijinal</div>
+              </div>
+              <div className="bg-amber-50 rounded-xl p-3 text-center border border-amber-100 flex flex-col justify-center">
+                <div className="text-xl font-black text-amber-700">{statusCounts.boyali + statusCounts.lokal_boyali}</div>
+                <div className="text-[9px] font-black text-amber-600 uppercase tracking-widest">Boyalı</div>
+              </div>
+              <div className="bg-red-50 rounded-xl p-3 text-center border border-red-100 flex flex-col justify-center">
+                <div className="text-xl font-black text-red-700">{statusCounts.degisen}</div>
+                <div className="text-[9px] font-black text-red-600 uppercase tracking-widest">Değişen</div>
+              </div>
+              <div className="bg-slate-50 rounded-xl p-3 text-center border border-slate-100 flex flex-col justify-center">
+                <div className="text-xl font-black text-slate-700">{statusCounts.bilinmiyor}</div>
+                <div className="text-[9px] font-black text-slate-600 uppercase tracking-widest">Bilinmiyor</div>
               </div>
             </div>
-          )}
-        </div>
 
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-4">
-          <div className="bg-emerald-50 rounded-xl p-3 text-center border border-emerald-100">
-            <div className="text-xl font-black text-emerald-700">{statusCounts.orjinal}</div>
-            <div className="text-[10px] font-bold text-emerald-600 uppercase">Orijinal</div>
+            <button
+              onClick={() => setIsExpanded(!isExpanded)}
+              className="w-full flex items-center justify-center gap-2 py-3 rounded-2xl border border-slate-200 bg-slate-50 text-slate-900 text-sm font-bold hover:bg-slate-100 transition-all shadow-sm group"
+            >
+              {isExpanded ? "Detayları Gizle" : "Tüm Parça Raporu"}
+              {isExpanded ? <ChevronUp size={16} /> : <ChevronDown size={16} className="group-hover:translate-y-0.5 transition-transform" />}
+            </button>
           </div>
-          <div className="bg-amber-50 rounded-xl p-3 text-center border border-amber-100">
-            <div className="text-xl font-black text-amber-700">{statusCounts.boyali + statusCounts.lokal_boyali}</div>
-            <div className="text-[10px] font-bold text-amber-600 uppercase">Boyalı</div>
-          </div>
-          <div className="bg-red-50 rounded-xl p-3 text-center border border-red-100">
-            <div className="text-xl font-black text-red-700">{statusCounts.degisen}</div>
-            <div className="text-[10px] font-bold text-red-600 uppercase">Değişen</div>
-          </div>
-          <div className="bg-slate-50 rounded-xl p-3 text-center border border-slate-100">
-            <div className="text-xl font-black text-slate-700">{statusCounts.bilinmiyor}</div>
-            <div className="text-[10px] font-bold text-slate-600 uppercase">Bilinmiyor</div>
+
+          {/* Graphical Map */}
+          <div className="w-full md:w-[200px] flex shrink-0 justify-center">
+            <VisualDamageMap damageStatus={damageStatus} className="w-full max-w-[180px]" />
           </div>
         </div>
-
-        <button
-          onClick={() => setIsExpanded(!isExpanded)}
-          className="w-full flex items-center justify-center gap-1.5 py-2.5 rounded-xl border border-slate-100 bg-slate-50 text-slate-600 text-sm font-semibold hover:bg-slate-100 transition-colors"
-        >
-          {isExpanded ? "Detayları Gizle" : "Tüm Parçaları Gör"}
-          {isExpanded ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
-        </button>
       </div>
 
       {isExpanded && (

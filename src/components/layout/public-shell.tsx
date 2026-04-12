@@ -3,6 +3,7 @@ import type { PropsWithChildren } from "react";
 import { MobileNav } from "@/components/layout/mobile-nav";
 import { SiteFooter } from "@/components/layout/site-footer";
 import { SiteHeader } from "@/components/layout/site-header";
+import { ScrollToTop } from "@/components/shared/scroll-to-top";
 
 export function PublicShell({ children }: PropsWithChildren) {
   return (
@@ -15,6 +16,7 @@ export function PublicShell({ children }: PropsWithChildren) {
         <SiteFooter />
       </div>
       <MobileNav />
+      <ScrollToTop />
     </div>
   );
 }

@@ -31,13 +31,13 @@ export function MarketValueCard({ price, marketPriceIndex }: MarketValueCardProp
               <Target size={18} />
            </div>
            <div className="flex flex-col">
-              <span className="text-[10px] font-black uppercase tracking-widest text-slate-500 italic">Piyasa Analizi</span>
-              <span className="text-sm font-black italic">OtoBurada Rayiç Değeri</span>
+              <span className="text-[11px] font-black uppercase tracking-widest text-slate-500 italic">Piyasa Analizi</span>
+              <span className="text-[15px] font-black italic">OtoBurada Rayiç Değeri</span>
            </div>
         </div>
         <div className="p-2 rounded-lg bg-white/50 border border-white cursor-help group relative">
            <Info size={14} className="text-slate-400 group-hover:text-primary transition-colors" />
-           <div className="absolute bottom-full right-0 mb-2 w-64 p-3 bg-slate-900 text-white text-[10px] rounded-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all shadow-2xl z-20 font-medium leading-relaxed italic">
+           <div className="absolute bottom-full right-0 mb-2 w-72 p-4 bg-slate-900 text-white text-[12px] rounded-2xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all shadow-2xl z-20 font-medium leading-relaxed italic">
               Rayiç değer, benzer marka, model, yıl ve kilometredeki diğer ilanlar ile güncel pazar verileri analiz edilerek AI algoritmalarımız tarafından hesaplanmaktadır.
            </div>
         </div>
@@ -68,8 +68,8 @@ export function MarketValueCard({ price, marketPriceIndex }: MarketValueCardProp
       </div>
       
       {isGoodDeal && (
-        <div className="mt-4 p-3 rounded-2xl bg-emerald-500/10 border border-emerald-500/10 text-[11px] font-bold text-emerald-800 italic leading-snug">
-          Fiyat kaçırılmayacak düzeyde! Benzer araçlara göre ₺{formatNumber(price - fairMarketValue)} daha avantajlı.
+        <div className="mt-4 p-4 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 text-xs font-bold text-emerald-800 italic leading-snug">
+          Fiyat kaçırılmayacak düzeyde! Benzer araçlara göre ₺{formatNumber(fairMarketValue - price)} daha avantajlı.
         </div>
       )}
     </div>

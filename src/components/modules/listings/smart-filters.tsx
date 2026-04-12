@@ -53,7 +53,7 @@ export function SmartFilters({
                Filtreler
             </h3>
             {activeCount > 0 && (
-              <span className="h-5 px-1.5 rounded bg-primary text-[10px] font-black text-white flex items-center justify-center">
+              <span className="h-5 px-2 rounded bg-primary text-[11px] font-black text-white flex items-center justify-center">
                  {activeCount}
               </span>
             )}
@@ -61,7 +61,7 @@ export function SmartFilters({
          {activeCount > 0 && (
            <button 
              onClick={onReset}
-             className="text-[10px] font-black text-primary hover:underline uppercase tracking-tighter italic"
+             className="text-xs font-black text-primary hover:underline uppercase tracking-tighter italic"
            >
              Sıfırla
            </button>
@@ -128,7 +128,7 @@ export function SmartFilters({
              />
              <div className="grid grid-cols-2 gap-2">
                 <div className="relative">
-                   <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Min</span>
+                   <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[11px] font-bold text-muted-foreground uppercase tracking-widest">Min</span>
                    <input 
                      type="number" 
                      value={filters.minPrice || ""} 
@@ -137,7 +137,7 @@ export function SmartFilters({
                    />
                 </div>
                 <div className="relative">
-                   <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Max</span>
+                   <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[11px] font-bold text-muted-foreground uppercase tracking-widest">Max</span>
                    <input 
                      type="number" 
                      value={filters.maxPrice || ""} 
@@ -153,7 +153,7 @@ export function SmartFilters({
         <FilterGroup title="Vites & Yakıt" isOpen={expandedSections.includes("specs")} onToggle={() => toggleSection("specs")}>
            <div className="space-y-4">
               <div>
-                 <span className="text-[10px] font-black uppercase text-muted-foreground tracking-widest mb-2 block">Vites</span>
+                 <span className="text-[11px] font-black uppercase text-muted-foreground tracking-widest mb-2 block">Vites</span>
                  <div className="flex flex-wrap gap-2">
                     {(["otomatik", "manuel"] as const).map(type => (
                       <button
@@ -172,7 +172,7 @@ export function SmartFilters({
                  </div>
               </div>
               <div>
-                 <span className="text-[10px] font-black uppercase text-muted-foreground tracking-widest mb-2 block">Yakıt</span>
+                 <span className="text-[11px] font-black uppercase text-muted-foreground tracking-widest mb-2 block">Yakıt</span>
                  <div className="grid grid-cols-2 gap-2">
                     {(["benzin", "dizel", "elektrik", "hibrit"] as const).map(type => (
                       <button

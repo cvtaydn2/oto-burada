@@ -36,7 +36,7 @@ export function MobileNav() {
                   href={item.href}
                   aria-current={isActive ? "page" : undefined}
                   className={cn(
-                    "flex min-h-14 flex-col items-center justify-center gap-1 rounded-2xl px-2 py-2 text-[11px] font-bold transition-all focus-visible:outline-none",
+                    "flex min-h-14 flex-col items-center justify-center gap-1 rounded-2xl px-2 py-2 text-[12px] font-black transition-all focus-visible:outline-none",
                     isActive
                       ? "text-indigo-600"
                       : "text-slate-400 hover:text-slate-600",

@@ -83,7 +83,7 @@ export function HomeHero({ brands }: HomeHeroProps) {
         {/* The Power Search Bar */}
         <form 
           onSubmit={handleSearch}
-          className="w-full max-w-3xl glass p-2 rounded-2xl shadow-2xl mb-8 group transition-all hover:bg-white/10 border-white/20"
+          className="w-full max-w-3xl glass p-2 rounded-2xl shadow-2xl mb-4 group transition-all hover:bg-white/10 border-white/20"
         >
           <div className="relative flex items-center bg-white rounded-xl h-16 sm:h-20 shadow-inner px-2">
             <div className="hidden sm:flex items-center px-4 border-r border-slate-100 h-10 gap-2 text-slate-400">
@@ -108,6 +108,22 @@ export function HomeHero({ brands }: HomeHeroProps) {
             </button>
           </div>
         </form>
+
+        {/* Quick Model Suggestions for Easy Discovery (Age-inclusive UX) */}
+        <div className="flex flex-wrap justify-center gap-2 mb-10 overflow-x-auto pb-2 scrollbar-none w-full max-w-2xl">
+           {(["Fiat Egea", "Renault Clio", "Toyota Corolla", "Honda Civic", "VW Passat"] as const).map(suggestion => (
+             <button
+               key={suggestion}
+               onClick={() => {
+                 setQuery(suggestion);
+                 router.push(`/listings?query=${encodeURIComponent(suggestion)}`)
+               }}
+               className="h-8 px-4 rounded-full bg-white/10 border border-white/10 text-white/60 text-[11px] font-bold hover:bg-white/20 hover:text-white transition-all whitespace-nowrap"
+             >
+                {suggestion}
+             </button>
+           ))}
+        </div>
 
         {/* Quick Brands with Logo Placeholders */}
         <div className="w-full flex flex-wrap justify-center gap-3">

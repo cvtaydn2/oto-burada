@@ -83,6 +83,10 @@ export function ListingsPageClient({
     })
   }
 
+  const pageTitle = filters.brand 
+    ? `Satılık ${filters.brand} ${filters.model || ""} İlanları`
+    : "Tüm Satılık İlanlar"
+
   return (
     <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8">
       
@@ -91,14 +95,18 @@ export function ListingsPageClient({
          <div>
             <div className="flex items-center gap-3 mb-2">
                <h1 className="text-3xl font-black tracking-tight italic">
-                  Tüm <span className="text-primary">İlanlar</span>
+                  {pageTitle.split(" ").map((word, i, arr) => (
+                    i === arr.length - 1 ? <span key={i} className="text-primary">{word}</span> : word + " "
+                  ))}
                </h1>
                <Badge className="bg-primary/10 text-primary border-none font-black px-2 py-0.5 mt-1">
                   {initialResult.total} Araç
                </Badge>
             </div>
             <p className="text-sm font-medium text-muted-foreground italic">
-               Türkiye genelindeki en güncel car market ilanlarını keşfedin.
+               {filters.brand 
+                 ? `${filters.brand} markasının en güncel ve güvenilir ilanlarını keşfedin.` 
+                 : "Türkiye genelindeki en güncel car market ilanlarını keşfedin."}
             </p>
          </div>
 
