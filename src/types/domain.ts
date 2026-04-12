@@ -272,3 +272,25 @@ export const expertInspectionStatusLabels: { status: ExpertInspectionStatus; lab
   { status: "yok", label: "Değişmiş/Onarılmış" },
   { status: "bilinmiyor", label: "Bilinmiyor" },
 ];
+
+export interface Chat {
+  id: string;
+  listingId: string;
+  buyerId: string;
+  sellerId: string;
+  createdAt: string;
+  lastMessageAt?: string;
+  listing?: Partial<Listing>;
+  buyer?: Partial<Profile>;
+  seller?: Partial<Profile>;
+  lastMessage?: Message;
+}
+
+export interface Message {
+  id: string;
+  chatId: string;
+  senderId: string;
+  content: string;
+  isRead: boolean;
+  createdAt: string;
+}

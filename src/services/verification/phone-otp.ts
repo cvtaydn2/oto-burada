@@ -1,6 +1,5 @@
 import { Redis } from "@upstash/redis";
 import { sms } from "@/lib/sms";
-import { nanoid } from "nanoid";
 
 const redis = Redis.fromEnv();
 const OTP_TTL = 300; // 5 minutes

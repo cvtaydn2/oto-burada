@@ -142,4 +142,5 @@ export const logger = {
   admin: createLogger("admin"),
   storage: createLogger("storage"),
   db: createLogger("database"),
+  messages: createLogger("messages"),
 };

@@ -95,9 +95,10 @@ export default async function ListingDetailPage({ params }: ListingDetailPagePro
       
       <MobileStickyActions 
           listingId={listing.id}
+          sellerId={listing.sellerId}
           price={listing.price}
           title={listing.title}
-          isLoggedIn={true} // Forcing true to allow Reveal (we will fix the action to use IP)
+          isLoggedIn={!!currentUser}
           loginUrl={`/login?next=${encodeURIComponent(`/listing/${listing.slug}`)}`}
       />
 
@@ -242,7 +243,7 @@ export default async function ListingDetailPage({ params }: ListingDetailPagePro
 
                  <div className="pt-8 space-y-4">
                     {/* Primary Contact CTA */}
-                    <ContactActions listingId={listing.id} />
+                    <ContactActions listingId={listing.id} sellerId={listing.sellerId} />
                     <CompareButton 
                       listingId={listing.id} 
                       className="w-full h-14 rounded-2xl border border-border bg-secondary font-bold text-slate-700 hover:bg-slate-200 transition-all flex items-center justify-center gap-2"

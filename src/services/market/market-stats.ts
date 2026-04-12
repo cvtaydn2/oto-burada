@@ -50,7 +50,7 @@ export async function updateMarketStats(brand: string, model: string, year: numb
 
   // 3. Update the 'market_price_index' for ALL approved listings in this segment
   // Formula: (Current Price / Market Average)
-  const { error: updateError } = await admin
+  const { error } = await admin
     .from("listings")
     .update({
       market_price_index: 0, // Reset first or calculate via RPC for better accuracy

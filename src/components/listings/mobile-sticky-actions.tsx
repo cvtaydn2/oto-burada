@@ -6,6 +6,7 @@ import { formatCurrency } from "@/lib/utils";
 
 interface MobileStickyActionsProps {
     listingId: string;
+    sellerId: string;
     price: number;
     title: string;
     isLoggedIn: boolean;
@@ -14,6 +15,7 @@ interface MobileStickyActionsProps {
 
 export function MobileStickyActions({ 
     listingId, 
+    sellerId,
     price, 
     title, 
     isLoggedIn, 
@@ -31,7 +33,7 @@ export function MobileStickyActions({
 
                 <div className="flex-1 max-w-[240px]">
                     {isLoggedIn ? (
-                        <ContactActions listingId={listingId} />
+                        <ContactActions listingId={listingId} sellerId={sellerId} />
                     ) : (
                         <a
                             href={loginUrl}
