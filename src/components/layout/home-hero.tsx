@@ -11,6 +11,20 @@ interface HomeHeroProps {
 
 const POPULAR_BRANDS = ["Volkswagen", "BMW", "Mercedes-Benz", "Audi", "Toyota", "Renault", "Fiat"]
 
+const BRAND_COLORS: Record<string, string> = {
+  "Volkswagen": "hover:bg-[#1E3C5F]",
+  "BMW": "hover:bg-[#2E475D]",
+  "Mercedes-Benz": "hover:bg-[#1F2937]",
+  "Audi": "hover:bg-[#162F47]",
+  "Toyota": "hover:bg-[#EB2527]",
+  "Renault": "hover:bg-[#F4C4D8]",
+  "Fiat": "hover:bg-[#B8C4D6]",
+}
+
+function getBrandColor(brand: string): string {
+  return BRAND_COLORS[brand] || "hover:bg-primary"
+}
+
 export function HomeHero({ brands }: HomeHeroProps) {
   const router = useRouter()
   const [query, setQuery] = useState("")
@@ -94,14 +108,17 @@ export function HomeHero({ brands }: HomeHeroProps) {
           </div>
         </form>
 
-        {/* Quick Brands with SVG Logos (Simulated with Text for now to be safe) */}
+        {/* Quick Brands with Logo Placeholders */}
         <div className="w-full flex flex-wrap justify-center gap-3">
            {POPULAR_BRANDS.map(brand => (
              <button 
                key={brand}
-               onClick={() => handleBrandSelect(brand)}
-               className="h-10 px-5 rounded-full bg-white/5 border border-white/10 text-white text-sm font-bold hover:bg-white hover:text-black transition-all flex items-center gap-2"
+               onClick={() => handleBrandSelect(brand.toLowerCase().replace(/[^a-z]/g, "-"))}
+               className={`h-12 px-6 rounded-xl bg-white/5 border border-white/10 text-white/80 text-sm font-bold hover:bg-white hover:text-black transition-all flex items-center gap-3 ${getBrandColor(brand)}`}
              >
+                <span className="w-8 h-8 rounded-lg bg-white/10 flex items-center justify-center text-xs font-black">
+                  {brand.slice(0, 2).toUpperCase()}
+                </span>
                 {brand}
              </button>
            ))}

@@ -1,10 +1,13 @@
 export interface BrandCatalogItem {
   brand: string;
+  slug: string;
+  name: string;
   models: string[];
 }
 
 export interface CityOption {
   city: string;
+  slug: string;
   cityPlate: number | null;
   districts: string[];
 }

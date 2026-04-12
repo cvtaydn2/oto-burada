@@ -71,6 +71,8 @@ export interface ListingImage {
   order: number;
   isCover: boolean;
   placeholderBlur?: string | null;
+  type?: "photo" | "video" | "360";
+  thumbnailUrl?: string | null;
 }
 
 export interface Listing {
@@ -227,14 +229,15 @@ export interface ListingFilters {
   brand?: string;
   model?: string;
   city?: string;
+  citySlug?: string;
   district?: string;
   minPrice?: number;
   maxPrice?: number;
   minYear?: number;
   maxYear?: number;
   maxMileage?: number;
-  fuelType?: FuelType;
-  transmission?: TransmissionType;
+  fuelType?: string;
+  transmission?: string;
   sort?: ListingSortOption;
   page?: number;
   limit?: number;

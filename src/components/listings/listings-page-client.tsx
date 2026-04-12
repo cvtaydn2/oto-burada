@@ -1,15 +1,27 @@
 "use client"
  
-import { useTransition, useState } from "react"
-import { useRouter } from "next/navigation"
-import { LayoutGrid, List, SlidersHorizontal, ArrowDownWideNarrow } from "lucide-react"
+import { useState, useTransition } from "react"
+import { useRouter, useSearchParams } from "next/navigation"
+import { LayoutGrid, List, SlidersHorizontal, ArrowDownWideNarrow, ChevronDown } from "lucide-react"
 
 import { type Listing, type ListingFilters, type BrandCatalogItem, type CityOption } from "@/types"
 import { CarCard } from "@/components/modules/listings/car-card"
 import { SmartFilters } from "@/components/modules/listings/smart-filters"
 import { ListingsGridSkeleton } from "@/components/listings/listings-grid-skeleton"
 import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
+
+const SORT_OPTIONS = [
+  { value: "newest", label: "En Yeni" },
+  { value: "oldest", label: "En Eski" },
+  { value: "price_asc", label: "Fiyat (Düşük)" },
+  { value: "price_desc", label: "Fiyat (Yüksek)" },
+  { value: "mileage_asc", label: "Kilometre (Düşük)" },
+  { value: "mileage_desc", label: "Kilometre (Yüksek)" },
+  { value: "year_desc", label: "Yıl (Yeni)" },
+  { value: "year_asc", label: "Yıl (Eski)" },
+]
 
 interface ListingsPageClientProps {
   initialResult: {
@@ -30,11 +42,13 @@ export function ListingsPageClient({
   userId
 }: ListingsPageClientProps) {
   const router = useRouter()
+  const searchParams = useSearchParams()
   const [isPending, startTransition] = useTransition()
   
   const [filters, setFilters] = useState<ListingFilters>(initialFilters)
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid")
   const [isFilterOpen, setIsFilterOpen] = useState(false)
+  const [isSortOpen, setIsSortOpen] = useState(false)
 
   // Compute active filters count
   const activeFiltersCount = Object.entries(filters).filter(([key, val]) => {
@@ -103,11 +117,38 @@ export function ListingsPageClient({
                <List size={16} />
                <span className="hidden sm:inline">Liste</span>
             </button>
-            <div className="w-px h-6 bg-border mx-1" />
-            <button className="p-2 px-3 rounded-xl text-muted-foreground hover:text-foreground transition-all flex items-center gap-2 text-xs font-black uppercase italic">
-               <ArrowDownWideNarrow size={16} />
-               <span className="hidden sm:inline">Sıralama</span>
-            </button>
+<div className="w-px h-6 bg-border mx-1" />
+            
+            <div className="relative">
+              <button 
+                onClick={() => setIsSortOpen(!isSortOpen)}
+                className="p-2 px-3 rounded-xl text-muted-foreground hover:text-foreground transition-all flex items-center gap-2 text-xs font-black uppercase italic"
+              >
+                <ArrowDownWideNarrow size={16} />
+                <span className="hidden sm:inline">Sıralama</span>
+                <ChevronDown size={14} className={cn("transition-transform", isSortOpen && "rotate-180")} />
+              </button>
+              
+              {isSortOpen && (
+                <div className="absolute right-0 top-full mt-2 w-48 bg-background border rounded-xl shadow-lg z-20 py-2">
+                  {SORT_OPTIONS.map((option) => (
+                    <button
+                      key={option.value}
+                      onClick={() => {
+                        handleFilterChange("sort", option.value as ListingFilters["sort"]);
+                        setIsSortOpen(false);
+                      }}
+                      className={cn(
+                        "w-full px-4 py-2 text-left text-sm hover:bg-muted",
+                        filters.sort === option.value && "bg-primary/5 text-primary font-medium"
+                      )}
+                    >
+                      {option.label}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
          </div>
       </div>
 

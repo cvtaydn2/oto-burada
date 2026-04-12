@@ -11,17 +11,17 @@ type DBCity = { id: string; name: string; plate_code: number };
 type DBDistrict = { city_id: string; name: string };
 
 const POPULAR_BRANDS: BrandCatalogItem[] = [
-  { brand: "Volkswagen", models: ["Passat", "Golf", "Polo", "Tiguan", "T-Roc"] },
-  { brand: "Renault", models: ["Clio", "Megane", "Symbol", "Kadjar", "Fluence"] },
-  { brand: "Fiat", models: ["Egea", "Linea", "Doblo", "Fiorino", "500"] },
-  { brand: "Toyota", models: ["Corolla", "Auris", "Yaris", "Rav4", "CH-R"] },
-  { brand: "BMW", models: ["3 Serisi", "5 Serisi", "1 Serisi", "X5", "X3"] },
+  { brand: "Volkswagen", slug: "volkswagen", name: "Volkswagen", models: ["Passat", "Golf", "Polo", "Tiguan", "T-Roc"] },
+  { brand: "Renault", slug: "renault", name: "Renault", models: ["Clio", "Megane", "Symbol", "Kadjar", "Fluence"] },
+  { brand: "Fiat", slug: "fiat", name: "Fiat", models: ["Egea", "Linea", "Doblo", "Fiorino", "500"] },
+  { brand: "Toyota", slug: "toyota", name: "Toyota", models: ["Corolla", "Auris", "Yaris", "Rav4", "CH-R"] },
+  { brand: "BMW", slug: "bmw", name: "BMW", models: ["3 Serisi", "5 Serisi", "1 Serisi", "X5", "X3"] },
 ];
 
 const POPULAR_CITIES: CityOption[] = [
-  { city: "İstanbul", cityPlate: 34, districts: ["Kadıköy", "Beşiktaş", "Şişli", "Üsküdar"] },
-  { city: "Ankara", cityPlate: 6, districts: ["Çankaya", "Keçiören", "Yenimahalle"] },
-  { city: "İzmir", cityPlate: 35, districts: ["Konak", "Karşıyaka", "Bornova"] },
+  { city: "İstanbul", slug: "istanbul", cityPlate: 34, districts: ["Kadıköy", "Beşiktaş", "Şişli", "Üsküdar"] },
+  { city: "Ankara", slug: "ankara", cityPlate: 6, districts: ["Çankaya", "Keçiören", "Yenimahalle"] },
+  { city: "İzmir", slug: "izmir", cityPlate: 35, districts: ["Konak", "Karşıyaka", "Bornova"] },
 ];
 
 export async function getLiveMarketplaceReferenceData() {
@@ -46,11 +46,14 @@ export async function getLiveMarketplaceReferenceData() {
 
   const brands: BrandCatalogItem[] = safeBrandsData.map((b: DBBrand) => ({
     brand: b.name,
+    slug: b.name.toLowerCase().replace(/[^a-z0-9]/g, "-"),
+    name: b.name,
     models: sortLocale(safeModelsData.filter((m: DBModel) => m.brand_id === b.id).map((m: DBModel) => m.name))
   }));
 
   const cities: CityOption[] = safeCitiesData.map((c: DBCity) => ({
     city: c.name,
+    slug: c.name.toLowerCase().replace(/[^a-z0-9]/g, "-"),
     cityPlate: c.plate_code,
     districts: sortLocale(safeDistrictsData.filter((d: DBDistrict) => d.city_id === c.id).map((d: DBDistrict) => d.name))
   }));
@@ -105,6 +108,7 @@ export function mergeCityOptions(cities: CityOption[], extraCities: string[]) {
 
     cityMap.set(city, {
       city,
+      slug: city.toLowerCase().replace(/[^a-z0-9]/g, "-"),
       cityPlate: null,
       districts: [],
     });

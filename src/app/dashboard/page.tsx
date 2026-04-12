@@ -36,10 +36,10 @@ export default async function DashboardPage() {
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <h2 className="text-lg font-semibold">
-              {metadata.full_name ? `${metadata.full_name}, hoÅŸ geldin` : "HoÅŸ geldin"}
+              {metadata.full_name ? `${metadata.full_name}, hoş geldin` : "Hoş geldin"}
             </h2>
             <p className="text-sm text-muted-foreground">
-              Ä°lanlarÄ±nÄ± ve favorilerini yÃ¶net
+              İlanlarını ve favorilerini yönet
             </p>
           </div>
           <div className="flex gap-2">
@@ -48,7 +48,7 @@ export default async function DashboardPage() {
               className="inline-flex h-9 items-center gap-2 rounded-lg bg-primary px-3 text-sm font-medium text-primary-foreground hover:bg-primary/90"
             >
               <ClipboardList className="size-4" />
-              Ä°lanlarÄ±m
+              İlanlarım
             </Link>
             <Link
               href="/dashboard/favorites"
@@ -65,11 +65,11 @@ export default async function DashboardPage() {
         <div className="rounded-xl border border-border/60 bg-background p-4">
           <div className="flex items-center gap-2 text-xs font-medium uppercase text-muted-foreground">
             <ClipboardList className="size-4 text-indigo-500" />
-            Toplam Ä°lan
+            Toplam İlan
           </div>
           <p className="mt-2 text-2xl font-semibold">{storedListings.length}</p>
           <p className="mt-1 text-xs text-muted-foreground">
-            {storedListings.filter((l) => l.status === "approved").length} yayÄ±nda
+            {storedListings.filter((l) => l.status === "approved").length} yayında
           </p>
         </div>
 
@@ -79,7 +79,7 @@ export default async function DashboardPage() {
             Bekleyen
           </div>
           <p className="mt-2 text-2xl font-semibold">{pendingListingsCount}</p>
-          <p className="mt-1 text-xs text-muted-foreground">Moderasyon sÄ±rasÄ±</p>
+          <p className="mt-1 text-xs text-muted-foreground">Moderasyon sırası</p>
         </div>
 
         <div className="rounded-xl border border-border/60 bg-background p-4">
@@ -97,18 +97,18 @@ export default async function DashboardPage() {
             Profil
           </div>
           <p className="mt-2 text-2xl font-semibold">{profileCompletion}%</p>
-          <p className="mt-1 text-xs text-muted-foreground">TamamlandÄ±</p>
+          <p className="mt-1 text-xs text-muted-foreground">Tamamlandı</p>
         </div>
       </div>
 
       <section className="rounded-xl border border-border/80 bg-background p-4 sm:p-5">
-        <h3 className="text-base font-semibold">HÄ±zlÄ± EriÅŸim</h3>
+        <h3 className="text-base font-semibold">Hızlı Erişim</h3>
         <div className="mt-3 grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
           <Link
             href="/dashboard/listings"
             className="flex items-center justify-between rounded-lg border border-border/60 bg-muted/30 px-3 py-2.5 text-sm hover:bg-muted"
           >
-            <span>Ä°lan Ekle</span>
+            <span>İlan Ekle</span>
             <ArrowRight className="size-4 text-muted-foreground" />
           </Link>
           <Link

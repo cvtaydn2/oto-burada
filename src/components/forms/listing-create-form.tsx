@@ -226,7 +226,12 @@ export function ListingCreateForm({
     if (!initialListing?.brand) return brands;
     const existingBrand = brands.find((item) => item.brand === initialListing.brand);
     if (!existingBrand) {
-      return [...brands, { brand: initialListing.brand, models: initialListing.model ? [initialListing.model] : [] }].sort((l, r) => l.brand.localeCompare(r.brand, "tr"));
+      return [...brands, { 
+        brand: initialListing.brand, 
+        slug: initialListing.brand.toLowerCase().replace(/[^a-z0-9]/g, "-"),
+        name: initialListing.brand,
+        models: initialListing.model ? [initialListing.model] : [] 
+      }].sort((l, r) => l.brand.localeCompare(r.brand, "tr"));
     }
     if (!initialListing.model || existingBrand.models.includes(initialListing.model)) return brands;
     return brands.map((item) => item.brand === initialListing.brand ? { ...item, models: [...item.models, initialListing.model].sort((l, r) => l.localeCompare(r, "tr")) } : item);
@@ -236,7 +241,12 @@ export function ListingCreateForm({
     if (!initialListing?.city) return cities;
     const existingCity = cities.find((item) => item.city === initialListing.city);
     if (!existingCity) {
-      return [...cities, { city: initialListing.city, cityPlate: null, districts: initialListing.district ? [initialListing.district] : [] }].sort((l, r) => l.city.localeCompare(r.city, "tr"));
+      return [...cities, { 
+        city: initialListing.city, 
+        slug: initialListing.city.toLowerCase().replace(/[^a-z0-9]/g, "-"),
+        cityPlate: null, 
+        districts: initialListing.district ? [initialListing.district] : [] 
+      }].sort((l, r) => l.city.localeCompare(r.city, "tr"));
     }
     if (!initialListing.district || existingCity.districts.includes(initialListing.district)) return cities;
     return cities.map((item) => item.city === initialListing.city ? { ...item, districts: [...item.districts, initialListing.district].sort((l, r) => l.localeCompare(r, "tr")) } : item);
