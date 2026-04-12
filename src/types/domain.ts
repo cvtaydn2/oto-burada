@@ -69,6 +69,7 @@ export interface ListingImage {
   url: string;
   order: number;
   isCover: boolean;
+  placeholderBlur?: string | null;
 }
 
 export interface Listing {
@@ -103,6 +104,7 @@ export interface Listing {
   expertInspection?: ExpertInspection;
   seller?: Partial<Profile>;
   bumpedAt?: string | null;
+  viewCount: number;
   createdAt: string;
   updatedAt: string;
 }
@@ -133,6 +135,7 @@ export interface ListingCreateFormImage {
   size?: number;
   storagePath?: string;
   url?: string;
+  placeholderBlur?: string | null;
 }
 
 export interface ListingCreateFormValues {

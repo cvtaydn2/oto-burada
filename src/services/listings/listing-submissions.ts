@@ -28,6 +28,7 @@ interface ListingImageRow {
   public_url: string;
   sort_order: number;
   storage_path: string;
+  placeholder_blur: string | null;
 }
 
 interface ListingRow {
@@ -60,6 +61,7 @@ interface ListingRow {
   mileage: number;
   model: string;
   price: number;
+  view_count?: number;
   seller_id: string;
   slug: string;
   status: Listing["status"];
@@ -86,7 +88,8 @@ const listingSelect = `
     storage_path,
     public_url,
     sort_order,
-    is_cover
+    is_cover,
+    placeholder_blur
   ),
   profiles:seller_id (
     full_name,
@@ -129,7 +132,8 @@ const legacyListingSelect = `
     storage_path,
     public_url,
     sort_order,
-    is_cover
+    is_cover,
+    placeholder_blur
   )
 `;
 
@@ -144,7 +148,7 @@ function toSlugSegment(value: string) {
     .replace(/-{2,}/g, "-");
 }
 
-function buildListingSlug(input: ListingCreateInput, existingListings: Listing[]) {
+export function buildListingSlug(input: ListingCreateInput, existingListings: Listing[]) {
   const baseSlug = toSlugSegment(`${input.year} ${input.brand} ${input.model} ${input.title}`);
   const existingSlugs = new Set(existingListings.map((listing) => listing.slug));
 
@@ -161,7 +165,7 @@ function buildListingSlug(input: ListingCreateInput, existingListings: Listing[]
   return `${baseSlug}-${suffix}`;
 }
 
-function calculateFraudScore(input: ListingCreateInput, existingListings: Listing[]): { fraudScore: number, fraudReason: string | null } {
+export function calculateFraudScore(input: ListingCreateInput, existingListings: Listing[]): { fraudScore: number, fraudReason: string | null } {
   let score = 0;
   const reasons: string[] = [];
 
@@ -197,7 +201,7 @@ function calculateFraudScore(input: ListingCreateInput, existingListings: Listin
   return { fraudScore: Math.min(score, 100), fraudReason: reasons.length > 0 ? reasons.join(", ") : null };
 }
 
-function buildListingRecord(
+export function buildListingRecord(
   input: ListingCreateInput,
   sellerId: string,
   existingListings: Listing[],
@@ -288,12 +292,14 @@ function mapListingRow(row: ListingRow): Listing {
         order: image.sort_order,
         storagePath: image.storage_path,
         url: image.public_url,
+        placeholderBlur: image.placeholder_blur,
       }))
       .sort((left, right) => left.order - right.order),
     mileage: row.mileage,
     model: row.model,
     price: row.price,
     sellerId: row.seller_id,
+    viewCount: row.view_count ?? 0,
     seller: row.profiles ? {
       fullName: row.profiles.full_name,
       phone: row.profiles.phone,
@@ -325,7 +331,7 @@ function mapListingRow(row: ListingRow): Listing {
   };
 }
 
-async function getDatabaseListings(options?: {
+export async function getDatabaseListings(options?: {
   ids?: string[];
   listingId?: string;
   sellerId?: string;
@@ -543,8 +549,6 @@ export async function getFilteredDatabaseListings(
     page,
     limit,
     hasMore: page * limit < totalCount,
-  };
-
   if (isDefaultView) {
     const { setCachedData } = await import("@/lib/redis/client");
     setCachedData(cacheKey, result, 600).catch(console.error); // 10 min cache
@@ -553,49 +557,14 @@ export async function getFilteredDatabaseListings(
   return result;
 }
 
-function mapListingToDatabaseRow(listing: Listing) {
-  return {
-    brand: listing.brand,
-    city: listing.city,
-    created_at: listing.createdAt,
-    damage_status_json: listing.damageStatusJson ?? null,
-    description: listing.description,
-    district: listing.district,
-    expert_inspection: listing.expertInspection ?? null,
-    featured: listing.featured,
-    fraud_reason: listing.fraudReason ?? null,
-    fraud_score: listing.fraudScore ?? 0,
-    fuel_type: listing.fuelType,
-    id: listing.id,
-    mileage: listing.mileage,
-    model: listing.model,
-    price: listing.price,
-    seller_id: listing.sellerId,
-    slug: listing.slug,
-    status: listing.status,
-    title: listing.title,
-    tramer_amount: listing.tramerAmount ?? null,
-    transmission: listing.transmission,
-    updated_at: listing.updatedAt,
-    bumped_at: listing.bumpedAt ?? null,
-    featured_until: listing.featuredUntil ?? null,
-    urgent_until: listing.urgentUntil ?? null,
-    highlighted_until: listing.highlightedUntil ?? null,
-    eids_verification_json: listing.eidsVerificationJson ?? null,
-    market_price_index: listing.marketPriceIndex ?? null,
-    whatsapp_phone: listing.whatsappPhone,
-    year: listing.year,
-    vin: listing.vin ?? null,
-  };
-}
-
-function mapListingImagesToDatabaseRows(listing: Listing) {
+export function mapListingImagesToDatabaseRows(listing: Listing) {
   return listing.images.map((image) => ({
     is_cover: image.isCover,
     listing_id: listing.id,
     public_url: image.url,
     sort_order: image.order,
     storage_path: image.storagePath,
+    placeholder_blur: image.placeholderBlur ?? null,
   }));
 }
 
@@ -660,6 +629,68 @@ export async function updateDatabaseListing(listing: Listing): Promise<UpdateLis
   const deleteImagesResult = await admin.from("listing_images").delete().eq("listing_id", listing.id);
 
   if (deleteImagesResult.error) {
+    return { error: "database_error" };
+  }
+
+  const imageRows = mapListingImagesToDatabaseRows(listing);
+
+  if (imageRows.length > 0) {
+    const imageInsertResult = await admin.from("listing_images").insert(imageRows);
+
+    if (imageInsertResult.error) {
+      return { error: "database_error" };
+    }
+  }
+
+  const updatedListing = (await getDatabaseListings({ listingId: listing.id }))?.[0];
+  return { listing: updatedListing };
+}
+
+export function mapListingToDatabaseRow(listing: Listing) {
+  return {
+    brand: listing.brand,
+    city: listing.city,
+    created_at: listing.createdAt,
+    damage_status_json: listing.damageStatusJson ?? null,
+    description: listing.description,
+    district: listing.district,
+    expert_inspection: listing.expertInspection ?? null,
+    featured: listing.featured,
+    fraud_reason: listing.fraudReason ?? null,
+    fraud_score: listing.fraudScore ?? 0,
+    fuel_type: listing.fuelType,
+    id: listing.id,
+    mileage: listing.mileage,
+    model: listing.model,
+    price: listing.price,
+    seller_id: listing.sellerId,
+    slug: listing.slug,
+    status: listing.status,
+    title: listing.title,
+    tramer_amount: listing.tramerAmount ?? null,
+    transmission: listing.transmission,
+    updated_at: listing.updatedAt,
+    bumped_at: listing.bumpedAt ?? null,
+    featured_until: listing.featuredUntil ?? null,
+    urgent_until: listing.urgentUntil ?? null,
+    highlighted_until: listing.highlightedUntil ?? null,
+    eids_verification_json: listing.eidsVerificationJson ?? null,
+    market_price_index: listing.marketPriceIndex ?? null,
+      whatsapp_phone: listing.whatsappPhone,
+    year: listing.year,
+    vin: listing.vin ?? null,
+  };
+}
+    return { error: "database_error" };
+  }
+
+  const imageRows = mapListingImagesToDatabaseRows(listing);
+
+  if (imageRows.length > 0) {
+    const imageInsertResult = await admin.from("listing_images").insert(imageRows);
+
+    if (imageInsertResult.error) {
+      await admin.from("listings").delete().eq("id", listing.id);
     return { error: "database_error" };
   }
 

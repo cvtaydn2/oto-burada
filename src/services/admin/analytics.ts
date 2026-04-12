@@ -12,6 +12,10 @@ export interface AdminAnalyticsData {
     date: string;
     listings: number;
   }[];
+  marketTrends: {
+    brand: string;
+    avgPrice: number;
+  }[];
 }
 
 export async function getAdminAnalytics(): Promise<AdminAnalyticsData | null> {
@@ -85,6 +89,26 @@ export async function getAdminAnalytics(): Promise<AdminAnalyticsData | null> {
     listings: trendData?.filter((l) => l.created_at.startsWith(date)).length ?? 0,
   }));
 
+  // 6. Market Trends (Brand Average Prices)
+  const { data: marketStats } = await admin
+    .from("market_stats")
+    .select("brand, avg_price");
+
+  const brandPriceMap: Record<string, { total: number; count: number }> = {};
+  marketStats?.forEach((s) => {
+    if (!brandPriceMap[s.brand]) brandPriceMap[s.brand] = { total: 0, count: 0 };
+    brandPriceMap[s.brand].total += Number(s.avg_price);
+    brandPriceMap[s.brand].count += 1;
+  });
+
+  const marketTrends = Object.entries(brandPriceMap)
+    .map(([brand, stats]) => ({
+      brand,
+      avgPrice: Math.round(stats.total / stats.count),
+    }))
+    .sort((a, b) => b.avgPrice - a.avgPrice)
+    .slice(0, 5);
+
   return {
     listingsByBrand,
     listingsByCity,
@@ -93,5 +117,6 @@ export async function getAdminAnalytics(): Promise<AdminAnalyticsData | null> {
     totalListings: listingCount ?? 0,
     totalReports: reportCount ?? 0,
     recentTrends: trends,
+    marketTrends,
   };
 }

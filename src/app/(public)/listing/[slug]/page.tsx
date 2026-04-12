@@ -22,6 +22,7 @@ import {
 import { FavoriteButton } from "@/components/listings/favorite-button";
 import { CompareButton } from "@/components/listings/compare-button";
 import { ListingGallery } from "@/components/listings/listing-gallery";
+import { ViewCounter } from "@/components/listings/view-counter";
 import { ListingDetailStructuredData, BreadcrumbStructuredData } from "@/components/seo/structured-data";
 import { Breadcrumbs } from "@/components/shared/breadcrumbs";
 import { ReportListingForm } from "@/components/forms/report-listing-form";
@@ -34,6 +35,8 @@ import { ExpertInspectionCard } from "@/components/listings/expert-inspection-ca
 import { DamageReportCard } from "@/components/listings/damage-report-card";
 import { ListingPrintAction } from "@/components/listings/listing-print-action";
 import { EIDSBadge } from "@/components/shared/eids-badge";
+import { MarketValueCard } from "@/components/listings/market-value-card";
+import { ResponseTimeBadge } from "@/components/profile/response-time-badge";
 import { MobileStickyActions } from "@/components/listings/mobile-sticky-actions";
 import { getCurrentUser } from "@/lib/auth/session";
 import { buildListingDetailMetadata, buildAbsoluteUrl } from "@/lib/seo";
@@ -134,26 +137,27 @@ export default async function ListingDetailPage({ params }: ListingDetailPagePro
                     {listing.brand} <span className="text-primary italic">{listing.model}</span>
                  </h1>
                  <p className="text-lg text-muted-foreground font-medium italic">{listing.title}</p>
-                 <div className="text-4xl font-black text-foreground">
+                  <div className="text-4xl font-black text-foreground pb-2">
                     ₺{new Intl.NumberFormat("tr-TR").format(listing.price)}
-                 </div>
+                  </div>
+                  <ViewCounter listingId={listing.id} initialCount={listing.viewCount} />
               </div>
 
               {/* Expert Inspection - High Visibility */}
               <ExpertInspectionCard expertInspection={listing.expertInspection} />
 
-              {/* AI Wisdom & Market Insights (Combo) */}
+              {/* Market Analysis View: Combining AI Insight & Market Value */}
               <div className="grid md:grid-cols-2 gap-6">
                  {/* AI Assessment */}
-                 <div className="p-6 rounded-3xl bg-secondary/30 border border-border space-y-4">
-                    <div className="flex items-center gap-2 text-primary font-black uppercase text-xs tracking-widest italic">
+                 <div className="p-8 rounded-[32px] bg-secondary/20 border border-slate-200/50 space-y-6">
+                    <div className="flex items-center gap-2 text-primary font-black uppercase text-xs tracking-widest italic outline-none">
                        <Sparkles size={16} className="fill-primary/20" />
                        OtoBurada AI Analizi
                     </div>
-                    <p className="text-sm font-medium leading-relaxed italic">{insight.summary}</p>
-                    <div className="flex flex-wrap gap-2">
+                    <p className="text-sm font-medium leading-relaxed italic text-slate-700">{insight.summary}</p>
+                    <div className="flex flex-wrap gap-2 pt-2">
                        {insight.highlights.map(h => (
-                         <div key={h} className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white border border-border text-xs font-bold shadow-sm">
+                         <div key={h} className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white border border-slate-100 text-xs font-bold shadow-sm">
                             <CheckCircle2 className="text-emerald-500" size={14} />
                             {h}
                          </div>
@@ -161,13 +165,7 @@ export default async function ListingDetailPage({ params }: ListingDetailPagePro
                     </div>
                  </div>
 
-                 {/* Price Analysis Card (Refactored to match) */}
-                 <PriceAnalysisCard 
-                    price={listing.price} 
-                    marketStatus={marketStatus} 
-                    priceDiff={priceDiff} 
-                    marketPriceIndex={listing.marketPriceIndex ?? undefined}
-                  />
+                 <MarketValueCard price={listing.price} marketPriceIndex={listing.marketPriceIndex ?? 1.0} />
               </div>
 
               {/* Technical Tabs or Groups */}
@@ -235,11 +233,13 @@ export default async function ListingDetailPage({ params }: ListingDetailPagePro
                  </h1>
                  <p className="text-lg text-muted-foreground font-medium italic">{listing.title}</p>
                  
-                 <div className="flex items-baseline gap-2 pt-2">
-                    <span className="text-5xl font-black underline underline-offset-[12px] decoration-primary transition-all">
-                       ₺{new Intl.NumberFormat("tr-TR").format(listing.price)}
-                    </span>
-                 </div>
+                 <div className="flex items-baseline gap-2 pt-2 pb-4">
+                     <span className="text-5xl font-black underline underline-offset-[12px] decoration-primary transition-all">
+                        ₺{new Intl.NumberFormat("tr-TR").format(listing.price)}
+                     </span>
+                  </div>
+
+                  <ViewCounter listingId={listing.id} initialCount={listing.viewCount} />
 
                  <div className="pt-8 space-y-4">
                     {/* Primary Contact CTA */}
@@ -264,6 +264,8 @@ export default async function ListingDetailPage({ params }: ListingDetailPagePro
                           Kimlik Doğrulandı
                        </div>
                     </div>
+                    
+                    <ResponseTimeBadge sellerId={listing.sellerId} />
                  </div>
 
                  <div className="grid grid-cols-2 gap-3 py-4 border-y border-slate-100">

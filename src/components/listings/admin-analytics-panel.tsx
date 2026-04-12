@@ -192,6 +192,47 @@ export function AdminAnalyticsPanel({ data }: AdminAnalyticsPanelProps) {
           </div>
         </div>
       </div>
+
+      {/* Market Trends (New Section) */}
+      <div className="rounded-[2rem] border border-border/80 bg-background p-6 shadow-sm">
+        <div className="flex items-center justify-between mb-8">
+           <h3 className="text-lg font-semibold flex items-center gap-2 italic uppercase tracking-tight">
+              <TrendingUp className="text-indigo-600" size={20} />
+              Piyasa Fiyat Analizi (Marka Bazlı)
+           </h3>
+           <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest italic">Piyasa Ortalamaları</p>
+        </div>
+        <div className="h-[350px] w-full">
+          <ResponsiveContainer width="100%" height="100%">
+            <BarChart data={data.marketTrends}>
+              <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
+              <XAxis 
+                dataKey="brand" 
+                axisLine={false} 
+                tickLine={false} 
+                tick={{ fontSize: 13, fontWeight: 700, fill: "#1e293b" }} 
+              />
+              <YAxis 
+                axisLine={false} 
+                tickLine={false} 
+                tick={{ fontSize: 11, fill: "#64748b" }} 
+                tickFormatter={(val) => `₺${val/1000}k`}
+              />
+              <Tooltip 
+                contentStyle={{ borderRadius: "1.25rem", border: "1px solid #f1f5f9", boxShadow: "0 20px 25px -5px rgb(0 0 0 / 0.1)" }}
+                formatter={(val) => [`₺${new Intl.NumberFormat("tr-TR").format(Number(val))}`, "Ortalama Fiyat"]}
+              />
+              <Bar 
+                dataKey="avgPrice" 
+                fill="#4f46e5" 
+                radius={[12, 12, 0, 0]} 
+                barSize={40}
+                className="hover:fill-primary/80 transition-colors"
+              />
+            </BarChart>
+          </ResponsiveContainer>
+        </div>
+      </div>
     </div>
   );
 }

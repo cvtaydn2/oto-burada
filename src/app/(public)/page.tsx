@@ -99,6 +99,41 @@ export default async function HomePage() {
            </div>
         </section>
 
+        {/* Marketplace Services (Estimation & Comparison) */}
+        <section className="mb-24 grid md:grid-cols-2 gap-8">
+           <Link href="/aracim-ne-kadar" className="group relative overflow-hidden p-10 rounded-[2.5rem] bg-slate-900 text-white shadow-2xl transition-all hover:scale-[1.01]">
+              <div className="absolute top-0 right-0 size-64 bg-primary/20 blur-[100px] pointer-events-none group-hover:bg-primary/30 transition-all" />
+              <div className="relative z-10 space-y-6">
+                 <div className="size-16 rounded-2xl bg-white/10 border border-white/20 flex items-center justify-center text-primary group-hover:scale-110 transition-transform">
+                    <ArrowRight className="rotate-[315deg]" size={32} />
+                 </div>
+                 <div className="space-y-2">
+                    <h3 className="text-3xl font-black italic uppercase tracking-tighter">Aracım Ne Kadar?</h3>
+                    <p className="text-slate-400 font-medium italic">Piyasa verilerini analiz ederek aracınızın güncel değerini anında öğrenin.</p>
+                 </div>
+                 <div className="flex items-center gap-2 text-primary font-bold">
+                    Hemen Hesapla <ArrowRight size={18} className="group-hover:translate-x-2 transition-transform" />
+                 </div>
+              </div>
+           </Link>
+
+           <Link href="/listings?sort=advantageous" className="group relative overflow-hidden p-10 rounded-[2.5rem] bg-emerald-600 text-white shadow-2xl transition-all hover:scale-[1.01]">
+              <div className="absolute top-0 right-0 size-64 bg-white/10 blur-[100px] pointer-events-none group-hover:bg-white/20 transition-all" />
+              <div className="relative z-10 space-y-6">
+                 <div className="size-16 rounded-2xl bg-white/10 border border-white/20 flex items-center justify-center text-white group-hover:scale-110 transition-transform">
+                    <TrendingDown size={32} />
+                 </div>
+                 <div className="space-y-2">
+                    <h3 className="text-3xl font-black italic uppercase tracking-tighter">Fırsat İlanlar</h3>
+                    <p className="text-emerald-50 font-medium italic">Piyasa ortalamasının altında, kaçırılmayacak avantajlı araçları listeleyin.</p>
+                 </div>
+                 <div className="flex items-center gap-2 text-white font-bold underline underline-offset-4 decoration-white/30 decoration-2">
+                    İlanları Gör <ArrowRight size={18} className="group-hover:translate-x-2 transition-transform" />
+                 </div>
+              </div>
+           </Link>
+        </section>
+
         {/* Latest Listings */}
         <section className="mb-24">
           <div className="flex items-center justify-between mb-8">

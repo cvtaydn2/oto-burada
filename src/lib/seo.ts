@@ -90,7 +90,7 @@ export function buildListingDetailMetadata(listing: Listing): Metadata {
     },
     openGraph: {
       description,
-      images: listing.images[0]?.url ? [listing.images[0].url] : undefined,
+      images: [buildAbsoluteUrl(`/api/og/listing?slug=${listing.slug}`)],
       title: `${title} | Oto Burada`,
       type: "article",
       url: buildAbsoluteUrl(`/listing/${listing.slug}`),
@@ -100,7 +100,7 @@ export function buildListingDetailMetadata(listing: Listing): Metadata {
       card: "summary_large_image",
       title: `${title} | Oto Burada`,
       description,
-      images: listing.images[0]?.url ? [listing.images[0].url] : undefined,
+      images: [buildAbsoluteUrl(`/api/og/listing?slug=${listing.slug}`)],
     },
   };
 }

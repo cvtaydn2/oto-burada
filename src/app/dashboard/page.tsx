@@ -36,10 +36,10 @@ export default async function DashboardPage() {
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <h2 className="text-lg font-semibold">
-              {metadata.full_name ? `${metadata.full_name}, hoş geldin` : "Hoş geldin"}
+              {metadata.full_name ? `${metadata.full_name}, hoÅŸ geldin` : "HoÅŸ geldin"}
             </h2>
             <p className="text-sm text-muted-foreground">
-              İlanlarını ve favorilerini yönet
+              Ä°lanlarÄ±nÄ± ve favorilerini yÃ¶net
             </p>
           </div>
           <div className="flex gap-2">
@@ -48,7 +48,7 @@ export default async function DashboardPage() {
               className="inline-flex h-9 items-center gap-2 rounded-lg bg-primary px-3 text-sm font-medium text-primary-foreground hover:bg-primary/90"
             >
               <ClipboardList className="size-4" />
-              İlanlarım
+              Ä°lanlarÄ±m
             </Link>
             <Link
               href="/dashboard/favorites"
@@ -65,11 +65,11 @@ export default async function DashboardPage() {
         <div className="rounded-xl border border-border/60 bg-background p-4">
           <div className="flex items-center gap-2 text-xs font-medium uppercase text-muted-foreground">
             <ClipboardList className="size-4 text-indigo-500" />
-            Toplam İlan
+            Toplam Ä°lan
           </div>
           <p className="mt-2 text-2xl font-semibold">{storedListings.length}</p>
           <p className="mt-1 text-xs text-muted-foreground">
-            {storedListings.filter((l) => l.status === "approved").length} yayında
+            {storedListings.filter((l) => l.status === "approved").length} yayÄ±nda
           </p>
         </div>
 
@@ -79,7 +79,7 @@ export default async function DashboardPage() {
             Bekleyen
           </div>
           <p className="mt-2 text-2xl font-semibold">{pendingListingsCount}</p>
-          <p className="mt-1 text-xs text-muted-foreground">Moderasyon sırası</p>
+          <p className="mt-1 text-xs text-muted-foreground">Moderasyon sÄ±rasÄ±</p>
         </div>
 
         <div className="rounded-xl border border-border/60 bg-background p-4">
@@ -97,18 +97,18 @@ export default async function DashboardPage() {
             Profil
           </div>
           <p className="mt-2 text-2xl font-semibold">{profileCompletion}%</p>
-          <p className="mt-1 text-xs text-muted-foreground">Tamamlandı</p>
+          <p className="mt-1 text-xs text-muted-foreground">TamamlandÄ±</p>
         </div>
       </div>
 
       <section className="rounded-xl border border-border/80 bg-background p-4 sm:p-5">
-        <h3 className="text-base font-semibold">Hızlı Erişim</h3>
-        <div className="mt-3 grid gap-2 sm:grid-cols-3">
+        <h3 className="text-base font-semibold">HÄ±zlÄ± EriÅŸim</h3>
+        <div className="mt-3 grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
           <Link
             href="/dashboard/listings"
             className="flex items-center justify-between rounded-lg border border-border/60 bg-muted/30 px-3 py-2.5 text-sm hover:bg-muted"
           >
-            <span>İlan Ekle</span>
+            <span>Ä°lan Ekle</span>
             <ArrowRight className="size-4 text-muted-foreground" />
           </Link>
           <Link
@@ -124,6 +124,13 @@ export default async function DashboardPage() {
           >
             <span>Profil</span>
             <ArrowRight className="size-4 text-muted-foreground" />
+          </Link>
+          <Link
+            href="/dashboard/bulk-import"
+            className="flex items-center justify-between rounded-lg border border-primary/20 bg-primary/5 px-3 py-2.5 text-sm hover:bg-primary/10 transition-all group"
+          >
+            <span className="font-bold text-primary group-hover:translate-x-1 transition-transform">Toplu İlan Yükle</span>
+            <ArrowRight className="size-4 text-primary group-hover:translate-x-1 transition-transform" />
           </Link>
         </div>
       </section>

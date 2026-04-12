@@ -50,43 +50,23 @@ export async function updateMarketStats(brand: string, model: string, year: numb
 
   // 3. Update the 'market_price_index' for ALL approved listings in this segment
   // Formula: (Current Price / Market Average)
-  const { error } = await admin
-    .from("listings")
-    .update({
-      market_price_index: 0, // Reset first or calculate via RPC for better accuracy
-    })
-    .eq("brand", brand)
-    .eq("model", model)
-    .eq("year", year)
-    .eq("status", "approved");
+  // Use high-performance RPC to update all listings in a single transaction
+  const { error: rpcError } = await admin.rpc("update_listing_price_indices", {
+    p_brand: brand,
+    p_model: model,
+    p_year: year,
+    p_avg_price: avgPrice,
+  });
 
-  // Since Supabase/PostgREST doesn't support relative updates easily in .update(), 
-  // we'll fetch then batch update or use an RPC if this becomes common.
-  // For MVP, we'll iterate through the listings we already have IDs for.
-  const { data: activeListings } = await admin
-    .from("listings")
-    .select("id, price")
-    .eq("brand", brand)
-    .eq("model", model)
-    .eq("year", year)
-    .eq("status", "approved");
-
-  let updatedCount = 0;
-  if (activeListings) {
-    for (const listing of activeListings) {
-      const index = Number(listing.price) / avgPrice;
-      await admin
-        .from("listings")
-        .update({ market_price_index: index })
-        .eq("id", listing.id);
-      updatedCount++;
-    }
+  if (rpcError) {
+    console.error("Failed to update listing indices via RPC:", rpcError);
+    return null;
   }
 
   return {
     avgPrice,
     count,
-    updatedListings: updatedCount
+    updatedListings: count, // Representing the whole batch
   };
 }
 

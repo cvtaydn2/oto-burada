@@ -53,12 +53,9 @@ interface UploadState {
 }
 
 interface UploadedImagePayload {
-  image: {
-    fileName: string;
-    mimeType: string;
-    size: number;
     storagePath: string;
     url: string;
+    placeholderBlur?: string | null;
   };
   message?: string;
 }
@@ -352,29 +349,60 @@ export function ListingCreateForm({
       return;
     }
     const previousImage = getValues(`images.${index}`);
-    updateUploadState(fieldId, { message: "Fotoğraf yükleniyor...", progress: 0, status: "uploading" });
+    updateUploadState(fieldId, { message: "Fotoğraf işleniyor...", progress: 0, status: "uploading" });
     
     let compressibleFile = file;
+    let blurDataUrl: string | null = null;
+
     try {
       const { default: imageCompression } = await import("browser-image-compression");
-      compressibleFile = await imageCompression(file, { maxSizeMB: 1, maxWidthOrHeight: 1920, useWebWorker: true });
-    } catch {}
+      
+      // Ana görsel sıkıştırma (WebP çıkışı olsa iyi olurdu ama kütüphane desteğine göre)
+      compressibleFile = await imageCompression(file, { 
+        maxSizeMB: 0.8, 
+        maxWidthOrHeight: 1600, 
+        useWebWorker: true,
+        fileType: "image/jpeg" // Force jpeg for performance/compatibility or let it be
+      });
+
+      // Blur placeholder üretimi (Çok küçük boyut)
+      const blurFile = await imageCompression(file, {
+        maxSizeMB: 0.005, // 5KB altı
+        maxWidthOrHeight: 20,
+        useWebWorker: true,
+      });
+      blurDataUrl = await imageCompression.getDataUrlFromFile(blurFile);
+
+    } catch (err) {
+      console.error("Compression error:", err);
+    }
 
     const previewUrl = URL.createObjectURL(compressibleFile);
     clearErrors(`images.${index}.url` as FieldPath<ListingCreateFormValues>);
-    updateUploadState(fieldId, { message: "Fotoğraf yükleniyor...", previewUrl, progress: 0, status: "uploading" });
+    updateUploadState(fieldId, { message: "Yükleniyor...", previewUrl, progress: 0, status: "uploading" });
 
     try {
       const payload = await uploadImageRequest(compressibleFile, (progress) => {
-        updateUploadState(fieldId, { message: "Fotoğraf yükleniyor...", previewUrl, progress, status: "uploading" });
+        updateUploadState(fieldId, { message: "Yükleniyor...", previewUrl, progress, status: "uploading" });
       });
       if (previousImage?.storagePath) await removeUploadedImage(previousImage.storagePath);
       revokeBlobUrl(previewUrl);
-      setValue(`images.${index}`, payload.image, { shouldDirty: true, shouldValidate: true });
-      updateUploadState(fieldId, { message: "Fotoğraf yüklendi.", previewUrl: payload.image.url, progress: 100, status: "uploaded" });
+      
+      const nextImageValue = { 
+        ...payload.image, 
+        placeholderBlur: blurDataUrl 
+      };
+
+      setValue(`images.${index}`, nextImageValue, { shouldDirty: true, shouldValidate: true });
+      updateUploadState(fieldId, { 
+        message: "Tamamlandı", 
+        previewUrl: nextImageValue.url, 
+        progress: 100, 
+        status: "uploaded" 
+      });
     } catch {
       revokeBlobUrl(previewUrl);
-      updateUploadState(fieldId, { message: "Hata oluştu.", progress: 0, status: "error" });
+      updateUploadState(fieldId, { message: "Yükleme hatası.", progress: 0, status: "error" });
     }
   };
 
