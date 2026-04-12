@@ -4,6 +4,7 @@ import { UseFormReturn } from "react-hook-form";
 import { CarFront, Search, LoaderCircle, AlertCircle } from "lucide-react";
 import { ListingCreateFormValues, BrandCatalogItem } from "@/types";
 import { maximumCarYear, minimumCarYear } from "@/lib/constants/domain";
+import { cn } from "@/lib/utils";
 
 interface VehicleInfoStepProps {
   form: UseFormReturn<ListingCreateFormValues, unknown, ListingCreateFormValues>;

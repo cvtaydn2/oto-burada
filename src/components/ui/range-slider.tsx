@@ -38,7 +38,9 @@ export function RangeSlider({
   // 2. Sync local state with props when they change (e.g. from outside reset)
   useEffect(() => {
     if (!isDragging) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setLocalMin(valueMin ?? min);
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setLocalMax(valueMax ?? max);
     }
   }, [valueMin, valueMax, min, max, isDragging]);

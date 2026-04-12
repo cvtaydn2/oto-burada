@@ -104,7 +104,7 @@ export function PriceHistoryChart({ history, currentPrice }: PriceHistoryChartPr
               }}
               labelStyle={{ fontSize: "10px", fontWeight: 800, color: "#64748b", textTransform: "uppercase", marginBottom: "4px" }}
               itemStyle={{ fontSize: "14px", fontWeight: 900, color: "#0f172a" }}
-              formatter={(value: any) => [value ? `₺${value.toLocaleString("tr-TR")}` : "", "Fiyat"]}
+              formatter={(value: number) => [value ? `₺${value.toLocaleString("tr-TR")}` : "", "Fiyat"]}
             />
             <Line 
               type="monotone" 

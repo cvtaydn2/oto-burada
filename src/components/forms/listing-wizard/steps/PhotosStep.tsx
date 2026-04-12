@@ -1,7 +1,7 @@
 "use client";
 
 import { UseFormReturn, UseFieldArrayReturn } from "react-hook-form";
-import { ImagePlus, Upload, Trash2, CheckCircle2, LoaderCircle, Sparkles, Wand2 } from "lucide-react";
+import { ImagePlus, Upload, Trash2, CheckCircle2, LoaderCircle, Sparkles, Wand2, Star } from "lucide-react";
 import Image from "next/image";
 import { cn } from "@/lib/utils";
 import { minimumListingImages } from "@/lib/constants/domain";

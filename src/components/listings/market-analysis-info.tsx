@@ -32,7 +32,7 @@ export function MarketAnalysisInfo() {
                                Şeffaf Fiyatlandırma
                             </div>
                             <p className="text-[11px] text-slate-300 leading-relaxed font-bold italic">
-                               OtoBurada'nın yapay zeka algoritmaları, bu ilanı benzer özelliklerdeki binlerce güncel ilanla anlık olarak karşılaştırır.
+                               OtoBurada&apos;nın yapay zeka algoritmaları, bu ilanı benzer özelliklerdeki binlerce güncel ilanla anlık olarak karşılaştırır.
                             </p>
                          </div>
                       </HoverCardContent>

@@ -26,6 +26,7 @@ export function usePushNotifications() {
 
   useEffect(() => {
     if (typeof window !== "undefined") {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setState(prev => ({
         ...prev,
         isSupported: "Notification" in window,

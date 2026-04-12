@@ -90,7 +90,7 @@ export function calculateValuation(
   const expectedMileage = (currentYear - params.year) * 15000;
   const mileageDiff = params.mileage - expectedMileage;
   const mileageAdjustment = (mileageDiff / 10000) * 0.012;
-  let adjustedAvg = baseAvg * (1 - mileageAdjustment);
+  const adjustedAvg = baseAvg * (1 - mileageAdjustment);
 
   // 2. Tramer adjustment (up to -20%)
   let tramerAdjustment = 0;

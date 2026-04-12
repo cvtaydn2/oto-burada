@@ -10,7 +10,8 @@ import {
   Settings2, 
   Sparkles,
   TrendingDown,
-  ArrowRight
+  ArrowRight,
+  CarFront
 } from "lucide-react"
 import { formatNumber } from "@/lib/utils"
 import { type Listing } from "@/types"

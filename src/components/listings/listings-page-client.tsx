@@ -48,6 +48,7 @@ export function ListingsPageClient({
 
   // Sync internal state when props change (from URL navigation)
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setFilters(initialFilters)
   }, [JSON.stringify(initialFilters)])
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid")

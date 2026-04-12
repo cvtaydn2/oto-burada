@@ -62,7 +62,7 @@ export function IdentityVerificationForm({ userId, isVerified }: IdentityVerific
           <div className="space-y-1">
             <h4 className="text-base font-black italic tracking-tight text-blue-900">Kimlik Dorulama Gerekli</h4>
             <p className="text-xs text-blue-700/80 leading-relaxed font-medium">
-              lanlarnzda "DorulanmY Satc" rozeti gsterilmesi ve gǬven puannzn artması iin kimliinizi dorulamanz neririz.
+              lanlarnzda &quot;DorulanmY Satc&quot; rozeti gsterilmesi ve gǬven puannzn artması iin kimliinizi dorulamanz neririz.
             </p>
           </div>
         </div>

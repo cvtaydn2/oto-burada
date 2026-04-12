@@ -16,6 +16,7 @@ export async function getAllUsers() {
     return [];
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   return (profiles || []).map((p: any) => ({
     id: p.id,
     fullName: p.full_name || "",

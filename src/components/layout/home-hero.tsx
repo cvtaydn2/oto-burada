@@ -75,7 +75,7 @@ export function HomeHero({ brands }: HomeHeroProps) {
                  {[1,2,3,4,5].map(i => <Star key={i} size={16} className="fill-accent text-accent animate-pulse" style={{ animationDelay: `${i * 150}ms` }} />)}
               </div>
               <span className="text-[10px] font-black uppercase tracking-[0.3em] text-white/40 italic">
-                TÜRKİYE'NİN EN SEÇKİN <span className="text-white/80">CAR CLUB</span> SOSYETE İLANLARI
+                TÜRKİYE&apos;NİN EN SEÇKİN <span className="text-white/80">CAR CLUB</span> SOSYETE İLANLARI
               </span>
            </div>
         </div>
