@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { ArrowRight, Zap, ShieldCheck, Trophy, BadgeCheck } from "lucide-react";
+import { ArrowRight, Zap, ShieldCheck, Trophy, BadgeCheck, TrendingDown } from "lucide-react";
 import Link from "next/link";
 
 import { HomeHero } from "@/components/layout/home-hero";
