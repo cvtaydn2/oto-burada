@@ -3,8 +3,8 @@ import { cookies } from "next/headers";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { hasSupabaseAdminEnv } from "@/lib/supabase/env";
 import { listingSchema } from "@/lib/validators";
-import type { Listing, ListingCreateInput, ListingFilters } from "@/types";
-import { listingSubmissionsCookieName, listingSubmissionsCookieOptions } from "./constants";
+import type { Listing, ListingCreateInput, ListingFilters, UserRole, Profile } from "@/types";
+import { listingSubmissionsCookieName } from "./constants";
 
 const turkishCharacterMap: Record<string, string> = {
   ç: "c",
@@ -299,8 +299,8 @@ function mapListingRow(row: ListingRow): Listing {
       phone: row.profiles.phone,
       city: row.profiles.city,
       avatarUrl: row.profiles.avatar_url,
-      role: row.profiles.role as any,
-      userType: row.profiles.user_type as any,
+      role: row.profiles.role as UserRole,
+      userType: row.profiles.user_type as Profile["userType"],
       businessName: row.profiles.business_name,
       businessLogoUrl: row.profiles.business_logo_url,
       identityVerified: row.profiles.is_verified,

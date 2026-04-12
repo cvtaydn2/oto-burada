@@ -1,14 +1,20 @@
-import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { createSupabaseBrowserClient } from "@/lib/supabase/browser";
 import type { Chat, Message } from "@/types";
 import { logger } from "@/lib/utils/logger";
+
+async function getSupabase() {
+  if (typeof window === "undefined") {
+    const { createSupabaseServerClient } = await import("@/lib/supabase/server");
+    return await createSupabaseServerClient();
+  }
+  return createSupabaseBrowserClient();
+}
 
 /**
  * Creates or retrieves a chat between a buyer and a seller for a specific listing.
  */
 export async function getOrCreateChat(listingId: string, buyerId: string, sellerId: string): Promise<Chat | null> {
-  const isServer = typeof window === "undefined";
-  const supabase = isServer ? await createSupabaseServerClient() : createSupabaseBrowserClient();
+  const supabase = await getSupabase();
 
   try {
     // Try to find existing chat
@@ -45,8 +51,7 @@ export async function getOrCreateChat(listingId: string, buyerId: string, seller
  * Fetches all messages for a specific chat.
  */
 export async function getChatMessages(chatId: string): Promise<Message[]> {
-  const isServer = typeof window === "undefined";
-  const supabase = isServer ? await createSupabaseServerClient() : createSupabaseBrowserClient();
+  const supabase = await getSupabase();
 
   const { data, error } = await supabase
     .from("messages")
@@ -66,8 +71,7 @@ export async function getChatMessages(chatId: string): Promise<Message[]> {
  * Sends a message in a specific chat.
  */
 export async function sendMessage(chatId: string, senderId: string, content: string): Promise<Message | null> {
-  const isServer = typeof window === "undefined";
-  const supabase = isServer ? await createSupabaseServerClient() : createSupabaseBrowserClient();
+  const supabase = await getSupabase();
 
   const { data, error } = await supabase
     .from("messages")
@@ -88,8 +92,7 @@ export async function sendMessage(chatId: string, senderId: string, content: str
  * Ordered by last message activity.
  */
 export async function getUserChats(userId: string): Promise<Chat[]> {
-  const isServer = typeof window === "undefined";
-  const supabase = isServer ? await createSupabaseServerClient() : createSupabaseBrowserClient();
+  const supabase = await getSupabase();
 
   const { data, error } = await supabase
     .from("chats")
@@ -109,8 +112,7 @@ export async function getUserChats(userId: string): Promise<Chat[]> {
  * Marks all unread messages in a chat as read for the current user.
  */
 export async function markMessagesAsRead(chatId: string, userId: string): Promise<boolean> {
-  const isServer = typeof window === "undefined";
-  const supabase = isServer ? await createSupabaseServerClient() : createSupabaseBrowserClient();
+  const supabase = await getSupabase();
 
   const { error } = await supabase
     .from("messages")
