@@ -40,7 +40,7 @@ export function useChatRealtime(chatId: string, currentUserId: string) {
           table: "messages",
           filter: `chat_id=eq.${chatId}`,
         },
-        (payload) => {
+        (payload: any) => {
           const newMessage = payload.new as Message;
           
           setMessages((prev) => {
@@ -70,7 +70,7 @@ export function useChatRealtime(chatId: string, currentUserId: string) {
         setOnlineUsers(users);
       })
       // 4. Listen for Typing Indicators (Broadcast)
-      .on("broadcast", { event: "typing" }, ({ payload }) => {
+      .on("broadcast", { event: "typing" }, ({ payload }: any) => {
         if (payload.userId !== currentUserId) {
           setIsTyping(payload.typing);
         }
