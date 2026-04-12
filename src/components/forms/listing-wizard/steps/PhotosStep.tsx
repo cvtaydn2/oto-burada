@@ -27,6 +27,17 @@ export function PhotosStep({
   const watchImages = form.watch("images");
   const [cleaningIndices, setCleaningIndices] = useState<number[]>([]);
 
+  const PHOTO_GUIDES = [
+    "Ön Çapraz (Sol)",
+    "Ön Çapraz (Sağ)",
+    "Arka Çapraz",
+    "İç Mekan (Ön)",
+    "Kadran / KM",
+    "Motor Bölümü",
+    "Bagaj",
+    "Diğer Detay"
+  ];
+
   const handleCleanBackground = async (index: number) => {
     if (cleaningIndices.includes(index)) return;
     setCleaningIndices(prev => [...prev, index]);
@@ -34,36 +45,37 @@ export function PhotosStep({
     // Simulate AI processing delay
     await new Promise(resolve => setTimeout(resolve, 2000));
     
-    // In a real app, this would refresh the image URL with a white background version
     setCleaningIndices(prev => prev.filter(i => i !== index));
-    // form.setValue(`images.${index}.url`, ...);
   };
 
   return (
-    <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
-      <div className="rounded-[1.75rem] border border-border/80 bg-background p-5 shadow-sm sm:p-6 text-slate-900">
-        <div className="flex items-start gap-4 mb-6">
-          <div className="size-11 rounded-2xl bg-primary/10 flex items-center justify-center text-primary shrink-0">
-            <ImagePlus size={22} />
+    <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
+      <div className="rounded-[2.5rem] border border-slate-100 bg-white p-8 shadow-2xl shadow-slate-200/40 text-slate-900 overflow-hidden relative">
+        <div className="absolute top-0 right-0 w-64 h-64 bg-primary/5 blur-[100px] -z-0 pointer-events-none" />
+        
+        <div className="relative z-10 flex items-start gap-4 mb-8">
+          <div className="size-14 rounded-2xl bg-slate-950 flex items-center justify-center text-white shrink-0 shadow-lg shadow-slate-900/20 italic font-black text-xl">
+            <ImagePlus size={24} />
           </div>
           <div>
-            <h3 className="text-lg font-bold">Fotoğraflar</h3>
-            <p className="text-sm text-muted-foreground">Aracınızın farklı açılardan en az {minimumListingImages} fotoğrafını yükleyin.</p>
+            <h3 className="text-2xl font-black italic uppercase tracking-tighter">Görsel Vitrini</h3>
+            <p className="text-sm text-slate-500 font-medium">Platformun en hızlı ilanları, doğru açılarla çekilmiş yüksek kaliteli fotoğraflarla başlar.</p>
           </div>
         </div>
 
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 relative z-10">
           {fields.map((field, index) => {
             const uploadState = uploadStates[field.id];
             const hasUrl = watchImages[index]?.url;
+            const guideText = PHOTO_GUIDES[index] || "Diğer Fotoğraf";
 
             return (
               <div
                 key={field.id}
                 className={cn(
-                  "relative group aspect-[4/3] rounded-2xl border-2 border-dashed border-slate-200 transition-all overflow-hidden bg-slate-50",
-                  hasUrl && "border-solid border-indigo-200 shadow-sm",
-                  uploadState?.status === "error" && "border-red-200 bg-red-50"
+                  "relative group aspect-[4/3] rounded-[2rem] border-2 border-dashed border-slate-200 transition-all duration-500 overflow-hidden bg-slate-50/50 hover:border-primary/50",
+                  hasUrl && "border-solid border-slate-100 shadow-xl scale-100 active:scale-95",
+                  uploadState?.status === "error" && "border-rose-200 bg-rose-50"
                 )}
               >
                 {hasUrl ? (
@@ -72,56 +84,77 @@ export function PhotosStep({
                       src={watchImages[index].url!}
                       alt={`Fotoğraf ${index + 1}`}
                       fill
-                      className="object-cover"
+                      className="object-cover group-hover:scale-105 transition-transform duration-1000"
                     />
-                    <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
+                    
+                    {/* Hover Overlay */}
+                    <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-all duration-500 backdrop-blur-[2px] flex items-center justify-center gap-3">
                       <button
                         type="button"
                         onClick={() => handleCleanBackground(index)}
                         disabled={cleaningIndices.includes(index)}
-                        className="p-2 bg-white rounded-full text-indigo-600 shadow-lg hover:bg-indigo-600 hover:text-white transition-all disabled:opacity-50"
-                        title="Arka Planı Temizle (AI)"
+                        className="size-11 bg-white rounded-2xl text-slate-900 shadow-2xl hover:bg-slate-900 hover:text-white transition-all disabled:opacity-50 flex items-center justify-center"
+                        title="Arka Planı Temizle (AI Optimizasyonu)"
                       >
-                        {cleaningIndices.includes(index) ? <LoaderCircle size={18} className="animate-spin" /> : <Wand2 size={18} />}
+                        {cleaningIndices.includes(index) ? (
+                          <LoaderCircle size={20} className="animate-spin" />
+                        ) : (
+                          <Wand2 size={20} />
+                        )}
                       </button>
                       <button
                         type="button"
                         onClick={() => onRemoveImage(index)}
-                        className="p-2 bg-white rounded-full text-red-500 shadow-lg hover:bg-red-500 hover:text-white transition-all"
-                        title="Sil"
+                        className="size-11 bg-white rounded-2xl text-rose-500 shadow-2xl hover:bg-rose-500 hover:text-white transition-all flex items-center justify-center"
+                        title="Kaldır"
                       >
-                        <Trash2 size={18} />
+                        <Trash2 size={20} />
                       </button>
                     </div>
 
                     {cleaningIndices.includes(index) && (
-                      <div className="absolute inset-0 bg-indigo-600/60 backdrop-blur-[2px] flex flex-col items-center justify-center text-white p-2">
-                         <Sparkles className="size-6 animate-pulse mb-1" />
-                         <span className="text-[10px] font-black uppercase italic tracking-tighter">AI Temizliyor...</span>
+                      <div className="absolute inset-0 bg-primary/80 backdrop-blur-md flex flex-col items-center justify-center text-white p-4">
+                         <div className="relative">
+                            <Sparkles className="size-8 animate-pulse mb-2 text-white" />
+                            <div className="absolute inset-0 blur-xl bg-white/50 animate-pulse" />
+                         </div>
+                         <span className="text-[10px] font-black uppercase italic tracking-[0.2em] text-center leading-tight">AI Arka Planı <br />Optimize Ediyor</span>
                       </div>
                     )}
 
                     {index === 0 && (
-                      <div className="absolute top-2 left-2 bg-indigo-600 text-white text-[10px] font-bold px-2 py-1 rounded-md shadow-md">
+                      <div className="absolute top-3 left-3 bg-slate-950 text-white text-[10px] font-black px-3 py-1 rounded-xl shadow-xl italic tracking-widest flex items-center gap-2">
+                        <Star className="size-3 fill-primary text-primary" />
                         KAPAK
                       </div>
                     )}
-                    <div className="absolute top-2 right-2 bg-emerald-500 text-white text-[9px] font-bold px-1.5 py-0.5 rounded shadow-sm flex items-center gap-1">
-                      <CheckCircle2 size={10} />
+                    
+                    <div className="absolute bottom-3 right-3 glass-dark text-white text-[9px] font-black px-2 py-1 rounded-lg shadow-sm flex items-center gap-1.5 opacity-90 backdrop-blur-xl">
+                      <CheckCircle2 size={12} className="text-emerald-400" />
                       HAZIR
                     </div>
                   </>
                 ) : (
-                  <label className="absolute inset-0 cursor-pointer flex flex-col items-center justify-center gap-2 hover:bg-slate-100 transition-colors">
+                  <label className="absolute inset-0 cursor-pointer flex flex-col items-center justify-center gap-3 hover:bg-white transition-all group-hover:shadow-inner">
                     {uploadState?.status === "uploading" ? (
-                      <>
-                        <LoaderCircle className="size-6 text-primary animate-spin" />
-                        <span className="text-[10px] font-bold text-primary">{uploadState.progress}%</span>
-                      </>
+                      <div className="flex flex-col items-center gap-3">
+                         <div className="relative size-12 flex items-center justify-center">
+                            <LoaderCircle className="size-full text-primary animate-spin" strokeWidth={3} />
+                            <span className="absolute inset-0 flex items-center justify-center text-[10px] font-black text-primary">
+                              {uploadState.progress}%
+                            </span>
+                         </div>
+                         <span className="text-[9px] font-black uppercase tracking-[0.15em] text-primary italic">Yükleniyor</span>
+                      </div>
                     ) : (
                       <>
-                        <Upload size={20} className="text-slate-400" />
-                        <span className="text-[11px] font-semibold text-slate-500 uppercase tracking-tight">Fotoğraf Ekle</span>
+                        <div className="size-12 rounded-2xl bg-slate-100 flex items-center justify-center text-slate-400 group-hover:bg-primary/10 group-hover:text-primary transition-all duration-500">
+                           <Upload size={24} />
+                        </div>
+                        <div className="flex flex-col items-center gap-1">
+                           <span className="text-[10px] font-black uppercase tracking-widest text-slate-400 group-hover:text-primary transition-colors italic">{guideText}</span>
+                           <span className="text-[9px] font-bold text-slate-300 uppercase leading-none">Dokun veya Sürükle</span>
+                        </div>
                       </>
                     )}
                     <input
@@ -138,8 +171,8 @@ export function PhotosStep({
 
                 {/* Status Overlays */}
                 {uploadState?.status === "error" && (
-                  <div className="absolute inset-x-0 bottom-0 bg-red-500 text-white text-[9px] py-1 px-2 text-center font-bold">
-                    HATA!
+                  <div className="absolute inset-x-0 bottom-0 bg-rose-500 text-white text-[9px] py-1.5 px-2 text-center font-black uppercase tracking-widest italic animate-in slide-in-from-bottom-2">
+                    YÜKLEME HATASI!
                   </div>
                 )}
               </div>
@@ -147,11 +180,19 @@ export function PhotosStep({
           })}
         </div>
 
-        <div className="mt-6 flex items-start gap-3 p-4 bg-indigo-50/50 rounded-2xl border border-indigo-100">
-          <CheckCircle2 className="size-5 text-indigo-500 shrink-0 mt-0.5" />
-          <p className="text-xs text-indigo-900 leading-relaxed font-medium">
-            <strong>İpucu:</strong> Aydınlık bir ortamda, aracın ön, arka ve yan profillerinden çekilen fotoğraflar alıcıların güvenini artırır.
-          </p>
+        <div className="mt-10 flex items-start gap-4 p-6 bg-slate-50 rounded-[2rem] border border-slate-100 relative overflow-hidden group">
+          <div className="absolute inset-0 bg-primary/5 opacity-0 group-hover:opacity-100 transition-opacity" />
+          <div className="size-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary shrink-0 relative z-10">
+            <CheckCircle2 size={20} />
+          </div>
+          <div className="relative z-10">
+             <p className="text-sm text-slate-900 leading-relaxed font-bold italic antialiased mb-1">
+               Profesyonel Fotoğraf Kılavuzu
+             </p>
+             <p className="text-xs text-slate-500 font-medium leading-relaxed">
+               Güneşi arkana al, kamerayı yatay tut. Aracın tüm açılarını gösteren ilanlar <span className="text-primary font-bold">3 kat daha hızlı</span> satılıyor.
+             </p>
+          </div>
         </div>
       </div>
     </div>
