@@ -1,13 +1,14 @@
 import { describe, it, expect } from "vitest";
 import { calculateValuation } from "../price-estimation";
 
-interface CustomMatchers<R = unknown> {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+interface CustomMatchers<R = any> {
   toBeRelativeCloseTo(expected: number, precision?: number): R;
 }
 
 declare module "vitest" {
-  // eslint-disable-next-line @typescript-eslint/no-empty-object-type
-  interface Assertion<T = unknown> extends CustomMatchers<T> {}
+  // eslint-disable-next-line @typescript-eslint/no-empty-object-type, @typescript-eslint/no-explicit-any
+  interface Assertion<T = any> extends CustomMatchers<T> {}
   // eslint-disable-next-line @typescript-eslint/no-empty-object-type
   interface AsymmetricMatchersContaining extends CustomMatchers {}
 }

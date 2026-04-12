@@ -94,11 +94,8 @@ export default async function ListingDetailPage({ params }: ListingDetailPagePro
           sellerId={listing.sellerId}
           price={listing.price}
           title={listing.title}
-          seller={seller}
-          trustSummary={trustSummary}
           isLoggedIn={!!currentUser}
           loginUrl={`/login?callbackUrl=${encodeURIComponent(`/listing/${listing.slug}`)}`}
-          ratingSummary={ratingSummary}
       />
 
       <main className="min-h-screen" role="main">

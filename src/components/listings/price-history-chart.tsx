@@ -104,7 +104,8 @@ export function PriceHistoryChart({ history, currentPrice }: PriceHistoryChartPr
               }}
               labelStyle={{ fontSize: "10px", fontWeight: 800, color: "#64748b", textTransform: "uppercase", marginBottom: "4px" }}
               itemStyle={{ fontSize: "14px", fontWeight: 900, color: "#0f172a" }}
-              formatter={(value: number) => [value ? `₺${value.toLocaleString("tr-TR")}` : "", "Fiyat"]}
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              formatter={(value: any) => [value ? `₺${Number(value).toLocaleString("tr-TR")}` : "", "Fiyat"]}
             />
             <Line 
               type="monotone" 
