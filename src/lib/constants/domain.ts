@@ -59,7 +59,10 @@ export const listingSortOptions = [
   "price_asc",
   "price_desc",
   "mileage_asc",
+  "mileage_desc",
   "year_desc",
+  "year_asc",
+  "oldest",
 ] as const;
 
 export const expertInspectionGrades = ["a", "b", "c", "d", "e"] as const;

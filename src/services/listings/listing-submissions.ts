@@ -197,7 +197,11 @@ export function calculateFraudScore(input: ListingCreateInput, existingListings:
   }
 
   if (input.damageStatusJson && input.tramerAmount === 0) {
-    const changedPartsCount = Object.values(input.damageStatusJson).filter(s => s === "degisen" || s === "boyali").length;
+    const suspiciousStatuses = ["boyali", "lokal_boyali", "degisen"];
+    const changedPartsCount = Object.values(input.damageStatusJson).filter((s) =>
+      suspiciousStatuses.includes(s as string),
+    ).length;
+
     if (changedPartsCount >= 3) {
       score += 20;
       reasons.push("Çoklu boya/değişen kaydına rağmen hasar kaydı 0");
@@ -444,8 +448,11 @@ export async function getDatabaseListings(options?: {
 
     const sort = filters?.sort ?? "newest";
     
-    // Always prioritize featured listings
-    query = query.order("featured", { ascending: false });
+    // Default "newest" view prioritizes featured listings.
+    // Explicit sorts (price, mileage, year) respect the user's choice as primary.
+    if (!filters?.sort || filters.sort === "newest") {
+      query = query.order("featured", { ascending: false });
+    }
 
     switch (sort) {
       case "price_asc":
@@ -459,6 +466,15 @@ export async function getDatabaseListings(options?: {
         break;
       case "year_desc":
         query = query.order("year", { ascending: false });
+        break;
+      case "oldest":
+        query = query.order("created_at", { ascending: true });
+        break;
+      case "mileage_desc":
+        query = query.order("mileage", { ascending: false });
+        break;
+      case "year_asc":
+        query = query.order("year", { ascending: true });
         break;
       case "newest":
       default:

@@ -1,6 +1,6 @@
 "use client"
  
-import { useState, useTransition } from "react"
+import { useState, useTransition, useEffect } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
 import { LayoutGrid, List, SlidersHorizontal, ArrowDownWideNarrow, ChevronDown } from "lucide-react"
 
@@ -46,6 +46,11 @@ export function ListingsPageClient({
   const [isPending, startTransition] = useTransition()
   
   const [filters, setFilters] = useState<ListingFilters>(initialFilters)
+
+  // Sync internal state when props change (from URL navigation)
+  useEffect(() => {
+    setFilters(initialFilters)
+  }, [JSON.stringify(initialFilters)])
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid")
   const [isFilterOpen, setIsFilterOpen] = useState(false)
   const [isSortOpen, setIsSortOpen] = useState(false)

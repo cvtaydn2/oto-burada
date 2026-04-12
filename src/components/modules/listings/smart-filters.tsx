@@ -119,12 +119,15 @@ export function SmartFilters({
              <RangeSlider
                 min={0}
                 max={15_000_000}
-                step={50_000}
+                step={10_000}
                 valueMin={filters.minPrice}
                 valueMax={filters.maxPrice}
                 onChangeMin={(v) => onFilterChange("minPrice", v)}
                 onChangeMax={(v) => onFilterChange("maxPrice", v)}
-                formatLabel={v => `₺${(v / 1000).toFixed(0)}k`}
+                formatLabel={v => {
+                  if (v >= 1_000_000) return `₺${(v/1_000_000).toFixed(1)}M`
+                  return `₺${(v/1000).toFixed(0)}k`
+                }}
              />
              <div className="grid grid-cols-2 gap-2">
                 <div className="relative">

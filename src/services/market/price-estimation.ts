@@ -60,26 +60,7 @@ export async function estimateVehiclePrice(params: {
     return { min: 0, max: 0, avg: 0, confidence: "low", listingCount: 0 };
   }
 
-  // 2. Mileage adjustment
-  const expectedMileage = (new Date().getFullYear() - params.year) * 15000;
-  const mileageDiff = params.mileage - expectedMileage;
-  const mileageAdjustment = (mileageDiff / 10000) * 0.012; // Adjusted slightly more aggressive
-  let adjustedAvg = baseAvg * (1 - mileageAdjustment);
-
-  // 3. Tramer adjustment (up to -20%)
-  let tramerAdjustment = 0;
-  if (params.tramerAmount && params.tramerAmount > 0) {
-     tramerAdjustment = Math.min((params.tramerAmount / 10000) * 0.015, 0.20);
-  }
-
-  // 4. Damage (Painted/Changed) adjustment (up to -25%)
-  let damageAdjustment = 0;
-  if (params.damageStatusJson) {
-     const nonOriginalParts = Object.values(params.damageStatusJson).filter(v => v !== "original" && v !== "var").length;
-     damageAdjustment = Math.min(nonOriginalParts * 0.018, 0.25);
-  }
-
-  const finalAvg = adjustedAvg * (1 - tramerAdjustment - damageAdjustment);
+  const finalAvg = calculateValuation(baseAvg, params);
   const confidence = count > 15 ? "high" : count > 5 ? "medium" : "low";
 
   return {
@@ -89,4 +70,42 @@ export async function estimateVehiclePrice(params: {
     confidence,
     listingCount: count,
   };
+}
+
+/**
+ * Pure function to calculate valuation based on adjustments.
+ * Isolated for unit testing.
+ */
+export function calculateValuation(
+  baseAvg: number,
+  params: {
+    year: number;
+    mileage: number;
+    tramerAmount?: number | null;
+    damageStatusJson?: Record<string, string> | null;
+  },
+) {
+  // 1. Mileage adjustment
+  const currentYear = new Date().getFullYear();
+  const expectedMileage = (currentYear - params.year) * 15000;
+  const mileageDiff = params.mileage - expectedMileage;
+  const mileageAdjustment = (mileageDiff / 10000) * 0.012;
+  let adjustedAvg = baseAvg * (1 - mileageAdjustment);
+
+  // 2. Tramer adjustment (up to -20%)
+  let tramerAdjustment = 0;
+  if (params.tramerAmount && params.tramerAmount > 0) {
+    tramerAdjustment = Math.min((params.tramerAmount / 10000) * 0.015, 0.2);
+  }
+
+  // 3. Damage (Painted/Changed) adjustment (up to -25%)
+  let damageAdjustment = 0;
+  if (params.damageStatusJson) {
+    const nonOriginalParts = Object.values(params.damageStatusJson).filter(
+      (v) => v !== "original" && v !== "var",
+    ).length;
+    damageAdjustment = Math.min(nonOriginalParts * 0.018, 0.25);
+  }
+
+  return adjustedAvg * (1 - tramerAdjustment - damageAdjustment);
 }

@@ -208,13 +208,16 @@ export function ListingsFilterPanel({
           <div className="px-1">
             <RangeSlider
               min={0}
-              max={10_000_000}
-              step={50_000}
+              max={15_000_000}
+              step={10_000}
               valueMin={filters.minPrice}
               valueMax={filters.maxPrice}
               onChangeMin={(v) => onFilterChange("minPrice", v)}
               onChangeMax={(v) => onFilterChange("maxPrice", v)}
-              formatLabel={formatPrice}
+              formatLabel={(v) => {
+                if (v >= 1_000_000) return `${(v / 1_000_000).toFixed(1)}M TL`
+                return `${(v / 1000).toFixed(0)}K TL`
+              }}
             />
           </div>
           <div className="grid grid-cols-2 gap-2">

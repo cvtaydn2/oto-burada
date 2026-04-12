@@ -56,7 +56,6 @@ export default async function ListingsPage({ searchParams }: ListingsPageProps) 
       </div>
 
       <ListingsPageClient
-        key={initialFiltersKey}
         initialResult={result}
         brands={references.brands}
         cities={references.cities}

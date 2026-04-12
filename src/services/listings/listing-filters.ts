@@ -33,7 +33,7 @@ export function filterListings(
 ) {
   const query = filters.query ? normalizeText(filters.query) : undefined;
 
-  return listings.filter((listing) => {
+  const filtered = listings.filter((listing) => {
     if (query) {
       const searchTarget = normalizeText(
         [
@@ -96,6 +96,8 @@ export function filterListings(
 
     return true;
   });
+
+  return sortListings(filtered, filters.sort);
 }
 
 export function sortListings(
@@ -114,6 +116,12 @@ export function sortListings(
         return left.mileage - right.mileage;
       case "year_desc":
         return right.year - left.year;
+      case "oldest":
+        return Date.parse(left.createdAt) - Date.parse(right.createdAt);
+      case "mileage_desc":
+        return right.mileage - left.mileage;
+      case "year_asc":
+        return left.year - right.year;
       case "newest":
       default:
         return Date.parse(right.createdAt) - Date.parse(left.createdAt);

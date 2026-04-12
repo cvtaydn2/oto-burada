@@ -23,15 +23,15 @@ describe('profile-trust logic', () => {
     expect(result.signals).toHaveLength(0);
   });
 
-  it('should calculate base score for new profile', () => {
+  it('should calculate base score for new profile correctly', () => {
     // base score 4.5
     // name +1.2
     // city +0.8
     // phone (unverified) +1.1
-    // years (since 2022, approx 4 years as of 2026) -> min(4, 4) * 0.35 = 1.4
+    // years (since 2022, approx 4 years as of 2026) -> 4 * 0.35 = 1.4
     // Total: 4.5 + 1.2 + 0.8 + 1.1 + 1.4 = 9.0
     const result = getSellerTrustSummary(mockProfile, 0);
-    expect(result.score).toBeGreaterThan(8); // Softening expected value as it depends on mock date
+    expect(result.score).toBe(9.0);
     expect(result.signals).toContain('Profil adı mevcut');
   });
 
