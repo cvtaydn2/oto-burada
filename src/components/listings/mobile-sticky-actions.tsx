@@ -10,6 +10,9 @@ interface MobileStickyActionsProps {
     title: string;
     isLoggedIn: boolean;
     loginUrl: string;
+    seller: any;
+    trustSummary: any;
+    ratingSummary: any;
 }
 
 export function MobileStickyActions({ 
@@ -18,7 +21,10 @@ export function MobileStickyActions({
     price, 
     title, 
     isLoggedIn, 
-    loginUrl 
+    loginUrl,
+    seller,
+    trustSummary,
+    ratingSummary
 }: MobileStickyActionsProps) {
     return (
         <div className="fixed bottom-0 left-0 right-0 z-50 lg:hidden px-4 py-3 bg-white border-t border-slate-200 shadow-[0_-8px_30px_rgb(0,0,0,0.08)] animate-in fade-in slide-in-from-bottom-full duration-500">

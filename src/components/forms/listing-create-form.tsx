@@ -230,11 +230,11 @@ export function ListingCreateForm({
         brand: initialListing.brand, 
         slug: initialListing.brand.toLowerCase().replace(/[^a-z0-9]/g, "-"),
         name: initialListing.brand,
-        models: initialListing.model ? [initialListing.model] : [] 
+        models: initialListing.model ? [{ name: initialListing.model, trims: [] }] : [] 
       }].sort((l, r) => l.brand.localeCompare(r.brand, "tr"));
     }
-    if (!initialListing.model || existingBrand.models.includes(initialListing.model)) return brands;
-    return brands.map((item) => item.brand === initialListing.brand ? { ...item, models: [...item.models, initialListing.model].sort((l, r) => l.localeCompare(r, "tr")) } : item);
+    if (!initialListing.model || existingBrand.models.some(m => m.name === initialListing.model)) return brands;
+    return brands.map((item) => item.brand === initialListing.brand ? { ...item, models: [...item.models, { name: initialListing.model as string, trims: [] }].sort((l, r) => l.name.localeCompare(r.name, "tr")) } : item);
   }, [brands, initialListing]);
 
   const availableCities = useMemo(() => {
@@ -255,7 +255,7 @@ export function ListingCreateForm({
   useEffect(() => {
     const nextModelOptions = availableBrands.find((item) => item.brand === selectedBrand)?.models ?? [];
     const currentModel = getValues("model");
-    if (currentModel && !nextModelOptions.includes(currentModel)) {
+    if (currentModel && !nextModelOptions.some(m => m.name === currentModel)) {
       setValue("model", "", { shouldDirty: true, shouldValidate: true });
     }
   }, [availableBrands, getValues, selectedBrand, setValue]);
@@ -263,7 +263,7 @@ export function ListingCreateForm({
   useEffect(() => {
     const nextDistrictOptions = availableCities.find((item) => item.city === selectedCity)?.districts ?? [];
     const currentDistrict = getValues("district");
-    if (currentDistrict && !nextDistrictOptions.includes(currentDistrict)) {
+    if (currentDistrict && currentDistrict.length > 0 && !nextDistrictOptions.includes(currentDistrict)) {
       setValue("district", "", { shouldDirty: true, shouldValidate: true });
     }
   }, [availableCities, getValues, selectedCity, setValue]);

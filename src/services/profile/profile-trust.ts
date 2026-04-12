@@ -1,7 +1,7 @@
 import type { Profile } from "@/types";
 
 interface SellerTrustSummary {
-  badgeLabel: string | null;
+  badgeLabel: string;
   score: number;
   signals: string[];
 }
@@ -16,7 +16,7 @@ export function getSellerTrustSummary(
 ): SellerTrustSummary {
   if (!seller) {
     return {
-      badgeLabel: null,
+      badgeLabel: "Yeni Satıcı",
       score: 0,
       signals: [],
     };
@@ -78,7 +78,7 @@ export function getSellerTrustSummary(
             ? "Telefonu doğrulanmış"
             : seller.phone.trim().length > 0
               ? "Profil bilgileri mevcut"
-              : null,
+              : "Profil bilgileri eksik",
     score: roundToSingleDecimal(Math.min(score, 9.9)),
     signals: signals.slice(0, 4),
   };

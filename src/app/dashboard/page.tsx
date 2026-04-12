@@ -12,7 +12,7 @@ import { getDatabaseFavoriteCount } from "@/services/favorites/favorite-records"
 import {
   getStoredUserListings,
 } from "@/services/listings/listing-submissions";
-import { getProfile } from "@/services/profile/profile-service";
+import { getStoredProfileById, buildProfileFromAuthUser } from "@/services/profile/profile-records";
 import { ShieldCheck, ShieldAlert, BadgeCheck } from "lucide-react";
 
 export const dynamic = "force-dynamic";
@@ -26,7 +26,7 @@ export default async function DashboardPage() {
     phone?: string;
   };
   const storedListings = await getStoredUserListings(user.id);
-  const profile = await getProfile(user.id);
+  const profile = (await getStoredProfileById(user.id)) ?? buildProfileFromAuthUser(user);
   const favoriteCount = await getDatabaseFavoriteCount(user.id);
   const pendingListingsCount = storedListings.filter((l) => l.status === "pending").length;
   const profileCompletion = Math.round(
@@ -64,7 +64,7 @@ export default async function DashboardPage() {
         </div>
       </section>
 
-      {!profile?.is_verified && (
+      {!profile?.isVerified && (
         <section className="rounded-2xl border border-amber-200 bg-amber-50/50 p-6 flex flex-col md:flex-row items-center gap-6 shadow-sm">
           <div className="size-16 rounded-full bg-amber-100 flex items-center justify-center text-amber-600 border border-amber-200 shrink-0">
             <ShieldAlert size={32} />
@@ -85,7 +85,7 @@ export default async function DashboardPage() {
         </section>
       )}
 
-      {profile?.is_verified && (
+      {profile?.isVerified && (
         <section className="rounded-2xl border border-emerald-100 bg-emerald-50/30 p-4 flex items-center gap-3">
           <BadgeCheck className="text-emerald-600" size={20} />
           <span className="text-xs font-bold text-emerald-800 italic uppercase tracking-wider">Doğrulanmış Üye - Güvenli Alışveriş Başladı</span>

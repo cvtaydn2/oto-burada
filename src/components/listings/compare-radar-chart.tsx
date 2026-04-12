@@ -21,17 +21,18 @@ export function CompareRadarChart({ cars }: CompareRadarChartProps) {
   // Categories: Price (inverted), Year, Mileage (inverted), Damage Status (inverted)
   
   const categories = [
-    { key: "price", label: "Ekonomi (Fiyat)" },
-    { key: "year", label: "Model Yılı" },
-    { key: "mileage", label: "Düşük KM" },
-    { key: "tramer", label: "Hasarsızlık" },
+    { key: "price", label: "Ekonomi" },
+    { key: "year", label: "Yaş/Model" },
+    { key: "mileage", label: "Kilometre" },
+    { key: "condition", label: "Kondisyon" },
+    { key: "trim", label: "Donanım" },
   ];
 
   const maxPrice = Math.max(...cars.map(c => c.price));
   const minYear = Math.min(...cars.map(c => c.year));
   const maxYear = Math.max(...cars.map(c => c.year));
   const maxMileage = Math.max(...cars.map(c => c.mileage));
-  const maxTramer = Math.max(...cars.map(c => c.tramerAmount || 0), 1);
+  const maxTramer = Math.max(...cars.map(c => c.tramerAmount || 0), 10000);
 
   const data = categories.map(cat => {
     const row: Record<string, number | string> = { subject: cat.label };
@@ -39,17 +40,19 @@ export function CompareRadarChart({ cars }: CompareRadarChartProps) {
     cars.forEach((car) => {
       let value = 0;
       if (cat.key === "price") {
-        // Higher score for lower price
         value = 100 - (car.price / maxPrice) * 100;
       } else if (cat.key === "year") {
-        // Higher score for newer year
         value = ((car.year - minYear) / (maxYear - minYear || 1)) * 100;
       } else if (cat.key === "mileage") {
-        // Higher score for lower mileage
         value = 100 - (car.mileage / (maxMileage || 1)) * 100;
-      } else if (cat.key === "tramer") {
-        // Higher score for lower tramer
-        value = 100 - ((car.tramerAmount || 0) / maxTramer) * 100;
+      } else if (cat.key === "condition") {
+        // Tramer + Expert Report + Damage Status
+        const tramerScore = 100 - (Math.min(car.tramerAmount || 0, 100000) / 100000) * 50;
+        const expertScore = car.expertInspection?.hasInspection ? 50 : 0;
+        value = (tramerScore + expertScore) / 1.5;
+      } else if (cat.key === "trim") {
+        // Higher score if has trim specified
+        value = car.carTrim ? 100 : 30;
       }
       row[car.id] = Math.round(Math.max(10, value));
     });
@@ -57,7 +60,7 @@ export function CompareRadarChart({ cars }: CompareRadarChartProps) {
     return row;
   });
 
-  const colors = ["#4f46e5", "#ef4444", "#10b981", "#f59e0b"];
+  const colors = ["#2563eb", "#e11d48", "#10b981", "#f59e0b"];
 
   return (
     <div className="h-[400px] w-full py-4">

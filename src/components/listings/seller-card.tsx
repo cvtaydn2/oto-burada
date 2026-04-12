@@ -7,6 +7,7 @@ import { TrustBadge } from "@/components/shared/trust-badge"
 import { ContactActions } from "@/components/listings/contact-actions"
 import type { Profile } from "@/types"
 import { cn } from "@/lib/utils"
+import { SellerRatingInfo } from "@/components/profile/seller-rating-info"
 
 interface SellerCardProps {
   seller: Profile | null
@@ -18,6 +19,7 @@ interface SellerCardProps {
   isLoggedIn: boolean
   listingId: string
   loginUrl: string
+  ratingSummary?: { average: number; count: number }
 }
 
 export function SellerCard({
@@ -26,6 +28,7 @@ export function SellerCard({
   isLoggedIn,
   listingId,
   loginUrl,
+  ratingSummary,
 }: SellerCardProps) {
   return (
     <div className="rounded-xl border border-slate-200 bg-white overflow-hidden">
@@ -65,11 +68,17 @@ export function SellerCard({
           </div>
         </div>
 
-        {/* Trust Badge */}
-        <TrustBadge
-          badgeLabel={trustSummary.badgeLabel}
-          score={trustSummary.score}
-        />
+        {/* Trust & Rating */}
+        <div className="space-y-3">
+          <SellerRatingInfo 
+            average={ratingSummary?.average || 0} 
+            count={ratingSummary?.count || 0} 
+          />
+          <TrustBadge
+            badgeLabel={trustSummary.badgeLabel}
+            score={trustSummary.score}
+          />
+        </div>
 
         {/* Contact Actions */}
         {isLoggedIn ? (

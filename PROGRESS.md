@@ -14,14 +14,19 @@ Her yeni geliştirme başlamadan önce okunmalıdır.
 
 ## Proje Durumu
 
-### 2026-04-13 Phase 25: Marketplace Hardening & Core Depth (Completed) ✅
-- [x] Database Schema Expansion (Chats, Messages, Price History)
-- [x] Implement Verification UI (Mock E-Devlet)
-- [x] Build Real-time Chat Logic & Realtime Sync
-- [x] Implement Price History Tracking & Chart
-- [x] Refine Market Value Algorithm (Damage & Paint factors)
-- [x] Fix RangeSlider UI Bugs
-- [x] Expand Demo Seed Coverage (Popular Turkish Car Models)
+### 2026-04-13 Phase 25: Marketplace Hardening & Quality (Completed)
+- **Identity Verification**: Integrated e-devlet style verification flow and is_verified database flag.
+- **In-App Messaging**: Real-time chat with online status and read receipts.
+- **Smart Filtering**: Added Tramer (damage) and Expert Report filters to discovery flow.
+- **Market Analysis**: Enhanced price prediction algorithm with damage history weighting and visual price history charts.
+- **Enriched Comparison**: Upgraded Radar Chart with condition/trim scores and detailed technical feature table.
+- **Seller Rating System**: Added `seller_reviews` table, rating service, and stars UI on listings.
+- **Professional PDF Export**: Optimized print CSS for corporate-grade car report output.
+
+- **Status**: ✅ All 4 requested depth features implemented and validated.
+- **Decisions**: Radar chart now uses a 'Condition' score combining Tramer amount and Expert Report presence for better visual comparison.
+- **Validation**: Manual tests on comparison page show accurate data normalization across different car prices. Print preview confirmed clean, brand-compliant layout.
+- **Next Step**: Phase 26: Monetization - Implementing paid listing bumps (iyzico/Stripe) and credit system.
 
 ### 2026-04-12 Phase 24: Age-Inclusive UX & Accessibility Hardening (Completed)
 - **Multi-Age Accessibility**: Standardized minimum font sizes across critical components (Filter, Hero, Legend, Market Analysis) to ensure usability for users aged 18 to 65.

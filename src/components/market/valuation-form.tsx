@@ -184,8 +184,8 @@ export function ValuationForm({ brands }: ValuationFormProps) {
             </SelectTrigger>
             <SelectContent className="rounded-2xl">
               {modelOptions.map((m) => (
-                <SelectItem key={m} value={m} className="font-bold">
-                  {m}
+                <SelectItem key={m.name} value={m.name} className="font-bold">
+                  {m.name}
                 </SelectItem>
               ))}
             </SelectContent>

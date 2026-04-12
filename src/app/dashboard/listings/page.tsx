@@ -37,7 +37,7 @@ export default async function DashboardListingsPage({ searchParams }: DashboardL
             brand: selectedListing.brand,
             slug: selectedListing.brand.toLowerCase().replace(/[^a-z0-9]/g, "-"),
             name: selectedListing.brand,
-            models: selectedListing.model ? [selectedListing.model] : [],
+            models: selectedListing.model ? [{ name: selectedListing.model, trims: [] }] : [],
           },
         ].sort((left, right) => left.brand.localeCompare(right.brand, "tr"))
       : references.brands;

@@ -61,6 +61,7 @@ export default async function ComparePage({ searchParams }: ComparePageProps) {
   }> = [
     { label: "Fiyat", render: (car) => formatCurrency(car.price) },
     { label: "Yıl", render: (car) => String(car.year) },
+    { label: "Paket", render: (car) => car.carTrim || "Belirtilmemiş" },
     { label: "Kilometre", render: (car) => `${formatNumber(car.mileage)} km` },
     { label: "Yakıt", render: (car) => car.fuelType },
     { label: "Vites", render: (car) => car.transmission },
@@ -70,17 +71,25 @@ export default async function ComparePage({ searchParams }: ComparePageProps) {
       render: (car) =>
         car.tramerAmount != null
           ? car.tramerAmount === 0
-            ? "Tramer kaydı yok ✓"
+            ? "Hasarsız ✓"
             : formatCurrency(car.tramerAmount)
           : "Belirtilmemiş",
     },
     {
-      label: "Ekspertiz Belgesi",
+      label: "Hasar Durumu",
+      render: (car) => {
+        if (!car.damageStatusJson) return "Tamamen Orijinal ✓";
+        const paintCount = Object.values(car.damageStatusJson).filter(v => v === "painted").length;
+        const changeCount = Object.values(car.damageStatusJson).filter(v => v === "replaced").length;
+        if (paintCount === 0 && changeCount === 0) return "Orijinal ✓";
+        return `${paintCount} Boyalı, ${changeCount} Değişen`;
+      }
+    },
+    {
+      label: "Ekspertiz",
       render: (car) =>
         car.expertInspection?.hasInspection
-          ? car.expertInspection.documentUrl
-            ? "Belge mevcut ✓"
-            : "Ekspertizli"
+          ? "Rapor Mevcut ✓"
           : "Yok",
     },
   ];

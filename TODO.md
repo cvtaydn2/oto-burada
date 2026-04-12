@@ -60,11 +60,11 @@
 ### Özellikler
 - [x] **Bildirim sistemi**: Push notification ve in-app bildirim altyapısı (Done - In-app)
   - Saved search eşleşmesi, favori fiyat düşüşü, moderasyon sonucu
-- [ ] **Karşılaştırma sayfası zenginleştirme**: Radar chart, özellik tablosu
+- [x] **Karşılaştırma sayfası zenginleştirme**: Radar chart, özellik tablosu (Radar + Teknik tablo zenginleştirildi)
 - [ ] **İlan bump (öne çıkarma)**: Ücretli öne çıkarma akışı (Stripe/iyzico)
-- [ ] **Satıcı puanlama**: İşlem sonrası alıcı değerlendirmesi
-- [ ] **Araç fiyat tahmini**: Marka/model/yıl/km bazlı piyasa fiyatı göstergesi
-- [ ] **PDF ilan raporu**: İlan detaylarını PDF olarak indirme
+- [x] **Satıcı puanlama**: İşlem sonrası alıcı değerlendirmesi (DB + UI entegre edildi)
+- [x] **Araç fiyat tahmini**: Marka/model/yıl/km bazlı piyasa fiyatı göstergesi (Phase 25 ile tamamlandı)
+- [x] **PDF ilan raporu**: İlan detaylarını PDF olarak indirme (Print optimization ile profesyonel rapor görünümü)
 
 ### Altyapı
 - [x] **E2E testleri**: Playwright ile kritik akışların otomasyonu (Done)

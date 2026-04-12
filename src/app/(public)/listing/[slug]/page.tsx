@@ -42,6 +42,8 @@ import { getSellerTrustSummary } from "@/services/profile/profile-trust";
 import { getListingPriceHistory } from "@/services/listings/listing-price-history";
 import { MarketAnalysisInfo } from "@/components/listings/market-analysis-info";
 import { PriceHistoryInfo } from "@/components/listings/price-history-info";
+import { getSellerRatingSummary } from "@/services/profile/seller-reviews";
+import { SellerCard } from "@/components/listings/seller-card";
 
 interface ListingDetailPageProps {
   params: Promise<{
@@ -68,12 +70,14 @@ export default async function ListingDetailPage({ params }: ListingDetailPagePro
   if (!listing) notFound();
 
   const seller = await getMarketplaceSeller(listing.sellerId);
-  const similarListings = await getSimilarMarketplaceListings(listing.slug, listing.brand, listing.city);
-  const activeListingCount = (await getPublicMarketplaceListings()).listings.filter(l => l.sellerId === listing.sellerId).length;
+  const [similarListings, trustSummary, priceHistory, ratingSummary] = await Promise.all([
+    getSimilarMarketplaceListings(listing.slug, listing.brand, listing.city),
+    getSellerTrustSummary(seller, (await getPublicMarketplaceListings()).listings.filter(l => l.sellerId === listing.sellerId).length),
+    getListingPriceHistory(listing.id),
+    getSellerRatingSummary(listing.sellerId),
+  ]);
   const insight = getListingCardInsights(listing);
-  const trustSummary = getSellerTrustSummary(seller, activeListingCount);
   const currentUser = await getCurrentUser();
-  const priceHistory = await getListingPriceHistory(listing.id);
 
   const breadcrumbs = [
     { name: "İlanlar", url: "/listings" },
@@ -91,8 +95,11 @@ export default async function ListingDetailPage({ params }: ListingDetailPagePro
           sellerId={listing.sellerId}
           price={listing.price}
           title={listing.title}
+          seller={seller}
+          trustSummary={trustSummary}
           isLoggedIn={!!currentUser}
-          loginUrl={`/login?next=${encodeURIComponent(`/listing/${listing.slug}`)}`}
+          loginUrl={`/login?callbackUrl=${encodeURIComponent(`/listing/${listing.slug}`)}`}
+          ratingSummary={ratingSummary}
       />
 
       <main className="min-h-screen bg-background" role="main">
@@ -132,6 +139,20 @@ export default async function ListingDetailPage({ params }: ListingDetailPagePro
                     ₺{new Intl.NumberFormat("tr-TR").format(listing.price)}
                   </div>
                   <ViewCounter listingId={listing.id} initialCount={listing.viewCount} />
+              </div>
+
+              {/* Print Only Professional Header */}
+              <div className="hidden print:block border-b-4 border-primary pb-8 mb-8">
+                 <div className="flex justify-between items-start">
+                    <div>
+                       <h1 className="text-4xl font-black italic uppercase">OtoBurada <span className="text-primary">Ekspertiz Raporu</span></h1>
+                       <p className="text-sm font-bold text-muted-foreground mt-2">İlan No: #{listing.id.slice(0, 8).toUpperCase()} • Tarih: {new Date().toLocaleDateString("tr-TR")}</p>
+                    </div>
+                    <div className="text-right">
+                       <div className="text-2xl font-black">₺{new Intl.NumberFormat("tr-TR").format(listing.price)}</div>
+                       <div className="text-sm font-bold italic text-muted-foreground">{listing.brand} {listing.model} {listing.carTrim}</div>
+                    </div>
+                 </div>
               </div>
 
               {/* Expert Inspection - High Visibility */}
@@ -249,49 +270,14 @@ export default async function ListingDetailPage({ params }: ListingDetailPagePro
               </div>
 
               {/* Seller Trust Profile */}
-              <div className="p-8 rounded-[32px] bg-white border border-border card-shadow space-y-6">
-                 <div className="flex items-center gap-4">
-                    <div className="size-16 bg-primary/10 text-primary rounded-2xl flex items-center justify-center font-black text-2xl border border-primary/20 italic">
-                      {(seller?.fullName ?? "S").slice(0, 1)}
-                    </div>
-                    <div className="flex-1">
-                       <h3 className="font-black text-xl italic">{seller?.fullName || "Bireysel Satıcı"}</h3>
-                       <div className="flex items-center gap-2 text-emerald-600 text-xs font-bold mt-1">
-                          <CheckCircle2 size={14} />
-                          Kimlik Doğrulandı
-                       </div>
-                    </div>
-                    
-                    <ResponseTimeBadge sellerId={listing.sellerId} />
-                 </div>
-
-                 <div className="grid grid-cols-2 gap-3 py-4 border-y border-slate-100">
-                    <div className="text-center">
-                       <div className="text-lg font-black">{activeListingCount}</div>
-                       <div className="text-[10px] font-black text-muted-foreground uppercase tracking-wider italic">Aktif İlan</div>
-                    </div>
-                    <div className="text-center border-l border-slate-100">
-                       <div className="text-lg font-black">9.8</div>
-                       <div className="text-[10px] font-black text-muted-foreground uppercase tracking-wider italic">Güven Puanı</div>
-                    </div>
-                 </div>
-
-                 {/* Trust Signals List */}
-                 <div className="space-y-3">
-                    {trustSummary.signals.map(s => (
-                      <div key={s} className="flex items-center gap-3 text-sm font-bold text-slate-700 italic">
-                         <div className="size-5 rounded-full bg-emerald-500/10 flex items-center justify-center">
-                            <CheckCircle2 className="text-emerald-500" size={12} />
-                         </div>
-                         {s}
-                      </div>
-                    ))}
-                 </div>
-
-                 <Link href={`/seller/${listing.sellerId}`} className="flex w-full h-12 items-center justify-center text-sm font-bold border border-border rounded-xl hover:bg-secondary transition-all italic">
-                    Satıcı Profilini Gör
-                 </Link>
-              </div>
+              <SellerCard 
+                seller={seller}
+                trustSummary={trustSummary}
+                isLoggedIn={!!currentUser}
+                listingId={listing.id}
+                loginUrl={`/login?callbackUrl=/listing/${listing.slug}`}
+                ratingSummary={ratingSummary}
+              />
 
               {/* Moderation Safety Note */}
               <div className="p-5 rounded-2xl bg-amber-50/50 border border-amber-100 flex gap-4">
