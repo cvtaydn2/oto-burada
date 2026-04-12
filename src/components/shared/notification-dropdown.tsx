@@ -1,49 +1,38 @@
 "use client";
 
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQueryClient, useMutation } from "@tanstack/react-query";
 import { Bell, Check, LoaderCircle, Trash2 } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
 import * as DropdownMenu from "@radix-ui/react-dropdown-menu";
 
 import { cn, formatDate } from "@/lib/utils";
-import type { Notification } from "@/types";
+import { useNotifications } from "@/hooks/use-notifications";
+import { createSupabaseBrowserClient } from "@/lib/supabase/browser";
 
-export function NotificationDropdown() {
+export function NotificationDropdown({ userId }: { userId?: string }) {
   const queryClient = useQueryClient();
   const [isOpen, setIsOpen] = useState(false);
+  const { notifications, unreadCount, isLoading } = useNotifications(userId);
+  const supabase = createSupabaseBrowserClient();
 
-  // 1. Fetch notifications
-  const { data: notifications = [], isLoading } = useQuery<Notification[]>({
-    queryKey: ["notifications"],
-    queryFn: async () => {
-      const response = await fetch("/api/notifications");
-      if (!response.ok) throw new Error("Bildirimler çekilemedi.");
-      const payload = await response.json();
-      return payload.data?.notifications ?? [];
-    },
-    refetchInterval: 30000, // Every 30 seconds
-  });
-
-  const unreadCount = notifications.filter((n) => !n.read).length;
-
-  // 2. Mark as read mutation
+  // Mark as read mutation
   const markReadMutation = useMutation({
     mutationFn: async (id: string) => {
       await fetch(`/api/notifications/${id}`, { method: "PATCH" });
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["notifications"] });
+      queryClient.invalidateQueries({ queryKey: ["notifications", userId] });
     },
   });
 
-  // 3. Mark all as read mutation
+  // Mark all as read mutation
   const markAllReadMutation = useMutation({
     mutationFn: async () => {
       await fetch("/api/notifications", { method: "PATCH" });
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["notifications"] });
+      queryClient.invalidateQueries({ queryKey: ["notifications", userId] });
     },
   });
 

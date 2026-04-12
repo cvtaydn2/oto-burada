@@ -49,7 +49,7 @@ export async function SiteHeader() {
 
           <nav className="hidden md:flex items-center gap-1.5" aria-label="Ana navigasyon">
             <ThemeToggle />
-            {user && <NotificationDropdown />}
+            {user && <NotificationDropdown userId={user.id} />}
             
             <Link 
               href={favoritesHref} 

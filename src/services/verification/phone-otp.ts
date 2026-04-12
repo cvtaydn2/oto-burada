@@ -1,4 +1,5 @@
 import { Redis } from "@upstash/redis";
+import { sms } from "@/lib/sms";
 import { nanoid } from "nanoid";
 
 const redis = Redis.fromEnv();
@@ -19,11 +20,14 @@ export async function sendPhoneOTP(phone: string): Promise<{ success: boolean; e
     // Store in Redis: phone -> code
     await redis.set(`otp:${normalizedPhone}`, code, { ex: OTP_TTL });
     
-    // MOCK SMS SENDING
-    console.log(`[SMS MOCK] Sending OTP ${code} to ${normalizedPhone}`);
-    
-    // In a real app, you would call an SMS provider (Twilio, Netgsm, etc.) here
-    // await smsProvider.send(normalizedPhone, `OtoBurada doğrulama kodunuz: ${code}`);
+    const smsResult = await sms.send({
+      to: normalizedPhone.startsWith("+") ? normalizedPhone : `+90${normalizedPhone}`,
+      body: `OtoBurada dogrulama kodunuz: ${code}`
+    });
+
+    if (!smsResult.success) {
+      return { success: false, error: smsResult.error };
+    }
 
     return { success: true };
   } catch (error) {

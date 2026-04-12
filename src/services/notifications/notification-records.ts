@@ -95,6 +95,39 @@ export async function createDatabaseNotification(input: {
   return mapNotificationRow(data);
 }
 
+export async function createDatabaseNotificationsBulk(inputs: {
+  href?: string | null;
+  message: string;
+  title: string;
+  type: NotificationType;
+  userId: string;
+}[]) {
+  if (!hasSupabaseAdminEnv() || inputs.length === 0) {
+    return [];
+  }
+
+  const admin = createSupabaseAdminClient();
+  const { data, error } = await admin
+    .from("notifications")
+    .insert(
+      inputs.map((input) => ({
+        href: input.href ?? null,
+        message: input.message,
+        title: input.title,
+        type: input.type,
+        user_id: input.userId,
+      }))
+    )
+    .select("id, user_id, type, title, message, href, read, created_at, updated_at")
+    .returns<NotificationRow[]>();
+
+  if (error || !data) {
+    return [];
+  }
+
+  return data.map(mapNotificationRow);
+}
+
 export async function markDatabaseNotificationRead(userId: string, notificationId: string) {
   if (!hasSupabaseAdminEnv()) {
     return null;

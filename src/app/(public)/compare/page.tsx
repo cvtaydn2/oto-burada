@@ -10,6 +10,7 @@ import {
 import { formatCurrency, formatNumber } from "@/lib/utils";
 import type { Listing } from "@/types";
 import { CompareRemoveButton } from "@/components/listings/compare-remove-button";
+import { CompareRadarChart } from "@/components/listings/compare-radar-chart";
 
 export const metadata: Metadata = {
   title: "Araç Karşılaştırma",
@@ -110,6 +111,30 @@ export default async function ComparePage({ searchParams }: ComparePageProps) {
           <p className="mt-1 text-sm text-muted-foreground">
             {cars.length} aracı detaylı olarak karşılaştırın.
           </p>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center bg-muted/30 rounded-[2rem] p-6 lg:p-8 border border-border/60">
+        <div className="lg:col-span-4 space-y-4">
+          <h2 className="text-xl font-bold">Veri Analizi</h2>
+          <p className="text-sm text-muted-foreground leading-relaxed">
+            Seçtiğiniz araçların model yılı, fiyat, düşük kilometre ve hasarsızlık durumlarını 
+            görsel olarak kıyaslayın. Grafikte merkeze en uzak olan araç, o kategoride en iyi değeri sunmaktadır.
+          </p>
+          <div className="flex flex-wrap gap-2 pt-2">
+            {cars.map((car, idx) => {
+               const colors = ["bg-indigo-600", "bg-rose-500", "bg-emerald-500", "bg-amber-500"];
+               return (
+                 <div key={car.id} className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-background border border-border text-xs font-semibold shadow-sm">
+                   <div className={`size-2 rounded-full ${colors[idx % colors.length]}`} />
+                   {car.brand} {car.model}
+                 </div>
+               )
+            })}
+          </div>
+        </div>
+        <div className="lg:col-span-8 flex justify-center">
+            <CompareRadarChart cars={cars} />
         </div>
       </div>
 

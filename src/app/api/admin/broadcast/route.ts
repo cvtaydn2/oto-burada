@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { requireApiAdminUser } from "@/lib/auth/api-admin";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
-import { createDatabaseNotification } from "@/services/notifications/notification-records";
+import { createDatabaseNotification, createDatabaseNotificationsBulk } from "@/services/notifications/notification-records";
 
 export async function POST(request: Request) {
   const authResponse = await requireApiAdminUser();
@@ -36,20 +36,19 @@ export async function POST(request: Request) {
     }
 
     // Create notifications for all users in parallel batches
-    const BATCH_SIZE = 50;
+    const BATCH_SIZE = 100;
     
     for (let i = 0; i < profiles.length; i += BATCH_SIZE) {
       const batch = profiles.slice(i, i + BATCH_SIZE);
-      const batchPromises = batch.map(profile => 
-        createDatabaseNotification({
+      await createDatabaseNotificationsBulk(
+        batch.map(profile => ({
           userId: profile.id,
           type: "system",
           title,
           message,
           href: "/"
-        })
+        }))
       );
-      await Promise.all(batchPromises);
     }
 
     return NextResponse.json({ 

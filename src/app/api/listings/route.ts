@@ -37,6 +37,15 @@ export async function GET(request: Request) {
 }
 
 export async function POST(request: Request) {
+  // Simple CSRF Check: Verify Origin and Referer
+  const origin = request.headers.get("origin");
+  const host = request.headers.get("host");
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL || "";
+
+  if (origin && !appUrl.includes(origin) && !origin.includes(host || "localhost")) {
+     return apiError(API_ERROR_CODES.BAD_REQUEST, "Geçersiz istek kaynağı (CSRF).", 403);
+  }
+
   const ipRateLimit = await enforceRateLimit(
     getRateLimitKey(request, "api:listings:create"),
     rateLimitProfiles.general,

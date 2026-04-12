@@ -355,9 +355,9 @@ Audit all pages for:
 - [x] Create an XML sitemap generator that includes all approved listings
 
 ### Task 8.2 — Admin Operational Excellence
-- Multi-step moderation flows with predefined rejection reasons
-- Activity tracking for moderator performance
-- Bulk notification sending for maintenance or updates
+- [x] Multi-step moderation flows with predefined rejection reasons
+- [x] Activity tracking for moderator performance
+- [x] Bulk notification sending for maintenance or updates
 
 ### Task 8.3 — PWA Support & Mobile Polish
 - [x] Implement manifest.json and service worker for "Add to Home Screen"

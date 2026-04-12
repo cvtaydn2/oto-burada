@@ -32,6 +32,7 @@ import { TrustBadge } from "@/components/shared/trust-badge";
 import { ContactActions } from "@/components/listings/contact-actions";
 import { ExpertInspectionCard } from "@/components/listings/expert-inspection-card";
 import { DamageReportCard } from "@/components/listings/damage-report-card";
+import { ListingPrintAction } from "@/components/listings/listing-print-action";
 import { EIDSBadge } from "@/components/shared/eids-badge";
 import { MobileStickyActions } from "@/components/listings/mobile-sticky-actions";
 import { getCurrentUser } from "@/lib/auth/session";
@@ -302,6 +303,7 @@ export default async function ListingDetailPage({ params }: ListingDetailPagePro
 
               {/* Report Button */}
               <ReportListingForm listingId={listing.id} sellerId={listing.sellerId} userId={currentUser?.id ?? null} />
+              <ListingPrintAction />
             </aside>
           </div>
         </div>

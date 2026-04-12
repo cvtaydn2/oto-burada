@@ -67,12 +67,11 @@
 - [ ] **PDF ilan raporu**: İlan detaylarını PDF olarak indirme
 
 ### Altyapı
-- [ ] **E2E testleri**: Playwright ile kritik akışların otomasyonu
-  - İlan oluşturma, moderasyon, arama, favori ekleme
-- [ ] **CI/CD pipeline**: GitHub Actions ile lint → typecheck → build → deploy
-- [ ] **Kritik**: SMS Verification (OTP) entegrasyonu (Sahte numaraları engellemek için)
-- [x] **Kritik**: Upstash Redis Rate Limiting (Serverless ortamda in-memory Map'in çalışmaması sorunu)
-- [x] **Önemli**: EİDS (E-Devlet) İlan Doğrulama API prototipi
+- [x] **E2E testleri**: Playwright ile kritik akışların otomasyonu (Done)
+- [x] **CI/CD pipeline**: GitHub Actions ile lint → typecheck → build → deploy (Done)
+- [x] **Kritik**: SMS Verification (OTP) entegrasyonu (Done)
+- [x] **Kritik**: Upstash Redis Rate Limiting (Done)
+- [x] **Önemli**: EİDS (E-Devlet) İlan Doğrulama API prototipi (Done)
 - [ ] **Önemli**: Güvenli Ödeme (Iyzico/Stripe) ve İlan Boost akışı
 - [ ] **Staging ortamı**: Supabase branch + Vercel preview deployment
 
