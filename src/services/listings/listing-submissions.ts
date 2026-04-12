@@ -284,15 +284,15 @@ function mapListingRow(row: ListingRow): Listing {
     fraudScore: row.fraud_score ?? 0,
     fuelType: row.fuel_type,
     id: row.id,
-    images: (row.listing_images ?? [])
+    images: (row.listing_images || [])
       .map((image) => ({
         id: image.id,
-        isCover: image.is_cover,
+        isCover: image.is_cover || false,
         listingId: image.listing_id,
-        order: image.sort_order,
-        storagePath: image.storage_path,
-        url: image.public_url,
-        placeholderBlur: image.placeholder_blur,
+        order: image.sort_order || 0,
+        storagePath: image.storage_path || "",
+        url: image.public_url || "",
+        placeholderBlur: image.placeholder_blur || null,
       }))
       .sort((left, right) => left.order - right.order),
     mileage: row.mileage,

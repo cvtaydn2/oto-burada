@@ -23,7 +23,8 @@ function formatPrice(price: number): string {
 
 export function CarCard({ listing, priority = false, variant = "grid" }: CarCardProps) {
   // Enhanced cover image selection logic to prevent mismatches if data is inconsistent
-  const coverImage = listing.images.find(img => img.isCover) || listing.images[0]
+  const images = listing.images || []
+  const coverImage = images.find(img => img.isCover) || images[0]
   
   // Logic for Advantageous Price (Conversion Booster)
   const isAdvantageous = (listing.marketPriceIndex ?? 1) < 0.95
@@ -120,7 +121,7 @@ export function CarCard({ listing, priority = false, variant = "grid" }: CarCard
         {/* Image Count Indicator */}
         <div className="absolute bottom-3 right-3 flex items-center gap-1.5 px-2 py-1 bg-black/50 backdrop-blur-md rounded-full text-[10px] text-white font-semibold">
            <Camera className="w-3 h-3" />
-           <span>{listing.images.length}</span>
+           <span>{(listing.images || []).length}</span>
         </div>
       </div>
 
