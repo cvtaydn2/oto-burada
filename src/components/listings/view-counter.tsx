@@ -16,52 +16,60 @@ export function ViewCounter({ listingId, initialCount }: ViewCounterProps) {
   const queryClient = useQueryClient();
 
   useEffect(() => {
-    // 1. Increment view count via RPC
-    const incrementView = async () => {
-      try {
-        // Simple client-side storage to avoid excessive increments in same session
-        const viewedKey = `voted_${listingId}`;
-        const lastViewed = localStorage.getItem(viewedKey);
-        const now = Date.now();
-        
-        // If not viewed in last hour in this browser session
-        if (!lastViewed || now - parseInt(lastViewed) > 3600000) {
-          await supabase.rpc("increment_listing_view", {
-            target_listing_id: listingId
-          });
+    let channel: any;
+
+    const setup = async () => {
+      // 1. Increment view count
+      const viewedKey = `voted_${listingId}`;
+      const lastViewed = localStorage.getItem(viewedKey);
+      const now = Date.now();
+      
+      if (!lastViewed || now - parseInt(lastViewed) > 3600000) {
+        try {
+          await supabase.rpc("increment_listing_view", { target_listing_id: listingId });
           localStorage.setItem(viewedKey, now.toString());
+        } catch (err) {
+          console.error("View increment error:", err);
         }
-      } catch (err) {
-        console.error("Failed to increment view:", err);
       }
+
+      // 2. Setup Realtime Channel
+      // Ensure any existing channel with this name is removed first to avoid callback errors
+      const channelName = `lv_${listingId.slice(0, 8)}`;
+      
+      // Attempt to clean up any existing instance of this channel
+      const existingChannel = supabase.getChannels().find((c: any) => c.name === channelName);
+      if (existingChannel) {
+        await supabase.removeChannel(existingChannel);
+      }
+
+      channel = supabase
+        .channel(channelName)
+        .on(
+          "postgres_changes",
+          {
+            event: "UPDATE",
+            schema: "public",
+            table: "listings",
+            filter: `id=eq.${listingId}`,
+          },
+          (payload: any) => {
+            if (payload.new && typeof payload.new.view_count === "number") {
+              setCount(payload.new.view_count);
+            }
+          }
+        )
+        .subscribe();
     };
 
-    incrementView();
-
-    // 2. Subscribe to Realtime updates for this listing
-    const channel = supabase
-      .channel(`listing-views-${listingId}`)
-      .on(
-        "postgres_changes",
-        {
-          event: "UPDATE",
-          schema: "public",
-          table: "listings",
-          filter: `id=eq.${listingId}`,
-        },
-        (payload) => {
-          if (payload.new && typeof payload.new.view_count === "number") {
-            setCount(payload.new.view_count);
-            // Optionally invalidate queries if needed, but we have local state
-          }
-        }
-      )
-      .subscribe();
+    setup();
 
     return () => {
-      supabase.removeChannel(channel);
+      if (channel) {
+        supabase.removeChannel(channel);
+      }
     };
-  }, [listingId, initialCount, supabase]);
+  }, [listingId, supabase]);
 
   return (
     <div className="flex items-center gap-4 py-2 px-4 rounded-2xl bg-slate-50 border border-slate-100/50 w-fit">

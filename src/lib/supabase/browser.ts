@@ -4,8 +4,13 @@ import { createBrowserClient } from "@supabase/ssr";
 
 import { getSupabaseEnv } from "@/lib/supabase/env";
 
-export function createSupabaseBrowserClient() {
-  const { url, anonKey } = getSupabaseEnv();
+let client: ReturnType<typeof createBrowserClient> | undefined;
 
-  return createBrowserClient(url, anonKey);
+export function createSupabaseBrowserClient() {
+  if (client) return client;
+
+  const { url, anonKey } = getSupabaseEnv();
+  client = createBrowserClient(url, anonKey);
+  
+  return client;
 }
