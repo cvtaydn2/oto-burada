@@ -16,7 +16,34 @@ export async function getAllUsers() {
     return [];
   }
 
-  return profiles as Profile[];
+  return (profiles || []).map((p: any) => ({
+    id: p.id,
+    fullName: p.full_name || "",
+    phone: p.phone || "",
+    city: p.city || "",
+    avatarUrl: p.avatar_url,
+    emailVerified: p.email_verified || false,
+    phoneVerified: p.phone_verified || false,
+    identityVerified: p.identity_verified || p.is_verified || false,
+    role: p.role || "user",
+    userType: p.user_type || "individual",
+    balanceCredits: p.balance_credits || 0,
+    isVerified: p.is_verified || false,
+    tcVerifiedAt: p.tc_verified_at,
+    eidsId: p.eids_id,
+    businessName: p.business_name,
+    businessAddress: p.business_address,
+    businessLogoUrl: p.business_logo_url,
+    businessDescription: p.business_description,
+    taxId: p.tax_id,
+    taxOffice: p.tax_office,
+    websiteUrl: p.website_url,
+    verifiedBusiness: p.verified_business,
+    businessSlug: p.business_slug,
+    isBanned: p.is_banned,
+    createdAt: p.created_at,
+    updatedAt: p.updated_at,
+  })) as Profile[];
 }
 
 export async function updateUserRole(userId: string, role: "user" | "admin" | "professional") {

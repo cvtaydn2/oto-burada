@@ -23,35 +23,35 @@ export function FilterSelect({
     <SelectPrimitive.Root value={value || ""} onValueChange={onValueChange}>
       <SelectPrimitive.Trigger
         className={cn(
-          "flex h-10 w-full items-center justify-between rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm font-medium text-slate-700 outline-none hover:bg-white hover:border-slate-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 disabled:cursor-not-allowed disabled:opacity-50 transition-colors",
+          "flex h-12 w-full items-center justify-between rounded-2xl border-none bg-slate-50 px-5 py-2 text-sm font-bold text-slate-700 outline-none hover:bg-slate-100 focus:ring-4 focus:ring-primary/5 disabled:cursor-not-allowed disabled:opacity-50 transition-all",
           className
         )}
       >
         <SelectPrimitive.Value placeholder={placeholder} />
         <SelectPrimitive.Icon>
-          <ChevronDown className="size-4 text-slate-400" />
+          <ChevronDown className="size-4 text-slate-300" />
         </SelectPrimitive.Icon>
       </SelectPrimitive.Trigger>
       
       <SelectPrimitive.Portal>
         <SelectPrimitive.Content
-          className="overflow-hidden rounded-lg border border-slate-200 bg-white shadow-lg z-50"
+          className="overflow-hidden rounded-2xl border border-slate-50 bg-white/90 backdrop-blur-xl shadow-2xl z-[100] animate-in fade-in zoom-in-95 duration-200"
           position="popper"
-          sideOffset={4}
+          sideOffset={8}
         >
-          <SelectPrimitive.Viewport className="p-1">
+          <SelectPrimitive.Viewport className="p-2 min-w-[200px]">
             {options.map((option) => (
               <SelectPrimitive.Item
                 key={option.value}
                 value={option.value}
                 className={cn(
-                  "relative flex cursor-pointer select-none items-center rounded-md py-2 pl-8 pr-3 text-sm outline-none transition-colors",
-                  "data-[highlighted]:bg-slate-100 data-[highlighted]:text-slate-900"
+                  "relative flex cursor-pointer select-none items-center rounded-xl py-3 pl-10 pr-4 text-sm font-bold text-slate-600 outline-none transition-all",
+                  "data-[highlighted]:bg-primary/5 data-[highlighted]:text-primary"
                 )}
               >
-                <span className="absolute left-2 flex h-4 w-4 items-center justify-center">
+                <span className="absolute left-3 flex h-4 w-4 items-center justify-center">
                   <SelectPrimitive.ItemIndicator>
-                    <Check className="size-4 text-blue-600" />
+                    <Check className="size-4 text-primary" strokeWidth={3} />
                   </SelectPrimitive.ItemIndicator>
                 </span>
                 <SelectPrimitive.ItemText>{option.label}</SelectPrimitive.ItemText>

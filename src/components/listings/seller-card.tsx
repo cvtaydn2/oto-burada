@@ -31,11 +31,11 @@ export function SellerCard({
   ratingSummary,
 }: SellerCardProps) {
   return (
-    <div className="rounded-xl border border-slate-200 bg-white overflow-hidden">
-      <div className="p-5">
+    <div className="rounded-[40px] border border-slate-100 bg-white overflow-hidden shadow-xl shadow-slate-200/20">
+      <div className="p-8">
         {/* Seller Header */}
-        <div className="flex items-center gap-3 mb-4">
-          <div className="size-12 rounded-xl bg-gradient-to-br from-blue-100 to-blue-50 text-blue-700 flex items-center justify-center font-black text-lg border border-slate-200 shrink-0 overflow-hidden">
+        <div className="flex items-center gap-4 mb-6">
+          <div className="size-16 rounded-[20px] bg-slate-50 flex items-center justify-center font-black text-2xl text-slate-400 border border-slate-100 shrink-0 overflow-hidden">
             {seller?.businessLogoUrl ? (
               <img src={seller.businessLogoUrl} alt={seller.businessName || seller.fullName} className="size-full object-contain p-1" />
             ) : (
@@ -43,25 +43,25 @@ export function SellerCard({
             )}
           </div>
           <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-2">
-              <span className="font-bold text-slate-900 truncate">
-                {seller?.businessName || seller?.fullName || "Satıcı"}
+            <div className="flex items-center gap-2 mb-1">
+              <span className="text-xl font-black font-heading text-slate-900 truncate">
+                {seller?.businessName || seller?.fullName || "Bireysel Satıcı"}
               </span>
               <EIDSBadge isVerified={!!seller?.eidsId} />
             </div>
-            <div className="flex items-center gap-2 mt-0.5">
+            <div className="flex items-center gap-3">
               <span className={cn(
-                "text-[10px] font-black uppercase px-1.5 py-0.5 rounded-md tracking-tighter",
-                seller?.userType === "professional" ? "bg-indigo-100 text-indigo-700" : "bg-slate-100 text-slate-500"
+                "text-[10px] font-black uppercase px-2 py-0.5 rounded-lg tracking-widest italic",
+                seller?.userType === "professional" ? "bg-primary/10 text-primary" : "bg-slate-100 text-slate-500"
               )}>
-                {seller?.userType === "professional" ? "Kurumsal Galeri" : "Bireysel Satıcı"}
+                {seller?.userType === "professional" ? "Kurumsal Galeri" : "Bireysel"}
               </span>
               {seller?.businessSlug && (
                 <Link 
                   href={`/gallery/${seller.businessSlug}`}
-                  className="text-[10px] font-black uppercase text-primary hover:underline"
+                  className="text-[10px] font-black uppercase text-primary hover:underline italic tracking-widest"
                 >
-                  Mağazayı Gez
+                  {"Profil ->"}
                 </Link>
               )}
             </div>
@@ -69,7 +69,7 @@ export function SellerCard({
         </div>
 
         {/* Trust & Rating */}
-        <div className="space-y-3">
+        <div className="space-y-4 py-6 border-y border-slate-50">
           <SellerRatingInfo 
             average={ratingSummary?.average || 0} 
             count={ratingSummary?.count || 0} 
@@ -82,44 +82,43 @@ export function SellerCard({
 
         {/* Contact Actions */}
         {isLoggedIn ? (
-          <div className="mt-4">
+          <div className="mt-8">
             <ContactActions listingId={listingId} sellerId={seller?.id || ""} />
           </div>
         ) : (
-          <div className="mt-4 space-y-3">
-            <div className="rounded-lg bg-blue-50 border border-blue-100 p-4 text-center">
-              <Lock className="w-5 h-5 text-blue-600 mx-auto mb-2" />
-              <p className="text-sm font-medium text-blue-900">
-                İletişim bilgilerini görmek için
+          <div className="mt-8 space-y-4">
+            <div className="rounded-[28px] bg-slate-50 p-8 text-center border border-slate-100 group">
+              <div className="size-12 rounded-2xl bg-white border border-slate-100 flex items-center justify-center mx-auto mb-4 text-slate-300 group-hover:text-primary transition-colors">
+                <Lock size={20} />
+              </div>
+              <p className="text-sm font-bold text-slate-900 mb-6 italic leading-relaxed">
+                İletişim bilgilerini görmek için lütfen giriş yapın.
               </p>
               <Link
                 href={loginUrl}
-                className="mt-2 inline-flex items-center justify-center gap-1.5 rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700 transition-colors"
+                className="w-full inline-flex items-center justify-center h-12 rounded-2xl bg-slate-900 text-sm font-black text-white hover:bg-black transition-all uppercase tracking-widest italic"
               >
                 Giriş Yap
               </Link>
             </div>
-            <p className="text-xs text-center text-slate-500">
-              veya <Link href="/register" className="text-blue-600 hover:underline">kayıt ol</Link> ücretsiz ilan oluştur
-            </p>
           </div>
         )}
 
         {/* Trust Signals */}
-        <div className="mt-4 pt-4 border-t border-slate-100">
-          <p className="text-sm font-semibold text-slate-900 mb-2">Güven Sinyalleri</p>
+        <div className="mt-8 pt-8 border-t border-slate-100">
+          <h4 className="text-[11px] font-black uppercase tracking-widest text-slate-400 italic mb-4">Güven Sinyalleri</h4>
           {trustSummary.signals.length > 0 ? (
-            <ul className="space-y-2">
+            <ul className="space-y-3">
               {trustSummary.signals.map((signal) => (
-                <li key={signal} className="flex items-center gap-2 text-sm text-slate-600">
-                  <CheckCircle2 className="w-4 h-4 text-emerald-500" />
+                <li key={signal} className="flex items-center gap-3 text-xs font-bold text-slate-600 italic">
+                  <CheckCircle2 className="size-4 text-emerald-500" />
                   {signal}
                 </li>
               ))}
             </ul>
           ) : (
-            <p className="text-sm text-slate-500">
-              Satıcı henüz ek güven sinyali paylaşmadı.
+            <p className="text-sm text-slate-500 font-medium italic">
+              Ek sinyal bulunmuyor.
             </p>
           )}
         </div>

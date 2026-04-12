@@ -9,7 +9,20 @@ import { getAppUrl } from "@/lib/seo";
 import { Analytics } from "@vercel/analytics/next";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 
+import { Inter, Outfit } from "next/font/google";
 import "./globals.css";
+
+const inter = Inter({
+  subsets: ["latin"],
+  variable: "--font-inter",
+  display: "swap",
+});
+
+const outfit = Outfit({
+  subsets: ["latin"],
+  variable: "--font-outfit",
+  display: "swap",
+});
 
 export const metadata: Metadata = {
   metadataBase: new URL(getAppUrl()),
@@ -48,8 +61,8 @@ export default async function RootLayout({
   const currentUser = await getCurrentUser();
 
   return (
-    <html lang="tr" className="h-full antialiased" suppressHydrationWarning>
-      <body className="min-h-full bg-background text-foreground">
+    <html lang="tr" className={`${inter.variable} ${outfit.variable} h-full antialiased font-sans`} suppressHydrationWarning>
+      <body className="min-h-full bg-background text-foreground selection:bg-primary/10 selection:text-primary">
         <AppProviders userId={currentUser?.id ?? null}>
           {children}
           <CookieConsent />

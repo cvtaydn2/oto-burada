@@ -1,6 +1,6 @@
 "use client"
  
-import { useState, useTransition, useEffect } from "react"
+import { useState, useTransition, useEffect, useRef } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
 import { LayoutGrid, List, SlidersHorizontal, ArrowDownWideNarrow, ChevronDown } from "lucide-react"
 
@@ -9,7 +9,6 @@ import { CarCard } from "@/components/modules/listings/car-card"
 import { SmartFilters } from "@/components/modules/listings/smart-filters"
 import { ListingsGridSkeleton } from "@/components/listings/listings-grid-skeleton"
 import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
 
 const SORT_OPTIONS = [
@@ -65,19 +64,32 @@ export function ListingsPageClient({
   const filteredTrims = (brands.find(b => b.brand === filters.brand)?.models?.find(m => m.name === filters.model)?.trims || []);
   const filteredDistricts = (cities.find(c => c.city === filters.city)?.districts || []);
 
+  const debounceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  
   const handleFilterChange = <K extends keyof ListingFilters>(key: K, value: ListingFilters[K]) => {
     const newFilters = { ...filters, [key]: value }
     setFilters(newFilters)
-    applyFilters(newFilters)
+    
+    // Sort changes should be immediate for snappy feel
+    if (key === "sort") {
+      applyFilters(newFilters, true)
+      return
+    }
+
+    // Debounce other filters (price, mileage, search etc)
+    if (debounceTimerRef.current) clearTimeout(debounceTimerRef.current)
+    debounceTimerRef.current = setTimeout(() => {
+      applyFilters(newFilters)
+    }, 500)
   }
 
   const handleReset = () => {
     setFilters({})
-    applyFilters({})
+    applyFilters({}, true)
   }
 
-  const applyFilters = (newFilters: ListingFilters) => {
-    startTransition(() => {
+  const applyFilters = (newFilters: ListingFilters, immediate = false) => {
+    const fn = () => {
       const params = new URLSearchParams()
       Object.entries(newFilters).forEach(([key, value]) => {
         if (value !== undefined && value !== "") {
@@ -85,7 +97,14 @@ export function ListingsPageClient({
         }
       })
       router.push(`/listings?${params.toString()}`, { scroll: false })
-    })
+    }
+
+    if (immediate) {
+      if (debounceTimerRef.current) clearTimeout(debounceTimerRef.current)
+      fn()
+    } else {
+      startTransition(fn)
+    }
   }
 
   const pageTitle = filters.brand 

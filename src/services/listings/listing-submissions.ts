@@ -456,25 +456,25 @@ export async function getDatabaseListings(options?: {
 
     switch (sort) {
       case "price_asc":
-        query = query.order("price", { ascending: true });
+        query = query.order("price", { ascending: true }).order("created_at", { ascending: false });
         break;
       case "price_desc":
-        query = query.order("price", { ascending: false });
+        query = query.order("price", { ascending: false }).order("created_at", { ascending: false });
         break;
       case "mileage_asc":
-        query = query.order("mileage", { ascending: true });
+        query = query.order("mileage", { ascending: true }).order("created_at", { ascending: false });
         break;
       case "year_desc":
-        query = query.order("year", { ascending: false });
+        query = query.order("year", { ascending: false }).order("created_at", { ascending: false });
         break;
       case "oldest":
         query = query.order("created_at", { ascending: true });
         break;
       case "mileage_desc":
-        query = query.order("mileage", { ascending: false });
+        query = query.order("mileage", { ascending: false }).order("created_at", { ascending: false });
         break;
       case "year_asc":
-        query = query.order("year", { ascending: true });
+        query = query.order("year", { ascending: true }).order("created_at", { ascending: false });
         break;
       case "newest":
       default:

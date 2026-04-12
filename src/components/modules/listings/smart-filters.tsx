@@ -44,16 +44,19 @@ export function SmartFilters({
   const trimOptions = [{ value: "all", label: "Tüm Paketler" }, ...trims.map(t => ({ value: t, label: t }))]
   
   return (
-    <div className="flex flex-col gap-6">
-      {/* Active Filters Summary (Desktop Only if we want) */}
+    <div className="flex flex-col gap-8">
+      {/* Header Section */}
       <div className="flex items-center justify-between">
-         <div className="flex items-center gap-2">
-            <h3 className="text-sm font-black uppercase tracking-widest italic flex items-center gap-2">
-               <SlidersHorizontal size={14} className="text-primary" />
-               Filtreler
-            </h3>
+         <div className="flex items-center gap-3">
+            <div className="size-10 rounded-2xl bg-primary/10 flex items-center justify-center text-primary">
+               <SlidersHorizontal size={18} />
+            </div>
+            <div className="flex flex-col">
+               <h3 className="text-[11px] font-black uppercase tracking-widest text-slate-400 italic">Tercihler</h3>
+               <span className="text-lg font-black font-heading leading-none">Filtreleme</span>
+            </div>
             {activeCount > 0 && (
-              <span className="h-5 px-2 rounded bg-primary text-[11px] font-black text-white flex items-center justify-center">
+              <span className="size-5 rounded-full bg-primary text-[10px] font-black text-white flex items-center justify-center shadow-lg shadow-primary/20">
                  {activeCount}
               </span>
             )}
@@ -61,19 +64,17 @@ export function SmartFilters({
          {activeCount > 0 && (
            <button 
              onClick={onReset}
-             className="text-xs font-black text-primary hover:underline uppercase tracking-tighter italic"
+             className="text-[11px] font-black text-slate-400 hover:text-primary uppercase tracking-widest italic transition-colors"
            >
              Sıfırla
            </button>
          )}
       </div>
 
-      {/* Modern High-Density Filter Sections */}
-      <div className="space-y-4">
-        
-        {/* Brand & Model Section */}
+      <div className="space-y-2">
+        {/* Brand Section */}
         <FilterGroup 
-          title="Marka & Model" 
+          title="Marka ve Model" 
           isOpen={expandedSections.includes("brand")} 
           onToggle={() => toggleSection("brand")}
         >
@@ -83,18 +84,18 @@ export function SmartFilters({
               onValueChange={(v) => onFilterChange("brand", v === "all" ? undefined : v)}
               placeholder="Marka seç"
               options={brandOptions}
-              className="bg-white rounded-xl border-border"
+              className="bg-slate-50 border-none rounded-2xl h-12 text-sm font-bold"
             />
-            {filters.brand && models.length > 0 && (
+            {filters.brand && (
               <FilterSelect
                 value={filters.model || "all"}
                 onValueChange={(v) => {
                   onFilterChange("model", v === "all" ? undefined : v);
-                  onFilterChange("carTrim", undefined); // Reset trim when model changes
+                  onFilterChange("carTrim", undefined);
                 }}
                 placeholder="Model seç"
                 options={modelOptions}
-                className="bg-white rounded-xl border-border animate-in fade-in slide-in-from-top-2"
+                className="bg-slate-50 border-none rounded-2xl h-12 text-sm font-bold animate-in fade-in slide-in-from-top-2"
               />
             )}
             {filters.model && trims.length > 0 && (
@@ -103,7 +104,7 @@ export function SmartFilters({
                 onValueChange={(v) => onFilterChange("carTrim", v === "all" ? undefined : v)}
                 placeholder="Paket seç"
                 options={trimOptions}
-                className="bg-white rounded-xl border-border animate-in fade-in slide-in-from-top-2"
+                className="bg-slate-50 border-none rounded-2xl h-12 text-sm font-bold animate-in fade-in slide-in-from-top-2"
               />
             )}
           </div>
@@ -111,7 +112,7 @@ export function SmartFilters({
 
         {/* Price Section */}
         <FilterGroup 
-          title="Fiyat" 
+          title="Fiyat Aralığı" 
           isOpen={expandedSections.includes("price")} 
           onToggle={() => toggleSection("price")}
         >
@@ -129,44 +130,28 @@ export function SmartFilters({
                   return `₺${(v/1000).toFixed(0)}k`
                 }}
              />
-             <div className="grid grid-cols-2 gap-2">
-                <div className="relative">
-                   <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[11px] font-bold text-muted-foreground uppercase tracking-widest">Min</span>
-                   <input 
-                     type="number" 
-                     value={filters.minPrice || ""} 
-                     onChange={(e) => onFilterChange("minPrice", e.target.value ? Number(e.target.value) : undefined)}
-                     className="w-full h-11 pl-12 pr-4 rounded-xl border border-border bg-white text-sm font-bold focus:ring-2 focus:ring-primary/20 outline-none"
-                   />
-                </div>
-                <div className="relative">
-                   <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[11px] font-bold text-muted-foreground uppercase tracking-widest">Max</span>
-                   <input 
-                     type="number" 
-                     value={filters.maxPrice || ""} 
-                     onChange={(e) => onFilterChange("maxPrice", e.target.value ? Number(e.target.value) : undefined)}
-                     className="w-full h-11 pl-12 pr-4 rounded-xl border border-border bg-white text-sm font-bold focus:ring-2 focus:ring-primary/20 outline-none"
-                   />
-                </div>
+             <div className="grid grid-cols-2 gap-3">
+                <PriceInput label="Min" value={filters.minPrice} onChange={(v) => onFilterChange("minPrice", v)} />
+                <PriceInput label="Max" value={filters.maxPrice} onChange={(v) => onFilterChange("maxPrice", v)} />
              </div>
           </div>
         </FilterGroup>
 
-        {/* Transmission & Fuel (Quick Selection Tabs) */}
-        <FilterGroup title="Vites & Yakıt" isOpen={expandedSections.includes("specs")} onToggle={() => toggleSection("specs")}>
-           <div className="space-y-4">
+        {/* Dynamic Specs Section */}
+        <FilterGroup title="Donanım ve Özellikler" isOpen={expandedSections.includes("specs")} onToggle={() => toggleSection("specs")}>
+           <div className="space-y-6">
               <div>
-                 <span className="text-[11px] font-black uppercase text-muted-foreground tracking-widest mb-2 block">Vites</span>
-                 <div className="flex flex-wrap gap-2">
+                 <span className="text-[10px] font-black uppercase text-slate-400 tracking-widest mb-3 block italic">Vites Tipi</span>
+                 <div className="grid grid-cols-2 gap-2">
                     {(["otomatik", "manuel"] as const).map(type => (
                       <button
                         key={type}
                         onClick={() => onFilterChange("transmission", filters.transmission === type ? undefined : type)}
                         className={cn(
-                          "flex-1 h-9 rounded-lg text-xs font-black uppercase transition-all tracking-tighter italic",
+                          "h-11 rounded-xl text-[11px] font-black uppercase transition-all tracking-widest italic",
                           filters.transmission === type 
-                            ? "bg-primary text-white shadow-lg shadow-primary/25" 
-                            : "bg-white border border-border text-slate-600 hover:bg-slate-50"
+                            ? "bg-slate-900 text-white shadow-xl shadow-slate-900/10" 
+                            : "bg-slate-50 text-slate-500 hover:bg-slate-100"
                         )}
                       >
                          {type}
@@ -175,17 +160,17 @@ export function SmartFilters({
                  </div>
               </div>
               <div>
-                 <span className="text-[11px] font-black uppercase text-muted-foreground tracking-widest mb-2 block">Yakıt</span>
+                 <span className="text-[10px] font-black uppercase text-slate-400 tracking-widest mb-3 block italic">Yakıt Tipi</span>
                  <div className="grid grid-cols-2 gap-2">
                     {(["benzin", "dizel", "elektrik", "hibrit"] as const).map(type => (
                       <button
                         key={type}
                         onClick={() => onFilterChange("fuelType", filters.fuelType === type ? undefined : type)}
                         className={cn(
-                          "h-9 rounded-lg text-xs font-black uppercase transition-all tracking-tighter italic",
+                          "h-11 rounded-xl text-[11px] font-black uppercase transition-all tracking-widest italic",
                           filters.fuelType === type 
-                            ? "bg-primary text-white shadow-lg shadow-primary/25" 
-                            : "bg-white border border-border text-slate-600 hover:bg-slate-50"
+                            ? "bg-slate-900 text-white shadow-xl shadow-slate-900/10" 
+                            : "bg-slate-50 text-slate-500 hover:bg-slate-100"
                         )}
                       >
                          {type}
@@ -196,24 +181,32 @@ export function SmartFilters({
            </div>
         </FilterGroup>
 
-        {/* Damage / Tramer Section */}
-        <FilterGroup title="Hasar & Ekspertiz" isOpen={expandedSections.includes("damage")} onToggle={() => toggleSection("damage")}>
-           <div className="space-y-4 pt-2">
-              <div className="flex items-center justify-between mb-4 p-3 bg-secondary/30 rounded-xl border border-border/50">
-                 <span className="text-[11px] font-black uppercase tracking-widest italic">Sadece Ekspertizliler</span>
-                 <button 
-                   onClick={() => onFilterChange("hasExpertReport", filters.hasExpertReport ? undefined : true)}
-                   className={cn(
-                     "size-6 rounded-md border flex items-center justify-center transition-all",
-                     filters.hasExpertReport ? "bg-primary border-primary text-white" : "bg-white border-border"
-                   )}
-                 >
-                   {filters.hasExpertReport && <SlidersHorizontal size={12} />}
-                 </button>
-              </div>
+        {/* Trust & Damage Section */}
+        <FilterGroup title="Güven ve Durum" isOpen={expandedSections.includes("trust")} onToggle={() => toggleSection("trust")}>
+           <div className="space-y-6 pt-2">
+              <button 
+                onClick={() => onFilterChange("hasExpertReport", filters.hasExpertReport ? undefined : true)}
+                className={cn(
+                  "w-full flex items-center justify-between p-4 rounded-2xl border transition-all",
+                  filters.hasExpertReport 
+                    ? "bg-emerald-50 border-emerald-100 text-emerald-700 active-ring" 
+                    : "bg-slate-50 border-transparent text-slate-500"
+                )}
+              >
+                <span className="text-xs font-black uppercase tracking-widest italic">Ekspertizli İlanlar</span>
+                <div className={cn(
+                  "size-5 rounded-full border-2 flex items-center justify-center transition-all",
+                  filters.hasExpertReport ? "bg-emerald-500 border-emerald-500 text-white" : "border-slate-300"
+                )}>
+                  {filters.hasExpertReport && <div className="size-2 rounded-full bg-white" />}
+                </div>
+              </button>
 
               <div>
-                 <span className="text-[11px] font-black uppercase text-muted-foreground tracking-widest mb-4 block italic">Max Tramer Kaydı</span>
+                 <div className="flex items-center justify-between mb-2">
+                   <span className="text-[10px] font-black uppercase text-slate-400 tracking-widest italic">Max Tramer</span>
+                   <span className="text-xs font-black text-slate-900 font-heading">₺{filters.maxTramer ? (filters.maxTramer/1000).toFixed(0) + 'k' : 'Sınırsız'}</span>
+                 </div>
                  <RangeSlider
                    min={0}
                    max={200_000}
@@ -222,68 +215,48 @@ export function SmartFilters({
                    valueMax={filters.maxTramer}
                    onChangeMin={() => {}}
                    onChangeMax={(v) => onFilterChange("maxTramer", v)}
-                   formatLabel={v => v === 0 ? "Hasarsız" : v >= 200_000 ? "Sınırsız" : `₺${(v/1000).toFixed(0)}k`}
-                 />
-              </div>
-              <p className="text-[10px] text-muted-foreground font-medium italic">Tramer kaydı bu tutarın altında olan araçları listeler.</p>
-           </div>
-        </FilterGroup>
-
-        {/* Year Section */}
-        <FilterGroup title="Yıl & KM" isOpen={expandedSections.includes("year")} onToggle={() => toggleSection("year")}>
-           <div className="space-y-4 pt-2">
-              <div className="grid grid-cols-2 gap-2">
-                 <input 
-                   type="number" 
-                   placeholder="Min Yıl" 
-                   value={filters.minYear || ""} 
-                   onChange={(e) => onFilterChange("minYear", e.target.value ? Number(e.target.value) : undefined)}
-                   className="w-full h-10 px-4 rounded-xl border border-border bg-white text-sm font-bold focus:ring-2 focus:ring-primary/20 outline-none"
-                 />
-                 <input 
-                   type="number" 
-                   placeholder="Max Yıl" 
-                   value={filters.maxYear || ""} 
-                   onChange={(e) => onFilterChange("maxYear", e.target.value ? Number(e.target.value) : undefined)}
-                   className="w-full h-10 px-4 rounded-xl border border-border bg-white text-sm font-bold focus:ring-2 focus:ring-primary/20 outline-none"
-                 />
-              </div>
-              <div>
-                 <RangeSlider
-                   min={0}
-                   max={500_000}
-                   step={10_000}
-                   valueMin={0}
-                   valueMax={filters.maxMileage}
-                   onChangeMin={() => {}}
-                   onChangeMax={(v) => onFilterChange("maxMileage", v)}
-                   formatLabel={v => `${(v/1000).toFixed(0)}k km`}
+                   formatLabel={v => v === 0 ? "Orijinal" : `₺${(v/1000).toFixed(0)}k`}
                  />
               </div>
            </div>
         </FilterGroup>
       </div>
-
-      {/* Floating Action for Mobile (If we use it inside a drawer) */}
     </div>
   )
 }
 
 function FilterGroup({ title, children, isOpen, onToggle }: { title: string; children: React.ReactNode; isOpen: boolean; onToggle: () => void }) {
   return (
-    <div className="border-b border-slate-100 last:border-0 pb-4">
+    <div className="group border-b border-slate-50 last:border-0 pb-4">
        <button 
          onClick={onToggle}
-         className="w-full flex items-center justify-between py-2 text-sm font-black italic uppercase tracking-tighter text-foreground group"
+         className="w-full flex items-center justify-between py-4 text-[13px] font-black italic uppercase tracking-widest text-slate-900"
        >
           <span className="group-hover:text-primary transition-colors">{title}</span>
-          <ChevronDown className={cn("text-muted-foreground transition-transform duration-300", isOpen && "rotate-180")} size={16} />
+          <ChevronDown className={cn("text-slate-300 transition-transform duration-500", isOpen && "rotate-180 text-primary")} size={18} />
        </button>
        {isOpen && (
-         <div className="mt-3 animate-in fade-in slide-in-from-bottom-2 duration-300">
+         <div className="pb-4 animate-in fade-in slide-in-from-bottom-4 duration-500 ease-out">
             {children}
          </div>
        )}
+    </div>
+  )
+}
+
+function PriceInput({ label, value, onChange }: { label: string; value?: number; onChange: (v?: number) => void }) {
+  return (
+    <div className="relative group">
+       <span className="absolute left-4 top-1/2 -translate-y-1/2 text-[10px] font-black text-slate-300 uppercase tracking-widest group-focus-within:text-primary transition-colors">
+          {label}
+       </span>
+       <input 
+         type="number" 
+         placeholder="0"
+         value={value || ""} 
+         onChange={(e) => onChange(e.target.value ? Number(e.target.value) : undefined)}
+         className="w-full h-12 pl-14 pr-4 rounded-2xl bg-slate-50 border-none text-sm font-black focus:ring-4 focus:ring-primary/5 transition-all outline-none"
+       />
     </div>
   )
 }
