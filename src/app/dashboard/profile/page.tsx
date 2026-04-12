@@ -1,4 +1,5 @@
 import { ProfileForm } from "@/components/forms/profile-form";
+import { IdentityVerificationForm } from "@/components/forms/identity-verification-form";
 import { updateProfileAction } from "@/lib/auth/profile-actions";
 import { requireUser } from "@/lib/auth/session";
 import { buildProfileFromAuthUser, getStoredProfileById } from "@/services/profile/profile-records";
@@ -86,14 +87,18 @@ export default async function DashboardProfilePage() {
           <span className="text-sm text-muted-foreground">{user.email}</span>
         </div>
 
-        <div className="mt-4 rounded-lg border border-border/60 bg-background p-4">
+        <div className="mt-6">
+           <IdentityVerificationForm userId={user.id} isVerified={profile.isVerified} />
+        </div>
+
+        <div className="mt-6 rounded-lg border border-border/60 bg-background p-4">
           <div className="flex items-center gap-2">
             <ShieldCheck className="size-4 text-primary" />
-            <h3 className="text-sm font-semibold">Doğrulama Durumu</h3>
+            <h3 className="text-sm font-semibold">Doğrulama Rozetleri</h3>
           </div>
-          <div className="mt-3 grid gap-3 sm:grid-cols-3">
+          <div className="mt-3 grid gap-3 sm:grid-cols-2">
             <div className="flex items-center justify-between rounded-lg bg-muted/40 p-3">
-              <span className="text-sm font-medium">E-posta</span>
+              <span className="text-sm font-medium">E-posta Onay</span>
               {profile.emailVerified ? (
                 <CheckCircle2 className="size-5 text-emerald-500" />
               ) : (
@@ -101,26 +106,14 @@ export default async function DashboardProfilePage() {
               )}
             </div>
             <div className="flex items-center justify-between rounded-lg bg-muted/40 p-3">
-              <span className="text-sm font-medium">Telefon</span>
+              <span className="text-sm font-medium">Telefon Onay</span>
               {profile.phoneVerified ? (
                 <CheckCircle2 className="size-5 text-emerald-500" />
               ) : (
                 <Circle className="size-5 text-muted-foreground/40" />
               )}
             </div>
-            <div className="flex items-center justify-between rounded-lg bg-muted/40 p-3">
-              <span className="text-sm font-medium">Kimlik</span>
-              {profile.identityVerified ? (
-                <CheckCircle2 className="size-5 text-emerald-500" />
-              ) : (
-                <Circle className="size-5 text-muted-foreground/40" />
-              )}
-            </div>
           </div>
-          <p className="mt-3 text-xs text-muted-foreground">
-            E-posta ve telefon rozetleri Supabase Auth durumundan, kimlik rozeti ise mevcut
-            kullanıcı metadata&apos;sından okunur.
-          </p>
         </div>
       </section>
 

@@ -219,3 +219,34 @@ export async function updateProfileTable(
 
   return getStoredProfileById(userId);
 }
+
+/**
+ * Marks a profile as identity verified (EИDS/Mock E-Devlet).
+ */
+export async function verifyProfileIdentity(userId: string, eidsId: string) {
+  if (!hasSupabaseAdminEnv()) {
+    return null;
+  }
+
+  const admin = createSupabaseAdminClient();
+  const { error } = await admin
+    .from("profiles")
+    .update({
+      is_verified: true,
+      tc_verified_at: new Date().toISOString(),
+      eids_id: eidsId,
+      updated_at: new Date().toISOString(),
+    })
+    .eq("id", userId);
+
+  if (error) {
+    return null;
+  }
+
+  // Also update auth user metadata for convenience in sessions
+  await admin.auth.admin.updateUserById(userId, {
+    app_metadata: { identity_verified: true },
+  });
+
+  return getStoredProfileById(userId);
+}

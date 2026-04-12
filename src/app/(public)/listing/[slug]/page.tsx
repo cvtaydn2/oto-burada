@@ -5,7 +5,6 @@ import {
   AlertTriangle,
   CalendarDays,
   CheckCircle2,
-  ChevronRight,
   CircleGauge,
   Fuel,
   Settings2,
@@ -19,7 +18,6 @@ import { CompareButton } from "@/components/listings/compare-button";
 import { ListingGallery } from "@/components/listings/listing-gallery";
 import { ViewCounter } from "@/components/listings/view-counter";
 import { ListingDetailStructuredData, BreadcrumbStructuredData } from "@/components/seo/structured-data";
-import { Breadcrumbs } from "@/components/shared/breadcrumbs";
 import { ReportListingForm } from "@/components/forms/report-listing-form";
 import { ShareButton } from "@/components/listings/share-button";
 import { CarCard } from "@/components/modules/listings/car-card";
@@ -27,7 +25,6 @@ import { ContactActions } from "@/components/listings/contact-actions";
 import { ExpertInspectionCard } from "@/components/listings/expert-inspection-card";
 import { DamageReportCard } from "@/components/listings/damage-report-card";
 import { ListingPrintAction } from "@/components/listings/listing-print-action";
-import { EIDSBadge } from "@/components/shared/eids-badge";
 import { MarketValueCard } from "@/components/listings/market-value-card";
 import { ResponseTimeBadge } from "@/components/profile/response-time-badge";
 import { MobileStickyActions } from "@/components/listings/mobile-sticky-actions";
@@ -42,6 +39,9 @@ import {
 } from "@/services/listings/marketplace-listings";
 import { getListingCardInsights } from "@/services/listings/listing-card-insights";
 import { getSellerTrustSummary } from "@/services/profile/profile-trust";
+import { getListingPriceHistory } from "@/services/listings/listing-price-history";
+import { MarketAnalysisInfo } from "@/components/listings/market-analysis-info";
+import { PriceHistoryInfo } from "@/components/listings/price-history-info";
 
 interface ListingDetailPageProps {
   params: Promise<{
@@ -73,6 +73,7 @@ export default async function ListingDetailPage({ params }: ListingDetailPagePro
   const insight = getListingCardInsights(listing);
   const trustSummary = getSellerTrustSummary(seller, activeListingCount);
   const currentUser = await getCurrentUser();
+  const priceHistory = await getListingPriceHistory(listing.id);
 
   const breadcrumbs = [
     { name: "İlanlar", url: "/listings" },
@@ -124,6 +125,7 @@ export default async function ListingDetailPage({ params }: ListingDetailPagePro
               <div className="lg:hidden space-y-4">
                  <h1 className="text-3xl font-black tracking-tight text-foreground">
                     {listing.brand} <span className="text-primary italic">{listing.model}</span>
+                    {listing.carTrim && <span className="ml-2 text-slate-400 font-bold text-2xl">{listing.carTrim}</span>}
                  </h1>
                  <p className="text-lg text-muted-foreground font-medium italic">{listing.title}</p>
                   <div className="text-4xl font-black text-foreground pb-2">
@@ -138,23 +140,29 @@ export default async function ListingDetailPage({ params }: ListingDetailPagePro
               {/* Market Analysis View: Combining AI Insight & Market Value */}
               <div className="grid md:grid-cols-2 gap-6">
                  {/* AI Assessment */}
-                 <div className="p-8 rounded-[32px] bg-secondary/20 border border-slate-200/50 space-y-6">
-                    <div className="flex items-center gap-2 text-primary font-black uppercase text-xs tracking-widest italic outline-none">
-                       <Sparkles size={16} className="fill-primary/20" />
-                       OtoBurada AI Analizi
+                 <div className="space-y-6">
+                    <div className="p-8 rounded-[32px] bg-secondary/20 border border-slate-200/50 space-y-6">
+                       <div className="flex items-center gap-2 text-primary font-black uppercase text-xs tracking-widest italic outline-none">
+                          <Sparkles size={16} className="fill-primary/20" />
+                          OtoBurada AI Analizi
+                       </div>
+                       <p className="text-sm font-medium leading-relaxed italic text-slate-700">{insight.summary}</p>
+                       <div className="flex flex-wrap gap-2 pt-2">
+                          {insight.highlights.map(h => (
+                            <div key={h} className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white border border-slate-100 text-xs font-bold shadow-sm">
+                               <CheckCircle2 className="text-emerald-500" size={14} />
+                               {h}
+                            </div>
+                          ))}
+                       </div>
                     </div>
-                    <p className="text-sm font-medium leading-relaxed italic text-slate-700">{insight.summary}</p>
-                    <div className="flex flex-wrap gap-2 pt-2">
-                       {insight.highlights.map(h => (
-                         <div key={h} className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white border border-slate-100 text-xs font-bold shadow-sm">
-                            <CheckCircle2 className="text-emerald-500" size={14} />
-                            {h}
-                         </div>
-                       ))}
-                    </div>
+                    <MarketAnalysisInfo />
                  </div>
 
-                 <MarketValueCard price={listing.price} marketPriceIndex={listing.marketPriceIndex ?? 1.0} />
+                 <div className="space-y-6">
+                    <MarketValueCard price={listing.price} marketPriceIndex={listing.marketPriceIndex ?? 1.0} />
+                    <PriceHistoryInfo history={priceHistory} currentPrice={listing.price} />
+                 </div>
               </div>
 
               {/* Technical Tabs or Groups */}

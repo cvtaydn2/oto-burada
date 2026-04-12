@@ -78,6 +78,7 @@ interface ListingRow {
   whatsapp_phone: string;
   year: number;
   vin?: string | null;
+  car_trim?: string | null;
 }
 
 const listingSelect = `
@@ -91,6 +92,11 @@ const listingSelect = `
     is_cover,
     placeholder_blur
   ),
+  market_price_index,
+  car_trim,
+  whatsapp_phone,
+  year,
+  vin,
   profiles:seller_id (
     full_name,
     phone,
@@ -298,6 +304,7 @@ function mapListingRow(row: ListingRow): Listing {
     mileage: row.mileage,
     model: row.model,
     price: row.price,
+    carTrim: row.car_trim ?? null,
     sellerId: row.seller_id,
     viewCount: row.view_count ?? 0,
     seller: row.profiles ? {
@@ -415,6 +422,16 @@ export async function getDatabaseListings(options?: {
         query = query.lte("mileage", filters.maxMileage);
       }
 
+      if (filters.maxTramer !== undefined) {
+        query = query.lte("tramer_amount", filters.maxTramer);
+      }
+
+      if (filters.hasExpertReport === true) {
+        // We filter for listings where expert_inspection has hasInspection: true
+        // In Postgres with JSONB: expert_inspection->>'hasInspection' = 'true'
+        query = query.filter("expert_inspection->>hasInspection", "eq", "true");
+      }
+
       if (filters.query) {
         const terms = filters.query.trim().split(/\s+/).filter(Boolean);
 
@@ -530,6 +547,8 @@ export async function getFilteredDatabaseListings(
   if (filters.minYear !== undefined) countQuery = countQuery.gte("year", filters.minYear);
   if (filters.maxYear !== undefined) countQuery = countQuery.lte("year", filters.maxYear);
   if (filters.maxMileage !== undefined) countQuery = countQuery.lte("mileage", filters.maxMileage);
+  if (filters.maxTramer !== undefined) countQuery = countQuery.lte("tramer_amount", filters.maxTramer);
+  if (filters.hasExpertReport === true) countQuery = countQuery.filter("expert_inspection->>hasInspection", "eq", "true");
 
   if (filters.query) {
     const terms = filters.query.trim().split(/\s+/).filter(Boolean);
@@ -685,6 +704,7 @@ export function mapListingToDatabaseRow(listing: Listing) {
     whatsapp_phone: listing.whatsappPhone,
     year: listing.year,
     vin: listing.vin ?? null,
+    car_trim: listing.carTrim ?? null,
   };
 }
 

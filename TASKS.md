@@ -403,6 +403,55 @@ Audit all pages for:
 
 ---
 
+## Phase 25 — Marketplace Hardening & Core Depth
+
+### Task 25.1 — Identity Verification (Mock E-Devlet)
+Build a verification flow to enable "is_verified" status for users.
+- Add "Verify Identity" CTA to Dashboard Profile page.
+- Create a mock E-Devlet verification form (TC ID, Name, Surname).
+- Update profiles table via server action upon successful mock verification.
+
+#### Acceptance Criteria
+- User can trigger verification flow from profile.
+- Verification status persists in database.
+- Verified badge appears on user listings.
+
+### Task 25.2 — Real-time In-App Chat
+Implement full messaging capability between buyers and sellers.
+- Create `chats` and `messages` services.
+- Integrate dashboard messages UI with realtime subscription.
+- Add "Message Seller" button to listing detail page.
+- Implement unread message indicators.
+
+#### Acceptance Criteria
+- Users can start chats from listing pages.
+- Messages are sent and received in real-time.
+- Only participants can access their chats (RLS).
+
+### Task 25.3 — Price History & Market Analysis
+Track price changes and show detailed market valuation.
+- Implement `listing_price_history` tracking (trigger/service).
+- Build price history chart component for listing detail pages.
+- Refine Market Value algorithm to include damage status and paint/replaced parts impact.
+- Display "Transparency Report" for market valuation in the UI.
+
+#### Acceptance Criteria
+- Price changes are logged automatically.
+- Charts show history clearly.
+- Market value estimations reflect car condition precisely.
+
+### Task 25.4 — Filter Polish & Data Scaling
+Fix UI bugs and populate the marketplace with high-quality data.
+- Fix `RangeSlider` z-index and reactivity issues.
+- Expand `seed-supabase-demo.mjs` with 20+ diverse car listings.
+- Include realistic damage reports and price histories in seed data.
+
+#### Acceptance Criteria
+- Slider handles work smoothly without overlapping issues.
+- Marketplace feels "lived-in" with diverse inventory.
+
+---
+
 ## Final Definition of Done
 The MVP is complete when:
 - user can register and sign in

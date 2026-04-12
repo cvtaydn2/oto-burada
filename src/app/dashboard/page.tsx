@@ -12,6 +12,8 @@ import { getDatabaseFavoriteCount } from "@/services/favorites/favorite-records"
 import {
   getStoredUserListings,
 } from "@/services/listings/listing-submissions";
+import { getProfile } from "@/services/profile/profile-service";
+import { ShieldCheck, ShieldAlert, BadgeCheck } from "lucide-react";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 60;
@@ -24,6 +26,7 @@ export default async function DashboardPage() {
     phone?: string;
   };
   const storedListings = await getStoredUserListings(user.id);
+  const profile = await getProfile(user.id);
   const favoriteCount = await getDatabaseFavoriteCount(user.id);
   const pendingListingsCount = storedListings.filter((l) => l.status === "pending").length;
   const profileCompletion = Math.round(
@@ -60,6 +63,34 @@ export default async function DashboardPage() {
           </div>
         </div>
       </section>
+
+      {!profile?.is_verified && (
+        <section className="rounded-2xl border border-amber-200 bg-amber-50/50 p-6 flex flex-col md:flex-row items-center gap-6 shadow-sm">
+          <div className="size-16 rounded-full bg-amber-100 flex items-center justify-center text-amber-600 border border-amber-200 shrink-0">
+            <ShieldAlert size={32} />
+          </div>
+          <div className="flex-1 text-center md:text-left">
+            <h3 className="text-lg font-black text-amber-900 italic">Hesabın Henüz Doğrulanmadı</h3>
+            <p className="text-sm text-amber-800 font-medium mt-1 leading-relaxed">
+              İlanlarının üst sıralarda görünmesi ve alıcıların sana daha fazla güvenmesi için E-Devlet (EİDS) ile hesabını hemen doğrula.
+            </p>
+          </div>
+          <Link 
+            href="/dashboard/profile"
+            className="w-full md:w-auto h-12 px-8 rounded-xl bg-amber-600 text-white font-bold text-sm hover:bg-amber-700 transition-all flex items-center justify-center gap-2 shadow-lg shadow-amber-600/20"
+          >
+            <ShieldCheck size={18} />
+            Hemen Doğrula
+          </Link>
+        </section>
+      )}
+
+      {profile?.is_verified && (
+        <section className="rounded-2xl border border-emerald-100 bg-emerald-50/30 p-4 flex items-center gap-3">
+          <BadgeCheck className="text-emerald-600" size={20} />
+          <span className="text-xs font-bold text-emerald-800 italic uppercase tracking-wider">Doğrulanmış Üye - Güvenli Alışveriş Başladı</span>
+        </section>
+      )}
 
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         <div className="rounded-xl border border-border/60 bg-background p-4">

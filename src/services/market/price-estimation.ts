@@ -9,56 +9,83 @@ export interface PriceEstimationResult {
   listingCount: number;
 }
 
-/**
- * Estimates the market price for a vehicle based on available data.
- * Uses the market_stats table and applies KM/Condition adjustments.
- */
 export async function estimateVehiclePrice(params: {
   brand: string;
   model: string;
   year: number;
   mileage: number;
+  carTrim?: string | null;
+  tramerAmount?: number | null;
+  damageStatusJson?: Record<string, string> | null;
 }): Promise<PriceEstimationResult | null> {
   if (!hasSupabaseAdminEnv()) return null;
   const admin = createSupabaseAdminClient();
 
-  // 1. Get the base average for the segment
-  const { data: stats, error } = await admin
+  // 1. Get the base average for the segment (optionally by trim)
+  let query = admin
     .from("market_stats")
     .select("avg_price, listing_count")
     .eq("brand", params.brand)
     .eq("model", params.model)
-    .eq("year", params.year)
-    .single();
+    .eq("year", params.year);
 
-  if (error || !stats) {
-    return {
-      min: 0,
-      max: 0,
-      avg: 0,
-      confidence: "low",
-      listingCount: 0,
-    };
+  if (params.carTrim) {
+    // Attempt trim matching if available, otherwise fallback to model-only in a retry
+    query = query.eq("car_trim", params.carTrim);
   }
 
-  const baseAvg = Number(stats.avg_price);
-  const count = Number(stats.listing_count);
+  const { data: stats, error } = await query.maybeSingle();
 
-  // 2. Simple mileage adjustment (example: -5% for every 50k km above a threshold)
-  // This is a naive model for the MVP.
+  let baseAvg = stats ? Number(stats.avg_price) : 0;
+  let count = stats ? Number(stats.listing_count) : 0;
+
+  // Fallback if trim-specific stats don't exist
+  if (!stats && params.carTrim) {
+    const { data: fallbackStats } = await admin
+      .from("market_stats")
+      .select("avg_price, listing_count")
+      .eq("brand", params.brand)
+      .eq("model", params.model)
+      .eq("year", params.year)
+      .is("car_trim", null)
+      .maybeSingle();
+    
+    if (fallbackStats) {
+      baseAvg = Number(fallbackStats.avg_price);
+      count = Number(fallbackStats.listing_count);
+    }
+  }
+
+  if (baseAvg === 0) {
+    return { min: 0, max: 0, avg: 0, confidence: "low", listingCount: 0 };
+  }
+
+  // 2. Mileage adjustment
   const expectedMileage = (new Date().getFullYear() - params.year) * 15000;
   const mileageDiff = params.mileage - expectedMileage;
-  
-  // -1% for every 10,000 km over expected
-  const mileageAdjustment = (mileageDiff / 10000) * 0.01;
-  const adjustedAvg = baseAvg * (1 - mileageAdjustment);
+  const mileageAdjustment = (mileageDiff / 10000) * 0.012; // Adjusted slightly more aggressive
+  let adjustedAvg = baseAvg * (1 - mileageAdjustment);
 
+  // 3. Tramer adjustment (up to -20%)
+  let tramerAdjustment = 0;
+  if (params.tramerAmount && params.tramerAmount > 0) {
+     tramerAdjustment = Math.min((params.tramerAmount / 10000) * 0.015, 0.20);
+  }
+
+  // 4. Damage (Painted/Changed) adjustment (up to -25%)
+  let damageAdjustment = 0;
+  if (params.damageStatusJson) {
+     const nonOriginalParts = Object.values(params.damageStatusJson).filter(v => v !== "original" && v !== "var").length;
+     damageAdjustment = Math.min(nonOriginalParts * 0.018, 0.25);
+  }
+
+  const finalAvg = adjustedAvg * (1 - tramerAdjustment - damageAdjustment);
   const confidence = count > 15 ? "high" : count > 5 ? "medium" : "low";
 
   return {
-    min: adjustedAvg * 0.9,
-    max: adjustedAvg * 1.1,
-    avg: adjustedAvg,
+    min: finalAvg * 0.92, // Narrower range for more "expert" feel
+    max: finalAvg * 1.08,
+    avg: finalAvg,
     confidence,
     listingCount: count,
   };

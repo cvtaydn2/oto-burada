@@ -240,6 +240,8 @@ export interface ListingFilters {
   minYear?: number;
   maxYear?: number;
   maxMileage?: number;
+  maxTramer?: number;
+  hasExpertReport?: boolean;
   fuelType?: string;
   transmission?: string;
   sort?: ListingSortOption;

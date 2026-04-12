@@ -193,6 +193,39 @@ export function SmartFilters({
            </div>
         </FilterGroup>
 
+        {/* Damage / Tramer Section */}
+        <FilterGroup title="Hasar & Ekspertiz" isOpen={expandedSections.includes("damage")} onToggle={() => toggleSection("damage")}>
+           <div className="space-y-4 pt-2">
+              <div className="flex items-center justify-between mb-4 p-3 bg-secondary/30 rounded-xl border border-border/50">
+                 <span className="text-[11px] font-black uppercase tracking-widest italic">Sadece Ekspertizliler</span>
+                 <button 
+                   onClick={() => onFilterChange("hasExpertReport", filters.hasExpertReport ? undefined : true)}
+                   className={cn(
+                     "size-6 rounded-md border flex items-center justify-center transition-all",
+                     filters.hasExpertReport ? "bg-primary border-primary text-white" : "bg-white border-border"
+                   )}
+                 >
+                   {filters.hasExpertReport && <SlidersHorizontal size={12} />}
+                 </button>
+              </div>
+
+              <div>
+                 <span className="text-[11px] font-black uppercase text-muted-foreground tracking-widest mb-4 block italic">Max Tramer Kaydı</span>
+                 <RangeSlider
+                   min={0}
+                   max={200_000}
+                   step={5000}
+                   valueMin={0}
+                   valueMax={filters.maxTramer}
+                   onChangeMin={() => {}}
+                   onChangeMax={(v) => onFilterChange("maxTramer", v)}
+                   formatLabel={v => v === 0 ? "Hasarsız" : v >= 200_000 ? "Sınırsız" : `₺${(v/1000).toFixed(0)}k`}
+                 />
+              </div>
+              <p className="text-[10px] text-muted-foreground font-medium italic">Tramer kaydı bu tutarın altında olan araçları listeler.</p>
+           </div>
+        </FilterGroup>
+
         {/* Year Section */}
         <FilterGroup title="Yıl & KM" isOpen={expandedSections.includes("year")} onToggle={() => toggleSection("year")}>
            <div className="space-y-4 pt-2">

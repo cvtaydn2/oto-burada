@@ -14,6 +14,15 @@ Her yeni geliştirme başlamadan önce okunmalıdır.
 
 ## Proje Durumu
 
+### 2026-04-13 Phase 25: Marketplace Hardening & Core Depth (Completed) ✅
+- [x] Database Schema Expansion (Chats, Messages, Price History)
+- [x] Implement Verification UI (Mock E-Devlet)
+- [x] Build Real-time Chat Logic & Realtime Sync
+- [x] Implement Price History Tracking & Chart
+- [x] Refine Market Value Algorithm (Damage & Paint factors)
+- [x] Fix RangeSlider UI Bugs
+- [x] Expand Demo Seed Coverage (Popular Turkish Car Models)
+
 ### 2026-04-12 Phase 24: Age-Inclusive UX & Accessibility Hardening (Completed)
 - **Multi-Age Accessibility**: Standardized minimum font sizes across critical components (Filter, Hero, Legend, Market Analysis) to ensure usability for users aged 18 to 65.
 - **Visual Contrast**: Improved contrast levels and used bolder weights for micro-labels which were previously difficult to read.

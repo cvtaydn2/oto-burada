@@ -95,6 +95,7 @@ export function CarCard({ listing, priority = false, variant = "grid" }: CarCard
                  <div className="flex items-center gap-2">
                     <h2 className="text-2xl font-black tracking-tight text-foreground italic group-hover:text-primary transition-colors">
                        {listing.brand} {listing.model}
+                       {listing.carTrim && <span className="ml-2 font-medium text-slate-400 not-italic text-lg">{listing.carTrim}</span>}
                     </h2>
                     {isHighTrust && <ShieldCheck className="text-emerald-500" size={20} />}
                  </div>
@@ -228,6 +229,7 @@ export function CarCard({ listing, priority = false, variant = "grid" }: CarCard
         <div className="flex items-start justify-between gap-2 mb-1">
           <h2 className="text-lg font-black text-foreground leading-tight tracking-tight line-clamp-1 group-hover:text-primary transition-colors italic">
             {listing.brand} {listing.model}
+            {listing.carTrim && <span className="ml-2 font-bold text-slate-400 not-italic text-sm">{listing.carTrim}</span>}
           </h2>
           {isHighTrust && (
             <ShieldCheck className="w-5 h-5 text-emerald-500 flex-shrink-0" />
