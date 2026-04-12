@@ -26,11 +26,10 @@ import { ExpertInspectionCard } from "@/components/listings/expert-inspection-ca
 import { DamageReportCard } from "@/components/listings/damage-report-card";
 import { ListingPrintAction } from "@/components/listings/listing-print-action";
 import { MarketValueCard } from "@/components/listings/market-value-card";
-import { ResponseTimeBadge } from "@/components/profile/response-time-badge";
 import { MobileStickyActions } from "@/components/listings/mobile-sticky-actions";
 import { getCurrentUser } from "@/lib/auth/session";
 import { buildListingDetailMetadata, buildAbsoluteUrl } from "@/lib/seo";
-import { formatDate, formatNumber } from "@/lib/utils";
+import { cn, formatNumber } from "@/lib/utils";
 import {
   getMarketplaceListingBySlug,
   getMarketplaceSeller,

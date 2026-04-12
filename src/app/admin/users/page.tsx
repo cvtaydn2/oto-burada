@@ -50,18 +50,31 @@ export default async function AdminUsersPage() {
               {users.map((user) => (
                 <tr key={user.id} className="hover:bg-slate-50/50 transition-colors group">
                   <td className="px-6 py-4">
-                    <div className="flex items-center gap-3">
-                       <div className="size-10 rounded-full bg-slate-100 flex items-center justify-center border border-slate-200">
-                          <UserCircle className="text-slate-400" size={20} />
+                    <div className="flex items-center gap-4">
+                       <div className="size-12 rounded-2xl bg-slate-100 flex items-center justify-center border border-slate-200 overflow-hidden shrink-0 shadow-sm relative group-hover:border-indigo-200 transition-colors">
+                          {user.avatarUrl ? (
+                            <img src={user.avatarUrl} alt={user.fullName || ""} className="w-full h-full object-cover" />
+                          ) : (
+                            <UserCircle className="text-slate-300" size={24} />
+                          )}
+                          {!user.avatarUrl && user.fullName && (
+                            <div className="absolute inset-0 flex items-center justify-center bg-indigo-50 text-indigo-400 font-black text-xs">
+                              {user.fullName.substring(0, 1).toUpperCase()}
+                            </div>
+                          )}
                        </div>
-                       <div className="flex flex-col">
-<div className="flex items-center gap-2">
-                              <span className="text-sm font-bold text-slate-900">{user.fullName || "İsimsiz Kullanıcı"}</span>
+                       <div className="flex flex-col min-w-0">
+                          <div className="flex items-center gap-2 mb-0.5">
+                              <span className="text-sm font-black text-slate-900 truncate">
+                                {user.fullName || "İsimsiz Kullanıcı"}
+                              </span>
                               {user.isBanned && (
-                                <Badge className="bg-rose-500 text-white rounded-md text-[8px] px-1 hover:bg-rose-500 border-none h-4">ENGELLEMİŞ</Badge>
+                                <Badge className="bg-rose-500 text-white rounded-md text-[8px] px-1.5 py-0 hover:bg-rose-500 border-none h-4 font-black">YASAKLI</Badge>
                               )}
-                           </div>
-                          <span className="text-xs text-slate-400">{user.id.substring(0, 8)}...</span>
+                          </div>
+                          <span className="text-[10px] font-bold text-slate-400 font-mono tracking-tight uppercase">
+                            ID: {user.id.substring(0, 8)}...
+                          </span>
                        </div>
                     </div>
                   </td>

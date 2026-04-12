@@ -3,6 +3,7 @@
 import { useState } from "react"
 import { useRouter } from "next/navigation"
 import { Search, Shield, Star } from "lucide-react"
+import { cn } from "@/lib/utils"
 import { type BrandCatalogItem } from "@/types"
 
 interface HomeHeroProps {
@@ -40,107 +41,118 @@ export function HomeHero({ brands }: HomeHeroProps) {
   const handleBrandSelect = (brand: string) => {
     router.push(`/listings?brand=${encodeURIComponent(brand)}`)
   }
+
   return (
-    <section className="relative w-full py-12 lg:py-24 overflow-hidden rounded-3xl mb-12 bg-[#0A0D14]">
-      {/* Background Decorative Elements */}
+    <section className="relative w-full py-16 lg:py-32 overflow-hidden rounded-[48px] mb-12 bg-[#0A0D14] shadow-2xl">
+      {/* Premium Background with Overlay */}
       <div className="absolute inset-0 z-0">
-        <div className="absolute top-0 right-0 w-2/3 h-full bg-gradient-to-l from-primary/20 to-transparent opacity-50" />
-        {/* We can use an image here later if needed */}
+        <img 
+          src="/hero_luxury_car_black_1776035280175.png" 
+          alt="Luxury Car" 
+          className="w-full h-full object-cover opacity-50 contrast-125 saturate-50"
+        />
+        <div className="absolute inset-0 bg-gradient-to-r from-[#0A0D14] via-[#0A0D14]/80 to-transparent" />
+        <div className="absolute inset-x-0 bottom-0 h-64 bg-gradient-to-t from-[#0A0D14] to-transparent" />
       </div>
 
-      <div className="relative z-10 mx-auto max-w-5xl px-6 lg:px-12 flex flex-col items-center text-center">
-        {/* Trust Badges */}
-        <div className="flex items-center gap-2 mb-6 animate-in fade-in slide-in-from-bottom-4 duration-700">
-           <div className="flex -space-x-2">
-              {[1,2,3].map(i => (
-                <div key={i} className="w-8 h-8 rounded-full border-2 border-[#0A0D14] bg-slate-800 flex items-center justify-center text-[10px] font-bold text-white uppercase tracking-tighter overflow-hidden">
-                   <img src={`https://i.pravatar.cc/150?u=${i*100}`} alt="User" />
+      <div className="relative z-10 mx-auto max-w-5xl px-8 lg:px-16 flex flex-col items-center md:items-start text-center md:text-left">
+        {/* Trust Element */}
+        <div className="flex items-center gap-3 mb-8 animate-in fade-in slide-in-from-left-4 duration-1000">
+           <div className="flex -space-x-3">
+              {[1,2,3,4].map(i => (
+                <div key={i} className="size-10 rounded-full border-4 border-[#0A0D14] bg-slate-800 flex items-center justify-center overflow-hidden ring-1 ring-white/10">
+                   <img src={`https://i.pravatar.cc/100?u=${i*123}`} alt="User" className="w-full h-full object-cover" />
                 </div>
               ))}
            </div>
-           <div className="flex items-center gap-1.5 ml-2">
+           <div className="flex flex-col gap-0.5">
               <div className="flex gap-0.5">
-                 {[1,2,3,4,5].map(i => <Star key={i} size={12} className="fill-amber-400 text-amber-400" />)}
+                 {[1,2,3,4,5].map(i => <Star key={i} size={14} className="fill-amber-400 text-amber-400" />)}
               </div>
-               <span className="text-sm font-medium text-slate-400">
-                  <span className="text-white font-bold">12,000+</span> kişi aracını burada buldu
-               </span>
+              <span className="text-[11px] font-black uppercase tracking-widest text-white/50 italic">
+                <span className="text-primary">+15.000</span> GÜVENLİ İŞLEM
+              </span>
            </div>
         </div>
 
-        <h1 className="text-4xl md:text-6xl font-black text-white tracking-tight mb-6 leading-[1.1]">
-          Aradığın Araba <br />
-          <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-indigo-400 italic">
-            Burada
-          </span> Seni Bekliyor.
+        <h1 className="text-4xl md:text-7xl font-black text-white tracking-tighter mb-8 leading-[1] max-w-3xl drop-shadow-2xl font-heading">
+          HAYALİNDEKİ <br />
+          <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-blue-400 italic">
+            OTOMOBİL
+          </span> <br />
+          BURADA.
         </h1>
 
-        <p className="text-lg text-slate-400 max-w-2xl mb-10 font-medium">
-          Türkiye&apos;nin en güvenilir, şeffaf ve hızlı ikinci el otomobil pazarı. 
-          Bireysel ilanlar her zaman ücretsiz.
+        <p className="text-lg md:text-xl text-white/60 max-w-xl mb-12 font-medium italic leading-relaxed">
+          Türkiye&apos;nin en şeffaf ve güven odaklı otomobil pazarı. 
+          Sizin için seçilmiş, ekspertiz onaylı ilanlarla huzurla tanışın.
         </p>
 
-        {/* The Power Search Bar */}
+        {/* The Power Search Bar (Optimized for Conversion) */}
         <form 
           onSubmit={handleSearch}
-          className="w-full max-w-3xl glass p-2 rounded-2xl shadow-2xl mb-4 group transition-all hover:bg-white/10 border-white/20"
+          className="w-full max-w-2xl bg-white/5 p-2 rounded-[32px] backdrop-blur-3xl shadow-2xl mb-6 group transition-all border border-white/10 hover:border-white/20"
         >
-          <div className="relative flex items-center bg-white rounded-xl h-16 sm:h-20 shadow-inner px-2">
-            <div className="hidden sm:flex items-center px-4 border-r border-slate-100 h-10 gap-2 text-slate-400">
-               <Shield size={18} />
-               <span className="text-xs font-bold uppercase tracking-wider">Güvenli</span>
+          <div className="relative flex items-center bg-white rounded-2xl h-16 sm:h-24 shadow-2xl px-3 overflow-hidden">
+            <div className="hidden sm:flex items-center px-6 border-r border-slate-100 h-12 gap-3 text-slate-400 bg-slate-50/50 rounded-xl mr-3">
+               <Shield size={20} className="text-primary" />
+               <span className="text-[10px] font-black uppercase tracking-widest italic">DOĞRULANMIŞ</span>
             </div>
             
-            <Search className="ml-4 text-slate-400" size={20} />
+            <Search className="ml-2 text-slate-300 group-focus-within:text-primary transition-colors" size={24} />
             <input 
               type="text" 
-              placeholder="Marka, model, özellik veya şehir yazın..." 
+              placeholder="Marka, model veya şehir..." 
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              className="flex-1 h-full px-4 text-lg font-medium text-slate-900 placeholder:text-slate-400 focus:outline-none bg-transparent"
+              className="flex-1 h-full px-4 text-lg md:text-xl font-bold text-slate-900 placeholder:text-slate-300 focus:outline-none bg-transparent"
             />
             
             <button 
               type="submit"
-              className="h-12 sm:h-16 px-6 sm:px-10 rounded-lg bg-primary text-white font-black text-lg hover:scale-[1.02] active:scale-95 transition-all shadow-lg shadow-primary/30"
+              className="h-12 sm:h-18 px-10 sm:px-14 rounded-xl bg-slate-900 text-white font-black text-lg md:text-xl hover:bg-black active:scale-95 transition-all shadow-xl shadow-black/20 italic uppercase tracking-tighter"
             >
-              Ara
+              ARA
             </button>
           </div>
         </form>
 
-        {/* Quick Model Suggestions for Easy Discovery (Age-inclusive UX) */}
-        <div className="flex flex-wrap justify-center gap-2 mb-10 overflow-x-auto pb-2 scrollbar-none w-full max-w-2xl">
-           {(["Fiat Egea", "Renault Clio", "Toyota Corolla", "Honda Civic", "VW Passat"] as const).map(suggestion => (
+        {/* Model Chips */}
+        <div className="flex flex-wrap justify-center md:justify-start gap-2 mb-14 overflow-hidden w-full max-w-2xl">
+           {(["Fiat Egea", "Renault Clio", "Toyota Corolla", "VW Passat"] as const).map((suggestion, idx) => (
              <button
                key={suggestion}
                onClick={() => {
                  setQuery(suggestion);
                  router.push(`/listings?query=${encodeURIComponent(suggestion)}`)
                }}
-               className="h-8 px-4 rounded-full bg-white/10 border border-white/10 text-white/60 text-[11px] font-bold hover:bg-white/20 hover:text-white transition-all whitespace-nowrap"
+               className="h-10 px-5 rounded-full bg-white/5 border border-white/10 text-white/50 text-[11px] font-black uppercase tracking-widest hover:bg-white/20 hover:text-white transition-all whitespace-nowrap italic animate-in fade-in slide-in-from-bottom-2"
+               style={{ animationDelay: `${idx * 100}ms` }}
              >
                 {suggestion}
              </button>
            ))}
         </div>
 
-        {/* Quick Brands with Logo Placeholders */}
-        <div className="w-full flex flex-wrap justify-center gap-3">
-           {POPULAR_BRANDS.map(brand => (
+        {/* Brand Group */}
+        <div className="w-full grid grid-cols-2 sm:flex sm:flex-wrap justify-center md:justify-start gap-3">
+           {POPULAR_BRANDS.slice(0, 6).map((brand, idx) => (
              <button 
                key={brand}
                onClick={() => handleBrandSelect(brand.toLowerCase().replace(/[^a-z]/g, "-"))}
-               className={`h-12 px-6 rounded-xl bg-white/5 border border-white/10 text-white/80 text-sm font-bold hover:bg-white hover:text-black transition-all flex items-center gap-3 ${getBrandColor(brand)}`}
+               className={cn(
+                  "h-14 px-5 rounded-2xl bg-white/5 border border-white/10 text-white/80 text-xs font-black uppercase tracking-widest hover:bg-white hover:text-black transition-all flex items-center justify-center gap-3 group/brand animate-in fade-in slide-in-from-left-4",
+                  getBrandColor(brand)
+               )}
+               style={{ animationDelay: `${(idx + 4) * 100}ms` }}
              >
-                <span className="w-8 h-8 rounded-lg bg-white/10 flex items-center justify-center text-[10px] font-black group-hover:bg-white/20 transition-colors border border-white/5">
+                <div className="size-8 rounded-lg bg-white/10 flex items-center justify-center text-[10px] font-black group-hover/brand:bg-black/5 transition-colors border border-white/5">
                   {brand === "Mercedes-Benz" ? "MB" : brand.slice(0, 2).toUpperCase()}
-                </span>
+                </div>
                 {brand}
              </button>
            ))}
         </div>
-
       </div>
     </section>
   )

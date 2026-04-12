@@ -1,6 +1,6 @@
 "use client";
 
-import { Info, Sparkles, TrendingUp, ShieldCheck } from "lucide-react";
+import { Info, TrendingUp, ShieldCheck } from "lucide-react";
 import {
   HoverCard,
   HoverCardContent,
@@ -9,51 +9,51 @@ import {
 
 export function MarketAnalysisInfo() {
   return (
-    <div className="mt-4 p-5 rounded-2xl bg-indigo-50/50 border border-indigo-100/50">
-      <div className="flex items-start gap-3">
-        <div className="p-2 rounded-xl bg-white text-indigo-600 shadow-sm border border-indigo-100">
-           <Sparkles size={18} />
-        </div>
-        <div className="space-y-1">
-          <div className="flex items-center gap-2">
-            <h4 className="text-xs font-black uppercase tracking-wider text-indigo-900 italic">Piyasa Analizi Nasıl Yapılıyor?</h4>
-            <HoverCard openDelay={0} closeDelay={0}>
-              <HoverCardTrigger asChild>
-                <button className="text-indigo-400 hover:text-indigo-600 transition-colors">
-                  <Info size={14} />
-                </button>
-              </HoverCardTrigger>
-              <HoverCardContent className="w-80 p-5 rounded-3xl card-shadow border-indigo-100 bg-white" side="top">
-                <div className="space-y-4">
-                  <div className="flex items-center gap-2 text-indigo-600 font-bold text-sm">
-                    <ShieldCheck size={16} />
-                    Şeffaf Fiyatlandırma
-                  </div>
-                  <p className="text-xs text-slate-600 leading-relaxed font-medium">
-                    OtoBurada'nın gelişmiş algoritmaları, bu ilanı benzer özelliklerdeki (yıl, km, yakıt, vites, lokasyon) binlerce güncel ve geçmiş ilanla karşılaştırır.
-                  </p>
-                  <ul className="space-y-2">
-                    <li className="flex items-center gap-2 text-[11px] font-bold text-slate-700 italic">
-                      <div className="w-1.5 h-1.5 rounded-full bg-indigo-400" />
-                      Günlük Piyasa Verisi Taraması
-                    </li>
-                    <li className="flex items-center gap-2 text-[11px] font-bold text-slate-700 italic">
-                      <div className="w-1.5 h-1.5 rounded-full bg-indigo-400" />
-                      Hasar ve Ekstra Donanım Filtreleme
-                    </li>
-                    <li className="flex items-center gap-2 text-[11px] font-bold text-slate-700 italic">
-                      <div className="w-1.5 h-1.5 rounded-full bg-indigo-400" />
-                      Aciliyet ve Talep Analizi
-                    </li>
-                  </ul>
+    <div className="mt-4 overflow-hidden rounded-[32px] bg-slate-900 border border-white/5 shadow-2xl group transition-all hover:scale-[1.01]">
+      <div className="p-8 pb-4">
+        <div className="flex items-start justify-between gap-4">
+          <div className="flex items-start gap-3">
+             <div className="p-2.5 rounded-2xl bg-indigo-500 text-white shadow-xl shadow-indigo-500/20">
+                <TrendingUp size={18} />
+             </div>
+             <div className="space-y-1">
+                <div className="flex items-center gap-2">
+                   <h4 className="text-xs font-black uppercase tracking-widest text-indigo-400 italic">Piyasa Skoru</h4>
+                   <HoverCard openDelay={0} closeDelay={0}>
+                      <HoverCardTrigger asChild>
+                         <button className="text-white/30 hover:text-white transition-colors">
+                            <Info size={14} />
+                         </button>
+                      </HoverCardTrigger>
+                      <HoverCardContent className="w-80 p-6 rounded-[32px] card-shadow border-white/10 bg-slate-900 text-white" side="top">
+                         <div className="space-y-4">
+                            <div className="flex items-center gap-2 text-indigo-400 font-black text-xs uppercase tracking-widest italic">
+                               <ShieldCheck size={16} />
+                               Şeffaf Fiyatlandırma
+                            </div>
+                            <p className="text-[11px] text-slate-300 leading-relaxed font-bold italic">
+                               OtoBurada'nın yapay zeka algoritmaları, bu ilanı benzer özelliklerdeki binlerce güncel ilanla anlık olarak karşılaştırır.
+                            </p>
+                         </div>
+                      </HoverCardContent>
+                   </HoverCard>
                 </div>
-              </HoverCardContent>
-            </HoverCard>
+                <p className="text-[11px] text-white/50 font-black leading-relaxed italic uppercase tracking-tighter">
+                   ARACINIZIN GERÇEK DEĞERİ, ŞİMDİ SİZİNLE.
+                </p>
+             </div>
           </div>
-          <p className="text-[11px] text-indigo-700/70 font-medium leading-relaxed italic">
-            Bu değer, ilan edilen fiyatın piyasa ortalamasına oranını gösterir. Yeşil bölge "Fırsat İlanı" anlamına gelir.
-          </p>
         </div>
+      </div>
+      
+      {/* Visual Chart Placeholder/Image */}
+      <div className="relative h-32 px-2 overflow-hidden">
+         <img 
+           src="/market_analysis_mockup_v1_1776035350916.png" 
+           alt="Market Trend" 
+           className="w-full h-full object-cover opacity-60 contrast-125 saturate-50 group-hover:scale-105 transition-transform duration-1000"
+         />
+         <div className="absolute inset-0 bg-gradient-to-t from-slate-900 via-transparent to-transparent" />
       </div>
     </div>
   );

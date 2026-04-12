@@ -148,11 +148,20 @@ export function CarCard({ listing, priority = false, variant = "grid" }: CarCard
           </div>
         )}
         
-        <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-all duration-700 flex flex-col justify-end p-6">
+           <div className="flex flex-col gap-2 translate-y-4 group-hover:translate-y-0 transition-transform duration-700 delay-75">
+              <div className="text-3xl font-black text-white tracking-tighter font-heading border-b border-white/20 pb-2 mb-2">
+                ₺{formatPrice(listing.price)}
+              </div>
+              <div className="flex items-center gap-2 text-primary font-black text-[10px] uppercase tracking-[0.2em] italic">
+                 HEMEN İNCELE <ChevronRight size={14} className="group-hover:translate-x-1 transition-transform" />
+              </div>
+           </div>
+        </div>
         
-        <div className="absolute top-5 left-5 flex flex-col gap-2">
+        <div className="absolute top-5 left-5 flex flex-col gap-2 z-20">
            {listing.featured && (
-             <div className="glass px-3 py-1.5 rounded-2xl flex items-center gap-1.5 text-[10px] font-black tracking-widest text-amber-600 uppercase">
+             <div className="glass px-3 py-1.5 rounded-2xl flex items-center gap-1.5 text-[10px] font-black tracking-widest text-amber-500 uppercase">
                 <Sparkles size={12} className="fill-amber-500 text-amber-500" />
                 VİTRİN
              </div>
@@ -168,11 +177,12 @@ export function CarCard({ listing, priority = false, variant = "grid" }: CarCard
         <div className="absolute top-5 right-5 z-20">
            <FavoriteButton 
              listingId={listing.id}
-             className="size-10 rounded-full glass flex items-center justify-center text-slate-700 hover:scale-110 active:scale-95 transition-all shadow-xl"
+             className="size-10 rounded-full glass flex items-center justify-center text-slate-700 hover:scale-110 active:scale-95 transition-all shadow-xl group-hover:bg-white/10 group-hover:text-white"
            />
         </div>
 
-        <div className="absolute bottom-5 left-5">
+        {/* Static Price (Hidden on Hover) */}
+        <div className="absolute bottom-5 left-5 transition-opacity duration-300 group-hover:opacity-0">
            <div className="text-2xl font-black text-white tracking-tighter drop-shadow-md font-heading">
              ₺{formatPrice(listing.price)}
            </div>
