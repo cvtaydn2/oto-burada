@@ -1,5 +1,6 @@
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { hasSupabaseAdminEnv } from "@/lib/supabase/env";
+import { payment } from "@/lib/payment";
 
 export type DopingType = "featured" | "urgent" | "highlighted";
 
@@ -57,7 +58,19 @@ export async function applyDopingToListing(
     return { success: false, message: "İlan sahibi doğrulanamadı." };
   }
 
-  // 2. Perform updates
+  // 3. Process Payment
+  const paymentResult = await payment.processPayment({
+    amount: dopingTypes.length * 50,
+    orderId: `DOP-${listingId}-${Date.now()}`,
+    listingId,
+    userId,
+  });
+
+  if (!paymentResult.success) {
+    return { success: false, message: paymentResult.error || "Ödeme işlemi başarısız oldu." };
+  }
+
+  // 4. Update listing with doping
   const { error } = await admin
     .from("listings")
     .update(updates)
@@ -65,12 +78,13 @@ export async function applyDopingToListing(
 
   if (error) return { success: false, message: "Doping uygulanırken bir hata oluştu." };
 
-  // 3. Log payment (Mock)
+  // 5. Log payment with real/mock transaction data
   await admin.from("payments").insert({
     user_id: userId,
-    amount: dopingTypes.length * 50, // Simplified price
-    provider: "iyzico_mock",
-    status: "success",
+    amount: dopingTypes.length * 50,
+    provider: "iyzico",
+    transaction_id: paymentResult.transactionId,
+    status: paymentResult.status,
     metadata: { listingId, dopingTypes }
   });
 
