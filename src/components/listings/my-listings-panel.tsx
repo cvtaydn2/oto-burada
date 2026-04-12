@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import Link from "next/link";
 import Image from "next/image";
@@ -421,7 +421,13 @@ function ListingCard({
       <div className="relative h-24 w-32 shrink-0 overflow-hidden rounded-2xl bg-slate-50 border border-slate-100">
         {listing.images?.[0]?.url ? (
           <Image
-            src={listing.images[0].url}`n            alt=""`n            fill`n            className="object-cover group-hover:scale-105 transition-transform duration-500"`n            placeholder={listing.images[0].placeholderBlur ? "blur" : "empty"}`n            blurDataURL={listing.images[0].placeholderBlur ?? undefined}`n          />
+            src={listing.images[0].url}
+            alt=""
+            fill
+            className="object-cover group-hover:scale-105 transition-transform duration-500"
+            placeholder={listing.images[0].placeholderBlur ? "blur" : "empty"}
+            blurDataURL={listing.images[0].placeholderBlur ?? undefined}
+          />
         ) : (
           <div className="flex h-full items-center justify-center text-slate-300">
              <Rocket size={24} />

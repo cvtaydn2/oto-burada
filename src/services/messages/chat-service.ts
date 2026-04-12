@@ -1,24 +1,28 @@
 import { createSupabaseBrowserClient } from "@/lib/supabase/browser";
 import type { Chat, Message } from "@/types";
 import { logger } from "@/lib/utils/logger";
+import { SupabaseClient } from "@supabase/supabase-js";
 
-async function getSupabase() {
-  if (typeof window === "undefined") {
-    const { createSupabaseServerClient } = await import("@/lib/supabase/server");
-    return await createSupabaseServerClient();
-  }
-  return createSupabaseBrowserClient();
+/**
+ * Common helper to get client, defaults to browser client
+ */
+function getClient(injectedClient?: SupabaseClient) {
+  return injectedClient || createSupabaseBrowserClient();
 }
 
 /**
  * Creates or retrieves a chat between a buyer and a seller for a specific listing.
  */
-export async function getOrCreateChat(listingId: string, buyerId: string, sellerId: string): Promise<Chat | null> {
-  const supabase = await getSupabase();
+export async function getOrCreateChat(
+  listingId: string, 
+  buyerId: string, 
+  sellerId: string,
+  supabase?: SupabaseClient
+): Promise<Chat | null> {
+  const client = getClient(supabase);
 
   try {
-    // Try to find existing chat
-    const { data: existingChat } = await supabase
+    const { data: existingChat } = await client
       .from("chats")
       .select("*, listing:listings(id, title, price), buyer:profiles!buyer_id(*), seller:profiles!seller_id(*)")
       .eq("listing_id", listingId)
@@ -28,8 +32,7 @@ export async function getOrCreateChat(listingId: string, buyerId: string, seller
 
     if (existingChat) return existingChat as Chat;
 
-    // If not found, create new
-    const { data: newChat, error: createError } = await supabase
+    const { data: newChat, error: createError } = await client
       .from("chats")
       .insert({ listing_id: listingId, buyer_id: buyerId, seller_id: sellerId })
       .select("*, listing:listings(id, title, price), buyer:profiles!buyer_id(*), seller:profiles!seller_id(*)")
@@ -50,10 +53,10 @@ export async function getOrCreateChat(listingId: string, buyerId: string, seller
 /**
  * Fetches all messages for a specific chat.
  */
-export async function getChatMessages(chatId: string): Promise<Message[]> {
-  const supabase = await getSupabase();
+export async function getChatMessages(chatId: string, supabase?: SupabaseClient): Promise<Message[]> {
+  const client = getClient(supabase);
 
-  const { data, error } = await supabase
+  const { data, error } = await client
     .from("messages")
     .select("*")
     .eq("chat_id", chatId)
@@ -70,10 +73,15 @@ export async function getChatMessages(chatId: string): Promise<Message[]> {
 /**
  * Sends a message in a specific chat.
  */
-export async function sendMessage(chatId: string, senderId: string, content: string): Promise<Message | null> {
-  const supabase = await getSupabase();
+export async function sendMessage(
+  chatId: string, 
+  senderId: string, 
+  content: string,
+  supabase?: SupabaseClient
+): Promise<Message | null> {
+  const client = getClient(supabase);
 
-  const { data, error } = await supabase
+  const { data, error } = await client
     .from("messages")
     .insert({ chat_id: chatId, sender_id: senderId, content })
     .select("*")
@@ -89,12 +97,11 @@ export async function sendMessage(chatId: string, senderId: string, content: str
 
 /**
  * Gets all chats for a specific user (either as buyer or seller).
- * Ordered by last message activity.
  */
-export async function getUserChats(userId: string): Promise<Chat[]> {
-  const supabase = await getSupabase();
+export async function getUserChats(userId: string, supabase?: SupabaseClient): Promise<Chat[]> {
+  const client = getClient(supabase);
 
-  const { data, error } = await supabase
+  const { data, error } = await client
     .from("chats")
     .select("*, listing:listings(id, title, price), buyer:profiles!buyer_id(*), seller:profiles!seller_id(*)")
     .or(`buyer_id.eq.${userId},seller_id.eq.${userId}`)
@@ -111,10 +118,10 @@ export async function getUserChats(userId: string): Promise<Chat[]> {
 /**
  * Marks all unread messages in a chat as read for the current user.
  */
-export async function markMessagesAsRead(chatId: string, userId: string): Promise<boolean> {
-  const supabase = await getSupabase();
+export async function markMessagesAsRead(chatId: string, userId: string, supabase?: SupabaseClient): Promise<boolean> {
+  const client = getClient(supabase);
 
-  const { error } = await supabase
+  const { error } = await client
     .from("messages")
     .update({ is_read: true })
     .eq("chat_id", chatId)

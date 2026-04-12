@@ -53,6 +53,7 @@ interface UploadState {
 }
 
 interface UploadedImagePayload {
+  image: {
     storagePath: string;
     url: string;
     placeholderBlur?: string | null;

@@ -549,9 +549,15 @@ export async function getFilteredDatabaseListings(
     page,
     limit,
     hasMore: page * limit < totalCount,
+  };
+
   if (isDefaultView) {
-    const { setCachedData } = await import("@/lib/redis/client");
-    setCachedData(cacheKey, result, 600).catch(console.error); // 10 min cache
+    try {
+      const { setCachedData } = await import("@/lib/redis/client");
+      setCachedData(cacheKey, result, 600).catch(console.error); // 10 min cache
+    } catch (e) {
+      // Ignored during build/edge
+    }
   }
 
   return result;
@@ -676,36 +682,10 @@ export function mapListingToDatabaseRow(listing: Listing) {
     highlighted_until: listing.highlightedUntil ?? null,
     eids_verification_json: listing.eidsVerificationJson ?? null,
     market_price_index: listing.marketPriceIndex ?? null,
-      whatsapp_phone: listing.whatsappPhone,
+    whatsapp_phone: listing.whatsappPhone,
     year: listing.year,
     vin: listing.vin ?? null,
   };
-}
-    return { error: "database_error" };
-  }
-
-  const imageRows = mapListingImagesToDatabaseRows(listing);
-
-  if (imageRows.length > 0) {
-    const imageInsertResult = await admin.from("listing_images").insert(imageRows);
-
-    if (imageInsertResult.error) {
-      await admin.from("listings").delete().eq("id", listing.id);
-    return { error: "database_error" };
-  }
-
-  const imageRows = mapListingImagesToDatabaseRows(listing);
-
-  if (imageRows.length > 0) {
-    const imageInsertResult = await admin.from("listing_images").insert(imageRows);
-
-    if (imageInsertResult.error) {
-      return { error: "database_error" };
-    }
-  }
-
-  const updatedListing = (await getDatabaseListings({ listingId: listing.id }))?.[0];
-  return { listing: updatedListing };
 }
 
 export async function archiveDatabaseListing(listingId: string) {
