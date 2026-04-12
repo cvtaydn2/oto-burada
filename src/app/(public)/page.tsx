@@ -4,7 +4,6 @@ import Link from "next/link";
 
 import { HomeHero } from "@/components/layout/home-hero";
 import { CarCard } from "@/components/modules/listings/car-card";
-import { getCurrentUser } from "@/lib/auth/session";
 import { buildListingsMetadata, getAppUrl } from "@/lib/seo";
 import { getPublicMarketplaceListings } from "@/services/listings/marketplace-listings";
 import { getLiveMarketplaceReferenceData } from "@/services/reference/live-reference-data";
@@ -18,9 +17,8 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default async function HomePage() {
-  const [listingsResult, user, references] = await Promise.all([
+  const [listingsResult, references] = await Promise.all([
     getPublicMarketplaceListings({ limit: 12, sort: "newest" }),
-    getCurrentUser(),
     getLiveMarketplaceReferenceData(),
   ]);
 

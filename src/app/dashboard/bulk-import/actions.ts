@@ -2,7 +2,6 @@
 
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { hasSupabaseAdminEnv } from "@/lib/supabase/env";
-import { listingSchema } from "@/lib/validators";
 import { buildListingRecord, mapListingToDatabaseRow, getDatabaseListings } from "@/services/listings/listing-submissions";
 import type { ListingCreateInput } from "@/types";
 

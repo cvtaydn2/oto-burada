@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { CreditCard, Heart, LayoutGrid, ListChecks, UserCircle2, Zap } from "lucide-react";
+import { Heart, LayoutGrid, ListChecks, UserCircle2, Zap } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 

@@ -2,9 +2,8 @@
 
 import { useState } from "react"
 import { useRouter } from "next/navigation"
-import { Search, Shield, Zap, CheckCircle2, Star } from "lucide-react"
+import { Search, Shield, Star } from "lucide-react"
 import { type BrandCatalogItem } from "@/types"
-import Image from "next/image"
 
 interface HomeHeroProps {
   brands: BrandCatalogItem[]

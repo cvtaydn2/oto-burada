@@ -6,7 +6,7 @@ import { sendMessage, getChatMessages, markMessagesAsRead } from "@/services/mes
 import { MessageBubble } from "./message-bubble";
 import { ChatInput } from "./chat-input";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import type { Message, Chat } from "@/types";
+import type { Chat } from "@/types";
 import { Loader2 } from "lucide-react";
 
 interface ChatWindowProps {

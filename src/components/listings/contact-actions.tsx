@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Phone, MessageCircle, ShieldAlert, AlertTriangle, Eye, Loader2 } from "lucide-react";
+import { Phone, MessageCircle, ShieldAlert, AlertTriangle, Loader2 } from "lucide-react";
 import {
   AlertDialog,
   AlertDialogAction,

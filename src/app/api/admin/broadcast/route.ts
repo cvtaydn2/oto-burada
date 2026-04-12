@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { requireApiAdminUser } from "@/lib/auth/api-admin";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
-import { createDatabaseNotification, createDatabaseNotificationsBulk } from "@/services/notifications/notification-records";
+import { createDatabaseNotificationsBulk } from "@/services/notifications/notification-records";
 
 export async function POST(request: Request) {
   const authResponse = await requireApiAdminUser();

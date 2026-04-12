@@ -29,7 +29,7 @@ export async function POST(req: Request) {
     }
 
     return apiSuccess({ count: ids.length }, `${ids.length} ilan başarıyla arşive kaldırıldı.`);
-  } catch (error) {
+  } catch {
     return apiError(API_ERROR_CODES.INTERNAL_ERROR, "Beklenmedik bir hata.", 500);
   }
 }

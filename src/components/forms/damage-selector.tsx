@@ -6,7 +6,7 @@ import {
   carPartLabels, 
   carParts 
 } from "@/lib/constants/domain";
-import { cn, formatNumber } from "@/lib/utils";
+import { cn } from "@/lib/utils";
 import { Check, ChevronDown, Info, RotateCcw, ShieldCheck } from "lucide-react";
 import { useState } from "react";
 

@@ -8,7 +8,6 @@ import {
   Ban, 
   UserCog, 
   Trash2,
-  CheckCircle2,
   AlertCircle
 } from "lucide-react";
 import {

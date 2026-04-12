@@ -1,8 +1,8 @@
 "use client"
 
 import { useState } from "react"
-import { SlidersHorizontal, Search, MapPin, Gauge, Settings2, Sparkles, X, ChevronDown, Check } from "lucide-react"
-import { cn, formatNumber } from "@/lib/utils"
+import { SlidersHorizontal, ChevronDown } from "lucide-react"
+import { cn } from "@/lib/utils"
 import { RangeSlider } from "@/components/ui/range-slider"
 import { FilterSelect } from "@/components/listings/filter-select"
 import type { ListingFilters } from "@/types"

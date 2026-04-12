@@ -1,6 +1,6 @@
 "use client";
 
-import { Building2, MapPin, Globe, ShieldCheck, FileText, Image as ImageIcon } from "lucide-react";
+import { Building2, ShieldCheck, FileText, Image as ImageIcon } from "lucide-react";
 import { useActionState } from "react";
 import { AuthSubmitButton } from "@/components/forms/auth-submit-button";
 import type { ProfileActionState } from "@/lib/auth/profile-actions";

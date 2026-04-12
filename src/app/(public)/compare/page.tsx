@@ -4,7 +4,6 @@ import Image from "next/image";
 import Link from "next/link";
 
 import { 
-  getPublicMarketplaceListings,
   getMarketplaceListingsByIds 
 } from "@/services/listings/marketplace-listings";
 import { formatCurrency, formatNumber } from "@/lib/utils";

@@ -1,7 +1,7 @@
 "use client";
 
 import { UseFormReturn } from "react-hook-form";
-import { MapPin, FileText, Info } from "lucide-react";
+import { MapPin, FileText } from "lucide-react";
 import { CityOption, ListingCreateFormValues } from "@/types";
 import { fuelTypes, transmissionTypes } from "@/lib/constants/domain";
 

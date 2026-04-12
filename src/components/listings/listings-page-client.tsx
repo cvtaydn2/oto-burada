@@ -1,7 +1,7 @@
 "use client"
-
-import { useTransition, useState, useEffect } from "react"
-import { useRouter, useSearchParams } from "next/navigation"
+ 
+import { useTransition, useState } from "react"
+import { useRouter } from "next/navigation"
 import { LayoutGrid, List, SlidersHorizontal, ArrowDownWideNarrow } from "lucide-react"
 
 import { type Listing, type ListingFilters, type BrandCatalogItem, type CityOption } from "@/types"
@@ -30,7 +30,6 @@ export function ListingsPageClient({
   userId
 }: ListingsPageClientProps) {
   const router = useRouter()
-  const searchParams = useSearchParams()
   const [isPending, startTransition] = useTransition()
   
   const [filters, setFilters] = useState<ListingFilters>(initialFilters)

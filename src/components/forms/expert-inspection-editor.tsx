@@ -47,7 +47,7 @@ const INSPECTION_FIELDS = [
 ] as const;
 
 export function ExpertInspectionEditor({ form }: ExpertInspectionEditorProps) {
-  const { register, watch, setValue, formState: { errors } } = form;
+  const { register, watch, setValue } = form;
   
   const hasInspection = watch("expertInspection.hasInspection");
 

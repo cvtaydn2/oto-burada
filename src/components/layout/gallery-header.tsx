@@ -1,5 +1,5 @@
 import { type Profile } from "@/types"
-import { MapPin, Globe, Phone, ShieldCheck, Calendar, Info } from "lucide-react"
+import { MapPin, Globe, Phone, ShieldCheck, Calendar } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 
 interface GalleryHeaderProps {

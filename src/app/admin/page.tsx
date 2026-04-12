@@ -1,7 +1,5 @@
 import {
-  ShieldCheck,
   Zap,
-  Clock,
   Activity,
   UserPlus,
   Car,

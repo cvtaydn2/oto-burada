@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { headers } from "next/headers";
-import { Bell, CarFront, Heart, PlusCircle, User, Zap } from "lucide-react";
+import { CarFront, Heart, PlusCircle, User } from "lucide-react";
 
 import { getCurrentUser, getUserRole } from "@/lib/auth/session";
 import { getLiveMarketplaceReferenceData } from "@/services/reference/live-reference-data";

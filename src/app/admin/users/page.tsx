@@ -1,4 +1,4 @@
-import { Users, ShieldCheck, ShieldAlert, UserCircle, Ban, CheckCircle2 } from "lucide-react";
+import { Users, ShieldCheck, ShieldAlert, UserCircle, CheckCircle2 } from "lucide-react";
 import { requireAdminUser } from "@/lib/auth/session";
 import { getAllUsers } from "@/services/admin/users";
 import { Badge } from "@/components/ui/badge";

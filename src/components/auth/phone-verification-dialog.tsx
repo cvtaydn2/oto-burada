@@ -6,8 +6,7 @@ import {
   DialogContent, 
   DialogDescription, 
   DialogHeader, 
-  DialogTitle,
-  DialogFooter
+  DialogTitle
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -59,7 +58,7 @@ export function PhoneVerificationDialog({
       } else {
         toast.error(data.error || "Kod gönderilemedi.");
       }
-    } catch (error) {
+    } catch {
       toast.error("Bir hata oluştu.");
     } finally {
       setIsLoading(false);
@@ -84,7 +83,7 @@ export function PhoneVerificationDialog({
       } else {
         toast.error(data.error || "Geçersiz kod.");
       }
-    } catch (error) {
+    } catch {
       toast.error("Bir hata oluştu.");
     } finally {
       setIsLoading(false);

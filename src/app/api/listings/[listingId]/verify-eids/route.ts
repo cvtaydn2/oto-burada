@@ -1,4 +1,3 @@
-import { NextResponse } from "next/server";
 import { getCurrentUser } from "@/lib/auth/session";
 import { verifyListingWithEIDS } from "@/services/verification/eids-mock";
 import { apiError, apiSuccess, API_ERROR_CODES } from "@/lib/utils/api-response";

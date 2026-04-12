@@ -1,4 +1,4 @@
-import { Info, Target, TrendingDown, TrendingUp, AlertCircle } from "lucide-react";
+import { Info, Target, TrendingDown, TrendingUp } from "lucide-react";
 import { formatNumber } from "@/lib/utils";
 
 interface MarketValueCardProps {

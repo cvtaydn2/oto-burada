@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ArrowLeft, Upload, FileSpreadsheet, AlertCircle, CheckCircle2, Info } from "lucide-react";
+import { ArrowLeft, FileSpreadsheet, CheckCircle2, Info } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";

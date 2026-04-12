@@ -1,6 +1,6 @@
 "use client"
 
-import { CalendarDays, CircleGauge, Fuel, MapPin, Settings2 } from "lucide-react"
+import { CalendarDays, CircleGauge, Fuel, Settings2 } from "lucide-react"
 import { formatNumber } from "@/lib/utils"
 import { type Listing } from "@/types"
 import { Badge } from "@/components/ui/badge"

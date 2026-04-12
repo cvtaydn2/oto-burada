@@ -1,6 +1,5 @@
 "use client"
 
-import { MessageCircle, Phone } from "lucide-react";
 import { ContactActions } from "./contact-actions";
 import { formatCurrency } from "@/lib/utils";
 

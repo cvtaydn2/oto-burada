@@ -9,8 +9,7 @@ import {
   Trash2, 
   CheckCircle2, 
   XSquare,
-  Zap,
-  Clock
+  Zap
 } from "lucide-react";
 import {
   DropdownMenu,

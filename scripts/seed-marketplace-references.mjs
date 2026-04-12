@@ -1,15 +1,9 @@
 import { createClient } from "@supabase/supabase-js";
-import fs from "node:fs";
-import path from "node:path";
 import process from "node:process";
-import { fileURLToPath } from "node:url";
 
 import { loadLocalEnv } from "./load-local-env.mjs";
 
 loadLocalEnv();
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const supabaseServiceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;

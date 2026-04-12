@@ -4,18 +4,13 @@ import { notFound } from "next/navigation";
 import {
   AlertTriangle,
   CalendarDays,
-  CarFront,
   CheckCircle2,
   ChevronRight,
   CircleGauge,
   Fuel,
-  MapPin,
   Settings2,
   Sparkles,
   ShieldCheck,
-  TrendingDown,
-  Info,
-  Clock,
   ArrowLeft
 } from "lucide-react";
 
@@ -28,8 +23,6 @@ import { Breadcrumbs } from "@/components/shared/breadcrumbs";
 import { ReportListingForm } from "@/components/forms/report-listing-form";
 import { ShareButton } from "@/components/listings/share-button";
 import { CarCard } from "@/components/modules/listings/car-card";
-import { PriceAnalysisCard } from "@/components/listings/price-analysis-card";
-import { TrustBadge } from "@/components/shared/trust-badge";
 import { ContactActions } from "@/components/listings/contact-actions";
 import { ExpertInspectionCard } from "@/components/listings/expert-inspection-card";
 import { DamageReportCard } from "@/components/listings/damage-report-card";
@@ -80,10 +73,6 @@ export default async function ListingDetailPage({ params }: ListingDetailPagePro
   const insight = getListingCardInsights(listing);
   const trustSummary = getSellerTrustSummary(seller, activeListingCount);
   const currentUser = await getCurrentUser();
-  
-  const marketPriceIndex = listing.marketPriceIndex || 1.0;
-  const marketStatus = marketPriceIndex <= 0.95 ? "excellent" : marketPriceIndex >= 1.05 ? "high" : "fair";
-  const priceDiff = (listing.price / marketPriceIndex) - listing.price;
 
   const breadcrumbs = [
     { name: "İlanlar", url: "/listings" },

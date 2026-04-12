@@ -1,4 +1,4 @@
-import { CarFront, Calculator, Search, BadgeCheck, TrendingUp, Info } from "lucide-react";
+import { CarFront, Calculator, BadgeCheck, TrendingUp, Info } from "lucide-react";
 import { getLiveMarketplaceReferenceData } from "@/services/reference/live-reference-data";
 import { ValuationForm } from "@/components/market/valuation-form";
 
