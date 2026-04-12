@@ -74,7 +74,7 @@ export function SellerCard({
         {/* Contact Actions */}
         {isLoggedIn ? (
           <div className="mt-4">
-            <ContactActions listingId={listingId} />
+            <ContactActions listingId={listingId} sellerId={seller?.id || ""} />
           </div>
         ) : (
           <div className="mt-4 space-y-3">

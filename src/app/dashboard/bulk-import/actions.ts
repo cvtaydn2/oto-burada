@@ -18,7 +18,7 @@ export async function processBulkListings(inputs: any[], sellerId: string) {
   try {
     // 1. Fetch current listings for slug and fraud collision checks
     // Limit to 1000 for performance during checks
-    const existingListings = await getDatabaseListings({ limit: 1000 }) ?? [];
+    const existingListings = await getDatabaseListings({ filters: { limit: 1000 } }) ?? [];
 
     // 2. Map and build records
     const preparedListings = inputs.map(input => {
