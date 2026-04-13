@@ -14,88 +14,91 @@ export async function SiteHeader() {
   const references = await getLiveMarketplaceReferenceData();
   const isAdmin = user ? getUserRole(user) === "admin" : false;
   
-  const headersList = await headers();
-  const pathname = headersList.get("x-pathname") || ""; 
-  // Note: x-pathname needs to be set in middleware if not available. 
-  // If not available, we can use a Client Component wrapper.
-  // For now, let's assume we want to show it everywhere EXCEPT homepage hero.
-  
   const accountHref = user ? "/dashboard" : "/login";
   const favoritesHref = user ? "/dashboard/favorites" : "/favorites";
   const postListingHref = user ? "/dashboard/listings" : "/login";
 
   return (
-    <header className="fixed top-4 left-0 right-0 z-50 flex justify-center pointer-events-none px-4" role="banner">
-      <div className="mx-auto w-full max-w-7xl glass rounded-[24px] pointer-events-auto h-20 shadow-[0_20px_50px_rgba(0,0,0,0.15)] flex items-center px-6 gap-6 ring-1 ring-white/20">
-        <div className="flex items-center gap-3">
-          <Link href="/" className="flex items-center gap-3 group shrink-0" aria-label="OtoBurada - Ana Sayfa">
-            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-primary text-white shadow-[0_10px_30px_rgba(0,0,0,0.2)] shadow-primary/40 transition-all group-hover:scale-105 group-hover:rotate-2 group-active:scale-95" aria-hidden="true">
-              <CarFront size={26} className="stroke-[2.5]" />
+    <header className="fixed top-0 left-0 right-0 z-50 bg-white/80 backdrop-blur-xl border-b border-slate-100 h-20 flex items-center shadow-sm" role="banner">
+      <div className="mx-auto w-full max-w-[1440px] px-6 lg:px-12 flex items-center justify-between gap-8">
+        {/* Logo & Main Nav */}
+        <div className="flex items-center gap-10">
+          <Link href="/" className="flex items-center gap-2 group shrink-0" aria-label="OtoBurada - Ana Sayfa">
+            <div className="size-8 rounded-lg bg-primary flex items-center justify-center text-white" aria-hidden="true">
+              <CarFront size={20} className="stroke-[2.5]" />
             </div>
-            <span className="text-2xl font-black tracking-tighter text-foreground hidden sm:block">
-              Oto<span className="text-primary italic">Burada</span>
+            <span className="text-xl font-black tracking-tightest text-slate-900">
+              Oto<span className="text-primary">Burada</span>
             </span>
           </Link>
+
+          <nav className="hidden lg:flex items-center gap-8 text-[13px] font-bold text-slate-600 uppercase tracking-widest italic">
+            <Link href="/listings" className="hover:text-primary transition-colors">İlanlar</Link>
+            <Link href="/compare" className="hover:text-primary transition-colors">Karşılaştır</Link>
+          </nav>
         </div>
 
-        <div className="hidden lg:flex flex-1 max-w-lg mx-auto">
-          {pathname !== "/" && (
-            <SearchWithSuggestions
-              placeholder="Marka, model ara..."
-              suggestions={references.searchSuggestions}
-              className="showroom-search"
-            />
-          )}
+        {/* Global Search Bar */}
+        <div className="hidden lg:flex flex-1 max-w-xl">
+          <SearchWithSuggestions
+            placeholder="Marka, model veya kelime ara..."
+            suggestions={references.searchSuggestions}
+            className="w-full bg-slate-50 border-none rounded-xl h-11 text-sm focus:ring-1 focus:ring-primary/20"
+          />
         </div>
 
-        <nav className="hidden md:flex items-center gap-2" aria-label="Ana navigasyon">
-          <ThemeToggle />
-          {user && <NotificationDropdown userId={user.id} />}
-          
-          <Link 
-            href={favoritesHref} 
-            className="flex items-center justify-center w-12 h-12 rounded-2xl text-muted-foreground hover:text-primary hover:bg-primary/5 transition-all relative group"
-            title="Favoriler"
-          >
-            <Heart size={22} className="group-hover:fill-primary/20 transition-all" />
-          </Link>
+        {/* User Actions */}
+        <div className="flex items-center gap-4">
+          <div className="hidden md:flex items-center gap-2 pr-4 border-r border-slate-100">
+             <Link 
+               href={favoritesHref} 
+               className="size-10 flex items-center justify-center rounded-xl text-slate-400 hover:text-primary hover:bg-slate-50 transition-all"
+               title="Favoriler"
+             >
+               <Heart size={20} />
+             </Link>
+             <Link 
+               href="/dashboard/messages" 
+               className="size-10 flex items-center justify-center rounded-xl text-slate-400 hover:text-primary hover:bg-slate-50 transition-all"
+               title="Mesajlar"
+             >
+               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+             </Link>
+          </div>
 
-          {isAdmin && (
-            <Link 
-              href="/admin" 
-              className="flex items-center justify-center h-12 px-5 rounded-2xl text-sm font-black uppercase tracking-widest text-muted-foreground hover:text-primary hover:bg-primary/5 transition-all"
-            >
-              Admin
-            </Link>
-          )}
+          <div className="flex items-center gap-3">
+             <Link 
+               href={accountHref}
+               className="h-11 px-6 rounded-xl text-sm font-black tracking-tighter uppercase border border-slate-200 hover:bg-slate-50 transition-all flex items-center justify-center gap-2"
+             >
+               {user ? (
+                 <>
+                   <div className="size-6 rounded-full bg-primary/10 text-primary flex items-center justify-center text-[10px]">
+                     {(user.user_metadata?.full_name as string)?.[0] || 'U'}
+                   </div>
+                   Hesabım
+                 </>
+               ) : "Giriş Yap"}
+             </Link>
 
-          <div className="h-8 w-px bg-border/40 mx-2" />
+             <Link 
+               href={postListingHref} 
+               className="hidden sm:flex h-11 px-6 rounded-xl text-sm font-black uppercase tracking-tighter text-white bg-primary hover:bg-primary/90 shadow-lg shadow-primary/20 transition-all items-center justify-center gap-2"
+             >
+               <PlusCircle size={18} />
+               İlan Ver
+             </Link>
+          </div>
 
-          <Link 
-            href={accountHref}
-            className="flex items-center justify-center h-12 px-5 rounded-2xl text-sm font-black tracking-widest uppercase border border-border/40 hover:bg-secondary/50 hover:border-primary/20 transition-all"
-          >
-            <User size={18} className="mr-2.5 text-primary" />
-            {user ? "Hesabım" : "Giriş"}
-          </Link>
-
-          <Link 
-            href={postListingHref} 
-            className="flex items-center justify-center h-12 px-7 rounded-2xl text-sm font-black uppercase tracking-tighter text-white bg-primary hover:bg-primary/90 hover:scale-[1.02] active:scale-95 shadow-[0_10px_25px_-5px_rgba(var(--primary),0.4)] transition-all ml-2"
-          >
-            <PlusCircle size={18} className="mr-2.5" />
-            İlan Ver
-          </Link>
-        </nav>
-
-        <HeaderMobileNav
-          user={user}
-          isAdmin={isAdmin}
-          accountHref={accountHref}
-          favoritesHref={favoritesHref}
-          postListingHref={postListingHref}
-          searchSuggestions={references.searchSuggestions}
-        />
+          <HeaderMobileNav
+            user={user}
+            isAdmin={isAdmin}
+            accountHref={accountHref}
+            favoritesHref={favoritesHref}
+            postListingHref={postListingHref}
+            searchSuggestions={references.searchSuggestions}
+          />
+        </div>
       </div>
     </header>
   );

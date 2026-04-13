@@ -1,6 +1,7 @@
 import { 
   getStoredListingBySlug, 
   getStoredListingsByIds, 
+  getStoredListingById,
   getFilteredDatabaseListings,
   type PaginatedListingsResult 
 } from "@/services/listings/listing-submissions";
@@ -27,6 +28,10 @@ export async function getMarketplaceListingBySlug(slug: string) {
   }
 
   return null;
+}
+
+export async function getListingById(id: string) {
+  return getStoredListingById(id);
 }
 
 export async function getMarketplaceSeller(sellerId: string): Promise<Profile | null> {

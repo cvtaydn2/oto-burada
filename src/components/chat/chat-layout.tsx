@@ -4,6 +4,7 @@ import { ChatSidebar } from "@/components/chat/chat-sidebar";
 import { ChatWindow } from "@/components/chat/chat-window";
 import type { Chat } from "@/types";
 import { useRouter, useSearchParams } from "next/navigation";
+import { MessageSquare, Search } from "lucide-react";
 
 interface ChatLayoutProps {
   initialChats: Chat[];
@@ -24,27 +25,32 @@ export function ChatLayout({ initialChats, currentUserId }: ChatLayoutProps) {
   };
 
   return (
-    <div className="flex bg-white rounded-2xl shadow-xl overflow-hidden border">
-      <ChatSidebar 
-        currentUserId={currentUserId} 
-        activeChatId={activeChat?.id}
-        onChatSelect={handleChatSelect}
-      />
+    <div className="flex-1 flex overflow-hidden">
+      <div className="w-80 lg:w-96 shrink-0 border-r border-slate-100 flex flex-col bg-slate-50/30">
+        <ChatSidebar 
+          currentUserId={currentUserId} 
+          activeChatId={activeChat?.id}
+          onChatSelect={handleChatSelect}
+        />
+      </div>
       
-      <div className="flex-1 min-w-0">
+      <div className="flex-1 min-w-0 bg-white flex flex-col">
         {activeChat ? (
           <ChatWindow chat={activeChat} currentUserId={currentUserId} key={activeChat.id} />
         ) : (
-          <div className="h-full flex flex-col items-center justify-center text-muted-foreground p-12 bg-muted/10">
-            <div className="size-20 bg-muted rounded-full flex items-center justify-center mb-4">
-              <svg className="size-10 opacity-20" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
-              </svg>
+          <div className="flex-1 flex flex-col items-center justify-center p-12 text-center space-y-6">
+            <div className="size-24 rounded-3xl bg-slate-50 flex items-center justify-center text-slate-200 shadow-inner">
+               <MessageSquare size={48} />
             </div>
-            <h3 className="text-xl font-bold text-foreground mb-2">Sohbet Seçin</h3>
-            <p className="text-sm max-w-[280px] text-center">
-              Mesajlaşmaya başlamak için soldaki menüden bir konuşma seçin veya bir ilan üzerinden satıcıya ulaşın.
-            </p>
+            <div className="space-y-2">
+              <h3 className="text-xl font-black italic uppercase tracking-tighter text-slate-900">Sohbet Seçin</h3>
+              <p className="text-xs font-medium text-slate-400 italic max-w-sm leading-relaxed">
+                Henüz bir konuşma seçmediniz. Mesajlarınızı görüntülemek için soldaki listeden bir seçim yapın.
+              </p>
+            </div>
+            <button className="h-12 px-8 rounded-xl bg-slate-900 text-white text-[10px] font-black uppercase tracking-widest hover:bg-black transition-all italic">
+               YENİ MESAJ OLUŞTUR
+            </button>
           </div>
         )}
       </div>

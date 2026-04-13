@@ -6,9 +6,10 @@ import { useState } from "react";
 interface ShareButtonProps {
   title: string;
   price: number;
+  className?: string;
 }
 
-export function ShareButton({ title, price }: ShareButtonProps) {
+export function ShareButton({ title, price, className }: ShareButtonProps) {
   const [copied, setCopied] = useState(false);
 
   const handleShare = async () => {
@@ -34,7 +35,7 @@ export function ShareButton({ title, price }: ShareButtonProps) {
   return (
     <button
       onClick={handleShare}
-      className="h-11 rounded-xl border border-slate-200 bg-white shadow-sm px-5 hover:bg-slate-50 font-medium text-sm gap-2 text-slate-700 flex items-center transition-all"
+      className={className || "h-11 rounded-xl border border-slate-200 bg-white shadow-sm px-5 hover:bg-slate-50 font-medium text-sm gap-2 text-slate-700 flex items-center transition-all"}
     >
       <Share2 size={18} />
       {copied ? "Kopyalandı!" : "Paylaş"}

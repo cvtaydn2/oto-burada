@@ -1,138 +1,141 @@
-import { Users, ShieldCheck, ShieldAlert, UserCircle, CheckCircle2 } from "lucide-react";
-import { requireAdminUser } from "@/lib/auth/session";
-import { getAllUsers } from "@/services/admin/users";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { UserActions } from "@/components/admin/user-actions";
+import { Users, Search, Filter, ShieldCheck, Mail, Calendar, MoreVertical, UserX } from "lucide-react";
+import { format } from "date-fns";
+import { tr } from "date-fns/locale";
 
-export const dynamic = "force-dynamic";
-
-export default async function AdminUsersPage() {
-  await requireAdminUser();
-  const users = await getAllUsers();
+export default function AdminUserManagementPage() {
+  const mockUsers = [
+    { id: "1", name: "Ahmet Yılmaz", email: "ahmet@mail.com", role: "Bireysel", status: "Aktif", joined: new Date() },
+    { id: "2", name: "Mehmet Demir", email: "mehmet@kurumsal.com", role: "Kurumsal", status: "Onay Bekliyor", joined: new Date() },
+    { id: "3", name: "Selin Ak", email: "selin@mail.com", role: "Admin", status: "Aktif", joined: new Date() },
+  ];
 
   return (
-    <main className="p-8 space-y-8">
-      <section className="flex flex-col md:flex-row md:items-end justify-between gap-4">
+    <main className="p-8 space-y-10 animate-in fade-in duration-700">
+      <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
         <div>
           <div className="flex items-center gap-2 mb-2">
-             <Users className="text-indigo-500" size={16} />
-             <span className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Üye Yönetimi</span>
+             <Users className="text-primary italic" size={16} />
+             <span className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Moderasyon Paneli</span>
           </div>
           <h1 className="text-4xl font-black italic uppercase tracking-tighter text-slate-900">
-            Kullanıcı <span className="text-indigo-500 italic">Veritabanı</span>
+            KULLANICI <span className="text-primary">YÖNETİMİ</span>
           </h1>
-          <p className="text-slate-500 font-medium mt-1">Sistemdeki tüm üyeleri görüntüleyin, rollerini ve hesap durumlarını yönetin.</p>
-        </div>
-      </section>
-
-      <div className="bg-white rounded-[2rem] border border-slate-100 shadow-sm overflow-hidden">
-        <div className="p-6 border-b border-slate-100 bg-slate-50/50 flex items-center justify-between">
-            <h2 className="text-lg font-black italic uppercase tracking-tighter">Tüm Üyeler ({users.length})</h2>
-            <div className="flex gap-2">
-               <Button variant="outline" size="sm" className="rounded-xl font-bold bg-white">CSV İndir</Button>
-               <Button size="sm" className="rounded-xl font-bold">Yeni Kullanıcı</Button>
-            </div>
-        </div>
-
-        <div className="overflow-x-auto">
-          <table className="w-full text-left">
-            <thead>
-              <tr className="border-b border-slate-100 bg-slate-50/30">
-                <th className="px-6 py-4 text-[11px] font-black text-slate-400 uppercase tracking-widest">Kullanıcı</th>
-                <th className="px-6 py-4 text-[11px] font-black text-slate-400 uppercase tracking-widest">Hesap Tipi</th>
-                <th className="px-6 py-4 text-[11px] font-black text-slate-400 uppercase tracking-widest">Doğrulama</th>
-                <th className="px-6 py-4 text-[11px] font-black text-slate-400 uppercase tracking-widest">Kayıt Tarihi</th>
-                <th className="px-6 py-4 text-right text-[11px] font-black text-slate-400 uppercase tracking-widest">İşlemler</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-50">
-              {users.map((user) => (
-                <tr key={user.id} className="hover:bg-slate-50/50 transition-colors group">
-                  <td className="px-6 py-4">
-                    <div className="flex items-center gap-4">
-                       <div className="size-12 rounded-2xl bg-slate-100 flex items-center justify-center border border-slate-200 overflow-hidden shrink-0 shadow-sm relative group-hover:border-indigo-200 transition-colors">
-                          {user.avatarUrl ? (
-                            <img src={user.avatarUrl} alt={user.fullName || ""} className="w-full h-full object-cover" />
-                          ) : (
-                            <UserCircle className="text-slate-300" size={24} />
-                          )}
-                          {!user.avatarUrl && user.fullName && (
-                            <div className="absolute inset-0 flex items-center justify-center bg-indigo-50 text-indigo-400 font-black text-xs">
-                              {user.fullName.substring(0, 1).toUpperCase()}
-                            </div>
-                          )}
-                       </div>
-                       <div className="flex flex-col min-w-0">
-                          <div className="flex items-center gap-2 mb-0.5">
-                              <span className="text-sm font-black text-slate-900 truncate">
-                                {user.fullName || "İsimsiz Kullanıcı"}
-                              </span>
-                              {user.isBanned && (
-                                <Badge className="bg-rose-500 text-white rounded-md text-[8px] px-1.5 py-0 hover:bg-rose-500 border-none h-4 font-black">YASAKLI</Badge>
-                              )}
-                          </div>
-                          <span className="text-[10px] font-bold text-slate-400 font-mono tracking-tight uppercase">
-                            ID: {user.id.substring(0, 8)}...
-                          </span>
-                       </div>
-                    </div>
-                  </td>
-                  <td className="px-6 py-4">
-                    {user.userType === "professional" ? (
-                      <div className="flex flex-col gap-1">
-<Badge className="bg-amber-100 text-amber-700 hover:bg-amber-100 border-transparent rounded-lg font-black uppercase text-[10px] tracking-tighter w-fit">Galeri</Badge>
-                          {user.verifiedBusiness && (
-                             <div className="flex items-center gap-1 text-[9px] font-bold text-emerald-600">
-                                <CheckCircle2 size={10} />
-                                DOĞRULANMIŞ
-                             </div>
-                          )}
-                      </div>
-                    ) : user.role === "admin" ? (
-                      <Badge className="bg-rose-100 text-rose-700 hover:bg-rose-100 border-transparent rounded-lg font-black uppercase text-[10px] tracking-tighter flex w-fit gap-1 items-center">
-                         <ShieldCheck size={10} />
-                         Admin
-                      </Badge>
-                    ) : (
-                      <Badge className="bg-slate-100 text-slate-600 hover:bg-slate-100 border-transparent rounded-lg font-black uppercase text-[10px] tracking-tighter w-fit">Bireysel</Badge>
-                    )}
-                  </td>
-                  <td className="px-6 py-4">
-                    <div className="flex gap-1.5 flex-wrap">
-                       {user.emailVerified && <Badge variant="outline" className="border-emerald-100 bg-emerald-50 text-emerald-600 rounded-md font-bold text-[9px]">E-POSTA</Badge>}
-                       {user.phoneVerified && <Badge variant="outline" className="border-indigo-100 bg-indigo-50 text-indigo-600 rounded-md font-bold text-[9px]">TEL</Badge>}
-                       {!user.emailVerified && !user.phoneVerified && <span className="text-xs font-medium text-slate-300 italic">Doğrulanmadı</span>}
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 text-sm font-medium text-slate-500">
-                    {new Date(user.createdAt).toLocaleDateString("tr-TR")}
-                  </td>
-                  <td className="px-6 py-4 text-right">
-<UserActions 
-                       userId={user.id} 
-                       userName={user.fullName || "İsimsiz Kullanıcı"} 
-                       userType={user.userType || "individual"}
-                       isBanned={user.isBanned}
-                       isVerified={user.verifiedBusiness}
-                     />
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+          <p className="text-sm font-medium text-slate-400 italic mt-1">Platform genelindeki tüzel ve gerçek kişilerin kayıtlarını denetleyin.</p>
         </div>
       </div>
 
-      {/* Security Notice */}
-      <div className="p-4 bg-slate-900 rounded-2xl flex items-center gap-4 text-white">
-         <div className="size-10 rounded-xl bg-primary/20 flex items-center justify-center shrink-0">
-            <ShieldAlert className="text-primary" size={24} />
+      <div className="grid lg:grid-cols-4 gap-6">
+         <div className="lg:col-span-3 space-y-6">
+            <div className="flex items-center gap-4 bg-white p-4 rounded-[2rem] border border-slate-100 shadow-xl shadow-slate-200/20">
+               <div className="relative flex-1">
+                  <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+                  <input 
+                    type="text" 
+                    placeholder="İsim, e-posta veya ID ile ara..." 
+                    className="h-12 w-full pl-12 pr-4 bg-slate-50 border-none rounded-xl outline-none font-bold italic text-sm text-slate-900 focus:bg-white focus:ring-2 focus:ring-primary/20 transition-all"
+                  />
+               </div>
+               <button className="h-12 px-6 bg-slate-900 text-white rounded-xl flex items-center gap-2 text-[10px] font-black uppercase tracking-widest italic group">
+                  <Filter size={14} className="group-hover:rotate-180 transition-transform" />
+                  FİLTRELE
+               </button>
+            </div>
+
+            <div className="bg-white rounded-[3rem] border border-slate-100 shadow-2xl shadow-slate-200/40 overflow-hidden">
+               <table className="w-full text-left border-collapse">
+                  <thead>
+                    <tr className="bg-slate-50/50">
+                       <th className="p-6 text-[10px] font-black uppercase tracking-widest text-slate-400 italic">KULLANICI</th>
+                       <th className="p-6 text-[10px] font-black uppercase tracking-widest text-slate-400 italic">ÜYELİK TİPİ</th>
+                       <th className="p-6 text-[10px] font-black uppercase tracking-widest text-slate-400 italic">DURUM</th>
+                       <th className="p-6 text-[10px] font-black uppercase tracking-widest text-slate-400 italic">KATILIM</th>
+                       <th className="p-6 text-[10px] font-black uppercase tracking-widest text-slate-400 italic text-right">İŞLEMLER</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-100">
+                     {mockUsers.map((u) => (
+                        <tr key={u.id} className="group hover:bg-slate-50/50 transition-colors">
+                           <td className="p-6">
+                              <div className="flex items-center gap-4">
+                                 <div className="size-10 rounded-xl bg-slate-100 flex items-center justify-center italic font-black text-slate-400 shadow-inner">
+                                    {u.name[0]}
+                                 </div>
+                                 <div className="space-y-0.5">
+                                    <p className="text-sm font-black italic uppercase text-slate-900 leading-none">{u.name}</p>
+                                    <p className="text-[10px] font-bold text-slate-400 italic lowercase">{u.email}</p>
+                                 </div>
+                              </div>
+                           </td>
+                           <td className="p-6">
+                              <span className={`px-3 py-1 rounded-lg text-[10px] font-black uppercase italic ${u.role === 'Admin' ? 'bg-indigo-50 text-indigo-600' : 'bg-slate-50 text-slate-600'}`}>
+                                 {u.role}
+                              </span>
+                           </td>
+                           <td className="p-6">
+                              <div className="flex items-center gap-2">
+                                 <div className={`size-1.5 rounded-full ${u.status === 'Aktif' ? 'bg-emerald-500' : 'bg-amber-500'}`} />
+                                 <span className="text-[10px] font-bold text-slate-700 italic uppercase underline decoration-primary/30 underline-offset-4">{u.status}</span>
+                              </div>
+                           </td>
+                           <td className="p-6">
+                              <span className="text-[10px] font-bold text-slate-400 uppercase italic">
+                                 {format(u.joined, "dd MMM yyyy", { locale: tr })}
+                              </span>
+                           </td>
+                           <td className="p-6 text-right">
+                              <button className="size-8 rounded-lg text-slate-300 hover:text-primary hover:bg-white transition-all shadow-sm">
+                                 <MoreVertical size={16} className="mx-auto" />
+                              </button>
+                           </td>
+                        </tr>
+                     ))}
+                  </tbody>
+               </table>
+            </div>
          </div>
-         <p className="text-xs font-medium opacity-80 leading-relaxed">
-            <strong>GÜVENLİK NOTU:</strong> Kullanıcı verilerine erişim Log katmanı tarafından kayıt altına alınmaktadır. Yetkisiz veri paylaşımı ve KVKK ihlalleri doğrudan sistem yöneticisine bildirilir.
-         </p>
+
+         <div className="space-y-8">
+            <div className="bg-slate-950 rounded-[2.5rem] p-8 text-white space-y-6 shadow-2xl shadow-slate-900/10 italic relative overflow-hidden">
+               <div className="absolute top-0 right-0 w-32 h-32 bg-primary/10 blur-[80px] -mr-16 -mt-16" />
+               <ShieldCheck className="text-primary" size={32} />
+               <h3 className="text-xl font-black italic uppercase tracking-tighter">GÜVENLİK ANALİZİ</h3>
+               <div className="space-y-4">
+                  <SecurityMetric label="Aktif Kullanıcı" value="1,240" />
+                  <SecurityMetric label="Son 24s Kayıt" value="+24" />
+                  <SecurityMetric label="Kısıtlı Hesap" value="2" />
+               </div>
+            </div>
+
+            <button className="w-full flex items-center justify-between p-6 rounded-3xl border-2 border-rose-100 bg-rose-50 text-rose-600 hover:bg-rose-100 transition-all group">
+               <div className="flex items-center gap-3 italic">
+                  <UserX size={20} />
+                  <span className="text-xs font-black uppercase tracking-widest">KARA LİSTEYİ YÖNET</span>
+               </div>
+               <ChevronRight size={18} className="group-hover:translate-x-1 transition-transform" />
+            </button>
+         </div>
       </div>
     </main>
+  );
+}
+
+function SecurityMetric({ label, value }: { label: string, value: string }) {
+  return (
+    <div className="flex items-center justify-between py-2 border-b border-white/5">
+       <span className="text-[10px] font-bold text-slate-400 uppercase">{label}</span>
+       <span className="text-lg font-black">{value}</span>
+    </div>
+  );
+}
+
+function ChevronRight({ size = 24, ...props }: React.SVGProps<SVGSVGElement> & { size?: number }) {
+  return (
+    <svg 
+      {...props} 
+      xmlns="http://www.w3.org/2000/svg" 
+      width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
+    >
+      <path d="m9 18 6-6-6-6" />
+    </svg>
   );
 }

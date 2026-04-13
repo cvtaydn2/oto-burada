@@ -2,7 +2,6 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import {
-  AlertTriangle,
   CalendarDays,
   CheckCircle2,
   CircleGauge,
@@ -10,21 +9,19 @@ import {
   Settings2,
   Sparkles,
   ShieldCheck,
-  ArrowLeft
+  ArrowLeft,
+  Zap
 } from "lucide-react";
 
 import { FavoriteButton } from "@/components/listings/favorite-button";
 import { CompareButton } from "@/components/listings/compare-button";
 import { ListingGallery } from "@/components/listings/listing-gallery";
-import { ViewCounter } from "@/components/listings/view-counter";
 import { ListingDetailStructuredData, BreadcrumbStructuredData } from "@/components/seo/structured-data";
-import { ReportListingForm } from "@/components/forms/report-listing-form";
 import { ShareButton } from "@/components/listings/share-button";
 import { CarCard } from "@/components/modules/listings/car-card";
 import { ContactActions } from "@/components/listings/contact-actions";
 import { ExpertInspectionCard } from "@/components/listings/expert-inspection-card";
 import { DamageReportCard } from "@/components/listings/damage-report-card";
-import { ListingPrintAction } from "@/components/listings/listing-print-action";
 import { MarketValueCard } from "@/components/listings/market-value-card";
 import { MobileStickyActions } from "@/components/listings/mobile-sticky-actions";
 import { getCurrentUser } from "@/lib/auth/session";
@@ -39,10 +36,7 @@ import {
 import { getListingCardInsights } from "@/services/listings/listing-card-insights";
 import { getSellerTrustSummary } from "@/services/profile/profile-trust";
 import { getListingPriceHistory } from "@/services/listings/listing-price-history";
-import { MarketAnalysisInfo } from "@/components/listings/market-analysis-info";
-import { PriceHistoryInfo } from "@/components/listings/price-history-info";
 import { getSellerRatingSummary } from "@/services/profile/seller-reviews";
-import { SellerCard } from "@/components/listings/seller-card";
 
 interface ListingDetailPageProps {
   params: Promise<{
@@ -98,134 +92,168 @@ export default async function ListingDetailPage({ params }: ListingDetailPagePro
           loginUrl={`/login?callbackUrl=${encodeURIComponent(`/listing/${listing.slug}`)}`}
       />
 
-      <main className="min-h-screen" role="main">
-        {/* Navigation & Desktop Back Button */}
-        <div className="mx-auto max-w-7xl px-4 pt-4 sm:px-6 lg:px-8">
-           <div className="flex items-center justify-between mb-8">
-              <Link href="/listings" className="group flex items-center gap-3 text-[11px] font-black uppercase tracking-widest text-muted-foreground hover:text-primary transition-all italic">
-                 <div className="size-8 rounded-full border border-border/40 flex items-center justify-center group-hover:border-primary group-hover:bg-primary/5 transition-all">
-                    <ArrowLeft size={14} className="group-hover:-translate-x-1 transition-transform" />
-                 </div>
-                 İLANLARA DÖN
-              </Link>
+      <main className="min-h-screen bg-[#FDFDFF] pt-24" role="main">
+        {/* Navigation & Desktop Top Bar */}
+        <div className="mx-auto max-w-[1440px] px-6 lg:px-12 mb-8">
+           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-100 pb-6">
+              <nav className="flex items-center gap-2 text-xs font-bold text-slate-400">
+                <Link href="/" className="hover:text-primary">Ana Sayfa</Link>
+                <span>/</span>
+                <Link href="/listings" className="hover:text-primary">Otomobil</Link>
+                <span>/</span>
+                <Link href={`/listings?brand=${listing.brand}`} className="hover:text-primary">{listing.brand}</Link>
+                <span>/</span>
+                <span className="text-slate-900 truncate max-w-[150px]">{listing.model}</span>
+              </nav>
+              
               <div className="flex items-center gap-3">
-                 <ShareButton title={`${listing.brand} ${listing.model} - ${listing.title}`} price={listing.price} />
-                 <FavoriteButton listingId={listing.id} className="h-11 px-6 rounded-2xl border border-border/40 bg-white font-black text-[11px] uppercase tracking-widest italic hover:bg-secondary/50 transition-all" />
+                 <ShareButton title={`${listing.brand} ${listing.model}`} price={listing.price} className="h-10 px-4 rounded-xl border border-slate-200 bg-white text-xs font-bold text-slate-600 hover:bg-slate-50 gap-2" />
+                 <CompareButton listingId={listing.id} className="h-10 px-4 rounded-xl border border-slate-200 bg-white text-xs font-bold text-slate-600 hover:bg-slate-50 gap-2" />
+                 <FavoriteButton listingId={listing.id} className="h-10 w-10 flex items-center justify-center rounded-xl border border-slate-200 bg-white hover:text-primary transition-all" />
               </div>
            </div>
         </div>
 
-        <div className="mx-auto max-w-7xl px-4 pb-32 sm:px-6 lg:px-8">
-          <div className="flex flex-col lg:flex-row gap-8 lg:gap-16 items-start">
+        <div className="mx-auto max-w-[1440px] px-6 lg:px-12 pb-32">
+          <div className="flex flex-col lg:flex-row gap-8 lg:gap-12 items-start">
             
-            {/* Left Column: Multi-Media & Primary Content */}
-            <div className="flex-1 min-w-0 w-full space-y-12">
+            {/* Left Column (70%) */}
+            <div className="flex-1 min-w-0 w-full space-y-10">
               
-              {/* Image Gallery - Showroom Frame */}
-              <div className="rounded-[40px] overflow-hidden shadow-[0_40px_100px_-20px_rgba(0,0,0,0.1)] border border-white/20 bg-card ring-1 ring-black/5">
-                 <ListingGallery images={listing.images} title={listing.title} />
-              </div>
-
-              {/* Mobile Only Header */}
-              <div className="lg:hidden space-y-6">
-                 <div className="space-y-2">
-                    <div className="text-[11px] font-black text-primary uppercase tracking-[0.2em] italic mb-1">
-                      {listing.brand}
-                    </div>
-                    <h1 className="text-4xl font-black tracking-tightest text-foreground font-heading leading-[0.9]">
-                       {listing.model}
-                    </h1>
-                    {listing.carTrim && <p className="text-lg font-black text-muted-foreground uppercase tracking-tighter italic">{listing.carTrim}</p>}
-                 </div>
-                 <div className="flex items-center justify-between border-y border-border/40 py-6">
-                    <div className="text-4xl font-black text-primary tracking-tightest font-heading italic">
-                      ₺{new Intl.NumberFormat("tr-TR").format(listing.price)}
-                    </div>
-                    <ViewCounter listingId={listing.id} initialCount={listing.viewCount} />
-                 </div>
-              </div>
-
-              {/* Expert Inspection - High Visibility */}
-              <div className="showroom-card rounded-[32px] overflow-hidden">
-                <ExpertInspectionCard expertInspection={listing.expertInspection} />
-              </div>
-
-              {/* Market Analysis View */}
-              <div className="grid md:grid-cols-2 gap-8">
-                 {/* AI Assessment */}
-                 <div className="space-y-8">
-                    <div className="p-10 rounded-[40px] bg-[#05070A] text-white space-y-8 shadow-2xl shadow-primary/10 border border-white/5 relative overflow-hidden group">
-                       <div className="absolute top-0 right-0 p-8 opacity-10 group-hover:rotate-12 transition-transform duration-1000">
-                          <Sparkles size={120} />
-                       </div>
-                       <div className="flex items-center gap-3">
-                          <div className="size-10 rounded-2xl bg-primary flex items-center justify-center shadow-[0_0_20px_rgba(var(--primary),0.4)]">
-                             <Sparkles size={18} className="fill-white" />
-                          </div>
-                          <div className="flex flex-col">
-                             <span className="text-[10px] font-black uppercase tracking-[0.2em] text-primary italic leading-none mb-1">DİJİTAL ASİSTAN</span>
-                             <span className="text-xl font-black font-heading leading-tight tracking-tight">Showroom Analizi</span>
-                          </div>
-                       </div>
-                       <p className="text-lg font-medium leading-relaxed italic text-white/70 antialiased relative z-10">{insight.summary}</p>
-                       <div className="flex flex-wrap gap-2 pt-2 relative z-10">
-                          {insight.highlights.map(h => (
-                            <div key={h} className="flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-white/5 border border-white/10 text-[10px] font-black uppercase tracking-widest italic antialiased text-white/90">
-                               <CheckCircle2 className="text-primary" size={14} />
-                               {h}
-                            </div>
-                          ))}
-                       </div>
-                    </div>
-                    <MarketAnalysisInfo />
-                 </div>
-
-                 <div className="space-y-8">
-                    <MarketValueCard price={listing.price} marketPriceIndex={listing.marketPriceIndex ?? 1.0} />
-                    <PriceHistoryInfo history={priceHistory} currentPrice={listing.price} />
-                 </div>
-              </div>
-
-              {/* Technical Specifications */}
+              {/* Image Gallery Side */}
               <div className="space-y-6">
-                 <div className="flex items-center gap-4">
-                    <h2 className="text-xl font-black tracking-tightest font-heading uppercase italic">Dosya Detayları</h2>
-                    <div className="h-0.5 flex-1 bg-gradient-to-r from-border/40 to-transparent" />
+                <div className="relative rounded-[32px] overflow-hidden bg-slate-100 aspect-[16/10] lg:aspect-[16/9] shadow-2xl">
+                   <ListingGallery images={listing.images} title={listing.title} />
+                   
+                   {/* Badges Overlay */}
+                   <div className="absolute top-6 left-6 flex flex-col gap-2 z-10">
+                      <div className="px-4 py-1.5 rounded-full bg-emerald-500 text-white text-[10px] font-black uppercase tracking-widest shadow-lg">Öne Çıkan İlan</div>
+                      <div className="px-4 py-1.5 rounded-full bg-white/90 backdrop-blur-md text-slate-900 text-[10px] font-black uppercase tracking-widest shadow-lg flex items-center gap-2">
+                        <ShieldCheck size={12} className="text-primary" />
+                        Ekspertiz Onaylı
+                      </div>
+                   </div>
+
+                   {/* 360 View Placeholder */}
+                   <button className="absolute bottom-10 left-1/2 -translate-x-1/2 bg-primary hover:bg-primary/90 text-white px-8 py-4 rounded-full font-black text-sm uppercase tracking-widest flex items-center gap-3 shadow-2xl transition-all active:scale-95 z-10">
+                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M12 2v20M2 12h20M5.3 5.3l13.4 13.4M5.3 18.7l13.4-13.4"/></svg>
+                      360° Görünüm
+                   </button>
+                </div>
+              </div>
+
+              {/* Title & Price Header */}
+              <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 pt-4">
+                 <div className="space-y-4">
+                    <h1 className="text-4xl lg:text-5xl font-black text-slate-900 tracking-tightest leading-tight">
+                       {listing.brand} {listing.model} <span className="text-slate-400 font-medium">{listing.carTrim}</span>
+                    </h1>
+                    <div className="flex flex-wrap items-center gap-6 text-sm font-bold text-slate-400">
+                       <span className="flex items-center gap-2">
+                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
+                          {listing.city}, {listing.district}
+                       </span>
+                       <span className="flex items-center gap-2">
+                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                          {new Date(listing.createdAt).toLocaleDateString('tr-TR')} güncellendi
+                       </span>
+                       <span className="bg-slate-50 px-3 py-1 rounded-lg">İlan No: {listing.id.slice(0, 8).toUpperCase()}</span>
+                    </div>
                  </div>
-                 <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-                    <SpecDetailItem icon={<CalendarDays size={20} />} label="Model Yılı" value={listing.year} />
-                    <SpecDetailItem icon={<CircleGauge size={20} />} label="Mesafe" value={`${formatNumber(listing.mileage)} km`} />
-                    <SpecDetailItem icon={<Fuel size={20} />} label="Yakıt" value={listing.fuelType} className="capitalize" />
-                    <SpecDetailItem icon={<Settings2 size={20} />} label="Şanzıman" value={listing.transmission} className="capitalize" />
+                 <div className="text-right">
+                    <div className="text-4xl lg:text-5xl font-black text-primary tracking-tightest">
+                       ₺{new Intl.NumberFormat("tr-TR").format(listing.price)}
+                    </div>
+                    <p className="text-xs font-bold text-slate-400 mt-2 uppercase tracking-widest italic">Son güncelleme: 15 Mayıs 2024</p>
                  </div>
               </div>
 
-              {/* Damage & Tramer Report */}
-              <div className="showroom-card rounded-[32px] overflow-hidden">
-                <DamageReportCard damageStatus={listing.damageStatusJson} tramerAmount={listing.tramerAmount} />
+              {/* Key Specs Grid (4 boxes) */}
+              <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                 <div className="p-6 rounded-2xl bg-slate-50/50 border border-slate-100 flex items-center gap-5 hover:bg-white hover:border-primary/20 transition-all">
+                    <div className="size-10 rounded-xl bg-white border border-slate-100 flex items-center justify-center text-primary shadow-sm">
+                       <CalendarDays size={20} />
+                    </div>
+                    <div className="flex flex-col">
+                       <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">MODEL YILI</span>
+                       <span className="text-base font-black text-slate-900">{listing.year}</span>
+                    </div>
+                 </div>
+                 <div className="p-6 rounded-2xl bg-slate-50/50 border border-slate-100 flex items-center gap-5 hover:bg-white hover:border-primary/20 transition-all">
+                    <div className="size-10 rounded-xl bg-white border border-slate-100 flex items-center justify-center text-blue-500 shadow-sm">
+                       <CircleGauge size={20} />
+                    </div>
+                    <div className="flex flex-col">
+                       <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">KİLOMETRE</span>
+                       <span className="text-base font-black text-slate-900">{formatNumber(listing.mileage)} km</span>
+                    </div>
+                 </div>
+                 <div className="p-6 rounded-2xl bg-slate-50/50 border border-slate-100 flex items-center gap-5 hover:bg-white hover:border-primary/20 transition-all">
+                    <div className="size-10 rounded-xl bg-white border border-slate-100 flex items-center justify-center text-teal-500 shadow-sm">
+                       <Fuel size={20} />
+                    </div>
+                    <div className="flex flex-col">
+                       <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">YAKIT TİPİ</span>
+                       <span className="text-base font-black text-slate-900 capitalize">{listing.fuelType}</span>
+                    </div>
+                 </div>
+                 <div className="p-6 rounded-2xl bg-slate-50/50 border border-slate-100 flex items-center gap-5 hover:bg-white hover:border-primary/20 transition-all">
+                    <div className="size-10 rounded-xl bg-white border border-slate-100 flex items-center justify-center text-indigo-500 shadow-sm">
+                       <Settings2 size={20} />
+                    </div>
+                    <div className="flex flex-col">
+                       <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">VİTES TİPİ</span>
+                       <span className="text-base font-black text-slate-900 capitalize">{listing.transmission}</span>
+                    </div>
+                 </div>
               </div>
 
-              {/* Description */}
-              <section className="p-10 lg:p-14 rounded-[48px] bg-card border border-border/40 space-y-10 relative overflow-hidden">
-                 <div className="absolute top-0 right-0 p-8 opacity-5">
-                    <ShieldCheck size={180} />
+              {/* Expert Inspection - Detailed Section */}
+              <div id="ekspertiz" className="space-y-6 pt-6">
+                 <div className="flex items-center justify-between">
+                    <h2 className="text-2xl font-black text-slate-900 flex items-center gap-3">
+                       <ShieldCheck className="text-primary" />
+                       Ekspertiz Raporu
+                    </h2>
+                    <Link href="#" className="text-sm font-bold text-primary hover:underline">Tam Raporu Gör</Link>
                  </div>
-                 <div className="flex flex-col gap-2">
-                    <span className="text-[10px] font-black text-primary uppercase tracking-[0.3em] italic mb-1">SATICI NOTU</span>
-                    <h2 className="text-3xl font-black tracking-tightest font-heading uppercase">Açıklama</h2>
+                 <div className="grid md:grid-cols-2 gap-8">
+                    <ExpertInspectionCard expertInspection={listing.expertInspection} />
+                    <DamageReportCard damageStatus={listing.damageStatusJson} tramerAmount={listing.tramerAmount} />
                  </div>
-                 <div className="text-xl text-foreground/80 leading-relaxed whitespace-pre-wrap font-medium font-serif italic antialiased max-w-4xl">
+              </div>
+
+              {/* Market Insights Area */}
+              <div className="grid md:grid-cols-2 gap-8 pt-6 border-t border-slate-100">
+                 <div className="p-8 rounded-[32px] bg-slate-900 text-white relative overflow-hidden group">
+                    <div className="absolute top-0 right-0 p-6 opacity-10 group-hover:scale-110 transition-transform">
+                       <Sparkles size={80} />
+                    </div>
+                    <h3 className="text-lg font-black italic mb-4">Showroom Analizi</h3>
+                    <p className="text-sm text-white/70 italic leading-relaxed mb-6">{insight.summary}</p>
+                    <div className="flex flex-wrap gap-2">
+                       {insight.highlights.map(h => (
+                         <div key={h} className="px-3 py-1.5 rounded-lg bg-white/10 border border-white/10 text-[10px] font-bold uppercase tracking-widest">
+                            {h}
+                         </div>
+                       ))}
+                    </div>
+                 </div>
+                 <MarketValueCard price={listing.price} marketPriceIndex={listing.marketPriceIndex ?? 1.0} />
+              </div>
+
+              {/* Description Section */}
+              <div className="space-y-6 pt-10">
+                 <h2 className="text-2xl font-black text-slate-900">Açıklama</h2>
+                 <div className="text-lg text-slate-600 leading-relaxed font-medium whitespace-pre-wrap">
                     {listing.description}
                  </div>
-              </section>
+              </div>
 
-              {/* Similar Listings */}
+              {/* Similar Vehicles */}
               {similarListings.length > 0 && (
-                <section className="space-y-8 pt-12">
-                   <div className="flex items-center justify-between">
-                     <h2 className="text-2xl font-black tracking-tightest font-heading uppercase italic">Benzer Seviyedeki Araçlar</h2>
-                     <Link href="/listings" className="text-[10px] font-black uppercase tracking-[0.2em] text-primary italic border-b-2 border-primary/20 hover:border-primary transition-all pb-1">TÜMÜNÜ İNCELE</Link>
-                   </div>
+                <section className="pt-20 border-t border-slate-100">
+                   <h2 className="text-2xl font-black text-slate-900 mb-10">Benzer araçlar</h2>
                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
                      {similarListings.map((item) => (
                        <CarCard key={item.id} listing={item} />
@@ -235,75 +263,91 @@ export default async function ListingDetailPage({ params }: ListingDetailPagePro
               )}
             </div>
 
-            {/* Right Column: Sticky Lead Capture & Seller Info */}
-            <aside className="w-full lg:w-[460px] shrink-0 space-y-8 lg:sticky lg:top-28">
+            {/* Right Column (30%) */}
+            <aside className="w-full lg:w-[400px] shrink-0 space-y-8 lg:sticky lg:top-28">
               
-              {/* Main Desktop Action Card */}
-              <div className="hidden lg:block p-10 rounded-[48px] bg-card border border-border/40 shadow-2xl space-y-10 ring-1 ring-black/5">
-                 <div className="space-y-4">
-                    <div className="flex items-center gap-2 text-primary font-black text-[10px] uppercase tracking-[0.2em] italic">
-                       <ShieldCheck size={16} />
-                       ONAYLI SHOWROOM İLANI
-                    </div>
-                    <div className="space-y-1">
-                      <div className="text-[14px] font-black text-muted-foreground uppercase tracking-[0.3em] italic">
-                        {listing.brand}
-                      </div>
-                      <h1 className="text-[52px] font-black tracking-tightest leading-[0.8] font-heading text-foreground uppercase italic underline decoration-primary/20 decoration-8 underline-offset-[12px]">
-                         {listing.model}
-                      </h1>
-                    </div>
-                    <p className="text-[12px] text-muted-foreground/60 font-bold uppercase tracking-widest italic leading-relaxed pt-4">{listing.title}</p>
-                 </div>
+              {/* Seller Information Card */}
+              <div className="p-8 rounded-[32px] bg-white border border-slate-100 shadow-xl shadow-slate-200/20 space-y-8">
+                 <h3 className="text-[11px] font-black uppercase tracking-widest text-slate-400">Satıcı Bilgileri</h3>
                  
-                 <div className="pt-8 border-t border-border/40">
-                    <div className="flex flex-col gap-1">
-                       <span className="text-[11px] font-black text-muted-foreground uppercase tracking-[0.3em] italic mb-1">TEKLİF FİYATI</span>
-                       <div className="text-6xl font-black text-primary tracking-tightest font-heading italic">
-                          ₺{new Intl.NumberFormat("tr-TR").format(listing.price)}
+                 <div className="flex items-center gap-5 pb-6 border-b border-slate-50">
+                    <div className="size-16 rounded-2xl bg-slate-50 flex items-center justify-center font-black text-2xl text-slate-300 border border-slate-100 overflow-hidden">
+                       {seller?.businessLogoUrl ? (
+                          <img src={seller.businessLogoUrl} alt={seller.fullName} className="size-full object-cover" />
+                       ) : (
+                          seller?.fullName?.[0] || 'S'
+                       )}
+                    </div>
+                    <div className="flex-1">
+                       <h4 className="text-xl font-black text-slate-900 leading-tight mb-1">{seller?.businessName || seller?.fullName}</h4>
+                       <div className="flex items-center gap-1">
+                          <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest italic">{seller?.userType === 'professional' ? 'Kurumsal Galeri' : 'Bireysel Satıcı'}</span>
+                          <span className="size-1 rounded-full bg-slate-200" />
+                          <div className="flex items-center gap-1 text-[10px] font-bold text-emerald-500 uppercase tracking-widest italic">
+                             <CheckCircle2 size={12} />
+                             Onaylı Üye
+                          </div>
                        </div>
                     </div>
                  </div>
 
-                 <div className="bg-secondary/50 rounded-2xl p-4 flex items-center justify-between">
-                    <ViewCounter listingId={listing.id} initialCount={listing.viewCount} />
-                    <div className="h-6 w-px bg-border/40" />
-                    <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-muted-foreground italic">
-                      ID: #{listing.id.slice(0, 8).toUpperCase()}
+                 <div className="space-y-4 pt-2">
+                    <ContactActions listingId={listing.id} sellerId={listing.sellerId} />
+                    
+                    <Link href={`/gallery/${seller?.businessSlug || seller?.id}`} className="flex items-center justify-between w-full h-14 px-6 rounded-2xl bg-slate-50 text-slate-600 font-bold text-sm hover:bg-slate-100 transition-all group">
+                       Satıcının Diğer İlanları
+                       <ArrowLeft size={16} className="rotate-180 group-hover:translate-x-1 transition-transform" />
+                    </Link>
+                 </div>
+              </div>
+
+              {/* Fast Offer Card */}
+              <div className="p-8 rounded-[32px] bg-sky-50 border border-sky-100 space-y-6">
+                 <div className="space-y-2">
+                    <h3 className="text-lg font-black text-sky-900 flex items-center gap-2">
+                       <Zap size={20} className="fill-sky-400 text-sky-400" />
+                       Hızlı Teklif Ver
+                    </h3>
+                    <p className="text-xs font-medium text-sky-700 leading-relaxed italic">
+                       Aracı beğendiniz mi? Satıcıya hızlı bir fiyat teklifi göndererek süreci başlatabilirsiniz.
+                    </p>
+                 </div>
+                 
+                 <div className="flex gap-2">
+                    <div className="flex-1 h-14 bg-white rounded-xl border border-sky-200 px-4 flex items-center justify-center font-black text-sky-900">
+                       ₺3.400.000
+                    </div>
+                    <div className="flex-1 h-14 bg-white rounded-xl border border-sky-200 px-4 flex items-center justify-center font-black text-sky-900">
+                       ₺3.425.000
                     </div>
                  </div>
 
-                 <div className="pt-4 space-y-5">
-                    <ContactActions listingId={listing.id} sellerId={listing.sellerId} />
-                    <CompareButton 
-                      listingId={listing.id} 
-                      className="w-full h-16 rounded-[24px] bg-secondary font-black text-[11px] text-foreground hover:bg-secondary/80 transition-all flex items-center justify-center gap-3 uppercase tracking-[0.2em] italic border border-border/40"
-                    />
-                 </div>
+                 <button className="w-full h-14 rounded-2xl bg-sky-500 hover:bg-sky-600 text-white font-black text-sm uppercase tracking-widest shadow-lg shadow-sky-500/20 transition-all active:scale-95">
+                    Kendi Teklifini Yap
+                 </button>
               </div>
 
-              {/* Seller Trust Profile */}
-              <div className="showroom-card rounded-[40px] overflow-hidden">
-                <SellerCard 
-                  seller={seller}
-                  trustSummary={trustSummary}
-                  isLoggedIn={!!currentUser}
-                  listingId={listing.id}
-                  loginUrl={`/login?callbackUrl=/listing/${listing.slug}`}
-                  ratingSummary={ratingSummary}
-                />
-              </div>
-
-              <div className="p-8 rounded-[32px] bg-accent/5 border border-accent/20 flex gap-5">
-                 <AlertTriangle size={24} className="text-accent shrink-0" />
-                 <p className="text-[11px] text-accent font-black leading-relaxed italic uppercase tracking-tighter">
-                    GÜVENLİK UYARISI: ARACI GÖRMEDEN, NOTER HUZURUNDA İMZA ATMADAN HİÇBİR ŞEKİLDE KAPORA VEYA ÖDEME GÖNDERMEYİNİZ.
-                 </p>
-              </div>
-
-              <div className="flex flex-col gap-4">
-                 <ReportListingForm listingId={listing.id} sellerId={listing.sellerId} userId={currentUser?.id ?? null} />
-                 <ListingPrintAction />
+              {/* Security Tips Card */}
+              <div className="p-8 rounded-[32px] bg-slate-50 border border-slate-100 space-y-6">
+                 <h3 className="text-[11px] font-black uppercase tracking-widest text-slate-400 flex items-center gap-2">
+                    <ShieldCheck size={16} className="text-emerald-500" />
+                    Güvenli Alışveriş Tüyoları
+                 </h3>
+                 <ul className="space-y-4">
+                    {[
+                      "Aracı görmeden kesinlikle kapora göndermeyin.",
+                      "Ekspertiz raporunu yetkili servislerde onaylatın.",
+                      "Ödemeyi noter huzurunda güvenli sistemlerle yapın."
+                    ].map(tip => (
+                      <li key={tip} className="flex gap-3 text-xs font-bold text-slate-500 leading-relaxed italic">
+                        <span className="size-1.5 rounded-full bg-slate-300 mt-1.5 shrink-0" />
+                        {tip}
+                      </li>
+                    ))}
+                 </ul>
+                 <button className="text-[10px] font-black text-slate-400 uppercase tracking-widest hover:text-red-500 transition-colors">
+                    İlanı Şikayet Et
+                 </button>
               </div>
             </aside>
           </div>

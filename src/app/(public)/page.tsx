@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { ArrowRight, Zap, ShieldCheck, Trophy, BadgeCheck, TrendingDown } from "lucide-react";
+import { ArrowRight, Zap, ShieldCheck, Trophy, BadgeCheck, TrendingDown, CarFront } from "lucide-react";
 import Link from "next/link";
 
 import { HomeHero } from "@/components/layout/home-hero";
@@ -38,6 +38,40 @@ export default async function HomePage() {
       <main className="flex-1 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
         {/* Modern Hero */}
         <HomeHero brands={references.brands} />
+
+        {/* Popular Categories (Visily Design) */}
+        <section className="mb-20 mt-24">
+          <div className="flex items-center justify-between mb-10">
+            <h2 className="text-3xl font-black text-slate-900">Popüler Kategoriler</h2>
+            <Link href="/categories" className="text-sm font-bold text-primary hover:underline flex items-center gap-2">
+              Tümünü Gör <ArrowRight size={16} />
+            </Link>
+          </div>
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+            {[
+              { id: 'electric', name: 'Elektrikli', count: '1,240 ilan', icon: <Zap /> },
+              { id: 'suv', name: 'SUV', count: '4,850 ilan', icon: <CarFront /> },
+              { id: 'sedan', name: 'Sedan', count: '12,400 ilan', icon: <ShieldCheck /> },
+              { id: 'classic', name: 'Klasik', count: '450 ilan', icon: <Trophy /> },
+              { id: 'commercial', name: 'Ticari', count: '2,100 ilan', icon: <BadgeCheck /> },
+              { id: 'hatchback', name: 'Hatchback', count: '8,920 ilan', icon: <TrendingDown /> },
+            ].map((cat) => (
+              <Link 
+                key={cat.id}
+                href={`/listings?body_type=${cat.id}`}
+                className="group p-8 rounded-[24px] bg-white border border-slate-100 hover:border-primary/20 hover:shadow-[0_20px_40px_-15px_rgba(0,0,0,0.05)] transition-all flex flex-col items-center justify-center text-center gap-4"
+              >
+                <div className="size-14 rounded-2xl bg-slate-50 flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-white transition-all">
+                  {cat.icon}
+                </div>
+                <div className="space-y-1">
+                  <h3 className="font-black text-slate-900">{cat.name}</h3>
+                  <p className="text-[11px] font-bold text-slate-400 uppercase tracking-tighter">{cat.count}</p>
+                </div>
+              </Link>
+            ))}
+          </div>
+        </section>
 
         {/* Featured Section */}
         {featuredListings.length > 0 && (

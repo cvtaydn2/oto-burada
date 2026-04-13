@@ -1,8 +1,8 @@
+import Link from "next/link";
 import type { Metadata } from "next";
 
 import { ListingsPageClient } from "@/components/listings/listings-page-client";
 import { ListingStructuredData, OrganizationStructuredData, BreadcrumbStructuredData } from "@/components/seo/structured-data";
-import { Breadcrumbs } from "@/components/shared/breadcrumbs";
 import { getCurrentUser } from "@/lib/auth/session";
 import { buildListingsMetadata, buildAbsoluteUrl } from "@/lib/seo";
 import { parseListingFiltersFromSearchParams } from "@/services/listings/listing-filters";
@@ -49,19 +49,23 @@ export default async function ListingsPage({ searchParams }: ListingsPageProps) 
       <BreadcrumbStructuredData items={breadcrumbs.map(b => ({ name: b.name, url: buildAbsoluteUrl(b.url) }))} />
       <ListingStructuredData listings={result.listings} url={buildAbsoluteUrl("/listings")} />
       
-      <div className="bg-slate-50 border-b border-slate-200">
-        <div className="mx-auto max-w-7xl px-4 py-4 sm:px-6 lg:px-8">
-          <Breadcrumbs items={breadcrumbs} />
+      <div className="bg-[#FDFDFF] min-h-screen">
+        <div className="mx-auto max-w-[1440px] px-6 lg:px-12 pt-24 pb-6 border-b border-slate-100 bg-white">
+           <nav className="flex items-center gap-2 text-xs font-bold text-slate-400 mb-6">
+             <Link href="/" className="hover:text-primary transition-colors">Ana Sayfa</Link>
+             <span>/</span>
+             <span className="text-slate-900">Otomobil İlanları</span>
+           </nav>
         </div>
-      </div>
 
-      <ListingsPageClient
-        initialResult={result}
-        brands={references.brands}
-        cities={references.cities}
-        initialFilters={initialFilters}
-        userId={currentUser?.id}
-      />
+        <ListingsPageClient
+          initialResult={result}
+          brands={references.brands}
+          cities={references.cities}
+          initialFilters={initialFilters}
+          userId={currentUser?.id}
+        />
+      </div>
     </>
   );
 }
