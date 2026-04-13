@@ -28,19 +28,66 @@ export const dynamic = "force-dynamic";
 
 export default async function AdminOverviewPage() {
   await requireAdminUser();
-  const analyticsData = await getAdminAnalytics();
-  const storedReports = await getStoredReports();
+
+  let analyticsData = null;
+  let storedReports: Awaited<ReturnType<typeof getStoredReports>> = [];
+  let knownListings: Awaited<ReturnType<typeof getAllKnownListings>> = [];
+  let persistenceHealth = null;
+  let recentActions: Awaited<ReturnType<typeof getRecentAdminModerationActions>> = [];
+
+  try {
+    analyticsData = await getAdminAnalytics();
+  } catch (e) {
+    console.error("Analytics error:", e);
+  }
+
+  try {
+    storedReports = await getStoredReports();
+  } catch (e) {
+    console.error("Reports error:", e);
+  }
+
   const actionableReports = storedReports.filter(
     (report) => report.status === "open" || report.status === "reviewing",
   );
-  const knownListings = await getAllKnownListings();
-  const persistenceHealth = await getPersistenceHealth();
-  const recentActions = await getRecentAdminModerationActions();
+
+  try {
+    knownListings = await getAllKnownListings();
+  } catch (e) {
+    console.error("Listings error:", e);
+  }
+
+  try {
+    persistenceHealth = await getPersistenceHealth();
+  } catch (e) {
+    console.error("Persistence health error:", e);
+    persistenceHealth = {
+      environment: { adminEnv: false, databaseUrlEnv: false, demoPasswordEnv: false, storageEnv: false, redisEnv: false },
+      healthScore: 0,
+      message: "Veri yüklenemedi",
+      ready: false,
+      storage: { bucketAccessible: null, bucketName: null, message: "Hata oluştu" },
+      tables: [],
+    };
+  }
+
+  try {
+    recentActions = await getRecentAdminModerationActions();
+  } catch (e) {
+    console.error("Moderation actions error:", e);
+  }
+
   const listingById = Object.fromEntries(knownListings.map((listing) => [listing.id, listing]));
   
   const recentActionItems: AdminRecentActionItem[] = await Promise.all(
     recentActions.map(async (action) => {
-      const actorProfile = await getStoredProfileById(action.adminUserId);
+      let actorProfile = null;
+      try {
+        actorProfile = await getStoredProfileById(action.adminUserId);
+      } catch (e) {
+        console.error("Profile fetch error:", e);
+      }
+      
       const targetListing =
         action.targetType === "listing"
           ? listingById[action.targetId]
@@ -75,10 +122,10 @@ export default async function AdminOverviewPage() {
         </div>
         
         <div className="flex items-center gap-4">
-           <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm min-w-[140px]">
-              <span className="block text-[10px] text-slate-400 font-bold uppercase mb-1 italic">Toplam Hacim (MVP)</span>
-              <span className="text-xl font-black text-slate-800 tracking-tighter">₺{analyticsData?.totalRevenue.toLocaleString("tr-TR")}</span>
-           </div>
+            <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm min-w-[140px]">
+               <span className="block text-[10px] text-slate-400 font-bold uppercase mb-1 italic">Toplam Hacim (MVP)</span>
+               <span className="text-xl font-black text-slate-800 tracking-tighter">₺{analyticsData?.totalRevenue?.toLocaleString("tr-TR") ?? "0"}</span>
+            </div>
            <MarketSyncButton />
            <Button className="rounded-xl bg-slate-900 border-none hover:bg-black text-white shadow-lg shadow-slate-200 font-bold px-6 h-12 transition-all hover:-translate-y-0.5" onClick={() => {}}>
               Rapor Çıktısı Al
@@ -124,7 +171,7 @@ export default async function AdminOverviewPage() {
 
       <div className="grid grid-cols-1 gap-8 xl:grid-cols-3">
         <div className="space-y-8 xl:col-span-2">
-           {analyticsData && (
+           {analyticsData ? (
               <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm overflow-hidden">
                  <div className="mb-6 flex items-center justify-between">
                     <div className="flex items-center gap-3">
@@ -139,6 +186,23 @@ export default async function AdminOverviewPage() {
                     <Button variant="ghost" size="sm" className="text-xs font-bold text-blue-600">Detaylı Gör</Button>
                  </div>
                  <AdminAnalyticsPanel data={analyticsData} />
+              </div>
+           ) : (
+              <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm overflow-hidden">
+                 <div className="mb-6 flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                       <div className="size-10 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center">
+                          <Zap size={20} className="fill-blue-600" />
+                       </div>
+                       <div>
+                          <h2 className="text-lg font-black text-slate-800">İlan Analiz Grafiği</h2>
+                          <p className="text-xs text-slate-400 font-medium">Veriler yüklenemedi</p>
+                       </div>
+                    </div>
+                 </div>
+                 <div className="h-40 flex items-center justify-center text-slate-400 text-sm">
+                    Analitik verileri şu anda mevcut değil
+                 </div>
               </div>
            )}
            <AdminPersistencePanel health={persistenceHealth} />
