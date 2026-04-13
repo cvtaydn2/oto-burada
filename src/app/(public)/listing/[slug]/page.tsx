@@ -15,6 +15,7 @@ import { ListingGallery } from "@/components/listings/listing-gallery";
 import { ListingDetailStructuredData, BreadcrumbStructuredData } from "@/components/seo/structured-data";
 import { CarCard } from "@/components/modules/listings/car-card";
 import { ContactActions } from "@/components/listings/contact-actions";
+import { ListingDetailActions } from "@/components/listings/listing-detail-actions";
 import { ExpertInspectionCard } from "@/components/listings/expert-inspection-card";
 import { DamageReportCard } from "@/components/listings/damage-report-card";
 import { MarketValueCard } from "@/components/listings/market-value-card";
@@ -65,6 +66,18 @@ export default async function ListingDetailPage({ params }: ListingDetailPagePro
   const membershipYears = memberSince
     ? Math.max(new Date().getFullYear() - memberSince, 0)
     : null;
+  const whatsappPhoneDigits = listing.whatsappPhone.replace(/\D/g, "");
+  const buildOfferLink = (offerPrice?: number) => {
+    if (!whatsappPhoneDigits) {
+      return "#";
+    }
+
+    const message = offerPrice
+      ? `${listing.title} ilanınız için ${new Intl.NumberFormat("tr-TR").format(offerPrice)} TL teklif vermek istiyorum.`
+      : `${listing.title} ilanınız için size özel teklif paylaşmak istiyorum.`;
+
+    return `https://wa.me/${whatsappPhoneDigits}?text=${encodeURIComponent(message)}`;
+  };
 
   const breadcrumbs = [
     { name: "Ana Sayfa", url: "/" },
@@ -107,25 +120,13 @@ export default async function ListingDetailPage({ params }: ListingDetailPagePro
               ))}
             </nav>
 
-            <div className="flex items-center space-x-2">
-              <button className="bg-white border border-gray-200 text-gray-600 px-3 py-1.5 rounded-lg text-sm font-medium hover:bg-gray-50 transition flex items-center shadow-sm">
-                <svg className="size-4 mr-2" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/>
-                </svg>
-                Paylaş
-              </button>
-              <button className="bg-white border border-gray-200 text-gray-600 px-3 py-1.5 rounded-lg text-sm font-medium hover:bg-gray-50 transition flex items-center shadow-sm">
-                <svg className="size-4 mr-2" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="m3 16 4 4 4-4"/><path d="M7 20V4"/><path d="m21 8-4-4-4 4"/><path d="M17 4v16"/>
-                </svg>
-                Karşılaştır
-              </button>
-              <button className="bg-white border border-gray-200 text-gray-600 w-9 h-9 rounded-lg flex items-center justify-center hover:bg-red-50 hover:text-red-500 hover:border-red-200 transition shadow-sm">
-                <svg className="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/>
-                </svg>
-              </button>
-            </div>
+            <ListingDetailActions
+              listingId={listing.id}
+              price={listing.price}
+              sellerId={listing.sellerId}
+              title={listing.title}
+              userId={currentUser?.id ?? null}
+            />
           </div>
 
           <div className="flex flex-col items-start gap-10 lg:flex-row lg:gap-10">
@@ -199,7 +200,7 @@ export default async function ListingDetailPage({ params }: ListingDetailPagePro
               </div>
 
               {/* Expert Inspection */}
-              <div className="rounded-xl border border-slate-200 bg-white p-6">
+              <div id="ekspertiz" className="rounded-xl border border-slate-200 bg-white p-6 scroll-mt-24">
                 <div className="mb-5 flex items-center justify-between">
                   <h2 className="flex items-center gap-2 text-lg font-bold text-slate-900">
                     <ShieldCheck size={20} className="text-emerald-500" />
@@ -319,12 +320,12 @@ export default async function ListingDetailPage({ params }: ListingDetailPagePro
                 <p className="text-xs text-gray-600 mb-4 leading-relaxed">Aracı beğendiniz mi? Satıcıya hızlı bir fiyat teklifi göndererek süreci başlatabilirsiniz.</p>
                 
                 <div className="grid grid-cols-2 gap-2 mb-3">
-                  <button className="bg-white border border-gray-200 text-gray-700 py-2 rounded-lg text-sm font-bold hover:border-blue-500 transition shadow-sm">₺{new Intl.NumberFormat("tr-TR").format(Math.round(listing.price * 0.95))}</button>
-                  <button className="bg-white border border-gray-200 text-gray-700 py-2 rounded-lg text-sm font-bold hover:border-blue-500 transition shadow-sm">₺{new Intl.NumberFormat("tr-TR").format(Math.round(listing.price * 0.98))}</button>
+                  <a href={buildOfferLink(Math.round(listing.price * 0.95))} target="_blank" rel="noreferrer" className="bg-white border border-gray-200 text-gray-700 py-2 rounded-lg text-sm font-bold hover:border-blue-500 transition shadow-sm text-center">₺{new Intl.NumberFormat("tr-TR").format(Math.round(listing.price * 0.95))}</a>
+                  <a href={buildOfferLink(Math.round(listing.price * 0.98))} target="_blank" rel="noreferrer" className="bg-white border border-gray-200 text-gray-700 py-2 rounded-lg text-sm font-bold hover:border-blue-500 transition shadow-sm text-center">₺{new Intl.NumberFormat("tr-TR").format(Math.round(listing.price * 0.98))}</a>
                 </div>
-                <button className="w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-2.5 rounded-xl transition shadow flex justify-center items-center">
+                <a href={buildOfferLink()} target="_blank" rel="noreferrer" className="w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-2.5 rounded-xl transition shadow flex justify-center items-center">
                   Kendi Teklifini Yap
-                </button>
+                </a>
               </div>
 
               {/* Security Tips */}
@@ -338,12 +339,12 @@ export default async function ListingDetailPage({ params }: ListingDetailPagePro
                   <li className="flex items-start"><span className="text-gray-400 mr-2">•</span> Ekspertiz raporunu yetkili servislerde onaylatın.</li>
                   <li className="flex items-start"><span className="text-gray-400 mr-2">•</span> Ödemeyi noter huzurunda güvenli sistemlerle yapın.</li>
                 </ul>
-                <button className="text-xs font-bold text-red-500 hover:text-red-600 flex items-center transition-colors">
+                <Link href="/support" className="text-xs font-bold text-red-500 hover:text-red-600 flex items-center transition-colors">
                   <svg className="size-3.5 mr-1.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                     <path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15"/>
                   </svg>
                   İlanı Şikayet Et
-                </button>
+                </Link>
               </div>
 
             </aside>

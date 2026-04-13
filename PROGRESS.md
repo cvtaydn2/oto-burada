@@ -14,6 +14,33 @@ Her yeni geliştirme başlamadan önce okunmalıdır.
 
 ## Proje Durumu
 
+### 2026-04-13 CTA Repair Pass: Listing Detail & Blog Actions (Completed)
+- **Odak**: Ekranda görünen ama gerçek aksiyona bağlı olmayan CTA ve butonları kapatmak.
+- **Bulgu**:
+  - `listing detail` üst aksiyon satırındaki paylaş / karşılaştır / favori kontrolleri placeholder görünümlüydü.
+  - Aynı ekrandaki hızlı teklif butonları ve ekspertiz anchor geçişi gerçek kullanıcı davranışına bağlı değildi.
+  - `blog detail` sayfasındaki paylaş ikonları ve ilgili içerik linkleri de placeholder durumdaydı.
+- **Uygulanan iyileştirmeler**:
+  - `src/components/listings/listing-detail-actions.tsx` eklendi.
+  - `src/app/(public)/listing/[slug]/page.tsx` içinde:
+    - paylaş butonu gerçek share/copy akışına bağlandı,
+    - compare butonu mevcut compare store akışına bağlandı,
+    - favori butonu gerçek favorite action ile değiştirildi,
+    - bildirme aksiyonu `ReportListingForm` dialog’una bağlandı,
+    - hızlı teklif CTA’ları gerçek WhatsApp teklif linklerine dönüştürüldü,
+    - `#ekspertiz` anchor hedefi gerçekten eklendi.
+  - `src/components/shared/article-share-actions.tsx` eklendi.
+  - `src/app/(public)/blog/[slug]/page.tsx` içinde paylaş ikonları gerçek share/copy davranışına bağlandı ve ilgili içerik linkleri çalışır rotalara çevrildi.
+- **Validation**:
+  - `npm run lint` ✅
+  - `npm run typecheck` ✅
+  - `npm run test` ✅ (20/20)
+- **Observability note**:
+  - Vercel runtime logları server-side ve route bazlı hataları yakalamakta yeterli.
+  - Ancak “butona basıldı ama client tarafında aksiyon oluşmadı” gibi sorunları tek başına göremez; bunlar için ek E2E kapsamı ve tercihen client event telemetry gerekir.
+- **Status**: ✅ Kritik public CTA’larda placeholder davranışlar kapatıldı, listing detail ve blog detail ekranları gerçek aksiyon üretir hale getirildi.
+- **Next Step**: Client-side işlevsizlikleri sistematik yakalamak için CTA bazlı Playwright senaryolarını genişletmek ve gerekiyorsa hafif bir client event telemetry katmanı eklemek.
+
 ### 2026-04-13 Broken Flow Audit: Create Route & Phone Verification (Completed)
 - **Odak**: “Çalışmıyor” hissi veren gerçek kullanıcı akışlarını log ve kod üzerinden izole etmek.
 - **Bulgu**:

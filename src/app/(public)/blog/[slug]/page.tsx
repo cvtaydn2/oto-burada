@@ -1,6 +1,7 @@
-import { Calendar, Clock, ChevronLeft, Share2, Globe, Link as LinkIcon } from "lucide-react";
+import { Calendar, Clock, ChevronLeft } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
+import { ArticleShareActions } from "@/components/shared/article-share-actions";
 
 export default function BlogDetailPage() {
   return (
@@ -69,11 +70,7 @@ export default function BlogDetailPage() {
             {/* Social Share */}
             <div className="flex items-center gap-6 pt-10 border-t border-slate-100 italic">
                <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">BU İÇERİĞİ PAYLAŞ:</span>
-               <div className="flex gap-3">
-                  <button className="size-12 rounded-xl bg-slate-50 flex items-center justify-center text-slate-400 hover:bg-slate-900 hover:text-white transition-all shadow-sm"><Globe size={18} /></button>
-                  <button className="size-12 rounded-xl bg-slate-50 flex items-center justify-center text-slate-400 hover:bg-slate-900 hover:text-white transition-all shadow-sm"><Share2 size={18} /></button>
-                  <button className="size-12 rounded-xl bg-slate-50 flex items-center justify-center text-slate-400 hover:bg-slate-900 hover:text-white transition-all shadow-sm"><LinkIcon size={18} /></button>
-               </div>
+               <ArticleShareActions title="2024 Model Yılı Araç Değerleme Raporu" />
             </div>
          </div>
 
@@ -98,11 +95,13 @@ export default function BlogDetailPage() {
                   <RelatedPostItem 
                     title="Expertiz Raporu Okuma Kılavuzu" 
                     date="10 Nisan 2024"
+                    href="/blog/ekspertiz-raporu-okuma-kilavuzu"
                     image="https://images.unsplash.com/photo-1486262715619-67b85e0b08d3?q=80&w=2082&auto=format&fit=crop"
                   />
                   <RelatedPostItem 
                     title="Elektrikli Araçlarda Batarya Sağlığı" 
                     date="08 Nisan 2024"
+                    href="/blog/elektrikli-araclarda-batarya-sagligi"
                     image="https://images.unsplash.com/photo-1593941707882-a5bba14938c7?q=80&w=2072&auto=format&fit=crop"
                   />
                </div>
@@ -113,9 +112,9 @@ export default function BlogDetailPage() {
   );
 }
 
-function RelatedPostItem({ title, date, image }: { title: string, date: string, image: string }) {
+function RelatedPostItem({ title, date, href, image }: { title: string, date: string, href: string, image: string }) {
   return (
-    <Link href="#" className="flex items-center gap-4 group">
+    <Link href={href} className="flex items-center gap-4 group">
        <div className="size-20 shrink-0 rounded-2xl bg-slate-100 relative overflow-hidden shadow-sm">
           <Image src={image} alt={title} fill className="object-cover group-hover:scale-110 transition-transform duration-500" />
        </div>
