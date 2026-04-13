@@ -2,6 +2,7 @@
 
 import { MoreVertical, Ban, ShieldCheck, UserMinus, LoaderCircle } from "lucide-react";
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -20,14 +21,21 @@ interface UserActionMenuProps {
 }
 
 export function UserActionMenu({ userId, isBanned, isAdmin }: UserActionMenuProps) {
+  const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
 
   const handleBanToggle = async () => {
+    if (!userId) {
+      toast.error("Kullanıcı ID'si bulunamadı.");
+      return;
+    }
     setIsLoading(true);
     try {
       await toggleUserBan(userId, isBanned);
       toast.success(isBanned ? "Kullanıcı yasaklaması kaldırıldı." : "Kullanıcı başarıyla yasaklandı.");
-    } catch {
+      router.refresh();
+    } catch (error) {
+      console.error("Ban toggle error:", error);
       toast.error("İşlem gerçekleştirilemedi.");
     } finally {
       setIsLoading(false);
@@ -35,12 +43,14 @@ export function UserActionMenu({ userId, isBanned, isAdmin }: UserActionMenuProp
   };
 
   const handlePromote = async () => {
-    if (isAdmin) return;
+    if (!userId || isAdmin) return;
     setIsLoading(true);
     try {
       await promoteUserToAdmin(userId);
       toast.success("Kullanıcı admin olarak atandı.");
-    } catch {
+      router.refresh();
+    } catch (error) {
+      console.error("Promote error:", error);
       toast.error("Yetkilendirme hatası.");
     } finally {
       setIsLoading(false);

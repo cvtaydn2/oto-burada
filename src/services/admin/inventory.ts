@@ -3,13 +3,17 @@
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { Listing } from "@/types/domain";
 
-export async function getAdminInventory(filters?: { status?: string; query?: string }) {
+export async function getAdminInventory(filters?: { status?: string; query?: string; page?: number; limit?: number }) {
   const supabase = await createSupabaseServerClient();
+  const page = filters?.page ?? 1;
+  const limit = filters?.limit ?? 50;
+  const from = (page - 1) * limit;
   
   let query = supabase
     .from("listings")
-    .select("*, images:listing_images(*)")
-    .order("created_at", { ascending: false });
+    .select("*, images:listing_images(id, listing_id, storage_path, public_url, sort_order, is_cover, placeholder_blur)", { count: "exact" })
+    .order("created_at", { ascending: false })
+    .range(from, from + limit - 1);
 
   if (filters?.status && filters.status !== "all") {
     query = query.eq("status", filters.status);
@@ -26,7 +30,8 @@ export async function getAdminInventory(filters?: { status?: string; query?: str
     return [];
   }
 
-  return data as Listing[];
+  const listings = data as Listing[];
+  return listings;
 }
 
 export async function forceActionOnListing(listingId: string, action: "archive" | "delete" | "approve" | "reject") {

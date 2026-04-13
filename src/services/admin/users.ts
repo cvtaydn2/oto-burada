@@ -1,6 +1,7 @@
 "use server";
 
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { revalidatePath } from "next/cache";
 import { Profile } from "@/types/domain";
 
 export async function getAllUsers() {
@@ -52,10 +53,10 @@ export async function updateUserRole(userId: string, role: "user" | "admin" | "p
   
   const { error } = await supabase
     .from("profiles")
-    .update({ user_type: role })
+    .update({ role: role === "admin" ? "admin" : role === "professional" ? "professional" : "user" })
     .eq("id", userId);
 
-  if (error) throw new Error(`Rol güncellenemed: ${error.message}`);
+  if (error) throw new Error(`Rol güncellenemedi: ${error.message}`);
   return { success: true };
 }
 
@@ -71,6 +72,7 @@ export async function banUser(userId: string, reason: string) {
     .eq("id", userId);
 
   if (error) throw new Error(`Kullanıcı engellenemedi: ${error.message}`);
+  revalidatePath("/admin/users");
   return { success: true };
 }
 

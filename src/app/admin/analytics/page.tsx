@@ -1,3 +1,4 @@
+import { redirect } from "next/navigation";
 import { getAdminAnalytics } from "@/services/admin/analytics";
 import { requireAdminUser } from "@/lib/auth/session";
 import { AdminAnalyticsClient } from "@/components/admin/admin-analytics-client";
@@ -24,5 +25,9 @@ export default async function AdminAnalyticsPage({ searchParams }: AdminAnalytic
     );
   }
 
-  return <AdminAnalyticsClient data={analyticsData} timeRange={range} onTimeRangeChange={() => {}} />;
+  const handleTimeRangeChange = (newRange: string) => {
+    redirect(`/admin/analytics?range=${newRange}`);
+  };
+
+  return <AdminAnalyticsClient data={analyticsData} timeRange={range} onTimeRangeChange={handleTimeRangeChange} />;
 }

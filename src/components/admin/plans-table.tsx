@@ -8,8 +8,7 @@ import {
   XCircle, 
   MoreVertical,
   Tag,
-  Loader2,
-  Plus
+  Loader2
 } from "lucide-react";
 import {
   DropdownMenu,

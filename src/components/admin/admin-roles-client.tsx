@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Shield, Key, Eye, Edit3, Trash2, Plus, ChevronRight, CheckCircle2, X, Loader2 } from "lucide-react";
+import { Shield, Key, Eye, Edit3, Trash2, Plus, ChevronRight, CheckCircle2, Loader2 } from "lucide-react";
 import { AdminRole, deleteRole } from "@/services/admin/roles";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";

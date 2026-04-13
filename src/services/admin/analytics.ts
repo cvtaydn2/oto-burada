@@ -109,25 +109,31 @@ export async function getAdminAnalytics(): Promise<AdminAnalyticsData | null> {
     .select("*", { count: "exact", head: true })
     .gte("created_at", thirtyDaysAgo.toISOString());
 
-  // 7. Market Trends (Brand Average Prices)
-  const { data: marketStats } = await admin
-    .from("market_stats")
-    .select("brand, avg_price");
+  // 7. Market Trends (Brand Average Prices) - gracefully handle if table doesn't exist
+  let marketTrends: { brand: string; avgPrice: number }[] = [];
+  try {
+    const { data: marketStats } = await admin
+      .from("market_stats")
+      .select("brand, avg_price");
 
-  const brandPriceMap: Record<string, { total: number; count: number }> = {};
-  marketStats?.forEach((s) => {
-    if (!brandPriceMap[s.brand]) brandPriceMap[s.brand] = { total: 0, count: 0 };
-    brandPriceMap[s.brand].total += Number(s.avg_price);
-    brandPriceMap[s.brand].count += 1;
-  });
+    const brandPriceMap: Record<string, { total: number; count: number }> = {};
+    marketStats?.forEach((s) => {
+      if (!brandPriceMap[s.brand]) brandPriceMap[s.brand] = { total: 0, count: 0 };
+      brandPriceMap[s.brand].total += Number(s.avg_price);
+      brandPriceMap[s.brand].count += 1;
+    });
 
-  const marketTrends = Object.entries(brandPriceMap)
-    .map(([brand, stats]) => ({
-      brand,
-      avgPrice: Math.round(stats.total / stats.count),
-    }))
-    .sort((a, b) => b.avgPrice - a.avgPrice)
-    .slice(0, 5);
+    marketTrends = Object.entries(brandPriceMap)
+      .map(([brand, stats]) => ({
+        brand,
+        avgPrice: Math.round(stats.total / stats.count),
+      }))
+      .sort((a, b) => b.avgPrice - a.avgPrice)
+      .slice(0, 5);
+  } catch {
+    // market_stats table doesn't exist yet - that's OK
+    marketTrends = [];
+  }
 
   return {
     listingsByBrand,

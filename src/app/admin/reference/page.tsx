@@ -1,6 +1,6 @@
 import { getBrands } from "@/services/admin/reference";
 import { requireAdminUser } from "@/lib/auth/session";
-import { Database, Search, Filter, Plus } from "lucide-react";
+import { Database, Search, Filter } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { BrandsManager } from "@/components/admin/brands-manager";

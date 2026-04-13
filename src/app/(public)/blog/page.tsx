@@ -67,7 +67,7 @@ export default function BlogPage() {
       {/* Featured Post */}
       <Link href={`/blog/${posts[0].id}`} className="block group">
         <div className="relative h-[500px] w-full rounded-[3rem] overflow-hidden shadow-3xl shadow-slate-200/50 transition-all group-hover:shadow-primary/10">
-           <Image src={posts[0].image} alt={posts[0].title} fill className="object-cover transition-transform duration-1000 group-hover:scale-110" />
+            <Image src={posts[0].image} alt={posts[0].title} fill priority sizes="100vw" className="object-cover" />
            <div className="absolute inset-0 bg-gradient-to-t from-slate-950/90 via-slate-950/40 to-transparent z-10" />
            <div className="absolute bottom-0 left-0 p-8 lg:p-16 z-20 space-y-6">
               <span className="inline-flex px-4 py-2 rounded-xl bg-primary text-[10px] font-black text-white uppercase tracking-widest italic">ÖNE ÇIKAN</span>
@@ -88,7 +88,7 @@ export default function BlogPage() {
          {posts.slice(1).map((post) => (
             <Link key={post.id} href={`/blog/${post.id}`} className="group space-y-6">
                <div className="relative aspect-[16/10] w-full rounded-[2.5rem] overflow-hidden bg-slate-100 shadow-xl shadow-slate-200/20">
-                  <Image src={post.image} alt={post.title} fill className="object-cover group-hover:scale-110 transition-transform duration-700" />
+                   <Image src={post.image} alt={post.title} fill sizes="(min-width: 1024px) 33vw, 50vw" className="object-cover" />
                   <div className="absolute top-4 left-4 px-3 py-1.5 rounded-lg bg-white/90 backdrop-blur-md text-[10px] font-black text-slate-900 uppercase tracking-widest italic">
                      {post.category}
                   </div>

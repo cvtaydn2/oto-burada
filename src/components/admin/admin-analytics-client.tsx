@@ -22,8 +22,14 @@ interface AdminAnalyticsClientProps {
   onTimeRangeChange: (range: string) => void;
 }
 
-export function AdminAnalyticsClient({ data, timeRange, onTimeRangeChange }: AdminAnalyticsClientProps) {
+export function AdminAnalyticsClient({ data, timeRange: initialTimeRange, onTimeRangeChange }: AdminAnalyticsClientProps) {
   const [activeChart, setActiveChart] = useState<"line" | "bar">("bar");
+  const [timeRange, setTimeRange] = useState(initialTimeRange);
+
+  const handleTimeRangeChange = (range: string) => {
+    setTimeRange(range);
+    onTimeRangeChange(range);
+  };
 
   const maxListings = Math.max(...data.recentTrends.map(t => t.listings), 1);
 
@@ -69,7 +75,7 @@ export function AdminAnalyticsClient({ data, timeRange, onTimeRangeChange }: Adm
             {["7d", "30d", "90d", "1y"].map((range) => (
               <button
                 key={range}
-                onClick={() => onTimeRangeChange(range)}
+                onClick={() => handleTimeRangeChange(range)}
                 className={`px-4 py-2 text-[11px] font-black uppercase tracking-wider rounded-lg transition-all ${
                   timeRange === range
                     ? "bg-slate-800 text-white shadow-sm"

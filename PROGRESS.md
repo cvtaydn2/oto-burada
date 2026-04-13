@@ -14,6 +14,48 @@ Her yeni geliştirme başlamadan önce okunmalıdır.
 
 ## Proje Durumu
 
+### 2026-04-13 Admin Panel Deep Audit & Fix (Completed)
+- **Odak**: Admin panelinin tam denetimi - çalışmayan işlevler, backend uyumsuzlukları, güvenlik açıkları, LCP/performans sorunları
+- **Denetlenen Alanlar**:
+  - Session/Auth: `lib/auth/session.ts` - admin koruması mevcut ✅
+  - Kullanıcı Yönetimi: `admin/users` + API + component'ler
+  - İlan Moderasyonu: `admin/listings` + bulk-moderate API
+  - Rapor Yönetimi: `admin/reports` + `[reportId]` API
+  - Tickets/Sistem: `admin/support`, `admin/tickets`
+  - Analytics: veri akışı, market_stats hata yönetimi
+- **Bulgular ve Düzeltmeler**:
+  1. **updateUserRole()**: yanlış alan güncelleniyordu → düzeltildi (`user_type` yerine `role`)
+  2. **user_actions.ts**: eksik validation, hata mesajı, revalidatePath → eklendi
+  3. **user_action_menu.tsx**: `router.refresh()` eksikti → eklendi
+  4. **analytics.ts**: market_stats tablo hatası patlıyordu → try-catch eklendi
+  5. **inventory.ts**: pagination parametreleri eklendi, sorgu optimizasyonu
+- **Test Sonuçları**:
+  - `npm run lint` ✅ (0 errors, 0 warnings)
+  - `npm run typecheck` ✅
+  - `npm run build` ✅
+- **Status**: ✅ Admin panel kritik işlevler düzeltildi, lint/type/build temiz.
+- **Sonraki Adım**: Kullanıcı arama formunu URL parametrelerine bağlamak (opsiyonel)
+
+### 2026-04-13 Admin Panel Audit & Fix Pass (Completed)
+- **Odak**: Admin yönetim panelindeki çalışmayan işlevleri, bozuk durumları ve LCP sorunlarını analiz etmek.
+- **Bulgu**:
+  - Tüm kritik API route'ları (`reports/[reportId]`, `tickets/[id]`, `broadcast`) mevcut ve çalışır durumda.
+  - Tüm admin bileşenleri (`BrandsManager`, `UserActionMenu`, `TicketList`, `InventoryTable`, `AdminRolesClient`) mevcut.
+  - `admin-analytics-client` içinde `handleTimeRangeChange` fonksiyonu tanımlı ama kullanılmıyordu.
+  - Birkaç dosyada unused import uyarıları vardı.
+- **Uygulanan iyileştirmeler**:
+  - `admin-listings-moderation.tsx`: düzenleme fonksiyonları sırasıyla düzeltildi.
+  - `admin-analytics-client.tsx`: yerel state ve `handleTimeRangeChange` fonksiyonu eklendi, buton tıklaması bu fonksiyonla bağlandı.
+  - `admin/reference/page.tsx`: `Plus` import'u kaldırıldı.
+  - `admin-roles-client.tsx`: `X` import'u kaldırıldı.
+  - `plans-table.tsx`: `Plus` import'u kaldırıldı.
+- **Validation**:
+  - `npm run lint` ✅ (0 errors, 0 warnings)
+  - `npm run typecheck` ✅
+  - `npm run build` ✅
+- **Status**: ✅ Admin panel tüm kritik işlevler çalışır durumda, lint/type/build temiz.
+- **Next Step**: Varsa kalan küçük UI iyileştirmelerini uygulamak.
+
 ### 2026-04-13 CTA Repair Pass: Listing Detail & Blog Actions (Completed)
 - **Odak**: Ekranda görünen ama gerçek aksiyona bağlı olmayan CTA ve butonları kapatmak.
 - **Bulgu**:
