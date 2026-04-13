@@ -23,6 +23,7 @@ import { getAdminAnalytics } from "@/services/admin/analytics";
 import { getAllKnownListings } from "@/services/listings/marketplace-listings";
 import { getStoredProfileById } from "@/services/profile/profile-records";
 import { getStoredReports } from "@/services/reports/report-submissions";
+import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 
 export const dynamic = "force-dynamic";
 
@@ -30,71 +31,62 @@ export default async function AdminOverviewPage() {
   // Authentication check
   await requireAdminUser();
 
-  // Parallel data fetching for maximum performance (Clean Code)
-  // We wrap each in a try-catch/catch to ensure one failure doesn't block the whole page
+  // 1. Initial parallel fetch for core metrics and actions
   const [
     analyticsData,
     storedReports,
-    knownListings,
-    persistenceHealth,
-    recentActions
+    recentActions,
+    persistenceHealth
   ] = await Promise.all([
-    getAdminAnalytics().catch((e) => {
-      console.error("Admin Analytics Fetch Error:", e);
-      return null;
-    }),
-    getStoredReports().catch((e) => {
-      console.error("Admin Reports Fetch Error:", e);
-      return [];
-    }),
-    getAllKnownListings().catch((e) => {
-      console.error("Admin Listings Fetch Error:", e);
-      return [];
-    }),
-    getPersistenceHealth().catch((e) => {
-      console.error("Admin Persistence Health Error:", e);
-      return null;
-    }),
-    getRecentAdminModerationActions().catch((e) => {
-      console.error("Admin Moderation Actions Fetch Error:", e);
-      return [];
-    })
+    getAdminAnalytics("30d").catch(() => null),
+    getStoredReports().catch(() => []),
+    getRecentAdminModerationActions(10).catch(() => []),
+    getPersistenceHealth().catch(() => null),
   ]);
 
-  const actionableReports = (storedReports ?? []).filter(
-    (report) => report.status === "open" || report.status === "reviewing",
-  );
+  // 2. Batch resolve related data for recent actions to avoid waterfalis
+  const actorIds = [...new Set(recentActions.map(a => a.adminUserId))];
+  const targetListingIds = [...new Set(
+    recentActions
+      .filter(a => a.targetType === "listing")
+      .map(a => a.targetId)
+  )];
 
-  const listingById = Object.fromEntries((knownListings ?? []).map((listing) => [listing.id, listing]));
-  
-  // Resolve actor labels and targets for recent actions
-  const recentActionItems: AdminRecentActionItem[] = await Promise.all(
-    (recentActions ?? []).map(async (action) => {
-      let actorProfile = null;
-      try {
-        actorProfile = await getStoredProfileById(action.adminUserId);
-      } catch (e) {
-        console.error("Action actor profile fetch error:", e);
-      }
-      
-      const targetListing =
-        action.targetType === "listing"
-          ? listingById[action.targetId]
-          : listingById[storedReports.find((report) => report.id === action.targetId)?.listingId ?? ""];
+  // Also include listings from reports mentioned in recent actions
+  const reportTargets = recentActions.filter(a => a.targetType === "report");
+  const reportListingIds = reportTargets.map(rt => 
+    storedReports.find(r => r.id === rt.targetId)?.listingId
+  ).filter(Boolean) as string[];
 
-      return {
-        action,
-        actorLabel: actorProfile?.fullName || actorProfile?.id || "Admin",
-        targetHref: targetListing?.slug ? `/listing/${targetListing.slug}` : null,
-        targetLabel:
-          action.targetType === "listing"
-            ? targetListing?.title ?? "İlan başlığı bulunamadı"
-            : targetListing
-              ? `${targetListing.title} için rapor`
-              : "Rapor hedef ilanı bulunamadı",
-      };
-    }),
-  );
+  const admin = createSupabaseAdminClient();
+  const [actorProfiles, actionListings] = await Promise.all([
+    admin.from("profiles").select("id, full_name").in("id", actorIds),
+    admin.from("listings").select("id, title, slug").in("id", [...new Set([...targetListingIds, ...reportListingIds])])
+  ]);
+
+  const actorsMap = Object.fromEntries((actorProfiles.data || []).map((p: any) => [p.id, p]));
+  const listingsMap = Object.fromEntries((actionListings.data || []).map((l: any) => [l.id, l]));
+
+  const actionableReports = (storedReports || []).filter(r => r.status === "open");
+
+  const recentActionItems: AdminRecentActionItem[] = recentActions.map(action => {
+    const actor = actorsMap[action.adminUserId];
+    
+    // Determine the relevant listing for the target (whether it's a listing or a report on a listing)
+    let listingId = action.targetType === "listing" ? action.targetId : null;
+    if (action.targetType === "report") {
+      listingId = storedReports.find(r => r.id === action.targetId)?.listingId || null;
+    }
+    
+    const targetListing = listingId ? listingsMap[listingId] : null;
+
+    return {
+      action,
+      actorLabel: actor?.full_name || "Sistem",
+      targetHref: targetListing?.slug ? `/listing/${targetListing.slug}` : null,
+      targetLabel: targetListing?.title || (action.targetType === "report" ? "Raporlanmış İlan" : "Bilinmeyen İlan"),
+    };
+  });
 
   return (
     <main className="space-y-8 p-6 lg:p-8 bg-slate-50/30 min-h-screen">

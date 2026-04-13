@@ -69,3 +69,10 @@ export async function createModel(brandId: string, name: string) {
   revalidatePath("/admin/reference");
   return { success: true };
 }
+
+export async function deleteModel(id: string) {
+  const admin = createSupabaseAdminClient();
+  const { error } = await admin.from("models").delete().eq("id", id);
+  if (error) throw error;
+  return { success: true };
+}

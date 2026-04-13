@@ -5,6 +5,7 @@ import { Shield, Key, Eye, Edit3, Trash2, Plus, ChevronRight, CheckCircle2, Load
 import { AdminRole, deleteRole } from "@/services/admin/roles";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
+import { RoleForm } from "@/components/forms/role-form";
 
 interface AdminRolesClientProps {
   initialRoles: AdminRole[];
@@ -21,6 +22,8 @@ export function AdminRolesClient({ initialRoles }: AdminRolesClientProps) {
   const [roles, setRoles] = useState(initialRoles);
   const [isDeleting, setIsDeleting] = useState<string | null>(null);
   const [deleteModal, setDeleteModal] = useState<AdminRole | null>(null);
+  const [editModal, setEditModal] = useState<AdminRole | null>(null);
+  const [showCreateModal, setShowCreateModal] = useState(false);
 
   const handleDelete = async (role: AdminRole) => {
     if (role.is_system) {
@@ -79,7 +82,10 @@ export function AdminRolesClient({ initialRoles }: AdminRolesClientProps) {
             </h1>
             <p className="mt-1.5 text-sm text-slate-500 font-medium italic">Sistem personelinin yetki seviyelerini ve erişim limitlerini tanımlayın.</p>
           </div>
-          <Button className="flex h-11 items-center gap-2 rounded-xl bg-blue-600 px-6 text-sm font-black uppercase tracking-widest hover:bg-blue-700 transition-all">
+          <Button 
+            onClick={() => setShowCreateModal(true)}
+            className="flex h-11 items-center gap-2 rounded-xl bg-blue-600 px-6 text-sm font-black uppercase tracking-widest hover:bg-blue-700 transition-all shadow-lg shadow-blue-100"
+          >
             <Plus size={16} />
             Yeni rol tanımla
           </Button>
@@ -118,7 +124,10 @@ export function AdminRolesClient({ initialRoles }: AdminRolesClientProps) {
                   <button className="flex h-10 flex-1 items-center justify-center rounded-lg border border-slate-200 bg-slate-50 text-slate-500 transition-all hover:bg-blue-50 hover:border-blue-200 hover:text-blue-600">
                     <Eye size={16} />
                   </button>
-                  <button className="flex h-10 flex-1 items-center justify-center rounded-lg border border-slate-200 bg-slate-50 text-slate-500 transition-all hover:bg-blue-50 hover:border-blue-200 hover:text-blue-600">
+                  <button 
+                    onClick={() => setEditModal(role)}
+                    className="flex h-10 flex-1 items-center justify-center rounded-lg border border-slate-200 bg-slate-50 text-slate-500 transition-all hover:bg-blue-50 hover:border-blue-200 hover:text-blue-600"
+                  >
                     <Edit3 size={16} />
                   </button>
                   <button
@@ -156,6 +165,40 @@ export function AdminRolesClient({ initialRoles }: AdminRolesClientProps) {
           </div>
         </div>
       </main>
+
+        {/* Create/Edit Modal */}
+        {(editModal || showCreateModal) && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+            <div className="w-full max-w-xl rounded-2xl bg-white p-8 shadow-2xl overflow-y-auto max-h-[90vh]">
+              <div className="mb-6 flex items-center gap-4">
+                <div className="flex size-14 items-center justify-center rounded-2xl bg-blue-50 text-blue-600">
+                  <Shield size={28} />
+                </div>
+                <div>
+                  <h3 className="text-xl font-black text-slate-900 leading-tight">
+                    {editModal ? "Rolü Düzenle" : "Yeni Rol Tanımla"}
+                  </h3>
+                  <p className="text-sm text-slate-500 font-medium italic mt-0.5">
+                    {editModal ? editModal.name : "Sistem personeli için özel yetki setleri oluşturun."}
+                  </p>
+                </div>
+              </div>
+              
+              <RoleForm 
+                initialData={editModal} 
+                onSuccess={() => {
+                  setEditModal(null);
+                  setShowCreateModal(false);
+                  window.location.reload();
+                }}
+                onCancel={() => {
+                  setEditModal(null);
+                  setShowCreateModal(false);
+                }}
+              />
+            </div>
+          </div>
+        )}
 
       {/* Delete Confirmation Modal */}
       {deleteModal && (

@@ -13,22 +13,23 @@ import {
   BarChart3,
   PieChart
 } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { AdminAnalyticsData } from "@/services/admin/analytics";
 import { formatCurrency } from "@/lib/utils";
 
 interface AdminAnalyticsClientProps {
   data: NonNullable<AdminAnalyticsData>;
   timeRange: string;
-  onTimeRangeChange: (range: string) => void;
 }
 
-export function AdminAnalyticsClient({ data, timeRange: initialTimeRange, onTimeRangeChange }: AdminAnalyticsClientProps) {
+export function AdminAnalyticsClient({ data, timeRange: initialTimeRange }: AdminAnalyticsClientProps) {
+  const router = useRouter();
   const [activeChart, setActiveChart] = useState<"line" | "bar">("bar");
   const [timeRange, setTimeRange] = useState(initialTimeRange);
 
   const handleTimeRangeChange = (range: string) => {
     setTimeRange(range);
-    onTimeRangeChange(range);
+    router.push(`/admin/analytics?range=${range}`);
   };
 
   const maxListings = Math.max(...data.recentTrends.map(t => t.listings), 1);

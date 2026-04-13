@@ -8,29 +8,32 @@ import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { PlatformSettings } from "@/services/admin/settings";
-import { updatePlatformSettings } from "@/services/admin/settings";
+import { updateAllPlatformSettings } from "@/services/admin/settings";
+import { useRouter } from "next/navigation";
+import { cn } from "@/lib/utils";
 
 interface AdminSettingsFormProps {
   initialSettings: PlatformSettings;
 }
 
 export function AdminSettingsForm({ initialSettings }: AdminSettingsFormProps) {
+  const router = useRouter();
   const [settings, setSettings] = useState<PlatformSettings>(initialSettings);
   const [isSaving, setIsSaving] = useState(false);
 
   const handleSave = async () => {
     setIsSaving(true);
     try {
-      await Promise.all([
-        updatePlatformSettings("general_appearance", settings.general_appearance),
-        updatePlatformSettings("moderation_policies", settings.moderation_policies),
-        updatePlatformSettings("notification_settings", settings.notification_settings),
-      ]);
-      toast.success("Sistem ayarları başarıyla güncellendi.");
+      await updateAllPlatformSettings(settings);
+      toast.success("Ayarlar başarıyla kaydedildi.");
+      router.refresh();
+      // Force a small delay for the feeling of "processing"
+      setTimeout(() => {
+        setIsSaving(false);
+      }, 500);
     } catch (error) {
       toast.error("Ayarlar kaydedilirken bir hata oluştu.");
       console.error(error);
-    } finally {
       setIsSaving(false);
     }
   };
@@ -53,7 +56,7 @@ export function AdminSettingsForm({ initialSettings }: AdminSettingsFormProps) {
   };
 
   return (
-    <div className="space-y-6">
+    <div className={cn("space-y-6 transition-opacity duration-300", isSaving && "opacity-70 pointer-events-none")}>
       <section className="flex flex-col justify-between gap-4 md:flex-row md:items-end">
         <div>
            <h1 className="text-2xl font-black text-slate-900">

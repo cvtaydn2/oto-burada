@@ -23,6 +23,8 @@ import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { formatCurrency } from "@/lib/utils";
 import { PricingPlan, togglePlanStatus, deletePricingPlan } from "@/services/admin/plans";
+import { PlanForm } from "@/components/forms/plan-form";
+import { Plus } from "lucide-react";
 
 interface PlansTableProps {
   initialPlans: PricingPlan[];
@@ -32,6 +34,7 @@ export function PlansTable({ initialPlans }: PlansTableProps) {
   const [plans, setPlans] = useState(initialPlans);
   const [isLoading, setIsLoading] = useState<string | null>(null);
   const [editModal, setEditModal] = useState<PricingPlan | null>(null);
+  const [showCreateForm, setShowCreateForm] = useState(false);
   const [deleteModal, setDeleteModal] = useState<PricingPlan | null>(null);
 
   const handleToggleStatus = async (plan: PricingPlan) => {
@@ -65,6 +68,16 @@ export function PlansTable({ initialPlans }: PlansTableProps) {
 
   return (
     <>
+      <div className="p-6 border-b border-slate-100 bg-slate-50/10 flex justify-end">
+        <Button 
+          onClick={() => setShowCreateForm(true)}
+          className="bg-indigo-600 hover:bg-indigo-700 rounded-xl font-black text-[10px] tracking-widest uppercase h-11 px-6 shadow-lg shadow-indigo-100 gap-2"
+        >
+          <Plus size={16} />
+          YENİ PAKET EKLE
+        </Button>
+      </div>
+
       <div className="overflow-x-auto">
         <table className="w-full text-left border-collapse">
           <thead>
@@ -162,28 +175,36 @@ export function PlansTable({ initialPlans }: PlansTableProps) {
         </table>
       </div>
 
-      {/* Edit Modal */}
-      {editModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
-          <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl">
+      {/* Edit Modal / Create Modal */}
+      {(editModal || showCreateForm) && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+          <div className="w-full max-w-xl rounded-2xl bg-white p-8 shadow-2xl max-h-[90vh] overflow-y-auto">
             <div className="mb-6 flex items-center gap-4">
-              <div className="flex size-12 items-center justify-center rounded-xl bg-indigo-100 text-indigo-600">
-                <Edit3 size={24} />
+              <div className="flex size-14 items-center justify-center rounded-2xl bg-indigo-50 text-indigo-600">
+                {editModal ? <Edit3 size={28} /> : <Plus size={28} />}
               </div>
               <div>
-                <h3 className="text-lg font-black text-slate-900">Paketi Düzenle</h3>
-                <p className="text-sm text-slate-500">{editModal.name}</p>
+                <h3 className="text-xl font-black text-slate-900 leading-tight">
+                  {editModal ? "Paketi Düzenle" : "Yeni Paket Oluştur"}
+                </h3>
+                <p className="text-sm text-slate-500 font-medium italic mt-0.5">
+                  {editModal ? editModal.name : "İlan paketlerinin detaylarını ve özelliklerini tanımlayın."}
+                </p>
               </div>
             </div>
-            <p className="text-sm text-slate-600 mb-4">
-              Paket düzenleme formu yakında eklenecek. Şimdilik paketi silip yeniden oluşturabilirsiniz.
-            </p>
-            <Button
-              className="w-full rounded-xl font-bold"
-              onClick={() => setEditModal(null)}
-            >
-              Kapat
-            </Button>
+            
+            <PlanForm 
+              initialData={editModal} 
+              onSuccess={() => {
+                setEditModal(null);
+                setShowCreateForm(false);
+                window.location.reload();
+              }}
+              onCancel={() => {
+                setEditModal(null);
+                setShowCreateForm(false);
+              }}
+            />
           </div>
         </div>
       )}

@@ -64,7 +64,7 @@ export function InventoryTable({ listings }: InventoryTableProps) {
           </tr>
         </thead>
         <tbody className="divide-y divide-slate-50">
-          {listings.map((listing) => (
+          {listings.map((listing, idx) => (
             <tr key={listing.id} className="hover:bg-slate-50/50 transition-colors group">
               <td className="px-6 py-4">
                 <div className="flex items-center gap-3">

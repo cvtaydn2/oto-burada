@@ -1,4 +1,4 @@
-import { redirect } from "next/navigation";
+import { TrendingUp, Car } from "lucide-react";
 import { getAdminAnalytics } from "@/services/admin/analytics";
 import { requireAdminUser } from "@/lib/auth/session";
 import { AdminAnalyticsClient } from "@/components/admin/admin-analytics-client";
@@ -12,22 +12,19 @@ interface AdminAnalyticsPageProps {
 export default async function AdminAnalyticsPage({ searchParams }: AdminAnalyticsPageProps) {
   await requireAdminUser();
   const { range = "30d" } = await searchParams;
-  const analyticsData = await getAdminAnalytics();
+  const analyticsData = await getAdminAnalytics(range);
 
   if (!analyticsData) {
     return (
-      <div className="flex items-center justify-center min-h-[400px]">
-        <div className="text-center">
-          <p className="text-slate-500 font-medium">Analitik verileri yüklenemedi.</p>
-          <p className="text-slate-400 text-sm mt-2">Lütfen Supabase bağlantınızı kontrol edin.</p>
+      <div className="flex flex-col items-center justify-center min-h-[400px] p-8 text-center bg-white rounded-3xl border border-rose-100 shadow-sm">
+        <div className="size-16 rounded-2xl bg-rose-50 flex items-center justify-center text-rose-500 mb-4">
+          <TrendingUp size={32} />
         </div>
+        <h2 className="text-xl font-black text-slate-800">Analitik Verileri Yüklenemedi</h2>
+        <p className="text-slate-500 font-medium mt-2 max-w-md italic">Veritabanı bağlantısı veya yetkilendirme ile ilgili bir sorun oluştu. Lütfen bağlantılarınızı kontrol edin.</p>
       </div>
     );
   }
 
-  const handleTimeRangeChange = (newRange: string) => {
-    redirect(`/admin/analytics?range=${newRange}`);
-  };
-
-  return <AdminAnalyticsClient data={analyticsData} timeRange={range} onTimeRangeChange={handleTimeRangeChange} />;
+  return <AdminAnalyticsClient data={analyticsData} timeRange={range} />;
 }

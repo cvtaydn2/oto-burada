@@ -9,8 +9,10 @@ import {
   XCircle,
   Car,
   Plus,
-  Loader2
+  Loader2,
+  ChevronRight
 } from "lucide-react";
+import { ModelsManager } from "./models-manager";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -45,6 +47,7 @@ export function BrandsManager({ initialBrands, showTableOnly }: BrandsManagerPro
   const [addModelModal, setAddModelModal] = useState<Brand | null>(null);
   const [newModelName, setNewModelName] = useState("");
   const [isAddingModel, setIsAddingModel] = useState(false);
+  const [selectedBrandForModels, setSelectedBrandForModels] = useState<Brand | null>(null);
 
   const handleToggleStatus = async (brand: Brand) => {
     setLoadingId(brand.id);
@@ -131,10 +134,14 @@ export function BrandsManager({ initialBrands, showTableOnly }: BrandsManagerPro
                   </div>
                 </td>
                 <td className="px-6 py-5">
-                  <div className="flex items-center gap-2">
-                    <Car size={14} className="text-slate-300" />
-                    <span className="text-[10px] font-black text-slate-500 uppercase italic">Modelleri Gör</span>
-                  </div>
+                  <button 
+                    onClick={() => setSelectedBrandForModels(brand)}
+                    className="flex items-center gap-2 px-3 py-1.5 rounded-lg border border-slate-200 bg-white hover:border-blue-300 hover:text-blue-600 transition-all group/btn shadow-sm"
+                  >
+                    <Car size={14} className="text-slate-400 group-hover/btn:text-blue-500" />
+                    <span className="text-[10px] font-black text-slate-600 uppercase italic group-hover/btn:text-blue-600">Föyü Aç</span>
+                    <ChevronRight size={12} className="text-slate-300 group-hover/btn:text-blue-400" />
+                  </button>
                 </td>
                 <td className="px-6 py-5">
                   {brand.is_active ? (
@@ -297,6 +304,22 @@ export function BrandsManager({ initialBrands, showTableOnly }: BrandsManagerPro
                 {isAddingModel ? <Loader2 className="animate-spin" size={18} /> : "Ekle"}
               </Button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Models Slide Panel Overlay */}
+      {selectedBrandForModels && (
+        <div className="fixed inset-0 z-50 flex justify-end">
+          <div 
+            className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm animate-in fade-in duration-300" 
+            onClick={() => setSelectedBrandForModels(null)}
+          />
+          <div className="relative w-full max-w-lg h-full">
+            <ModelsManager 
+              brand={selectedBrandForModels} 
+              onClose={() => setSelectedBrandForModels(null)} 
+            />
           </div>
         </div>
       )}

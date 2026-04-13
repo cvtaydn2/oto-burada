@@ -63,3 +63,18 @@ export async function deletePricingPlan(id: string) {
   revalidatePath("/dashboard/pricing");
   return { success: true };
 }
+
+export async function createPricingPlan(plan: Omit<PricingPlan, "id">) {
+  const admin = createSupabaseAdminClient();
+  const { error } = await admin
+    .from("pricing_plans")
+    .insert(plan);
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  revalidatePath("/admin/plans");
+  revalidatePath("/dashboard/pricing");
+  return { success: true };
+}

@@ -23,10 +23,11 @@ export default async function AdminPlansPage() {
            </h1>
            <p className="mt-1.5 text-sm text-slate-500 font-medium italic">Üyelik paketlerini, fiyatları ve ilan limitlerini buradan yönetin.</p>
         </div>
-        <Button className="bg-indigo-600 hover:bg-indigo-700 rounded-xl font-black text-[10px] tracking-widest uppercase h-11 px-6 shadow-lg shadow-indigo-100 gap-2">
-           <Plus size={16} />
-           YENİ PAKET EKLE
-        </Button>
+        <div className="flex items-center gap-3">
+           <div className="size-10 rounded-xl bg-white border border-slate-200 flex items-center justify-center text-slate-400 group-hover:bg-white group-hover:text-blue-600 transition-all">
+              <Plus size={20} className="opacity-0 group-hover:opacity-100" />
+           </div>
+        </div>
       </section>
 
       <div className="rounded-3xl border border-slate-200 bg-white shadow-sm overflow-hidden">

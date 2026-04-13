@@ -77,15 +77,23 @@ export async function getPlatformSettings(): Promise<PlatformSettings> {
   };
 }
 
-export async function updatePlatformSettings<K extends PlatformSettingsKey>(
-  key: K,
-  value: PlatformSettings[K],
-) {
+export async function updateAllPlatformSettings(settings: PlatformSettings) {
   const supabase = await createSupabaseServerClient();
+  
+  const updates = [
+    { key: "general_appearance", value: settings.general_appearance, updated_at: new Date().toISOString() },
+    { key: "moderation_policies", value: settings.moderation_policies, updated_at: new Date().toISOString() },
+    { key: "notification_settings", value: settings.notification_settings, updated_at: new Date().toISOString() },
+  ];
+
   const { error } = await supabase
     .from("platform_settings")
-    .upsert({ key, value, updated_at: new Date().toISOString() });
+    .upsert(updates);
     
   if (error) throw error;
+  
+  const { revalidatePath } = await import("next/cache");
+  revalidatePath("/admin/settings");
+  
   return { success: true };
 }

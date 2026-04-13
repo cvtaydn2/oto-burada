@@ -11,6 +11,7 @@ import {
   XCircle,
 } from "lucide-react";
 import { useState } from "react";
+import { toast } from "sonner";
 
 import { reportReasonLabels, reportStatusLabels } from "@/lib/constants/domain";
 import { formatDate } from "@/lib/utils";
@@ -67,17 +68,18 @@ export function AdminReportsModeration({
       const payload = await response.json().catch(() => null) as { success?: boolean; error?: { message: string } } | null;
 
       if (!response.ok || !payload?.success) {
-        setErrorMessage(payload?.error?.message ?? "Rapor durumu güncellenemedi.");
+        toast.error(payload?.error?.message ?? "Rapor durumu güncellenemedi.");
         return;
       }
 
+      toast.success("Rapor durumu güncellendi.");
       setNotesByReportId((current) => ({
         ...current,
         [reportId]: "",
       }));
       router.refresh();
     } catch {
-      setErrorMessage("Bağlantı sırasında bir hata oluştu. Lütfen tekrar dene.");
+      toast.error("Bağlantı sırasında bir hata oluştu.");
     } finally {
       setActiveAction(null);
     }

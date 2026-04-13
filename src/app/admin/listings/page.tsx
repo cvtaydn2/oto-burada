@@ -6,21 +6,34 @@ import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { InventoryTable } from "@/components/admin/inventory-table";
 import { Badge } from "@/components/ui/badge";
+import { SimplePagination } from "@/components/admin/simple-pagination";
+import Link from "next/link";
 
 export const dynamic = "force-dynamic";
 
 interface AdminListingsPageProps {
-  searchParams: Promise<{ q?: string }>;
+  searchParams: Promise<{ q?: string; page?: string; status?: string }>;
 }
 
 export default async function AdminListingsPage({ searchParams }: AdminListingsPageProps) {
   await requireAdminUser();
-  const { q } = await searchParams;
+  const { q, page, status = "pending" } = await searchParams;
+  const currentPage = Number(page) || 1;
 
-  const allListings = await getAdminInventory({ query: q });
-  const pendingListings = allListings.filter((l) => l.status === "pending");
-  const approvedListings = allListings.filter((l) => l.status === "approved");
-  const archivedListings = allListings.filter((l) => l.status === "archived" || l.status === "rejected");
+  // Fetch counts for all states to show in badges
+  const [{ total: pendingCount }, { total: approvedCount }, { total: historyCount }] = await Promise.all([
+    getAdminInventory({ status: "pending", limit: 1 }),
+    getAdminInventory({ status: "approved", limit: 1 }),
+    getAdminInventory({ status: "history", limit: 1 }),
+  ]);
+
+  const { listings, total, limit } = await getAdminInventory({ 
+    query: q, 
+    status, 
+    page: currentPage 
+  });
+
+  const totalPages = Math.ceil(total / (limit || 12));
 
   return (
     <main className="space-y-8 p-6 lg:p-8 max-w-full bg-slate-50/30 min-h-full">
@@ -53,67 +66,82 @@ export default async function AdminListingsPage({ searchParams }: AdminListingsP
              </div>
           </div>
 
-          <Tabs defaultValue="pending" className="w-full">
-            <div className="px-6 border-b border-slate-100 bg-white">
-              <TabsList className="h-20 bg-transparent gap-10 p-0">
+          <Tabs defaultValue={status} className="w-full">
+            <div className="px-6 border-b border-slate-100 bg-white overflow-x-auto">
+              <TabsList className="h-20 bg-transparent gap-10 p-0 flex">
                 <TabsTrigger 
                   value="pending" 
+                  asChild
                   className="h-20 rounded-none border-b-4 border-transparent data-[state=active]:border-blue-600 data-[state=active]:bg-transparent data-[state=active]:shadow-none font-black uppercase tracking-widest text-[11px] gap-3 transition-all data-[state=active]:text-blue-600"
                 >
-                  Onay Bekleyen
-                  <Badge variant="secondary" className="bg-amber-100 text-amber-700 hover:bg-amber-100 border-none rounded-lg px-2 py-0.5 font-black">{pendingListings.length}</Badge>
+                  <a href={`?status=pending${q ? `&q=${q}` : ""}`}>
+                    Onay Bekleyen
+                    <Badge variant="secondary" className="bg-amber-100 text-amber-700 hover:bg-amber-100 border-none rounded-lg px-2 py-0.5 font-black">{pendingCount}</Badge>
+                  </a>
                 </TabsTrigger>
                 <TabsTrigger 
                   value="approved" 
+                  asChild
                   className="h-20 rounded-none border-b-4 border-transparent data-[state=active]:border-blue-600 data-[state=active]:bg-transparent data-[state=active]:shadow-none font-black uppercase tracking-widest text-[11px] gap-3 transition-all data-[state=active]:text-blue-600"
                 >
-                  Yayında Olanlar
-                  <Badge variant="secondary" className="bg-blue-50 text-blue-600 hover:bg-blue-50 border-none rounded-lg px-2 py-0.5 font-black">{approvedListings.length}</Badge>
+                  <a href={`?status=approved${q ? `&q=${q}` : ""}`}>
+                    Yayında Olanlar
+                    <Badge variant="secondary" className="bg-blue-50 text-blue-600 hover:bg-blue-50 border-none rounded-lg px-2 py-0.5 font-black">{approvedCount}</Badge>
+                  </a>
                 </TabsTrigger>
                 <TabsTrigger 
                   value="history" 
+                  asChild
                   className="h-20 rounded-none border-b-4 border-transparent data-[state=active]:border-blue-600 data-[state=active]:bg-transparent data-[state=active]:shadow-none font-black uppercase tracking-widest text-[11px] gap-3 transition-all data-[state=active]:text-blue-600"
                 >
-                  Arşiv & Ret
-                  <Badge variant="secondary" className="bg-slate-100 text-slate-600 hover:bg-slate-100 border-none rounded-lg px-2 py-0.5 font-black">{archivedListings.length}</Badge>
+                  <a href={`?status=history${q ? `&q=${q}` : ""}`}>
+                    Arşiv & Ret
+                    <Badge variant="secondary" className="bg-slate-100 text-slate-600 hover:bg-slate-100 border-none rounded-lg px-2 py-0.5 font-black">{historyCount}</Badge>
+                  </a>
                 </TabsTrigger>
               </TabsList>
             </div>
 
             <TabsContent value="pending" className="m-0 p-8 bg-slate-50/20">
-               <AdminListingsModeration pendingListings={pendingListings} />
+               <AdminListingsModeration pendingListings={listings} />
             </TabsContent>
             
             <TabsContent value="approved" className="m-0">
-               <InventoryTable listings={approvedListings} />
+               <InventoryTable listings={listings} />
             </TabsContent>
 
             <TabsContent value="history" className="m-0">
-               <InventoryTable listings={archivedListings} />
+               <InventoryTable listings={listings} />
             </TabsContent>
+
+            <div className="p-4 border-t border-slate-100 bg-white">
+                <SimplePagination currentPage={currentPage} totalPages={totalPages} />
+            </div>
           </Tabs>
       </div>
 
       {/* Summary Stats Footer */}
-      <div className="grid md:grid-cols-4 gap-6">
-         <div className="p-8 bg-white rounded-3xl border border-slate-100 shadow-sm relative overflow-hidden group">
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-6 px-2">
+          <div className="p-8 bg-white rounded-3xl border border-slate-200 shadow-sm relative overflow-hidden group">
             <div className="absolute -right-2 -top-2 size-20 bg-slate-50 rounded-full blur-2xl group-hover:scale-110 transition-transform" />
-            <h3 className="text-slate-400 font-black uppercase text-[10px] tracking-widest mb-2 italic">Toplam Kayıtlı İlan</h3>
-            <span className="text-3xl font-black text-slate-800 tracking-tighter">{allListings.length}</span>
-         </div>
-         <div className="p-8 bg-white rounded-3xl border border-blue-100 shadow-sm relative overflow-hidden group">
+            <h3 className="text-slate-400 font-black uppercase text-[10px] tracking-widest mb-2 italic">Segment Toplamı</h3>
+            <span className="text-3xl font-black text-slate-800 tracking-tighter">{total}</span>
+          </div>
+          
+          <div className="p-8 bg-white rounded-3xl border border-blue-100 shadow-sm relative overflow-hidden group">
             <div className="absolute -right-2 -top-2 size-20 bg-blue-50 rounded-full blur-2xl group-hover:scale-110 transition-transform" />
             <h3 className="text-blue-600 font-black uppercase text-[10px] tracking-widest mb-2 italic">Aktif Satıştakiler</h3>
-            <span className="text-3xl font-black text-slate-800 tracking-tighter">{approvedListings.length}</span>
-         </div>
-         <div className="md:col-span-2 p-8 bg-blue-600 rounded-3xl shadow-lg shadow-blue-100 flex items-center justify-between gap-6 relative overflow-hidden group">
+            <span className="text-3xl font-black text-slate-800 tracking-tighter">{approvedCount}</span>
+          </div>
+
+          <div className="md:col-span-2 p-8 bg-blue-600 rounded-3xl shadow-lg shadow-blue-100 flex items-center justify-between gap-6 relative overflow-hidden group">
             <div className="absolute -left-10 -bottom-10 size-40 bg-white/10 rounded-full blur-3xl group-hover:scale-125 transition-transform" />
             <div className="relative z-10">
                <h3 className="text-white font-black text-lg leading-tight mb-1">Yeni Modeli Keşfet</h3>
                <p className="text-blue-100 text-[11px] font-medium italic">Otomatik içerik tarama ve sahte ilan tespiti aktif.</p>
             </div>
-            <Badge className="bg-white text-blue-600 rounded-xl px-5 py-2 font-black text-[10px] uppercase tracking-widest relative z-10">Güvenlik Aktif</Badge>
-         </div>
+            <Badge className="bg-white text-blue-600 rounded-xl px-5 py-2 font-black text-[10px] uppercase tracking-widest relative z-10 shrink-0">GÜVENLİK AKTİF</Badge>
+          </div>
       </div>
     </main>
   );
