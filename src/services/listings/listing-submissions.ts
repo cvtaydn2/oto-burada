@@ -597,7 +597,7 @@ export async function getFilteredDatabaseListings(
     try {
       const { setCachedData } = await import("@/lib/redis/client");
       setCachedData(cacheKey, result, 600).catch(console.error); // 10 min cache
-    } catch (e) {
+    } catch {
       // Ignored during build/edge
     }
   }

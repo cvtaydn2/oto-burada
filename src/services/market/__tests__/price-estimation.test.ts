@@ -98,7 +98,7 @@ describe("Price Estimation Logic", () => {
 
 // Helper for float precision
 expect.extend({
-  toBeRelativeCloseTo(received: number, expected: number, precision = 2) {
+  toBeRelativeCloseTo(received: number, expected: number) {
     const pass = Math.abs(received - expected) < 1; // within 1 TL
     if (pass) {
       return { message: () => `expected ${received} to be close to ${expected}`, pass: true };

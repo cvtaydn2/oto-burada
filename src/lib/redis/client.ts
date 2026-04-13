@@ -28,7 +28,7 @@ export const redis = redisUrl ? new Redis(redisUrl, {
 }) : null;
 
 if (redis) {
-  redis.on("error", (err) => {
+  redis.on("error", () => {
     // Only log once to avoid log spam, or use a logger
     console.error("Redis Connection Error");
   });
@@ -40,7 +40,7 @@ export async function getCachedData<T>(key: string): Promise<T | null> {
     const data = await redis.get(key);
     if (!data) return null;
     return JSON.parse(data) as T;
-  } catch (error) {
+  } catch {
     return null;
   }
 }
@@ -50,7 +50,7 @@ export async function setCachedData<T>(key: string, data: T, ttlSeconds: number 
   try {
     const stringified = JSON.stringify(data);
     await redis.set(key, stringified, "EX", ttlSeconds);
-  } catch (error) {
+  } catch {
     // Silent fail
   }
 }
@@ -59,7 +59,7 @@ export async function invalidateCache(key: string) {
   if (!redis) return;
   try {
     await redis.del(key);
-  } catch (error) {
+  } catch {
     // Silent fail
   }
 }

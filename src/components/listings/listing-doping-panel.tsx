@@ -82,7 +82,7 @@ export function ListingDopingPanel({ listingId, listingTitle }: ListingDopingPan
       } else {
         alert(result.message || "İşlem başarısız oldu.");
       }
-    } catch (error) {
+    } catch {
       alert("Bir hata oluştu.");
     } finally {
       setLoading(false);

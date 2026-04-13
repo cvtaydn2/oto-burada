@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 
 describe.skip("Listing Views Service", () => {
   it("should handle view recording gracefully", async () => {
-    const { recordListingView, getListingViewCount } = await import('../listing-views');
+    const { recordListingView } = await import('../listing-views');
     const result = await recordListingView("test-listing", { viewerId: "test-user" });
     expect(result).toBeDefined();
   });

@@ -1,8 +1,8 @@
 "use client"
 
-import { useState, useTransition, useEffect, useRef } from "react"
+import { useState, useTransition, useRef } from "react"
 import { useRouter } from "next/navigation"
-import { LayoutGrid, List, SlidersHorizontal, ArrowDownWideNarrow, ChevronDown } from "lucide-react"
+import { LayoutGrid, List, ArrowDownWideNarrow, ChevronDown } from "lucide-react"
 
 import { type Listing, type ListingFilters, type BrandCatalogItem, type CityOption } from "@/types"
 import { CarCard } from "@/components/modules/listings/car-card"
@@ -37,7 +37,6 @@ export function ListingsPageClient({
   brands,
   cities,
   initialFilters,
-  userId
 }: ListingsPageClientProps) {
   const router = useRouter()
   const [isPending, startTransition] = useTransition()
@@ -45,12 +44,7 @@ export function ListingsPageClient({
   const [filters, setFilters] = useState<ListingFilters>(initialFilters)
 
   // Sync internal state when props change (from URL navigation)
-  useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    setFilters(initialFilters)
-  }, [JSON.stringify(initialFilters)])
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid")
-  const [isFilterOpen, setIsFilterOpen] = useState(false)
   const [isSortOpen, setIsSortOpen] = useState(false)
 
   // Compute active filters count
@@ -208,25 +202,8 @@ export function ListingsPageClient({
         </aside>
 
         {/* Results Stream */}
-        <div className="flex-1 min-w-0 w-full">
-           
-           {/* Mobile Filter Trigger */}
-           <button
-             onClick={() => setIsFilterOpen(true)}
-             className="mb-5 flex h-12 w-full items-center justify-between rounded-lg border border-slate-200 bg-white px-4 text-xs font-semibold lg:hidden"
-           >
-              <div className="flex items-center gap-3">
-                 <SlidersHorizontal size={18} className="text-primary" />
-                 Filtreleri Göster
-              </div>
-              {activeFiltersCount > 0 && (
-                 <span className="flex h-6 items-center rounded-full bg-primary px-2.5 text-[10px] font-medium text-white">
-                    {activeFiltersCount} aktif
-                 </span>
-              )}
-           </button>
-
-           {isPending ? (
+          <div className="flex-1 min-w-0 w-full">
+            {isPending ? (
               <ListingsGridSkeleton />
            ) : initialResult.listings.length > 0 ? (
               <div className={cn(

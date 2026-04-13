@@ -47,7 +47,6 @@ export function MyListingsPanel({ activeEditId, listings, children }: MyListings
   const [archivingId, setArchivingId] = useState<string | null>(null);
   const [archiveError, setArchiveError] = useState<string | null>(null);
   const [bumpingId, setBumpingId] = useState<string | null>(null);
-  const [verifyingId, setVerifyingId] = useState<string | null>(null);
   const [bumpMessage, setBumpMessage] = useState<string | null>(null);
   const [currentTime, setCurrentTime] = useState(() => Date.now());
   
@@ -103,8 +102,8 @@ export function MyListingsPanel({ activeEditId, listings, children }: MyListings
       } else {
         setArchiveError(payload.message || "Toplu arÅŸivleme sÄ±rasÄ±nda hata oluÅŸtu.");
       }
-    } catch (error) {
-      setArchiveError("Bir hata oluÅŸtu.");
+    } catch {
+      setArchiveError("Bir hata oluştu.");
     } finally {
       setIsBulkArchiving(false);
     }
@@ -129,7 +128,7 @@ export function MyListingsPanel({ activeEditId, listings, children }: MyListings
       } else {
         setArchiveError(payload.message || "Toplu silme sırasında hata oluştu.");
       }
-    } catch (error) {
+    } catch {
       setArchiveError("Bir hata oluştu.");
     } finally {
       setIsBulkArchiving(false);
@@ -150,7 +149,7 @@ export function MyListingsPanel({ activeEditId, listings, children }: MyListings
         setSelectedIds([]);
         router.refresh();
       } else { setArchiveError(payload.message); }
-    } catch (e) { setArchiveError("Hata oluştu."); } finally { setIsBulkArchiving(false); }
+    } catch { setArchiveError("Hata oluştu."); } finally { setIsBulkArchiving(false); }
   };
 
   const toggleSelect = (id: string) => {
@@ -184,26 +183,6 @@ export function MyListingsPanel({ activeEditId, listings, children }: MyListings
       router.refresh();
     } finally {
       setBumpingId(null);
-    }
-  };
-  
-  const handleVerifyEIDS = async (id: string) => {
-    setVerifyingId(id);
-    try {
-      const response = await fetch(`/api/listings/${id}/verify-eids`, {
-        method: "POST",
-      });
-      const result = await response.json();
-      
-      if (result.success) {
-        router.refresh();
-      } else {
-        alert(result.message || "DoÄŸrulama baÅŸarÄ±sÄ±z oldu.");
-      }
-    } catch (error) {
-      alert("Bir hata oluÅŸtu.");
-    } finally {
-      setVerifyingId(null);
     }
   };
 
@@ -357,11 +336,9 @@ export function MyListingsPanel({ activeEditId, listings, children }: MyListings
                 onToggleSelect={() => toggleSelect(listing.id)}
                 isArchiving={archivingId === listing.id}
                 isBumping={bumpingId === listing.id}
-                isVerifying={verifyingId === listing.id}
                 currentTime={currentTime}
                 onArchive={handleArchive}
                 onBump={handleBump}
-                onVerifyEIDS={handleVerifyEIDS}
               />
             ))}
           </div>
@@ -380,8 +357,6 @@ function ListingCard({
   currentTime,
   onArchive,
   onBump,
-  onVerifyEIDS,
-  isVerifying,
 }: {
   listing: Listing;
   isSelected: boolean;
@@ -391,8 +366,6 @@ function ListingCard({
   currentTime: number;
   onArchive: (id: string) => void;
   onBump: (id: string) => void;
-  onVerifyEIDS: (id: string) => Promise<void>;
-  isVerifying: boolean;
 }) {
   const isArchived = listing.status === "archived";
   const isApproved = listing.status === "approved";

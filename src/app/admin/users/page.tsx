@@ -1,4 +1,4 @@
-import { Users, Search, Filter, ShieldCheck, Mail, Calendar, MoreVertical, UserX } from "lucide-react";
+import { Users, Search, Filter, ShieldCheck, MoreVertical, UserX } from "lucide-react";
 import { format } from "date-fns";
 import { tr } from "date-fns/locale";
 

@@ -1,5 +1,6 @@
 "use client"
 
+import Image from "next/image";
 import Link from "next/link"
 import { CheckCircle2, Lock } from "lucide-react"
 import { EIDSBadge } from "@/components/shared/eids-badge"
@@ -35,9 +36,9 @@ export function SellerCard({
       <div className="p-8">
         {/* Seller Header */}
         <div className="flex items-center gap-4 mb-6">
-          <div className="size-16 rounded-[20px] bg-slate-50 flex items-center justify-center font-black text-2xl text-slate-400 border border-slate-100 shrink-0 overflow-hidden">
+          <div className="size-16 rounded-[20px] bg-slate-50 flex items-center justify-center font-black text-2xl text-slate-400 border border-slate-100 shrink-0 overflow-hidden relative">
             {seller?.businessLogoUrl ? (
-              <img src={seller.businessLogoUrl} alt={seller.businessName || seller.fullName} className="size-full object-contain p-1" />
+              <Image src={seller.businessLogoUrl} alt={seller.businessName || seller.fullName || ""} fill className="object-contain p-1" />
             ) : (
               (seller?.businessName || seller?.fullName || "S").slice(0, 1)
             )}

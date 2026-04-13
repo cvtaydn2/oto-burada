@@ -32,7 +32,7 @@ async function resetAdminPassword() {
   }
   
   // 2. Update password
-  const { data, error } = await supabase.auth.admin.updateUserById(
+  const { error } = await supabase.auth.admin.updateUserById(
     targetUser.id,
     { password: "password123" }
   );

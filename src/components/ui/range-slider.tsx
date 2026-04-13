@@ -40,7 +40,6 @@ export function RangeSlider({
     if (!isDragging) {
       // eslint-disable-next-line react-hooks/set-state-in-effect
       setLocalMin(valueMin ?? min);
-      // eslint-disable-next-line react-hooks/set-state-in-effect
       setLocalMax(valueMax ?? max);
     }
   }, [valueMin, valueMax, min, max, isDragging]);

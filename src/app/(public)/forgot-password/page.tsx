@@ -1,4 +1,4 @@
-import { Fingerprint, Mail, KeyRound, ChevronLeft } from "lucide-react";
+import { Fingerprint, Mail, ChevronLeft } from "lucide-react";
 import Link from "next/link";
 
 export default function ForgotPasswordPage() {

@@ -60,6 +60,28 @@ Her yeni geliştirme başlamadan önce okunmalıdır.
 - **Status**: ✅ Codebase is production-hardened and build-ready.
 - **Next Step**: Phase 28: Concierge Listing Wizard - High-touch listing creation journey.
 
+### 2026-04-13 Bugfix Session 2: Lint Cleanup, Design Alignment & Ticket System (Completed)
+- **Lint Cleanup**: Resolved all 95 ESLint warnings across the codebase:
+  - Removed unused imports (`User`, `KeyRound`, `EyeOff`, `ChevronLeft`, `Link`, `HelpCircle`, `AlertTriangle`, `Mail`, `Calendar`, `Edit3`, `Circle`, `MapPin`, `Search`, `Badge`, `Grid3X3`, `Button`, `MapIcon`, `TrendingDown`, `cn`, `FileSpreadsheet`, `AlertCircle`, `X`, `ArrowRight`, `MessageCircle`, `Check`, `Trash2`, `setPlatform`, `Check`, `useEffect`, `useQueryClient`, `vi`, `createSearchParamsFromListingFilters`, `Profile`, `Listing`)
+  - Removed unused variables and functions (`trustSummary`, `priceHistory`, `ratingSummary`, `SpecDetailItem`, `getStatusColor`, `_brands`, `brands`, `references`, `initialFiltersKey`, `isFilterOpen`, `userId`, `initialFilters` effect, `maxTramer`, `err`, `error`, `e`, `_previousState`, `_imageUrl`, `precision`, `data`)
+  - Replaced bare `<img>` tags with `next/image` across 8 files for LCP optimization
+  - Removed unused eslint-disable comments in `range-slider.tsx`
+  - Removed orphaned `urlBase64ToUint8Array` function from `use-push-notifications.ts`
+- **UI_SYSTEM.md Update**: Aligned design document with `.design` Visily drafts — clarified white card aesthetic, removed glassmorphism references, added support/ticket system page guideline.
+- **Hardcoded Price Fix**: Replaced hardcoded offer prices (`₺3.400.000`, `₺3.425.000`) in listing detail page with dynamic calculations (`price * 0.97`, `price * 0.99`). Made featured/expert badges conditional on listing data.
+- **Unused Data Removed**: `trustSummary`, `priceHistory`, `ratingSummary` fetch calls removed from listing detail; `HomeHero` prop simplified.
+- **Ticket System**: Full support system implemented:
+  - `schema.sql`: Added `tickets` table with RLS, `ticket_status`/`ticket_priority`/`ticket_category` enums
+  - `src/services/support/ticket-service.ts`: CRUD operations for tickets
+  - `src/components/support/ticket-form.tsx` + `ticket-list.tsx`: User-facing form and ticket list
+  - `src/components/support/admin-ticket-list.tsx`: Admin ticket management with reply/status update
+  - `src/app/(public)/support/page.tsx`: Enhanced with FAQ accordion and ticket creation
+  - `src/app/admin/tickets/page.tsx`: Admin ticket management dashboard
+  - `src/app/api/support/tickets/route.ts` + `src/app/api/admin/tickets/[id]/route.ts`: REST API routes
+- **Validation**: `npm run lint` and `npm run typecheck` both pass with zero errors.
+- **Status**: ✅ All governance issues resolved. Lint clean. Ticket system aligned with `.design/visily-destek-&-ticket-sistemi.png`.
+- **Next Step**: UI refactoring to align public pages with updated UI_SYSTEM.md light card aesthetic.
+
 ### 2026-04-13 Phase 26: Showroom Elite UI Overhaul (Completed)
 - **Design System Evolution**: Migrated to an OKLCH-based ultra-premium color palette with tonal layering and advanced glassmorphism tokens.
 - **Showroom Navigation**: Overhauled `SiteHeader` into a floating glass island with refined brand identity and concierge-style menus.

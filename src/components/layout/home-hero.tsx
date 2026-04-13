@@ -1,15 +1,11 @@
 "use client"
 
+import Image from "next/image"
 import { useState } from "react"
 import { useRouter } from "next/navigation"
 import { Search } from "lucide-react"
-import { type BrandCatalogItem } from "@/types"
 
-interface HomeHeroProps {
-  brands: BrandCatalogItem[]
-}
-
-export function HomeHero({ brands: _brands }: HomeHeroProps) {
+export function HomeHero() {
   const router = useRouter()
   const [query, setQuery] = useState("")
   const [city, setCity] = useState("")
@@ -26,10 +22,12 @@ export function HomeHero({ brands: _brands }: HomeHeroProps) {
   return (
     <section className="relative mb-16 w-full overflow-visible">
       <div className="relative h-[420px] w-full overflow-hidden rounded-2xl border border-slate-200 bg-slate-900 lg:h-[470px]">
-        <img 
+        <Image 
           src="/hero_luxury_car_black_1776035280175.png" 
           alt="Luxury Car Showcase" 
-          className="h-full w-full object-cover opacity-65"
+          fill
+          className="object-cover opacity-65"
+          priority
         />
         <div className="absolute inset-0 bg-black/35" />
         

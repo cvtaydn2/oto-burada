@@ -27,7 +27,7 @@ export class IyzicoProvider implements PaymentProvider {
       // const result = await iyzico.payment.create({...});
       
       return { success: true, status: "success", transactionId: "real_tx_id" };
-    } catch (error) {
+    } catch {
       return { success: false, status: "failure", error: "Ödeme geçidi hatası." };
     }
   }

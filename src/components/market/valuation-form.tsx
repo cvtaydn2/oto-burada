@@ -4,7 +4,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm, useWatch } from "react-hook-form";
 import { z } from "zod";
 import { useState } from "react";
-import { Loader2, TrendingDown, Target, AlertCircle, Sparkles } from "lucide-react";
+import { Loader2, Target, AlertCircle, Sparkles } from "lucide-react";
 import { BrandCatalogItem, CityOption } from "@/types";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
@@ -43,7 +43,7 @@ export function ValuationForm({ brands }: ValuationFormProps) {
     handleSubmit,
     control,
     setValue,
-    formState: { errors, isValid },
+    formState: { errors },
   } = useForm<ValuationValues>({
     resolver: zodResolver(valuationSchema),
     defaultValues: {

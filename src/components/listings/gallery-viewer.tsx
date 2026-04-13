@@ -2,8 +2,7 @@
 
 import { useState, useCallback } from "react";
 import Image from "next/image";
-import { ChevronLeft, ChevronRight, Play, Maximize2, Grid3X3, X } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { ChevronLeft, ChevronRight, Play, Maximize2, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { ListingImage } from "@/types";
 

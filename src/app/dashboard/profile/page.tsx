@@ -4,7 +4,7 @@ import { updateProfileAction } from "@/lib/auth/profile-actions";
 import { requireUser } from "@/lib/auth/session";
 import { buildProfileFromAuthUser, getStoredProfileById } from "@/services/profile/profile-records";
 import { getLiveMarketplaceReferenceData, mergeCityOptions } from "@/services/reference/live-reference-data";
-import { CheckCircle2, Circle, User, Phone, MapPin, Mail, ShieldCheck, Building2 } from "lucide-react";
+import { CheckCircle2, User, Phone, Mail, ShieldCheck, Building2 } from "lucide-react";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 

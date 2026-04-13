@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { Info, TrendingUp, ShieldCheck } from "lucide-react";
 import {
   HoverCard,
@@ -47,12 +48,13 @@ export function MarketAnalysisInfo() {
       </div>
       
       {/* Visual Chart Placeholder/Image */}
-      <div className="relative h-32 px-2 overflow-hidden">
-         <img 
-           src="/market_analysis_mockup_v1_1776035350916.png" 
-           alt="Market Trend" 
-           className="w-full h-full object-cover opacity-60 contrast-125 saturate-50 group-hover:scale-105 transition-transform duration-1000"
-         />
+       <div className="relative h-32 px-2 overflow-hidden">
+          <Image 
+            src="/market_analysis_mockup_v1_1776035350916.png" 
+            alt="Market Trend" 
+            fill
+            className="object-cover opacity-60 contrast-125 saturate-50 group-hover:scale-105 transition-transform duration-1000"
+          />
          <div className="absolute inset-0 bg-gradient-to-t from-slate-900 via-transparent to-transparent" />
       </div>
     </div>

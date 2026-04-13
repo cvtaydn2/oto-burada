@@ -3,7 +3,7 @@ import { getListingById } from "@/services/listings/marketplace-listings";
 import { getLiveMarketplaceReferenceData } from "@/services/reference/live-reference-data";
 import { getStoredProfileById } from "@/services/profile/profile-records";
 import { ListingCreateForm } from "@/components/forms/listing-create-form";
-import { ChevronLeft, Edit3, ShieldAlert } from "lucide-react";
+import { ChevronLeft, ShieldAlert } from "lucide-react";
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 

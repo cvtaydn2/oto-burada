@@ -6,7 +6,7 @@ import { ArrowRight, Heart, LogIn, TrendingUp, Gauge, ShieldCheck } from "lucide
 import { ListingCard } from "@/components/listings/listing-card";
 import { ListingsGridSkeleton } from "@/components/listings/listings-grid-skeleton";
 import { useFavorites } from "@/hooks/use-favorites";
-import { formatCurrency, cn } from "@/lib/utils";
+import { formatCurrency } from "@/lib/utils";
 import type { Listing } from "@/types";
 
 interface FavoritesPageClientProps {

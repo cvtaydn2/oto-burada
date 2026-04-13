@@ -2,15 +2,14 @@
 
 ## Design Intent
 The product should feel:
-- clean
-- calm
-- trustworthy
-- modern
-- easy to scan
-- much simpler than generic classifieds websites
+- clean and calm (lightweight classified marketplace)
+- trustworthy and safe
+- modern yet approachable
+- fast to scan on mobile
+- simpler than generic classifieds websites (Sahibinden, Arabam.com)
 
-This is not a flashy marketplace.
-It is a practical, premium-feeling, conversion-oriented product.
+This is NOT a flashy showroom or dealership site.
+It is a practical, premium-feeling, conversion-oriented car marketplace.
 
 ---
 
@@ -19,207 +18,198 @@ It is a practical, premium-feeling, conversion-oriented product.
 2. Speed first
 3. Mobile first
 4. Consistency
-5. Restraint
+5. Restraint — avoid visual noise
 
 ---
 
 ## Visual Direction
-- Background: white or very light neutral
-- Text: dark neutral
-- Accent: single confident brand color
-- Surfaces: white cards on soft neutral background
-- Borders: subtle
-- Shadows: soft
-- Radius: medium to large rounded corners
+
+### Color Palette
+- Background: white or very light neutral (`#F8FAFC`)
+- Surface: white cards (`#FFFFFF`)
+- Border: subtle slate (`#E2E8F0`)
+- Text primary: dark slate (`#0F172A`)
+- Text secondary: medium slate (`#64748B`)
+- Accent/Primary: confident brand color (use CSS variable `--primary`)
+- Success: emerald (`#10B981`)
+- Warning: amber (`#F59E0B`)
+- Danger: red (`#EF4444`)
+- WhatsApp: `#25D366`
 
 Avoid:
-- heavy gradients
-- excessive color usage
-- crowded layouts
-- tiny text
+- heavy gradients on backgrounds
+- glassmorphism effects in non-hero areas
+- dark slate hero backgrounds (trust signals should use white/light)
+- excessive color usage beyond primary + status colors
 
----
+### Typography
+- Heading font: bold, dark neutral, uppercase for labels
+- Body: readable, comfortable line height
+- Price: visually dominant, bold, primary color
+- Metadata: compact but legible (small text, muted color)
+- Turkish content with proper locale formatting (Intl.NumberFormat)
 
-## Typography
-Hierarchy:
-- H1: hero title
-- H2: section titles
-- H3: card titles / subsection headers
-- Body: default text
-- Small: metadata / helper text
+### Spacing
+- Card padding: comfortable (p-6 to p-8)
+- Section gaps: generous (gap-6 to gap-8)
+- Mobile: no cramped layouts
+- Border radius: rounded-xl to rounded-2xl
 
-Rules:
-- readability over density
-- price should be visually dominant
-- metadata should be compact but legible
-
----
-
-## Spacing
-- generous outer spacing
-- comfortable card padding
-- 4/8 spacing rhythm
-- mobile layout must not feel cramped
-
----
-
-## Components
-
-### Buttons
-Variants:
-- primary
-- secondary
-- ghost
-- destructive
-
-Rules:
-- primary CTA must stand out
-- WhatsApp CTA must be visually distinct
-- buttons need hover/focus/disabled states
-
-### Inputs
-- large enough for touch
-- labels always visible
-- helper/error text directly below field
-- filter inputs must be easy to scan
-
-### Cards
-Use cards for:
-- listing previews
-- seller info
-- trust blocks
-- dashboard modules
-
-Listing card priority:
-1. image
-2. price
-3. title
-4. year / mileage / fuel / transmission
-5. city
-6. favorite action
-
-### Badges
-Use badges for:
-- listing status
-- verified seller
-- moderation state
+### Component Style
+- White cards on soft neutral background
+- Subtle borders (1px slate-200)
+- Soft shadows (shadow-sm to shadow-xl)
+- No heavy gradients outside hero
 
 ---
 
 ## Page Guidelines
 
-### Homepage
-Sections:
-1. Header
-2. Hero search block
-3. Featured listings
-4. Latest listings
-5. Trust section
-6. Footer
+### Homepage (`/`)
+Hero block:
+- Headline: "Hayalindeki Aracı Bugün Bul" (or dynamic SEO H1)
+- Subtext: concise, trust-oriented
+- Search form: brand/model input, city select, price range, search button
+- Post listing CTA: prominent
+- Popular brand chips below search
+Trust section:
+- Use white cards on light background
+- NOT dark slate with glassmorphism
 
-Hero block should include:
-- headline
-- concise subtext
-- brand/model/price/city quick filters
-- post listing CTA
+### Listings Page (`/listings`)
+- Results count visible
+- Sort controls (dropdown)
+- Filter sidebar on desktop
+- Filter drawer on mobile (bottom sheet)
+- Grid/list view toggle
+- Clean listing cards
 
-### Listings Page
-Must support:
-- visible results count
-- sorting controls
-- filter sidebar on desktop
-- filter drawer on mobile
-- clean listing cards
+### Listing Detail Page (`/listing/[slug]`)
+Priority order:
+1. Image gallery with badges
+2. Price + title + key facts
+3. Seller card + WhatsApp CTA + Message Seller button
+4. Key specs grid (year/km/fuel/transmission)
+5. Expert inspection section (if available)
+6. Market analysis section (market price comparison)
+7. Description
+8. Similar listings
 
-### Listing Detail Page
-Priority:
-1. gallery
-2. price/title/key facts
-3. seller card + WhatsApp CTA
-4. description
-5. extended specs
-6. similar listings
+Sidebar (right column, sticky on desktop):
+- Seller information card
+- Contact actions (WhatsApp, Message, Phone reveal)
+- Quick offer card (optional, non-intrusive)
+- Security tips card
+- Report listing button
 
-### Create Listing Page
-Must feel:
-- guided
-- simple
-- structured
-- not overwhelming
+### Create Listing Page (`/dashboard/listings/new`)
+3-step wizard:
+1. Araç Bilgileri (brand/model/trim/year)
+2. Detaylar (mileage/fuel/transmission/price/city/district/description)
+3. Fotoğraflar (minimum 3, drag to reorder)
 
-Use:
-- grouped fields
-- clear required/optional labels
-- image upload preview
-- progress indication if multi-step
+Rules:
+- Progress indicator
+- Clear required/optional labels
+- Image upload preview with compression feedback
+- Mobile-friendly form
+
+### Favorites Page (`/favorites`)
+- Clean listing grid
+- Empty state: "Henüz favori ilan eklemedin"
+- Remove from favorites action
 
 ### Dashboard
 Sections:
-- my listings
-- favorites
-- profile
-- status overview
+- İlanlarım (my listings with status badges)
+- Favoriler (favorites)
+- Profil (profile form)
+- Mesajlar (chat)
+- Fiyatlandırma (optional: paid bumps)
 
-### Admin
-Prioritize utility and speed.
-Use:
-- readable tables/cards
-- clear status badges
-- obvious moderation actions
+### Admin Panel
+- Overview dashboard with metrics
+- Pending listings moderation
+- Reports review
+- User management
+- Role/permission management
+- Audit logs
+- Analytics
 
----
-
-## States
-Every major UI should support:
-- default
-- loading
-- empty
-- error
-- disabled where needed
-
-Examples:
-- listing skeletons
-- no result state
-- image upload error
-- no favorites state
+### Support / Ticket System (`/support`)
+- FAQ categories
+- Ticket submission form
+- Ticket list view (for user)
+- Admin ticket management
 
 ---
 
-## Responsive Rules
-Mobile first.
+## Component Standards
 
-Mobile:
-- sticky CTA where useful
-- filter drawer instead of fixed sidebar
-- large tap targets
-- avoid dense multi-column forms
+### Buttons
+Variants: primary, secondary, ghost, destructive, WhatsApp
+Rules:
+- WhatsApp CTA: green (#25D366) background, white text
+- Primary CTA: primary color, prominent
+- Hover/focus/disabled states required
 
-Desktop:
-- use width for better scanning
-- avoid overly stretched content
-- keep form readability high
+### Inputs
+- Large touch targets (min 44px)
+- Always-visible labels
+- Error messages below field
+- Helper text where needed
+
+### Cards
+- White background, subtle border
+- Rounded corners (rounded-xl)
+- Comfortable padding (p-6)
+- Shadow on hover (optional)
+
+### Listing Card Priority
+1. Image (primary photo)
+2. Price (bold, primary)
+3. Title (brand + model + trim)
+4. Specs: year • km • fuel • transmission
+5. City
+6. Favorite action (heart icon)
+
+### Badges
+- Status badges (approved/pending/rejected/archived)
+- Verified badge
+- Expert inspection badge
+- Fuel type / transmission badges
+
+### States
+Every UI must handle:
+- loading (skeleton)
+- empty (friendly message)
+- error (error message)
+- disabled (muted appearance)
 
 ---
 
 ## Trust Signals
-The UI should support:
-- verified seller badge
-- report listing action
-- moderation-related cues
-- listing completeness hints
+- Verified seller badge
+- Expert inspection badge
+- Report listing action
+- Security tips section
+- View counter
+- Moderation status indicators
 
 ---
 
 ## Accessibility
 - semantic HTML
 - visible focus states
-- sufficient contrast
+- sufficient contrast ratios
 - correctly bound labels
-- keyboard accessibility
+- keyboard navigation
+- touch targets min 44px
+- aria labels on icon buttons
 
 ---
 
 ## AI UI Prompt
 Use this with design AI tools:
 
-Design a startup-grade, mobile-first web UI for a free car classifieds marketplace focused only on automobiles. The product should feel cleaner, safer, more modern, and easier to use than generic classifieds websites. Use a calm, trustworthy, premium-but-approachable aesthetic. Prioritize fast scanning, strong search/filter UX, excellent listing cards, high-quality listing detail pages, and simple listing creation flows. Include homepage, listings search page, listing detail page, create listing page, favorites page, user dashboard, and admin moderation page. Use reusable components, strong typography hierarchy, spacious layouts, large car imagery, clear CTA buttons, rounded cards, subtle shadows, and one confident accent color. Show both desktop and mobile versions with a coherent design system.
+Design a startup-grade, mobile-first web UI for a free car classifieds marketplace focused only on automobiles. The product should feel cleaner, safer, more modern, and easier to use than generic classifieds websites (Sahibinden, Arabam.com). Use a calm, trustworthy, premium-but-approachable aesthetic. Light color palette with white cards on soft neutral background. Prioritize fast scanning, strong search/filter UX, excellent listing cards, high-quality listing detail pages, and simple listing creation flows. Include homepage, listings search page, listing detail page, create listing page, favorites page, user dashboard, and admin moderation page. Use reusable components, strong typography hierarchy, spacious layouts, large car imagery, clear CTA buttons, rounded cards, subtle shadows, and one confident accent color. Show both desktop and mobile versions with a coherent design system. Include support/ticket system pages.

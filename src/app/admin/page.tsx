@@ -25,7 +25,7 @@ import { getStoredReports } from "@/services/reports/report-submissions";
 export const dynamic = "force-dynamic";
 
 export default async function AdminOverviewPage() {
-  const user = await requireAdminUser();
+  await requireAdminUser();
   const analyticsData = await getAdminAnalytics();
   const storedReports = await getStoredReports();
   const actionableReports = storedReports.filter(

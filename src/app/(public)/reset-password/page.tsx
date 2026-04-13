@@ -1,5 +1,4 @@
-import { ShieldCheck, Lock, EyeOff, ChevronLeft } from "lucide-react";
-import Link from "next/link";
+import { ShieldCheck, Lock } from "lucide-react";
 
 export default function ResetPasswordPage() {
   return (

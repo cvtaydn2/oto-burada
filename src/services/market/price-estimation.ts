@@ -34,7 +34,7 @@ export async function estimateVehiclePrice(params: {
     query = query.eq("car_trim", params.carTrim);
   }
 
-  const { data: stats, error } = await query.maybeSingle();
+  const { data: stats } = await query.maybeSingle();
 
   let baseAvg = stats ? Number(stats.avg_price) : 0;
   let count = stats ? Number(stats.listing_count) : 0;

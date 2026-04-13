@@ -1,4 +1,4 @@
-import { Calendar, Clock, User, ChevronLeft, Share2, Globe, Link as LinkIcon } from "lucide-react";
+import { Calendar, Clock, ChevronLeft, Share2, Globe, Link as LinkIcon } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
 

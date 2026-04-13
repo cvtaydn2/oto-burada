@@ -3,7 +3,6 @@
 import { useEffect, useState } from "react";
 import { Eye, TrendingUp } from "lucide-react";
 import { createSupabaseBrowserClient } from "@/lib/supabase/browser";
-import { useQueryClient } from "@tanstack/react-query";
 
 interface ViewCounterProps {
   listingId: string;
@@ -13,7 +12,6 @@ interface ViewCounterProps {
 export function ViewCounter({ listingId, initialCount }: ViewCounterProps) {
   const [count, setCount] = useState(initialCount);
   const supabase = createSupabaseBrowserClient();
-  const queryClient = useQueryClient();
 
   useEffect(() => {
     let channel: ReturnType<typeof supabase.channel> | undefined;

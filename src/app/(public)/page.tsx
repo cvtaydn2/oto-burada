@@ -6,7 +6,6 @@ import { HomeHero } from "@/components/layout/home-hero";
 import { CarCard } from "@/components/modules/listings/car-card";
 import { buildListingsMetadata, getAppUrl } from "@/lib/seo";
 import { getPublicMarketplaceListings } from "@/services/listings/marketplace-listings";
-import { getLiveMarketplaceReferenceData } from "@/services/reference/live-reference-data";
 import { WebSiteStructuredData, OrganizationStructuredData } from "@/components/seo/structured-data";
 
 export const dynamic = "force-dynamic";
@@ -17,10 +16,7 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default async function HomePage() {
-  const [listingsResult, references] = await Promise.all([
-    getPublicMarketplaceListings({ limit: 12, sort: "newest" }),
-    getLiveMarketplaceReferenceData(),
-  ]);
+  const listingsResult = await getPublicMarketplaceListings({ limit: 12, sort: "newest" });
 
   const appUrl = getAppUrl();
   const featuredListings = listingsResult.listings.filter(l => l.featured).slice(0, 4);
@@ -37,7 +33,7 @@ export default async function HomePage() {
 
       <main className="flex-1 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
         {/* Modern Hero */}
-        <HomeHero brands={references.brands} />
+        <HomeHero />
 
         {/* Popular Categories (Visily Design) */}
         <section className="mb-20 mt-24">

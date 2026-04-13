@@ -4,7 +4,6 @@ import Link from "next/link";
 import { logoutAction } from "@/lib/auth/actions";
 import { DashboardNavigation } from "@/components/layout/dashboard-navigation";
 import { ArrowLeft, ShieldCheck } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 
 interface DashboardShellProps extends PropsWithChildren {

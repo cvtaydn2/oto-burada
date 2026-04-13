@@ -3,12 +3,8 @@
 import { useState, useRef } from "react";
 import { 
   Upload, 
-  FileSpreadsheet, 
-  AlertCircle, 
   CheckCircle2, 
-  X, 
-  Loader2, 
-  ArrowRight,
+  Loader2,
   Trash2
 } from "lucide-react";
 import { toast } from "sonner";
@@ -169,7 +165,7 @@ export function BulkImportWizard({ sellerId }: { sellerId: string }) {
       } else {
         toast.error(result.error || "Yükleme sırasında bir hata oluştu.");
       }
-    } catch (err) {
+    } catch {
       toast.error("Bağlantı hatası oluştu.");
     } finally {
       setIsUploading(false);

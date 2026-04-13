@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
-import { X, SlidersHorizontal, ChevronDown, Check } from "lucide-react";
+import { X, SlidersHorizontal, ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import type { ListingFilters, BrandCatalogItem, CityOption } from "@/types";

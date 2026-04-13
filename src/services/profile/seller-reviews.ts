@@ -1,5 +1,4 @@
 import { createSupabaseServerClient } from "@/lib/supabase/server";
-import { Listing } from "@/types";
 
 export interface SellerReview {
   id: string;

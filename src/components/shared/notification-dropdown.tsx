@@ -1,7 +1,7 @@
 "use client";
 
 import { useQueryClient, useMutation } from "@tanstack/react-query";
-import { Bell, Check, LoaderCircle, Trash2 } from "lucide-react";
+import { Bell, LoaderCircle } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
 import * as DropdownMenu from "@radix-ui/react-dropdown-menu";
@@ -14,7 +14,7 @@ export function NotificationDropdown({ userId }: { userId?: string }) {
   const queryClient = useQueryClient();
   const [isOpen, setIsOpen] = useState(false);
   const { notifications, unreadCount, isLoading } = useNotifications(userId);
-  const supabase = createSupabaseBrowserClient();
+  createSupabaseBrowserClient();
 
   // Mark as read mutation
   const markReadMutation = useMutation({

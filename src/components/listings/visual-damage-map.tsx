@@ -1,6 +1,6 @@
 "use client";
 
-import { carParts, carPartLabels, carPartDamageStatusLabels } from "@/lib/constants/domain";
+import { carPartDamageStatusLabels } from "@/lib/constants/domain";
 import { cn } from "@/lib/utils";
 
 interface VisualDamageMapProps {

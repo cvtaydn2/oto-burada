@@ -1,4 +1,4 @@
-import { Zap, Clock, MessageCircle } from "lucide-react";
+import { Zap, Clock } from "lucide-react";
 
 interface ResponseTimeBadgeProps {
   sellerId: string;

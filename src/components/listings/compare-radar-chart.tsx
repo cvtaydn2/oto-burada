@@ -32,7 +32,7 @@ export function CompareRadarChart({ cars }: CompareRadarChartProps) {
   const minYear = Math.min(...cars.map(c => c.year));
   const maxYear = Math.max(...cars.map(c => c.year));
   const maxMileage = Math.max(...cars.map(c => c.mileage));
-  const maxTramer = Math.max(...cars.map(c => c.tramerAmount || 0), 10000);
+  Math.max(...cars.map(c => c.tramerAmount || 0), 10000);
 
   const data = categories.map(cat => {
     const row: Record<string, number | string> = { subject: cat.label };

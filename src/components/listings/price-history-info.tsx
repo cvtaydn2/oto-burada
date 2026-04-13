@@ -13,7 +13,7 @@ interface PriceHistoryInfoProps {
   currentPrice: number;
 }
 
-export function PriceHistoryInfo({ history, currentPrice }: PriceHistoryInfoProps) {
+export function PriceHistoryInfo({ history }: PriceHistoryInfoProps) {
   if (!history || history.length < 2) {
     return (
       <div className="p-6 rounded-3xl bg-slate-50 border border-slate-100 italic text-slate-500 text-xs font-medium">
@@ -42,7 +42,6 @@ export function PriceHistoryInfo({ history, currentPrice }: PriceHistoryInfoProp
           const nextEntry = sortedHistory[idx + 1];
           const diff = nextEntry ? entry.price - nextEntry.price : 0;
           const isDecrease = diff < 0;
-          const isIncrease = diff > 0;
 
           return (
             <div key={entry.date + entry.price} className="relative pl-8 flex items-center justify-between group">

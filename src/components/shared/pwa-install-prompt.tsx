@@ -5,7 +5,7 @@ import { Download, X, Share } from "lucide-react";
 
 export function PWAInstallPrompt() {
   const [isVisible, setIsVisible] = useState(false);
-  const [platform, setPlatform] = useState<"ios" | "android" | "other">(() => {
+  const [platform] = useState<"ios" | "android" | "other">(() => {
     if (typeof window === "undefined") return "other";
     const userAgent = window.navigator.userAgent.toLowerCase();
     if (/iphone|ipad|ipod/.test(userAgent)) return "ios";

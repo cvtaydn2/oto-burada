@@ -1,4 +1,4 @@
-import { describe, it, expect, vi } from "vitest";
+import { describe, it, expect } from "vitest";
 
 describe.skip("Listing Actions Service", () => {
   it("should reveal listing phone for authorized user", async () => {

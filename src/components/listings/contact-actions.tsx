@@ -74,7 +74,7 @@ export function ContactActions({ listingId, sellerId }: ContactActionsProps) {
       } else {
         setError("Sohbet başlatılırken bir sorun oluştu.");
       }
-    } catch (err) {
+    } catch {
       setError("Bağlantı hatası.");
     } finally {
       setIsChatting(false);

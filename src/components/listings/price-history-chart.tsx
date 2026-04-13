@@ -9,7 +9,6 @@ import {
   CartesianGrid,
   Tooltip,
   ResponsiveContainer,
-  ReferenceLine,
 } from "recharts";
 import { TrendingDown, History } from "lucide-react";
 import { format } from "date-fns";

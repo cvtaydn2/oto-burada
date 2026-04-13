@@ -635,3 +635,63 @@ CREATE INDEX IF NOT EXISTS idx_districts_city_id ON public.districts (city_id);
 CREATE INDEX IF NOT EXISTS idx_admin_actions_admin_user_id ON public.admin_actions (admin_user_id);
 CREATE INDEX IF NOT EXISTS idx_profiles_role ON public.profiles (role);
 CREATE INDEX IF NOT EXISTS idx_notifications_unread_user ON public.notifications (user_id) WHERE read = false;
+
+-- Ticket / Support System
+
+do $$
+begin
+  if not exists (select 1 from pg_type where typname = 'ticket_status') then
+    create type public.ticket_status as enum ('open', 'in_progress', 'resolved', 'closed');
+  end if;
+
+  if not exists (select 1 from pg_type where typname = 'ticket_priority') then
+    create type public.ticket_priority as enum ('low', 'medium', 'high', 'urgent');
+  end if;
+
+  if not exists (select 1 from pg_type where typname = 'ticket_category') then
+    create type public.ticket_category as enum ('listing', 'account', 'payment', 'technical', 'feedback', 'other');
+  end if;
+end
+$$;
+
+CREATE TABLE IF NOT EXISTS public.tickets (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id uuid REFERENCES public.profiles(id) ON DELETE SET NULL,
+  subject text NOT NULL,
+  description text NOT NULL,
+  category public.ticket_category NOT NULL DEFAULT 'other',
+  priority public.ticket_priority NOT NULL DEFAULT 'medium',
+  status public.ticket_status NOT NULL DEFAULT 'open',
+  listing_id uuid REFERENCES public.listings(id) ON DELETE SET NULL,
+  admin_response text,
+  resolved_at timestamptz,
+  created_at timestamptz NOT NULL DEFAULT timezone('utc', now()),
+  updated_at timestamptz NOT NULL DEFAULT timezone('utc', now())
+);
+
+ALTER TABLE public.tickets ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Users can view their own tickets"
+  ON public.tickets FOR SELECT
+  USING (auth.uid() = user_id OR public.is_admin());
+
+CREATE POLICY "Authenticated users can create tickets"
+  ON public.tickets FOR INSERT
+  WITH CHECK (auth.uid() IS NOT NULL);
+
+CREATE POLICY "Users can update their own open tickets"
+  ON public.tickets FOR UPDATE
+  USING (auth.uid() = user_id AND status = 'open');
+
+CREATE POLICY "Admins can update any ticket"
+  ON public.tickets FOR UPDATE
+  USING (public.is_admin());
+
+CREATE TRIGGER set_tickets_updated_at
+  BEFORE UPDATE ON public.tickets
+  FOR EACH ROW EXECUTE FUNCTION public.set_updated_at();
+
+CREATE INDEX IF NOT EXISTS idx_tickets_user_id ON public.tickets (user_id);
+CREATE INDEX IF NOT EXISTS idx_tickets_status ON public.tickets (status);
+CREATE INDEX IF NOT EXISTS idx_tickets_priority ON public.tickets (priority);
+

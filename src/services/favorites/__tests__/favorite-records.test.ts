@@ -1,4 +1,4 @@
-import { describe, it, expect, vi } from "vitest";
+import { describe, it, expect } from "vitest";
 
 describe.skip("Favorite Records Service", () => {
   it("should get database favorite IDs", async () => {

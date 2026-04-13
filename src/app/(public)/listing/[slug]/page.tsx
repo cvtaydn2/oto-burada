@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import {
@@ -26,17 +27,13 @@ import { MarketValueCard } from "@/components/listings/market-value-card";
 import { MobileStickyActions } from "@/components/listings/mobile-sticky-actions";
 import { getCurrentUser } from "@/lib/auth/session";
 import { buildListingDetailMetadata, buildAbsoluteUrl } from "@/lib/seo";
-import { cn, formatNumber } from "@/lib/utils";
+import { formatNumber } from "@/lib/utils";
 import {
   getMarketplaceListingBySlug,
   getMarketplaceSeller,
   getSimilarMarketplaceListings,
-  getPublicMarketplaceListings,
 } from "@/services/listings/marketplace-listings";
 import { getListingCardInsights } from "@/services/listings/listing-card-insights";
-import { getSellerTrustSummary } from "@/services/profile/profile-trust";
-import { getListingPriceHistory } from "@/services/listings/listing-price-history";
-import { getSellerRatingSummary } from "@/services/profile/seller-reviews";
 
 interface ListingDetailPageProps {
   params: Promise<{
@@ -63,11 +60,8 @@ export default async function ListingDetailPage({ params }: ListingDetailPagePro
   if (!listing) notFound();
 
   const seller = await getMarketplaceSeller(listing.sellerId);
-  const [similarListings, trustSummary, priceHistory, ratingSummary] = await Promise.all([
+  const [similarListings] = await Promise.all([
     getSimilarMarketplaceListings(listing.slug, listing.brand, listing.city),
-    getSellerTrustSummary(seller, (await getPublicMarketplaceListings()).listings.filter(l => l.sellerId === listing.sellerId).length),
-    getListingPriceHistory(listing.id),
-    getSellerRatingSummary(listing.sellerId),
   ]);
   const insight = getListingCardInsights(listing);
   const currentUser = await getCurrentUser();
@@ -124,14 +118,18 @@ export default async function ListingDetailPage({ params }: ListingDetailPagePro
                 <div className="relative aspect-[16/10] overflow-hidden rounded-xl border border-slate-200 bg-slate-100 lg:aspect-[16/9]">
                    <ListingGallery images={listing.images} title={listing.title} />
                    
-                   {/* Badges Overlay */}
-                   <div className="absolute left-4 top-4 z-10 flex flex-col gap-2">
-                      <div className="rounded-md bg-emerald-500 px-3 py-1 text-[10px] font-medium text-white">Öne çıkan ilan</div>
-                      <div className="flex items-center gap-2 rounded-md bg-white/95 px-3 py-1 text-[10px] font-medium text-slate-900 shadow">
-                        <ShieldCheck size={12} className="text-primary" />
-                        Ekspertiz Onaylı
-                      </div>
-                   </div>
+                    {/* Badges Overlay */}
+                    <div className="absolute left-4 top-4 z-10 flex flex-col gap-2">
+                       {listing.featured && (
+                         <div className="rounded-md bg-emerald-500 px-3 py-1 text-[10px] font-medium text-white">Öne çıkan ilan</div>
+                       )}
+                       {listing.expertInspection && (
+                         <div className="flex items-center gap-2 rounded-md bg-white/95 px-3 py-1 text-[10px] font-medium text-slate-900 shadow">
+                           <ShieldCheck size={12} className="text-primary" />
+                           Ekspertiz Onaylı
+                         </div>
+                       )}
+                    </div>
 
                    {/* 360 View Placeholder */}
                    <button className="absolute bottom-6 left-1/2 z-10 flex -translate-x-1/2 items-center gap-2 rounded-md bg-primary px-5 py-2.5 text-xs font-medium text-white shadow-lg transition-all hover:bg-primary/90">
@@ -272,8 +270,8 @@ export default async function ListingDetailPage({ params }: ListingDetailPagePro
                  <div className="flex items-center gap-5 pb-6 border-b border-slate-50">
                     <div className="size-16 rounded-2xl bg-slate-50 flex items-center justify-center font-black text-2xl text-slate-300 border border-slate-100 overflow-hidden">
                        {seller?.businessLogoUrl ? (
-                          <img src={seller.businessLogoUrl} alt={seller.fullName} className="size-full object-cover" />
-                       ) : (
+                           <Image src={seller.businessLogoUrl} alt={seller.fullName || ""} fill className="object-cover" />
+                        ) : (
                           seller?.fullName?.[0] || 'S'
                        )}
                     </div>
@@ -312,14 +310,14 @@ export default async function ListingDetailPage({ params }: ListingDetailPagePro
                     </p>
                  </div>
                  
-                 <div className="flex gap-2">
-                    <div className="flex-1 h-14 bg-white rounded-xl border border-sky-200 px-4 flex items-center justify-center font-black text-sky-900">
-                       ₺3.400.000
-                    </div>
-                    <div className="flex-1 h-14 bg-white rounded-xl border border-sky-200 px-4 flex items-center justify-center font-black text-sky-900">
-                       ₺3.425.000
-                    </div>
-                 </div>
+                  <div className="flex gap-2">
+                     <div className="flex-1 h-14 bg-white rounded-xl border border-sky-200 px-4 flex items-center justify-center font-black text-sky-900">
+                        ₺{new Intl.NumberFormat("tr-TR").format(Math.round(listing.price * 0.97))}
+                     </div>
+                     <div className="flex-1 h-14 bg-white rounded-xl border border-sky-200 px-4 flex items-center justify-center font-black text-sky-900">
+                        ₺{new Intl.NumberFormat("tr-TR").format(Math.round(listing.price * 0.99))}
+                     </div>
+                  </div>
 
                  <button className="w-full h-14 rounded-2xl bg-sky-500 hover:bg-sky-600 text-white font-black text-sm uppercase tracking-widest shadow-lg shadow-sky-500/20 transition-all active:scale-95">
                     Kendi Teklifini Yap
@@ -356,16 +354,4 @@ export default async function ListingDetailPage({ params }: ListingDetailPagePro
   );
 }
 
-function SpecDetailItem({ icon, label, value, className }: { icon: React.ReactNode, label: string, value: string | number, className?: string }) {
-  return (
-    <div className="p-8 rounded-[32px] bg-card border border-border/40 flex flex-col gap-4 group hover:border-primary/40 transition-all duration-500 hover:shadow-2xl hover:shadow-primary/5">
-       <div className="size-12 rounded-2xl bg-secondary text-muted-foreground flex items-center justify-center group-hover:bg-primary group-hover:text-white transition-all duration-500 shadow-inner">
-          {icon}
-       </div>
-       <div className="flex flex-col">
-          <span className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/60 italic leading-none mb-1">{label}</span>
-          <span className={cn("text-lg font-black font-heading text-foreground uppercase tracking-tight", className)}>{value}</span>
-       </div>
-    </div>
-  )
-}
+

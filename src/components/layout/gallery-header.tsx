@@ -1,3 +1,4 @@
+import Image from "next/image";
 import { type Profile } from "@/types"
 import { MapPin, Globe, Phone, ShieldCheck, Calendar } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
@@ -15,10 +16,11 @@ export function GalleryHeader({ profile }: GalleryHeaderProps) {
           {/* Logo / Avatar */}
           <div className="size-32 sm:size-40 rounded-3xl bg-slate-50 border border-slate-100 p-4 shrink-0 flex items-center justify-center relative shadow-sm">
             {profile.businessLogoUrl ? (
-              <img 
+              <Image 
                 src={profile.businessLogoUrl} 
-                alt={profile.businessName || profile.fullName} 
-                className="max-h-full max-w-full object-contain"
+                alt={profile.businessName || profile.fullName || ""} 
+                fill
+                className="object-contain"
               />
             ) : (
               <div className="text-4xl font-black text-primary italic uppercase">

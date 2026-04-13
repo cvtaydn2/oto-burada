@@ -16,7 +16,6 @@ export function MobileStickyActions({
     listingId, 
     sellerId,
     price, 
-    title, 
     isLoggedIn, 
     loginUrl,
 }: MobileStickyActionsProps) {

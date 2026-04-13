@@ -15,7 +15,6 @@ import {
 } from "lucide-react"
 import { formatNumber } from "@/lib/utils"
 import { type Listing } from "@/types"
-import { Badge } from "@/components/ui/badge"
 
 interface ListingCardProps {
   listing: Listing

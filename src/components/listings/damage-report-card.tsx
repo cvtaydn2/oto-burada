@@ -2,7 +2,7 @@
 
 import { carPartDamageStatusLabels, carPartLabels, carParts } from "@/lib/constants/domain";
 import { cn } from "@/lib/utils";
-import { AlertCircle, CheckCircle2, ChevronDown, ChevronUp, Info, Map as MapIcon } from "lucide-react";
+import { AlertCircle, CheckCircle2, ChevronDown, ChevronUp, Info } from "lucide-react";
 import { useState } from "react";
 import { VisualDamageMap } from "./visual-damage-map";
 
@@ -48,16 +48,6 @@ export function DamageReportCard({ damageStatus, tramerAmount }: DamageReportCar
     const status = (damageStatus[part] as keyof typeof statusCounts) || "orjinal";
     statusCounts[status]++;
   });
-
-  const getStatusColor = (status?: string) => {
-    switch (status) {
-      case "orjinal": return "text-emerald-600 bg-emerald-50";
-      case "boyali": return "text-amber-600 bg-amber-50";
-      case "lokal_boyali": return "text-orange-600 bg-orange-50";
-      case "degisen": return "text-red-600 bg-red-50";
-      default: return "text-slate-500 bg-slate-50";
-    }
-  };
 
   const hasIssues = statusCounts.boyali > 0 || statusCounts.degisen > 0 || statusCounts.lokal_boyali > 0;
 

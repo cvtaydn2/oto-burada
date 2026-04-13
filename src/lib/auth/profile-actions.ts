@@ -106,6 +106,7 @@ export async function updateProfileAction(
 }
 
 export async function updateCorporateProfileAction(
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   previousState: ProfileActionState = initialState,
   formData: FormData,
 ): Promise<ProfileActionState> {

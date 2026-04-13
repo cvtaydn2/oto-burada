@@ -28,7 +28,6 @@ export async function generateMetadata({
 export default async function ListingsPage({ searchParams }: ListingsPageProps) {
   const resolvedSearchParams = searchParams ? await searchParams : undefined;
   const initialFilters = parseListingFiltersFromSearchParams(resolvedSearchParams);
-  const initialFiltersKey = JSON.stringify(initialFilters);
   const [currentUser, result, references] = await Promise.all([
     getCurrentUser(),
     getFilteredMarketplaceListings(initialFilters),

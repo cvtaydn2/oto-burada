@@ -30,7 +30,6 @@ import type {
   ListingCreateInput,
   ListingFilters,
   ListingImage,
-  Profile,
   Report,
   ReportCreateInput,
   Notification,

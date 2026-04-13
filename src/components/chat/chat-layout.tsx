@@ -4,7 +4,7 @@ import { ChatSidebar } from "@/components/chat/chat-sidebar";
 import { ChatWindow } from "@/components/chat/chat-window";
 import type { Chat } from "@/types";
 import { useRouter, useSearchParams } from "next/navigation";
-import { MessageSquare, Search } from "lucide-react";
+import { MessageSquare } from "lucide-react";
 
 interface ChatLayoutProps {
   initialChats: Chat[];

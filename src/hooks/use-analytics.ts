@@ -55,7 +55,7 @@ export function useAnalytics() {
     });
   }, [trackEvent]);
 
-  const trackContact = useCallback((method: "whatsapp" | "phone" | "message", listingId: string) => {
+  const trackContact = useCallback((method: "whatsapp" | "phone" | "message") => {
     trackEvent("contact_click", {
       category: "conversion",
       label: method,

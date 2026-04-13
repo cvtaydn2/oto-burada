@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { Building2, ShieldCheck, FileText, Image as ImageIcon } from "lucide-react";
 import { useActionState } from "react";
 import { AuthSubmitButton } from "@/components/forms/auth-submit-button";
@@ -109,7 +110,7 @@ export function CorporateProfileForm({
               />
               <div className="size-12 rounded-xl border border-slate-200 bg-slate-50 flex items-center justify-center shrink-0 overflow-hidden">
                 {values.businessLogoUrl ? (
-                  <img src={values.businessLogoUrl} alt="Logo Preview" className="size-full object-contain p-1" />
+                  <Image src={values.businessLogoUrl} alt="Logo Preview" fill className="object-contain p-1" />
                 ) : (
                   <ImageIcon className="size-5 text-slate-300" />
                 )}

@@ -11,7 +11,7 @@ interface DetailsStepProps {
 }
 
 export function DetailsStep({ form, cities }: DetailsStepProps) {
-  const { register, watch, formState: { errors } } = form;
+  const { register, watch } = form;
   const selectedCity = watch("city");
   const districtOptions = cities.find(c => c.city === selectedCity)?.districts || [];
 

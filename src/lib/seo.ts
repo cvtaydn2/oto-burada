@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 
-import { createSearchParamsFromListingFilters } from "@/services/listings/listing-filters";
 import { formatCurrency, formatNumber } from "@/lib/utils";
 import { sanitizeForMeta } from "@/lib/utils/sanitize";
 import type { Listing, ListingFilters } from "@/types";

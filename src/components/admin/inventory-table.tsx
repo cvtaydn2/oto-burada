@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { 
   MoreHorizontal, 
@@ -68,9 +69,9 @@ export function InventoryTable({ listings }: InventoryTableProps) {
               <td className="px-6 py-4">
                 <div className="flex items-center gap-3">
                    <div className="size-12 rounded-xl bg-slate-100 border border-slate-200 overflow-hidden shrink-0">
-                      {listing.images?.[0] ? (
-                        <img src={listing.images[0].url} alt="" className="w-full h-full object-cover" />
-                      ) : (
+                       {listing.images?.[0] ? (
+                         <Image src={listing.images[0].url} alt="" fill className="object-cover" />
+                       ) : (
                         <div className="w-full h-full flex items-center justify-center text-slate-300">
                            <Zap size={16} />
                         </div>

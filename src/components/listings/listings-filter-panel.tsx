@@ -76,11 +76,6 @@ function FilterSection({
   )
 }
 
-function formatPrice(value: number) {
-  if (value >= 1_000_000) return `${(value / 1_000_000).toFixed(1)}M TL`
-  return `${(value / 1_000).toFixed(0)}K TL`
-}
-
 export function ListingsFilterPanel({
   brands,
   cities,

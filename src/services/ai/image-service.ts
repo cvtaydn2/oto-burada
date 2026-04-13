@@ -31,7 +31,8 @@ export async function removeImageBackground(imageUrl: string): Promise<string | 
 /**
  * Detects if an image contains a car and its primary color (Simulated)
  */
-export async function analyzeVehicleImage(imageUrl: string) {
+export async function analyzeVehicleImage(_imageUrl: string) {
+  void _imageUrl; // Parameter intentionally unused in mock
   await new Promise(resolve => setTimeout(resolve, 800));
   
   return {
