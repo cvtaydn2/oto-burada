@@ -13,15 +13,17 @@ import { Inter, Outfit } from "next/font/google";
 import "./globals.css";
 
 const inter = Inter({
-  subsets: ["latin", "latin-ext"],
+  subsets: ["latin"],
   variable: "--font-inter",
   display: "swap",
+  preload: true,
 });
 
 const outfit = Outfit({
-  subsets: ["latin", "latin-ext"],
+  subsets: ["latin"],
   variable: "--font-outfit",
   display: "swap",
+  preload: true,
 });
 
 export const metadata: Metadata = {
@@ -62,13 +64,17 @@ export default async function RootLayout({
 
   return (
     <html lang="tr" className={`${inter.variable} ${outfit.variable} h-full antialiased font-sans`} suppressHydrationWarning>
+      <head>
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+      </head>
       <body className="min-h-full bg-background text-foreground selection:bg-primary/10 selection:text-primary">
         <AppProviders userId={currentUser?.id ?? null}>
           {children}
-          <CookieConsent />
-          <PWAInstallPrompt />
           <Analytics />
           <SpeedInsights />
+          <CookieConsent />
+          <PWAInstallPrompt />
         </AppProviders>
       </body>
     </html>

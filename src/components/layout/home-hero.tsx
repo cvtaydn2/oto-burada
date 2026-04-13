@@ -1,6 +1,5 @@
 "use client"
 
-import Image from "next/image"
 import { useState } from "react"
 import { useRouter } from "next/navigation"
 import { Search } from "lucide-react"
@@ -21,16 +20,9 @@ export function HomeHero() {
 
   return (
     <section className="relative mb-16 w-full overflow-visible">
-      <div className="relative h-[420px] w-full overflow-hidden rounded-2xl border border-slate-200 bg-slate-900 lg:h-[470px]">
-        <Image 
-          src="/hero_luxury_car_black_1776035280175.png" 
-          alt="Luxury Car Showcase" 
-          fill
-          className="object-cover opacity-65"
-          priority
-        />
-        <div className="absolute inset-0 bg-black/35" />
-        
+      <div className="relative h-[420px] w-full overflow-hidden rounded-2xl border border-slate-200 bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 lg:h-[470px]">
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-primary/20 via-transparent to-transparent" />
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_bottom_left,_var(--tw-gradient-stops))] from-slate-700/50 via-transparent to-transparent" />
         <div className="absolute inset-0 flex flex-col items-center justify-center px-6 pb-20 text-center">
           <h1 className="mb-4 max-w-4xl text-4xl font-extrabold leading-tight text-white md:text-6xl">
             Hayalindeki Aracı Bugün Bul
