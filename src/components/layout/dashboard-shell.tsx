@@ -13,42 +13,43 @@ interface DashboardShellProps extends PropsWithChildren {
 
 export function DashboardShell({ children, email, isAdmin }: DashboardShellProps) {
   return (
-    <main className="bg-muted/40 min-h-screen">
-      <div className="mx-auto flex w-full max-w-6xl flex-col gap-6 px-4 py-6 sm:px-6 sm:py-8 lg:px-8">
-        <section className="rounded-2xl border border-border/80 bg-background p-5 shadow-sm sm:p-6">
-          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-            <div className="flex items-center gap-3">
+    <main className="bg-[#F8FAFC] min-h-screen">
+      <div className="mx-auto flex w-full max-w-7xl flex-col gap-8 px-4 py-8">
+        <section className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
+          <div className="flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex items-center gap-4">
               <Link
                 href="/"
-                className="inline-flex h-10 w-10 items-center justify-center rounded-lg border border-border bg-background text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
-                aria-label="Ana sayfaya dön"
+                className="w-10 h-10 flex items-center justify-center rounded-xl bg-slate-50 text-slate-400 border border-slate-100 transition hover:bg-white hover:text-blue-500 hover:border-blue-100 hover:shadow-sm"
               >
-                <ArrowLeft className="size-5" />
+                <ArrowLeft size={18} />
               </Link>
-              <div className="space-y-1">
-                <p className="text-xs font-bold uppercase tracking-widest text-slate-500">
-                  Kullanıcı Paneli
+              <div>
+                <p className="text-[10px] font-bold text-blue-500 uppercase tracking-widest mb-0.5">
+                  Satıcı Paneli
                 </p>
-                <h1 className="text-2xl font-black text-slate-900">Hesabını Yönet</h1>
-                <p className="text-sm leading-5 text-muted-foreground">
-                  {email ?? "Giriş yapan kullanıcı"}
+                <h1 className="text-2xl font-black text-slate-900 leading-none">
+                  Hesabını Yönet
+                </h1>
+                <p className="text-xs text-slate-400 font-medium mt-1">
+                  {email ?? "Kullanıcı"}
                 </p>
               </div>
             </div>
 
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-3">
               {isAdmin && (
                 <Link href="/admin">
-                  <Button variant="outline" className="h-10 border-indigo-200 bg-indigo-50 text-indigo-700 hover:bg-indigo-100 gap-2 font-bold rounded-lg shadow-sm">
+                  <Button variant="outline" className="h-10 border-blue-100 bg-blue-50/50 text-blue-700 hover:bg-blue-50 gap-2 font-bold rounded-xl shadow-sm">
                     <ShieldCheck size={16} />
-                    Admin Paneline Geç
+                    Admin Paneli
                   </Button>
                 </Link>
               )}
               <form action={logoutAction}>
                 <button
                   type="submit"
-                  className="inline-flex h-10 items-center justify-center rounded-lg border border-border bg-background px-4 text-sm font-medium text-foreground transition-colors hover:bg-muted"
+                  className="inline-flex h-10 items-center justify-center rounded-xl border border-slate-200 bg-white px-5 text-sm font-bold text-slate-600 transition hover:bg-slate-50 hover:text-red-500 hover:border-red-100"
                 >
                   Çıkış
                 </button>
@@ -59,7 +60,7 @@ export function DashboardShell({ children, email, isAdmin }: DashboardShellProps
 
         <DashboardNavigation />
 
-        <div>{children}</div>
+        <div className="flex-1">{children}</div>
       </div>
     </main>
   );

@@ -1,10 +1,12 @@
+import Link from "next/link";
 import { MyListingsPanel } from "@/components/listings/my-listings-panel";
 import { ListingCreateForm } from "@/components/forms/listing-create-form";
 import { requireUser } from "@/lib/auth/session";
 import { getStoredUserListings } from "@/services/listings/listing-submissions";
 import { getStoredProfileById } from "@/services/profile/profile-records";
 import { getLiveMarketplaceReferenceData, mergeCityOptions } from "@/services/reference/live-reference-data";
-import { ListChecks } from "lucide-react";
+import { Plus } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 60;
@@ -53,23 +55,38 @@ export default async function DashboardListingsPage({ searchParams }: DashboardL
   const isEditingExisting = selectedListing !== null;
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
+    <div className="space-y-8">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h2 className="text-xl font-semibold">İlanlarım</h2>
-          <p className="mt-1 text-sm text-muted-foreground">
-            {storedListings.length} ilan • {storedListings.filter((l) => l.status === "approved").length} yayında
+          <h2 className="text-3xl font-black text-slate-800 tracking-tight">İlanlarım</h2>
+          <p className="mt-1 text-sm text-slate-500 font-medium italic">
+            Toplam {storedListings.length} ilandan {storedListings.filter((l) => l.status === "approved").length} tanesi yayında.
           </p>
         </div>
-        <div className="flex items-center gap-2 text-sm text-muted-foreground">
-          <ListChecks className="size-4" />
-          <span>Telefon: {metadata.phone ? "Kayıtlı" : "Yok"}</span>
+        <div className="flex items-center gap-4">
+          <div className={cn(
+            "flex items-center gap-2 px-4 py-2 rounded-xl border text-xs font-bold transition-all",
+            isPhoneVerified 
+              ? "bg-emerald-50 border-emerald-100 text-emerald-600 shadow-sm shadow-emerald-50/50" 
+              : "bg-amber-50 border-amber-100 text-amber-600 shadow-sm shadow-amber-50/50"
+          )}>
+            <div className={cn("w-1.5 h-1.5 rounded-full animate-pulse", isPhoneVerified ? "bg-emerald-500" : "bg-amber-500")} />
+            {isPhoneVerified ? "Telefon Doğrulandı" : "Telefon Doğrulanmadı"}
+          </div>
+          <Link
+            href="/dashboard/listings?create=true"
+            className="bg-blue-600 text-white px-6 py-2.5 rounded-xl text-sm font-black shadow-lg shadow-blue-100 hover:bg-blue-700 hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center gap-2"
+          >
+            <Plus size={18} strokeWidth={3} />
+            YENİ İLAN
+          </Link>
         </div>
       </div>
 
       {hasRequestedEdit && !isEditingExisting && (
-        <div className="rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm text-amber-700">
-          İlan bulunamadı.
+        <div className="rounded-2xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-700 font-bold flex items-center gap-3">
+          <div className="size-2 rounded-full bg-amber-500 animate-bounce" />
+          İlan bulunamadı veya yetkiniz yok.
         </div>
       )}
 
@@ -77,7 +94,11 @@ export default async function DashboardListingsPage({ searchParams }: DashboardL
         activeEditId={selectedListing?.id} 
         listings={storedListings}
       >
-        <div className="mt-4">
+        <div className="mt-8 bg-white rounded-3xl border border-slate-200 p-8 shadow-sm">
+          <div className="mb-8 pb-6 border-b border-slate-100">
+             <h3 className="text-xl font-black text-slate-800">{isEditingExisting ? "İlanı Düzenle" : "Hızlı İlan Oluştur"}</h3>
+             <p className="text-sm text-slate-400 font-medium mt-1">Gerekli bilgileri eksiksiz doldurarak ilanınızı yayınlayın.</p>
+          </div>
           <ListingCreateForm
             key={selectedListing?.id ?? "create-listing"}
             initialListing={selectedListing}
@@ -86,7 +107,7 @@ export default async function DashboardListingsPage({ searchParams }: DashboardL
               whatsappPhone: metadata.phone ?? "",
             }}
             brands={mergedBrands}
-            cities={mergedCities}
+            cityOptions={mergedCities.map(c => c.city)}
             isPhoneVerified={isPhoneVerified}
           />
         </div>

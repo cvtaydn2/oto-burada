@@ -34,11 +34,11 @@ export async function SiteHeader() {
           </nav>
         </div>
 
-        <div className="hidden flex-1 max-w-lg lg:flex">
+        <div className="hidden flex-1 max-w-lg mx-8 lg:flex">
           <SearchWithSuggestions
             placeholder="Marka, model veya kelime ara..."
             suggestions={references.searchSuggestions}
-            className="h-11 w-full rounded-lg border border-slate-200 bg-slate-50/50 text-sm font-medium focus:ring-2 focus:ring-primary/20"
+            className="h-10 w-full rounded-full border-transparent bg-slate-100 text-sm font-medium focus:bg-white focus:border-primary focus:ring-2 focus:ring-primary/20 block pl-10"
           />
         </div>
 

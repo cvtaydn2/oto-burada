@@ -1,7 +1,8 @@
-import { DatabaseZap, ShieldCheck, TerminalSquare, TriangleAlert } from "lucide-react";
+import { DatabaseZap, ShieldCheck, TerminalSquare, TriangleAlert, Info } from "lucide-react";
 
 import { DashboardMetricCard } from "@/components/shared/dashboard-metric-card";
 import type { PersistenceHealth } from "@/services/admin/persistence-health";
+import { cn } from "@/lib/utils";
 
 interface AdminPersistencePanelProps {
   health: PersistenceHealth;
@@ -11,22 +12,22 @@ type StepStatus = "blocked" | "done" | "ready" | "todo";
 
 const statusLabel: Record<StepStatus, string> = {
   blocked: "Bloklu",
-  done: "Tamam",
-  ready: "Hazir",
-  todo: "Sirada",
+  done: "Tamamlandı",
+  ready: "Hazır",
+  todo: "Sırada",
 };
 
-const statusClassName: Record<StepStatus, string> = {
-  blocked: "border-destructive/20 bg-destructive/10 text-destructive",
-  done: "border-primary/20 bg-primary/10 text-primary",
-  ready: "border-emerald-500/20 bg-emerald-500/10 text-emerald-700",
-  todo: "border-border/70 bg-muted/40 text-foreground",
+const statusClasses: Record<StepStatus, string> = {
+  blocked: "bg-rose-50 text-rose-600 border-rose-100",
+  done: "bg-emerald-50 text-emerald-600 border-emerald-100",
+  ready: "bg-blue-50 text-blue-600 border-blue-100",
+  todo: "bg-slate-50 text-slate-400 border-slate-100",
 };
 
 function formatCommand(command: string) {
   return (
-    <code className="block overflow-x-auto rounded-xl border border-border/70 bg-muted/40 px-3 py-2 font-mono text-xs text-foreground">
-      {command}
+    <code className="block overflow-x-auto rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 font-mono text-[11px] text-slate-700 font-bold">
+      $ {command}
     </code>
   );
 }
@@ -47,35 +48,35 @@ export function AdminPersistencePanel({ health }: AdminPersistencePanelProps) {
     {
       command: "npm run db:check-env",
       description:
-        "Bootstrap icin gerekli env degerlerini once dogrula. Eksik degisken varsa schema veya seed adimina gecme.",
+        "Bootstrap için gerekli env değerlerini önce doğrula. Eksik değişken varsa schema veya seed adımına geçme.",
       status: allBootstrapEnvReady ? "done" : "blocked",
-      title: "1. Ortam degiskenlerini kontrol et",
+      title: "1. Ortam değişkenlerini kontrol et",
     },
     {
       command: "npm run db:apply-schema",
       description:
-        "schema.sql dosyasini hedef Supabase Postgres veritabanina uygula. Bu adim psql ve SUPABASE_DB_URL bekler.",
+        "schema.sql dosyasını hedef Supabase Postgres veritabanına uygula. Bu adım psql ve SUPABASE_DB_URL bekler.",
       status: health.ready ? "done" : health.environment.databaseUrlEnv ? "ready" : "blocked",
-      title: "2. Schema'yi uygula",
+      title: "2. Schema'yı uygula",
     },
     {
       command: "npm run db:seed-demo",
       description:
-        "Demo auth kullanicilarini, profilleri, ilanlari, gorselleri, favorileri ve raporlari tabloya yaz.",
+        "Demo auth kullanıcılarını, profilleri, ilanları, görselleri, favorileri ve raporları tabloya yaz.",
       status: demoSeedReady ? "done" : health.ready && allBootstrapEnvReady ? "ready" : "todo",
-      title: "3. Demo veriyi yukle",
+      title: "3. Demo veriyi yükle",
     },
     {
       command: "npm run db:verify-demo",
       description:
-        "Seed sonrasi auth kullanicilari, tablo sayilari ve storage bucket erisimini script tarafinda dogrula.",
+        "Seed sonrası auth kullanıcıları, tablo sayıları ve storage bucket erişimini script tarafında doğrula.",
       status: demoSeedReady && health.storage.bucketAccessible ? "ready" : "todo",
-      title: "4. Seed sonucunu dogrula",
+      title: "4. Seed sonucunu doğrula",
     },
     {
       command: "Dashboard > Legacy Sync",
       description:
-        "Canli veya test kullanicisinda cookie tabanli eski kayitlar varsa dashboard icindeki Legacy Sync karti ile tabloya tasi.",
+        "Canlı veya test kullanıcısında cookie tabanlı eski kayıtlar varsa dashboard içindeki Legacy Sync kartı ile tabloya taşı.",
       status: health.ready ? "ready" : "todo",
       title: "5. Legacy veriyi backfill et",
     },
@@ -83,140 +84,154 @@ export function AdminPersistencePanel({ health }: AdminPersistencePanelProps) {
     command: string;
     description: string;
     status: StepStatus;
-      title: string;
+    title: string;
   }>;
   const readyEnvCount = Object.values(health.environment).filter(Boolean).length;
   const accessibleTables = health.tables.filter((table) => table.count >= 0).length;
 
   return (
-    <section className="rounded-[2rem] border border-border/80 bg-background p-6 shadow-sm sm:p-8">
-      <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_280px] lg:items-start">
-        <div className="flex items-start gap-3">
-          <div className="flex size-11 shrink-0 items-center justify-center rounded-2xl bg-primary/10 text-primary">
-            <DatabaseZap className="size-5" />
-          </div>
-          <div className="space-y-2">
-            <p className="text-sm font-medium uppercase tracking-[0.18em] text-primary/80">
-              Persistence Durumu
-            </p>
-            <h2 className="text-2xl font-semibold tracking-tight">Supabase migration sagligi</h2>
-            <p className="text-sm leading-6 text-muted-foreground sm:text-base">{health.message}</p>
-          </div>
-        </div>
-
-        <div className="rounded-[1.5rem] border border-primary/10 bg-gradient-to-br from-primary/10 via-background to-background p-5">
-          <div className="flex items-center gap-2 text-sm font-semibold text-primary">
-            <ShieldCheck className="size-4" />
-            Hazirlik ozeti
-          </div>
-          <p className="mt-3 text-3xl font-semibold tracking-tight text-foreground">
-            {readyEnvCount}/4
-          </p>
-          <p className="mt-2 text-sm leading-6 text-muted-foreground">
-            Kritik env alanlari hazir. Tablo kontrolu: {accessibleTables}/{health.tables.length}.
-          </p>
-        </div>
-      </div>
-
-      <div className="mt-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-5">
-        <DashboardMetricCard
-          label="Admin env"
-          value={health.environment.adminEnv ? "Hazir" : "Eksik"}
-          helper="Service role ve admin client tarafinin calisma durumu."
-          icon={ShieldCheck}
-          tone={health.environment.adminEnv ? "emerald" : "amber"}
-        />
-        <DashboardMetricCard
-          label="Storage env"
-          value={health.environment.storageEnv ? "Hazir" : "Eksik"}
-          helper="Bucket ve storage konfigurasyonu."
-          icon={DatabaseZap}
-          tone={health.environment.storageEnv ? "emerald" : "amber"}
-        />
-        <DashboardMetricCard
-          label="DB URL env"
-          value={health.environment.databaseUrlEnv ? "Hazir" : "Eksik"}
-          helper="Schema uygulama komutlari icin gerekli baglanti."
-          icon={DatabaseZap}
-          tone={health.environment.databaseUrlEnv ? "emerald" : "amber"}
-        />
-        <DashboardMetricCard
-          label="Demo seed env"
-          value={health.environment.demoPasswordEnv ? "Hazir" : "Eksik"}
-          helper="Bootstrap ve verify icin gereken demo sifresi."
-          icon={ShieldCheck}
-          tone={health.environment.demoPasswordEnv ? "emerald" : "amber"}
-        />
-        <DashboardMetricCard
-          label="Storage bucket"
-          value={
-            health.storage.bucketAccessible === null
-              ? "Bekliyor"
-              : health.storage.bucketAccessible
-                ? "Erisilebilir"
-                : "Kontrol et"
-          }
-          helper={health.storage.bucketName ?? "Bucket tanimsiz"}
-          icon={health.storage.bucketAccessible ? ShieldCheck : TriangleAlert}
-          tone={health.storage.bucketAccessible ? "emerald" : "amber"}
-        />
-      </div>
-
-      {health.tables.length > 0 ? (
-        <div className="mt-6 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-          {health.tables.map((table) => (
-            <div
-              key={table.key}
-              className="rounded-[1.5rem] border border-border/70 bg-muted/10 p-5"
-            >
-              <p className="text-sm text-muted-foreground">{table.label}</p>
-              <p className="mt-2 text-3xl font-semibold tracking-tight">{table.count}</p>
+    <div className="space-y-8">
+      <section className="rounded-3xl border border-slate-200 bg-white p-6 lg:p-8 shadow-sm">
+        <div className="grid gap-8 lg:grid-cols-[1fr_300px] items-center">
+          <div className="flex items-start gap-4">
+            <div className="flex size-14 shrink-0 items-center justify-center rounded-2xl bg-blue-50 text-blue-600 shadow-sm shadow-blue-50">
+              <DatabaseZap size={28} />
             </div>
-          ))}
-        </div>
-      ) : null}
-
-      <div className="mt-6 rounded-[1.5rem] border border-primary/10 bg-gradient-to-r from-primary/10 to-background p-5">
-        <p className="text-sm font-semibold tracking-tight text-primary">Storage notu</p>
-        <p className="mt-2 text-sm leading-6 text-muted-foreground">{health.storage.message}</p>
-      </div>
-
-      <div className="mt-6 rounded-[1.5rem] border border-primary/15 bg-primary/5 p-5">
-        <div className="flex items-start gap-3">
-          <div className="flex size-10 shrink-0 items-center justify-center rounded-2xl bg-background text-primary shadow-sm">
-            <TerminalSquare className="size-5" />
+            <div className="space-y-1">
+              <div className="flex items-center gap-2">
+                 <span className="text-[10px] font-black text-blue-600 uppercase tracking-widest">Sistem Sağlığı</span>
+                 <div className="size-1 rounded-full bg-slate-300" />
+                 <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest italic">{formatDate(new Date().toISOString())}</span>
+              </div>
+              <h2 className="text-2xl font-black text-slate-800 tracking-tight">Veri Katmanı Durumu</h2>
+              <p className="text-sm text-slate-500 font-medium max-w-xl">{health.message}</p>
+            </div>
           </div>
-          <div className="space-y-2">
-            <p className="text-sm font-medium uppercase tracking-[0.18em] text-primary/80">
-              Migration Runbook
-            </p>
-            <h3 className="text-xl font-semibold tracking-tight">
-              Gercek Supabase gecisi icin onerilen sira
-            </h3>
-            <p className="text-sm leading-6 text-muted-foreground">
-              Asagidaki adimlar repo icine eklenen scriptleri ve dashboard icindeki legacy sync
-              akisini temel alir.
+
+          <div className="rounded-2xl border border-blue-100 bg-blue-50/50 p-6 relative overflow-hidden group">
+            <div className="absolute -right-4 -top-4 size-24 bg-blue-600/5 rounded-full blur-2xl group-hover:bg-blue-600/10 transition-colors" />
+            <div className="flex items-center gap-2 text-[10px] font-black text-blue-600 uppercase tracking-widest mb-3">
+              <ShieldCheck className="size-3" />
+              Hazırlık Skoru
+            </div>
+            <div className="flex items-baseline gap-1">
+               <span className="text-4xl font-black text-slate-800 tracking-tighter">
+                 {readyEnvCount}
+               </span>
+               <span className="text-xl font-bold text-slate-400">/4</span>
+            </div>
+            <p className="mt-2 text-[11px] font-bold text-slate-500 uppercase tracking-wider">
+              Erişilebilir Tablo: <span className="text-blue-600 font-black">{accessibleTables}/{health.tables.length}</span>
             </p>
           </div>
         </div>
 
-        <div className="mt-6 grid gap-4 lg:grid-cols-2">
+        <div className="mt-8 grid gap-4 grid-cols-2 md:grid-cols-3 lg:grid-cols-5">
+          <DashboardMetricCard
+            label="Admin"
+            value={health.environment.adminEnv ? "Aktif" : "Pasif"}
+            helper="Service role client"
+            icon={ShieldCheck}
+            tone={health.environment.adminEnv ? "emerald" : "amber"}
+          />
+          <DashboardMetricCard
+            label="Storage"
+            value={health.environment.storageEnv ? "Aktif" : "Pasif"}
+            helper="Bucket yetkileri"
+            icon={DatabaseZap}
+            tone={health.environment.storageEnv ? "emerald" : "amber"}
+          />
+          <DashboardMetricCard
+            label="Postgres"
+            value={health.environment.databaseUrlEnv ? "Aktif" : "Pasif"}
+            helper="Direct SQL access"
+            icon={DatabaseZap}
+            tone={health.environment.databaseUrlEnv ? "emerald" : "amber"}
+          />
+          <DashboardMetricCard
+            label="Seed"
+            value={health.environment.demoPasswordEnv ? "Hazır" : "Eksik"}
+            helper="Demo şifre statüsü"
+            icon={ShieldCheck}
+            tone={health.environment.demoPasswordEnv ? "emerald" : "amber"}
+          />
+          <DashboardMetricCard
+            label="Bucket"
+            value={
+              health.storage.bucketAccessible === null
+                ? "Bilinmiyor"
+                : health.storage.bucketAccessible
+                  ? "Erişilebilir"
+                  : "Hata"
+            }
+            helper={health.storage.bucketName ?? "Tanımsız"}
+            icon={health.storage.bucketAccessible ? ShieldCheck : TriangleAlert}
+            tone={health.storage.bucketAccessible ? "emerald" : "amber"}
+          />
+        </div>
+
+        {health.tables.length > 0 && (
+          <div className="mt-8 grid gap-4 grid-cols-2 lg:grid-cols-4 xl:grid-cols-6">
+            {health.tables.map((table) => (
+              <div
+                key={table.key}
+                className="rounded-xl border border-slate-100 bg-slate-50 p-4 transition-all hover:border-blue-100 hover:bg-white hover:shadow-sm group"
+              >
+                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest group-hover:text-blue-600 transition-colors">{table.label}</p>
+                <p className="mt-1 text-2xl font-black text-slate-800 tracking-tight">{table.count}</p>
+              </div>
+            ))}
+          </div>
+        )}
+
+        <div className="mt-8 rounded-2xl border border-blue-50 bg-blue-50/20 p-5 flex items-start gap-3">
+          <Info className="size-5 text-blue-500 shrink-0 mt-0.5" />
+          <div className="space-y-1">
+             <p className="text-[11px] font-black text-blue-600 uppercase tracking-widest">Storage Bilgisi</p>
+             <p className="text-sm text-slate-600 font-medium leading-relaxed">{health.storage.message}</p>
+          </div>
+        </div>
+      </section>
+
+      <section className="rounded-3xl border border-slate-200 bg-slate-100/50 p-6 lg:p-8">
+        <div className="flex items-center gap-4 mb-8">
+          <div className="flex size-12 shrink-0 items-center justify-center rounded-2xl bg-white text-blue-600 shadow-sm border border-slate-200">
+            <TerminalSquare size={24} />
+          </div>
+          <div className="space-y-0.5">
+            <h3 className="text-xl font-black text-slate-800 tracking-tight">Migration Runbook</h3>
+            <p className="text-sm text-slate-500 font-medium">Sistemi sıfırdan kurmak veya güncellemek için izlenecek adımlar</p>
+          </div>
+        </div>
+
+        <div className="grid gap-6 lg:grid-cols-2">
           {runbook.map((step) => (
-            <div key={step.title} className="rounded-[1.5rem] border border-border/70 bg-background p-5">
-              <div className="flex flex-wrap items-center justify-between gap-2">
-                <p className="text-base font-semibold tracking-tight">{step.title}</p>
-                <span
-                  className={`inline-flex items-center rounded-full border px-3 py-1 text-xs font-semibold ${statusClassName[step.status]}`}
-                >
+            <div key={step.title} className="rounded-2xl border border-slate-100 bg-white p-6 shadow-sm hover:border-blue-200 transition-all">
+              <div className="flex items-center justify-between gap-4 mb-4">
+                <p className="text-base font-black text-slate-800">{step.title}</p>
+                <span className={cn(
+                  "px-3 py-1 rounded-lg text-[10px] font-black uppercase tracking-widest border",
+                  statusClasses[step.status]
+                )}>
                   {statusLabel[step.status]}
                 </span>
               </div>
-              <p className="mt-3 text-sm leading-6 text-muted-foreground">{step.description}</p>
-              <div className="mt-4">{formatCommand(step.command)}</div>
+              <p className="text-sm text-slate-500 font-medium leading-relaxed mb-6">{step.description}</p>
+              <div className="mt-auto">{formatCommand(step.command)}</div>
             </div>
           ))}
         </div>
-      </div>
-    </section>
+      </section>
+    </div>
   );
+}
+
+function formatDate(date: string) {
+  return new Intl.DateTimeFormat("tr-TR", {
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  }).format(new Date(date));
 }

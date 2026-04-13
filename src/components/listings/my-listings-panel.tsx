@@ -26,19 +26,19 @@ interface MyListingsPanelProps {
 }
 
 const statusLabelMap: Record<Listing["status"], string> = {
-  approved: "YayÄ±nda",
-  archived: "ArÅŸivde",
+  approved: "Yayında",
+  archived: "Arşivde",
   draft: "Taslak",
-  pending: "Bekliyor",
+  pending: "İnceleniyor",
   rejected: "Reddedildi",
 };
 
 const statusClassMap: Record<Listing["status"], string> = {
-  approved: "bg-green-100 text-green-800 border-green-200",
-  archived: "bg-gray-100 text-gray-600 border-gray-200",
-  draft: "bg-amber-100 text-amber-800 border-amber-200",
-  pending: "bg-blue-100 text-blue-800 border-blue-200",
-  rejected: "bg-red-100 text-red-800 border-red-200",
+  approved: "bg-emerald-50 text-emerald-600 border-emerald-100",
+  archived: "bg-slate-100 text-slate-500 border-slate-200",
+  draft: "bg-amber-50 text-amber-600 border-amber-100",
+  pending: "bg-blue-50 text-blue-600 border-blue-100",
+  rejected: "bg-red-50 text-red-600 border-red-100",
 };
 
 export function MyListingsPanel({ activeEditId, listings, children }: MyListingsPanelProps) {
@@ -73,7 +73,7 @@ export function MyListingsPanel({ activeEditId, listings, children }: MyListings
       const payload = await response.json().catch(() => null) as { success?: boolean; error?: { message: string } } | null;
 
       if (!response.ok || !payload?.success) {
-        setArchiveError(payload?.error?.message ?? "Ä°lan arÅŸive alÄ±namadÄ±.");
+        setArchiveError(payload?.error?.message ?? "İlan arşive alınamadı.");
         return;
       }
 
@@ -100,7 +100,7 @@ export function MyListingsPanel({ activeEditId, listings, children }: MyListings
         setSelectedIds([]);
         router.refresh();
       } else {
-        setArchiveError(payload.message || "Toplu arÅŸivleme sÄ±rasÄ±nda hata oluÅŸtu.");
+        setArchiveError(payload.message || "Toplu arşivleme sırasında hata oluştu.");
       }
     } catch {
       setArchiveError("Bir hata oluştu.");
@@ -135,23 +135,6 @@ export function MyListingsPanel({ activeEditId, listings, children }: MyListings
     }
   };
 
-  const handleBulkDraft = async () => {
-    if (selectedIds.length === 0) return;
-    setIsBulkArchiving(true);
-    try {
-      const response = await fetch("/api/listings/bulk-draft", {
-        method: "POST",
-        body: JSON.stringify({ ids: selectedIds }),
-        headers: { "Content-Type": "application/json" },
-      });
-      const payload = await response.json();
-      if (payload.success) {
-        setSelectedIds([]);
-        router.refresh();
-      } else { setArchiveError(payload.message); }
-    } catch { setArchiveError("Hata oluştu."); } finally { setIsBulkArchiving(false); }
-  };
-
   const toggleSelect = (id: string) => {
     setSelectedIds(prev => 
       prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]
@@ -175,11 +158,11 @@ export function MyListingsPanel({ activeEditId, listings, children }: MyListings
       const payload = await response.json().catch(() => null) as { success?: boolean; message?: string; error?: { message: string } } | null;
 
       if (!response.ok || !payload?.success) {
-        setBumpMessage(payload?.error?.message ?? "Ä°lan yenilenemedi.");
+        setBumpMessage(payload?.error?.message ?? "İlan yenilenemedi.");
         return;
       }
 
-      setBumpMessage(payload.message ?? "Ä°lan yenilendi!");
+      setBumpMessage(payload.message ?? "İlan yenilendi!");
       router.refresh();
     } finally {
       setBumpingId(null);
@@ -195,22 +178,22 @@ export function MyListingsPanel({ activeEditId, listings, children }: MyListings
       ) : null}
 
       {bumpMessage ? (
-        <p className="rounded-lg border border-indigo-200 bg-indigo-50 px-4 py-3 text-sm text-indigo-700 font-bold">
+        <p className="rounded-lg border border-blue-200 bg-blue-50 px-4 py-3 text-sm text-blue-700 font-bold mb-4">
           {bumpMessage}
         </p>
       ) : null}
 
       {showForm && children && (
-        <div className="rounded-xl border border-primary/20 bg-primary/5 p-4">
-          <div className="mb-4 flex items-center justify-between">
-            <h3 className="text-base font-black uppercase italic italic tracking-tighter">
-              {activeEditId ? "Ä°lanÄ± DÃ¼zenle" : "Yeni Ä°lan Ver"}
+        <div className="rounded-2xl border border-blue-200 bg-blue-50/20 p-6 shadow-sm">
+          <div className="mb-6 flex items-center justify-between">
+            <h3 className="text-lg font-black text-slate-800">
+              {activeEditId ? "İlanı Düzenle" : "Yeni İlan Ver"}
             </h3>
             <button
               onClick={() => setShowForm(false)}
-              className="rounded-lg p-1 hover:bg-primary/10"
+              className="rounded-xl p-2 bg-white border border-slate-200 text-slate-400 hover:text-slate-600 transition-all hover:bg-slate-50"
             >
-              <X className="size-5" />
+              <X size={20} />
             </button>
           </div>
           {children}
@@ -220,33 +203,35 @@ export function MyListingsPanel({ activeEditId, listings, children }: MyListings
       {!showForm && (
         <button
           onClick={() => setShowForm(true)}
-          className="flex w-full items-center justify-center gap-2 rounded-xl border-2 border-dashed border-primary/30 bg-primary/5 py-4 text-base font-bold text-primary transition-all hover:bg-primary/10 active:scale-[0.98]"
+          className="flex w-full items-center justify-center gap-3 rounded-2xl border-2 border-dashed border-blue-200 bg-white py-6 text-base font-bold text-blue-600 transition-all hover:bg-blue-50 hover:border-blue-300 active:scale-[0.99] group shadow-sm"
         >
-          <Plus className="size-5" />
-          YENÄ° Ä°LAN VER
+          <div className="size-10 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center group-hover:scale-110 transition-transform">
+            <Plus size={24} />
+          </div>
+          YENİ İLAN YAYINLA
         </button>
       )}
 
       {listings.length === 0 && !showForm && (
-        <div className="rounded-[2rem] border border-dashed border-slate-200 p-12 text-center bg-white shadow-sm">
-          <div className="size-16 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-4 text-slate-300">
-             <Plus size={32} />
+        <div className="rounded-3xl border border-dashed border-slate-200 p-16 text-center bg-white shadow-sm mt-6">
+          <div className="size-20 bg-slate-50 rounded-2xl flex items-center justify-center mx-auto mb-6 text-slate-300">
+             <Rocket size={40} />
           </div>
-          <h3 className="text-xl font-black uppercase italic tracking-tighter text-slate-400">HenÃ¼z Ä°lanÄ±n Yok</h3>
-          <p className="mt-1 text-sm text-slate-400 font-medium tracking-tight">Hemen ilk arabanÄ± ekleyerek satÄ±ÅŸa baÅŸla!</p>
+          <h3 className="text-xl font-black text-slate-600">Henüz İlanınız Yok</h3>
+          <p className="mt-2 text-slate-400 font-medium max-w-xs mx-auto">Hemen ilk arabanızı ekleyerek Türkiye&apos;nin en hızlı pazar yerinde satışa başlayın!</p>
         </div>
       )}
 
       {listings.length > 0 && (
         <div className="space-y-4">
-          <div className="flex items-center justify-between px-1">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 px-1 py-2">
             <div className="flex items-center gap-4">
                <button 
                  onClick={toggleSelectAll}
-                 className="flex items-center gap-2 text-xs font-bold text-slate-500 hover:text-primary transition-colors"
+                 className="flex items-center gap-2 text-xs font-bold text-slate-500 hover:text-blue-600 transition-colors"
                >
-                 {selectedIds.length === listings.length ? <CheckSquare size={16} /> : <Square size={16} />}
-                 TÃ¼mÃ¼nÃ¼ SeÃ§ ({listings.length})
+                 {selectedIds.length === listings.length ? <CheckSquare size={18} className="text-blue-600" /> : <Square size={18} />}
+                 Tümünü Seç ({listings.length})
                </button>
                {selectedIds.length > 0 && (
                  <div className="flex items-center gap-2 animate-in fade-in slide-in-from-left-2 duration-300">
@@ -255,35 +240,24 @@ export function MyListingsPanel({ activeEditId, listings, children }: MyListings
                       size="sm" 
                       onClick={handleBulkArchive}
                       disabled={isBulkArchiving}
-                      className="h-8 px-3 text-[10px] font-black uppercase tracking-tighter italic"
+                      className="h-9 px-4 text-[11px] font-bold uppercase tracking-tight rounded-xl shadow-md bg-slate-800 hover:bg-slate-900"
                     >
-                      {isBulkArchiving ? <Loader2 className="size-3 animate-spin mr-1" /> : <Archive size={12} className="mr-1" />}
-                      {selectedIds.length} Ä°LANÄ± ARÅÄ°VLE
+                      {isBulkArchiving ? <Loader2 className="size-3 animate-spin mr-2" /> : <Archive size={14} className="mr-2" />}
+                      {selectedIds.length} İLAN ARŞİVLE
                     </Button>
                     <Button 
                       variant="outline" 
                       size="sm" 
                       onClick={handleBulkDelete}
                       disabled={isBulkArchiving || !selectedIds.every(id => listings.find(l => l.id === id)?.status === "archived")}
-                      className="h-8 px-3 text-[10px] font-black uppercase tracking-tighter italic border-rose-200 text-rose-600 hover:bg-rose-50"
+                      className="h-9 px-4 text-[11px] font-bold uppercase tracking-tight rounded-xl border-red-200 text-red-600 hover:bg-red-50 shadow-sm"
                     >
-                      {isBulkArchiving ? <Loader2 className="size-3 animate-spin mr-1" /> : <X size={12} className="mr-1" />}
                       SİL
-                    </Button>
-                    <Button 
-                      variant="outline" 
-                      size="sm" 
-                      onClick={handleBulkDraft}
-                      disabled={isBulkArchiving}
-                      className="h-8 px-3 text-[10px] font-black uppercase tracking-tighter italic border-amber-200 text-amber-600 hover:bg-amber-50"
-                    >
-                      {isBulkArchiving ? <Loader2 className="size-3 animate-spin mr-1" /> : <RotateCcw size={12} className="mr-1" />}
-                      TASLAĞA ÇEK
                     </Button>
                  </div>
                )}
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-3">
                <Button
                   variant="outline"
                   size="sm"
@@ -316,13 +290,14 @@ export function MyListingsPanel({ activeEditId, listings, children }: MyListings
                     link.click();
                     document.body.removeChild(link);
                   }}
-                  className="h-8 px-3 text-[10px] font-black uppercase tracking-tighter italic border-2 rounded-xl"
+                  className="h-9 px-4 text-[11px] font-bold uppercase tracking-tight border-slate-200 rounded-xl bg-white hover:bg-slate-50 transition-all text-slate-600 shadow-sm"
                >
-                 <FileSpreadsheet size={12} className="mr-1.5" />
-                 LÄ°STEYÄ° CSV Ä°NDÄ°R
+                 <FileSpreadsheet size={14} className="mr-2" />
+                 LİSTEYİ İNDİR
                </Button>
-               <h3 className="text-[11px] font-black text-slate-400 uppercase tracking-widest italic">
-                 {listings.length} Toplam Ä°lan
+               <div className="h-6 w-px bg-slate-200 mx-1 hidden sm:block" />
+               <h3 className="text-[11px] font-bold text-slate-400 uppercase tracking-widest hidden sm:block">
+                 {listings.length} TOPLAM İLAN
                </h3>
             </div>
           </div>
@@ -381,23 +356,23 @@ function ListingCard({
     : 0;
 
   return (
-    <div className={`group flex gap-3 rounded-[1.5rem] border transition-all duration-300 ${isSelected ? 'border-primary bg-primary/5 ring-1 ring-primary/20' : 'border-slate-100 bg-white hover:border-slate-200 hover:shadow-md'} p-3 ${isArchived ? "opacity-60" : ""}`}>
+    <div className={`group flex gap-4 rounded-xl border transition-all duration-300 ${isSelected ? 'border-blue-500 bg-blue-50/30 ring-1 ring-blue-100' : 'border-slate-200 bg-white hover:border-blue-200 hover:shadow-md'} p-4 ${isArchived ? "opacity-60" : ""}`}>
       {/* Checkbox Overlay for Selection */}
-      <div className="flex items-center pr-1">
+      <div className="flex items-center">
          <Checkbox 
            checked={isSelected} 
            onCheckedChange={onToggleSelect} 
-           className="size-5 rounded-md border-slate-300 data-[state=checked]:bg-primary data-[state=checked]:border-primary"
+           className="size-5 rounded-lg border-slate-300 data-[state=checked]:bg-blue-600 data-[state=checked]:border-blue-600"
          />
       </div>
 
-      <div className="relative h-24 w-32 shrink-0 overflow-hidden rounded-2xl bg-slate-50 border border-slate-100">
+      <div className="relative h-24 w-32 shrink-0 overflow-hidden rounded-xl bg-slate-50 border border-slate-100 group">
         {listing.images?.[0]?.url ? (
           <Image
             src={listing.images[0].url}
             alt=""
             fill
-            className="object-cover group-hover:scale-105 transition-transform duration-500"
+            className="object-cover group-hover:scale-110 transition-transform duration-700"
             placeholder={listing.images[0].placeholderBlur ? "blur" : "empty"}
             blurDataURL={listing.images[0].placeholderBlur ?? undefined}
           />
@@ -407,88 +382,88 @@ function ListingCard({
           </div>
         )}
         {listing.featured && (
-          <div className="absolute top-1.5 left-1.5 px-1.5 py-0.5 rounded-lg bg-amber-500 text-white text-[8px] font-black uppercase tracking-tighter">
-             VÄ°TRÄ°N
+          <div className="absolute top-2 left-2 px-2 py-0.5 rounded-md bg-blue-600 text-white text-[8px] font-bold uppercase tracking-wider shadow-sm">
+             ÖNE ÇIKAN
           </div>
         )}
       </div>
 
       <div className="min-w-0 flex-1 flex flex-col pt-1">
-        <div className="flex items-center gap-2 mb-1.5">
-          <span className={`text-[9px] font-black uppercase italic tracking-widest px-2 py-0.5 rounded-full border ${statusClassMap[listing.status]} shadow-sm`}>
+        <div className="flex items-center gap-2 mb-2">
+          <span className={`text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-md border ${statusClassMap[listing.status]} shadow-sm`}>
             {statusLabelMap[listing.status]}
           </span>
           {listing.eidsVerificationJson && (
-            <span className="flex items-center gap-1.5 rounded-full border border-emerald-200 bg-emerald-50 px-2 py-0.5 text-[9px] font-black text-emerald-700 italic tracking-tighter">
-              <ShieldCheck className="size-2.5" />
-              EÄ°DS DOÄRULANDI
+            <span className="flex items-center gap-1.5 rounded-md border border-blue-200 bg-blue-50 px-2 py-0.5 text-[9px] font-bold text-blue-700 tracking-wider">
+              <ShieldCheck size={10} />
+              EİDS ONAYLI
             </span>
           )}
         </div>
-        <p className="font-bold text-slate-900 truncate tracking-tight text-sm line-clamp-1">{listing.title}</p>
-        <p className="text-xl font-black text-slate-900 tracking-tighter leading-tight">
-          â‚º{formatCurrency(listing.price)}
+        <p className="font-bold text-slate-800 truncate tracking-tight text-sm mb-1 group-hover:text-blue-600 transition-colors uppercase">{listing.title}</p>
+        <p className="text-lg font-black text-blue-600 tracking-tight leading-none">
+          {formatCurrency(listing.price)} ₺
         </p>
-        <div className="mt-auto flex items-center gap-2 text-[10px] text-slate-400 font-bold uppercase tracking-tight">
+        <div className="mt-auto flex items-center gap-3 text-[10px] text-slate-400 font-bold uppercase tracking-wider">
           <span>{listing.year}</span>
-          <span className="text-slate-200">|</span>
+          <span className="w-1 h-1 rounded-full bg-slate-200" />
           <span>{formatNumber(listing.mileage)} km</span>
-          <span className="text-slate-200">|</span>
+          <span className="w-1 h-1 rounded-full bg-slate-200" />
           <span className="truncate">{listing.city}</span>
         </div>
       </div>
 
-      <div className="flex flex-col gap-2 justify-center ml-2 border-l border-slate-50 pl-4 py-1">
+      <div className="flex flex-col gap-2 justify-center ml-2 border-l border-slate-100 pl-4">
         <Link
           href={`/dashboard/listings?edit=${listing.id}`}
-          className="flex items-center justify-center size-9 rounded-xl bg-slate-100 text-slate-600 hover:bg-primary hover:text-white transition-all shadow-sm"
-          title="DÃ¼zenle"
+          className="flex items-center justify-center size-9 rounded-xl bg-slate-50 text-slate-400 hover:bg-blue-600 hover:text-white transition-all border border-slate-100"
+          title="Düzenle"
         >
           <Pencil className="size-4" />
         </Link>
+
+        {isApproved && (listing.bumpedAt ? (
+             <div className="flex items-center justify-center size-9 rounded-xl bg-slate-50 text-slate-300 border border-slate-100 cursor-help" title={`${bumpCooldownDays} gün sonra tekrar öne çıkarılabilir`}>
+                <ArrowUpCircle className="size-4" />
+             </div>
+        ) : (
+            <button
+                type="button"
+                onClick={() => onBump(listing.id)}
+                disabled={isBumping || !canBump}
+                className="flex items-center justify-center size-9 rounded-xl bg-emerald-50 text-emerald-600 hover:bg-emerald-600 hover:text-white transition-all disabled:opacity-30 border border-emerald-100"
+                title="Üste Taşı"
+            >
+                {isBumping ? <Loader2 className="size-4 animate-spin" /> : <ArrowUpCircle className="size-4" />}
+            </button>
+        ))}
 
         {isApproved && (
           <Dialog>
             <DialogTrigger asChild>
               <button
                 type="button"
-                className="flex items-center justify-center size-9 rounded-xl bg-amber-50 text-amber-600 hover:bg-amber-500 hover:text-white transition-all shadow-sm"
-                title="HÄ±zlandÄ±r (Doping)"
+                className="flex items-center justify-center size-9 rounded-xl bg-blue-50 text-blue-600 hover:bg-blue-600 hover:text-white transition-all border border-blue-100"
+                title="Doping (Hızlandır)"
               >
                 <Rocket className="size-4" />
               </button>
             </DialogTrigger>
-            <DialogContent className="sm:max-w-xl rounded-[2rem] border-none">
+            <DialogContent className="sm:max-w-xl rounded-2xl border-none">
               <DialogHeader>
-                <DialogTitle className="text-2xl font-black italic uppercase tracking-tighter">Ä°lanÄ±nÄ± <span className="text-primary">GÃ¶klerde</span> GÃ¶r</DialogTitle>
+                <DialogTitle className="text-2xl font-black">İlanını <span className="text-blue-600">Öne Çıkar</span></DialogTitle>
               </DialogHeader>
               <ListingDopingPanel listingId={listing.id} listingTitle={listing.title} />
             </DialogContent>
           </Dialog>
         )}
 
-        {isApproved && (
-          <button
-            type="button"
-            onClick={() => onBump(listing.id)}
-            disabled={isBumping || !canBump}
-            className="flex items-center justify-center size-9 rounded-xl bg-emerald-50 text-emerald-600 hover:bg-emerald-500 hover:text-white transition-all disabled:opacity-30 shadow-sm"
-            title={canBump ? "Ä°lanÄ± Ã¼ste taÅŸÄ±" : `${bumpCooldownDays} gÃ¼n beklemelisin`}
-          >
-            {isBumping ? (
-              <Loader2 className="size-4 animate-spin" />
-            ) : (
-               <ArrowUpCircle className="size-4" />
-            )}
-          </button>
-        )}
-
         <button
           type="button"
           onClick={() => onArchive(listing.id)}
           disabled={isArchiving}
-          className={`flex items-center justify-center size-9 rounded-xl ${isArchived ? 'bg-slate-50 text-slate-300' : 'bg-rose-50 text-rose-500 hover:bg-rose-500 hover:text-white'} transition-all disabled:opacity-30 shadow-sm`}
-          title={isArchived ? "ArÅŸivde" : "ArÅŸivle"}
+          className={`flex items-center justify-center size-9 rounded-xl ${isArchived ? 'bg-slate-100 text-slate-400' : 'bg-red-50 text-red-500 hide hover:bg-red-600 hover:text-white'} transition-all disabled:opacity-30 border border-transparent`}
+          title={isArchived ? "Arşivden Çıkar" : "Arşivle"}
         >
           {isArchiving ? (
             <Loader2 className="size-4 animate-spin" />
@@ -502,5 +477,3 @@ function ListingCard({
     </div>
   );
 }
-
-

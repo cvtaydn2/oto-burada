@@ -2,7 +2,7 @@
 
 import Image from "next/image"
 import Link from "next/link"
-import { CarFront, Calendar, Gauge, MapPin, Settings2 } from "lucide-react"
+import { CarFront, MapPin, Settings2 } from "lucide-react"
 import { cn, formatNumber } from "@/lib/utils"
 import { type Listing } from "@/types"
 import { FavoriteButton } from "@/components/listings/favorite-button"
@@ -25,18 +25,17 @@ export function CarCard({ listing, priority = false, variant = "grid" }: CarCard
   const detailHref = `/listing/${listing.slug}`
 
   return (
-    <Link 
-      href={detailHref}
+    <div 
       className={cn(
-        "group relative block overflow-hidden rounded-xl border border-slate-200 bg-white transition-all duration-300 hover:shadow-lg hover:border-slate-300",
-        variant === "list" && "hover:border-slate-300"
+        "group relative block overflow-hidden rounded-xl border border-gray-200 bg-white transition-all duration-300 hover:shadow-lg",
+        variant === "grid" ? "flex-col" : "flex flex-row"
       )}
     >
-      <div className={cn("flex", variant === "grid" ? "flex-col" : "flex-col sm:flex-row")}>
-        <div className={cn(
-          "relative overflow-hidden bg-slate-100",
-          variant === "grid" ? "aspect-[16/10]" : "aspect-[16/10] w-full shrink-0 sm:w-[300px] sm:aspect-square"
-        )}>
+      <div className={cn(
+        "relative bg-gray-100",
+        variant === "grid" ? "aspect-[16/10]" : "aspect-[16/10] w-[260px] shrink-0"
+      )}>
+        <Link href={detailHref} className="block w-full h-full">
           {coverImage ? (
             <Image
               src={coverImage.url}
@@ -47,79 +46,75 @@ export function CarCard({ listing, priority = false, variant = "grid" }: CarCard
               priority={priority}
             />
           ) : (
-            <div className="flex items-center justify-center h-full text-muted-foreground/30">
+            <div className="flex items-center justify-center h-full text-gray-300">
               <CarFront size={48} className="stroke-[1]" />
             </div>
           )}
-
-          <div className="absolute left-3 top-3 z-20 flex flex-col gap-2">
-            {listing.featured && (
-              <div className="rounded-md bg-primary px-2.5 py-1 text-[10px] font-bold text-white">
-                   Öne Çıkan
-              </div>
-            )}
-          </div>
-
-          <div className="absolute right-3 top-3 z-20">
-            <FavoriteButton 
-              listingId={listing.id}
-              className="flex size-9 items-center justify-center rounded-full bg-white/90 text-slate-500 shadow-sm transition-all hover:bg-white hover:text-rose-500"
-            />
-          </div>
+        </Link>
+        
+        <div className="absolute left-3 top-3 z-10 flex flex-col gap-2">
+          {listing.hasExpertReport && (
+            <div className="rounded bg-blue-500 px-2 py-0.5 text-[10px] font-bold text-white shadow-sm">
+              Ekspertizli
+            </div>
+          )}
+          {listing.featured && !listing.hasExpertReport && (
+            <div className="rounded bg-primary px-2 py-0.5 text-[10px] font-bold text-white shadow-sm">
+              Öne Çıkan
+            </div>
+          )}
         </div>
 
-        <div className={cn("flex flex-1 flex-col p-4", variant === "list" && "justify-center sm:p-5")}>
-           <div className="space-y-3.5">
-              <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
-                 <div className="flex-1 min-w-0">
-                     <h3 className={cn(
-                       "line-clamp-2 font-bold leading-tight text-slate-900 transition-colors group-hover:text-primary",
-                       variant === "grid" ? "text-[15px]" : "text-lg md:text-xl"
-                     )}>
-                      {listing.title}
-                    </h3>
-                    <p className="mt-1.5 line-clamp-1 text-xs font-medium text-slate-400">
-                      {listing.year} • {listing.brand} {listing.model}
-                    </p>
-                 </div>
-                 <div className="flex flex-col items-start sm:items-end shrink-0">
-                    <div className={cn(
-                      "font-black text-primary",
-                      variant === "grid" ? "text-xl" : "text-2xl"
-                    )}>
-                       ₺{formatPrice(listing.price)}
-                    </div>
-                 </div>
-              </div>
-
-               <div className={cn(
-                 "flex flex-wrap gap-x-5 gap-y-2.5 border-t border-slate-100 pt-3.5",
-                 variant === "list" && "my-2"
-               )}>
-                  <SpecItem icon={<Calendar size={12} />} label="Yıl" value={listing.year} />
-                  <SpecItem icon={<Gauge size={12} />} label="Km" value={formatNumber(listing.mileage)} />
-                  <SpecItem icon={<Settings2 size={12} />} label="Vites" value={listing.transmission === "otomatik" ? "Otomatik" : listing.transmission === "manuel" ? "Manuel" : "Yarı Otomatik"} />
-                  <SpecItem icon={<MapPin size={12} />} label="Şehir" value={listing.city} />
-               </div>
-           </div>
+        <div className="absolute right-3 top-3 z-10">
+          <FavoriteButton 
+            listingId={listing.id}
+            className="flex size-8 items-center justify-center rounded-full bg-white/80 text-gray-500 shadow-sm transition-all hover:bg-white hover:text-red-500 backdrop-blur-sm"
+          />
         </div>
       </div>
-    </Link>
-  )
-}
 
-function SpecItem({ icon, label, value, className }: { icon: React.ReactNode, label: string, value: string | number, className?: string }) {
-  return (
-    <div className="flex items-center gap-2.5">
-       <div className="flex size-7 shrink-0 items-center justify-center rounded-md border border-slate-100 bg-slate-50 text-slate-400">
-          {icon}
-       </div>
-       <div className="flex flex-col">
-          <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-wide leading-none mb-0.5">{label}</span>
-          <span className={cn("text-xs font-bold text-slate-600", className)}>
-             {value}
+      <div className="flex flex-1 flex-col p-4">
+        <Link href={detailHref} className="group-hover:text-primary transition-colors">
+          <h3 className="font-bold text-lg text-gray-800 truncate leading-tight">
+            {listing.title}
+          </h3>
+          <p className="mt-1 text-sm text-gray-500 font-medium">{listing.year}</p>
+        </Link>
+
+        <div className="mt-3 flex items-center justify-between border-b border-gray-100 pb-3 text-[11px] font-medium text-gray-500">
+          <span className="flex items-center gap-1.5 capitalize">
+            <Settings2 size={13} className="text-gray-400" />
+            {listing.transmission === "yari_otomatik" ? "Yarı Otomatik" : listing.transmission}
           </span>
-       </div>
+          <span className="flex items-center gap-1.5 capitalize">
+            <CarFront size={13} className="text-gray-400" />
+            {listing.fuelType}
+          </span>
+        </div>
+
+        <div className="mt-3 flex flex-col gap-1">
+          <p className="flex items-center gap-1.5 text-[11px] text-gray-400 font-medium">
+            <MapPin size={12} className="text-gray-300" />
+            {listing.city}, {listing.district}
+          </p>
+          <div className="text-xl font-extrabold text-primary">
+            ₺{formatPrice(listing.price)}
+          </div>
+        </div>
+
+        <div className="mt-auto flex items-center justify-between border-t border-gray-50 pt-3">
+          <span className="text-xs font-bold text-gray-500">{formatNumber(listing.mileage)} km</span>
+          <Link 
+            href={detailHref} 
+            className="flex items-center gap-1 text-[11px] font-black uppercase tracking-wider text-primary hover:text-primary/80 transition-colors"
+          >
+            İncele
+            <svg className="size-2.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+              <path d="m9 18 6-6-6-6" />
+            </svg>
+          </Link>
+        </div>
+      </div>
     </div>
   )
 }

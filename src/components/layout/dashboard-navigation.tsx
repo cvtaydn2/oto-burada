@@ -38,8 +38,8 @@ export function DashboardNavigation() {
   const pathname = usePathname();
 
   return (
-    <nav aria-label="Dashboard menü" className="overflow-x-auto">
-      <ul className="flex gap-2">
+    <nav aria-label="Dashboard menü" className="overflow-x-auto pb-2 scrollbar-hide">
+      <ul className="flex gap-3">
         {dashboardNavItems.map((item) => {
           const isActive = pathname === item.href;
           const Icon = item.icon;
@@ -50,13 +50,13 @@ export function DashboardNavigation() {
                 href={item.href}
                 aria-current={isActive ? "page" : undefined}
                 className={cn(
-                  "inline-flex items-center gap-2 rounded-lg px-4 py-2.5 text-sm font-medium transition-colors",
+                  "inline-flex items-center gap-2.5 rounded-xl px-5 py-3 text-sm font-bold transition-all",
                   isActive
-                    ? "bg-primary text-primary-foreground"
-                    : "bg-background text-muted-foreground hover:bg-muted hover:text-foreground border border-border",
+                    ? "bg-blue-600 text-white shadow-md shadow-blue-200"
+                    : "bg-white text-slate-500 hover:text-blue-500 hover:bg-blue-50/50 border border-slate-200"
                 )}
               >
-                <Icon className="size-4" />
+                <Icon size={18} className={cn(isActive ? "text-white" : "text-slate-400")} />
                 <span>{item.label}</span>
               </Link>
             </li>

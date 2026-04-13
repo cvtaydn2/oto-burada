@@ -333,9 +333,9 @@ function ChevronIcon({ className }: { className?: string }) {
 
 function FilterTag({ label, onRemove }: { label: string; onRemove: () => void }) {
   return (
-    <div className="flex items-center gap-1.5 rounded-full border border-primary/30 bg-primary/5 px-3 py-1.5 text-xs font-semibold text-primary">
+    <div className="flex items-center gap-1.5 rounded-full border border-blue-100 bg-blue-50 px-3 py-1.5 text-xs font-semibold text-blue-600">
       <span>{label}</span>
-      <button onClick={onRemove} className="hover:text-rose-500 transition-colors">
+      <button onClick={onRemove} className="hover:text-blue-800 transition-colors">
         <svg className="size-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round">
           <path d="M18 6 6 18M6 6l12 12" />
         </svg>

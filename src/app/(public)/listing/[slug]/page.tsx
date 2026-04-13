@@ -8,10 +8,9 @@ import {
   Fuel,
   Settings2,
   ShieldCheck,
-  ArrowLeft,
   Zap,
 } from "lucide-react";
-
+import { cn } from "@/lib/utils";
 import { ListingGallery } from "@/components/listings/listing-gallery";
 import { ListingDetailStructuredData, BreadcrumbStructuredData } from "@/components/seo/structured-data";
 import { CarCard } from "@/components/modules/listings/car-card";
@@ -62,7 +61,8 @@ export default async function ListingDetailPage({ params }: ListingDetailPagePro
   const currentUser = await getCurrentUser();
 
   const breadcrumbs = [
-    { name: "İlanlar", url: "/listings" },
+    { name: "Ana Sayfa", url: "/" },
+    { name: "Otomobil", url: "/listings" },
     { name: listing.brand, url: `/listings?brand=${encodeURIComponent(listing.brand)}` },
     { name: listing.model, url: `/listing/${listing.slug}` }
   ];
@@ -81,38 +81,65 @@ export default async function ListingDetailPage({ params }: ListingDetailPagePro
           loginUrl={`/login?callbackUrl=${encodeURIComponent(`/listing/${listing.slug}`)}`}
       /> 
 
-      <main className="min-h-screen bg-[#F8FAFC]">
-        <div className="mx-auto max-w-[1280px] px-5 pb-28 lg:px-6 lg:pt-8">
+      <main className="min-h-screen bg-gray-50 flex flex-col">
+        <div className="mx-auto max-w-[1400px] px-4 py-6 w-full flex-1">
           
-          {/* Breadcrumb */}
-          <nav className="mb-6 flex items-center gap-2 text-xs font-medium text-slate-500">
-            <Link href="/" className="hover:text-primary">Ana Sayfa</Link>
-            <span>/</span>
-            <Link href="/listings" className="hover:text-primary">Otomobil</Link>
-            <span>/</span>
-            <Link href={`/listings?brand=${listing.brand}`} className="hover:text-primary">{listing.brand}</Link>
-            <span>/</span>
-            <span className="text-slate-900 truncate max-w-[150px]">{listing.model}</span>
-          </nav>
+          {/* Top Header/Breadcrumb Area */}
+          <div className="flex justify-between items-center mb-6">
+            <nav className="flex items-center space-x-2 text-xs font-medium text-gray-500">
+              {breadcrumbs.map((b, i) => (
+                <div key={b.url} className="flex items-center space-x-2">
+                  <Link href={b.url} className={cn("hover:text-blue-500 transition-colors", i === breadcrumbs.length - 1 ? "text-gray-700" : "")}>
+                    {b.name}
+                  </Link>
+                  {i < breadcrumbs.length - 1 && (
+                    <svg className="size-2 text-gray-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="m9 18 6-6-6-6" />
+                    </svg>
+                  )}
+                </div>
+              ))}
+            </nav>
+
+            <div className="flex items-center space-x-2">
+              <button className="bg-white border border-gray-200 text-gray-600 px-3 py-1.5 rounded-lg text-sm font-medium hover:bg-gray-50 transition flex items-center shadow-sm">
+                <svg className="size-4 mr-2" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/>
+                </svg>
+                Paylaş
+              </button>
+              <button className="bg-white border border-gray-200 text-gray-600 px-3 py-1.5 rounded-lg text-sm font-medium hover:bg-gray-50 transition flex items-center shadow-sm">
+                <svg className="size-4 mr-2" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="m3 16 4 4 4-4"/><path d="M7 20V4"/><path d="m21 8-4-4-4 4"/><path d="M17 4v16"/>
+                </svg>
+                Karşılaştır
+              </button>
+              <button className="bg-white border border-gray-200 text-gray-600 w-9 h-9 rounded-lg flex items-center justify-center hover:bg-red-50 hover:text-red-500 hover:border-red-200 transition shadow-sm">
+                <svg className="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/>
+                </svg>
+              </button>
+            </div>
+          </div>
 
           <div className="flex flex-col items-start gap-10 lg:flex-row lg:gap-10">
             
             {/* Left Column */}
-            <div className="w-full min-w-0 flex-1 space-y-8">
+            <div className="w-full min-w-0 flex-1 space-y-6">
               
-              {/* Image Gallery */}
-              <div className="space-y-4">
-                <div className="relative aspect-[16/10] overflow-hidden rounded-xl border border-slate-200 bg-slate-100 lg:aspect-[16/9]">
+              {/* Image Gallery Container */}
+              <div className="bg-white rounded-2xl p-4 border border-gray-200 shadow-sm">
+                <div className="relative aspect-[16/10] overflow-hidden rounded-xl border border-gray-100 bg-gray-50 group">
                   <ListingGallery images={listing.images} title={listing.title} />
                   
                   {/* Badges */}
                   <div className="absolute left-4 top-4 z-10 flex flex-col gap-2">
                     {listing.featured && (
-                      <span className="rounded-md bg-primary px-3 py-1 text-[10px] font-bold text-white">Öne Çıkan İlan</span>
+                      <span className="bg-emerald-500 text-white text-[10px] font-bold px-3 py-1.5 rounded-full shadow-md">Öne Çıkan İlan</span>
                     )}
                     {listing.expertInspection && (
-                      <span className="flex items-center gap-1.5 rounded-md bg-white/95 px-3 py-1 text-[10px] font-semibold text-slate-700 shadow">
-                        <ShieldCheck size={12} className="text-emerald-500" />
+                      <span className="bg-white text-gray-700 text-[10px] font-bold px-3 py-1.5 rounded-full shadow-md border border-gray-200 flex items-center">
+                        <ShieldCheck size={13} className="text-blue-500 mr-1.5" />
                         Ekspertiz Onaylı
                       </span>
                     )}
@@ -120,35 +147,39 @@ export default async function ListingDetailPage({ params }: ListingDetailPagePro
                 </div>
               </div>
 
-              {/* Title & Price */}
-              <div className="flex flex-col justify-between gap-4 md:flex-row md:items-end">
-                <div className="space-y-2">
-                  <h1 className="text-2xl font-black text-slate-900 md:text-3xl">
+              {/* Title & Price Card */}
+              <div className="bg-white rounded-2xl p-6 border border-gray-200 shadow-sm flex flex-col md:flex-row justify-between items-start md:items-end gap-6">
+                <div className="space-y-3">
+                  <h1 className="text-2xl md:text-3xl font-extrabold text-gray-800 leading-tight">
                     {listing.brand} {listing.model}
-                    {listing.carTrim && <span className="font-semibold text-slate-500"> {listing.carTrim}</span>}
+                    {listing.carTrim && <span className="font-semibold text-gray-500"> {listing.carTrim}</span>}
                   </h1>
-                  <div className="flex flex-wrap items-center gap-4 text-sm text-slate-500 font-medium">
-                    <span className="flex items-center gap-1.5">
-                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
+                  <div className="flex flex-wrap items-center gap-4 text-xs text-gray-500 font-medium">
+                    <span className="flex items-center">
+                      <svg className="size-3.5 mr-1.5 text-gray-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
                       {listing.city}, {listing.district}
                     </span>
-                    <span className="rounded bg-slate-100 px-2 py-0.5 text-xs font-semibold">İlan No: {listing.id.slice(0, 8).toUpperCase()}</span>
+                    <span className="flex items-center">
+                      <svg className="size-3.5 mr-1.5 text-gray-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                      {new Date(listing.createdAt).toLocaleDateString("tr-TR")} güncellendi
+                    </span>
+                    <span className="bg-gray-100 px-2 py-1 rounded text-[10px]">İlan No: {listing.id.slice(0, 8).toUpperCase()}</span>
                   </div>
                 </div>
-                <div className="text-right shrink-0">
-                  <p className="text-3xl font-black text-primary md:text-4xl">
+                <div className="text-left md:text-right w-full md:w-auto">
+                  <div className="text-3xl md:text-4xl font-extrabold text-blue-500">
                     ₺{new Intl.NumberFormat("tr-TR").format(listing.price)}
-                  </p>
-                  <p className="text-xs text-slate-400 mt-1">{new Date(listing.createdAt).toLocaleDateString("tr-TR")} tarihinde güncellendi</p>
+                  </div>
+                  <div className="text-[10px] text-gray-400 mt-1 uppercase tracking-wider font-bold">KDV Dahil</div>
                 </div>
               </div>
 
-              {/* Key Specs */}
-              <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-                <SpecBox icon={<CalendarDays size={18} />} label="Yıl" value={String(listing.year)} />
+              {/* Key Specs Grid */}
+              <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                <SpecBox icon={<CalendarDays size={18} />} label="Model Yılı" value={String(listing.year)} />
                 <SpecBox icon={<CircleGauge size={18} />} label="Kilometre" value={`${formatNumber(listing.mileage)} km`} />
-                <SpecBox icon={<Fuel size={18} />} label="Yakıt" value={listing.fuelType} />
-                <SpecBox icon={<Settings2 size={18} />} label="Vites" value={listing.transmission} />
+                <SpecBox icon={<Fuel size={18} />} label="Yakıt Tipi" value={listing.fuelType} />
+                <SpecBox icon={<Settings2 size={18} />} label="Vites Tipi" value={listing.transmission} />
               </div>
 
               {/* Expert Inspection */}
@@ -205,77 +236,83 @@ export default async function ListingDetailPage({ params }: ListingDetailPagePro
             </div>
 
             {/* Right Sidebar */}
-            <aside className="w-full lg:w-[380px] shrink-0 space-y-4 lg:sticky lg:top-6">
+            <aside className="w-full lg:w-80 flex-shrink-0 space-y-6 lg:sticky lg:top-24">
               
               {/* Seller Card */}
-              <div className="rounded-xl border border-slate-200 bg-white p-6">
-                <h3 className="mb-5 text-xs font-bold uppercase tracking-wider text-slate-400">Satıcı Bilgileri</h3>
+              <div className="bg-white border border-gray-200 rounded-2xl p-6 shadow-sm">
+                <h2 className="text-sm font-bold text-gray-800 mb-1">Satıcı Bilgileri</h2>
+                <p className="text-xs text-gray-500 mb-6">{seller?.userType === "professional" ? "Kurumsal Galeri" : "Bireysel Satıcı"}</p>
                 
-                <div className="mb-5 flex items-center gap-4 pb-5 border-b border-slate-100">
-                  <div className="relative size-14 rounded-xl bg-slate-50 border border-slate-100 overflow-hidden flex items-center justify-center font-bold text-xl text-slate-300">
-                    {seller?.businessLogoUrl ? (
-                      <Image src={seller.businessLogoUrl} alt={seller.fullName || ""} fill className="object-cover" />
-                    ) : (
-                      seller?.fullName?.[0] || "S"
-                    )}
+                <div className="flex items-center mb-6">
+                  <div className="relative mr-4 shrink-0">
+                    <div className="size-14 rounded-full border-2 border-white shadow-md bg-gray-50 overflow-hidden flex items-center justify-center font-bold text-gray-300">
+                      {seller?.businessLogoUrl ? (
+                        <Image src={seller.businessLogoUrl} alt={seller.fullName || ""} fill className="object-cover" />
+                      ) : (
+                        seller?.fullName?.[0] || "S"
+                      )}
+                    </div>
+                    <div className="absolute bottom-0 right-0 w-3.5 h-3.5 bg-green-500 border-2 border-white rounded-full"></div>
                   </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="font-bold text-slate-900 truncate">{seller?.businessName || seller?.fullName}</p>
-                    <p className="text-xs font-medium text-slate-500">{seller?.userType === "professional" ? "Kurumsal Galeri" : "Bireysel Satıcı"}</p>
+                  <div className="min-w-0">
+                    <h3 className="font-bold text-gray-800 truncate">{seller?.businessName || seller?.fullName}</h3>
+                    <div className="flex items-center text-[10px] text-gray-500 mt-0.5 mb-1">
+                      <span className="bg-blue-50 text-blue-600 px-1.5 py-0.5 rounded mr-1 font-medium">Onaylı Üye</span>
+                      <span>• {new Date().getFullYear() - new Date(seller?.createdAt || "").getFullYear()} yıldır üye</span>
+                    </div>
                   </div>
                 </div>
 
                 <div className="space-y-3">
                   <ContactActions listingId={listing.id} sellerId={listing.sellerId} />
-                  <Link 
-                    href={`/gallery/${seller?.businessSlug || seller?.id}`}
-                    className="flex h-11 items-center justify-center gap-2 rounded-lg border border-slate-200 text-sm font-semibold text-slate-700 hover:bg-slate-50 transition-colors"
-                  >
-                    <ArrowLeft size={15} className="rotate-180" />
-                    Satıcının Diğer İlanları
+                </div>
+
+                <div className="mt-6 pt-4 border-t border-gray-100 space-y-3">
+                  <Link href={`/gallery/${seller?.businessSlug || seller?.id}`} className="flex justify-between items-center text-sm font-medium text-gray-600 hover:text-blue-500 transition group">
+                    Satıcının diğer ilanları 
+                    <svg className="size-2.5 text-gray-400 group-hover:text-blue-500 transition-colors" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="m9 18 6-6-6-6" />
+                    </svg>
                   </Link>
                 </div>
               </div>
 
-              {/* Security Tips */}
-              <div className="rounded-xl border border-slate-200 bg-white p-6">
-                <h3 className="mb-5 text-xs font-bold uppercase tracking-wider text-slate-400 flex items-center gap-2">
-                  <ShieldCheck size={14} className="text-emerald-500" />
-                  Güvenlik İpuçları
+              {/* Quick Offer */}
+              <div className="bg-blue-50/50 border border-blue-100 rounded-2xl p-6 shadow-sm relative overflow-hidden">
+                <div className="absolute top-0 left-0 w-1 h-full bg-blue-400"></div>
+                <h3 className="font-bold text-gray-800 mb-2 flex items-center">
+                  <svg className="size-4 text-blue-500 mr-2" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <circle cx="8" cy="8" r="6"/><path d="M18.09 10.37A6 6 0 1 1 10.34 18"/><path d="M7 6h1v4"/><path d="m16.71 13.88.7.71-2.82 2.82"/><path d="m17.41 17.41-2.82-2.82"/>
+                  </svg>
+                  Hızlı Teklif Ver
                 </h3>
-                <ul className="space-y-3.5">
-                  {[
-                    "Aracı görmeden kapora göndermeyin.",
-                    "Ekspertiz raporunu onaylatın.",
-                    "Ödemeyi noter huzurunda yapın."
-                  ].map(tip => (
-                    <li key={tip} className="flex items-start gap-2.5 text-xs text-slate-500 font-medium">
-                      <span className="mt-1 size-1.5 rounded-full bg-slate-300 shrink-0" />
-                      {tip}
-                    </li>
-                  ))}
-                </ul>
-                <button className="mt-5 text-xs font-semibold text-rose-500 hover:underline">
-                  İlanı Şikayet Et
+                <p className="text-xs text-gray-600 mb-4 leading-relaxed">Aracı beğendiniz mi? Satıcıya hızlı bir fiyat teklifi göndererek süreci başlatabilirsiniz.</p>
+                
+                <div className="grid grid-cols-2 gap-2 mb-3">
+                  <button className="bg-white border border-gray-200 text-gray-700 py-2 rounded-lg text-sm font-bold hover:border-blue-500 transition shadow-sm">₺{new Intl.NumberFormat("tr-TR").format(Math.round(listing.price * 0.95))}</button>
+                  <button className="bg-white border border-gray-200 text-gray-700 py-2 rounded-lg text-sm font-bold hover:border-blue-500 transition shadow-sm">₺{new Intl.NumberFormat("tr-TR").format(Math.round(listing.price * 0.98))}</button>
+                </div>
+                <button className="w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-2.5 rounded-xl transition shadow flex justify-center items-center">
+                  Kendi Teklifini Yap
                 </button>
               </div>
 
-              {/* Quick Offer */}
-              <div className="rounded-xl border border-slate-200 bg-white p-6">
-                <h3 className="mb-1 text-base font-bold text-slate-900">Hızlı Teklif</h3>
-                <p className="mb-5 text-xs text-slate-500 font-medium">Satıcıya fiyat teklifi gönderin.</p>
-                <div className="flex gap-2.5 mb-4">
-                  <div className="flex-1 rounded-lg border border-slate-200 bg-slate-50 px-3 py-3.5 text-center">
-                    <p className="text-sm font-bold text-slate-900">₺{new Intl.NumberFormat("tr-TR").format(Math.round(listing.price * 0.97))}</p>
-                    <p className="text-[10px] text-slate-400 font-medium">Düşük teklif</p>
-                  </div>
-                  <div className="flex-1 rounded-lg border border-slate-200 bg-slate-50 px-3 py-3.5 text-center">
-                    <p className="text-sm font-bold text-slate-900">₺{new Intl.NumberFormat("tr-TR").format(Math.round(listing.price * 0.99))}</p>
-                    <p className="text-[10px] text-slate-400 font-medium">Yüksek teklif</p>
-                  </div>
-                </div>
-                <button className="w-full h-11 rounded-lg bg-primary text-white text-sm font-bold hover:bg-primary/90 transition-colors">
-                  Kendi Teklifini Yap
+              {/* Security Tips */}
+              <div className="bg-gray-50 border border-gray-200 rounded-2xl p-6 shadow-sm">
+                <h3 className="font-bold text-gray-800 mb-3 flex items-center text-sm">
+                   <ShieldCheck size={16} className="text-green-500 mr-2" />
+                   Güvenli Alışveriş Tüyoları
+                </h3>
+                <ul className="text-xs text-gray-600 space-y-2 mb-4 pl-1">
+                  <li className="flex items-start"><span className="text-gray-400 mr-2">•</span> Aracı görmeden kesinlikle kapora göndermeyin.</li>
+                  <li className="flex items-start"><span className="text-gray-400 mr-2">•</span> Ekspertiz raporunu yetkili servislerde onaylatın.</li>
+                  <li className="flex items-start"><span className="text-gray-400 mr-2">•</span> Ödemeyi noter huzurunda güvenli sistemlerle yapın.</li>
+                </ul>
+                <button className="text-xs font-bold text-red-500 hover:text-red-600 flex items-center transition-colors">
+                  <svg className="size-3.5 mr-1.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15"/>
+                  </svg>
+                  İlanı Şikayet Et
                 </button>
               </div>
 
@@ -289,11 +326,13 @@ export default async function ListingDetailPage({ params }: ListingDetailPagePro
 
 function SpecBox({ icon, label, value }: { icon: React.ReactNode; label: string; value: string }) {
   return (
-    <div className="flex items-center gap-3 rounded-lg border border-slate-200 bg-white p-4">
-      <div className="text-primary">{icon}</div>
+    <div className="bg-white border border-gray-200 rounded-xl p-4 flex items-center shadow-sm">
+      <div className="w-10 h-10 bg-blue-50 text-blue-500 rounded-lg flex items-center justify-center mr-3 flex-shrink-0">
+        {icon}
+      </div>
       <div>
-        <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-wide">{label}</p>
-        <p className="text-sm font-bold text-slate-900 capitalize">{value}</p>
+        <div className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">{label}</div>
+        <div className="text-sm font-bold text-gray-800 capitalize leading-tight">{value}</div>
       </div>
     </div>
   );

@@ -63,10 +63,10 @@ export function SmartFilters({
 
   return (
     <div className="flex flex-col">
-      <div className="flex items-center justify-between px-5 pt-5 pb-4 border-b border-slate-100">
+      <div className="flex items-center justify-between px-5 pt-5 pb-4 border-b border-gray-100">
         <div className="flex items-center gap-2">
-          <SlidersHorizontal size={16} className="text-slate-500" />
-          <h3 className="text-[13px] font-bold uppercase tracking-wide text-slate-800">Filtrele</h3>
+          <SlidersHorizontal size={18} className="text-gray-800" />
+          <h3 className="text-lg font-bold text-gray-800">Filtrele</h3>
           {activeCount > 0 && (
             <span className="flex size-5 items-center justify-center rounded-full bg-primary text-[10px] font-bold text-white">
               {activeCount}
@@ -76,9 +76,9 @@ export function SmartFilters({
         {activeCount > 0 && (
           <button
             onClick={onReset}
-            className="text-xs font-medium text-slate-400 hover:text-primary transition-colors"
+            className="text-sm font-medium text-primary hover:text-primary/80 transition-colors"
           >
-            Temizle
+            Sıfırla
           </button>
         )}
       </div>

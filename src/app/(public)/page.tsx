@@ -38,9 +38,9 @@ export default async function HomePage() {
         {/* Popular Categories */}
         <section className="mb-24 mt-28">
           <div className="flex items-center justify-between mb-8">
-            <h2 className="text-xl font-black text-slate-900">Popüler Kategoriler</h2>
-            <Link href="/categories" className="text-xs font-bold text-primary hover:underline flex items-center gap-2">
-              Tümünü Gör <ArrowRight size={14} />
+            <h2 className="text-2xl font-bold text-gray-800">Popüler Kategoriler</h2>
+            <Link href="/categories" className="text-sm font-medium text-primary hover:text-primary/80 flex items-center gap-1 transition">
+              Tümünü Gör <ArrowRight size={10} className="ml-1" />
             </Link>
           </div>
           <div className="grid grid-cols-3 md:grid-cols-6 gap-3.5">
@@ -55,7 +55,7 @@ export default async function HomePage() {
               <Link
                 key={cat.id}
                 href={`/listings?body_type=${cat.id}`}
-                className="group p-4 rounded-xl bg-white border border-slate-200 hover:border-primary/20 hover:shadow-md transition-all flex flex-col items-center text-center gap-2"
+                className="group p-6 rounded-2xl bg-white border border-gray-100 hover:shadow-lg hover:border-primary/20 transition-all flex flex-col items-center text-center gap-2"
               >
                 <div className="size-10 rounded-lg bg-slate-50 flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-white transition-all">
                   {cat.icon}
