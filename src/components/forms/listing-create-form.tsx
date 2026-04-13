@@ -459,19 +459,24 @@ export function ListingCreateForm({
   });
 
   return (
-    <div className="mx-auto max-w-4xl">
-      <StepIndicator currentStep={currentStep} steps={STEP_LABELS} />
+    <div className="max-w-[1000px] mx-auto px-4 py-8 w-full flex-1">
+      <div className="mb-8 animate-in fade-in slide-in-from-top-4 duration-700">
+        <h1 className="text-3xl font-bold text-gray-800 tracking-tight">Yeni İlan Oluştur</h1>
+        <p className="text-gray-500 mt-2">Aracınızı milyonlarca alıcıyla buluşturmak için formu doldurmaya başlayın.</p>
+      </div>
 
-      <form onSubmit={onSubmit} className="space-y-6">
+      <StepIndicator currentStep={currentStep} />
+
+      <form onSubmit={onSubmit} className="space-y-10">
         {submitState.status === "success" && submitState.message && (
-          <div className="rounded-2xl bg-emerald-50 p-4 border border-emerald-100 flex items-center gap-3 animate-in fade-in zoom-in duration-300">
+          <div className="rounded-2xl bg-emerald-50 p-4 border border-emerald-100 flex items-center gap-3 animate-in fade-in zoom-in duration-300 shadow-sm">
             <CheckCircle2 className="size-5 text-emerald-500" />
             <p className="text-sm font-semibold text-emerald-800">{submitState.message}</p>
           </div>
         )}
 
         {errors.root && (
-          <div className="rounded-2xl bg-red-50 p-4 border border-red-100 flex items-center gap-3">
+          <div className="rounded-2xl bg-red-50 p-4 border border-red-100 flex items-center gap-3 shadow-sm">
             <AlertCircle className="size-5 text-red-500" />
             <p className="text-sm font-semibold text-red-800">{errors.root.message}</p>
           </div>
@@ -512,41 +517,42 @@ export function ListingCreateForm({
         </div>
 
         {/* Navigation Controls */}
-        <div className="flex items-center justify-between pt-8 border-t border-gray-100">
-          <button
-            type="button"
-            onClick={handlePrevStep}
-            disabled={currentStep === 0 || isSubmitting}
-            className="group inline-flex h-12 items-center justify-center gap-2 rounded-xl border border-gray-200 bg-white px-6 text-sm font-bold text-gray-700 transition-all hover:bg-gray-50 disabled:opacity-30 disabled:pointer-events-none"
-          >
-            <ChevronLeft size={18} className="transition-transform group-hover:-translate-x-1" />
-            Geri
-          </button>
+        <div className="flex items-center justify-end space-x-4 pt-4 border-t border-gray-100">
+          {currentStep > 0 && (
+            <button
+              type="button"
+              onClick={handlePrevStep}
+              disabled={isSubmitting}
+              className="bg-white border border-gray-300 text-gray-700 font-bold px-8 py-3 rounded-xl hover:bg-gray-50 transition shadow-sm disabled:opacity-50"
+            >
+              Geri
+            </button>
+          )}
 
           {currentStep < totalSteps - 1 ? (
             <button
               type="button"
               onClick={handleNextStep}
-              className="group inline-flex h-12 items-center justify-center gap-2 rounded-xl bg-blue-500 px-8 text-sm font-bold text-white transition-all hover:bg-blue-600 shadow-lg shadow-blue-500/20"
+              className="bg-blue-500 text-white font-bold px-10 py-3 rounded-xl hover:bg-blue-600 transition shadow-md flex items-center group"
             >
-              Sonraki Adım
-              <ChevronRight size={18} className="transition-transform group-hover:translate-x-1" />
+              İleri 
+              <ChevronRight size={18} className="ml-2 transition-transform group-hover:translate-x-1" />
             </button>
           ) : (
             <button
               type="submit"
               disabled={isSubmitting || isUploadingAnyImage || uploadedImageCount < minimumListingImages}
-              className="inline-flex h-12 items-center justify-center gap-2 rounded-xl bg-blue-500 px-10 text-sm font-bold text-white transition-all hover:bg-blue-600 disabled:opacity-50 shadow-lg shadow-blue-500/20"
+              className="bg-blue-500 text-white font-bold px-10 py-3 rounded-xl hover:bg-blue-600 transition shadow-md flex items-center disabled:opacity-50"
             >
               {isSubmitting ? (
                 <>
-                  <LoaderCircle className="size-4 animate-spin" />
+                  <LoaderCircle className="size-4 animate-spin mr-2" />
                   Yayınlanıyor...
                 </>
               ) : (
                 <>
-                  <ShieldCheck size={18} />
-                  {isEditing ? "İlanı Güncelle" : "İlanı Yayınla"}
+                  <ShieldCheck size={18} className="mr-2" />
+                  {isEditing ? "Girişi Güncelle" : "İlanı Yayınla"}
                 </>
               )}
             </button>
@@ -561,7 +567,6 @@ export function ListingCreateForm({
         onSuccess={() => {
           setIsPhoneVerifiedLocally(true);
           setIsVerifyDialogOpen(false);
-          // Auto-submit after verification
           onSubmit();
         }}
       />

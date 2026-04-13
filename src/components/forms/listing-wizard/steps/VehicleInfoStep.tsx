@@ -1,10 +1,12 @@
 "use client";
 
-import { UseFormReturn } from "react-hook-form";
-import { CarFront, Search, LoaderCircle, AlertCircle } from "lucide-react";
+import { UseFormReturn, Controller } from "react-hook-form";
+import { Search, LoaderCircle, AlertCircle, Sparkles } from "lucide-react";
 import { ListingCreateFormValues, BrandCatalogItem } from "@/types";
 import { maximumCarYear, minimumCarYear } from "@/lib/constants/domain";
-import { cn } from "@/lib/utils";
+import { FormSection } from "@/components/shared/design-system/FormSection";
+import { DesignInput } from "@/components/shared/design-system/DesignInput";
+import { ChoiceGroup } from "@/components/shared/design-system/ChoiceGroup";
 
 interface VehicleInfoStepProps {
   form: UseFormReturn<ListingCreateFormValues, unknown, ListingCreateFormValues>;
@@ -19,173 +21,142 @@ export function VehicleInfoStep({
   isPlateLoading, 
   onPlateLookup 
 }: VehicleInfoStepProps) {
-  const { register, formState: { errors }, watch } = form;
+  const { register, formState: { errors }, watch, control } = form;
   const selectedBrand = watch("brand");
   const selectedModel = watch("model");
-  const vinValue = watch("vin") || "";
 
   return (
-    <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
-      <div className="rounded-[2.5rem] border border-slate-100 bg-white p-8 shadow-2xl shadow-slate-200/40 text-slate-900 relative overflow-hidden">
-        <div className="absolute top-0 left-0 w-64 h-64 bg-blue-500/5 blur-[100px] -z-0 pointer-events-none" />
+    <div className="space-y-10">
+      {/* SECTION 1: AUTO LOOKUP */}
+      <FormSection number={1} title="Hızlı Araç Tanımlama">
+        <p className="text-sm text-gray-500 mb-6">
+          Aracınızı plakadan otomatik tanıyabilir veya şasi numarası (VIN) ile doğrulayabilirsiniz.
+        </p>
         
-        <div className="relative z-10 flex items-start gap-4 mb-10">
-          <div className="size-14 rounded-2xl bg-blue-600 flex items-center justify-center text-white shrink-0 shadow-lg shadow-blue-500/20 italic font-black text-xl">
-            <CarFront size={24} />
-          </div>
-          <div>
-            <h3 className="text-2xl font-black italic uppercase tracking-tighter text-blue-900">Araç Tanımlama</h3>
-            <p className="text-sm text-gray-500 font-medium">Aracınızı plakadan otomatik tanıyabilir veya teknik verileri manuel girebilirsiniz.</p>
-          </div>
-        </div>
-
-        <div className="grid gap-10 relative z-10">
-          {/* Plate Lookup - Magical UI */}
+        <div className="grid gap-8">
           <div className="space-y-3">
-            <label htmlFor="licensePlate" className="text-[11px] font-black uppercase tracking-[0.2em] text-slate-400 italic ml-1">Plaka ile Başla</label>
+            <label className="block text-sm font-bold text-gray-700">Plaka ile Sorgula</label>
             <div className="flex gap-3">
-              <div className="relative flex-1 group">
-                <div className="absolute inset-y-0 left-0 w-12 flex items-center justify-center border-r border-slate-100 bg-slate-50 rounded-l-2xl">
+              <div className="relative flex-1">
+                <div className="absolute inset-y-0 left-0 w-10 flex items-center justify-center border-r border-gray-100 bg-gray-50 rounded-l-lg">
                    <span className="text-[10px] font-black text-blue-800">TR</span>
                 </div>
                 <input
                   {...register("licensePlate")}
-                  id="licensePlate"
                   placeholder="34 ABC 123"
-                  className="h-16 w-full rounded-2xl border-2 border-gray-100 bg-white pl-16 pr-4 text-xl font-black text-gray-900 outline-none transition-all focus:border-blue-500 focus:ring-4 focus:ring-blue-500/5 uppercase tracking-tighter placeholder:text-gray-200"
+                  className="h-12 w-full border border-gray-200 rounded-lg pl-14 pr-4 text-sm font-bold placeholder-gray-300 outline-none focus:border-blue-500 transition-all uppercase"
                 />
               </div>
               <button
                 type="button"
                 onClick={onPlateLookup}
                 disabled={isPlateLoading}
-                className="inline-flex h-16 items-center justify-center gap-3 rounded-2xl bg-blue-600 px-10 text-sm font-black text-white transition-all hover:bg-blue-700 disabled:opacity-50 shadow-xl shadow-blue-600/20 group uppercase tracking-widest italic"
+                className="inline-flex h-12 items-center justify-center gap-2 rounded-lg bg-blue-500 px-6 text-sm font-bold text-white transition-all hover:bg-blue-600 disabled:opacity-50"
               >
-                {isPlateLoading ? (
-                  <LoaderCircle className="size-5 animate-spin" />
-                ) : (
-                  <Search size={20} className="group-hover:scale-110 transition-transform" />
-                )}
+                {isPlateLoading ? <LoaderCircle className="size-4 animate-spin" /> : <Search size={18} />}
                 Sorgula
               </button>
             </div>
             {errors.licensePlate && (
-              <p className="text-xs font-bold text-red-500 flex items-center gap-2 ml-1 animate-in shake duration-300">
+              <p className="text-xs font-bold text-red-500 flex items-center gap-2">
                 <AlertCircle size={14} /> {(errors.licensePlate?.message as string)}
               </p>
             )}
           </div>
 
-          <div className="h-px bg-slate-100 w-full" />
+          <DesignInput
+            label="Şasi Numarası (VIN)"
+            {...register("vin")}
+            placeholder="17 haneli şasi numarasını giriniz..."
+            error={errors.vin?.message as string}
+            helperText="Güvenlik doğrulaması için zorunludur."
+            className="uppercase tracking-widest font-mono"
+          />
+        </div>
+      </FormSection>
 
-          {/* VIN (Chassis Number) - Precise UI */}
-          <div className="space-y-3">
-            <label htmlFor="vin" className="text-[11px] font-black uppercase tracking-[0.2em] text-slate-400 italic ml-1">Şasi Numarası (VIN)</label>
-            <div className="relative">
-               <input
-                 {...register("vin")}
-                 id="vin"
-                 autoComplete="off"
-                 placeholder="SC7G..."
-                 className={cn(
-                    "h-16 w-full rounded-2xl border-2 px-6 text-lg font-black outline-none transition-all uppercase tracking-[0.2em] font-mono",
-                    errors.vin ? "border-red-200 bg-red-50 text-red-900" : "border-gray-100 bg-white text-gray-900 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/5"
-                 )}
-               />
-               <div className="absolute right-6 top-1/2 -translate-y-1/2 flex items-center gap-2">
-                  {vinValue.length > 0 && (
-                    <span className={cn(
-                      "text-[10px] font-black px-2 py-1 rounded-lg italic tracking-widest",
-                      vinValue.length === 17 ? "bg-emerald-500 text-white" : "bg-gray-100 text-gray-400"
-                    )}>
-                      {vinValue.length}/17
-                    </span>
-                  )}
-               </div>
-            </div>
-            <p className="text-[11px] text-gray-400 font-medium italic px-1">
-              Güvenlik standardı gereği 17 haneli şasi numarası doğrulaması zorunludur.
-            </p>
-            {errors.vin && (
-              <p className="text-xs font-bold text-red-500 flex items-center gap-2 ml-1 animate-in slide-in-from-left-2">
-                <AlertCircle size={14} /> {(errors.vin?.message as string)}
-              </p>
-            )}
+      {/* SECTION 2: BASIC INFO */}
+      <FormSection number={2} title="Araç Temel Bilgileri">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+          <DesignInput
+            label="Marka"
+            required
+            as="select"
+            {...register("brand")}
+            error={errors.brand?.message as string}
+          >
+            <option value="">Seçiniz</option>
+            {brands.map((b) => (
+              <option key={b.brand} value={b.brand}>{b.brand}</option>
+            ))}
+          </DesignInput>
+
+          <DesignInput
+            label="Model"
+            required
+            as="select"
+            {...register("model")}
+            disabled={!selectedBrand}
+            error={errors.model?.message as string}
+          >
+            <option value="">Seçiniz</option>
+            {(brands.find(b => b.brand === selectedBrand)?.models || []).map(m => (
+              <option key={m.name} value={m.name}>{m.name}</option>
+            ))}
+          </DesignInput>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+          <DesignInput
+            label="Model Yılı"
+            required
+            type="number"
+            {...register("year", { valueAsNumber: true })}
+            min={minimumCarYear}
+            max={maximumCarYear + 1}
+            error={errors.year?.message as string}
+          />
+          <DesignInput
+            label="Kilometre"
+            required
+            type="number"
+            {...register("mileage", { valueAsNumber: true })}
+            error={errors.mileage?.message as string}
+          />
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+          <div className="space-y-2">
+            <label className="block text-sm font-bold text-gray-700">Yakıt Tipi <span className="text-red-500">*</span></label>
+            <Controller
+              control={control}
+              name="fuelType"
+              render={({ field }) => (
+                <ChoiceGroup
+                  options={["benzin", "dizel", "hibrit", "elektrik"]}
+                  value={field.value}
+                  onChange={field.onChange}
+                />
+              )}
+            />
           </div>
 
-          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            <div className="space-y-2">
-              <label htmlFor="brand" className="text-[11px] font-black uppercase tracking-[0.2em] text-gray-400 italic ml-1">Marka</label>
-              <select
-                {...register("brand")}
-                id="brand"
-                className="h-14 w-full rounded-xl border-2 border-gray-100 bg-white px-4 text-sm font-bold text-gray-900 outline-none transition-all focus:border-blue-500 italic"
-              >
-                <option value="">Seçiniz</option>
-                {brands.map((b) => (
-                  <option key={b.brand} value={b.brand}>{b.brand}</option>
-                ))}
-              </select>
-            </div>
-
-            <div className="space-y-2">
-              <label htmlFor="model" className="text-[11px] font-black uppercase tracking-[0.2em] text-gray-400 italic ml-1">Model</label>
-              <select
-                {...register("model")}
-                id="model"
-                disabled={!selectedBrand}
-                className="h-14 w-full rounded-xl border-2 border-gray-100 bg-white px-4 text-sm font-bold text-gray-900 outline-none transition-all focus:border-blue-500 italic disabled:opacity-50"
-              >
-                <option value="">Seçiniz</option>
-                {(brands.find(b => b.brand === selectedBrand)?.models || []).map(m => (
-                  <option key={m.name} value={m.name}>{m.name}</option>
-                ))}
-              </select>
-            </div>
-
-            <div className="space-y-2">
-              <label htmlFor="carTrim" className="text-[11px] font-black uppercase tracking-[0.2em] text-gray-400 italic ml-1">Donanım Paketi</label>
-              <select
-                {...register("carTrim")}
-                id="carTrim"
-                disabled={!selectedModel}
-                className="h-14 w-full rounded-xl border-2 border-gray-100 bg-white px-4 text-sm font-bold text-gray-900 outline-none transition-all focus:border-blue-500 italic disabled:opacity-50"
-              >
-                <option value="">Seçiniz (Opsiyonel)</option>
-                {(brands.find(b => b.brand === selectedBrand)?.models?.find(m => m.name === selectedModel)?.trims || []).map(t => (
-                  <option key={t} value={t}>{t}</option>
-                ))}
-              </select>
-            </div>
-          </div>
-
-          <div className="grid sm:grid-cols-2 gap-6 pb-4">
-            <div className="space-y-2">
-              <label htmlFor="year" className="text-[11px] font-black uppercase tracking-[0.2em] text-gray-400 italic ml-1">Model Yılı</label>
-              <input
-                type="number"
-                {...register("year", { valueAsNumber: true })}
-                id="year"
-                min={minimumCarYear}
-                max={maximumCarYear + 1}
-                className="h-14 w-full rounded-xl border-2 border-gray-100 bg-white px-4 text-sm font-bold text-gray-900 outline-none transition-all focus:border-blue-500 font-mono"
-              />
-            </div>
-            <div className="space-y-2">
-              <label htmlFor="mileage" className="text-[11px] font-black uppercase tracking-[0.2em] text-gray-400 italic ml-1">Kilometre</label>
-              <div className="relative">
-                 <input
-                   type="number"
-                   {...register("mileage", { valueAsNumber: true })}
-                   id="mileage"
-                   className="h-14 w-full rounded-xl border-2 border-gray-100 bg-white px-4 text-sm font-bold text-gray-900 outline-none transition-all focus:border-blue-500 font-mono"
-                 />
-                 <span className="absolute right-4 top-1/2 -translate-y-1/2 text-[10px] font-black text-gray-300 italic">KM</span>
-              </div>
-            </div>
+          <div className="space-y-2">
+            <label className="block text-sm font-bold text-gray-700">Vites Tipi <span className="text-red-500">*</span></label>
+            <Controller
+              control={control}
+              name="transmission"
+              render={({ field }) => (
+                <ChoiceGroup
+                  options={["manuel", "yarı otomatik", "otomatik"]}
+                  value={field.value}
+                  onChange={field.onChange}
+                />
+              )}
+            />
           </div>
         </div>
-      </div>
+      </FormSection>
     </div>
   );
 }

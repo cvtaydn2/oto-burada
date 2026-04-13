@@ -21,6 +21,13 @@ Her yeni geliştirme başlamadan önce okunmalıdır.
 - **Clean Code & Build**: `npm run lint` ve `npm run build` süreçleri başarıyla geçildi. Codebase 0 error durumunda.
 - **Status**: ✅ Tüm admin ve dashboard arayüzleri premium tasarım diliyle uyumlu, stabil ve production-ready.
 
+### 2026-04-13 Listing Wizard Modernization (Completed)
+- **Modular Design System**: `src/components/shared/design-system` altında `FormSection`, `DesignInput` ve `ChoiceGroup` bileşenleri oluşturuldu. Bu sayede tüm formlar merkezi bir tasarım diline kavuşturuldu.
+- **Wizard Steps Refactor**: `StepIndicator`, `VehicleInfoStep`, `DetailsStep`, `InspectionStep` ve `PhotosStep` tamamen yenilendi. "Showroom Elite" tasarım sistemiyle (`blue-500` accents, premium shadow-cards) %100 uyumlu hale getirildi.
+- **Typography & Consistency**: Tekrar eden harici font tanımları ve tutarsız spacing'ler temizlendi. İkon tabanlı aşama göstergesi (Check, Car, Settings, Photo) eklendi.
+- **Clean Code Integration**: `react-hook-form` entegrasyonu shared component'ler içinde optimize edildi, type-safety sağlandı.
+- **Status**: ✅ İlan oluşturma sihirbazı modern, mobil uyumlu ve premium bir görünüme kavuşturuldu.
+
 ### 2026-04-13 Cleanup Session: Optimization & Dependency Cleanup (Completed)
 - **ioredis → @upstash/redis**: Değiştirildi ve tüm `url.parse()` deprecation uyarıları temizlendi.
 - **@base-ui/react**: Kullanılmadığı tespit edildi, kaldırıldı.

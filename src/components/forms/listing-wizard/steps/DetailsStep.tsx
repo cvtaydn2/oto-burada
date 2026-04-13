@@ -1,9 +1,9 @@
 "use client";
 
 import { UseFormReturn } from "react-hook-form";
-import { MapPin, FileText } from "lucide-react";
 import { CityOption, ListingCreateFormValues } from "@/types";
-import { fuelTypes, transmissionTypes } from "@/lib/constants/domain";
+import { FormSection } from "@/components/shared/design-system/FormSection";
+import { DesignInput } from "@/components/shared/design-system/DesignInput";
 
 interface DetailsStepProps {
   form: UseFormReturn<ListingCreateFormValues, unknown, ListingCreateFormValues>;
@@ -11,143 +11,87 @@ interface DetailsStepProps {
 }
 
 export function DetailsStep({ form, cities }: DetailsStepProps) {
-  const { register, watch } = form;
+  const { register, watch, formState: { errors } } = form;
   const selectedCity = watch("city");
   const districtOptions = cities.find(c => c.city === selectedCity)?.districts || [];
 
   return (
-    <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
-      {/* Location & Specs Case */}
-      <div className="rounded-[2.5rem] border border-gray-100 bg-white p-8 shadow-2xl shadow-gray-200/40 text-gray-900 relative overflow-hidden">
-        <div className="absolute top-0 right-0 w-64 h-64 bg-blue-500/5 blur-[100px] -z-0 pointer-events-none" />
-        
-        <div className="relative z-10 flex items-start gap-4 mb-10">
-          <div className="size-14 rounded-2xl bg-blue-600 flex items-center justify-center text-white shrink-0 shadow-lg shadow-blue-500/20 italic font-black text-xl">
-            <MapPin size={24} />
-          </div>
-          <div>
-            <h3 className="text-2xl font-black italic uppercase tracking-tighter text-blue-900">Konum ve Teknik</h3>
-            <p className="text-sm text-gray-500 font-medium">Aracın bulunduğu yeri ve temel sürüş özelliklerini belirtin.</p>
-          </div>
+    <div className="space-y-10">
+      {/* SECTION 1: LOCATION */}
+      <FormSection number={1} title="Konum Bilgileri">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <DesignInput
+            label="Şehir"
+            required
+            as="select"
+            {...register("city")}
+            error={errors.city?.message as string}
+          >
+            <option value="">Seçiniz</option>
+            {cities.map((c) => (
+              <option key={c.city} value={c.city}>{c.city}</option>
+            ))}
+          </DesignInput>
+
+          <DesignInput
+            label="İlçe"
+            required
+            as="select"
+            {...register("district")}
+            disabled={!selectedCity}
+            error={errors.district?.message as string}
+          >
+            <option value="">Seçiniz</option>
+            {districtOptions.map((d) => (
+              <option key={d} value={d}>{d}</option>
+            ))}
+          </DesignInput>
+        </div>
+      </FormSection>
+
+      {/* SECTION 2: AD DETAILS */}
+      <FormSection number={2} title="İlan Detayları">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+          <DesignInput
+            label="İlan Başlığı"
+            required
+            {...register("title")}
+            placeholder="Örn: Hatasız, Boyasız 2021 BMW 320i M Sport"
+            error={errors.title?.message as string}
+            helperText="Etkileyici bir başlık, alıcıların dikkatini daha hızlı çeker."
+          />
+          <DesignInput
+            label="Fiyat (TL)"
+            required
+            type="number"
+            {...register("price", { valueAsNumber: true })}
+            placeholder="0.00"
+            error={errors.price?.message as string}
+          />
         </div>
 
-        <div className="grid gap-8 relative z-10">
-          <div className="grid sm:grid-cols-2 gap-6">
-            <div className="space-y-2">
-              <label htmlFor="city" className="text-[11px] font-black uppercase tracking-[0.2em] text-gray-400 italic ml-1">Şehir</label>
-              <select
-                {...register("city")}
-                id="city"
-                className="h-14 w-full rounded-xl border-2 border-gray-100 bg-white px-4 text-sm font-bold text-gray-900 outline-none transition-all focus:border-blue-500 italic"
-              >
-                <option value="">Seçiniz</option>
-                {cities.map((c) => (
-                  <option key={c.city} value={c.city}>{c.city}</option>
-                ))}
-              </select>
-            </div>
-            <div className="space-y-2">
-              <label htmlFor="district" className="text-[11px] font-black uppercase tracking-[0.2em] text-gray-400 italic ml-1">İlçe</label>
-              <select
-                {...register("district")}
-                id="district"
-                disabled={!selectedCity}
-                className="h-14 w-full rounded-xl border-2 border-gray-100 bg-white px-4 text-sm font-bold text-gray-900 outline-none transition-all focus:border-blue-500 italic disabled:opacity-50"
-              >
-                <option value="">Seçiniz</option>
-                {districtOptions.map((d) => (
-                  <option key={d} value={d}>{d}</option>
-                ))}
-              </select>
-            </div>
-          </div>
-
-          <div className="grid sm:grid-cols-2 gap-6">
-            <div className="space-y-2">
-              <label htmlFor="fuelType" className="text-[11px] font-black uppercase tracking-[0.2em] text-gray-400 italic ml-1">Yakıt Tipi</label>
-              <select
-                {...register("fuelType")}
-                id="fuelType"
-                className="h-14 w-full rounded-xl border-2 border-gray-100 bg-white px-4 text-sm font-bold text-gray-900 outline-none transition-all focus:border-blue-500 italic"
-              >
-                {fuelTypes.map((t) => (
-                  <option key={t} value={t}>
-                    {t.charAt(0).toUpperCase() + t.slice(1)}
-                  </option>
-                ))}
-              </select>
-            </div>
-            <div className="space-y-2">
-              <label htmlFor="transmission" className="text-[11px] font-black uppercase tracking-[0.2em] text-gray-400 italic ml-1">Vites Tipi</label>
-              <select
-                {...register("transmission")}
-                id="transmission"
-                className="h-14 w-full rounded-xl border-2 border-gray-100 bg-white px-4 text-sm font-bold text-gray-900 outline-none transition-all focus:border-blue-500 italic"
-              >
-                {transmissionTypes.map((t) => (
-                  <option key={t} value={t}>
-                    {t.split('_').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')}
-                  </option>
-                ))}
-              </select>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Description & Price Case */}
-      <div className="rounded-[2.5rem] border border-gray-100 bg-white p-8 shadow-2xl shadow-gray-200/40 text-gray-900 relative overflow-hidden">
-        <div className="absolute bottom-0 left-0 w-64 h-64 bg-emerald-500/5 blur-[100px] -z-0 pointer-events-none" />
-        
-        <div className="relative z-10 flex items-start gap-4 mb-10">
-          <div className="size-14 rounded-2xl bg-blue-600 flex items-center justify-center text-white shrink-0 shadow-lg shadow-blue-500/20 italic font-black text-xl">
-            <FileText size={24} />
-          </div>
-          <div>
-            <h3 className="text-2xl font-black italic uppercase tracking-tighter text-blue-900">İçerik ve Fiyat</h3>
-            <p className="text-sm text-gray-500 font-medium">Alıcıların ilgisini çekecek net bir başlık ve dürüst bir açıklama girin.</p>
-          </div>
+        <div className="mb-6">
+          <DesignInput
+            label="Açıklama"
+            required
+            as="textarea"
+            rows={5}
+            {...register("description")}
+            placeholder="Aracınızın durumu, bakımları ve öne çıkan özelliklerini burada detaylandırın..."
+            error={errors.description?.message as string}
+            className="resize-none"
+          />
         </div>
 
-        <div className="grid gap-8 relative z-10">
-          <div className="space-y-3">
-            <label htmlFor="title" className="text-[11px] font-black uppercase tracking-[0.2em] text-gray-400 italic ml-1">İlan Başlığı</label>
-            <input
-              {...register("title")}
-              id="title"
-              placeholder="Örn: 2020 Volkswagen Golf Hatasız Boyasız"
-              className="h-16 w-full rounded-2xl border-2 border-gray-100 bg-white px-6 text-lg font-bold text-gray-900 outline-none transition-all focus:border-blue-500 placeholder:text-gray-200 italic"
-            />
-          </div>
-
-          <div className="space-y-3">
-            <label htmlFor="description" className="text-[11px] font-black uppercase tracking-[0.2em] text-gray-400 italic ml-1">Ayrıntılı Açıklama</label>
-            <textarea
-              {...register("description")}
-              id="description"
-              rows={6}
-              placeholder="Aracınız hakkında samimi ve detaylı bir yazı yazın..."
-              className="w-full rounded-2xl border-2 border-gray-100 bg-white p-6 text-base font-medium text-gray-700 outline-none transition-all focus:border-blue-500 italic antialiased"
-            />
-          </div>
-
-          <div className="space-y-3">
-            <label htmlFor="price" className="text-[11px] font-black uppercase tracking-[0.2em] text-gray-400 italic ml-1">Satış Fiyatı (TL)</label>
-            <div className="relative">
-               <input
-                 type="number"
-                 {...register("price", { valueAsNumber: true })}
-                 id="price"
-                 className="h-20 w-full rounded-2xl border-2 border-gray-100 bg-white px-8 text-4xl font-black text-blue-600 outline-none transition-all focus:border-blue-500 font-heading tracking-tighter"
-               />
-               <span className="absolute right-8 top-1/2 -translate-y-1/2 text-2xl font-black text-gray-200 italic">₺</span>
-            </div>
-            <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest italic ml-1">
-              * Piyasa analizine göre rekabetçi bir fiyat girmeniz önerilir.
-            </p>
-          </div>
-        </div>
-      </div>
+        <DesignInput
+          label="WhatsApp İletişim Numarası"
+          required
+          {...register("whatsappPhone")}
+          placeholder="5XX XXX XX XX"
+          error={errors.whatsappPhone?.message as string}
+          helperText="Alıcılar sizinle WhatsApp üzerinden iletişime geçecektir."
+        />
+      </FormSection>
     </div>
   );
 }
