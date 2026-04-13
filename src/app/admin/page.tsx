@@ -15,6 +15,7 @@ import { AdminPersistencePanel } from "@/components/shared/admin-persistence-pan
 import { DashboardMetricCard } from "@/components/shared/dashboard-metric-card";
 import { AdminAnalyticsPanel } from "@/components/listings/admin-analytics-panel";
 import { Button } from "@/components/ui/button";
+import { MarketSyncButton } from "@/components/admin/market-sync-button";
 import { requireAdminUser } from "@/lib/auth/session";
 import { getRecentAdminModerationActions } from "@/services/admin/moderation-actions";
 import { getPersistenceHealth } from "@/services/admin/persistence-health";
@@ -78,6 +79,7 @@ export default async function AdminOverviewPage() {
               <span className="block text-[10px] text-slate-400 font-bold uppercase mb-1">Ciro</span>
               <span className="text-xl font-black text-slate-800 tracking-tighter">₺0</span>
            </div>
+           <MarketSyncButton />
            <Button className="rounded-xl bg-blue-600 hover:bg-blue-700 shadow-md shadow-blue-100 font-bold px-6 h-12">
               Rapor Oluştur
            </Button>
