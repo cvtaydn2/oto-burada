@@ -1,5 +1,6 @@
 "use client"
 
+import Image from "next/image"
 import { useState } from "react"
 import { useRouter } from "next/navigation"
 import { Search, CarFront, MapPin } from "lucide-react"
@@ -22,15 +23,17 @@ export function HomeHero() {
 
   return (
     <section className="hero-bg h-[500px] flex items-center relative overflow-hidden">
-      {/* Background Image with Overlay */}
-      <div 
-        className="absolute inset-0 bg-cover bg-center transition-transform duration-[10000ms] hover:scale-105" 
-        style={{ 
-          backgroundImage: 'linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.6)), url("https://images.unsplash.com/photo-1503375822722-ec8cb7a4c7e6?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80")',
-          backgroundSize: 'cover',
-          backgroundPosition: 'center'
-        }} 
-      />
+      <div className="absolute inset-0">
+        <Image
+          src="https://images.unsplash.com/photo-1503376780353-7e6692767b70?auto=format&fit=crop&w=1920&q=80"
+          alt="Oto Burada ana sayfa vitrin görseli"
+          fill
+          priority
+          sizes="100vw"
+          className="object-cover transition-transform duration-[10000ms] hover:scale-105"
+        />
+        <div className="absolute inset-0 bg-black/60" />
+      </div>
       
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full relative z-10 text-center">
         <h1 className="text-4xl md:text-5xl font-extrabold text-white mb-4 tracking-tight">

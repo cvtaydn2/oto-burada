@@ -78,6 +78,14 @@ test.describe('Giriş Sayfası', () => {
   });
 });
 
+test.describe('Dashboard Listing Create Akışı', () => {
+  test('yetkisiz kullanıcı create rotasında girişe yönlendirilir', async ({ page }) => {
+    await page.goto('/dashboard/listings/create');
+    await expect(page).toHaveURL(/\/login/);
+    await expect(page.getByPlaceholder('E-posta')).toBeVisible();
+  });
+});
+
 test.describe('Mobil Uyumluluk', () => {
   test('mobilde düzgün görünüyor', async ({ page }) => {
     await page.setViewportSize({ width: 375, height: 667 });

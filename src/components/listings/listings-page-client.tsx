@@ -296,7 +296,7 @@ export function ListingsPageClient({
                 <CarCard
                   key={listing.id}
                   listing={listing}
-                  priority={index < 3}
+                  priority={viewMode === "grid" ? index < 4 : index < 2}
                   variant={viewMode}
                 />
               ))}

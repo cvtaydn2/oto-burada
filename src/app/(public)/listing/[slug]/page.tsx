@@ -243,8 +243,8 @@ export default async function ListingDetailPage({ params }: ListingDetailPagePro
                 <div>
                   <h2 className="mb-6 text-lg font-bold text-slate-900">Benzer ilanlar</h2>
                   <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-                    {similarListings.map((item) => (
-                      <CarCard key={item.id} listing={item} />
+                    {similarListings.map((item, index) => (
+                      <CarCard key={item.id} listing={item} priority={index < 2} />
                     ))}
                   </div>
                 </div>

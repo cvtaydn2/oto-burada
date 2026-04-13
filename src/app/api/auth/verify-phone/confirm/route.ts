@@ -1,7 +1,9 @@
 import { NextResponse } from "next/server";
 import { verifyPhoneOTP } from "@/services/verification/phone-otp";
 import { getCurrentUser } from "@/lib/auth/session";
+import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { hasSupabaseAdminEnv } from "@/lib/supabase/env";
 
 export async function POST(req: Request) {
   const user = await getCurrentUser();
@@ -26,7 +28,6 @@ export async function POST(req: Request) {
       .from("profiles")
       .update({ 
         phone: phone,
-        is_verified: true, // We could add a more specific phone_verified flag too
         updated_at: new Date().toISOString()
       })
       .eq("id", user.id);
@@ -34,6 +35,19 @@ export async function POST(req: Request) {
     if (updateError) {
       console.error("Profile update error after OTP:", updateError);
       return NextResponse.json({ success: false, error: "Profil güncellenemedi." }, { status: 500 });
+    }
+
+    if (hasSupabaseAdminEnv()) {
+      const admin = createSupabaseAdminClient();
+      const { data: authUserResult } = await admin.auth.admin.getUserById(user.id);
+      const currentAppMetadata = (authUserResult.user?.app_metadata as Record<string, unknown> | undefined) ?? {};
+
+      await admin.auth.admin.updateUserById(user.id, {
+        app_metadata: {
+          ...currentAppMetadata,
+          phone_verified: true,
+        },
+      });
     }
 
     return NextResponse.json({ success: true, message: "Telefon numaranız başarıyla doğrulandı." });

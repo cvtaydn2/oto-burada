@@ -13,6 +13,7 @@ export const revalidate = 60;
 
 interface DashboardListingsPageProps {
   searchParams?: Promise<{
+    create?: string;
     edit?: string;
   }>;
 }
@@ -24,6 +25,7 @@ export default async function DashboardListingsPage({ searchParams }: DashboardL
     phone?: string;
   };
   const resolvedSearchParams = searchParams ? await searchParams : undefined;
+  const hasRequestedCreate = resolvedSearchParams?.create === "true";
   const hasRequestedEdit = Boolean(resolvedSearchParams?.edit);
   const storedListings = await getStoredUserListings(user.id);
   const references = await getLiveMarketplaceReferenceData();
@@ -92,6 +94,7 @@ export default async function DashboardListingsPage({ searchParams }: DashboardL
 
       <MyListingsPanel 
         activeEditId={selectedListing?.id} 
+        initialShowForm={hasRequestedCreate && !isEditingExisting}
         listings={storedListings}
       >
         <div className="mt-8 bg-white rounded-3xl border border-slate-200 p-8 shadow-sm">

@@ -1,8 +1,26 @@
 import { Redis } from "@upstash/redis";
 import { sms } from "@/lib/sms";
 
-const redis = Redis.fromEnv();
 const OTP_TTL = 300; // 5 minutes
+let redisClient: Redis | null | undefined;
+
+function getRedisClient() {
+  if (redisClient !== undefined) {
+    return redisClient;
+  }
+
+  if (!process.env.UPSTASH_REDIS_REST_URL || !process.env.UPSTASH_REDIS_REST_TOKEN) {
+    redisClient = null;
+    return redisClient;
+  }
+
+  redisClient = new Redis({
+    url: process.env.UPSTASH_REDIS_REST_URL,
+    token: process.env.UPSTASH_REDIS_REST_TOKEN,
+  });
+
+  return redisClient;
+}
 
 export async function sendPhoneOTP(phone: string): Promise<{ success: boolean; error?: string }> {
   // Normalize phone number (remove non-digits)
@@ -10,6 +28,11 @@ export async function sendPhoneOTP(phone: string): Promise<{ success: boolean; e
   
   if (normalizedPhone.length < 10) {
     return { success: false, error: "Geçersiz telefon numarası." };
+  }
+
+  const redis = getRedisClient();
+  if (!redis) {
+    return { success: false, error: "Telefon doğrulama servisi şu anda kullanılamıyor." };
   }
 
   // Generate a 4-6 digit code
@@ -37,6 +60,11 @@ export async function sendPhoneOTP(phone: string): Promise<{ success: boolean; e
 
 export async function verifyPhoneOTP(phone: string, code: string): Promise<{ success: boolean; error?: string }> {
   const normalizedPhone = phone.replace(/\D/g, "");
+  const redis = getRedisClient();
+
+  if (!redis) {
+    return { success: false, error: "Telefon doğrulama servisi şu anda kullanılamıyor." };
+  }
   
   try {
     const storedCode = await redis.get(`otp:${normalizedPhone}`);

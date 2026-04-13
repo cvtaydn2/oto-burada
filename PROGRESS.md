@@ -14,6 +14,55 @@ Her yeni geliştirme başlamadan önce okunmalıdır.
 
 ## Proje Durumu
 
+### 2026-04-13 Broken Flow Audit: Create Route & Phone Verification (Completed)
+- **Odak**: “Çalışmıyor” hissi veren gerçek kullanıcı akışlarını log ve kod üzerinden izole etmek.
+- **Bulgu**:
+  - Production runtime loglarında `GET /dashboard/listings/create` için tekrar eden `404` kayıtları vardı.
+  - Kod içinde `mobile-nav` ve blog CTA’ları doğrudan `/dashboard/listings/create` rotasına gidiyordu; ancak route fiziksel olarak yoktu.
+  - `dashboard/listings?page?create=true` akışı tasarlanmış olsa da formu açan state bağlanmamıştı.
+  - Telefon OTP akışı `Redis.fromEnv()` ile module-load anında ayağa kalktığı için `UPSTASH_REDIS_*` yokken build sırasında gürültü üretiyordu.
+  - OTP doğrulama sonrası `profiles.is_verified` güncelleniyor, fakat dashboard tarafı `phoneVerified` durumunu auth metadata üzerinden okuduğu için telefon doğrulaması tutarlı şekilde yansımayabiliyordu.
+- **Uygulanan iyileştirmeler**:
+  - `src/app/dashboard/listings/create/page.tsx` eklendi ve `/dashboard/listings?create=true` akışına redirect verildi.
+  - `src/app/dashboard/listings/page.tsx`: `create=true` query parametresi tanındı ve yeni ilan formunun açılması desteklendi.
+  - `src/components/listings/my-listings-panel.tsx`: dışarıdan gelen `initialShowForm` ile form görünürlüğü senkronize edildi.
+  - `src/services/verification/phone-otp.ts`: Redis client lazy hale getirildi; env yoksa kontrollü “servis kullanılamıyor” yanıtı dönülüyor.
+  - `src/app/api/auth/verify-phone/confirm/route.ts`: başarılı doğrulama sonrası auth `app_metadata.phone_verified = true` güncelleniyor.
+  - `public/icons/icon-32x32.png` fallback dosyası eklendi; eski istemcilerden gelen legacy icon isteği için 404 riski kapatıldı.
+  - `e2e/homepage.spec.ts`: yetkisiz kullanıcı için `/dashboard/listings/create` -> `/login` yönlendirmesi test kapsamına alındı.
+- **Validation**:
+  - `npm run lint` ✅
+  - `npm run typecheck` ✅
+  - `npm run test` ✅ (20/20)
+  - `npm run build` ✅
+- **Residual note**:
+  - Playwright altında bazı generated listing cover görselleri için `LCP` tavsiye uyarısı hâlâ devam ediyor; işlevsel hata değil.
+- **Status**: ✅ Eksik create route, görünmeyen create form akışı ve telefon doğrulama durum tutarsızlığı kapatıldı.
+- **Next Step**: Yeni deployment sonrası production logları tekrar okuyup `dashboard/listings/create` ve legacy icon 404 kayıtlarının temizlendiğini doğrulamak; ardından browser seviyesinde kalan LCP aday görselleri route bazında izole etmek.
+
+### 2026-04-13 Production Observability & LCP Hardening Pass 2 (Completed)
+- **Odak**: Yeni production deployment sonrası canlı sağlık kontrolü, kalan PWA/metadata 404 gürültüsü ve fold-üstü görsel önceliklendirmesi.
+- **Canlı doğrulama**:
+  - Vercel production deployment `dpl_FN1xtsFvScXwsL9XQNCU7Zd484k2` `READY` durumda doğrulandı.
+  - Deployment-spesifik production runtime loglarında daha önce görülen `/admin/support` veri hatası ve `/admin` debug gürültüsü artık görünmedi.
+  - Yeni deploy loglarında ana kritik kalan sinyal `GET /icons/icon-32x32.png` için `404` kaydıydı.
+- **Uygulanan iyileştirmeler**:
+  - `src/app/layout.tsx`: metadata icon referansları mevcut dosyalarla hizalandı; bozuk `icon-32x32.png` ve `apple-touch-icon.png` referansları kaldırıldı.
+  - `src/app/layout.tsx`: manifest referansı `manifest.webmanifest` ile hizalandı ve font subsetleri tekrar `latin-ext` ile genişletildi.
+  - `src/components/layout/home-hero.tsx`: hero arka planı CSS background yerine `next/image` ile fold-üstü optimize edildi.
+  - `src/components/listings/listings-page-client.tsx`: listings grid/list kartlarında eager öncelik ilk satıra göre ayarlandı.
+  - `src/app/(public)/listing/[slug]/page.tsx` ve `src/app/(public)/gallery/[slug]/page.tsx`: benzer ilanlar / galeri gridlerinde ilk kartlara kontrollü `priority` verildi.
+  - `src/app/(public)/page.tsx`: ana sayfada below-the-fold yeni ilanlar için gereksiz eager yük kaldırıldı.
+- **Validation**:
+  - `npm run typecheck` ✅
+  - `npm run lint` ✅
+  - `npm run test` ✅ (18/18)
+- **Residual note**:
+  - Playwright altında `https://images.unsplash.com/photo-1553440569-bcc63803a83d?...` cover görseli için `LCP` tavsiye uyarısı devam ediyor.
+  - Bu artık tekil URL değil; generated listing datasındaki bir kartın belirli route/viewport kombinasyonunda fold-üstüne geldiğine işaret ediyor.
+- **Status**: ✅ Production log temizliği doğrulandı, metadata/icon 404 gürültüsü kapatıldı, fold-üstü görsel önceliklendirmesi ikinci tur optimize edildi.
+- **Next Step**: Browser seviyesinde hangi route ve viewport kombinasyonunun bu generated listing cover’ı `LCP` yaptığı izole edilip, o kullanım noktasına özel eager/priority stratejisi uygulanmalı.
+
 ### 2026-04-13 Performance Hardening Pass 1: Public Shell & Header (Completed)
 - **Odak**: Canlı performans darboğazlarını azaltmak ve Vercel production davranışını incelemek.
 - **Bulgu**:

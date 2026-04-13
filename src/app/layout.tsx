@@ -13,14 +13,14 @@ import { Inter, Outfit } from "next/font/google";
 import "./globals.css";
 
 const inter = Inter({
-  subsets: ["latin"],
+  subsets: ["latin", "latin-ext"],
   variable: "--font-inter",
   display: "swap",
   preload: true,
 });
 
 const outfit = Outfit({
-  subsets: ["latin"],
+  subsets: ["latin", "latin-ext"],
   variable: "--font-outfit",
   display: "swap",
   preload: true,
@@ -44,10 +44,13 @@ export const metadata: Metadata = {
     type: "website",
   },
   icons: {
-    icon: "/icons/icon-32x32.png",
-    apple: "/icons/apple-touch-icon.png",
+    icon: [
+      { url: "/icons/icon-192x192.png", sizes: "192x192", type: "image/png" },
+      { url: "/icons/icon-512x512.png", sizes: "512x512", type: "image/png" },
+    ],
+    apple: [{ url: "/icons/icon-192x192.png", sizes: "192x192", type: "image/png" }],
   },
-  manifest: "/manifest.json",
+  manifest: "/manifest.webmanifest",
   other: {
     "theme-color": "#4f46e5",
     "mobile-web-app-capable": "yes",

@@ -21,6 +21,7 @@ import { Button } from "@/components/ui/button";
 
 interface MyListingsPanelProps {
   activeEditId?: string;
+  initialShowForm?: boolean;
   listings: Listing[];
   children?: React.ReactNode;
 }
@@ -41,9 +42,9 @@ const statusClassMap: Record<Listing["status"], string> = {
   rejected: "bg-red-50 text-red-600 border-red-100",
 };
 
-export function MyListingsPanel({ activeEditId, listings, children }: MyListingsPanelProps) {
+export function MyListingsPanel({ activeEditId, initialShowForm = false, listings, children }: MyListingsPanelProps) {
   const router = useRouter();
-  const [showForm, setShowForm] = useState(!!activeEditId);
+  const [showForm, setShowForm] = useState(Boolean(activeEditId) || initialShowForm);
   const [archivingId, setArchivingId] = useState<string | null>(null);
   const [archiveError, setArchiveError] = useState<string | null>(null);
   const [bumpingId, setBumpingId] = useState<string | null>(null);
@@ -63,6 +64,10 @@ export function MyListingsPanel({ activeEditId, listings, children }: MyListings
       window.clearInterval(intervalId);
     };
   }, []);
+
+  useEffect(() => {
+    setShowForm(Boolean(activeEditId) || initialShowForm);
+  }, [activeEditId, initialShowForm]);
 
   const handleArchive = async (listingId: string) => {
     setArchivingId(listingId);
