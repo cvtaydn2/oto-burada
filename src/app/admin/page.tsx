@@ -15,7 +15,7 @@ import { AdminPersistencePanel } from "@/components/shared/admin-persistence-pan
 import { DashboardMetricCard } from "@/components/shared/dashboard-metric-card";
 import { AdminAnalyticsPanel } from "@/components/listings/admin-analytics-panel";
 import { Button } from "@/components/ui/button";
-import { MarketSyncButton } from "@/components/admin/market-sync-button";
+import { AdminHeaderActions } from "@/components/admin/admin-header-actions";
 import { requireAdminUser } from "@/lib/auth/session";
 import { getRecentAdminModerationActions } from "@/services/admin/moderation-actions";
 import { getPersistenceHealth } from "@/services/admin/persistence-health";
@@ -27,65 +27,54 @@ import { getStoredReports } from "@/services/reports/report-submissions";
 export const dynamic = "force-dynamic";
 
 export default async function AdminOverviewPage() {
+  // Authentication check
   await requireAdminUser();
 
-  let analyticsData = null;
-  let storedReports: Awaited<ReturnType<typeof getStoredReports>> = [];
-  let knownListings: Awaited<ReturnType<typeof getAllKnownListings>> = [];
-  let persistenceHealth = null;
-  let recentActions: Awaited<ReturnType<typeof getRecentAdminModerationActions>> = [];
+  // Parallel data fetching for maximum performance (Clean Code)
+  // We wrap each in a try-catch/catch to ensure one failure doesn't block the whole page
+  const [
+    analyticsData,
+    storedReports,
+    knownListings,
+    persistenceHealth,
+    recentActions
+  ] = await Promise.all([
+    getAdminAnalytics().catch((e) => {
+      console.error("Admin Analytics Fetch Error:", e);
+      return null;
+    }),
+    getStoredReports().catch((e) => {
+      console.error("Admin Reports Fetch Error:", e);
+      return [];
+    }),
+    getAllKnownListings().catch((e) => {
+      console.error("Admin Listings Fetch Error:", e);
+      return [];
+    }),
+    getPersistenceHealth().catch((e) => {
+      console.error("Admin Persistence Health Error:", e);
+      return null;
+    }),
+    getRecentAdminModerationActions().catch((e) => {
+      console.error("Admin Moderation Actions Fetch Error:", e);
+      return [];
+    })
+  ]);
 
-  try {
-    analyticsData = await getAdminAnalytics();
-  } catch (e) {
-    console.error("Analytics error:", e);
-  }
-
-  try {
-    storedReports = await getStoredReports();
-  } catch (e) {
-    console.error("Reports error:", e);
-  }
-
-  const actionableReports = storedReports.filter(
+  const actionableReports = (storedReports ?? []).filter(
     (report) => report.status === "open" || report.status === "reviewing",
   );
 
-  try {
-    knownListings = await getAllKnownListings();
-  } catch (e) {
-    console.error("Listings error:", e);
-  }
-
-  try {
-    persistenceHealth = await getPersistenceHealth();
-  } catch (e) {
-    console.error("Persistence health error:", e);
-    persistenceHealth = {
-      environment: { adminEnv: false, databaseUrlEnv: false, demoPasswordEnv: false, storageEnv: false, redisEnv: false },
-      healthScore: 0,
-      message: "Veri yüklenemedi",
-      ready: false,
-      storage: { bucketAccessible: null, bucketName: null, message: "Hata oluştu" },
-      tables: [],
-    };
-  }
-
-  try {
-    recentActions = await getRecentAdminModerationActions();
-  } catch (e) {
-    console.error("Moderation actions error:", e);
-  }
-
-  const listingById = Object.fromEntries(knownListings.map((listing) => [listing.id, listing]));
+  const listingById = Object.fromEntries((knownListings ?? []).map((listing) => [listing.id, listing]));
   
+  // Resolve actor labels and targets for recent actions
   const recentActionItems: AdminRecentActionItem[] = await Promise.all(
-    recentActions.map(async (action) => {
+    (recentActions ?? []).map(async (action) => {
       let actorProfile = null;
       try {
         actorProfile = await getStoredProfileById(action.adminUserId);
       } catch (e) {
-        console.error("Profile fetch error:", e);
+        console.error("Action actor profile fetch error:", e);
       }
       
       const targetListing =
@@ -95,20 +84,21 @@ export default async function AdminOverviewPage() {
 
       return {
         action,
-        actorLabel: actorProfile?.fullName || actorProfile?.id || "Bilinmeyen admin",
+        actorLabel: actorProfile?.fullName || actorProfile?.id || "Admin",
         targetHref: targetListing?.slug ? `/listing/${targetListing.slug}` : null,
         targetLabel:
           action.targetType === "listing"
-            ? targetListing?.title ?? "Ilan basligi bulunamadi"
+            ? targetListing?.title ?? "İlan başlığı bulunamadı"
             : targetListing
-              ? `${targetListing.title} icin rapor`
-              : "Rapor hedef ilani bulunamadi",
+              ? `${targetListing.title} için rapor`
+              : "Rapor hedef ilanı bulunamadı",
       };
     }),
   );
 
   return (
-    <main className="space-y-8 p-6 lg:p-8 bg-slate-50/30 min-h-full">
+    <main className="space-y-8 p-6 lg:p-8 bg-slate-50/30 min-h-screen">
+      {/* Header Section */}
       <section className="flex flex-col md:flex-row md:items-center justify-between gap-6">
         <div>
           <div className="mb-2 flex items-center gap-2">
@@ -122,14 +112,13 @@ export default async function AdminOverviewPage() {
         </div>
         
         <div className="flex items-center gap-4">
-           <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm min-w-[140px]">
-              <span className="block text-[10px] text-slate-400 font-bold uppercase mb-1 italic">Toplam Hacim (MVP)</span>
-              <span className="text-xl font-black text-slate-800 tracking-tighter">₺{analyticsData?.totalRevenue?.toLocaleString("tr-TR") ?? "0"}</span>
-           </div>
-           <MarketSyncButton />
-           <Button className="rounded-xl bg-slate-900 border-none hover:bg-black text-white shadow-lg shadow-slate-200 font-bold px-6 h-12 transition-all hover:-translate-y-0.5" onClick={() => {}}>
-              Rapor Çıktısı Al
-           </Button>
+           {analyticsData && (
+             <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm min-w-[140px]">
+                <span className="block text-[10px] text-slate-400 font-bold uppercase mb-1 italic">Toplam Hacim</span>
+                <span className="text-xl font-black text-slate-800 tracking-tighter">₺{analyticsData.totalRevenue.toLocaleString("tr-TR")}</span>
+             </div>
+           )}
+           <AdminHeaderActions />
         </div>
       </section>
 
@@ -151,7 +140,7 @@ export default async function AdminOverviewPage() {
         />
         <DashboardMetricCard
           label="İlan Artışı"
-          value={`${analyticsData?.totalListings ?? 0}`}
+          value={String(analyticsData?.totalListings ?? 0)}
           helper="Toplam kayıtlı araç"
           icon={Activity}
           tone="emerald"
@@ -171,7 +160,7 @@ export default async function AdminOverviewPage() {
 
       <div className="grid grid-cols-1 gap-8 xl:grid-cols-3">
         <div className="space-y-8 xl:col-span-2">
-           <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm overflow-hidden">
+           <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm overflow-hidden min-h-[400px]">
               <div className="mb-6 flex items-center justify-between">
                  <div className="flex items-center gap-3">
                     <div className="size-10 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center">
@@ -179,14 +168,15 @@ export default async function AdminOverviewPage() {
                     </div>
                     <div>
                        <h2 className="text-lg font-black text-slate-800">İlan Analiz Grafiği</h2>
-                       <p className="text-xs text-slate-400 font-medium">Son 30 günlük ilan dağılımı</p>
+                       <p className="text-xs text-slate-400 font-medium">Son 7 günlük ilan dağılımı</p>
                     </div>
                  </div>
                  <Button variant="ghost" size="sm" className="text-xs font-bold text-blue-600">Detaylı Gör</Button>
               </div>
               <AdminAnalyticsPanel data={analyticsData} />
            </div>
-           <AdminPersistencePanel health={persistenceHealth} />
+           
+           {persistenceHealth && <AdminPersistencePanel health={persistenceHealth} />}
         </div>
         
         <div className="space-y-8">

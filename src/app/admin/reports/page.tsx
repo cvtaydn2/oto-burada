@@ -6,12 +6,17 @@ import { getAllKnownListings } from "@/services/listings/marketplace-listings";
 
 export const dynamic = "force-dynamic";
 
-export default async function AdminReportsPage() {
+export default async function AdminReportsPage({ searchParams }: { searchParams: Promise<{ urgent?: string }> }) {
   await requireAdminUser();
+  const { urgent } = await searchParams;
   const storedReports = await getStoredReports();
-  const actionableReports = storedReports.filter(
+  let actionableReports = storedReports.filter(
     (report) => report.status === "open" || report.status === "reviewing",
   );
+
+  if (urgent === "true") {
+     actionableReports = actionableReports.filter(r => r.reason === "fake_listing");
+  }
   const knownListings = await getAllKnownListings();
   const listingMetaById = Object.fromEntries(
     knownListings.map((listing) => [
@@ -84,9 +89,12 @@ export default async function AdminReportsPage() {
              <div className="absolute -right-4 -bottom-4 size-24 bg-white/10 rounded-full blur-2xl group-hover:scale-125 transition-transform" />
              <h4 className="font-black text-lg mb-2">Hızlı Filtre</h4>
              <p className="text-blue-100 text-xs font-medium mb-4 leading-relaxed italic">Sadece yüksek riskli şikayetleri listeleyerek zaman kazanın.</p>
-             <button className="w-full bg-white text-blue-600 rounded-xl py-3 font-black text-[10px] tracking-widest uppercase hover:bg-blue-50 transition-colors">
-                ACİL OLANLAR
-             </button>
+             <a 
+                href={urgent === "true" ? "/admin/reports" : "/admin/reports?urgent=true"}
+                className="w-full bg-white text-blue-600 rounded-xl py-3 font-black text-[10px] tracking-widest uppercase hover:bg-blue-50 transition-colors flex items-center justify-center cursor-pointer"
+             >
+                {urgent === "true" ? "TÜMÜNÜ GÖSTER" : "ACİL OLANLAR"}
+             </a>
           </div>
         </div>
       </div>

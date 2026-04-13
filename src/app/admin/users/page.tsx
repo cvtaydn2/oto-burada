@@ -1,4 +1,6 @@
 import { Users, Search, Plus, UserCog, ShieldCheck } from "lucide-react";
+import { UserHeaderActions } from "@/components/admin/user-header-actions";
+import { UserSearch } from "@/components/admin/user-search";
 import { format } from "date-fns";
 import { tr } from "date-fns/locale";
 import { Badge } from "@/components/ui/badge";
@@ -8,8 +10,13 @@ import { UserActionMenu } from "@/components/admin/user_action_menu";
 
 import { getAllUsers } from "@/services/admin/users";
 
-export default async function AdminUserManagementPage() {
-  const users = await getAllUsers();
+export default async function AdminUserManagementPage({ 
+  searchParams 
+}: { 
+  searchParams: Promise<{ q?: string }> 
+}) {
+  const { q } = await searchParams;
+  const users = await getAllUsers(q);
 
   const stats = [
     { label: "Tüm Kullanıcılar", value: users.length.toLocaleString("tr-TR"), color: "text-slate-900" },
@@ -30,15 +37,7 @@ export default async function AdminUserManagementPage() {
           </h1>
           <p className="mt-1.5 text-sm text-slate-500 font-medium italic">Platform genelindeki üye kayıtlarını ve yetkilerini buradan kontrol edin.</p>
         </div>
-        <div className="flex items-center gap-3">
-           <Button variant="outline" className="rounded-xl border-slate-200 text-slate-600 font-bold h-12 px-6">
-             Dışa Aktar
-           </Button>
-           <Button className="rounded-xl bg-blue-600 hover:bg-blue-700 shadow-lg shadow-blue-100 font-black h-12 px-8 flex items-center gap-2">
-             <Plus size={18} strokeWidth={3} />
-             YENİ ÜYE EKLE
-           </Button>
-        </div>
+        <UserHeaderActions />
       </div>
 
       <div className="grid gap-8 lg:grid-cols-4">
@@ -60,14 +59,7 @@ export default async function AdminUserManagementPage() {
           <div className="rounded-3xl border border-slate-200 bg-white overflow-hidden shadow-sm">
             {/* Search and Filters */}
             <div className="p-6 border-b border-slate-100 bg-slate-50/30 flex flex-col md:flex-row md:items-center gap-4">
-              <div className="relative flex-1 group">
-                <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-blue-500 transition-colors" size={18} />
-                <input
-                  type="text"
-                  placeholder="İsim, e-posta veya üye ID ile hızlı ara..."
-                  className="h-12 w-full rounded-xl border border-slate-200 bg-white pl-12 pr-4 text-sm text-slate-900 outline-none transition-all focus:border-blue-300 focus:ring-4 focus:ring-blue-50 placeholder:italic placeholder:text-slate-300"
-                />
-              </div>
+              <UserSearch defaultValue={q} />
               <div className="flex items-center gap-2">
                  <Button variant="ghost" size="sm" className="text-xs font-bold text-slate-500">Sırala</Button>
                  <Button variant="ghost" size="sm" className="text-xs font-bold text-slate-500">Filtrele</Button>

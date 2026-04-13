@@ -1,7 +1,6 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import { TrendingUp, Users, FileText, TriangleAlert } from "lucide-react";
 import type { AdminAnalyticsData } from "@/services/admin/analytics";
 
 const BarChart = dynamic(() => import("recharts").then((mod) => mod.BarChart), { ssr: false });
@@ -26,8 +25,8 @@ interface AdminAnalyticsPanelProps {
 export function AdminAnalyticsPanel({ data }: AdminAnalyticsPanelProps) {
   if (!data) {
     return (
-      <div className="flex items-center justify-center h-40 text-slate-400 text-sm">
-        Analitik verileri yükleniyor veya mevcut değil
+      <div className="flex items-center justify-center h-[400px] text-slate-400 text-sm font-medium italic">
+        Analitik verileri yükleniyor veya mevcut değil...
       </div>
     );
   }
@@ -37,45 +36,15 @@ export function AdminAnalyticsPanel({ data }: AdminAnalyticsPanelProps) {
     value: s.count || 0,
   }));
 
-  const totalUsers = data.totalUsers ?? 0;
-  const totalListings = data.totalListings ?? 0;
-  const totalReports = data.totalReports ?? 0;
-  const listingTrend = data.listingTrend ?? 0;
-
   return (
-    <div className="space-y-6">
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-        <StatCard
-          title="Toplam Kullanıcı"
-          value={totalUsers}
-          icon={Users}
-          description="Kayıtlı profil sayısı"
-        />
-        <StatCard
-          title="Toplam İlan"
-          value={totalListings}
-          icon={FileText}
-          description="Tüm zamanların ilanları"
-        />
-        <StatCard
-          title="Aktif Rapor"
-          value={totalReports}
-          icon={TriangleAlert}
-          description="İncelemede olan raporlar"
-        />
-        <StatCard
-          title="Gelir Trendi"
-          value={`${listingTrend}%`}
-          icon={TrendingUp}
-          description="Aylık ilan artışı"
-          highlight
-        />
-      </div>
-
-      <div className="grid gap-6 lg:grid-cols-2">
-        <div className="rounded-2xl border border-slate-200 bg-slate-50/50 p-4">
-          <h3 className="text-sm font-black text-slate-700 mb-4 uppercase tracking-wider">İlan Durumu Dağılımı</h3>
-          <div className="h-[200px]">
+    <div className="space-y-8">
+      <div className="grid gap-8 lg:grid-cols-2">
+        <div className="rounded-2xl border border-slate-100 bg-slate-50/20 p-6 flex flex-col">
+          <div className="flex items-center gap-2 mb-6">
+             <div className="size-1.5 rounded-full bg-blue-500" />
+             <h3 className="text-[11px] font-black text-slate-400 uppercase tracking-[0.2em] italic">İlan Durumu Dağılımı</h3>
+          </div>
+          <div className="h-[250px] w-full flex-1">
             {statusData.length > 0 ? (
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
@@ -83,103 +52,135 @@ export function AdminAnalyticsPanel({ data }: AdminAnalyticsPanelProps) {
                     data={statusData}
                     cx="50%"
                     cy="50%"
-                    innerRadius={50}
-                    outerRadius={80}
-                    paddingAngle={5}
+                    innerRadius={60}
+                    outerRadius={90}
+                    paddingAngle={8}
                     dataKey="value"
+                    stroke="none"
                   >
                     {statusData.map((_, index) => (
                       <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                     ))}
                   </Pie>
-                  <Tooltip />
+                  <Tooltip 
+                    contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 20px rgba(0,0,0,0.08)', fontWeight: 'bold' }}
+                  />
                 </PieChart>
               </ResponsiveContainer>
             ) : (
-              <div className="flex items-center justify-center h-full text-slate-400 text-sm">
-                Veri yok
+              <div className="flex items-center justify-center h-full text-slate-400 text-sm font-medium">
+                Görüntülenecek veri bulunamadı
               </div>
             )}
           </div>
+          <div className="mt-4 flex flex-wrap gap-4 justify-center">
+             {statusData.map((s, i) => (
+                <div key={s.name} className="flex items-center gap-2">
+                   <div className="size-2 rounded-full" style={{ backgroundColor: COLORS[i % COLORS.length] }} />
+                   <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">{s.name} ({s.value})</span>
+                </div>
+             ))}
+          </div>
         </div>
 
-        <div className="rounded-2xl border border-slate-200 bg-slate-50/50 p-4">
-          <h3 className="text-sm font-black text-slate-700 mb-4 uppercase tracking-wider">İlan Trendi (Son 30 Gün)</h3>
-          <div className="h-[200px]">
+        <div className="rounded-2xl border border-slate-100 bg-slate-50/20 p-6">
+          <div className="flex items-center gap-2 mb-6">
+             <div className="size-1.5 rounded-full bg-indigo-500" />
+             <h3 className="text-[11px] font-black text-slate-400 uppercase tracking-[0.2em] italic">İlan Trendi (Son 7 Gün)</h3>
+          </div>
+          <div className="h-[250px] w-full">
             {(data.recentTrends || []).length > 0 ? (
               <ResponsiveContainer width="100%" height="100%">
                 <LineChart data={data.recentTrends}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
+                   <defs>
+                    <linearGradient id="lineGradient" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="#4f46e5" stopOpacity={0.1}/>
+                      <stop offset="95%" stopColor="#4f46e5" stopOpacity={0}/>
+                    </linearGradient>
+                  </defs>
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
                   <XAxis 
                     dataKey="date" 
-                    tick={{ fontSize: 10, fill: "#64748b" }}
+                    axisLine={false}
+                    tickLine={false}
+                    tick={{ fontSize: 10, fill: "#94a3b8", fontWeight: "bold" }}
                     tickFormatter={(value) => {
                       try {
-                        return new Date(value).toLocaleDateString("tr-TR", { day: "numeric" });
+                        const date = new Date(value);
+                        return date.toLocaleDateString("tr-TR", { day: "numeric", month: "short" });
                       } catch {
                         return "";
                       }
                     }}
+                    padding={{ left: 10, right: 10 }}
                   />
-                  <YAxis tick={{ fontSize: 10, fill: "#64748b" }} />
-                  <Tooltip />
-                  <Line type="monotone" dataKey="listings" stroke="#4f46e5" strokeWidth={2} dot={false} />
+                  <YAxis 
+                    axisLine={false}
+                    tickLine={false}
+                    tick={{ fontSize: 10, fill: "#94a3b8", fontWeight: "bold" }}
+                  />
+                  <Tooltip 
+                    contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 20px rgba(0,0,0,0.08)', fontWeight: 'bold' }}
+                  />
+                  <Line 
+                    type="monotone" 
+                    dataKey="listings" 
+                    stroke="#4f46e5" 
+                    strokeWidth={4} 
+                    dot={{ fill: '#4f46e5', strokeWidth: 2, r: 4, stroke: '#fff' }}
+                    activeDot={{ r: 6, strokeWidth: 0 }}
+                  />
                 </LineChart>
               </ResponsiveContainer>
             ) : (
-              <div className="flex items-center justify-center h-full text-slate-400 text-sm">
-                Veri yok
+              <div className="flex items-center justify-center h-full text-slate-400 text-sm font-medium">
+                Görüntülenecek veri bulunamadı
               </div>
             )}
           </div>
         </div>
       </div>
 
-      <div className="rounded-2xl border border-slate-200 bg-slate-50/50 p-4">
-        <h3 className="text-sm font-black text-slate-700 mb-4 uppercase tracking-wider">Marka Dağılımı (Top 10)</h3>
-        <div className="h-[250px]">
+      <div className="rounded-2xl border border-slate-100 bg-slate-50/20 p-6">
+        <div className="flex items-center gap-2 mb-6">
+           <div className="size-1.5 rounded-full bg-emerald-500" />
+           <h3 className="text-[11px] font-black text-slate-400 uppercase tracking-[0.2em] italic">Marka Bazlı Kapasite (Top 5)</h3>
+        </div>
+        <div className="h-[250px] w-full">
           {(data.listingsByBrand || []).length > 0 ? (
             <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={(data.listingsByBrand || []).slice(0, 10)} layout="vertical">
-                <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
-                <XAxis type="number" tick={{ fontSize: 10, fill: "#64748b" }} />
+              <BarChart data={(data.listingsByBrand || []).slice(0, 5)} layout="vertical" margin={{ left: 20 }}>
+                <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#e2e8f0" />
+                <XAxis type="number" axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: "#94a3b8", fontWeight: "bold" }} />
                 <YAxis 
                   type="category" 
                   dataKey="brand" 
-                  tick={{ fontSize: 10, fill: "#64748b" }} 
-                  width={80}
+                  axisLine={false}
+                  tickLine={false}
+                  tick={{ fontSize: 11, fill: "#475569", fontWeight: "black" }} 
+                  width={100}
                 />
-                <Tooltip />
-                <Bar dataKey="count" fill="#4f46e5" radius={[0, 4, 4, 0]} />
+                <Tooltip 
+                  contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 20px rgba(0,0,0,0.08)', fontWeight: 'bold' }}
+                />
+                <Bar 
+                  dataKey="count" 
+                  fill="#10b981" 
+                  radius={[0, 8, 8, 0]} 
+                  barSize={32}
+                >
+                   {data.listingsByBrand.slice(0, 5).map((_, index) => (
+                    <Cell key={`cell-${index}`} fill={index === 0 ? "#10b981" : "#10b981cc"} />
+                   ))}
+                </Bar>
               </BarChart>
             </ResponsiveContainer>
           ) : (
-            <div className="flex items-center justify-center h-full text-slate-400 text-sm">
-              Veri yok
+            <div className="flex items-center justify-center h-full text-slate-400 text-sm font-medium">
+              Görüntülenecek veri bulunamadı
             </div>
           )}
         </div>
-      </div>
-    </div>
-  );
-}
-
-function StatCard({ title, value, icon: Icon, description, highlight }: {
-  title: string;
-  value: string | number;
-  icon: React.ComponentType<{ size?: number; className?: string }>;
-  description: string;
-  highlight?: boolean;
-}) {
-  return (
-    <div className="flex items-start gap-3 rounded-xl bg-slate-50 p-4">
-      <div className={`rounded-lg p-2 ${highlight ? "bg-emerald-100 text-emerald-600" : "bg-blue-100 text-blue-600"}`}>
-        <Icon size={18} />
-      </div>
-      <div>
-        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">{title}</p>
-        <p className="text-xl font-black text-slate-800">{value}</p>
-        <p className="text-[10px] text-slate-500">{description}</p>
       </div>
     </div>
   );

@@ -3,11 +3,17 @@
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { revalidatePath } from "next/cache";
 
-export async function getBrands() {
+export async function getBrands(query?: string) {
   const admin = createSupabaseAdminClient();
-  const { data, error } = await admin
+  let rpc = admin
     .from("brands")
-    .select("*")
+    .select("*");
+
+  if (query) {
+    rpc = rpc.ilike("name", `%${query}%`);
+  }
+
+  const { data, error } = await rpc
     .order("name", { ascending: true });
 
   if (error) return [];

@@ -4,12 +4,19 @@ import { Database, Search, Filter } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { BrandsManager } from "@/components/admin/brands-manager";
+import { UserSearch } from "@/components/admin/user-search";
+import { toast } from "sonner";
 
 export const dynamic = "force-dynamic";
 
-export default async function AdminReferencePage() {
+export default async function AdminReferencePage({ 
+  searchParams 
+}: { 
+  searchParams: Promise<{ q?: string }> 
+}) {
   await requireAdminUser();
-  const brands = await getBrands();
+  const { q } = await searchParams;
+  const brands = await getBrands(q);
 
   return (
     <main className="space-y-8 p-6 lg:p-8 bg-slate-50/30 min-h-full">
@@ -44,10 +51,7 @@ export default async function AdminReferencePage() {
                      <p className="text-[10px] text-slate-400 font-bold uppercase tracking-tighter">Toplam {brands.length} marka kayıtlı</p>
                   </div>
                </div>
-               <div className="relative w-full md:w-72">
-                  <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
-                  <Input className="h-11 rounded-xl bg-white border-slate-200 pl-11 text-sm font-medium" placeholder="Marka ara..." />
-               </div>
+               <UserSearch defaultValue={q} />
             </div>
             
             <BrandsManager initialBrands={brands} />

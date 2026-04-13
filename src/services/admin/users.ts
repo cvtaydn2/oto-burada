@@ -4,12 +4,18 @@ import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { revalidatePath } from "next/cache";
 import { Profile } from "@/types/domain";
 
-export async function getAllUsers() {
+export async function getAllUsers(query?: string) {
   const supabase = await createSupabaseServerClient();
   
-  const { data: profiles, error } = await supabase
+  let rpc = supabase
     .from("profiles")
-    .select("*")
+    .select("*");
+
+  if (query) {
+    rpc = rpc.or(`full_name.ilike.%${query}%,phone.ilike.%${query}%,id.ilike.%${query}%`);
+  }
+
+  const { data: profiles, error } = await rpc
     .order("created_at", { ascending: false });
 
   if (error) {
