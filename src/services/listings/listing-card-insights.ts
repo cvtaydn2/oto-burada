@@ -13,52 +13,45 @@ export interface ListingCardInsight {
 }
 
 export function getListingCardInsights(listing: Listing): ListingCardInsight {
-  // Base logic uses the engine
   const analysis = analyzeListingValue(listing);
+  const currentYear = new Date().getFullYear();
+  const isBudgetFriendly = listing.price <= 1_000_000;
+  const isLowMileage = listing.mileage <= 70_000;
+  const isCurrentModel = listing.year >= currentYear - 4;
+  const isAutomatic = listing.transmission === "otomatik";
 
   const highlights: string[] = [];
-  
-  // Highlight construction
-  if (analysis.rating === "opportunity") highlights.push("🔥 FIRSAT ARACI");
-  if (analysis.riskScore === "low") highlights.push("✅ Düşük Risk");
-  if (analysis.riskScore === "high") highlights.push("⚠️ Detaylı İncele");
-  if (listing.mileage < 70000) highlights.push("📍 Düşük KM");
-  if (analysis.hasCriticalDamage) highlights.push("⚡ Kritik Parça İşlemli");
+  if (isBudgetFriendly) highlights.push("Bütçe Dostu");
+  if (isLowMileage) highlights.push("Düşük KM");
+  if (isCurrentModel) highlights.push("Güncel Model");
+  if (isAutomatic) highlights.push("Otomatik Sürüş");
+  if (listing.expertInspection) highlights.push("Ekspertizli");
+  if (analysis.riskScore === "low") highlights.push("Düşük Risk");
+  if (analysis.hasCriticalDamage) highlights.push("Detaylı İncele");
 
-  let badgeLabel = "İnceleniyor";
-  let tone: ListingCardInsightTone = "blue";
+  let badgeLabel = "İncelenebilir";
+  let tone: ListingCardInsightTone = "indigo";
 
-  switch (analysis.rating) {
-    case "opportunity":
-      badgeLabel = analysis.riskScore === "high" ? "Fiyat Avantajlı" : "Süper Fırsat";
-      tone = analysis.riskScore === "high" ? "amber" : "emerald";
-      break;
-    case "good":
-      badgeLabel = "İdeal Fiyat";
-      tone = "indigo";
-      break;
-    case "fair":
-      badgeLabel = "Makul";
-      tone = "blue";
-      break;
-    case "overpriced":
-      badgeLabel = "Kontrollü Alım";
-      tone = "amber";
-      break;
-  }
-
-  // Handle specific quality indicators
-  if (listing.featured && analysis.rating !== "opportunity") {
-    badgeLabel = "Vitrindeki İlan";
+  if (listing.featured) {
+    badgeLabel = "Öne Çıkan";
     tone = "amber";
+  } else if (isBudgetFriendly && isLowMileage) {
+    badgeLabel = "Akıllı Seçim";
+    tone = "emerald";
+  } else if (isAutomatic && isCurrentModel) {
+    badgeLabel = "Kolay Karar";
+    tone = "indigo";
+  } else if (analysis.rating === "opportunity" && analysis.riskScore !== "high" && isLowMileage) {
+    badgeLabel = "Fırsat";
+    tone = "emerald";
   }
 
   return {
     badgeLabel,
     tone,
     summary: analysis.advice,
-    highlights: highlights.slice(0, 3),
+    highlights: highlights.slice(0, 4),
     buyRecommendation: analysis.advice,
-    fairValue: analysis.fairValue
+    fairValue: analysis.fairValue,
   };
 }

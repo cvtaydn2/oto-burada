@@ -35,7 +35,14 @@ export function AdminSettingsForm({ initialSettings }: AdminSettingsFormProps) {
     }
   };
 
-  const updateSubSetting = (category: keyof PlatformSettings, key: string, value: any) => {
+  const updateSubSetting = <
+    K extends keyof PlatformSettings,
+    S extends keyof PlatformSettings[K],
+  >(
+    category: K,
+    key: S,
+    value: PlatformSettings[K][S],
+  ) => {
     setSettings(prev => ({
       ...prev,
       [category]: {

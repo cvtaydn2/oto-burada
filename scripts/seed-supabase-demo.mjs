@@ -174,7 +174,7 @@ const demoListingImages = [
     isCover: false,
     listingId: "ff43d0df-4f47-4338-b2e9-7f9cb944d80d",
     publicUrl:
-      "https://images.unsplash.com/photo-1590362891991-f776e947f1b2?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?auto=format&fit=crop&w=1200&q=80",
     sortOrder: 1,
     storagePath: "seed/listings/2020-renault-clio-1-0-tce-touch-2.jpg",
   },
@@ -183,7 +183,7 @@ const demoListingImages = [
     isCover: false,
     listingId: "ff43d0df-4f47-4338-b2e9-7f9cb944d80d",
     publicUrl:
-      "https://images.unsplash.com/photo-1593367807023-952410a83c39?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1552519507-da3b142c6e3d?auto=format&fit=crop&w=1200&q=80",
     sortOrder: 2,
     storagePath: "seed/listings/2020-renault-clio-1-0-tce-touch-3.jpg",
   },
@@ -192,7 +192,7 @@ const demoListingImages = [
     isCover: true,
     listingId: "8e85f7fc-bbff-4058-8ae1-a95357c67bd4",
     publicUrl:
-      "https://images.unsplash.com/photo-1555215695-3004980ad54e?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1494976388531-d1058494cdd8?auto=format&fit=crop&w=1200&q=80",
     sortOrder: 0,
     storagePath: "seed/listings/2016-bmw-320i-ed-luxury-line-1.jpg",
   },
@@ -215,6 +215,25 @@ const demoListingImages = [
     storagePath: "seed/listings/2016-bmw-320i-ed-luxury-line-3.jpg",
   },
 ];
+
+const brokenListingImageReplacements = new Map([
+  [
+    "https://images.unsplash.com/photo-1590362891991-f776e947f1b2?auto=format&fit=crop&w=1200&q=80",
+    "https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?auto=format&fit=crop&w=1200&q=80",
+  ],
+  [
+    "https://images.unsplash.com/photo-1593367807023-952410a83c39?auto=format&fit=crop&w=1200&q=80",
+    "https://images.unsplash.com/photo-1552519507-da3b142c6e3d?auto=format&fit=crop&w=1200&q=80",
+  ],
+  [
+    "https://images.unsplash.com/photo-1555215695-3004980ad54e?auto=format&fit=crop&w=1200&q=80",
+    "https://images.unsplash.com/photo-1494976388531-d1058494cdd8?auto=format&fit=crop&w=1200&q=80",
+  ],
+  [
+    "https://images.unsplash.com/photo-1493238507129-15510bf4a01b?auto=format&fit=crop&w=1200&q=80",
+    "https://images.unsplash.com/photo-1502877338535-766e1452684a?auto=format&fit=crop&w=1200&q=80",
+  ],
+]);
 
 const demoFavorites = [
   {
@@ -455,6 +474,19 @@ async function upsertListingImages() {
   }
 }
 
+async function repairBrokenListingImageUrls() {
+  for (const [brokenUrl, replacementUrl] of brokenListingImageReplacements.entries()) {
+    const { error } = await supabase
+      .from("listing_images")
+      .update({ public_url: replacementUrl })
+      .eq("public_url", brokenUrl);
+
+    if (error) {
+      throw error;
+    }
+  }
+}
+
 async function upsertFavorites(usersByEmail) {
   const rows = demoFavorites.map((entry) => {
     const user = usersByEmail.get(entry.user_email);
@@ -546,6 +578,7 @@ async function main() {
   await upsertProfiles(usersByEmail);
   await upsertListings(usersByEmail);
   await upsertListingImages();
+  await repairBrokenListingImageUrls();
   await upsertFavorites(usersByEmail);
   await upsertReports(usersByEmail);
   await upsertAdminActions(usersByEmail);

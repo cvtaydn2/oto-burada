@@ -2,13 +2,16 @@ import Link from "next/link";
 import Image from "next/image";
 import { CarFront, Heart, MessageSquare, PlusCircle } from "lucide-react";
 
-import { getCurrentUser, getUserRole } from "@/lib/auth/session";
+import { getUserRole } from "@/lib/auth/session";
 import { getLiveMarketplaceReferenceData } from "@/services/reference/live-reference-data";
 import { HeaderMobileNav } from "./header-mobile-nav";
 import { SearchWithSuggestions } from "@/components/ui/search-with-suggestions";
 
-export async function SiteHeader() {
-  const user = await getCurrentUser();
+interface SiteHeaderProps {
+  user: Awaited<ReturnType<typeof import("@/lib/auth/session").getCurrentUser>>;
+}
+
+export async function SiteHeader({ user }: SiteHeaderProps) {
   const references = await getLiveMarketplaceReferenceData();
   const isAdmin = user ? getUserRole(user) === "admin" : false;
   
@@ -103,4 +106,3 @@ export async function SiteHeader() {
     </header>
   );
 }
-

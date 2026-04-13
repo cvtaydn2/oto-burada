@@ -28,11 +28,11 @@ describe("Listing Card Insights Service", () => {
     ...overrides
   });
 
-  it("should return 'Akilli Secim' for budget-friendly low mileage listing", () => {
+  it("should return 'Akıllı Seçim' for budget-friendly low mileage listing", () => {
     const listing = createMockListing({ price: 800000, mileage: 50000 });
     const insights = getListingCardInsights(listing);
     
-    expect(insights.badgeLabel).toBe("Akilli Secim");
+    expect(insights.badgeLabel).toBe("Akıllı Seçim");
     expect(insights.tone).toBe("emerald");
   });
 
@@ -48,7 +48,7 @@ describe("Listing Card Insights Service", () => {
     expect(insights.tone).toBe("indigo");
   });
 
-  it("should return 'One Cikan' for featured listing", () => {
+  it("should return 'Öne Çıkan' for featured listing", () => {
     const listing = createMockListing({ 
       featured: true,
       price: 2000000,
@@ -58,7 +58,7 @@ describe("Listing Card Insights Service", () => {
     });
     const insights = getListingCardInsights(listing);
     
-    expect(insights.badgeLabel).toBe("One Cikan");
+    expect(insights.badgeLabel).toBe("Öne Çıkan");
     expect(insights.tone).toBe("amber");
   });
 
@@ -71,7 +71,7 @@ describe("Listing Card Insights Service", () => {
     });
     const insights = getListingCardInsights(listing);
     
-    expect(insights.badgeLabel).toBe("Incelenebilir");
+    expect(insights.badgeLabel).toBe("İncelenebilir");
     expect(insights.tone).toBe("indigo");
   });
 
@@ -79,9 +79,9 @@ describe("Listing Card Insights Service", () => {
     const listing = createMockListing({ price: 500000, mileage: 30000, year: 2024 });
     const insights = getListingCardInsights(listing);
     
-    expect(insights.highlights).toContain("Butce Dostu");
-    expect(insights.highlights).toContain("Dusuk KM");
-    expect(insights.highlights).toContain("Guncel Model");
+    expect(insights.highlights).toContain("Bütçe Dostu");
+    expect(insights.highlights).toContain("Düşük KM");
+    expect(insights.highlights).toContain("Güncel Model");
   });
 
   it("should include correct highlights for easy drive listing", () => {
@@ -92,7 +92,7 @@ describe("Listing Card Insights Service", () => {
     });
     const insights = getListingCardInsights(listing);
     
-    expect(insights.highlights).toContain("Otomatik Surus");
-    expect(insights.highlights).toContain("Guncel Model");
+    expect(insights.highlights).toContain("Otomatik Sürüş");
+    expect(insights.highlights).toContain("Güncel Model");
   });
 });

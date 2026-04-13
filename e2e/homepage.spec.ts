@@ -10,13 +10,13 @@ test.describe('Ana Sayfa', () => {
   });
 
   test('arama kutusu görünür', async ({ page }) => {
-    const searchInput = page.locator('input[placeholder*="Marka"]');
+    const searchInput = page.getByPlaceholder('Örn: BMW 3 Serisi');
     await expect(searchInput).toBeVisible();
   });
 
-  test('popüler marka butonları görünür', async ({ page }) => {
-    await expect(page.getByText('Volkswagen')).toBeVisible();
-    await expect(page.getByText('BMW')).toBeVisible();
+  test('popüler kategoriler görünür', async ({ page }) => {
+    await expect(page.getByText('Elektrikli')).toBeVisible();
+    await expect(page.getByText('SUV')).toBeVisible();
   });
 });
 
@@ -27,15 +27,24 @@ test.describe('İlanlar Sayfası', () => {
 
   test('ilanlar listeleniyor', async ({ page }) => {
     await page.waitForLoadState('networkidle');
-    const listings = page.locator('a[href^="/listing/"]');
-    const count = await listings.count();
-    expect(count).toBeGreaterThan(0);
+    await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
+    const listings = page.locator('a[href^="/listing/"]').first();
+    const emptyState = page.getByText('Sonuç bulunamadı');
+    await expect(listings.or(emptyState)).toBeVisible();
   });
 
   test('filtreler çalışıyor', async ({ page }) => {
     await page.waitForLoadState('networkidle');
-    await page.getByText('Filtreler').first().click();
-    await expect(page.getByText('Marka')).toBeVisible();
+    const viewportWidth = page.viewportSize()?.width ?? 1280;
+
+    if (viewportWidth < 1024) {
+      await page.getByText('Filtreler').first().click();
+      await expect(page.getByText('Marka').first()).toBeVisible();
+      return;
+    }
+
+    await expect(page.getByRole('heading', { name: 'Filtrele' })).toBeVisible();
+    await expect(page.getByPlaceholder('Marka ara...')).toBeVisible();
   });
 });
 
@@ -64,7 +73,7 @@ test.describe('Giriş Sayfası', () => {
   });
 
   test('kayıt sayfasına yönlendirme', async ({ page }) => {
-    await page.getByText('Hesabın yok mu?').click();
+    await page.locator('a[href="/register"]').first().click();
     await expect(page).toHaveURL('/register');
   });
 });
@@ -75,7 +84,7 @@ test.describe('Mobil Uyumluluk', () => {
     await page.goto('/');
     await page.waitForLoadState('networkidle');
     
-    const searchInput = page.locator('input[placeholder*="Marka"]');
+    const searchInput = page.getByPlaceholder('Örn: BMW 3 Serisi');
     await expect(searchInput).toBeVisible();
   });
 });

@@ -8,7 +8,7 @@ export interface PricingPlan {
   name: string;
   price: number;
   credits: number;
-  features: Record<string, any>;
+  features: Record<string, boolean | number | string | null>;
   is_active: boolean;
 }
 

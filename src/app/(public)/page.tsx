@@ -81,8 +81,8 @@ export default async function HomePage() {
                 </Link>
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-                {featuredListings.map((listing) => (
-                  <CarCard key={listing.id} listing={listing} />
+                {featuredListings.map((listing, index) => (
+                  <CarCard key={listing.id} listing={listing} priority={index < 4} />
                 ))}
               </div>
             </div>
@@ -98,8 +98,8 @@ export default async function HomePage() {
             </Link>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            {latestListings.map((listing) => (
-              <CarCard key={listing.id} listing={listing} />
+            {latestListings.map((listing, index) => (
+              <CarCard key={listing.id} listing={listing} priority={index < 2} />
             ))}
           </div>
           <div className="mt-12 flex justify-center">

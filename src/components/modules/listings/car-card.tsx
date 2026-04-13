@@ -39,7 +39,7 @@ export function CarCard({ listing, priority = false, variant = "grid" }: CarCard
         "relative bg-gray-100",
         variant === "grid" ? "aspect-[16/10]" : "aspect-[16/10] w-[260px] shrink-0"
       )}>
-        <Link href={detailHref} className="block w-full h-full">
+        <Link href={detailHref} className="relative block h-full w-full">
           {coverImage ? (
             <Image
               src={coverImage.url}
@@ -47,6 +47,8 @@ export function CarCard({ listing, priority = false, variant = "grid" }: CarCard
               fill
               sizes={variant === "grid" ? "(min-width: 1024px) 33vw, 50vw" : "320px"}
               className="object-cover transition-transform duration-500 group-hover:scale-105"
+              fetchPriority={priority ? "high" : "auto"}
+              loading={priority ? "eager" : "lazy"}
               priority={priority}
             />
           ) : (
@@ -59,7 +61,7 @@ export function CarCard({ listing, priority = false, variant = "grid" }: CarCard
         <div className="absolute left-3 top-3 z-10 flex flex-col gap-2">
           {/* AI Badge */}
           <div className={cn(
-            "rounded-lg px-2.5 py-1 text-[10px] font-black uppercase tracking-widest text-white shadow-lg flex items-center gap-1.5",
+            "rounded-full px-3 py-1 text-[11px] font-bold text-white shadow-lg flex items-center gap-1.5",
             insights.tone === "emerald" ? "bg-emerald-500 shadow-emerald-500/20" : 
             insights.tone === "rose" ? "bg-rose-500 shadow-rose-500/20" :
             insights.tone === "amber" ? "bg-amber-500 shadow-amber-500/20" :
@@ -101,7 +103,7 @@ export function CarCard({ listing, priority = false, variant = "grid" }: CarCard
         {insights.highlights.length > 0 && (
           <div className="mt-3 flex flex-wrap gap-1.5">
             {insights.highlights.map(h => (
-              <span key={h} className="text-[9px] font-bold uppercase tracking-wider bg-gray-50 text-gray-500 px-2 py-1 rounded border border-gray-100">
+              <span key={h} className="text-[10px] font-semibold bg-gray-50 text-gray-500 px-2 py-1 rounded-full border border-gray-100">
                 {h}
               </span>
             ))}
@@ -136,10 +138,10 @@ export function CarCard({ listing, priority = false, variant = "grid" }: CarCard
           </div>
         </div>
 
-        <div className="mt-auto flex items-center justify-between border-t border-gray-50 pt-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-          <span className="text-xs font-bold text-gray-400">{formatNumber(listing.mileage)} KM</span>
-          <div className="flex items-center gap-1 text-[11px] font-bold uppercase tracking-wider text-blue-500">
-            Detaylar
+          <div className="mt-auto flex items-center justify-between border-t border-gray-50 pt-3">
+            <span className="text-xs font-bold text-gray-400">{formatNumber(listing.mileage)} KM</span>
+            <div className="flex items-center gap-1 text-[11px] font-bold uppercase tracking-wider text-blue-500">
+            İncele
             <svg className="size-2.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
               <path d="m9 18 6-6-6-6" />
             </svg>

@@ -1,4 +1,4 @@
-import { Users, Search, Plus, MoreVertical, UserCog, ShieldCheck } from "lucide-react";
+import { Users, Search, Plus, UserCog, ShieldCheck } from "lucide-react";
 import { format } from "date-fns";
 import { tr } from "date-fns/locale";
 import { Badge } from "@/components/ui/badge";

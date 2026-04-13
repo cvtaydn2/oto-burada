@@ -63,7 +63,12 @@ export default async function RootLayout({
   const currentUser = await getCurrentUser();
 
   return (
-    <html lang="tr" className={`${inter.variable} ${outfit.variable} h-full antialiased font-sans`} suppressHydrationWarning>
+    <html
+      lang="tr"
+      className={`${inter.variable} ${outfit.variable} h-full antialiased font-sans`}
+      data-scroll-behavior="smooth"
+      suppressHydrationWarning
+    >
       <head>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />

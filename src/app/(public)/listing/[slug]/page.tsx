@@ -59,6 +59,12 @@ export default async function ListingDetailPage({ params }: ListingDetailPagePro
   ]);
   const insight = getListingCardInsights(listing);
   const currentUser = await getCurrentUser();
+  const memberSince = seller?.createdAt
+    ? new Date(seller.createdAt).getFullYear()
+    : null;
+  const membershipYears = memberSince
+    ? Math.max(new Date().getFullYear() - memberSince, 0)
+    : null;
 
   const breadcrumbs = [
     { name: "Ana Sayfa", url: "/" },
@@ -151,9 +157,19 @@ export default async function ListingDetailPage({ params }: ListingDetailPagePro
               <div className="bg-white rounded-2xl p-6 border border-gray-200 shadow-sm flex flex-col md:flex-row justify-between items-start md:items-end gap-6">
                 <div className="space-y-3">
                   <h1 className="text-2xl md:text-3xl font-extrabold text-gray-800 leading-tight">
-                    {listing.brand} {listing.model}
-                    {listing.carTrim && <span className="font-semibold text-gray-500 ml-2">{listing.carTrim}</span>}
+                    {listing.title}
                   </h1>
+                  <div className="flex flex-wrap items-center gap-2 text-[11px] font-bold uppercase tracking-wider text-gray-400">
+                    <span>{listing.brand}</span>
+                    <span className="size-1 rounded-full bg-gray-300" />
+                    <span>{listing.model}</span>
+                    {listing.carTrim ? (
+                      <>
+                        <span className="size-1 rounded-full bg-gray-300" />
+                        <span>{listing.carTrim}</span>
+                      </>
+                    ) : null}
+                  </div>
                   <div className="flex flex-wrap items-center gap-4 text-xs text-gray-500 font-medium">
                     <span className="flex items-center">
                       <svg className="size-3.5 mr-1.5 text-gray-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
@@ -245,7 +261,7 @@ export default async function ListingDetailPage({ params }: ListingDetailPagePro
                 
                 <div className="flex items-center mb-6">
                   <div className="relative mr-4 shrink-0">
-                    <div className="size-14 rounded-full border-2 border-white shadow-md bg-gray-50 overflow-hidden flex items-center justify-center font-bold text-gray-300">
+                    <div className="relative size-14 rounded-full border-2 border-white shadow-md bg-gray-50 overflow-hidden flex items-center justify-center font-bold text-gray-300">
                       {seller?.businessLogoUrl ? (
                         <Image src={seller.businessLogoUrl} alt={seller.fullName || ""} fill className="object-cover" />
                       ) : (
@@ -257,9 +273,17 @@ export default async function ListingDetailPage({ params }: ListingDetailPagePro
                   <div className="min-w-0">
                     <h3 className="font-bold text-gray-800 truncate">{seller?.businessName || seller?.fullName}</h3>
                     <div className="flex items-center text-[10px] text-gray-500 mt-0.5 mb-1">
-                      <span className="bg-blue-50 text-blue-600 px-1.5 py-0.5 rounded mr-1 font-medium">Onaylı Üye</span>
-                      <span>• {new Date().getFullYear() - new Date(seller?.createdAt || "").getFullYear()} yıldır üye</span>
+                      <span className={cn(
+                        "px-1.5 py-0.5 rounded mr-1 font-medium",
+                        seller?.isVerified || seller?.eidsId ? "bg-blue-50 text-blue-600" : "bg-slate-100 text-slate-500"
+                      )}>
+                        {seller?.isVerified || seller?.eidsId ? "Onaylı Üye" : "Profil aktif"}
+                      </span>
+                      {membershipYears !== null ? <span>• {membershipYears} yıldır üye</span> : null}
                     </div>
+                    {seller?.eidsId ? (
+                      <p className="text-[11px] font-semibold text-emerald-600">EIDS doğrulaması mevcut</p>
+                    ) : null}
                   </div>
                 </div>
 
@@ -270,6 +294,12 @@ export default async function ListingDetailPage({ params }: ListingDetailPagePro
                 <div className="mt-6 pt-4 border-t border-gray-100 space-y-3">
                   <Link href={`/gallery/${seller?.businessSlug || seller?.id}`} className="flex justify-between items-center text-sm font-medium text-gray-600 hover:text-blue-500 transition group">
                     Satıcının diğer ilanları 
+                    <svg className="size-2.5 text-gray-400 group-hover:text-blue-500 transition-colors" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="m9 18 6-6-6-6" />
+                    </svg>
+                  </Link>
+                  <Link href="#ekspertiz" className="flex justify-between items-center text-sm font-medium text-gray-600 hover:text-blue-500 transition group">
+                    Ekspertiz randevusu al
                     <svg className="size-2.5 text-gray-400 group-hover:text-blue-500 transition-colors" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
                       <path d="m9 18 6-6-6-6" />
                     </svg>

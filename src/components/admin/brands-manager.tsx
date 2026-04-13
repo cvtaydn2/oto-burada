@@ -44,7 +44,7 @@ export function BrandsManager({ initialBrands }: BrandsManagerProps) {
         b.id === brand.id ? { ...b, is_active: !b.is_active } : b
       ));
       toast.success(`${brand.name} durumu güncellendi`);
-    } catch (error) {
+    } catch {
       toast.error("İşlem başarısız oldu");
     } finally {
       setLoadingId(null);

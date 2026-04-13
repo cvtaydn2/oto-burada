@@ -5,6 +5,7 @@ import {
   ClipboardList,
   Clock,
   Heart,
+  Plus,
   User,
   Zap,
 } from "lucide-react";
@@ -32,12 +33,39 @@ export default async function DashboardPage() {
   const profile = (await getStoredProfileById(user.id)) ?? buildProfileFromAuthUser(user);
   const favoriteCount = await getDatabaseFavoriteCount(user.id);
   const pendingListingsCount = storedListings.filter((l) => l.status === "pending").length;
+  const approvedListingsCount = storedListings.filter((l) => l.status === "approved").length;
   const profileCompletion = Math.round(
     ([metadata.full_name, metadata.phone, metadata.city].filter(Boolean).length / 3) * 100,
   );
 
   return (
     <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+      <section className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <h2 className="text-2xl font-black text-slate-900">Satıcı Paneli</h2>
+            <p className="mt-1 text-sm text-slate-500">
+              İlanlarını yönet, favori hareketlerini takip et ve hesabını canlıda güçlü tut.
+            </p>
+          </div>
+          <div className="flex items-center gap-3">
+            <Link
+              href="/dashboard/listings"
+              className="inline-flex h-11 items-center justify-center rounded-xl border border-slate-200 bg-white px-4 text-sm font-bold text-slate-600 transition hover:bg-slate-50"
+            >
+              İlan Yönetimi
+            </Link>
+            <Link
+              href="/dashboard/listings"
+              className="inline-flex h-11 items-center justify-center gap-2 rounded-xl bg-blue-500 px-4 text-sm font-bold text-white shadow-sm transition hover:bg-blue-600"
+            >
+              <Plus size={16} />
+              Yeni İlan Ekle
+            </Link>
+          </div>
+        </div>
+      </section>
+
       {/* Verification Banner */}
       {!profile?.isVerified && (
         <section className="bg-gradient-to-r from-blue-600 to-indigo-700 rounded-2xl p-6 text-white shadow-lg shadow-blue-200 flex flex-col md:flex-row items-center justify-between gap-6 overflow-hidden relative">
@@ -80,7 +108,7 @@ export default async function DashboardPage() {
       {/* Stats Grid */}
       <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
         {[
-          { label: "Toplam İlan", value: storedListings.length, icon: ClipboardList, color: "blue", sub: `${storedListings.filter(l => l.status === "approved").length} Yayında` },
+          { label: "Toplam İlan", value: storedListings.length, icon: ClipboardList, color: "blue", sub: `${approvedListingsCount} yayında` },
           { label: "Bekleyen", value: pendingListingsCount, icon: Clock, color: "orange", sub: "Moderasyon Sırası" },
           { label: "Favoriler", value: favoriteCount, icon: Heart, color: "rose", sub: "Kaydedilen İlanlar" },
           { label: "Profil Doluluğu", value: `${profileCompletion}%`, icon: User, color: "indigo", sub: "Hesap Ayarları" },
@@ -115,42 +143,69 @@ export default async function DashboardPage() {
               <Link href="/dashboard/listings" className="text-sm font-bold text-blue-600 hover:text-blue-700">Tümünü Gör</Link>
             </div>
             
-            <div className="space-y-4">
-              {storedListings.slice(0, 3).map((listing) => (
-                <Link 
-                  key={listing.id} 
-                  href={`/listing/${listing.slug}`}
-                  className="flex items-center gap-4 p-3 rounded-xl border border-slate-50 hover:border-blue-100 hover:bg-blue-50/30 transition-all group"
-                >
-                  <div className="w-16 h-12 bg-slate-100 rounded-lg overflow-hidden shrink-0 border border-slate-200">
-                    <Image 
-                      src={listing.images[0]?.url || "https://placehold.co/100x75?text=No+Image"} 
-                      alt={listing.title}
-                      width={100}
-                      height={75}
-                      className="w-full h-full object-cover"
-                    />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <h4 className="text-sm font-bold text-slate-800 truncate group-hover:text-blue-600 transition-colors">
-                      {listing.title}
-                    </h4>
-                    <p className="text-[10px] font-bold text-blue-500 uppercase mt-0.5">
-                      {listing.price.toLocaleString("tr-TR")} ₺
-                    </p>
-                  </div>
-                  <div className="text-right">
-                    <span className={cn(
-                      "text-[10px] font-bold px-2 py-1 rounded-md uppercase tracking-wide",
-                      listing.status === "approved" ? "bg-green-50 text-green-600" :
-                      listing.status === "pending" ? "bg-orange-50 text-orange-600" :
-                      "bg-slate-100 text-slate-500"
-                    )}>
-                      {listing.status === "approved" ? "Yayında" : listing.status === "pending" ? "İnceleniyor" : listing.status}
-                    </span>
-                  </div>
-                </Link>
-              ))}
+            <div className="overflow-x-auto">
+              <table className="w-full min-w-[640px] text-left">
+                <thead>
+                  <tr className="border-b border-slate-100 text-[11px] font-bold uppercase tracking-wider text-slate-400">
+                    <th className="pb-3 font-medium">Araç Bilgisi</th>
+                    <th className="pb-3 font-medium">Fiyat</th>
+                    <th className="pb-3 font-medium">Durum</th>
+                    <th className="pb-3 font-medium">Şehir</th>
+                    <th className="pb-3 font-medium text-right">Aksiyon</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100 text-sm">
+                  {storedListings.slice(0, 4).map((listing) => (
+                    <tr key={listing.id} className="transition hover:bg-slate-50/80">
+                      <td className="py-4">
+                        <Link href={`/listing/${listing.slug}`} className="flex items-center gap-3 group">
+                          <div className="overflow-hidden rounded-lg border border-slate-200 bg-slate-100 shrink-0">
+                            <Image
+                              src={listing.images[0]?.url || "https://placehold.co/100x75?text=No+Image"}
+                              alt={listing.title}
+                              width={72}
+                              height={48}
+                              className="h-12 w-[72px] object-cover"
+                            />
+                          </div>
+                          <div className="min-w-0">
+                            <div className="truncate font-bold text-slate-800 group-hover:text-blue-600">
+                              {listing.title}
+                            </div>
+                            <div className="mt-1 text-[11px] font-medium text-slate-500">
+                              {listing.year} • {listing.brand} {listing.model}
+                            </div>
+                          </div>
+                        </Link>
+                      </td>
+                      <td className="py-4 font-bold text-blue-500">
+                        {listing.price.toLocaleString("tr-TR")} ₺
+                      </td>
+                      <td className="py-4">
+                        <span className={cn(
+                          "rounded-md px-2 py-1 text-[10px] font-bold uppercase tracking-wide",
+                          listing.status === "approved" ? "bg-green-50 text-green-600" :
+                          listing.status === "pending" ? "bg-orange-50 text-orange-600" :
+                          "bg-slate-100 text-slate-500"
+                        )}>
+                          {listing.status === "approved" ? "Yayında" : listing.status === "pending" ? "İnceleniyor" : listing.status}
+                        </span>
+                      </td>
+                      <td className="py-4 text-xs font-medium text-slate-500">
+                        {listing.city}
+                      </td>
+                      <td className="py-4 text-right">
+                        <Link
+                          href={`/dashboard/listings/${listing.id}/edit`}
+                          className="text-xs font-bold text-slate-600 transition hover:text-blue-600"
+                        >
+                          Düzenle
+                        </Link>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
               {storedListings.length === 0 && (
                 <div className="text-center py-8">
                   <div className="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-4 text-slate-300">
@@ -170,6 +225,32 @@ export default async function DashboardPage() {
         </div>
 
         <div className="space-y-6">
+          <div className="bg-blue-50/60 border border-blue-100 rounded-2xl p-6 shadow-sm">
+            <h3 className="text-lg font-black text-slate-900 mb-2">Hesap Durumu</h3>
+            <p className="text-xs text-slate-500 mb-5">
+              Profil güveni ve ilan yayın akışın burada özetlenir.
+            </p>
+            <div className="space-y-3">
+              <div className="flex items-center justify-between rounded-xl border border-white/70 bg-white px-4 py-3">
+                <span className="text-sm font-medium text-slate-600">Doğrulama</span>
+                <span className={cn(
+                  "text-xs font-bold",
+                  profile?.isVerified ? "text-emerald-600" : "text-amber-600"
+                )}>
+                  {profile?.isVerified ? "Tamamlandı" : "Bekliyor"}
+                </span>
+              </div>
+              <div className="flex items-center justify-between rounded-xl border border-white/70 bg-white px-4 py-3">
+                <span className="text-sm font-medium text-slate-600">Yayındaki ilanlar</span>
+                <span className="text-sm font-black text-slate-900">{approvedListingsCount}</span>
+              </div>
+              <div className="flex items-center justify-between rounded-xl border border-white/70 bg-white px-4 py-3">
+                <span className="text-sm font-medium text-slate-600">Favori kayıtları</span>
+                <span className="text-sm font-black text-slate-900">{favoriteCount}</span>
+              </div>
+            </div>
+          </div>
+
           <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
             <h3 className="text-lg font-black text-slate-900 mb-6 flex items-center gap-2">
               <ArrowRight className="text-blue-500" size={20} />

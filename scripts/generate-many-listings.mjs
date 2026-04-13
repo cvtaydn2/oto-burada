@@ -41,9 +41,9 @@ const carImages = [
   "https://images.unsplash.com/photo-1494905998402-395d579af36f",
   "https://images.unsplash.com/photo-1506469717960-433cebe3f181",
   "https://images.unsplash.com/photo-1619405399517-d7fce0f13302",
-  "https://images.unsplash.com/photo-1590362891991-f776e947f1b2",
-  "https://images.unsplash.com/photo-1593367807023-952410a83c39",
-  "https://images.unsplash.com/photo-1555215695-3004980ad54e",
+  "https://images.unsplash.com/photo-1492144534655-ae79c964c9d7",
+  "https://images.unsplash.com/photo-1552519507-da3b142c6e3d",
+  "https://images.unsplash.com/photo-1494976388531-d1058494cdd8",
   "https://images.unsplash.com/photo-1523983388277-336a66bf9bcd",
   "https://images.unsplash.com/photo-1520116468816-95b69f847357",
   "https://images.unsplash.com/photo-1492144534655-ae79c964c9d7",
@@ -56,7 +56,7 @@ const carImages = [
   "https://images.unsplash.com/photo-1542281286-9e0a16bb7366",
   "https://images.unsplash.com/photo-1511919884226-fd3cad34687c",
   "https://images.unsplash.com/photo-1502877338535-766e1452684a",
-  "https://images.unsplash.com/photo-1493238507129-15510bf4a01b",
+  "https://images.unsplash.com/photo-1492144534655-ae79c964c9d7",
 ];
 
 async function generateListings(count = 50) {

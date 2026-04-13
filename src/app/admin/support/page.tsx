@@ -1,8 +1,6 @@
 import { getSupportTickets } from "@/services/admin/support";
 import { requireAdminUser } from "@/lib/auth/session";
-import { MessageSquare, Search, Filter, Clock } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
-import { Input } from "@/components/ui/input";
+import { MessageSquare, Filter } from "lucide-react";
 import { TicketList } from "@/components/admin/ticket-list";
 
 export const dynamic = "force-dynamic";

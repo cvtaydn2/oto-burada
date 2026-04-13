@@ -3,7 +3,6 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
   CheckCircle2,
-  ChevronLeft,
   ChevronRight,
   LoaderCircle,
   ShieldCheck,

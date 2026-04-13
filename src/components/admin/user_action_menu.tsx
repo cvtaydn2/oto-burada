@@ -27,7 +27,7 @@ export function UserActionMenu({ userId, isBanned, isAdmin }: UserActionMenuProp
     try {
       await toggleUserBan(userId, isBanned);
       toast.success(isBanned ? "Kullanıcı yasaklaması kaldırıldı." : "Kullanıcı başarıyla yasaklandı.");
-    } catch (error) {
+    } catch {
       toast.error("İşlem gerçekleştirilemedi.");
     } finally {
       setIsLoading(false);
@@ -40,7 +40,7 @@ export function UserActionMenu({ userId, isBanned, isAdmin }: UserActionMenuProp
     try {
       await promoteUserToAdmin(userId);
       toast.success("Kullanıcı admin olarak atandı.");
-    } catch (error) {
+    } catch {
       toast.error("Yetkilendirme hatası.");
     } finally {
       setIsLoading(false);

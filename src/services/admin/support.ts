@@ -3,11 +3,21 @@
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { revalidatePath } from "next/cache";
 
+interface SupportTicketRow {
+  created_at: string;
+  description: string;
+  id: string;
+  priority: string;
+  profiles?: Array<{ email: string; full_name: string }> | { email: string; full_name: string } | null;
+  status: string;
+  subject: string;
+}
+
 export async function getSupportTickets() {
   const admin = createSupabaseAdminClient();
   const { data, error } = await admin
-    .from("support_tickets")
-    .select("*, profile:profiles(full_name, email)")
+    .from("tickets")
+    .select("id, subject, description, status, priority, created_at, profiles(full_name, email)")
     .order("created_at", { ascending: false });
 
   if (error) {
@@ -15,13 +25,21 @@ export async function getSupportTickets() {
     return [];
   }
 
-  return data;
+  return ((data ?? []) as SupportTicketRow[]).map((ticket) => ({
+    created_at: ticket.created_at,
+    id: ticket.id,
+    message: ticket.description,
+    priority: ticket.priority,
+    profile: Array.isArray(ticket.profiles) ? ticket.profiles[0] : ticket.profiles ?? undefined,
+    status: ticket.status,
+    subject: ticket.subject,
+  }));
 }
 
 export async function updateTicketStatus(id: string, status: string) {
   const admin = createSupabaseAdminClient();
   const { error } = await admin
-    .from("support_tickets")
+    .from("tickets")
     .update({ status, updated_at: new Date().toISOString() })
     .eq("id", id);
 

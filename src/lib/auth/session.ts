@@ -1,10 +1,11 @@
+import { cache } from "react";
 import { redirect } from "next/navigation";
 
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { hasSupabaseEnv } from "@/lib/supabase/env";
 import type { UserRole } from "@/types";
 
-export async function getCurrentUser() {
+export const getCurrentUser = cache(async () => {
   if (!hasSupabaseEnv()) {
     return null;
   }
@@ -15,7 +16,7 @@ export async function getCurrentUser() {
   } = await supabase.auth.getUser();
 
   return user;
-}
+});
 
 export async function requireUser() {
   const user = await getCurrentUser();

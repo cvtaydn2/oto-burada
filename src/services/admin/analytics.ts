@@ -98,7 +98,6 @@ export async function getAdminAnalytics(): Promise<AdminAnalyticsData | null> {
   // 6. Growth Trends (Last 30 days vs previous 30 days)
   const now = new Date();
   const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
-  const sixtyDaysAgo = new Date(now.getTime() - 60 * 24 * 60 * 60 * 1000);
 
   const { count: newUsersRecent } = await admin
     .from("profiles")

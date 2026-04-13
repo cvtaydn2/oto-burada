@@ -292,10 +292,11 @@ export function ListingsPageClient({
                 ? "grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3"
                 : "flex flex-col gap-3"
             )}>
-              {initialResult.listings.map((listing) => (
+              {initialResult.listings.map((listing, index) => (
                 <CarCard
                   key={listing.id}
                   listing={listing}
+                  priority={index < 3}
                   variant={viewMode}
                 />
               ))}

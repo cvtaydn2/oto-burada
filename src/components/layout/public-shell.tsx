@@ -11,7 +11,7 @@ export async function PublicShell({ children }: PropsWithChildren) {
 
   return (
     <div className="min-h-screen flex flex-col bg-background">
-      <SiteHeader />
+      <SiteHeader user={user} />
       <div className="flex flex-col flex-1 pt-[68px]">
         <main className="flex-1 pb-24 lg:pb-0" role="main">
           {children}

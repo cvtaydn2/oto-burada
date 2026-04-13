@@ -7,7 +7,6 @@ import {
   CheckCircle2, 
   XCircle, 
   MoreVertical,
-  Zap,
   Tag
 } from "lucide-react";
 import {
@@ -40,7 +39,7 @@ export function PlansTable({ initialPlans }: PlansTableProps) {
         p.id === plan.id ? { ...p, is_active: !p.is_active } : p
       ));
       toast.success(`${plan.name} durumu güncellendi`);
-    } catch (error) {
+    } catch {
       toast.error("İşlem başarısız oldu");
     } finally {
       setIsLoading(null);

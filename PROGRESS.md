@@ -14,6 +14,87 @@ Her yeni geliştirme başlamadan önce okunmalıdır.
 
 ## Proje Durumu
 
+### 2026-04-13 Performance Hardening Pass 1: Public Shell & Header (Completed)
+- **Odak**: Canlı performans darboğazlarını azaltmak ve Vercel production davranışını incelemek.
+- **Bulgu**:
+  - PageSpeed API üzerinden 2026-04-13 tarihinde canlı ölçüm denenirken Google `pagespeedonline.googleapis.com` tarafı günlük kota nedeniyle `429 RESOURCE_EXHAUSTED` döndü; bu yüzden lab skoru doğrudan alınamadı.
+  - Production runtime loglarında son 24 saatte `GET /admin/support` için ticket fetch hatası ve `GET /admin` tarafında bir `500` kaydı görüldü.
+  - Public shell akışında kullanıcı oturumu tekrar tekrar okunuyor, header tarafında ise canlı referans verisi her istekte tekrar derleniyordu.
+- **Uygulanan iyileştirmeler**:
+  - `src/lib/auth/session.ts`: `getCurrentUser()` React `cache()` ile request-scope memoize edildi.
+  - `src/services/reference/live-reference-data.ts`: header için kullanılan marka / model / şehir / suggestion datası `unstable_cache` ile 1 saatlik cache altına alındı.
+  - Cookie-bağımlı server client yerine public reference datası için stateless Supabase client kullanıldı; böylece cache güvenli hale geldi.
+  - `src/components/layout/public-shell.tsx` ve `src/components/layout/site-header.tsx`: aynı user verisi üst shell’den header’a geçirildi, gereksiz tekrar çağrı kaldırıldı.
+- **Canlı temel ölçüm**:
+  - `https://oto-burada.vercel.app` için kaba yanıt süresi ilk ölçümde yaklaşık `4270 ms`
+  - Aynı endpoint, optimizasyon sonrası tekrar ölçümde yaklaşık `2019 ms`
+  - Bu değer Lighthouse skoru değildir; ancak server-side yükte anlamlı düşüşe işaret eder.
+- **Validation**:
+  - `npm run typecheck` ✅
+  - `npm run lint` ✅
+  - `npm run test` ✅ (18/18)
+- **Residual note**:
+  - Playwright sırasında halen üstte görünen bazı araç kartı görselleri için düşük öncelikli `LCP` tavsiye uyarısı görülüyor.
+  - Admin runtime loglarındaki `/admin/support` ve `/admin` hataları ayrıca ele alınmalı.
+- **Status**: ✅ Public shell ve header performans maliyeti düşürüldü, canlı ilk yanıt süresi anlamlı biçimde iyileştirildi.
+- **Next Step**: Admin runtime log hatalarını kapatmak ve homepage / listings üst satırındaki LCP kaynaklı görsel önceliklendirmeyi daha agresif optimize etmek.
+
+### 2026-04-13 Production Runtime Cleanup: Admin Support & Log Noise (Completed)
+- **Admin support üretim hatası düzeltildi**:
+  - `src/services/admin/support.ts` içindeki yanlış `support_tickets` tablo referansı `tickets` olarak düzeltildi.
+  - Admin destek listesi bileşenin beklediği `message` / `profile` shape’i doğru biçimde map edildi.
+- **Log temizliği**:
+  - `src/services/listings/listing-submissions.ts` içindeki gereksiz `DEBUG - Primary Result Data...` logları kaldırıldı.
+  - Sadece gerçek query hatası olduğunda anlamlı `console.error` bırakıldı.
+- **Validation**:
+  - `npm run typecheck` ✅
+  - `npm run lint` ✅
+  - `npm run test` ✅
+- **Status**: ✅ Production runtime loglarında görülen admin destek veri kaynağı problemi ve gereksiz listing debug gürültüsü kod seviyesinde temizlendi.
+- **Next Step**: Vercel runtime loglarını yeni deployment sonrası tekrar kontrol edip `/admin` tarafında kalan hata kaydı varsa izole etmek; paralelde LCP uyarısı veren üst kart görsellerini agresif önceliklendirmek.
+
+### 2026-04-13 Design Convergence Pass 2: Listing Detail & Seller Dashboard (Completed)
+- **Listing detail hizalandi**: `src/app/(public)/listing/[slug]/page.tsx` ekraninda `.design/pages-code/ilan-detay.html` referansina daha yakin bir bilgi hiyerarsisi kuruldu.
+  - Baslik karti artik ilanin tam basligini one cikariyor.
+  - Marka / model / paket satiri ayri bir meta katmanina tasindi.
+  - Sag satıcı kartinda onay durumu, uyelik suresi ve EIDS sinyali daha netlestirildi.
+  - Satıcı avatar kapsayicisi `next/image fill` ile uyumlu hale getirildi.
+  - “Ekspertiz randevusu al” gecisi eklendi.
+- **Dashboard hizalandi**: `src/app/dashboard/page.tsx` ekraninda `.design/pages-code/satici-paneli.html` referansina gore daha net bir seller-management akisi kuruldu.
+  - Ustte aksiyon odakli panel basligi eklendi.
+  - Istatistik kartlari daha referans uyumlu kopya ve hiyerarsi ile sadeletirildi.
+  - “Son Ilanlar” bolumu kart listesinden tabloya yaklastirildi: arac bilgisi, fiyat, durum, sehir ve duzenleme aksiyonu tek satirda toplandi.
+  - Sag kolona hesap durumu / hizli erisim ozeti eklendi.
+- **Validation**:
+  - `npm run lint` ✅
+  - `npm run test:unit` ✅
+  - `npm run test` ✅ (18/18)
+- **Status**: ✅ Listing detail ve seller dashboard ikinci tasarim yakinlastirma turu tamamlandi.
+- **Next Step**: Homepage hero / public shell / dashboard shell katmanlarini `.design` referansindaki spacing ve CTA yogunluguna gore son kez inceltmek.
+
+### 2026-04-13 Production Audit, UI Alignment & Runtime Repairs (Completed)
+- **Canli ortam dogrulandi**: Vercel production deployment kontrol edildi; `oto-burada.vercel.app` ana sayfa ve `listings` akisi erisilebilir durumda.
+- **.design hizalama turu**: Login/Register ekranlari `.design` referansina yaklastirildi. `auth-form.tsx` daha net iki kolonlu giris yapisina, temiz CTA'lara ve mobil uyumlu akisa tasindi. `auth-submit-button.tsx` ve `car-card.tsx` da bu yeni dil ile hizalandi.
+- **Kirik islevler onarildi**:
+  - `package.json` icindeki hatali `next dev --no-turbopack` komutu duzeltildi; Playwright web server yeniden saglikli calisiyor.
+  - `listing-card-insights.ts` icindeki karar rozeti mantigi sade ve tutarli hale getirildi; ilgili unit testler yeni davranisa gore guncellendi.
+  - Admin/settings tarafindaki `any` kaynakli lint ve type sorunlari temizlendi.
+  - `CarCard` icinde `next/image fill` kullaniminda hatali ebeveyn yapisi duzeltildi.
+  - E2E kayit sayfasina gecis testi kararsiz seciciden arindirildi.
+- **Demo veri onarimi**:
+  - Kırık Unsplash URL'leri `scripts/seed-supabase-demo.mjs` ve `scripts/generate-many-listings.mjs` icinde temizlendi.
+  - `seed-supabase-demo.mjs` icine bozuk `listing_images.public_url` kayitlarini guvenli sekilde replace eden onarim akisi eklendi.
+  - `npm run db:seed-demo` calistirilarak mevcut demo verisi onarildi.
+- **Kalite dogrulama**:
+  - `npm run lint` ✅
+  - `npm run typecheck` ✅
+  - `npm run test:unit` ✅
+  - `npm run test` ✅ (18/18)
+  - `npm run db:verify-demo` ✅
+- **Residual note**: `next/image` tarafinda ana akista kalan tek not, bazi ustteki kart gorselleri icin dusuk oncelikli LCP tavsiye uyarisi. Islevsel hata degil.
+- **Status**: ✅ Kritik kirik akıslar toparlandi, demo veri onarildi, production ve lokal kalite kapilari yeniden yesile dondu.
+- **Next Step**: `.design` altindaki homepage / listing detail / dashboard referanslarini ekran ekran ilerleyip son gorsel farklari kapatmak ve kalan LCP tavsiyelerini optimize etmek.
+
 ### 2026-04-13 Admin & Dashboard Modernization & Stabilization (Completed)
 - **Admin Dashboard Overhaul**: Tüm admin paneli (`admin/users`, `admin/listings`, `admin/reports`, `admin/layout`) "Ultra-Premium" mavi tema (`blue-600` accents, `rounded-3xl`, `font-black`) prensiplerine göre modernize edildi.
 - **Dashboard Stabilization**: `dashboard/page.tsx` dosyasındaki broken import (`Image` component), unescaped entity ve `ListingImage` tip uyuşmazlığı hataları giderildi. LCP optimizasyonu yapıldı.

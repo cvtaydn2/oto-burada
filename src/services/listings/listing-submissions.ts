@@ -494,12 +494,7 @@ export async function getDatabaseListings(options?: {
   const primaryResult = await applyListingQueryOptions(listingSelect).returns<ListingRow[]>();
 
   if (primaryResult.error) {
-    console.error("DEBUG - Database Listings Error:", primaryResult.error);
-  } else {
-    console.log("DEBUG - Primary Result Data Length:", primaryResult.data?.length ?? 0);
-    if (primaryResult.data && primaryResult.data.length > 0) {
-      console.log("DEBUG - Sample Row ID:", primaryResult.data[0].id);
-    }
+    console.error("Database listings query failed:", primaryResult.error);
   }
 
   if (!primaryResult.error && primaryResult.data && primaryResult.data.length > 0) {
