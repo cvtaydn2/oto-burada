@@ -1,21 +1,21 @@
 "use client";
 
-import {
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  ResponsiveContainer,
-  PieChart,
-  Pie,
-  Cell,
-  LineChart,
-  Line,
-} from "recharts";
+import dynamic from "next/dynamic";
 import { TrendingUp, Users, FileText, TriangleAlert } from "lucide-react";
 import type { AdminAnalyticsData } from "@/services/admin/analytics";
+
+const BarChart = dynamic(() => import("recharts").then(mod => mod.BarChart), { ssr: false });
+const Bar = dynamic(() => import("recharts").then(mod => mod.Bar), { ssr: false });
+const XAxis = dynamic(() => import("recharts").then(mod => mod.XAxis), { ssr: false });
+const YAxis = dynamic(() => import("recharts").then(mod => mod.YAxis), { ssr: false });
+const CartesianGrid = dynamic(() => import("recharts").then(mod => mod.CartesianGrid), { ssr: false });
+const Tooltip = dynamic(() => import("recharts").then(mod => mod.Tooltip), { ssr: false });
+const ResponsiveContainer = dynamic(() => import("recharts").then(mod => mod.ResponsiveContainer), { ssr: false });
+const PieChart = dynamic(() => import("recharts").then(mod => mod.PieChart), { ssr: false });
+const Pie = dynamic(() => import("recharts").then(mod => mod.Pie), { ssr: false });
+const Cell = dynamic(() => import("recharts").then(mod => mod.Cell), { ssr: false });
+const LineChart = dynamic(() => import("recharts").then(mod => mod.LineChart), { ssr: false });
+const Line = dynamic(() => import("recharts").then(mod => mod.Line), { ssr: false });
 
 const COLORS = ["#4f46e5", "#10b981", "#f59e0b", "#ef4444", "#8b5cf6"];
 
@@ -48,187 +48,77 @@ export function AdminAnalyticsPanel({ data }: AdminAnalyticsPanelProps) {
           title="Aktif Rapor"
           value={data.totalReports}
           icon={TriangleAlert}
-          description="İnceleme bekleyen şikayetler"
+          description="İncelemede olan raporlar"
         />
         <StatCard
-          title="Büyüme"
-          value={`${data.recentTrends[data.recentTrends.length - 1].listings} yeni`}
+          title="Gelir Trendi"
+          value={`${data.listingTrend}%`}
           icon={TrendingUp}
-          description="Son 24 saatteki ilanlar"
+          description="Aylık ilan artışı"
+          highlight
         />
       </div>
 
       <div className="grid gap-6 lg:grid-cols-2">
-        {/* Listings by Trend */}
-        <div className="rounded-[2rem] border border-border/80 bg-background p-6 shadow-sm">
-          <h3 className="mb-6 text-lg font-semibold">Son 7 Günlük İlan Akışı</h3>
-          <div className="h-[300px] w-full">
-            <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={data.recentTrends}>
-                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
-                <XAxis 
-                  dataKey="date" 
-                  axisLine={false} 
-                  tickLine={false} 
-                  tick={{ fontSize: 12, fill: "#64748b" }}
-                  tickFormatter={(val) => val.split("-").slice(1).join("/")}
-                />
-                <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: "#64748b" }} />
-                <Tooltip 
-                  contentStyle={{ borderRadius: "1rem", border: "1px solid #e2e8f0", boxShadow: "0 10px 15px -3px rgb(0 0 0 / 0.1)" }}
-                />
-                <Line
-                  type="monotone"
-                  dataKey="listings"
-                  stroke="#4f46e5"
-                  strokeWidth={3}
-                  dot={{ r: 4, fill: "#4f46e5", strokeWidth: 2, stroke: "#fff" }}
-                  activeDot={{ r: 6, strokeWidth: 0 }}
-                  name="İlan Sayısı"
-                />
-              </LineChart>
-            </ResponsiveContainer>
-          </div>
-        </div>
-
-        {/* Listings by Status */}
-        <div className="rounded-[2rem] border border-border/80 bg-background p-6 shadow-sm">
-          <h3 className="mb-6 text-lg font-semibold">İlan Durum Dağılımı</h3>
-          <div className="h-[300px] w-full">
+        <div className="rounded-2xl border border-slate-200 bg-slate-50/50 p-4">
+          <h3 className="text-sm font-black text-slate-700 mb-4 uppercase tracking-wider">İlan Durumu Dağılımı</h3>
+          <div className="h-[200px]">
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
                 <Pie
                   data={statusData}
                   cx="50%"
                   cy="50%"
-                  innerRadius={60}
+                  innerRadius={50}
                   outerRadius={80}
                   paddingAngle={5}
                   dataKey="value"
                 >
-                  {statusData.map((entry, index) => (
+                  {statusData.map((_, index) => (
                     <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                   ))}
                 </Pie>
-                <Tooltip 
-                   contentStyle={{ borderRadius: "1rem", border: "1px solid #e2e8f0" }}
-                />
+                <Tooltip />
               </PieChart>
             </ResponsiveContainer>
           </div>
-          <div className="mt-4 flex justify-center gap-4">
-            {statusData.map((s, i) => (
-              <div key={s.name} className="flex items-center gap-2">
-                <div className="size-3 rounded-full" style={{ backgroundColor: COLORS[i % COLORS.length] }} />
-                <span className="text-xs font-medium text-muted-foreground">{s.name} ({s.value})</span>
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
-
-      <div className="grid gap-6 lg:grid-cols-2">
-        {/* Top Brands */}
-        <div className="rounded-[2rem] border border-border/80 bg-background p-6 shadow-sm">
-          <h3 className="mb-6 text-lg font-semibold">En Popüler Markalar</h3>
-          <div className="h-[300px] w-full">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={data.listingsByBrand} layout="vertical">
-                <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#e2e8f0" />
-                <XAxis type="number" axisLine={false} tickLine={false} hide />
-                <YAxis 
-                  dataKey="brand" 
-                  type="category" 
-                  axisLine={false} 
-                  tickLine={false} 
-                  tick={{ fontSize: 12, fontWeight: 600, fill: "#1e293b" }}
-                  width={100}
-                />
-                <Tooltip 
-                  cursor={{ fill: "transparent" }}
-                  contentStyle={{ borderRadius: "1rem", border: "1px solid #e2e8f0" }}
-                />
-                <Bar 
-                  dataKey="count" 
-                  fill="#4f46e5" 
-                  radius={[0, 10, 10, 0]} 
-                  barSize={20}
-                  name="İlan Sayısı"
-                />
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
         </div>
 
-        {/* Top Cities */}
-        <div className="rounded-[2rem] border border-border/80 bg-background p-6 shadow-sm">
-          <h3 className="mb-6 text-lg font-semibold">Şehir Bazlı Yoğunluk</h3>
-          <div className="h-[300px] w-full">
+        <div className="rounded-2xl border border-slate-200 bg-slate-50/50 p-4">
+          <h3 className="text-sm font-black text-slate-700 mb-4 uppercase tracking-wider">İlan Trendi (Son 30 Gün)</h3>
+          <div className="h-[200px]">
             <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={data.listingsByCity} layout="vertical">
-                <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#e2e8f0" />
-                <XAxis type="number" axisLine={false} tickLine={false} hide />
-                <YAxis 
-                  dataKey="city" 
-                  type="category" 
-                  axisLine={false} 
-                  tickLine={false} 
-                  tick={{ fontSize: 12, fontWeight: 600, fill: "#1e293b" }}
-                  width={100}
+              <LineChart data={data.recentTrends}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
+                <XAxis 
+                  dataKey="date" 
+                  tick={{ fontSize: 10, fill: "#64748b" }}
+                  tickFormatter={(value) => new Date(value).toLocaleDateString("tr-TR", { day: "numeric" })}
                 />
-                <Tooltip 
-                  cursor={{ fill: "transparent" }}
-                  contentStyle={{ borderRadius: "1rem", border: "1px solid #e2e8f0" }}
-                />
-                <Bar 
-                  dataKey="count" 
-                  fill="#10b981" 
-                  radius={[0, 10, 10, 0]} 
-                  barSize={20}
-                  name="İlan Sayısı"
-                />
-              </BarChart>
+                <YAxis tick={{ fontSize: 10, fill: "#64748b" }} />
+                <Tooltip />
+                <Line type="monotone" dataKey="listings" stroke="#4f46e5" strokeWidth={2} dot={false} />
+              </LineChart>
             </ResponsiveContainer>
           </div>
         </div>
       </div>
 
-      {/* Market Trends (New Section) */}
-      <div className="rounded-[2rem] border border-border/80 bg-background p-6 shadow-sm">
-        <div className="flex items-center justify-between mb-8">
-           <h3 className="text-lg font-semibold flex items-center gap-2 italic uppercase tracking-tight">
-              <TrendingUp className="text-indigo-600" size={20} />
-              Piyasa Fiyat Analizi (Marka Bazlı)
-           </h3>
-           <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest italic">Piyasa Ortalamaları</p>
-        </div>
-        <div className="h-[350px] w-full">
+      <div className="rounded-2xl border border-slate-200 bg-slate-50/50 p-4">
+        <h3 className="text-sm font-black text-slate-700 mb-4 uppercase tracking-wider">Marka Dağılımı (Top 10)</h3>
+        <div className="h-[250px]">
           <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={data.marketTrends}>
-              <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-              <XAxis 
-                dataKey="brand" 
-                axisLine={false} 
-                tickLine={false} 
-                tick={{ fontSize: 13, fontWeight: 700, fill: "#1e293b" }} 
-              />
+            <BarChart data={data.listingsByBrand.slice(0, 10)} layout="vertical">
+              <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
+              <XAxis type="number" tick={{ fontSize: 10, fill: "#64748b" }} />
               <YAxis 
-                axisLine={false} 
-                tickLine={false} 
-                tick={{ fontSize: 11, fill: "#64748b" }} 
-                tickFormatter={(val) => `₺${val/1000}k`}
+                type="category" 
+                dataKey="brand" 
+                tick={{ fontSize: 10, fill: "#64748b" }} 
+                width={80}
               />
-              <Tooltip 
-                contentStyle={{ borderRadius: "1.25rem", border: "1px solid #f1f5f9", boxShadow: "0 20px 25px -5px rgb(0 0 0 / 0.1)" }}
-                formatter={(val) => [`₺${new Intl.NumberFormat("tr-TR").format(Number(val))}`, "Ortalama Fiyat"]}
-              />
-              <Bar 
-                dataKey="avgPrice" 
-                fill="#4f46e5" 
-                radius={[12, 12, 0, 0]} 
-                barSize={40}
-                className="hover:fill-primary/80 transition-colors"
-              />
+              <Tooltip />
+              <Bar dataKey="count" fill="#4f46e5" radius={[0, 4, 4, 0]} />
             </BarChart>
           </ResponsiveContainer>
         </div>
@@ -237,24 +127,23 @@ export function AdminAnalyticsPanel({ data }: AdminAnalyticsPanelProps) {
   );
 }
 
-interface StatCardProps {
+function StatCard({ title, value, icon: Icon, description, highlight }: {
   title: string;
   value: string | number;
   icon: React.ComponentType<{ size?: number; className?: string }>;
   description: string;
-}
-
-function StatCard({ title, value, icon: Icon, description }: StatCardProps) {
+  highlight?: boolean;
+}) {
   return (
-    <div className="rounded-[2rem] border border-border/80 bg-background p-6 shadow-sm">
-      <div className="flex items-center justify-between mb-2">
-        <span className="text-sm font-medium text-muted-foreground">{title}</span>
-        <div className="rounded-xl bg-primary/10 p-2 text-primary">
-          <Icon size={18} />
-        </div>
+    <div className="flex items-start gap-3 rounded-xl bg-slate-50 p-4">
+      <div className={`rounded-lg p-2 ${highlight ? "bg-emerald-100 text-emerald-600" : "bg-blue-100 text-blue-600"}`}>
+        <Icon size={18} />
       </div>
-      <div className="text-3xl font-bold tracking-tight">{value}</div>
-      <p className="mt-1 text-xs text-muted-foreground">{description}</p>
+      <div>
+        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">{title}</p>
+        <p className="text-xl font-black text-slate-800">{value}</p>
+        <p className="text-[10px] text-slate-500">{description}</p>
+      </div>
     </div>
   );
 }

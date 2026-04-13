@@ -29,8 +29,8 @@ export function HomeHero() {
           alt="Oto Burada ana sayfa vitrin görseli"
           fill
           priority
-          sizes="100vw"
-          className="object-cover transition-transform duration-[10000ms] hover:scale-105"
+          sizes="(max-width: 768px) 100vw, 1920px"
+          className="object-cover"
         />
         <div className="absolute inset-0 bg-black/60" />
       </div>
