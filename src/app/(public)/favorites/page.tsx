@@ -1,7 +1,7 @@
 import { FavoritesPageClient } from "@/components/listings/favorites-page-client";
 import { getCurrentUser } from "@/lib/auth/session";
 import { getPublicMarketplaceListings } from "@/services/listings/marketplace-listings";
-import { Heart, ChevronLeft } from "lucide-react";
+import { ChevronLeft } from "lucide-react";
 import Link from "next/link";
 
 export const dynamic = "force-dynamic";
@@ -14,21 +14,20 @@ export default async function FavoritesPage() {
   ]);
 
   return (
-    <div className="mx-auto max-w-[1440px] px-6 lg:px-12 py-10 space-y-12 animate-in fade-in slide-in-from-bottom-4 duration-700">
-      <div className="flex flex-col md:flex-row md:items-end justify-between gap-8">
+    <div className="mx-auto max-w-[1280px] space-y-8 px-4 py-6 lg:px-6 lg:py-8">
+      <div className="flex flex-col justify-between gap-5 md:flex-row md:items-end">
         <div className="max-w-2xl">
-           <div className="flex items-center gap-4 mb-4">
-              <Link href="/" className="flex size-11 items-center justify-center rounded-xl bg-slate-950 text-white shadow-xl shadow-slate-900/10 hover:scale-105 transition-transform">
-                 <ChevronLeft className="size-5" />
+           <div className="mb-3 flex items-center gap-3">
+              <Link href="/" className="flex size-9 items-center justify-center rounded-md border border-slate-200 bg-white text-slate-700 transition-transform hover:bg-slate-50">
+                 <ChevronLeft className="size-4" />
               </Link>
-              <div className="h-px w-12 bg-primary" />
-              <span className="text-[10px] font-black uppercase tracking-[0.3em] text-primary italic">Kişisel Envanter</span>
+              <span className="text-xs font-medium text-slate-500">Kişisel envanter</span>
            </div>
-           <h1 className="text-4xl md:text-5xl font-black tracking-tightest leading-tight text-slate-900 uppercase italic">
-              FAVORİ <span className="text-primary">İLANLARIM</span>
+           <h1 className="text-3xl font-bold leading-tight text-slate-900 md:text-4xl">
+              Favori ilanlarım
            </h1>
-           <p className="mt-4 text-sm font-medium text-slate-400 italic leading-relaxed">
-              Takibinizdeki araçları dijital showroom&apos;unuzda tek panelden yönetin ve piyasa hareketlerini izleyin.
+           <p className="mt-2 text-sm leading-relaxed text-slate-500">
+              Beğendiğiniz araçları tek listede toplayın ve takip edin.
            </p>
         </div>
       </div>

@@ -34,26 +34,26 @@ export function AuthForm({
   const [state, formAction] = useActionState(action, initialState);
 
   return (
-    <div className="flex-1 flex items-center justify-center bg-[#FDFDFF] px-4 py-20">
+    <div className="flex flex-1 items-center justify-center bg-[#F8FAFC] px-4 py-16">
       <div className="w-full max-w-md">
-        <div className="text-center mb-10">
+        <div className="mb-8 text-center">
           <Link href="/" className="inline-flex items-center gap-2 group mb-8">
-             <div className="size-14 rounded-2xl bg-slate-900 flex items-center justify-center text-white shadow-2xl shadow-slate-900/20 group-hover:scale-105 transition-transform">
-                <CarFront size={28} />
+             <div className="flex size-12 items-center justify-center rounded-xl bg-sky-500 text-white transition-transform group-hover:scale-105">
+                <CarFront size={24} />
              </div>
           </Link>
-          <h1 className="text-4xl font-black italic tracking-tightest uppercase text-slate-900 leading-none mb-4">
+          <h1 className="mb-2 text-3xl font-bold tracking-tight text-slate-900">
              {title}
           </h1>
-          <p className="text-sm font-bold text-slate-400 italic uppercase tracking-widest">{description}</p>
+          <p className="text-sm text-slate-500">{description}</p>
         </div>
 
-        <div className="bg-white rounded-[40px] border border-slate-100 shadow-2xl shadow-slate-200/40 p-10">
+        <div className="rounded-2xl border border-slate-200 bg-white p-7 shadow-sm">
           <form action={formAction} className="space-y-6">
             <div className="space-y-5">
               <div>
-                <label htmlFor="email" className="block text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 mb-3 ml-1">
-                   DİJİTAL KİMLİK (E-POSTA)
+                <label htmlFor="email" className="mb-2 ml-1 block text-xs font-medium text-slate-600">
+                   E-posta
                 </label>
                 <input
                   id="email"
@@ -63,13 +63,13 @@ export function AuthForm({
                   autoComplete="email"
                   placeholder="isim@mail.com"
                   required
-                  className="h-14 w-full rounded-2xl border border-slate-100 bg-slate-50 px-6 text-sm font-bold text-slate-900 placeholder:text-slate-300 outline-none transition-all focus:border-primary focus:bg-white focus:ring-4 focus:ring-primary/5"
+                  className="h-11 w-full rounded-lg border border-slate-200 bg-white px-4 text-sm text-slate-900 placeholder:text-slate-400 outline-none transition-all focus:border-primary focus:ring-2 focus:ring-primary/10"
                 />
               </div>
 
               <div>
-                <label htmlFor="password" className="block text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 mb-3 ml-1">
-                   GÜVENLİK ANAHTARI
+                <label htmlFor="password" className="mb-2 ml-1 block text-xs font-medium text-slate-600">
+                   Şifre
                 </label>
                 <input
                   id="password"
@@ -79,7 +79,7 @@ export function AuthForm({
                   placeholder="••••••••"
                   required
                   minLength={6}
-                  className="h-14 w-full rounded-2xl border border-slate-100 bg-slate-50 px-6 text-sm font-bold text-slate-900 placeholder:text-slate-300 outline-none transition-all focus:border-primary focus:bg-white focus:ring-4 focus:ring-primary/5"
+                  className="h-11 w-full rounded-lg border border-slate-200 bg-white px-4 text-sm text-slate-900 placeholder:text-slate-400 outline-none transition-all focus:border-primary focus:ring-2 focus:ring-primary/10"
                 />
               </div>
             </div>
@@ -90,15 +90,15 @@ export function AuthForm({
                   id="remember-me"
                   name="remember-me"
                   type="checkbox"
-                  className="size-5 rounded-lg border-slate-200 text-primary focus:ring-primary/20 transition-all cursor-pointer"
+                  className="size-4 cursor-pointer rounded border-slate-300 text-primary transition-all focus:ring-primary/20"
                 />
-                <span className="text-xs font-bold text-slate-500 group-hover:text-slate-900 transition-colors uppercase tracking-tighter">Beni Hatırla</span>
+                <span className="text-xs text-slate-500 transition-colors group-hover:text-slate-900">Beni hatırla</span>
               </label>
 
               {mode === "login" && (
                 <Link
                   href="#"
-                  className="text-xs font-black text-primary hover:underline transition-all uppercase tracking-tighter"
+                  className="text-xs font-medium text-primary transition-all hover:underline"
                 >
                   Şifremi Unuttum
                 </Link>
@@ -106,13 +106,13 @@ export function AuthForm({
             </div>
 
             {state.error ? (
-              <div className="rounded-2xl border border-red-100 bg-red-50/50 px-6 py-4 text-xs font-bold text-red-500 italic">
+              <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-xs text-red-600">
                 {state.error}
               </div>
             ) : null}
 
             {state.success ? (
-              <div className="rounded-2xl border border-emerald-100 bg-emerald-50/50 px-6 py-4 text-xs font-bold text-emerald-500 italic">
+              <div className="rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-xs text-emerald-700">
                 {state.success}
               </div>
             ) : null}
@@ -120,20 +120,20 @@ export function AuthForm({
             <AuthSubmitButton label={submitLabel} />
           </form>
 
-          <div className="mt-10">
+          <div className="mt-8">
             <div className="relative">
               <div className="absolute inset-0 flex items-center">
                 <div className="w-full border-t border-slate-100" />
               </div>
-              <div className="relative flex justify-center text-[10px] font-black">
-                <span className="bg-white px-4 text-slate-300 uppercase tracking-[0.3em]">VEYA</span>
+              <div className="relative flex justify-center text-[10px] font-medium">
+                <span className="bg-white px-3 text-slate-400">veya</span>
               </div>
             </div>
 
-            <div className="mt-8">
+            <div className="mt-6">
               <button
                 type="button"
-                className="inline-flex h-14 w-full items-center justify-center gap-4 rounded-2xl border border-slate-100 bg-white px-6 text-xs font-black text-slate-900 uppercase tracking-widest shadow-sm transition-all hover:bg-slate-50 active:scale-[0.98]"
+                className="inline-flex h-11 w-full items-center justify-center gap-3 rounded-lg border border-slate-200 bg-white px-4 text-sm font-medium text-slate-800 shadow-sm transition-all hover:bg-slate-50 active:scale-[0.98]"
               >
                 <svg className="size-5" aria-hidden="true" viewBox="0 0 24 24">
                   <path d="M12.0003 4.75C13.7703 4.75 15.3553 5.36002 16.6053 6.54998L20.0303 3.125C17.9502 1.19 15.2353 0 12.0003 0C7.31028 0 3.25527 2.69 1.28027 6.60998L5.27028 9.70498C6.21525 6.86002 8.87028 4.75 12.0003 4.75Z" fill="#EA4335" />
@@ -141,17 +141,17 @@ export function AuthForm({
                   <path d="M5.26498 14.2949C5.02498 13.5699 4.88501 12.7999 4.88501 11.9999C4.88501 11.1999 5.01998 10.4299 5.26498 9.7049L1.275 6.60986C0.46 8.22986 0 10.0599 0 11.9999C0 13.9399 0.46 15.7699 1.28 17.3899L5.26498 14.2949Z" fill="#FBBC05" />
                   <path d="M12.0004 24.0001C15.2404 24.0001 17.9654 22.935 19.9454 21.095L16.0804 18.095C15.0054 18.82 13.6204 19.245 12.0004 19.245C8.8704 19.245 6.21537 17.135 5.2654 14.29L1.27539 17.385C3.25539 21.31 7.3104 24.0001 12.0004 24.0001Z" fill="#34A853" />
                 </svg>
-                Google ile Giriş
+                Google ile devam et
               </button>
             </div>
           </div>
         </div>
 
-        <p className="mt-8 text-center text-xs font-bold text-slate-400 uppercase tracking-widest italic">
+        <p className="mt-6 text-center text-sm text-slate-500">
           {mode === "login" ? "Henüz üye değil misiniz?" : "Zaten üyeliğiniz var mı?"}{" "}
           <Link
             href={alternateHref}
-            className="text-primary hover:underline ml-2 transition-all"
+            className="ml-1 text-primary transition-all hover:underline"
           >
             {alternateLabel}
           </Link>

@@ -2,12 +2,10 @@
 
 import Image from "next/image"
 import Link from "next/link"
-import { CarFront, Calendar, Gauge, MapPin, Sparkles, TrendingDown, Clock, ShieldCheck, Camera, Zap, ChevronRight } from "lucide-react"
+import { CarFront, Calendar, Gauge, MapPin, Settings2 } from "lucide-react"
 import { cn, formatNumber } from "@/lib/utils"
 import { type Listing } from "@/types"
-import { Badge } from "@/components/ui/badge"
 import { FavoriteButton } from "@/components/listings/favorite-button"
-import { Settings2 } from "lucide-react"
 
 interface CarCardProps {
   listing: Listing
@@ -24,25 +22,20 @@ function formatPrice(price: number): string {
 export function CarCard({ listing, priority = false, variant = "grid" }: CarCardProps) {
   const images = Array.isArray(listing.images) ? listing.images : []
   const coverImage = images.find(img => img.isCover) || images[0]
-  
-  const isAdvantageous = (listing.marketPriceIndex ?? 1) < 0.95
-  const isHighTrust = (listing.fraudScore ?? 0) < 10
-  const isUrgent = listing.urgentUntil ? new Date(listing.urgentUntil) > new Date() : false
   const detailHref = `/listing/${listing.slug}`
 
   return (
     <Link 
       href={detailHref}
       className={cn(
-        "group relative block bg-card rounded-[32px] border border-border/40 overflow-hidden transition-all duration-500",
-        variant === "grid" ? "showroom-card" : "card-shadow hover:shadow-2xl"
+        "group relative block overflow-hidden rounded-lg border border-slate-200 bg-white transition-all duration-300 hover:shadow-md",
+        variant === "list" && "hover:border-slate-300"
       )}
     >
       <div className={cn("flex", variant === "grid" ? "flex-col" : "flex-col sm:flex-row")}>
-        {/* Media Frame */}
         <div className={cn(
-          "relative overflow-hidden bg-secondary/30",
-          variant === "grid" ? "aspect-[4/3]" : "w-full sm:w-[320px] aspect-[16/10] sm:aspect-square shrink-0"
+          "relative overflow-hidden bg-slate-100",
+          variant === "grid" ? "aspect-[16/10]" : "aspect-[16/10] w-full shrink-0 sm:w-[300px] sm:aspect-square"
         )}>
           {coverImage ? (
             <Image
@@ -50,7 +43,7 @@ export function CarCard({ listing, priority = false, variant = "grid" }: CarCard
               alt={listing.title}
               fill
               sizes={variant === "grid" ? "(min-width: 1024px) 33vw, 50vw" : "320px"}
-              className="object-cover group-hover:scale-110 transition-transform duration-1000 ease-out"
+              className="object-cover transition-transform duration-500 group-hover:scale-105"
               priority={priority}
             />
           ) : (
@@ -59,94 +52,54 @@ export function CarCard({ listing, priority = false, variant = "grid" }: CarCard
             </div>
           )}
 
-          {/* Elite Badges Overlay */}
-          <div className="absolute top-4 left-4 flex flex-col gap-2 z-20">
+          <div className="absolute left-3 top-3 z-20 flex flex-col gap-2">
             {listing.featured && (
-              <div className="glass px-3 py-1.5 rounded-2xl flex items-center gap-1.5 text-[9px] font-black tracking-widest text-primary uppercase shadow-lg">
-                <Sparkles size={12} className="fill-primary" />
-                VİTRİN
-              </div>
-            )}
-            {isUrgent && (
-              <div className="bg-accent px-3 py-1.5 rounded-2xl flex items-center gap-1.5 text-[9px] font-black tracking-widest text-white uppercase shadow-lg shadow-accent/20">
-                <Zap size={12} className="fill-white" />
-                ACİL
+              <div className="rounded-md bg-sky-500 px-2 py-1 text-[10px] font-medium text-white shadow">
+                Yeni İlan
               </div>
             )}
           </div>
 
-          <div className="absolute top-4 right-4 z-20">
+          <div className="absolute right-3 top-3 z-20">
             <FavoriteButton 
               listingId={listing.id}
-              className="size-10 rounded-full glass flex items-center justify-center text-foreground hover:bg-white hover:text-primary transition-all shadow-xl"
+              className="flex size-8 items-center justify-center rounded-full bg-white/90 text-slate-600 shadow transition-all hover:bg-white hover:text-primary"
             />
           </div>
-
-          <div className="absolute bottom-4 right-4 z-20 glass px-2 py-1 rounded-lg text-[9px] font-black text-white/80 uppercase">
-            {images.length} FOTO
-          </div>
-
-          <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent group-hover:opacity-0 transition-opacity" />
         </div>
 
-        {/* Content Section */}
-        <div className={cn("flex-1 p-6 flex flex-col", variant === "list" && "sm:p-8 justify-center")}>
-           <div className="space-y-4">
+        <div className={cn("flex flex-1 flex-col p-4", variant === "list" && "justify-center sm:p-5")}>
+           <div className="space-y-3">
               <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
                  <div className="flex-1 min-w-0">
-                    <div className="text-[10px] font-black text-primary uppercase tracking-[0.2em] mb-1 italic">
-                      {listing.brand}
-                    </div>
                     <h3 className={cn(
-                      "font-black text-foreground tracking-tightest leading-tight uppercase italic group-hover:text-primary transition-colors",
-                      variant === "grid" ? "text-xl" : "text-2xl md:text-3xl"
+                      "line-clamp-2 font-semibold leading-tight text-slate-900 transition-colors group-hover:text-primary",
+                      variant === "grid" ? "text-xl" : "text-xl md:text-2xl"
                     )}>
-                      {listing.model}
-                    </h3>
-                    <p className="text-[11px] font-bold text-muted-foreground/60 uppercase tracking-widest mt-1.5 line-clamp-1 italic">
                       {listing.title}
+                    </h3>
+                    <p className="mt-1 line-clamp-1 text-sm text-slate-500">
+                      {listing.year} • {listing.brand} {listing.model}
                     </p>
                  </div>
                  <div className="flex flex-col items-start sm:items-end shrink-0">
                     <div className={cn(
-                      "font-black text-primary tracking-tightest italic",
-                      variant === "grid" ? "text-2xl" : "text-3xl md:text-4xl"
+                      "font-bold text-sky-600",
+                      variant === "grid" ? "text-2xl" : "text-3xl"
                     )}>
                       ₺{formatPrice(listing.price)}
                     </div>
-                    {isAdvantageous && (
-                      <span className="text-[9px] font-black text-accent uppercase tracking-[0.2em] mt-1 italic">Fırsat İlanı</span>
-                    )}
                  </div>
               </div>
 
-              {/* Technical Ribbon */}
               <div className={cn(
-                "flex flex-wrap gap-x-6 gap-y-3 pt-6 border-t border-border/40",
-                variant === "list" && "my-6"
+                "flex flex-wrap gap-x-5 gap-y-2 border-t border-slate-100 pt-3",
+                variant === "list" && "my-2"
               )}>
                  <SpecItem icon={<Calendar size={14} />} label="YIL" value={listing.year} />
                  <SpecItem icon={<Gauge size={14} />} label="MESAFE" value={`${formatNumber(listing.mileage)} km`} />
-                 <SpecItem icon={<Settings2 size={14} />} label="VİTES" value={listing.transmission?.slice(0, 3)} className="uppercase" />
+                 <SpecItem icon={<Settings2 size={14} />} label="VİTES" value={listing.transmission} className="uppercase" />
                  <SpecItem icon={<MapPin size={14} />} label="LOKASYON" value={listing.city} className="uppercase" />
-              </div>
-
-              {/* Verification & Trust */}
-              <div className="flex items-center justify-between pt-4">
-                 <div className="flex items-center gap-4">
-                    {isHighTrust && (
-                      <div className="flex items-center gap-1.5 text-[9px] font-black text-emerald-500 uppercase tracking-widest">
-                        <ShieldCheck size={14} />
-                        DOĞRULANMIŞ
-                      </div>
-                    )}
-                    <div className="text-[9px] font-black text-muted-foreground/40 uppercase tracking-widest italic">
-                      {isUrgent ? "ÖNCELİKLİ ÜYE" : "GÜNCEL İLAN"}
-                    </div>
-                 </div>
-                 <div className="flex items-center gap-1.5 text-[10px] font-black text-primary uppercase tracking-widest opacity-0 group-hover:opacity-100 transition-all group-hover:gap-3 italic">
-                    İNCELE <ChevronRight size={14} />
-                 </div>
               </div>
            </div>
         </div>
@@ -158,12 +111,12 @@ export function CarCard({ listing, priority = false, variant = "grid" }: CarCard
 function SpecItem({ icon, label, value, className }: { icon: React.ReactNode, label: string, value: string | number, className?: string }) {
   return (
     <div className="flex items-center gap-2">
-       <div className="size-8 rounded-lg bg-secondary flex items-center justify-center text-muted-foreground shrink-0 border border-border/20">
+       <div className="flex size-7 shrink-0 items-center justify-center rounded-md border border-slate-200 bg-slate-50 text-slate-500">
           {icon}
        </div>
        <div className="flex flex-col">
-          <span className="text-[8px] font-black text-muted-foreground/50 uppercase tracking-widest leading-none mb-0.5">{label}</span>
-          <span className={cn("text-xs font-black text-foreground tracking-tight", className)}>
+          <span className="mb-0.5 text-[9px] font-medium leading-none text-slate-400">{label}</span>
+          <span className={cn("text-xs font-semibold text-slate-700", className)}>
              {value}
           </span>
        </div>

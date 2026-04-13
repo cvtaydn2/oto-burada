@@ -59,34 +59,33 @@ export default async function AdminOverviewPage() {
   );
 
   return (
-    <main className="p-8 space-y-8">
-      {/* Header */}
-      <section className="flex flex-col md:flex-row md:items-end justify-between gap-4">
+    <main className="space-y-6 p-4 lg:p-6">
+      <section className="flex flex-col justify-between gap-4 md:flex-row md:items-end">
         <div>
-          <div className="flex items-center gap-2 mb-2">
-             <div className="size-2 rounded-full bg-emerald-500 animate-pulse" />
-             <span className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Canlı Sistem Durumu</span>
+          <div className="mb-2 flex items-center gap-2">
+             <div className="size-2 rounded-full bg-emerald-500" />
+             <span className="text-xs text-slate-500">Canlı sistem durumu</span>
           </div>
-          <h1 className="text-4xl font-black italic uppercase tracking-tighter text-slate-900">
-            Kontrol <span className="text-primary text-glow">Paneli</span>
+          <h1 className="text-3xl font-bold tracking-tight text-slate-900">
+            Kontrol paneli
           </h1>
-          <p className="text-slate-500 font-medium mt-1">Platformun genel performans verileri ve akışı.</p>
+          <p className="mt-1 text-sm text-slate-500">Platformun genel performans verileri ve akışı.</p>
         </div>
         
         <div className="flex items-center gap-3">
-           <div className="p-3 bg-white border border-slate-100 rounded-2xl shadow-sm text-center min-w-24">
-              <span className="block text-[10px] font-bold text-slate-400 uppercase mb-1">Yeni Kayıt</span>
-              <span className="text-xl font-black text-slate-900">+12</span>
+           <div className="min-w-20 rounded-lg border border-slate-200 bg-white p-2.5 text-center">
+              <span className="mb-1 block text-[10px] text-slate-500">Yeni kayıt</span>
+              <span className="text-lg font-semibold text-slate-900">+12</span>
            </div>
-           <div className="p-3 bg-white border border-slate-100 rounded-2xl shadow-sm text-center min-w-24">
-              <span className="block text-[10px] font-bold text-slate-400 uppercase mb-1">Görünüm</span>
-              <span className="text-xl font-black text-slate-900">4.2k</span>
+           <div className="min-w-20 rounded-lg border border-slate-200 bg-white p-2.5 text-center">
+              <span className="mb-1 block text-[10px] text-slate-500">Görünüm</span>
+              <span className="text-lg font-semibold text-slate-900">4.2k</span>
            </div>
         </div>
       </section>
 
       {/* Analytics Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
         <DashboardMetricCard
           label="Bekleyen İlanlar"
           value={String(analyticsData?.listingsByStatus.find(s => s.status === "pending")?.count ?? 0)}
@@ -117,13 +116,13 @@ export default async function AdminOverviewPage() {
         />
       </div>
 
-      <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
-        <div className="xl:col-span-2 space-y-8">
+      <div className="grid grid-cols-1 gap-6 xl:grid-cols-3">
+        <div className="space-y-6 xl:col-span-2">
            {analyticsData && (
-              <div className="bg-white rounded-[2rem] p-6 border border-slate-100 shadow-sm">
-                 <div className="flex items-center gap-3 mb-6">
+              <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+                 <div className="mb-4 flex items-center gap-3">
                     <Zap className="text-amber-500 fill-amber-500" size={24} />
-                    <h2 className="text-xl font-black italic uppercase tracking-tighter">İlan Analiz Grafiği</h2>
+                    <h2 className="text-lg font-semibold text-slate-900">İlan analiz grafiği</h2>
                  </div>
                  <AdminAnalyticsPanel data={analyticsData} />
               </div>
@@ -131,7 +130,7 @@ export default async function AdminOverviewPage() {
            <AdminPersistencePanel health={persistenceHealth} />
         </div>
         
-        <div className="space-y-8">
+        <div className="space-y-6">
            <AdminRecentActions actions={recentActionItems} />
            <AdminBroadcastPanel />
         </div>

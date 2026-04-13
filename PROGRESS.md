@@ -14,6 +14,28 @@ Her yeni geliştirme başlamadan önce okunmalıdır.
 
 ## Proje Durumu
 
+### 2026-04-13 UI Alignment: .design Visily Draft Convergence (Completed)
+- **Goal**: Public-facing UI screens were not aligned with the `.design` draft direction (lightweight classified marketplace feel).
+- **Implemented**:
+  - Refactored `SiteHeader` to a clean and compact light header (thin borders, simpler CTA hierarchy, less showroom styling).
+  - Refactored `HomeHero` to match draft hierarchy: lighter overlay, cleaner typography, and compact white floating search panel.
+  - Simplified `ListingsPageClient` result header/controls/sidebar shells to draft-like spacing and low-noise controls.
+  - Reworked `CarCard` visual language to a cleaner listing card style (simple badges, clearer title/price/spec order).
+  - Simplified `AuthForm` (login/register) to lighter card/input/button hierarchy consistent with Visily auth draft.
+  - Refactored favorites surfaces (`(public)/favorites`, `FavoritesPageClient`) to cleaner spacing and simpler CTA language.
+  - Reduced visual noise on listing detail page (`(public)/listing/[slug]`) by simplifying header actions, hero badges, price/spec cards.
+  - Aligned dashboard and admin overview cards/headers with low-noise light UI style.
+  - Refactored compare page (`(public)/compare`) table and radar section to cleaner card/table shells and lighter typography.
+  - Refactored admin sub-pages (`admin/users`, `admin/reports`, `admin/settings`) with consistent light surface system and compact controls.
+  - Refactored dashboard messages page (`dashboard/messages`) to align with simplified `.design` visual hierarchy.
+  - Refactored seller profile (`(public)/seller/[id]`) to compact light card system and cleaner stats/CTA layout.
+  - Refactored gallery page (`(public)/gallery/[slug]`) listing header/grid/empty state to match the same visual baseline.
+  - Refactored admin audit and roles pages (`admin/audit`, `admin/roles`) into low-noise, consistent management UI shells.
+- **Validation**:
+  - Checked updated files with lint diagnostics; no new lint errors introduced.
+- **Status**: ✅ Core homepage/search card/listings visual language now follows `.design` inspiration more closely.
+- **Next Step**: Final visual pass for tiny inconsistencies (radius/spacing/text-weight) and screenshot-based QA against `.design` files.
+
 ### 2026-04-13 Phase 27: Build Stabilization & Quality Assurance (Completed)
 - **Vercel Build Fix**: Resolved production-blocking errors caused by missing `lucide-react` imports (`Star`, `CarFront`) and utility helper `cn` in wizard steps and card components.
 - **Strict Quality Compliance**: Performed a full codebase audit and resolved 104+ ESLint violations, including:

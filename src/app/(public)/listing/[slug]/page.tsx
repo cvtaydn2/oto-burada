@@ -92,11 +92,10 @@ export default async function ListingDetailPage({ params }: ListingDetailPagePro
           loginUrl={`/login?callbackUrl=${encodeURIComponent(`/listing/${listing.slug}`)}`}
       />
 
-      <main className="min-h-screen bg-[#FDFDFF] pt-24" role="main">
-        {/* Navigation & Desktop Top Bar */}
-        <div className="mx-auto max-w-[1440px] px-6 lg:px-12 mb-8">
-           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-100 pb-6">
-              <nav className="flex items-center gap-2 text-xs font-bold text-slate-400">
+      <main className="min-h-screen bg-[#F8FAFC] pt-20" role="main">
+        <div className="mx-auto mb-6 max-w-[1280px] px-4 lg:px-6">
+           <div className="flex flex-col justify-between gap-4 border-b border-slate-200 pb-4 md:flex-row md:items-center">
+              <nav className="flex items-center gap-2 text-xs text-slate-500">
                 <Link href="/" className="hover:text-primary">Ana Sayfa</Link>
                 <span>/</span>
                 <Link href="/listings" className="hover:text-primary">Otomobil</Link>
@@ -106,36 +105,36 @@ export default async function ListingDetailPage({ params }: ListingDetailPagePro
                 <span className="text-slate-900 truncate max-w-[150px]">{listing.model}</span>
               </nav>
               
-              <div className="flex items-center gap-3">
-                 <ShareButton title={`${listing.brand} ${listing.model}`} price={listing.price} className="h-10 px-4 rounded-xl border border-slate-200 bg-white text-xs font-bold text-slate-600 hover:bg-slate-50 gap-2" />
-                 <CompareButton listingId={listing.id} className="h-10 px-4 rounded-xl border border-slate-200 bg-white text-xs font-bold text-slate-600 hover:bg-slate-50 gap-2" />
-                 <FavoriteButton listingId={listing.id} className="h-10 w-10 flex items-center justify-center rounded-xl border border-slate-200 bg-white hover:text-primary transition-all" />
+              <div className="flex items-center gap-2">
+                 <ShareButton title={`${listing.brand} ${listing.model}`} price={listing.price} className="h-9 gap-2 rounded-md border border-slate-300 bg-white px-3 text-xs font-medium text-slate-600 hover:bg-slate-50" />
+                 <CompareButton listingId={listing.id} className="h-9 gap-2 rounded-md border border-slate-300 bg-white px-3 text-xs font-medium text-slate-600 hover:bg-slate-50" />
+                 <FavoriteButton listingId={listing.id} className="flex h-9 w-9 items-center justify-center rounded-md border border-slate-300 bg-white transition-all hover:text-primary" />
               </div>
            </div>
         </div>
 
-        <div className="mx-auto max-w-[1440px] px-6 lg:px-12 pb-32">
-          <div className="flex flex-col lg:flex-row gap-8 lg:gap-12 items-start">
+        <div className="mx-auto max-w-[1280px] px-4 pb-24 lg:px-6">
+          <div className="flex flex-col items-start gap-6 lg:flex-row lg:gap-8">
             
             {/* Left Column (70%) */}
-            <div className="flex-1 min-w-0 w-full space-y-10">
+            <div className="w-full min-w-0 flex-1 space-y-8">
               
               {/* Image Gallery Side */}
               <div className="space-y-6">
-                <div className="relative rounded-[32px] overflow-hidden bg-slate-100 aspect-[16/10] lg:aspect-[16/9] shadow-2xl">
+                <div className="relative aspect-[16/10] overflow-hidden rounded-xl border border-slate-200 bg-slate-100 lg:aspect-[16/9]">
                    <ListingGallery images={listing.images} title={listing.title} />
                    
                    {/* Badges Overlay */}
-                   <div className="absolute top-6 left-6 flex flex-col gap-2 z-10">
-                      <div className="px-4 py-1.5 rounded-full bg-emerald-500 text-white text-[10px] font-black uppercase tracking-widest shadow-lg">Öne Çıkan İlan</div>
-                      <div className="px-4 py-1.5 rounded-full bg-white/90 backdrop-blur-md text-slate-900 text-[10px] font-black uppercase tracking-widest shadow-lg flex items-center gap-2">
+                   <div className="absolute left-4 top-4 z-10 flex flex-col gap-2">
+                      <div className="rounded-md bg-emerald-500 px-3 py-1 text-[10px] font-medium text-white">Öne çıkan ilan</div>
+                      <div className="flex items-center gap-2 rounded-md bg-white/95 px-3 py-1 text-[10px] font-medium text-slate-900 shadow">
                         <ShieldCheck size={12} className="text-primary" />
                         Ekspertiz Onaylı
                       </div>
                    </div>
 
                    {/* 360 View Placeholder */}
-                   <button className="absolute bottom-10 left-1/2 -translate-x-1/2 bg-primary hover:bg-primary/90 text-white px-8 py-4 rounded-full font-black text-sm uppercase tracking-widest flex items-center gap-3 shadow-2xl transition-all active:scale-95 z-10">
+                   <button className="absolute bottom-6 left-1/2 z-10 flex -translate-x-1/2 items-center gap-2 rounded-md bg-primary px-5 py-2.5 text-xs font-medium text-white shadow-lg transition-all hover:bg-primary/90">
                       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M12 2v20M2 12h20M5.3 5.3l13.4 13.4M5.3 18.7l13.4-13.4"/></svg>
                       360° Görünüm
                    </button>
@@ -143,12 +142,12 @@ export default async function ListingDetailPage({ params }: ListingDetailPagePro
               </div>
 
               {/* Title & Price Header */}
-              <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 pt-4">
+              <div className="flex flex-col justify-between gap-6 pt-2 md:flex-row md:items-end">
                  <div className="space-y-4">
-                    <h1 className="text-4xl lg:text-5xl font-black text-slate-900 tracking-tightest leading-tight">
-                       {listing.brand} {listing.model} <span className="text-slate-400 font-medium">{listing.carTrim}</span>
+                    <h1 className="text-3xl font-bold leading-tight text-slate-900 lg:text-4xl">
+                       {listing.brand} {listing.model} <span className="font-medium text-slate-400">{listing.carTrim}</span>
                     </h1>
-                    <div className="flex flex-wrap items-center gap-6 text-sm font-bold text-slate-400">
+                    <div className="flex flex-wrap items-center gap-4 text-sm text-slate-500">
                        <span className="flex items-center gap-2">
                           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
                           {listing.city}, {listing.district}
@@ -157,53 +156,53 @@ export default async function ListingDetailPage({ params }: ListingDetailPagePro
                           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
                           {new Date(listing.createdAt).toLocaleDateString('tr-TR')} güncellendi
                        </span>
-                       <span className="bg-slate-50 px-3 py-1 rounded-lg">İlan No: {listing.id.slice(0, 8).toUpperCase()}</span>
+                       <span className="rounded-md bg-slate-100 px-2.5 py-1 text-xs">İlan No: {listing.id.slice(0, 8).toUpperCase()}</span>
                     </div>
                  </div>
                  <div className="text-right">
-                    <div className="text-4xl lg:text-5xl font-black text-primary tracking-tightest">
+                    <div className="text-3xl font-bold text-primary lg:text-4xl">
                        ₺{new Intl.NumberFormat("tr-TR").format(listing.price)}
                     </div>
-                    <p className="text-xs font-bold text-slate-400 mt-2 uppercase tracking-widest italic">Son güncelleme: 15 Mayıs 2024</p>
+                    <p className="mt-1 text-xs text-slate-500">Son güncelleme: {new Date(listing.createdAt).toLocaleDateString('tr-TR')}</p>
                  </div>
               </div>
 
               {/* Key Specs Grid (4 boxes) */}
-              <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-                 <div className="p-6 rounded-2xl bg-slate-50/50 border border-slate-100 flex items-center gap-5 hover:bg-white hover:border-primary/20 transition-all">
-                    <div className="size-10 rounded-xl bg-white border border-slate-100 flex items-center justify-center text-primary shadow-sm">
+              <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+                 <div className="flex items-center gap-4 rounded-lg border border-slate-200 bg-white p-4">
+                    <div className="flex size-9 items-center justify-center rounded-md border border-slate-200 bg-slate-50 text-primary">
                        <CalendarDays size={20} />
                     </div>
                     <div className="flex flex-col">
-                       <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">MODEL YILI</span>
-                       <span className="text-base font-black text-slate-900">{listing.year}</span>
+                       <span className="text-[10px] font-medium text-slate-500">MODEL YILI</span>
+                       <span className="text-base font-semibold text-slate-900">{listing.year}</span>
                     </div>
                  </div>
-                 <div className="p-6 rounded-2xl bg-slate-50/50 border border-slate-100 flex items-center gap-5 hover:bg-white hover:border-primary/20 transition-all">
-                    <div className="size-10 rounded-xl bg-white border border-slate-100 flex items-center justify-center text-blue-500 shadow-sm">
+                 <div className="flex items-center gap-4 rounded-lg border border-slate-200 bg-white p-4">
+                    <div className="flex size-9 items-center justify-center rounded-md border border-slate-200 bg-slate-50 text-blue-500">
                        <CircleGauge size={20} />
                     </div>
                     <div className="flex flex-col">
-                       <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">KİLOMETRE</span>
-                       <span className="text-base font-black text-slate-900">{formatNumber(listing.mileage)} km</span>
+                       <span className="text-[10px] font-medium text-slate-500">KİLOMETRE</span>
+                       <span className="text-base font-semibold text-slate-900">{formatNumber(listing.mileage)} km</span>
                     </div>
                  </div>
-                 <div className="p-6 rounded-2xl bg-slate-50/50 border border-slate-100 flex items-center gap-5 hover:bg-white hover:border-primary/20 transition-all">
-                    <div className="size-10 rounded-xl bg-white border border-slate-100 flex items-center justify-center text-teal-500 shadow-sm">
+                 <div className="flex items-center gap-4 rounded-lg border border-slate-200 bg-white p-4">
+                    <div className="flex size-9 items-center justify-center rounded-md border border-slate-200 bg-slate-50 text-teal-500">
                        <Fuel size={20} />
                     </div>
                     <div className="flex flex-col">
-                       <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">YAKIT TİPİ</span>
-                       <span className="text-base font-black text-slate-900 capitalize">{listing.fuelType}</span>
+                       <span className="text-[10px] font-medium text-slate-500">YAKIT TİPİ</span>
+                       <span className="text-base font-semibold text-slate-900 capitalize">{listing.fuelType}</span>
                     </div>
                  </div>
-                 <div className="p-6 rounded-2xl bg-slate-50/50 border border-slate-100 flex items-center gap-5 hover:bg-white hover:border-primary/20 transition-all">
-                    <div className="size-10 rounded-xl bg-white border border-slate-100 flex items-center justify-center text-indigo-500 shadow-sm">
+                 <div className="flex items-center gap-4 rounded-lg border border-slate-200 bg-white p-4">
+                    <div className="flex size-9 items-center justify-center rounded-md border border-slate-200 bg-slate-50 text-indigo-500">
                        <Settings2 size={20} />
                     </div>
                     <div className="flex flex-col">
-                       <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">VİTES TİPİ</span>
-                       <span className="text-base font-black text-slate-900 capitalize">{listing.transmission}</span>
+                       <span className="text-[10px] font-medium text-slate-500">VİTES TİPİ</span>
+                       <span className="text-base font-semibold text-slate-900 capitalize">{listing.transmission}</span>
                     </div>
                  </div>
               </div>

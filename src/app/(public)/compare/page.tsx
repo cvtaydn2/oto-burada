@@ -104,41 +104,40 @@ export default async function ComparePage({ searchParams }: ComparePageProps) {
   );
 
   return (
-    <div className="mx-auto max-w-[1440px] px-6 lg:px-12 py-10 space-y-12">
-      <div className="flex flex-col md:flex-row md:items-end justify-between gap-8">
+    <div className="mx-auto max-w-[1280px] space-y-8 px-4 py-6 lg:px-6 lg:py-8">
+      <div className="flex flex-col justify-between gap-6 md:flex-row md:items-end">
         <div className="max-w-2xl">
-           <div className="flex items-center gap-4 mb-4">
-              <Link href="/" className="flex size-11 items-center justify-center rounded-xl bg-slate-950 text-white shadow-xl shadow-slate-900/10 hover:scale-105 transition-transform">
-                 <ChevronLeft className="size-5" />
+           <div className="mb-3 flex items-center gap-3">
+              <Link href="/" className="flex size-9 items-center justify-center rounded-md border border-slate-200 bg-white text-slate-700 transition-transform hover:bg-slate-50">
+                 <ChevronLeft className="size-4" />
               </Link>
-              <div className="h-px w-12 bg-primary" />
-              <span className="text-[10px] font-black uppercase tracking-[0.3em] text-primary italic">Analitik Kıyaslama</span>
+              <span className="text-xs text-slate-500">Analitik kıyaslama</span>
            </div>
-           <h1 className="text-4xl md:text-5xl font-black tracking-tightest leading-tight text-slate-900 uppercase italic">
-              Araç <span className="text-primary">Karşılaştırma</span>
+           <h1 className="text-3xl font-bold leading-tight text-slate-900 md:text-4xl">
+              Araç karşılaştırma
            </h1>
-           <p className="mt-4 text-sm font-medium text-slate-400 italic leading-relaxed">
+           <p className="mt-2 text-sm leading-relaxed text-slate-500">
               {cars.length} farklı aracı dijital verilerle yan yana koyarak en rasyonel seçimi yapın. Merkeze uzak olan araçlar o kategorideki en yüksek performansı temsil eder.
            </p>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-center bg-white rounded-[3rem] p-8 lg:p-12 border border-slate-100 shadow-2xl shadow-slate-200/40">
-        <div className="lg:col-span-5 space-y-6">
+      <div className="grid grid-cols-1 items-center gap-6 rounded-xl border border-slate-200 bg-white p-5 lg:grid-cols-12 lg:p-7">
+        <div className="space-y-4 lg:col-span-5">
           <div className="flex items-center gap-3">
-             <div className="size-10 rounded-xl bg-emerald-500/10 flex items-center justify-center text-emerald-600">
+             <div className="flex size-9 items-center justify-center rounded-md bg-emerald-500/10 text-emerald-600">
                 <CheckCircle2 size={24} />
              </div>
-             <h2 className="text-2xl font-black italic tracking-tighter uppercase">Rasyonel Analiz</h2>
+             <h2 className="text-xl font-semibold text-slate-900">Rasyonel analiz</h2>
           </div>
-          <p className="text-sm font-medium text-slate-500 leading-relaxed italic">
+          <p className="text-sm leading-relaxed text-slate-500">
             Bu analiz; model yılı, fiyat dengesi, düşük kilometre verileri ve güvenlik parametrelerini birleştirerek size en iyi fiyat/performans indeksini sunar.
           </p>
-          <div className="flex flex-wrap gap-3 pt-4">
+          <div className="flex flex-wrap gap-2 pt-2">
             {cars.map((car, idx) => {
                const colors = ["bg-slate-900", "bg-rose-500", "bg-emerald-500", "bg-primary"];
                return (
-                 <div key={car.id} className="flex items-center gap-3 px-4 py-2.5 rounded-2xl bg-slate-50 border border-slate-100 text-[11px] font-black uppercase tracking-widest text-slate-600 italic">
+                 <div key={car.id} className="flex items-center gap-2 rounded-md border border-slate-200 bg-slate-50 px-3 py-1.5 text-xs font-medium text-slate-600">
                    <div className={`size-3 rounded-full ${colors[idx % colors.length]} shadow-sm`} />
                    {car.brand} {car.model}
                  </div>
@@ -146,17 +145,17 @@ export default async function ComparePage({ searchParams }: ComparePageProps) {
             })}
           </div>
         </div>
-        <div className="lg:col-span-7 flex justify-center bg-slate-50/50 rounded-[2.5rem] p-6 lg:p-10 border border-slate-100/50">
+        <div className="flex justify-center rounded-lg border border-slate-200 bg-slate-50 p-4 lg:col-span-7 lg:p-6">
             <CompareRadarChart cars={cars} />
         </div>
       </div>
 
-      <div className="overflow-x-auto rounded-[3rem] border border-slate-100 bg-white shadow-2xl shadow-slate-200/40">
+      <div className="overflow-x-auto rounded-xl border border-slate-200 bg-white">
         <table className="min-w-[800px] w-full border-collapse text-left">
           <thead>
             <tr>
-              <th className="w-56 bg-slate-50/80 p-8 align-top border-b border-slate-100">
-                <div className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-400 italic">
+              <th className="w-56 border-b border-slate-200 bg-slate-50 p-5 align-top">
+                <div className="text-[10px] font-medium tracking-wide text-slate-500">
                   Teknik Parametreler
                 </div>
               </th>
@@ -171,10 +170,10 @@ export default async function ComparePage({ searchParams }: ComparePageProps) {
                 return (
                   <th
                     key={car.id}
-                    className="relative border-b border-l border-slate-100 p-8 align-top group"
+                    className="group relative border-b border-l border-slate-200 p-5 align-top"
                   >
                     <CompareRemoveButton otherIds={otherIds} />
-                    <div className="relative mb-6 aspect-[4/3] w-full overflow-hidden rounded-[2.5rem] bg-slate-100 shadow-xl shadow-slate-200/20">
+                    <div className="relative mb-4 aspect-[4/3] w-full overflow-hidden rounded-lg bg-slate-100">
                       {coverImage ? (
                         <Image
                           src={coverImage.url}
@@ -184,20 +183,20 @@ export default async function ComparePage({ searchParams }: ComparePageProps) {
                         />
                       ) : null}
                     </div>
-                    <div className="mb-2 text-2xl font-black italic tracking-tightest text-slate-900 leading-tight">
+                    <div className="mb-1 text-xl font-semibold leading-tight text-slate-900">
                       {car.brand} {car.model}
                     </div>
-                    <div className="mb-4 text-xs font-bold text-slate-400 uppercase tracking-widest line-clamp-1 italic">
+                    <div className="mb-3 line-clamp-1 text-xs text-slate-500">
                       {car.title}
                     </div>
-                    <div className="mb-6 text-3xl font-black tracking-tighter text-slate-900 italic">
+                    <div className="mb-4 text-2xl font-bold text-slate-900">
                       {formatCurrency(car.price)}
                     </div>
                     <Link
                       href={`/listing/${car.slug}`}
-                      className="inline-flex h-12 w-full items-center justify-center rounded-2xl bg-slate-900 px-6 text-[10px] font-black uppercase text-white tracking-widest transition-all hover:bg-black hover:scale-[1.02] active:scale-[0.98] italic"
+                      className="inline-flex h-9 w-full items-center justify-center rounded-md bg-slate-900 px-4 text-xs font-medium text-white transition-all hover:bg-black"
                     >
-                      DETAYLI İNCELE
+                      Detaylı incele
                     </Link>
                   </th>
                 );
@@ -207,7 +206,7 @@ export default async function ComparePage({ searchParams }: ComparePageProps) {
           <tbody>
             {/* Best value recommendation */}
             <tr>
-              <td className="border-b border-slate-100 bg-emerald-50/50 p-8 font-black uppercase italic tracking-widest text-emerald-600 text-[10px]">
+              <td className="border-b border-slate-200 bg-emerald-50/50 p-5 text-[10px] font-medium text-emerald-700">
                 <div className="flex items-center gap-2">
                   <ShieldCheck className="size-4" />
                   SİSTEM ÖNERİSİ
@@ -216,15 +215,15 @@ export default async function ComparePage({ searchParams }: ComparePageProps) {
               {cars.map((car, idx) => (
                 <td
                   key={`ai-${car.id}`}
-                  className="border-b border-l border-slate-100 bg-emerald-50/20 p-8"
+                  className="border-b border-l border-slate-200 bg-emerald-50/20 p-5"
                 >
                   {idx === bestValueIndex ? (
-                    <div className="flex items-start gap-2 text-xs font-black text-emerald-700 uppercase italic tracking-tighter leading-relaxed">
+                    <div className="flex items-start gap-2 text-xs font-medium leading-relaxed text-emerald-700">
                       <CheckCircle2 className="mt-0.5 size-4 shrink-0" />
                       Fiyat/Performans endeksine göre en mantıklı tercih
                     </div>
                   ) : (
-                    <div className="text-xs font-bold text-slate-300 text-center italic tracking-widest lowercase">
+                    <div className="text-center text-xs text-slate-300">
                       —
                     </div>
                   )}
@@ -238,7 +237,7 @@ export default async function ComparePage({ searchParams }: ComparePageProps) {
                 key={feature.label}
                 className={cn("group", idx % 2 === 0 ? "bg-white" : "bg-slate-50/30")}
               >
-                <td className="border-b border-slate-100 p-8 font-black uppercase italic tracking-widest text-slate-400 text-[10px] group-hover:text-slate-900 transition-colors">
+                <td className="border-b border-slate-200 p-5 text-[10px] font-medium text-slate-500 transition-colors group-hover:text-slate-900">
                   {feature.label}
                 </td>
                 {cars.map((car) => {
@@ -248,10 +247,10 @@ export default async function ComparePage({ searchParams }: ComparePageProps) {
                     <td
                       key={`${car.id}-${feature.label}`}
                       className={cn(
-                        "border-b border-l border-slate-100 p-8 text-sm",
+                        "border-b border-l border-slate-200 p-5 text-sm",
                         isPositive
-                          ? "font-black text-emerald-600 italic"
-                          : "font-bold text-slate-700 italic"
+                          ? "font-semibold text-emerald-600"
+                          : "font-medium text-slate-700"
                       )}
                     >
                       {value.replace(" ✓", "")}
@@ -266,7 +265,7 @@ export default async function ComparePage({ searchParams }: ComparePageProps) {
               (car) => car.tramerAmount != null && car.tramerAmount > 0,
             ) && (
               <tr>
-                <td className="border-b border-slate-100 bg-rose-50/50 p-8 font-black uppercase italic tracking-widest text-rose-600 text-[10px]">
+                <td className="border-b border-slate-200 bg-rose-50/50 p-5 text-[10px] font-medium text-rose-700">
                   <div className="flex items-center gap-2">
                     <AlertTriangle className="size-4" />
                     HASAR KAYDI
@@ -275,7 +274,7 @@ export default async function ComparePage({ searchParams }: ComparePageProps) {
                 {cars.map((car) => (
                   <td
                     key={`tramer-warn-${car.id}`}
-                    className="border-b border-l border-slate-100 bg-rose-50/20 p-8 text-xs font-black text-rose-700 italic uppercase tracking-tighter"
+                    className="border-b border-l border-slate-200 bg-rose-50/20 p-5 text-xs font-medium text-rose-700"
                   >
                     {car.tramerAmount != null && car.tramerAmount > 0
                       ? `${formatCurrency(car.tramerAmount)} tramer mevcut`

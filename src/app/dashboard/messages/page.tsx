@@ -8,25 +8,25 @@ export default async function MessagesPage() {
   const chats = await getUserChats(user.id);
 
   return (
-    <div className="space-y-10 animate-in fade-in slide-in-from-bottom-4 duration-700 h-[calc(100vh-160px)] flex flex-col">
-      <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 shrink-0">
+    <div className="flex h-[calc(100vh-160px)] flex-col space-y-5">
+      <div className="shrink-0">
         <div>
-          <div className="flex items-center gap-2 mb-2">
-             <MessageSquare className="text-primary italic" size={16} />
-             <span className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">İletişim Hub</span>
+          <div className="mb-2 flex items-center gap-2">
+             <MessageSquare className="text-primary" size={16} />
+             <span className="text-xs text-slate-500">İletişim merkezi</span>
           </div>
-          <h1 className="text-4xl font-black italic uppercase tracking-tighter text-slate-900 leading-tight">
-            IÇ <span className="text-primary">MESAJLAŞMA</span>
+          <h1 className="text-3xl font-bold tracking-tight text-slate-900">
+            İç mesajlaşma
           </h1>
-          <p className="text-sm font-medium text-slate-400 italic mt-1">İlan sahipleri ve alıcılar ile güvenli bir ortamda pazarlığınızı yapın.</p>
+          <p className="mt-1 text-sm text-slate-500">İlan sahipleri ve alıcılar ile güvenli bir ortamda pazarlığınızı yapın.</p>
         </div>
-        <div className="flex items-center gap-3 px-4 py-2 rounded-2xl bg-emerald-50 text-emerald-600 border border-emerald-100 italic">
+        <div className="mt-3 inline-flex items-center gap-2 rounded-md border border-emerald-200 bg-emerald-50 px-3 py-1.5 text-emerald-700">
           <ShieldCheck size={16} />
-          <span className="text-[10px] font-black uppercase tracking-widest">Güvenli İletişim Aktif</span>
+          <span className="text-xs font-medium">Güvenli iletişim aktif</span>
         </div>
       </div>
 
-      <div className="flex-1 min-h-0 bg-white rounded-[2.5rem] border border-slate-100 shadow-2xl shadow-slate-200/40 overflow-hidden flex flex-col">
+      <div className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
         <ChatLayout initialChats={chats} currentUserId={user.id} />
       </div>
     </div>

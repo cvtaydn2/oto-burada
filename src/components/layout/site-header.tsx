@@ -1,13 +1,10 @@
 import Link from "next/link";
-import { headers } from "next/headers";
-import { CarFront, Heart, PlusCircle, User } from "lucide-react";
+import { CarFront, Heart, MessageSquare, PlusCircle } from "lucide-react";
 
 import { getCurrentUser, getUserRole } from "@/lib/auth/session";
 import { getLiveMarketplaceReferenceData } from "@/services/reference/live-reference-data";
 import { HeaderMobileNav } from "./header-mobile-nav";
 import { SearchWithSuggestions } from "@/components/ui/search-with-suggestions";
-import { ThemeToggle } from "@/components/shared/theme-toggle";
-import { NotificationDropdown } from "@/components/shared/notification-dropdown";
 
 export async function SiteHeader() {
   const user = await getCurrentUser();
@@ -19,61 +16,58 @@ export async function SiteHeader() {
   const postListingHref = user ? "/dashboard/listings" : "/login";
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 bg-white/80 backdrop-blur-xl border-b border-slate-100 h-20 flex items-center shadow-sm" role="banner">
-      <div className="mx-auto w-full max-w-[1440px] px-6 lg:px-12 flex items-center justify-between gap-8">
-        {/* Logo & Main Nav */}
-        <div className="flex items-center gap-10">
+    <header className="sticky top-0 left-0 right-0 z-50 h-16 border-b border-slate-200 bg-white/95 backdrop-blur-sm" role="banner">
+      <div className="mx-auto flex h-full w-full max-w-[1280px] items-center justify-between gap-4 px-4 lg:px-6">
+        <div className="flex items-center gap-6">
           <Link href="/" className="flex items-center gap-2 group shrink-0" aria-label="OtoBurada - Ana Sayfa">
-            <div className="size-8 rounded-lg bg-primary flex items-center justify-center text-white" aria-hidden="true">
-              <CarFront size={20} className="stroke-[2.5]" />
+            <div className="flex size-7 items-center justify-center rounded-md bg-sky-500 text-white" aria-hidden="true">
+              <CarFront size={16} className="stroke-[2.25]" />
             </div>
-            <span className="text-xl font-black tracking-tightest text-slate-900">
+            <span className="text-lg font-extrabold tracking-tight text-slate-900">
               Oto<span className="text-primary">Burada</span>
             </span>
           </Link>
 
-          <nav className="hidden lg:flex items-center gap-8 text-[13px] font-bold text-slate-600 uppercase tracking-widest italic">
+          <nav className="hidden items-center gap-5 text-sm font-medium text-slate-600 lg:flex">
             <Link href="/listings" className="hover:text-primary transition-colors">İlanlar</Link>
             <Link href="/compare" className="hover:text-primary transition-colors">Karşılaştır</Link>
           </nav>
         </div>
 
-        {/* Global Search Bar */}
-        <div className="hidden lg:flex flex-1 max-w-xl">
+        <div className="hidden flex-1 max-w-md lg:flex">
           <SearchWithSuggestions
             placeholder="Marka, model veya kelime ara..."
             suggestions={references.searchSuggestions}
-            className="w-full bg-slate-50 border-none rounded-xl h-11 text-sm focus:ring-1 focus:ring-primary/20"
+            className="h-10 w-full rounded-md border border-slate-200 bg-slate-50 text-sm focus:ring-1 focus:ring-primary/20"
           />
         </div>
 
-        {/* User Actions */}
-        <div className="flex items-center gap-4">
-          <div className="hidden md:flex items-center gap-2 pr-4 border-r border-slate-100">
+        <div className="flex items-center gap-2">
+          <div className="hidden items-center gap-1 border-r border-slate-200 pr-2 md:flex">
              <Link 
                href={favoritesHref} 
-               className="size-10 flex items-center justify-center rounded-xl text-slate-400 hover:text-primary hover:bg-slate-50 transition-all"
+               className="flex size-9 items-center justify-center rounded-md text-slate-500 hover:bg-slate-100 hover:text-primary transition-all"
                title="Favoriler"
              >
-               <Heart size={20} />
+               <Heart size={17} />
              </Link>
              <Link 
                href="/dashboard/messages" 
-               className="size-10 flex items-center justify-center rounded-xl text-slate-400 hover:text-primary hover:bg-slate-50 transition-all"
+               className="flex size-9 items-center justify-center rounded-md text-slate-500 hover:bg-slate-100 hover:text-primary transition-all"
                title="Mesajlar"
              >
-               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+               <MessageSquare size={17} />
              </Link>
           </div>
 
           <div className="flex items-center gap-3">
              <Link 
                href={accountHref}
-               className="h-11 px-6 rounded-xl text-sm font-black tracking-tighter uppercase border border-slate-200 hover:bg-slate-50 transition-all flex items-center justify-center gap-2"
+               className="flex h-9 items-center justify-center gap-2 rounded-md border border-slate-300 px-3 text-sm font-medium text-slate-700 hover:bg-slate-50 transition-all"
              >
                {user ? (
                  <>
-                   <div className="size-6 rounded-full bg-primary/10 text-primary flex items-center justify-center text-[10px]">
+                  <div className="flex size-5 items-center justify-center rounded-full bg-primary/10 text-[10px] text-primary">
                      {(user.user_metadata?.full_name as string)?.[0] || 'U'}
                    </div>
                    Hesabım
@@ -83,9 +77,9 @@ export async function SiteHeader() {
 
              <Link 
                href={postListingHref} 
-               className="hidden sm:flex h-11 px-6 rounded-xl text-sm font-black uppercase tracking-tighter text-white bg-primary hover:bg-primary/90 shadow-lg shadow-primary/20 transition-all items-center justify-center gap-2"
+               className="hidden h-9 items-center justify-center gap-2 rounded-md bg-primary px-4 text-sm font-medium text-white transition-all hover:bg-primary/90 sm:flex"
              >
-               <PlusCircle size={18} />
+               <PlusCircle size={15} />
                İlan Ver
              </Link>
           </div>

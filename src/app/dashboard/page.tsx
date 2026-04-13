@@ -34,7 +34,7 @@ export default async function DashboardPage() {
   );
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-4">
       <section className="rounded-xl border border-border/80 bg-background p-4 sm:p-5">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div>
@@ -65,19 +65,19 @@ export default async function DashboardPage() {
       </section>
 
       {!profile?.isVerified && (
-        <section className="rounded-2xl border border-amber-200 bg-amber-50/50 p-6 flex flex-col md:flex-row items-center gap-6 shadow-sm">
+        <section className="flex flex-col items-center gap-5 rounded-xl border border-amber-200 bg-amber-50/60 p-5 md:flex-row">
           <div className="size-16 rounded-full bg-amber-100 flex items-center justify-center text-amber-600 border border-amber-200 shrink-0">
             <ShieldAlert size={32} />
           </div>
           <div className="flex-1 text-center md:text-left">
-            <h3 className="text-lg font-black text-amber-900 italic">Hesabın Henüz Doğrulanmadı</h3>
-            <p className="text-sm text-amber-800 font-medium mt-1 leading-relaxed">
+            <h3 className="text-lg font-semibold text-amber-900">Hesabın henüz doğrulanmadı</h3>
+            <p className="mt-1 text-sm leading-relaxed text-amber-800">
               İlanlarının üst sıralarda görünmesi ve alıcıların sana daha fazla güvenmesi için E-Devlet (EİDS) ile hesabını hemen doğrula.
             </p>
           </div>
           <Link 
             href="/dashboard/profile"
-            className="w-full md:w-auto h-12 px-8 rounded-xl bg-amber-600 text-white font-bold text-sm hover:bg-amber-700 transition-all flex items-center justify-center gap-2 shadow-lg shadow-amber-600/20"
+            className="flex h-10 w-full items-center justify-center gap-2 rounded-md bg-amber-600 px-5 text-sm font-medium text-white transition-all hover:bg-amber-700 md:w-auto"
           >
             <ShieldCheck size={18} />
             Hemen Doğrula
@@ -86,9 +86,9 @@ export default async function DashboardPage() {
       )}
 
       {profile?.isVerified && (
-        <section className="rounded-2xl border border-emerald-100 bg-emerald-50/30 p-4 flex items-center gap-3">
+        <section className="flex items-center gap-3 rounded-xl border border-emerald-100 bg-emerald-50/40 p-4">
           <BadgeCheck className="text-emerald-600" size={20} />
-          <span className="text-xs font-bold text-emerald-800 italic uppercase tracking-wider">Doğrulanmış Üye - Güvenli Alışveriş Başladı</span>
+          <span className="text-xs font-medium text-emerald-800">Doğrulanmış Üye - Güvenli alışveriş başladı</span>
         </section>
       )}
 

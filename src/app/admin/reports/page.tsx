@@ -24,22 +24,22 @@ export default async function AdminReportsPage() {
   );
 
   return (
-    <main className="p-8 space-y-8">
-      <section className="flex flex-col md:flex-row md:items-end justify-between gap-4">
+    <main className="space-y-6 p-4 lg:p-6">
+      <section className="flex flex-col justify-between gap-4 md:flex-row md:items-end">
         <div>
           <div className="flex items-center gap-2 mb-2">
              <Flag className="text-rose-500" size={16} />
-             <span className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Şikayet Yönetimi</span>
+             <span className="text-xs text-slate-500">Şikayet yönetimi</span>
           </div>
-          <h1 className="text-4xl font-black italic uppercase tracking-tighter text-slate-900">
-            Kullanıcı <span className="text-rose-500 italic">Raporları</span>
+          <h1 className="text-3xl font-bold tracking-tight text-slate-900">
+            Kullanıcı raporları
           </h1>
-          <p className="text-slate-500 font-medium mt-1">İlanlar hakkında gelen şikayetleri değerlendirin ve aksiyon alın.</p>
+          <p className="mt-1 text-sm text-slate-500">İlanlar hakkında gelen şikayetleri değerlendirin ve aksiyon alın.</p>
         </div>
       </section>
 
-      <div className="bg-white rounded-[2rem] p-6 border border-slate-100 shadow-sm">
-         <div className="flex items-center gap-3 mb-8 p-4 bg-rose-50 rounded-2xl border border-rose-100/50">
+      <div className="rounded-xl border border-slate-200 bg-white p-5">
+         <div className="mb-6 flex items-center gap-3 rounded-lg border border-rose-200/70 bg-rose-50 p-4">
             <ShieldAlert className="text-rose-500" size={24} />
             <div>
                <h3 className="font-bold text-rose-900 leading-tight">İnceleme Önceliği</h3>
@@ -53,22 +53,22 @@ export default async function AdminReportsPage() {
          />
       </div>
 
-      <div className="grid md:grid-cols-4 gap-6">
-         <div className="p-6 bg-white border border-slate-100 rounded-3xl shadow-sm">
-            <span className="text-[10px] font-black text-slate-400 uppercase block mb-1">Açık</span>
-            <span className="text-3xl font-black text-slate-900">{actionableReports.filter(r => r.status === "open").length}</span>
+      <div className="grid gap-4 md:grid-cols-4">
+         <div className="rounded-xl border border-slate-200 bg-white p-4">
+            <span className="mb-1 block text-[10px] font-medium text-slate-500">Açık</span>
+            <span className="text-2xl font-semibold text-slate-900">{actionableReports.filter(r => r.status === "open").length}</span>
          </div>
-         <div className="p-6 bg-white border border-slate-100 rounded-3xl shadow-sm">
-            <span className="text-[10px] font-black text-slate-400 uppercase block mb-1">İncelemede</span>
-            <span className="text-3xl font-black text-slate-900">{actionableReports.filter(r => r.status === "reviewing").length}</span>
+         <div className="rounded-xl border border-slate-200 bg-white p-4">
+            <span className="mb-1 block text-[10px] font-medium text-slate-500">İncelemede</span>
+            <span className="text-2xl font-semibold text-slate-900">{actionableReports.filter(r => r.status === "reviewing").length}</span>
          </div>
-         <div className="p-6 bg-white border border-slate-100 rounded-3xl shadow-sm">
-            <span className="text-[10px] font-black text-slate-400 uppercase block mb-1">Çözüldü</span>
-            <span className="text-3xl font-black text-emerald-600">142</span>
+         <div className="rounded-xl border border-slate-200 bg-white p-4">
+            <span className="mb-1 block text-[10px] font-medium text-slate-500">Çözüldü</span>
+            <span className="text-2xl font-semibold text-emerald-600">142</span>
          </div>
-         <div className="p-6 bg-white border border-slate-100 rounded-3xl shadow-sm">
-            <span className="text-[10px] font-black text-slate-400 uppercase block mb-1">Geçersiz</span>
-            <span className="text-3xl font-black text-slate-400">12</span>
+         <div className="rounded-xl border border-slate-200 bg-white p-4">
+            <span className="mb-1 block text-[10px] font-medium text-slate-500">Geçersiz</span>
+            <span className="text-2xl font-semibold text-slate-400">12</span>
          </div>
       </div>
     </main>
