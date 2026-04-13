@@ -76,7 +76,7 @@ export default async function AdminOverviewPage() {
         <div className="flex items-center gap-4">
            <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm min-w-[120px]">
               <span className="block text-[10px] text-slate-400 font-bold uppercase mb-1">Ciro</span>
-              <span className="text-xl font-black text-slate-800 tracking-tighter">₺12.450</span>
+              <span className="text-xl font-black text-slate-800 tracking-tighter">₺0</span>
            </div>
            <Button className="rounded-xl bg-blue-600 hover:bg-blue-700 shadow-md shadow-blue-100 font-bold px-6 h-12">
               Rapor Oluştur
@@ -108,9 +108,9 @@ export default async function AdminOverviewPage() {
           tone="emerald"
         />
         <DashboardMetricCard
-          label="Yeni Kayıtlar"
-          value="48"
-          helper="Son 24 saatteki kullanıcı artışı"
+          label="Sistem Kullanıcıları"
+          value={String(analyticsData?.totalUsers ?? 0)}
+          helper="Toplam kayıtlı kullanıcı sayısı"
           icon={UserPlus}
           tone="indigo"
         />

@@ -72,11 +72,11 @@ export default async function AdminReportsPage() {
              </div>
              <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm hover:border-blue-100 transition-all group">
                 <span className="mb-2 block text-[10px] font-black text-slate-400 uppercase tracking-widest group-hover:text-emerald-600 transition-colors">Çözüldü</span>
-                <span className="text-3xl font-black text-emerald-600 tracking-tighter">142</span>
+                <span className="text-3xl font-black text-emerald-600 tracking-tighter">{storedReports.filter(r => r.status === "resolved").length}</span>
              </div>
              <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm hover:border-blue-100 transition-all group">
                 <span className="mb-2 block text-[10px] font-black text-slate-400 uppercase tracking-widest group-hover:text-slate-600 transition-colors">Geçersiz</span>
-                <span className="text-3xl font-black text-slate-400 tracking-tighter">12</span>
+                <span className="text-3xl font-black text-slate-400 tracking-tighter">{storedReports.filter(r => r.status === "dismissed").length}</span>
              </div>
           </div>
 

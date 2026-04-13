@@ -5,19 +5,15 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
-export default function AdminUserManagementPage() {
-  const mockUsers = [
-    { id: "1", name: "Ahmet Yılmaz", email: "ahmet@mail.com", role: "Bireysel", status: "Aktif", joined: new Date("2024-01-15") },
-    { id: "2", name: "Mehmet Demir", email: "mehmet@kurumsal.com", role: "Kurumsal", status: "Pasif", joined: new Date("2024-02-20") },
-    { id: "3", name: "Selin Ak", email: "selin.k@mail.com", role: "Admin", status: "Aktif", joined: new Date("2023-11-05") },
-    { id: "4", name: "Can Öztürk", email: "can.ozturk@mail.com", role: "Bireysel", status: "Aktif", joined: new Date("2024-03-10") },
-    { id: "5", name: "Zeynep Kaya", email: "zeynepk@kurumsal.com", role: "Kurumsal", status: "Aktif", joined: new Date("2024-01-28") },
-  ];
+import { getAllUsers } from "@/services/admin/users";
+
+export default async function AdminUserManagementPage() {
+  const users = await getAllUsers();
 
   const stats = [
-    { label: "Tüm Kullanıcılar", value: "1,240", color: "text-slate-900" },
-    { label: "Aktif", value: "1,238", color: "text-emerald-600" },
-    { label: "Pasif", value: "2", color: "text-slate-400" },
+    { label: "Tüm Kullanıcılar", value: users.length.toLocaleString("tr-TR"), color: "text-slate-900" },
+    { label: "Aktif", value: users.filter(u => !u.isBanned).length.toLocaleString("tr-TR"), color: "text-emerald-600" },
+    { label: "Kurumsal", value: users.filter(u => u.userType === "professional").length.toLocaleString("tr-TR"), color: "text-blue-600" },
   ];
 
   return (
@@ -91,57 +87,57 @@ export default function AdminUserManagementPage() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-50">
-                  {mockUsers.map((u) => (
+                  {users.map((u) => (
                     <tr key={u.id} className="group transition-colors hover:bg-blue-50/20">
                       <td className="p-6">
                         <div className="flex items-center gap-4">
                           <div className={cn(
                             "flex size-11 items-center justify-center rounded-xl text-sm font-black transition-all group-hover:scale-110",
-                            u.role === "Admin" ? "bg-blue-600 text-white shadow-md shadow-blue-100" : "bg-slate-100 text-slate-500"
+                            u.role === "admin" ? "bg-blue-600 text-white shadow-md shadow-blue-100" : "bg-slate-100 text-slate-500"
                           )}>
-                            {u.name[0]}
+                            {(u.fullName || "U")[0].toUpperCase()}
                           </div>
                           <div>
-                            <span className="text-sm font-black text-slate-800 block leading-none mb-1 group-hover:text-blue-600 transition-colors uppercase">{u.name}</span>
-                            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-tighter italic">ID: #{u.id.padStart(4, "0")}</span>
+                            <span className="text-sm font-black text-slate-800 block leading-none mb-1 group-hover:text-blue-600 transition-colors uppercase">{u.fullName || "İsimsiz Kullanıcı"}</span>
+                            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-tighter italic">ID: #{u.id.substring(0, 8)}</span>
                           </div>
                         </div>
                       </td>
                       <td className="p-6">
-                        <span className="text-sm font-medium text-slate-500 italic lowercase">{u.email}</span>
+                        <span className="text-sm font-medium text-slate-500 italic lowercase">{u.phone || "Telefon Yok"}</span>
                       </td>
                       <td className="p-6">
                         <Badge
                           variant={
-                            u.role === "Admin"
+                            u.role === "admin"
                               ? "default"
-                              : u.role === "Kurumsal"
+                              : u.userType === "professional"
                               ? "secondary"
                               : "outline"
                           }
                           className={cn(
                              "text-[10px] font-black px-3 py-1 rounded-lg uppercase tracking-wider",
-                             u.role === "Admin" ? "bg-blue-600 text-white" : ""
+                             u.role === "admin" ? "bg-blue-600 text-white" : ""
                           )}
                         >
-                          {u.role}
+                          {u.role === "admin" ? "Admin" : u.userType === "professional" ? "Kurumsal" : "Bireysel"}
                         </Badge>
                       </td>
                       <td className="p-6">
                         <span className="text-xs font-bold text-slate-500">
-                          {format(u.joined, "dd MMM yyyy", { locale: tr })}
+                          {u.createdAt ? format(new Date(u.createdAt), "dd MMM yyyy", { locale: tr }) : "-"}
                         </span>
                       </td>
                       <td className="p-6">
                         <div className="flex items-center gap-2">
                           <div className={cn(
                             "size-2 rounded-full",
-                            u.status === "Aktif" ? "bg-emerald-500 animate-pulse" : "bg-slate-300"
+                            !u.isBanned ? "bg-emerald-500 animate-pulse" : "bg-slate-300"
                           )} />
                           <span className={cn(
                             "text-[10px] font-black uppercase tracking-widest",
-                            u.status === "Aktif" ? "text-emerald-600" : "text-slate-400"
-                          )}>{u.status}</span>
+                            !u.isBanned ? "text-emerald-600" : "text-slate-400"
+                          )}>{!u.isBanned ? "Aktif" : "Yasaklı"}</span>
                         </div>
                       </td>
                       <td className="p-6 text-right">
