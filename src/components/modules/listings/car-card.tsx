@@ -92,15 +92,15 @@ export function CarCard({ listing, priority = false, variant = "grid" }: CarCard
                  </div>
               </div>
 
-              <div className={cn(
-                "flex flex-wrap gap-x-5 gap-y-2 border-t border-slate-100 pt-3",
-                variant === "list" && "my-2"
-              )}>
-                 <SpecItem icon={<Calendar size={14} />} label="YIL" value={listing.year} />
-                 <SpecItem icon={<Gauge size={14} />} label="MESAFE" value={`${formatNumber(listing.mileage)} km`} />
-                 <SpecItem icon={<Settings2 size={14} />} label="VİTES" value={listing.transmission} className="uppercase" />
-                 <SpecItem icon={<MapPin size={14} />} label="LOKASYON" value={listing.city} className="uppercase" />
-              </div>
+               <div className={cn(
+                 "flex flex-wrap gap-x-4 gap-y-2 border-t border-slate-100 pt-3",
+                 variant === "list" && "my-2"
+               )}>
+                  <SpecItem icon={<Calendar size={13} />} label="Yıl" value={listing.year} />
+                  <SpecItem icon={<Gauge size={13} />} label="Km" value={formatNumber(listing.mileage)} />
+                  <SpecItem icon={<Settings2 size={13} />} label="Vites" value={listing.transmission === "otomatik" ? "Otomatik" : listing.transmission === "manuel" ? "Manuel" : "Yarı Otomatik"} />
+                  <SpecItem icon={<MapPin size={13} />} label="Şehir" value={listing.city} />
+               </div>
            </div>
         </div>
       </div>
@@ -111,11 +111,11 @@ export function CarCard({ listing, priority = false, variant = "grid" }: CarCard
 function SpecItem({ icon, label, value, className }: { icon: React.ReactNode, label: string, value: string | number, className?: string }) {
   return (
     <div className="flex items-center gap-2">
-       <div className="flex size-7 shrink-0 items-center justify-center rounded-md border border-slate-200 bg-slate-50 text-slate-500">
+       <div className="flex size-6 shrink-0 items-center justify-center rounded border border-slate-200 bg-slate-50 text-slate-400">
           {icon}
        </div>
        <div className="flex flex-col">
-          <span className="mb-0.5 text-[9px] font-medium leading-none text-slate-400">{label}</span>
+          <span className="text-[10px] font-medium text-slate-400 leading-none mb-0.5">{label}</span>
           <span className={cn("text-xs font-semibold text-slate-700", className)}>
              {value}
           </span>

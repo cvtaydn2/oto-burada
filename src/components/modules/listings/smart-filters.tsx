@@ -63,9 +63,9 @@ export function SmartFilters({
 
   return (
     <div className="flex flex-col">
-      <div className="flex items-center justify-between pb-4 mb-1 border-b border-slate-100">
+      <div className="flex items-center justify-between px-4 pt-4 pb-3 border-b border-slate-100">
         <div className="flex items-center gap-2">
-          <SlidersHorizontal size={16} className="text-slate-400" />
+          <SlidersHorizontal size={15} className="text-slate-400" />
           <h3 className="text-sm font-bold text-slate-900">Filtrele</h3>
           {activeCount > 0 && (
             <span className="flex size-5 items-center justify-center rounded-full bg-primary text-[10px] font-medium text-white">
@@ -83,7 +83,7 @@ export function SmartFilters({
         )}
       </div>
 
-      <div className="divide-y divide-slate-100">
+      <div className="divide-y divide-slate-100 px-4 pb-4">
         {/* Marka & Model */}
         <FilterGroup
           title="Marka"

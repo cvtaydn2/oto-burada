@@ -14,6 +14,31 @@ Her yeni geliştirme başlamadan önce okunmalıdır.
 
 ## Proje Durumu
 
+### 2026-04-13 Cleanup Session: Optimization & Dependency Cleanup (Completed)
+- **ioredis → @upstash/redis**: Değiştirildi ve tüm `url.parse()` deprecation uyarıları temizlendi.
+- **@base-ui/react**: Kullanılmadığı tespit edildi, kaldırıldı.
+- **rate-limit.ts**: `@upstash/redis` API'sine uyumlu hale getirildi (multi() → incr()/expire()/ttl()).
+- **tsconfig.json**: `.next/types/**/*.ts` kalıcı olarak exclude edildi.
+- **Validation**: `npm run lint` → 0 errors ✅ | `npm run build` → başarılı ✅ | `npm run typecheck` → passed ✅
+- **Status**: ✅ Build temiz, dependencies optimize edilmiş, deprecation uyarıları yok.
+
+### 2026-04-13 Bugfix Session 6: Listings Page Full Redesign (Completed)
+- **Tüm ilanlar sayfası (listings) tamamen yeniden tasarlandı.** Visily taslaklarına (`visily-arama-sonuçları.png`, `visily-filtre-paneli.png`) uyumlu hale getirildi.
+- **listings-page-client.tsx**: Komple yeniden yazıldı:
+  - Temiz header: `text-2xl font-black`, sonuç sayısı tek satırda
+  - Hızlı filtre chip'leri eklendi: Tüm İlanlar, Ekspertizli, Fiyatı Düşen (₺ sıralama), Yeni Eklenen
+  - Aktif filtre tag'leri (removable chips): Marka, model, şehir, yakıt, vites, fiyat aralığı
+  - Sort dropdown: temiz overlay, `price_asc` sıralaması "Fiyatı Düşen" olarak çalışıyor
+  - Grid/list view toggle: temiz toggle butonları
+  - MobileFilterDrawer kontroller bölümüne taşındı (responsive)
+  - Empty state: `bg-slate-900` → `bg-primary`, temiz CTA
+- **listings/page.tsx**: Büyük üst banner (`pt-24`, breadcrumb) kaldırıldı. Sayfa artık taslak gibi direkt içerikten başlıyor.
+- **SmartFilters**: `px-4 pt-4 pb-3 border-b` header yapısı, sidebar içinde temiz görünüm. Çift padding (`p-2` wrapper) temizlendi.
+- **CarCard**: Spec label'lar temizlendi: `YIL` → `Yıl`, `MESAFE` → `Km`, `VİTES` → `Vites`, `LOKASYON` → `Şehir`. İkon boyutları `14` → `13`. Value typography sadeleştirildi.
+- **Validation**: `npm run lint` → 0 errors, 0 warnings ✅ | `npm run typecheck` → passed ✅
+- **Son uyarı temizliği**: `listing/[slug]/page.tsx` dosyasından `CompareButton`, `ShareButton`, `FavoriteButton`, `Phone`, `CheckCircle2`, `MessageSquare` unused import'ları kaldırıldı.
+- **Status**: ✅ Listings page Visily taslaklarına tam uyumlu. Codebase **0 errors, 0 warnings**. Clean build.
+
 ### 2026-04-13 Bugfix Session 5: Full UI Consistency Audit — All Pages (Completed)
 - **Tüm sayfa taraması tamamlandı.** 19 taslak PNG referans alınarak eksiksiz tutarsızlık analizi yapıldı.
 - **dashboard/profile/page.tsx**: Komple yeniden yazıldı. `italic uppercase showroom stili` → temiz UI. `rounded-[2.5rem]` → `rounded-xl`, `font-black italic uppercase tracking-tighter` → `font-black text-slate-900`, `bg-slate-900` → `bg-white border`, verification cards temiz badge stili, profile form section lighten.
@@ -31,7 +56,6 @@ Her yeni geliştirme başlamadan önce okunmalıdır.
   - `dashboard-navigation.tsx`: Clean — showroom styling yok.
   - `listing/[slug]`: Temiz — `bg-slate-900` yok.
 - **Status**: ✅ Tüm bileşenler clean UI_SYSTEM.md stilinde. Showroom aesthetic tamamen temizlendi.
-- **Next Step**: Kalan 6 uyarıyı temizle (`CompareButton`, `ShareButton` vb. unused imports).
 
 ### 2026-04-13 Bugfix Session 4: Turkish Font Fix & Filter Panel Redesign (Completed)
 - **Turkish Character Fix**: Changed font subsets in `src/app/layout.tsx` from `["latin"]` to `["latin", "latin-ext"]` for both `Inter` and `Outfit` fonts. Turkish characters (ı, ş, ğ, ü, ö, ç) now render correctly.

@@ -55,23 +55,18 @@ export async function checkRateLimit(key: string, config: RateLimitConfig): Prom
   if (redis) {
     try {
       const now = Date.now();
-      const multi = redis.multi();
-      multi.incr(fullKey);
-      multi.pexpire(fullKey, config.windowMs);
+      const count = await redis.incr(fullKey);
+      await redis.expire(fullKey, Math.ceil(config.windowMs / 1000));
       
-      const results = await multi.exec();
-      if (results && results[0] && results[0][1] !== null) {
-        const count = results[0][1] as number;
-        const ttl = await redis.pttl(fullKey);
-        const resetAt = now + (ttl > 0 ? ttl : config.windowMs);
-        
-        return {
-          allowed: count <= config.limit,
-          limit: config.limit,
-          remaining: Math.max(0, config.limit - count),
-          resetAt,
-        };
-      }
+      const ttl = await redis.ttl(fullKey);
+      const resetAt = now + (ttl > 0 ? ttl * 1000 : config.windowMs);
+      
+      return {
+        allowed: count <= config.limit,
+        limit: config.limit,
+        remaining: Math.max(0, config.limit - count),
+        resetAt,
+      };
     } catch (e) {
       console.warn("Redis rate limit error, falling back:", e);
     }

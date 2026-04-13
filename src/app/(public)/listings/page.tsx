@@ -1,4 +1,3 @@
-import Link from "next/link";
 import type { Metadata } from "next";
 
 import { ListingsPageClient } from "@/components/listings/listings-page-client";
@@ -48,15 +47,7 @@ export default async function ListingsPage({ searchParams }: ListingsPageProps) 
       <BreadcrumbStructuredData items={breadcrumbs.map(b => ({ name: b.name, url: buildAbsoluteUrl(b.url) }))} />
       <ListingStructuredData listings={result.listings} url={buildAbsoluteUrl("/listings")} />
       
-      <div className="bg-[#FDFDFF] min-h-screen">
-        <div className="mx-auto max-w-[1440px] px-6 lg:px-12 pt-24 pb-6 border-b border-slate-100 bg-white">
-           <nav className="flex items-center gap-2 text-xs font-bold text-slate-400 mb-6">
-             <Link href="/" className="hover:text-primary transition-colors">Ana Sayfa</Link>
-             <span>/</span>
-             <span className="text-slate-900">Otomobil İlanları</span>
-           </nav>
-        </div>
-
+      <div className="min-h-screen bg-slate-50">
         <ListingsPageClient
           initialResult={result}
           brands={references.brands}

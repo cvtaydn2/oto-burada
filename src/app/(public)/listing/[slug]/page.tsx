@@ -4,22 +4,16 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import {
   CalendarDays,
-  CheckCircle2,
   CircleGauge,
   Fuel,
   Settings2,
   ShieldCheck,
   ArrowLeft,
   Zap,
-  MessageSquare,
-  Phone,
 } from "lucide-react";
 
-import { FavoriteButton } from "@/components/listings/favorite-button";
-import { CompareButton } from "@/components/listings/compare-button";
 import { ListingGallery } from "@/components/listings/listing-gallery";
 import { ListingDetailStructuredData, BreadcrumbStructuredData } from "@/components/seo/structured-data";
-import { ShareButton } from "@/components/listings/share-button";
 import { CarCard } from "@/components/modules/listings/car-card";
 import { ContactActions } from "@/components/listings/contact-actions";
 import { ExpertInspectionCard } from "@/components/listings/expert-inspection-card";

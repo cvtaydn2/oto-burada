@@ -1,45 +1,25 @@
-import Redis from "ioredis";
+import { Redis } from "@upstash/redis";
 
-const getRedisUrl = () => {
-  if (process.env.REDIS_URL) return process.env.REDIS_URL;
-  if (process.env.UPSTASH_REDIS_REST_URL) return process.env.UPSTASH_REDIS_REST_URL; // Fallback
-  
-  const host = process.env.REDIS_HOST;
-  const port = process.env.REDIS_PORT || "6379";
-  const password = process.env.REDIS_PASSWORD;
-  const user = process.env.REDIS_USER || "default";
-
-  if (host) {
-    return `redis://${user}:${password}@${host}:${port}`;
+const getRedisConfig = () => {
+  if (process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN) {
+    return {
+      url: process.env.UPSTASH_REDIS_REST_URL,
+      token: process.env.UPSTASH_REDIS_REST_TOKEN,
+    };
   }
-
   return null;
 };
 
-const redisUrl = getRedisUrl();
+const redisConfig = getRedisConfig();
 
-// Initialize Redis only if redisUrl is present
-export const redis = redisUrl ? new Redis(redisUrl, {
-  maxRetriesPerRequest: 3,
-  retryStrategy(times) {
-    const delay = Math.min(times * 50, 2000);
-    return delay;
-  }
-}) : null;
-
-if (redis) {
-  redis.on("error", () => {
-    // Only log once to avoid log spam, or use a logger
-    console.error("Redis Connection Error");
-  });
-}
+export const redis = redisConfig ? new Redis(redisConfig) : null;
 
 export async function getCachedData<T>(key: string): Promise<T | null> {
   if (!redis) return null;
   try {
     const data = await redis.get(key);
     if (!data) return null;
-    return JSON.parse(data) as T;
+    return data as T;
   } catch {
     return null;
   }
@@ -48,8 +28,7 @@ export async function getCachedData<T>(key: string): Promise<T | null> {
 export async function setCachedData<T>(key: string, data: T, ttlSeconds: number = 3600) {
   if (!redis) return;
   try {
-    const stringified = JSON.stringify(data);
-    await redis.set(key, stringified, "EX", ttlSeconds);
+    await redis.set(key, data, { ex: ttlSeconds });
   } catch {
     // Silent fail
   }
