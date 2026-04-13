@@ -152,34 +152,34 @@ export default async function ListingDetailPage({ params }: ListingDetailPagePro
                 <div className="space-y-3">
                   <h1 className="text-2xl md:text-3xl font-extrabold text-gray-800 leading-tight">
                     {listing.brand} {listing.model}
-                    {listing.carTrim && <span className="font-semibold text-gray-500"> {listing.carTrim}</span>}
+                    {listing.carTrim && <span className="font-semibold text-gray-500 ml-2">{listing.carTrim}</span>}
                   </h1>
                   <div className="flex flex-wrap items-center gap-4 text-xs text-gray-500 font-medium">
                     <span className="flex items-center">
-                      <svg className="size-3.5 mr-1.5 text-gray-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
+                      <svg className="size-3.5 mr-1.5 text-gray-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
                       {listing.city}, {listing.district}
                     </span>
                     <span className="flex items-center">
-                      <svg className="size-3.5 mr-1.5 text-gray-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                      <svg className="size-3.5 mr-1.5 text-gray-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
                       {new Date(listing.createdAt).toLocaleDateString("tr-TR")} güncellendi
                     </span>
-                    <span className="bg-gray-100 px-2 py-1 rounded text-[10px]">İlan No: {listing.id.slice(0, 8).toUpperCase()}</span>
+                    <span className="bg-gray-100 px-2 py-1 rounded text-[10px] text-gray-600 font-bold uppercase tracking-wider">İlan No: {listing.id.slice(0, 8).toUpperCase()}</span>
                   </div>
                 </div>
                 <div className="text-left md:text-right w-full md:w-auto">
-                  <div className="text-3xl md:text-4xl font-extrabold text-blue-500">
-                    ₺{new Intl.NumberFormat("tr-TR").format(listing.price)}
+                  <div className="text-3xl md:text-4xl font-extrabold text-blue-500 tracking-tighter">
+                    {new Intl.NumberFormat("tr-TR").format(listing.price)} TL
                   </div>
-                  <div className="text-[10px] text-gray-400 mt-1 uppercase tracking-wider font-bold">KDV Dahil</div>
+                  <div className="text-[10px] text-gray-400 mt-1 uppercase tracking-widest font-black">Son güncelleme: {new Date(listing.updatedAt).toLocaleDateString("tr-TR")}</div>
                 </div>
               </div>
 
               {/* Key Specs Grid */}
               <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-                <SpecBox icon={<CalendarDays size={18} />} label="Model Yılı" value={String(listing.year)} />
-                <SpecBox icon={<CircleGauge size={18} />} label="Kilometre" value={`${formatNumber(listing.mileage)} km`} />
-                <SpecBox icon={<Fuel size={18} />} label="Yakıt Tipi" value={listing.fuelType} />
-                <SpecBox icon={<Settings2 size={18} />} label="Vites Tipi" value={listing.transmission} />
+                <SpecBox icon={<CalendarDays className="size-5" />} label="Model Yılı" value={String(listing.year)} />
+                <SpecBox icon={<CircleGauge className="size-5" />} label="Kilometre" value={`${formatNumber(listing.mileage)} km`} />
+                <SpecBox icon={<Fuel className="size-5" />} label="Yakıt Tipi" value={listing.fuelType} />
+                <SpecBox icon={<Settings2 className="size-5" />} label="Vites Tipi" value={listing.transmission} />
               </div>
 
               {/* Expert Inspection */}

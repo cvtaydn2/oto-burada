@@ -86,42 +86,36 @@ export function ContactActions({ listingId, sellerId }: ContactActionsProps) {
     : "#";
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-3">
       {/* In-App Messaging Button */}
       <button
         onClick={handleStartChat}
         disabled={isChatting}
-        className="flex w-full items-center justify-center gap-2 rounded-xl bg-white h-12 px-4 text-[15px] font-bold text-slate-900 border-2 border-slate-900 shadow-md transition-all hover:bg-slate-50 active:scale-95 disabled:opacity-70"
+        className="flex w-full items-center justify-center gap-2 rounded-xl bg-blue-500 h-12 px-4 text-[15px] font-bold text-white shadow-md transition-all hover:bg-blue-600 active:scale-95 disabled:opacity-70"
       >
         {isChatting ? (
           <Loader2 className="animate-spin size-5" />
         ) : (
           <>
-            <MessageCircle className="size-5 text-primary" />
-            Uygulama İçi Mesaj Gönder
+            <MessageCircle className="size-5" />
+            Mesaj Gönder
           </>
         )}
       </button>
 
-      <div className="flex items-center gap-2 my-2">
-        <div className="h-[1px] flex-1 bg-slate-100" />
-        <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">veya</span>
-        <div className="h-[1px] flex-1 bg-slate-100" />
-      </div>
-
       {/* Phone Number Reveal */}
-      <div className="relative group">
+      <div className="relative">
         {!isRevealed ? (
           <button
             onClick={handleReveal}
             disabled={isLogging}
-            className="flex w-full items-center justify-center gap-2 rounded-xl bg-slate-900 h-12 px-4 text-[15px] font-semibold text-white shadow-lg transition-all hover:bg-slate-800 disabled:opacity-70"
+            className="flex w-full items-center justify-center gap-2 rounded-xl bg-white border border-gray-300 h-12 px-4 text-[15px] font-bold text-gray-700 hover:bg-gray-50 transition-all active:scale-95 disabled:opacity-70"
           >
             {isLogging ? (
               <Loader2 className="animate-spin size-5" />
             ) : (
               <>
-                <Phone className="size-5" />
+                <Phone className="size-5 text-blue-500" />
                 Numarayı Göster
               </>
             )}
@@ -129,9 +123,9 @@ export function ContactActions({ listingId, sellerId }: ContactActionsProps) {
         ) : (
           <a
             href={`tel:${revealedPhone}`}
-            className="flex w-full items-center justify-center gap-2 rounded-xl bg-slate-100 h-12 px-4 text-[15px] font-bold text-slate-900 border border-slate-200 animate-in fade-in zoom-in-95 duration-200"
+            className="flex w-full items-center justify-center gap-2 rounded-xl bg-gray-50 border border-gray-200 h-12 px-4 text-[15px] font-bold text-gray-900 animate-in fade-in zoom-in-95 duration-200"
           >
-            <Phone className="size-5 text-indigo-600" />
+            <Phone className="size-5 text-blue-500" />
             {revealedPhone ? formatPhone(revealedPhone) : "N/A"}
           </a>
         )}
@@ -141,10 +135,10 @@ export function ContactActions({ listingId, sellerId }: ContactActionsProps) {
       <AlertDialog>
         <AlertDialogTrigger asChild>
           <button
-            className="flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-green-500 to-emerald-600 h-12 px-4 text-[15px] text-white font-semibold shadow-lg shadow-green-500/25 transition-all hover:from-green-600 hover:to-emerald-700 active:scale-95"
+            className="flex w-full items-center justify-center gap-2 rounded-xl bg-emerald-50 text-emerald-700 h-12 px-4 text-[15px] font-bold border border-emerald-100 transition-all hover:bg-emerald-100 active:scale-95"
           >
-            <MessageCircle className="size-5" />
-            WhatsApp ile Mesaj Gönder
+            <MessageCircle className="size-5 text-emerald-500" />
+            WhatsApp
           </button>
         </AlertDialogTrigger>
         <AlertDialogContent className="max-w-md bg-white border border-slate-200 rounded-3xl">

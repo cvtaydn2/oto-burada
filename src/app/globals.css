@@ -54,7 +54,7 @@
   --font-geist-mono: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, Monaco, monospace;
   
   /* Showroom Elite Light Palette - High Precision */
-  --background: oklch(0.995 0.002 240);
+  --background: oklch(0.99 0.002 240);
   --foreground: oklch(0.12 0.01 240);
   
   --card: oklch(1 0 0);
@@ -63,9 +63,9 @@
   --popover: oklch(1 0 0);
   --popover-foreground: oklch(0.12 0.01 240);
   
-  /* Elite Brand Indigo */
-  --primary: oklch(0.48 0.22 260);
-  --primary-foreground: oklch(0.99 0 0);
+  /* Showroom Elite Blue - Clean Professional */
+  --primary: oklch(0.55 0.18 250);
+  --primary-foreground: oklch(1 0 0);
   
   --secondary: oklch(0.96 0.005 240);
   --secondary-foreground: oklch(0.2 0.02 240);
@@ -73,18 +73,18 @@
   --muted: oklch(0.97 0.003 240);
   --muted-foreground: oklch(0.4 0.01 240);
   
-  /* Precision Accent - Burnt Orange */
-  --accent: oklch(0.7 0.18 45);
-  --accent-foreground: oklch(0.99 0 0);
+  /* Precision Accent - Burnt Orange (High Contrast) */
+  --accent: oklch(0.65 0.2 45);
+  --accent-foreground: oklch(1 0 0);
   
   --destructive: oklch(0.55 0.18 28);
-  --destructive-foreground: oklch(0.99 0 0);
+  --destructive-foreground: oklch(1 0 0);
   
   --border: oklch(0.92 0.005 240);
   --input: oklch(0.92 0.005 240);
-  --ring: oklch(0.48 0.22 260);
+  --ring: oklch(0.55 0.18 250);
   
-  --radius: 1rem; /* Slightly larger, softer radii */
+  --radius: 1.25rem; /* Modern large radii */
 }
 
 .dark {

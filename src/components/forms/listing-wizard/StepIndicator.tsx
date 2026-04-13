@@ -23,17 +23,17 @@ export function StepIndicator({ currentStep, steps }: StepIndicatorProps) {
             <div key={label} className="flex flex-col items-center gap-2 relative z-10">
               <div
                 className={cn(
-                  "size-10 rounded-full flex items-center justify-center text-sm font-bold transition-all duration-300",
-                  isCompleted ? "bg-emerald-500 text-white" : 
-                  isActive ? "bg-primary text-white scale-110 shadow-lg shadow-primary/20" : 
-                  "bg-slate-100 text-slate-400"
+                  "size-10 rounded-full flex items-center justify-center text-sm font-bold transition-all duration-500",
+                  isCompleted ? "bg-emerald-500 text-white shadow-md shadow-emerald-500/20" : 
+                  isActive ? "bg-blue-500 text-white scale-110 shadow-lg shadow-blue-500/20" : 
+                  "bg-gray-100 text-gray-400"
                 )}
               >
                 {isCompleted ? <Check size={18} /> : index + 1}
               </div>
               <span className={cn(
-                "hidden md:block text-[11px] font-bold uppercase tracking-wider transition-colors",
-                isActive ? "text-primary" : "text-slate-400"
+                "hidden md:block text-[10px] font-bold uppercase tracking-widest transition-colors",
+                isActive ? "text-blue-500" : "text-gray-400"
               )}>
                 {label}
               </span>

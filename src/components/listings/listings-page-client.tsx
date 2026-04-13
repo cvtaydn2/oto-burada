@@ -139,8 +139,8 @@ export function ListingsPageClient({
                 className={cn(
                   "flex h-8 items-center justify-center rounded-md px-2.5 transition-colors",
                   viewMode === "grid"
-                    ? "bg-primary text-white"
-                    : "text-slate-400 hover:text-slate-600"
+                    ? "bg-blue-500 text-white shadow-sm"
+                    : "text-gray-400 hover:text-gray-600"
                 )}
               >
                 <LayoutGrid size={16} />
@@ -150,8 +150,8 @@ export function ListingsPageClient({
                 className={cn(
                   "flex h-8 items-center justify-center rounded-md px-2.5 transition-colors",
                   viewMode === "list"
-                    ? "bg-primary text-white"
-                    : "text-slate-400 hover:text-slate-600"
+                    ? "bg-blue-500 text-white shadow-sm"
+                    : "text-gray-400 hover:text-gray-600"
                 )}
               >
                 <List size={16} />
@@ -180,8 +180,8 @@ export function ListingsPageClient({
                       className={cn(
                         "w-full px-4 py-2 text-left text-sm transition-colors",
                         filters.sort === option.value
-                          ? "bg-primary/5 font-medium text-primary"
-                          : "text-slate-600 hover:bg-slate-50"
+                          ? "bg-blue-50 font-bold text-blue-600"
+                          : "text-gray-600 hover:bg-gray-50"
                       )}
                     >
                       {option.label}
@@ -212,15 +212,15 @@ export function ListingsPageClient({
                   else if (qf.type === "newest") handleFilterChange("sort", filters.sort === "newest" ? undefined : "newest")
                 }}
                 className={cn(
-                  "flex items-center gap-1.5 rounded-full border px-3.5 py-2 text-xs font-semibold transition-all",
+                  "flex items-center gap-1.5 rounded-full border px-4 py-2 text-xs font-bold transition-all",
                   qf.type === "price_low" && filters.sort === "price_asc"
-                    ? "border-emerald-300 bg-emerald-50 text-emerald-700"
+                    ? "border-emerald-200 bg-emerald-50 text-emerald-700 shadow-sm"
                     : isActive
-                    ? "border-primary bg-primary text-white"
-                    : "border-slate-200 bg-white text-slate-600 hover:border-primary/50 hover:text-primary"
+                    ? "border-blue-500 bg-blue-500 text-white shadow-md shadow-blue-500/10"
+                    : "border-gray-200 bg-white text-gray-500 hover:border-blue-300 hover:text-blue-500"
                 )}
               >
-                {qf.icon && <qf.icon size={12} />}
+                {qf.icon && <qf.icon size={13} />}
                 {qf.label}
               </button>
             )
@@ -311,7 +311,7 @@ export function ListingsPageClient({
               </p>
               <button
                 onClick={handleReset}
-                className="h-10 rounded-lg bg-primary px-6 text-sm font-bold text-white hover:bg-primary/90 transition-colors"
+                className="h-10 rounded-lg bg-blue-500 px-8 text-sm font-bold text-white hover:bg-blue-600 transition-all shadow-lg shadow-blue-500/20"
               >
                 Filtreleri Temizle
               </button>

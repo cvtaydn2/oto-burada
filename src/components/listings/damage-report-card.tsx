@@ -68,38 +68,38 @@ export function DamageReportCard({ damageStatus, tramerAmount }: DamageReportCar
               </div>
               {tramerAmount != null && (
                 <div className="text-right">
-                  <div className="text-[10px] font-black text-slate-400 uppercase tracking-widest italic leading-none mb-1">Tramer</div>
-                  <div className="text-sm font-black text-slate-900 leading-none">
+                  <div className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] leading-none mb-1">Tramer Kaydı</div>
+                  <div className="text-base font-black text-gray-900 leading-none">
                     {tramerAmount === 0 ? "Hasar Kayıtsız" : `${tramerAmount.toLocaleString("tr-TR")} TL`}
                   </div>
                 </div>
               )}
             </div>
 
-            <div className="grid grid-cols-2 gap-2 mb-4">
-              <div className="bg-emerald-50 rounded-xl p-3 text-center border border-emerald-100 flex flex-col justify-center">
-                <div className="text-xl font-black text-emerald-700">{statusCounts.orjinal}</div>
-                <div className="text-[9px] font-black text-emerald-600 uppercase tracking-widest">Orijinal</div>
+            <div className="grid grid-cols-2 gap-2 mb-4 text-[11px]">
+              <div className="bg-emerald-50 rounded-xl p-3 border border-emerald-100 flex items-center justify-between">
+                <span className="font-bold text-gray-400 uppercase tracking-tighter">Orijinal</span>
+                <span className="text-lg font-black text-emerald-600">{statusCounts.orjinal}</span>
               </div>
-              <div className="bg-amber-50 rounded-xl p-3 text-center border border-amber-100 flex flex-col justify-center">
-                <div className="text-xl font-black text-amber-700">{statusCounts.boyali + statusCounts.lokal_boyali}</div>
-                <div className="text-[9px] font-black text-amber-600 uppercase tracking-widest">Boyalı</div>
+              <div className="bg-orange-50 rounded-xl p-3 border border-orange-100 flex items-center justify-between">
+                <span className="font-bold text-gray-400 uppercase tracking-tighter">Boyalı</span>
+                <span className="text-lg font-black text-orange-600">{statusCounts.boyali + statusCounts.lokal_boyali}</span>
               </div>
-              <div className="bg-red-50 rounded-xl p-3 text-center border border-red-100 flex flex-col justify-center">
-                <div className="text-xl font-black text-red-700">{statusCounts.degisen}</div>
-                <div className="text-[9px] font-black text-red-600 uppercase tracking-widest">Değişen</div>
+              <div className="bg-red-50 rounded-xl p-3 border border-red-100 flex items-center justify-between">
+                <span className="font-bold text-gray-400 uppercase tracking-tighter">Değişen</span>
+                <span className="text-lg font-black text-red-600">{statusCounts.degisen}</span>
               </div>
-              <div className="bg-slate-50 rounded-xl p-3 text-center border border-slate-100 flex flex-col justify-center">
-                <div className="text-xl font-black text-slate-700">{statusCounts.bilinmiyor}</div>
-                <div className="text-[9px] font-black text-slate-600 uppercase tracking-widest">Bilinmiyor</div>
+              <div className="bg-gray-50 rounded-xl p-3 border border-gray-100 flex items-center justify-between">
+                <span className="font-bold text-gray-400 uppercase tracking-tighter">Bilinmiyor</span>
+                <span className="text-lg font-black text-gray-600">{statusCounts.bilinmiyor}</span>
               </div>
             </div>
 
             <button
               onClick={() => setIsExpanded(!isExpanded)}
-              className="w-full flex items-center justify-center gap-2 py-3 rounded-2xl border border-slate-200 bg-slate-50 text-slate-900 text-sm font-bold hover:bg-slate-100 transition-all shadow-sm group"
+              className="w-full flex items-center justify-center gap-2 py-3 rounded-2xl border border-blue-100 bg-blue-50/50 text-blue-600 text-xs font-black uppercase tracking-wider hover:bg-blue-100 transition-all shadow-sm group"
             >
-              {isExpanded ? "Detayları Gizle" : "Tüm Parça Raporu"}
+              {isExpanded ? "Detayları Gizle" : "Boya/Değişen Detayları"}
               {isExpanded ? <ChevronUp size={16} /> : <ChevronDown size={16} className="group-hover:translate-y-0.5 transition-transform" />}
             </button>
           </div>

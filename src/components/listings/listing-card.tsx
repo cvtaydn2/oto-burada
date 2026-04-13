@@ -58,13 +58,13 @@ export function ListingCard({ listing, priority = false }: ListingCardProps) {
           {/* Elite Badges */}
           <div className="absolute top-4 left-4 flex flex-col gap-2">
             {listing.featured && (
-              <div className="bg-primary/95 backdrop-blur shadow-xl text-white text-[10px] font-black uppercase tracking-widest px-3 py-1.5 rounded-lg flex items-center gap-1.5 animate-in fade-in slide-in-from-left-2 transition-all group-hover:bg-primary">
+              <div className="bg-blue-600/95 backdrop-blur shadow-xl text-white text-[10px] font-black uppercase tracking-widest px-3 py-1.5 rounded-lg flex items-center gap-1.5 animate-in fade-in slide-in-from-left-2 transition-all group-hover:bg-blue-500">
                 <Sparkles className="w-3.5 h-3.5 fill-white/20" />
                 VİTRİN
               </div>
             )}
             {isAdvantageous && (
-              <div className="bg-accent/95 backdrop-blur shadow-xl text-white text-[10px] font-black uppercase tracking-widest px-3 py-1.5 rounded-lg flex items-center gap-1.5 animate-in fade-in slide-in-from-left-2 transition-all">
+              <div className="bg-orange-600/95 backdrop-blur shadow-xl text-white text-[10px] font-black uppercase tracking-widest px-3 py-1.5 rounded-lg flex items-center gap-1.5 animate-in fade-in slide-in-from-left-2 transition-all">
                 <TrendingDown className="w-3.5 h-3.5" />
                 AVANTAJLI
               </div>
@@ -80,30 +80,30 @@ export function ListingCard({ listing, priority = false }: ListingCardProps) {
         </div>
 
         {/* Content Section - Editorial Density */}
-        <div className="flex-1 p-6 min-w-0 flex flex-col justify-between bg-card group-hover:bg-secondary/20 transition-colors duration-500">
+        <div className="flex-1 p-6 min-w-0 flex flex-col justify-between bg-white group-hover:bg-blue-50/50 transition-colors duration-500">
           <div className="space-y-4">
             {/* Title & Price - Elite Pairing */}
             <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
               <div className="min-w-0 flex-1">
-                <div className="text-[10px] font-black text-primary/60 uppercase tracking-[0.2em] mb-1 italic">
+                <div className="text-[10px] font-black text-blue-600/60 uppercase tracking-[0.2em] mb-1 italic">
                   {listing.brand}
                 </div>
-                <h3 className="text-xl md:text-2xl font-black text-foreground tracking-tight leading-tight truncate group-hover:text-primary transition-colors">
+                <h3 className="text-xl md:text-2xl font-black text-gray-900 tracking-tight leading-tight truncate group-hover:text-blue-600 transition-colors">
                   {listing.model}
                 </h3>
-                <p className="text-sm text-muted-foreground font-medium truncate mt-1">
+                <p className="text-sm text-gray-500 font-medium truncate mt-1">
                   {listing.title}
                 </p>
               </div>
               <div className="shrink-0 text-left sm:text-right flex flex-col items-end">
                 <div className="flex items-baseline gap-1.5">
-                  <span className="text-2xl sm:text-3xl font-black tracking-tightest text-primary italic">
+                  <span className="text-2xl sm:text-3xl font-black tracking-tightest text-blue-600 italic">
                     {formatPrice(listing.price)}
                   </span>
-                  <span className="text-xs font-black text-primary/40 italic">TL</span>
+                  <span className="text-xs font-black text-blue-600/40 italic">TL</span>
                 </div>
                 {isAdvantageous && (
-                  <span className="text-[9px] font-black text-accent uppercase tracking-widest mt-1">PAZAR LİDERİ FİYAT</span>
+                  <span className="text-[9px] font-black text-orange-600 uppercase tracking-widest mt-1">PAZAR LİDERİ FİYAT</span>
                 )}
               </div>
             </div>
@@ -111,41 +111,41 @@ export function ListingCard({ listing, priority = false }: ListingCardProps) {
             {/* Smart Specs Overlay */}
             <div className="flex flex-wrap gap-x-6 gap-y-3 pt-2">
               <div className="flex items-center gap-2 group/spec">
-                <div className="size-8 rounded-lg bg-secondary flex items-center justify-center text-muted-foreground group-hover/spec:bg-primary/10 group-hover/spec:text-primary transition-colors">
+                <div className="size-8 rounded-lg bg-gray-50 flex items-center justify-center text-gray-400 group-hover/spec:bg-blue-50 group-hover/spec:text-blue-600 transition-colors outline outline-1 outline-gray-100">
                   <Calendar className="size-4" />
                 </div>
                 <div className="flex flex-col">
-                  <span className="text-[9px] font-bold text-muted-foreground/60 uppercase tracking-widest">MODEL</span>
+                  <span className="text-[9px] font-bold text-gray-400 uppercase tracking-widest">MODEL</span>
                   <span className="text-xs font-black">{listing.year}</span>
                 </div>
               </div>
 
               <div className="flex items-center gap-2 group/spec">
-                <div className="size-8 rounded-lg bg-secondary flex items-center justify-center text-muted-foreground group-hover/spec:bg-primary/10 group-hover/spec:text-primary transition-colors">
+                <div className="size-8 rounded-lg bg-gray-50 flex items-center justify-center text-gray-400 group-hover/spec:bg-blue-50 group-hover/spec:text-blue-600 transition-colors outline outline-1 outline-gray-100">
                   <CircleGauge className="size-4" />
                 </div>
                 <div className="flex flex-col">
-                  <span className="text-[9px] font-bold text-muted-foreground/60 uppercase tracking-widest">MESAFE</span>
+                  <span className="text-[9px] font-bold text-gray-400 uppercase tracking-widest">MESAFE</span>
                   <span className="text-xs font-black">{formatNumber(listing.mileage)} <span className="text-[9px]">KM</span></span>
                 </div>
               </div>
 
               <div className="flex items-center gap-2 group/spec">
-                <div className="size-8 rounded-lg bg-secondary flex items-center justify-center text-muted-foreground group-hover/spec:bg-primary/10 group-hover/spec:text-primary transition-colors">
+                <div className="size-8 rounded-lg bg-gray-50 flex items-center justify-center text-gray-400 group-hover/spec:bg-blue-50 group-hover/spec:text-blue-600 transition-colors outline outline-1 outline-gray-100">
                   <Settings2 className="size-4" />
                 </div>
                 <div className="flex flex-col">
-                  <span className="text-[9px] font-bold text-muted-foreground/60 uppercase tracking-widest">VİTES</span>
+                  <span className="text-[9px] font-bold text-gray-400 uppercase tracking-widest">VİTES</span>
                   <span className="text-xs font-black">{listing.transmission}</span>
                 </div>
               </div>
 
               <div className="flex items-center gap-2 group/spec">
-                <div className="size-8 rounded-lg bg-secondary flex items-center justify-center text-muted-foreground group-hover/spec:bg-primary/10 group-hover/spec:text-primary transition-colors">
+                <div className="size-8 rounded-lg bg-gray-50 flex items-center justify-center text-gray-400 group-hover/spec:bg-blue-50 group-hover/spec:text-blue-600 transition-colors outline outline-1 outline-gray-100">
                   <Fuel className="size-4" />
                 </div>
                 <div className="flex flex-col">
-                  <span className="text-[9px] font-bold text-muted-foreground/60 uppercase tracking-widest">YAKIT</span>
+                  <span className="text-[9px] font-bold text-gray-400 uppercase tracking-widest">YAKIT</span>
                   <span className="text-xs font-black">{listing.fuelType}</span>
                 </div>
               </div>
@@ -153,15 +153,15 @@ export function ListingCard({ listing, priority = false }: ListingCardProps) {
           </div>
 
           {/* Footer UI */}
-          <div className="flex items-center justify-between pt-5 mt-4 border-t border-border/40">
-            <div className="flex items-center gap-2 cursor-pointer hover:text-primary transition-colors">
-              <div className="size-7 rounded-full bg-secondary flex items-center justify-center">
-                <MapPin className="size-3.5 text-primary" />
+          <div className="flex items-center justify-between pt-5 mt-4 border-t border-gray-100">
+            <div className="flex items-center gap-2 cursor-pointer hover:text-blue-600 transition-colors">
+              <div className="size-7 rounded-full bg-blue-50 flex items-center justify-center shadow-inner">
+                <MapPin className="size-3.5 text-blue-600" />
               </div>
               <span className="text-xs font-black uppercase tracking-widest">{listing.city}</span>
             </div>
             
-            <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-primary group-hover:gap-4 transition-all duration-300 italic">
+            <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-blue-600 group-hover:gap-4 transition-all duration-300 italic">
               DETAYLI İNCELE
               <ArrowRight size={14} className="animate-pulse" />
             </div>

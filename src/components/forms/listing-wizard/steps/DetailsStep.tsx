@@ -18,27 +18,27 @@ export function DetailsStep({ form, cities }: DetailsStepProps) {
   return (
     <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
       {/* Location & Specs Case */}
-      <div className="rounded-[2.5rem] border border-slate-100 bg-white p-8 shadow-2xl shadow-slate-200/40 text-slate-900 relative overflow-hidden">
-        <div className="absolute top-0 right-0 w-64 h-64 bg-primary/5 blur-[100px] -z-0 pointer-events-none" />
+      <div className="rounded-[2.5rem] border border-gray-100 bg-white p-8 shadow-2xl shadow-gray-200/40 text-gray-900 relative overflow-hidden">
+        <div className="absolute top-0 right-0 w-64 h-64 bg-blue-500/5 blur-[100px] -z-0 pointer-events-none" />
         
         <div className="relative z-10 flex items-start gap-4 mb-10">
-          <div className="size-14 rounded-2xl bg-slate-950 flex items-center justify-center text-white shrink-0 shadow-lg shadow-slate-900/20 italic font-black text-xl">
+          <div className="size-14 rounded-2xl bg-blue-600 flex items-center justify-center text-white shrink-0 shadow-lg shadow-blue-500/20 italic font-black text-xl">
             <MapPin size={24} />
           </div>
           <div>
-            <h3 className="text-2xl font-black italic uppercase tracking-tighter">Konum ve Teknik</h3>
-            <p className="text-sm text-slate-500 font-medium">Aracın bulunduğu yeri ve temel sürüş özelliklerini belirtin.</p>
+            <h3 className="text-2xl font-black italic uppercase tracking-tighter text-blue-900">Konum ve Teknik</h3>
+            <p className="text-sm text-gray-500 font-medium">Aracın bulunduğu yeri ve temel sürüş özelliklerini belirtin.</p>
           </div>
         </div>
 
         <div className="grid gap-8 relative z-10">
           <div className="grid sm:grid-cols-2 gap-6">
             <div className="space-y-2">
-              <label htmlFor="city" className="text-[11px] font-black uppercase tracking-[0.2em] text-slate-400 italic ml-1">Şehir</label>
+              <label htmlFor="city" className="text-[11px] font-black uppercase tracking-[0.2em] text-gray-400 italic ml-1">Şehir</label>
               <select
                 {...register("city")}
                 id="city"
-                className="h-14 w-full rounded-xl border-2 border-slate-100 bg-white px-4 text-sm font-bold text-slate-900 outline-none transition-all focus:border-primary italic"
+                className="h-14 w-full rounded-xl border-2 border-gray-100 bg-white px-4 text-sm font-bold text-gray-900 outline-none transition-all focus:border-blue-500 italic"
               >
                 <option value="">Seçiniz</option>
                 {cities.map((c) => (
@@ -47,12 +47,12 @@ export function DetailsStep({ form, cities }: DetailsStepProps) {
               </select>
             </div>
             <div className="space-y-2">
-              <label htmlFor="district" className="text-[11px] font-black uppercase tracking-[0.2em] text-slate-400 italic ml-1">İlçe</label>
+              <label htmlFor="district" className="text-[11px] font-black uppercase tracking-[0.2em] text-gray-400 italic ml-1">İlçe</label>
               <select
                 {...register("district")}
                 id="district"
                 disabled={!selectedCity}
-                className="h-14 w-full rounded-xl border-2 border-slate-100 bg-white px-4 text-sm font-bold text-slate-900 outline-none transition-all focus:border-primary italic disabled:opacity-50"
+                className="h-14 w-full rounded-xl border-2 border-gray-100 bg-white px-4 text-sm font-bold text-gray-900 outline-none transition-all focus:border-blue-500 italic disabled:opacity-50"
               >
                 <option value="">Seçiniz</option>
                 {districtOptions.map((d) => (
@@ -64,11 +64,11 @@ export function DetailsStep({ form, cities }: DetailsStepProps) {
 
           <div className="grid sm:grid-cols-2 gap-6">
             <div className="space-y-2">
-              <label htmlFor="fuelType" className="text-[11px] font-black uppercase tracking-[0.2em] text-slate-400 italic ml-1">Yakıt Tipi</label>
+              <label htmlFor="fuelType" className="text-[11px] font-black uppercase tracking-[0.2em] text-gray-400 italic ml-1">Yakıt Tipi</label>
               <select
                 {...register("fuelType")}
                 id="fuelType"
-                className="h-14 w-full rounded-xl border-2 border-slate-100 bg-white px-4 text-sm font-bold text-slate-900 outline-none transition-all focus:border-primary italic"
+                className="h-14 w-full rounded-xl border-2 border-gray-100 bg-white px-4 text-sm font-bold text-gray-900 outline-none transition-all focus:border-blue-500 italic"
               >
                 {fuelTypes.map((t) => (
                   <option key={t} value={t}>
@@ -78,11 +78,11 @@ export function DetailsStep({ form, cities }: DetailsStepProps) {
               </select>
             </div>
             <div className="space-y-2">
-              <label htmlFor="transmission" className="text-[11px] font-black uppercase tracking-[0.2em] text-slate-400 italic ml-1">Vites Tipi</label>
+              <label htmlFor="transmission" className="text-[11px] font-black uppercase tracking-[0.2em] text-gray-400 italic ml-1">Vites Tipi</label>
               <select
                 {...register("transmission")}
                 id="transmission"
-                className="h-14 w-full rounded-xl border-2 border-slate-100 bg-white px-4 text-sm font-bold text-slate-900 outline-none transition-all focus:border-primary italic"
+                className="h-14 w-full rounded-xl border-2 border-gray-100 bg-white px-4 text-sm font-bold text-gray-900 outline-none transition-all focus:border-blue-500 italic"
               >
                 {transmissionTypes.map((t) => (
                   <option key={t} value={t}>
@@ -96,51 +96,51 @@ export function DetailsStep({ form, cities }: DetailsStepProps) {
       </div>
 
       {/* Description & Price Case */}
-      <div className="rounded-[2.5rem] border border-slate-100 bg-white p-8 shadow-2xl shadow-slate-200/40 text-slate-900 relative overflow-hidden">
+      <div className="rounded-[2.5rem] border border-gray-100 bg-white p-8 shadow-2xl shadow-gray-200/40 text-gray-900 relative overflow-hidden">
         <div className="absolute bottom-0 left-0 w-64 h-64 bg-emerald-500/5 blur-[100px] -z-0 pointer-events-none" />
         
         <div className="relative z-10 flex items-start gap-4 mb-10">
-          <div className="size-14 rounded-2xl bg-slate-950 flex items-center justify-center text-white shrink-0 shadow-lg shadow-slate-900/20 italic font-black text-xl">
+          <div className="size-14 rounded-2xl bg-blue-600 flex items-center justify-center text-white shrink-0 shadow-lg shadow-blue-500/20 italic font-black text-xl">
             <FileText size={24} />
           </div>
           <div>
-            <h3 className="text-2xl font-black italic uppercase tracking-tighter">İçerik ve Fiyat</h3>
-            <p className="text-sm text-slate-500 font-medium">Alıcıların ilgisini çekecek net bir başlık ve dürüst bir açıklama girin.</p>
+            <h3 className="text-2xl font-black italic uppercase tracking-tighter text-blue-900">İçerik ve Fiyat</h3>
+            <p className="text-sm text-gray-500 font-medium">Alıcıların ilgisini çekecek net bir başlık ve dürüst bir açıklama girin.</p>
           </div>
         </div>
 
         <div className="grid gap-8 relative z-10">
           <div className="space-y-3">
-            <label htmlFor="title" className="text-[11px] font-black uppercase tracking-[0.2em] text-slate-400 italic ml-1">İlan Başlığı</label>
+            <label htmlFor="title" className="text-[11px] font-black uppercase tracking-[0.2em] text-gray-400 italic ml-1">İlan Başlığı</label>
             <input
               {...register("title")}
               id="title"
               placeholder="Örn: 2020 Volkswagen Golf Hatasız Boyasız"
-              className="h-16 w-full rounded-2xl border-2 border-slate-100 bg-white px-6 text-lg font-bold text-slate-900 outline-none transition-all focus:border-primary placeholder:text-slate-200 italic"
+              className="h-16 w-full rounded-2xl border-2 border-gray-100 bg-white px-6 text-lg font-bold text-gray-900 outline-none transition-all focus:border-blue-500 placeholder:text-gray-200 italic"
             />
           </div>
 
           <div className="space-y-3">
-            <label htmlFor="description" className="text-[11px] font-black uppercase tracking-[0.2em] text-slate-400 italic ml-1">Ayrıntılı Açıklama</label>
+            <label htmlFor="description" className="text-[11px] font-black uppercase tracking-[0.2em] text-gray-400 italic ml-1">Ayrıntılı Açıklama</label>
             <textarea
               {...register("description")}
               id="description"
               rows={6}
               placeholder="Aracınız hakkında samimi ve detaylı bir yazı yazın..."
-              className="w-full rounded-2xl border-2 border-slate-100 bg-white p-6 text-base font-medium text-slate-700 outline-none transition-all focus:border-primary italic antialiased"
+              className="w-full rounded-2xl border-2 border-gray-100 bg-white p-6 text-base font-medium text-gray-700 outline-none transition-all focus:border-blue-500 italic antialiased"
             />
           </div>
 
           <div className="space-y-3">
-            <label htmlFor="price" className="text-[11px] font-black uppercase tracking-[0.2em] text-slate-400 italic ml-1">Satış Fiyatı (TL)</label>
+            <label htmlFor="price" className="text-[11px] font-black uppercase tracking-[0.2em] text-gray-400 italic ml-1">Satış Fiyatı (TL)</label>
             <div className="relative">
                <input
                  type="number"
                  {...register("price", { valueAsNumber: true })}
                  id="price"
-                 className="h-20 w-full rounded-2xl border-2 border-slate-100 bg-white px-8 text-4xl font-black text-slate-900 outline-none transition-all focus:border-primary font-heading tracking-tighter"
+                 className="h-20 w-full rounded-2xl border-2 border-gray-100 bg-white px-8 text-4xl font-black text-blue-600 outline-none transition-all focus:border-blue-500 font-heading tracking-tighter"
                />
-               <span className="absolute right-8 top-1/2 -translate-y-1/2 text-2xl font-black text-slate-200 italic">₺</span>
+               <span className="absolute right-8 top-1/2 -translate-y-1/2 text-2xl font-black text-gray-200 italic">₺</span>
             </div>
             <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest italic ml-1">
               * Piyasa analizine göre rekabetçi bir fiyat girmeniz önerilir.

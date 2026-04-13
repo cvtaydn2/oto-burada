@@ -86,7 +86,7 @@ export function CarCard({ listing, priority = false, variant = "grid" }: CarCard
       </div>
 
       <div className="flex flex-1 flex-col p-4">
-        <Link href={detailHref} className="group-hover:text-primary transition-colors">
+        <Link href={detailHref} className="group-hover:text-blue-500 transition-colors">
           <h3 className="font-bold text-lg text-gray-800 truncate leading-tight">
             {listing.title}
           </h3>
@@ -98,53 +98,52 @@ export function CarCard({ listing, priority = false, variant = "grid" }: CarCard
         </Link>
 
         {/* Insight Highlights */}
-        <div className="mt-3 flex flex-wrap gap-1.5">
-          {insights.highlights.map(h => (
-            <span key={h} className="text-[9px] font-black uppercase tracking-tighter bg-gray-100 text-gray-500 px-1.5 py-0.5 rounded">
-              {h}
-            </span>
-          ))}
-        </div>
+        {insights.highlights.length > 0 && (
+          <div className="mt-3 flex flex-wrap gap-1.5">
+            {insights.highlights.map(h => (
+              <span key={h} className="text-[9px] font-bold uppercase tracking-wider bg-gray-50 text-gray-500 px-2 py-1 rounded border border-gray-100">
+                {h}
+              </span>
+            ))}
+          </div>
+        )}
 
-        <div className="mt-3 flex items-center justify-between border-b border-gray-100 pb-3 text-[11px] font-medium text-gray-500">
+        <div className="mt-3 flex items-center justify-between border-b border-gray-100 pb-3 text-[11px] font-medium text-gray-400">
           <span className="flex items-center gap-1.5 capitalize">
-            <Settings2 size={13} className="text-gray-400" />
+            <Settings2 size={13} className="text-gray-300" />
             {listing.transmission === "yari_otomatik" ? "Yarı Otomatik" : listing.transmission}
           </span>
           <span className="flex items-center gap-1.5 capitalize">
-            <CarFront size={13} className="text-gray-400" />
+            <CarFront size={13} className="text-gray-300" />
             {listing.fuelType}
           </span>
         </div>
 
         <div className="mt-3 flex flex-col gap-1">
-          <p className="flex items-center gap-1.5 text-[11px] text-gray-400 font-medium">
+          <p className="flex items-center gap-1.5 text-[11px] text-gray-400">
             <MapPin size={12} className="text-gray-300" />
             {listing.city}, {listing.district}
           </p>
-          <div className="flex items-baseline gap-2">
-            <div className="text-xl font-extrabold text-primary">
-              ₺{formatPrice(listing.price)}
+          <div className="flex items-center justify-between mt-1">
+            <div className="text-xl font-bold text-blue-500 tracking-tight">
+              {formatPrice(listing.price)} TL
             </div>
             {insights.fairValue && insights.fairValue > listing.price && (
-              <div className="text-[10px] font-bold text-emerald-500 line-through opacity-50">
-                ₺{formatPrice(insights.fairValue)}
+              <div className="text-[10px] font-bold text-emerald-500 bg-emerald-50 px-1.5 py-0.5 rounded border border-emerald-100 animate-pulse">
+                FIRSAT
               </div>
             )}
           </div>
         </div>
 
-        <div className="mt-auto flex items-center justify-between border-t border-gray-50 pt-3">
-          <span className="text-xs font-bold text-gray-500">{formatNumber(listing.mileage)} km</span>
-          <Link 
-            href={detailHref} 
-            className="flex items-center gap-1 text-[11px] font-black uppercase tracking-wider text-primary hover:text-primary/80 transition-colors"
-          >
-            İncele
+        <div className="mt-auto flex items-center justify-between border-t border-gray-50 pt-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+          <span className="text-xs font-bold text-gray-400">{formatNumber(listing.mileage)} KM</span>
+          <div className="flex items-center gap-1 text-[11px] font-bold uppercase tracking-wider text-blue-500">
+            Detaylar
             <svg className="size-2.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
               <path d="m9 18 6-6-6-6" />
             </svg>
-          </Link>
+          </div>
         </div>
       </div>
     </div>

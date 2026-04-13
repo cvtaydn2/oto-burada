@@ -512,12 +512,12 @@ export function ListingCreateForm({
         </div>
 
         {/* Navigation Controls */}
-        <div className="flex items-center justify-between pt-8 border-t border-slate-200">
+        <div className="flex items-center justify-between pt-8 border-t border-gray-100">
           <button
             type="button"
             onClick={handlePrevStep}
             disabled={currentStep === 0 || isSubmitting}
-            className="group inline-flex h-12 items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-6 text-sm font-bold text-slate-700 transition-all hover:bg-slate-50 disabled:opacity-30 disabled:pointer-events-none"
+            className="group inline-flex h-12 items-center justify-center gap-2 rounded-xl border border-gray-200 bg-white px-6 text-sm font-bold text-gray-700 transition-all hover:bg-gray-50 disabled:opacity-30 disabled:pointer-events-none"
           >
             <ChevronLeft size={18} className="transition-transform group-hover:-translate-x-1" />
             Geri
@@ -527,7 +527,7 @@ export function ListingCreateForm({
             <button
               type="button"
               onClick={handleNextStep}
-              className="group inline-flex h-12 items-center justify-center gap-2 rounded-xl bg-slate-900 px-8 text-sm font-bold text-white transition-all hover:bg-slate-800 shadow-xl shadow-slate-900/10"
+              className="group inline-flex h-12 items-center justify-center gap-2 rounded-xl bg-blue-500 px-8 text-sm font-bold text-white transition-all hover:bg-blue-600 shadow-lg shadow-blue-500/20"
             >
               Sonraki Adım
               <ChevronRight size={18} className="transition-transform group-hover:translate-x-1" />
@@ -536,7 +536,7 @@ export function ListingCreateForm({
             <button
               type="submit"
               disabled={isSubmitting || isUploadingAnyImage || uploadedImageCount < minimumListingImages}
-              className="inline-flex h-12 items-center justify-center gap-2 rounded-xl bg-indigo-600 px-10 text-sm font-bold text-white transition-all hover:bg-indigo-700 disabled:opacity-50 shadow-xl shadow-indigo-600/20"
+              className="inline-flex h-12 items-center justify-center gap-2 rounded-xl bg-blue-500 px-10 text-sm font-bold text-white transition-all hover:bg-blue-600 disabled:opacity-50 shadow-lg shadow-blue-500/20"
             >
               {isSubmitting ? (
                 <>
