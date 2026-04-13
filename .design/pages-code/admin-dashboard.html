@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OtoBurada Admin - Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body class="bg-gray-50 flex h-screen overflow-hidden font-sans text-gray-800">
+
+    <aside class="w-64 bg-white border-r border-gray-200 flex flex-col flex-shrink-0 z-20">
+        <div class="h-16 flex items-center px-6 border-b border-gray-100">
+            <span class="text-blue-500 text-2xl font-bold flex items-center">
+                <i class="fa-solid fa-car-side mr-2"></i>OtoBurada
+            </span>
+        </div>
+
+        <nav class="flex-1 overflow-y-auto py-4">
+            <div class="px-6 mb-2 text-xs font-semibold text-gray-400 uppercase tracking-wider">Yönetim Menüsü</div>
+            <ul class="space-y-1">
+                <li>
+                    <a href="#" class="flex items-center px-6 py-3 text-blue-600 bg-blue-50 border-r-4 border-blue-600">
+                        <i class="fa-solid fa-border-all w-5 h-5 mr-3"></i>
+                        <span class="font-medium">Dashboard</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="#" class="flex items-center px-6 py-3 text-gray-600 hover:bg-gray-50 hover:text-blue-600 transition-colors">
+                        <i class="fa-solid fa-list w-5 h-5 mr-3"></i>
+                        <span class="font-medium">İlan Yönetimi</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="#" class="flex items-center px-6 py-3 text-gray-600 hover:bg-gray-50 hover:text-blue-600 transition-colors">
+                        <i class="fa-solid fa-users w-5 h-5 mr-3"></i>
+                        <span class="font-medium">Kullanıcılar</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="#" class="flex items-center px-6 py-3 text-gray-600 hover:bg-gray-50 hover:text-blue-600 transition-colors">
+                        <i class="fa-solid fa-shield-halved w-5 h-5 mr-3"></i>
+                        <span class="font-medium">Moderasyon</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="#" class="flex items-center px-6 py-3 text-gray-600 hover:bg-gray-50 hover:text-blue-600 transition-colors">
+                        <i class="fa-solid fa-chart-simple w-5 h-5 mr-3"></i>
+                        <span class="font-medium">Analitik</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="#" class="flex items-center px-6 py-3 text-gray-600 hover:bg-gray-50 hover:text-blue-600 transition-colors">
+                        <i class="fa-solid fa-gear w-5 h-5 mr-3"></i>
+                        <span class="font-medium">Entegrasyonlar</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="#" class="flex items-center px-6 py-3 text-gray-600 hover:bg-gray-50 hover:text-blue-600 transition-colors">
+                        <i class="fa-regular fa-life-ring w-5 h-5 mr-3"></i>
+                        <span class="font-medium">Destek Talepleri</span>
+                    </a>
+                </li>
+            </ul>
+        </nav>
+    </aside>
+
+    <div class="flex-1 flex flex-col h-full overflow-hidden">
+        
+        <header class="h-16 bg-white border-b border-gray-200 flex items-center justify-between px-8 flex-shrink-0 z-10">
+            <div class="relative w-96">
+                <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400">
+                    <i class="fa-solid fa-magnifying-glass"></i>
+                </span>
+                <input type="text" placeholder="İlan, kullanıcı veya ticket ara..." class="w-full bg-gray-50 border border-transparent focus:border-blue-500 focus:bg-white text-gray-700 text-sm rounded-lg block pl-10 p-2.5 outline-none transition">
+            </div>
+
+            <div class="flex items-center space-x-6">
+                <button class="text-gray-400 hover:text-gray-600 relative">
+                    <i class="fa-regular fa-bell text-xl"></i>
+                    <span class="absolute top-0 right-0 block h-2 w-2 rounded-full bg-red-500 ring-2 ring-white"></span>
+                </button>
+                <div class="flex items-center space-x-3 border-l pl-6 border-gray-200">
+                    <div class="text-right">
+                        <div class="text-sm font-semibold text-gray-800">Admin Panel</div>
+                        <div class="text-xs text-gray-500">OtoBurada Yönetici</div>
+                    </div>
+                    <img class="h-10 w-10 rounded-full object-cover border border-gray-200" src="https://i.pravatar.cc/150?img=11" alt="Admin Profil">
+                </div>
+            </div>
+        </header>
+
+        <main class="flex-1 overflow-y-auto p-8 bg-gray-50">
+            
+            <div class="flex justify-between items-center mb-6">
+                <div>
+                    <h1 class="text-2xl font-bold text-gray-800">Yönetici Paneli</h1>
+                    <p class="text-gray-500 text-sm mt-1">Hoş geldiniz! Platformun bugünkü durumuna bir göz atın.</p>
+                </div>
+                <div class="flex space-x-3">
+                    <button class="bg-white border border-gray-300 text-gray-700 px-4 py-2 rounded-lg text-sm font-medium hover:bg-gray-50 flex items-center transition">
+                        <i class="fa-solid fa-bolt mr-2"></i> İlanları Yönet
+                    </button>
+                    <button class="bg-blue-500 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-600 flex items-center transition shadow-sm">
+                        <i class="fa-solid fa-plus mr-2"></i> Hızlı İlan Oluştur
+                    </button>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
+                <div class="bg-white p-5 rounded-xl border border-gray-100 shadow-sm flex flex-col justify-between">
+                    <div class="flex justify-between items-start mb-4">
+                        <div class="bg-blue-50 text-blue-500 w-10 h-10 rounded-lg flex items-center justify-center"><i class="fa-solid fa-car"></i></div>
+                        <span class="text-xs font-semibold text-gray-600 bg-gray-100 px-2 py-1 rounded-md flex items-center"><i class="fa-solid fa-arrow-trend-up text-green-500 mr-1"></i> +12%</span>
+                    </div>
+                    <div>
+                        <div class="text-sm text-gray-500 mb-1">Aktif İlanlar</div>
+                        <div class="text-2xl font-bold text-gray-800">12,482</div>
+                    </div>
+                </div>
+                <div class="bg-white p-5 rounded-xl border border-gray-100 shadow-sm flex flex-col justify-between">
+                    <div class="flex justify-between items-start mb-4">
+                        <div class="bg-cyan-50 text-cyan-500 w-10 h-10 rounded-lg flex items-center justify-center"><i class="fa-solid fa-user-group"></i></div>
+                        <span class="text-xs font-semibold text-gray-600 bg-gray-100 px-2 py-1 rounded-md flex items-center"><i class="fa-solid fa-arrow-trend-up text-green-500 mr-1"></i> +5.2%</span>
+                    </div>
+                    <div>
+                        <div class="text-sm text-gray-500 mb-1">Yeni Kullanıcılar</div>
+                        <div class="text-2xl font-bold text-gray-800">438</div>
+                    </div>
+                </div>
+                <div class="bg-white p-5 rounded-xl border border-gray-100 shadow-sm flex flex-col justify-between">
+                    <div class="flex justify-between items-start mb-4">
+                        <div class="bg-orange-50 text-orange-500 w-10 h-10 rounded-lg flex items-center justify-center"><i class="fa-regular fa-clock"></i></div>
+                        </div>
+                    <div>
+                        <div class="text-sm text-gray-500 mb-1">Bekleyen Onaylar</div>
+                        <div class="text-2xl font-bold text-gray-800">24</div>
+                    </div>
+                </div>
+                <div class="bg-white p-5 rounded-xl border border-gray-100 shadow-sm flex flex-col justify-between">
+                    <div class="flex justify-between items-start mb-4">
+                        <div class="bg-indigo-50 text-indigo-500 w-10 h-10 rounded-lg flex items-center justify-center"><i class="fa-solid fa-chart-line"></i></div>
+                        <span class="text-xs font-semibold text-gray-600 bg-gray-100 px-2 py-1 rounded-md flex items-center"><i class="fa-solid fa-arrow-trend-up text-green-500 mr-1"></i> +18%</span>
+                    </div>
+                    <div>
+                        <div class="text-sm text-gray-500 mb-1">Aylık Gelir</div>
+                        <div class="text-2xl font-bold text-gray-800">₺845,200</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+                
+                <div class="bg-white p-6 rounded-xl border border-gray-100 shadow-sm lg:col-span-2 flex flex-col">
+                    <div class="flex justify-between items-center mb-6">
+                        <div>
+                            <h3 class="text-lg font-bold text-gray-800">Platform Performansı</h3>
+                            <p class="text-xs text-gray-500">Son 7 gündeki ilan ve trafik değişimi</p>
+                        </div>
+                        <button class="text-sm text-gray-600 hover:text-blue-500 font-medium transition">Detaylı Analiz</button>
+                    </div>
+                    <div class="flex-1 bg-gray-50 rounded-lg border border-dashed border-gray-200 flex flex-col items-center justify-center min-h-[250px]">
+                        <i class="fa-solid fa-chart-area text-4xl text-gray-300 mb-2"></i>
+                        <p class="text-gray-400 text-sm">Grafik Kütüphanesi Buraya Gelecek (Örn: Chart.js)</p>
+                    </div>
+                </div>
+
+                <div class="bg-white p-6 rounded-xl border border-gray-100 shadow-sm flex flex-col">
+                    <div class="flex justify-between items-center mb-6">
+                        <h3 class="text-lg font-bold text-gray-800 flex items-center"><i class="fa-solid fa-bolt text-blue-500 mr-2"></i>Son Aktiviteler</h3>
+                        <span class="bg-gray-100 text-gray-600 text-xs px-2 py-1 rounded-full font-medium">Canlı</span>
+                    </div>
+                    
+                    <div class="space-y-5 flex-1">
+                        <div class="flex items-start">
+                            <img src="https://i.pravatar.cc/150?img=5" alt="Avatar" class="w-10 h-10 rounded-full mr-3 border border-gray-200">
+                            <div>
+                                <p class="text-sm text-gray-800 font-medium">Selin Aras <span class="text-gray-500 font-normal">ilanını güncelledi</span></p>
+                                <p class="text-xs text-blue-500 font-medium mt-0.5">Fiat Egea</p>
+                                <p class="text-[11px] text-gray-400 mt-1"><i class="fa-regular fa-clock mr-1"></i>2 dk önce</p>
+                            </div>
+                        </div>
+                        <div class="flex items-start">
+                            <div class="w-10 h-10 rounded-full mr-3 bg-gray-100 border border-gray-200 flex items-center justify-center text-gray-500"><i class="fa-solid fa-building"></i></div>
+                            <div>
+                                <p class="text-sm text-gray-800 font-medium">Oto Galeri XYZ <span class="text-gray-500 font-normal">Yeni üyelik oluşturdu</span></p>
+                                <p class="text-xs text-cyan-500 font-medium mt-0.5">Premium Paket</p>
+                                <p class="text-[11px] text-gray-400 mt-1"><i class="fa-regular fa-clock mr-1"></i>15 dk önce</p>
+                            </div>
+                        </div>
+                        <div class="flex items-start">
+                            <img src="https://i.pravatar.cc/150?img=12" alt="Avatar" class="w-10 h-10 rounded-full mr-3 border border-gray-200">
+                            <div>
+                                <p class="text-sm text-gray-800 font-medium">Moderatör Burak <span class="text-gray-500 font-normal">İlanı reddetti</span></p>
+                                <p class="text-xs text-blue-500 font-medium mt-0.5">Tesla Model 3</p>
+                                <p class="text-[11px] text-gray-400 mt-1"><i class="fa-regular fa-clock mr-1"></i>45 dk önce</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <button class="w-full mt-4 py-2 bg-white border border-gray-200 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-50 transition">Tüm Logları Gör</button>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
+                <div class="p-6 border-b border-gray-100 flex justify-between items-center">
+                    <div>
+                        <h3 class="text-lg font-bold text-gray-800">Bekleyen İlan Onayları</h3>
+                        <p class="text-xs text-gray-500 mt-1">Moderatör onayı bekleyen yeni ve güncellenmiş ilanlar</p>
+                    </div>
+                    <span class="bg-gray-100 text-gray-600 text-xs px-3 py-1.5 rounded-full font-medium">24 İlan Bekliyor</span>
+                </div>
+                
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr class="bg-gray-50 text-gray-500 text-xs uppercase tracking-wider">
+                                <th class="p-4 font-medium">Araç Bilgisi</th>
+                                <th class="p-4 font-medium">Satıcı</th>
+                                <th class="p-4 font-medium">Tür</th>
+                                <th class="p-4 font-medium">Fiyat</th>
+                                <th class="p-4 font-medium text-right">Aksiyon</th>
+                            </tr>
+                        </thead>
+                        <tbody class="text-sm text-gray-700 divide-y divide-gray-100">
+                            <tr class="hover:bg-gray-50 transition">
+                                <td class="p-4">
+                                    <div class="font-bold text-gray-800">BMW 3 Serisi 320d</div>
+                                    <div class="text-xs text-gray-500 mt-0.5">10 Dakika Önce</div>
+                                </td>
+                                <td class="p-4">Ahmet Yılmaz</td>
+                                <td class="p-4"><span class="bg-gray-100 text-gray-600 px-2 py-1 rounded text-xs">Bireysel</span></td>
+                                <td class="p-4 font-bold">1.850.000 ₺</td>
+                                <td class="p-4 text-right space-x-3">
+                                    <button class="text-gray-400 hover:text-blue-500 transition" title="İncele"><i class="fa-regular fa-eye text-lg"></i></button>
+                                    <button class="text-gray-400 hover:text-green-500 transition" title="Onayla"><i class="fa-solid fa-check text-lg"></i></button>
+                                    <button class="text-gray-400 hover:text-red-500 transition" title="Reddet"><i class="fa-solid fa-xmark text-lg"></i></button>
+                                    <button class="text-gray-400 hover:text-gray-600 transition ml-2"><i class="fa-solid fa-ellipsis-vertical"></i></button>
+                                </td>
+                            </tr>
+                             <tr class="hover:bg-gray-50 transition">
+                                <td class="p-4">
+                                    <div class="font-bold text-gray-800">Renault Megane 1.5 dCi</div>
+                                    <div class="text-xs text-gray-500 mt-0.5">45 Dakika Önce</div>
+                                </td>
+                                <td class="p-4">Oto Galeri XYZ</td>
+                                <td class="p-4"><span class="bg-blue-50 text-blue-600 px-2 py-1 rounded text-xs font-medium">Kurumsal</span></td>
+                                <td class="p-4 font-bold">950.000 ₺</td>
+                                <td class="p-4 text-right space-x-3">
+                                    <button class="text-gray-400 hover:text-blue-500 transition" title="İncele"><i class="fa-regular fa-eye text-lg"></i></button>
+                                    <button class="text-gray-400 hover:text-green-500 transition" title="Onayla"><i class="fa-solid fa-check text-lg"></i></button>
+                                    <button class="text-gray-400 hover:text-red-500 transition" title="Reddet"><i class="fa-solid fa-xmark text-lg"></i></button>
+                                    <button class="text-gray-400 hover:text-gray-600 transition ml-2"><i class="fa-solid fa-ellipsis-vertical"></i></button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+</body>
+</html>

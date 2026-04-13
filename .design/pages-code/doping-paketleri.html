@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OtoBurada - İlan Paketleri ve Dopingler</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body class="bg-gray-50 text-gray-800 font-sans min-h-screen flex flex-col">
+
+    <header class="bg-white border-b border-gray-200 sticky top-0 z-50">
+        <div class="max-w-[1400px] mx-auto px-4 flex justify-between items-center h-16">
+            <div class="flex items-center space-x-8">
+                <a href="/" class="text-blue-500 text-xl font-bold flex items-center">
+                    <i class="fa-solid fa-car-side mr-2"></i>OtoBurada
+                </a>
+                <nav class="hidden md:flex space-x-6 text-sm">
+                    <a href="#" class="text-gray-600 hover:text-blue-500 font-medium transition py-5">İlanlar</a>
+                    <a href="#" class="text-blue-500 font-bold border-b-2 border-blue-500 py-5">İlan Paketleri</a>
+                </nav>
+            </div>
+            <div class="flex items-center space-x-4">
+                <a href="#" class="text-sm font-medium text-gray-600 hover:text-blue-500 transition border border-gray-200 px-4 py-2 rounded-lg">Giriş Yap</a>
+                <button class="bg-blue-500 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-600 transition shadow-sm">
+                    İlan Ver
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <div class="max-w-4xl mx-auto px-4 py-16 text-center">
+        <h1 class="text-4xl md:text-5xl font-extrabold text-gray-800 mb-4">Aracınızı Milyonlara Ulaştırın</h1>
+        <p class="text-lg text-gray-500 max-w-2xl mx-auto">Standart ilan vermek her zaman ücretsizdir. Ancak aracınızı çok daha hızlı satmak istiyorsanız, OtoBurada premium doping paketlerinden yararlanın.</p>
+    </div>
+
+    <main class="max-w-[1200px] mx-auto px-4 w-full flex-1 mb-20">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8 items-start">
+            
+            <div class="bg-white border border-gray-200 rounded-3xl p-8 shadow-sm hover:shadow-md transition">
+                <h3 class="text-xl font-bold text-gray-800 mb-2">Standart İlan</h3>
+                <p class="text-sm text-gray-500 mb-6 h-10">Bireysel kullanıcılar için yılda 1 adet ücretsiz ilan hakkı.</p>
+                <div class="mb-6">
+                    <span class="text-4xl font-extrabold text-gray-800">₺0</span>
+                </div>
+                <button class="w-full bg-white border-2 border-blue-500 text-blue-600 font-bold py-3 rounded-xl hover:bg-blue-50 transition mb-6">
+                    Ücretsiz İlan Ver
+                </button>
+                <ul class="space-y-4 text-sm text-gray-600">
+                    <li class="flex items-center"><i class="fa-solid fa-check text-green-500 mr-3"></i> 30 Gün Yayında Kalma</li>
+                    <li class="flex items-center"><i class="fa-solid fa-check text-green-500 mr-3"></i> 10 Adet Fotoğraf</li>
+                    <li class="flex items-center"><i class="fa-solid fa-check text-green-500 mr-3"></i> Standart Arama Sonuçları</li>
+                    <li class="flex items-center text-gray-400"><i class="fa-solid fa-xmark mr-3"></i> Vitrin Ayrıcalığı Yok</li>
+                </ul>
+            </div>
+
+            <div class="bg-white border-2 border-blue-500 rounded-3xl p-8 shadow-xl relative transform md:-translate-y-4">
+                <div class="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-blue-500 text-white px-4 py-1 rounded-full text-xs font-bold uppercase tracking-wider shadow">En Popüler</div>
+                
+                <h3 class="text-xl font-bold text-blue-600 mb-2 flex items-center"><i class="fa-solid fa-bolt mr-2"></i> Turbo Doping</h3>
+                <p class="text-sm text-gray-500 mb-6 h-10">Arama sonuçlarında en üstte çıkın, aracınızı 3 kat hızlı satın.</p>
+                <div class="mb-6">
+                    <span class="text-4xl font-extrabold text-gray-800">₺249</span><span class="text-gray-400 text-sm"> /ilan başına</span>
+                </div>
+                <button class="w-full bg-blue-500 text-white font-bold py-3 rounded-xl hover:bg-blue-600 transition shadow-md mb-6">
+                    Hemen Satın Al
+                </button>
+                <ul class="space-y-4 text-sm text-gray-700">
+                    <li class="flex items-center font-medium"><i class="fa-solid fa-check text-green-500 mr-3"></i> <span class="bg-blue-50 text-blue-600 px-1 py-0.5 rounded">Kategori Üst Sıra</span> (7 Gün)</li>
+                    <li class="flex items-center"><i class="fa-solid fa-check text-green-500 mr-3"></i> 60 Gün Yayında Kalma</li>
+                    <li class="flex items-center"><i class="fa-solid fa-check text-green-500 mr-3"></i> 20 Adet Fotoğraf + Video</li>
+                    <li class="flex items-center"><i class="fa-solid fa-check text-green-500 mr-3"></i> Renkli İlan Çerçevesi</li>
+                </ul>
+            </div>
+
+            <div class="bg-slate-900 border border-slate-800 rounded-3xl p-8 shadow-lg text-white">
+                <h3 class="text-xl font-bold text-white mb-2 flex items-center"><i class="fa-solid fa-crown text-yellow-400 mr-2"></i> Mega Vitrin</h3>
+                <p class="text-sm text-slate-400 mb-6 h-10">Ana sayfa vitrininde milyonlarca ziyaretçiye doğrudan gösterim.</p>
+                <div class="mb-6">
+                    <span class="text-4xl font-extrabold text-white">₺599</span><span class="text-slate-400 text-sm"> /ilan başına</span>
+                </div>
+                <button class="w-full bg-yellow-500 text-slate-900 font-bold py-3 rounded-xl hover:bg-yellow-400 transition shadow-md mb-6">
+                    Mega Vitrin'e Çık
+                </button>
+                <ul class="space-y-4 text-sm text-slate-300">
+                    <li class="flex items-center text-white font-bold"><i class="fa-solid fa-check text-yellow-400 mr-3"></i> Ana Sayfa Vitrini (3 Gün)</li>
+                    <li class="flex items-center"><i class="fa-solid fa-check text-green-400 mr-3"></i> Kategori Üst Sıra (15 Gün)</li>
+                    <li class="flex items-center"><i class="fa-solid fa-check text-green-400 mr-3"></i> 90 Gün Yayında Kalma</li>
+                    <li class="flex items-center"><i class="fa-solid fa-check text-green-400 mr-3"></i> Kalın Başlık ve Özel Etiket</li>
+                </ul>
+            </div>
+
+        </div>
+    </main>
+
+    <div class="bg-white border-t border-gray-200 py-8 text-center text-sm text-gray-500">
+        <p>Kurumsal galeri paketleri ve toplu doping alımları için <a href="#" class="text-blue-500 font-bold hover:underline">Kurumsal Satış Müşteri Hizmetleri</a> ile iletişime geçin.</p>
+    </div>
+
+</body>
+</html>

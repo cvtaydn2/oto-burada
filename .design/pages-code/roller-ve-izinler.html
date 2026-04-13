@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OtoBurada Admin - Roller ve İzinler</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body class="bg-gray-50 flex h-screen overflow-hidden font-sans text-gray-800">
+
+    <aside class="w-64 bg-white border-r border-gray-200 flex flex-col flex-shrink-0 z-20">
+        <div class="h-16 flex items-center px-6 border-b border-gray-100">
+            <span class="text-blue-500 text-2xl font-bold flex items-center">
+                <i class="fa-solid fa-car-side mr-2"></i>OtoBurada
+            </span>
+        </div>
+        <nav class="flex-1 overflow-y-auto py-4">
+            <div class="px-6 mb-2 text-xs font-semibold text-gray-400 uppercase tracking-wider">Yönetim Menüsü</div>
+            <ul class="space-y-1">
+                <li><a href="#" class="flex items-center px-6 py-3 text-gray-600 hover:bg-gray-50"><i class="fa-solid fa-border-all w-5 h-5 mr-3"></i><span class="font-medium">Dashboard</span></a></li>
+                <li><a href="#" class="flex items-center px-6 py-3 text-gray-600 hover:bg-gray-50"><i class="fa-solid fa-list w-5 h-5 mr-3"></i><span class="font-medium">İlan Yönetimi</span></a></li>
+                <li><a href="#" class="flex items-center px-6 py-3 text-gray-600 hover:bg-gray-50"><i class="fa-solid fa-users w-5 h-5 mr-3"></i><span class="font-medium">Kullanıcılar</span></a></li>
+                <li><a href="#" class="flex items-center px-6 py-3 text-gray-600 hover:bg-gray-50"><i class="fa-solid fa-shield-halved w-5 h-5 mr-3"></i><span class="font-medium">Moderasyon</span></a></li>
+                <li><a href="#" class="flex items-center px-6 py-3 text-gray-600 hover:bg-gray-50"><i class="fa-solid fa-chart-simple w-5 h-5 mr-3"></i><span class="font-medium">Analitik</span></a></li>
+                <li><a href="#" class="flex items-center px-6 py-3 text-blue-600 bg-blue-50 border-r-4 border-blue-600"><i class="fa-solid fa-gear w-5 h-5 mr-3"></i><span class="font-bold">Roller & İzinler</span></a></li>
+                <li><a href="#" class="flex items-center px-6 py-3 text-gray-600 hover:bg-gray-50"><i class="fa-solid fa-plug w-5 h-5 mr-3"></i><span class="font-medium">Entegrasyonlar</span></a></li>
+                <li><a href="#" class="flex items-center px-6 py-3 text-gray-600 hover:bg-gray-50"><i class="fa-regular fa-life-ring w-5 h-5 mr-3"></i><span class="font-medium">Destek Talepleri</span></a></li>
+            </ul>
+        </nav>
+    </aside>
+
+    <div class="flex-1 flex flex-col h-full overflow-hidden">
+        
+        <header class="h-16 bg-white border-b border-gray-200 flex items-center justify-between px-8 flex-shrink-0 z-10">
+            <div class="relative w-96">
+                <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400"><i class="fa-solid fa-magnifying-glass"></i></span>
+                <input type="text" placeholder="İlan, kullanıcı veya ticket ara..." class="w-full bg-gray-50 border border-transparent focus:border-blue-500 focus:bg-white text-gray-700 text-sm rounded-lg block pl-10 p-2.5 outline-none transition">
+            </div>
+            <div class="flex items-center space-x-6">
+                <button class="text-gray-400 hover:text-gray-600 relative"><i class="fa-regular fa-bell text-xl"></i><span class="absolute top-0 right-0 block h-2 w-2 rounded-full bg-red-500 ring-2 ring-white"></span></button>
+                <div class="flex items-center space-x-3 border-l pl-6 border-gray-200">
+                    <div class="text-right">
+                        <div class="text-sm font-semibold text-gray-800">Admin Panel</div>
+                        <div class="text-xs text-gray-500">OtoBurada Yönetici</div>
+                    </div>
+                    <img class="h-10 w-10 rounded-full border border-gray-200" src="https://i.pravatar.cc/150?img=11" alt="Admin">
+                </div>
+            </div>
+        </header>
+
+        <main class="flex-1 overflow-y-auto p-8 bg-gray-50">
+            
+            <div class="max-w-[1200px] mx-auto">
+                
+                <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
+                    <div>
+                        <h1 class="text-2xl font-bold text-gray-800">Roller ve İzinler</h1>
+                        <p class="text-sm text-gray-500 mt-1">Sistem erişim seviyelerini yönetin ve kullanıcı yetkilerini tanımlayın.</p>
+                    </div>
+                    <div class="flex space-x-3">
+                        <button class="bg-white border border-gray-300 text-gray-700 px-4 py-2 rounded-lg text-sm font-medium hover:bg-gray-50 transition flex items-center shadow-sm">
+                            <i class="fa-solid fa-shield-halved mr-2"></i> Güvenlik Logları
+                        </button>
+                        <button class="bg-blue-500 text-white px-4 py-2 rounded-lg text-sm font-bold hover:bg-blue-600 transition shadow-sm flex items-center">
+                            <i class="fa-solid fa-plus mr-2"></i> Yeni Rol Oluştur
+                        </button>
+                    </div>
+                </div>
+
+                <div class="flex flex-col lg:flex-row gap-6">
+                    
+                    <div class="w-full lg:w-80 flex-shrink-0 space-y-4">
+                        
+                        <div class="relative mb-4">
+                            <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400"><i class="fa-solid fa-magnifying-glass text-sm"></i></span>
+                            <input type="text" placeholder="Rollerde ara..." class="w-full bg-white border border-gray-200 text-gray-700 text-sm rounded-lg block pl-10 p-2.5 outline-none focus:border-blue-500 shadow-sm">
+                        </div>
+
+                        <div class="bg-white border border-gray-200 rounded-xl p-4 cursor-pointer hover:border-blue-300 transition shadow-sm">
+                            <div class="flex items-start justify-between mb-2">
+                                <div class="flex items-center">
+                                    <div class="w-8 h-8 rounded-full bg-gray-100 text-gray-500 flex items-center justify-center mr-3"><i class="fa-solid fa-shield"></i></div>
+                                    <h3 class="font-bold text-gray-800">Süper Yönetici</h3>
+                                </div>
+                                <span class="bg-gray-100 text-gray-600 text-[10px] font-bold px-2 py-0.5 rounded-full border border-gray-200">Sistem</span>
+                            </div>
+                            <p class="text-xs text-gray-500 mb-3">Tüm sistem özelliklerine ve ayarlarına sınırsız erişim sağlar.</p>
+                            <div class="flex items-center text-xs text-gray-400 font-medium"><i class="fa-solid fa-user-group mr-1.5"></i> 2 Kullanıcı</div>
+                        </div>
+
+                        <div class="bg-blue-50 border-2 border-blue-500 rounded-xl p-4 cursor-pointer shadow-sm relative">
+                            <div class="absolute right-4 top-1/2 -translate-y-1/2 text-blue-500"><i class="fa-solid fa-chevron-right text-xs"></i></div>
+                            <div class="flex items-start justify-between mb-2">
+                                <div class="flex items-center">
+                                    <div class="w-8 h-8 rounded-full bg-blue-500 text-white flex items-center justify-center mr-3 shadow-sm"><i class="fa-solid fa-shield"></i></div>
+                                    <h3 class="font-bold text-blue-900">İçerik Moderatörü</h3>
+                                </div>
+                            </div>
+                            <p class="text-xs text-blue-700 mb-3 pr-4">İlan onaylama, reddetme ve raporlanan içerikleri yönetme yetkisi.</p>
+                            <div class="flex items-center text-xs text-blue-600 font-medium"><i class="fa-solid fa-user-group mr-1.5"></i> 8 Kullanıcı</div>
+                        </div>
+
+                        <div class="bg-white border border-gray-200 rounded-xl p-4 cursor-pointer hover:border-blue-300 transition shadow-sm">
+                            <div class="flex items-start justify-between mb-2">
+                                <div class="flex items-center">
+                                    <div class="w-8 h-8 rounded-full bg-gray-100 text-gray-500 flex items-center justify-center mr-3"><i class="fa-solid fa-shield"></i></div>
+                                    <h3 class="font-bold text-gray-800">Müşteri Destek</h3>
+                                </div>
+                            </div>
+                            <p class="text-xs text-gray-500 mb-3">Kullanıcı taleplerini yanıtlama ve ticket sistemini yönetme yetkisi.</p>
+                            <div class="flex items-center text-xs text-gray-400 font-medium"><i class="fa-solid fa-user-group mr-1.5"></i> 5 Kullanıcı</div>
+                        </div>
+
+                        <div class="mt-6 bg-blue-50 border border-blue-100 rounded-xl p-4 flex items-start">
+                            <i class="fa-solid fa-circle-info text-blue-500 mt-0.5 mr-3"></i>
+                            <div>
+                                <h4 class="font-bold text-blue-800 text-sm mb-1">Bilgi Köşesi</h4>
+                                <p class="text-xs text-blue-600 leading-relaxed">Sistem rolleri düzenlenemez veya silinemez. Yeni bir yetkilendirme grubu için "Yeni Rol Oluştur" butonunu kullanın.</p>
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <div class="flex-1 space-y-6">
+                        
+                        <div class="bg-white border border-gray-200 rounded-2xl p-6 shadow-sm">
+                            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6">
+                                <div>
+                                    <div class="flex items-center mb-1">
+                                        <h2 class="text-xl font-bold text-gray-800 mr-3">İçerik Moderatörü</h2>
+                                        <span class="bg-green-100 text-green-700 text-[10px] font-bold px-2 py-0.5 rounded uppercase">Aktif</span>
+                                    </div>
+                                    <p class="text-sm text-gray-500">İlan onaylama, reddetme ve raporlanan içerikleri yönetme yetkisi.</p>
+                                </div>
+                                <div class="flex items-center space-x-2 mt-4 sm:mt-0">
+                                    <button class="w-9 h-9 border border-gray-200 rounded-lg flex items-center justify-center text-gray-500 hover:bg-gray-50 transition"><i class="fa-solid fa-ellipsis-vertical"></i></button>
+                                    <button class="bg-blue-500 text-white px-4 py-2 rounded-lg text-sm font-bold hover:bg-blue-600 transition shadow-sm flex items-center">
+                                        <i class="fa-regular fa-floppy-disk mr-2"></i> Değişiklikleri Kaydet
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div class="overflow-x-auto border border-gray-100 rounded-xl">
+                                <table class="w-full text-left">
+                                    <thead>
+                                        <tr class="bg-gray-50/80 text-[11px] font-bold text-gray-500 uppercase tracking-wider border-b border-gray-100">
+                                            <th class="p-4 w-1/3">Sistem Modülleri</th>
+                                            <th class="p-4 text-center">Görüntüle</th>
+                                            <th class="p-4 text-center">Düzenle</th>
+                                            <th class="p-4 text-center">Sil</th>
+                                            <th class="p-4 text-center">Dışa Aktar</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody class="text-sm divide-y divide-gray-100">
+                                        <tr class="hover:bg-gray-50 transition">
+                                            <td class="p-4 font-medium text-gray-700 flex items-center"><i class="fa-solid fa-chart-pie w-5 text-blue-400 mr-2"></i> Dashboard</td>
+                                            <td class="p-4 text-center"><input type="checkbox" checked class="w-4 h-4 text-blue-500 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 cursor-pointer"></td>
+                                            <td class="p-4 text-center"><input type="checkbox" class="w-4 h-4 text-blue-500 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 cursor-pointer"></td>
+                                            <td class="p-4 text-center"><input type="checkbox" class="w-4 h-4 text-blue-500 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 cursor-pointer"></td>
+                                            <td class="p-4 text-center"><input type="checkbox" class="w-4 h-4 text-blue-500 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 cursor-pointer"></td>
+                                        </tr>
+                                        <tr class="hover:bg-gray-50 transition">
+                                            <td class="p-4 font-medium text-gray-700 flex items-center"><i class="fa-solid fa-list w-5 text-blue-400 mr-2"></i> İlan Yönetimi</td>
+                                            <td class="p-4 text-center"><input type="checkbox" checked class="w-4 h-4 text-blue-500 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 cursor-pointer"></td>
+                                            <td class="p-4 text-center"><input type="checkbox" checked class="w-4 h-4 text-blue-500 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 cursor-pointer"></td>
+                                            <td class="p-4 text-center"><input type="checkbox" class="w-4 h-4 text-blue-500 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 cursor-pointer"></td>
+                                            <td class="p-4 text-center"><input type="checkbox" class="w-4 h-4 text-blue-500 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 cursor-pointer"></td>
+                                        </tr>
+                                        <tr class="hover:bg-gray-50 transition">
+                                            <td class="p-4 font-medium text-gray-700 flex items-center"><i class="fa-solid fa-users w-5 text-blue-400 mr-2"></i> Kullanıcılar</td>
+                                            <td class="p-4 text-center"><input type="checkbox" checked class="w-4 h-4 text-blue-500 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 cursor-pointer"></td>
+                                            <td class="p-4 text-center"><input type="checkbox" class="w-4 h-4 text-blue-500 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 cursor-pointer"></td>
+                                            <td class="p-4 text-center"><input type="checkbox" class="w-4 h-4 text-blue-500 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 cursor-pointer"></td>
+                                            <td class="p-4 text-center"><input type="checkbox" class="w-4 h-4 text-blue-500 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 cursor-pointer"></td>
+                                        </tr>
+                                        <tr class="hover:bg-gray-50 transition">
+                                            <td class="p-4 font-medium text-gray-700 flex items-center"><i class="fa-regular fa-life-ring w-5 text-blue-400 mr-2"></i> Destek Talepleri</td>
+                                            <td class="p-4 text-center"><input type="checkbox" class="w-4 h-4 text-blue-500 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 cursor-pointer"></td>
+                                            <td class="p-4 text-center"><input type="checkbox" class="w-4 h-4 text-blue-500 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 cursor-pointer"></td>
+                                            <td class="p-4 text-center"><input type="checkbox" class="w-4 h-4 text-blue-500 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 cursor-pointer"></td>
+                                            <td class="p-4 text-center"><input type="checkbox" class="w-4 h-4 text-blue-500 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 cursor-pointer"></td>
+                                        </tr>
+                                        <tr class="hover:bg-gray-50 transition">
+                                            <td class="p-4 font-medium text-gray-700 flex items-center"><i class="fa-solid fa-gear w-5 text-blue-400 mr-2"></i> Genel Ayarlar</td>
+                                            <td class="p-4 text-center"><input type="checkbox" class="w-4 h-4 text-blue-500 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 cursor-pointer"></td>
+                                            <td class="p-4 text-center"><input type="checkbox" class="w-4 h-4 text-blue-500 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 cursor-pointer"></td>
+                                            <td class="p-4 text-center"><input type="checkbox" class="w-4 h-4 text-blue-500 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 cursor-pointer"></td>
+                                            <td class="p-4 text-center"><input type="checkbox" class="w-4 h-4 text-blue-500 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 cursor-pointer"></td>
+                                        </tr>
+                                        <tr class="hover:bg-gray-50 transition">
+                                            <td class="p-4 font-medium text-gray-700 flex items-center"><i class="fa-solid fa-globe w-5 text-blue-400 mr-2"></i> SEO & İçerik</td>
+                                            <td class="p-4 text-center"><input type="checkbox" checked class="w-4 h-4 text-blue-500 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 cursor-pointer"></td>
+                                            <td class="p-4 text-center"><input type="checkbox" class="w-4 h-4 text-blue-500 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 cursor-pointer"></td>
+                                            <td class="p-4 text-center"><input type="checkbox" class="w-4 h-4 text-blue-500 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 cursor-pointer"></td>
+                                            <td class="p-4 text-center"><input type="checkbox" class="w-4 h-4 text-blue-500 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 cursor-pointer"></td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                            
+                            <div class="flex justify-between items-center mt-4 text-xs">
+                                <span class="text-gray-400 italic"><i class="fa-regular fa-clock mr-1"></i> Son güncelleme: 12.05.2024, 14:30 (Yönetici tarafından)</span>
+                                <div class="flex items-center space-x-4 font-medium text-gray-600">
+                                    <span class="flex items-center"><span class="w-2 h-2 rounded-full bg-blue-500 mr-2"></span> Tam Yetki</span>
+                                    <span class="flex items-center"><span class="w-2 h-2 rounded-full bg-gray-300 mr-2"></span> Yetki Yok</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="bg-white border border-gray-200 rounded-2xl p-6 shadow-sm">
+                            <div class="flex justify-between items-center mb-6 cursor-pointer">
+                                <h3 class="font-bold text-gray-800 flex items-center"><i class="fa-solid fa-lock text-gray-400 mr-2"></i> Gelişmiş Kısıtlamalar</h3>
+                                <i class="fa-solid fa-chevron-down text-gray-400"></i>
+                            </div>
+
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <label class="border border-gray-100 rounded-xl p-4 flex justify-between items-start cursor-pointer hover:bg-gray-50 transition">
+                                    <div>
+                                        <div class="font-bold text-sm text-gray-800 mb-0.5">IP Kısıtlaması</div>
+                                        <div class="text-[10px] text-gray-500">Sadece ofis IP'lerinden erişim.</div>
+                                    </div>
+                                    <input type="checkbox" class="w-4 h-4 text-blue-500 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 mt-1">
+                                </label>
+                                
+                                <label class="border border-blue-200 bg-blue-50/30 rounded-xl p-4 flex justify-between items-start cursor-pointer transition">
+                                    <div>
+                                        <div class="font-bold text-sm text-gray-800 mb-0.5">İki Faktörlü Doğrulama</div>
+                                        <div class="text-[10px] text-gray-500">Bu rol için zorunlu kıl.</div>
+                                    </div>
+                                    <input type="checkbox" checked class="w-4 h-4 text-blue-500 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 mt-1">
+                                </label>
+
+                                <label class="border border-blue-200 bg-blue-50/30 rounded-xl p-4 flex justify-between items-start cursor-pointer transition">
+                                    <div>
+                                        <div class="font-bold text-sm text-gray-800 mb-0.5">Mesai Saatleri Dışı</div>
+                                        <div class="text-[10px] text-gray-500">Erişimi çalışma saatleriyle sınırla.</div>
+                                    </div>
+                                    <input type="checkbox" checked class="w-4 h-4 text-blue-500 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 mt-1">
+                                </label>
+
+                                <label class="border border-gray-100 rounded-xl p-4 flex justify-between items-start cursor-pointer hover:bg-gray-50 transition">
+                                    <div>
+                                        <div class="font-bold text-sm text-gray-800 mb-0.5">Hassas Veri Maskeleme</div>
+                                        <div class="text-[10px] text-gray-500">Telefon/E-posta gizleme.</div>
+                                    </div>
+                                    <input type="checkbox" class="w-4 h-4 text-blue-500 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 mt-1">
+                                </label>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+
+            </div>
+        </main>
+    </div>
+
+</body>
+</html>

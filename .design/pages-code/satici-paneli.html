@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OtoBurada - Satıcı Paneli</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body class="bg-gray-50 text-gray-800 font-sans min-h-screen flex flex-col">
+
+    <header class="bg-white border-b border-gray-200 sticky top-0 z-50">
+        <div class="max-w-[1400px] mx-auto px-4 flex justify-between items-center h-16">
+            <div class="flex items-center space-x-8">
+                <a href="#" class="text-blue-500 text-xl font-bold flex items-center">
+                    <i class="fa-solid fa-car-side mr-2"></i>OtoBurada
+                </a>
+                <nav class="hidden md:flex space-x-6 text-sm">
+                    <a href="#" class="text-gray-600 hover:text-blue-500 font-medium transition py-5">İlanlar</a>
+                    <a href="#" class="text-gray-600 hover:text-blue-500 font-medium transition py-5">Karşılaştır</a>
+                </nav>
+            </div>
+            
+            <div class="hidden lg:flex relative w-[500px]">
+                <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400">
+                    <i class="fa-solid fa-magnifying-glass text-sm"></i>
+                </span>
+                <input type="text" placeholder="Marka, model veya kelime ara..." class="w-full bg-gray-100 border-transparent text-gray-700 text-sm rounded-full focus:bg-white focus:border-blue-500 pl-10 py-2 outline-none transition">
+            </div>
+            
+            <div class="flex items-center space-x-4">
+                <a href="#" class="text-gray-500 hover:text-red-500 transition"><i class="fa-regular fa-heart text-xl"></i></a>
+                <a href="#" class="text-gray-500 hover:text-blue-500 transition"><i class="fa-regular fa-message text-xl"></i></a>
+                <div class="h-6 border-l border-gray-300 mx-2"></div>
+                <button class="bg-blue-500 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-600 transition shadow-sm flex items-center">
+                    <i class="fa-solid fa-plus mr-1"></i> İlan Ver
+                </button>
+                <img src="https://i.pravatar.cc/150?img=12" alt="Profil" class="w-8 h-8 rounded-full border border-gray-200 ml-2">
+            </div>
+        </div>
+    </header>
+
+    <div class="max-w-[1400px] w-full mx-auto px-4 py-8 flex flex-col md:flex-row gap-8 flex-1">
+        
+        <aside class="w-full md:w-64 flex-shrink-0">
+            <nav class="bg-white border border-gray-200 rounded-xl overflow-hidden py-2 sticky top-24">
+                <a href="#" class="flex items-center px-6 py-3 text-blue-600 bg-blue-50 transition border-l-4 border-blue-500">
+                    <i class="fa-solid fa-border-all w-5 mr-3"></i> <span class="font-bold text-sm">Özet Panel</span>
+                </a>
+                <a href="#" class="flex items-center px-6 py-3 text-gray-600 hover:bg-gray-50 transition border-l-4 border-transparent">
+                    <i class="fa-solid fa-car w-5 mr-3"></i> <span class="font-medium text-sm">İlanlarım</span>
+                </a>
+                <a href="#" class="flex items-center px-6 py-3 text-gray-600 hover:bg-gray-50 transition border-l-4 border-transparent">
+                    <i class="fa-regular fa-comments w-5 mr-3"></i> <span class="font-medium text-sm">Mesajlar</span>
+                </a>
+                <a href="#" class="flex items-center px-6 py-3 text-gray-600 hover:bg-gray-50 transition border-l-4 border-transparent">
+                    <i class="fa-solid fa-heart w-5 mr-3"></i> <span class="font-medium text-sm">Favoriler</span>
+                </a>
+                <a href="#" class="flex items-center px-6 py-3 text-gray-600 hover:bg-gray-50 transition border-l-4 border-transparent">
+                    <i class="fa-solid fa-gear w-5 mr-3"></i> <span class="font-medium text-sm">Hesap Ayarları</span>
+                </a>
+            </nav>
+        </aside>
+
+        <main class="flex-1">
+            
+            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
+                <div>
+                    <h1 class="text-2xl font-bold text-gray-800">Satıcı Paneli</h1>
+                    <p class="text-sm text-gray-500 mt-1">İlanlarınızı yönetin, alıcılarla iletişime geçin ve satışlarınızı takip edin.</p>
+                </div>
+                
+                <div class="flex items-center space-x-3 w-full sm:w-auto">
+                    <button class="bg-white border border-gray-200 text-gray-700 px-4 py-2 rounded-lg text-sm font-medium hover:bg-gray-50 transition flex items-center shadow-sm">
+                        <i class="fa-solid fa-filter mr-2"></i> Filtreler
+                    </button>
+                    <button class="bg-blue-500 text-white px-4 py-2 rounded-lg text-sm font-bold hover:bg-blue-600 transition shadow-sm flex items-center">
+                        <i class="fa-solid fa-plus mr-2"></i> Yeni İlan Ekle
+                    </button>
+                </div>
+            </div>
+
+            <div class="flex border-b border-gray-200 mb-8 overflow-x-auto">
+                <button class="px-6 py-3 text-sm font-bold text-gray-800 border-b-2 border-gray-800 whitespace-nowrap">Özet Panel</button>
+                <button class="px-6 py-3 text-sm font-medium text-gray-500 hover:text-gray-700 whitespace-nowrap transition">İlan Yönetimi</button>
+                <button class="px-6 py-3 text-sm font-medium text-gray-500 hover:text-gray-700 whitespace-nowrap transition">Mesajlar & Rezervasyonlar</button>
+                <button class="px-6 py-3 text-sm font-medium text-gray-500 hover:text-gray-700 whitespace-nowrap transition">Finansal Özet</button>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                <div class="bg-white p-6 rounded-2xl border border-gray-200 shadow-sm flex flex-col justify-between">
+                    <div class="flex justify-between items-start mb-4">
+                        <div class="text-sm text-gray-500 font-medium">Toplam Görüntülenme</div>
+                        <div class="bg-blue-50 text-blue-500 w-8 h-8 rounded-full flex items-center justify-center"><i class="fa-regular fa-eye"></i></div>
+                    </div>
+                    <div>
+                        <div class="text-3xl font-extrabold text-gray-800 mb-2">12.845</div>
+                        <div class="text-[10px] text-gray-500 font-medium flex items-center"><i class="fa-solid fa-arrow-trend-up text-green-500 mr-1"></i> +12.5% geçen aya göre</div>
+                    </div>
+                </div>
+                <div class="bg-white p-6 rounded-2xl border border-gray-200 shadow-sm flex flex-col justify-between">
+                    <div class="flex justify-between items-start mb-4">
+                        <div class="text-sm text-gray-500 font-medium">Favorilere Ekleme</div>
+                        <div class="bg-blue-50 text-blue-500 w-8 h-8 rounded-full flex items-center justify-center"><i class="fa-regular fa-heart"></i></div>
+                    </div>
+                    <div>
+                        <div class="text-3xl font-extrabold text-gray-800 mb-2">842</div>
+                        <div class="text-[10px] text-gray-500 font-medium flex items-center"><i class="fa-solid fa-arrow-trend-up text-green-500 mr-1"></i> +5.2% geçen aya göre</div>
+                    </div>
+                </div>
+                <div class="bg-white p-6 rounded-2xl border border-gray-200 shadow-sm flex flex-col justify-between">
+                    <div class="flex justify-between items-start mb-4">
+                        <div class="text-sm text-gray-500 font-medium">Aktif Mesajlar</div>
+                        <div class="bg-blue-50 text-blue-500 w-8 h-8 rounded-full flex items-center justify-center"><i class="fa-regular fa-comment"></i></div>
+                    </div>
+                    <div>
+                        <div class="text-3xl font-extrabold text-gray-800 mb-2">24</div>
+                        <div class="text-[10px] text-gray-500 font-medium flex items-center"><i class="fa-solid fa-arrow-trend-down text-red-500 mr-1"></i> -2.4% geçen aya göre</div>
+                    </div>
+                </div>
+                <div class="bg-white p-6 rounded-2xl border border-gray-200 shadow-sm flex flex-col justify-between">
+                    <div class="flex justify-between items-start mb-4">
+                        <div class="text-sm text-gray-500 font-medium">İlan Performansı</div>
+                        <div class="bg-blue-50 text-blue-500 w-8 h-8 rounded-full flex items-center justify-center"><i class="fa-solid fa-chart-simple"></i></div>
+                    </div>
+                    <div>
+                        <div class="text-3xl font-extrabold text-gray-800 mb-2">98<span class="text-lg text-gray-400 font-medium">/100</span></div>
+                        <div class="text-[10px] text-gray-500 font-medium flex items-center"><i class="fa-solid fa-arrow-trend-up text-green-500 mr-1"></i> +0.8% geçen aya göre</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                
+                <div class="lg:col-span-2 bg-white border border-gray-200 rounded-2xl p-6 shadow-sm">
+                    <div class="flex justify-between items-center mb-6">
+                        <div>
+                            <h2 class="text-lg font-bold text-gray-800">Son İlanlarım</h2>
+                            <p class="text-xs text-gray-500 mt-1">En son yayına giren veya güncellenen ilanlarınız.</p>
+                        </div>
+                        <a href="#" class="text-sm font-medium text-blue-500 hover:text-blue-600">Tümünü Gör</a>
+                    </div>
+                    
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left">
+                            <thead>
+                                <tr class="text-[11px] font-bold text-gray-400 uppercase tracking-wider border-b border-gray-100">
+                                    <th class="pb-3 font-medium">Araç Bilgisi</th>
+                                    <th class="pb-3 font-medium">Fiyat</th>
+                                    <th class="pb-3 font-medium">Durum</th>
+                                    <th class="pb-3 font-medium">İstatistik</th>
+                                    <th class="pb-3 font-medium text-right">Aksiyonlar</th>
+                                </tr>
+                            </thead>
+                            <tbody class="text-sm divide-y divide-gray-100">
+                                <tr class="hover:bg-gray-50 transition group">
+                                    <td class="py-4 flex items-center">
+                                        <img src="https://images.unsplash.com/photo-1555215695-3004980ad54e?ixlib=rb-4.0.3&auto=format&fit=crop&w=100&q=60" class="w-12 h-8 rounded object-cover mr-3">
+                                        <div>
+                                            <div class="font-bold text-gray-800">2021 BMW 320i M Sport</div>
+                                        </div>
+                                    </td>
+                                    <td class="py-4 font-bold text-blue-500">2.850.000 ₺</td>
+                                    <td class="py-4"><span class="bg-green-50 text-green-600 px-2 py-1 rounded text-xs font-medium">Yayında</span></td>
+                                    <td class="py-4 text-gray-500 text-xs">
+                                        <span class="mr-2"><i class="fa-regular fa-eye mr-1"></i> 1240</span>
+                                        <span><i class="fa-regular fa-heart mr-1"></i> 85</span>
+                                    </td>
+                                    <td class="py-4 text-right">
+                                        <button class="text-xs font-medium text-gray-600 hover:text-blue-500 mr-3">Düzenle</button>
+                                        <button class="text-gray-400 hover:text-gray-600"><i class="fa-solid fa-ellipsis-vertical"></i></button>
+                                    </td>
+                                </tr>
+                                <tr class="hover:bg-gray-50 transition group">
+                                    <td class="py-4 flex items-center">
+                                        <img src="https://images.unsplash.com/photo-1618843479313-40f8afb4b4d8?ixlib=rb-4.0.3&auto=format&fit=crop&w=100&q=60" class="w-12 h-8 rounded object-cover mr-3">
+                                        <div>
+                                            <div class="font-bold text-gray-800">2020 Mercedes-Benz C200d</div>
+                                        </div>
+                                    </td>
+                                    <td class="py-4 font-bold text-blue-500">2.450.000 ₺</td>
+                                    <td class="py-4"><span class="bg-green-50 text-green-600 px-2 py-1 rounded text-xs font-medium">Yayında</span></td>
+                                    <td class="py-4 text-gray-500 text-xs">
+                                        <span class="mr-2"><i class="fa-regular fa-eye mr-1"></i> 980</span>
+                                        <span><i class="fa-regular fa-heart mr-1"></i> 42</span>
+                                    </td>
+                                    <td class="py-4 text-right">
+                                        <button class="text-xs font-medium text-gray-600 hover:text-blue-500 mr-3">Düzenle</button>
+                                        <button class="text-gray-400 hover:text-gray-600"><i class="fa-solid fa-ellipsis-vertical"></i></button>
+                                    </td>
+                                </tr>
+                                <tr class="hover:bg-gray-50 transition group">
+                                    <td class="py-4 flex items-center">
+                                        <img src="https://images.unsplash.com/photo-1563720223185-11003d516935?ixlib=rb-4.0.3&auto=format&fit=crop&w=100&q=60" class="w-12 h-8 rounded object-cover mr-3 opacity-50">
+                                        <div>
+                                            <div class="font-bold text-gray-800">2023 Tesla Model Y</div>
+                                        </div>
+                                    </td>
+                                    <td class="py-4 font-bold text-blue-500">2.920.000 ₺</td>
+                                    <td class="py-4"><span class="bg-gray-100 text-gray-500 px-2 py-1 rounded text-xs font-medium">Taslak</span></td>
+                                    <td class="py-4 text-gray-500 text-xs">
+                                        <span class="mr-2"><i class="fa-regular fa-eye mr-1"></i> 0</span>
+                                        <span><i class="fa-regular fa-heart mr-1"></i> 0</span>
+                                    </td>
+                                    <td class="py-4 text-right">
+                                        <button class="text-xs font-medium text-gray-600 hover:text-blue-500 mr-3">Düzenle</button>
+                                        <button class="text-gray-400 hover:text-gray-600"><i class="fa-solid fa-ellipsis-vertical"></i></button>
+                                    </td>
+                                </tr>
+                                <tr class="hover:bg-gray-50 transition group">
+                                    <td class="py-4 flex items-center">
+                                        <img src="https://images.unsplash.com/photo-1541899481282-d53bffe3c35d?ixlib=rb-4.0.3&auto=format&fit=crop&w=100&q=60" class="w-12 h-8 rounded object-cover mr-3">
+                                        <div>
+                                            <div class="font-bold text-gray-800">2021 VW Golf 1.5 eTSI</div>
+                                        </div>
+                                    </td>
+                                    <td class="py-4 font-bold text-blue-500">1.280.000 ₺</td>
+                                    <td class="py-4"><span class="bg-gray-100 text-gray-500 px-2 py-1 rounded text-xs font-medium line-through">Satıldı</span></td>
+                                    <td class="py-4 text-gray-500 text-xs">
+                                        <span class="mr-2"><i class="fa-regular fa-eye mr-1"></i> 4250</span>
+                                        <span><i class="fa-regular fa-heart mr-1"></i> 210</span>
+                                    </td>
+                                    <td class="py-4 text-right">
+                                        <button class="text-xs font-medium text-gray-600 hover:text-blue-500 mr-3">Düzenle</button>
+                                        <button class="text-gray-400 hover:text-gray-600"><i class="fa-solid fa-ellipsis-vertical"></i></button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="space-y-8">
+                    <div class="bg-blue-50/50 border border-blue-100 rounded-2xl p-6 shadow-sm">
+                        <h3 class="font-bold text-gray-800 mb-1 flex items-center">
+                            <i class="fa-solid fa-wallet text-blue-500 mr-2"></i> Finansal Özet
+                        </h3>
+                        <p class="text-xs text-gray-500 mb-5">Bu ayki bekleyen ve tamamlanan işlemler</p>
+                        
+                        <div class="space-y-4 mb-6">
+                            <div class="bg-white border border-gray-100 rounded-xl p-4 flex justify-between items-center shadow-sm">
+                                <div class="flex items-center">
+                                    <div class="w-8 h-8 rounded-full bg-green-50 text-green-500 flex items-center justify-center mr-3"><i class="fa-solid fa-check"></i></div>
+                                    <div>
+                                        <div class="text-[10px] text-gray-400 font-bold uppercase">Başarılı Satışlar</div>
+                                        <div class="font-bold text-gray-800">1.450.000 ₺</div>
+                                    </div>
+                                </div>
+                                <span class="text-xs font-medium text-blue-500 bg-blue-50 px-2 py-1 rounded">3 Araç</span>
+                            </div>
+                            
+                            <div class="bg-white border border-gray-100 rounded-xl p-4 flex justify-between items-center shadow-sm">
+                                <div class="flex items-center">
+                                    <div class="w-8 h-8 rounded-full bg-yellow-50 text-yellow-500 flex items-center justify-center mr-3"><i class="fa-regular fa-clock"></i></div>
+                                    <div>
+                                        <div class="text-[10px] text-gray-400 font-bold uppercase">Bekleyen Kaporalar</div>
+                                        <div class="font-bold text-gray-800">25.000 ₺</div>
+                                    </div>
+                                </div>
+                                <span class="text-xs font-medium text-gray-600 bg-gray-100 px-2 py-1 rounded">2 Rezervasyon</span>
+                            </div>
+                        </div>
+
+                        <button class="w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-2.5 rounded-xl transition shadow-sm">
+                            Detaylı Rapor Al
+                        </button>
+                    </div>
+
+                    <div class="bg-white border border-gray-200 rounded-2xl p-6 shadow-sm">
+                        <h3 class="font-bold text-gray-800 mb-5 flex items-center">
+                            <i class="fa-regular fa-calendar text-blue-500 mr-2"></i> Yaklaşan Rezervasyonlar
+                        </h3>
+                        
+                        <div class="space-y-4">
+                            <div class="flex items-center justify-between">
+                                <div class="flex items-center">
+                                    <div class="w-10 h-10 rounded-lg bg-blue-50 flex flex-col items-center justify-center mr-3 border border-blue-100">
+                                        <span class="text-[10px] font-bold text-blue-500 uppercase">12</span>
+                                        <span class="text-[9px] text-blue-400 uppercase">Haz</span>
+                                    </div>
+                                    <div>
+                                        <div class="text-sm font-bold text-gray-800">Ahmet Yılmaz</div>
+                                        <div class="text-[10px] text-gray-500">Ekspertiz Randevusu - BMW 320i</div>
+                                    </div>
+                                </div>
+                                <div class="text-xs font-bold text-gray-400">14:30</div>
+                            </div>
+                            
+                            <div class="flex items-center justify-between">
+                                <div class="flex items-center">
+                                    <div class="w-10 h-10 rounded-lg bg-gray-50 flex flex-col items-center justify-center mr-3 border border-gray-100">
+                                        <span class="text-[10px] font-bold text-gray-600 uppercase">15</span>
+                                        <span class="text-[9px] text-gray-400 uppercase">Haz</span>
+                                    </div>
+                                    <div>
+                                        <div class="text-sm font-bold text-gray-800">Mehmet Can</div>
+                                        <div class="text-[10px] text-gray-500">Araç Gösterimi - Passat</div>
+                                    </div>
+                                </div>
+                                <div class="text-xs font-bold text-gray-400">10:00</div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+</body>
+</html>

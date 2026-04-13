@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OtoBurada Admin - Destek Talepleri</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body class="bg-gray-50 flex h-screen overflow-hidden font-sans text-gray-800">
+
+    <aside class="w-20 lg:w-64 bg-white border-r border-gray-200 flex flex-col flex-shrink-0 z-20">
+        <div class="h-16 flex items-center justify-center lg:justify-start lg:px-6 border-b border-gray-100">
+            <span class="text-blue-500 text-2xl font-bold flex items-center">
+                <i class="fa-solid fa-car-side"></i><span class="hidden lg:block ml-2">OtoBurada</span>
+            </span>
+        </div>
+        <nav class="flex-1 overflow-y-auto py-4">
+            <div class="hidden lg:block px-6 mb-2 text-xs font-semibold text-gray-400 uppercase tracking-wider">Yönetim Menüsü</div>
+            <ul class="space-y-1">
+                <li><a href="#" class="flex items-center justify-center lg:justify-start px-6 py-3 text-gray-600 hover:bg-gray-50"><i class="fa-solid fa-border-all w-5 h-5 lg:mr-3"></i><span class="hidden lg:block font-medium">Dashboard</span></a></li>
+                <li><a href="#" class="flex items-center justify-center lg:justify-start px-6 py-3 text-gray-600 hover:bg-gray-50"><i class="fa-solid fa-list w-5 h-5 lg:mr-3"></i><span class="hidden lg:block font-medium">İlan Yönetimi</span></a></li>
+                <li><a href="#" class="flex items-center justify-center lg:justify-start px-6 py-3 text-gray-600 hover:bg-gray-50"><i class="fa-solid fa-users w-5 h-5 lg:mr-3"></i><span class="hidden lg:block font-medium">Kullanıcılar</span></a></li>
+                <li><a href="#" class="flex items-center justify-center lg:justify-start px-6 py-3 text-blue-600 bg-blue-50 border-r-4 border-blue-600"><i class="fa-regular fa-life-ring w-5 h-5 lg:mr-3"></i><span class="hidden lg:block font-medium">Destek Talepleri</span></a></li>
+            </ul>
+        </nav>
+    </aside>
+
+    <div class="flex-1 flex flex-col h-full overflow-hidden">
+        
+        <header class="h-16 bg-white border-b border-gray-200 flex items-center justify-between px-6 flex-shrink-0 z-10">
+            <div class="relative w-64 md:w-96">
+                <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400"><i class="fa-solid fa-magnifying-glass"></i></span>
+                <input type="text" placeholder="İlan, kullanıcı veya ticket ara..." class="w-full bg-gray-50 border border-transparent focus:border-blue-500 focus:bg-white text-gray-700 text-sm rounded-lg block pl-10 p-2 outline-none transition">
+            </div>
+            <div class="flex items-center space-x-4">
+                <button class="text-gray-400 hover:text-gray-600 relative"><i class="fa-regular fa-bell text-xl"></i><span class="absolute top-0 right-0 block h-2 w-2 rounded-full bg-red-500 ring-2 ring-white"></span></button>
+                <div class="flex items-center space-x-3 border-l pl-4 border-gray-200">
+                    <div class="text-right hidden md:block">
+                        <div class="text-sm font-semibold text-gray-800">Admin Panel</div>
+                        <div class="text-xs text-gray-500">OtoBurada Yönetici</div>
+                    </div>
+                    <img class="h-8 w-8 rounded-full border border-gray-200" src="https://i.pravatar.cc/150?img=11" alt="Admin">
+                </div>
+            </div>
+        </header>
+
+        <div class="flex flex-1 overflow-hidden">
+            
+            <div class="w-80 bg-white border-r border-gray-200 flex flex-col flex-shrink-0">
+                <div class="p-4 border-b border-gray-100 flex justify-between items-center">
+                    <h2 class="text-lg font-bold text-gray-800">Destek Talepleri</h2>
+                    <button class="text-gray-400 hover:text-gray-600"><i class="fa-solid fa-filter"></i></button>
+                </div>
+                <div class="p-3 border-b border-gray-100 bg-gray-50">
+                    <div class="relative">
+                        <i class="fa-solid fa-magnifying-glass absolute left-3 top-2.5 text-gray-400 text-xs"></i>
+                        <input type="text" placeholder="Ticket veya kullanıcı ara..." class="w-full bg-white border border-gray-200 rounded-md pl-8 p-1.5 text-sm focus:border-blue-500 outline-none">
+                    </div>
+                </div>
+                
+                <div class="flex-1 overflow-y-auto">
+                    <div class="p-4 border-b border-gray-100 bg-blue-50/30 border-l-4 border-l-blue-500 cursor-pointer">
+                        <div class="flex justify-between items-start mb-1">
+                            <div class="flex items-center">
+                                <img src="https://i.pravatar.cc/150?img=8" class="w-6 h-6 rounded-full mr-2">
+                                <span class="text-sm font-bold text-gray-800">Ahmet Yılmaz</span>
+                            </div>
+                            <span class="text-[10px] text-gray-500">14:20</span>
+                        </div>
+                        <h3 class="text-sm font-bold text-gray-800 mb-1 truncate">İlan Onayı Gecikmesi</h3>
+                        <p class="text-xs text-gray-500 line-clamp-2 mb-2">Dün akşam verdiğim 2021 BMW 320i ilanım hala onay bekliyor...</p>
+                        <div class="flex justify-between items-center">
+                            <span class="text-[10px] font-medium text-gray-400">T-842</span>
+                            <div class="flex space-x-1">
+                                <span class="bg-red-50 text-red-500 text-[10px] px-2 py-0.5 rounded font-bold">Yüksek</span>
+                                <span class="bg-blue-50 text-blue-500 text-[10px] px-2 py-0.5 rounded font-bold">Yeni</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="p-4 border-b border-gray-100 hover:bg-gray-50 cursor-pointer transition">
+                        <div class="flex justify-between items-start mb-1">
+                            <div class="flex items-center">
+                                <div class="w-6 h-6 rounded-full bg-gray-200 flex items-center justify-center mr-2"><i class="fa-solid fa-building text-xs text-gray-500"></i></div>
+                                <span class="text-sm font-bold text-gray-800">Galeri Park</span>
+                            </div>
+                            <span class="text-[10px] text-gray-500">12:45</span>
+                        </div>
+                        <h3 class="text-sm font-bold text-gray-800 mb-1 truncate">Ödeme Entegrasyonu Hatası</h3>
+                        <p class="text-xs text-gray-500 line-clamp-2 mb-2">Kredi kartı ile doping alırken 3D secure aşamasında hata alıyoruz.</p>
+                        <div class="flex justify-between items-center">
+                            <span class="text-[10px] font-medium text-gray-400">T-841</span>
+                            <div class="flex space-x-1">
+                                <span class="bg-red-50 text-red-500 text-[10px] px-2 py-0.5 rounded font-bold">Yüksek</span>
+                                <span class="bg-gray-100 text-gray-600 text-[10px] px-2 py-0.5 rounded font-bold">Açık</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="p-4 border-b border-gray-100 hover:bg-gray-50 cursor-pointer transition">
+                        <div class="flex justify-between items-start mb-1">
+                            <div class="flex items-center">
+                                <img src="https://i.pravatar.cc/150?img=3" class="w-6 h-6 rounded-full mr-2">
+                                <span class="text-sm font-bold text-gray-800">Mehmet Demir</span>
+                            </div>
+                            <span class="text-[10px] text-gray-500">10:15</span>
+                        </div>
+                        <h3 class="text-sm font-bold text-gray-800 mb-1 truncate">Hesap Doğrulama</h3>
+                        <p class="text-xs text-gray-500 line-clamp-2 mb-2">Kimlik belgelerimi yükledim, hesabımın ticari olarak güncellenmesini istiyorum.</p>
+                        <div class="flex justify-between items-center">
+                            <span class="text-[10px] font-medium text-gray-400">T-840</span>
+                            <div class="flex space-x-1">
+                                <span class="bg-yellow-50 text-yellow-600 text-[10px] px-2 py-0.5 rounded font-bold">Orta</span>
+                                <span class="bg-gray-100 text-gray-600 text-[10px] px-2 py-0.5 rounded font-bold">Açık</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="flex-1 flex flex-col bg-slate-50">
+                <div class="p-4 border-b border-gray-200 bg-white flex justify-between items-center flex-shrink-0">
+                    <div>
+                        <div class="flex items-center space-x-2">
+                            <h2 class="text-lg font-bold text-gray-800">İlan Onayı Gecikmesi</h2>
+                            <span class="text-xs text-gray-400">T-842</span>
+                        </div>
+                        <div class="text-xs text-gray-500 mt-1">Oluşturulma: 12 Mayıs 2024, 14:20</div>
+                    </div>
+                    <div class="flex space-x-2">
+                        <button class="px-3 py-1.5 border border-gray-200 rounded text-sm font-medium text-gray-600 hover:bg-gray-50 bg-white"><i class="fa-solid fa-user-plus mr-1"></i> Atama Yap</button>
+                        <button class="px-3 py-1.5 border border-green-200 rounded text-sm font-medium text-green-600 hover:bg-green-50 bg-white"><i class="fa-solid fa-check mr-1"></i> Çözüldü İşaretle</button>
+                        <button class="px-3 py-1.5 border border-gray-200 rounded text-sm font-medium text-gray-600 hover:bg-gray-50 bg-white"><i class="fa-solid fa-ellipsis-vertical"></i></button>
+                    </div>
+                </div>
+
+                <div class="flex-1 overflow-y-auto p-6 space-y-6">
+                    <div class="text-center">
+                        <span class="text-[10px] font-bold text-gray-400 bg-gray-200 px-2 py-1 rounded-full uppercase">Bugün</span>
+                    </div>
+
+                    <div class="flex flex-col items-start">
+                        <span class="text-[10px] text-gray-400 mb-1 ml-1">Ahmet Yılmaz • 14:20</span>
+                        <div class="bg-white border border-gray-200 rounded-2xl rounded-tl-sm px-4 py-3 text-sm text-gray-700 max-w-md shadow-sm">
+                            Merhaba, dün akşam verdiğim 2021 BMW 320i ilanım hala onay bekliyor. Normalde 2 saat içinde onaylanıyordu.
+                        </div>
+                    </div>
+
+                    <div class="flex flex-col items-end">
+                        <span class="text-[10px] text-gray-400 mb-1 mr-1">Destek Ekibi • 14:25</span>
+                        <div class="bg-blue-500 text-white rounded-2xl rounded-tr-sm px-4 py-3 text-sm max-w-md shadow-sm">
+                            Merhaba Ahmet Bey, talebinizi kontrol ediyorum. Hafta sonu yoğunluğu nedeniyle süreçler biraz uzayabiliyor. Hemen ilgili birime iletiyorum.
+                        </div>
+                    </div>
+
+                    <div class="flex flex-col items-start">
+                        <span class="text-[10px] text-gray-400 mb-1 ml-1">Ahmet Yılmaz • 14:30</span>
+                        <div class="bg-white border border-gray-200 rounded-2xl rounded-tl-sm px-4 py-3 text-sm text-gray-700 max-w-md shadow-sm">
+                            Anlıyorum ama müşterilerim arıyor. İlanın yayında olması benim için çok kritik.
+                        </div>
+                    </div>
+                </div>
+
+                <div class="p-4 bg-white border-t border-gray-200 flex-shrink-0">
+                    <div class="flex justify-between items-center mb-2 px-2">
+                        <button class="text-xs text-blue-500 font-medium hover:text-blue-600"><i class="fa-solid fa-bolt text-yellow-400 mr-1"></i> Hızlı Yanıt Şablonları</button>
+                    </div>
+                    <div class="relative flex items-end border border-gray-200 rounded-xl overflow-hidden focus-within:border-blue-500 focus-within:ring-1 focus-within:ring-blue-500 bg-gray-50">
+                        <textarea rows="2" placeholder="Mesajınızı buraya yazın..." class="w-full bg-transparent p-3 text-sm outline-none resize-none"></textarea>
+                        <div class="flex items-center space-x-2 p-2">
+                            <button class="text-gray-400 hover:text-gray-600 p-2"><i class="fa-regular fa-face-smile"></i></button>
+                            <button class="text-gray-400 hover:text-gray-600 p-2"><i class="fa-solid fa-paperclip"></i></button>
+                            <button class="bg-blue-500 text-white w-10 h-10 rounded-lg flex items-center justify-center hover:bg-blue-600 shadow-sm"><i class="fa-regular fa-paper-plane"></i></button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="w-72 bg-white border-l border-gray-200 flex flex-col flex-shrink-0 overflow-y-auto">
+                <div class="p-6 text-center border-b border-gray-100">
+                    <div class="relative inline-block mb-3">
+                        <img src="https://i.pravatar.cc/150?img=8" class="w-20 h-20 rounded-full border-2 border-white shadow-md">
+                        <div class="absolute bottom-0 right-0 w-4 h-4 bg-green-500 border-2 border-white rounded-full"></div>
+                    </div>
+                    <h3 class="text-lg font-bold text-gray-800">Ahmet Yılmaz</h3>
+                    <p class="text-xs text-gray-500 mt-1">Bireysel Üye • İstanbul</p>
+                    
+                    <div class="grid grid-cols-2 gap-4 mt-6">
+                        <div class="border border-gray-100 rounded-lg p-2 bg-gray-50">
+                            <div class="text-[10px] text-gray-400 uppercase font-bold">İlanlar</div>
+                            <div class="text-lg font-bold text-gray-800">12</div>
+                        </div>
+                        <div class="border border-gray-100 rounded-lg p-2 bg-gray-50">
+                            <div class="text-[10px] text-gray-400 uppercase font-bold">Puan</div>
+                            <div class="text-lg font-bold text-gray-800 flex items-center justify-center"><i class="fa-solid fa-star text-yellow-400 text-xs mr-1"></i> 4.8</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="p-5 border-b border-gray-100">
+                    <h4 class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-4 flex items-center"><i class="fa-solid fa-car-side mr-2"></i> Aktif İlanları</h4>
+                    <div class="space-y-3">
+                        <div class="flex items-center border border-gray-100 rounded p-2 hover:bg-gray-50 cursor-pointer">
+                            <div class="w-8 h-8 bg-gray-100 rounded flex items-center justify-center text-gray-400 mr-3 flex-shrink-0"><i class="fa-solid fa-car"></i></div>
+                            <div class="overflow-hidden">
+                                <div class="text-xs font-bold text-gray-800 truncate">2021 BMW 320i Sedan</div>
+                                <div class="text-xs text-blue-500 font-bold">2.150.000 ₺</div>
+                            </div>
+                        </div>
+                        <div class="flex items-center border border-gray-100 rounded p-2 hover:bg-gray-50 cursor-pointer">
+                            <div class="w-8 h-8 bg-gray-100 rounded flex items-center justify-center text-gray-400 mr-3 flex-shrink-0"><i class="fa-solid fa-car"></i></div>
+                            <div class="overflow-hidden">
+                                <div class="text-xs font-bold text-gray-800 truncate">2019 Audi A4</div>
+                                <div class="text-xs text-blue-500 font-bold">1.850.000 ₺</div>
+                            </div>
+                        </div>
+                    </div>
+                    <button class="w-full text-xs text-blue-500 font-medium mt-3 hover:text-blue-600">Tüm İlanları Gör</button>
+                </div>
+
+                <div class="p-5 flex-1 flex flex-col justify-between">
+                    <div>
+                        <h4 class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-4 flex items-center"><i class="fa-solid fa-clock-rotate-left mr-2"></i> Destek Geçmişi</h4>
+                        <ul class="relative border-l border-gray-200 ml-2 space-y-4">
+                            <li class="pl-4 relative">
+                                <div class="absolute w-2 h-2 bg-gray-300 rounded-full -left-[4.5px] top-1"></div>
+                                <div class="text-xs font-bold text-gray-700">Üyelik İptali Hakkında</div>
+                                <div class="text-[10px] text-gray-500">12 Nis • <span class="text-green-500">Çözüldü</span></div>
+                            </li>
+                            <li class="pl-4 relative">
+                                <div class="absolute w-2 h-2 bg-gray-300 rounded-full -left-[4.5px] top-1"></div>
+                                <div class="text-xs font-bold text-gray-700">Yanlış İlan Bilgisi</div>
+                                <div class="text-[10px] text-gray-500">24 Mar • <span class="text-green-500">Çözüldü</span></div>
+                            </li>
+                        </ul>
+                    </div>
+                    
+                    <button class="w-full mt-6 bg-red-50 text-red-600 border border-red-100 py-2.5 rounded-lg text-sm font-bold hover:bg-red-500 hover:text-white transition flex justify-center items-center">
+                        <i class="fa-solid fa-ban mr-2"></i> Kullanıcıyı Engelle
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

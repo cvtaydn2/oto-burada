@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OtoBurada - Yeni İlan Oluştur</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body class="bg-gray-50 text-gray-800 font-sans min-h-screen flex flex-col">
+
+    <header class="bg-white border-b border-gray-200 sticky top-0 z-50">
+        <div class="max-w-[1400px] mx-auto px-4 flex justify-between items-center h-16">
+            <div class="flex items-center space-x-8">
+                <a href="#" class="text-blue-500 text-xl font-bold flex items-center">
+                    <i class="fa-solid fa-car-side mr-2"></i>OtoBurada
+                </a>
+                <nav class="hidden md:flex space-x-6 text-sm">
+                    <a href="#" class="text-gray-600 hover:text-blue-500 font-medium transition py-5">İlanlar</a>
+                    <a href="#" class="text-gray-600 hover:text-blue-500 font-medium transition py-5">Karşılaştır</a>
+                </nav>
+            </div>
+            
+            <div class="hidden lg:flex relative w-[500px]">
+                <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400">
+                    <i class="fa-solid fa-magnifying-glass text-sm"></i>
+                </span>
+                <input type="text" placeholder="Marka, model veya kelime ara..." class="w-full bg-gray-100 border-transparent text-gray-700 text-sm rounded-full focus:bg-white focus:border-blue-500 pl-10 py-2 outline-none transition">
+            </div>
+            
+            <div class="flex items-center space-x-4">
+                <a href="#" class="text-gray-500 hover:text-red-500 transition"><i class="fa-regular fa-heart text-xl"></i></a>
+                <a href="#" class="text-gray-500 hover:text-blue-500 transition"><i class="fa-regular fa-message text-xl"></i></a>
+                <div class="h-6 border-l border-gray-300 mx-2"></div>
+                <button class="bg-blue-500 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-600 transition shadow-sm flex items-center">
+                    <i class="fa-solid fa-plus mr-1"></i> İlan Ver
+                </button>
+                <img src="https://i.pravatar.cc/150?img=12" alt="Profil" class="w-8 h-8 rounded-full border border-gray-200 ml-2">
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-[1000px] mx-auto px-4 py-8 w-full flex-1">
+        
+        <div class="mb-8">
+            <h1 class="text-3xl font-bold text-gray-800">Yeni İlan Oluştur</h1>
+            <p class="text-gray-500 mt-2">Aracınızı milyonlarca alıcıyla buluşturmak için formu doldurmaya başlayın.</p>
+        </div>
+
+        <div class="bg-white border border-gray-200 rounded-2xl p-8 mb-8 shadow-sm">
+            <div class="flex justify-between items-center relative">
+                
+                <div class="absolute left-0 top-1/2 -translate-y-1/2 w-full h-0.5 bg-gray-100 z-0"></div>
+                
+                <div class="relative z-10 flex flex-col items-center bg-white px-4">
+                    <div class="w-12 h-12 rounded-full bg-blue-500 text-white flex items-center justify-center font-bold shadow-md ring-4 ring-white mb-2">
+                        <i class="fa-solid fa-car"></i>
+                    </div>
+                    <span class="text-xs font-bold text-gray-800">Araç Bilgileri</span>
+                </div>
+
+                <div class="relative z-10 flex flex-col items-center bg-white px-4">
+                    <div class="w-12 h-12 rounded-full bg-gray-50 text-gray-400 border border-gray-200 flex items-center justify-center font-bold ring-4 ring-white mb-2">
+                        <i class="fa-solid fa-sliders"></i>
+                    </div>
+                    <span class="text-xs font-medium text-gray-400">Teknik Detaylar</span>
+                </div>
+
+                <div class="relative z-10 flex flex-col items-center bg-white px-4">
+                    <div class="w-12 h-12 rounded-full bg-gray-50 text-gray-400 border border-gray-200 flex items-center justify-center font-bold ring-4 ring-white mb-2">
+                        <i class="fa-regular fa-images"></i>
+                    </div>
+                    <span class="text-xs font-medium text-gray-400">Medya & Dosyalar</span>
+                </div>
+
+                <div class="relative z-10 flex flex-col items-center bg-white px-4">
+                    <div class="w-12 h-12 rounded-full bg-gray-50 text-gray-400 border border-gray-200 flex items-center justify-center font-bold ring-4 ring-white mb-2">
+                        <i class="fa-regular fa-circle-check"></i>
+                    </div>
+                    <span class="text-xs font-medium text-gray-400">Yayınla</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="space-y-10">
+            
+            <div>
+                <div class="flex items-center mb-6">
+                    <div class="w-8 h-8 rounded-full bg-blue-50 text-blue-500 flex items-center justify-center font-bold mr-3 text-sm">1</div>
+                    <h2 class="text-xl font-bold text-gray-800">Araç Temel Bilgileri</h2>
+                </div>
+
+                <div class="bg-white border border-gray-200 rounded-2xl p-8 shadow-sm">
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                        <div>
+                            <label class="block text-sm font-bold text-gray-700 mb-2">Marka <span class="text-red-500">*</span></label>
+                            <input type="text" value="BMW" class="w-full border border-gray-200 rounded-lg p-3 text-sm focus:border-blue-500 outline-none text-gray-800">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-bold text-gray-700 mb-2">Model <span class="text-red-500">*</span></label>
+                            <input type="text" value="320i" class="w-full border border-gray-200 rounded-lg p-3 text-sm focus:border-blue-500 outline-none text-gray-800">
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                        <div>
+                            <label class="block text-sm font-bold text-gray-700 mb-2">Yıl <span class="text-red-500">*</span></label>
+                            <input type="text" value="2021" class="w-full border border-gray-200 rounded-lg p-3 text-sm focus:border-blue-500 outline-none text-gray-800">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-bold text-gray-700 mb-2">Kilometre <span class="text-red-500">*</span></label>
+                            <input type="text" value="45000" class="w-full border border-gray-200 rounded-lg p-3 text-sm focus:border-blue-500 outline-none text-gray-800">
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                        <div>
+                            <label class="block text-sm font-bold text-gray-700 mb-2">Yakıt Tipi <span class="text-red-500">*</span></label>
+                            <div class="flex gap-2">
+                                <button class="flex-1 bg-blue-500 text-white font-bold py-2.5 rounded-lg text-sm shadow-sm transition">Benzin</button>
+                                <button class="flex-1 bg-white border border-gray-200 text-gray-600 font-medium py-2.5 rounded-lg text-sm hover:bg-gray-50 transition">Dizel</button>
+                                <button class="flex-1 bg-white border border-gray-200 text-gray-600 font-medium py-2.5 rounded-lg text-sm hover:bg-gray-50 transition">Hibrit</button>
+                                <button class="flex-1 bg-white border border-gray-200 text-gray-600 font-medium py-2.5 rounded-lg text-sm hover:bg-gray-50 transition">Elektrik</button>
+                            </div>
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-bold text-gray-700 mb-2">Vites Tipi <span class="text-red-500">*</span></label>
+                            <div class="flex gap-2">
+                                <button class="flex-1 bg-white border border-gray-200 text-gray-600 font-medium py-2.5 rounded-lg text-sm hover:bg-gray-50 transition">Manuel</button>
+                                <button class="flex-1 bg-white border border-gray-200 text-gray-600 font-medium py-2.5 rounded-lg text-sm hover:bg-gray-50 transition">Yarı Otomatik</button>
+                                <button class="flex-1 bg-blue-500 text-white font-bold py-2.5 rounded-lg text-sm shadow-sm transition">Otomatik</button>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+            <div>
+                <div class="flex items-center mb-6">
+                    <div class="w-8 h-8 rounded-full bg-blue-50 text-blue-500 flex items-center justify-center font-bold mr-3 text-sm">2</div>
+                    <h2 class="text-xl font-bold text-gray-800">Detaylı Bilgiler</h2>
+                </div>
+
+                <div class="bg-white border border-gray-200 rounded-2xl p-8 shadow-sm">
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                        <div>
+                            <label class="block text-sm font-bold text-gray-700 mb-2">İlan Başlığı <span class="text-red-500">*</span></label>
+                            <input type="text" placeholder="Örn: Hatasız, Boyasız 2021 BMW 320i M Sport" class="w-full border border-gray-200 rounded-lg p-3 text-sm focus:border-blue-500 outline-none text-gray-800 placeholder-gray-400">
+                            <p class="text-[10px] text-gray-500 mt-2">Etkileyici bir başlık, alıcıların dikkatini daha hızlı çeker.</p>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-bold text-gray-700 mb-2">Fiyat (TL) <span class="text-red-500">*</span></label>
+                            <input type="text" placeholder="0.00" class="w-full border border-gray-200 rounded-lg p-3 text-sm focus:border-blue-500 outline-none text-gray-800">
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-bold text-gray-700 mb-2">Açıklama <span class="text-red-500">*</span></label>
+                        <textarea rows="5" placeholder="Aracınızın durumu, bakımları ve öne çıkan özelliklerini burada detaylandırın..." class="w-full border border-gray-200 rounded-lg p-4 text-sm focus:border-blue-500 outline-none text-gray-800 resize-none"></textarea>
+                    </div>
+
+                </div>
+            </div>
+
+            <div class="flex justify-end space-x-4 pt-4">
+                <button class="bg-white border border-gray-300 text-gray-700 font-bold px-8 py-3 rounded-xl hover:bg-gray-50 transition shadow-sm">Taslak Olarak Kaydet</button>
+                <button class="bg-blue-500 text-white font-bold px-10 py-3 rounded-xl hover:bg-blue-600 transition shadow-md flex items-center">
+                    İleri <i class="fa-solid fa-arrow-right ml-2"></i>
+                </button>
+            </div>
+
+        </div>
+    </main>
+
+</body>
+</html>
