@@ -1,22 +1,22 @@
 import { cn } from "@/lib/utils";
 import React from "react";
 
-interface DesignInputProps extends React.InputHTMLAttributes<HTMLInputElement> {
+interface DesignInputProps extends React.InputHTMLAttributes<HTMLInputElement & HTMLSelectElement & HTMLTextAreaElement> {
   label: string;
   required?: boolean;
   error?: string;
   helperText?: string;
   as?: "input" | "select" | "textarea";
-  rows?: number; // Added for textarea support
+  rows?: number;
 }
 
 /**
  * Shared Input component following the Showroom Elite design system.
  * Matches the HTML reference: Bold label + Standard border + Focus ring.
  */
-export const DesignInput = React.forwardRef<HTMLInputElement & HTMLSelectElement & HTMLTextAreaElement, DesignInputProps>(
+export const DesignInput = React.forwardRef<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement, DesignInputProps>(
   ({ label, required, error, helperText, as = "input", className, children, ...props }, ref) => {
-    const Component = as as any;
+    const Component = as as React.ElementType;
     
     return (
       <div className="space-y-2">

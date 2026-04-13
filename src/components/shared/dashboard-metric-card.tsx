@@ -10,6 +10,8 @@ interface DashboardMetricCardProps {
   helper: string;
   icon: LucideIcon;
   tone?: DashboardMetricTone;
+  trend?: number;
+  trendLabel?: string;
 }
 
 const toneClasses: Record<
@@ -48,6 +50,8 @@ export function DashboardMetricCard({
   helper,
   icon: Icon,
   tone = "indigo",
+  trend,
+  trendLabel,
 }: DashboardMetricCardProps) {
   const palette = toneClasses[tone];
 
@@ -60,13 +64,24 @@ export function DashboardMetricCard({
     >
       <div className="flex items-start justify-between gap-4">
         <div className="flex-1">
-          <div
-            className={cn(
-              "inline-flex items-center rounded-lg border px-2 py-1 text-[10px] font-bold uppercase tracking-wider",
-              palette.badge,
+          <div className="flex items-center justify-between">
+            <div
+              className={cn(
+                "inline-flex items-center rounded-lg border px-2 py-1 text-[10px] font-bold uppercase tracking-wider",
+                palette.badge,
+              )}
+            >
+              {label}
+            </div>
+            {trend !== undefined && (
+              <span className={cn(
+                "text-[10px] font-bold px-1.5 py-0.5 rounded-md flex items-center gap-1",
+                trend >= 0 ? "bg-emerald-50 text-emerald-600" : "bg-rose-50 text-rose-600"
+              )}>
+                {trend >= 0 ? "+" : ""}{trend}%
+                {trendLabel && <span className="opacity-60">{trendLabel}</span>}
+              </span>
             )}
-          >
-            {label}
           </div>
           <p className={cn("mt-4 text-3xl font-black tracking-tight", palette.text)}>{value}</p>
           <p className="mt-2 text-xs font-medium text-slate-400 line-clamp-1">{helper}</p>

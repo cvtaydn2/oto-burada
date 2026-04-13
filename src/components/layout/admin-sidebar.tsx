@@ -9,8 +9,11 @@ import {
   Users, 
   Settings, 
   ChevronLeft,
-  ShieldCheck,
-  History
+  History,
+  CreditCard,
+  Database,
+  MessageSquare,
+  ShieldCheck
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -27,9 +30,19 @@ const ADMIN_NAV_ITEMS = [
     icon: Car,
   },
   {
+    title: "Araç Veritabanı",
+    href: "/admin/reference",
+    icon: Database,
+  },
+  {
     title: "Şikayet Yönetimi",
     href: "/admin/reports",
     icon: Flag,
+  },
+  {
+    title: "Destek Talepleri",
+    href: "/admin/support",
+    icon: MessageSquare,
   },
   {
     title: "Kullanıcı Yönetimi",
@@ -40,6 +53,11 @@ const ADMIN_NAV_ITEMS = [
     title: "Audit Logs",
     href: "/admin/audit",
     icon: History,
+  },
+  {
+    title: "Paket Yönetimi",
+    href: "/admin/plans",
+    icon: CreditCard,
   },
   {
     title: "Sistem Ayarları",

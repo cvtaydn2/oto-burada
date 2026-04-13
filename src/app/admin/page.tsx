@@ -75,13 +75,13 @@ export default async function AdminOverviewPage() {
         </div>
         
         <div className="flex items-center gap-4">
-           <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm min-w-[120px]">
-              <span className="block text-[10px] text-slate-400 font-bold uppercase mb-1">Ciro</span>
-              <span className="text-xl font-black text-slate-800 tracking-tighter">₺0</span>
+           <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm min-w-[140px]">
+              <span className="block text-[10px] text-slate-400 font-bold uppercase mb-1 italic">Toplam Hacim (MVP)</span>
+              <span className="text-xl font-black text-slate-800 tracking-tighter">₺{analyticsData?.totalRevenue.toLocaleString("tr-TR")}</span>
            </div>
            <MarketSyncButton />
-           <Button className="rounded-xl bg-blue-600 hover:bg-blue-700 shadow-md shadow-blue-100 font-bold px-6 h-12">
-              Rapor Oluştur
+           <Button className="rounded-xl bg-slate-900 border-none hover:bg-black text-white shadow-lg shadow-slate-200 font-bold px-6 h-12 transition-all hover:-translate-y-0.5" onClick={() => {}}>
+              Rapor Çıktısı Al
            </Button>
         </div>
       </section>
@@ -103,18 +103,22 @@ export default async function AdminOverviewPage() {
           tone="amber"
         />
         <DashboardMetricCard
-          label="Sistem Sağlığı"
-          value={`${persistenceHealth.healthScore}%`}
-          helper="Postgres, Redis ve Storage statüsü"
+          label="İlan Artışı"
+          value={`${analyticsData?.totalListings ?? 0}`}
+          helper="Toplam kayıtlı araç"
           icon={Activity}
           tone="emerald"
+          trend={analyticsData?.listingTrend}
+          trendLabel="Ay"
         />
         <DashboardMetricCard
-          label="Sistem Kullanıcıları"
+          label="Yeni Üyeler"
           value={String(analyticsData?.totalUsers ?? 0)}
-          helper="Toplam kayıtlı kullanıcı sayısı"
+          helper="Toplam kayıtlı kullanıcı"
           icon={UserPlus}
           tone="indigo"
+          trend={analyticsData?.userTrend}
+          trendLabel="Ay"
         />
       </div>
 

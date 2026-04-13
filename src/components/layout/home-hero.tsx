@@ -2,103 +2,106 @@
 
 import { useState } from "react"
 import { useRouter } from "next/navigation"
-import { Search, CarFront } from "lucide-react"
+import { Search, CarFront, MapPin } from "lucide-react"
 
 export function HomeHero() {
   const router = useRouter()
   const [query, setQuery] = useState("")
   const [city, setCity] = useState("")
+  const [minPrice, setMinPrice] = useState("")
   const [maxPrice, setMaxPrice] = useState("")
 
   const handleSearch = (e?: React.FormEvent) => {
     e?.preventDefault()
     let url = `/listings?query=${encodeURIComponent(query.trim())}`
-    if (city) url += `&city=${encodeURIComponent(city)}`
+    if (city && city !== "Tüm Şehirler") url += `&city=${encodeURIComponent(city)}`
+    if (minPrice) url += `&minPrice=${minPrice}`
     if (maxPrice) url += `&maxPrice=${maxPrice}`
     router.push(url)
   }
 
   return (
-    <section className="relative h-[500px] flex items-center mb-16 overflow-hidden">
+    <section className="hero-bg h-[500px] flex items-center relative overflow-hidden">
       {/* Background Image with Overlay */}
       <div 
         className="absolute inset-0 bg-cover bg-center transition-transform duration-[10000ms] hover:scale-105" 
-        style={{ backgroundImage: 'linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.6)), url("https://images.unsplash.com/photo-1503375822722-ec8cb7a4c7e6?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80")' }} 
+        style={{ 
+          backgroundImage: 'linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.6)), url("https://images.unsplash.com/photo-1503375822722-ec8cb7a4c7e6?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80")',
+          backgroundSize: 'cover',
+          backgroundPosition: 'center'
+        }} 
       />
       
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full relative z-10 text-center">
-        <h1 className="text-4xl md:text-6xl font-extrabold text-white mb-4 tracking-tight drop-shadow-sm">
+        <h1 className="text-4xl md:text-5xl font-extrabold text-white mb-4 tracking-tight">
           Hayalindeki Aracı Bugün Bul
         </h1>
-        <p className="text-lg text-gray-200 mb-10 max-w-2xl mx-auto font-light leading-relaxed">
+        <p className="text-lg text-gray-200 mb-10 max-w-2xl mx-auto font-light">
           Türkiye&apos;nin en geniş araç ağıyla, güvenli ve hızlı otomobil alışverişinin adresi.
         </p>
-
-        {/* Floating Search Bar */}
-        <div className="bg-white p-4 rounded-2xl shadow-2xl max-w-4xl mx-auto text-left flex flex-col md:flex-row gap-4">
+        
+        <div className="bg-white p-4 rounded-2xl shadow-xl max-w-4xl mx-auto text-left flex flex-col md:flex-row gap-4">
+          
           <div className="flex-1">
-            <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1.5 pl-1">Marka / Model</label>
+            <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1 pl-1">Marka / Model</label>
             <div className="relative">
-              <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400">
-                <CarFront size={16} />
-              </span>
+              <CarFront size={16} className="absolute left-3 top-3 text-gray-400" />
               <input 
                 type="text" 
                 placeholder="Örn: BMW 3 Serisi" 
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
-                className="w-full h-11 bg-gray-50 border border-gray-200 text-gray-700 rounded-lg focus:border-blue-500 focus:ring-1 focus:ring-blue-500 block pl-10 p-2.5 outline-none transition"
+                className="w-full bg-gray-50 border border-gray-200 text-gray-700 rounded-lg focus:border-blue-500 focus:ring-1 focus:ring-blue-500 block pl-10 p-2.5 outline-none transition"
               />
             </div>
           </div>
 
           <div className="flex-1">
-            <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1.5 pl-1">Şehir</label>
+            <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1 pl-1">Şehir</label>
             <div className="relative">
-              <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400">
-                <Search size={16} className="rotate-90 scale-x-[-1]" />
-              </span>
+              <MapPin size={16} className="absolute left-3 top-3 text-gray-400" />
               <select 
                 value={city}
                 onChange={(e) => setCity(e.target.value)}
-                className="w-full h-11 bg-gray-50 border border-gray-200 text-gray-700 rounded-lg focus:border-blue-500 focus:ring-1 focus:ring-blue-500 block pl-10 p-2.5 outline-none appearance-none cursor-pointer"
+                className="w-full bg-gray-50 border border-gray-200 text-gray-700 rounded-lg focus:border-blue-500 focus:ring-1 focus:ring-blue-500 block pl-10 p-2.5 outline-none appearance-none cursor-pointer"
               >
-                <option value="">Tüm Şehirler</option>
-                <option value="İstanbul">İstanbul</option>
-                <option value="Ankara">Ankara</option>
-                <option value="İzmir">İzmir</option>
+                <option>Tüm Şehirler</option>
+                <option>İstanbul</option>
+                <option>Ankara</option>
+                <option>İzmir</option>
               </select>
             </div>
           </div>
 
           <div className="flex-1">
-            <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1.5 pl-1">Fiyat Aralığı</label>
+            <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1 pl-1">Fiyat Aralığı</label>
             <div className="flex space-x-2">
               <input 
-                type="number" 
+                type="text" 
                 placeholder="Min TL" 
-                className="w-1/2 h-11 bg-gray-50 border border-gray-200 text-gray-700 rounded-lg focus:border-blue-500 focus:ring-1 focus:ring-blue-500 block p-2.5 outline-none text-sm transition" 
+                value={minPrice}
+                onChange={(e) => setMinPrice(e.target.value)}
+                className="w-1/2 bg-gray-50 border border-gray-200 text-gray-700 rounded-lg focus:border-blue-500 focus:ring-1 focus:ring-blue-500 block p-2.5 outline-none text-sm transition" 
               />
               <input 
-                type="number" 
+                type="text" 
                 placeholder="Maks TL" 
                 value={maxPrice}
                 onChange={(e) => setMaxPrice(e.target.value)}
-                className="w-1/2 h-11 bg-gray-50 border border-gray-200 text-gray-700 rounded-lg focus:border-blue-500 focus:ring-1 focus:ring-blue-500 block p-2.5 outline-none text-sm transition" 
+                className="w-1/2 bg-gray-50 border border-gray-200 text-gray-700 rounded-lg focus:border-blue-500 focus:ring-1 focus:ring-blue-500 block p-2.5 outline-none text-sm transition" 
               />
             </div>
           </div>
 
           <div className="flex items-end">
             <button 
-              type="submit"
               onClick={handleSearch}
-              className="w-full md:w-auto h-11 bg-blue-500 hover:bg-blue-600 text-white font-bold rounded-lg px-8 transition shadow-md flex items-center justify-center gap-2 group"
+              className="w-full md:w-auto bg-blue-500 hover:bg-blue-600 text-white font-medium rounded-lg px-8 py-2.5 transition shadow-md flex items-center justify-center"
             >
-              <Search size={18} className="group-hover:scale-110 transition-transform" />
-              İlan Arabul
+              <Search size={18} className="mr-2" /> İlanları Ara
             </button>
           </div>
+
         </div>
       </div>
     </section>

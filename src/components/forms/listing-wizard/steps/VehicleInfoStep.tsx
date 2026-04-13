@@ -1,7 +1,7 @@
 "use client";
 
 import { UseFormReturn, Controller } from "react-hook-form";
-import { Search, LoaderCircle, AlertCircle, Sparkles } from "lucide-react";
+import { Search, LoaderCircle, AlertCircle } from "lucide-react";
 import { ListingCreateFormValues, BrandCatalogItem } from "@/types";
 import { maximumCarYear, minimumCarYear } from "@/lib/constants/domain";
 import { FormSection } from "@/components/shared/design-system/FormSection";
@@ -23,7 +23,7 @@ export function VehicleInfoStep({
 }: VehicleInfoStepProps) {
   const { register, formState: { errors }, watch, control } = form;
   const selectedBrand = watch("brand");
-  const selectedModel = watch("model");
+  // Watch brand and type change to reset or filter models
 
   return (
     <div className="space-y-10">

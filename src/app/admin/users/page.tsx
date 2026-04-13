@@ -4,6 +4,7 @@ import { tr } from "date-fns/locale";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { UserActionMenu } from "@/components/admin/user_action_menu";
 
 import { getAllUsers } from "@/services/admin/users";
 
@@ -141,9 +142,11 @@ export default async function AdminUserManagementPage() {
                         </div>
                       </td>
                       <td className="p-6 text-right">
-                        <Button variant="ghost" size="icon" className="rounded-xl text-slate-300 hover:text-blue-600 hover:bg-blue-50 transition-all">
-                          <MoreVertical size={18} />
-                        </Button>
+                        <UserActionMenu 
+                          userId={u.id}
+                          isBanned={!!u.isBanned}
+                          isAdmin={u.role === "admin"}
+                        />
                       </td>
                     </tr>
                   ))}
