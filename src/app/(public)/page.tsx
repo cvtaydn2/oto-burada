@@ -31,19 +31,19 @@ export default async function HomePage() {
         description="Türkiye'nin en güvenilir, şeffaf ve hızlı ikinci el otomobil pazarı. Aradığın araba burada."
       />
 
-      <main className="flex-1 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+      <main className="flex-1 w-full max-w-7xl mx-auto px-5 sm:px-6 lg:px-8 py-6">
         {/* Modern Hero */}
         <HomeHero />
 
         {/* Popular Categories */}
-        <section className="mb-20 mt-24">
+        <section className="mb-24 mt-28">
           <div className="flex items-center justify-between mb-8">
-            <h2 className="text-2xl font-black text-slate-900">Popüler Kategoriler</h2>
-            <Link href="/categories" className="text-sm font-bold text-primary hover:underline flex items-center gap-2">
-              Tümünü Gör <ArrowRight size={16} />
+            <h2 className="text-xl font-black text-slate-900">Popüler Kategoriler</h2>
+            <Link href="/categories" className="text-xs font-bold text-primary hover:underline flex items-center gap-2">
+              Tümünü Gör <ArrowRight size={14} />
             </Link>
           </div>
-          <div className="grid grid-cols-3 md:grid-cols-6 gap-3">
+          <div className="grid grid-cols-3 md:grid-cols-6 gap-3.5">
             {[
               { id: 'electric', name: 'Elektrikli', count: '1,240', icon: <Zap size={18} /> },
               { id: 'suv', name: 'SUV', count: '4,850', icon: <CarFront size={18} /> },
@@ -71,17 +71,17 @@ export default async function HomePage() {
 
         {/* Featured Section */}
         {featuredListings.length > 0 && (
-          <section className="mb-16">
+          <section className="mb-20">
             <div className="flex items-center justify-between mb-6">
               <div className="flex items-center gap-2">
                 <Zap className="text-amber-500 fill-amber-500" size={20} />
                 <h2 className="text-xl font-black text-slate-900">Öne Çıkanlar</h2>
               </div>
-              <Link href="/listings?featured=true" className="text-sm font-bold text-primary hover:underline flex items-center gap-1">
-                Tümünü Gör <ArrowRight size={14} />
+              <Link href="/listings?featured=true" className="text-xs font-bold text-primary hover:underline flex items-center gap-1">
+                Tümünü Gör <ArrowRight size={12} />
               </Link>
             </div>
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5">
               {featuredListings.map((listing) => (
                 <CarCard key={listing.id} listing={listing} priority />
               ))}
@@ -90,11 +90,11 @@ export default async function HomePage() {
         )}
 
         {/* Trust Section */}
-        <section className="mb-16">
+        <section className="mb-20">
           <div className="bg-white rounded-2xl border border-slate-200 p-8">
             <div className="flex items-center gap-2 mb-6">
               <ShieldCheck className="text-emerald-500" size={18} />
-              <span className="text-xs font-bold text-slate-500 uppercase tracking-widest">Güven Odaklı Pazar</span>
+              <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Güven Odaklı Pazar</span>
             </div>
             <h2 className="text-2xl md:text-3xl font-black text-slate-900 mb-3">
               Neden OtoBurada?
@@ -122,7 +122,7 @@ export default async function HomePage() {
         </section>
 
         {/* Marketplace Services */}
-        <section className="mb-24 grid md:grid-cols-2 gap-6">
+        <section className="mb-28 grid md:grid-cols-2 gap-6">
           <Link href="/aracim-ne-kadar" className="group p-8 rounded-2xl bg-white border border-slate-200 shadow-sm hover:shadow-md hover:border-primary/20 transition-all flex items-center gap-6">
             <div className="size-14 rounded-xl bg-slate-50 flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-white transition-all shrink-0">
               <ArrowRight className="rotate-[315deg]" size={24} />
@@ -145,19 +145,19 @@ export default async function HomePage() {
         </section>
 
         {/* Latest Listings */}
-        <section className="mb-24">
+        <section className="mb-28">
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-xl font-black text-slate-900">Yeni İlanlar</h2>
-            <Link href="/listings" className="text-sm font-bold text-primary hover:underline flex items-center gap-1">
-              Tüm İlanları Gör <ArrowRight size={14} />
+            <Link href="/listings" className="text-xs font-bold text-primary hover:underline flex items-center gap-1">
+              Tüm İlanları Gör <ArrowRight size={12} />
             </Link>
           </div>
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5">
             {latestListings.map((listing) => (
               <CarCard key={listing.id} listing={listing} />
             ))}
           </div>
-          <div className="mt-10 flex justify-center">
+          <div className="mt-12 flex justify-center">
             <Link href="/listings" className="h-12 px-8 rounded-xl bg-primary text-white font-bold text-base hover:bg-primary/90 transition-all flex items-center justify-center">
               Tüm İlanları Keşfet
             </Link>

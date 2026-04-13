@@ -59,27 +59,27 @@ export default async function AdminOverviewPage() {
   );
 
   return (
-    <main className="space-y-6 p-4 lg:p-6">
-      <section className="flex flex-col justify-between gap-4 md:flex-row md:items-end">
+    <main className="space-y-6 p-5 lg:p-6">
+      <section className="flex flex-col justify-between gap-5 md:flex-row md:items-end">
         <div>
           <div className="mb-2 flex items-center gap-2">
              <div className="size-2 rounded-full bg-emerald-500" />
-             <span className="text-xs text-slate-500">Canlı sistem durumu</span>
+             <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Canlı sistem durumu</span>
           </div>
            <h1 className="text-2xl font-black text-slate-900">
              Kontrol Paneli
            </h1>
-          <p className="mt-1 text-sm text-slate-500">Platformun genel performans verileri ve akışı.</p>
+          <p className="mt-1.5 text-sm text-slate-500 font-medium">Platformun genel performans verileri ve akışı.</p>
         </div>
         
         <div className="flex items-center gap-3">
-           <div className="min-w-20 rounded-lg border border-slate-200 bg-white p-2.5 text-center">
-              <span className="mb-1 block text-[10px] text-slate-500">Yeni kayıt</span>
-              <span className="text-lg font-semibold text-slate-900">+12</span>
+           <div className="min-w-20 rounded-lg border border-slate-200 bg-white p-3 text-center">
+              <span className="mb-1 block text-[10px] text-slate-500 font-semibold uppercase">Yeni kayıt</span>
+              <span className="text-lg font-black text-slate-900">+12</span>
            </div>
-           <div className="min-w-20 rounded-lg border border-slate-200 bg-white p-2.5 text-center">
-              <span className="mb-1 block text-[10px] text-slate-500">Görünüm</span>
-              <span className="text-lg font-semibold text-slate-900">4.2k</span>
+           <div className="min-w-20 rounded-lg border border-slate-200 bg-white p-3 text-center">
+              <span className="mb-1 block text-[10px] text-slate-500 font-semibold uppercase">Görünüm</span>
+              <span className="text-lg font-black text-slate-900">4.2k</span>
            </div>
         </div>
       </section>

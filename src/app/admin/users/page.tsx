@@ -19,8 +19,8 @@ export default function AdminUserManagementPage() {
   ];
 
   return (
-    <main className="space-y-6 p-4 lg:p-6 max-w-7xl mx-auto">
-      <div className="flex flex-col justify-between gap-4 md:flex-row md:items-end">
+    <main className="space-y-6 p-5 lg:p-6 max-w-7xl mx-auto">
+      <div className="flex flex-col justify-between gap-5 md:flex-row md:items-end">
         <div>
           <div className="flex items-center gap-2 mb-2">
             <Users className="text-primary" size={16} />
@@ -29,9 +29,9 @@ export default function AdminUserManagementPage() {
           <h1 className="text-2xl font-black text-slate-900">
             Kullanıcı Yönetimi
           </h1>
-          <p className="mt-1 text-sm text-slate-500 font-medium">Platform genelindeki kullanıcı kayıtlarını yönetin.</p>
+          <p className="mt-1.5 text-sm text-slate-500 font-medium">Platform genelindeki kullanıcı kayıtlarını yönetin.</p>
         </div>
-        <button className="flex items-center gap-2 h-10 px-4 rounded-lg bg-primary text-white text-sm font-bold hover:bg-primary/90 transition-colors">
+        <button className="flex items-center gap-2 h-10 px-5 rounded-lg bg-primary text-white text-sm font-bold hover:bg-primary/90 transition-colors">
           <Plus size={16} />
           Yeni Kullanıcı Ekle
         </button>
@@ -66,29 +66,29 @@ export default function AdminUserManagementPage() {
             <table className="w-full text-left border-collapse">
               <thead>
                 <tr className="border-b border-slate-100">
-                  <th className="p-4 text-[10px] font-bold text-slate-500 uppercase tracking-wider">Kullanıcı</th>
-                  <th className="p-4 text-[10px] font-bold text-slate-500 uppercase tracking-wider">E-posta</th>
-                  <th className="p-4 text-[10px] font-bold text-slate-500 uppercase tracking-wider">Rol</th>
-                  <th className="p-4 text-[10px] font-bold text-slate-500 uppercase tracking-wider">Kayıt Tarihi</th>
-                  <th className="p-4 text-[10px] font-bold text-slate-500 uppercase tracking-wider">Durum</th>
-                  <th className="p-4 text-right text-[10px] font-bold text-slate-500 uppercase tracking-wider">İşlem</th>
+                  <th className="p-5 text-[10px] font-bold text-slate-500 uppercase tracking-wider">Kullanıcı</th>
+                  <th className="p-5 text-[10px] font-bold text-slate-500 uppercase tracking-wider">E-posta</th>
+                  <th className="p-5 text-[10px] font-bold text-slate-500 uppercase tracking-wider">Rol</th>
+                  <th className="p-5 text-[10px] font-bold text-slate-500 uppercase tracking-wider">Kayıt Tarihi</th>
+                  <th className="p-5 text-[10px] font-bold text-slate-500 uppercase tracking-wider">Durum</th>
+                  <th className="p-5 text-right text-[10px] font-bold text-slate-500 uppercase tracking-wider">İşlem</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
                 {mockUsers.map((u) => (
                   <tr key={u.id} className="group transition-colors hover:bg-slate-50/60">
-                    <td className="p-4">
+                    <td className="p-5">
                       <div className="flex items-center gap-3">
-                        <div className="flex size-8 items-center justify-center rounded-md bg-slate-100 text-xs font-bold text-slate-500">
+                        <div className="flex size-9 items-center justify-center rounded-lg bg-slate-100 text-xs font-bold text-slate-500">
                           {u.name[0]}
                         </div>
                         <span className="text-sm font-bold text-slate-900">{u.name}</span>
                       </div>
                     </td>
-                    <td className="p-4">
-                      <span className="text-sm text-slate-600">{u.email}</span>
+                    <td className="p-5">
+                      <span className="text-sm font-medium text-slate-600">{u.email}</span>
                     </td>
-                    <td className="p-4">
+                    <td className="p-5">
                       <Badge
                         variant={
                           u.role === "Admin"
@@ -97,24 +97,24 @@ export default function AdminUserManagementPage() {
                             ? "secondary"
                             : "outline"
                         }
-                        className="text-[10px] font-medium"
+                        className="text-[10px] font-bold"
                       >
                         {u.role}
                       </Badge>
                     </td>
-                    <td className="p-4">
-                      <span className="text-xs text-slate-500 font-medium">
+                    <td className="p-5">
+                      <span className="text-xs font-semibold text-slate-500">
                         {format(u.joined, "dd MMM yyyy", { locale: tr })}
                       </span>
                     </td>
-                    <td className="p-4">
+                    <td className="p-5">
                       <div className="flex items-center gap-2">
-                        <div className={`size-1.5 rounded-full ${u.status === "Aktif" ? "bg-emerald-500" : "bg-slate-300"}`} />
-                        <span className="text-xs font-medium text-slate-700">{u.status}</span>
+                        <div className={`size-2 rounded-full ${u.status === "Aktif" ? "bg-emerald-500" : "bg-slate-300"}`} />
+                        <span className="text-xs font-semibold text-slate-700">{u.status}</span>
                       </div>
                     </td>
-                    <td className="p-4 text-right">
-                      <button className="inline-flex size-8 items-center justify-center rounded-md text-slate-400 transition-all hover:bg-slate-100 hover:text-primary">
+                    <td className="p-5 text-right">
+                      <button className="inline-flex size-9 items-center justify-center rounded-lg text-slate-400 transition-all hover:bg-slate-100 hover:text-primary">
                         <MoreVertical size={14} />
                       </button>
                     </td>

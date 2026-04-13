@@ -35,24 +35,24 @@ export function AuthForm({
 
   return (
     <div className="flex flex-1 items-center justify-center bg-[#F8FAFC] px-4 py-16">
-      <div className="w-full max-w-md">
-        <div className="mb-8 text-center">
-           <Link href="/" className="inline-flex items-center gap-2 group mb-8">
+      <div className="w-full max-w-[420px]">
+        <div className="mb-10 text-center">
+           <Link href="/" className="inline-flex items-center gap-2.5 group mb-10">
               <div className="flex size-12 items-center justify-center rounded-xl bg-primary text-white transition-transform group-hover:scale-105">
-                 <CarFront size={24} />
+                 <CarFront size={26} />
               </div>
            </Link>
-          <h1 className="mb-2 text-3xl font-bold tracking-tight text-slate-900">
+          <h1 className="mb-2 text-3xl font-black text-slate-900">
              {title}
           </h1>
-          <p className="text-sm text-slate-500">{description}</p>
+          <p className="text-sm font-medium text-slate-500">{description}</p>
         </div>
 
-        <div className="rounded-2xl border border-slate-200 bg-white p-7 shadow-sm">
+        <div className="rounded-2xl border border-slate-200/80 bg-white p-8 shadow-sm">
           <form action={formAction} className="space-y-6">
             <div className="space-y-5">
               <div>
-                <label htmlFor="email" className="mb-2 ml-1 block text-xs font-medium text-slate-600">
+                <label htmlFor="email" className="mb-2 ml-1 block text-xs font-semibold text-slate-600">
                    E-posta
                 </label>
                 <input
@@ -63,12 +63,12 @@ export function AuthForm({
                   autoComplete="email"
                   placeholder="isim@mail.com"
                   required
-                  className="h-11 w-full rounded-lg border border-slate-200 bg-white px-4 text-sm text-slate-900 placeholder:text-slate-400 outline-none transition-all focus:border-primary focus:ring-2 focus:ring-primary/10"
+                  className="h-11 w-full rounded-lg border border-slate-200 bg-white px-4 text-sm font-medium text-slate-900 placeholder:text-slate-400 outline-none transition-all focus:border-primary focus:ring-2 focus:ring-primary/10"
                 />
               </div>
 
               <div>
-                <label htmlFor="password" className="mb-2 ml-1 block text-xs font-medium text-slate-600">
+                <label htmlFor="password" className="mb-2 ml-1 block text-xs font-semibold text-slate-600">
                    Şifre
                 </label>
                 <input
@@ -79,7 +79,7 @@ export function AuthForm({
                   placeholder="••••••••"
                   required
                   minLength={6}
-                  className="h-11 w-full rounded-lg border border-slate-200 bg-white px-4 text-sm text-slate-900 placeholder:text-slate-400 outline-none transition-all focus:border-primary focus:ring-2 focus:ring-primary/10"
+                  className="h-11 w-full rounded-lg border border-slate-200 bg-white px-4 text-sm font-medium text-slate-900 placeholder:text-slate-400 outline-none transition-all focus:border-primary focus:ring-2 focus:ring-primary/10"
                 />
               </div>
             </div>
@@ -92,13 +92,13 @@ export function AuthForm({
                   type="checkbox"
                   className="size-4 cursor-pointer rounded border-slate-300 text-primary transition-all focus:ring-primary/20"
                 />
-                <span className="text-xs text-slate-500 transition-colors group-hover:text-slate-900">Beni hatırla</span>
+                <span className="text-xs font-medium text-slate-500 transition-colors group-hover:text-slate-900">Beni hatırla</span>
               </label>
 
               {mode === "login" && (
                 <Link
                   href="#"
-                  className="text-xs font-medium text-primary transition-all hover:underline"
+                  className="text-xs font-semibold text-primary transition-all hover:underline"
                 >
                   Şifremi Unuttum
                 </Link>
@@ -106,13 +106,13 @@ export function AuthForm({
             </div>
 
             {state.error ? (
-              <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-xs text-red-600">
+              <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-xs font-semibold text-red-600">
                 {state.error}
               </div>
             ) : null}
 
             {state.success ? (
-              <div className="rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-xs text-emerald-700">
+              <div className="rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-xs font-semibold text-emerald-700">
                 {state.success}
               </div>
             ) : null}
@@ -125,15 +125,15 @@ export function AuthForm({
               <div className="absolute inset-0 flex items-center">
                 <div className="w-full border-t border-slate-100" />
               </div>
-              <div className="relative flex justify-center text-[10px] font-medium">
+              <div className="relative flex justify-center text-[10px] font-bold uppercase tracking-wider">
                 <span className="bg-white px-3 text-slate-400">veya</span>
               </div>
             </div>
 
-            <div className="mt-6 space-y-2">
+            <div className="mt-6 space-y-2.5">
               <button
                 type="button"
-                className="inline-flex h-11 w-full items-center justify-center gap-3 rounded-lg border border-slate-200 bg-white px-4 text-sm font-medium text-slate-800 shadow-sm transition-all hover:bg-slate-50 active:scale-[0.98]"
+                className="inline-flex h-11 w-full items-center justify-center gap-3 rounded-lg border border-slate-200 bg-white px-4 text-sm font-semibold text-slate-800 shadow-sm transition-all hover:bg-slate-50 active:scale-[0.98]"
               >
                 <svg className="size-5" aria-hidden="true" viewBox="0 0 24 24">
                   <path d="M12.0003 4.75C13.7703 4.75 15.3553 5.36002 16.6053 6.54998L20.0303 3.125C17.9502 1.19 15.2353 0 12.0003 0C7.31028 0 3.25527 2.69 1.28027 6.60998L5.27028 9.70498C6.21525 6.86002 8.87028 4.75 12.0003 4.75Z" fill="#EA4335" />
@@ -156,11 +156,11 @@ export function AuthForm({
           </div>
         </div>
 
-        <p className="mt-6 text-center text-sm text-slate-500">
+        <p className="mt-8 text-center text-sm font-medium text-slate-500">
           {mode === "login" ? "Henüz üye değil misiniz?" : "Zaten üyeliğiniz var mı?"}{" "}
           <Link
             href={alternateHref}
-            className="ml-1 text-primary transition-all hover:underline"
+            className="ml-1 font-semibold text-primary transition-all hover:underline"
           >
             {alternateLabel}
           </Link>

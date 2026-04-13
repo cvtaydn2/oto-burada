@@ -24,16 +24,16 @@ export default async function AdminListingsPage({ searchParams }: AdminListingsP
 
   return (
     <main className="p-8 space-y-8">
-      <section className="flex flex-col md:flex-row md:items-end justify-between gap-4">
+      <section className="flex flex-col md:flex-row md:items-end justify-between gap-5">
         <div>
           <div className="flex items-center gap-2 mb-2">
              <Car className="text-primary" size={16} />
              <span className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Envanter Kontrolü</span>
           </div>
-          <h1 className="text-4xl font-black italic uppercase tracking-tighter text-slate-900">
+          <h1 className="text-3xl font-black uppercase tracking-tighter text-slate-900">
             İlan <span className="text-primary italic">Yönetimi</span>
           </h1>
-          <p className="text-slate-500 font-medium mt-1">Platformdaki tüm ilanları denetleyin, onaylayın veya yayından kaldırın.</p>
+          <p className="text-slate-500 font-medium mt-1.5">Platformdaki tüm ilanları denetleyin, onaylayın veya yayından kaldırın.</p>
         </div>
       </section>
 

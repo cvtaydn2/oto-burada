@@ -63,12 +63,12 @@ export function SmartFilters({
 
   return (
     <div className="flex flex-col">
-      <div className="flex items-center justify-between px-4 pt-4 pb-3 border-b border-slate-100">
+      <div className="flex items-center justify-between px-5 pt-5 pb-4 border-b border-slate-100">
         <div className="flex items-center gap-2">
-          <SlidersHorizontal size={15} className="text-slate-400" />
-          <h3 className="text-sm font-bold text-slate-900">Filtrele</h3>
+          <SlidersHorizontal size={16} className="text-slate-500" />
+          <h3 className="text-[13px] font-bold uppercase tracking-wide text-slate-800">Filtrele</h3>
           {activeCount > 0 && (
-            <span className="flex size-5 items-center justify-center rounded-full bg-primary text-[10px] font-medium text-white">
+            <span className="flex size-5 items-center justify-center rounded-full bg-primary text-[10px] font-bold text-white">
               {activeCount}
             </span>
           )}
@@ -76,17 +76,17 @@ export function SmartFilters({
         {activeCount > 0 && (
           <button
             onClick={onReset}
-            className="text-xs font-medium text-slate-500 hover:text-primary transition-colors"
+            className="text-xs font-medium text-slate-400 hover:text-primary transition-colors"
           >
             Temizle
           </button>
         )}
       </div>
 
-      <div className="divide-y divide-slate-100 px-4 pb-4">
+      <div className="divide-y divide-slate-50 px-5 pb-5">
         {/* Marka & Model */}
         <FilterGroup
-          title="Marka"
+          title="Marka & Model"
           isOpen={openSections.includes("brand")}
           onToggle={() => toggleSection("brand")}
           activeCount={filters.brand ? 1 : 0}
@@ -126,7 +126,7 @@ export function SmartFilters({
 
         {/* Fiyat */}
         <FilterGroup
-          title="Fiyat"
+          title="Fiyat Aralığı"
           isOpen={openSections.includes("price")}
           onToggle={() => toggleSection("price")}
           activeCount={(filters.minPrice ? 1 : 0) + (filters.maxPrice ? 1 : 0)}
@@ -166,7 +166,7 @@ export function SmartFilters({
 
         {/* Yıl */}
         <FilterGroup
-          title="Yıl"
+          title="Model Yılı"
           isOpen={openSections.includes("year")}
           onToggle={() => toggleSection("year")}
           activeCount={yearCount}
@@ -306,29 +306,29 @@ interface FilterGroupProps {
 
 function FilterGroup({ title, icon: Icon, isOpen, onToggle, activeCount, children }: FilterGroupProps) {
   return (
-    <div className="py-3">
+    <div className="py-4">
       <button
         onClick={onToggle}
         className="flex w-full items-center justify-between group"
       >
-        <span className="flex items-center gap-2 text-sm font-medium text-slate-700 group-hover:text-primary transition-colors">
-          {Icon && <Icon size={14} className={activeCount && activeCount > 0 ? "text-primary" : "text-slate-400"} />}
+        <span className="flex items-center gap-2 text-xs font-semibold text-slate-600 group-hover:text-slate-900 transition-colors">
+          {Icon && <Icon size={13} className={activeCount && activeCount > 0 ? "text-primary" : "text-slate-400"} />}
           {title}
           {activeCount !== undefined && activeCount > 0 && (
-            <span className="flex size-4 items-center justify-center rounded-full bg-primary text-[9px] font-medium text-white">
+            <span className="flex size-4 items-center justify-center rounded-full bg-primary text-[9px] font-bold text-white">
               {activeCount}
             </span>
           )}
         </span>
         <ChevronDown
-          size={14}
+          size={13}
           className={cn(
             "text-slate-400 transition-transform",
             isOpen && "rotate-180"
           )}
         />
       </button>
-      {isOpen && children}
+      {isOpen && <div className="mt-4">{children}</div>}
     </div>
   )
 }

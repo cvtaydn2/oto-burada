@@ -14,20 +14,20 @@ export default async function FavoritesPage() {
   ]);
 
   return (
-    <div className="mx-auto max-w-[1280px] space-y-8 px-4 py-6 lg:px-6 lg:py-8">
+    <div className="mx-auto max-w-[1280px] space-y-8 px-5 py-8 lg:px-6 lg:py-10">
       <div className="flex flex-col justify-between gap-5 md:flex-row md:items-end">
         <div className="max-w-2xl">
-           <div className="mb-3 flex items-center gap-3">
-              <Link href="/" className="flex size-9 items-center justify-center rounded-md border border-slate-200 bg-white text-slate-700 transition-transform hover:bg-slate-50">
+           <div className="mb-4 flex items-center gap-3">
+              <Link href="/" className="flex size-10 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-600 transition-transform hover:bg-slate-50">
                  <ChevronLeft className="size-4" />
               </Link>
-              <span className="text-xs font-medium text-slate-500">Kişisel envanter</span>
+              <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Kişisel envanter</span>
            </div>
-           <h1 className="text-3xl font-bold leading-tight text-slate-900 md:text-4xl">
-              Favori ilanlarım
+           <h1 className="text-3xl font-black leading-tight text-slate-900 md:text-4xl">
+               Favori ilanlarım
            </h1>
-           <p className="mt-2 text-sm leading-relaxed text-slate-500">
-              Beğendiğiniz araçları tek listede toplayın ve takip edin.
+           <p className="mt-2.5 text-sm font-medium leading-relaxed text-slate-500">
+               Beğendiğiniz araçları tek listede toplayın ve takip edin.
            </p>
         </div>
       </div>

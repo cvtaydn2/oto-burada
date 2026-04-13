@@ -82,10 +82,10 @@ export default async function ListingDetailPage({ params }: ListingDetailPagePro
       /> 
 
       <main className="min-h-screen bg-[#F8FAFC]">
-        <div className="mx-auto max-w-[1280px] px-4 pb-24 lg:px-6 lg:pt-6">
+        <div className="mx-auto max-w-[1280px] px-5 pb-28 lg:px-6 lg:pt-8">
           
           {/* Breadcrumb */}
-          <nav className="mb-6 flex items-center gap-2 text-xs text-slate-500">
+          <nav className="mb-6 flex items-center gap-2 text-xs font-medium text-slate-500">
             <Link href="/" className="hover:text-primary">Ana Sayfa</Link>
             <span>/</span>
             <Link href="/listings" className="hover:text-primary">Otomobil</Link>
@@ -95,7 +95,7 @@ export default async function ListingDetailPage({ params }: ListingDetailPagePro
             <span className="text-slate-900 truncate max-w-[150px]">{listing.model}</span>
           </nav>
 
-          <div className="flex flex-col items-start gap-8 lg:flex-row lg:gap-10">
+          <div className="flex flex-col items-start gap-10 lg:flex-row lg:gap-10">
             
             {/* Left Column */}
             <div className="w-full min-w-0 flex-1 space-y-8">
@@ -108,10 +108,10 @@ export default async function ListingDetailPage({ params }: ListingDetailPagePro
                   {/* Badges */}
                   <div className="absolute left-4 top-4 z-10 flex flex-col gap-2">
                     {listing.featured && (
-                      <span className="rounded-md bg-emerald-500 px-3 py-1 text-[10px] font-medium text-white">Öne çıkan ilan</span>
+                      <span className="rounded-md bg-primary px-3 py-1 text-[10px] font-bold text-white">Öne Çıkan İlan</span>
                     )}
                     {listing.expertInspection && (
-                      <span className="flex items-center gap-1.5 rounded-md bg-white/95 px-3 py-1 text-[10px] font-medium text-slate-700 shadow">
+                      <span className="flex items-center gap-1.5 rounded-md bg-white/95 px-3 py-1 text-[10px] font-semibold text-slate-700 shadow">
                         <ShieldCheck size={12} className="text-emerald-500" />
                         Ekspertiz Onaylı
                       </span>
@@ -123,20 +123,20 @@ export default async function ListingDetailPage({ params }: ListingDetailPagePro
               {/* Title & Price */}
               <div className="flex flex-col justify-between gap-4 md:flex-row md:items-end">
                 <div className="space-y-2">
-                  <h1 className="text-2xl font-bold text-slate-900 md:text-3xl">
+                  <h1 className="text-2xl font-black text-slate-900 md:text-3xl">
                     {listing.brand} {listing.model}
-                    {listing.carTrim && <span className="font-normal text-slate-500"> {listing.carTrim}</span>}
+                    {listing.carTrim && <span className="font-semibold text-slate-500"> {listing.carTrim}</span>}
                   </h1>
-                  <div className="flex flex-wrap items-center gap-4 text-sm text-slate-500">
+                  <div className="flex flex-wrap items-center gap-4 text-sm text-slate-500 font-medium">
                     <span className="flex items-center gap-1.5">
                       <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
                       {listing.city}, {listing.district}
                     </span>
-                    <span className="rounded bg-slate-100 px-2 py-0.5 text-xs">İlan No: {listing.id.slice(0, 8).toUpperCase()}</span>
+                    <span className="rounded bg-slate-100 px-2 py-0.5 text-xs font-semibold">İlan No: {listing.id.slice(0, 8).toUpperCase()}</span>
                   </div>
                 </div>
                 <div className="text-right shrink-0">
-                  <p className="text-3xl font-bold text-primary md:text-4xl">
+                  <p className="text-3xl font-black text-primary md:text-4xl">
                     ₺{new Intl.NumberFormat("tr-TR").format(listing.price)}
                   </p>
                   <p className="text-xs text-slate-400 mt-1">{new Date(listing.createdAt).toLocaleDateString("tr-TR")} tarihinde güncellendi</p>
@@ -205,11 +205,11 @@ export default async function ListingDetailPage({ params }: ListingDetailPagePro
             </div>
 
             {/* Right Sidebar */}
-            <aside className="w-full lg:w-[360px] shrink-0 space-y-4 lg:sticky lg:top-6">
+            <aside className="w-full lg:w-[380px] shrink-0 space-y-4 lg:sticky lg:top-6">
               
               {/* Seller Card */}
               <div className="rounded-xl border border-slate-200 bg-white p-6">
-                <h3 className="mb-4 text-xs font-bold uppercase tracking-wider text-slate-400">Satıcı Bilgileri</h3>
+                <h3 className="mb-5 text-xs font-bold uppercase tracking-wider text-slate-400">Satıcı Bilgileri</h3>
                 
                 <div className="mb-5 flex items-center gap-4 pb-5 border-b border-slate-100">
                   <div className="relative size-14 rounded-xl bg-slate-50 border border-slate-100 overflow-hidden flex items-center justify-center font-bold text-xl text-slate-300">
@@ -221,7 +221,7 @@ export default async function ListingDetailPage({ params }: ListingDetailPagePro
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="font-bold text-slate-900 truncate">{seller?.businessName || seller?.fullName}</p>
-                    <p className="text-xs text-slate-500">{seller?.userType === "professional" ? "Kurumsal Galeri" : "Bireysel Satıcı"}</p>
+                    <p className="text-xs font-medium text-slate-500">{seller?.userType === "professional" ? "Kurumsal Galeri" : "Bireysel Satıcı"}</p>
                   </div>
                 </div>
 
@@ -229,7 +229,7 @@ export default async function ListingDetailPage({ params }: ListingDetailPagePro
                   <ContactActions listingId={listing.id} sellerId={listing.sellerId} />
                   <Link 
                     href={`/gallery/${seller?.businessSlug || seller?.id}`}
-                    className="flex h-11 items-center justify-center gap-2 rounded-lg border border-slate-200 text-sm font-medium text-slate-700 hover:bg-slate-50 transition-colors"
+                    className="flex h-11 items-center justify-center gap-2 rounded-lg border border-slate-200 text-sm font-semibold text-slate-700 hover:bg-slate-50 transition-colors"
                   >
                     <ArrowLeft size={15} className="rotate-180" />
                     Satıcının Diğer İlanları
@@ -239,42 +239,42 @@ export default async function ListingDetailPage({ params }: ListingDetailPagePro
 
               {/* Security Tips */}
               <div className="rounded-xl border border-slate-200 bg-white p-6">
-                <h3 className="mb-4 text-xs font-bold uppercase tracking-wider text-slate-400 flex items-center gap-2">
+                <h3 className="mb-5 text-xs font-bold uppercase tracking-wider text-slate-400 flex items-center gap-2">
                   <ShieldCheck size={14} className="text-emerald-500" />
                   Güvenlik İpuçları
                 </h3>
-                <ul className="space-y-3">
+                <ul className="space-y-3.5">
                   {[
                     "Aracı görmeden kapora göndermeyin.",
                     "Ekspertiz raporunu onaylatın.",
                     "Ödemeyi noter huzurunda yapın."
                   ].map(tip => (
-                    <li key={tip} className="flex items-start gap-2.5 text-xs text-slate-500">
+                    <li key={tip} className="flex items-start gap-2.5 text-xs text-slate-500 font-medium">
                       <span className="mt-1 size-1.5 rounded-full bg-slate-300 shrink-0" />
                       {tip}
                     </li>
                   ))}
                 </ul>
-                <button className="mt-4 text-xs font-medium text-red-500 hover:underline">
+                <button className="mt-5 text-xs font-semibold text-rose-500 hover:underline">
                   İlanı Şikayet Et
                 </button>
               </div>
 
               {/* Quick Offer */}
               <div className="rounded-xl border border-slate-200 bg-white p-6">
-                <h3 className="mb-1 text-sm font-bold text-slate-900">Hızlı Teklif</h3>
-                <p className="mb-4 text-xs text-slate-500">Satıcıya fiyat teklifi gönderin.</p>
-                <div className="flex gap-2 mb-3">
-                  <div className="flex-1 rounded-lg border border-slate-200 bg-slate-50 px-3 py-3 text-center">
+                <h3 className="mb-1 text-base font-bold text-slate-900">Hızlı Teklif</h3>
+                <p className="mb-5 text-xs text-slate-500 font-medium">Satıcıya fiyat teklifi gönderin.</p>
+                <div className="flex gap-2.5 mb-4">
+                  <div className="flex-1 rounded-lg border border-slate-200 bg-slate-50 px-3 py-3.5 text-center">
                     <p className="text-sm font-bold text-slate-900">₺{new Intl.NumberFormat("tr-TR").format(Math.round(listing.price * 0.97))}</p>
-                    <p className="text-[10px] text-slate-400">Düşük teklif</p>
+                    <p className="text-[10px] text-slate-400 font-medium">Düşük teklif</p>
                   </div>
-                  <div className="flex-1 rounded-lg border border-slate-200 bg-slate-50 px-3 py-3 text-center">
+                  <div className="flex-1 rounded-lg border border-slate-200 bg-slate-50 px-3 py-3.5 text-center">
                     <p className="text-sm font-bold text-slate-900">₺{new Intl.NumberFormat("tr-TR").format(Math.round(listing.price * 0.99))}</p>
-                    <p className="text-[10px] text-slate-400">Yüksek teklif</p>
+                    <p className="text-[10px] text-slate-400 font-medium">Yüksek teklif</p>
                   </div>
                 </div>
-                <button className="w-full h-11 rounded-lg bg-primary text-white text-sm font-medium hover:bg-primary/90 transition-colors">
+                <button className="w-full h-11 rounded-lg bg-primary text-white text-sm font-bold hover:bg-primary/90 transition-colors">
                   Kendi Teklifini Yap
                 </button>
               </div>
@@ -292,8 +292,8 @@ function SpecBox({ icon, label, value }: { icon: React.ReactNode; label: string;
     <div className="flex items-center gap-3 rounded-lg border border-slate-200 bg-white p-4">
       <div className="text-primary">{icon}</div>
       <div>
-        <p className="text-[10px] font-medium text-slate-400 uppercase tracking-wide">{label}</p>
-        <p className="text-sm font-semibold text-slate-900 capitalize">{value}</p>
+        <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-wide">{label}</p>
+        <p className="text-sm font-bold text-slate-900 capitalize">{value}</p>
       </div>
     </div>
   );

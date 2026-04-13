@@ -51,10 +51,10 @@ export default async function SupportPage() {
   }
 
   return (
-    <div className="mx-auto max-w-5xl px-4 py-12 space-y-16">
+    <div className="mx-auto max-w-5xl px-5 py-14 space-y-20">
       <div className="text-center space-y-4">
         <h1 className="text-4xl font-black text-slate-900">Destek Merkezi</h1>
-        <p className="text-slate-500 font-medium">
+        <p className="text-slate-500 font-medium text-lg">
           Sorularınız için aşağıdaki SSS bölümünü inceleyin veya bir destek talebi oluşturun.
         </p>
       </div>
@@ -71,18 +71,18 @@ export default async function SupportPage() {
         <div className="space-y-4">
           {FAQ_CATEGORIES.map((cat, idx) => (
             <div key={idx} className="rounded-xl border border-slate-200 bg-white">
-              <div className="px-6 py-4 border-b border-slate-100 flex items-center gap-3">
+              <div className="px-6 py-5 border-b border-slate-100 flex items-center gap-3">
                 <span className={`size-2 rounded-full ${cat.iconColor.replace("text-", "bg-")}`} />
                 <h3 className="text-sm font-black uppercase tracking-wider text-slate-900">{cat.title}</h3>
               </div>
               <div className="divide-y divide-slate-50">
                 {cat.items.map((item, i) => (
                   <details key={i} className="group">
-                    <summary className="flex cursor-pointer items-center justify-between px-6 py-4 text-sm font-medium text-slate-700 hover:text-slate-900 list-none">
+                    <summary className="flex cursor-pointer items-center justify-between px-6 py-4.5 text-sm font-semibold text-slate-700 hover:text-slate-900 list-none">
                       {item.q}
                       <span className="size-5 rounded-full bg-slate-100 flex items-center justify-center text-xs group-open:rotate-180 transition-transform">▲</span>
                     </summary>
-                    <p className="px-6 pb-4 text-sm text-slate-500">{item.a}</p>
+                    <p className="px-6 pb-5 text-sm text-slate-500 font-medium">{item.a}</p>
                   </details>
                 ))}
               </div>
@@ -97,9 +97,9 @@ export default async function SupportPage() {
           {user ? (
             <TicketForm />
           ) : (
-            <p className="text-sm text-slate-500">
+            <p className="text-sm text-slate-500 font-medium">
               Destek talebi oluşturmak için{" "}
-              <a href="/login?callbackUrl=/support" className="text-primary font-medium hover:underline">
+              <a href="/login?callbackUrl=/support" className="text-primary font-bold hover:underline">
                 giriş yapmanız
               </a>{" "}
               gerekmektedir.

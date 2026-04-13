@@ -106,24 +106,24 @@ export function ListingsPageClient({
   const currentSortLabel = SORT_OPTIONS.find(o => o.value === filters.sort)?.label || "En Yeni"
 
   return (
-    <div className="mx-auto max-w-[1440px] px-4 py-6 lg:px-6 lg:py-8">
+    <div className="mx-auto max-w-[1440px] px-5 py-8 lg:px-6 lg:py-8">
 
       {/* Header */}
-      <div className="mb-6">
-        <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+      <div className="mb-8">
+        <div className="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
           <div>
             <h1 className="text-2xl font-black text-slate-900">
               {filters.brand
-                ? `Satılık ${filters.brand}${filters.model ? ` ${filters.model}` : ""} İlanları`
-                : "Tüm Satılık İlanlar"}
+                ? `${filters.brand}${filters.model ? ` ${filters.model}` : ""} İlanları`
+                : "Tüm Satılık Araçlar"}
             </h1>
-            <p className="mt-1 text-sm text-slate-500 font-medium">
+            <p className="mt-1 text-sm font-medium text-slate-500">
               {initialResult.total} ilan bulundu
             </p>
           </div>
 
           {/* Controls Row */}
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2.5">
             <MobileFilterDrawer
               brands={brands}
               cities={cities}
@@ -194,7 +194,7 @@ export function ListingsPageClient({
         </div>
 
         {/* Quick Filter Chips */}
-        <div className="mt-4 flex flex-wrap gap-2">
+        <div className="mt-5 flex flex-wrap gap-2.5">
           {QUICK_FILTERS.map((qf) => {
             const isActive =
               (qf.type === "reset" && !filters.hasExpertReport && filters.sort !== "price_asc" && filters.sort !== "newest") ||
@@ -212,12 +212,12 @@ export function ListingsPageClient({
                   else if (qf.type === "newest") handleFilterChange("sort", filters.sort === "newest" ? undefined : "newest")
                 }}
                 className={cn(
-                  "flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-medium transition-colors",
+                  "flex items-center gap-1.5 rounded-full border px-3.5 py-2 text-xs font-semibold transition-all",
                   qf.type === "price_low" && filters.sort === "price_asc"
                     ? "border-emerald-300 bg-emerald-50 text-emerald-700"
                     : isActive
                     ? "border-primary bg-primary text-white"
-                    : "border-slate-200 bg-white text-slate-600 hover:border-primary/40 hover:text-primary"
+                    : "border-slate-200 bg-white text-slate-600 hover:border-primary/50 hover:text-primary"
                 )}
               >
                 {qf.icon && <qf.icon size={12} />}
@@ -229,8 +229,8 @@ export function ListingsPageClient({
 
         {/* Active Filter Tags */}
         {activeFiltersCount > 0 && (
-          <div className="mt-3 flex flex-wrap items-center gap-2">
-            <span className="text-xs text-slate-500 font-medium">Aktif filtreler:</span>
+          <div className="mt-4 flex flex-wrap items-center gap-2.5">
+            <span className="text-xs font-medium text-slate-400">Aktif filtreler:</span>
             {filters.brand && (
               <FilterTag label={filters.brand} onRemove={() => handleFilterChange("brand", undefined)} />
             )}
@@ -254,7 +254,7 @@ export function ListingsPageClient({
             )}
             <button
               onClick={handleReset}
-              className="text-xs font-medium text-rose-500 hover:text-rose-600 hover:underline"
+              className="text-xs font-semibold text-rose-500 hover:text-rose-600 hover:underline"
             >
               Tümünü temizle
             </button>
@@ -266,8 +266,8 @@ export function ListingsPageClient({
       <div className="flex flex-col gap-6 lg:flex-row">
 
         {/* Desktop Sidebar */}
-        <aside className="hidden lg:block w-[280px] shrink-0">
-          <div className="sticky top-24 rounded-xl border border-slate-200 bg-white overflow-hidden">
+        <aside className="hidden lg:block w-[300px] shrink-0">
+          <div className="sticky top-24 rounded-xl border border-slate-200 bg-white overflow-hidden shadow-sm">
             <SmartFilters
               brands={brands}
               cities={cities}
@@ -333,7 +333,7 @@ function ChevronIcon({ className }: { className?: string }) {
 
 function FilterTag({ label, onRemove }: { label: string; onRemove: () => void }) {
   return (
-    <div className="flex items-center gap-1.5 rounded-full border border-primary/30 bg-primary/5 px-3 py-1 text-xs font-medium text-primary">
+    <div className="flex items-center gap-1.5 rounded-full border border-primary/30 bg-primary/5 px-3 py-1.5 text-xs font-semibold text-primary">
       <span>{label}</span>
       <button onClick={onRemove} className="hover:text-rose-500 transition-colors">
         <svg className="size-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round">
