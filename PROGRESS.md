@@ -14,6 +14,20 @@ Her yeni geliştirme başlamadan önce okunmalıdır.
 
 ## Proje Durumu
 
+### 2026-04-13 Bugfix: Sorting Cache & Mobile Auth Navigation (Completed)
+- **Issue 1**: Listings sorting appeared inconsistent on default listing flow.
+- **Root Cause**: Redis cache fast-path in `getFilteredDatabaseListings` was active even when non-default sort options were selected, so users could receive "newest" cache despite selecting another sort.
+- **Fix**: Limited default cache usage to only `sort === "newest"` in `src/services/listings/listing-submissions.ts`.
+- **Issue 2**: Mobile bottom navigation showed "Giriş/Kayıt Ol" even after login.
+- **Root Cause**: Mobile navigation items were static and auth-agnostic.
+- **Fix**:
+  - Added auth-aware `getMobileNavigationItems(isAuthenticated)` in `src/components/layout/public-navigation.ts`.
+  - Passed current user id from `PublicShell` to `MobileNav`.
+  - Updated `MobileNav` to render items based on auth state.
+- **Validation**:
+  - Lint diagnostics on edited files: clean.
+  - Sorting unit tests: `npx vitest run src/services/listings/__tests__/listing-sorting.test.ts` passed (8/8).
+
 ### 2026-04-13 UI Alignment: .design Visily Draft Convergence (Completed)
 - **Goal**: Public-facing UI screens were not aligned with the `.design` draft direction (lightweight classified marketplace feel).
 - **Implemented**:

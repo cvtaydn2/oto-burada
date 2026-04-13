@@ -4,11 +4,16 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Plus } from "lucide-react";
 
-import { mobileNavigationItems } from "@/components/layout/public-navigation";
+import { getMobileNavigationItems } from "@/components/layout/public-navigation";
 import { cn } from "@/lib/utils";
 
-export function MobileNav() {
+interface MobileNavProps {
+  userId?: string | null;
+}
+
+export function MobileNav({ userId }: MobileNavProps) {
   const pathname = usePathname();
+  const mobileNavigationItems = getMobileNavigationItems(Boolean(userId));
 
   return (
     <div className="lg:hidden">

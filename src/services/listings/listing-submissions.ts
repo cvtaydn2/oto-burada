@@ -532,7 +532,14 @@ export async function getFilteredDatabaseListings(
 ): Promise<PaginatedListingsResult> {
   const page = filters.page ?? 1;
   const limit = filters.limit ?? 24;
-  const isDefaultView = !filters.query && !filters.brand && !filters.model && !filters.city && page === 1;
+  const sort = filters.sort ?? "newest";
+  const isDefaultView =
+    !filters.query &&
+    !filters.brand &&
+    !filters.model &&
+    !filters.city &&
+    page === 1 &&
+    sort === "newest";
   const cacheKey = "listings:approved:default";
 
   if (isDefaultView) {

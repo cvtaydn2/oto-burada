@@ -1,4 +1,4 @@
-import { Home, LogIn, Search, UserPlus } from "lucide-react";
+import { Heart, Home, LogIn, Search, User, UserPlus } from "lucide-react";
 
 export interface PublicNavigationItem {
   href: string;
@@ -21,14 +21,36 @@ export const primaryNavigationItems: PublicNavigationItem[] = [
 
 export const mobileNavigationItems: PublicNavigationItem[] = [
   ...primaryNavigationItems,
-  {
-    href: "/login",
-    label: "Giriş",
-    icon: LogIn,
-  },
-  {
-    href: "/register",
-    label: "Kayıt Ol",
-    icon: UserPlus,
-  },
 ];
+
+export function getMobileNavigationItems(isAuthenticated: boolean): PublicNavigationItem[] {
+  if (isAuthenticated) {
+    return [
+      ...primaryNavigationItems,
+      {
+        href: "/dashboard",
+        label: "Hesabım",
+        icon: User,
+      },
+      {
+        href: "/dashboard/favorites",
+        label: "Favoriler",
+        icon: Heart,
+      },
+    ];
+  }
+
+  return [
+    ...primaryNavigationItems,
+    {
+      href: "/login",
+      label: "Giriş",
+      icon: LogIn,
+    },
+    {
+      href: "/register",
+      label: "Kayıt Ol",
+      icon: UserPlus,
+    },
+  ];
+}
