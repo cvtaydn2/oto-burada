@@ -1,53 +1,64 @@
 import type { Listing } from "@/types";
+import { analyzeListingValue } from "./pricing-engine";
 
-export type ListingCardInsightTone = "indigo" | "emerald" | "amber";
+export type ListingCardInsightTone = "indigo" | "emerald" | "amber" | "rose" | "blue";
 
 export interface ListingCardInsight {
   badgeLabel: string;
   tone: ListingCardInsightTone;
   summary: string;
   highlights: string[];
+  buyRecommendation: string;
+  fairValue?: number;
 }
 
 export function getListingCardInsights(listing: Listing): ListingCardInsight {
-  const currentYear = new Date().getFullYear();
-  const vehicleAge = currentYear - listing.year;
-  const budgetFriendly = listing.price <= 1_000_000;
-  const lowMileage = listing.mileage <= 80_000;
-  const easyDrive = listing.transmission === "otomatik" || listing.transmission === "yari_otomatik";
-  const newerModel = vehicleAge <= 4;
+  // Base logic uses the engine
+  const analysis = analyzeListingValue(listing);
 
-  if (budgetFriendly && lowMileage) {
-    return {
-      badgeLabel: "Akilli Secim",
-      tone: "emerald",
-      summary: "Fiyat ve kilometre dengesi sayesinde hizli karar listesine girmeye uygun.",
-      highlights: ["Butce Dostu", "Dusuk KM", newerModel ? "Guncel Model" : "Temiz Profil"],
-    };
+  const highlights: string[] = [];
+  
+  // Highlight construction
+  if (analysis.rating === "opportunity") highlights.push("🔥 FIRSAT ARACI");
+  if (analysis.riskScore === "low") highlights.push("✅ Düşük Risk");
+  if (analysis.riskScore === "high") highlights.push("⚠️ Detaylı İncele");
+  if (listing.mileage < 70000) highlights.push("📍 Düşük KM");
+  if (analysis.hasCriticalDamage) highlights.push("⚡ Kritik Parça İşlemli");
+
+  let badgeLabel = "İnceleniyor";
+  let tone: ListingCardInsightTone = "blue";
+
+  switch (analysis.rating) {
+    case "opportunity":
+      badgeLabel = analysis.riskScore === "high" ? "Fiyat Avantajlı" : "Süper Fırsat";
+      tone = analysis.riskScore === "high" ? "amber" : "emerald";
+      break;
+    case "good":
+      badgeLabel = "İdeal Fiyat";
+      tone = "indigo";
+      break;
+    case "fair":
+      badgeLabel = "Makul";
+      tone = "blue";
+      break;
+    case "overpriced":
+      badgeLabel = "Kontrollü Alım";
+      tone = "amber";
+      break;
   }
 
-  if (easyDrive && newerModel) {
-    return {
-      badgeLabel: "Kolay Karar",
-      tone: "indigo",
-      summary: "Yeni model yili ve rahat surus kombinasyonu sehir ici kullanim icin guclu.",
-      highlights: ["Otomatik Surus", "Guncel Model", lowMileage ? "Dusuk KM" : "Net Bilgiler"],
-    };
-  }
-
-  if (listing.featured) {
-    return {
-      badgeLabel: "One Cikan",
-      tone: "amber",
-      summary: "Platformda daha gorunur tutulan, hizli karsilastirma icin secilen ilanlardan biri.",
-      highlights: ["Vitrin Ilani", easyDrive ? "Kolay Surus" : "Net Ozellikler", newerModel ? "Yeni Nesil" : "Dengeli Paket"],
-    };
+  // Handle specific quality indicators
+  if (listing.featured && analysis.rating !== "opportunity") {
+    badgeLabel = "Vitrindeki İlan";
+    tone = "amber";
   }
 
   return {
-    badgeLabel: "Incelenebilir",
-    tone: "indigo",
-    summary: "Temel alanlari net, kart uzerinden ilk eleme yapmaya uygun bir ilan akisi sunuyor.",
-    highlights: [budgetFriendly ? "Butce Dostu" : "Pazar Bandinda", lowMileage ? "Dusuk KM" : "Detay Kontrolu", easyDrive ? "Otomatik Surus" : "Klasik Surus"],
+    badgeLabel,
+    tone,
+    summary: analysis.advice,
+    highlights: highlights.slice(0, 3),
+    buyRecommendation: analysis.advice,
+    fairValue: analysis.fairValue
   };
 }

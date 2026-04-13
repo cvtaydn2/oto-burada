@@ -212,7 +212,7 @@ export default async function ListingDetailPage({ params }: ListingDetailPagePro
                       ))}
                     </div>
                   </div>
-                  <MarketValueCard price={listing.price} marketPriceIndex={listing.marketPriceIndex ?? 1.0} />
+                  <MarketValueCard listing={listing} />
                 </div>
               </div>
 

@@ -109,7 +109,7 @@ export function ExpertInspectionCard({
           <div className="mt-4 md:mt-0 text-center bg-white px-6 py-3 rounded-lg shadow-sm border border-blue-50">
             <div className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">Eksper Puanı</div>
             <div className="text-3xl font-extrabold text-blue-500">
-               {gradeInfo.grade === "A" ? "9.8" : gradeInfo.grade === "B" ? "8.5" : "7.0"}
+               {gradeInfo.grade === "a" ? "9.8" : gradeInfo.grade === "b" ? "8.5" : "7.0"}
                <span className="text-sm text-gray-400 font-medium">/10</span>
             </div>
           </div>

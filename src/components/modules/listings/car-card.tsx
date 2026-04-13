@@ -2,10 +2,11 @@
 
 import Image from "next/image"
 import Link from "next/link"
-import { CarFront, MapPin, Settings2 } from "lucide-react"
+import { CarFront, MapPin, Settings2, ShieldCheck, Zap } from "lucide-react"
 import { cn, formatNumber } from "@/lib/utils"
 import { type Listing } from "@/types"
 import { FavoriteButton } from "@/components/listings/favorite-button"
+import { getListingCardInsights } from "@/services/listings/listing-card-insights"
 
 interface CarCardProps {
   listing: Listing
@@ -23,6 +24,9 @@ export function CarCard({ listing, priority = false, variant = "grid" }: CarCard
   const images = Array.isArray(listing.images) ? listing.images : []
   const coverImage = images.find(img => img.isCover) || images[0]
   const detailHref = `/listing/${listing.slug}`
+  
+  // AI Insights calculation
+  const insights = getListingCardInsights(listing)
 
   return (
     <div 
@@ -53,14 +57,22 @@ export function CarCard({ listing, priority = false, variant = "grid" }: CarCard
         </Link>
         
         <div className="absolute left-3 top-3 z-10 flex flex-col gap-2">
-          {listing.hasExpertReport && (
-            <div className="rounded bg-blue-500 px-2 py-0.5 text-[10px] font-bold text-white shadow-sm">
-              Ekspertizli
-            </div>
-          )}
-          {listing.featured && !listing.hasExpertReport && (
-            <div className="rounded bg-primary px-2 py-0.5 text-[10px] font-bold text-white shadow-sm">
-              Öne Çıkan
+          {/* AI Badge */}
+          <div className={cn(
+            "rounded-lg px-2.5 py-1 text-[10px] font-black uppercase tracking-widest text-white shadow-lg flex items-center gap-1.5",
+            insights.tone === "emerald" ? "bg-emerald-500 shadow-emerald-500/20" : 
+            insights.tone === "rose" ? "bg-rose-500 shadow-rose-500/20" :
+            insights.tone === "amber" ? "bg-amber-500 shadow-amber-500/20" :
+            "bg-blue-600 shadow-blue-600/20"
+          )}>
+            {insights.tone === "emerald" && <Zap size={12} className="fill-current" />}
+            {insights.badgeLabel}
+          </div>
+
+          {listing.expertInspection && (
+            <div className="rounded-lg bg-white/90 backdrop-blur-md px-2.5 py-1 text-[10px] font-bold text-blue-600 shadow-sm border border-blue-100 flex items-center gap-1">
+              <ShieldCheck size={12} />
+              EKSPERTİZLİ
             </div>
           )}
         </div>
@@ -78,8 +90,21 @@ export function CarCard({ listing, priority = false, variant = "grid" }: CarCard
           <h3 className="font-bold text-lg text-gray-800 truncate leading-tight">
             {listing.title}
           </h3>
-          <p className="mt-1 text-sm text-gray-500 font-medium">{listing.year}</p>
+          <div className="flex items-center gap-2 mt-1">
+             <span className="text-sm text-gray-500 font-medium">{listing.year}</span>
+             <span className="size-1 rounded-full bg-gray-300" />
+             <span className="text-xs text-blue-500 font-bold">{listing.brand} {listing.model}</span>
+          </div>
         </Link>
+
+        {/* Insight Highlights */}
+        <div className="mt-3 flex flex-wrap gap-1.5">
+          {insights.highlights.map(h => (
+            <span key={h} className="text-[9px] font-black uppercase tracking-tighter bg-gray-100 text-gray-500 px-1.5 py-0.5 rounded">
+              {h}
+            </span>
+          ))}
+        </div>
 
         <div className="mt-3 flex items-center justify-between border-b border-gray-100 pb-3 text-[11px] font-medium text-gray-500">
           <span className="flex items-center gap-1.5 capitalize">
@@ -97,8 +122,15 @@ export function CarCard({ listing, priority = false, variant = "grid" }: CarCard
             <MapPin size={12} className="text-gray-300" />
             {listing.city}, {listing.district}
           </p>
-          <div className="text-xl font-extrabold text-primary">
-            ₺{formatPrice(listing.price)}
+          <div className="flex items-baseline gap-2">
+            <div className="text-xl font-extrabold text-primary">
+              ₺{formatPrice(listing.price)}
+            </div>
+            {insights.fairValue && insights.fairValue > listing.price && (
+              <div className="text-[10px] font-bold text-emerald-500 line-through opacity-50">
+                ₺{formatPrice(insights.fairValue)}
+              </div>
+            )}
           </div>
         </div>
 

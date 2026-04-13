@@ -107,8 +107,7 @@ export default async function DashboardListingsPage({ searchParams }: DashboardL
               whatsappPhone: metadata.phone ?? "",
             }}
             brands={mergedBrands}
-            cityOptions={mergedCities.map(c => c.city)}
-            isPhoneVerified={isPhoneVerified}
+            cities={mergedCities}
           />
         </div>
       </MyListingsPanel>

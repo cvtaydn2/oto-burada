@@ -333,12 +333,15 @@ export function AdminListingsModeration({ pendingListings }: AdminListingsModera
           const rejecting = activeAction === `${listing.id}:reject`;
           const actionBusy = approving || rejecting;
           const insight = getListingCardInsights(listing);
-          const toneClasses = {
+          const toneClasses: Record<string, string> = {
             amber: "border-amber-100 bg-gradient-to-r from-amber-50 to-background text-amber-700",
             emerald:
               "border-emerald-100 bg-gradient-to-r from-emerald-50 to-background text-emerald-700",
             indigo: "border-primary/10 bg-gradient-to-r from-primary/10 to-background text-primary",
-          }[insight.tone];
+            blue: "border-blue-100 bg-gradient-to-r from-blue-50 to-background text-blue-700",
+            rose: "border-rose-100 bg-gradient-to-r from-rose-50 to-background text-rose-700",
+          };
+          const currentToneClass = toneClasses[insight.tone] || toneClasses.blue;
 
           return (
             <article
@@ -368,7 +371,7 @@ export function AdminListingsModeration({ pendingListings }: AdminListingsModera
                       İncelemede
                     </span>
                     <span
-                      className={`inline-flex rounded-full border px-3 py-1 text-xs font-semibold ${toneClasses}`}
+                      className={`inline-flex rounded-full border px-3 py-1 text-xs font-semibold ${currentToneClass}`}
                     >
                       {insight.badgeLabel}
                     </span>
@@ -483,7 +486,7 @@ export function AdminListingsModeration({ pendingListings }: AdminListingsModera
                     </span>
                   </div>
 
-                  <div className={`rounded-[1.25rem] border p-4 ${toneClasses}`}>
+                  <div className={`rounded-[1.25rem] border p-4 ${currentToneClass}`}>
                     <div className="flex items-center gap-2 text-sm font-semibold">
                       <Sparkles className="size-4" />
                       Hızlı moderasyon özeti
