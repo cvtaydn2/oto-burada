@@ -113,9 +113,9 @@ export default async function ComparePage({ searchParams }: ComparePageProps) {
               </Link>
               <span className="text-xs text-slate-500">Analitik kıyaslama</span>
            </div>
-           <h1 className="text-3xl font-bold leading-tight text-slate-900 md:text-4xl">
-              Araç karşılaştırma
-           </h1>
+            <h1 className="text-2xl font-black text-slate-900">
+               Araç Karşılaştırma
+            </h1>
            <p className="mt-2 text-sm leading-relaxed text-slate-500">
               {cars.length} farklı aracı dijital verilerle yan yana koyarak en rasyonel seçimi yapın. Merkeze uzak olan araçlar o kategorideki en yüksek performansı temsil eder.
            </p>
@@ -125,27 +125,27 @@ export default async function ComparePage({ searchParams }: ComparePageProps) {
       <div className="grid grid-cols-1 items-center gap-6 rounded-xl border border-slate-200 bg-white p-5 lg:grid-cols-12 lg:p-7">
         <div className="space-y-4 lg:col-span-5">
           <div className="flex items-center gap-3">
-             <div className="flex size-9 items-center justify-center rounded-md bg-emerald-500/10 text-emerald-600">
-                <CheckCircle2 size={24} />
+             <div className="flex size-9 items-center justify-center rounded-lg bg-primary/10 text-primary">
+                <CheckCircle2 size={18} />
              </div>
-             <h2 className="text-xl font-semibold text-slate-900">Rasyonel analiz</h2>
+             <h2 className="text-lg font-bold text-slate-900">Rasyonel Analiz</h2>
           </div>
           <p className="text-sm leading-relaxed text-slate-500">
-            Bu analiz; model yılı, fiyat dengesi, düşük kilometre verileri ve güvenlik parametrelerini birleştirerek size en iyi fiyat/performans indeksini sunar.
+            Model yılı, fiyat dengesi ve kilometre verilerini karşılaştırarak en iyi fiyat/performans dengesini sunar.
           </p>
           <div className="flex flex-wrap gap-2 pt-2">
             {cars.map((car, idx) => {
-               const colors = ["bg-slate-900", "bg-rose-500", "bg-emerald-500", "bg-primary"];
+               const colors = ["bg-primary", "bg-rose-500", "bg-emerald-500", "bg-slate-400"];
                return (
-                 <div key={car.id} className="flex items-center gap-2 rounded-md border border-slate-200 bg-slate-50 px-3 py-1.5 text-xs font-medium text-slate-600">
-                   <div className={`size-3 rounded-full ${colors[idx % colors.length]} shadow-sm`} />
+                 <div key={car.id} className="flex items-center gap-2 rounded-lg border border-slate-200 bg-slate-50 px-3 py-1.5 text-xs font-medium text-slate-600">
+                   <div className={`size-2.5 rounded-full ${colors[idx % colors.length]}`} />
                    {car.brand} {car.model}
                  </div>
                )
             })}
           </div>
         </div>
-        <div className="flex justify-center rounded-lg border border-slate-200 bg-slate-50 p-4 lg:col-span-7 lg:p-6">
+        <div className="flex justify-center rounded-lg border border-slate-100 bg-slate-50/50 p-4 lg:col-span-7 lg:p-6">
             <CompareRadarChart cars={cars} />
         </div>
       </div>
@@ -194,9 +194,9 @@ export default async function ComparePage({ searchParams }: ComparePageProps) {
                     </div>
                     <Link
                       href={`/listing/${car.slug}`}
-                      className="inline-flex h-9 w-full items-center justify-center rounded-md bg-slate-900 px-4 text-xs font-medium text-white transition-all hover:bg-black"
+                      className="inline-flex h-9 w-full items-center justify-center rounded-lg bg-primary px-4 text-xs font-bold text-white transition-all hover:bg-primary/90"
                     >
-                      Detaylı incele
+                      Detaylı Incele
                     </Link>
                   </th>
                 );
@@ -206,10 +206,10 @@ export default async function ComparePage({ searchParams }: ComparePageProps) {
           <tbody>
             {/* Best value recommendation */}
             <tr>
-              <td className="border-b border-slate-200 bg-emerald-50/50 p-5 text-[10px] font-medium text-emerald-700">
-                <div className="flex items-center gap-2">
-                  <ShieldCheck className="size-4" />
-                  SİSTEM ÖNERİSİ
+              <td className="border-b border-slate-200 bg-emerald-50/50 p-5">
+                <div className="flex items-center gap-2 text-xs font-medium text-emerald-700">
+                  <ShieldCheck className="size-3" />
+                  Sistem Önerisi
                 </div>
               </td>
               {cars.map((car, idx) => (
@@ -265,12 +265,12 @@ export default async function ComparePage({ searchParams }: ComparePageProps) {
               (car) => car.tramerAmount != null && car.tramerAmount > 0,
             ) && (
               <tr>
-                <td className="border-b border-slate-200 bg-rose-50/50 p-5 text-[10px] font-medium text-rose-700">
-                  <div className="flex items-center gap-2">
-                    <AlertTriangle className="size-4" />
-                    HASAR KAYDI
-                  </div>
-                </td>
+                 <td className="border-b border-slate-200 bg-rose-50/50 p-5">
+                   <div className="flex items-center gap-2 text-xs font-medium text-rose-700">
+                     <AlertTriangle className="size-3" />
+                     Hasar Kaydi
+                   </div>
+                 </td>
                 {cars.map((car) => (
                   <td
                     key={`tramer-warn-${car.id}`}

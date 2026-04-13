@@ -54,8 +54,8 @@ export function CarCard({ listing, priority = false, variant = "grid" }: CarCard
 
           <div className="absolute left-3 top-3 z-20 flex flex-col gap-2">
             {listing.featured && (
-              <div className="rounded-md bg-sky-500 px-2 py-1 text-[10px] font-medium text-white shadow">
-                Yeni İlan
+              <div className="rounded-md bg-primary px-2 py-1 text-[10px] font-medium text-white">
+                 Yeni İlan
               </div>
             )}
           </div>
@@ -72,10 +72,10 @@ export function CarCard({ listing, priority = false, variant = "grid" }: CarCard
            <div className="space-y-3">
               <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
                  <div className="flex-1 min-w-0">
-                    <h3 className={cn(
-                      "line-clamp-2 font-semibold leading-tight text-slate-900 transition-colors group-hover:text-primary",
-                      variant === "grid" ? "text-xl" : "text-xl md:text-2xl"
-                    )}>
+                     <h3 className={cn(
+                       "line-clamp-2 font-bold leading-tight text-slate-900 transition-colors group-hover:text-primary",
+                       variant === "grid" ? "text-base" : "text-lg md:text-xl"
+                     )}>
                       {listing.title}
                     </h3>
                     <p className="mt-1 line-clamp-1 text-sm text-slate-500">
@@ -84,10 +84,10 @@ export function CarCard({ listing, priority = false, variant = "grid" }: CarCard
                  </div>
                  <div className="flex flex-col items-start sm:items-end shrink-0">
                     <div className={cn(
-                      "font-bold text-sky-600",
-                      variant === "grid" ? "text-2xl" : "text-3xl"
+                      "font-bold text-primary",
+                      variant === "grid" ? "text-xl" : "text-2xl"
                     )}>
-                      ₺{formatPrice(listing.price)}
+                       ₺{formatPrice(listing.price)}
                     </div>
                  </div>
               </div>

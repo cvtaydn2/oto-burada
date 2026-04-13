@@ -26,10 +26,10 @@ export function DashboardShell({ children, email, isAdmin }: DashboardShellProps
                 <ArrowLeft className="size-5" />
               </Link>
               <div className="space-y-1">
-                <p className="text-xs font-medium uppercase tracking-[0.18em] text-primary/80">
+                <p className="text-xs font-bold uppercase tracking-widest text-slate-500">
                   Kullanıcı Paneli
                 </p>
-                <h1 className="text-2xl font-semibold tracking-tight">Hesabını yönet</h1>
+                <h1 className="text-2xl font-black text-slate-900">Hesabını Yönet</h1>
                 <p className="text-sm leading-5 text-muted-foreground">
                   {email ?? "Giriş yapan kullanıcı"}
                 </p>

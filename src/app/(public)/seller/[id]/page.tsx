@@ -39,13 +39,13 @@ export default async function SellerProfilePage({ params }: SellerProfilePagePro
     <div className="mx-auto max-w-[1280px] space-y-6 px-4 py-6 sm:px-6 lg:px-6 lg:py-8">
       {/* Seller Header */}
       <section className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
-        {/* Cover gradient */}
-        <div className="h-20 bg-gradient-to-r from-sky-500 to-blue-600 sm:h-24" />
+        {/* Cover */}
+        <div className="h-16 bg-slate-100 sm:h-20" />
         
         <div className="relative px-6 pb-8 sm:px-8">
           <div className="-mt-10 flex flex-col items-start gap-5 sm:-mt-12 sm:flex-row sm:items-end">
             {/* Avatar */}
-            <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-xl border-4 border-white bg-gradient-to-br from-indigo-100 to-blue-100 text-2xl font-semibold text-indigo-600 shadow sm:h-20 sm:w-20 sm:text-3xl">
+            <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-xl border-4 border-white bg-slate-100 text-xl font-bold text-slate-500 shadow sm:h-16 sm:w-16 sm:text-2xl">
               {seller.fullName?.[0]?.toUpperCase() ?? "S"}
             </div>
             
@@ -56,21 +56,21 @@ export default async function SellerProfilePage({ params }: SellerProfilePagePro
                 </h1>
                 {sellerListings.some(l => l.featured) && (
                   <span className="inline-flex items-center gap-1 rounded-full bg-amber-100 px-2.5 py-1 text-xs font-medium text-amber-700">
-                    <Star size={12} />
-                    Öne çıkan ilanı var
+                    <Star size={10} />
+                    Öne çıkan
                   </span>
                 )}
               </div>
               <div className="flex flex-wrap items-center gap-4 text-sm text-slate-500">
                 <span className="flex items-center gap-1.5">
-                  <MapPin size={14} className="text-indigo-500" /> 
+                  <MapPin size={14} className="text-slate-400" /> 
                   {seller.city || "Konum belirtilmedi"}
                 </span>
                 <span className="flex items-center gap-1.5">
-                  <Calendar size={14} className="text-indigo-500" /> 
-                  {memberSinceYear} den beri uye
+                  <Calendar size={14} className="text-slate-400" />
+                  {memberSinceYear} den beri üye
                 </span>
-                <span className="inline-flex items-center rounded-full bg-slate-100 px-3 py-1 text-xs font-medium text-slate-600">
+                <span className="inline-flex items-center rounded-full bg-primary/10 px-3 py-1 text-xs font-medium text-primary">
                   Bireysel Satıcı
                 </span>
               </div>
@@ -79,57 +79,57 @@ export default async function SellerProfilePage({ params }: SellerProfilePagePro
             <div className="flex w-full gap-2 sm:w-auto">
               <a
                 href={`tel:${seller.phone}`}
-                className="flex h-10 flex-1 items-center justify-center gap-2 rounded-md bg-slate-900 px-4 text-sm font-medium text-white transition-all hover:bg-slate-800 sm:flex-none"
+                className="flex h-10 flex-1 items-center justify-center gap-2 rounded-lg bg-primary px-4 text-sm font-bold text-white transition-all hover:bg-primary/90 sm:flex-none"
               >
-                <Phone size={18} />
+                <Phone size={16} />
                 Ara
               </a>
               <a
                 href={`https://wa.me/${seller.phone?.replace(/\s+/g, "")}`}
                 target="_blank"
                 rel="noreferrer"
-                className="flex h-10 flex-1 items-center justify-center gap-2 rounded-md border border-slate-200 bg-white px-4 text-sm font-medium text-slate-700 transition-all hover:border-slate-300 hover:bg-slate-50 sm:flex-none"
+                className="flex h-10 flex-1 items-center justify-center gap-2 rounded-lg bg-[#25D366] px-4 text-sm font-bold text-white transition-all hover:bg-[#20bd5a] sm:flex-none"
               >
-                <MessageSquare size={18} />
-                Mesaj
+                <MessageSquare size={16} />
+                WhatsApp
               </a>
             </div>
           </div>
 
           {/* Stats Cards */}
           <div className="mt-6 grid gap-3 sm:grid-cols-3">
-            <div className="rounded-lg border border-indigo-100 bg-gradient-to-br from-indigo-50 to-blue-50 p-4">
-              <div className="flex items-center gap-3 mb-2">
-                <div className="flex h-9 w-9 items-center justify-center rounded-md bg-indigo-100 text-indigo-600">
-                  <Car size={20} />
+            <div className="rounded-lg border border-slate-200 bg-white p-4">
+              <div className="flex items-center gap-3">
+                <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-slate-100 text-slate-500">
+                  <Car size={18} />
                 </div>
                 <div>
-                  <div className="text-xl font-semibold text-slate-900">{totalListingsCount}</div>
-                  <div className="text-xs text-slate-500">Aktif ilan</div>
+                  <div className="text-xl font-bold text-slate-900">{totalListingsCount}</div>
+                  <div className="text-xs text-slate-500 font-medium">Aktif ilan</div>
                 </div>
               </div>
             </div>
-            
-            <div className="rounded-lg border border-emerald-100 bg-gradient-to-br from-emerald-50 to-green-50 p-4">
-              <div className="flex items-center gap-3 mb-2">
-                <div className="flex h-9 w-9 items-center justify-center rounded-md bg-emerald-100 text-emerald-600">
-                  <CheckCircle2 size={20} />
+
+            <div className="rounded-lg border border-slate-200 bg-white p-4">
+              <div className="flex items-center gap-3">
+                <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-slate-100 text-slate-500">
+                  <CheckCircle2 size={18} />
                 </div>
                 <div>
-                  <div className="text-xl font-semibold text-slate-900">{featuredListingCount}</div>
-                  <div className="text-xs text-slate-500">Öne çıkan ilan</div>
+                  <div className="text-xl font-bold text-slate-900">{featuredListingCount}</div>
+                  <div className="text-xs text-slate-500 font-medium">Öne çıkan ilan</div>
                 </div>
               </div>
             </div>
-            
-            <div className="rounded-lg border border-amber-100 bg-gradient-to-br from-amber-50 to-orange-50 p-4">
-              <div className="flex items-center gap-3 mb-2">
-                <div className="flex h-9 w-9 items-center justify-center rounded-md bg-amber-100 text-amber-600">
-                  <Clock size={20} />
+
+            <div className="rounded-lg border border-slate-200 bg-white p-4">
+              <div className="flex items-center gap-3">
+                <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-slate-100 text-slate-500">
+                  <Clock size={18} />
                 </div>
                 <div>
-                  <div className="text-xl font-semibold text-slate-900">{memberSinceYear}</div>
-                  <div className="text-xs text-slate-500">Üyelik başlangıcı</div>
+                  <div className="text-xl font-bold text-slate-900">{memberSinceYear}</div>
+                  <div className="text-xs text-slate-500 font-medium">Üyelik yılı</div>
                 </div>
               </div>
             </div>

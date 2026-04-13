@@ -36,9 +36,9 @@ export default async function AdminAuditPage() {
              <History className="text-slate-400" size={16} />
              <span className="text-xs text-slate-500">Denetim günlüğü</span>
           </div>
-          <h1 className="text-3xl font-bold tracking-tight text-slate-900">
-            Audit logs
-          </h1>
+           <h1 className="text-3xl font-bold tracking-tight text-slate-900">
+             Denetim Kayıtları
+           </h1>
           <p className="mt-1 text-sm text-slate-500">Sistem üzerinde gerçekleştirilen tüm admin aksiyonlarını takip edin.</p>
         </div>
       </section>

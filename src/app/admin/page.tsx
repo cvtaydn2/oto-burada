@@ -66,9 +66,9 @@ export default async function AdminOverviewPage() {
              <div className="size-2 rounded-full bg-emerald-500" />
              <span className="text-xs text-slate-500">Canlı sistem durumu</span>
           </div>
-          <h1 className="text-3xl font-bold tracking-tight text-slate-900">
-            Kontrol paneli
-          </h1>
+           <h1 className="text-2xl font-black text-slate-900">
+             Kontrol Paneli
+           </h1>
           <p className="mt-1 text-sm text-slate-500">Platformun genel performans verileri ve akışı.</p>
         </div>
         

@@ -44,9 +44,9 @@ export default async function GalleryPage({ params }: GalleryPageProps) {
              <div className="flex size-9 items-center justify-center rounded-md bg-primary text-white">
                 <Car size={20} />
              </div>
-             <h2 className="text-2xl font-bold tracking-tight text-slate-900">
-                Galerinin ilanları
-             </h2>
+              <h2 className="text-xl font-black text-slate-900">
+                 Galerinin Ilanları
+              </h2>
           </div>
           <Badge variant="outline" className="border-slate-300 bg-white px-3 py-1 text-xs font-medium text-slate-600">
             {listings.length} araç

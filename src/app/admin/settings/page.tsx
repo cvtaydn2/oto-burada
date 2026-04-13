@@ -16,9 +16,9 @@ export default async function AdminSettingsPage() {
              <Settings className="text-slate-400" size={16} />
              <span className="text-xs text-slate-500">Genel ayarlar</span>
           </div>
-          <h1 className="text-3xl font-bold tracking-tight text-slate-900">
-            Sistem konfigürasyonu
-          </h1>
+           <h1 className="text-2xl font-black text-slate-900">
+             Sistem Konfigürasyonu
+           </h1>
           <p className="mt-1 text-sm text-slate-500">Platformun global parametrelerini ve özellik bayraklarını yönetin.</p>
         </div>
         

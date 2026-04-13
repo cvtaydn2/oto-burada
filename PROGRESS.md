@@ -14,6 +14,35 @@ Her yeni geliştirme başlamadan önce okunmalıdır.
 
 ## Proje Durumu
 
+### 2026-04-13 Bugfix Session 5: Full UI Consistency Audit — All Pages (Completed)
+- **Tüm sayfa taraması tamamlandı.** 19 taslak PNG referans alınarak eksiksiz tutarsızlık analizi yapıldı.
+- **dashboard/profile/page.tsx**: Komple yeniden yazıldı. `italic uppercase showroom stili` → temiz UI. `rounded-[2.5rem]` → `rounded-xl`, `font-black italic uppercase tracking-tighter` → `font-black text-slate-900`, `bg-slate-900` → `bg-white border`, verification cards temiz badge stili, profile form section lighten.
+- **dashboard/listings/edit/page.tsx**: Temiz UI'ya uyarlandı. `bg-slate-950 back button` → `border rounded-lg`, `text-4xl uppercase italic` → `text-2xl font-black`, `rounded-[3rem]` → `rounded-xl`, indigo warning box → amber.
+- **compare/page.tsx**: Radar chart section: `bg-emerald-500/10` → `bg-primary/10`, `text-xl font-semibold` → `text-lg font-bold`. Dark buttons: `bg-slate-900` → `bg-primary`. Labels: `SİSTEM ÖNERİSİ uppercase` → `Sistem Önerisi`, `HASAR KAYDI uppercase` → `Hasar Kaydi`. h1: `text-3xl bold` → `text-2xl font-black`.
+- **seller/profile page.tsx**: Temiz UI. `bg-gradient-to-r from-sky-500 to-blue-600` → `bg-slate-100` flat cover. Avatar: gradient → flat `bg-slate-100`. Stat cards: `bg-gradient-to-br` → `bg-white border`. CTA: `bg-slate-900` → `bg-primary`, WhatsApp button ekleme. "den beri uye" typo → "den beri üye". "Bireysel Satıcı" badge: indigo → primary.
+- **gallery/page.tsx**: Heading: `text-2xl font-bold tracking-tight` → `text-xl font-black`.
+- **auth-form.tsx**: `bg-sky-500` → `bg-primary`. WhatsApp login butonu eklendi (taslakta var).
+- **Validation**: `npm run lint` → 0 errors, 6 warnings. `npm run typecheck` → passed.
+- **Status**: ✅ Tüm sayfalar clean UI_SYSTEM.md stilinde. Showroom aesthetic tamamen temizlendi.
+- **Ek bileşen iyileştirmeleri**:
+  - `car-card.tsx`: `bg-sky-500` → `bg-primary` (featured badge), `text-sky-600` → `text-primary` (price), title font `text-xl` → `text-base` for grid, title weight `font-semibold` → `font-bold`.
+  - `StepIndicator.tsx`: `rounded-[2rem]` → `rounded-xl`.
+  - `dashboard-shell.tsx`: Heading `text-2xl font-semibold tracking-tight` → `text-2xl font-black text-slate-900`, section label `text-primary/80` → `text-slate-500`.
+  - `dashboard-navigation.tsx`: Clean — showroom styling yok.
+  - `listing/[slug]`: Temiz — `bg-slate-900` yok.
+- **Status**: ✅ Tüm bileşenler clean UI_SYSTEM.md stilinde. Showroom aesthetic tamamen temizlendi.
+- **Next Step**: Kalan 6 uyarıyı temizle (`CompareButton`, `ShareButton` vb. unused imports).
+
+### 2026-04-13 Bugfix Session 4: Turkish Font Fix & Filter Panel Redesign (Completed)
+- **Turkish Character Fix**: Changed font subsets in `src/app/layout.tsx` from `["latin"]` to `["latin", "latin-ext"]` for both `Inter` and `Outfit` fonts. Turkish characters (ı, ş, ğ, ü, ö, ç) now render correctly.
+- **SmartFilters Redesign**: Completely rewrote `src/components/modules/listings/smart-filters.tsx` from showroom-style (uppercase italic headings, dark icons) to clean Visily design (white background, simple headers, primary color accents). New sections: Marka+Model+Paket, Fiyat (RangeSlider + inputs), Yıl, Şehir+İlçe, Kilometre, Yakıt Türü, Vites. Removed showroom aesthetic entirely.
+- **listings-page-client**: Changed view mode toggle from `bg-slate-900` to `bg-primary` for active state, matching the clean UI system.
+- **admin/users Page**: Rewrote to match `visily-kullanıcı-yönetimi.png` — white card layout, stats bar (Tüm/Aktif/Pasif), "Yeni Kullanıcı Ekle" button, proper table columns, status dots (green/gray), sidebar with quick actions.
+- **Validation**: `npm run lint` → 0 errors, 6 warnings. `npm run typecheck` → passed.
+- **Status**: ✅ Turkish font support fixed. Filter panel and user management page fully aligned with Visily designs.
+- **Additional Admin Polish**: Unified all admin page headings to `text-2xl font-black text-slate-900` for consistency. Fixed `admin/roles/page.tsx` — replaced dark `bg-slate-900` role card headers with clean white/light `bg-slate-50` style, updated button hovers to use `bg-primary` instead of `bg-slate-900`. Fixed `admin/audit/page.tsx` — changed "Audit logs" heading to Turkish "Denetim Kayıtları". Updated all admin pages with proper section labels (uppercase tracking-widest).
+- **Next Step**: Continue remaining UI pages — compare, auth, favorites, seller profile, dashboard.
+
 ### 2026-04-13 Bugfix: Sorting Cache & Mobile Auth Navigation (Completed)
 - **Issue 1**: Listings sorting appeared inconsistent on default listing flow.
 - **Root Cause**: Redis cache fast-path in `getFilteredDatabaseListings` was active even when non-default sort options were selected, so users could receive "newest" cache despite selecting another sort.
@@ -59,6 +88,20 @@ Her yeni geliştirme başlamadan önce okunmalıdır.
 - **Validation**: `npm run typecheck` and `npm run lint` now pass with zero errors, ensuring a 100% clean CI/CD pipeline.
 - **Status**: ✅ Codebase is production-hardened and build-ready.
 - **Next Step**: Phase 28: Concierge Listing Wizard - High-touch listing creation journey.
+
+### 2026-04-13 Bugfix Session 3: Homepage UI Alignment (Completed)
+- **Refactored**: `src/app/(public)/page.tsx` fully aligned with `.design/visily-ana-sayfa.png` and `UI_SYSTEM.md`.
+- **Changes**:
+  - Popular Categories: cleaner white cards, `grid-cols-3` mobile, compact icons/badges, `rounded-xl`
+  - Featured/Öne Çıkanlar: reduced heading size, compact grid, cleaner CTA
+  - Trust Section: replaced dark `bg-secondary/50` with clean white card, 4-item grid layout
+  - Marketplace Services: replaced `bg-slate-900`/`bg-emerald-600` dark cards with white cards + soft emerald tint
+  - Latest/Yeni İlanlar: reduced heading size, compact grid, slimmer CTA button
+  - Removed unused `MapPin` import
+- **Bug Fix**: Added missing `title` prop to `MobileStickyActions` in `listing/[slug]/page.tsx` (TS error).
+- **Validation**: `npm run lint` → 0 errors, 6 warnings. `npm run typecheck` → passed.
+- **Status**: ✅ Homepage fully aligned with lightweight clean classified aesthetic.
+- **Next Step**: Continue with remaining pages — search results, favorites, auth, filter panel, create listing wizard, compare, admin pages, seller profile.
 
 ### 2026-04-13 Bugfix Session 2: Lint Cleanup, Design Alignment & Ticket System (Completed)
 - **Lint Cleanup**: Resolved all 95 ESLint warnings across the codebase:

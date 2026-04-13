@@ -10,7 +10,7 @@ interface StepIndicatorProps {
 
 export function StepIndicator({ currentStep, steps }: StepIndicatorProps) {
   return (
-    <div className="mb-8 overflow-hidden rounded-[2rem] border border-border/80 bg-background p-4 shadow-sm sm:p-6">
+    <div className="mb-8 overflow-hidden rounded-xl border border-slate-200 bg-background p-4 shadow-sm sm:p-6">
       <div className="flex items-center justify-between relative">
         {/* Progress Line */}
         <div className="absolute top-1/2 left-0 w-full h-0.5 bg-slate-100 -translate-y-1/2 z-0 hidden sm:block" />

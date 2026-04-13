@@ -16,6 +16,9 @@ export default async function AdminTicketsPage() {
   return (
     <div className="space-y-8">
       <div>
+        <div className="flex items-center gap-2 mb-2">
+          <span className="text-xs font-bold text-slate-500 uppercase tracking-widest">Destek</span>
+        </div>
         <h1 className="text-2xl font-black text-slate-900">Destek Talepleri</h1>
         <p className="text-sm text-slate-500 mt-1">Kullanıcılardan gelen destek taleplerini yönetin.</p>
       </div>

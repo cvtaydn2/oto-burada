@@ -31,9 +31,9 @@ export default async function AdminReportsPage() {
              <Flag className="text-rose-500" size={16} />
              <span className="text-xs text-slate-500">Şikayet yönetimi</span>
           </div>
-          <h1 className="text-3xl font-bold tracking-tight text-slate-900">
-            Kullanıcı raporları
-          </h1>
+           <h1 className="text-2xl font-black text-slate-900">
+             Kullanıcı Raporları
+           </h1>
           <p className="mt-1 text-sm text-slate-500">İlanlar hakkında gelen şikayetleri değerlendirin ve aksiyon alın.</p>
         </div>
       </section>

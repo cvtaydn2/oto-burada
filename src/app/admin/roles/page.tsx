@@ -15,50 +15,50 @@ export default function AdminRolesPage() {
              <Key className="text-primary" size={16} />
              <span className="text-xs text-slate-500">Erişim kontrolü</span>
           </div>
-          <h1 className="text-3xl font-bold tracking-tight text-slate-900">
-            Roller ve yetkiler
-          </h1>
+           <h1 className="text-2xl font-black text-slate-900">
+             Roller ve Yetkiler
+           </h1>
           <p className="mt-1 text-sm text-slate-500">Sistem personelinin yetki seviyelerini ve erişim limitlerini tanımlayın.</p>
         </div>
-        <button className="flex h-10 items-center gap-2 rounded-md bg-slate-900 px-4 text-sm font-medium text-white transition-all hover:bg-black">
-           <Plus size={18} />
+        <button className="flex h-10 items-center gap-2 rounded-lg bg-primary px-4 text-sm font-bold text-white transition-all hover:bg-primary/90">
+           <Plus size={16} />
            Yeni rol tanımla
         </button>
       </div>
 
       <div className="grid gap-4 lg:grid-cols-3">
-         {roles.map((role, idx) => (
-            <div key={idx} className="group overflow-hidden rounded-xl border border-slate-200 bg-white transition-all hover:border-primary">
-               <div className={`${role.color} relative space-y-3 p-6 text-white`}>
-                  <Shield size={32} />
-                  <div>
-                    <h3 className="text-2xl font-semibold tracking-tight">{role.name}</h3>
-                    <p className="text-xs text-white/70">{role.users} atanmış kişi</p>
-                  </div>
-               </div>
-               <div className="space-y-5 p-6">
-                  <div className="space-y-3">
-                     <p className="text-[10px] font-medium tracking-wide text-slate-500">ERİŞİM KAPSAMI</p>
-                     <div className="flex items-center gap-2 rounded-lg border border-slate-200 bg-slate-50 p-3">
-                        <CheckCircle2 size={16} className="text-emerald-500" />
-                        <span className="text-xs font-medium text-slate-900">{role.access}</span>
-                     </div>
-                  </div>
+          {roles.map((role, idx) => (
+             <div key={idx} className="group overflow-hidden rounded-xl border border-slate-200 bg-white transition-all hover:border-primary">
+                <div className="relative space-y-3 p-6 bg-slate-50 border-b border-slate-100">
+                   <Shield size={24} className="text-primary" />
+                   <div>
+                     <h3 className="text-lg font-black text-slate-900">{role.name}</h3>
+                     <p className="text-xs text-slate-500 font-medium">{role.users} atanmış kişi</p>
+                   </div>
+                </div>
+                <div className="space-y-5 p-6">
+                   <div className="space-y-3">
+                      <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Erişim Kapsamı</p>
+                      <div className="flex items-center gap-2 rounded-lg border border-slate-200 bg-white p-3">
+                         <CheckCircle2 size={16} className="text-emerald-500" />
+                         <span className="text-xs font-medium text-slate-900">{role.access}</span>
+                      </div>
+                   </div>
 
-                  <div className="flex gap-2">
-                     <button className="flex h-10 flex-1 items-center justify-center rounded-md bg-slate-50 text-slate-500 transition-all hover:bg-slate-900 hover:text-white">
-                        <Edit3 size={18} />
-                     </button>
-                     <button className="flex h-10 flex-1 items-center justify-center rounded-md bg-slate-50 text-slate-500 transition-all hover:bg-slate-900 hover:text-white">
-                        <Eye size={18} />
-                     </button>
-                     <button className="flex h-10 flex-1 items-center justify-center rounded-md bg-slate-50 text-slate-500 transition-all hover:bg-rose-500 hover:text-white">
-                        <Trash2 size={18} />
-                     </button>
-                  </div>
-               </div>
-            </div>
-         ))}
+                   <div className="flex gap-2">
+                      <button className="flex h-10 flex-1 items-center justify-center rounded-lg border border-slate-200 bg-slate-50 text-slate-500 transition-all hover:bg-primary hover:border-primary hover:text-white">
+                         <Edit3 size={16} />
+                      </button>
+                      <button className="flex h-10 flex-1 items-center justify-center rounded-lg border border-slate-200 bg-slate-50 text-slate-500 transition-all hover:bg-primary hover:border-primary hover:text-white">
+                         <Eye size={16} />
+                      </button>
+                      <button className="flex h-10 flex-1 items-center justify-center rounded-lg border border-slate-200 bg-slate-50 text-slate-500 transition-all hover:bg-rose-500 hover:border-rose-500 hover:text-white">
+                         <Trash2 size={16} />
+                      </button>
+                   </div>
+                </div>
+             </div>
+          ))}
       </div>
 
       <div className="rounded-xl border border-slate-200 bg-white p-6">

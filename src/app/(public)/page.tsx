@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { ArrowRight, Zap, ShieldCheck, Trophy, BadgeCheck, TrendingDown, CarFront } from "lucide-react";
+import { ArrowRight, Zap, ShieldCheck, Trophy, BadgeCheck, TrendingDown, CarFront, Search } from "lucide-react";
 import Link from "next/link";
 
 import { HomeHero } from "@/components/layout/home-hero";
@@ -35,34 +35,34 @@ export default async function HomePage() {
         {/* Modern Hero */}
         <HomeHero />
 
-        {/* Popular Categories (Visily Design) */}
+        {/* Popular Categories */}
         <section className="mb-20 mt-24">
-          <div className="flex items-center justify-between mb-10">
-            <h2 className="text-3xl font-black text-slate-900">Popüler Kategoriler</h2>
+          <div className="flex items-center justify-between mb-8">
+            <h2 className="text-2xl font-black text-slate-900">Popüler Kategoriler</h2>
             <Link href="/categories" className="text-sm font-bold text-primary hover:underline flex items-center gap-2">
               Tümünü Gör <ArrowRight size={16} />
             </Link>
           </div>
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+          <div className="grid grid-cols-3 md:grid-cols-6 gap-3">
             {[
-              { id: 'electric', name: 'Elektrikli', count: '1,240 ilan', icon: <Zap /> },
-              { id: 'suv', name: 'SUV', count: '4,850 ilan', icon: <CarFront /> },
-              { id: 'sedan', name: 'Sedan', count: '12,400 ilan', icon: <ShieldCheck /> },
-              { id: 'classic', name: 'Klasik', count: '450 ilan', icon: <Trophy /> },
-              { id: 'commercial', name: 'Ticari', count: '2,100 ilan', icon: <BadgeCheck /> },
-              { id: 'hatchback', name: 'Hatchback', count: '8,920 ilan', icon: <TrendingDown /> },
+              { id: 'electric', name: 'Elektrikli', count: '1,240', icon: <Zap size={18} /> },
+              { id: 'suv', name: 'SUV', count: '4,850', icon: <CarFront size={18} /> },
+              { id: 'sedan', name: 'Sedan', count: '12,400', icon: <ShieldCheck size={18} /> },
+              { id: 'classic', name: 'Klasik', count: '450', icon: <Trophy size={18} /> },
+              { id: 'commercial', name: 'Ticari', count: '2,100', icon: <BadgeCheck size={18} /> },
+              { id: 'hatchback', name: 'Hatchback', count: '8,920', icon: <TrendingDown size={18} /> },
             ].map((cat) => (
-              <Link 
+              <Link
                 key={cat.id}
                 href={`/listings?body_type=${cat.id}`}
-                className="group p-8 rounded-[24px] bg-white border border-slate-100 hover:border-primary/20 hover:shadow-[0_20px_40px_-15px_rgba(0,0,0,0.05)] transition-all flex flex-col items-center justify-center text-center gap-4"
+                className="group p-4 rounded-xl bg-white border border-slate-200 hover:border-primary/20 hover:shadow-md transition-all flex flex-col items-center text-center gap-2"
               >
-                <div className="size-14 rounded-2xl bg-slate-50 flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-white transition-all">
+                <div className="size-10 rounded-lg bg-slate-50 flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-white transition-all">
                   {cat.icon}
                 </div>
-                <div className="space-y-1">
-                  <h3 className="font-black text-slate-900">{cat.name}</h3>
-                  <p className="text-[11px] font-bold text-slate-400 uppercase tracking-tighter">{cat.count}</p>
+                <div>
+                  <h3 className="text-sm font-bold text-slate-900">{cat.name}</h3>
+                  <p className="text-[11px] text-slate-400">{cat.count} ilan</p>
                 </div>
               </Link>
             ))}
@@ -72,20 +72,16 @@ export default async function HomePage() {
         {/* Featured Section */}
         {featuredListings.length > 0 && (
           <section className="mb-16">
-            <div className="flex items-center justify-between mb-8">
-              <div>
-                <h2 className="text-3xl font-black text-foreground flex items-center gap-3 italic">
-                  <Zap className="text-amber-500 fill-amber-500" size={28} />
-                  Öne Çıkanlar
-                </h2>
-                <p className="text-muted-foreground font-medium mt-1">Sizin için seçtiğimiz özel ilanlar</p>
+            <div className="flex items-center justify-between mb-6">
+              <div className="flex items-center gap-2">
+                <Zap className="text-amber-500 fill-amber-500" size={20} />
+                <h2 className="text-xl font-black text-slate-900">Öne Çıkanlar</h2>
               </div>
-              <Link href="/listings?featured=true" className="group flex items-center gap-2 text-sm font-bold text-primary hover:underline">
-                Tümünü Gör
-                <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
+              <Link href="/listings?featured=true" className="text-sm font-bold text-primary hover:underline flex items-center gap-1">
+                Tümünü Gör <ArrowRight size={14} />
               </Link>
             </div>
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
               {featuredListings.map((listing) => (
                 <CarCard key={listing.id} listing={listing} priority />
               ))}
@@ -93,96 +89,78 @@ export default async function HomePage() {
           </section>
         )}
 
-        {/* Trust Section (Senior Aesthetic) */}
-        <section className="mb-16 py-16 px-8 rounded-3xl bg-secondary/50 border border-border flex flex-col md:flex-row items-center gap-12">
-           <div className="flex-1 space-y-6 text-center md:text-left">
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-600 font-bold text-xs uppercase tracking-widest">
-                 <ShieldCheck size={14} />
-                 Güven Odaklı Pazar
-              </div>
-              <h2 className="text-3xl md:text-5xl font-black text-foreground leading-[1.1]">
-                Neden <span className="text-primary italic">OtoBurada</span>&apos;ya Güvenmelisiniz?
-              </h2>
-              <p className="text-lg text-muted-foreground font-medium">
-                Alıcı ve satıcı arasındaki tüm süreci şeffaf kılarak dolandırıcılık riskini minimize ediyoruz.
-              </p>
-              <div className="flex flex-wrap gap-4 justify-center md:justify-start">
-                 <div className="flex items-center gap-2 text-sm font-bold bg-white px-4 py-2 rounded-xl border border-border shadow-sm">
-                    EİDS Doğrulaması
-                 </div>
-                 <div className="flex items-center gap-2 text-sm font-bold bg-white px-4 py-2 rounded-xl border border-border shadow-sm">
-                    Yapay Zeka Fiyat Analizi
-                 </div>
-              </div>
-           </div>
-           <div className="flex-1 grid grid-cols-2 gap-4 w-full">
-              <div className="p-6 rounded-2xl bg-white border border-border shadow-sm hover:shadow-md transition-all flex flex-col justify-center items-center text-center gap-3">
-                 <Trophy className="text-primary" size={32} />
-                 <span className="text-base font-bold text-foreground leading-tight">En Hızlı İlan Süreci</span>
-              </div>
-              <div className="p-6 rounded-2xl bg-white border border-border shadow-sm hover:shadow-md transition-all flex flex-col justify-center items-center text-center gap-3">
-                 <BadgeCheck className="text-indigo-600" size={32} />
-                 <span className="text-base font-bold text-foreground leading-tight">Yüzlerce Onaylı Satıcı</span>
-              </div>
-           </div>
+        {/* Trust Section */}
+        <section className="mb-16">
+          <div className="bg-white rounded-2xl border border-slate-200 p-8">
+            <div className="flex items-center gap-2 mb-6">
+              <ShieldCheck className="text-emerald-500" size={18} />
+              <span className="text-xs font-bold text-slate-500 uppercase tracking-widest">Güven Odaklı Pazar</span>
+            </div>
+            <h2 className="text-2xl md:text-3xl font-black text-slate-900 mb-3">
+              Neden OtoBurada?
+            </h2>
+            <p className="text-muted-foreground font-medium mb-8 max-w-xl">
+              Tüm süreçleri şeffaf kılarak alıcı ve satıcı arasındaki güveni üst seviyeye taşıyoruz.
+            </p>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              {[
+                { icon: <Search className="text-primary" size={22} />, title: "Yapay Zeka Fiyat Analizi", desc: "Piyasa verileriyle gerçek değer" },
+                { icon: <BadgeCheck className="text-primary" size={22} />, title: "EİDS Doğrulaması", desc: "Kimlik onaylı satıcılar" },
+                { icon: <Trophy className="text-primary" size={22} />, title: "En Hızlı İlan Süreci", desc: "2 dakikada ilan yayınla" },
+                { icon: <ShieldCheck className="text-primary" size={22} />, title: "Ücretsiz İlan", desc: "Herkes ücretsiz yayınlar" },
+              ].map((item, i) => (
+                <div key={i} className="p-4 rounded-xl border border-slate-100 flex flex-col gap-3 hover:border-primary/20 transition-colors">
+                  <div className="size-10 rounded-lg bg-slate-50 flex items-center justify-center">{item.icon}</div>
+                  <div>
+                    <h3 className="text-sm font-bold text-slate-900">{item.title}</h3>
+                    <p className="text-xs text-muted-foreground font-medium">{item.desc}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
         </section>
 
-        {/* Marketplace Services (Estimation & Comparison) */}
-        <section className="mb-24 grid md:grid-cols-2 gap-8">
-           <Link href="/aracim-ne-kadar" className="group relative overflow-hidden p-10 rounded-[2.5rem] bg-slate-900 text-white shadow-2xl transition-all hover:scale-[1.01]">
-              <div className="absolute top-0 right-0 size-64 bg-primary/20 blur-[100px] pointer-events-none group-hover:bg-primary/30 transition-all" />
-              <div className="relative z-10 space-y-6">
-                 <div className="size-16 rounded-2xl bg-white/10 border border-white/20 flex items-center justify-center text-primary group-hover:scale-110 transition-transform">
-                    <ArrowRight className="rotate-[315deg]" size={32} />
-                 </div>
-                 <div className="space-y-2">
-                    <h3 className="text-3xl font-black italic uppercase tracking-tighter">Aracım Ne Kadar?</h3>
-                    <p className="text-slate-400 font-medium italic">Piyasa verilerini analiz ederek aracınızın güncel değerini anında öğrenin.</p>
-                 </div>
-                 <div className="flex items-center gap-2 text-primary font-bold">
-                    Hemen Hesapla <ArrowRight size={18} className="group-hover:translate-x-2 transition-transform" />
-                 </div>
-              </div>
-           </Link>
+        {/* Marketplace Services */}
+        <section className="mb-24 grid md:grid-cols-2 gap-6">
+          <Link href="/aracim-ne-kadar" className="group p-8 rounded-2xl bg-white border border-slate-200 shadow-sm hover:shadow-md hover:border-primary/20 transition-all flex items-center gap-6">
+            <div className="size-14 rounded-xl bg-slate-50 flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-white transition-all shrink-0">
+              <ArrowRight className="rotate-[315deg]" size={24} />
+            </div>
+            <div className="space-y-1">
+              <h3 className="text-xl font-black text-slate-900">Aracım Ne Kadar?</h3>
+              <p className="text-sm text-muted-foreground font-medium">Piyasa verileriyle aracınızın güncel değerini öğrenin.</p>
+            </div>
+          </Link>
 
-           <Link href="/listings?sort=advantageous" className="group relative overflow-hidden p-10 rounded-[2.5rem] bg-emerald-600 text-white shadow-2xl transition-all hover:scale-[1.01]">
-              <div className="absolute top-0 right-0 size-64 bg-white/10 blur-[100px] pointer-events-none group-hover:bg-white/20 transition-all" />
-              <div className="relative z-10 space-y-6">
-                 <div className="size-16 rounded-2xl bg-white/10 border border-white/20 flex items-center justify-center text-white group-hover:scale-110 transition-transform">
-                    <TrendingDown size={32} />
-                 </div>
-                 <div className="space-y-2">
-                    <h3 className="text-3xl font-black italic uppercase tracking-tighter">Fırsat İlanlar</h3>
-                    <p className="text-emerald-50 font-medium italic">Piyasa ortalamasının altında, kaçırılmayacak avantajlı araçları listeleyin.</p>
-                 </div>
-                 <div className="flex items-center gap-2 text-white font-bold underline underline-offset-4 decoration-white/30 decoration-2">
-                    İlanları Gör <ArrowRight size={18} className="group-hover:translate-x-2 transition-transform" />
-                 </div>
-              </div>
-           </Link>
+          <Link href="/listings?sort=advantageous" className="group p-8 rounded-2xl bg-emerald-50 border border-emerald-200 shadow-sm hover:shadow-md transition-all flex items-center gap-6">
+            <div className="size-14 rounded-xl bg-emerald-500 flex items-center justify-center text-white group-hover:bg-emerald-600 transition-all shrink-0">
+              <TrendingDown size={24} />
+            </div>
+            <div className="space-y-1">
+              <h3 className="text-xl font-black text-slate-900">Fırsat İlanlar</h3>
+              <p className="text-sm text-muted-foreground font-medium">Piyasa ortalamasının altında avantajlı araçlar.</p>
+            </div>
+          </Link>
         </section>
 
         {/* Latest Listings */}
         <section className="mb-24">
-          <div className="flex items-center justify-between mb-8">
-            <div>
-              <h2 className="text-3xl font-black text-foreground">Son İlanlar</h2>
-              <p className="text-muted-foreground font-medium mt-1">Platforma yeni eklenen fırsatları kaçırmayın</p>
-            </div>
-            <Link href="/listings" className="group flex items-center gap-2 text-sm font-bold text-primary hover:underline">
-              Tüm İlanları Gör
-              <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-xl font-black text-slate-900">Yeni İlanlar</h2>
+            <Link href="/listings" className="text-sm font-bold text-primary hover:underline flex items-center gap-1">
+              Tüm İlanları Gör <ArrowRight size={14} />
             </Link>
           </div>
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
             {latestListings.map((listing) => (
               <CarCard key={listing.id} listing={listing} />
             ))}
           </div>
-          <div className="mt-12 flex justify-center">
-             <Link href="/listings" className="h-16 px-12 rounded-2xl bg-primary text-white font-black text-lg hover:bg-primary/90 transition-all flex items-center justify-center shadow-xl shadow-primary/20 hover:scale-105 active:scale-95">
-               Tüm İlanları Keşfet
-             </Link>
+          <div className="mt-10 flex justify-center">
+            <Link href="/listings" className="h-12 px-8 rounded-xl bg-primary text-white font-bold text-base hover:bg-primary/90 transition-all flex items-center justify-center">
+              Tüm İlanları Keşfet
+            </Link>
           </div>
         </section>
       </main>

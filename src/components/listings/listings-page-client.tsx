@@ -127,21 +127,21 @@ export function ListingsPageClient({
          </div>
 
          <div className="flex items-center gap-2 rounded-lg border border-slate-200 bg-white p-1.5">
-            <button 
+            <button
               onClick={() => setViewMode("grid")}
               className={cn(
                 "flex h-9 items-center gap-2 rounded-md px-3 text-xs font-medium transition-all",
-                viewMode === "grid" ? "bg-slate-900 text-white" : "text-slate-500 hover:text-slate-700"
+                viewMode === "grid" ? "bg-primary text-white" : "text-slate-500 hover:text-slate-700 hover:bg-slate-50"
               )}
             >
                <LayoutGrid size={16} />
                <span className="hidden sm:inline">Grid</span>
             </button>
-            <button 
+            <button
               onClick={() => setViewMode("list")}
               className={cn(
                 "flex h-9 items-center gap-2 rounded-md px-3 text-xs font-medium transition-all",
-                viewMode === "list" ? "bg-slate-900 text-white" : "text-slate-500 hover:text-slate-700"
+                viewMode === "list" ? "bg-primary text-white" : "text-slate-500 hover:text-slate-700 hover:bg-slate-50"
               )}
             >
                <List size={16} />
