@@ -50,3 +50,16 @@ export async function addBrand(name: string) {
   revalidatePath("/admin/reference");
   return { success: true };
 }
+
+export async function createModel(brandId: string, name: string) {
+  const admin = createSupabaseAdminClient();
+  const slug = name.toLowerCase().replace(/ /g, "-").replace(/[^\w-]+/g, "");
+  
+  const { error } = await admin
+    .from("models")
+    .insert({ brand_id: brandId, name, slug });
+
+  if (error) throw error;
+  revalidatePath("/admin/reference");
+  return { success: true };
+}

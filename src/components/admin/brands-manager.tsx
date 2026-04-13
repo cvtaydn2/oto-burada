@@ -7,7 +7,9 @@ import {
   Settings2, 
   CheckCircle2, 
   XCircle,
-  Car
+  Car,
+  Plus,
+  Loader2
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -18,8 +20,9 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
-import { toggleBrandStatus } from "@/services/admin/reference";
+import { toggleBrandStatus, addBrand, createModel } from "@/services/admin/reference";
 
 interface Brand {
   id: string;
@@ -30,11 +33,18 @@ interface Brand {
 
 interface BrandsManagerProps {
   initialBrands: Brand[];
+  showTableOnly?: boolean;
 }
 
-export function BrandsManager({ initialBrands }: BrandsManagerProps) {
+export function BrandsManager({ initialBrands, showTableOnly }: BrandsManagerProps) {
   const [brands, setBrands] = useState(initialBrands);
   const [loadingId, setLoadingId] = useState<string | null>(null);
+  const [addBrandModal, setAddBrandModal] = useState(false);
+  const [newBrandName, setNewBrandName] = useState("");
+  const [isAdding, setIsAdding] = useState(false);
+  const [addModelModal, setAddModelModal] = useState<Brand | null>(null);
+  const [newModelName, setNewModelName] = useState("");
+  const [isAddingModel, setIsAddingModel] = useState(false);
 
   const handleToggleStatus = async (brand: Brand) => {
     setLoadingId(brand.id);
@@ -51,83 +61,245 @@ export function BrandsManager({ initialBrands }: BrandsManagerProps) {
     }
   };
 
+  const handleAddBrand = async () => {
+    if (!newBrandName.trim()) {
+      toast.error("Marka adı gereklidir");
+      return;
+    }
+
+    setIsAdding(true);
+    try {
+      await addBrand(newBrandName.trim());
+      toast.success(`${newBrandName} markası eklendi`);
+      setNewBrandName("");
+      setAddBrandModal(false);
+      window.location.reload();
+    } catch {
+      toast.error("Marka eklenemedi");
+    } finally {
+      setIsAdding(false);
+    }
+  };
+
+  const handleAddModel = async (brand: Brand) => {
+    if (!newModelName.trim()) {
+      toast.error("Model adı gereklidir");
+      return;
+    }
+
+    setIsAddingModel(true);
+    try {
+      await createModel(brand.id, newModelName.trim());
+      toast.success(`${newModelName} modeli eklendi`);
+      setNewModelName("");
+      setAddModelModal(null);
+    } catch {
+      toast.error("Model eklenemedi");
+    } finally {
+      setIsAddingModel(false);
+    }
+  };
+
   return (
-    <div className="overflow-x-auto">
-      <table className="w-full text-left border-collapse">
-        <thead>
-          <tr className="bg-slate-50/50 border-b border-slate-100">
-            <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Marka</th>
-            <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">URL (Slug)</th>
-            <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Koleksiyon</th>
-            <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Durum</th>
-            <th className="px-6 py-4 text-right text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">İşlem</th>
-          </tr>
-        </thead>
-        <tbody className="divide-y divide-slate-50">
-          {brands.map((brand) => (
-            <tr key={brand.id} className="hover:bg-blue-50/20 transition-colors group">
-              <td className="px-6 py-5">
-                <div className="flex items-center gap-3">
-                   <div className="size-9 rounded-xl bg-slate-100 border border-slate-200 flex items-center justify-center text-slate-400 group-hover:bg-white group-hover:text-blue-600 group-hover:border-blue-100 transition-all font-black text-xs">
+    <>
+      <div className="overflow-x-auto">
+        <table className="w-full text-left border-collapse">
+          <thead>
+            <tr className="bg-slate-50/50 border-b border-slate-100">
+              <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Marka</th>
+              <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">URL (Slug)</th>
+              <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Koleksiyon</th>
+              <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Durum</th>
+              <th className="px-6 py-4 text-right text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">İşlem</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-slate-50">
+            {brands.map((brand) => (
+              <tr key={brand.id} className="hover:bg-blue-50/20 transition-colors group">
+                <td className="px-6 py-5">
+                  <div className="flex items-center gap-3">
+                    <div className="size-9 rounded-xl bg-slate-100 border border-slate-200 flex items-center justify-center text-slate-400 group-hover:bg-white group-hover:text-blue-600 group-hover:border-blue-100 transition-all font-black text-xs">
                       {brand.name.substring(0, 2).toUpperCase()}
-                   </div>
-                   <span className="text-sm font-black text-slate-800 tracking-tight">{brand.name}</span>
-                </div>
-              </td>
-              <td className="px-6 py-5">
-                 <div className="flex items-center gap-2 text-xs font-bold text-slate-400 italic">
+                    </div>
+                    <span className="text-sm font-black text-slate-800 tracking-tight">{brand.name}</span>
+                  </div>
+                </td>
+                <td className="px-6 py-5">
+                  <div className="flex items-center gap-2 text-xs font-bold text-slate-400 italic">
                     /{brand.slug}
                     <ExternalLink size={12} className="opacity-0 group-hover:opacity-100 transition-all" />
-                 </div>
-              </td>
-              <td className="px-6 py-5">
-                 <div className="flex items-center gap-2">
+                  </div>
+                </td>
+                <td className="px-6 py-5">
+                  <div className="flex items-center gap-2">
                     <Car size={14} className="text-slate-300" />
                     <span className="text-[10px] font-black text-slate-500 uppercase italic">Modelleri Gör</span>
-                 </div>
-              </td>
-              <td className="px-6 py-5">
-                 {brand.is_active ? (
-                   <div className="flex items-center gap-1.5 text-emerald-600">
+                  </div>
+                </td>
+                <td className="px-6 py-5">
+                  {brand.is_active ? (
+                    <div className="flex items-center gap-1.5 text-emerald-600">
                       <CheckCircle2 size={14} />
                       <span className="text-[10px] font-black uppercase tracking-widest italic">Yayında</span>
-                   </div>
-                 ) : (
-                   <div className="flex items-center gap-1.5 text-slate-400">
+                    </div>
+                  ) : (
+                    <div className="flex items-center gap-1.5 text-slate-400">
                       <XCircle size={14} />
                       <span className="text-[10px] font-black uppercase tracking-widest italic">Gizli</span>
-                   </div>
-                 )}
-              </td>
-              <td className="px-6 py-5 text-right">
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" className="h-9 w-9 p-0 rounded-xl hover:bg-white border border-transparent hover:border-slate-200 transition-all">
-                      <MoreVertical className="h-4 w-4" />
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end" className="w-[200px] rounded-2xl p-2 shadow-xl border-slate-100">
-                    <DropdownMenuLabel className="text-[10px] font-black uppercase tracking-widest text-slate-400 px-3 py-2">Marka Ayarları</DropdownMenuLabel>
-                    <DropdownMenuSeparator className="bg-slate-50" />
-                    <DropdownMenuItem className="cursor-pointer gap-2 font-black text-[10px] uppercase tracking-widest rounded-xl px-3 py-2.5 hover:bg-slate-50 transition-all">
-                      <Settings2 size={14} />
-                      DÜZENLE
-                    </DropdownMenuItem>
-                    <DropdownMenuItem 
-                      onClick={() => handleToggleStatus(brand)}
-                      disabled={loadingId === brand.id}
-                      className="cursor-pointer gap-2 font-black text-[10px] uppercase tracking-widest rounded-xl px-3 py-2.5 hover:bg-slate-50 transition-all"
-                    >
-                      {brand.is_active ? <XCircle size={14} /> : <CheckCircle2 size={14} />}
-                      {brand.is_active ? "YAYINDAN KALDIR" : "YAYINA AL"}
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
+                    </div>
+                  )}
+                </td>
+                <td className="px-6 py-5 text-right">
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="ghost" className="h-9 w-9 p-0 rounded-xl hover:bg-white border border-transparent hover:border-slate-200 transition-all">
+                        <MoreVertical className="h-4 w-4" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end" className="w-[200px] rounded-2xl p-2 shadow-xl border-slate-100">
+                      <DropdownMenuLabel className="text-[10px] font-black uppercase tracking-widest text-slate-400 px-3 py-2">Marka Ayarları</DropdownMenuLabel>
+                      <DropdownMenuSeparator className="bg-slate-50" />
+                      <DropdownMenuItem className="cursor-pointer gap-2 font-black text-[10px] uppercase tracking-widest rounded-xl px-3 py-2.5 hover:bg-slate-50 transition-all">
+                        <Settings2 size={14} />
+                        DÜZENLE
+                      </DropdownMenuItem>
+                      <DropdownMenuItem 
+                        onClick={() => setAddModelModal(brand)}
+                        className="cursor-pointer gap-2 font-black text-[10px] uppercase tracking-widest rounded-xl px-3 py-2.5 hover:bg-slate-50 transition-all"
+                      >
+                        <Plus size={14} />
+                        MODEL EKLE
+                      </DropdownMenuItem>
+                      <DropdownMenuSeparator className="bg-slate-50" />
+                      <DropdownMenuItem 
+                        onClick={() => handleToggleStatus(brand)}
+                        disabled={loadingId === brand.id}
+                        className="cursor-pointer gap-2 font-black text-[10px] uppercase tracking-widest rounded-xl px-3 py-2.5 hover:bg-slate-50 transition-all"
+                      >
+                        {loadingId === brand.id ? (
+                          <Loader2 className="animate-spin" size={14} />
+                        ) : brand.is_active ? (
+                          <XCircle size={14} />
+                        ) : (
+                          <CheckCircle2 size={14} />
+                        )}
+                        {brand.is_active ? "YAYINDAN KALDIR" : "YAYINA AL"}
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
+      {/* Add Brand Button - Only show when not in table-only mode */}
+      {!showTableOnly && (
+        <div className="p-6 border-t border-slate-100">
+          <Button 
+            onClick={() => setAddBrandModal(true)}
+            className="w-full rounded-xl border border-dashed border-slate-200 bg-slate-50 text-slate-500 font-bold hover:bg-white hover:border-blue-300 hover:text-blue-600 transition-all py-6"
+          >
+            <Plus size={18} className="mr-2" />
+            YENİ MARKA EKLE
+          </Button>
+        </div>
+      )}
+
+      {/* Add Brand Modal */}
+      {addBrandModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+          <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl">
+            <div className="mb-6 flex items-center gap-4">
+              <div className="flex size-12 items-center justify-center rounded-xl bg-blue-100 text-blue-600">
+                <Plus size={24} />
+              </div>
+              <div>
+                <h3 className="text-lg font-black text-slate-900">Yeni Marka Ekle</h3>
+                <p className="text-sm text-slate-500">Araç veritabanına yeni marka ekleyin</p>
+              </div>
+            </div>
+            <div className="space-y-4">
+              <div>
+                <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Marka Adı</label>
+                <Input
+                  value={newBrandName}
+                  onChange={(e) => setNewBrandName(e.target.value)}
+                  placeholder="Örn: Tesla"
+                  className="mt-1"
+                />
+              </div>
+            </div>
+            <div className="flex gap-3 mt-6">
+              <Button
+                variant="outline"
+                className="flex-1 rounded-xl border-slate-200 font-bold"
+                onClick={() => {
+                  setAddBrandModal(false);
+                  setNewBrandName("");
+                }}
+              >
+                İptal
+              </Button>
+              <Button
+                className="flex-1 rounded-xl bg-blue-600 font-bold hover:bg-blue-700"
+                onClick={handleAddBrand}
+                disabled={isAdding}
+              >
+                {isAdding ? <Loader2 className="animate-spin" size={18} /> : "Ekle"}
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Add Model Modal */}
+      {addModelModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+          <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl">
+            <div className="mb-6 flex items-center gap-4">
+              <div className="flex size-12 items-center justify-center rounded-xl bg-blue-100 text-blue-600">
+                <Car size={24} />
+              </div>
+              <div>
+                <h3 className="text-lg font-black text-slate-900">Yeni Model Ekle</h3>
+                <p className="text-sm text-slate-500">{addModelModal.name} için yeni model</p>
+              </div>
+            </div>
+            <div className="space-y-4">
+              <div>
+                <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Model Adı</label>
+                <Input
+                  value={newModelName}
+                  onChange={(e) => setNewModelName(e.target.value)}
+                  placeholder="Örn: Model S"
+                  className="mt-1"
+                />
+              </div>
+            </div>
+            <div className="flex gap-3 mt-6">
+              <Button
+                variant="outline"
+                className="flex-1 rounded-xl border-slate-200 font-bold"
+                onClick={() => {
+                  setAddModelModal(null);
+                  setNewModelName("");
+                }}
+              >
+                İptal
+              </Button>
+              <Button
+                className="flex-1 rounded-xl bg-blue-600 font-bold hover:bg-blue-700"
+                onClick={() => handleAddModel(addModelModal)}
+                disabled={isAddingModel}
+              >
+                {isAddingModel ? <Loader2 className="animate-spin" size={18} /> : "Ekle"}
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+    </>
   );
 }

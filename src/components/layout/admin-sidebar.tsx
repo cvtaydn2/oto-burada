@@ -13,7 +13,9 @@ import {
   CreditCard,
   Database,
   MessageSquare,
-  ShieldCheck
+  ShieldCheck,
+  BarChart3,
+  KeyRound
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -23,6 +25,11 @@ const ADMIN_NAV_ITEMS = [
     title: "Genel Bakış",
     href: "/admin",
     icon: LayoutDashboard,
+  },
+  {
+    title: "Analitik & Raporlar",
+    href: "/admin/analytics",
+    icon: BarChart3,
   },
   {
     title: "İlan Moderasyonu",
@@ -43,6 +50,11 @@ const ADMIN_NAV_ITEMS = [
     title: "Destek Talepleri",
     href: "/admin/support",
     icon: MessageSquare,
+  },
+  {
+    title: "Roller & Yetkiler",
+    href: "/admin/roles",
+    icon: KeyRound,
   },
   {
     title: "Kullanıcı Yönetimi",

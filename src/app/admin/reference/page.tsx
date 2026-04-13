@@ -1,6 +1,6 @@
 import { getBrands } from "@/services/admin/reference";
 import { requireAdminUser } from "@/lib/auth/session";
-import { Database, Search, Plus, Filter } from "lucide-react";
+import { Database, Search, Filter, Plus } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { BrandsManager } from "@/components/admin/brands-manager";
@@ -28,10 +28,6 @@ export default async function AdminReferencePage() {
            <Button variant="outline" className="rounded-xl font-black text-[10px] tracking-widest uppercase h-11 px-6 bg-white border-slate-200">
               <Filter size={16} className="mr-2" />
               FİLTRELE
-           </Button>
-           <Button className="bg-blue-600 hover:bg-blue-700 rounded-xl font-black text-[10px] tracking-widest uppercase h-11 px-6 shadow-lg shadow-blue-100 gap-2">
-              <Plus size={16} />
-              MARKA EKLE
            </Button>
         </div>
       </section>

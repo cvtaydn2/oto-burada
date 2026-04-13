@@ -46,3 +46,20 @@ export async function updatePricingPlan(id: string, updates: Partial<PricingPlan
 export async function togglePlanStatus(id: string, currentStatus: boolean) {
   return updatePricingPlan(id, { is_active: !currentStatus });
 }
+
+export async function deletePricingPlan(id: string) {
+  const admin = createSupabaseAdminClient();
+  
+  const { error } = await admin
+    .from("pricing_plans")
+    .delete()
+    .eq("id", id);
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  revalidatePath("/admin/plans");
+  revalidatePath("/dashboard/pricing");
+  return { success: true };
+}
