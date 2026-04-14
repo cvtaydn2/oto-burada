@@ -23,7 +23,7 @@ interface AuthContextValue {
 const AuthContext = createContext<AuthContextValue | undefined>(undefined);
 
 function getIsAdmin(user: User | null) {
-  const role = user?.app_metadata?.role;
+  const role = (user?.app_metadata as { role?: string } | undefined)?.role;
   return role === "admin";
 }
 

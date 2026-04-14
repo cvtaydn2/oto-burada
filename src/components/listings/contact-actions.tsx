@@ -83,7 +83,7 @@ export function ContactActions({ listingId, sellerId }: ContactActionsProps) {
 
   const whatsappLink = revealedPhone 
     ? `https://wa.me/${revealedPhone.replace(/\D/g, "")}?text=${encodeURIComponent("Merhaba, OtoBurada üzerinden ilanınızla ilgileniyorum.")}`
-    : "#";
+    : null;
 
   return (
     <div className="space-y-3">
@@ -180,8 +180,8 @@ export function ContactActions({ listingId, sellerId }: ContactActionsProps) {
                }}
              >
                <a
-                 href={isRevealed ? whatsappLink : "#"}
-                 target={isRevealed ? "_blank" : undefined}
+                 href={isRevealed && whatsappLink ? whatsappLink : "#"}
+                 target={isRevealed && whatsappLink ? "_blank" : undefined}
                  rel="noreferrer"
                  className="flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-green-500 to-emerald-600 w-full h-12 px-6 text-[15px] text-white font-bold shadow-sm"
                >

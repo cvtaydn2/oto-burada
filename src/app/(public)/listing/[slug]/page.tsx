@@ -68,8 +68,8 @@ export default async function ListingDetailPage({ params }: ListingDetailPagePro
 
   if (!listing) notFound();
 
-  const seller = await getMarketplaceSeller(listing.sellerId);
-  const [similarListings] = await Promise.all([
+  const [seller, similarListings] = await Promise.all([
+    getMarketplaceSeller(listing.sellerId),
     getSimilarMarketplaceListings(listing.slug, listing.brand, listing.city),
   ]);
   const insight = getListingCardInsights(listing);

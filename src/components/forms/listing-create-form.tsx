@@ -37,6 +37,7 @@ interface ListingCreateFormProps {
   brands: BrandCatalogItem[];
   cities: CityOption[];
   initialListing?: Listing | null;
+  isPhoneVerified?: boolean;
 }
 
 interface SubmitState {
@@ -158,17 +159,6 @@ const STEP_LABELS = [
   "Ekspertiz ve Kondisyon",
   "Fotoğraflar ve Gönderim",
 ] as const;
-
-interface ListingCreateFormProps {
-  initialValues: {
-    city: string;
-    whatsappPhone: string;
-  };
-  brands: BrandCatalogItem[];
-  cities: CityOption[];
-  initialListing?: Listing | null;
-  isPhoneVerified?: boolean;
-}
 
 import { PhoneVerificationDialog } from "@/components/auth/phone-verification-dialog";
 

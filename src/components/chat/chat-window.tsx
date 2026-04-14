@@ -30,7 +30,7 @@ export function ChatWindow({ chat, currentUserId }: ChatWindowProps) {
 
   // Mark new messages as read when they arrive if window is focused
   useEffect(() => {
-     if (messages.length > 0 && !document.hidden) {
+     if (messages.length > 0 && typeof document !== "undefined" && !document.hidden) {
         markMessagesAsRead(chat.id, currentUserId);
      }
   }, [messages, chat.id, currentUserId]);

@@ -1,7 +1,7 @@
 "use client"
 
 import dynamic from "next/dynamic"
-import { useState, useTransition, useRef } from "react"
+import { useState, useTransition, useRef, useCallback } from "react"
 import { useRouter } from "next/navigation"
 import { LayoutGrid, List, ArrowDownUp, Star, BadgeCheck, TrendingDown } from "lucide-react"
 
@@ -79,7 +79,21 @@ export function ListingsPageClient({
 
   const debounceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const handleFilterChange = <K extends keyof ListingFilters>(key: K, value: ListingFilters[K]) => {
+  const applyFilters = useCallback((newFilters: ListingFilters, immediate = false) => {
+    const fn = () => {
+      const params = createSearchParamsFromListingFilters(newFilters)
+      router.push(`/listings?${params.toString()}`, { scroll: false })
+    }
+
+    if (immediate) {
+      if (debounceTimerRef.current) clearTimeout(debounceTimerRef.current)
+      fn()
+    } else {
+      startTransition(fn)
+    }
+  }, [router, startTransition])
+
+  const handleFilterChange = useCallback(<K extends keyof ListingFilters>(key: K, value: ListingFilters[K]) => {
     const newFilters = { ...filters, [key]: value, page: 1 }
     setFilters(newFilters)
 
@@ -97,33 +111,19 @@ export function ListingsPageClient({
     debounceTimerRef.current = setTimeout(() => {
       applyFilters(newFilters)
     }, 400)
-  }
+  }, [filters, applyFilters, initialResult.page])
 
-  const handleReset = () => {
+  const handleReset = useCallback(() => {
     const resetFilters = { limit: filters.limit ?? initialResult.limit, page: 1 }
     setFilters(resetFilters)
     applyFilters(resetFilters, true)
-  }
+  }, [filters.limit, initialResult.limit, applyFilters])
 
-  const handlePageChange = (page: number) => {
+  const handlePageChange = useCallback((page: number) => {
     const nextFilters = { ...filters, page }
     setFilters(nextFilters)
     applyFilters(nextFilters, true)
-  }
-
-  const applyFilters = (newFilters: ListingFilters, immediate = false) => {
-    const fn = () => {
-      const params = createSearchParamsFromListingFilters(newFilters)
-      router.push(`/listings?${params.toString()}`, { scroll: false })
-    }
-
-    if (immediate) {
-      if (debounceTimerRef.current) clearTimeout(debounceTimerRef.current)
-      fn()
-    } else {
-      startTransition(fn)
-    }
-  }
+  }, [filters, applyFilters])
 
   const currentSortLabel = SORT_OPTIONS.find(o => o.value === filters.sort)?.label || "En Yeni"
   const currentPage = initialResult.page
