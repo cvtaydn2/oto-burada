@@ -1,6 +1,5 @@
 import { describe, it, expect } from 'vitest';
 import { createDatabaseNotification, getStoredNotificationsByUser, markDatabaseNotificationRead } from '../../services/notifications/notification-records';
-import { createSupabaseAdminClient } from '../../lib/supabase/admin';
 
 describe('Notification Service (Integration)', () => {
   const TEST_USER_ID = 'fde3c732-6bdc-4eb4-9c4c-471040b94e7d'; // Existing user

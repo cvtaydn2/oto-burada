@@ -4,18 +4,54 @@ import { createSupabaseAdminClient } from '@/lib/supabase/admin';
 
 vi.mock('@/lib/supabase/admin');
 
+type NotificationQueryResult = {
+  data:
+    | Array<{
+        id: string;
+        user_id: string;
+        type: 'system';
+        title: string;
+        message: string;
+        read: boolean;
+        created_at: string;
+        updated_at: string;
+      }>
+    | {
+        id: string;
+        user_id: string;
+        type: 'system';
+        title: string;
+        message: string;
+        read: boolean;
+        created_at: string;
+        updated_at: string;
+      }
+    | null;
+  error: unknown;
+};
+
 describe('notification-records service', () => {
-  const mockChain: any = {};
+  const mockChain = {
+    select: vi.fn(),
+    insert: vi.fn(),
+    update: vi.fn(),
+    delete: vi.fn(),
+    eq: vi.fn(),
+    order: vi.fn(),
+    single: vi.fn(),
+    returns: vi.fn(),
+    then: vi.fn(),
+  };
   const mockAdminClient = {
     from: vi.fn(() => mockChain),
   };
 
   // Shared state to control what .then() resolves to
-  let nextResolveValue: any = { data: null, error: null };
+  let nextResolveValue: NotificationQueryResult = { data: null, error: null };
 
   beforeEach(() => {
     vi.clearAllMocks();
-    vi.mocked(createSupabaseAdminClient).mockReturnValue(mockAdminClient as any);
+    vi.mocked(createSupabaseAdminClient).mockReturnValue(mockAdminClient as never);
 
     nextResolveValue = { data: null, error: null };
 
@@ -29,7 +65,7 @@ describe('notification-records service', () => {
     mockChain.returns = vi.fn().mockImplementation(() => Promise.resolve(nextResolveValue));
     
     // Proper thenable implementation
-    mockChain.then = vi.fn().mockImplementation((onFulfilled) => {
+    mockChain.then = vi.fn().mockImplementation((onFulfilled: (value: NotificationQueryResult) => unknown) => {
       return Promise.resolve(nextResolveValue).then(onFulfilled);
     });
   });

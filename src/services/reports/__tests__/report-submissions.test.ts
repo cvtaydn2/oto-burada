@@ -44,18 +44,42 @@ describe('report-submissions logic', () => {
   describe('replaceStoredReport', () => {
     it('should add a new report to the list', () => {
       const existing: Report[] = [];
-      const next: Report = { id: '1' } as any;
+      const next: Report = {
+        id: '1',
+        listingId: 'listing-1',
+        reporterId: 'reporter-1',
+        reason: 'other',
+        status: 'open',
+        createdAt: '2023-01-01',
+        updatedAt: '2023-01-01',
+      };
       const result = replaceStoredReport(existing, next);
       expect(result).toHaveLength(1);
       expect(result[0].id).toBe('1');
     });
 
     it('should update an existing report in the list', () => {
-      const existing: Report[] = [{ id: '1', reason: 'old' } as any];
-      const next: Report = { id: '1', reason: 'new' } as any;
+      const existing: Report[] = [{
+        id: '1',
+        listingId: 'listing-1',
+        reporterId: 'reporter-1',
+        reason: 'other',
+        status: 'open',
+        createdAt: '2023-01-01',
+        updatedAt: '2023-01-01',
+      }];
+      const next: Report = {
+        id: '1',
+        listingId: 'listing-1',
+        reporterId: 'reporter-1',
+        reason: 'fake_listing',
+        status: 'open',
+        createdAt: '2023-01-01',
+        updatedAt: '2023-01-02',
+      };
       const result = replaceStoredReport(existing, next);
       expect(result).toHaveLength(1);
-      expect(result[0].reason).toBe('new');
+      expect(result[0].reason).toBe('fake_listing');
     });
   });
 

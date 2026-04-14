@@ -10,6 +10,7 @@
     "typecheck": "next typegen && tsc --noEmit",
     "test": "playwright test",
     "test:unit": "vitest run",
+    "test:int": "vitest run --config vitest.int.config.ts",
     "test:unit:watch": "vitest",
     "test:ui": "playwright test --ui",
     "test:report": "playwright show-report",

@@ -3,6 +3,7 @@ import { moderateListingWithSideEffects, moderateListingsWithSideEffects } from 
 import * as listingSubmissions from '@/services/listings/listing-submissions';
 import * as moderationActions from '../moderation-actions';
 import * as notifications from '@/services/notifications/notification-records';
+import type { Listing } from '@/types';
 
 // Mock dependencies
 vi.mock('@/services/listings/listing-submissions');
@@ -16,14 +17,28 @@ vi.mock('@/services/market/market-stats', () => ({
 }));
 
 describe('listing-moderation service', () => {
-  const mockListing = {
+  const mockListing: Listing = {
     id: 'listing-123',
+    slug: 'test-car',
     title: 'Test Car',
     sellerId: 'seller-456',
     brand: 'Fiat',
     model: 'Egea',
     year: 2022,
+    mileage: 15000,
+    fuelType: 'benzin',
+    transmission: 'otomatik',
+    price: 1000000,
+    city: 'Istanbul',
+    district: 'Kadikoy',
+    description: 'Test description',
+    whatsappPhone: '905551112233',
     status: 'pending',
+    images: [],
+    featured: false,
+    viewCount: 0,
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
   };
 
   beforeEach(() => {
@@ -35,7 +50,7 @@ describe('listing-moderation service', () => {
       vi.mocked(listingSubmissions.moderateDatabaseListing).mockResolvedValue({
         ...mockListing,
         status: 'approved',
-      } as any);
+      });
 
       const result = await moderateListingWithSideEffects({
         action: 'approve',
@@ -58,7 +73,7 @@ describe('listing-moderation service', () => {
       vi.mocked(listingSubmissions.moderateDatabaseListing).mockResolvedValue({
         ...mockListing,
         status: 'rejected',
-      } as any);
+      });
 
       const result = await moderateListingWithSideEffects({
         action: 'reject',
@@ -93,8 +108,8 @@ describe('listing-moderation service', () => {
 
   describe('moderateListingsWithSideEffects', () => {
     it('should handle multiple listings', async () => {
-      vi.mocked(listingSubmissions.moderateDatabaseListing).mockResolvedValueOnce({ ...mockListing, id: '1' } as any);
-      vi.mocked(listingSubmissions.moderateDatabaseListing).mockResolvedValueOnce({ ...mockListing, id: '2' } as any);
+      vi.mocked(listingSubmissions.moderateDatabaseListing).mockResolvedValueOnce({ ...mockListing, id: '1' });
+      vi.mocked(listingSubmissions.moderateDatabaseListing).mockResolvedValueOnce({ ...mockListing, id: '2' });
 
       const result = await moderateListingsWithSideEffects({
         action: 'approve',
@@ -107,7 +122,7 @@ describe('listing-moderation service', () => {
     });
 
     it('should track skipped listings', async () => {
-      vi.mocked(listingSubmissions.moderateDatabaseListing).mockResolvedValueOnce({ ...mockListing, id: '1' } as any);
+      vi.mocked(listingSubmissions.moderateDatabaseListing).mockResolvedValueOnce({ ...mockListing, id: '1' });
       vi.mocked(listingSubmissions.moderateDatabaseListing).mockResolvedValueOnce(null);
 
       const result = await moderateListingsWithSideEffects({

@@ -136,7 +136,7 @@ export async function getLiveMarketplaceReferenceData() {
       { revalidate: 3600 },
     );
     return getCached();
-  } catch (e) {
+  } catch {
     return fetchLiveMarketplaceReferenceData();
   }
 }

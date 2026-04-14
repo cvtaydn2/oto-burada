@@ -14,6 +14,25 @@ Her yeni geliştirme başlamadan önce okunmalıdır.
 
 ## Proje Durumu
 
+- **Status**: 🟢 Kalite ve sürdürülebilirlik turu tamamlandı; lint/type/build tekrar temiz.
+- **Quality Consolidation (2026-04-14)**:
+  1. **Mesajlaşma Hata Yalıtımı**: `dashboard/messages` sayfasındaki JSX `try/catch` anti-pattern’i kaldırıldı. Veri çekme render katmanından ayrıldı ve kullanıcıya güvenli fallback durumu tanımlandı.
+  2. **Realtime Performans**: `useChatRealtime` içinde her render’da yeniden Supabase client üretimi ve gereksiz channel re-subscribe davranışı kaldırıldı. Realtime payload tipi açık hale getirildi.
+  3. **Tip Güvenliği & Modülerlik**: `plan-form`, `chat-service`, `plate-lookup` ve ilgili testlerdeki `any` kullanımları temizlendi. Form input/output tipleri ve mesaj row mapper’ları netleştirildi.
+  4. **Test Ayrıştırma**: `vitest.config.ts` içinde `.int.test.ts` dosyaları unit hattan çıkarıldı. `package.json` içine `npm run test:int` eklendi; böylece unit ve gerçek entegrasyon doğrulaması ayrıştı.
+  5. **Kod Sağlığı**: Kullanılmayan `catch` parametresi ve gevşek test mock tipleri temizlendi; repo tekrar temiz lint seviyesine getirildi.
+- **Doğrulama**:
+  - `npm run lint` ✅
+  - `npm run typecheck` ✅
+  - `npm run test:unit` ✅
+  - `npm run build` ✅
+- **Karar Notu**:
+  - Birim test hattının entegrasyon testlerinden ayrılması, sahte negatifleri azaltmak ve CI sinyalini okunur kılmak için zorunlu görüldü.
+  - `plate-lookup` sorgusu gereksiz builder typing zincirinden arındırıldı; runtime ve test uyumu sadeleştirildi.
+- **Sonraki Adım**:
+  - `npm run test:int` hattı gerçek Supabase env ile ayrıca stabilize edilmeli.
+  - Browser seviyesinde route bazlı performans ölçümü ve Core Web Vitals takibi ayrı bir turda derinleştirilebilir.
+
 - **Status**: 🟢 Kritik mobil UX sorunları giderildi.
 - **Backend Hardening (2026-04-14)**:
   1. **Entegrasyon Testleri**: 8 farklı servis için (Chat, Notification, Listing, Profile, Favorite, Admin Analytics, Reference Data, Plate Lookup) toplam 12 entegrasyon testi yazıldı ve gerçek DB üzerinden %100 başarıyla geçmesi sağlandı.

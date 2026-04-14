@@ -5,14 +5,29 @@ import { createSupabaseBrowserClient } from '@/lib/supabase/browser';
 vi.mock('@/lib/supabase/browser');
 
 describe('chat-service', () => {
-  const mockChain: any = {};
+  type ChatQueryResult = {
+    data: unknown;
+    error: unknown;
+  };
+
+  const mockChain = {
+    select: vi.fn(),
+    insert: vi.fn(),
+    update: vi.fn(),
+    eq: vi.fn(),
+    neq: vi.fn(),
+    or: vi.fn(),
+    order: vi.fn(),
+    single: vi.fn(),
+    then: vi.fn(),
+  };
   const mockClient = {
     from: vi.fn(() => mockChain),
   };
 
   beforeEach(() => {
     vi.clearAllMocks();
-    vi.mocked(createSupabaseBrowserClient).mockReturnValue(mockClient as any);
+    vi.mocked(createSupabaseBrowserClient).mockReturnValue(mockClient as never);
 
     mockChain.select = vi.fn().mockReturnValue(mockChain);
     mockChain.insert = vi.fn().mockReturnValue(mockChain);
@@ -24,7 +39,7 @@ describe('chat-service', () => {
     mockChain.single = vi.fn().mockResolvedValue({ data: null, error: null });
     
     // Default promise resolution
-    mockChain.then = vi.fn().mockImplementation((onFulfilled) => {
+    mockChain.then = vi.fn().mockImplementation((onFulfilled: (value: ChatQueryResult) => unknown) => {
       return Promise.resolve({ data: [], error: null }).then(onFulfilled);
     });
   });
@@ -56,7 +71,7 @@ describe('chat-service', () => {
         { id: 'm1', chat_id: 'c1', sender_id: 'u1', content: 'hi', is_read: false, created_at: '2023-01-01' }
       ];
       // Use thenable mock for select().eq().order()
-      mockChain.then.mockImplementationOnce((onFulfilled: any) => {
+      mockChain.then.mockImplementationOnce((onFulfilled: (value: ChatQueryResult) => unknown) => {
         return Promise.resolve({ data: mockMessages, error: null }).then(onFulfilled);
       });
 
@@ -81,7 +96,7 @@ describe('chat-service', () => {
   describe('getUserChats', () => {
     it('should fetch chats for a user', async () => {
       const mockChats = [{ id: 'c1', buyer_id: 'u1', seller_id: 's1' }];
-      mockChain.then.mockImplementationOnce((onFulfilled: any) => {
+      mockChain.then.mockImplementationOnce((onFulfilled: (value: ChatQueryResult) => unknown) => {
         return Promise.resolve({ data: mockChats, error: null }).then(onFulfilled);
       });
 

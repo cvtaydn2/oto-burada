@@ -4,17 +4,30 @@ import { createSupabaseAdminClient } from '@/lib/supabase/admin';
 
 vi.mock('@/lib/supabase/admin');
 
+type FavoriteQueryResult = {
+  data: Array<{ listing_id: string }> | null;
+  error: { message: string } | null;
+};
+
 describe('favorite-records service', () => {
-  const mockChain: any = {};
+  const mockChain = {
+    select: vi.fn(),
+    eq: vi.fn(),
+    in: vi.fn(),
+    delete: vi.fn(),
+    upsert: vi.fn(),
+    returns: vi.fn(),
+    then: vi.fn(),
+  };
   const mockAdminClient = {
     from: vi.fn(() => mockChain),
   };
 
-  let nextResolveValue: any = { data: [], error: null };
+  let nextResolveValue: FavoriteQueryResult = { data: [], error: null };
 
   beforeEach(() => {
     vi.clearAllMocks();
-    vi.mocked(createSupabaseAdminClient).mockReturnValue(mockAdminClient as any);
+    vi.mocked(createSupabaseAdminClient).mockReturnValue(mockAdminClient as never);
     
     nextResolveValue = { data: [{ listing_id: '1' }, { listing_id: '2' }], error: null };
 
@@ -25,7 +38,7 @@ describe('favorite-records service', () => {
     mockChain.upsert = vi.fn().mockReturnValue(mockChain);
     mockChain.returns = vi.fn().mockImplementation(() => Promise.resolve(nextResolveValue));
     
-    mockChain.then = vi.fn().mockImplementation((onFulfilled) => {
+    mockChain.then = vi.fn().mockImplementation((onFulfilled: (value: FavoriteQueryResult) => unknown) => {
       return Promise.resolve(nextResolveValue).then(onFulfilled);
     });
   });

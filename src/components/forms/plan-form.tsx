@@ -27,6 +27,42 @@ const planSchema = z.object({
 });
 
 type PlanFormValues = z.infer<typeof planSchema>;
+type PlanFormInput = z.input<typeof planSchema>;
+type PlanFeatureKey = keyof PlanFormValues["features"];
+
+const defaultPlanValues: PlanFormValues = {
+  name: "",
+  price: 0,
+  credits: 5,
+  is_active: true,
+  features: {
+    featured_listings: false,
+    express_support: false,
+    advanced_analytics: false,
+    no_ads: false,
+    custom_badge: false,
+  },
+};
+
+function getPlanFormDefaults(initialData?: PricingPlan | null): PlanFormValues {
+  if (!initialData) {
+    return defaultPlanValues;
+  }
+
+  return {
+    name: initialData.name,
+    price: initialData.price,
+    credits: initialData.credits,
+    is_active: initialData.is_active,
+    features: {
+      featured_listings: Boolean(initialData.features?.featured_listings),
+      express_support: Boolean(initialData.features?.express_support),
+      advanced_analytics: Boolean(initialData.features?.advanced_analytics),
+      no_ads: Boolean(initialData.features?.no_ads),
+      custom_badge: Boolean(initialData.features?.custom_badge),
+    },
+  };
+}
 
 interface PlanFormProps {
   initialData?: PricingPlan | null;
@@ -37,36 +73,12 @@ interface PlanFormProps {
 export function PlanForm({ initialData, onSuccess, onCancel }: PlanFormProps) {
   const [loading, setLoading] = useState(false);
 
-  const form = useForm<any>({
+  const form = useForm<PlanFormInput, undefined, PlanFormValues>({
     resolver: zodResolver(planSchema),
-    defaultValues: initialData ? {
-      name: initialData.name,
-      price: initialData.price,
-      credits: initialData.credits,
-      is_active: initialData.is_active,
-      features: {
-        featured_listings: !!initialData.features?.featured_listings,
-        express_support: !!initialData.features?.express_support,
-        advanced_analytics: !!initialData.features?.advanced_analytics,
-        no_ads: !!initialData.features?.no_ads,
-        custom_badge: !!initialData.features?.custom_badge,
-      }
-    } : {
-      name: "",
-      price: 0,
-      credits: 5,
-      is_active: true,
-      features: {
-        featured_listings: false,
-        express_support: false,
-        advanced_analytics: false,
-        no_ads: false,
-        custom_badge: false,
-      }
-    },
+    defaultValues: getPlanFormDefaults(initialData),
   });
 
-  const onSubmit = async (values: any) => {
+  const onSubmit = async (values: PlanFormValues) => {
     setLoading(true);
     try {
       if (initialData) {
@@ -115,8 +127,7 @@ export function PlanForm({ initialData, onSuccess, onCancel }: PlanFormProps) {
                  { id: "no_ads", label: "Reklamsız Deneyim" },
                  { id: "custom_badge", label: "Özel Rozet" }
                ].map((feature) => {
-                  type FeatureKey = keyof PlanFormValues["features"];
-                  const fieldName = `features.${feature.id as FeatureKey}` as const;
+                  const fieldName = `features.${feature.id as PlanFeatureKey}` as const;
                   return (
                     <div key={feature.id} className="flex items-center space-x-2 bg-slate-50 p-3 rounded-xl border border-slate-100">
                        <Checkbox 

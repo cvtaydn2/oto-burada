@@ -10,39 +10,86 @@ function getClient(injectedClient?: SupabaseClient) {
   return injectedClient || createSupabaseBrowserClient();
 }
 
+interface ProfileRow {
+  id: string;
+  full_name?: string | null;
+  phone?: string | null;
+  city?: string | null;
+  avatar_url?: string | null;
+  role?: Profile["role"];
+  user_type?: Profile["userType"];
+  is_verified?: boolean | null;
+  business_name?: string | null;
+  business_logo_url?: string | null;
+  business_slug?: string | null;
+}
+
+interface ListingRow {
+  id: string;
+  title: string;
+  price: number;
+  slug?: string | null;
+  brand?: string | null;
+  model?: string | null;
+}
+
+interface MessageRow {
+  id: string;
+  chat_id: string;
+  sender_id: string;
+  content: string;
+  is_read: boolean;
+  created_at: string;
+}
+
+interface ChatRow {
+  id: string;
+  listing_id: string;
+  buyer_id: string;
+  seller_id: string;
+  created_at: string;
+  last_message_at?: string;
+  listing?: ListingRow | null;
+  buyer?: ProfileRow | null;
+  seller?: ProfileRow | null;
+  profiles_buyer_id?: ProfileRow[];
+  profiles_seller_id?: ProfileRow[];
+  last_message?: MessageRow | null;
+}
+
 /**
  * Mapping helpers to convert DB rows (snake_case) to Domain types (camelCase)
  */
-function mapProfileRow(row: any): Partial<Profile> {
+function mapProfileRow(row?: ProfileRow | null): Partial<Profile> {
   if (!row) return {};
   return {
     id: row.id,
-    fullName: row.full_name,
-    phone: row.phone,
-    city: row.city,
-    avatarUrl: row.avatar_url,
+    fullName: row.full_name ?? undefined,
+    phone: row.phone ?? undefined,
+    city: row.city ?? undefined,
+    avatarUrl: row.avatar_url ?? undefined,
     role: row.role,
     userType: row.user_type,
-    isVerified: row.is_verified,
-    businessName: row.business_name,
-    businessLogoUrl: row.business_logo_url,
-    businessSlug: row.business_slug,
+    isVerified: row.is_verified ?? undefined,
+    businessName: row.business_name ?? undefined,
+    businessLogoUrl: row.business_logo_url ?? undefined,
+    businessSlug: row.business_slug ?? undefined,
   };
 }
 
-function mapListingRow(row: any): Partial<Listing> {
+function mapListingRow(row?: ListingRow | null): Partial<Listing> {
   if (!row) return {};
   return {
     id: row.id,
     title: row.title,
     price: row.price,
-    slug: row.slug,
-    brand: row.brand,
-    model: row.model,
+    slug: row.slug ?? undefined,
+    brand: row.brand ?? undefined,
+    model: row.model ?? undefined,
   };
 }
 
-function mapChatRow(row: any): Chat {
+function mapChatRow(row: ChatRow): Chat {
   return {
     id: row.id,
     listingId: row.listing_id,
@@ -51,13 +98,13 @@ function mapChatRow(row: any): Chat {
     createdAt: row.created_at,
     lastMessageAt: row.last_message_at,
     listing: mapListingRow(row.listing),
-    buyer: mapProfileRow(row.buyer || (row.profiles && row.profiles_buyer_id?.[0])),
-    seller: mapProfileRow(row.seller || (row.profiles && row.profiles_seller_id?.[0])),
+    buyer: mapProfileRow(row.buyer ?? row.profiles_buyer_id?.[0]),
+    seller: mapProfileRow(row.seller ?? row.profiles_seller_id?.[0]),
     lastMessage: row.last_message ? mapMessageRow(row.last_message) : undefined
   };
 }
 
-function mapMessageRow(row: any): Message {
+function mapMessageRow(row: MessageRow): Message {
   return {
     id: row.id,
     chatId: row.chat_id,
@@ -102,8 +149,8 @@ export async function getOrCreateChat(
     }
 
     return mapChatRow(newChat);
-  } catch (err) {
-    logger.messages.error("Unexpected Chat Service Error", err);
+  } catch (error) {
+    logger.messages.error("Unexpected Chat Service Error", error);
     return null;
   }
 }

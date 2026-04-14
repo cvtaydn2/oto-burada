@@ -9,6 +9,6 @@ export default defineConfig({
     globals: true,
     setupFiles: ['./src/test/setup.ts'],
     include: ['src/**/*.test.{ts,tsx}'],
-    exclude: ['node_modules', '.next', 'tests'], // Keep playwright tests separate
+    exclude: ['node_modules', '.next', 'tests', 'src/**/*.int.test.{ts,tsx}'], // Keep integration and playwright tests separate
   },
 });

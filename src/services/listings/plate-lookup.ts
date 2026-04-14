@@ -1,5 +1,7 @@
 "use server";
 
+import type { SupabaseClient } from "@supabase/supabase-js";
+
 export interface PlateLookupResult {
   brand: string;
   model: string;
@@ -16,7 +18,7 @@ export interface PlateLookupResult {
  */
 export async function lookupVehicleByPlate(
   plate: string,
-  supabaseClient?: any
+  supabaseClient?: SupabaseClient
 ): Promise<PlateLookupResult | null> {
   const normalizedPlate = plate.replace(/\s/g, "").toUpperCase();
   

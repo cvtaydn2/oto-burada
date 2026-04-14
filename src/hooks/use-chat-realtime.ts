@@ -1,22 +1,40 @@
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { createSupabaseBrowserClient } from "@/lib/supabase/browser";
 import type { Message } from "@/types";
-import type { RealtimeChannel } from "@supabase/supabase-js";
+import type { RealtimeChannel, RealtimePostgresInsertPayload } from "@supabase/supabase-js";
+
+interface RealtimeMessageRow {
+  id: string;
+  chat_id: string;
+  sender_id: string;
+  content: string;
+  is_read: boolean;
+  created_at: string;
+}
 
 export function useChatRealtime(chatId: string, currentUserId: string) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [isTyping, setIsTyping] = useState(false);
   const [onlineUsers, setOnlineUsers] = useState<string[]>([]);
-  const supabase = createSupabaseBrowserClient();
   const channelRef = useRef<RealtimeChannel | null>(null);
+  const supabaseRef = useRef<ReturnType<typeof createSupabaseBrowserClient> | null>(null);
+
+  if (supabaseRef.current == null) {
+    supabaseRef.current = createSupabaseBrowserClient();
+  }
 
   useEffect(() => {
     if (!chatId) return;
+    const supabase = supabaseRef.current;
+
+    if (!supabase) {
+      return;
+    }
 
     // Request Notification Permission
     if (typeof window !== "undefined" && "Notification" in window) {
       if (Notification.permission === "default") {
-        Notification.requestPermission();
+        void Notification.requestPermission();
       }
     }
 
@@ -41,7 +59,7 @@ export function useChatRealtime(chatId: string, currentUserId: string) {
           table: "messages",
           filter: `chat_id=eq.${chatId}`,
         },
-        (payload: any) => {
+        (payload: RealtimePostgresInsertPayload<RealtimeMessageRow>) => {
           const raw = payload.new;
           const newMessage: Message = {
             id: raw.id,
@@ -89,7 +107,7 @@ export function useChatRealtime(chatId: string, currentUserId: string) {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [chatId, currentUserId, supabase]);
+  }, [chatId, currentUserId]);
 
   // Helper to broadcast typing state
   const sendTypingStatus = (typing: boolean) => {

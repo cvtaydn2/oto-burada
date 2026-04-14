@@ -3,6 +3,19 @@ import { getAdminAnalytics } from '../analytics';
 import { createSupabaseAdminClient } from '@/lib/supabase/admin';
 
 vi.mock('@/lib/supabase/admin');
+vi.mock('@/lib/supabase/env', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('@/lib/supabase/env')>();
+  return {
+    ...actual,
+    hasSupabaseAdminEnv: vi.fn(() => true),
+  };
+});
+
+type MockQueryResult = {
+  count?: number | null;
+  data: unknown;
+  error: unknown;
+};
 
 describe('admin analytics service', () => {
   const mockFrom = vi.fn();
@@ -12,21 +25,21 @@ describe('admin analytics service', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
-    vi.mocked(createSupabaseAdminClient).mockReturnValue(mockAdminClient as any);
+    vi.mocked(createSupabaseAdminClient).mockReturnValue(mockAdminClient as never);
   });
 
   it('should calculate correct KPIs and trends', async () => {
     // Mock the chain for many different queries
     // Promise.all in analytics.ts expects 16 results
-    mockFrom.mockImplementation((table) => ({
-      select: vi.fn().mockImplementation((col, opts) => {
-        const query: any = {
+    mockFrom.mockImplementation((table: string) => ({
+      select: vi.fn().mockImplementation((_col: string, opts?: { count?: string }) => {
+        const query = {
           limit: vi.fn().mockReturnThis(),
           eq: vi.fn().mockReturnThis(),
           gte: vi.fn().mockReturnThis(),
           lt: vi.fn().mockReturnThis(),
           order: vi.fn().mockReturnThis(),
-          then: (resolve: any) => {
+          then: (resolve: (value: MockQueryResult) => unknown) => {
             // Return different data based on the table
             if (table === 'listings') {
               if (opts?.count === 'exact') resolve({ count: 100, data: null, error: null });
