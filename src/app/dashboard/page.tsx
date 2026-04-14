@@ -13,6 +13,8 @@ import {
   ShieldAlert,
   BadgeCheck,
 } from "lucide-react";
+import { DashboardFinancialSummary } from "@/components/dashboard/dashboard-financial-summary";
+import { DashboardAppointments } from "@/components/dashboard/dashboard-appointments";
 
 import { requireUser } from "@/lib/auth/session";
 import { getDatabaseFavoriteCount } from "@/services/favorites/favorite-records";
@@ -261,6 +263,33 @@ async function DashboardDataSection({
         </div>
 
         <div className="space-y-6">
+          <DashboardFinancialSummary
+            successfulSalesAmount={1450000}
+            pendingDepositsAmount={25000}
+            successfulSalesCount={3}
+            pendingDepositsCount={2}
+          />
+
+          <DashboardAppointments
+            appointments={[
+              {
+                id: "1",
+                date: new Date(2026, 5, 12),
+                time: "14:30",
+                customerName: "Ahmet Yılmaz",
+                description: "BMW 320i",
+                type: "expertise",
+              },
+              {
+                id: "2",
+                date: new Date(2026, 5, 15),
+                time: "10:00",
+                customerName: "Mehmet Can",
+                description: "Passat",
+                type: "showroom",
+              },
+            ]}
+          />
           <div className="rounded-2xl border border-blue-100 bg-blue-50/60 p-6 shadow-sm">
             <h3 className="mb-2 text-lg font-black text-slate-900">Hesap Durumu</h3>
             <p className="mb-5 text-xs text-slate-500">
