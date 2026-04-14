@@ -1,5 +1,5 @@
 import { createSupabaseBrowserClient } from "@/lib/supabase/browser";
-import type { Chat, Message } from "@/types";
+import type { Chat, Message, Profile, Listing } from "@/types";
 import { logger } from "@/lib/utils/logger";
 import { SupabaseClient } from "@supabase/supabase-js";
 
@@ -8,6 +8,64 @@ import { SupabaseClient } from "@supabase/supabase-js";
  */
 function getClient(injectedClient?: SupabaseClient) {
   return injectedClient || createSupabaseBrowserClient();
+}
+
+/**
+ * Mapping helpers to convert DB rows (snake_case) to Domain types (camelCase)
+ */
+function mapProfileRow(row: any): Partial<Profile> {
+  if (!row) return {};
+  return {
+    id: row.id,
+    fullName: row.full_name,
+    phone: row.phone,
+    city: row.city,
+    avatarUrl: row.avatar_url,
+    role: row.role,
+    userType: row.user_type,
+    isVerified: row.is_verified,
+    businessName: row.business_name,
+    businessLogoUrl: row.business_logo_url,
+    businessSlug: row.business_slug,
+  };
+}
+
+function mapListingRow(row: any): Partial<Listing> {
+  if (!row) return {};
+  return {
+    id: row.id,
+    title: row.title,
+    price: row.price,
+    slug: row.slug,
+    brand: row.brand,
+    model: row.model,
+  };
+}
+
+function mapChatRow(row: any): Chat {
+  return {
+    id: row.id,
+    listingId: row.listing_id,
+    buyerId: row.buyer_id,
+    sellerId: row.seller_id,
+    createdAt: row.created_at,
+    lastMessageAt: row.last_message_at,
+    listing: mapListingRow(row.listing),
+    buyer: mapProfileRow(row.buyer || (row.profiles && row.profiles_buyer_id?.[0])),
+    seller: mapProfileRow(row.seller || (row.profiles && row.profiles_seller_id?.[0])),
+    lastMessage: row.last_message ? mapMessageRow(row.last_message) : undefined
+  };
+}
+
+function mapMessageRow(row: any): Message {
+  return {
+    id: row.id,
+    chatId: row.chat_id,
+    senderId: row.sender_id,
+    content: row.content,
+    isRead: row.is_read,
+    createdAt: row.created_at
+  };
 }
 
 /**
@@ -30,7 +88,7 @@ export async function getOrCreateChat(
       .eq("seller_id", sellerId)
       .single();
 
-    if (existingChat) return existingChat as Chat;
+    if (existingChat) return mapChatRow(existingChat);
 
     const { data: newChat, error: createError } = await client
       .from("chats")
@@ -43,7 +101,7 @@ export async function getOrCreateChat(
       return null;
     }
 
-    return newChat as unknown as Chat;
+    return mapChatRow(newChat);
   } catch (err) {
     logger.messages.error("Unexpected Chat Service Error", err);
     return null;
@@ -67,7 +125,7 @@ export async function getChatMessages(chatId: string, supabase?: SupabaseClient)
     return [];
   }
 
-  return data as Message[];
+  return (data || []).map(mapMessageRow);
 }
 
 /**
@@ -92,7 +150,7 @@ export async function sendMessage(
     return null;
   }
 
-  return data as Message;
+  return mapMessageRow(data);
 }
 
 /**
@@ -112,7 +170,7 @@ export async function getUserChats(userId: string, supabase?: SupabaseClient): P
     return [];
   }
 
-  return data as unknown as Chat[];
+  return (data || []).map(mapChatRow);
 }
 
 /**

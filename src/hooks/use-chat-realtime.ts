@@ -41,8 +41,16 @@ export function useChatRealtime(chatId: string, currentUserId: string) {
           table: "messages",
           filter: `chat_id=eq.${chatId}`,
         },
-        (payload: { new: Message }) => {
-          const newMessage = payload.new as Message;
+        (payload: any) => {
+          const raw = payload.new;
+          const newMessage: Message = {
+            id: raw.id,
+            chatId: raw.chat_id,
+            senderId: raw.sender_id,
+            content: raw.content,
+            isRead: raw.is_read,
+            createdAt: raw.created_at
+          };
           
           setMessages((prev) => {
             if (prev.some((m) => m.id === newMessage.id)) return prev;

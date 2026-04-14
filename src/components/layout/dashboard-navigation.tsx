@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Heart, LayoutGrid, ListChecks, UserCircle2, Zap } from "lucide-react";
+import { Heart, LayoutGrid, ListChecks, UserCircle2, Zap, MessageSquare } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 
@@ -31,6 +31,11 @@ const dashboardNavItems = [
     href: "/dashboard/pricing",
     label: "Paketler",
     icon: Zap,
+  },
+  {
+    href: "/dashboard/messages",
+    label: "Mesajlar",
+    icon: MessageSquare,
   },
 ] as const;
 
