@@ -215,27 +215,28 @@ export function MyListingsPanel({
       {listings.length > 0 && (
         <div className="space-y-4">
           {/* Toolbar */}
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 px-1 py-2">
-            <div className="flex items-center gap-4">
+          <div className="flex flex-col gap-3 px-1 py-2">
+            {/* Üst satır: seçim + toplu işlemler */}
+            <div className="flex flex-wrap items-center gap-3">
               <button onClick={toggleSelectAll} className="flex items-center gap-2 text-xs font-bold text-slate-500 hover:text-blue-600 transition-colors">
                 {allPageSelected ? <CheckSquare size={18} className="text-blue-600" /> : <Square size={18} />}
                 Bu Sayfayı Seç ({paginatedListings.length})
               </button>
               {selectedIds.length > 0 && (
-                <div className="flex items-center gap-2 animate-in fade-in slide-in-from-left-2 duration-300">
-                  <Button variant="destructive" size="sm" onClick={handleBulkArchive} disabled={isBulkArchiving} className="h-9 px-4 text-[11px] font-bold uppercase tracking-tight rounded-xl shadow-md bg-slate-800 hover:bg-slate-900">
-                    {isBulkArchiving ? <Loader2 className="size-3 animate-spin mr-2" /> : <Archive size={14} className="mr-2" />}
-                    {selectedIds.length} İLAN ARŞİVLE
+                <div className="flex flex-wrap items-center gap-2 animate-in fade-in slide-in-from-left-2 duration-300">
+                  <Button variant="destructive" size="sm" onClick={handleBulkArchive} disabled={isBulkArchiving} className="h-8 px-3 text-[11px] font-bold uppercase tracking-tight rounded-xl shadow-md bg-slate-800 hover:bg-slate-900">
+                    {isBulkArchiving ? <Loader2 className="size-3 animate-spin mr-1" /> : <Archive size={13} className="mr-1" />}
+                    {selectedIds.length} Arşivle
                   </Button>
-                  <Button variant="outline" size="sm" onClick={handleBulkDelete} disabled={isBulkArchiving || !selectedIds.every(id => listings.find(l => l.id === id)?.status === "archived")} className="h-9 px-4 text-[11px] font-bold uppercase tracking-tight rounded-xl border-red-200 text-red-600 hover:bg-red-50 shadow-sm">
-                    SİL
+                  <Button variant="outline" size="sm" onClick={handleBulkDelete} disabled={isBulkArchiving || !selectedIds.every(id => listings.find(l => l.id === id)?.status === "archived")} className="h-8 px-3 text-[11px] font-bold uppercase tracking-tight rounded-xl border-red-200 text-red-600 hover:bg-red-50 shadow-sm">
+                    Sil
                   </Button>
                 </div>
               )}
             </div>
 
-            <div className="flex items-center gap-3">
-              {/* Kaç ilan göster */}
+            {/* Alt satır: göster + indir + toplam */}
+            <div className="flex flex-wrap items-center gap-3">
               <div className="flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 h-9">
                 <span className="text-xs font-semibold text-slate-500">Göster</span>
                 <select
@@ -247,15 +248,15 @@ export function MyListingsPanel({
                 </select>
               </div>
 
-              <Button variant="outline" size="sm" onClick={exportCsv} className="h-9 px-4 text-[11px] font-bold uppercase tracking-tight border-slate-200 rounded-xl bg-white hover:bg-slate-50 transition-all text-slate-600 shadow-sm">
-                <FileSpreadsheet size={14} className="mr-2" />
-                LİSTEYİ İNDİR
+              <Button variant="outline" size="sm" onClick={exportCsv} className="h-9 px-3 text-[11px] font-bold uppercase tracking-tight border-slate-200 rounded-xl bg-white hover:bg-slate-50 transition-all text-slate-600 shadow-sm">
+                <FileSpreadsheet size={14} className="mr-1.5" />
+                <span className="hidden sm:inline">Listeyi İndir</span>
+                <span className="sm:hidden">İndir</span>
               </Button>
 
-              <div className="h-6 w-px bg-slate-200 mx-1 hidden sm:block" />
-              <h3 className="text-[11px] font-bold text-slate-400 uppercase tracking-widest hidden sm:block">
-                {listings.length} TOPLAM İLAN
-              </h3>
+              <span className="text-[11px] font-bold text-slate-400 uppercase tracking-widest ml-auto">
+                {listings.length} ilan
+              </span>
             </div>
           </div>
 
@@ -349,64 +350,65 @@ function ListingCard({
     : 0;
 
   return (
-    <div className={`group flex gap-4 rounded-xl border transition-all duration-300 ${isSelected ? "border-blue-500 bg-blue-50/30 ring-1 ring-blue-100" : "border-slate-200 bg-white hover:border-blue-200 hover:shadow-md"} p-4 ${isArchived ? "opacity-60" : ""}`}>
-      <div className="flex items-center">
-        <Checkbox checked={isSelected} onCheckedChange={onToggleSelect} className="size-5 rounded-lg border-slate-300 data-[state=checked]:bg-blue-600 data-[state=checked]:border-blue-600" />
+    <div className={`group flex gap-3 rounded-xl border transition-all duration-300 ${isSelected ? "border-blue-500 bg-blue-50/30 ring-1 ring-blue-100" : "border-slate-200 bg-white hover:border-blue-200 hover:shadow-md"} p-3 sm:p-4 ${isArchived ? "opacity-60" : ""}`}>
+      <div className="flex items-start pt-1">
+        <Checkbox checked={isSelected} onCheckedChange={onToggleSelect} className="size-4 rounded border-slate-300 data-[state=checked]:bg-blue-600 data-[state=checked]:border-blue-600" />
       </div>
 
-      <div className="relative h-24 w-32 shrink-0 overflow-hidden rounded-xl bg-slate-50 border border-slate-100">
+      <div className="relative h-20 w-24 sm:h-24 sm:w-32 shrink-0 overflow-hidden rounded-xl bg-slate-50 border border-slate-100">
         {listing.images?.[0]?.url ? (
           <Image src={listing.images[0].url} alt="" fill className="object-cover group-hover:scale-110 transition-transform duration-700" placeholder={listing.images[0].placeholderBlur ? "blur" : "empty"} blurDataURL={listing.images[0].placeholderBlur ?? undefined} />
         ) : (
-          <div className="flex h-full items-center justify-center text-slate-300"><Rocket size={24} /></div>
+          <div className="flex h-full items-center justify-center text-slate-300"><Rocket size={20} /></div>
         )}
         {listing.featured && (
-          <div className="absolute top-2 left-2 px-2 py-0.5 rounded-md bg-blue-600 text-white text-[8px] font-bold uppercase tracking-wider shadow-sm">ÖNE ÇIKAN</div>
+          <div className="absolute top-1.5 left-1.5 px-1.5 py-0.5 rounded-md bg-blue-600 text-white text-[7px] font-bold uppercase tracking-wider shadow-sm">ÖNE ÇIKAN</div>
         )}
       </div>
 
-      <div className="min-w-0 flex-1 flex flex-col pt-1">
-        <div className="flex items-center gap-2 mb-2">
+      <div className="min-w-0 flex-1 flex flex-col pt-0.5">
+        <div className="flex flex-wrap items-center gap-1.5 mb-1.5">
           <span className={`text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-md border ${statusClassMap[listing.status]} shadow-sm`}>
             {statusLabelMap[listing.status]}
           </span>
           {listing.eidsVerificationJson && (
-            <span className="flex items-center gap-1.5 rounded-md border border-blue-200 bg-blue-50 px-2 py-0.5 text-[9px] font-bold text-blue-700 tracking-wider">
-              <ShieldCheck size={10} />EİDS ONAYLI
+            <span className="hidden sm:flex items-center gap-1 rounded-md border border-blue-200 bg-blue-50 px-2 py-0.5 text-[9px] font-bold text-blue-700 tracking-wider">
+              <ShieldCheck size={9} />EİDS
             </span>
           )}
         </div>
-        <p className="font-bold text-slate-800 truncate tracking-tight text-sm mb-1 group-hover:text-blue-600 transition-colors uppercase">{listing.title}</p>
-        <p className="text-lg font-black text-blue-600 tracking-tight leading-none">{formatCurrency(listing.price)} ₺</p>
-        <div className="mt-auto flex items-center gap-3 text-[10px] text-slate-400 font-bold uppercase tracking-wider">
+        <p className="font-bold text-slate-800 truncate tracking-tight text-sm mb-1 group-hover:text-blue-600 transition-colors">{listing.title}</p>
+        <p className="text-base font-black text-blue-600 tracking-tight leading-none">{formatCurrency(listing.price)} ₺</p>
+        <div className="mt-auto flex flex-wrap items-center gap-2 text-[10px] text-slate-400 font-bold uppercase tracking-wider pt-1">
           <span>{listing.year}</span>
-          <span className="w-1 h-1 rounded-full bg-slate-200" />
-          <span>{formatNumber(listing.mileage)} km</span>
-          <span className="w-1 h-1 rounded-full bg-slate-200" />
+          <span className="hidden sm:inline">•</span>
+          <span className="hidden sm:inline">{formatNumber(listing.mileage)} km</span>
+          <span className="hidden sm:inline">•</span>
           <span className="truncate">{listing.city}</span>
         </div>
       </div>
 
-      <div className="flex flex-col gap-2 justify-center ml-2 border-l border-slate-100 pl-4">
-        <Link href={`/dashboard/listings?edit=${listing.id}`} className="flex items-center justify-center size-9 rounded-xl bg-slate-50 text-slate-400 hover:bg-blue-600 hover:text-white transition-all border border-slate-100" title="Düzenle">
-          <Pencil className="size-4" />
+      {/* Aksiyon butonları — mobilde 2 sütun grid */}
+      <div className="grid grid-cols-2 sm:flex sm:flex-col gap-1.5 justify-start sm:justify-center ml-1 sm:ml-2 sm:border-l sm:border-slate-100 sm:pl-3">
+        <Link href={`/dashboard/listings?edit=${listing.id}`} className="flex items-center justify-center size-8 rounded-lg bg-slate-50 text-slate-400 hover:bg-blue-600 hover:text-white transition-all border border-slate-100" title="Düzenle">
+          <Pencil className="size-3.5" />
         </Link>
 
         {isApproved && (listing.bumpedAt ? (
-          <div className="flex items-center justify-center size-9 rounded-xl bg-slate-50 text-slate-300 border border-slate-100 cursor-help" title={`${bumpCooldownDays} gün sonra tekrar öne çıkarılabilir`}>
-            <ArrowUpCircle className="size-4" />
+          <div className="flex items-center justify-center size-8 rounded-lg bg-slate-50 text-slate-300 border border-slate-100 cursor-help" title={`${bumpCooldownDays} gün sonra tekrar öne çıkarılabilir`}>
+            <ArrowUpCircle className="size-3.5" />
           </div>
         ) : (
-          <button type="button" onClick={() => onBump(listing.id)} disabled={isBumping || !canBump} className="flex items-center justify-center size-9 rounded-xl bg-emerald-50 text-emerald-600 hover:bg-emerald-600 hover:text-white transition-all disabled:opacity-30 border border-emerald-100" title="Üste Taşı">
-            {isBumping ? <Loader2 className="size-4 animate-spin" /> : <ArrowUpCircle className="size-4" />}
+          <button type="button" onClick={() => onBump(listing.id)} disabled={isBumping || !canBump} className="flex items-center justify-center size-8 rounded-lg bg-emerald-50 text-emerald-600 hover:bg-emerald-600 hover:text-white transition-all disabled:opacity-30 border border-emerald-100" title="Üste Taşı">
+            {isBumping ? <Loader2 className="size-3.5 animate-spin" /> : <ArrowUpCircle className="size-3.5" />}
           </button>
         ))}
 
         {isApproved && (
           <Dialog>
             <DialogTrigger asChild>
-              <button type="button" className="flex items-center justify-center size-9 rounded-xl bg-blue-50 text-blue-600 hover:bg-blue-600 hover:text-white transition-all border border-blue-100" title="Doping (Hızlandır)">
-                <Rocket className="size-4" />
+              <button type="button" className="flex items-center justify-center size-8 rounded-lg bg-blue-50 text-blue-600 hover:bg-blue-600 hover:text-white transition-all border border-blue-100" title="Doping">
+                <Rocket className="size-3.5" />
               </button>
             </DialogTrigger>
             <DialogContent className="sm:max-w-xl rounded-2xl border-none">
@@ -418,8 +420,8 @@ function ListingCard({
           </Dialog>
         )}
 
-        <button type="button" onClick={() => onArchive(listing.id)} disabled={isArchiving} className={`flex items-center justify-center size-9 rounded-xl ${isArchived ? "bg-slate-100 text-slate-400" : "bg-red-50 text-red-500 hover:bg-red-600 hover:text-white"} transition-all disabled:opacity-30 border border-transparent`} title={isArchived ? "Arşivden Çıkar" : "Arşivle"}>
-          {isArchiving ? <Loader2 className="size-4 animate-spin" /> : isArchived ? <RotateCcw className="size-4" /> : <Archive className="size-4" />}
+        <button type="button" onClick={() => onArchive(listing.id)} disabled={isArchiving} className={`flex items-center justify-center size-8 rounded-lg ${isArchived ? "bg-slate-100 text-slate-400" : "bg-red-50 text-red-500 hover:bg-red-600 hover:text-white"} transition-all disabled:opacity-30 border border-transparent`} title={isArchived ? "Arşivden Çıkar" : "Arşivle"}>
+          {isArchiving ? <Loader2 className="size-3.5 animate-spin" /> : isArchived ? <RotateCcw className="size-3.5" /> : <Archive className="size-3.5" />}
         </button>
       </div>
     </div>

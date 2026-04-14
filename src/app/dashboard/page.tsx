@@ -235,8 +235,8 @@ async function DashboardDataSection({
               <Link href="/dashboard/listings" className="text-sm font-bold text-blue-600 hover:text-blue-700">Tümünü Gör</Link>
             </div>
 
-            <div className="overflow-x-auto">
-              <table className="w-full min-w-[640px] text-left">
+            <div className="overflow-x-auto -mx-6 px-6">
+              <table className="w-full min-w-[480px] text-left">
                 <thead>
                   <tr className="border-b border-gray-100 text-[11px] font-bold uppercase tracking-wider text-gray-400">
                     <th className="pb-3 font-medium">Araç Bilgisi</th>

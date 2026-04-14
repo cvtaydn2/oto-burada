@@ -784,3 +784,46 @@ Her yeni geliştirme başlamadan önce okunmalıdır.
   - `npm run typecheck` ✅
   - `npm run build` ✅
 - **Status**: 🟢 Bireysel ve kurumsal satıcı panelleri tasarım referansına uygun hale getirildi.
+
+- **Kapsamlı Responsive Düzeltme Pass (2026-04-15)**:
+  Tüm UI ekranları responsive sorunlar için tarandı. Tespit edilen sorunlar giderildi:
+
+  1. **`chat-layout.tsx` — Mobil Chat Toggle**:
+     - Mobilde sidebar ve chat window aynı anda görünüyordu (overflow)
+     - `showSidebar` state eklendi — mobilde sidebar/chat arasında toggle
+     - Mobil "Geri" butonu eklendi (chat window'dan sidebar'a dönüş)
+     - "Konuşmaları Gör" butonu eklendi (boş state'de)
+
+  2. **`compare/page.tsx` — Tablo Min-Width**:
+     - `min-w-[800px]` → `min-w-[600px]` (daha az yatay scroll)
+
+  3. **`dashboard/page.tsx` — Son İlanlar Tablosu**:
+     - `min-w-[640px]` → `min-w-[480px]`
+     - `-mx-6 px-6` ile overflow-x container düzeltildi
+
+  4. **`inventory-table.tsx` — Truncate Genişliği**:
+     - `max-w-[240px]` → `max-w-[180px] sm:max-w-[240px]` (responsive)
+
+  5. **`dashboard-shell.tsx` — Sidebar Genişliği**:
+     - `md:w-64` → `md:w-56 lg:w-64` (dar ekranlarda daha az yer)
+     - `gap-8` → `gap-6 lg:gap-8`
+
+  6. **`dashboard-navigation.tsx` — Mobil Yatay Scroll**:
+     - Sidebar variant'ta mobilde yatay scroll eklendi
+     - `min-w-max md:min-w-0` ile overflow yönetimi
+     - `shrink-0 md:shrink` ile item genişlikleri
+
+  7. **`my-listings-panel.tsx` — Toolbar & ListingCard**:
+     - Toolbar: `flex-col sm:flex-row` → iki ayrı satır (seçim + araçlar)
+     - "Listeyi İndir" butonu: mobilde kısa metin
+     - ListingCard: `p-4` → `p-3 sm:p-4`
+     - Görsel: `h-24 w-32` → `h-20 w-24 sm:h-24 sm:w-32`
+     - Aksiyon butonları: `flex-col` → `grid grid-cols-2 sm:flex sm:flex-col`
+     - EİDS badge: mobilde gizlendi (`hidden sm:flex`)
+     - Kilometre: mobilde gizlendi (`hidden sm:inline`)
+
+- **Doğrulama**:
+  - `npm run lint` ✅ (0 errors, 0 warnings)
+  - `npm run typecheck` ✅
+  - `npm run build` ✅
+- **Status**: 🟢 Tüm kritik responsive sorunlar giderildi.

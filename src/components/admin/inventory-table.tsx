@@ -84,7 +84,7 @@ export function InventoryTable({ listings }: InventoryTableProps) {
                       )}
                    </div>
                    <div className="flex flex-col min-w-0">
-                      <span className="text-sm font-bold text-slate-900 truncate max-w-[240px]">{listing.title}</span>
+                      <span className="text-sm font-bold text-slate-900 truncate max-w-[180px] sm:max-w-[240px]">{listing.title}</span>
                       <span className="text-[10px] text-slate-400 uppercase font-black tracking-tighter">
                         {listing.brand} {listing.model} • {listing.year} • {formatNumber(listing.mileage)} km
                       </span>

@@ -26,29 +26,32 @@ export function DashboardNavigation({ variant = "tabs" }: DashboardNavigationPro
 
   if (variant === "sidebar") {
     return (
-      <ul className="space-y-0.5 px-2 py-1">
-        {dashboardNavItems.map((item) => {
-          const isActive = item.exact ? pathname === item.href : pathname.startsWith(item.href);
-          const Icon = item.icon;
-          return (
-            <li key={item.href}>
-              <Link
-                href={item.href}
-                aria-current={isActive ? "page" : undefined}
-                className={cn(
-                  "flex items-center gap-3 rounded-lg px-4 py-3 text-sm font-medium transition-all border-l-4",
-                  isActive
-                    ? "bg-blue-50 text-blue-600 border-blue-500"
-                    : "text-gray-600 hover:bg-gray-50 border-transparent hover:text-gray-800"
-                )}
-              >
-                <Icon size={18} className={cn(isActive ? "text-blue-500" : "text-gray-400")} />
-                <span>{item.label}</span>
-              </Link>
-            </li>
-          );
-        })}
-      </ul>
+      // Mobilde yatay scroll, md'de dikey liste
+      <div className="overflow-x-auto md:overflow-visible">
+        <ul className="flex md:flex-col gap-0.5 px-2 py-1 min-w-max md:min-w-0">
+          {dashboardNavItems.map((item) => {
+            const isActive = item.exact ? pathname === item.href : pathname.startsWith(item.href);
+            const Icon = item.icon;
+            return (
+              <li key={item.href} className="shrink-0 md:shrink">
+                <Link
+                  href={item.href}
+                  aria-current={isActive ? "page" : undefined}
+                  className={cn(
+                    "flex items-center gap-3 rounded-lg px-4 py-2.5 text-sm font-medium transition-all whitespace-nowrap md:whitespace-normal",
+                    isActive
+                      ? "bg-blue-50 text-blue-600 md:border-l-4 md:border-blue-500 md:rounded-l-none"
+                      : "text-gray-600 hover:bg-gray-50 md:border-l-4 md:border-transparent hover:text-gray-800"
+                  )}
+                >
+                  <Icon size={17} className={cn(isActive ? "text-blue-500" : "text-gray-400")} />
+                  <span>{item.label}</span>
+                </Link>
+              </li>
+            );
+          })}
+        </ul>
+      </div>
     );
   }
 

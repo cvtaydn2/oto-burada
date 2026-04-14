@@ -58,11 +58,11 @@ export function DashboardShell({ children, email, isAdmin }: DashboardShellProps
         </section>
 
         {/* Main Layout: Sidebar + Content */}
-        <div className="flex flex-col md:flex-row gap-8">
+        <div className="flex flex-col md:flex-row gap-6 lg:gap-8">
 
-          {/* Sidebar Navigation */}
-          <aside className="w-full md:w-64 shrink-0">
-            <nav className="rounded-xl border border-gray-200 bg-white overflow-hidden py-2 md:sticky md:top-24 shadow-sm">
+          {/* Sidebar Navigation — mobilde yatay scroll */}
+          <aside className="w-full md:w-56 lg:w-64 shrink-0">
+            <nav className="rounded-xl border border-gray-200 bg-white overflow-hidden md:sticky md:top-24 shadow-sm">
               <DashboardNavigation variant="sidebar" />
             </nav>
           </aside>

@@ -151,7 +151,7 @@ export default async function ComparePage({ searchParams }: ComparePageProps) {
       </div>
 
       <div className="overflow-x-auto rounded-xl border border-slate-200 bg-white">
-        <table className="min-w-[800px] w-full border-collapse text-left">
+        <table className="min-w-[600px] w-full border-collapse text-left">
           <thead>
             <tr>
               <th className="w-56 border-b border-slate-200 bg-slate-50 p-5 align-top">
