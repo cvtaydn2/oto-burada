@@ -400,6 +400,10 @@ export async function getDatabaseListings(options?: {
         query = query.eq("model", filters.model);
       }
 
+      if (filters.carTrim) {
+        query = query.eq("car_trim", filters.carTrim);
+      }
+
       if (filters.city) {
         query = query.eq("city", filters.city);
       }
@@ -566,6 +570,7 @@ export async function getFilteredDatabaseListings(
   if (filters.sellerId) countQuery = countQuery.eq("seller_id", filters.sellerId);
   if (filters.brand) countQuery = countQuery.eq("brand", filters.brand);
   if (filters.model) countQuery = countQuery.eq("model", filters.model);
+  if (filters.carTrim) countQuery = countQuery.eq("car_trim", filters.carTrim);
   if (filters.city) countQuery = countQuery.eq("city", filters.city);
   if (filters.district) countQuery = countQuery.eq("district", filters.district);
   if (filters.fuelType) countQuery = countQuery.eq("fuel_type", filters.fuelType);

@@ -1,7 +1,11 @@
 import Image from "next/image"
 import { Search, CarFront, MapPin } from "lucide-react"
 
-export function HomeHero() {
+interface HomeHeroProps {
+  cities: string[];
+}
+
+export function HomeHero({ cities }: HomeHeroProps) {
   return (
     <section className="hero-bg min-h-[500px] py-12 md:py-0 md:h-[500px] flex items-center relative overflow-hidden">
       <div className="absolute inset-0">
@@ -54,9 +58,9 @@ export function HomeHero() {
                 className="w-full bg-gray-50 border border-gray-200 text-gray-700 rounded-lg focus:border-blue-500 focus:ring-1 focus:ring-blue-500 block pl-10 p-2.5 outline-none appearance-none cursor-pointer"
               >
                 <option value="">Tüm Şehirler</option>
-                <option value="İstanbul">İstanbul</option>
-                <option value="Ankara">Ankara</option>
-                <option value="İzmir">İzmir</option>
+                {cities.map((city) => (
+                  <option key={city} value={city}>{city}</option>
+                ))}
               </select>
             </div>
           </div>

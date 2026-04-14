@@ -20,12 +20,16 @@ interface SmartFiltersProps {
 
 export function SmartFilters({
   brands,
+  cities,
   filters,
+  models,
+  trims,
+  districts,
   onFilterChange,
   onReset,
   activeCount
 }: SmartFiltersProps) {
-  const [openSections, setOpenSections] = useState<string[]>(["brand", "price", "fuel"])
+  const [openSections, setOpenSections] = useState<string[]>(["brand", "city", "price", "fuel"])
 
   const toggleSection = (id: string) => {
     setOpenSections(prev =>
@@ -57,39 +61,96 @@ export function SmartFilters({
       </div>
 
       <div className="bg-white border border-gray-200 rounded-xl p-4 space-y-6 shadow-sm">
-        {/* Search Brand */}
-        <div className="relative">
-          <Search size={14} className="absolute left-3 top-3 text-gray-400" />
-          <input 
-            type="text" 
-            placeholder="Marka ara..." 
-            className="w-full border border-gray-200 rounded-lg pl-9 p-2 text-sm focus:border-blue-500 outline-none transition-colors"
-          />
-        </div>
-
         {/* Brand & Model Section */}
         <FilterSection 
           title="Marka & Model" 
           isOpen={openSections.includes("brand")} 
           onToggle={() => toggleSection("brand")}
         >
-          <div className="space-y-2 max-h-48 overflow-y-auto pr-2 custom-scrollbar">
-            {brands.slice(0, 8).map((b) => (
-              <label key={b.brand} className="flex items-center space-x-2 cursor-pointer text-sm group">
-                <input 
-                  type="checkbox" 
-                  checked={filters.brand === b.brand}
-                  onChange={() => onFilterChange("brand", filters.brand === b.brand ? undefined : b.brand)}
-                  className="rounded border-gray-300 text-blue-500 focus:ring-blue-500 size-4 transition"
-                />
-                <span className={cn("transition-colors", filters.brand === b.brand ? "font-bold text-blue-600" : "text-gray-600 group-hover:text-gray-900")}>
-                  {b.brand}
-                </span>
-              </label>
-            ))}
-            {brands.length > 8 && (
-              <button className="text-blue-500 text-xs font-bold mt-2 hover:underline">+ {brands.length - 8} Marka Daha</button>
-            )}
+          <div className="space-y-3">
+            <div className="relative">
+              <Search size={14} className="absolute left-3 top-3 text-gray-400" />
+              <select
+                value={filters.brand ?? ""}
+                onChange={(e) => {
+                  const nextBrand = e.target.value || undefined
+                  onFilterChange("brand", nextBrand)
+                  onFilterChange("model", undefined)
+                  onFilterChange("carTrim", undefined)
+                }}
+                className="w-full appearance-none rounded-lg border border-gray-200 bg-white pl-9 p-2 text-sm focus:border-blue-500 outline-none transition-colors"
+              >
+                <option value="">Tüm Markalar</option>
+                {brands.map((brand) => (
+                  <option key={brand.brand} value={brand.brand}>{brand.brand}</option>
+                ))}
+              </select>
+            </div>
+
+            <select
+              value={filters.model ?? ""}
+              onChange={(e) => {
+                const nextModel = e.target.value || undefined
+                onFilterChange("model", nextModel)
+                onFilterChange("carTrim", undefined)
+              }}
+              disabled={!filters.brand}
+              className="w-full rounded-lg border border-gray-200 bg-white p-2 text-sm focus:border-blue-500 outline-none transition-colors disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-400"
+            >
+              <option value="">Tüm Modeller</option>
+              {models.map((model) => (
+                <option key={model} value={model}>{model}</option>
+              ))}
+            </select>
+
+            <select
+              value={filters.carTrim ?? ""}
+              onChange={(e) => onFilterChange("carTrim", e.target.value || undefined)}
+              disabled={!filters.model}
+              className="w-full rounded-lg border border-gray-200 bg-white p-2 text-sm focus:border-blue-500 outline-none transition-colors disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-400"
+            >
+              <option value="">Tüm Paketler</option>
+              {trims.map((trim) => (
+                <option key={trim} value={trim}>{trim}</option>
+              ))}
+            </select>
+          </div>
+        </FilterSection>
+
+        <hr className="border-gray-100" />
+
+        <FilterSection
+          title="Şehir & İlçe"
+          isOpen={openSections.includes("city")}
+          onToggle={() => toggleSection("city")}
+        >
+          <div className="space-y-3">
+            <select
+              value={filters.city ?? ""}
+              onChange={(e) => {
+                const nextCity = e.target.value || undefined
+                onFilterChange("city", nextCity)
+                onFilterChange("district", undefined)
+              }}
+              className="w-full rounded-lg border border-gray-200 bg-white p-2 text-sm focus:border-blue-500 outline-none transition-colors"
+            >
+              <option value="">Tüm Şehirler</option>
+              {cities.map((city) => (
+                <option key={city.city} value={city.city}>{city.city}</option>
+              ))}
+            </select>
+
+            <select
+              value={filters.district ?? ""}
+              onChange={(e) => onFilterChange("district", e.target.value || undefined)}
+              disabled={!filters.city}
+              className="w-full rounded-lg border border-gray-200 bg-white p-2 text-sm focus:border-blue-500 outline-none transition-colors disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-400"
+            >
+              <option value="">Tüm İlçeler</option>
+              {districts.map((district) => (
+                <option key={district} value={district}>{district}</option>
+              ))}
+            </select>
           </div>
         </FilterSection>
 
@@ -122,6 +183,34 @@ export function SmartFilters({
 
         <hr className="border-gray-100" />
 
+        <FilterSection
+          title="Ekspertiz & Hasar"
+          isOpen={openSections.includes("trust")}
+          onToggle={() => toggleSection("trust")}
+        >
+          <div className="space-y-3">
+            <label className="flex items-center space-x-2 cursor-pointer text-sm group">
+              <input
+                type="checkbox"
+                checked={filters.hasExpertReport === true}
+                onChange={() => onFilterChange("hasExpertReport", filters.hasExpertReport ? undefined : true)}
+                className="rounded border-gray-300 text-blue-500 focus:ring-blue-500 size-4 transition"
+              />
+              <span className="text-gray-600 group-hover:text-gray-900">Ekspertiz raporlu ilanlar</span>
+            </label>
+            <input
+              type="number"
+              min={0}
+              placeholder="Maks. Tramer Tutarı"
+              value={filters.maxTramer ?? ""}
+              onChange={(e) => onFilterChange("maxTramer", e.target.value ? Number(e.target.value) : undefined)}
+              className="w-full rounded-lg border border-gray-200 bg-white p-2 text-sm focus:border-blue-500 outline-none transition-colors"
+            />
+          </div>
+        </FilterSection>
+
+        <hr className="border-gray-100" />
+
         {/* Fuel Type Section */}
         <FilterSection 
           title="Yakıt Tipi" 
@@ -138,6 +227,34 @@ export function SmartFilters({
                   className="rounded border-gray-300 text-blue-500 focus:ring-blue-500 size-4 transition"
                 />
                 <span className={cn("transition-colors", filters.fuelType === opt.value ? "font-bold text-blue-600" : "text-gray-600 group-hover:text-gray-900")}>
+                  {opt.label}
+                </span>
+              </label>
+            ))}
+          </div>
+        </FilterSection>
+
+        <hr className="border-gray-100" />
+
+        <FilterSection
+          title="Vites"
+          isOpen={openSections.includes("gearbox")}
+          onToggle={() => toggleSection("gearbox")}
+        >
+          <div className="space-y-2">
+            {[
+              { value: "manuel", label: "Manuel" },
+              { value: "otomatik", label: "Otomatik" },
+              { value: "yari_otomatik", label: "Yarı Otomatik" },
+            ].map((opt) => (
+              <label key={opt.value} className="flex items-center space-x-2 cursor-pointer text-sm group">
+                <input
+                  type="checkbox"
+                  checked={filters.transmission === opt.value}
+                  onChange={() => onFilterChange("transmission", filters.transmission === opt.value ? undefined : opt.value)}
+                  className="rounded border-gray-300 text-blue-500 focus:ring-blue-500 size-4 transition"
+                />
+                <span className={cn("transition-colors", filters.transmission === opt.value ? "font-bold text-blue-600" : "text-gray-600 group-hover:text-gray-900")}>
                   {opt.label}
                 </span>
               </label>

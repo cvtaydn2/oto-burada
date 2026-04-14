@@ -416,6 +416,14 @@ export const listingFiltersSchema: z.ZodType<ListingFilters> = z
       emptyStringToUndefined,
       nonNegativeNumberSchema.max(maximumMileage, invalidMessage).optional(),
     ),
+    maxTramer: z.preprocess(
+      emptyStringToUndefined,
+      nonNegativeNumberSchema.optional(),
+    ),
+    hasExpertReport: z.preprocess(
+      (value) => value === "true" || value === true ? true : value === "false" || value === false ? false : undefined,
+      z.boolean().optional(),
+    ),
     fuelType: z.preprocess(emptyStringToUndefined, z.enum(fuelTypes).optional()),
     transmission: z.preprocess(emptyStringToUndefined, z.enum(transmissionTypes).optional()),
     sort: z.preprocess(emptyStringToUndefined, z.enum(listingSortOptions).optional()),

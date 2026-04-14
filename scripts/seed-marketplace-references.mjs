@@ -69,6 +69,51 @@ async function seedReferences() {
       { name: "Leon", trims: ["Style", "FR", "Xperience"] },
       { name: "Arona", trims: ["Style", "Xperience", "Style Plus"] }
     ]},
+    { name: "Toyota", models: [
+      { name: "Corolla", trims: ["Vision", "Dream", "Flame X-Pack"] },
+      { name: "C-HR", trims: ["Flame", "Passion", "Hybrid Passion X-Pack"] },
+      { name: "Yaris", trims: ["Dream", "Flame", "Hybrid Passion"] }
+    ]},
+    { name: "Honda", models: [
+      { name: "Civic", trims: ["Elegance", "Executive", "Eco Executive"] },
+      { name: "City", trims: ["Elegance", "Executive"] },
+      { name: "HR-V", trims: ["Elegance", "Executive+"] }
+    ]},
+    { name: "Peugeot", models: [
+      { name: "208", trims: ["Active", "Allure", "GT"] },
+      { name: "308", trims: ["Active Prime", "Allure", "GT"] },
+      { name: "3008", trims: ["Active Prime", "Allure", "GT"] }
+    ]},
+    { name: "Opel", models: [
+      { name: "Corsa", trims: ["Edition", "Elegance", "GS"] },
+      { name: "Astra", trims: ["Edition", "Elegance", "GS Line"] },
+      { name: "Crossland", trims: ["Essentia", "Edition", "Ultimate"] }
+    ]},
+    { name: "Ford", models: [
+      { name: "Focus", trims: ["Trend X", "Titanium", "ST-Line"] },
+      { name: "Fiesta", trims: ["Trend", "Titanium", "ST-Line"] },
+      { name: "Puma", trims: ["Style", "Titanium", "ST-Line"] }
+    ]},
+    { name: "Audi", models: [
+      { name: "A3", trims: ["Advanced", "S Line", "Quattro"] },
+      { name: "A4", trims: ["Advanced", "S Line", "Quattro"] },
+      { name: "Q3", trims: ["Advanced", "S Line", "Black Edition"] }
+    ]},
+    { name: "Skoda", models: [
+      { name: "Octavia", trims: ["Elite", "Premium", "Sportline"] },
+      { name: "Superb", trims: ["Prestige", "Premium", "Sportline"] },
+      { name: "Kamiq", trims: ["Elite", "Premium", "Monte Carlo"] }
+    ]},
+    { name: "Hyundai", models: [
+      { name: "i20", trims: ["Jump", "Style", "Elite"] },
+      { name: "Elantra", trims: ["Style", "Prime", "Elite"] },
+      { name: "Tucson", trims: ["Comfort", "Prime", "Elite"] }
+    ]},
+    { name: "Kia", models: [
+      { name: "Rio", trims: ["Cool", "Elegance", "Prestige"] },
+      { name: "Ceed", trims: ["Cool", "Elegance", "Prestige"] },
+      { name: "Sportage", trims: ["Comfort", "Elegance", "Prestige"] }
+    ]},
   ];
 
   const cities = [
@@ -82,6 +127,18 @@ async function seedReferences() {
     { name: "Konya", plate: 42, districts: ["Selçuklu", "Meram", "Karatay"] },
     { name: "Gaziantep", plate: 27, districts: ["Şahinbey", "Şehitkamil"] },
     { name: "Mersin", plate: 33, districts: ["Yenişehir", "Mezitli", "Tarsus", "Toroslar"] },
+    { name: "Kayseri", plate: 38, districts: ["Melikgazi", "Kocasinan", "Talas"] },
+    { name: "Eskişehir", plate: 26, districts: ["Odunpazarı", "Tepebaşı"] },
+    { name: "Samsun", plate: 55, districts: ["Atakum", "İlkadım", "Canik"] },
+    { name: "Denizli", plate: 20, districts: ["Pamukkale", "Merkezefendi"] },
+    { name: "Sakarya", plate: 54, districts: ["Adapazarı", "Serdivan", "Erenler"] },
+    { name: "Tekirdağ", plate: 59, districts: ["Süleymanpaşa", "Çorlu", "Çerkezköy"] },
+    { name: "Balıkesir", plate: 10, districts: ["Karesi", "Altıeylül", "Bandırma", "Edremit"] },
+    { name: "Muğla", plate: 48, districts: ["Bodrum", "Fethiye", "Menteşe", "Marmaris"] },
+    { name: "Aydın", plate: 9, districts: ["Efeler", "Kuşadası", "Nazilli"] },
+    { name: "Hatay", plate: 31, districts: ["Antakya", "İskenderun", "Defne"] },
+    { name: "Trabzon", plate: 61, districts: ["Ortahisar", "Akçaabat", "Yomra"] },
+    { name: "Malatya", plate: 44, districts: ["Battalgazi", "Yeşilyurt"] },
   ];
 
   console.log("Seeding Brands and Models...");

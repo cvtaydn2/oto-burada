@@ -70,7 +70,30 @@ export function ExpertInspectionCard({
   }, [expertInspection]);
 
   if (!hasData || !expertInspection) {
-    return null;
+    return (
+      <div className={cn("rounded-2xl border border-slate-200 bg-white p-6 shadow-sm", className)}>
+        <div className="mb-4 flex items-center gap-3">
+          <div className="flex size-12 items-center justify-center rounded-2xl border border-amber-100 bg-amber-50 text-amber-600">
+            <Info size={22} />
+          </div>
+          <div>
+            <h3 className="text-lg font-black text-slate-900">Ekspertiz Bilgisi Paylaşılmamış</h3>
+            <p className="text-sm font-medium text-slate-500">Bu ilanda doğrulanmış ekspertiz raporu henüz eklenmemiş.</p>
+          </div>
+        </div>
+
+        <div className="grid gap-3 sm:grid-cols-2">
+          <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
+            <div className="text-[11px] font-black uppercase tracking-widest text-slate-400">Durum</div>
+            <div className="mt-2 text-sm font-bold text-slate-800">Satıcı beyanı mevcut, bağımsız ekspertiz yok</div>
+          </div>
+          <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
+            <div className="text-[11px] font-black uppercase tracking-widest text-slate-400">Öneri</div>
+            <div className="mt-2 text-sm font-bold text-slate-800">Aracı görmeden önce ekspertiz raporu ve servis kontrolü isteyin</div>
+          </div>
+        </div>
+      </div>
+    );
   }
 
   const gradeInfo = expertInspection.overallGrade

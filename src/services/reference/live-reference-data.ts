@@ -13,30 +13,6 @@ type DBTrim = { model_id: string; name: string };
 type DBCity = { id: string; name: string; plate_code: number };
 type DBDistrict = { city_id: string; name: string };
 
-const POPULAR_BRANDS: BrandCatalogItem[] = [
-  { brand: "Volkswagen", slug: "volkswagen", name: "Volkswagen", models: [
-    { name: "Passat", trims: ["Business", "Elegance", "R-Line"] },
-    { name: "Golf", trims: ["Life", "Style", "R-Line"] },
-    { name: "Polo", trims: ["Life", "Style"] }
-  ]},
-  { brand: "Renault", slug: "renault", name: "Renault", models: [
-    { name: "Clio", trims: ["Joy", "Touch", "Icon"] },
-    { name: "Megane", trims: ["Joy", "Touch", "Icon"] }
-  ]},
-  { brand: "Fiat", slug: "fiat", name: "Fiat", models: [
-    { name: "Egea", trims: ["Easy", "Urban", "Lounge"] }
-  ]},
-  { brand: "BMW", slug: "bmw", name: "BMW", models: [
-    { name: "3 Serisi", trims: ["M Sport", "Sport Line", "Luxury Line"] }
-  ]},
-];
-
-const POPULAR_CITIES: CityOption[] = [
-  { city: "İstanbul", slug: "istanbul", cityPlate: 34, districts: ["Kadıköy", "Beşiktaş", "Şişli", "Üsküdar"] },
-  { city: "Ankara", slug: "ankara", cityPlate: 6, districts: ["Çankaya", "Keçiören", "Yenimahalle"] },
-  { city: "İzmir", slug: "izmir", cityPlate: 35, districts: ["Konak", "Karşıyaka", "Bornova"] },
-];
-
 async function fetchLiveMarketplaceReferenceData() {
   const { url, anonKey } = getSupabaseEnv();
   const supabase = createClient(url, anonKey, {
@@ -115,8 +91,8 @@ async function fetchLiveMarketplaceReferenceData() {
     .slice(0, 100);
 
   return { 
-    brands: Array.isArray(brands) && brands.length > 0 ? brands : POPULAR_BRANDS, 
-    cities: Array.isArray(cities) && cities.length > 0 ? cities : POPULAR_CITIES, 
+    brands,
+    cities,
     searchSuggestions: Array.isArray(searchSuggestions) ? searchSuggestions : []
   };
 }

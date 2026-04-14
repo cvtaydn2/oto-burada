@@ -210,6 +210,36 @@ export default async function ListingDetailPage({ params }: ListingDetailPagePro
                 <SpecBox icon={<Settings2 className="size-5" />} label="Vites Tipi" value={listing.transmission} />
               </div>
 
+              <div className="rounded-xl border border-slate-200 bg-white p-6">
+                <h2 className="mb-5 text-lg font-bold text-slate-900">Güven ve Durum Özeti</h2>
+                <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+                  <TrustCard
+                    title="Ekspertiz"
+                    value={listing.expertInspection?.hasInspection ? "Var" : "Paylaşılmadı"}
+                    description={listing.expertInspection?.inspectionDate ? `${new Date(listing.expertInspection.inspectionDate).toLocaleDateString("tr-TR")} tarihli rapor` : "Bağımsız ekspertiz kaydı görünmüyor"}
+                    tone={listing.expertInspection?.hasInspection ? "emerald" : "amber"}
+                  />
+                  <TrustCard
+                    title="Tramer"
+                    value={listing.tramerAmount && listing.tramerAmount > 0 ? `${new Intl.NumberFormat("tr-TR").format(listing.tramerAmount)} TL` : "Kayıt yok"}
+                    description={listing.tramerAmount && listing.tramerAmount > 0 ? "Hasar kaydı var, detayları aşağıda inceleyin" : "Beyan edilen hasar kaydı görünmüyor"}
+                    tone={listing.tramerAmount && listing.tramerAmount > 0 ? "amber" : "emerald"}
+                  />
+                  <TrustCard
+                    title="Satıcı"
+                    value={seller?.isVerified || seller?.eidsId ? "Onaylı" : "Aktif Profil"}
+                    description={seller?.eidsId ? "EIDS doğrulaması mevcut" : "Satıcı profili yayında"}
+                    tone={seller?.isVerified || seller?.eidsId ? "emerald" : "slate"}
+                  />
+                  <TrustCard
+                    title="İlan Güncelliği"
+                    value={new Date(listing.updatedAt).toLocaleDateString("tr-TR")}
+                    description="Fiyat ve açıklama değişiklikleri son güncelleme tarihine göre okunmalı"
+                    tone="blue"
+                  />
+                </div>
+              </div>
+
               {/* Expert Inspection */}
               <div id="ekspertiz" className="rounded-xl border border-slate-200 bg-white p-6 scroll-mt-24">
                 <div className="mb-5 flex items-center justify-between">
@@ -376,6 +406,33 @@ function SpecBox({ icon, label, value }: { icon: React.ReactNode; label: string;
         <div className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">{label}</div>
         <div className="text-sm font-bold text-gray-800 capitalize leading-tight">{value}</div>
       </div>
+    </div>
+  );
+}
+
+function TrustCard({
+  title,
+  value,
+  description,
+  tone,
+}: {
+  title: string;
+  value: string;
+  description: string;
+  tone: "emerald" | "amber" | "blue" | "slate";
+}) {
+  const toneClasses = {
+    amber: "border-amber-100 bg-amber-50 text-amber-700",
+    blue: "border-blue-100 bg-blue-50 text-blue-700",
+    emerald: "border-emerald-100 bg-emerald-50 text-emerald-700",
+    slate: "border-slate-200 bg-slate-50 text-slate-700",
+  } as const;
+
+  return (
+    <div className={cn("rounded-xl border p-4", toneClasses[tone])}>
+      <div className="text-[11px] font-black uppercase tracking-widest">{title}</div>
+      <div className="mt-2 text-lg font-black">{value}</div>
+      <p className="mt-2 text-xs font-medium leading-relaxed opacity-90">{description}</p>
     </div>
   );
 }

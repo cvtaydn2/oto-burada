@@ -14,6 +14,22 @@ Her yeni geliştirme başlamadan önce okunmalıdır.
 
 ## Proje Durumu
 
+- **Data Integrity & UX Pass (2026-04-14)**:
+  1. **Sahte Homepage Verisi Kaldırıldı**: Ana sayfadaki sabit “popüler kategoriler” kartları kaldırıldı; marka ve şehir keşif alanları artık doğrudan Supabase reference verisinden besleniyor.
+  2. **Hero ve Reference Canlılaştırma**: `HomeHero` şehir listesi artık canlı reference datasından geliyor. `live-reference-data` içindeki fallback mock brand/city dönüşü kaldırıldı; boşsa boş, varsa DB verisi gösteriliyor.
+  3. **Listings Pagination**: `/listings` sayfasına gerçek sayfalama, aktif sayfa durumu ve “kaç ilan gösterilsin” seçeneği eklendi. `page`, `limit`, `carTrim`, `maxTramer`, `hasExpertReport` filtreleri URL ile tam senkron çalışır hale getirildi.
+  4. **Filtre Paneli Tamamlandı**: Desktop filtre paneli artık tüm marka, model, paket, şehir ve ilçe akışını kullanıyor; `slice(0, 8)` ile marka kırpma kaldırıldı.
+  5. **İlan Detayı Güven Katmanı**: Detail sayfasına “Güven ve Durum Özeti” eklendi. Ekspertiz verisi yoksa bunu açıkça söyleyen bilgilendirici kart gösteriliyor; kullanıcı belirsizlikle bırakılmıyor.
+  6. **Reference Seed Genişletildi**: `db:seed-references` script’i yeni marka/model/paket ve ek şehir/ilçelerle büyütüldü; script gerçek Supabase veritabanına başarıyla çalıştırıldı.
+- **Doğrulama**:
+  - `npm run lint` ✅
+  - `npm run typecheck` ✅
+  - `npm run build` ✅
+  - `npm run db:seed-references` ✅
+- **Sonraki Adım**:
+  - Yeni deploy sonrası `/listings` ve `/listing/[slug]` route’larında gerçek kullanıcı tarafı hız etkisi Vercel RES/FCP panelinden tekrar okunmalı.
+  - Reference veri kalitesi için bir sonraki turda ilçe kapsamı ve model/paket sayısı daha da genişletilebilir; ardından create form ve search suggestions aynı dataset ile hizalanmalı.
+
 - **Performance Pass 5 (2026-04-14)**:
   1. **Homepage Hero JS Kaldırıldı**: `HomeHero` client component olmaktan çıkarıldı ve GET form tabanlı server render arama yüzeyine dönüştürüldü; ana sayfanın fold-üstü alanındaki ilk JS maliyeti düşürüldü.
   2. **Admin Streaming**: `/admin` ana sayfasındaki metrikler, grafik/persistence panelleri ve moderasyon geçmişi `Suspense` ile ayrı stream edilen bloklara bölündü; header artık tüm veri sorgularını beklemeden boyanabiliyor.

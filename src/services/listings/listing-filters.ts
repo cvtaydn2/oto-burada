@@ -174,6 +174,7 @@ export function createSearchParamsFromListingFilters(filters: ListingFilters) {
   append("query", filters.query);
   append("brand", filters.brand);
   append("model", filters.model);
+  append("carTrim", filters.carTrim);
   append("city", filters.city);
   append("district", filters.district);
   append("minPrice", filters.minPrice);
@@ -181,8 +182,15 @@ export function createSearchParamsFromListingFilters(filters: ListingFilters) {
   append("minYear", filters.minYear);
   append("maxYear", filters.maxYear);
   append("maxMileage", filters.maxMileage);
+  append("maxTramer", filters.maxTramer);
   append("fuelType", filters.fuelType);
   append("transmission", filters.transmission);
+  append("page", filters.page);
+  append("limit", filters.limit);
+
+  if (filters.hasExpertReport) {
+    searchParams.set("hasExpertReport", "true");
+  }
 
   if (filters.sort && filters.sort !== "newest") {
     append("sort", filters.sort);

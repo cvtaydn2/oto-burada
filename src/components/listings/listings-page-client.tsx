@@ -9,6 +9,7 @@ import { type Listing, type ListingFilters, type BrandCatalogItem, type CityOpti
 import { CarCard } from "@/components/modules/listings/car-card"
 import { ListingsGridSkeleton } from "@/components/listings/listings-grid-skeleton"
 import { cn } from "@/lib/utils"
+import { createSearchParamsFromListingFilters } from "@/services/listings/listing-filters"
 
 const SmartFilters = dynamic(
   () => import("@/components/modules/listings/smart-filters").then((mod) => mod.SmartFilters),
@@ -39,10 +40,15 @@ const QUICK_FILTERS = [
   { label: "Yeni Eklenen", type: "newest" as const, icon: Star },
 ]
 
+const PAGE_SIZE_OPTIONS = [12, 24, 48]
+
 interface ListingsPageClientProps {
   initialResult: {
     listings: Listing[]
     total: number
+    page: number
+    limit: number
+    hasMore: boolean
   }
   brands: BrandCatalogItem[]
   cities: CityOption[]
@@ -63,7 +69,7 @@ export function ListingsPageClient({
   const [isSortOpen, setIsSortOpen] = useState(false)
 
   const activeFiltersCount = Object.entries(filters).filter(([key, val]) => {
-    if (key === "limit" || key === "offset" || key === "sort") return false
+    if (key === "limit" || key === "offset" || key === "sort" || key === "page") return false
     return val !== undefined && val !== ""
   }).length
 
@@ -74,10 +80,15 @@ export function ListingsPageClient({
   const debounceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const handleFilterChange = <K extends keyof ListingFilters>(key: K, value: ListingFilters[K]) => {
-    const newFilters = { ...filters, [key]: value }
+    const newFilters = { ...filters, [key]: value, page: 1 }
     setFilters(newFilters)
 
     if (key === "sort") {
+      applyFilters({ ...newFilters, page: filters.page ?? initialResult.page }, true)
+      return
+    }
+
+    if (key === "limit") {
       applyFilters(newFilters, true)
       return
     }
@@ -89,18 +100,20 @@ export function ListingsPageClient({
   }
 
   const handleReset = () => {
-    setFilters({})
-    applyFilters({}, true)
+    const resetFilters = { limit: filters.limit ?? initialResult.limit, page: 1 }
+    setFilters(resetFilters)
+    applyFilters(resetFilters, true)
+  }
+
+  const handlePageChange = (page: number) => {
+    const nextFilters = { ...filters, page }
+    setFilters(nextFilters)
+    applyFilters(nextFilters, true)
   }
 
   const applyFilters = (newFilters: ListingFilters, immediate = false) => {
     const fn = () => {
-      const params = new URLSearchParams()
-      Object.entries(newFilters).forEach(([key, value]) => {
-        if (value !== undefined && value !== "") {
-          params.set(key, String(value))
-        }
-      })
+      const params = createSearchParamsFromListingFilters(newFilters)
       router.push(`/listings?${params.toString()}`, { scroll: false })
     }
 
@@ -113,6 +126,12 @@ export function ListingsPageClient({
   }
 
   const currentSortLabel = SORT_OPTIONS.find(o => o.value === filters.sort)?.label || "En Yeni"
+  const currentPage = initialResult.page
+  const totalPages = Math.max(1, Math.ceil(initialResult.total / initialResult.limit))
+  const canGoPrev = currentPage > 1
+  const canGoNext = currentPage < totalPages
+  const startIndex = initialResult.total === 0 ? 0 : (currentPage - 1) * initialResult.limit + 1
+  const endIndex = Math.min(currentPage * initialResult.limit, initialResult.total)
 
   return (
     <div className="mx-auto max-w-[1440px] px-5 py-8 lg:px-6 lg:py-8">
@@ -198,6 +217,19 @@ export function ListingsPageClient({
                   ))}
                 </div>
               )}
+            </div>
+
+            <div className="hidden sm:flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 h-9">
+              <span className="text-xs font-semibold text-slate-500">Göster</span>
+              <select
+                value={filters.limit ?? initialResult.limit}
+                onChange={(event) => handleFilterChange("limit", Number(event.target.value))}
+                className="bg-transparent text-sm font-medium text-slate-700 outline-none"
+              >
+                {PAGE_SIZE_OPTIONS.map((option) => (
+                  <option key={option} value={option}>{option}</option>
+                ))}
+              </select>
             </div>
           </div>
         </div>
@@ -296,19 +328,79 @@ export function ListingsPageClient({
           {isPending ? (
             <ListingsGridSkeleton />
           ) : initialResult.listings.length > 0 ? (
-            <div className={cn(
-              viewMode === "grid"
-                ? "grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3"
-                : "flex flex-col gap-3"
-            )}>
-              {initialResult.listings.map((listing, index) => (
-                <CarCard
-                  key={listing.id}
-                  listing={listing}
-                  priority={viewMode === "grid" ? index < 4 : index < 2}
-                  variant={viewMode}
-                />
-              ))}
+            <div className="space-y-6">
+              <div className="flex flex-col gap-3 rounded-xl border border-slate-200 bg-white p-4 sm:flex-row sm:items-center sm:justify-between">
+                <p className="text-sm font-medium text-slate-600">
+                  <span className="font-bold text-slate-900">{startIndex}-{endIndex}</span> arası gösteriliyor, toplam <span className="font-bold text-slate-900">{initialResult.total}</span> ilan
+                </p>
+                <div className="flex items-center gap-2 sm:hidden">
+                  <span className="text-xs font-semibold text-slate-500">Göster</span>
+                  <select
+                    value={filters.limit ?? initialResult.limit}
+                    onChange={(event) => handleFilterChange("limit", Number(event.target.value))}
+                    className="rounded-md border border-slate-200 bg-white px-2 py-1 text-sm font-medium text-slate-700 outline-none"
+                  >
+                    {PAGE_SIZE_OPTIONS.map((option) => (
+                      <option key={option} value={option}>{option}</option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
+              <div className={cn(
+                viewMode === "grid"
+                  ? "grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3"
+                  : "flex flex-col gap-3"
+              )}>
+                {initialResult.listings.map((listing, index) => (
+                  <CarCard
+                    key={listing.id}
+                    listing={listing}
+                    priority={viewMode === "grid" ? index < 4 : index < 2}
+                    variant={viewMode}
+                  />
+                ))}
+              </div>
+
+              <div className="flex flex-col gap-4 rounded-xl border border-slate-200 bg-white p-4 sm:flex-row sm:items-center sm:justify-between">
+                <div className="text-sm text-slate-500">
+                  Sayfa <span className="font-bold text-slate-900">{currentPage}</span> / {totalPages}
+                </div>
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => handlePageChange(currentPage - 1)}
+                    disabled={!canGoPrev}
+                    className="inline-flex h-10 items-center justify-center rounded-lg border border-slate-200 px-4 text-sm font-bold text-slate-600 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
+                  >
+                    Önceki
+                  </button>
+                  {buildPageItems(currentPage, totalPages).map((item, index) =>
+                    item === "ellipsis" ? (
+                      <span key={`${item}-${index}`} className="px-2 text-slate-400">…</span>
+                    ) : (
+                      <button
+                        key={item}
+                        onClick={() => handlePageChange(item)}
+                        className={cn(
+                          "inline-flex h-10 min-w-10 items-center justify-center rounded-lg border px-3 text-sm font-bold transition",
+                          item === currentPage
+                            ? "border-blue-500 bg-blue-500 text-white"
+                            : "border-slate-200 bg-white text-slate-600 hover:bg-slate-50"
+                        )}
+                      >
+                        {item}
+                      </button>
+                    )
+                  )}
+                  <button
+                    onClick={() => handlePageChange(currentPage + 1)}
+                    disabled={!canGoNext}
+                    className="inline-flex h-10 items-center justify-center rounded-lg border border-slate-200 px-4 text-sm font-bold text-slate-600 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
+                  >
+                    Sonraki
+                  </button>
+                </div>
+              </div>
             </div>
           ) : (
             <div className="flex flex-col items-center justify-center rounded-xl border border-dashed border-slate-200 bg-white py-24 text-center">
@@ -331,6 +423,22 @@ export function ListingsPageClient({
       </div>
     </div>
   )
+}
+
+function buildPageItems(currentPage: number, totalPages: number): Array<number | "ellipsis"> {
+  if (totalPages <= 7) {
+    return Array.from({ length: totalPages }, (_, index) => index + 1)
+  }
+
+  if (currentPage <= 3) {
+    return [1, 2, 3, 4, "ellipsis", totalPages]
+  }
+
+  if (currentPage >= totalPages - 2) {
+    return [1, "ellipsis", totalPages - 3, totalPages - 2, totalPages - 1, totalPages]
+  }
+
+  return [1, "ellipsis", currentPage - 1, currentPage, currentPage + 1, "ellipsis", totalPages]
 }
 
 function ChevronIcon({ className }: { className?: string }) {
