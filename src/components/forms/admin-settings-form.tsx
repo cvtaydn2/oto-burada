@@ -205,12 +205,25 @@ export function AdminSettingsForm({ initialSettings }: AdminSettingsFormProps) {
             </div>
             
             <div className="space-y-5">
-               <div className="flex cursor-not-allowed items-center justify-between rounded-2xl border-2 border-dashed border-slate-100 p-5 opacity-50">
+               <div className="flex items-center justify-between rounded-2xl border-2 border-dashed border-slate-100 p-5">
                   <div className="flex flex-col gap-1">
                      <span className="text-sm font-black text-slate-900 uppercase tracking-tight">Önbellek Temizle</span>
                      <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider italic">Redis kayıtlarını sıfırla</span>
                   </div>
-                  <Button variant="ghost" className="font-black text-[10px] tracking-widest text-slate-400" disabled>SIFIRLA</Button>
+                  <Button 
+                    variant="outline" 
+                    className="font-black text-[10px] tracking-widest text-slate-600 border-slate-200 hover:bg-red-50 hover:text-red-600 hover:border-red-200 transition-all"
+                    onClick={async () => {
+                      try {
+                        await fetch("/api/admin/market/sync", { method: "POST" });
+                        toast.success("Önbellek temizlendi.");
+                      } catch {
+                        toast.error("Önbellek temizlenemedi.");
+                      }
+                    }}
+                  >
+                    SIFIRLA
+                  </Button>
                </div>
                <div className="flex items-center justify-between rounded-2xl border border-slate-100 p-5">
                   <div className="flex flex-col gap-1">

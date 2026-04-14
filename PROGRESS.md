@@ -637,3 +637,20 @@ Her yeni geliştirme başlamadan önce okunmalıdır.
   - `npm run typecheck` ✅
   - `npm run build` ✅
 - **Status**: 🟢 Ekspertiz raporu hem ilan oluşturma formunda hem de ilan detay sayfasında tasarım referansıyla tam uyumlu.
+
+- **Kapsamlı UI Tarama & Düzeltme Pass (2026-04-15)**:
+  Tüm UI ekranları `.design/pages-code` taslaklarıyla karşılaştırıldı. Tespit edilen sorunlar giderildi:
+
+  1. **`pricing-plans.tsx`** — `alert()` placeholder kaldırıldı, `/dashboard/pricing/checkout?plan=` yönlendirmesine çevrildi.
+  2. **`admin-settings-form.tsx`** — "Önbellek Temizle" butonu `disabled` durumdan çıkarıldı, `/api/admin/market/sync` endpoint'ine bağlandı.
+  3. **`admin-roles-client.tsx`** — "Logları görüntüle" butonu `/admin/audit` sayfasına yönlendiren gerçek link'e çevrildi.
+  4. **`contact/page.tsx`** — Tasarıma göre tamamen yeniden yazıldı: sol mavi iletişim bilgileri paneli + sağ çalışan form. `ContactForm` bileşeni oluşturuldu (ad, email, konu, mesaj, submit state, success state).
+  5. **`support/page.tsx`** — `<details>` HTML accordion anti-pattern kaldırıldı. `FaqAccordion` client bileşeni oluşturuldu (animasyonlu, ChevronDown ile).
+  6. **`FaqAccordion`** — Yeni bileşen: `src/components/shared/faq-accordion.tsx` — animasyonlu, erişilebilir accordion.
+  7. **`ContactForm`** — Yeni bileşen: `src/components/shared/contact-form.tsx` — form validation, loading state, success state.
+
+- **Doğrulama**:
+  - `npm run lint` ✅ (0 errors, 0 warnings)
+  - `npm run typecheck` ✅
+  - `npm run build` ✅
+- **Status**: 🟢 Tüm UI ekranları tarandı. İşlevsiz placeholder yapılar giderildi, eksik form işlevleri eklendi.

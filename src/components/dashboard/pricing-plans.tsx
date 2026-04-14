@@ -31,11 +31,11 @@ export function PricingPlans({ initialPlans }: PricingPlansProps) {
 
   const handleSubscribe = (planId: string) => {
     setLoading(planId);
-    // Simulate payment process
+    // Redirect to payment page
     setTimeout(() => {
-      alert("Ödeme sistemine yönlendiriliyorsunuz...");
+      window.location.href = `/dashboard/pricing/checkout?plan=${planId}`;
       setLoading(null);
-    }, 1000);
+    }, 800);
   };
 
   return (

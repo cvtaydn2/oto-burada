@@ -158,9 +158,11 @@ export function AdminRolesClient({ initialRoles }: AdminRolesClientProps) {
                 <p className="text-sm text-slate-500">Hangi yetkinin ne zaman ve kim tarafından kullanıldığını inceleyin.</p>
               </div>
             </div>
-            <Button variant="outline" className="flex h-10 items-center gap-2 rounded-lg border border-slate-300 bg-white px-4 text-sm font-medium text-slate-900 transition-all hover:border-blue-300 hover:text-blue-600">
-              Logları görüntüle
-              <ChevronRight size={18} />
+            <Button variant="outline" className="flex h-10 items-center gap-2 rounded-lg border border-slate-300 bg-white px-4 text-sm font-medium text-slate-900 transition-all hover:border-blue-300 hover:text-blue-600" asChild>
+              <a href="/admin/audit">
+                Logları görüntüle
+                <ChevronRight size={18} />
+              </a>
             </Button>
           </div>
         </div>

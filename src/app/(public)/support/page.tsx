@@ -2,6 +2,7 @@ import { getCurrentUser } from "@/lib/auth/session";
 import { getUserTickets } from "@/services/support/ticket-service";
 import { TicketForm } from "@/components/support/ticket-form";
 import { TicketList } from "@/components/support/ticket-list";
+import { FaqAccordion } from "@/components/shared/faq-accordion";
 
 const FAQ_CATEGORIES = [
   {
@@ -77,13 +78,7 @@ export default async function SupportPage() {
               </div>
               <div className="divide-y divide-slate-50">
                 {cat.items.map((item, i) => (
-                  <details key={i} className="group">
-                    <summary className="flex cursor-pointer items-center justify-between px-6 py-4.5 text-sm font-semibold text-slate-700 hover:text-slate-900 list-none">
-                      {item.q}
-                      <span className="size-5 rounded-full bg-slate-100 flex items-center justify-center text-xs group-open:rotate-180 transition-transform">▲</span>
-                    </summary>
-                    <p className="px-6 pb-5 text-sm text-slate-500 font-medium">{item.a}</p>
-                  </details>
+                  <FaqAccordion key={i} items={[item]} />
                 ))}
               </div>
             </div>
