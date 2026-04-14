@@ -1,10 +1,11 @@
 "use client"
 
 import { useState } from "react"
-import { Filter, ChevronDown, Search } from "lucide-react"
+import { Filter, ChevronDown, Search, SlidersHorizontal } from "lucide-react"
 import { cn } from "@/lib/utils"
 import type { ListingFilters } from "@/types"
 import type { BrandCatalogItem, CityOption } from "@/types"
+import Link from "next/link"
 
 interface SmartFiltersProps {
   brands: BrandCatalogItem[]
@@ -18,6 +19,22 @@ interface SmartFiltersProps {
   activeCount: number
 }
 
+const FUEL_OPTIONS = [
+  { value: "benzin", label: "Benzin" },
+  { value: "dizel", label: "Dizel" },
+  { value: "hibrit", label: "Hibrit" },
+  { value: "elektrik", label: "Elektrik" },
+  { value: "lpg", label: "LPG" },
+]
+
+const TRANSMISSION_OPTIONS = [
+  { value: "manuel", label: "Manuel" },
+  { value: "otomatik", label: "Otomatik" },
+  { value: "yari_otomatik", label: "Yarı Otomatik" },
+]
+
+const CURRENT_YEAR = new Date().getFullYear()
+
 export function SmartFilters({
   brands,
   cities,
@@ -29,7 +46,7 @@ export function SmartFilters({
   onReset,
   activeCount
 }: SmartFiltersProps) {
-  const [openSections, setOpenSections] = useState<string[]>(["brand", "city", "price", "fuel"])
+  const [openSections, setOpenSections] = useState<string[]>(["brand", "city", "price", "year", "fuel"])
 
   const toggleSection = (id: string) => {
     setOpenSections(prev =>
@@ -37,52 +54,59 @@ export function SmartFilters({
     )
   }
 
-  const FUEL_OPTIONS = [
-    { value: "benzin", label: "Benzin" },
-    { value: "dizel", label: "Dizel" },
-    { value: "hibrit", label: "Hibrit" },
-    { value: "elektrik", label: "Elektrik" },
-  ]
-
   return (
     <div className="flex flex-col">
-      <div className="flex items-center justify-between mb-4">
-        <h2 className="text-lg font-bold flex items-center">
-          <Filter size={18} className="mr-2" /> Filtrele
+      {/* Header */}
+      <div className="flex items-center justify-between p-4 border-b border-gray-100">
+        <h2 className="text-base font-bold flex items-center gap-2 text-gray-800">
+          <Filter size={16} className="text-blue-500" /> Filtrele
+          {activeCount > 0 && (
+            <span className="inline-flex items-center justify-center size-5 rounded-full bg-blue-500 text-white text-[10px] font-black">
+              {activeCount}
+            </span>
+          )}
         </h2>
-        {activeCount > 0 && (
-          <button 
-            onClick={onReset}
-            className="text-sm text-blue-500 hover:text-blue-600 font-medium"
+        <div className="flex items-center gap-2">
+          {activeCount > 0 && (
+            <button
+              onClick={onReset}
+              className="text-xs text-rose-500 hover:text-rose-600 font-medium"
+            >
+              Sıfırla
+            </button>
+          )}
+          <Link
+            href="/listings/filter"
+            className="flex items-center gap-1 text-xs text-blue-500 hover:text-blue-600 font-medium border border-blue-100 bg-blue-50 px-2 py-1 rounded-lg transition"
           >
-            Sıfırla
-          </button>
-        )}
+            <SlidersHorizontal size={12} />
+            Gelişmiş
+          </Link>
+        </div>
       </div>
 
-      <div className="bg-white border border-gray-200 rounded-xl p-4 space-y-6 shadow-sm">
-        {/* Brand & Model Section */}
-        <FilterSection 
-          title="Marka & Model" 
-          isOpen={openSections.includes("brand")} 
+      <div className="p-4 space-y-5">
+        {/* Brand & Model */}
+        <FilterSection
+          title="Marka & Model"
+          isOpen={openSections.includes("brand")}
           onToggle={() => toggleSection("brand")}
         >
-          <div className="space-y-3">
+          <div className="space-y-2.5">
             <div className="relative">
-              <Search size={14} className="absolute left-3 top-3 text-gray-400" />
+              <Search size={13} className="absolute left-3 top-2.5 text-gray-400" />
               <select
                 value={filters.brand ?? ""}
                 onChange={(e) => {
-                  const nextBrand = e.target.value || undefined
-                  onFilterChange("brand", nextBrand)
+                  onFilterChange("brand", e.target.value || undefined)
                   onFilterChange("model", undefined)
                   onFilterChange("carTrim", undefined)
                 }}
-                className="w-full appearance-none rounded-lg border border-gray-200 bg-white pl-9 p-2 text-sm focus:border-blue-500 outline-none transition-colors"
+                className="w-full appearance-none rounded-lg border border-gray-200 bg-white pl-8 pr-3 py-2 text-sm focus:border-blue-500 outline-none"
               >
                 <option value="">Tüm Markalar</option>
-                {brands.map((brand) => (
-                  <option key={brand.brand} value={brand.brand}>{brand.brand}</option>
+                {brands.map((b) => (
+                  <option key={b.brand} value={b.brand}>{b.brand}</option>
                 ))}
               </select>
             </div>
@@ -90,143 +114,175 @@ export function SmartFilters({
             <select
               value={filters.model ?? ""}
               onChange={(e) => {
-                const nextModel = e.target.value || undefined
-                onFilterChange("model", nextModel)
+                onFilterChange("model", e.target.value || undefined)
                 onFilterChange("carTrim", undefined)
               }}
               disabled={!filters.brand}
-              className="w-full rounded-lg border border-gray-200 bg-white p-2 text-sm focus:border-blue-500 outline-none transition-colors disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-400"
+              className="w-full rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm focus:border-blue-500 outline-none disabled:bg-slate-50 disabled:text-slate-400 disabled:cursor-not-allowed"
             >
               <option value="">Tüm Modeller</option>
-              {models.map((model) => (
-                <option key={model} value={model}>{model}</option>
-              ))}
+              {models.map((m) => <option key={m} value={m}>{m}</option>)}
             </select>
 
             <select
               value={filters.carTrim ?? ""}
               onChange={(e) => onFilterChange("carTrim", e.target.value || undefined)}
               disabled={!filters.model}
-              className="w-full rounded-lg border border-gray-200 bg-white p-2 text-sm focus:border-blue-500 outline-none transition-colors disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-400"
+              className="w-full rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm focus:border-blue-500 outline-none disabled:bg-slate-50 disabled:text-slate-400 disabled:cursor-not-allowed"
             >
               <option value="">Tüm Paketler</option>
-              {trims.map((trim) => (
-                <option key={trim} value={trim}>{trim}</option>
-              ))}
+              {trims.map((t) => <option key={t} value={t}>{t}</option>)}
             </select>
           </div>
         </FilterSection>
 
-        <hr className="border-gray-100" />
+        <Divider />
 
+        {/* City & District */}
         <FilterSection
           title="Şehir & İlçe"
           isOpen={openSections.includes("city")}
           onToggle={() => toggleSection("city")}
         >
-          <div className="space-y-3">
+          <div className="space-y-2.5">
             <select
               value={filters.city ?? ""}
               onChange={(e) => {
-                const nextCity = e.target.value || undefined
-                onFilterChange("city", nextCity)
+                onFilterChange("city", e.target.value || undefined)
                 onFilterChange("district", undefined)
               }}
-              className="w-full rounded-lg border border-gray-200 bg-white p-2 text-sm focus:border-blue-500 outline-none transition-colors"
+              className="w-full rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm focus:border-blue-500 outline-none"
             >
               <option value="">Tüm Şehirler</option>
-              {cities.map((city) => (
-                <option key={city.city} value={city.city}>{city.city}</option>
-              ))}
+              {cities.map((c) => <option key={c.city} value={c.city}>{c.city}</option>)}
             </select>
 
             <select
               value={filters.district ?? ""}
               onChange={(e) => onFilterChange("district", e.target.value || undefined)}
               disabled={!filters.city}
-              className="w-full rounded-lg border border-gray-200 bg-white p-2 text-sm focus:border-blue-500 outline-none transition-colors disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-400"
+              className="w-full rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm focus:border-blue-500 outline-none disabled:bg-slate-50 disabled:text-slate-400 disabled:cursor-not-allowed"
             >
               <option value="">Tüm İlçeler</option>
-              {districts.map((district) => (
-                <option key={district} value={district}>{district}</option>
-              ))}
+              {districts.map((d) => <option key={d} value={d}>{d}</option>)}
             </select>
           </div>
         </FilterSection>
 
-        <hr className="border-gray-100" />
+        <Divider />
 
-        {/* Price Section */}
-        <FilterSection 
-          title="Fiyat (TL)" 
-          isOpen={openSections.includes("price")} 
+        {/* Price */}
+        <FilterSection
+          title="Fiyat (TL)"
+          isOpen={openSections.includes("price")}
           onToggle={() => toggleSection("price")}
         >
-          <div className="flex items-center space-x-2">
-            <input 
-              type="text" 
-              placeholder="Min" 
-              value={filters.minPrice ?? ""}
-                onChange={(e) => onFilterChange("minPrice", e.target.value ? Number(e.target.value) : undefined)}
-              className="w-1/2 border border-gray-200 rounded-lg p-2 text-sm focus:border-blue-500 outline-none transition-colors"
-            />
-            <span className="text-gray-400">-</span>
-            <input 
-              type="text" 
-              placeholder="Max" 
-              value={filters.maxPrice ?? ""}
-                onChange={(e) => onFilterChange("maxPrice", e.target.value ? Number(e.target.value) : undefined)}
-              className="w-1/2 border border-gray-200 rounded-lg p-2 text-sm focus:border-blue-500 outline-none transition-colors"
-            />
-          </div>
-        </FilterSection>
-
-        <hr className="border-gray-100" />
-
-        <FilterSection
-          title="Ekspertiz & Hasar"
-          isOpen={openSections.includes("trust")}
-          onToggle={() => toggleSection("trust")}
-        >
-          <div className="space-y-3">
-            <label className="flex items-center space-x-2 cursor-pointer text-sm group">
-              <input
-                type="checkbox"
-                checked={filters.hasExpertReport === true}
-                onChange={() => onFilterChange("hasExpertReport", filters.hasExpertReport ? undefined : true)}
-                className="rounded border-gray-300 text-blue-500 focus:ring-blue-500 size-4 transition"
-              />
-              <span className="text-gray-600 group-hover:text-gray-900">Ekspertiz raporlu ilanlar</span>
-            </label>
+          <div className="flex items-center gap-2">
             <input
               type="number"
-              min={0}
-              placeholder="Maks. Tramer Tutarı"
-              value={filters.maxTramer ?? ""}
-              onChange={(e) => onFilterChange("maxTramer", e.target.value ? Number(e.target.value) : undefined)}
-              className="w-full rounded-lg border border-gray-200 bg-white p-2 text-sm focus:border-blue-500 outline-none transition-colors"
+              placeholder="Min"
+              value={filters.minPrice ?? ""}
+              onChange={(e) => onFilterChange("minPrice", e.target.value ? Number(e.target.value) : undefined)}
+              className="w-1/2 border border-gray-200 rounded-lg px-3 py-2 text-sm focus:border-blue-500 outline-none"
+            />
+            <span className="text-gray-400 text-sm">—</span>
+            <input
+              type="number"
+              placeholder="Max"
+              value={filters.maxPrice ?? ""}
+              onChange={(e) => onFilterChange("maxPrice", e.target.value ? Number(e.target.value) : undefined)}
+              className="w-1/2 border border-gray-200 rounded-lg px-3 py-2 text-sm focus:border-blue-500 outline-none"
             />
           </div>
         </FilterSection>
 
-        <hr className="border-gray-100" />
+        <Divider />
 
-        {/* Fuel Type Section */}
-        <FilterSection 
-          title="Yakıt Tipi" 
-          isOpen={openSections.includes("fuel")} 
+        {/* Year */}
+        <FilterSection
+          title="Model Yılı"
+          isOpen={openSections.includes("year")}
+          onToggle={() => toggleSection("year")}
+        >
+          <div className="flex items-center gap-2">
+            <input
+              type="number"
+              placeholder="Min"
+              min={1990}
+              max={CURRENT_YEAR}
+              value={filters.minYear ?? ""}
+              onChange={(e) => onFilterChange("minYear", e.target.value ? Number(e.target.value) : undefined)}
+              className="w-1/2 border border-gray-200 rounded-lg px-3 py-2 text-sm focus:border-blue-500 outline-none"
+            />
+            <span className="text-gray-400 text-sm">—</span>
+            <input
+              type="number"
+              placeholder="Max"
+              min={1990}
+              max={CURRENT_YEAR}
+              value={filters.maxYear ?? ""}
+              onChange={(e) => onFilterChange("maxYear", e.target.value ? Number(e.target.value) : undefined)}
+              className="w-1/2 border border-gray-200 rounded-lg px-3 py-2 text-sm focus:border-blue-500 outline-none"
+            />
+          </div>
+        </FilterSection>
+
+        <Divider />
+
+        {/* Mileage */}
+        <FilterSection
+          title="Kilometre"
+          isOpen={openSections.includes("mileage")}
+          onToggle={() => toggleSection("mileage")}
+        >
+          <div className="space-y-2">
+            <input
+              type="number"
+              placeholder="Maks. Kilometre"
+              value={filters.maxMileage ?? ""}
+              onChange={(e) => onFilterChange("maxMileage", e.target.value ? Number(e.target.value) : undefined)}
+              className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:border-blue-500 outline-none"
+            />
+            <div className="flex flex-wrap gap-1.5">
+              {[50000, 100000, 150000, 200000].map((km) => (
+                <button
+                  key={km}
+                  onClick={() => onFilterChange("maxMileage", filters.maxMileage === km ? undefined : km)}
+                  className={cn(
+                    "px-2.5 py-1 rounded-lg text-xs font-medium border transition",
+                    filters.maxMileage === km
+                      ? "bg-blue-500 text-white border-blue-500"
+                      : "bg-white text-gray-600 border-gray-200 hover:border-blue-300"
+                  )}
+                >
+                  {km >= 1000 ? `${km / 1000}K` : km}
+                </button>
+              ))}
+            </div>
+          </div>
+        </FilterSection>
+
+        <Divider />
+
+        {/* Fuel */}
+        <FilterSection
+          title="Yakıt Tipi"
+          isOpen={openSections.includes("fuel")}
           onToggle={() => toggleSection("fuel")}
         >
           <div className="space-y-2">
             {FUEL_OPTIONS.map((opt) => (
-              <label key={opt.value} className="flex items-center space-x-2 cursor-pointer text-sm group">
-                <input 
-                  type="checkbox" 
+              <label key={opt.value} className="flex items-center gap-2 cursor-pointer text-sm group">
+                <input
+                  type="checkbox"
                   checked={filters.fuelType === opt.value}
                   onChange={() => onFilterChange("fuelType", filters.fuelType === opt.value ? undefined : opt.value as ListingFilters["fuelType"])}
-                  className="rounded border-gray-300 text-blue-500 focus:ring-blue-500 size-4 transition"
+                  className="rounded border-gray-300 text-blue-500 focus:ring-blue-500 size-4"
                 />
-                <span className={cn("transition-colors", filters.fuelType === opt.value ? "font-bold text-blue-600" : "text-gray-600 group-hover:text-gray-900")}>
+                <span className={cn(
+                  "transition-colors",
+                  filters.fuelType === opt.value ? "font-bold text-blue-600" : "text-gray-600 group-hover:text-gray-900"
+                )}>
                   {opt.label}
                 </span>
               </label>
@@ -234,31 +290,65 @@ export function SmartFilters({
           </div>
         </FilterSection>
 
-        <hr className="border-gray-100" />
+        <Divider />
 
+        {/* Transmission */}
         <FilterSection
           title="Vites"
           isOpen={openSections.includes("gearbox")}
           onToggle={() => toggleSection("gearbox")}
         >
           <div className="space-y-2">
-            {[
-              { value: "manuel", label: "Manuel" },
-              { value: "otomatik", label: "Otomatik" },
-              { value: "yari_otomatik", label: "Yarı Otomatik" },
-            ].map((opt) => (
-              <label key={opt.value} className="flex items-center space-x-2 cursor-pointer text-sm group">
+            {TRANSMISSION_OPTIONS.map((opt) => (
+              <label key={opt.value} className="flex items-center gap-2 cursor-pointer text-sm group">
                 <input
                   type="checkbox"
                   checked={filters.transmission === opt.value}
                   onChange={() => onFilterChange("transmission", filters.transmission === opt.value ? undefined : opt.value)}
-                  className="rounded border-gray-300 text-blue-500 focus:ring-blue-500 size-4 transition"
+                  className="rounded border-gray-300 text-blue-500 focus:ring-blue-500 size-4"
                 />
-                <span className={cn("transition-colors", filters.transmission === opt.value ? "font-bold text-blue-600" : "text-gray-600 group-hover:text-gray-900")}>
+                <span className={cn(
+                  "transition-colors",
+                  filters.transmission === opt.value ? "font-bold text-blue-600" : "text-gray-600 group-hover:text-gray-900"
+                )}>
                   {opt.label}
                 </span>
               </label>
             ))}
+          </div>
+        </FilterSection>
+
+        <Divider />
+
+        {/* Trust */}
+        <FilterSection
+          title="Ekspertiz & Hasar"
+          isOpen={openSections.includes("trust")}
+          onToggle={() => toggleSection("trust")}
+        >
+          <div className="space-y-3">
+            <label className="flex items-center gap-2 cursor-pointer text-sm group">
+              <input
+                type="checkbox"
+                checked={filters.hasExpertReport === true}
+                onChange={() => onFilterChange("hasExpertReport", filters.hasExpertReport ? undefined : true)}
+                className="rounded border-gray-300 text-blue-500 focus:ring-blue-500 size-4"
+              />
+              <span className={cn(
+                "transition-colors",
+                filters.hasExpertReport ? "font-bold text-blue-600" : "text-gray-600 group-hover:text-gray-900"
+              )}>
+                Ekspertiz raporlu
+              </span>
+            </label>
+            <input
+              type="number"
+              min={0}
+              placeholder="Maks. Tramer Tutarı (TL)"
+              value={filters.maxTramer ?? ""}
+              onChange={(e) => onFilterChange("maxTramer", e.target.value ? Number(e.target.value) : undefined)}
+              className="w-full rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm focus:border-blue-500 outline-none"
+            />
           </div>
         </FilterSection>
       </div>
@@ -266,16 +356,30 @@ export function SmartFilters({
   )
 }
 
-function FilterSection({ title, isOpen, onToggle, children }: { title: string, isOpen: boolean, onToggle: () => void, children: React.ReactNode }) {
+function FilterSection({
+  title,
+  isOpen,
+  onToggle,
+  children,
+}: {
+  title: string
+  isOpen: boolean
+  onToggle: () => void
+  children: React.ReactNode
+}) {
   return (
     <div>
-      <h3 
+      <button
+        type="button"
         onClick={onToggle}
-        className="font-bold text-sm mb-3 flex justify-between items-center cursor-pointer select-none text-gray-800 hover:text-blue-500 transition-colors"
+        className="w-full flex items-center justify-between text-sm font-bold text-gray-800 hover:text-blue-500 transition-colors mb-3"
       >
-        {title} 
-        <ChevronDown size={14} className={cn("text-gray-400 transition-transform duration-200", isOpen && "rotate-180")} />
-      </h3>
+        {title}
+        <ChevronDown
+          size={14}
+          className={cn("text-gray-400 transition-transform duration-200", isOpen && "rotate-180")}
+        />
+      </button>
       {isOpen && (
         <div className="animate-in fade-in slide-in-from-top-1 duration-200">
           {children}
@@ -283,4 +387,8 @@ function FilterSection({ title, isOpen, onToggle, children }: { title: string, i
       )}
     </div>
   )
+}
+
+function Divider() {
+  return <hr className="border-gray-100" />
 }

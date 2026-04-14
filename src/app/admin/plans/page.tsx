@@ -1,7 +1,7 @@
 import { getPricingPlans } from "@/services/admin/plans";
 import { requireAdminUser } from "@/lib/auth/session";
 import { PlansTable } from "@/components/admin/plans-table";
-import { CreditCard, Plus } from "lucide-react";
+import { CreditCard } from "lucide-react";
 
 export const dynamic = "force-dynamic";
 
@@ -23,9 +23,7 @@ export default async function AdminPlansPage() {
            <p className="mt-1.5 text-sm text-slate-500 font-medium italic">Üyelik paketlerini, fiyatları ve ilan limitlerini buradan yönetin.</p>
         </div>
         <div className="flex items-center gap-3">
-           <div className="size-10 rounded-xl bg-white border border-slate-200 flex items-center justify-center text-slate-400 group-hover:bg-white group-hover:text-blue-600 transition-all">
-              <Plus size={20} className="opacity-0 group-hover:opacity-100" />
-           </div>
+           <span className="text-xs font-medium text-slate-400 italic">Paket eklemek için PlansTable kullanın</span>
         </div>
       </section>
 

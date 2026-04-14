@@ -827,3 +827,35 @@ Her yeni geliştirme başlamadan önce okunmalıdır.
   - `npm run typecheck` ✅
   - `npm run build` ✅
 - **Status**: 🟢 Tüm kritik responsive sorunlar giderildi.
+
+- **Gelişmiş Filtreleme & SmartFilters Güncelleme Pass (2026-04-15)**:
+  `.design/pages-code/filtre-paneli.html` ve `.design/pages-png/visily-filtre-paneli.png` referanslarına göre:
+
+  **SmartFilters (`smart-filters.tsx`) Güncellendi:**
+  1. **Yıl Aralığı Filtresi** eklendi (`minYear`/`maxYear`)
+  2. **Kilometre Filtresi** eklendi (`maxMileage`) — hızlı seçim butonları (50K, 100K, 150K, 200K)
+  3. **LPG** yakıt tipi eklendi
+  4. **"Gelişmiş" butonu** eklendi — `/listings/filter` sayfasına yönlendirir
+  5. **Aktif filtre sayısı badge'i** header'a eklendi
+  6. **Kod kalitesi** — `FUEL_OPTIONS`, `TRANSMISSION_OPTIONS` sabit dizilere taşındı, `FilterSection` ve `Divider` ayrı bileşenler
+
+  **Yeni: Gelişmiş Filtreleme Sayfası (`/listings/filter`):**
+  - `src/app/(public)/listings/filter/page.tsx` — server component, referans veri + toplam ilan sayısı çeker
+  - `src/components/listings/advanced-filter-page.tsx` — client component
+  - Sol sidebar: 6 kategori navigasyonu (Temel Bilgiler, Fiyat & KM, Model Yılı, Konum, Teknik, Ekspertiz)
+  - Her kategori için detaylı form alanları
+  - Konum: popüler şehir butonları + "Diğer" dropdown
+  - Yıl: hızlı seçim butonları (2020+, 2021+, ...)
+  - KM: hızlı seçim butonları (50K, 100K, ...)
+  - "Sonuçları Gör (X ilan)" butonu — `/listings?...` parametreleriyle yönlendirir
+  - "Aramayı Kaydet" butonu
+  - Aktif filtre sayısı banner'ı
+
+  **Listings Page Client Güncellendi:**
+  - "Gelişmiş" butonu eklendi (mevcut filtrelerle `/listings/filter`'a yönlendirir)
+
+- **Doğrulama**:
+  - `npm run lint` ✅ (0 errors, 0 warnings)
+  - `npm run typecheck` ✅
+  - `npm run build` ✅ (`/listings/filter` route oluştu)
+- **Status**: 🟢 Gelişmiş filtreleme sayfası oluşturuldu, SmartFilters eksik filtrelerle güncellendi.

@@ -56,7 +56,7 @@ export default async function DashboardPage() {
               href="/dashboard/listings"
               className="inline-flex h-10 items-center justify-center rounded-lg border border-gray-200 bg-white px-4 text-sm font-medium text-gray-700 transition hover:bg-gray-50 shadow-sm"
             >
-              Filtreler
+              İlan Yönetimi
             </Link>
             <Link
               href="/dashboard/listings?create=true"
@@ -324,32 +324,13 @@ async function DashboardDataSection({
 
         <div className="space-y-6">
           <DashboardFinancialSummary
-            successfulSalesAmount={1450000}
-            pendingDepositsAmount={25000}
-            successfulSalesCount={3}
-            pendingDepositsCount={2}
+            successfulSalesAmount={0}
+            pendingDepositsAmount={0}
+            successfulSalesCount={0}
+            pendingDepositsCount={0}
           />
 
-          <DashboardAppointments
-            appointments={[
-              {
-                id: "1",
-                date: new Date(2026, 5, 12),
-                time: "14:30",
-                customerName: "Ahmet Yılmaz",
-                description: "BMW 320i",
-                type: "expertise",
-              },
-              {
-                id: "2",
-                date: new Date(2026, 5, 15),
-                time: "10:00",
-                customerName: "Mehmet Can",
-                description: "Passat",
-                type: "showroom",
-              },
-            ]}
-          />
+          <DashboardAppointments appointments={[]} />
 
           <div className="rounded-2xl border border-blue-100 bg-blue-50/60 p-6 shadow-sm">
             <h3 className="mb-2 text-lg font-bold text-gray-800">Hesap Durumu</h3>

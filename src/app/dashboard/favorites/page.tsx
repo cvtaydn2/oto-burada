@@ -4,7 +4,7 @@ import { requireUser } from "@/lib/auth/session";
 import { getPublicMarketplaceListings } from "@/services/listings/marketplace-listings";
 
 export const dynamic = "force-dynamic";
-export const revalidate = 60;
+// revalidate kaldırıldı — force-dynamic ile çakışıyor
 
 export default async function DashboardFavoritesPage() {
   const user = await requireUser();

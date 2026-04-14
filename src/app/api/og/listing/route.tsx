@@ -116,8 +116,7 @@ export async function GET(request: Request) {
     );
   } catch (e) {
     const message = e instanceof Error ? e.message : "Beklenmedik hata";
-    console.log(message);
-    return new Response(`Failed to generate the image`, {
+    return new Response(`Failed to generate the image: ${message}`, {
       status: 500,
     });
   }

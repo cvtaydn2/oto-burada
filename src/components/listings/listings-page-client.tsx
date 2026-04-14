@@ -3,8 +3,9 @@
 import dynamic from "next/dynamic"
 import { useState, useTransition, useRef, useCallback } from "react"
 import { useRouter } from "next/navigation"
-import { LayoutGrid, List, ArrowDownUp, Star, BadgeCheck, TrendingDown } from "lucide-react"
+import { LayoutGrid, List, ArrowDownUp, Star, BadgeCheck, TrendingDown, SlidersHorizontal } from "lucide-react"
 
+import Link from "next/link"
 import { type Listing, type ListingFilters, type BrandCatalogItem, type CityOption } from "@/types"
 import { CarCard } from "@/components/modules/listings/car-card"
 import { ListingsGridSkeleton } from "@/components/listings/listings-grid-skeleton"
@@ -160,6 +161,15 @@ export function ListingsPageClient({
               onReset={handleReset}
               activeCount={activeFiltersCount}
             />
+
+            {/* Gelişmiş Filtre butonu */}
+            <Link
+              href={`/listings/filter?${createSearchParamsFromListingFilters(filters).toString()}`}
+              className="flex h-9 items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 text-sm font-medium text-slate-600 hover:bg-slate-50 transition-colors"
+            >
+              <SlidersHorizontal size={15} />
+              <span className="hidden sm:inline">Gelişmiş</span>
+            </Link>
 
             <div className="flex items-center gap-1 rounded-lg border border-slate-200 bg-white p-1">
               <button
