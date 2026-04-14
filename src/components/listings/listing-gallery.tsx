@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import dynamic from "next/dynamic";
 import Image from "next/image";
-import { ChevronLeft, ChevronRight, Sparkles } from "lucide-react";
+import { ChevronLeft, ChevronRight, Sparkles, Rotate3d } from "lucide-react";
 import useEmblaCarousel from "embla-carousel-react";
 import type { ListingImage } from "@/types";
 
@@ -114,12 +114,18 @@ export function ListingGallery({ images, title }: ListingGalleryProps) {
               <div className="px-3 py-1.5 rounded-full bg-black/50 backdrop-blur-md text-white text-[10px] font-black uppercase tracking-widest italic">
                 {currentIndex + 1} / {images.length}
               </div>
-              <div 
-                className="px-3 py-1.5 rounded-full bg-white/90 backdrop-blur-md text-slate-900 text-[10px] font-black uppercase tracking-widest italic pointer-events-auto cursor-pointer flex items-center gap-1.5 shadow-lg"
-                onClick={() => setIsLightboxOpen(true)}
-              >
-                Tam Ekran
-                <Sparkles size={12} className="text-primary" />
+              <div className="flex items-center gap-2 pointer-events-auto">
+                <button
+                  onClick={() => setIsLightboxOpen(true)}
+                  className="px-3 py-1.5 rounded-full bg-white/90 backdrop-blur-md text-slate-900 text-[10px] font-black uppercase tracking-widest italic hover:bg-white transition-all shadow-lg flex items-center gap-1.5"
+                >
+                  Tam Ekran
+                  <Sparkles size={12} className="text-primary" />
+                </button>
+                <button className="px-3 py-1.5 rounded-full bg-blue-500 text-white text-[10px] font-bold uppercase tracking-widest hover:bg-blue-600 transition-all shadow-lg flex items-center gap-1.5">
+                  <Rotate3d size={12} />
+                  360° Görünüm
+                </button>
               </div>
             </div>
           </div>

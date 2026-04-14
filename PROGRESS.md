@@ -591,3 +591,13 @@ Her yeni geliştirme başlamadan önce okunmalıdır.
   - `npm run build` ✅
 - **Status**: 🟢 UI Modernization Pass tamamlandı; dashboard ve favorites sayfaları `.design/pages-code` referanslarına tam uyumlu hale getirildi.
 - **Sonraki Adım**: Production deployment sonrası Vercel RES/FCP panelinden gerçek kullanıcı hız etkisi ölçümü.
+- **UI Eksiklikleri Giderme Pass (2026-04-14)**:
+  1. **360° Görünüm Butonu**: Listing detail sayfasında "360° Görünüm" butonu eklendi. `.design/pages-code/ilan-detay.html` referansına göre listing gallery'ye eklendi.
+  2. **Listing 360 View Component**: `Listing360View` bileşeni oluşturuldu. Placeholder implementation ile 360° görünüm ekranı sağlandı.
+  3. **Lint Temizliği**: Tüm yeni bileşenlerde unused import ve değişkenler temizlendi.
+- **Doğrulama**:
+  - `npm run lint` ✅ (0 errors, 0 warnings)
+  - `npm run typecheck` ✅
+  - `npm run build` ✅
+- **Status**: 🟢 UI Eksiklikleri Giderme Pass tamamlandı; listing detail sayfası `.design/pages-code` referanslarına tam uyumlu hale getirildi.
+- **Sonraki Adım**: Production deployment sonrası Vercel RES/FCP panelinden gerçek kullanıcı hız etkisi ölçümü.
