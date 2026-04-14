@@ -3,17 +3,17 @@
 import Link from "next/link";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
-import { Archive, ArrowUpCircle, Loader2, Pencil, Plus, Rocket, RotateCcw, ShieldCheck, X, CheckSquare, Square, FileSpreadsheet } from "lucide-react";
+import { useEffect, useState, useMemo } from "react";
+import {
+  Archive, ArrowUpCircle, ChevronLeft, ChevronRight,
+  Loader2, Pencil, Plus, Rocket, RotateCcw, ShieldCheck,
+  X, CheckSquare, Square, FileSpreadsheet,
+} from "lucide-react";
 
 import { formatCurrency, formatNumber } from "@/lib/utils";
 import type { Listing } from "@/types";
 import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
+  Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger,
 } from "@/components/ui/dialog";
 import { ListingDopingPanel } from "./listing-doping-panel";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -25,6 +25,8 @@ interface MyListingsPanelProps {
   listings: Listing[];
   children?: React.ReactNode;
 }
+
+const PAGE_SIZE_OPTIONS = [5, 10, 20, 50] as const;
 
 const statusLabelMap: Record<Listing["status"], string> = {
   approved: "Yayında",
@@ -42,7 +44,12 @@ const statusClassMap: Record<Listing["status"], string> = {
   rejected: "bg-red-50 text-red-600 border-red-100",
 };
 
-export function MyListingsPanel({ activeEditId, initialShowForm = false, listings, children }: MyListingsPanelProps) {
+export function MyListingsPanel({
+  activeEditId,
+  initialShowForm = false,
+  listings,
+  children,
+}: MyListingsPanelProps) {
   const router = useRouter();
   const [showForm, setShowForm] = useState(Boolean(activeEditId) || initialShowForm);
   const [archivingId, setArchivingId] = useState<string | null>(null);
@@ -50,21 +57,27 @@ export function MyListingsPanel({ activeEditId, initialShowForm = false, listing
   const [bumpingId, setBumpingId] = useState<string | null>(null);
   const [bumpMessage, setBumpMessage] = useState<string | null>(null);
   const [currentTime, setCurrentTime] = useState(() => Date.now());
-  
-  // Bulk selection state
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [isBulkArchiving, setIsBulkArchiving] = useState(false);
 
+  // Sayfalama
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState<number>(10);
+
+  const totalPages = Math.max(1, Math.ceil(listings.length / pageSize));
+  const paginatedListings = useMemo(() => {
+    const start = (currentPage - 1) * pageSize;
+    return listings.slice(start, start + pageSize);
+  }, [listings, currentPage, pageSize]);
+
+  useEffect(() => { setSelectedIds([]); }, [currentPage, pageSize]);
   useEffect(() => {
-    const intervalId = window.setInterval(() => {
-      setCurrentTime(Date.now());
-    }, 60_000);
-
-    return () => {
-      window.clearInterval(intervalId);
-    };
+    if (currentPage > totalPages) setCurrentPage(totalPages);
+  }, [currentPage, totalPages]);
+  useEffect(() => {
+    const id = window.setInterval(() => setCurrentTime(Date.now()), 60_000);
+    return () => window.clearInterval(id);
   }, []);
-
   useEffect(() => {
     setShowForm(Boolean(activeEditId) || initialShowForm);
   }, [activeEditId, initialShowForm]);
@@ -72,16 +85,13 @@ export function MyListingsPanel({ activeEditId, initialShowForm = false, listing
   const handleArchive = async (listingId: string) => {
     setArchivingId(listingId);
     setArchiveError(null);
-
     try {
-      const response = await fetch(`/api/listings/${listingId}/archive`, { method: "POST" });
-      const payload = await response.json().catch(() => null) as { success?: boolean; error?: { message: string } } | null;
-
-      if (!response.ok || !payload?.success) {
+      const res = await fetch(`/api/listings/${listingId}/archive`, { method: "POST" });
+      const payload = await res.json().catch(() => null) as { success?: boolean; error?: { message: string } } | null;
+      if (!res.ok || !payload?.success) {
         setArchiveError(payload?.error?.message ?? "İlan arşive alınamadı.");
         return;
       }
-
       router.refresh();
     } finally {
       setArchivingId(null);
@@ -89,115 +99,93 @@ export function MyListingsPanel({ activeEditId, initialShowForm = false, listing
   };
 
   const handleBulkArchive = async () => {
-    if (selectedIds.length === 0) return;
+    if (!selectedIds.length) return;
     setIsBulkArchiving(true);
     setArchiveError(null);
-
     try {
-      const response = await fetch("/api/listings/bulk-archive", {
+      const res = await fetch("/api/listings/bulk-archive", {
         method: "POST",
         body: JSON.stringify({ ids: selectedIds }),
         headers: { "Content-Type": "application/json" },
       });
-      const payload = await response.json();
-
-      if (payload.success) {
-        setSelectedIds([]);
-        router.refresh();
-      } else {
-        setArchiveError(payload.message || "Toplu arşivleme sırasında hata oluştu.");
-      }
-    } catch {
-      setArchiveError("Bir hata oluştu.");
-    } finally {
-      setIsBulkArchiving(false);
-    }
+      const payload = await res.json();
+      if (payload.success) { setSelectedIds([]); router.refresh(); }
+      else setArchiveError(payload.message || "Toplu arşivleme sırasında hata oluştu.");
+    } catch { setArchiveError("Bir hata oluştu."); }
+    finally { setIsBulkArchiving(false); }
   };
 
   const handleBulkDelete = async () => {
-    if (selectedIds.length === 0) return;
+    if (!selectedIds.length) return;
     if (!confirm(`${selectedIds.length} ilanı kalıcı olarak silmek istediğinize emin misiniz?`)) return;
-    
     setIsBulkArchiving(true);
     try {
-      const response = await fetch("/api/listings/bulk-delete", {
+      const res = await fetch("/api/listings/bulk-delete", {
         method: "POST",
         body: JSON.stringify({ ids: selectedIds }),
         headers: { "Content-Type": "application/json" },
       });
-      const payload = await response.json();
-
-      if (payload.success) {
-        setSelectedIds([]);
-        router.refresh();
-      } else {
-        setArchiveError(payload.message || "Toplu silme sırasında hata oluştu.");
-      }
-    } catch {
-      setArchiveError("Bir hata oluştu.");
-    } finally {
-      setIsBulkArchiving(false);
-    }
-  };
-
-  const toggleSelect = (id: string) => {
-    setSelectedIds(prev => 
-      prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]
-    );
-  };
-
-  const toggleSelectAll = () => {
-    if (selectedIds.length === listings.length) {
-      setSelectedIds([]);
-    } else {
-      setSelectedIds(listings.map(l => l.id));
-    }
+      const payload = await res.json();
+      if (payload.success) { setSelectedIds([]); router.refresh(); }
+      else setArchiveError(payload.message || "Toplu silme sırasında hata oluştu.");
+    } catch { setArchiveError("Bir hata oluştu."); }
+    finally { setIsBulkArchiving(false); }
   };
 
   const handleBump = async (listingId: string) => {
     setBumpingId(listingId);
     setBumpMessage(null);
-
     try {
-      const response = await fetch(`/api/listings/${listingId}/bump`, { method: "POST" });
-      const payload = await response.json().catch(() => null) as { success?: boolean; message?: string; error?: { message: string } } | null;
-
-      if (!response.ok || !payload?.success) {
-        setBumpMessage(payload?.error?.message ?? "İlan yenilenemedi.");
-        return;
-      }
-
+      const res = await fetch(`/api/listings/${listingId}/bump`, { method: "POST" });
+      const payload = await res.json().catch(() => null) as { success?: boolean; message?: string; error?: { message: string } } | null;
+      if (!res.ok || !payload?.success) { setBumpMessage(payload?.error?.message ?? "İlan yenilenemedi."); return; }
       setBumpMessage(payload.message ?? "İlan yenilendi!");
       router.refresh();
-    } finally {
-      setBumpingId(null);
-    }
+    } finally { setBumpingId(null); }
+  };
+
+  const pageIds = paginatedListings.map(l => l.id);
+  const allPageSelected = pageIds.length > 0 && pageIds.every(id => selectedIds.includes(id));
+
+  const toggleSelect = (id: string) =>
+    setSelectedIds(prev => prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]);
+
+  const toggleSelectAll = () => {
+    if (allPageSelected) setSelectedIds(prev => prev.filter(id => !pageIds.includes(id)));
+    else setSelectedIds(prev => [...new Set([...prev, ...pageIds])]);
+  };
+
+  const exportCsv = () => {
+    const headers = ["title", "brand", "model", "year", "mileage", "fuel_type", "transmission", "price", "city", "district", "whatsapp_phone", "description", "vin"];
+    const rows = listings.map(l => [
+      `"${l.title}"`, l.brand, l.model, l.year, l.mileage, l.fuelType,
+      l.transmission, l.price, l.city, l.district, l.whatsappPhone,
+      `"${l.description.replace(/"/g, '""')}"`, l.vin || "",
+    ].join(","));
+    const csv = [headers.join(","), ...rows].join("\n");
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+    const link = document.createElement("a");
+    link.href = URL.createObjectURL(blob);
+    link.setAttribute("download", `oto-burada-ilanlarim-${new Date().toISOString().split("T")[0]}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
   };
 
   return (
     <div className="space-y-4">
-      {archiveError ? (
-        <p className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 font-bold">
-          {archiveError}
-        </p>
-      ) : null}
-
-      {bumpMessage ? (
-        <p className="rounded-lg border border-blue-200 bg-blue-50 px-4 py-3 text-sm text-blue-700 font-bold mb-4">
-          {bumpMessage}
-        </p>
-      ) : null}
+      {archiveError && (
+        <p className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 font-bold">{archiveError}</p>
+      )}
+      {bumpMessage && (
+        <p className="rounded-lg border border-blue-200 bg-blue-50 px-4 py-3 text-sm text-blue-700 font-bold mb-4">{bumpMessage}</p>
+      )}
 
       {showForm && children && (
         <div className="rounded-2xl border border-blue-200 bg-blue-50/20 p-6 shadow-sm">
           <div className="mb-6 flex items-center justify-between">
-            <h3 className="text-lg font-black text-slate-800">
-              {activeEditId ? "İlanı Düzenle" : "Yeni İlan Ver"}
-            </h3>
-            <button
-              onClick={() => setShowForm(false)}
-              className="rounded-xl p-2 bg-white border border-slate-200 text-slate-400 hover:text-slate-600 transition-all hover:bg-slate-50"
-            >
+            <h3 className="text-lg font-black text-slate-800">{activeEditId ? "İlanı Düzenle" : "Yeni İlan Ver"}</h3>
+            <button onClick={() => setShowForm(false)} className="rounded-xl p-2 bg-white border border-slate-200 text-slate-400 hover:text-slate-600 transition-all hover:bg-slate-50">
               <X size={20} />
             </button>
           </div>
@@ -206,10 +194,7 @@ export function MyListingsPanel({ activeEditId, initialShowForm = false, listing
       )}
 
       {!showForm && (
-        <button
-          onClick={() => setShowForm(true)}
-          className="flex w-full items-center justify-center gap-3 rounded-2xl border-2 border-dashed border-blue-200 bg-white py-6 text-base font-bold text-blue-600 transition-all hover:bg-blue-50 hover:border-blue-300 active:scale-[0.99] group shadow-sm"
-        >
+        <button onClick={() => setShowForm(true)} className="flex w-full items-center justify-center gap-3 rounded-2xl border-2 border-dashed border-blue-200 bg-white py-6 text-base font-bold text-blue-600 transition-all hover:bg-blue-50 hover:border-blue-300 active:scale-[0.99] group shadow-sm">
           <div className="size-10 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center group-hover:scale-110 transition-transform">
             <Plus size={24} />
           </div>
@@ -220,7 +205,7 @@ export function MyListingsPanel({ activeEditId, initialShowForm = false, listing
       {listings.length === 0 && !showForm && (
         <div className="rounded-3xl border border-dashed border-slate-200 p-16 text-center bg-white shadow-sm mt-6">
           <div className="size-20 bg-slate-50 rounded-2xl flex items-center justify-center mx-auto mb-6 text-slate-300">
-             <Rocket size={40} />
+            <Rocket size={40} />
           </div>
           <h3 className="text-xl font-black text-slate-600">Henüz İlanınız Yok</h3>
           <p className="mt-2 text-slate-400 font-medium max-w-xs mx-auto">Hemen ilk arabanızı ekleyerek Türkiye&apos;nin en hızlı pazar yerinde satışa başlayın!</p>
@@ -229,86 +214,54 @@ export function MyListingsPanel({ activeEditId, initialShowForm = false, listing
 
       {listings.length > 0 && (
         <div className="space-y-4">
+          {/* Toolbar */}
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 px-1 py-2">
             <div className="flex items-center gap-4">
-               <button 
-                 onClick={toggleSelectAll}
-                 className="flex items-center gap-2 text-xs font-bold text-slate-500 hover:text-blue-600 transition-colors"
-               >
-                 {selectedIds.length === listings.length ? <CheckSquare size={18} className="text-blue-600" /> : <Square size={18} />}
-                 Tümünü Seç ({listings.length})
-               </button>
-               {selectedIds.length > 0 && (
-                 <div className="flex items-center gap-2 animate-in fade-in slide-in-from-left-2 duration-300">
-                    <Button 
-                      variant="destructive" 
-                      size="sm" 
-                      onClick={handleBulkArchive}
-                      disabled={isBulkArchiving}
-                      className="h-9 px-4 text-[11px] font-bold uppercase tracking-tight rounded-xl shadow-md bg-slate-800 hover:bg-slate-900"
-                    >
-                      {isBulkArchiving ? <Loader2 className="size-3 animate-spin mr-2" /> : <Archive size={14} className="mr-2" />}
-                      {selectedIds.length} İLAN ARŞİVLE
-                    </Button>
-                    <Button 
-                      variant="outline" 
-                      size="sm" 
-                      onClick={handleBulkDelete}
-                      disabled={isBulkArchiving || !selectedIds.every(id => listings.find(l => l.id === id)?.status === "archived")}
-                      className="h-9 px-4 text-[11px] font-bold uppercase tracking-tight rounded-xl border-red-200 text-red-600 hover:bg-red-50 shadow-sm"
-                    >
-                      SİL
-                    </Button>
-                 </div>
-               )}
+              <button onClick={toggleSelectAll} className="flex items-center gap-2 text-xs font-bold text-slate-500 hover:text-blue-600 transition-colors">
+                {allPageSelected ? <CheckSquare size={18} className="text-blue-600" /> : <Square size={18} />}
+                Bu Sayfayı Seç ({paginatedListings.length})
+              </button>
+              {selectedIds.length > 0 && (
+                <div className="flex items-center gap-2 animate-in fade-in slide-in-from-left-2 duration-300">
+                  <Button variant="destructive" size="sm" onClick={handleBulkArchive} disabled={isBulkArchiving} className="h-9 px-4 text-[11px] font-bold uppercase tracking-tight rounded-xl shadow-md bg-slate-800 hover:bg-slate-900">
+                    {isBulkArchiving ? <Loader2 className="size-3 animate-spin mr-2" /> : <Archive size={14} className="mr-2" />}
+                    {selectedIds.length} İLAN ARŞİVLE
+                  </Button>
+                  <Button variant="outline" size="sm" onClick={handleBulkDelete} disabled={isBulkArchiving || !selectedIds.every(id => listings.find(l => l.id === id)?.status === "archived")} className="h-9 px-4 text-[11px] font-bold uppercase tracking-tight rounded-xl border-red-200 text-red-600 hover:bg-red-50 shadow-sm">
+                    SİL
+                  </Button>
+                </div>
+              )}
             </div>
+
             <div className="flex items-center gap-3">
-               <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => {
-                    const headers = ["title", "brand", "model", "year", "mileage", "fuel_type", "transmission", "price", "city", "district", "whatsapp_phone", "description", "vin"];
-                    const csvContent = [
-                      headers.join(","),
-                      ...listings.map(l => [
-                        `"${l.title}"`,
-                        l.brand,
-                        l.model,
-                        l.year,
-                        l.mileage,
-                        l.fuelType,
-                        l.transmission,
-                        l.price,
-                        l.city,
-                        l.district,
-                        l.whatsappPhone,
-                        `"${l.description.replace(/"/g, '""')}"`,
-                        l.vin || ""
-                      ].join(","))
-                    ].join("\n");
-                    
-                    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
-                    const link = document.createElement("a");
-                    link.href = URL.createObjectURL(blob);
-                    link.setAttribute("download", `oto-burada-ilanlarim-${new Date().toISOString().split('T')[0]}.csv`);
-                    document.body.appendChild(link);
-                    link.click();
-                    document.body.removeChild(link);
-                  }}
-                  className="h-9 px-4 text-[11px] font-bold uppercase tracking-tight border-slate-200 rounded-xl bg-white hover:bg-slate-50 transition-all text-slate-600 shadow-sm"
-               >
-                 <FileSpreadsheet size={14} className="mr-2" />
-                 LİSTEYİ İNDİR
-               </Button>
-               <div className="h-6 w-px bg-slate-200 mx-1 hidden sm:block" />
-               <h3 className="text-[11px] font-bold text-slate-400 uppercase tracking-widest hidden sm:block">
-                 {listings.length} TOPLAM İLAN
-               </h3>
+              {/* Kaç ilan göster */}
+              <div className="flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 h-9">
+                <span className="text-xs font-semibold text-slate-500">Göster</span>
+                <select
+                  value={pageSize}
+                  onChange={(e) => { setPageSize(Number(e.target.value)); setCurrentPage(1); }}
+                  className="bg-transparent text-sm font-bold text-slate-700 outline-none cursor-pointer"
+                >
+                  {PAGE_SIZE_OPTIONS.map(n => <option key={n} value={n}>{n}</option>)}
+                </select>
+              </div>
+
+              <Button variant="outline" size="sm" onClick={exportCsv} className="h-9 px-4 text-[11px] font-bold uppercase tracking-tight border-slate-200 rounded-xl bg-white hover:bg-slate-50 transition-all text-slate-600 shadow-sm">
+                <FileSpreadsheet size={14} className="mr-2" />
+                LİSTEYİ İNDİR
+              </Button>
+
+              <div className="h-6 w-px bg-slate-200 mx-1 hidden sm:block" />
+              <h3 className="text-[11px] font-bold text-slate-400 uppercase tracking-widest hidden sm:block">
+                {listings.length} TOPLAM İLAN
+              </h3>
             </div>
           </div>
 
+          {/* İlan listesi */}
           <div className="space-y-3">
-            {listings.map((listing) => (
+            {paginatedListings.map((listing) => (
               <ListingCard
                 key={listing.id}
                 listing={listing}
@@ -322,11 +275,46 @@ export function MyListingsPanel({ activeEditId, initialShowForm = false, listing
               />
             ))}
           </div>
+
+          {/* Sayfalama */}
+          {totalPages > 1 && (
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-4 rounded-xl border border-slate-200 bg-white p-4">
+              <p className="text-sm text-slate-500">
+                <span className="font-bold text-slate-900">{(currentPage - 1) * pageSize + 1}–{Math.min(currentPage * pageSize, listings.length)}</span> arası, toplam <span className="font-bold text-slate-900">{listings.length}</span> ilan
+              </p>
+              <div className="flex items-center gap-2">
+                <button onClick={() => setCurrentPage(p => Math.max(1, p - 1))} disabled={currentPage === 1} className="inline-flex h-9 items-center justify-center rounded-lg border border-slate-200 px-3 text-sm font-bold text-slate-600 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-40">
+                  <ChevronLeft size={16} />
+                </button>
+                {Array.from({ length: totalPages }, (_, i) => i + 1)
+                  .filter(p => p === 1 || p === totalPages || Math.abs(p - currentPage) <= 1)
+                  .reduce<(number | "…")[]>((acc, p, i, arr) => {
+                    if (i > 0 && (p as number) - (arr[i - 1] as number) > 1) acc.push("…");
+                    acc.push(p);
+                    return acc;
+                  }, [])
+                  .map((item, idx) =>
+                    item === "…" ? (
+                      <span key={`e-${idx}`} className="px-1 text-slate-400 text-sm">…</span>
+                    ) : (
+                      <button key={item} onClick={() => setCurrentPage(item as number)} className={`inline-flex h-9 min-w-9 items-center justify-center rounded-lg border px-3 text-sm font-bold transition ${item === currentPage ? "border-blue-500 bg-blue-500 text-white" : "border-slate-200 bg-white text-slate-600 hover:bg-slate-50"}`}>
+                        {item}
+                      </button>
+                    )
+                  )}
+                <button onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))} disabled={currentPage === totalPages} className="inline-flex h-9 items-center justify-center rounded-lg border border-slate-200 px-3 text-sm font-bold text-slate-600 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-40">
+                  <ChevronRight size={16} />
+                </button>
+              </div>
+            </div>
+          )}
         </div>
       )}
     </div>
   );
 }
+
+// ─── ListingCard ──────────────────────────────────────────────────────────────
 
 function ListingCard({
   listing,
@@ -361,35 +349,19 @@ function ListingCard({
     : 0;
 
   return (
-    <div className={`group flex gap-4 rounded-xl border transition-all duration-300 ${isSelected ? 'border-blue-500 bg-blue-50/30 ring-1 ring-blue-100' : 'border-slate-200 bg-white hover:border-blue-200 hover:shadow-md'} p-4 ${isArchived ? "opacity-60" : ""}`}>
-      {/* Checkbox Overlay for Selection */}
+    <div className={`group flex gap-4 rounded-xl border transition-all duration-300 ${isSelected ? "border-blue-500 bg-blue-50/30 ring-1 ring-blue-100" : "border-slate-200 bg-white hover:border-blue-200 hover:shadow-md"} p-4 ${isArchived ? "opacity-60" : ""}`}>
       <div className="flex items-center">
-         <Checkbox 
-           checked={isSelected} 
-           onCheckedChange={onToggleSelect} 
-           className="size-5 rounded-lg border-slate-300 data-[state=checked]:bg-blue-600 data-[state=checked]:border-blue-600"
-         />
+        <Checkbox checked={isSelected} onCheckedChange={onToggleSelect} className="size-5 rounded-lg border-slate-300 data-[state=checked]:bg-blue-600 data-[state=checked]:border-blue-600" />
       </div>
 
-      <div className="relative h-24 w-32 shrink-0 overflow-hidden rounded-xl bg-slate-50 border border-slate-100 group">
+      <div className="relative h-24 w-32 shrink-0 overflow-hidden rounded-xl bg-slate-50 border border-slate-100">
         {listing.images?.[0]?.url ? (
-          <Image
-            src={listing.images[0].url}
-            alt=""
-            fill
-            className="object-cover group-hover:scale-110 transition-transform duration-700"
-            placeholder={listing.images[0].placeholderBlur ? "blur" : "empty"}
-            blurDataURL={listing.images[0].placeholderBlur ?? undefined}
-          />
+          <Image src={listing.images[0].url} alt="" fill className="object-cover group-hover:scale-110 transition-transform duration-700" placeholder={listing.images[0].placeholderBlur ? "blur" : "empty"} blurDataURL={listing.images[0].placeholderBlur ?? undefined} />
         ) : (
-          <div className="flex h-full items-center justify-center text-slate-300">
-             <Rocket size={24} />
-          </div>
+          <div className="flex h-full items-center justify-center text-slate-300"><Rocket size={24} /></div>
         )}
         {listing.featured && (
-          <div className="absolute top-2 left-2 px-2 py-0.5 rounded-md bg-blue-600 text-white text-[8px] font-bold uppercase tracking-wider shadow-sm">
-             ÖNE ÇIKAN
-          </div>
+          <div className="absolute top-2 left-2 px-2 py-0.5 rounded-md bg-blue-600 text-white text-[8px] font-bold uppercase tracking-wider shadow-sm">ÖNE ÇIKAN</div>
         )}
       </div>
 
@@ -400,15 +372,12 @@ function ListingCard({
           </span>
           {listing.eidsVerificationJson && (
             <span className="flex items-center gap-1.5 rounded-md border border-blue-200 bg-blue-50 px-2 py-0.5 text-[9px] font-bold text-blue-700 tracking-wider">
-              <ShieldCheck size={10} />
-              EİDS ONAYLI
+              <ShieldCheck size={10} />EİDS ONAYLI
             </span>
           )}
         </div>
         <p className="font-bold text-slate-800 truncate tracking-tight text-sm mb-1 group-hover:text-blue-600 transition-colors uppercase">{listing.title}</p>
-        <p className="text-lg font-black text-blue-600 tracking-tight leading-none">
-          {formatCurrency(listing.price)} ₺
-        </p>
+        <p className="text-lg font-black text-blue-600 tracking-tight leading-none">{formatCurrency(listing.price)} ₺</p>
         <div className="mt-auto flex items-center gap-3 text-[10px] text-slate-400 font-bold uppercase tracking-wider">
           <span>{listing.year}</span>
           <span className="w-1 h-1 rounded-full bg-slate-200" />
@@ -419,38 +388,24 @@ function ListingCard({
       </div>
 
       <div className="flex flex-col gap-2 justify-center ml-2 border-l border-slate-100 pl-4">
-        <Link
-          href={`/dashboard/listings?edit=${listing.id}`}
-          className="flex items-center justify-center size-9 rounded-xl bg-slate-50 text-slate-400 hover:bg-blue-600 hover:text-white transition-all border border-slate-100"
-          title="Düzenle"
-        >
+        <Link href={`/dashboard/listings?edit=${listing.id}`} className="flex items-center justify-center size-9 rounded-xl bg-slate-50 text-slate-400 hover:bg-blue-600 hover:text-white transition-all border border-slate-100" title="Düzenle">
           <Pencil className="size-4" />
         </Link>
 
         {isApproved && (listing.bumpedAt ? (
-             <div className="flex items-center justify-center size-9 rounded-xl bg-slate-50 text-slate-300 border border-slate-100 cursor-help" title={`${bumpCooldownDays} gün sonra tekrar öne çıkarılabilir`}>
-                <ArrowUpCircle className="size-4" />
-             </div>
+          <div className="flex items-center justify-center size-9 rounded-xl bg-slate-50 text-slate-300 border border-slate-100 cursor-help" title={`${bumpCooldownDays} gün sonra tekrar öne çıkarılabilir`}>
+            <ArrowUpCircle className="size-4" />
+          </div>
         ) : (
-            <button
-                type="button"
-                onClick={() => onBump(listing.id)}
-                disabled={isBumping || !canBump}
-                className="flex items-center justify-center size-9 rounded-xl bg-emerald-50 text-emerald-600 hover:bg-emerald-600 hover:text-white transition-all disabled:opacity-30 border border-emerald-100"
-                title="Üste Taşı"
-            >
-                {isBumping ? <Loader2 className="size-4 animate-spin" /> : <ArrowUpCircle className="size-4" />}
-            </button>
+          <button type="button" onClick={() => onBump(listing.id)} disabled={isBumping || !canBump} className="flex items-center justify-center size-9 rounded-xl bg-emerald-50 text-emerald-600 hover:bg-emerald-600 hover:text-white transition-all disabled:opacity-30 border border-emerald-100" title="Üste Taşı">
+            {isBumping ? <Loader2 className="size-4 animate-spin" /> : <ArrowUpCircle className="size-4" />}
+          </button>
         ))}
 
         {isApproved && (
           <Dialog>
             <DialogTrigger asChild>
-              <button
-                type="button"
-                className="flex items-center justify-center size-9 rounded-xl bg-blue-50 text-blue-600 hover:bg-blue-600 hover:text-white transition-all border border-blue-100"
-                title="Doping (Hızlandır)"
-              >
+              <button type="button" className="flex items-center justify-center size-9 rounded-xl bg-blue-50 text-blue-600 hover:bg-blue-600 hover:text-white transition-all border border-blue-100" title="Doping (Hızlandır)">
                 <Rocket className="size-4" />
               </button>
             </DialogTrigger>
@@ -463,20 +418,8 @@ function ListingCard({
           </Dialog>
         )}
 
-        <button
-          type="button"
-          onClick={() => onArchive(listing.id)}
-          disabled={isArchiving}
-          className={`flex items-center justify-center size-9 rounded-xl ${isArchived ? 'bg-slate-100 text-slate-400' : 'bg-red-50 text-red-500 hide hover:bg-red-600 hover:text-white'} transition-all disabled:opacity-30 border border-transparent`}
-          title={isArchived ? "Arşivden Çıkar" : "Arşivle"}
-        >
-          {isArchiving ? (
-            <Loader2 className="size-4 animate-spin" />
-          ) : isArchived ? (
-            <RotateCcw className="size-4" />
-          ) : (
-            <Archive className="size-4" />
-          )}
+        <button type="button" onClick={() => onArchive(listing.id)} disabled={isArchiving} className={`flex items-center justify-center size-9 rounded-xl ${isArchived ? "bg-slate-100 text-slate-400" : "bg-red-50 text-red-500 hover:bg-red-600 hover:text-white"} transition-all disabled:opacity-30 border border-transparent`} title={isArchived ? "Arşivden Çıkar" : "Arşivle"}>
+          {isArchiving ? <Loader2 className="size-4 animate-spin" /> : isArchived ? <RotateCcw className="size-4" /> : <Archive className="size-4" />}
         </button>
       </div>
     </div>

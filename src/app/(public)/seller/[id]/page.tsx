@@ -24,7 +24,7 @@ export default async function SellerProfilePage({ params }: SellerProfilePagePro
 
   const listingsResult = await getPublicMarketplaceListings({ 
     sellerId, 
-    limit: 100, // Fetch up to 100 listings for the profile
+    limit: 24,
     page: 1,
     sort: "newest"
   });

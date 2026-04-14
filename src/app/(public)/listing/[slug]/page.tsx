@@ -27,6 +27,11 @@ import {
 } from "@/services/listings/marketplace-listings";
 import { getListingCardInsights } from "@/services/listings/listing-card-insights";
 
+const ListingMap = dynamic(
+  () => import("@/components/shared/listing-map-wrapper").then((mod) => mod.ListingMapWrapper),
+  { loading: () => <div className="h-60 animate-pulse rounded-xl bg-slate-100" /> }
+);
+
 const ListingDetailActions = dynamic(
   () => import("@/components/listings/listing-detail-actions").then((mod) => mod.ListingDetailActions),
   {
@@ -301,6 +306,17 @@ export default async function ListingDetailPage({ params }: ListingDetailPagePro
               <div className="rounded-xl border border-slate-200 bg-white p-6">
                 <h2 className="mb-4 text-lg font-bold text-slate-900">Açıklama</h2>
                 <p className="text-sm leading-relaxed text-slate-600 whitespace-pre-wrap">{listing.description}</p>
+              </div>
+
+              {/* Location Map — OpenStreetMap, ücretsiz */}
+              <div className="rounded-xl border border-slate-200 bg-white p-6">
+                <h2 className="mb-4 flex items-center gap-2 text-lg font-bold text-slate-900">
+                  <svg className="size-5 text-blue-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/>
+                  </svg>
+                  Konum
+                </h2>
+                <ListingMap city={listing.city} district={listing.district} className="h-60" />
               </div>
 
               {/* Similar Listings */}

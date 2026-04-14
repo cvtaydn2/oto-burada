@@ -729,3 +729,27 @@ Her yeni geliştirme başlamadan önce okunmalıdır.
   - `npm run typecheck` ✅
   - `npm run build` ✅
 - **Status**: 🟢 Tüm admin ve dashboard sayfaları performans açısından optimize edildi.
+
+- **Kapsamlı Ekran Kontrolü + Yeni Özellikler Pass (2026-04-15)**:
+
+  **Diğer Ekran Sorunları Giderildi:**
+  1. **`/seller/[id]`** — `limit: 100` → `limit: 24` (gereksiz veri çekimi azaltıldı)
+  2. **`/admin/reports`** — Sequential fetch → `Promise.all` ile paralel
+  3. **`/admin/users`** — `requireAdminUser()` eksikti → eklendi (güvenlik açığı kapatıldı)
+  4. **`/admin/audit`** — Limit'siz DB query → `.limit(200)` eklendi
+  5. **`/admin/listings`** — 4 sequential query → tek `Promise.all`
+  6. **`/admin/analytics`** — Suspense yok → `AnalyticsContent` + skeleton eklendi
+  7. **`/dashboard/listings`** — `force-dynamic` + `revalidate` çakışması + sequential fetch → düzeltildi
+  8. **`/dashboard/profile`** — Aynı sorunlar → düzeltildi
+  9. **`/dashboard/saved-searches`** — `limit: 100` → `limit: 50`, revalidate kaldırıldı
+  10. **`/dashboard/notifications`** — revalidate kaldırıldı
+
+  **Yeni Özellikler:**
+  11. **İlanlarım Sayfalama**: `MyListingsPanel`'e sayfalama eklendi (5/10/20/50 ilan göster seçeneği, sayfa numaraları, önceki/sonraki butonlar, seçim sayfaya göre çalışır)
+  12. **OpenStreetMap Harita**: `listing-map.tsx` bileşeni oluşturuldu — tamamen ücretsiz, Leaflet + OpenStreetMap tile layer. İlan detay sayfasında "Konum" bölümü olarak eklendi. Türkiye'nin 20+ şehri için koordinat mapping yapıldı.
+
+- **Doğrulama**:
+  - `npm run lint` ✅ (0 errors, 0 warnings)
+  - `npm run typecheck` ✅
+  - `npm run build` ✅
+- **Status**: 🟢 Tüm ekranlar kontrol edildi, sayfalama ve harita özellikleri eklendi.
