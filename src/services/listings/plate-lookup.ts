@@ -14,7 +14,10 @@ export interface PlateLookupResult {
  * we verify the plate format and dynamically fetch a compatible brand/model 
  * from the live database to ensure No "Fake Data" is used.
  */
-export async function lookupVehicleByPlate(plate: string): Promise<PlateLookupResult | null> {
+export async function lookupVehicleByPlate(
+  plate: string,
+  supabaseClient?: any
+): Promise<PlateLookupResult | null> {
   const normalizedPlate = plate.replace(/\s/g, "").toUpperCase();
   
   // Basic TR Plate Regex
@@ -28,8 +31,12 @@ export async function lookupVehicleByPlate(plate: string): Promise<PlateLookupRe
   await new Promise((resolve) => setTimeout(resolve, 1000));
 
   try {
-    const { createSupabaseServerClient } = await import("@/lib/supabase/server");
-    const supabase = await createSupabaseServerClient();
+    let supabase = supabaseClient;
+    
+    if (!supabase) {
+      const { createSupabaseServerClient } = await import("@/lib/supabase/server");
+      supabase = await createSupabaseServerClient();
+    }
 
     // Fetch a random brand from live DB
     const { data: brands } = await supabase

@@ -82,7 +82,7 @@ export async function getOrCreateChat(
   try {
     const { data: existingChat } = await client
       .from("chats")
-      .select("*, listing:listings(id, title, price), buyer:profiles!buyer_id(*), seller:profiles!seller_id(*)")
+      .select("*, listing:listings(id, title, price, slug, brand, model), buyer:profiles!buyer_id(id, full_name, avatar_url, city), seller:profiles!seller_id(id, full_name, avatar_url, city)")
       .eq("listing_id", listingId)
       .eq("buyer_id", buyerId)
       .eq("seller_id", sellerId)
@@ -93,7 +93,7 @@ export async function getOrCreateChat(
     const { data: newChat, error: createError } = await client
       .from("chats")
       .insert({ listing_id: listingId, buyer_id: buyerId, seller_id: sellerId })
-      .select("*, listing:listings(id, title, price), buyer:profiles!buyer_id(*), seller:profiles!seller_id(*)")
+      .select("*, listing:listings(id, title, price, slug, brand, model), buyer:profiles!buyer_id(id, full_name, avatar_url, city), seller:profiles!seller_id(id, full_name, avatar_url, city)")
       .single();
 
     if (createError) {
@@ -161,7 +161,7 @@ export async function getUserChats(userId: string, supabase?: SupabaseClient): P
 
   const { data, error } = await client
     .from("chats")
-    .select("*, listing:listings(id, title, price), buyer:profiles!buyer_id(*), seller:profiles!seller_id(*)")
+    .select("*, listing:listings(id, title, price, slug, brand, model), buyer:profiles!buyer_id(id, full_name, avatar_url, city), seller:profiles!seller_id(id, full_name, avatar_url, city)")
     .or(`buyer_id.eq.${userId},seller_id.eq.${userId}`)
     .order("last_message_at", { ascending: false });
 

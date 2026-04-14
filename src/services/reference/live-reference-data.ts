@@ -1,4 +1,3 @@
-import { unstable_cache } from "next/cache";
 import { createClient } from "@supabase/supabase-js";
 
 import { getSupabaseEnv } from "@/lib/supabase/env";
@@ -38,96 +37,108 @@ const POPULAR_CITIES: CityOption[] = [
   { city: "İzmir", slug: "izmir", cityPlate: 35, districts: ["Konak", "Karşıyaka", "Bornova"] },
 ];
 
-const getCachedMarketplaceReferenceData = unstable_cache(
-  async () => {
-    const { url, anonKey } = getSupabaseEnv();
-    const supabase = createClient(url, anonKey, {
-      auth: {
-        autoRefreshToken: false,
-        persistSession: false,
-      },
-    });
+async function fetchLiveMarketplaceReferenceData() {
+  const { url, anonKey } = getSupabaseEnv();
+  const supabase = createClient(url, anonKey, {
+    auth: {
+      autoRefreshToken: false,
+      persistSession: false,
+    },
+  });
 
-    const [
-      { data: brandsData },
-      { data: modelsData },
-      { data: trimsData },
-      { data: citiesData },
-      { data: districtsData }
-    ] = await Promise.all([
-      supabase.from("brands").select("id, name").eq("is_active", true).order("sort_order", { ascending: true }),
-      supabase.from("models").select("id, brand_id, name").eq("is_active", true).order("sort_order", { ascending: true }),
-      supabase.from("car_trims").select("model_id, name").eq("is_active", true).order("sort_order", { ascending: true }),
-      supabase.from("cities").select("id, name, plate_code").eq("is_active", true).order("name", { ascending: true }),
-      supabase.from("districts").select("city_id, name").eq("is_active", true).order("name", { ascending: true })
-    ]);
+  const [
+    { data: brandsData },
+    { data: modelsData },
+    { data: trimsData },
+    { data: citiesData },
+    { data: districtsData }
+  ] = await Promise.all([
+    supabase.from("brands").select("id, name").eq("is_active", true).order("sort_order", { ascending: true }),
+    supabase.from("models").select("id, brand_id, name").eq("is_active", true).order("sort_order", { ascending: true }),
+    supabase.from("car_trims").select("model_id, name").eq("is_active", true).order("sort_order", { ascending: true }),
+    supabase.from("cities").select("id, name, plate_code").eq("is_active", true).order("name", { ascending: true }),
+    supabase.from("districts").select("city_id, name").eq("is_active", true).order("name", { ascending: true })
+  ]);
 
-    const safeBrandsData = Array.isArray(brandsData) ? (brandsData as DBBrand[]) : [];
-    const safeModelsData = Array.isArray(modelsData) ? (modelsData as DBModel[]) : [];
-    const safeTrimsData = Array.isArray(trimsData) ? (trimsData as DBTrim[]) : [];
-    const safeCitiesData = Array.isArray(citiesData) ? (citiesData as DBCity[]) : [];
-    const safeDistrictsData = Array.isArray(districtsData) ? (districtsData as DBDistrict[]) : [];
+  const safeBrandsData = Array.isArray(brandsData) ? (brandsData as DBBrand[]) : [];
+  const safeModelsData = Array.isArray(modelsData) ? (modelsData as DBModel[]) : [];
+  const safeTrimsData = Array.isArray(trimsData) ? (trimsData as DBTrim[]) : [];
+  const safeCitiesData = Array.isArray(citiesData) ? (citiesData as DBCity[]) : [];
+  const safeDistrictsData = Array.isArray(districtsData) ? (districtsData as DBDistrict[]) : [];
 
-    const brands: BrandCatalogItem[] = safeBrandsData.map((b: DBBrand) => ({
-      brand: b.name,
-      slug: b.name.toLowerCase().replace(/[^a-z0-9]/g, "-"),
-      name: b.name,
-      models: safeModelsData
-        .filter((m: DBModel) => m.brand_id === b.id)
-        .map(m => ({
-          name: m.name,
-          trims: sortLocale(safeTrimsData.filter(t => t.model_id === m.id).map(t => t.name))
-        }))
-        .sort((left, right) => left.name.localeCompare(right.name, "tr"))
-    }));
+  const brands: BrandCatalogItem[] = safeBrandsData.map((b: DBBrand) => ({
+    brand: b.name,
+    slug: b.name.toLowerCase().replace(/[^a-z0-9]/g, "-"),
+    name: b.name,
+    models: safeModelsData
+      .filter((m: DBModel) => m.brand_id === b.id)
+      .map(m => ({
+        name: m.name,
+        trims: sortLocale(safeTrimsData.filter(t => t.model_id === m.id).map(t => t.name))
+      }))
+      .sort((left, right) => left.name.localeCompare(right.name, "tr"))
+  }));
 
-    const cities: CityOption[] = safeCitiesData.map((c: DBCity) => ({
-      city: c.name,
-      slug: c.name.toLowerCase().replace(/[^a-z0-9]/g, "-"),
-      cityPlate: c.plate_code,
-      districts: sortLocale(safeDistrictsData.filter((d: DBDistrict) => d.city_id === c.id).map((d: DBDistrict) => d.name))
-    }));
+  const cities: CityOption[] = safeCitiesData.map((c: DBCity) => ({
+    city: c.name,
+    slug: c.name.toLowerCase().replace(/[^a-z0-9]/g, "-"),
+    cityPlate: c.plate_code,
+    districts: sortLocale(safeDistrictsData.filter((d: DBDistrict) => d.city_id === c.id).map((d: DBDistrict) => d.name))
+  }));
 
-    const uniqueSuggestions = new Map<string, SearchSuggestionItem>();
+  const uniqueSuggestions = new Map<string, SearchSuggestionItem>();
+  
+  for (const b of safeBrandsData) {
+    uniqueSuggestions.set(`brand:${b.name.toLowerCase()}`, { label: b.name, type: "brand", value: b.name });
     
-    for (const b of safeBrandsData) {
-      uniqueSuggestions.set(`brand:${b.name.toLowerCase()}`, { label: b.name, type: "brand", value: b.name });
-      
-      const brandModels = safeModelsData.filter((m: DBModel) => m.brand_id === b.id).slice(0, 5);
-      for (const m of brandModels) {
-        const val = `${b.name} ${m.name}`;
-        uniqueSuggestions.set(`model:${val.toLowerCase()}`, { label: val, type: "model", value: val });
+    const brandModels = safeModelsData.filter((m: DBModel) => m.brand_id === b.id).slice(0, 5);
+    for (const m of brandModels) {
+      const val = `${b.name} ${m.name}`;
+      uniqueSuggestions.set(`model:${val.toLowerCase()}`, { label: val, type: "model", value: val });
+    }
+  }
+
+  for (const c of safeCitiesData) {
+    uniqueSuggestions.set(`city:${c.name.toLowerCase()}`, { label: c.name, type: "city", value: c.name });
+  }
+
+  const searchSuggestions = [...uniqueSuggestions.values()]
+    .sort((left, right) => {
+      if (left.type !== right.type) {
+        if (left.type === "brand") return -1;
+        if (right.type === "brand") return 1;
+        if (left.type === "model") return -1;
+        if (right.type === "model") return 1;
       }
-    }
+      return left.label.localeCompare(right.label, "tr");
+    })
+    .slice(0, 100);
 
-    for (const c of safeCitiesData) {
-      uniqueSuggestions.set(`city:${c.name.toLowerCase()}`, { label: c.name, type: "city", value: c.name });
-    }
-
-    const searchSuggestions = [...uniqueSuggestions.values()]
-      .sort((left, right) => {
-        if (left.type !== right.type) {
-          if (left.type === "brand") return -1;
-          if (right.type === "brand") return 1;
-          if (left.type === "model") return -1;
-          if (right.type === "model") return 1;
-        }
-        return left.label.localeCompare(right.label, "tr");
-      })
-      .slice(0, 100);
-
-    return { 
-      brands: Array.isArray(brands) && brands.length > 0 ? brands : POPULAR_BRANDS, 
-      cities: Array.isArray(cities) && cities.length > 0 ? cities : POPULAR_CITIES, 
-      searchSuggestions: Array.isArray(searchSuggestions) ? searchSuggestions : []
-    };
-  },
-  ["live-marketplace-reference-data"],
-  { revalidate: 3600 },
-);
+  return { 
+    brands: Array.isArray(brands) && brands.length > 0 ? brands : POPULAR_BRANDS, 
+    cities: Array.isArray(cities) && cities.length > 0 ? cities : POPULAR_CITIES, 
+    searchSuggestions: Array.isArray(searchSuggestions) ? searchSuggestions : []
+  };
+}
 
 export async function getLiveMarketplaceReferenceData() {
-  return getCachedMarketplaceReferenceData();
+  // If we are in a testing or non-Next.js server-side environment, skip unstable_cache
+  if (process.env.NODE_ENV === 'test' || typeof window !== 'undefined' || !process.env.NEXT_RUNTIME) {
+    return fetchLiveMarketplaceReferenceData();
+  }
+
+  // Use dynamic require/import for next/cache to avoid issues in non-Next environments
+  try {
+    const { unstable_cache } = await import("next/cache");
+    const getCached = unstable_cache(
+      async () => fetchLiveMarketplaceReferenceData(),
+      ["live-marketplace-reference-data"],
+      { revalidate: 3600 },
+    );
+    return getCached();
+  } catch (e) {
+    return fetchLiveMarketplaceReferenceData();
+  }
 }
 
 export function mergeCityOptions(cities: CityOption[], extraCities: string[]) {
