@@ -366,7 +366,6 @@ export async function getDatabaseListings(options?: {
 
   const admin = createSupabaseAdminClient();
   const applyListingQueryOptions = (selectClause: string) => {
-    console.log("[getDatabaseListings] Options:", JSON.stringify(options));
     let query = admin.from("listings").select(selectClause);
 
     const sellerId = options?.sellerId ?? options?.filters?.sellerId;

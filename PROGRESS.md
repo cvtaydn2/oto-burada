@@ -14,6 +14,19 @@ Her yeni geliştirme başlamadan önce okunmalıdır.
 
 ## Proje Durumu
 
+- **Performance Pass 3 (2026-04-14)**:
+  1. **Public Listing Data Cache**: `marketplace-listings` içinde Next cache uyumlu bir sarmalayıcı eklenerek listing detail, seller ve similar listings sorguları `unstable_cache` ile ISR-benzeri yeniden kullanım alacak şekilde cache'lendi.
+  2. **Seller Fetch Hafifletme**: Public seller bilgisi artık `admin.auth.admin.getUserById` zincirine girmeden doğrudan `profiles` tablosundan okunuyor; detail sayfasındaki ek auth admin round-trip kaldırıldı.
+  3. **Build Gürültüsü Temizliği**: `listing-submissions` içindeki build sırasında gereksiz log üreten debug satırı kaldırıldı; production build çıktısı sadeleşti.
+  4. **Runtime Dayanıklılığı**: Cache sarmalayıcısı test ve non-Next çalışma ortamlarında güvenli fallback ile çalışacak şekilde tasarlandı; runtime ortam farkı yüzünden servis kırılması riski azaltıldı.
+- **Doğrulama**:
+  - `npm run lint` ✅
+  - `npm run typecheck` ✅
+  - `npm run build` ✅
+- **Sonraki Adım**:
+  - Production deployment hazır olduğunda gerçek route bazlı ölçüm alınmalı; özellikle `listing/[slug]` için TTFB ve LCP etkisi sayısal olarak doğrulanmalı.
+  - Ardından `listing-gallery` ve detail action island'larında client JS yükü ayrıca küçültülmeli.
+
 - **Performance Pass 2 (2026-04-14)**:
   1. **Listing Detail Auth Ayrıştırması**: `listing/[slug]` sayfasında `getCurrentUser()` bağımlılığı kaldırıldı. Detail action ve mobile sticky CTA, client auth context üzerinden çalışacak şekilde taşındı.
   2. **Listings JS Yükü Azaltıldı**: `ListingsPageClient` içindeki `SmartFilters` ve `MobileFilterDrawer` bileşenleri dynamic import ile lazy yüklenir hale getirildi.
