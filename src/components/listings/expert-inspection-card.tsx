@@ -1,22 +1,18 @@
 "use client";
-import { useMemo } from "react";
 
+import { useMemo } from "react";
 import {
   CheckCircle2,
   ClipboardList,
-  Gauge,
   Info,
   ShieldCheck,
-  Snowflake,
   Sparkles,
-  CircleDot,
   Wrench,
   Car,
+  XCircle,
+  HelpCircle,
 } from "lucide-react";
-
-import {
-  expertInspectionGradeInfo,
-} from "@/types";
+import { expertInspectionGradeInfo } from "@/types";
 import type { ExpertInspection } from "@/types";
 import { cn, formatDate } from "@/lib/utils";
 
@@ -25,39 +21,62 @@ interface ExpertInspectionCardProps {
   className?: string;
 }
 
-const statusConfig = {
-  var: {
-    label: "Değişmemiş",
-    color: "text-green-600",
-    bg: "bg-green-50",
-    icon: CheckCircle2,
-  },
-  yok: {
-    label: "Değişmiş/Onarılmış",
-    color: "text-amber-600",
-    bg: "bg-amber-50",
+// Tasarıma göre 3 sütun: Motor & Mekanik / Yürüyen & Şanzıman / Elektronik
+const INSPECTION_CATEGORIES = [
+  {
+    title: "Motor & Mekanik",
     icon: Wrench,
+    items: [
+      { key: "engine", label: "Motor Performansı" },
+      { key: "damageRecord", label: "Hasar Kaydı" },
+      { key: "bodyPaint", label: "Boya Durumu" },
+    ],
   },
-  bilinmiyor: {
-    label: "Bilinmiyor",
-    color: "text-gray-500",
-    bg: "bg-gray-50",
-    icon: Info,
+  {
+    title: "Yürüyen & Şanzıman",
+    icon: Car,
+    items: [
+      { key: "transmission", label: "Şanzıman Geçişleri" },
+      { key: "suspension", label: "Amortisörler" },
+      { key: "brakes", label: "Fren Disk / Balata" },
+    ],
   },
-};
-
-const inspectionItems = [
-  { key: "damageRecord", label: "Hasar Kaydı", icon: ShieldCheck },
-  { key: "bodyPaint", label: "Boya Durumu", icon: Sparkles },
-  { key: "engine", label: "Motor", icon: Gauge },
-  { key: "transmission", label: "Şanzıman", icon: Wrench },
-  { key: "suspension", label: "Süspansiyon", icon: Car },
-  { key: "brakes", label: "Fren Sistemi", icon: ShieldCheck },
-  { key: "electrical", label: "Elektrik", icon: Info },
-  { key: "interior", label: "İç Döşeme", icon: ClipboardList },
-  { key: "tires", label: "Lastikler", icon: CircleDot },
-  { key: "acHeating", label: "Klima/Isıtma", icon: Snowflake },
+  {
+    title: "Elektronik",
+    icon: Sparkles,
+    items: [
+      { key: "electrical", label: "OBD Arıza Taraması" },
+      { key: "interior", label: "İç Döşeme / Multimedya" },
+      { key: "acHeating", label: "Klima Performansı" },
+      { key: "tires", label: "Lastik Durumu" },
+    ],
+  },
 ] as const;
+
+function StatusBadge({ status }: { status: string }) {
+  if (status === "var") {
+    return (
+      <div className="flex items-center gap-1.5 text-[10px] font-bold text-green-600">
+        <CheckCircle2 size={14} className="text-green-500" />
+        <span>Kusursuz</span>
+      </div>
+    );
+  }
+  if (status === "yok") {
+    return (
+      <div className="flex items-center gap-1.5 text-[10px] font-bold text-red-600">
+        <XCircle size={14} className="text-red-500" />
+        <span>Değişmiş/Onarılmış</span>
+      </div>
+    );
+  }
+  return (
+    <div className="flex items-center gap-1.5 text-[10px] font-bold text-gray-400">
+      <HelpCircle size={14} className="text-gray-400" />
+      <span>Bilinmiyor</span>
+    </div>
+  );
+}
 
 export function ExpertInspectionCard({
   expertInspection,
@@ -65,30 +84,30 @@ export function ExpertInspectionCard({
 }: ExpertInspectionCardProps) {
   const hasData = useMemo(() => {
     if (!expertInspection) return false;
-    const items = inspectionItems.map(i => expertInspection[i.key as keyof ExpertInspection]);
-    return items.some(v => v === "var" || v === "yok") || expertInspection.hasInspection;
+    const keys = ["engine", "transmission", "suspension", "brakes", "electrical", "interior", "tires", "acHeating", "damageRecord", "bodyPaint"] as const;
+    return keys.some(k => expertInspection[k] === "var" || expertInspection[k] === "yok") || expertInspection.hasInspection;
   }, [expertInspection]);
 
+  // Ekspertiz yoksa bilgilendirici kart
   if (!hasData || !expertInspection) {
     return (
-      <div className={cn("rounded-2xl border border-slate-200 bg-white p-6 shadow-sm", className)}>
+      <div className={cn("rounded-xl border border-slate-200 bg-white p-6 shadow-sm", className)}>
         <div className="mb-4 flex items-center gap-3">
-          <div className="flex size-12 items-center justify-center rounded-2xl border border-amber-100 bg-amber-50 text-amber-600">
+          <div className="flex size-12 items-center justify-center rounded-xl border border-amber-100 bg-amber-50 text-amber-600">
             <Info size={22} />
           </div>
           <div>
-            <h3 className="text-lg font-black text-slate-900">Ekspertiz Bilgisi Paylaşılmamış</h3>
-            <p className="text-sm font-medium text-slate-500">Bu ilanda doğrulanmış ekspertiz raporu henüz eklenmemiş.</p>
+            <h3 className="text-base font-bold text-slate-900">Ekspertiz Bilgisi Paylaşılmamış</h3>
+            <p className="text-sm text-slate-500">Bu ilanda doğrulanmış ekspertiz raporu henüz eklenmemiş.</p>
           </div>
         </div>
-
         <div className="grid gap-3 sm:grid-cols-2">
           <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
-            <div className="text-[11px] font-black uppercase tracking-widest text-slate-400">Durum</div>
+            <div className="text-[11px] font-bold uppercase tracking-widest text-slate-400">Durum</div>
             <div className="mt-2 text-sm font-bold text-slate-800">Satıcı beyanı mevcut, bağımsız ekspertiz yok</div>
           </div>
           <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
-            <div className="text-[11px] font-black uppercase tracking-widest text-slate-400">Öneri</div>
+            <div className="text-[11px] font-bold uppercase tracking-widest text-slate-400">Öneri</div>
             <div className="mt-2 text-sm font-bold text-slate-800">Aracı görmeden önce ekspertiz raporu ve servis kontrolü isteyin</div>
           </div>
         </div>
@@ -100,123 +119,112 @@ export function ExpertInspectionCard({
     ? expertInspectionGradeInfo.find((g) => g.grade === expertInspection.overallGrade)
     : null;
 
-  const isVerified = expertInspection.hasInspection;
-
-  const categories = [
-    {
-      title: "Motor & Mekanik",
-      icon: <Gauge size={16} />,
-      items: [
-        { key: "engine", label: "Motor Durumu" },
-        { key: "transmission", label: "Şanzıman" },
-        { key: "damageRecord", label: "Hasar Kaydı" },
-      ]
-    },
-    {
-      title: "Yürüyen & Güvenlik",
-      icon: <Car size={16} />,
-      items: [
-        { key: "suspension", label: "Süspansiyon" },
-        { key: "brakes", label: "Frenler" },
-        { key: "tires", label: "Lastikler" },
-      ]
-    },
-    {
-      title: "Konfor & Donanım",
-      icon: <Sparkles size={16} />,
-      items: [
-        { key: "interior", label: "İç Döşeme" },
-        { key: "acHeating", label: "Klima" },
-        { key: "electrical", label: "Elektronik" },
-      ]
-    }
-  ];
+  // Puan hesapla: grade'e göre veya totalScore'dan
+  const scoreDisplay = expertInspection.totalScore
+    ? `${expertInspection.totalScore}`
+    : gradeInfo?.grade === "a" ? "9.8"
+    : gradeInfo?.grade === "b" ? "8.5"
+    : gradeInfo?.grade === "c" ? "7.2"
+    : gradeInfo?.grade === "d" ? "5.8"
+    : "4.5";
 
   return (
     <div className={cn("flex flex-col gap-6", className)}>
-      {/* Premium Header */}
-      <div className="bg-blue-600 border border-blue-500 rounded-2xl p-6 flex flex-col md:flex-row items-center justify-between shadow-xl shadow-blue-500/10">
-        <div className="flex items-center">
-          <div className="size-14 bg-white/10 backdrop-blur-sm text-white rounded-2xl flex items-center justify-center shadow-inner mr-5 shrink-0">
-            <ShieldCheck size={28} className="text-white" />
+
+      {/* 1. Onaylı Ekspertiz Banner - Tasarıma göre mavi */}
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 rounded-xl border border-blue-100 bg-blue-50 p-6 shadow-sm">
+        <div className="flex items-center gap-4">
+          <div className="flex size-12 items-center justify-center rounded-full bg-blue-500 text-white shadow-md">
+            <ShieldCheck size={24} />
           </div>
           <div>
-            <h2 className="text-xl font-black text-white leading-tight">
-              {isVerified ? "Onaylı Ekspertiz Raporu" : "Satıcı Teknik Beyanı"}
+            <h2 className="text-lg font-bold text-blue-900">
+              {expertInspection.hasInspection ? "Onaylı Ekspertiz Raporu" : "Satıcı Teknik Beyanı"}
             </h2>
-            <div className="flex items-center gap-2 mt-1.5">
-               <span className="size-2 rounded-full bg-blue-300 animate-pulse" />
-               <p className="text-sm text-blue-100 font-medium">
-                {expertInspection.inspectionDate 
-                  ? `${formatDate(expertInspection.inspectionDate)} tarihinde düzenlenmiştir` 
-                  : "Sistem kaydı doğrulanmış"}
-              </p>
-            </div>
+            <p className="text-sm text-blue-700 mt-0.5">
+              {expertInspection.inspectedBy
+                ? `${expertInspection.inspectedBy} tarafından`
+                : "Satıcı tarafından"}{" "}
+              {expertInspection.inspectionDate
+                ? `${formatDate(expertInspection.inspectionDate)} tarihinde düzenlenmiştir.`
+                : "beyan edilmiştir."}
+            </p>
           </div>
         </div>
-        
-        <div className="mt-5 md:mt-0 bg-white/10 backdrop-blur-md px-6 py-3 rounded-2xl border border-white/20">
-          <div className="text-[10px] font-black text-blue-100 uppercase tracking-widest mb-1 text-center">Ekspertiz Puanı</div>
-          <div className="text-3xl font-black text-white text-center">
-             {gradeInfo?.grade === "a" ? "9.8" : gradeInfo?.grade === "b" ? "8.5" : gradeInfo?.grade === "c" ? "7.2" : "6.5"}
-             <span className="text-sm text-blue-200 font-bold">/10</span>
+        <div className="shrink-0 rounded-lg border border-blue-100 bg-white px-6 py-3 text-center shadow-sm">
+          <div className="text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-1">Eksper Puanı</div>
+          <div className="text-3xl font-extrabold text-blue-500">
+            {scoreDisplay}
+            <span className="text-sm font-medium text-gray-400">/10</span>
           </div>
         </div>
       </div>
 
-      {/* Categorized Checklists */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        {categories.map((cat) => (
-          <div key={cat.title} className="bg-white border border-gray-100 rounded-2xl p-5 shadow-sm">
-            <h3 className="text-xs font-black text-gray-800 uppercase tracking-widest mb-4 flex items-center gap-2 border-b border-gray-50 pb-3">
-              <span className="text-blue-500">{cat.icon}</span>
-              {cat.title}
-            </h3>
-            <div className="space-y-4">
-              {cat.items.map((item) => {
-                const status = expertInspection[item.key as keyof ExpertInspection] as string;
-                const config = statusConfig[status as keyof typeof statusConfig] || statusConfig.bilinmiyor;
-                const Icon = config.icon;
-                
-                return (
-                  <div key={item.key} className="flex items-center justify-between">
-                    <span className="text-xs font-bold text-gray-500">{item.label}</span>
-                    <div className={cn(
-                      "flex items-center gap-1.5 px-2 py-1 rounded-md border text-[10px] font-black uppercase tracking-tighter",
-                      status === "var" ? "bg-emerald-50 text-emerald-600 border-emerald-100" :
-                      status === "yok" ? "bg-orange-50 text-orange-600 border-orange-100" :
-                      "bg-gray-50 text-gray-400 border-gray-100"
-                    )}>
-                      <Icon size={12} />
-                      {config.label === "Değişmemiş" ? "Kusursuz" : config.label}
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-        ))}
-      </div>
-
-      {/* Expert Note */}
+      {/* 2. Uzman Görüşü - Tasarıma göre */}
       {expertInspection.notes && (
-        <div className="bg-gray-50 border border-gray-200 rounded-2xl p-6 relative overflow-hidden group">
-          <div className="absolute top-0 left-0 w-1.5 h-full bg-blue-500 transition-all group-hover:w-2"></div>
-          <h4 className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] mb-3">Uzman Görüşü</h4>
-          <p className="text-sm text-gray-600 leading-relaxed font-medium italic">
-            &quot;{expertInspection.notes}&quot;
-          </p>
+        <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
+          <h3 className="mb-4 flex items-center gap-2 text-sm font-bold text-gray-800">
+            <svg className="size-4 text-blue-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+            </svg>
+            Uzman Görüşü
+          </h3>
+          <div className="relative rounded-xl border border-gray-100 bg-gray-50 p-5">
+            <svg className="absolute top-3 left-3 size-8 text-gray-200" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M14.017 21v-7.391c0-5.704 3.731-9.57 8.983-10.609l.995 2.151c-2.432.917-3.995 3.638-3.995 5.849h4v10h-9.983zm-14.017 0v-7.391c0-5.704 3.748-9.57 9-10.609l.996 2.151c-2.433.917-3.996 3.638-3.996 5.849h3.983v10h-9.983z"/>
+            </svg>
+            <p className="relative z-10 pt-2 pl-2 text-sm italic leading-relaxed text-gray-600">
+              {expertInspection.notes}
+            </p>
+          </div>
+          {expertInspection.inspectedBy && (
+            <div className="mt-4 flex items-center gap-3">
+              <div className="flex size-10 items-center justify-center rounded-full bg-blue-100 text-blue-600 font-bold text-sm">
+                {expertInspection.inspectedBy[0]}
+              </div>
+              <div>
+                <div className="text-sm font-bold text-gray-800">{expertInspection.inspectedBy}</div>
+                <div className="text-[10px] font-medium text-gray-500">Ekspertiz Uzmanı</div>
+              </div>
+            </div>
+          )}
         </div>
       )}
 
-      {/* Document Link */}
+      {/* 3. Teknik Checklist - Tasarıma göre 3 sütun */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        {INSPECTION_CATEGORIES.map((cat) => {
+          const Icon = cat.icon;
+          return (
+            <div key={cat.title} className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
+              <h3 className="mb-4 flex items-center gap-2 border-b border-gray-100 pb-3 text-xs font-bold uppercase tracking-wider text-gray-800">
+                <Icon size={14} className="text-gray-400" />
+                {cat.title}
+              </h3>
+              <ul className="space-y-3">
+                {cat.items.map((item) => {
+                  const status = expertInspection[item.key as keyof ExpertInspection] as string ?? "bilinmiyor";
+                  return (
+                    <li key={item.key} className="flex items-center justify-between text-sm">
+                      <span className="text-gray-600">{item.label}</span>
+                      <StatusBadge status={status} />
+                    </li>
+                  );
+                })}
+              </ul>
+            </div>
+          );
+        })}
+      </div>
+
+      {/* 4. PDF İndir */}
       {expertInspection.documentUrl && (
         <div className="flex justify-center">
           <a
             href={expertInspection.documentUrl}
             target="_blank"
             rel="noreferrer"
-            className="inline-flex items-center gap-2 bg-white border border-gray-200 px-6 py-2.5 rounded-xl text-sm font-bold text-gray-700 hover:border-blue-500 hover:text-blue-600 transition-all shadow-sm"
+            className="inline-flex items-center gap-2 rounded-xl border border-gray-200 bg-white px-6 py-2.5 text-sm font-bold text-gray-700 shadow-sm transition hover:border-blue-500 hover:text-blue-600"
           >
             <ClipboardList size={18} />
             Ekspertiz Raporunu İndir (PDF)

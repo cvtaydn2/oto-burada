@@ -609,3 +609,31 @@ Her yeni geliştirme başlamadan önce okunmalıdır.
   - `npm run typecheck` ✅
 - **Status**: 🟢 Build hatası giderildi; proje tekrar deploy edilebilir durumda.
 - **Sonraki Adım**: Vercel üzerinden deployment durumunu takip etmek ve canlı siteyi kontrol etmek.
+
+- **UI Kapsamlı Tarama & Düzeltme Pass (2026-04-15)**:
+  1. **360° View Modal Entegrasyonu**: `ListingGallery` bileşenindeki 360° butonu artık `Listing360View` modal'ına bağlandı. Buton tıklandığında modal açılıyor.
+  2. **Ekspertiz Bölümü Yeniden Düzenlendi**: `listing/[slug]` sayfasında `ExpertInspectionCard` ve `DamageReportCard` ayrı bölümlere taşındı. Tasarım referansına (`ilan-detay-ekspertiz.html`) göre ekspertiz tam genişlik, kaporta/boya ayrı section olarak gösteriliyor.
+  3. **404 Sayfası Yenilendi**: `.design/pages-code/404.html` referansına göre büyük "404" yazısı üzerinde araç ikonu, Türkçe açıklama ve iki CTA butonu ile yeniden tasarlandı.
+  4. **Admin Users "Son Giriş" Kolonu**: `.design/pages-code/kullanici-yonetimi.html` referansına göre kullanıcı tablosuna "Son Giriş" kolonu eklendi.
+  5. **Listing360View Lint Fix**: `useEffect` içinde `setState` çağrısı kaldırıldı, bileşen sade ve lint-clean hale getirildi.
+- **Doğrulama**:
+  - `npm run lint` ✅ (0 errors, 0 warnings)
+  - `npm run typecheck` ✅
+  - `npm run build` ✅
+- **Status**: 🟢 Tüm UI ekranları `.design/pages-code` referanslarıyla karşılaştırıldı, kritik eksiklikler giderildi.
+- **Sonraki Adım**: Ödeme entegrasyonu (Iyzico/Stripe) ve İlan Boost akışı.
+
+- **Ekspertiz Raporu & Kaporta UI Tam Uyum Pass (2026-04-15)**:
+  1. **ExpertInspectionCard Yeniden Tasarlandı**: `.design/pages-code/ilan-detay-ekspertiz.html` referansına birebir uygun hale getirildi:
+     - Mavi "Onaylı Ekspertiz Raporu" banner + puan göstergesi
+     - Uzman Görüşü kartı (tırnak işareti, eksper adı)
+     - 3 sütun teknik checklist: Motor & Mekanik / Yürüyen & Şanzıman / Elektronik
+     - Her satırda ikon + durum badge (Kusursuz / Değişmiş / Bilinmiyor)
+     - PDF indirme butonu
+  2. **Listing Detail Ekspertiz Section Güncellendi**: Ekspertiz raporu ve Kaporta & Boya bölümleri ayrı section'lar olarak düzenlendi, PDF indirme butonu header'a taşındı.
+  3. **Form Zaten Tam**: `InspectionStep` → `ExpertInspectionEditor` + `DamageSelector` wizard'da mevcut ve çalışıyor. Kullanıcı ilan eklerken tüm ekspertiz bilgilerini girebiliyor.
+- **Doğrulama**:
+  - `npm run lint` ✅ (0 errors, 0 warnings)
+  - `npm run typecheck` ✅
+  - `npm run build` ✅
+- **Status**: 🟢 Ekspertiz raporu hem ilan oluşturma formunda hem de ilan detay sayfasında tasarım referansıyla tam uyumlu.

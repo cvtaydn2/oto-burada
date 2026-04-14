@@ -240,17 +240,40 @@ export default async function ListingDetailPage({ params }: ListingDetailPagePro
                 </div>
               </div>
 
-              {/* Expert Inspection */}
-              <div id="ekspertiz" className="rounded-xl border border-slate-200 bg-white p-6 scroll-mt-24">
-                <div className="mb-5 flex items-center justify-between">
-                  <h2 className="flex items-center gap-2 text-lg font-bold text-slate-900">
-                    <ShieldCheck size={20} className="text-emerald-500" />
-                    Ekspertiz Raporu
-                  </h2>
-                  <Link href="#ekspertiz" className="text-xs font-medium text-primary hover:underline">Tam raporu gör</Link>
-                </div>
-                <div className="grid gap-4 sm:grid-cols-2">
+              {/* Expert Inspection + Damage - Tasarıma göre aynı section */}
+              <div id="ekspertiz" className="scroll-mt-24 space-y-6">
+                {/* Ekspertiz Raporu */}
+                <div className="rounded-xl border border-slate-200 bg-white p-6">
+                  <div className="mb-5 flex items-center justify-between">
+                    <h2 className="flex items-center gap-2 text-lg font-bold text-slate-900">
+                      <ShieldCheck size={20} className="text-emerald-500" />
+                      Ekspertiz Raporu
+                    </h2>
+                    {listing.expertInspection?.documentUrl && (
+                      <a
+                        href={listing.expertInspection.documentUrl}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="flex items-center gap-1.5 rounded-lg border border-gray-200 bg-white px-3 py-1.5 text-xs font-bold text-gray-600 shadow-sm transition hover:border-blue-500 hover:text-blue-600"
+                      >
+                        <svg className="size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>
+                        </svg>
+                        Raporu İndir (PDF)
+                      </a>
+                    )}
+                  </div>
                   <ExpertInspectionCard expertInspection={listing.expertInspection} />
+                </div>
+
+                {/* Kaporta & Boya - Tasarıma göre ayrı section */}
+                <div className="rounded-xl border border-slate-200 bg-white p-6">
+                  <h2 className="mb-5 flex items-center gap-2 text-lg font-bold text-slate-900">
+                    <svg className="size-5 text-amber-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><path d="M12 9v4"/><path d="M12 17h.01"/>
+                    </svg>
+                    Kaporta & Boya Durumu
+                  </h2>
                   <DamageReportCard damageStatus={listing.damageStatusJson} tramerAmount={listing.tramerAmount} />
                 </div>
               </div>

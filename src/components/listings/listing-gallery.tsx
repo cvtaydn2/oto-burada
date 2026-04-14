@@ -6,6 +6,7 @@ import Image from "next/image";
 import { ChevronLeft, ChevronRight, Sparkles, Rotate3d } from "lucide-react";
 import useEmblaCarousel from "embla-carousel-react";
 import type { ListingImage } from "@/types";
+import { Listing360View } from "@/components/listings/listing-360-view";
 
 const ListingGalleryLightbox = dynamic(
   () => import("@/components/listings/listing-gallery-lightbox").then((mod) => mod.ListingGalleryLightbox),
@@ -19,6 +20,7 @@ interface ListingGalleryProps {
 export function ListingGallery({ images, title }: ListingGalleryProps) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isLightboxOpen, setIsLightboxOpen] = useState(false);
+  const [is360Open, setIs360Open] = useState(false);
 
   const [emblaRef, emblaApi] = useEmblaCarousel({ 
     loop: true,
@@ -122,7 +124,10 @@ export function ListingGallery({ images, title }: ListingGalleryProps) {
                   Tam Ekran
                   <Sparkles size={12} className="text-primary" />
                 </button>
-                <button className="px-3 py-1.5 rounded-full bg-blue-500 text-white text-[10px] font-bold uppercase tracking-widest hover:bg-blue-600 transition-all shadow-lg flex items-center gap-1.5">
+                <button
+                  onClick={() => setIs360Open(true)}
+                  className="px-3 py-1.5 rounded-full bg-blue-500 text-white text-[10px] font-bold uppercase tracking-widest hover:bg-blue-600 transition-all shadow-lg flex items-center gap-1.5"
+                >
                   <Rotate3d size={12} />
                   360° Görünüm
                 </button>
@@ -167,6 +172,11 @@ export function ListingGallery({ images, title }: ListingGalleryProps) {
         onNext={() => emblaApi?.scrollNext()}
         onPrev={() => emblaApi?.scrollPrev()}
         title={title}
+      />
+
+      <Listing360View
+        isOpen={is360Open}
+        onClose={() => setIs360Open(false)}
       />
     </>
   );

@@ -77,6 +77,7 @@ export default async function AdminUserManagementPage({
                     <th className="p-6 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Rol / Yetki</th>
                     <th className="p-6 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Kayıt Tarihi</th>
                     <th className="p-6 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Durum</th>
+                    <th className="p-6 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Son Giriş</th>
                     <th className="p-6 text-right text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Yönetim</th>
                   </tr>
                 </thead>
@@ -133,6 +134,9 @@ export default async function AdminUserManagementPage({
                             !u.isBanned ? "text-emerald-600" : "text-slate-400"
                           )}>{!u.isBanned ? "Aktif" : "Yasaklı"}</span>
                         </div>
+                      </td>
+                      <td className="p-6 text-xs font-medium text-slate-400 italic">
+                        —
                       </td>
                       <td className="p-6 text-right">
                         <UserActionMenu 

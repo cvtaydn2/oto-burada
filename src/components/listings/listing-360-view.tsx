@@ -1,7 +1,6 @@
 "use client";
 
 import { X } from "lucide-react";
-import { useState, useEffect } from "react";
 
 interface Listing360ViewProps {
   isOpen: boolean;
@@ -9,18 +8,6 @@ interface Listing360ViewProps {
 }
 
 export function Listing360View({ isOpen, onClose }: Listing360ViewProps) {
-  const [isLoading, setIsLoading] = useState(true);
-
-  useEffect(() => {
-    if (isOpen) {
-      setIsLoading(true);
-      const timer = setTimeout(() => {
-        setIsLoading(false);
-      }, 1500);
-      return () => clearTimeout(timer);
-    }
-  }, [isOpen]);
-
   if (!isOpen) return null;
 
   return (
@@ -32,16 +19,7 @@ export function Listing360View({ isOpen, onClose }: Listing360ViewProps) {
         <X size={24} />
       </button>
 
-      <div className="relative w-full max-w-6xl aspect-video bg-slate-900 rounded-2xl overflow-hidden shadow-2xl">
-        {isLoading && (
-          <div className="absolute inset-0 flex items-center justify-center">
-            <div className="text-white text-lg font-medium animate-pulse">
-              360° Görünüm Yükleniyor...
-            </div>
-          </div>
-        )}
-
-        {/* Placeholder for 360° viewer - Replace with actual 360 viewer component */}
+      <div className="relative w-full max-w-6xl aspect-video bg-slate-900 rounded-2xl overflow-hidden shadow-2xl mx-4">
         <div className="w-full h-full flex flex-col items-center justify-center text-slate-400">
           <div className="mb-4 p-6 rounded-full bg-slate-800/50">
             <svg className="w-16 h-16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
