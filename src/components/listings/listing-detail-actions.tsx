@@ -2,6 +2,7 @@
 
 import { Flag } from "lucide-react";
 
+import { useAuthUser } from "@/components/shared/auth-provider";
 import { CompareButton } from "@/components/listings/compare-button";
 import { FavoriteButton } from "@/components/listings/favorite-button";
 import { ShareButton } from "@/components/listings/share-button";
@@ -19,7 +20,6 @@ interface ListingDetailActionsProps {
   price: number;
   sellerId: string;
   title: string;
-  userId?: string | null;
 }
 
 export function ListingDetailActions({
@@ -27,8 +27,9 @@ export function ListingDetailActions({
   price,
   sellerId,
   title,
-  userId,
 }: ListingDetailActionsProps) {
+  const { userId } = useAuthUser();
+
   return (
     <div className="flex items-center space-x-2">
       <ShareButton

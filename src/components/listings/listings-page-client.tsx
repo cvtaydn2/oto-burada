@@ -1,15 +1,25 @@
 "use client"
 
+import dynamic from "next/dynamic"
 import { useState, useTransition, useRef } from "react"
 import { useRouter } from "next/navigation"
 import { LayoutGrid, List, ArrowDownUp, Star, BadgeCheck, TrendingDown } from "lucide-react"
 
 import { type Listing, type ListingFilters, type BrandCatalogItem, type CityOption } from "@/types"
 import { CarCard } from "@/components/modules/listings/car-card"
-import { SmartFilters } from "@/components/modules/listings/smart-filters"
 import { ListingsGridSkeleton } from "@/components/listings/listings-grid-skeleton"
-import { MobileFilterDrawer } from "@/components/ui/mobile-filter-drawer"
 import { cn } from "@/lib/utils"
+
+const SmartFilters = dynamic(
+  () => import("@/components/modules/listings/smart-filters").then((mod) => mod.SmartFilters),
+  {
+    loading: () => <div className="min-h-[320px] rounded-xl border border-slate-200 bg-white shadow-sm" />,
+  },
+)
+
+const MobileFilterDrawer = dynamic(
+  () => import("@/components/ui/mobile-filter-drawer").then((mod) => mod.MobileFilterDrawer),
+)
 
 const SORT_OPTIONS = [
   { value: "newest", label: "En Yeni" },
@@ -37,7 +47,6 @@ interface ListingsPageClientProps {
   brands: BrandCatalogItem[]
   cities: CityOption[]
   initialFilters: ListingFilters
-  userId?: string
 }
 
 export function ListingsPageClient({

@@ -14,6 +14,19 @@ Her yeni geliştirme başlamadan önce okunmalıdır.
 
 ## Proje Durumu
 
+- **Performance Pass 2 (2026-04-14)**:
+  1. **Listing Detail Auth Ayrıştırması**: `listing/[slug]` sayfasında `getCurrentUser()` bağımlılığı kaldırıldı. Detail action ve mobile sticky CTA, client auth context üzerinden çalışacak şekilde taşındı.
+  2. **Listings JS Yükü Azaltıldı**: `ListingsPageClient` içindeki `SmartFilters` ve `MobileFilterDrawer` bileşenleri dynamic import ile lazy yüklenir hale getirildi.
+  3. **SEO Landing Senkronu**: `satilik/[brand]/[[...city]]` route’u yeni auth modeline uyarlandı; gereksiz user prop akışı kaldırıldı.
+  4. **Build Sağlığı Korundu**: İkinci performans turu sonrası lint, typecheck ve build temiz kaldı.
+- **Doğrulama**:
+  - `npm run lint` ✅
+  - `npm run typecheck` ✅
+  - `npm run build` ✅
+- **Sonraki Adım**:
+  - `listing-gallery`, `contact-actions` ve `listing-detail-actions` client payload’ları route bazlı daha agresif code split ile küçültülebilir.
+  - Route bazlı gerçek Lighthouse / PageSpeed ölçümü alınarak LCP ve INP artık sayısal olarak doğrulanmalı.
+
 - **Performance Recovery (2026-04-14)**:
   1. **Public Shell Statikleşti**: Root layout ve public shell içinden server-side `getCurrentUser()` bağımlılığı kaldırıldı. Auth bilgisi client-side `AuthProvider` katmanına taşındı.
   2. **Homepage Cache Dostu Hale Geldi**: Ana sayfadaki gereksiz `force-dynamic` kaldırıldı. Build çıktısında `/` route'u tekrar static ISR (`○ /`) olarak üretildi.

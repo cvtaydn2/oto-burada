@@ -3,7 +3,6 @@ import { notFound } from "next/navigation";
 import { ListingsPageClient } from "@/components/listings/listings-page-client";
 import { ListingStructuredData, BreadcrumbStructuredData } from "@/components/seo/structured-data";
 import { Breadcrumbs } from "@/components/shared/breadcrumbs";
-import { getCurrentUser } from "@/lib/auth/session";
 import { buildListingsMetadata, buildAbsoluteUrl } from "@/lib/seo";
 import { getPublicMarketplaceListings } from "@/services/listings/marketplace-listings";
 import { getLiveMarketplaceReferenceData } from "@/services/reference/live-reference-data";
@@ -69,10 +68,7 @@ export default async function LandingPage({ params }: LandingPageProps) {
     sort: "newest",
   };
 
-  const [currentUser, listings] = await Promise.all([
-    getCurrentUser(),
-    getPublicMarketplaceListings(initialFilters),
-  ]);
+  const listings = await getPublicMarketplaceListings(initialFilters);
 
   const breadcrumbs = [
     { name: "Ana Sayfa", url: "/" },
@@ -109,7 +105,6 @@ export default async function LandingPage({ params }: LandingPageProps) {
         brands={references.brands}
         cities={references.cities}
         initialFilters={initialFilters}
-        userId={currentUser?.id}
       />
     </>
   );

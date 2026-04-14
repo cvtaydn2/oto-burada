@@ -20,7 +20,6 @@ import { ExpertInspectionCard } from "@/components/listings/expert-inspection-ca
 import { DamageReportCard } from "@/components/listings/damage-report-card";
 import { MarketValueCard } from "@/components/listings/market-value-card";
 import { MobileStickyActions } from "@/components/listings/mobile-sticky-actions";
-import { getCurrentUser } from "@/lib/auth/session";
 import { buildListingDetailMetadata, buildAbsoluteUrl } from "@/lib/seo";
 import { formatNumber } from "@/lib/utils";
 import {
@@ -36,7 +35,6 @@ interface ListingDetailPageProps {
   }>;
 }
 
-export const dynamic = "force-dynamic";
 export const revalidate = 60;
 
 export async function generateMetadata({
@@ -59,7 +57,6 @@ export default async function ListingDetailPage({ params }: ListingDetailPagePro
     getSimilarMarketplaceListings(listing.slug, listing.brand, listing.city),
   ]);
   const insight = getListingCardInsights(listing);
-  const currentUser = await getCurrentUser();
   const memberSince = seller?.createdAt
     ? new Date(seller.createdAt).getFullYear()
     : null;
@@ -96,8 +93,6 @@ export default async function ListingDetailPage({ params }: ListingDetailPagePro
           sellerId={listing.sellerId}
           price={listing.price}
           title={listing.title}
-          isLoggedIn={!!currentUser}
-          loginUrl={`/login?callbackUrl=${encodeURIComponent(`/listing/${listing.slug}`)}`}
       /> 
 
       <main className="min-h-screen bg-gray-50 flex flex-col">
@@ -126,7 +121,6 @@ export default async function ListingDetailPage({ params }: ListingDetailPagePro
                 price={listing.price}
                 sellerId={listing.sellerId}
                 title={listing.title}
-                userId={currentUser?.id ?? null}
               />
             </div>
           </div>

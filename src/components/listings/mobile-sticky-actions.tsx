@@ -1,5 +1,6 @@
 "use client"
 
+import { useAuthUser } from "@/components/shared/auth-provider";
 import { ContactActions } from "./contact-actions";
 import { formatCurrency } from "@/lib/utils";
 
@@ -8,17 +9,16 @@ interface MobileStickyActionsProps {
     sellerId: string;
     price: number;
     title: string;
-    isLoggedIn: boolean;
-    loginUrl: string;
 }
 
 export function MobileStickyActions({ 
     listingId, 
     sellerId,
     price, 
-    isLoggedIn, 
-    loginUrl,
 }: MobileStickyActionsProps) {
+    const { isAuthenticated } = useAuthUser();
+    const loginUrl = `/login?callbackUrl=${encodeURIComponent(`/listing/${listingId}`)}`;
+
     return (
         <div className="fixed bottom-[88px] left-0 right-0 z-50 lg:hidden px-4 py-3 bg-white border-t border-slate-200 shadow-[0_-8px_30px_rgb(0,0,0,0.08)] animate-in fade-in slide-in-from-bottom-full duration-500">
             <div className="mx-auto flex max-w-7xl items-center justify-between gap-4">
@@ -30,7 +30,7 @@ export function MobileStickyActions({
                 </div>
 
                 <div className="flex-1 max-w-[240px]">
-                    {isLoggedIn ? (
+                    {isAuthenticated ? (
                         <ContactActions listingId={listingId} sellerId={sellerId} />
                     ) : (
                         <a
