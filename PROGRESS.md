@@ -14,6 +14,19 @@ Her yeni geliştirme başlamadan önce okunmalıdır.
 
 ## Proje Durumu
 
+- **Performance Pass 5 (2026-04-14)**:
+  1. **Homepage Hero JS Kaldırıldı**: `HomeHero` client component olmaktan çıkarıldı ve GET form tabanlı server render arama yüzeyine dönüştürüldü; ana sayfanın fold-üstü alanındaki ilk JS maliyeti düşürüldü.
+  2. **Admin Streaming**: `/admin` ana sayfasındaki metrikler, grafik/persistence panelleri ve moderasyon geçmişi `Suspense` ile ayrı stream edilen bloklara bölündü; header artık tüm veri sorgularını beklemeden boyanabiliyor.
+  3. **Dashboard Streaming**: `/dashboard` ana sayfasında verification banner, sayaçlar ve alt tablo/paneller ayrı data section içine taşındı; auth sonrası listings/profile/favorite sorguları parallelize edilip streaming fallback ile sunuldu.
+  4. **FCP Odaklı Yaklaşım**: Özellikle Vercel Real Experience verisinde zayıf görünen `/`, `/admin` ve `/dashboard` için server response zinciri kısaltıldı; amaç fold-üstü ilk boyamayı veri tamamlanmadan başlatmak.
+- **Doğrulama**:
+  - `npm run lint` ✅
+  - `npm run typecheck` ✅
+  - `npm run build` ✅
+- **Sonraki Adım**:
+  - Vercel dashboard’da 2026-04-14 deploy’ları sonrası yeni RES/FCP p75 değerleri takip edilmeli; özellikle `/admin` ve `/dashboard` için birkaç saatlik gerçek trafik sonrası düşüş beklenir.
+  - Hâlâ düşük kalırsa sıradaki hedef `DashboardShell` ve admin sidebar dışındaki navigasyon yüzeylerini de kısmi streaming veya route-group loading ile hafifletmek olmalı.
+
 - **Performance Pass 4 (2026-04-14)**:
   1. **Gallery Lightbox Chunk Ayrımı**: `listing-gallery` içindeki tam ekran lightbox kodu ayrı bir client chunk'a taşındı; detail sayfasının ilk yükünde gerekmeyen overlay ve büyük görsel gezinme kodu ana bundle'dan ayrıldı.
   2. **Detail Action Lazy Yükleme**: `listing/[slug]` üst aksiyon satırı (`share`, `favorite`, `report`, `compare`) route seviyesinde dynamic import ile lazy hale getirildi; kritik üst içerik render'ı daha hafif kaldı.

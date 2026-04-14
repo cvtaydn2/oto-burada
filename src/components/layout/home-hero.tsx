@@ -1,26 +1,7 @@
-"use client"
-
 import Image from "next/image"
-import { useState } from "react"
-import { useRouter } from "next/navigation"
 import { Search, CarFront, MapPin } from "lucide-react"
 
 export function HomeHero() {
-  const router = useRouter()
-  const [query, setQuery] = useState("")
-  const [city, setCity] = useState("")
-  const [minPrice, setMinPrice] = useState("")
-  const [maxPrice, setMaxPrice] = useState("")
-
-  const handleSearch = (e?: React.FormEvent) => {
-    e?.preventDefault()
-    let url = `/listings?query=${encodeURIComponent(query.trim())}`
-    if (city && city !== "Tüm Şehirler") url += `&city=${encodeURIComponent(city)}`
-    if (minPrice) url += `&minPrice=${minPrice}`
-    if (maxPrice) url += `&maxPrice=${maxPrice}`
-    router.push(url)
-  }
-
   return (
     <section className="hero-bg min-h-[500px] py-12 md:py-0 md:h-[500px] flex items-center relative overflow-hidden">
       <div className="absolute inset-0">
@@ -44,7 +25,11 @@ export function HomeHero() {
           Türkiye&apos;nin en geniş araç ağıyla, güvenli ve hızlı otomobil alışverişinin adresi.
         </p>
         
-        <div className="bg-white p-4 rounded-2xl shadow-xl max-w-4xl mx-auto text-left flex flex-col md:flex-row gap-4">
+        <form
+          action="/listings"
+          method="GET"
+          className="bg-white p-4 rounded-2xl shadow-xl max-w-4xl mx-auto text-left flex flex-col md:flex-row gap-4"
+        >
           
           <div className="flex-1">
             <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1 pl-1">Marka / Model</label>
@@ -52,9 +37,8 @@ export function HomeHero() {
               <CarFront size={16} className="absolute left-3 top-3 text-gray-400" />
               <input 
                 type="text" 
+                name="query"
                 placeholder="Örn: BMW 3 Serisi" 
-                value={query}
-                onChange={(e) => setQuery(e.target.value)}
                 className="w-full bg-gray-50 border border-gray-200 text-gray-700 rounded-lg focus:border-blue-500 focus:ring-1 focus:ring-blue-500 block pl-10 p-2.5 outline-none transition"
               />
             </div>
@@ -65,14 +49,14 @@ export function HomeHero() {
             <div className="relative">
               <MapPin size={16} className="absolute left-3 top-3 text-gray-400" />
               <select 
-                value={city}
-                onChange={(e) => setCity(e.target.value)}
+                name="city"
+                defaultValue=""
                 className="w-full bg-gray-50 border border-gray-200 text-gray-700 rounded-lg focus:border-blue-500 focus:ring-1 focus:ring-blue-500 block pl-10 p-2.5 outline-none appearance-none cursor-pointer"
               >
-                <option>Tüm Şehirler</option>
-                <option>İstanbul</option>
-                <option>Ankara</option>
-                <option>İzmir</option>
+                <option value="">Tüm Şehirler</option>
+                <option value="İstanbul">İstanbul</option>
+                <option value="Ankara">Ankara</option>
+                <option value="İzmir">İzmir</option>
               </select>
             </div>
           </div>
@@ -82,16 +66,14 @@ export function HomeHero() {
             <div className="flex space-x-2">
               <input 
                 type="text" 
+                name="minPrice"
                 placeholder="Min TL" 
-                value={minPrice}
-                onChange={(e) => setMinPrice(e.target.value)}
                 className="w-1/2 bg-gray-50 border border-gray-200 text-gray-700 rounded-lg focus:border-blue-500 focus:ring-1 focus:ring-blue-500 block p-2.5 outline-none text-sm transition" 
               />
               <input 
                 type="text" 
+                name="maxPrice"
                 placeholder="Maks TL" 
-                value={maxPrice}
-                onChange={(e) => setMaxPrice(e.target.value)}
                 className="w-1/2 bg-gray-50 border border-gray-200 text-gray-700 rounded-lg focus:border-blue-500 focus:ring-1 focus:ring-blue-500 block p-2.5 outline-none text-sm transition" 
               />
             </div>
@@ -99,14 +81,14 @@ export function HomeHero() {
 
           <div className="flex items-end">
             <button 
-              onClick={handleSearch}
+              type="submit"
               className="w-full md:w-auto bg-blue-500 hover:bg-blue-600 text-white font-medium rounded-lg px-8 py-2.5 transition shadow-md flex items-center justify-center"
             >
               <Search size={18} className="mr-2" /> İlanları Ara
             </button>
           </div>
 
-        </div>
+        </form>
       </div>
     </section>
   )

@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import {
@@ -8,15 +9,15 @@ import {
   Plus,
   User,
   Zap,
+  ShieldCheck,
+  ShieldAlert,
+  BadgeCheck,
 } from "lucide-react";
 
 import { requireUser } from "@/lib/auth/session";
 import { getDatabaseFavoriteCount } from "@/services/favorites/favorite-records";
-import {
-  getStoredUserListings,
-} from "@/services/listings/listing-submissions";
+import { getStoredUserListings } from "@/services/listings/listing-submissions";
 import { getStoredProfileById, buildProfileFromAuthUser } from "@/services/profile/profile-records";
-import { ShieldCheck, ShieldAlert, BadgeCheck } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";
@@ -29,18 +30,14 @@ export default async function DashboardPage() {
     full_name?: string;
     phone?: string;
   };
-  const storedListings = await getStoredUserListings(user.id);
-  const profile = (await getStoredProfileById(user.id)) ?? buildProfileFromAuthUser(user);
-  const favoriteCount = await getDatabaseFavoriteCount(user.id);
-  const pendingListingsCount = storedListings.filter((l) => l.status === "pending").length;
-  const approvedListingsCount = storedListings.filter((l) => l.status === "approved").length;
-  const profileCompletion = Math.round(
-    ([metadata.full_name, metadata.phone, metadata.city].filter(Boolean).length / 3) * 100,
-  );
+
+  const listingsPromise = getStoredUserListings(user.id);
+  const profilePromise = getStoredProfileById(user.id);
+  const favoriteCountPromise = getDatabaseFavoriteCount(user.id);
 
   return (
     <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
-      <section className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
+      <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <h2 className="text-2xl font-black text-slate-900">Satıcı Paneli</h2>
@@ -66,46 +63,86 @@ export default async function DashboardPage() {
         </div>
       </section>
 
-      {/* Verification Banner */}
-      {!profile?.isVerified && (
-        <section className="bg-gradient-to-r from-blue-600 to-indigo-700 rounded-2xl p-6 text-white shadow-lg shadow-blue-200 flex flex-col md:flex-row items-center justify-between gap-6 overflow-hidden relative">
-          <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full -mr-20 -mt-20 blur-3xl pointer-events-none"></div>
-          <div className="flex items-center gap-6 relative z-10">
-            <div className="w-16 h-16 bg-white/20 backdrop-blur-md rounded-full flex items-center justify-center shrink-0 border border-white/30">
+      <Suspense fallback={<DashboardContentSkeleton />}>
+        <DashboardDataSection
+          favoriteCountPromise={favoriteCountPromise}
+          listingsPromise={listingsPromise}
+          metadata={metadata}
+          profilePromise={profilePromise}
+          user={user}
+        />
+      </Suspense>
+    </div>
+  );
+}
+
+async function DashboardDataSection({
+  favoriteCountPromise,
+  listingsPromise,
+  metadata,
+  profilePromise,
+  user,
+}: {
+  favoriteCountPromise: Promise<number>;
+  listingsPromise: Promise<Awaited<ReturnType<typeof getStoredUserListings>>>;
+  metadata: {
+    city?: string;
+    full_name?: string;
+    phone?: string;
+  };
+  profilePromise: Promise<Awaited<ReturnType<typeof getStoredProfileById>>>;
+  user: Awaited<ReturnType<typeof requireUser>>;
+}) {
+  const [storedListings, storedProfile, favoriteCount] = await Promise.all([
+    listingsPromise,
+    profilePromise,
+    favoriteCountPromise,
+  ]);
+  const profile = storedProfile ?? buildProfileFromAuthUser(user);
+  const pendingListingsCount = storedListings.filter((listing) => listing.status === "pending").length;
+  const approvedListingsCount = storedListings.filter((listing) => listing.status === "approved").length;
+  const profileCompletion = Math.round(
+    ([metadata.full_name, metadata.phone, metadata.city].filter(Boolean).length / 3) * 100,
+  );
+
+  return (
+    <>
+      {!profile?.isVerified ? (
+        <section className="relative flex flex-col items-center justify-between gap-6 overflow-hidden rounded-2xl bg-gradient-to-r from-blue-600 to-indigo-700 p-6 text-white shadow-lg shadow-blue-200 md:flex-row">
+          <div className="pointer-events-none absolute top-0 right-0 -mt-20 -mr-20 h-64 w-64 rounded-full bg-white/10 blur-3xl"></div>
+          <div className="relative z-10 flex items-center gap-6">
+            <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-full border border-white/30 bg-white/20 backdrop-blur-md">
               <ShieldAlert size={32} className="text-white" />
             </div>
             <div>
               <h3 className="text-xl font-bold">Hesabınızı Hemen Doğrulayın</h3>
-              <p className="text-blue-50 text-sm mt-1 max-w-lg font-medium">
+              <p className="mt-1 max-w-lg text-sm font-medium text-blue-50">
                 E-Devlet ile hesabınızı doğrulayarak &quot;Onaylı Satıcı&quot; rozeti kazanın ve ilanlarınızın güvenilirliğini artırın.
               </p>
             </div>
           </div>
-          <Link 
+          <Link
             href="/dashboard/profile"
-            className="bg-white text-blue-600 px-8 py-3 rounded-xl font-bold text-sm tracking-wide hover:bg-blue-50 transition-colors shadow-sm relative z-10 whitespace-nowrap"
+            className="relative z-10 whitespace-nowrap rounded-xl bg-white px-8 py-3 text-sm font-bold tracking-wide text-blue-600 shadow-sm transition-colors hover:bg-blue-50"
           >
             Hemen Doğrula
           </Link>
         </section>
-      )}
-
-      {profile?.isVerified && (
-        <section className="bg-white border border-blue-100 rounded-2xl p-4 flex items-center justify-between shadow-sm">
+      ) : (
+        <section className="flex items-center justify-between rounded-2xl border border-blue-100 bg-white p-4 shadow-sm">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-blue-50 rounded-full flex items-center justify-center text-blue-600 border border-blue-100">
+            <div className="flex h-10 w-10 items-center justify-center rounded-full border border-blue-100 bg-blue-50 text-blue-600">
               <ShieldCheck size={20} />
             </div>
             <div>
               <span className="text-sm font-bold text-slate-800">Doğrulanmış Üye</span>
-              <p className="text-[10px] text-slate-400 font-medium">Hesabınız E-Devlet üzerinden doğrulanmıştır.</p>
+              <p className="text-[10px] font-medium text-slate-400">Hesabınız E-Devlet üzerinden doğrulanmıştır.</p>
             </div>
           </div>
           <BadgeCheck className="text-blue-500" size={24} />
         </section>
       )}
 
-      {/* Stats Grid */}
       <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
         {[
           { label: "Toplam İlan", value: storedListings.length, icon: ClipboardList, color: "blue", sub: `${approvedListingsCount} yayında` },
@@ -113,11 +150,11 @@ export default async function DashboardPage() {
           { label: "Favoriler", value: favoriteCount, icon: Heart, color: "rose", sub: "Kaydedilen İlanlar" },
           { label: "Profil Doluluğu", value: `${profileCompletion}%`, icon: User, color: "indigo", sub: "Hesap Ayarları" },
         ].map((stat) => (
-          <div key={stat.label} className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex flex-col justify-between group hover:border-blue-200 transition-all duration-300">
-            <div className="flex justify-between items-start mb-4">
-              <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">{stat.label}</div>
+          <div key={stat.label} className="group flex flex-col justify-between rounded-2xl border border-slate-200 bg-white p-6 shadow-sm transition-all duration-300 hover:border-blue-200">
+            <div className="mb-4 flex items-start justify-between">
+              <div className="text-[10px] font-bold uppercase tracking-wider text-slate-400">{stat.label}</div>
               <div className={cn(
-                "w-10 h-10 rounded-xl flex items-center justify-center transition-transform group-hover:scale-110",
+                "flex h-10 w-10 items-center justify-center rounded-xl transition-transform group-hover:scale-110",
                 stat.color === "blue" ? "bg-blue-50 text-blue-500" :
                 stat.color === "orange" ? "bg-orange-50 text-orange-500" :
                 stat.color === "rose" ? "bg-rose-50 text-rose-500" :
@@ -127,22 +164,21 @@ export default async function DashboardPage() {
               </div>
             </div>
             <div>
-              <div className="text-3xl font-black text-slate-900 mb-1">{stat.value}</div>
-              <div className="text-[11px] text-slate-500 font-medium">{stat.sub}</div>
+              <div className="mb-1 text-3xl font-black text-slate-900">{stat.value}</div>
+              <div className="text-[11px] font-medium text-slate-500">{stat.sub}</div>
             </div>
           </div>
         ))}
       </div>
 
-      {/* Bottom Content Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        <div className="lg:col-span-2 space-y-6">
-          <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
-            <div className="flex items-center justify-between mb-6">
+      <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
+        <div className="space-y-6 lg:col-span-2">
+          <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+            <div className="mb-6 flex items-center justify-between">
               <h3 className="text-lg font-black text-slate-900">Son İlanlar</h3>
               <Link href="/dashboard/listings" className="text-sm font-bold text-blue-600 hover:text-blue-700">Tümünü Gör</Link>
             </div>
-            
+
             <div className="overflow-x-auto">
               <table className="w-full min-w-[640px] text-left">
                 <thead>
@@ -151,15 +187,15 @@ export default async function DashboardPage() {
                     <th className="pb-3 font-medium">Fiyat</th>
                     <th className="pb-3 font-medium">Durum</th>
                     <th className="pb-3 font-medium">Şehir</th>
-                    <th className="pb-3 font-medium text-right">Aksiyon</th>
+                    <th className="pb-3 text-right font-medium">Aksiyon</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100 text-sm">
                   {storedListings.slice(0, 4).map((listing) => (
                     <tr key={listing.id} className="transition hover:bg-slate-50/80">
                       <td className="py-4">
-                        <Link href={`/listing/${listing.slug}`} className="flex items-center gap-3 group">
-                          <div className="overflow-hidden rounded-lg border border-slate-200 bg-slate-100 shrink-0">
+                        <Link href={`/listing/${listing.slug}`} className="group flex items-center gap-3">
+                          <div className="shrink-0 overflow-hidden rounded-lg border border-slate-200 bg-slate-100">
                             <Image
                               src={listing.images[0]?.url || "https://placehold.co/100x75?text=No+Image"}
                               alt={listing.title}
@@ -206,37 +242,34 @@ export default async function DashboardPage() {
                   ))}
                 </tbody>
               </table>
-              {storedListings.length === 0 && (
-                <div className="text-center py-8">
-                  <div className="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-4 text-slate-300">
+              {storedListings.length === 0 ? (
+                <div className="py-8 text-center">
+                  <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-slate-50 text-slate-300">
                     <ClipboardList size={32} />
                   </div>
                   <p className="text-sm font-medium text-slate-500">Henüz ilanınız bulunmuyor.</p>
-                  <Link 
-                    href="/dashboard/listings" 
-                    className="text-xs font-bold text-blue-600 mt-2 inline-block hover:underline"
+                  <Link
+                    href="/dashboard/listings"
+                    className="mt-2 inline-block text-xs font-bold text-blue-600 hover:underline"
                   >
                     Hemen İlan Ver
                   </Link>
                 </div>
-              )}
+              ) : null}
             </div>
           </div>
         </div>
 
         <div className="space-y-6">
-          <div className="bg-blue-50/60 border border-blue-100 rounded-2xl p-6 shadow-sm">
-            <h3 className="text-lg font-black text-slate-900 mb-2">Hesap Durumu</h3>
-            <p className="text-xs text-slate-500 mb-5">
+          <div className="rounded-2xl border border-blue-100 bg-blue-50/60 p-6 shadow-sm">
+            <h3 className="mb-2 text-lg font-black text-slate-900">Hesap Durumu</h3>
+            <p className="mb-5 text-xs text-slate-500">
               Profil güveni ve ilan yayın akışın burada özetlenir.
             </p>
             <div className="space-y-3">
               <div className="flex items-center justify-between rounded-xl border border-white/70 bg-white px-4 py-3">
                 <span className="text-sm font-medium text-slate-600">Doğrulama</span>
-                <span className={cn(
-                  "text-xs font-bold",
-                  profile?.isVerified ? "text-emerald-600" : "text-amber-600"
-                )}>
+                <span className={cn("text-xs font-bold", profile?.isVerified ? "text-emerald-600" : "text-amber-600")}>
                   {profile?.isVerified ? "Tamamlandı" : "Bekliyor"}
                 </span>
               </div>
@@ -251,34 +284,54 @@ export default async function DashboardPage() {
             </div>
           </div>
 
-          <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
-            <h3 className="text-lg font-black text-slate-900 mb-6 flex items-center gap-2">
+          <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+            <h3 className="mb-6 flex items-center gap-2 text-lg font-black text-slate-900">
               <ArrowRight className="text-blue-500" size={20} />
               Hızlı Erişim
             </h3>
             <div className="grid gap-3">
               {[
-                { label: "Yeni İlan Oluştur", href: "/dashboard/listings", icon: ClipboardList, color: "blue" },
-                { label: "Favori İlanlarım", href: "/dashboard/favorites", icon: Heart, color: "rose" },
-                { label: "Profil Bilgilerim", href: "/dashboard/profile", icon: User, color: "slate" },
-                { label: "Toplu İlan Yükle", href: "/dashboard/bulk-import", icon: Zap, color: "orange" },
+                { label: "Yeni İlan Oluştur", href: "/dashboard/listings", icon: ClipboardList },
+                { label: "Favori İlanlarım", href: "/dashboard/favorites", icon: Heart },
+                { label: "Profil Bilgilerim", href: "/dashboard/profile", icon: User },
+                { label: "Toplu İlan Yükle", href: "/dashboard/bulk-import", icon: Zap },
               ].map((item) => (
                 <Link
                   key={item.label}
                   href={item.href}
-                  className="flex items-center justify-between p-4 rounded-xl border border-slate-100 bg-slate-50/50 hover:bg-white hover:border-blue-200 hover:shadow-sm transition-all group"
+                  className="group flex items-center justify-between rounded-xl border border-slate-100 bg-slate-50/50 p-4 transition-all hover:border-blue-200 hover:bg-white hover:shadow-sm"
                 >
                   <div className="flex items-center gap-3">
-                    <item.icon size={18} className="text-slate-400 group-hover:text-blue-500 transition-colors" />
-                    <span className="text-sm font-bold text-slate-700 group-hover:text-blue-600 transition-colors">{item.label}</span>
+                    <item.icon size={18} className="text-slate-400 transition-colors group-hover:text-blue-500" />
+                    <span className="text-sm font-bold text-slate-700 transition-colors group-hover:text-blue-600">{item.label}</span>
                   </div>
-                  <ArrowRight size={14} className="text-slate-300 group-hover:text-blue-400 group-hover:translate-x-1 transition-all" />
+                  <ArrowRight size={14} className="text-slate-300 transition-all group-hover:translate-x-1 group-hover:text-blue-400" />
                 </Link>
               ))}
             </div>
           </div>
         </div>
       </div>
-    </div>
+    </>
+  );
+}
+
+function DashboardContentSkeleton() {
+  return (
+    <>
+      <div className="h-36 animate-pulse rounded-2xl border border-slate-200 bg-white" />
+      <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+        {Array.from({ length: 4 }).map((_, index) => (
+          <div key={index} className="h-36 animate-pulse rounded-2xl border border-slate-200 bg-white" />
+        ))}
+      </div>
+      <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
+        <div className="h-[420px] animate-pulse rounded-2xl border border-slate-200 bg-white lg:col-span-2" />
+        <div className="space-y-6">
+          <div className="h-56 animate-pulse rounded-2xl border border-slate-200 bg-white" />
+          <div className="h-72 animate-pulse rounded-2xl border border-slate-200 bg-white" />
+        </div>
+      </div>
+    </>
   );
 }
