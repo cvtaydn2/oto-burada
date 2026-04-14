@@ -9,12 +9,17 @@ import Link from "next/link";
 import { cn } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";
-export const revalidate = 60;
+// revalidate kaldırıldı — force-dynamic ile çakışıyor
 
 export default async function DashboardProfilePage() {
   const user = await requireUser();
-  const profile = (await getStoredProfileById(user.id)) ?? buildProfileFromAuthUser(user);
-  const references = await getLiveMarketplaceReferenceData();
+
+  // Paralel fetch
+  const [storedProfile, references] = await Promise.all([
+    getStoredProfileById(user.id),
+    getLiveMarketplaceReferenceData(),
+  ]);
+  const profile = storedProfile ?? buildProfileFromAuthUser(user);
   const cityOptions = mergeCityOptions(references.cities, [profile.city]);
 
   const hasFullName = Boolean(profile.fullName);

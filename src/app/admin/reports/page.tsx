@@ -9,7 +9,13 @@ export const dynamic = "force-dynamic";
 export default async function AdminReportsPage({ searchParams }: { searchParams: Promise<{ urgent?: string }> }) {
   await requireAdminUser();
   const { urgent } = await searchParams;
-  const storedReports = await getStoredReports();
+
+  // Paralel fetch — sequential await yerine
+  const [storedReports, knownListings] = await Promise.all([
+    getStoredReports(),
+    getAllKnownListings(),
+  ]);
+
   let actionableReports = storedReports.filter(
     (report) => report.status === "open" || report.status === "reviewing",
   );
@@ -17,7 +23,6 @@ export default async function AdminReportsPage({ searchParams }: { searchParams:
   if (urgent === "true") {
      actionableReports = actionableReports.filter(r => r.reason === "fake_listing");
   }
-  const knownListings = await getAllKnownListings();
   const listingMetaById = Object.fromEntries(
     knownListings.map((listing) => [
       listing.id,

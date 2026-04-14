@@ -707,3 +707,25 @@ Her yeni geliştirme başlamadan önce okunmalıdır.
   - `npm run typecheck` ✅
   - `npm run build` ✅
 - **Status**: 🟢 FCP/LCP sorunları için kritik optimizasyonlar uygulandı. Deploy sonrası Vercel RES panelinden ölçüm alınmalı.
+
+- **Kapsamlı Performans Optimizasyon Pass 2 (2026-04-15)**:
+  Tüm admin ve dashboard sayfaları tarandı. Aşağıdaki sorunlar giderildi:
+
+  **Admin Sayfaları:**
+  1. **`/admin/reports`** — `getStoredReports()` + `getAllKnownListings()` sequential → `Promise.all` ile paralel
+  2. **`/admin/analytics`** — `getAdminAnalytics()` Suspense olmadan await ediliyordu → `AnalyticsContent` async bileşeni + `<Suspense>` ile skeleton fallback eklendi
+  3. **`/admin/users`** — `requireAdminUser()` eksikti (güvenlik açığı) → eklendi
+  4. **`/admin/audit`** — Tüm kayıtlar limit'siz çekiliyordu → `.limit(200)` eklendi
+  5. **`/admin/listings`** — 3 count query + 1 data query sequential → 4'ü birden `Promise.all` ile paralel
+
+  **Dashboard Sayfaları:**
+  6. **`/dashboard/listings`** — `force-dynamic` + `revalidate = 60` çakışması giderildi, 3 sequential fetch → `Promise.all` ile paralel
+  7. **`/dashboard/profile`** — `force-dynamic` + `revalidate = 60` çakışması giderildi, sequential fetch → `Promise.all` ile paralel
+  8. **`/dashboard/saved-searches`** — `force-dynamic` + `revalidate = 60` çakışması giderildi, `limit: 100` → `limit: 50` (sadece count için kullanılıyor)
+  9. **`/dashboard/notifications`** — `force-dynamic` + `revalidate = 60` çakışması giderildi
+
+- **Doğrulama**:
+  - `npm run lint` ✅ (0 errors, 0 warnings)
+  - `npm run typecheck` ✅
+  - `npm run build` ✅
+- **Status**: 🟢 Tüm admin ve dashboard sayfaları performans açısından optimize edildi.

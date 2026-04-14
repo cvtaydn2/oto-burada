@@ -27,7 +27,8 @@ export default async function AdminAuditPage() {
   const { data: actions } = await supabase
     .from("admin_actions")
     .select("*, profile:profiles(full_name)")
-    .order("created_at", { ascending: false }) as { data: AdminActionWithProfile[] | null };
+    .order("created_at", { ascending: false })
+    .limit(200) as { data: AdminActionWithProfile[] | null };
 
   return (
     <main className="space-y-8 p-6 lg:p-8 bg-slate-50/30 min-h-full">

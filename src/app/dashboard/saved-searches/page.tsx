@@ -12,13 +12,15 @@ import {
 } from "@/services/saved-searches/saved-search-utils";
 
 export const dynamic = "force-dynamic";
-export const revalidate = 60;
+// revalidate kaldırıldı — force-dynamic ile çakışıyor
 
 export default async function DashboardSavedSearchesPage() {
   const user = await requireUser();
+
+  // Paralel fetch — listings sadece count için, limit düşürüldü
   const [savedSearches, listings] = await Promise.all([
     getStoredSavedSearchesByUser(user.id),
-    getPublicMarketplaceListings({ limit: 100, page: 1, sort: "newest" }),
+    getPublicMarketplaceListings({ limit: 50, page: 1, sort: "newest" }),
   ]);
   const resultCountBySignature = new Map(
     savedSearches.map((search) => [

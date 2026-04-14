@@ -9,7 +9,7 @@ import { Plus } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";
-export const revalidate = 60;
+// revalidate kaldırıldı — force-dynamic ile çakışıyor
 
 interface DashboardListingsPageProps {
   searchParams?: Promise<{
@@ -27,8 +27,13 @@ export default async function DashboardListingsPage({ searchParams }: DashboardL
   const resolvedSearchParams = searchParams ? await searchParams : undefined;
   const hasRequestedCreate = resolvedSearchParams?.create === "true";
   const hasRequestedEdit = Boolean(resolvedSearchParams?.edit);
-  const storedListings = await getStoredUserListings(user.id);
-  const references = await getLiveMarketplaceReferenceData();
+
+  // Paralel fetch
+  const [storedListings, references, profile] = await Promise.all([
+    getStoredUserListings(user.id),
+    getLiveMarketplaceReferenceData(),
+    getStoredProfileById(user.id),
+  ]);
   const selectedListing = resolvedSearchParams?.edit
     ? storedListings.find((l) => l.id === resolvedSearchParams.edit) ?? null
     : null;
@@ -45,7 +50,6 @@ export default async function DashboardListingsPage({ searchParams }: DashboardL
           },
         ].sort((left, right) => left.brand.localeCompare(right.brand, "tr"))
       : references.brands;
-  const profile = await getStoredProfileById(user.id);
   const isPhoneVerified = profile?.phoneVerified ?? false;
 
   const mergedCities = mergeCityOptions(references.cities, [

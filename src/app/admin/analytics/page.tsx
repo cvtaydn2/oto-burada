@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import { TrendingUp } from "lucide-react";
 import { getAdminAnalytics } from "@/services/admin/analytics";
 import { requireAdminUser } from "@/lib/auth/session";
@@ -9,9 +10,7 @@ interface AdminAnalyticsPageProps {
   searchParams: Promise<{ range?: string }>;
 }
 
-export default async function AdminAnalyticsPage({ searchParams }: AdminAnalyticsPageProps) {
-  await requireAdminUser();
-  const { range = "30d" } = await searchParams;
+async function AnalyticsContent({ range }: { range: string }) {
   const analyticsData = await getAdminAnalytics(range);
 
   if (!analyticsData) {
@@ -21,10 +20,39 @@ export default async function AdminAnalyticsPage({ searchParams }: AdminAnalytic
           <TrendingUp size={32} />
         </div>
         <h2 className="text-xl font-black text-slate-800">Analitik Verileri Yüklenemedi</h2>
-        <p className="text-slate-500 font-medium mt-2 max-w-md italic">Veritabanı bağlantısı veya yetkilendirme ile ilgili bir sorun oluştu. Lütfen bağlantılarınızı kontrol edin.</p>
+        <p className="text-slate-500 font-medium mt-2 max-w-md italic">
+          Veritabanı bağlantısı veya yetkilendirme ile ilgili bir sorun oluştu.
+        </p>
       </div>
     );
   }
 
   return <AdminAnalyticsClient data={analyticsData} timeRange={range} />;
+}
+
+function AnalyticsSkeleton() {
+  return (
+    <div className="space-y-6 p-6 lg:p-8">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        {Array.from({ length: 4 }).map((_, i) => (
+          <div key={i} className="h-28 animate-pulse rounded-2xl border border-slate-200 bg-white" />
+        ))}
+      </div>
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="lg:col-span-2 h-80 animate-pulse rounded-2xl border border-slate-200 bg-white" />
+        <div className="h-80 animate-pulse rounded-2xl border border-slate-200 bg-white" />
+      </div>
+    </div>
+  );
+}
+
+export default async function AdminAnalyticsPage({ searchParams }: AdminAnalyticsPageProps) {
+  await requireAdminUser();
+  const { range = "30d" } = await searchParams;
+
+  return (
+    <Suspense fallback={<AnalyticsSkeleton />}>
+      <AnalyticsContent range={range} />
+    </Suspense>
+  );
 }

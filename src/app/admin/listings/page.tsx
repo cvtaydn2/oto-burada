@@ -19,18 +19,18 @@ export default async function AdminListingsPage({ searchParams }: AdminListingsP
   const { q, page, status = "pending" } = await searchParams;
   const currentPage = Number(page) || 1;
 
-  // Fetch counts for all states to show in badges
-  const [{ total: pendingCount }, { total: approvedCount }, { total: historyCount }] = await Promise.all([
+  // Tüm count'ları ve asıl listeyi paralel çek
+  const [
+    { total: pendingCount },
+    { total: approvedCount },
+    { total: historyCount },
+    { listings, total, limit },
+  ] = await Promise.all([
     getAdminInventory({ status: "pending", limit: 1 }),
     getAdminInventory({ status: "approved", limit: 1 }),
     getAdminInventory({ status: "history", limit: 1 }),
+    getAdminInventory({ query: q, status, page: currentPage }),
   ]);
-
-  const { listings, total, limit } = await getAdminInventory({ 
-    query: q, 
-    status, 
-    page: currentPage 
-  });
 
   const totalPages = Math.ceil(total / (limit || 12));
 

@@ -3,7 +3,7 @@ import { requireUser } from "@/lib/auth/session";
 import { getStoredNotificationsByUser } from "@/services/notifications/notification-records";
 
 export const dynamic = "force-dynamic";
-export const revalidate = 60;
+// revalidate kaldırıldı — force-dynamic ile çakışıyor
 
 export default async function NotificationsPage() {
   const user = await requireUser();
