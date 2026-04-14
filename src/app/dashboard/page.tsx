@@ -5,6 +5,7 @@ import {
   ArrowRight,
   ClipboardList,
   Clock,
+  Eye,
   Heart,
   Plus,
   User,
@@ -12,6 +13,7 @@ import {
   ShieldCheck,
   ShieldAlert,
   BadgeCheck,
+  TrendingUp,
 } from "lucide-react";
 import { DashboardFinancialSummary } from "@/components/dashboard/dashboard-financial-summary";
 import { DashboardAppointments } from "@/components/dashboard/dashboard-appointments";
@@ -40,29 +42,49 @@ export default async function DashboardPage() {
 
   return (
     <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
-      <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+      {/* Header */}
+      <section className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <h2 className="text-2xl font-black text-slate-900">Satıcı Paneli</h2>
-            <p className="mt-1 text-sm text-slate-500">
-              İlanlarını yönet, favori hareketlerini takip et ve hesabını canlıda güçlü tut.
+            <h1 className="text-2xl font-bold text-gray-800">Satıcı Paneli</h1>
+            <p className="mt-1 text-sm text-gray-500">
+              İlanlarınızı yönetin, alıcılarla iletişime geçin ve satışlarınızı takip edin.
             </p>
           </div>
           <div className="flex items-center gap-3">
             <Link
               href="/dashboard/listings"
-              className="inline-flex h-11 items-center justify-center rounded-xl border border-slate-200 bg-white px-4 text-sm font-bold text-slate-600 transition hover:bg-slate-50"
+              className="inline-flex h-10 items-center justify-center rounded-lg border border-gray-200 bg-white px-4 text-sm font-medium text-gray-700 transition hover:bg-gray-50 shadow-sm"
             >
-              İlan Yönetimi
+              Filtreler
             </Link>
             <Link
-              href="/dashboard/listings"
-              className="inline-flex h-11 items-center justify-center gap-2 rounded-xl bg-blue-500 px-4 text-sm font-bold text-white shadow-sm transition hover:bg-blue-600"
+              href="/dashboard/listings?create=true"
+              className="inline-flex h-10 items-center justify-center gap-2 rounded-lg bg-blue-500 px-4 text-sm font-bold text-white shadow-sm transition hover:bg-blue-600"
             >
               <Plus size={16} />
               Yeni İlan Ekle
             </Link>
           </div>
+        </div>
+
+        {/* Tab Navigation */}
+        <div className="mt-6 flex border-b border-gray-200 overflow-x-auto">
+          <Link href="/dashboard" className="px-6 py-3 text-sm font-bold text-gray-800 border-b-2 border-gray-800 whitespace-nowrap">
+            Özet Panel
+          </Link>
+          <Link href="/dashboard/listings" className="px-6 py-3 text-sm font-medium text-gray-500 hover:text-gray-700 whitespace-nowrap transition">
+            İlan Yönetimi
+          </Link>
+          <Link href="/dashboard/messages" className="px-6 py-3 text-sm font-medium text-gray-500 hover:text-gray-700 whitespace-nowrap transition">
+            Mesajlar
+          </Link>
+          <Link href="/dashboard/favorites" className="px-6 py-3 text-sm font-medium text-gray-500 hover:text-gray-700 whitespace-nowrap transition">
+            Favoriler
+          </Link>
+          <Link href="/dashboard/profile" className="px-6 py-3 text-sm font-medium text-gray-500 hover:text-gray-700 whitespace-nowrap transition">
+            Hesap Ayarları
+          </Link>
         </div>
       </section>
 
@@ -148,27 +170,58 @@ async function DashboardDataSection({
 
       <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
         {[
-          { label: "Toplam İlan", value: storedListings.length, icon: ClipboardList, color: "blue", sub: `${approvedListingsCount} yayında` },
-          { label: "Bekleyen", value: pendingListingsCount, icon: Clock, color: "orange", sub: "Moderasyon Sırası" },
-          { label: "Favoriler", value: favoriteCount, icon: Heart, color: "rose", sub: "Kaydedilen İlanlar" },
-          { label: "Profil Doluluğu", value: `${profileCompletion}%`, icon: User, color: "indigo", sub: "Hesap Ayarları" },
+          {
+            label: "Toplam İlan",
+            value: storedListings.length,
+            icon: ClipboardList,
+            color: "blue",
+            sub: `${approvedListingsCount} yayında`,
+            trend: null,
+          },
+          {
+            label: "Bekleyen Onay",
+            value: pendingListingsCount,
+            icon: Clock,
+            color: "orange",
+            sub: "Moderasyon sırası",
+            trend: null,
+          },
+          {
+            label: "Favorilere Ekleme",
+            value: favoriteCount,
+            icon: Heart,
+            color: "rose",
+            sub: "Kaydedilen ilanlar",
+            trend: null,
+          },
+          {
+            label: "Profil Doluluğu",
+            value: `${profileCompletion}%`,
+            icon: User,
+            color: "indigo",
+            sub: profileCompletion === 100 ? "Tamamlandı" : "Eksik alanlar var",
+            trend: null,
+          },
         ].map((stat) => (
-          <div key={stat.label} className="group flex flex-col justify-between rounded-2xl border border-slate-200 bg-white p-6 shadow-sm transition-all duration-300 hover:border-blue-200">
+          <div key={stat.label} className="group flex flex-col justify-between rounded-2xl border border-gray-200 bg-white p-6 shadow-sm transition-all hover:shadow-md hover:border-blue-100">
             <div className="mb-4 flex items-start justify-between">
-              <div className="text-[10px] font-bold uppercase tracking-wider text-slate-400">{stat.label}</div>
+              <div className="text-sm font-medium text-gray-500">{stat.label}</div>
               <div className={cn(
-                "flex h-10 w-10 items-center justify-center rounded-xl transition-transform group-hover:scale-110",
+                "flex h-8 w-8 items-center justify-center rounded-full",
                 stat.color === "blue" ? "bg-blue-50 text-blue-500" :
                 stat.color === "orange" ? "bg-orange-50 text-orange-500" :
                 stat.color === "rose" ? "bg-rose-50 text-rose-500" :
                 "bg-indigo-50 text-indigo-500"
               )}>
-                <stat.icon size={20} />
+                <stat.icon size={16} />
               </div>
             </div>
             <div>
-              <div className="mb-1 text-3xl font-black text-slate-900">{stat.value}</div>
-              <div className="text-[11px] font-medium text-slate-500">{stat.sub}</div>
+              <div className="mb-2 text-3xl font-extrabold text-gray-800">{stat.value}</div>
+              <div className="text-[10px] font-medium text-gray-500 flex items-center gap-1">
+                <TrendingUp size={10} className="text-green-500" />
+                {stat.sub}
+              </div>
             </div>
           </div>
         ))}
@@ -185,17 +238,17 @@ async function DashboardDataSection({
             <div className="overflow-x-auto">
               <table className="w-full min-w-[640px] text-left">
                 <thead>
-                  <tr className="border-b border-slate-100 text-[11px] font-bold uppercase tracking-wider text-slate-400">
+                  <tr className="border-b border-gray-100 text-[11px] font-bold uppercase tracking-wider text-gray-400">
                     <th className="pb-3 font-medium">Araç Bilgisi</th>
                     <th className="pb-3 font-medium">Fiyat</th>
                     <th className="pb-3 font-medium">Durum</th>
-                    <th className="pb-3 font-medium">Şehir</th>
+                    <th className="pb-3 font-medium hidden sm:table-cell">İstatistik</th>
                     <th className="pb-3 text-right font-medium">Aksiyon</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-100 text-sm">
+                <tbody className="divide-y divide-gray-100 text-sm">
                   {storedListings.slice(0, 4).map((listing) => (
-                    <tr key={listing.id} className="transition hover:bg-slate-50/80">
+                    <tr key={listing.id} className="transition hover:bg-gray-50">
                       <td className="py-4">
                         <Link href={`/listing/${listing.slug}`} className="group flex items-center gap-3">
                           <div className="shrink-0 overflow-hidden rounded-lg border border-slate-200 bg-slate-100">
@@ -208,10 +261,10 @@ async function DashboardDataSection({
                             />
                           </div>
                           <div className="min-w-0">
-                            <div className="truncate font-bold text-slate-800 group-hover:text-blue-600">
+                            <div className="truncate font-bold text-gray-800 group-hover:text-blue-600">
                               {listing.title}
                             </div>
-                            <div className="mt-1 text-[11px] font-medium text-slate-500">
+                            <div className="mt-1 text-[11px] font-medium text-gray-500">
                               {listing.year} • {listing.brand} {listing.model}
                             </div>
                           </div>
@@ -222,21 +275,27 @@ async function DashboardDataSection({
                       </td>
                       <td className="py-4">
                         <span className={cn(
-                          "rounded-md px-2 py-1 text-[10px] font-bold uppercase tracking-wide",
+                          "rounded px-2 py-1 text-xs font-medium",
                           listing.status === "approved" ? "bg-green-50 text-green-600" :
                           listing.status === "pending" ? "bg-orange-50 text-orange-600" :
-                          "bg-slate-100 text-slate-500"
+                          listing.status === "rejected" ? "bg-red-50 text-red-600" :
+                          "bg-gray-100 text-gray-500"
                         )}>
-                          {listing.status === "approved" ? "Yayında" : listing.status === "pending" ? "İnceleniyor" : listing.status}
+                          {listing.status === "approved" ? "Yayında" :
+                           listing.status === "pending" ? "İnceleniyor" :
+                           listing.status === "rejected" ? "Reddedildi" :
+                           listing.status === "draft" ? "Taslak" : listing.status}
                         </span>
                       </td>
-                      <td className="py-4 text-xs font-medium text-slate-500">
-                        {listing.city}
+                      <td className="py-4 text-gray-500 text-xs hidden sm:table-cell">
+                        <span className="mr-3 flex items-center gap-1 inline-flex">
+                          <Eye size={12} /> {listing.viewCount ?? 0}
+                        </span>
                       </td>
                       <td className="py-4 text-right">
                         <Link
-                          href={`/dashboard/listings/${listing.id}/edit`}
-                          className="text-xs font-bold text-slate-600 transition hover:text-blue-600"
+                          href={`/dashboard/listings?edit=${listing.id}`}
+                          className="text-xs font-medium text-gray-600 hover:text-blue-500 mr-3"
                         >
                           Düzenle
                         </Link>
@@ -292,36 +351,37 @@ async function DashboardDataSection({
             ]}
           />
 
-          <div className="rounded-2xl border border-blue-100 bg-blue-50/60 p-6 shadow-sm">            <h3 className="mb-2 text-lg font-black text-slate-900">Hesap Durumu</h3>
-            <p className="mb-5 text-xs text-slate-500">
+          <div className="rounded-2xl border border-blue-100 bg-blue-50/60 p-6 shadow-sm">
+            <h3 className="mb-2 text-lg font-bold text-gray-800">Hesap Durumu</h3>
+            <p className="mb-5 text-xs text-gray-500">
               Profil güveni ve ilan yayın akışın burada özetlenir.
             </p>
             <div className="space-y-3">
               <div className="flex items-center justify-between rounded-xl border border-white/70 bg-white px-4 py-3">
-                <span className="text-sm font-medium text-slate-600">Doğrulama</span>
+                <span className="text-sm font-medium text-gray-600">Doğrulama</span>
                 <span className={cn("text-xs font-bold", profile?.isVerified ? "text-emerald-600" : "text-amber-600")}>
                   {profile?.isVerified ? "Tamamlandı" : "Bekliyor"}
                 </span>
               </div>
               <div className="flex items-center justify-between rounded-xl border border-white/70 bg-white px-4 py-3">
-                <span className="text-sm font-medium text-slate-600">Yayındaki ilanlar</span>
-                <span className="text-sm font-black text-slate-900">{approvedListingsCount}</span>
+                <span className="text-sm font-medium text-gray-600">Yayındaki ilanlar</span>
+                <span className="text-sm font-bold text-gray-900">{approvedListingsCount}</span>
               </div>
               <div className="flex items-center justify-between rounded-xl border border-white/70 bg-white px-4 py-3">
-                <span className="text-sm font-medium text-slate-600">Favori kayıtları</span>
-                <span className="text-sm font-black text-slate-900">{favoriteCount}</span>
+                <span className="text-sm font-medium text-gray-600">Favori kayıtları</span>
+                <span className="text-sm font-bold text-gray-900">{favoriteCount}</span>
               </div>
             </div>
           </div>
 
-          <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-            <h3 className="mb-6 flex items-center gap-2 text-lg font-black text-slate-900">
-              <ArrowRight className="text-blue-500" size={20} />
+          <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
+            <h3 className="mb-5 flex items-center gap-2 text-base font-bold text-gray-800">
+              <ArrowRight className="text-blue-500" size={18} />
               Hızlı Erişim
             </h3>
-            <div className="grid gap-3">
+            <div className="grid gap-2">
               {[
-                { label: "Yeni İlan Oluştur", href: "/dashboard/listings", icon: ClipboardList },
+                { label: "Yeni İlan Oluştur", href: "/dashboard/listings?create=true", icon: ClipboardList },
                 { label: "Favori İlanlarım", href: "/dashboard/favorites", icon: Heart },
                 { label: "Profil Bilgilerim", href: "/dashboard/profile", icon: User },
                 { label: "Toplu İlan Yükle", href: "/dashboard/bulk-import", icon: Zap },
@@ -329,13 +389,13 @@ async function DashboardDataSection({
                 <Link
                   key={item.label}
                   href={item.href}
-                  className="group flex items-center justify-between rounded-xl border border-slate-100 bg-slate-50/50 p-4 transition-all hover:border-blue-200 hover:bg-white hover:shadow-sm"
+                  className="group flex items-center justify-between rounded-xl border border-gray-100 bg-gray-50/50 p-3 transition-all hover:border-blue-200 hover:bg-white hover:shadow-sm"
                 >
                   <div className="flex items-center gap-3">
-                    <item.icon size={18} className="text-slate-400 transition-colors group-hover:text-blue-500" />
-                    <span className="text-sm font-bold text-slate-700 transition-colors group-hover:text-blue-600">{item.label}</span>
+                    <item.icon size={16} className="text-gray-400 transition-colors group-hover:text-blue-500" />
+                    <span className="text-sm font-medium text-gray-700 transition-colors group-hover:text-blue-600">{item.label}</span>
                   </div>
-                  <ArrowRight size={14} className="text-slate-300 transition-all group-hover:translate-x-1 group-hover:text-blue-400" />
+                  <ArrowRight size={13} className="text-gray-300 transition-all group-hover:translate-x-1 group-hover:text-blue-400" />
                 </Link>
               ))}
             </div>

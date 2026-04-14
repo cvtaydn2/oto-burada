@@ -52,10 +52,10 @@ export function ProfileForm({
           <div className="rounded-[1.25rem] border border-border/70 bg-muted/20 p-4">
             <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
               <UserRound className="size-4 text-primary" />
-              Tam ad
+              Tam Ad
             </div>
             <p className="mt-2 text-sm font-semibold text-foreground">
-              {values.fullName || "Henuz eklenmedi"}
+              {values.fullName || "Henüz eklenmedi"}
             </p>
           </div>
           <div className="rounded-[1.25rem] border border-border/70 bg-muted/20 p-4">
@@ -71,16 +71,16 @@ export function ProfileForm({
               )}
             </div>
             <p className="mt-2 text-sm font-semibold text-foreground">
-              {values.phone || "Henuz eklenmedi"}
+              {values.phone || "Henüz eklenmedi"}
             </p>
           </div>
           <div className="rounded-[1.25rem] border border-border/70 bg-muted/20 p-4">
             <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
               <MapPin className="size-4 text-primary" />
-              Sehir
+              Şehir
             </div>
             <p className="mt-2 text-sm font-semibold text-foreground">
-              {values.city || "Henuz eklenmedi"}
+              {values.city || "Henüz eklenmedi"}
             </p>
           </div>
           <div className="rounded-[1.25rem] border border-primary/10 bg-gradient-to-br from-primary/10 via-background to-background p-4">
@@ -89,7 +89,7 @@ export function ProfileForm({
               Avatar
             </div>
             <p className="mt-2 text-sm font-semibold text-foreground">
-              {values.avatarUrl ? "URL hazir" : "Opsiyonel"}
+              {values.avatarUrl ? "URL hazır" : "Opsiyonel"}
             </p>
           </div>
         </div>
@@ -101,11 +101,10 @@ export function ProfileForm({
             </div>
             <div className="space-y-1">
               <h3 className="text-lg font-semibold tracking-tight text-foreground">
-                Temel profil bilgileri
+                Temel Profil Bilgileri
               </h3>
               <p className="text-sm leading-6 text-muted-foreground">
-                Guven hissi icin ad, telefon ve sehir alanlarini net tut. Bu bilgiler ilan
-                akislarinda destekleyici sinyal olarak kullanilir.
+                Güven için ad, telefon ve şehir alanlarını eksiksiz doldurun. Bu bilgiler ilan akışlarında destekleyici sinyal olarak kullanılır.
               </p>
             </div>
           </div>
@@ -171,10 +170,10 @@ export function ProfileForm({
           </div>
           <div className="space-y-1">
             <h3 className="text-lg font-semibold tracking-tight text-foreground">
-              Avatar ve son kayit
+              Avatar ve Son Kayıt
             </h3>
             <p className="text-sm leading-6 text-muted-foreground">
-              Avatar alani opsiyoneldir. Su an URL ile calisir; dilersen bos birakabilirsin.
+              Avatar alanı opsiyoneldir. Şu an URL ile çalışır; dilersen boş bırakabilirsin.
             </p>
           </div>
         </div>
@@ -193,11 +192,10 @@ export function ProfileForm({
 
           <div className="rounded-[1.5rem] border border-primary/10 bg-gradient-to-br from-primary/10 via-background to-background p-4">
             <p className="text-xs font-semibold uppercase tracking-[0.14em] text-primary">
-              Hazirlik notu
+              Hazırlık Notu
             </p>
             <p className="mt-2 text-sm leading-6 text-muted-foreground">
-              Profil guncel olursa ilan detay sayfalarinda daha guvenli ve duzenli bir satici
-              gorunumu elde edilir.
+              Profil güncel olursa ilan detay sayfalarında daha güvenli ve düzenli bir satıcı görünümü elde edilir.
             </p>
           </div>
         </div>

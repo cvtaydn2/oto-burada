@@ -753,3 +753,34 @@ Her yeni geliştirme başlamadan önce okunmalıdır.
   - `npm run typecheck` ✅
   - `npm run build` ✅
 - **Status**: 🟢 Tüm ekranlar kontrol edildi, sayfalama ve harita özellikleri eklendi.
+
+- **Bireysel & Kurumsal Satıcı Paneli Güncelleme Pass (2026-04-15)**:
+  `.design/pages-code/satici-paneli.html` referansına göre kapsamlı güncelleme yapıldı:
+
+  **Bireysel Satıcı Paneli (`/dashboard`):**
+  1. **Tab Navigation Eklendi**: Tasarımdaki "Özet Panel / İlan Yönetimi / Mesajlar / Favoriler / Hesap Ayarları" tab'ları header'a eklendi
+  2. **Stat Kartları Güncellendi**: Tasarıma uygun görünüm (beyaz kart, yuvarlak ikon, trend göstergesi)
+  3. **Son İlanlar Tablosu**: "İstatistik" kolonu eklendi (viewCount), "Düzenle" linki düzeltildi (`?edit=` parametresi)
+  4. **Durum Badge'leri**: Tüm listing status'ları için renk kodlaması eklendi (rejected, draft dahil)
+  5. **Hızlı Erişim**: "Yeni İlan Oluştur" linki `?create=true` parametresiyle güncellendi
+
+  **Dashboard Shell:**
+  6. **Sidebar Navigation**: `DashboardShell` tasarıma uygun sol sidebar layout'a geçirildi
+  7. **DashboardNavigation**: `variant="sidebar"` prop eklendi — sidebar'da border-left active indicator ile gösterilir
+  8. **Navigasyon Genişletildi**: Bildirimler ve Kayıtlı Aramalar menüye eklendi
+
+  **Bireysel Profil (`/dashboard/profile`):**
+  9. **Türkçe Karakter Düzeltmeleri**: "Henuz eklenmedi" → "Henüz eklenmedi", "Sehir" → "Şehir", vb.
+  10. **Başlıklar Düzeltildi**: "Temel profil bilgileri" → "Temel Profil Bilgileri"
+
+  **Kurumsal Profil (`/dashboard/profile/corporate`):**
+  11. **Header Yenilendi**: Tasarıma uygun başlık, geri butonu, doğrulama badge'i
+  12. **Info Banner**: Kurumsal hesap avantajları açıklama kartı eklendi
+  13. **Stats Kartları**: Mevcut galeri bilgileri (ad, website, adres) özet kartlar olarak gösteriliyor
+  14. **businessSlug Prefix**: `/gallery/` olarak kısaltıldı (önceki çok uzundu)
+
+- **Doğrulama**:
+  - `npm run lint` ✅ (0 errors, 0 warnings)
+  - `npm run typecheck` ✅
+  - `npm run build` ✅
+- **Status**: 🟢 Bireysel ve kurumsal satıcı panelleri tasarım referansına uygun hale getirildi.

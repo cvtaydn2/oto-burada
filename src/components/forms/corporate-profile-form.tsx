@@ -75,14 +75,14 @@ export function CorporateProfileForm({
           <label className="block space-y-2 text-sm font-bold text-foreground">
             <span>Mağaza URL (Slug)</span>
             <div className="relative">
-              <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-xs">otoburada.com/gallery/</span>
+              <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-xs font-medium">/gallery/</span>
               <input
                 type="text"
                 name="businessSlug"
-                placeholder="cevat-otomotiv"
+                placeholder="galeri-adiniz"
                 defaultValue={values.businessSlug}
                 required
-                className="h-12 w-full rounded-xl border border-input bg-background pl-[135px] pr-4 text-sm outline-none transition-colors focus:border-indigo-500 font-medium"
+                className="h-12 w-full rounded-xl border border-input bg-background pl-[80px] pr-4 text-sm outline-none transition-colors focus:border-indigo-500 font-medium"
               />
             </div>
           </label>
