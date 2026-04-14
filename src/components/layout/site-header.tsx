@@ -21,7 +21,7 @@ export async function SiteHeader({ user }: SiteHeaderProps) {
 
   return (
     <header className="sticky top-0 left-0 right-0 z-50 h-[68px] border-b border-slate-200/80 bg-white/98 backdrop-blur-sm" role="banner">
-      <div className="mx-auto flex h-full w-full max-w-[1280px] items-center justify-between gap-4 px-5 lg:px-6">
+      <div className="mx-auto flex h-full w-full max-w-[1280px] items-center justify-between gap-2 px-3 sm:px-5 lg:px-6">
         <div className="flex items-center gap-8">
           <Link href="/" className="flex items-center space-x-2 group shrink-0" aria-label="OtoBurada - Ana Sayfa">
             <div className="flex size-9 items-center justify-center rounded-lg bg-blue-500 text-white" aria-hidden="true">
@@ -46,7 +46,7 @@ export async function SiteHeader({ user }: SiteHeaderProps) {
           />
         </div>
 
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-2 sm:gap-4">
           <div className="hidden items-center gap-2 border-r border-gray-200 pr-4 md:flex">
              <Link 
                href={favoritesHref} 
@@ -64,7 +64,7 @@ export async function SiteHeader({ user }: SiteHeaderProps) {
              </Link>
           </div>
 
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-2 sm:gap-4">
              <Link 
                href={accountHref}
                className="flex items-center gap-2 group"

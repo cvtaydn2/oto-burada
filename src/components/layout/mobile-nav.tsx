@@ -20,7 +20,7 @@ export function MobileNav({ userId }: MobileNavProps) {
       {/* Mobile FAB */}
       <Link
         href="/dashboard/listings/create"
-        className="fixed bottom-20 right-6 z-50 flex h-14 w-14 items-center justify-center rounded-full bg-indigo-600 text-white shadow-2xl shadow-indigo-500/40 transition-transform active:scale-90"
+        className="fixed bottom-28 right-6 z-50 flex h-14 w-14 items-center justify-center rounded-full bg-indigo-600 text-white shadow-2xl shadow-indigo-500/40 transition-transform active:scale-95"
         aria-label="İlan Ver"
       >
         <Plus className="size-6" />

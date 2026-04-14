@@ -22,7 +22,7 @@ export function HomeHero() {
   }
 
   return (
-    <section className="hero-bg h-[500px] flex items-center relative overflow-hidden">
+    <section className="hero-bg min-h-[500px] py-12 md:py-0 md:h-[500px] flex items-center relative overflow-hidden">
       <div className="absolute inset-0">
         <Image
           src="https://images.unsplash.com/photo-1503376780353-7e6692767b70?auto=format&fit=crop&w=1920&q=80"

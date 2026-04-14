@@ -104,15 +104,15 @@ export default async function ListingDetailPage({ params }: ListingDetailPagePro
         <div className="mx-auto max-w-[1400px] px-4 py-6 w-full flex-1">
           
           {/* Top Header/Breadcrumb Area */}
-          <div className="flex justify-between items-center mb-6">
-            <nav className="flex items-center space-x-2 text-xs font-medium text-gray-500">
+          <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4 mb-6">
+            <nav className="flex flex-wrap items-center gap-2 text-[10px] sm:text-xs font-medium text-gray-500">
               {breadcrumbs.map((b, i) => (
-                <div key={b.url} className="flex items-center space-x-2">
-                  <Link href={b.url} className={cn("hover:text-blue-500 transition-colors", i === breadcrumbs.length - 1 ? "text-gray-700" : "")}>
+                <div key={b.url} className="flex items-center gap-2">
+                  <Link href={b.url} className={cn("hover:text-blue-500 transition-colors whitespace-nowrap", i === breadcrumbs.length - 1 ? "text-gray-700" : "")}>
                     {b.name}
                   </Link>
                   {i < breadcrumbs.length - 1 && (
-                    <svg className="size-2 text-gray-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                    <svg className="size-2 text-gray-400 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
                       <path d="m9 18 6-6-6-6" />
                     </svg>
                   )}
@@ -120,13 +120,15 @@ export default async function ListingDetailPage({ params }: ListingDetailPagePro
               ))}
             </nav>
 
-            <ListingDetailActions
-              listingId={listing.id}
-              price={listing.price}
-              sellerId={listing.sellerId}
-              title={listing.title}
-              userId={currentUser?.id ?? null}
-            />
+            <div className="flex items-center justify-between md:justify-end gap-2 overflow-x-auto pb-2 md:pb-0 scrollbar-hide">
+              <ListingDetailActions
+                listingId={listing.id}
+                price={listing.price}
+                sellerId={listing.sellerId}
+                title={listing.title}
+                userId={currentUser?.id ?? null}
+              />
+            </div>
           </div>
 
           <div className="flex flex-col items-start gap-10 lg:flex-row lg:gap-10">
