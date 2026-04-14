@@ -14,6 +14,17 @@ Her yeni geliştirme başlamadan önce okunmalıdır.
 
 ## Proje Durumu
 
+### 2026-04-14 Mobile UX Optimization & Reliability Pass (In Progress)
+- **Odak**: Mobil kullanıcı deneyimindeki kritik arayüz çakışmalarının giderilmesi ve sayfa hiyerarşisinin responsive hale getirilmesi.
+- **Uygulanan İyileştirmeler**:
+  1. **Buton Çakışması Fix**: "Yukarı Çık" ve "İlan Ver" (FAB) butonları arasındaki overlap giderildi. Konumlar basamaklı (stacked) hale getirildi.
+  2. **Sticky Actions Fix**: İlan detay sayfasındaki fiyat/iletişim barının alt navigasyonu kapatması sorunu, barın navigasyon boyutu kadar yukarı ötelenmesiyle (`bottom-[88px]`) çözüldü.
+  3. **Header Spacing**: Mobil başlık (logo + menü) alanı dar ekranlarda daha fazla nefes alacak şekilde (gap/padding) optimize edildi.
+  4. **Breadcrumb Stacking**: İlan detay sayfasındaki yol haritası (breadcrumb) uzun marka/model isimlerinde aksiyon butonlarının üzerine binmek yerine artık alt satıra geçiyor.
+  5. **Hero Height**: Ana sayfa vitrin alanı `min-h-[500px]` yapılarak mobilde içerik kesilmesi engellendi.
+  6. **Mesajlaşma Fix**: `chats` ve `messages` tablolarındaki ilişki join'lerini engelleyen eksik yabancı anahtarlar (foreign keys) veritabanına eklendi. Artık "Mesaj Gönder" butonu sorunsuz çalışıyor.
+- **Status**: 🟢 Kritik mobil UX ve mesajlaşma sorunları giderildi. Proje genel analiz raporu (`ANALYSIS_REPORT.md`) oluşturuldu.
+
 ### 2026-04-14 Production Build Stabilization & Data Fetching Hardening (Completed)
 - **Odak**: Üretim build’ini engelleyen kritik TypeScript hatalarının giderilmesi ve ilan detay sayfasındaki 404 sorunlarının kalıcı olarak çözülmesi.
 - **Uygulananan İyileştirmeler**:
