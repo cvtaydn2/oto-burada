@@ -1,6 +1,7 @@
 "use client";
 
 import { X } from "lucide-react";
+import { useState, useEffect } from "react";
 
 interface Listing360ViewProps {
   isOpen: boolean;
@@ -8,6 +9,18 @@ interface Listing360ViewProps {
 }
 
 export function Listing360View({ isOpen, onClose }: Listing360ViewProps) {
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    if (isOpen) {
+      setIsLoading(true);
+      const timer = setTimeout(() => {
+        setIsLoading(false);
+      }, 1500);
+      return () => clearTimeout(timer);
+    }
+  }, [isOpen]);
+
   if (!isOpen) return null;
 
   return (

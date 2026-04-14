@@ -601,3 +601,11 @@ Her yeni geliştirme başlamadan önce okunmalıdır.
   - `npm run build` ✅
 - **Status**: 🟢 UI Eksiklikleri Giderme Pass tamamlandı; listing detail sayfası `.design/pages-code` referanslarına tam uyumlu hale getirildi.
 - **Sonraki Adım**: Production deployment sonrası Vercel RES/FCP panelinden gerçek kullanıcı hız etkisi ölçümü.
+
+- **Build Hotfix (2026-04-14)**:
+  1. **Listing 360 View Onarımı**: `isLoading` değişkeni tanımlanmadığı için Vercel build aşamasında hata veriyordu. `useState` ve `useEffect` ile simüle edilmiş bir yükleme durumu eklendi.
+- **Doğrulama**:
+  - `npm run build` ✅ (Local build success)
+  - `npm run typecheck` ✅
+- **Status**: 🟢 Build hatası giderildi; proje tekrar deploy edilebilir durumda.
+- **Sonraki Adım**: Vercel üzerinden deployment durumunu takip etmek ve canlı siteyi kontrol etmek.
