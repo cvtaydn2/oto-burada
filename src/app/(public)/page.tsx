@@ -8,7 +8,6 @@ import { buildListingsMetadata, getAppUrl } from "@/lib/seo";
 import { getPublicMarketplaceListings } from "@/services/listings/marketplace-listings";
 import { WebSiteStructuredData, OrganizationStructuredData } from "@/components/seo/structured-data";
 
-export const dynamic = "force-dynamic";
 export const revalidate = 60;
 
 export async function generateMetadata(): Promise<Metadata> {

@@ -5,15 +5,13 @@ import { usePathname } from "next/navigation";
 import { Plus } from "lucide-react";
 
 import { getMobileNavigationItems } from "@/components/layout/public-navigation";
+import { useAuthUser } from "@/components/shared/auth-provider";
 import { cn } from "@/lib/utils";
 
-interface MobileNavProps {
-  userId?: string | null;
-}
-
-export function MobileNav({ userId }: MobileNavProps) {
+export function MobileNav() {
   const pathname = usePathname();
-  const mobileNavigationItems = getMobileNavigationItems(Boolean(userId));
+  const { isAuthenticated } = useAuthUser();
+  const mobileNavigationItems = getMobileNavigationItems(isAuthenticated);
 
   return (
     <div className="lg:hidden">

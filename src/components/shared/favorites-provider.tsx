@@ -10,6 +10,7 @@ import {
   useSyncExternalStore,
 } from "react";
 
+import { useAuthUser } from "@/components/shared/auth-provider";
 import { readFavoriteIds, writeFavoriteIds } from "@/services/favorites/favorites-storage";
 
 interface FavoritesContextValue {
@@ -18,10 +19,6 @@ interface FavoritesContextValue {
   isAuthenticated: boolean;
   isFavorite: (listingId: string) => boolean;
   toggleFavorite: (listingId: string) => void;
-}
-
-interface FavoritesProviderProps extends PropsWithChildren {
-  userId?: string | null;
 }
 
 const FavoritesContext = createContext<FavoritesContextValue | undefined>(undefined);
@@ -91,7 +88,8 @@ function broadcastFavoritesUpdate(nextIds: string[]) {
   }
 }
 
-export function FavoritesProvider({ children, userId }: FavoritesProviderProps) {
+export function FavoritesProvider({ children }: PropsWithChildren) {
+  const { userId } = useAuthUser();
   const localFavoriteIds = useSyncExternalStore(
     subscribe,
     getFavoritesSnapshot,

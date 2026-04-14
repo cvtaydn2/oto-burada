@@ -14,6 +14,21 @@ Her yeni geliştirme başlamadan önce okunmalıdır.
 
 ## Proje Durumu
 
+- **Performance Recovery (2026-04-14)**:
+  1. **Public Shell Statikleşti**: Root layout ve public shell içinden server-side `getCurrentUser()` bağımlılığı kaldırıldı. Auth bilgisi client-side `AuthProvider` katmanına taşındı.
+  2. **Homepage Cache Dostu Hale Geldi**: Ana sayfadaki gereksiz `force-dynamic` kaldırıldı. Build çıktısında `/` route'u tekrar static ISR (`○ /`) olarak üretildi.
+  3. **Header/Auth Ayrıştırması**: Public header içindeki hesap/favori/ilan-ver kontrolleri client island olarak ayrıldı; böylece header yüzünden tüm public sayfaların dinamikleşmesi engellendi.
+  4. **LCP Hafifletme**: Hero görselinin kaynak boyutu ve kalite seviyesi düşürüldü; gereksiz Google Fonts preconnect etiketleri kaldırıldı.
+  5. **Kullanıcıya Özel State Ayrıştırması**: Favorites senkronizasyonu provider içinde client auth context üzerinden çözülerek render zinciri sadeleştirildi.
+- **Doğrulama**:
+  - `npm run lint` ✅
+  - `npm run typecheck` ✅
+  - `npm run build` ✅
+  - Build route çıktısı: homepage `/` artık static prerender + revalidate `1m`
+- **Sonraki Adım**:
+  - `listings` ve `listing detail` yüzeyleri için route bazlı JS payload ve LCP analizi yapılıp ikinci tur code splitting uygulanmalı.
+  - Header arama önerileri gerekirse API tabanlı lazy yüklemeye taşınmalı.
+
 - **Status**: 🟢 Kalite ve sürdürülebilirlik turu tamamlandı; lint/type/build tekrar temiz.
 - **Quality Consolidation (2026-04-14)**:
   1. **Mesajlaşma Hata Yalıtımı**: `dashboard/messages` sayfasındaki JSX `try/catch` anti-pattern’i kaldırıldı. Veri çekme render katmanından ayrıldı ve kullanıcıya güvenli fallback durumu tanımlandı.

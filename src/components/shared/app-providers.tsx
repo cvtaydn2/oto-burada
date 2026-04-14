@@ -3,15 +3,12 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { type PropsWithChildren, useState } from "react";
 
+import { AuthProvider } from "@/components/shared/auth-provider";
 import { FavoritesProvider } from "@/components/shared/favorites-provider";
 import { CompareProvider } from "@/components/shared/compare-provider";
 import { ThemeProvider } from "@/components/shared/theme-provider";
 
-interface AppProvidersProps extends PropsWithChildren {
-  userId?: string | null;
-}
-
-export function AppProviders({ children, userId }: AppProvidersProps) {
+export function AppProviders({ children }: PropsWithChildren) {
   const [queryClient] = useState(
     () =>
       new QueryClient({
@@ -32,9 +29,11 @@ export function AppProviders({ children, userId }: AppProvidersProps) {
       disableTransitionOnChange
     >
       <QueryClientProvider client={queryClient}>
-        <FavoritesProvider userId={userId}>
-          <CompareProvider>{children}</CompareProvider>
-        </FavoritesProvider>
+        <AuthProvider>
+          <FavoritesProvider>
+            <CompareProvider>{children}</CompareProvider>
+          </FavoritesProvider>
+        </AuthProvider>
       </QueryClientProvider>
     </ThemeProvider>
   );

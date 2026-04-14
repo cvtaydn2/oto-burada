@@ -2,18 +2,14 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { Menu, X, User as UserIcon, Heart, PlusCircle } from "lucide-react";
-import type { User } from "@supabase/supabase-js";
+import { Heart, Menu, PlusCircle, User as UserIcon, X } from "lucide-react";
+
+import { useAuthUser } from "@/components/shared/auth-provider";
 import { SearchWithSuggestions } from "@/components/ui/search-with-suggestions";
 import type { SearchSuggestionItem } from "@/types";
 import { ThemeToggle } from "@/components/shared/theme-toggle";
 
 interface HeaderMobileNavProps {
-  user: User | null;
-  isAdmin: boolean;
-  accountHref: string;
-  favoritesHref: string;
-  postListingHref: string;
   searchSuggestions: SearchSuggestionItem[];
 }
 
@@ -25,14 +21,13 @@ const mobileQuickLinks = [
 ] as const;
 
 export function HeaderMobileNav({
-  user,
-  isAdmin,
-  accountHref,
-  favoritesHref,
-  postListingHref,
   searchSuggestions,
 }: HeaderMobileNavProps) {
   const [isOpen, setIsOpen] = useState(false);
+  const { isAdmin, isAuthenticated } = useAuthUser();
+  const accountHref = isAuthenticated ? "/dashboard" : "/login";
+  const favoritesHref = isAuthenticated ? "/dashboard/favorites" : "/favorites";
+  const postListingHref = isAuthenticated ? "/dashboard/listings" : "/login";
 
   return (
     <div className="md:hidden flex items-center gap-2">
@@ -60,7 +55,7 @@ export function HeaderMobileNav({
                 className="flex items-center h-12 px-4 rounded-xl text-sm font-semibold text-foreground hover:bg-muted transition-all"
               >
                 <UserIcon size={18} className="mr-3" />
-                {user ? "Hesabım" : "Giriş Yap"}
+                {isAuthenticated ? "Hesabım" : "Giriş Yap"}
               </Link>
               <Link 
                 href={favoritesHref}

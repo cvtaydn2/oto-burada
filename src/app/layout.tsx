@@ -3,7 +3,6 @@ import type { Metadata } from "next";
 import { AppProviders } from "@/components/shared/app-providers";
 import { CookieConsent } from "@/components/shared/cookie-consent";
 import { PWAInstallPrompt } from "@/components/shared/pwa-install-prompt";
-import { getCurrentUser } from "@/lib/auth/session";
 import { getAppUrl } from "@/lib/seo";
 
 import { Analytics } from "@vercel/analytics/next";
@@ -58,13 +57,11 @@ export const metadata: Metadata = {
   }
 };
 
-export default async function RootLayout({
+export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const currentUser = await getCurrentUser();
-
   return (
     <html
       lang="tr"
@@ -72,12 +69,8 @@ export default async function RootLayout({
       data-scroll-behavior="smooth"
       suppressHydrationWarning
     >
-      <head>
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-      </head>
       <body className="min-h-full bg-background text-foreground selection:bg-primary/10 selection:text-primary">
-        <AppProviders userId={currentUser?.id ?? null}>
+        <AppProviders>
           {children}
           <Analytics />
           <SpeedInsights />
