@@ -4,13 +4,15 @@ import { useState } from "react";
 import { 
   MoreVertical, 
   ExternalLink, 
-  Settings2, 
   CheckCircle2, 
   XCircle,
   Car,
   Plus,
   Loader2,
-  ChevronRight
+  ChevronRight,
+  Trash2,
+  Edit,
+  AlertTriangle
 } from "lucide-react";
 import { ModelsManager } from "./models-manager";
 import {
@@ -24,7 +26,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
-import { toggleBrandStatus, addBrand, createModel } from "@/services/admin/reference";
+import { toggleBrandStatus, addBrand, createModel, updateBrand, deleteBrand } from "@/services/admin/reference";
 
 interface Brand {
   id: string;
@@ -48,6 +50,9 @@ export function BrandsManager({ initialBrands, showTableOnly }: BrandsManagerPro
   const [newModelName, setNewModelName] = useState("");
   const [isAddingModel, setIsAddingModel] = useState(false);
   const [selectedBrandForModels, setSelectedBrandForModels] = useState<Brand | null>(null);
+  const [editingBrand, setEditingBrand] = useState<Brand | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [deleteId, setDeleteId] = useState<string | null>(null);
 
   const handleToggleStatus = async (brand: Brand) => {
     setLoadingId(brand.id);
@@ -61,6 +66,36 @@ export function BrandsManager({ initialBrands, showTableOnly }: BrandsManagerPro
       toast.error("İşlem başarısız oldu");
     } finally {
       setLoadingId(null);
+    }
+  };
+
+  const handleUpdateBrand = async () => {
+    if (!editingBrand || !editingBrand.name.trim()) return;
+    setIsAdding(true);
+    try {
+      await updateBrand(editingBrand.id, editingBrand.name.trim());
+      toast.success("Marka güncellendi");
+      setEditingBrand(null);
+      window.location.reload();
+    } catch {
+      toast.error("Marka güncellenemedi");
+    } finally {
+      setIsAdding(false);
+    }
+  };
+
+  const handleDeleteBrandConfirmed = async () => {
+    if (!deleteId) return;
+    setIsDeleting(true);
+    try {
+      await deleteBrand(deleteId);
+      toast.success("Marka silindi");
+      setDeleteId(null);
+      window.location.reload();
+    } catch {
+      toast.error("Marka silinemedi (bağlı modeller olabilir)");
+    } finally {
+      setIsDeleting(false);
     }
   };
 
@@ -166,8 +201,11 @@ export function BrandsManager({ initialBrands, showTableOnly }: BrandsManagerPro
                     <DropdownMenuContent align="end" className="w-[200px] rounded-2xl p-2 shadow-xl border-slate-100">
                       <DropdownMenuLabel className="text-[10px] font-black uppercase tracking-widest text-slate-400 px-3 py-2">Marka Ayarları</DropdownMenuLabel>
                       <DropdownMenuSeparator className="bg-slate-50" />
-                      <DropdownMenuItem className="cursor-pointer gap-2 font-black text-[10px] uppercase tracking-widest rounded-xl px-3 py-2.5 hover:bg-slate-50 transition-all">
-                        <Settings2 size={14} />
+                      <DropdownMenuItem 
+                        onClick={() => setEditingBrand(brand)}
+                        className="cursor-pointer gap-2 font-black text-[10px] uppercase tracking-widest rounded-xl px-3 py-2.5 hover:bg-slate-50 transition-all"
+                      >
+                        <Edit size={14} />
                         DÜZENLE
                       </DropdownMenuItem>
                       <DropdownMenuItem 
@@ -191,6 +229,14 @@ export function BrandsManager({ initialBrands, showTableOnly }: BrandsManagerPro
                           <CheckCircle2 size={14} />
                         )}
                         {brand.is_active ? "YAYINDAN KALDIR" : "YAYINA AL"}
+                      </DropdownMenuItem>
+                      <DropdownMenuSeparator className="bg-slate-50" />
+                      <DropdownMenuItem 
+                        onClick={() => setDeleteId(brand.id)}
+                        className="cursor-pointer gap-2 font-black text-[10px] uppercase tracking-widest rounded-xl px-3 py-2.5 text-rose-600 hover:bg-rose-50 transition-all font-black"
+                      >
+                        <Trash2 size={14} />
+                        SİL
                       </DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>
@@ -320,6 +366,82 @@ export function BrandsManager({ initialBrands, showTableOnly }: BrandsManagerPro
               brand={selectedBrandForModels} 
               onClose={() => setSelectedBrandForModels(null)} 
             />
+          </div>
+        </div>
+      )}
+      {/* Edit Brand Modal */}
+      {editingBrand && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+          <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl">
+            <div className="mb-6 flex items-center gap-4">
+              <div className="flex size-12 items-center justify-center rounded-xl bg-blue-100 text-blue-600">
+                <Edit size={24} />
+              </div>
+              <div>
+                <h3 className="text-lg font-black text-slate-900">Markayı Düzenle</h3>
+                <p className="text-sm text-slate-500">{editingBrand.name} bilgilerini güncelleyin</p>
+              </div>
+            </div>
+            <div className="space-y-4">
+              <div>
+                <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Marka Adı</label>
+                <Input
+                  value={editingBrand.name}
+                  onChange={(e) => setEditingBrand({ ...editingBrand, name: e.target.value })}
+                  placeholder="Marka adı"
+                  className="mt-1"
+                />
+              </div>
+            </div>
+            <div className="flex gap-3 mt-6">
+              <Button
+                variant="outline"
+                className="flex-1 rounded-xl border-slate-200 font-bold"
+                onClick={() => setEditingBrand(null)}
+              >
+                İptal
+              </Button>
+              <Button
+                className="flex-1 rounded-xl bg-blue-600 font-bold hover:bg-blue-700 text-white"
+                onClick={handleUpdateBrand}
+                disabled={isAdding}
+              >
+                {isAdding ? <Loader2 className="animate-spin" size={18} /> : "Güncelle"}
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Delete Confirmation Modal */}
+      {deleteId && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+          <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl">
+            <div className="mb-6 flex items-center gap-4 text-rose-600">
+              <div className="flex size-12 items-center justify-center rounded-xl bg-rose-100">
+                <AlertTriangle size={24} />
+              </div>
+              <div>
+                <h3 className="text-lg font-black">Markayı Sil?</h3>
+                <p className="text-sm text-slate-500">Bu işlem geri alınamaz ve markaya bağlı her şey (modeller vb.) etkilenebilir.</p>
+              </div>
+            </div>
+            <div className="flex gap-3 mt-6">
+              <Button
+                variant="outline"
+                className="flex-1 rounded-xl border-slate-200 font-bold"
+                onClick={() => setDeleteId(null)}
+              >
+                İptal
+              </Button>
+              <Button
+                className="flex-1 rounded-xl bg-rose-600 font-bold hover:bg-rose-700 text-white"
+                onClick={handleDeleteBrandConfirmed}
+                disabled={isDeleting}
+              >
+                {isDeleting ? <Loader2 className="animate-spin" size={18} /> : "SİL"}
+              </Button>
+            </div>
           </div>
         </div>
       )}

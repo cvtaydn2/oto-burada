@@ -68,9 +68,15 @@ export function InventoryTable({ listings }: InventoryTableProps) {
             <tr key={listing.id} className="hover:bg-slate-50/50 transition-colors group">
               <td className="px-6 py-4">
                 <div className="flex items-center gap-3">
-                   <div className="size-12 rounded-xl bg-slate-100 border border-slate-200 overflow-hidden shrink-0">
+                   <div className="relative size-12 rounded-xl bg-slate-100 border border-slate-200 overflow-hidden shrink-0">
                        {listing.images?.[0] ? (
-                         <Image src={listing.images[0].url} alt="" fill className="object-cover" />
+                         <Image 
+                           src={listing.images[0].url} 
+                           alt="" 
+                           fill 
+                           className="object-cover" 
+                           priority={idx < 5} 
+                         />
                        ) : (
                         <div className="w-full h-full flex items-center justify-center text-slate-300">
                            <Zap size={16} />

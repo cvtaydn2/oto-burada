@@ -20,8 +20,6 @@ import { requireAdminUser } from "@/lib/auth/session";
 import { getRecentAdminModerationActions } from "@/services/admin/moderation-actions";
 import { getPersistenceHealth } from "@/services/admin/persistence-health";
 import { getAdminAnalytics } from "@/services/admin/analytics";
-import { getAllKnownListings } from "@/services/listings/marketplace-listings";
-import { getStoredProfileById } from "@/services/profile/profile-records";
 import { getStoredReports } from "@/services/reports/report-submissions";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 
@@ -64,8 +62,8 @@ export default async function AdminOverviewPage() {
     admin.from("listings").select("id, title, slug").in("id", [...new Set([...targetListingIds, ...reportListingIds])])
   ]);
 
-  const actorsMap = Object.fromEntries((actorProfiles.data || []).map((p: any) => [p.id, p]));
-  const listingsMap = Object.fromEntries((actionListings.data || []).map((l: any) => [l.id, l]));
+  const actorsMap = Object.fromEntries((actorProfiles.data || []).map((p) => [p.id, p]));
+  const listingsMap = Object.fromEntries((actionListings.data || []).map((l) => [l.id, l]));
 
   const actionableReports = (storedReports || []).filter(r => r.status === "open");
 

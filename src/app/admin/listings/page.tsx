@@ -7,7 +7,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { InventoryTable } from "@/components/admin/inventory-table";
 import { Badge } from "@/components/ui/badge";
 import { SimplePagination } from "@/components/admin/simple-pagination";
-import Link from "next/link";
 
 export const dynamic = "force-dynamic";
 

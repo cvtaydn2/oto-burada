@@ -27,11 +27,11 @@ export async function getAdminInventory(filters?: { status?: string; query?: str
     query = query.or(`title.ilike.%${filters.query}%,brand.ilike.%${filters.query}%,model.ilike.%${filters.query}%,vin.ilike.%${filters.query}%`);
   }
 
-  const { data, count, error } = await query.range(from, to);
+  const { data, count } = await query.range(from, to);
 
-  const listings = (data || []).map((listing: any) => ({
+  const listings = (data || []).map((listing: { images: { public_url: string; sort_order: number; is_cover: boolean }[] }) => ({
     ...listing,
-    images: (listing.images || []).map((img: any) => ({
+    images: (listing.images || []).map((img) => ({
       ...img,
       url: img.public_url || "",
       order: img.sort_order || 0,

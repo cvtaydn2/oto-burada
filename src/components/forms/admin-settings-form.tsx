@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Save, Globe, Lock, Bell, Zap, LoaderCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -20,6 +20,11 @@ export function AdminSettingsForm({ initialSettings }: AdminSettingsFormProps) {
   const router = useRouter();
   const [settings, setSettings] = useState<PlatformSettings>(initialSettings);
   const [isSaving, setIsSaving] = useState(false);
+
+  // Sync state with server props after revalidation
+  useEffect(() => {
+    setSettings(initialSettings);
+  }, [initialSettings]);
 
   const handleSave = async () => {
     setIsSaving(true);

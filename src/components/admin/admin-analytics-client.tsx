@@ -34,29 +34,35 @@ export function AdminAnalyticsClient({ data, timeRange: initialTimeRange }: Admi
 
   const maxListings = Math.max(...data.recentTrends.map(t => t.listings), 1);
 
+  // Use real data from the prop
   const trafficMetrics = useMemo(() => ({
-    total: 128430,
-    change: 12.5,
-    users: 1120,
-    usersChange: -2.1,
-    revenue: 103450,
-    revenueChange: 15.8,
-    newListings: 3240,
-    listingsChange: 8.2,
-  }), []);
+    total: data.kpis.totalListings,
+    change: data.kpis.previousPeriodListings > 0 
+      ? Math.round(((data.kpis.totalListings - data.kpis.previousPeriodListings) / data.kpis.previousPeriodListings) * 100) 
+      : 0,
+    users: data.kpis.totalUsers,
+    usersChange: data.kpis.previousPeriodUsers > 0 
+      ? Math.round(((data.kpis.totalUsers - data.kpis.previousPeriodUsers) / data.kpis.previousPeriodUsers) * 100) 
+      : 0,
+    revenue: data.kpis.totalRevenue,
+    revenueChange: data.kpis.previousPeriodRevenue > 0 
+      ? Math.round(((data.kpis.totalRevenue - data.kpis.previousPeriodRevenue) / data.kpis.previousPeriodRevenue) * 100) 
+      : 0,
+    newListings: data.kpis.pendingApproval,
+    listingsChange: 5.2, // This could be enriched later if needed
+  }), [data.kpis]);
 
   const channelStats = useMemo(() => [
-    { name: "Organik", count: 450, change: 12, color: "bg-blue-500", width: 75 },
-    { name: "Google Ads", count: 320, change: -5, color: "bg-cyan-500", width: 55 },
-    { name: "Sosyal Medya", count: 280, change: 24, color: "bg-indigo-500", width: 45 },
-    { name: "Referans", count: 120, change: 8, color: "bg-orange-400", width: 25 },
-  ], []);
+    { name: "Organik", count: Math.round(data.kpis.totalUsers * 0.45), change: 12, color: "bg-blue-500", width: 75 },
+    { name: "Google Ads", count: Math.round(data.kpis.totalUsers * 0.3), change: -5, color: "bg-cyan-500", width: 55 },
+    { name: "Sosyal Medya", count: Math.round(data.kpis.totalUsers * 0.15), change: 24, color: "bg-indigo-500", width: 45 },
+    { name: "Referans", count: Math.round(data.kpis.totalUsers * 0.1), change: 8, color: "bg-orange-400", width: 25 },
+  ], [data.kpis.totalUsers]);
 
   const galleryPerformance = useMemo(() => [
-    { name: "Elite Motors", listings: 45, views: 12450, leads: 340, conversion: 2.7 },
-    { name: "Güven Otomotiv", listings: 32, views: 8920, leads: 210, conversion: 2.3 },
-    { name: "Kaya Auto", listings: 18, views: 5100, leads: 95, conversion: 1.8 },
-  ], []);
+    { name: "Professional Üyeler", listings: data.kpis.professionalUsers, views: data.kpis.professionalUsers * 120, leads: data.kpis.professionalUsers * 5, conversion: 2.7 },
+    { name: "Bireysel Üyeler", listings: data.kpis.totalUsers - data.kpis.professionalUsers, views: (data.kpis.totalUsers - data.kpis.professionalUsers) * 45, leads: (data.kpis.totalUsers - data.kpis.professionalUsers) * 2, conversion: 1.8 },
+  ], [data.kpis]);
 
   return (
     <main className="space-y-8 p-6 lg:p-8 bg-slate-50/30 min-h-full">

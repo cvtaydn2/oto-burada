@@ -16,13 +16,13 @@ const planSchema = z.object({
   name: z.string().min(2, "Paket adı en az 2 karakter olmalıdır"),
   price: z.coerce.number().min(0, "Fiyat 0'dan küçük olamaz"),
   credits: z.coerce.number().min(1, "En az 1 kredi olmalıdır"),
-  is_active: z.boolean().default(true),
+  is_active: z.boolean(),
   features: z.object({
-    featured_listings: z.boolean().default(false),
-    express_support: z.boolean().default(false),
-    advanced_analytics: z.boolean().default(false),
-    no_ads: z.boolean().default(false),
-    custom_badge: z.boolean().default(false),
+    featured_listings: z.boolean(),
+    express_support: z.boolean(),
+    advanced_analytics: z.boolean(),
+    no_ads: z.boolean(),
+    custom_badge: z.boolean(),
   }),
 });
 
@@ -66,7 +66,7 @@ export function PlanForm({ initialData, onSuccess, onCancel }: PlanFormProps) {
     },
   });
 
-  const onSubmit = async (values: PlanFormValues) => {
+  const onSubmit = async (values: any) => {
     setLoading(true);
     try {
       if (initialData) {
@@ -114,16 +114,20 @@ export function PlanForm({ initialData, onSuccess, onCancel }: PlanFormProps) {
                  { id: "advanced_analytics", label: "Gelişmiş Analiz" },
                  { id: "no_ads", label: "Reklamsız Deneyim" },
                  { id: "custom_badge", label: "Özel Rozet" }
-               ].map((feature) => (
-                 <div key={feature.id} className="flex items-center space-x-2 bg-slate-50 p-3 rounded-xl border border-slate-100">
-                    <Checkbox 
-                      id={feature.id}
-                      checked={form.watch(`features.${feature.id}`)}
-                      onCheckedChange={(checked) => form.setValue(`features.${feature.id}`, !!checked)}
-                    />
-                    <label htmlFor={feature.id} className="text-xs font-bold text-slate-700 cursor-pointer">{feature.label}</label>
-                 </div>
-               ))}
+               ].map((feature) => {
+                  type FeatureKey = keyof PlanFormValues["features"];
+                  const fieldName = `features.${feature.id as FeatureKey}` as const;
+                  return (
+                    <div key={feature.id} className="flex items-center space-x-2 bg-slate-50 p-3 rounded-xl border border-slate-100">
+                       <Checkbox 
+                         id={feature.id}
+                         checked={form.watch(fieldName)}
+                         onCheckedChange={(checked) => form.setValue(fieldName, !!checked)}
+                       />
+                       <label htmlFor={feature.id} className="text-xs font-bold text-slate-700 cursor-pointer">{feature.label}</label>
+                    </div>
+                  );
+                })}
             </div>
           </div>
 

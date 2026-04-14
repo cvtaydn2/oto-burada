@@ -17,6 +17,7 @@ import {
   XCircle,
 } from "lucide-react";
 import { useState } from "react";
+import Image from "next/image";
 
 import { formatCurrency, formatDate, formatNumber } from "@/lib/utils";
 import { getListingCardInsights } from "@/services/listings/listing-card-insights";
@@ -367,9 +368,29 @@ export function AdminListingsModeration({ pendingListings }: AdminListingsModera
                   </div>
 
                   <div className="flex flex-wrap items-center gap-3">
-                    <span className="inline-flex rounded-full bg-sky-100 px-3 py-1 text-xs font-semibold text-sky-700">
-                      İncelemede
+                    <span className="inline-flex rounded-full bg-sky-100 px-3 py-1 text-[10px] font-black uppercase tracking-widest text-sky-700">
+                      {listing.status === "pending" ? "İnceleme Bekliyor" : listing.status}
                     </span>
+                    <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">ID: {listing.id.split("-")[0]}</span>
+                  </div>
+
+                  {listing.images && listing.images.length > 0 && (
+                    <div className="flex gap-2 overflow-x-auto pb-4 pt-1 no-scrollbar -mx-1 px-1">
+                       {listing.images.map((img, i) => (
+                         <div key={img.id || i} className="relative aspect-[4/3] w-32 shrink-0 overflow-hidden rounded-2xl border border-slate-100 bg-slate-50 shadow-sm group/img">
+                            <Image 
+                              src={img.url} 
+                              alt="" 
+                              fill 
+                              className="object-cover transition-transform group-hover/img:scale-110" 
+                              sizes="128px"
+                            />
+                         </div>
+                       ))}
+                    </div>
+                  )}
+
+                  <div className="flex flex-wrap items-center gap-2">
                     <span
                       className={`inline-flex rounded-full border px-3 py-1 text-xs font-semibold ${currentToneClass}`}
                     >

@@ -1,4 +1,4 @@
-import { TrendingUp, Car } from "lucide-react";
+import { TrendingUp } from "lucide-react";
 import { getAdminAnalytics } from "@/services/admin/analytics";
 import { requireAdminUser } from "@/lib/auth/session";
 import { AdminAnalyticsClient } from "@/components/admin/admin-analytics-client";

@@ -2,7 +2,6 @@ import { getPricingPlans } from "@/services/admin/plans";
 import { requireAdminUser } from "@/lib/auth/session";
 import { PlansTable } from "@/components/admin/plans-table";
 import { CreditCard, Plus } from "lucide-react";
-import { Button } from "@/components/ui/button";
 
 export const dynamic = "force-dynamic";
 

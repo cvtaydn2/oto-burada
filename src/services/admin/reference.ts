@@ -76,3 +76,24 @@ export async function deleteModel(id: string) {
   if (error) throw error;
   return { success: true };
 }
+export async function updateBrand(id: string, name: string) {
+  const admin = createSupabaseAdminClient();
+  const slug = name.toLowerCase().replace(/ /g, "-").replace(/[^\w-]+/g, "");
+  
+  const { error } = await admin
+    .from("brands")
+    .update({ name, slug })
+    .eq("id", id);
+
+  if (error) throw error;
+  revalidatePath("/admin/reference");
+  return { success: true };
+}
+
+export async function deleteBrand(id: string) {
+  const admin = createSupabaseAdminClient();
+  const { error } = await admin.from("brands").delete().eq("id", id);
+  if (error) throw error;
+  revalidatePath("/admin/reference");
+  return { success: true };
+}

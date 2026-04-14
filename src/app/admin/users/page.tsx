@@ -1,8 +1,7 @@
-import { Users, Search, Plus, UserCog, ShieldCheck } from "lucide-react";
+import { Users, Plus, UserCog, ShieldCheck } from "lucide-react";
+import Link from "next/link";
 import { UserHeaderActions } from "@/components/admin/user-header-actions";
 import { UserSearch } from "@/components/admin/user-search";
-import { format } from "date-fns";
-import { tr } from "date-fns/locale";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -170,10 +169,12 @@ export default async function AdminUserManagementPage({
                 <Users size={16} />
                 Toplu İçe Aktar
               </Button>
-              <Button variant="outline" className="w-full rounded-xl border-slate-100 text-slate-600 font-bold text-xs h-11 flex items-center gap-2 justify-start px-4 hover:bg-slate-50 transition-all">
-                <ShieldCheck size={16} />
-                Yetki Matrisi
-              </Button>
+              <Link href="/admin/roles">
+                <Button variant="outline" className="w-full rounded-xl border-slate-100 text-slate-600 font-bold text-xs h-11 flex items-center gap-2 justify-start px-4 hover:bg-slate-50 transition-all">
+                  <ShieldCheck size={16} />
+                  Yetki Matrisi
+                </Button>
+              </Link>
             </div>
           </div>
           
