@@ -1,4 +1,5 @@
 import Link from "next/link";
+import dynamic from "next/dynamic";
 import Image from "next/image";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
@@ -14,12 +15,9 @@ import { cn } from "@/lib/utils";
 import { ListingGallery } from "@/components/listings/listing-gallery";
 import { ListingDetailStructuredData, BreadcrumbStructuredData } from "@/components/seo/structured-data";
 import { CarCard } from "@/components/modules/listings/car-card";
-import { ContactActions } from "@/components/listings/contact-actions";
-import { ListingDetailActions } from "@/components/listings/listing-detail-actions";
 import { ExpertInspectionCard } from "@/components/listings/expert-inspection-card";
 import { DamageReportCard } from "@/components/listings/damage-report-card";
 import { MarketValueCard } from "@/components/listings/market-value-card";
-import { MobileStickyActions } from "@/components/listings/mobile-sticky-actions";
 import { buildListingDetailMetadata, buildAbsoluteUrl } from "@/lib/seo";
 import { formatNumber } from "@/lib/utils";
 import {
@@ -28,6 +26,24 @@ import {
   getSimilarMarketplaceListings,
 } from "@/services/listings/marketplace-listings";
 import { getListingCardInsights } from "@/services/listings/listing-card-insights";
+
+const ListingDetailActions = dynamic(
+  () => import("@/components/listings/listing-detail-actions").then((mod) => mod.ListingDetailActions),
+  {
+    loading: () => <div className="h-9 w-44 animate-pulse rounded-lg bg-slate-100" />,
+  },
+);
+
+const ContactActions = dynamic(
+  () => import("@/components/listings/contact-actions").then((mod) => mod.ContactActions),
+  {
+    loading: () => <div className="h-36 w-full animate-pulse rounded-xl bg-slate-100" />,
+  },
+);
+
+const MobileStickyActions = dynamic(
+  () => import("@/components/listings/mobile-sticky-actions").then((mod) => mod.MobileStickyActions),
+);
 
 interface ListingDetailPageProps {
   params: Promise<{
@@ -92,7 +108,6 @@ export default async function ListingDetailPage({ params }: ListingDetailPagePro
           listingId={listing.id}
           sellerId={listing.sellerId}
           price={listing.price}
-          title={listing.title}
       /> 
 
       <main className="min-h-screen bg-gray-50 flex flex-col">

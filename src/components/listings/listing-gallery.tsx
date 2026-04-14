@@ -1,10 +1,15 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import dynamic from "next/dynamic";
 import Image from "next/image";
-import { ChevronLeft, ChevronRight, X, Sparkles } from "lucide-react";
+import { ChevronLeft, ChevronRight, Sparkles } from "lucide-react";
 import useEmblaCarousel from "embla-carousel-react";
 import type { ListingImage } from "@/types";
+
+const ListingGalleryLightbox = dynamic(
+  () => import("@/components/listings/listing-gallery-lightbox").then((mod) => mod.ListingGalleryLightbox),
+);
 
 interface ListingGalleryProps {
   images: ListingImage[];
@@ -148,63 +153,15 @@ export function ListingGallery({ images, title }: ListingGalleryProps) {
         </div>
       </div>
 
-      {/* Lightbox with Swipe Support (Manual Selection) */}
-      {isLightboxOpen && (
-        <div className="fixed inset-0 z-[100] bg-black/98 backdrop-blur-2xl flex flex-col" onClick={() => setIsLightboxOpen(false)}>
-          <div className="flex items-center justify-between p-6">
-            <div className="text-white text-sm font-black italic uppercase tracking-widest">
-              {title} <span className="text-white/40 ml-2">({currentIndex + 1} / {images.length})</span>
-            </div>
-            <button
-               onClick={() => setIsLightboxOpen(false)}
-               className="size-12 rounded-full bg-white/10 flex items-center justify-center text-white hover:bg-white/20 transition-all shadow-2xl"
-            >
-               <X size={24} />
-            </button>
-          </div>
-
-          <div className="flex-1 relative flex items-center justify-center overflow-hidden" onClick={(e) => e.stopPropagation()}>
-             {images.map((img, idx) => (
-                <div 
-                  key={img.id || img.url} 
-                  className={`absolute inset-0 transition-opacity duration-500 ease-in-out flex items-center justify-center p-4 ${
-                    idx === currentIndex ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"
-                  }`}
-                >
-                   <div className="relative w-full h-full max-w-7xl">
-                      <Image
-                        src={img.url}
-                        alt=""
-                        fill
-                        className="object-contain"
-                        sizes="100vw"
-                        priority
-                        placeholder={img.placeholderBlur ? "blur" : "empty"}
-                        blurDataURL={img.placeholderBlur ?? undefined}
-                      />
-                   </div>
-                </div>
-             ))}
-
-             {/* Lightbox Nav */}
-             {images.length > 1 && (
-               <>
-                 <button onClick={() => { if (emblaApi) emblaApi.scrollPrev(); }} className="absolute left-6 size-16 rounded-full bg-white/5 hidden sm:flex items-center justify-center text-white hover:bg-white/10 transition-all"><ChevronLeft size={32}/></button>
-                 <button onClick={() => { if (emblaApi) emblaApi.scrollNext(); }} className="absolute right-6 size-16 rounded-full bg-white/5 hidden sm:flex items-center justify-center text-white hover:bg-white/10 transition-all"><ChevronRight size={32}/></button>
-               </>
-             )}
-          </div>
-          
-          <div className="p-8 flex justify-center gap-2 overflow-x-auto" onClick={(e) => e.stopPropagation()}>
-             {images.map((_, idx) => (
-                <div 
-                  key={idx}
-                  className={`h-1.5 rounded-full transition-all ${idx === currentIndex ? "bg-primary w-8" : "bg-white/20 w-1.5"}`}
-                />
-             ))}
-          </div>
-        </div>
-      )}
+      <ListingGalleryLightbox
+        currentIndex={currentIndex}
+        images={images}
+        isOpen={isLightboxOpen}
+        onClose={() => setIsLightboxOpen(false)}
+        onNext={() => emblaApi?.scrollNext()}
+        onPrev={() => emblaApi?.scrollPrev()}
+        title={title}
+      />
     </>
   );
 }

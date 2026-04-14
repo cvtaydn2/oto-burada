@@ -14,6 +14,19 @@ Her yeni geliştirme başlamadan önce okunmalıdır.
 
 ## Proje Durumu
 
+- **Performance Pass 4 (2026-04-14)**:
+  1. **Gallery Lightbox Chunk Ayrımı**: `listing-gallery` içindeki tam ekran lightbox kodu ayrı bir client chunk'a taşındı; detail sayfasının ilk yükünde gerekmeyen overlay ve büyük görsel gezinme kodu ana bundle'dan ayrıldı.
+  2. **Detail Action Lazy Yükleme**: `listing/[slug]` üst aksiyon satırı (`share`, `favorite`, `report`, `compare`) route seviyesinde dynamic import ile lazy hale getirildi; kritik üst içerik render'ı daha hafif kaldı.
+  3. **Contact Panel Lazy Yükleme**: Sidebar ve mobile sticky CTA içinde kullanılan `ContactActions` bileşeni ayrı yüklenir hale getirildi; chat, phone reveal ve WhatsApp dialog mantığı ilk render JS'ine doğrudan binmiyor.
+  4. **Production Senkronu**: `perf: cache public marketplace data` deployment'ı Vercel production'da `READY` doğrulandı; son cache turu yayında.
+- **Doğrulama**:
+  - `npm run lint` ✅
+  - `npm run typecheck` ✅
+  - `npm run build` ✅
+- **Sonraki Adım**:
+  - Gerçek route bazlı Lighthouse ölçümü alınmalı; özellikle `listing/[slug]` için LCP ve INP düşüşü sayısal olarak görülmeli.
+  - `SearchWithSuggestions` ve listing sonuç üst barı için benzer lazy/split stratejisi uygulanabilir.
+
 - **Performance Pass 3 (2026-04-14)**:
   1. **Public Listing Data Cache**: `marketplace-listings` içinde Next cache uyumlu bir sarmalayıcı eklenerek listing detail, seller ve similar listings sorguları `unstable_cache` ile ISR-benzeri yeniden kullanım alacak şekilde cache'lendi.
   2. **Seller Fetch Hafifletme**: Public seller bilgisi artık `admin.auth.admin.getUserById` zincirine girmeden doğrudan `profiles` tablosundan okunuyor; detail sayfasındaki ek auth admin round-trip kaldırıldı.

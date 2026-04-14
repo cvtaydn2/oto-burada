@@ -1,14 +1,21 @@
 "use client"
 
+import dynamic from "next/dynamic";
+
 import { useAuthUser } from "@/components/shared/auth-provider";
-import { ContactActions } from "./contact-actions";
 import { formatCurrency } from "@/lib/utils";
+
+const ContactActions = dynamic(
+  () => import("./contact-actions").then((mod) => mod.ContactActions),
+  {
+    loading: () => <div className="h-12 w-full animate-pulse rounded-xl bg-slate-100" />,
+  },
+);
 
 interface MobileStickyActionsProps {
     listingId: string;
     sellerId: string;
     price: number;
-    title: string;
 }
 
 export function MobileStickyActions({ 
