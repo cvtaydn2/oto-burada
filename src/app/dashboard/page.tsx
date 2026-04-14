@@ -23,7 +23,7 @@ import { getStoredProfileById, buildProfileFromAuthUser } from "@/services/profi
 import { cn } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";
-export const revalidate = 60;
+// revalidate kaldırıldı — force-dynamic ile çakışıyor
 
 export default async function DashboardPage() {
   const user = await requireUser();
@@ -33,6 +33,7 @@ export default async function DashboardPage() {
     phone?: string;
   };
 
+  // Promise'leri hemen başlat, await etme — Suspense içinde resolve edilecek
   const listingsPromise = getStoredUserListings(user.id);
   const profilePromise = getStoredProfileById(user.id);
   const favoriteCountPromise = getDatabaseFavoriteCount(user.id);
@@ -290,8 +291,8 @@ async function DashboardDataSection({
               },
             ]}
           />
-          <div className="rounded-2xl border border-blue-100 bg-blue-50/60 p-6 shadow-sm">
-            <h3 className="mb-2 text-lg font-black text-slate-900">Hesap Durumu</h3>
+
+          <div className="rounded-2xl border border-blue-100 bg-blue-50/60 p-6 shadow-sm">            <h3 className="mb-2 text-lg font-black text-slate-900">Hesap Durumu</h3>
             <p className="mb-5 text-xs text-slate-500">
               Profil güveni ve ilan yayın akışın burada özetlenir.
             </p>

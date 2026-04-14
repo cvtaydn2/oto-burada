@@ -114,7 +114,7 @@ export default async function HomePage() {
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
                 {featuredListings.map((listing, index) => (
-                  <CarCard key={listing.id} listing={listing} priority={index < 4} />
+                  <CarCard key={listing.id} listing={listing} priority={index < 2} />
                 ))}
               </div>
             </div>

@@ -1,14 +1,34 @@
 import Link from "next/link";
 import { CarFront } from "lucide-react";
+import { Suspense } from "react";
 
 import { SiteHeaderAuth } from "@/components/layout/site-header-auth";
 import { getLiveMarketplaceReferenceData } from "@/services/reference/live-reference-data";
 import { HeaderMobileNav } from "./header-mobile-nav";
 import { SearchWithSuggestions } from "@/components/ui/search-with-suggestions";
+
+// Arama önerileri ayrı Suspense boundary'de — header'ın geri kalanını bloklamaz
+async function HeaderSearch() {
+  const references = await getLiveMarketplaceReferenceData();
+  return (
+    <SearchWithSuggestions
+      placeholder="Marka, model veya kelime ara..."
+      suggestions={references.searchSuggestions}
+      className="w-full"
+    />
+  );
+}
+
+async function HeaderMobileNavWrapper() {
+  const references = await getLiveMarketplaceReferenceData();
+  return (
+    <HeaderMobileNav
+      searchSuggestions={references.searchSuggestions}
+    />
+  );
+}
  
 export async function SiteHeader() {
-  const references = await getLiveMarketplaceReferenceData();
-
   return (
     <header className="sticky top-0 left-0 right-0 z-50 h-[68px] border-b border-slate-200/80 bg-white/98 backdrop-blur-sm" role="banner">
       <div className="mx-auto flex h-full w-full max-w-[1280px] items-center justify-between gap-2 px-3 sm:px-5 lg:px-6">
@@ -29,11 +49,11 @@ export async function SiteHeader() {
         </div>
 
         <div className="hidden flex-1 max-w-lg mx-8 lg:flex relative">
-          <SearchWithSuggestions
-            placeholder="Marka, model veya kelime ara..."
-            suggestions={references.searchSuggestions}
-            className="w-full"
-          />
+          <Suspense fallback={
+            <div className="w-full h-10 rounded-full bg-gray-100 animate-pulse" />
+          }>
+            <HeaderSearch />
+          </Suspense>
         </div>
 
         <div className="flex items-center gap-2 sm:gap-4">
@@ -41,9 +61,9 @@ export async function SiteHeader() {
             favoritesHrefGuest="/favorites"
             postListingHrefAuthenticated="/dashboard/listings"
           />
-          <HeaderMobileNav
-            searchSuggestions={references.searchSuggestions}
-          />
+          <Suspense fallback={<div className="size-9 rounded-lg bg-gray-100 animate-pulse lg:hidden" />}>
+            <HeaderMobileNavWrapper />
+          </Suspense>
         </div>
       </div>
     </header>

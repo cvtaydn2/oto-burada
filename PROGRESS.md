@@ -670,3 +670,40 @@ Her yeni geliştirme başlamadan önce okunmalıdır.
   - `npm run typecheck` ✅
   - `npm run build` ✅
 - **Status**: 🟢 Kritik performans, mantık ve TypeScript sorunları giderildi.
+
+- **Performans Optimizasyon Pass (2026-04-15)**:
+  Vercel Real Experience verileri incelendi. FCP/LCP sorunları tespit edildi ve giderildi:
+
+  **Sorunlu Rotalar (önceki):**
+  - `/` FCP: 3.87s (Poor), LCP: 3.94s (Needs Improvement)
+  - `/admin` FCP: 10.23s (Poor), LCP: 10.23s (Poor)
+  - `/dashboard` FCP: 3.47s (Poor), LCP: 3.48s (Needs Improvement)
+
+  **Yapılan Optimizasyonlar:**
+
+  1. **`site-header.tsx` — Suspense ile Search Ayrıştırması**:
+     - `getLiveMarketplaceReferenceData()` header'ı tamamen blokluyordu
+     - `HeaderSearch` ve `HeaderMobileNavWrapper` ayrı async bileşenlere taşındı
+     - Her ikisi de `<Suspense>` ile sarıldı — header shell anında render edilir, arama önerileri stream edilir
+     - Beklenen etki: `/` FCP ~1-1.5s iyileşme
+
+  2. **`/admin/page.tsx` — AdminRecentActionsSection Optimizasyonu**:
+     - `recentActions.length === 0` early return eklendi — boş durumda DB query yapılmıyor
+     - `allListingIds` deduplication optimize edildi
+     - `analyticsPromise` comment ile belgelendi — tüm promise'ler aynı anda başlatılıyor
+     - Beklenen etki: `/admin` LCP ~2-3s iyileşme
+
+  3. **`/dashboard/page.tsx` — revalidate Çakışması Giderildi**:
+     - `force-dynamic` + `revalidate = 60` birlikte kullanılıyordu (çakışma)
+     - `revalidate` kaldırıldı — `force-dynamic` ile tutarlı hale getirildi
+
+  4. **`/page.tsx` — LCP Image Priority Düzeltmesi**:
+     - Featured listings'de `priority={index < 4}` → `priority={index < 2}` olarak düzeltildi
+     - Sadece gerçekten fold-üstünde olan ilk 2 görsel `priority` alıyor
+     - Gereksiz preload azaltıldı
+
+- **Doğrulama**:
+  - `npm run lint` ✅ (0 errors, 0 warnings)
+  - `npm run typecheck` ✅
+  - `npm run build` ✅
+- **Status**: 🟢 FCP/LCP sorunları için kritik optimizasyonlar uygulandı. Deploy sonrası Vercel RES panelinden ölçüm alınmalı.

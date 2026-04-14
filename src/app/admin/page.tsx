@@ -29,6 +29,7 @@ export const dynamic = "force-dynamic";
 export default async function AdminOverviewPage() {
   await requireAdminUser();
 
+  // Tüm promise'leri aynı anda başlat — hiçbiri diğerini beklemez
   const analyticsPromise = getAdminAnalytics("30d").catch(() => null);
   const reportsPromise = getStoredReports().catch(() => []);
   const recentActionsPromise = getRecentAdminModerationActions(10).catch(() => []);
@@ -193,6 +194,11 @@ async function AdminRecentActionsSection({
   reportsPromise: Promise<Awaited<ReturnType<typeof getStoredReports>>>;
 }) {
   const [recentActions, storedReports] = await Promise.all([recentActionsPromise, reportsPromise]);
+
+  if (recentActions.length === 0) {
+    return <AdminRecentActions actions={[]} />;
+  }
+
   const actorIds = [...new Set(recentActions.map((action) => action.adminUserId))];
   const targetListingIds = [...new Set(recentActions.filter((action) => action.targetType === "listing").map((action) => action.targetId))];
   const reportListingIds = recentActions
@@ -200,11 +206,15 @@ async function AdminRecentActionsSection({
     .map((action) => storedReports.find((report) => report.id === action.targetId)?.listingId)
     .filter(Boolean) as string[];
 
+  const allListingIds = [...new Set([...targetListingIds, ...reportListingIds])];
+
   const admin = createSupabaseAdminClient();
   const [actorProfiles, actionListings] = await Promise.all([
-    actorIds.length > 0 ? admin.from("profiles").select("id, full_name").in("id", actorIds) : Promise.resolve({ data: [], error: null }),
-    [...targetListingIds, ...reportListingIds].length > 0
-      ? admin.from("listings").select("id, title, slug").in("id", [...new Set([...targetListingIds, ...reportListingIds])])
+    actorIds.length > 0
+      ? admin.from("profiles").select("id, full_name").in("id", actorIds)
+      : Promise.resolve({ data: [], error: null }),
+    allListingIds.length > 0
+      ? admin.from("listings").select("id, title, slug").in("id", allListingIds)
       : Promise.resolve({ data: [], error: null }),
   ]);
 
