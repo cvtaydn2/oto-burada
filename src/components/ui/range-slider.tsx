@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useRef, useState } from "react";
 import { cn } from "@/lib/utils";
 
 interface RangeSliderProps {
@@ -28,50 +28,58 @@ export function RangeSlider({
   unit = "",
   className,
 }: RangeSliderProps) {
-  // 1. Local state for immediate UI feedback (smooth movement)
-  const [localMin, setLocalMin] = useState(valueMin ?? min);
-  const [localMax, setLocalMax] = useState(valueMax ?? max);
+  // Local state only used during active drag for smooth UI feedback
+  const [dragMin, setDragMin] = useState<number | null>(null);
+  const [dragMax, setDragMax] = useState<number | null>(null);
   const [isDragging, setIsDragging] = useState(false);
   const [activeThumb, setActiveThumb] = useState<"min" | "max" | null>(null);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // 2. Sync local state with props when they change (e.g. from outside reset)
-  useEffect(() => {
-    if (!isDragging) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
-      setLocalMin(valueMin ?? min);
-      setLocalMax(valueMax ?? max);
-    }
-  }, [valueMin, valueMax, min, max, isDragging]);
+  // Display values: use drag state during drag, props otherwise
+  const displayMin = isDragging && dragMin !== null ? dragMin : (valueMin ?? min);
+  const displayMax = isDragging && dragMax !== null ? dragMax : (valueMax ?? max);
 
-  // 3. Debounced emit to parent (prevents excessive network/URL updates)
+  // Debounced emit to parent (prevents excessive network/URL updates)
   const debouncedEmit = useCallback(
     (emitMin: number, emitMax: number) => {
       if (debounceRef.current) clearTimeout(debounceRef.current);
       debounceRef.current = setTimeout(() => {
         onChangeMin(emitMin <= min ? undefined : emitMin);
         onChangeMax(emitMax >= max ? undefined : emitMax);
-      }, 500); // 500ms delay for smooth typing/sliding
+      }, 400);
     },
     [min, max, onChangeMin, onChangeMax],
   );
 
   const handleMinChange = (value: number) => {
-    const clamped = Math.min(value, localMax - step);
-    setLocalMin(clamped);
-    debouncedEmit(clamped, localMax);
+    const clamped = Math.min(value, displayMax - step);
+    setDragMin(clamped);
+    debouncedEmit(clamped, displayMax);
     setActiveThumb("min");
   };
 
   const handleMaxChange = (value: number) => {
-    const clamped = Math.max(value, localMin + step);
-    setLocalMax(clamped);
-    debouncedEmit(localMin, clamped);
+    const clamped = Math.max(value, displayMin + step);
+    setDragMax(clamped);
+    debouncedEmit(displayMin, clamped);
     setActiveThumb("max");
   };
 
-  const minPercent = ((localMin - min) / (max - min)) * 100;
-  const maxPercent = ((localMax - min) / (max - min)) * 100;
+  const handleDragStart = (thumb: "min" | "max") => {
+    setIsDragging(true);
+    setActiveThumb(thumb);
+    setDragMin(displayMin);
+    setDragMax(displayMax);
+  };
+
+  const handleDragEnd = () => {
+    setIsDragging(false);
+    setDragMin(null);
+    setDragMax(null);
+  };
+
+  const minPercent = ((displayMin - min) / (max - min)) * 100;
+  const maxPercent = ((displayMax - min) / (max - min)) * 100;
 
   const format = formatLabel ?? ((v: number) => `${v.toLocaleString("tr-TR")}${unit ? ` ${unit}` : ""}`);
 
@@ -79,13 +87,13 @@ export function RangeSlider({
     <div className={cn("space-y-3", className)}>
       <div className="flex items-center justify-between text-[13px] font-black italic text-slate-900 border-b border-slate-100 pb-1.5">
         <span className="flex flex-col">
-           <span className="text-[9px] font-black uppercase text-slate-400 tracking-widest leading-none mb-1">En Az</span>
-           {format(localMin)}
+          <span className="text-[9px] font-black uppercase text-slate-400 tracking-widest leading-none mb-1">En Az</span>
+          {format(displayMin)}
         </span>
         <div className="size-6 rounded-full bg-slate-50 flex items-center justify-center border border-slate-100 italic font-black text-slate-300">/</div>
         <span className="flex flex-col text-right">
-           <span className="text-[9px] font-black uppercase text-slate-400 tracking-widest leading-none mb-1">En Çok</span>
-           {format(localMax)}
+          <span className="text-[9px] font-black uppercase text-slate-400 tracking-widest leading-none mb-1">En Çok</span>
+          {format(displayMax)}
         </span>
       </div>
 
@@ -108,12 +116,12 @@ export function RangeSlider({
           min={min}
           max={max}
           step={step}
-          value={localMin}
+          value={displayMin}
           onChange={(e) => handleMinChange(Number(e.target.value))}
-          onMouseDown={() => { setIsDragging(true); setActiveThumb("min"); }}
-          onMouseUp={() => setIsDragging(false)}
-          onTouchStart={() => { setIsDragging(true); setActiveThumb("min"); }}
-          onTouchEnd={() => setIsDragging(false)}
+          onMouseDown={() => handleDragStart("min")}
+          onMouseUp={handleDragEnd}
+          onTouchStart={() => handleDragStart("min")}
+          onTouchEnd={handleDragEnd}
           className={cn(
             "pointer-events-none absolute left-0 h-6 w-full appearance-none bg-transparent outline-none",
             "[&::-webkit-slider-thumb]:pointer-events-auto [&::-webkit-slider-thumb]:h-5 [&::-webkit-slider-thumb]:w-5 [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:cursor-grab [&::-webkit-slider-thumb]:active:cursor-grabbing [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:border-2 [&::-webkit-slider-thumb]:border-white [&::-webkit-slider-thumb]:bg-primary [&::-webkit-slider-thumb]:shadow-lg [&::-webkit-slider-thumb]:transition-transform",
@@ -129,12 +137,12 @@ export function RangeSlider({
           min={min}
           max={max}
           step={step}
-          value={localMax}
+          value={displayMax}
           onChange={(e) => handleMaxChange(Number(e.target.value))}
-          onMouseDown={() => { setIsDragging(true); setActiveThumb("max"); }}
-          onMouseUp={() => setIsDragging(false)}
-          onTouchStart={() => { setIsDragging(true); setActiveThumb("max"); }}
-          onTouchEnd={() => setIsDragging(false)}
+          onMouseDown={() => handleDragStart("max")}
+          onMouseUp={handleDragEnd}
+          onTouchStart={() => handleDragStart("max")}
+          onTouchEnd={handleDragEnd}
           className={cn(
             "pointer-events-none absolute left-0 h-6 w-full appearance-none bg-transparent outline-none",
             "[&::-webkit-slider-thumb]:pointer-events-auto [&::-webkit-slider-thumb]:h-5 [&::-webkit-slider-thumb]:w-5 [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:cursor-grab [&::-webkit-slider-thumb]:active:cursor-grabbing [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:border-2 [&::-webkit-slider-thumb]:border-white [&::-webkit-slider-thumb]:bg-primary [&::-webkit-slider-thumb]:shadow-lg [&::-webkit-slider-thumb]:transition-transform",

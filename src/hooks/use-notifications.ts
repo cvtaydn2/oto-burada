@@ -36,7 +36,6 @@ export function useNotifications(userId?: string) {
           filter: `user_id=eq.${userId}`,
         },
         (payload: { new: { title: string; message: string } }) => {
-          console.log("New notification received:", payload.new);
           // Invalidate query to refetch or manually update cache
           queryClient.invalidateQueries({ queryKey: ["notifications", userId] });
           

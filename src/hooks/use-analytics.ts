@@ -19,7 +19,6 @@ declare global {
 export function useAnalytics() {
   const trackPageView = useCallback((page: string) => {
     if (typeof window !== "undefined") {
-      console.log("[Analytics] Page view:", page);
       if (window.__vercel_analytics) {
         window.__vercel_analytics.fire("page_view", { path: page });
       }
@@ -27,7 +26,6 @@ export function useAnalytics() {
   }, []);
 
   const trackEvent = useCallback((eventName: string, params?: AnalyticsEvent) => {
-    console.log(`[Analytics] ${eventName}`, params);
     if (typeof window !== "undefined" && window.__vercel_analytics) {
       window.__vercel_analytics.fire(eventName, params as Record<string, unknown>);
     }

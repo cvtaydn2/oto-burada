@@ -1,14 +1,14 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Save, Globe, Lock, Bell, Zap, LoaderCircle } from "lucide-react";
+import { Save, Globe, Lock, Bell, Zap, LoaderCircle, RefreshCw, AlertTriangle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
+import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
-import { PlatformSettings } from "@/services/admin/settings";
-import { updateAllPlatformSettings } from "@/services/admin/settings";
+import { PlatformSettings, updateAllPlatformSettings } from "@/services/admin/settings";
 import { useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
 
@@ -20,26 +20,49 @@ export function AdminSettingsForm({ initialSettings }: AdminSettingsFormProps) {
   const router = useRouter();
   const [settings, setSettings] = useState<PlatformSettings>(initialSettings);
   const [isSaving, setIsSaving] = useState(false);
+  const [isClearingCache, setIsClearingCache] = useState(false);
+  const [hasChanges, setHasChanges] = useState(false);
 
   // Sync state with server props after revalidation
   useEffect(() => {
     setSettings(initialSettings);
+    setHasChanges(false);
   }, [initialSettings]);
 
   const handleSave = async () => {
     setIsSaving(true);
     try {
-      await updateAllPlatformSettings(settings);
-      toast.success("Ayarlar başarıyla kaydedildi.");
-      router.refresh();
-      // Force a small delay for the feeling of "processing"
-      setTimeout(() => {
-        setIsSaving(false);
-      }, 500);
+      const result = await updateAllPlatformSettings(settings);
+      if (result.success) {
+        toast.success("Ayarlar başarıyla kaydedildi.");
+        setHasChanges(false);
+        router.refresh();
+      } else {
+        toast.error(result.error ?? "Ayarlar kaydedilemedi.");
+      }
     } catch (error) {
       toast.error("Ayarlar kaydedilirken bir hata oluştu.");
       console.error(error);
+    } finally {
       setIsSaving(false);
+    }
+  };
+
+  const handleClearCache = async () => {
+    setIsClearingCache(true);
+    try {
+      const res = await fetch("/api/admin/cache/clear", { method: "POST" });
+      const data = await res.json();
+      if (data.success) {
+        toast.success("Önbellek başarıyla temizlendi.");
+        router.refresh();
+      } else {
+        toast.error(data.error ?? "Önbellek temizlenemedi.");
+      }
+    } catch {
+      toast.error("Önbellek temizlenirken bir hata oluştu.");
+    } finally {
+      setIsClearingCache(false);
     }
   };
 
@@ -55,185 +78,232 @@ export function AdminSettingsForm({ initialSettings }: AdminSettingsFormProps) {
       ...prev,
       [category]: {
         ...prev[category],
-        [key]: value
-      }
+        [key]: value,
+      },
     }));
+    setHasChanges(true);
   };
 
   return (
     <div className={cn("space-y-6 transition-opacity duration-300", isSaving && "opacity-70 pointer-events-none")}>
+      {/* Header */}
       <section className="flex flex-col justify-between gap-4 md:flex-row md:items-end">
         <div>
-           <h1 className="text-2xl font-black text-slate-900">
-             Sistem Konfigürasyonu
-           </h1>
-          <p className="mt-1 text-sm text-slate-500 font-medium italic">Platformun global parametrelerini ve özellik bayraklarını yönetin.</p>
+          <h1 className="text-2xl font-black text-slate-900">Sistem Konfigürasyonu</h1>
+          <p className="mt-1 text-sm text-slate-500 font-medium italic">
+            Platformun global parametrelerini ve özellik bayraklarını yönetin.
+          </p>
         </div>
-        
-        <Button 
-          onClick={handleSave}
-          disabled={isSaving}
-          className="h-12 gap-2 rounded-xl px-6 text-sm font-bold bg-blue-600 hover:bg-blue-700 shadow-lg shadow-blue-100 transition-all hover:-translate-y-0.5"
-        >
-           {isSaving ? <LoaderCircle className="animate-spin" size={18} /> : <Save size={18} />}
-           Değişiklikleri Kaydet
-        </Button>
+
+        <div className="flex items-center gap-3">
+          {hasChanges && (
+            <Badge variant="outline" className="gap-1.5 border-amber-200 bg-amber-50 text-amber-700 font-bold text-[10px] uppercase tracking-widest">
+              <AlertTriangle size={11} />
+              Kaydedilmemiş değişiklikler
+            </Badge>
+          )}
+          <Button
+            onClick={handleSave}
+            disabled={isSaving || !hasChanges}
+            className="h-12 gap-2 rounded-xl px-6 text-sm font-bold bg-blue-600 hover:bg-blue-700 shadow-lg shadow-blue-100 transition-all hover:-translate-y-0.5 disabled:opacity-50 disabled:translate-y-0"
+          >
+            {isSaving ? <LoaderCircle className="animate-spin" size={18} /> : <Save size={18} />}
+            Değişiklikleri Kaydet
+          </Button>
+        </div>
       </section>
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-         {/* Site Appearance */}
-         <div className="space-y-6 rounded-[2rem] border border-slate-200 bg-white p-8 shadow-sm">
-            <div className="flex items-center gap-4 mb-2">
-               <div className="size-12 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center border border-blue-100">
-                  <Globe size={24} />
-               </div>
-               <h2 className="text-xl font-black text-slate-800">Genel Görünüm</h2>
-            </div>
-            
-            <div className="space-y-5">
-               <div className="space-y-2">
-                  <Label className="text-[11px] font-black text-slate-400 uppercase tracking-widest ml-1">Site Başlığı</Label>
-                  <Input 
-                    value={settings.general_appearance?.site_title}
-                    onChange={(e) => updateSubSetting("general_appearance", "site_title", e.target.value)}
-                    className="h-12 rounded-xl bg-slate-50 border-transparent focus:bg-white focus:border-blue-300 focus:ring-4 focus:ring-blue-50 font-bold" 
-                  />
-               </div>
-               <div className="space-y-2">
-                  <Label className="text-[11px] font-black text-slate-400 uppercase tracking-widest ml-1">Destek E-Posta</Label>
-                  <Input 
-                    value={settings.general_appearance?.support_email}
-                    onChange={(e) => updateSubSetting("general_appearance", "support_email", e.target.value)}
-                    className="h-12 rounded-xl bg-slate-50 border-transparent focus:bg-white focus:border-blue-300 focus:ring-4 focus:ring-blue-50 font-bold" 
-                  />
-               </div>
-               <div className="flex items-center justify-between rounded-2xl bg-slate-50 p-5 border border-slate-100">
-                  <div className="flex flex-col gap-1">
-                     <span className="text-sm font-black text-slate-900 uppercase tracking-tight">Bakım Modu</span>
-                     <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider italic">Siteyi geçici olarak dışa kapat</span>
-                  </div>
-                  <Switch 
-                    checked={settings.general_appearance?.maintenance_mode}
-                    onCheckedChange={(val) => updateSubSetting("general_appearance", "maintenance_mode", val)}
-                  />
-               </div>
-            </div>
-         </div>
 
-         {/* Moderation Policies */}
-         <div className="space-y-6 rounded-[2rem] border border-slate-200 bg-white p-8 shadow-sm">
-            <div className="flex items-center gap-4 mb-2">
-               <div className="size-12 rounded-2xl bg-amber-50 text-amber-600 flex items-center justify-center border border-amber-100">
-                  <Lock size={24} />
-               </div>
-               <h2 className="text-xl font-black text-slate-800">Moderasyon</h2>
+        {/* Genel Görünüm */}
+        <div className="space-y-6 rounded-[2rem] border border-slate-200 bg-white p-8 shadow-sm">
+          <div className="flex items-center gap-4 mb-2">
+            <div className="size-12 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center border border-blue-100">
+              <Globe size={24} />
             </div>
-            
-            <div className="space-y-5">
-               <div className="flex items-center justify-between rounded-2xl bg-slate-50 p-5 border border-slate-100">
-                  <div className="flex flex-col gap-1">
-                     <span className="text-sm font-black text-slate-900 uppercase tracking-tight">Otomatik Onay</span>
-                     <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider italic">Eski üyelerin ilanlarını otomatik yayınla</span>
-                  </div>
-                  <Switch 
-                    checked={settings.moderation_policies?.auto_approve_regulars}
-                    onCheckedChange={(val) => updateSubSetting("moderation_policies", "auto_approve_regulars", val)}
-                  />
-               </div>
-               <div className="flex items-center justify-between rounded-2xl bg-slate-50 p-5 border border-slate-100">
-                  <div className="flex flex-col gap-1">
-                     <span className="text-sm font-black text-slate-900 uppercase tracking-tight">VIN Kontrolü</span>
-                     <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider italic">API üzerinden gerçeklik testi yap</span>
-                  </div>
-                  <Switch 
-                    checked={settings.moderation_policies?.vin_check_enabled}
-                    onCheckedChange={(val) => updateSubSetting("moderation_policies", "vin_check_enabled", val)}
-                  />
-               </div>
-               <div className="flex items-center justify-between gap-4">
-                  <Label className="text-[11px] font-black text-slate-400 uppercase tracking-widest ml-1">Maksimum Ücretsiz İlan</Label>
-                  <Input 
-                    type="number" 
-                    value={settings.moderation_policies?.max_free_listings}
-                    onChange={(e) => updateSubSetting("moderation_policies", "max_free_listings", parseInt(e.target.value))}
-                    className="h-10 rounded-xl bg-slate-50 border-transparent focus:bg-white w-24 text-center font-black" 
-                  />
-               </div>
-            </div>
-         </div>
+            <h2 className="text-xl font-black text-slate-800">Genel Görünüm</h2>
+          </div>
 
-         {/* Notification Settings */}
-         <div className="space-y-6 rounded-[2rem] border border-slate-200 bg-white p-8 shadow-sm">
-            <div className="flex items-center gap-4 mb-2">
-               <div className="size-12 rounded-2xl bg-indigo-50 text-indigo-600 flex items-center justify-center border border-indigo-100">
-                  <Bell size={24} />
-               </div>
-               <h2 className="text-xl font-black text-slate-800">Bildirimler</h2>
+          <div className="space-y-5">
+            <div className="space-y-2">
+              <Label className="text-[11px] font-black text-slate-400 uppercase tracking-widest ml-1">Site Başlığı</Label>
+              <Input
+                value={settings.general_appearance?.site_title ?? ""}
+                onChange={(e) => updateSubSetting("general_appearance", "site_title", e.target.value)}
+                className="h-12 rounded-xl bg-slate-50 border-transparent focus:bg-white focus:border-blue-300 focus:ring-4 focus:ring-blue-50 font-bold"
+              />
             </div>
-            
-            <div className="space-y-4">
-               <div className="flex items-center justify-between rounded-2xl border border-slate-100 p-5">
-                  <div className="flex flex-col gap-1">
-                     <span className="text-sm font-black text-slate-900 uppercase tracking-tight">Slack Entegrasyonu</span>
-                     <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider italic">Yeni ilanlar için kanal bildirimi</span>
-                  </div>
-                  <Switch 
-                    checked={settings.notification_settings?.new_listing_slack}
-                    onCheckedChange={(val) => updateSubSetting("notification_settings", "new_listing_slack", val)}
-                  />
-               </div>
-               <div className="flex items-center justify-between rounded-2xl border border-slate-100 p-5">
-                  <div className="flex flex-col gap-1">
-                     <span className="text-sm font-black text-slate-900 uppercase tracking-tight">Rapor Uyarıları</span>
-                     <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider italic">Adminlere anlık email gönder</span>
-                  </div>
-                  <Switch 
-                    checked={settings.notification_settings?.report_email_alerts}
-                    onCheckedChange={(val) => updateSubSetting("notification_settings", "report_email_alerts", val)}
-                  />
-               </div>
+            <div className="space-y-2">
+              <Label className="text-[11px] font-black text-slate-400 uppercase tracking-widest ml-1">Destek E-Posta</Label>
+              <Input
+                type="email"
+                value={settings.general_appearance?.support_email ?? ""}
+                onChange={(e) => updateSubSetting("general_appearance", "support_email", e.target.value)}
+                className="h-12 rounded-xl bg-slate-50 border-transparent focus:bg-white focus:border-blue-300 focus:ring-4 focus:ring-blue-50 font-bold"
+              />
             </div>
-         </div>
 
-         {/* Advanced Performance */}
-         <div className="space-y-6 rounded-[2rem] border border-slate-200 bg-white p-8 shadow-sm">
-            <div className="flex items-center gap-4 mb-2">
-               <div className="size-12 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center border border-emerald-100">
-                  <Zap size={24} />
-               </div>
-               <h2 className="text-xl font-black text-slate-800">Performans</h2>
+            {/* Bakım Modu — kritik toggle, kırmızı uyarı ile */}
+            <div className={cn(
+              "flex items-center justify-between rounded-2xl p-5 border transition-colors",
+              settings.general_appearance?.maintenance_mode
+                ? "bg-red-50 border-red-200"
+                : "bg-slate-50 border-slate-100"
+            )}>
+              <div className="flex flex-col gap-1">
+                <span className={cn(
+                  "text-sm font-black uppercase tracking-tight",
+                  settings.general_appearance?.maintenance_mode ? "text-red-700" : "text-slate-900"
+                )}>
+                  Bakım Modu
+                  {settings.general_appearance?.maintenance_mode && (
+                    <span className="ml-2 text-[10px] bg-red-100 text-red-600 px-2 py-0.5 rounded-full font-black uppercase tracking-widest">AKTİF</span>
+                  )}
+                </span>
+                <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider italic">
+                  Siteyi geçici olarak dışa kapat
+                </span>
+              </div>
+              <Switch
+                checked={settings.general_appearance?.maintenance_mode ?? false}
+                onCheckedChange={(val) => updateSubSetting("general_appearance", "maintenance_mode", val)}
+              />
             </div>
-            
-            <div className="space-y-5">
-               <div className="flex items-center justify-between rounded-2xl border-2 border-dashed border-slate-100 p-5">
-                  <div className="flex flex-col gap-1">
-                     <span className="text-sm font-black text-slate-900 uppercase tracking-tight">Önbellek Temizle</span>
-                     <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider italic">Redis kayıtlarını sıfırla</span>
-                  </div>
-                  <Button 
-                    variant="outline" 
-                    className="font-black text-[10px] tracking-widest text-slate-600 border-slate-200 hover:bg-red-50 hover:text-red-600 hover:border-red-200 transition-all"
-                    onClick={async () => {
-                      try {
-                        await fetch("/api/admin/market/sync", { method: "POST" });
-                        toast.success("Önbellek temizlendi.");
-                      } catch {
-                        toast.error("Önbellek temizlenemedi.");
-                      }
-                    }}
-                  >
-                    SIFIRLA
-                  </Button>
-               </div>
-               <div className="flex items-center justify-between rounded-2xl border border-slate-100 p-5">
-                  <div className="flex flex-col gap-1">
-                     <span className="text-sm font-black text-slate-900 uppercase tracking-tight">Hata Ayıklama (Debug)</span>
-                     <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider italic">Detaylı sunucu loglarını aktif et</span>
-                  </div>
-                  <Switch defaultChecked />
-               </div>
+          </div>
+        </div>
+
+        {/* Moderasyon */}
+        <div className="space-y-6 rounded-[2rem] border border-slate-200 bg-white p-8 shadow-sm">
+          <div className="flex items-center gap-4 mb-2">
+            <div className="size-12 rounded-2xl bg-amber-50 text-amber-600 flex items-center justify-center border border-amber-100">
+              <Lock size={24} />
             </div>
-         </div>
+            <h2 className="text-xl font-black text-slate-800">Moderasyon</h2>
+          </div>
+
+          <div className="space-y-5">
+            <div className="flex items-center justify-between rounded-2xl bg-slate-50 p-5 border border-slate-100">
+              <div className="flex flex-col gap-1">
+                <span className="text-sm font-black text-slate-900 uppercase tracking-tight">Otomatik Onay</span>
+                <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider italic">Eski üyelerin ilanlarını otomatik yayınla</span>
+              </div>
+              <Switch
+                checked={settings.moderation_policies?.auto_approve_regulars ?? false}
+                onCheckedChange={(val) => updateSubSetting("moderation_policies", "auto_approve_regulars", val)}
+              />
+            </div>
+            <div className="flex items-center justify-between rounded-2xl bg-slate-50 p-5 border border-slate-100">
+              <div className="flex flex-col gap-1">
+                <span className="text-sm font-black text-slate-900 uppercase tracking-tight">VIN Kontrolü</span>
+                <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider italic">API üzerinden gerçeklik testi yap</span>
+              </div>
+              <Switch
+                checked={settings.moderation_policies?.vin_check_enabled ?? false}
+                onCheckedChange={(val) => updateSubSetting("moderation_policies", "vin_check_enabled", val)}
+              />
+            </div>
+            <div className="flex items-center justify-between gap-4">
+              <Label className="text-[11px] font-black text-slate-400 uppercase tracking-widest ml-1">Maksimum Ücretsiz İlan</Label>
+              <Input
+                type="number"
+                min={1}
+                max={100}
+                value={settings.moderation_policies?.max_free_listings ?? 3}
+                onChange={(e) => {
+                  const val = parseInt(e.target.value);
+                  if (!isNaN(val) && val > 0) {
+                    updateSubSetting("moderation_policies", "max_free_listings", val);
+                  }
+                }}
+                className="h-10 rounded-xl bg-slate-50 border-transparent focus:bg-white w-24 text-center font-black"
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* Bildirimler */}
+        <div className="space-y-6 rounded-[2rem] border border-slate-200 bg-white p-8 shadow-sm">
+          <div className="flex items-center gap-4 mb-2">
+            <div className="size-12 rounded-2xl bg-indigo-50 text-indigo-600 flex items-center justify-center border border-indigo-100">
+              <Bell size={24} />
+            </div>
+            <h2 className="text-xl font-black text-slate-800">Bildirimler</h2>
+          </div>
+
+          <div className="space-y-4">
+            <div className="flex items-center justify-between rounded-2xl border border-slate-100 p-5">
+              <div className="flex flex-col gap-1">
+                <span className="text-sm font-black text-slate-900 uppercase tracking-tight">Slack Entegrasyonu</span>
+                <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider italic">Yeni ilanlar için kanal bildirimi</span>
+              </div>
+              <Switch
+                checked={settings.notification_settings?.new_listing_slack ?? false}
+                onCheckedChange={(val) => updateSubSetting("notification_settings", "new_listing_slack", val)}
+              />
+            </div>
+            <div className="flex items-center justify-between rounded-2xl border border-slate-100 p-5">
+              <div className="flex flex-col gap-1">
+                <span className="text-sm font-black text-slate-900 uppercase tracking-tight">Rapor Uyarıları</span>
+                <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider italic">Adminlere anlık email gönder</span>
+              </div>
+              <Switch
+                checked={settings.notification_settings?.report_email_alerts ?? false}
+                onCheckedChange={(val) => updateSubSetting("notification_settings", "report_email_alerts", val)}
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* Performans */}
+        <div className="space-y-6 rounded-[2rem] border border-slate-200 bg-white p-8 shadow-sm">
+          <div className="flex items-center gap-4 mb-2">
+            <div className="size-12 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center border border-emerald-100">
+              <Zap size={24} />
+            </div>
+            <h2 className="text-xl font-black text-slate-800">Performans</h2>
+          </div>
+
+          <div className="space-y-5">
+            {/* Önbellek Temizle — ayrı API çağrısı, kaydet butonuna bağlı değil */}
+            <div className="flex items-center justify-between rounded-2xl border-2 border-dashed border-slate-100 p-5">
+              <div className="flex flex-col gap-1">
+                <span className="text-sm font-black text-slate-900 uppercase tracking-tight">Önbellek Temizle</span>
+                <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider italic">
+                  Tüm sayfa önbelleklerini sıfırla
+                </span>
+              </div>
+              <Button
+                variant="outline"
+                size="sm"
+                disabled={isClearingCache}
+                className="font-black text-[10px] tracking-widest text-slate-600 border-slate-200 hover:bg-red-50 hover:text-red-600 hover:border-red-200 transition-all gap-1.5"
+                onClick={handleClearCache}
+              >
+                {isClearingCache
+                  ? <LoaderCircle className="animate-spin" size={13} />
+                  : <RefreshCw size={13} />
+                }
+                SIFIRLA
+              </Button>
+            </div>
+
+            {/* Debug Mode — state'e bağlı, kaydet ile persist ediliyor */}
+            <div className="flex items-center justify-between rounded-2xl border border-slate-100 p-5">
+              <div className="flex flex-col gap-1">
+                <span className="text-sm font-black text-slate-900 uppercase tracking-tight">
+                  Hata Ayıklama (Debug)
+                </span>
+                <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider italic">
+                  Detaylı sunucu loglarını aktif et
+                </span>
+              </div>
+              <Switch
+                checked={settings.performance?.debug_mode ?? false}
+                onCheckedChange={(val) => updateSubSetting("performance", "debug_mode", val)}
+              />
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );

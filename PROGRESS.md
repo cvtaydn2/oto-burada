@@ -14,6 +14,21 @@ Her yeni geliştirme başlamadan önce okunmalıdır.
 
 ## Proje Durumu
 
+- **Semantik Kod Temizliği (2026-04-15)**:
+  1. **console.log Temizliği**: `use-notifications.ts`, `use-analytics.ts`, `lib/analytics.tsx` içindeki tüm production console.log'ları kaldırıldı.
+  2. **any Type Düzeltmesi**: `services/admin/users.ts` içindeki `any` type kullanımı kaldırıldı; `ProfileRow` interface'i tanımlandı.
+  3. **Unused Var Düzeltmesi**: `lib/auth/profile-actions.ts` içindeki `eslint-disable @typescript-eslint/no-unused-vars` kaldırıldı; parametre `_previousState` olarak yeniden adlandırıldı.
+  4. **setState-in-effect Düzeltmesi**: `use-push-notifications.ts` içindeki `useEffect` + `setState` anti-pattern'i kaldırıldı; lazy initial state ile çözüldü.
+  5. **RangeSlider Refactor**: `range-slider.tsx` içindeki `useEffect` + `setState` anti-pattern'i kaldırıldı; drag state yönetimi `useRef` + event handler tabanlı yaklaşıma taşındı.
+- **Doğrulama**:
+  - `npm run lint` ✅ (0 errors, 0 warnings)
+  - `npm run typecheck` ✅
+  - `npm run build` ✅
+- **Sonraki Adım**:
+  - `src/lib/analytics.tsx` içindeki `G-XXXXXXXXXX` placeholder GA4 ID gerçek ID ile değiştirilmeli (config/env sorunu).
+  - Contact sayfasındaki sosyal medya linkleri `href="#"` → gerçek URL'ler ile güncellenmeli.
+  - Blog sayfası statik içerik sorunu ele alınabilir.
+
 - **Data Integrity & UX Pass (2026-04-14)**:
   1. **Sahte Homepage Verisi Kaldırıldı**: Ana sayfadaki sabit “popüler kategoriler” kartları kaldırıldı; marka ve şehir keşif alanları artık doğrudan Supabase reference verisinden besleniyor.
   2. **Hero ve Reference Canlılaştırma**: `HomeHero` şehir listesi artık canlı reference datasından geliyor. `live-reference-data` içindeki fallback mock brand/city dönüşü kaldırıldı; boşsa boş, varsa DB verisi gösteriliyor.

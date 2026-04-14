@@ -1,23 +1,10 @@
 "use server";
 
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+import type { PlatformSettings } from "./settings-types";
+import { defaultPlatformSettings } from "./settings-types";
 
-export interface PlatformSettings {
-  general_appearance: {
-    site_title: string;
-    support_email: string;
-    maintenance_mode: boolean;
-  };
-  moderation_policies: {
-    auto_approve_regulars: boolean;
-    vin_check_enabled: boolean;
-    max_free_listings: number;
-  };
-  notification_settings: {
-    new_listing_slack: boolean;
-    report_email_alerts: boolean;
-  };
-}
+export type { PlatformSettings } from "./settings-types";
 
 type PlatformSettingsKey = keyof PlatformSettings;
 type PlatformSettingsValue = PlatformSettings[PlatformSettingsKey];
@@ -27,73 +14,89 @@ interface PlatformSettingRow {
   value: PlatformSettingsValue;
 }
 
-const defaultPlatformSettings: PlatformSettings = {
-  general_appearance: {
-    site_title: "OtoBurada",
-    support_email: "destek@otoburada.com",
-    maintenance_mode: false,
-  },
-  moderation_policies: {
-    auto_approve_regulars: false,
-    vin_check_enabled: false,
-    max_free_listings: 3,
-  },
-  notification_settings: {
-    new_listing_slack: false,
-    report_email_alerts: true,
-  },
-};
-
 export async function getPlatformSettings(): Promise<PlatformSettings> {
-  const supabase = await createSupabaseServerClient();
-  const { data } = await supabase.from("platform_settings").select("*");
+  try {
+    const supabase = await createSupabaseServerClient();
+    const { data, error } = await supabase.from("platform_settings").select("*");
 
-  const settings: Partial<PlatformSettings> = {};
-  (data as PlatformSettingRow[] | null)?.forEach((item) => {
-    if (item.key === "general_appearance") {
-      settings.general_appearance = item.value as PlatformSettings["general_appearance"];
+    // Table may not exist yet — return defaults gracefully
+    if (error) {
+      console.warn("platform_settings table not available, using defaults:", error.message);
+      return defaultPlatformSettings;
     }
-    if (item.key === "moderation_policies") {
-      settings.moderation_policies = item.value as PlatformSettings["moderation_policies"];
-    }
-    if (item.key === "notification_settings") {
-      settings.notification_settings = item.value as PlatformSettings["notification_settings"];
-    }
-  });
 
-  return {
-    general_appearance: {
-      ...defaultPlatformSettings.general_appearance,
-      ...settings.general_appearance,
-    },
-    moderation_policies: {
-      ...defaultPlatformSettings.moderation_policies,
-      ...settings.moderation_policies,
-    },
-    notification_settings: {
-      ...defaultPlatformSettings.notification_settings,
-      ...settings.notification_settings,
-    },
-  };
+    const settings: Partial<PlatformSettings> = {};
+    (data as PlatformSettingRow[] | null)?.forEach((item) => {
+      if (item.key === "general_appearance") {
+        settings.general_appearance = item.value as PlatformSettings["general_appearance"];
+      }
+      if (item.key === "moderation_policies") {
+        settings.moderation_policies = item.value as PlatformSettings["moderation_policies"];
+      }
+      if (item.key === "notification_settings") {
+        settings.notification_settings = item.value as PlatformSettings["notification_settings"];
+      }
+      if (item.key === "performance") {
+        settings.performance = item.value as PlatformSettings["performance"];
+      }
+    });
+
+    return {
+      general_appearance: {
+        ...defaultPlatformSettings.general_appearance,
+        ...settings.general_appearance,
+      },
+      moderation_policies: {
+        ...defaultPlatformSettings.moderation_policies,
+        ...settings.moderation_policies,
+      },
+      notification_settings: {
+        ...defaultPlatformSettings.notification_settings,
+        ...settings.notification_settings,
+      },
+      performance: {
+        ...defaultPlatformSettings.performance,
+        ...settings.performance,
+      },
+    };
+  } catch {
+    return defaultPlatformSettings;
+  }
 }
 
-export async function updateAllPlatformSettings(settings: PlatformSettings) {
-  const supabase = await createSupabaseServerClient();
-  
-  const updates = [
-    { key: "general_appearance", value: settings.general_appearance, updated_at: new Date().toISOString() },
-    { key: "moderation_policies", value: settings.moderation_policies, updated_at: new Date().toISOString() },
-    { key: "notification_settings", value: settings.notification_settings, updated_at: new Date().toISOString() },
-  ];
+export async function updateAllPlatformSettings(
+  settings: PlatformSettings,
+): Promise<{ success: boolean; error?: string }> {
+  try {
+    const supabase = await createSupabaseServerClient();
 
-  const { error } = await supabase
-    .from("platform_settings")
-    .upsert(updates);
-    
-  if (error) throw error;
-  
-  const { revalidatePath } = await import("next/cache");
-  revalidatePath("/admin/settings");
-  
-  return { success: true };
+    const updates = [
+      { key: "general_appearance", value: settings.general_appearance, updated_at: new Date().toISOString() },
+      { key: "moderation_policies", value: settings.moderation_policies, updated_at: new Date().toISOString() },
+      { key: "notification_settings", value: settings.notification_settings, updated_at: new Date().toISOString() },
+      { key: "performance", value: settings.performance, updated_at: new Date().toISOString() },
+    ];
+
+    const { error } = await supabase
+      .from("platform_settings")
+      .upsert(updates, { onConflict: "key" });
+
+    if (error) {
+      if (error.code === "42P01") {
+        return {
+          success: false,
+          error: "platform_settings tablosu henüz oluşturulmamış. Lütfen DB migration çalıştırın.",
+        };
+      }
+      return { success: false, error: error.message };
+    }
+
+    const { revalidatePath } = await import("next/cache");
+    revalidatePath("/admin/settings");
+
+    return { success: true };
+  } catch (err) {
+    const message = err instanceof Error ? err.message : "Bilinmeyen hata";
+    return { success: false, error: message };
+  }
 }

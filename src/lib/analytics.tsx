@@ -54,8 +54,6 @@ export function trackEvent({ category, action, label, value, metadata }: Analyti
 
   if (isGAConfigured()) {
     window.gtag("event", action, eventData);
-  } else {
-    console.log("[Analytics]", action, eventData);
   }
 }
 

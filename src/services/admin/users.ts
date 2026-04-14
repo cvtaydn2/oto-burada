@@ -4,6 +4,35 @@ import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { revalidatePath } from "next/cache";
 import { Profile } from "@/types/domain";
 
+interface ProfileRow {
+  id: string;
+  full_name: string | null;
+  phone: string | null;
+  city: string | null;
+  avatar_url: string | null;
+  email_verified: boolean | null;
+  phone_verified: boolean | null;
+  identity_verified: boolean | null;
+  is_verified: boolean | null;
+  role: string | null;
+  user_type: string | null;
+  balance_credits: number | null;
+  tc_verified_at: string | null;
+  eids_id: string | null;
+  business_name: string | null;
+  business_address: string | null;
+  business_logo_url: string | null;
+  business_description: string | null;
+  tax_id: string | null;
+  tax_office: string | null;
+  website_url: string | null;
+  verified_business: boolean | null;
+  business_slug: string | null;
+  is_banned: boolean | null;
+  created_at: string;
+  updated_at: string;
+}
+
 export async function getAllUsers(query?: string) {
   const supabase = await createSupabaseServerClient();
   
@@ -23,8 +52,7 @@ export async function getAllUsers(query?: string) {
     return [];
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  return (profiles || []).map((p: any) => ({
+  return (profiles || []).map((p: ProfileRow) => ({
     id: p.id,
     fullName: p.full_name || "",
     phone: p.phone || "",

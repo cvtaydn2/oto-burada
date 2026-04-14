@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useCallback } from "react";
 
 interface PushNotificationState {
   permission: NotificationPermission | null;
@@ -18,22 +18,19 @@ interface PushNotificationOptions {
 }
 
 export function usePushNotifications() {
-  const [state, setState] = useState<PushNotificationState>({
-    permission: null,
-    token: null,
-    isSupported: false,
+  const [state, setState] = useState<PushNotificationState>(() => {
+    if (typeof window === "undefined") {
+      return { permission: null, token: null, isSupported: false };
+    }
+    const supported = "Notification" in window;
+    return {
+      permission: supported ? Notification.permission : null,
+      token: null,
+      isSupported: supported,
+    };
   });
 
-  useEffect(() => {
-    if (typeof window !== "undefined") {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
-      setState(prev => ({
-        ...prev,
-        isSupported: "Notification" in window,
-        permission: Notification?.permission || null,
-      }));
-    }
-  }, []);
+  // No useEffect needed — permission is read synchronously on mount via lazy init
 
   const requestPermission = useCallback(async (): Promise<boolean> => {
     if (!("Notification" in window)) return false;
