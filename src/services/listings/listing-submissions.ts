@@ -97,7 +97,7 @@ const listingSelect = `
   whatsapp_phone,
   year,
   vin,
-  profiles:seller_id (
+  profiles!seller_id (
     full_name,
     phone,
     city,
@@ -132,6 +132,16 @@ const legacyListingSelect = `
   featured,
   created_at,
   updated_at,
+  market_price_index,
+  car_trim,
+  vin,
+  tramer_amount,
+  damage_status_json,
+  view_count,
+  bumped_at,
+  featured_until,
+  urgent_until,
+  highlighted_until,
   listing_images (
     id,
     listing_id,
@@ -356,6 +366,7 @@ export async function getDatabaseListings(options?: {
 
   const admin = createSupabaseAdminClient();
   const applyListingQueryOptions = (selectClause: string) => {
+    console.log("[getDatabaseListings] Options:", JSON.stringify(options));
     let query = admin.from("listings").select(selectClause);
 
     const sellerId = options?.sellerId ?? options?.filters?.sellerId;
@@ -494,20 +505,20 @@ export async function getDatabaseListings(options?: {
   const primaryResult = await applyListingQueryOptions(listingSelect).returns<ListingRow[]>();
 
   if (primaryResult.error) {
-    console.error("Database listings query failed:", primaryResult.error);
+    console.error("[getDatabaseListings] Primary query failed:", primaryResult.error.message, primaryResult.error.details, primaryResult.error.hint);
   }
-
-  if (!primaryResult.error && primaryResult.data && primaryResult.data.length > 0) {
+  
+  if (primaryResult.data && primaryResult.data.length > 0) {
     return primaryResult.data.map(mapListingRow);
   }
 
-  if (!primaryResult.error?.message?.includes("column listings.")) {
-    return null;
-  }
-
+  // Fallback if primary fails or returns no data (could be schema mismatch)
   const fallbackResult = await applyListingQueryOptions(legacyListingSelect).returns<ListingRow[]>();
 
   if (fallbackResult.error || !fallbackResult.data) {
+    if (fallbackResult.error) {
+       console.error("[getDatabaseListings] Fallback query failed:", fallbackResult.error.message);
+    }
     return null;
   }
 

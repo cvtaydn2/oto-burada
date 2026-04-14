@@ -2,6 +2,16 @@ import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { hasSupabaseAdminEnv } from "@/lib/supabase/env";
 
 export interface AdminAnalyticsData {
+  kpis: {
+    totalListings: number;
+    previousPeriodListings: number;
+    totalUsers: number;
+    previousPeriodUsers: number;
+    totalRevenue: number;
+    previousPeriodRevenue: number;
+    pendingApproval: number;
+    professionalUsers: number;
+  };
   listingsByBrand: { brand: string; count: number }[];
   listingsByCity: { city: string; count: number }[];
   listingsByStatus: { status: string; count: number }[];
@@ -29,6 +39,7 @@ export async function getAdminAnalytics(range: string = "30d"): Promise<AdminAna
   const now = new Date();
   const rangeDate = new Date(now.getTime() - days * 24 * 60 * 60 * 1000);
   const rangeStart = rangeDate.toISOString();
+  const prevRangeStart = new Date(rangeDate.getTime() - days * 24 * 60 * 60 * 1000).toISOString();
 
   // Optimized parallel fetching using specific selects and counts
   const [
@@ -42,11 +53,14 @@ export async function getAdminAnalytics(range: string = "30d"): Promise<AdminAna
     { data: trendData },
     { count: newUsersRecent },
     { count: newListingsRecent },
-    { data: marketStatsResult }
+    { data: marketStatsResult },
+    // KPI specific counts
+    { count: prevUserCount },
+    { count: prevListingCount },
+    { data: prevPayments },
+    { count: pendingApprovalCount },
+    { count: professionalUserCount }
   ] = await Promise.all([
-    // Grouping by brand/city/status is hard in PostgREST without RPC, 
-    // but we can at least fetch only what we need for the top ones.
-    // For now we'll use a slightly better select
     admin.from("listings").select("brand").limit(1000), 
     admin.from("listings").select("city").limit(1000),
     admin.from("listings").select("status"),
@@ -54,11 +68,17 @@ export async function getAdminAnalytics(range: string = "30d"): Promise<AdminAna
     admin.from("listings").select("*", { count: "exact", head: true }),
     admin.from("reports").select("*", { count: "exact", head: true }),
     admin.from("payments").select("amount").eq("status", "success"),
-    // For trends, we only fetch the last 'days'
     admin.from("listings").select("created_at").gte("created_at", rangeStart),
     admin.from("profiles").select("*", { count: "exact", head: true }).gte("created_at", rangeStart),
     admin.from("listings").select("*", { count: "exact", head: true }).gte("created_at", rangeStart),
-    admin.from("market_stats").select("brand, avg_price").limit(20)
+    admin.from("market_stats").select("brand, avg_price").limit(20),
+    // Historical counts for change calculation
+    admin.from("profiles").select("*", { count: "exact", head: true }).lt("created_at", rangeStart).gte("created_at", prevRangeStart),
+    admin.from("listings").select("*", { count: "exact", head: true }).lt("created_at", rangeStart).gte("created_at", prevRangeStart),
+    admin.from("payments").select("amount").eq("status", "success").lt("created_at", rangeStart).gte("created_at", prevRangeStart),
+    // Segmented counts
+    admin.from("listings").select("*", { count: "exact", head: true }).eq("status", "pending"),
+    admin.from("profiles").select("*", { count: "exact", head: true }).eq("user_type", "professional")
   ]);
 
   // brand/city/status mapping (optimized)
@@ -83,7 +103,8 @@ export async function getAdminAnalytics(range: string = "30d"): Promise<AdminAna
     count,
   }));
 
-  const totalRevenue = payments?.reduce((sum, p) => sum + Number(p.amount), 0) ?? 0;
+  const totalRevenueBase = payments?.reduce((sum, p) => sum + Number(p.amount), 0) ?? 0;
+  const prevRevenueBase = prevPayments?.reduce((sum, p) => sum + Number(p.amount), 0) ?? 0;
 
   // Trend mapping for the selected range
   const trendDaysArr = Array.from({ length: Math.min(days, 14) }, (_, i) => {
@@ -106,17 +127,26 @@ export async function getAdminAnalytics(range: string = "30d"): Promise<AdminAna
     .slice(0, 5);
 
   return {
+    kpis: {
+      totalListings: listingCount ?? 0,
+      previousPeriodListings: prevListingCount ?? 0,
+      totalUsers: userCount ?? 0,
+      previousPeriodUsers: prevUserCount ?? 0,
+      totalRevenue: totalRevenueBase,
+      previousPeriodRevenue: prevRevenueBase,
+      pendingApproval: pendingApprovalCount ?? 0,
+      professionalUsers: professionalUserCount ?? 0,
+    },
     listingsByBrand,
     listingsByCity,
     listingsByStatus,
     totalUsers: userCount ?? 0,
     totalListings: listingCount ?? 0,
     totalReports: reportCount ?? 0,
-    totalRevenue,
+    totalRevenue: totalRevenueBase,
     userTrend: newUsersRecent ? Math.round((newUsersRecent / Math.max(1, (userCount ?? 1) - newUsersRecent)) * 100) : 0,
     listingTrend: newListingsRecent ? Math.round((newListingsRecent / Math.max(1, (listingCount ?? 1) - newListingsRecent)) * 100) : 0,
     recentTrends: trends,
     marketTrends,
   };
 }
-

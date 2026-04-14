@@ -21,7 +21,9 @@ export async function getMarketplaceListingsByIds(ids: string[]) {
 }
 
 export async function getMarketplaceListingBySlug(slug: string) {
+  console.log(`[getMarketplaceListingBySlug] Slug: ${slug}`);
   const storedListing = await getStoredListingBySlug(slug);
+  console.log(`[getMarketplaceListingBySlug] Stored listing found: ${!!storedListing}, Status: ${storedListing?.status}`);
 
   if (storedListing?.status === "approved") {
     return storedListing;

@@ -452,6 +452,21 @@ Fix UI bugs and populate the marketplace with high-quality data.
 
 ---
 
+## Phase 27 — Build Stabilization & Data Resilience
+
+### Task 27.1 — Analytics & Data Fetching Hardening
+Resolve build-time type errors and runtime 404 issues in listing retrieval.
+- [x] Refactor Admin Analytics service and client for type safety.
+- [x] Fix Supabase join syntax in `listingSelect`.
+- [x] Implement aggressive fallback logic for data fetching.
+
+#### Acceptance Criteria
+- `npm run build` passes without errors.
+- Listing detail pages load reliably even during schema drift.
+- Admin analytics dashboard accurately reflects current and historical KPIs.
+
+---
+
 ## Final Definition of Done
 The MVP is complete when:
 - user can register and sign in

@@ -14,6 +14,19 @@ Her yeni geliştirme başlamadan önce okunmalıdır.
 
 ## Proje Durumu
 
+### 2026-04-14 Production Build Stabilization & Data Fetching Hardening (Completed)
+- **Odak**: Üretim build’ini engelleyen kritik TypeScript hatalarının giderilmesi ve ilan detay sayfasındaki 404 sorunlarının kalıcı olarak çözülmesi.
+- **Uygulananan İyileştirmeler**:
+  1. **Analytics Stabilizasyonu**: `AdminAnalyticsData` arayüzü ve `getAdminAnalytics` servisi, frontend’in beklediği `kpis` (temel performans göstergeleri) yapısını içerecek şekilde tamamen refaktör edildi. Artık mevcut ve tarihsel veri (period karşılaştırması) paralel olarak çekiliyor.
+  2. **Supabase Join Onarımı**: `listing-submissions.ts` içindeki `listingSelect` sorgusu, `profiles!seller_id (*)` explicit syntax’ına taşınarak join kaynaklı veri çekme hataları (404 sebebi) giderildi.
+  3. **Hata Yönetimi & Fallback**: `getDatabaseListings` fonksiyonu, şema uyumsuzlukları veya join hataları durumunda otomatik olarak `legacyListingSelect` (basit/güvenli sorgu) moduna geçecek şekilde agresif bir fallback mekanizmasına kavuşturuldu.
+  4. **Build Fix**: `AdminAnalyticsClient` bileşenindeki tip uyuşmazlıkları ve eksik prop tanımları giderilerek `npm run build` süreci başarıyla tamamlandı.
+- **Doğrulama**:
+  - `npm run build` ✅ Success (Exit code 0)
+  - `npm run typecheck` ✅ Success
+  - `getAdminAnalytics` Unit Test / DB Check ✅ Parallel query success
+- **Status**: 🚀 **Production Build Stabilize Edildi.** İlan detay sayfalarındaki veri çekme direnci artırıldı ve admin paneli veri yapısı frontend ile tam uyumlu hale getirildi.
+
 ### 2026-04-14 Production Hardening & Full System Verification (Completed)
 - **Odak**: OtoBurada platformunun her iki (admin ve public) tarafında tüm TypeScript ve linting hatalarının giderilmesi, performans optimizasyonu ve canlı veri doğrulaması.
 - **Uygulanan İyileştirmeler**:
