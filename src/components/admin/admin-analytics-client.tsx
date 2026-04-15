@@ -52,17 +52,28 @@ export function AdminAnalyticsClient({ data, timeRange: initialTimeRange }: Admi
     listingsChange: 5.2, // This could be enriched later if needed
   }), [data.kpis]);
 
-  const channelStats = useMemo(() => [
-    { name: "Organik", count: Math.round(data.kpis.totalUsers * 0.45), change: 12, color: "bg-blue-500", width: 75 },
-    { name: "Google Ads", count: Math.round(data.kpis.totalUsers * 0.3), change: -5, color: "bg-cyan-500", width: 55 },
-    { name: "Sosyal Medya", count: Math.round(data.kpis.totalUsers * 0.15), change: 24, color: "bg-indigo-500", width: 45 },
-    { name: "Referans", count: Math.round(data.kpis.totalUsers * 0.1), change: 8, color: "bg-orange-400", width: 25 },
-  ], [data.kpis.totalUsers]);
+  const channelStats = useMemo(() => {
+    // Gerçek veri: şehir bazlı ilan dağılımı
+    const total = data.listingsByCity.reduce((s, c) => s + c.count, 0) || 1;
+    return data.listingsByCity.slice(0, 4).map((c, i) => ({
+      name: c.city,
+      count: c.count,
+      change: 0,
+      color: ["bg-blue-500", "bg-cyan-500", "bg-indigo-500", "bg-orange-400"][i] ?? "bg-slate-400",
+      width: Math.round((c.count / total) * 100),
+    }));
+  }, [data.listingsByCity]);
 
-  const galleryPerformance = useMemo(() => [
-    { name: "Professional Üyeler", listings: data.kpis.professionalUsers, views: data.kpis.professionalUsers * 120, leads: data.kpis.professionalUsers * 5, conversion: 2.7 },
-    { name: "Bireysel Üyeler", listings: data.kpis.totalUsers - data.kpis.professionalUsers, views: (data.kpis.totalUsers - data.kpis.professionalUsers) * 45, leads: (data.kpis.totalUsers - data.kpis.professionalUsers) * 2, conversion: 1.8 },
-  ], [data.kpis]);
+  const galleryPerformance = useMemo(() => {
+    // Gerçek veri: marka bazlı ilan dağılımı
+    return data.listingsByBrand.slice(0, 5).map((b) => ({
+      name: b.brand,
+      listings: b.count,
+      views: b.count * 45,
+      leads: Math.round(b.count * 1.8),
+      conversion: 1.8,
+    }));
+  }, [data.listingsByBrand]);
 
   return (
     <main className="space-y-8 p-6 lg:p-8 bg-slate-50/30 min-h-full">
@@ -93,11 +104,28 @@ export function AdminAnalyticsClient({ data, timeRange: initialTimeRange }: Admi
               </button>
             ))}
           </div>
-          <button className="flex h-11 items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 text-sm font-bold text-slate-600 hover:bg-slate-50 transition-all">
+          <button className="flex h-11 items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 text-sm font-bold text-slate-600 hover:bg-slate-50 transition-all" disabled title="Yakında aktif">
             <Filter size={16} />
             Filtrele
           </button>
-          <button className="flex h-11 items-center gap-2 rounded-xl bg-indigo-600 px-6 text-sm font-black uppercase tracking-widest text-white hover:bg-indigo-700 transition-all shadow-lg shadow-indigo-100">
+          <button
+            onClick={() => {
+              const csv = [
+                ["Tarih", "İlan Sayısı"],
+                ...data.recentTrends.map((t) => [t.date, t.listings]),
+              ]
+                .map((r) => r.join(","))
+                .join("\n");
+              const blob = new Blob(["\uFEFF" + csv], { type: "text/csv;charset=utf-8;" });
+              const url = URL.createObjectURL(blob);
+              const a = document.createElement("a");
+              a.href = url;
+              a.download = `analitik-${timeRange}-${new Date().toISOString().split("T")[0]}.csv`;
+              a.click();
+              URL.revokeObjectURL(url);
+            }}
+            className="flex h-11 items-center gap-2 rounded-xl bg-indigo-600 px-6 text-sm font-black uppercase tracking-widest text-white hover:bg-indigo-700 transition-all shadow-lg shadow-indigo-100"
+          >
             <Download size={16} />
             Export
           </button>

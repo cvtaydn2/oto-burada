@@ -1,6 +1,6 @@
 "use server";
 
-import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import type { PlatformSettings } from "./settings-types";
 import { defaultPlatformSettings } from "./settings-types";
 import { logger } from "@/lib/utils/logger";
@@ -18,7 +18,7 @@ interface PlatformSettingRow {
 
 export async function getPlatformSettings(): Promise<PlatformSettings> {
   try {
-    const supabase = await createSupabaseServerClient();
+    const supabase = createSupabaseAdminClient();
     const { data, error } = await supabase.from("platform_settings").select("*");
 
     // Table may not exist yet — return defaults gracefully
@@ -71,7 +71,7 @@ export async function updateAllPlatformSettings(
   settings: PlatformSettings,
 ): Promise<{ success: boolean; error?: string }> {
   try {
-    const supabase = await createSupabaseServerClient();
+    const supabase = createSupabaseAdminClient();
 
     const updates = [
       { key: "general_appearance", value: settings.general_appearance, updated_at: new Date().toISOString() },

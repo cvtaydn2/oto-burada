@@ -1,34 +1,46 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { Plus, Download } from "lucide-react";
+import { Download, Loader2 } from "lucide-react";
 import { toast } from "sonner";
+import { useState } from "react";
 
 export function UserHeaderActions() {
-  const handleExport = () => {
-    toast.success("Kullanıcı listesi CSV formatında hazırlanıyor...");
-  };
+  const [isExporting, setIsExporting] = useState(false);
 
-  const handleAddUser = () => {
-    toast.info("Yeni üye kayıt formu yakında eklenecek. Şimdilik sistem otomatik kayıtları desteklemektedir.");
+  const handleExport = async () => {
+    setIsExporting(true);
+    try {
+      const res = await fetch("/api/admin/users/export", { method: "GET" });
+      if (!res.ok) throw new Error("Export başarısız");
+
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `kullanicilar-${new Date().toISOString().split("T")[0]}.csv`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      toast.success("Kullanıcı listesi indirildi.");
+    } catch {
+      toast.error("Export sırasında bir hata oluştu.");
+    } finally {
+      setIsExporting(false);
+    }
   };
 
   return (
     <div className="flex items-center gap-3">
-      <Button 
-        variant="outline" 
+      <Button
+        variant="outline"
         className="rounded-xl border-slate-200 text-slate-600 font-bold h-12 px-6 flex items-center gap-2"
         onClick={handleExport}
+        disabled={isExporting}
       >
-        <Download size={18} />
-        Dışa Aktar
-      </Button>
-      <Button 
-        className="rounded-xl bg-blue-600 hover:bg-blue-700 shadow-lg shadow-blue-100 font-black h-12 px-8 flex items-center gap-2"
-        onClick={handleAddUser}
-      >
-        <Plus size={18} strokeWidth={3} />
-        YENİ ÜYE EKLE
+        {isExporting ? <Loader2 size={18} className="animate-spin" /> : <Download size={18} />}
+        {isExporting ? "Hazırlanıyor..." : "CSV İndir"}
       </Button>
     </div>
   );

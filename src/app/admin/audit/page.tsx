@@ -20,15 +20,22 @@ interface AdminActionWithProfile {
 
 export const dynamic = "force-dynamic";
 
-export default async function AdminAuditPage() {
+export default async function AdminAuditPage({ searchParams }: { searchParams: Promise<{ q?: string }> }) {
   await requireAdminUser();
+  const { q } = await searchParams;
   const supabase = await createSupabaseServerClient();
 
-  const { data: actions } = await supabase
+  let query = supabase
     .from("admin_actions")
     .select("*, profile:profiles(full_name)")
     .order("created_at", { ascending: false })
-    .limit(200) as { data: AdminActionWithProfile[] | null };
+    .limit(200);
+
+  if (q) {
+    query = query.or(`action.ilike.%${q}%,note.ilike.%${q}%`);
+  }
+
+  const { data: actions } = await query as { data: AdminActionWithProfile[] | null };
 
   return (
     <main className="space-y-8 p-6 lg:p-8 bg-slate-50/30 min-h-full">
@@ -48,10 +55,15 @@ export default async function AdminAuditPage() {
       <div className="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm">
         <div className="flex flex-col justify-between gap-4 border-b border-slate-100 bg-slate-50/30 p-6 md:flex-row md:items-center">
             <h2 className="text-lg font-black text-slate-800 tracking-tight italic">İşlem Günlüğü (Audit)</h2>
-            <div className="relative w-full md:w-80 group">
+            <form className="relative w-full md:w-80 group">
               <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-blue-500 transition-colors" size={18} />
-              <Input className="h-12 rounded-xl border-slate-200 bg-white pl-12 pr-4 text-sm font-bold focus:ring-4 focus:ring-blue-50 focus:border-blue-300 transition-all" placeholder="İşlem veya admin ara..." />
-            </div>
+              <Input 
+                name="q"
+                defaultValue={q}
+                className="h-12 rounded-xl border-slate-200 bg-white pl-12 pr-4 text-sm font-bold focus:ring-4 focus:ring-blue-50 focus:border-blue-300 transition-all" 
+                placeholder="İşlem veya not ara..." 
+              />
+            </form>
         </div>
 
         <div className="overflow-x-auto">

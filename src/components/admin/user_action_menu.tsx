@@ -11,7 +11,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { toggleUserBan, promoteUserToAdmin } from "@/services/admin/user_actions";
+import { toggleUserBan, promoteUserToAdmin, deleteUser } from "@/services/admin/user_actions";
 import { toast } from "sonner";
 
 interface UserActionMenuProps {
@@ -57,6 +57,22 @@ export function UserActionMenu({ userId, isBanned, isAdmin }: UserActionMenuProp
     }
   };
 
+  const handleDelete = async () => {
+    if (!userId) return;
+    if (!confirm("Bu kullanıcıyı kalıcı olarak silmek istediğinizden emin misiniz? Bu işlem geri alınamaz.")) return;
+    setIsLoading(true);
+    try {
+      await deleteUser(userId);
+      toast.success("Kullanıcı hesabı silindi.");
+      router.refresh();
+    } catch (error) {
+      console.error("Delete error:", error);
+      toast.error("Hesap silinemedi.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -90,7 +106,7 @@ export function UserActionMenu({ userId, isBanned, isAdmin }: UserActionMenuProp
 
         <DropdownMenuSeparator className="my-1 bg-slate-100" />
         
-        <DropdownMenuItem className="flex items-center gap-2 rounded-xl p-3 text-sm font-bold text-rose-600 hover:bg-rose-50 cursor-pointer opacity-50 cursor-not-allowed">
+        <DropdownMenuItem className="flex items-center gap-2 rounded-xl p-3 text-sm font-bold text-rose-600 hover:bg-rose-50 cursor-pointer" onClick={handleDelete}>
           <UserMinus size={16} />
           Hesabı Sil
         </DropdownMenuItem>

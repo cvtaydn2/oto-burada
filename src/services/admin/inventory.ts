@@ -1,18 +1,30 @@
 "use server";
 
-import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { createSupabaseAdminClient } from "@/lib/supabase/admin";
+import { createAdminModerationAction } from "./moderation-actions";
+import { createDatabaseNotification } from "@/services/notifications/notification-records";
 import { Listing } from "@/types/domain";
+import { logger } from "@/lib/utils/logger";
+import { captureServerError } from "@/lib/monitoring/posthog-server";
 
-export async function getAdminInventory(filters?: { status?: string; query?: string; page?: number; limit?: number }) {
-  const supabase = await createSupabaseServerClient();
+export async function getAdminInventory(filters?: {
+  status?: string;
+  query?: string;
+  page?: number;
+  limit?: number;
+}) {
+  const admin = createSupabaseAdminClient();
   const page = filters?.page ?? 1;
-  const limit = filters?.limit ?? 15; // Set a reasonable default for admin
+  const limit = filters?.limit ?? 15;
   const from = (page - 1) * limit;
   const to = from + limit - 1;
-  
-  let query = supabase
+
+  let query = admin
     .from("listings")
-    .select("*, images:listing_images(id, listing_id, storage_path, public_url, sort_order, is_cover, placeholder_blur)", { count: "exact" })
+    .select(
+      "*, images:listing_images(id, listing_id, storage_path, public_url, sort_order, is_cover, placeholder_blur)",
+      { count: "exact" },
+    )
     .order("created_at", { ascending: false });
 
   if (filters?.status && filters.status !== "all") {
@@ -24,44 +36,124 @@ export async function getAdminInventory(filters?: { status?: string; query?: str
   }
 
   if (filters?.query) {
-    query = query.or(`title.ilike.%${filters.query}%,brand.ilike.%${filters.query}%,model.ilike.%${filters.query}%,vin.ilike.%${filters.query}%`);
+    query = query.or(
+      `title.ilike.%${filters.query}%,brand.ilike.%${filters.query}%,model.ilike.%${filters.query}%,vin.ilike.%${filters.query}%`,
+    );
   }
 
-  const { data, count } = await query.range(from, to);
+  const { data, count, error } = await query.range(from, to);
 
-  const listings = (data || []).map((listing: { images: { public_url: string; sort_order: number; is_cover: boolean }[] }) => ({
-    ...listing,
-    images: (listing.images || []).map((img) => ({
-      ...img,
-      url: img.public_url || "",
-      order: img.sort_order || 0,
-      isCover: img.is_cover || false,
-    })),
-  }));
+  if (error) {
+    logger.admin.error("getAdminInventory query failed", error, { filters });
+    captureServerError("getAdminInventory query failed", "admin", error, { filters });
+    return { listings: [] as Listing[], total: 0, page, limit };
+  }
 
-  return { listings: (listings as unknown as Listing[]), total: count ?? 0, page, limit };
+  const listings = (data || []).map(
+    (listing: { images: { public_url: string; sort_order: number; is_cover: boolean }[] }) => ({
+      ...listing,
+      images: (listing.images || []).map((img) => ({
+        ...img,
+        url: img.public_url || "",
+        order: img.sort_order || 0,
+        isCover: img.is_cover || false,
+      })),
+    }),
+  );
+
+  return { listings: listings as unknown as Listing[], total: count ?? 0, page, limit };
 }
 
-export async function forceActionOnListing(listingId: string, action: "archive" | "delete" | "approve" | "reject") {
-    const supabase = await createSupabaseServerClient();
-    
-    if (action === "delete") {
-        const { error } = await supabase.from("listings").delete().eq("id", listingId);
-        if (error) throw error;
-        return { success: true };
+export async function forceActionOnListing(
+  listingId: string,
+  action: "archive" | "delete" | "approve" | "reject",
+  adminUserId?: string,
+) {
+  const admin = createSupabaseAdminClient();
+
+  if (action === "delete") {
+    // Fetch listing info before delete for audit
+    const { data: listing } = await admin
+      .from("listings")
+      .select("id, title, seller_id")
+      .eq("id", listingId)
+      .maybeSingle();
+
+    const { error } = await admin.from("listings").delete().eq("id", listingId);
+    if (error) {
+      logger.admin.error("forceActionOnListing delete failed", error, { listingId });
+      throw error;
     }
 
-    const statusMap = {
-        archive: "archived",
-        approve: "approved",
-        reject: "rejected"
-    };
+    if (adminUserId && listing) {
+      await createAdminModerationAction({
+        action: "reject",
+        adminUserId,
+        note: `İlan kalıcı olarak silindi: ${listing.title}`,
+        targetId: listingId,
+        targetType: "listing",
+      }).catch(() => null);
+    }
 
-    const { error } = await supabase
-        .from("listings")
-        .update({ status: statusMap[action as keyof typeof statusMap] })
-        .eq("id", listingId);
-
-    if (error) throw error;
     return { success: true };
+  }
+
+  const statusMap: Record<string, string> = {
+    archive: "archived",
+    approve: "approved",
+    reject: "rejected",
+  };
+
+  const newStatus = statusMap[action];
+
+  // Fetch listing for notification
+  const { data: listing } = await admin
+    .from("listings")
+    .select("id, title, seller_id, slug")
+    .eq("id", listingId)
+    .maybeSingle();
+
+  const { error } = await admin
+    .from("listings")
+    .update({ status: newStatus, updated_at: new Date().toISOString() })
+    .eq("id", listingId);
+
+  if (error) {
+    logger.admin.error("forceActionOnListing update failed", error, { listingId, action });
+    throw error;
+  }
+
+  // Audit log
+  if (adminUserId && listing) {
+    await createAdminModerationAction({
+      action: action === "approve" ? "approve" : "reject",
+      adminUserId,
+      note: `Admin zorla ${action}: ${listing.title}`,
+      targetId: listingId,
+      targetType: "listing",
+    }).catch(() => null);
+
+    // Notify seller
+    if (listing.seller_id) {
+      await createDatabaseNotification({
+        href: listing.slug ? `/listing/${listing.slug}` : `/dashboard/listings`,
+        message:
+          action === "approve"
+            ? `"${listing.title}" ilanın yayınlandı.`
+            : action === "archive"
+              ? `"${listing.title}" ilanın yayından kaldırıldı.`
+              : `"${listing.title}" ilanın reddedildi.`,
+        title:
+          action === "approve"
+            ? "İlanın yayınlandı"
+            : action === "archive"
+              ? "İlanın yayından kaldırıldı"
+              : "İlanın reddedildi",
+        type: "moderation",
+        userId: listing.seller_id,
+      }).catch(() => null);
+    }
+  }
+
+  return { success: true };
 }

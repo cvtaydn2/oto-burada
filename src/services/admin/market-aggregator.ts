@@ -1,3 +1,5 @@
+"use server";
+
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { logger } from "@/lib/utils/logger";
 

@@ -1,3 +1,5 @@
+"use server";
+
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { hasSupabaseAdminEnv } from "@/lib/supabase/env";
 import { adminModerationActionSchema } from "@/lib/validators";

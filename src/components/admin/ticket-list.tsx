@@ -6,8 +6,11 @@ import {
   MoreHorizontal, 
   MessageCircle, 
   CheckCircle2,
-  AlertCircle
+  AlertCircle,
+  Loader2
 } from "lucide-react";
+import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -16,6 +19,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { toast } from "sonner";
 
 interface Ticket {
   id: string;
@@ -35,6 +39,27 @@ interface TicketListProps {
 }
 
 export function TicketList({ initialTickets }: TicketListProps) {
+  const router = useRouter();
+  const [loadingId, setLoadingId] = useState<string | null>(null);
+
+  const handleStatusChange = async (ticketId: string, status: string) => {
+    setLoadingId(ticketId);
+    try {
+      const res = await fetch(`/api/admin/tickets/${ticketId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status }),
+      });
+      if (!res.ok) throw new Error();
+      toast.success("Durum güncellendi");
+      router.refresh();
+    } catch {
+      toast.error("Güncelleme başarısız");
+    } finally {
+      setLoadingId(null);
+    }
+  };
+
   return (
     <div className="divide-y divide-slate-50">
       {initialTickets.map((ticket) => (
@@ -84,14 +109,39 @@ export function TicketList({ initialTickets }: TicketListProps) {
                  
                  <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                       <Button variant="ghost" className="h-10 w-10 p-0 rounded-xl hover:bg-white border border-transparent hover:border-slate-200 transition-all">
-                          <MoreHorizontal className="h-5 w-5" />
+                       <Button 
+                         variant="ghost" 
+                         className="h-10 w-10 p-0 rounded-xl hover:bg-white border border-transparent hover:border-slate-200 transition-all"
+                         disabled={loadingId === ticket.id}
+                       >
+                          {loadingId === ticket.id 
+                            ? <Loader2 className="h-5 w-5 animate-spin" />
+                            : <MoreHorizontal className="h-5 w-5" />
+                          }
                        </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end" className="w-[180px] rounded-2xl p-2 shadow-xl">
-                       <DropdownMenuItem className="cursor-pointer gap-2 font-black text-[10px] uppercase tracking-widest rounded-xl">CEVAPLA</DropdownMenuItem>
-                       <DropdownMenuItem className="cursor-pointer gap-2 font-black text-[10px] uppercase tracking-widest rounded-xl">İşleme Al</DropdownMenuItem>
-                       <DropdownMenuItem className="cursor-pointer gap-2 font-black text-[10px] uppercase tracking-widest rounded-xl text-emerald-600">Tamamlandı</DropdownMenuItem>
+                       <DropdownMenuItem 
+                         className="cursor-pointer gap-2 font-black text-[10px] uppercase tracking-widest rounded-xl"
+                         onClick={() => handleStatusChange(ticket.id, "in_progress")}
+                         disabled={ticket.status === "in_progress"}
+                       >
+                         İşleme Al
+                       </DropdownMenuItem>
+                       <DropdownMenuItem 
+                         className="cursor-pointer gap-2 font-black text-[10px] uppercase tracking-widest rounded-xl text-emerald-600"
+                         onClick={() => handleStatusChange(ticket.id, "resolved")}
+                         disabled={ticket.status === "resolved"}
+                       >
+                         Tamamlandı
+                       </DropdownMenuItem>
+                       <DropdownMenuItem 
+                         className="cursor-pointer gap-2 font-black text-[10px] uppercase tracking-widest rounded-xl text-slate-400"
+                         onClick={() => handleStatusChange(ticket.id, "closed")}
+                         disabled={ticket.status === "closed"}
+                       >
+                         Kapat
+                       </DropdownMenuItem>
                     </DropdownMenuContent>
                  </DropdownMenu>
               </div>

@@ -40,7 +40,20 @@ export function InventoryTable({ listings }: InventoryTableProps) {
     
     setIsLoading(true);
     try {
-      await forceActionOnListing(listingId, action);
+      if (action === "approve" || action === "reject") {
+        // Use the moderation API so audit logs and notifications fire
+        const res = await fetch(`/api/admin/listings/${listingId}/moderate`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ action }),
+        });
+        if (!res.ok) {
+          const payload = await res.json().catch(() => null);
+          throw new Error(payload?.error?.message ?? "İşlem başarısız");
+        }
+      } else {
+        await forceActionOnListing(listingId, action);
+      }
       toast.success("İşlem başarıyla gerçekleştirildi");
       router.refresh();
     } catch (error) {

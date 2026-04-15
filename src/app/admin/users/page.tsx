@@ -65,10 +65,6 @@ export default async function AdminUserManagementPage({
             {/* Search and Filters */}
             <div className="p-6 border-b border-slate-100 bg-slate-50/30 flex flex-col md:flex-row md:items-center gap-4">
               <UserSearch defaultValue={q} />
-              <div className="flex items-center gap-2">
-                 <Button variant="ghost" size="sm" className="text-xs font-bold text-slate-500">Sırala</Button>
-                 <Button variant="ghost" size="sm" className="text-xs font-bold text-slate-500">Filtrele</Button>
-              </div>
             </div>
 
             {/* Table */}
@@ -90,14 +86,16 @@ export default async function AdminUserManagementPage({
                     <tr key={u.id} className="group transition-colors hover:bg-blue-50/20">
                       <td className="p-6">
                         <div className="flex items-center gap-4">
+                          <Link href={`/admin/users/${u.id}`}>
                           <div className={cn(
-                            "flex size-11 items-center justify-center rounded-xl text-sm font-black transition-all group-hover:scale-110",
+                            "flex size-11 items-center justify-center rounded-xl text-sm font-black transition-all group-hover:scale-110 cursor-pointer",
                             u.role === "admin" ? "bg-blue-600 text-white shadow-md shadow-blue-100" : "bg-slate-100 text-slate-500"
                           )}>
                             {(u.fullName || "U")[0].toUpperCase()}
                           </div>
+                          </Link>
                           <div>
-                            <span className="text-sm font-black text-slate-800 block leading-none mb-1 group-hover:text-blue-600 transition-colors uppercase">{u.fullName || "İsimsiz Kullanıcı"}</span>
+                            <Link href={`/admin/users/${u.id}`} className="text-sm font-black text-slate-800 block leading-none mb-1 group-hover:text-blue-600 transition-colors uppercase hover:underline">{u.fullName || "İsimsiz Kullanıcı"}</Link>
                             <span className="text-[10px] font-bold text-slate-400 uppercase tracking-tighter italic">ID: #{u.id.substring(0, 8)}</span>
                           </div>
                         </div>
@@ -171,11 +169,11 @@ export default async function AdminUserManagementPage({
               <h3 className="text-base font-black text-slate-800 tracking-tight">Hızlı İşlemler</h3>
             </div>
             <div className="space-y-3">
-              <Button className="w-full rounded-xl bg-blue-50 text-blue-600 border border-blue-100 hover:bg-blue-600 hover:text-white font-bold text-xs h-11 flex items-center gap-2 justify-start px-4 transition-all">
+              <Button className="w-full rounded-xl bg-blue-50 text-blue-600 border border-blue-100 hover:bg-blue-600 hover:text-white font-bold text-xs h-11 flex items-center gap-2 justify-start px-4 transition-all" disabled title="Yakında aktif">
                 <Plus size={16} />
                 Yeni Üye Ekle
               </Button>
-              <Button variant="outline" className="w-full rounded-xl border-slate-100 text-slate-600 font-bold text-xs h-11 flex items-center gap-2 justify-start px-4 hover:bg-slate-50 transition-all">
+              <Button variant="outline" className="w-full rounded-xl border-slate-100 text-slate-600 font-bold text-xs h-11 flex items-center gap-2 justify-start px-4 hover:bg-slate-50 transition-all" disabled title="Yakında aktif">
                 <Users size={16} />
                 Toplu İçe Aktar
               </Button>

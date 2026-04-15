@@ -21,6 +21,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { banUser, verifyUserBusiness, updateUserRole } from "@/services/admin/users";
+import { deleteUser } from "@/services/admin/user_actions";
 
 interface UserActionsProps {
   userId: string;
@@ -98,7 +99,14 @@ export function UserActions({ userId, userName, userType, isBanned, isVerified }
           </DropdownMenuItem>
         )}
 
-        <DropdownMenuItem className="gap-2 font-bold cursor-pointer text-slate-400 hover:text-red-600 transition-colors">
+        <DropdownMenuItem 
+          className="gap-2 font-bold cursor-pointer text-slate-400 hover:text-red-600 transition-colors"
+          onClick={() => {
+            if (confirm(`"${userName}" kullanıcısını kalıcı olarak silmek istediğinizden emin misiniz?`)) {
+              handleAction(() => deleteUser(userId), "Kullanıcı hesabı silindi");
+            }
+          }}
+        >
           <Trash2 size={16} />
           Hesabı Tamamen Sil
         </DropdownMenuItem>
