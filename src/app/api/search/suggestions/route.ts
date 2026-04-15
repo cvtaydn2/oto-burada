@@ -1,40 +1,73 @@
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { apiSuccess } from "@/lib/utils/api-response";
+import { enforceRateLimit, getRateLimitKey } from "@/lib/utils/rate-limit-middleware";
+import { getCachedData, setCachedData } from "@/lib/redis/client";
 
 export const dynamic = "force-dynamic";
 
+// Rate limit: 60 per minute per IP
+const SUGGESTIONS_RATE_LIMIT = { limit: 60, windowMs: 60 * 1000 };
+
+// Sanitize search query — only allow alphanumeric + Turkish chars + spaces
+function sanitizeSearchQuery(q: string): string {
+  return q
+    .replace(/[^a-zA-Z0-9\s\u00C0-\u024F\u0130\u0131]/g, "")
+    .trim()
+    .substring(0, 50); // max 50 chars
+}
+
 export async function GET(request: Request) {
+  const rateLimit = await enforceRateLimit(
+    getRateLimitKey(request, "api:search:suggestions"),
+    SUGGESTIONS_RATE_LIMIT,
+  );
+  if (rateLimit) return rateLimit.response;
+
   const { searchParams } = new URL(request.url);
-  const q = searchParams.get("q") || "";
+  const rawQ = searchParams.get("q") ?? "";
+  const q = sanitizeSearchQuery(rawQ);
 
   if (q.length < 2) {
     return apiSuccess({ brands: [], models: [] });
   }
 
-  const supabase = await createSupabaseServerClient();
+  // Cache suggestions for 2 minutes
+  const cacheKey = `search:suggestions:${q.toLowerCase()}`;
+  const cached = await getCachedData<{ brands: unknown[]; models: unknown[] }>(cacheKey);
+  if (cached) return apiSuccess(cached);
 
-  // Search brands
-  const { data: brands } = await supabase
-    .from("brands")
-    .select("name, slug")
-    .ilike("name", `%${q}%`)
-    .eq("is_active", true)
-    .limit(5);
+  try {
+    const supabase = await createSupabaseServerClient();
 
-  // Search models
-  const { data: models } = await supabase
-    .from("models")
-    .select("name, slug, brands(name)")
-    .ilike("name", `%${q}%`)
-    .eq("is_active", true)
-    .limit(5);
+    const [brandsResult, modelsResult] = await Promise.all([
+      supabase
+        .from("brands")
+        .select("name, slug")
+        .ilike("name", `${q}%`)
+        .eq("is_active", true)
+        .limit(5),
+      supabase
+        .from("models")
+        .select("name, slug, brands(name)")
+        .ilike("name", `${q}%`)
+        .eq("is_active", true)
+        .limit(5),
+    ]);
 
-  return apiSuccess({ 
-    brands: brands || [], 
-    models: (models || []).map((m: { name: string; slug: string; brands?: { name: string }[] | null }) => ({
-      name: m.name,
-      slug: m.slug,
-      brandName: m.brands?.[0]?.name
-    }))
-  });
+    const result = {
+      brands: brandsResult.data ?? [],
+      models: (modelsResult.data ?? []).map((m: { name: string; slug: string; brands?: { name: string }[] | null }) => ({
+        name: m.name,
+        slug: m.slug,
+        brandName: m.brands?.[0]?.name,
+      })),
+    };
+
+    await setCachedData(cacheKey, result, 120);
+
+    return apiSuccess(result);
+  } catch {
+    // Non-critical — return empty on error
+    return apiSuccess({ brands: [], models: [] });
+  }
 }

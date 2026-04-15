@@ -1,9 +1,98 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from "vitest";
+import type { DopingResult } from "../doping-service";
 
-describe.skip("Doping Service", () => {
-  it("should handle doping application gracefully", async () => {
-    const { applyDopingToListing } = await import('../doping-service');
-    const result = await applyDopingToListing("test-listing", "test-user", ["featured"]);
-    expect(result).toBeDefined();
+// Mock all external dependencies
+vi.mock("@/lib/supabase/admin", () => ({
+  createSupabaseAdminClient: vi.fn(() => ({
+    from: vi.fn(() => ({
+      select: vi.fn(() => ({
+        eq: vi.fn(() => ({
+          single: vi.fn().mockResolvedValue({
+            data: { seller_id: "user-123" },
+            error: null,
+          }),
+        })),
+      })),
+      update: vi.fn(() => ({
+        eq: vi.fn().mockResolvedValue({ error: null }),
+      })),
+      insert: vi.fn().mockResolvedValue({ error: null }),
+    })),
+  })),
+}));
+
+vi.mock("@/lib/supabase/env", () => ({
+  hasSupabaseAdminEnv: vi.fn(() => true),
+}));
+
+vi.mock("@/lib/payment", () => ({
+  payment: {
+    processPayment: vi.fn().mockResolvedValue({
+      success: true,
+      status: "success",
+      transactionId: "mock-tx-123",
+    }),
+  },
+}));
+
+describe("Doping Service", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it("should apply featured doping successfully", async () => {
+    const { applyDopingToListing } = await import("../doping-service");
+    const result: DopingResult = await applyDopingToListing("listing-1", "user-123", ["featured"]);
+    expect(result.success).toBe(true);
+    expect(result.message).toContain("başarıyla");
+  });
+
+  it("should fail when listing ownership check fails", async () => {
+    const { createSupabaseAdminClient } = await import("@/lib/supabase/admin");
+    vi.mocked(createSupabaseAdminClient).mockReturnValueOnce({
+      from: vi.fn(() => ({
+        select: vi.fn(() => ({
+          eq: vi.fn(() => ({
+            single: vi.fn().mockResolvedValue({
+              data: { seller_id: "other-user" },
+              error: null,
+            }),
+          })),
+        })),
+      })),
+    } as unknown as ReturnType<typeof createSupabaseAdminClient>);
+
+    const { applyDopingToListing } = await import("../doping-service");
+    const result = await applyDopingToListing("listing-1", "user-123", ["featured"]);
+    expect(result.success).toBe(false);
+    expect(result.message).toContain("doğrulanamadı");
+  });
+
+  it("should fail when payment fails", async () => {
+    const { payment } = await import("@/lib/payment");
+    vi.mocked(payment.processPayment).mockResolvedValueOnce({
+      success: false,
+      status: "failure",
+      error: "Ödeme reddedildi",
+    });
+
+    const { applyDopingToListing } = await import("../doping-service");
+    const result = await applyDopingToListing("listing-1", "user-123", ["urgent"]);
+    expect(result.success).toBe(false);
+  });
+
+  it("should apply multiple doping types", async () => {
+    const { applyDopingToListing } = await import("../doping-service");
+    const result = await applyDopingToListing("listing-1", "user-123", ["featured", "urgent", "highlighted"]);
+    expect(result.success).toBe(true);
+  });
+
+  it("should return error when supabase env is missing", async () => {
+    const { hasSupabaseAdminEnv } = await import("@/lib/supabase/env");
+    vi.mocked(hasSupabaseAdminEnv).mockReturnValueOnce(false);
+
+    const { applyDopingToListing } = await import("../doping-service");
+    const result = await applyDopingToListing("listing-1", "user-123", ["featured"]);
+    expect(result.success).toBe(false);
   });
 });
