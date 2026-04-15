@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { Cookie, X } from "lucide-react";
+import posthog from "posthog-js";
 
 export function CookieConsent() {
   const [isVisible, setIsVisible] = useState(false);
@@ -16,6 +17,8 @@ export function CookieConsent() {
 
   const handleAccept = () => {
     localStorage.setItem("cookie-consent", "true");
+    posthog.opt_in_capturing();
+    posthog.capture("cookie_consent_accepted");
     setIsVisible(false);
   };
 

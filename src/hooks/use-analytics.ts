@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback } from "react";
+import { usePostHog } from "posthog-js/react";
 
 interface AnalyticsEvent {
   category?: string;
@@ -8,28 +9,16 @@ interface AnalyticsEvent {
   value?: number;
 }
 
-declare global {
-  interface Window {
-    __vercel_analytics?: {
-      fire: (event: string, params?: Record<string, unknown>) => void;
-    };
-  }
-}
-
 export function useAnalytics() {
+  const posthog = usePostHog();
+
   const trackPageView = useCallback((page: string) => {
-    if (typeof window !== "undefined") {
-      if (window.__vercel_analytics) {
-        window.__vercel_analytics.fire("page_view", { path: page });
-      }
-    }
-  }, []);
+    posthog?.capture("$pageview", { $current_url: page });
+  }, [posthog]);
 
   const trackEvent = useCallback((eventName: string, params?: AnalyticsEvent) => {
-    if (typeof window !== "undefined" && window.__vercel_analytics) {
-      window.__vercel_analytics.fire(eventName, params as Record<string, unknown>);
-    }
-  }, []);
+    posthog?.capture(eventName, params);
+  }, [posthog]);
 
   const trackListingView = useCallback((listingId: string, brand: string, model: string) => {
     trackEvent("listing_view", {

@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Phone, MessageCircle, ShieldAlert, AlertTriangle, Loader2 } from "lucide-react";
+import { usePostHog } from "posthog-js/react";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -27,6 +28,7 @@ interface ContactActionsProps {
 export function ContactActions({ listingId, sellerId }: ContactActionsProps) {
   const router = useRouter();
   const supabase = createSupabaseBrowserClient();
+  const posthog = usePostHog();
   const [isRevealed, setIsRevealed] = useState(false);
   const [revealedPhone, setRevealedPhone] = useState<string | null>(null);
   const [isLogging, setIsLogging] = useState(false);
@@ -46,6 +48,7 @@ export function ContactActions({ listingId, sellerId }: ContactActionsProps) {
       const result = await revealListingPhone(listingId);
       setRevealedPhone(result.phone);
       setIsRevealed(true);
+      posthog?.capture("contact_phone_revealed", { listingId, sellerId });
     } catch (err) {
       const message = err instanceof Error ? err.message : "Bir hata oluştu";
       setError(message);
@@ -70,6 +73,11 @@ export function ContactActions({ listingId, sellerId }: ContactActionsProps) {
 
       const chat = await getOrCreateChat(listingId, user.id, sellerId);
       if (chat) {
+        posthog?.capture("chat_started", {
+          chatId: chat.id,
+          listingId,
+          sellerId,
+        });
         router.push(`/dashboard/messages?chatId=${chat.id}`);
       } else {
         setError("Sohbet başlatılırken bir sorun oluştu.");
@@ -183,6 +191,13 @@ export function ContactActions({ listingId, sellerId }: ContactActionsProps) {
                  href={isRevealed && whatsappLink ? whatsappLink : "#"}
                  target={isRevealed && whatsappLink ? "_blank" : undefined}
                  rel="noreferrer"
+                 onClick={() => {
+                   if (!isRevealed || !whatsappLink) {
+                     return;
+                   }
+
+                   posthog?.capture("contact_whatsapp_clicked", { listingId, sellerId });
+                 }}
                  className="flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-green-500 to-emerald-600 w-full h-12 px-6 text-[15px] text-white font-bold shadow-sm"
                >
                  {isLogging ? <Loader2 className="animate-spin size-4" /> : isRevealed ? "Mesaj Gönder" : "Numarayı Gör ve İlerle"}

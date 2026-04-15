@@ -1,5 +1,6 @@
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { hasSupabaseEnv, hasSupabaseAdminEnv } from "@/lib/supabase/env";
+import { captureServerEvent } from "@/lib/monitoring/posthog-server";
 import { apiSuccess, apiError, API_ERROR_CODES } from "@/lib/utils/api-response";
 import {
   addDatabaseFavorite,
@@ -114,6 +115,13 @@ export async function POST(request: Request) {
     });
   }
 
+  captureServerEvent("favorite_added", {
+    userId: user.id,
+    listingId,
+    sellerId: listing.sellerId,
+    listingSlug: listing.slug,
+  });
+
   return apiSuccess({ favoriteIds }, "İlan favorilere eklendi.");
 }
 
@@ -152,6 +160,11 @@ export async function DELETE(request: Request) {
   if (!favoriteIds) {
     return apiError(API_ERROR_CODES.INTERNAL_ERROR, "Favori kaldırılamadı.", 500);
   }
+
+  captureServerEvent("favorite_removed", {
+    userId: user.id,
+    listingId,
+  });
 
   return apiSuccess({ favoriteIds }, "İlan favorilerden kaldırıldı.");
 }

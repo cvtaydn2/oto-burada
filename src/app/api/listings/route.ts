@@ -1,4 +1,5 @@
 import { hasSupabaseEnv } from "@/lib/supabase/env";
+import { captureServerError, captureServerEvent } from "@/lib/monitoring/posthog-server";
 import { rateLimitProfiles } from "@/lib/utils/rate-limit";
 import { enforceRateLimit, getRateLimitKey, getUserRateLimitKey } from "@/lib/utils/rate-limit-middleware";
 import { sanitizeText, sanitizeDescription } from "@/lib/utils/sanitize";
@@ -31,7 +32,7 @@ export async function GET(request: Request) {
     const result = await getFilteredMarketplaceListings(filters);
     return apiSuccess(result);
   } catch (error) {
-    console.error("GET /api/listings error:", error);
+    captureServerError("GET /api/listings failed", "listings", error, { filters: paramsObj });
     return apiError(API_ERROR_CODES.INTERNAL_ERROR, "İlanlar yüklenirken bir hata oluştu.", 500);
   }
 }
@@ -152,6 +153,17 @@ export async function POST(request: Request) {
   }
 
   if (result.listing) {
+    captureServerEvent("listing_created", {
+      userId: user.id,
+      listingId: result.listing.id,
+      listingSlug: result.listing.slug,
+      listingStatus: result.listing.status,
+      brand: result.listing.brand,
+      model: result.listing.model,
+      city: result.listing.city,
+      price: result.listing.price,
+    });
+
     return apiSuccess(
       {
         message: "İlanın kaydedildi ve moderasyon incelemesine gönderildi.",

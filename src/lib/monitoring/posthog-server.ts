@@ -34,6 +34,14 @@ export function captureServerError(
   const ph = getPostHogServer();
   if (!ph) return;
 
+  const derivedDistinctId =
+    distinctId ??
+    (typeof data?.userId === "string"
+      ? data.userId
+      : typeof data?.user_id === "string"
+        ? data.user_id
+        : "server");
+
   const properties: Record<string, unknown> = {
     context,
     message,
@@ -50,10 +58,10 @@ export function captureServerError(
   }
 
   if (error instanceof Error) {
-    ph.captureException(error, distinctId ?? "server", { properties });
+    ph.captureException(error, derivedDistinctId, { properties });
   } else {
     ph.capture({
-      distinctId: distinctId ?? "server",
+      distinctId: derivedDistinctId,
       event: "$exception",
       properties,
     });
@@ -81,6 +89,34 @@ export function captureServerWarning(
       message,
       environment: process.env.NODE_ENV,
       ...data,
+    },
+  });
+
+  ph.flush().catch(() => {});
+}
+
+export function captureServerEvent(
+  event: string,
+  properties?: Record<string, unknown>,
+  distinctId?: string,
+) {
+  const ph = getPostHogServer();
+  if (!ph) return;
+
+  const derivedDistinctId =
+    distinctId ??
+    (typeof properties?.userId === "string"
+      ? properties.userId
+      : typeof properties?.user_id === "string"
+        ? properties.user_id
+        : "server");
+
+  ph.capture({
+    distinctId: derivedDistinctId,
+    event,
+    properties: {
+      environment: process.env.NODE_ENV,
+      ...properties,
     },
   });
 

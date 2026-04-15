@@ -13,7 +13,23 @@
  */
 import posthog from "posthog-js";
 
-posthog.init(process.env.NEXT_PUBLIC_POSTHOG_PROJECT_TOKEN!, {
-  api_host: process.env.NEXT_PUBLIC_POSTHOG_HOST,
-  defaults: "2026-01-30",
-});
+const posthogProjectToken =
+  process.env.NEXT_PUBLIC_POSTHOG_PROJECT_TOKEN ?? process.env.NEXT_PUBLIC_POSTHOG_KEY;
+
+if (posthogProjectToken) {
+  posthog.init(posthogProjectToken, {
+    api_host: process.env.NEXT_PUBLIC_POSTHOG_HOST,
+    defaults: "2026-01-30",
+    capture_pageview: false,
+    opt_out_capturing_by_default: true,
+    loaded: (client) => {
+      if (typeof window === "undefined") {
+        return;
+      }
+
+      if (window.localStorage.getItem("cookie-consent") === "true") {
+        client.opt_in_capturing();
+      }
+    },
+  });
+}

@@ -1,5 +1,40 @@
 # PROGRESS.md
 
+## PostHog Audit Remediation (2026-04-16)
+
+### Analytics / Error Tracking Hardening
+- **PostHog Init Güçlendirildi**:
+  - client init artık `NEXT_PUBLIC_POSTHOG_PROJECT_TOKEN` ve eski `NEXT_PUBLIC_POSTHOG_KEY` adlarını geriye dönük destekliyor
+  - `capture_pageview: false` ile otomatik + manuel pageview çift kaydı engellendi
+  - `opt_out_capturing_by_default: true` ile tracking, consent onayı gelene kadar kapalı hale getirildi
+- **Consent ve Tracking Senkronize Edildi**:
+  - cookie consent kabul edildiğinde PostHog `opt_in_capturing()` çağrılıyor
+  - daha önce consent vermiş kullanıcılar için client yüklenirken capture tekrar açılıyor
+- **Kullanıcı Kimlikleme Eklendi**:
+  - `AuthProvider` sonrası PostHog provider içinde `identify(user.id, ...)` akışı eklendi
+  - logout durumunda `reset()` ile anonim oturuma temiz dönülüyor
+  - email / role / doğrulama sinyalleri kişi özelliklerine bağlanıyor
+- **Server Error Korelasyonu Artırıldı**:
+  - `captureServerError()` artık `data.userId` veya `data.user_id` varsa bunu otomatik `distinctId` olarak kullanıyor
+  - böylece handled API/service error’ları tek bir `"server"` anonim profiline yığılmıyor
+- **Custom Event Omurgası Eklendi**:
+  - yeni `captureServerEvent()` helper eklendi
+  - `listing_created`, `favorite_added`, `favorite_removed` event’leri server tarafta kaydediliyor
+  - `contact_phone_revealed`, `contact_whatsapp_clicked`, `chat_started` event’leri client tarafta eklendi
+- **Eski Analytics Drift Temizlendi**:
+  - kullanılmayan `useAnalytics()` hook’u artık Vercel `__vercel_analytics` yerine PostHog kullanıyor
+  - `/api/listings` GET hata yolu artık sadece `console.error` değil, PostHog server error capture ile izleniyor
+
+### Audit Kararı
+- PostHog artık teknik olarak tutarlı kullanılıyor; önceki en kritik sorunlar olan consent kopukluğu, pageview duplication, kimliksiz event akışı ve ölü analytics helper giderildi.
+- Vercel `<Analytics />` ve `<SpeedInsights />` bilinçli olarak bırakıldı; bunlar ürün event tracking değil, platform/web vitals ölçümü için tutuluyor.
+- Hâlâ geliştirilebilecek alan: arama/filter funnel, registration/login success ve moderation funnel için daha zengin ürün event seti tanımlanabilir.
+
+### Doğrulama
+- `npm run lint` ✅
+- `npm run typecheck` ✅
+- `npm run build` ✅
+
 ## Deep Audit Remediation (2026-04-16)
 
 ### Backend / API / DB Hardening
