@@ -1,12 +1,13 @@
 "use client";
 
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { type PropsWithChildren, useState } from "react";
+import { type PropsWithChildren, useState, Suspense } from "react";
 
 import { AuthProvider } from "@/components/shared/auth-provider";
 import { FavoritesProvider } from "@/components/shared/favorites-provider";
 import { CompareProvider } from "@/components/shared/compare-provider";
 import { ThemeProvider } from "@/components/shared/theme-provider";
+import { PostHogProvider } from "@/components/providers/posthog-provider";
 
 export function AppProviders({ children }: PropsWithChildren) {
   const [queryClient] = useState(
@@ -31,7 +32,14 @@ export function AppProviders({ children }: PropsWithChildren) {
       <QueryClientProvider client={queryClient}>
         <AuthProvider>
           <FavoritesProvider>
-            <CompareProvider>{children}</CompareProvider>
+            <CompareProvider>
+              {/* Suspense required because PostHogProvider uses useSearchParams */}
+              <Suspense fallback={null}>
+                <PostHogProvider>
+                  {children}
+                </PostHogProvider>
+              </Suspense>
+            </CompareProvider>
           </FavoritesProvider>
         </AuthProvider>
       </QueryClientProvider>

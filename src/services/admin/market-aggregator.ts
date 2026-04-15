@@ -1,4 +1,5 @@
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
+import { logger } from "@/lib/utils/logger";
 
 export async function aggregateMarketStats() {
   const supabaseAdmin = createSupabaseAdminClient();
@@ -80,7 +81,7 @@ export async function aggregateMarketStats() {
       count: statsToUpsert.length 
     };
   } catch (error: unknown) {
-    console.error("Market aggregation error:", error);
+    logger.market.error("Market aggregation failed", error);
     return { success: false, error: error instanceof Error ? error.message : "Bilinmeyen hata" };
   }
 }

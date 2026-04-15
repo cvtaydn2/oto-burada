@@ -2,6 +2,7 @@
 
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { revalidatePath } from "next/cache";
+import { logger } from "@/lib/utils/logger";
 
 export interface PricingPlan {
   id: string;
@@ -20,7 +21,7 @@ export async function getPricingPlans() {
     .order("price", { ascending: true });
 
   if (error) {
-    console.error("Error fetching plans:", error);
+    logger.admin.error("getPricingPlans query failed", error);
     return [];
   }
 

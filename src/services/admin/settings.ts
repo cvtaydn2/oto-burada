@@ -3,6 +3,8 @@
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import type { PlatformSettings } from "./settings-types";
 import { defaultPlatformSettings } from "./settings-types";
+import { logger } from "@/lib/utils/logger";
+import { captureServerError, captureServerWarning } from "@/lib/monitoring/posthog-server";
 
 export type { PlatformSettings } from "./settings-types";
 
@@ -21,7 +23,8 @@ export async function getPlatformSettings(): Promise<PlatformSettings> {
 
     // Table may not exist yet — return defaults gracefully
     if (error) {
-      console.warn("platform_settings table not available, using defaults:", error.message);
+      logger.settings.warn("platform_settings table not available, using defaults", { message: error.message });
+      captureServerWarning("platform_settings table not available", "settings", { code: error.code, message: error.message });
       return defaultPlatformSettings;
     }
 
@@ -97,6 +100,8 @@ export async function updateAllPlatformSettings(
     return { success: true };
   } catch (err) {
     const message = err instanceof Error ? err.message : "Bilinmeyen hata";
+    logger.settings.error("updateAllPlatformSettings failed", err);
+    captureServerError("updateAllPlatformSettings failed", "settings", err);
     return { success: false, error: message };
   }
 }

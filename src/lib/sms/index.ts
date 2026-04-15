@@ -1,5 +1,6 @@
 import type { SMSMessage, SMSProvider, SMSResponse } from "./types";
 import { TwilioProvider } from "@/lib/sms/twilio";
+import { logger } from "@/lib/utils/logger";
 
 class ConsoleProvider implements SMSProvider {
   async send(message: SMSMessage): Promise<SMSResponse> {
@@ -31,14 +32,12 @@ class SMSManager {
       const result = await this.provider.send(message);
       
       if (!result.success) {
-        console.error(`SMS Provider Error: ${result.error}`);
-        // If Twilio fails, we could potentially try another fallback here, 
-        // but for now, we'll just ensure it doesn't throw.
+        logger.sms.error("SMS provider returned failure", undefined, { error: result.error });
       }
       
       return result;
     } catch (error) {
-      console.error("SMS Infrastructure Error:", error);
+      logger.sms.error("SMS infrastructure error", error);
       return { success: false, error: "SMS sistemi geçici olarak servis dışı." };
     }
   }

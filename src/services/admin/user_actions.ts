@@ -2,6 +2,7 @@
 
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { revalidatePath } from "next/cache";
+import { logger } from "@/lib/utils/logger";
 
 export async function toggleUserBan(userId: string, currentStatus: boolean) {
   if (!userId) throw new Error("Kullanıcı ID'si gerekli.");
@@ -14,7 +15,7 @@ export async function toggleUserBan(userId: string, currentStatus: boolean) {
     .eq("id", userId);
 
   if (error) {
-    console.error("Ban toggle error:", error);
+    logger.admin.error("toggleUserBan failed", error, { userId, currentStatus });
     throw new Error(`Yasak durumu güncellenemedi: ${error.message}`);
   }
   
@@ -33,7 +34,7 @@ export async function promoteUserToAdmin(userId: string) {
     .eq("id", userId);
 
   if (error) {
-    console.error("Promote error:", error);
+    logger.admin.error("promoteUserToAdmin failed", error, { userId });
     throw new Error(`Yetki güncellenemedi: ${error.message}`);
   }
   

@@ -3,6 +3,8 @@
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { revalidatePath } from "next/cache";
 import { Profile } from "@/types/domain";
+import { logger } from "@/lib/utils/logger";
+import { captureServerError } from "@/lib/monitoring/posthog-server";
 
 interface ProfileRow {
   id: string;
@@ -48,7 +50,8 @@ export async function getAllUsers(query?: string) {
     .order("created_at", { ascending: false });
 
   if (error) {
-    console.error("Error fetching all users:", error);
+    logger.admin.error("getAllUsers query failed", error, { query });
+    captureServerError("getAllUsers query failed", "admin", error, { query });
     return [];
   }
 

@@ -1,4 +1,5 @@
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { logger } from "@/lib/utils/logger";
 
 export interface SellerReview {
   id: string;
@@ -30,7 +31,7 @@ export async function getSellerReviews(sellerId: string) {
     .order("created_at", { ascending: false });
 
   if (error) {
-    console.error("Error fetching seller reviews:", error);
+    logger.db.error("getSellerReviews query failed", error, { sellerId });
     return [];
   }
 

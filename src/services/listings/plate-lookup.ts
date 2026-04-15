@@ -1,6 +1,7 @@
 "use server";
 
 import type { SupabaseClient } from "@supabase/supabase-js";
+import { logger } from "@/lib/utils/logger";
 
 export interface PlateLookupResult {
   brand: string;
@@ -75,7 +76,7 @@ export async function lookupVehicleByPlate(
       transmission: "otomatik",
     };
   } catch (error) {
-    console.error("Plate lookup error:", error);
+    logger.listings.error("Plate lookup failed", error, { plate });
     return null;
   }
 }

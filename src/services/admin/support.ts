@@ -2,6 +2,8 @@
 
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { revalidatePath } from "next/cache";
+import { logger } from "@/lib/utils/logger";
+import { captureServerError } from "@/lib/monitoring/posthog-server";
 
 interface SupportTicketRow {
   created_at: string;
@@ -21,7 +23,8 @@ export async function getSupportTickets() {
     .order("created_at", { ascending: false });
 
   if (error) {
-    console.error("Error fetching tickets:", error);
+    logger.admin.error("getSupportTickets query failed", error);
+    captureServerError("getSupportTickets query failed", "admin", error);
     return [];
   }
 

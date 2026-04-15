@@ -38,3 +38,7 @@ next-env.d.ts
 # local imports / scratch
 .ai-studio-import/
 .figma-import/
+
+# Sentry Config File
+.env.sentry-build-plugin
+.env.local
