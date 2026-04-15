@@ -3,9 +3,9 @@
 import { useEffect } from "react";
 import { usePathname, useSearchParams } from "next/navigation";
 import { PostHogProvider as PHProvider, usePostHog } from "posthog-js/react";
-import { initPostHog, posthog } from "@/lib/monitoring/posthog-client";
+import { posthog } from "@/lib/monitoring/posthog-client";
 
-// Inner component — tracks page views on route change
+// Tracks page views on route change
 function PostHogPageView() {
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -21,10 +21,7 @@ function PostHogPageView() {
 }
 
 export function PostHogProvider({ children }: { children: React.ReactNode }) {
-  useEffect(() => {
-    initPostHog();
-  }, []);
-
+  // posthog is initialized in instrumentation-client.ts — no need to call init here
   return (
     <PHProvider client={posthog}>
       <PostHogPageView />
