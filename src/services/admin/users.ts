@@ -35,27 +35,33 @@ interface ProfileRow {
   updated_at: string;
 }
 
-export async function getAllUsers(query?: string) {
-  const supabase = await createSupabaseServerClient();
-  
-  let rpc = supabase
-    .from("profiles")
-    .select("*");
+export async function getAllUsers(query?: string, page = 1, limit = 20) {
+  const admin = createSupabaseAdminClient();
+
+  // Auth kullanıcılarını çek (son giriş için)
+  const { data: authData } = await admin.auth.admin.listUsers({ page, perPage: 1000 });
+  const authMap = Object.fromEntries(
+    (authData?.users ?? []).map((u) => [u.id, u.last_sign_in_at ?? null])
+  );
+
+  let rpc = admin.from("profiles").select("*", { count: "exact" });
 
   if (query) {
     rpc = rpc.or(`full_name.ilike.%${query}%,phone.ilike.%${query}%,id.ilike.%${query}%`);
   }
 
-  const { data: profiles, error } = await rpc
-    .order("created_at", { ascending: false });
+  const from = (page - 1) * limit;
+  const { data: profiles, error, count } = await rpc
+    .order("created_at", { ascending: false })
+    .range(from, from + limit - 1);
 
   if (error) {
     logger.admin.error("getAllUsers query failed", error, { query });
     captureServerError("getAllUsers query failed", "admin", error, { query });
-    return [];
+    return { users: [] as Profile[], total: 0, page, limit };
   }
 
-  return (profiles || []).map((p: ProfileRow) => ({
+  const users = (profiles || []).map((p: ProfileRow) => ({
     id: p.id,
     fullName: p.full_name || "",
     phone: p.phone || "",
@@ -82,7 +88,10 @@ export async function getAllUsers(query?: string) {
     isBanned: p.is_banned,
     createdAt: p.created_at,
     updatedAt: p.updated_at,
-  })) as Profile[];
+    lastSignInAt: authMap[p.id] ?? null,
+  })) as (Profile & { lastSignInAt: string | null })[];
+
+  return { users, total: count ?? 0, page, limit };
 }
 
 export async function updateUserRole(userId: string, role: "user" | "admin" | "professional") {
@@ -152,6 +161,7 @@ export interface UserDetailData {
   profile: ReturnType<typeof mapProfile>;
   payments: UserPaymentRecord[];
   dopings: UserDopingRecord[];
+  listings: { id: string; title: string; status: string }[];
   listingCount: number;
   activeListingCount: number;
 }
@@ -220,6 +230,7 @@ export async function getUserDetail(userId: string): Promise<UserDetailData | nu
     profile: mapProfile(profile as ProfileRow),
     payments: (payments || []) as UserPaymentRecord[],
     dopings,
+    listings: (listings || []).map((l) => ({ id: l.id, title: l.title || l.id, status: l.status })),
     listingCount: (listings || []).length,
     activeListingCount: (listings || []).filter((l) => l.status === "approved").length,
   };

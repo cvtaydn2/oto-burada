@@ -48,7 +48,7 @@ const ADMIN_NAV_ITEMS = [
   },
   {
     title: "Destek Talepleri",
-    href: "/admin/support",
+    href: "/admin/tickets",
     icon: MessageSquare,
   },
   {

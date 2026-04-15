@@ -1,4 +1,4 @@
-import { Users, Plus, UserCog, ShieldCheck } from "lucide-react";
+import { Users, UserCog, ShieldCheck } from "lucide-react";
 import Link from "next/link";
 import { UserHeaderActions } from "@/components/admin/user-header-actions";
 import { UserSearch } from "@/components/admin/user-search";
@@ -6,27 +6,29 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { UserActionMenu } from "@/components/admin/user_action_menu";
-import { format } from "date-fns";
+import { format, formatDistanceToNow } from "date-fns";
 import { tr } from "date-fns/locale";
 import { requireAdminUser } from "@/lib/auth/session";
-
 import { getAllUsers } from "@/services/admin/users";
+import { SimplePagination } from "@/components/admin/simple-pagination";
 
 export const dynamic = "force-dynamic";
 
-export default async function AdminUserManagementPage({ 
-  searchParams 
-}: { 
-  searchParams: Promise<{ q?: string }> 
+export default async function AdminUserManagementPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ q?: string; page?: string }>;
 }) {
   await requireAdminUser();
-  const { q } = await searchParams;
-  const users = await getAllUsers(q);
+  const { q, page } = await searchParams;
+  const currentPage = Number(page) || 1;
+  const { users, total, limit } = await getAllUsers(q, currentPage);
+  const totalPages = Math.ceil(total / limit);
 
   const stats = [
-    { label: "Tüm Kullanıcılar", value: users.length.toLocaleString("tr-TR"), color: "text-slate-900" },
-    { label: "Aktif", value: users.filter(u => !u.isBanned).length.toLocaleString("tr-TR"), color: "text-emerald-600" },
-    { label: "Kurumsal", value: users.filter(u => u.userType === "professional").length.toLocaleString("tr-TR"), color: "text-blue-600" },
+    { label: "Tüm Kullanıcılar", value: total.toLocaleString("tr-TR"), color: "text-slate-900" },
+    { label: "Aktif", value: users.filter((u) => !u.isBanned).length.toLocaleString("tr-TR"), color: "text-emerald-600" },
+    { label: "Kurumsal", value: users.filter((u) => u.userType === "professional").length.toLocaleString("tr-TR"), color: "text-blue-600" },
   ];
 
   return (
@@ -40,7 +42,9 @@ export default async function AdminUserManagementPage({
           <h1 className="text-3xl font-black text-slate-800 tracking-tight">
             Kullanıcı <span className="text-blue-600">Yönetimi</span>
           </h1>
-          <p className="mt-1.5 text-sm text-slate-500 font-medium italic">Platform genelindeki üye kayıtlarını ve yetkilerini buradan kontrol edin.</p>
+          <p className="mt-1.5 text-sm text-slate-500 font-medium italic">
+            Platform genelindeki üye kayıtlarını ve yetkilerini buradan kontrol edin.
+          </p>
         </div>
         <UserHeaderActions />
       </div>
@@ -50,111 +54,138 @@ export default async function AdminUserManagementPage({
           {/* Stats bar */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {stats.map((stat, idx) => (
-              <div key={stat.label} className="flex flex-col p-6 rounded-2xl border border-slate-100 bg-white shadow-sm hover:border-blue-100 transition-all group relative overflow-hidden">
+              <div
+                key={stat.label}
+                className="flex flex-col p-6 rounded-2xl border border-slate-100 bg-white shadow-sm hover:border-blue-100 transition-all group relative overflow-hidden"
+              >
                 <div className="absolute -right-2 -top-2 size-16 bg-blue-50 rounded-full blur-xl opacity-0 group-hover:opacity-100 transition-opacity" />
                 <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">{stat.label}</span>
                 <div className="flex items-baseline gap-2">
                   <span className={cn("text-3xl font-black tracking-tighter", stat.color)}>{stat.value}</span>
-                  {idx === 0 && <span className="text-[10px] font-bold text-emerald-500 bg-emerald-50 px-2 py-0.5 rounded-md">+5%</span>}
+                  {idx === 0 && (
+                    <span className="text-[10px] font-bold text-slate-400 bg-slate-50 px-2 py-0.5 rounded-md">
+                      Sayfa {currentPage}/{totalPages}
+                    </span>
+                  )}
                 </div>
               </div>
             ))}
           </div>
 
           <div className="rounded-3xl border border-slate-200 bg-white overflow-hidden shadow-sm">
-            {/* Search and Filters */}
             <div className="p-6 border-b border-slate-100 bg-slate-50/30 flex flex-col md:flex-row md:items-center gap-4">
               <UserSearch defaultValue={q} />
             </div>
 
-            {/* Table */}
             <div className="overflow-x-auto">
               <table className="w-full text-left border-collapse">
                 <thead>
                   <tr className="bg-slate-50/50 border-b border-slate-100">
                     <th className="p-6 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Profil</th>
                     <th className="p-6 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">İletişim</th>
-                    <th className="p-6 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Rol / Yetki</th>
-                    <th className="p-6 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Kayıt Tarihi</th>
-                    <th className="p-6 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Durum</th>
+                    <th className="p-6 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Rol</th>
+                    <th className="p-6 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Kredi</th>
+                    <th className="p-6 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Kayıt</th>
                     <th className="p-6 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Son Giriş</th>
-                    <th className="p-6 text-right text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Yönetim</th>
+                    <th className="p-6 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Durum</th>
+                    <th className="p-6 text-right text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">İşlem</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-50">
-                  {users.map((u) => (
-                    <tr key={u.id} className="group transition-colors hover:bg-blue-50/20">
-                      <td className="p-6">
-                        <div className="flex items-center gap-4">
-                          <Link href={`/admin/users/${u.id}`}>
-                          <div className={cn(
-                            "flex size-11 items-center justify-center rounded-xl text-sm font-black transition-all group-hover:scale-110 cursor-pointer",
-                            u.role === "admin" ? "bg-blue-600 text-white shadow-md shadow-blue-100" : "bg-slate-100 text-slate-500"
-                          )}>
-                            {(u.fullName || "U")[0].toUpperCase()}
+                  {users.map((u) => {
+                    const userWithLogin = u as typeof u & { lastSignInAt: string | null };
+                    return (
+                      <tr key={u.id} className="group transition-colors hover:bg-blue-50/20">
+                        <td className="p-6">
+                          <div className="flex items-center gap-4">
+                            <Link href={`/admin/users/${u.id}`}>
+                              <div
+                                className={cn(
+                                  "flex size-11 items-center justify-center rounded-xl text-sm font-black transition-all group-hover:scale-110 cursor-pointer",
+                                  u.role === "admin"
+                                    ? "bg-blue-600 text-white shadow-md shadow-blue-100"
+                                    : "bg-slate-100 text-slate-500",
+                                )}
+                              >
+                                {(u.fullName || "U")[0].toUpperCase()}
+                              </div>
+                            </Link>
+                            <div>
+                              <Link
+                                href={`/admin/users/${u.id}`}
+                                className="text-sm font-black text-slate-800 block leading-none mb-1 group-hover:text-blue-600 transition-colors uppercase hover:underline"
+                              >
+                                {u.fullName || "İsimsiz Kullanıcı"}
+                              </Link>
+                              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-tighter italic">
+                                #{u.id.substring(0, 8)}
+                              </span>
+                            </div>
                           </div>
-                          </Link>
-                          <div>
-                            <Link href={`/admin/users/${u.id}`} className="text-sm font-black text-slate-800 block leading-none mb-1 group-hover:text-blue-600 transition-colors uppercase hover:underline">{u.fullName || "İsimsiz Kullanıcı"}</Link>
-                            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-tighter italic">ID: #{u.id.substring(0, 8)}</span>
+                        </td>
+                        <td className="p-6">
+                          <span className="text-sm font-medium text-slate-500 italic lowercase">
+                            {u.phone || "—"}
+                          </span>
+                        </td>
+                        <td className="p-6">
+                          <Badge
+                            variant={u.role === "admin" ? "default" : u.userType === "professional" ? "secondary" : "outline"}
+                            className={cn(
+                              "text-[10px] font-black px-3 py-1 rounded-lg uppercase tracking-wider",
+                              u.role === "admin" ? "bg-blue-600 text-white" : "",
+                            )}
+                          >
+                            {u.role === "admin" ? "Admin" : u.userType === "professional" ? "Kurumsal" : "Bireysel"}
+                          </Badge>
+                        </td>
+                        <td className="p-6">
+                          <span className="text-xs font-black text-indigo-600">
+                            {(u.balanceCredits ?? 0)} kr
+                          </span>
+                        </td>
+                        <td className="p-6">
+                          <span className="text-xs font-bold text-slate-500">
+                            {u.createdAt ? format(new Date(u.createdAt), "dd MMM yy", { locale: tr }) : "—"}
+                          </span>
+                        </td>
+                        <td className="p-6">
+                          <span className="text-xs font-bold text-slate-400">
+                            {userWithLogin.lastSignInAt
+                              ? formatDistanceToNow(new Date(userWithLogin.lastSignInAt), { addSuffix: true, locale: tr })
+                              : "—"}
+                          </span>
+                        </td>
+                        <td className="p-6">
+                          <div className="flex items-center gap-2">
+                            <div
+                              className={cn(
+                                "size-2 rounded-full",
+                                !u.isBanned ? "bg-emerald-500 animate-pulse" : "bg-slate-300",
+                              )}
+                            />
+                            <span
+                              className={cn(
+                                "text-[10px] font-black uppercase tracking-widest",
+                                !u.isBanned ? "text-emerald-600" : "text-slate-400",
+                              )}
+                            >
+                              {!u.isBanned ? "Aktif" : "Yasaklı"}
+                            </span>
                           </div>
-                        </div>
-                      </td>
-                      <td className="p-6">
-                        <span className="text-sm font-medium text-slate-500 italic lowercase">{u.phone || "Telefon Yok"}</span>
-                      </td>
-                      <td className="p-6">
-                        <Badge
-                          variant={
-                            u.role === "admin"
-                              ? "default"
-                              : u.userType === "professional"
-                              ? "secondary"
-                              : "outline"
-                          }
-                          className={cn(
-                             "text-[10px] font-black px-3 py-1 rounded-lg uppercase tracking-wider",
-                             u.role === "admin" ? "bg-blue-600 text-white" : ""
-                          )}
-                        >
-                          {u.role === "admin" ? "Admin" : u.userType === "professional" ? "Kurumsal" : "Bireysel"}
-                        </Badge>
-                      </td>
-                      <td className="p-6">
-                        <span className="text-xs font-bold text-slate-500">
-                          {u.createdAt ? format(new Date(u.createdAt), "dd MMM yyyy", { locale: tr }) : "-"}
-                        </span>
-                      </td>
-                      <td className="p-6">
-                        <div className="flex items-center gap-2">
-                          <div className={cn(
-                            "size-2 rounded-full",
-                            !u.isBanned ? "bg-emerald-500 animate-pulse" : "bg-slate-300"
-                          )} />
-                          <span className={cn(
-                            "text-[10px] font-black uppercase tracking-widest",
-                            !u.isBanned ? "text-emerald-600" : "text-slate-400"
-                          )}>{!u.isBanned ? "Aktif" : "Yasaklı"}</span>
-                        </div>
-                      </td>
-                      <td className="p-6 text-xs font-medium text-slate-400 italic">
-                        —
-                      </td>
-                      <td className="p-6 text-right">
-                        <UserActionMenu 
-                          userId={u.id}
-                          isBanned={!!u.isBanned}
-                          isAdmin={u.role === "admin"}
-                        />
-                      </td>
-                    </tr>
-                  ))}
+                        </td>
+                        <td className="p-6 text-right">
+                          <UserActionMenu userId={u.id} isBanned={!!u.isBanned} isAdmin={u.role === "admin"} />
+                        </td>
+                      </tr>
+                    );
+                  })}
                 </tbody>
               </table>
             </div>
-            {/* Pagination Placeholder */}
-            <div className="p-4 bg-slate-50/50 border-t border-slate-100 flex items-center justify-center">
-               <span className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] py-2">Sonraki adımlar için kaydırın</span>
+
+            <div className="p-4 bg-slate-50/50 border-t border-slate-100">
+              <SimplePagination currentPage={currentPage} totalPages={totalPages} />
             </div>
           </div>
         </div>
@@ -164,35 +195,48 @@ export default async function AdminUserManagementPage({
           <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
             <div className="flex items-center gap-3 mb-6">
               <div className="size-10 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center">
-                 <UserCog size={18} />
+                <UserCog size={18} />
               </div>
               <h3 className="text-base font-black text-slate-800 tracking-tight">Hızlı İşlemler</h3>
             </div>
             <div className="space-y-3">
-              <Button className="w-full rounded-xl bg-blue-50 text-blue-600 border border-blue-100 hover:bg-blue-600 hover:text-white font-bold text-xs h-11 flex items-center gap-2 justify-start px-4 transition-all" disabled title="Yakında aktif">
-                <Plus size={16} />
-                Yeni Üye Ekle
-              </Button>
-              <Button variant="outline" className="w-full rounded-xl border-slate-100 text-slate-600 font-bold text-xs h-11 flex items-center gap-2 justify-start px-4 hover:bg-slate-50 transition-all" disabled title="Yakında aktif">
+              <Button
+                variant="outline"
+                className="w-full rounded-xl border-slate-100 text-slate-600 font-bold text-xs h-11 flex items-center gap-2 justify-start px-4 hover:bg-slate-50 transition-all"
+                disabled
+                title="Yakında aktif"
+              >
                 <Users size={16} />
                 Toplu İçe Aktar
               </Button>
               <Link href="/admin/roles">
-                <Button variant="outline" className="w-full rounded-xl border-slate-100 text-slate-600 font-bold text-xs h-11 flex items-center gap-2 justify-start px-4 hover:bg-slate-50 transition-all">
+                <Button
+                  variant="outline"
+                  className="w-full rounded-xl border-slate-100 text-slate-600 font-bold text-xs h-11 flex items-center gap-2 justify-start px-4 hover:bg-slate-50 transition-all"
+                >
                   <ShieldCheck size={16} />
                   Yetki Matrisi
                 </Button>
               </Link>
             </div>
           </div>
-          
-          <div className="rounded-3xl border border-blue-600 bg-blue-600 p-6 shadow-lg shadow-blue-100 relative overflow-hidden group">
-             <div className="absolute -right-8 -bottom-8 size-32 bg-white/10 rounded-full blur-3xl group-hover:scale-125 transition-transform" />
-             <h4 className="text-white font-black text-lg leading-tight mb-2">Güvenlik<br/>Kontrolü</h4>
-             <p className="text-blue-100 text-xs font-medium mb-6 leading-relaxed">Şüpheli girişleri ve bekleyen onayları periyodik olarak kontrol etmeyi unutmayın.</p>
-             <Button className="w-full bg-white text-blue-600 hover:bg-blue-50 rounded-xl font-black text-[10px] tracking-widest uppercase h-10">
-                SİSTEMİ TARA
-             </Button>
+
+          <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+            <h4 className="text-sm font-black text-slate-800 mb-3">Özet</h4>
+            <div className="space-y-2 text-xs text-slate-500">
+              <div className="flex justify-between">
+                <span>Toplam kayıt</span>
+                <span className="font-black text-slate-800">{total}</span>
+              </div>
+              <div className="flex justify-between">
+                <span>Bu sayfada</span>
+                <span className="font-black text-slate-800">{users.length}</span>
+              </div>
+              <div className="flex justify-between">
+                <span>Yasaklı</span>
+                <span className="font-black text-rose-600">{users.filter((u) => u.isBanned).length}</span>
+              </div>
+            </div>
           </div>
         </div>
       </div>

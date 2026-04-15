@@ -41,7 +41,7 @@ const DOPING_LABELS: Record<string, string> = {
 
 export function AdminUserDetailClient({ detail, userId }: AdminUserDetailClientProps) {
   const router = useRouter();
-  const { profile, payments, dopings, listingCount, activeListingCount } = detail;
+  const { profile, payments, dopings, listings, listingCount, activeListingCount } = detail;
 
   // Grant credits state
   const [credits, setCredits] = useState(10);
@@ -318,13 +318,23 @@ export function AdminUserDetailClient({ detail, userId }: AdminUserDetailClientP
             </div>
             <div className="space-y-4">
               <div className="space-y-2">
-                <Label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">İlan ID (UUID)</Label>
-                <Input
-                  value={dopingListingId}
-                  onChange={(e) => setDopingListingId(e.target.value)}
-                  placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
-                  className="h-11 rounded-xl font-mono text-sm"
-                />
+                <Label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">İlan Seç</Label>
+                {listings.length > 0 ? (
+                  <select
+                    value={dopingListingId}
+                    onChange={(e) => setDopingListingId(e.target.value)}
+                    className="w-full h-11 rounded-xl border border-slate-200 bg-white px-3 text-sm font-medium text-slate-700 focus:outline-none focus:border-blue-300 focus:ring-2 focus:ring-blue-50"
+                  >
+                    <option value="">— İlan seçin —</option>
+                    {listings.map((l) => (
+                      <option key={l.id} value={l.id}>
+                        {l.title} ({l.status})
+                      </option>
+                    ))}
+                  </select>
+                ) : (
+                  <p className="text-xs text-slate-400 italic py-2">Bu kullanıcının ilanı yok.</p>
+                )}
               </div>
               <div className="space-y-2">
                 <Label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Doping Türleri</Label>

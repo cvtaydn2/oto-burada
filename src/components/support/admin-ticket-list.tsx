@@ -28,16 +28,25 @@ const PRIORITY_BADGES: Record<string, string> = {
 
 interface AdminTicketListProps {
   tickets: Ticket[];
+  initialStatus?: TicketStatus | "all";
+  initialQuery?: string;
 }
 
-export function AdminTicketList({ tickets: initialTickets }: AdminTicketListProps) {
+export function AdminTicketList({ tickets: initialTickets, initialStatus = "all", initialQuery = "" }: AdminTicketListProps) {
   const router = useRouter();
   const [tickets] = useState(initialTickets);
-  const [filter, setFilter] = useState<TicketStatus | "all">("all");
+  const [filter, setFilter] = useState<TicketStatus | "all">(initialStatus);
+  const [searchQuery, setSearchQuery] = useState(initialQuery);
   const [replyingTo, setReplyingTo] = useState<string | null>(null);
   const [reply, setReply] = useState("");
 
-  const filtered = filter === "all" ? tickets : tickets.filter((t) => t.status === filter);
+  const filtered = tickets
+    .filter((t) => filter === "all" || t.status === filter)
+    .filter((t) =>
+      !searchQuery ||
+      t.subject.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      t.description.toLowerCase().includes(searchQuery.toLowerCase()),
+    );
 
   const handleStatusChange = async (ticketId: string, status: TicketStatus) => {
     try {
@@ -82,6 +91,14 @@ export function AdminTicketList({ tickets: initialTickets }: AdminTicketListProp
 
   return (
     <div className="space-y-4 p-6">
+      {/* Arama */}
+      <input
+        type="text"
+        value={searchQuery}
+        onChange={(e) => setSearchQuery(e.target.value)}
+        placeholder="Konu veya içerik ara..."
+        className="w-full h-10 rounded-xl border border-slate-200 px-4 text-sm outline-none focus:border-emerald-300 focus:ring-2 focus:ring-emerald-50 transition-all"
+      />
       <div className="flex gap-2 flex-wrap">
         <button
           onClick={() => setFilter("all")}
