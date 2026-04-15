@@ -1,5 +1,6 @@
 import { Redis } from "@upstash/redis";
 import { sms } from "@/lib/sms";
+import { logger } from "@/lib/utils/logger";
 
 const OTP_TTL = 300; // 5 minutes
 let redisClient: Redis | null | undefined;
@@ -53,7 +54,7 @@ export async function sendPhoneOTP(phone: string): Promise<{ success: boolean; e
 
     return { success: true };
   } catch (error) {
-    console.error("SMS OTP Send Error:", error);
+    logger.sms.error("sendPhoneOTP failed", error, { phone: normalizedPhone });
     return { success: false, error: "SMS gönderimi sırasında bir hata oluştu." };
   }
 }
@@ -82,7 +83,7 @@ export async function verifyPhoneOTP(phone: string, code: string): Promise<{ suc
     
     return { success: true };
   } catch (error) {
-    console.error("SMS OTP Verify Error:", error);
+    logger.sms.error("verifyPhoneOTP failed", error, { phone: normalizedPhone });
     return { success: false, error: "Doğrulama sırasında bir hata oluştu." };
   }
 }

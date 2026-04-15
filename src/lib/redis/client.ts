@@ -1,4 +1,5 @@
 import { Redis } from "@upstash/redis";
+import { logger } from "@/lib/utils/logger";
 
 const getRedisConfig = () => {
   if (process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN) {
@@ -20,7 +21,8 @@ export async function getCachedData<T>(key: string): Promise<T | null> {
     const data = await redis.get(key);
     if (!data) return null;
     return data as T;
-  } catch {
+  } catch (error) {
+    logger.db.warn("Redis getCachedData failed", { key }, error);
     return null;
   }
 }
@@ -29,8 +31,8 @@ export async function setCachedData<T>(key: string, data: T, ttlSeconds: number 
   if (!redis) return;
   try {
     await redis.set(key, data, { ex: ttlSeconds });
-  } catch {
-    // Silent fail
+  } catch (error) {
+    logger.db.warn("Redis setCachedData failed", { key }, error);
   }
 }
 
@@ -38,8 +40,8 @@ export async function invalidateCache(key: string) {
   if (!redis) return;
   try {
     await redis.del(key);
-  } catch {
-    // Silent fail
+  } catch (error) {
+    logger.db.warn("Redis invalidateCache failed", { key }, error);
   }
 }
 

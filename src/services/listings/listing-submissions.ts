@@ -5,6 +5,7 @@ import { hasSupabaseAdminEnv } from "@/lib/supabase/env";
 import { listingSchema } from "@/lib/validators";
 import type { Listing, ListingCreateInput, ListingFilters, UserRole, Profile } from "@/types";
 import { listingSubmissionsCookieName } from "./constants";
+import { logger } from "@/lib/utils/logger";
 
 const turkishCharacterMap: Record<string, string> = {
   ç: "c",
@@ -508,7 +509,9 @@ export async function getDatabaseListings(options?: {
   const primaryResult = await applyListingQueryOptions(listingSelect).returns<ListingRow[]>();
 
   if (primaryResult.error) {
-    console.error("[getDatabaseListings] Primary query failed:", primaryResult.error.message, primaryResult.error.details, primaryResult.error.hint);
+    logger.listings.error("getDatabaseListings primary query failed", primaryResult.error, {
+      message: primaryResult.error.message,
+    });
   }
   
   if (primaryResult.data && primaryResult.data.length > 0) {
@@ -520,7 +523,9 @@ export async function getDatabaseListings(options?: {
 
   if (fallbackResult.error || !fallbackResult.data) {
     if (fallbackResult.error) {
-       console.error("[getDatabaseListings] Fallback query failed:", fallbackResult.error.message);
+      logger.listings.error("getDatabaseListings fallback query failed", fallbackResult.error, {
+        message: fallbackResult.error.message,
+      });
     }
     return null;
   }
@@ -606,7 +611,9 @@ export async function getFilteredDatabaseListings(
   if (isDefaultView) {
     try {
       const { setCachedData } = await import("@/lib/redis/client");
-      setCachedData(cacheKey, result, 600).catch(console.error); // 10 min cache
+      setCachedData(cacheKey, result, 600).catch((err) =>
+        logger.db.warn("Redis cache set failed for listings", { cacheKey }, err)
+      );
     } catch {
       // Ignored during build/edge
     }

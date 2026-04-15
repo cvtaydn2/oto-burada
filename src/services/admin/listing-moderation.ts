@@ -1,7 +1,7 @@
 import { createDatabaseNotification } from "@/services/notifications/notification-records";
 import { moderateDatabaseListing } from "@/services/listings/listing-submissions";
 import type { Listing } from "@/types";
-
+import { logger } from "@/lib/utils/logger";
 import { createAdminModerationAction } from "./moderation-actions";
 
 export type ListingModerationDecision = "approve" | "reject";
@@ -54,10 +54,14 @@ async function createModerationSideEffects(
   // If approved, recalculate market stats and invalidate cache
   if (action === "approve") {
     const { invalidateCache } = await import("@/lib/redis/client");
-    invalidateCache("listings:approved").catch(console.error);
+    invalidateCache("listings:approved").catch((err) =>
+      logger.admin.warn("Cache invalidation failed after approval", { listingId: listing.id }, err)
+    );
 
     const { updateMarketStats } = await import("@/services/market/market-stats");
-    updateMarketStats(listing.brand, listing.model, listing.year).catch(console.error);
+    updateMarketStats(listing.brand, listing.model, listing.year).catch((err) =>
+      logger.market.warn("Market stats update failed after approval", { listingId: listing.id }, err)
+    );
   }
 }
 

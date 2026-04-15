@@ -1,4 +1,5 @@
 import type { PaymentRequest, PaymentResponse, PaymentProvider } from "./types";
+import { logger } from "@/lib/utils/logger";
 
 export class IyzicoProvider implements PaymentProvider {
   // In a real scenario, we'd use 'iyzipay' npm package.
@@ -27,7 +28,8 @@ export class IyzicoProvider implements PaymentProvider {
       // const result = await iyzico.payment.create({...});
       
       return { success: true, status: "success", transactionId: "real_tx_id" };
-    } catch {
+    } catch (error) {
+      logger.payments.error("Iyzico processPayment failed", error, { listingId: request.listingId, amount: request.amount });
       return { success: false, status: "failure", error: "Ödeme geçidi hatası." };
     }
   }
