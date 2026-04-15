@@ -1,6 +1,6 @@
 "use client";
 
-import { Camera, MapPin, Phone, UserRound } from "lucide-react";
+import { Camera, MapPin, Mail, UserRound } from "lucide-react";
 import { useActionState } from "react";
 
 import type { ProfileActionState } from "@/lib/auth/profile-actions";
@@ -23,7 +23,7 @@ interface ProfileFormProps {
     avatarUrl: string;
   };
   cityOptions: string[];
-  isPhoneVerified?: boolean;
+  isEmailVerified?: boolean;
 }
 
 const initialState: ProfileActionState = {};
@@ -32,11 +32,11 @@ export function ProfileForm({
   action,
   initialValues,
   cityOptions,
-  isPhoneVerified = false,
+  isEmailVerified = false,
 }: ProfileFormProps) {
   const [state, formAction] = useActionState(action, initialState);
   const [isVerifyDialogOpen, setIsVerifyDialogOpen] = useState(false);
-  const [isVerifiedLocally, setIsVerifiedLocally] = useState(isPhoneVerified);
+  const [isVerifiedLocally, setIsVerifiedLocally] = useState(isEmailVerified);
 
   const values = {
     fullName: state.fields?.fullName ?? initialValues.fullName,
@@ -61,8 +61,8 @@ export function ProfileForm({
           <div className="rounded-[1.25rem] border border-border/70 bg-muted/20 p-4">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
-                <Phone className="size-4 text-primary" />
-                Telefon
+                <Mail className="size-4 text-primary" />
+                E-posta
               </div>
               {isVerifiedLocally ? (
                 <CheckCircle2 className="size-4 text-emerald-500" />
@@ -71,7 +71,7 @@ export function ProfileForm({
               )}
             </div>
             <p className="mt-2 text-sm font-semibold text-foreground">
-              {values.phone || "Henüz eklenmedi"}
+              {isVerifiedLocally ? "Doğrulandı" : "Doğrulanmadı"}
             </p>
           </div>
           <div className="rounded-[1.25rem] border border-border/70 bg-muted/20 p-4">
@@ -124,13 +124,13 @@ export function ProfileForm({
             <div className="space-y-2 text-sm font-medium text-foreground">
               <div className="flex items-center justify-between">
                 <Label htmlFor="phone">Telefon</Label>
-                {values.phone && !isVerifiedLocally && (
+                {!isVerifiedLocally && (
                   <button
                     type="button"
                     onClick={() => setIsVerifyDialogOpen(true)}
                     className="text-xs font-bold text-primary hover:underline"
                   >
-                    Hemen Doğrula
+                    E-posta Doğrula
                   </button>
                 )}
               </div>

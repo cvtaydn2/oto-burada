@@ -37,7 +37,8 @@ interface ListingCreateFormProps {
   brands: BrandCatalogItem[];
   cities: CityOption[];
   initialListing?: Listing | null;
-  isPhoneVerified?: boolean;
+  isPhoneVerified?: boolean; // kept for backward compat
+  isEmailVerified?: boolean;
 }
 
 interface SubmitState {
@@ -168,10 +169,12 @@ export function ListingCreateForm({
   initialListing,
   initialValues,
   isPhoneVerified = false,
+  isEmailVerified = false,
 }: ListingCreateFormProps) {
   const router = useRouter();
   const isEditing = Boolean(initialListing);
-  const [isPhoneVerifiedLocally, setIsPhoneVerifiedLocally] = useState(isPhoneVerified);
+  // Email doğrulama — phone doğrulama kaldırıldı
+  const [isEmailVerifiedLocally, setIsEmailVerifiedLocally] = useState(isEmailVerified || isPhoneVerified);
   const [isVerifyDialogOpen, setIsVerifyDialogOpen] = useState(false);
   const [submitState, setSubmitState] = useState<SubmitState>(initialSubmitState);
   const [uploadStates, setUploadStates] = useState<Record<string, UploadState>>({});
@@ -421,7 +424,7 @@ export function ListingCreateForm({
   };
 
   const onSubmit = handleSubmit(async (values) => {
-    if (!isPhoneVerifiedLocally) {
+    if (!isEmailVerifiedLocally) {
       setIsVerifyDialogOpen(true);
       return;
     }
@@ -559,9 +562,8 @@ export function ListingCreateForm({
       <PhoneVerificationDialog
         isOpen={isVerifyDialogOpen}
         onOpenChange={setIsVerifyDialogOpen}
-        initialPhone={getValues("whatsappPhone")}
         onSuccess={() => {
-          setIsPhoneVerifiedLocally(true);
+          setIsEmailVerifiedLocally(true);
           setIsVerifyDialogOpen(false);
           onSubmit();
         }}

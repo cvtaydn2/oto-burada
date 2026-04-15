@@ -50,7 +50,7 @@ export default async function DashboardListingsPage({ searchParams }: DashboardL
           },
         ].sort((left, right) => left.brand.localeCompare(right.brand, "tr"))
       : references.brands;
-  const isPhoneVerified = profile?.phoneVerified ?? false;
+  const isEmailVerified = profile?.emailVerified ?? false;
 
   const mergedCities = mergeCityOptions(references.cities, [
     metadata.city ?? "",
@@ -72,12 +72,12 @@ export default async function DashboardListingsPage({ searchParams }: DashboardL
         <div className="flex items-center gap-4">
           <div className={cn(
             "flex items-center gap-2 px-4 py-2 rounded-xl border text-xs font-bold transition-all",
-            isPhoneVerified 
+            isEmailVerified 
               ? "bg-emerald-50 border-emerald-100 text-emerald-600 shadow-sm shadow-emerald-50/50" 
               : "bg-amber-50 border-amber-100 text-amber-600 shadow-sm shadow-amber-50/50"
           )}>
-            <div className={cn("w-1.5 h-1.5 rounded-full animate-pulse", isPhoneVerified ? "bg-emerald-500" : "bg-amber-500")} />
-            {isPhoneVerified ? "Telefon Doğrulandı" : "Telefon Doğrulanmadı"}
+            <div className={cn("w-1.5 h-1.5 rounded-full animate-pulse", isEmailVerified ? "bg-emerald-500" : "bg-amber-500")} />
+            {isEmailVerified ? "E-posta Doğrulandı" : "E-posta Doğrulanmadı"}
           </div>
           <Link
             href="/dashboard/listings?create=true"
@@ -115,6 +115,7 @@ export default async function DashboardListingsPage({ searchParams }: DashboardL
             }}
             brands={mergedBrands}
             cities={mergedCities}
+            isEmailVerified={isEmailVerified}
           />
         </div>
       </MyListingsPanel>

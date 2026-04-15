@@ -35,17 +35,15 @@ export function getSellerTrustSummary(
     score += 2;
   }
 
-  if (seller.phoneVerified) {
-    signals.push("Telefon doğrulandı");
-    score += 1.8;
-  } else if (seller.phone.trim().length > 0) {
-    signals.push("Telefon bilgisi mevcut");
-    score += 1.1;
-  }
-
+  // Email doğrulama — SMS OTP kaldırıldı, email OTP kullanılıyor
   if (seller.emailVerified) {
     signals.push("E-posta doğrulandı");
-    score += 0.8;
+    score += 1.8;
+  }
+
+  if (seller.phone && seller.phone.trim().length > 0) {
+    signals.push("Telefon bilgisi mevcut");
+    score += 1.1;
   }
 
   if (seller.city.trim().length > 0) {
@@ -64,7 +62,7 @@ export function getSellerTrustSummary(
       0,
       new Date().getFullYear() - membershipStart.getFullYear(),
     );
-    signals.push(`${membershipStart.getFullYear()} den beri uye`);
+    signals.push(`${membershipStart.getFullYear()} den beri üye`);
     score += Math.min(yearsAsMember, 4) * 0.35;
   }
 
@@ -72,13 +70,11 @@ export function getSellerTrustSummary(
     badgeLabel:
       seller.identityVerified
         ? "Kimliği doğrulanmış satıcı"
-        : seller.phoneVerified && seller.emailVerified
-          ? "İletişim bilgileri doğrulanmış"
-          : seller.phoneVerified
-            ? "Telefonu doğrulanmış"
-            : seller.phone.trim().length > 0
-              ? "Profil bilgileri mevcut"
-              : "Profil bilgileri eksik",
+        : seller.emailVerified
+          ? "E-posta doğrulanmış satıcı"
+          : seller.phone && seller.phone.trim().length > 0
+            ? "Profil bilgileri mevcut"
+            : "Profil bilgileri eksik",
     score: roundToSingleDecimal(Math.min(score, 9.9)),
     signals: signals.slice(0, 4),
   };
