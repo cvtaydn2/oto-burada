@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
+import posthog from "posthog-js";
 import { Button } from "@/components/ui/button";
 import { AlertTriangle, Home } from "lucide-react";
 
@@ -12,7 +13,7 @@ export default function Error({
   reset: () => void;
 }) {
   useEffect(() => {
-    console.error("Sayfa hatası:", error);
+    posthog.captureException(error);
   }, [error]);
 
   return (
