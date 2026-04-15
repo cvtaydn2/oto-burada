@@ -1,32 +1,37 @@
 import { PostHog } from "posthog-node";
 
-let client: PostHog | null = null;
+let posthogInstance: PostHog | null = null;
 
-function getPostHogClient(): PostHog | null {
-  if (!process.env.NEXT_PUBLIC_POSTHOG_KEY) return null;
+export function getPostHogServer(): PostHog | null {
+  const token = process.env.NEXT_PUBLIC_POSTHOG_PROJECT_TOKEN ?? process.env.NEXT_PUBLIC_POSTHOG_KEY;
+  if (!token) return null;
 
-  if (!client) {
-    client = new PostHog(process.env.NEXT_PUBLIC_POSTHOG_KEY, {
+  if (!posthogInstance) {
+    posthogInstance = new PostHog(token, {
       host: process.env.NEXT_PUBLIC_POSTHOG_HOST ?? "https://us.i.posthog.com",
-      flushAt: 1,   // flush immediately in serverless
+      flushAt: 1,       // flush immediately — important for serverless
       flushInterval: 0,
     });
   }
 
-  return client;
+  return posthogInstance;
 }
 
 /**
- * Capture a server-side error event in PostHog.
- * Automatically called by logger.ts on error/warn level.
+ * Capture a server-side exception in PostHog.
+ * Use in server actions and API routes.
+ *
+ * @example
+ * captureServerError("DB query failed", "database", error, { table: "listings" })
  */
 export function captureServerError(
   message: string,
   context: string,
   error?: unknown,
   data?: Record<string, unknown>,
+  distinctId?: string,
 ) {
-  const ph = getPostHogClient();
+  const ph = getPostHogServer();
   if (!ph) return;
 
   const properties: Record<string, unknown> = {
@@ -39,29 +44,33 @@ export function captureServerError(
   if (error instanceof Error) {
     properties.error_name = error.name;
     properties.error_message = error.message;
-    // Don't send full stack to PostHog — too noisy
     properties.error_stack_first_line = error.stack?.split("\n")[1]?.trim();
   } else if (error) {
     properties.error_raw = String(error);
   }
 
-  // Use a system user ID for server-side events
-  ph.capture({
-    distinctId: "server",
-    event: "$exception",
-    properties,
-  });
+  if (error instanceof Error) {
+    ph.captureException(error, distinctId ?? "server", { properties });
+  } else {
+    ph.capture({
+      distinctId: distinctId ?? "server",
+      event: "$exception",
+      properties,
+    });
+  }
 
-  // Don't await — fire and forget in serverless
   ph.flush().catch(() => {});
 }
 
+/**
+ * Capture a server-side warning in PostHog.
+ */
 export function captureServerWarning(
   message: string,
   context: string,
   data?: Record<string, unknown>,
 ) {
-  const ph = getPostHogClient();
+  const ph = getPostHogServer();
   if (!ph) return;
 
   ph.capture({

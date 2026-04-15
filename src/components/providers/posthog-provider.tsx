@@ -1,28 +1,34 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect } from "react";
 import { usePathname, useSearchParams } from "next/navigation";
+import { PostHogProvider as PHProvider, usePostHog } from "posthog-js/react";
 import { initPostHog, posthog } from "@/lib/monitoring/posthog-client";
 
-export function PostHogProvider({ children }: { children: React.ReactNode }) {
+// Inner component — tracks page views on route change
+function PostHogPageView() {
   const pathname = usePathname();
   const searchParams = useSearchParams();
-  const initialized = useRef(false);
+  const ph = usePostHog();
 
   useEffect(() => {
-    if (!initialized.current) {
-      initPostHog();
-      initialized.current = true;
-    }
+    if (!ph) return;
+    const url = pathname + (searchParams?.toString() ? `?${searchParams}` : "");
+    ph.capture("$pageview", { $current_url: url });
+  }, [pathname, searchParams, ph]);
+
+  return null;
+}
+
+export function PostHogProvider({ children }: { children: React.ReactNode }) {
+  useEffect(() => {
+    initPostHog();
   }, []);
 
-  // Track page views on route change
-  useEffect(() => {
-    if (typeof window === "undefined") return;
-
-    const url = pathname + (searchParams?.toString() ? `?${searchParams}` : "");
-    posthog.capture("$pageview", { $current_url: url });
-  }, [pathname, searchParams]);
-
-  return <>{children}</>;
+  return (
+    <PHProvider client={posthog}>
+      <PostHogPageView />
+      {children}
+    </PHProvider>
+  );
 }

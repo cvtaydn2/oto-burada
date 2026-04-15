@@ -1,7 +1,8 @@
 "use client";
 
+import posthog from "posthog-js";
+import NextError from "next/error";
 import { useEffect } from "react";
-import { posthog } from "@/lib/monitoring/posthog-client";
 
 export default function GlobalError({
   error,
@@ -11,26 +12,18 @@ export default function GlobalError({
   reset: () => void;
 }) {
   useEffect(() => {
-    // Report unhandled global errors to PostHog
-    posthog.capture("$exception", {
-      error_name: error.name,
-      error_message: error.message,
-      error_digest: error.digest,
-      context: "global_error_boundary",
-    });
+    posthog.captureException(error);
   }, [error]);
 
   return (
     <html lang="tr">
-      <body className="flex min-h-screen items-center justify-center bg-slate-50 p-6">
-        <div className="max-w-md text-center space-y-4">
-          <h1 className="text-2xl font-black text-slate-900">Beklenmedik bir hata oluştu</h1>
-          <p className="text-slate-500 text-sm">
-            Ekibimiz otomatik olarak bilgilendirildi. Lütfen sayfayı yenileyin.
-          </p>
+      <body>
+        {/* NextError renders a generic error page — statusCode 0 = unknown */}
+        <NextError statusCode={0} />
+        <div className="fixed bottom-6 left-1/2 -translate-x-1/2">
           <button
             onClick={reset}
-            className="rounded-xl bg-blue-600 px-6 py-3 text-sm font-bold text-white hover:bg-blue-700 transition-colors"
+            className="rounded-xl bg-blue-600 px-6 py-3 text-sm font-bold text-white shadow-lg hover:bg-blue-700 transition-colors"
           >
             Tekrar Dene
           </button>
