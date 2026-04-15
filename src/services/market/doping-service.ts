@@ -78,14 +78,17 @@ export async function applyDopingToListing(
 
   if (error) return { success: false, message: "Doping uygulanırken bir hata oluştu." };
 
-  // 5. Log payment with real/mock transaction data
+  // 5. Log payment — transaction_id metadata içinde saklanır (DB kolonu yok)
   await admin.from("payments").insert({
     user_id: userId,
     amount: dopingTypes.length * 50,
     provider: "iyzico",
-    transaction_id: paymentResult.transactionId,
     status: paymentResult.status,
-    metadata: { listingId, dopingTypes }
+    metadata: {
+      listingId,
+      dopingTypes,
+      transaction_id: paymentResult.transactionId
+    }
   });
 
   return { success: true, message: "Dopingler başarıyla uygulandı!" };

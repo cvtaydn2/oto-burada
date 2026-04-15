@@ -1,6 +1,7 @@
 "use server";
 
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
+import { logger } from "@/lib/utils/logger";
 
 export interface EidsVerificationInput {
   vin: string;
@@ -16,18 +17,21 @@ export async function verifyVehicleEids(input: EidsVerificationInput) {
   const { data: auditLog, error: auditError } = await admin
     .from("eids_audit_logs")
     .insert({
-      vin: input.vin,
-      license_plate: input.licensePlate,
-      seller_id: input.sellerId,
-      listing_id: input.listingId,
+      listing_id: input.listingId ?? null,
+      verified_by: input.sellerId,
+      verification_method: "eids_api",
       status: "pending",
-      performed_at: new Date().toISOString()
+      raw_response: {
+        vin: input.vin,
+        license_plate: input.licensePlate,
+        initiated_at: new Date().toISOString()
+      }
     })
     .select()
     .single();
 
   if (auditError) {
-    console.error("EİDS Audit Error:", auditError);
+    logger.auth.warn("EİDS Audit log failed", { message: auditError.message });
   }
 
   // 2. Simulate API Call to Government Systems (E-Devlet / Sigorta Bilgi Merkezi)
@@ -42,9 +46,10 @@ export async function verifyVehicleEids(input: EidsVerificationInput) {
       .from("eids_audit_logs")
       .update({ 
         status: isVerified ? "success" : "failed",
-        metadata: {
+        raw_response: {
           verification_code: Math.random().toString(36).substring(7).toUpperCase(),
-          system: "SBM-GIB-GATEWAY"
+          system: "SBM-GIB-GATEWAY",
+          verified_at: new Date().toISOString()
         }
       })
       .eq("id", auditLog.id);

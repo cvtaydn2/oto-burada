@@ -27,11 +27,11 @@ export async function verifyListingWithEIDS(listingId: string, userId: string): 
   // 1. Check if user has TC Identity verified in their profile
   const { data: profile } = await admin
     .from("profiles")
-    .select("identity_verified, id")
+    .select("is_verified, id")
     .eq("id", userId)
     .single();
 
-  if (!profile?.identity_verified) {
+  if (!profile?.is_verified) {
     return { 
       success: false, 
       message: "E-Devlet kimlik doğrulaması tamamlanmamış. Lütfen önce profilinizi doğrulayın." 

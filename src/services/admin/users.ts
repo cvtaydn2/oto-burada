@@ -12,9 +12,8 @@ interface ProfileRow {
   phone: string | null;
   city: string | null;
   avatar_url: string | null;
-  email_verified: boolean | null;
-  phone_verified: boolean | null;
-  identity_verified: boolean | null;
+  // DB'de email_verified / phone_verified / identity_verified kolonları yok
+  // is_verified tek doğrulama kolonu
   is_verified: boolean | null;
   role: string | null;
   user_type: string | null;
@@ -61,9 +60,9 @@ export async function getAllUsers(query?: string) {
     phone: p.phone || "",
     city: p.city || "",
     avatarUrl: p.avatar_url,
-    emailVerified: p.email_verified || false,
-    phoneVerified: p.phone_verified || false,
-    identityVerified: p.identity_verified || p.is_verified || false,
+    emailVerified: p.is_verified || false,
+    phoneVerified: p.is_verified || false,
+    identityVerified: p.is_verified || false,
     role: p.role || "user",
     userType: p.user_type || "individual",
     balanceCredits: p.balance_credits || 0,
