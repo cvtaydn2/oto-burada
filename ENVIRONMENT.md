@@ -28,6 +28,13 @@ Vercel üzerindeki ortam değişkenlerini (API anahtarları vb.) yerel makineniz
    ```
    Bu komut yerel dizininizde güncel bir `.env.local` oluşturur.
 
+## Supabase Storage Bucket Ayrımı
+
+- `SUPABASE_STORAGE_BUCKET_LISTINGS`: herkese açık listing görselleri için kullanılır.
+- `SUPABASE_STORAGE_BUCKET_DOCUMENTS`: ekspertiz ve benzeri hassas belgeler için private bucket olmalıdır.
+
+Belge bucket'ı için public read açılmamalı; uygulama bu dosyaları kısa ömürlü signed URL ile sunar.
+
 ## Dağıtım (Deployment)
 
 Uygulamayı Vercel'e manuel olarak göndermek için:

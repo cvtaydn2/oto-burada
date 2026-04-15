@@ -41,6 +41,11 @@ export function getSellerTrustSummary(
     score += 1.8;
   }
 
+  if (seller.phoneVerified) {
+    signals.push("Telefon doğrulandı");
+    score += 1.6;
+  }
+
   if (seller.phone && seller.phone.trim().length > 0) {
     signals.push("Telefon bilgisi mevcut");
     score += 1.1;
@@ -70,11 +75,15 @@ export function getSellerTrustSummary(
     badgeLabel:
       seller.identityVerified
         ? "Kimliği doğrulanmış satıcı"
-        : seller.emailVerified
-          ? "E-posta doğrulanmış satıcı"
-          : seller.phone && seller.phone.trim().length > 0
-            ? "Profil bilgileri mevcut"
-            : "Profil bilgileri eksik",
+        : seller.emailVerified && seller.phoneVerified
+          ? "İletişim bilgileri doğrulanmış"
+          : seller.emailVerified
+            ? "E-posta doğrulanmış satıcı"
+            : seller.phoneVerified
+              ? "Telefon doğrulanmış satıcı"
+              : seller.phone && seller.phone.trim().length > 0
+                ? "Profil bilgileri mevcut"
+                : "Profil bilgileri eksik",
     score: roundToSingleDecimal(Math.min(score, 9.9)),
     signals: signals.slice(0, 4),
   };

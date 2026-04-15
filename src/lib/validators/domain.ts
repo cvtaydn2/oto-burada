@@ -77,6 +77,7 @@ export const profileSchema = z.object({
   phoneVerified: z.boolean(),
   identityVerified: z.boolean(),
   isVerified: z.boolean(),
+  isBanned: z.boolean().optional(),
   userType: z.enum(["individual", "professional", "staff"]).optional(),
   balanceCredits: z.number().int().min(0).optional(),
   tcVerifiedAt: timestampSchema.nullable().optional(),
@@ -127,6 +128,7 @@ export const listingImageSchema: z.ZodType<ListingImage> = z.object({
   url: z.string().trim().url(invalidMessage),
   order: z.coerce.number().int().min(0, invalidMessage),
   isCover: z.boolean(),
+  placeholderBlur: z.string().trim().nullable().optional(),
 });
 
 export const expertInspectionSchema: z.ZodType<ExpertInspection> = z.object({
@@ -146,6 +148,8 @@ export const expertInspectionSchema: z.ZodType<ExpertInspection> = z.object({
   acHeating: z.enum(expertInspectionStatuses),
   notes: optionalTrimmedString,
   inspectedBy: optionalTrimmedString,
+  documentUrl: z.preprocess(emptyStringToUndefined, z.string().trim().url(invalidMessage).optional()),
+  documentPath: optionalTrimmedString,
 });
 
 export const listingCreateSchema: z.ZodType<ListingCreateInput> = z.object({
@@ -211,6 +215,7 @@ export const listingCreateFormSchema: z.ZodType<ListingCreateFormValues> = z.obj
         size: z.coerce.number().int().min(0).optional(),
         storagePath: z.string().trim().optional(),
         url: z.string().trim().optional(),
+        placeholderBlur: z.string().trim().nullable().optional(),
       }),
     )
     .superRefine((images, context) => {

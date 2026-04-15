@@ -71,11 +71,12 @@ export async function PATCH(
           (image.url ?? "").trim().length > 0 &&
           (image.storagePath ?? "").trim().length > 0,
       )
-      .map((image: { url?: string; storagePath?: string }, index: number) => ({
+      .map((image: { url?: string; storagePath?: string; placeholderBlur?: string | null }, index: number) => ({
         storagePath: image.storagePath?.trim() ?? "",
         url: image.url?.trim() ?? "",
         order: index,
         isCover: index === 0,
+        placeholderBlur: image.placeholderBlur ?? null,
       })),
   };
 

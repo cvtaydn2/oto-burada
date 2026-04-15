@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { requireUser } from "@/lib/auth/session";
+import { requireApiUser } from "@/lib/auth/api-user";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { logger } from "@/lib/utils/logger";
 import { captureServerError } from "@/lib/monitoring/posthog-server";
@@ -10,7 +10,10 @@ const BULK_DRAFT_RATE_LIMIT = { limit: 20, windowMs: 60 * 60 * 1000 };
 
 export async function POST(req: Request) {
   try {
-    const user = await requireUser();
+    const user = await requireApiUser();
+    if (user instanceof Response) {
+      return user;
+    }
 
     const rateLimit = await enforceRateLimit(
       getUserRateLimitKey(user.id, "api:listings:bulk-draft"),

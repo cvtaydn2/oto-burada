@@ -6,6 +6,7 @@ import {
   getFilteredDatabaseListings,
   type PaginatedListingsResult 
 } from "@/services/listings/listing-submissions";
+import { createExpertDocumentSignedUrl } from "@/services/listings/listing-documents";
 import type { Profile, ListingFilters } from "@/types";
 
 async function withNextCache<T>(
@@ -45,7 +46,21 @@ export async function getMarketplaceListingBySlug(slug: string) {
   );
 
   if (storedListing?.status === "approved") {
-    return storedListing;
+    if (!storedListing.expertInspection?.documentPath) {
+      return storedListing;
+    }
+
+    const signedUrl = await createExpertDocumentSignedUrl(
+      storedListing.expertInspection.documentPath,
+    );
+
+    return {
+      ...storedListing,
+      expertInspection: {
+        ...storedListing.expertInspection,
+        documentUrl: signedUrl ?? storedListing.expertInspection.documentUrl,
+      },
+    };
   }
 
   return null;

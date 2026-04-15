@@ -7,18 +7,28 @@ import type { Profile } from "@/types";
 
 interface ProfileRow {
   avatar_url: string | null;
+  business_address: string | null;
+  business_description: string | null;
+  business_logo_url: string | null;
+  business_name: string | null;
+  business_slug: string | null;
   city: string;
   created_at: string;
+  is_banned: boolean | null;
   full_name: string;
   id: string;
   phone: string;
   role: Profile["role"];
+  tax_id: string | null;
+  tax_office: string | null;
   user_type: "individual" | "professional" | "staff";
   balance_credits: number;
   is_verified: boolean;
   tc_verified_at: string | null;
   eids_id: string | null;
   updated_at: string;
+  verified_business: boolean | null;
+  website_url: string | null;
 }
 
 function getVerificationState(user: User | null | undefined) {
@@ -56,8 +66,18 @@ function mapProfileRow(row: ProfileRow, authUser?: User | null) {
     userType: row.user_type,
     balanceCredits: row.balance_credits,
     isVerified: row.is_verified,
+    isBanned: row.is_banned ?? false,
     tcVerifiedAt: row.tc_verified_at,
     eidsId: row.eids_id,
+    businessName: row.business_name,
+    businessAddress: row.business_address,
+    businessLogoUrl: row.business_logo_url,
+    businessDescription: row.business_description,
+    taxId: row.tax_id,
+    taxOffice: row.tax_office,
+    websiteUrl: row.website_url,
+    verifiedBusiness: row.verified_business ?? false,
+    businessSlug: row.business_slug,
     updatedAt: row.updated_at,
   });
 
@@ -74,28 +94,47 @@ function mapProfileRow(row: ProfileRow, authUser?: User | null) {
     emailVerified: verificationState.emailVerified,
     role: row.role || "user",
     identityVerified: verificationState.identityVerified,
-    phoneVerified: verificationState.phoneVerified,
-    userType: row.user_type || "individual",
-    balanceCredits: row.balance_credits || 0,
-    isVerified: row.is_verified || false,
-    tcVerifiedAt: row.tc_verified_at,
-    eidsId: row.eids_id,
-    createdAt: row.created_at,
-    updatedAt: row.updated_at,
-  };
+      phoneVerified: verificationState.phoneVerified,
+      userType: row.user_type || "individual",
+      balanceCredits: row.balance_credits || 0,
+      isVerified: row.is_verified || false,
+      isBanned: row.is_banned || false,
+      tcVerifiedAt: row.tc_verified_at,
+      eidsId: row.eids_id,
+      businessName: row.business_name,
+      businessAddress: row.business_address,
+      businessLogoUrl: row.business_logo_url,
+      businessDescription: row.business_description,
+      taxId: row.tax_id,
+      taxOffice: row.tax_office,
+      websiteUrl: row.website_url,
+      verifiedBusiness: row.verified_business || false,
+      businessSlug: row.business_slug,
+      createdAt: row.created_at,
+      updatedAt: row.updated_at,
+    };
 }
 
 export function buildProfileFromAuthUser(user: User) {
   const userMetadata = user.user_metadata as {
     avatar_url?: string;
+    business_address?: string;
+    business_description?: string;
+    business_logo_url?: string;
+    business_name?: string;
+    business_slug?: string;
     city?: string;
     full_name?: string;
     phone?: string;
     role?: string;
+    tax_id?: string;
+    tax_office?: string;
+    website_url?: string;
   };
   const appMetadata = user.app_metadata as {
     identity_verified?: boolean;
     role?: string;
+    verified_business?: boolean;
   };
   const verificationState = getVerificationState(user);
   const timestamp = new Date().toISOString();
@@ -117,6 +156,16 @@ export function buildProfileFromAuthUser(user: User) {
     balanceCredits: 0,
     tcVerifiedAt: null,
     eidsId: null,
+    isBanned: false,
+    businessName: userMetadata.business_name ?? null,
+    businessAddress: userMetadata.business_address ?? null,
+    businessLogoUrl: userMetadata.business_logo_url ?? null,
+    businessDescription: userMetadata.business_description ?? null,
+    taxId: userMetadata.tax_id ?? null,
+    taxOffice: userMetadata.tax_office ?? null,
+    websiteUrl: userMetadata.website_url ?? null,
+    verifiedBusiness: appMetadata.verified_business === true,
+    businessSlug: userMetadata.business_slug ?? null,
     createdAt: user.created_at ?? timestamp,
     updatedAt: timestamp,
   };
@@ -153,6 +202,16 @@ export async function ensureProfileRecord(user: User) {
       user_type: profile.userType ?? "individual",
       balance_credits: profile.balanceCredits ?? 0,
       is_verified: profile.isVerified ?? false,
+      is_banned: profile.isBanned ?? false,
+      business_name: profile.businessName ?? null,
+      business_address: profile.businessAddress ?? null,
+      business_logo_url: profile.businessLogoUrl ?? null,
+      business_description: profile.businessDescription ?? null,
+      tax_id: profile.taxId ?? null,
+      tax_office: profile.taxOffice ?? null,
+      website_url: profile.websiteUrl ?? null,
+      verified_business: profile.verifiedBusiness ?? false,
+      business_slug: profile.businessSlug ?? null,
       updated_at: profile.updatedAt,
     },
     { onConflict: "id" },
@@ -173,7 +232,7 @@ export async function getStoredProfileById(profileId: string) {
   const admin = createSupabaseAdminClient();
   const { data, error } = await admin
     .from("profiles")
-    .select("id, full_name, phone, city, avatar_url, role, user_type, balance_credits, is_verified, tc_verified_at, eids_id, created_at, updated_at")
+    .select("id, full_name, phone, city, avatar_url, role, user_type, balance_credits, is_verified, is_banned, tc_verified_at, eids_id, business_name, business_address, business_logo_url, business_description, tax_id, tax_office, website_url, verified_business, business_slug, created_at, updated_at")
     .eq("id", profileId)
     .maybeSingle<ProfileRow>();
 

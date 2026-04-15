@@ -93,7 +93,7 @@ export async function getAllTickets(options?: {
   const admin = createSupabaseAdminClient();
   let query = admin
     .from("tickets")
-    .select("*, profiles!tickets_user_id_fkey(full_name, email)")
+    .select("*, profiles!tickets_user_id_fkey(full_name)")
     .order("created_at", { ascending: false });
 
   if (options?.status) {
@@ -147,7 +147,7 @@ export async function updateTicketStatus(
     .from("tickets")
     .update(updates)
     .eq("id", ticketId)
-    .select("*, profiles!tickets_user_id_fkey(full_name, email)")
+    .select("*, profiles!tickets_user_id_fkey(full_name)")
     .single();
 
   if (error) {
@@ -287,10 +287,10 @@ function mapTicket(row: Record<string, unknown>): Ticket {
 }
 
 function mapTicketWithProfile(row: Record<string, unknown>): Ticket {
-  const profile = row.profiles as { full_name?: string; email?: string } | null;
+  const profile = row.profiles as { full_name?: string } | null;
   return {
     ...mapTicket(row),
-    userEmail: profile?.email ?? null,
+    userEmail: null,
     userName: profile?.full_name ?? null,
   };
 }

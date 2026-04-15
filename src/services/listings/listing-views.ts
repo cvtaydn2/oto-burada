@@ -4,7 +4,7 @@ import { hasSupabaseAdminEnv } from "@/lib/supabase/env";
 /**
  * Record a listing view with deduplication.
  *
- * For authenticated users: one view per listing per user (unique index handles this).
+ * For authenticated users: one view per listing per user per day.
  * For anonymous users: one view per listing per IP per day.
  * Silently ignores duplicate constraint violations.
  */
@@ -17,16 +17,18 @@ export async function recordListingView(
   }
 
   const admin = createSupabaseAdminClient();
+  const viewedOn = new Date().toISOString().slice(0, 10);
 
   if (options.viewerId) {
-    // Authenticated user: use upsert with unique constraint
+    // Authenticated user: use daily dedup backed by a composite unique index.
     const { error } = await admin.from("listing_views").upsert(
       {
         listing_id: listingId,
         viewer_id: options.viewerId,
         viewer_ip: options.viewerIp ?? null,
+        viewed_on: viewedOn,
       },
-      { onConflict: "listing_id,viewer_id", ignoreDuplicates: true },
+      { onConflict: "listing_id,viewer_id,viewed_on", ignoreDuplicates: true },
     );
 
     if (error) {
@@ -35,15 +37,13 @@ export async function recordListingView(
     }
   } else if (options.viewerIp) {
     // Anonymous user: check IP + 24 hour window
-    const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
-
     const { data: existing } = await admin
       .from("listing_views")
       .select("id")
       .eq("listing_id", listingId)
       .eq("viewer_ip", options.viewerIp)
       .is("viewer_id", null)
-      .gte("created_at", oneDayAgo)
+      .eq("viewed_on", viewedOn)
       .limit(1);
 
     if (existing && existing.length > 0) {

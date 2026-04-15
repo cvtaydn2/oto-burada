@@ -66,3 +66,29 @@ export function buildExpertDocumentStoragePath(userId: string, fileName: string)
   const extension = fileName.includes(".") ? fileName.split(".").pop()?.toLowerCase() ?? "pdf" : "pdf";
   return `documents/${userId}/${crypto.randomUUID()}.${extension}`;
 }
+
+export async function createExpertDocumentSignedUrl(
+  storagePath: string,
+  options?: {
+    bucketName?: string;
+    expiresIn?: number;
+  },
+) {
+  const { createSupabaseAdminClient } = await import("@/lib/supabase/admin");
+  const admin = createSupabaseAdminClient();
+  const bucketName = options?.bucketName ?? process.env.SUPABASE_STORAGE_BUCKET_DOCUMENTS ?? "";
+
+  if (!bucketName) {
+    return null;
+  }
+
+  const { data, error } = await admin.storage
+    .from(bucketName)
+    .createSignedUrl(storagePath, options?.expiresIn ?? 600);
+
+  if (error || !data?.signedUrl) {
+    return null;
+  }
+
+  return data.signedUrl;
+}

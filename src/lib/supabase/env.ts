@@ -20,6 +20,13 @@ export function hasSupabaseStorageEnv() {
   );
 }
 
+export function hasSupabaseDocumentsStorageEnv() {
+  return Boolean(
+    hasSupabaseAdminEnv() &&
+      process.env.SUPABASE_STORAGE_BUCKET_DOCUMENTS,
+  );
+}
+
 export function getSupabaseEnv() {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
@@ -57,4 +64,17 @@ export function getSupabaseStorageEnv() {
   }
 
   return { listingsBucket, serviceRoleKey, url };
+}
+
+export function getSupabaseDocumentsStorageEnv() {
+  const { serviceRoleKey, url } = getSupabaseAdminEnv();
+  const documentsBucket = process.env.SUPABASE_STORAGE_BUCKET_DOCUMENTS;
+
+  if (!documentsBucket) {
+    throw new Error(
+      "Supabase belge depolama ortam değişkenleri eksik. SUPABASE_STORAGE_BUCKET_DOCUMENTS gereklidir.",
+    );
+  }
+
+  return { documentsBucket, serviceRoleKey, url };
 }

@@ -36,12 +36,9 @@ describe('Bug 3 — plate lookup returns null when brands query is empty (EXPECT
     const mockLimit = vi.fn();
 
     // Track calls to detect is_active filter usage
-    let isActiveFilterApplied = false;
-
     const mockSelect = vi.fn().mockReturnValue({
-      eq: vi.fn().mockImplementation((col: string, _val: unknown) => {
+      eq: vi.fn().mockImplementation((col: string) => {
         if (col === 'is_active') {
-          isActiveFilterApplied = true;
           // Return empty — simulating the bug condition
           return {
             eq: mockEq,

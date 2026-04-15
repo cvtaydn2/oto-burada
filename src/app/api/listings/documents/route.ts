@@ -1,11 +1,15 @@
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
-import { getSupabaseStorageEnv, hasSupabaseStorageEnv } from "@/lib/supabase/env";
+import {
+  getSupabaseDocumentsStorageEnv,
+  hasSupabaseDocumentsStorageEnv,
+} from "@/lib/supabase/env";
 import { rateLimitProfiles } from "@/lib/utils/rate-limit";
 import { enforceRateLimit, getRateLimitKey, getUserRateLimitKey } from "@/lib/utils/rate-limit-middleware";
 import { apiSuccess, apiError, API_ERROR_CODES } from "@/lib/utils/api-response";
 import {
   buildExpertDocumentStoragePath,
+  createExpertDocumentSignedUrl,
   validateExpertDocumentFile,
 } from "@/services/listings/listing-documents";
 
@@ -30,7 +34,7 @@ export async function POST(request: Request) {
     return ipRateLimit.response;
   }
 
-  if (!hasSupabaseStorageEnv()) {
+  if (!hasSupabaseDocumentsStorageEnv()) {
     return apiError(
       API_ERROR_CODES.SERVICE_UNAVAILABLE,
       "Supabase Storage ortam değişkenleri eksik. Yükleme için .env.local dosyasını tamamlamalısın.",
@@ -71,11 +75,11 @@ export async function POST(request: Request) {
   }
 
   const sanitizedFileName = sanitizeFileName(file.name);
-  const { listingsBucket } = getSupabaseStorageEnv();
+  const { documentsBucket } = getSupabaseDocumentsStorageEnv();
   const adminClient = createSupabaseAdminClient();
   const storagePath = buildExpertDocumentStoragePath(user.id, sanitizedFileName);
   
-  const uploadResult = await adminClient.storage.from(listingsBucket).upload(storagePath, file, {
+  const uploadResult = await adminClient.storage.from(documentsBucket).upload(storagePath, file, {
     cacheControl: "3600",
     contentType: file.type,
     upsert: false,
@@ -85,9 +89,9 @@ export async function POST(request: Request) {
     return apiError(API_ERROR_CODES.INTERNAL_ERROR, "Belge yüklenemedi. Lütfen tekrar dene.", 500);
   }
 
-  const {
-    data: { publicUrl },
-  } = adminClient.storage.from(listingsBucket).getPublicUrl(storagePath);
+  const signedUrl = await createExpertDocumentSignedUrl(storagePath, {
+    bucketName: documentsBucket,
+  });
 
   return apiSuccess(
     {
@@ -96,7 +100,7 @@ export async function POST(request: Request) {
         mimeType: file.type,
         size: file.size,
         storagePath,
-        url: publicUrl,
+        url: signedUrl,
       },
     },
     "Belge yüklendi.",
@@ -105,7 +109,7 @@ export async function POST(request: Request) {
 }
 
 export async function DELETE(request: Request) {
-  if (!hasSupabaseStorageEnv()) {
+  if (!hasSupabaseDocumentsStorageEnv()) {
     return apiError(
       API_ERROR_CODES.SERVICE_UNAVAILABLE,
       "Supabase Storage ortam değişkenleri eksik. Belge silmek için .env.local dosyasını tamamlamalısın.",
@@ -140,9 +144,9 @@ export async function DELETE(request: Request) {
     return apiError(API_ERROR_CODES.BAD_REQUEST, "Belge yolu geçersiz.", 400);
   }
 
-  const { listingsBucket } = getSupabaseStorageEnv();
+  const { documentsBucket } = getSupabaseDocumentsStorageEnv();
   const adminClient = createSupabaseAdminClient();
-  const removeResult = await adminClient.storage.from(listingsBucket).remove([storagePath]);
+  const removeResult = await adminClient.storage.from(documentsBucket).remove([storagePath]);
 
   if (removeResult.error) {
     return apiError(API_ERROR_CODES.INTERNAL_ERROR, "Belge silinemedi. Lütfen tekrar dene.", 500);

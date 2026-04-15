@@ -40,7 +40,7 @@ begin
   end if;
 
   if not exists (select 1 from pg_type where typname = 'moderation_target_type') then
-    create type public.moderation_target_type as enum ('listing', 'report');
+    create type public.moderation_target_type as enum ('listing', 'report', 'user');
   end if;
 
   if not exists (select 1 from pg_type where typname = 'moderation_action') then
@@ -51,6 +51,22 @@ $$;
 
 do $$
 begin
+  if not exists (
+    select 1 from pg_enum
+    where enumtypid = 'public.user_type'::regtype
+      and enumlabel = 'staff'
+  ) then
+    alter type public.user_type add value 'staff';
+  end if;
+
+  if not exists (
+    select 1 from pg_enum
+    where enumtypid = 'public.moderation_target_type'::regtype
+      and enumlabel = 'user'
+  ) then
+    alter type public.moderation_target_type add value 'user';
+  end if;
+
   if not exists (
     select 1 from pg_enum 
     where enumtypid = 'public.moderation_action'::regtype 
@@ -84,17 +100,25 @@ $$;
 create extension if not exists pg_cron;
 
 -- Automatically archive approved listings older than 30 days
-select cron.schedule(
-  'expire-old-listings',
-  '0 2 * * *',
-  $$
-    update public.listings
-    set status = 'archived',
-        updated_at = timezone('utc', now())
-    where status = 'approved' 
-      and published_at < now() - interval '30 days';
-  $$
-);
+do $$
+begin
+  if not exists (select 1 from cron.job where jobname = 'expire-old-listings') then
+    perform cron.schedule(
+      'expire-old-listings',
+      '0 2 * * *',
+      $job$
+        update public.listings
+        set status = 'archived',
+            updated_at = timezone('utc', now())
+        where status = 'approved'
+          and published_at < now() - interval '30 days';
+      $job$
+    );
+  end if;
+exception
+  when undefined_table then null;
+end
+$$;
 
 create table if not exists public.profiles (
   id uuid primary key references auth.users (id) on delete cascade,
@@ -111,6 +135,22 @@ create table if not exists public.profiles (
   created_at timestamptz not null default timezone('utc', now()),
   updated_at timestamptz not null default timezone('utc', now())
 );
+
+alter table public.profiles add column if not exists business_name text;
+alter table public.profiles add column if not exists business_address text;
+alter table public.profiles add column if not exists business_logo_url text;
+alter table public.profiles add column if not exists business_description text;
+alter table public.profiles add column if not exists tax_id text;
+alter table public.profiles add column if not exists tax_office text;
+alter table public.profiles add column if not exists website_url text;
+alter table public.profiles add column if not exists verified_business boolean not null default false;
+alter table public.profiles add column if not exists business_slug text;
+alter table public.profiles add column if not exists is_banned boolean not null default false;
+alter table public.profiles add column if not exists ban_reason text;
+
+create unique index if not exists profiles_business_slug_idx
+  on public.profiles (business_slug)
+  where business_slug is not null;
 
 create table if not exists public.listings (
   id uuid primary key default gen_random_uuid(),
@@ -164,6 +204,8 @@ create table if not exists public.listing_images (
   created_at timestamptz not null default timezone('utc', now()),
   unique (listing_id, sort_order)
 );
+
+alter table public.listing_images add column if not exists placeholder_blur text;
 
 create table if not exists public.favorites (
   user_id uuid not null references public.profiles (id) on delete cascade,
@@ -371,11 +413,31 @@ alter table public.models enable row level security;
 alter table public.cities enable row level security;
 alter table public.districts enable row level security;
 
+create table if not exists public.chats (
+  id uuid primary key default gen_random_uuid(),
+  listing_id uuid not null references public.listings(id) on delete cascade,
+  buyer_id uuid not null references public.profiles(id) on delete cascade,
+  seller_id uuid not null references public.profiles(id) on delete cascade,
+  last_message_at timestamptz not null default timezone('utc', now()),
+  created_at timestamptz not null default timezone('utc', now()),
+  constraint chats_distinct_participants check (buyer_id <> seller_id),
+  constraint chats_unique_listing_pair unique (listing_id, buyer_id, seller_id)
+);
+
 drop policy if exists "profiles_select_self_or_admin" on public.profiles;
 create policy "profiles_select_self_or_admin"
 on public.profiles
 for select
-using ((select auth.uid()) = id or (select public.is_admin()));
+using (
+  (select auth.uid()) = id
+  or (select public.is_admin())
+  or exists (
+    select 1
+    from public.chats
+    where ((select auth.uid()) = chats.buyer_id or (select auth.uid()) = chats.seller_id)
+      and (public.profiles.id = chats.buyer_id or public.profiles.id = chats.seller_id)
+  )
+);
 
 drop policy if exists "brands_select_public" on public.brands;
 create policy "brands_select_public" on public.brands for select using (true);
@@ -504,8 +566,9 @@ with check ((select public.is_admin()));
 
 -- Storage intent:
 -- 1. Create a public-read bucket named `listing-images` for listing media.
--- 2. Optionally create an `avatars` bucket for profile images.
--- 3. Enforce JPG/PNG/WebP and 5 MB upload validation from the application layer.
+-- 2. Create a private bucket named `listing-documents` for ekspertiz and similar documents.
+-- 3. Optionally create an `avatars` bucket for profile images.
+-- 4. Enforce JPG/PNG/WebP/PDF validation from the application layer and serve documents via signed URLs.
 
 -- ── B-09: Full-Text Search ──────────────────────────────────────────────
 -- Generated tsvector column for fast text search across listing fields.
@@ -539,13 +602,19 @@ create table if not exists public.listing_views (
   listing_id uuid not null references public.listings (id) on delete cascade,
   viewer_id uuid references public.profiles (id) on delete set null,
   viewer_ip text,
+  viewed_on date not null default current_date,
   created_at timestamptz not null default timezone('utc', now())
 );
 
--- Prevent duplicate views from same user/IP within 24 hours
-create unique index if not exists listing_views_user_dedup_idx
-  on public.listing_views (listing_id, viewer_id)
+drop index if exists listing_views_user_dedup_idx;
+
+create unique index if not exists listing_views_user_daily_dedup_idx
+  on public.listing_views (listing_id, viewer_id, viewed_on)
   where viewer_id is not null;
+
+create unique index if not exists listing_views_anonymous_daily_dedup_idx
+  on public.listing_views (listing_id, viewer_ip, viewed_on)
+  where viewer_id is null and viewer_ip is not null;
 
 create index if not exists listing_views_listing_idx
   on public.listing_views (listing_id, created_at desc);
@@ -622,11 +691,13 @@ CREATE INDEX IF NOT EXISTS idx_listings_seller_id_status ON public.listings (sel
 CREATE INDEX IF NOT EXISTS idx_favorites_user_id ON public.favorites (user_id);
 CREATE INDEX IF NOT EXISTS idx_reports_status ON public.reports (status, created_at DESC);
 
+drop policy if exists "Allow public read-only access for models" on public.models;
 CREATE POLICY "Allow public read-only access for models" ON public.models
   FOR SELECT USING (is_active = true);
 
 -- Policies for car_trims
 ALTER TABLE public.car_trims ENABLE ROW LEVEL SECURITY;
+drop policy if exists "Allow public read-only access for car_trims" on public.car_trims;
 CREATE POLICY "Allow public read-only access for car_trims" ON public.car_trims
   FOR SELECT USING (is_active = true);
 
@@ -671,22 +742,29 @@ CREATE TABLE IF NOT EXISTS public.tickets (
 
 ALTER TABLE public.tickets ENABLE ROW LEVEL SECURITY;
 
+drop policy if exists "Users can view their own tickets" on public.tickets;
 CREATE POLICY "Users can view their own tickets"
   ON public.tickets FOR SELECT
   USING (auth.uid() = user_id OR public.is_admin());
 
+drop policy if exists "Authenticated users can create tickets" on public.tickets;
 CREATE POLICY "Authenticated users can create tickets"
   ON public.tickets FOR INSERT
-  WITH CHECK (auth.uid() IS NOT NULL);
+  WITH CHECK (auth.uid() = user_id);
 
+drop policy if exists "Users can update their own open tickets" on public.tickets;
 CREATE POLICY "Users can update their own open tickets"
   ON public.tickets FOR UPDATE
-  USING (auth.uid() = user_id AND status = 'open');
+  USING (auth.uid() = user_id AND status = 'open')
+  WITH CHECK (auth.uid() = user_id AND status = 'open');
 
+drop policy if exists "Admins can update any ticket" on public.tickets;
 CREATE POLICY "Admins can update any ticket"
   ON public.tickets FOR UPDATE
-  USING (public.is_admin());
+  USING (public.is_admin())
+  WITH CHECK (public.is_admin());
 
+drop trigger if exists set_tickets_updated_at on public.tickets;
 CREATE TRIGGER set_tickets_updated_at
   BEFORE UPDATE ON public.tickets
   FOR EACH ROW EXECUTE FUNCTION public.set_updated_at();
@@ -695,3 +773,111 @@ CREATE INDEX IF NOT EXISTS idx_tickets_user_id ON public.tickets (user_id);
 CREATE INDEX IF NOT EXISTS idx_tickets_status ON public.tickets (status);
 CREATE INDEX IF NOT EXISTS idx_tickets_priority ON public.tickets (priority);
 
+create table if not exists public.chats (
+  id uuid primary key default gen_random_uuid(),
+  listing_id uuid not null references public.listings(id) on delete cascade,
+  buyer_id uuid not null references public.profiles(id) on delete cascade,
+  seller_id uuid not null references public.profiles(id) on delete cascade,
+  last_message_at timestamptz not null default timezone('utc', now()),
+  created_at timestamptz not null default timezone('utc', now()),
+  constraint chats_distinct_participants check (buyer_id <> seller_id),
+  constraint chats_unique_listing_pair unique (listing_id, buyer_id, seller_id)
+);
+
+create table if not exists public.messages (
+  id uuid primary key default gen_random_uuid(),
+  chat_id uuid not null references public.chats(id) on delete cascade,
+  sender_id uuid not null references public.profiles(id) on delete cascade,
+  content text not null check (char_length(trim(content)) > 0),
+  is_read boolean not null default false,
+  created_at timestamptz not null default timezone('utc', now())
+);
+
+create index if not exists idx_chats_buyer_last_message_at on public.chats (buyer_id, last_message_at desc);
+create index if not exists idx_chats_seller_last_message_at on public.chats (seller_id, last_message_at desc);
+create index if not exists idx_messages_chat_created_at on public.messages (chat_id, created_at asc);
+
+alter table public.chats enable row level security;
+alter table public.messages enable row level security;
+
+drop policy if exists "chats_select_participants" on public.chats;
+create policy "chats_select_participants"
+on public.chats
+for select
+using ((select auth.uid()) in (buyer_id, seller_id));
+
+drop policy if exists "chats_insert_participants" on public.chats;
+create policy "chats_insert_participants"
+on public.chats
+for insert
+with check (
+  (select auth.uid()) = buyer_id
+  or (select auth.uid()) = seller_id
+);
+
+drop policy if exists "messages_select_chat_participants" on public.messages;
+create policy "messages_select_chat_participants"
+on public.messages
+for select
+using (
+  exists (
+    select 1
+    from public.chats
+    where chats.id = messages.chat_id
+      and (select auth.uid()) in (chats.buyer_id, chats.seller_id)
+  )
+);
+
+drop policy if exists "messages_insert_chat_participants" on public.messages;
+create policy "messages_insert_chat_participants"
+on public.messages
+for insert
+with check (
+  sender_id = (select auth.uid())
+  and exists (
+    select 1
+    from public.chats
+    where chats.id = messages.chat_id
+      and (select auth.uid()) in (chats.buyer_id, chats.seller_id)
+  )
+);
+
+drop policy if exists "messages_update_chat_participants" on public.messages;
+create policy "messages_update_chat_participants"
+on public.messages
+for update
+using (
+  exists (
+    select 1
+    from public.chats
+    where chats.id = messages.chat_id
+      and (select auth.uid()) in (chats.buyer_id, chats.seller_id)
+  )
+)
+with check (
+  exists (
+    select 1
+    from public.chats
+    where chats.id = messages.chat_id
+      and (select auth.uid()) in (chats.buyer_id, chats.seller_id)
+  )
+);
+
+create or replace function public.touch_chat_last_message_at()
+returns trigger
+language plpgsql
+as $$
+begin
+  update public.chats
+  set last_message_at = new.created_at
+  where id = new.chat_id;
+
+  return new;
+end;
+$$;
+
+drop trigger if exists messages_touch_chat_last_message_at on public.messages;
+create trigger messages_touch_chat_last_message_at
+after insert on public.messages
+for each row
+execute function public.touch_chat_last_message_at();

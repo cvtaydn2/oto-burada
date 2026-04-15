@@ -1,5 +1,68 @@
 # PROGRESS.md
 
+## Deep Audit Remediation (2026-04-16)
+
+### Backend / API / DB Hardening
+- **Schema Drift Kapatıldı**: `schema.sql`, runtime kodla hizalandı.
+  - `profiles` tablosuna kurumsal alanlar eklendi: `business_name`, `business_address`, `business_logo_url`, `business_description`, `tax_id`, `tax_office`, `website_url`, `verified_business`, `business_slug`
+  - Moderasyon ve admin akışları için `is_banned`, `ban_reason` alanları eklendi
+  - `listing_images.placeholder_blur` kolonu eklendi
+  - `user_type` enumuna `staff`, `moderation_target_type` enumuna `user` değeri eklendi
+  - Mesajlaşma için eksik `chats` ve `messages` tabloları, index’leri, trigger’ları ve RLS politikaları eklendi
+- **Schema Tekrar Çalıştırılabilir Hale Getirildi**:
+  - `pg_cron` job kaydı idempotent hale getirildi
+  - tekrar çalıştırmada kırılan policy/trigger bloklarına `drop if exists` guard’ları eklendi
+- **Ticket RLS Sıkılaştırıldı**:
+  - ticket insert artık sadece kendi `user_id`’si ile yapılabiliyor
+  - kullanıcı update politikası açık ticket ile sınırlandı
+  - admin update politikası `with check` ile tamamlandı
+- **View Counter Semantiği Düzeltildi**:
+  - `listing_views` tablosuna `viewed_on` eklendi
+  - kullanıcı ve anonim ziyaretler için günlük dedup index’leri tanımlandı
+  - servis kodu günlük dedup mantığı ile hizalandı
+
+### Service / Frontend Alignment
+- **Profil Katmanı Hizalandı**:
+  - `profile-records` artık kurumsal ve ban alanlarını okuyup/yazıyor
+  - auth’tan türetilen profil modeli genişletildi
+- **Ekspertiz Belge Güvenliği Güçlendirildi**:
+  - public listing görselleri ile hassas belgeler ayrıldı
+  - yeni env: `SUPABASE_STORAGE_BUCKET_DOCUMENTS`
+  - `/api/listings/documents` artık private bucket kullanıyor ve public URL yerine signed URL üretiyor
+  - public listing fetch sırasında `documentPath` varsa kısa ömürlü signed URL resolve ediliyor
+  - `.env.example` ve `ENVIRONMENT.md` güncellendi
+- **Validator / Type Drift Giderildi**:
+  - `ExpertInspection.documentPath`
+  - `ListingImage.placeholderBlur`
+  - `Profile.isBanned`
+  alanları type + validator katmanına taşındı
+- **API Auth Sözleşmesi Düzeltildi**:
+  - yeni `requireApiUser()` helper eklendi
+  - `bulk-draft` ve `bulk-delete` route’ları artık redirect yerine düzgün API `401/503` cevabı veriyor
+- **Listing Update Dayanıklılığı Artırıldı**:
+  - update sırasında yeni image insert’i patlarsa eski image kayıtları restore edilmeye çalışılıyor
+- **Support Join Hatası Giderildi**:
+  - `ticket-service`, `profiles.email` olmayan join’i bırakıp email’i Auth üzerinden resolve etmeye devam edecek şekilde düzeltildi
+- **Admin Kullanıcı Rol Mantığı Düzeltildi**:
+  - `updateUserRole()` artık `role` ve `user_type` alanlarını doğru ayrıştırıyor; `professional` yanlışlıkla `role` alanına yazılmıyor
+- **Profile Trust Uyumu**:
+  - `phoneVerified` sinyali ve “İletişim bilgileri doğrulanmış” badge mantığı eklendi
+
+### Doğrulama
+- `npm run lint` ✅
+- `npm run typecheck` ✅
+- `npm run build` ✅
+- `npm run test:unit` ✅
+
+### Karar Notları
+- Hassas ekspertiz belgeleri artık public storage mantığıyla taşınmıyor; signed URL yaklaşımı tercih edildi.
+- Mesajlaşma altyapısı şemaya geri eklendi; yalnızca chat katılımcıları erişebilir.
+- Şema düzeltmeleri migration yerine mevcut `schema.sql` üzerinde yapıldı; amaç yeni ortam bootstrap’ını tekrar güvenilir hale getirmek.
+
+### Sonraki Adım
+- Güncel `schema.sql` gerçek Supabase veritabanına uygulanmalı ve production veri modeli senkronize edilmeli.
+- Ardından gerçek DB üzerinde chat, corporate profile ve ekspertiz belge akışları için integration smoke test yapılmalı.
+
 ## Temizlik & Refactor (2026-04-15)
 
 ### EIDS & GA4 Kaldırma

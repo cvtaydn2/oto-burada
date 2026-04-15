@@ -680,6 +680,7 @@ export async function updateDatabaseListing(listing: Listing): Promise<UpdateLis
   }
 
   const admin = createSupabaseAdminClient();
+  const previousListing = (await getDatabaseListings({ listingId: listing.id }))?.[0];
   const updateResult = await admin
     .from("listings")
     .update(mapListingToDatabaseRow(listing))
@@ -704,6 +705,17 @@ export async function updateDatabaseListing(listing: Listing): Promise<UpdateLis
     const imageInsertResult = await admin.from("listing_images").insert(imageRows);
 
     if (imageInsertResult.error) {
+      if (previousListing?.images.length) {
+        const restoreResult = await admin
+          .from("listing_images")
+          .insert(mapListingImagesToDatabaseRows(previousListing));
+
+        if (restoreResult.error) {
+          logger.listings.error("updateDatabaseListing failed to restore previous images", restoreResult.error, {
+            listingId: listing.id,
+          });
+        }
+      }
       return { error: "database_error" };
     }
   }

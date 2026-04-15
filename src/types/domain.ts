@@ -270,6 +270,7 @@ export interface ExpertInspection {
   notes?: string;
   inspectedBy?: string;
   documentUrl?: string; // Tramer/Ekspertiz Kanıt Dosyası
+  documentPath?: string;
 }
 
 export const expertInspectionGradeInfo: { grade: ExpertInspectionGrade; label: string; color: string }[] = [

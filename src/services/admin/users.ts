@@ -96,10 +96,16 @@ export async function getAllUsers(query?: string, page = 1, limit = 20) {
 
 export async function updateUserRole(userId: string, role: "user" | "admin" | "professional") {
   const supabase = await createSupabaseServerClient();
-  
+
+  const nextRole = role === "admin" ? "admin" : "user";
+  const nextUserType = role === "professional" ? "professional" : "individual";
+
   const { error } = await supabase
     .from("profiles")
-    .update({ role: role === "admin" ? "admin" : role === "professional" ? "professional" : "user" })
+    .update({
+      role: nextRole,
+      user_type: nextUserType,
+    })
     .eq("id", userId);
 
   if (error) throw new Error(`Rol güncellenemedi: ${error.message}`);
