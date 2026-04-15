@@ -3,7 +3,7 @@
 import { profileUpdateSchema } from "@/lib/validators";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { hasSupabaseEnv } from "@/lib/supabase/env";
-import { updateProfileTable, verifyProfileIdentity } from "@/services/profile/profile-records";
+import { updateProfileTable } from "@/services/profile/profile-records";
 
 export interface ProfileActionState {
   error?: string;
@@ -174,29 +174,4 @@ export async function updateCorporateProfileAction(
   };
 }
 
-export async function verifyIdentityAction(
-  userId: string,
-  formData: FormData,
-): Promise<{ success?: string; error?: string }> {
-  const tcId = String(formData.get("tcId") ?? "");
-  const fullName = String(formData.get("fullName") ?? "");
-
-  if (!tcId || tcId.length !== 11) {
-    return { error: "Lütfen 11 haneli geçerli bir TC Kimlik No girin." };
-  }
-
-  if (!fullName) {
-    return { error: "Lütfen ad soyad bilgisini girin." };
-  }
-
-  // In a real app, you would call a 3rd party API (NVI KPS) here.
-  // For this mock hardening, we simulate success if the fields are present.
-  const result = await verifyProfileIdentity(userId, `EIDS-${tcId.slice(-4)}-${Date.now()}`);
-
-  if (!result) {
-    return { error: "Doğrulama işlemi başarısız oldu. Lütfen tekrar deneyin." };
-  }
-
-  return { success: "Kimliğiniz başarıyla doğrulandı!" };
-}
-
+// verifyIdentityAction — E-Devlet entegrasyonu hazır olduğunda buraya eklenecek

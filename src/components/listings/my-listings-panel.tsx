@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState, useMemo } from "react";
 import {
   Archive, ArrowUpCircle, ChevronLeft, ChevronRight,
-  Loader2, Pencil, Plus, Rocket, RotateCcw, ShieldCheck,
+  Loader2, Pencil, Plus, Rocket, RotateCcw,
   X, CheckSquare, Square, FileSpreadsheet,
 } from "lucide-react";
 
@@ -379,9 +379,9 @@ function ListingCard({
         ) : (
           <div className="flex h-full items-center justify-center text-slate-300"><Rocket size={20} /></div>
         )}
-        {listing.featured && (
-          <div className="absolute top-1.5 left-1.5 px-1.5 py-0.5 rounded-md bg-blue-600 text-white text-[7px] font-bold uppercase tracking-wider shadow-sm">ÖNE ÇIKAN</div>
-        )}
+          {listing.featured && (
+            <div className="absolute top-1.5 left-1.5 px-1.5 py-0.5 rounded-md bg-blue-600 text-white text-[7px] font-bold uppercase tracking-wider shadow-sm">ÖNE ÇIKAN</div>
+          )}
       </div>
 
       <div className="min-w-0 flex-1 flex flex-col pt-0.5">
@@ -389,11 +389,7 @@ function ListingCard({
           <span className={`text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-md border ${statusClassMap[listing.status]} shadow-sm`}>
             {statusLabelMap[listing.status]}
           </span>
-          {listing.eidsVerificationJson && (
-            <span className="hidden sm:flex items-center gap-1 rounded-md border border-blue-200 bg-blue-50 px-2 py-0.5 text-[9px] font-bold text-blue-700 tracking-wider">
-              <ShieldCheck size={9} />EİDS
-            </span>
-          )}
+          {listing.eidsVerificationJson && null}
         </div>
         <p className="font-bold text-slate-800 truncate tracking-tight text-sm mb-1 group-hover:text-blue-600 transition-colors">{listing.title}</p>
         <p className="text-base font-black text-blue-600 tracking-tight leading-none">{formatCurrency(listing.price)} ₺</p>

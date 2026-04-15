@@ -3,7 +3,6 @@
 import { MapPin, Sparkles } from "lucide-react"
 import { type Listing } from "@/types"
 import { Badge } from "@/components/ui/badge"
-import { EIDSBadge } from "@/components/shared/eids-badge"
 
 interface ListingHeaderProps {
   listing: Listing
@@ -27,9 +26,6 @@ export function ListingHeader({ listing }: ListingHeaderProps) {
             <h1 className="text-2xl sm:text-3xl font-bold text-slate-900">
               {listing.brand} <span className="font-medium text-slate-500">{listing.model}</span>
             </h1>
-            {listing.eidsVerificationJson && (
-              <EIDSBadge isVerified={true} />
-            )}
             {listing.featured && (
               <Badge className="bg-amber-500 text-white text-xs font-medium">
                 <Sparkles className="w-3 h-3 mr-1" />

@@ -1,31 +1,59 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Bell, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { toast } from "sonner";
 
 interface PriceAlertSettings {
   pushNotifications: boolean;
   emailNotifications: boolean;
-  smsNotifications: boolean;
   priceThreshold: "2" | "5" | "10" | "any";
 }
 
-export function FavoritesPriceAlerts() {
-  const [settings, setSettings] = useState<PriceAlertSettings>({
-    pushNotifications: true,
-    emailNotifications: true,
-    smsNotifications: false,
-    priceThreshold: "5",
-  });
+const STORAGE_KEY = "price-alert-settings";
 
-  const handleToggle = (key: keyof PriceAlertSettings) => {
+const defaultSettings: PriceAlertSettings = {
+  pushNotifications: true,
+  emailNotifications: true,
+  priceThreshold: "5",
+};
+
+export function FavoritesPriceAlerts() {
+  const [settings, setSettings] = useState<PriceAlertSettings>(defaultSettings);
+  const [isSaving, setIsSaving] = useState(false);
+
+  // Load from localStorage on mount
+  useEffect(() => {
+    try {
+      const stored = localStorage.getItem(STORAGE_KEY);
+      if (stored) {
+        setSettings(JSON.parse(stored) as PriceAlertSettings);
+      }
+    } catch {
+      // Ignore parse errors
+    }
+  }, []);
+
+  const handleToggle = (key: keyof Pick<PriceAlertSettings, "pushNotifications" | "emailNotifications">) => {
     setSettings((prev) => ({ ...prev, [key]: !prev[key] }));
   };
 
   const handleThresholdChange = (value: string) => {
     setSettings((prev) => ({ ...prev, priceThreshold: value as PriceAlertSettings["priceThreshold"] }));
+  };
+
+  const handleSave = async () => {
+    setIsSaving(true);
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(settings));
+      toast.success("Uyarı ayarları kaydedildi.");
+    } catch {
+      toast.error("Ayarlar kaydedilemedi.");
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   return (
@@ -52,7 +80,7 @@ export function FavoritesPriceAlerts() {
                   />
                   <div className="h-5 w-9 rounded-full bg-slate-200 peer-checked:bg-blue-500 after:absolute after:left-1 after:top-1 after:h-3 after:w-3 after:rounded-full after:bg-white after:transition-all peer-checked:after:translate-x-4"></div>
                 </div>
-                <span className="text-sm font-medium text-slate-700">Mobil Uygulama (Push)</span>
+                <span className="text-sm font-medium text-slate-700">Uygulama Bildirimi (Push)</span>
               </label>
 
               <label className="flex cursor-pointer items-center gap-3 rounded-lg p-2 hover:bg-white/50 transition-colors">
@@ -67,26 +95,12 @@ export function FavoritesPriceAlerts() {
                 </div>
                 <span className="text-sm font-medium text-slate-700">E-posta Bilgilendirme</span>
               </label>
-
-              <label className="flex cursor-pointer items-center gap-3 rounded-lg p-2 hover:bg-white/50 transition-colors">
-                <div className="relative">
-                  <input
-                    type="checkbox"
-                    checked={settings.smsNotifications}
-                    onChange={() => handleToggle("smsNotifications")}
-                    className="peer sr-only"
-                  />
-                  <div className="h-5 w-9 rounded-full bg-slate-200 peer-checked:bg-blue-500 after:absolute after:left-1 after:top-1 after:h-3 after:w-3 after:rounded-full after:bg-white after:transition-all peer-checked:after:translate-x-4"></div>
-                </div>
-                <span className="text-sm font-medium text-slate-700">SMS Bildirimi</span>
-              </label>
             </div>
           </div>
 
           <div>
             <p className="mb-2 text-xs font-bold uppercase tracking-wider text-slate-400">Fiyat Hassasiyeti</p>
             <p className="mb-3 text-xs text-slate-500">Fiyat en az ne kadar düştüğünde uyarı almak istersiniz?</p>
-            
             <div className="space-y-2">
               {[
                 { value: "2", label: "%2 ve Üzeri" },
@@ -116,9 +130,9 @@ export function FavoritesPriceAlerts() {
             <p className="text-[10px] italic text-slate-400">
               * Ayarlar tüm favori ilanlarınız için geçerli olacaktır.
             </p>
-            <Button size="sm" className="bg-blue-500 hover:bg-blue-600">
+            <Button size="sm" className="bg-blue-500 hover:bg-blue-600" onClick={handleSave} disabled={isSaving}>
               <Check size={16} className="mr-2" />
-              Ayarları Güncelle
+              {isSaving ? "Kaydediliyor..." : "Ayarları Güncelle"}
             </Button>
           </div>
         </div>

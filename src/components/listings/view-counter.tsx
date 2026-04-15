@@ -26,8 +26,8 @@ export function ViewCounter({ listingId, initialCount }: ViewCounterProps) {
         try {
           await supabase.rpc("increment_listing_view", { target_listing_id: listingId });
           localStorage.setItem(viewedKey, now.toString());
-        } catch (err) {
-          console.error("View increment error:", err);
+        } catch {
+          // View increment failed silently — non-critical
         }
       }
 
