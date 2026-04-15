@@ -51,7 +51,7 @@ export function CookieConsent() {
             Anladım, Devam Et
           </button>
           <a
-            href="/legal/cookies"
+            href="/legal/privacy"
             className="text-xs font-semibold text-indigo-600 hover:text-indigo-700"
           >
             Detaylar

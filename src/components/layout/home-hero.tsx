@@ -69,15 +69,17 @@ export function HomeHero({ cities }: HomeHeroProps) {
             <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1 pl-1">Fiyat Aralığı</label>
             <div className="flex space-x-2">
               <input 
-                type="text" 
+                type="number" 
                 name="minPrice"
                 placeholder="Min TL" 
+                min={0}
                 className="w-1/2 bg-gray-50 border border-gray-200 text-gray-700 rounded-lg focus:border-blue-500 focus:ring-1 focus:ring-blue-500 block p-2.5 outline-none text-sm transition" 
               />
               <input 
-                type="text" 
+                type="number" 
                 name="maxPrice"
                 placeholder="Maks TL" 
+                min={0}
                 className="w-1/2 bg-gray-50 border border-gray-200 text-gray-700 rounded-lg focus:border-blue-500 focus:ring-1 focus:ring-blue-500 block p-2.5 outline-none text-sm transition" 
               />
             </div>

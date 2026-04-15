@@ -20,9 +20,25 @@ export function ContactForm() {
     if (!form.name || !form.email || !form.message) return;
 
     setStatus("loading");
-    // Simulate form submission — replace with real API call
-    await new Promise((r) => setTimeout(r, 1200));
-    setStatus("success");
+    try {
+      const res = await fetch("/api/support/tickets", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          subject: form.subject,
+          description: `Ad Soyad: ${form.name}\nE-posta: ${form.email}\n\n${form.message}`,
+          category: "other",
+          priority: "medium",
+        }),
+      });
+      if (res.ok) {
+        setStatus("success");
+      } else {
+        setStatus("error");
+      }
+    } catch {
+      setStatus("error");
+    }
   };
 
   if (status === "success") {
@@ -103,6 +119,11 @@ export function ContactForm() {
           <><Send size={18} /> Mesajı Gönder</>
         )}
       </button>
+      {status === "error" && (
+        <p className="text-sm text-red-600 font-medium text-center">
+          Mesaj gönderilemedi. Lütfen tekrar deneyin veya doğrudan e-posta ile ulaşın.
+        </p>
+      )}
     </form>
   );
 }

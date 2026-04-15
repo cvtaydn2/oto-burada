@@ -85,12 +85,30 @@ export function MyListingsPanel({
   const handleArchive = async (listingId: string) => {
     setArchivingId(listingId);
     setArchiveError(null);
+    const listing = listings.find(l => l.id === listingId);
+    const isCurrentlyArchived = listing?.status === "archived";
+
     try {
-      const res = await fetch(`/api/listings/${listingId}/archive`, { method: "POST" });
-      const payload = await res.json().catch(() => null) as { success?: boolean; error?: { message: string } } | null;
-      if (!res.ok || !payload?.success) {
-        setArchiveError(payload?.error?.message ?? "İlan arşive alınamadı.");
-        return;
+      if (isCurrentlyArchived) {
+        // Arşivden çıkar → taslağa al
+        const res = await fetch("/api/listings/bulk-draft", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ ids: [listingId] }),
+        });
+        const payload = await res.json().catch(() => null) as { success?: boolean; message?: string } | null;
+        if (!res.ok || !payload?.success) {
+          setArchiveError(payload?.message ?? "İlan taslağa alınamadı.");
+          return;
+        }
+      } else {
+        // Arşivle
+        const res = await fetch(`/api/listings/${listingId}/archive`, { method: "POST" });
+        const payload = await res.json().catch(() => null) as { success?: boolean; error?: { message: string } } | null;
+        if (!res.ok || !payload?.success) {
+          setArchiveError(payload?.error?.message ?? "İlan arşive alınamadı.");
+          return;
+        }
       }
       router.refresh();
     } finally {

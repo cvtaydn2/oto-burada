@@ -8,13 +8,11 @@ import * as DropdownMenu from "@radix-ui/react-dropdown-menu";
 
 import { cn, formatDate } from "@/lib/utils";
 import { useNotifications } from "@/hooks/use-notifications";
-import { createSupabaseBrowserClient } from "@/lib/supabase/browser";
 
 export function NotificationDropdown({ userId }: { userId?: string }) {
   const queryClient = useQueryClient();
   const [isOpen, setIsOpen] = useState(false);
   const { notifications, unreadCount, isLoading } = useNotifications(userId);
-  createSupabaseBrowserClient();
 
   // Mark as read mutation
   const markReadMutation = useMutation({
