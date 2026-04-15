@@ -1,17 +1,16 @@
 /**
- * Next.js Instrumentation — server-side error tracking via PostHog.
- *
- * onRequestError fires for every unhandled server-side error:
- * - API route crashes
- * - Server action failures
- * - Server component render errors
- * - Middleware errors
+ * Next.js server-side instrumentation.
+ * onRequestError captures ALL unhandled server errors to PostHog:
+ *   - API route crashes
+ *   - Server action failures
+ *   - Server component render errors
+ *   - Middleware errors
  *
  * Docs: https://posthog.com/docs/error-tracking/installation/nextjs
  */
 
 export function register() {
-  // No-op — initialization happens lazily in getPostHogServer()
+  // No-op — PostHog server client initializes lazily
 }
 
 export const onRequestError = async (
@@ -27,7 +26,7 @@ export const onRequestError = async (
     routeType: string;
   },
 ) => {
-  // Only run in Node.js runtime (not Edge)
+  // Only run in Node.js runtime — PostHog Node SDK doesn't support Edge
   if (process.env.NEXT_RUNTIME !== "nodejs") return;
 
   try {
@@ -35,7 +34,7 @@ export const onRequestError = async (
     const posthog = getPostHogServer();
     if (!posthog) return;
 
-    // Try to extract PostHog distinct_id from cookie to link error to a user
+    // Extract PostHog distinct_id from cookie to link error to a specific user
     let distinctId: string | undefined;
     const cookieHeader = request.headers.cookie;
     if (cookieHeader) {
@@ -43,6 +42,7 @@ export const onRequestError = async (
         ? cookieHeader.join("; ")
         : cookieHeader;
 
+      // PostHog cookie format: ph_<token>_posthog=<encoded JSON>
       const match = cookieString.match(/ph_phc_.*?_posthog=([^;]+)/);
       if (match?.[1]) {
         try {
@@ -50,7 +50,7 @@ export const onRequestError = async (
           const parsed = JSON.parse(decoded) as { distinct_id?: string };
           distinctId = parsed.distinct_id;
         } catch {
-          // Cookie parse failed — use anonymous
+          // Cookie parse failed — fall back to anonymous
         }
       }
     }

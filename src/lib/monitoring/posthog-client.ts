@@ -1,7 +1,7 @@
 "use client";
 
-// PostHog is initialized in src/instrumentation-client.ts (Next.js 15.3+ pattern)
-// This file just re-exports the posthog instance for use in components.
+// PostHog initialized in src/instrumentation-client.ts
+// Re-export for use in client components that can't use usePostHog() hook
 import posthog from "posthog-js";
 
 export { posthog };

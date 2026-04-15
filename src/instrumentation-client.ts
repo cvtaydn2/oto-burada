@@ -1,27 +1,19 @@
+/**
+ * PostHog initialization — Next.js 15.3+ instrumentation-client pattern.
+ * Runs before the app initializes on the client side.
+ *
+ * defaults: '2026-01-30' automatically enables:
+ *   - Exception autocapture (unhandled JS errors + promise rejections)
+ *   - Session recording
+ *   - Web vitals
+ *   - Dead clicks / rage clicks
+ *   - Pageview capture
+ *
+ * Docs: https://posthog.com/docs/error-tracking/installation/nextjs
+ */
 import posthog from "posthog-js";
 
-// Next.js 15.3+ instrumentation-client pattern
-// This file runs before the app initializes — ideal for PostHog setup
-const token =
-  process.env.NEXT_PUBLIC_POSTHOG_PROJECT_TOKEN ??
-  process.env.NEXT_PUBLIC_POSTHOG_KEY;
-
-if (token) {
-  posthog.init(token, {
-    api_host: process.env.NEXT_PUBLIC_POSTHOG_HOST ?? "https://us.i.posthog.com",
-    // defaults: '2026-01-30' enables:
-    //   - exception autocapture (unhandled errors + promise rejections)
-    //   - session recording
-    //   - web vitals
-    //   - dead clicks
-    //   - rage clicks
-    defaults: "2026-01-30",
-    // Only override what's strictly necessary
-    capture_pageview: false, // handled manually via PostHogProvider
-    person_profiles: "identified_only",
-    session_recording: {
-      maskAllInputs: true, // mask passwords, phone numbers, TC no etc.
-      maskTextSelector: "[data-sensitive]", // add data-sensitive to any sensitive element
-    },
-  });
-}
+posthog.init(process.env.NEXT_PUBLIC_POSTHOG_PROJECT_TOKEN!, {
+  api_host: process.env.NEXT_PUBLIC_POSTHOG_HOST,
+  defaults: "2026-01-30",
+});

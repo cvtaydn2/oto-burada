@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { getCurrentUser } from "@/lib/auth/session";
 import { logger } from "@/lib/utils/logger";
+import { captureServerError } from "@/lib/monitoring/posthog-server";
 
 export async function POST(req: Request) {
   const user = await getCurrentUser();
@@ -15,17 +16,20 @@ export async function POST(req: Request) {
       return NextResponse.json({ success: false, error: "Plan ID gerekli." }, { status: 400 });
     }
 
-    // TODO: Iyzico payment integration
-    // For now, return a clear "not yet available" response
+    // Attempt logged to PostHog for funnel tracking
     logger.payments.info("Plan purchase attempted", { planId, userId: user.id });
 
+    // TODO: Iyzico payment integration
+    // Return clear "not yet available" — this is expected, not an error
     return NextResponse.json({
       success: false,
       error: "Ödeme sistemi henüz aktif değil. Lütfen bizimle iletişime geçin.",
     }, { status: 503 });
 
   } catch (error) {
-    logger.payments.error("Purchase plan error", error);
+    // Unexpected server error — log + send to PostHog
+    logger.payments.error("Purchase plan unexpected error", error);
+    captureServerError("Purchase plan unexpected error", "payments", error, { userId: user.id });
     return NextResponse.json({ success: false, error: "Sunucu hatası." }, { status: 500 });
   }
 }
