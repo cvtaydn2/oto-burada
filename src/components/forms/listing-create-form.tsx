@@ -436,6 +436,13 @@ export function ListingCreateForm({
       });
       const payload = await response.json();
       if (!response.ok || !payload?.success) {
+        // Handle field-level validation errors from API
+        const fieldErrors = payload?.error?.fieldErrors as Record<string, string> | undefined;
+        if (fieldErrors) {
+          Object.entries(fieldErrors).forEach(([field, message]) => {
+            setError(field as Parameters<typeof setError>[0], { message });
+          });
+        }
         setSubmitState({ message: payload?.error?.message ?? "Bir hata oluştu.", status: "error" });
         return;
       }
