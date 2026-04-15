@@ -252,6 +252,7 @@ export function buildListingRecord(
     id,
     slug,
     sellerId,
+    viewCount: existingListing?.viewCount ?? 0,
     title: input.title,
     brand: input.brand,
     model: input.model,

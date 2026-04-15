@@ -160,9 +160,9 @@ export function ExpertInspectionEditor({ form }: ExpertInspectionEditorProps) {
           </div>
 
           {/* Technical Status Grid */}
-          <div className="bg-muted/30 rounded-2xl p-6 border border-border/50">
+          <div className="bg-muted/30 rounded-2xl p-6 border border-border/50 overflow-visible">
             <h5 className="text-sm font-bold text-foreground mb-4">Teknik Aksam Durumları</h5>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-y-4 gap-x-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-y-4 gap-x-6 overflow-visible">
               {INSPECTION_FIELDS.map((field) => (
                 <div key={field.name} className="flex flex-col gap-1.5">
                   <Label className="text-[11px] font-semibold text-muted-foreground ml-1">

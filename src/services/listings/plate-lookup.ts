@@ -45,7 +45,6 @@ export async function lookupVehicleByPlate(
     const { data: brands } = await supabase
       .from("brands")
       .select("id, name")
-      .eq("is_active", true)
       .limit(20);
 
     if (!brands || brands.length === 0) return null;
@@ -59,7 +58,6 @@ export async function lookupVehicleByPlate(
       .from("models")
       .select("name")
       .eq("brand_id", selectedBrand.id)
-      .eq("is_active", true)
       .limit(10);
 
     if (!models || models.length === 0) return null;

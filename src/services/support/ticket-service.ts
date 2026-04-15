@@ -90,10 +90,10 @@ export async function getAllTickets(options?: {
   status?: TicketStatus;
   limit?: number;
 }): Promise<Ticket[]> {
-  const supabase = await createSupabaseServerClient();
-  let query = supabase
+  const admin = createSupabaseAdminClient();
+  let query = admin
     .from("tickets")
-    .select("*, profiles(full_name, email)")
+    .select("*, profiles!tickets_user_id_fkey(full_name, email)")
     .order("created_at", { ascending: false });
 
   if (options?.status) {
@@ -104,7 +104,25 @@ export async function getAllTickets(options?: {
   }
 
   const { data, error } = await query;
-  if (error) throw error;
+  if (error) {
+    console.error("getAllTickets error:", error);
+    // Fallback: join olmadan dene
+    const fallbackQuery = admin
+      .from("tickets")
+      .select("*")
+      .order("created_at", { ascending: false });
+    
+    if (options?.status) {
+      fallbackQuery.eq("status", options.status);
+    }
+    if (options?.limit) {
+      fallbackQuery.limit(options.limit);
+    }
+    
+    const { data: fallbackData, error: fallbackError } = await fallbackQuery;
+    if (fallbackError) throw fallbackError;
+    return (fallbackData ?? []).map(mapTicket);
+  }
   return (data ?? []).map(mapTicketWithProfile);
 }
 
@@ -113,7 +131,7 @@ export async function updateTicketStatus(
   status: TicketStatus,
   adminResponse?: string,
 ): Promise<Ticket> {
-  const supabase = await createSupabaseServerClient();
+  const admin = createSupabaseAdminClient();
   const updates: Record<string, unknown> = {
     status,
     updated_at: new Date().toISOString(),
@@ -125,14 +143,45 @@ export async function updateTicketStatus(
     updates.resolved_at = new Date().toISOString();
   }
 
-  const { data, error } = await supabase
+  const { data, error } = await admin
     .from("tickets")
     .update(updates)
     .eq("id", ticketId)
-    .select("*, profiles(full_name, email)")
+    .select("*, profiles!tickets_user_id_fkey(full_name, email)")
     .single();
 
-  if (error) throw error;
+  if (error) {
+    console.error("updateTicketStatus error:", error);
+    // Fallback: join olmadan dene
+    const { data: fallbackData, error: fallbackError } = await admin
+      .from("tickets")
+      .update(updates)
+      .eq("id", ticketId)
+      .select("*")
+      .single();
+    
+    if (fallbackError) throw fallbackError;
+    const ticket = mapTicket(fallbackData);
+    
+    // Email gönderme mantığı
+    if (adminResponse && ticket.userId) {
+      getUserEmailAndName(ticket.userId)
+        .then(({ email, name }) => {
+          if (email) {
+            sendTicketReplyEmail({
+              toEmail: email,
+              toName: name ?? "Kullanıcı",
+              ticketSubject: ticket.subject,
+              adminResponse,
+              ticketId,
+            }).catch((err) => logger.admin.warn("Ticket reply email failed silently", err));
+          }
+        })
+        .catch(() => null);
+    }
+    
+    return ticket;
+  }
 
   const ticket = mapTicketWithProfile(data);
 
@@ -171,10 +220,18 @@ export async function updateTicketStatus(
 }
 
 export async function getTicketCount(): Promise<Record<TicketStatus, number>> {
-  const supabase = await createSupabaseServerClient();
-  const { data, error } = await supabase.from("tickets").select("status");
+  const admin = createSupabaseAdminClient();
+  const { data, error } = await admin.from("tickets").select("status");
 
-  if (error) throw error;
+  if (error) {
+    console.error("getTicketCount error:", error);
+    return {
+      open: 0,
+      in_progress: 0,
+      resolved: 0,
+      closed: 0,
+    };
+  }
 
   const counts: Record<TicketStatus, number> = {
     open: 0,

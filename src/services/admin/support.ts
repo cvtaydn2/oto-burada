@@ -10,7 +10,7 @@ interface SupportTicketRow {
   description: string;
   id: string;
   priority: string;
-  profiles?: Array<{ email: string; full_name: string }> | { email: string; full_name: string } | null;
+  profiles?: Array<{ full_name: string }> | { full_name: string } | null;
   status: string;
   subject: string;
 }
@@ -19,7 +19,7 @@ export async function getSupportTickets() {
   const admin = createSupabaseAdminClient();
   const { data, error } = await admin
     .from("tickets")
-    .select("id, subject, description, status, priority, created_at, profiles(full_name, email)")
+    .select("id, subject, description, status, priority, created_at, profiles(full_name)")
     .order("created_at", { ascending: false });
 
   if (error) {
@@ -37,6 +37,13 @@ export async function getSupportTickets() {
     status: ticket.status,
     subject: ticket.subject,
   }));
+}
+
+export async function getUserEmailById(userId: string): Promise<string | null> {
+  const admin = createSupabaseAdminClient();
+  const { data, error } = await admin.auth.admin.getUserById(userId);
+  if (error || !data.user) return null;
+  return data.user.email ?? null;
 }
 
 export async function updateTicketStatus(id: string, status: string) {

@@ -451,7 +451,7 @@ export function ListingCreateForm({
       }
       setSubmitState({ message: "İlan başarıyla kaydedildi.", status: "success" });
       if (isEditing) router.replace("/dashboard/listings");
-      router.refresh();
+      else router.push("/dashboard/listings");
     } catch {
       setSubmitState({ message: "Bağlantı hatası.", status: "error" });
     }
@@ -565,7 +565,33 @@ export function ListingCreateForm({
         onSuccess={() => {
           setIsEmailVerifiedLocally(true);
           setIsVerifyDialogOpen(false);
-          onSubmit();
+          form.handleSubmit(async (values) => {
+            clearErrors();
+            setSubmitState(initialSubmitState);
+            try {
+              const response = await fetch(isEditing ? `/api/listings/${initialListing?.id}` : "/api/listings", {
+                body: JSON.stringify(values),
+                headers: { "Content-Type": "application/json" },
+                method: isEditing ? "PATCH" : "POST",
+              });
+              const payload = await response.json();
+              if (!response.ok || !payload?.success) {
+                const fieldErrors = payload?.error?.fieldErrors as Record<string, string> | undefined;
+                if (fieldErrors) {
+                  Object.entries(fieldErrors).forEach(([field, message]) => {
+                    setError(field as Parameters<typeof setError>[0], { message });
+                  });
+                }
+                setSubmitState({ message: payload?.error?.message ?? "Bir hata oluştu.", status: "error" });
+                return;
+              }
+              setSubmitState({ message: "İlan başarıyla kaydedildi.", status: "success" });
+              if (isEditing) router.replace("/dashboard/listings");
+              else router.push("/dashboard/listings");
+            } catch {
+              setSubmitState({ message: "Bağlantı hatası.", status: "error" });
+            }
+          })();
         }}
       />
     </div>
