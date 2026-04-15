@@ -77,22 +77,26 @@ export default async function SellerProfilePage({ params }: SellerProfilePagePro
             </div>
             
             <div className="flex w-full gap-2 sm:w-auto">
-              <a
-                href={`tel:${seller.phone}`}
-                className="flex h-10 flex-1 items-center justify-center gap-2 rounded-lg bg-primary px-4 text-sm font-bold text-white transition-all hover:bg-primary/90 sm:flex-none"
-              >
-                <Phone size={16} />
-                Ara
-              </a>
-              <a
-                href={`https://wa.me/${seller.phone?.replace(/\s+/g, "")}`}
-                target="_blank"
-                rel="noreferrer"
-                className="flex h-10 flex-1 items-center justify-center gap-2 rounded-lg bg-[#25D366] px-4 text-sm font-bold text-white transition-all hover:bg-[#20bd5a] sm:flex-none"
-              >
-                <MessageSquare size={16} />
-                WhatsApp
-              </a>
+              {seller.phone && (
+                <a
+                  href={`tel:${seller.phone}`}
+                  className="flex h-10 flex-1 items-center justify-center gap-2 rounded-lg bg-primary px-4 text-sm font-bold text-white transition-all hover:bg-primary/90 sm:flex-none"
+                >
+                  <Phone size={16} />
+                  Ara
+                </a>
+              )}
+              {seller.phone && (
+                <a
+                  href={`https://wa.me/${seller.phone.replace(/\D/g, "")}`}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="flex h-10 flex-1 items-center justify-center gap-2 rounded-lg bg-[#25D366] px-4 text-sm font-bold text-white transition-all hover:bg-[#20bd5a] sm:flex-none"
+                >
+                  <MessageSquare size={16} />
+                  WhatsApp
+                </a>
+              )}
             </div>
           </div>
 

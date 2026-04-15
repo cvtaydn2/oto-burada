@@ -1,7 +1,7 @@
 "use client"
 
 import dynamic from "next/dynamic"
-import { useState, useTransition, useRef, useCallback } from "react"
+import { useState, useTransition, useRef, useCallback, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { LayoutGrid, List, ArrowDownUp, Star, BadgeCheck, TrendingDown, SlidersHorizontal } from "lucide-react"
 
@@ -65,68 +65,87 @@ export function ListingsPageClient({
   const router = useRouter()
   const [isPending, startTransition] = useTransition()
 
+  // FIX: Sync filters state with initialFilters when URL changes (navigation)
   const [filters, setFilters] = useState<ListingFilters>(initialFilters)
+  useEffect(() => {
+    setFilters(initialFilters)
+  }, [initialFilters])
+
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid")
   const [isSortOpen, setIsSortOpen] = useState(false)
 
   const activeFiltersCount = Object.entries(filters).filter(([key, val]) => {
-    if (key === "limit" || key === "offset" || key === "sort" || key === "page") return false
+    if (key === "limit" || key === "sort" || key === "page") return false
     return val !== undefined && val !== ""
   }).length
 
-  const filteredModels = (brands.find(b => b.brand === filters.brand)?.models || []).map(m => m.name);
-  const filteredTrims = (brands.find(b => b.brand === filters.brand)?.models?.find(m => m.name === filters.model)?.trims || []);
-  const filteredDistricts = (cities.find(c => c.city === filters.city)?.districts || []);
+  const filteredModels = (brands.find(b => b.brand === filters.brand)?.models || []).map(m => m.name)
+  const filteredTrims = (brands.find(b => b.brand === filters.brand)?.models?.find(m => m.name === filters.model)?.trims || [])
+  const filteredDistricts = (cities.find(c => c.city === filters.city)?.districts || [])
 
-  const debounceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const debounceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   const applyFilters = useCallback((newFilters: ListingFilters, immediate = false) => {
     const fn = () => {
       const params = createSearchParamsFromListingFilters(newFilters)
-      router.push(`/listings?${params.toString()}`, { scroll: false })
+      startTransition(() => {
+        router.push(`/listings?${params.toString()}`, { scroll: false })
+      })
     }
 
     if (immediate) {
       if (debounceTimerRef.current) clearTimeout(debounceTimerRef.current)
       fn()
     } else {
-      startTransition(fn)
+      if (debounceTimerRef.current) clearTimeout(debounceTimerRef.current)
+      debounceTimerRef.current = setTimeout(fn, 400)
     }
   }, [router, startTransition])
 
   const handleFilterChange = useCallback(<K extends keyof ListingFilters>(key: K, value: ListingFilters[K]) => {
-    const newFilters = { ...filters, [key]: value, page: 1 }
+    // Always reset to page 1 when any filter changes
+    const newFilters: ListingFilters = { ...filters, [key]: value, page: 1 }
     setFilters(newFilters)
 
-    if (key === "sort") {
-      applyFilters({ ...newFilters, page: filters.page ?? initialResult.page }, true)
-      return
-    }
-
-    if (key === "limit") {
+    // Immediate navigation for sort, limit, select-type filters
+    const immediateKeys: (keyof ListingFilters)[] = ["sort", "limit", "brand", "model", "carTrim", "city", "district", "fuelType", "transmission", "hasExpertReport"]
+    if (immediateKeys.includes(key)) {
       applyFilters(newFilters, true)
       return
     }
 
-    if (debounceTimerRef.current) clearTimeout(debounceTimerRef.current)
-    debounceTimerRef.current = setTimeout(() => {
-      applyFilters(newFilters)
-    }, 400)
-  }, [filters, applyFilters, initialResult.page])
-
-  const handleReset = useCallback(() => {
-    const resetFilters = { limit: filters.limit ?? initialResult.limit, page: 1 }
-    setFilters(resetFilters)
-    applyFilters(resetFilters, true)
-  }, [filters.limit, initialResult.limit, applyFilters])
-
-  const handlePageChange = useCallback((page: number) => {
-    const nextFilters = { ...filters, page }
-    setFilters(nextFilters)
-    applyFilters(nextFilters, true)
+    // Debounced for text/number inputs (price, year, mileage, query, maxTramer)
+    applyFilters(newFilters, false)
   }, [filters, applyFilters])
 
-  const currentSortLabel = SORT_OPTIONS.find(o => o.value === filters.sort)?.label || "En Yeni"
+  const handleReset = useCallback(() => {
+    if (debounceTimerRef.current) clearTimeout(debounceTimerRef.current)
+    const resetFilters: ListingFilters = { limit: filters.limit ?? initialResult.limit, page: 1, sort: "newest" }
+    setFilters(resetFilters)
+    const params = createSearchParamsFromListingFilters(resetFilters)
+    startTransition(() => {
+      router.push(`/listings?${params.toString()}`, { scroll: false })
+    })
+  }, [filters.limit, initialResult.limit, router, startTransition])
+
+  const handlePageChange = useCallback((page: number) => {
+    if (debounceTimerRef.current) clearTimeout(debounceTimerRef.current)
+    const nextFilters = { ...filters, page }
+    setFilters(nextFilters)
+    const params = createSearchParamsFromListingFilters(nextFilters)
+    startTransition(() => {
+      router.push(`/listings?${params.toString()}`, { scroll: false })
+    })
+  }, [filters, router, startTransition])
+
+  // Cleanup debounce on unmount
+  useEffect(() => {
+    return () => {
+      if (debounceTimerRef.current) clearTimeout(debounceTimerRef.current)
+    }
+  }, [])
+
+  const currentSortLabel = SORT_OPTIONS.find(o => o.value === (filters.sort ?? "newest"))?.label || "En Yeni"
   const currentPage = initialResult.page
   const totalPages = Math.max(1, Math.ceil(initialResult.total / initialResult.limit))
   const canGoPrev = currentPage > 1
@@ -162,7 +181,6 @@ export function ListingsPageClient({
               activeCount={activeFiltersCount}
             />
 
-            {/* Gelişmiş Filtre butonu */}
             <Link
               href={`/listings/filter?${createSearchParamsFromListingFilters(filters).toString()}`}
               className="flex h-9 items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 text-sm font-medium text-slate-600 hover:bg-slate-50 transition-colors"
@@ -207,25 +225,29 @@ export function ListingsPageClient({
               </button>
 
               {isSortOpen && (
-                <div className="absolute right-0 top-full z-50 mt-2 w-56 rounded-lg border border-slate-200 bg-white py-1 shadow-lg">
-                  {SORT_OPTIONS.map((option) => (
-                    <button
-                      key={option.value}
-                      onClick={() => {
-                        handleFilterChange("sort", option.value as ListingFilters["sort"]);
-                        setIsSortOpen(false);
-                      }}
-                      className={cn(
-                        "w-full px-4 py-2 text-left text-sm transition-colors",
-                        filters.sort === option.value
-                          ? "bg-blue-50 font-bold text-blue-600"
-                          : "text-gray-600 hover:bg-gray-50"
-                      )}
-                    >
-                      {option.label}
-                    </button>
-                  ))}
-                </div>
+                <>
+                  {/* Backdrop */}
+                  <div className="fixed inset-0 z-40" onClick={() => setIsSortOpen(false)} />
+                  <div className="absolute right-0 top-full z-50 mt-2 w-56 rounded-lg border border-slate-200 bg-white py-1 shadow-lg">
+                    {SORT_OPTIONS.map((option) => (
+                      <button
+                        key={option.value}
+                        onClick={() => {
+                          handleFilterChange("sort", option.value as ListingFilters["sort"])
+                          setIsSortOpen(false)
+                        }}
+                        className={cn(
+                          "w-full px-4 py-2 text-left text-sm transition-colors",
+                          (filters.sort ?? "newest") === option.value
+                            ? "bg-blue-50 font-bold text-blue-600"
+                            : "text-gray-600 hover:bg-gray-50"
+                        )}
+                      >
+                        {option.label}
+                      </button>
+                    ))}
+                  </div>
+                </>
               )}
             </div>
 
@@ -248,10 +270,9 @@ export function ListingsPageClient({
         <div className="mt-5 flex flex-wrap gap-2.5">
           {QUICK_FILTERS.map((qf) => {
             const isActive =
-              (qf.type === "reset" && !filters.hasExpertReport && filters.sort !== "price_asc" && filters.sort !== "newest") ||
               (qf.type === "expert" && filters.hasExpertReport === true) ||
               (qf.type === "price_low" && filters.sort === "price_asc") ||
-              (qf.type === "newest" && filters.sort === "newest")
+              (qf.type === "newest" && (filters.sort === "newest" || !filters.sort))
 
             return (
               <button
@@ -259,13 +280,13 @@ export function ListingsPageClient({
                 onClick={() => {
                   if (qf.type === "reset") handleReset()
                   else if (qf.type === "expert") handleFilterChange("hasExpertReport", filters.hasExpertReport ? undefined : true)
-                  else if (qf.type === "price_low") handleFilterChange("sort", filters.sort === "price_asc" ? undefined : "price_asc")
-                  else if (qf.type === "newest") handleFilterChange("sort", filters.sort === "newest" ? undefined : "newest")
+                  else if (qf.type === "price_low") handleFilterChange("sort", filters.sort === "price_asc" ? "newest" : "price_asc")
+                  else if (qf.type === "newest") handleFilterChange("sort", "newest")
                 }}
                 className={cn(
                   "flex items-center gap-1.5 rounded-full border px-4 py-2 text-xs font-bold transition-all",
-                  qf.type === "price_low" && filters.sort === "price_asc"
-                    ? "border-emerald-200 bg-emerald-50 text-emerald-700 shadow-sm"
+                  qf.type === "reset"
+                    ? "border-gray-200 bg-white text-gray-500 hover:border-blue-300 hover:text-blue-500"
                     : isActive
                     ? "border-blue-500 bg-blue-500 text-white shadow-md shadow-blue-500/10"
                     : "border-gray-200 bg-white text-gray-500 hover:border-blue-300 hover:text-blue-500"
@@ -300,8 +321,18 @@ export function ListingsPageClient({
             {(filters.minPrice || filters.maxPrice) && (
               <FilterTag
                 label={`${filters.minPrice ? formatTL(filters.minPrice) : "0"} — ${filters.maxPrice ? formatTL(filters.maxPrice) : "∞"}`}
-                onRemove={() => { handleFilterChange("minPrice", undefined); handleFilterChange("maxPrice", undefined) }}
+                onRemove={() => {
+                  const f = { ...filters, minPrice: undefined, maxPrice: undefined, page: 1 }
+                  setFilters(f)
+                  applyFilters(f, true)
+                }}
               />
+            )}
+            {filters.query && (
+              <FilterTag label={`"${filters.query}"`} onRemove={() => handleFilterChange("query", undefined)} />
+            )}
+            {filters.hasExpertReport && (
+              <FilterTag label="Ekspertizli" onRemove={() => handleFilterChange("hasExpertReport", undefined)} />
             )}
             <button
               onClick={handleReset}
@@ -372,6 +403,7 @@ export function ListingsPageClient({
                 ))}
               </div>
 
+              {/* Pagination */}
               <div className="flex flex-col gap-4 rounded-xl border border-slate-200 bg-white p-4 sm:flex-row sm:items-center sm:justify-between">
                 <div className="text-sm text-slate-500">
                   Sayfa <span className="font-bold text-slate-900">{currentPage}</span> / {totalPages}
@@ -386,7 +418,7 @@ export function ListingsPageClient({
                   </button>
                   {buildPageItems(currentPage, totalPages).map((item, index) =>
                     item === "ellipsis" ? (
-                      <span key={`${item}-${index}`} className="px-2 text-slate-400">…</span>
+                      <span key={`ellipsis-${index}`} className="px-2 text-slate-400">…</span>
                     ) : (
                       <button
                         key={item}
@@ -439,15 +471,12 @@ function buildPageItems(currentPage: number, totalPages: number): Array<number |
   if (totalPages <= 7) {
     return Array.from({ length: totalPages }, (_, index) => index + 1)
   }
-
   if (currentPage <= 3) {
     return [1, 2, 3, 4, "ellipsis", totalPages]
   }
-
   if (currentPage >= totalPages - 2) {
     return [1, "ellipsis", totalPages - 3, totalPages - 2, totalPages - 1, totalPages]
   }
-
   return [1, "ellipsis", currentPage - 1, currentPage, currentPage + 1, "ellipsis", totalPages]
 }
 

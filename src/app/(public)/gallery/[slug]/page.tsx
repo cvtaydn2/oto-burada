@@ -45,7 +45,7 @@ export default async function GalleryPage({ params }: GalleryPageProps) {
                 <Car size={20} />
              </div>
               <h2 className="text-xl font-black text-slate-900">
-                 Galerinin Ilanları
+                 Galerinin İlanları
               </h2>
           </div>
           <Badge variant="outline" className="border-slate-300 bg-white px-3 py-1 text-xs font-medium text-slate-600">

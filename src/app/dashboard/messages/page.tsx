@@ -3,12 +3,13 @@ import { getUserChats } from "@/services/messages/chat-service";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { ChatLayout } from "@/components/chat/chat-layout";
 import { MessageSquare, ShieldCheck } from "lucide-react";
+import { logger } from "@/lib/utils/logger";
 
 export default async function MessagesPage() {
   const user = await requireUser();
   const supabase = await createSupabaseServerClient();
   const chats = await getUserChats(user.id, supabase).catch((error) => {
-    console.error("MessagesPage Error:", error);
+    logger.messages.error("MessagesPage failed to load chats", error, { userId: user.id });
     return null;
   });
 

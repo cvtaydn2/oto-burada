@@ -27,7 +27,7 @@ export default async function AdminLayout({
                <div className="size-1 rounded-full bg-blue-600" />
             </div>
             <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest italic">
-               Control Center &mdash; v1.4.0 (Enterprise)
+               Control Center &mdash; MVP
             </p>
          </footer>
       </div>
