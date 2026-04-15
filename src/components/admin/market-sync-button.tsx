@@ -4,8 +4,10 @@ import { useState } from "react";
 import { Zap, LoaderCircle, CheckCircle2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
+import { useErrorCapture } from "@/hooks/use-error-capture";
 
 export function MarketSyncButton() {
+  const { captureError } = useErrorCapture("market-sync");
   const [isSyncing, setIsSyncing] = useState(false);
   const [result, setResult] = useState<{ success: boolean; message: string } | null>(null);
   const router = useRouter();
@@ -25,7 +27,8 @@ export function MarketSyncButton() {
       } else {
         setResult({ success: false, message: data.error || "Senkronizasyon başarısız." });
       }
-    } catch {
+    } catch (err) {
+      captureError(err, "handleSync");
       setResult({ success: false, message: "Bağlantı hatası oluştu." });
     } finally {
       setIsSyncing(false);

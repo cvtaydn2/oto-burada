@@ -6,6 +6,7 @@ import { AdminRole, deleteRole } from "@/services/admin/roles";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { RoleForm } from "@/components/forms/role-form";
+import { useErrorCapture } from "@/hooks/use-error-capture";
 
 interface AdminRolesClientProps {
   initialRoles: AdminRole[];
@@ -19,6 +20,7 @@ const roleColors: Record<string, string> = {
 };
 
 export function AdminRolesClient({ initialRoles }: AdminRolesClientProps) {
+  const { captureError } = useErrorCapture("admin-roles");
   const [roles, setRoles] = useState(initialRoles);
   const [isDeleting, setIsDeleting] = useState<string | null>(null);
   const [deleteModal, setDeleteModal] = useState<AdminRole | null>(null);
@@ -37,7 +39,8 @@ export function AdminRolesClient({ initialRoles }: AdminRolesClientProps) {
       setRoles((prev) => prev.filter((r) => r.id !== role.id));
       toast.success(`${role.name} rolü silindi`);
       setDeleteModal(null);
-    } catch {
+    } catch (err) {
+      captureError(err, "handleDelete");
       toast.error("Rol silinemedi");
     } finally {
       setIsDeleting(null);

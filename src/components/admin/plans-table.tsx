@@ -25,12 +25,14 @@ import { formatCurrency } from "@/lib/utils";
 import { PricingPlan, togglePlanStatus, deletePricingPlan } from "@/services/admin/plans";
 import { PlanForm } from "@/components/forms/plan-form";
 import { Plus } from "lucide-react";
+import { useErrorCapture } from "@/hooks/use-error-capture";
 
 interface PlansTableProps {
   initialPlans: PricingPlan[];
 }
 
 export function PlansTable({ initialPlans }: PlansTableProps) {
+  const { captureError } = useErrorCapture("plans-table");
   const [plans, setPlans] = useState(initialPlans);
   const [isLoading, setIsLoading] = useState<string | null>(null);
   const [editModal, setEditModal] = useState<PricingPlan | null>(null);
@@ -45,7 +47,8 @@ export function PlansTable({ initialPlans }: PlansTableProps) {
         p.id === plan.id ? { ...p, is_active: !p.is_active } : p
       ));
       toast.success(`${plan.name} durumu güncellendi`);
-    } catch {
+    } catch (err) {
+      captureError(err, "handleToggleStatus");
       toast.error("İşlem başarısız oldu");
     } finally {
       setIsLoading(null);
@@ -59,7 +62,8 @@ export function PlansTable({ initialPlans }: PlansTableProps) {
       setPlans(prev => prev.filter(p => p.id !== plan.id));
       toast.success(`${plan.name} paketi silindi`);
       setDeleteModal(null);
-    } catch {
+    } catch (err) {
+      captureError(err, "handleDelete");
       toast.error("Paket silinemedi");
     } finally {
       setIsLoading(null);

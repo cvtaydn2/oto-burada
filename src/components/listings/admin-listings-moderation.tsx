@@ -22,12 +22,14 @@ import Image from "next/image";
 import { formatCurrency, formatDate, formatNumber } from "@/lib/utils";
 import { getListingCardInsights } from "@/services/listings/listing-card-insights";
 import type { Listing } from "@/types";
+import { useErrorCapture } from "@/hooks/use-error-capture";
 
 interface AdminListingsModerationProps {
   pendingListings: Listing[];
 }
 
 export function AdminListingsModeration({ pendingListings }: AdminListingsModerationProps) {
+  const { captureError } = useErrorCapture("admin-listings-moderation");
   const router = useRouter();
   const [activeAction, setActiveAction] = useState<string | null>(null);
   const [activeBulkAction, setActiveBulkAction] = useState<"approve" | "reject" | null>(null);
@@ -85,7 +87,8 @@ export function AdminListingsModeration({ pendingListings }: AdminListingsModera
       setSelectedListingIds((current) => current.filter((id) => id !== listingId));
       setSuccessMessage(action === "approve" ? "İlan onaylandı." : "İlan reddedildi.");
       router.refresh();
-    } catch {
+    } catch (err) {
+      captureError(err, "handleModeration");
       setErrorMessage("Bağlantı sırasında bir hata oluştu. Lütfen tekrar dene.");
     } finally {
       setActiveAction(null);
@@ -151,7 +154,8 @@ export function AdminListingsModeration({ pendingListings }: AdminListingsModera
           : payload.message ?? "Toplu moderasyon tamamlandı.",
       );
       router.refresh();
-    } catch {
+    } catch (err) {
+      captureError(err, "handleBulkModeration");
       setErrorMessage("Toplu moderasyon sırasında bağlantı hatası oluştu.");
     } finally {
       setActiveBulkAction(null);
@@ -192,7 +196,8 @@ export function AdminListingsModeration({ pendingListings }: AdminListingsModera
       setEditingListingId(null);
       setEditValues(null);
       router.refresh();
-    } catch {
+    } catch (err) {
+      captureError(err, "handleSaveEdit");
       setErrorMessage("Bağlantı hatası.");
     } finally {
       setIsSavingEdit(false);

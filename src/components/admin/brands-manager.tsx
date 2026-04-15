@@ -27,6 +27,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 import { toggleBrandStatus, addBrand, createModel, updateBrand, deleteBrand } from "@/services/admin/reference";
+import { useErrorCapture } from "@/hooks/use-error-capture";
 
 interface Brand {
   id: string;
@@ -41,6 +42,7 @@ interface BrandsManagerProps {
 }
 
 export function BrandsManager({ initialBrands, showTableOnly }: BrandsManagerProps) {
+  const { captureError } = useErrorCapture("brands-manager");
   const [brands, setBrands] = useState(initialBrands);
   const [loadingId, setLoadingId] = useState<string | null>(null);
   const [addBrandModal, setAddBrandModal] = useState(false);
@@ -62,7 +64,8 @@ export function BrandsManager({ initialBrands, showTableOnly }: BrandsManagerPro
         b.id === brand.id ? { ...b, is_active: !b.is_active } : b
       ));
       toast.success(`${brand.name} durumu güncellendi`);
-    } catch {
+    } catch (err) {
+      captureError(err, "handleToggleStatus");
       toast.error("İşlem başarısız oldu");
     } finally {
       setLoadingId(null);
@@ -77,7 +80,8 @@ export function BrandsManager({ initialBrands, showTableOnly }: BrandsManagerPro
       toast.success("Marka güncellendi");
       setEditingBrand(null);
       window.location.reload();
-    } catch {
+    } catch (err) {
+      captureError(err, "handleUpdateBrand");
       toast.error("Marka güncellenemedi");
     } finally {
       setIsAdding(false);
@@ -92,7 +96,8 @@ export function BrandsManager({ initialBrands, showTableOnly }: BrandsManagerPro
       toast.success("Marka silindi");
       setDeleteId(null);
       window.location.reload();
-    } catch {
+    } catch (err) {
+      captureError(err, "handleDeleteBrand");
       toast.error("Marka silinemedi (bağlı modeller olabilir)");
     } finally {
       setIsDeleting(false);
@@ -112,7 +117,8 @@ export function BrandsManager({ initialBrands, showTableOnly }: BrandsManagerPro
       setNewBrandName("");
       setAddBrandModal(false);
       window.location.reload();
-    } catch {
+    } catch (err) {
+      captureError(err, "handleAddBrand");
       toast.error("Marka eklenemedi");
     } finally {
       setIsAdding(false);
@@ -131,7 +137,8 @@ export function BrandsManager({ initialBrands, showTableOnly }: BrandsManagerPro
       toast.success(`${newModelName} modeli eklendi`);
       setNewModelName("");
       setAddModelModal(null);
-    } catch {
+    } catch (err) {
+      captureError(err, "handleAddModel");
       toast.error("Model eklenemedi");
     } finally {
       setIsAddingModel(false);

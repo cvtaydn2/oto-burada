@@ -12,10 +12,10 @@ import {
 } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
-
 import { reportReasonLabels, reportStatusLabels } from "@/lib/constants/domain";
 import { formatDate } from "@/lib/utils";
 import type { Report, ReportStatus } from "@/types";
+import { useErrorCapture } from "@/hooks/use-error-capture";
 
 interface AdminReportsModerationProps {
   listingMetaById: Record<string, { slug: string; title: string }>;
@@ -33,6 +33,7 @@ export function AdminReportsModeration({
   listingMetaById,
   reports,
 }: AdminReportsModerationProps) {
+  const { captureError } = useErrorCapture("admin-reports-moderation");
   const router = useRouter();
   const [activeAction, setActiveAction] = useState<string | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -78,7 +79,8 @@ export function AdminReportsModeration({
         [reportId]: "",
       }));
       router.refresh();
-    } catch {
+    } catch (err) {
+      captureError(err, "handleStatusUpdate");
       toast.error("Bağlantı sırasında bir hata oluştu.");
     } finally {
       setActiveAction(null);
