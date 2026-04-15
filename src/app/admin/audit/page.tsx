@@ -1,6 +1,6 @@
 import { History, ShieldCheck, ExternalLink, Search } from "lucide-react";
 import { requireAdminUser } from "@/lib/auth/session";
-import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
@@ -23,7 +23,7 @@ export const dynamic = "force-dynamic";
 export default async function AdminAuditPage({ searchParams }: { searchParams: Promise<{ q?: string }> }) {
   await requireAdminUser();
   const { q } = await searchParams;
-  const supabase = await createSupabaseServerClient();
+  const supabase = createSupabaseAdminClient();
 
   let query = supabase
     .from("admin_actions")
@@ -36,6 +36,13 @@ export default async function AdminAuditPage({ searchParams }: { searchParams: P
   }
 
   const { data: actions } = await query as { data: AdminActionWithProfile[] | null };
+
+  function getTargetHref(action: AdminActionWithProfile): string | null {
+    if (action.target_type === "listing") return `/admin/listings?q=${action.target_id}`;
+    if (action.target_type === "user") return `/admin/users/${action.target_id}`;
+    if (action.target_type === "report") return `/admin/reports`;
+    return null;
+  }
 
   return (
     <main className="space-y-8 p-6 lg:p-8 bg-slate-50/30 min-h-full">
@@ -102,10 +109,21 @@ export default async function AdminAuditPage({ searchParams }: { searchParams: P
                      </Badge>
                   </td>
                   <td className="px-6 py-5 font-mono text-[10px] text-slate-400">
-                     <div className="flex items-center gap-2 group-hover:text-blue-500 transition-colors">
-                        <span className="font-bold">#</span>{action.target_id.substring(0, 12)}...
-                        <ExternalLink size={12} className="opacity-40" />
-                     </div>
+                     {(() => {
+                       const href = getTargetHref(action);
+                       return href ? (
+                         <a href={href} className="flex items-center gap-2 hover:text-blue-500 transition-colors group-hover:text-blue-500">
+                           <span className="font-bold">{action.target_type}</span>
+                           <span>#{action.target_id.substring(0, 8)}...</span>
+                           <ExternalLink size={12} />
+                         </a>
+                       ) : (
+                         <div className="flex items-center gap-2">
+                           <span className="font-bold">{action.target_type}</span>
+                           <span>#{action.target_id.substring(0, 8)}...</span>
+                         </div>
+                       );
+                     })()}
                   </td>
                   <td className="px-6 py-5">
                      <p className="text-sm font-medium text-slate-500 max-w-xs truncate italic">{action.note || "Ek not belirtilmedi."}</p>

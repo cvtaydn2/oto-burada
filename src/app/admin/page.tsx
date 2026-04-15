@@ -29,19 +29,25 @@ export const dynamic = "force-dynamic";
 export default async function AdminOverviewPage() {
   await requireAdminUser();
 
-  // Tüm promise'leri aynı anda başlat — hiçbiri diğerini beklemez
   const analyticsPromise = getAdminAnalytics("30d").catch(() => null);
   const reportsPromise = getStoredReports().catch(() => []);
   const recentActionsPromise = getRecentAdminModerationActions(10).catch(() => []);
   const persistenceHealthPromise = getPersistenceHealth().catch(() => null);
+
+  // Sistem durumu için hızlı DB ping
+  const admin = createSupabaseAdminClient();
+  const { error: pingError } = await admin.from("profiles").select("id").limit(1);
+  const systemOnline = !pingError;
 
   return (
     <main className="min-h-screen space-y-8 bg-slate-50/30 p-6 lg:p-8">
       <section className="flex flex-col justify-between gap-6 md:flex-row md:items-center">
         <div>
           <div className="mb-2 flex items-center gap-2">
-            <div className="size-2 animate-pulse rounded-full bg-blue-500" />
-            <span className="text-[10px] font-bold uppercase tracking-widest italic text-slate-400">Sistem Durumu: Çevrimiçi</span>
+            <div className={`size-2 animate-pulse rounded-full ${systemOnline ? "bg-emerald-500" : "bg-rose-500"}`} />
+            <span className={`text-[10px] font-bold uppercase tracking-widest italic ${systemOnline ? "text-slate-400" : "text-rose-500"}`}>
+              Sistem Durumu: {systemOnline ? "Çevrimiçi" : "Bağlantı Sorunu"}
+            </span>
           </div>
           <h1 className="text-3xl font-black tracking-tight text-slate-800">
             Yönetim <span className="text-blue-600">Paneli</span>
@@ -176,7 +182,9 @@ async function AdminAnalyticsSection({
               <p className="text-xs font-medium text-slate-400">Son 7 günlük ilan dağılımı</p>
             </div>
           </div>
-          <Button variant="ghost" size="sm" className="text-xs font-bold text-blue-600">Detaylı Gör</Button>
+          <Button variant="ghost" size="sm" className="text-xs font-bold text-blue-600" asChild>
+            <a href="/admin/analytics">Detaylı Gör →</a>
+          </Button>
         </div>
         <AdminAnalyticsPanel data={analyticsData} />
       </div>

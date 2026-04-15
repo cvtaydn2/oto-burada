@@ -6,22 +6,22 @@ import { getAllKnownListings } from "@/services/listings/marketplace-listings";
 
 export const dynamic = "force-dynamic";
 
-export default async function AdminReportsPage({ searchParams }: { searchParams: Promise<{ urgent?: string }> }) {
+export default async function AdminReportsPage({ searchParams }: { searchParams: Promise<{ urgent?: string; show?: string }> }) {
   await requireAdminUser();
-  const { urgent } = await searchParams;
+  const { urgent, show } = await searchParams;
 
-  // Paralel fetch — sequential await yerine
   const [storedReports, knownListings] = await Promise.all([
     getStoredReports(),
     getAllKnownListings(),
   ]);
 
-  let actionableReports = storedReports.filter(
-    (report) => report.status === "open" || report.status === "reviewing",
-  );
+  // show=all ise tüm raporları göster, yoksa sadece açık/incelemede olanları
+  let actionableReports = show === "all"
+    ? storedReports
+    : storedReports.filter((report) => report.status === "open" || report.status === "reviewing");
 
   if (urgent === "true") {
-     actionableReports = actionableReports.filter(r => r.reason === "fake_listing");
+    actionableReports = actionableReports.filter(r => r.reason === "fake_listing");
   }
   const listingMetaById = Object.fromEntries(
     knownListings.map((listing) => [
@@ -94,12 +94,20 @@ export default async function AdminReportsPage({ searchParams }: { searchParams:
              <div className="absolute -right-4 -bottom-4 size-24 bg-white/10 rounded-full blur-2xl group-hover:scale-125 transition-transform" />
              <h4 className="font-black text-lg mb-2">Hızlı Filtre</h4>
              <p className="text-blue-100 text-xs font-medium mb-4 leading-relaxed italic">Sadece yüksek riskli şikayetleri listeleyerek zaman kazanın.</p>
-             <a 
-                href={urgent === "true" ? "/admin/reports" : "/admin/reports?urgent=true"}
-                className="w-full bg-white text-blue-600 rounded-xl py-3 font-black text-[10px] tracking-widest uppercase hover:bg-blue-50 transition-colors flex items-center justify-center cursor-pointer"
-             >
-                {urgent === "true" ? "TÜMÜNÜ GÖSTER" : "ACİL OLANLAR"}
-             </a>
+             <div className="space-y-2">
+               <a 
+                  href={urgent === "true" ? "/admin/reports" : "/admin/reports?urgent=true"}
+                  className="w-full bg-white text-blue-600 rounded-xl py-3 font-black text-[10px] tracking-widest uppercase hover:bg-blue-50 transition-colors flex items-center justify-center cursor-pointer"
+               >
+                  {urgent === "true" ? "TÜMÜNÜ GÖSTER" : "ACİL OLANLAR"}
+               </a>
+               <a
+                  href={show === "all" ? "/admin/reports" : "/admin/reports?show=all"}
+                  className="w-full bg-blue-700 text-white rounded-xl py-3 font-black text-[10px] tracking-widest uppercase hover:bg-blue-800 transition-colors flex items-center justify-center cursor-pointer"
+               >
+                  {show === "all" ? "SADECE AKTİFLER" : "TÜM GEÇMİŞ"}
+               </a>
+             </div>
           </div>
         </div>
       </div>

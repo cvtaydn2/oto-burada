@@ -7,7 +7,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { InventoryTable } from "@/components/admin/inventory-table";
 import { Badge } from "@/components/ui/badge";
 import { SimplePagination } from "@/components/admin/simple-pagination";
-
 export const dynamic = "force-dynamic";
 
 interface AdminListingsPageProps {
@@ -60,9 +59,6 @@ export default async function AdminListingsPage({ searchParams }: AdminListingsP
                    placeholder="VIN, Başlık veya Marka ile akıllı ara..." 
                 />
              </form>
-             <div className="flex items-center gap-2">
-                <Badge variant="outline" className="h-12 px-4 rounded-xl border-slate-200 text-slate-500 font-bold uppercase tracking-widest text-[10px]">Filtreler</Badge>
-             </div>
           </div>
 
           <Tabs defaultValue={status} className="w-full">
@@ -120,10 +116,10 @@ export default async function AdminListingsPage({ searchParams }: AdminListingsP
       </div>
 
       {/* Summary Stats Footer */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6 px-2">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 px-2">
           <div className="p-8 bg-white rounded-3xl border border-slate-200 shadow-sm relative overflow-hidden group">
             <div className="absolute -right-2 -top-2 size-20 bg-slate-50 rounded-full blur-2xl group-hover:scale-110 transition-transform" />
-            <h3 className="text-slate-400 font-black uppercase text-[10px] tracking-widest mb-2 italic">Segment Toplamı</h3>
+            <h3 className="text-slate-400 font-black uppercase text-[10px] tracking-widest mb-2 italic">Bu Segmentte</h3>
             <span className="text-3xl font-black text-slate-800 tracking-tighter">{total}</span>
           </div>
           
@@ -133,13 +129,10 @@ export default async function AdminListingsPage({ searchParams }: AdminListingsP
             <span className="text-3xl font-black text-slate-800 tracking-tighter">{approvedCount}</span>
           </div>
 
-          <div className="md:col-span-2 p-8 bg-blue-600 rounded-3xl shadow-lg shadow-blue-100 flex items-center justify-between gap-6 relative overflow-hidden group">
-            <div className="absolute -left-10 -bottom-10 size-40 bg-white/10 rounded-full blur-3xl group-hover:scale-125 transition-transform" />
-            <div className="relative z-10">
-               <h3 className="text-white font-black text-lg leading-tight mb-1">Yeni Modeli Keşfet</h3>
-               <p className="text-blue-100 text-[11px] font-medium italic">Otomatik içerik tarama ve sahte ilan tespiti aktif.</p>
-            </div>
-            <Badge className="bg-white text-blue-600 rounded-xl px-5 py-2 font-black text-[10px] uppercase tracking-widest relative z-10 shrink-0">GÜVENLİK AKTİF</Badge>
+          <div className="p-8 bg-white rounded-3xl border border-amber-100 shadow-sm relative overflow-hidden group">
+            <div className="absolute -right-2 -top-2 size-20 bg-amber-50 rounded-full blur-2xl group-hover:scale-110 transition-transform" />
+            <h3 className="text-amber-600 font-black uppercase text-[10px] tracking-widest mb-2 italic">Onay Bekleyen</h3>
+            <span className="text-3xl font-black text-slate-800 tracking-tighter">{pendingCount}</span>
           </div>
       </div>
     </main>

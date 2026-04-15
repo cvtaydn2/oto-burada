@@ -25,10 +25,18 @@ export default async function AdminUserManagementPage({
   const { users, total, limit } = await getAllUsers(q, currentPage);
   const totalPages = Math.ceil(total / limit);
 
+  // Tüm DB'den gerçek sayılar — sadece mevcut sayfa değil
+  const admin = (await import("@/lib/supabase/admin")).createSupabaseAdminClient();
+  const [{ count: totalActive }, { count: totalProfessional }, { count: totalBanned }] = await Promise.all([
+    admin.from("profiles").select("*", { count: "exact", head: true }).eq("is_banned", false),
+    admin.from("profiles").select("*", { count: "exact", head: true }).eq("user_type", "professional"),
+    admin.from("profiles").select("*", { count: "exact", head: true }).eq("is_banned", true),
+  ]);
+
   const stats = [
     { label: "Tüm Kullanıcılar", value: total.toLocaleString("tr-TR"), color: "text-slate-900" },
-    { label: "Aktif", value: users.filter((u) => !u.isBanned).length.toLocaleString("tr-TR"), color: "text-emerald-600" },
-    { label: "Kurumsal", value: users.filter((u) => u.userType === "professional").length.toLocaleString("tr-TR"), color: "text-blue-600" },
+    { label: "Aktif", value: (totalActive ?? 0).toLocaleString("tr-TR"), color: "text-emerald-600" },
+    { label: "Kurumsal", value: (totalProfessional ?? 0).toLocaleString("tr-TR"), color: "text-blue-600" },
   ];
 
   return (
@@ -234,7 +242,7 @@ export default async function AdminUserManagementPage({
               </div>
               <div className="flex justify-between">
                 <span>Yasaklı</span>
-                <span className="font-black text-rose-600">{users.filter((u) => u.isBanned).length}</span>
+                <span className="font-black text-rose-600">{totalBanned ?? 0}</span>
               </div>
             </div>
           </div>
