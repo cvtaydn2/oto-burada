@@ -3,7 +3,6 @@
 import Image from "next/image";
 import Link from "next/link"
 import { CheckCircle2, Lock } from "lucide-react"
-import { EIDSBadge } from "@/components/shared/eids-badge"
 import { TrustBadge } from "@/components/shared/trust-badge"
 import { ContactActions } from "@/components/listings/contact-actions"
 import type { Profile } from "@/types"
@@ -48,7 +47,6 @@ export function SellerCard({
               <span className="text-xl font-black font-heading text-slate-900 truncate">
                 {seller?.businessName || seller?.fullName || "Bireysel Satıcı"}
               </span>
-              <EIDSBadge isVerified={!!seller?.eidsId} />
             </div>
             <div className="flex items-center gap-3">
               <span className={cn(

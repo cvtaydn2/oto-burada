@@ -364,11 +364,11 @@ Audit all pages for:
 - [x] Offline caching for recently viewed listings
 - [x] Native-like transitions between pages
 
-### Task 8.4 — Transparency & EİDS Compliance (Complete)
+### Task 8.4 — Transparency & Market Price Indexing (Complete)
 - [x] Implement Market Price Indexing service
-- [x] Integrate EİDS (E-Devlet) verification mock & audit logs
 - [x] Synchronize domain types with regulation-ready schema
 - [x] Resolve all data-layer lint/type inconsistencies
+- Note: EİDS (E-Devlet) entegrasyonu kaldırıldı (2026-04-15). Gerçek API hazır olduğunda ileride entegre edilecek.
 
 ---
 
@@ -405,16 +405,13 @@ Audit all pages for:
 
 ## Phase 25 — Marketplace Hardening & Core Depth
 
-### Task 25.1 — Identity Verification (Mock E-Devlet)
-Build a verification flow to enable "is_verified" status for users.
-- Add "Verify Identity" CTA to Dashboard Profile page.
-- Create a mock E-Devlet verification form (TC ID, Name, Surname).
-- Update profiles table via server action upon successful mock verification.
+### Task 25.1 — Identity Verification (Ertelendi)
+~~Build a verification flow to enable "is_verified" status for users.~~
+- Note: EİDS (E-Devlet) gerçek entegrasyonu kaldırıldı (2026-04-15). Şimdilik "yakında aktif" bilgi kartı gösteriliyor.
+- Gerçek API hazır olduğunda bu task yeniden ele alınacak.
 
 #### Acceptance Criteria
-- User can trigger verification flow from profile.
-- Verification status persists in database.
-- Verified badge appears on user listings.
+- Ertelendi — ileride gerçek EİDS API ile entegre edilecek.
 
 ### Task 25.2 — Real-time In-App Chat
 Implement full messaging capability between buyers and sellers.

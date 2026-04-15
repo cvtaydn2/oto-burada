@@ -175,7 +175,7 @@ Rules:
 
 ### Badges
 - Status badges (approved/pending/rejected/archived)
-- Verified badge
+- Verified badge (e-posta doğrulaması)
 - Expert inspection badge
 - Fuel type / transmission badges
 
@@ -213,3 +213,50 @@ Every UI must handle:
 Use this with design AI tools:
 
 Design a startup-grade, mobile-first web UI for a free car classifieds marketplace focused only on automobiles. The product should feel cleaner, safer, more modern, and easier to use than generic classifieds websites (Sahibinden, Arabam.com). Use a calm, trustworthy, premium-but-approachable aesthetic. Light color palette with white cards on soft neutral background. Prioritize fast scanning, strong search/filter UX, excellent listing cards, high-quality listing detail pages, and simple listing creation flows. Include homepage, listings search page, listing detail page, create listing page, favorites page, user dashboard, and admin moderation page. Use reusable components, strong typography hierarchy, spacious layouts, large car imagery, clear CTA buttons, rounded cards, subtle shadows, and one confident accent color. Show both desktop and mobile versions with a coherent design system. Include support/ticket system pages.
+
+---
+
+## UI Copy Reference
+
+### Homepage Hero
+- Başlık: "Arabanı kolayca sat"
+- Alt metin: "Ücretsiz ilan ver, doğru alıcıya hızlıca ulaş."
+- CTA: "İlan Ver"
+
+### Search
+- Placeholder: "Marka, model ara..."
+- Filters: Marka, Model, Fiyat, Şehir, KM
+
+### Listing Detail Buttons
+- "WhatsApp ile İletişime Geç"
+- "Favorilere Ekle"
+- "Şikayet Et"
+
+### Create Listing
+- Title: "İlan Oluştur"
+- Steps: "Araç Bilgileri" → "Detaylar" → "Fotoğraflar"
+- Submit: "İlanı Yayına Gönder"
+
+### Form Labels
+Başlık, Marka, Model, Yıl, Kilometre, Yakıt Tipi, Vites, Fiyat, Şehir, İlçe, Açıklama
+
+### Validation Messages
+- "Bu alan zorunlu"
+- "En az 3 fotoğraf eklemelisin"
+- "Geçerli bir değer gir"
+
+### Status Labels
+- Yayında, İnceleniyor, Reddedildi, Arşivlendi
+
+### Toast Messages
+- Success: "İşlem başarılı"
+- Error: "Bir hata oluştu"
+
+### WhatsApp Template
+"Merhaba, ilanınızla ilgileniyorum."
+
+### Report Reasons
+Sahte ilan, Yanlış bilgi, Spam, Diğer
+
+### Admin Actions
+Onayla, Reddet, İncele

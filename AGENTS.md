@@ -114,3 +114,41 @@ src/
   hooks/
   types/
   data/
+
+---
+
+## Brand Voice & Copy Rules
+
+### Tone
+- Clear, direct, calm, helpful
+- Avoid corporate language, exaggerated claims, complicated sentences
+
+### Copy Style
+- Short sentences, simple Turkish, no jargon, no unnecessary adjectives
+- Bad: "En gelişmiş ve üstün araba platformu deneyimini sunuyoruz"
+- Good: "Arabanı kolayca sat. Güvenle satın al."
+
+### Key Messages
+- "Ücretsiz ilan ver"
+- "Sade ve güvenli platform"
+- "Arabanı kolayca sat. Doğru arabayı hızlıca bul."
+
+### CTA Style
+- Primary: "İlan Ver"
+- Secondary: "İlanları İncele"
+- Detail: "WhatsApp ile İletişime Geç"
+
+### Trust Language
+- "Doğrulanmış satıcı", "İlan inceleniyor", "Şüpheli ilanı bildir"
+
+### Error Messages
+- Bad: "An error occurred"
+- Good: "Bir hata oluştu. Lütfen tekrar dene."
+
+### Empty States
+- Favorites: "Henüz favori ilan eklemedin."
+- Listings: "Aradığın kriterlere uygun ilan bulunamadı."
+
+### Seed Data Note
+- Seed script (`npm run db:seed-references`) tamamlandı. Gerçek Supabase DB'ye çalıştırıldı.
+- Minimum 50 ilan, 10 marka, 3+ şehir hedefi karşılandı.

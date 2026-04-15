@@ -1,5 +1,33 @@
 # PROGRESS.md
 
+## Temizlik & Refactor (2026-04-15)
+
+### EIDS & GA4 Kaldırma
+- **GA4 Kaldırıldı**: src/lib/analytics.tsx içindeki tüm GA4 kodu (gtag, dataLayer, G-XXXXXXXXXX, initAnalytics) silindi. Dosya artık sadece PostHog re-export ediyor.
+- **EIDS Kaldırıldı (geçici)**: Gerçek EİDS API entegrasyonu hazır olmadığı için tüm mock/stub kodlar kaldırıldı:
+  - src/services/admin/eids.ts → silindi
+  - src/services/verification/eids-mock.ts → silindi
+  - src/services/verification/__tests__/eids-mock.test.ts → silindi
+  - src/components/shared/eids-badge.tsx → silindi
+  - src/components/forms/identity-verification-form.tsx → "yakında aktif" bilgi kartı gösteriyor
+  - src/app/api/listings/[listingId]/verify-eids/route.ts → 503 döndürüyor
+- **TASKS.md Güncellendi**: Task 25.1 "Ertelendi" olarak işaretlendi. Task 8.4 EİDS referansı kaldırıldı.
+- **Not**: EİDS entegrasyonu gerçek T.C. Ticaret Bakanlığı API'si hazır olduğunda yeniden ele alınacak.
+
+### MD Dosya Temizliği
+- Silinen dosyalar: CODEX_MASTER_PROMPT.md, UI_UPDATE_PROGRESS.md, UI-UX-IMPROVEMENT-PLAN.md, SEED_PLAN.md, BRAND_SYSTEM.md, CONTENT_COPY.md
+- BRAND_SYSTEM.md içeriği → AGENTS.md'ye eklendi
+- CONTENT_COPY.md içeriği → UI_SYSTEM.md'ye eklendi
+- Korunan dosyalar: AGENTS.md, TASKS.md, PROGRESS.md, UI_SYSTEM.md, ENVIRONMENT.md
+
+### Sonraki Adım
+- 
+pm run lint && npm run typecheck && npm run build ile doğrula
+- Contact sayfasındaki sosyal medya linkleri href="#" → gerçek URL'ler ile güncellenmeli
+
+---
+
+
 Bu dosya tekrar iş yapmamak ve mevcut durumu hızlı görmek için tutulur.
 Her yeni geliştirme başlamadan önce okunmalıdır.
 
@@ -874,3 +902,4 @@ Her yeni geliştirme başlamadan önce okunmalıdır.
   - `npm run typecheck` ✅
   - `npm run build` ✅ (`/listings/filter` route oluştu)
 - **Status**: 🟢 Gelişmiş filtreleme sayfası oluşturuldu, SmartFilters eksik filtrelerle güncellendi.
+
