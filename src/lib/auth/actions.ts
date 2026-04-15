@@ -148,6 +148,30 @@ export async function registerAction(
   };
 }
 
+export async function forgotPasswordAction(
+  _previousState: AuthActionState | undefined,
+  formData: FormData,
+): Promise<AuthActionState> {
+  const email = String(formData.get("email") ?? "").trim();
+
+  if (!email || !email.includes("@")) {
+    return { error: "Geçerli bir e-posta adresi girin." };
+  }
+
+  if (!hasSupabaseEnv()) {
+    return { error: "Servis şu anda kullanılamıyor." };
+  }
+
+  const { sendPasswordResetEmail } = await import("@/services/verification/email-otp");
+  await sendPasswordResetEmail(email);
+
+  // Güvenlik: hesap var/yok bilgisi verme — her zaman başarı mesajı göster
+  return {
+    success: "Sıfırlama bağlantısı e-posta adresinize gönderildi.",
+    fields: { email },
+  };
+}
+
 export async function logoutAction() {
   if (!hasSupabaseEnv()) {
     redirect("/");

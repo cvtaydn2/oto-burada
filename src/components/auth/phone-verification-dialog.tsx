@@ -1,64 +1,56 @@
 "use client";
 
 import { useState } from "react";
-import { 
-  Dialog, 
-  DialogContent, 
-  DialogDescription, 
-  DialogHeader, 
-  DialogTitle
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { 
-  InputOTP, 
-  InputOTPGroup, 
-  InputOTPSlot 
+import {
+  InputOTP,
+  InputOTPGroup,
+  InputOTPSlot,
 } from "@/components/ui/input-otp";
-import { LoaderCircle, Smartphone, CheckCircle2 } from "lucide-react";
+import { LoaderCircle, Mail, CheckCircle2 } from "lucide-react";
 import { toast } from "sonner";
+import { useErrorCapture } from "@/hooks/use-error-capture";
 
 interface PhoneVerificationDialogProps {
   isOpen: boolean;
   onOpenChange: (open: boolean) => void;
-  initialPhone?: string;
+  initialPhone?: string; // kept for backward compat, not used
   onSuccess?: () => void;
 }
 
 export function PhoneVerificationDialog({
   isOpen,
   onOpenChange,
-  initialPhone = "",
-  onSuccess
+  onSuccess,
 }: PhoneVerificationDialogProps) {
-  const [step, setStep] = useState<"phone" | "otp" | "success">("phone");
-  const [phone, setPhone] = useState(initialPhone);
+  const { captureError } = useErrorCapture("email-verification-dialog");
+  const [step, setStep] = useState<"send" | "otp" | "success">("send");
   const [otp, setOtp] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
   const handleSendOtp = async () => {
-    if (!phone || phone.length < 10) {
-      toast.error("Lütfen geçerli bir telefon numarası girin.");
-      return;
-    }
-
     setIsLoading(true);
     try {
-      const response = await fetch("/api/auth/verify-phone/send", {
+      const response = await fetch("/api/auth/verify-email/send", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ phone }),
       });
-
       const data = await response.json();
       if (data.success) {
         setStep("otp");
-        toast.success("Doğrulama kodu gönderildi.");
+        toast.success("Doğrulama kodu e-posta adresinize gönderildi.");
       } else {
         toast.error(data.error || "Kod gönderilemedi.");
       }
-    } catch {
+    } catch (err) {
+      captureError(err, "handleSendOtp");
       toast.error("Bir hata oluştu.");
     } finally {
       setIsLoading(false);
@@ -67,15 +59,13 @@ export function PhoneVerificationDialog({
 
   const handleVerifyOtp = async () => {
     if (otp.length < 6) return;
-
     setIsLoading(true);
     try {
-      const response = await fetch("/api/auth/verify-phone/confirm", {
+      const response = await fetch("/api/auth/verify-email/confirm", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ phone, code: otp }),
+        body: JSON.stringify({ token: otp }),
       });
-
       const data = await response.json();
       if (data.success) {
         setStep("success");
@@ -83,7 +73,8 @@ export function PhoneVerificationDialog({
       } else {
         toast.error(data.error || "Geçersiz kod.");
       }
-    } catch {
+    } catch (err) {
+      captureError(err, "handleVerifyOtp");
       toast.error("Bir hata oluştu.");
     } finally {
       setIsLoading(false);
@@ -95,53 +86,38 @@ export function PhoneVerificationDialog({
       <DialogContent className="sm:max-w-[425px] rounded-[2rem]">
         <DialogHeader>
           <div className="flex justify-center mb-4">
-            <div className={`p-4 rounded-full ${step === 'success' ? 'bg-emerald-100 text-emerald-600' : 'bg-primary/10 text-primary'}`}>
-              {step === 'success' ? <CheckCircle2 size={32} /> : <Smartphone size={32} />}
+            <div className={`p-4 rounded-full ${step === "success" ? "bg-emerald-100 text-emerald-600" : "bg-primary/10 text-primary"}`}>
+              {step === "success" ? <CheckCircle2 size={32} /> : <Mail size={32} />}
             </div>
           </div>
           <DialogTitle className="text-center text-2xl font-bold">
-            {step === "phone" && "Telefon Doğrulama"}
-            {step === "otp" && "Kod Girin"}
+            {step === "send" && "E-posta Doğrulama"}
+            {step === "otp" && "Kodu Girin"}
             {step === "success" && "Başarılı!"}
           </DialogTitle>
           <DialogDescription className="text-center">
-            {step === "phone" && "Güvenliğiniz için telefon numaranızı doğrulamanız gerekmektedir."}
-            {step === "otp" && `${phone} numarasına gönderilen 6 haneli kodu girin.`}
-            {step === "success" && "Telefon numaranız başarıyla doğrulandı. Artık güvenle ilan verebilirsiniz."}
+            {step === "send" && "E-posta adresinize 6 haneli bir doğrulama kodu göndereceğiz."}
+            {step === "otp" && "E-posta adresinize gönderilen 6 haneli kodu girin."}
+            {step === "success" && "E-posta adresiniz başarıyla doğrulandı."}
           </DialogDescription>
         </DialogHeader>
 
-        {step === "phone" && (
-          <div className="py-4 space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="phone">Telefon Numarası</Label>
-              <Input 
-                id="phone" 
-                placeholder="5xx xxx xx xx" 
-                value={phone}
-                onChange={(e) => setPhone(e.target.value)}
-                disabled={isLoading}
-              />
-            </div>
-            <Button 
-              className="w-full h-12 rounded-xl text-lg font-semibold" 
+        {step === "send" && (
+          <div className="py-4">
+            <Button
+              className="w-full h-12 rounded-xl text-base font-semibold"
               onClick={handleSendOtp}
               disabled={isLoading}
             >
-              {isLoading ? <LoaderCircle className="animate-spin mr-2" /> : null}
-              Kod Gönder
+              {isLoading && <LoaderCircle className="animate-spin mr-2" size={18} />}
+              Doğrulama Kodu Gönder
             </Button>
           </div>
         )}
 
         {step === "otp" && (
           <div className="py-4 space-y-6 flex flex-col items-center">
-            <InputOTP 
-              maxLength={6} 
-              value={otp} 
-              onChange={setOtp}
-              disabled={isLoading}
-            >
+            <InputOTP maxLength={6} value={otp} onChange={setOtp} disabled={isLoading}>
               <InputOTPGroup>
                 <InputOTPSlot index={0} />
                 <InputOTPSlot index={1} />
@@ -151,23 +127,23 @@ export function PhoneVerificationDialog({
                 <InputOTPSlot index={5} />
               </InputOTPGroup>
             </InputOTP>
-            
+
             <div className="w-full space-y-3">
-              <Button 
-                className="w-full h-12 rounded-xl text-lg font-semibold" 
+              <Button
+                className="w-full h-12 rounded-xl text-base font-semibold"
                 onClick={handleVerifyOtp}
                 disabled={isLoading || otp.length < 6}
               >
-                {isLoading ? <LoaderCircle className="animate-spin mr-2" /> : null}
+                {isLoading && <LoaderCircle className="animate-spin mr-2" size={18} />}
                 Doğrula
               </Button>
-              <Button 
-                variant="ghost" 
-                className="w-full" 
-                onClick={() => setStep("phone")}
+              <Button
+                variant="ghost"
+                className="w-full text-sm"
+                onClick={() => { setStep("send"); setOtp(""); }}
                 disabled={isLoading}
               >
-                Numarayı Değiştir
+                Tekrar Gönder
               </Button>
             </div>
           </div>
@@ -175,8 +151,8 @@ export function PhoneVerificationDialog({
 
         {step === "success" && (
           <div className="py-4">
-            <Button 
-              className="w-full h-12 rounded-xl text-lg font-semibold" 
+            <Button
+              className="w-full h-12 rounded-xl text-base font-semibold"
               onClick={() => onOpenChange(false)}
             >
               Kapat
