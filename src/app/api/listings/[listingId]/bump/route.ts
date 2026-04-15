@@ -1,96 +1,79 @@
 import { createSupabaseServerClient } from "@/lib/supabase/server";
-import { createSupabaseAdminClient } from "@/lib/supabase/admin";
-import { hasSupabaseAdminEnv } from "@/lib/supabase/env";
-import { rateLimitProfiles } from "@/lib/utils/rate-limit";
+import { apiError, apiSuccess, API_ERROR_CODES } from "@/lib/utils/api-response";
+import { logger } from "@/lib/utils/logger";
+import { captureServerError } from "@/lib/monitoring/posthog-server";
 import { enforceRateLimit, getUserRateLimitKey } from "@/lib/utils/rate-limit-middleware";
-import { apiSuccess, apiError, API_ERROR_CODES } from "@/lib/utils/api-response";
 
-const BUMP_COOLDOWN_DAYS = 7;
+// Bump: 3 per day per user (prevents abuse)
+const BUMP_RATE_LIMIT = { limit: 3, windowMs: 24 * 60 * 60 * 1000 };
 
 export async function POST(
-  _request: Request,
+  _req: Request,
   { params }: { params: Promise<{ listingId: string }> },
 ) {
   const { listingId } = await params;
 
-  if (!hasSupabaseAdminEnv()) {
-    return apiError(API_ERROR_CODES.SERVICE_UNAVAILABLE, "Servis kullanılamıyor.", 503);
-  }
-
   const supabase = await createSupabaseServerClient();
-  const {
-    data: { user },
-    error: userError,
-  } = await supabase.auth.getUser();
+  const { data: { user } } = await supabase.auth.getUser();
 
-  if (userError || !user) {
-    return apiError(API_ERROR_CODES.UNAUTHORIZED, "Oturum doğrulanamadı.", 401);
+  if (!user) {
+    return apiError(API_ERROR_CODES.UNAUTHORIZED, "Yetkisiz erişim.", 401);
   }
 
+  // Rate limit: 3 bumps per day per user
   const rateLimit = await enforceRateLimit(
-    getUserRateLimitKey(user.id, "listings:bump"),
-    rateLimitProfiles.general,
+    getUserRateLimitKey(user.id, "api:listings:bump"),
+    BUMP_RATE_LIMIT,
   );
+  if (rateLimit) return rateLimit.response;
 
-  if (rateLimit) {
-    return rateLimit.response;
-  }
+  try {
+    // Verify ownership and status
+    const { data: listing, error: fetchError } = await supabase
+      .from("listings")
+      .select("id, status, seller_id, bumped_at")
+      .eq("id", listingId)
+      .eq("seller_id", user.id)
+      .single();
 
-  const admin = createSupabaseAdminClient();
-
-  // Fetch listing and verify ownership
-  const { data: listing, error: fetchError } = await admin
-    .from("listings")
-    .select("id, seller_id, status, bumped_at")
-    .eq("id", listingId)
-    .single();
-
-  if (fetchError || !listing) {
-    return apiError(API_ERROR_CODES.NOT_FOUND, "İlan bulunamadı.", 404);
-  }
-
-  if (listing.seller_id !== user.id) {
-    return apiError(API_ERROR_CODES.FORBIDDEN, "Bu ilan size ait değil.", 403);
-  }
-
-  if (listing.status !== "approved") {
-    return apiError(API_ERROR_CODES.BAD_REQUEST, "Sadece yayında olan ilanlar yenilenebilir.", 400);
-  }
-
-  // Check cooldown
-  if (listing.bumped_at) {
-    const lastBump = new Date(listing.bumped_at);
-    const cooldownEnd = new Date(lastBump.getTime() + BUMP_COOLDOWN_DAYS * 24 * 60 * 60 * 1000);
-    const now = new Date();
-
-    if (now < cooldownEnd) {
-      const remainingMs = cooldownEnd.getTime() - now.getTime();
-      const remainingDays = Math.ceil(remainingMs / (24 * 60 * 60 * 1000));
-
-      return apiError(
-        API_ERROR_CODES.BAD_REQUEST,
-        `İlanı yenilemek için ${remainingDays} gün daha beklemelisiniz.`,
-        429,
-      );
+    if (fetchError || !listing) {
+      return apiError(API_ERROR_CODES.NOT_FOUND, "İlan bulunamadı veya bu işlem için yetkiniz yok.", 404);
     }
+
+    if (listing.status !== "approved") {
+      return apiError(API_ERROR_CODES.BAD_REQUEST, "Sadece yayındaki ilanlar öne çıkarılabilir.", 400);
+    }
+
+    // Prevent bumping more than once per 24h per listing
+    if (listing.bumped_at) {
+      const lastBump = new Date(listing.bumped_at).getTime();
+      const hoursSinceLastBump = (Date.now() - lastBump) / (1000 * 60 * 60);
+      if (hoursSinceLastBump < 24) {
+        const hoursLeft = Math.ceil(24 - hoursSinceLastBump);
+        return apiError(
+          API_ERROR_CODES.BAD_REQUEST,
+          `Bu ilan ${hoursLeft} saat sonra tekrar öne çıkarılabilir.`,
+          400,
+        );
+      }
+    }
+
+    const { error } = await supabase
+      .from("listings")
+      .update({ bumped_at: new Date().toISOString(), updated_at: new Date().toISOString() })
+      .eq("id", listingId)
+      .eq("seller_id", user.id);
+
+    if (error) {
+      logger.listings.error("Bump listing DB error", error, { listingId, userId: user.id });
+      captureServerError("Bump listing DB error", "listings", error, { listingId });
+      return apiError(API_ERROR_CODES.INTERNAL_ERROR, "İlan öne çıkarılırken bir hata oluştu.", 500);
+    }
+
+    return apiSuccess({ listingId }, "İlan başarıyla öne çıkarıldı.");
+  } catch (error) {
+    logger.listings.error("Bump listing unexpected error", error, { listingId });
+    captureServerError("Bump listing unexpected error", "listings", error, { listingId });
+    return apiError(API_ERROR_CODES.INTERNAL_ERROR, "Beklenmedik bir hata oluştu.", 500);
   }
-
-  // Bump the listing
-  const now = new Date().toISOString();
-  const { error: updateError } = await admin
-    .from("listings")
-    .update({
-      bumped_at: now,
-      updated_at: now,
-    })
-    .eq("id", listingId);
-
-  if (updateError) {
-    return apiError(API_ERROR_CODES.INTERNAL_ERROR, "İlan yenilenemedi.", 500);
-  }
-
-  return apiSuccess(
-    { bumpedAt: now, nextBumpAvailableAt: new Date(Date.now() + BUMP_COOLDOWN_DAYS * 24 * 60 * 60 * 1000).toISOString() },
-    "İlan başarıyla yenilendi ve listenin üstüne taşındı.",
-  );
 }

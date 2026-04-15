@@ -143,4 +143,13 @@ export const rateLimitProfiles = {
 
   /** General API: 60 per minute per IP */
   general: { limit: 60, windowMs: 60 * 1000 } satisfies RateLimitConfig,
+
+  /** Support ticket creation: 5 per hour per user */
+  ticketCreate: { limit: 5, windowMs: 60 * 60 * 1000 } satisfies RateLimitConfig,
+
+  /** Listing bump: 3 per day per user */
+  listingBump: { limit: 3, windowMs: 24 * 60 * 60 * 1000 } satisfies RateLimitConfig,
+
+  /** Doping: 10 per day per user */
+  dopingApply: { limit: 10, windowMs: 24 * 60 * 60 * 1000 } satisfies RateLimitConfig,
 } as const;

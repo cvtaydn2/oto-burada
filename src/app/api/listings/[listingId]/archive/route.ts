@@ -1,81 +1,62 @@
-import { cookies } from "next/headers";
-
-import { hasSupabaseEnv } from "@/lib/supabase/env";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
-import { apiSuccess, apiError, API_ERROR_CODES } from "@/lib/utils/api-response";
-import {
-  archiveStoredListing,
-  archiveDatabaseListing,
-  findArchivableListingById,
-  parseStoredListings,
-  replaceStoredListing,
-  serializeStoredListings,
-} from "@/services/listings/listing-submissions";
-import { listingSubmissionsCookieName, listingSubmissionsCookieOptions } from "@/services/listings/constants";
+import { apiError, apiSuccess, API_ERROR_CODES } from "@/lib/utils/api-response";
+import { logger } from "@/lib/utils/logger";
+import { captureServerError } from "@/lib/monitoring/posthog-server";
+import { enforceRateLimit, getUserRateLimitKey } from "@/lib/utils/rate-limit-middleware";
 
 export async function POST(
-  _request: Request,
-  context: { params: Promise<{ listingId: string }> },
+  _req: Request,
+  { params }: { params: Promise<{ listingId: string }> },
 ) {
-  if (!hasSupabaseEnv()) {
-    return apiError(
-      API_ERROR_CODES.SERVICE_UNAVAILABLE,
-      "Supabase ortam değişkenleri eksik. İlan arşivlemek için .env.local dosyasını tamamlamalısın.",
-      503,
-    );
-  }
+  const { listingId } = await params;
 
   const supabase = await createSupabaseServerClient();
-  const {
-    data: { user },
-    error: userError,
-  } = await supabase.auth.getUser();
+  const { data: { user } } = await supabase.auth.getUser();
 
-  if (userError || !user) {
-    return apiError(API_ERROR_CODES.UNAUTHORIZED, "Oturum doğrulanamadı. Lütfen tekrar giriş yap.", 401);
+  if (!user) {
+    return apiError(API_ERROR_CODES.UNAUTHORIZED, "Yetkisiz erişim.", 401);
   }
 
-  const { listingId } = await context.params;
-
-  const archivableListing = await findArchivableListingById(listingId, user.id);
-
-  if (!archivableListing) {
-    return apiError(API_ERROR_CODES.NOT_FOUND, "Arşivlenecek ilan bulunamadı.", 404);
-  }
-
-  const persistedListing = await archiveDatabaseListing(listingId);
-
-  if (persistedListing) {
-    return apiSuccess(
-      {
-        listing: {
-          id: persistedListing.id,
-          status: persistedListing.status,
-        },
-      },
-      "İlan arşive alındı.",
-    );
-  }
-
-  const archivedListing = archiveStoredListing(archivableListing);
-  const cookieStore = await cookies();
-  const cookieListings = parseStoredListings(cookieStore.get(listingSubmissionsCookieName)?.value);
-
-  const response = apiSuccess(
-    {
-      listing: {
-        id: archivedListing.id,
-        status: archivedListing.status,
-      },
-    },
-    "İlan arşive alındı.",
+  // Rate limit: 20 archive ops per hour per user
+  const rateLimit = await enforceRateLimit(
+    getUserRateLimitKey(user.id, "api:listings:archive"),
+    { limit: 20, windowMs: 60 * 60 * 1000 },
   );
+  if (rateLimit) return rateLimit.response;
 
-  response.cookies.set(
-    listingSubmissionsCookieName,
-    serializeStoredListings(replaceStoredListing(cookieListings, archivedListing)),
-    listingSubmissionsCookieOptions,
-  );
+  try {
+    // Verify ownership before archiving
+    const { data: listing, error: fetchError } = await supabase
+      .from("listings")
+      .select("id, status, seller_id")
+      .eq("id", listingId)
+      .eq("seller_id", user.id)
+      .single();
 
-  return response;
+    if (fetchError || !listing) {
+      return apiError(API_ERROR_CODES.NOT_FOUND, "İlan bulunamadı veya bu işlem için yetkiniz yok.", 404);
+    }
+
+    if (listing.status === "archived") {
+      return apiError(API_ERROR_CODES.BAD_REQUEST, "İlan zaten arşivlenmiş.", 400);
+    }
+
+    const { error } = await supabase
+      .from("listings")
+      .update({ status: "archived", updated_at: new Date().toISOString() })
+      .eq("id", listingId)
+      .eq("seller_id", user.id);
+
+    if (error) {
+      logger.listings.error("Archive listing DB error", error, { listingId, userId: user.id });
+      captureServerError("Archive listing DB error", "listings", error, { listingId });
+      return apiError(API_ERROR_CODES.INTERNAL_ERROR, "İlan arşivlenirken bir hata oluştu.", 500);
+    }
+
+    return apiSuccess({ listingId }, "İlan başarıyla arşivlendi.");
+  } catch (error) {
+    logger.listings.error("Archive listing unexpected error", error, { listingId });
+    captureServerError("Archive listing unexpected error", "listings", error, { listingId });
+    return apiError(API_ERROR_CODES.INTERNAL_ERROR, "Beklenmedik bir hata oluştu.", 500);
+  }
 }
