@@ -22,6 +22,12 @@ export function CookieConsent() {
     setIsVisible(false);
   };
 
+  const handleDecline = () => {
+    localStorage.setItem("cookie-consent", "false");
+    posthog.opt_out_capturing();
+    setIsVisible(false);
+  };
+
   if (!isVisible) return null;
 
   return (
@@ -32,8 +38,9 @@ export function CookieConsent() {
             <Cookie size={20} />
           </div>
           <button
-            onClick={() => setIsVisible(false)}
+            onClick={handleDecline}
             className="rounded-full p-1 text-slate-400 hover:bg-slate-100 transition-colors"
+            aria-label="Reddet"
           >
             <X size={18} />
           </button>

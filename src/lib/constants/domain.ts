@@ -34,7 +34,7 @@ export const reportStatusLabels = {
   dismissed: "Kapatildi",
 } as const;
 
-export const moderationTargetTypes = ["listing", "report"] as const;
+export const moderationTargetTypes = ["listing", "report", "user"] as const;
 
 export const moderationActions = [
   "approve",

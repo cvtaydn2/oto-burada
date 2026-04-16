@@ -8,7 +8,7 @@ import {
   buildUpdatedListing,
   deleteDatabaseListing,
   findEditableListingById,
-  getStoredListings,
+  getExistingListingSlugs,
   updateDatabaseListing,
 } from "@/services/listings/listing-submissions";
 import { captureServerEvent } from "@/lib/monitoring/posthog-server";
@@ -92,7 +92,7 @@ export async function PATCH(
     );
   }
 
-  const allListings = await getStoredListings();
+  const allListings = await getExistingListingSlugs();
 
   const updatedListing = buildUpdatedListing(
     parsedListingInput.data,

@@ -109,7 +109,7 @@ export function AdvancedFilterPage({
         }
       } catch (error) {
         if ((error as Error).name !== "AbortError") {
-          console.error("Advanced filter count fetch failed", error);
+          // Non-critical — count fetch failure doesn't break the page
         }
       } finally {
         if (!controller.signal.aborted) {

@@ -145,7 +145,7 @@ export async function getAllTickets(options?: {
 
   const { data, error } = await query;
   if (error) {
-    console.error("getAllTickets error:", error);
+    logger.admin.error("getAllTickets error", error);
     // Fallback: join olmadan dene
     const fallbackQuery = admin
       .from("tickets")
@@ -191,7 +191,7 @@ export async function updateTicketStatus(
     .single();
 
   if (error) {
-    console.error("updateTicketStatus error:", error);
+    logger.admin.error("updateTicketStatus error", error);
     // Fallback: join olmadan dene
     const { data: fallbackData, error: fallbackError } = await admin
       .from("tickets")
@@ -264,7 +264,7 @@ export async function getTicketCount(): Promise<Record<TicketStatus, number>> {
   const { data, error } = await admin.from("tickets").select("status");
 
   if (error) {
-    console.error("getTicketCount error:", error);
+    logger.admin.error("getTicketCount error", error);
     return {
       open: 0,
       in_progress: 0,

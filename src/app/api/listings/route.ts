@@ -10,7 +10,7 @@ import { apiSuccess, apiError, API_ERROR_CODES } from "@/lib/utils/api-response"
 import {
   buildPendingListing,
   createDatabaseListing,
-  getStoredListings,
+  getExistingListingSlugs,
 } from "@/services/listings/listing-submissions";
 import { createDatabaseNotification } from "@/services/notifications/notification-records";
 import { ensureProfileRecord, getStoredProfileById } from "@/services/profile/profile-records";
@@ -149,7 +149,7 @@ export async function POST(request: Request) {
     );
   }
 
-  const existingListings = await getStoredListings();
+  const existingListings = await getExistingListingSlugs();
   const createdListing = buildPendingListing(parsedListingInput.data, user.id, existingListings);
   const result = await createDatabaseListing(createdListing);
 

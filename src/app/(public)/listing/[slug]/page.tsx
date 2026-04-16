@@ -27,6 +27,8 @@ import {
 } from "@/services/listings/marketplace-listings";
 import { getListingCardInsights } from "@/services/listings/listing-card-insights";
 import { captureServerEvent } from "@/lib/monitoring/posthog-server";
+import { recordListingView } from "@/services/listings/listing-views";
+import { headers } from "next/headers";
 
 const ListingMap = dynamic(
   () => import("@/components/shared/listing-map-wrapper").then((mod) => mod.ListingMapWrapper),
@@ -78,6 +80,14 @@ export default async function ListingDetailPage({ params }: ListingDetailPagePro
     getMarketplaceSeller(listing.sellerId),
     getSimilarMarketplaceListings(listing.slug, listing.brand, listing.city),
   ]);
+
+  // Server-side view kaydı (dedup: kullanıcı/IP bazlı günlük)
+  const headersList = await headers();
+  const viewerIp = headersList.get("x-forwarded-for")?.split(",")[0]?.trim()
+    ?? headersList.get("x-real-ip")
+    ?? undefined;
+  // Fire-and-forget — view kaydı sayfayı bloklamasın
+  recordListingView(listing.id, { viewerIp }).catch(() => {});
 
   // Server-side listing view event — fires once per SSR render
   captureServerEvent("listing_viewed", {

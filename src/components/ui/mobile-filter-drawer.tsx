@@ -154,7 +154,7 @@ export function MobileFilterDrawer({
                   onToggle={() => toggleSection("brand")}
                 >
                   <div className="grid grid-cols-2 gap-2 py-2">
-                    {brands.slice(0, 20).map((brand) => (
+                    {brands.map((brand) => (
                       <button
                         key={brand.slug}
                         onClick={() => handleBrandSelect(brand.brand)}
@@ -225,7 +225,7 @@ export function MobileFilterDrawer({
                   onToggle={() => toggleSection("city")}
                 >
                   <div className="grid grid-cols-2 gap-2 py-2">
-                    {cities.slice(0, 20).map((city) => (
+                    {cities.map((city) => (
                       <button
                         key={city.city}
                         onClick={() => handleCitySelect(city.city)}

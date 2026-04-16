@@ -1,5 +1,6 @@
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { hasSupabaseAdminEnv } from "@/lib/supabase/env";
+import { logger } from "@/lib/utils/logger";
 
 export interface MarketStatUpdateResult {
   avgPrice: number;
@@ -45,7 +46,7 @@ export async function updateMarketStats(brand: string, model: string, year: numb
     }, { onConflict: "brand,model,year" });
 
   if (statsError) {
-    console.error("Failed to update market_stats:", statsError);
+    logger.market.error("Failed to update market_stats", statsError, { brand, model, year });
   }
 
   // 3. Update the 'market_price_index' for ALL approved listings in this segment
@@ -59,7 +60,7 @@ export async function updateMarketStats(brand: string, model: string, year: numb
   });
 
   if (rpcError) {
-    console.error("Failed to update listing indices via RPC:", rpcError);
+    logger.market.error("Failed to update listing indices via RPC", rpcError, { brand, model, year });
     return null;
   }
 

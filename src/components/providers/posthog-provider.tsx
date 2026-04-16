@@ -26,11 +26,15 @@ function PostHogPageView() {
     if (!ph) return;
     if (typeof window === "undefined") return;
 
-    const hasConsent = window.localStorage.getItem("cookie-consent") === "true";
-    if (!hasConsent) return;
-
-    if (ph.has_opted_out_capturing()) {
-      ph.opt_in_capturing();
+    const consent = window.localStorage.getItem("cookie-consent");
+    if (consent === "true") {
+      if (ph.has_opted_out_capturing()) {
+        ph.opt_in_capturing();
+      }
+    } else if (consent === "false") {
+      if (!ph.has_opted_out_capturing()) {
+        ph.opt_out_capturing();
+      }
     }
   }, [ph]);
 

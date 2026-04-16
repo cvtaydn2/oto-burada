@@ -50,13 +50,15 @@ export async function getAdminInventory(filters?: {
   }
 
   const listings = (data || []).map(
-    (listing: { images: { public_url: string; sort_order: number; is_cover: boolean }[] }) => ({
+    (listing: { images: { public_url: string; sort_order: number; is_cover: boolean; storage_path: string; placeholder_blur: string | null }[] }) => ({
       ...listing,
       images: (listing.images || []).map((img) => ({
         ...img,
         url: img.public_url || "",
         order: img.sort_order || 0,
         isCover: img.is_cover || false,
+        storagePath: img.storage_path || "",
+        placeholderBlur: img.placeholder_blur || null,
       })),
     }),
   );

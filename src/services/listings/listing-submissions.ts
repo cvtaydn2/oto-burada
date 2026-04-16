@@ -165,7 +165,7 @@ function toSlugSegment(value: string) {
     .replace(/-{2,}/g, "-");
 }
 
-export function buildListingSlug(input: ListingCreateInput, existingListings: Listing[]) {
+export function buildListingSlug(input: ListingCreateInput, existingListings: { id: string; slug: string }[]) {
   const baseSlug = toSlugSegment(`${input.year} ${input.brand} ${input.model} ${input.title}`);
   const existingSlugs = new Set(existingListings.map((listing) => listing.slug));
 
@@ -182,7 +182,7 @@ export function buildListingSlug(input: ListingCreateInput, existingListings: Li
   return `${baseSlug}-${suffix}`;
 }
 
-export function calculateFraudScore(input: ListingCreateInput, existingListings: Listing[]): { fraudScore: number, fraudReason: string | null } {
+export function calculateFraudScore(input: ListingCreateInput, existingListings: { id: string; slug: string; brand?: string; model?: string; year?: number; mileage?: number; price?: number; sellerId?: string; vin?: string | null; status?: string }[]): { fraudScore: number, fraudReason: string | null } {
   let score = 0;
   const reasons: string[] = [];
 
@@ -225,7 +225,7 @@ export function calculateFraudScore(input: ListingCreateInput, existingListings:
 export function buildListingRecord(
   input: ListingCreateInput,
   sellerId: string,
-  existingListings: Listing[],
+  existingListings: { id: string; slug: string }[],
   options?: {
     existingListing?: Listing;
     id?: string;
@@ -333,6 +333,7 @@ function mapListingRow(row: ListingRow): Listing {
       businessName: row.profiles.business_name,
       businessLogoUrl: row.profiles.business_logo_url,
       identityVerified: row.profiles.is_verified,
+      isVerified: row.profiles.is_verified,
       verifiedBusiness: row.profiles.verified_business,
       businessSlug: row.profiles.business_slug
     } : undefined,
@@ -927,7 +928,7 @@ export async function getLegacyStoredListings() {
 export function buildPendingListing(
   input: ListingCreateInput,
   sellerId: string,
-  existingListings: Listing[],
+  existingListings: { id: string; slug: string }[],
 ) {
   return buildListingRecord(input, sellerId, existingListings, {
     status: "pending",
@@ -937,7 +938,7 @@ export function buildPendingListing(
 export function buildUpdatedListing(
   input: ListingCreateInput,
   existingListing: Listing,
-  existingListings: Listing[],
+  existingListings: { id: string; slug: string }[],
 ) {
   return buildListingRecord(input, existingListing.sellerId, existingListings, {
     existingListing,
@@ -1033,6 +1034,17 @@ export async function getStoredListings() {
   return (databaseListings ?? []).sort(
     (left, right) => Date.parse(right.updatedAt) - Date.parse(left.updatedAt),
   );
+}
+
+/**
+ * Lightweight slug-only fetch for collision detection.
+ * Avoids loading full listing data when only slugs are needed.
+ */
+export async function getExistingListingSlugs(): Promise<{ id: string; slug: string }[]> {
+  if (!hasSupabaseAdminEnv()) return [];
+  const admin = createSupabaseAdminClient();
+  const { data } = await admin.from("listings").select("id, slug").neq("status", "archived");
+  return (data ?? []) as { id: string; slug: string }[];
 }
 
 export async function getStoredUserListings(sellerId: string) {

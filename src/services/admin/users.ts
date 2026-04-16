@@ -38,10 +38,18 @@ interface ProfileRow {
 export async function getAllUsers(query?: string, page = 1, limit = 20) {
   const admin = createSupabaseAdminClient();
 
-  // Auth kullanıcılarını çek (son giriş için)
+  // Auth kullanıcılarını çek (son giriş + verification metadata için)
   const { data: authData } = await admin.auth.admin.listUsers({ page, perPage: 1000 });
   const authMap = Object.fromEntries(
-    (authData?.users ?? []).map((u) => [u.id, u.last_sign_in_at ?? null])
+    (authData?.users ?? []).map((u) => [
+      u.id,
+      {
+        lastSignInAt: u.last_sign_in_at ?? null,
+        emailVerified: Boolean(u.email_confirmed_at ?? u.confirmed_at),
+        phoneVerified: Boolean((u as { phone_confirmed_at?: string | null }).phone_confirmed_at),
+        identityVerified: Boolean((u.app_metadata as { identity_verified?: boolean } | undefined)?.identity_verified),
+      },
+    ])
   );
 
   let rpc = admin.from("profiles").select("*", { count: "exact" });
@@ -61,35 +69,38 @@ export async function getAllUsers(query?: string, page = 1, limit = 20) {
     return { users: [] as Profile[], total: 0, page, limit };
   }
 
-  const users = (profiles || []).map((p: ProfileRow) => ({
-    id: p.id,
-    fullName: p.full_name || "",
-    phone: p.phone || "",
-    city: p.city || "",
-    avatarUrl: p.avatar_url,
-    emailVerified: p.is_verified || false,
-    phoneVerified: p.is_verified || false,
-    identityVerified: p.is_verified || false,
-    role: p.role || "user",
-    userType: p.user_type || "individual",
-    balanceCredits: p.balance_credits || 0,
-    isVerified: p.is_verified || false,
-    tcVerifiedAt: p.tc_verified_at,
-    eidsId: p.eids_id,
-    businessName: p.business_name,
-    businessAddress: p.business_address,
-    businessLogoUrl: p.business_logo_url,
-    businessDescription: p.business_description,
-    taxId: p.tax_id,
-    taxOffice: p.tax_office,
-    websiteUrl: p.website_url,
-    verifiedBusiness: p.verified_business,
-    businessSlug: p.business_slug,
-    isBanned: p.is_banned,
-    createdAt: p.created_at,
-    updatedAt: p.updated_at,
-    lastSignInAt: authMap[p.id] ?? null,
-  })) as (Profile & { lastSignInAt: string | null })[];
+  const users = (profiles || []).map((p: ProfileRow) => {
+    const auth = authMap[p.id];
+    return {
+      id: p.id,
+      fullName: p.full_name || "",
+      phone: p.phone || "",
+      city: p.city || "",
+      avatarUrl: p.avatar_url,
+      emailVerified: auth?.emailVerified ?? p.is_verified ?? false,
+      phoneVerified: auth?.phoneVerified ?? false,
+      identityVerified: auth?.identityVerified ?? p.is_verified ?? false,
+      role: p.role || "user",
+      userType: p.user_type || "individual",
+      balanceCredits: p.balance_credits || 0,
+      isVerified: p.is_verified || false,
+      tcVerifiedAt: p.tc_verified_at,
+      eidsId: p.eids_id,
+      businessName: p.business_name,
+      businessAddress: p.business_address,
+      businessLogoUrl: p.business_logo_url,
+      businessDescription: p.business_description,
+      taxId: p.tax_id,
+      taxOffice: p.tax_office,
+      websiteUrl: p.website_url,
+      verifiedBusiness: p.verified_business,
+      businessSlug: p.business_slug,
+      isBanned: p.is_banned,
+      createdAt: p.created_at,
+      updatedAt: p.updated_at,
+      lastSignInAt: auth?.lastSignInAt ?? null,
+    };
+  }) as (Profile & { lastSignInAt: string | null })[];
 
   return { users, total: count ?? 0, page, limit };
 }
@@ -279,7 +290,6 @@ export async function grantCreditsToUser(
     target_id: userId,
     target_type: "user",
   });
-
   revalidatePath("/admin/users");
   revalidatePath(`/admin/users/${userId}`);
   return { success: true };

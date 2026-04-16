@@ -3,7 +3,8 @@
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { hasSupabaseAdminEnv } from "@/lib/supabase/env";
 import { requireUser } from "@/lib/auth/session";
-import { buildListingRecord, mapListingToDatabaseRow, getDatabaseListings } from "@/services/listings/listing-submissions";
+import { buildListingRecord, mapListingToDatabaseRow, getExistingListingSlugs } from "@/services/listings/listing-submissions";
+import { logger } from "@/lib/utils/logger";
 import type { ListingCreateInput } from "@/types";
 
 /**
@@ -16,13 +17,12 @@ export async function processBulkListings(inputs: ListingCreateInput[]) {
   const admin = createSupabaseAdminClient();
   
   try {
-    // 1. Fetch current listings for slug and fraud collision checks
-    // Limit to 1000 for performance during checks
-    const existingListings = await getDatabaseListings({ filters: { limit: 1000 } }) ?? [];
+    // 1. Fetch existing slugs for collision checks (lightweight)
+    const existingSlugs = await getExistingListingSlugs();
 
     // 2. Map and build records
     const preparedListings = inputs.map(input => {
-      return buildListingRecord(input, user.id, existingListings);
+      return buildListingRecord(input, user.id, existingSlugs);
     });
 
     // 3. Perform atomic bulk insert
@@ -31,7 +31,7 @@ export async function processBulkListings(inputs: ListingCreateInput[]) {
       .insert(preparedListings.map(mapListingToDatabaseRow));
 
     if (insertError) {
-      console.error("Bulk Insert SQL Error:", insertError);
+      logger.listings.error("Bulk Insert SQL Error", insertError, { userId: user.id, count: inputs.length });
       throw new Error("Veritabanına yazılırken bir hata oluştu.");
     }
 

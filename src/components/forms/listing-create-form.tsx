@@ -378,8 +378,8 @@ export function ListingCreateForm({
       });
       blurDataUrl = await imageCompression.getDataUrlFromFile(blurFile);
 
-    } catch (err) {
-      console.error("Compression error:", err);
+    } catch {
+      // Compression failed — upload original file
     }
 
     const previewUrl = URL.createObjectURL(compressibleFile);
