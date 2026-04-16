@@ -23,17 +23,17 @@ export function SiteHeaderAuth({
 
   return (
     <div className="flex items-center gap-2 sm:gap-4">
-      <div className="hidden items-center gap-2 border-r border-gray-200 pr-4 md:flex">
+      <div className="hidden items-center gap-2 border-r border-border pr-4 md:flex">
         <Link
           href={favoritesHref}
-          className="text-gray-500 transition-colors hover:text-red-500"
+          className="text-muted-foreground transition-colors hover:text-red-500"
           title="Favoriler"
         >
           <Heart size={22} strokeWidth={1.5} />
         </Link>
         <Link
           href="/dashboard/messages"
-          className="text-gray-500 transition-colors hover:text-blue-500"
+          className="text-muted-foreground transition-colors hover:text-primary"
           title="Mesajlar"
         >
           <MessageSquare size={22} strokeWidth={1.5} />
@@ -53,7 +53,7 @@ export function SiteHeaderAuth({
               />
             </div>
           ) : (
-            <span className="text-sm font-medium text-gray-600 transition-colors hover:text-blue-500">
+            <span className="text-sm font-medium text-muted-foreground transition-colors hover:text-primary">
               Giriş Yap
             </span>
           )}

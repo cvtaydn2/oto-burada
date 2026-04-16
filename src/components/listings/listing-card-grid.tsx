@@ -26,10 +26,10 @@ export function ListingCardGrid({ listing, priority = false }: ListingCardGridPr
   return (
     <Link 
       href={`/listing/${listing.slug}`}
-      className="group relative flex flex-col bg-white rounded-xl border border-slate-200 overflow-hidden hover:border-blue-300 hover:shadow-md transition-all duration-200"
+      className="group relative flex flex-col bg-card rounded-xl border border-border overflow-hidden hover:border-primary/30 hover:shadow-md transition-all duration-200"
     >
       {/* Image */}
-      <div className="relative w-full aspect-[4/3] overflow-hidden bg-slate-100">
+      <div className="relative w-full aspect-[4/3] overflow-hidden bg-muted">
         {coverImage ? (
           <Image
             src={coverImage.url}
@@ -40,7 +40,7 @@ export function ListingCardGrid({ listing, priority = false }: ListingCardGridPr
             priority={priority}
           />
         ) : (
-          <div className="w-full h-full flex items-center justify-center text-slate-400">
+          <div className="w-full h-full flex items-center justify-center text-muted-foreground/40">
             <CarFront className="w-8 h-8" />
           </div>
         )}
@@ -70,32 +70,32 @@ export function ListingCardGrid({ listing, priority = false }: ListingCardGridPr
         <div className="absolute top-2 right-2">
           <FavoriteButton
             listingId={listing.id}
-            className="size-8 rounded-full bg-white shadow-md flex items-center justify-center hover:scale-110 transition-transform"
+            className="size-8 rounded-full bg-background shadow-md flex items-center justify-center hover:scale-110 transition-transform"
           />
         </div>
       </div>
 
       {/* Content */}
       <div className="flex flex-col p-3 space-y-2">
-        <h2 className="text-sm font-semibold text-slate-900 line-clamp-1 group-hover:text-blue-600 transition-colors">
+        <h2 className="text-sm font-semibold text-card-foreground line-clamp-1 group-hover:text-primary transition-colors">
           {listing.brand} {listing.model}
         </h2>
         
-        <p className="text-xs text-slate-500 line-clamp-1">{listing.title}</p>
+        <p className="text-xs text-muted-foreground line-clamp-1">{listing.title}</p>
 
         {/* Specs */}
-        <div className="flex items-center gap-2 text-[10px] text-slate-600">
-          <span className="bg-slate-100 px-1.5 py-0.5 rounded font-medium">{listing.year}</span>
-          <span className="bg-slate-100 px-1.5 py-0.5 rounded font-medium">{formatNumber(listing.mileage)} km</span>
+        <div className="flex items-center gap-2 text-[10px] text-muted-foreground">
+          <span className="bg-muted px-1.5 py-0.5 rounded font-medium">{listing.year}</span>
+          <span className="bg-muted px-1.5 py-0.5 rounded font-medium">{formatNumber(listing.mileage)} km</span>
         </div>
 
         {/* Price */}
         <div className="mt-auto pt-1 flex items-end justify-between">
-          <span className="text-base font-bold text-blue-600">
+          <span className="text-base font-bold text-primary">
             {formatPrice(listing.price)}
-            <span className="text-[10px] text-slate-400 ml-0.5">TL</span>
+            <span className="text-[10px] text-muted-foreground ml-0.5">TL</span>
           </span>
-          <span className="text-[10px] text-slate-500">{listing.city}</span>
+          <span className="text-[10px] text-muted-foreground">{listing.city}</span>
         </div>
       </div>
     </Link>

@@ -32,30 +32,30 @@ export function HomeHero({ cities }: HomeHeroProps) {
         <form
           action="/listings"
           method="GET"
-          className="bg-white p-4 rounded-2xl shadow-xl max-w-4xl mx-auto text-left flex flex-col md:flex-row gap-4"
+          className="bg-card p-4 rounded-2xl shadow-xl max-w-4xl mx-auto text-left flex flex-col md:flex-row gap-4"
         >
           
           <div className="flex-1">
-            <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1 pl-1">Marka / Model</label>
+            <label className="block text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-1 pl-1">Marka / Model</label>
             <div className="relative">
-              <CarFront size={16} className="absolute left-3 top-3 text-gray-400" />
+              <CarFront size={16} className="absolute left-3 top-3 text-muted-foreground" />
               <input 
                 type="text" 
                 name="query"
                 placeholder="Örn: BMW 3 Serisi" 
-                className="w-full bg-gray-50 border border-gray-200 text-gray-700 rounded-lg focus:border-blue-500 focus:ring-1 focus:ring-blue-500 block pl-10 p-2.5 outline-none transition"
+                className="w-full bg-muted border border-border text-foreground rounded-lg focus:border-primary focus:ring-1 focus:ring-primary block pl-10 p-2.5 outline-none transition"
               />
             </div>
           </div>
 
           <div className="flex-1">
-            <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1 pl-1">Şehir</label>
+            <label className="block text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-1 pl-1">Şehir</label>
             <div className="relative">
-              <MapPin size={16} className="absolute left-3 top-3 text-gray-400" />
+              <MapPin size={16} className="absolute left-3 top-3 text-muted-foreground" />
               <select 
                 name="city"
                 defaultValue=""
-                className="w-full bg-gray-50 border border-gray-200 text-gray-700 rounded-lg focus:border-blue-500 focus:ring-1 focus:ring-blue-500 block pl-10 p-2.5 outline-none appearance-none cursor-pointer"
+                className="w-full bg-muted border border-border text-foreground rounded-lg focus:border-primary focus:ring-1 focus:ring-primary block pl-10 p-2.5 outline-none appearance-none cursor-pointer"
               >
                 <option value="">Tüm Şehirler</option>
                 {cities.map((city) => (
@@ -66,21 +66,21 @@ export function HomeHero({ cities }: HomeHeroProps) {
           </div>
 
           <div className="flex-1">
-            <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1 pl-1">Fiyat Aralığı</label>
+            <label className="block text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-1 pl-1">Fiyat Aralığı</label>
             <div className="flex space-x-2">
               <input 
                 type="number" 
                 name="minPrice"
                 placeholder="Min TL" 
                 min={0}
-                className="w-1/2 bg-gray-50 border border-gray-200 text-gray-700 rounded-lg focus:border-blue-500 focus:ring-1 focus:ring-blue-500 block p-2.5 outline-none text-sm transition" 
+                className="w-1/2 bg-muted border border-border text-foreground rounded-lg focus:border-primary focus:ring-1 focus:ring-primary block p-2.5 outline-none text-sm transition" 
               />
               <input 
                 type="number" 
                 name="maxPrice"
                 placeholder="Maks TL" 
                 min={0}
-                className="w-1/2 bg-gray-50 border border-gray-200 text-gray-700 rounded-lg focus:border-blue-500 focus:ring-1 focus:ring-blue-500 block p-2.5 outline-none text-sm transition" 
+                className="w-1/2 bg-muted border border-border text-foreground rounded-lg focus:border-primary focus:ring-1 focus:ring-primary block p-2.5 outline-none text-sm transition" 
               />
             </div>
           </div>
@@ -88,7 +88,7 @@ export function HomeHero({ cities }: HomeHeroProps) {
           <div className="flex items-end">
             <button 
               type="submit"
-              className="w-full md:w-auto bg-blue-500 hover:bg-blue-600 text-white font-medium rounded-lg px-8 py-2.5 transition shadow-md flex items-center justify-center"
+              className="w-full md:w-auto bg-primary hover:bg-primary/90 text-primary-foreground font-medium rounded-lg px-8 py-2.5 transition shadow-md flex items-center justify-center"
             >
               <Search size={18} className="mr-2" /> İlanları Ara
             </button>

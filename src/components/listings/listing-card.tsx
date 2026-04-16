@@ -80,27 +80,27 @@ export function ListingCard({ listing, priority = false }: ListingCardProps) {
         </div>
 
         {/* Content Section - Editorial Density */}
-        <div className="flex-1 p-6 min-w-0 flex flex-col justify-between bg-white group-hover:bg-blue-50/50 transition-colors duration-500">
+        <div className="flex-1 p-6 min-w-0 flex flex-col justify-between bg-card group-hover:bg-primary/5 transition-colors duration-500">
           <div className="space-y-4">
             {/* Title & Price - Elite Pairing */}
             <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
               <div className="min-w-0 flex-1">
-                <div className="text-[10px] font-black text-blue-600/60 uppercase tracking-[0.2em] mb-1 italic">
+                <div className="text-[10px] font-black text-primary/60 uppercase tracking-[0.2em] mb-1 italic">
                   {listing.brand}
                 </div>
-                <h3 className="text-xl md:text-2xl font-black text-gray-900 tracking-tight leading-tight truncate group-hover:text-blue-600 transition-colors">
+                <h3 className="text-xl md:text-2xl font-black text-card-foreground tracking-tight leading-tight truncate group-hover:text-primary transition-colors">
                   {listing.model}
                 </h3>
-                <p className="text-sm text-gray-500 font-medium truncate mt-1">
+                <p className="text-sm text-muted-foreground font-medium truncate mt-1">
                   {listing.title}
                 </p>
               </div>
               <div className="shrink-0 text-left sm:text-right flex flex-col items-end">
                 <div className="flex items-baseline gap-1.5">
-                  <span className="text-2xl sm:text-3xl font-black tracking-tightest text-blue-600 italic">
+                  <span className="text-2xl sm:text-3xl font-black tracking-tightest text-primary italic">
                     {formatPrice(listing.price)}
                   </span>
-                  <span className="text-xs font-black text-blue-600/40 italic">TL</span>
+                  <span className="text-xs font-black text-primary/40 italic">TL</span>
                 </div>
                 {isAdvantageous && (
                   <span className="text-[9px] font-black text-orange-600 uppercase tracking-widest mt-1">PAZAR LİDERİ FİYAT</span>
@@ -111,57 +111,57 @@ export function ListingCard({ listing, priority = false }: ListingCardProps) {
             {/* Smart Specs Overlay */}
             <div className="flex flex-wrap gap-x-6 gap-y-3 pt-2">
               <div className="flex items-center gap-2 group/spec">
-                <div className="size-8 rounded-lg bg-gray-50 flex items-center justify-center text-gray-400 group-hover/spec:bg-blue-50 group-hover/spec:text-blue-600 transition-colors outline outline-1 outline-gray-100">
+                <div className="size-8 rounded-lg bg-muted flex items-center justify-center text-muted-foreground group-hover/spec:bg-primary/10 group-hover/spec:text-primary transition-colors outline outline-1 outline-border">
                   <Calendar className="size-4" />
                 </div>
                 <div className="flex flex-col">
-                  <span className="text-[9px] font-bold text-gray-400 uppercase tracking-widest">MODEL</span>
-                  <span className="text-xs font-black">{listing.year}</span>
+                  <span className="text-[9px] font-bold text-muted-foreground uppercase tracking-widest">MODEL</span>
+                  <span className="text-xs font-black text-card-foreground">{listing.year}</span>
                 </div>
               </div>
 
               <div className="flex items-center gap-2 group/spec">
-                <div className="size-8 rounded-lg bg-gray-50 flex items-center justify-center text-gray-400 group-hover/spec:bg-blue-50 group-hover/spec:text-blue-600 transition-colors outline outline-1 outline-gray-100">
+                <div className="size-8 rounded-lg bg-muted flex items-center justify-center text-muted-foreground group-hover/spec:bg-primary/10 group-hover/spec:text-primary transition-colors outline outline-1 outline-border">
                   <CircleGauge className="size-4" />
                 </div>
                 <div className="flex flex-col">
-                  <span className="text-[9px] font-bold text-gray-400 uppercase tracking-widest">MESAFE</span>
-                  <span className="text-xs font-black">{formatNumber(listing.mileage)} <span className="text-[9px]">KM</span></span>
+                  <span className="text-[9px] font-bold text-muted-foreground uppercase tracking-widest">MESAFE</span>
+                  <span className="text-xs font-black text-card-foreground">{formatNumber(listing.mileage)} <span className="text-[9px]">KM</span></span>
                 </div>
               </div>
 
               <div className="flex items-center gap-2 group/spec">
-                <div className="size-8 rounded-lg bg-gray-50 flex items-center justify-center text-gray-400 group-hover/spec:bg-blue-50 group-hover/spec:text-blue-600 transition-colors outline outline-1 outline-gray-100">
+                <div className="size-8 rounded-lg bg-muted flex items-center justify-center text-muted-foreground group-hover/spec:bg-primary/10 group-hover/spec:text-primary transition-colors outline outline-1 outline-border">
                   <Settings2 className="size-4" />
                 </div>
                 <div className="flex flex-col">
-                  <span className="text-[9px] font-bold text-gray-400 uppercase tracking-widest">VİTES</span>
-                  <span className="text-xs font-black">{listing.transmission}</span>
+                  <span className="text-[9px] font-bold text-muted-foreground uppercase tracking-widest">VİTES</span>
+                  <span className="text-xs font-black text-card-foreground">{listing.transmission}</span>
                 </div>
               </div>
 
               <div className="flex items-center gap-2 group/spec">
-                <div className="size-8 rounded-lg bg-gray-50 flex items-center justify-center text-gray-400 group-hover/spec:bg-blue-50 group-hover/spec:text-blue-600 transition-colors outline outline-1 outline-gray-100">
+                <div className="size-8 rounded-lg bg-muted flex items-center justify-center text-muted-foreground group-hover/spec:bg-primary/10 group-hover/spec:text-primary transition-colors outline outline-1 outline-border">
                   <Fuel className="size-4" />
                 </div>
                 <div className="flex flex-col">
-                  <span className="text-[9px] font-bold text-gray-400 uppercase tracking-widest">YAKIT</span>
-                  <span className="text-xs font-black">{listing.fuelType}</span>
+                  <span className="text-[9px] font-bold text-muted-foreground uppercase tracking-widest">YAKIT</span>
+                  <span className="text-xs font-black text-card-foreground">{listing.fuelType}</span>
                 </div>
               </div>
             </div>
           </div>
 
           {/* Footer UI */}
-          <div className="flex items-center justify-between pt-5 mt-4 border-t border-gray-100">
-            <div className="flex items-center gap-2 cursor-pointer hover:text-blue-600 transition-colors">
-              <div className="size-7 rounded-full bg-blue-50 flex items-center justify-center shadow-inner">
-                <MapPin className="size-3.5 text-blue-600" />
+          <div className="flex items-center justify-between pt-5 mt-4 border-t border-border">
+            <div className="flex items-center gap-2 cursor-pointer hover:text-primary transition-colors">
+              <div className="size-7 rounded-full bg-primary/10 flex items-center justify-center shadow-inner">
+                <MapPin className="size-3.5 text-primary" />
               </div>
-              <span className="text-xs font-black uppercase tracking-widest">{listing.city}</span>
+              <span className="text-xs font-black uppercase tracking-widest text-card-foreground">{listing.city}</span>
             </div>
             
-            <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-blue-600 group-hover:gap-4 transition-all duration-300 italic">
+            <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-primary group-hover:gap-4 transition-all duration-300 italic">
               DETAYLI İNCELE
               <ArrowRight size={14} className="animate-pulse" />
             </div>
