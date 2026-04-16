@@ -15,9 +15,10 @@ const ListingGalleryLightbox = dynamic(
 interface ListingGalleryProps {
   images: ListingImage[];
   title: string;
+  has360View?: boolean;
 }
 
-export function ListingGallery({ images, title }: ListingGalleryProps) {
+export function ListingGallery({ images, title, has360View = false }: ListingGalleryProps) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isLightboxOpen, setIsLightboxOpen] = useState(false);
   const [is360Open, setIs360Open] = useState(false);
@@ -124,13 +125,15 @@ export function ListingGallery({ images, title }: ListingGalleryProps) {
                   Tam Ekran
                   <Sparkles size={12} className="text-primary" />
                 </button>
-                <button
-                  onClick={() => setIs360Open(true)}
-                  className="px-3 py-1.5 rounded-full bg-blue-500 text-white text-[10px] font-bold uppercase tracking-widest hover:bg-blue-600 transition-all shadow-lg flex items-center gap-1.5"
-                >
-                  <Rotate3d size={12} />
-                  360° Görünüm
-                </button>
+                {has360View && (
+                  <button
+                    onClick={() => setIs360Open(true)}
+                    className="px-3 py-1.5 rounded-full bg-blue-500 text-white text-[10px] font-bold uppercase tracking-widest hover:bg-blue-600 transition-all shadow-lg flex items-center gap-1.5"
+                  >
+                    <Rotate3d size={12} />
+                    360° Görünüm
+                  </button>
+                )}
               </div>
             </div>
           </div>

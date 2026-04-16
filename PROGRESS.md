@@ -278,7 +278,57 @@
 - Güncel `schema.sql` gerçek Supabase veritabanına uygulanmalı ve production veri modeli senkronize edilmeli.
 - Ardından gerçek DB üzerinde chat, corporate profile ve ekspertiz belge akışları için integration smoke test yapılmalı.
 
-## Admin Moderation Queue Audit & Fixes (2026-04-17)
+## Image Upload & Display Pipeline Audit & Fixes (2026-04-17)
+
+### Tespit ve Düzeltilen Sorunlar
+
+**PERF [YÜKSEK]: Lightbox tüm resimleri DOM'a priority ile yüklüyordu**
+- 20 ilan görseli için 20 `<Image priority>` bileşeni DOM'a ekleniyordu
+- Kullanıcı sadece 1 resim görüyor ama 20 resim yüklüyordu
+- Düzeltme: Lightbox artık sadece `currentIndex`'teki resmi render ediyor
+- `key={currentImage.url}` ile slide değişiminde force re-render
+- Keyboard navigation eklendi (ArrowLeft, ArrowRight, Escape)
+- ARIA dialog attributes eklendi
+
+**UX [YÜKSEK]: 360° buton her ilanda yanıltıcı görünüyordu**
+- `Listing360View` her zaman "bu araç için 360° görünüm henüz eklenmemiş" diyordu
+- Ama her ilan detay sayfasında 360° butonu görünüyordu
+- Düzeltme: `ListingGallery`'e `has360View?: boolean` prop eklendi
+- Sadece gerçek 360° içerik varken buton gösteriliyor
+
+**PERF [YÜKSEK]: List sayfalarında full resolution görsel yükleniyordu**
+- `CarCard` ve `ListingCard` Supabase Storage URL'ini transform parametresi olmadan kullanıyordu
+- 3MB+ full resolution görsel 120x80px thumbnail boyutunda yükleniyordu
+- Düzeltme: `supabaseImageUrl(url, width, quality)` helper eklendi (`src/lib/utils.ts`)
+- `CarCard`: `supabaseImageUrl(url, 600, 80)` grid, `(url, 400, 80)` list
+- `ListingCard`: `supabaseImageUrl(url, 480, 80)`
+- Supabase Storage olmayan URL'lerde (Unsplash vb.) transform uygulanmıyor
+
+**SECURITY [ORTA]: ContentType ve extension tarayıcıdan alınıyordu**
+- `file.type` ve `fileName.split(".")` browser-controlled — güvenilmez
+- Düzeltme: `getVerifiedMimeType()` magic bytes'tan gerçek MIME type türetiyor
+- `buildListingImageStoragePath` verified MIME type'ı extension için kullanıyor
+- Upload API'de `contentType = verifiedMimeType ?? file.type`
+
+**PERF [ORTA]: Next.js image cache TTL 60 saniyeydi**
+- UUID-based storage path'ler değişmez — 60s cache çok düşük
+- Düzeltme: `minimumCacheTTL: 60 → 86400` (1 gün)
+- Upload API'de `cacheControl: "3600" → "86400"`
+
+**CONFIG [ORTA]: Supabase hostname next.config.ts'de hardcoded**
+- `yagcxhrhtfhwaxzhyrkj.supabase.co` — staging/farklı proje ortamında görsel optimize edilmiyordu
+- Düzeltme: `NEXT_PUBLIC_SUPABASE_URL` env'den hostname dinamik parse ediliyor
+- Fallback değer korunuyor — mevcut deployment'lar env değişikliği gerektirmiyor
+
+### Yeni Utility
+- `src/lib/utils.ts` → `supabaseImageUrl(url, width, quality)` — Supabase Storage transform helper
+
+### Doğrulama
+- `npm run typecheck` ✅
+- `npm run lint` ✅ (0 errors, 0 warnings)
+- `npm run build` ✅
+
+
 
 ### Tespit ve Düzeltilen Sorunlar
 

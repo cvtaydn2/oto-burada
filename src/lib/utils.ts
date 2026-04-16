@@ -49,3 +49,36 @@ export function formatTL(value: number): string {
   if (value >= 1_000) return `₺${(value / 1_000).toFixed(0)}K`;
   return `₺${value}`;
 }
+
+/**
+ * Appends Supabase Storage image transformation query parameters to a URL.
+ * Returns the original URL unchanged if it is not a Supabase Storage URL
+ * (e.g. Unsplash, data URIs, or blob URLs).
+ *
+ * @param url     - Original image URL from Supabase Storage
+ * @param width   - Desired output width in pixels
+ * @param quality - JPEG/WebP quality 1-100 (default 80)
+ *
+ * Supabase Storage transform docs:
+ * https://supabase.com/docs/guides/storage/serving/image-transformations
+ */
+export function supabaseImageUrl(
+  url: string,
+  width: number,
+  quality = 80,
+): string {
+  if (!url) return url;
+  // Only transform Supabase Storage public URLs
+  if (!url.includes(".supabase.co/storage/v1/object/public/")) {
+    return url;
+  }
+  try {
+    const parsed = new URL(url);
+    parsed.searchParams.set("width", String(width));
+    parsed.searchParams.set("quality", String(quality));
+    parsed.searchParams.set("resize", "cover");
+    return parsed.toString();
+  } catch {
+    return url;
+  }
+}

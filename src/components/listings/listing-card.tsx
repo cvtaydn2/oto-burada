@@ -13,7 +13,7 @@ import {
   Zap,
   Flame
 } from "lucide-react"
-import { formatNumber, formatPrice } from "@/lib/utils"
+import { formatNumber, formatPrice, supabaseImageUrl } from "@/lib/utils"
 import { type Listing } from "@/types"
 
 interface ListingCardProps {
@@ -40,12 +40,14 @@ export function ListingCard({ listing, priority = false }: ListingCardProps) {
         <div className="relative w-full sm:w-[300px] aspect-[16/10] sm:aspect-auto shrink-0 bg-secondary/30 overflow-hidden">
           {coverImage ? (
             <Image
-              src={coverImage.url}
+              src={supabaseImageUrl(coverImage.url, 480, 80)}
               alt={listing.title}
               fill
               sizes="(min-width: 640px) 300px, 100vw"
               className="object-cover group-hover:scale-110 transition-transform duration-700 ease-out"
               priority={priority}
+              placeholder={coverImage.placeholderBlur ? "blur" : "empty"}
+              blurDataURL={coverImage.placeholderBlur ?? undefined}
             />
           ) : (
             <div className="flex items-center justify-center h-full text-muted-foreground/40">

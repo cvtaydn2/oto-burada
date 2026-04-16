@@ -3,7 +3,7 @@
 import Image from "next/image"
 import Link from "next/link"
 import { CarFront, MapPin, Settings2, ShieldCheck, Zap } from "lucide-react"
-import { cn, formatNumber, formatPrice } from "@/lib/utils"
+import { cn, formatNumber, formatPrice, supabaseImageUrl } from "@/lib/utils"
 import { type Listing } from "@/types"
 import { FavoriteButton } from "@/components/listings/favorite-button"
 import { getListingCardInsights } from "@/services/listings/listing-card-insights"
@@ -36,7 +36,7 @@ export function CarCard({ listing, priority = false, variant = "grid" }: CarCard
         <Link href={detailHref} className="relative block h-full w-full">
           {coverImage ? (
             <Image
-              src={coverImage.url}
+              src={supabaseImageUrl(coverImage.url, variant === "grid" ? 600 : 400, 80)}
               alt={listing.title}
               fill
               sizes={variant === "grid" ? "(min-width: 1024px) 33vw, 50vw" : "320px"}
@@ -44,6 +44,8 @@ export function CarCard({ listing, priority = false, variant = "grid" }: CarCard
               fetchPriority={priority ? "high" : "auto"}
               loading={priority ? "eager" : "lazy"}
               priority={priority}
+              placeholder={coverImage.placeholderBlur ? "blur" : "empty"}
+              blurDataURL={coverImage.placeholderBlur ?? undefined}
             />
           ) : (
             <div className="flex items-center justify-center h-full text-muted-foreground/40">

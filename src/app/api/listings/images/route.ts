@@ -6,6 +6,7 @@ import { enforceRateLimit, getRateLimitKey, getUserRateLimitKey } from "@/lib/ut
 import { apiSuccess, apiError, API_ERROR_CODES } from "@/lib/utils/api-response";
 import {
   buildListingImageStoragePath,
+  getVerifiedMimeType,
   validateListingImageFile,
 } from "@/services/listings/listing-images";
 import { captureServerError } from "@/lib/monitoring/posthog-server";
@@ -74,10 +75,15 @@ export async function POST(request: Request) {
   const sanitizedFileName = sanitizeFileName(file.name);
   const { listingsBucket } = getSupabaseStorageEnv();
   const adminClient = createSupabaseAdminClient();
-  const storagePath = buildListingImageStoragePath(user.id, sanitizedFileName);
+
+  // Use the VERIFIED MIME type (from magic bytes) — not the browser-declared file.type.
+  const verifiedMimeType = await getVerifiedMimeType(file);
+  const contentType = verifiedMimeType ?? file.type;
+  const storagePath = buildListingImageStoragePath(user.id, sanitizedFileName, verifiedMimeType ?? undefined);
+
   const uploadResult = await adminClient.storage.from(listingsBucket).upload(storagePath, file, {
-    cacheControl: "3600",
-    contentType: file.type,
+    cacheControl: "86400", // 24h — UUID paths never change
+    contentType,
     upsert: false,
   });
 
