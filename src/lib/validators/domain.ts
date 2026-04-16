@@ -413,8 +413,8 @@ export const listingFiltersSchema: z.ZodType<ListingFilters> = z
     carTrim: optionalTrimmedString,
     city: optionalTrimmedString,
     district: optionalTrimmedString,
-    minPrice: z.preprocess(emptyStringToUndefined, positiveCurrencySchema.optional()),
-    maxPrice: z.preprocess(emptyStringToUndefined, positiveCurrencySchema.optional()),
+    minPrice: z.preprocess(emptyStringToUndefined, z.coerce.number().finite().min(0, invalidMessage).optional()),
+    maxPrice: z.preprocess(emptyStringToUndefined, z.coerce.number().finite().min(0, invalidMessage).optional()),
     minYear: z.preprocess(
       emptyStringToUndefined,
       z.coerce.number().int().min(minimumCarYear, invalidMessage).max(maximumCarYear, invalidMessage).optional(),

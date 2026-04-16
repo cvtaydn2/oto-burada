@@ -80,13 +80,16 @@ export function AdvancedFilterPage({
 
   useEffect(() => {
     const controller = new AbortController();
-    const params = createSearchParamsFromListingFilters({
-      ...deferredFilters,
-      limit: 1,
-      page: 1,
-    });
 
-    const loadResultCount = async () => {
+    // Debounce count fetch — wait 600ms after last change to avoid a network
+    // request on every keystroke in price/year/km inputs.
+    const timer = setTimeout(async () => {
+      const params = createSearchParamsFromListingFilters({
+        ...deferredFilters,
+        limit: 1,
+        page: 1,
+      });
+
       setIsCounting(true);
 
       try {
@@ -116,11 +119,10 @@ export function AdvancedFilterPage({
           setIsCounting(false);
         }
       }
-    };
-
-    void loadResultCount();
+    }, 600);
 
     return () => {
+      clearTimeout(timer);
       controller.abort();
     };
   }, [deferredFilters]);

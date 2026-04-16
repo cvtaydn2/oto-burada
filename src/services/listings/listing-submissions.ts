@@ -492,21 +492,29 @@ export async function getDatabaseListings(options?: {
       }
 
       if (filters.maxTramer !== undefined) {
-        query = query.lte("tramer_amount", filters.maxTramer);
+        if (filters.maxTramer === 0) {
+          // maxTramer=0 → "no damage at all" — include NULL (not recorded) and 0 (clean)
+          query = query.or("tramer_amount.is.null,tramer_amount.eq.0");
+        } else {
+          query = query.lte("tramer_amount", filters.maxTramer);
+        }
       }
 
       if (filters.hasExpertReport === true) {
-        // We filter for listings where expert_inspection has hasInspection: true
-        // In Postgres with JSONB: expert_inspection->>'hasInspection' = 'true'
-        query = query.filter("expert_inspection->>hasInspection", "eq", "true");
+        // expert_inspection is a JSONB column. Postgres stores boolean true as true (not "true").
+        // Use the containment operator @> to match JSONB with hasInspection: true.
+        query = query.contains("expert_inspection", { hasInspection: true });
       }
 
       if (filters.query) {
         const terms = filters.query.trim().split(/\s+/).filter(Boolean);
 
         if (terms.length > 0) {
+          // `to_tsquery` format with `:*` prefix matching — works with Supabase .textSearch()
+          // which maps to PostgREST's `@@` operator using `to_tsquery` by default.
+          // Using `config: "simple"` ensures Turkish characters (ş,ğ,ı etc.) are not stemmed away.
           const tsQuery = terms.map((t) => `${t}:*`).join(" & ");
-          query = query.textSearch("search_vector", tsQuery);
+          query = query.textSearch("search_vector", tsQuery, { config: "simple" });
         }
       }
     }
@@ -598,7 +606,7 @@ export interface PaginatedListingsResult {
  * Shared by both the data query and the count query to avoid duplication.
  */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-function applyListingFilterPredicates<T extends { eq: any; gte: any; lte: any; filter: any; textSearch: any; ilike: any }>(
+function applyListingFilterPredicates<T extends { eq: any; gte: any; lte: any; filter: any; textSearch: any; ilike: any; contains: any; or: any }>(
   query: T,
   filters: ListingFilters,
 ): T {
@@ -617,14 +625,23 @@ function applyListingFilterPredicates<T extends { eq: any; gte: any; lte: any; f
   if (filters.minYear !== undefined) query = query.gte("year", filters.minYear);
   if (filters.maxYear !== undefined) query = query.lte("year", filters.maxYear);
   if (filters.maxMileage !== undefined) query = query.lte("mileage", filters.maxMileage);
-  if (filters.maxTramer !== undefined) query = query.lte("tramer_amount", filters.maxTramer);
+  if (filters.maxTramer !== undefined) {
+    if (filters.maxTramer === 0) {
+      // maxTramer=0 means "no damage" — match both NULL and 0
+      query = query.or("tramer_amount.is.null,tramer_amount.eq.0");
+    } else {
+      query = query.lte("tramer_amount", filters.maxTramer);
+    }
+  }
   if (filters.hasExpertReport === true) {
-    query = query.filter("expert_inspection->>hasInspection", "eq", "true");
+    // Use JSONB containment operator to correctly match boolean true (not string "true")
+    query = query.contains("expert_inspection", { hasInspection: true });
   }
   if (filters.query) {
     const terms = filters.query.trim().split(/\s+/).filter(Boolean);
     if (terms.length > 0) {
-      query = query.textSearch("search_vector", terms.map((t) => `${t}:*`).join(" & "));
+      const tsQuery = terms.map((t) => `${t}:*`).join(" & ");
+      query = query.textSearch("search_vector", tsQuery, { config: "simple" });
     }
   }
   return query;

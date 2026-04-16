@@ -278,7 +278,50 @@
 - Güncel `schema.sql` gerçek Supabase veritabanına uygulanmalı ve production veri modeli senkronize edilmeli.
 - Ardından gerçek DB üzerinde chat, corporate profile ve ekspertiz belge akışları için integration smoke test yapılmalı.
 
-## Derin Semantik Audit & Bug Fixes (2026-04-17)
+## Search & Filter Cross-Layer Audit & Fixes (2026-04-17)
+
+### Tespit ve Düzeltilen Sorunlar
+
+**BUG [YÜKSEK]: `hasExpertReport` JSONB filter çalışmıyordu**
+- `.filter("expert_inspection->>hasInspection", "eq", "true")` — string `"true"` ile eşleştiriyordu
+- Postgres JSONB boolean `true` değil string `"true"` değil — JSONB containment `@>` operatörü gerekir
+- Düzeltme: `.contains("expert_inspection", { hasInspection: true })` — JSONB `@>` operatörü
+
+**BUG [YÜKSEK]: `maxTramer=0` hasarsız araç filtrelemesi çalışmıyordu**
+- `.lte("tramer_amount", 0)` — `tramer_amount IS NULL` olan ilanları yakalamıyordu
+- DB'de hasar kaydedilmemiş ilanlar `tramer_amount = NULL`, `maxTramer=0` hiçbirini getirmiyordu
+- Düzeltme: `maxTramer === 0` → `.or("tramer_amount.is.null,tramer_amount.eq.0")`
+
+**BUG [YÜKSEK]: `SearchWithSuggestions` mevcut filtreleri sıfırlıyordu**
+- `router.push(\`/listings?query=...\`)` — URL'deki tüm aktif filtreler (brand, city, vb.) siliniyordu
+- Düzeltme: `currentFilters` prop eklendi, arama `URLSearchParams` üzerine yazarak filtreleri koruyarak query ekliyor
+
+**BUG [YÜKSEK]: `parseListingFiltersFromSearchParams` parse hatası tüm filtreleri siliyordu**
+- Tek bir alan parse hatası (örn. `?minPrice=abc`) → tüm URL parametreleri `{ sort: "newest" }` ile sıfırlanıyordu
+- Düzeltme: Partial recovery — her alan bağımsız parse edilir, geçerli olanlar korunur, hatalı olanlar düşürülür
+
+**BUG [ORTA]: `minPrice=0` Zod şemasında parse hatası**
+- `positiveCurrencySchema` → `z.coerce.number().min(1)` — sıfır geçmiyordu
+- Düzeltme: `listingFiltersSchema.minPrice` ve `maxPrice` → `min(0)` olarak genişletildi
+
+**PERF [ORTA]: `AdvancedFilterPage` count fetch debounce yoktu**
+- `useDeferredValue` + `useEffect` → her filtre değişiminde network isteği
+- Düzeltme: 600ms debounce eklendi, `clearTimeout` + `controller.abort()` ile cleanup
+
+**SAFE: `createSearchParamsFromListingFilters` — `page=1` URL gürültüsü**
+- Her filtre değişiminde `?page=1` URL'e yazılıyordu — canonical SEO gürültüsü
+- Düzeltme: `page > 1` olduğunda URL'e yazılır, default (1) gizlenir
+
+**SAFE: FTS `config: "simple"` eklendi**
+- `textSearch("search_vector", tsQuery)` → Türkçe karakterler için `config: "simple"` eklendi
+- `turkish` config yoksa `simple` Türkçe karakterleri (ş,ğ,ı,ü) doğru işler
+
+### Doğrulama
+- `npm run typecheck` ✅
+- `npm run lint` ✅ (0 errors, 0 warnings)
+- `npm run build` ✅
+
+
 
 ### Bulunan ve Düzeltilen Sorunlar
 

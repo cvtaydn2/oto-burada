@@ -16,12 +16,15 @@ interface SearchWithSuggestionsProps {
   placeholder?: string;
   className?: string;
   suggestions?: SearchSuggestionItem[];
+  /** Current active filters — if provided, search navigates to /listings preserving them */
+  currentFilters?: Record<string, string>;
 }
 
 export function SearchWithSuggestions({
   placeholder = "Marka, model veya şehir ara...",
   className = "",
   suggestions = [],
+  currentFilters,
 }: SearchWithSuggestionsProps) {
   const [query, setQuery] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
@@ -56,7 +59,11 @@ export function SearchWithSuggestions({
 
   const handleSearch = (searchQuery: string) => {
     if (searchQuery.trim()) {
-      router.push(`/listings?query=${encodeURIComponent(searchQuery.trim())}`);
+      // Preserve existing filters when available, only override/add `query` param
+      const params = new URLSearchParams(currentFilters ?? {});
+      params.set("query", searchQuery.trim());
+      params.delete("page"); // reset to page 1 on new search
+      router.push(`/listings?${params.toString()}`);
       setQuery("");
     }
   };

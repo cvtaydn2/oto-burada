@@ -160,13 +160,49 @@ export function parseListingFiltersFromSearchParams(
   const parsed = listingFiltersSchema.safeParse(normalizedSearchParams);
 
   if (!parsed.success) {
-    return { sort: "newest" } satisfies ListingFilters;
+    // Partial recovery: parse field-by-field, keep valid entries, drop invalid ones.
+    // This prevents a single bad URL param (e.g. "?minPrice=abc") from silently
+    // wiping out all other filters the user set.
+    const recovered: Record<string, unknown> = {};
+    const fieldOrder: (keyof import("@/types").ListingFilters)[] = [
+      "query", "brand", "model", "carTrim", "city", "district",
+      "fuelType", "transmission", "sort", "page", "limit",
+      "hasExpertReport",
+    ];
+
+    // First pass: string/enum fields (safe to try individually)
+    for (const key of fieldOrder) {
+      if (normalizedSearchParams[key] !== undefined) {
+        const singleResult = listingFiltersSchema.safeParse({ [key]: normalizedSearchParams[key] });
+        if (singleResult.success) {
+          const val = (singleResult.data as Record<string, unknown>)[key];
+          if (val !== undefined) recovered[key] = val;
+        }
+      }
+    }
+
+    // Second pass: numeric range fields
+    const numericFields = ["minPrice", "maxPrice", "minYear", "maxYear", "maxMileage", "maxTramer"] as const;
+    for (const key of numericFields) {
+      if (normalizedSearchParams[key] !== undefined) {
+        const singleResult = listingFiltersSchema.safeParse({ [key]: normalizedSearchParams[key] });
+        if (singleResult.success) {
+          const val = (singleResult.data as Record<string, unknown>)[key];
+          if (val !== undefined) recovered[key] = val;
+        }
+      }
+    }
+
+    return {
+      ...recovered,
+      sort: (recovered.sort as import("@/types").ListingSortOption | undefined) ?? "newest",
+    } satisfies import("@/types").ListingFilters;
   }
 
   return {
     ...parsed.data,
     sort: parsed.data.sort ?? "newest",
-  } satisfies ListingFilters;
+  } satisfies import("@/types").ListingFilters;
 }
 
 export function createSearchParamsFromListingFilters(filters: ListingFilters) {
@@ -185,6 +221,7 @@ export function createSearchParamsFromListingFilters(filters: ListingFilters) {
   append("model", filters.model);
   append("carTrim", filters.carTrim);
   append("city", filters.city);
+  // citySlug is an internal routing field — do not serialize to search params
   append("district", filters.district);
   append("minPrice", filters.minPrice);
   append("maxPrice", filters.maxPrice);
@@ -194,7 +231,10 @@ export function createSearchParamsFromListingFilters(filters: ListingFilters) {
   append("maxTramer", filters.maxTramer);
   append("fuelType", filters.fuelType);
   append("transmission", filters.transmission);
-  append("page", filters.page);
+  // Only include page when > 1 — page=1 is the default and adds URL noise
+  if (filters.page !== undefined && filters.page > 1) {
+    append("page", filters.page);
+  }
   append("limit", filters.limit);
 
   if (filters.hasExpertReport) {
