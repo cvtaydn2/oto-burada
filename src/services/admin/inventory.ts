@@ -50,10 +50,45 @@ export async function getAdminInventory(filters?: {
   }
 
   const listings = (data || []).map(
-    (listing: { images: { public_url: string; sort_order: number; is_cover: boolean; storage_path: string; placeholder_blur: string | null }[] }) => ({
-      ...listing,
+    (listing: Record<string, unknown> & {
+      images?: { public_url: string; sort_order: number; is_cover: boolean; storage_path: string; placeholder_blur: string | null }[];
+    }) => ({
+      // camelCase mapping — DB returns snake_case, Listing type expects camelCase
+      id: listing.id,
+      slug: listing.slug,
+      sellerId: listing.seller_id,
+      title: listing.title,
+      brand: listing.brand,
+      model: listing.model,
+      carTrim: listing.car_trim ?? null,
+      year: listing.year,
+      mileage: listing.mileage,
+      fuelType: listing.fuel_type,
+      transmission: listing.transmission,
+      price: listing.price,
+      city: listing.city,
+      district: listing.district,
+      description: listing.description,
+      whatsappPhone: listing.whatsapp_phone,
+      vin: listing.vin ?? null,
+      tramerAmount: listing.tramer_amount ?? null,
+      damageStatusJson: listing.damage_status_json ?? null,
+      fraudScore: listing.fraud_score ?? 0,
+      fraudReason: listing.fraud_reason ?? null,
+      status: listing.status,
+      featured: listing.featured,
+      featuredUntil: listing.featured_until ?? null,
+      urgentUntil: listing.urgent_until ?? null,
+      highlightedUntil: listing.highlighted_until ?? null,
+      eidsVerificationJson: listing.eids_verification_json ?? null,
+      marketPriceIndex: listing.market_price_index ?? null,
+      expertInspection: listing.expert_inspection ?? undefined,
+      bumpedAt: listing.bumped_at ?? null,
+      viewCount: listing.view_count ?? 0,
+      createdAt: listing.created_at as string,
+      updatedAt: listing.updated_at as string,
       images: (listing.images || []).map((img) => ({
-        ...img,
+        id: img.public_url, // placeholder — not used in admin moderation
         url: img.public_url || "",
         order: img.sort_order || 0,
         isCover: img.is_cover || false,

@@ -927,7 +927,23 @@ export async function moderateDatabaseListing(
     .select("id")
     .maybeSingle<{ id: string }>();
 
-  if (error || !data) {
+  if (error) {
+    logger.listings.error("moderateDatabaseListing update failed", error, {
+      listingId,
+      status,
+      errorCode: error.code,
+      errorMessage: error.message,
+      errorHint: error.hint,
+    });
+    console.error("[listings] moderateDatabaseListing DB error:", {
+      code: error.code,
+      message: error.message,
+      hint: error.hint,
+    });
+    return null;
+  }
+
+  if (!data) {
     return null;
   }
 

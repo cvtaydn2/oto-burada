@@ -21,12 +21,15 @@ export function formatNumber(value: number) {
   return numberFormatter.format(value);
 }
 
-export function formatDate(value: string) {
+export function formatDate(value: string | null | undefined): string {
+  if (!value) return "—";
+  const date = new Date(value);
+  if (isNaN(date.getTime())) return "—";
   return new Intl.DateTimeFormat("tr-TR", {
     day: "2-digit",
     month: "long",
     year: "numeric",
-  }).format(new Date(value));
+  }).format(date);
 }
 
 /**
