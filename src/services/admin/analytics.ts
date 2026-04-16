@@ -37,9 +37,9 @@ export async function getAdminAnalytics(range: string = "30d"): Promise<AdminAna
 
   try {
     const [
-      { data: brandStats },
-      { data: cityStats },
-      { data: statusStats },
+      brandStatsResult,
+      cityStatsResult,
+      statusStatsResult,
       { count: userCount },
       { count: listingCount },
       { data: payments },
@@ -53,11 +53,20 @@ export async function getAdminAnalytics(range: string = "30d"): Promise<AdminAna
       { count: pendingApprovalCount },
       { count: professionalUserCount },
     ] = await Promise.all([
-      // Brand aggregation: fetch only brand column, limited to top candidates
-      // At scale this should be a DB-level GROUP BY via RPC — acceptable for MVP
-      admin.from("listings").select("brand").eq("status", "approved").limit(5000),
-      admin.from("listings").select("city").eq("status", "approved").limit(5000),
-      admin.from("listings").select("status"),
+      // Use DB-level aggregation via RPC to avoid pulling thousands of rows.
+      // Falls back to empty array if RPC not available.
+      admin.rpc("get_listings_by_brand_count", { p_status: "approved" }).then(
+        (r) => r,
+        () => ({ data: null, error: null }),
+      ),
+      admin.rpc("get_listings_by_city_count", { p_status: "approved" }).then(
+        (r) => r,
+        () => ({ data: null, error: null }),
+      ),
+      admin.rpc("get_listings_by_status_count").then(
+        (r) => r,
+        () => ({ data: null, error: null }),
+      ),
       admin.from("profiles").select("*", { count: "exact", head: true }),
       admin.from("listings").select("*", { count: "exact", head: true }),
       admin.from("payments").select("amount").eq("status", "success"),
@@ -72,23 +81,59 @@ export async function getAdminAnalytics(range: string = "30d"): Promise<AdminAna
       admin.from("profiles").select("*", { count: "exact", head: true }).eq("user_type", "professional"),
     ]);
 
-    const brandMap: Record<string, number> = {};
-    brandStats?.forEach((l) => { brandMap[l.brand] = (brandMap[l.brand] ?? 0) + 1; });
-    const listingsByBrand = Object.entries(brandMap)
-      .map(([brand, count]) => ({ brand, count }))
-      .sort((a, b) => b.count - a.count)
-      .slice(0, 5);
+    // RPC-based aggregation returns { brand, count } / { city, count } / { status, count }
+    // If RPC is unavailable (not yet created), fall back to in-memory aggregation
+    // using a capped query so we don't pull the entire table.
+    let listingsByBrand: { brand: string; count: number }[];
+    if (brandStatsResult.data && brandStatsResult.data.length > 0) {
+      listingsByBrand = (brandStatsResult.data as { brand: string; count: number }[])
+        .sort((a, b) => b.count - a.count)
+        .slice(0, 5);
+    } else {
+      const { data: brandRaw } = await admin
+        .from("listings")
+        .select("brand")
+        .eq("status", "approved")
+        .limit(2000);
+      const brandMap: Record<string, number> = {};
+      brandRaw?.forEach((l) => { brandMap[l.brand] = (brandMap[l.brand] ?? 0) + 1; });
+      listingsByBrand = Object.entries(brandMap)
+        .map(([brand, count]) => ({ brand, count }))
+        .sort((a, b) => b.count - a.count)
+        .slice(0, 5);
+    }
 
-    const cityMap: Record<string, number> = {};
-    cityStats?.forEach((l) => { cityMap[l.city] = (cityMap[l.city] ?? 0) + 1; });
-    const listingsByCity = Object.entries(cityMap)
-      .map(([city, count]) => ({ city, count }))
-      .sort((a, b) => b.count - a.count)
-      .slice(0, 5);
+    let listingsByCity: { city: string; count: number }[];
+    if (cityStatsResult.data && cityStatsResult.data.length > 0) {
+      listingsByCity = (cityStatsResult.data as { city: string; count: number }[])
+        .sort((a, b) => b.count - a.count)
+        .slice(0, 5);
+    } else {
+      const { data: cityRaw } = await admin
+        .from("listings")
+        .select("city")
+        .eq("status", "approved")
+        .limit(2000);
+      const cityMap: Record<string, number> = {};
+      cityRaw?.forEach((l) => { cityMap[l.city] = (cityMap[l.city] ?? 0) + 1; });
+      listingsByCity = Object.entries(cityMap)
+        .map(([city, count]) => ({ city, count }))
+        .sort((a, b) => b.count - a.count)
+        .slice(0, 5);
+    }
 
-    const statusMap: Record<string, number> = {};
-    statusStats?.forEach((l) => { statusMap[l.status] = (statusMap[l.status] ?? 0) + 1; });
-    const listingsByStatus = Object.entries(statusMap).map(([status, count]) => ({ status, count }));
+    let listingsByStatus: { status: string; count: number }[];
+    if (statusStatsResult.data && statusStatsResult.data.length > 0) {
+      listingsByStatus = statusStatsResult.data as { status: string; count: number }[];
+    } else {
+      const { data: statusRaw } = await admin
+        .from("listings")
+        .select("status")
+        .limit(5000);
+      const statusMap: Record<string, number> = {};
+      statusRaw?.forEach((l) => { statusMap[l.status] = (statusMap[l.status] ?? 0) + 1; });
+      listingsByStatus = Object.entries(statusMap).map(([status, count]) => ({ status, count }));
+    }
 
     const totalRevenueBase = payments?.reduce((sum, p) => sum + Number(p.amount), 0) ?? 0;
     const prevRevenueBase = prevPayments?.reduce((sum, p) => sum + Number(p.amount), 0) ?? 0;

@@ -29,7 +29,7 @@ export default async function AdminAuditPage({ searchParams }: { searchParams: P
     .from("admin_actions")
     .select("*, profiles!admin_actions_admin_user_id_fkey(full_name)")
     .order("created_at", { ascending: false })
-    .limit(200);
+    .limit(500); // TODO: replace with cursor-based pagination when audit log grows large
 
   if (q) {
     query = query.or(`action.ilike.%${q}%,note.ilike.%${q}%`);

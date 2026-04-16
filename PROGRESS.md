@@ -278,7 +278,48 @@
 - Güncel `schema.sql` gerçek Supabase veritabanına uygulanmalı ve production veri modeli senkronize edilmeli.
 - Ardından gerçek DB üzerinde chat, corporate profile ve ekspertiz belge akışları için integration smoke test yapılmalı.
 
-## Favorites Feature Audit & Fixes (2026-04-17)
+## Admin Moderation Queue Audit & Fixes (2026-04-17)
+
+### Tespit ve Düzeltilen Sorunlar
+
+**PERF [YÜKSEK]: `getAdminAnalytics` tüm listings tablosunu çekiyordu**
+- `select("brand").limit(5000)` + `select("city").limit(5000)` + `select("status")` (limitsiz)
+- Her admin panel açılışında binlerce satır transfer ediliyordu
+- Düzeltme: RPC-first yaklaşım — `get_listings_by_brand_count()`, `get_listings_by_city_count()`, `get_listings_by_status_count()` DB fonksiyonları
+- RPC mevcut değilse 2000 limitli fallback ile in-memory GROUP BY
+- Migration SQL: `scripts/migrations/add-analytics-rpc-functions.sql`
+
+**BUG [ORTA]: `AdminReportsModeration` nullable report.id ile note state karışabiliyordu**
+- `notesByReportId[report.id ?? ""]` — `""` key'i ile farklı raporların notları karışabilirdi
+- Butonlar `report.id ?? ""` ile action tetikliyordu — ID'siz raporlarda boş string action
+- Düzeltme: `report.id` guard eklendi, `!report.id` olan raporlarda butonlar disabled
+
+**PERF [ORTA]: Admin raporlar sayfası 100 ilanın full verisini çekiyordu**
+- `getAllKnownListings()` → tüm ilan verisi (images, expert_inspection, vb.)
+- Sadece `id, title, slug` gerekiyordu
+- Düzeltme: `createSupabaseAdminClient` + `.select("id, title, slug").in("id", listingIds)` ile sadece report'lardaki ilan meta'sı çekiliyor
+
+**PERF [ORTA]: Bulk moderation seri döngü yapıyordu**
+- `for...of` ile her ilan sırasıyla işleniyordu — 50 ilan × (DB + email + notification) = 150+ seri operasyon
+- Düzeltme: 5'li batch `Promise.allSettled` ile paralel işlem — kısmi hata korumalı
+
+**SAFE: Audit log limiti 200 → 500**
+- 200 kayıt sonrası eski aksiyonlar görünmüyordu
+- 500'e yükseltildi, cursor pagination için TODO notu eklendi
+
+### Yeni Dosya
+- `scripts/migrations/add-analytics-rpc-functions.sql` — Analytics aggregation için DB fonksiyonları
+
+### Doğrulama
+- `npm run typecheck` ✅
+- `npm run lint` ✅ (0 errors, 0 warnings)
+- `npm run build` ✅
+
+### Sonraki Adım
+- `scripts/migrations/add-analytics-rpc-functions.sql` Supabase SQL editor'de çalıştırılmalı
+- Çalıştırıldıktan sonra admin panel analytics RPC üzerinden çok daha hızlı çalışır
+
+
 
 ### Tespit ve Düzeltilen Sorunlar
 

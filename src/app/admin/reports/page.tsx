@@ -2,7 +2,7 @@ import { ShieldAlert } from "lucide-react";
 import { AdminReportsModeration } from "@/components/admin/admin-reports-moderation";
 import { requireAdminUser } from "@/lib/auth/session";
 import { getStoredReports } from "@/services/reports/report-submissions";
-import { getAllKnownListings } from "@/services/listings/marketplace-listings";
+import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 
 export const dynamic = "force-dynamic";
 
@@ -10,12 +10,10 @@ export default async function AdminReportsPage({ searchParams }: { searchParams:
   await requireAdminUser();
   const { urgent, show } = await searchParams;
 
-  const [storedReports, knownListings] = await Promise.all([
+  const [storedReports] = await Promise.all([
     getStoredReports(),
-    getAllKnownListings(),
   ]);
 
-  // show=all ise tüm raporları göster, yoksa sadece açık/incelemede olanları
   let actionableReports = show === "all"
     ? storedReports
     : storedReports.filter((report) => report.status === "open" || report.status === "reviewing");
@@ -23,15 +21,23 @@ export default async function AdminReportsPage({ searchParams }: { searchParams:
   if (urgent === "true") {
     actionableReports = actionableReports.filter(r => r.reason === "fake_listing");
   }
-  const listingMetaById = Object.fromEntries(
-    knownListings.map((listing) => [
-      listing.id,
-      {
-        slug: listing.slug,
-        title: listing.title,
-      },
-    ]),
-  );
+
+  // Fetch only the listing meta (id, title, slug) we actually need for the report list.
+  // Avoids loading full listing data (images, expert_inspection, etc.) for every report.
+  const listingIds = [...new Set(actionableReports.map((r) => r.listingId))];
+  let listingMetaById: Record<string, { slug: string; title: string }> = {};
+
+  if (listingIds.length > 0) {
+    const admin = createSupabaseAdminClient();
+    const { data: listingMeta } = await admin
+      .from("listings")
+      .select("id, title, slug")
+      .in("id", listingIds);
+
+    listingMetaById = Object.fromEntries(
+      (listingMeta ?? []).map((l) => [l.id, { slug: l.slug, title: l.title }]),
+    );
+  }
 
   return (
     <main className="space-y-8 p-6 lg:p-8 max-w-full bg-slate-50/30 min-h-full">

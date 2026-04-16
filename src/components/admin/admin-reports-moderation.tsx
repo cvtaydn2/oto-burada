@@ -52,6 +52,7 @@ export function AdminReportsModeration({
   }
 
   const handleStatusUpdate = async (reportId: string, status: ReportStatus) => {
+    if (!reportId) return; // Guard: never act on reports without a DB ID
     setActiveAction(`${reportId}:${status}`);
     setErrorMessage(null);
 
@@ -176,13 +177,14 @@ export function AdminReportsModeration({
                     </label>
                     <textarea
                       id={`report-note-${report.id}`}
-                      value={notesByReportId[report.id ?? ""] ?? ""}
-                      onChange={(event) =>
+                      value={report.id ? (notesByReportId[report.id] ?? "") : ""}
+                      onChange={(event) => {
+                        if (!report.id) return;
                         setNotesByReportId((current) => ({
                           ...current,
-                          [report.id ?? ""]: event.target.value,
-                        }))
-                      }
+                          [report.id!]: event.target.value,
+                        }));
+                      }}
                       placeholder="Opsiyonel not: neden incelemeye alindi, cozuldu veya kapatildi?"
                       rows={3}
                       className="mt-2 min-h-24 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm text-foreground outline-none transition-colors placeholder:text-muted-foreground focus:border-primary"
@@ -206,8 +208,8 @@ export function AdminReportsModeration({
                 <div className="flex flex-col gap-2 sm:flex-row lg:w-44 lg:flex-col">
                   <button
                     type="button"
-                    disabled={actionBusy || report.status === "reviewing"}
-                    onClick={() => void handleStatusUpdate(report.id ?? "", "reviewing")}
+                    disabled={actionBusy || report.status === "reviewing" || !report.id}
+                    onClick={() => report.id && void handleStatusUpdate(report.id, "reviewing")}
                     className="inline-flex h-11 items-center justify-center gap-2 rounded-xl border border-border bg-background px-4 text-sm font-semibold text-foreground transition-colors hover:bg-muted disabled:cursor-not-allowed disabled:opacity-60"
                   >
                     {reviewing ? <LoaderCircle className="size-4 animate-spin" /> : <Eye className="size-4" />}
@@ -216,8 +218,8 @@ export function AdminReportsModeration({
 
                   <button
                     type="button"
-                    disabled={actionBusy || report.status === "resolved"}
-                    onClick={() => void handleStatusUpdate(report.id ?? "", "resolved")}
+                    disabled={actionBusy || report.status === "resolved" || !report.id}
+                    onClick={() => report.id && void handleStatusUpdate(report.id, "resolved")}
                     className="inline-flex h-11 items-center justify-center gap-2 rounded-xl bg-primary px-4 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-60"
                   >
                     {resolved ? <LoaderCircle className="size-4 animate-spin" /> : <ShieldCheck className="size-4" />}
@@ -226,8 +228,8 @@ export function AdminReportsModeration({
 
                   <button
                     type="button"
-                    disabled={actionBusy || report.status === "dismissed"}
-                    onClick={() => void handleStatusUpdate(report.id ?? "", "dismissed")}
+                    disabled={actionBusy || report.status === "dismissed" || !report.id}
+                    onClick={() => report.id && void handleStatusUpdate(report.id, "dismissed")}
                     className="inline-flex h-11 items-center justify-center gap-2 rounded-xl border border-border bg-background px-4 text-sm font-semibold text-foreground transition-colors hover:bg-muted disabled:cursor-not-allowed disabled:opacity-60"
                   >
                     {dismissed ? <LoaderCircle className="size-4 animate-spin" /> : <XCircle className="size-4" />}

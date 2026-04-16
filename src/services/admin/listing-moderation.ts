@@ -135,27 +135,31 @@ export async function moderateListingsWithSideEffects({
   note,
 }: ModerateListingsInput) {
   const uniqueIds = [...new Set(listingIds)];
+
+  // Process in parallel with a concurrency cap of 5 to avoid overwhelming
+  // the DB / email service while still being faster than serial processing.
+  const CONCURRENCY = 5;
   const moderatedListings: Listing[] = [];
   const skippedListingIds: string[] = [];
 
-  for (const listingId of uniqueIds) {
-    const moderatedListing = await moderateListingWithSideEffects({
-      action,
-      adminUserId,
-      listingId,
-      note,
-    });
+  for (let i = 0; i < uniqueIds.length; i += CONCURRENCY) {
+    const batch = uniqueIds.slice(i, i + CONCURRENCY);
+    const results = await Promise.allSettled(
+      batch.map((listingId) =>
+        moderateListingWithSideEffects({ action, adminUserId, listingId, note }),
+      ),
+    );
 
-    if (!moderatedListing) {
-      skippedListingIds.push(listingId);
-      continue;
+    for (let j = 0; j < results.length; j++) {
+      const result = results[j];
+      const listingId = batch[j] as string;
+      if (result.status === "fulfilled" && result.value) {
+        moderatedListings.push(result.value);
+      } else {
+        skippedListingIds.push(listingId);
+      }
     }
-
-    moderatedListings.push(moderatedListing);
   }
 
-  return {
-    moderatedListings,
-    skippedListingIds,
-  };
+  return { moderatedListings, skippedListingIds };
 }
