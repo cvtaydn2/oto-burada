@@ -107,7 +107,7 @@ async function AdminRevenueBadge({
   return (
     <div className="min-w-[140px] rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
       <span className="mb-1 block text-[10px] font-bold uppercase italic text-slate-400">Toplam Hacim</span>
-      <span className="text-xl font-black tracking-tighter text-slate-800">₺{analyticsData.totalRevenue.toLocaleString("tr-TR")}</span>
+      <span className="text-xl font-black tracking-tighter text-slate-800">₺{analyticsData.kpis.totalRevenue.toLocaleString("tr-TR")}</span>
     </div>
   );
 }
@@ -140,7 +140,7 @@ async function AdminMetricsSection({
       />
       <DashboardMetricCard
         label="İlan Artışı"
-        value={String(analyticsData?.totalListings ?? 0)}
+        value={String(analyticsData?.kpis.totalListings ?? 0)}
         helper="Toplam kayıtlı araç"
         icon={Activity}
         tone="emerald"
@@ -149,7 +149,7 @@ async function AdminMetricsSection({
       />
       <DashboardMetricCard
         label="Yeni Üyeler"
-        value={String(analyticsData?.totalUsers ?? 0)}
+        value={String(analyticsData?.kpis.totalUsers ?? 0)}
         helper="Toplam kayıtlı kullanıcı"
         icon={UserPlus}
         tone="indigo"

@@ -65,9 +65,9 @@ describe('admin analytics service', () => {
 
     expect(result).not.toBeNull();
     if (result) {
-      expect(result.totalListings).toBe(100);
-      expect(result.totalUsers).toBe(50);
-      expect(result.totalRevenue).toBe(1500);
+      expect(result.kpis.totalListings).toBe(100);
+      expect(result.kpis.totalUsers).toBe(50);
+      expect(result.kpis.totalRevenue).toBe(1500);
       expect(result.listingsByBrand[0].brand).toBe('BMW');
       expect(result.listingsByBrand[0].count).toBe(2);
     }

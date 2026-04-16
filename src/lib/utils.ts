@@ -36,3 +36,13 @@ export function formatDate(value: string) {
 export function formatPrice(value: number): string {
   return new Intl.NumberFormat("tr-TR", { maximumFractionDigits: 0 }).format(value);
 }
+
+/**
+ * Compact Turkish Lira formatter for filter tags and range displays.
+ * e.g. 1500000 → "₺1.5M", 500000 → "₺500K"
+ */
+export function formatTL(value: number): string {
+  if (value >= 1_000_000) return `₺${(value / 1_000_000).toFixed(1)}M`;
+  if (value >= 1_000) return `₺${(value / 1_000).toFixed(0)}K`;
+  return `₺${value}`;
+}

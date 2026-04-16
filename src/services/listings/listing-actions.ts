@@ -8,12 +8,8 @@ import { captureServerEvent } from "@/lib/monitoring/posthog-server";
 
 /**
  * Server Action to reveal a listing's phone number with security checks.
- * This prevents mass scraping by not including the phone number in the initial page payload.
- */
-/**
- * Server Action to reveal a listing's phone number with security checks.
- * This prevents mass scraping by not including the phone number in the initial page payload.
- * Guests can reveal up to 5 numbers per hour, while logged-in users get more.
+ * Prevents mass scraping by not including the phone number in the initial page payload.
+ * Guests can reveal up to 5 numbers per hour; logged-in users get 20.
  */
 export async function revealListingPhone(listingId: string) {
   const user = await getCurrentUser();

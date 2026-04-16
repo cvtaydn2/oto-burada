@@ -175,7 +175,7 @@ export const listingCreateSchema: z.ZodType<ListingCreateInput> = z.object({
     .regex(/^[A-HJ-NPR-Z0-9]+$/i, "Geçersiz şasi numarası formatı (I, O, Q harfleri içermez)"),
   licensePlate: z.string().trim().min(5, "Geçerli bir plaka gir").max(12, "Gecersiz plaka").nullable().optional(),
   tramerAmount: nonNegativeNumberSchema.nullable().optional(),
-  damageStatusJson: z.record(z.string(), z.any()).nullable().optional(),
+  damageStatusJson: z.record(z.string(), z.string()).nullable().optional(),
   images: z
     .array(listingImageSchema)
     .min(minimumListingImages, "En az 3 fotoğraf eklemelisin"),
@@ -205,7 +205,7 @@ export const listingCreateFormSchema: z.ZodType<ListingCreateFormValues> = z.obj
     .regex(/^[A-HJ-NPR-Z0-9]+$/i, "Geçersiz şasi numarası formatı (I, O, Q harfleri içermez)"),
   licensePlate: z.string().trim().min(5, "Geçerli bir plaka gir").max(12, "Gecersiz plaka").nullable().optional(),
   tramerAmount: nonNegativeNumberSchema.nullable().optional(),
-  damageStatusJson: z.record(z.string(), z.any()).nullable().optional(),
+  damageStatusJson: z.record(z.string(), z.string()).nullable().optional(),
   expertInspection: expertInspectionSchema.optional(),
   images: z
     .array(
@@ -285,7 +285,7 @@ export const listingSchema: z.ZodType<Listing> = z.object({
   vin: z.string().trim().length(17).optional().nullable(),
   licensePlate: z.string().trim().min(5).max(12).nullable().optional(),
   tramerAmount: z.coerce.number().int().min(0).nullable().optional(),
-  damageStatusJson: z.record(z.string(), z.any()).nullable().optional(),
+  damageStatusJson: z.record(z.string(), z.string()).nullable().optional(),
   fraudScore: z.coerce.number().int().min(0).max(100).optional(),
   fraudReason: z.string().nullable().optional(),
   viewCount: z.coerce.number().int().min(0),

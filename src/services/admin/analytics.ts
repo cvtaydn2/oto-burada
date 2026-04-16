@@ -19,10 +19,6 @@ export interface AdminAnalyticsData {
   listingsByBrand: { brand: string; count: number }[];
   listingsByCity: { city: string; count: number }[];
   listingsByStatus: { status: string; count: number }[];
-  totalUsers: number;
-  totalListings: number;
-  totalReports: number;
-  totalRevenue: number;
   userTrend: number;
   listingTrend: number;
   recentTrends: { date: string; listings: number }[];
@@ -46,7 +42,6 @@ export async function getAdminAnalytics(range: string = "30d"): Promise<AdminAna
       { data: statusStats },
       { count: userCount },
       { count: listingCount },
-      { count: reportCount },
       { data: payments },
       { data: trendData },
       { count: newUsersRecent },
@@ -58,12 +53,13 @@ export async function getAdminAnalytics(range: string = "30d"): Promise<AdminAna
       { count: pendingApprovalCount },
       { count: professionalUserCount },
     ] = await Promise.all([
-      admin.from("listings").select("brand").limit(1000),
-      admin.from("listings").select("city").limit(1000),
+      // Brand aggregation: fetch only brand column, limited to top candidates
+      // At scale this should be a DB-level GROUP BY via RPC — acceptable for MVP
+      admin.from("listings").select("brand").eq("status", "approved").limit(5000),
+      admin.from("listings").select("city").eq("status", "approved").limit(5000),
       admin.from("listings").select("status"),
       admin.from("profiles").select("*", { count: "exact", head: true }),
       admin.from("listings").select("*", { count: "exact", head: true }),
-      admin.from("reports").select("*", { count: "exact", head: true }),
       admin.from("payments").select("amount").eq("status", "success"),
       admin.from("listings").select("created_at").gte("created_at", rangeStart),
       admin.from("profiles").select("*", { count: "exact", head: true }).gte("created_at", rangeStart),
@@ -130,10 +126,6 @@ export async function getAdminAnalytics(range: string = "30d"): Promise<AdminAna
       listingsByBrand,
       listingsByCity,
       listingsByStatus,
-      totalUsers: userCount ?? 0,
-      totalListings: listingCount ?? 0,
-      totalReports: reportCount ?? 0,
-      totalRevenue: totalRevenueBase,
       userTrend: newUsersRecent
         ? Math.round((newUsersRecent / Math.max(1, (userCount ?? 1) - newUsersRecent)) * 100)
         : 0,

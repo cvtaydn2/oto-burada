@@ -27,6 +27,11 @@ export function getDistrictsForCity(
   return cities.find((item) => item.city === city)?.districts ?? [];
 }
 
+/**
+ * @deprecated Client-side filtering is no longer used.
+ * All filtering is performed at the database level via `getFilteredDatabaseListings`.
+ * This function remains for reference and potential unit testing only.
+ */
 export function filterListings(
   listings: Listing[],
   filters: ListingFilters,
@@ -100,6 +105,10 @@ export function filterListings(
   return sortListings(filtered, filters.sort);
 }
 
+/**
+ * @deprecated Used only by `filterListings` which is itself deprecated.
+ * Sorting is handled at the database level.
+ */
 export function sortListings(
   listings: Listing[],
   sort: ListingSortOption = "newest",

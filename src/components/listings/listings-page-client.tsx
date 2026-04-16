@@ -9,7 +9,7 @@ import Link from "next/link"
 import { type Listing, type ListingFilters, type BrandCatalogItem, type CityOption } from "@/types"
 import { CarCard } from "@/components/modules/listings/car-card"
 import { ListingsGridSkeleton } from "@/components/listings/listings-grid-skeleton"
-import { cn } from "@/lib/utils"
+import { cn, formatTL } from "@/lib/utils"
 import { createSearchParamsFromListingFilters } from "@/services/listings/listing-filters"
 
 const SmartFilters = dynamic(
@@ -531,8 +531,7 @@ export function ListingsPageClient({
   )
 }
 
-function buildPageItems(currentPage: number, totalPages: number): Array<number | "ellipsis"> {
-  if (totalPages <= 7) {
+function buildPageItems(currentPage: number, totalPages: number): Array<number | "ellipsis"> {  if (totalPages <= 7) {
     return Array.from({ length: totalPages }, (_, index) => index + 1)
   }
   if (currentPage <= 3) {
@@ -565,8 +564,3 @@ function FilterTag({ label, onRemove }: { label: string; onRemove: () => void })
   )
 }
 
-function formatTL(value: number): string {
-  if (value >= 1_000_000) return `₺${(value / 1_000_000).toFixed(1)}M`
-  if (value >= 1_000) return `₺${(value / 1_000).toFixed(0)}K`
-  return `₺${value}`
-}

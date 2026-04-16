@@ -40,8 +40,8 @@ export function useNotifications(userId?: string) {
           queryClient.invalidateQueries({ queryKey: ["notifications", userId] });
           
           // Show browser notification if permitted
-          if (Notification.permission === "granted") {
-            new Notification(payload.new.title, {
+          if (typeof window !== "undefined" && window.Notification?.permission === "granted") {
+            new window.Notification(payload.new.title, {
               body: payload.new.message,
             });
           }

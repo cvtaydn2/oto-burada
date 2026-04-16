@@ -25,20 +25,32 @@ export async function getUserListingCounts(userId: string): Promise<{
   const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
   const startOfYear = new Date(now.getFullYear(), 0, 1).toISOString();
 
-  const { data, error } = await admin
-    .from("listings")
-    .select("created_at")
-    .eq("seller_id", userId)
-    .neq("status", "archived");
+  // Three parallel COUNT queries — no row data transferred, DB does the counting
+  const [totalResult, monthlyResult, yearlyResult] = await Promise.all([
+    admin
+      .from("listings")
+      .select("*", { count: "exact", head: true })
+      .eq("seller_id", userId)
+      .neq("status", "archived"),
+    admin
+      .from("listings")
+      .select("*", { count: "exact", head: true })
+      .eq("seller_id", userId)
+      .neq("status", "archived")
+      .gte("created_at", startOfMonth),
+    admin
+      .from("listings")
+      .select("*", { count: "exact", head: true })
+      .eq("seller_id", userId)
+      .neq("status", "archived")
+      .gte("created_at", startOfYear),
+  ]);
 
-  if (error || !data) {
-    return { monthly: 0, yearly: 0, total: 0 };
-  }
-
-  const monthly = data.filter((l) => new Date(l.created_at) >= new Date(startOfMonth)).length;
-  const yearly = data.filter((l) => new Date(l.created_at) >= new Date(startOfYear)).length;
-
-  return { monthly, yearly, total: data.length };
+  return {
+    total: totalResult.count ?? 0,
+    monthly: monthlyResult.count ?? 0,
+    yearly: yearlyResult.count ?? 0,
+  };
 }
 
 export async function checkListingLimit(userId: string, limits: ListingLimits = DEFAULT_LISTING_LIMITS): Promise<{
