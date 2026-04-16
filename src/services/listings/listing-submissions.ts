@@ -410,11 +410,11 @@ export async function getDatabaseListings(options?: {
       }
 
       if (filters.city) {
-        query = query.eq("city", filters.city);
+        query = query.ilike("city", filters.city);
       }
 
       if (filters.district) {
-        query = query.eq("district", filters.district);
+        query = query.ilike("district", filters.district);
       }
 
       if (filters.fuelType) {
@@ -518,11 +518,13 @@ export async function getDatabaseListings(options?: {
     });
   }
   
-  if (primaryResult.data && primaryResult.data.length > 0) {
-    return primaryResult.data.map(mapListingRow);
+  // Primary query succeeded (even with 0 results) — return immediately.
+  // Only fall back when the primary query itself errors (schema mismatch, etc.).
+  if (!primaryResult.error) {
+    return (primaryResult.data ?? []).map(mapListingRow);
   }
 
-  // Fallback if primary fails or returns no data (could be schema mismatch)
+  // Primary errored — attempt a simpler fallback query (no profile join)
   const fallbackResult = await applyListingQueryOptions(legacyListingSelect).returns<ListingRow[]>();
 
   if (fallbackResult.error || !fallbackResult.data) {
@@ -550,7 +552,7 @@ export interface PaginatedListingsResult {
  * Shared by both the data query and the count query to avoid duplication.
  */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-function applyListingFilterPredicates<T extends { eq: any; gte: any; lte: any; filter: any; textSearch: any }>(
+function applyListingFilterPredicates<T extends { eq: any; gte: any; lte: any; filter: any; textSearch: any; ilike: any }>(
   query: T,
   filters: ListingFilters,
 ): T {
@@ -558,8 +560,10 @@ function applyListingFilterPredicates<T extends { eq: any; gte: any; lte: any; f
   if (filters.brand) query = query.eq("brand", filters.brand);
   if (filters.model) query = query.eq("model", filters.model);
   if (filters.carTrim) query = query.eq("car_trim", filters.carTrim);
-  if (filters.city) query = query.eq("city", filters.city);
-  if (filters.district) query = query.eq("district", filters.district);
+  // city can come as an exact name (from filter panel) or a slug/lowercase (from SEO routes).
+  // We use ilike for case-insensitive matching so both "İstanbul" and "istanbul" work.
+  if (filters.city) query = query.ilike("city", filters.city);
+  if (filters.district) query = query.ilike("district", filters.district);
   if (filters.fuelType) query = query.eq("fuel_type", filters.fuelType);
   if (filters.transmission) query = query.eq("transmission", filters.transmission);
   if (filters.minPrice !== undefined) query = query.gte("price", filters.minPrice);
@@ -977,16 +981,21 @@ export async function moderateDatabaseListing(
     updated_at: now,
   };
 
-  // Set published_at when approving for the first time (expiry tracking)
+  // Set published_at when approving (first time or re-approval after rejection)
   if (status === "approved") {
     updatePayload.published_at = now;
   }
 
+  // Allow moderation from any non-terminal state:
+  //   pending  → approved | rejected   (normal flow)
+  //   rejected → approved              (admin re-approves after fix)
+  //   approved → rejected              (admin pulls back a live listing)
+  // archived / draft are terminal — cannot be moderated.
   const { data, error } = await admin
     .from("listings")
     .update(updatePayload)
     .eq("id", listingId)
-    .eq("status", "pending")
+    .in("status", ["pending", "rejected", "approved"])
     .select("id")
     .maybeSingle<{ id: string }>();
 
@@ -1007,6 +1016,7 @@ export async function moderateDatabaseListing(
   }
 
   if (!data) {
+    // Listing not found or in a terminal state (archived/draft)
     return null;
   }
 

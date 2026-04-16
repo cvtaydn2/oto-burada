@@ -1,6 +1,5 @@
 "use server";
 
-import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { revalidatePath } from "next/cache";
 import { Profile } from "@/types/domain";
@@ -106,12 +105,14 @@ export async function getAllUsers(query?: string, page = 1, limit = 20) {
 }
 
 export async function updateUserRole(userId: string, role: "user" | "admin" | "professional") {
-  const supabase = await createSupabaseServerClient();
+  // Admin client gerekli — profile tablosundaki role alanı RLS ile korunuyor,
+  // normal session client admin haricinde bu satırı update edemez.
+  const admin = createSupabaseAdminClient();
 
   const nextRole = role === "admin" ? "admin" : "user";
   const nextUserType = role === "professional" ? "professional" : "individual";
 
-  const { error } = await supabase
+  const { error } = await admin
     .from("profiles")
     .update({
       role: nextRole,
@@ -120,13 +121,26 @@ export async function updateUserRole(userId: string, role: "user" | "admin" | "p
     .eq("id", userId);
 
   if (error) throw new Error(`Rol güncellenemedi: ${error.message}`);
+
+  // Auth app_metadata'yı da senkronize et — middleware/JWT claim için
+  if (role === "admin") {
+    await admin.auth.admin.updateUserById(userId, {
+      app_metadata: { role: "admin" },
+    });
+  } else {
+    // Downgrade — app_metadata'dan admin rolünü kaldır
+    await admin.auth.admin.updateUserById(userId, {
+      app_metadata: { role: "user" },
+    });
+  }
+
   return { success: true };
 }
 
 export async function banUser(userId: string, reason: string) {
-  const supabase = await createSupabaseServerClient();
+  const admin = createSupabaseAdminClient();
   
-  const { error } = await supabase
+  const { error } = await admin
     .from("profiles")
     .update({ 
        is_banned: true,
@@ -140,9 +154,9 @@ export async function banUser(userId: string, reason: string) {
 }
 
 export async function verifyUserBusiness(userId: string) {
-  const supabase = await createSupabaseServerClient();
+  const admin = createSupabaseAdminClient();
   
-  const { error } = await supabase
+  const { error } = await admin
     .from("profiles")
     .update({ 
        verified_business: true 
@@ -204,21 +218,22 @@ function mapProfile(p: ProfileRow) {
 }
 
 export async function getUserDetail(userId: string): Promise<UserDetailData | null> {
-  const supabase = await createSupabaseServerClient();
+  // Admin client — kullanıcı detayı ve ödeme geçmişi RLS kısıtlaması olmadan okunmalı
+  const admin = createSupabaseAdminClient();
 
   const [
     { data: profile },
     { data: payments },
     { data: listings },
   ] = await Promise.all([
-    supabase.from("profiles").select("*").eq("id", userId).single(),
-    supabase
+    admin.from("profiles").select("*").eq("id", userId).single(),
+    admin
       .from("payments")
       .select("id, amount, provider, status, metadata, created_at")
       .eq("user_id", userId)
       .order("created_at", { ascending: false })
       .limit(50),
-    supabase
+    admin
       .from("listings")
       .select("id, title, status, featured, featured_until, urgent_until, highlighted_until, created_at")
       .eq("seller_id", userId)
@@ -261,9 +276,9 @@ export async function grantCreditsToUser(
   note: string,
   adminUserId: string,
 ): Promise<{ success: boolean; error?: string }> {
-  const supabase = await createSupabaseServerClient();
+  const admin = createSupabaseAdminClient();
 
-  const { data: profile } = await supabase
+  const { data: profile } = await admin
     .from("profiles")
     .select("balance_credits")
     .eq("id", userId)
@@ -271,7 +286,7 @@ export async function grantCreditsToUser(
 
   const currentCredits = (profile?.balance_credits as number) || 0;
 
-  const { error } = await supabase
+  const { error } = await admin
     .from("profiles")
     .update({ balance_credits: currentCredits + credits })
     .eq("id", userId);
@@ -281,8 +296,7 @@ export async function grantCreditsToUser(
     return { success: false, error: error.message };
   }
 
-  // Audit log
-  const admin = createSupabaseAdminClient();
+  // Audit log — aynı admin client'ı kullan
   await admin.from("admin_actions").insert({
     action: "approve",
     admin_user_id: adminUserId,

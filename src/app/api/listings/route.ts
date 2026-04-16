@@ -3,6 +3,7 @@ import { captureServerError, captureServerEvent } from "@/lib/monitoring/posthog
 import { rateLimitProfiles } from "@/lib/utils/rate-limit";
 import { enforceRateLimit, getRateLimitKey, getUserRateLimitKey } from "@/lib/utils/rate-limit-middleware";
 import { sanitizeText, sanitizeDescription } from "@/lib/utils/sanitize";
+import { isValidRequestOrigin } from "@/lib/security";
 import { issuesToFieldErrors } from "@/lib/utils/validation-helpers";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { listingCreateFormSchema, listingCreateSchema } from "@/lib/validators";
@@ -39,13 +40,9 @@ export async function GET(request: Request) {
 }
 
 export async function POST(request: Request) {
-  // Simple CSRF Check: Verify Origin and Referer
-  const origin = request.headers.get("origin");
-  const host = request.headers.get("host");
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL || "";
-
-  if (origin && !appUrl.includes(origin) && !origin.includes(host || "localhost")) {
-     return apiError(API_ERROR_CODES.BAD_REQUEST, "Geçersiz istek kaynağı (CSRF).", 403);
+  // CSRF check — reject cross-origin requests from untrusted origins
+  if (!isValidRequestOrigin(request)) {
+    return apiError(API_ERROR_CODES.BAD_REQUEST, "Geçersiz istek kaynağı (CSRF).", 403);
   }
 
   const ipRateLimit = await enforceRateLimit(

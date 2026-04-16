@@ -14,11 +14,7 @@ export interface AdminRole {
 export async function getAdminRoles(): Promise<AdminRole[]> {
   const admin = createSupabaseAdminClient();
 
-  const { data: roles } = await admin
-    .from("roles")
-    .select("*")
-    .order("name");
-
+  // profiles tablosundan rol dağılımını hesapla
   const { data: profiles } = await admin
     .from("profiles")
     .select("role");
@@ -29,6 +25,7 @@ export async function getAdminRoles(): Promise<AdminRole[]> {
     roleCountMap[r] = (roleCountMap[r] ?? 0) + 1;
   });
 
+  // Sistem rolleri — DB'de ayrı bir roles tablosu yok, bunlar sabit tanımlar
   const defaultRoles: AdminRole[] = [
     {
       id: "admin",
@@ -64,56 +61,22 @@ export async function getAdminRoles(): Promise<AdminRole[]> {
     },
   ];
 
-  if (roles && roles.length > 0) {
-    const customRoles: AdminRole[] = roles.map((r) => ({
-      id: r.id,
-      name: r.name,
-      description: r.description,
-      permissions: r.permissions || [],
-      user_count: roleCountMap[r.id] ?? 0,
-      is_system: false,
-    }));
-    return [...defaultRoles, ...customRoles];
-  }
-
   return defaultRoles;
 }
 
-export async function createRole(name: string, description: string, permissions: string[]) {
-  const admin = createSupabaseAdminClient();
-  
-  const { error } = await admin
-    .from("roles")
-    .insert({
-      name,
-      description,
-      permissions,
-    });
-
-  if (error) throw error;
-  return { success: true };
+// These stub functions exist for forward-compatibility.
+// When a custom roles table is added to the DB, replace the throw with real logic.
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+export async function createRole(_name: string, _description: string, _permissions: string[]): Promise<never> {
+  throw new Error("Özel rol oluşturma henüz desteklenmiyor.");
 }
 
-export async function updateRole(id: string, updates: { name?: string; description?: string; permissions?: string[] }) {
-  const admin = createSupabaseAdminClient();
-  
-  const { error } = await admin
-    .from("roles")
-    .update(updates)
-    .eq("id", id);
-
-  if (error) throw error;
-  return { success: true };
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+export async function updateRole(_id: string, _updates: { name?: string; description?: string; permissions?: string[] }): Promise<never> {
+  throw new Error("Sistem rolleri değiştirilemez.");
 }
 
-export async function deleteRole(id: string) {
-  const admin = createSupabaseAdminClient();
-  
-  const { error } = await admin
-    .from("roles")
-    .delete()
-    .eq("id", id);
-
-  if (error) throw error;
-  return { success: true };
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+export async function deleteRole(_id: string): Promise<never> {
+  throw new Error("Sistem rolleri silinemez.");
 }

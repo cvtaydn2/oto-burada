@@ -6,6 +6,7 @@ import { sanitizeDescription } from "@/lib/utils/sanitize";
 import { issuesToFieldErrors } from "@/lib/utils/validation-helpers";
 import { reportCreateSchema } from "@/lib/validators";
 import { apiSuccess, apiError, API_ERROR_CODES } from "@/lib/utils/api-response";
+import { isValidRequestOrigin } from "@/lib/security";
 import {
   createOrUpdateDatabaseReport,
   getDatabaseActiveReport,
@@ -16,10 +17,7 @@ import { captureServerEvent } from "@/lib/monitoring/posthog-server";
 
 export async function POST(request: Request) {
   // CSRF check
-  const origin = request.headers.get("origin");
-  const host = request.headers.get("host");
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "";
-  if (origin && !appUrl.includes(origin) && !origin.includes(host ?? "localhost")) {
+  if (!isValidRequestOrigin(request)) {
     return apiError(API_ERROR_CODES.BAD_REQUEST, "Geçersiz istek kaynağı.", 403);
   }
 

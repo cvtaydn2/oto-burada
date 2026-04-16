@@ -278,7 +278,97 @@
 - Güncel `schema.sql` gerçek Supabase veritabanına uygulanmalı ve production veri modeli senkronize edilmeli.
 - Ardından gerçek DB üzerinde chat, corporate profile ve ekspertiz belge akışları için integration smoke test yapılmalı.
 
-## Temizlik & Refactor (2026-04-15)
+## Derin Semantik Audit & Bug Fixes (2026-04-17)
+
+### Bulunan ve Düzeltilen Sorunlar
+
+**BUG: `listing-views.ts` — anonymous view insert'te `viewed_on` eksikti**
+- `listing_views` tablosuna anonim IP bazlı insert'te `viewed_on` alanı gönderilmiyordu
+- DB'deki `listing_views_anonymous_daily_dedup_idx` unique index çalışmıyor, günlük dedup bypass ediliyordu
+- Her sayfayı yükleme yeni bir view sayıyor, `view_count` şişiyordu
+- Düzeltme: insert payload'a `viewed_on: viewedOn` eklendi
+
+**BUG: `listing/[slug]/page.tsx` — `viewerId` authenticated user'dan geçirilmiyordu**
+- Giriş yapmış kullanıcının detay sayfası açması IP üzerinden anonim view kaydettiriyordu
+- `currentUser.id` artık `recordListingView`'a `viewerId` olarak geçiriliyor
+- Kullanıcı bazlı dedup artık çalışıyor
+
+**BUG: `listing/[slug]/page.tsx` — gallery link UUID ile bozuluyordu**
+- `seller?.businessSlug || seller?.id` → kurumsal satıcısı olmayan satıcılar için UUID slug üretiliyordu
+- `/gallery/uuid` → `getGalleryBySlug(uuid)` `notFound()` döndürüyor
+- Düzeltme: `businessSlug` varsa `/gallery/[slug]`, yoksa `/seller/[id]` rotası kullanılıyor
+
+**BUG: `admin/users.ts` — admin server action'lar `createSupabaseServerClient` kullanıyordu**
+- `updateUserRole`, `banUser`, `verifyUserBusiness`, `getUserDetail`, `grantCreditsToUser`
+  hepsi normal session client ile profiles tablosunu güncelliyor
+- RLS politikası: `profiles_update_self_or_admin` → sadece `auth.uid() = id` veya `is_admin()` güncelle
+- Normal session client ile admin, başkasının profilini güncelleyemiyor — silent fail
+- Tüm admin mutasyon fonksiyonları `createSupabaseAdminClient` kullanacak şekilde düzeltildi
+- `updateUserRole` aynı zamanda `auth.app_metadata.role` senkronize ediyor — JWT claim ve middleware güncelleniyor
+
+**BUG: `admin/roles.ts` — var olmayan `roles` tablosunu sorguluyordu**
+- Schema'da `roles` tablosu yok, sorgu her seferinde DB hatası döndürüyor
+- Hata sessizce yutulduğu için sayfa render oluyordu ama `getAdminRoles` bozuktu
+- Düzeltme: `roles` tablosu sorgusu kaldırıldı; roller sabit sistem tanımları olarak döndürülüyor
+- `createRole`/`updateRole`/`deleteRole` açık `throw new Error` ile "henüz desteklenmiyor" diyor
+
+**BUG: `middleware.ts` — CSRF dev-mode karşılaştırması tutarsızdı**
+- `origin: "http://localhost:3000"` → `originHost: "localhost:3000"`
+- `host: "localhost:3000"` → karşılaştırma doğru çalışıyordu ANCAK
+- `origin: "http://localhost:3000"` + `host: "localhost:3001"` → dev'de hiç kontrol yoktu
+- Production'da `origin !== allowedOrigin` (string eşitliği) yerine `originHost !== allowedHost` (host karşılaştırması) daha sağlıklı
+- Malformed origin'ler artık `try/catch` içinde parse ediliyor, 403 dönüyor
+- Localhost origin'ler dev'de her durumda geçerli sayılıyor
+
+### Doğrulama
+- `npm run typecheck` ✅
+- `npm run lint` ✅ (0 errors, 0 warnings)
+- `npm run build` ✅
+
+### Sonraki Adım
+- `listing_views` dedup DB index'lerinin production'da doğru çalıştığından emin olmak için smoke test yapılmalı
+- Admin kullanıcı rol değişikliği sonrası JWT token'ın yenilenmesi için kullanıcının tekrar login olması gerekiyor — bu beklenen davranış; ileride realtime rol güncellemesi için Supabase `auth.setSession` akışı düşünülebilir
+
+
+
+### Düzeltilen Sorunlar
+
+**BUG: `getDatabaseListings` yanlış fallback mantığı**
+- 0 sonuç döndüren başarılı sorgular artık gereksiz fallback'e düşmüyor
+- Fallback sadece DB hatası olduğunda devreye giriyor (schema mismatch vb.)
+- Etki: Boş sonuç döndürmesi gereken senaryolarda (yeni ortam, filtreli sorgu) double round-trip kaldırıldı
+
+**BUG: `moderateDatabaseListing` sadece `pending` ilan modere edebiliyordu**
+- `.eq("status", "pending")` koşulu `.in("status", ["pending", "rejected", "approved"])` olarak genişletildi
+- Admin artık reddedilmiş bir ilanı tekrar onaylayabiliyor (rejected → approved)
+- Admin artık yayındaki bir ilanı geri çekebiliyor (approved → rejected)
+- `draft` ve `archived` terminal durumlar korunuyor — bunlar modere edilemiyor
+
+**BUG: `citySlug` filtresi DB sorgusunda çalışmıyordu**
+- `applyListingFilterPredicates` ve `getDatabaseListings` içindeki city/district filtreleri `.eq()` → `.ilike()` olarak değiştirildi
+- SEO rotası `/satilik/[brand]/[[...city]]`'den gelen lowercase slug ("istanbul") artık DB'deki "İstanbul" ile eşleşiyor
+- Türkçe karakter duyarsız case-insensitive eşleşme sağlandı
+
+**SAFE: `lib/security/` klasörü anlamlı hale getirildi**
+- `src/lib/security/index.ts` oluşturuldu
+- `isValidRequestOrigin()` helper eklendi — dağınık inline CSRF kontrollerini merkezileştiriyor
+- `sanitize`, `rate-limit`, `rate-limit-middleware`, `ip` helper'ları re-export ediliyor
+- `favorites/route.ts`, `reports/route.ts`, `listings/route.ts` inline CSRF bloklarını kaldırıp `isValidRequestOrigin()` kullanıyor
+
+**SAFE: `domain/` layer netleştirildi**
+- `usecases/listing-create.ts` — `ListingRepository.createPendingListing` dönüş tipi `Promise<Listing | null>` olarak düzeltildi (önceki `Promise<unknown>`)
+- `domain/index.ts` — re-export surface genişletildi; tüm domain entity tipleri, guard'lar ve use-case'ler buradan erişilebilir
+
+### Doğrulama
+- `npm run typecheck` ✅
+- `npm run lint` ✅
+- `npm run build` ✅
+
+### Sonraki Adım
+- Admin panelinde moderated-already durumundaki ilanlar için UI geri bildirimi eklenebilir (approved → reject yapıldığında banner)
+- `ilike` sorgusu tüm şehir/ilçe isimleri DB'de başharfi büyük kaydedilmişse yeterli; ancak eğer karışık kayıtlar varsa normalization migration gerekebilir
+
+
 
 ### EIDS & GA4 Kaldırma
 - **GA4 Kaldırıldı**: src/lib/analytics.tsx içindeki tüm GA4 kodu (gtag, dataLayer, G-XXXXXXXXXX, initAnalytics) silindi. Dosya artık sadece PostHog re-export ediyor.

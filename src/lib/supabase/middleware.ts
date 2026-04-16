@@ -91,27 +91,34 @@ export async function updateSession(request: NextRequest) {
     const host = request.headers.get("host");
     const appUrl = process.env.NEXT_PUBLIC_APP_URL;
     
-    // In production, enforce origin check
-    if (process.env.NODE_ENV === "production" && appUrl) {
-      const allowedOrigin = new URL(appUrl).origin;
-      if (origin !== allowedOrigin) {
+    if (origin) {
+      let originHost: string | null = null;
+      try {
+        originHost = new URL(origin).host;
+      } catch {
+        // Malformed origin — reject
         return new NextResponse(
           JSON.stringify({ error: "Invalid origin" }),
-          { status: 403, headers: { "Content-Type": "application/json" } }
+          { status: 403, headers: { "Content-Type": "application/json" } },
         );
       }
-    } else if (origin && host) {
-      // In dev, at least check if origin matches host if both are present
-      try {
-        const originHost = new URL(origin).host;
-        if (originHost !== host) {
+
+      const isLocalhost = originHost.startsWith("localhost") || originHost.startsWith("127.0.0.1");
+
+      if (process.env.NODE_ENV === "production" && appUrl) {
+        const allowedHost = new URL(appUrl).host;
+        if (originHost !== allowedHost) {
           return new NextResponse(
-            JSON.stringify({ error: "CSRF mismatch" }),
-            { status: 403, headers: { "Content-Type": "application/json" } }
+            JSON.stringify({ error: "Invalid origin" }),
+            { status: 403, headers: { "Content-Type": "application/json" } },
           );
         }
-      } catch {
-        // Ignore invalid URLs in origin if they happen
+      } else if (!isLocalhost && host && originHost !== host) {
+        // In dev: block mismatched non-localhost origins
+        return new NextResponse(
+          JSON.stringify({ error: "CSRF mismatch" }),
+          { status: 403, headers: { "Content-Type": "application/json" } },
+        );
       }
     }
   }

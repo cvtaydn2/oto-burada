@@ -36,7 +36,7 @@ export async function recordListingView(
       return;
     }
   } else if (options.viewerIp) {
-    // Anonymous user: check IP + 24 hour window
+    // Anonymous user: check IP + daily dedup via viewed_on
     const { data: existing } = await admin
       .from("listing_views")
       .select("id")
@@ -47,13 +47,14 @@ export async function recordListingView(
       .limit(1);
 
     if (existing && existing.length > 0) {
-      return; // Already viewed within 24 hours
+      return; // Already viewed today — skip
     }
 
     await admin.from("listing_views").insert({
       listing_id: listingId,
       viewer_id: null,
       viewer_ip: options.viewerIp,
+      viewed_on: viewedOn,
     });
   }
 

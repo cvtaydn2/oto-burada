@@ -1,17 +1,33 @@
-// Domain-level type aliases for core entities
-// This provides a single source of domain types that can be used across services
-// while still sharing the underlying TS types defined in src/types/domain.ts
+/**
+ * Domain layer public surface.
+ *
+ * Re-exports canonical domain types so callers can import from `@/domain`
+ * instead of reaching into `@/types` or `@/services` directly.
+ * This keeps the domain boundary explicit and easy to evolve.
+ */
 
-export type UserProfile = import("@/types").Profile;
-export type DomainListing = import("@/types").Listing;
-export type DomainListingImage = import("@/types").ListingImage;
-export type DomainListingCreateInput = import("@/types").ListingCreateInput;
-export type DomainListingCreateFormValues = import("@/types").ListingCreateFormValues;
-export type DomainFavorite = import("@/types").Favorite;
-export type DomainReport = import("@/types").Report;
-export type DomainReportCreateInput = import("@/types").ReportCreateInput;
-export type DomainAdminModerationAction = import("@/types").AdminModerationAction;
-export type DomainListingFilters = import("@/types").ListingFilters;
+// Core entity types
+export type {
+  Profile,
+  Listing,
+  ListingImage,
+  ListingCreateInput,
+  ListingCreateFormValues,
+  Favorite,
+  Report,
+  ReportCreateInput,
+  AdminModerationAction,
+  ListingFilters,
+  ExpertInspection,
+  Chat,
+  Message,
+  Notification,
+  SavedSearch,
+} from "@/types";
 
-// Expose a compact namespace-like surface for potential future domain helpers
-export {};
+// Domain guards / auth helpers
+export { ensureAuthenticated, ensureAdmin, getAuthenticatedUserOrThrow } from "@/domain/guards";
+
+// Use-cases
+export { executeListingCreate } from "@/domain/usecases/listing-create";
+export type { ListingRepository, PendingListingCreatePayload } from "@/domain/usecases/listing-create";

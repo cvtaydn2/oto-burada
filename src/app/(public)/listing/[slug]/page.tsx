@@ -101,7 +101,10 @@ export default async function ListingDetailPage({ params }: ListingDetailPagePro
     ?? headersList.get("x-real-ip")
     ?? undefined;
   // Fire-and-forget — view kaydı sayfayı bloklamasın
-  recordListingView(listing.id, { viewerIp }).catch(() => {});
+  recordListingView(listing.id, {
+    viewerId: currentUser?.id,
+    viewerIp,
+  }).catch(() => {});
 
   // Server-side listing view event — fires once per SSR render
   captureServerEvent("listing_viewed", {
@@ -439,12 +442,22 @@ export default async function ListingDetailPage({ params }: ListingDetailPagePro
                 )}
 
                 <div className="mt-4 pt-4 border-t border-gray-100 space-y-3">
-                  <Link href={`/gallery/${seller?.businessSlug || seller?.id}`} className="flex justify-between items-center text-sm font-medium text-gray-600 hover:text-blue-500 transition group">
-                    Satıcının diğer ilanları 
-                    <svg className="size-2.5 text-gray-400 group-hover:text-blue-500 transition-colors" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
-                      <path d="m9 18 6-6-6-6" />
-                    </svg>
-                  </Link>
+                  {seller?.businessSlug && (
+                    <Link href={`/gallery/${seller.businessSlug}`} className="flex justify-between items-center text-sm font-medium text-gray-600 hover:text-blue-500 transition group">
+                      Satıcının diğer ilanları 
+                      <svg className="size-2.5 text-gray-400 group-hover:text-blue-500 transition-colors" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="m9 18 6-6-6-6" />
+                      </svg>
+                    </Link>
+                  )}
+                  {!seller?.businessSlug && (
+                    <Link href={`/seller/${listing.sellerId}`} className="flex justify-between items-center text-sm font-medium text-gray-600 hover:text-blue-500 transition group">
+                      Satıcının diğer ilanları 
+                      <svg className="size-2.5 text-gray-400 group-hover:text-blue-500 transition-colors" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="m9 18 6-6-6-6" />
+                      </svg>
+                    </Link>
+                  )}
                   <Link href="#ekspertiz" className="flex justify-between items-center text-sm font-medium text-gray-600 hover:text-blue-500 transition group">
                     Ekspertiz randevusu al
                     <svg className="size-2.5 text-gray-400 group-hover:text-blue-500 transition-colors" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">

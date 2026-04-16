@@ -2,6 +2,7 @@ import { hasSupabaseEnv, hasSupabaseAdminEnv } from "@/lib/supabase/env";
 import { captureServerEvent } from "@/lib/monitoring/posthog-server";
 import { apiSuccess, apiError, API_ERROR_CODES } from "@/lib/utils/api-response";
 import { requireApiUser } from "@/lib/auth/api-user";
+import { isValidRequestOrigin } from "@/lib/security";
 import {
   addDatabaseFavorite,
   getDatabaseFavoriteIds,
@@ -22,13 +23,7 @@ function getListingIdFromBody(body: unknown): string {
 }
 
 function checkCsrf(request: Request): boolean {
-  const origin = request.headers.get("origin");
-  const host = request.headers.get("host");
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "";
-  if (origin && !appUrl.includes(origin) && !origin.includes(host ?? "localhost")) {
-    return false;
-  }
-  return true;
+  return isValidRequestOrigin(request);
 }
 
 export async function GET() {
