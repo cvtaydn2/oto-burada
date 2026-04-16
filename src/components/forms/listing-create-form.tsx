@@ -423,14 +423,10 @@ export function ListingCreateForm({
     setValue(`images.${index}`, { fileName: "", storagePath: "", url: "" }, { shouldDirty: true });
   };
 
-  const onSubmit = handleSubmit(async (values) => {
-    if (!isEmailVerifiedLocally) {
-      setIsVerifyDialogOpen(true);
-      return;
-    }
-    
+  const submitListing = async (values: ListingCreateFormValues) => {
     clearErrors();
     setSubmitState(initialSubmitState);
+
     try {
       const response = await fetch(isEditing ? `/api/listings/${initialListing?.id}` : "/api/listings", {
         body: JSON.stringify(values),
@@ -449,12 +445,32 @@ export function ListingCreateForm({
         setSubmitState({ message: payload?.error?.message ?? "Bir hata oluştu.", status: "error" });
         return;
       }
-      setSubmitState({ message: "İlan başarıyla kaydedildi.", status: "success" });
-      if (isEditing) router.replace("/dashboard/listings");
-      else router.push("/dashboard/listings");
+
+      setSubmitState({
+        message: isEditing
+          ? "İlan güncellendi."
+          : "İlanın kaydedildi ve moderasyon incelemesine gönderildi.",
+        status: "success",
+      });
+
+      if (isEditing) {
+        router.replace("/dashboard/listings?updated=true");
+        return;
+      }
+
+      router.push("/dashboard/listings?created=pending");
     } catch {
       setSubmitState({ message: "Bağlantı hatası.", status: "error" });
     }
+  };
+
+  const onSubmit = handleSubmit(async (values) => {
+    if (!isEmailVerifiedLocally) {
+      setIsVerifyDialogOpen(true);
+      return;
+    }
+
+    await submitListing(values);
   });
 
   return (
@@ -471,6 +487,13 @@ export function ListingCreateForm({
           <div className="rounded-2xl bg-emerald-50 p-4 border border-emerald-100 flex items-center gap-3 animate-in fade-in zoom-in duration-300 shadow-sm">
             <CheckCircle2 className="size-5 text-emerald-500" />
             <p className="text-sm font-semibold text-emerald-800">{submitState.message}</p>
+          </div>
+        )}
+
+        {submitState.status === "error" && submitState.message && (
+          <div className="rounded-2xl bg-red-50 p-4 border border-red-100 flex items-center gap-3 animate-in fade-in zoom-in duration-300 shadow-sm">
+            <AlertCircle className="size-5 text-red-500" />
+            <p className="text-sm font-semibold text-red-800">{submitState.message}</p>
           </div>
         )}
 
@@ -565,33 +588,7 @@ export function ListingCreateForm({
         onSuccess={() => {
           setIsEmailVerifiedLocally(true);
           setIsVerifyDialogOpen(false);
-          form.handleSubmit(async (values) => {
-            clearErrors();
-            setSubmitState(initialSubmitState);
-            try {
-              const response = await fetch(isEditing ? `/api/listings/${initialListing?.id}` : "/api/listings", {
-                body: JSON.stringify(values),
-                headers: { "Content-Type": "application/json" },
-                method: isEditing ? "PATCH" : "POST",
-              });
-              const payload = await response.json();
-              if (!response.ok || !payload?.success) {
-                const fieldErrors = payload?.error?.fieldErrors as Record<string, string> | undefined;
-                if (fieldErrors) {
-                  Object.entries(fieldErrors).forEach(([field, message]) => {
-                    setError(field as Parameters<typeof setError>[0], { message });
-                  });
-                }
-                setSubmitState({ message: payload?.error?.message ?? "Bir hata oluştu.", status: "error" });
-                return;
-              }
-              setSubmitState({ message: "İlan başarıyla kaydedildi.", status: "success" });
-              if (isEditing) router.replace("/dashboard/listings");
-              else router.push("/dashboard/listings");
-            } catch {
-              setSubmitState({ message: "Bağlantı hatası.", status: "error" });
-            }
-          })();
+          form.handleSubmit(submitListing)();
         }}
       />
     </div>

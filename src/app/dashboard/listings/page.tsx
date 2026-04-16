@@ -14,7 +14,9 @@ export const dynamic = "force-dynamic";
 interface DashboardListingsPageProps {
   searchParams?: Promise<{
     create?: string;
+    created?: string;
     edit?: string;
+    updated?: string;
   }>;
 }
 
@@ -27,6 +29,8 @@ export default async function DashboardListingsPage({ searchParams }: DashboardL
   const resolvedSearchParams = searchParams ? await searchParams : undefined;
   const hasRequestedCreate = resolvedSearchParams?.create === "true";
   const hasRequestedEdit = Boolean(resolvedSearchParams?.edit);
+  const hasCreatedPendingListing = resolvedSearchParams?.created === "pending";
+  const hasUpdatedListing = resolvedSearchParams?.updated === "true";
 
   // Paralel fetch
   const [storedListings, references, profile] = await Promise.all([
@@ -93,6 +97,20 @@ export default async function DashboardListingsPage({ searchParams }: DashboardL
         <div className="rounded-2xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-700 font-bold flex items-center gap-3">
           <div className="size-2 rounded-full bg-amber-500 animate-bounce" />
           İlan bulunamadı veya yetkiniz yok.
+        </div>
+      )}
+
+      {hasCreatedPendingListing && (
+        <div className="rounded-2xl border border-blue-200 bg-blue-50 p-4 text-sm text-blue-700 font-bold flex items-center gap-3">
+          <div className="size-2 rounded-full bg-blue-500 animate-pulse" />
+          İlanın oluşturuldu. Şu anda moderasyon incelemesinde. Sonucu bildirimlerinden takip edebilirsin.
+        </div>
+      )}
+
+      {hasUpdatedListing && (
+        <div className="rounded-2xl border border-emerald-200 bg-emerald-50 p-4 text-sm text-emerald-700 font-bold flex items-center gap-3">
+          <div className="size-2 rounded-full bg-emerald-500 animate-pulse" />
+          İlanın güncellendi.
         </div>
       )}
 

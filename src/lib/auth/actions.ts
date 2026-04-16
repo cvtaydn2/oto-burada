@@ -48,6 +48,7 @@ export async function loginAction(
 
   const values = {
     email: String(formData.get("email") ?? ""),
+    next: String(formData.get("next") ?? ""),
     password: String(formData.get("password") ?? ""),
   };
 
@@ -79,7 +80,12 @@ export async function loginAction(
     };
   }
 
-  redirect("/dashboard");
+  const nextPath =
+    values.next.startsWith("/") && !values.next.startsWith("//")
+      ? values.next
+      : "/dashboard";
+
+  redirect(nextPath);
 }
 
 export async function registerAction(

@@ -9,7 +9,7 @@ import { BulkImportWizard } from "@/components/modules/dashboard/bulk-import-wiz
 import { requireUser } from "@/lib/auth/session";
 
 export default async function BulkImportPage() {
-  const user = await requireUser();
+  await requireUser();
 
   return (
     <div className="container max-w-5xl py-10 space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
@@ -35,7 +35,7 @@ export default async function BulkImportPage() {
 
       <div className="grid md:grid-cols-3 gap-8">
         <div className="md:col-span-2 space-y-6">
-          <BulkImportWizard sellerId={user.id} />
+          <BulkImportWizard />
 
           <Alert className="bg-amber-500/5 border-amber-500/20 text-amber-900 rounded-2xl">
             <Info className="size-5" />

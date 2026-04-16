@@ -176,8 +176,6 @@ export function ListingsPageClient({
               brands={brands}
               cities={cities}
               filters={filters}
-              onFilterChange={handleFilterChange}
-              onReset={handleReset}
               activeCount={activeFiltersCount}
             />
 
@@ -304,13 +302,38 @@ export function ListingsPageClient({
           <div className="mt-4 flex flex-wrap items-center gap-2.5">
             <span className="text-xs font-medium text-slate-400">Aktif filtreler:</span>
             {filters.brand && (
-              <FilterTag label={filters.brand} onRemove={() => handleFilterChange("brand", undefined)} />
+              <FilterTag
+                label={filters.brand}
+                onRemove={() => {
+                  const nextFilters = {
+                    ...filters,
+                    brand: undefined,
+                    carTrim: undefined,
+                    model: undefined,
+                    page: 1,
+                  };
+                  setFilters(nextFilters);
+                  applyFilters(nextFilters, true);
+                }}
+              />
             )}
             {filters.model && (
               <FilterTag label={filters.model} onRemove={() => handleFilterChange("model", undefined)} />
             )}
             {filters.city && (
-              <FilterTag label={filters.city} onRemove={() => handleFilterChange("city", undefined)} />
+              <FilterTag
+                label={filters.city}
+                onRemove={() => {
+                  const nextFilters = {
+                    ...filters,
+                    city: undefined,
+                    district: undefined,
+                    page: 1,
+                  };
+                  setFilters(nextFilters);
+                  applyFilters(nextFilters, true);
+                }}
+              />
             )}
             {filters.fuelType && (
               <FilterTag label={filters.fuelType === "benzin" ? "Benzin" : filters.fuelType === "dizel" ? "Dizel" : filters.fuelType} onRemove={() => handleFilterChange("fuelType", undefined)} />

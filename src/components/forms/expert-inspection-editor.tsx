@@ -66,7 +66,12 @@ export function ExpertInspectionEditor({ form }: ExpertInspectionEditorProps) {
         <div className="flex items-center gap-2">
           <button
             type="button"
-            onClick={() => setValue("expertInspection.hasInspection", false)}
+            onClick={() =>
+              setValue("expertInspection.hasInspection", false, {
+                shouldDirty: true,
+                shouldValidate: true,
+              })
+            }
             className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
               !hasInspection 
                 ? "bg-slate-200 text-slate-700 shadow-sm" 
@@ -77,7 +82,12 @@ export function ExpertInspectionEditor({ form }: ExpertInspectionEditorProps) {
           </button>
           <button
             type="button"
-            onClick={() => setValue("expertInspection.hasInspection", true)}
+            onClick={() =>
+              setValue("expertInspection.hasInspection", true, {
+                shouldDirty: true,
+                shouldValidate: true,
+              })
+            }
             className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
               hasInspection 
                 ? "bg-primary text-white shadow-sm" 
@@ -125,7 +135,12 @@ export function ExpertInspectionEditor({ form }: ExpertInspectionEditorProps) {
                 Genel Değerlendirme
               </Label>
               <Select 
-                onValueChange={(val) => setValue("expertInspection.overallGrade", val as ExpertInspectionGrade)}
+                onValueChange={(val) =>
+                  setValue("expertInspection.overallGrade", val as ExpertInspectionGrade, {
+                    shouldDirty: true,
+                    shouldValidate: true,
+                  })
+                }
                 value={watch("expertInspection.overallGrade") || undefined}
               >
                 <SelectTrigger className="rounded-xl h-11 border-border focus:border-primary">
@@ -173,7 +188,16 @@ export function ExpertInspectionEditor({ form }: ExpertInspectionEditorProps) {
                       <button
                         key={s.status}
                         type="button"
-                        onClick={() => setValue(`expertInspection.${field.name}` as "expertInspection.damageRecord", s.status as ExpertInspectionStatus)}
+                        onClick={() =>
+                          setValue(
+                            `expertInspection.${field.name}` as "expertInspection.damageRecord",
+                            s.status as ExpertInspectionStatus,
+                            {
+                              shouldDirty: true,
+                              shouldValidate: true,
+                            },
+                          )
+                        }
                         className={`flex-1 py-1 px-1.5 rounded-md text-[10px] font-bold transition-all flex items-center justify-center gap-1 ${
                           watch(`expertInspection.${field.name}` as "expertInspection.damageRecord") === s.status
                             ? s.status === "var" 

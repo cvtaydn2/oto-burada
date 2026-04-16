@@ -12,6 +12,7 @@ import {
   createDatabaseListing,
   getStoredListings,
 } from "@/services/listings/listing-submissions";
+import { createDatabaseNotification } from "@/services/notifications/notification-records";
 import { ensureProfileRecord, getStoredProfileById } from "@/services/profile/profile-records";
 import { checkListingLimit } from "@/services/listings/listing-limits";
 import { parseListingFiltersFromSearchParams } from "@/services/listings/listing-filters";
@@ -153,6 +154,14 @@ export async function POST(request: Request) {
   }
 
   if (result.listing) {
+    await createDatabaseNotification({
+      href: `/dashboard/listings?edit=${result.listing.id}`,
+      message: `"${result.listing.title}" ilanın moderasyon incelemesine alındı. Onaylandığında sana haber vereceğiz.`,
+      title: "İlanın incelemeye alındı",
+      type: "moderation",
+      userId: user.id,
+    });
+
     captureServerEvent("listing_created", {
       userId: user.id,
       listingId: result.listing.id,

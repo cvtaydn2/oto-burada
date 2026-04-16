@@ -22,10 +22,11 @@ import { createSupabaseBrowserClient } from "@/lib/supabase/browser";
 
 interface ContactActionsProps {
   listingId: string;
+  listingSlug?: string;
   sellerId: string;
 }
 
-export function ContactActions({ listingId, sellerId }: ContactActionsProps) {
+export function ContactActions({ listingId, listingSlug, sellerId }: ContactActionsProps) {
   const router = useRouter();
   const supabase = createSupabaseBrowserClient();
   const posthog = usePostHog();
@@ -62,7 +63,8 @@ export function ContactActions({ listingId, sellerId }: ContactActionsProps) {
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) {
-        router.push(`/login?next=/listing/${listingId}`);
+        const returnPath = listingSlug ? `/listing/${listingSlug}` : "/listings";
+        router.push(`/login?next=${encodeURIComponent(returnPath)}`);
         return;
       }
 
@@ -95,22 +97,6 @@ export function ContactActions({ listingId, sellerId }: ContactActionsProps) {
 
   return (
     <div className="space-y-3">
-      {/* In-App Messaging Button */}
-      <button
-        onClick={handleStartChat}
-        disabled={isChatting}
-        className="flex w-full items-center justify-center gap-2 rounded-xl bg-blue-500 h-12 px-4 text-[15px] font-bold text-white shadow-md transition-all hover:bg-blue-600 active:scale-95 disabled:opacity-70"
-      >
-        {isChatting ? (
-          <Loader2 className="animate-spin size-5" />
-        ) : (
-          <>
-            <MessageCircle className="size-5" />
-            Mesaj Gönder
-          </>
-        )}
-      </button>
-
       {/* Phone Number Reveal */}
       <div className="relative">
         {!isRevealed ? (
@@ -143,10 +129,10 @@ export function ContactActions({ listingId, sellerId }: ContactActionsProps) {
       <AlertDialog>
         <AlertDialogTrigger asChild>
           <button
-            className="flex w-full items-center justify-center gap-2 rounded-xl bg-emerald-50 text-emerald-700 h-12 px-4 text-[15px] font-bold border border-emerald-100 transition-all hover:bg-emerald-100 active:scale-95"
+            className="flex w-full items-center justify-center gap-2 rounded-xl bg-emerald-500 text-white h-12 px-4 text-[15px] font-bold border border-emerald-500 transition-all hover:bg-emerald-600 active:scale-95 shadow-md"
           >
-            <MessageCircle className="size-5 text-emerald-500" />
-            WhatsApp
+            <MessageCircle className="size-5" />
+            WhatsApp ile İletişime Geç
           </button>
         </AlertDialogTrigger>
         <AlertDialogContent className="max-w-md bg-white border border-slate-200 rounded-3xl">
@@ -207,6 +193,21 @@ export function ContactActions({ listingId, sellerId }: ContactActionsProps) {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      <button
+        onClick={handleStartChat}
+        disabled={isChatting}
+        className="flex w-full items-center justify-center gap-2 rounded-xl bg-blue-50 h-12 px-4 text-[15px] font-bold text-blue-700 border border-blue-100 transition-all hover:bg-blue-100 active:scale-95 disabled:opacity-70"
+      >
+        {isChatting ? (
+          <Loader2 className="animate-spin size-5" />
+        ) : (
+          <>
+            <MessageCircle className="size-5" />
+            Uygulama İçi Mesaj
+          </>
+        )}
+      </button>
 
       {error && (
         <div className="flex items-center gap-2 text-red-600 text-[13px] font-medium bg-red-50 p-3 rounded-lg border border-red-100 animate-in fade-in slide-in-from-top-1">

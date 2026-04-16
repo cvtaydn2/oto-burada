@@ -2,6 +2,7 @@
 
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { hasSupabaseAdminEnv } from "@/lib/supabase/env";
+import { requireUser } from "@/lib/auth/session";
 import { buildListingRecord, mapListingToDatabaseRow, getDatabaseListings } from "@/services/listings/listing-submissions";
 import type { ListingCreateInput } from "@/types";
 
@@ -9,9 +10,9 @@ import type { ListingCreateInput } from "@/types";
  * Server Action for Bulk Listing Creation
  * Processes an array of validated listing inputs from the CSV parser.
  */
-export async function processBulkListings(inputs: ListingCreateInput[], sellerId: string) {
+export async function processBulkListings(inputs: ListingCreateInput[]) {
   if (!hasSupabaseAdminEnv()) return { success: false, error: "Veritabanı bağlantısı yok." };
-  
+  const user = await requireUser();
   const admin = createSupabaseAdminClient();
   
   try {
@@ -21,7 +22,7 @@ export async function processBulkListings(inputs: ListingCreateInput[], sellerId
 
     // 2. Map and build records
     const preparedListings = inputs.map(input => {
-      return buildListingRecord(input, sellerId, existingListings);
+      return buildListingRecord(input, user.id, existingListings);
     });
 
     // 3. Perform atomic bulk insert

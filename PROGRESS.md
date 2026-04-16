@@ -1,5 +1,66 @@
 # PROGRESS.md
 
+## Frontend-Backend Contract Remediation (2026-04-16)
+
+### Listing Creation / Moderation / Contact Flow Alignment
+- **İlan Ver Akışı Güçlendirildi**:
+  - `VehicleInfoStep` içinde `yari_otomatik` enum uyumsuzluğu giderildi
+  - yakıt seçeneklerine `lpg` eklendi
+  - şasi alanı copy’si “gerçek doğrulama” izlenimi yerine format doğrulaması olarak netleştirildi
+  - `listing-create-form` artık submit hata durumunu görünür şekilde gösteriyor
+  - create/edit submit logic tek helper altında toplandı; duplicate istek akışı kaldırıldı
+- **Submit Sonrası Kullanıcı Geri Bildirimi Eklendi**:
+  - yeni ilan sonrası `/dashboard/listings?created=pending` yönlendirmesi eklendi
+  - dashboard listings ekranında “ilanın moderasyona gönderildi” bilgi banner’ı gösteriliyor
+  - edit sonrası görünür başarı banner’ı eklendi
+- **Ekspertiz Form Durumu Düzeltildi**:
+  - `expert-inspection-editor` içindeki toggle ve durum butonları artık `shouldDirty` + `shouldValidate` ile form state’ini doğru güncelliyor
+- **Moderasyon Bildirimi Zinciri Tamamlandı**:
+  - `/api/listings` create sonrası satıcıya DB notification bırakılıyor
+  - admin onay/reddet akışları mevcut seller notification mantığı ile uyumlu kaldı
+
+### Filters / Listing Discovery Alignment
+- **Notification Dropdown Düzeltildi**:
+  - `use-notifications` yanlış payload shape okumayı bıraktı; dropdown artık gerçek notification array’i alıyor
+- **Mobile Filter Drawer Yeniden Bağlandı**:
+  - mobile drawer artık seçimleri anında route push etmeden local draft state’te tutuyor
+  - `Uygula` ile tek seferde URL’ye yazıyor; tasarım davranışı ile kod hizalandı
+  - marka değişince model/paket, şehir değişince ilçe resetleniyor
+  - transmission enum ve fuel seçim contract’ı backend ile hizalandı
+- **Aktif Filtre Tag Tutarlılığı**:
+  - marka tag’i silinince model/paket de temizleniyor
+  - şehir tag’i silinince ilçe de temizleniyor
+- **Bulk Import Yetki ve Dil Düzeltmeleri**:
+  - server action artık client’tan `sellerId` almıyor; oturumdaki kullanıcıyı kendi resolve ediyor
+  - bulk import CTA metni “yayına al” yerine “moderasyona gönder” olarak düzeltildi
+
+### Public Contact / Auth / CTA Alignment
+- **Public Contact Form Gerçekten Çalışır Hale Geldi**:
+  - yeni `/api/contact` route’u eklendi
+  - login zorunlu support endpoint yerine public form için ayrı ticket oluşturma akışı yazıldı
+  - public ticket’lar `tickets` tablosuna `user_id = null` ile düşüyor; admin tarafında görünür kalıyor
+- **WhatsApp-First Kuralı Uygulandı**:
+  - listing detail contact area’da primary CTA artık WhatsApp
+  - in-app chat secondary aksiyon olarak aşağı taşındı
+- **Login Return Path Düzeltildi**:
+  - `next` parametresi login formundan server action’a taşınıyor
+  - listing detail’den login’e düşen kullanıcı artık doğru route’a geri dönebiliyor
+- **Dead Push Hook Temizlendi**:
+  - kullanılmayan ve eksik `/api/notifications/subscribe` entegrasyonuna bağlı `use-push-notifications` kaldırıldı
+
+### Doğrulama
+- `npm run lint` ✅
+- `npm run typecheck` ✅
+- `npm run build` ✅
+
+### Sonraki Adım
+- Browser üzerinden gerçek kullanıcı akışlarıyla ikinci tur audit:
+  - ilan oluşturma wizard’ı
+  - `/listings` desktop/mobile filtre davranışı
+  - admin pending moderation görünürlüğü
+  - contact form ve login return path
+- Özellikle create/edit wizard içinde kullanıcı örneklediği “ekspertizden sonra diğer bilgiler + yayınla” senaryosu gerçek form etkileşimiyle tekrar test edilmeli.
+
 ## PostHog Audit Remediation (2026-04-16)
 
 ### Analytics / Error Tracking Hardening

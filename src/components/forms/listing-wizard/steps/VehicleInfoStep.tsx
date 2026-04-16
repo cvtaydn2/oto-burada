@@ -23,6 +23,8 @@ export function VehicleInfoStep({
 }: VehicleInfoStepProps) {
   const { register, formState: { errors }, watch, control } = form;
   const selectedBrand = watch("brand");
+  const selectedTransmission = watch("transmission");
+  const selectedFuelType = watch("fuelType");
   // Watch brand and type change to reset or filter models
 
   return (
@@ -30,7 +32,7 @@ export function VehicleInfoStep({
       {/* SECTION 1: AUTO LOOKUP */}
       <FormSection number={1} title="Hızlı Araç Tanımlama">
         <p className="text-sm text-gray-500 mb-6">
-          Aracınızı plakadan otomatik tanıyabilir veya şasi numarası (VIN) ile doğrulayabilirsiniz.
+          Aracınızı plakadan ön doldurabilir, şasi numarasını ise format kontrolü için ekleyebilirsiniz.
         </p>
         
         <div className="grid gap-8">
@@ -133,8 +135,8 @@ export function VehicleInfoStep({
               name="fuelType"
               render={({ field }) => (
                 <ChoiceGroup
-                  options={["benzin", "dizel", "hibrit", "elektrik"]}
-                  value={field.value}
+                  options={["benzin", "dizel", "lpg", "hibrit", "elektrik"]}
+                  value={field.value ?? selectedFuelType}
                   onChange={field.onChange}
                 />
               )}
@@ -148,8 +150,13 @@ export function VehicleInfoStep({
               name="transmission"
               render={({ field }) => (
                 <ChoiceGroup
-                  options={["manuel", "yarı otomatik", "otomatik"]}
-                  value={field.value}
+                  options={["manuel", "yari_otomatik", "otomatik"]}
+                  value={field.value ?? selectedTransmission}
+                  labels={{
+                    manuel: "Manuel",
+                    otomatik: "Otomatik",
+                    yari_otomatik: "Yarı Otomatik",
+                  }}
                   onChange={field.onChange}
                 />
               )}

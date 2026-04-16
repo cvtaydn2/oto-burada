@@ -111,6 +111,7 @@ export default async function ListingDetailPage({ params }: ListingDetailPagePro
       
       <MobileStickyActions
           listingId={listing.id}
+          listingSlug={listing.slug}
           sellerId={listing.sellerId}
           price={listing.price}
       /> 
@@ -369,7 +370,7 @@ export default async function ListingDetailPage({ params }: ListingDetailPagePro
                 </div>
 
                 <div className="space-y-3">
-                  <ContactActions listingId={listing.id} sellerId={listing.sellerId} />
+                  <ContactActions listingId={listing.id} listingSlug={listing.slug} sellerId={listing.sellerId} />
                 </div>
 
                 <div className="mt-6 pt-4 border-t border-gray-100 space-y-3">

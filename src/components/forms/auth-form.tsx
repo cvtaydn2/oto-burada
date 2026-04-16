@@ -18,6 +18,7 @@ interface AuthFormProps {
   alternateHref: string;
   alternateLabel: string;
   mode: "login" | "register";
+  next?: string;
 }
 
 const initialState: AuthActionState = {};
@@ -30,6 +31,7 @@ export function AuthForm({
   alternateHref,
   alternateLabel,
   mode,
+  next,
 }: AuthFormProps) {
   const [state, formAction] = useActionState(action, initialState);
   const isLogin = mode === "login";
@@ -112,6 +114,7 @@ export function AuthForm({
           </div>
 
           <form action={formAction} className="space-y-5">
+            {next ? <input type="hidden" name="next" value={next} /> : null}
             <div>
               <label htmlFor="email" className="mb-1.5 block text-xs font-bold text-slate-700">
                 E-posta

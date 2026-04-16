@@ -86,6 +86,36 @@ export async function createTicket(
   return ticket;
 }
 
+export async function createPublicTicket(input: {
+  contactEmail: string;
+  contactName: string;
+} & CreateTicketInput): Promise<Ticket> {
+  const admin = createSupabaseAdminClient();
+  const description = [
+    `İletişim Adı: ${input.contactName}`,
+    `İletişim E-postası: ${input.contactEmail}`,
+    "",
+    input.description,
+  ].join("\n");
+
+  const { data, error } = await admin
+    .from("tickets")
+    .insert({
+      user_id: null,
+      subject: input.subject,
+      description,
+      category: input.category,
+      priority: input.priority ?? "medium",
+      listing_id: input.listingId ?? null,
+    })
+    .select()
+    .single();
+
+  if (error) throw error;
+
+  return mapTicket(data);
+}
+
 export async function getAllTickets(options?: {
   status?: TicketStatus;
   limit?: number;

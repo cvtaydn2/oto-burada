@@ -16,7 +16,7 @@ export function useNotifications(userId?: string) {
       if (!userId) return [];
       const response = await fetch("/api/notifications");
       const payload = await response.json();
-      return payload.success ? payload.data : [];
+      return payload.success ? payload.data?.notifications ?? [] : [];
     },
     enabled: !!userId,
   });

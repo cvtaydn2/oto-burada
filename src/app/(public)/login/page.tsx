@@ -1,7 +1,15 @@
 import { AuthForm } from "@/components/forms/auth-form";
 import { loginAction } from "@/lib/auth/actions";
 
-export default function LoginPage() {
+interface LoginPageProps {
+  searchParams?: Promise<{
+    next?: string;
+  }>;
+}
+
+export default async function LoginPage({ searchParams }: LoginPageProps) {
+  const resolvedSearchParams = searchParams ? await searchParams : undefined;
+
   return (
     <div className="flex-1 flex flex-col">
       <AuthForm
@@ -12,6 +20,7 @@ export default function LoginPage() {
         alternateHref="/register"
         alternateLabel="Kayıt Ol"
         mode="login"
+        next={resolvedSearchParams?.next}
       />
     </div>
   );

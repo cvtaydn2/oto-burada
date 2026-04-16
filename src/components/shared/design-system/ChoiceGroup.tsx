@@ -7,6 +7,7 @@ interface ChoiceGroupProps<T extends string> {
   value: T;
   onChange: (value: T) => void;
   className?: string;
+  labels?: Partial<Record<T, string>>;
 }
 
 /**
@@ -17,7 +18,8 @@ export function ChoiceGroup<T extends string>({
   options, 
   value, 
   onChange,
-  className 
+  className,
+  labels,
 }: ChoiceGroupProps<T>) {
   return (
     <div className={cn("flex flex-wrap gap-2", className)}>
@@ -35,7 +37,7 @@ export function ChoiceGroup<T extends string>({
                 : "bg-white border border-gray-200 text-gray-600 hover:bg-gray-50 border-gray-200"
             )}
           >
-            {option}
+            {labels?.[option] ?? option}
           </button>
         );
       })}

@@ -21,14 +21,14 @@ export function ContactForm() {
 
     setStatus("loading");
     try {
-      const res = await fetch("/api/support/tickets", {
+      const res = await fetch("/api/contact", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
+          email: form.email,
+          name: form.name,
           subject: form.subject,
-          description: `Ad Soyad: ${form.name}\nE-posta: ${form.email}\n\n${form.message}`,
-          category: "other",
-          priority: "medium",
+          message: form.message,
         }),
       });
       if (res.ok) {

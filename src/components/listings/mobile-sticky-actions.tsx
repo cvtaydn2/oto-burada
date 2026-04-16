@@ -14,17 +14,19 @@ const ContactActions = dynamic(
 
 interface MobileStickyActionsProps {
     listingId: string;
+    listingSlug: string;
     sellerId: string;
     price: number;
 }
 
 export function MobileStickyActions({ 
     listingId, 
+    listingSlug,
     sellerId,
     price, 
 }: MobileStickyActionsProps) {
     const { isAuthenticated } = useAuthUser();
-    const loginUrl = `/login?callbackUrl=${encodeURIComponent(`/listing/${listingId}`)}`;
+    const loginUrl = `/login?next=${encodeURIComponent(`/listing/${listingSlug}`)}`;
 
     return (
         <div className="fixed bottom-[88px] left-0 right-0 z-50 lg:hidden px-4 py-3 bg-white border-t border-slate-200 shadow-[0_-8px_30px_rgb(0,0,0,0.08)] animate-in fade-in slide-in-from-bottom-full duration-500">
@@ -38,7 +40,7 @@ export function MobileStickyActions({
 
                 <div className="flex-1 max-w-[240px]">
                     {isAuthenticated ? (
-                        <ContactActions listingId={listingId} sellerId={sellerId} />
+                        <ContactActions listingId={listingId} listingSlug={listingSlug} sellerId={sellerId} />
                     ) : (
                         <a
                             href={loginUrl}

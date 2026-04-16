@@ -45,7 +45,7 @@ interface ListingRow {
   images: unknown[];
 }
 
-export function BulkImportWizard({ sellerId }: { sellerId: string }) {
+export function BulkImportWizard() {
   const [rows, setRows] = useState<ListingRow[]>([]);
   const [isProcessing, setIsProcessing] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
@@ -157,7 +157,7 @@ export function BulkImportWizard({ sellerId }: { sellerId: string }) {
         vin: row.vin,
         images: [],
       }));
-      const result = await processBulkListings(transformedInputs, sellerId);
+      const result = await processBulkListings(transformedInputs);
       
       if (result.success) {
         toast.success(result.message);
@@ -236,7 +236,7 @@ export function BulkImportWizard({ sellerId }: { sellerId: string }) {
                onClick={handleUpload}
             >
               {isUploading ? <Loader2 className="animate-spin" /> : <CheckCircle2 size={24} />}
-              {validCount} İlanı Onayla ve Yayına Al
+              {validCount} İlanı Moderasyona Gönder
             </Button>
          </div>
       </div>

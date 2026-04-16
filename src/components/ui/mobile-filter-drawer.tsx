@@ -1,18 +1,17 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter, usePathname, useSearchParams } from "next/navigation";
+import { useEffect, useState } from "react";
+import { useRouter, usePathname } from "next/navigation";
 import { X, SlidersHorizontal, ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import type { ListingFilters, BrandCatalogItem, CityOption } from "@/types";
+import { createSearchParamsFromListingFilters } from "@/services/listings/listing-filters";
 
 interface MobileFilterDrawerProps {
   brands: BrandCatalogItem[];
   cities: CityOption[];
   filters: ListingFilters;
-  onFilterChange: <K extends keyof ListingFilters>(key: K, value: ListingFilters[K]) => void;
-  onReset: () => void;
   activeCount: number;
 }
 
@@ -27,66 +26,77 @@ const FUEL_TYPES = [
 const TRANSMISSION_TYPES = [
   { value: "otomatik", label: "Otomatik" },
   { value: "manuel", label: "Manuel" },
-  { value: "yarı-otomatik", label: "Yarı Otomatik" },
+  { value: "yari_otomatik", label: "Yarı Otomatik" },
 ];
 
 export function MobileFilterDrawer({
   brands,
   cities,
   filters,
-  onFilterChange,
-  onReset,
   activeCount,
 }: MobileFilterDrawerProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [expandedSection, setExpandedSection] = useState<string | null>("brand");
+  const [draftFilters, setDraftFilters] = useState<ListingFilters>(filters);
   const router = useRouter();
   const pathname = usePathname();
-  const searchParams = useSearchParams();
+
+  useEffect(() => {
+    setDraftFilters(filters);
+  }, [filters]);
 
   const toggleSection = (section: string) => {
     setExpandedSection((prev) => (prev === section ? null : section));
   };
 
   const handleBrandSelect = (brand: string) => {
-    onFilterChange("brand", filters.brand === brand ? undefined : brand);
+    const nextBrand = draftFilters.brand === brand ? undefined : brand;
+    setDraftFilters((current) => ({
+      ...current,
+      brand: nextBrand,
+      carTrim: undefined,
+      model: undefined,
+      page: 1,
+    }));
     setExpandedSection(null);
   };
 
-  const handleCitySelect = (city: string, citySlug: string) => {
-    onFilterChange("city", filters.city === city ? undefined : city);
-    onFilterChange("citySlug", filters.citySlug === citySlug ? undefined : citySlug);
+  const handleCitySelect = (city: string) => {
+    setDraftFilters((current) => ({
+      ...current,
+      city: current.city === city ? undefined : city,
+      district: undefined,
+      page: 1,
+    }));
   };
 
   const handleFuelSelect = (fuel: string) => {
-    const currentFuel = Array.isArray(filters.fuelType) ? filters.fuelType : filters.fuelType?.split(",").filter(Boolean) || [];
-    const newFuel = currentFuel.includes(fuel)
-      ? currentFuel.filter((f) => f !== fuel)
-      : [...currentFuel, fuel];
-    onFilterChange("fuelType", newFuel.length > 0 ? newFuel.join(",") as ListingFilters["fuelType"] : undefined);
+    setDraftFilters((current) => ({
+      ...current,
+      fuelType: current.fuelType === fuel ? undefined : fuel,
+      page: 1,
+    }));
   };
 
   const handleTransmissionSelect = (transmission: string) => {
-    onFilterChange("transmission", filters.transmission === transmission ? undefined : transmission);
+    setDraftFilters((current) => ({
+      ...current,
+      page: 1,
+      transmission: current.transmission === transmission ? undefined : transmission,
+    }));
   };
 
   const handleApply = () => {
-    const params = new URLSearchParams(searchParams.toString());
-    
-    Object.entries(filters).forEach(([key, value]) => {
-      if (value !== undefined && value !== "" && value !== null) {
-        params.set(key, String(value));
-      } else {
-        params.delete(key);
-      }
+    const params = createSearchParamsFromListingFilters({
+      ...draftFilters,
+      page: 1,
     });
-
     router.push(`${pathname}?${params.toString()}`, { scroll: false });
     setIsOpen(false);
   };
 
   const handleReset = () => {
-    onReset();
+    setDraftFilters({});
     router.push(pathname, { scroll: false });
     setIsOpen(false);
   };
@@ -137,10 +147,10 @@ export function MobileFilterDrawer({
                     {brands.slice(0, 20).map((brand) => (
                       <button
                         key={brand.slug}
-                        onClick={() => handleBrandSelect(brand.slug)}
+                        onClick={() => handleBrandSelect(brand.brand)}
                         className={cn(
                           "rounded-lg border px-3 py-2.5 text-left text-sm transition-colors",
-                          filters.brand === brand.slug
+                          draftFilters.brand === brand.brand
                             ? "border-primary bg-primary/5 text-primary"
                             : "border-border hover:bg-muted"
                         )}
@@ -160,10 +170,10 @@ export function MobileFilterDrawer({
                     {cities.slice(0, 20).map((city) => (
                       <button
                         key={city.city}
-                        onClick={() => handleCitySelect(city.city, city.slug)}
+                        onClick={() => handleCitySelect(city.city)}
                         className={cn(
                           "rounded-lg border px-3 py-2.5 text-left text-sm transition-colors",
-                          filters.city === city.city
+                          draftFilters.city === city.city
                             ? "border-primary bg-primary/5 text-primary"
                             : "border-border hover:bg-muted"
                         )}
@@ -183,15 +193,15 @@ export function MobileFilterDrawer({
                     <input
                       type="number"
                       placeholder="Min fiyat"
-                      value={filters.minPrice || ""}
-                      onChange={(e) => onFilterChange("minPrice", e.target.value ? Number(e.target.value) : undefined)}
+                      value={draftFilters.minPrice || ""}
+                      onChange={(e) => setDraftFilters((current) => ({ ...current, minPrice: e.target.value ? Number(e.target.value) : undefined, page: 1 }))}
                       className="flex-1 rounded-lg border border-border px-3 py-2 text-sm"
                     />
                     <input
                       type="number"
                       placeholder="Max fiyat"
-                      value={filters.maxPrice || ""}
-                      onChange={(e) => onFilterChange("maxPrice", e.target.value ? Number(e.target.value) : undefined)}
+                      value={draftFilters.maxPrice || ""}
+                      onChange={(e) => setDraftFilters((current) => ({ ...current, maxPrice: e.target.value ? Number(e.target.value) : undefined, page: 1 }))}
                       className="flex-1 rounded-lg border border-border px-3 py-2 text-sm"
                     />
                   </div>
@@ -209,7 +219,7 @@ export function MobileFilterDrawer({
                         onClick={() => handleFuelSelect(fuel.value)}
                         className={cn(
                           "rounded-lg border px-3 py-2 text-sm transition-colors",
-                          filters.fuelType?.includes(fuel.value)
+                          draftFilters.fuelType === fuel.value
                             ? "border-primary bg-primary/5 text-primary"
                             : "border-border hover:bg-muted"
                         )}
@@ -232,7 +242,7 @@ export function MobileFilterDrawer({
                         onClick={() => handleTransmissionSelect(trans.value)}
                         className={cn(
                           "rounded-lg border px-3 py-2 text-sm transition-colors",
-                          filters.transmission === trans.value
+                          draftFilters.transmission === trans.value
                             ? "border-primary bg-primary/5 text-primary"
                             : "border-border hover:bg-muted"
                         )}
@@ -252,15 +262,15 @@ export function MobileFilterDrawer({
                     <input
                       type="number"
                       placeholder="Min yıl"
-                      value={filters.minYear || ""}
-                      onChange={(e) => onFilterChange("minYear", e.target.value ? Number(e.target.value) : undefined)}
+                      value={draftFilters.minYear || ""}
+                      onChange={(e) => setDraftFilters((current) => ({ ...current, minYear: e.target.value ? Number(e.target.value) : undefined, page: 1 }))}
                       className="flex-1 rounded-lg border border-border px-3 py-2 text-sm"
                     />
                     <input
                       type="number"
                       placeholder="Max yıl"
-                      value={filters.maxYear || ""}
-                      onChange={(e) => onFilterChange("maxYear", e.target.value ? Number(e.target.value) : undefined)}
+                      value={draftFilters.maxYear || ""}
+                      onChange={(e) => setDraftFilters((current) => ({ ...current, maxYear: e.target.value ? Number(e.target.value) : undefined, page: 1 }))}
                       className="flex-1 rounded-lg border border-border px-3 py-2 text-sm"
                     />
                   </div>
@@ -275,8 +285,8 @@ export function MobileFilterDrawer({
                     <input
                       type="number"
                       placeholder="Min km"
-                      value={filters.maxMileage ? filters.maxMileage : ""}
-                      onChange={(e) => onFilterChange("maxMileage", e.target.value ? Number(e.target.value) : undefined)}
+                      value={draftFilters.maxMileage ? draftFilters.maxMileage : ""}
+                      onChange={(e) => setDraftFilters((current) => ({ ...current, maxMileage: e.target.value ? Number(e.target.value) : undefined, page: 1 }))}
                       className="flex-1 rounded-lg border border-border px-3 py-2 text-sm"
                     />
                   </div>
