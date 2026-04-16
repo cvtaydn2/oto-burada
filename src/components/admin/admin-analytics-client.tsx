@@ -9,7 +9,6 @@ import {
   Wallet, 
   MousePointer, 
   Download,
-  Filter,
   BarChart3,
   PieChart
 } from "lucide-react";
@@ -104,10 +103,6 @@ export function AdminAnalyticsClient({ data, timeRange: initialTimeRange }: Admi
               </button>
             ))}
           </div>
-          <button className="flex h-11 items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 text-sm font-bold text-slate-600 hover:bg-slate-50 transition-all" disabled title="Yakında aktif">
-            <Filter size={16} />
-            Filtrele
-          </button>
           <button
             onClick={() => {
               const csv = [

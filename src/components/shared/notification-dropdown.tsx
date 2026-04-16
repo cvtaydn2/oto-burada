@@ -4,6 +4,7 @@ import { useQueryClient, useMutation } from "@tanstack/react-query";
 import { Bell, LoaderCircle } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import * as DropdownMenu from "@radix-ui/react-dropdown-menu";
 
 import { cn, formatDate } from "@/lib/utils";
@@ -11,6 +12,7 @@ import { useNotifications } from "@/hooks/use-notifications";
 
 export function NotificationDropdown({ userId }: { userId?: string }) {
   const queryClient = useQueryClient();
+  const router = useRouter();
   const [isOpen, setIsOpen] = useState(false);
   const { notifications, unreadCount, isLoading } = useNotifications(userId);
 
@@ -99,7 +101,10 @@ export function NotificationDropdown({ userId }: { userId?: string }) {
                       if (!notification.read && notification.id) {
                         markReadMutation.mutate(notification.id);
                       }
-                      if (notification.href) window.location.href = notification.href;
+                      if (notification.href) {
+                        setIsOpen(false);
+                        router.push(notification.href);
+                      }
                     }}
                   >
                     <div className="flex items-start justify-between gap-2">

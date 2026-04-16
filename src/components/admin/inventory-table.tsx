@@ -36,8 +36,6 @@ export function InventoryTable({ listings }: InventoryTableProps) {
   const [isLoading, setIsLoading] = useState(false);
 
   const handleAction = async (listingId: string, action: "archive" | "delete" | "approve" | "reject") => {
-    if (action === "delete" && !confirm("Bu ilanı sistemden tamamen silmek istediğinize emin misiniz?")) return;
-    
     setIsLoading(true);
     try {
       if (action === "approve" || action === "reject") {

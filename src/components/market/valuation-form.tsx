@@ -4,8 +4,9 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm, useWatch } from "react-hook-form";
 import { z } from "zod";
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { Loader2, Target, AlertCircle, Sparkles } from "lucide-react";
-import { BrandCatalogItem, CityOption } from "@/types";
+import { BrandCatalogItem } from "@/types";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -30,10 +31,10 @@ type ValuationValues = z.infer<typeof valuationSchema>;
 
 interface ValuationFormProps {
   brands: BrandCatalogItem[];
-  cities: CityOption[];
 }
 
 export function ValuationForm({ brands }: ValuationFormProps) {
+  const router = useRouter();
   const [result, setResult] = useState<PriceEstimationResult | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -139,7 +140,7 @@ export function ValuationForm({ brands }: ValuationFormProps) {
            </Button>
            <Button 
               className="h-14 rounded-2xl font-bold italic shadow-lg shadow-primary/20"
-              onClick={() => window.location.href = `/listings?brand=${encodeURIComponent(selectedBrand)}&model=${encodeURIComponent(selectedModel)}`}
+              onClick={() => router.push(`/listings?brand=${encodeURIComponent(selectedBrand)}&model=${encodeURIComponent(selectedModel)}`)}
            >
               Piyasayi Gor
            </Button>

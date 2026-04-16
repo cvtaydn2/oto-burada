@@ -51,7 +51,6 @@ export default async function AracimNeKadarPage() {
 
              <ValuationForm 
                 brands={references.brands} 
-                cities={references.cities} 
              />
           </div>
 

@@ -15,8 +15,6 @@ import {
   BadgeCheck,
   TrendingUp,
 } from "lucide-react";
-import { DashboardFinancialSummary } from "@/components/dashboard/dashboard-financial-summary";
-import { DashboardAppointments } from "@/components/dashboard/dashboard-appointments";
 
 import { requireUser } from "@/lib/auth/session";
 import { getDatabaseFavoriteCount } from "@/services/favorites/favorite-records";
@@ -132,17 +130,17 @@ async function DashboardDataSection({
 
   return (
     <>
-      {!profile?.isVerified ? (
+      {!profile?.emailVerified ? (
         <section className="relative flex flex-col items-center justify-between gap-6 overflow-hidden rounded-2xl bg-gradient-to-r from-blue-600 to-indigo-700 p-6 text-white shadow-lg shadow-blue-200 md:flex-row">
-          <div className="pointer-events-none absolute top-0 right-0 -mt-20 -mr-20 h-64 w-64 rounded-full bg-white/10 blur-3xl"></div>
+          <div className="pointer-events-none absolute top-0 right-0 -mt-20 -mr-20 h-64 w-64 rounded-full bg-white/10 blur-3xl" />
           <div className="relative z-10 flex items-center gap-6">
             <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-full border border-white/30 bg-white/20 backdrop-blur-md">
               <ShieldAlert size={32} className="text-white" />
             </div>
             <div>
-              <h3 className="text-xl font-bold">Hesabınızı Hemen Doğrulayın</h3>
+              <h3 className="text-xl font-bold">E-posta Adresinizi Doğrulayın</h3>
               <p className="mt-1 max-w-lg text-sm font-medium text-blue-50">
-                E-Devlet ile hesabınızı doğrulayarak &quot;Onaylı Satıcı&quot; rozeti kazanın ve ilanlarınızın güvenilirliğini artırın.
+                İlan verebilmek için e-posta adresinizi doğrulamanız gerekmektedir. Kayıt sırasında gönderilen bağlantıyı kontrol edin.
               </p>
             </div>
           </div>
@@ -150,7 +148,7 @@ async function DashboardDataSection({
             href="/dashboard/profile"
             className="relative z-10 whitespace-nowrap rounded-xl bg-white px-8 py-3 text-sm font-bold tracking-wide text-blue-600 shadow-sm transition-colors hover:bg-blue-50"
           >
-            Hemen Doğrula
+            Profil Ayarları
           </Link>
         </section>
       ) : (
@@ -160,8 +158,8 @@ async function DashboardDataSection({
               <ShieldCheck size={20} />
             </div>
             <div>
-              <span className="text-sm font-bold text-slate-800">Doğrulanmış Üye</span>
-              <p className="text-[10px] font-medium text-slate-400">Hesabınız E-Devlet üzerinden doğrulanmıştır.</p>
+              <span className="text-sm font-bold text-slate-800">E-posta Doğrulandı</span>
+              <p className="text-[10px] font-medium text-slate-400">İlan verebilirsiniz.</p>
             </div>
           </div>
           <BadgeCheck className="text-blue-500" size={24} />
@@ -323,15 +321,6 @@ async function DashboardDataSection({
         </div>
 
         <div className="space-y-6">
-          <DashboardFinancialSummary
-            successfulSalesAmount={0}
-            pendingDepositsAmount={0}
-            successfulSalesCount={0}
-            pendingDepositsCount={0}
-          />
-
-          <DashboardAppointments appointments={[]} />
-
           <div className="rounded-2xl border border-blue-100 bg-blue-50/60 p-6 shadow-sm">
             <h3 className="mb-2 text-lg font-bold text-gray-800">Hesap Durumu</h3>
             <p className="mb-5 text-xs text-gray-500">
@@ -339,9 +328,9 @@ async function DashboardDataSection({
             </p>
             <div className="space-y-3">
               <div className="flex items-center justify-between rounded-xl border border-white/70 bg-white px-4 py-3">
-                <span className="text-sm font-medium text-gray-600">Doğrulama</span>
-                <span className={cn("text-xs font-bold", profile?.isVerified ? "text-emerald-600" : "text-amber-600")}>
-                  {profile?.isVerified ? "Tamamlandı" : "Bekliyor"}
+                <span className="text-sm font-medium text-gray-600">E-posta Doğrulama</span>
+                <span className={cn("text-xs font-bold", profile?.emailVerified ? "text-emerald-600" : "text-amber-600")}>
+                  {profile?.emailVerified ? "Tamamlandı" : "Bekliyor"}
                 </span>
               </div>
               <div className="flex items-center justify-between rounded-xl border border-white/70 bg-white px-4 py-3">

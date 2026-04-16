@@ -15,6 +15,10 @@ import type { Listing } from "@/types";
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger,
 } from "@/components/ui/dialog";
+import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel,
+  AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import { ListingDopingPanel } from "./listing-doping-panel";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
@@ -135,7 +139,6 @@ export function MyListingsPanel({
 
   const handleBulkDelete = async () => {
     if (!selectedIds.length) return;
-    if (!confirm(`${selectedIds.length} ilanı kalıcı olarak silmek istediğinize emin misiniz?`)) return;
     setIsBulkArchiving(true);
     try {
       const res = await fetch("/api/listings/bulk-delete", {
@@ -242,13 +245,31 @@ export function MyListingsPanel({
               </button>
               {selectedIds.length > 0 && (
                 <div className="flex flex-wrap items-center gap-2 animate-in fade-in slide-in-from-left-2 duration-300">
-                  <Button variant="destructive" size="sm" onClick={handleBulkArchive} disabled={isBulkArchiving} className="h-8 px-3 text-[11px] font-bold uppercase tracking-tight rounded-xl shadow-md bg-slate-800 hover:bg-slate-900">
+                  <Button variant="outline" size="sm" onClick={handleBulkArchive} disabled={isBulkArchiving} className="h-8 px-3 text-[11px] font-bold uppercase tracking-tight rounded-xl shadow-md bg-slate-800 hover:bg-slate-900 text-white">
                     {isBulkArchiving ? <Loader2 className="size-3 animate-spin mr-1" /> : <Archive size={13} className="mr-1" />}
                     {selectedIds.length} Arşivle
                   </Button>
-                  <Button variant="outline" size="sm" onClick={handleBulkDelete} disabled={isBulkArchiving || !selectedIds.every(id => listings.find(l => l.id === id)?.status === "archived")} className="h-8 px-3 text-[11px] font-bold uppercase tracking-tight rounded-xl border-red-200 text-red-600 hover:bg-red-50 shadow-sm">
-                    Sil
-                  </Button>
+                  <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                      <Button variant="outline" size="sm" disabled={isBulkArchiving || !selectedIds.every(id => listings.find(l => l.id === id)?.status === "archived")} className="h-8 px-3 text-[11px] font-bold uppercase tracking-tight rounded-xl border-red-200 text-red-600 hover:bg-red-50 shadow-sm">
+                        Sil
+                      </Button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent className="rounded-2xl">
+                      <AlertDialogHeader>
+                        <AlertDialogTitle>İlanları Kalıcı Sil</AlertDialogTitle>
+                        <AlertDialogDescription>
+                          {selectedIds.length} ilanı kalıcı olarak silmek istediğinize emin misiniz? Bu işlem geri alınamaz.
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel>İptal</AlertDialogCancel>
+                        <AlertDialogAction className="bg-red-600 hover:bg-red-700" onClick={handleBulkDelete}>
+                          Kalıcı Sil
+                        </AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
                 </div>
               )}
             </div>

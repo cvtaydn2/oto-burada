@@ -138,8 +138,8 @@ export default async function DashboardProfilePage() {
             <div className="flex items-center gap-3 mb-4">
               <ShieldCheck size={18} className="text-primary" />
               <div>
-                <h3 className="text-base font-bold text-slate-900">E-Devlet Kimlik Doğrulama</h3>
-                <p className="text-xs text-slate-500 font-medium">Hesabınızı E-Devlet ile doğrulayarak güvenilirliğinizi artırın.</p>
+                <h3 className="text-base font-bold text-slate-900">Doğrulama Durumu</h3>
+                <p className="text-xs text-slate-500 font-medium">E-posta doğrulaması ilan yayınlamak için zorunludur.</p>
               </div>
             </div>
             <IdentityVerificationForm userId={user.id} isVerified={profile.isVerified} />

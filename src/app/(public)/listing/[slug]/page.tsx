@@ -258,9 +258,9 @@ export default async function ListingDetailPage({ params }: ListingDetailPagePro
                   />
                   <TrustCard
                     title="Satıcı"
-                    value={seller?.isVerified || seller?.eidsId ? "Onaylı" : "Aktif Profil"}
-                    description={seller?.eidsId ? "EIDS doğrulaması mevcut" : "Satıcı profili yayında"}
-                    tone={seller?.isVerified || seller?.eidsId ? "emerald" : "slate"}
+                    value={seller?.isVerified ? "Onaylı" : "Aktif Profil"}
+                    description={seller?.isVerified ? "Satıcı profili doğrulanmış" : "Satıcı profili yayında"}
+                    tone={seller?.isVerified ? "emerald" : "slate"}
                   />
                   <TrustCard
                     title="İlan Güncelliği"
@@ -382,15 +382,12 @@ export default async function ListingDetailPage({ params }: ListingDetailPagePro
                     <div className="flex items-center text-[10px] text-gray-500 mt-0.5 mb-1">
                       <span className={cn(
                         "px-1.5 py-0.5 rounded mr-1 font-medium",
-                        seller?.isVerified || seller?.eidsId ? "bg-blue-50 text-blue-600" : "bg-slate-100 text-slate-500"
+                        seller?.isVerified ? "bg-blue-50 text-blue-600" : "bg-slate-100 text-slate-500"
                       )}>
-                        {seller?.isVerified || seller?.eidsId ? "Onaylı Üye" : "Profil aktif"}
+                        {seller?.isVerified ? "Onaylı Üye" : "Profil aktif"}
                       </span>
                       {membershipYears !== null ? <span>• {membershipYears} yıldır üye</span> : null}
                     </div>
-                    {seller?.eidsId ? (
-                      <p className="text-[11px] font-semibold text-emerald-600">EIDS doğrulaması mevcut</p>
-                    ) : null}
                   </div>
                 </div>
 

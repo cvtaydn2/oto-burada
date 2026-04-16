@@ -1,4 +1,4 @@
-import { Users, UserCog, ShieldCheck } from "lucide-react";
+import { UserCog, ShieldCheck } from "lucide-react";
 import Link from "next/link";
 import { UserHeaderActions } from "@/components/admin/user-header-actions";
 import { UserSearch } from "@/components/admin/user-search";
@@ -208,15 +208,6 @@ export default async function AdminUserManagementPage({
               <h3 className="text-base font-black text-slate-800 tracking-tight">Hızlı İşlemler</h3>
             </div>
             <div className="space-y-3">
-              <Button
-                variant="outline"
-                className="w-full rounded-xl border-slate-100 text-slate-600 font-bold text-xs h-11 flex items-center gap-2 justify-start px-4 hover:bg-slate-50 transition-all"
-                disabled
-                title="Yakında aktif"
-              >
-                <Users size={16} />
-                Toplu İçe Aktar
-              </Button>
               <Link href="/admin/roles">
                 <Button
                   variant="outline"

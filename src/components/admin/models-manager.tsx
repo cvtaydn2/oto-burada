@@ -63,7 +63,6 @@ export function ModelsManager({ brand, onClose }: ModelsManagerProps) {
   };
 
   const handleDeleteModel = async (id: string) => {
-    if (!confirm("Bu modeli silmek istediğinizden emin misiniz?")) return;
     try {
       await deleteModel(id);
       setModels(prev => prev.filter(m => m.id !== id));

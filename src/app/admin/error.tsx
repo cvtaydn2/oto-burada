@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
+import { useRouter } from "next/navigation";
 import posthog from "posthog-js";
 import { Button } from "@/components/ui/button";
 import { Shield } from "lucide-react";
@@ -12,6 +13,8 @@ export default function Error({
   error: Error & { digest?: string };
   reset: () => void;
 }) {
+  const router = useRouter();
+
   useEffect(() => {
     posthog.captureException(error);
   }, [error]);
@@ -26,7 +29,7 @@ export default function Error({
         Bu sayfayı yüklerken bir hata oluştu. Lütfen tekrar deneyin.
       </p>
       <div className="flex gap-3">
-        <Button variant="outline" onClick={() => window.location.href = "/admin"}>
+        <Button variant="outline" onClick={() => router.push("/admin")}>
           <Shield className="mr-2 size-4" />
           Admin Ana Sayfa
         </Button>

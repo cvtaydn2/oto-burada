@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { Check, Zap, Crown, User, Building2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -22,6 +23,7 @@ interface PricingPlansProps {
 export function PricingPlans({ initialPlans }: PricingPlansProps) {
   const [plans] = useState(initialPlans);
   const [loading, setLoading] = useState<string | null>(null);
+  const router = useRouter();
 
   const getPlanIcon = (name: string) => {
     if (name.includes("Bireysel")) return User;
@@ -31,11 +33,8 @@ export function PricingPlans({ initialPlans }: PricingPlansProps) {
 
   const handleSubscribe = (planId: string) => {
     setLoading(planId);
-    // Redirect to payment page
-    setTimeout(() => {
-      window.location.href = `/dashboard/pricing/checkout?plan=${planId}`;
-      setLoading(null);
-    }, 800);
+    router.push(`/dashboard/pricing/checkout?plan=${planId}`);
+    setLoading(null);
   };
 
   return (
@@ -131,7 +130,9 @@ export function PricingPlans({ initialPlans }: PricingPlansProps) {
             Büyük filolar veya zincir galeriler için özel fiyat teklifi alın.
           </p>
         </div>
-        <Button variant="outline">Bizimle İletişime Geçin</Button>
+        <Button variant="outline" asChild>
+          <a href="/contact">Bizimle İletişime Geçin</a>
+        </Button>
       </div>
     </div>
   );

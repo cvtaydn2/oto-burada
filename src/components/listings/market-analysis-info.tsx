@@ -1,6 +1,5 @@
 "use client";
 
-import Image from "next/image";
 import { Info, TrendingUp, ShieldCheck } from "lucide-react";
 import {
   HoverCard,
@@ -11,7 +10,7 @@ import {
 export function MarketAnalysisInfo() {
   return (
     <div className="mt-4 overflow-hidden rounded-[32px] bg-slate-900 border border-white/5 shadow-2xl group transition-all hover:scale-[1.01]">
-      <div className="p-8 pb-4">
+      <div className="p-8">
         <div className="flex items-start justify-between gap-4">
           <div className="flex items-start gap-3">
              <div className="p-2.5 rounded-2xl bg-indigo-500 text-white shadow-xl shadow-indigo-500/20">
@@ -33,7 +32,7 @@ export function MarketAnalysisInfo() {
                                Şeffaf Fiyatlandırma
                             </div>
                             <p className="text-[11px] text-slate-300 leading-relaxed font-bold italic">
-                               OtoBurada&apos;nın yapay zeka algoritmaları, bu ilanı benzer özelliklerdeki binlerce güncel ilanla anlık olarak karşılaştırır.
+                               OtoBurada&apos;nın algoritmaları, bu ilanı benzer özelliklerdeki güncel ilanlarla karşılaştırır.
                             </p>
                          </div>
                       </HoverCardContent>
@@ -45,17 +44,6 @@ export function MarketAnalysisInfo() {
              </div>
           </div>
         </div>
-      </div>
-      
-      {/* Visual Chart Placeholder/Image */}
-       <div className="relative h-32 px-2 overflow-hidden">
-          <Image 
-            src="/market_analysis_mockup_v1_1776035350916.png" 
-            alt="Market Trend" 
-            fill
-            className="object-cover opacity-60 contrast-125 saturate-50 group-hover:scale-105 transition-transform duration-1000"
-          />
-         <div className="absolute inset-0 bg-gradient-to-t from-slate-900 via-transparent to-transparent" />
       </div>
     </div>
   );

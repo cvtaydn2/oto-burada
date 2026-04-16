@@ -151,7 +151,7 @@ export default async function HomePage() {
             
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
               {[
-                { icon: <ShieldCheck size={32} />, title: "Onaylı Profil", desc: "Tüm satıcılarımız e-Devlet destekli kimlik doğrulaması yapar." },
+                { icon: <ShieldCheck size={32} />, title: "Onaylı Profil", desc: "Satıcı profilleri moderasyon ekibimiz tarafından incelenir ve doğrulanır." },
                 { icon: <CheckCircle2 size={32} />, title: "Şeffaf Ekspertiz", desc: "Aracın tüm durumu dijital raporlarla net şekilde sunulur." },
                 { icon: <Zap size={32} />, title: "AI Değerleme", desc: "Aracınızın gerçek piyasa değerini saniyeler içinde öğrenin." },
               ].map((item, i) => (

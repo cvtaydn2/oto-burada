@@ -1,6 +1,6 @@
 "use client";
 
-import { ShieldCheck, Clock } from "lucide-react";
+import { ShieldCheck, Mail } from "lucide-react";
 
 interface IdentityVerificationFormProps {
   userId: string;
@@ -25,14 +25,14 @@ export function IdentityVerificationForm({ isVerified }: IdentityVerificationFor
 
   return (
     <div className="rounded-xl border border-slate-200 bg-slate-50 p-5 flex items-start gap-4">
-      <div className="size-10 rounded-xl bg-slate-200 flex items-center justify-center text-slate-500 shrink-0">
-        <Clock size={20} />
+      <div className="size-10 rounded-xl bg-blue-50 flex items-center justify-center text-blue-500 shrink-0">
+        <Mail size={20} />
       </div>
       <div>
-        <h4 className="text-sm font-bold text-slate-700">E-Devlet Kimlik Doğrulama</h4>
+        <h4 className="text-sm font-bold text-slate-700">E-posta Doğrulama</h4>
         <p className="text-xs text-slate-500 mt-1 leading-relaxed">
-          E-Devlet entegrasyonu yakında aktif olacak. Bu özellik hazır olduğunda hesabınızı doğrulayarak
-          &quot;Onaylı Satıcı&quot; rozeti kazanabileceksiniz.
+          İlan verebilmek için e-posta adresinizi doğrulamanız gerekmektedir.
+          Kayıt sırasında gönderilen doğrulama bağlantısını kontrol edin.
         </p>
       </div>
     </div>
