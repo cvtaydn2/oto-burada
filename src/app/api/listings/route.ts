@@ -141,8 +141,12 @@ export async function POST(request: Request) {
   await ensureProfileRecord(user);
   const profile = await getStoredProfileById(user.id);
   
-  if (!profile || !profile.isVerified) {
-    return apiError(API_ERROR_CODES.FORBIDDEN, "İlan verebilmek için telefon numaranızı doğrulamanız gerekmektedir.", 403);
+  if (!profile || !profile.emailVerified) {
+    return apiError(
+      API_ERROR_CODES.FORBIDDEN,
+      "İlan verebilmek için e-posta adresinizi doğrulamanız gerekmektedir.",
+      403,
+    );
   }
 
   const existingListings = await getStoredListings();

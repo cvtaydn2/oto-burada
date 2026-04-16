@@ -5,7 +5,7 @@ import { createAdminModerationAction } from "./moderation-actions";
 import { createDatabaseNotification } from "@/services/notifications/notification-records";
 import { Listing } from "@/types/domain";
 import { logger } from "@/lib/utils/logger";
-import { captureServerError } from "@/lib/monitoring/posthog-server";
+import { captureServerError, captureServerEvent } from "@/lib/monitoring/posthog-server";
 
 export async function getAdminInventory(filters?: {
   status?: string;
@@ -153,6 +153,14 @@ export async function forceActionOnListing(
         userId: listing.seller_id,
       }).catch(() => null);
     }
+
+    captureServerEvent("listing_moderated", {
+      action,
+      adminUserId,
+      listingId,
+      listingStatus: newStatus,
+      sellerId: listing.seller_id,
+    });
   }
 
   return { success: true };

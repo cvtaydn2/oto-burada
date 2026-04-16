@@ -113,7 +113,17 @@ export async function createPublicTicket(input: {
 
   if (error) throw error;
 
-  return mapTicket(data);
+  const ticket = mapTicket(data);
+
+  sendTicketCreatedEmail({
+    ticketId: ticket.id,
+    ticketSubject: input.subject,
+    ticketUrl: `${process.env.NEXT_PUBLIC_APP_URL ?? "https://otoburada.com"}/contact`,
+    toEmail: input.contactEmail,
+    toName: input.contactName,
+  }).catch((err) => logger.admin.warn("Public ticket created email failed silently", err));
+
+  return ticket;
 }
 
 export async function getAllTickets(options?: {

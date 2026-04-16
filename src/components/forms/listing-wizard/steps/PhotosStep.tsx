@@ -49,7 +49,7 @@ export function PhotosStep({
     <div className="space-y-10">
       <FormSection number={1} title="Medya ve Dosyalar">
         <p className="text-sm text-gray-500 mb-8">
-          Aracınızın tüm açılarını gösteren en az 4 adet kaliteli fotoğraf yükleyin.
+          Aracınızın tüm açılarını gösteren en az 3 adet kaliteli fotoğraf yükleyin.
         </p>
 
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">

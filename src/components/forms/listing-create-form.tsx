@@ -574,7 +574,7 @@ export function ListingCreateForm({
               ) : (
                 <>
                   <ShieldCheck size={18} className="mr-2" />
-                  {isEditing ? "Girişi Güncelle" : "İlanı Yayınla"}
+                  {isEditing ? "İlanı Güncelle" : "İlanı Moderasyona Gönder"}
                 </>
               )}
             </button>

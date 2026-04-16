@@ -8,6 +8,7 @@ import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { hasSupabaseEnv } from "@/lib/supabase/env";
 import { rateLimitProfiles } from "@/lib/utils/rate-limit";
 import { checkRateLimit } from "@/lib/utils/rate-limit-middleware";
+import { captureServerEvent } from "@/lib/monitoring/posthog-server";
 
 export interface AuthActionState {
   error?: string;
@@ -71,13 +72,19 @@ export async function loginAction(
 
   const supabase = await createSupabaseServerClient();
 
-  const { error } = await supabase.auth.signInWithPassword(parsed.data);
+  const { data, error } = await supabase.auth.signInWithPassword(parsed.data);
 
   if (error) {
     return {
       error: "Giriş yapılamadı. E-posta veya şifreyi kontrol et.",
       fields: { email: values.email },
     };
+  }
+
+  if (data.user) {
+    captureServerEvent("auth_login_success", {
+      userId: data.user.id,
+    });
   }
 
   const nextPath =
@@ -141,6 +148,12 @@ export async function registerAction(
       error: "Kayıt oluşturulamadı. Lütfen tekrar dene.",
       fields: { email: values.email },
     };
+  }
+
+  if (data.user) {
+    captureServerEvent("auth_register_success", {
+      userId: data.user.id,
+    });
   }
 
   if (data.session) {

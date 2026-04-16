@@ -94,7 +94,7 @@ export default async function SupportPage() {
           ) : (
             <p className="text-sm text-slate-500 font-medium">
               Destek talebi oluşturmak için{" "}
-              <a href="/login?callbackUrl=/support" className="text-primary font-bold hover:underline">
+              <a href="/login?next=%2Fsupport" className="text-primary font-bold hover:underline">
                 giriş yapmanız
               </a>{" "}
               gerekmektedir.

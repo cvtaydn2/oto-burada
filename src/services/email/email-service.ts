@@ -85,6 +85,7 @@ export async function sendTicketCreatedEmail(params: {
   toName: string;
   ticketSubject: string;
   ticketId: string;
+  ticketUrl?: string;
 }): Promise<SendEmailResult> {
   const resend = getResendClient();
   if (!resend) return { success: false, error: "Email servisi yapılandırılmamış." };
@@ -99,7 +100,7 @@ export async function sendTicketCreatedEmail(params: {
       html: ticketCreatedHtml({
         toName: params.toName,
         ticketSubject: params.ticketSubject,
-        ticketUrl: `${appUrl}/dashboard/support`,
+        ticketUrl: params.ticketUrl ?? `${appUrl}/dashboard/support`,
         appName: APP_NAME,
       }),
     });

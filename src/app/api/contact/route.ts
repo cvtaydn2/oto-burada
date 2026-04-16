@@ -2,7 +2,7 @@ import { apiError, apiSuccess, API_ERROR_CODES } from "@/lib/utils/api-response"
 import { rateLimitProfiles } from "@/lib/utils/rate-limit";
 import { enforceRateLimit, getRateLimitKey } from "@/lib/utils/rate-limit-middleware";
 import { sanitizeDescription, sanitizeText } from "@/lib/utils/sanitize";
-import { captureServerError } from "@/lib/monitoring/posthog-server";
+import { captureServerError, captureServerEvent } from "@/lib/monitoring/posthog-server";
 import { logger } from "@/lib/utils/logger";
 import { createPublicTicket, type TicketCategory, type TicketPriority } from "@/services/support/ticket-service";
 
@@ -68,6 +68,12 @@ export async function POST(request: Request) {
       description: sanitizeDescription(message.trim()),
       priority: (priority as TicketPriority) ?? "medium",
       subject: sanitizeText(subject.trim()),
+    });
+
+    captureServerEvent("contact_form_submitted", {
+      category: (category as TicketCategory) ?? "other",
+      priority: (priority as TicketPriority) ?? "medium",
+      ticketId: ticket.id,
     });
 
     return apiSuccess(ticket, "Mesajın bize ulaştı. En kısa sürede dönüş yapacağız.", 201);
