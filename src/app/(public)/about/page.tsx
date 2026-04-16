@@ -20,12 +20,12 @@ export default function AboutPage() {
            </p>
            <div className="flex gap-4">
              <div className="px-6 py-4 rounded-2xl bg-slate-900 text-white shadow-xl shadow-slate-900/20">
-                <span className="block text-3xl font-black italic tracking-tighter">10k+</span>
-                <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Aktif İlan</span>
+                <span className="block text-3xl font-black italic tracking-tighter">Ücretsiz</span>
+                <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Bireysel İlan</span>
              </div>
              <div className="px-6 py-4 rounded-2xl bg-white border border-slate-100 shadow-xl shadow-slate-200/20">
-                <span className="block text-3xl font-black italic tracking-tighter text-primary">4.9/5</span>
-                <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Kullanıcı Memnuniyeti</span>
+                <span className="block text-3xl font-black italic tracking-tighter text-primary">Güvenli</span>
+                <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Moderasyonlu Platform</span>
              </div>
            </div>
         </div>

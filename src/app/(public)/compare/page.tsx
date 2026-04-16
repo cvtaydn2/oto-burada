@@ -26,12 +26,14 @@ export default async function ComparePage({ searchParams }: ComparePageProps) {
   const resolvedParams = await searchParams;
   let idsToCompare: string[] = [];
 
+  const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
   if (resolvedParams.ids) {
-    if (Array.isArray(resolvedParams.ids)) {
-      idsToCompare = resolvedParams.ids;
-    } else {
-      idsToCompare = resolvedParams.ids.split(",").filter(Boolean);
-    }
+    const raw = Array.isArray(resolvedParams.ids)
+      ? resolvedParams.ids
+      : resolvedParams.ids.split(",").filter(Boolean);
+    // Only allow valid UUIDs, max 4 cars
+    idsToCompare = raw.filter((id) => UUID_REGEX.test(id)).slice(0, 4);
   }
 
   const cars = idsToCompare.length > 0 

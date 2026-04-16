@@ -1,7 +1,9 @@
 import { createSupabaseAdminClient } from "@/lib/supabase/admin"
+import { hasSupabaseAdminEnv } from "@/lib/supabase/env"
 import { type Listing, type Profile } from "@/types"
 
 export async function getGalleryBySlug(slug: string) {
+  if (!hasSupabaseAdminEnv()) return null;
   const supabase = createSupabaseAdminClient()
   const { data: profile, error } = await supabase
     .from("profiles")

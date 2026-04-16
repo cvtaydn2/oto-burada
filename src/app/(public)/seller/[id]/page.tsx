@@ -1,4 +1,4 @@
-import { Calendar, CheckCircle2, MapPin, MessageSquare, Phone, Star, Car, Clock } from "lucide-react";
+import { Calendar, CheckCircle2, MapPin, MessageSquare, Star, Car, Clock } from "lucide-react";
 import { notFound } from "next/navigation";
 
 import { ListingCardGrid } from "@/components/listings/listing-card-grid";
@@ -79,16 +79,7 @@ export default async function SellerProfilePage({ params }: SellerProfilePagePro
             <div className="flex w-full gap-2 sm:w-auto">
               {seller.phone && (
                 <a
-                  href={`tel:${seller.phone}`}
-                  className="flex h-10 flex-1 items-center justify-center gap-2 rounded-lg bg-primary px-4 text-sm font-bold text-white transition-all hover:bg-primary/90 sm:flex-none"
-                >
-                  <Phone size={16} />
-                  Ara
-                </a>
-              )}
-              {seller.phone && (
-                <a
-                  href={`https://wa.me/${seller.phone.replace(/\D/g, "")}`}
+                  href={`https://wa.me/${seller.phone.replace(/\D/g, "")}?text=${encodeURIComponent("Merhaba, OtoBurada üzerinden ilanlarınızla ilgileniyorum.")}`}
                   target="_blank"
                   rel="noreferrer"
                   className="flex h-10 flex-1 items-center justify-center gap-2 rounded-lg bg-[#25D366] px-4 text-sm font-bold text-white transition-all hover:bg-[#20bd5a] sm:flex-none"

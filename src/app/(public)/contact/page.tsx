@@ -25,7 +25,7 @@ export default function ContactPage() {
           icon={<MessageCircle size={28} />}
           title="WhatsApp"
           description="En hızlı çözüm için danışmanlarımıza anlık mesaj gönderin."
-          value="+90 (5xx) xxx xx xx"
+          value="destek@otoburada.com"
           color="bg-emerald-500"
         />
         <ContactCard
@@ -37,9 +37,9 @@ export default function ContactPage() {
         />
         <ContactCard
           icon={<Phone size={28} />}
-          title="Telefon"
-          description="Hafta içi 09:00 - 18:00 arası canlı destek hattımız."
-          value="0850 xxx xx xx"
+          title="Destek"
+          description="Hafta içi 09:00 - 18:00 arası destek ekibimize ulaşın."
+          value="destek@otoburada.com"
           color="bg-blue-500"
         />
       </div>
@@ -70,7 +70,7 @@ export default function ContactPage() {
                 <div>
                   <h4 className="font-bold">Müşteri Hizmetleri</h4>
                   <p className="text-blue-100 text-sm mt-1">
-                    0850 123 45 67<br />
+                    destek@otoburada.com<br />
                     <span className="text-xs opacity-75">Hafta içi 09:00 - 18:00</span>
                   </p>
                 </div>

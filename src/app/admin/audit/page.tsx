@@ -13,7 +13,7 @@ interface AdminActionWithProfile {
   target_type: string;
   note: string | null;
   created_at: string;
-  profile?: {
+  profiles?: {
     full_name: string | null;
   } | null;
 }
@@ -27,7 +27,7 @@ export default async function AdminAuditPage({ searchParams }: { searchParams: P
 
   let query = supabase
     .from("admin_actions")
-    .select("*, profile:profiles(full_name)")
+    .select("*, profiles!admin_actions_admin_user_id_fkey(full_name)")
     .order("created_at", { ascending: false })
     .limit(200);
 
@@ -95,7 +95,7 @@ export default async function AdminAuditPage({ searchParams }: { searchParams: P
                         <div className="size-9 rounded-xl bg-slate-100 border border-slate-200 flex items-center justify-center group-hover:bg-white group-hover:scale-110 transition-all">
                            <ShieldCheck size={16} className="text-slate-400 group-hover:text-blue-600" />
                         </div>
-                        <span className="text-sm font-black text-slate-800 uppercase tracking-tight">{action.profile?.full_name || "Bilinmeyen Admin"}</span>
+                        <span className="text-sm font-black text-slate-800 uppercase tracking-tight">{action.profiles?.full_name || "Bilinmeyen Admin"}</span>
                      </div>
                   </td>
                   <td className="px-6 py-5">

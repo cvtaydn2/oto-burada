@@ -65,7 +65,7 @@ export default async function EditListingPage({ params }: EditListingPageProps) 
             city: profile?.city || "",
             whatsappPhone: profile?.phone || "",
           }}
-          isPhoneVerified={profile?.phoneVerified}
+          isEmailVerified={profile?.emailVerified}
         />
       </div>
     </div>
