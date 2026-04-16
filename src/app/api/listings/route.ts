@@ -202,5 +202,13 @@ export async function POST(request: Request) {
     );
   }
 
-  return apiError(API_ERROR_CODES.INTERNAL_ERROR, "İlan kaydedilemedi. Lütfen tekrar dene.", 500);
-}
+  // createDatabaseListing returned { error: "database_error" } — log it
+  captureServerError("POST /api/listings — createDatabaseListing failed", "listings", null, {
+    userId: user.id,
+    listingId: createdListing.id,
+    brand: createdListing.brand,
+    model: createdListing.model,
+    resultError: result.error ?? "unknown",
+  }, user.id);
+
+  return apiError(API_ERROR_CODES.INTERNAL_ERROR, "İlan kaydedilemedi. Lütfen tekrar dene.", 500);}

@@ -651,6 +651,25 @@ export async function createDatabaseListing(listing: Listing): Promise<CreateLis
   const insertResult = await admin.from("listings").insert(mapListingToDatabaseRow(listing));
 
   if (insertResult.error) {
+    // Log the actual DB error so it appears in Vercel function logs
+    logger.listings.error("createDatabaseListing insert failed", insertResult.error, {
+      listingId: listing.id,
+      sellerId: listing.sellerId,
+      errorCode: insertResult.error.code,
+      errorMessage: insertResult.error.message,
+      errorDetails: insertResult.error.details,
+      errorHint: insertResult.error.hint,
+    });
+
+    // Also log to console.error so it always appears in Vercel runtime logs
+    // regardless of log level configuration
+    console.error("[listings] DB insert 400:", {
+      code: insertResult.error.code,
+      message: insertResult.error.message,
+      details: insertResult.error.details,
+      hint: insertResult.error.hint,
+    });
+
     if (insertResult.error.message.includes("slug_unique") || insertResult.error.code === "23505") {
       return { error: "slug_collision" };
     }
@@ -663,6 +682,12 @@ export async function createDatabaseListing(listing: Listing): Promise<CreateLis
     const imageInsertResult = await admin.from("listing_images").insert(imageRows);
 
     if (imageInsertResult.error) {
+      logger.listings.error("createDatabaseListing image insert failed", imageInsertResult.error, {
+        listingId: listing.id,
+        imageCount: imageRows.length,
+        errorCode: imageInsertResult.error.code,
+        errorMessage: imageInsertResult.error.message,
+      });
       await admin.from("listings").delete().eq("id", listing.id);
       return { error: "database_error" };
     }
@@ -731,7 +756,8 @@ export function mapListingToDatabaseRow(listing: Listing) {
   return {
     brand: listing.brand,
     city: listing.city,
-    created_at: listing.createdAt,
+    // created_at is intentionally omitted — DB DEFAULT now() handles it on insert.
+    // Sending it can cause 400 errors with some PostgREST versions.
     damage_status_json: listing.damageStatusJson ?? null,
     description: listing.description,
     district: listing.district,
