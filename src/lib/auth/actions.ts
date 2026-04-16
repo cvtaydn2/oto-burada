@@ -20,6 +20,23 @@ export interface AuthActionState {
 
 const initialState: AuthActionState = {};
 
+// Shared safe-path validator — mirrors auth/callback/route.ts sanitizeNextParam.
+// Accepts only relative paths with safe characters; rejects open-redirect attempts.
+const ALLOWED_NEXT_PATHS = /^\/[a-zA-Z0-9\-_/?=&%#.]+$/;
+
+function sanitizeRedirectPath(next: string | null | undefined): string {
+  if (!next) return "/dashboard";
+  // Must start with / but not //  (protocol-relative open redirect)
+  if (!next.startsWith("/") || next.startsWith("//")) return "/dashboard";
+  // Block /\  and /... traversal tricks
+  if (/^\/[\\.]/.test(next)) return "/dashboard";
+  // Block protocol-relative disguised as path  (e.g. /javascript:...)
+  if (/^\/[a-z]+:/i.test(next)) return "/dashboard";
+  // Allowlist: only safe URL characters
+  if (!ALLOWED_NEXT_PATHS.test(next)) return "/dashboard";
+  return next;
+}
+
 function getEmailRedirectUrl() {
   const appUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
   return `${appUrl.replace(/\/$/, "")}/auth/callback`;
@@ -87,10 +104,7 @@ export async function loginAction(
     });
   }
 
-  const nextPath =
-    values.next.startsWith("/") && !values.next.startsWith("//")
-      ? values.next
-      : "/dashboard";
+  const nextPath = sanitizeRedirectPath(values.next);
 
   redirect(nextPath);
 }
@@ -137,9 +151,9 @@ export async function registerAction(
     ...parsed.data,
     options: {
       emailRedirectTo: getEmailRedirectUrl(),
-      data: {
-        role: "user",
-      },
+      // Do NOT set role in user_metadata — it is user-editable and cannot be
+      // trusted for authorization. Role is managed via app_metadata (admin SDK only)
+      // and the profiles.role column (RLS-protected).
     },
   });
 
@@ -203,6 +217,9 @@ export async function logoutAction() {
     captureServerEvent("auth_logout", { userId: user.id }, user.id);
   }
 
-  await supabase.auth.signOut();
+  // scope: 'global' invalidates all sessions across devices/browsers,
+  // not just the current cookie. This prevents sessions lingering on
+  // other tabs or devices after an explicit logout.
+  await supabase.auth.signOut({ scope: "global" });
   redirect("/");
 }

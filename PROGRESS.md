@@ -278,7 +278,58 @@
 - Güncel `schema.sql` gerçek Supabase veritabanına uygulanmalı ve production veri modeli senkronize edilmeli.
 - Ardından gerçek DB üzerinde chat, corporate profile ve ekspertiz belge akışları için integration smoke test yapılmalı.
 
-## Create Listing Flow Audit & Fixes (2026-04-17)
+## Authentication & Authorization Audit & Fixes (2026-04-17)
+
+### Tespit ve Düzeltilen Sorunlar
+
+**SECURITY [YÜKSEK]: `loginAction` open redirect zafiyeti**
+- `values.next.startsWith("/") && !values.next.startsWith("//")` — `//evil.com` ve `/\evil.com` gibi path'ler bypass edebilirdi
+- `auth/callback/route.ts`'deki daha güçlü `sanitizeNextParam` mantığı kullanılmıyordu
+- Düzeltme: `sanitizeRedirectPath()` helper eklendi — allowlist regex, protocol-relative block, traversal block
+
+**SECURITY [YÜKSEK]: `registerAction` role'ü `user_metadata`'ya yazıyordu**
+- `signUp({ options: { data: { role: "user" } } })` — `user_metadata` kullanıcı tarafından güncellenebilir
+- Güvenli kaynak: `app_metadata.role` (sadece admin SDK yazabilir)
+- Düzeltme: `data: { role: "user" }` kaldırıldı, yorum eklenidi — role DB ve app_metadata üzerinden yönetiliyor
+
+**SECURITY [YÜKSEK]: Admin JWT stale — demotion sonrası API erişimi devam ediyordu**
+- `requireApiAdminUser` sadece JWT `app_metadata.role` bakıyordu
+- Admin DB'de demote edilse bile JWT süresi dolana kadar admin API'lere erişebiliyordu
+- Düzeltme: `requireApiAdminUser` JWT check + DB `profiles.role` cross-verify eklenidi
+- Düzeltme: `requireAdminUser` (page-level) aynı DB cross-verify eklenidi
+
+**SECURITY [YÜKSEK]: PostHog `identify()` email PII gönderiyor**
+- `ph.identify(user.id, { email: user.email, ... })` — proje kuralları PII gönderimini yasaklıyor
+- Düzeltme: `email` property kaldırıldı, sadece `email_verified`, `phone_verified`, `role` gönderiliyor
+
+**SECURITY [ORTA]: `logoutAction` sadece local session'ı kapatıyordu**
+- `supabase.auth.signOut()` → sadece current cookie
+- Diğer cihaz/sekme oturumları aktif kalıyordu
+- Düzeltme: `signOut({ scope: "global" })` ile tüm cihazlardaki session invalide ediliyor
+
+**PRIVACY [ORTA]: Avatar `i.pravatar.cc` userId'yi dışarıya sızdırıyordu**
+- `https://i.pravatar.cc/150?u=${userId}` harici servise UUID gönderiyordu
+- Düzeltme: Harici servis kaldırıldı, `Image` import temizlendi, initials fallback eklendi
+
+**SAFE: Register şifre minimum uzunluğu güçlendirildi**
+- `loginSchema = registerSchema` — kayıt için `min(6)` yeterliydi
+- Düzeltme: `registerSchema` ayrı tanımlandı, `password: min(8)` (reset form ile tutarlı)
+- `loginSchema` `min(6)` kaldı (eski kullanıcılar kısa şifreyle login yapabilmeli)
+
+### Doğrulama
+- `npm run typecheck` ✅
+- `npm run lint` ✅ (0 errors, 0 warnings)
+- `npm run build` ✅
+
+### Önemli Not (RLS-2 — Listing join profile select)
+- `listings_select_visible` policy'si ile approved listing'leri herkes görebiliyor
+- Bu listing'lerin seller profile join'i `profiles!seller_id(...)` ile yapılıyor
+- `profiles_select_self_or_admin` chat partner check'i bu join'i kapsamıyor
+- **Etki**: Herkes onaylı ilanı görünce satıcının bazı profil alanlarını (isim, şehir, logo) görebiliyor
+- **Karar**: Satıcı profil bilgisi public listing context'te kasıtlı olarak gösteriliyor (satıcı kartı)
+- `getMarketplaceSeller()` zaten `phone`, `email` gibi PII alanlarını dışarıda bırakıyor — tasarım gereği kabul edildi
+
+
 
 ### Tespit ve Düzeltilen Sorunlar
 

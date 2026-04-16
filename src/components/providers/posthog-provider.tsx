@@ -47,7 +47,8 @@ function PostHogPageView() {
     }
 
     ph.identify(user.id, {
-      email: user.email,
+      // Do NOT include email, phone, or name — PII must never be sent to PostHog.
+      // Only include non-identifiable attributes for segmentation.
       email_verified: Boolean(user.email_confirmed_at),
       phone_verified: Boolean(user.phone_confirmed_at),
       role: (user.app_metadata as { role?: string } | undefined)?.role ?? "user",

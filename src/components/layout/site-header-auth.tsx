@@ -1,6 +1,5 @@
 "use client";
 
-import Image from "next/image";
 import Link from "next/link";
 import { Heart, MessageSquare, PlusCircle } from "lucide-react";
 
@@ -43,14 +42,9 @@ export function SiteHeaderAuth({
       <div className="flex items-center gap-2 sm:gap-4">
         <Link href={accountHref} className="flex items-center gap-2 group">
           {isAuthenticated && userId ? (
-            <div className="size-8 overflow-hidden rounded-full border border-gray-200">
-              <Image
-                src={`https://i.pravatar.cc/150?u=${userId}`}
-                alt="Profil"
-                className="h-full w-full object-cover"
-                width={32}
-                height={32}
-              />
+            <div className="size-8 overflow-hidden rounded-full border border-gray-200 bg-blue-500 flex items-center justify-center text-white text-xs font-bold select-none">
+              {/* No external avatar service — avoids leaking userId to third parties */}
+              <span>U</span>
             </div>
           ) : (
             <span className="text-sm font-medium text-muted-foreground transition-colors hover:text-primary">
