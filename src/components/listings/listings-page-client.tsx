@@ -103,8 +103,21 @@ export function ListingsPageClient({
   }, [router, startTransition])
 
   const handleFilterChange = useCallback(<K extends keyof ListingFilters>(key: K, value: ListingFilters[K]) => {
-    // Always reset to page 1 when any filter changes
     const newFilters: ListingFilters = { ...filters, [key]: value, page: 1 }
+
+    if (key === "brand") {
+      newFilters.model = undefined
+      newFilters.carTrim = undefined
+    }
+
+    if (key === "model") {
+      newFilters.carTrim = undefined
+    }
+
+    if (key === "city") {
+      newFilters.district = undefined
+    }
+
     setFilters(newFilters)
 
     // Immediate navigation for sort, limit, select-type filters
