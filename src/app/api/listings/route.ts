@@ -13,7 +13,7 @@ import {
   getExistingListingSlugs,
 } from "@/services/listings/listing-submissions";
 import { createDatabaseNotification } from "@/services/notifications/notification-records";
-import { ensureProfileRecord, getStoredProfileById } from "@/services/profile/profile-records";
+import { ensureProfileRecord, getStoredProfileById, isUserBanned } from "@/services/profile/profile-records";
 import { checkListingLimit } from "@/services/listings/listing-limits";
 import { parseListingFiltersFromSearchParams } from "@/services/listings/listing-filters";
 import { getFilteredMarketplaceListings } from "@/services/listings/marketplace-listings";
@@ -145,6 +145,16 @@ export async function POST(request: Request) {
     return apiError(
       API_ERROR_CODES.FORBIDDEN,
       "İlan verebilmek için e-posta adresinizi doğrulamanız gerekmektedir.",
+      403,
+    );
+  }
+
+  // Ban check — prevent banned users from creating listings
+  const banned = await isUserBanned(user.id);
+  if (banned) {
+    return apiError(
+      API_ERROR_CODES.FORBIDDEN,
+      "Hesabınız askıya alınmıştır. Lütfen destek ekibiyle iletişime geçin.",
       403,
     );
   }

@@ -3,8 +3,10 @@ import { notFound } from "next/navigation";
 
 import { ListingCardGrid } from "@/components/listings/listing-card-grid";
 import { TrustBadge } from "@/components/shared/trust-badge";
+import { SellerRatingInfo } from "@/components/profile/seller-rating-info";
 import { getMarketplaceSeller, getPublicMarketplaceListings } from "@/services/listings/marketplace-listings";
 import { getSellerTrustSummary } from "@/services/profile/profile-trust";
+import { getSellerRatingSummary, getSellerReviews } from "@/services/profile/seller-reviews";
 import type { Listing } from "@/types";
 
 interface SellerProfilePageProps {
@@ -34,6 +36,10 @@ export default async function SellerProfilePage({ params }: SellerProfilePagePro
   const featuredListingCount = sellerListings.filter((listing: Listing) => listing.featured).length;
   const trustSummary = getSellerTrustSummary(seller, totalListingsCount);
   const memberSinceYear = new Date(seller.createdAt).getFullYear();
+  const [ratingSummary, reviews] = await Promise.all([
+    getSellerRatingSummary(sellerId),
+    getSellerReviews(sellerId),
+  ]);
 
   return (
     <div className="mx-auto max-w-[1280px] space-y-6 px-4 py-6 sm:px-6 lg:px-6 lg:py-8">
@@ -132,7 +138,15 @@ export default async function SellerProfilePage({ params }: SellerProfilePagePro
 
           {/* Trust Section */}
           <div className="mt-5 rounded-lg bg-slate-50 p-4">
-            <h3 className="mb-3 text-sm font-semibold text-slate-900">Güvenilirlik özeti</h3>
+            <div className="mb-3 flex items-center justify-between">
+              <h3 className="text-sm font-semibold text-slate-900">Güvenilirlik özeti</h3>
+              {ratingSummary.count > 0 && (
+                <SellerRatingInfo
+                  average={ratingSummary.average}
+                  count={ratingSummary.count}
+                />
+              )}
+            </div>
             <div className="flex flex-wrap gap-4">
               {trustSummary.signals.map((signal) => (
                 <div key={signal} className="flex items-center gap-2 text-sm text-emerald-700">
@@ -173,6 +187,65 @@ export default async function SellerProfilePage({ params }: SellerProfilePagePro
           </div>
         )}
       </section>
+
+      {/* Seller Reviews */}
+      {reviews.length > 0 && (
+        <section className="space-y-4">
+          <div className="flex items-center gap-3">
+            <h2 className="text-xl font-bold text-slate-900 sm:text-2xl">
+              Değerlendirmeler
+            </h2>
+            <SellerRatingInfo
+              average={ratingSummary.average}
+              count={ratingSummary.count}
+            />
+          </div>
+          <div className="grid gap-4 sm:grid-cols-2">
+            {reviews.map((review) => (
+              <div
+                key={review.id}
+                className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm"
+              >
+                <div className="mb-3 flex items-start justify-between gap-3">
+                  <div className="flex items-center gap-3">
+                    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-slate-100 text-sm font-bold text-slate-500">
+                      {review.reviewer?.full_name?.[0]?.toUpperCase() ?? "K"}
+                    </div>
+                    <div>
+                      <p className="text-sm font-semibold text-slate-900">
+                        {review.reviewer?.full_name ?? "Anonim"}
+                      </p>
+                      <p className="text-xs text-slate-400">
+                        {new Date(review.created_at).toLocaleDateString("tr-TR", {
+                          day: "numeric",
+                          month: "long",
+                          year: "numeric",
+                        })}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex shrink-0 items-center gap-0.5">
+                    {[1, 2, 3, 4, 5].map((star) => (
+                      <Star
+                        key={star}
+                        size={13}
+                        className={
+                          star <= review.rating
+                            ? "fill-amber-400 text-amber-400"
+                            : "fill-slate-100 text-slate-200"
+                        }
+                      />
+                    ))}
+                  </div>
+                </div>
+                {review.comment && (
+                  <p className="text-sm leading-relaxed text-slate-600">{review.comment}</p>
+                )}
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
     </div>
   );
 }

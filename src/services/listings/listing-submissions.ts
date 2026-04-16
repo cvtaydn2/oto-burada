@@ -877,12 +877,21 @@ export async function moderateDatabaseListing(
   }
 
   const admin = createSupabaseAdminClient();
+  const now = new Date().toISOString();
+
+  const updatePayload: Record<string, string | null> = {
+    status,
+    updated_at: now,
+  };
+
+  // Set published_at when approving for the first time (expiry tracking)
+  if (status === "approved") {
+    updatePayload.published_at = now;
+  }
+
   const { data, error } = await admin
     .from("listings")
-    .update({
-      status,
-      updated_at: new Date().toISOString(),
-    })
+    .update(updatePayload)
     .eq("id", listingId)
     .eq("status", "pending")
     .select("id")

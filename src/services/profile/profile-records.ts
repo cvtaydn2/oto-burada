@@ -309,3 +309,28 @@ export async function verifyProfileIdentity(userId: string, eidsId: string) {
 
   return getStoredProfileById(userId);
 }
+
+/**
+ * Checks if a user is banned.
+ * Used in API routes before allowing mutations (listing creation, messaging, etc.)
+ * Returns true if the user is banned, false otherwise.
+ * Returns false (safe default) if the DB is unavailable.
+ */
+export async function isUserBanned(userId: string): Promise<boolean> {
+  if (!hasSupabaseAdminEnv()) {
+    return false; // Safe default — don't block if DB unavailable
+  }
+
+  const admin = createSupabaseAdminClient();
+  const { data, error } = await admin
+    .from("profiles")
+    .select("is_banned")
+    .eq("id", userId)
+    .maybeSingle<{ is_banned: boolean | null }>();
+
+  if (error || !data) {
+    return false; // Safe default
+  }
+
+  return data.is_banned === true;
+}
