@@ -26,6 +26,47 @@ function buildDefaultModerationNote(listing: Listing, action: ListingModerationD
     : `${listing.title} ilanı reddedildi.`;
 }
 
+async function sendModerationEmail(
+  listing: Listing,
+  action: ListingModerationDecision,
+  note?: string | null,
+) {
+  try {
+    const { createSupabaseAdminClient } = await import("@/lib/supabase/admin");
+    const admin = createSupabaseAdminClient();
+    const { data: authUser } = await admin.auth.admin.getUserById(listing.sellerId);
+    const sellerEmail = authUser?.user?.email;
+    const sellerName =
+      (authUser?.user?.user_metadata as { full_name?: string } | undefined)?.full_name ??
+      "Satıcı";
+
+    if (!sellerEmail) return;
+
+    const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://otoburada.com";
+
+    if (action === "approve") {
+      const { sendListingApprovedEmail } = await import("@/services/email/email-service");
+      await sendListingApprovedEmail({
+        toEmail: sellerEmail,
+        toName: sellerName,
+        listingTitle: listing.title,
+        listingUrl: `${appUrl}/listing/${listing.slug}`,
+      });
+    } else {
+      const { sendListingRejectedEmail } = await import("@/services/email/email-service");
+      await sendListingRejectedEmail({
+        toEmail: sellerEmail,
+        toName: sellerName,
+        listingTitle: listing.title,
+        reason: note ?? undefined,
+      });
+    }
+  } catch (err) {
+    // Non-critical — don't fail moderation if email fails
+    logger.admin.warn("Moderation email failed to send", { listingId: listing.id, action }, err);
+  }
+}
+
 async function createModerationSideEffects(
   listing: Listing,
   action: ListingModerationDecision,
@@ -50,6 +91,9 @@ async function createModerationSideEffects(
     type: "moderation",
     userId: listing.sellerId,
   });
+
+  // Fire-and-forget email — doesn't block moderation response
+  sendModerationEmail(listing, action, note);
 
   // If approved, recalculate market stats and invalidate cache
   if (action === "approve") {

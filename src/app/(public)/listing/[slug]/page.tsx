@@ -29,6 +29,12 @@ import { getListingCardInsights } from "@/services/listings/listing-card-insight
 import { captureServerEvent } from "@/lib/monitoring/posthog-server";
 import { recordListingView } from "@/services/listings/listing-views";
 import { headers } from "next/headers";
+import { getCurrentUser } from "@/lib/auth/session";
+import { getSellerRatingSummary } from "@/services/profile/seller-reviews";
+
+const SellerReviewForm = dynamic(
+  () => import("@/components/listings/seller-review-form").then((mod) => mod.SellerReviewForm),
+);
 
 const ListingMap = dynamic(
   () => import("@/components/shared/listing-map-wrapper").then((mod) => mod.ListingMapWrapper),
@@ -80,6 +86,14 @@ export default async function ListingDetailPage({ params }: ListingDetailPagePro
     getMarketplaceSeller(listing.sellerId),
     getSimilarMarketplaceListings(listing.slug, listing.brand, listing.city),
   ]);
+
+  const [currentUser, sellerRatingSummary] = await Promise.all([
+    getCurrentUser(),
+    getSellerRatingSummary(listing.sellerId),
+  ]);
+
+  // Buyer can review if: logged in AND not the seller
+  const canReview = Boolean(currentUser && currentUser.id !== listing.sellerId);
 
   // Server-side view kaydı (dedup: kullanıcı/IP bazlı günlük)
   const headersList = await headers();
@@ -394,7 +408,37 @@ export default async function ListingDetailPage({ params }: ListingDetailPagePro
                   <ContactActions listingId={listing.id} listingSlug={listing.slug} sellerId={listing.sellerId} />
                 </div>
 
-                <div className="mt-6 pt-4 border-t border-gray-100 space-y-3">
+                {/* Seller rating summary */}
+                {sellerRatingSummary.count > 0 && (
+                  <div className="mt-4 flex items-center gap-2 pt-4 border-t border-gray-100">
+                    <div className="flex items-center gap-0.5">
+                      {[1, 2, 3, 4, 5].map((star) => (
+                        <svg
+                          key={star}
+                          className={cn(
+                            "size-3.5",
+                            star <= Math.round(sellerRatingSummary.average)
+                              ? "fill-amber-400 text-amber-400"
+                              : "fill-slate-100 text-slate-200",
+                          )}
+                          viewBox="0 0 24 24"
+                          stroke="currentColor"
+                          strokeWidth="1"
+                        >
+                          <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+                        </svg>
+                      ))}
+                    </div>
+                    <span className="text-xs font-bold text-slate-700">
+                      {sellerRatingSummary.average.toFixed(1)}
+                    </span>
+                    <span className="text-xs text-slate-400">
+                      ({sellerRatingSummary.count} değerlendirme)
+                    </span>
+                  </div>
+                )}
+
+                <div className="mt-4 pt-4 border-t border-gray-100 space-y-3">
                   <Link href={`/gallery/${seller?.businessSlug || seller?.id}`} className="flex justify-between items-center text-sm font-medium text-gray-600 hover:text-blue-500 transition group">
                     Satıcının diğer ilanları 
                     <svg className="size-2.5 text-gray-400 group-hover:text-blue-500 transition-colors" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
@@ -409,6 +453,15 @@ export default async function ListingDetailPage({ params }: ListingDetailPagePro
                   </Link>
                 </div>
               </div>
+
+              {/* Seller Review Form — only for logged-in non-sellers */}
+              {canReview && (
+                <SellerReviewForm
+                  sellerId={listing.sellerId}
+                  listingId={listing.id}
+                  sellerName={seller?.businessName ?? seller?.fullName ?? "Satıcı"}
+                />
+              )}
 
               {/* Quick Offer */}
               <div className="bg-blue-50/50 border border-blue-100 rounded-2xl p-6 shadow-sm relative overflow-hidden">
