@@ -3,7 +3,6 @@ import { hasSupabaseAdminEnv } from "@/lib/supabase/env";
 
 interface FavoriteRow {
   listing_id: string;
-  user_id: string;
 }
 
 export async function getDatabaseFavoriteIds(userId: string) {
@@ -14,7 +13,7 @@ export async function getDatabaseFavoriteIds(userId: string) {
   const admin = createSupabaseAdminClient();
   const { data, error } = await admin
     .from("favorites")
-    .select("user_id, listing_id")
+    .select("listing_id")
     .eq("user_id", userId)
     .returns<FavoriteRow[]>();
 
@@ -26,8 +25,18 @@ export async function getDatabaseFavoriteIds(userId: string) {
 }
 
 export async function getDatabaseFavoriteCount(userId: string) {
-  const favoriteIds = await getDatabaseFavoriteIds(userId);
-  return favoriteIds?.length ?? 0;
+  if (!hasSupabaseAdminEnv()) {
+    return 0;
+  }
+
+  const admin = createSupabaseAdminClient();
+  const { count, error } = await admin
+    .from("favorites")
+    .select("*", { count: "exact", head: true })
+    .eq("user_id", userId);
+
+  if (error) return 0;
+  return count ?? 0;
 }
 
 export async function addDatabaseFavorite(userId: string, listingId: string) {

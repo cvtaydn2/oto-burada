@@ -56,11 +56,17 @@ export function FavoritesPriceAlerts() {
         <CardTitle className="flex items-center gap-2 text-lg font-bold text-slate-900">
           <Bell className="text-blue-500" size={20} />
           Fiyat Düşüşü Uyarı Ayarları
+          <span className="ml-auto text-[10px] font-black uppercase tracking-widest text-blue-400 bg-blue-50 border border-blue-100 px-2 py-0.5 rounded-full">
+            Yakında
+          </span>
         </CardTitle>
       </CardHeader>
       <CardContent>
         <div className="space-y-6">
-          <div>
+          <div className="rounded-xl bg-white border border-blue-100 p-4 text-sm text-slate-600 leading-relaxed">
+            Fiyat düşüşü bildirimleri özelliği yakında aktif olacak. Şu an bu ayarlar kaydedilmekte, ancak e-posta gönderimi henüz aktif değil.
+          </div>
+          <div className="opacity-60 pointer-events-none select-none">
             <p className="mb-2 text-xs font-bold uppercase tracking-wider text-slate-400">Fiyat Hassasiyeti</p>
             <p className="mb-3 text-xs text-slate-500">Fiyat en az ne kadar düştüğünde e-posta uyarısı almak istersiniz?</p>
             <div className="space-y-2">

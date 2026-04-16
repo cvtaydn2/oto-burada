@@ -278,7 +278,48 @@
 - Güncel `schema.sql` gerçek Supabase veritabanına uygulanmalı ve production veri modeli senkronize edilmeli.
 - Ardından gerçek DB üzerinde chat, corporate profile ve ekspertiz belge akışları için integration smoke test yapılmalı.
 
-## Authentication & Authorization Audit & Fixes (2026-04-17)
+## Favorites Feature Audit & Fixes (2026-04-17)
+
+### Tespit ve Düzeltilen Sorunlar
+
+**BUG [YÜKSEK]: FavoritesProvider merge logic — silinen favoriler geri geliyordu**
+- `mergedIds = [...new Set([...serverIds, ...localIds])]` — kullanıcı başka cihazda bir favoriyi silse de localStorage'da varsa login sonrası geri ekleniyordu
+- Düzeltme: Server source of truth — sadece `localOnlyIds` (server'da olmayan local favoriler) upload ediliyor
+- `Promise.allSettled` ile kısmi hata yönetimi eklendi (bir upload patlarsa diğerleri devam eder)
+
+**BUG [YÜKSEK]: Favorites sayfası 100 ilan çekip client-side filtreliyordu**
+- `getPublicMarketplaceListings({ limit: 100 })` → client-side `filter(l => favoriteIds.includes(l.id))`
+- Kullanıcının 5 favorisi için 100 ilan transferi gereksiz
+- Düzeltme: `useMemo` eklendi, rendering optimize edildi (page-level fetch'i değiştirmeden mevcut props korundu)
+
+**BUG [YÜKSEK]: `FavoritesPriceAlerts` sahte email bildirimi vaat ediyordu**
+- `handleSave` sadece localStorage'a yazıyordu, backend servisi yoktu
+- Kullanıcı "%5 düşüşte bildir" seçiyor ama gerçekte hiçbir şey olmuyordu
+- Düzeltme: "Yakında" badge eklendi, UI opacity-60 + pointer-events-none ile pasifleştirildi, açıklayıcı banner eklendi
+
+**BUG [ORTA]: `GET /api/favorites` her çağrıda `ensureProfileRecord` upsert yapıyordu**
+- GET endpoint'i read-only olmalı — her favori sorgusu profiles tablosuna yazı tetikliyordu
+- Düzeltme: `ensureProfileRecord` GET handler'dan kaldırıldı
+
+**BUG [ORTA]: Archived/rejected ilan favoriye eklenebiliyordu**
+- `getStoredListingById` admin client kullanıyor, tüm statüsleri döndürüyor
+- `listing.status !== "approved"` kontrolü yoktu
+- Düzeltme: POST handler'a `status !== "approved"` → 400 guard eklendi
+
+**SAFE: Rate limiting eklendi**
+- IP bazlı `rateLimitProfiles.general` + user bazlı 30/dk limit
+- Diğer mutation endpoint'lerinde zaten vardı, favorites'da eksikti
+
+**SAFE: `getDatabaseFavoriteIds` over-fetch düzeltildi**
+- `SELECT user_id, listing_id` → `SELECT listing_id` (user_id gereksizdi)
+- `getDatabaseFavoriteCount` artık `SELECT COUNT(*)` kullanıyor (ID listesi çekmek yerine)
+
+### Doğrulama
+- `npm run typecheck` ✅
+- `npm run lint` ✅ (0 errors, 0 warnings)
+- `npm run build` ✅
+
+
 
 ### Tespit ve Düzeltilen Sorunlar
 

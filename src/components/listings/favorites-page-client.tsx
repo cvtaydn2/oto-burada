@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useMemo } from "react";
 import { ArrowRight, Heart, LogIn, TrendingUp, Gauge, ShieldCheck } from "lucide-react";
 
 import { ListingCard } from "@/components/listings/listing-card";
@@ -18,17 +19,22 @@ export function FavoritesPageClient({ listings, userId }: FavoritesPageClientPro
   const { favoriteIds, hydrated } = useFavorites();
   const isGuest = !userId;
 
-  const favoriteListings = listings.filter((listing) =>
-    favoriteIds.includes(listing.id),
+  // Memoize filtering to avoid re-running on every render
+  const favoriteListings = useMemo(
+    () => listings.filter((listing) => favoriteIds.includes(listing.id)),
+    [listings, favoriteIds],
   );
   
-  const avgPrice =
-    favoriteListings.length > 0
-      ? Math.round(
-          favoriteListings.reduce((total, l) => total + l.price, 0) /
-            favoriteListings.length,
-        )
-      : 0;
+  const avgPrice = useMemo(
+    () =>
+      favoriteListings.length > 0
+        ? Math.round(
+            favoriteListings.reduce((total, l) => total + l.price, 0) /
+              favoriteListings.length,
+          )
+        : 0,
+    [favoriteListings],
+  );
 
   if (!hydrated) {
     return <ListingsGridSkeleton count={4} />;

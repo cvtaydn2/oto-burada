@@ -115,28 +115,33 @@ export function FavoritesProvider({ children }: PropsWithChildren) {
         const response = await fetch("/api/favorites", { method: "GET" });
         const payload = await response.json().catch(() => null) as { success?: boolean; data?: { favoriteIds?: string[] } };
         const serverFavoriteIds = payload?.data?.favoriteIds ?? [];
-        const localIds = readFavoriteIds();
-        
-        // Defensive: Ensure serverFavoriteIds is an array before filtering
-        const safeServerIds = Array.isArray(serverFavoriteIds) ? serverFavoriteIds : [];
-        const mergedIds = [...new Set([...safeServerIds, ...localIds])];
 
-        if (mergedIds.length > safeServerIds.length) {
-          await Promise.all(
-            mergedIds
-              .filter((listingId) => !safeServerIds.includes(listingId))
-              .map((listingId) =>
-                requestFavoriteUpdate("POST", listingId).catch(() => safeServerIds),
-              ),
+        // Server is the source of truth for authenticated users.
+        // We do NOT blindly merge localStorage — that would re-add items
+        // the user deleted on another device/session.
+        const safeServerIds = Array.isArray(serverFavoriteIds) ? serverFavoriteIds : [];
+        const localIds = readFavoriteIds();
+        const localOnlyIds = localIds.filter((id) => !safeServerIds.includes(id));
+
+        // Upload any local-only favorites that the server doesn't know about yet
+        // (e.g. items added while offline / before login).
+        if (localOnlyIds.length > 0) {
+          await Promise.allSettled(
+            localOnlyIds.map((listingId) => requestFavoriteUpdate("POST", listingId)),
           );
         }
 
+        const canonicalIds = localOnlyIds.length > 0
+          ? [...new Set([...safeServerIds, ...localOnlyIds])]
+          : safeServerIds;
+
         if (!cancelled) {
-          broadcastFavoritesUpdate(mergedIds);
-          setRemoteFavoriteIds(mergedIds);
+          broadcastFavoritesUpdate(canonicalIds);
+          setRemoteFavoriteIds(canonicalIds);
         }
       } catch {
         if (!cancelled) {
+          // Network error — fall back to local state, do not overwrite server truth
           setRemoteFavoriteIds(readFavoriteIds());
         }
       }

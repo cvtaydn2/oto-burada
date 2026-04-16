@@ -3,6 +3,8 @@ import { captureServerEvent } from "@/lib/monitoring/posthog-server";
 import { apiSuccess, apiError, API_ERROR_CODES } from "@/lib/utils/api-response";
 import { requireApiUser } from "@/lib/auth/api-user";
 import { isValidRequestOrigin } from "@/lib/security";
+import { enforceRateLimit, getRateLimitKey, getUserRateLimitKey } from "@/lib/utils/rate-limit-middleware";
+import { rateLimitProfiles } from "@/lib/utils/rate-limit";
 import {
   addDatabaseFavorite,
   getDatabaseFavoriteIds,
@@ -37,7 +39,7 @@ export async function GET() {
     return apiSuccess({ favoriteIds: [] });
   }
 
-  await ensureProfileRecord(userOrError);
+  // No ensureProfileRecord here — GET should be read-only with no side effects.
   const favoriteIds = (await getDatabaseFavoriteIds(userOrError.id)) ?? [];
 
   return apiSuccess({ favoriteIds });
@@ -52,10 +54,24 @@ export async function POST(request: Request) {
     return apiError(API_ERROR_CODES.SERVICE_UNAVAILABLE, "Servis kullanılamıyor.", 503);
   }
 
+  // IP-level rate limit to prevent scraping/spam
+  const ipLimit = await enforceRateLimit(
+    getRateLimitKey(request, "api:favorites:mutate"),
+    rateLimitProfiles.general,
+  );
+  if (ipLimit) return ipLimit.response;
+
   const userOrError = await requireApiUser();
   if (userOrError instanceof Response) {
     return apiError(API_ERROR_CODES.UNAUTHORIZED, "Favori eklemek için giriş yapmalısın.", 401);
   }
+
+  // Per-user rate limit: max 30 favorite mutations per minute
+  const userLimit = await enforceRateLimit(
+    getUserRateLimitKey(userOrError.id, "favorites:mutate"),
+    { limit: 30, windowMs: 60 * 1000 },
+  );
+  if (userLimit) return userLimit.response;
 
   let body: unknown;
   try {
@@ -72,6 +88,11 @@ export async function POST(request: Request) {
   const listing = await getStoredListingById(listingId);
   if (!listing) {
     return apiError(API_ERROR_CODES.NOT_FOUND, "Favoriye eklenecek ilan bulunamadı.", 404);
+  }
+
+  // Only allow favoriting active (approved) listings
+  if (listing.status !== "approved") {
+    return apiError(API_ERROR_CODES.BAD_REQUEST, "Sadece yayındaki ilanlar favorilere eklenebilir.", 400);
   }
 
   await ensureProfileRecord(userOrError);
