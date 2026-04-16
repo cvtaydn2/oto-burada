@@ -2,6 +2,8 @@
 
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { logger } from "@/lib/utils/logger";
+import { headers } from "next/headers";
+import { checkRateLimit } from "@/lib/utils/rate-limit";
 
 export interface PlateLookupResult {
   brand: string;
@@ -21,6 +23,17 @@ export async function lookupVehicleByPlate(
   plate: string,
   supabaseClient?: SupabaseClient
 ): Promise<PlateLookupResult | null> {
+  // Rate limit: 10 lookups per hour per IP to prevent abuse of the DB lookup
+  const headersList = await headers();
+  const ip = headersList.get("x-forwarded-for")?.split(",")[0]?.trim()
+    ?? headersList.get("x-real-ip")
+    ?? "unknown";
+  const rateLimit = await checkRateLimit(`plate-lookup:${ip}`, { limit: 10, windowMs: 60 * 60 * 1000 });
+  if (!rateLimit.allowed) {
+    logger.listings.warn("Plate lookup rate limited", { ip });
+    return null;
+  }
+
   const normalizedPlate = plate.replace(/\s/g, "").toUpperCase();
   
   // Basic TR Plate Regex
@@ -31,7 +44,7 @@ export async function lookupVehicleByPlate(
   }
 
   // Simulate network delay for realistic experience
-  await new Promise((resolve) => setTimeout(resolve, 1000));
+  await new Promise((resolve) => setTimeout(resolve, 800));
 
   try {
     let supabase = supabaseClient;

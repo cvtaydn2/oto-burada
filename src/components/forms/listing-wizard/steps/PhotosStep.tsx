@@ -1,11 +1,10 @@
 "use client";
 
 import { UseFormReturn, UseFieldArrayReturn } from "react-hook-form";
-import { Upload, Trash2, LoaderCircle, Wand2, Star, Info } from "lucide-react";
+import { Upload, Trash2, LoaderCircle, Star, Info } from "lucide-react";
 import Image from "next/image";
 import { cn } from "@/lib/utils";
 import { ListingCreateFormValues } from "@/types";
-import { useState } from "react";
 import { FormSection } from "@/components/shared/design-system/FormSection";
 
 interface PhotosStepProps {
@@ -25,7 +24,6 @@ export function PhotosStep({
 }: PhotosStepProps) {
   const { fields } = fieldArray;
   const watchImages = form.watch("images");
-  const [cleaningIndices, setCleaningIndices] = useState<number[]>([]);
 
   const PHOTO_GUIDES = [
     "Ön Çapraz (Sol)",
@@ -37,13 +35,6 @@ export function PhotosStep({
     "Bagaj",
     "Diğer Detay"
   ];
-
-  const handleCleanBackground = async (index: number) => {
-    if (cleaningIndices.includes(index)) return;
-    setCleaningIndices(prev => [...prev, index]);
-    await new Promise(resolve => setTimeout(resolve, 2000));
-    setCleaningIndices(prev => prev.filter(i => i !== index));
-  };
 
   return (
     <div className="space-y-10">
@@ -77,14 +68,6 @@ export function PhotosStep({
                     />
                     
                     <div className="absolute inset-0 bg-black/40 opacity-0 hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
-                      <button
-                        type="button"
-                        onClick={() => handleCleanBackground(index)}
-                        disabled={cleaningIndices.includes(index)}
-                        className="p-2 bg-white rounded-lg text-gray-700 hover:bg-blue-500 hover:text-white transition-colors"
-                      >
-                        {cleaningIndices.includes(index) ? <LoaderCircle size={18} className="animate-spin" /> : <Wand2 size={18} />}
-                      </button>
                       <button
                         type="button"
                         onClick={() => onRemoveImage(index)}

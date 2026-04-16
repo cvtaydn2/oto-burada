@@ -307,8 +307,8 @@ export function ListingCreateForm({
 
   const handleNextStep = async () => {
     let fieldsToValidate: FieldPath<ListingCreateFormValues>[] = [];
-    if (currentStep === 0) fieldsToValidate = ["brand", "model", "year", "mileage", "vin"];
-    if (currentStep === 1) fieldsToValidate = ["city", "district", "title", "description", "price"];
+    if (currentStep === 0) fieldsToValidate = ["brand", "model", "year", "mileage", "vin", "fuelType", "transmission"];
+    if (currentStep === 1) fieldsToValidate = ["city", "district", "title", "description", "price", "whatsappPhone"];
     if (currentStep === 2) {
       fieldsToValidate = [
         "damageStatusJson",
@@ -337,11 +337,16 @@ export function ListingCreateForm({
 
   const removeUploadedImage = async (storagePath?: string) => {
     if (!storagePath) return;
-    await fetch("/api/listings/images", {
-      body: JSON.stringify({ storagePath }),
-      headers: { "Content-Type": "application/json" },
-      method: "DELETE",
-    }).catch(() => undefined);
+    try {
+      await fetch("/api/listings/images", {
+        body: JSON.stringify({ storagePath }),
+        headers: { "Content-Type": "application/json" },
+        method: "DELETE",
+      });
+    } catch {
+      // Non-critical: storage cleanup failure should not block UX.
+      // Orphaned images will be cleaned up by a periodic storage sweep if implemented.
+    }
   };
 
   const handleImageChange = async (index: number, file: File | null) => {
@@ -405,9 +410,11 @@ export function ListingCreateForm({
         progress: 100, 
         status: "uploaded" 
       });
-    } catch {
+    } catch (uploadError) {
       revokeBlobUrl(previewUrl);
-      updateUploadState(fieldId, { message: "Yükleme hatası.", progress: 0, status: "error" });
+      const message = uploadError instanceof Error ? uploadError.message : "Yükleme hatası.";
+      setError(`images.${index}.url` as FieldPath<ListingCreateFormValues>, { message, type: "validate" });
+      updateUploadState(fieldId, { message, progress: 0, status: "error" });
     }
   };
 

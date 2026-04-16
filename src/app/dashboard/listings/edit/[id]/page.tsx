@@ -18,7 +18,20 @@ export default async function EditListingPage({ params }: EditListingPageProps) 
 
   if (!listing) notFound();
 
-  if (listing.sellerId !== user.id && user.user_metadata?.role !== "admin") {
+  // Security: verify ownership using app_metadata (server-signed, not user-editable)
+  // user_metadata CAN be updated by the user — do not use it for role checks.
+  const appMetadata = user.app_metadata as { role?: string } | undefined;
+  const isAdmin = appMetadata?.role === "admin";
+
+  if (listing.sellerId !== user.id && !isAdmin) {
+    redirect("/dashboard/listings");
+  }
+
+  // Only allow editing listings in editable states.
+  // archived listings cannot be re-edited — they must be re-created.
+  // approved listings can be re-submitted (will go back to pending after update).
+  const editableStatuses: string[] = ["draft", "pending", "approved", "rejected"];
+  if (!editableStatuses.includes(listing.status)) {
     redirect("/dashboard/listings");
   }
 

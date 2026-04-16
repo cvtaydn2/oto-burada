@@ -14,10 +14,10 @@ interface StepIndicatorProps {
 }
 
 const stepsConfig = [
-  { label: "Araç Bilgileri", icon: Car },
-  { label: "Teknik Detaylar", icon: Settings },
-  { label: "Medya & Dosyalar", icon: ImageIcon },
-  { label: "Yayınla", icon: CheckCircle2 },
+  { label: "Temel Bilgiler", icon: Car },
+  { label: "Konum & Detaylar", icon: Settings },
+  { label: "Ekspertiz & Kondisyon", icon: ImageIcon },
+  { label: "Fotoğraflar & Gönder", icon: CheckCircle2 },
 ] as const;
 
 export function StepIndicator({ currentStep }: StepIndicatorProps) {

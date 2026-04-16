@@ -278,7 +278,54 @@
 - Güncel `schema.sql` gerçek Supabase veritabanına uygulanmalı ve production veri modeli senkronize edilmeli.
 - Ardından gerçek DB üzerinde chat, corporate profile ve ekspertiz belge akışları için integration smoke test yapılmalı.
 
-## Search & Filter Cross-Layer Audit & Fixes (2026-04-17)
+## Create Listing Flow Audit & Fixes (2026-04-17)
+
+### Tespit ve Düzeltilen Sorunlar
+
+**BUG [YÜKSEK]: Step 0 validation `fuelType` ve `transmission` eksikti**
+- Kullanıcı yakıt tipi ve vites seçmeden step 1'e geçebiliyordu
+- Son adımda submit yapıldığında sürpriz validation hatası alıyordu
+- Düzeltme: `handleNextStep` step 0 trigger listesine `fuelType`, `transmission` eklendi
+- Step 1'e `whatsappPhone` da eklendi
+
+**BUG [YÜKSEK]: Sahte "Arka Plan Kaldır" butonu kullanıcıyı yanıltıyordu**
+- `handleCleanBackground` 2 saniye setTimeout'tan sonra hiçbir şey yapmıyordu
+- Gerçek bir AI/processing servisi bağlı değildi
+- Düzeltme: `handleCleanBackground`, `cleaningIndices` state'i ve `Wand2` butonu tamamen kaldırıldı
+- Kullanılmayan `useState`, `Wand2`, `LoaderCircle` import'ları temizlendi (LoaderCircle upload progress için korundu)
+
+**SECURITY [YÜKSEK]: Edit sayfası `user_metadata.role` ile admin kontrolü yapıyordu**
+- `user_metadata` kullanıcı tarafından güncellenebilir — admin kontrolünde kullanılamaz
+- Doğru kaynak: `app_metadata.role` (Supabase tarafından imzalanır, sadece admin SDK yazabilir)
+- Düzeltme: `edit/[id]/page.tsx` → `user.app_metadata.role === "admin"` ile kontrol
+
+**BUG [YÜKSEK]: Edit sayfası `archived` ilanları düzenlenebilir gösteriyordu**
+- `getListingById` tüm statüsleri dönüyor, sahiplik kontrolü sadece seller_id bakıyordu
+- `archived` ilanlar terminal state — yeniden düzenlenemez
+- Düzeltme: `editableStatuses: ["draft", "pending", "approved", "rejected"]` kontrolü eklendi
+
+**BUG [ORTA]: `handleImageChange` upload hatası kullanıcıya gösterilmiyordu**
+- `catch {}` bloğu hata mesajını yutuyordu, `uploadState` "error" durumuna geçmiyordu
+- Düzeltme: `catch (uploadError)` ile `setError()` + `updateUploadState()` çağrısı eklendi
+
+**SAFE: Fraud score fiyat threshold güncellendi**
+- `year >= 2018 && price < 300_000` → `year >= 2020 && price < 800_000`
+- 2025 TL değerleriyle eski threshold çok fazla false positive üretiyordu
+
+**SAFE: `plate-lookup` server action'a rate limiting eklendi**
+- Her IP için saatte 10 sorgu limiti
+- Rate limit aşılırsa `null` dönüyor (kullanıcıya sessiz fail)
+
+**SAFE: StepIndicator label uyumsuzluğu giderildi**
+- Eskisi: "Araç Bilgileri", "Teknik Detaylar", "Medya & Dosyalar", "Yayınla"
+- Yenisi: "Temel Bilgiler", "Konum & Detaylar", "Ekspertiz & Kondisyon", "Fotoğraflar & Gönder"
+
+### Doğrulama
+- `npm run typecheck` ✅
+- `npm run lint` ✅ (0 errors, 0 warnings)
+- `npm run build` ✅
+
+
 
 ### Tespit ve Düzeltilen Sorunlar
 

@@ -244,7 +244,7 @@ export function calculateFraudScore(input: ListingCreateInput, existingListings:
     reasons.push("Aynı şasi numaralı başka bir aktif ilan mevcut (VIN clone)");
   }
 
-  if (input.year >= 2018 && input.price < 300000) {
+  if (input.year >= 2020 && input.price < 800_000) {
     score += 60;
     reasons.push("Pazar ortalamasının çok altında şüpheli fiyat");
   }
