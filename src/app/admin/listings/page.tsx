@@ -7,6 +7,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { InventoryTable } from "@/components/admin/inventory-table";
 import { Badge } from "@/components/ui/badge";
 import { SimplePagination } from "@/components/admin/simple-pagination";
+
 export const dynamic = "force-dynamic";
 
 interface AdminListingsPageProps {
@@ -14,7 +15,7 @@ interface AdminListingsPageProps {
 }
 
 export default async function AdminListingsPage({ searchParams }: AdminListingsPageProps) {
-  await requireAdminUser();
+  const adminUser = await requireAdminUser();
   const { q, page, status = "pending" } = await searchParams;
   const currentPage = Number(page) || 1;
 
@@ -103,11 +104,11 @@ export default async function AdminListingsPage({ searchParams }: AdminListingsP
             </TabsContent>
             
             <TabsContent value="approved" className="m-0">
-               <InventoryTable listings={listings} />
+               <InventoryTable listings={listings} adminUserId={adminUser.id} />
             </TabsContent>
 
             <TabsContent value="history" className="m-0">
-               <InventoryTable listings={listings} />
+               <InventoryTable listings={listings} adminUserId={adminUser.id} />
             </TabsContent>
 
             <div className="p-4 border-t border-slate-100 bg-white">

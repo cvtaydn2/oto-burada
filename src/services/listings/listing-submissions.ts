@@ -43,14 +43,18 @@ export interface ListingRow {
   district: string;
   expert_inspection?: Listing["expertInspection"] | null;
   featured: boolean;
+  featured_until?: string | null;
+  urgent_until?: string | null;
+  highlighted_until?: string | null;
   fraud_reason?: string | null;
   fraud_score?: number | null;
   fuel_type: Listing["fuelType"];
   id: string;
+  license_plate?: string | null;
   listing_images?: ListingImageRow[] | null;
   profiles?: {
     full_name: string;
-    phone: string;
+    // phone is intentionally excluded — PII, not needed on list/detail page
     city: string;
     avatar_url: string | null;
     role: string;
@@ -64,6 +68,7 @@ export interface ListingRow {
   mileage: number;
   model: string;
   price: number;
+  published_at?: string | null;
   view_count?: number;
   seller_id: string;
   slug: string;
@@ -73,9 +78,6 @@ export interface ListingRow {
   transmission: Listing["transmission"];
   updated_at: string;
   bumped_at?: string | null;
-  featured_until?: string | null;
-  urgent_until?: string | null;
-  highlighted_until?: string | null;
   eids_verification_json?: Record<string, unknown> | null;
   market_price_index?: number | null;
   whatsapp_phone: string;
@@ -85,7 +87,41 @@ export interface ListingRow {
 }
 
 const listingSelect = `
-  *,
+  id,
+  seller_id,
+  slug,
+  title,
+  brand,
+  model,
+  year,
+  mileage,
+  fuel_type,
+  transmission,
+  price,
+  city,
+  district,
+  description,
+  whatsapp_phone,
+  vin,
+  license_plate,
+  car_trim,
+  tramer_amount,
+  damage_status_json,
+  fraud_score,
+  fraud_reason,
+  status,
+  featured,
+  featured_until,
+  urgent_until,
+  highlighted_until,
+  eids_verification_json,
+  market_price_index,
+  expert_inspection,
+  published_at,
+  bumped_at,
+  view_count,
+  created_at,
+  updated_at,
   listing_images (
     id,
     listing_id,
@@ -95,14 +131,8 @@ const listingSelect = `
     is_cover,
     placeholder_blur
   ),
-  market_price_index,
-  car_trim,
-  whatsapp_phone,
-  year,
-  vin,
   profiles!seller_id (
     full_name,
-    phone,
     city,
     avatar_url,
     role,
@@ -189,16 +219,26 @@ export function calculateFraudScore(input: ListingCreateInput, existingListings:
   const reasons: string[] = [];
 
   const isDuplicate = existingListings.some(
-    (l) => l.brand === input.brand && l.model === input.model && l.year === input.year && l.mileage === input.mileage && l.price === input.price && l.sellerId !== "" // Assuming seller constraints
+    (l) =>
+      l.brand === input.brand &&
+      l.model === input.model &&
+      l.year === input.year &&
+      l.mileage === input.mileage &&
+      l.price === input.price,
   );
   if (isDuplicate) {
     score += 50;
     reasons.push("Mükerrer ilan şüphesi");
   }
 
-  const vinDuplicate = existingListings.find(
-    (l) => l.vin === input.vin && l.sellerId !== "" && l.status !== "archived" && l.status !== "rejected"
-  );
+  const vinDuplicate = input.vin
+    ? existingListings.find(
+        (l) =>
+          l.vin === input.vin &&
+          l.status !== "archived" &&
+          l.status !== "rejected",
+      )
+    : undefined;
   if (vinDuplicate) {
     score += 100;
     reasons.push("Aynı şasi numaralı başka bir aktif ilan mevcut (VIN clone)");
@@ -321,13 +361,14 @@ function mapListingRow(row: ListingRow): Listing {
       .sort((left, right) => left.order - right.order),
     mileage: row.mileage,
     model: row.model,
-    price: row.price,
+    price: Number(row.price),
     carTrim: row.car_trim ?? null,
     sellerId: row.seller_id,
     viewCount: row.view_count ?? 0,
     seller: row.profiles ? {
       fullName: row.profiles.full_name,
-      phone: row.profiles.phone,
+      // phone intentionally excluded from list/detail seller embed — PII
+      phone: "",
       city: row.profiles.city,
       avatarUrl: row.profiles.avatar_url,
       role: row.profiles.role as UserRole,
@@ -337,12 +378,17 @@ function mapListingRow(row: ListingRow): Listing {
       identityVerified: row.profiles.is_verified,
       isVerified: row.profiles.is_verified,
       verifiedBusiness: row.profiles.verified_business,
-      businessSlug: row.profiles.business_slug
+      businessSlug: row.profiles.business_slug,
+      emailVerified: false,
+      phoneVerified: false,
+      createdAt: "",
+      updatedAt: "",
     } : undefined,
     slug: row.slug,
     status: row.status,
     title: row.title,
-    tramerAmount: row.tramer_amount ?? null,
+    // tramer_amount is a Postgres numeric — coerce to number to guard against string representation
+    tramerAmount: row.tramer_amount != null ? Number(row.tramer_amount) : null,
     transmission: row.transmission,
     updatedAt: row.updated_at,
     bumpedAt: row.bumped_at ?? null,
@@ -595,6 +641,17 @@ export async function getFilteredDatabaseListings(
     !filters.brand &&
     !filters.model &&
     !filters.city &&
+    !filters.district &&
+    !filters.fuelType &&
+    !filters.transmission &&
+    !filters.carTrim &&
+    filters.minPrice === undefined &&
+    filters.maxPrice === undefined &&
+    filters.minYear === undefined &&
+    filters.maxYear === undefined &&
+    filters.maxMileage === undefined &&
+    filters.maxTramer === undefined &&
+    filters.hasExpertReport === undefined &&
     page === 1 &&
     sort === "newest";
   const cacheKey = "listings:approved:default";

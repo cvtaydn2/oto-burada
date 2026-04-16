@@ -2,6 +2,7 @@
 
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { createAdminModerationAction } from "./moderation-actions";
+import { moderateListingWithSideEffects } from "./listing-moderation";
 import { createDatabaseNotification } from "@/services/notifications/notification-records";
 import { Listing } from "@/types/domain";
 import { logger } from "@/lib/utils/logger";
@@ -88,7 +89,7 @@ export async function getAdminInventory(filters?: {
       createdAt: listing.created_at as string,
       updatedAt: listing.updated_at as string,
       images: (listing.images || []).map((img) => ({
-        id: img.public_url, // placeholder — not used in admin moderation
+        id: img.public_url,  // admin list view only — id not needed for display
         url: img.public_url || "",
         order: img.sort_order || 0,
         isCover: img.is_cover || false,
@@ -108,8 +109,30 @@ export async function forceActionOnListing(
 ) {
   const admin = createSupabaseAdminClient();
 
+  // approve / reject — delegate to the full moderation pipeline so that
+  // email notifications, seller DB notifications, cache invalidation and
+  // market stats all fire correctly.
+  if (action === "approve" || action === "reject") {
+    if (!adminUserId) {
+      // If no adminUserId provided (legacy call), fall through to direct update
+      // but log a warning — callers should always pass adminUserId.
+      logger.admin.warn("forceActionOnListing called without adminUserId for moderation", { listingId, action });
+    }
+
+    const result = await moderateListingWithSideEffects({
+      action,
+      adminUserId: adminUserId ?? "system",
+      listingId,
+    });
+
+    if (!result) {
+      throw new Error(`Moderasyon başarısız: ilan bulunamadı veya terminal durumda (${listingId})`);
+    }
+
+    return { success: true };
+  }
+
   if (action === "delete") {
-    // Fetch listing info before delete for audit
     const { data: listing } = await admin
       .from("listings")
       .select("id, title, seller_id")
@@ -135,15 +158,7 @@ export async function forceActionOnListing(
     return { success: true };
   }
 
-  const statusMap: Record<string, string> = {
-    archive: "archived",
-    approve: "approved",
-    reject: "rejected",
-  };
-
-  const newStatus = statusMap[action];
-
-  // Fetch listing for notification
+  // action === "archive"
   const { data: listing } = await admin
     .from("listings")
     .select("id, title, seller_id, slug")
@@ -152,50 +167,36 @@ export async function forceActionOnListing(
 
   const { error } = await admin
     .from("listings")
-    .update({ status: newStatus, updated_at: new Date().toISOString() })
+    .update({ status: "archived", updated_at: new Date().toISOString() })
     .eq("id", listingId);
 
   if (error) {
-    logger.admin.error("forceActionOnListing update failed", error, { listingId, action });
+    logger.admin.error("forceActionOnListing archive failed", error, { listingId });
     throw error;
   }
 
-  // Audit log
   if (adminUserId && listing) {
     await createAdminModerationAction({
-      action: action === "approve" ? "approve" : "reject",
+      action: "archive",
       adminUserId,
-      note: `Admin zorla ${action}: ${listing.title}`,
+      note: `İlan arşivlendi: ${listing.title}`,
       targetId: listingId,
       targetType: "listing",
     }).catch(() => null);
 
-    // Notify seller
     if (listing.seller_id) {
       await createDatabaseNotification({
-        href: listing.slug ? `/listing/${listing.slug}` : `/dashboard/listings`,
-        message:
-          action === "approve"
-            ? `"${listing.title}" ilanın yayınlandı.`
-            : action === "archive"
-              ? `"${listing.title}" ilanın yayından kaldırıldı.`
-              : `"${listing.title}" ilanın reddedildi.`,
-        title:
-          action === "approve"
-            ? "İlanın yayınlandı"
-            : action === "archive"
-              ? "İlanın yayından kaldırıldı"
-              : "İlanın reddedildi",
+        href: `/dashboard/listings`,
+        message: `"${listing.title}" ilanın yayından kaldırıldı.`,
+        title: "İlanın yayından kaldırıldı",
         type: "moderation",
         userId: listing.seller_id,
       }).catch(() => null);
     }
 
-    captureServerEvent("listing_moderated", {
-      action,
+    captureServerEvent("listing_archived_by_admin", {
       adminUserId,
       listingId,
-      listingStatus: newStatus,
       sellerId: listing.seller_id,
     });
   }

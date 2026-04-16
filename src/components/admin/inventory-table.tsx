@@ -29,9 +29,10 @@ import { forceActionOnListing } from "@/services/admin/inventory";
 
 interface InventoryTableProps {
   listings: Listing[];
+  adminUserId: string;
 }
 
-export function InventoryTable({ listings }: InventoryTableProps) {
+export function InventoryTable({ listings, adminUserId }: InventoryTableProps) {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
 
@@ -50,7 +51,7 @@ export function InventoryTable({ listings }: InventoryTableProps) {
           throw new Error(payload?.error?.message ?? "İşlem başarısız");
         }
       } else {
-        await forceActionOnListing(listingId, action);
+        await forceActionOnListing(listingId, action, adminUserId);
       }
       toast.success("İşlem başarıyla gerçekleştirildi");
       router.refresh();
