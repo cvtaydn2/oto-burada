@@ -10,6 +10,8 @@ import {
 import { cn } from "@/lib/utils";
 import type { ListingFilters, BrandCatalogItem, CityOption } from "@/types";
 import { createSearchParamsFromListingFilters } from "@/services/listings/listing-filters";
+import { SaveSearchButton } from "@/components/listings/save-search-button";
+import { useAuthUser } from "@/components/shared/auth-provider";
 
 interface AdvancedFilterPageProps {
   brands: BrandCatalogItem[];
@@ -50,6 +52,7 @@ export function AdvancedFilterPage({
   const [resultCount, setResultCount] = useState(totalCount);
   const [isCounting, setIsCounting] = useState(false);
   const deferredFilters = useDeferredValue(filters);
+  const { userId } = useAuthUser();
 
   const models = (brands.find(b => b.brand === filters.brand)?.models || []).map(m => m.name);
   const trims = (brands.find(b => b.brand === filters.brand)?.models?.find(m => m.name === filters.model)?.trims || []);
@@ -214,12 +217,10 @@ export function AdvancedFilterPage({
                 <RotateCcw size={14} />
                 Sıfırla
               </button>
-              <button
-                className="flex items-center gap-2 bg-white border border-gray-200 text-gray-600 px-4 py-2 rounded-lg text-sm font-medium hover:bg-gray-50 transition"
-              >
-                <Save size={14} />
-                Aramayı Kaydet
-              </button>
+              <div className="flex items-center gap-2">
+                <Save size={14} className="text-gray-500" />
+                <SaveSearchButton filters={filters} resultCount={resultCount} userId={userId} />
+              </div>
               <button
                 onClick={handleApply}
                 disabled={isPending}

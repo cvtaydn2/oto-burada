@@ -32,6 +32,37 @@
   - listing detail login dönüşü
   tekrar doğrulanmalı.
 
+## Search Persistence & Admin Search Alignment (2026-04-16)
+
+### Saved Search / Listings Contract Alignment
+- **Kayıtlı Arama Filtre Kaybı Giderildi**:
+  - `saved-search-utils` artık `carTrim`, `maxTramer`, `hasExpertReport` alanlarını normalize ediyor
+  - anlamlı filtre kontrolü bu alanları da kapsıyor; kullanıcı sadece ekspertiz/tramer filtresiyle de arama kaydedebiliyor
+  - title ve summary üretimi paket, tramer ve ekspertiz bilgisini artık koruyor
+- **Gelişmiş Filtrede Kaydet CTA’sı Gerçek Servise Bağlandı**:
+  - `advanced-filter-page` içindeki ölü “Aramayı Kaydet” butonu kaldırıldı
+  - yerine çalışan `SaveSearchButton` bağlandı
+  - login gerektiren durumda kullanıcı mevcut filtre URL’sini kaybetmeden `next` ile geri dönebiliyor
+- **/listings Aktif Filtre Geri Bildirimi Tamamlandı**:
+  - aktif tag listesine `carTrim`, `district`, yıl aralığı, `maxMileage`, `maxTramer` etiketleri eklendi
+  - böylece çalışan ama görünmeyen filtre durumu sorunu kapatıldı
+
+### Admin Contract Alignment
+- **Admin Listings Search Tab State Korundu**:
+  - `/admin/listings` arama formuna `status` hidden input eklendi
+  - admin, `approved` veya `history` sekmesindeyken arama yaptığında artık yanlışlıkla tekrar `pending` sekmesine düşmüyor
+
+### Doğrulama
+- `npm run lint` ✅
+- `npm run typecheck` ✅
+- `npm run build` ✅
+- `npm run test:unit -- saved-search-utils` ✅
+
+### Sonraki Adım
+- `listing-doping-panel` hâlâ `alert()` tabanlı çalışıyor; servis bağlı olsa da kullanıcı deneyimi kırık.
+- ödeme/checkout akışı hâlâ canlı feature gibi görünüp backend’de `503` dönüyor; copy ve CTA seviyesinde açık biçimde kapatılmalı ya da gerçek entegrasyon yapılmalı.
+- browser ile gerçek kullanıcı akışları hâlâ ayrıca doğrulanmalı.
+
 ## Frontend-Backend Contract Remediation (2026-04-16)
 
 ### Listing Creation / Moderation / Contact Flow Alignment

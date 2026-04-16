@@ -11,6 +11,7 @@ export function normalizeSavedSearchFilters(filters: ListingFilters): Normalized
     query: parsed.query,
     brand: parsed.brand,
     model: parsed.model,
+    carTrim: parsed.carTrim,
     city: parsed.city,
     district: parsed.district,
     minPrice: parsed.minPrice,
@@ -18,6 +19,8 @@ export function normalizeSavedSearchFilters(filters: ListingFilters): Normalized
     minYear: parsed.minYear,
     maxYear: parsed.maxYear,
     maxMileage: parsed.maxMileage,
+    maxTramer: parsed.maxTramer,
+    hasExpertReport: parsed.hasExpertReport,
     fuelType: parsed.fuelType,
     transmission: parsed.transmission,
     sort: parsed.sort ?? "newest",
@@ -31,6 +34,7 @@ export function hasMeaningfulSavedSearchFilters(filters: ListingFilters) {
     normalized.query ||
       normalized.brand ||
       normalized.model ||
+      normalized.carTrim ||
       normalized.city ||
       normalized.district ||
       normalized.minPrice !== undefined ||
@@ -38,6 +42,8 @@ export function hasMeaningfulSavedSearchFilters(filters: ListingFilters) {
       normalized.minYear !== undefined ||
       normalized.maxYear !== undefined ||
       normalized.maxMileage !== undefined ||
+      normalized.maxTramer !== undefined ||
+      normalized.hasExpertReport === true ||
       normalized.fuelType ||
       normalized.transmission,
   );
@@ -57,7 +63,7 @@ export function getSavedSearchSignature(filters: ListingFilters) {
 export function buildSavedSearchTitle(filters: ListingFilters) {
   const normalized = normalizeSavedSearchFilters(filters);
   const parts = [
-    [normalized.brand, normalized.model].filter(Boolean).join(" ").trim(),
+    [normalized.brand, normalized.model, normalized.carTrim].filter(Boolean).join(" ").trim(),
     normalized.city,
     normalized.query ? `"${normalized.query}"` : undefined,
   ].filter(Boolean) as string[];
@@ -80,13 +86,15 @@ export function buildSavedSearchTitle(filters: ListingFilters) {
 export function buildSavedSearchSummary(filters: ListingFilters) {
   const normalized = normalizeSavedSearchFilters(filters);
   const summaryParts = [
-    normalized.brand && normalized.model ? `${normalized.brand} ${normalized.model}` : normalized.brand,
+    [normalized.brand, normalized.model, normalized.carTrim].filter(Boolean).join(" ").trim() || undefined,
     normalized.city ? `${normalized.city}${normalized.district ? ` / ${normalized.district}` : ""}` : undefined,
     normalized.minYear || normalized.maxYear
       ? `Model ${normalized.minYear ?? "eski"}-${normalized.maxYear ?? "guncel"}`
       : undefined,
     normalized.maxPrice !== undefined ? `Max ${normalized.maxPrice.toLocaleString("tr-TR")} TL` : undefined,
     normalized.maxMileage !== undefined ? `Max ${normalized.maxMileage.toLocaleString("tr-TR")} km` : undefined,
+    normalized.maxTramer !== undefined ? `Max ${normalized.maxTramer.toLocaleString("tr-TR")} TL tramer` : undefined,
+    normalized.hasExpertReport ? "Ekspertizli" : undefined,
     normalized.fuelType,
     normalized.transmission,
     normalized.query ? `"${normalized.query}"` : undefined,

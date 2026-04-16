@@ -51,6 +51,7 @@ export default async function AdminListingsPage({ searchParams }: AdminListingsP
       <div className="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden flex flex-col">
           <div className="p-6 border-b border-slate-100 bg-slate-50/30 flex items-center justify-between gap-4">
              <form className="relative flex-1 max-w-xl group">
+                <input type="hidden" name="status" value={status} />
                 <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-blue-500 transition-colors" size={18} />
                 <Input 
                    name="q"

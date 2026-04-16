@@ -320,6 +320,9 @@ export function ListingsPageClient({
             {filters.model && (
               <FilterTag label={filters.model} onRemove={() => handleFilterChange("model", undefined)} />
             )}
+            {filters.carTrim && (
+              <FilterTag label={filters.carTrim} onRemove={() => handleFilterChange("carTrim", undefined)} />
+            )}
             {filters.city && (
               <FilterTag
                 label={filters.city}
@@ -335,6 +338,9 @@ export function ListingsPageClient({
                 }}
               />
             )}
+            {filters.district && (
+              <FilterTag label={filters.district} onRemove={() => handleFilterChange("district", undefined)} />
+            )}
             {filters.fuelType && (
               <FilterTag label={filters.fuelType === "benzin" ? "Benzin" : filters.fuelType === "dizel" ? "Dizel" : filters.fuelType} onRemove={() => handleFilterChange("fuelType", undefined)} />
             )}
@@ -349,6 +355,28 @@ export function ListingsPageClient({
                   setFilters(f)
                   applyFilters(f, true)
                 }}
+              />
+            )}
+            {(filters.minYear || filters.maxYear) && (
+              <FilterTag
+                label={`Model ${filters.minYear ?? "eski"}-${filters.maxYear ?? "güncel"}`}
+                onRemove={() => {
+                  const nextFilters = { ...filters, minYear: undefined, maxYear: undefined, page: 1 }
+                  setFilters(nextFilters)
+                  applyFilters(nextFilters, true)
+                }}
+              />
+            )}
+            {filters.maxMileage !== undefined && (
+              <FilterTag
+                label={`Max ${filters.maxMileage.toLocaleString("tr-TR")} km`}
+                onRemove={() => handleFilterChange("maxMileage", undefined)}
+              />
+            )}
+            {filters.maxTramer !== undefined && (
+              <FilterTag
+                label={`Max ${filters.maxTramer.toLocaleString("tr-TR")} TL tramer`}
+                onRemove={() => handleFilterChange("maxTramer", undefined)}
               />
             )}
             {filters.query && (

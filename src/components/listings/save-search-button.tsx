@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { usePathname, useSearchParams } from "next/navigation";
 import { BellRing, CheckCircle2, LoaderCircle, LogIn } from "lucide-react";
 import { useState } from "react";
 
@@ -23,6 +24,9 @@ export function SaveSearchButton({
   const [message, setMessage] = useState<string | null>(null);
   const [status, setStatus] = useState<"error" | "idle" | "success">("idle");
   const canSave = hasMeaningfulSavedSearchFilters(filters);
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const loginHref = `/login?next=${encodeURIComponent(`${pathname}${searchParams.toString() ? `?${searchParams.toString()}` : ""}`)}`;
 
   const handleSave = async () => {
     if (!canSave) {
@@ -72,7 +76,7 @@ export function SaveSearchButton({
     return (
       <div className="space-y-2">
         <Link
-          href="/login"
+          href={loginHref}
           className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-4 text-sm font-semibold text-slate-700 transition-all hover:bg-slate-50"
         >
           <LogIn className="size-4" />

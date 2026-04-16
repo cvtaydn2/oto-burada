@@ -14,16 +14,22 @@ describe("Saved Search Utils Service", () => {
       const filters: ListingFilters = {
         query: "bmw",
         brand: "BMW",
+        carTrim: "M Sport",
         city: "Istanbul",
         minPrice: 500000,
         maxPrice: 2000000,
+        maxTramer: 25000,
+        hasExpertReport: true,
       };
 
       const result = normalizeSavedSearchFilters(filters);
       expect(result.brand).toBe("BMW");
+      expect(result.carTrim).toBe("M Sport");
       expect(result.city).toBe("Istanbul");
       expect(result.minPrice).toBe(500000);
       expect(result.maxPrice).toBe(2000000);
+      expect(result.maxTramer).toBe(25000);
+      expect(result.hasExpertReport).toBe(true);
     });
   });
 
@@ -41,6 +47,11 @@ describe("Saved Search Utils Service", () => {
     it("should return true for filters with price range", () => {
       const filters: ListingFilters = { minPrice: 500000, maxPrice: 1000000 };
       expect(hasMeaningfulSavedSearchFilters(filters)).toBe(true);
+    });
+
+    it("should return true for expert and tramer filters", () => {
+      expect(hasMeaningfulSavedSearchFilters({ hasExpertReport: true })).toBe(true);
+      expect(hasMeaningfulSavedSearchFilters({ maxTramer: 0 })).toBe(true);
     });
 
     it("should return false for empty filters", () => {
@@ -62,11 +73,13 @@ describe("Saved Search Utils Service", () => {
     });
 
     it("should generate signature for multiple filters", () => {
-      const filters: ListingFilters = { brand: "BMW", city: "Istanbul", minPrice: 500000 };
+      const filters: ListingFilters = { brand: "BMW", carTrim: "M Sport", city: "Istanbul", minPrice: 500000, hasExpertReport: true };
       const signature = getSavedSearchSignature(filters);
       expect(signature).toContain("brand=BMW");
+      expect(signature).toContain("carTrim=M+Sport");
       expect(signature).toContain("city=Istanbul");
       expect(signature).toContain("minPrice=500000");
+      expect(signature).toContain("hasExpertReport=true");
     });
   });
 
@@ -75,6 +88,12 @@ describe("Saved Search Utils Service", () => {
       const filters: ListingFilters = { brand: "BMW", model: "320i" };
       const title = buildSavedSearchTitle(filters);
       expect(title).toBe("BMW 320i");
+    });
+
+    it("should include trim in title when present", () => {
+      const filters: ListingFilters = { brand: "BMW", model: "320i", carTrim: "M Sport" };
+      const title = buildSavedSearchTitle(filters);
+      expect(title).toBe("BMW 320i M Sport");
     });
 
     it("should build title with brand, model and city", () => {
@@ -131,6 +150,13 @@ describe("Saved Search Utils Service", () => {
       const filters: ListingFilters = { fuelType: "benzin" };
       const summary = buildSavedSearchSummary(filters);
       expect(summary).toContain("benzin");
+    });
+
+    it("should build summary with tramer and expert filters", () => {
+      const filters: ListingFilters = { maxTramer: 25000, hasExpertReport: true };
+      const summary = buildSavedSearchSummary(filters);
+      expect(summary).toContain("25.000");
+      expect(summary).toContain("Ekspertizli");
     });
 
     it("should return default summary for empty filters", () => {
