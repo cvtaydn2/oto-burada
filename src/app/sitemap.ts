@@ -28,7 +28,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       .eq("status", "approved")
       .order("updated_at", { ascending: false })
       .limit(5000),
-    admin.from("brands").select("brand").order("brand"),
+    admin.from("brands").select("name, slug").eq("is_active", true).order("name"),
   ]);
 
   const listingPages: MetadataRoute.Sitemap = (listings ?? []).map((listing) => ({
@@ -39,7 +39,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   }));
 
   const brandPages: MetadataRoute.Sitemap = (brands ?? []).map((brand) => ({
-    url: `${baseUrl}/satilik/${brand.brand.toLowerCase()}`,
+    url: `${baseUrl}/satilik/${brand.slug}`,
     lastModified: new Date(),
     changeFrequency: "daily" as const,
     priority: 0.7,

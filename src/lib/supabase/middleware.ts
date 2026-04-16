@@ -13,6 +13,7 @@ const SECURITY_HEADERS = {
   "X-XSS-Protection": "1; mode=block",
   "Referrer-Policy": "strict-origin-when-cross-origin",
   "Permissions-Policy": "camera=(), microphone=(), geolocation=()",
+  "Strict-Transport-Security": "max-age=63072000; includeSubDomains; preload",
 };
 
 export async function updateSession(request: NextRequest) {

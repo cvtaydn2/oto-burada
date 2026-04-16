@@ -17,24 +17,11 @@ export function ViewCounter({ listingId, initialCount }: ViewCounterProps) {
     let channel: ReturnType<typeof supabase.channel> | undefined;
 
     const setup = async () => {
-      // 1. Increment view count
-      const viewedKey = `voted_${listingId}`;
-      const lastViewed = localStorage.getItem(viewedKey);
-      const now = Date.now();
-      
-      if (!lastViewed || now - parseInt(lastViewed) > 3600000) {
-        try {
-          await supabase.rpc("increment_listing_view", { target_listing_id: listingId });
-          localStorage.setItem(viewedKey, now.toString());
-        } catch {
-          // View increment failed silently — non-critical
-        }
-      }
+      // View kaydı server-side recordListingView ile yapılıyor (listing/[slug]/page.tsx)
+      // Burada sadece realtime güncellemeleri dinliyoruz
 
-      // 2. Setup Realtime Channel
       const channelName = `lv_${listingId.slice(0, 8)}`;
       
-      // Attempt to clean up any existing instance of this channel
       const existingChannel = supabase.getChannels().find((c: { name: string }) => c.name === channelName);
       if (existingChannel) {
         await supabase.removeChannel(existingChannel);

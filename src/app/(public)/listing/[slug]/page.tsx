@@ -18,6 +18,7 @@ import { CarCard } from "@/components/modules/listings/car-card";
 import { ExpertInspectionCard } from "@/components/listings/expert-inspection-card";
 import { DamageReportCard } from "@/components/listings/damage-report-card";
 import { MarketValueCard } from "@/components/listings/market-value-card";
+import { ViewCounter } from "@/components/listings/view-counter";
 import { buildListingDetailMetadata, buildAbsoluteUrl } from "@/lib/seo";
 import { formatNumber } from "@/lib/utils";
 import {
@@ -221,6 +222,7 @@ export default async function ListingDetailPage({ params }: ListingDetailPagePro
                       {new Date(listing.createdAt).toLocaleDateString("tr-TR")} güncellendi
                     </span>
                     <span className="bg-gray-100 px-2 py-1 rounded text-[10px] text-gray-600 font-bold uppercase tracking-wider">İlan No: {listing.id.slice(0, 8).toUpperCase()}</span>
+                    <ViewCounter listingId={listing.id} initialCount={listing.viewCount} />
                   </div>
                 </div>
                 <div className="text-left md:text-right w-full md:w-auto">

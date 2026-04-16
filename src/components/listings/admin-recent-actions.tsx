@@ -23,6 +23,7 @@ interface AdminRecentActionsProps {
 const targetTypeLabels = {
   listing: "İlan",
   report: "Rapor",
+  user: "Kullanıcı",
 } as const;
 
 const filters = [

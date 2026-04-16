@@ -1,5 +1,6 @@
 import { Ratelimit } from "@upstash/ratelimit";
 import { Redis } from "@upstash/redis";
+import { logger } from "@/lib/utils/logger";
 
 let ratelimit: Ratelimit | null = null;
 
@@ -37,7 +38,7 @@ export async function checkGlobalRateLimit(ip: string) {
     );
     return { success, limit, remaining, reset };
   } catch (error) {
-    console.error("Distributed Rate Limit Error:", error);
+    logger.api.error("Distributed Rate Limit Error", error);
     return { success: true, limit: 100, remaining: 100, reset: 0 };
   }
 }

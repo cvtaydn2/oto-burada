@@ -1,29 +1,45 @@
 /* eslint-disable @next/next/no-img-element */
 import { ImageResponse } from "next/og";
-import { getMarketplaceListingBySlug } from "@/services/listings/marketplace-listings";
+import { createSupabaseAdminClient } from "@/lib/supabase/admin";
+import { hasSupabaseAdminEnv } from "@/lib/supabase/env";
 
-export const runtime = "edge";
+// Node.js runtime — unstable_cache ve Supabase admin client edge'de çalışmaz
+export const runtime = "nodejs";
+export const revalidate = 3600;
+
+async function getListingForOg(slug: string) {
+  if (!hasSupabaseAdminEnv()) return null;
+  const admin = createSupabaseAdminClient();
+  const { data } = await admin
+    .from("listings")
+    .select("title, brand, model, year, mileage, price, listing_images(public_url, is_cover, sort_order)")
+    .eq("slug", slug)
+    .eq("status", "approved")
+    .single();
+  return data;
+}
 
 export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url);
     const slug = searchParams.get("slug");
 
-    if (!slug) {
-      return new Response("Missing slug", { status: 400 });
+    if (!slug || !/^[a-z0-9-]+$/.test(slug)) {
+      return new Response("Missing or invalid slug", { status: 400 });
     }
 
-    const listing = await getMarketplaceListingBySlug(slug);
+    const listing = await getListingForOg(slug);
 
     if (!listing) {
       return new Response("Listing not found", { status: 404 });
     }
 
-    const brand = listing.brand;
-    const model = listing.model;
-    const year = listing.year;
-    const price = new Intl.NumberFormat("tr-TR").format(listing.price);
-    const coverImage = listing.images.find(img => img.isCover)?.url || listing.images[0]?.url;
+    const brand = listing.brand as string;
+    const model = listing.model as string;
+    const year = listing.year as number;
+    const price = new Intl.NumberFormat("tr-TR").format(listing.price as number);
+    const images = (listing.listing_images as { public_url: string; is_cover: boolean; sort_order: number }[]) ?? [];
+    const coverImage = images.sort((a, b) => (b.is_cover ? 1 : 0) - (a.is_cover ? 1 : 0))[0]?.public_url;
 
     return new ImageResponse(
       (
@@ -90,7 +106,7 @@ export async function GET(request: Request) {
             <div style={{ display: "flex", flexDirection: "column", flex: 1 }}>
                <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "16px" }}>
                   <div style={{ padding: "4px 12px", backgroundColor: "#3b82f6", borderRadius: "100px", color: "white", fontSize: "14px", fontWeight: "900" }}>OTOBURADA</div>
-                  <div style={{ fontSize: "16px", color: "#64748b", fontWeight: "700" }}>{year} Model • {listing.mileage.toLocaleString()} km</div>
+                  <div style={{ fontSize: "16px", color: "#64748b", fontWeight: "700" }}>{year} Model • {(listing.mileage as number).toLocaleString()} km</div>
                </div>
                
                <h1 style={{ fontSize: "56px", fontWeight: "900", color: "#0f172a", lineHeight: 1, marginBottom: "8px", textTransform: "uppercase", fontStyle: "italic" }}>
@@ -98,7 +114,7 @@ export async function GET(request: Request) {
                </h1>
                
                <p style={{ fontSize: "20px", color: "#475569", fontWeight: "600", marginBottom: "32px", fontStyle: "italic" }}>
-                  {listing.title}
+                  {listing.title as string}
                </p>
 
                <div style={{ display: "flex", flexDirection: "column" }}>

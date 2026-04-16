@@ -29,6 +29,7 @@ interface RateLimitEntry {
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { hasSupabaseAdminEnv } from "@/lib/supabase/env";
 import { redis } from "@/lib/redis";
+import { logger } from "@/lib/utils/logger";
 
 const inMemoryStore = new Map<string, RateLimitEntry>();
 
@@ -68,7 +69,7 @@ export async function checkRateLimit(key: string, config: RateLimitConfig): Prom
         resetAt,
       };
     } catch (e) {
-      console.warn("Redis rate limit error, falling back:", e);
+      logger.api.warn("Redis rate limit error, falling back", { key: fullKey }, e);
     }
   }
 
@@ -86,9 +87,9 @@ export async function checkRateLimit(key: string, config: RateLimitConfig): Prom
         return data as RateLimitResult;
       }
       
-      console.warn("Rate limit DB error, falling back to in-memory:", error);
+      logger.api.warn("Rate limit DB error, falling back to in-memory", { key }, error);
     } catch (e) {
-      console.warn("Rate limit DB exception, falling back to in-memory:", e);
+      logger.api.warn("Rate limit DB exception, falling back to in-memory", { key }, e);
     }
   }
 
