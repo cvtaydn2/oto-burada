@@ -40,6 +40,16 @@ export function MobileFilterDrawer({
   const [draftFilters, setDraftFilters] = useState<ListingFilters>(filters);
   const router = useRouter();
   const pathname = usePathname();
+  const models = (brands.find((brand) => brand.brand === draftFilters.brand)?.models || []).map((model) => model.name);
+  const trims = (brands.find((brand) => brand.brand === draftFilters.brand)?.models?.find((model) => model.name === draftFilters.model)?.trims || []);
+  const districts = (cities.find((city) => city.city === draftFilters.city)?.districts || []);
+  const draftActiveCount = Object.entries(draftFilters).filter(([key, value]) => {
+    if (["limit", "offset", "sort", "page"].includes(key)) {
+      return false;
+    }
+
+    return value !== undefined && value !== "";
+  }).length;
 
   useEffect(() => {
     setDraftFilters(filters);
@@ -96,7 +106,7 @@ export function MobileFilterDrawer({
   };
 
   const handleReset = () => {
-    setDraftFilters({});
+    setDraftFilters({ sort: "newest", page: 1 });
     router.push(pathname, { scroll: false });
     setIsOpen(false);
   };
@@ -162,6 +172,54 @@ export function MobileFilterDrawer({
                 </FilterSection>
 
                 <FilterSection
+                  title="Model"
+                  isExpanded={expandedSection === "model"}
+                  onToggle={() => toggleSection("model")}
+                >
+                  <div className="space-y-2 py-2">
+                    <select
+                      value={draftFilters.model ?? ""}
+                      onChange={(event) =>
+                        setDraftFilters((current) => ({
+                          ...current,
+                          model: event.target.value || undefined,
+                          carTrim: undefined,
+                          page: 1,
+                        }))
+                      }
+                      disabled={!draftFilters.brand}
+                      className="w-full rounded-lg border border-border px-3 py-2.5 text-sm disabled:bg-muted disabled:text-muted-foreground"
+                    >
+                      <option value="">Tüm modeller</option>
+                      {models.map((model) => (
+                        <option key={model} value={model}>
+                          {model}
+                        </option>
+                      ))}
+                    </select>
+                    <select
+                      value={draftFilters.carTrim ?? ""}
+                      onChange={(event) =>
+                        setDraftFilters((current) => ({
+                          ...current,
+                          carTrim: event.target.value || undefined,
+                          page: 1,
+                        }))
+                      }
+                      disabled={!draftFilters.model}
+                      className="w-full rounded-lg border border-border px-3 py-2.5 text-sm disabled:bg-muted disabled:text-muted-foreground"
+                    >
+                      <option value="">Tüm paketler</option>
+                      {trims.map((trim) => (
+                        <option key={trim} value={trim}>
+                          {trim}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                </FilterSection>
+
+                <FilterSection
                   title="Şehir"
                   isExpanded={expandedSection === "city"}
                   onToggle={() => toggleSection("city")}
@@ -181,6 +239,27 @@ export function MobileFilterDrawer({
                         {city.city}
                       </button>
                     ))}
+                  </div>
+                  <div className="pb-2">
+                    <select
+                      value={draftFilters.district ?? ""}
+                      onChange={(event) =>
+                        setDraftFilters((current) => ({
+                          ...current,
+                          district: event.target.value || undefined,
+                          page: 1,
+                        }))
+                      }
+                      disabled={!draftFilters.city}
+                      className="w-full rounded-lg border border-border px-3 py-2.5 text-sm disabled:bg-muted disabled:text-muted-foreground"
+                    >
+                      <option value="">Tüm ilçeler</option>
+                      {districts.map((district) => (
+                        <option key={district} value={district}>
+                          {district}
+                        </option>
+                      ))}
+                    </select>
                   </div>
                 </FilterSection>
 
@@ -284,10 +363,48 @@ export function MobileFilterDrawer({
                   <div className="flex gap-2 py-2">
                     <input
                       type="number"
-                      placeholder="Min km"
+                      placeholder="Maks km"
                       value={draftFilters.maxMileage ? draftFilters.maxMileage : ""}
                       onChange={(e) => setDraftFilters((current) => ({ ...current, maxMileage: e.target.value ? Number(e.target.value) : undefined, page: 1 }))}
                       className="flex-1 rounded-lg border border-border px-3 py-2 text-sm"
+                    />
+                  </div>
+                </FilterSection>
+
+                <FilterSection
+                  title="Ekspertiz & Tramer"
+                  isExpanded={expandedSection === "trust"}
+                  onToggle={() => toggleSection("trust")}
+                >
+                  <div className="space-y-3 py-2">
+                    <label className="flex items-center gap-2 text-sm">
+                      <input
+                        type="checkbox"
+                        checked={draftFilters.hasExpertReport === true}
+                        onChange={() =>
+                          setDraftFilters((current) => ({
+                            ...current,
+                            hasExpertReport: current.hasExpertReport ? undefined : true,
+                            page: 1,
+                          }))
+                        }
+                        className="rounded border-border"
+                      />
+                      Ekspertiz raporlu ilanlar
+                    </label>
+                    <input
+                      type="number"
+                      min={0}
+                      placeholder="Maks tramer tutarı"
+                      value={draftFilters.maxTramer ?? ""}
+                      onChange={(event) =>
+                        setDraftFilters((current) => ({
+                          ...current,
+                          maxTramer: event.target.value ? Number(event.target.value) : undefined,
+                          page: 1,
+                        }))
+                      }
+                      className="w-full rounded-lg border border-border px-3 py-2 text-sm"
                     />
                   </div>
                 </FilterSection>
@@ -299,7 +416,7 @@ export function MobileFilterDrawer({
                 Temizle
               </Button>
               <Button onClick={handleApply} className="flex-1">
-                Uygula ({activeCount})
+                Uygula ({draftActiveCount})
               </Button>
             </div>
           </div>

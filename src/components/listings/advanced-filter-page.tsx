@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback, useTransition } from "react";
+import { useState, useCallback, useTransition, useEffect, useDeferredValue } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import {
@@ -47,7 +47,9 @@ export function AdvancedFilterPage({
   const [isPending, startTransition] = useTransition();
   const [filters, setFilters] = useState<ListingFilters>(initialFilters);
   const [activeSection, setActiveSection] = useState<FilterSection>("brand");
-  const [resultCount] = useState(totalCount);
+  const [resultCount, setResultCount] = useState(totalCount);
+  const [isCounting, setIsCounting] = useState(false);
+  const deferredFilters = useDeferredValue(filters);
 
   const models = (brands.find(b => b.brand === filters.brand)?.models || []).map(m => m.name);
   const trims = (brands.find(b => b.brand === filters.brand)?.models?.find(m => m.name === filters.model)?.trims || []);
@@ -72,6 +74,53 @@ export function AdvancedFilterPage({
     if (["limit", "offset", "sort", "page"].includes(key)) return false;
     return val !== undefined && val !== "";
   }).length;
+
+  useEffect(() => {
+    const controller = new AbortController();
+    const params = createSearchParamsFromListingFilters({
+      ...deferredFilters,
+      limit: 1,
+      page: 1,
+    });
+
+    const loadResultCount = async () => {
+      setIsCounting(true);
+
+      try {
+        const response = await fetch(`/api/listings?${params.toString()}`, {
+          signal: controller.signal,
+        });
+
+        if (!response.ok) {
+          return;
+        }
+
+        const payload = (await response.json()) as {
+          data?: {
+            total?: number;
+          };
+        };
+
+        if (typeof payload.data?.total === "number") {
+          setResultCount(payload.data.total);
+        }
+      } catch (error) {
+        if ((error as Error).name !== "AbortError") {
+          console.error("Advanced filter count fetch failed", error);
+        }
+      } finally {
+        if (!controller.signal.aborted) {
+          setIsCounting(false);
+        }
+      }
+    };
+
+    void loadResultCount();
+
+    return () => {
+      controller.abort();
+    };
+  }, [deferredFilters]);
 
   const SECTIONS: { id: FilterSection; label: string; icon: React.ReactNode }[] = [
     { id: "brand", label: "Temel Bilgiler", icon: <Car size={16} /> },
@@ -177,7 +226,7 @@ export function AdvancedFilterPage({
                 className="flex items-center gap-2 bg-blue-500 text-white px-6 py-2 rounded-lg text-sm font-bold hover:bg-blue-600 transition shadow-md disabled:opacity-70"
               >
                 <Search size={14} />
-                {isPending ? "Yükleniyor..." : `Sonuçları Gör (${resultCount.toLocaleString("tr-TR")} ilan)`}
+                {isPending ? "Yükleniyor..." : isCounting ? "İlanlar hesaplanıyor..." : `Sonuçları Gör (${resultCount.toLocaleString("tr-TR")} ilan)`}
               </button>
             </div>
           </div>
@@ -482,7 +531,11 @@ export function AdvancedFilterPage({
           {/* Alt CTA */}
           <div className="mt-10 pt-6 border-t border-gray-100 flex flex-col sm:flex-row justify-between items-center gap-4">
             <p className="text-sm text-gray-500">
-              Seçilen kriterlere göre <span className="font-bold text-gray-800">{resultCount.toLocaleString("tr-TR")}</span> ilan bulundu
+              Seçilen kriterlere göre{" "}
+              <span className="font-bold text-gray-800">
+                {isCounting ? "..." : resultCount.toLocaleString("tr-TR")}
+              </span>{" "}
+              ilan bulundu
             </p>
             <button
               onClick={handleApply}

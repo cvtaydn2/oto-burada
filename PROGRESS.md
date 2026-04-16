@@ -1,5 +1,37 @@
 # PROGRESS.md
 
+## Filter Flow Hardening (2026-04-16)
+
+### Listings Discovery Alignment
+- **Gelişmiş Filtre Sonuç Sayısı Gerçek Hale Getirildi**:
+  - `advanced-filter-page` artık sabit `totalCount` metnini göstermiyor
+  - filtreler değiştikçe `/api/listings` üzerinden gerçek toplam sayı tekrar okunuyor
+  - kullanıcıya sahte “X ilan bulundu” bilgisi verilmesi engellendi
+- **Mobile Filter Drawer Güçlendirildi**:
+  - alt CTA içindeki `Uygula (X)` sayacı artık uygulanan eski filtreleri değil, drawer içindeki `draftFilters` durumunu gösteriyor
+  - reset akışı boş obje yerine `sort: "newest"` ile ürün kontratına hizalandı
+  - mobil filtrelere eksik kalan `model`, `paket`, `ilçe`, `ekspertiz`, `tramer` alanları eklendi
+  - kilometre alanındaki yanlış “Min km” kopyası “Maks km” olarak düzeltildi
+
+### Audit Kararı
+- `/listings` ile `/listings/filter` arasındaki en görünür kırık artık kapandı: filtre değişince kullanıcı hem doğru sonuç sayısını görüyor hem de mobile drawer seçimini doğru sayaçla uyguluyor.
+- Auth dönüş akışında kalan `callbackUrl` drift’i bulunmadı; login yönlendirmeleri `next` parametresine toplanmış durumda.
+- Admin pending görünürlüğünde bu turda yeni bir backend bug doğrulanmadı; önceki create API doğrulama uyumsuzluğu (`isVerified` vs `emailVerified`) büyük olasılıkla kök sebepti.
+
+### Doğrulama
+- `npm run lint` ✅
+- `npm run typecheck` ✅
+- `npm run build` ✅
+
+### Sonraki Adım
+- `/listings` ekranında aktif filtre etiketleri hâlâ tüm alanları temsil etmiyor; `carTrim`, `district`, `maxTramer`, yıl ve km etiketleri eklenmeli.
+- Browser seviyesinde gerçek akış kontrolüyle:
+  - mobile filter apply/reset
+  - advanced filter count ve redirect
+  - admin pending moderasyon listesi
+  - listing detail login dönüşü
+  tekrar doğrulanmalı.
+
 ## Frontend-Backend Contract Remediation (2026-04-16)
 
 ### Listing Creation / Moderation / Contact Flow Alignment
