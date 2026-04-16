@@ -915,3 +915,70 @@ create policy "seller_reviews_delete_self"
   on public.seller_reviews for delete
   using ((select auth.uid()) = reviewer_id or (select public.is_admin()));
 
+
+-- ── Chats & Messages RLS ─────────────────────────────────────────────────────
+
+alter table public.chats enable row level security;
+
+drop policy if exists "chats_select_participants" on public.chats;
+create policy "chats_select_participants"
+  on public.chats for select
+  using (
+    (select auth.uid()) = buyer_id
+    or (select auth.uid()) = seller_id
+    or (select public.is_admin())
+  );
+
+-- Buyer initiates the chat; listing must be approved; buyer ≠ seller (DB constraint)
+drop policy if exists "chats_insert_buyer_only" on public.chats;
+create policy "chats_insert_buyer_only"
+  on public.chats for insert
+  with check (
+    (select auth.uid()) = buyer_id
+    and exists (
+      select 1 from public.listings
+      where listings.id = chats.listing_id
+        and listings.status = 'approved'
+        and listings.seller_id = chats.seller_id
+    )
+  );
+
+-- ── Phone Reveal Audit Log ───────────────────────────────────────────────────
+
+create table if not exists public.phone_reveal_logs (
+  id uuid primary key default gen_random_uuid(),
+  listing_id uuid not null references public.listings(id) on delete cascade,
+  user_id uuid references public.profiles(id) on delete set null,
+  viewer_ip text,
+  revealed_at timestamptz not null default timezone('utc', now())
+);
+
+create index if not exists idx_phone_reveal_logs_ip
+  on public.phone_reveal_logs (viewer_ip, revealed_at desc)
+  where viewer_ip is not null;
+
+create index if not exists idx_phone_reveal_logs_listing
+  on public.phone_reveal_logs (listing_id, revealed_at desc);
+
+create index if not exists idx_phone_reveal_logs_user
+  on public.phone_reveal_logs (user_id, revealed_at desc)
+  where user_id is not null;
+
+alter table public.phone_reveal_logs enable row level security;
+
+drop policy if exists "phone_reveal_logs_select_owner_or_admin" on public.phone_reveal_logs;
+create policy "phone_reveal_logs_select_owner_or_admin"
+  on public.phone_reveal_logs for select
+  using (
+    public.is_admin()
+    or exists (
+      select 1 from public.listings
+      where listings.id = phone_reveal_logs.listing_id
+        and listings.seller_id = (select auth.uid())
+    )
+  );
+
+drop policy if exists "phone_reveal_logs_insert_anyone" on public.phone_reveal_logs;
+create policy "phone_reveal_logs_insert_anyone"
+  on public.phone_reveal_logs for insert
+  with check (true);

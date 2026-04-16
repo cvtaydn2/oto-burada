@@ -30,10 +30,12 @@ export async function revealListingPhone(listingId: string) {
   }
 
   // Fetch only the phone number using admin client
+  // Also verify the listing is in an active state — do not reveal phones for
+  // archived or rejected listings.
   const admin = createSupabaseAdminClient();
   const { data, error } = await admin
     .from("listings")
-    .select("whatsapp_phone")
+    .select("whatsapp_phone, status, seller_id")
     .eq("id", listingId)
     .single();
 
@@ -41,14 +43,29 @@ export async function revealListingPhone(listingId: string) {
     throw new Error("İlan bulunamadı.");
   }
 
+  // Only allow phone reveal for approved listings
+  if (data.status !== "approved") {
+    throw new Error("Bu ilan aktif değil. Telefon numarası gösterilemiyor.");
+  }
+
   captureServerEvent("contact_phone_revealed_server", {
     listingId,
     userId: user?.id ?? "guest",
     isGuest: !user,
+    sellerId: data.seller_id,
+  });
+
+  // Persist to phone_reveal_logs for scraping detection and seller analytics.
+  // Fire-and-forget — never blocks the phone reveal response.
+  // Requires: scripts/migrations/add-phone-reveal-logs.sql to be applied.
+  void admin.from("phone_reveal_logs").insert({
+    listing_id: listingId,
+    user_id: user?.id ?? null,
+    viewer_ip: ip !== "unknown" ? ip : null,
   });
 
   return {
-    phone: data.whatsapp_phone
+    phone: data.whatsapp_phone,
   };
 }
 

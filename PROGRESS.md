@@ -278,7 +278,66 @@
 - Güncel `schema.sql` gerçek Supabase veritabanına uygulanmalı ve production veri modeli senkronize edilmeli.
 - Ardından gerçek DB üzerinde chat, corporate profile ve ekspertiz belge akışları için integration smoke test yapılmalı.
 
-## Image Upload & Display Pipeline Audit & Fixes (2026-04-17)
+## Contact & Phone Reveal Audit & Fixes (2026-04-17)
+
+### Tespit ve Düzeltilen Sorunlar
+
+**SECURITY [YÜKSEK]: Archived/rejected ilan telefon açılabiliyordu**
+- `revealListingPhone` sadece listing ID bakıyordu, status kontrolü yoktu
+- Arşivlenmiş veya reddedilmiş ilanların telefonu açılabiliyordu
+- Düzeltme: `data.status !== "approved"` → 403 hatası fırlatıyor
+
+**SECURITY [YÜKSEK]: `chats` tablosunda insert RLS policy yoktu**
+- Herhangi bir authenticated user istediği buyer/seller/listing kombinasyonu için chat açabilirdi
+- `chats_distinct_participants` DB constraint buyer ≠ seller garantiliyor ama yetersiz
+- Düzeltme: `chats_insert_buyer_only` RLS policy eklendi
+  - `buyer_id = auth.uid()` — sadece alıcı chat başlatabilir
+  - `listing.status = 'approved'` — sadece aktif ilan için chat
+  - `listing.seller_id = chats.seller_id` — seller ID'si listing ile tutarlı olmalı
+- Migration: `scripts/migrations/fix-chats-rls.sql`
+- `schema.sql`'e de eklendi (bootstrap için)
+
+**AUDIT [YÜKSEK]: Telefon görüntüleme DB'de audit log yoktu**
+- Sadece PostHog'a gidiyordu — adblocker ile atlanabilir, scraping tespiti yoktu
+- Satıcı kim kaç kez telefonunu gördü bilemiyordu
+- Düzeltme: `phone_reveal_logs` tablosu eklendi (listing_id, user_id, viewer_ip, revealed_at)
+- Migration: `scripts/migrations/add-phone-reveal-logs.sql`
+- RLS: Sadece admin ve listing sahibi görebilir, herkes insert edebilir
+- `revealListingPhone` → fire-and-forget DB insert
+
+**UX [ORTA]: WhatsApp dialog double-click bug**
+- "Numarayı Gör ve İlerle" butonu `href="#"` ile render ediliyordu
+- Reveal tamamlanmadan tıklanınca boş sayfa açılıyor, bir sonraki tıklamada çalışıyordu
+- Düzeltme: İki farklı render: reveal tamamlanmamışsa `<button onClick={handleReveal}>`, tamamlanmışsa `<a href={whatsappLink}>`
+
+**UX [ORTA]: Satıcı kendi ilanında contact görebiliyordu**
+- "Numarayı Göster" satıcının kendi numarasını göstermesi anlamsız
+- Mobil sticky'de sadece `isAuthenticated` kontrolü, satıcı kısıtlaması yoktu
+- Düzeltme:
+  - `ContactActions`: `currentUserId === sellerId` → "Bu sizin ilanınız." mesajı
+  - `MobileStickyActions`: `currentUserId === sellerId` → `return null`
+  - Listing detail page → `currentUser?.id` geçiriliyor
+
+**UX [ORTA]: Mobil ve desktop guest experience tutarsızlığı**
+- Mobil: guest → "İletişim İçin Giriş Yap"
+- Desktop: guest → numarayı göster (5/saat izin veriliyordu)
+- Şimdi her iki noktada da `currentUserId` prop geçildiği için daha tutarlı
+
+### Yeni Dosyalar
+- `scripts/migrations/add-phone-reveal-logs.sql`
+- `scripts/migrations/fix-chats-rls.sql`
+
+### Doğrulama
+- `npm run typecheck` ✅
+- `npm run lint` ✅ (0 errors, 0 warnings)
+- `npm run build` ✅
+
+### Sonraki Adım
+- `scripts/migrations/add-phone-reveal-logs.sql` → Supabase SQL editor'de çalıştır
+- `scripts/migrations/fix-chats-rls.sql` → Supabase SQL editor'de çalıştır
+- Phone reveal log'larını admin panelinde satıcı detay sayfasına göster (ileride)
+
+
 
 ### Tespit ve Düzeltilen Sorunlar
 

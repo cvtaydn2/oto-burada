@@ -17,17 +17,22 @@ interface MobileStickyActionsProps {
     listingSlug: string;
     sellerId: string;
     price: number;
+    currentUserId?: string | null;
 }
 
 export function MobileStickyActions({ 
     listingId, 
     listingSlug,
     sellerId,
-    price, 
+    price,
+    currentUserId,
 }: MobileStickyActionsProps) {
     const { isAuthenticated } = useAuthUser();
     const loginUrl = `/login?next=${encodeURIComponent(`/listing/${listingSlug}`)}`;
+    // If this is the seller's own listing, render nothing (no contact needed)
+    const isOwnListing = Boolean(currentUserId && currentUserId === sellerId);
 
+    if (isOwnListing) return null;
     return (
         <div className="fixed bottom-[88px] left-0 right-0 z-50 lg:hidden px-4 py-3 bg-white border-t border-slate-200 shadow-[0_-8px_30px_rgb(0,0,0,0.08)] animate-in fade-in slide-in-from-bottom-full duration-500">
             <div className="mx-auto flex max-w-7xl items-center justify-between gap-4">
@@ -40,7 +45,7 @@ export function MobileStickyActions({
 
                 <div className="flex-1 max-w-[240px]">
                     {isAuthenticated ? (
-                        <ContactActions listingId={listingId} listingSlug={listingSlug} sellerId={sellerId} />
+                        <ContactActions listingId={listingId} listingSlug={listingSlug} sellerId={sellerId} currentUserId={currentUserId} />
                     ) : (
                         <a
                             href={loginUrl}

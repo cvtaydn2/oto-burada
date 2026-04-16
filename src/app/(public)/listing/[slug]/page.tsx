@@ -154,6 +154,7 @@ export default async function ListingDetailPage({ params }: ListingDetailPagePro
           listingSlug={listing.slug}
           sellerId={listing.sellerId}
           price={listing.price}
+          currentUserId={currentUser?.id ?? null}
       /> 
 
       <main className="min-h-screen bg-gray-50 flex flex-col">
@@ -408,7 +409,7 @@ export default async function ListingDetailPage({ params }: ListingDetailPagePro
                 </div>
 
                 <div className="space-y-3">
-                  <ContactActions listingId={listing.id} listingSlug={listing.slug} sellerId={listing.sellerId} />
+                  <ContactActions listingId={listing.id} listingSlug={listing.slug} sellerId={listing.sellerId} currentUserId={currentUser?.id ?? null} />
                 </div>
 
                 {/* Seller rating summary */}

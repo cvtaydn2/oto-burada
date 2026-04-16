@@ -24,9 +24,11 @@ interface ContactActionsProps {
   listingId: string;
   listingSlug?: string;
   sellerId: string;
+  /** Pass the current user's ID to hide contact actions on own listing */
+  currentUserId?: string | null;
 }
 
-export function ContactActions({ listingId, listingSlug, sellerId }: ContactActionsProps) {
+export function ContactActions({ listingId, listingSlug, sellerId, currentUserId }: ContactActionsProps) {
   const router = useRouter();
   const supabase = createSupabaseBrowserClient();
   const posthog = usePostHog();
@@ -35,6 +37,16 @@ export function ContactActions({ listingId, listingSlug, sellerId }: ContactActi
   const [isLogging, setIsLogging] = useState(false);
   const [isChatting, setIsChatting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // Seller should not see contact actions on their own listing
+  const isOwnListing = Boolean(currentUserId && currentUserId === sellerId);
+  if (isOwnListing) {
+    return (
+      <div className="rounded-xl border border-slate-200 bg-slate-50 p-3 text-center text-xs font-medium text-slate-500">
+        Bu sizin ilanınız.
+      </div>
+    );
+  }
 
   const formatPhone = (p: string) => {
     return p.replace(/(\d{4})(\d{3})(\d{2})(\d{2})/, "$1 $2 $3 $4");
@@ -163,32 +175,32 @@ export function ContactActions({ listingId, listingSlug, sellerId }: ContactActi
             <AlertDialogCancel className="w-full sm:flex-1 h-12 rounded-xl border border-slate-200 text-slate-600 font-semibold">
               Vazgeç
             </AlertDialogCancel>
-            <AlertDialogAction 
-               asChild 
+            <AlertDialogAction
+               asChild
                className="w-full sm:flex-1 h-12 p-0 bg-transparent hover:bg-transparent"
-               onClick={(e) => {
-                 if (!isRevealed) {
-                   e.preventDefault();
-                   handleReveal();
-                 }
-               }}
              >
-               <a
-                 href={isRevealed && whatsappLink ? whatsappLink : "#"}
-                 target={isRevealed && whatsappLink ? "_blank" : undefined}
-                 rel="noreferrer"
-                 onClick={() => {
-                   if (!isRevealed || !whatsappLink) {
-                     return;
-                   }
-
-                   posthog?.capture("contact_whatsapp_clicked", { listingId, sellerId });
-                 }}
-                 className="flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-green-500 to-emerald-600 w-full h-12 px-6 text-[15px] text-white font-bold shadow-sm"
-               >
-                 {isLogging ? <Loader2 className="animate-spin size-4" /> : isRevealed ? "Mesaj Gönder" : "Numarayı Gör ve İlerle"}
-                 <MessageCircle className="size-4" />
-               </a>
+               {isRevealed && whatsappLink ? (
+                 <a
+                   href={whatsappLink}
+                   target="_blank"
+                   rel="noreferrer"
+                   onClick={() => posthog?.capture("contact_whatsapp_clicked", { listingId, sellerId })}
+                   className="flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-green-500 to-emerald-600 w-full h-12 px-6 text-[15px] text-white font-bold shadow-sm"
+                 >
+                   Mesaj Gönder
+                   <MessageCircle className="size-4" />
+                 </a>
+               ) : (
+                 <button
+                   type="button"
+                   disabled={isLogging}
+                   onClick={handleReveal}
+                   className="flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-green-500 to-emerald-600 w-full h-12 px-6 text-[15px] text-white font-bold shadow-sm disabled:opacity-70"
+                 >
+                   {isLogging ? <Loader2 className="animate-spin size-4" /> : "Numarayı Gör ve İlerle"}
+                   {!isLogging && <MessageCircle className="size-4" />}
+                 </button>
+               )}
              </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
