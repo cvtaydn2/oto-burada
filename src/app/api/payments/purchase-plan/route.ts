@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { getCurrentUser } from "@/lib/auth/session";
 import { logger } from "@/lib/utils/logger";
 import { captureServerError } from "@/lib/monitoring/posthog-server";
+import { isPaymentEnabled } from "@/lib/payment/config";
 
 export async function POST(req: Request) {
   const user = await getCurrentUser();
@@ -19,12 +20,17 @@ export async function POST(req: Request) {
     // Attempt logged to PostHog for funnel tracking
     logger.payments.info("Plan purchase attempted", { planId, userId: user.id });
 
-    // TODO: Iyzico payment integration
-    // Return clear "not yet available" — this is expected, not an error
+    if (!isPaymentEnabled()) {
+      return NextResponse.json({
+        success: false,
+        error: "Ödeme sistemi henüz aktif değil. Lütfen bizimle iletişime geçin.",
+      }, { status: 503 });
+    }
+
     return NextResponse.json({
       success: false,
-      error: "Ödeme sistemi henüz aktif değil. Lütfen bizimle iletişime geçin.",
-    }, { status: 503 });
+      error: "Ödeme entegrasyonu henüz tamamlanmadı.",
+    }, { status: 501 });
 
   } catch (error) {
     // Unexpected server error — log + send to PostHog

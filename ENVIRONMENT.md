@@ -35,6 +35,18 @@ Vercel üzerindeki ortam değişkenlerini (API anahtarları vb.) yerel makineniz
 
 Belge bucket'ı için public read açılmamalı; uygulama bu dosyaları kısa ömürlü signed URL ile sunar.
 
+## Ödeme Ortam Değişkenleri
+
+- `IYZICO_API_KEY`
+- `IYZICO_SECRET_KEY`
+- `IYZICO_BASE_URL`
+
+Bu değişkenler tanımlı değilse ödeme tabanlı akışlar bilinçli olarak pasif kalır:
+- plan satın alma
+- ilan doping / öne çıkarma
+
+Amaç, development ortamında sahte başarı üretmek yerine frontend ile backend davranışını aynı çizgide tutmaktır.
+
 ## Dağıtım (Deployment)
 
 Uygulamayı Vercel'e manuel olarak göndermek için:

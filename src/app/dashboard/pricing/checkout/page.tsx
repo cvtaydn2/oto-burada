@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { requireUser } from "@/lib/auth/session";
 import { getPricingPlans } from "@/services/admin/plans";
 import { CheckoutClient } from "@/components/dashboard/checkout-client";
+import { isPaymentEnabled } from "@/lib/payment/config";
 
 interface CheckoutPageProps {
   searchParams: Promise<{ plan?: string }>;
@@ -29,7 +30,7 @@ export default async function CheckoutPage({ searchParams }: CheckoutPageProps) 
 
   return (
     <div className="container max-w-2xl py-12">
-      <CheckoutClient plan={selectedPlan} />
+      <CheckoutClient plan={selectedPlan} isPaymentEnabled={isPaymentEnabled()} />
     </div>
   );
 }

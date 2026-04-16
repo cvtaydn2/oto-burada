@@ -1,6 +1,7 @@
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { hasSupabaseAdminEnv } from "@/lib/supabase/env";
 import { payment } from "@/lib/payment";
+import { isPaymentEnabled } from "@/lib/payment/config";
 
 export type DopingType = "featured" | "urgent" | "highlighted";
 
@@ -26,6 +27,9 @@ export async function applyDopingToListing(
   dopingTypes: DopingType[]
 ): Promise<DopingResult> {
   if (!hasSupabaseAdminEnv()) return { success: false, message: "Server connection failed" };
+  if (!isPaymentEnabled()) {
+    return { success: false, message: "Doping ödemeleri henüz aktif değil. Lütfen bizimle iletişime geçin." };
+  }
   const admin = createSupabaseAdminClient();
 
   const now = new Date();

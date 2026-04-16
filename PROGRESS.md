@@ -63,6 +63,34 @@
 - ödeme/checkout akışı hâlâ canlı feature gibi görünüp backend’de `503` dönüyor; copy ve CTA seviyesinde açık biçimde kapatılmalı ya da gerçek entegrasyon yapılmalı.
 - browser ile gerçek kullanıcı akışları hâlâ ayrıca doğrulanmalı.
 
+## Payment Contract Hardening (2026-04-16)
+
+### Checkout / Doping Alignment
+- **Sahte Ödeme Başarısı Kaldırıldı**:
+  - `IyzicoProvider` içindeki development mock success davranışı kaldırıldı
+  - ödeme yapılandırması `src/lib/payment/config.ts` içinde tek yerde tanımlandı
+  - `IYZICO_API_KEY` ve `IYZICO_SECRET_KEY` yoksa ödeme tabanlı akışlar bilinçli olarak pasif kalıyor
+- **İlan Doping Akışı Gerçek Duruma Uyarlandı**:
+  - `listing-doping-panel` artık `alert()` + `window.location.reload()` kullanmıyor
+  - sonuçlar inline success/error mesajı olarak gösteriliyor
+  - ödeme aktif değilse servis açık bir mesajla reddediyor; frontend de bunu görünür şekilde yansıtıyor
+- **Checkout Placeholder Akışı Temizlendi**:
+  - checkout sayfası ödeme aktif değilken sahte “Öde” deneyimi sunmuyor
+  - kullanıcı bunun yerine `contact` yönlendirmeli net CTA görüyor
+  - alt mesaj da “SSL ödeme” yerine manuel aktivasyon durumunu yansıtıyor
+- **Ortam Dokümantasyonu Tamamlandı**:
+  - `.env.example` ve `ENVIRONMENT.md` içine Iyzico değişkenleri eklendi
+  - payment özelliklerinin bu env’ler olmadan bilinçli biçimde pasif kaldığı belgelendi
+
+### Doğrulama
+- `npm run lint` ✅
+- `npm run typecheck` ✅
+- `npm run build` ✅
+
+### Sonraki Adım
+- browser seviyesinde `doping` dialog ve checkout ekranı canlı akışları kontrol edilmeli.
+- admin ve dashboard tarafında hâlâ placeholder/yarım bağlı CTA taraması sürmeli.
+
 ## Frontend-Backend Contract Remediation (2026-04-16)
 
 ### Listing Creation / Moderation / Contact Flow Alignment

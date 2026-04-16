@@ -1,13 +1,15 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { 
   Rocket, 
   Star, 
   Zap, 
   Clock,
   CheckCircle2,
-  TrendingUp
+  TrendingUp,
+  AlertTriangle
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -51,8 +53,11 @@ interface ListingDopingPanelProps {
 }
 
 export function ListingDopingPanel({ listingId, listingTitle }: ListingDopingPanelProps) {
+  const router = useRouter();
   const [selected, setSelected] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
+  const [message, setMessage] = useState<string | null>(null);
+  const [status, setStatus] = useState<"error" | "idle" | "success">("idle");
 
   const totalPrice = DOPING_OPTIONS
     .filter(opt => selected.includes(opt.id))
@@ -67,23 +72,39 @@ export function ListingDopingPanel({ listingId, listingTitle }: ListingDopingPan
   };
 
   const handleApply = async () => {
+    if (selected.length === 0) {
+      setStatus("error");
+      setMessage("Lütfen en az bir doping seçin.");
+      return;
+    }
+
     setLoading(true);
+    setStatus("idle");
+    setMessage(null);
+
     try {
       const response = await fetch(`/api/listings/${listingId}/doping`, {
         method: "POST",
         body: JSON.stringify({ dopingTypes: selected }),
         headers: { "Content-Type": "application/json" },
       });
-      const result = await response.json();
+      const result = await response.json().catch(() => null) as {
+        success?: boolean;
+        message?: string;
+        error?: { message?: string };
+      } | null;
       
-      if (result.success) {
-        alert(result.message);
-        window.location.reload();
+      if (response.ok && result?.success) {
+        setStatus("success");
+        setMessage(result.message ?? "Dopingler başarıyla uygulandı.");
+        router.refresh();
       } else {
-        alert(result.message || "İşlem başarısız oldu.");
+        setStatus("error");
+        setMessage(result?.error?.message ?? result?.message ?? "İşlem başarısız oldu.");
       }
     } catch {
-      alert("Bir hata oluştu.");
+      setStatus("error");
+      setMessage("Bir hata oluştu.");
     } finally {
       setLoading(false);
     }
@@ -156,9 +177,22 @@ export function ListingDopingPanel({ listingId, listingTitle }: ListingDopingPan
           >
             {loading ? "İşleniyor..." : "Dopingleri Uygula"}
           </Button>
-          <p className="text-[10px] text-center text-muted-foreground mt-3">
-            Ödeme işlemleri SSL korumalı altyapımız ile güvenle gerçekleştirilir.
-          </p>
+          {message ? (
+            <div
+              className={`mt-3 flex items-center gap-2 rounded-xl border px-3 py-2 text-sm ${
+                status === "success"
+                  ? "border-emerald-200 bg-emerald-50 text-emerald-700"
+                  : "border-red-200 bg-red-50 text-red-700"
+              }`}
+            >
+              {status === "success" ? <CheckCircle2 className="h-4 w-4 shrink-0" /> : <AlertTriangle className="h-4 w-4 shrink-0" />}
+              <span>{message}</span>
+            </div>
+          ) : (
+            <p className="text-[10px] text-center text-muted-foreground mt-3">
+              Ödeme ve görünürlük artışı onayı işlem sonucunda burada gösterilir.
+            </p>
+          )}
         </CardContent>
       </Card>
     </div>

@@ -11,9 +11,10 @@ import type { PricingPlan } from "@/services/admin/plans";
 
 interface CheckoutClientProps {
   plan: PricingPlan;
+  isPaymentEnabled: boolean;
 }
 
-export function CheckoutClient({ plan }: CheckoutClientProps) {
+export function CheckoutClient({ plan, isPaymentEnabled }: CheckoutClientProps) {
   const router = useRouter();
   const posthog = usePostHog();
   const [isProcessing, setIsProcessing] = useState(false);
@@ -144,18 +145,27 @@ export function CheckoutClient({ plan }: CheckoutClientProps) {
 
       {/* CTA */}
       <div className="space-y-3">
-        <Button
-          className="w-full h-14 text-base font-bold gap-2"
-          onClick={handlePayment}
-          disabled={isProcessing}
-        >
-          <CreditCard size={20} />
-          {isProcessing ? "İşleniyor..." : `${new Intl.NumberFormat("tr-TR", { style: "currency", currency: "TRY" }).format(plan.price)} Öde`}
-        </Button>
+        {isPaymentEnabled ? (
+          <Button
+            className="w-full h-14 text-base font-bold gap-2"
+            onClick={handlePayment}
+            disabled={isProcessing}
+          >
+            <CreditCard size={20} />
+            {isProcessing ? "İşleniyor..." : `${new Intl.NumberFormat("tr-TR", { style: "currency", currency: "TRY" }).format(plan.price)} Öde`}
+          </Button>
+        ) : (
+          <Button asChild className="w-full h-14 text-base font-bold gap-2">
+            <a href="/contact">
+              <CreditCard size={20} />
+              Bizimle İletişime Geç
+            </a>
+          </Button>
+        )}
 
         <div className="flex items-center justify-center gap-2 text-xs text-slate-400">
           <ShieldCheck size={14} className="text-emerald-500" />
-          <span>SSL korumalı güvenli ödeme</span>
+          <span>{isPaymentEnabled ? "SSL korumalı güvenli ödeme" : "Paket aktivasyonu şu an manuel ilerliyor"}</span>
         </div>
       </div>
     </div>

@@ -1,5 +1,6 @@
 import type { PaymentRequest, PaymentResponse, PaymentProvider } from "./types";
 import { logger } from "@/lib/utils/logger";
+import { isPaymentEnabled } from "./config";
 
 export class IyzicoProvider implements PaymentProvider {
   // In a real scenario, we'd use 'iyzipay' npm package.
@@ -9,16 +10,7 @@ export class IyzicoProvider implements PaymentProvider {
   private baseUrl = process.env.IYZICO_BASE_URL;
 
   async processPayment(request: PaymentRequest): Promise<PaymentResponse> {
-    if (!this.apiKey || !this.secretKey) {
-      // Return a "Mock Success" if keys are missing but in dev
-      if (process.env.NODE_ENV === "development") {
-        console.log(`[IYZICO MOCK PAYMENT] Processing ${request.amount} TL for listing ${request.listingId}`);
-        return { 
-          success: true, 
-          status: "success", 
-          transactionId: `mock_tx_${Date.now()}` 
-        };
-      }
+    if (!isPaymentEnabled()) {
       return { success: false, status: "failure", error: "Iyzico keys missing." };
     }
 
