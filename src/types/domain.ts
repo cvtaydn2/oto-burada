@@ -34,10 +34,15 @@ export interface Profile {
   avatarUrl?: string | null;
   emailVerified: boolean;
   phoneVerified: boolean;
+  /** Identity verified via TC/EIDS — maps to `is_verified` in the DB. */
   identityVerified: boolean;
   role: UserRole;
   userType?: "individual" | "professional" | "staff";
   balanceCredits?: number;
+  /**
+   * General trust flag — currently mirrors `identityVerified` (is_verified).
+   * Used by seller cards and trust badges to show a single verified indicator.
+   */
   isVerified: boolean;
   tcVerifiedAt?: string | null;
   eidsId?: string | null;

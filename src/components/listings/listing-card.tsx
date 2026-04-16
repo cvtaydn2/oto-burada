@@ -1,5 +1,3 @@
-"use client"
-
 import Image from "next/image"
 import Link from "next/link"
 import { 
@@ -13,18 +11,12 @@ import {
   ArrowRight,
   CarFront
 } from "lucide-react"
-import { formatNumber } from "@/lib/utils"
+import { formatNumber, formatPrice } from "@/lib/utils"
 import { type Listing } from "@/types"
 
 interface ListingCardProps {
   listing: Listing
   priority?: boolean
-}
-
-function formatPrice(price: number): string {
-  return new Intl.NumberFormat("tr-TR", {
-    maximumFractionDigits: 0,
-  }).format(price)
 }
 
 export function ListingCard({ listing, priority = false }: ListingCardProps) {

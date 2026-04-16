@@ -1,5 +1,33 @@
 # PROGRESS.md
 
+## 8-Skill Kapsamlı Kod Kalitesi Temizliği (2026-04-16)
+
+### Yapılan Değişiklikler
+
+**Architecture**
+- Admin bileşenleri `src/components/listings/` klasöründen `src/components/admin/` klasörüne taşındı: `admin-listings-moderation.tsx`, `admin-reports-moderation.tsx`, `admin-analytics-panel.tsx`, `admin-recent-actions.tsx`
+
+**TypeScript**
+- `formatPrice` tekrarı giderildi: 4 ayrı dosyadaki yerel implementasyon kaldırıldı, `lib/utils.ts`'e merkezi `formatPrice()` eklendi
+- `Profile.isVerified` ve `identityVerified` alanlarına JSDoc açıklaması eklendi
+- `ListingImageRow` ve `ListingRow` interface'leri export edildi
+
+**Component Cleanup**
+- `listing-header.tsx`, `listing-specs.tsx`, `listings-grid-skeleton.tsx`, `listing-card.tsx`, `shared/structured-data.tsx` — gereksiz `"use client"` kaldırıldı (server component)
+
+**Performance**
+- `getSimilarMarketplaceListings` N+1 sorgu mantığı temizlendi
+- Dead code silindi: `price-history-chart.tsx`, `price-history-info.tsx`, `market-analysis-info.tsx`, `listing-print-action.tsx`
+
+**API Routes**
+- `favorites/route.ts`: duplicate `getAuthenticatedUser()` kaldırıldı, `requireApiUser()` kullanıldı, POST/DELETE'e CSRF kontrolü eklendi
+- `reports/route.ts`: POST'a CSRF kontrolü eklendi
+
+### Doğrulama
+- `npm run lint` ✅
+- `npm run typecheck` ✅
+- `npm run build` ✅
+
 ## Filter Flow Hardening (2026-04-16)
 
 ### Listings Discovery Alignment

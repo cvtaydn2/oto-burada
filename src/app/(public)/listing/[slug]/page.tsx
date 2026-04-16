@@ -11,7 +11,7 @@ import {
   ShieldCheck,
   Zap,
 } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { cn, formatNumber } from "@/lib/utils";
 import { ListingGallery } from "@/components/listings/listing-gallery";
 import { ListingDetailStructuredData, BreadcrumbStructuredData } from "@/components/seo/structured-data";
 import { CarCard } from "@/components/modules/listings/car-card";
@@ -20,7 +20,6 @@ import { DamageReportCard } from "@/components/listings/damage-report-card";
 import { MarketValueCard } from "@/components/listings/market-value-card";
 import { ViewCounter } from "@/components/listings/view-counter";
 import { buildListingDetailMetadata, buildAbsoluteUrl } from "@/lib/seo";
-import { formatNumber } from "@/lib/utils";
 import {
   getMarketplaceListingBySlug,
   getMarketplaceSeller,

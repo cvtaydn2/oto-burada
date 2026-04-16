@@ -1,7 +1,7 @@
-import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { hasSupabaseEnv, hasSupabaseAdminEnv } from "@/lib/supabase/env";
 import { captureServerEvent } from "@/lib/monitoring/posthog-server";
 import { apiSuccess, apiError, API_ERROR_CODES } from "@/lib/utils/api-response";
+import { requireApiUser } from "@/lib/auth/api-user";
 import {
   addDatabaseFavorite,
   getDatabaseFavoriteIds,
@@ -14,70 +14,55 @@ import { ensureProfileRecord, getStoredProfileById } from "@/services/profile/pr
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
-function getListingIdFromBody(body: unknown) {
+function getListingIdFromBody(body: unknown): string {
   if (typeof body !== "object" || body === null || !("listingId" in body)) {
     return "";
   }
-
-  return String(body.listingId ?? "");
+  return String((body as Record<string, unknown>).listingId ?? "");
 }
 
-async function getAuthenticatedUser() {
-  if (!hasSupabaseEnv()) {
-    return null;
+function checkCsrf(request: Request): boolean {
+  const origin = request.headers.get("origin");
+  const host = request.headers.get("host");
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "";
+  if (origin && !appUrl.includes(origin) && !origin.includes(host ?? "localhost")) {
+    return false;
   }
-
-  const supabase = await createSupabaseServerClient();
-  const {
-    data: { user },
-    error,
-  } = await supabase.auth.getUser();
-
-  if (error || !user) {
-    return null;
-  }
-
-  return user;
+  return true;
 }
 
 export async function GET() {
-  if (!hasSupabaseEnv()) {
+  if (!hasSupabaseEnv() || !hasSupabaseAdminEnv()) {
     return apiSuccess({ favoriteIds: [] });
   }
 
-  const user = await getAuthenticatedUser();
-
-  if (!user) {
+  const userOrError = await requireApiUser();
+  if (userOrError instanceof Response) {
+    // Unauthenticated — return empty list (favorites are optional for guests)
     return apiSuccess({ favoriteIds: [] });
   }
 
-  if (!hasSupabaseAdminEnv()) {
-    return apiSuccess({ favoriteIds: [] });
-  }
-
-  await ensureProfileRecord(user);
-  const favoriteIds = (await getDatabaseFavoriteIds(user.id)) ?? [];
+  await ensureProfileRecord(userOrError);
+  const favoriteIds = (await getDatabaseFavoriteIds(userOrError.id)) ?? [];
 
   return apiSuccess({ favoriteIds });
 }
 
 export async function POST(request: Request) {
-  if (!hasSupabaseEnv()) {
+  if (!checkCsrf(request)) {
+    return apiError(API_ERROR_CODES.BAD_REQUEST, "Geçersiz istek kaynağı.", 403);
+  }
+
+  if (!hasSupabaseEnv() || !hasSupabaseAdminEnv()) {
     return apiError(API_ERROR_CODES.SERVICE_UNAVAILABLE, "Servis kullanılamıyor.", 503);
   }
 
-  const user = await getAuthenticatedUser();
-
-  if (!user) {
+  const userOrError = await requireApiUser();
+  if (userOrError instanceof Response) {
     return apiError(API_ERROR_CODES.UNAUTHORIZED, "Favori eklemek için giriş yapmalısın.", 401);
   }
 
-  if (!hasSupabaseAdminEnv()) {
-    return apiError(API_ERROR_CODES.SERVICE_UNAVAILABLE, "Servis kullanılamıyor.", 503);
-  }
-
   let body: unknown;
-
   try {
     body = await request.json();
   } catch {
@@ -85,38 +70,35 @@ export async function POST(request: Request) {
   }
 
   const listingId = getListingIdFromBody(body);
-
   if (!listingId) {
     return apiError(API_ERROR_CODES.BAD_REQUEST, "Geçerli bir ilan seçmelisin.", 400);
   }
 
   const listing = await getStoredListingById(listingId);
-
   if (!listing) {
     return apiError(API_ERROR_CODES.NOT_FOUND, "Favoriye eklenecek ilan bulunamadı.", 404);
   }
 
-  await ensureProfileRecord(user);
-  const favoriteIds = await addDatabaseFavorite(user.id, listingId);
+  await ensureProfileRecord(userOrError);
+  const favoriteIds = await addDatabaseFavorite(userOrError.id, listingId);
 
   if (!favoriteIds) {
     return apiError(API_ERROR_CODES.INTERNAL_ERROR, "Favori eklenemedi.", 500);
   }
 
-  if (listing.sellerId !== user.id) {
-    const actorProfile = await getStoredProfileById(user.id);
-
+  if (listing.sellerId !== userOrError.id) {
+    const actorProfile = await getStoredProfileById(userOrError.id);
     await createDatabaseNotification({
       href: `/listing/${listing.slug}`,
-      message: `"${listing.title}" ilanini ${actorProfile?.fullName || "Bir kullanici"} favorilerine ekledi.`,
-      title: "Ilanin favorilere eklendi",
+      message: `"${listing.title}" ilanını ${actorProfile?.fullName ?? "Bir kullanıcı"} favorilerine ekledi.`,
+      title: "İlanın favorilere eklendi",
       type: "favorite",
       userId: listing.sellerId,
     });
   }
 
   captureServerEvent("favorite_added", {
-    userId: user.id,
+    userId: userOrError.id,
     listingId,
     sellerId: listing.sellerId,
     listingSlug: listing.slug,
@@ -126,22 +108,20 @@ export async function POST(request: Request) {
 }
 
 export async function DELETE(request: Request) {
-  if (!hasSupabaseEnv()) {
+  if (!checkCsrf(request)) {
+    return apiError(API_ERROR_CODES.BAD_REQUEST, "Geçersiz istek kaynağı.", 403);
+  }
+
+  if (!hasSupabaseEnv() || !hasSupabaseAdminEnv()) {
     return apiError(API_ERROR_CODES.SERVICE_UNAVAILABLE, "Servis kullanılamıyor.", 503);
   }
 
-  const user = await getAuthenticatedUser();
-
-  if (!user) {
+  const userOrError = await requireApiUser();
+  if (userOrError instanceof Response) {
     return apiError(API_ERROR_CODES.UNAUTHORIZED, "Favori güncellemek için giriş yapmalısın.", 401);
   }
 
-  if (!hasSupabaseAdminEnv()) {
-    return apiError(API_ERROR_CODES.SERVICE_UNAVAILABLE, "Servis kullanılamıyor.", 503);
-  }
-
   let body: unknown;
-
   try {
     body = await request.json();
   } catch {
@@ -149,20 +129,19 @@ export async function DELETE(request: Request) {
   }
 
   const listingId = getListingIdFromBody(body);
-
   if (!listingId) {
     return apiError(API_ERROR_CODES.BAD_REQUEST, "Geçerli bir ilan seçmelisin.", 400);
   }
 
-  await ensureProfileRecord(user);
-  const favoriteIds = await removeDatabaseFavorite(user.id, listingId);
+  await ensureProfileRecord(userOrError);
+  const favoriteIds = await removeDatabaseFavorite(userOrError.id, listingId);
 
   if (!favoriteIds) {
     return apiError(API_ERROR_CODES.INTERNAL_ERROR, "Favori kaldırılamadı.", 500);
   }
 
   captureServerEvent("favorite_removed", {
-    userId: user.id,
+    userId: userOrError.id,
     listingId,
   });
 

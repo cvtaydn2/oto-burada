@@ -15,6 +15,14 @@ import { ensureProfileRecord } from "@/services/profile/profile-records";
 import { captureServerEvent } from "@/lib/monitoring/posthog-server";
 
 export async function POST(request: Request) {
+  // CSRF check
+  const origin = request.headers.get("origin");
+  const host = request.headers.get("host");
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "";
+  if (origin && !appUrl.includes(origin) && !origin.includes(host ?? "localhost")) {
+    return apiError(API_ERROR_CODES.BAD_REQUEST, "Geçersiz istek kaynağı.", 403);
+  }
+
   const ipRateLimit = await enforceRateLimit(
     getRateLimitKey(request, "api:reports:create"),
     rateLimitProfiles.general,

@@ -28,3 +28,11 @@ export function formatDate(value: string) {
     year: "numeric",
   }).format(new Date(value));
 }
+
+/**
+ * Formats a price as a plain Turkish number without currency symbol.
+ * Use this when you want to display "1.250.000 TL" with a separate TL label.
+ */
+export function formatPrice(value: number): string {
+  return new Intl.NumberFormat("tr-TR", { maximumFractionDigits: 0 }).format(value);
+}

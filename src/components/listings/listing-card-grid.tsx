@@ -3,7 +3,7 @@
 import Image from "next/image"
 import Link from "next/link"
 import { CarFront, Sparkles, TrendingDown } from "lucide-react"
-import { formatNumber } from "@/lib/utils"
+import { formatNumber, formatPrice } from "@/lib/utils"
 import { type Listing } from "@/types"
 import { Badge } from "@/components/ui/badge"
 import { FavoriteButton } from "@/components/listings/favorite-button"
@@ -11,12 +11,6 @@ import { FavoriteButton } from "@/components/listings/favorite-button"
 interface ListingCardGridProps {
   listing: Listing
   priority?: boolean
-}
-
-function formatPrice(price: number): string {
-  return new Intl.NumberFormat("tr-TR", {
-    maximumFractionDigits: 0,
-  }).format(price)
 }
 
 export function ListingCardGrid({ listing, priority = false }: ListingCardGridProps) {

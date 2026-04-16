@@ -1,5 +1,5 @@
 import { Search } from "lucide-react";
-import { AdminListingsModeration } from "@/components/listings/admin-listings-moderation";
+import { AdminListingsModeration } from "@/components/admin/admin-listings-moderation";
 import { requireAdminUser } from "@/lib/auth/session";
 import { getAdminInventory } from "@/services/admin/inventory";
 import { Input } from "@/components/ui/input";

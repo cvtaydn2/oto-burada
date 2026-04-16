@@ -22,7 +22,8 @@ const turkishCharacterMap: Record<string, string> = {
   Ü: "u",
 };
 
-interface ListingImageRow {
+/** DB row shape for a listing image — used internally for mapping. */
+export interface ListingImageRow {
   id: string;
   is_cover: boolean;
   listing_id: string;
@@ -32,7 +33,8 @@ interface ListingImageRow {
   placeholder_blur: string | null;
 }
 
-interface ListingRow {
+/** DB row shape for a listing — used internally for mapping. */
+export interface ListingRow {
   brand: string;
   city: string;
   created_at: string;

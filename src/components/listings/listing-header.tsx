@@ -1,17 +1,10 @@
-"use client"
-
 import { MapPin, Sparkles } from "lucide-react"
+import { formatPrice } from "@/lib/utils"
 import { type Listing } from "@/types"
 import { Badge } from "@/components/ui/badge"
 
 interface ListingHeaderProps {
   listing: Listing
-}
-
-function formatPrice(price: number): string {
-  return new Intl.NumberFormat("tr-TR", {
-    maximumFractionDigits: 0,
-  }).format(price)
 }
 
 export function ListingHeader({ listing }: ListingHeaderProps) {

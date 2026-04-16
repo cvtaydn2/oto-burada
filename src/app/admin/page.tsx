@@ -10,11 +10,11 @@ import {
 import {
   AdminRecentActions,
   type AdminRecentActionItem,
-} from "@/components/listings/admin-recent-actions";
+} from "@/components/admin/admin-recent-actions";
 import { AdminBroadcastPanel } from "@/components/shared/admin-broadcast-panel";
 import { AdminPersistencePanel } from "@/components/shared/admin-persistence-panel";
 import { DashboardMetricCard } from "@/components/shared/dashboard-metric-card";
-import { AdminAnalyticsPanel } from "@/components/listings/admin-analytics-panel";
+import { AdminAnalyticsPanel } from "@/components/admin/admin-analytics-panel";
 import { Button } from "@/components/ui/button";
 import { AdminHeaderActions } from "@/components/admin/admin-header-actions";
 import { requireAdminUser } from "@/lib/auth/session";

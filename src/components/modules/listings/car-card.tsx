@@ -3,7 +3,7 @@
 import Image from "next/image"
 import Link from "next/link"
 import { CarFront, MapPin, Settings2, ShieldCheck, Zap } from "lucide-react"
-import { cn, formatNumber } from "@/lib/utils"
+import { cn, formatNumber, formatPrice } from "@/lib/utils"
 import { type Listing } from "@/types"
 import { FavoriteButton } from "@/components/listings/favorite-button"
 import { getListingCardInsights } from "@/services/listings/listing-card-insights"
@@ -12,12 +12,6 @@ interface CarCardProps {
   listing: Listing
   priority?: boolean
   variant?: "grid" | "list"
-}
-
-function formatPrice(price: number): string {
-  return new Intl.NumberFormat("tr-TR", {
-    maximumFractionDigits: 0,
-  }).format(price)
 }
 
 export function CarCard({ listing, priority = false, variant = "grid" }: CarCardProps) {

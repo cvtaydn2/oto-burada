@@ -1,5 +1,3 @@
-"use client"
-
 import { Skeleton } from "@/components/ui/skeleton"
 
 export function ListingsGridSkeleton({ count = 6 }: { count?: number }) {

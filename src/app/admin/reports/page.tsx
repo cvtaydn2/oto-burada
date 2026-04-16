@@ -1,5 +1,5 @@
 import { ShieldAlert } from "lucide-react";
-import { AdminReportsModeration } from "@/components/listings/admin-reports-moderation";
+import { AdminReportsModeration } from "@/components/admin/admin-reports-moderation";
 import { requireAdminUser } from "@/lib/auth/session";
 import { getStoredReports } from "@/services/reports/report-submissions";
 import { getAllKnownListings } from "@/services/listings/marketplace-listings";

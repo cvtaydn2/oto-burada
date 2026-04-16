@@ -108,6 +108,8 @@ export async function getMarketplaceSeller(sellerId: string): Promise<Profile | 
         phone: data.phone,
         city: data.city,
         avatarUrl: data.avatar_url,
+        // emailVerified and phoneVerified are not exposed in the public seller profile
+        // for privacy reasons — they are only available in the authenticated profile context.
         emailVerified: false,
         phoneVerified: false,
         identityVerified: data.is_verified,
@@ -145,38 +147,34 @@ export async function getSimilarMarketplaceListings(slug: string, brand: string,
   return withNextCache(
     [`similar-marketplace-listings:${slug}:${brand}:${city}`],
     async () => {
-      const result = await getFilteredDatabaseListings({
+      // Single query: fetch candidates by brand, then supplement with city if needed
+      const brandResult = await getFilteredDatabaseListings({
         brand,
         limit: 10,
         page: 1,
-        sort: "newest"
+        sort: "newest",
       });
 
-      const listings = result.listings;
-      
-      const similarByBrand = listings.filter(
-        (listing) => listing.slug !== slug && listing.brand === brand,
-      );
+      const byBrand = brandResult.listings.filter((l) => l.slug !== slug);
 
-      if (similarByBrand.length >= 3) {
-        return similarByBrand.slice(0, 3);
+      if (byBrand.length >= 3) {
+        return byBrand.slice(0, 3);
       }
 
+      // Not enough brand matches — fetch by city and merge
       const cityResult = await getFilteredDatabaseListings({
         city,
         limit: 10,
         page: 1,
-        sort: "newest"
+        sort: "newest",
       });
 
-      const similarByCity = cityResult.listings.filter(
-        (listing) =>
-          listing.slug !== slug &&
-          listing.city === city &&
-          !similarByBrand.some((brandMatch) => brandMatch.id === listing.id),
+      const brandIds = new Set(byBrand.map((l) => l.id));
+      const byCity = cityResult.listings.filter(
+        (l) => l.slug !== slug && !brandIds.has(l.id),
       );
 
-      return [...similarByBrand, ...similarByCity].slice(0, 3);
+      return [...byBrand, ...byCity].slice(0, 3);
     },
     120,
   );
