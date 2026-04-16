@@ -1,6 +1,7 @@
 "use client";
 
 import { Flag } from "lucide-react";
+import { usePostHog } from "posthog-js/react";
 
 import { useAuthUser } from "@/components/shared/auth-provider";
 import { CompareButton } from "@/components/listings/compare-button";
@@ -29,6 +30,7 @@ export function ListingDetailActions({
   title,
 }: ListingDetailActionsProps) {
   const { userId } = useAuthUser();
+  const posthog = usePostHog();
 
   return (
     <div className="flex items-center space-x-2">
@@ -49,6 +51,7 @@ export function ListingDetailActions({
         <DialogTrigger asChild>
           <button
             type="button"
+            onClick={() => posthog?.capture("report_dialog_opened", { listingId, sellerId })}
             className="bg-white border border-gray-200 text-gray-600 px-3 py-1.5 rounded-lg text-sm font-medium hover:bg-red-50 hover:text-red-500 hover:border-red-200 transition flex items-center gap-2 shadow-sm"
           >
             <Flag className="size-4" />

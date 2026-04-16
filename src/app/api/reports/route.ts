@@ -12,6 +12,7 @@ import {
 } from "@/services/reports/report-submissions";
 import { getStoredListingById } from "@/services/listings/listing-submissions";
 import { ensureProfileRecord } from "@/services/profile/profile-records";
+import { captureServerEvent } from "@/lib/monitoring/posthog-server";
 
 export async function POST(request: Request) {
   const ipRateLimit = await enforceRateLimit(
@@ -96,6 +97,14 @@ export async function POST(request: Request) {
   if (!persistedReport) {
     return apiError(API_ERROR_CODES.INTERNAL_ERROR, "Rapor kaydedilemedi. Lütfen tekrar dene.", 500);
   }
+
+  captureServerEvent("report_submitted", {
+    userId: user.id,
+    reportId: persistedReport.id,
+    listingId: sanitizedData.listingId,
+    reason: sanitizedData.reason,
+    isUpdate: Boolean(activeDatabaseReport),
+  }, user.id);
 
   return apiSuccess(
     {

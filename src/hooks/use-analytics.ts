@@ -7,6 +7,7 @@ interface AnalyticsEvent {
   category?: string;
   label?: string;
   value?: number;
+  [key: string]: unknown;
 }
 
 export function useAnalytics() {
@@ -21,11 +22,12 @@ export function useAnalytics() {
   }, [posthog]);
 
   const trackListingView = useCallback((listingId: string, brand: string, model: string) => {
-    trackEvent("listing_view", {
+    posthog?.capture("listing_view", {
       category: "engagement",
+      listingId,
       label: `${brand} ${model}`,
     });
-  }, [trackEvent]);
+  }, [posthog]);
 
   const trackSearch = useCallback((query: string, resultCount: number) => {
     trackEvent("search", {
@@ -38,7 +40,7 @@ export function useAnalytics() {
   const trackFavorite = useCallback((action: "add" | "remove", listingId: string) => {
     trackEvent(action === "add" ? "favorite_add" : "favorite_remove", {
       category: "engagement",
-      label: listingId,
+      listingId,
     });
   }, [trackEvent]);
 

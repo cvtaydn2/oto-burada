@@ -6,7 +6,7 @@ import { enforceRateLimit, getRateLimitKey, getUserRateLimitKey } from "@/lib/ut
 import { rateLimitProfiles } from "@/lib/utils/rate-limit";
 import { sanitizeText, sanitizeDescription } from "@/lib/utils/sanitize";
 import { logger } from "@/lib/utils/logger";
-import { captureServerError } from "@/lib/monitoring/posthog-server";
+import { captureServerError, captureServerEvent } from "@/lib/monitoring/posthog-server";
 import { apiError, apiSuccess, API_ERROR_CODES } from "@/lib/utils/api-response";
 
 const VALID_CATEGORIES: TicketCategory[] = ["listing", "account", "payment", "technical", "feedback", "other"];
@@ -65,6 +65,12 @@ export async function POST(request: Request) {
       priority: (priority as TicketPriority) ?? "medium",
       listingId: typeof listingId === "string" ? listingId : undefined,
     });
+
+    captureServerEvent("support_ticket_created", {
+      userId: user.id,
+      ticketId: ticket.id,
+      category: (category as TicketCategory) ?? "other",
+    }, user.id);
 
     return apiSuccess(ticket, "Destek talebiniz oluşturuldu.", 201);
   } catch (error) {

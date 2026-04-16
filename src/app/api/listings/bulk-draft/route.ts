@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { requireApiUser } from "@/lib/auth/api-user";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { logger } from "@/lib/utils/logger";
-import { captureServerError } from "@/lib/monitoring/posthog-server";
+import { captureServerError, captureServerEvent } from "@/lib/monitoring/posthog-server";
 import { enforceRateLimit, getUserRateLimitKey } from "@/lib/utils/rate-limit-middleware";
 
 // Bulk draft: 20 per hour per user
@@ -50,6 +50,11 @@ export async function POST(req: Request) {
       captureServerError("Bulk draft DB error", "listings", error, { userId: user.id });
       return NextResponse.json({ success: false, message: "İşlem sırasında bir hata oluştu." }, { status: 500 });
     }
+
+    captureServerEvent("listings_bulk_drafted", {
+      userId: user.id,
+      count: ids.length,
+    }, user.id);
 
     return NextResponse.json({ success: true, message: "İlanlar taslağa çekildi." });
   } catch (error) {

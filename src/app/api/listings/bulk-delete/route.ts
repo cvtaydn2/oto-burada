@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { requireApiUser } from "@/lib/auth/api-user";
 import { deleteDatabaseListing } from "@/services/listings/listing-submissions";
 import { logger } from "@/lib/utils/logger";
-import { captureServerError } from "@/lib/monitoring/posthog-server";
+import { captureServerError, captureServerEvent } from "@/lib/monitoring/posthog-server";
 import { enforceRateLimit, getUserRateLimitKey } from "@/lib/utils/rate-limit-middleware";
 
 // Bulk delete: 10 per hour per user
@@ -43,6 +43,11 @@ export async function POST(req: Request) {
     );
 
     const successCount = results.filter(Boolean).length;
+
+    captureServerEvent("listings_bulk_deleted", {
+      userId: user.id,
+      count: successCount,
+    }, user.id);
 
     return NextResponse.json({
       success: true,

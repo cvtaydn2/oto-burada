@@ -1,6 +1,7 @@
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { apiError, apiSuccess, API_ERROR_CODES } from "@/lib/utils/api-response";
 import { logger } from "@/lib/utils/logger";
+import { captureServerEvent } from "@/lib/monitoring/posthog-server";
 
 export async function POST(req: Request) {
   try {
@@ -28,6 +29,11 @@ export async function POST(req: Request) {
        logger.listings.error("Bulk archive DB error", error, { ids, userId: user.id });
        return apiError(API_ERROR_CODES.INTERNAL_ERROR, "İşlem sırasında bir hata oluştu.", 500);
     }
+
+    captureServerEvent("listings_bulk_archived", {
+      userId: user.id,
+      count: ids.length,
+    }, user.id);
 
     return apiSuccess({ count: ids.length }, `${ids.length} ilan başarıyla arşive kaldırıldı.`);
   } catch (error) {

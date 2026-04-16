@@ -15,6 +15,7 @@ import {
   getStoredSavedSearchesByUser,
 } from "@/services/saved-searches/saved-search-records";
 import { hasMeaningfulSavedSearchFilters } from "@/services/saved-searches/saved-search-utils";
+import { captureServerEvent } from "@/lib/monitoring/posthog-server";
 
 async function getAuthenticatedUser() {
   if (!hasSupabaseEnv()) {
@@ -130,6 +131,12 @@ export async function POST(request: Request) {
   if (!savedSearch) {
     return apiError(API_ERROR_CODES.INTERNAL_ERROR, "Arama kaydedilemedi. Lütfen tekrar dene.", 500);
   }
+
+  captureServerEvent("saved_search_created", {
+    userId: user.id,
+    savedSearchId: savedSearch.id,
+    filters: parsed.data.filters,
+  }, user.id);
 
   return apiSuccess(
     { savedSearch },

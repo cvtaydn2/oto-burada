@@ -9,6 +9,7 @@ import { checkRateLimit } from "@/lib/utils/rate-limit-middleware";
 import { headers } from "next/headers";
 import { sanitizeText } from "@/lib/utils/sanitize";
 import { apiSuccess, apiError, API_ERROR_CODES } from "@/lib/utils/api-response";
+import { captureServerEvent } from "@/lib/monitoring/posthog-server";
 
 async function getClientIp() {
   const headersList = await headers();
@@ -94,6 +95,13 @@ export async function PATCH(
     type: "report",
     userId: persistedReport.reporterId,
   });
+
+  captureServerEvent("admin_report_resolved", {
+    adminUserId: adminUser.id,
+    reportId,
+    status,
+    listingId: persistedReport.listingId,
+  }, adminUser.id);
 
   return apiSuccess(
     {

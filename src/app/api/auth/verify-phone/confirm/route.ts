@@ -5,7 +5,7 @@ import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { hasSupabaseAdminEnv } from "@/lib/supabase/env";
 import { logger } from "@/lib/utils/logger";
-import { captureServerError } from "@/lib/monitoring/posthog-server";
+import { captureServerError, captureServerEvent } from "@/lib/monitoring/posthog-server";
 
 export async function POST(req: Request) {
   const user = await getCurrentUser();
@@ -54,6 +54,7 @@ export async function POST(req: Request) {
       });
     }
 
+    captureServerEvent("auth_phone_verified", { userId: user.id }, user.id);
     return NextResponse.json({ success: true, message: "Telefon numaranız başarıyla doğrulandı." });
   } catch (error) {
     logger.auth.error("OTP confirm failed", error, { userId: user.id });

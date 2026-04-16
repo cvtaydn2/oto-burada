@@ -8,6 +8,7 @@ import {
   buildListingImageStoragePath,
   validateListingImageFile,
 } from "@/services/listings/listing-images";
+import { captureServerError } from "@/lib/monitoring/posthog-server";
 
 function sanitizeFileName(fileName: string): string {
   return fileName
@@ -81,6 +82,11 @@ export async function POST(request: Request) {
   });
 
   if (uploadResult.error) {
+    captureServerError("Image upload to storage failed", "storage", uploadResult.error, {
+      userId: user.id,
+      storagePath,
+      bucket: listingsBucket,
+    }, user.id);
     return apiError(API_ERROR_CODES.INTERNAL_ERROR, "Fotoğraf yüklenemedi. Lütfen tekrar dene.", 500);
   }
 
@@ -144,6 +150,10 @@ export async function DELETE(request: Request) {
   const removeResult = await adminClient.storage.from(listingsBucket).remove([storagePath]);
 
   if (removeResult.error) {
+    captureServerError("Image delete from storage failed", "storage", removeResult.error, {
+      userId: user.id,
+      storagePath,
+    }, user.id);
     return apiError(API_ERROR_CODES.INTERNAL_ERROR, "Fotoğraf silinemedi. Lütfen tekrar dene.", 500);
   }
 

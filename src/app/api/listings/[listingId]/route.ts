@@ -11,6 +11,7 @@ import {
   getStoredListings,
   updateDatabaseListing,
 } from "@/services/listings/listing-submissions";
+import { captureServerEvent } from "@/lib/monitoring/posthog-server";
 
 export async function PATCH(
   request: Request,
@@ -105,6 +106,13 @@ export async function PATCH(
   }
 
   if (result.listing) {
+    captureServerEvent("listing_updated", {
+      userId: user.id,
+      listingId: result.listing.id,
+      listingSlug: result.listing.slug,
+      listingStatus: result.listing.status,
+    });
+
     return apiSuccess(
       {
         listing: {
@@ -149,6 +157,11 @@ export async function DELETE(
   if (!result) {
     return apiError(API_ERROR_CODES.NOT_FOUND, "Silinecek ilan bulunamadı. Sadece arşivlenmiş ilanlar silinebilir.", 404);
   }
+
+  captureServerEvent("listing_deleted", {
+    userId: user.id,
+    listingId,
+  });
 
   return apiSuccess({ deleted: true }, "İlan kalıcı olarak silindi.");
 }

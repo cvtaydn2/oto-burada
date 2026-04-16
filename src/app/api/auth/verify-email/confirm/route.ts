@@ -4,7 +4,7 @@ import { getCurrentUser } from "@/lib/auth/session";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { hasSupabaseAdminEnv } from "@/lib/supabase/env";
 import { logger } from "@/lib/utils/logger";
-import { captureServerError } from "@/lib/monitoring/posthog-server";
+import { captureServerError, captureServerEvent } from "@/lib/monitoring/posthog-server";
 
 export async function POST(req: Request) {
   const user = await getCurrentUser();
@@ -45,9 +45,9 @@ export async function POST(req: Request) {
       });
     }
 
+    captureServerEvent("auth_email_verified", { userId: user.id }, user.id);
     return NextResponse.json({ success: true, message: "E-posta adresiniz başarıyla doğrulandı." });
-  } catch (error) {
-    logger.auth.error("Email OTP confirm route failed", error, { userId: user.id });
+  } catch (error) {    logger.auth.error("Email OTP confirm route failed", error, { userId: user.id });
     captureServerError("Email OTP confirm route failed", "auth", error, { userId: user.id });
     return NextResponse.json({ success: false, error: "Sunucu hatası." }, { status: 500 });
   }

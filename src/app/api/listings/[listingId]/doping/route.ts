@@ -2,7 +2,7 @@ import { getCurrentUser } from "@/lib/auth/session";
 import { applyDopingToListing, DopingType } from "@/services/market/doping-service";
 import { apiError, apiSuccess, API_ERROR_CODES } from "@/lib/utils/api-response";
 import { logger } from "@/lib/utils/logger";
-import { captureServerError } from "@/lib/monitoring/posthog-server";
+import { captureServerError, captureServerEvent } from "@/lib/monitoring/posthog-server";
 import { enforceRateLimit, getUserRateLimitKey } from "@/lib/utils/rate-limit-middleware";
 
 const VALID_DOPING_TYPES: DopingType[] = ["featured", "urgent", "highlighted"];
@@ -50,6 +50,11 @@ export async function POST(
     const result = await applyDopingToListing(listingId, user.id, dopingTypes as DopingType[]);
 
     if (result.success) {
+      captureServerEvent("listing_doping_applied", {
+        userId: user.id,
+        listingId,
+        dopingTypes,
+      }, user.id);
       return apiSuccess(null, result.message);
     } else {
       return apiError(API_ERROR_CODES.BAD_REQUEST, result.message, 400);

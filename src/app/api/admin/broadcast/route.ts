@@ -4,7 +4,7 @@ import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { createDatabaseNotificationsBulk } from "@/services/notifications/notification-records";
 import { sanitizeText } from "@/lib/utils/sanitize";
 import { logger } from "@/lib/utils/logger";
-import { captureServerError } from "@/lib/monitoring/posthog-server";
+import { captureServerError, captureServerEvent } from "@/lib/monitoring/posthog-server";
 import { enforceRateLimit } from "@/lib/utils/rate-limit-middleware";
 
 // Broadcast: 5 per hour (admin-only, but still protect against accidents)
@@ -86,6 +86,13 @@ export async function POST(request: Request) {
     if (failCount > 0) {
       logger.admin.warn("Broadcast partially failed", { successCount, failCount });
     }
+
+    captureServerEvent("admin_broadcast_sent", {
+      adminUserId: authResponse.id,
+      successCount,
+      failCount,
+      title: sanitizedTitle,
+    }, authResponse.id);
 
     return NextResponse.json({
       success: true,

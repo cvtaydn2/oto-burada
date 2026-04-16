@@ -1,7 +1,7 @@
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { apiError, apiSuccess, API_ERROR_CODES } from "@/lib/utils/api-response";
 import { logger } from "@/lib/utils/logger";
-import { captureServerError } from "@/lib/monitoring/posthog-server";
+import { captureServerError, captureServerEvent } from "@/lib/monitoring/posthog-server";
 import { enforceRateLimit, getUserRateLimitKey } from "@/lib/utils/rate-limit-middleware";
 
 export async function POST(
@@ -52,6 +52,11 @@ export async function POST(
       captureServerError("Archive listing DB error", "listings", error, { listingId });
       return apiError(API_ERROR_CODES.INTERNAL_ERROR, "İlan arşivlenirken bir hata oluştu.", 500);
     }
+
+    captureServerEvent("listing_archived", {
+      userId: user.id,
+      listingId,
+    }, user.id);
 
     return apiSuccess({ listingId }, "İlan başarıyla arşivlendi.");
   } catch (error) {

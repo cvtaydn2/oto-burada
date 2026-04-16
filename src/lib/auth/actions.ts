@@ -197,6 +197,11 @@ export async function logoutAction() {
   }
 
   const supabase = await createSupabaseServerClient();
+  const { data: { user } } = await supabase.auth.getUser();
+
+  if (user) {
+    captureServerEvent("auth_logout", { userId: user.id }, user.id);
+  }
 
   await supabase.auth.signOut();
   redirect("/");

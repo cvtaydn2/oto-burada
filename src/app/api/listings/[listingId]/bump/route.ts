@@ -1,7 +1,7 @@
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { apiError, apiSuccess, API_ERROR_CODES } from "@/lib/utils/api-response";
 import { logger } from "@/lib/utils/logger";
-import { captureServerError } from "@/lib/monitoring/posthog-server";
+import { captureServerError, captureServerEvent } from "@/lib/monitoring/posthog-server";
 import { enforceRateLimit, getUserRateLimitKey } from "@/lib/utils/rate-limit-middleware";
 
 // Bump: 3 per day per user (prevents abuse)
@@ -69,6 +69,11 @@ export async function POST(
       captureServerError("Bump listing DB error", "listings", error, { listingId });
       return apiError(API_ERROR_CODES.INTERNAL_ERROR, "İlan öne çıkarılırken bir hata oluştu.", 500);
     }
+
+    captureServerEvent("listing_bumped", {
+      userId: user.id,
+      listingId,
+    }, user.id);
 
     return apiSuccess({ listingId }, "İlan başarıyla öne çıkarıldı.");
   } catch (error) {

@@ -3,7 +3,7 @@ import { requireApiAdminUser } from "@/lib/auth/api-admin";
 import { updateTicketStatus } from "@/services/support/ticket-service";
 import type { TicketStatus } from "@/services/support/ticket-service";
 import { logger } from "@/lib/utils/logger";
-import { captureServerError } from "@/lib/monitoring/posthog-server";
+import { captureServerError, captureServerEvent } from "@/lib/monitoring/posthog-server";
 import { sanitizeText } from "@/lib/utils/sanitize";
 import { apiError, apiSuccess, API_ERROR_CODES } from "@/lib/utils/api-response";
 
@@ -36,6 +36,13 @@ export async function PATCH(
 
   try {
     const ticket = await updateTicketStatus(id, (status as TicketStatus) ?? "in_progress", sanitizedResponse);
+
+    captureServerEvent("admin_ticket_updated", {
+      adminUserId: adminUser.id,
+      ticketId: id,
+      status: status ?? "in_progress",
+    }, adminUser.id);
+
     return apiSuccess(ticket, "Ticket durumu güncellendi.");
   } catch (error) {
     logger.admin.error("Admin ticket update failed", error, { ticketId: id, status });

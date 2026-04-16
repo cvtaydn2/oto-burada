@@ -2,8 +2,9 @@
 
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { getCurrentUser } from "@/lib/auth/session";
-import { checkRateLimit } from "@/lib/utils/rate-limit"; // This is my existing rate limiter
+import { checkRateLimit } from "@/lib/utils/rate-limit";
 import { headers } from "next/headers";
+import { captureServerEvent } from "@/lib/monitoring/posthog-server";
 
 /**
  * Server Action to reveal a listing's phone number with security checks.
@@ -43,6 +44,12 @@ export async function revealListingPhone(listingId: string) {
   if (error || !data) {
     throw new Error("İlan bulunamadı.");
   }
+
+  captureServerEvent("contact_phone_revealed_server", {
+    listingId,
+    userId: user?.id ?? "guest",
+    isGuest: !user,
+  });
 
   return {
     phone: data.whatsapp_phone

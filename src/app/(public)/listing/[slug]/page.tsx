@@ -26,6 +26,7 @@ import {
   getSimilarMarketplaceListings,
 } from "@/services/listings/marketplace-listings";
 import { getListingCardInsights } from "@/services/listings/listing-card-insights";
+import { captureServerEvent } from "@/lib/monitoring/posthog-server";
 
 const ListingMap = dynamic(
   () => import("@/components/shared/listing-map-wrapper").then((mod) => mod.ListingMapWrapper),
@@ -77,6 +78,18 @@ export default async function ListingDetailPage({ params }: ListingDetailPagePro
     getMarketplaceSeller(listing.sellerId),
     getSimilarMarketplaceListings(listing.slug, listing.brand, listing.city),
   ]);
+
+  // Server-side listing view event — fires once per SSR render
+  captureServerEvent("listing_viewed", {
+    listingId: listing.id,
+    listingSlug: listing.slug,
+    brand: listing.brand,
+    model: listing.model,
+    city: listing.city,
+    price: listing.price,
+    year: listing.year,
+    status: listing.status,
+  });
   const insight = getListingCardInsights(listing);
   const memberSince = seller?.createdAt
     ? new Date(seller.createdAt).getFullYear()
