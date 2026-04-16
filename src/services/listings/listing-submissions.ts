@@ -753,40 +753,44 @@ export async function updateDatabaseListing(listing: Listing): Promise<UpdateLis
 }
 
 export function mapListingToDatabaseRow(listing: Listing) {
+  // Columns verified against live DB on 2026-04-16.
+  // created_at is intentionally omitted — DB DEFAULT now() handles it on insert.
+  // search_vector is GENERATED ALWAYS AS STORED — must never be sent.
+  // view_count has DEFAULT 0 — omitted on insert, updated separately.
+  // published_at is set by moderateDatabaseListing on approval — not on create.
+  // license_plate is nullable — omitted when not provided.
   return {
-    brand: listing.brand,
-    city: listing.city,
-    // created_at is intentionally omitted — DB DEFAULT now() handles it on insert.
-    // Sending it can cause 400 errors with some PostgREST versions.
-    damage_status_json: listing.damageStatusJson ?? null,
-    description: listing.description,
-    district: listing.district,
-    expert_inspection: listing.expertInspection ?? null,
-    featured: listing.featured,
-    fraud_reason: listing.fraudReason ?? null,
-    fraud_score: listing.fraudScore ?? 0,
-    fuel_type: listing.fuelType,
     id: listing.id,
-    mileage: listing.mileage,
-    model: listing.model,
-    price: listing.price,
     seller_id: listing.sellerId,
     slug: listing.slug,
-    status: listing.status,
     title: listing.title,
-    tramer_amount: listing.tramerAmount ?? null,
+    brand: listing.brand,
+    model: listing.model,
+    year: listing.year,
+    mileage: listing.mileage,
+    fuel_type: listing.fuelType,
     transmission: listing.transmission,
+    price: listing.price,
+    city: listing.city,
+    district: listing.district,
+    description: listing.description,
+    whatsapp_phone: listing.whatsappPhone,
+    status: listing.status,
+    featured: listing.featured,
     updated_at: listing.updatedAt,
-    bumped_at: listing.bumpedAt ?? null,
+    tramer_amount: listing.tramerAmount ?? null,
+    damage_status_json: listing.damageStatusJson ?? null,
+    fraud_score: listing.fraudScore ?? 0,
+    fraud_reason: listing.fraudReason ?? null,
     featured_until: listing.featuredUntil ?? null,
     urgent_until: listing.urgentUntil ?? null,
     highlighted_until: listing.highlightedUntil ?? null,
     eids_verification_json: listing.eidsVerificationJson ?? null,
     market_price_index: listing.marketPriceIndex ?? null,
-    whatsapp_phone: listing.whatsappPhone,
-    year: listing.year,
     vin: listing.vin ?? null,
+    bumped_at: listing.bumpedAt ?? null,
     car_trim: listing.carTrim ?? null,
+    expert_inspection: listing.expertInspection ?? null,
   };
 }
 
