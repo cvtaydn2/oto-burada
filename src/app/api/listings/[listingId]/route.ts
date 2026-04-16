@@ -72,12 +72,13 @@ export async function PATCH(
           (image.url ?? "").trim().length > 0 &&
           (image.storagePath ?? "").trim().length > 0,
       )
-      .map((image: { url?: string; storagePath?: string; placeholderBlur?: string | null }, index: number) => ({
+      .map((image: { url?: string; storagePath?: string; placeholderBlur?: string | null; imageType?: string }, index: number) => ({
         storagePath: image.storagePath?.trim() ?? "",
         url: image.url?.trim() ?? "",
         order: index,
         isCover: index === 0,
         placeholderBlur: image.placeholderBlur ?? null,
+        type: image.imageType === "360" ? "360" as const : "photo" as const,
       })),
   };
 

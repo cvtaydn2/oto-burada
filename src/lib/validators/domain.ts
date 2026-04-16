@@ -216,6 +216,7 @@ export const listingCreateFormSchema: z.ZodType<ListingCreateFormValues> = z.obj
         storagePath: z.string().trim().optional(),
         url: z.string().trim().optional(),
         placeholderBlur: z.string().trim().nullable().optional(),
+        imageType: z.enum(["photo", "360"]).optional(),
       }),
     )
     .superRefine((images, context) => {

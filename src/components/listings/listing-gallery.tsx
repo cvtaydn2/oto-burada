@@ -15,6 +15,7 @@ const ListingGalleryLightbox = dynamic(
 interface ListingGalleryProps {
   images: ListingImage[];
   title: string;
+  /** Legacy override — auto-detected from images with type="360" */
   has360View?: boolean;
 }
 
@@ -23,15 +24,20 @@ export function ListingGallery({ images, title, has360View = false }: ListingGal
   const [isLightboxOpen, setIsLightboxOpen] = useState(false);
   const [is360Open, setIs360Open] = useState(false);
 
-  const [emblaRef, emblaApi] = useEmblaCarousel({ 
+  // Auto-detect 360° image
+  const panoramaImage = images.find((img) => img.type === "360");
+  const show360Button = has360View || Boolean(panoramaImage);
+  const panoramaUrl = panoramaImage?.url ?? "";
+
+  const [emblaRef, emblaApi] = useEmblaCarousel({
     loop: true,
     align: "start",
-    containScroll: "trimSnaps"
+    containScroll: "trimSnaps",
   });
 
   const [thumbRef, thumbApi] = useEmblaCarousel({
     containScroll: "keepSnaps",
-    dragFree: true
+    dragFree: true,
   });
 
   useEffect(() => {
@@ -71,13 +77,16 @@ export function ListingGallery({ images, title, has360View = false }: ListingGal
     <>
       <div className="bg-white rounded-3xl border border-slate-200/60 overflow-hidden shadow-sm">
         <div className="p-4 sm:p-6 space-y-4">
-          
+
           {/* Main Viewport */}
           <div className="relative group">
             <div className="overflow-hidden rounded-2xl bg-slate-100 touch-pan-y" ref={emblaRef}>
               <div className="flex">
                 {images.map((image, index) => (
-                  <div key={image.id || image.url} className="relative flex-[0_0_100%] min-w-0 aspect-[4/3] sm:aspect-[16/9] lg:aspect-[16/10]">
+                  <div
+                    key={image.id || image.url}
+                    className="relative flex-[0_0_100%] min-w-0 aspect-[4/3] sm:aspect-[16/9] lg:aspect-[16/10]"
+                  >
                     <Image
                       src={image.url}
                       alt={`${title} - ${index + 1}`}
@@ -89,6 +98,13 @@ export function ListingGallery({ images, title, has360View = false }: ListingGal
                       className="object-cover cursor-pointer"
                       onClick={() => setIsLightboxOpen(true)}
                     />
+                    {/* 360° badge on panoramic images */}
+                    {image.type === "360" && (
+                      <div className="absolute top-3 left-3 bg-blue-600/90 backdrop-blur text-white text-[10px] font-black px-2.5 py-1 rounded-full flex items-center gap-1.5 pointer-events-none">
+                        <Rotate3d size={11} />
+                        360°
+                      </div>
+                    )}
                   </div>
                 ))}
               </div>
@@ -99,12 +115,14 @@ export function ListingGallery({ images, title, has360View = false }: ListingGal
               <>
                 <button
                   onClick={scrollPrev}
+                  aria-label="Önceki"
                   className="absolute left-4 top-1/2 -translate-y-1/2 w-12 h-12 rounded-full bg-white/90 backdrop-blur-md hidden sm:flex items-center justify-center text-slate-700 opacity-0 group-hover:opacity-100 transition-all shadow-xl hover:bg-white z-10"
                 >
                   <ChevronLeft size={24} />
                 </button>
                 <button
                   onClick={scrollNext}
+                  aria-label="Sonraki"
                   className="absolute right-4 top-1/2 -translate-y-1/2 w-12 h-12 rounded-full bg-white/90 backdrop-blur-md hidden sm:flex items-center justify-center text-slate-700 opacity-0 group-hover:opacity-100 transition-all shadow-xl hover:bg-white z-10"
                 >
                   <ChevronRight size={24} />
@@ -125,7 +143,7 @@ export function ListingGallery({ images, title, has360View = false }: ListingGal
                   Tam Ekran
                   <Sparkles size={12} className="text-primary" />
                 </button>
-                {has360View && (
+                {show360Button && (
                   <button
                     onClick={() => setIs360Open(true)}
                     className="px-3 py-1.5 rounded-full bg-blue-500 text-white text-[10px] font-bold uppercase tracking-widest hover:bg-blue-600 transition-all shadow-lg flex items-center gap-1.5"
@@ -146,8 +164,8 @@ export function ListingGallery({ images, title, has360View = false }: ListingGal
                   key={image.id || image.url}
                   onClick={() => onThumbClick(index)}
                   className={`relative flex-[0_0_80px] sm:flex-[0_0_120px] aspect-[4/3] rounded-xl overflow-hidden border-2 transition-all ${
-                    index === currentIndex 
-                      ? "border-primary ring-4 ring-primary/20 scale-95" 
+                    index === currentIndex
+                      ? "border-primary ring-4 ring-primary/20 scale-95"
                       : "border-transparent opacity-60 hover:opacity-100"
                   }`}
                 >
@@ -160,6 +178,11 @@ export function ListingGallery({ images, title, has360View = false }: ListingGal
                     placeholder={image.placeholderBlur ? "blur" : "empty"}
                     blurDataURL={image.placeholderBlur ?? undefined}
                   />
+                  {image.type === "360" && (
+                    <div className="absolute inset-0 flex items-center justify-center bg-black/30">
+                      <Rotate3d size={16} className="text-white" />
+                    </div>
+                  )}
                 </button>
               ))}
             </div>
@@ -179,6 +202,7 @@ export function ListingGallery({ images, title, has360View = false }: ListingGal
 
       <Listing360View
         isOpen={is360Open}
+        imageUrl={panoramaUrl}
         onClose={() => setIs360Open(false)}
       />
     </>

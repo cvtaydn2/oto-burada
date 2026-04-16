@@ -146,6 +146,8 @@ export interface ListingCreateFormImage {
   storagePath?: string;
   url?: string;
   placeholderBlur?: string | null;
+  /** "360" marks this slot as an equirectangular panorama image */
+  imageType?: "photo" | "360";
 }
 
 export interface ListingCreateFormValues {

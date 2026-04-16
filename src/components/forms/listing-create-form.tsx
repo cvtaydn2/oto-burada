@@ -93,8 +93,10 @@ function buildDefaultValues(
             fileName: image.storagePath.split("/").pop(),
             storagePath: image.storagePath,
             url: image.url,
+            placeholderBlur: image.placeholderBlur ?? null,
+            imageType: (image.type === "360" ? "360" : "photo") as "photo" | "360",
           }))
-        : Array.from({ length: minimumListingImages }, () => ({})),
+        : Array.from({ length: minimumListingImages }, () => ({ imageType: "photo" as const })),
     expertInspection: initialListing?.expertInspection ?? {
       hasInspection: false,
       damageRecord: "bilinmiyor",
