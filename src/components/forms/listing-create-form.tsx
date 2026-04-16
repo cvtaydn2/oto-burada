@@ -9,6 +9,7 @@ import {
   AlertCircle,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { usePostHog } from "posthog-js/react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useFieldArray, useForm, useWatch, type FieldPath } from "react-hook-form";
 
@@ -172,6 +173,7 @@ export function ListingCreateForm({
   isEmailVerified = false,
 }: ListingCreateFormProps) {
   const router = useRouter();
+  const posthog = usePostHog();
   const isEditing = Boolean(initialListing);
   // Email doğrulama — phone doğrulama kaldırıldı
   const [isEmailVerifiedLocally, setIsEmailVerifiedLocally] = useState(isEmailVerified || isPhoneVerified);
@@ -442,6 +444,12 @@ export function ListingCreateForm({
             setError(field as Parameters<typeof setError>[0], { message });
           });
         }
+        posthog?.capture("listing_submit_failed", {
+          isEditing,
+          responseStatus: response.status,
+          message: payload?.error?.message ?? "Bir hata oluştu.",
+          listingId: initialListing?.id,
+        });
         setSubmitState({ message: payload?.error?.message ?? "Bir hata oluştu.", status: "error" });
         return;
       }
@@ -452,6 +460,10 @@ export function ListingCreateForm({
           : "İlanın kaydedildi ve moderasyon incelemesine gönderildi.",
         status: "success",
       });
+      posthog?.capture(isEditing ? "listing_update_succeeded" : "listing_submit_succeeded", {
+        listingId: payload?.data?.listing?.id ?? initialListing?.id,
+        listingStatus: payload?.data?.listing?.status,
+      });
 
       if (isEditing) {
         router.replace("/dashboard/listings?updated=true");
@@ -460,6 +472,11 @@ export function ListingCreateForm({
 
       router.push("/dashboard/listings?created=pending");
     } catch {
+      posthog?.capture("listing_submit_failed", {
+        isEditing,
+        listingId: initialListing?.id,
+        message: "Bağlantı hatası.",
+      });
       setSubmitState({ message: "Bağlantı hatası.", status: "error" });
     }
   };

@@ -13,8 +13,8 @@ import posthog from "posthog-js";
  */
 export function useErrorCapture(context: string) {
   const captureError = useCallback(
-    (error: unknown, action?: string) => {
-      const properties: Record<string, string> = { context };
+    (error: unknown, action?: string, extra?: Record<string, unknown>) => {
+      const properties: Record<string, unknown> = { context, ...extra };
       if (action) properties.action = action;
 
       if (error instanceof Error) {
@@ -29,5 +29,28 @@ export function useErrorCapture(context: string) {
     [context],
   );
 
-  return { captureError };
+  const captureFailure = useCallback(
+    (event: string, message: string, extra?: Record<string, unknown>) => {
+      posthog.capture(event, {
+        context,
+        message,
+        status: "failed",
+        ...extra,
+      });
+    },
+    [context],
+  );
+
+  const captureSuccess = useCallback(
+    (event: string, extra?: Record<string, unknown>) => {
+      posthog.capture(event, {
+        context,
+        status: "succeeded",
+        ...extra,
+      });
+    },
+    [context],
+  );
+
+  return { captureError, captureFailure, captureSuccess };
 }

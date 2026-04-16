@@ -29,7 +29,7 @@ interface AdminListingsModerationProps {
 }
 
 export function AdminListingsModeration({ pendingListings }: AdminListingsModerationProps) {
-  const { captureError } = useErrorCapture("admin-listings-moderation");
+  const { captureError, captureFailure, captureSuccess } = useErrorCapture("admin-listings-moderation");
   const router = useRouter();
   const [activeAction, setActiveAction] = useState<string | null>(null);
   const [activeBulkAction, setActiveBulkAction] = useState<"approve" | "reject" | null>(null);
@@ -76,7 +76,9 @@ export function AdminListingsModeration({ pendingListings }: AdminListingsModera
       const payload = await response.json().catch(() => null) as { success?: boolean; error?: { message: string } } | null;
 
       if (!response.ok || !payload?.success) {
-        setErrorMessage(payload?.error?.message ?? "Moderasyon işlemi tamamlanamadı.");
+        const message = payload?.error?.message ?? "Moderasyon işlemi tamamlanamadı.";
+        captureFailure("admin_listing_moderation_failed", message, { action, listingId, responseStatus: response.status });
+        setErrorMessage(message);
         return;
       }
 
@@ -86,9 +88,10 @@ export function AdminListingsModeration({ pendingListings }: AdminListingsModera
       }));
       setSelectedListingIds((current) => current.filter((id) => id !== listingId));
       setSuccessMessage(action === "approve" ? "İlan onaylandı." : "İlan reddedildi.");
+      captureSuccess("admin_listing_moderated", { action, listingId });
       router.refresh();
     } catch (err) {
-      captureError(err, "handleModeration");
+      captureError(err, "handleModeration", { action, listingId });
       setErrorMessage("Bağlantı sırasında bir hata oluştu. Lütfen tekrar dene.");
     } finally {
       setActiveAction(null);
@@ -140,7 +143,13 @@ export function AdminListingsModeration({ pendingListings }: AdminListingsModera
         | null;
 
       if (!response.ok || !payload?.success) {
-        setErrorMessage(payload?.error?.message ?? "Toplu moderasyon işlemi tamamlanamadı.");
+        const message = payload?.error?.message ?? "Toplu moderasyon işlemi tamamlanamadı.";
+        captureFailure("admin_bulk_moderation_failed", message, {
+          action,
+          attemptedCount: uniqueListingIds.length,
+          responseStatus: response.status,
+        });
+        setErrorMessage(message);
         return;
       }
 
@@ -148,6 +157,11 @@ export function AdminListingsModeration({ pendingListings }: AdminListingsModera
       const skippedIds = payload.data?.skippedListingIds ?? [];
       setSelectedListingIds((current) => current.filter((id) => !moderatedIds.includes(id)));
       setBulkNote("");
+      captureSuccess("admin_bulk_moderation_completed", {
+        action,
+        moderatedCount: moderatedIds.length,
+        skippedCount: skippedIds.length,
+      });
       setSuccessMessage(
         skippedIds.length > 0
           ? `${payload.message ?? "Toplu moderasyon tamamlandı."} ${skippedIds.length} ilan atlandı.`
@@ -155,7 +169,7 @@ export function AdminListingsModeration({ pendingListings }: AdminListingsModera
       );
       router.refresh();
     } catch (err) {
-      captureError(err, "handleBulkModeration");
+      captureError(err, "handleBulkModeration", { action, attemptedCount: uniqueListingIds.length });
       setErrorMessage("Toplu moderasyon sırasında bağlantı hatası oluştu.");
     } finally {
       setActiveBulkAction(null);
@@ -188,16 +202,19 @@ export function AdminListingsModeration({ pendingListings }: AdminListingsModera
       const payload = await response.json();
 
       if (!response.ok || !payload.success) {
-        setErrorMessage(payload.error?.message ?? "Düzenleme kaydedilemedi.");
+        const message = payload.error?.message ?? "Düzenleme kaydedilemedi.";
+        captureFailure("admin_listing_edit_failed", message, { listingId: editingListingId, responseStatus: response.status });
+        setErrorMessage(message);
         return;
       }
 
       setSuccessMessage("İlan güncellendi.");
+      captureSuccess("admin_listing_edited", { listingId: editingListingId });
       setEditingListingId(null);
       setEditValues(null);
       router.refresh();
     } catch (err) {
-      captureError(err, "handleSaveEdit");
+      captureError(err, "handleSaveEdit", { listingId: editingListingId });
       setErrorMessage("Bağlantı hatası.");
     } finally {
       setIsSavingEdit(false);
