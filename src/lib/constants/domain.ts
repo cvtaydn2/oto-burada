@@ -43,6 +43,7 @@ export const moderationActions = [
   "review",
   "resolve",
   "dismiss",
+  "edit",
 ] as const;
 
 export const moderationActionLabels = {
@@ -52,6 +53,7 @@ export const moderationActionLabels = {
   review: "Inceleme",
   resolve: "Cozum",
   dismiss: "Kapatma",
+  edit: "Düzenleme",
 } as const;
 
 export const listingSortOptions = [

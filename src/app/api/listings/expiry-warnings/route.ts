@@ -11,6 +11,7 @@ import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { hasSupabaseAdminEnv } from "@/lib/supabase/env";
 import { apiSuccess, apiError, API_ERROR_CODES } from "@/lib/utils/api-response";
 import { logger } from "@/lib/utils/logger";
+import { createDatabaseNotificationsBulk } from "@/services/notifications/notification-records";
 
 export const dynamic = "force-dynamic";
 
@@ -87,6 +88,20 @@ export async function POST(request: Request) {
     process.env.RESEND_FROM_EMAIL ?? "OtoBurada <onboarding@resend.dev>";
 
   let warnedCount = 0;
+
+  // Send in-app notifications in bulk — one per expiring listing
+  const notificationInputs = expiringListings.map((listing) => ({
+    userId: listing.seller_id as string,
+    type: "system" as const,
+    title: "İlanın sona eriyor",
+    message: `"${listing.title as string}" ilanın ${WARN_DAYS_BEFORE} gün içinde arşivlenecek. Yenilemek için paneline git.`,
+    href: `/dashboard/listings`,
+  }));
+
+  if (notificationInputs.length > 0) {
+    const created = await createDatabaseNotificationsBulk(notificationInputs);
+    logger.listings.info("Expiry warning notifications created", { count: created.length });
+  }
 
   for (const listing of expiringListings) {
     const seller = userMap.get(listing.seller_id as string);

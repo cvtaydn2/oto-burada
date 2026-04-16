@@ -9,7 +9,9 @@ import {
   Sparkles,
   TrendingDown,
   ArrowRight,
-  CarFront
+  CarFront,
+  Zap,
+  Flame
 } from "lucide-react"
 import { formatNumber, formatPrice } from "@/lib/utils"
 import { type Listing } from "@/types"
@@ -23,11 +25,15 @@ export function ListingCard({ listing, priority = false }: ListingCardProps) {
   const coverImage = listing.images.find(img => img.isCover) || listing.images[0]
   const isAdvantageous = (listing.marketPriceIndex ?? 1) < 0.95
   const detailHref = `/listing/${listing.slug}`
+  const now = new Date().toISOString()
+  const isFeaturedActive = listing.featured && (!listing.featuredUntil || listing.featuredUntil > now)
+  const isUrgentActive = !!listing.urgentUntil && listing.urgentUntil > now
+  const isHighlightedActive = !!listing.highlightedUntil && listing.highlightedUntil > now
 
   return (
     <Link 
       href={detailHref}
-      className="group block showroom-card rounded-[24px] overflow-hidden"
+      className={`group block showroom-card rounded-[24px] overflow-hidden${isHighlightedActive ? " ring-2 ring-purple-400/60 shadow-purple-100" : ""}`}
     >
       <div className="flex flex-col sm:flex-row">
         {/* Image Section - The "Showroom" Frame */}
@@ -49,10 +55,22 @@ export function ListingCard({ listing, priority = false }: ListingCardProps) {
           
           {/* Elite Badges */}
           <div className="absolute top-4 left-4 flex flex-col gap-2">
-            {listing.featured && (
+            {isFeaturedActive && (
               <div className="bg-blue-600/95 backdrop-blur shadow-xl text-white text-[10px] font-black uppercase tracking-widest px-3 py-1.5 rounded-lg flex items-center gap-1.5 animate-in fade-in slide-in-from-left-2 transition-all group-hover:bg-blue-500">
                 <Sparkles className="w-3.5 h-3.5 fill-white/20" />
                 VİTRİN
+              </div>
+            )}
+            {isUrgentActive && (
+              <div className="bg-red-600/95 backdrop-blur shadow-xl text-white text-[10px] font-black uppercase tracking-widest px-3 py-1.5 rounded-lg flex items-center gap-1.5 animate-in fade-in slide-in-from-left-2 transition-all group-hover:bg-red-500">
+                <Zap className="w-3.5 h-3.5 fill-white/20" />
+                ACİL SATILIK
+              </div>
+            )}
+            {isHighlightedActive && (
+              <div className="bg-purple-600/95 backdrop-blur shadow-xl text-white text-[10px] font-black uppercase tracking-widest px-3 py-1.5 rounded-lg flex items-center gap-1.5 animate-in fade-in slide-in-from-left-2 transition-all group-hover:bg-purple-500">
+                <Flame className="w-3.5 h-3.5 fill-white/20" />
+                ÖNE ÇIKAN
               </div>
             )}
             {isAdvantageous && (

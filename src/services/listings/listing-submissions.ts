@@ -545,6 +545,41 @@ export interface PaginatedListingsResult {
   hasMore: boolean;
 }
 
+/**
+ * Applies filter predicates to a Supabase query builder.
+ * Shared by both the data query and the count query to avoid duplication.
+ */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function applyListingFilterPredicates<T extends { eq: any; gte: any; lte: any; filter: any; textSearch: any }>(
+  query: T,
+  filters: ListingFilters,
+): T {
+  if (filters.sellerId) query = query.eq("seller_id", filters.sellerId);
+  if (filters.brand) query = query.eq("brand", filters.brand);
+  if (filters.model) query = query.eq("model", filters.model);
+  if (filters.carTrim) query = query.eq("car_trim", filters.carTrim);
+  if (filters.city) query = query.eq("city", filters.city);
+  if (filters.district) query = query.eq("district", filters.district);
+  if (filters.fuelType) query = query.eq("fuel_type", filters.fuelType);
+  if (filters.transmission) query = query.eq("transmission", filters.transmission);
+  if (filters.minPrice !== undefined) query = query.gte("price", filters.minPrice);
+  if (filters.maxPrice !== undefined) query = query.lte("price", filters.maxPrice);
+  if (filters.minYear !== undefined) query = query.gte("year", filters.minYear);
+  if (filters.maxYear !== undefined) query = query.lte("year", filters.maxYear);
+  if (filters.maxMileage !== undefined) query = query.lte("mileage", filters.maxMileage);
+  if (filters.maxTramer !== undefined) query = query.lte("tramer_amount", filters.maxTramer);
+  if (filters.hasExpertReport === true) {
+    query = query.filter("expert_inspection->>hasInspection", "eq", "true");
+  }
+  if (filters.query) {
+    const terms = filters.query.trim().split(/\s+/).filter(Boolean);
+    if (terms.length > 0) {
+      query = query.textSearch("search_vector", terms.map((t) => `${t}:*`).join(" & "));
+    }
+  }
+  return query;
+}
+
 export async function getFilteredDatabaseListings(
   filters: ListingFilters,
 ): Promise<PaginatedListingsResult> {
@@ -566,46 +601,74 @@ export async function getFilteredDatabaseListings(
     if (cached) return cached;
   }
 
-  const listings = await getDatabaseListings({
-    statuses: ["approved"],
-    filters: { ...filters, page, limit },
-  });
+  // Run data fetch and count query in parallel — single round-trip each, no filter duplication.
+  const admin = createSupabaseAdminClient();
+  const from = (page - 1) * limit;
+  const to = from + limit - 1;
 
-  // Get total count with same filters but no pagination
-  const countAdmin = createSupabaseAdminClient();
-  let countQuery = countAdmin.from("listings").select("id", { count: "exact", head: true });
-  countQuery = countQuery.eq("status", "approved");
+  let dataQuery = admin
+    .from("listings")
+    .select(listingSelect)
+    .eq("status", "approved");
+  dataQuery = applyListingFilterPredicates(dataQuery, { ...filters, page, limit });
 
-  if (filters.sellerId) countQuery = countQuery.eq("seller_id", filters.sellerId);
-  if (filters.brand) countQuery = countQuery.eq("brand", filters.brand);
-  if (filters.model) countQuery = countQuery.eq("model", filters.model);
-  if (filters.carTrim) countQuery = countQuery.eq("car_trim", filters.carTrim);
-  if (filters.city) countQuery = countQuery.eq("city", filters.city);
-  if (filters.district) countQuery = countQuery.eq("district", filters.district);
-  if (filters.fuelType) countQuery = countQuery.eq("fuel_type", filters.fuelType);
-  if (filters.transmission) countQuery = countQuery.eq("transmission", filters.transmission);
-  if (filters.minPrice !== undefined) countQuery = countQuery.gte("price", filters.minPrice);
-  if (filters.maxPrice !== undefined) countQuery = countQuery.lte("price", filters.maxPrice);
-  if (filters.minYear !== undefined) countQuery = countQuery.gte("year", filters.minYear);
-  if (filters.maxYear !== undefined) countQuery = countQuery.lte("year", filters.maxYear);
-  if (filters.maxMileage !== undefined) countQuery = countQuery.lte("mileage", filters.maxMileage);
-  if (filters.maxTramer !== undefined) countQuery = countQuery.lte("tramer_amount", filters.maxTramer);
-  if (filters.hasExpertReport === true) countQuery = countQuery.filter("expert_inspection->>hasInspection", "eq", "true");
+  // Sort
+  if (!filters.sort || filters.sort === "newest") {
+    dataQuery = dataQuery.order("featured", { ascending: false });
+  }
+  switch (sort) {
+    case "price_asc":
+      dataQuery = dataQuery.order("price", { ascending: true }).order("created_at", { ascending: false });
+      break;
+    case "price_desc":
+      dataQuery = dataQuery.order("price", { ascending: false }).order("created_at", { ascending: false });
+      break;
+    case "mileage_asc":
+      dataQuery = dataQuery.order("mileage", { ascending: true }).order("created_at", { ascending: false });
+      break;
+    case "year_desc":
+      dataQuery = dataQuery.order("year", { ascending: false }).order("created_at", { ascending: false });
+      break;
+    case "oldest":
+      dataQuery = dataQuery.order("created_at", { ascending: true });
+      break;
+    case "mileage_desc":
+      dataQuery = dataQuery.order("mileage", { ascending: false }).order("created_at", { ascending: false });
+      break;
+    case "year_asc":
+      dataQuery = dataQuery.order("year", { ascending: true }).order("created_at", { ascending: false });
+      break;
+    case "newest":
+    default:
+      dataQuery = dataQuery
+        .order("bumped_at", { ascending: false, nullsFirst: false })
+        .order("created_at", { ascending: false });
+      break;
+  }
+  dataQuery = dataQuery.range(from, to);
 
-  if (filters.query) {
-    const terms = filters.query.trim().split(/\s+/).filter(Boolean);
+  let countQuery = admin
+    .from("listings")
+    .select("id", { count: "exact", head: true })
+    .eq("status", "approved");
+  countQuery = applyListingFilterPredicates(countQuery, filters);
 
-    if (terms.length > 0) {
-      const tsQuery = terms.map((t) => `${t}:*`).join(" & ");
-      countQuery = countQuery.textSearch("search_vector", tsQuery);
-    }
+  const [dataResult, countResult] = await Promise.all([
+    dataQuery.returns<ListingRow[]>(),
+    countQuery,
+  ]);
+
+  if (dataResult.error) {
+    logger.listings.error("getFilteredDatabaseListings data query failed", dataResult.error, {
+      message: dataResult.error.message,
+    });
   }
 
-  const { count: total } = await countQuery;
-  const totalCount = total ?? 0;
+  const listings = dataResult.data ? dataResult.data.map(mapListingRow) : [];
+  const totalCount = countResult.count ?? 0;
 
-  const result = {
-    listings: listings ?? [],
+  const result: PaginatedListingsResult = {
+    listings,
     total: totalCount,
     page,
     limit,

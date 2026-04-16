@@ -881,3 +881,37 @@ create trigger messages_touch_chat_last_message_at
 after insert on public.messages
 for each row
 execute function public.touch_chat_last_message_at();
+
+-- ── Seller Reviews ───────────────────────────────────────────────────────
+-- Table already exists in production; schema documented here for new-env bootstrap.
+
+create table if not exists public.seller_reviews (
+  id uuid primary key default gen_random_uuid(),
+  seller_id uuid not null references public.profiles(id) on delete cascade,
+  reviewer_id uuid not null references public.profiles(id) on delete cascade,
+  listing_id uuid references public.listings(id) on delete set null,
+  rating integer not null check (rating between 1 and 5),
+  comment text,
+  created_at timestamptz not null default timezone('utc', now()),
+  constraint seller_reviews_unique_per_listing unique (reviewer_id, listing_id)
+);
+
+create index if not exists idx_seller_reviews_seller_id on public.seller_reviews (seller_id);
+create index if not exists idx_seller_reviews_reviewer_id on public.seller_reviews (reviewer_id);
+
+alter table public.seller_reviews enable row level security;
+
+drop policy if exists "seller_reviews_select_public" on public.seller_reviews;
+create policy "seller_reviews_select_public"
+  on public.seller_reviews for select using (true);
+
+drop policy if exists "seller_reviews_insert_self" on public.seller_reviews;
+create policy "seller_reviews_insert_self"
+  on public.seller_reviews for insert
+  with check ((select auth.uid()) = reviewer_id);
+
+drop policy if exists "seller_reviews_delete_self" on public.seller_reviews;
+create policy "seller_reviews_delete_self"
+  on public.seller_reviews for delete
+  using ((select auth.uid()) = reviewer_id or (select public.is_admin()));
+
