@@ -71,6 +71,44 @@ function buildDefaultValues(
     ? [...initialListing.images].sort((left, right) => left.order - right.order)
     : [];
 
+  // DB'den gelen expertInspection JSONB null, undefined veya {} olabilir.
+  // Tüm durumları normalize et — eksik alanları default değerlerle doldur.
+  const rawInspection = initialListing?.expertInspection;
+  const normalizedInspection = rawInspection && typeof rawInspection === "object" && Object.keys(rawInspection).length > 0
+    ? {
+        hasInspection: rawInspection.hasInspection ?? false,
+        inspectionDate: rawInspection.inspectionDate ?? undefined,
+        overallGrade: rawInspection.overallGrade ?? undefined,
+        totalScore: rawInspection.totalScore ?? undefined,
+        damageRecord: rawInspection.damageRecord ?? "bilinmiyor",
+        bodyPaint: rawInspection.bodyPaint ?? "bilinmiyor",
+        engine: rawInspection.engine ?? "bilinmiyor",
+        transmission: rawInspection.transmission ?? "bilinmiyor",
+        suspension: rawInspection.suspension ?? "bilinmiyor",
+        brakes: rawInspection.brakes ?? "bilinmiyor",
+        electrical: rawInspection.electrical ?? "bilinmiyor",
+        interior: rawInspection.interior ?? "bilinmiyor",
+        tires: rawInspection.tires ?? "bilinmiyor",
+        acHeating: rawInspection.acHeating ?? "bilinmiyor",
+        notes: rawInspection.notes ?? undefined,
+        inspectedBy: rawInspection.inspectedBy ?? undefined,
+        documentUrl: rawInspection.documentUrl ?? undefined,
+        documentPath: rawInspection.documentPath ?? undefined,
+      }
+    : {
+        hasInspection: false,
+        damageRecord: "bilinmiyor" as const,
+        bodyPaint: "bilinmiyor" as const,
+        engine: "bilinmiyor" as const,
+        transmission: "bilinmiyor" as const,
+        suspension: "bilinmiyor" as const,
+        brakes: "bilinmiyor" as const,
+        electrical: "bilinmiyor" as const,
+        interior: "bilinmiyor" as const,
+        tires: "bilinmiyor" as const,
+        acHeating: "bilinmiyor" as const,
+      };
+
   return {
     title: initialListing?.title ?? "",
     brand: initialListing?.brand ?? "",
@@ -97,19 +135,7 @@ function buildDefaultValues(
             imageType: (image.type === "360" ? "360" : "photo") as "photo" | "360",
           }))
         : Array.from({ length: minimumListingImages }, () => ({ imageType: "photo" as const })),
-    expertInspection: initialListing?.expertInspection ?? {
-      hasInspection: false,
-      damageRecord: "bilinmiyor",
-      bodyPaint: "bilinmiyor",
-      engine: "bilinmiyor",
-      transmission: "bilinmiyor",
-      suspension: "bilinmiyor",
-      brakes: "bilinmiyor",
-      electrical: "bilinmiyor",
-      interior: "bilinmiyor",
-      tires: "bilinmiyor",
-      acHeating: "bilinmiyor",
-    },
+    expertInspection: normalizedInspection,
   };
 }
 

@@ -141,7 +141,7 @@ export function ExpertInspectionEditor({ form }: ExpertInspectionEditorProps) {
                     shouldValidate: true,
                   })
                 }
-                value={watch("expertInspection.overallGrade") || undefined}
+                value={watch("expertInspection.overallGrade") ?? ""}
               >
                 <SelectTrigger className="rounded-xl h-11 border-border focus:border-primary">
                   <SelectValue placeholder="Not Seçin" />

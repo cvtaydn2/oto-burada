@@ -1,5 +1,6 @@
 import { hasSupabaseEnv } from "@/lib/supabase/env";
 import { sanitizeText, sanitizeDescription } from "@/lib/utils/sanitize";
+import { isValidRequestOrigin } from "@/lib/security";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { listingCreateFormSchema, listingCreateSchema } from "@/lib/validators";
 import { issuesToFieldErrors } from "@/lib/utils/validation-helpers";
@@ -12,29 +13,33 @@ import {
   updateDatabaseListing,
 } from "@/services/listings/listing-submissions";
 import { captureServerEvent } from "@/lib/monitoring/posthog-server";
+import { logger } from "@/lib/utils/logger";
 
 export async function PATCH(
   request: Request,
   context: { params: Promise<{ listingId: string }> },
 ) {
+  // CSRF check
+  if (!isValidRequestOrigin(request)) {
+    return apiError(API_ERROR_CODES.BAD_REQUEST, "Geçersiz istek kaynağı.", 403);
+  }
+
   if (!hasSupabaseEnv()) {
     return apiError(
       API_ERROR_CODES.SERVICE_UNAVAILABLE,
-      "Supabase ortam değişkenleri eksik. İlan güncellemek için .env.local dosyasını tamamlamalısın.",
+      "Supabase ortam değişkenleri eksik.",
       503,
     );
   }
 
   let body: unknown;
-
   try {
     body = await request.json();
   } catch {
-    return apiError(API_ERROR_CODES.BAD_REQUEST, "Gönderilen form verisi okunamadı. Lütfen tekrar dene.", 400);
+    return apiError(API_ERROR_CODES.BAD_REQUEST, "Gönderilen form verisi okunamadı.", 400);
   }
 
   const parsedFormValues = listingCreateFormSchema.safeParse(body);
-
   if (!parsedFormValues.success) {
     return apiError(
       API_ERROR_CODES.VALIDATION_ERROR,
@@ -45,19 +50,13 @@ export async function PATCH(
   }
 
   const supabase = await createSupabaseServerClient();
-  const {
-    data: { user },
-    error: userError,
-  } = await supabase.auth.getUser();
-
+  const { data: { user }, error: userError } = await supabase.auth.getUser();
   if (userError || !user) {
-    return apiError(API_ERROR_CODES.UNAUTHORIZED, "Oturum doğrulanamadı. Lütfen tekrar giriş yap.", 401);
+    return apiError(API_ERROR_CODES.UNAUTHORIZED, "Oturum doğrulanamadı.", 401);
   }
 
   const { listingId } = await context.params;
-
   const existingListing = await findEditableListingById(listingId, user.id);
-
   if (!existingListing) {
     return apiError(API_ERROR_CODES.NOT_FOUND, "Düzenlenebilir ilan bulunamadı.", 404);
   }
@@ -66,6 +65,14 @@ export async function PATCH(
     ...parsedFormValues.data,
     title: sanitizeText(parsedFormValues.data.title),
     description: sanitizeDescription(parsedFormValues.data.description),
+    // damage_status_json: DB CHECK constraint'e uygun değerlere normalize et
+    damageStatusJson: parsedFormValues.data.damageStatusJson
+      ? Object.fromEntries(
+          Object.entries(parsedFormValues.data.damageStatusJson).filter(
+            ([, v]) => ["orijinal", "boyali", "degisen", "hasarli", "belirtilmemis"].includes(v as string)
+          )
+        )
+      : null,
     images: parsedFormValues.data.images
       .filter(
         (image: { url?: string; storagePath?: string }) =>
@@ -83,8 +90,12 @@ export async function PATCH(
   };
 
   const parsedListingInput = listingCreateSchema.safeParse(normalizedInput);
-
   if (!parsedListingInput.success) {
+    logger.listings.error("PATCH /api/listings/[id] validation failed", parsedListingInput.error, {
+      listingId,
+      userId: user.id,
+      issues: parsedListingInput.error.issues,
+    });
     return apiError(
       API_ERROR_CODES.VALIDATION_ERROR,
       parsedListingInput.error.issues[0]?.message ?? "İlan bilgileri doğrulanamadı.",
@@ -94,7 +105,6 @@ export async function PATCH(
   }
 
   const allListings = await getExistingListingSlugs();
-
   const updatedListing = buildUpdatedListing(
     parsedListingInput.data,
     existingListing,
@@ -103,7 +113,16 @@ export async function PATCH(
   const result = await updateDatabaseListing(updatedListing);
 
   if (result.error === "slug_collision") {
-    return apiError(API_ERROR_CODES.BAD_REQUEST, "Bu başlıkla başka bir ilan zaten mevcut. Lütfen başlığı değiştir.", 409);
+    return apiError(API_ERROR_CODES.BAD_REQUEST, "Bu başlıkla başka bir ilan zaten mevcut.", 409);
+  }
+
+  if (result.error) {
+    logger.listings.error("PATCH /api/listings/[id] DB update failed", null, {
+      listingId,
+      userId: user.id,
+      error: result.error,
+    });
+    return apiError(API_ERROR_CODES.INTERNAL_ERROR, "İlan kaydedilemedi. Lütfen tekrar dene.", 500);
   }
 
   if (result.listing) {
