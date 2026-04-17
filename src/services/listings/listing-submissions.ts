@@ -1,312 +1,33 @@
 import { cookies } from "next/headers";
-
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { hasSupabaseAdminEnv } from "@/lib/supabase/env";
 import { listingSchema } from "@/lib/validators";
-import type { Listing, ListingCreateInput, ListingFilters, UserRole, Profile } from "@/types";
+import type { Listing, ListingCreateInput, ListingFilters } from "@/types";
 import { listingSubmissionsCookieName } from "./constants";
 import { logger } from "@/lib/utils/logger";
 
-const turkishCharacterMap: Record<string, string> = {
-  ç: "c",
-  Ç: "c",
-  ğ: "g",
-  Ğ: "g",
-  ı: "i",
-  İ: "i",
-  ö: "o",
-  Ö: "o",
-  ş: "s",
-  Ş: "s",
-  ü: "u",
-  Ü: "u",
-};
+// Feature Modules
+import { buildListingSlug } from "./listing-submission-helpers";
+import { calculateFraudScore } from "./listing-submission-moderation";
 
-/** DB row shape for a listing image — used internally for mapping. */
-export interface ListingImageRow {
-  id: string;
-  is_cover: boolean;
-  listing_id: string;
-  public_url: string;
-  sort_order: number;
-  storage_path: string;
-  placeholder_blur: string | null;
-}
+export { buildListingSlug, calculateFraudScore };
+import { 
+  getDatabaseListings, 
+  getFilteredDatabaseListings, 
+  PaginatedListingsResult 
+} from "./listing-submission-query";
+import { 
+  createDatabaseListing, 
+  updateDatabaseListing, 
+  mapListingToDatabaseRow,
+  mapListingImagesToDatabaseRows
+} from "./listing-submission-persistence";
+import { ListingRow, ListingImageRow } from "./listing-submission-types";
 
-/** DB row shape for a listing — used internally for mapping. */
-export interface ListingRow {
-  brand: string;
-  city: string;
-  created_at: string;
-  damage_status_json?: Record<string, unknown> | null;
-  description: string;
-  district: string;
-  expert_inspection?: Listing["expertInspection"] | null;
-  featured: boolean;
-  featured_until?: string | null;
-  urgent_until?: string | null;
-  highlighted_until?: string | null;
-  fraud_reason?: string | null;
-  fraud_score?: number | null;
-  fuel_type: Listing["fuelType"];
-  id: string;
-  license_plate?: string | null;
-  listing_images?: ListingImageRow[] | null;
-  profiles?: {
-    full_name: string;
-    // phone is intentionally excluded — PII, not needed on list/detail page
-    city: string;
-    avatar_url: string | null;
-    role: string;
-    user_type: string;
-    business_name: string | null;
-    business_logo_url: string | null;
-    is_verified: boolean;
-    verified_business: boolean;
-    business_slug: string | null;
-  } | null;
-  mileage: number;
-  model: string;
-  price: number;
-  published_at?: string | null;
-  view_count?: number;
-  seller_id: string;
-  slug: string;
-  status: Listing["status"];
-  title: string;
-  tramer_amount?: number | null;
-  transmission: Listing["transmission"];
-  updated_at: string;
-  bumped_at?: string | null;
-  market_price_index?: number | null;
-  whatsapp_phone: string;
-  year: number;
-  vin?: string | null;
-  car_trim?: string | null;
-}
+// Re-export types for backward compatibility
+export type { ListingRow, ListingImageRow };
 
-const listingSelect = `
-  id,
-  seller_id,
-  slug,
-  title,
-  brand,
-  model,
-  year,
-  mileage,
-  fuel_type,
-  transmission,
-  price,
-  city,
-  district,
-  description,
-  whatsapp_phone,
-  vin,
-  license_plate,
-  car_trim,
-  tramer_amount,
-  damage_status_json,
-  fraud_score,
-  fraud_reason,
-  status,
-  featured,
-  featured_until,
-  urgent_until,
-  highlighted_until,
-  market_price_index,
-  expert_inspection,
-  published_at,
-  bumped_at,
-  view_count,
-  created_at,
-  updated_at,
-  listing_images (
-    id,
-    listing_id,
-    storage_path,
-    public_url,
-    sort_order,
-    is_cover,
-    placeholder_blur
-  ),
-  profiles!seller_id (
-    full_name,
-    city,
-    avatar_url,
-    role,
-    user_type,
-    business_name,
-    business_logo_url,
-    is_verified,
-    verified_business,
-    business_slug
-  )
-`;
-
-const legacyListingSelect = `
-  id,
-  seller_id,
-  slug,
-  title,
-  brand,
-  model,
-  year,
-  mileage,
-  fuel_type,
-  transmission,
-  price,
-  city,
-  district,
-  description,
-  whatsapp_phone,
-  status,
-  featured,
-  created_at,
-  updated_at,
-  market_price_index,
-  car_trim,
-  vin,
-  tramer_amount,
-  damage_status_json,
-  view_count,
-  bumped_at,
-  featured_until,
-  urgent_until,
-  highlighted_until,
-  listing_images (
-    id,
-    listing_id,
-    storage_path,
-    public_url,
-    sort_order,
-    is_cover,
-    placeholder_blur
-  )
-`;
-
-function toSlugSegment(value: string) {
-  return value
-    .split("")
-    .map((character) => turkishCharacterMap[character] ?? character)
-    .join("")
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-+|-+$/g, "")
-    .replace(/-{2,}/g, "-");
-}
-
-export function buildListingSlug(input: ListingCreateInput, existingListings: { id: string; slug: string }[]) {
-  const baseSlug = toSlugSegment(`${input.year} ${input.brand} ${input.model} ${input.title}`);
-  const existingSlugs = new Set(existingListings.map((listing) => listing.slug));
-
-  if (!existingSlugs.has(baseSlug)) {
-    return baseSlug;
-  }
-
-  let suffix = 2;
-
-  while (existingSlugs.has(`${baseSlug}-${suffix}`)) {
-    suffix += 1;
-  }
-
-  return `${baseSlug}-${suffix}`;
-}
-
-export function calculateFraudScore(
-  input: ListingCreateInput,
-  existingListings: {
-    id: string;
-    slug: string;
-    brand?: string;
-    model?: string;
-    year?: number;
-    mileage?: number;
-    price?: number;
-    sellerId?: string;
-    vin?: string | null;
-    status?: string;
-  }[]
-): { fraudScore: number; fraudReason: string | null; suggestedStatus?: Listing["status"] } {
-  let score = 0;
-  const reasons: string[] = [];
-  let suggestedStatus: Listing["status"] | undefined = undefined;
-
-  const isDuplicate = existingListings.some(
-    (l) =>
-      l.brand === input.brand &&
-      l.model === input.model &&
-      l.year === input.year &&
-      l.mileage === input.mileage &&
-      l.price === input.price
-  );
-  if (isDuplicate) {
-    score += 50;
-    reasons.push("Mükerrer ilan şüphesi");
-  }
-
-  const vinDuplicate = input.vin
-    ? existingListings.find(
-        (l) => l.vin === input.vin && l.status !== "archived" && l.status !== "rejected"
-      )
-    : undefined;
-  if (vinDuplicate) {
-    score += 100;
-    reasons.push("Aynı şasi numaralı başka bir aktif ilan mevcut (VIN clone)");
-  }
-
-  // --- ANOMALY DETECTOR LOGIC ---
-  // Ortalama fiyat karsilastirmasi
-  const similarListings = existingListings.filter(
-    (l) => l.brand === input.brand && l.model === input.model && l.year === input.year && l.price && l.price > 0
-  );
-
-  if (similarListings.length >= 3) {
-    const avgPrice = similarListings.reduce((sum, current) => sum + (current.price || 0), 0) / similarListings.length;
-    
-    if (input.price < avgPrice * 0.7) {
-      score += 70;
-      reasons.push(`Fiyat ortalamanın %30 altında (${Math.round(avgPrice)} TL)`);
-      suggestedStatus = "flagged";
-    } else if (input.price > avgPrice * 1.5) {
-      score += 50;
-      reasons.push(`Fiyat ortalamanın %50 üzerinde (${Math.round(avgPrice)} TL)`);
-      suggestedStatus = "flagged";
-    }
-  } else {
-    // Statik fallback eger 3'den az araba varsa
-    if (input.year >= 2020 && input.price < 800_000) {
-      score += 60;
-      reasons.push("Pazar ortalamasının çok altında şüpheli fiyat");
-    }
-  }
-
-  // Kilometre Anomalisi
-  const vehicleAge = new Date().getFullYear() - input.year;
-  if (vehicleAge >= 10 && input.mileage < 10000) {
-    score += 40;
-    reasons.push("mileage_anomaly"); // AnomalyDetector keyword
-    suggestedStatus = suggestedStatus || "flagged";
-  }
-
-  if (input.damageStatusJson && input.tramerAmount === 0) {
-    const suspiciousStatuses = ["boyali", "lokal_boyali", "degisen"];
-    const changedPartsCount = Object.values(input.damageStatusJson).filter((s) =>
-      suspiciousStatuses.includes(s as string)
-    ).length;
-
-    if (changedPartsCount >= 3) {
-      score += 20;
-      reasons.push("Çoklu boya/değişen kaydına rağmen hasar kaydı 0");
-    }
-  }
-
-  return { 
-    fraudScore: Math.min(score, 100), 
-    fraudReason: reasons.length > 0 ? reasons.join(", ") : null,
-    suggestedStatus
-  };
-}
-
+/** Orchestrates the creation of a listing record with all computed fields (slug, fraud score). */
 export function buildListingRecord(
   input: ListingCreateInput,
   sellerId: string,
@@ -319,6 +40,8 @@ export function buildListingRecord(
 ) {
   const existingListing = options?.existingListing;
   const id = existingListing?.id ?? options?.id ?? crypto.randomUUID();
+  
+  // Delegate slug and fraud calculation to specialized modules
   const slug = buildListingSlug(
     input,
     existingListing
@@ -331,6 +54,7 @@ export function buildListingRecord(
       ? existingListings.filter((listing) => listing.id !== existingListing.id)
       : existingListings,
   );
+  
   const timestamp = new Date().toISOString();
 
   return listingSchema.parse({
@@ -377,631 +101,12 @@ export function buildListingRecord(
   });
 }
 
-function mapListingRow(row: ListingRow): Listing {
-  return {
-    brand: row.brand,
-    city: row.city,
-    createdAt: row.created_at,
-    damageStatusJson: (row.damage_status_json as Record<string, string> | null) ?? null,
-    description: row.description,
-    district: row.district,
-    expertInspection: row.expert_inspection ?? undefined,
-    featured: row.featured,
-    fraudReason: row.fraud_reason ?? null,
-    fraudScore: row.fraud_score ?? 0,
-    fuelType: row.fuel_type,
-    id: row.id,
-    images: (row.listing_images || [])
-      .map((image) => ({
-        id: image.id,
-        isCover: image.is_cover || false,
-        listingId: image.listing_id,
-        order: image.sort_order || 0,
-        storagePath: image.storage_path || "",
-        url: image.public_url || "",
-        placeholderBlur: image.placeholder_blur || null,
-      }))
-      .sort((left, right) => left.order - right.order),
-    mileage: row.mileage,
-    model: row.model,
-    price: Number(row.price),
-    carTrim: row.car_trim ?? null,
-    sellerId: row.seller_id,
-    viewCount: row.view_count ?? 0,
-    seller: row.profiles ? {
-      fullName: row.profiles.full_name,
-      // phone intentionally excluded from list/detail seller embed — PII
-      phone: "",
-      city: row.profiles.city,
-      avatarUrl: row.profiles.avatar_url,
-      role: row.profiles.role as UserRole,
-      userType: row.profiles.user_type as Profile["userType"],
-      businessName: row.profiles.business_name,
-      businessLogoUrl: row.profiles.business_logo_url,
-      isVerified: row.profiles.is_verified,
-      verifiedBusiness: row.profiles.verified_business,
-      businessSlug: row.profiles.business_slug,
-      emailVerified: false,
-      createdAt: "",
-      updatedAt: "",
-    } : undefined,
-    slug: row.slug,
-    status: row.status,
-    title: row.title,
-    // tramer_amount is a Postgres numeric — coerce to number to guard against string representation
-    tramerAmount: row.tramer_amount != null ? Number(row.tramer_amount) : null,
-    transmission: row.transmission,
-    updatedAt: row.updated_at,
-    bumpedAt: row.bumped_at ?? null,
-    featuredUntil: row.featured_until ?? null,
-    urgentUntil: row.urgent_until ?? null,
-    highlightedUntil: row.highlighted_until ?? null,
-    marketPriceIndex: row.market_price_index ? Number(row.market_price_index) : null,
-    whatsappPhone: row.whatsapp_phone,
-    vin: row.vin ?? null,
-    licensePlate: row.license_plate ?? null,
-    year: row.year,
-  };
-}
-
-export async function getDatabaseListings(options?: {
-  ids?: string[];
-  listingId?: string;
-  sellerId?: string;
-  slug?: string;
-  statuses?: Listing["status"][];
-  filters?: ListingFilters;
-}) {
-  if (!hasSupabaseAdminEnv()) {
-    return null;
-  }
-
-  const admin = createSupabaseAdminClient();
-  const applyListingQueryOptions = (selectClause: string) => {
-    let query = admin.from("listings").select(selectClause);
-
-    const sellerId = options?.sellerId ?? options?.filters?.sellerId;
-    if (sellerId) {
-      query = query.eq("seller_id", sellerId);
-    }
-
-    if (options?.listingId) {
-      query = query.eq("id", options.listingId);
-    }
-
-    if (options?.slug) {
-      query = query.eq("slug", options.slug);
-    }
-
-    if (options?.ids?.length) {
-      query = query.in("id", options.ids);
-    }
-
-    if (options?.statuses?.length) {
-      query = query.in("status", options.statuses);
-    }
-
-    const filters = options?.filters;
-
-    if (filters) {
-      if (filters.brand) {
-        query = query.eq("brand", filters.brand);
-      }
-
-      if (filters.model) {
-        query = query.eq("model", filters.model);
-      }
-
-      if (filters.carTrim) {
-        query = query.eq("car_trim", filters.carTrim);
-      }
-
-      if (filters.city) {
-        query = query.ilike("city", filters.city);
-      }
-
-      if (filters.district) {
-        query = query.ilike("district", filters.district);
-      }
-
-      if (filters.fuelType) {
-        query = query.eq("fuel_type", filters.fuelType);
-      }
-
-      if (filters.transmission) {
-        query = query.eq("transmission", filters.transmission);
-      }
-
-      if (filters.minPrice !== undefined) {
-        query = query.gte("price", filters.minPrice);
-      }
-
-      if (filters.maxPrice !== undefined) {
-        query = query.lte("price", filters.maxPrice);
-      }
-
-      if (filters.minYear !== undefined) {
-        query = query.gte("year", filters.minYear);
-      }
-
-      if (filters.maxYear !== undefined) {
-        query = query.lte("year", filters.maxYear);
-      }
-
-      if (filters.maxMileage !== undefined) {
-        query = query.lte("mileage", filters.maxMileage);
-      }
-
-      if (filters.maxTramer !== undefined) {
-        if (filters.maxTramer === 0) {
-          // maxTramer=0 → "no damage at all" — include NULL (not recorded) and 0 (clean)
-          query = query.or("tramer_amount.is.null,tramer_amount.eq.0");
-        } else {
-          query = query.lte("tramer_amount", filters.maxTramer);
-        }
-      }
-
-      if (filters.hasExpertReport === true) {
-        // expert_inspection is a JSONB column. Postgres stores boolean true as true (not "true").
-        // Use the containment operator @> to match JSONB with hasInspection: true.
-        query = query.contains("expert_inspection", { hasInspection: true });
-      }
-
-      if (filters.query) {
-        const terms = filters.query.trim().split(/\s+/).filter(Boolean);
-
-        if (terms.length > 0) {
-          // `to_tsquery` format with `:*` prefix matching — works with Supabase .textSearch()
-          // which maps to PostgREST's `@@` operator using `to_tsquery` by default.
-          // Using `config: "simple"` ensures Turkish characters (ş,ğ,ı etc.) are not stemmed away.
-          const tsQuery = terms.map((t) => `${t}:*`).join(" & ");
-          query = query.textSearch("search_vector", tsQuery, { config: "simple" });
-        }
-      }
-    }
-
-    const sort = filters?.sort ?? "newest";
-    
-    // Default "newest" view prioritizes featured listings.
-    // Explicit sorts (price, mileage, year) respect the user's choice as primary.
-    if (!filters?.sort || filters.sort === "newest") {
-      query = query.order("featured", { ascending: false });
-    }
-
-    switch (sort) {
-      case "price_asc":
-        query = query.order("price", { ascending: true }).order("created_at", { ascending: false });
-        break;
-      case "price_desc":
-        query = query.order("price", { ascending: false }).order("created_at", { ascending: false });
-        break;
-      case "mileage_asc":
-        query = query.order("mileage", { ascending: true }).order("created_at", { ascending: false });
-        break;
-      case "year_desc":
-        query = query.order("year", { ascending: false }).order("created_at", { ascending: false });
-        break;
-      case "oldest":
-        query = query.order("created_at", { ascending: true });
-        break;
-      case "mileage_desc":
-        query = query.order("mileage", { ascending: false }).order("created_at", { ascending: false });
-        break;
-      case "year_asc":
-        query = query.order("year", { ascending: true }).order("created_at", { ascending: false });
-        break;
-      case "newest":
-      default:
-        // Use bumped_at if available for improved recency
-        query = query.order("bumped_at", { ascending: false, nullsFirst: false })
-                     .order("created_at", { ascending: false });
-        break;
-    }
-
-    const page = filters?.page ?? 1;
-    const limit = filters?.limit ?? 50;
-    const from = (page - 1) * limit;
-    const to = from + limit - 1;
-    return query.range(from, to);
-  };
-
-  const primaryResult = await applyListingQueryOptions(listingSelect).returns<ListingRow[]>();
-
-  if (primaryResult.error) {
-    logger.listings.error("getDatabaseListings primary query failed", primaryResult.error, {
-      message: primaryResult.error.message,
-    });
-  }
-  
-  // Primary query succeeded (even with 0 results) — return immediately.
-  if (!primaryResult.error) {
-    return (primaryResult.data ?? []).map(mapListingRow);
-  }
-
-  // Primary errored — attempt a simpler fallback query (no profile join)
-  const fallbackResult = await applyListingQueryOptions(legacyListingSelect).returns<ListingRow[]>();
-
-  if (fallbackResult.error || !fallbackResult.data) {
-    if (fallbackResult.error) {
-      logger.listings.error("getDatabaseListings fallback query failed", fallbackResult.error, {
-        message: fallbackResult.error.message,
-      });
-    }
-    return null;
-  }
-
-  return fallbackResult.data.map(mapListingRow);
-}
-
-export interface PaginatedListingsResult {
-  listings: Listing[];
-  total: number;
-  page: number;
-  limit: number;
-  hasMore: boolean;
-}
-
-/**
- * Applies filter predicates to a Supabase query builder.
- * Shared by both the data query and the count query to avoid duplication.
- */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function applyListingFilterPredicates<T extends { eq: any; gte: any; lte: any; filter: any; textSearch: any; ilike: any; contains: any; or: any }>(
-  query: T,
-  filters: ListingFilters,
-): T {
-  if (filters.sellerId) query = query.eq("seller_id", filters.sellerId);
-  if (filters.brand) query = query.eq("brand", filters.brand);
-  if (filters.model) query = query.eq("model", filters.model);
-  if (filters.carTrim) query = query.eq("car_trim", filters.carTrim);
-  // city can come as an exact name (from filter panel) or a slug/lowercase (from SEO routes).
-  // We use ilike for case-insensitive matching so both "İstanbul" and "istanbul" work.
-  if (filters.city) query = query.ilike("city", filters.city);
-  if (filters.district) query = query.ilike("district", filters.district);
-  if (filters.fuelType) query = query.eq("fuel_type", filters.fuelType);
-  if (filters.transmission) query = query.eq("transmission", filters.transmission);
-  if (filters.minPrice !== undefined) query = query.gte("price", filters.minPrice);
-  if (filters.maxPrice !== undefined) query = query.lte("price", filters.maxPrice);
-  if (filters.minYear !== undefined) query = query.gte("year", filters.minYear);
-  if (filters.maxYear !== undefined) query = query.lte("year", filters.maxYear);
-  if (filters.maxMileage !== undefined) query = query.lte("mileage", filters.maxMileage);
-  if (filters.maxTramer !== undefined) {
-    if (filters.maxTramer === 0) {
-      // maxTramer=0 means "no damage" — match both NULL and 0
-      query = query.or("tramer_amount.is.null,tramer_amount.eq.0");
-    } else {
-      query = query.lte("tramer_amount", filters.maxTramer);
-    }
-  }
-  if (filters.hasExpertReport === true) {
-    // Use JSONB containment operator to correctly match boolean true (not string "true")
-    query = query.contains("expert_inspection", { hasInspection: true });
-  }
-  if (filters.query) {
-    const terms = filters.query.trim().split(/\s+/).filter(Boolean);
-    if (terms.length > 0) {
-      const tsQuery = terms.map((t) => `${t}:*`).join(" & ");
-      query = query.textSearch("search_vector", tsQuery, { config: "simple" });
-    }
-  }
-  return query;
-}
-
-export async function getFilteredDatabaseListings(
-  filters: ListingFilters,
-): Promise<PaginatedListingsResult> {
-  const page = filters.page ?? 1;
-  const limit = filters.limit ?? 24;
-  const sort = filters.sort ?? "newest";
-  const isDefaultView =
-    !filters.query &&
-    !filters.brand &&
-    !filters.model &&
-    !filters.city &&
-    !filters.district &&
-    !filters.fuelType &&
-    !filters.transmission &&
-    !filters.carTrim &&
-    filters.minPrice === undefined &&
-    filters.maxPrice === undefined &&
-    filters.minYear === undefined &&
-    filters.maxYear === undefined &&
-    filters.maxMileage === undefined &&
-    filters.maxTramer === undefined &&
-    filters.hasExpertReport === undefined &&
-    page === 1 &&
-    sort === "newest";
-  const cacheKey = "listings:approved:default";
-
-  if (isDefaultView) {
-    const { getCachedData } = await import("@/lib/redis/client");
-    const cached = await getCachedData<PaginatedListingsResult>(cacheKey);
-    if (cached) return cached;
-  }
-
-  // Run data fetch and count query in parallel — single round-trip each, no filter duplication.
-  const admin = createSupabaseAdminClient();
-  const from = (page - 1) * limit;
-  const to = from + limit - 1;
-
-  let dataQuery = admin
-    .from("listings")
-    .select(listingSelect)
-    .eq("status", "approved");
-  dataQuery = applyListingFilterPredicates(dataQuery, { ...filters, page, limit });
-
-  // Sort
-  if (!filters.sort || filters.sort === "newest") {
-    dataQuery = dataQuery.order("featured", { ascending: false });
-  }
-  switch (sort) {
-    case "price_asc":
-      dataQuery = dataQuery.order("price", { ascending: true }).order("created_at", { ascending: false });
-      break;
-    case "price_desc":
-      dataQuery = dataQuery.order("price", { ascending: false }).order("created_at", { ascending: false });
-      break;
-    case "mileage_asc":
-      dataQuery = dataQuery.order("mileage", { ascending: true }).order("created_at", { ascending: false });
-      break;
-    case "year_desc":
-      dataQuery = dataQuery.order("year", { ascending: false }).order("created_at", { ascending: false });
-      break;
-    case "oldest":
-      dataQuery = dataQuery.order("created_at", { ascending: true });
-      break;
-    case "mileage_desc":
-      dataQuery = dataQuery.order("mileage", { ascending: false }).order("created_at", { ascending: false });
-      break;
-    case "year_asc":
-      dataQuery = dataQuery.order("year", { ascending: true }).order("created_at", { ascending: false });
-      break;
-    case "newest":
-    default:
-      dataQuery = dataQuery
-        .order("bumped_at", { ascending: false, nullsFirst: false })
-        .order("created_at", { ascending: false });
-      break;
-  }
-  dataQuery = dataQuery.range(from, to);
-
-  let countQuery = admin
-    .from("listings")
-    .select("id", { count: "exact", head: true })
-    .eq("status", "approved");
-  countQuery = applyListingFilterPredicates(countQuery, filters);
-
-  const [dataResult, countResult] = await Promise.all([
-    dataQuery.returns<ListingRow[]>(),
-    countQuery,
-  ]);
-
-  if (dataResult.error) {
-    logger.listings.error("getFilteredDatabaseListings data query failed", dataResult.error, {
-      message: dataResult.error.message,
-    });
-  }
-
-  const listings = dataResult.data ? dataResult.data.map(mapListingRow) : [];
-  const totalCount = countResult.count ?? 0;
-
-  const result: PaginatedListingsResult = {
-    listings,
-    total: totalCount,
-    page,
-    limit,
-    hasMore: page * limit < totalCount,
-  };
-
-  if (isDefaultView) {
-    try {
-      const { setCachedData } = await import("@/lib/redis/client");
-      setCachedData(cacheKey, result, 600).catch((err) =>
-        logger.db.warn("Redis cache set failed for listings", { cacheKey }, err)
-      );
-    } catch {
-      // Ignored during build/edge
-    }
-  }
-
-  return result;
-}
-
-export function mapListingImagesToDatabaseRows(listing: Listing) {
-  return listing.images.map((image) => ({
-    is_cover: image.isCover,
-    listing_id: listing.id,
-    public_url: image.url,
-    sort_order: image.order,
-    storage_path: image.storagePath,
-    placeholder_blur: image.placeholderBlur ?? null,
-  }));
-}
-
-interface CreateListingResult {
-  listing?: Listing;
-  error?: "slug_collision" | "database_error" | null;
-}
-
-export async function createDatabaseListing(listing: Listing): Promise<CreateListingResult> {
-  if (!hasSupabaseAdminEnv()) {
-    return { error: "database_error" };
-  }
-
-  const admin = createSupabaseAdminClient();
-  const insertResult = await admin.from("listings").insert(mapListingToDatabaseRow(listing));
-
-  if (insertResult.error) {
-    // Log the actual DB error so it appears in Vercel function logs
-    logger.listings.error("createDatabaseListing insert failed", insertResult.error, {
-      listingId: listing.id,
-      sellerId: listing.sellerId,
-      errorCode: insertResult.error.code,
-      errorMessage: insertResult.error.message,
-      errorDetails: insertResult.error.details,
-      errorHint: insertResult.error.hint,
-    });
-
-    // Also log to console.error so it always appears in Vercel runtime logs
-    // regardless of log level configuration
-    console.error("[listings] DB insert 400:", {
-      code: insertResult.error.code,
-      message: insertResult.error.message,
-      details: insertResult.error.details,
-      hint: insertResult.error.hint,
-    });
-
-    if (insertResult.error.message.includes("slug_unique") || insertResult.error.code === "23505") {
-      return { error: "slug_collision" };
-    }
-    return { error: "database_error" };
-  }
-
-  const imageRows = mapListingImagesToDatabaseRows(listing);
-
-  if (imageRows.length > 0) {
-    const imageInsertResult = await admin.from("listing_images").insert(imageRows);
-
-    if (imageInsertResult.error) {
-      logger.listings.error("createDatabaseListing image insert failed", imageInsertResult.error, {
-        listingId: listing.id,
-        imageCount: imageRows.length,
-        errorCode: imageInsertResult.error.code,
-        errorMessage: imageInsertResult.error.message,
-      });
-      await admin.from("listings").delete().eq("id", listing.id);
-      return { error: "database_error" };
-    }
-  }
-
-  const createdListing = (await getDatabaseListings({ listingId: listing.id }))?.[0];
-  return { listing: createdListing };
-}
-
-interface UpdateListingResult {
-  listing?: Listing | null;
-  error?: "slug_collision" | "database_error" | null;
-}
-
-export async function updateDatabaseListing(listing: Listing): Promise<UpdateListingResult> {
-  if (!hasSupabaseAdminEnv()) {
-    return { error: "database_error" };
-  }
-
-  const admin = createSupabaseAdminClient();
-  const previousListing = (await getDatabaseListings({ listingId: listing.id }))?.[0];
-  const updateResult = await admin
-    .from("listings")
-    .update(mapListingToDatabaseRow(listing))
-    .eq("id", listing.id);
-
-  if (updateResult.error) {
-    // Gerçek DB hatasını logla — 400 hatalarının nedenini görmek için kritik
-    logger.listings.error("updateDatabaseListing DB PATCH failed", updateResult.error, {
-      listingId: listing.id,
-      errorCode: updateResult.error.code,
-      errorMessage: updateResult.error.message,
-      errorDetails: updateResult.error.details,
-      errorHint: updateResult.error.hint,
-    });
-    console.error("[listings] DB PATCH 400:", {
-      code: updateResult.error.code,
-      message: updateResult.error.message,
-      details: updateResult.error.details,
-      hint: updateResult.error.hint,
-    });
-    if (updateResult.error.message.includes("slug_unique") || updateResult.error.code === "23505") {
-      return { error: "slug_collision" };
-    }
-    return { error: "database_error" };
-  }
-
-  const deleteImagesResult = await admin.from("listing_images").delete().eq("listing_id", listing.id);
-
-  if (deleteImagesResult.error) {
-    return { error: "database_error" };
-  }
-
-  const imageRows = mapListingImagesToDatabaseRows(listing);
-
-  if (imageRows.length > 0) {
-    const imageInsertResult = await admin.from("listing_images").insert(imageRows);
-
-    if (imageInsertResult.error) {
-      if (previousListing?.images.length) {
-        const restoreResult = await admin
-          .from("listing_images")
-          .insert(mapListingImagesToDatabaseRows(previousListing));
-
-        if (restoreResult.error) {
-          logger.listings.error("updateDatabaseListing failed to restore previous images", restoreResult.error, {
-            listingId: listing.id,
-          });
-        }
-      }
-      return { error: "database_error" };
-    }
-  }
-
-  const updatedListing = (await getDatabaseListings({ listingId: listing.id }))?.[0];
-  return { listing: updatedListing };
-}
-
-export function mapListingToDatabaseRow(listing: Listing) {
-  // Columns verified against live DB on 2026-04-16.
-  // created_at is intentionally omitted — DB DEFAULT now() handles it on insert.
-  // search_vector is GENERATED ALWAYS AS STORED — must never be sent.
-  // view_count has DEFAULT 0 — omitted on insert, updated separately.
-  // published_at is set by moderateDatabaseListing on approval — not on create.
-  // license_plate is nullable — omitted when not provided.
-  return {
-    id: listing.id,
-    seller_id: listing.sellerId,
-    slug: listing.slug,
-    title: listing.title,
-    brand: listing.brand,
-    model: listing.model,
-    year: listing.year,
-    mileage: listing.mileage,
-    fuel_type: listing.fuelType,
-    transmission: listing.transmission,
-    price: listing.price,
-    city: listing.city,
-    district: listing.district,
-    description: listing.description,
-    whatsapp_phone: listing.whatsappPhone,
-    license_plate: listing.licensePlate ?? null,
-    status: listing.status,
-    featured: listing.featured,
-    updated_at: listing.updatedAt,
-    tramer_amount: listing.tramerAmount ?? null,
-    // damage_status_json: DB CHECK constraint'e uygun değerlere normalize et
-    // "orjinal" değerleri DB'ye göndermeden filtrele (constraint "orijinal" veya null bekliyor)
-    damage_status_json: listing.damageStatusJson && Object.keys(listing.damageStatusJson).length > 0
-      ? Object.fromEntries(
-          Object.entries(listing.damageStatusJson)
-            .map(([k, v]) => [k, v === "orjinal" ? "orijinal" : v])
-            .filter(([, v]) => ["orijinal", "boyali", "lokal_boyali", "degisen", "hasarli", "belirtilmemis", "bilinmiyor"].includes(v as string))
-        )
-      : null,
-    fraud_score: listing.fraudScore ?? 0,
-    fraud_reason: listing.fraudReason ?? null,
-    featured_until: listing.featuredUntil ?? null,
-    urgent_until: listing.urgentUntil ?? null,
-    highlighted_until: listing.highlightedUntil ?? null,
-    market_price_index: listing.marketPriceIndex ?? null,
-    vin: listing.vin ?? null,
-    bumped_at: listing.bumpedAt ?? null,
-    car_trim: listing.carTrim ?? null,
-    expert_inspection: listing.expertInspection ?? null,
-  };
-}
+// Proxy exports for query logic
+export { getDatabaseListings, getFilteredDatabaseListings };
+export type { PaginatedListingsResult };
 
 export async function archiveDatabaseListing(listingId: string) {
-  if (!hasSupabaseAdminEnv()) {
-    return null;
-  }
-
+  if (!hasSupabaseAdminEnv()) return null;
   const admin = createSupabaseAdminClient();
   const { error } = await admin
     .from("listings")
@@ -1011,212 +116,80 @@ export async function archiveDatabaseListing(listingId: string) {
     })
     .eq("id", listingId);
 
-  if (error) {
-    return null;
-  }
-
+  if (error) return null;
   return (await getDatabaseListings({ listingId }))?.[0] ?? null;
 }
 
 export async function deleteDatabaseListing(listingId: string, sellerId: string) {
-  if (!hasSupabaseAdminEnv()) {
-    return null;
-  }
-
+  if (!hasSupabaseAdminEnv()) return null;
   const admin = createSupabaseAdminClient();
-
-  // Verify listing exists and belongs to seller, and is archived
   const listing = (await getDatabaseListings({ listingId, sellerId }))?.[0];
+  if (!listing || listing.status !== "archived") return null;
 
-  if (!listing || listing.status !== "archived") {
-    return null;
-  }
-
-  // Delete images from storage
   if (listing.images.length > 0) {
-    const storagePaths = listing.images
-      .map((img) => img.storagePath)
-      .filter((path) => path.length > 0);
-
+    const storagePaths = listing.images.map((img) => img.storagePath).filter((path) => path.length > 0);
     if (storagePaths.length > 0) {
       const bucketName = process.env.SUPABASE_STORAGE_BUCKET_LISTINGS ?? "listing-images";
       await admin.storage.from(bucketName).remove(storagePaths);
     }
   }
 
-  // Delete listing_images rows
   await admin.from("listing_images").delete().eq("listing_id", listingId);
-
-  // Delete related favorites
   await admin.from("favorites").delete().eq("listing_id", listingId);
-
-  // Delete related reports
   await admin.from("reports").delete().eq("listing_id", listingId);
-
-  // Delete the listing
   const { error } = await admin.from("listings").delete().eq("id", listingId);
 
-  if (error) {
-    return null;
-  }
-
-  return { id: listingId, deleted: true };
+  return error ? null : { id: listingId, deleted: true };
 }
 
-
-
+// Cookie & Draft Logic
 export function parseStoredListings(rawValue?: string | null) {
-  if (!rawValue) {
-    return [] satisfies Listing[];
-  }
-
+  if (!rawValue) return [] satisfies Listing[];
   try {
     const parsed = JSON.parse(rawValue);
     const result = listingSchema.array().safeParse(parsed);
-
-    if (!result.success) {
-      return [] satisfies Listing[];
-    }
-
-    return result.data;
-  } catch {
-    return [] satisfies Listing[];
-  }
+    return result.success ? result.data : [];
+  } catch { return []; }
 }
 
 export function serializeStoredListings(listings: Listing[]) {
   return JSON.stringify(listings);
 }
 
-/** @deprecated LEGACY ONLY: Used by migration scripts and edge-case draft recovery. */
 export async function getLegacyStoredListings() {
   const cookieStore = await cookies();
-
   return parseStoredListings(cookieStore.get(listingSubmissionsCookieName)?.value).sort(
     (left, right) => Date.parse(right.updatedAt) - Date.parse(left.updatedAt),
   );
 }
 
-export function buildPendingListing(
-  input: ListingCreateInput,
-  sellerId: string,
-  existingListings: { id: string; slug: string }[],
-) {
-  return buildListingRecord(input, sellerId, existingListings, {
-    status: "pending",
-  });
+// Orchestration Helpers
+export function buildPendingListing(input: ListingCreateInput, sellerId: string, existingListings: { id: string; slug: string }[]) {
+  return buildListingRecord(input, sellerId, existingListings, { status: "pending" });
 }
 
-export function buildUpdatedListing(
-  input: ListingCreateInput,
-  existingListing: Listing,
-  existingListings: { id: string; slug: string }[],
-) {
-  const nextStatus =
-    existingListing.status === "draft" || existingListing.status === "pending"
-      ? existingListing.status
-      : "pending";
-
-  return buildListingRecord(input, existingListing.sellerId, existingListings, {
-    existingListing,
-    status: nextStatus,
-  });
-}
-
-export function replaceStoredListing(existingListings: Listing[], nextListing: Listing) {
-  const alreadyExists = existingListings.some((listing) => listing.id === nextListing.id);
-
-  if (!alreadyExists) {
-    return [nextListing, ...existingListings];
-  }
-
-  return existingListings.map((listing) => (listing.id === nextListing.id ? nextListing : listing));
-}
-
-export function archiveStoredListing(existingListing: Listing) {
-  return listingSchema.parse({
-    ...existingListing,
-    status: "archived",
-    updatedAt: new Date().toISOString(),
-  });
-}
-
-
-export function getEditableListingById(listings: Listing[], listingId: string, sellerId: string) {
-  return listings.find(
-    (listing) =>
-      listing.id === listingId &&
-      listing.sellerId === sellerId &&
-      (listing.status === "draft" || listing.status === "pending"),
-  );
-}
-
-export function getArchivableListingById(listings: Listing[], listingId: string, sellerId: string) {
-  return listings.find(
-    (listing) =>
-      listing.id === listingId &&
-      listing.sellerId === sellerId &&
-      listing.status !== "archived",
-  );
+export function buildUpdatedListing(input: ListingCreateInput, existingListing: Listing, existingListings: { id: string; slug: string }[]) {
+  const nextStatus = existingListing.status === "draft" || existingListing.status === "pending" ? existingListing.status : "pending";
+  return buildListingRecord(input, existingListing.sellerId, existingListings, { existingListing, status: nextStatus });
 }
 
 export async function findEditableListingById(listingId: string, sellerId: string) {
-  const dbListings = await getDatabaseListings({
-    listingId,
-    sellerId,
-    statuses: ["draft", "pending", "approved", "rejected"],
-  });
-
-  if (dbListings && dbListings.length > 0) {
-    return dbListings[0];
-  }
-
+  const dbListings = await getDatabaseListings({ listingId, sellerId, statuses: ["draft", "pending", "approved", "rejected"] });
+  if (dbListings?.length) return dbListings[0];
   const cookieListings = await getLegacyStoredListings();
-  return getEditableListingById(cookieListings, listingId, sellerId) ?? null;
+  return cookieListings.find(l => l.id === listingId && l.sellerId === sellerId && (l.status === "draft" || l.status === "pending")) ?? null;
 }
 
-export async function findArchivableListingById(listingId: string, sellerId: string) {
-  const dbListings = await getDatabaseListings({
-    listingId,
-    sellerId,
-  });
-
-  if (dbListings && dbListings.length > 0) {
-    const listing = dbListings[0];
-    if (listing.status !== "archived") {
-      return listing;
-    }
-    return null;
-  }
-
-  const cookieListings = await getLegacyStoredListings();
-  return getArchivableListingById(cookieListings, listingId, sellerId) ?? null;
+export async function getStoredUserListings(sellerId: string) {
+  const databaseListings = await getDatabaseListings({ sellerId });
+  return (databaseListings ?? []).sort((left, right) => Date.parse(right.createdAt) - Date.parse(left.createdAt));
 }
 
-
-export async function getStoredListings() {
-  const databaseListings = await getDatabaseListings();
-  return (databaseListings ?? []).sort(
-    (left, right) => Date.parse(right.updatedAt) - Date.parse(left.updatedAt),
-  );
-}
-
-/**
- * Lightweight slug-only fetch for collision detection.
- * Avoids loading full listing data when only slugs are needed.
- */
 export async function getExistingListingSlugs(): Promise<{ id: string; slug: string }[]> {
   if (!hasSupabaseAdminEnv()) return [];
   const admin = createSupabaseAdminClient();
   const { data } = await admin.from("listings").select("id, slug").neq("status", "archived");
   return (data ?? []) as { id: string; slug: string }[];
-}
-
-export async function getStoredUserListings(sellerId: string) {
-  const databaseListings = await getDatabaseListings({ sellerId });
-  return (databaseListings ?? []).sort(
-    (left, right) => Date.parse(right.createdAt) - Date.parse(left.createdAt),
-  );
 }
 
 export async function getStoredListingBySlug(slug: string) {
@@ -1235,10 +208,7 @@ export async function getStoredListingById(listingId: string) {
 }
 
 export async function getStoredListingsByIds(ids: string[]) {
-  if (ids.length === 0) {
-    return [];
-  }
-
+  if (ids.length === 0) return [];
   const databaseListings = await getDatabaseListings({ ids });
   return databaseListings ?? [];
 }
@@ -1249,15 +219,13 @@ export async function getLegacyStoredUserListings(sellerId: string) {
 }
 
 export async function upsertDatabaseListingRecord(listing: Listing) {
-  if (!hasSupabaseAdminEnv()) {
-    return null;
-  }
-
+  if (!hasSupabaseAdminEnv()) return null;
   const updatedListing = await updateDatabaseListing(listing);
-
-  if (updatedListing) {
-    return updatedListing;
-  }
-
-  return createDatabaseListing(listing);
+  if (updatedListing.listing) return updatedListing.listing; // Corrected to return listing directly for compatibility
+  
+  const created = await createDatabaseListing(listing);
+  return created.listing ?? null;
 }
+
+// Export persistence functions for direct use if needed
+export { createDatabaseListing, updateDatabaseListing, mapListingToDatabaseRow, mapListingImagesToDatabaseRows };
