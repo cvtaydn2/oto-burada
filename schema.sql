@@ -570,7 +570,65 @@ with check ((select public.is_admin()));
 -- 3. Optionally create an `avatars` bucket for profile images.
 -- 4. Enforce JPG/PNG/WebP/PDF validation from the application layer and serve documents via signed URLs.
 
--- ── B-09: Full-Text Search ──────────────────────────────────────────────
+-- ── Rate Limiting RPC ──────────────────────────────────────────────────
+-- Supabase-tier fallback for distributed rate limiting.
+-- Called by src/lib/utils/rate-limit.ts when Redis is unavailable.
+-- Uses a simple counter table with TTL-based expiry.
+
+create table if not exists public.api_rate_limits (
+  key text not null,
+  count integer not null default 1,
+  reset_at timestamptz not null,
+  primary key (key)
+);
+
+alter table public.api_rate_limits enable row level security;
+
+-- Only service role (admin client) can read/write rate limit records
+create policy "api_rate_limits_service_only"
+  on public.api_rate_limits
+  for all
+  using ((select public.is_admin()))
+  with check ((select public.is_admin()));
+
+create or replace function public.check_api_rate_limit(
+  p_key text,
+  p_limit integer,
+  p_window_ms bigint
+)
+returns jsonb
+language plpgsql
+security definer
+set search_path = 'public'
+as $$
+declare
+  v_now timestamptz := now();
+  v_reset_at timestamptz := v_now + (p_window_ms || ' milliseconds')::interval;
+  v_count integer;
+  v_existing_reset_at timestamptz;
+begin
+  -- Upsert: increment counter if window is still active, else reset
+  insert into public.api_rate_limits (key, count, reset_at)
+  values (p_key, 1, v_reset_at)
+  on conflict (key) do update
+    set count = case
+          when api_rate_limits.reset_at > v_now then api_rate_limits.count + 1
+          else 1
+        end,
+        reset_at = case
+          when api_rate_limits.reset_at > v_now then api_rate_limits.reset_at
+          else v_reset_at
+        end
+  returning count, reset_at into v_count, v_existing_reset_at;
+
+  return jsonb_build_object(
+    'allowed',    v_count <= p_limit,
+    'limit',      p_limit,
+    'remaining',  greatest(0, p_limit - v_count),
+    'resetAt',    extract(epoch from v_existing_reset_at) * 1000
+  );
+end;
+$$;
 -- Generated tsvector column for fast text search across listing fields.
 
 alter table public.listings add column if not exists
@@ -594,6 +652,31 @@ create index if not exists listings_city_idx on public.listings (city);
 create index if not exists listings_price_idx on public.listings (price);
 create index if not exists listings_year_idx on public.listings (year);
 create index if not exists listings_mileage_idx on public.listings (mileage);
+
+-- Indexes for cron jobs and doping expiry queries
+create index if not exists listings_published_at_idx
+  on public.listings (published_at)
+  where published_at is not null;
+
+create index if not exists listings_bumped_at_idx
+  on public.listings (bumped_at desc nulls last)
+  where bumped_at is not null;
+
+create index if not exists listings_featured_until_idx
+  on public.listings (featured_until)
+  where featured_until is not null;
+
+create index if not exists listings_urgent_until_idx
+  on public.listings (urgent_until)
+  where urgent_until is not null;
+
+create index if not exists listings_highlighted_until_idx
+  on public.listings (highlighted_until)
+  where highlighted_until is not null;
+
+create index if not exists listings_fraud_score_idx
+  on public.listings (fraud_score)
+  where fraud_score > 0;
 
 -- ── B-08: Listing View Counter ──────────────────────────────────────────
 

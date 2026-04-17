@@ -79,16 +79,21 @@ async function handleCronRequest(request: Request) {
     return apiSuccess({ processed: 0, notified: 0 }, "Bildirim gönderilecek kayıtlı arama yok.");
   }
 
-  // 2. Get unique user IDs to fetch their emails in one query
+  // 2. Get unique user IDs to fetch their emails — paginate to handle >1000 users
   const userIds = [...new Set(savedSearches.map((s) => s.user_id))];
-  const { data: users } = await admin.auth.admin.listUsers();
   const userEmailMap = new Map<string, { email: string; name: string }>();
-
-  for (const user of users?.users ?? []) {
-    if (userIds.includes(user.id)) {
-      const name = (user.user_metadata as { full_name?: string })?.full_name ?? "Kullanıcı";
-      userEmailMap.set(user.id, { email: user.email ?? "", name });
+  let authPage = 1;
+  while (true) {
+    const { data: authData } = await admin.auth.admin.listUsers({ page: authPage, perPage: 1000 });
+    const users = authData?.users ?? [];
+    for (const user of users) {
+      if (userIds.includes(user.id)) {
+        const name = (user.user_metadata as { full_name?: string })?.full_name ?? "Kullanıcı";
+        userEmailMap.set(user.id, { email: user.email ?? "", name });
+      }
     }
+    if (users.length < 1000 || userEmailMap.size >= userIds.length) break;
+    authPage++;
   }
 
   let notifiedCount = 0;

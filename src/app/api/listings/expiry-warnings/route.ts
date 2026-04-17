@@ -78,19 +78,26 @@ async function handleCronRequest(request: Request) {
     return apiSuccess({ warned: 0 }, "Uyarı gönderilecek ilan yok.");
   }
 
-  // Get unique seller IDs
+  // Get unique seller IDs to fetch their emails in one query
   const sellerIds = [...new Set(expiringListings.map((l) => l.seller_id as string))];
-  const { data: authUsers } = await admin.auth.admin.listUsers();
 
+  // Paginate listUsers — Supabase Auth caps at 1000 per page
   const userMap = new Map<string, { email: string; name: string }>();
-  for (const user of authUsers?.users ?? []) {
-    if (sellerIds.includes(user.id)) {
-      userMap.set(user.id, {
-        email: user.email ?? "",
-        name:
-          (user.user_metadata as { full_name?: string } | undefined)?.full_name ?? "Satıcı",
-      });
+  let authPage = 1;
+  while (true) {
+    const { data: authData } = await admin.auth.admin.listUsers({ page: authPage, perPage: 1000 });
+    const users = authData?.users ?? [];
+    for (const user of users) {
+      if (sellerIds.includes(user.id)) {
+        userMap.set(user.id, {
+          email: user.email ?? "",
+          name: (user.user_metadata as { full_name?: string } | undefined)?.full_name ?? "Satıcı",
+        });
+      }
     }
+    // Stop when we've found all sellers or there are no more pages
+    if (users.length < 1000 || userMap.size >= sellerIds.length) break;
+    authPage++;
   }
 
   const { Resend } = await import("resend");

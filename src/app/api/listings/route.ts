@@ -20,6 +20,13 @@ import { parseListingFiltersFromSearchParams } from "@/services/listings/listing
 import { getFilteredMarketplaceListings } from "@/services/listings/marketplace-listings";
 
 export async function GET(request: Request) {
+  // Rate limit public search — 120 requests per minute per IP
+  const ipRateLimit = await enforceRateLimit(
+    getRateLimitKey(request, "api:listings:search"),
+    { limit: 120, windowMs: 60 * 1000 },
+  );
+  if (ipRateLimit) return ipRateLimit.response;
+
   const { searchParams } = new URL(request.url);
   
   // Convert URLSearchParams to a key-value object
