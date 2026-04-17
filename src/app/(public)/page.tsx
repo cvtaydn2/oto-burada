@@ -4,7 +4,7 @@ import Link from "next/link";
 
 import { HomeHero } from "@/components/layout/home-hero";
 import { CarCard } from "@/components/modules/listings/car-card";
-import { buildListingsMetadata, getAppUrl } from "@/lib/seo";
+import { getAppUrl } from "@/lib/seo";
 import { getPublicMarketplaceListings } from "@/services/listings/marketplace-listings";
 import { WebSiteStructuredData, OrganizationStructuredData } from "@/components/seo/structured-data";
 import { getLiveMarketplaceReferenceData } from "@/services/reference/live-reference-data";
@@ -12,7 +12,20 @@ import { getLiveMarketplaceReferenceData } from "@/services/reference/live-refer
 export const revalidate = 60;
 
 export async function generateMetadata(): Promise<Metadata> {
-  return buildListingsMetadata({ sort: "newest" });
+  return {
+    title: "Arabanı Kolayca Sat. Doğru Arabayı Hızlıca Bul.",
+    description: "Türkiye'nin en güvenilir ikinci el otomobil pazarı. Ücretsiz ilan ver, binlerce araç arasından hayalindekini bul.",
+    alternates: {
+      canonical: getAppUrl(),
+    },
+    openGraph: {
+      title: "OtoBurada — Arabanı Kolayca Sat",
+      description: "Türkiye'nin en güvenilir ikinci el otomobil pazarı. Ücretsiz ilan ver, binlerce araç arasından hayalindekini bul.",
+      type: "website",
+      url: getAppUrl(),
+      siteName: "OtoBurada",
+    },
+  };
 }
 
 export default async function HomePage() {

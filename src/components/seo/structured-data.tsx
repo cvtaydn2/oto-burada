@@ -14,25 +14,39 @@ export function ListingStructuredData({ listings, url }: ListingStructuredDataPr
     "url": url,
     "numberOfItems": listings.length,
     "itemListElement": listings.slice(0, 10).map((listing, index) => ({
-      "@type": "Offer",
+      "@type": "ListItem",
       "position": index + 1,
-      "name": `${listing.brand} ${listing.model} - ${listing.title}`,
-      "description": `${listing.year} model, ${listing.mileage.toLocaleString()} km, ${listing.fuelType}, ${listing.transmission}`,
-      "price": listing.price,
-      "priceCurrency": "TRY",
-      "availability": "https://schema.org/InStock",
-      "url": `${url}/listing/${listing.slug}`,
-      "image": listing.images[0]?.url,
-      "seller": {
-        "@type": "Organization",
-        "name": "OtoBurada"
+      "item": {
+        "@type": "Car",
+        "name": listing.title,
+        "description": `${listing.year} model, ${listing.mileage.toLocaleString("tr-TR")} km, ${listing.fuelType}, ${listing.transmission}`,
+        "brand": { "@type": "Brand", "name": listing.brand },
+        "model": listing.model,
+        "modelDate": listing.year.toString(),
+        "mileageFromOdometer": {
+          "@type": "QuantitativeValue",
+          "value": listing.mileage,
+          "unitCode": "KMT",
+        },
+        "image": listing.images[0]?.url,
+        "url": `${url}/listing/${listing.slug}`,
+        "offers": {
+          "@type": "Offer",
+          "price": listing.price,
+          "priceCurrency": "TRY",
+          "availability": "https://schema.org/InStock",
+          "url": `${url}/listing/${listing.slug}`,
+        },
+        "availableAtOrFrom": {
+          "@type": "Place",
+          "address": {
+            "@type": "PostalAddress",
+            "addressLocality": listing.city,
+            "addressCountry": "TR",
+          },
+        },
       },
-      "address": {
-        "@type": "PostalAddress",
-        "addressLocality": listing.city,
-        "addressCountry": "TR"
-      }
-    }))
+    })),
   };
 
   return (
@@ -112,36 +126,77 @@ interface ListingDetailStructuredDataProps {
 }
 
 export function ListingDetailStructuredData({ listing, url, sellerName }: ListingDetailStructuredDataProps) {
+  const coverImage = listing.images.find(img => img.isCover) ?? listing.images[0];
+  const allImageUrls = listing.images.map(img => img.url).filter(Boolean);
+
+  // Map Turkish fuel types to schema.org values
+  const fuelTypeMap: Record<string, string> = {
+    benzin: "Gasoline",
+    dizel: "Diesel",
+    lpg: "LPG",
+    hibrit: "Hybrid",
+    elektrik: "Electric",
+  };
+
+  // Map Turkish transmission types to schema.org values
+  const transmissionMap: Record<string, string> = {
+    manuel: "ManualTransmission",
+    otomatik: "AutomaticTransmission",
+    yari_otomatik: "SemiAutomaticTransmission",
+  };
+
   const schema = {
     "@context": "https://schema.org",
-    "@type": "Vehicle",
-    "name": `${listing.brand} ${listing.model}`,
+    "@type": "Car",
+    "name": listing.title,
     "description": listing.description,
+    "url": url,
     "brand": {
       "@type": "Brand",
-      "name": listing.brand
+      "name": listing.brand,
     },
     "model": listing.model,
+    ...(listing.carTrim ? { "vehicleModelDate": listing.carTrim } : {}),
+    "modelDate": listing.year.toString(),
     "productionDate": listing.year.toString(),
+    "vehicleModelDate": listing.year.toString(),
     "mileageFromOdometer": {
       "@type": "QuantitativeValue",
       "value": listing.mileage,
-      "unitCode": "KM"
+      "unitCode": "KMT",
+      "unitText": "km",
     },
-    "fuelType": listing.fuelType,
-    "vehicleTransmission": listing.transmission,
+    "fuelType": fuelTypeMap[listing.fuelType] ?? listing.fuelType,
+    "vehicleTransmission": transmissionMap[listing.transmission] ?? listing.transmission,
+    ...(listing.vin ? { "vehicleIdentificationNumber": listing.vin } : {}),
+    "itemCondition": "https://schema.org/UsedCondition",
+    "image": allImageUrls.length > 0 ? allImageUrls : undefined,
+    "thumbnail": coverImage?.url,
     "offers": {
       "@type": "Offer",
       "price": listing.price,
       "priceCurrency": "TRY",
       "availability": "https://schema.org/InStock",
       "url": url,
+      "priceValidUntil": new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split("T")[0],
       "seller": {
-        "@type": "Person",
-        "name": sellerName ?? "Satıcı"
-      }
+        "@type": sellerName ? "Person" : "Organization",
+        "name": sellerName ?? "OtoBurada",
+      },
     },
-    "image": listing.images.map(img => img.url)
+    "seller": {
+      "@type": sellerName ? "Person" : "Organization",
+      "name": sellerName ?? "OtoBurada",
+    },
+    "availableAtOrFrom": {
+      "@type": "Place",
+      "address": {
+        "@type": "PostalAddress",
+        "addressLocality": listing.city,
+        "addressRegion": listing.district,
+        "addressCountry": "TR",
+      },
+    },
   };
 
   return (

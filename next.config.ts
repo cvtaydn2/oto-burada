@@ -33,6 +33,8 @@ const nextConfig: NextConfig = {
   },
   experimental: {
     optimizePackageImports: ["lucide-react", "date-fns"],
+    // Restore scroll position on back/forward navigation
+    scrollRestoration: true,
   },
   compress: true,
   poweredByHeader: false,

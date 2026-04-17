@@ -89,7 +89,14 @@ export function buildListingDetailMetadata(listing: Listing): Metadata {
     },
     openGraph: {
       description,
-      images: [buildAbsoluteUrl(`/api/og/listing?slug=${listing.slug}`)],
+      images: [
+        {
+          url: buildAbsoluteUrl(`/api/og/listing?slug=${listing.slug}`),
+          width: 1200,
+          height: 630,
+          alt: sanitizeForMeta(`${listing.brand} ${listing.model} ${listing.year} - ${listing.city}`),
+        },
+      ],
       title: `${title} | Oto Burada`,
       type: "article",
       url: buildAbsoluteUrl(`/listing/${listing.slug}`),

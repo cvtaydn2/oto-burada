@@ -6,12 +6,16 @@ import { hasSupabaseAdminEnv } from "@/lib/supabase/env";
 
 export const revalidate = 3600; // Re-generate every hour
 
+// Fixed date for truly static pages — avoids unnecessary cache invalidation
+// on every render. Update manually when page content changes significantly.
+const STATIC_PAGE_DATE = new Date("2026-01-01");
+
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const baseUrl = getAppUrl();
 
   const staticPages: MetadataRoute.Sitemap = [
-    { url: baseUrl, lastModified: new Date(), changeFrequency: "daily", priority: 1.0 },
-    { url: `${baseUrl}/listings`, lastModified: new Date(), changeFrequency: "hourly", priority: 0.9 },
+    { url: baseUrl, lastModified: STATIC_PAGE_DATE, changeFrequency: "daily", priority: 1.0 },
+    { url: `${baseUrl}/listings`, lastModified: STATIC_PAGE_DATE, changeFrequency: "hourly", priority: 0.9 },
     { url: `${baseUrl}/login`, changeFrequency: "monthly", priority: 0.3 },
     { url: `${baseUrl}/register`, changeFrequency: "monthly", priority: 0.3 },
   ];
