@@ -37,6 +37,8 @@ const statusLabelMap: Record<Listing["status"], string> = {
   archived: "Arşivde",
   draft: "Taslak",
   pending: "İnceleniyor",
+  pending_ai_review: "Yapay Zeka İncelemesinde",
+  flagged: "Şüpheli",
   rejected: "Reddedildi",
 };
 
@@ -45,6 +47,8 @@ const statusClassMap: Record<Listing["status"], string> = {
   archived: "bg-muted text-muted-foreground border-border",
   draft: "bg-amber-50 text-amber-600 border-amber-100",
   pending: "bg-blue-50 text-blue-600 border-blue-100",
+  pending_ai_review: "bg-indigo-50 text-indigo-600 border-indigo-100",
+  flagged: "bg-rose-50 text-rose-600 border-rose-100",
   rejected: "bg-red-50 text-red-600 border-red-100",
 };
 

@@ -48,6 +48,10 @@ export interface Profile {
   eidsId?: string | null;
   isBanned?: boolean;
   
+  // Custom Trust Algorithm fields
+  trustScore?: number;
+  isWalletVerified?: boolean;
+  
   // Corporate Fields
   businessName?: string | null;
   businessAddress?: string | null;

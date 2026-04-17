@@ -42,8 +42,15 @@ export function AdminListingsModeration({ pendingListings }: AdminListingsModera
   const [editingListingId, setEditingListingId] = useState<string | null>(null);
   const [editValues, setEditValues] = useState<{ title: string; price: number; description: string } | null>(null);
   const [isSavingEdit, setIsSavingEdit] = useState(false);
-  const allPendingListingIds = pendingListings.map((listing) => listing.id);
-  const allSelected = pendingListings.length > 0 && selectedListingIds.length === pendingListings.length;
+  
+  const [activeTab, setActiveTab] = useState<"all" | "ai_flagged">("all");
+
+  const filteredListings = activeTab === "ai_flagged" 
+    ? pendingListings.filter(l => l.status === "flagged" || l.status === "pending_ai_review" || (l.fraudScore ?? 0) > 0)
+    : pendingListings;
+
+  const allPendingListingIds = filteredListings.map((listing) => listing.id);
+  const allSelected = filteredListings.length > 0 && selectedListingIds.length === filteredListings.length;
 
   if (pendingListings.length === 0) {
     return (
@@ -235,6 +242,33 @@ export function AdminListingsModeration({ pendingListings }: AdminListingsModera
           {pendingListings.length} ilan bekliyor
         </div>
       </div>
+      
+      {/* Tabs */}
+      <div className="mt-6 flex border-b border-border">
+        <button
+          type="button"
+          onClick={() => { setActiveTab("all"); setSelectedListingIds([]); }}
+          className={`px-4 py-3 text-sm font-semibold border-b-2 transition-colors ${
+            activeTab === "all" 
+              ? "border-primary text-primary" 
+              : "border-transparent text-muted-foreground hover:text-foreground"
+          }`}
+        >
+          Tümü ({pendingListings.length})
+        </button>
+        <button
+          type="button"
+          onClick={() => { setActiveTab("ai_flagged"); setSelectedListingIds([]); }}
+          className={`flex items-center gap-2 px-4 py-3 text-sm font-semibold border-b-2 transition-colors ${
+            activeTab === "ai_flagged" 
+              ? "border-rose-500 text-rose-500" 
+              : "border-transparent text-muted-foreground hover:text-rose-500"
+          }`}
+        >
+          <TriangleAlert className="size-4" />
+          AI Tarafından Kırmızı İşaretlenenler ({pendingListings.filter(l => l.status === "flagged" || l.status === "pending_ai_review" || (l.fraudScore ?? 0) > 0).length})
+        </button>
+      </div>
 
       {errorMessage && (
         <div className="mt-5 rounded-2xl border border-red-200 bg-red-50 p-4 text-sm font-medium text-red-700">
@@ -351,7 +385,13 @@ export function AdminListingsModeration({ pendingListings }: AdminListingsModera
           </div>
         </div>
 
-        {pendingListings.map((listing) => {
+        {filteredListings.length === 0 && (
+          <div className="py-12 text-center">
+            <h3 className="text-lg font-medium text-foreground">Bu sekmede ilan bulunmuyor</h3>
+          </div>
+        )}
+
+        {filteredListings.map((listing) => {
           const approving = activeAction === `${listing.id}:approve`;
           const rejecting = activeAction === `${listing.id}:reject`;
           const actionBusy = approving || rejecting;

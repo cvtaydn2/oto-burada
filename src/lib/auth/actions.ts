@@ -197,8 +197,12 @@ export async function forgotPasswordAction(
     return { error: "Servis şu anda kullanılamıyor." };
   }
 
-  const { sendPasswordResetEmail } = await import("@/services/verification/email-otp");
-  await sendPasswordResetEmail(email);
+  const supabase = await createSupabaseServerClient();
+  const getAppUrl = (await import("@/lib/seo")).getAppUrl;
+
+  await supabase.auth.resetPasswordForEmail(email, {
+    redirectTo: `${getAppUrl()}/auth/update-password`,
+  });
 
   // Güvenlik: hesap var/yok bilgisi verme — her zaman başarı mesajı göster
   return {

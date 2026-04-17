@@ -11,6 +11,37 @@ import { CarCard } from "@/components/modules/listings/car-card"
 import { ListingsGridSkeleton } from "@/components/listings/listings-grid-skeleton"
 import { cn, formatTL } from "@/lib/utils"
 import { createSearchParamsFromListingFilters } from "@/services/listings/listing-filters"
+import { useInfiniteQuery } from "@tanstack/react-query"
+
+function useIntersectionObserver({
+  onIntersect,
+  enabled = true,
+}: {
+  onIntersect: () => void
+  enabled?: boolean
+}) {
+  const ref = useRef<HTMLDivElement | null>(null)
+
+  useEffect(() => {
+    if (!enabled || !ref.current) return
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            onIntersect()
+          }
+        })
+      },
+      { rootMargin: "200px" } // trigger earlier
+    )
+
+    observer.observe(ref.current)
+    return () => observer.disconnect()
+  }, [onIntersect, enabled])
+
+  return ref
+}
 
 const SmartFilters = dynamic(
   () => import("@/components/modules/listings/smart-filters").then((mod) => mod.SmartFilters),
@@ -71,6 +102,39 @@ export function ListingsPageClient({
   useEffect(() => {
     setFilters(initialFilters)
   }, [initialFilters])
+
+  // INFINITE RUNTIME
+  const queryKey = ["listings", initialFilters]
+
+  const fetchListings = async ({ pageParam }: { pageParam: number }) => {
+    const params = createSearchParamsFromListingFilters({ ...initialFilters, page: pageParam })
+    const res = await fetch(`/api/listings?${params.toString()}`)
+    if (!res.ok) throw new Error("İlanlar yüklenirken hata oluştu.")
+    const json = await res.json()
+    return json.data as typeof initialResult
+  }
+
+  const {
+    data,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+  } = useInfiniteQuery({
+    queryKey,
+    queryFn: fetchListings,
+    initialPageParam: 1,
+    getNextPageParam: (lastPage) => lastPage.hasMore ? lastPage.page + 1 : undefined,
+    initialData: {
+      pages: [initialResult],
+      pageParams: [1]
+    }
+  })
+
+  // Set up the intersection observer to fetch the next page
+  const loadMoreRef = useIntersectionObserver({
+    onIntersect: fetchNextPage,
+    enabled: hasNextPage && !isFetchingNextPage,
+  })
 
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid")
   const [isSortOpen, setIsSortOpen] = useState(false)
@@ -152,16 +216,6 @@ export function ListingsPageClient({
     })
   }, [filters.limit, initialResult.limit, router, startTransition])
 
-  const handlePageChange = useCallback((page: number) => {
-    if (debounceTimerRef.current) clearTimeout(debounceTimerRef.current)
-    const nextFilters = { ...filters, page }
-    setFilters(nextFilters)
-    const params = createSearchParamsFromListingFilters(nextFilters)
-    startTransition(() => {
-      router.push(`/listings?${params.toString()}`, { scroll: false })
-    })
-  }, [filters, router, startTransition])
-
   // Cleanup debounce on unmount
   useEffect(() => {
     return () => {
@@ -170,12 +224,7 @@ export function ListingsPageClient({
   }, [])
 
   const currentSortLabel = SORT_OPTIONS.find(o => o.value === (filters.sort ?? "newest"))?.label || "En Yeni"
-  const currentPage = initialResult.page
-  const totalPages = Math.max(1, Math.ceil(initialResult.total / initialResult.limit))
-  const canGoPrev = currentPage > 1
-  const canGoNext = currentPage < totalPages
-  const startIndex = initialResult.total === 0 ? 0 : (currentPage - 1) * initialResult.limit + 1
-  const endIndex = Math.min(currentPage * initialResult.limit, initialResult.total)
+  const allListings = data?.pages.flatMap(p => p.listings) ?? initialResult.listings
 
   return (
     <div className="mx-auto max-w-[1440px] px-5 py-8 lg:px-6 lg:py-8">
@@ -463,7 +512,7 @@ export function ListingsPageClient({
             <div className="space-y-6">
               <div className="flex flex-col gap-3 rounded-xl border border-border bg-card p-4 sm:flex-row sm:items-center sm:justify-between">
                 <p className="text-sm font-medium text-muted-foreground">
-                  <span className="font-bold text-foreground">{startIndex}-{endIndex}</span> arası gösteriliyor, toplam <span className="font-bold text-foreground">{initialResult.total}</span> ilan
+                  Toplam <span className="font-bold text-foreground">{initialResult.total}</span> ilandan <span className="font-bold text-foreground">{allListings.length}</span> ilan gösteriliyor
                 </p>
                 <div className="flex items-center gap-2 sm:hidden">
                   <span className="text-xs font-semibold text-muted-foreground">Göster</span>
@@ -484,9 +533,9 @@ export function ListingsPageClient({
                   ? "grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3"
                   : "flex flex-col gap-3"
               )}>
-                {initialResult.listings.map((listing, index) => (
+                {allListings.map((listing, index) => (
                   <CarCard
-                    key={listing.id}
+                    key={`${listing.id}-${index}`} /* In case of duplicates during optimistic updates */
                     listing={listing}
                     priority={viewMode === "grid" ? index < 4 : index < 2}
                     variant={viewMode}
@@ -494,45 +543,23 @@ export function ListingsPageClient({
                 ))}
               </div>
 
-              {/* Pagination */}
-              <div className="flex flex-col gap-4 rounded-xl border border-border bg-card p-4 sm:flex-row sm:items-center sm:justify-between">
-                <div className="text-sm text-muted-foreground">
-                  Sayfa <span className="font-bold text-foreground">{currentPage}</span> / {totalPages}
-                </div>
-                <div className="flex items-center gap-2">
-                  <button
-                    onClick={() => handlePageChange(currentPage - 1)}
-                    disabled={!canGoPrev}
-                    className="inline-flex h-10 items-center justify-center rounded-lg border border-border px-4 text-sm font-bold text-muted-foreground transition hover:bg-muted/30 disabled:cursor-not-allowed disabled:opacity-50"
+              {/* Infinite Scroll trigger */}
+              <div ref={loadMoreRef} className="py-6 flex justify-center">
+                {isFetchingNextPage ? (
+                  <div className="flex flex-col items-center gap-2">
+                    <div className="size-6 animate-spin rounded-full border-2 border-primary border-t-transparent"></div>
+                    <span className="text-sm font-medium text-muted-foreground">Daha fazla yükleniyor...</span>
+                  </div>
+                ) : hasNextPage ? (
+                  <button 
+                    onClick={() => fetchNextPage()} 
+                    className="h-10 rounded-lg border border-border bg-card px-6 text-sm font-medium hover:bg-muted"
                   >
-                    Önceki
+                    Daha Fazla Göster
                   </button>
-                  {buildPageItems(currentPage, totalPages).map((item, index) =>
-                    item === "ellipsis" ? (
-                      <span key={`ellipsis-${index}`} className="px-2 text-muted-foreground/70">…</span>
-                    ) : (
-                      <button
-                        key={item}
-                        onClick={() => handlePageChange(item)}
-                        className={cn(
-                          "inline-flex h-10 min-w-10 items-center justify-center rounded-lg border px-3 text-sm font-bold transition",
-                          item === currentPage
-                            ? "border-blue-500 bg-blue-500 text-white"
-                            : "border-border bg-card text-muted-foreground hover:bg-muted/30"
-                        )}
-                      >
-                        {item}
-                      </button>
-                    )
-                  )}
-                  <button
-                    onClick={() => handlePageChange(currentPage + 1)}
-                    disabled={!canGoNext}
-                    className="inline-flex h-10 items-center justify-center rounded-lg border border-border px-4 text-sm font-bold text-muted-foreground transition hover:bg-muted/30 disabled:cursor-not-allowed disabled:opacity-50"
-                  >
-                    Sonraki
-                  </button>
-                </div>
+                ) : allListings.length > 0 ? (
+                  <p className="text-sm font-medium text-muted-foreground/70">Mevcut tüm ilanları görüntülediniz.</p>
+                ) : null}
               </div>
             </div>
           ) : (
@@ -556,18 +583,6 @@ export function ListingsPageClient({
       </div>
     </div>
   )
-}
-
-function buildPageItems(currentPage: number, totalPages: number): Array<number | "ellipsis"> {  if (totalPages <= 7) {
-    return Array.from({ length: totalPages }, (_, index) => index + 1)
-  }
-  if (currentPage <= 3) {
-    return [1, 2, 3, 4, "ellipsis", totalPages]
-  }
-  if (currentPage >= totalPages - 2) {
-    return [1, "ellipsis", totalPages - 3, totalPages - 2, totalPages - 1, totalPages]
-  }
-  return [1, "ellipsis", currentPage - 1, currentPage, currentPage + 1, "ellipsis", totalPages]
 }
 
 function ChevronIcon({ className }: { className?: string }) {

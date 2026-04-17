@@ -6,8 +6,36 @@ interface SellerTrustSummary {
   signals: string[];
 }
 
-function roundToSingleDecimal(value: number) {
-  return Math.round(value * 10) / 10;
+export function calculateTrustScore(seller: Partial<Profile> | null): number {
+  if (!seller) return 0;
+  
+  let score = 0;
+  
+  // Rule 1: E-posta doğrulandıysa +20 puan
+  if (seller.emailVerified) {
+    score += 20;
+  }
+  
+  // Rule 2: Profil fotoğrafı eklendiyse +10 puan
+  if (seller.avatarUrl && seller.avatarUrl.trim().length > 0) {
+    score += 10;
+  }
+  
+  // Rule 3: Cüzdan doğrulaması (İyzico) yapıldıysa +50 puan
+  if (seller.isWalletVerified) {
+    score += 50;
+  }
+  
+  // Ekstra ufak güvenlik/gerçeklik sinyalleri (Opsiyonel ama iyi olur)
+  if (seller.phoneVerified) {
+    score += 10; // Bonus
+  }
+  
+  if (seller.identityVerified) {
+    score += 10; // TC verification (Varsayılan olarak kalabilir)
+  }
+  
+  return Math.min(score, 100);
 }
 
 export function getSellerTrustSummary(
@@ -23,68 +51,37 @@ export function getSellerTrustSummary(
   }
 
   const signals: string[] = [];
-  let score = 4.5;
+  
+  // Eğer veritabanından çekilen bir trustScore varsa o kullanılabilir,
+  // Yoksa runtime üzerinden güncel hesaplama yapılır.
+  const score = seller.trustScore !== undefined && seller.trustScore > 0 
+    ? seller.trustScore 
+    : calculateTrustScore(seller);
 
-  if (seller.fullName.trim().length > 0) {
-    signals.push("Profil adı mevcut");
-    score += 1.2;
-  }
-
-  if (seller.identityVerified) {
-    signals.push("Kimlik doğrulandı");
-    score += 2;
-  }
-
-  // Email doğrulama — SMS OTP kaldırıldı, email OTP kullanılıyor
   if (seller.emailVerified) {
-    signals.push("E-posta doğrulandı");
-    score += 1.8;
+    signals.push("E-posta onayı (Güven Puanı +20)");
   }
 
-  if (seller.phoneVerified) {
-    signals.push("Telefon doğrulandı");
-    score += 1.6;
+  if (seller.avatarUrl && seller.avatarUrl.trim().length > 0) {
+    signals.push("Profil fotoğrafı (Güven Puanı +10)");
   }
 
-  if (seller.phone && seller.phone.trim().length > 0) {
-    signals.push("Telefon bilgisi mevcut");
-    score += 1.1;
+  if (seller.isWalletVerified) {
+    signals.push("İyzico Cüzdan Doğrulaması (Güven Puanı +50)");
   }
 
-  if (seller.city.trim().length > 0) {
-    signals.push("Şehir bilgisi mevcut");
-    score += 0.8;
-  }
+  let badgeLabel = "Standart Üye";
+  if (score >= 80) badgeLabel = "Premium Doğrulanmış Satıcı";
+  else if (score >= 50) badgeLabel = "Güvenilir Satıcı";
+  else if (score >= 20) badgeLabel = "Onaylı E-posta";
 
   if (activeListingCount > 0) {
     signals.push(`${activeListingCount} aktif ilan`);
-    score += Math.min(activeListingCount, 3) * 0.6;
-  }
-
-  const membershipStart = new Date(seller.createdAt);
-  if (!Number.isNaN(membershipStart.getTime())) {
-    const yearsAsMember = Math.max(
-      0,
-      new Date().getFullYear() - membershipStart.getFullYear(),
-    );
-    signals.push(`${membershipStart.getFullYear()} den beri üye`);
-    score += Math.min(yearsAsMember, 4) * 0.35;
   }
 
   return {
-    badgeLabel:
-      seller.identityVerified
-        ? "Kimliği doğrulanmış satıcı"
-        : seller.emailVerified && seller.phoneVerified
-          ? "İletişim bilgileri doğrulanmış"
-          : seller.emailVerified
-            ? "E-posta doğrulanmış satıcı"
-            : seller.phoneVerified
-              ? "Telefon doğrulanmış satıcı"
-              : seller.phone && seller.phone.trim().length > 0
-                ? "Profil bilgileri mevcut"
-                : "Profil bilgileri eksik",
-    score: roundToSingleDecimal(Math.min(score, 9.9)),
+    badgeLabel,
+    score, // Score artık 0-100 arasında
     signals: signals.slice(0, 4),
   };
 }

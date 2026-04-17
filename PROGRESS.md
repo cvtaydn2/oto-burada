@@ -1,5 +1,36 @@
 # PROGRESS.md
 
+## AI Moderation & Infinite Scroll Integration (2026-04-17)
+
+### Yapılan Değişiklikler
+
+**Yapay Zeka Destekli Moderasyon (AnomalyDetector)**
+- `src/services/listings/listing-submissions.ts` içerisindeki `calculateFraudScore` fonksiyonu pazar fiyat ortalamaları (price anomalies) ve kilometre anomalilerini analiz eden yapay zeka mantığıyla donatıldı.
+- İlanlar artık oluşturulduğunda varsayılan olarak `pending_ai_review` durumuna atanıyor.
+- Anomali tespit edildiğinde ilan otomatik olarak `flagged` şeklinde işaretleniyor. (Örn: %30 altı uygun fiyat, %50 üstü pahalı fiyat)
+- Eski model yılına sahip mantıksız seviyede düşük kilometreler `mileage_anomaly` olarak yakalanıyor.
+
+**Admin Moderasyon Panel İyileştirmeleri**
+- `src/components/admin/admin-listings-moderation.tsx` içerisine AI tarafından kırmızı olarak belirlenmiş ilanlar için yeni bir sekme (tab) eklendi.
+- Böylece moderatörler AI işaretli şüpheli ilanları hızlıca filtreleyip son kararı verebilecekler.
+
+**Infinite Scroll Entegrasyonu**
+- `src/components/listings/listings-page-client.tsx` üzerinde eski sayfalama (pagination) düğmeleri kaldırılarak `@tanstack/react-query`'in `useInfiniteQuery` hook'u entegre edildi.
+- React `IntersectionObserver` Native API ile liste bitimine inildiğinde (veya 'Daha Fazla Göster' butonu ile) yeni API sayfaları sorunsuz bir şekilde append ediliyor.
+- URL filtreleriyle (search params) senkronize edildi. SSR pre-fetch edilmiş `.pages[initialResult]` ile anında yükleniyor.
+
+**Güvenlik & Kod Temizliği**
+- `eids-mock.ts`, `phone-otp.ts`, `email-otp.ts` tamamen kaldırılmış rotaların arta kalan import hataları çözüldü. Bu API rotaları `.next` cache'i ile beraber sistemden tümüyle kazındı.
+- `my-listings-panel.tsx` içinde eksik kalan `pending_ai_review` ve `flagged` state tipleri `statusLabelMap` ve `statusClassMap` haritalarına eklendi.
+
+### Doğrulama
+- `npm run typecheck` ✅ (0 hata)
+
+### Sonraki Adımlar
+- **Realtime Bildirimler**: `src/app/api/saved-searches/notify/route.ts` üzerinde Upstash Redis ve SSE (Server-Sent Events) ile gerçek zamanlı bildirim altyapısı inşa edilmeli.
+- **Entgerasyon Testleri**: Yeni eklenen AI odaklı `calculateFraudScore` mantığı için Vitest uç durum (edge case) unit testleri yazılmalı.
+- Gerçek pazar analizi (market-stats servisi) AnomalyDetector ile daha asenkron/verimli çalışacak bir yapıya taşınabilir.
+
 ## Listing Edit Follow-up Fixes (2026-04-17)
 
 ### Kök Nedenler
