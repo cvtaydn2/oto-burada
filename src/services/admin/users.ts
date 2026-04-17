@@ -6,6 +6,7 @@ import { Profile } from "@/types/domain";
 import { logger } from "@/lib/utils/logger";
 import { captureServerError } from "@/lib/monitoring/posthog-server";
 import { createDatabaseNotification } from "@/services/notifications/notification-records";
+import { adjustUserCredits, logDopingApplication } from "@/services/billing/transaction-service";
 
 interface ProfileRow {
   id: string;
@@ -200,6 +201,8 @@ export interface UserDetailData {
   payments: UserPaymentRecord[];
   dopings: UserDopingRecord[];
   listings: { id: string; title: string; status: string }[];
+  creditTransactions: any[];
+  dopingHistory: any[];
   listingCount: number;
   activeListingCount: number;
 }
@@ -232,6 +235,8 @@ export async function getUserDetail(userId: string): Promise<UserDetailData | nu
     { data: profile },
     { data: payments },
     { data: listings },
+    { data: creditTransactions },
+    { data: dopingHistory },
   ] = await Promise.all([
     admin.from("profiles").select(
       "id, full_name, phone, city, avatar_url, role, user_type, balance_credits, is_verified, is_banned, business_name, business_address, business_logo_url, business_description, tax_id, tax_office, website_url, verified_business, business_slug, created_at, updated_at"
@@ -247,6 +252,18 @@ export async function getUserDetail(userId: string): Promise<UserDetailData | nu
       .select("id, title, status, featured, featured_until, urgent_until, highlighted_until, created_at")
       .eq("seller_id", userId)
       .order("created_at", { ascending: false }),
+    admin
+      .from("credit_transactions")
+      .select("*")
+      .eq("user_id", userId)
+      .order("created_at", { ascending: false })
+      .limit(20),
+    admin
+      .from("doping_applications")
+      .select("*, listings(title)")
+      .eq("user_id", userId)
+      .order("created_at", { ascending: false })
+      .limit(20),
   ]);
 
   if (!profile) return null;
@@ -272,6 +289,21 @@ export async function getUserDetail(userId: string): Promise<UserDetailData | nu
     payments: (payments || []) as UserPaymentRecord[],
     dopings,
     listings: (listings || []).map((l) => ({ id: l.id, title: l.title || l.id, status: l.status })),
+    creditTransactions: (creditTransactions || []).map((t: any) => ({
+      id: t.id,
+      amount: t.amount,
+      type: t.transaction_type,
+      description: t.description,
+      createdAt: t.created_at
+    })),
+    dopingHistory: (dopingHistory || []).map((d: any) => ({
+      id: d.id,
+      listingId: d.listing_id,
+      listingTitle: d.listings?.title || d.listing_id,
+      dopingType: d.doping_type,
+      expiresAt: d.expires_at,
+      createdAt: d.created_at
+    })),
     listingCount: (listings || []).length,
     activeListingCount: (listings || []).filter((l) => l.status === "approved").length,
   };
@@ -286,21 +318,16 @@ export async function grantCreditsToUser(
   adminUserId: string,
 ): Promise<{ success: boolean; error?: string }> {
   const admin = createSupabaseAdminClient();
-
-  const { data: profile } = await admin
-    .from("profiles")
-    .select("balance_credits")
-    .eq("id", userId)
-    .single();
-
-  const currentCredits = (profile?.balance_credits as number) || 0;
-
-  const { error } = await admin
-    .from("profiles")
-    .update({ balance_credits: currentCredits + credits })
-    .eq("id", userId);
-
-  if (error) {
+  try {
+    await adjustUserCredits({
+      userId,
+      amount: credits,
+      type: 'admin_adjustment',
+      description: `Hediye kredi (Admin: ${adminUserId}): ${note}`,
+      referenceId: adminUserId,
+      metadata: { note, grantedBy: adminUserId }
+    });
+  } catch (error: any) {
     logger.admin.error("grantCreditsToUser failed", error, { userId, credits });
     return { success: false, error: error.message };
   }
@@ -343,6 +370,9 @@ export async function grantDopingToListing(
 
   const until = new Date(Date.now() + durationDays * 24 * 60 * 60 * 1000).toISOString();
 
+  const { data: listing } = await admin.from("listings").select("seller_id").eq("id", listingId).single();
+  const userId = listing?.seller_id;
+
   const updates: Record<string, unknown> = { updated_at: new Date().toISOString() };
   if (dopingTypes.includes("featured")) {
     updates.featured = true;
@@ -362,14 +392,18 @@ export async function grantDopingToListing(
     return { success: false, error: error.message };
   }
 
-  await admin.from("admin_actions").insert({
-    action: "approve",
-    admin_user_id: adminUserId,
-    note: `Hediye doping: ${dopingTypes.join(", ")} — ${durationDays} gün`,
-    target_id: listingId,
-    target_type: "listing",
-  });
+  // 6. Log detailed history
+  for (const type of dopingTypes) {
+    await logDopingApplication({
+      listingId,
+      userId,
+      dopingType: type,
+      durationDays,
+      metadata: { adminUserId, reason: 'admin_grant' }
+    });
+  }
 
   revalidatePath("/admin/users");
+  revalidatePath(`/admin/users/${userId}`);
   return { success: true };
 }

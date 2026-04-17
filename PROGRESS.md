@@ -1,5 +1,44 @@
 # PROGRESS.md
 
+## Domain Boundary Refactoring & Service Consolidation (2026-04-18)
+
+### Step 2: Billing & Transaction Audit Hardening (2026-04-18)
+- **Credit Audit**: `credit_transactions` tablosu eklendi. Tüm kredi değişimleri (satın alma, harcama, admin müdahalesi) artık loglanıyor.
+- **Doping Audit**: `doping_applications` tablosu eklendi. İlanlara uygulanan dopinglerin tarihçesi tutuluyor.
+- **Transaction Service**: `src/services/billing/transaction-service.ts` merkezi otorite olarak oluşturuldu.
+- **Admin Entegrasyonu**: Admin paneli için kullanıcı detay ekranına kredi ve doping geçmişi eklendi.
+- **Doping Service Refactor**: `doping-service.ts` yeni audit tablolarını besleyecek şekilde güncellendi.
+
+### Step 1: Initial Domain Boundary Refactoring (2026-04-18)
+
+### Yapılan Değişiklikler
+
+**[Moderation] Externalize Decision Logic**
+- İlan onay/red/silme gibi "karar verici" (governance) mantığı `listing-submissions.ts` dosyasından tamamen çıkarıldı.
+- `src/services/admin/listing-moderation.ts` dosyası oluşturularak bu mantık buraya taşındı.
+- Katalog servisi (`listing-submissions.ts`) artık sadece verinin DB'ye kaydedilmesi ve okunmasından sorumlu hale getirildi.
+
+**[Catalog] Reference Data Authority Consolidation**
+- Marka, model ve şehir verilerinin yönetimi için `src/services/reference/reference-records.ts` merkezi otorite olarak belirlendi.
+- Admin (`src/services/admin/reference.ts`) ve Marketplace (`src/services/reference/live-reference-data.ts`) okuma katmanları, bu merkezi servise yönlendirilerek kod tekrarı ortadan kaldırıldı.
+- Build/Typecheck hataları giderildi ve `mergeCityOptions` gibi yardımcı fonksiyonlar merkezi servise dahil edildi.
+
+**[Billing] Credit Usage Audit**
+- `profiles.balance_credits` kolonuna olan tüm bağımlılıklar analiz edildi.
+- **Boundary Leak Tespitleri**:
+  - `marketplace-listings.ts`: İlan dopingi sırasında kredi düşümü yapıyor (Monetization sızıntısı).
+  - `admin/users.ts`: Admin tarafından manuel kredi yüklemesi (Admin sızıntısı).
+- Bu alanlar bir sonraki Sprint'te "Credit Isolation Migration" kapsamında ele alınmak üzere işaretlendi.
+
+### Doğrulama
+- `npm run typecheck` ✅ (Hatalar giderildi, build başarılı)
+- `moderateDatabaseListing` ve `adminDeleteDatabaseListing` yeni yerlerine taşındı ve unit testleri güncellendi. ✅
+- Manuel Smoke Test: Admin dashboard'da referans verileri (marka/model) ve moderasyon akışları fonksiyonel. ✅
+
+### Sonraki Adımlar
+- **[Monetization] Encapsulate Listing Side-Effects**: Doping ve ödeme süreçlerini `marketplace-listings.ts`'den ayırarak bağımsız bir faturalandırma katmanına taşıma.
+- **[Admin] Support & Reporting Infrastructure**: Destek talepleri ve raporlama mantığının (ticket/repors) admin tarafındaki ortak altyapıya (`governance`) taşınması.
+
 ## Modular Provider Architecture & Server-First Auth (2026-04-18)
 
 ### Yapılan Değişiklikler

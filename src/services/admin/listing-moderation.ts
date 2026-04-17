@@ -1,5 +1,10 @@
 import { createDatabaseNotification } from "@/services/notifications/notification-records";
-import { moderateDatabaseListing } from "@/services/listings/listing-submissions";
+import { 
+  getDatabaseListings, 
+} from "@/services/listings/listing-submissions";
+import { hasSupabaseAdminEnv } from "@/lib/supabase/env";
+import { createSupabaseAdminClient } from "@/lib/supabase/admin";
+import { listingSchema } from "@/lib/validators";
 import type { Listing } from "@/types";
 import { logger } from "@/lib/utils/logger";
 import { createAdminModerationAction } from "./moderation-actions";
@@ -162,4 +167,98 @@ export async function moderateListingsWithSideEffects({
   }
 
   return { moderatedListings, skippedListingIds };
+}
+
+export async function moderateDatabaseListing(
+  listingId: string,
+  status: Extract<Listing["status"], "approved" | "rejected">,
+) {
+  if (!hasSupabaseAdminEnv()) {
+    return null;
+  }
+
+  const admin = createSupabaseAdminClient();
+  const now = new Date().toISOString();
+
+  const updatePayload: Record<string, string | null> = {
+    status,
+    updated_at: now,
+  };
+
+  if (status === "approved") {
+    updatePayload.published_at = now;
+  }
+
+  const { data, error } = await admin
+    .from("listings")
+    .update(updatePayload)
+    .eq("id", listingId)
+    .in("status", ["pending", "rejected", "approved"])
+    .select("id")
+    .maybeSingle<{ id: string }>();
+
+  if (error) {
+    logger.admin.error("moderateDatabaseListing update failed", error, {
+      listingId,
+      status,
+    });
+    return null;
+  }
+
+  if (!data) {
+    return null;
+  }
+
+  return (await getDatabaseListings({ listingId }))?.[0] ?? null;
+}
+
+export async function adminDeleteDatabaseListing(listingId: string) {
+  if (!hasSupabaseAdminEnv()) {
+    return null;
+  }
+
+  const admin = createSupabaseAdminClient();
+  const listing = (await getDatabaseListings({ listingId }))?.[0];
+
+  if (!listing) {
+    return null;
+  }
+
+  if (listing.images.length > 0) {
+    const storagePaths = listing.images
+      .map((img) => img.storagePath)
+      .filter((path) => path.length > 0);
+
+    if (storagePaths.length > 0) {
+      const bucketName = process.env.SUPABASE_STORAGE_BUCKET_LISTINGS ?? "listing-images";
+      await admin.storage.from(bucketName).remove(storagePaths);
+    }
+  }
+
+  await admin.from("listing_images").delete().eq("listing_id", listingId);
+  await admin.from("favorites").delete().eq("listing_id", listingId);
+  await admin.from("reports").delete().eq("listing_id", listingId);
+
+  const { error } = await admin.from("listings").delete().eq("id", listingId);
+
+  if (error) {
+    return null;
+  }
+
+  return { id: listingId, deleted: true };
+}
+
+export function moderateStoredListing(
+  existingListing: Listing,
+  status: Extract<Listing["status"], "approved" | "rejected">,
+) {
+  return listingSchema.parse({
+    ...existingListing,
+    status,
+    updatedAt: new Date().toISOString(),
+  });
+}
+
+export function getModeratableListingById(listings: Listing[], listingId: string) {
+  return listings.find((listing) => listing.id === listingId && listing.status === "pending");
 }

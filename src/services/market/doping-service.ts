@@ -3,6 +3,8 @@ import { hasSupabaseAdminEnv } from "@/lib/supabase/env";
 import { payment } from "@/lib/payment";
 import { isPaymentEnabled } from "@/lib/payment/config";
 import { DOPING_PRICES, DopingId } from "@/lib/payment/constants";
+import { logDopingApplication } from "@/services/billing/transaction-service";
+import { logger } from "@/lib/utils/logger";
 
 export type DopingType = DopingId;
 
@@ -85,6 +87,7 @@ export async function applyDopingToListing(
     // We create a pending payment record for tracking
     await admin.from("payments").insert({
       user_id: userId,
+      listing_id: listingId,
       amount: totalAmount,
       provider: "iyzico",
       status: "pending",
@@ -93,7 +96,7 @@ export async function applyDopingToListing(
         listingId,
         dopingTypes,
         type: "doping",
-        durationDays: 7 // simplified
+        durationDays: 7
       }
     });
 
@@ -113,18 +116,32 @@ export async function applyDopingToListing(
 
   if (error) return { success: false, message: "Doping uygulanırken bir hata oluştu." };
 
-  // 5. Log payment — transaction_id metadata içinde saklanır (DB kolonu yok)
-  await admin.from("payments").insert({
+  // 5. Log payment & doping application history
+  const { data: paymentRecord } = await admin.from("payments").insert({
     user_id: userId,
-    amount: dopingTypes.length * 50,
+    listing_id: listingId,
+    amount: totalAmount,
     provider: "iyzico",
     status: paymentResult.status,
+    iyzico_token: paymentResult.transactionId,
     metadata: {
       listingId,
       dopingTypes,
       transaction_id: paymentResult.transactionId
     }
-  });
+  }).select('id').single();
+
+  // 6. Log individual doping applications for detailed history
+  for (const type of dopingTypes) {
+    await logDopingApplication({
+      listingId,
+      userId,
+      dopingType: type,
+      durationDays: type === 'highlighted' ? 15 : 7,
+      paymentId: paymentRecord?.id,
+      metadata: { transactionId: paymentResult.transactionId }
+    });
+  }
 
   return { success: true, message: "Dopingler başarıyla uygulandı!" };
 }

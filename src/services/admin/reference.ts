@@ -1,99 +1,41 @@
 "use server";
 
-import { createSupabaseAdminClient } from "@/lib/supabase/admin";
-import { revalidatePath } from "next/cache";
+import * as ReferenceService from "@/services/reference/reference-records";
+
+/**
+ * Proxy functions for Admin Reference UI.
+ * These maintain the existing API for the admin dashboard screens 
+ * while delegating the logic to the unified ReferenceService.
+ */
 
 export async function getBrands(query?: string) {
-  const admin = createSupabaseAdminClient();
-  let rpc = admin
-    .from("brands")
-    .select("*");
-
-  if (query) {
-    rpc = rpc.ilike("name", `%${query}%`);
-  }
-
-  const { data, error } = await rpc
-    .order("name", { ascending: true });
-
-  if (error) return [];
-  return data;
+  return ReferenceService.getAdminBrands(query);
 }
 
 export async function getModelsByBrand(brandId: string) {
-  const admin = createSupabaseAdminClient();
-  const { data, error } = await admin
-    .from("models")
-    .select("*")
-    .eq("brand_id", brandId)
-    .order("name", { ascending: true });
-
-  if (error) return [];
-  return data;
+  return ReferenceService.getAdminModelsByBrand(brandId);
 }
 
 export async function toggleBrandStatus(id: string, currentStatus: boolean) {
-  const admin = createSupabaseAdminClient();
-  const { error } = await admin
-    .from("brands")
-    .update({ is_active: !currentStatus })
-    .eq("id", id);
-
-  if (error) throw error;
-  revalidatePath("/admin/reference");
-  return { success: true };
+  return ReferenceService.updateBrandStatus(id, !currentStatus);
 }
 
 export async function addBrand(name: string) {
-  const admin = createSupabaseAdminClient();
-  const slug = name.toLowerCase().replace(/ /g, "-").replace(/[^\w-]+/g, "");
-  
-  const { error } = await admin
-    .from("brands")
-    .insert({ name, slug, is_active: true });
-
-  if (error) throw error;
-  revalidatePath("/admin/reference");
-  return { success: true };
+  return ReferenceService.upsertBrand(name);
 }
 
-export async function createModel(brandId: string, name: string) {
-  const admin = createSupabaseAdminClient();
-  const slug = name.toLowerCase().replace(/ /g, "-").replace(/[^\w-]+/g, "");
-  
-  const { error } = await admin
-    .from("models")
-    .insert({ brand_id: brandId, name, slug });
-
-  if (error) throw error;
-  revalidatePath("/admin/reference");
-  return { success: true };
-}
-
-export async function deleteModel(id: string) {
-  const admin = createSupabaseAdminClient();
-  const { error } = await admin.from("models").delete().eq("id", id);
-  if (error) throw error;
-  return { success: true };
-}
 export async function updateBrand(id: string, name: string) {
-  const admin = createSupabaseAdminClient();
-  const slug = name.toLowerCase().replace(/ /g, "-").replace(/[^\w-]+/g, "");
-  
-  const { error } = await admin
-    .from("brands")
-    .update({ name, slug })
-    .eq("id", id);
-
-  if (error) throw error;
-  revalidatePath("/admin/reference");
-  return { success: true };
+  return ReferenceService.upsertBrand(name, id);
 }
 
 export async function deleteBrand(id: string) {
-  const admin = createSupabaseAdminClient();
-  const { error } = await admin.from("brands").delete().eq("id", id);
-  if (error) throw error;
-  revalidatePath("/admin/reference");
-  return { success: true };
+  return ReferenceService.removeBrand(id);
+}
+
+export async function createModel(brandId: string, name: string) {
+  return ReferenceService.addModel(brandId, name);
+}
+
+export async function deleteModel(id: string) {
+  return ReferenceService.removeModel(id);
 }

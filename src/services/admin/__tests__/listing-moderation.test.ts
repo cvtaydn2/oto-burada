@@ -1,11 +1,18 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { moderateListingWithSideEffects, moderateListingsWithSideEffects } from '../listing-moderation';
+import * as listingModeration from '../listing-moderation';
 import * as listingSubmissions from '@/services/listings/listing-submissions';
 import * as moderationActions from '../moderation-actions';
 import * as notifications from '@/services/notifications/notification-records';
 import type { Listing } from '@/types';
 
 // Mock dependencies
+vi.mock('../listing-moderation', async () => {
+  const actual = await vi.importActual<typeof import('../listing-moderation')>('../listing-moderation');
+  return {
+    ...actual,
+    moderateDatabaseListing: vi.fn(),
+  };
+});
 vi.mock('@/services/listings/listing-submissions');
 vi.mock('../moderation-actions');
 vi.mock('@/services/notifications/notification-records');
@@ -45,21 +52,21 @@ describe('listing-moderation service', () => {
     vi.clearAllMocks();
   });
 
-  describe('moderateListingWithSideEffects', () => {
+  describe('listingModeration.moderateListingWithSideEffects', () => {
     it('should approve a listing and trigger side effects', async () => {
-      vi.mocked(listingSubmissions.moderateDatabaseListing).mockResolvedValue({
+      vi.mocked(listingModeration.moderateDatabaseListing).mockResolvedValue({
         ...mockListing,
         status: 'approved',
       });
 
-      const result = await moderateListingWithSideEffects({
+      const result = await listingModeration.moderateListingWithSideEffects({
         action: 'approve',
         adminUserId: 'admin-1',
         listingId: 'listing-123',
       });
 
       expect(result?.status).toBe('approved');
-      expect(listingSubmissions.moderateDatabaseListing).toHaveBeenCalledWith('listing-123', 'approved');
+      expect(listingModeration.moderateDatabaseListing).toHaveBeenCalledWith('listing-123', 'approved');
       expect(moderationActions.createAdminModerationAction).toHaveBeenCalled();
       expect(notifications.createDatabaseNotification).toHaveBeenCalledWith(
         expect.objectContaining({
@@ -70,12 +77,12 @@ describe('listing-moderation service', () => {
     });
 
     it('should reject a listing and trigger side effects', async () => {
-      vi.mocked(listingSubmissions.moderateDatabaseListing).mockResolvedValue({
+      vi.mocked(listingModeration.moderateDatabaseListing).mockResolvedValue({
         ...mockListing,
         status: 'rejected',
       });
 
-      const result = await moderateListingWithSideEffects({
+      const result = await listingModeration.moderateListingWithSideEffects({
         action: 'reject',
         adminUserId: 'admin-1',
         listingId: 'listing-123',
@@ -83,7 +90,7 @@ describe('listing-moderation service', () => {
       });
 
       expect(result?.status).toBe('rejected');
-      expect(listingSubmissions.moderateDatabaseListing).toHaveBeenCalledWith('listing-123', 'rejected');
+      expect(listingModeration.moderateDatabaseListing).toHaveBeenCalledWith('listing-123', 'rejected');
       expect(moderationActions.createAdminModerationAction).toHaveBeenCalledWith(
         expect.objectContaining({
           action: 'reject',
@@ -93,9 +100,9 @@ describe('listing-moderation service', () => {
     });
 
     it('should return null if database update fails', async () => {
-      vi.mocked(listingSubmissions.moderateDatabaseListing).mockResolvedValue(null);
+      vi.mocked(listingModeration.moderateDatabaseListing).mockResolvedValue(null);
 
-      const result = await moderateListingWithSideEffects({
+      const result = await listingModeration.moderateListingWithSideEffects({
         action: 'approve',
         adminUserId: 'admin-1',
         listingId: 'missing-id',
@@ -106,12 +113,12 @@ describe('listing-moderation service', () => {
     });
   });
 
-  describe('moderateListingsWithSideEffects', () => {
+  describe('listingModeration.moderateListingsWithSideEffects', () => {
     it('should handle multiple listings', async () => {
-      vi.mocked(listingSubmissions.moderateDatabaseListing).mockResolvedValueOnce({ ...mockListing, id: '1' });
-      vi.mocked(listingSubmissions.moderateDatabaseListing).mockResolvedValueOnce({ ...mockListing, id: '2' });
+      vi.mocked(listingModeration.moderateDatabaseListing).mockResolvedValueOnce({ ...mockListing, id: '1' });
+      vi.mocked(listingModeration.moderateDatabaseListing).mockResolvedValueOnce({ ...mockListing, id: '2' });
 
-      const result = await moderateListingsWithSideEffects({
+      const result = await listingModeration.moderateListingsWithSideEffects({
         action: 'approve',
         adminUserId: 'admin-1',
         listingIds: ['1', '2'],
@@ -122,10 +129,10 @@ describe('listing-moderation service', () => {
     });
 
     it('should track skipped listings', async () => {
-      vi.mocked(listingSubmissions.moderateDatabaseListing).mockResolvedValueOnce({ ...mockListing, id: '1' });
-      vi.mocked(listingSubmissions.moderateDatabaseListing).mockResolvedValueOnce(null);
+      vi.mocked(listingModeration.moderateDatabaseListing).mockResolvedValueOnce({ ...mockListing, id: '1' });
+      vi.mocked(listingModeration.moderateDatabaseListing).mockResolvedValueOnce(null);
 
-      const result = await moderateListingsWithSideEffects({
+      const result = await listingModeration.moderateListingsWithSideEffects({
         action: 'approve',
         adminUserId: 'admin-1',
         listingIds: ['1', 'missing'],

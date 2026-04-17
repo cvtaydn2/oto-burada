@@ -1063,101 +1063,7 @@ export async function deleteDatabaseListing(listingId: string, sellerId: string)
   return { id: listingId, deleted: true };
 }
 
-export async function adminDeleteDatabaseListing(listingId: string) {
-  if (!hasSupabaseAdminEnv()) {
-    return null;
-  }
 
-  const admin = createSupabaseAdminClient();
-
-  const listing = (await getDatabaseListings({ listingId }))?.[0];
-
-  if (!listing) {
-    return null;
-  }
-
-  // Delete images from storage
-  if (listing.images.length > 0) {
-    const storagePaths = listing.images
-      .map((img) => img.storagePath)
-      .filter((path) => path.length > 0);
-
-    if (storagePaths.length > 0) {
-      const bucketName = process.env.SUPABASE_STORAGE_BUCKET_LISTINGS ?? "listing-images";
-      await admin.storage.from(bucketName).remove(storagePaths);
-    }
-  }
-
-  await admin.from("listing_images").delete().eq("listing_id", listingId);
-  await admin.from("favorites").delete().eq("listing_id", listingId);
-  await admin.from("reports").delete().eq("listing_id", listingId);
-
-  const { error } = await admin.from("listings").delete().eq("id", listingId);
-
-  if (error) {
-    return null;
-  }
-
-  return { id: listingId, deleted: true };
-}
-
-export async function moderateDatabaseListing(
-  listingId: string,
-  status: Extract<Listing["status"], "approved" | "rejected">,
-) {
-  if (!hasSupabaseAdminEnv()) {
-    return null;
-  }
-
-  const admin = createSupabaseAdminClient();
-  const now = new Date().toISOString();
-
-  const updatePayload: Record<string, string | null> = {
-    status,
-    updated_at: now,
-  };
-
-  // Set published_at when approving (first time or re-approval after rejection)
-  if (status === "approved") {
-    updatePayload.published_at = now;
-  }
-
-  // Allow moderation from any non-terminal state:
-  //   pending  → approved | rejected   (normal flow)
-  //   rejected → approved              (admin re-approves after fix)
-  //   approved → rejected              (admin pulls back a live listing)
-  // archived / draft are terminal — cannot be moderated.
-  const { data, error } = await admin
-    .from("listings")
-    .update(updatePayload)
-    .eq("id", listingId)
-    .in("status", ["pending", "rejected", "approved"])
-    .select("id")
-    .maybeSingle<{ id: string }>();
-
-  if (error) {
-    logger.listings.error("moderateDatabaseListing update failed", error, {
-      listingId,
-      status,
-      errorCode: error.code,
-      errorMessage: error.message,
-      errorHint: error.hint,
-    });
-    console.error("[listings] moderateDatabaseListing DB error:", {
-      code: error.code,
-      message: error.message,
-      hint: error.hint,
-    });
-    return null;
-  }
-
-  if (!data) {
-    // Listing not found or in a terminal state (archived/draft)
-    return null;
-  }
-
-  return (await getDatabaseListings({ listingId }))?.[0] ?? null;
-}
 
 export function parseStoredListings(rawValue?: string | null) {
   if (!rawValue) {
@@ -1235,16 +1141,6 @@ export function archiveStoredListing(existingListing: Listing) {
   });
 }
 
-export function moderateStoredListing(
-  existingListing: Listing,
-  status: Extract<Listing["status"], "approved" | "rejected">,
-) {
-  return listingSchema.parse({
-    ...existingListing,
-    status,
-    updatedAt: new Date().toISOString(),
-  });
-}
 
 export function getEditableListingById(listings: Listing[], listingId: string, sellerId: string) {
   return listings.find(
@@ -1297,9 +1193,6 @@ export async function findArchivableListingById(listingId: string, sellerId: str
   return getArchivableListingById(cookieListings, listingId, sellerId) ?? null;
 }
 
-export function getModeratableListingById(listings: Listing[], listingId: string) {
-  return listings.find((listing) => listing.id === listingId && listing.status === "pending");
-}
 
 export async function getStoredListings() {
   const databaseListings = await getDatabaseListings();
