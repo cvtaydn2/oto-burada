@@ -14,6 +14,8 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useFieldArray, useForm, useWatch, type FieldPath } from "react-hook-form";
 
 import {
+  carPartDamageStatuses,
+  carParts,
   maximumCarYear,
   minimumListingImages,
 } from "@/lib/constants/domain";
@@ -61,6 +63,89 @@ interface UploadedImagePayload {
     placeholderBlur?: string | null;
   };
   message?: string;
+}
+
+const damageStatusAliases: Record<string, string> = {
+  orijinal: "orjinal",
+};
+
+const carPartAliases: Record<string, string> = {
+  soloncamurluk: "sol_on_camurluk",
+  sagoncamurluk: "sag_on_camurluk",
+  solarkacamurluk: "sol_arka_camurluk",
+  sagarkacamurluk: "sag_arka_camurluk",
+  solonkapi: "sol_on_kapi",
+  sagonkapi: "sag_on_kapi",
+  solarkakapi: "sol_arka_kapi",
+  sagarkakapi: "sag_arka_kapi",
+  ontampon: "on_tampon",
+  arkatampon: "arka_tampon",
+};
+
+function normalizeDamagePartKey(key: string) {
+  const normalized = key
+    .toLocaleLowerCase("tr-TR")
+    .replace(/ç/g, "c")
+    .replace(/ğ/g, "g")
+    .replace(/ı/g, "i")
+    .replace(/ö/g, "o")
+    .replace(/ş/g, "s")
+    .replace(/ü/g, "u")
+    .replace(/[^a-z0-9]+/g, "_")
+    .replace(/^_+|_+$/g, "");
+
+  if (carParts.includes(normalized as (typeof carParts)[number])) {
+    return normalized;
+  }
+
+  const compact = normalized.replace(/_/g, "");
+  return carPartAliases[compact] ?? null;
+}
+
+function normalizeDamageStatusValue(value: unknown) {
+  if (typeof value !== "string") {
+    return null;
+  }
+
+  const normalized = value
+    .toLocaleLowerCase("tr-TR")
+    .replace(/ç/g, "c")
+    .replace(/ğ/g, "g")
+    .replace(/ı/g, "i")
+    .replace(/ö/g, "o")
+    .replace(/ş/g, "s")
+    .replace(/ü/g, "u")
+    .replace(/[^a-z0-9]+/g, "_")
+    .replace(/^_+|_+$/g, "");
+
+  const canonical = damageStatusAliases[normalized] ?? normalized;
+
+  if (carPartDamageStatuses.includes(canonical as (typeof carPartDamageStatuses)[number])) {
+    return canonical;
+  }
+
+  return null;
+}
+
+function normalizeDamageStatusJson(rawDamageStatusJson?: Record<string, unknown> | null) {
+  if (!rawDamageStatusJson || typeof rawDamageStatusJson !== "object") {
+    return {};
+  }
+
+  return Object.fromEntries(
+    Object.entries(rawDamageStatusJson)
+      .map(([rawKey, rawValue]) => {
+        const key = normalizeDamagePartKey(rawKey);
+        const value = normalizeDamageStatusValue(rawValue);
+
+        if (!key || !value || value === "orjinal") {
+          return null;
+        }
+
+        return [key, value] as const;
+      })
+      .filter((entry): entry is readonly [string, string] => entry !== null),
+  );
 }
 
 function buildDefaultValues(
@@ -123,18 +208,10 @@ function buildDefaultValues(
     district: initialListing?.district ?? "",
     description: initialListing?.description ?? "",
     whatsappPhone: initialListing?.whatsappPhone ?? initialValues.whatsappPhone,
+    licensePlate: initialListing?.licensePlate ?? "",
     vin: initialListing?.vin ?? "",
     tramerAmount: initialListing?.tramerAmount ?? 0,
-    // damage_status_json: DB'den gelen değerleri DamageSelector'ın beklediği formata normalize et
-    // "orijinal" → "orjinal" (kod "orjinal" kullanıyor, DB'de her ikisi de olabilir)
-    damageStatusJson: initialListing?.damageStatusJson
-      ? Object.fromEntries(
-          Object.entries(initialListing.damageStatusJson).map(([k, v]) => [
-            k,
-            v === "orijinal" ? "orjinal" : v,
-          ])
-        )
-      : {},
+    damageStatusJson: normalizeDamageStatusJson(initialListing?.damageStatusJson),
     images:
       sortedImages.length > 0
         ? sortedImages.map((image) => ({
@@ -223,6 +300,7 @@ export function ListingCreateForm({
   const totalSteps = STEP_LABELS.length;
   const uploadStatesRef = useRef<Record<string, UploadState>>({});
   const pendingImageCleanupRef = useRef<Set<string>>(new Set());
+  const submitIntentRef = useRef(false);
   
   const formValues = useMemo(
     () => buildDefaultValues(initialValues, initialListing),
@@ -318,6 +396,10 @@ export function ListingCreateForm({
   useEffect(() => {
     reset(formValues);
   }, [formValues, reset]);
+
+  useEffect(() => {
+    submitIntentRef.current = false;
+  }, [currentStep]);
 
   useEffect(() => {
     return () => {
@@ -591,6 +673,17 @@ export function ListingCreateForm({
     window.scrollTo({ top: 0, behavior: "smooth" });
   });
 
+  const handleFormSubmit: React.FormEventHandler<HTMLFormElement> = (event) => {
+    if (currentStep !== totalSteps - 1 || !submitIntentRef.current) {
+      event.preventDefault();
+      submitIntentRef.current = false;
+      return;
+    }
+
+    submitIntentRef.current = false;
+    void onSubmit(event);
+  };
+
   return (
     <div className="max-w-[1000px] mx-auto px-4 py-8 w-full flex-1">
       <div className="mb-8 animate-in fade-in slide-in-from-top-4 duration-700">
@@ -606,7 +699,7 @@ export function ListingCreateForm({
 
       <StepIndicator currentStep={currentStep} />
 
-      <form onSubmit={onSubmit} className="space-y-10">
+      <form onSubmit={handleFormSubmit} className="space-y-10">
         {submitState.status === "success" && submitState.message && (
           <div className="rounded-2xl bg-emerald-50 p-4 border border-emerald-100 flex items-center gap-3 animate-in fade-in zoom-in duration-300 shadow-sm">
             <CheckCircle2 className="size-5 text-emerald-500" />
@@ -688,6 +781,9 @@ export function ListingCreateForm({
             <button
               type="submit"
               disabled={isSubmitting || isUploadingAnyImage || effectiveImageCount < minimumListingImages}
+              onClick={() => {
+                submitIntentRef.current = true;
+              }}
               className="bg-blue-500 text-white font-bold px-10 py-3 rounded-xl hover:bg-blue-600 transition shadow-md flex items-center disabled:opacity-50"
             >
               {isSubmitting ? (

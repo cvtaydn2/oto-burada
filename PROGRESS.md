@@ -1,5 +1,37 @@
 # PROGRESS.md
 
+## Listing Edit Follow-up Fixes (2026-04-17)
+
+### Kök Nedenler
+
+- edit form `buildDefaultValues()` içinde `licensePlate` hiç set edilmiyordu; backend persistence düzelmiş olsa da frontend input boş kalıyordu
+- `damageStatusJson` edit yüklemesinde yalnızca dar bir dönüşüm uygulanıyordu; eski/alternatif key ve value formatları (`orijinal`, boşluklu/Türkçe/camelCase varyasyonları) güvenli normalize edilmiyordu
+- form submit akışı sadece `type="submit"` butonuna dayanıyordu; son adıma geçiş sonrası istenmeyen native submit event’i gelirse form PATCH atabiliyordu
+
+### Yapılan Değişiklikler
+
+- `listing-create-form` default değerlerine `licensePlate` eklendi
+- kaporta/hasar verisi için frontend tarafında ortak normalizasyon eklendi:
+  - parça anahtarları bilinen `carParts` kontratına dönüştürülüyor
+  - `orijinal` değeri `orjinal` formatına çevriliyor
+  - tanınmayan key/value çiftleri edit formuna taşınmıyor
+- form submit sadece final adımdaki gerçek kullanıcı submit niyetiyle çalışacak şekilde kilitlendi
+- step değişiminde submit intent temizleniyor; böylece son ekrana gelir gelmez kendiliğinden “ilan güncellendi” akışı tetiklenmiyor
+
+### Doğrulama
+
+- `npm run lint` ✅
+- `npm run typecheck` ✅
+- `npm run build` ✅
+
+### Sonraki Adım
+
+- browser seviyesinde edit senaryosu tekrar yürütülmeli:
+  - plaka alanı dolu geliyor mu
+  - mevcut kaporta/hasar işaretleri doğru görünüyor mu
+  - 3. adımdan 4. adıma geçiş artık submit atmıyor mu
+  - resim sil + yeni resim yükle + kaydet akışı tutarlı mı
+
 ## Listing Update Flow Remediation (2026-04-17)
 
 ### Yapılan Değişiklikler
