@@ -36,30 +36,48 @@ export function getUserRole(user: Awaited<ReturnType<typeof requireUser>>): User
   return appMetadata.role === "admin" ? "admin" : "user";
 }
 
+/**
+ * Verifies the user's role against the database as a final security measure.
+ * Uses React cache to ensure this only hits the DB once per request.
+ */
+const getDBUserRole = cache(async (userId: string) => {
+  if (!process.env.SUPABASE_SERVICE_ROLE_KEY) {
+    return null;
+  }
+
+  try {
+    const { createSupabaseAdminClient } = await import("@/lib/supabase/admin");
+    const adminClient = createSupabaseAdminClient();
+    const { data: profile, error } = await adminClient
+      .from("profiles")
+      .select("role")
+      .eq("id", userId)
+      .maybeSingle<{ role: string }>();
+
+    if (error || !profile) return null;
+    return profile.role as UserRole;
+  } catch {
+    return null;
+  }
+});
+
 export async function requireAdminUser() {
   const user = await requireUser();
 
+  // 1. Check JWT claims (fast, covers 99% of cases)
   if (getUserRole(user) !== "admin") {
     redirect("/dashboard");
   }
 
-  // Secondary DB check to guard against stale JWT after demotion.
-  // Fails CLOSED — if the DB check throws, we deny access rather than
-  // silently granting it. Only skipped when admin env is not configured
-  // (offline / test mode).
-  if (process.env.SUPABASE_SERVICE_ROLE_KEY) {
-    const { createSupabaseAdminClient } = await import("@/lib/supabase/admin");
-    const adminClient = createSupabaseAdminClient();
-    const { data: profile, error: profileError } = await adminClient
-      .from("profiles")
-      .select("role")
-      .eq("id", user.id)
-      .maybeSingle<{ role: string }>();
-
-    // DB error or profile missing → fail closed (deny access)
-    if (profileError || !profile || profile.role !== "admin") {
-      redirect("/dashboard");
-    }
+  // 2. Secondary DB check to guard against stale JWT after demotion.
+  // Fails CLOSED — if the DB check throws or returns non-admin, deny access.
+  const dbRole = await getDBUserRole(user.id);
+  
+  // dbRole null means either env missing or not found/error.
+  // We only allow if dbRole is explicitly "admin".
+  // If env is missing (local dev), we fallback to JWT check only (convenience).
+  if (process.env.SUPABASE_SERVICE_ROLE_KEY && dbRole !== "admin") {
+    redirect("/dashboard");
   }
 
   return user;

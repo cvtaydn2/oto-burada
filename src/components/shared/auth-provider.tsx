@@ -27,22 +27,26 @@ function getIsAdmin(user: User | null) {
   return role === "admin";
 }
 
-export function AuthProvider({ children }: PropsWithChildren) {
-  const [user, setUser] = useState<User | null>(null);
-  const [isReady, setIsReady] = useState(false);
+interface AuthProviderProps extends PropsWithChildren {
+  initialUser?: User | null;
+}
+
+export function AuthProvider({ children, initialUser = null }: AuthProviderProps) {
+  const [user, setUser] = useState<User | null>(initialUser);
+  const [isReady, setIsReady] = useState(!!initialUser);
 
   useEffect(() => {
     const supabase = createSupabaseBrowserClient();
     let mounted = true;
 
-    void supabase.auth.getUser().then(({ data }: UserResponse) => {
-      if (!mounted) {
-        return;
-      }
-
-      setUser(data.user ?? null);
-      setIsReady(true);
-    });
+    // Sadece initialUser yoksa veya sessiz doğrulama gerekiyorsa çalıştır
+    if (!initialUser) {
+      void supabase.auth.getUser().then(({ data }: UserResponse) => {
+        if (!mounted) return;
+        setUser(data.user ?? null);
+        setIsReady(true);
+      });
+    }
 
     const {
       data: { subscription },

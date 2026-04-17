@@ -3,11 +3,16 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { type PropsWithChildren, useState } from "react";
 
+import { type User } from "@supabase/supabase-js";
 import { AuthProvider } from "@/components/shared/auth-provider";
 import { ThemeProvider } from "@/components/shared/theme-provider";
 import { PostHogProvider } from "@/components/providers/posthog-provider";
 
-export function RootProviders({ children }: PropsWithChildren) {
+interface RootProvidersProps extends PropsWithChildren {
+  user: User | null;
+}
+
+export function RootProviders({ children, user }: RootProvidersProps) {
   const [queryClient] = useState(
     () =>
       new QueryClient({
@@ -31,7 +36,7 @@ export function RootProviders({ children }: PropsWithChildren) {
       disableTransitionOnChange
     >
       <QueryClientProvider client={queryClient}>
-        <AuthProvider>
+        <AuthProvider initialUser={user}>
           <PostHogProvider>
             {children}
           </PostHogProvider>

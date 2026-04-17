@@ -4,6 +4,7 @@ import { RootProviders } from "@/components/providers/root-providers";
 import { CookieConsent } from "@/components/shared/cookie-consent";
 import { PWAInstallPrompt } from "@/components/shared/pwa-install-prompt";
 import { getAppUrl } from "@/lib/seo";
+import { getCurrentUser } from "@/lib/auth/session";
 
 import { Analytics } from "@vercel/analytics/next";
 import { SpeedInsights } from "@vercel/speed-insights/next";
@@ -57,11 +58,13 @@ export const metadata: Metadata = {
   }
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const user = await getCurrentUser();
+
   return (
     <html
       lang="tr"
@@ -70,7 +73,7 @@ export default function RootLayout({
       suppressHydrationWarning
     >
       <body className="min-h-full bg-background text-foreground selection:bg-primary/10 selection:text-primary">
-        <RootProviders>
+        <RootProviders user={user}>
           {children}
           <Analytics />
           <SpeedInsights />
