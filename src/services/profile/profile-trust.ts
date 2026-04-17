@@ -27,13 +27,7 @@ export function calculateTrustScore(seller: Partial<Profile> | null): number {
   }
   
   // Ekstra ufak güvenlik/gerçeklik sinyalleri (Opsiyonel ama iyi olur)
-  if (seller.phoneVerified) {
-    score += 10; // Bonus
-  }
-  
-  if (seller.identityVerified) {
-    score += 10; // TC verification (Varsayılan olarak kalabilir)
-  }
+  // Gelecekte ek puan kriterleri buraya eklenebilir.
   
   return Math.min(score, 100);
 }

@@ -14,14 +14,8 @@ const SECURITY_HEADERS = {
   "Referrer-Policy": "strict-origin-when-cross-origin",
   "Permissions-Policy": "camera=(), microphone=(), geolocation=()",
   "Strict-Transport-Security": "max-age=63072000; includeSubDomains; preload",
-  // Content-Security-Policy: tight policy for a marketplace app.
-  // - default-src 'self': only same-origin by default
-  // - script-src: Next.js inline scripts need 'unsafe-inline' in dev; in prod
-  //   nonces are preferred but require per-request generation. 'unsafe-eval'
-  //   is needed for some Next.js internals. Vercel Analytics is self-hosted.
-  // - img-src: allow Supabase Storage, Unsplash (seed data), and data URIs
-  // - connect-src: Supabase API, PostHog, Upstash
-  // - frame-ancestors 'none': equivalent to X-Frame-Options DENY
+  // Content-Security-Policy: Secure baseline for the marketplace.
+  // - Allow Supabase, PostHog, Map (OSM), and Vercel services.
   "Content-Security-Policy": [
     "default-src 'self'",
     // Next.js inline/eval + Vercel Analytics + Vercel Speed Insights + Vercel Live (preview feedback) + PostHog

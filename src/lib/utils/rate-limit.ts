@@ -1,10 +1,10 @@
 /**
- * Simple in-memory rate limiter for API routes.
- *
- * Uses a sliding window approach stored in a Map.  Because this runs in
- * a single server process it will reset on restart and will not work for
- * horizontally scaled deployments – but it is entirely sufficient for
- * the MVP and saves an external dependency.
+ * Smart, multi-tiered rate limiter for API routes.
+ * 
+ * Supports three layers of enforcement:
+ * 1. Redis Tier: Distributed, fast, and primary for production.
+ * 2. Supabase RPC Tier: Persistent fallback if Redis is unavailable.
+ * 3. In-memory Tier: Local fallback for development or total service outage.
  */
 
 export interface RateLimitConfig {

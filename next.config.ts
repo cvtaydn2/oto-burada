@@ -39,6 +39,7 @@ const nextConfig: NextConfig = {
   compress: true,
   poweredByHeader: false,
   generateEtags: true,
+  serverExternalPackages: ["iyzipay"],
   output: "standalone",
 };
 

@@ -38,8 +38,6 @@ const mockProfile: Partial<Profile> = {
   phone: "+905551234567",
   city: "Istanbul",
   emailVerified: true,
-  phoneVerified: true,
-  identityVerified: false,
   isVerified: false,
   role: "user",
   createdAt: "2024-01-01"

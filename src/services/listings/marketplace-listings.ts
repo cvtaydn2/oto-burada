@@ -80,15 +80,20 @@ export async function getMarketplaceSeller(sellerId: string): Promise<Profile | 
         .select("id, full_name, phone, city, avatar_url, role, user_type, balance_credits, is_verified, business_name, business_logo_url, business_slug, created_at, updated_at")
         .eq("id", sellerId)
         .maybeSingle<{
-          avatar_url: string | null;
-          balance_credits: number | null;
-          business_logo_url: string | null;
-          business_name: string | null;
-          business_slug: string | null;
+          id: string;
+          full_name: string;
+          phone: string | null;
           city: string;
+          avatar_url: string | null;
+          role: "user" | "admin";
+          user_type: "individual" | "professional" | "staff";
+          balance_credits: number | null;
+          is_verified: boolean;
+          business_name: string | null;
+          business_logo_url: string | null;
+          business_slug: string | null;
           created_at: string;
           updated_at: string;
-          user_type: "individual" | "professional" | "staff";
         }>();
 
       if (error || !data) {
@@ -98,7 +103,7 @@ export async function getMarketplaceSeller(sellerId: string): Promise<Profile | 
       return {
         id: data.id,
         fullName: data.full_name,
-        phone: data.phone,
+        phone: data.phone || "",
         city: data.city,
         avatarUrl: data.avatar_url,
         // emailVerified and phoneVerified are not exposed in the public seller profile

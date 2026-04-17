@@ -9,8 +9,6 @@ describe('profile-trust logic', () => {
     phone: '905551112233',
     city: 'İstanbul',
     emailVerified: false,
-    phoneVerified: false,
-    identityVerified: false,
     isVerified: false,
     role: 'user',
     createdAt: '2022-01-01T00:00:00Z',
@@ -32,11 +30,6 @@ describe('profile-trust logic', () => {
     expect(result.badgeLabel).toBe("Standart Üye");
   });
 
-  it('should boost score for verified identity (10 pts) and label correctly', () => {
-    const result = getSellerTrustSummary({ ...mockProfile, identityVerified: true }, 0);
-    expect(result.score).toBe(10);
-    expect(result.badgeLabel).toBe('Standart Üye');
-  });
 
   it('should boost score for verified email (20 pts) and label correctly', () => {
     const result = getSellerTrustSummary({ ...mockProfile, emailVerified: true }, 0);

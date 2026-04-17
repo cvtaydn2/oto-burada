@@ -414,7 +414,6 @@ function ListingCard({
           <span className={`text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-md border ${statusClassMap[listing.status]} shadow-sm`}>
             {statusLabelMap[listing.status]}
           </span>
-          {listing.eidsVerificationJson && null}
         </div>
         <p className="font-bold text-foreground truncate tracking-tight text-sm mb-1 group-hover:text-blue-600 transition-colors">{listing.title}</p>
         <p className="text-base font-black text-blue-600 tracking-tight leading-none">{formatCurrency(listing.price)} ₺</p>

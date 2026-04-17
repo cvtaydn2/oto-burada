@@ -614,7 +614,6 @@ export async function getDatabaseListings(options?: {
   }
   
   // Primary query succeeded (even with 0 results) — return immediately.
-  // Only fall back when the primary query itself errors (schema mismatch, etc.).
   if (!primaryResult.error) {
     return (primaryResult.data ?? []).map(mapListingRow);
   }
@@ -1183,7 +1182,7 @@ export function serializeStoredListings(listings: Listing[]) {
   return JSON.stringify(listings);
 }
 
-/** @deprecated Only used by legacy-sync migration endpoint and edit/archive fallback. */
+/** @deprecated LEGACY ONLY: Used by migration scripts and edge-case draft recovery. */
 export async function getLegacyStoredListings() {
   const cookieStore = await cookies();
 
@@ -1351,7 +1350,7 @@ export async function getStoredListingsByIds(ids: string[]) {
   return databaseListings ?? [];
 }
 
-/** @deprecated Only used by legacy-sync migration endpoint. */
+/** @deprecated LEGACY ONLY: Used by migration scripts. */
 export async function getLegacyStoredUserListings(sellerId: string) {
   return (await getLegacyStoredListings()).filter((listing) => listing.sellerId === sellerId);
 }

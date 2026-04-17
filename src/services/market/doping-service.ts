@@ -3,7 +3,6 @@ import { hasSupabaseAdminEnv } from "@/lib/supabase/env";
 import { payment } from "@/lib/payment";
 import { isPaymentEnabled } from "@/lib/payment/config";
 import { DOPING_PRICES, DopingId } from "@/lib/payment/constants";
-import { logger } from "@/lib/utils/logger";
 
 export type DopingType = DopingId;
 

@@ -292,7 +292,6 @@ export const listingSchema: z.ZodType<Listing> = z.object({
   featuredUntil: z.string().nullable().optional(),
   urgentUntil: z.string().nullable().optional(),
   highlightedUntil: z.string().nullable().optional(),
-  status: z.enum(listingStatuses),
   marketPriceIndex: z.coerce.number().nullable().optional(),
   expertInspection: expertInspectionSchema.optional(),
   seller: profileSchema.partial().optional(),
