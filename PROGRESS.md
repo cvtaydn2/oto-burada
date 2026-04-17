@@ -1,4 +1,8 @@
-# PROGRESS.md
+# Progress Log - OtoBurada
+
+## Architecture Documentation (2026-04-18)
+*   **ADR Framework:** Projenin temel taşlarını (Tech Stack, Moderation, WhatsApp-first, Feature Gating) açıklayan ADR'lar `docs/adr/` altına eklendi.
+*   **Decision History:** Yeni geliştiriciler için projenin "neden" yapıldığına dair kalıcı dokümantasyon sağlandı.
 
 ## Domain Boundary Refactoring & Service Consolidation (2026-04-18)
 
