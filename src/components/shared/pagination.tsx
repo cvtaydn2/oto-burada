@@ -40,7 +40,7 @@ export function Pagination({
         return pages.map((page, index) => {
             if (page === "...") {
                 return (
-                    <span key={`dots-${index}`} className="flex size-10 items-center justify-center text-slate-400">
+                    <span key={`dots-${index}`} className="flex size-10 items-center justify-center text-muted-foreground/70">
                         <MoreHorizontal size={16} />
                     </span>
                 );
@@ -57,7 +57,7 @@ export function Pagination({
                         "flex size-10 items-center justify-center rounded-xl text-sm font-bold transition-all",
                         isActive 
                             ? "bg-indigo-600 text-white shadow-lg shadow-indigo-200 scale-110" 
-                            : "bg-white text-slate-600 border border-slate-200 hover:border-indigo-300 hover:text-indigo-600"
+                            : "bg-card text-muted-foreground border border-border hover:border-indigo-300 hover:text-indigo-600"
                     )}
                 >
                     {pageNum}
@@ -71,7 +71,7 @@ export function Pagination({
             <button
                 onClick={() => onPageChange(currentPage - 1)}
                 disabled={currentPage === 1}
-                className="flex size-10 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-600 hover:border-indigo-300 hover:text-indigo-600 disabled:opacity-30 disabled:pointer-events-none transition-all"
+                className="flex size-10 items-center justify-center rounded-xl border border-border bg-card text-muted-foreground hover:border-indigo-300 hover:text-indigo-600 disabled:opacity-30 disabled:pointer-events-none transition-all"
             >
                 <ChevronLeft size={18} />
             </button>
@@ -83,7 +83,7 @@ export function Pagination({
             <button
                 onClick={() => onPageChange(currentPage + 1)}
                 disabled={currentPage === totalPages}
-                className="flex size-10 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-600 hover:border-indigo-300 hover:text-indigo-600 disabled:opacity-30 disabled:pointer-events-none transition-all"
+                className="flex size-10 items-center justify-center rounded-xl border border-border bg-card text-muted-foreground hover:border-indigo-300 hover:text-indigo-600 disabled:opacity-30 disabled:pointer-events-none transition-all"
             >
                 <ChevronRight size={18} />
             </button>

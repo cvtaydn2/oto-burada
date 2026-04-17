@@ -53,7 +53,7 @@ export function FavoritesPriceAlerts() {
     <Card className="relative overflow-hidden border-blue-100 bg-blue-50/50 shadow-sm">
       <div className="absolute top-0 left-0 h-full w-1 bg-blue-400" />
       <CardHeader className="pb-4">
-        <CardTitle className="flex items-center gap-2 text-lg font-bold text-slate-900">
+        <CardTitle className="flex items-center gap-2 text-lg font-bold text-foreground">
           <Bell className="text-blue-500" size={20} />
           Fiyat Düşüşü Uyarı Ayarları
           <span className="ml-auto text-[10px] font-black uppercase tracking-widest text-blue-400 bg-blue-50 border border-blue-100 px-2 py-0.5 rounded-full">
@@ -63,12 +63,12 @@ export function FavoritesPriceAlerts() {
       </CardHeader>
       <CardContent>
         <div className="space-y-6">
-          <div className="rounded-xl bg-white border border-blue-100 p-4 text-sm text-slate-600 leading-relaxed">
+          <div className="rounded-xl bg-card border border-blue-100 p-4 text-sm text-muted-foreground leading-relaxed">
             Fiyat düşüşü bildirimleri özelliği yakında aktif olacak. Şu an bu ayarlar kaydedilmekte, ancak e-posta gönderimi henüz aktif değil.
           </div>
           <div className="opacity-60 pointer-events-none select-none">
-            <p className="mb-2 text-xs font-bold uppercase tracking-wider text-slate-400">Fiyat Hassasiyeti</p>
-            <p className="mb-3 text-xs text-slate-500">Fiyat en az ne kadar düştüğünde e-posta uyarısı almak istersiniz?</p>
+            <p className="mb-2 text-xs font-bold uppercase tracking-wider text-muted-foreground/70">Fiyat Hassasiyeti</p>
+            <p className="mb-3 text-xs text-muted-foreground">Fiyat en az ne kadar düştüğünde e-posta uyarısı almak istersiniz?</p>
             <div className="space-y-2">
               {[
                 { value: "2", label: "%2 ve Üzeri" },
@@ -76,7 +76,7 @@ export function FavoritesPriceAlerts() {
                 { value: "10", label: "%10 ve Üzeri" },
                 { value: "any", label: "Herhangi Bir Değişim" },
               ].map((option) => (
-                <label key={option.value} className="flex cursor-pointer items-center gap-3 rounded-lg p-3 hover:bg-white/50 transition-colors">
+                <label key={option.value} className="flex cursor-pointer items-center gap-3 rounded-lg p-3 hover:bg-card/50 transition-colors">
                   <div className="relative">
                     <input
                       type="radio"
@@ -86,16 +86,16 @@ export function FavoritesPriceAlerts() {
                       onChange={() => handleThresholdChange(option.value)}
                       className="peer sr-only"
                     />
-                    <div className="h-5 w-5 rounded-full border-2 border-slate-300 peer-checked:border-blue-500 peer-checked:bg-blue-500 after:absolute after:left-1.5 after:top-1.5 after:h-2 after:w-2 after:rounded-full after:bg-white peer-checked:after:bg-white" />
+                    <div className="h-5 w-5 rounded-full border-2 border-border peer-checked:border-blue-500 peer-checked:bg-blue-500 after:absolute after:left-1.5 after:top-1.5 after:h-2 after:w-2 after:rounded-full after:bg-card peer-checked:after:bg-card" />
                   </div>
-                  <span className="text-sm font-medium text-slate-700">{option.label}</span>
+                  <span className="text-sm font-medium text-foreground/90">{option.label}</span>
                 </label>
               ))}
             </div>
           </div>
 
           <div className="flex items-end justify-between pt-2">
-            <p className="text-[10px] italic text-slate-400">
+            <p className="text-[10px] italic text-muted-foreground/70">
               * Ayarlar tüm favori ilanlarınız için geçerli olacaktır.
             </p>
             <Button size="sm" className="bg-blue-500 hover:bg-blue-600" onClick={handleSave} disabled={isSaving}>

@@ -8,7 +8,7 @@ import { formatCurrency } from "@/lib/utils";
 const ContactActions = dynamic(
   () => import("./contact-actions").then((mod) => mod.ContactActions),
   {
-    loading: () => <div className="h-12 w-full animate-pulse rounded-xl bg-slate-100" />,
+    loading: () => <div className="h-12 w-full animate-pulse rounded-xl bg-muted" />,
   },
 );
 
@@ -34,12 +34,12 @@ export function MobileStickyActions({
 
     if (isOwnListing) return null;
     return (
-        <div className="fixed bottom-[88px] left-0 right-0 z-50 lg:hidden px-4 py-3 bg-white border-t border-slate-200 shadow-[0_-8px_30px_rgb(0,0,0,0.08)] animate-in fade-in slide-in-from-bottom-full duration-500">
+        <div className="fixed bottom-[88px] left-0 right-0 z-50 lg:hidden px-4 py-3 bg-card border-t border-border shadow-[0_-8px_30px_rgb(0,0,0,0.08)] animate-in fade-in slide-in-from-bottom-full duration-500">
             <div className="mx-auto flex max-w-7xl items-center justify-between gap-4">
                 <div className="flex flex-col">
-                    <span className="text-[10px] uppercase font-bold text-slate-400 tracking-wider">Fiyat</span>
-                    <div className="text-lg font-bold text-slate-900">
-                        {formatCurrency(price)} <span className="text-xs font-semibold text-slate-400">TL</span>
+                    <span className="text-[10px] uppercase font-bold text-muted-foreground/70 tracking-wider">Fiyat</span>
+                    <div className="text-lg font-bold text-foreground">
+                        {formatCurrency(price)} <span className="text-xs font-semibold text-muted-foreground/70">TL</span>
                     </div>
                 </div>
 

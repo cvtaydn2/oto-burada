@@ -12,25 +12,25 @@ export default function AboutPage() {
               <div className="h-px w-12 bg-primary" />
               <span className="text-[10px] font-black uppercase tracking-[0.3em] text-primary italic">Vizyon & Misyon</span>
            </div>
-           <h1 className="text-5xl md:text-7xl font-black tracking-tightest leading-tight text-slate-900 uppercase italic">
+           <h1 className="text-5xl md:text-7xl font-black tracking-tightest leading-tight text-foreground uppercase italic">
               YENİ NESİL <span className="text-primary block">OTO SHOWROOM</span>
            </h1>
-           <p className="text-lg font-medium text-slate-500 italic leading-relaxed">
+           <p className="text-lg font-medium text-muted-foreground italic leading-relaxed">
               OtoBurada, sadece bir ilan sitesi değil; güvenin, hızın ve şeffaflığın dijital buluşma noktasıdır. Amacımız, araç alım-satım sürecini bir yorgunluktan çıkarıp premium bir deneyime dönüştürmektir.
            </p>
            <div className="flex gap-4">
              <div className="px-6 py-4 rounded-2xl bg-slate-900 text-white shadow-xl shadow-slate-900/20">
                 <span className="block text-3xl font-black italic tracking-tighter">Ücretsiz</span>
-                <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Bireysel İlan</span>
+                <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/70">Bireysel İlan</span>
              </div>
-             <div className="px-6 py-4 rounded-2xl bg-white border border-slate-100 shadow-xl shadow-slate-200/20">
+             <div className="px-6 py-4 rounded-2xl bg-card border border-border/50 shadow-xl shadow-slate-200/20">
                 <span className="block text-3xl font-black italic tracking-tighter text-primary">Güvenli</span>
-                <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Moderasyonlu Platform</span>
+                <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/70">Moderasyonlu Platform</span>
              </div>
            </div>
         </div>
         <div className="lg:w-1/2 relative">
-          <div className="aspect-[4/3] rounded-[4rem] bg-slate-100 overflow-hidden shadow-3xl shadow-slate-200/50">
+          <div className="aspect-[4/3] rounded-[4rem] bg-muted overflow-hidden shadow-3xl shadow-slate-200/50">
              <div className="absolute inset-0 bg-gradient-to-tr from-slate-900/40 to-transparent z-10" />
              <Image 
                src="https://images.unsplash.com/photo-1560179707-f14e90ef3623?q=80&w=2073&auto=format&fit=crop" 
@@ -39,10 +39,10 @@ export default function AboutPage() {
                className="object-cover"
              />
           </div>
-          <div className="absolute -bottom-8 -left-8 bg-white p-8 rounded-[2.5rem] shadow-2xl border border-slate-100 z-20 hidden md:block">
+          <div className="absolute -bottom-8 -left-8 bg-card p-8 rounded-[2.5rem] shadow-2xl border border-border/50 z-20 hidden md:block">
              <ShieldCheck size={48} className="text-emerald-500 mb-4" />
-             <h4 className="font-black italic uppercase tracking-tighter text-slate-900">%100 Güvenli</h4>
-             <p className="text-[10px] font-medium text-slate-400">Doğrulanmış İlanlar</p>
+             <h4 className="font-black italic uppercase tracking-tighter text-foreground">%100 Güvenli</h4>
+             <p className="text-[10px] font-medium text-muted-foreground/70">Doğrulanmış İlanlar</p>
           </div>
         </div>
       </section>
@@ -53,7 +53,7 @@ export default function AboutPage() {
         
         <div className="relative z-10 flex flex-col items-center text-center max-w-3xl mx-auto space-y-10">
            <h2 className="text-4xl md:text-5xl font-black italic uppercase tracking-tighter">Showroom Elite <span className="text-primary italic">Felsefesi</span></h2>
-           <p className="text-slate-400 font-medium italic leading-relaxed">
+           <p className="text-muted-foreground/70 font-medium italic leading-relaxed">
              Pazarın karmaşıklığını ve güvensizliğini ortadan kaldırmak için &quot;Elite&quot; standartlarını belirledik. Her ilan, her kullanıcı ve her etkileşim bizim için bir prestij meselesidir.
            </p>
 
@@ -90,7 +90,7 @@ export default function AboutPage() {
             </Link>
             <Link 
               href="/contact" 
-              className="h-16 px-10 rounded-2xl bg-white border-2 border-slate-100 text-slate-900 flex items-center gap-3 text-sm font-black uppercase tracking-widest hover:border-primary transition-all italic group"
+              className="h-16 px-10 rounded-2xl bg-card border-2 border-border/50 text-foreground flex items-center gap-3 text-sm font-black uppercase tracking-widest hover:border-primary transition-all italic group"
             >
               BİZE ULAŞIN
             </Link>
@@ -102,12 +102,12 @@ export default function AboutPage() {
 
 function EliteValueCard({ icon, title, desc }: { icon: React.ReactNode, title: string, desc: string }) {
   return (
-    <div className="bg-white/5 border border-white/10 p-8 rounded-3xl hover:bg-white/10 transition-all group">
-       <div className="size-12 rounded-2xl bg-white/10 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+    <div className="bg-card/5 border border-white/10 p-8 rounded-3xl hover:bg-card/10 transition-all group">
+       <div className="size-12 rounded-2xl bg-card/10 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
           {icon}
        </div>
        <h3 className="text-sm font-black italic uppercase tracking-widest mb-3">{title}</h3>
-       <p className="text-[11px] font-medium text-slate-500 italic leading-relaxed">{desc}</p>
+       <p className="text-[11px] font-medium text-muted-foreground italic leading-relaxed">{desc}</p>
     </div>
   );
 }

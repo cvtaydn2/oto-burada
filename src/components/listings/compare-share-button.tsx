@@ -46,7 +46,7 @@ export function CompareShareButton({ ids }: CompareShareButtonProps) {
   return (
     <button
       onClick={() => void handleShare()}
-      className="flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-bold text-slate-600 hover:bg-slate-50 hover:border-slate-300 transition-all shadow-sm"
+      className="flex items-center gap-2 rounded-xl border border-border bg-card px-4 py-2.5 text-sm font-bold text-muted-foreground hover:bg-muted/30 hover:border-border transition-all shadow-sm"
     >
       {copied ? (
         <>

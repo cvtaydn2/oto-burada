@@ -44,7 +44,7 @@ export default async function ListingsPage({ searchParams }: ListingsPageProps) 
       <BreadcrumbStructuredData items={breadcrumbs.map(b => ({ name: b.name, url: buildAbsoluteUrl(b.url) }))} />
       <ListingStructuredData listings={result.listings} url={buildAbsoluteUrl("/listings")} />
       
-      <div className="min-h-screen bg-slate-50">
+      <div className="min-h-screen bg-muted/30">
         <ListingsPageClient
           initialResult={result}
           brands={references.brands}

@@ -21,12 +21,12 @@ const statusClasses: Record<StepStatus, string> = {
   blocked: "bg-rose-50 text-rose-600 border-rose-100",
   done: "bg-emerald-50 text-emerald-600 border-emerald-100",
   ready: "bg-blue-50 text-blue-600 border-blue-100",
-  todo: "bg-slate-50 text-slate-400 border-slate-100",
+  todo: "bg-muted/30 text-muted-foreground/70 border-border/50",
 };
 
 function formatCommand(command: string) {
   return (
-    <code className="block overflow-x-auto rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 font-mono text-[11px] text-slate-700 font-bold">
+    <code className="block overflow-x-auto rounded-xl border border-border bg-muted/30 px-3 py-2.5 font-mono text-[11px] text-foreground/90 font-bold">
       $ {command}
     </code>
   );
@@ -91,7 +91,7 @@ export function AdminPersistencePanel({ health }: AdminPersistencePanelProps) {
 
   return (
     <div className="space-y-8">
-      <section className="rounded-3xl border border-slate-200 bg-white p-6 lg:p-8 shadow-sm">
+      <section className="rounded-3xl border border-border bg-card p-6 lg:p-8 shadow-sm">
         <div className="grid gap-8 lg:grid-cols-[1fr_300px] items-center">
           <div className="flex items-start gap-4">
             <div className="flex size-14 shrink-0 items-center justify-center rounded-2xl bg-blue-50 text-blue-600 shadow-sm shadow-blue-50">
@@ -101,10 +101,10 @@ export function AdminPersistencePanel({ health }: AdminPersistencePanelProps) {
               <div className="flex items-center gap-2">
                  <span className="text-[10px] font-black text-blue-600 uppercase tracking-widest">Sistem Sağlığı</span>
                  <div className="size-1 rounded-full bg-slate-300" />
-                 <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest italic">{formatDate(new Date().toISOString())}</span>
+                 <span className="text-[10px] font-bold text-muted-foreground/70 uppercase tracking-widest italic">{formatDate(new Date().toISOString())}</span>
               </div>
-              <h2 className="text-2xl font-black text-slate-800 tracking-tight">Veri Katmanı Durumu</h2>
-              <p className="text-sm text-slate-500 font-medium max-w-xl">{health.message}</p>
+              <h2 className="text-2xl font-black text-foreground tracking-tight">Veri Katmanı Durumu</h2>
+              <p className="text-sm text-muted-foreground font-medium max-w-xl">{health.message}</p>
             </div>
           </div>
 
@@ -115,12 +115,12 @@ export function AdminPersistencePanel({ health }: AdminPersistencePanelProps) {
               Hazırlık Skoru
             </div>
             <div className="flex items-baseline gap-1">
-               <span className="text-4xl font-black text-slate-800 tracking-tighter">
+               <span className="text-4xl font-black text-foreground tracking-tighter">
                  {readyEnvCount}
                </span>
-               <span className="text-xl font-bold text-slate-400">/4</span>
+               <span className="text-xl font-bold text-muted-foreground/70">/4</span>
             </div>
-            <p className="mt-2 text-[11px] font-bold text-slate-500 uppercase tracking-wider">
+            <p className="mt-2 text-[11px] font-bold text-muted-foreground uppercase tracking-wider">
               Erişilebilir Tablo: <span className="text-blue-600 font-black">{accessibleTables}/{health.tables.length}</span>
             </p>
           </div>
@@ -175,10 +175,10 @@ export function AdminPersistencePanel({ health }: AdminPersistencePanelProps) {
             {health.tables.map((table) => (
               <div
                 key={table.key}
-                className="rounded-xl border border-slate-100 bg-slate-50 p-4 transition-all hover:border-blue-100 hover:bg-white hover:shadow-sm group"
+                className="rounded-xl border border-border/50 bg-muted/30 p-4 transition-all hover:border-blue-100 hover:bg-card hover:shadow-sm group"
               >
-                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest group-hover:text-blue-600 transition-colors">{table.label}</p>
-                <p className="mt-1 text-2xl font-black text-slate-800 tracking-tight">{table.count}</p>
+                <p className="text-[10px] font-bold text-muted-foreground/70 uppercase tracking-widest group-hover:text-blue-600 transition-colors">{table.label}</p>
+                <p className="mt-1 text-2xl font-black text-foreground tracking-tight">{table.count}</p>
               </div>
             ))}
           </div>
@@ -188,27 +188,27 @@ export function AdminPersistencePanel({ health }: AdminPersistencePanelProps) {
           <Info className="size-5 text-blue-500 shrink-0 mt-0.5" />
           <div className="space-y-1">
              <p className="text-[11px] font-black text-blue-600 uppercase tracking-widest">Storage Bilgisi</p>
-             <p className="text-sm text-slate-600 font-medium leading-relaxed">{health.storage.message}</p>
+             <p className="text-sm text-muted-foreground font-medium leading-relaxed">{health.storage.message}</p>
           </div>
         </div>
       </section>
 
-      <section className="rounded-3xl border border-slate-200 bg-slate-100/50 p-6 lg:p-8">
+      <section className="rounded-3xl border border-border bg-muted/50 p-6 lg:p-8">
         <div className="flex items-center gap-4 mb-8">
-          <div className="flex size-12 shrink-0 items-center justify-center rounded-2xl bg-white text-blue-600 shadow-sm border border-slate-200">
+          <div className="flex size-12 shrink-0 items-center justify-center rounded-2xl bg-card text-blue-600 shadow-sm border border-border">
             <TerminalSquare size={24} />
           </div>
           <div className="space-y-0.5">
-            <h3 className="text-xl font-black text-slate-800 tracking-tight">Migration Runbook</h3>
-            <p className="text-sm text-slate-500 font-medium">Sistemi sıfırdan kurmak veya güncellemek için izlenecek adımlar</p>
+            <h3 className="text-xl font-black text-foreground tracking-tight">Migration Runbook</h3>
+            <p className="text-sm text-muted-foreground font-medium">Sistemi sıfırdan kurmak veya güncellemek için izlenecek adımlar</p>
           </div>
         </div>
 
         <div className="grid gap-6 lg:grid-cols-2">
           {runbook.map((step) => (
-            <div key={step.title} className="rounded-2xl border border-slate-100 bg-white p-6 shadow-sm hover:border-blue-200 transition-all">
+            <div key={step.title} className="rounded-2xl border border-border/50 bg-card p-6 shadow-sm hover:border-blue-200 transition-all">
               <div className="flex items-center justify-between gap-4 mb-4">
-                <p className="text-base font-black text-slate-800">{step.title}</p>
+                <p className="text-base font-black text-foreground">{step.title}</p>
                 <span className={cn(
                   "px-3 py-1 rounded-lg text-[10px] font-black uppercase tracking-widest border",
                   statusClasses[step.status]
@@ -216,7 +216,7 @@ export function AdminPersistencePanel({ health }: AdminPersistencePanelProps) {
                   {statusLabel[step.status]}
                 </span>
               </div>
-              <p className="text-sm text-slate-500 font-medium leading-relaxed mb-6">{step.description}</p>
+              <p className="text-sm text-muted-foreground font-medium leading-relaxed mb-6">{step.description}</p>
               <div className="mt-auto">{formatCommand(step.command)}</div>
             </div>
           ))}

@@ -142,7 +142,7 @@ export function AdvancedFilterPage({
 
         {/* Sol Sidebar — Kategori Navigasyonu */}
         <aside className="w-full md:w-64 shrink-0">
-          <div className="bg-white border border-gray-200 rounded-xl overflow-hidden sticky top-24 shadow-sm">
+          <div className="bg-card border border-gray-200 rounded-xl overflow-hidden sticky top-24 shadow-sm">
             <div className="p-4 border-b border-gray-100">
               <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-3 px-2">Kategoriler</p>
               <nav className="space-y-1">
@@ -195,14 +195,14 @@ export function AdvancedFilterPage({
         </aside>
 
         {/* Ana İçerik */}
-        <main className="flex-1 bg-white border border-gray-200 rounded-xl p-6 md:p-8 shadow-sm">
+        <main className="flex-1 bg-card border border-gray-200 rounded-xl p-6 md:p-8 shadow-sm">
 
           {/* Header */}
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 pb-6 border-b border-gray-100 gap-4">
             <div className="flex items-center gap-3">
               <Link
                 href="/listings"
-                className="flex size-9 items-center justify-center rounded-lg border border-gray-200 bg-white text-gray-500 hover:text-blue-500 hover:border-blue-200 transition"
+                className="flex size-9 items-center justify-center rounded-lg border border-gray-200 bg-card text-gray-500 hover:text-blue-500 hover:border-blue-200 transition"
               >
                 <ArrowLeft size={16} />
               </Link>
@@ -214,7 +214,7 @@ export function AdvancedFilterPage({
             <div className="flex flex-wrap gap-2">
               <button
                 onClick={handleReset}
-                className="flex items-center gap-2 bg-white border border-gray-200 text-gray-600 px-4 py-2 rounded-lg text-sm font-medium hover:bg-gray-50 transition"
+                className="flex items-center gap-2 bg-card border border-gray-200 text-gray-600 px-4 py-2 rounded-lg text-sm font-medium hover:bg-gray-50 transition"
               >
                 <RotateCcw size={14} />
                 Sıfırla
@@ -261,7 +261,7 @@ export function AdvancedFilterPage({
                         updateFilter("model", undefined);
                         updateFilter("carTrim", undefined);
                       }}
-                      className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:border-blue-500 outline-none bg-white"
+                      className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:border-blue-500 outline-none bg-card"
                     >
                       <option value="">Örn: BMW, Mercedes, Toyota...</option>
                       {brands.map(b => <option key={b.brand} value={b.brand}>{b.brand}</option>)}
@@ -276,7 +276,7 @@ export function AdvancedFilterPage({
                         updateFilter("carTrim", undefined);
                       }}
                       disabled={!filters.brand}
-                      className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:border-blue-500 outline-none bg-white disabled:bg-gray-50 disabled:text-gray-400 disabled:cursor-not-allowed"
+                      className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:border-blue-500 outline-none bg-card disabled:bg-gray-50 disabled:text-gray-400 disabled:cursor-not-allowed"
                     >
                       <option value="">Örn: 3 Serisi, C Serisi...</option>
                       {models.map(m => <option key={m} value={m}>{m}</option>)}
@@ -288,7 +288,7 @@ export function AdvancedFilterPage({
                       value={filters.carTrim ?? ""}
                       onChange={(e) => updateFilter("carTrim", e.target.value || undefined)}
                       disabled={!filters.model}
-                      className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:border-blue-500 outline-none bg-white disabled:bg-gray-50 disabled:text-gray-400 disabled:cursor-not-allowed"
+                      className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:border-blue-500 outline-none bg-card disabled:bg-gray-50 disabled:text-gray-400 disabled:cursor-not-allowed"
                     >
                       <option value="">Örn: M Sport, AMG, Vision...</option>
                       {trims.map(t => <option key={t} value={t}>{t}</option>)}
@@ -323,7 +323,7 @@ export function AdvancedFilterPage({
                         placeholder="Maks. Kilometre"
                         value={filters.maxMileage ?? ""}
                         onChange={(e) => updateFilter("maxMileage", e.target.value ? Number(e.target.value) : undefined)}
-                        className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:border-blue-500 outline-none bg-white mb-3"
+                        className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:border-blue-500 outline-none bg-card mb-3"
                       />
                       <div className="flex flex-wrap gap-2">
                         {[50000, 100000, 150000, 200000, 300000].map((km) => (
@@ -334,7 +334,7 @@ export function AdvancedFilterPage({
                               "px-3 py-1.5 rounded-lg text-xs font-medium border transition",
                               filters.maxMileage === km
                                 ? "bg-blue-500 text-white border-blue-500"
-                                : "bg-white text-gray-600 border-gray-200 hover:border-blue-300"
+                                : "bg-card text-gray-600 border-gray-200 hover:border-blue-300"
                             )}
                           >
                             {km >= 1000 ? `${km / 1000}K km` : `${km} km`}
@@ -371,7 +371,7 @@ export function AdvancedFilterPage({
                       "px-4 py-2 rounded-lg text-sm font-medium border transition",
                       filters.minYear === year
                         ? "bg-blue-500 text-white border-blue-500"
-                        : "bg-white text-gray-600 border-gray-200 hover:border-blue-300"
+                        : "bg-card text-gray-600 border-gray-200 hover:border-blue-300"
                     )}
                   >
                     {year}+
@@ -413,7 +413,7 @@ export function AdvancedFilterPage({
                           updateFilter("city", e.target.value || undefined);
                           updateFilter("district", undefined);
                         }}
-                        className="px-3 py-1.5 rounded-lg text-sm font-medium border border-dashed border-gray-300 text-gray-500 bg-white hover:border-blue-300 outline-none cursor-pointer"
+                        className="px-3 py-1.5 rounded-lg text-sm font-medium border border-dashed border-gray-300 text-gray-500 bg-card hover:border-blue-300 outline-none cursor-pointer"
                       >
                         <option value="">+ Diğer</option>
                         {cities
@@ -428,7 +428,7 @@ export function AdvancedFilterPage({
                       value={filters.district ?? ""}
                       onChange={(e) => updateFilter("district", e.target.value || undefined)}
                       disabled={!filters.city}
-                      className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:border-blue-500 outline-none bg-white disabled:bg-gray-50 disabled:text-gray-400 disabled:cursor-not-allowed"
+                      className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:border-blue-500 outline-none bg-card disabled:bg-gray-50 disabled:text-gray-400 disabled:cursor-not-allowed"
                     >
                       <option value="">Tüm İlçeler</option>
                       {districts.map(d => <option key={d} value={d}>{d}</option>)}
@@ -588,7 +588,7 @@ function RangeInput({
           placeholder={minPlaceholder}
           value={minValue ?? ""}
           onChange={(e) => onMinChange(e.target.value ? Number(e.target.value) : undefined)}
-          className="w-1/2 border border-gray-200 rounded-lg px-3 py-2 text-sm text-center focus:border-blue-500 outline-none bg-white"
+          className="w-1/2 border border-gray-200 rounded-lg px-3 py-2 text-sm text-center focus:border-blue-500 outline-none bg-card"
         />
         <span className="text-gray-400 text-sm">—</span>
         <input
@@ -596,7 +596,7 @@ function RangeInput({
           placeholder={maxPlaceholder}
           value={maxValue ?? ""}
           onChange={(e) => onMaxChange(e.target.value ? Number(e.target.value) : undefined)}
-          className="w-1/2 border border-gray-200 rounded-lg px-3 py-2 text-sm text-center focus:border-blue-500 outline-none bg-white"
+          className="w-1/2 border border-gray-200 rounded-lg px-3 py-2 text-sm text-center focus:border-blue-500 outline-none bg-card"
         />
       </div>
     </div>

@@ -88,13 +88,13 @@ export default async function LandingPage({ params }: LandingPageProps) {
         url={buildAbsoluteUrl(`/satilik/${brandSlug}${citySlug ? `/${citySlug}` : ""}`)} 
       />
       
-      <div className="bg-white border-b border-slate-200">
+      <div className="bg-card border-b border-border">
         <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
           <Breadcrumbs items={breadcrumbs.slice(1)} />
-          <h1 className="text-3xl font-bold tracking-tight text-slate-900 sm:text-4xl">
+          <h1 className="text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
             Satılık {city ? `${city} ` : ""}{brand} İlanları
           </h1>
-          <p className="mt-4 text-lg text-slate-500 max-w-3xl">
+          <p className="mt-4 text-lg text-muted-foreground max-w-3xl">
             {city ?? "Türkiye"} genelindeki en güncel {brand} ilanlarını keşfet. {brand} modelleri arasından bütçene ve kriterlerine en uygun olanı hemen bul.
           </p>
         </div>

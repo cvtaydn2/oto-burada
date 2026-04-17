@@ -11,7 +11,7 @@ export default async function AracimNeKadarPage() {
   const references = await getLiveMarketplaceReferenceData();
 
   return (
-    <main className="min-h-screen bg-slate-50 pb-20">
+    <main className="min-h-screen bg-muted/30 pb-20">
       {/* Hero Header */}
       <section className="relative overflow-hidden bg-slate-900 pt-20 pb-24 text-white">
         {/* Background Patterns */}
@@ -20,14 +20,14 @@ export default async function AracimNeKadarPage() {
         </div>
 
         <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 text-center space-y-6">
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 border border-white/20 text-xs font-bold uppercase tracking-widest text-primary-foreground mb-4">
+          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-card/10 border border-white/20 text-xs font-bold uppercase tracking-widest text-primary-foreground mb-4">
             <Calculator size={14} />
             Yapay Zeka Destekli Değerleme
           </div>
           <h1 className="text-4xl md:text-6xl font-black tracking-tighter italic uppercase leading-none">
             Aracım <span className="text-primary">Ne Kadar?</span>
           </h1>
-          <p className="max-w-2xl mx-auto text-lg text-slate-400 font-medium italic">
+          <p className="max-w-2xl mx-auto text-lg text-muted-foreground/70 font-medium italic">
             Piyasadaki binlerce aktif ilanı ve geçmiş verileri analiz ederek aracınızın güncel değerini anında hesaplayın.
           </p>
         </div>
@@ -38,7 +38,7 @@ export default async function AracimNeKadarPage() {
         <div className="grid lg:grid-cols-[1fr_350px] gap-8">
           
           {/* Main Form Area */}
-          <div className="bg-white rounded-[2.5rem] p-8 md:p-12 shadow-2xl shadow-slate-200 border border-border">
+          <div className="bg-card rounded-[2.5rem] p-8 md:p-12 shadow-2xl shadow-slate-200 border border-border">
              <div className="flex items-center gap-4 mb-8">
                 <div className="size-12 rounded-2xl bg-primary/10 flex items-center justify-center text-primary">
                    <CarFront size={24} />
@@ -75,7 +75,7 @@ export default async function AracimNeKadarPage() {
                 </ul>
              </div>
 
-             <div className="p-6 rounded-3xl bg-white border border-border shadow-sm space-y-4">
+             <div className="p-6 rounded-3xl bg-card border border-border shadow-sm space-y-4">
                 <div className="flex items-center gap-2 text-amber-600">
                    <Info size={18} />
                    <span className="text-sm font-black italic uppercase">Biliyor musunuz?</span>

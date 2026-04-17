@@ -762,7 +762,7 @@ export function ListingCreateForm({
               type="button"
               onClick={handlePrevStep}
               disabled={isSubmitting}
-              className="bg-white border border-gray-300 text-gray-700 font-bold px-8 py-3 rounded-xl hover:bg-gray-50 transition shadow-sm disabled:opacity-50"
+              className="bg-card border border-gray-300 text-gray-700 font-bold px-8 py-3 rounded-xl hover:bg-gray-50 transition shadow-sm disabled:opacity-50"
             >
               Geri
             </button>

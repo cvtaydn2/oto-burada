@@ -9,7 +9,7 @@ export default async function AdminSettingsPage() {
   const initialSettings = await getPlatformSettings();
 
   return (
-    <main className="p-6 lg:p-8 bg-slate-50/30 min-h-full">
+    <main className="p-6 lg:p-8 bg-muted/30/30 min-h-full">
       <AdminSettingsForm initialSettings={initialSettings} />
     </main>
   );

@@ -41,7 +41,7 @@ export function PWAInstallPrompt() {
 
   return (
     <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 w-[92%] max-w-sm animate-in fade-in slide-in-from-bottom-5 duration-500">
-      <div className="bg-white/95 backdrop-blur-xl border border-border shadow-2xl rounded-2xl p-4 overflow-hidden">
+      <div className="bg-card/95 backdrop-blur-xl border border-border shadow-2xl rounded-2xl p-4 overflow-hidden">
         <button 
           onClick={handleDismiss}
           className="absolute top-2 right-2 p-1 text-muted-foreground hover:bg-muted rounded-full transition-colors"
@@ -54,16 +54,16 @@ export function PWAInstallPrompt() {
             <Download className="text-white" size={20} />
           </div>
           <div className="flex-1 pr-4">
-            <h3 className="font-bold text-slate-900 text-sm leading-tight">OtoBurada&apos;yı Yükle</h3>
-            <p className="text-[10px] text-slate-500 mt-0.5">İlanlara ana ekranından anında ulaş.</p>
+            <h3 className="font-bold text-foreground text-sm leading-tight">OtoBurada&apos;yı Yükle</h3>
+            <p className="text-[10px] text-muted-foreground mt-0.5">İlanlara ana ekranından anında ulaş.</p>
           </div>
         </div>
  
-        <div className="mt-3 pt-3 border-t border-slate-100/50">
+        <div className="mt-3 pt-3 border-t border-border/50/50">
           {platform === "ios" ? (
-            <div className="flex items-center gap-2 text-[11px] text-slate-700 font-medium">
+            <div className="flex items-center gap-2 text-[11px] text-foreground/90 font-medium">
               <span>Alttaki</span>
-              <div className="p-0.5 bg-slate-100 rounded text-slate-900">
+              <div className="p-0.5 bg-muted rounded text-foreground">
                 <Share size={12} />
               </div>
               <span>butonuna basıp &quot;Ana Ekrana Ekle&quot;yi seçin.</span>

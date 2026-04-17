@@ -18,15 +18,15 @@ export default async function CorporateSettingsPage() {
         <div className="flex items-center gap-4">
           <Link
             href="/dashboard/profile"
-            className="size-10 rounded-xl border border-slate-200 bg-white flex items-center justify-center text-slate-500 hover:text-blue-500 hover:border-blue-200 transition-colors shadow-sm"
+            className="size-10 rounded-xl border border-border bg-card flex items-center justify-center text-muted-foreground hover:text-blue-500 hover:border-blue-200 transition-colors shadow-sm"
           >
             <ArrowLeft size={18} />
           </Link>
           <div>
-            <h1 className="text-2xl font-bold text-slate-900">
+            <h1 className="text-2xl font-bold text-foreground">
               Kurumsal Mağaza Ayarları
             </h1>
-            <p className="text-sm text-slate-500 mt-0.5">Profesyonel galeri kimliğinizi yönetin</p>
+            <p className="text-sm text-muted-foreground mt-0.5">Profesyonel galeri kimliğinizi yönetin</p>
           </div>
         </div>
         {profile.verifiedBusiness && (
@@ -53,34 +53,34 @@ export default async function CorporateSettingsPage() {
       {/* Stats (if corporate) */}
       {profile.businessName && (
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          <div className="rounded-xl border border-slate-200 bg-white p-4 flex items-center gap-3 shadow-sm">
+          <div className="rounded-xl border border-border bg-card p-4 flex items-center gap-3 shadow-sm">
             <div className="size-10 rounded-lg bg-blue-50 flex items-center justify-center text-blue-500">
               <Building2 size={18} />
             </div>
             <div>
-              <p className="text-xs text-slate-500 font-medium">Galeri Adı</p>
-              <p className="text-sm font-bold text-slate-900 truncate">{profile.businessName}</p>
+              <p className="text-xs text-muted-foreground font-medium">Galeri Adı</p>
+              <p className="text-sm font-bold text-foreground truncate">{profile.businessName}</p>
             </div>
           </div>
           {profile.websiteUrl && (
-            <div className="rounded-xl border border-slate-200 bg-white p-4 flex items-center gap-3 shadow-sm">
+            <div className="rounded-xl border border-border bg-card p-4 flex items-center gap-3 shadow-sm">
               <div className="size-10 rounded-lg bg-emerald-50 flex items-center justify-center text-emerald-500">
                 <Globe size={18} />
               </div>
               <div>
-                <p className="text-xs text-slate-500 font-medium">Web Sitesi</p>
-                <p className="text-sm font-bold text-slate-900 truncate">{profile.websiteUrl.replace(/^https?:\/\//, "")}</p>
+                <p className="text-xs text-muted-foreground font-medium">Web Sitesi</p>
+                <p className="text-sm font-bold text-foreground truncate">{profile.websiteUrl.replace(/^https?:\/\//, "")}</p>
               </div>
             </div>
           )}
           {profile.businessAddress && (
-            <div className="rounded-xl border border-slate-200 bg-white p-4 flex items-center gap-3 shadow-sm">
+            <div className="rounded-xl border border-border bg-card p-4 flex items-center gap-3 shadow-sm">
               <div className="size-10 rounded-lg bg-orange-50 flex items-center justify-center text-orange-500">
                 <MapPin size={18} />
               </div>
               <div>
-                <p className="text-xs text-slate-500 font-medium">Adres</p>
-                <p className="text-sm font-bold text-slate-900 truncate">{profile.businessAddress}</p>
+                <p className="text-xs text-muted-foreground font-medium">Adres</p>
+                <p className="text-sm font-bold text-foreground truncate">{profile.businessAddress}</p>
               </div>
             </div>
           )}

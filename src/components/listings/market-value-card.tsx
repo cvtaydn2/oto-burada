@@ -34,7 +34,7 @@ export function MarketValueCard({ listing }: MarketValueCardProps) {
               <span className="text-lg font-bold text-gray-800 leading-tight">AI Rayiç Değer</span>
            </div>
         </div>
-        <div className="p-2 rounded-lg bg-white border border-gray-100 cursor-help group relative">
+        <div className="p-2 rounded-lg bg-card border border-gray-100 cursor-help group relative">
            <Info size={16} className="text-gray-400 group-hover:text-blue-500 transition-colors" />
            <div className="absolute bottom-full right-0 mb-3 w-64 p-4 bg-gray-900 text-white text-[11px] rounded-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all shadow-xl z-20 font-medium leading-relaxed border border-white/10">
               Bu değer; aracın markası, modeli, yılı, kilometresi ve <strong className="text-blue-300">ekspertiz durumu</strong> analiz edilerek OtoBurada AI tarafından hesaplanmaktadır.
@@ -48,17 +48,17 @@ export function MarketValueCard({ listing }: MarketValueCardProps) {
         </div>
         <div className="flex items-center gap-2">
           {isOpportunity ? (
-            <div className="flex items-center gap-1.5 text-emerald-600 text-[10px] font-bold uppercase tracking-widest bg-white py-1.5 px-3 rounded-full border border-emerald-100 shadow-sm">
+            <div className="flex items-center gap-1.5 text-emerald-600 text-[10px] font-bold uppercase tracking-widest bg-card py-1.5 px-3 rounded-full border border-emerald-100 shadow-sm">
               <TrendingDown size={14} className="animate-bounce" />
               SÜPER FIRSAT
             </div>
           ) : isOverpriced ? (
-            <div className="flex items-center gap-1.5 text-rose-600 text-[10px] font-bold uppercase tracking-widest bg-white py-1.5 px-3 rounded-full border border-rose-100 shadow-sm">
+            <div className="flex items-center gap-1.5 text-rose-600 text-[10px] font-bold uppercase tracking-widest bg-card py-1.5 px-3 rounded-full border border-rose-100 shadow-sm">
               <TrendingUp size={14} />
               Piyasa Üstü
             </div>
           ) : (
-            <div className="flex items-center gap-1.5 text-blue-600 text-[10px] font-bold uppercase tracking-widest bg-white py-1.5 px-3 rounded-full border border-blue-100 shadow-sm">
+            <div className="flex items-center gap-1.5 text-blue-600 text-[10px] font-bold uppercase tracking-widest bg-card py-1.5 px-3 rounded-full border border-blue-100 shadow-sm">
               <Target size={14} />
               Adil Fiyat
             </div>
@@ -70,7 +70,7 @@ export function MarketValueCard({ listing }: MarketValueCardProps) {
         <div className={`p-4 rounded-xl text-xs font-semibold leading-relaxed border ${
           isOpportunity 
             ? "bg-emerald-500/5 border-emerald-500/10 text-emerald-800" 
-            : "bg-white/50 border-gray-100 text-gray-600"
+            : "bg-card/50 border-gray-100 text-gray-600"
         }`}>
           {analysis.advice}
         </div>

@@ -44,20 +44,20 @@ export default async function SellerProfilePage({ params }: SellerProfilePagePro
   return (
     <div className="mx-auto max-w-[1280px] space-y-6 px-4 py-6 sm:px-6 lg:px-6 lg:py-8">
       {/* Seller Header */}
-      <section className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
+      <section className="overflow-hidden rounded-xl border border-border bg-card shadow-sm">
         {/* Cover */}
-        <div className="h-16 bg-slate-100 sm:h-20" />
+        <div className="h-16 bg-muted sm:h-20" />
         
         <div className="relative px-6 pb-8 sm:px-8">
           <div className="-mt-10 flex flex-col items-start gap-5 sm:-mt-12 sm:flex-row sm:items-end">
             {/* Avatar */}
-            <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-xl border-4 border-white bg-slate-100 text-xl font-bold text-slate-500 shadow sm:h-16 sm:w-16 sm:text-2xl">
+            <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-xl border-4 border-white bg-muted text-xl font-bold text-muted-foreground shadow sm:h-16 sm:w-16 sm:text-2xl">
               {seller.fullName?.[0]?.toUpperCase() ?? "S"}
             </div>
             
             <div className="min-w-0 flex-1">
               <div className="mb-2 flex items-center gap-2 flex-wrap">
-                <h1 className="text-2xl font-bold text-slate-900 sm:text-3xl">
+                <h1 className="text-2xl font-bold text-foreground sm:text-3xl">
                   {seller.fullName || "İsimsiz Satıcı"}
                 </h1>
                 {sellerListings.some(l => l.featured) && (
@@ -67,13 +67,13 @@ export default async function SellerProfilePage({ params }: SellerProfilePagePro
                   </span>
                 )}
               </div>
-              <div className="flex flex-wrap items-center gap-4 text-sm text-slate-500">
+              <div className="flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
                 <span className="flex items-center gap-1.5">
-                  <MapPin size={14} className="text-slate-400" /> 
+                  <MapPin size={14} className="text-muted-foreground/70" /> 
                   {seller.city || "Konum belirtilmedi"}
                 </span>
                 <span className="flex items-center gap-1.5">
-                  <Calendar size={14} className="text-slate-400" />
+                  <Calendar size={14} className="text-muted-foreground/70" />
                   {memberSinceYear} den beri üye
                 </span>
                 <span className="inline-flex items-center rounded-full bg-primary/10 px-3 py-1 text-xs font-medium text-primary">
@@ -99,47 +99,47 @@ export default async function SellerProfilePage({ params }: SellerProfilePagePro
 
           {/* Stats Cards */}
           <div className="mt-6 grid gap-3 sm:grid-cols-3">
-            <div className="rounded-lg border border-slate-200 bg-white p-4">
+            <div className="rounded-lg border border-border bg-card p-4">
               <div className="flex items-center gap-3">
-                <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-slate-100 text-slate-500">
+                <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-muted text-muted-foreground">
                   <Car size={18} />
                 </div>
                 <div>
-                  <div className="text-xl font-bold text-slate-900">{totalListingsCount}</div>
-                  <div className="text-xs text-slate-500 font-medium">Aktif ilan</div>
+                  <div className="text-xl font-bold text-foreground">{totalListingsCount}</div>
+                  <div className="text-xs text-muted-foreground font-medium">Aktif ilan</div>
                 </div>
               </div>
             </div>
 
-            <div className="rounded-lg border border-slate-200 bg-white p-4">
+            <div className="rounded-lg border border-border bg-card p-4">
               <div className="flex items-center gap-3">
-                <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-slate-100 text-slate-500">
+                <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-muted text-muted-foreground">
                   <CheckCircle2 size={18} />
                 </div>
                 <div>
-                  <div className="text-xl font-bold text-slate-900">{featuredListingCount}</div>
-                  <div className="text-xs text-slate-500 font-medium">Öne çıkan ilan</div>
+                  <div className="text-xl font-bold text-foreground">{featuredListingCount}</div>
+                  <div className="text-xs text-muted-foreground font-medium">Öne çıkan ilan</div>
                 </div>
               </div>
             </div>
 
-            <div className="rounded-lg border border-slate-200 bg-white p-4">
+            <div className="rounded-lg border border-border bg-card p-4">
               <div className="flex items-center gap-3">
-                <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-slate-100 text-slate-500">
+                <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-muted text-muted-foreground">
                   <Clock size={18} />
                 </div>
                 <div>
-                  <div className="text-xl font-bold text-slate-900">{memberSinceYear}</div>
-                  <div className="text-xs text-slate-500 font-medium">Üyelik yılı</div>
+                  <div className="text-xl font-bold text-foreground">{memberSinceYear}</div>
+                  <div className="text-xs text-muted-foreground font-medium">Üyelik yılı</div>
                 </div>
               </div>
             </div>
           </div>
 
           {/* Trust Section */}
-          <div className="mt-5 rounded-lg bg-slate-50 p-4">
+          <div className="mt-5 rounded-lg bg-muted/30 p-4">
             <div className="mb-3 flex items-center justify-between">
-              <h3 className="text-sm font-semibold text-slate-900">Güvenilirlik özeti</h3>
+              <h3 className="text-sm font-semibold text-foreground">Güvenilirlik özeti</h3>
               {ratingSummary.count > 0 && (
                 <SellerRatingInfo
                   average={ratingSummary.average}
@@ -166,7 +166,7 @@ export default async function SellerProfilePage({ params }: SellerProfilePagePro
       {/* Seller Listings */}
       <section className="space-y-4">
         <div className="flex items-center justify-between">
-          <h2 className="text-xl font-bold text-slate-900 sm:text-2xl">
+          <h2 className="text-xl font-bold text-foreground sm:text-2xl">
             Satıcının İlanları ({totalListingsCount})
           </h2>
         </div>
@@ -178,12 +178,12 @@ export default async function SellerProfilePage({ params }: SellerProfilePagePro
             ))}
           </div>
         ) : (
-          <div className="rounded-xl border border-dashed border-slate-200 bg-slate-50 p-10 text-center">
-            <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-slate-100">
-              <Car size={32} className="text-slate-400" />
+          <div className="rounded-xl border border-dashed border-border bg-muted/30 p-10 text-center">
+            <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-muted">
+              <Car size={32} className="text-muted-foreground/70" />
             </div>
-            <h3 className="mb-2 text-lg font-semibold text-slate-900">Bu satıcının aktif ilanı yok</h3>
-            <p className="text-slate-500">Satıcı henüz araç ilanı yayınlamamış.</p>
+            <h3 className="mb-2 text-lg font-semibold text-foreground">Bu satıcının aktif ilanı yok</h3>
+            <p className="text-muted-foreground">Satıcı henüz araç ilanı yayınlamamış.</p>
           </div>
         )}
       </section>
@@ -192,7 +192,7 @@ export default async function SellerProfilePage({ params }: SellerProfilePagePro
       {reviews.length > 0 && (
         <section className="space-y-4">
           <div className="flex items-center gap-3">
-            <h2 className="text-xl font-bold text-slate-900 sm:text-2xl">
+            <h2 className="text-xl font-bold text-foreground sm:text-2xl">
               Değerlendirmeler
             </h2>
             <SellerRatingInfo
@@ -204,18 +204,18 @@ export default async function SellerProfilePage({ params }: SellerProfilePagePro
             {reviews.map((review) => (
               <div
                 key={review.id}
-                className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm"
+                className="rounded-xl border border-border bg-card p-5 shadow-sm"
               >
                 <div className="mb-3 flex items-start justify-between gap-3">
                   <div className="flex items-center gap-3">
-                    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-slate-100 text-sm font-bold text-slate-500">
+                    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-muted text-sm font-bold text-muted-foreground">
                       {review.reviewer?.full_name?.[0]?.toUpperCase() ?? "K"}
                     </div>
                     <div>
-                      <p className="text-sm font-semibold text-slate-900">
+                      <p className="text-sm font-semibold text-foreground">
                         {review.reviewer?.full_name ?? "Anonim"}
                       </p>
-                      <p className="text-xs text-slate-400">
+                      <p className="text-xs text-muted-foreground/70">
                         {new Date(review.created_at).toLocaleDateString("tr-TR", {
                           day: "numeric",
                           month: "long",
@@ -239,7 +239,7 @@ export default async function SellerProfilePage({ params }: SellerProfilePagePro
                   </div>
                 </div>
                 {review.comment && (
-                  <p className="text-sm leading-relaxed text-slate-600">{review.comment}</p>
+                  <p className="text-sm leading-relaxed text-muted-foreground">{review.comment}</p>
                 )}
               </div>
             ))}

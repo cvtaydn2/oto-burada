@@ -20,7 +20,7 @@ export function VisualDamageMap({ damageStatus, className }: VisualDamageMapProp
   const getStatus = (part: string) => damageStatus[part] || "orjinal";
 
   return (
-    <div className={cn("relative flex items-center justify-center rounded-3xl border border-slate-100 bg-slate-50/30 p-4", className)}>
+    <div className={cn("relative flex items-center justify-center rounded-3xl border border-border/50 bg-muted/30/30 p-4", className)}>
       <svg viewBox="0 0 240 460" className="h-auto w-full max-w-[180px] drop-shadow-lg">
         {/* Base Car Body Shadow */}
         <path d="M50,40 Q50,20 120,20 Q190,20 190,40 L195,100 L200,300 Q200,440 120,440 Q40,440 40,300 L45,100 Z" fill="rgba(0,0,0,0.05)" />
@@ -120,9 +120,9 @@ export function VisualDamageMap({ damageStatus, className }: VisualDamageMapProp
       {/* Legend for Visual Map */}
       <div className="absolute bottom-2 right-4 flex flex-col gap-1 items-end">
         {(["boyali", "degisen"] as const).map(s => (
-           <div key={s} className="flex items-center gap-1.5 bg-white/90 backdrop-blur-sm px-2.5 py-1 rounded-lg border border-slate-200 shadow-sm">
+           <div key={s} className="flex items-center gap-1.5 bg-card/90 backdrop-blur-sm px-2.5 py-1 rounded-lg border border-border shadow-sm">
               <div className={cn("size-2.5 rounded-full", s === "boyali" ? "bg-amber-400" : "bg-red-400")} />
-              <span className="text-[11px] font-bold uppercase tracking-tight text-slate-700">
+              <span className="text-[11px] font-bold uppercase tracking-tight text-foreground/90">
                 {carPartDamageStatusLabels[s]}
               </span>
            </div>

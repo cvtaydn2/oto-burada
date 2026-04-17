@@ -28,20 +28,20 @@ export function SafeWhatsAppButton({ whatsappLink }: SafeWhatsAppButtonProps) {
           WhatsApp ile İletişime Geç
         </button>
       </AlertDialogTrigger>
-      <AlertDialogContent className="max-w-md bg-white border border-slate-200">
+      <AlertDialogContent className="max-w-md bg-card border border-border">
         <AlertDialogHeader className="text-left space-y-3">
           <div className="flex size-14 items-center justify-center rounded-2xl bg-amber-50 text-amber-600 border border-amber-100">
             <ShieldAlert className="size-7" />
           </div>
-          <AlertDialogTitle className="text-xl font-bold text-slate-900">
+          <AlertDialogTitle className="text-xl font-bold text-foreground">
             Güvenlik Uyarısı
           </AlertDialogTitle>
-          <AlertDialogDescription className="text-slate-600 space-y-4" asChild>
+          <AlertDialogDescription className="text-muted-foreground space-y-4" asChild>
             <div className="space-y-4">
               <p>
                 Araç alım satımında kötü niyetli kişilere karşı lütfen dikkatli olun.
               </p>
-              <ul className="space-y-3 text-sm text-slate-700 bg-slate-50 p-4 rounded-xl border border-slate-200">
+              <ul className="space-y-3 text-sm text-foreground/90 bg-muted/30 p-4 rounded-xl border border-border">
                 <li className="flex gap-2">
                   <AlertTriangle className="size-4 shrink-0 text-amber-500 mt-0.5" />
                   <span>Aracı fiziki olarak görmeden <strong>kesinlikle kapora göndermeyin</strong>. Ön ödeme talep eden kişilere şüpheyle yaklaşın.</span>
@@ -59,7 +59,7 @@ export function SafeWhatsAppButton({ whatsappLink }: SafeWhatsAppButtonProps) {
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter className="mt-6 sm:space-x-3">
-          <AlertDialogCancel className="w-full sm:w-auto h-12 rounded-xl border border-slate-200 text-slate-600 hover:bg-slate-50 font-medium">
+          <AlertDialogCancel className="w-full sm:w-auto h-12 rounded-xl border border-border text-muted-foreground hover:bg-muted/30 font-medium">
             Geri Dön
           </AlertDialogCancel>
           <AlertDialogAction asChild className="w-full sm:w-auto h-12 bg-transparent p-0 hover:bg-transparent">

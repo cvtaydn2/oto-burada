@@ -12,17 +12,17 @@ export function ListingDescription({ description }: ListingDescriptionProps) {
   const isLong = description.length > 500
 
   return (
-    <div className="rounded-xl border border-slate-200 bg-white p-5">
+    <div className="rounded-xl border border-border bg-card p-5">
       <button
         onClick={() => setIsExpanded(!isExpanded)}
         className="flex w-full items-center justify-between text-left"
       >
-        <h2 className="text-lg font-semibold text-slate-900">İlan Açıklaması</h2>
+        <h2 className="text-lg font-semibold text-foreground">İlan Açıklaması</h2>
         {isLong && (
-          isExpanded ? <ChevronUp className="w-5 h-5 text-slate-400" /> : <ChevronDown className="w-5 h-5 text-slate-400" />
+          isExpanded ? <ChevronUp className="w-5 h-5 text-muted-foreground/70" /> : <ChevronDown className="w-5 h-5 text-muted-foreground/70" />
         )}
       </button>
-      <div className={`mt-3 text-sm text-slate-600 leading-relaxed ${!isExpanded && !isLong ? '' : isExpanded ? '' : 'line-clamp-3'}`}>
+      <div className={`mt-3 text-sm text-muted-foreground leading-relaxed ${!isExpanded && !isLong ? '' : isExpanded ? '' : 'line-clamp-3'}`}>
         <p className="whitespace-pre-wrap">{description}</p>
       </div>
     </div>

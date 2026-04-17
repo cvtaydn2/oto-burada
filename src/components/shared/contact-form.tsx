@@ -47,8 +47,8 @@ export function ContactForm() {
         <div className="flex size-16 items-center justify-center rounded-full bg-emerald-50 text-emerald-500">
           <CheckCircle2 size={32} />
         </div>
-        <h3 className="text-xl font-black text-slate-900">Mesajınız İletildi</h3>
-        <p className="text-sm text-slate-500 max-w-sm">
+        <h3 className="text-xl font-black text-foreground">Mesajınız İletildi</h3>
+        <p className="text-sm text-muted-foreground max-w-sm">
           En kısa sürede size dönüş yapacağız. Ortalama yanıt süremiz 2 saattir.
         </p>
         <button
@@ -92,7 +92,7 @@ export function ContactForm() {
         <select
           value={form.subject}
           onChange={(e) => setForm((p) => ({ ...p, subject: e.target.value }))}
-          className="w-full border border-gray-200 rounded-xl p-3 text-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-100 outline-none bg-white transition"
+          className="w-full border border-gray-200 rounded-xl p-3 text-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-100 outline-none bg-card transition"
         >
           {SUBJECTS.map((s) => <option key={s}>{s}</option>)}
         </select>

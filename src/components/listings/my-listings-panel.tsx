@@ -42,7 +42,7 @@ const statusLabelMap: Record<Listing["status"], string> = {
 
 const statusClassMap: Record<Listing["status"], string> = {
   approved: "bg-emerald-50 text-emerald-600 border-emerald-100",
-  archived: "bg-slate-100 text-slate-500 border-slate-200",
+  archived: "bg-muted text-muted-foreground border-border",
   draft: "bg-amber-50 text-amber-600 border-amber-100",
   pending: "bg-blue-50 text-blue-600 border-blue-100",
   rejected: "bg-red-50 text-red-600 border-red-100",
@@ -205,8 +205,8 @@ export function MyListingsPanel({
       {showForm && children && (
         <div className="rounded-2xl border border-blue-200 bg-blue-50/20 p-6 shadow-sm">
           <div className="mb-6 flex items-center justify-between">
-            <h3 className="text-lg font-black text-slate-800">{activeEditId ? "İlanı Düzenle" : "Yeni İlan Ver"}</h3>
-            <button onClick={() => setShowForm(false)} className="rounded-xl p-2 bg-white border border-slate-200 text-slate-400 hover:text-slate-600 transition-all hover:bg-slate-50">
+            <h3 className="text-lg font-black text-foreground">{activeEditId ? "İlanı Düzenle" : "Yeni İlan Ver"}</h3>
+            <button onClick={() => setShowForm(false)} className="rounded-xl p-2 bg-card border border-border text-muted-foreground/70 hover:text-muted-foreground transition-all hover:bg-muted/30">
               <X size={20} />
             </button>
           </div>
@@ -215,7 +215,7 @@ export function MyListingsPanel({
       )}
 
       {!showForm && (
-        <button onClick={() => setShowForm(true)} className="flex w-full items-center justify-center gap-3 rounded-2xl border-2 border-dashed border-blue-200 bg-white py-6 text-base font-bold text-blue-600 transition-all hover:bg-blue-50 hover:border-blue-300 active:scale-[0.99] group shadow-sm">
+        <button onClick={() => setShowForm(true)} className="flex w-full items-center justify-center gap-3 rounded-2xl border-2 border-dashed border-blue-200 bg-card py-6 text-base font-bold text-blue-600 transition-all hover:bg-blue-50 hover:border-blue-300 active:scale-[0.99] group shadow-sm">
           <div className="size-10 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center group-hover:scale-110 transition-transform">
             <Plus size={24} />
           </div>
@@ -224,12 +224,12 @@ export function MyListingsPanel({
       )}
 
       {listings.length === 0 && !showForm && (
-        <div className="rounded-3xl border border-dashed border-slate-200 p-16 text-center bg-white shadow-sm mt-6">
-          <div className="size-20 bg-slate-50 rounded-2xl flex items-center justify-center mx-auto mb-6 text-slate-300">
+        <div className="rounded-3xl border border-dashed border-border p-16 text-center bg-card shadow-sm mt-6">
+          <div className="size-20 bg-muted/30 rounded-2xl flex items-center justify-center mx-auto mb-6 text-slate-300">
             <Rocket size={40} />
           </div>
-          <h3 className="text-xl font-black text-slate-600">Henüz İlanınız Yok</h3>
-          <p className="mt-2 text-slate-400 font-medium max-w-xs mx-auto">Hemen ilk arabanızı ekleyerek Türkiye&apos;nin en hızlı pazar yerinde satışa başlayın!</p>
+          <h3 className="text-xl font-black text-muted-foreground">Henüz İlanınız Yok</h3>
+          <p className="mt-2 text-muted-foreground/70 font-medium max-w-xs mx-auto">Hemen ilk arabanızı ekleyerek Türkiye&apos;nin en hızlı pazar yerinde satışa başlayın!</p>
         </div>
       )}
 
@@ -239,7 +239,7 @@ export function MyListingsPanel({
           <div className="flex flex-col gap-3 px-1 py-2">
             {/* Üst satır: seçim + toplu işlemler */}
             <div className="flex flex-wrap items-center gap-3">
-              <button onClick={toggleSelectAll} className="flex items-center gap-2 text-xs font-bold text-slate-500 hover:text-blue-600 transition-colors">
+              <button onClick={toggleSelectAll} className="flex items-center gap-2 text-xs font-bold text-muted-foreground hover:text-blue-600 transition-colors">
                 {allPageSelected ? <CheckSquare size={18} className="text-blue-600" /> : <Square size={18} />}
                 Bu Sayfayı Seç ({paginatedListings.length})
               </button>
@@ -276,24 +276,24 @@ export function MyListingsPanel({
 
             {/* Alt satır: göster + indir + toplam */}
             <div className="flex flex-wrap items-center gap-3">
-              <div className="flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 h-9">
-                <span className="text-xs font-semibold text-slate-500">Göster</span>
+              <div className="flex items-center gap-2 rounded-lg border border-border bg-card px-3 h-9">
+                <span className="text-xs font-semibold text-muted-foreground">Göster</span>
                 <select
                   value={pageSize}
                   onChange={(e) => { setPageSize(Number(e.target.value)); setCurrentPage(1); }}
-                  className="bg-transparent text-sm font-bold text-slate-700 outline-none cursor-pointer"
+                  className="bg-transparent text-sm font-bold text-foreground/90 outline-none cursor-pointer"
                 >
                   {PAGE_SIZE_OPTIONS.map(n => <option key={n} value={n}>{n}</option>)}
                 </select>
               </div>
 
-              <Button variant="outline" size="sm" onClick={exportCsv} className="h-9 px-3 text-[11px] font-bold uppercase tracking-tight border-slate-200 rounded-xl bg-white hover:bg-slate-50 transition-all text-slate-600 shadow-sm">
+              <Button variant="outline" size="sm" onClick={exportCsv} className="h-9 px-3 text-[11px] font-bold uppercase tracking-tight border-border rounded-xl bg-card hover:bg-muted/30 transition-all text-muted-foreground shadow-sm">
                 <FileSpreadsheet size={14} className="mr-1.5" />
                 <span className="hidden sm:inline">Listeyi İndir</span>
                 <span className="sm:hidden">İndir</span>
               </Button>
 
-              <span className="text-[11px] font-bold text-slate-400 uppercase tracking-widest ml-auto">
+              <span className="text-[11px] font-bold text-muted-foreground/70 uppercase tracking-widest ml-auto">
                 {listings.length} ilan
               </span>
             </div>
@@ -318,12 +318,12 @@ export function MyListingsPanel({
 
           {/* Sayfalama */}
           {totalPages > 1 && (
-            <div className="flex flex-col sm:flex-row items-center justify-between gap-4 rounded-xl border border-slate-200 bg-white p-4">
-              <p className="text-sm text-slate-500">
-                <span className="font-bold text-slate-900">{(currentPage - 1) * pageSize + 1}–{Math.min(currentPage * pageSize, listings.length)}</span> arası, toplam <span className="font-bold text-slate-900">{listings.length}</span> ilan
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-4 rounded-xl border border-border bg-card p-4">
+              <p className="text-sm text-muted-foreground">
+                <span className="font-bold text-foreground">{(currentPage - 1) * pageSize + 1}–{Math.min(currentPage * pageSize, listings.length)}</span> arası, toplam <span className="font-bold text-foreground">{listings.length}</span> ilan
               </p>
               <div className="flex items-center gap-2">
-                <button onClick={() => setCurrentPage(p => Math.max(1, p - 1))} disabled={currentPage === 1} className="inline-flex h-9 items-center justify-center rounded-lg border border-slate-200 px-3 text-sm font-bold text-slate-600 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-40">
+                <button onClick={() => setCurrentPage(p => Math.max(1, p - 1))} disabled={currentPage === 1} className="inline-flex h-9 items-center justify-center rounded-lg border border-border px-3 text-sm font-bold text-muted-foreground transition hover:bg-muted/30 disabled:cursor-not-allowed disabled:opacity-40">
                   <ChevronLeft size={16} />
                 </button>
                 {Array.from({ length: totalPages }, (_, i) => i + 1)
@@ -335,14 +335,14 @@ export function MyListingsPanel({
                   }, [])
                   .map((item, idx) =>
                     item === "…" ? (
-                      <span key={`e-${idx}`} className="px-1 text-slate-400 text-sm">…</span>
+                      <span key={`e-${idx}`} className="px-1 text-muted-foreground/70 text-sm">…</span>
                     ) : (
-                      <button key={item} onClick={() => setCurrentPage(item as number)} className={`inline-flex h-9 min-w-9 items-center justify-center rounded-lg border px-3 text-sm font-bold transition ${item === currentPage ? "border-blue-500 bg-blue-500 text-white" : "border-slate-200 bg-white text-slate-600 hover:bg-slate-50"}`}>
+                      <button key={item} onClick={() => setCurrentPage(item as number)} className={`inline-flex h-9 min-w-9 items-center justify-center rounded-lg border px-3 text-sm font-bold transition ${item === currentPage ? "border-blue-500 bg-blue-500 text-white" : "border-border bg-card text-muted-foreground hover:bg-muted/30"}`}>
                         {item}
                       </button>
                     )
                   )}
-                <button onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))} disabled={currentPage === totalPages} className="inline-flex h-9 items-center justify-center rounded-lg border border-slate-200 px-3 text-sm font-bold text-slate-600 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-40">
+                <button onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))} disabled={currentPage === totalPages} className="inline-flex h-9 items-center justify-center rounded-lg border border-border px-3 text-sm font-bold text-muted-foreground transition hover:bg-muted/30 disabled:cursor-not-allowed disabled:opacity-40">
                   <ChevronRight size={16} />
                 </button>
               </div>
@@ -389,12 +389,12 @@ function ListingCard({
     : 0;
 
   return (
-    <div className={`group flex gap-3 rounded-xl border transition-all duration-300 ${isSelected ? "border-blue-500 bg-blue-50/30 ring-1 ring-blue-100" : "border-slate-200 bg-white hover:border-blue-200 hover:shadow-md"} p-3 sm:p-4 ${isArchived ? "opacity-60" : ""}`}>
+    <div className={`group flex gap-3 rounded-xl border transition-all duration-300 ${isSelected ? "border-blue-500 bg-blue-50/30 ring-1 ring-blue-100" : "border-border bg-card hover:border-blue-200 hover:shadow-md"} p-3 sm:p-4 ${isArchived ? "opacity-60" : ""}`}>
       <div className="flex items-start pt-1">
-        <Checkbox checked={isSelected} onCheckedChange={onToggleSelect} className="size-4 rounded border-slate-300 data-[state=checked]:bg-blue-600 data-[state=checked]:border-blue-600" />
+        <Checkbox checked={isSelected} onCheckedChange={onToggleSelect} className="size-4 rounded border-border data-[state=checked]:bg-blue-600 data-[state=checked]:border-blue-600" />
       </div>
 
-      <div className="relative h-20 w-24 sm:h-24 sm:w-32 shrink-0 overflow-hidden rounded-xl bg-slate-50 border border-slate-100">
+      <div className="relative h-20 w-24 sm:h-24 sm:w-32 shrink-0 overflow-hidden rounded-xl bg-muted/30 border border-border/50">
         {listing.images?.[0]?.url ? (
           <Image src={listing.images[0].url} alt="" fill className="object-cover group-hover:scale-110 transition-transform duration-700" placeholder={listing.images[0].placeholderBlur ? "blur" : "empty"} blurDataURL={listing.images[0].placeholderBlur ?? undefined} />
         ) : (
@@ -412,9 +412,9 @@ function ListingCard({
           </span>
           {listing.eidsVerificationJson && null}
         </div>
-        <p className="font-bold text-slate-800 truncate tracking-tight text-sm mb-1 group-hover:text-blue-600 transition-colors">{listing.title}</p>
+        <p className="font-bold text-foreground truncate tracking-tight text-sm mb-1 group-hover:text-blue-600 transition-colors">{listing.title}</p>
         <p className="text-base font-black text-blue-600 tracking-tight leading-none">{formatCurrency(listing.price)} ₺</p>
-        <div className="mt-auto flex flex-wrap items-center gap-2 text-[10px] text-slate-400 font-bold uppercase tracking-wider pt-1">
+        <div className="mt-auto flex flex-wrap items-center gap-2 text-[10px] text-muted-foreground/70 font-bold uppercase tracking-wider pt-1">
           <span>{listing.year}</span>
           <span className="hidden sm:inline">•</span>
           <span className="hidden sm:inline">{formatNumber(listing.mileage)} km</span>
@@ -424,13 +424,13 @@ function ListingCard({
       </div>
 
       {/* Aksiyon butonları — mobilde 2 sütun grid */}
-      <div className="grid grid-cols-2 sm:flex sm:flex-col gap-1.5 justify-start sm:justify-center ml-1 sm:ml-2 sm:border-l sm:border-slate-100 sm:pl-3">
-        <Link href={`/dashboard/listings?edit=${listing.id}`} className="flex items-center justify-center size-8 rounded-lg bg-slate-50 text-slate-400 hover:bg-blue-600 hover:text-white transition-all border border-slate-100" title="Düzenle">
+      <div className="grid grid-cols-2 sm:flex sm:flex-col gap-1.5 justify-start sm:justify-center ml-1 sm:ml-2 sm:border-l sm:border-border/50 sm:pl-3">
+        <Link href={`/dashboard/listings?edit=${listing.id}`} className="flex items-center justify-center size-8 rounded-lg bg-muted/30 text-muted-foreground/70 hover:bg-blue-600 hover:text-white transition-all border border-border/50" title="Düzenle">
           <Pencil className="size-3.5" />
         </Link>
 
         {isApproved && (listing.bumpedAt ? (
-          <div className="flex items-center justify-center size-8 rounded-lg bg-slate-50 text-slate-300 border border-slate-100 cursor-help" title={`${bumpCooldownDays} gün sonra tekrar öne çıkarılabilir`}>
+          <div className="flex items-center justify-center size-8 rounded-lg bg-muted/30 text-slate-300 border border-border/50 cursor-help" title={`${bumpCooldownDays} gün sonra tekrar öne çıkarılabilir`}>
             <ArrowUpCircle className="size-3.5" />
           </div>
         ) : (
@@ -458,7 +458,7 @@ function ListingCard({
           </Dialog>
         )}
 
-        <button type="button" onClick={() => onArchive(listing.id)} disabled={isArchiving} className={`flex items-center justify-center size-8 rounded-lg ${isArchived ? "bg-slate-100 text-slate-400" : "bg-red-50 text-red-500 hover:bg-red-600 hover:text-white"} transition-all disabled:opacity-30 border border-transparent`} title={isArchived ? "Arşivden Çıkar" : "Arşivle"}>
+        <button type="button" onClick={() => onArchive(listing.id)} disabled={isArchiving} className={`flex items-center justify-center size-8 rounded-lg ${isArchived ? "bg-muted text-muted-foreground/70" : "bg-red-50 text-red-500 hover:bg-red-600 hover:text-white"} transition-all disabled:opacity-30 border border-transparent`} title={isArchived ? "Arşivden Çıkar" : "Arşivle"}>
           {isArchiving ? <Loader2 className="size-3.5 animate-spin" /> : isArchived ? <RotateCcw className="size-3.5" /> : <Archive className="size-3.5" />}
         </button>
       </div>

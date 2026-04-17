@@ -67,20 +67,20 @@ export function ListingGallery({ images, title, has360View = false }: ListingGal
 
   if (images.length === 0) {
     return (
-      <div className="aspect-[4/3] sm:aspect-[16/9] bg-slate-100 rounded-2xl flex items-center justify-center">
-        <p className="text-slate-400">Görsel bulunamadı</p>
+      <div className="aspect-[4/3] sm:aspect-[16/9] bg-muted rounded-2xl flex items-center justify-center">
+        <p className="text-muted-foreground/70">Görsel bulunamadı</p>
       </div>
     );
   }
 
   return (
     <>
-      <div className="bg-white rounded-3xl border border-slate-200/60 overflow-hidden shadow-sm">
+      <div className="bg-card rounded-3xl border border-border/60 overflow-hidden shadow-sm">
         <div className="p-4 sm:p-6 space-y-4">
 
           {/* Main Viewport */}
           <div className="relative group">
-            <div className="overflow-hidden rounded-2xl bg-slate-100 touch-pan-y" ref={emblaRef}>
+            <div className="overflow-hidden rounded-2xl bg-muted touch-pan-y" ref={emblaRef}>
               <div className="flex">
                 {images.map((image, index) => (
                   <div
@@ -116,14 +116,14 @@ export function ListingGallery({ images, title, has360View = false }: ListingGal
                 <button
                   onClick={scrollPrev}
                   aria-label="Önceki"
-                  className="absolute left-4 top-1/2 -translate-y-1/2 w-12 h-12 rounded-full bg-white/90 backdrop-blur-md hidden sm:flex items-center justify-center text-slate-700 opacity-0 group-hover:opacity-100 transition-all shadow-xl hover:bg-white z-10"
+                  className="absolute left-4 top-1/2 -translate-y-1/2 w-12 h-12 rounded-full bg-card/90 backdrop-blur-md hidden sm:flex items-center justify-center text-foreground/90 opacity-0 group-hover:opacity-100 transition-all shadow-xl hover:bg-card z-10"
                 >
                   <ChevronLeft size={24} />
                 </button>
                 <button
                   onClick={scrollNext}
                   aria-label="Sonraki"
-                  className="absolute right-4 top-1/2 -translate-y-1/2 w-12 h-12 rounded-full bg-white/90 backdrop-blur-md hidden sm:flex items-center justify-center text-slate-700 opacity-0 group-hover:opacity-100 transition-all shadow-xl hover:bg-white z-10"
+                  className="absolute right-4 top-1/2 -translate-y-1/2 w-12 h-12 rounded-full bg-card/90 backdrop-blur-md hidden sm:flex items-center justify-center text-foreground/90 opacity-0 group-hover:opacity-100 transition-all shadow-xl hover:bg-card z-10"
                 >
                   <ChevronRight size={24} />
                 </button>
@@ -138,7 +138,7 @@ export function ListingGallery({ images, title, has360View = false }: ListingGal
               <div className="flex items-center gap-2 pointer-events-auto">
                 <button
                   onClick={() => setIsLightboxOpen(true)}
-                  className="px-3 py-1.5 rounded-full bg-white/90 backdrop-blur-md text-slate-900 text-[10px] font-black uppercase tracking-widest italic hover:bg-white transition-all shadow-lg flex items-center gap-1.5"
+                  className="px-3 py-1.5 rounded-full bg-card/90 backdrop-blur-md text-foreground text-[10px] font-black uppercase tracking-widest italic hover:bg-card transition-all shadow-lg flex items-center gap-1.5"
                 >
                   Tam Ekran
                   <Sparkles size={12} className="text-primary" />

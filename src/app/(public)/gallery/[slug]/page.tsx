@@ -43,7 +43,7 @@ export default async function GalleryPage({ params }: GalleryPageProps) {
   recordGalleryView(profile.id, { viewerId: currentUser?.id, viewerIp }).catch(() => {})
 
   return (
-    <div className="min-h-screen bg-slate-50/40">
+    <div className="min-h-screen bg-muted/30/40">
       <GalleryHeader profile={profile} />
       
       <main className="mx-auto max-w-[1280px] px-4 py-8 sm:px-6 lg:px-6">
@@ -52,18 +52,18 @@ export default async function GalleryPage({ params }: GalleryPageProps) {
              <div className="flex size-9 items-center justify-center rounded-md bg-primary text-white">
                 <Car size={20} />
              </div>
-              <h2 className="text-xl font-black text-slate-900">
+              <h2 className="text-xl font-black text-foreground">
                  Galerinin İlanları
               </h2>
           </div>
           <div className="flex items-center gap-3">
             {viewCount30d > 0 && (
-              <div className="flex items-center gap-1.5 text-xs font-medium text-slate-500">
+              <div className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
                 <Eye size={13} />
                 Son 30 günde {viewCount30d.toLocaleString("tr-TR")} ziyaret
               </div>
             )}
-            <Badge variant="outline" className="border-slate-300 bg-white px-3 py-1 text-xs font-medium text-slate-600">
+            <Badge variant="outline" className="border-border bg-card px-3 py-1 text-xs font-medium text-muted-foreground">
               {listings.length} araç
             </Badge>
           </div>
@@ -81,12 +81,12 @@ export default async function GalleryPage({ params }: GalleryPageProps) {
             ))}
           </div>
         ) : (
-          <div className="flex flex-col items-center justify-center rounded-xl border border-slate-200 bg-white py-20 text-center">
-             <div className="mb-4 flex size-16 items-center justify-center rounded-full bg-slate-50 text-slate-300">
+          <div className="flex flex-col items-center justify-center rounded-xl border border-border bg-card py-20 text-center">
+             <div className="mb-4 flex size-16 items-center justify-center rounded-full bg-muted/30 text-slate-300">
                 <Car size={40} />
              </div>
-             <h3 className="text-xl font-semibold text-slate-700">Henüz ilan mevcut değil</h3>
-             <p className="mt-1 max-w-xs text-sm text-slate-500">
+             <h3 className="text-xl font-semibold text-foreground/90">Henüz ilan mevcut değil</h3>
+             <p className="mt-1 max-w-xs text-sm text-muted-foreground">
                 Bu galeri henüz aktif bir araç ilanı eklememiş.
              </p>
           </div>

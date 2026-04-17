@@ -36,12 +36,12 @@ export default async function MessagesPage() {
         <div>
           <div className="mb-2 flex items-center gap-2">
             <MessageSquare className="text-primary" size={16} />
-            <span className="text-xs text-slate-500">İletişim merkezi</span>
+            <span className="text-xs text-muted-foreground">İletişim merkezi</span>
           </div>
-          <h1 className="text-3xl font-bold tracking-tight text-slate-900">
+          <h1 className="text-3xl font-bold tracking-tight text-foreground">
             İç mesajlaşma
           </h1>
-          <p className="mt-1 text-sm text-slate-500">
+          <p className="mt-1 text-sm text-muted-foreground">
             İlan sahipleri ve alıcılar ile güvenli bir ortamda pazarlığınızı yapın.
           </p>
         </div>
@@ -51,7 +51,7 @@ export default async function MessagesPage() {
         </div>
       </div>
 
-      <div className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
+      <div className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-xl border border-border bg-card shadow-sm">
         <ChatLayout initialChats={chats} currentUserId={user.id} />
       </div>
     </div>

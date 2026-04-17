@@ -42,7 +42,7 @@ export function ContactActions({ listingId, listingSlug, sellerId, currentUserId
   const isOwnListing = Boolean(currentUserId && currentUserId === sellerId);
   if (isOwnListing) {
     return (
-      <div className="rounded-xl border border-slate-200 bg-slate-50 p-3 text-center text-xs font-medium text-slate-500">
+      <div className="rounded-xl border border-border bg-muted/30 p-3 text-center text-xs font-medium text-muted-foreground">
         Bu sizin ilanınız.
       </div>
     );
@@ -120,7 +120,7 @@ export function ContactActions({ listingId, listingSlug, sellerId, currentUserId
             // Guest: giriş yap butonu göster
             <button
               onClick={() => router.push(`/login?next=${encodeURIComponent(returnPath)}`)}
-              className="flex w-full items-center justify-center gap-2 rounded-xl bg-white border border-gray-300 h-12 px-4 text-[15px] font-bold text-gray-700 hover:bg-gray-50 transition-all active:scale-95"
+              className="flex w-full items-center justify-center gap-2 rounded-xl bg-card border border-gray-300 h-12 px-4 text-[15px] font-bold text-gray-700 hover:bg-gray-50 transition-all active:scale-95"
             >
               <Phone className="size-5 text-blue-500" />
               Numarayı Görmek İçin Giriş Yap
@@ -129,7 +129,7 @@ export function ContactActions({ listingId, listingSlug, sellerId, currentUserId
             <button
               onClick={handleReveal}
               disabled={isLogging}
-              className="flex w-full items-center justify-center gap-2 rounded-xl bg-white border border-gray-300 h-12 px-4 text-[15px] font-bold text-gray-700 hover:bg-gray-50 transition-all active:scale-95 disabled:opacity-70"
+              className="flex w-full items-center justify-center gap-2 rounded-xl bg-card border border-gray-300 h-12 px-4 text-[15px] font-bold text-gray-700 hover:bg-gray-50 transition-all active:scale-95 disabled:opacity-70"
             >
               {isLogging ? (
                 <Loader2 className="animate-spin size-5" />
@@ -162,18 +162,18 @@ export function ContactActions({ listingId, listingSlug, sellerId, currentUserId
             WhatsApp ile İletişime Geç
           </button>
         </AlertDialogTrigger>
-        <AlertDialogContent className="max-w-md bg-white border border-slate-200 rounded-3xl">
+        <AlertDialogContent className="max-w-md bg-card border border-border rounded-3xl">
           <AlertDialogHeader className="text-left space-y-3">
             <div className="flex size-14 items-center justify-center rounded-2xl bg-amber-50 text-amber-600 border border-amber-100">
               <ShieldAlert className="size-7" />
             </div>
-            <AlertDialogTitle className="text-xl font-bold text-slate-900">
+            <AlertDialogTitle className="text-xl font-bold text-foreground">
               Dolandırıcılık Uyarısı
             </AlertDialogTitle>
-            <AlertDialogDescription className="text-slate-600 space-y-4" asChild>
+            <AlertDialogDescription className="text-muted-foreground space-y-4" asChild>
               <div className="space-y-4">
                 <p>Güvenliğiniz için lütfen aşağıdaki kurallara uyun:</p>
-                <div className="space-y-3 text-sm text-slate-700 bg-slate-50 p-4 rounded-xl border border-slate-200">
+                <div className="space-y-3 text-sm text-foreground/90 bg-muted/30 p-4 rounded-xl border border-border">
                   <div className="flex gap-3">
                     <AlertTriangle className="size-5 shrink-0 text-amber-500" />
                     <span><strong>Kapora Göndermeyin:</strong> Aracı görmeden, ekspertiz yaptırmadan kesinlikle ön ödeme yapmayın.</span>
@@ -187,7 +187,7 @@ export function ContactActions({ listingId, listingSlug, sellerId, currentUserId
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter className="mt-6 flex flex-col sm:flex-row gap-3">
-            <AlertDialogCancel className="w-full sm:flex-1 h-12 rounded-xl border border-slate-200 text-slate-600 font-semibold">
+            <AlertDialogCancel className="w-full sm:flex-1 h-12 rounded-xl border border-border text-muted-foreground font-semibold">
               Vazgeç
             </AlertDialogCancel>
             <AlertDialogAction

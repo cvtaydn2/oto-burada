@@ -89,8 +89,8 @@ export function AdminSettingsForm({ initialSettings }: AdminSettingsFormProps) {
       {/* Header */}
       <section className="flex flex-col justify-between gap-4 md:flex-row md:items-end">
         <div>
-          <h1 className="text-2xl font-black text-slate-900">Sistem Konfigürasyonu</h1>
-          <p className="mt-1 text-sm text-slate-500 font-medium italic">
+          <h1 className="text-2xl font-black text-foreground">Sistem Konfigürasyonu</h1>
+          <p className="mt-1 text-sm text-muted-foreground font-medium italic">
             Platformun global parametrelerini ve özellik bayraklarını yönetin.
           </p>
         </div>
@@ -116,30 +116,30 @@ export function AdminSettingsForm({ initialSettings }: AdminSettingsFormProps) {
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
 
         {/* Genel Görünüm */}
-        <div className="space-y-6 rounded-[2rem] border border-slate-200 bg-white p-8 shadow-sm">
+        <div className="space-y-6 rounded-[2rem] border border-border bg-card p-8 shadow-sm">
           <div className="flex items-center gap-4 mb-2">
             <div className="size-12 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center border border-blue-100">
               <Globe size={24} />
             </div>
-            <h2 className="text-xl font-black text-slate-800">Genel Görünüm</h2>
+            <h2 className="text-xl font-black text-foreground">Genel Görünüm</h2>
           </div>
 
           <div className="space-y-5">
             <div className="space-y-2">
-              <Label className="text-[11px] font-black text-slate-400 uppercase tracking-widest ml-1">Site Başlığı</Label>
+              <Label className="text-[11px] font-black text-muted-foreground/70 uppercase tracking-widest ml-1">Site Başlığı</Label>
               <Input
                 value={settings.general_appearance?.site_title ?? ""}
                 onChange={(e) => updateSubSetting("general_appearance", "site_title", e.target.value)}
-                className="h-12 rounded-xl bg-slate-50 border-transparent focus:bg-white focus:border-blue-300 focus:ring-4 focus:ring-blue-50 font-bold"
+                className="h-12 rounded-xl bg-muted/30 border-transparent focus:bg-card focus:border-blue-300 focus:ring-4 focus:ring-blue-50 font-bold"
               />
             </div>
             <div className="space-y-2">
-              <Label className="text-[11px] font-black text-slate-400 uppercase tracking-widest ml-1">Destek E-Posta</Label>
+              <Label className="text-[11px] font-black text-muted-foreground/70 uppercase tracking-widest ml-1">Destek E-Posta</Label>
               <Input
                 type="email"
                 value={settings.general_appearance?.support_email ?? ""}
                 onChange={(e) => updateSubSetting("general_appearance", "support_email", e.target.value)}
-                className="h-12 rounded-xl bg-slate-50 border-transparent focus:bg-white focus:border-blue-300 focus:ring-4 focus:ring-blue-50 font-bold"
+                className="h-12 rounded-xl bg-muted/30 border-transparent focus:bg-card focus:border-blue-300 focus:ring-4 focus:ring-blue-50 font-bold"
               />
             </div>
 
@@ -148,19 +148,19 @@ export function AdminSettingsForm({ initialSettings }: AdminSettingsFormProps) {
               "flex items-center justify-between rounded-2xl p-5 border transition-colors",
               settings.general_appearance?.maintenance_mode
                 ? "bg-red-50 border-red-200"
-                : "bg-slate-50 border-slate-100"
+                : "bg-muted/30 border-border/50"
             )}>
               <div className="flex flex-col gap-1">
                 <span className={cn(
                   "text-sm font-black uppercase tracking-tight",
-                  settings.general_appearance?.maintenance_mode ? "text-red-700" : "text-slate-900"
+                  settings.general_appearance?.maintenance_mode ? "text-red-700" : "text-foreground"
                 )}>
                   Bakım Modu
                   {settings.general_appearance?.maintenance_mode && (
                     <span className="ml-2 text-[10px] bg-red-100 text-red-600 px-2 py-0.5 rounded-full font-black uppercase tracking-widest">AKTİF</span>
                   )}
                 </span>
-                <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider italic">
+                <span className="text-[10px] text-muted-foreground/70 font-bold uppercase tracking-wider italic">
                   Siteyi geçici olarak dışa kapat
                 </span>
               </div>
@@ -173,29 +173,29 @@ export function AdminSettingsForm({ initialSettings }: AdminSettingsFormProps) {
         </div>
 
         {/* Moderasyon */}
-        <div className="space-y-6 rounded-[2rem] border border-slate-200 bg-white p-8 shadow-sm">
+        <div className="space-y-6 rounded-[2rem] border border-border bg-card p-8 shadow-sm">
           <div className="flex items-center gap-4 mb-2">
             <div className="size-12 rounded-2xl bg-amber-50 text-amber-600 flex items-center justify-center border border-amber-100">
               <Lock size={24} />
             </div>
-            <h2 className="text-xl font-black text-slate-800">Moderasyon</h2>
+            <h2 className="text-xl font-black text-foreground">Moderasyon</h2>
           </div>
 
           <div className="space-y-5">
-            <div className="flex items-center justify-between rounded-2xl bg-slate-50 p-5 border border-slate-100">
+            <div className="flex items-center justify-between rounded-2xl bg-muted/30 p-5 border border-border/50">
               <div className="flex flex-col gap-1">
-                <span className="text-sm font-black text-slate-900 uppercase tracking-tight">Otomatik Onay</span>
-                <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider italic">Eski üyelerin ilanlarını otomatik yayınla</span>
+                <span className="text-sm font-black text-foreground uppercase tracking-tight">Otomatik Onay</span>
+                <span className="text-[10px] text-muted-foreground/70 font-bold uppercase tracking-wider italic">Eski üyelerin ilanlarını otomatik yayınla</span>
               </div>
               <Switch
                 checked={settings.moderation_policies?.auto_approve_regulars ?? false}
                 onCheckedChange={(val) => updateSubSetting("moderation_policies", "auto_approve_regulars", val)}
               />
             </div>
-            <div className="flex items-center justify-between rounded-2xl bg-slate-50 p-5 border border-slate-100">
+            <div className="flex items-center justify-between rounded-2xl bg-muted/30 p-5 border border-border/50">
               <div className="flex flex-col gap-1">
-                <span className="text-sm font-black text-slate-900 uppercase tracking-tight">VIN Kontrolü</span>
-                <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider italic">API üzerinden gerçeklik testi yap</span>
+                <span className="text-sm font-black text-foreground uppercase tracking-tight">VIN Kontrolü</span>
+                <span className="text-[10px] text-muted-foreground/70 font-bold uppercase tracking-wider italic">API üzerinden gerçeklik testi yap</span>
               </div>
               <Switch
                 checked={settings.moderation_policies?.vin_check_enabled ?? false}
@@ -203,7 +203,7 @@ export function AdminSettingsForm({ initialSettings }: AdminSettingsFormProps) {
               />
             </div>
             <div className="flex items-center justify-between gap-4">
-              <Label className="text-[11px] font-black text-slate-400 uppercase tracking-widest ml-1">Maksimum Ücretsiz İlan</Label>
+              <Label className="text-[11px] font-black text-muted-foreground/70 uppercase tracking-widest ml-1">Maksimum Ücretsiz İlan</Label>
               <Input
                 type="number"
                 min={1}
@@ -215,36 +215,36 @@ export function AdminSettingsForm({ initialSettings }: AdminSettingsFormProps) {
                     updateSubSetting("moderation_policies", "max_free_listings", val);
                   }
                 }}
-                className="h-10 rounded-xl bg-slate-50 border-transparent focus:bg-white w-24 text-center font-black"
+                className="h-10 rounded-xl bg-muted/30 border-transparent focus:bg-card w-24 text-center font-black"
               />
             </div>
           </div>
         </div>
 
         {/* Bildirimler */}
-        <div className="space-y-6 rounded-[2rem] border border-slate-200 bg-white p-8 shadow-sm">
+        <div className="space-y-6 rounded-[2rem] border border-border bg-card p-8 shadow-sm">
           <div className="flex items-center gap-4 mb-2">
             <div className="size-12 rounded-2xl bg-indigo-50 text-indigo-600 flex items-center justify-center border border-indigo-100">
               <Bell size={24} />
             </div>
-            <h2 className="text-xl font-black text-slate-800">Bildirimler</h2>
+            <h2 className="text-xl font-black text-foreground">Bildirimler</h2>
           </div>
 
           <div className="space-y-4">
-            <div className="flex items-center justify-between rounded-2xl border border-slate-100 p-5">
+            <div className="flex items-center justify-between rounded-2xl border border-border/50 p-5">
               <div className="flex flex-col gap-1">
-                <span className="text-sm font-black text-slate-900 uppercase tracking-tight">Slack Entegrasyonu</span>
-                <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider italic">Yeni ilanlar için kanal bildirimi</span>
+                <span className="text-sm font-black text-foreground uppercase tracking-tight">Slack Entegrasyonu</span>
+                <span className="text-[10px] text-muted-foreground/70 font-bold uppercase tracking-wider italic">Yeni ilanlar için kanal bildirimi</span>
               </div>
               <Switch
                 checked={settings.notification_settings?.new_listing_slack ?? false}
                 onCheckedChange={(val) => updateSubSetting("notification_settings", "new_listing_slack", val)}
               />
             </div>
-            <div className="flex items-center justify-between rounded-2xl border border-slate-100 p-5">
+            <div className="flex items-center justify-between rounded-2xl border border-border/50 p-5">
               <div className="flex flex-col gap-1">
-                <span className="text-sm font-black text-slate-900 uppercase tracking-tight">Rapor Uyarıları</span>
-                <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider italic">Adminlere anlık email gönder</span>
+                <span className="text-sm font-black text-foreground uppercase tracking-tight">Rapor Uyarıları</span>
+                <span className="text-[10px] text-muted-foreground/70 font-bold uppercase tracking-wider italic">Adminlere anlık email gönder</span>
               </div>
               <Switch
                 checked={settings.notification_settings?.report_email_alerts ?? false}
@@ -255,20 +255,20 @@ export function AdminSettingsForm({ initialSettings }: AdminSettingsFormProps) {
         </div>
 
         {/* Performans */}
-        <div className="space-y-6 rounded-[2rem] border border-slate-200 bg-white p-8 shadow-sm">
+        <div className="space-y-6 rounded-[2rem] border border-border bg-card p-8 shadow-sm">
           <div className="flex items-center gap-4 mb-2">
             <div className="size-12 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center border border-emerald-100">
               <Zap size={24} />
             </div>
-            <h2 className="text-xl font-black text-slate-800">Performans</h2>
+            <h2 className="text-xl font-black text-foreground">Performans</h2>
           </div>
 
           <div className="space-y-5">
             {/* Önbellek Temizle — ayrı API çağrısı, kaydet butonuna bağlı değil */}
-            <div className="flex items-center justify-between rounded-2xl border-2 border-dashed border-slate-100 p-5">
+            <div className="flex items-center justify-between rounded-2xl border-2 border-dashed border-border/50 p-5">
               <div className="flex flex-col gap-1">
-                <span className="text-sm font-black text-slate-900 uppercase tracking-tight">Önbellek Temizle</span>
-                <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider italic">
+                <span className="text-sm font-black text-foreground uppercase tracking-tight">Önbellek Temizle</span>
+                <span className="text-[10px] text-muted-foreground/70 font-bold uppercase tracking-wider italic">
                   Tüm sayfa önbelleklerini sıfırla
                 </span>
               </div>
@@ -276,7 +276,7 @@ export function AdminSettingsForm({ initialSettings }: AdminSettingsFormProps) {
                 variant="outline"
                 size="sm"
                 disabled={isClearingCache}
-                className="font-black text-[10px] tracking-widest text-slate-600 border-slate-200 hover:bg-red-50 hover:text-red-600 hover:border-red-200 transition-all gap-1.5"
+                className="font-black text-[10px] tracking-widest text-muted-foreground border-border hover:bg-red-50 hover:text-red-600 hover:border-red-200 transition-all gap-1.5"
                 onClick={handleClearCache}
               >
                 {isClearingCache
@@ -288,12 +288,12 @@ export function AdminSettingsForm({ initialSettings }: AdminSettingsFormProps) {
             </div>
 
             {/* Debug Mode — state'e bağlı, kaydet ile persist ediliyor */}
-            <div className="flex items-center justify-between rounded-2xl border border-slate-100 p-5">
+            <div className="flex items-center justify-between rounded-2xl border border-border/50 p-5">
               <div className="flex flex-col gap-1">
-                <span className="text-sm font-black text-slate-900 uppercase tracking-tight">
+                <span className="text-sm font-black text-foreground uppercase tracking-tight">
                   Hata Ayıklama (Debug)
                 </span>
-                <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider italic">
+                <span className="text-[10px] text-muted-foreground/70 font-bold uppercase tracking-wider italic">
                   Detaylı sunucu loglarını aktif et
                 </span>
               </div>

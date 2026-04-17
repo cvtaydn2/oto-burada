@@ -35,7 +35,7 @@ export function FilterSelect({
       
       <SelectPrimitive.Portal>
         <SelectPrimitive.Content
-          className="overflow-hidden rounded-3xl border border-white/20 bg-white/80 backdrop-blur-2xl shadow-3xl z-[100] animate-in fade-in zoom-in-95 duration-200"
+          className="overflow-hidden rounded-3xl border border-white/20 bg-card/80 backdrop-blur-2xl shadow-3xl z-[100] animate-in fade-in zoom-in-95 duration-200"
           position="popper"
           sideOffset={8}
         >

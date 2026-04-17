@@ -18,15 +18,15 @@ export default async function FavoritesPage() {
       <div className="flex flex-col justify-between gap-5 md:flex-row md:items-end">
         <div className="max-w-2xl">
            <div className="mb-4 flex items-center gap-3">
-              <Link href="/" aria-label="Ana sayfaya dön" className="flex size-10 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-600 transition-transform hover:bg-slate-50">
+              <Link href="/" aria-label="Ana sayfaya dön" className="flex size-10 items-center justify-center rounded-lg border border-border bg-card text-muted-foreground transition-transform hover:bg-muted/30">
                  <ChevronLeft className="size-4" aria-hidden="true" />
               </Link>
-              <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Kişisel envanter</span>
+              <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Kişisel envanter</span>
            </div>
-           <h1 className="text-3xl font-black leading-tight text-slate-900 md:text-4xl">
+           <h1 className="text-3xl font-black leading-tight text-foreground md:text-4xl">
                Favori ilanlarım
            </h1>
-           <p className="mt-2.5 text-sm font-medium leading-relaxed text-slate-500">
+           <p className="mt-2.5 text-sm font-medium leading-relaxed text-muted-foreground">
                Beğendiğiniz araçları tek listede toplayın ve takip edin.
            </p>
         </div>

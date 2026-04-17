@@ -111,15 +111,15 @@ export default async function ComparePage({ searchParams }: ComparePageProps) {
       <div className="flex flex-col justify-between gap-6 md:flex-row md:items-end">
         <div className="max-w-2xl">
            <div className="mb-4 flex items-center gap-3">
-              <Link href="/" aria-label="Ana sayfaya dön" className="flex size-10 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-600 transition-transform hover:bg-slate-50">
+              <Link href="/" aria-label="Ana sayfaya dön" className="flex size-10 items-center justify-center rounded-lg border border-border bg-card text-muted-foreground transition-transform hover:bg-muted/30">
                  <ChevronLeft className="size-4" aria-hidden="true" />
               </Link>
-              <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Analitik kıyaslama</span>
+              <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Analitik kıyaslama</span>
            </div>
-             <h1 className="text-2xl font-black text-slate-900">
+             <h1 className="text-2xl font-black text-foreground">
                 Araç Karşılaştırma
              </h1>
-           <p className="mt-2.5 text-sm font-medium leading-relaxed text-slate-500">
+           <p className="mt-2.5 text-sm font-medium leading-relaxed text-muted-foreground">
                {cars.length} farklı aracı dijital verilerle yan yana koyarak en rasyonel seçimi yapın.
            </p>
         </div>
@@ -127,22 +127,22 @@ export default async function ComparePage({ searchParams }: ComparePageProps) {
         <CompareShareButton ids={idsToCompare} />
       </div>
 
-      <div className="grid grid-cols-1 items-center gap-6 rounded-xl border border-slate-200 bg-white p-6 lg:grid-cols-12 lg:p-8">
+      <div className="grid grid-cols-1 items-center gap-6 rounded-xl border border-border bg-card p-6 lg:grid-cols-12 lg:p-8">
         <div className="space-y-4 lg:col-span-5">
           <div className="flex items-center gap-3">
              <div className="flex size-10 items-center justify-center rounded-lg bg-primary/10 text-primary">
                 <CheckCircle2 size={18} />
              </div>
-             <h2 className="text-lg font-black text-slate-900">Rasyonel Analiz</h2>
+             <h2 className="text-lg font-black text-foreground">Rasyonel Analiz</h2>
           </div>
-          <p className="text-sm leading-relaxed text-slate-500 font-medium">
+          <p className="text-sm leading-relaxed text-muted-foreground font-medium">
             Model yılı, fiyat dengesi ve kilometre verilerini karşılaştırarak en iyi fiyat/performans dengesini sunar.
           </p>
           <div className="flex flex-wrap gap-2 pt-2">
             {cars.map((car, idx) => {
                const colors = ["bg-primary", "bg-rose-500", "bg-emerald-500", "bg-slate-400"];
                return (
-                 <div key={car.id} className="flex items-center gap-2 rounded-lg border border-slate-200 bg-slate-50 px-3 py-1.5 text-xs font-semibold text-slate-600">
+                 <div key={car.id} className="flex items-center gap-2 rounded-lg border border-border bg-muted/30 px-3 py-1.5 text-xs font-semibold text-muted-foreground">
                    <div className={`size-2.5 rounded-full ${colors[idx % colors.length]}`} />
                    {car.brand} {car.model}
                  </div>
@@ -150,17 +150,17 @@ export default async function ComparePage({ searchParams }: ComparePageProps) {
             })}
           </div>
         </div>
-        <div className="flex justify-center rounded-lg border border-slate-100 bg-slate-50/50 p-5 lg:col-span-7 lg:p-6">
+        <div className="flex justify-center rounded-lg border border-border/50 bg-muted/30/50 p-5 lg:col-span-7 lg:p-6">
             <CompareRadarChart cars={cars} />
         </div>
       </div>
 
-      <div className="overflow-x-auto rounded-xl border border-slate-200 bg-white">
+      <div className="overflow-x-auto rounded-xl border border-border bg-card">
         <table className="min-w-[600px] w-full border-collapse text-left">
           <thead>
             <tr>
-              <th className="w-56 border-b border-slate-200 bg-slate-50 p-5 align-top">
-                <div className="text-[10px] font-bold uppercase tracking-wider text-slate-500">
+              <th className="w-56 border-b border-border bg-muted/30 p-5 align-top">
+                <div className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
                   Teknik Parametreler
                 </div>
               </th>
@@ -175,10 +175,10 @@ export default async function ComparePage({ searchParams }: ComparePageProps) {
                 return (
                   <th
                     key={car.id}
-                    className="group relative border-b border-l border-slate-200 p-5 align-top"
+                    className="group relative border-b border-l border-border p-5 align-top"
                   >
                     <CompareRemoveButton otherIds={otherIds} />
-                    <div className="relative mb-4 aspect-[4/3] w-full overflow-hidden rounded-lg bg-slate-100">
+                    <div className="relative mb-4 aspect-[4/3] w-full overflow-hidden rounded-lg bg-muted">
                       {coverImage ? (
                         <Image
                           src={coverImage.url}
@@ -188,13 +188,13 @@ export default async function ComparePage({ searchParams }: ComparePageProps) {
                         />
                       ) : null}
                     </div>
-                    <div className="mb-1 text-xl font-black leading-tight text-slate-900">
+                    <div className="mb-1 text-xl font-black leading-tight text-foreground">
                       {car.brand} {car.model}
                     </div>
-                    <div className="mb-3 line-clamp-1 text-xs text-slate-500 font-medium">
+                    <div className="mb-3 line-clamp-1 text-xs text-muted-foreground font-medium">
                       {car.title}
                     </div>
-                    <div className="mb-5 text-2xl font-black text-slate-900">
+                    <div className="mb-5 text-2xl font-black text-foreground">
                       {formatCurrency(car.price)}
                     </div>
                     <Link
@@ -211,7 +211,7 @@ export default async function ComparePage({ searchParams }: ComparePageProps) {
           <tbody>
             {/* Best value recommendation */}
             <tr>
-              <td className="border-b border-slate-200 bg-emerald-50/50 p-5">
+              <td className="border-b border-border bg-emerald-50/50 p-5">
                 <div className="flex items-center gap-2 text-xs font-bold text-emerald-700 uppercase tracking-wider">
                   <ShieldCheck className="size-3" />
                   Sistem Önerisi
@@ -220,7 +220,7 @@ export default async function ComparePage({ searchParams }: ComparePageProps) {
               {cars.map((car, idx) => (
                 <td
                   key={`ai-${car.id}`}
-                  className="border-b border-l border-slate-200 bg-emerald-50/20 p-5"
+                  className="border-b border-l border-border bg-emerald-50/20 p-5"
                 >
                   {idx === bestValueIndex ? (
                     <div className="flex items-start gap-2 text-xs font-semibold leading-relaxed text-emerald-700">
@@ -240,9 +240,9 @@ export default async function ComparePage({ searchParams }: ComparePageProps) {
             {features.map((feature, idx) => (
               <tr
                 key={feature.label}
-                className={cn("group", idx % 2 === 0 ? "bg-white" : "bg-slate-50/30")}
+                className={cn("group", idx % 2 === 0 ? "bg-card" : "bg-muted/30/30")}
               >
-                <td className="border-b border-slate-200 p-5 text-[10px] font-bold text-slate-500 uppercase tracking-wider transition-colors group-hover:text-slate-900">
+                <td className="border-b border-border p-5 text-[10px] font-bold text-muted-foreground uppercase tracking-wider transition-colors group-hover:text-foreground">
                   {feature.label}
                 </td>
                 {cars.map((car) => {
@@ -252,10 +252,10 @@ export default async function ComparePage({ searchParams }: ComparePageProps) {
                     <td
                       key={`${car.id}-${feature.label}`}
                       className={cn(
-                        "border-b border-l border-slate-200 p-5 text-sm",
+                        "border-b border-l border-border p-5 text-sm",
                         isPositive
                           ? "font-bold text-emerald-600"
-                          : "font-semibold text-slate-700"
+                          : "font-semibold text-foreground/90"
                       )}
                     >
                       {value.replace(" ✓", "")}
@@ -270,7 +270,7 @@ export default async function ComparePage({ searchParams }: ComparePageProps) {
               (car) => car.tramerAmount != null && car.tramerAmount > 0,
             ) && (
               <tr>
-                 <td className="border-b border-slate-200 bg-rose-50/50 p-5">
+                 <td className="border-b border-border bg-rose-50/50 p-5">
                    <div className="flex items-center gap-2 text-xs font-bold text-rose-700 uppercase tracking-wider">
                      <AlertTriangle className="size-3" />
                      Hasar Kaydı
@@ -279,7 +279,7 @@ export default async function ComparePage({ searchParams }: ComparePageProps) {
                 {cars.map((car) => (
                   <td
                     key={`tramer-warn-${car.id}`}
-                    className="border-b border-l border-slate-200 bg-rose-50/20 p-5 text-xs font-semibold text-rose-700"
+                    className="border-b border-l border-border bg-rose-50/20 p-5 text-xs font-semibold text-rose-700"
                   >
                     {car.tramerAmount != null && car.tramerAmount > 0
                       ? `${formatCurrency(car.tramerAmount)} tramer mevcut`

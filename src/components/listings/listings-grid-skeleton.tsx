@@ -6,7 +6,7 @@ export function ListingsGridSkeleton({ count = 6 }: { count?: number }) {
       {Array.from({ length: count }, (_, index) => (
         <div
           key={index}
-          className="rounded-xl border border-slate-200 bg-white overflow-hidden"
+          className="rounded-xl border border-border bg-card overflow-hidden"
         >
           <Skeleton className="aspect-[4/3] w-full" />
           <div className="p-3 space-y-2">
@@ -33,7 +33,7 @@ export function ListingsListSkeleton({ count = 4 }: { count?: number }) {
       {Array.from({ length: count }, (_, index) => (
         <div
           key={index}
-          className="flex bg-white rounded-xl border border-slate-200 overflow-hidden p-4 gap-4"
+          className="flex bg-card rounded-xl border border-border overflow-hidden p-4 gap-4"
         >
           <Skeleton className="w-[240px] aspect-[4/3] shrink-0 rounded-lg" />
           <div className="flex-1 space-y-2">

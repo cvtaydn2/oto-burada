@@ -32,14 +32,14 @@ export function CookieConsent() {
 
   return (
     <div className="fixed bottom-24 left-4 right-4 z-50 animate-in fade-in slide-in-from-bottom-5 duration-500 sm:left-auto sm:right-6 sm:max-w-sm">
-      <div className="rounded-3xl border border-slate-200 bg-white/95 p-5 shadow-2xl backdrop-blur-xl">
+      <div className="rounded-3xl border border-border bg-card/95 p-5 shadow-2xl backdrop-blur-xl">
         <div className="flex items-start justify-between gap-4">
           <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-indigo-50 text-indigo-600">
             <Cookie size={20} />
           </div>
           <button
             onClick={handleDecline}
-            className="rounded-full p-1 text-slate-400 hover:bg-slate-100 transition-colors"
+            className="rounded-full p-1 text-muted-foreground/70 hover:bg-muted transition-colors"
             aria-label="Reddet"
           >
             <X size={18} />
@@ -47,8 +47,8 @@ export function CookieConsent() {
         </div>
         
         <div className="mt-4">
-          <h3 className="text-sm font-bold text-slate-900">Çerez Odaklı Deneyim</h3>
-          <p className="mt-2 text-xs leading-relaxed text-slate-500">
+          <h3 className="text-sm font-bold text-foreground">Çerez Odaklı Deneyim</h3>
+          <p className="mt-2 text-xs leading-relaxed text-muted-foreground">
             Size daha iyi bir deneyim sunmak için çerezleri kullanıyoruz. Sitemizi kullanarak çerez politikamızı ve KVKK metinlerimizi kabul etmiş sayılırsınız.
           </p>
         </div>

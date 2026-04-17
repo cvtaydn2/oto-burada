@@ -49,15 +49,15 @@ function FilterSection({
   const [isOpen, setIsOpen] = useState(defaultOpen)
 
   return (
-    <div className="border-b border-slate-100 last:border-0">
+    <div className="border-b border-border/50 last:border-0">
       <button
         type="button"
         onClick={() => setIsOpen(!isOpen)}
         disabled={disabled}
-        className="flex w-full items-center justify-between py-3 text-sm font-medium text-slate-900 hover:text-blue-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+        className="flex w-full items-center justify-between py-3 text-sm font-medium text-foreground hover:text-blue-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
       >
         <span className="flex items-center gap-2">
-          {Icon && <Icon size={16} className={activeCount && activeCount > 0 ? "text-blue-600" : "text-slate-400"} />}
+          {Icon && <Icon size={16} className={activeCount && activeCount > 0 ? "text-blue-600" : "text-muted-foreground/70"} />}
           {title}
           {activeCount !== undefined && activeCount > 0 && (
             <span className="flex size-5 items-center justify-center rounded-full bg-blue-600 text-[10px] font-medium text-white">
@@ -65,7 +65,7 @@ function FilterSection({
             </span>
           )}
         </span>
-        <span className={cn("text-slate-400 transition-transform", isOpen ? "rotate-180" : "")}>
+        <span className={cn("text-muted-foreground/70 transition-transform", isOpen ? "rotate-180" : "")}>
           <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
           </svg>
@@ -103,7 +103,7 @@ export function ListingsFilterPanel({
 
   return (
     <div className={cn(
-      "bg-white border border-slate-200 shadow-sm",
+      "bg-card border border-border shadow-sm",
       isMobile ? "rounded-t-2xl h-full" : "rounded-xl p-5 sticky top-24",
       disabled && "pointer-events-none opacity-60"
     )}>
@@ -114,15 +114,15 @@ export function ListingsFilterPanel({
             <SlidersHorizontal size={18} />
           </div>
           <div>
-            <h2 className="text-base font-semibold text-slate-900">Filtrele</h2>
-            <p className="text-xs text-slate-500">{activeFiltersCount} aktif</p>
+            <h2 className="text-base font-semibold text-foreground">Filtrele</h2>
+            <p className="text-xs text-muted-foreground">{activeFiltersCount} aktif</p>
           </div>
         </div>
         {activeFiltersCount > 0 && (
           <button
             type="button"
             onClick={onReset}
-            className="h-8 px-3 rounded-lg bg-slate-100 text-xs font-medium text-blue-600 hover:bg-blue-50 transition-colors"
+            className="h-8 px-3 rounded-lg bg-muted text-xs font-medium text-blue-600 hover:bg-blue-50 transition-colors"
           >
             Temizle
           </button>
@@ -131,8 +131,8 @@ export function ListingsFilterPanel({
 
       {/* Quick Presets */}
       {quickPresets.length > 0 && (
-        <div className="mb-5 p-3 bg-slate-50 rounded-lg">
-          <span className="text-xs font-medium text-slate-500 flex items-center gap-1.5 mb-2">
+        <div className="mb-5 p-3 bg-muted/30 rounded-lg">
+          <span className="text-xs font-medium text-muted-foreground flex items-center gap-1.5 mb-2">
             <Sparkles className="w-3 h-3 text-amber-500" />
             Hızlı Seçimler
           </span>
@@ -142,7 +142,7 @@ export function ListingsFilterPanel({
                 key={preset.id}
                 type="button"
                 onClick={() => onApplyPreset?.(preset.id)}
-                className="px-2.5 py-1.5 bg-white rounded-md text-xs font-medium text-slate-700 border border-slate-200 hover:border-blue-300 hover:text-blue-600 transition-colors"
+                className="px-2.5 py-1.5 bg-card rounded-md text-xs font-medium text-foreground/90 border border-border hover:border-blue-300 hover:text-blue-600 transition-colors"
               >
                 {preset.label}
               </button>
@@ -158,7 +158,7 @@ export function ListingsFilterPanel({
             value={filters.query ?? ""}
             onChange={(e) => onFilterChange("query", e.target.value || undefined)}
             placeholder="Marka, model..."
-            className="h-10 w-full px-3 rounded-lg border border-slate-200 bg-slate-50 text-sm text-slate-900 outline-none focus:bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 placeholder:text-slate-400"
+            className="h-10 w-full px-3 rounded-lg border border-border bg-muted/30 text-sm text-foreground outline-none focus:bg-card focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 placeholder:text-muted-foreground/70"
           />
         </FilterSection>
 
@@ -221,14 +221,14 @@ export function ListingsFilterPanel({
               placeholder="Min TL"
               value={filters.minPrice ?? ""}
               onChange={(e) => onFilterChange("minPrice", e.target.value ? Number(e.target.value) : undefined)}
-              className="h-10 rounded-lg border border-slate-200 bg-slate-50 px-3 text-sm text-slate-900 outline-none focus:bg-white focus:border-blue-500"
+              className="h-10 rounded-lg border border-border bg-muted/30 px-3 text-sm text-foreground outline-none focus:bg-card focus:border-blue-500"
             />
             <input
               type="number"
               placeholder="Max TL"
               value={filters.maxPrice ?? ""}
               onChange={(e) => onFilterChange("maxPrice", e.target.value ? Number(e.target.value) : undefined)}
-              className="h-10 rounded-lg border border-slate-200 bg-slate-50 px-3 text-sm text-slate-900 outline-none focus:bg-white focus:border-blue-500"
+              className="h-10 rounded-lg border border-border bg-muted/30 px-3 text-sm text-foreground outline-none focus:bg-card focus:border-blue-500"
             />
           </div>
         </FilterSection>
@@ -237,7 +237,7 @@ export function ListingsFilterPanel({
         <FilterSection title="Özellikler" icon={Settings2} activeCount={specsCount}>
             <div className="space-y-3">
             <div>
-              <span className="text-xs font-medium text-slate-500 block mb-2">Yakıt Türü</span>
+              <span className="text-xs font-medium text-muted-foreground block mb-2">Yakıt Türü</span>
               <div className="flex flex-wrap gap-2">
                 {(["benzin", "dizel", "lpg", "hibrit", "elektrik"] as const).map((type) => (
                   <button
@@ -247,7 +247,7 @@ export function ListingsFilterPanel({
                       "px-3 py-1.5 rounded-md text-xs font-medium transition-colors",
                       filters.fuelType === type 
                         ? "bg-blue-600 text-white" 
-                        : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+                        : "bg-muted text-muted-foreground hover:bg-slate-200"
                     )}
                   >
                     {type === "benzin" ? "Benzin" : type === "dizel" ? "Dizel" : type === "lpg" ? "LPG" : type === "hibrit" ? "Hibrit" : "Elektrik"}
@@ -257,7 +257,7 @@ export function ListingsFilterPanel({
             </div>
             
             <div>
-              <span className="text-xs font-medium text-slate-500 block mb-2">Vites</span>
+              <span className="text-xs font-medium text-muted-foreground block mb-2">Vites</span>
               <div className="flex flex-wrap gap-2">
                 {(["otomatik", "manuel", "yari_otomatik"] as const).map((type) => (
                   <button
@@ -267,7 +267,7 @@ export function ListingsFilterPanel({
                       "px-3 py-1.5 rounded-md text-xs font-medium transition-colors",
                       filters.transmission === type 
                         ? "bg-blue-600 text-white" 
-                        : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+                        : "bg-muted text-muted-foreground hover:bg-slate-200"
                     )}
                   >
                     {type === "otomatik" ? "Otomatik" : type === "manuel" ? "Manuel" : "Yarı Otomatik"}
@@ -287,19 +287,19 @@ export function ListingsFilterPanel({
                 placeholder="Min yıl"
                 value={filters.minYear ?? ""}
                 onChange={(e) => onFilterChange("minYear", e.target.value ? Number(e.target.value) : undefined)}
-                className="h-10 rounded-lg border border-slate-200 bg-slate-50 px-3 text-sm text-slate-900 outline-none focus:bg-white focus:border-blue-500"
+                className="h-10 rounded-lg border border-border bg-muted/30 px-3 text-sm text-foreground outline-none focus:bg-card focus:border-blue-500"
               />
               <input
                 type="number"
                 placeholder="Max yıl"
                 value={filters.maxYear ?? ""}
                 onChange={(e) => onFilterChange("maxYear", e.target.value ? Number(e.target.value) : undefined)}
-                className="h-10 rounded-lg border border-slate-200 bg-slate-50 px-3 text-sm text-slate-900 outline-none focus:bg-white focus:border-blue-500"
+                className="h-10 rounded-lg border border-border bg-muted/30 px-3 text-sm text-foreground outline-none focus:bg-card focus:border-blue-500"
               />
             </div>
 
             <div>
-              <span className="text-xs font-medium text-slate-500 block mb-2">Max KM</span>
+              <span className="text-xs font-medium text-muted-foreground block mb-2">Max KM</span>
               <RangeSlider
                 min={0}
                 max={500_000}

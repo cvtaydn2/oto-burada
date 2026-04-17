@@ -110,7 +110,7 @@ export function NotificationDropdown({ userId }: { userId?: string }) {
                     <div className="flex items-start justify-between gap-2">
                        <span className={cn(
                         "text-xs font-bold leading-tight",
-                        notification.read ? "text-slate-700" : "text-indigo-900 dark:text-indigo-200"
+                        notification.read ? "text-foreground/90" : "text-indigo-900 dark:text-indigo-200"
                       )}>
                         {notification.title}
                       </span>
@@ -118,10 +118,10 @@ export function NotificationDropdown({ userId }: { userId?: string }) {
                         <div className="size-2 rounded-full bg-indigo-500 shrink-0 mt-1" />
                       )}
                     </div>
-                    <p className="text-[13px] leading-relaxed text-slate-500 line-clamp-2">
+                    <p className="text-[13px] leading-relaxed text-muted-foreground line-clamp-2">
                       {notification.message}
                     </p>
-                    <span className="text-[10px] font-medium text-slate-400 mt-1 uppercase tracking-wider">
+                    <span className="text-[10px] font-medium text-muted-foreground/70 mt-1 uppercase tracking-wider">
                       {formatDate(notification.createdAt)}
                     </span>
                   </DropdownMenu.Item>

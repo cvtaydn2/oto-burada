@@ -106,17 +106,17 @@ export function ListingMap({ city, district, className = "" }: ListingMapProps) 
 
   return (
     <div
-      className={`relative overflow-hidden rounded-xl border border-slate-200 bg-slate-50 ${className}`}
+      className={`relative overflow-hidden rounded-xl border border-border bg-muted/30 ${className}`}
       style={{ isolation: "isolate", zIndex: 0 }}
     >
       <div ref={mapRef} className="h-full w-full" style={{ minHeight: 240 }} />
       {/* Overlay label — z-index yüksek tutuldu ama map container'ı isolate edildi */}
-      <div className="absolute bottom-3 left-3 z-[400] flex items-center gap-1.5 rounded-lg bg-white/90 backdrop-blur-sm px-3 py-1.5 shadow-sm border border-slate-200 pointer-events-none">
+      <div className="absolute bottom-3 left-3 z-[400] flex items-center gap-1.5 rounded-lg bg-card/90 backdrop-blur-sm px-3 py-1.5 shadow-sm border border-border pointer-events-none">
         <MapPin size={13} className="text-blue-500" />
-        <span className="text-xs font-bold text-slate-700">
+        <span className="text-xs font-bold text-foreground/90">
           {city}{district ? `, ${district}` : ""}
         </span>
-        <span className="text-[10px] text-slate-400 ml-1">(yaklaşık)</span>
+        <span className="text-[10px] text-muted-foreground/70 ml-1">(yaklaşık)</span>
       </div>
     </div>
   );

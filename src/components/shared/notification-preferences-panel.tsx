@@ -20,8 +20,8 @@ function ToggleRow({ label, description, checked, onChange, disabled }: ToggleRo
   return (
     <label className="flex items-center justify-between gap-4 py-3 cursor-pointer group">
       <div className="min-w-0">
-        <p className="text-sm font-semibold text-slate-800 group-hover:text-slate-900">{label}</p>
-        <p className="text-xs text-slate-500 mt-0.5">{description}</p>
+        <p className="text-sm font-semibold text-foreground group-hover:text-foreground">{label}</p>
+        <p className="text-xs text-muted-foreground mt-0.5">{description}</p>
       </div>
       <button
         type="button"
@@ -34,7 +34,7 @@ function ToggleRow({ label, description, checked, onChange, disabled }: ToggleRo
         }`}
       >
         <span
-          className={`inline-block h-4 w-4 rounded-full bg-white shadow-sm transition-transform ${
+          className={`inline-block h-4 w-4 rounded-full bg-card shadow-sm transition-transform ${
             checked ? "translate-x-6" : "translate-x-1"
           }`}
         />
@@ -76,23 +76,23 @@ export function NotificationPreferencesPanel({ initialPreferences }: Notificatio
   };
 
   return (
-    <section className="rounded-3xl bg-white border border-slate-200/60 p-6 shadow-sm sm:p-8">
+    <section className="rounded-3xl bg-card border border-border/60 p-6 shadow-sm sm:p-8">
       <div className="flex items-center gap-3 mb-6">
         <div className="size-10 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center">
           <Bell size={18} />
         </div>
         <div>
-          <h2 className="text-lg font-bold text-slate-900">Bildirim Tercihleri</h2>
-          <p className="text-xs text-slate-500">Hangi bildirimleri almak istediğinizi seçin</p>
+          <h2 className="text-lg font-bold text-foreground">Bildirim Tercihleri</h2>
+          <p className="text-xs text-muted-foreground">Hangi bildirimleri almak istediğinizi seçin</p>
         </div>
       </div>
 
       <div className="grid gap-8 md:grid-cols-2">
         {/* In-app notifications */}
         <div>
-          <div className="flex items-center gap-2 mb-3 pb-3 border-b border-slate-100">
-            <Bell size={14} className="text-slate-400" />
-            <span className="text-xs font-bold text-slate-500 uppercase tracking-widest">Uygulama İçi</span>
+          <div className="flex items-center gap-2 mb-3 pb-3 border-b border-border/50">
+            <Bell size={14} className="text-muted-foreground/70" />
+            <span className="text-xs font-bold text-muted-foreground uppercase tracking-widest">Uygulama İçi</span>
           </div>
           <div className="divide-y divide-slate-50">
             <ToggleRow
@@ -130,9 +130,9 @@ export function NotificationPreferencesPanel({ initialPreferences }: Notificatio
 
         {/* Email notifications */}
         <div>
-          <div className="flex items-center gap-2 mb-3 pb-3 border-b border-slate-100">
-            <Mail size={14} className="text-slate-400" />
-            <span className="text-xs font-bold text-slate-500 uppercase tracking-widest">E-posta</span>
+          <div className="flex items-center gap-2 mb-3 pb-3 border-b border-border/50">
+            <Mail size={14} className="text-muted-foreground/70" />
+            <span className="text-xs font-bold text-muted-foreground uppercase tracking-widest">E-posta</span>
           </div>
           <div className="divide-y divide-slate-50">
             <ToggleRow

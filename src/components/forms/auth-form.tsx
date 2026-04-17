@@ -37,7 +37,7 @@ export function AuthForm({
   const isLogin = mode === "login";
 
   return (
-    <div className="flex min-h-screen flex-1 overflow-hidden bg-white">
+    <div className="flex min-h-screen flex-1 overflow-hidden bg-card">
       <section className="relative hidden lg:flex lg:w-1/2 flex-col justify-between overflow-hidden bg-slate-950 px-12 py-14 text-white">
         <div
           className="absolute inset-0 bg-cover bg-center"
@@ -62,18 +62,18 @@ export function AuthForm({
           </p>
 
           <div className="mt-10 flex flex-wrap gap-3">
-            <div className="flex items-center gap-2 rounded-xl border border-white/15 bg-white/10 px-4 py-3 text-sm font-medium backdrop-blur">
+            <div className="flex items-center gap-2 rounded-xl border border-white/15 bg-card/10 px-4 py-3 text-sm font-medium backdrop-blur">
               <ShieldCheck size={16} className="text-sky-300" />
               Kimlik doğrulama odaklı ilanlar
             </div>
-            <div className="flex items-center gap-2 rounded-xl border border-white/15 bg-white/10 px-4 py-3 text-sm font-medium backdrop-blur">
+            <div className="flex items-center gap-2 rounded-xl border border-white/15 bg-card/10 px-4 py-3 text-sm font-medium backdrop-blur">
               <BadgeCheck size={16} className="text-sky-300" />
               Şeffaf ekspertiz görünümü
             </div>
           </div>
         </div>
 
-        <div className="relative z-10 flex items-center gap-4 text-xs text-slate-400">
+        <div className="relative z-10 flex items-center gap-4 text-xs text-muted-foreground/70">
           <span>© 2026 OtoBurada</span>
           <Link href="/legal/terms" className="hover:text-white transition-colors">Kullanım Şartları</Link>
           <Link href="/legal/privacy" className="hover:text-white transition-colors">Gizlilik</Link>
@@ -90,15 +90,15 @@ export function AuthForm({
           </div>
 
           <div className="mb-8 text-center">
-            <h1 className="text-3xl font-black tracking-tight text-slate-900">{title}</h1>
-            <p className="mt-2 text-sm font-medium text-slate-500">{description}</p>
+            <h1 className="text-3xl font-black tracking-tight text-foreground">{title}</h1>
+            <p className="mt-2 text-sm font-medium text-muted-foreground">{description}</p>
           </div>
 
-          <div className="mb-8 flex border-b border-slate-200">
+          <div className="mb-8 flex border-b border-border">
             <Link
               href="/login"
               className={`flex-1 border-b-2 py-3 text-center text-sm font-bold transition-colors ${
-                isLogin ? "border-sky-500 text-sky-500" : "border-transparent text-slate-400 hover:text-slate-700"
+                isLogin ? "border-sky-500 text-sky-500" : "border-transparent text-muted-foreground/70 hover:text-foreground/90"
               }`}
             >
               Giriş Yap
@@ -106,7 +106,7 @@ export function AuthForm({
             <Link
               href="/register"
               className={`flex-1 border-b-2 py-3 text-center text-sm font-bold transition-colors ${
-                !isLogin ? "border-sky-500 text-sky-500" : "border-transparent text-slate-400 hover:text-slate-700"
+                !isLogin ? "border-sky-500 text-sky-500" : "border-transparent text-muted-foreground/70 hover:text-foreground/90"
               }`}
             >
               Kayıt Ol
@@ -116,7 +116,7 @@ export function AuthForm({
           <form action={formAction} className="space-y-5">
             {next ? <input type="hidden" name="next" value={next} /> : null}
             <div>
-              <label htmlFor="email" className="mb-1.5 block text-xs font-bold text-slate-700">
+              <label htmlFor="email" className="mb-1.5 block text-xs font-bold text-foreground/90">
                 E-posta
               </label>
               <input
@@ -127,13 +127,13 @@ export function AuthForm({
                 autoComplete="email"
                 placeholder="E-posta"
                 required
-                className="h-12 w-full rounded-xl border border-slate-300 px-4 text-sm font-medium text-slate-900 outline-none transition-all placeholder:text-slate-400 focus:border-sky-500 focus:ring-4 focus:ring-sky-100"
+                className="h-12 w-full rounded-xl border border-border px-4 text-sm font-medium text-foreground outline-none transition-all placeholder:text-muted-foreground/70 focus:border-sky-500 focus:ring-4 focus:ring-sky-100"
               />
             </div>
 
             <div>
               <div className="mb-1.5 flex items-center justify-between">
-                <label htmlFor="password" className="block text-xs font-bold text-slate-700">
+                <label htmlFor="password" className="block text-xs font-bold text-foreground/90">
                   Şifre
                 </label>
                 {isLogin && (
@@ -150,7 +150,7 @@ export function AuthForm({
                 placeholder="Şifre"
                 required
                 minLength={6}
-                className="h-12 w-full rounded-xl border border-slate-300 px-4 text-sm font-medium text-slate-900 outline-none transition-all placeholder:text-slate-400 focus:border-sky-500 focus:ring-4 focus:ring-sky-100"
+                className="h-12 w-full rounded-xl border border-border px-4 text-sm font-medium text-foreground outline-none transition-all placeholder:text-muted-foreground/70 focus:border-sky-500 focus:ring-4 focus:ring-sky-100"
               />
             </div>
 
@@ -160,9 +160,9 @@ export function AuthForm({
                   id="remember-me"
                   name="remember-me"
                   type="checkbox"
-                  className="size-4 rounded border-slate-300 text-sky-500 focus:ring-sky-200"
+                  className="size-4 rounded border-border text-sky-500 focus:ring-sky-200"
                 />
-                <span className="text-sm text-slate-600">Beni Hatırla</span>
+                <span className="text-sm text-muted-foreground">Beni Hatırla</span>
               </label>
             )}
 
@@ -192,10 +192,10 @@ export function AuthForm({
           <div className="mt-8">
             <div className="relative">
               <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-slate-200" />
+                <div className="w-full border-t border-border" />
               </div>
               <div className="relative flex justify-center">
-                <span className="bg-white px-3 text-[10px] font-black uppercase tracking-[0.25em] text-slate-400">
+                <span className="bg-card px-3 text-[10px] font-black uppercase tracking-[0.25em] text-muted-foreground/70">
                   Veya
                 </span>
               </div>
@@ -204,21 +204,21 @@ export function AuthForm({
             <div className="mt-6">
               <Link
                 href={alternateHref}
-                className="inline-flex h-11 w-full items-center justify-center gap-3 rounded-xl border border-slate-300 bg-white px-4 text-sm font-semibold text-slate-700 transition-all hover:bg-slate-50"
+                className="inline-flex h-11 w-full items-center justify-center gap-3 rounded-xl border border-border bg-card px-4 text-sm font-semibold text-foreground/90 transition-all hover:bg-muted/30"
               >
                 {isLogin ? "Hesap Oluştur" : "Giriş Yap"}
               </Link>
             </div>
           </div>
 
-          <p className="mt-8 text-center text-sm text-slate-600">
+          <p className="mt-8 text-center text-sm text-muted-foreground">
             {isLogin ? "Hesabın yok mu?" : "Zaten hesabın var mı?"}
             <Link href={alternateHref} className="ml-1 font-bold text-sky-500 hover:text-sky-600">
               {alternateLabel}
             </Link>
           </p>
 
-          <div className="mt-6 flex justify-center gap-6 text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">
+          <div className="mt-6 flex justify-center gap-6 text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/70">
             <span className="flex items-center gap-1">
               <ShieldCheck size={12} />
               SSL Secure

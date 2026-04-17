@@ -12,7 +12,7 @@ interface BreadcrumbsProps {
 
 export function Breadcrumbs({ items }: BreadcrumbsProps) {
   return (
-    <nav className="flex px-4 py-3 text-slate-500 bg-slate-50/50 rounded-xl border border-slate-100 mb-6" aria-label="Breadcrumb">
+    <nav className="flex px-4 py-3 text-muted-foreground bg-muted/30/50 rounded-xl border border-border/50 mb-6" aria-label="Breadcrumb">
       <ol className="inline-flex items-center space-x-1 md:space-x-3">
         <li className="inline-flex items-center">
           <Link
@@ -28,7 +28,7 @@ export function Breadcrumbs({ items }: BreadcrumbsProps) {
             <div className="flex items-center">
               <ChevronRight className="w-4 h-4 text-slate-300 mx-1" />
               {index === items.length - 1 ? (
-                <span className="ml-1 text-sm font-semibold text-slate-800 md:ml-2">
+                <span className="ml-1 text-sm font-semibold text-foreground md:ml-2">
                   {item.name}
                 </span>
               ) : (

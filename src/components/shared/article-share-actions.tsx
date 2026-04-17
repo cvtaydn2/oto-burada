@@ -37,7 +37,7 @@ export function ArticleShareActions({ title }: ArticleShareActionsProps) {
       <button
         type="button"
         onClick={handleShare}
-        className="size-12 rounded-xl bg-slate-50 flex items-center justify-center text-slate-400 hover:bg-slate-900 hover:text-white transition-all shadow-sm"
+        className="size-12 rounded-xl bg-muted/30 flex items-center justify-center text-muted-foreground/70 hover:bg-slate-900 hover:text-white transition-all shadow-sm"
         aria-label="İçeriği paylaş"
       >
         <Globe size={18} />
@@ -45,7 +45,7 @@ export function ArticleShareActions({ title }: ArticleShareActionsProps) {
       <button
         type="button"
         onClick={handleShare}
-        className="size-12 rounded-xl bg-slate-50 flex items-center justify-center text-slate-400 hover:bg-slate-900 hover:text-white transition-all shadow-sm"
+        className="size-12 rounded-xl bg-muted/30 flex items-center justify-center text-muted-foreground/70 hover:bg-slate-900 hover:text-white transition-all shadow-sm"
         aria-label="Paylaş"
       >
         <Share2 size={18} />
@@ -53,7 +53,7 @@ export function ArticleShareActions({ title }: ArticleShareActionsProps) {
       <button
         type="button"
         onClick={handleCopy}
-        className="size-12 rounded-xl bg-slate-50 flex items-center justify-center text-slate-400 hover:bg-slate-900 hover:text-white transition-all shadow-sm"
+        className="size-12 rounded-xl bg-muted/30 flex items-center justify-center text-muted-foreground/70 hover:bg-slate-900 hover:text-white transition-all shadow-sm"
         aria-label="Bağlantıyı kopyala"
         title={copied ? "Kopyalandı" : "Bağlantıyı kopyala"}
       >

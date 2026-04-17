@@ -45,29 +45,29 @@ export default async function AdminAuditPage({ searchParams }: { searchParams: P
   }
 
   return (
-    <main className="space-y-8 p-6 lg:p-8 bg-slate-50/30 min-h-full">
+    <main className="space-y-8 p-6 lg:p-8 bg-muted/30/30 min-h-full">
       <section className="flex flex-col justify-between gap-4 md:flex-row md:items-end">
         <div>
            <div className="flex items-center gap-2 mb-2">
-              <div className="size-2 rounded-full bg-slate-500 shadow-[0_0_8px_rgba(100,116,139,0.5)]" />
-              <span className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] italic">Şeffaflık & Güvenlik</span>
+              <div className="size-2 rounded-full bg-muted/300 shadow-[0_0_8px_rgba(100,116,139,0.5)]" />
+              <span className="text-[10px] font-black text-muted-foreground/70 uppercase tracking-[0.2em] italic">Şeffaflık & Güvenlik</span>
            </div>
-           <h1 className="text-3xl font-black text-slate-800 tracking-tight">
-             Denetim <span className="text-slate-500">Kayıtları</span>
+           <h1 className="text-3xl font-black text-foreground tracking-tight">
+             Denetim <span className="text-muted-foreground">Kayıtları</span>
            </h1>
-           <p className="mt-1.5 text-sm text-slate-500 font-medium italic">Sistem üzerinde gerçekleştirilen tüm admin aksiyonlarını geriye dönük takip edin.</p>
+           <p className="mt-1.5 text-sm text-muted-foreground font-medium italic">Sistem üzerinde gerçekleştirilen tüm admin aksiyonlarını geriye dönük takip edin.</p>
         </div>
       </section>
 
-      <div className="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm">
-        <div className="flex flex-col justify-between gap-4 border-b border-slate-100 bg-slate-50/30 p-6 md:flex-row md:items-center">
-            <h2 className="text-lg font-black text-slate-800 tracking-tight italic">İşlem Günlüğü (Audit)</h2>
+      <div className="overflow-hidden rounded-3xl border border-border bg-card shadow-sm">
+        <div className="flex flex-col justify-between gap-4 border-b border-border/50 bg-muted/30/30 p-6 md:flex-row md:items-center">
+            <h2 className="text-lg font-black text-foreground tracking-tight italic">İşlem Günlüğü (Audit)</h2>
             <form className="relative w-full md:w-80 group">
-              <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-blue-500 transition-colors" size={18} />
+              <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground/70 group-focus-within:text-blue-500 transition-colors" size={18} />
               <Input 
                 name="q"
                 defaultValue={q}
-                className="h-12 rounded-xl border-slate-200 bg-white pl-12 pr-4 text-sm font-bold focus:ring-4 focus:ring-blue-50 focus:border-blue-300 transition-all" 
+                className="h-12 rounded-xl border-border bg-card pl-12 pr-4 text-sm font-bold focus:ring-4 focus:ring-blue-50 focus:border-blue-300 transition-all" 
                 placeholder="İşlem veya not ara..." 
               />
             </form>
@@ -76,26 +76,26 @@ export default async function AdminAuditPage({ searchParams }: { searchParams: P
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>
-              <tr className="bg-slate-50/50">
-                <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Zamanlama</th>
-                <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Admin / Operatör</th>
-                <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Eylem</th>
-                <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Hedef Nesne</th>
-                <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Açıklama</th>
+              <tr className="bg-muted/30/50">
+                <th className="px-6 py-4 text-[10px] font-black text-muted-foreground/70 uppercase tracking-[0.2em]">Zamanlama</th>
+                <th className="px-6 py-4 text-[10px] font-black text-muted-foreground/70 uppercase tracking-[0.2em]">Admin / Operatör</th>
+                <th className="px-6 py-4 text-[10px] font-black text-muted-foreground/70 uppercase tracking-[0.2em]">Eylem</th>
+                <th className="px-6 py-4 text-[10px] font-black text-muted-foreground/70 uppercase tracking-[0.2em]">Hedef Nesne</th>
+                <th className="px-6 py-4 text-[10px] font-black text-muted-foreground/70 uppercase tracking-[0.2em]">Açıklama</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-50">
               {actions?.map((action) => (
                 <tr key={action.id} className="hover:bg-blue-50/20 transition-colors group">
-                  <td className="whitespace-nowrap px-6 py-5 text-xs font-bold text-slate-400 italic">
+                  <td className="whitespace-nowrap px-6 py-5 text-xs font-bold text-muted-foreground/70 italic">
                     {new Date(action.created_at).toLocaleString("tr-TR")}
                   </td>
                   <td className="px-6 py-5">
                      <div className="flex items-center gap-3">
-                        <div className="size-9 rounded-xl bg-slate-100 border border-slate-200 flex items-center justify-center group-hover:bg-white group-hover:scale-110 transition-all">
-                           <ShieldCheck size={16} className="text-slate-400 group-hover:text-blue-600" />
+                        <div className="size-9 rounded-xl bg-muted border border-border flex items-center justify-center group-hover:bg-card group-hover:scale-110 transition-all">
+                           <ShieldCheck size={16} className="text-muted-foreground/70 group-hover:text-blue-600" />
                         </div>
-                        <span className="text-sm font-black text-slate-800 uppercase tracking-tight">{action.profiles?.full_name || "Bilinmeyen Admin"}</span>
+                        <span className="text-sm font-black text-foreground uppercase tracking-tight">{action.profiles?.full_name || "Bilinmeyen Admin"}</span>
                      </div>
                   </td>
                   <td className="px-6 py-5">
@@ -103,12 +103,12 @@ export default async function AdminAuditPage({ searchParams }: { searchParams: P
                         "rounded-lg px-2.5 py-1 text-[9px] font-black uppercase tracking-widest border-none shadow-sm",
                         action.action === 'approve' ? 'bg-emerald-100 text-emerald-700' :
                         action.action === 'reject' ? 'bg-rose-100 text-rose-700' :
-                        'bg-slate-100 text-slate-500'
+                        'bg-muted text-muted-foreground'
                      )}>
                         {action.action}
                      </Badge>
                   </td>
-                  <td className="px-6 py-5 font-mono text-[10px] text-slate-400">
+                  <td className="px-6 py-5 font-mono text-[10px] text-muted-foreground/70">
                      {(() => {
                        const href = getTargetHref(action);
                        return href ? (
@@ -126,7 +126,7 @@ export default async function AdminAuditPage({ searchParams }: { searchParams: P
                      })()}
                   </td>
                   <td className="px-6 py-5">
-                     <p className="text-sm font-medium text-slate-500 max-w-xs truncate italic">{action.note || "Ek not belirtilmedi."}</p>
+                     <p className="text-sm font-medium text-muted-foreground max-w-xs truncate italic">{action.note || "Ek not belirtilmedi."}</p>
                   </td>
                 </tr>
               ))}
@@ -134,7 +134,7 @@ export default async function AdminAuditPage({ searchParams }: { searchParams: P
                 <tr>
                    <td colSpan={5} className="px-6 py-20 text-center">
                       <div className="flex flex-col items-center gap-3">
-                         <div className="size-16 rounded-full bg-slate-50 flex items-center justify-center border border-dashed border-slate-200">
+                         <div className="size-16 rounded-full bg-muted/30 flex items-center justify-center border border-dashed border-border">
                             <History className="text-slate-200" size={32} />
                          </div>
                          <p className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-300">Henüz bir eylem kaydı bulunmuyor</p>

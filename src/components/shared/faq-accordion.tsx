@@ -22,19 +22,19 @@ export function FaqAccordion({ items }: FaqAccordionProps) {
         <div key={i}>
           <button
             onClick={() => setOpenIndex(openIndex === i ? null : i)}
-            className="flex w-full cursor-pointer items-center justify-between px-6 py-4 text-left text-sm font-semibold text-slate-700 hover:text-slate-900 transition-colors"
+            className="flex w-full cursor-pointer items-center justify-between px-6 py-4 text-left text-sm font-semibold text-foreground/90 hover:text-foreground transition-colors"
           >
             <span>{item.q}</span>
             <ChevronDown
               size={18}
               className={cn(
-                "shrink-0 text-slate-400 transition-transform duration-200",
+                "shrink-0 text-muted-foreground/70 transition-transform duration-200",
                 openIndex === i && "rotate-180 text-blue-500"
               )}
             />
           </button>
           {openIndex === i && (
-            <div className="px-6 pb-5 text-sm text-slate-500 font-medium animate-in slide-in-from-top-1 duration-200">
+            <div className="px-6 pb-5 text-sm text-muted-foreground font-medium animate-in slide-in-from-top-1 duration-200">
               {item.a}
             </div>
           )}

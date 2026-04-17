@@ -36,8 +36,8 @@ export function GalleryViewer({ images, title }: GalleryViewerProps) {
 
   if (!images.length) {
     return (
-      <div className="aspect-[4/3] bg-slate-100 rounded-3xl flex items-center justify-center">
-        <p className="text-slate-400">Fotoğraf yok</p>
+      <div className="aspect-[4/3] bg-muted rounded-3xl flex items-center justify-center">
+        <p className="text-muted-foreground/70">Fotoğraf yok</p>
       </div>
     );
   }
@@ -45,7 +45,7 @@ export function GalleryViewer({ images, title }: GalleryViewerProps) {
   return (
     <div 
       className={cn(
-        "relative rounded-3xl overflow-hidden bg-slate-50",
+        "relative rounded-3xl overflow-hidden bg-muted/30",
         isFullscreen ? "fixed inset-0 z-50" : "aspect-[4/3]"
       )}
       onKeyDown={handleKeyDown}
@@ -98,14 +98,14 @@ export function GalleryViewer({ images, title }: GalleryViewerProps) {
           <>
             <button
               onClick={goToPrevious}
-              className="absolute left-4 top-1/2 -translate-y-1/2 bg-white/90 shadow-lg rounded-full p-3 hover:bg-white transition-all"
+              className="absolute left-4 top-1/2 -translate-y-1/2 bg-card/90 shadow-lg rounded-full p-3 hover:bg-card transition-all"
               aria-label="Önceki"
             >
               <ChevronLeft size={20} />
             </button>
             <button
               onClick={goToNext}
-              className="absolute right-4 top-1/2 -translate-y-1/2 bg-white/90 shadow-lg rounded-full p-3 hover:bg-white transition-all"
+              className="absolute right-4 top-1/2 -translate-y-1/2 bg-card/90 shadow-lg rounded-full p-3 hover:bg-card transition-all"
               aria-label="Sonraki"
             >
               <ChevronRight size={20} />

@@ -156,7 +156,7 @@ export function Listing360View({ isOpen, imageUrl, onClose }: Listing360ViewProp
         <button
           onClick={onClose}
           aria-label="Kapat"
-          className="flex size-10 items-center justify-center rounded-full bg-white/10 text-white hover:bg-white/20 transition-all"
+          className="flex size-10 items-center justify-center rounded-full bg-card/10 text-white hover:bg-card/20 transition-all"
         >
           <X size={20} />
         </button>

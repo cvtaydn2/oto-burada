@@ -77,12 +77,12 @@ export function SaveSearchButton({
       <div className="space-y-2">
         <Link
           href={loginHref}
-          className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-4 text-sm font-semibold text-slate-700 transition-all hover:bg-slate-50"
+          className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-border bg-card px-4 text-sm font-semibold text-foreground/90 transition-all hover:bg-muted/30"
         >
           <LogIn className="size-4" />
           Giriş yap ve aramayı kaydet
         </Link>
-        <p className="text-xs text-slate-500">
+        <p className="text-xs text-muted-foreground">
           Kayıtlı aramalar yeni sonuçları dashboard&apos;dan takip etmeni sağlar.
         </p>
       </div>
@@ -95,7 +95,7 @@ export function SaveSearchButton({
         type="button"
         onClick={() => void handleSave()}
         disabled={isSaving}
-        className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-4 text-sm font-semibold text-slate-700 transition-all hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-60"
+        className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-border bg-card px-4 text-sm font-semibold text-foreground/90 transition-all hover:bg-muted/30 disabled:cursor-not-allowed disabled:opacity-60"
       >
         {isSaving ? <LoaderCircle className="size-4 animate-spin" /> : <BellRing className="size-4" />}
         {isSaving ? "Kaydediliyor..." : `Aramayı Kaydet (${resultCount})`}
@@ -112,7 +112,7 @@ export function SaveSearchButton({
           {message}
         </p>
       ) : (
-        <p className="text-xs text-slate-500">
+        <p className="text-xs text-muted-foreground">
           Mevcut filtre kombinasyonunu kaydedip yeni uygun ilanlar geldiğinde tekrar dön.
         </p>
       )}

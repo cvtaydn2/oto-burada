@@ -20,27 +20,27 @@ const toneClasses: Record<
 > = {
   amber: {
     icon: "bg-amber-100 text-amber-600",
-    panel: "bg-white border-slate-200",
+    panel: "bg-card border-border",
     badge: "bg-amber-50 text-amber-700 border-amber-100",
-    text: "text-slate-900",
+    text: "text-foreground",
   },
   emerald: {
     icon: "bg-emerald-100 text-emerald-600",
-    panel: "bg-white border-slate-200",
+    panel: "bg-card border-border",
     badge: "bg-emerald-50 text-emerald-700 border-emerald-100",
-    text: "text-slate-900",
+    text: "text-foreground",
   },
   indigo: {
     icon: "bg-blue-100 text-blue-600",
-    panel: "bg-white border-slate-200",
+    panel: "bg-card border-border",
     badge: "bg-blue-50 text-blue-700 border-blue-100",
-    text: "text-slate-900",
+    text: "text-foreground",
   },
   slate: {
-    icon: "bg-slate-100 text-slate-600",
-    panel: "bg-white border-slate-200",
-    badge: "bg-slate-100 text-slate-700 border-slate-200",
-    text: "text-slate-900",
+    icon: "bg-muted text-muted-foreground",
+    panel: "bg-card border-border",
+    badge: "bg-muted text-foreground/90 border-border",
+    text: "text-foreground",
   },
 };
 
@@ -58,7 +58,7 @@ export function DashboardMetricCard({
   return (
     <div
       className={cn(
-        "rounded-2xl border p-5 shadow-sm transition-all hover:shadow-md hover:border-blue-200 group bg-white",
+        "rounded-2xl border p-5 shadow-sm transition-all hover:shadow-md hover:border-blue-200 group bg-card",
         palette.panel,
       )}
     >
@@ -84,7 +84,7 @@ export function DashboardMetricCard({
             )}
           </div>
           <p className={cn("mt-4 text-3xl font-black tracking-tight", palette.text)}>{value}</p>
-          <p className="mt-2 text-xs font-medium text-slate-400 line-clamp-1">{helper}</p>
+          <p className="mt-2 text-xs font-medium text-muted-foreground/70 line-clamp-1">{helper}</p>
         </div>
         <div
           className={cn(

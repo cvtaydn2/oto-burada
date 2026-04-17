@@ -63,7 +63,7 @@ export function ListingGalleryLightbox({
         <button
           onClick={onClose}
           aria-label="Kapat"
-          className="flex size-12 items-center justify-center rounded-full bg-white/10 text-white shadow-2xl transition-all hover:bg-white/20"
+          className="flex size-12 items-center justify-center rounded-full bg-card/10 text-white shadow-2xl transition-all hover:bg-card/20"
         >
           <X size={24} />
         </button>
@@ -95,14 +95,14 @@ export function ListingGalleryLightbox({
             <button
               onClick={onPrev}
               aria-label="Önceki fotoğraf"
-              className="absolute left-6 hidden size-16 items-center justify-center rounded-full bg-white/5 text-white transition-all hover:bg-white/10 sm:flex"
+              className="absolute left-6 hidden size-16 items-center justify-center rounded-full bg-card/5 text-white transition-all hover:bg-card/10 sm:flex"
             >
               <ChevronLeft size={32} />
             </button>
             <button
               onClick={onNext}
               aria-label="Sonraki fotoğraf"
-              className="absolute right-6 hidden size-16 items-center justify-center rounded-full bg-white/5 text-white transition-all hover:bg-white/10 sm:flex"
+              className="absolute right-6 hidden size-16 items-center justify-center rounded-full bg-card/5 text-white transition-all hover:bg-card/10 sm:flex"
             >
               <ChevronRight size={32} />
             </button>
@@ -119,7 +119,7 @@ export function ListingGalleryLightbox({
           <div
             key={index}
             className={`h-1.5 rounded-full transition-all ${
-              index === currentIndex ? "w-8 bg-primary" : "w-1.5 bg-white/20"
+              index === currentIndex ? "w-8 bg-primary" : "w-1.5 bg-card/20"
             }`}
           />
         ))}

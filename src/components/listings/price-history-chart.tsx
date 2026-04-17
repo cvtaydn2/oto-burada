@@ -25,11 +25,11 @@ function CustomTooltip({ active, payload, label }: {
 }) {
   if (!active || !payload?.length) return null;
   return (
-    <div className="rounded-xl border border-slate-200 bg-white px-4 py-3 shadow-xl">
-      <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">
+    <div className="rounded-xl border border-border bg-card px-4 py-3 shadow-xl">
+      <p className="text-[10px] font-bold text-muted-foreground/70 uppercase tracking-widest mb-1">
         {safeFormatDate(label, "dd MMM yyyy")}
       </p>
-      <p className="text-lg font-black text-slate-900">
+      <p className="text-lg font-black text-foreground">
         {formatCurrency(payload[0]?.value ?? 0)}
       </p>
     </div>
@@ -39,7 +39,7 @@ function CustomTooltip({ active, payload, label }: {
 export function PriceHistoryChart({ history, currentPrice }: PriceHistoryChartProps) {
   if (history.length < 2) {
     return (
-      <div className="flex items-center justify-center h-32 text-sm text-slate-400 font-medium">
+      <div className="flex items-center justify-center h-32 text-sm text-muted-foreground/70 font-medium">
         Henüz fiyat değişikliği yok
       </div>
     );
@@ -67,17 +67,17 @@ export function PriceHistoryChart({ history, currentPrice }: PriceHistoryChartPr
         <div className={`flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-bold ${
           isDown ? "bg-emerald-50 text-emerald-700 border border-emerald-100" :
           isUp ? "bg-rose-50 text-rose-700 border border-rose-100" :
-          "bg-slate-50 text-slate-600 border border-slate-200"
+          "bg-muted/30 text-muted-foreground border border-border"
         }`}>
           {isDown ? <TrendingDown size={13} /> : isUp ? <TrendingUp size={13} /> : <Minus size={13} />}
           {isDown ? "İndirim" : isUp ? "Artış" : "Sabit"}
           {" "}
           {Math.abs(changePercent).toFixed(1)}%
         </div>
-        <span className="text-xs text-slate-400 font-medium">
-          İlk fiyat: <span className="font-bold text-slate-600">{formatCurrency(firstPrice)}</span>
+        <span className="text-xs text-muted-foreground/70 font-medium">
+          İlk fiyat: <span className="font-bold text-muted-foreground">{formatCurrency(firstPrice)}</span>
         </span>
-        <span className="text-xs text-slate-400 font-medium">
+        <span className="text-xs text-muted-foreground/70 font-medium">
           {history.length - 1} değişiklik
         </span>
       </div>

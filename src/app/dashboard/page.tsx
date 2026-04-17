@@ -36,18 +36,18 @@ export default async function DashboardPage() {
   return (
     <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
       {/* Header */}
-      <section className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
+      <section className="rounded-2xl border border-border bg-card p-6 shadow-sm">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <h1 className="text-2xl font-bold text-gray-800">Satıcı Paneli</h1>
-            <p className="mt-1 text-sm text-gray-500">
+            <h1 className="text-2xl font-bold text-foreground">Satıcı Paneli</h1>
+            <p className="mt-1 text-sm text-muted-foreground">
               İlanlarınızı yönetin, alıcılarla iletişime geçin ve satışlarınızı takip edin.
             </p>
           </div>
           <div className="flex items-center gap-3">
             <Link
               href="/dashboard/listings"
-              className="inline-flex h-10 items-center justify-center rounded-lg border border-gray-200 bg-white px-4 text-sm font-medium text-gray-700 transition hover:bg-gray-50 shadow-sm"
+              className="inline-flex h-10 items-center justify-center rounded-lg border border-border bg-card px-4 text-sm font-medium text-foreground/90 transition hover:bg-muted/30 shadow-sm"
             >
               İlan Yönetimi
             </Link>
@@ -62,20 +62,20 @@ export default async function DashboardPage() {
         </div>
 
         {/* Tab Navigation */}
-        <div className="mt-6 flex border-b border-gray-200 overflow-x-auto">
-          <Link href="/dashboard" className="px-6 py-3 text-sm font-bold text-gray-800 border-b-2 border-gray-800 whitespace-nowrap">
+        <div className="mt-6 flex border-b border-border overflow-x-auto">
+          <Link href="/dashboard" className="px-6 py-3 text-sm font-bold text-foreground border-b-2 border-gray-800 whitespace-nowrap">
             Özet Panel
           </Link>
-          <Link href="/dashboard/listings" className="px-6 py-3 text-sm font-medium text-gray-500 hover:text-gray-700 whitespace-nowrap transition">
+          <Link href="/dashboard/listings" className="px-6 py-3 text-sm font-medium text-muted-foreground hover:text-foreground/90 whitespace-nowrap transition">
             İlan Yönetimi
           </Link>
-          <Link href="/dashboard/messages" className="px-6 py-3 text-sm font-medium text-gray-500 hover:text-gray-700 whitespace-nowrap transition">
+          <Link href="/dashboard/messages" className="px-6 py-3 text-sm font-medium text-muted-foreground hover:text-foreground/90 whitespace-nowrap transition">
             Mesajlar
           </Link>
-          <Link href="/dashboard/favorites" className="px-6 py-3 text-sm font-medium text-gray-500 hover:text-gray-700 whitespace-nowrap transition">
+          <Link href="/dashboard/favorites" className="px-6 py-3 text-sm font-medium text-muted-foreground hover:text-foreground/90 whitespace-nowrap transition">
             Favoriler
           </Link>
-          <Link href="/dashboard/profile" className="px-6 py-3 text-sm font-medium text-gray-500 hover:text-gray-700 whitespace-nowrap transition">
+          <Link href="/dashboard/profile" className="px-6 py-3 text-sm font-medium text-muted-foreground hover:text-foreground/90 whitespace-nowrap transition">
             Hesap Ayarları
           </Link>
         </div>
@@ -117,9 +117,9 @@ async function DashboardDataSection({
     <>
       {!profile?.emailVerified ? (
         <section className="relative flex flex-col items-center justify-between gap-6 overflow-hidden rounded-2xl bg-gradient-to-r from-blue-600 to-indigo-700 p-6 text-white shadow-lg shadow-blue-200 md:flex-row">
-          <div className="pointer-events-none absolute top-0 right-0 -mt-20 -mr-20 h-64 w-64 rounded-full bg-white/10 blur-3xl" />
+          <div className="pointer-events-none absolute top-0 right-0 -mt-20 -mr-20 h-64 w-64 rounded-full bg-card/10 blur-3xl" />
           <div className="relative z-10 flex items-center gap-6">
-            <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-full border border-white/30 bg-white/20 backdrop-blur-md">
+            <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-full border border-white/30 bg-card/20 backdrop-blur-md">
               <ShieldAlert size={32} className="text-white" />
             </div>
             <div>
@@ -131,20 +131,20 @@ async function DashboardDataSection({
           </div>
           <Link
             href="/dashboard/profile"
-            className="relative z-10 whitespace-nowrap rounded-xl bg-white px-8 py-3 text-sm font-bold tracking-wide text-blue-600 shadow-sm transition-colors hover:bg-blue-50"
+            className="relative z-10 whitespace-nowrap rounded-xl bg-card px-8 py-3 text-sm font-bold tracking-wide text-blue-600 shadow-sm transition-colors hover:bg-blue-50"
           >
             Profil Ayarları
           </Link>
         </section>
       ) : (
-        <section className="flex items-center justify-between rounded-2xl border border-blue-100 bg-white p-4 shadow-sm">
+        <section className="flex items-center justify-between rounded-2xl border border-blue-100 bg-card p-4 shadow-sm">
           <div className="flex items-center gap-3">
             <div className="flex h-10 w-10 items-center justify-center rounded-full border border-blue-100 bg-blue-50 text-blue-600">
               <ShieldCheck size={20} />
             </div>
             <div>
-              <span className="text-sm font-bold text-slate-800">E-posta Doğrulandı</span>
-              <p className="text-[10px] font-medium text-slate-400">İlan verebilirsiniz.</p>
+              <span className="text-sm font-bold text-foreground">E-posta Doğrulandı</span>
+              <p className="text-[10px] font-medium text-muted-foreground/70">İlan verebilirsiniz.</p>
             </div>
           </div>
           <BadgeCheck className="text-blue-500" size={24} />
@@ -186,9 +186,9 @@ async function DashboardDataSection({
             trend: null,
           },
         ].map((stat) => (
-          <div key={stat.label} className="group flex flex-col justify-between rounded-2xl border border-gray-200 bg-white p-6 shadow-sm transition-all hover:shadow-md hover:border-blue-100">
+          <div key={stat.label} className="group flex flex-col justify-between rounded-2xl border border-border bg-card p-6 shadow-sm transition-all hover:shadow-md hover:border-blue-100">
             <div className="mb-4 flex items-start justify-between">
-              <div className="text-sm font-medium text-gray-500">{stat.label}</div>
+              <div className="text-sm font-medium text-muted-foreground">{stat.label}</div>
               <div className={cn(
                 "flex h-8 w-8 items-center justify-center rounded-full",
                 stat.color === "blue" ? "bg-blue-50 text-blue-500" :
@@ -200,8 +200,8 @@ async function DashboardDataSection({
               </div>
             </div>
             <div>
-              <div className="mb-2 text-3xl font-extrabold text-gray-800">{stat.value}</div>
-              <div className="text-[10px] font-medium text-gray-500 flex items-center gap-1">
+              <div className="mb-2 text-3xl font-extrabold text-foreground">{stat.value}</div>
+              <div className="text-[10px] font-medium text-muted-foreground flex items-center gap-1">
                 <TrendingUp size={10} className="text-green-500" />
                 {stat.sub}
               </div>
@@ -237,16 +237,16 @@ async function DashboardDataSection({
 
       <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
         <div className="space-y-6 lg:col-span-2">
-          <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+          <div className="rounded-2xl border border-border bg-card p-6 shadow-sm">
             <div className="mb-6 flex items-center justify-between">
-              <h3 className="text-lg font-black text-slate-900">Son İlanlar</h3>
+              <h3 className="text-lg font-black text-foreground">Son İlanlar</h3>
               <Link href="/dashboard/listings" className="text-sm font-bold text-blue-600 hover:text-blue-700">Tümünü Gör</Link>
             </div>
 
             <div className="overflow-x-auto -mx-6 px-6">
               <table className="w-full min-w-[480px] text-left">
                 <thead>
-                  <tr className="border-b border-gray-100 text-[11px] font-bold uppercase tracking-wider text-gray-400">
+                  <tr className="border-b border-border/50 text-[11px] font-bold uppercase tracking-wider text-muted-foreground/70">
                     <th className="pb-3 font-medium">Araç Bilgisi</th>
                     <th className="pb-3 font-medium">Fiyat</th>
                     <th className="pb-3 font-medium">Durum</th>
@@ -256,10 +256,10 @@ async function DashboardDataSection({
                 </thead>
                 <tbody className="divide-y divide-gray-100 text-sm">
                   {storedListings.slice(0, 4).map((listing) => (
-                    <tr key={listing.id} className="transition hover:bg-gray-50">
+                    <tr key={listing.id} className="transition hover:bg-muted/30">
                       <td className="py-4">
                         <Link href={`/listing/${listing.slug}`} className="group flex items-center gap-3">
-                          <div className="shrink-0 overflow-hidden rounded-lg border border-slate-200 bg-slate-100">
+                          <div className="shrink-0 overflow-hidden rounded-lg border border-border bg-muted">
                             <Image
                               src={listing.images[0]?.url || "https://placehold.co/100x75?text=No+Image"}
                               alt={listing.title}
@@ -269,10 +269,10 @@ async function DashboardDataSection({
                             />
                           </div>
                           <div className="min-w-0">
-                            <div className="truncate font-bold text-gray-800 group-hover:text-blue-600">
+                            <div className="truncate font-bold text-foreground group-hover:text-blue-600">
                               {listing.title}
                             </div>
-                            <div className="mt-1 text-[11px] font-medium text-gray-500">
+                            <div className="mt-1 text-[11px] font-medium text-muted-foreground">
                               {listing.year} • {listing.brand} {listing.model}
                             </div>
                           </div>
@@ -287,7 +287,7 @@ async function DashboardDataSection({
                           listing.status === "approved" ? "bg-green-50 text-green-600" :
                           listing.status === "pending" ? "bg-orange-50 text-orange-600" :
                           listing.status === "rejected" ? "bg-red-50 text-red-600" :
-                          "bg-gray-100 text-gray-500"
+                          "bg-muted text-muted-foreground"
                         )}>
                           {listing.status === "approved" ? "Yayında" :
                            listing.status === "pending" ? "İnceleniyor" :
@@ -295,7 +295,7 @@ async function DashboardDataSection({
                            listing.status === "draft" ? "Taslak" : listing.status}
                         </span>
                       </td>
-                      <td className="py-4 text-gray-500 text-xs hidden sm:table-cell">
+                      <td className="py-4 text-muted-foreground text-xs hidden sm:table-cell">
                         <span className="mr-3 flex items-center gap-1 inline-flex">
                           <Eye size={12} /> {listing.viewCount ?? 0}
                         </span>
@@ -303,7 +303,7 @@ async function DashboardDataSection({
                       <td className="py-4 text-right">
                         <Link
                           href={`/dashboard/listings?edit=${listing.id}`}
-                          className="text-xs font-medium text-gray-600 hover:text-blue-500 mr-3"
+                          className="text-xs font-medium text-muted-foreground hover:text-blue-500 mr-3"
                         >
                           Düzenle
                         </Link>
@@ -314,10 +314,10 @@ async function DashboardDataSection({
               </table>
               {storedListings.length === 0 ? (
                 <div className="py-8 text-center">
-                  <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-slate-50 text-slate-300">
+                  <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-muted/30 text-slate-300">
                     <ClipboardList size={32} />
                   </div>
-                  <p className="text-sm font-medium text-slate-500">Henüz ilanınız bulunmuyor.</p>
+                  <p className="text-sm font-medium text-muted-foreground">Henüz ilanınız bulunmuyor.</p>
                   <Link
                     href="/dashboard/listings"
                     className="mt-2 inline-block text-xs font-bold text-blue-600 hover:underline"
@@ -332,30 +332,30 @@ async function DashboardDataSection({
 
         <div className="space-y-6">
           <div className="rounded-2xl border border-blue-100 bg-blue-50/60 p-6 shadow-sm">
-            <h3 className="mb-2 text-lg font-bold text-gray-800">Hesap Durumu</h3>
-            <p className="mb-5 text-xs text-gray-500">
+            <h3 className="mb-2 text-lg font-bold text-foreground">Hesap Durumu</h3>
+            <p className="mb-5 text-xs text-muted-foreground">
               Profil güveni ve ilan yayın akışın burada özetlenir.
             </p>
             <div className="space-y-3">
-              <div className="flex items-center justify-between rounded-xl border border-white/70 bg-white px-4 py-3">
-                <span className="text-sm font-medium text-gray-600">E-posta Doğrulama</span>
+              <div className="flex items-center justify-between rounded-xl border border-white/70 bg-card px-4 py-3">
+                <span className="text-sm font-medium text-muted-foreground">E-posta Doğrulama</span>
                 <span className={cn("text-xs font-bold", profile?.emailVerified ? "text-emerald-600" : "text-amber-600")}>
                   {profile?.emailVerified ? "Tamamlandı" : "Bekliyor"}
                 </span>
               </div>
-              <div className="flex items-center justify-between rounded-xl border border-white/70 bg-white px-4 py-3">
-                <span className="text-sm font-medium text-gray-600">Yayındaki ilanlar</span>
-                <span className="text-sm font-bold text-gray-900">{approvedListingsCount}</span>
+              <div className="flex items-center justify-between rounded-xl border border-white/70 bg-card px-4 py-3">
+                <span className="text-sm font-medium text-muted-foreground">Yayındaki ilanlar</span>
+                <span className="text-sm font-bold text-foreground">{approvedListingsCount}</span>
               </div>
-              <div className="flex items-center justify-between rounded-xl border border-white/70 bg-white px-4 py-3">
-                <span className="text-sm font-medium text-gray-600">Favori kayıtları</span>
-                <span className="text-sm font-bold text-gray-900">{favoriteCount}</span>
+              <div className="flex items-center justify-between rounded-xl border border-white/70 bg-card px-4 py-3">
+                <span className="text-sm font-medium text-muted-foreground">Favori kayıtları</span>
+                <span className="text-sm font-bold text-foreground">{favoriteCount}</span>
               </div>
             </div>
           </div>
 
-          <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
-            <h3 className="mb-5 flex items-center gap-2 text-base font-bold text-gray-800">
+          <div className="rounded-2xl border border-border bg-card p-6 shadow-sm">
+            <h3 className="mb-5 flex items-center gap-2 text-base font-bold text-foreground">
               <ArrowRight className="text-blue-500" size={18} />
               Hızlı Erişim
             </h3>
@@ -369,13 +369,13 @@ async function DashboardDataSection({
                 <Link
                   key={item.label}
                   href={item.href}
-                  className="group flex items-center justify-between rounded-xl border border-gray-100 bg-gray-50/50 p-3 transition-all hover:border-blue-200 hover:bg-white hover:shadow-sm"
+                  className="group flex items-center justify-between rounded-xl border border-border/50 bg-muted/30/50 p-3 transition-all hover:border-blue-200 hover:bg-card hover:shadow-sm"
                 >
                   <div className="flex items-center gap-3">
-                    <item.icon size={16} className="text-gray-400 transition-colors group-hover:text-blue-500" />
-                    <span className="text-sm font-medium text-gray-700 transition-colors group-hover:text-blue-600">{item.label}</span>
+                    <item.icon size={16} className="text-muted-foreground/70 transition-colors group-hover:text-blue-500" />
+                    <span className="text-sm font-medium text-foreground/90 transition-colors group-hover:text-blue-600">{item.label}</span>
                   </div>
-                  <ArrowRight size={13} className="text-gray-300 transition-all group-hover:translate-x-1 group-hover:text-blue-400" />
+                  <ArrowRight size={13} className="text-muted-foreground/50 transition-all group-hover:translate-x-1 group-hover:text-blue-400" />
                 </Link>
               ))}
             </div>
@@ -389,17 +389,17 @@ async function DashboardDataSection({
 function DashboardContentSkeleton() {
   return (
     <>
-      <div className="h-36 animate-pulse rounded-2xl border border-slate-200 bg-white" />
+      <div className="h-36 animate-pulse rounded-2xl border border-border bg-card" />
       <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
         {Array.from({ length: 4 }).map((_, index) => (
-          <div key={index} className="h-36 animate-pulse rounded-2xl border border-slate-200 bg-white" />
+          <div key={index} className="h-36 animate-pulse rounded-2xl border border-border bg-card" />
         ))}
       </div>
       <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
-        <div className="h-[420px] animate-pulse rounded-2xl border border-slate-200 bg-white lg:col-span-2" />
+        <div className="h-[420px] animate-pulse rounded-2xl border border-border bg-card lg:col-span-2" />
         <div className="space-y-6">
-          <div className="h-56 animate-pulse rounded-2xl border border-slate-200 bg-white" />
-          <div className="h-72 animate-pulse rounded-2xl border border-slate-200 bg-white" />
+          <div className="h-56 animate-pulse rounded-2xl border border-border bg-card" />
+          <div className="h-72 animate-pulse rounded-2xl border border-border bg-card" />
         </div>
       </div>
     </>

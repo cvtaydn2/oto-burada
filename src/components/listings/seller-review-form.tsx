@@ -75,7 +75,7 @@ export function SellerReviewForm({
     return (
       <button
         onClick={() => setIsOpen(true)}
-        className="flex w-full items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-600 transition hover:border-amber-300 hover:bg-amber-50 hover:text-amber-700"
+        className="flex w-full items-center justify-center gap-2 rounded-xl border border-border bg-card px-4 py-3 text-sm font-semibold text-muted-foreground transition hover:border-amber-300 hover:bg-amber-50 hover:text-amber-700"
       >
         <Star size={15} className="text-amber-400" />
         Satıcıyı Değerlendir
@@ -86,20 +86,20 @@ export function SellerReviewForm({
   return (
     <form
       onSubmit={handleSubmit}
-      className="rounded-xl border border-slate-200 bg-white p-5 space-y-4"
+      className="rounded-xl border border-border bg-card p-5 space-y-4"
     >
       <div>
-        <p className="text-sm font-bold text-slate-900 mb-1">
+        <p className="text-sm font-bold text-foreground mb-1">
           {sellerName} için değerlendirme
         </p>
-        <p className="text-xs text-slate-500">
+        <p className="text-xs text-muted-foreground">
           Deneyimini paylaş, diğer alıcılara yardımcı ol.
         </p>
       </div>
 
       {/* Star Rating */}
       <div>
-        <p className="mb-2 text-xs font-semibold text-slate-600 uppercase tracking-wider">
+        <p className="mb-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
           Puan
         </p>
         <div className="flex items-center gap-1">
@@ -125,7 +125,7 @@ export function SellerReviewForm({
             </button>
           ))}
           {rating > 0 && (
-            <span className="ml-2 text-xs font-bold text-slate-500">
+            <span className="ml-2 text-xs font-bold text-muted-foreground">
               {["", "Çok kötü", "Kötü", "Orta", "İyi", "Mükemmel"][rating]}
             </span>
           )}
@@ -136,9 +136,9 @@ export function SellerReviewForm({
       <div>
         <label
           htmlFor="review-comment"
-          className="mb-1.5 block text-xs font-semibold text-slate-600 uppercase tracking-wider"
+          className="mb-1.5 block text-xs font-semibold text-muted-foreground uppercase tracking-wider"
         >
-          Yorum <span className="font-normal text-slate-400">(isteğe bağlı)</span>
+          Yorum <span className="font-normal text-muted-foreground/70">(isteğe bağlı)</span>
         </label>
         <textarea
           id="review-comment"
@@ -147,9 +147,9 @@ export function SellerReviewForm({
           maxLength={500}
           rows={3}
           placeholder="Satıcıyla iletişim, güvenilirlik, araç durumu hakkında ne düşünüyorsun?"
-          className="w-full resize-none rounded-lg border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm text-slate-800 placeholder:text-slate-400 focus:border-blue-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-100 transition"
+          className="w-full resize-none rounded-lg border border-border bg-muted/30 px-3 py-2.5 text-sm text-foreground placeholder:text-muted-foreground/70 focus:border-blue-400 focus:bg-card focus:outline-none focus:ring-2 focus:ring-blue-100 transition"
         />
-        <p className="mt-1 text-right text-[10px] text-slate-400">
+        <p className="mt-1 text-right text-[10px] text-muted-foreground/70">
           {comment.length}/500
         </p>
       </div>
@@ -172,7 +172,7 @@ export function SellerReviewForm({
         <button
           type="button"
           onClick={() => setIsOpen(false)}
-          className="text-sm font-medium text-slate-500 hover:text-slate-700 transition"
+          className="text-sm font-medium text-muted-foreground hover:text-foreground/90 transition"
         >
           İptal
         </button>

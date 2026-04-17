@@ -6,7 +6,7 @@ const ListingMap = dynamic(
   () => import("./listing-map").then((mod) => mod.ListingMap),
   {
     ssr: false,
-    loading: () => <div className="h-60 animate-pulse rounded-xl bg-slate-100" />,
+    loading: () => <div className="h-60 animate-pulse rounded-xl bg-muted" />,
   }
 );
 

@@ -40,23 +40,23 @@ export default async function AdminOverviewPage() {
   const systemOnline = !pingError;
 
   return (
-    <main className="min-h-screen space-y-8 bg-slate-50/30 p-6 lg:p-8">
+    <main className="min-h-screen space-y-8 bg-muted/30/30 p-6 lg:p-8">
       <section className="flex flex-col justify-between gap-6 md:flex-row md:items-center">
         <div>
           <div className="mb-2 flex items-center gap-2">
             <div className={`size-2 animate-pulse rounded-full ${systemOnline ? "bg-emerald-500" : "bg-rose-500"}`} />
-            <span className={`text-[10px] font-bold uppercase tracking-widest italic ${systemOnline ? "text-slate-400" : "text-rose-500"}`}>
+            <span className={`text-[10px] font-bold uppercase tracking-widest italic ${systemOnline ? "text-muted-foreground/70" : "text-rose-500"}`}>
               Sistem Durumu: {systemOnline ? "Çevrimiçi" : "Bağlantı Sorunu"}
             </span>
           </div>
-          <h1 className="text-3xl font-black tracking-tight text-slate-800">
+          <h1 className="text-3xl font-black tracking-tight text-foreground">
             Yönetim <span className="text-blue-600">Paneli</span>
           </h1>
-          <p className="mt-1.5 text-sm font-medium text-slate-500">Platform operasyonlarını ve sistem sağlığını buradan takip edin.</p>
+          <p className="mt-1.5 text-sm font-medium text-muted-foreground">Platform operasyonlarını ve sistem sağlığını buradan takip edin.</p>
         </div>
 
         <div className="flex items-center gap-4">
-          <Suspense fallback={<div className="h-[74px] min-w-[140px] animate-pulse rounded-2xl border border-slate-200 bg-white p-4 shadow-sm" />}>
+          <Suspense fallback={<div className="h-[74px] min-w-[140px] animate-pulse rounded-2xl border border-border bg-card p-4 shadow-sm" />}>
             <AdminRevenueBadge analyticsPromise={analyticsPromise} />
           </Suspense>
           <AdminHeaderActions />
@@ -84,7 +84,7 @@ export default async function AdminOverviewPage() {
               reportsPromise={reportsPromise}
             />
           </Suspense>
-          <Suspense fallback={<div className="h-[420px] animate-pulse rounded-[2rem] border border-slate-200 bg-white" />}>
+          <Suspense fallback={<div className="h-[420px] animate-pulse rounded-[2rem] border border-border bg-card" />}>
             <AdminBroadcastPanel />
           </Suspense>
         </div>
@@ -105,9 +105,9 @@ async function AdminRevenueBadge({
   }
 
   return (
-    <div className="min-w-[140px] rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
-      <span className="mb-1 block text-[10px] font-bold uppercase italic text-slate-400">Toplam Hacim</span>
-      <span className="text-xl font-black tracking-tighter text-slate-800">₺{analyticsData.kpis.totalRevenue.toLocaleString("tr-TR")}</span>
+    <div className="min-w-[140px] rounded-2xl border border-border bg-card p-4 shadow-sm">
+      <span className="mb-1 block text-[10px] font-bold uppercase italic text-muted-foreground/70">Toplam Hacim</span>
+      <span className="text-xl font-black tracking-tighter text-foreground">₺{analyticsData.kpis.totalRevenue.toLocaleString("tr-TR")}</span>
     </div>
   );
 }
@@ -171,15 +171,15 @@ async function AdminAnalyticsSection({
 
   return (
     <>
-      <div className="min-h-[400px] overflow-hidden rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+      <div className="min-h-[400px] overflow-hidden rounded-2xl border border-border bg-card p-6 shadow-sm">
         <div className="mb-6 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="flex size-10 items-center justify-center rounded-xl bg-blue-50 text-blue-600">
               <Zap size={20} className="fill-blue-600" />
             </div>
             <div>
-              <h2 className="text-lg font-black text-slate-800">İlan Analiz Grafiği</h2>
-              <p className="text-xs font-medium text-slate-400">Son 7 günlük ilan dağılımı</p>
+              <h2 className="text-lg font-black text-foreground">İlan Analiz Grafiği</h2>
+              <p className="text-xs font-medium text-muted-foreground/70">Son 7 günlük ilan dağılımı</p>
             </div>
           </div>
           <Button variant="ghost" size="sm" className="text-xs font-bold text-blue-600" asChild>
@@ -252,7 +252,7 @@ function AdminMetricsSkeleton() {
   return (
     <div className="grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-4">
       {Array.from({ length: 4 }).map((_, index) => (
-        <div key={index} className="h-36 animate-pulse rounded-2xl border border-slate-200 bg-white" />
+        <div key={index} className="h-36 animate-pulse rounded-2xl border border-border bg-card" />
       ))}
     </div>
   );
@@ -261,12 +261,12 @@ function AdminMetricsSkeleton() {
 function AdminAnalyticsSkeleton() {
   return (
     <div className="space-y-8">
-      <div className="h-[460px] animate-pulse rounded-2xl border border-slate-200 bg-white" />
-      <div className="h-[520px] animate-pulse rounded-3xl border border-slate-200 bg-white" />
+      <div className="h-[460px] animate-pulse rounded-2xl border border-border bg-card" />
+      <div className="h-[520px] animate-pulse rounded-3xl border border-border bg-card" />
     </div>
   );
 }
 
 function AdminRecentActionsSkeleton() {
-  return <div className="h-[640px] animate-pulse rounded-3xl border border-slate-200 bg-white" />;
+  return <div className="h-[640px] animate-pulse rounded-3xl border border-border bg-card" />;
 }

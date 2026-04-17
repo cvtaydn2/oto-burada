@@ -32,23 +32,23 @@ export default async function AdminUserManagementPage({
   ]);
 
   const stats = [
-    { label: "Tüm Kullanıcılar", value: total.toLocaleString("tr-TR"), color: "text-slate-900" },
+    { label: "Tüm Kullanıcılar", value: total.toLocaleString("tr-TR"), color: "text-foreground" },
     { label: "Aktif", value: (totalActive ?? 0).toLocaleString("tr-TR"), color: "text-emerald-600" },
     { label: "Kurumsal", value: (totalProfessional ?? 0).toLocaleString("tr-TR"), color: "text-blue-600" },
   ];
 
   return (
-    <main className="space-y-8 p-6 lg:p-8 max-w-full bg-slate-50/30 min-h-full">
+    <main className="space-y-8 p-6 lg:p-8 max-w-full bg-muted/30/30 min-h-full">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
         <div>
           <div className="flex items-center gap-2 mb-2">
             <div className="size-2 rounded-full bg-blue-500 shadow-[0_0_8px_rgba(59,130,246,0.5)]" />
-            <span className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] italic">Admin Çözüm Merkezi</span>
+            <span className="text-[10px] font-black text-muted-foreground/70 uppercase tracking-[0.2em] italic">Admin Çözüm Merkezi</span>
           </div>
-          <h1 className="text-3xl font-black text-slate-800 tracking-tight">
+          <h1 className="text-3xl font-black text-foreground tracking-tight">
             Kullanıcı <span className="text-blue-600">Yönetimi</span>
           </h1>
-          <p className="mt-1.5 text-sm text-slate-500 font-medium italic">
+          <p className="mt-1.5 text-sm text-muted-foreground font-medium italic">
             Platform genelindeki üye kayıtlarını ve yetkilerini buradan kontrol edin.
           </p>
         </div>
@@ -62,14 +62,14 @@ export default async function AdminUserManagementPage({
             {stats.map((stat, idx) => (
               <div
                 key={stat.label}
-                className="flex flex-col p-6 rounded-2xl border border-slate-100 bg-white shadow-sm hover:border-blue-100 transition-all group relative overflow-hidden"
+                className="flex flex-col p-6 rounded-2xl border border-border/50 bg-card shadow-sm hover:border-blue-100 transition-all group relative overflow-hidden"
               >
                 <div className="absolute -right-2 -top-2 size-16 bg-blue-50 rounded-full blur-xl opacity-0 group-hover:opacity-100 transition-opacity" />
-                <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">{stat.label}</span>
+                <span className="text-[10px] font-black text-muted-foreground/70 uppercase tracking-widest mb-2">{stat.label}</span>
                 <div className="flex items-baseline gap-2">
                   <span className={cn("text-3xl font-black tracking-tighter", stat.color)}>{stat.value}</span>
                   {idx === 0 && (
-                    <span className="text-[10px] font-bold text-slate-400 bg-slate-50 px-2 py-0.5 rounded-md">
+                    <span className="text-[10px] font-bold text-muted-foreground/70 bg-muted/30 px-2 py-0.5 rounded-md">
                       Sayfa {currentPage}/{totalPages}
                     </span>
                   )}
@@ -78,8 +78,8 @@ export default async function AdminUserManagementPage({
             ))}
           </div>
 
-          <div className="rounded-3xl border border-slate-200 bg-white overflow-hidden shadow-sm">
-            <div className="p-6 border-b border-slate-100 bg-slate-50/30 flex flex-col md:flex-row md:items-center gap-4">
+          <div className="rounded-3xl border border-border bg-card overflow-hidden shadow-sm">
+            <div className="p-6 border-b border-border/50 bg-muted/30/30 flex flex-col md:flex-row md:items-center gap-4">
               <UserSearch defaultValue={q} />
             </div>
 
@@ -87,15 +87,15 @@ export default async function AdminUserManagementPage({
               <table className="w-full text-left border-collapse">
                 <caption className="sr-only">Platform kullanıcıları listesi</caption>
                 <thead>
-                  <tr className="bg-slate-50/50 border-b border-slate-100">
-                    <th className="p-6 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Profil</th>
-                    <th className="p-6 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">İletişim</th>
-                    <th className="p-6 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Rol</th>
-                    <th className="p-6 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Kredi</th>
-                    <th className="p-6 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Kayıt</th>
-                    <th className="p-6 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Son Giriş</th>
-                    <th className="p-6 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Durum</th>
-                    <th className="p-6 text-right text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">İşlem</th>
+                  <tr className="bg-muted/30/50 border-b border-border/50">
+                    <th className="p-6 text-[10px] font-black text-muted-foreground/70 uppercase tracking-[0.2em]">Profil</th>
+                    <th className="p-6 text-[10px] font-black text-muted-foreground/70 uppercase tracking-[0.2em]">İletişim</th>
+                    <th className="p-6 text-[10px] font-black text-muted-foreground/70 uppercase tracking-[0.2em]">Rol</th>
+                    <th className="p-6 text-[10px] font-black text-muted-foreground/70 uppercase tracking-[0.2em]">Kredi</th>
+                    <th className="p-6 text-[10px] font-black text-muted-foreground/70 uppercase tracking-[0.2em]">Kayıt</th>
+                    <th className="p-6 text-[10px] font-black text-muted-foreground/70 uppercase tracking-[0.2em]">Son Giriş</th>
+                    <th className="p-6 text-[10px] font-black text-muted-foreground/70 uppercase tracking-[0.2em]">Durum</th>
+                    <th className="p-6 text-right text-[10px] font-black text-muted-foreground/70 uppercase tracking-[0.2em]">İşlem</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-50">
@@ -111,7 +111,7 @@ export default async function AdminUserManagementPage({
                                   "flex size-11 items-center justify-center rounded-xl text-sm font-black transition-all group-hover:scale-110 cursor-pointer",
                                   u.role === "admin"
                                     ? "bg-blue-600 text-white shadow-md shadow-blue-100"
-                                    : "bg-slate-100 text-slate-500",
+                                    : "bg-muted text-muted-foreground",
                                 )}
                               >
                                 {(u.fullName || "U")[0].toUpperCase()}
@@ -120,18 +120,18 @@ export default async function AdminUserManagementPage({
                             <div>
                               <Link
                                 href={`/admin/users/${u.id}`}
-                                className="text-sm font-black text-slate-800 block leading-none mb-1 group-hover:text-blue-600 transition-colors uppercase hover:underline"
+                                className="text-sm font-black text-foreground block leading-none mb-1 group-hover:text-blue-600 transition-colors uppercase hover:underline"
                               >
                                 {u.fullName || "İsimsiz Kullanıcı"}
                               </Link>
-                              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-tighter italic">
+                              <span className="text-[10px] font-bold text-muted-foreground/70 uppercase tracking-tighter italic">
                                 #{u.id.substring(0, 8)}
                               </span>
                             </div>
                           </div>
                         </td>
                         <td className="p-6">
-                          <span className="text-sm font-medium text-slate-500 italic lowercase">
+                          <span className="text-sm font-medium text-muted-foreground italic lowercase">
                             {u.phone || "—"}
                           </span>
                         </td>
@@ -152,12 +152,12 @@ export default async function AdminUserManagementPage({
                           </span>
                         </td>
                         <td className="p-6">
-                          <span className="text-xs font-bold text-slate-500">
+                          <span className="text-xs font-bold text-muted-foreground">
                             {safeFormatDate(u.createdAt, "dd MMM yy")}
                           </span>
                         </td>
                         <td className="p-6">
-                          <span className="text-xs font-bold text-slate-400">
+                          <span className="text-xs font-bold text-muted-foreground/70">
                             {safeFormatDistanceToNow(userWithLogin.lastSignInAt)}
                           </span>
                         </td>
@@ -172,7 +172,7 @@ export default async function AdminUserManagementPage({
                             <span
                               className={cn(
                                 "text-[10px] font-black uppercase tracking-widest",
-                                !u.isBanned ? "text-emerald-600" : "text-slate-400",
+                                !u.isBanned ? "text-emerald-600" : "text-muted-foreground/70",
                               )}
                             >
                               {!u.isBanned ? "Aktif" : "Yasaklı"}
@@ -189,7 +189,7 @@ export default async function AdminUserManagementPage({
               </table>
             </div>
 
-            <div className="p-4 bg-slate-50/50 border-t border-slate-100">
+            <div className="p-4 bg-muted/30/50 border-t border-border/50">
               <SimplePagination currentPage={currentPage} totalPages={totalPages} />
             </div>
           </div>
@@ -197,18 +197,18 @@ export default async function AdminUserManagementPage({
 
         {/* Sidebar */}
         <div className="space-y-8">
-          <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+          <div className="rounded-3xl border border-border bg-card p-6 shadow-sm">
             <div className="flex items-center gap-3 mb-6">
               <div className="size-10 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center">
                 <UserCog size={18} />
               </div>
-              <h3 className="text-base font-black text-slate-800 tracking-tight">Hızlı İşlemler</h3>
+              <h3 className="text-base font-black text-foreground tracking-tight">Hızlı İşlemler</h3>
             </div>
             <div className="space-y-3">
               <Link href="/admin/roles">
                 <Button
                   variant="outline"
-                  className="w-full rounded-xl border-slate-100 text-slate-600 font-bold text-xs h-11 flex items-center gap-2 justify-start px-4 hover:bg-slate-50 transition-all"
+                  className="w-full rounded-xl border-border/50 text-muted-foreground font-bold text-xs h-11 flex items-center gap-2 justify-start px-4 hover:bg-muted/30 transition-all"
                 >
                   <ShieldCheck size={16} />
                   Yetki Matrisi
@@ -217,16 +217,16 @@ export default async function AdminUserManagementPage({
             </div>
           </div>
 
-          <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
-            <h4 className="text-sm font-black text-slate-800 mb-3">Özet</h4>
-            <div className="space-y-2 text-xs text-slate-500">
+          <div className="rounded-3xl border border-border bg-card p-6 shadow-sm">
+            <h4 className="text-sm font-black text-foreground mb-3">Özet</h4>
+            <div className="space-y-2 text-xs text-muted-foreground">
               <div className="flex justify-between">
                 <span>Toplam kayıt</span>
-                <span className="font-black text-slate-800">{total}</span>
+                <span className="font-black text-foreground">{total}</span>
               </div>
               <div className="flex justify-between">
                 <span>Bu sayfada</span>
-                <span className="font-black text-slate-800">{users.length}</span>
+                <span className="font-black text-foreground">{users.length}</span>
               </div>
               <div className="flex justify-between">
                 <span>Yasaklı</span>

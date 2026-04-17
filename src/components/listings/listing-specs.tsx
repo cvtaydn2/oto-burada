@@ -19,11 +19,11 @@ export function ListingSpecs({ listing }: ListingSpecsProps) {
       {specs.map((spec) => (
         <div
           key={spec.label}
-          className="flex flex-col items-center justify-center p-3 rounded-lg border border-slate-200 bg-white"
+          className="flex flex-col items-center justify-center p-3 rounded-lg border border-border bg-card"
         >
           <spec.icon className="w-5 h-5 text-blue-600 mb-1" />
-          <span className="text-[10px] font-medium text-slate-500 uppercase">{spec.label}</span>
-          <span className="text-sm font-semibold text-slate-900">{spec.value}</span>
+          <span className="text-[10px] font-medium text-muted-foreground uppercase">{spec.label}</span>
+          <span className="text-sm font-semibold text-foreground">{spec.value}</span>
         </div>
       ))}
     </div>

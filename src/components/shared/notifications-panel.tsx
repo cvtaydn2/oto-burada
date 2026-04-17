@@ -142,10 +142,10 @@ export function NotificationsPanel({ initialNotifications }: NotificationsPanelP
 
   return (
     <div className="space-y-6">
-      <section className="flex flex-col items-start justify-between gap-4 rounded-3xl bg-white border border-slate-200/60 p-6 shadow-sm sm:flex-row sm:items-center sm:p-8">
+      <section className="flex flex-col items-start justify-between gap-4 rounded-3xl bg-card border border-border/60 p-6 shadow-sm sm:flex-row sm:items-center sm:p-8">
         <div>
-          <h1 className="text-2xl sm:text-3xl font-bold text-slate-900">Bildirimler</h1>
-          <p className="mt-1 text-sm text-slate-500">
+          <h1 className="text-2xl sm:text-3xl font-bold text-foreground">Bildirimler</h1>
+          <p className="mt-1 text-sm text-muted-foreground">
             {unreadCount} okunmamis bildirimin var
           </p>
         </div>
@@ -156,7 +156,7 @@ export function NotificationsPanel({ initialNotifications }: NotificationsPanelP
               "px-4 py-2 rounded-xl text-sm font-medium transition-all",
               showUnreadOnly
                 ? "bg-indigo-100 text-indigo-700"
-                : "bg-slate-100 text-slate-600 hover:bg-slate-200",
+                : "bg-muted text-muted-foreground hover:bg-slate-200",
             )}
           >
             {showUnreadOnly ? "Tumu" : "Okunmamis"}
@@ -178,7 +178,7 @@ export function NotificationsPanel({ initialNotifications }: NotificationsPanelP
         </p>
       ) : null}
 
-      <div className="bg-white rounded-3xl border border-slate-200/60 shadow-sm overflow-hidden">
+      <div className="bg-card rounded-3xl border border-border/60 shadow-sm overflow-hidden">
         {filteredItems.length > 0 ? (
           filteredItems.map((notif, idx) => {
             const isLast = idx === filteredItems.length - 1;
@@ -189,8 +189,8 @@ export function NotificationsPanel({ initialNotifications }: NotificationsPanelP
               <div
                 key={notif.id}
                 className={cn(
-                  "flex gap-4 p-5 transition-all hover:bg-slate-50 sm:p-6",
-                  !isLast && "border-b border-slate-100",
+                  "flex gap-4 p-5 transition-all hover:bg-muted/30 sm:p-6",
+                  !isLast && "border-b border-border/50",
                   !notif.read && "bg-indigo-50/50",
                 )}
               >
@@ -205,18 +205,18 @@ export function NotificationsPanel({ initialNotifications }: NotificationsPanelP
                       <h4
                         className={cn(
                           "truncate pr-4 text-base",
-                          !notif.read ? "font-bold text-slate-900" : "font-semibold text-slate-600",
+                          !notif.read ? "font-bold text-foreground" : "font-semibold text-muted-foreground",
                         )}
                       >
                         {notif.title}
                       </h4>
-                      <span className="mt-1 block shrink-0 whitespace-nowrap text-xs font-medium text-slate-400">
+                      <span className="mt-1 block shrink-0 whitespace-nowrap text-xs font-medium text-muted-foreground/70">
                         {formatDate(notif.createdAt)}
                       </span>
                     </div>
                   </div>
 
-                  <p className="text-sm text-slate-500 leading-relaxed">{notif.message}</p>
+                  <p className="text-sm text-muted-foreground leading-relaxed">{notif.message}</p>
 
                   {notif.href ? (
                     <Link
@@ -233,7 +233,7 @@ export function NotificationsPanel({ initialNotifications }: NotificationsPanelP
                       type="button"
                       onClick={() => void markSingleAsRead(notif.id)}
                       disabled={isReading || isDeleting}
-                      className="mt-1 p-2 rounded-xl text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 transition-all disabled:cursor-not-allowed disabled:opacity-60"
+                      className="mt-1 p-2 rounded-xl text-muted-foreground/70 hover:text-indigo-600 hover:bg-indigo-50 transition-all disabled:cursor-not-allowed disabled:opacity-60"
                       title="Okundu olarak işaretle"
                     >
                       {isReading ? <LoaderCircle size={16} className="animate-spin" /> : <Check size={16} />}
@@ -242,7 +242,7 @@ export function NotificationsPanel({ initialNotifications }: NotificationsPanelP
                   <button
                     onClick={() => void deleteNotification(notif.id)}
                     disabled={isReading || isDeleting}
-                    className="mt-1 p-2 rounded-xl text-slate-400 hover:text-red-500 hover:bg-red-50 transition-all disabled:cursor-not-allowed disabled:opacity-60"
+                    className="mt-1 p-2 rounded-xl text-muted-foreground/70 hover:text-red-500 hover:bg-red-50 transition-all disabled:cursor-not-allowed disabled:opacity-60"
                     title="Sil"
                   >
                     {isDeleting ? <LoaderCircle size={16} className="animate-spin" /> : <Trash2 size={16} />}
@@ -253,11 +253,11 @@ export function NotificationsPanel({ initialNotifications }: NotificationsPanelP
           })
         ) : (
           <div className="p-12 text-center">
-            <div className="mx-auto w-16 h-16 rounded-full bg-slate-100 flex items-center justify-center mb-4">
-              <Bell size={32} className="text-slate-400" />
+            <div className="mx-auto w-16 h-16 rounded-full bg-muted flex items-center justify-center mb-4">
+              <Bell size={32} className="text-muted-foreground/70" />
             </div>
-            <h3 className="text-lg font-bold text-slate-900 mb-2">Bildirim yok</h3>
-            <p className="text-slate-500">Favori, moderasyon ve rapor olaylari burada gorunecek.</p>
+            <h3 className="text-lg font-bold text-foreground mb-2">Bildirim yok</h3>
+            <p className="text-muted-foreground">Favori, moderasyon ve rapor olaylari burada gorunecek.</p>
           </div>
         )}
       </div>

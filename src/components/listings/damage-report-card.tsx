@@ -16,18 +16,18 @@ export function DamageReportCard({ damageStatus, tramerAmount }: DamageReportCar
 
   if (!damageStatus || Object.keys(damageStatus).length === 0) {
     return (
-      <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+      <div className="rounded-2xl border border-border bg-card p-5 shadow-sm">
         <div className="flex items-center gap-2 text-emerald-600 mb-2">
           <CheckCircle2 size={20} />
-          <h3 className="font-bold text-slate-900">Boya ve Değişen Yok</h3>
+          <h3 className="font-bold text-foreground">Boya ve Değişen Yok</h3>
         </div>
-        <p className="text-sm text-slate-500">
+        <p className="text-sm text-muted-foreground">
           Satıcı tarafından belirtilen herhangi bir kaza, boya veya değişen parça bulunmamaktadır.
         </p>
         {tramerAmount != null && (
-          <div className="mt-4 pt-4 border-t border-slate-100 flex justify-between items-center text-sm">
-            <span className="text-slate-500">Tramer Kaydı</span>
-            <span className="font-bold text-slate-900">
+          <div className="mt-4 pt-4 border-t border-border/50 flex justify-between items-center text-sm">
+            <span className="text-muted-foreground">Tramer Kaydı</span>
+            <span className="font-bold text-foreground">
               {tramerAmount === 0 ? "Kayıt Yok" : `${tramerAmount.toLocaleString("tr-TR")} TL`}
             </span>
           </div>
@@ -52,7 +52,7 @@ export function DamageReportCard({ damageStatus, tramerAmount }: DamageReportCar
   const hasIssues = statusCounts.boyali > 0 || statusCounts.degisen > 0 || statusCounts.lokal_boyali > 0;
 
   return (
-    <div className="rounded-2xl border border-slate-200 bg-white overflow-hidden shadow-sm">
+    <div className="rounded-2xl border border-border bg-card overflow-hidden shadow-sm">
       <div className="p-5">
         <div className="flex flex-col md:flex-row gap-8">
           {/* Legend and Overview */}
@@ -64,7 +64,7 @@ export function DamageReportCard({ damageStatus, tramerAmount }: DamageReportCar
                 ) : (
                   <CheckCircle2 size={20} className="text-emerald-500" />
                 )}
-                <h3 className="font-bold text-slate-900 text-base italic">Ekspertiz Özet Durumu</h3>
+                <h3 className="font-bold text-foreground text-base italic">Ekspertiz Özet Durumu</h3>
               </div>
               {tramerAmount != null && (
                 <div className="text-right">
@@ -112,13 +112,13 @@ export function DamageReportCard({ damageStatus, tramerAmount }: DamageReportCar
       </div>
 
       {isExpanded && (
-        <div className="bg-slate-50/50 border-t border-slate-100 p-5 animate-in slide-in-from-top-2 duration-300">
+        <div className="bg-muted/30/50 border-t border-border/50 p-5 animate-in slide-in-from-top-2 duration-300">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-2">
             {carParts.map((part) => {
               const status = (damageStatus[part] as keyof typeof carPartDamageStatusLabels) || "orjinal";
               return (
                 <div key={part} className="flex items-center justify-between py-1.5 border-b border-white last:border-0 sm:last:border-b">
-                  <span className="text-[13px] font-medium text-slate-600">{carPartLabels[part]}</span>
+                  <span className="text-[13px] font-medium text-muted-foreground">{carPartLabels[part]}</span>
                   <span className={cn(
                     "text-[12px] font-bold px-2 py-0.5 rounded-md border",
                     status === "orjinal" ? "bg-emerald-50 text-emerald-700 border-emerald-100" :
@@ -131,7 +131,7 @@ export function DamageReportCard({ damageStatus, tramerAmount }: DamageReportCar
               );
             })}
           </div>
-          <div className="mt-4 flex items-start gap-2 text-xs text-slate-400 bg-white p-3 rounded-xl border border-slate-100">
+          <div className="mt-4 flex items-start gap-2 text-xs text-muted-foreground/70 bg-card p-3 rounded-xl border border-border/50">
             <Info size={14} className="shrink-0 mt-0.5" />
             Bu bilgiler satıcının beyanıdır. Alırken ekspertiz yaptırılması önerilir.
           </div>

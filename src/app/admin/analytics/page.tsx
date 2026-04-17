@@ -15,12 +15,12 @@ async function AnalyticsContent({ range }: { range: string }) {
 
   if (!analyticsData) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-[400px] p-8 text-center bg-white rounded-3xl border border-rose-100 shadow-sm">
+      <div className="flex flex-col items-center justify-center min-h-[400px] p-8 text-center bg-card rounded-3xl border border-rose-100 shadow-sm">
         <div className="size-16 rounded-2xl bg-rose-50 flex items-center justify-center text-rose-500 mb-4">
           <TrendingUp size={32} />
         </div>
-        <h2 className="text-xl font-black text-slate-800">Analitik Verileri Yüklenemedi</h2>
-        <p className="text-slate-500 font-medium mt-2 max-w-md italic">
+        <h2 className="text-xl font-black text-foreground">Analitik Verileri Yüklenemedi</h2>
+        <p className="text-muted-foreground font-medium mt-2 max-w-md italic">
           Veritabanı bağlantısı veya yetkilendirme ile ilgili bir sorun oluştu.
         </p>
       </div>
@@ -35,12 +35,12 @@ function AnalyticsSkeleton() {
     <div className="space-y-6 p-6 lg:p-8">
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         {Array.from({ length: 4 }).map((_, i) => (
-          <div key={i} className="h-28 animate-pulse rounded-2xl border border-slate-200 bg-white" />
+          <div key={i} className="h-28 animate-pulse rounded-2xl border border-border bg-card" />
         ))}
       </div>
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="lg:col-span-2 h-80 animate-pulse rounded-2xl border border-slate-200 bg-white" />
-        <div className="h-80 animate-pulse rounded-2xl border border-slate-200 bg-white" />
+        <div className="lg:col-span-2 h-80 animate-pulse rounded-2xl border border-border bg-card" />
+        <div className="h-80 animate-pulse rounded-2xl border border-border bg-card" />
       </div>
     </div>
   );

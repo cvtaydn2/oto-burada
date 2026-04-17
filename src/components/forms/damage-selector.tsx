@@ -21,7 +21,7 @@ const statusColors: Record<string, { bg: string, border: string, text: string, f
   boyali: { bg: "bg-amber-50", border: "border-amber-200", text: "text-amber-700", fill: "fill-amber-400" },
   lokal_boyali: { bg: "bg-orange-50", border: "border-orange-200", text: "text-orange-700", fill: "fill-orange-400" },
   degisen: { bg: "bg-red-50", border: "border-red-200", text: "text-red-700", fill: "fill-red-400" },
-  bilinmiyor: { bg: "bg-slate-50", border: "border-slate-200", text: "text-slate-600", fill: "fill-slate-300" },
+  bilinmiyor: { bg: "bg-muted/30", border: "border-border", text: "text-muted-foreground", fill: "fill-slate-300" },
 };
 
 export function DamageSelector({ value, onChange, className }: DamageSelectorProps) {
@@ -51,7 +51,7 @@ export function DamageSelector({ value, onChange, className }: DamageSelectorPro
           <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-indigo-50 text-indigo-600">
             <Info size={16} />
           </div>
-          <p className="text-sm font-medium text-slate-600">
+          <p className="text-sm font-medium text-muted-foreground">
             Aracın üzerindeki parçalara tıklayarak durumunu seçebilirsin.
           </p>
         </div>
@@ -60,7 +60,7 @@ export function DamageSelector({ value, onChange, className }: DamageSelectorPro
           <button 
             type="button"
             onClick={clearAll}
-            className="flex items-center gap-1.5 text-xs font-bold text-slate-400 transition-colors hover:text-red-500"
+            className="flex items-center gap-1.5 text-xs font-bold text-muted-foreground/70 transition-colors hover:text-red-500"
           >
             <RotateCcw size={12} />
             TÜMÜNÜ SIFIRLA
@@ -70,7 +70,7 @@ export function DamageSelector({ value, onChange, className }: DamageSelectorPro
 
       <div className="grid grid-cols-1 gap-8 lg:grid-cols-2">
         {/* Visual Car Diagram */}
-        <div className="relative flex items-center justify-center rounded-[2rem] border border-slate-100 bg-slate-50/50 p-6 sm:p-10">
+        <div className="relative flex items-center justify-center rounded-[2rem] border border-border/50 bg-muted/30/50 p-6 sm:p-10">
           <svg viewBox="0 0 240 460" className="h-auto w-full max-w-[220px] drop-shadow-2xl">
             {/* Base Car Body Shadow */}
             <path d="M50,40 Q50,20 120,20 Q190,20 190,40 L195,100 L200,300 Q200,440 120,440 Q40,440 40,300 L45,100 Z" fill="rgba(0,0,0,0.05)" />
@@ -191,15 +191,15 @@ export function DamageSelector({ value, onChange, className }: DamageSelectorPro
           {/* Active Overlay Tooltip */}
           {activePart && (
             <div className="absolute inset-x-6 top-1/2 z-30 -translate-y-1/2 animate-in zoom-in-95 duration-200">
-              <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-2xl">
+              <div className="rounded-2xl border border-border bg-card p-5 shadow-2xl">
                 <div className="mb-4 flex items-center justify-between border-b pb-2">
-                  <span className="text-sm font-bold uppercase tracking-wide text-slate-800">
+                  <span className="text-sm font-bold uppercase tracking-wide text-foreground">
                     {carPartLabels[activePart as keyof typeof carPartLabels]}
                   </span>
                   <button 
                     type="button"
                     onClick={() => setActivePart(null)}
-                    className="text-xs font-bold text-slate-400 hover:text-slate-600"
+                    className="text-xs font-bold text-muted-foreground/70 hover:text-muted-foreground"
                   >
                     KAPAT
                   </button>
@@ -214,7 +214,7 @@ export function DamageSelector({ value, onChange, className }: DamageSelectorPro
                         "flex items-center justify-between rounded-xl px-4 py-3 text-sm font-semibold transition-all",
                         getStatus(activePart) === status 
                           ? cn(statusColors[status].bg, statusColors[status].text, "ring-2 ring-indigo-500/20") 
-                          : "bg-slate-50 text-slate-600 hover:bg-white hover:shadow-md"
+                          : "bg-muted/30 text-muted-foreground hover:bg-card hover:shadow-md"
                       )}
                     >
                       <div className="flex items-center gap-2">
@@ -233,7 +233,7 @@ export function DamageSelector({ value, onChange, className }: DamageSelectorPro
         {/* List for Selection and Recap */}
         <div className="flex flex-col gap-4">
           <div className="space-y-3">
-            <h4 className="text-xs font-bold uppercase tracking-[0.2em] text-slate-400">
+            <h4 className="text-xs font-bold uppercase tracking-[0.2em] text-muted-foreground/70">
               EKSPERTİZ ÖZETİ ({affectedPartsCount} Parça)
             </h4>
             
@@ -255,7 +255,7 @@ export function DamageSelector({ value, onChange, className }: DamageSelectorPro
                     )}
                   >
                     <div className="flex flex-col">
-                      <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500">
+                      <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
                         {carPartLabels[part as keyof typeof carPartLabels]}
                       </span>
                       <span className={cn("text-xs font-bold", statusColors[status].text)}>
@@ -265,7 +265,7 @@ export function DamageSelector({ value, onChange, className }: DamageSelectorPro
                     <button 
                       type="button"
                       onClick={() => handleStatusChange(part, "orjinal")}
-                      className="text-slate-400 hover:text-red-500"
+                      className="text-muted-foreground/70 hover:text-red-500"
                     >
                       <RotateCcw size={14} />
                     </button>
@@ -282,10 +282,10 @@ export function DamageSelector({ value, onChange, className }: DamageSelectorPro
                   key={part}
                   type="button"
                   onClick={() => setActivePart(part)}
-                  className="flex items-center justify-between rounded-xl border border-slate-200 bg-white p-3 text-left transition-all hover:border-indigo-300 hover:shadow-sm"
+                  className="flex items-center justify-between rounded-xl border border-border bg-card p-3 text-left transition-all hover:border-indigo-300 hover:shadow-sm"
                 >
-                  <span className="text-xs font-medium text-slate-600 truncate">{carPartLabels[part]}</span>
-                  <ChevronDown size={14} className="text-slate-400" />
+                  <span className="text-xs font-medium text-muted-foreground truncate">{carPartLabels[part]}</span>
+                  <ChevronDown size={14} className="text-muted-foreground/70" />
                 </button>
               ))}
             </div>
@@ -301,9 +301,9 @@ export function DamageSelector({ value, onChange, className }: DamageSelectorPro
       </div>
 
       <div className="flex flex-wrap items-center gap-4 border-t pt-4">
-        <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Lejand:</span>
+        <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/70">Lejand:</span>
         {carPartDamageStatuses.filter(s => s !== "bilinmiyor" && s !== "orjinal").map((status) => (
-          <div key={status} className="flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-tight text-slate-600">
+          <div key={status} className="flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-tight text-muted-foreground">
             <div className={cn("size-2.5 rounded-full", statusColors[status].fill.replace("fill-", "bg-"))} />
             {carPartDamageStatusLabels[status]}
           </div>

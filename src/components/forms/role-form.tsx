@@ -81,18 +81,18 @@ export function RoleForm({ initialData, onSuccess, onCancel }: RoleFormProps) {
       <div className="space-y-4">
         <div className="grid gap-4">
           <div className="space-y-2">
-            <Label className="text-xs font-black uppercase tracking-widest text-slate-500">Rol Adı</Label>
+            <Label className="text-xs font-black uppercase tracking-widest text-muted-foreground">Rol Adı</Label>
             <Input {...form.register("name")} placeholder="Örn: Bölge Sorumlusu" className="rounded-xl" />
             {form.formState.errors.name && <p className="text-[10px] font-bold text-rose-500">{form.formState.errors.name.message}</p>}
           </div>
 
           <div className="space-y-2">
-            <Label className="text-xs font-black uppercase tracking-widest text-slate-500">Açıklama</Label>
+            <Label className="text-xs font-black uppercase tracking-widest text-muted-foreground">Açıklama</Label>
             <Textarea {...form.register("description")} placeholder="Bu rolün görevlerini kısaca açıklayın..." className="rounded-xl min-h-[80px]" />
           </div>
 
           <div className="pt-2">
-            <Label className="text-xs font-black uppercase tracking-widest text-slate-500 mb-4 block">Yetki Tanımları</Label>
+            <Label className="text-xs font-black uppercase tracking-widest text-muted-foreground mb-4 block">Yetki Tanımları</Label>
             <div className="grid gap-3">
                {availablePermissions.map((perm) => (
                  <div 
@@ -100,7 +100,7 @@ export function RoleForm({ initialData, onSuccess, onCancel }: RoleFormProps) {
                    className={`flex items-start space-x-3 p-4 rounded-2xl border transition-all cursor-pointer ${
                      form.watch("permissions").includes(perm.id) 
                        ? "border-blue-200 bg-blue-50/50" 
-                       : "border-slate-100 bg-slate-50 hover:border-slate-200"
+                       : "border-border/50 bg-muted/30 hover:border-border"
                    }`}
                    onClick={() => togglePermission(perm.id)}
                  >
@@ -111,8 +111,8 @@ export function RoleForm({ initialData, onSuccess, onCancel }: RoleFormProps) {
                       onClick={(e) => e.stopPropagation()}
                     />
                     <div className="space-y-1 cursor-pointer">
-                      <label htmlFor={perm.id} className="text-sm font-black text-slate-800 block cursor-pointer">{perm.label}</label>
-                      <p className="text-[10px] text-slate-500 font-medium italic leading-tight">{perm.description}</p>
+                      <label htmlFor={perm.id} className="text-sm font-black text-foreground block cursor-pointer">{perm.label}</label>
+                      <p className="text-[10px] text-muted-foreground font-medium italic leading-tight">{perm.description}</p>
                     </div>
                  </div>
                ))}
@@ -126,7 +126,7 @@ export function RoleForm({ initialData, onSuccess, onCancel }: RoleFormProps) {
         <Button
           type="button"
           variant="outline"
-          className="flex-1 rounded-xl h-11 font-black text-[10px] tracking-widest uppercase border-slate-200"
+          className="flex-1 rounded-xl h-11 font-black text-[10px] tracking-widest uppercase border-border"
           onClick={onCancel}
         >
           İptal

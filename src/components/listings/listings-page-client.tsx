@@ -15,7 +15,7 @@ import { createSearchParamsFromListingFilters } from "@/services/listings/listin
 const SmartFilters = dynamic(
   () => import("@/components/modules/listings/smart-filters").then((mod) => mod.SmartFilters),
   {
-    loading: () => <div className="min-h-[320px] rounded-xl border border-slate-200 bg-white shadow-sm" />,
+    loading: () => <div className="min-h-[320px] rounded-xl border border-border bg-card shadow-sm" />,
   },
 )
 
@@ -184,12 +184,12 @@ export function ListingsPageClient({
       <div className="mb-8">
         <div className="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
           <div>
-            <h1 className="text-2xl font-black text-slate-900">
+            <h1 className="text-2xl font-black text-foreground">
               {filters.brand
                 ? `${filters.brand}${filters.model ? ` ${filters.model}` : ""} İlanları`
                 : "Tüm Satılık Araçlar"}
             </h1>
-            <p className="mt-1 text-sm font-medium text-slate-500">
+            <p className="mt-1 text-sm font-medium text-muted-foreground">
               {initialResult.total} ilan bulundu
             </p>
           </div>
@@ -205,13 +205,13 @@ export function ListingsPageClient({
 
             <Link
               href={`/listings/filter?${createSearchParamsFromListingFilters(filters).toString()}`}
-              className="flex h-9 items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 text-sm font-medium text-slate-600 hover:bg-slate-50 transition-colors"
+              className="flex h-9 items-center gap-1.5 rounded-lg border border-border bg-card px-3 text-sm font-medium text-muted-foreground hover:bg-muted/30 transition-colors"
             >
               <SlidersHorizontal size={15} />
               <span className="hidden sm:inline">Gelişmiş</span>
             </Link>
 
-            <div className="flex items-center gap-1 rounded-lg border border-slate-200 bg-white p-1">
+            <div className="flex items-center gap-1 rounded-lg border border-border bg-card p-1">
               <button
                 onClick={() => setViewMode("grid")}
                 aria-label="Izgara görünümü"
@@ -246,7 +246,7 @@ export function ListingsPageClient({
                 aria-haspopup="listbox"
                 aria-expanded={isSortOpen}
                 aria-label={`Sıralama: ${currentSortLabel}`}
-                className="flex h-9 items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 text-sm font-medium text-slate-600 hover:bg-slate-50 transition-colors"
+                className="flex h-9 items-center gap-2 rounded-lg border border-border bg-card px-3 text-sm font-medium text-muted-foreground hover:bg-muted/30 transition-colors"
               >
                 <ArrowDownUp size={16} aria-hidden="true" />
                 <span className="hidden sm:inline">{currentSortLabel}</span>
@@ -260,7 +260,7 @@ export function ListingsPageClient({
                   <ul
                     role="listbox"
                     aria-label="Sıralama seçenekleri"
-                    className="absolute right-0 top-full z-50 mt-2 w-56 rounded-lg border border-slate-200 bg-white py-1 shadow-lg"
+                    className="absolute right-0 top-full z-50 mt-2 w-56 rounded-lg border border-border bg-card py-1 shadow-lg"
                   >
                     {SORT_OPTIONS.map((option) => (
                       <li key={option.value} role="option" aria-selected={(filters.sort ?? "newest") === option.value}>
@@ -285,13 +285,13 @@ export function ListingsPageClient({
               )}
             </div>
 
-            <div className="hidden sm:flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 h-9">
-              <label htmlFor="page-size-select" className="text-xs font-semibold text-slate-500">Göster</label>
+            <div className="hidden sm:flex items-center gap-2 rounded-lg border border-border bg-card px-3 h-9">
+              <label htmlFor="page-size-select" className="text-xs font-semibold text-muted-foreground">Göster</label>
               <select
                 id="page-size-select"
                 value={filters.limit ?? initialResult.limit}
                 onChange={(event) => handleFilterChange("limit", Number(event.target.value))}
-                className="bg-transparent text-sm font-medium text-slate-700 outline-none"
+                className="bg-transparent text-sm font-medium text-foreground/90 outline-none"
               >
                 {PAGE_SIZE_OPTIONS.map((option) => (
                   <option key={option} value={option}>{option}</option>
@@ -321,10 +321,10 @@ export function ListingsPageClient({
                 className={cn(
                   "flex items-center gap-1.5 rounded-full border px-4 py-2 text-xs font-bold transition-all",
                   qf.type === "reset"
-                    ? "border-gray-200 bg-white text-gray-500 hover:border-blue-300 hover:text-blue-500"
+                    ? "border-gray-200 bg-card text-gray-500 hover:border-blue-300 hover:text-blue-500"
                     : isActive
                     ? "border-blue-500 bg-blue-500 text-white shadow-md shadow-blue-500/10"
-                    : "border-gray-200 bg-white text-gray-500 hover:border-blue-300 hover:text-blue-500"
+                    : "border-gray-200 bg-card text-gray-500 hover:border-blue-300 hover:text-blue-500"
                 )}
               >
                 {qf.icon && <qf.icon size={13} />}
@@ -337,7 +337,7 @@ export function ListingsPageClient({
         {/* Active Filter Tags */}
         {activeFiltersCount > 0 && (
           <div className="mt-4 flex flex-wrap items-center gap-2.5">
-            <span className="text-xs font-medium text-slate-400">Aktif filtreler:</span>
+            <span className="text-xs font-medium text-muted-foreground/70">Aktif filtreler:</span>
             {filters.brand && (
               <FilterTag
                 label={filters.brand}
@@ -438,7 +438,7 @@ export function ListingsPageClient({
         {/* Desktop Sidebar */}
         <aside className="hidden lg:block w-[300px] shrink-0">
           <div className={cn(
-            "sticky top-24 rounded-xl border border-slate-200 bg-white overflow-hidden shadow-sm transition-opacity",
+            "sticky top-24 rounded-xl border border-border bg-card overflow-hidden shadow-sm transition-opacity",
             isPending && "opacity-50 pointer-events-none"
           )}>
             <SmartFilters
@@ -461,16 +461,16 @@ export function ListingsPageClient({
             <ListingsGridSkeleton />
           ) : initialResult.listings.length > 0 ? (
             <div className="space-y-6">
-              <div className="flex flex-col gap-3 rounded-xl border border-slate-200 bg-white p-4 sm:flex-row sm:items-center sm:justify-between">
-                <p className="text-sm font-medium text-slate-600">
-                  <span className="font-bold text-slate-900">{startIndex}-{endIndex}</span> arası gösteriliyor, toplam <span className="font-bold text-slate-900">{initialResult.total}</span> ilan
+              <div className="flex flex-col gap-3 rounded-xl border border-border bg-card p-4 sm:flex-row sm:items-center sm:justify-between">
+                <p className="text-sm font-medium text-muted-foreground">
+                  <span className="font-bold text-foreground">{startIndex}-{endIndex}</span> arası gösteriliyor, toplam <span className="font-bold text-foreground">{initialResult.total}</span> ilan
                 </p>
                 <div className="flex items-center gap-2 sm:hidden">
-                  <span className="text-xs font-semibold text-slate-500">Göster</span>
+                  <span className="text-xs font-semibold text-muted-foreground">Göster</span>
                   <select
                     value={filters.limit ?? initialResult.limit}
                     onChange={(event) => handleFilterChange("limit", Number(event.target.value))}
-                    className="rounded-md border border-slate-200 bg-white px-2 py-1 text-sm font-medium text-slate-700 outline-none"
+                    className="rounded-md border border-border bg-card px-2 py-1 text-sm font-medium text-foreground/90 outline-none"
                   >
                     {PAGE_SIZE_OPTIONS.map((option) => (
                       <option key={option} value={option}>{option}</option>
@@ -495,21 +495,21 @@ export function ListingsPageClient({
               </div>
 
               {/* Pagination */}
-              <div className="flex flex-col gap-4 rounded-xl border border-slate-200 bg-white p-4 sm:flex-row sm:items-center sm:justify-between">
-                <div className="text-sm text-slate-500">
-                  Sayfa <span className="font-bold text-slate-900">{currentPage}</span> / {totalPages}
+              <div className="flex flex-col gap-4 rounded-xl border border-border bg-card p-4 sm:flex-row sm:items-center sm:justify-between">
+                <div className="text-sm text-muted-foreground">
+                  Sayfa <span className="font-bold text-foreground">{currentPage}</span> / {totalPages}
                 </div>
                 <div className="flex items-center gap-2">
                   <button
                     onClick={() => handlePageChange(currentPage - 1)}
                     disabled={!canGoPrev}
-                    className="inline-flex h-10 items-center justify-center rounded-lg border border-slate-200 px-4 text-sm font-bold text-slate-600 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
+                    className="inline-flex h-10 items-center justify-center rounded-lg border border-border px-4 text-sm font-bold text-muted-foreground transition hover:bg-muted/30 disabled:cursor-not-allowed disabled:opacity-50"
                   >
                     Önceki
                   </button>
                   {buildPageItems(currentPage, totalPages).map((item, index) =>
                     item === "ellipsis" ? (
-                      <span key={`ellipsis-${index}`} className="px-2 text-slate-400">…</span>
+                      <span key={`ellipsis-${index}`} className="px-2 text-muted-foreground/70">…</span>
                     ) : (
                       <button
                         key={item}
@@ -518,7 +518,7 @@ export function ListingsPageClient({
                           "inline-flex h-10 min-w-10 items-center justify-center rounded-lg border px-3 text-sm font-bold transition",
                           item === currentPage
                             ? "border-blue-500 bg-blue-500 text-white"
-                            : "border-slate-200 bg-white text-slate-600 hover:bg-slate-50"
+                            : "border-border bg-card text-muted-foreground hover:bg-muted/30"
                         )}
                       >
                         {item}
@@ -528,7 +528,7 @@ export function ListingsPageClient({
                   <button
                     onClick={() => handlePageChange(currentPage + 1)}
                     disabled={!canGoNext}
-                    className="inline-flex h-10 items-center justify-center rounded-lg border border-slate-200 px-4 text-sm font-bold text-slate-600 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
+                    className="inline-flex h-10 items-center justify-center rounded-lg border border-border px-4 text-sm font-bold text-muted-foreground transition hover:bg-muted/30 disabled:cursor-not-allowed disabled:opacity-50"
                   >
                     Sonraki
                   </button>
@@ -536,12 +536,12 @@ export function ListingsPageClient({
               </div>
             </div>
           ) : (
-            <div className="flex flex-col items-center justify-center rounded-xl border border-dashed border-slate-200 bg-white py-24 text-center">
-              <div className="mb-4 flex size-16 items-center justify-center rounded-full bg-slate-50">
+            <div className="flex flex-col items-center justify-center rounded-xl border border-dashed border-border bg-card py-24 text-center">
+              <div className="mb-4 flex size-16 items-center justify-center rounded-full bg-muted/30">
                 <span className="text-3xl">🔍</span>
               </div>
-              <h3 className="mb-2 text-lg font-bold text-slate-900">Sonuç bulunamadı</h3>
-              <p className="mb-6 max-w-sm text-sm text-slate-500">
+              <h3 className="mb-2 text-lg font-bold text-foreground">Sonuç bulunamadı</h3>
+              <p className="mb-6 max-w-sm text-sm text-muted-foreground">
                 Aradığınız kriterlere uygun araç bulunamadı. Filtreleri değiştirip tekrar deneyin.
               </p>
               <button

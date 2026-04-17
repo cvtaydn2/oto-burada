@@ -74,8 +74,8 @@ export function ExpertInspectionEditor({ form }: ExpertInspectionEditorProps) {
             }
             className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
               !hasInspection 
-                ? "bg-slate-200 text-slate-700 shadow-sm" 
-                : "text-muted-foreground hover:bg-slate-100"
+                ? "bg-slate-200 text-foreground/90 shadow-sm" 
+                : "text-muted-foreground hover:bg-muted"
             }`}
           >
             YOK
@@ -91,7 +91,7 @@ export function ExpertInspectionEditor({ form }: ExpertInspectionEditorProps) {
             className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
               hasInspection 
                 ? "bg-primary text-white shadow-sm" 
-                : "text-muted-foreground hover:bg-slate-100"
+                : "text-muted-foreground hover:bg-muted"
             }`}
           >
             VAR
@@ -204,7 +204,7 @@ export function ExpertInspectionEditor({ form }: ExpertInspectionEditorProps) {
                               ? "bg-emerald-100 text-emerald-700" 
                               : s.status === "yok"
                                 ? "bg-rose-100 text-rose-700"
-                                : "bg-slate-100 text-slate-700"
+                                : "bg-muted text-foreground/90"
                             : "text-muted-foreground/60 hover:text-muted-foreground"
                         }`}
                       >

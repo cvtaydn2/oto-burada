@@ -24,13 +24,13 @@ export function IdentityVerificationForm({ isVerified }: IdentityVerificationFor
   }
 
   return (
-    <div className="rounded-xl border border-slate-200 bg-slate-50 p-5 flex items-start gap-4">
+    <div className="rounded-xl border border-border bg-muted/30 p-5 flex items-start gap-4">
       <div className="size-10 rounded-xl bg-blue-50 flex items-center justify-center text-blue-500 shrink-0">
         <Mail size={20} />
       </div>
       <div>
-        <h4 className="text-sm font-bold text-slate-700">E-posta Doğrulama</h4>
-        <p className="text-xs text-slate-500 mt-1 leading-relaxed">
+        <h4 className="text-sm font-bold text-foreground/90">E-posta Doğrulama</h4>
+        <p className="text-xs text-muted-foreground mt-1 leading-relaxed">
           İlan verebilmek için e-posta adresinizi doğrulamanız gerekmektedir.
           Kayıt sırasında gönderilen doğrulama bağlantısını kontrol edin.
         </p>

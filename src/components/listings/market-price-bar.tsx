@@ -25,11 +25,11 @@ export function MarketPriceBar({ currentPrice, averagePrice, className }: Market
     <div className={cn("space-y-4", className)}>
       <div className="flex justify-between items-end text-xs font-bold uppercase tracking-wider">
         <span className="text-emerald-600">Fırsat</span>
-        <span className="text-slate-400">Piyasa Ortalaması</span>
+        <span className="text-muted-foreground/70">Piyasa Ortalaması</span>
         <span className="text-amber-600">Yüksek</span>
       </div>
       
-      <div className="relative h-3 w-full rounded-full bg-slate-100 overflow-visible">
+      <div className="relative h-3 w-full rounded-full bg-muted overflow-visible">
         {/* Gradient Track */}
         <div className="absolute inset-0 rounded-full bg-gradient-to-r from-emerald-500 via-slate-300 to-amber-500 opacity-30" />
         
@@ -58,16 +58,16 @@ export function MarketPriceBar({ currentPrice, averagePrice, className }: Market
         </div>
       </div>
       
-      <div className="pt-6 flex justify-between items-center bg-slate-50 rounded-2xl p-4 border border-slate-100">
+      <div className="pt-6 flex justify-between items-center bg-muted/30 rounded-2xl p-4 border border-border/50">
         <div>
-          <p className="text-[10px] font-bold text-slate-400 uppercase">Piyasa Ortalaması</p>
-          <p className="text-sm font-bold text-slate-700">{formatCurrency(averagePrice)}</p>
+          <p className="text-[10px] font-bold text-muted-foreground/70 uppercase">Piyasa Ortalaması</p>
+          <p className="text-sm font-bold text-foreground/90">{formatCurrency(averagePrice)}</p>
         </div>
         <div className="text-right">
-          <p className="text-[10px] font-bold text-slate-400 uppercase">Durum</p>
+          <p className="text-[10px] font-bold text-muted-foreground/70 uppercase">Durum</p>
           <p className={cn(
             "text-sm font-bold",
-            isGoodPrice ? "text-emerald-600" : isHighPrice ? "text-amber-600" : "text-slate-700"
+            isGoodPrice ? "text-emerald-600" : isHighPrice ? "text-amber-600" : "text-foreground/90"
           )}>
             {isGoodPrice 
               ? `%${Math.abs(Math.round(diffPercent))} Avantajlı` 

@@ -3,7 +3,7 @@ import { Car, Home, Search } from "lucide-react";
 
 export default function NotFound() {
   return (
-    <main className="flex min-h-[80vh] flex-col items-center justify-center bg-white px-4 text-center" aria-labelledby="not-found-heading">
+    <main className="flex min-h-[80vh] flex-col items-center justify-center bg-card px-4 text-center" aria-labelledby="not-found-heading">
       {/* Big 404 with car icon overlay */}
       <div className="relative mb-8 select-none">
         <span className="text-[160px] font-black leading-none text-blue-50 tracking-tighter">404</span>
@@ -14,10 +14,10 @@ export default function NotFound() {
         </div>
       </div>
 
-      <h2 id="not-found-heading" className="mb-3 text-3xl font-extrabold text-gray-800">
+      <h2 id="not-found-heading" className="mb-3 text-3xl font-extrabold text-foreground">
         Üzgünüz, Aradığınız Araç Yoldan Çıkmış!
       </h2>
-      <p className="mb-10 max-w-md text-gray-500">
+      <p className="mb-10 max-w-md text-muted-foreground">
         Aradığınız ilan yayından kaldırılmış olabilir veya yanlış bir bağlantıya tıkladınız. Hayalinizdeki aracı bulmak için ana sayfaya dönebilirsiniz.
       </p>
 
@@ -31,7 +31,7 @@ export default function NotFound() {
         </Link>
         <Link
           href="/listings"
-          className="inline-flex h-12 items-center justify-center gap-2 rounded-xl border border-gray-200 bg-gray-100 px-8 text-sm font-bold text-gray-700 transition hover:bg-gray-200 active:scale-95"
+          className="inline-flex h-12 items-center justify-center gap-2 rounded-xl border border-border bg-muted px-8 text-sm font-bold text-foreground/90 transition hover:bg-gray-200 active:scale-95"
         >
           <Search size={18} />
           İlanları Keşfet

@@ -26,17 +26,17 @@ export default function Loading() {
           {/* Quick Specs Grid */}
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
             {[1, 2, 3, 4].map((i) => (
-              <div key={i} className="h-24 animate-pulse rounded-2xl bg-white border border-slate-100 p-4" />
+              <div key={i} className="h-24 animate-pulse rounded-2xl bg-card border border-border/50 p-4" />
             ))}
           </div>
 
           {/* Description Block */}
-          <div className="space-y-4 rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+          <div className="space-y-4 rounded-3xl border border-border bg-card p-6 shadow-sm">
             <div className="h-6 w-32 animate-pulse rounded bg-slate-200" />
             <div className="space-y-2">
-              <div className="h-4 w-full animate-pulse rounded bg-slate-100" />
-              <div className="h-4 w-full animate-pulse rounded bg-slate-100" />
-              <div className="h-4 w-3/4 animate-pulse rounded bg-slate-100" />
+              <div className="h-4 w-full animate-pulse rounded bg-muted" />
+              <div className="h-4 w-full animate-pulse rounded bg-muted" />
+              <div className="h-4 w-3/4 animate-pulse rounded bg-muted" />
             </div>
           </div>
           
@@ -65,11 +65,11 @@ export default function Loading() {
           </div>
 
           {/* Safety Card Skeleton */}
-          <div className="rounded-3xl border border-slate-200 bg-white p-6">
+          <div className="rounded-3xl border border-border bg-card p-6">
             <div className="h-5 w-1/2 animate-pulse rounded bg-slate-200 mb-4" />
             <div className="space-y-3">
-              <div className="h-4 w-full animate-pulse rounded bg-slate-50" />
-              <div className="h-4 w-full animate-pulse rounded bg-slate-50" />
+              <div className="h-4 w-full animate-pulse rounded bg-muted/30" />
+              <div className="h-4 w-full animate-pulse rounded bg-muted/30" />
             </div>
           </div>
         </aside>

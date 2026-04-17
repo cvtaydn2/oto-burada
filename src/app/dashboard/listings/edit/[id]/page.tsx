@@ -47,16 +47,16 @@ export default async function EditListingPage({ params }: EditListingPageProps) 
           <div className="flex items-center gap-2 mb-2">
             <Link
               href="/dashboard/listings"
-              className="flex size-8 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-600 hover:bg-slate-50 hover:text-primary transition-colors"
+              className="flex size-8 items-center justify-center rounded-lg border border-border bg-card text-muted-foreground hover:bg-muted/30 hover:text-primary transition-colors"
             >
               <ChevronLeft className="size-4" />
             </Link>
-            <span className="text-xs font-bold text-slate-500 uppercase tracking-widest">İlan Yönetimi</span>
+            <span className="text-xs font-bold text-muted-foreground uppercase tracking-widest">İlan Yönetimi</span>
           </div>
-          <h1 className="text-2xl font-black text-slate-900">
+          <h1 className="text-2xl font-black text-foreground">
             İlanı Düzenle
           </h1>
-          <p className="text-sm font-medium text-slate-500 mt-1">
+          <p className="text-sm font-medium text-muted-foreground mt-1">
             Araç bilgilerini ve fiyat bilgisini güncelleyin.
           </p>
         </div>
@@ -69,7 +69,7 @@ export default async function EditListingPage({ params }: EditListingPageProps) 
         </div>
       </div>
 
-      <div className="bg-white rounded-xl border border-slate-200 p-6">
+      <div className="bg-card rounded-xl border border-border p-6">
         <ListingCreateForm
           brands={references.brands}
           cities={references.cities}
