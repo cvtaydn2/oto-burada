@@ -10,7 +10,12 @@
  */
 
 export function register() {
-  // No-op — PostHog server client initializes lazily
+  // Validate required environment variables at server startup.
+  // Logs clearly if anything is missing so operators know immediately.
+  if (process.env.NEXT_RUNTIME === "nodejs") {
+    const { logEnvValidation } = require("./lib/env-validation") as typeof import("./lib/env-validation");
+    logEnvValidation();
+  }
 }
 
 export const onRequestError = async (
