@@ -48,6 +48,10 @@ export function ContactActions({ listingId, listingSlug, sellerId, currentUserId
     );
   }
 
+  // Guest kullanıcı — telefon numarası için giriş yönlendirmesi
+  const isGuest = !currentUserId;
+  const returnPath = listingSlug ? `/listing/${listingSlug}` : "/listings";
+
   const formatPhone = (p: string) => {
     return p.replace(/(\d{4})(\d{3})(\d{2})(\d{2})/, "$1 $2 $3 $4");
   };
@@ -112,20 +116,31 @@ export function ContactActions({ listingId, listingSlug, sellerId, currentUserId
       {/* Phone Number Reveal */}
       <div className="relative">
         {!isRevealed ? (
-          <button
-            onClick={handleReveal}
-            disabled={isLogging}
-            className="flex w-full items-center justify-center gap-2 rounded-xl bg-white border border-gray-300 h-12 px-4 text-[15px] font-bold text-gray-700 hover:bg-gray-50 transition-all active:scale-95 disabled:opacity-70"
-          >
-            {isLogging ? (
-              <Loader2 className="animate-spin size-5" />
-            ) : (
-              <>
-                <Phone className="size-5 text-blue-500" />
-                Numarayı Göster
-              </>
-            )}
-          </button>
+          isGuest ? (
+            // Guest: giriş yap butonu göster
+            <button
+              onClick={() => router.push(`/login?next=${encodeURIComponent(returnPath)}`)}
+              className="flex w-full items-center justify-center gap-2 rounded-xl bg-white border border-gray-300 h-12 px-4 text-[15px] font-bold text-gray-700 hover:bg-gray-50 transition-all active:scale-95"
+            >
+              <Phone className="size-5 text-blue-500" />
+              Numarayı Görmek İçin Giriş Yap
+            </button>
+          ) : (
+            <button
+              onClick={handleReveal}
+              disabled={isLogging}
+              className="flex w-full items-center justify-center gap-2 rounded-xl bg-white border border-gray-300 h-12 px-4 text-[15px] font-bold text-gray-700 hover:bg-gray-50 transition-all active:scale-95 disabled:opacity-70"
+            >
+              {isLogging ? (
+                <Loader2 className="animate-spin size-5" />
+              ) : (
+                <>
+                  <Phone className="size-5 text-blue-500" />
+                  Numarayı Göster
+                </>
+              )}
+            </button>
+          )
         ) : (
           <a
             href={`tel:${revealedPhone}`}

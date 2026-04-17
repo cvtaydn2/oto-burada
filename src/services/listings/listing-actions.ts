@@ -7,25 +7,27 @@ import { headers } from "next/headers";
 import { captureServerEvent } from "@/lib/monitoring/posthog-server";
 
 /**
- * Server Action to reveal a listing's phone number with security checks.
- * Prevents mass scraping by not including the phone number in the initial page payload.
- * Guests can reveal up to 5 numbers per hour; logged-in users get 20.
+ * Server Action to reveal a listing's phone number.
+ * Requires authentication — guests cannot reveal phone numbers.
+ * Authenticated users: 20 reveals per hour.
  */
 export async function revealListingPhone(listingId: string) {
   const user = await getCurrentUser();
+
+  // Telefon numarası görmek için giriş zorunlu
+  if (!user) {
+    throw new Error("Telefon numarasını görmek için giriş yapmalısınız.");
+  }
+
   const headersList = await headers();
   const ip = headersList.get("x-forwarded-for") || "unknown";
-  
-  // High-Conversion Policy: Allow guests but limit them more strictly
-  const identifier = user ? `reveal-phone:user:${user.id}` : `reveal-phone:ip:${ip}`;
-  const limit = user ? 20 : 5; // Guests get 5, users get 20
-  
-  const rateLimit = await checkRateLimit(identifier, { limit, windowMs: 60 * 60 * 1000 });
-  
+
+  const rateLimit = await checkRateLimit(
+    `reveal-phone:user:${user.id}`,
+    { limit: 20, windowMs: 60 * 60 * 1000 },
+  );
+
   if (!rateLimit.allowed) {
-    if (!user) {
-      throw new Error("Çok fazla görüntüleme yaptınız. Daha fazlası için giriş yapın.");
-    }
     throw new Error("Lütfen bir saat sonra tekrar deneyin.");
   }
 
@@ -60,7 +62,7 @@ export async function revealListingPhone(listingId: string) {
   // Requires: scripts/migrations/add-phone-reveal-logs.sql to be applied.
   void admin.from("phone_reveal_logs").insert({
     listing_id: listingId,
-    user_id: user?.id ?? null,
+    user_id: user.id,
     viewer_ip: ip !== "unknown" ? ip : null,
   });
 
