@@ -21,36 +21,51 @@ describe('profile-trust logic', () => {
     const result = getSellerTrustSummary(null, 0);
     expect(result.score).toBe(0);
     expect(result.signals).toHaveLength(0);
+    expect(result.badgeLabel).toBe("Yeni Satıcı");
   });
 
   it('should calculate base score for new profile correctly', () => {
-    // base score 4.5
-    // name +1.2
-    // city +0.8
-    // phone (unverified) +1.1
-    // years (since 2022, approx 4 years as of 2026) -> 4 * 0.35 = 1.4
-    // Total: 4.5 + 1.2 + 0.8 + 1.1 + 1.4 = 9.0
+    // New profile with no verified traits = 0 score
     const result = getSellerTrustSummary(mockProfile, 0);
-    expect(result.score).toBe(9.0);
-    expect(result.signals).toContain('Profil adı mevcut');
+    expect(result.score).toBe(0);
+    expect(result.signals).not.toContain('E-posta onayı');
+    expect(result.badgeLabel).toBe("Standart Üye");
   });
 
-  it('should boost score for verified identity', () => {
+  it('should boost score for verified identity (10 pts) and label correctly', () => {
     const result = getSellerTrustSummary({ ...mockProfile, identityVerified: true }, 0);
-    expect(result.badgeLabel).toBe('Kimliği doğrulanmış satıcı');
-    expect(result.signals).toContain('Kimlik doğrulandı');
+    expect(result.score).toBe(10);
+    expect(result.badgeLabel).toBe('Standart Üye');
   });
 
-  it('should boost score for verified phone and email', () => {
-    const result = getSellerTrustSummary({ ...mockProfile, phoneVerified: true, emailVerified: true }, 0);
-    expect(result.badgeLabel).toBe('İletişim bilgileri doğrulanmış');
-    expect(result.signals).toContain('Telefon doğrulandı');
-    expect(result.signals).toContain('E-posta doğrulandı');
+  it('should boost score for verified email (20 pts) and label correctly', () => {
+    const result = getSellerTrustSummary({ ...mockProfile, emailVerified: true }, 0);
+    expect(result.badgeLabel).toBe('Onaylı E-posta');
+    expect(result.score).toBe(20);
+    expect(result.signals).toContain('E-posta onayı (Güven Puanı +20)');
   });
 
-  it('should reflect active listing count in score', () => {
-    const lowCount = getSellerTrustSummary(mockProfile, 1);
-    const highCount = getSellerTrustSummary(mockProfile, 10);
-    expect(highCount.score).toBeGreaterThan(lowCount.score);
+  it('should boost score for Iyzico wallet verified (50 pts) and label correctly', () => {
+    const result = getSellerTrustSummary({ ...mockProfile, isWalletVerified: true }, 0);
+    expect(result.badgeLabel).toBe('Güvenilir Satıcı');
+    expect(result.score).toBe(50);
+    expect(result.signals).toContain('İyzico Cüzdan Doğrulaması (Güven Puanı +50)');
+  });
+
+  it('should max out trust score across combinations and become Premium', () => {
+    const result = getSellerTrustSummary({ 
+      ...mockProfile, 
+      isWalletVerified: true, 
+      emailVerified: true, 
+      avatarUrl: 'https://example.com/avatar.jpg' 
+    }, 0);
+    expect(result.badgeLabel).toBe('Premium Doğrulanmış Satıcı');
+    expect(result.score).toBe(80);
+    expect(result.signals).toContain('Profil fotoğrafı (Güven Puanı +10)');
+  });
+
+  it('should reflect active listing count in signals', () => {
+    const countSummary = getSellerTrustSummary(mockProfile, 10);
+    expect(countSummary.signals).toContain('10 aktif ilan');
   });
 });

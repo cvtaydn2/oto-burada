@@ -19,8 +19,10 @@ type MockQueryResult = {
 
 describe('admin analytics service', () => {
   const mockFrom = vi.fn();
+  const mockRpc = vi.fn().mockImplementation(() => Promise.reject(new Error("Use fallback")));
   const mockAdminClient = {
     from: mockFrom,
+    rpc: mockRpc,
   };
 
   beforeEach(() => {

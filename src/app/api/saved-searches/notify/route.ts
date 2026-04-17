@@ -28,8 +28,21 @@ import { createSearchParamsFromListingFilters } from "@/services/listings/listin
 import { normalizeSavedSearchFilters } from "@/services/saved-searches/saved-search-utils";
 import { logger } from "@/lib/utils/logger";
 import type { ListingFilters } from "@/types";
+import { Redis } from "@upstash/redis";
+import { createSupabaseServerClient } from "@/lib/supabase/server";
 
 export const dynamic = "force-dynamic";
+
+// Upstash Redis instance (lazy loaded conditionally)
+function getRedisClient() {
+  if (!process.env.UPSTASH_REDIS_REST_URL || !process.env.UPSTASH_REDIS_REST_TOKEN) {
+    return null;
+  }
+  return new Redis({
+    url: process.env.UPSTASH_REDIS_REST_URL,
+    token: process.env.UPSTASH_REDIS_REST_TOKEN,
+  });
+}
 
 // How far back to look for new listings (24 hours)
 const LOOKBACK_HOURS = 24;
@@ -42,14 +55,111 @@ function verifyCronSecret(request: Request): boolean {
   return authHeader === `Bearer ${cronSecret}`;
 }
 
-// Vercel Cron sends GET requests — this is the primary handler
+// Vercel Cron sends GET requests — this is the primary handler for Emails
+// BUT this is also the endpoint for SSE Realtime connection from clients!
 export async function GET(request: Request) {
+  const accept = request.headers.get("accept");
+  if (accept === "text/event-stream") {
+    return handleSSERequest(request);
+  }
   return handleCronRequest(request);
 }
 
-// POST kept for manual/internal triggers (e.g. admin panel, scripts)
+// Internal trigger for publishing a notification or triggering cron
 export async function POST(request: Request) {
+  try {
+    const contentType = request.headers.get("content-type");
+    if (contentType?.includes("application/json")) {
+      const payload = await request.json();
+      if (payload.action === "publish_notification" && payload.userId && payload.message) {
+        // Publish to Upstash Redis directly if requested
+        const redis = getRedisClient();
+        if (redis) {
+          const key = `notifications:${payload.userId}`;
+          // Add to a sorted set with timestamp as score
+          await redis.zadd(key, { score: Date.now(), member: JSON.stringify({
+            id: Date.now().toString(),
+            message: payload.message,
+            title: payload.title || "Yeni Bildirim",
+            link: payload.link,
+            createdAt: new Date().toISOString(),
+          }) });
+          return apiSuccess({ published: true });
+        }
+        return apiError(API_ERROR_CODES.SERVICE_UNAVAILABLE, "Redis yapılandırılmamış");
+      }
+    }
+  } catch (e) {
+    // Fallback to cron
+  }
   return handleCronRequest(request);
+}
+
+/**
+ * Handles SSE streams by polling Upstash Redis for user notifications
+ * since Upstash Redis HTTP does not support native PUB/SUB.
+ */
+async function handleSSERequest(request: Request) {
+  const supabase = await createSupabaseServerClient();
+  const { data: userData } = await supabase.auth.getUser();
+  const userId = userData?.user?.id;
+
+  if (!userId) {
+    return new Response("Unauthorized", { status: 401 });
+  }
+
+  const redis = getRedisClient();
+  if (!redis) {
+    return new Response("Service Unavailable", { status: 503 });
+  }
+
+  const encoder = new TextEncoder();
+  const stream = new ReadableStream({
+    async start(controller) {
+      // Send initial connection successful
+      controller.enqueue(encoder.encode('data: {"type":"connected"}\n\n'));
+
+      const key = `notifications:${userId}`;
+      let lastCheck = Date.now();
+
+      // Poll Redis every 3 seconds for new notifications
+      // In a production serverless environment, long-lived streams might be killed by the provider (e.g. Vercel terminates edge/serverless after bounded time)
+      const intervalId = setInterval(async () => {
+        try {
+          // Check for notifications where score > lastCheck
+          const newNotifications = await redis.zrange(key, lastCheck + 1, "+inf", { 
+            byScore: true 
+          });
+
+          if (newNotifications && newNotifications.length > 0) {
+            for (const notice of newNotifications) {
+              controller.enqueue(encoder.encode(`data: ${notice}\n\n`));
+            }
+            lastCheck = Date.now(); // update cursor
+          }
+          
+          // Send a keep-alive ping to keep connection open
+          controller.enqueue(encoder.encode(':\n\n'));
+        } catch (error) {
+          logger.notifications.error("SSE Polling Error", error);
+        }
+      }, 3000);
+
+      // Clean up interval on close
+      request.signal.addEventListener("abort", () => {
+        clearInterval(intervalId);
+      });
+    },
+  });
+
+  return new Response(stream, {
+    headers: {
+      "Content-Type": "text/event-stream",
+      "Cache-Control": "no-cache, no-transform",
+      Connection: "keep-alive",
+      "Access-Control-Allow-Origin": "*",
+    },
+  });
 }
 
 async function handleCronRequest(request: Request) {

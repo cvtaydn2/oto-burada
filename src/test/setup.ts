@@ -8,6 +8,13 @@ vi.mock('next/headers', () => ({
     set: vi.fn(),
     delete: vi.fn(),
   })),
+  headers: vi.fn(() => Promise.resolve({
+    get: vi.fn((key: string) => {
+      if (key === 'x-forwarded-for') return '127.0.0.1';
+      if (key === 'x-real-ip') return '127.0.0.1';
+      return null;
+    }),
+  })),
 }));
 
 // Mock Supabase Admin
