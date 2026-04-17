@@ -259,6 +259,10 @@ export function ListingCreateForm({
   const uploadedImageCount = imageValues.filter(
     (image) => (image.url ?? "").trim().length > 0 && (image.storagePath ?? "").trim().length > 0,
   ).length;
+  // Edit modunda: form henüz hydrate olmamışsa initialListing'deki resim sayısını kullan
+  const effectiveImageCount = isEditing && uploadedImageCount === 0
+    ? (initialListing?.images.filter(img => img.url && img.storagePath).length ?? 0)
+    : uploadedImageCount;
   const plateValue = useWatch({ control, name: "licensePlate" });
   const isUploadingAnyImage = fields.some((field) => uploadStates[field.id]?.status === "uploading");
 
@@ -637,7 +641,7 @@ export function ListingCreateForm({
           ) : (
             <button
               type="submit"
-              disabled={isSubmitting || isUploadingAnyImage || uploadedImageCount < minimumListingImages}
+              disabled={isSubmitting || isUploadingAnyImage || effectiveImageCount < minimumListingImages}
               className="bg-blue-500 text-white font-bold px-10 py-3 rounded-xl hover:bg-blue-600 transition shadow-md flex items-center disabled:opacity-50"
             >
               {isSubmitting ? (
