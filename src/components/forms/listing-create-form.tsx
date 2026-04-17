@@ -538,24 +538,46 @@ export function ListingCreateForm({
   };
 
   const onSubmit = handleSubmit(async (values) => {
-    // Debug: submit'in neden tetiklendiğini görmek için stack trace
-    if (process.env.NODE_ENV !== "production") {
-      console.trace("[ListingCreateForm] onSubmit triggered");
-    }
-
-    if (!isEmailVerifiedLocally) {
+    // Edit modunda email verification bypass — zaten ilan sahibi doğrulanmış
+    if (!isEmailVerifiedLocally && !isEditing) {
       setIsVerifyDialogOpen(true);
       return;
     }
 
     await submitListing(values);
+  }, (validationErrors) => {
+    // Validation başarısız — hangi adımda hata var, oraya git
+    const errorFields = Object.keys(validationErrors);
+    const step0Fields = ["brand", "model", "year", "mileage", "vin", "fuelType", "transmission"];
+    const step1Fields = ["city", "district", "title", "description", "price", "whatsappPhone"];
+    const step2Fields = ["damageStatusJson", "tramerAmount", "expertInspection"];
+
+    if (errorFields.some(f => step0Fields.includes(f))) {
+      setCurrentStep(0);
+    } else if (errorFields.some(f => step1Fields.includes(f))) {
+      setCurrentStep(1);
+    } else if (errorFields.some(f => step2Fields.some(s => f.startsWith(s)))) {
+      setCurrentStep(2);
+    }
+
+    // Hata mesajını göster
+    const firstError = Object.values(validationErrors)[0];
+    const message = (firstError as { message?: string })?.message ?? "Lütfen tüm zorunlu alanları doldurun.";
+    setSubmitState({ message, status: "error" });
+    window.scrollTo({ top: 0, behavior: "smooth" });
   });
 
   return (
     <div className="max-w-[1000px] mx-auto px-4 py-8 w-full flex-1">
       <div className="mb-8 animate-in fade-in slide-in-from-top-4 duration-700">
-        <h1 className="text-3xl font-bold text-gray-800 tracking-tight">Yeni İlan Oluştur</h1>
-        <p className="text-gray-500 mt-2">Aracınızı milyonlarca alıcıyla buluşturmak için formu doldurmaya başlayın.</p>
+        <h1 className="text-3xl font-bold text-gray-800 tracking-tight">
+          {isEditing ? "İlanı Düzenle" : "Yeni İlan Oluştur"}
+        </h1>
+        <p className="text-gray-500 mt-2">
+          {isEditing
+            ? "Araç bilgilerini güncelleyin. Değişiklikler moderasyon ekibimiz tarafından tekrar incelenecektir."
+            : "Aracınızı milyonlarca alıcıyla buluşturmak için formu doldurmaya başlayın."}
+        </p>
       </div>
 
       <StepIndicator currentStep={currentStep} />
