@@ -98,6 +98,7 @@ export interface Listing {
   description: string;
   whatsappPhone: string;
   vin?: string | null;
+  licensePlate?: string | null;
   tramerAmount?: number | null;
   damageStatusJson?: Record<string, string> | null;
   fraudScore?: number;
@@ -133,6 +134,7 @@ export interface ListingCreateInput {
   description: string;
   whatsappPhone: string;
   vin: string;
+  licensePlate?: string | null;
   tramerAmount?: number | null;
   damageStatusJson?: Record<string, string> | null;
   images: ListingImage[];

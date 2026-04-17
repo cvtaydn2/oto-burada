@@ -222,17 +222,15 @@ export function ListingCreateForm({
   const [currentStep, setCurrentStep] = useState(0);
   const totalSteps = STEP_LABELS.length;
   const uploadStatesRef = useRef<Record<string, UploadState>>({});
+  const pendingImageCleanupRef = useRef<Set<string>>(new Set());
   
-  // initialListing değiştiğinde form değerlerini memoize et
-  // Her render'da yeni obje oluşturulmasını önle — values prop bunu "değişti" sanmasın
   const formValues = useMemo(
     () => buildDefaultValues(initialValues, initialListing),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [initialListing?.id, initialListing?.updatedAt],
+    [initialListing, initialValues],
   );
 
   const form = useForm<ListingCreateFormValues, unknown, ListingCreateFormValues>({
-    defaultValues: buildDefaultValues(initialValues, initialListing),
+    defaultValues: formValues,
     mode: "onBlur",
     resolver: zodResolver(listingCreateFormSchema as never),
   });
@@ -243,6 +241,7 @@ export function ListingCreateForm({
     formState: { errors, isSubmitting },
     getValues,
     handleSubmit,
+    reset,
     setError,
     setValue,
     trigger,
@@ -315,6 +314,10 @@ export function ListingCreateForm({
   useEffect(() => {
     uploadStatesRef.current = uploadStates;
   }, [uploadStates]);
+
+  useEffect(() => {
+    reset(formValues);
+  }, [formValues, reset]);
 
   useEffect(() => {
     return () => {
@@ -399,6 +402,20 @@ export function ListingCreateForm({
     }
   };
 
+  const queueImageCleanup = (storagePath?: string) => {
+    if (!storagePath) return;
+    pendingImageCleanupRef.current.add(storagePath);
+  };
+
+  const flushQueuedImageCleanup = async () => {
+    const queuedPaths = [...pendingImageCleanupRef.current];
+    pendingImageCleanupRef.current.clear();
+
+    await Promise.allSettled(
+      queuedPaths.map((storagePath) => removeUploadedImage(storagePath)),
+    );
+  };
+
   const handleImageChange = async (index: number, file: File | null) => {
     if (!file) return;
     const fieldId = fields[index].id;
@@ -443,8 +460,11 @@ export function ListingCreateForm({
       const payload = await uploadImageRequest(compressibleFile, (progress) => {
         updateUploadState(fieldId, { message: "Yükleniyor...", previewUrl, progress, status: "uploading" });
       });
-      if (previousImage?.storagePath) await removeUploadedImage(previousImage.storagePath);
       revokeBlobUrl(previewUrl);
+
+      if (previousImage?.storagePath && previousImage.storagePath !== payload.image.storagePath) {
+        queueImageCleanup(previousImage.storagePath);
+      }
       
       const nextImageValue = { 
         ...payload.image, 
@@ -470,7 +490,9 @@ export function ListingCreateForm({
   const handleRemoveImage = (index: number) => {
     const fieldId = fields[index].id;
     const currentImage = getValues(`images.${index}`);
-    if (currentImage?.storagePath) void removeUploadedImage(currentImage.storagePath);
+    if (currentImage?.storagePath) {
+      queueImageCleanup(currentImage.storagePath);
+    }
     revokeBlobUrl(uploadStates[fieldId]?.previewUrl);
     
     const nextStates = { ...uploadStates };
@@ -520,6 +542,8 @@ export function ListingCreateForm({
         listingId: payload?.data?.listing?.id ?? initialListing?.id,
         listingStatus: payload?.data?.listing?.status,
       });
+
+      void flushQueuedImageCleanup();
 
       if (isEditing) {
         router.replace("/dashboard/listings?updated=true");

@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { calculateFraudScore, buildListingSlug } from '../listing-submissions';
+import { calculateFraudScore, buildListingSlug, buildListingRecord, buildUpdatedListing } from '../listing-submissions';
 import { Listing, ListingCreateInput } from '@/types';
 
 describe('listing-submissions logic', () => {
@@ -85,6 +85,34 @@ describe('listing-submissions logic', () => {
       const existing = { slug: '2020-bmw-320i-clean-car' } as Listing;
       const slug = buildListingSlug(mockInput, [existing]);
       expect(slug).toBe('2020-bmw-320i-clean-car-2');
+    });
+  });
+
+  describe('listing mapping semantics', () => {
+    it('should persist licensePlate into the built listing record', () => {
+      const listing = buildListingRecord(
+        { ...mockInput, licensePlate: '34ABC123' },
+        'seller-1',
+        [],
+      );
+
+      expect(listing.licensePlate).toBe('34ABC123');
+    });
+
+    it('should send approved listings back to pending after edit', () => {
+      const existingListing = {
+        ...buildListingRecord(mockInput, 'seller-1', []),
+        status: 'approved' as const,
+      };
+
+      const updatedListing = buildUpdatedListing(
+        { ...mockInput, price: 1550000, licensePlate: '34ABC123' },
+        existingListing,
+        [{ id: existingListing.id, slug: existingListing.slug }],
+      );
+
+      expect(updatedListing.status).toBe('pending');
+      expect(updatedListing.licensePlate).toBe('34ABC123');
     });
   });
 });

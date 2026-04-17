@@ -308,6 +308,7 @@ export function buildListingRecord(
     description: input.description,
     whatsappPhone: input.whatsappPhone,
     vin: input.vin,
+    licensePlate: input.licensePlate ?? null,
     tramerAmount: input.tramerAmount ?? null,
     damageStatusJson: input.damageStatusJson ?? null,
     fraudScore: fraudAssessment.fraudScore,
@@ -399,6 +400,7 @@ function mapListingRow(row: ListingRow): Listing {
     marketPriceIndex: row.market_price_index ? Number(row.market_price_index) : null,
     whatsappPhone: row.whatsapp_phone,
     vin: row.vin ?? null,
+    licensePlate: row.license_plate ?? null,
     year: row.year,
   };
 }
@@ -930,6 +932,7 @@ export function mapListingToDatabaseRow(listing: Listing) {
     district: listing.district,
     description: listing.description,
     whatsapp_phone: listing.whatsappPhone,
+    license_plate: listing.licensePlate ?? null,
     status: listing.status,
     featured: listing.featured,
     updated_at: listing.updatedAt,
@@ -1166,8 +1169,14 @@ export function buildUpdatedListing(
   existingListing: Listing,
   existingListings: { id: string; slug: string }[],
 ) {
+  const nextStatus =
+    existingListing.status === "draft" || existingListing.status === "pending"
+      ? existingListing.status
+      : "pending";
+
   return buildListingRecord(input, existingListing.sellerId, existingListings, {
     existingListing,
+    status: nextStatus,
   });
 }
 

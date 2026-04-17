@@ -1,5 +1,48 @@
 # PROGRESS.md
 
+## Listing Update Flow Remediation (2026-04-17)
+
+### Yapılan Değişiklikler
+
+**Frontend Form Hydration / Edit UX**
+- `listing-create-form` içinde edit form default değerleri `useMemo` + `reset()` ile stabilize edildi
+- böylece edit ekranı farklı ilan verisiyle açıldığında form state eski değerleri taşımıyor
+- kullanılmayan `formValues` drift’i de kaldırılmış oldu
+
+**Listing Field Persistence**
+- `licensePlate` alanı domain type ve listing build/map katmanına tam eklendi
+- DB’den okunan `license_plate` artık domain `Listing.licensePlate` alanına map ediliyor
+- create/update kayıtlarında `license_plate` artık gerçekten DB’ye yazılıyor
+- bunun sonucu olarak edit ekranında plaka alanı eksik dolma sorunu kapatıldı
+
+**Moderation Semantics**
+- `approved` ve `rejected` durumundaki ilanlar edit sonrası tekrar `pending` durumuna alınıyor
+- `draft` ve `pending` kayıtlar kendi edit semantiğini koruyor
+- böylece UI copy’sindeki “tekrar incelenecek” sözü backend davranışıyla hizalandı
+
+**Image Lifecycle Hardening**
+- edit formunda eski/resmi değiştirme veya silme aksiyonu artık storage objesini submit öncesi silmiyor
+- silinecek eski görseller `pendingImageCleanupRef` içinde kuyruğa alınıyor
+- PATCH başarıyla döndükten sonra eski storage path’leri arka planda temizleniyor
+- böylece “resmi sil/yeni resim yükle ama kayıt başarısız olursa eski görsel de kayboldu” türü veri kaybı riski giderildi
+
+**Lint Gate Fix**
+- `pwa-install-prompt` içindeki effect-time `setState` kullanımı kaldırıldı
+- platform tespiti lazy `useState` initializer’a taşındı
+
+### Doğrulama
+- `npm run lint` ✅
+- `npm run typecheck` ✅
+- `npm run build` ✅
+- `npm run test:unit -- listing-submissions` ✅
+
+### Sonraki Adım
+- browser seviyesinde gerçek edit akışı tekrar doğrulanmalı:
+  - mevcut ilan alanları tam ön doluyor mu
+  - mevcut resmi sil + yeni resim yükle + kaydet
+  - approved ilan edit sonrası pending banner / admin pending görünürlüğü
+- public listing DTO içindeki `whatsappPhone` sızıntısı ayrıca kapatılmalı; bu tur listing update akışına odaklanıldı.
+
 ## 8-Skill Kapsamlı Kod Kalitesi Temizliği (2026-04-16)
 
 ### Yapılan Değişiklikler
@@ -1653,4 +1696,3 @@ Her yeni geliştirme başlamadan önce okunmalıdır.
   - `npm run typecheck` ✅
   - `npm run build` ✅ (`/listings/filter` route oluştu)
 - **Status**: 🟢 Gelişmiş filtreleme sayfası oluşturuldu, SmartFilters eksik filtrelerle güncellendi.
-

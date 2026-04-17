@@ -5,14 +5,18 @@ import { Download, X, Share } from "lucide-react";
 
 export function PWAInstallPrompt() {
   const [isVisible, setIsVisible] = useState(false);
-  const [platform, setPlatform] = useState<"ios" | "android" | "other">("other");
+  const [platform] = useState<"ios" | "android" | "other">(() => {
+    if (typeof window === "undefined") {
+      return "other";
+    }
+
+    const userAgent = window.navigator.userAgent.toLowerCase();
+    if (/iphone|ipad|ipod/.test(userAgent)) return "ios";
+    if (/android/.test(userAgent)) return "android";
+    return "other";
+  });
 
   useEffect(() => {
-    // Platform tespiti useEffect içinde — SSR/hydration mismatch önlenir
-    const userAgent = window.navigator.userAgent.toLowerCase();
-    if (/iphone|ipad|ipod/.test(userAgent)) setPlatform("ios");
-    else if (/android/.test(userAgent)) setPlatform("android");
-
     // Check if already installed
     const isStandalone = window.matchMedia("(display-mode: standalone)").matches;
     if (isStandalone) return;
