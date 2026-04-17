@@ -18,14 +18,31 @@ export function ChatSidebar({ currentUserId, activeChatId, onChatSelect }: ChatS
   const [chats, setChats] = useState<Chat[]>([]);
   const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
 
   useEffect(() => {
+    let cancelled = false;
+
     const load = async () => {
-      const data = await getUserChats(currentUserId);
-      setChats(data);
-      setLoading(false);
+      setLoading(true);
+      setError(false);
+      try {
+        const data = await getUserChats(currentUserId);
+        if (!cancelled) {
+          setChats(data);
+        }
+      } catch {
+        if (!cancelled) setError(true);
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
     };
-    load();
+
+    void load();
+
+    return () => {
+      cancelled = true;
+    };
   }, [currentUserId]);
 
   const filteredChats = chats.filter(chat => 
@@ -50,6 +67,20 @@ export function ChatSidebar({ currentUserId, activeChatId, onChatSelect }: ChatS
       <ScrollArea className="flex-1">
         {loading ? (
           <div className="p-8 text-center text-sm text-muted-foreground animate-pulse">Yükleniyor...</div>
+        ) : error ? (
+          <div className="p-8 text-center text-sm text-destructive">
+            Mesajlar yüklenemedi.
+            <button
+              onClick={() => {
+                setError(false);
+                setLoading(true);
+                void getUserChats(currentUserId).then(setChats).catch(() => setError(true)).finally(() => setLoading(false));
+              }}
+              className="block mx-auto mt-2 text-xs underline text-muted-foreground hover:text-foreground"
+            >
+              Tekrar dene
+            </button>
+          </div>
         ) : filteredChats.length === 0 ? (
           <div className="p-8 text-center text-sm text-muted-foreground">Henüz bir konuşma yok.</div>
         ) : (

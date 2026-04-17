@@ -130,6 +130,27 @@ export function PhotosStep({
                           {uploadState.progress}%
                         </span>
                       </div>
+                    ) : uploadState?.status === "error" ? (
+                      // Hata durumu: retry butonu göster
+                      <div className="flex flex-col items-center gap-2 px-2 text-center">
+                        <span className="text-[10px] font-bold text-red-500 leading-tight">
+                          {uploadState.message ?? "Yükleme hatası"}
+                        </span>
+                        <span className="text-[10px] font-bold text-red-400 underline">
+                          Tekrar dene
+                        </span>
+                        <input
+                          type="file"
+                          accept="image/*"
+                          className="hidden"
+                          onChange={(e) => {
+                            const file = e.target.files?.[0];
+                            if (file) onImageChange(index, file);
+                            // Input'u sıfırla — aynı dosya tekrar seçilebilsin
+                            e.target.value = "";
+                          }}
+                        />
+                      </div>
                     ) : (
                       <>
                         <Upload size={24} className="text-gray-400" />
@@ -138,15 +159,17 @@ export function PhotosStep({
                         </span>
                       </>
                     )}
-                    <input
-                      type="file"
-                      accept="image/*"
-                      className="hidden"
-                      onChange={(e) => {
-                        const file = e.target.files?.[0];
-                        if (file) onImageChange(index, file);
-                      }}
-                    />
+                    {uploadState?.status !== "error" && (
+                      <input
+                        type="file"
+                        accept="image/*"
+                        className="hidden"
+                        onChange={(e) => {
+                          const file = e.target.files?.[0];
+                          if (file) onImageChange(index, file);
+                        }}
+                      />
+                    )}
                   </label>
                 )}
               </div>

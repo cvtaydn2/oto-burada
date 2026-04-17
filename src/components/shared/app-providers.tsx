@@ -15,13 +15,12 @@ export function AppProviders({ children }: PropsWithChildren) {
       new QueryClient({
         defaultOptions: {
           queries: {
-            // 10 minutes stale time — data is considered fresh for 10 min after fetch.
-            // Prevents redundant refetches on tab focus and client-side navigation.
             staleTime: 10 * 60 * 1000,
-            // Keep unused query data in cache for 15 minutes before garbage collection.
             gcTime: 15 * 60 * 1000,
             refetchOnWindowFocus: false,
             retry: 1,
+            // Exponential backoff: 1s → 2s → max 30s — ağ hatalarında anında retry önlenir
+            retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30_000),
           },
         },
       }),

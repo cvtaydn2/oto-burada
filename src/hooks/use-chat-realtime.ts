@@ -105,7 +105,7 @@ export function useChatRealtime(chatId: string, currentUserId: string) {
       .subscribe();
 
     return () => {
-      supabase.removeChannel(channel);
+      void channel.unsubscribe();
     };
   }, [chatId, currentUserId]);
 

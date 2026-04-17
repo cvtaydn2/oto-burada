@@ -14,45 +14,34 @@ export function ViewCounter({ listingId, initialCount }: ViewCounterProps) {
   const supabase = createSupabaseBrowserClient();
 
   useEffect(() => {
-    let channel: ReturnType<typeof supabase.channel> | undefined;
+    // channelRef ile cleanup garantisi — setup() async olsa bile
+    // unmount öncesi oluşturulan channel temizlenir
+    const channelName = `lv_${listingId.slice(0, 8)}`;
+    let mounted = true;
 
-    const setup = async () => {
-      // View kaydı server-side recordListingView ile yapılıyor (listing/[slug]/page.tsx)
-      // Burada sadece realtime güncellemeleri dinliyoruz
-
-      const channelName = `lv_${listingId.slice(0, 8)}`;
-      
-      const existingChannel = supabase.getChannels().find((c: { name: string }) => c.name === channelName);
-      if (existingChannel) {
-        await supabase.removeChannel(existingChannel);
-      }
-
-      channel = supabase
-        .channel(channelName)
-        .on(
-          "postgres_changes",
-          {
-            event: "UPDATE",
-            schema: "public",
-            table: "listings",
-            filter: `id=eq.${listingId}`,
-          },
-          (payload: { new: unknown }) => {
-            const newRecord = payload.new as { view_count?: number } | null;
-            if (newRecord && typeof newRecord.view_count === "number") {
-              setCount(newRecord.view_count);
-            }
+    const channel = supabase
+      .channel(channelName)
+      .on(
+        "postgres_changes",
+        {
+          event: "UPDATE",
+          schema: "public",
+          table: "listings",
+          filter: `id=eq.${listingId}`,
+        },
+        (payload: { new: unknown }) => {
+          if (!mounted) return;
+          const newRecord = payload.new as { view_count?: number } | null;
+          if (newRecord && typeof newRecord.view_count === "number") {
+            setCount(newRecord.view_count);
           }
-        )
-        .subscribe();
-    };
-
-    setup();
+        }
+      )
+      .subscribe();
 
     return () => {
-      if (channel) {
-        supabase.removeChannel(channel);
-      }
+      mounted = false;
+      void channel.unsubscribe();
     };
   }, [listingId, supabase]);
 

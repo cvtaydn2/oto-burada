@@ -416,6 +416,7 @@ export function ListingCreateForm({
       revokeBlobUrl(previewUrl);
       const message = uploadError instanceof Error ? uploadError.message : "Yükleme hatası.";
       setError(`images.${index}.url` as FieldPath<ListingCreateFormValues>, { message, type: "validate" });
+      // Hata state'i: previewUrl yok, retry için input tekrar aktif
       updateUploadState(fieldId, { message, progress: 0, status: "error" });
     }
   };

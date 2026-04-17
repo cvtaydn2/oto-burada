@@ -127,7 +127,7 @@ export function CarCard({ listing, priority = false, variant = "grid" }: CarCard
               {formatPrice(listing.price)} TL
             </div>
             {insights.fairValue && insights.fairValue > listing.price && (
-              <div className="text-[10px] font-bold text-emerald-500 bg-emerald-50 dark:bg-emerald-900/30 px-1.5 py-0.5 rounded border border-emerald-100 dark:border-emerald-800 animate-pulse">
+              <div className="text-[10px] font-bold text-emerald-500 bg-emerald-50 dark:bg-emerald-900/30 px-1.5 py-0.5 rounded border border-emerald-100 dark:border-emerald-800">
                 FIRSAT
               </div>
             )}

@@ -1,4 +1,3 @@
-import { NextResponse } from "next/server";
 import { getCurrentUser } from "@/lib/auth/session";
 import { createTicket } from "@/services/support/ticket-service";
 import type { TicketCategory, TicketPriority } from "@/services/support/ticket-service";
@@ -76,7 +75,7 @@ export async function POST(request: Request) {
   } catch (error) {
     logger.api.error("Ticket creation failed", error, { userId: user.id });
     captureServerError("Ticket creation failed", "support", error, { userId: user.id });
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    return apiError(API_ERROR_CODES.INTERNAL_ERROR, "Destek talebi oluşturulamadı. Lütfen tekrar dene.", 500);
   }
 }
 
@@ -100,6 +99,6 @@ export async function GET(request: Request) {
   } catch (error) {
     logger.api.error("Get tickets failed", error, { userId: user.id });
     captureServerError("Get tickets failed", "support", error, { userId: user.id });
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    return apiError(API_ERROR_CODES.INTERNAL_ERROR, "Destek talepleri yüklenemedi.", 500);
   }
 }

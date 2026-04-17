@@ -436,7 +436,10 @@ export function ListingsPageClient({
 
         {/* Desktop Sidebar */}
         <aside className="hidden lg:block w-[300px] shrink-0">
-          <div className="sticky top-24 rounded-xl border border-slate-200 bg-white overflow-hidden shadow-sm">
+          <div className={cn(
+            "sticky top-24 rounded-xl border border-slate-200 bg-white overflow-hidden shadow-sm transition-opacity",
+            isPending && "opacity-50 pointer-events-none"
+          )}>
             <SmartFilters
               brands={brands}
               cities={cities}
