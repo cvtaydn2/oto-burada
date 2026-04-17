@@ -982,3 +982,73 @@ drop policy if exists "phone_reveal_logs_insert_anyone" on public.phone_reveal_l
 create policy "phone_reveal_logs_insert_anyone"
   on public.phone_reveal_logs for insert
   with check (true);
+
+-- ── Security & Performance Advisor Fixes ────────────────────────────────────
+-- Applied: 2026-04-17
+-- Source: scripts/migrations/fix-security-performance-advisor.sql
+
+-- Functions: SECURITY DEFINER + SET search_path = 'public'
+-- (see CREATE OR REPLACE FUNCTION blocks at top of file — updated in place)
+
+-- Tickets: consolidated UPDATE policies
+DROP POLICY IF EXISTS "Users can update their own open tickets" ON public.tickets;
+DROP POLICY IF EXISTS "Admins can update any ticket" ON public.tickets;
+CREATE POLICY "tickets_update_own_open_or_admin"
+  ON public.tickets FOR UPDATE
+  USING (
+    ((SELECT auth.uid()) = user_id AND status = 'open')
+    OR (SELECT public.is_admin())
+  )
+  WITH CHECK (
+    ((SELECT auth.uid()) = user_id AND status = 'open')
+    OR (SELECT public.is_admin())
+  );
+
+-- Tickets: fix bare auth.uid() → (SELECT auth.uid())
+DROP POLICY IF EXISTS "Users can view their own tickets" ON public.tickets;
+CREATE POLICY "tickets_select_own_or_admin"
+  ON public.tickets FOR SELECT
+  USING (
+    (SELECT auth.uid()) = user_id
+    OR (SELECT public.is_admin())
+  );
+
+DROP POLICY IF EXISTS "Authenticated users can create tickets" ON public.tickets;
+CREATE POLICY "tickets_insert_own"
+  ON public.tickets FOR INSERT
+  WITH CHECK (
+    (SELECT auth.uid()) = user_id
+    OR user_id IS NULL
+  );
+
+-- Chats: remove old permissive INSERT, keep strict buyer-only policy
+DROP POLICY IF EXISTS "chats_insert_participants" ON public.chats;
+-- chats_insert_buyer_only already defined above in schema
+
+-- Messages: remove duplicate policies (keep only the ones from fix-chats-rls section)
+DROP POLICY IF EXISTS "messages_select_chat_participants" ON public.messages;
+DROP POLICY IF EXISTS "messages_insert_chat_participants" ON public.messages;
+-- messages_select_participants and messages_insert_participant already defined above
+
+-- phone_reveal_logs: tighten INSERT to require approved listing
+DROP POLICY IF EXISTS "phone_reveal_logs_insert_anyone" ON public.phone_reveal_logs;
+CREATE POLICY "phone_reveal_logs_insert_approved_listing"
+  ON public.phone_reveal_logs FOR INSERT
+  WITH CHECK (
+    EXISTS (
+      SELECT 1 FROM public.listings
+      WHERE listings.id = phone_reveal_logs.listing_id
+        AND listings.status = 'approved'
+    )
+  );
+
+-- listing_views: tighten INSERT to require existing listing
+DROP POLICY IF EXISTS "listing_views_insert_anyone" ON public.listing_views;
+CREATE POLICY "listing_views_insert_anyone"
+  ON public.listing_views FOR INSERT
+  WITH CHECK (
+    EXISTS (
+      SELECT 1 FROM public.listings
+      WHERE listings.id = listing_views.listing_id
+    )
+  );

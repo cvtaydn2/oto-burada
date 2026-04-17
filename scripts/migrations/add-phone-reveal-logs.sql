@@ -29,6 +29,7 @@ CREATE INDEX IF NOT EXISTS idx_phone_reveal_logs_user
 ALTER TABLE public.phone_reveal_logs ENABLE ROW LEVEL SECURITY;
 
 -- Only admins and listing owners can view the logs
+DROP POLICY IF EXISTS "phone_reveal_logs_select_owner_or_admin" ON public.phone_reveal_logs;
 CREATE POLICY "phone_reveal_logs_select_owner_or_admin"
   ON public.phone_reveal_logs
   FOR SELECT
@@ -42,6 +43,7 @@ CREATE POLICY "phone_reveal_logs_select_owner_or_admin"
   );
 
 -- Anyone (including anonymous) can insert (controlled by RLS + rate limiting in app layer)
+DROP POLICY IF EXISTS "phone_reveal_logs_insert_anyone" ON public.phone_reveal_logs;
 CREATE POLICY "phone_reveal_logs_insert_anyone"
   ON public.phone_reveal_logs
   FOR INSERT

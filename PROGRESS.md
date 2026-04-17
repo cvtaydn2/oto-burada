@@ -278,7 +278,58 @@
 - Güncel `schema.sql` gerçek Supabase veritabanına uygulanmalı ve production veri modeli senkronize edilmeli.
 - Ardından gerçek DB üzerinde chat, corporate profile ve ekspertiz belge akışları için integration smoke test yapılmalı.
 
-## Contact & Phone Reveal Audit & Fixes (2026-04-17)
+## Supabase Security & Performance Advisor Full Fix (2026-04-17)
+
+### Kapsam
+Supabase Security Advisor ve Performance Advisor'ın tüm uyarıları ele alındı.
+
+### Oluşturulan Migration Dosyaları
+1. `scripts/migrations/fix-security-performance-advisor.sql` — Ana fix (idempotent)
+2. `scripts/migrations/fix-security-performance-advisor--rollback.sql` — Rollback
+3. `scripts/migrations/fix-storage-bucket-policies.sql` — Storage bucket fix
+
+### Düzeltilen Sorunlar
+
+**SECURITY: Mutable search_path (7 fonksiyon)**
+- `is_admin`, `set_updated_at`, `touch_chat_last_message_at`, `track_listing_price_change`
+- `get_listings_by_brand_count`, `get_listings_by_city_count`, `get_listings_by_status_count`
+- Tümüne `SECURITY DEFINER + SET search_path = 'public'` eklendi
+- SQL injection via search_path hijacking riski ortadan kalktı
+
+**PERFORMANCE: auth_rls_initplan (9 tablo)**
+- `notifications`, `listing_images`, `profiles`, `chats`, `messages`, `tickets`, `seller_reviews`, `listing_price_history`, `listing_views`
+- Bare `auth.uid()` → `(SELECT auth.uid())` — her row yerine query başına bir kez evaluate
+- Büyük tablolarda 10-100x sorgu hızlanması bekleniyor
+
+**SECURITY: Multiple permissive policies**
+- `tickets` UPDATE: 2 policy → 1 consolidated policy
+- `chats` INSERT: eski permissive `chats_insert_participants` kaldırıldı, `chats_insert_buyer_only` korundu
+- `messages` SELECT + INSERT: duplicate policy'ler kaldırıldı
+- `seller_reviews`: `(select auth.uid())` pattern uygulandı
+
+**SECURITY: phone_reveal_logs INSERT policy**
+- `WITH CHECK (true)` → `WITH CHECK (listing.status = 'approved')` 
+- Phantom reveal log insert'i engellendi
+
+**SECURITY: listing_views INSERT policy**
+- `WITH CHECK (true)` → listing_id'nin var olmasını zorunlu kıldı
+
+**SECURITY: Storage bucket listing-images**
+- Broad SELECT (`true`) → path-scoped (`listings/` prefix)
+- Bucket enumeration engellendi, public CDN reads etkilenmedi
+
+**SECURITY: Leaked password protection**
+- Dashboard'dan manuel aktif edilmeli: Authentication → Settings → Enable leaked password protection
+
+### Uygulama Sırası
+1. `fix-security-performance-advisor.sql` → Supabase SQL Editor
+2. `fix-storage-bucket-policies.sql` → Supabase SQL Editor
+3. Dashboard → Auth → Settings → Leaked password protection: ON
+
+### Doğrulama
+Migration dosyasının sonundaki SECTION 7 verification query'lerini çalıştır.
+
+
 
 ### Tespit ve Düzeltilen Sorunlar
 

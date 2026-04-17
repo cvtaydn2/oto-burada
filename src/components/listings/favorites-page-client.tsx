@@ -1,13 +1,29 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
-import { useMemo } from "react";
-import { ArrowRight, Heart, LogIn, TrendingUp, Gauge, ShieldCheck } from "lucide-react";
+import { useMemo, useState } from "react";
+import {
+  ArrowRight,
+  CarFront,
+  ExternalLink,
+  Fuel,
+  Gauge,
+  Heart,
+  LogIn,
+  MapPin,
+  Settings2,
+  ShieldCheck,
+  SortAsc,
+  Trash2,
+  TrendingDown,
+  TrendingUp,
+  Zap,
+} from "lucide-react";
 
-import { ListingCard } from "@/components/listings/listing-card";
 import { ListingsGridSkeleton } from "@/components/listings/listings-grid-skeleton";
 import { useFavorites } from "@/hooks/use-favorites";
-import { formatCurrency } from "@/lib/utils";
+import { cn, formatCurrency, formatNumber, formatPrice, supabaseImageUrl } from "@/lib/utils";
 import type { Listing } from "@/types";
 
 interface FavoritesPageClientProps {
@@ -15,70 +31,67 @@ interface FavoritesPageClientProps {
   userId?: string;
 }
 
+type SortKey = "newest" | "price_asc" | "price_desc" | "mileage_asc";
+
+const SORT_OPTIONS: { value: SortKey; label: string }[] = [
+  { value: "newest", label: "En Yeni" },
+  { value: "price_asc", label: "Fiyat (Düşük → Yüksek)" },
+  { value: "price_desc", label: "Fiyat (Yüksek → Düşük)" },
+  { value: "mileage_asc", label: "Kilometre (Az → Çok)" },
+];
+
 export function FavoritesPageClient({ listings, userId }: FavoritesPageClientProps) {
-  const { favoriteIds, hydrated } = useFavorites();
+  const { favoriteIds, hydrated, toggleFavorite } = useFavorites();
+  const [sort, setSort] = useState<SortKey>("newest");
   const isGuest = !userId;
 
-  // Memoize filtering to avoid re-running on every render
   const favoriteListings = useMemo(
-    () => listings.filter((listing) => favoriteIds.includes(listing.id)),
+    () => listings.filter((l) => favoriteIds.includes(l.id)),
     [listings, favoriteIds],
   );
-  
-  const avgPrice = useMemo(
-    () =>
-      favoriteListings.length > 0
-        ? Math.round(
-            favoriteListings.reduce((total, l) => total + l.price, 0) /
-              favoriteListings.length,
-          )
-        : 0,
-    [favoriteListings],
-  );
 
-  if (!hydrated) {
-    return <ListingsGridSkeleton count={4} />;
-  }
+  const sortedListings = useMemo(() => {
+    const copy = [...favoriteListings];
+    switch (sort) {
+      case "price_asc":   return copy.sort((a, b) => a.price - b.price);
+      case "price_desc":  return copy.sort((a, b) => b.price - a.price);
+      case "mileage_asc": return copy.sort((a, b) => a.mileage - b.mileage);
+      default:            return copy.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+    }
+  }, [favoriteListings, sort]);
 
+  const stats = useMemo(() => {
+    if (favoriteListings.length === 0) return null;
+    const prices = favoriteListings.map((l) => l.price);
+    const minPrice = Math.min(...prices);
+    const maxPrice = Math.max(...prices);
+    const avgPrice = Math.round(prices.reduce((s, p) => s + p, 0) / prices.length);
+    const withExpert = favoriteListings.filter((l) => l.expertInspection?.hasInspection).length;
+    const lowMileage = favoriteListings.filter((l) => l.mileage <= 80_000).length;
+    return { minPrice, maxPrice, avgPrice, withExpert, lowMileage };
+  }, [favoriteListings]);
+
+  if (!hydrated) return <ListingsGridSkeleton count={4} />;
+
+  /* ── Empty state ── */
   if (favoriteListings.length === 0) {
     return (
-      <div className="space-y-8">
-        {isGuest && (
-          <div className="relative space-y-4 overflow-hidden rounded-xl border border-primary/20 bg-primary/5 p-6 text-center lg:p-8">
-            <LogIn className="mx-auto size-12 text-primary" />
-            <div className="space-y-2">
-               <h2 className="text-2xl font-semibold text-slate-900">Bulut senkronizasyonu</h2>
-               <p className="mx-auto max-w-lg text-sm leading-relaxed text-slate-600">
-                 Favori ilanlarınız şu an sadece bu cihazda saklanıyor. Tüm cihazlarınızdan erişmek ve fiyat değişimlerinden haberdar olmak için oturum açın.
-               </p>
-            </div>
-            <div className="flex justify-center gap-4">
-              <Link
-                href="/login"
-                className="flex h-10 items-center gap-2 rounded-md bg-slate-900 px-5 text-sm font-medium text-white transition-all hover:bg-black"
-              >
-                Giriş yap
-              </Link>
-            </div>
+      <div className="space-y-6">
+        {isGuest && <GuestBanner />}
+        <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-slate-200 bg-white py-20 text-center">
+          <div className="mb-5 flex size-20 items-center justify-center rounded-2xl border border-slate-100 bg-slate-50">
+            <Heart size={36} className="text-slate-300" />
           </div>
-        )}
-
-        <div className="space-y-6 rounded-xl border border-dashed border-slate-200 bg-slate-50/50 p-12 text-center">
-          <div className="mx-auto flex size-20 items-center justify-center rounded-2xl border border-slate-200 bg-white text-slate-300">
-             <Heart size={48} />
-          </div>
-          <div className="space-y-2">
-            <h2 className="text-2xl font-semibold text-slate-900">Henüz favoriniz yok</h2>
-            <p className="mx-auto max-w-md text-sm leading-relaxed text-slate-500">
-              Piyasadaki en seçkin araçları inceleyerek beğendiklerinizi kalp ikonuna basarak bu listeye ekleyebilirsiniz.
-            </p>
-          </div>
+          <h2 className="text-xl font-black text-slate-800">Henüz favori ilan yok</h2>
+          <p className="mt-2 max-w-xs text-sm text-slate-500 leading-relaxed">
+            İlanları gezerken kalp ikonuna tıklayarak buraya ekleyebilirsin.
+          </p>
           <Link
             href="/listings"
-            className="group inline-flex h-10 items-center gap-2 rounded-md bg-primary px-5 text-sm font-medium text-white transition-all hover:bg-slate-950"
+            className="mt-6 inline-flex items-center gap-2 rounded-xl bg-blue-600 px-6 py-2.5 text-sm font-bold text-white shadow-lg shadow-blue-600/20 transition hover:bg-blue-700"
           >
-            İlanları keşfet
-            <ArrowRight size={16} className="transition-transform group-hover:translate-x-1" />
+            İlanları Keşfet
+            <ArrowRight size={15} />
           </Link>
         </div>
       </div>
@@ -87,61 +100,300 @@ export function FavoritesPageClient({ listings, userId }: FavoritesPageClientPro
 
   return (
     <div className="space-y-6">
-      {isGuest && (
-        <div className="flex flex-col items-center justify-between gap-4 rounded-xl border border-primary/20 bg-primary/5 p-5 md:flex-row">
-          <div className="flex items-center gap-6">
-             <div className="flex size-12 items-center justify-center rounded-xl bg-white text-primary">
-                <ShieldCheck size={22} />
-             </div>
-             <div>
-               <p className="mb-1 text-xs font-medium text-primary">Senkronizasyon</p>
-               <p className="text-sm font-medium text-slate-900">Favorileri bulut ile eşitleyin</p>
-             </div>
-          </div>
-          <Link
-            href="/login"
-            className="flex h-10 items-center justify-center rounded-md bg-slate-900 px-5 text-sm font-medium text-white transition-all hover:bg-black"
-          >
-            Oturum aç
-          </Link>
+      {/* Guest sync banner */}
+      {isGuest && <GuestBanner compact />}
+
+      {/* Stats row */}
+      {stats && (
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+          <StatCard
+            label="Takip Edilen"
+            value={String(favoriteListings.length)}
+            sub="ilan"
+            icon={<Heart size={16} />}
+            color="rose"
+          />
+          <StatCard
+            label="Ort. Fiyat"
+            value={formatCurrency(stats.avgPrice)}
+            sub={`${formatCurrency(stats.minPrice)} – ${formatCurrency(stats.maxPrice)}`}
+            icon={<TrendingUp size={16} />}
+            color="blue"
+          />
+          <StatCard
+            label="Ekspertizli"
+            value={String(stats.withExpert)}
+            sub={`${favoriteListings.length} ilandan`}
+            icon={<ShieldCheck size={16} />}
+            color="emerald"
+          />
+          <StatCard
+            label="Düşük KM"
+            value={String(stats.lowMileage)}
+            sub="80.000 km altı"
+            icon={<Gauge size={16} />}
+            color="amber"
+          />
         </div>
       )}
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <StatsCard label="TOPLAM TAKİP" value={String(favoriteListings.length)} icon={<Heart />} />
-        <StatsCard label="ORTALAMA PİYASA" value={formatCurrency(avgPrice)} icon={<TrendingUp />} />
-        <StatsCard label="DÜŞÜK KM ADEDİ" value={String(favoriteListings.filter((l) => l.mileage <= 80000).length)} icon={<Gauge />} />
+      {/* Toolbar */}
+      <div className="flex items-center justify-between gap-3">
+        <p className="text-sm font-medium text-slate-500">
+          <span className="font-black text-slate-800">{favoriteListings.length}</span> favori ilan
+        </p>
+        <div className="flex items-center gap-2">
+          <SortAsc size={15} className="text-slate-400" />
+          <select
+            value={sort}
+            onChange={(e) => setSort(e.target.value as SortKey)}
+            className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 outline-none focus:border-blue-400"
+          >
+            {SORT_OPTIONS.map((o) => (
+              <option key={o.value} value={o.value}>{o.label}</option>
+            ))}
+          </select>
+        </div>
       </div>
 
-      <div className="grid gap-5 md:grid-cols-2">
-        {favoriteListings.map((listing) => (
-          <ListingCard key={listing.id} listing={listing} />
+      {/* Cards */}
+      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+        {sortedListings.map((listing, i) => (
+          <FavoriteCard
+            key={listing.id}
+            listing={listing}
+            priority={i < 3}
+            onRemove={() => toggleFavorite(listing.id)}
+          />
         ))}
       </div>
 
+      {/* Discover more */}
       <Link
         href="/listings"
-        className="group flex items-center justify-between rounded-xl border border-slate-200 bg-white p-5 transition-all hover:border-primary"
+        className="group flex items-center justify-between rounded-2xl border border-slate-200 bg-white px-6 py-4 transition hover:border-blue-300 hover:shadow-sm"
       >
-        <span className="text-sm font-medium text-slate-900">Daha fazla ilan keşfet</span>
-        <div className="flex size-10 items-center justify-center rounded-lg bg-slate-50 text-slate-900 shadow-sm transition-all group-hover:bg-primary group-hover:text-white">
-           <ArrowRight size={18} />
+        <div>
+          <p className="text-sm font-black text-slate-800">Daha fazla ilan keşfet</p>
+          <p className="text-xs text-slate-400 mt-0.5">Binlerce araç seni bekliyor</p>
+        </div>
+        <div className="flex size-10 items-center justify-center rounded-xl bg-slate-50 text-slate-500 transition group-hover:bg-blue-600 group-hover:text-white">
+          <ArrowRight size={18} />
         </div>
       </Link>
     </div>
   );
 }
 
-function StatsCard({ label, value, icon }: { label: string, value: string, icon: React.ReactNode }) {
+/* ── Favorite Card ─────────────────────────────────────────── */
+
+function FavoriteCard({
+  listing,
+  priority,
+  onRemove,
+}: {
+  listing: Listing;
+  priority: boolean;
+  onRemove: () => void;
+}) {
+  const coverImage = listing.images.find((img) => img.isCover) ?? listing.images[0];
+  const isAdvantageous = (listing.marketPriceIndex ?? 1) < 0.95;
+  const hasExpert = listing.expertInspection?.hasInspection;
+
   return (
-    <div className="group relative overflow-hidden rounded-xl border border-slate-200 bg-white p-5">
-       <div className="absolute -right-6 -top-6 flex size-16 items-end justify-start rounded-full bg-slate-100/70 p-4 text-slate-300 transition-colors group-hover:text-primary">
-          {icon}
-       </div>
-       <div className="relative z-10 space-y-1">
-          <p className="text-xs font-medium text-slate-500">{label}</p>
-          <p className="text-2xl font-semibold text-slate-900">{value}</p>
-       </div>
+    <div className="group relative flex flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm transition hover:shadow-md hover:border-slate-300">
+      {/* Image */}
+      <div className="relative aspect-[16/10] overflow-hidden bg-slate-100">
+        {coverImage ? (
+          <Image
+            src={supabaseImageUrl(coverImage.url, 480, 80)}
+            alt={listing.title}
+            fill
+            sizes="(min-width: 1280px) 33vw, (min-width: 640px) 50vw, 100vw"
+            className="object-cover transition-transform duration-500 group-hover:scale-105"
+            priority={priority}
+            placeholder={coverImage.placeholderBlur ? "blur" : "empty"}
+            blurDataURL={coverImage.placeholderBlur ?? undefined}
+          />
+        ) : (
+          <div className="flex h-full items-center justify-center text-slate-300">
+            <CarFront size={40} className="stroke-[1]" />
+          </div>
+        )}
+
+        {/* Badges */}
+        <div className="absolute left-3 top-3 flex flex-col gap-1.5">
+          {isAdvantageous && (
+            <span className="flex items-center gap-1 rounded-full bg-orange-500/90 px-2.5 py-1 text-[10px] font-black text-white backdrop-blur">
+              <TrendingDown size={10} /> AVANTAJLI
+            </span>
+          )}
+          {hasExpert && (
+            <span className="flex items-center gap-1 rounded-full bg-emerald-500/90 px-2.5 py-1 text-[10px] font-black text-white backdrop-blur">
+              <ShieldCheck size={10} /> EKSPERTİZLİ
+            </span>
+          )}
+          {listing.featured && (
+            <span className="flex items-center gap-1 rounded-full bg-blue-600/90 px-2.5 py-1 text-[10px] font-black text-white backdrop-blur">
+              <Zap size={10} /> VİTRİN
+            </span>
+          )}
+        </div>
+
+        {/* Remove button */}
+        <button
+          type="button"
+          onClick={(e) => {
+            e.preventDefault();
+            onRemove();
+          }}
+          title="Favorilerden kaldır"
+          className="absolute right-3 top-3 flex size-8 items-center justify-center rounded-full bg-white/90 text-slate-500 shadow-sm backdrop-blur transition hover:bg-red-50 hover:text-red-500"
+        >
+          <Trash2 size={14} />
+        </button>
+
+        {/* Photo count */}
+        <div className="absolute bottom-3 right-3 rounded-lg bg-black/50 px-2 py-1 text-[10px] font-black text-white backdrop-blur">
+          {listing.images.length} FOTO
+        </div>
+      </div>
+
+      {/* Content */}
+      <div className="flex flex-1 flex-col p-4">
+        {/* Title + price */}
+        <div className="flex items-start justify-between gap-2">
+          <div className="min-w-0">
+            <p className="text-[10px] font-black uppercase tracking-widest text-blue-500">
+              {listing.brand} {listing.model}
+            </p>
+            <h3 className="mt-0.5 truncate text-sm font-black text-slate-800 leading-tight">
+              {listing.title}
+            </h3>
+          </div>
+          <div className="shrink-0 text-right">
+            <p className="text-lg font-black text-blue-600 leading-tight">
+              {formatPrice(listing.price)}
+            </p>
+            <p className="text-[10px] font-bold text-slate-400">TL</p>
+          </div>
+        </div>
+
+        {/* Specs */}
+        <div className="mt-3 grid grid-cols-3 gap-2 rounded-xl bg-slate-50 p-2.5">
+          <SpecItem icon={<Gauge size={12} />} value={`${formatNumber(listing.mileage)} km`} />
+          <SpecItem
+            icon={<Settings2 size={12} />}
+            value={listing.transmission === "yari_otomatik" ? "Yarı Oto." : listing.transmission}
+          />
+          <SpecItem icon={<Fuel size={12} />} value={listing.fuelType} />
+        </div>
+
+        {/* Footer */}
+        <div className="mt-3 flex items-center justify-between">
+          <span className="flex items-center gap-1 text-[11px] font-medium text-slate-500">
+            <MapPin size={11} className="text-slate-400" />
+            {listing.city} · {listing.year}
+          </span>
+          <Link
+            href={`/listing/${listing.slug}`}
+            className="flex items-center gap-1 rounded-lg bg-blue-50 px-3 py-1.5 text-[11px] font-black text-blue-600 transition hover:bg-blue-100"
+          >
+            İncele
+            <ExternalLink size={11} />
+          </Link>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ── Spec Item ─────────────────────────────────────────────── */
+
+function SpecItem({ icon, value }: { icon: React.ReactNode; value: string }) {
+  return (
+    <div className="flex flex-col items-center gap-0.5">
+      <span className="text-slate-400">{icon}</span>
+      <span className="text-center text-[10px] font-bold text-slate-600 capitalize leading-tight">{value}</span>
+    </div>
+  );
+}
+
+/* ── Stat Card ─────────────────────────────────────────────── */
+
+type StatColor = "rose" | "blue" | "emerald" | "amber";
+
+const colorMap: Record<StatColor, { bg: string; text: string; icon: string }> = {
+  rose:    { bg: "bg-rose-50",    text: "text-rose-600",    icon: "text-rose-400" },
+  blue:    { bg: "bg-blue-50",    text: "text-blue-600",    icon: "text-blue-400" },
+  emerald: { bg: "bg-emerald-50", text: "text-emerald-600", icon: "text-emerald-400" },
+  amber:   { bg: "bg-amber-50",   text: "text-amber-600",   icon: "text-amber-400" },
+};
+
+function StatCard({
+  label,
+  value,
+  sub,
+  icon,
+  color,
+}: {
+  label: string;
+  value: string;
+  sub: string;
+  icon: React.ReactNode;
+  color: StatColor;
+}) {
+  const c = colorMap[color];
+  return (
+    <div className={cn("rounded-2xl border border-slate-100 p-4", c.bg)}>
+      <div className={cn("mb-2 flex size-8 items-center justify-center rounded-lg bg-white shadow-sm", c.icon)}>
+        {icon}
+      </div>
+      <p className="text-[10px] font-bold uppercase tracking-widest text-slate-500">{label}</p>
+      <p className={cn("mt-0.5 text-xl font-black leading-tight", c.text)}>{value}</p>
+      <p className="mt-0.5 text-[10px] text-slate-400 truncate">{sub}</p>
+    </div>
+  );
+}
+
+/* ── Guest Banner ──────────────────────────────────────────── */
+
+function GuestBanner({ compact = false }: { compact?: boolean }) {
+  if (compact) {
+    return (
+      <div className="flex items-center justify-between gap-4 rounded-2xl border border-blue-100 bg-blue-50 px-5 py-3">
+        <div className="flex items-center gap-3">
+          <div className="flex size-9 items-center justify-center rounded-xl bg-white text-blue-500 shadow-sm">
+            <ShieldCheck size={18} />
+          </div>
+          <p className="text-sm font-medium text-slate-700">
+            Favorileri tüm cihazlarda senkronize et
+          </p>
+        </div>
+        <Link
+          href="/login"
+          className="shrink-0 rounded-xl bg-slate-900 px-4 py-2 text-xs font-bold text-white transition hover:bg-black"
+        >
+          Giriş Yap
+        </Link>
+      </div>
+    );
+  }
+
+  return (
+    <div className="rounded-2xl border border-blue-100 bg-blue-50 p-6 text-center">
+      <LogIn className="mx-auto mb-3 size-10 text-blue-500" />
+      <h3 className="text-lg font-black text-slate-800">Bulut senkronizasyonu</h3>
+      <p className="mt-1 text-sm text-slate-500">
+        Favorilerin şu an sadece bu cihazda. Giriş yaparak tüm cihazlardan eriş.
+      </p>
+      <Link
+        href="/login"
+        className="mt-4 inline-flex items-center gap-2 rounded-xl bg-slate-900 px-5 py-2.5 text-sm font-bold text-white transition hover:bg-black"
+      >
+        <LogIn size={15} />
+        Giriş Yap
+      </Link>
     </div>
   );
 }

@@ -1,0 +1,51 @@
+-- ============================================================
+-- OtoBurada — Storage Bucket Policy Fix
+-- Generated: 2026-04-17
+-- ============================================================
+-- IMPORTANT: Supabase no longer exposes storage.policies as a
+-- writable table via SQL Editor. Storage policies must be managed
+-- via the Supabase Dashboard or the Management API.
+--
+-- MANUAL STEPS (do these in Supabase Dashboard):
+--
+-- 1. Go to: Storage → listing-images bucket → Policies
+--
+-- 2. Find the existing SELECT policy that has definition = "true"
+--    (it may be named "Give users access to own folder" or similar)
+--    → DELETE that policy
+--
+-- 3. Create a new SELECT policy:
+--    Name: "listing-images-read-listings-prefix"
+--    Allowed operation: SELECT
+--    Target roles: public (anon + authenticated)
+--    Policy definition (USING):
+--      bucket_id = 'listing-images'
+--      AND (storage.foldername(name))[1] = 'listings'
+--
+-- 4. Verify INSERT policy exists and is scoped to owner folder:
+--    Name: "listing-images-insert-own-folder"
+--    Allowed operation: INSERT
+--    Target roles: authenticated
+--    Policy definition (WITH CHECK):
+--      bucket_id = 'listing-images'
+--      AND (storage.foldername(name))[1] = 'listings'
+--      AND (storage.foldername(name))[2] = (select auth.uid()::text)
+--
+-- 5. Verify DELETE policy exists and is scoped to owner folder:
+--    Name: "listing-images-delete-own-folder"
+--    Allowed operation: DELETE
+--    Target roles: authenticated
+--    Policy definition (USING):
+--      bucket_id = 'listing-images'
+--      AND (storage.foldername(name))[1] = 'listings'
+--      AND (storage.foldername(name))[2] = (select auth.uid()::text)
+--
+-- ── listing-documents bucket ─────────────────────────────────
+-- 6. Go to: Storage → listing-documents bucket → Policies
+--    Ensure there is NO public SELECT policy (definition = true).
+--    Documents are served via signed URLs only.
+-- ============================================================
+
+-- This file is intentionally left as documentation only.
+-- No SQL to execute — all changes are done via Dashboard.
+SELECT 'Storage bucket policies must be configured via Supabase Dashboard. See comments above.' AS instruction;
