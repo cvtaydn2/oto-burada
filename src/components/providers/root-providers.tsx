@@ -4,12 +4,10 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { type PropsWithChildren, useState } from "react";
 
 import { AuthProvider } from "@/components/shared/auth-provider";
-import { FavoritesProvider } from "@/components/shared/favorites-provider";
-import { CompareProvider } from "@/components/shared/compare-provider";
 import { ThemeProvider } from "@/components/shared/theme-provider";
 import { PostHogProvider } from "@/components/providers/posthog-provider";
 
-export function AppProviders({ children }: PropsWithChildren) {
+export function RootProviders({ children }: PropsWithChildren) {
   const [queryClient] = useState(
     () =>
       new QueryClient({
@@ -19,7 +17,6 @@ export function AppProviders({ children }: PropsWithChildren) {
             gcTime: 15 * 60 * 1000,
             refetchOnWindowFocus: false,
             retry: 1,
-            // Exponential backoff: 1s → 2s → max 30s — ağ hatalarında anında retry önlenir
             retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30_000),
           },
         },
@@ -35,13 +32,9 @@ export function AppProviders({ children }: PropsWithChildren) {
     >
       <QueryClientProvider client={queryClient}>
         <AuthProvider>
-          <FavoritesProvider>
-            <CompareProvider>
-              <PostHogProvider>
-                {children}
-              </PostHogProvider>
-            </CompareProvider>
-          </FavoritesProvider>
+          <PostHogProvider>
+            {children}
+          </PostHogProvider>
         </AuthProvider>
       </QueryClientProvider>
     </ThemeProvider>

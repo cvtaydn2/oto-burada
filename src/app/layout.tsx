@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 
-import { AppProviders } from "@/components/shared/app-providers";
+import { RootProviders } from "@/components/providers/root-providers";
 import { CookieConsent } from "@/components/shared/cookie-consent";
 import { PWAInstallPrompt } from "@/components/shared/pwa-install-prompt";
 import { getAppUrl } from "@/lib/seo";
@@ -70,13 +70,13 @@ export default function RootLayout({
       suppressHydrationWarning
     >
       <body className="min-h-full bg-background text-foreground selection:bg-primary/10 selection:text-primary">
-        <AppProviders>
+        <RootProviders>
           {children}
           <Analytics />
           <SpeedInsights />
           <CookieConsent />
           <PWAInstallPrompt />
-        </AppProviders>
+        </RootProviders>
       </body>
     </html>
   );
