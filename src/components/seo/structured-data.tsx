@@ -178,7 +178,7 @@ export function ListingDetailStructuredData({ listing, url, sellerName }: Listin
       "priceCurrency": "TRY",
       "availability": "https://schema.org/InStock",
       "url": url,
-      "priceValidUntil": new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split("T")[0],
+      "priceValidUntil": new Date(listing.updatedAt).toISOString().split("T")[0],
       "seller": {
         "@type": sellerName ? "Person" : "Organization",
         "name": sellerName ?? "OtoBurada",

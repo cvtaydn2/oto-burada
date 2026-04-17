@@ -13,8 +13,11 @@ export function register() {
   // Validate required environment variables at server startup.
   // Logs clearly if anything is missing so operators know immediately.
   if (process.env.NEXT_RUNTIME === "nodejs") {
-    const { logEnvValidation } = require("./lib/env-validation") as typeof import("./lib/env-validation");
-    logEnvValidation();
+    import("./lib/env-validation").then(({ logEnvValidation }) => {
+      logEnvValidation();
+    }).catch(() => {
+      // Non-critical — never let env validation crash the app
+    });
   }
 }
 

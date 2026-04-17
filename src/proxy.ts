@@ -7,6 +7,9 @@ import { checkGlobalRateLimit } from "@/lib/utils/distributed-rate-limit";
  * Order of operations:
  * 1. Global Rate Limiting (Edge/Redis)
  * 2. Auth Session Management & CSRF Protection
+ *
+ * Next.js 16+ uses `proxy.ts` as the middleware entry point.
+ * The exported function must be named `proxy`.
  */
 export async function proxy(request: NextRequest) {
   const pathname = request.nextUrl.pathname;

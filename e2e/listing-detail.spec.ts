@@ -95,7 +95,6 @@ test.describe('İlan Detay Sayfası', () => {
     await page.waitForLoadState('networkidle');
 
     // Mobile sticky bar should be present
-    const stickyBar = page.locator('[class*="sticky"]').filter({ hasText: /whatsapp|iletişim|tl/i }).first();
     // Just check the page loaded correctly on mobile
     await expect(page.locator('h1')).toBeVisible();
   });

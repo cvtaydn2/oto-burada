@@ -38,7 +38,6 @@ export function formatDate(value: string | null | undefined): string {
  */
 export function safeFormatDistanceToNow(
   value: string | null | undefined,
-  options?: { addSuffix?: boolean; locale?: Intl.Locale | { code?: string } },
 ): string {
   if (!value) return "—";
   const date = new Date(value);

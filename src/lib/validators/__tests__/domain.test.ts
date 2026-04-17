@@ -39,7 +39,8 @@ describe('listingCreateSchema', () => {
   });
 
   it('rejects missing required fields', () => {
-    const { title: _t, ...withoutTitle } = validListingInput;
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { title: _title, ...withoutTitle } = validListingInput;
     const result = listingCreateSchema.safeParse(withoutTitle);
     expect(result.success).toBe(false);
   });
