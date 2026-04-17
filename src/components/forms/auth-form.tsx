@@ -167,13 +167,21 @@ export function AuthForm({
             )}
 
             {state.error ? (
-              <div className="rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm font-semibold text-rose-600">
+              <div
+                role="alert"
+                aria-live="assertive"
+                className="rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm font-semibold text-rose-600"
+              >
                 {state.error}
               </div>
             ) : null}
 
             {state.success ? (
-              <div className="rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-semibold text-emerald-700">
+              <div
+                role="status"
+                aria-live="polite"
+                className="rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-semibold text-emerald-700"
+              >
                 {state.success}
               </div>
             ) : null}

@@ -74,6 +74,16 @@ export function ListingsPageClient({
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid")
   const [isSortOpen, setIsSortOpen] = useState(false)
 
+  // Close sort dropdown on Escape key
+  useEffect(() => {
+    if (!isSortOpen) return
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setIsSortOpen(false)
+    }
+    document.addEventListener("keydown", handleKeyDown)
+    return () => document.removeEventListener("keydown", handleKeyDown)
+  }, [isSortOpen])
+
   const activeFiltersCount = Object.entries(filters).filter(([key, val]) => {
     if (key === "limit" || key === "sort" || key === "page") return false
     return val !== undefined && val !== ""
@@ -89,7 +99,7 @@ export function ListingsPageClient({
     const fn = () => {
       const params = createSearchParamsFromListingFilters(newFilters)
       startTransition(() => {
-        router.push(`/listings?${params.toString()}`, { scroll: false })
+        router.push(`/listings?${params.toString()}`, { scroll: true })
       })
     }
 
@@ -203,6 +213,8 @@ export function ListingsPageClient({
             <div className="flex items-center gap-1 rounded-lg border border-slate-200 bg-white p-1">
               <button
                 onClick={() => setViewMode("grid")}
+                aria-label="Izgara görünümü"
+                aria-pressed={viewMode === "grid"}
                 className={cn(
                   "flex h-8 items-center justify-center rounded-md px-2.5 transition-colors",
                   viewMode === "grid"
@@ -210,10 +222,12 @@ export function ListingsPageClient({
                     : "text-gray-400 hover:text-gray-600"
                 )}
               >
-                <LayoutGrid size={16} />
+                <LayoutGrid size={16} aria-hidden="true" />
               </button>
               <button
                 onClick={() => setViewMode("list")}
+                aria-label="Liste görünümü"
+                aria-pressed={viewMode === "list"}
                 className={cn(
                   "flex h-8 items-center justify-center rounded-md px-2.5 transition-colors",
                   viewMode === "list"
@@ -221,16 +235,19 @@ export function ListingsPageClient({
                     : "text-gray-400 hover:text-gray-600"
                 )}
               >
-                <List size={16} />
+                <List size={16} aria-hidden="true" />
               </button>
             </div>
 
             <div className="relative">
               <button
                 onClick={() => setIsSortOpen(!isSortOpen)}
+                aria-haspopup="listbox"
+                aria-expanded={isSortOpen}
+                aria-label={`Sıralama: ${currentSortLabel}`}
                 className="flex h-9 items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 text-sm font-medium text-slate-600 hover:bg-slate-50 transition-colors"
               >
-                <ArrowDownUp size={16} />
+                <ArrowDownUp size={16} aria-hidden="true" />
                 <span className="hidden sm:inline">{currentSortLabel}</span>
                 <ChevronIcon className={cn("transition-transform size-4", isSortOpen && "rotate-180")} />
               </button>
@@ -238,33 +255,39 @@ export function ListingsPageClient({
               {isSortOpen && (
                 <>
                   {/* Backdrop */}
-                  <div className="fixed inset-0 z-40" onClick={() => setIsSortOpen(false)} />
-                  <div className="absolute right-0 top-full z-50 mt-2 w-56 rounded-lg border border-slate-200 bg-white py-1 shadow-lg">
+                  <div className="fixed inset-0 z-40" onClick={() => setIsSortOpen(false)} aria-hidden="true" />
+                  <ul
+                    role="listbox"
+                    aria-label="Sıralama seçenekleri"
+                    className="absolute right-0 top-full z-50 mt-2 w-56 rounded-lg border border-slate-200 bg-white py-1 shadow-lg"
+                  >
                     {SORT_OPTIONS.map((option) => (
-                      <button
-                        key={option.value}
-                        onClick={() => {
-                          handleFilterChange("sort", option.value as ListingFilters["sort"])
-                          setIsSortOpen(false)
-                        }}
-                        className={cn(
-                          "w-full px-4 py-2 text-left text-sm transition-colors",
-                          (filters.sort ?? "newest") === option.value
-                            ? "bg-blue-50 font-bold text-blue-600"
-                            : "text-gray-600 hover:bg-gray-50"
-                        )}
-                      >
-                        {option.label}
-                      </button>
+                      <li key={option.value} role="option" aria-selected={(filters.sort ?? "newest") === option.value}>
+                        <button
+                          onClick={() => {
+                            handleFilterChange("sort", option.value as ListingFilters["sort"])
+                            setIsSortOpen(false)
+                          }}
+                          className={cn(
+                            "w-full px-4 py-2 text-left text-sm transition-colors",
+                            (filters.sort ?? "newest") === option.value
+                              ? "bg-blue-50 font-bold text-blue-600"
+                              : "text-gray-600 hover:bg-gray-50"
+                          )}
+                        >
+                          {option.label}
+                        </button>
+                      </li>
                     ))}
-                  </div>
+                  </ul>
                 </>
               )}
             </div>
 
             <div className="hidden sm:flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 h-9">
-              <span className="text-xs font-semibold text-slate-500">Göster</span>
+              <label htmlFor="page-size-select" className="text-xs font-semibold text-slate-500">Göster</label>
               <select
+                id="page-size-select"
                 value={filters.limit ?? initialResult.limit}
                 onChange={(event) => handleFilterChange("limit", Number(event.target.value))}
                 className="bg-transparent text-sm font-medium text-slate-700 outline-none"

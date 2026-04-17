@@ -87,6 +87,7 @@ export default async function AdminUserManagementPage({
 
             <div className="overflow-x-auto">
               <table className="w-full text-left border-collapse">
+                <caption className="sr-only">Platform kullanıcıları listesi</caption>
                 <thead>
                   <tr className="bg-slate-50/50 border-b border-slate-100">
                     <th className="p-6 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Profil</th>

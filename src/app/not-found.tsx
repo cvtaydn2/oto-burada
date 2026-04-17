@@ -3,7 +3,7 @@ import { Car, Home, Search } from "lucide-react";
 
 export default function NotFound() {
   return (
-    <div className="flex min-h-[80vh] flex-col items-center justify-center bg-white px-4 text-center">
+    <main className="flex min-h-[80vh] flex-col items-center justify-center bg-white px-4 text-center" aria-labelledby="not-found-heading">
       {/* Big 404 with car icon overlay */}
       <div className="relative mb-8 select-none">
         <span className="text-[160px] font-black leading-none text-blue-50 tracking-tighter">404</span>
@@ -14,7 +14,7 @@ export default function NotFound() {
         </div>
       </div>
 
-      <h2 className="mb-3 text-3xl font-extrabold text-gray-800">
+      <h2 id="not-found-heading" className="mb-3 text-3xl font-extrabold text-gray-800">
         Üzgünüz, Aradığınız Araç Yoldan Çıkmış!
       </h2>
       <p className="mb-10 max-w-md text-gray-500">
@@ -44,6 +44,6 @@ export default function NotFound() {
           OtoBurada
         </Link>
       </div>
-    </div>
+    </main>
   );
 }

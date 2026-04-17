@@ -2,8 +2,9 @@ import { requireUser } from "@/lib/auth/session";
 import { getUserChats } from "@/services/messages/chat-service";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { ChatLayout } from "@/components/chat/chat-layout";
-import { MessageSquare, ShieldCheck } from "lucide-react";
+import { MessageSquare, ShieldCheck, RefreshCw } from "lucide-react";
 import { logger } from "@/lib/utils/logger";
+import Link from "next/link";
 
 export default async function MessagesPage() {
   const user = await requireUser();
@@ -15,9 +16,16 @@ export default async function MessagesPage() {
 
   if (!chats) {
     return (
-      <div className="rounded-xl border border-red-200 bg-red-50 p-8 text-center">
+      <div role="alert" className="rounded-xl border border-red-200 bg-red-50 p-8 text-center">
         <h2 className="text-lg font-bold text-red-700">Mesajlar yüklenemedi</h2>
-        <p className="text-sm text-red-600">Lütfen daha sonra tekrar deneyin.</p>
+        <p className="text-sm text-red-600 mt-1">Lütfen daha sonra tekrar deneyin.</p>
+        <Link
+          href="/dashboard/messages"
+          className="mt-4 inline-flex items-center gap-2 rounded-lg bg-red-600 px-4 py-2 text-sm font-semibold text-white hover:bg-red-700 transition-colors"
+        >
+          <RefreshCw size={15} />
+          Tekrar Dene
+        </Link>
       </div>
     );
   }

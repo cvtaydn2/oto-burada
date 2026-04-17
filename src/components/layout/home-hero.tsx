@@ -36,10 +36,11 @@ export function HomeHero({ cities }: HomeHeroProps) {
         >
           
           <div className="flex-1">
-            <label className="block text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-1 pl-1">Marka / Model</label>
+            <label htmlFor="hero-query" className="block text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-1 pl-1">Marka / Model</label>
             <div className="relative">
-              <CarFront size={16} className="absolute left-3 top-3 text-muted-foreground" />
+              <CarFront size={16} className="absolute left-3 top-3 text-muted-foreground" aria-hidden="true" />
               <input 
+                id="hero-query"
                 type="text" 
                 name="query"
                 placeholder="Örn: BMW 3 Serisi" 
@@ -49,10 +50,11 @@ export function HomeHero({ cities }: HomeHeroProps) {
           </div>
 
           <div className="flex-1">
-            <label className="block text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-1 pl-1">Şehir</label>
+            <label htmlFor="hero-city" className="block text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-1 pl-1">Şehir</label>
             <div className="relative">
-              <MapPin size={16} className="absolute left-3 top-3 text-muted-foreground" />
+              <MapPin size={16} className="absolute left-3 top-3 text-muted-foreground" aria-hidden="true" />
               <select 
+                id="hero-city"
                 name="city"
                 defaultValue=""
                 className="w-full bg-muted border border-border text-foreground rounded-lg focus:border-primary focus:ring-1 focus:ring-primary block pl-10 p-2.5 outline-none appearance-none cursor-pointer"
@@ -66,20 +68,24 @@ export function HomeHero({ cities }: HomeHeroProps) {
           </div>
 
           <div className="flex-1">
-            <label className="block text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-1 pl-1">Fiyat Aralığı</label>
+            <label htmlFor="hero-min-price" className="block text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-1 pl-1">Fiyat Aralığı</label>
             <div className="flex space-x-2">
               <input 
+                id="hero-min-price"
                 type="number" 
                 name="minPrice"
                 placeholder="Min TL" 
                 min={0}
+                aria-label="Minimum fiyat (TL)"
                 className="w-1/2 bg-muted border border-border text-foreground rounded-lg focus:border-primary focus:ring-1 focus:ring-primary block p-2.5 outline-none text-sm transition" 
               />
               <input 
+                id="hero-max-price"
                 type="number" 
                 name="maxPrice"
                 placeholder="Maks TL" 
                 min={0}
+                aria-label="Maksimum fiyat (TL)"
                 className="w-1/2 bg-muted border border-border text-foreground rounded-lg focus:border-primary focus:ring-1 focus:ring-primary block p-2.5 outline-none text-sm transition" 
               />
             </div>
