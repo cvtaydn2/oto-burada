@@ -856,6 +856,20 @@ export async function updateDatabaseListing(listing: Listing): Promise<UpdateLis
     .eq("id", listing.id);
 
   if (updateResult.error) {
+    // Gerçek DB hatasını logla — 400 hatalarının nedenini görmek için kritik
+    logger.listings.error("updateDatabaseListing DB PATCH failed", updateResult.error, {
+      listingId: listing.id,
+      errorCode: updateResult.error.code,
+      errorMessage: updateResult.error.message,
+      errorDetails: updateResult.error.details,
+      errorHint: updateResult.error.hint,
+    });
+    console.error("[listings] DB PATCH 400:", {
+      code: updateResult.error.code,
+      message: updateResult.error.message,
+      details: updateResult.error.details,
+      hint: updateResult.error.hint,
+    });
     if (updateResult.error.message.includes("slug_unique") || updateResult.error.code === "23505") {
       return { error: "slug_collision" };
     }
@@ -920,7 +934,15 @@ export function mapListingToDatabaseRow(listing: Listing) {
     featured: listing.featured,
     updated_at: listing.updatedAt,
     tramer_amount: listing.tramerAmount ?? null,
-    damage_status_json: listing.damageStatusJson ?? null,
+    // damage_status_json: DB CHECK constraint'e uygun değerlere normalize et
+    // "orjinal" değerleri DB'ye göndermeden filtrele (constraint "orijinal" veya null bekliyor)
+    damage_status_json: listing.damageStatusJson && Object.keys(listing.damageStatusJson).length > 0
+      ? Object.fromEntries(
+          Object.entries(listing.damageStatusJson)
+            .map(([k, v]) => [k, v === "orjinal" ? "orijinal" : v])
+            .filter(([, v]) => ["orijinal", "boyali", "lokal_boyali", "degisen", "hasarli", "belirtilmemis", "bilinmiyor"].includes(v as string))
+        )
+      : null,
     fraud_score: listing.fraudScore ?? 0,
     fraud_reason: listing.fraudReason ?? null,
     featured_until: listing.featuredUntil ?? null,
