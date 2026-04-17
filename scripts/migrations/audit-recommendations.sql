@@ -195,54 +195,82 @@ ALTER TABLE public.eids_audit_logs
   ALTER COLUMN verified_by DROP NOT NULL;
 
 -- ── 4. damage_status_json CHECK Constraint ───────────────────────────────────
--- Enforce that damage_status_json only contains known car part keys
--- and valid status values. Prevents garbage data from reaching the DB.
+-- PostgreSQL CHECK constraint'leri subquery kabul etmez.
+-- Çözüm: Doğrulama mantığını IMMUTABLE bir fonksiyona taşı,
+-- CHECK constraint sadece bu fonksiyonu çağırsın.
 --
--- Valid part keys (Turkish car body parts):
---   kaput, tavan, on_tampon, arka_tampon, on_sol_camurluk, on_sag_camurluk,
---   arka_sol_camurluk, arka_sag_camurluk, sol_on_kapi, sag_on_kapi,
---   sol_arka_kapi, sag_arka_kapi, bagaj, sol_far, sag_far, on_cam, arka_cam
---
--- Valid status values: 'orijinal' | 'boyali' | 'degisen' | 'hasarli'
+-- ÖNEMLİ: Constraint eklenmeden önce mevcut geçersiz veriler temizlenir.
+-- Geçersiz damage_status_json değerleri NULL'a çekilir (veri kaybı yok —
+-- zaten geçersiz/anlamsız verilerdi).
 
+DROP FUNCTION IF EXISTS public.is_valid_damage_status_json(jsonb);
+
+CREATE OR REPLACE FUNCTION public.is_valid_damage_status_json(data jsonb)
+RETURNS boolean
+LANGUAGE plpgsql
+IMMUTABLE
+SECURITY DEFINER
+SET search_path = 'public'
+AS $$
+DECLARE
+  valid_parts  text[] := ARRAY[
+    'kaput', 'tavan', 'on_tampon', 'arka_tampon',
+    'on_sol_camurluk', 'on_sag_camurluk',
+    'arka_sol_camurluk', 'arka_sag_camurluk',
+    'sol_on_kapi', 'sag_on_kapi',
+    'sol_arka_kapi', 'sag_arka_kapi',
+    'bagaj', 'sol_far', 'sag_far',
+    'on_cam', 'arka_cam',
+    'sol_yan_ayna', 'sag_yan_ayna',
+    'tavan_penceresi', 'stepne_kapagi'
+  ];
+  valid_values text[] := ARRAY[
+    'orijinal', 'boyali', 'degisen', 'hasarli', 'belirtilmemis'
+  ];
+  rec record;
+BEGIN
+  -- NULL geçerli — hasar kaydı opsiyonel
+  IF data IS NULL THEN
+    RETURN true;
+  END IF;
+
+  -- Object olmalı (array veya scalar değil)
+  IF jsonb_typeof(data) <> 'object' THEN
+    RETURN false;
+  END IF;
+
+  -- Her key ve value'yu kontrol et
+  FOR rec IN SELECT key, value FROM jsonb_each_text(data)
+  LOOP
+    IF rec.key <> ALL(valid_parts) THEN
+      RETURN false;
+    END IF;
+    IF rec.value <> ALL(valid_values) THEN
+      RETURN false;
+    END IF;
+  END LOOP;
+
+  RETURN true;
+END;
+$$;
+
+-- Mevcut geçersiz verileri temizle: constraint'e uymayan satırları NULL'a çek.
+-- Bu satırların kaç tane olduğunu önce görmek isterseniz:
+--   SELECT id, damage_status_json FROM public.listings
+--   WHERE damage_status_json IS NOT NULL
+--     AND NOT public.is_valid_damage_status_json(damage_status_json);
+UPDATE public.listings
+SET damage_status_json = NULL
+WHERE damage_status_json IS NOT NULL
+  AND NOT public.is_valid_damage_status_json(damage_status_json);
+
+-- Artık tüm mevcut veriler geçerli — constraint güvenle eklenebilir
 ALTER TABLE public.listings
   DROP CONSTRAINT IF EXISTS listings_damage_status_json_check;
 
 ALTER TABLE public.listings
   ADD CONSTRAINT listings_damage_status_json_check
-  CHECK (
-    damage_status_json IS NULL
-    OR (
-      -- Must be a JSON object (not array, not scalar)
-      jsonb_typeof(damage_status_json) = 'object'
-      AND
-      -- All keys must be known car parts
-      (
-        SELECT bool_and(
-          key IN (
-            'kaput', 'tavan', 'on_tampon', 'arka_tampon',
-            'on_sol_camurluk', 'on_sag_camurluk',
-            'arka_sol_camurluk', 'arka_sag_camurluk',
-            'sol_on_kapi', 'sag_on_kapi',
-            'sol_arka_kapi', 'sag_arka_kapi',
-            'bagaj', 'sol_far', 'sag_far',
-            'on_cam', 'arka_cam',
-            'sol_yan_ayna', 'sag_yan_ayna',
-            'tavan_penceresi', 'stepne_kapaği'
-          )
-        )
-        FROM jsonb_object_keys(damage_status_json) AS key
-      )
-      AND
-      -- All values must be valid status strings
-      (
-        SELECT bool_and(
-          value #>> '{}' IN ('orijinal', 'boyali', 'degisen', 'hasarli', 'belirtilmemis')
-        )
-        FROM jsonb_each(damage_status_json) AS kv(key, value)
-      )
-    )
-  );
+  CHECK (public.is_valid_damage_status_json(damage_status_json));
 
 -- ── Verification Queries ─────────────────────────────────────────────────────
 -- Run these after applying the migration to confirm everything worked:
@@ -307,5 +335,6 @@ ALTER TABLE public.listings
 --   FOREIGN KEY (verified_by) REFERENCES public.profiles(id);
 -- ALTER TABLE public.eids_audit_logs ALTER COLUMN verified_by SET NOT NULL;
 --
--- -- 4. Remove damage_status_json constraint
+-- -- 4. Remove damage_status_json constraint and function
 -- ALTER TABLE public.listings DROP CONSTRAINT IF EXISTS listings_damage_status_json_check;
+-- DROP FUNCTION IF EXISTS public.is_valid_damage_status_json(jsonb);
