@@ -1,10 +1,12 @@
 /**
- * POST /api/saved-searches/notify
+ * GET /api/saved-searches/notify  (Vercel Cron — GET)
+ * POST /api/saved-searches/notify (manual/internal trigger)
  *
  * Internal endpoint — called by a cron job or Supabase webhook when new listings
  * match saved searches with notifications_enabled = true.
  *
- * Security: requires CRON_SECRET header to prevent unauthorized calls.
+ * Security: requires CRON_SECRET header (Authorization: Bearer <secret>).
+ * Vercel automatically sends this header when CRON_SECRET env var is set.
  *
  * Flow:
  * 1. Fetch all saved searches with notifications_enabled = true
@@ -32,12 +34,26 @@ export const dynamic = "force-dynamic";
 // How far back to look for new listings (24 hours)
 const LOOKBACK_HOURS = 24;
 
-export async function POST(request: Request) {
-  // Verify cron secret to prevent unauthorized calls
+function verifyCronSecret(request: Request): boolean {
   const cronSecret = process.env.CRON_SECRET;
+  // CRON_SECRET must always be set in production — fail closed if missing
+  if (!cronSecret) return false;
   const authHeader = request.headers.get("authorization");
+  return authHeader === `Bearer ${cronSecret}`;
+}
 
-  if (cronSecret && authHeader !== `Bearer ${cronSecret}`) {
+// Vercel Cron sends GET requests — this is the primary handler
+export async function GET(request: Request) {
+  return handleCronRequest(request);
+}
+
+// POST kept for manual/internal triggers (e.g. admin panel, scripts)
+export async function POST(request: Request) {
+  return handleCronRequest(request);
+}
+
+async function handleCronRequest(request: Request) {
+  if (!verifyCronSecret(request)) {
     return apiError(API_ERROR_CODES.UNAUTHORIZED, "Yetkisiz erişim.", 401);
   }
 

@@ -108,9 +108,10 @@ export function OrganizationStructuredData({ name, url, logo, description }: Org
 interface ListingDetailStructuredDataProps {
   listing: Listing;
   url: string;
+  sellerName?: string;
 }
 
-export function ListingDetailStructuredData({ listing, url }: ListingDetailStructuredDataProps) {
+export function ListingDetailStructuredData({ listing, url, sellerName }: ListingDetailStructuredDataProps) {
   const schema = {
     "@context": "https://schema.org",
     "@type": "Vehicle",
@@ -137,7 +138,7 @@ export function ListingDetailStructuredData({ listing, url }: ListingDetailStruc
       "url": url,
       "seller": {
         "@type": "Person",
-        "name": "Satıcı"
+        "name": sellerName ?? "Satıcı"
       }
     },
     "image": listing.images.map(img => img.url)

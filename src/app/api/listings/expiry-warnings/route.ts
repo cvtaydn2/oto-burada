@@ -1,10 +1,12 @@
 /**
- * POST /api/listings/expiry-warnings
+ * GET /api/listings/expiry-warnings  (Vercel Cron — GET)
+ * POST /api/listings/expiry-warnings (manual/internal trigger)
  *
  * Sends expiry warning emails to sellers whose listings will expire in 7 days.
  * Called daily by Vercel Cron (see vercel.json).
  *
- * Security: requires CRON_SECRET header.
+ * Security: requires CRON_SECRET header (Authorization: Bearer <secret>).
+ * Vercel automatically sends this header when CRON_SECRET env var is set.
  */
 
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
@@ -19,11 +21,26 @@ export const dynamic = "force-dynamic";
 const EXPIRY_DAYS = 60;
 const WARN_DAYS_BEFORE = 7;
 
-export async function POST(request: Request) {
+function verifyCronSecret(request: Request): boolean {
   const cronSecret = process.env.CRON_SECRET;
+  // CRON_SECRET must always be set in production — fail closed if missing
+  if (!cronSecret) return false;
   const authHeader = request.headers.get("authorization");
+  return authHeader === `Bearer ${cronSecret}`;
+}
 
-  if (cronSecret && authHeader !== `Bearer ${cronSecret}`) {
+// Vercel Cron sends GET requests — this is the primary handler
+export async function GET(request: Request) {
+  return handleCronRequest(request);
+}
+
+// POST kept for manual/internal triggers (e.g. admin panel, scripts)
+export async function POST(request: Request) {
+  return handleCronRequest(request);
+}
+
+async function handleCronRequest(request: Request) {
+  if (!verifyCronSecret(request)) {
     return apiError(API_ERROR_CODES.UNAUTHORIZED, "Yetkisiz erişim.", 401);
   }
 
