@@ -42,6 +42,7 @@ const QUICK_FILTERS = [
 ]
 
 const PAGE_SIZE_OPTIONS = [12, 24, 48]
+const DEBOUNCE_DELAY_MS = 400
 
 interface ListingsPageClientProps {
   initialResult: {
@@ -108,7 +109,7 @@ export function ListingsPageClient({
       fn()
     } else {
       if (debounceTimerRef.current) clearTimeout(debounceTimerRef.current)
-      debounceTimerRef.current = setTimeout(fn, 400)
+      debounceTimerRef.current = setTimeout(fn, DEBOUNCE_DELAY_MS)
     }
   }, [router, startTransition])
 
@@ -255,7 +256,7 @@ export function ListingsPageClient({
               {isSortOpen && (
                 <>
                   {/* Backdrop */}
-                  <div className="fixed inset-0 z-40" onClick={() => setIsSortOpen(false)} aria-hidden="true" />
+                  <div className="fixed inset-0 z-40" onClick={() => setIsSortOpen(false)} aria-hidden="true" role="presentation" tabIndex={-1} />
                   <ul
                     role="listbox"
                     aria-label="Sıralama seçenekleri"

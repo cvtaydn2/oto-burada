@@ -141,12 +141,22 @@ export async function getAdminAnalytics(range: string = "30d"): Promise<AdminAna
     const trendDaysArr = Array.from({ length: Math.min(days, 14) }, (_, i) => {
       const d = new Date();
       d.setDate(d.getDate() - i);
-      return d.toISOString().split("T")[0];
+      // Yerel timezone offseti hesaba katarak güvenli bir UTC string ayıklaması
+      return new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().split("T")[0];
     }).reverse();
+
+    // PERFORMANS OPTİMİZASYONU: O(N*M)'i O(N)'e çeviriyoruz
+    const trendMap = new Map<string, number>();
+    if (trendData && Array.isArray(trendData)) {
+      for (const item of trendData as Array<{ created_at: string }>) {
+        const itemDateStr = item.created_at.split("T")[0];
+        trendMap.set(itemDateStr, (trendMap.get(itemDateStr) ?? 0) + 1);
+      }
+    }
 
     const trends = trendDaysArr.map((date) => ({
       date,
-      listings: (trendData as Array<{ created_at: string }>)?.filter((l) => l.created_at.startsWith(date)).length ?? 0,
+      listings: trendMap.get(date) ?? 0,
     }));
 
     const marketTrends = (marketStatsResult || [])

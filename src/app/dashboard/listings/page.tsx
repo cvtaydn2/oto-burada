@@ -68,8 +68,8 @@ export default async function DashboardListingsPage({ searchParams }: DashboardL
     <div className="space-y-8">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h2 className="text-3xl font-black text-slate-800 tracking-tight">İlanlarım</h2>
-          <p className="mt-1 text-sm text-slate-500 font-medium italic">
+          <h2 className="text-3xl font-black text-foreground tracking-tight">İlanlarım</h2>
+          <p className="mt-1 text-sm text-muted-foreground font-medium italic">
             Toplam {storedListings.length} ilandan {storedListings.filter((l) => l.status === "approved").length} tanesi yayında.
           </p>
         </div>
@@ -119,10 +119,10 @@ export default async function DashboardListingsPage({ searchParams }: DashboardL
         initialShowForm={hasRequestedCreate && !isEditingExisting}
         listings={storedListings}
       >
-        <div className="mt-8 bg-white rounded-3xl border border-slate-200 p-8 shadow-sm">
-          <div className="mb-8 pb-6 border-b border-slate-100">
-             <h3 className="text-xl font-black text-slate-800">{isEditingExisting ? "İlanı Düzenle" : "Hızlı İlan Oluştur"}</h3>
-             <p className="text-sm text-slate-400 font-medium mt-1">Gerekli bilgileri eksiksiz doldurarak ilanınızı yayınlayın.</p>
+        <div className="mt-8 bg-card rounded-3xl border border-border p-8 shadow-sm">
+          <div className="mb-8 pb-6 border-b border-border/50">
+             <h3 className="text-xl font-black text-foreground">{isEditingExisting ? "İlanı Düzenle" : "Hızlı İlan Oluştur"}</h3>
+             <p className="text-sm text-muted-foreground/70 font-medium mt-1">Gerekli bilgileri eksiksiz doldurarak ilanınızı yayınlayın.</p>
           </div>
           <ListingCreateForm
             key={selectedListing?.id ?? "create-listing"}

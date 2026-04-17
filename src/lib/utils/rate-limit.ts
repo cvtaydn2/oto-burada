@@ -33,12 +33,24 @@ import { logger } from "@/lib/utils/logger";
 
 const inMemoryStore = new Map<string, RateLimitEntry>();
 
+let lastCleanup = Date.now();
+const CLEANUP_INTERVAL_MS = 60 * 1000; // 1 dakika
+const MAX_DELETIONS_PER_CLEANUP = 1000; // Event-loop bloklanmasını önlemek için limit
+
 function cleanupInMemory() {
   const now = Date.now();
+  if (now - lastCleanup < CLEANUP_INTERVAL_MS) return;
+  lastCleanup = now;
+
+  let deletedCount = 0;
   for (const [key, entry] of inMemoryStore) {
     if (entry.resetAt <= now) {
       inMemoryStore.delete(key);
+      deletedCount++;
     }
+    // Rate limit attack'lerinde bellekte milyonlarca key biriktiğinde 
+    // garbage collection veya the loop bloklanmasın diye:
+    if (deletedCount >= MAX_DELETIONS_PER_CLEANUP) break;
   }
 }
 

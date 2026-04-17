@@ -10,7 +10,7 @@ export default async function AdminLayout({
   await requireAdminUser();
 
   return (
-    <div className="flex min-h-screen bg-slate-50/20">
+    <div className="flex min-h-screen bg-background">
       {/* Skip navigation */}
       <a
         href="#admin-main"
@@ -27,13 +27,13 @@ export default async function AdminLayout({
             {children}
          </main>
          
-         <footer className="p-10 text-center flex flex-col items-center gap-2 border-t border-slate-100 bg-white shadow-[0_-4px_20px_rgba(0,0,0,0.02)]">
+         <footer className="p-10 text-center flex flex-col items-center gap-2 border-t border-border bg-card shadow-[0_-4px_20px_rgba(0,0,0,0.02)]">
             <div className="flex items-center gap-2 opacity-30 grayscale hover:opacity-100 hover:grayscale-0 transition-all cursor-default" aria-hidden="true">
                <div className="size-1 rounded-full bg-blue-600" />
-               <span className="text-[9px] font-black text-slate-800 uppercase tracking-[0.2em]">OtoBurada Engine</span>
+               <span className="text-[9px] font-black text-foreground uppercase tracking-[0.2em]">OtoBurada Engine</span>
                <div className="size-1 rounded-full bg-blue-600" />
             </div>
-            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest italic">
+            <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest italic">
                Control Center &mdash; MVP
             </p>
          </footer>

@@ -39,11 +39,11 @@ export async function SiteHeader() {
               <CarFront size={18} className="stroke-[2.5]" />
             </div>
             <span className="text-xl font-bold tracking-tight text-blue-500">
-              Oto<span className="text-slate-900">Burada</span>
+              Oto<span className="text-foreground">Burada</span>
             </span>
           </Link>
 
-          <nav className="hidden items-center gap-6 text-sm font-medium text-gray-600 lg:flex">
+          <nav className="hidden items-center gap-6 text-sm font-medium text-muted-foreground lg:flex">
             <Link href="/listings" className="hover:text-blue-500 transition-colors">İlanlar</Link>
             <Link href="/compare" className="hover:text-blue-500 transition-colors">Karşılaştır</Link>
           </nav>
