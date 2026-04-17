@@ -2,6 +2,8 @@
 
 import { useEffect, useRef } from "react";
 import { MapPin } from "lucide-react";
+// Leaflet CSS — npm paketinden, CSP uyumlu (unpkg.com CDN'e bağımlılık yok)
+import "leaflet/dist/leaflet.css";
 
 interface ListingMapProps {
   city: string;
@@ -43,15 +45,6 @@ export function ListingMap({ city, district, className = "" }: ListingMapProps) 
 
   useEffect(() => {
     if (!mapRef.current || mapInstanceRef.current) return;
-
-    // Leaflet CSS'i dinamik olarak yükle
-    if (!document.getElementById("leaflet-css")) {
-      const link = document.createElement("link");
-      link.id = "leaflet-css";
-      link.rel = "stylesheet";
-      link.href = "https://unpkg.com/leaflet@1.9.4/dist/leaflet.css";
-      document.head.appendChild(link);
-    }
 
     const coords = getCoords(city);
 

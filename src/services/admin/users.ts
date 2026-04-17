@@ -5,6 +5,7 @@ import { revalidatePath } from "next/cache";
 import { Profile } from "@/types/domain";
 import { logger } from "@/lib/utils/logger";
 import { captureServerError } from "@/lib/monitoring/posthog-server";
+import { createDatabaseNotification } from "@/services/notifications/notification-records";
 
 interface ProfileRow {
   id: string;
@@ -304,6 +305,19 @@ export async function grantCreditsToUser(
     target_id: userId,
     target_type: "user",
   });
+
+  // Kullanıcıya in-app bildirim gönder
+  await createDatabaseNotification({
+    userId,
+    type: "system",
+    title: "Krediniz güncellendi",
+    message: `Hesabınıza ${credits} kredi tanımlandı. Kredilerinizi ilan öne çıkarma ve doping özelliklerinde kullanabilirsiniz.`,
+    href: "/dashboard/pricing",
+  }).catch((err) => {
+    // Bildirim kritik değil — başarısız olsa da kredi işlemi tamamlandı
+    logger.admin.warn("Credit notification failed", { userId, credits }, err);
+  });
+
   revalidatePath("/admin/users");
   revalidatePath(`/admin/users/${userId}`);
   return { success: true };

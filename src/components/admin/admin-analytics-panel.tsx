@@ -44,7 +44,7 @@ export function AdminAnalyticsPanel({ data }: AdminAnalyticsPanelProps) {
              <div className="size-1.5 rounded-full bg-blue-500" />
              <h3 className="text-[11px] font-black text-slate-400 uppercase tracking-[0.2em] italic">İlan Durumu Dağılımı</h3>
           </div>
-          <div className="h-[250px] min-h-[250px] w-full flex-1">
+          <div className="h-[250px] w-full overflow-hidden">
             {statusData.length > 0 ? (
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
@@ -88,7 +88,7 @@ export function AdminAnalyticsPanel({ data }: AdminAnalyticsPanelProps) {
              <div className="size-1.5 rounded-full bg-indigo-500" />
              <h3 className="text-[11px] font-black text-slate-400 uppercase tracking-[0.2em] italic">İlan Trendi (Son 7 Gün)</h3>
           </div>
-          <div className="h-[250px] min-h-[250px] w-full">
+          <div className="h-[250px] w-full overflow-hidden">
             {(data.recentTrends || []).length > 0 ? (
               <ResponsiveContainer width="100%" height="100%">
                 <LineChart data={data.recentTrends}>
@@ -146,7 +146,7 @@ export function AdminAnalyticsPanel({ data }: AdminAnalyticsPanelProps) {
            <div className="size-1.5 rounded-full bg-emerald-500" />
            <h3 className="text-[11px] font-black text-slate-400 uppercase tracking-[0.2em] italic">Marka Bazlı Kapasite (Top 5)</h3>
         </div>
-        <div className="h-[250px] min-h-[250px] w-full">
+        <div className="h-[250px] w-full overflow-hidden">
           {(data.listingsByBrand || []).length > 0 ? (
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={(data.listingsByBrand || []).slice(0, 5)} layout="vertical" margin={{ left: 20 }}>

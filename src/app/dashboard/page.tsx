@@ -27,11 +27,6 @@ export const dynamic = "force-dynamic";
 
 export default async function DashboardPage() {
   const user = await requireUser();
-  const metadata = user.user_metadata as {
-    city?: string;
-    full_name?: string;
-    phone?: string;
-  };
 
   // Promise'leri hemen başlat, await etme — Suspense içinde resolve edilecek
   const listingsPromise = getStoredUserListings(user.id);
@@ -90,7 +85,6 @@ export default async function DashboardPage() {
         <DashboardDataSection
           favoriteCountPromise={favoriteCountPromise}
           listingsPromise={listingsPromise}
-          metadata={metadata}
           profilePromise={profilePromise}
           user={user}
         />
@@ -102,17 +96,11 @@ export default async function DashboardPage() {
 async function DashboardDataSection({
   favoriteCountPromise,
   listingsPromise,
-  metadata,
   profilePromise,
   user,
 }: {
   favoriteCountPromise: Promise<number>;
   listingsPromise: Promise<Awaited<ReturnType<typeof getStoredUserListings>>>;
-  metadata: {
-    city?: string;
-    full_name?: string;
-    phone?: string;
-  };
   profilePromise: Promise<Awaited<ReturnType<typeof getStoredProfileById>>>;
   user: Awaited<ReturnType<typeof requireUser>>;
 }) {
@@ -124,9 +112,6 @@ async function DashboardDataSection({
   const profile = storedProfile ?? buildProfileFromAuthUser(user);
   const pendingListingsCount = storedListings.filter((listing) => listing.status === "pending").length;
   const approvedListingsCount = storedListings.filter((listing) => listing.status === "approved").length;
-  const profileCompletion = Math.round(
-    ([metadata.full_name, metadata.phone, metadata.city].filter(Boolean).length / 3) * 100,
-  );
 
   return (
     <>
@@ -193,11 +178,11 @@ async function DashboardDataSection({
             trend: null,
           },
           {
-            label: "Profil Doluluğu",
-            value: `${profileCompletion}%`,
-            icon: User,
+            label: "Kredi Bakiyesi",
+            value: profile?.balanceCredits ?? 0,
+            icon: Zap,
             color: "indigo",
-            sub: profileCompletion === 100 ? "Tamamlandı" : "Eksik alanlar var",
+            sub: "İlan öne çıkarma için",
             trend: null,
           },
         ].map((stat) => (
@@ -224,6 +209,31 @@ async function DashboardDataSection({
           </div>
         ))}
       </div>
+
+      {/* Kredi bilgi banner'ı — sadece kredi varsa göster */}
+      {(profile?.balanceCredits ?? 0) > 0 && (
+        <div className="flex items-center justify-between gap-4 rounded-2xl border border-indigo-100 bg-indigo-50 px-6 py-4">
+          <div className="flex items-center gap-3">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-indigo-100 text-indigo-600">
+              <Zap size={18} />
+            </div>
+            <div>
+              <p className="text-sm font-bold text-indigo-900">
+                {profile?.balanceCredits} krediniz var
+              </p>
+              <p className="text-xs text-indigo-600">
+                Kredilerinizi ilanlarınızı öne çıkarmak, acil satılık veya vitrin özelliği için kullanabilirsiniz.
+              </p>
+            </div>
+          </div>
+          <Link
+            href="/dashboard/pricing"
+            className="shrink-0 rounded-xl bg-indigo-600 px-4 py-2 text-xs font-bold text-white hover:bg-indigo-700 transition-colors"
+          >
+            Paketleri Gör
+          </Link>
+        </div>
+      )}
 
       <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
         <div className="space-y-6 lg:col-span-2">

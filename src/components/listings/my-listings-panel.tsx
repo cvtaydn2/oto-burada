@@ -13,7 +13,7 @@ import {
 import { formatCurrency, formatNumber } from "@/lib/utils";
 import type { Listing } from "@/types";
 import {
-  Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger,
+  Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger,
 } from "@/components/ui/dialog";
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel,
@@ -449,6 +449,9 @@ function ListingCard({
             <DialogContent className="sm:max-w-xl rounded-2xl border-none">
               <DialogHeader>
                 <DialogTitle className="text-2xl font-black">İlanını <span className="text-blue-600">Öne Çıkar</span></DialogTitle>
+                <DialogDescription className="sr-only">
+                  İlanınızı öne çıkarmak için doping paketi seçin.
+                </DialogDescription>
               </DialogHeader>
               <ListingDopingPanel listingId={listing.id} listingTitle={listing.title} />
             </DialogContent>

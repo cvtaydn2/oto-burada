@@ -24,11 +24,11 @@ const SECURITY_HEADERS = {
   // - frame-ancestors 'none': equivalent to X-Frame-Options DENY
   "Content-Security-Policy": [
     "default-src 'self'",
-    "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://va.vercel-scripts.com",
-    "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
-    "font-src 'self' https://fonts.gstatic.com",
-    "img-src 'self' data: blob: https://*.supabase.co https://images.unsplash.com",
-    "connect-src 'self' https://*.supabase.co https://*.posthog.com https://*.upstash.io wss://*.supabase.co",
+    "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://va.vercel-scripts.com https://cdn.vercel-insights.com",
+    "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://unpkg.com",
+    "font-src 'self' https://fonts.gstatic.com https://unpkg.com",
+    "img-src 'self' data: blob: https://*.supabase.co https://images.unsplash.com https://*.tile.openstreetmap.org https://unpkg.com",
+    "connect-src 'self' https://*.supabase.co https://*.posthog.com https://*.upstash.io wss://*.supabase.co https://nominatim.openstreetmap.org",
     "media-src 'self' blob: https://*.supabase.co",
     "object-src 'none'",
     "base-uri 'self'",
