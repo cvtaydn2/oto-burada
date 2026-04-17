@@ -20,8 +20,8 @@ export default function Error({
   }, [error]);
 
   return (
-    <div className="flex min-h-[400px] flex-col items-center justify-center p-8 text-center">
-      <div className="mb-6 rounded-full bg-red-100 p-4">
+    <div role="alert" className="flex min-h-[400px] flex-col items-center justify-center p-8 text-center">
+      <div className="mb-6 rounded-full bg-red-100 p-4" aria-hidden="true">
         <AlertTriangle className="size-8 text-red-600" />
       </div>
       <h2 className="mb-2 text-2xl font-bold">Bir şeyler ters gitti</h2>

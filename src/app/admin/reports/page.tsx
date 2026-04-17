@@ -79,20 +79,20 @@ export default async function AdminReportsPage({ searchParams }: { searchParams:
         <div className="space-y-6">
           <div className="grid gap-4">
              <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm hover:border-blue-100 transition-all group">
-                <span className="mb-2 block text-[10px] font-black text-slate-400 uppercase tracking-widest group-hover:text-blue-600 transition-colors">Açık</span>
-                <span className="text-3xl font-black text-slate-800 tracking-tighter">{actionableReports.filter(r => r.status === "open").length}</span>
+                <span className="mb-2 block text-[10px] font-black text-slate-400 uppercase tracking-widest group-hover:text-blue-600 transition-colors" aria-hidden="true">Açık</span>
+                <span className="text-3xl font-black text-slate-800 tracking-tighter" aria-label={`Açık şikayet: ${actionableReports.filter(r => r.status === "open").length}`}>{actionableReports.filter(r => r.status === "open").length}</span>
              </div>
              <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm hover:border-blue-100 transition-all group">
-                <span className="mb-2 block text-[10px] font-black text-slate-400 uppercase tracking-widest group-hover:text-amber-600 transition-colors">İncelemede</span>
-                <span className="text-3xl font-black text-slate-800 tracking-tighter">{actionableReports.filter(r => r.status === "reviewing").length}</span>
+                <span className="mb-2 block text-[10px] font-black text-slate-400 uppercase tracking-widest group-hover:text-amber-600 transition-colors" aria-hidden="true">İncelemede</span>
+                <span className="text-3xl font-black text-slate-800 tracking-tighter" aria-label={`İncelemede: ${actionableReports.filter(r => r.status === "reviewing").length}`}>{actionableReports.filter(r => r.status === "reviewing").length}</span>
              </div>
              <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm hover:border-blue-100 transition-all group">
-                <span className="mb-2 block text-[10px] font-black text-slate-400 uppercase tracking-widest group-hover:text-emerald-600 transition-colors">Çözüldü</span>
-                <span className="text-3xl font-black text-emerald-600 tracking-tighter">{storedReports.filter(r => r.status === "resolved").length}</span>
+                <span className="mb-2 block text-[10px] font-black text-slate-400 uppercase tracking-widest group-hover:text-emerald-600 transition-colors" aria-hidden="true">Çözüldü</span>
+                <span className="text-3xl font-black text-emerald-600 tracking-tighter" aria-label={`Çözülen şikayet: ${storedReports.filter(r => r.status === "resolved").length}`}>{storedReports.filter(r => r.status === "resolved").length}</span>
              </div>
              <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm hover:border-blue-100 transition-all group">
-                <span className="mb-2 block text-[10px] font-black text-slate-400 uppercase tracking-widest group-hover:text-slate-600 transition-colors">Geçersiz</span>
-                <span className="text-3xl font-black text-slate-400 tracking-tighter">{storedReports.filter(r => r.status === "dismissed").length}</span>
+                <span className="mb-2 block text-[10px] font-black text-slate-400 uppercase tracking-widest group-hover:text-slate-600 transition-colors" aria-hidden="true">Geçersiz</span>
+                <span className="text-3xl font-black text-slate-400 tracking-tighter" aria-label={`Geçersiz şikayet: ${storedReports.filter(r => r.status === "dismissed").length}`}>{storedReports.filter(r => r.status === "dismissed").length}</span>
              </div>
           </div>
 

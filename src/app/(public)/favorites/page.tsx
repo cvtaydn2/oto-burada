@@ -18,8 +18,8 @@ export default async function FavoritesPage() {
       <div className="flex flex-col justify-between gap-5 md:flex-row md:items-end">
         <div className="max-w-2xl">
            <div className="mb-4 flex items-center gap-3">
-              <Link href="/" className="flex size-10 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-600 transition-transform hover:bg-slate-50">
-                 <ChevronLeft className="size-4" />
+              <Link href="/" aria-label="Ana sayfaya dön" className="flex size-10 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-600 transition-transform hover:bg-slate-50">
+                 <ChevronLeft className="size-4" aria-hidden="true" />
               </Link>
               <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Kişisel envanter</span>
            </div>

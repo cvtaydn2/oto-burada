@@ -82,7 +82,7 @@ export function AdminSidebar() {
   const pathname = usePathname();
 
   return (
-    <aside className="fixed left-0 top-0 hidden h-screen w-72 flex-col border-r border-slate-200 bg-white md:flex z-50">
+    <aside aria-label="Admin paneli navigasyonu" className="fixed left-0 top-0 hidden h-screen w-72 flex-col border-r border-slate-200 bg-white md:flex z-50">
       <div className="flex h-20 items-center px-8 border-b border-slate-100">
         <Link href="/" className="flex items-center gap-3 group">
           <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-600 text-white shadow-lg shadow-blue-100 transition-all group-hover:scale-110 group-hover:rotate-3">
@@ -99,7 +99,7 @@ export function AdminSidebar() {
         </Link>
       </div>
 
-      <nav className="flex-1 overflow-y-auto p-6 space-y-1.5 custom-scrollbar">
+      <nav aria-label="Admin menü" className="flex-1 overflow-y-auto p-6 space-y-1.5 custom-scrollbar">
         <div className="mb-4">
            <span className="px-4 text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em]">Ana Menü</span>
         </div>
@@ -109,6 +109,7 @@ export function AdminSidebar() {
             <Link
               key={item.href}
               href={item.href}
+              aria-current={isActive ? "page" : undefined}
               className={cn(
                 "group flex items-center gap-3 rounded-xl px-4 py-3.5 text-sm font-bold transition-all relative overflow-hidden",
                 isActive 
