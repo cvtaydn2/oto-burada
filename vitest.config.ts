@@ -9,6 +9,34 @@ export default defineConfig({
     globals: true,
     setupFiles: ['./src/test/setup.ts'],
     include: ['src/**/*.test.{ts,tsx}'],
-    exclude: ['node_modules', '.next', 'tests', 'src/**/*.int.test.{ts,tsx}'], // Keep integration and playwright tests separate
+    exclude: ['node_modules', '.next', 'tests', 'src/**/*.int.test.{ts,tsx}'],
+    coverage: {
+      provider: 'v8',
+      reporter: ['text', 'json', 'html', 'lcov'],
+      reportsDirectory: './coverage',
+      // Target: 90%+ on business-critical paths
+      thresholds: {
+        lines: 80,
+        functions: 80,
+        branches: 75,
+        statements: 80,
+      },
+      include: [
+        'src/services/**/*.ts',
+        'src/lib/utils/**/*.ts',
+        'src/lib/validators/**/*.ts',
+        'src/lib/security/**/*.ts',
+      ],
+      exclude: [
+        'src/**/*.test.ts',
+        'src/**/*.test.tsx',
+        'src/**/__tests__/**',
+        'src/test/**',
+        'src/**/*.d.ts',
+        // DB-dependent services — covered by integration tests
+        'src/services/*/listing-submissions.ts',
+        'src/services/*/marketplace-listings.ts',
+      ],
+    },
   },
 });

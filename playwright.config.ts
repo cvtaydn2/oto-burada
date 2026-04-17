@@ -5,11 +5,18 @@ export default defineConfig({
   fullyParallel: true,
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 2 : 0,
-  workers: process.env.CI ? 1 : undefined,
-  reporter: 'html',
+  workers: process.env.CI ? 2 : undefined,
+  reporter: process.env.CI
+    ? [['github'], ['html', { open: 'never' }]]
+    : [['html', { open: 'never' }]],
   use: {
     baseURL: process.env.BASE_URL || 'http://localhost:3000',
     trace: 'on-first-retry',
+    screenshot: 'only-on-failure',
+    video: 'retain-on-failure',
+    // Consistent locale for Turkish content assertions
+    locale: 'tr-TR',
+    timezoneId: 'Europe/Istanbul',
   },
   projects: [
     {
@@ -17,13 +24,30 @@ export default defineConfig({
       use: { ...devices['Desktop Chrome'] },
     },
     {
+      name: 'firefox',
+      use: { ...devices['Desktop Firefox'] },
+    },
+    {
       name: 'Mobile Chrome',
       use: { ...devices['Pixel 5'] },
     },
+    {
+      name: 'Mobile Safari',
+      use: { ...devices['iPhone 13'] },
+    },
   ],
-  webServer: {
-    command: 'npm run dev',
-    url: 'http://localhost:3000',
-    reuseExistingServer: !process.env.CI,
-  },
+  // In CI: use pre-built production server (faster, closer to real deployment)
+  // Locally: reuse existing dev server if running
+  webServer: process.env.CI
+    ? {
+        command: 'npm run build && npm run start',
+        url: 'http://localhost:3000',
+        timeout: 120_000,
+        reuseExistingServer: false,
+      }
+    : {
+        command: 'npm run dev',
+        url: 'http://localhost:3000',
+        reuseExistingServer: true,
+      },
 });
