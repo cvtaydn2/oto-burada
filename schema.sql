@@ -99,6 +99,9 @@ $$;
 
 create extension if not exists pg_cron;
 
+-- NOTE: The raw cron job below is superseded by run_expire_old_listings() wrapper
+-- defined in scripts/migrations/audit-recommendations.sql (adds logging).
+-- For new environments, run that migration after this schema.
 -- Automatically archive approved listings older than 30 days
 do $$
 begin
@@ -308,7 +311,7 @@ create table if not exists public.admin_actions (
 
 create table if not exists public.payments (
   id uuid primary key default gen_random_uuid(),
-  user_id uuid not null references public.profiles (id) on delete cascade,
+  user_id uuid references public.profiles (id) on delete set null, -- SET NULL: payment records survive user deletion (KVKK/accounting)
   amount decimal(12,2) not null,
   currency text not null default 'TRY',
   provider text not null, -- 'stripe', 'iyzico', 'manual'
@@ -335,8 +338,8 @@ create policy "pricing_plans_select_all" on public.pricing_plans for select usin
 
 create table if not exists public.eids_audit_logs (
   id uuid primary key default gen_random_uuid(),
-  listing_id uuid not null references public.listings (id) on delete cascade,
-  verified_by uuid not null references public.profiles (id),
+  listing_id uuid references public.listings (id) on delete set null, -- SET NULL: audit log survives listing deletion (legal record)
+  verified_by uuid references public.profiles (id) on delete set null, -- SET NULL: log survives verifier account deletion
   verification_method text not null, -- 'e-devlet', 'manual'
   status text not null, -- 'success', 'denied'
   raw_response jsonb, -- Sanitized response from gov gateway
@@ -630,10 +633,24 @@ begin
 end;
 $$;
 -- Generated tsvector column for fast text search across listing fields.
+-- Uses turkish_unaccent config: Turkish stemming + diacritic normalization
+-- (ş→s, ğ→g, ı→i, ö→o, ü→u) so "satilik" matches "satılık".
+
+CREATE EXTENSION IF NOT EXISTS unaccent;
+
+DO $$
+BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_ts_config WHERE cfgname = 'turkish_unaccent') THEN
+    CREATE TEXT SEARCH CONFIGURATION turkish_unaccent (COPY = turkish);
+    ALTER TEXT SEARCH CONFIGURATION turkish_unaccent
+      ALTER MAPPING FOR hword, hword_part, word
+      WITH unaccent, turkish_stem;
+  END IF;
+END $$;
 
 alter table public.listings add column if not exists
   search_vector tsvector generated always as (
-    to_tsvector('simple',
+    to_tsvector('turkish_unaccent',
       coalesce(title, '') || ' ' ||
       coalesce(brand, '') || ' ' ||
       coalesce(model, '') || ' ' ||
