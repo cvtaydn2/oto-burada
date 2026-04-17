@@ -1,5 +1,5 @@
 import { hasSupabaseEnv, hasSupabaseAdminEnv } from "@/lib/supabase/env";
-import { captureServerEvent } from "@/lib/monitoring/posthog-server";
+import { captureServerError, captureServerEvent } from "@/lib/monitoring/posthog-server";
 import { apiSuccess, apiError, API_ERROR_CODES } from "@/lib/utils/api-response";
 import { requireApiUser } from "@/lib/auth/api-user";
 import { isValidRequestOrigin } from "@/lib/security";
@@ -99,6 +99,7 @@ export async function POST(request: Request) {
   const favoriteIds = await addDatabaseFavorite(userOrError.id, listingId);
 
   if (!favoriteIds) {
+    captureServerError("Favorite add failed", "favorites", null, { userId: userOrError.id, listingId }, userOrError.id);
     return apiError(API_ERROR_CODES.INTERNAL_ERROR, "Favori eklenemedi.", 500);
   }
 
@@ -153,6 +154,7 @@ export async function DELETE(request: Request) {
   const favoriteIds = await removeDatabaseFavorite(userOrError.id, listingId);
 
   if (!favoriteIds) {
+    captureServerError("Favorite remove failed", "favorites", null, { userId: userOrError.id, listingId }, userOrError.id);
     return apiError(API_ERROR_CODES.INTERNAL_ERROR, "Favori kaldırılamadı.", 500);
   }
 

@@ -66,8 +66,10 @@ export async function GET(request: Request) {
     await setCachedData(cacheKey, result, 120);
 
     return apiSuccess(result);
-  } catch {
-    // Non-critical — return empty on error
+  } catch (error) {
+    // Non-critical — but capture for observability
+    const { captureServerError } = await import("@/lib/monitoring/posthog-server");
+    captureServerError("Search suggestions query failed", "search", error, { query: q });
     return apiSuccess({ brands: [], models: [] });
   }
 }

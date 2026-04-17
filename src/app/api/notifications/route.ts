@@ -12,6 +12,7 @@ import {
   getStoredNotificationsByUser,
   markAllDatabaseNotificationsRead,
 } from "@/services/notifications/notification-records";
+import { captureServerError } from "@/lib/monitoring/posthog-server";
 
 async function getAuthenticatedUser() {
   if (!hasSupabaseEnv()) {
@@ -98,6 +99,7 @@ export async function PATCH(request: Request) {
   const updated = await markAllDatabaseNotificationsRead(user.id);
 
   if (!updated) {
+    captureServerError("Mark all notifications read failed", "notifications", null, { userId: user.id }, user.id);
     return apiError(API_ERROR_CODES.INTERNAL_ERROR, "Bildirimler güncellenemedi.", 500);
   }
 

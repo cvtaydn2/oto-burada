@@ -12,7 +12,7 @@ import {
   getExistingListingSlugs,
   updateDatabaseListing,
 } from "@/services/listings/listing-submissions";
-import { captureServerEvent } from "@/lib/monitoring/posthog-server";
+import { captureServerError, captureServerEvent } from "@/lib/monitoring/posthog-server";
 import { logger } from "@/lib/utils/logger";
 
 export async function PATCH(
@@ -122,6 +122,7 @@ export async function PATCH(
       userId: user.id,
       error: result.error,
     });
+    captureServerError("Listing update DB failed", "listings", result.error, { listingId, userId: user.id }, user.id);
     return apiError(API_ERROR_CODES.INTERNAL_ERROR, "İlan kaydedilemedi. Lütfen tekrar dene.", 500);
   }
 

@@ -1,5 +1,5 @@
 import { createSupabaseServerClient } from "@/lib/supabase/server";
-import { createSupabaseAdminClient } from "@/lib/supabase/admin";
+
 import {
   getSupabaseDocumentsStorageEnv,
   hasSupabaseDocumentsStorageEnv,
@@ -13,6 +13,7 @@ import {
   validateExpertDocumentFile,
   getVerifiedDocumentMimeType,
 } from "@/services/listings/listing-documents";
+import { captureServerError } from "@/lib/monitoring/posthog-server";
 
 function sanitizeFileName(fileName: string): string {
   return fileName
@@ -77,20 +78,25 @@ export async function POST(request: Request) {
 
   const sanitizedFileName = sanitizeFileName(file.name);
   const { documentsBucket } = getSupabaseDocumentsStorageEnv();
-  const adminClient = createSupabaseAdminClient();
+
 
   // Use verified MIME type from magic bytes — never trust browser-declared file.type
   const verifiedMimeType = await getVerifiedDocumentMimeType(file);
   const contentType = verifiedMimeType ?? file.type;
   const storagePath = buildExpertDocumentStoragePath(user.id, sanitizedFileName, verifiedMimeType ?? undefined);
   
-  const uploadResult = await adminClient.storage.from(documentsBucket).upload(storagePath, file, {
+  const uploadResult = await supabase.storage.from(documentsBucket).upload(storagePath, file, {
     cacheControl: "3600",
     contentType,
     upsert: false,
   });
 
   if (uploadResult.error) {
+    captureServerError("Document upload to storage failed", "storage", uploadResult.error, {
+      userId: user.id,
+      storagePath,
+      bucket: documentsBucket,
+    }, user.id);
     return apiError(API_ERROR_CODES.INTERNAL_ERROR, "Belge yüklenemedi. Lütfen tekrar dene.", 500);
   }
 
@@ -150,10 +156,13 @@ export async function DELETE(request: Request) {
   }
 
   const { documentsBucket } = getSupabaseDocumentsStorageEnv();
-  const adminClient = createSupabaseAdminClient();
-  const removeResult = await adminClient.storage.from(documentsBucket).remove([storagePath]);
+  const removeResult = await supabase.storage.from(documentsBucket).remove([storagePath]);
 
   if (removeResult.error) {
+    captureServerError("Document delete from storage failed", "storage", removeResult.error, {
+      userId: user.id,
+      storagePath,
+    }, user.id);
     return apiError(API_ERROR_CODES.INTERNAL_ERROR, "Belge silinemedi. Lütfen tekrar dene.", 500);
   }
 

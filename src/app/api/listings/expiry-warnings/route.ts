@@ -13,6 +13,7 @@ import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { hasSupabaseAdminEnv } from "@/lib/supabase/env";
 import { apiSuccess, apiError, API_ERROR_CODES } from "@/lib/utils/api-response";
 import { logger } from "@/lib/utils/logger";
+import { captureServerError } from "@/lib/monitoring/posthog-server";
 import { createDatabaseNotificationsBulk } from "@/services/notifications/notification-records";
 
 export const dynamic = "force-dynamic";
@@ -71,6 +72,7 @@ async function handleCronRequest(request: Request) {
 
   if (error) {
     logger.listings.error("Failed to fetch expiring listings", error);
+    captureServerError("Expiry warnings cron query failed", "cron", error);
     return apiError(API_ERROR_CODES.INTERNAL_ERROR, "Süresi dolacak ilanlar alınamadı.", 500);
   }
 

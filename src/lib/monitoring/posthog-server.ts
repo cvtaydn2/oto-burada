@@ -122,3 +122,21 @@ export function captureServerEvent(
 
   ph.flush().catch(() => {});
 }
+
+/**
+ * Type-safe server event tracking using the Event Dictionary.
+ * Use this for new code; the untyped `captureServerEvent` above is kept
+ * for backward compatibility with existing call sites.
+ */
+import { AnalyticsEvent, type EventPayload } from "@/lib/analytics/events";
+
+export function trackServerEvent<T extends AnalyticsEvent>(
+  event: T,
+  properties: EventPayload<T>,
+  distinctId?: string,
+) {
+  captureServerEvent(event, properties as Record<string, unknown>, distinctId);
+}
+
+export { AnalyticsEvent };
+

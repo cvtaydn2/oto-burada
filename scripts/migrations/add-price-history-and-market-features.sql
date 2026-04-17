@@ -191,7 +191,13 @@ ALTER TABLE public.gallery_views ENABLE ROW LEVEL SECURITY;
 DROP POLICY IF EXISTS "gallery_views_insert_anyone" ON public.gallery_views;
 CREATE POLICY "gallery_views_insert_anyone"
   ON public.gallery_views FOR INSERT
-  WITH CHECK (true);
+  WITH CHECK (
+    EXISTS (
+      SELECT 1 FROM public.profiles
+      WHERE profiles.id = gallery_views.seller_id
+        AND profiles.user_type = 'professional'
+    )
+  );
 
 DROP POLICY IF EXISTS "gallery_views_select_owner_or_admin" ON public.gallery_views;
 CREATE POLICY "gallery_views_select_owner_or_admin"

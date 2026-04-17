@@ -9,8 +9,9 @@ import {
   AlertCircle,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { usePostHog } from "posthog-js/react";
 import { useEffect, useMemo, useRef, useState } from "react";
+import { useAnalytics } from "@/hooks/use-analytics";
+import { AnalyticsEvent } from "@/lib/analytics/events";
 import { useFieldArray, useForm, useWatch, type FieldPath } from "react-hook-form";
 
 import {
@@ -288,7 +289,7 @@ export function ListingCreateForm({
   isEmailVerified = false,
 }: ListingCreateFormProps) {
   const router = useRouter();
-  const posthog = usePostHog();
+  const { trackEvent } = useAnalytics();
   const isEditing = Boolean(initialListing);
   // Email doğrulama — phone doğrulama kaldırıldı
   const [isEmailVerifiedLocally, setIsEmailVerifiedLocally] = useState(isEmailVerified || isPhoneVerified);
@@ -301,6 +302,8 @@ export function ListingCreateForm({
   const uploadStatesRef = useRef<Record<string, UploadState>>({});
   const pendingImageCleanupRef = useRef<Set<string>>(new Set());
   const submitIntentRef = useRef(false);
+  const stepStartTimeRef = useRef<number>(Date.now());
+  const hasTrackedWizardStart = useRef(false);
   
   const formValues = useMemo(
     () => buildDefaultValues(initialValues, initialListing),
@@ -399,7 +402,28 @@ export function ListingCreateForm({
 
   useEffect(() => {
     submitIntentRef.current = false;
+    stepStartTimeRef.current = Date.now();
   }, [currentStep]);
+
+  // Track wizard start once
+  useEffect(() => {
+    if (!hasTrackedWizardStart.current) {
+      hasTrackedWizardStart.current = true;
+      trackEvent(AnalyticsEvent.LISTING_WIZARD_STARTED, {} as Record<string, never>);
+    }
+  }, [trackEvent]);
+
+  // Track abandonment on unmount (if not submitted)
+  useEffect(() => {
+    return () => {
+      if (submitState.status !== "success") {
+        trackEvent(AnalyticsEvent.LISTING_WIZARD_ABANDONED, {
+          lastStepName: STEP_LABELS[currentStep],
+        });
+      }
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   useEffect(() => {
     return () => {
@@ -456,6 +480,12 @@ export function ListingCreateForm({
     
     const isValid = await trigger(fieldsToValidate);
     if (isValid) {
+      const timeSpentSeconds = Math.round((Date.now() - stepStartTimeRef.current) / 1000);
+      trackEvent(AnalyticsEvent.LISTING_WIZARD_STEP_COMPLETED, {
+        stepName: STEP_LABELS[currentStep],
+        stepIndex: currentStep,
+        timeSpentSeconds,
+      });
       setCurrentStep(prev => Math.min(prev + 1, totalSteps - 1));
       window.scrollTo({ top: 0, behavior: "smooth" });
     }
@@ -604,11 +634,11 @@ export function ListingCreateForm({
             setError(field as Parameters<typeof setError>[0], { message });
           });
         }
-        posthog?.capture("listing_submit_failed", {
-          isEditing,
-          responseStatus: response.status,
-          message: payload?.error?.message ?? "Bir hata oluştu.",
-          listingId: initialListing?.id,
+        trackEvent(AnalyticsEvent.LISTING_SUBMITTED, {
+          listingId: initialListing?.id ?? "unknown",
+          brand: getValues("brand"),
+          model: getValues("model"),
+          price: getValues("price"),
         });
         setSubmitState({ message: payload?.error?.message ?? "Bir hata oluştu.", status: "error" });
         return;
@@ -620,10 +650,18 @@ export function ListingCreateForm({
           : "İlanın kaydedildi ve moderasyon incelemesine gönderildi.",
         status: "success",
       });
-      posthog?.capture(isEditing ? "listing_update_succeeded" : "listing_submit_succeeded", {
-        listingId: payload?.data?.listing?.id ?? initialListing?.id,
-        listingStatus: payload?.data?.listing?.status,
-      });
+      if (isEditing) {
+        trackEvent(AnalyticsEvent.LISTING_UPDATED, {
+          listingId: payload?.data?.listing?.id ?? initialListing?.id ?? "unknown",
+        });
+      } else {
+        trackEvent(AnalyticsEvent.LISTING_SUBMITTED, {
+          listingId: payload?.data?.listing?.id ?? "unknown",
+          brand: getValues("brand"),
+          model: getValues("model"),
+          price: getValues("price"),
+        });
+      }
 
       void flushQueuedImageCleanup();
 
@@ -634,11 +672,8 @@ export function ListingCreateForm({
 
       router.push("/dashboard/listings?created=pending");
     } catch {
-      posthog?.capture("listing_submit_failed", {
-        isEditing,
-        listingId: initialListing?.id,
-        message: "Bağlantı hatası.",
-      });
+      // Network error — no typed event for failures, use raw capture
+      // (these are operational, not product analytics)
       setSubmitState({ message: "Bağlantı hatası.", status: "error" });
     }
   };

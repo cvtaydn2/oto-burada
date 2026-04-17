@@ -1152,3 +1152,55 @@ CREATE POLICY "listing_views_insert_anyone"
       WHERE listings.id = listing_views.listing_id
     )
   );
+
+-- ── C: Storage Configuration & Policies ───────────────────────────────────────
+-- 1. Create buckets if they don't exist
+INSERT INTO storage.buckets (id, name, public) VALUES ('listing-images', 'listing-images', true) ON CONFLICT (id) DO NOTHING;
+INSERT INTO storage.buckets (id, name, public) VALUES ('listing-documents', 'listing-documents', false) ON CONFLICT (id) DO NOTHING;
+
+-- Enable RLS on storage.objects if not already enabled
+ALTER TABLE storage.objects ENABLE ROW LEVEL SECURITY;
+
+-- `listing-images` Policies
+-- Public Read
+DROP POLICY IF EXISTS "Public listing-images Read" ON storage.objects;
+CREATE POLICY "Public listing-images Read"
+ON storage.objects FOR SELECT
+USING (bucket_id = 'listing-images');
+
+-- Insert/Select/Update for Authenticated Users (Requires all 3 for Upsert!)
+DROP POLICY IF EXISTS "Auth listing-images Insert" ON storage.objects;
+CREATE POLICY "Auth listing-images Insert"
+ON storage.objects FOR INSERT
+WITH CHECK (
+  bucket_id = 'listing-images' 
+  AND auth.role() = 'authenticated'
+  AND (storage.foldername(name))[1] = 'listings'
+  AND (storage.foldername(name))[2] = (SELECT auth.uid())::text
+);
+
+DROP POLICY IF EXISTS "Auth listing-images Update" ON storage.objects;
+CREATE POLICY "Auth listing-images Update"
+ON storage.objects FOR UPDATE
+USING (
+  bucket_id = 'listing-images' 
+  AND auth.role() = 'authenticated'
+  AND (storage.foldername(name))[1] = 'listings'
+  AND (storage.foldername(name))[2] = (SELECT auth.uid())::text
+)
+WITH CHECK (
+  bucket_id = 'listing-images' 
+  AND auth.role() = 'authenticated'
+  AND (storage.foldername(name))[1] = 'listings'
+  AND (storage.foldername(name))[2] = (SELECT auth.uid())::text
+);
+
+DROP POLICY IF EXISTS "Auth listing-images Delete" ON storage.objects;
+CREATE POLICY "Auth listing-images Delete"
+ON storage.objects FOR DELETE
+USING (
+  bucket_id = 'listing-images' 
+  AND auth.role() = 'authenticated'
+  AND (storage.foldername(name))[1] = 'listings'
+  AND (storage.foldername(name))[2] = (SELECT auth.uid())::text
+);

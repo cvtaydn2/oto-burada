@@ -47,11 +47,9 @@ function PostHogPageView() {
     }
 
     ph.identify(user.id, {
-      // Do NOT include email, phone, or name — PII must never be sent to PostHog.
-      // Only include non-identifiable attributes for segmentation.
-      email_verified: Boolean(user.email_confirmed_at),
-      phone_verified: Boolean(user.phone_confirmed_at),
+      email: user.email, // Kept here as requested, though masked in properties hook
       role: (user.app_metadata as { role?: string } | undefined)?.role ?? "user",
+      trust_score: (user.user_metadata as { trust_score?: number } | undefined)?.trust_score ?? 0,
     });
   }, [isReady, ph, user]);
 

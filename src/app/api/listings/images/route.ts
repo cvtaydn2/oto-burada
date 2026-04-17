@@ -1,5 +1,5 @@
 import { createSupabaseServerClient } from "@/lib/supabase/server";
-import { createSupabaseAdminClient } from "@/lib/supabase/admin";
+
 import { getSupabaseStorageEnv, hasSupabaseStorageEnv } from "@/lib/supabase/env";
 import { rateLimitProfiles } from "@/lib/utils/rate-limit";
 import { enforceRateLimit, getRateLimitKey, getUserRateLimitKey } from "@/lib/utils/rate-limit-middleware";
@@ -74,14 +74,14 @@ export async function POST(request: Request) {
 
   const sanitizedFileName = sanitizeFileName(file.name);
   const { listingsBucket } = getSupabaseStorageEnv();
-  const adminClient = createSupabaseAdminClient();
+
 
   // Use the VERIFIED MIME type (from magic bytes) — not the browser-declared file.type.
   const verifiedMimeType = await getVerifiedMimeType(file);
   const contentType = verifiedMimeType ?? file.type;
   const storagePath = buildListingImageStoragePath(user.id, sanitizedFileName, verifiedMimeType ?? undefined);
 
-  const uploadResult = await adminClient.storage.from(listingsBucket).upload(storagePath, file, {
+  const uploadResult = await supabase.storage.from(listingsBucket).upload(storagePath, file, {
     cacheControl: "86400", // 24h — UUID paths never change
     contentType,
     upsert: false,
@@ -98,7 +98,7 @@ export async function POST(request: Request) {
 
   const {
     data: { publicUrl },
-  } = adminClient.storage.from(listingsBucket).getPublicUrl(storagePath);
+  } = supabase.storage.from(listingsBucket).getPublicUrl(storagePath);
 
   return apiSuccess(
     {
@@ -152,8 +152,7 @@ export async function DELETE(request: Request) {
   }
 
   const { listingsBucket } = getSupabaseStorageEnv();
-  const adminClient = createSupabaseAdminClient();
-  const removeResult = await adminClient.storage.from(listingsBucket).remove([storagePath]);
+  const removeResult = await supabase.storage.from(listingsBucket).remove([storagePath]);
 
   if (removeResult.error) {
     captureServerError("Image delete from storage failed", "storage", removeResult.error, {

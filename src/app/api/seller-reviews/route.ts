@@ -88,6 +88,8 @@ export async function POST(request: Request) {
     .single();
 
   if (error) {
+    const { captureServerError } = await import("@/lib/monitoring/posthog-server");
+    captureServerError("Seller review upsert failed", "reviews", error, { sellerId, reviewerId: user.id }, user.id);
     return apiError(API_ERROR_CODES.INTERNAL_ERROR, "Değerlendirme kaydedilemedi. Lütfen tekrar dene.", 500);
   }
 

@@ -22,6 +22,22 @@ if (posthogProjectToken) {
     defaults: "2026-01-30",
     capture_pageview: false,
     opt_out_capturing_by_default: true,
+    sanitize_properties: (properties) => {
+      // Basic PII masking for client-side events
+      for (const [key, value] of Object.entries(properties)) {
+        if (typeof value === "string") {
+          // Mask emails
+          if (/[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/.test(value)) {
+            properties[key] = "[EMAIL_REDACTED]";
+          }
+          // Request specific masks for obvious keys
+          if (["email", "phone", "tc", "tc_no", "identity"].includes(key.toLowerCase())) {
+            properties[key] = "[PII_REDACTED]";
+          }
+        }
+      }
+      return properties;
+    },
     loaded: (client) => {
       if (typeof window === "undefined") {
         return;
