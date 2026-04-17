@@ -1,5 +1,38 @@
 # PROGRESS.md
 
+## Modular Provider Architecture & Server-First Auth (2026-04-18)
+
+### Yapılan Değişiklikler
+
+**Provider Optimizasyonu**
+- Root Layout'taki `AppProviders` monolitik yapısı parçalandı.
+- `RootProviders`: Sadece global ihtiyaçları (Auth, Theme, QueryClient, Analytics) karşılayan en yalın kök sağlayıcı.
+- `MarketplaceProviders`: Favoriler ve Karşılaştırma gibi sadece ilan sayfalarında gereken özellikler `(marketplace)` route group layout'una taşındı.
+- Bu değişiklik ile Login/Register ve Kurumsal/Statik sayfaların client-side yükü ciddi oranda azaltıldı.
+
+**Server-First Auth & Flicker Önleme**
+- `RootLayout` (Server Component) içerisinde `getCurrentUser()` ile oturum bilgisi henüz sayfa istemciye ulaşmadan çekildi.
+- Bu veri `AuthProvider`'a `initialUser` olarak aktarıldı, böylece client-side hydration sırasında oluşan "giriş yapılmamış gibi görünme" (auth flicker) sorunu giderildi.
+- `src/middleware.ts` aktif edildi; Supabase session refresh ve güvenlik başlıkları (CSP, HSTS) artık her istekte server-side kontrol ediliyor.
+
+**Admin Kontrol Optimizasyonu**
+- `requireAdminUser` akışı `React.cache` ile optimize edildi. Tek bir istekte veritabanına giden mükerrer rol kontrolü sorguları tekilleştirildi.
+
+**Dokümantasyon Konsolidasyonu & Temizlik (2026-04-18)**
+- Redundant olan `TODO.md` ve `ROADMAP.md` dosyaları silindi (Tüm içerikler `TASKS.md` içerisine aktarıldı veya güncellendi).
+- `ENVIRONMENT.md` içeriği (Vercel CLI ve ortam yönetimi) `RUNBOOK.md` dosyasına taşınarak tek bir operasyonel kılavuz oluşturuldu.
+- `SECURITY.md` ve `UI_SYSTEM.md` gözden geçirildi; modern, güvenli ve tutarlı yapı teyit edildi.
+- `TASKS.md` dosyasına Faz 26 (Ödeme ve Otomasyon) eklenerek gelecek vizyonu korundu.
+
+### Doğrulama
+- Gereksiz dosyaların silindiği teyit edildi. ✅
+- `RUNBOOK.md` güncel ve kapsamlı hale getirildi. ✅
+- `TASKS.md` ve `AGENTS.md` tam uyumlu. ✅
+
+### Sonraki Adımlar
+- **Iyzico & Saved Search Preparation**: Faz 26 için `add-payments-webhook-support.sql` migration dosyasının hazırlanması ve Resend/Iyzico ortam değişkenlerinin Vercel'e girişi.
+
+
 ## Data Layer Simplification & Migration Structure (2026-04-18)
 
 ### Yapılan Değişiklikler

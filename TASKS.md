@@ -403,15 +403,16 @@ Audit all pages for:
 ## Phase 25 — Marketplace Hardening & Core Depth
 
 
-### Task 25.2 — Real-time In-App Chat
-Implement full messaging capability between buyers and sellers.
+### Task 25.2 — Real-time In-App Chat (POST-MVP / SECONDARY)
+*Note: WhatsApp remains the primary contact method as per AGENTS.md.*
+If prioritized in future:
 - Create `chats` and `messages` services.
 - Integrate dashboard messages UI with realtime subscription.
-- Add "Message Seller" button to listing detail page.
+- Add "Message Seller" button (secondary to WhatsApp) to listing detail page.
 - Implement unread message indicators.
 
 #### Acceptance Criteria
-- Users can start chats from listing pages.
+- Users can start chats only if WhatsApp is unavailable or as secondary.
 - Messages are sent and received in real-time.
 - Only participants can access their chats (RLS).
 
@@ -451,6 +452,32 @@ Resolve build-time type errors and runtime 404 issues in listing retrieval.
 - `npm run build` passes without errors.
 - Listing detail pages load reliably even during schema drift.
 - Admin analytics dashboard accurately reflects current and historical KPIs.
+
+---
+
+## Phase 26 — Post-MVP Monetization & Automation
+
+### Task 26.1 — Iyzico Payment Activation
+Activate the existing Iyzico skeleton for real transactions.
+- Set `IYZICO_API_KEY` and `IYZICO_SECRET_KEY` in Vercel.
+- Deploy `add-payments-webhook-support.sql` to seed plans and enable webhooks.
+- Connect `listing-doping-panel` to the real checkout flow.
+- Implement `balance_credits` display in dashboard.
+
+#### Acceptance Criteria
+- Users can purchase doping/highlighting plans.
+- Payments are processed via Iyzico 3DS flow.
+- Listing status updates automatically after successful payment.
+
+### Task 26.2 — Saved Searches & Email Alerts
+Automate "Search Result" notifications.
+- Activate `RESEND_API_KEY`.
+- Connect the built-in Cron job (`/api/saved-searches/notify`) to Resend.
+- Ensure email templates are localized in Turkish.
+
+#### Acceptance Criteria
+- Users receive emails when new listings match their saved searches.
+- Unsubscribe links work correctly.
 
 ---
 

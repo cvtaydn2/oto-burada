@@ -2,12 +2,16 @@ import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { hasSupabaseAdminEnv } from "@/lib/supabase/env";
 import { payment } from "@/lib/payment";
 import { isPaymentEnabled } from "@/lib/payment/config";
+import { DOPING_PRICES, DopingId } from "@/lib/payment/constants";
+import { logger } from "@/lib/utils/logger";
 
-export type DopingType = "featured" | "urgent" | "highlighted";
+export type DopingType = DopingId;
 
 export interface DopingResult {
   success: boolean;
   message: string;
+  paymentUrl?: string;
+  transactionId?: string;
 }
 
 interface DopingUpdates {
@@ -62,9 +66,12 @@ export async function applyDopingToListing(
     return { success: false, message: "İlan sahibi doğrulanamadı." };
   }
 
-  // 3. Process Payment
+  // 3. Calculate Total
+  const totalAmount = dopingTypes.reduce((sum, type) => sum + DOPING_PRICES[type].price, 0);
+
+  // 4. Process Payment
   const paymentResult = await payment.processPayment({
-    amount: dopingTypes.length * 50,
+    amount: totalAmount,
     orderId: `DOP-${listingId}-${Date.now()}`,
     listingId,
     userId,
@@ -72,6 +79,31 @@ export async function applyDopingToListing(
 
   if (!paymentResult.success) {
     return { success: false, message: paymentResult.error || "Ödeme işlemi başarısız oldu." };
+  }
+
+  // If 3DS is required (paymentUrl provided), return it for redirect
+  if (paymentResult.paymentUrl) {
+    // We create a pending payment record for tracking
+    await admin.from("payments").insert({
+      user_id: userId,
+      amount: totalAmount,
+      provider: "iyzico",
+      status: "pending",
+      iyzico_token: paymentResult.transactionId,
+      metadata: {
+        listingId,
+        dopingTypes,
+        type: "doping",
+        durationDays: 7 // simplified
+      }
+    });
+
+    return { 
+      success: true, 
+      message: "Ödeme sayfasına yönlendiriliyorsunuz...",
+      paymentUrl: paymentResult.paymentUrl,
+      transactionId: paymentResult.transactionId
+    };
   }
 
   // 4. Update listing with doping

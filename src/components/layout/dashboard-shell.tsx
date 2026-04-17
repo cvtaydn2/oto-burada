@@ -3,15 +3,17 @@ import Link from "next/link";
 
 import { logoutAction } from "@/lib/auth/actions";
 import { DashboardNavigation } from "@/components/layout/dashboard-navigation";
-import { ArrowLeft, ShieldCheck } from "lucide-react";
+import { ArrowLeft, ShieldCheck, Coins } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 
 interface DashboardShellProps extends PropsWithChildren {
   email: string | null;
   isAdmin?: boolean;
+  balanceCredits?: number;
 }
 
-export function DashboardShell({ children, email, isAdmin }: DashboardShellProps) {
+export function DashboardShell({ children, email, isAdmin, balanceCredits = 0 }: DashboardShellProps) {
   return (
     <div className="min-h-screen bg-muted/30">
       {/* Skip navigation */}
@@ -45,6 +47,12 @@ export function DashboardShell({ children, email, isAdmin }: DashboardShellProps
             </div>
 
             <div className="flex items-center gap-3">
+              <Link href="/dashboard/pricing">
+                <Badge variant="secondary" className="flex items-center gap-1.5 h-9 px-3 rounded-xl bg-amber-50 text-amber-700 border-amber-100 hover:bg-amber-100 transition-colors cursor-pointer">
+                  <Coins size={14} className="text-amber-500" />
+                  <span className="font-bold">{balanceCredits} İlan Hakkı</span>
+                </Badge>
+              </Link>
               {isAdmin && (
                 <Link href="/admin">
                   <Button variant="outline" className="h-9 border-blue-100 bg-blue-50/50 text-blue-700 hover:bg-blue-50 gap-2 font-bold rounded-xl shadow-sm text-xs">

@@ -15,6 +15,12 @@ Primary success criteria:
 3. The codebase is understandable for a new developer.
 4. The app builds, lints, and typechecks cleanly.
 
+## Documentation Hierarchy (Source of Truth)
+1. **AGENTS.md**: The "Compass". Vision, non-negotiable rules, and architectural standards.
+2. **README.md**: The "Entry Point". Quick start, setup, and high-level tech overview.
+3. **TASKS.md**: The "Backlog". Execution order and detailed acceptance criteria.
+4. **PROGRESS.md**: The "Log". Implementation history, specific decisions, and immediate next steps.
+
 ---
 
 ## Workflow Rules
@@ -22,6 +28,7 @@ Primary success criteria:
 - Before starting any new development, read `PROGRESS.md` to avoid repeating completed work.
 - Update `PROGRESS.md` after each completed task with status, decisions, validations, and next step.
 - Keep documentation aligned with the current implementation state.
+- In case of contradiction, **AGENTS.md** always takes precedence.
 
 ---
 
@@ -34,6 +41,7 @@ Primary success criteria:
 - Mobile-first UX is mandatory.
 - SEO-friendly public listing pages are mandatory.
 - The initial user-to-seller contact method is **WhatsApp CTA**, not internal chat.
+- **In-App Chat**: While basic infrastructure might exist for future scaling, it is **Secondary** and should not be prioritized or featured as a main USP for the MVP.
 - **Out of Scope (MVP)**: EİDS (E-Devlet), SMS OTP, and Phone Verification are strictly out of scope to maintain simplicity and speed.
 
 

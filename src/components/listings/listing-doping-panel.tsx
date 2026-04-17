@@ -9,8 +9,10 @@ import {
   Clock,
   CheckCircle2,
   TrendingUp,
-  AlertTriangle
+  AlertTriangle,
+  ExternalLink
 } from "lucide-react";
+import { DOPING_PRICES } from "@/lib/payment/constants";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -19,30 +21,21 @@ import {
 
 const DOPING_OPTIONS = [
   {
-    id: "featured",
-    name: "Ana Sayfa Vitrin",
+    ...DOPING_PRICES.featured,
     description: "İlanınız ana sayfada en üst bölümde döner.",
     icon: Star,
-    price: 199,
-    days: 7,
     color: "bg-amber-500",
   },
   {
-    id: "urgent",
-    name: "Acil Acil",
+    ...DOPING_PRICES.urgent,
     description: "Sarı 'ACİL' etiketi ve arama sonuçlarında öncelik.",
     icon: Zap,
-    price: 99,
-    days: 7,
     color: "bg-red-500",
   },
   {
-    id: "highlighted",
-    name: "Kalın Yazı & Renkli Çerçeve",
+    ...DOPING_PRICES.highlighted,
     description: "Arama listesinde ilanınız fark edilir şekilde görünür.",
     icon: TrendingUp,
-    price: 49,
-    days: 15,
     color: "bg-blue-500",
   },
 ];
@@ -91,13 +84,20 @@ export function ListingDopingPanel({ listingId, listingTitle }: ListingDopingPan
       const result = await response.json().catch(() => null) as {
         success?: boolean;
         message?: string;
+        paymentUrl?: string; // Fix: Add this
         error?: { message?: string };
       } | null;
       
       if (response.ok && result?.success) {
-        setStatus("success");
-        setMessage(result.message ?? "Dopingler başarıyla uygulandı.");
-        router.refresh();
+        if (result.paymentUrl) {
+          setStatus("success");
+          setMessage("Ödeme sayfasına yönlendiriliyorsunuz...");
+          window.location.href = result.paymentUrl;
+        } else {
+          setStatus("success");
+          setMessage(result.message ?? "Dopingler başarıyla uygulandı.");
+          router.refresh();
+        }
       } else {
         setStatus("error");
         setMessage(result?.error?.message ?? result?.message ?? "İşlem başarısız oldu.");

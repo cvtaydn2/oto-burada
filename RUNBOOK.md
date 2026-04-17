@@ -8,14 +8,15 @@
 ## Table of Contents
 
 1. [Deployment](#deployment)
-2. [Database Migrations](#database-migrations)
-3. [Environment Variables](#environment-variables)
-4. [Health Checks & Monitoring](#health-checks--monitoring)
-5. [Rollback Procedures](#rollback-procedures)
-6. [Cron Jobs](#cron-jobs)
-7. [Incident Response](#incident-response)
-8. [Feature Flags](#feature-flags)
-9. [Secrets Rotation](#secrets-rotation)
+2. [Development Environment](#development-environment)
+3. [Database Migrations](#database-migrations)
+4. [Environment Variables](#environment-variables)
+5. [Health Checks & Monitoring](#health-checks--monitoring)
+6. [Rollback Procedures](#rollback-procedures)
+7. [Cron Jobs](#cron-jobs)
+8. [Incident Response](#incident-response)
+9. [Feature Flags](#feature-flags)
+10. [Secrets Rotation](#secrets-rotation)
 
 ---
 
@@ -47,6 +48,29 @@ Vercel uses atomic deployments — the new build is fully ready before traffic s
 - DB schema changes that are not backward-compatible (see Migrations)
 - Redis key format changes (old instances may read stale keys)
 - Breaking API contract changes (clients may have cached old responses)
+
+---
+
+## Development Environment
+
+OtoBurada projesi, Vercel'in standard **Local**, **Preview** ve **Production** ortamlarını kullanır.
+
+### Local Development
+Yerel makinenizde geliştirme yaptığınız ortam. `.env.local` dosyasını kullanır.
+
+### Preview
+Her Git branch'i için otomatik oluşturulan test ortamı. Canlı veritabanına zarar vermeden QA yapmak için kullanılır.
+
+### Production
+Kullanıcıların eriştiği asıl canlı ortam (`main` branch).
+
+### Syncing Environment Variables
+Vercel üzerindeki ortam değişkenlerini (API anahtarları vb.) yerel makinenize çekmek için:
+
+1. **Vercel CLI Kurulumu**: `npm i -g vercel`
+2. **Proje Linkleme**: `npm run vercel:link`
+3. **Değişkenleri Çekme**: `npm run vercel:pull`
+   Bu komut yerel dizininizde güncel bir `.env.local` oluşturur.
 
 ---
 
