@@ -96,6 +96,8 @@ export function SearchWithSuggestions({
         </span>
         <input
           ref={inputRef}
+          id="header-search"
+          name="query"
           type="search"
           role="combobox"
           value={query}

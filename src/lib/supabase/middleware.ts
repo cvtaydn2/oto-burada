@@ -27,7 +27,7 @@ const SECURITY_HEADERS = {
     // Next.js inline/eval + Vercel Analytics + Vercel Speed Insights + Vercel Live (preview feedback) + PostHog
     "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://va.vercel-scripts.com https://cdn.vercel-insights.com https://vercel.live https://*.posthog.com https://us-assets.i.posthog.com",
     "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://unpkg.com",
-    "font-src 'self' https://fonts.gstatic.com https://unpkg.com",
+    "font-src 'self' https://fonts.gstatic.com https://unpkg.com https://vercel.live",
     "img-src 'self' data: blob: https://*.supabase.co https://images.unsplash.com https://*.tile.openstreetmap.org https://unpkg.com https://vercel.live",
     "connect-src 'self' https://*.supabase.co https://*.posthog.com https://us-assets.i.posthog.com wss://*.supabase.co https://nominatim.openstreetmap.org https://*.upstash.io https://vercel.live wss://ws-us3.pusher.com",
     "worker-src 'self' blob:",
