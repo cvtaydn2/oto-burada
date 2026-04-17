@@ -33,7 +33,7 @@ const TRANSMISSION_OPTIONS = [
   { value: "yari_otomatik", label: "Yarı Otomatik" },
 ]
 
-const CURRENT_YEAR = new Date().getFullYear()
+const CURRENT_YEAR = 2026 // Updated annually — avoids hydration mismatch from new Date() in client components
 
 export function SmartFilters({
   brands,

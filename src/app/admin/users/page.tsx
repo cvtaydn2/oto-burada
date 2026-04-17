@@ -4,10 +4,8 @@ import { UserHeaderActions } from "@/components/admin/user-header-actions";
 import { UserSearch } from "@/components/admin/user-search";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
+import { cn, safeFormatDate, safeFormatDistanceToNow } from "@/lib/utils";
 import { UserActionMenu } from "@/components/admin/user_action_menu";
-import { format, formatDistanceToNow } from "date-fns";
-import { tr } from "date-fns/locale";
 import { requireAdminUser } from "@/lib/auth/session";
 import { getAllUsers } from "@/services/admin/users";
 import { SimplePagination } from "@/components/admin/simple-pagination";
@@ -155,14 +153,12 @@ export default async function AdminUserManagementPage({
                         </td>
                         <td className="p-6">
                           <span className="text-xs font-bold text-slate-500">
-                            {u.createdAt ? format(new Date(u.createdAt), "dd MMM yy", { locale: tr }) : "—"}
+                            {safeFormatDate(u.createdAt, "dd MMM yy")}
                           </span>
                         </td>
                         <td className="p-6">
                           <span className="text-xs font-bold text-slate-400">
-                            {userWithLogin.lastSignInAt
-                              ? formatDistanceToNow(new Date(userWithLogin.lastSignInAt), { addSuffix: true, locale: tr })
-                              : "—"}
+                            {safeFormatDistanceToNow(userWithLogin.lastSignInAt)}
                           </span>
                         </td>
                         <td className="p-6">

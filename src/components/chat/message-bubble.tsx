@@ -1,7 +1,5 @@
-import { cn } from "@/lib/utils";
+import { cn, safeFormatDate } from "@/lib/utils";
 import type { Message } from "@/types";
-import { format } from "date-fns";
-import { tr } from "date-fns/locale";
 
 interface MessageBubbleProps {
   message: Message;
@@ -32,7 +30,7 @@ export function MessageBubble({ message, isMe }: MessageBubbleProps) {
             isMe ? "text-right" : "text-left"
           )}
         >
-          {format(new Date(message.createdAt), "HH:mm", { locale: tr })}
+          {safeFormatDate(message.createdAt, "HH:mm")}
         </div>
       </div>
     </div>

@@ -33,6 +33,78 @@ export function formatDate(value: string | null | undefined): string {
 }
 
 /**
+ * Safe wrapper around date-fns formatDistanceToNow.
+ * Returns "—" for null/undefined/invalid dates instead of throwing RangeError.
+ */
+export function safeFormatDistanceToNow(
+  value: string | null | undefined,
+  options?: { addSuffix?: boolean; locale?: Intl.Locale | { code?: string } },
+): string {
+  if (!value) return "—";
+  const date = new Date(value);
+  if (isNaN(date.getTime())) return "—";
+  try {
+    // Dynamic import not possible in sync context — use Intl.RelativeTimeFormat
+    const diffMs = Date.now() - date.getTime();
+    const diffSec = Math.round(diffMs / 1000);
+    const diffMin = Math.round(diffSec / 60);
+    const diffHour = Math.round(diffMin / 60);
+    const diffDay = Math.round(diffHour / 24);
+    const diffMonth = Math.round(diffDay / 30);
+    const diffYear = Math.round(diffDay / 365);
+
+    const rtf = new Intl.RelativeTimeFormat("tr-TR", { numeric: "auto" });
+
+    if (Math.abs(diffSec) < 60) return rtf.format(-diffSec, "second");
+    if (Math.abs(diffMin) < 60) return rtf.format(-diffMin, "minute");
+    if (Math.abs(diffHour) < 24) return rtf.format(-diffHour, "hour");
+    if (Math.abs(diffDay) < 30) return rtf.format(-diffDay, "day");
+    if (Math.abs(diffMonth) < 12) return rtf.format(-diffMonth, "month");
+    return rtf.format(-diffYear, "year");
+  } catch {
+    return "—";
+  }
+}
+
+/**
+ * Safe date formatter using date-fns format pattern.
+ * Returns "—" for null/undefined/invalid dates instead of throwing RangeError.
+ */
+export function safeFormatDate(
+  value: string | null | undefined,
+  pattern: string,
+): string {
+  if (!value) return "—";
+  const date = new Date(value);
+  if (isNaN(date.getTime())) return "—";
+  try {
+    // Use Intl for common patterns to avoid date-fns dependency in utils
+    if (pattern === "dd MMM yy" || pattern === "dd MMM yyyy") {
+      return date.toLocaleDateString("tr-TR", {
+        day: "2-digit",
+        month: "short",
+        year: pattern === "dd MMM yy" ? "2-digit" : "numeric",
+      });
+    }
+    if (pattern === "dd MMM yyyy HH:mm") {
+      return date.toLocaleString("tr-TR", {
+        day: "2-digit",
+        month: "short",
+        year: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+      });
+    }
+    if (pattern === "HH:mm") {
+      return date.toLocaleTimeString("tr-TR", { hour: "2-digit", minute: "2-digit" });
+    }
+    return date.toLocaleDateString("tr-TR");
+  } catch {
+    return "—";
+  }
+}
+
+/**
  * Formats a price as a plain Turkish number without currency symbol.
  * Use this when you want to display "1.250.000 TL" with a separate TL label.
  */

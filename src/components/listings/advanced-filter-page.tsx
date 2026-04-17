@@ -35,7 +35,7 @@ const TRANSMISSION_OPTIONS = [
 ];
 
 const POPULAR_CITIES = ["İstanbul", "Ankara", "İzmir", "Bursa", "Antalya", "Adana", "Konya"];
-const CURRENT_YEAR = new Date().getFullYear();
+const CURRENT_YEAR = 2026; // Updated annually — avoids hydration mismatch from new Date() in client components
 
 type FilterSection = "brand" | "price" | "year" | "location" | "technical" | "trust";
 

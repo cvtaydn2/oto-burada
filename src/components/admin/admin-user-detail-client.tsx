@@ -23,7 +23,7 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
-import { formatCurrency } from "@/lib/utils";
+import { formatCurrency, safeFormatDate } from "@/lib/utils";
 import type { UserDetailData } from "@/services/admin/users";
 import { toggleUserBan, promoteUserToAdmin } from "@/services/admin/user_actions";
 import { cn } from "@/lib/utils";
@@ -202,7 +202,7 @@ export function AdminUserDetailClient({ detail, userId }: AdminUserDetailClientP
                   : <span className="text-slate-400 font-bold flex items-center gap-1"><XCircle size={14} /> Hayır</span>
               } />
               {profile.businessName && <Row label="İşletme" value={profile.businessName} />}
-              <Row label="Kayıt" value={new Date(profile.createdAt).toLocaleDateString("tr-TR")} />
+              <Row label="Kayıt" value={safeFormatDate(profile.createdAt, "dd MMM yyyy")} />
             </div>
           </div>
 
@@ -447,7 +447,7 @@ export function AdminUserDetailClient({ detail, userId }: AdminUserDetailClientP
                         <td className="py-3 text-xs text-slate-500 font-bold">
                           <div className="flex items-center gap-1.5">
                             <Calendar size={12} className="text-slate-300" />
-                            {new Date(p.created_at).toLocaleDateString("tr-TR")}
+                            {safeFormatDate(p.created_at, "dd MMM yyyy")}
                           </div>
                         </td>
                         <td className="py-3 text-sm font-black text-slate-800">

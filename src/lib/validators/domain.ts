@@ -289,7 +289,7 @@ export const listingSchema: z.ZodType<Listing> = z.object({
   damageStatusJson: z.record(z.string(), z.string()).nullable().optional(),
   fraudScore: z.coerce.number().int().min(0).max(100).optional(),
   fraudReason: z.string().nullable().optional(),
-  viewCount: z.coerce.number().int().min(0),
+  viewCount: z.coerce.number().int().min(0).optional().default(0),
   status: z.enum(listingStatuses),
   images: z.array(listingImageSchema),
   featured: z.boolean(),

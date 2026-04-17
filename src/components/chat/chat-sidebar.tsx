@@ -3,12 +3,10 @@
 import { useEffect, useState } from "react";
 import { getUserChats } from "@/services/messages/chat-service";
 import type { Chat } from "@/types";
-import { cn } from "@/lib/utils";
+import { cn, safeFormatDistanceToNow } from "@/lib/utils";
 import { Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { formatDistanceToNow } from "date-fns";
-import { tr } from "date-fns/locale";
 
 interface ChatSidebarProps {
   currentUserId: string;
@@ -76,7 +74,7 @@ export function ChatSidebar({ currentUserId, activeChatId, onChatSelect }: ChatS
                       {partner?.fullName || "Kullanıcı"}
                     </span>
                     <span className="text-[10px] text-muted-foreground whitespace-nowrap">
-                      {formatDistanceToNow(new Date(chat.lastMessageAt || chat.createdAt), { addSuffix: true, locale: tr })}
+                      {safeFormatDistanceToNow(chat.lastMessageAt || chat.createdAt)}
                     </span>
                   </div>
                   <p className="text-xs text-muted-foreground truncate font-medium">
