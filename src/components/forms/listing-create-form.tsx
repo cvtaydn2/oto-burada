@@ -232,13 +232,7 @@ export function ListingCreateForm({
   );
 
   const form = useForm<ListingCreateFormValues, unknown, ListingCreateFormValues>({
-    defaultValues: formValues,
-    // `values` prop: initialListing sunucudan yüklendiğinde form'u sync eder.
-    // Memoize edilmiş — kullanıcı düzenlerken gereksiz reset olmaz.
-    values: formValues,
-    resetOptions: {
-      keepDirtyValues: true,
-    },
+    defaultValues: buildDefaultValues(initialValues, initialListing),
     mode: "onBlur",
     resolver: zodResolver(listingCreateFormSchema as never),
   });
@@ -472,15 +466,15 @@ export function ListingCreateForm({
   const handleRemoveImage = (index: number) => {
     const fieldId = fields[index].id;
     const currentImage = getValues(`images.${index}`);
-    if (currentImage?.storagePath) removeUploadedImage(currentImage.storagePath);
+    if (currentImage?.storagePath) void removeUploadedImage(currentImage.storagePath);
     revokeBlobUrl(uploadStates[fieldId]?.previewUrl);
     
     const nextStates = { ...uploadStates };
     delete nextStates[fieldId];
     setUploadStates(nextStates);
     
-    // We don't remove the field index to keep the grid stable, we just clear the value
-    setValue(`images.${index}`, { fileName: "", storagePath: "", url: "" }, { shouldDirty: true });
+    // Resim alanını temizle — shouldValidate: false ile validation tetiklenmesin
+    setValue(`images.${index}`, { fileName: "", storagePath: "", url: "" }, { shouldDirty: true, shouldValidate: false });
   };
 
   const submitListing = async (values: ListingCreateFormValues) => {
@@ -540,6 +534,11 @@ export function ListingCreateForm({
   };
 
   const onSubmit = handleSubmit(async (values) => {
+    // Debug: submit'in neden tetiklendiğini görmek için stack trace
+    if (process.env.NODE_ENV !== "production") {
+      console.trace("[ListingCreateForm] onSubmit triggered");
+    }
+
     if (!isEmailVerifiedLocally) {
       setIsVerifyDialogOpen(true);
       return;

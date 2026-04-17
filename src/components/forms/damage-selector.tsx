@@ -197,6 +197,7 @@ export function DamageSelector({ value, onChange, className }: DamageSelectorPro
                     {carPartLabels[activePart as keyof typeof carPartLabels]}
                   </span>
                   <button 
+                    type="button"
                     onClick={() => setActivePart(null)}
                     className="text-xs font-bold text-slate-400 hover:text-slate-600"
                   >

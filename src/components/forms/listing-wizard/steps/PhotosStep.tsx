@@ -82,7 +82,10 @@ export function PhotosStep({
                     />
 
                     {/* Hover overlay — delete + 360° toggle */}
-                    <div className="absolute inset-0 bg-black/50 opacity-0 hover:opacity-100 transition-opacity flex flex-col items-center justify-center gap-2">
+                    <div
+                      className="absolute inset-0 bg-black/50 opacity-0 hover:opacity-100 transition-opacity flex flex-col items-center justify-center gap-2"
+                      onClick={(e) => e.stopPropagation()}
+                    >
                       <button
                         type="button"
                         onClick={() => toggle360(index)}
@@ -99,7 +102,11 @@ export function PhotosStep({
                       </button>
                       <button
                         type="button"
-                        onClick={() => onRemoveImage(index)}
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          onRemoveImage(index);
+                        }}
                         className="p-2 bg-white rounded-lg text-red-500 hover:bg-red-500 hover:text-white transition-colors"
                       >
                         <Trash2 size={16} />
