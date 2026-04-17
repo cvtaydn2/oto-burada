@@ -8,7 +8,8 @@ import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { hasSupabaseEnv } from "@/lib/supabase/env";
 import { rateLimitProfiles } from "@/lib/utils/rate-limit";
 import { checkRateLimit } from "@/lib/utils/rate-limit-middleware";
-import { captureServerEvent } from "@/lib/monitoring/posthog-server";
+import { trackServerEvent, identifyServerUser } from "@/lib/monitoring/posthog-server";
+import { AnalyticsEvent } from "@/lib/analytics/events";
 
 export interface AuthActionState {
   error?: string;
@@ -101,8 +102,14 @@ export async function loginAction(
   }
 
   if (data.user) {
-    captureServerEvent("auth_login_success", {
+    trackServerEvent(AnalyticsEvent.SERVER_AUTH_LOGIN, {
       userId: data.user.id,
+      method: "email",
+    }, data.user.id);
+
+    identifyServerUser(data.user.id, {
+      email: data.user.email,
+      role: (data.user.app_metadata as { role?: string } | undefined)?.role ?? "user",
     });
   }
 
@@ -167,8 +174,13 @@ export async function registerAction(
   }
 
   if (data.user) {
-    captureServerEvent("auth_register_success", {
+    trackServerEvent(AnalyticsEvent.SERVER_AUTH_REGISTER, {
       userId: data.user.id,
+      method: "email",
+    }, data.user.id);
+
+    identifyServerUser(data.user.id, {
+      email: data.user.email,
     });
   }
 
@@ -220,7 +232,7 @@ export async function logoutAction() {
   const { data: { user } } = await supabase.auth.getUser();
 
   if (user) {
-    captureServerEvent("auth_logout", { userId: user.id }, user.id);
+    trackServerEvent(AnalyticsEvent.SERVER_AUTH_LOGOUT, { userId: user.id }, user.id);
   }
 
   // scope: 'global' invalidates all sessions across devices/browsers,

@@ -1,5 +1,6 @@
 import { hasSupabaseEnv } from "@/lib/supabase/env";
-import { captureServerError, captureServerEvent } from "@/lib/monitoring/posthog-server";
+import { captureServerError, trackServerEvent } from "@/lib/monitoring/posthog-server";
+import { AnalyticsEvent } from "@/lib/analytics/events";
 import { rateLimitProfiles } from "@/lib/utils/rate-limit";
 import { enforceRateLimit, getRateLimitKey, getUserRateLimitKey } from "@/lib/utils/rate-limit-middleware";
 import { sanitizeText, sanitizeDescription } from "@/lib/utils/sanitize";
@@ -190,16 +191,15 @@ export async function POST(request: Request) {
       userId: user.id,
     });
 
-    captureServerEvent("listing_created", {
-      userId: user.id,
+    trackServerEvent(AnalyticsEvent.SERVER_LISTING_CREATED, {
       listingId: result.listing.id,
-      listingSlug: result.listing.slug,
-      listingStatus: result.listing.status,
       brand: result.listing.brand,
       model: result.listing.model,
       city: result.listing.city,
       price: result.listing.price,
-    });
+      fraudScore: result.listing.fraudScore,
+      status: result.listing.status,
+    }, user.id);
 
     return apiSuccess(
       {
