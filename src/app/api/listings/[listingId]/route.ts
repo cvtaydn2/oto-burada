@@ -69,7 +69,7 @@ export async function PATCH(
     damageStatusJson: parsedFormValues.data.damageStatusJson
       ? Object.fromEntries(
           Object.entries(parsedFormValues.data.damageStatusJson).filter(
-            ([, v]) => ["orijinal", "boyali", "degisen", "hasarli", "belirtilmemis"].includes(v as string)
+            ([, v]) => ["orjinal", "orijinal", "boyali", "lokal_boyali", "degisen", "hasarli", "belirtilmemis", "bilinmiyor"].includes(v as string)
           )
         )
       : null,

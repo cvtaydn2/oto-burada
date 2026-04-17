@@ -116,6 +116,14 @@ export async function POST(request: Request) {
     ...parsedFormValues.data,
     title: sanitizeText(parsedFormValues.data.title),
     description: sanitizeDescription(parsedFormValues.data.description),
+    // damage_status_json: DB CHECK constraint'e uygun değerlere normalize et
+    damageStatusJson: parsedFormValues.data.damageStatusJson
+      ? Object.fromEntries(
+          Object.entries(parsedFormValues.data.damageStatusJson).filter(
+            ([, v]) => ["orjinal", "orijinal", "boyali", "lokal_boyali", "degisen", "hasarli", "belirtilmemis", "bilinmiyor"].includes(v as string)
+          )
+        )
+      : null,
     images: parsedFormValues.data.images
       .filter(
         (image: { url?: string; storagePath?: string }) =>

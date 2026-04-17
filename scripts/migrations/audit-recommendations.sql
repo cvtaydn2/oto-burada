@@ -225,7 +225,7 @@ DECLARE
     'tavan_penceresi', 'stepne_kapagi'
   ];
   valid_values text[] := ARRAY[
-    'orijinal', 'boyali', 'degisen', 'hasarli', 'belirtilmemis'
+    'orjinal', 'orijinal', 'boyali', 'lokal_boyali', 'degisen', 'hasarli', 'belirtilmemis', 'bilinmiyor'
   ];
   rec record;
 BEGIN

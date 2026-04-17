@@ -23,9 +23,9 @@ export function VehicleInfoStep({
 }: VehicleInfoStepProps) {
   const { register, formState: { errors }, watch, control } = form;
   const selectedBrand = watch("brand");
+  const selectedModel = watch("model");
   const selectedTransmission = watch("transmission");
   const selectedFuelType = watch("fuelType");
-  // Watch brand and type change to reset or filter models
 
   return (
     <div className="space-y-10">
@@ -107,6 +107,23 @@ export function VehicleInfoStep({
             ))}
           </DesignInput>
         </div>
+
+        {/* Paket / Trim — sadece seçili modelin trim'leri varsa göster */}
+        {selectedBrand && selectedModel && (brands.find(b => b.brand === selectedBrand)?.models.find(m => m.name === selectedModel)?.trims?.length ?? 0) > 0 && (
+          <div className="mb-6">
+            <DesignInput
+              label="Paket / Donanım"
+              as="select"
+              {...register("carTrim")}
+              error={errors.carTrim?.message as string}
+            >
+              <option value="">Seçiniz (Opsiyonel)</option>
+              {(brands.find(b => b.brand === selectedBrand)?.models.find(m => m.name === selectedModel)?.trims || []).map(t => (
+                <option key={t} value={t}>{t}</option>
+              ))}
+            </DesignInput>
+          </div>
+        )}
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
           <DesignInput

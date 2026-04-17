@@ -113,6 +113,7 @@ function buildDefaultValues(
     title: initialListing?.title ?? "",
     brand: initialListing?.brand ?? "",
     model: initialListing?.model ?? "",
+    carTrim: initialListing?.carTrim ?? null,
     year: initialListing?.year ?? Math.min(new Date().getFullYear(), maximumCarYear),
     mileage: initialListing?.mileage ?? 0,
     fuelType: initialListing?.fuelType ?? "benzin",

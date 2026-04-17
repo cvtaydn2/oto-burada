@@ -168,7 +168,7 @@ export function ExpertInspectionEditor({ form }: ExpertInspectionEditorProps) {
                 min="0"
                 max="100"
                 placeholder="Örn: 92"
-                {...register("expertInspection.totalScore")}
+                {...register("expertInspection.totalScore", { valueAsNumber: true })}
                 className="rounded-xl h-11 border-border focus:border-primary"
               />
             </div>
