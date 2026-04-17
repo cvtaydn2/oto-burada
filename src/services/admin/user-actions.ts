@@ -1,3 +1,5 @@
+"use server";
+
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { revalidatePath } from "next/cache";
 import { logger } from "@/lib/utils/logger";
@@ -34,7 +36,7 @@ export async function grantCreditsToUser(
     target_type: "user",
   });
 
-  // Kullanıcıya in-app bildirim gönder
+  // Notification
   await createDatabaseNotification({
     userId,
     type: "system",
@@ -93,5 +95,106 @@ export async function grantDopingToListing(
 
   revalidatePath("/admin/users");
   revalidatePath(`/admin/users/${userId}`);
+  return { success: true };
+}
+
+export async function toggleUserBan(userId: string, currentStatus: boolean) {
+  const admin = createSupabaseAdminClient();
+  const { error } = await admin
+    .from("profiles")
+    .update({ 
+       is_banned: !currentStatus,
+       ban_reason: !currentStatus ? "Admin tarafından yasaklandı" : null
+    })
+    .eq("id", userId);
+
+  if (error) throw new Error(`Yasak durumu güncellenemedi: ${error.message}`);
+  
+  revalidatePath("/admin/users");
+  revalidatePath(`/admin/users/${userId}`);
+  return { success: true };
+}
+
+export async function banUser(userId: string, reason: string) {
+  const admin = createSupabaseAdminClient();
+  const { error } = await admin
+    .from("profiles")
+    .update({ 
+       is_banned: true,
+       ban_reason: reason || "Admin tarafından yasaklandı"
+    })
+    .eq("id", userId);
+
+  if (error) throw new Error(`Kullanıcı yasaklanamadı: ${error.message}`);
+  
+  revalidatePath("/admin/users");
+  revalidatePath(`/admin/users/${userId}`);
+  return { success: true };
+}
+
+export async function promoteUserToAdmin(userId: string) {
+  const admin = createSupabaseAdminClient();
+  const { error: profileError } = await admin
+    .from("profiles")
+    .update({ role: "admin" })
+    .eq("id", userId);
+
+  if (profileError) throw new Error(`Yetki güncellenemedi: ${profileError.message}`);
+
+  await admin.auth.admin.updateUserById(userId, {
+    app_metadata: { role: "admin" },
+  });
+
+  revalidatePath("/admin/users");
+  revalidatePath(`/admin/users/${userId}`);
+  return { success: true };
+}
+
+export async function updateUserRole(userId: string, role: "user" | "admin" | "professional") {
+  const admin = createSupabaseAdminClient();
+  const nextRole = role === "admin" ? "admin" : "user";
+  const nextUserType = role === "professional" ? "professional" : "individual";
+
+  const { error } = await admin
+    .from("profiles")
+    .update({
+      role: nextRole,
+      user_type: nextUserType,
+    })
+    .eq("id", userId);
+
+  if (error) throw new Error(`Rol güncellenemedi: ${error.message}`);
+
+  await admin.auth.admin.updateUserById(userId, {
+    app_metadata: { role: nextRole },
+  });
+
+  revalidatePath("/admin/users");
+  revalidatePath(`/admin/users/${userId}`);
+  return { success: true };
+}
+
+export async function verifyUserBusiness(userId: string) {
+  const admin = createSupabaseAdminClient();
+  const { error } = await admin
+    .from("profiles")
+    .update({ 
+       verified_business: true 
+    })
+    .eq("id", userId);
+
+  if (error) throw new Error(`İşletme doğrulanamadı: ${error.message}`);
+  
+  revalidatePath("/admin/users");
+  revalidatePath(`/admin/users/${userId}`);
+  return { success: true };
+}
+
+export async function deleteUser(userId: string) {
+  const admin = createSupabaseAdminClient();
+  const { error } = await admin.auth.admin.deleteUser(userId);
+  if (error) throw new Error(`Kullanıcı silinemedi: ${error.message}`);
+  
+  revalidatePath("/admin/users");
   return { success: true };
 }

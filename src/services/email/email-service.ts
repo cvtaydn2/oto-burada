@@ -6,8 +6,8 @@
 
 import { Resend } from "resend";
 import { logger } from "@/lib/utils/logger";
-import * as templates from "./templates";
-import type { SavedSearchAlertListing } from "./templates";
+import * as templates from "./email-templates";
+import type { SavedSearchAlertListing } from "./email-templates";
 
 function getResendClient(): Resend | null {
   const apiKey = process.env.RESEND_API_KEY;

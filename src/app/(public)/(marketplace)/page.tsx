@@ -8,6 +8,7 @@ import { getAppUrl } from "@/lib/seo";
 import { getPublicMarketplaceListings } from "@/services/listings/marketplace-listings";
 import { WebSiteStructuredData, OrganizationStructuredData } from "@/components/seo/structured-data";
 import { getLiveMarketplaceReferenceData } from "@/services/reference/live-reference-data";
+import { cn } from "@/lib/utils";
 
 export const revalidate = 60;
 
@@ -53,59 +54,74 @@ export default async function HomePage() {
         {/* Modern Hero */}
         <HomeHero cities={references.cities.map((city) => city.city)} />
 
-        {/* Popular Discovery */}
-        <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-          <div className="flex justify-between items-end mb-8">
-            <h2 className="text-2xl font-bold text-foreground">Canlı Keşif Alanları</h2>
-            <Link href="/listings" className="text-sm font-medium text-primary hover:text-primary/80 flex items-center transition">
-              Tümünü Gör <ChevronRight size={14} className="ml-1" />
+        {/* Premium Discovery */}
+        <section className="max-w-7xl mx-auto px-6 lg:px-8 py-24">
+          <div className="flex flex-col md:flex-row justify-between items-baseline gap-4 mb-12">
+            <div>
+              <h2 className="text-4xl font-black text-slate-900 tracking-tighter leading-none mb-3">Premium Keşif</h2>
+              <p className="text-xs font-black text-slate-400 uppercase tracking-[0.3em]">HAYALİNİZDEKİ ARACA GİDEN EN KISA YOL</p>
+            </div>
+            <Link href="/listings" className="group flex items-center gap-2 text-xs font-black text-blue-600 uppercase tracking-widest transition-all hover:gap-3">
+              Tümünü İncele <ChevronRight size={14} strokeWidth={3} className="group-hover:translate-x-1 transition-transform" />
             </Link>
           </div>
           
-          <div className="grid gap-6 lg:grid-cols-2">
+          <div className="grid gap-12 lg:grid-cols-2">
             <div>
-              <div className="mb-4 flex items-center gap-2">
-                <CarFront size={18} className="text-primary" />
-                <h3 className="text-sm font-black uppercase tracking-wider text-foreground/70">Markalar</h3>
+              <div className="mb-6 flex items-center gap-3">
+                <div className="size-8 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center">
+                   <CarFront size={18} strokeWidth={2.5} />
+                </div>
+                <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Markalar</h3>
               </div>
-              <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-6">
                 {featuredBrands.map((brand) => (
                   <Link
                     key={brand.slug}
                     href={`/listings?brand=${encodeURIComponent(brand.brand)}`}
-                    className="bg-card border border-border rounded-2xl p-5 hover:shadow-lg hover:border-primary/20 transition group flex flex-col"
+                    className="group relative bg-white border border-slate-100 rounded-[2rem] p-6 shadow-sm transition-all duration-500 hover:shadow-2xl hover:shadow-blue-900/10 hover:-translate-y-1.5 overflow-hidden"
                   >
-                    <div className="w-11 h-11 bg-primary/10 text-primary rounded-full flex items-center justify-center mb-4 group-hover:bg-primary group-hover:text-primary-foreground transition">
-                      <CarFront size={18} />
+                    <div className="absolute top-0 right-0 size-24 bg-slate-50 rounded-full blur-2xl -mr-12 -mt-12 opacity-0 group-hover:opacity-100 transition-opacity" />
+                    
+                    <div className="relative z-10">
+                      <div className="size-12 rounded-2xl bg-slate-50 text-slate-400 flex items-center justify-center mb-6 group-hover:bg-blue-600 group-hover:text-white group-hover:shadow-lg group-hover:shadow-blue-200 transition-all duration-300">
+                        <CarFront size={20} strokeWidth={2.5} />
+                      </div>
+                      <h4 className="text-lg font-black text-slate-900 tracking-tight group-hover:text-blue-600 transition-colors">{brand.brand}</h4>
+                      <p className="mt-1 text-[9px] font-black text-slate-400 uppercase tracking-widest">
+                        {brand.models.length} MODEL &middot; {brand.models.reduce((sum, model) => sum + model.trims.length, 0)} PAKET
+                      </p>
                     </div>
-                    <h4 className="font-bold text-card-foreground">{brand.brand}</h4>
-                    <p className="mt-1 text-xs text-muted-foreground">
-                      {brand.models.length} model, {brand.models.reduce((sum, model) => sum + model.trims.length, 0)} paket
-                    </p>
                   </Link>
                 ))}
               </div>
             </div>
 
             <div>
-              <div className="mb-4 flex items-center gap-2">
-                <Trophy size={18} className="text-primary" />
-                <h3 className="text-sm font-black uppercase tracking-wider text-foreground/70">Şehirler</h3>
+              <div className="mb-6 flex items-center gap-3">
+                <div className="size-8 rounded-xl bg-orange-50 text-orange-600 flex items-center justify-center">
+                   <Trophy size={18} strokeWidth={2.5} />
+                </div>
+                <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Şehirler</h3>
               </div>
-              <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-6">
                 {featuredCities.map((city) => (
                   <Link
                     key={city.slug}
                     href={`/listings?city=${encodeURIComponent(city.city)}`}
-                    className="bg-card border border-border rounded-2xl p-5 hover:shadow-lg hover:border-primary/20 transition group flex flex-col"
+                    className="group relative bg-white border border-slate-100 rounded-[2rem] p-6 shadow-sm transition-all duration-500 hover:shadow-2xl hover:shadow-orange-900/10 hover:-translate-y-1.5 overflow-hidden"
                   >
-                    <div className="w-11 h-11 bg-primary/10 text-primary rounded-full flex items-center justify-center mb-4 group-hover:bg-primary group-hover:text-primary-foreground transition">
-                      <BadgeCheck size={18} />
+                    <div className="absolute top-0 right-0 size-24 bg-slate-50 rounded-full blur-2xl -mr-12 -mt-12 opacity-0 group-hover:opacity-100 transition-opacity" />
+                    
+                    <div className="relative z-10">
+                      <div className="size-12 rounded-2xl bg-slate-50 text-slate-400 flex items-center justify-center mb-6 group-hover:bg-orange-500 group-hover:text-white group-hover:shadow-lg group-hover:shadow-orange-200 transition-all duration-300">
+                        <BadgeCheck size={20} strokeWidth={2.5} />
+                      </div>
+                      <h4 className="text-lg font-black text-slate-900 tracking-tight group-hover:text-orange-600 transition-colors">{city.city}</h4>
+                      <p className="mt-1 text-[9px] font-black text-slate-400 uppercase tracking-widest">
+                        {city.districts.length} ÜSTÜN İLÇE
+                      </p>
                     </div>
-                    <h4 className="font-bold text-card-foreground">{city.city}</h4>
-                    <p className="mt-1 text-xs text-muted-foreground">
-                      {city.districts.length} ilçe
-                    </p>
                   </Link>
                 ))}
               </div>
@@ -167,26 +183,42 @@ export default async function HomePage() {
           </div>
         </section>
 
-        {/* Services / Trust */}
-        <section className="bg-muted/40 py-20">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="text-center mb-16">
-              <h2 className="text-3xl font-bold text-foreground mb-4 tracking-tight">Güvenli Araç Alışverişinin Adresi</h2>
-              <p className="text-muted-foreground max-w-2xl mx-auto">Tüm ilanlarımız kimlik onaylıdır ve şeffaf ekspertiz raporu desteğiyle sunulur.</p>
+        {/* Elite Trust & Performance */}
+        <section className="bg-slate-900 py-32 relative overflow-hidden">
+          {/* Abstract Background Accents */}
+          <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-blue-600/10 rounded-full blur-[120px] -mr-64 -mt-64" />
+          <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-indigo-600/10 rounded-full blur-[120px] -ml-64 -mb-64" />
+
+          <div className="max-w-7xl mx-auto px-6 lg:px-8 relative z-10">
+            <div className="text-center mb-24">
+              <h2 className="text-4xl md:text-6xl font-black text-white mb-6 tracking-tighter">Güvenli Ticaretin Standartı</h2>
+              <p className="text-slate-400 max-w-2xl mx-auto text-sm font-bold uppercase tracking-[0.2em] opacity-80">
+                TÜM İLANLARIMIZ KİMLİK ONAYLI VE ŞEFFAF EKSPERTİZ DESTEĞİYLE SUNULUR.
+              </p>
             </div>
             
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
               {[
-                { icon: <ShieldCheck size={32} />, title: "Onaylı Profil", desc: "Satıcı profilleri moderasyon ekibimiz tarafından incelenir ve doğrulanır." },
-                { icon: <CheckCircle2 size={32} />, title: "Şeffaf Ekspertiz", desc: "Aracın tüm durumu dijital raporlarla net şekilde sunulur." },
-                { icon: <Zap size={32} />, title: "AI Değerleme", desc: "Aracınızın gerçek piyasa değerini saniyeler içinde öğrenin." },
+                { icon: <ShieldCheck size={40} strokeWidth={1} />, title: "Kurumsal Onay", desc: "Tüm satıcı profilleri moderasyon ekibimiz tarafından titizlikle incelenir ve kimlikleri doğrulanır.", color: "blue" },
+                { icon: <CheckCircle2 size={40} strokeWidth={1} />, title: "Dijital Ekspertiz", desc: "Aracın tüm geçmişi ve teknik durumu bağımsız dijital raporlarla %100 şeffaflıkla sunulur.", color: "emerald" },
+                { icon: <Zap size={40} strokeWidth={1} />, title: "AI Değerleme", desc: "Yapay zeka altyapımız ile aracınızın gerçek piyasa değerini anlık verilerle saniyeler içinde öğrenin.", color: "indigo" },
               ].map((item, i) => (
-                <div key={i} className="bg-card p-8 rounded-3xl border border-border shadow-sm text-center">
-                  <div className="w-16 h-16 bg-primary/10 text-primary rounded-2xl flex items-center justify-center mx-auto mb-6">
+                <div key={i} className="group relative bg-white/5 backdrop-blur-sm border border-white/10 p-10 rounded-[3rem] transition-all duration-500 hover:bg-white/10 hover:border-white/20 hover:-translate-y-2">
+                  <div className={cn(
+                    "size-20 rounded-[2rem] flex items-center justify-center mb-8 transition-transform duration-500 group-hover:scale-110 group-hover:rotate-3 shadow-2xl",
+                    item.color === "blue" ? "bg-blue-600 text-white shadow-blue-500/20" :
+                    item.color === "emerald" ? "bg-emerald-500 text-white shadow-emerald-500/20" :
+                    "bg-indigo-600 text-white shadow-indigo-500/20"
+                  )}>
                     {item.icon}
                   </div>
-                  <h3 className="text-lg font-bold text-card-foreground mb-3">{item.title}</h3>
-                  <p className="text-sm text-muted-foreground leading-relaxed">{item.desc}</p>
+                  <h3 className="text-2xl font-black text-white mb-4 tracking-tight">{item.title}</h3>
+                  <p className="text-slate-400 text-sm leading-relaxed font-medium">{item.desc}</p>
+                  
+                  {/* Premium Corner Accent */}
+                  <div className="absolute top-8 right-8 text-white/5 font-black text-6xl select-none group-hover:text-white/10 transition-colors">
+                    0{i + 1}
+                  </div>
                 </div>
               ))}
             </div>

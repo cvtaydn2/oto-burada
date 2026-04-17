@@ -21,7 +21,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { toggleUserBan, promoteUserToAdmin, deleteUser } from "@/services/admin/user_actions";
+import { toggleUserBan, promoteUserToAdmin, deleteUser } from "@/services/admin/users";
 import { toast } from "sonner";
 
 interface UserActionMenuProps {

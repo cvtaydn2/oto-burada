@@ -2,7 +2,7 @@
 
 import Image from "next/image"
 import Link from "next/link"
-import { CarFront, MapPin, Settings2, ShieldCheck, Zap } from "lucide-react"
+import { CarFront, MapPin, Settings2, ShieldCheck, Zap, ChevronRight } from "lucide-react"
 import { cn, formatNumber, formatPrice, supabaseImageUrl } from "@/lib/utils"
 import { type Listing } from "@/types"
 import { FavoriteButton } from "@/components/listings/favorite-button"
@@ -25,13 +25,13 @@ export function CarCard({ listing, priority = false, variant = "grid" }: CarCard
   return (
     <div 
       className={cn(
-        "group relative block overflow-hidden rounded-xl border border-border bg-card transition-all duration-300 hover:shadow-lg",
+        "group relative block overflow-hidden rounded-[2.5rem] border border-slate-200/60 bg-white transition-all duration-500 hover:shadow-[0_40px_80px_-20px_rgba(0,0,0,0.1)] hover:-translate-y-2",
         variant === "grid" ? "flex-col" : "flex flex-row"
       )}
     >
       <div className={cn(
-        "relative bg-muted",
-        variant === "grid" ? "aspect-[16/10]" : "aspect-[16/10] w-[260px] shrink-0"
+        "relative bg-slate-100 overflow-hidden",
+        variant === "grid" ? "aspect-[16/10]" : "aspect-[16/11] w-[300px] shrink-0"
       )}>
         <Link href={detailHref} className="relative block h-full w-full">
           {coverImage ? (
@@ -40,7 +40,7 @@ export function CarCard({ listing, priority = false, variant = "grid" }: CarCard
               alt={listing.title}
               fill
               sizes={variant === "grid" ? "(min-width: 1024px) 33vw, 50vw" : "320px"}
-              className="object-cover transition-transform duration-500 group-hover:scale-105"
+              className="object-cover transition-transform duration-1000 ease-out group-hover:scale-110"
               fetchPriority={priority ? "high" : "auto"}
               loading={priority ? "eager" : "lazy"}
               priority={priority}
@@ -48,99 +48,111 @@ export function CarCard({ listing, priority = false, variant = "grid" }: CarCard
               blurDataURL={coverImage.placeholderBlur ?? undefined}
             />
           ) : (
-            <div className="flex items-center justify-center h-full text-muted-foreground/40">
+            <div className="flex items-center justify-center h-full text-slate-300">
               <CarFront size={48} className="stroke-[1]" />
             </div>
           )}
+          {/* Overlay gradient for depth */}
+          <div className="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-black/40 to-transparent opacity-60 group-hover:opacity-80 transition-opacity duration-500" />
         </Link>
         
-        <div className="absolute left-3 top-3 z-10 flex flex-col gap-2">
-          {/* AI Badge */}
+        <div className="absolute left-4 top-4 z-10 flex flex-col gap-2">
+          {/* AI Badge - Premium Glassmorphism */}
           <div className={cn(
-            "rounded-full px-3 py-1 text-[11px] font-bold text-white shadow-lg flex items-center gap-1.5",
-            insights.tone === "emerald" ? "bg-emerald-500 shadow-emerald-500/20" : 
-            insights.tone === "rose" ? "bg-rose-500 shadow-rose-500/20" :
-            insights.tone === "amber" ? "bg-amber-500 shadow-amber-500/20" :
-            "bg-blue-600 shadow-blue-600/20"
+            "backdrop-blur-xl border border-white/30 rounded-full px-4 py-1.5 text-[10px] font-black text-white shadow-xl flex items-center gap-2 tracking-widest uppercase",
+            insights.tone === "emerald" ? "bg-emerald-500/80" : 
+            insights.tone === "rose" ? "bg-rose-500/80" :
+            insights.tone === "amber" ? "bg-amber-500/80" :
+            "bg-indigo-600/80"
           )}>
-            {insights.tone === "emerald" && <Zap size={12} className="fill-current" />}
+            {insights.tone === "emerald" && <Zap size={10} className="fill-current animate-pulse" />}
             {insights.badgeLabel}
           </div>
 
           {listing.expertInspection && (
-            <div className="rounded-lg bg-background/90 backdrop-blur-md px-2.5 py-1 text-[10px] font-bold text-primary shadow-sm border border-primary/20 flex items-center gap-1">
-              <ShieldCheck size={12} />
+            <div className="backdrop-blur-xl bg-white/90 border border-emerald-100/30 rounded-full px-4 py-1.5 text-[9px] font-black text-emerald-700 shadow-xl flex items-center gap-1.5 tracking-widest uppercase">
+              <ShieldCheck size={12} className="text-emerald-500" />
               EKSPERTİZLİ
             </div>
           )}
         </div>
 
-        <div className="absolute right-3 top-3 z-10">
+        <div className="absolute right-4 top-4 z-10">
           <FavoriteButton 
             listingId={listing.id}
-            className="flex size-8 items-center justify-center rounded-full bg-background/80 text-muted-foreground shadow-sm transition-all hover:bg-background hover:text-red-500 backdrop-blur-sm"
+            className="flex size-10 items-center justify-center rounded-full bg-white/20 text-white shadow-xl transition-all hover:bg-white hover:text-rose-500 backdrop-blur-md border border-white/40 group/fav"
           />
+        </div>
+
+        {/* Price Tag Overlay (Mobile view or grid highlight) */}
+        <div className="absolute left-4 bottom-4 z-10">
+           <div className="text-xl font-black text-white tracking-tighter drop-shadow-lg">
+             {formatPrice(listing.price)} <span className="text-xs font-bold opacity-80 uppercase">TL</span>
+           </div>
         </div>
       </div>
 
-      <div className="flex flex-1 flex-col p-4">
-        <Link href={detailHref} className="group-hover:text-primary transition-colors">
-          <h3 className="font-bold text-lg text-card-foreground truncate leading-tight">
+      <div className="flex flex-1 flex-col p-6">
+        <Link href={detailHref} className="group/title block">
+          <h3 className="font-black text-[1.15rem] text-slate-900 truncate leading-none tracking-tight group-hover/title:text-indigo-600 transition-colors">
             {listing.title}
           </h3>
-          <div className="flex items-center gap-2 mt-1">
-             <span className="text-sm text-muted-foreground font-medium">{listing.year}</span>
-             <span className="size-1 rounded-full bg-border" />
-             <span className="text-xs text-primary font-bold">{listing.brand} {listing.model}</span>
+          <div className="flex items-center gap-2 mt-2">
+             <span className="text-[10px] text-slate-400 font-black uppercase tracking-widest bg-slate-50 px-2 py-0.5 rounded-md">{listing.year}</span>
+             <span className="text-[10px] text-indigo-500 font-black uppercase tracking-widest">{listing.brand} &middot; {listing.model}</span>
           </div>
         </Link>
 
-        {/* Insight Highlights */}
+        {/* Mini Badges Highlights */}
         {insights.highlights.length > 0 && (
-          <div className="mt-3 flex flex-wrap gap-1.5">
+          <div className="mt-5 flex flex-wrap gap-1.5">
             {insights.highlights.map(h => (
-              <span key={h} className="text-[10px] font-semibold bg-muted text-muted-foreground px-2 py-1 rounded-full border border-border">
+              <span key={h} className="text-[9px] font-black uppercase tracking-widest bg-slate-50 text-slate-500 px-3 py-1.5 rounded-xl border border-slate-100/60 transition-all hover:bg-white hover:border-indigo-100 hover:text-indigo-600">
                 {h}
               </span>
             ))}
           </div>
         )}
 
-        <div className="mt-3 flex items-center justify-between border-b border-border pb-3 text-[11px] font-medium text-muted-foreground">
-          <span className="flex items-center gap-1.5 capitalize">
-            <Settings2 size={13} className="text-muted-foreground/50" />
-            {listing.transmission === "yari_otomatik" ? "Yarı Otomatik" : listing.transmission}
-          </span>
-          <span className="flex items-center gap-1.5 capitalize">
-            <CarFront size={13} className="text-muted-foreground/50" />
-            {listing.fuelType}
-          </span>
-        </div>
-
-        <div className="mt-3 flex flex-col gap-1">
-          <p className="flex items-center gap-1.5 text-[11px] text-muted-foreground">
-            <MapPin size={12} className="text-muted-foreground/50" />
-            {listing.city}, {listing.district}
-          </p>
-          <div className="flex items-center justify-between mt-1">
-            <div className="text-xl font-bold text-primary tracking-tight">
-              {formatPrice(listing.price)} TL
+        {/* Specs Grid */}
+        <div className="mt-6 grid grid-cols-2 gap-4 border-b border-slate-50 pb-6">
+          <div className="flex items-center gap-2.5">
+            <div className="size-8 rounded-xl bg-slate-50 flex items-center justify-center text-slate-400">
+              <Settings2 size={14} />
             </div>
-            {insights.fairValue && insights.fairValue > listing.price && (
-              <div className="text-[10px] font-bold text-emerald-500 bg-emerald-50 dark:bg-emerald-900/30 px-1.5 py-0.5 rounded border border-emerald-100 dark:border-emerald-800">
-                FIRSAT
-              </div>
-            )}
+            <div className="flex flex-col">
+              <span className="text-[9px] font-black text-slate-300 uppercase tracking-widest leading-none">Şanzıman</span>
+              <span className="text-[11px] font-black text-slate-700 mt-1 uppercase">
+                {listing.transmission === "yari_otomatik" ? "Yarı Otomatik" : (listing.transmission === "manuel" ? "Manuel" : "Otomatik")}
+              </span>
+            </div>
+          </div>
+          <div className="flex items-center gap-2.5">
+            <div className="size-8 rounded-xl bg-slate-50 flex items-center justify-center text-slate-400">
+              <CarFront size={14} />
+            </div>
+            <div className="flex flex-col">
+              <span className="text-[9px] font-black text-slate-300 uppercase tracking-widest leading-none">Yakıt</span>
+              <span className="text-[11px] font-black text-slate-700 mt-1 uppercase">
+                {listing.fuelType === "benzin" ? "Benzin" : (listing.fuelType === "dizel" ? "Dizel" : "Hibrit")}
+              </span>
+            </div>
           </div>
         </div>
 
-          <div className="mt-auto flex items-center justify-between border-t border-border/50 pt-3">
-            <span className="text-xs font-bold text-muted-foreground">{formatNumber(listing.mileage)} KM</span>
-            <div className="flex items-center gap-1 text-[11px] font-bold uppercase tracking-wider text-primary">
+        {/* Footer Area */}
+        <div className="mt-6 flex items-center justify-between">
+          <div className="flex flex-col">
+             <p className="flex items-center gap-1.5 text-[10px] text-slate-400 font-black uppercase tracking-widest">
+               <MapPin size={12} className="text-slate-300" />
+               {listing.city} &middot; {listing.district}
+             </p>
+             <span className="text-sm font-black text-slate-700 mt-1 tracking-tight">{formatNumber(listing.mileage)} KM</span>
+          </div>
+          
+          <div className="group/btn flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-white bg-slate-900 px-6 py-3 rounded-2xl shadow-xl shadow-slate-200 hover:bg-indigo-600 hover:shadow-indigo-200 transition-all active:scale-90 cursor-pointer">
             İncele
-            <svg className="size-2.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
-              <path d="m9 18 6-6-6-6" />
-            </svg>
+            <ChevronRight size={14} strokeWidth={4} className="group-hover/btn:translate-x-1 transition-transform" />
           </div>
         </div>
       </div>

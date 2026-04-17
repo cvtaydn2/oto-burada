@@ -2,7 +2,7 @@ import type { LucideIcon } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 
-type DashboardMetricTone = "indigo" | "emerald" | "amber" | "slate";
+type DashboardMetricTone = "indigo" | "emerald" | "amber" | "slate" | "blue" | "rose";
 
 interface DashboardMetricCardProps {
   label: string;
@@ -40,6 +40,18 @@ const toneClasses: Record<
     icon: "bg-muted text-muted-foreground",
     panel: "bg-card border-border",
     badge: "bg-muted text-foreground/90 border-border",
+    text: "text-foreground",
+  },
+  blue: {
+    icon: "bg-blue-100 text-blue-600",
+    panel: "bg-card border-border",
+    badge: "bg-blue-50 text-blue-700 border-blue-100",
+    text: "text-foreground",
+  },
+  rose: {
+    icon: "bg-rose-100 text-rose-600",
+    panel: "bg-card border-border",
+    badge: "bg-rose-50 text-rose-700 border-rose-100",
     text: "text-foreground",
   },
 };

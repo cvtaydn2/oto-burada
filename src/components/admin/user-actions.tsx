@@ -31,8 +31,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
-import { banUser, verifyUserBusiness, updateUserRole } from "@/services/admin/users";
-import { deleteUser } from "@/services/admin/user_actions";
+import { banUser, verifyUserBusiness, updateUserRole, deleteUser } from "@/services/admin/users";
 
 interface UserActionsProps {
   userId: string;

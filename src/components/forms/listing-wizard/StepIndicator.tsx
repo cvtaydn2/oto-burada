@@ -4,7 +4,7 @@ import { cn } from "@/lib/utils";
 import { 
   Car, 
   Settings, 
-  Image as ImageIcon, 
+  ShieldCheck,
   CheckCircle2,
   Check
 } from "lucide-react";
@@ -14,18 +14,24 @@ interface StepIndicatorProps {
 }
 
 const stepsConfig = [
-  { label: "Temel Bilgiler", icon: Car },
-  { label: "Konum & Detaylar", icon: Settings },
-  { label: "Ekspertiz & Kondisyon", icon: ImageIcon },
-  { label: "Fotoğraflar & Gönder", icon: CheckCircle2 },
+  { label: "Araç", icon: Car },
+  { label: "Detay Başlık", icon: Settings },
+  { label: "Kondisyon", icon: ShieldCheck },
+  { label: "Medya", icon: CheckCircle2 },
 ] as const;
 
 export function StepIndicator({ currentStep }: StepIndicatorProps) {
   return (
-    <div className="bg-white border border-gray-200 rounded-2xl p-8 mb-8 shadow-sm">
-      <div className="flex justify-between items-center relative">
-        {/* Progress Line */}
-        <div className="absolute left-0 top-1/2 -translate-y-1/2 w-full h-0.5 bg-gray-100 z-0" />
+    <div className="mb-12">
+      <div className="flex justify-between items-center relative max-w-2xl mx-auto">
+        {/* Background Track */}
+        <div className="absolute left-0 top-[22px] w-full h-1.5 bg-slate-100 rounded-full z-0" />
+        
+        {/* Active Progress Line */}
+        <div 
+          className="absolute left-0 top-[22px] h-1.5 bg-slate-900 rounded-full z-1 transition-all duration-700 ease-out shadow-[0_0_15px_rgba(15,23,42,0.3)]"
+          style={{ width: `${(currentStep / (stepsConfig.length - 1)) * 100}%` }}
+        />
         
         {stepsConfig.map((step, index) => {
           const isCompleted = index < currentStep;
@@ -33,23 +39,31 @@ export function StepIndicator({ currentStep }: StepIndicatorProps) {
           const Icon = step.icon;
 
           return (
-            <div key={step.label} className="relative z-10 flex flex-col items-center bg-white px-4">
+            <div key={step.label} className="relative z-10 flex flex-col items-center">
               <div
                 className={cn(
-                  "w-12 h-12 rounded-full flex items-center justify-center font-bold transition-all duration-500 ring-4 ring-white shadow-sm",
+                  "size-12 rounded-full flex items-center justify-center transition-all duration-500 ring-[6px] ring-slate-50 shadow-lg",
                   isCompleted ? "bg-emerald-500 text-white" : 
-                  isActive ? "bg-blue-500 text-white shadow-md" : 
-                  "bg-gray-50 text-gray-400 border border-gray-200"
+                  isActive ? "bg-slate-900 text-white scale-110 shadow-xl shadow-slate-900/40" : 
+                  "bg-white text-slate-300 border border-slate-200"
                 )}
               >
-                {isCompleted ? <Check size={20} strokeWidth={3} /> : <Icon size={20} />}
+                {isCompleted ? <Check size={20} strokeWidth={4} /> : <Icon size={20} strokeWidth={isActive ? 3 : 2} />}
               </div>
-              <span className={cn(
-                "hidden sm:block text-[11px] mt-2 font-bold transition-colors",
-                isActive || isCompleted ? "text-gray-800" : "text-gray-400"
-              )}>
-                {step.label}
-              </span>
+              <div className="absolute top-16 whitespace-nowrap text-center">
+                <span className={cn(
+                  "text-[10px] font-black uppercase tracking-widest transition-all duration-300",
+                  isActive ? "text-slate-900 translate-y-0 opacity-100" : 
+                  isCompleted ? "text-emerald-600 opacity-80" : "text-slate-300 opacity-60"
+                )}>
+                  {step.label}
+                </span>
+                {isActive && (
+                  <div className="mt-1 flex justify-center">
+                    <div className="size-1 rounded-full bg-slate-900 animate-bounce" />
+                  </div>
+                )}
+              </div>
             </div>
           );
         })}

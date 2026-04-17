@@ -7,6 +7,7 @@ import {
   LoaderCircle,
   ShieldCheck,
   AlertCircle,
+  Car,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
@@ -718,43 +719,65 @@ export function ListingCreateForm({
   };
 
   return (
-    <div className="max-w-[1000px] mx-auto px-4 py-8 w-full flex-1">
-      <div className="mb-8 animate-in fade-in slide-in-from-top-4 duration-700">
-        <h1 className="text-3xl font-bold text-gray-800 tracking-tight">
-          {isEditing ? "İlanı Düzenle" : "Yeni İlan Oluştur"}
-        </h1>
-        <p className="text-gray-500 mt-2">
-          {isEditing
-            ? "Araç bilgilerini güncelleyin. Değişiklikler moderasyon ekibimiz tarafından tekrar incelenecektir."
-            : "Aracınızı milyonlarca alıcıyla buluşturmak için formu doldurmaya başlayın."}
-        </p>
-      </div>
-
-      <StepIndicator currentStep={currentStep} />
-
-      <form onSubmit={handleFormSubmit} className="space-y-10">
-        {submitState.status === "success" && submitState.message && (
-          <div className="rounded-2xl bg-emerald-50 p-4 border border-emerald-100 flex items-center gap-3 animate-in fade-in zoom-in duration-300 shadow-sm">
-            <CheckCircle2 className="size-5 text-emerald-500" />
-            <p className="text-sm font-semibold text-emerald-800">{submitState.message}</p>
+    <div className="mx-auto min-h-screen w-full flex-1 bg-slate-50/50 px-4 py-12 lg:px-8">
+      <div className="mx-auto max-w-[1000px]">
+        <div className="mb-14 text-center">
+          <div className="inline-flex items-center gap-2 rounded-full bg-slate-100 px-4 py-1.5 text-[10px] font-black uppercase tracking-widest text-slate-500 mb-6 border border-slate-200 shadow-sm">
+            <Car size={12} strokeWidth={3} />
+            Satış Yolculuğu
           </div>
-        )}
+          <h1 className="text-4xl font-black tracking-tight text-slate-900 lg:text-6xl">
+            {isEditing ? "İlanı Güncelle" : "Arabanı Satışa Çıkar"}
+          </h1>
+          <p className="mx-auto mt-4 max-w-2xl text-base font-bold text-slate-400">
+            {isEditing
+              ? "Araç bilgilerini güncelleyerek ilanını taze tut. Değişiklikler uzman ekibimiz tarafından incelenecektir."
+              : "Hızlı, güvenli ve kolayca ilan ver. Doğru alıcıyla dakikalar içinde buluş."}
+          </p>
+        </div>
 
-        {submitState.status === "error" && submitState.message && (
-          <div className="rounded-2xl bg-red-50 p-4 border border-red-100 flex items-center gap-3 animate-in fade-in zoom-in duration-300 shadow-sm">
-            <AlertCircle className="size-5 text-red-500" />
-            <p className="text-sm font-semibold text-red-800">{submitState.message}</p>
-          </div>
-        )}
+        <StepIndicator currentStep={currentStep} />
 
-        {errors.root && (
-          <div className="rounded-2xl bg-red-50 p-4 border border-red-100 flex items-center gap-3 shadow-sm">
-            <AlertCircle className="size-5 text-red-500" />
-            <p className="text-sm font-semibold text-red-800">{errors.root.message}</p>
-          </div>
-        )}
+        <form onSubmit={handleFormSubmit} className="mt-16">
+          <div className="relative rounded-[2.5rem] border border-white bg-white p-6 shadow-2xl shadow-slate-200/60 lg:p-12">
+            
+            {/* Step Corner Badge */}
+            <div className="absolute -right-3 -top-3 hidden lg:flex size-20 items-center justify-center rounded-3xl bg-slate-900 text-white shadow-xl shadow-slate-900/30 transform transition-transform hover:scale-110">
+              <div className="flex flex-col items-center leading-none">
+                <span className="text-[10px] uppercase font-black opacity-60 mb-1">Adım</span>
+                <span className="text-3xl font-black">{currentStep + 1}</span>
+              </div>
+            </div>
 
-        <div className="min-h-[500px]">
+            <div className="space-y-8">
+              {submitState.status === "success" && submitState.message && (
+                <div className="flex items-center gap-4 rounded-3xl bg-emerald-50 p-6 border border-emerald-100 shadow-sm animate-in fade-in zoom-in-95 duration-500">
+                  <div className="flex size-10 items-center justify-center rounded-2xl bg-emerald-500 text-white shadow-lg shadow-emerald-500/30">
+                    <CheckCircle2 size={24} strokeWidth={3} />
+                  </div>
+                  <p className="text-base font-black text-emerald-900 tracking-tight">{submitState.message}</p>
+                </div>
+              )}
+
+              {submitState.status === "error" && submitState.message && (
+                <div className="flex items-center gap-4 rounded-3xl bg-rose-50 p-6 border border-rose-100 shadow-sm animate-in fade-in zoom-in-95 duration-500">
+                  <div className="flex size-10 items-center justify-center rounded-2xl bg-rose-500 text-white shadow-lg shadow-rose-500/30">
+                    <AlertCircle size={24} strokeWidth={3} />
+                  </div>
+                  <p className="text-base font-black text-rose-900 tracking-tight">{submitState.message}</p>
+                </div>
+              )}
+
+              {errors.root && (
+                <div className="flex items-center gap-4 rounded-3xl bg-rose-50 p-6 border border-rose-100 shadow-sm">
+                  <div className="flex size-10 items-center justify-center rounded-2xl bg-rose-500 text-white shadow-lg shadow-rose-500/30">
+                    <AlertCircle size={24} strokeWidth={3} />
+                  </div>
+                  <p className="text-base font-black text-rose-900 tracking-tight">{errors.root.message}</p>
+                </div>
+              )}
+
+              <div className="min-h-[400px]">
           {currentStep === 0 && (
             <VehicleInfoStep 
               form={form} 
@@ -787,61 +810,72 @@ export function ListingCreateForm({
             />
           )}
         </div>
+      </div>
 
-        {/* Navigation Controls */}
-        <div className="flex items-center justify-end space-x-4 pt-4 border-t border-gray-100">
-          {currentStep > 0 && (
-            <button
-              type="button"
-              onClick={handlePrevStep}
-              disabled={isSubmitting}
-              className="bg-card border border-gray-300 text-gray-700 font-bold px-8 py-3 rounded-xl hover:bg-gray-50 transition shadow-sm disabled:opacity-50"
-            >
-              Geri
-            </button>
-          )}
+            {/* Navigation Controls - Fixed Bottom Bar Feel */}
+            <div className="mt-12 flex h-24 items-center justify-between border-t border-slate-100 pt-8 lg:mt-16">
+              <div>
+                {currentStep > 0 && (
+                  <button
+                    type="button"
+                    onClick={handlePrevStep}
+                    disabled={isSubmitting}
+                    className="flex items-center gap-2 text-xs font-black uppercase tracking-widest text-slate-400 transition-all hover:text-slate-900 active:scale-95 disabled:opacity-30"
+                  >
+                    <svg className="size-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
+                    </svg>
+                    Geri Dön
+                  </button>
+                )}
+              </div>
 
-          {currentStep < totalSteps - 1 ? (
-            <button
-              type="button"
-              onClick={handleNextStep}
-              className="bg-blue-500 text-white font-bold px-10 py-3 rounded-xl hover:bg-blue-600 transition shadow-md flex items-center group"
-            >
-              İleri 
-              <ChevronRight size={18} className="ml-2 transition-transform group-hover:translate-x-1" />
-            </button>
-          ) : (
-            <button
-              type="submit"
-              disabled={isSubmitting || isUploadingAnyImage || effectiveImageCount < minimumListingImages}
-              onClick={() => {
-                submitIntentRef.current = true;
-              }}
-              className="bg-blue-500 text-white font-bold px-10 py-3 rounded-xl hover:bg-blue-600 transition shadow-md flex items-center disabled:opacity-50"
-            >
-              {isSubmitting ? (
-                <>
-                  <LoaderCircle className="size-4 animate-spin mr-2" />
-                  Yayınlanıyor...
-                </>
-              ) : (
-                <>
-                  <ShieldCheck size={18} className="mr-2" />
-                  {isEditing ? "İlanı Güncelle" : "İlanı Moderasyona Gönder"}
-                </>
-              )}
-            </button>
-          )}
-        </div>
-      </form>
+              <div className="flex items-center gap-4">
+                {currentStep < totalSteps - 1 ? (
+                  <button
+                    type="button"
+                    onClick={handleNextStep}
+                    className="flex h-14 items-center gap-3 rounded-2xl bg-slate-900 px-10 text-xs font-black uppercase tracking-[0.2em] text-white shadow-2xl shadow-slate-900/30 transition-all hover:bg-black hover:scale-105 active:scale-95"
+                  >
+                    Sonraki Adım
+                    <ChevronRight size={18} strokeWidth={3} />
+                  </button>
+                ) : (
+                  <button
+                    type="submit"
+                    onClick={() => (submitIntentRef.current = true)}
+                    disabled={isSubmitting || isUploadingAnyImage}
+                    className="flex h-16 items-center gap-4 rounded-2xl bg-blue-600 px-12 text-sm font-black uppercase tracking-[0.2em] text-white shadow-2xl shadow-blue-600/30 transition-all hover:bg-blue-700 hover:scale-105 active:scale-95 disabled:opacity-50 disabled:grayscale"
+                  >
+                    {isSubmitting ? (
+                      <>
+                        <LoaderCircle className="animate-spin" size={20} strokeWidth={3} />
+                        Gönderiliyor...
+                      </>
+                    ) : (
+                      <>
+                        {isEditing ? "Değişiklikleri Kaydet" : "İlanı Yayınla"}
+                        <ShieldCheck size={22} strokeWidth={3} />
+                      </>
+                    )}
+                  </button>
+                )}
+              </div>
+            </div>
+          </div>
+        </form>
+
+        <p className="mt-10 text-center text-xs font-bold text-slate-400 uppercase tracking-widest opacity-60">
+          Güvenli Altyapı — OtoBurada Marketplace
+        </p>
+      </div>
 
       <EmailVerificationDialog
         isOpen={isVerifyDialogOpen}
         onOpenChange={setIsVerifyDialogOpen}
         onSuccess={() => {
           setIsEmailVerifiedLocally(true);
-          setIsVerifyDialogOpen(false);
-          form.handleSubmit(submitListing)();
+          void submitListing(getValues());
         }}
       />
     </div>

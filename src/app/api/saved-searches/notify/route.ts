@@ -22,7 +22,8 @@
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { hasSupabaseAdminEnv } from "@/lib/supabase/env";
 import { apiSuccess, apiError, API_ERROR_CODES } from "@/lib/utils/api-response";
-import { sendSavedSearchAlertEmail, type SavedSearchAlertListing } from "@/services/email/email-service";
+import { sendSavedSearchAlertEmail } from "@/services/email/email-service";
+import type { SavedSearchAlertListing } from "@/services/email/email-templates";
 import { getFilteredDatabaseListings } from "@/services/listings/listing-submissions";
 import { createSearchParamsFromListingFilters } from "@/services/listings/listing-filters";
 import { normalizeSavedSearchFilters } from "@/services/saved-searches/saved-search-utils";

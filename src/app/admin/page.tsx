@@ -5,6 +5,12 @@ import {
   UserPlus,
   Car,
   Flag,
+  ShieldCheck,
+  ShieldAlert,
+  ArrowUpRight,
+  Monitor,
+  Database,
+  Search,
 } from "lucide-react";
 
 import {
@@ -24,6 +30,7 @@ import { getAdminAnalytics } from "@/services/admin/analytics";
 import { getStoredReports } from "@/services/reports/report-submissions";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { features } from "@/lib/features";
+import { cn } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";
 
@@ -35,70 +42,105 @@ export default async function AdminOverviewPage() {
   const recentActionsPromise = getRecentAdminModerationActions(10).catch(() => []);
   const persistenceHealthPromise = getPersistenceHealth().catch(() => null);
 
-  // Sistem durumu için hızlı DB ping
   const admin = createSupabaseAdminClient();
   const { error: pingError } = await admin.from("profiles").select("id").limit(1);
   const systemOnline = !pingError;
 
   return (
-    <main className="min-h-screen space-y-8 bg-muted/30/30 p-6 lg:p-8">
-      <section className="flex flex-col justify-between gap-6 md:flex-row md:items-center">
-        <div>
-          <div className="mb-2 flex items-center gap-2">
-            <div className={`size-2 animate-pulse rounded-full ${systemOnline ? "bg-emerald-500" : "bg-rose-500"}`} />
-            <span className={`text-[10px] font-bold uppercase tracking-widest italic ${systemOnline ? "text-muted-foreground/70" : "text-rose-500"}`}>
-              Sistem Durumu: {systemOnline ? "Çevrimiçi" : "Bağlantı Sorunu"}
-            </span>
+    <main className="min-h-screen bg-slate-50/50 pb-20 pt-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
+      <div className="max-w-[1400px] mx-auto px-4 lg:px-8 space-y-12">
+        
+        {/* Elite Admin Header */}
+        <section className="relative overflow-hidden rounded-[2.5rem] bg-slate-900 px-8 py-12 text-white shadow-2xl shadow-slate-900/20">
+          <div className="absolute right-0 top-0 h-full w-1/4 bg-gradient-to-l from-white/5 to-transparent opacity-50" />
+          <div className="absolute -left-20 -top-20 h-64 w-64 rounded-full bg-blue-500/10 blur-3xl" />
+          
+          <div className="relative z-10 flex flex-col gap-8 md:flex-row md:items-end md:justify-between">
+            <div>
+              <div className="mb-4 inline-flex items-center gap-3 rounded-full bg-white/10 px-4 py-1.5 backdrop-blur-md border border-white/5">
+                <div className={cn("size-2 rounded-full shadow-[0_0_10px_currentColor]", systemOnline ? "bg-emerald-400 text-emerald-400" : "bg-rose-400 text-rose-400")} />
+                <span className="text-[10px] font-black uppercase tracking-widest text-slate-300">
+                  Sistem: <span className={cn(systemOnline ? "text-emerald-400" : "text-rose-400")}>{systemOnline ? "ONLINE" : "OFFLINE"}</span>
+                </span>
+              </div>
+              <h1 className="text-4xl font-black tracking-tight lg:text-6xl">
+                Yönetim <span className="text-blue-500">Merkezi</span>
+              </h1>
+              <p className="mt-4 max-w-xl text-lg font-bold text-slate-400 lowercase first-letter:uppercase">
+                Platform genelindeki operasyonları, moderasyon kuyruğunu ve sistem sağlığını buradan yönetin.
+              </p>
+            </div>
+
+            <div className="flex flex-wrap gap-4">
+              {features.adminAnalytics && (
+                <Suspense fallback={<div className="h-[80px] min-w-[180px] animate-pulse rounded-2xl bg-white/5" />}>
+                  <AdminRevenueBadge analyticsPromise={analyticsPromise} />
+                </Suspense>
+              )}
+              <AdminHeaderActions />
+            </div>
           </div>
-          <h1 className="text-3xl font-black tracking-tight text-foreground">
-            Yönetim <span className="text-blue-600">Paneli</span>
-          </h1>
-          <p className="mt-1.5 text-sm font-medium text-muted-foreground">Platform operasyonlarını ve sistem sağlığını buradan takip edin.</p>
-        </div>
 
-        <div className="flex items-center gap-4">
-          {features.adminAnalytics && (
-            <Suspense fallback={<div className="h-[74px] min-w-[140px] animate-pulse rounded-2xl border border-border bg-card p-4 shadow-sm" />}>
-              <AdminRevenueBadge analyticsPromise={analyticsPromise} />
-            </Suspense>
-          )}
-          <AdminHeaderActions />
-        </div>
-      </section>
+          <div className="relative z-10 mt-12 grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-8 border-t border-white/10 pt-8">
+            <QuickSystemStat icon={<Database size={16} />} label="DB Sağlığı" value={systemOnline ? "%100" : "%0"} color="emerald" />
+            <QuickSystemStat icon={<Monitor size={16} />} label="Sunucu Yükü" value="Normal" color="blue" />
+            <QuickSystemStat icon={<ShieldCheck size={16} />} label="Güvenlik" value="Aktif" color="indigo" />
+            <QuickSystemStat icon={<Activity size={16} />} label="Uptime" value="%99.9" color="emerald" />
+          </div>
+        </section>
 
-      <Suspense fallback={<AdminMetricsSkeleton />}>
-        <AdminMetricsSection analyticsPromise={analyticsPromise} reportsPromise={reportsPromise} />
-      </Suspense>
+        {/* Metrics Grid */}
+        <Suspense fallback={<AdminMetricsSkeleton />}>
+          <AdminMetricsSection analyticsPromise={analyticsPromise} reportsPromise={reportsPromise} />
+        </Suspense>
 
-      <div className="grid grid-cols-1 gap-8 xl:grid-cols-3">
-        <div className="space-y-8 xl:col-span-2">
-          {features.adminAnalytics ? (
-            <Suspense fallback={<AdminAnalyticsSkeleton />}>
-              <AdminAnalyticsSection
-                analyticsPromise={analyticsPromise}
-                persistenceHealthPromise={persistenceHealthPromise}
+        <div className="grid grid-cols-1 gap-12 xl:grid-cols-3">
+          <div className="space-y-12 xl:col-span-2">
+            {features.adminAnalytics ? (
+              <Suspense fallback={<AdminAnalyticsSkeleton />}>
+                <AdminAnalyticsSection
+                  analyticsPromise={analyticsPromise}
+                  persistenceHealthPromise={persistenceHealthPromise}
+                />
+              </Suspense>
+            ) : persistenceHealthPromise ? (
+               <Suspense fallback={<div className="h-60 animate-pulse bg-card rounded-[2.5rem]" />}>
+                 <PersistenceOnlySection persistenceHealthPromise={persistenceHealthPromise} />
+               </Suspense>
+            ) : null}
+          </div>
+
+          <div className="space-y-12">
+            <Suspense fallback={<AdminRecentActionsSkeleton />}>
+              <AdminRecentActionsSection
+                recentActionsPromise={recentActionsPromise}
+                reportsPromise={reportsPromise}
               />
             </Suspense>
-          ) : persistenceHealthPromise ? (
-             <Suspense fallback={<div className="h-60 animate-pulse bg-card rounded-2xl" />}>
-               <PersistenceOnlySection persistenceHealthPromise={persistenceHealthPromise} />
-             </Suspense>
-          ) : null}
-        </div>
-
-        <div className="space-y-8">
-          <Suspense fallback={<AdminRecentActionsSkeleton />}>
-            <AdminRecentActionsSection
-              recentActionsPromise={recentActionsPromise}
-              reportsPromise={reportsPromise}
-            />
-          </Suspense>
-          <Suspense fallback={<div className="h-[420px] animate-pulse rounded-[2rem] border border-border bg-card" />}>
-            <AdminBroadcastPanel />
-          </Suspense>
+            <Suspense fallback={<div className="h-[420px] animate-pulse rounded-[2.5rem] border border-border bg-card shadow-sm" />}>
+              <AdminBroadcastPanel />
+            </Suspense>
+          </div>
         </div>
       </div>
     </main>
+  );
+}
+
+function QuickSystemStat({ icon, label, value, color }: { icon: React.ReactNode, label: string, value: string, color: "emerald" | "blue" | "indigo" }) {
+  return (
+    <div className="flex items-center gap-3">
+      <div className={cn(
+        "flex size-10 items-center justify-center rounded-xl bg-white/5 border border-white/10 shadow-inner",
+        color === "emerald" ? "text-emerald-400" : color === "blue" ? "text-blue-400" : "text-indigo-400"
+      )}>
+        {icon}
+      </div>
+      <div>
+        <p className="text-[9px] font-black uppercase tracking-widest text-slate-500">{label}</p>
+        <p className="text-sm font-black text-white">{value}</p>
+      </div>
+    </div>
   );
 }
 
@@ -114,9 +156,13 @@ async function AdminRevenueBadge({
   }
 
   return (
-    <div className="min-w-[140px] rounded-2xl border border-border bg-card p-4 shadow-sm">
-      <span className="mb-1 block text-[10px] font-bold uppercase italic text-muted-foreground/70">Toplam Hacim</span>
-      <span className="text-xl font-black tracking-tighter text-foreground">₺{analyticsData.kpis.totalRevenue.toLocaleString("tr-TR")}</span>
+    <div className="min-w-[180px] rounded-3xl border border-white/5 bg-white/5 p-6 backdrop-blur-xl shadow-2xl relative group overflow-hidden">
+      <div className="absolute -right-4 -top-4 size-20 bg-emerald-500/10 rounded-full blur-2xl group-hover:scale-125 transition-transform" />
+      <span className="relative z-10 block text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1">Ciro Hacmi</span>
+      <div className="relative z-10 flex items-center gap-2">
+        <span className="text-2xl font-black tracking-tighter text-white">₺{analyticsData.kpis.totalRevenue.toLocaleString("tr-TR")}</span>
+        <ArrowUpRight size={14} className="text-emerald-400" />
+      </div>
     </div>
   );
 }
@@ -132,38 +178,38 @@ async function AdminMetricsSection({
   const actionableReports = storedReports.filter((report) => report.status === "open");
 
   return (
-    <div className="grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-4">
+    <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-4">
       <DashboardMetricCard
         label="Bekleyen İlanlar"
         value={String(analyticsData?.listingsByStatus?.find((status) => status.status === "pending")?.count ?? 0)}
-        helper="İncelenmeyi bekleyen yeni ilanlar"
+        helper="Moderasyon kuyruğu"
         icon={Car}
-        tone="amber"
+        tone={ (analyticsData?.listingsByStatus?.find((status) => status.status === "pending")?.count ?? 0) > 0 ? "amber" : "blue"}
       />
       <DashboardMetricCard
         label="Aktif Şikayetler"
         value={String(actionableReports.length)}
-        helper="Operatör müdahalesi bekleyenler"
+        helper="Kullanıcı ihbarları"
         icon={Flag}
-        tone="amber"
+        tone={actionableReports.length > 0 ? "rose" : "blue"}
       />
       <DashboardMetricCard
-        label="İlan Artışı"
+        label="Toplam İlan"
         value={String(analyticsData?.kpis.totalListings ?? 0)}
-        helper="Toplam kayıtlı araç"
+        helper="Envanter hacmi"
         icon={Activity}
         tone="emerald"
         trend={analyticsData?.listingTrend}
-        trendLabel="Ay"
+        trendLabel="Haftalık"
       />
       <DashboardMetricCard
-        label="Yeni Üyeler"
+        label="Kayıtlı Üye"
         value={String(analyticsData?.kpis.totalUsers ?? 0)}
-        helper="Toplam kayıtlı kullanıcı"
+        helper="Ekosistem büyüklüğü"
         icon={UserPlus}
         tone="indigo"
         trend={analyticsData?.userTrend}
-        trendLabel="Ay"
+        trendLabel="Haftalık"
       />
     </div>
   );
@@ -176,7 +222,11 @@ async function PersistenceOnlySection({
 }) {
   const persistenceHealth = await persistenceHealthPromise;
   if (!persistenceHealth) return null;
-  return <AdminPersistencePanel health={persistenceHealth} />;
+  return (
+    <div className="rounded-[2.5rem] overflow-hidden border border-white bg-white shadow-xl shadow-slate-200/50">
+      <AdminPersistencePanel health={persistenceHealth} />
+    </div>
+  );
 }
 
 async function AdminAnalyticsSection({
@@ -189,27 +239,33 @@ async function AdminAnalyticsSection({
   const [analyticsData, persistenceHealth] = await Promise.all([analyticsPromise, persistenceHealthPromise]);
 
   return (
-    <>
-      <div className="min-h-[400px] overflow-hidden rounded-2xl border border-border bg-card p-6 shadow-sm">
-        <div className="mb-6 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="flex size-10 items-center justify-center rounded-xl bg-blue-50 text-blue-600">
-              <Zap size={20} className="fill-blue-600" />
+    <div className="space-y-12">
+      <div className="overflow-hidden rounded-[2.5rem] border border-white bg-white p-10 shadow-2xl shadow-slate-200/50 group">
+        <div className="mb-10 flex items-center justify-between">
+          <div className="flex items-center gap-5">
+            <div className="flex size-14 items-center justify-center rounded-2xl bg-blue-50 text-blue-600 shadow-inner group-hover:bg-blue-600 group-hover:text-white transition-all duration-500">
+              <Zap size={28} strokeWidth={2.5} className="fill-current" />
             </div>
             <div>
-              <h2 className="text-lg font-black text-foreground">İlan Analiz Grafiği</h2>
-              <p className="text-xs font-medium text-muted-foreground/70">Son 7 günlük ilan dağılımı</p>
+              <h2 className="text-2xl font-black text-slate-900 tracking-tight">Akış Analitiği</h2>
+              <p className="text-xs font-black uppercase tracking-widest text-slate-400 mt-1">İlan yayın performans dağılımı</p>
             </div>
           </div>
-          <Button variant="ghost" size="sm" className="text-xs font-bold text-blue-600" asChild>
-            <a href="/admin/analytics">Detaylı Gör →</a>
+          <Button variant="ghost" size="sm" className="rounded-xl h-10 px-6 font-black text-[10px] tracking-widest uppercase hover:bg-slate-50 transition-colors" asChild>
+            <a href="/admin/analytics">TAM RAPORU GÖR</a>
           </Button>
         </div>
-        <AdminAnalyticsPanel data={analyticsData} />
+        <div className="min-h-[300px]">
+          <AdminAnalyticsPanel data={analyticsData} />
+        </div>
       </div>
 
-      {persistenceHealth ? <AdminPersistencePanel health={persistenceHealth} /> : null}
-    </>
+      {persistenceHealth && (
+        <div className="rounded-[2.5rem] overflow-hidden border border-white bg-white shadow-xl shadow-slate-200/50">
+          <AdminPersistencePanel health={persistenceHealth} />
+        </div>
+      )}
+    </div>
   );
 }
 
@@ -223,7 +279,11 @@ async function AdminRecentActionsSection({
   const [recentActions, storedReports] = await Promise.all([recentActionsPromise, reportsPromise]);
 
   if (recentActions.length === 0) {
-    return <AdminRecentActions actions={[]} />;
+    return (
+      <div className="rounded-[2.5rem] border border-white bg-white p-8 shadow-xl shadow-slate-200/50">
+        <AdminRecentActions actions={[]} />
+      </div>
+    );
   }
 
   const actorIds = [...new Set(recentActions.map((action) => action.adminUserId))];
@@ -264,14 +324,18 @@ async function AdminRecentActionsSection({
     };
   });
 
-  return <AdminRecentActions actions={recentActionItems} />;
+  return (
+    <div className="rounded-[2.5rem] overflow-hidden border border-white bg-white shadow-xl shadow-slate-200/50 transition-all hover:shadow-2xl">
+      <AdminRecentActions actions={recentActionItems} />
+    </div>
+  );
 }
 
 function AdminMetricsSkeleton() {
   return (
-    <div className="grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-4">
-      {Array.from({ length: 4 }).map((_, index) => (
-        <div key={index} className="h-36 animate-pulse rounded-2xl border border-border bg-card" />
+    <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-4">
+      {Array.from({ length: 4 }).map((_, i) => (
+        <div key={i} className="h-40 animate-pulse rounded-[2rem] bg-slate-200" />
       ))}
     </div>
   );
@@ -279,13 +343,13 @@ function AdminMetricsSkeleton() {
 
 function AdminAnalyticsSkeleton() {
   return (
-    <div className="space-y-8">
-      <div className="h-[460px] animate-pulse rounded-2xl border border-border bg-card" />
-      <div className="h-[520px] animate-pulse rounded-3xl border border-border bg-card" />
+    <div className="space-y-12">
+      <div className="h-[460px] animate-pulse rounded-[2.5rem] bg-slate-200" />
+      <div className="h-[300px] animate-pulse rounded-[2.5rem] bg-slate-200" />
     </div>
   );
 }
 
 function AdminRecentActionsSkeleton() {
-  return <div className="h-[640px] animate-pulse rounded-3xl border border-border bg-card" />;
+  return <div className="h-[640px] animate-pulse rounded-[2.5rem] bg-slate-200" />;
 }

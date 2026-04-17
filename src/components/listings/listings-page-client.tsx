@@ -227,24 +227,25 @@ export function ListingsPageClient({
   const allListings = data?.pages.flatMap(p => p.listings) ?? initialResult.listings
 
   return (
-    <div className="mx-auto max-w-[1440px] px-5 py-8 lg:px-6 lg:py-8">
+    <div className="mx-auto max-w-[1440px] px-4 py-10 lg:px-10 lg:py-12 bg-slate-50/30 min-h-screen">
 
-      {/* Header */}
-      <div className="mb-8">
-        <div className="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
-          <div>
-            <h1 className="text-2xl font-black text-foreground">
+      {/* Header & Control Center */}
+      <div className="mb-12">
+        <div className="flex flex-col gap-8 lg:flex-row lg:items-end lg:justify-between">
+          <div className="space-y-2">
+            <h1 className="text-4xl lg:text-5xl font-black text-slate-900 tracking-tight leading-none">
               {filters.brand
                 ? `${filters.brand}${filters.model ? ` ${filters.model}` : ""} İlanları`
                 : "Tüm Satılık Araçlar"}
             </h1>
-            <p className="mt-1 text-sm font-medium text-muted-foreground">
-              {initialResult.total} ilan bulundu
+            <p className="text-base font-bold text-slate-400 flex items-center gap-2">
+              <span className="size-1.5 rounded-full bg-blue-500 animate-pulse" />
+              Şu an {initialResult.total} aktif ilan listeleniyor
             </p>
           </div>
 
-          {/* Controls Row */}
-          <div className="flex items-center gap-2.5">
+          {/* Controls - Glassmorphism Bar */}
+          <div className="flex flex-wrap items-center gap-3 bg-white/70 backdrop-blur-xl border border-white p-2 rounded-[2rem] shadow-xl shadow-slate-200/50">
             <MobileFilterDrawer
               brands={brands}
               cities={cities}
@@ -254,75 +255,65 @@ export function ListingsPageClient({
 
             <Link
               href={`/listings/filter?${createSearchParamsFromListingFilters(filters).toString()}`}
-              className="flex h-9 items-center gap-1.5 rounded-lg border border-border bg-card px-3 text-sm font-medium text-muted-foreground hover:bg-muted/30 transition-colors"
+              className="flex h-11 items-center gap-2 rounded-2xl bg-slate-900 px-5 text-xs font-black text-white hover:bg-black transition-all hover:scale-105 active:scale-95 uppercase tracking-widest shadow-lg shadow-slate-900/20"
             >
-              <SlidersHorizontal size={15} />
-              <span className="hidden sm:inline">Gelişmiş</span>
+              <SlidersHorizontal size={14} strokeWidth={3} />
+              Gelişmiş Filtrele
             </Link>
 
-            <div className="flex items-center gap-1 rounded-lg border border-border bg-card p-1">
+            <div className="h-8 w-px bg-slate-200 mx-1 hidden sm:block" />
+
+            <div className="hidden sm:flex items-center gap-1.5 p-1 rounded-xl bg-slate-100/50">
               <button
                 onClick={() => setViewMode("grid")}
-                aria-label="Izgara görünümü"
-                aria-pressed={viewMode === "grid"}
                 className={cn(
-                  "flex h-8 items-center justify-center rounded-md px-2.5 transition-colors",
+                  "flex h-9 w-10 items-center justify-center rounded-lg transition-all",
                   viewMode === "grid"
-                    ? "bg-blue-500 text-white shadow-sm"
-                    : "text-gray-400 hover:text-gray-600"
+                    ? "bg-white text-slate-900 shadow-sm"
+                    : "text-slate-400 hover:text-slate-600"
                 )}
               >
-                <LayoutGrid size={16} aria-hidden="true" />
+                <LayoutGrid size={18} />
               </button>
               <button
                 onClick={() => setViewMode("list")}
-                aria-label="Liste görünümü"
-                aria-pressed={viewMode === "list"}
                 className={cn(
-                  "flex h-8 items-center justify-center rounded-md px-2.5 transition-colors",
+                  "flex h-9 w-10 items-center justify-center rounded-lg transition-all",
                   viewMode === "list"
-                    ? "bg-blue-500 text-white shadow-sm"
-                    : "text-gray-400 hover:text-gray-600"
+                    ? "bg-white text-slate-900 shadow-sm"
+                    : "text-slate-400 hover:text-slate-600"
                 )}
               >
-                <List size={16} aria-hidden="true" />
+                <List size={18} />
               </button>
             </div>
 
             <div className="relative">
               <button
                 onClick={() => setIsSortOpen(!isSortOpen)}
-                aria-haspopup="listbox"
-                aria-expanded={isSortOpen}
-                aria-label={`Sıralama: ${currentSortLabel}`}
-                className="flex h-9 items-center gap-2 rounded-lg border border-border bg-card px-3 text-sm font-medium text-muted-foreground hover:bg-muted/30 transition-colors"
+                className="flex h-11 items-center gap-3 rounded-2xl border border-slate-200 bg-white px-5 text-xs font-black text-slate-600 hover:border-slate-300 transition-all uppercase tracking-widest"
               >
-                <ArrowDownUp size={16} aria-hidden="true" />
+                <ArrowDownUp size={14} strokeWidth={3} />
                 <span className="hidden sm:inline">{currentSortLabel}</span>
-                <ChevronIcon className={cn("transition-transform size-4", isSortOpen && "rotate-180")} />
+                <ChevronIcon className={cn("transition-transform size-4 ml-1", isSortOpen && "rotate-180")} />
               </button>
 
               {isSortOpen && (
                 <>
-                  {/* Backdrop */}
-                  <div className="fixed inset-0 z-40" onClick={() => setIsSortOpen(false)} aria-hidden="true" role="presentation" tabIndex={-1} />
-                  <ul
-                    role="listbox"
-                    aria-label="Sıralama seçenekleri"
-                    className="absolute right-0 top-full z-50 mt-2 w-56 rounded-lg border border-border bg-card py-1 shadow-lg"
-                  >
+                  <div className="fixed inset-0 z-40" onClick={() => setIsSortOpen(false)} />
+                  <ul className="absolute right-0 top-full z-50 mt-3 w-64 rounded-3xl border border-slate-100 bg-white/95 backdrop-blur-2xl p-2 shadow-2xl animate-in fade-in zoom-in-95 duration-200">
                     {SORT_OPTIONS.map((option) => (
-                      <li key={option.value} role="option" aria-selected={(filters.sort ?? "newest") === option.value}>
+                      <li key={option.value}>
                         <button
                           onClick={() => {
                             handleFilterChange("sort", option.value as ListingFilters["sort"])
                             setIsSortOpen(false)
                           }}
                           className={cn(
-                            "w-full px-4 py-2 text-left text-sm transition-colors",
+                            "w-full px-4 py-3 text-left text-xs font-black rounded-2xl transition-all uppercase tracking-widest",
                             (filters.sort ?? "newest") === option.value
-                              ? "bg-blue-50 font-bold text-blue-600"
-                              : "text-gray-600 hover:bg-gray-50"
+                              ? "bg-slate-900 text-white"
+                              : "text-slate-500 hover:bg-slate-50"
                           )}
                         >
                           {option.label}
@@ -333,25 +324,11 @@ export function ListingsPageClient({
                 </>
               )}
             </div>
-
-            <div className="hidden sm:flex items-center gap-2 rounded-lg border border-border bg-card px-3 h-9">
-              <label htmlFor="page-size-select" className="text-xs font-semibold text-muted-foreground">Göster</label>
-              <select
-                id="page-size-select"
-                value={filters.limit ?? initialResult.limit}
-                onChange={(event) => handleFilterChange("limit", Number(event.target.value))}
-                className="bg-transparent text-sm font-medium text-foreground/90 outline-none"
-              >
-                {PAGE_SIZE_OPTIONS.map((option) => (
-                  <option key={option} value={option}>{option}</option>
-                ))}
-              </select>
-            </div>
           </div>
         </div>
 
         {/* Quick Filter Chips */}
-        <div className="mt-5 flex flex-wrap gap-2.5">
+        <div className="mt-8 flex flex-wrap gap-3">
           {QUICK_FILTERS.map((qf) => {
             const isActive =
               (qf.type === "expert" && filters.hasExpertReport === true) ||
@@ -368,15 +345,15 @@ export function ListingsPageClient({
                   else if (qf.type === "newest") handleFilterChange("sort", "newest")
                 }}
                 className={cn(
-                  "flex items-center gap-1.5 rounded-full border px-4 py-2 text-xs font-bold transition-all",
+                  "flex items-center gap-2 rounded-full border px-6 py-2.5 text-[10px] font-black uppercase tracking-widest transition-all shadow-sm active:scale-95",
                   qf.type === "reset"
-                    ? "border-gray-200 bg-card text-gray-500 hover:border-blue-300 hover:text-blue-500"
+                    ? "border-slate-200 bg-white text-slate-500 hover:border-slate-900 hover:text-slate-900"
                     : isActive
-                    ? "border-blue-500 bg-blue-500 text-white shadow-md shadow-blue-500/10"
-                    : "border-gray-200 bg-card text-gray-500 hover:border-blue-300 hover:text-blue-500"
+                    ? "border-slate-900 bg-slate-900 text-white shadow-xl shadow-slate-900/10"
+                    : "border-slate-200 bg-white text-slate-500 hover:border-slate-900 hover:text-slate-900"
                 )}
               >
-                {qf.icon && <qf.icon size={13} />}
+                {qf.icon && <qf.icon size={12} strokeWidth={3} />}
                 {qf.label}
               </button>
             )
@@ -385,19 +362,13 @@ export function ListingsPageClient({
 
         {/* Active Filter Tags */}
         {activeFiltersCount > 0 && (
-          <div className="mt-4 flex flex-wrap items-center gap-2.5">
-            <span className="text-xs font-medium text-muted-foreground/70">Aktif filtreler:</span>
+          <div className="mt-6 flex flex-wrap items-center gap-3">
+            <span className="text-[10px] font-black text-slate-300 uppercase tracking-widest pl-1">Aktif Süzgeçler:</span>
             {filters.brand && (
               <FilterTag
                 label={filters.brand}
                 onRemove={() => {
-                  const nextFilters = {
-                    ...filters,
-                    brand: undefined,
-                    carTrim: undefined,
-                    model: undefined,
-                    page: 1,
-                  };
+                  const nextFilters = { ...filters, brand: undefined, carTrim: undefined, model: undefined, page: 1 };
                   setFilters(nextFilters);
                   applyFilters(nextFilters, true);
                 }}
@@ -413,12 +384,7 @@ export function ListingsPageClient({
               <FilterTag
                 label={filters.city}
                 onRemove={() => {
-                  const nextFilters = {
-                    ...filters,
-                    city: undefined,
-                    district: undefined,
-                    page: 1,
-                  };
+                  const nextFilters = { ...filters, city: undefined, district: undefined, page: 1 };
                   setFilters(nextFilters);
                   applyFilters(nextFilters, true);
                 }}
@@ -473,53 +439,63 @@ export function ListingsPageClient({
             )}
             <button
               onClick={handleReset}
-              className="text-xs font-semibold text-rose-500 hover:text-rose-600 hover:underline"
+              className="text-[10px] font-black text-rose-500 hover:text-rose-600 uppercase tracking-widest pl-2"
             >
-              Tümünü temizle
+              Temizle
             </button>
           </div>
         )}
       </div>
 
       {/* Main Layout */}
-      <div className="flex flex-col gap-6 lg:flex-row">
+      <div className="flex flex-col gap-10 lg:flex-row">
 
-        {/* Desktop Sidebar */}
-        <aside className="hidden lg:block w-[300px] shrink-0">
+        {/* Desktop Sidebar - Premium Shell */}
+        <aside className="hidden lg:block w-[320px] shrink-0">
           <div className={cn(
-            "sticky top-24 rounded-xl border border-border bg-card overflow-hidden shadow-sm transition-opacity",
-            isPending && "opacity-50 pointer-events-none"
+            "sticky top-28 rounded-[2.5rem] border border-slate-200 bg-white overflow-hidden shadow-2xl shadow-slate-200/50 transition-all",
+            isPending && "opacity-50 pointer-events-none grayscale"
           )}>
-            <SmartFilters
-              brands={brands}
-              cities={cities}
-              filters={filters}
-              models={filteredModels}
-              trims={filteredTrims}
-              districts={filteredDistricts}
-              onFilterChange={handleFilterChange}
-              onReset={handleReset}
-              activeCount={activeFiltersCount}
-            />
+            <div className="bg-slate-900 p-6">
+               <h3 className="text-sm font-black text-white uppercase tracking-[0.2em] flex items-center gap-2">
+                  <SlidersHorizontal size={14} />
+                  Filtreleme
+               </h3>
+            </div>
+            <div className="p-2">
+              <SmartFilters
+                brands={brands}
+                cities={cities}
+                filters={filters}
+                models={filteredModels}
+                trims={filteredTrims}
+                districts={filteredDistricts}
+                onFilterChange={handleFilterChange}
+                onReset={handleReset}
+                activeCount={activeFiltersCount}
+              />
+            </div>
           </div>
         </aside>
 
         {/* Results */}
         <div className="flex-1 min-w-0">
           {isPending ? (
-            <ListingsGridSkeleton />
+            <div className="bg-white rounded-[2.5rem] p-10 border border-slate-100 shadow-sm min-h-[600px]">
+              <ListingsGridSkeleton />
+            </div>
           ) : initialResult.listings.length > 0 ? (
-            <div className="space-y-6">
-              <div className="flex flex-col gap-3 rounded-xl border border-border bg-card p-4 sm:flex-row sm:items-center sm:justify-between">
-                <p className="text-sm font-medium text-muted-foreground">
-                  Toplam <span className="font-bold text-foreground">{initialResult.total}</span> ilandan <span className="font-bold text-foreground">{allListings.length}</span> ilan gösteriliyor
+            <div className="space-y-8">
+              <div className="flex flex-col gap-4 rounded-3xl border border-slate-100 bg-white/50 p-6 sm:flex-row sm:items-center sm:justify-between">
+                <p className="text-sm font-bold text-slate-500">
+                  Toplam <span className="text-slate-900 font-black">{initialResult.total}</span> ilan arasından <span className="text-slate-900 font-black">{allListings.length}</span> araç gösteriliyor
                 </p>
-                <div className="flex items-center gap-2 sm:hidden">
-                  <span className="text-xs font-semibold text-muted-foreground">Göster</span>
+                <div className="flex items-center gap-3">
+                  <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Gösterim:</span>
                   <select
                     value={filters.limit ?? initialResult.limit}
                     onChange={(event) => handleFilterChange("limit", Number(event.target.value))}
-                    className="rounded-md border border-border bg-card px-2 py-1 text-sm font-medium text-foreground/90 outline-none"
+                    className="h-8 rounded-lg border border-slate-200 bg-white px-3 text-xs font-black text-slate-700 outline-none focus:ring-2 focus:ring-blue-100"
                   >
                     {PAGE_SIZE_OPTIONS.map((option) => (
                       <option key={option} value={option}>{option}</option>
@@ -529,9 +505,10 @@ export function ListingsPageClient({
               </div>
 
               <div className={cn(
+                "animate-in fade-in duration-700",
                 viewMode === "grid"
-                  ? "grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3"
-                  : "flex flex-col gap-3"
+                  ? "grid grid-cols-1 gap-6 sm:grid-cols-2 xl:grid-cols-3"
+                  : "flex flex-col gap-4"
               )}>
                 {allListings.map((listing, index) => (
                   <CarCard
@@ -595,10 +572,13 @@ function ChevronIcon({ className }: { className?: string }) {
 
 function FilterTag({ label, onRemove }: { label: string; onRemove: () => void }) {
   return (
-    <div className="flex items-center gap-1.5 rounded-full border border-blue-100 bg-blue-50 px-3 py-1.5 text-xs font-semibold text-blue-600">
+    <div className="group flex items-center gap-2 rounded-full border border-slate-200 bg-white pl-4 pr-2 py-2 text-[10px] font-black text-slate-600 uppercase tracking-widest shadow-sm hover:border-slate-900 transition-all">
       <span>{label}</span>
-      <button onClick={onRemove} className="hover:text-blue-800 transition-colors">
-        <svg className="size-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round">
+      <button 
+        onClick={onRemove} 
+        className="size-5 rounded-full bg-slate-100 text-slate-400 flex items-center justify-center hover:bg-rose-500 hover:text-white transition-all active:scale-90"
+      >
+        <svg className="size-2.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="4">
           <path d="M18 6 6 18M6 6l12 12" />
         </svg>
       </button>
