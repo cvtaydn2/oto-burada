@@ -223,13 +223,21 @@ export function ListingCreateForm({
   const totalSteps = STEP_LABELS.length;
   const uploadStatesRef = useRef<Record<string, UploadState>>({});
   
+  // initialListing değiştiğinde form değerlerini memoize et
+  // Her render'da yeni obje oluşturulmasını önle — values prop bunu "değişti" sanmasın
+  const formValues = useMemo(
+    () => buildDefaultValues(initialValues, initialListing),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [initialListing?.id, initialListing?.updatedAt],
+  );
+
   const form = useForm<ListingCreateFormValues, unknown, ListingCreateFormValues>({
-    defaultValues: buildDefaultValues(initialValues, initialListing),
-    // `values` prop: initialListing değiştiğinde form'u sync eder.
-    // `resetOptions.keepDirtyValues: true` ile kullanıcının değiştirdiği alanlar korunur.
-    values: buildDefaultValues(initialValues, initialListing),
+    defaultValues: formValues,
+    // `values` prop: initialListing sunucudan yüklendiğinde form'u sync eder.
+    // Memoize edilmiş — kullanıcı düzenlerken gereksiz reset olmaz.
+    values: formValues,
     resetOptions: {
-      keepDirtyValues: true, // Kullanıcının değiştirdiği alanları koru
+      keepDirtyValues: true,
     },
     mode: "onBlur",
     resolver: zodResolver(listingCreateFormSchema as never),
