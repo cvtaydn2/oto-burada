@@ -155,7 +155,13 @@ export function FavoritesProvider({ children }: PropsWithChildren) {
   }, [userId]);
 
   const resolvedFavoriteIds = useMemo(
-    () => (userId ? remoteFavoriteIds ?? [] : localFavoriteIds),
+    () => {
+      if (!userId) return localFavoriteIds;
+      // Login sonrası sync tamamlanana kadar local favorites'ı göster
+      // (boş array yerine) — kullanıcı anlık "kalp boşaldı" görmez
+      if (remoteFavoriteIds === null) return localFavoriteIds;
+      return remoteFavoriteIds;
+    },
     [localFavoriteIds, remoteFavoriteIds, userId],
   );
   const resolvedHydrated = userId ? remoteFavoriteIds !== null && !isSyncing : localHydrated;

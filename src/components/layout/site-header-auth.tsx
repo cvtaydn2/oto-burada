@@ -14,7 +14,7 @@ export function SiteHeaderAuth({
   favoritesHrefGuest,
   postListingHrefAuthenticated,
 }: SiteHeaderAuthProps) {
-  const { isAuthenticated, userId } = useAuthUser();
+  const { isAuthenticated, isReady, userId } = useAuthUser();
 
   const accountHref = isAuthenticated ? "/dashboard" : "/login";
   const favoritesHref = isAuthenticated ? "/dashboard/favorites" : favoritesHrefGuest;
@@ -40,18 +40,22 @@ export function SiteHeaderAuth({
       </div>
 
       <div className="flex items-center gap-2 sm:gap-4">
-        <Link href={accountHref} className="flex items-center gap-2 group">
-          {isAuthenticated && userId ? (
-            <div className="size-8 overflow-hidden rounded-full border border-gray-200 bg-blue-500 flex items-center justify-center text-white text-xs font-bold select-none">
-              {/* No external avatar service — avoids leaking userId to third parties */}
-              <span>U</span>
-            </div>
-          ) : (
-            <span className="text-sm font-medium text-muted-foreground transition-colors hover:text-primary">
-              Giriş Yap
-            </span>
-          )}
-        </Link>
+        {/* Auth state yüklenene kadar skeleton göster — "Giriş Yap" flash'ını önler */}
+        {!isReady ? (
+          <div className="size-8 rounded-full bg-muted animate-pulse" />
+        ) : (
+          <Link href={accountHref} className="flex items-center gap-2 group">
+            {isAuthenticated && userId ? (
+              <div className="size-8 overflow-hidden rounded-full border border-gray-200 bg-blue-500 flex items-center justify-center text-white text-xs font-bold select-none">
+                <span>U</span>
+              </div>
+            ) : (
+              <span className="text-sm font-medium text-muted-foreground transition-colors hover:text-primary">
+                Giriş Yap
+              </span>
+            )}
+          </Link>
+        )}
 
         <Link
           href={postListingHref}

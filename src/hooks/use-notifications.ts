@@ -50,7 +50,7 @@ export function useNotifications(userId?: string) {
       .subscribe();
 
     return () => {
-      supabase.removeChannel(channel);
+      void channel.unsubscribe();
     };
   }, [userId, supabase, queryClient]);
 

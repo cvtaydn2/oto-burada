@@ -34,6 +34,8 @@ function sanitizeRedirectPath(next: string | null | undefined): string {
   if (/^\/[a-z]+:/i.test(next)) return "/dashboard";
   // Allowlist: only safe URL characters
   if (!ALLOWED_NEXT_PATHS.test(next)) return "/dashboard";
+  // Block admin redirect — prevents leaking admin status to attackers
+  if (next.startsWith("/admin")) return "/dashboard";
   return next;
 }
 

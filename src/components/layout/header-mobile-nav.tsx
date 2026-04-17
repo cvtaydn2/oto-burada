@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { Heart, Menu, PlusCircle, User as UserIcon, X } from "lucide-react";
+import { Heart, Menu, PlusCircle, User as UserIcon, UserPlus, X } from "lucide-react";
 
 import { useAuthUser } from "@/components/shared/auth-provider";
 import { SearchWithSuggestions } from "@/components/ui/search-with-suggestions";
@@ -24,7 +24,7 @@ export function HeaderMobileNav({
   searchSuggestions,
 }: HeaderMobileNavProps) {
   const [isOpen, setIsOpen] = useState(false);
-  const { isAdmin, isAuthenticated } = useAuthUser();
+  const { isAdmin, isAuthenticated, isReady } = useAuthUser();
   const accountHref = isAuthenticated ? "/dashboard" : "/login";
   const favoritesHref = isAuthenticated ? "/dashboard/favorites" : "/favorites";
   const postListingHref = isAuthenticated ? "/dashboard/listings" : "/login";
@@ -55,8 +55,22 @@ export function HeaderMobileNav({
                 className="flex items-center h-12 px-4 rounded-xl text-sm font-semibold text-foreground hover:bg-muted transition-all"
               >
                 <UserIcon size={18} className="mr-3" />
-                {isAuthenticated ? "Hesabım" : "Giriş Yap"}
+                {/* isReady false iken "Giriş Yap" flash'ını önle */}
+                {!isReady ? (
+                  <span className="h-4 w-16 rounded bg-muted animate-pulse inline-block" />
+                ) : isAuthenticated ? "Hesabım" : "Giriş Yap"}
               </Link>
+              {/* Kayıt Ol linki sadece giriş yapılmamışsa göster */}
+              {isReady && !isAuthenticated && (
+                <Link
+                  href="/register"
+                  onClick={() => setIsOpen(false)}
+                  className="flex items-center h-12 px-4 rounded-xl text-sm font-semibold text-foreground hover:bg-muted transition-all"
+                >
+                  <UserPlus size={18} className="mr-3" />
+                  Kayıt Ol
+                </Link>
+              )}
               <Link 
                 href={favoritesHref}
                 onClick={() => setIsOpen(false)}

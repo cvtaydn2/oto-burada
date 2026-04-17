@@ -10,8 +10,9 @@ import { cn } from "@/lib/utils";
 
 export function MobileNav() {
   const pathname = usePathname();
-  const { isAuthenticated } = useAuthUser();
-  const mobileNavigationItems = getMobileNavigationItems(isAuthenticated);
+  const { isAuthenticated, isReady } = useAuthUser();
+  // isReady false iken guest items gösterme — auth state henüz yüklenmedi
+  const mobileNavigationItems = getMobileNavigationItems(isReady ? isAuthenticated : true);
 
   return (
     <div className="lg:hidden">
