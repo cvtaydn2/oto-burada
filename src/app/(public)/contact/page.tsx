@@ -1,6 +1,7 @@
 import { Mail, MessageCircle, Phone, ChevronRight, HelpCircle, ShieldCheck, MapPin } from "lucide-react";
 import Link from "next/link";
 import { ContactForm } from "@/components/shared/contact-form";
+import { features } from "@/lib/features";
 
 export const metadata = {
   title: "İletişim | OtoBurada",
@@ -101,8 +102,21 @@ export default function ContactPage() {
 
         {/* Right: Contact Form */}
         <div className="p-10">
-          <h2 className="text-2xl font-bold text-foreground mb-6">Mesaj Gönderin</h2>
-          <ContactForm />
+          <h2 className="text-2xl font-bold text-foreground mb-6">
+            {features.tickets ? "Mesaj Gönderin" : "İletişime Geçin"}
+          </h2>
+          {features.tickets ? (
+            <ContactForm />
+          ) : (
+            <div className="space-y-4">
+              <p className="text-sm text-muted-foreground">
+                Şu anda sadece WhatsApp ve E-Posta üzerinden destek vermekteyiz. Lütfen yandaki iletişim kanallarını kullanın.
+              </p>
+              <div className="p-4 bg-blue-50 border border-blue-100 rounded-xl text-blue-800 text-sm font-bold">
+                WhatsApp: destek@otoburada.com
+              </div>
+            </div>
+          )}
         </div>
       </div>
 

@@ -8,6 +8,7 @@ import { CompareButton } from "@/components/listings/compare-button";
 import { FavoriteButton } from "@/components/listings/favorite-button";
 import { ShareButton } from "@/components/listings/share-button";
 import { ReportListingForm } from "@/components/forms/report-listing-form";
+import { features } from "@/lib/features";
 import {
   Dialog,
   DialogContent,
@@ -39,10 +40,12 @@ export function ListingDetailActions({
         price={price}
         className="bg-card border border-gray-200 text-gray-600 px-3 py-1.5 rounded-lg text-sm font-medium hover:bg-gray-50 transition flex items-center shadow-sm"
       />
-      <CompareButton
-        listingId={listingId}
-        className="bg-card border border-gray-200 text-gray-600 px-3 py-1.5 rounded-lg text-sm font-medium hover:bg-gray-50 transition flex items-center shadow-sm gap-2"
-      />
+      {features.compare && (
+        <CompareButton
+          listingId={listingId}
+          className="bg-card border border-gray-200 text-gray-600 px-3 py-1.5 rounded-lg text-sm font-medium hover:bg-gray-50 transition flex items-center shadow-sm gap-2"
+        />
+      )}
       <FavoriteButton
         listingId={listingId}
         className="bg-card border border-gray-200 text-gray-600 w-9 h-9 rounded-lg flex items-center justify-center hover:bg-red-50 hover:text-red-500 hover:border-red-200 transition shadow-sm"

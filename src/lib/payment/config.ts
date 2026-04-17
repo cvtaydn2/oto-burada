@@ -1,4 +1,9 @@
-export function isPaymentEnabled() {
-  return Boolean(process.env.IYZICO_API_KEY && process.env.IYZICO_SECRET_KEY);
-}
+import { features } from "@/lib/features";
 
+/**
+ * Helper to check if payment processing is globally enabled.
+ * Uses the centralized feature flag system.
+ */
+export function isPaymentEnabled() {
+  return features.payments;
+}

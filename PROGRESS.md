@@ -3,9 +3,11 @@
 ## Domain Boundary Refactoring & Service Consolidation (2026-04-18)
 
 ### Step 2: Billing & Transaction Audit Hardening (2026-04-18)
-- **Credit Audit**: `credit_transactions` tablosu eklendi. Tüm kredi değişimleri (satın alma, harcama, admin müdahalesi) artık loglanıyor.
-- **Doping Audit**: `doping_applications` tablosu eklendi. İlanlara uygulanan dopinglerin tarihçesi tutuluyor.
-- **Transaction Service**: `src/services/billing/transaction-service.ts` merkezi otorite olarak oluşturuldu.
+- **Audit Tables:** `credit_transactions` ve `doping_applications` ile finansal izlenebilirlik sağlandı.
+- **Transaction Service:** Tüm kredi işlemleri `transaction-service.ts` üzerinden atomik hale getirildi.
+- **Feature Flag System:** `src/lib/features.ts` ile modüler yapı kuruldu (Chat, PWA, Compare, Reviews, Admin Analytics gated).
+- **UI Gating:** Header, Listing Detail, Contact ve Admin Dashboard alanları feature flag'lere bağlandı.
+- **Validation:** Lint ve Typecheck başarıyla tamamlandı.
 - **Admin Entegrasyonu**: Admin paneli için kullanıcı detay ekranına kredi ve doping geçmişi eklendi.
 - **Doping Service Refactor**: `doping-service.ts` yeni audit tablolarını besleyecek şekilde güncellendi.
 

@@ -1,6 +1,7 @@
-import Link from "next/link";
 import { CarFront } from "lucide-react";
 import { Suspense } from "react";
+import Link from "next/link";
+import { features } from "@/lib/features";
 
 import { SiteHeaderAuth } from "@/components/layout/site-header-auth";
 import { getLiveMarketplaceReferenceData } from "@/services/reference/live-reference-data";
@@ -45,7 +46,9 @@ export async function SiteHeader() {
 
           <nav className="hidden items-center gap-6 text-sm font-medium text-muted-foreground lg:flex">
             <Link href="/listings" className="hover:text-blue-500 transition-colors">İlanlar</Link>
-            <Link href="/compare" className="hover:text-blue-500 transition-colors">Karşılaştır</Link>
+            {features.compare && (
+              <Link href="/compare" className="hover:text-blue-500 transition-colors">Karşılaştır</Link>
+            )}
           </nav>
         </div>
 

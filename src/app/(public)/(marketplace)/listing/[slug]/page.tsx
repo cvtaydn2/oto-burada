@@ -12,6 +12,7 @@ import {
   Zap,
 } from "lucide-react";
 import { cn, formatNumber } from "@/lib/utils";
+import { features } from "@/lib/features";
 import { ListingGallery } from "@/components/listings/listing-gallery";
 import { ListingDetailStructuredData, BreadcrumbStructuredData } from "@/components/seo/structured-data";
 import { CarCard } from "@/components/modules/listings/car-card";
@@ -483,7 +484,7 @@ export default async function ListingDetailPage({ params }: ListingDetailPagePro
               </div>
 
               {/* Seller Review Form — only for logged-in non-sellers */}
-              {canReview && (
+              {features.reviews && canReview && (
                 <SellerReviewForm
                   sellerId={listing.sellerId}
                   listingId={listing.id}

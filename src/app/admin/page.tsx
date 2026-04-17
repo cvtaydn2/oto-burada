@@ -23,6 +23,7 @@ import { getPersistenceHealth } from "@/services/admin/persistence-health";
 import { getAdminAnalytics } from "@/services/admin/analytics";
 import { getStoredReports } from "@/services/reports/report-submissions";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
+import { features } from "@/lib/features";
 
 export const dynamic = "force-dynamic";
 
@@ -56,9 +57,11 @@ export default async function AdminOverviewPage() {
         </div>
 
         <div className="flex items-center gap-4">
-          <Suspense fallback={<div className="h-[74px] min-w-[140px] animate-pulse rounded-2xl border border-border bg-card p-4 shadow-sm" />}>
-            <AdminRevenueBadge analyticsPromise={analyticsPromise} />
-          </Suspense>
+          {features.adminAnalytics && (
+            <Suspense fallback={<div className="h-[74px] min-w-[140px] animate-pulse rounded-2xl border border-border bg-card p-4 shadow-sm" />}>
+              <AdminRevenueBadge analyticsPromise={analyticsPromise} />
+            </Suspense>
+          )}
           <AdminHeaderActions />
         </div>
       </section>
@@ -69,12 +72,18 @@ export default async function AdminOverviewPage() {
 
       <div className="grid grid-cols-1 gap-8 xl:grid-cols-3">
         <div className="space-y-8 xl:col-span-2">
-          <Suspense fallback={<AdminAnalyticsSkeleton />}>
-            <AdminAnalyticsSection
-              analyticsPromise={analyticsPromise}
-              persistenceHealthPromise={persistenceHealthPromise}
-            />
-          </Suspense>
+          {features.adminAnalytics ? (
+            <Suspense fallback={<AdminAnalyticsSkeleton />}>
+              <AdminAnalyticsSection
+                analyticsPromise={analyticsPromise}
+                persistenceHealthPromise={persistenceHealthPromise}
+              />
+            </Suspense>
+          ) : persistenceHealthPromise ? (
+             <Suspense fallback={<div className="h-60 animate-pulse bg-card rounded-2xl" />}>
+               <PersistenceOnlySection persistenceHealthPromise={persistenceHealthPromise} />
+             </Suspense>
+          ) : null}
         </div>
 
         <div className="space-y-8">
@@ -158,6 +167,16 @@ async function AdminMetricsSection({
       />
     </div>
   );
+}
+
+async function PersistenceOnlySection({
+  persistenceHealthPromise,
+}: {
+  persistenceHealthPromise: Promise<Awaited<ReturnType<typeof getPersistenceHealth>> | null>;
+}) {
+  const persistenceHealth = await persistenceHealthPromise;
+  if (!persistenceHealth) return null;
+  return <AdminPersistencePanel health={persistenceHealth} />;
 }
 
 async function AdminAnalyticsSection({
