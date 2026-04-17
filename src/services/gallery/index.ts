@@ -22,6 +22,14 @@ export async function getGalleryBySlug(slug: string) {
     .eq("status", "approved")
     .order("created_at", { ascending: false })
 
+  // Gallery view count (last 30 days)
+  const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().split("T")[0];
+  const { count: viewCount } = await supabase
+    .from("gallery_views")
+    .select("id", { count: "exact", head: true })
+    .eq("seller_id", profile.id)
+    .gte("viewed_on", thirtyDaysAgo);
+
   return {
     profile: {
       id: profile.id,
@@ -45,7 +53,29 @@ export async function getGalleryBySlug(slug: string) {
       createdAt: profile.created_at,
       updatedAt: profile.updated_at,
     } as Profile,
-    listings: (listings || []) as unknown as Listing[]
+    listings: (listings || []) as unknown as Listing[],
+    viewCount30d: viewCount ?? 0,
+  }
+}
+
+export async function recordGalleryView(
+  sellerId: string,
+  options: { viewerId?: string; viewerIp?: string },
+): Promise<void> {
+  if (!hasSupabaseAdminEnv()) return;
+  const supabase = createSupabaseAdminClient();
+  const viewedOn = new Date().toISOString().split("T")[0];
+
+  if (options.viewerId) {
+    await supabase.from("gallery_views").upsert(
+      { seller_id: sellerId, viewer_id: options.viewerId, viewed_on: viewedOn },
+      { onConflict: "seller_id,viewer_id,viewed_on", ignoreDuplicates: true },
+    );
+  } else if (options.viewerIp) {
+    await supabase.from("gallery_views").upsert(
+      { seller_id: sellerId, viewer_ip: options.viewerIp, viewed_on: viewedOn },
+      { onConflict: "seller_id,viewer_ip,viewed_on", ignoreDuplicates: true },
+    );
   }
 }
 
@@ -53,7 +83,7 @@ export async function getGalleryById(id: string) {
   const supabase = createSupabaseAdminClient()
   const { data: profile, error } = await supabase
     .from("profiles")
-    .select("*")
+    .select("id, full_name, phone, city, avatar_url, role, user_type, is_verified, business_name, business_logo_url, business_slug, business_description, website_url, verified_business, created_at, updated_at")
     .eq("id", id)
     .single()
 

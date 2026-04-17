@@ -10,6 +10,7 @@ import { formatCurrency, formatNumber, cn } from "@/lib/utils";
 import type { Listing } from "@/types";
 import { CompareRemoveButton } from "@/components/listings/compare-remove-button";
 import { CompareRadarChart } from "@/components/listings/compare-radar-chart";
+import { CompareShareButton } from "@/components/listings/compare-share-button";
 
 export const metadata: Metadata = {
   title: "Araç Karşılaştırma",
@@ -110,8 +111,8 @@ export default async function ComparePage({ searchParams }: ComparePageProps) {
       <div className="flex flex-col justify-between gap-6 md:flex-row md:items-end">
         <div className="max-w-2xl">
            <div className="mb-4 flex items-center gap-3">
-              <Link href="/" className="flex size-10 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-600 transition-transform hover:bg-slate-50">
-                 <ChevronLeft className="size-4" />
+              <Link href="/" aria-label="Ana sayfaya dön" className="flex size-10 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-600 transition-transform hover:bg-slate-50">
+                 <ChevronLeft className="size-4" aria-hidden="true" />
               </Link>
               <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Analitik kıyaslama</span>
            </div>
@@ -122,6 +123,8 @@ export default async function ComparePage({ searchParams }: ComparePageProps) {
                {cars.length} farklı aracı dijital verilerle yan yana koyarak en rasyonel seçimi yapın.
            </p>
         </div>
+        {/* Share comparison link */}
+        <CompareShareButton ids={idsToCompare} />
       </div>
 
       <div className="grid grid-cols-1 items-center gap-6 rounded-xl border border-slate-200 bg-white p-6 lg:grid-cols-12 lg:p-8">

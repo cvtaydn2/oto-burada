@@ -1,0 +1,52 @@
+"use client";
+
+import { useState } from "react";
+import { Share2, Check } from "lucide-react";
+
+interface CompareShareButtonProps {
+  ids: string[];
+}
+
+export function CompareShareButton({ ids }: CompareShareButtonProps) {
+  const [copied, setCopied] = useState(false);
+
+  const handleShare = async () => {
+    const url = `${window.location.origin}/compare?ids=${ids.join(",")}`;
+
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: "Araç Karşılaştırması — OtoBurada",
+          text: `${ids.length} aracı karşılaştırdım, sen de incele!`,
+          url,
+        });
+        return;
+      } catch {
+        // Fallback to clipboard
+      }
+    }
+
+    await navigator.clipboard.writeText(url);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2500);
+  };
+
+  return (
+    <button
+      onClick={() => void handleShare()}
+      className="flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-bold text-slate-600 hover:bg-slate-50 hover:border-slate-300 transition-all shadow-sm"
+    >
+      {copied ? (
+        <>
+          <Check size={15} className="text-emerald-500" />
+          <span className="text-emerald-600">Kopyalandı!</span>
+        </>
+      ) : (
+        <>
+          <Share2 size={15} />
+          Karşılaştırmayı Paylaş
+        </>
+      )}
+    </button>
+  );
+}

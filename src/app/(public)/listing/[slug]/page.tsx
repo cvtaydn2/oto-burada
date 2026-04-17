@@ -19,6 +19,7 @@ import { ExpertInspectionCard } from "@/components/listings/expert-inspection-ca
 import { DamageReportCard } from "@/components/listings/damage-report-card";
 import { MarketValueCard } from "@/components/listings/market-value-card";
 import { ViewCounter } from "@/components/listings/view-counter";
+import { PriceHistoryChart } from "@/components/listings/price-history-chart";
 import { buildListingDetailMetadata, buildAbsoluteUrl } from "@/lib/seo";
 import {
   getMarketplaceListingBySlug,
@@ -26,6 +27,7 @@ import {
   getSimilarMarketplaceListings,
 } from "@/services/listings/marketplace-listings";
 import { getListingCardInsights } from "@/services/listings/listing-card-insights";
+import { getListingPriceHistory } from "@/services/listings/listing-price-history";
 import { captureServerEvent } from "@/lib/monitoring/posthog-server";
 import { recordListingView } from "@/services/listings/listing-views";
 import { headers } from "next/headers";
@@ -87,9 +89,10 @@ export default async function ListingDetailPage({ params }: ListingDetailPagePro
     getSimilarMarketplaceListings(listing.slug, listing.brand, listing.city),
   ]);
 
-  const [currentUser, sellerRatingSummary] = await Promise.all([
+  const [currentUser, sellerRatingSummary, priceHistory] = await Promise.all([
     getCurrentUser(),
     getSellerRatingSummary(listing.sellerId),
+    getListingPriceHistory(listing.id),
   ]);
 
   // Buyer can review if: logged in AND not the seller
@@ -344,6 +347,17 @@ export default async function ListingDetailPage({ params }: ListingDetailPagePro
                   <MarketValueCard listing={listing} />
                 </div>
               </div>
+
+              {/* Price History */}
+              {priceHistory.length >= 2 && (
+                <div className="rounded-xl border border-slate-200 bg-white p-6">
+                  <h2 className="mb-5 flex items-center gap-2 text-lg font-bold text-slate-900">
+                    <Zap size={20} className="text-amber-500" />
+                    Fiyat Geçmişi
+                  </h2>
+                  <PriceHistoryChart history={priceHistory} currentPrice={listing.price} />
+                </div>
+              )}
 
               {/* Description */}
               <div className="rounded-xl border border-slate-200 bg-white p-6">

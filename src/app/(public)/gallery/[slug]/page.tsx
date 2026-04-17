@@ -1,10 +1,12 @@
 import { Metadata } from "next"
 import { notFound } from "next/navigation"
-import { getGalleryBySlug } from "@/services/gallery"
+import { headers } from "next/headers"
+import { getGalleryBySlug, recordGalleryView } from "@/services/gallery"
+import { getCurrentUser } from "@/lib/auth/session"
 import { GalleryHeader } from "@/components/layout/gallery-header"
 import { CarCard } from "@/components/modules/listings/car-card"
 import { Badge } from "@/components/ui/badge"
-import { Car } from "lucide-react"
+import { Car, Eye } from "lucide-react"
 
 interface GalleryPageProps {
   params: Promise<{
@@ -32,7 +34,13 @@ export default async function GalleryPage({ params }: GalleryPageProps) {
     notFound()
   }
 
-  const { profile, listings } = data
+  const { profile, listings, viewCount30d } = data
+
+  // Record gallery view (fire-and-forget)
+  const headersList = await headers()
+  const viewerIp = headersList.get("x-forwarded-for")?.split(",")[0]?.trim() ?? undefined
+  const currentUser = await getCurrentUser()
+  recordGalleryView(profile.id, { viewerId: currentUser?.id, viewerIp }).catch(() => {})
 
   return (
     <div className="min-h-screen bg-slate-50/40">
@@ -48,9 +56,17 @@ export default async function GalleryPage({ params }: GalleryPageProps) {
                  Galerinin İlanları
               </h2>
           </div>
-          <Badge variant="outline" className="border-slate-300 bg-white px-3 py-1 text-xs font-medium text-slate-600">
-            {listings.length} araç
-          </Badge>
+          <div className="flex items-center gap-3">
+            {viewCount30d > 0 && (
+              <div className="flex items-center gap-1.5 text-xs font-medium text-slate-500">
+                <Eye size={13} />
+                Son 30 günde {viewCount30d.toLocaleString("tr-TR")} ziyaret
+              </div>
+            )}
+            <Badge variant="outline" className="border-slate-300 bg-white px-3 py-1 text-xs font-medium text-slate-600">
+              {listings.length} araç
+            </Badge>
+          </div>
         </div>
 
         {listings.length > 0 ? (
