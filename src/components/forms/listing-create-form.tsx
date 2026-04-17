@@ -216,6 +216,12 @@ export function ListingCreateForm({
   
   const form = useForm<ListingCreateFormValues, unknown, ListingCreateFormValues>({
     defaultValues: buildDefaultValues(initialValues, initialListing),
+    // `values` prop: initialListing değiştiğinde form'u sync eder.
+    // `resetOptions.keepDirtyValues: true` ile kullanıcının değiştirdiği alanlar korunur.
+    values: buildDefaultValues(initialValues, initialListing),
+    resetOptions: {
+      keepDirtyValues: true, // Kullanıcının değiştirdiği alanları koru
+    },
     mode: "onBlur",
     resolver: zodResolver(listingCreateFormSchema as never),
   });

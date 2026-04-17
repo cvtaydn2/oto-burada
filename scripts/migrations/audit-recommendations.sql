@@ -69,6 +69,7 @@ CREATE TABLE IF NOT EXISTS public.cron_job_logs (
 
 ALTER TABLE public.cron_job_logs ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "cron_job_logs_admin_only" ON public.cron_job_logs;
 CREATE POLICY "cron_job_logs_admin_only"
   ON public.cron_job_logs FOR ALL
   USING ((SELECT public.is_admin()))
@@ -202,6 +203,10 @@ ALTER TABLE public.eids_audit_logs
 -- ÖNEMLİ: Constraint eklenmeden önce mevcut geçersiz veriler temizlenir.
 -- Geçersiz damage_status_json değerleri NULL'a çekilir (veri kaybı yok —
 -- zaten geçersiz/anlamsız verilerdi).
+
+-- Constraint fonksiyona bağlı — önce constraint'i drop et, sonra fonksiyonu yeniden oluştur
+ALTER TABLE public.listings
+  DROP CONSTRAINT IF EXISTS listings_damage_status_json_check;
 
 DROP FUNCTION IF EXISTS public.is_valid_damage_status_json(jsonb);
 
