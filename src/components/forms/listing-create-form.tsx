@@ -125,7 +125,16 @@ function buildDefaultValues(
     whatsappPhone: initialListing?.whatsappPhone ?? initialValues.whatsappPhone,
     vin: initialListing?.vin ?? "",
     tramerAmount: initialListing?.tramerAmount ?? 0,
-    damageStatusJson: initialListing?.damageStatusJson ?? {},
+    // damage_status_json: DB'den gelen değerleri DamageSelector'ın beklediği formata normalize et
+    // "orijinal" → "orjinal" (kod "orjinal" kullanıyor, DB'de her ikisi de olabilir)
+    damageStatusJson: initialListing?.damageStatusJson
+      ? Object.fromEntries(
+          Object.entries(initialListing.damageStatusJson).map(([k, v]) => [
+            k,
+            v === "orijinal" ? "orjinal" : v,
+          ])
+        )
+      : {},
     images:
       sortedImages.length > 0
         ? sortedImages.map((image) => ({
@@ -402,19 +411,17 @@ export function ListingCreateForm({
     try {
       const { default: imageCompression } = await import("browser-image-compression");
       
-      // Ana görsel sıkıştırma (WebP çıkışı olsa iyi olurdu ama kütüphane desteğine göre)
       compressibleFile = await imageCompression(file, { 
         maxSizeMB: 0.8, 
         maxWidthOrHeight: 1600, 
-        useWebWorker: true,
-        fileType: "image/jpeg" // Force jpeg for performance/compatibility or let it be
+        useWebWorker: false, // Web Worker CDN'den script yüklemeye çalışıyor — CSP ihlali
+        fileType: "image/jpeg",
       });
 
-      // Blur placeholder üretimi (Çok küçük boyut)
       const blurFile = await imageCompression(file, {
-        maxSizeMB: 0.005, // 5KB altı
+        maxSizeMB: 0.005,
         maxWidthOrHeight: 20,
-        useWebWorker: true,
+        useWebWorker: false,
       });
       blurDataUrl = await imageCompression.getDataUrlFromFile(blurFile);
 
