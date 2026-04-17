@@ -34,6 +34,8 @@ Primary success criteria:
 - Mobile-first UX is mandatory.
 - SEO-friendly public listing pages are mandatory.
 - The initial user-to-seller contact method is **WhatsApp CTA**, not internal chat.
+- **Out of Scope (MVP)**: EİDS (E-Devlet), SMS OTP, and Phone Verification are strictly out of scope to maintain simplicity and speed.
+
 
 ---
 

@@ -42,7 +42,7 @@ BEGIN
     END IF;
 
     IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'report_reason') THEN
-        CREATE TYPE public.report_reason AS ENUM ('fake_listing', 'wrong_info', 'spam', 'price_manipulation', 'invalid_eids', 'other');
+        CREATE TYPE public.report_reason AS ENUM ('fake_listing', 'wrong_info', 'spam', 'price_manipulation', 'invalid_verification', 'other');
     END IF;
 
     IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'notification_type') THEN
@@ -106,8 +106,6 @@ CREATE TABLE IF NOT EXISTS public.profiles (
   user_type public.user_type NOT NULL DEFAULT 'individual',
   balance_credits integer NOT NULL DEFAULT 0,
   is_verified boolean NOT NULL DEFAULT false,
-  tc_verified_at timestamptz,
-  eids_id text UNIQUE,
   business_name text,
   business_address text,
   business_logo_url text,
@@ -196,7 +194,6 @@ CREATE TABLE IF NOT EXISTS public.listings (
   fraud_score integer NOT NULL DEFAULT 0 CHECK (fraud_score BETWEEN 0 AND 100),
   fraud_reason text,
   status public.listing_status NOT NULL DEFAULT 'pending',
-  eids_verification_json jsonb,
   market_price_index decimal(12,2),
   featured boolean NOT NULL DEFAULT false,
   expert_inspection jsonb,
@@ -353,16 +350,6 @@ CREATE TABLE IF NOT EXISTS public.pricing_plans (
 );
 
 -- Audits & Stats
-CREATE TABLE IF NOT EXISTS public.eids_audit_logs (
-  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  listing_id uuid REFERENCES public.listings (id) ON DELETE SET NULL,
-  verified_by uuid REFERENCES public.profiles (id) ON DELETE SET NULL,
-  verification_method text NOT NULL,
-  status text NOT NULL,
-  raw_response jsonb,
-  created_at timestamptz NOT NULL DEFAULT timezone('utc', now())
-);
-
 CREATE TABLE IF NOT EXISTS public.market_stats (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   brand text NOT NULL,
@@ -587,7 +574,6 @@ CREATE POLICY "market_stats_select_public" ON public.market_stats FOR SELECT USI
 -- Admin Only
 CREATE POLICY "admin_actions_all" ON public.admin_actions FOR ALL USING (public.is_admin());
 CREATE POLICY "api_rate_limits_admin" ON public.api_rate_limits FOR ALL USING (public.is_admin());
-CREATE POLICY "eids_audit_select_admin" ON public.eids_audit_logs FOR SELECT USING (public.is_admin());
 
 -- 9. CRON JOBS
 DO $$

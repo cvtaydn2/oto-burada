@@ -33,19 +33,13 @@ export interface Profile {
   city: string;
   avatarUrl?: string | null;
   emailVerified: boolean;
-  phoneVerified: boolean;
-  /** Identity verified via TC/EIDS — maps to `is_verified` in the DB. */
-  identityVerified: boolean;
   role: UserRole;
   userType?: "individual" | "professional" | "staff";
   balanceCredits?: number;
   /**
-   * General trust flag — currently mirrors `identityVerified` (is_verified).
-   * Used by seller cards and trust badges to show a single verified indicator.
+   * General trust flag.
    */
   isVerified: boolean;
-  tcVerifiedAt?: string | null;
-  eidsId?: string | null;
   isBanned?: boolean;
   
   // Custom Trust Algorithm fields
@@ -113,7 +107,6 @@ export interface Listing {
   featuredUntil?: string | null;
   urgentUntil?: string | null;
   highlightedUntil?: string | null;
-  eidsVerificationJson?: Record<string, unknown> | null;
   marketPriceIndex?: number | null;
   expertInspection?: ExpertInspection;
   seller?: Partial<Profile>;

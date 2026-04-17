@@ -19,8 +19,6 @@ interface ProfileRow {
   role: string | null;
   user_type: string | null;
   balance_credits: number | null;
-  tc_verified_at: string | null;
-  eids_id: string | null;
   business_name: string | null;
   business_address: string | null;
   business_logo_url: string | null;
@@ -53,7 +51,7 @@ export async function getAllUsers(query?: string, page = 1, limit = 20) {
   );
 
   let rpc = admin.from("profiles").select(
-    "id, full_name, phone, city, avatar_url, role, user_type, balance_credits, is_verified, is_banned, tc_verified_at, eids_id, business_name, business_logo_url, business_slug, verified_business, created_at, updated_at",
+    "id, full_name, phone, city, avatar_url, role, user_type, balance_credits, is_verified, is_banned, business_name, business_logo_url, business_slug, verified_business, created_at, updated_at",
     { count: "exact" }
   );
 
@@ -74,7 +72,7 @@ export async function getAllUsers(query?: string, page = 1, limit = 20) {
 
   type UserListRow = Pick<ProfileRow,
     "id" | "full_name" | "phone" | "city" | "avatar_url" | "role" | "user_type" |
-    "balance_credits" | "is_verified" | "is_banned" | "tc_verified_at" | "eids_id" |
+    "balance_credits" | "is_verified" | "is_banned" |
     "business_name" | "business_logo_url" | "business_slug" | "verified_business" |
     "created_at" | "updated_at"
   >;
@@ -94,8 +92,6 @@ export async function getAllUsers(query?: string, page = 1, limit = 20) {
       userType: p.user_type || "individual",
       balanceCredits: p.balance_credits || 0,
       isVerified: p.is_verified || false,
-      tcVerifiedAt: p.tc_verified_at,
-      eidsId: p.eids_id,
       businessName: p.business_name,
       businessAddress: null,
       businessLogoUrl: p.business_logo_url,
@@ -238,7 +234,7 @@ export async function getUserDetail(userId: string): Promise<UserDetailData | nu
     { data: listings },
   ] = await Promise.all([
     admin.from("profiles").select(
-      "id, full_name, phone, city, avatar_url, role, user_type, balance_credits, is_verified, is_banned, tc_verified_at, eids_id, business_name, business_address, business_logo_url, business_description, tax_id, tax_office, website_url, verified_business, business_slug, created_at, updated_at"
+      "id, full_name, phone, city, avatar_url, role, user_type, balance_credits, is_verified, is_banned, business_name, business_address, business_logo_url, business_description, tax_id, tax_office, website_url, verified_business, business_slug, created_at, updated_at"
     ).eq("id", userId).single(),
     admin
       .from("payments")

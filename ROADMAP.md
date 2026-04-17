@@ -2,7 +2,7 @@
 
 > Base date: May 2026  
 > Status: ~60% complete MVP, live in production  
-> Goal: Compete with sahibinden.com and arabam.com on UX, SEO, trust, and performance
+> Goal: Build the leanest, fastest car-only marketplace — simpler than generic classifieds.
 
 ---
 
@@ -40,13 +40,10 @@
 | M3 | **Checkout page** | M | High | `/dashboard/pricing/checkout?plan=X` — Iyzico 3DS redirect flow |
 | M4 | **Credit balance display** | S | Medium | Show `balance_credits` in dashboard header |
 | M5 | **Doping purchase flow** | M | High | Connect `listing-doping-panel` to real payment (currently shows 503) |
-| M6 | **Phone verification (SMS)** | M | High | OTP via Twilio/Netgsm — increases seller trust score |
-| M7 | **E-Devlet identity verification** | L | High | `eids_verification_json` column exists — build the UI flow |
-| M8 | **Seller response rate tracking** | S | Medium | Track WhatsApp click → reply time via webhook |
+| M6 | **Seller response rate tracking** | S | Medium | Track WhatsApp click → reply time via webhook |
 
 **Cost estimate (Q2):**
 - Iyzico: 2.9% + 0.25₺ per transaction (no monthly fee)
-- Twilio SMS: ~0.05₺/OTP
 - Infrastructure: Vercel Pro (~$20/mo) + Supabase Pro (~$25/mo) + Upstash (~$10/mo)
 - **Total: ~$55/mo fixed + transaction fees**
 

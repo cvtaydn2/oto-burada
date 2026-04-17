@@ -18,18 +18,17 @@ import { LoaderCircle, Mail, CheckCircle2 } from "lucide-react";
 import { toast } from "sonner";
 import { useErrorCapture } from "@/hooks/use-error-capture";
 
-interface PhoneVerificationDialogProps {
+interface EmailVerificationDialogProps {
   isOpen: boolean;
   onOpenChange: (open: boolean) => void;
-  initialPhone?: string; // kept for backward compat, not used
   onSuccess?: () => void;
 }
 
-export function PhoneVerificationDialog({
+export function EmailVerificationDialog({
   isOpen,
   onOpenChange,
   onSuccess,
-}: PhoneVerificationDialogProps) {
+}: EmailVerificationDialogProps) {
   const { captureError } = useErrorCapture("email-verification-dialog");
   const [step, setStep] = useState<"send" | "otp" | "success">("send");
   const [otp, setOtp] = useState("");

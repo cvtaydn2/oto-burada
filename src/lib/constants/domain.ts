@@ -14,7 +14,7 @@ export const fuelTypes = ["benzin", "dizel", "lpg", "hibrit", "elektrik"] as con
 
 export const transmissionTypes = ["manuel", "otomatik", "yari_otomatik"] as const;
 
-export const reportReasons = ["fake_listing", "wrong_info", "spam", "price_manipulation", "invalid_eids", "other"] as const;
+export const reportReasons = ["fake_listing", "wrong_info", "spam", "price_manipulation", "invalid_verification", "other"] as const;
 
 export const reportStatuses = ["open", "reviewing", "resolved", "dismissed"] as const;
 
@@ -25,7 +25,7 @@ export const reportReasonLabels = {
   wrong_info: "Yanlis bilgi",
   spam: "Spam veya tekrar",
   price_manipulation: "Fiyat manipülasyonu",
-  invalid_eids: "EİDS / Kimlik hatası",
+  invalid_verification: "Geçersiz kimlik/ilan",
   other: "Diger",
 } as const;
 

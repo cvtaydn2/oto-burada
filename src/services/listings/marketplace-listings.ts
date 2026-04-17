@@ -77,7 +77,7 @@ export async function getMarketplaceSeller(sellerId: string): Promise<Profile | 
       const admin = createSupabaseAdminClient();
       const { data, error } = await admin
         .from("profiles")
-        .select("id, full_name, phone, city, avatar_url, role, user_type, balance_credits, is_verified, tc_verified_at, eids_id, business_name, business_logo_url, business_slug, created_at, updated_at")
+        .select("id, full_name, phone, city, avatar_url, role, user_type, balance_credits, is_verified, business_name, business_logo_url, business_slug, created_at, updated_at")
         .eq("id", sellerId)
         .maybeSingle<{
           avatar_url: string | null;
@@ -87,13 +87,6 @@ export async function getMarketplaceSeller(sellerId: string): Promise<Profile | 
           business_slug: string | null;
           city: string;
           created_at: string;
-          eids_id: string | null;
-          full_name: string;
-          id: string;
-          is_verified: boolean;
-          phone: string;
-          role: Profile["role"];
-          tc_verified_at: string | null;
           updated_at: string;
           user_type: "individual" | "professional" | "staff";
         }>();
@@ -111,14 +104,10 @@ export async function getMarketplaceSeller(sellerId: string): Promise<Profile | 
         // emailVerified and phoneVerified are not exposed in the public seller profile
         // for privacy reasons — they are only available in the authenticated profile context.
         emailVerified: false,
-        phoneVerified: false,
-        identityVerified: data.is_verified,
+        isVerified: data.is_verified,
         role: data.role,
         userType: data.user_type,
         balanceCredits: data.balance_credits ?? 0,
-        isVerified: data.is_verified,
-        tcVerifiedAt: data.tc_verified_at,
-        eidsId: data.eids_id,
         businessName: data.business_name,
         businessLogoUrl: data.business_logo_url,
         businessSlug: data.business_slug,

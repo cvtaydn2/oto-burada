@@ -41,7 +41,6 @@ interface ListingCreateFormProps {
   brands: BrandCatalogItem[];
   cities: CityOption[];
   initialListing?: Listing | null;
-  isPhoneVerified?: boolean; // kept for backward compat
   isEmailVerified?: boolean;
 }
 
@@ -278,21 +277,20 @@ const STEP_LABELS = [
   "Fotoğraflar ve Gönderim",
 ] as const;
 
-import { PhoneVerificationDialog } from "@/components/auth/phone-verification-dialog";
+import { EmailVerificationDialog } from "@/components/auth/email-verification-dialog";
 
 export function ListingCreateForm({
   brands,
   cities,
   initialListing,
   initialValues,
-  isPhoneVerified = false,
   isEmailVerified = false,
 }: ListingCreateFormProps) {
   const router = useRouter();
   const { trackEvent } = useAnalytics();
   const isEditing = Boolean(initialListing);
   // Email doğrulama — phone doğrulama kaldırıldı
-  const [isEmailVerifiedLocally, setIsEmailVerifiedLocally] = useState(isEmailVerified || isPhoneVerified);
+  const [isEmailVerifiedLocally, setIsEmailVerifiedLocally] = useState(isEmailVerified);
   const [isVerifyDialogOpen, setIsVerifyDialogOpen] = useState(false);
   const [submitState, setSubmitState] = useState<SubmitState>(initialSubmitState);
   const [uploadStates, setUploadStates] = useState<Record<string, UploadState>>({});
@@ -837,7 +835,7 @@ export function ListingCreateForm({
         </div>
       </form>
 
-      <PhoneVerificationDialog
+      <EmailVerificationDialog
         isOpen={isVerifyDialogOpen}
         onOpenChange={setIsVerifyDialogOpen}
         onSuccess={() => {

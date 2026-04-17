@@ -78,7 +78,6 @@ export interface ListingRow {
   transmission: Listing["transmission"];
   updated_at: string;
   bumped_at?: string | null;
-  eids_verification_json?: Record<string, unknown> | null;
   market_price_index?: number | null;
   whatsapp_phone: string;
   year: number;
@@ -114,7 +113,6 @@ const listingSelect = `
   featured_until,
   urgent_until,
   highlighted_until,
-  eids_verification_json,
   market_price_index,
   expert_inspection,
   published_at,
@@ -365,7 +363,6 @@ export function buildListingRecord(
     featuredUntil: existingListing?.featuredUntil ?? null,
     urgentUntil: existingListing?.urgentUntil ?? null,
     highlightedUntil: existingListing?.highlightedUntil ?? null,
-    eidsVerificationJson: (existingListing as Listing | undefined)?.eidsVerificationJson ?? null,
     marketPriceIndex: existingListing?.marketPriceIndex ?? null,
     createdAt: existingListing?.createdAt ?? timestamp,
     updatedAt: timestamp,
@@ -421,12 +418,10 @@ function mapListingRow(row: ListingRow): Listing {
       userType: row.profiles.user_type as Profile["userType"],
       businessName: row.profiles.business_name,
       businessLogoUrl: row.profiles.business_logo_url,
-      identityVerified: row.profiles.is_verified,
       isVerified: row.profiles.is_verified,
       verifiedBusiness: row.profiles.verified_business,
       businessSlug: row.profiles.business_slug,
       emailVerified: false,
-      phoneVerified: false,
       createdAt: "",
       updatedAt: "",
     } : undefined,
@@ -441,7 +436,6 @@ function mapListingRow(row: ListingRow): Listing {
     featuredUntil: row.featured_until ?? null,
     urgentUntil: row.urgent_until ?? null,
     highlightedUntil: row.highlighted_until ?? null,
-    eidsVerificationJson: (row.eids_verification_json as Record<string, unknown> | null) ?? null,
     marketPriceIndex: row.market_price_index ? Number(row.market_price_index) : null,
     whatsappPhone: row.whatsapp_phone,
     vin: row.vin ?? null,
@@ -996,7 +990,6 @@ export function mapListingToDatabaseRow(listing: Listing) {
     featured_until: listing.featuredUntil ?? null,
     urgent_until: listing.urgentUntil ?? null,
     highlighted_until: listing.highlightedUntil ?? null,
-    eids_verification_json: listing.eidsVerificationJson ?? null,
     market_price_index: listing.marketPriceIndex ?? null,
     vin: listing.vin ?? null,
     bumped_at: listing.bumpedAt ?? null,

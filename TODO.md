@@ -7,10 +7,9 @@
 
 ## 🚨 Acil (Üretim Öncesi Engelleyiciler)
 
-- [x] **SMS Verification (OTP)**: Sahte ilanları engellemek için telefon doğrulama. (Done)
+- [x] **Ürün Kapsamı Revizyonu**: EİDS, SMS ve Telefon doğrulama kapsam dışı bırakıldı. (Done)
 - [x] **Upstash Redis Rate Limiting**: Serverless ortamda gerçek istek sınırlama. (Done)
-- [x] **EİDS Entegrasyonu**: E-Devlet üzerinden araç sahibi doğrulaması. (Done)
-- [x] **Schema Bütünlüğü**: `schema.sql` ve canlı veritabanı senkronizasyonu. (Done)
+- [x] **Schema Bütünlüğü**: `schema.snapshot.sql` ve canlı veritabanı senkronizasyonu. (Done)
 
 ---
 
@@ -69,9 +68,7 @@
 ### Altyapı
 - [x] **E2E testleri**: Playwright ile kritik akışların otomasyonu (Done)
 - [x] **CI/CD pipeline**: GitHub Actions ile lint → typecheck → build → deploy (Done)
-- [x] **Kritik**: SMS Verification (OTP) entegrasyonu (Done)
-- [x] **Kritik**: Upstash Redis Rate Limiting (Done)
-- [x] **Önemli**: EİDS (E-Devlet) İlan Doğrulama API prototipi (Done)
+- [x] **İptal**: EİDS ve SMS Verification (Ürün kararıyla kaldırıldı)
 - [ ] **Önemli**: Güvenli Ödeme (Iyzico/Stripe) ve İlan Boost akışı
 - [ ] **Staging ortamı**: Supabase branch + Vercel preview deployment
 

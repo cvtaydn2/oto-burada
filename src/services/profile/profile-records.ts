@@ -24,8 +24,6 @@ interface ProfileRow {
   user_type: "individual" | "professional" | "staff";
   balance_credits: number;
   is_verified: boolean;
-  tc_verified_at: string | null;
-  eids_id: string | null;
   updated_at: string;
   verified_business: boolean | null;
   website_url: string | null;
@@ -45,8 +43,6 @@ function getVerificationState(user: User | null | undefined) {
 
   return {
     emailVerified: Boolean(appMetadata.email_verified ?? user?.email_confirmed_at ?? user?.confirmed_at),
-    identityVerified: appMetadata.identity_verified === true,
-    phoneVerified: Boolean(appMetadata.phone_verified ?? authUser?.phone_confirmed_at),
   };
 }
 
@@ -59,16 +55,8 @@ function mapProfileRow(row: ProfileRow, authUser?: User | null) {
     emailVerified: verificationState.emailVerified,
     fullName: row.full_name,
     id: row.id,
-    identityVerified: verificationState.identityVerified,
-    phone: row.phone,
-    phoneVerified: verificationState.phoneVerified,
-    role: row.role,
-    userType: row.user_type,
-    balanceCredits: row.balance_credits,
     isVerified: row.is_verified,
     isBanned: row.is_banned ?? false,
-    tcVerifiedAt: row.tc_verified_at,
-    eidsId: row.eids_id,
     businessName: row.business_name,
     businessAddress: row.business_address,
     businessLogoUrl: row.business_logo_url,
@@ -93,14 +81,8 @@ function mapProfileRow(row: ProfileRow, authUser?: User | null) {
     avatarUrl: row.avatar_url,
     emailVerified: verificationState.emailVerified,
     role: row.role || "user",
-    identityVerified: verificationState.identityVerified,
-    phoneVerified: verificationState.phoneVerified,
-    userType: row.user_type || "individual",
-    balanceCredits: row.balance_credits || 0,
     isVerified: row.is_verified || false,
     isBanned: row.is_banned || false,
-    tcVerifiedAt: row.tc_verified_at,
-    eidsId: row.eids_id,
     businessName: row.business_name,
     businessAddress: row.business_address,
     businessLogoUrl: row.business_logo_url,
@@ -148,14 +130,10 @@ export function buildProfileFromAuthUser(user: User) {
     phone: userMetadata.phone ?? "",
     city: userMetadata.city ?? "",
     emailVerified: verificationState.emailVerified,
-    phoneVerified: verificationState.phoneVerified,
-    identityVerified: verificationState.identityVerified,
-    isVerified: verificationState.identityVerified, // Default to matching identity verification
+    isVerified: false, 
     role: resolvedRole as Profile["role"],
     userType: "individual" as const,
     balanceCredits: 0,
-    tcVerifiedAt: null,
-    eidsId: null,
     isBanned: false,
     businessName: userMetadata.business_name ?? null,
     businessAddress: userMetadata.business_address ?? null,
@@ -232,7 +210,7 @@ export async function getStoredProfileById(profileId: string) {
   const admin = createSupabaseAdminClient();
   const { data, error } = await admin
     .from("profiles")
-    .select("id, full_name, phone, city, avatar_url, role, user_type, balance_credits, is_verified, is_banned, tc_verified_at, eids_id, business_name, business_address, business_logo_url, business_description, tax_id, tax_office, website_url, verified_business, business_slug, created_at, updated_at")
+    .select("id, full_name, phone, city, avatar_url, role, user_type, balance_credits, is_verified, is_banned, business_name, business_address, business_logo_url, business_description, tax_id, tax_office, website_url, verified_business, business_slug, created_at, updated_at")
     .eq("id", profileId)
     .maybeSingle<ProfileRow>();
 
@@ -279,36 +257,6 @@ export async function updateProfileTable(
   return getStoredProfileById(userId);
 }
 
-/**
- * Marks a profile as identity verified (EИDS/Mock E-Devlet).
- */
-export async function verifyProfileIdentity(userId: string, eidsId: string) {
-  if (!hasSupabaseAdminEnv()) {
-    return null;
-  }
-
-  const admin = createSupabaseAdminClient();
-  const { error } = await admin
-    .from("profiles")
-    .update({
-      is_verified: true,
-      tc_verified_at: new Date().toISOString(),
-      eids_id: eidsId,
-      updated_at: new Date().toISOString(),
-    })
-    .eq("id", userId);
-
-  if (error) {
-    return null;
-  }
-
-  // Also update auth user metadata for convenience in sessions
-  await admin.auth.admin.updateUserById(userId, {
-    app_metadata: { identity_verified: true },
-  });
-
-  return getStoredProfileById(userId);
-}
 
 /**
  * Checks if a user is banned.

@@ -365,10 +365,7 @@ Audit all pages for:
 - [x] Native-like transitions between pages
 
 ### Task 8.4 — Transparency & Market Price Indexing (Complete)
-- [x] Implement Market Price Indexing service
-- [x] Synchronize domain types with regulation-ready schema
 - [x] Resolve all data-layer lint/type inconsistencies
-- Note: EİDS (E-Devlet) entegrasyonu kaldırıldı (2026-04-15). Gerçek API hazır olduğunda ileride entegre edilecek.
 
 ---
 
@@ -405,13 +402,6 @@ Audit all pages for:
 
 ## Phase 25 — Marketplace Hardening & Core Depth
 
-### Task 25.1 — Identity Verification (Ertelendi)
-~~Build a verification flow to enable "is_verified" status for users.~~
-- Note: EİDS (E-Devlet) gerçek entegrasyonu kaldırıldı (2026-04-15). Şimdilik "yakında aktif" bilgi kartı gösteriliyor.
-- Gerçek API hazır olduğunda bu task yeniden ele alınacak.
-
-#### Acceptance Criteria
-- Ertelendi — ileride gerçek EİDS API ile entegre edilecek.
 
 ### Task 25.2 — Real-time In-App Chat
 Implement full messaging capability between buyers and sellers.

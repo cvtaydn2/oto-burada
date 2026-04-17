@@ -6,7 +6,7 @@ import { useActionState } from "react";
 import type { ProfileActionState } from "@/lib/auth/profile-actions";
 import { AuthSubmitButton } from "@/components/forms/auth-submit-button";
 
-import { PhoneVerificationDialog } from "@/components/auth/phone-verification-dialog";
+import { EmailVerificationDialog } from "@/components/auth/email-verification-dialog";
 import { useState } from "react";
 import { CheckCircle2, AlertCircle } from "lucide-react";
 import { Label } from "@/components/ui/label";
@@ -216,10 +216,9 @@ export function ProfileForm({
       <AuthSubmitButton label="Profili Güncelle" />
     </form>
     
-    <PhoneVerificationDialog 
+    <EmailVerificationDialog 
       isOpen={isVerifyDialogOpen}
       onOpenChange={setIsVerifyDialogOpen}
-      initialPhone={values.phone}
       onSuccess={() => {
         setIsVerifiedLocally(true);
         setIsVerifyDialogOpen(false);

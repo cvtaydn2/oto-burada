@@ -74,14 +74,10 @@ export const profileSchema = z.object({
   city: trimmedRequiredString,
   avatarUrl: z.string().trim().url(invalidMessage).nullable().optional(),
   emailVerified: z.boolean(),
-  phoneVerified: z.boolean(),
-  identityVerified: z.boolean(),
   isVerified: z.boolean(),
   isBanned: z.boolean().optional(),
   userType: z.enum(["individual", "professional", "staff"]).optional(),
   balanceCredits: z.number().int().min(0).optional(),
-  tcVerifiedAt: timestampSchema.nullable().optional(),
-  eidsId: z.string().nullable().optional(),
   role: z.enum(userRoles),
   
   // Corporate Fields
@@ -296,7 +292,7 @@ export const listingSchema: z.ZodType<Listing> = z.object({
   featuredUntil: z.string().nullable().optional(),
   urgentUntil: z.string().nullable().optional(),
   highlightedUntil: z.string().nullable().optional(),
-  eidsVerificationJson: z.record(z.string(), z.unknown()).nullable().optional(),
+  status: z.enum(listingStatuses),
   marketPriceIndex: z.coerce.number().nullable().optional(),
   expertInspection: expertInspectionSchema.optional(),
   seller: profileSchema.partial().optional(),
