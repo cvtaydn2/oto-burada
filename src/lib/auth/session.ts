@@ -44,22 +44,21 @@ export async function requireAdminUser() {
   }
 
   // Secondary DB check to guard against stale JWT after demotion.
-  // Only runs when admin env is available (skip in offline/test mode).
+  // Fails CLOSED — if the DB check throws, we deny access rather than
+  // silently granting it. Only skipped when admin env is not configured
+  // (offline / test mode).
   if (process.env.SUPABASE_SERVICE_ROLE_KEY) {
-    try {
-      const { createSupabaseAdminClient } = await import("@/lib/supabase/admin");
-      const adminClient = createSupabaseAdminClient();
-      const { data: profile } = await adminClient
-        .from("profiles")
-        .select("role")
-        .eq("id", user.id)
-        .maybeSingle<{ role: string }>();
+    const { createSupabaseAdminClient } = await import("@/lib/supabase/admin");
+    const adminClient = createSupabaseAdminClient();
+    const { data: profile, error: profileError } = await adminClient
+      .from("profiles")
+      .select("role")
+      .eq("id", user.id)
+      .maybeSingle<{ role: string }>();
 
-      if (profile && profile.role !== "admin") {
-        redirect("/dashboard");
-      }
-    } catch {
-      // Non-critical: if DB check fails, fall through (JWT admin claim is still valid).
+    // DB error or profile missing → fail closed (deny access)
+    if (profileError || !profile || profile.role !== "admin") {
+      redirect("/dashboard");
     }
   }
 

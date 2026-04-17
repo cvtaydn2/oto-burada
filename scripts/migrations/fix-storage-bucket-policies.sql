@@ -1,51 +1,110 @@
--- ============================================================
--- OtoBurada — Storage Bucket Policy Fix
--- Generated: 2026-04-17
--- ============================================================
--- IMPORTANT: Supabase no longer exposes storage.policies as a
--- writable table via SQL Editor. Storage policies must be managed
--- via the Supabase Dashboard or the Management API.
+-- Migration: fix-storage-bucket-policies.sql
+-- Applied: 2026-04-17
+-- Purpose: Create Supabase Storage RLS policies for listing-images and
+--          listing-documents buckets. These were previously only documented
+--          as comments in schema.sql but never applied as actual SQL.
 --
--- MANUAL STEPS (do these in Supabase Dashboard):
+-- Prerequisites:
+--   1. Create buckets in Supabase Dashboard (Storage > New bucket):
+--      - "listing-images"  → Public: ON
+--      - "listing-documents" → Public: OFF (private, signed URLs only)
+--   2. Run this migration in the SQL editor.
 --
--- 1. Go to: Storage → listing-images bucket → Policies
---
--- 2. Find the existing SELECT policy that has definition = "true"
---    (it may be named "Give users access to own folder" or similar)
---    → DELETE that policy
---
--- 3. Create a new SELECT policy:
---    Name: "listing-images-read-listings-prefix"
---    Allowed operation: SELECT
---    Target roles: public (anon + authenticated)
---    Policy definition (USING):
---      bucket_id = 'listing-images'
---      AND (storage.foldername(name))[1] = 'listings'
---
--- 4. Verify INSERT policy exists and is scoped to owner folder:
---    Name: "listing-images-insert-own-folder"
---    Allowed operation: INSERT
---    Target roles: authenticated
---    Policy definition (WITH CHECK):
---      bucket_id = 'listing-images'
---      AND (storage.foldername(name))[1] = 'listings'
---      AND (storage.foldername(name))[2] = (select auth.uid()::text)
---
--- 5. Verify DELETE policy exists and is scoped to owner folder:
---    Name: "listing-images-delete-own-folder"
---    Allowed operation: DELETE
---    Target roles: authenticated
---    Policy definition (USING):
---      bucket_id = 'listing-images'
---      AND (storage.foldername(name))[1] = 'listings'
---      AND (storage.foldername(name))[2] = (select auth.uid()::text)
---
--- ── listing-documents bucket ─────────────────────────────────
--- 6. Go to: Storage → listing-documents bucket → Policies
---    Ensure there is NO public SELECT policy (definition = true).
---    Documents are served via signed URLs only.
--- ============================================================
+-- Rollback:
+--   DELETE FROM storage.buckets WHERE id IN ('listing-images', 'listing-documents');
+--   (policies are cascade-deleted with the bucket)
 
--- This file is intentionally left as documentation only.
--- No SQL to execute — all changes are done via Dashboard.
-SELECT 'Storage bucket policies must be configured via Supabase Dashboard. See comments above.' AS instruction;
+-- ── listing-images bucket ────────────────────────────────────────────────────
+
+-- Public read: anyone can view listing images (bucket is public)
+DROP POLICY IF EXISTS "listing_images_public_read" ON storage.objects;
+CREATE POLICY "listing_images_public_read"
+  ON storage.objects FOR SELECT
+  USING (bucket_id = 'listing-images');
+
+-- Authenticated users can upload to their own folder only
+-- Path format: listings/{user_id}/{uuid}.{ext}
+DROP POLICY IF EXISTS "listing_images_owner_insert" ON storage.objects;
+CREATE POLICY "listing_images_owner_insert"
+  ON storage.objects FOR INSERT
+  WITH CHECK (
+    bucket_id = 'listing-images'
+    AND auth.role() = 'authenticated'
+    AND (storage.foldername(name))[1] = 'listings'
+    AND (storage.foldername(name))[2] = (SELECT auth.uid()::text)
+  );
+
+-- Users can only delete their own images
+DROP POLICY IF EXISTS "listing_images_owner_delete" ON storage.objects;
+CREATE POLICY "listing_images_owner_delete"
+  ON storage.objects FOR DELETE
+  USING (
+    bucket_id = 'listing-images'
+    AND (
+      (
+        (storage.foldername(name))[1] = 'listings'
+        AND (storage.foldername(name))[2] = (SELECT auth.uid()::text)
+      )
+      OR (SELECT public.is_admin())
+    )
+  );
+
+-- Users can update (replace) their own images
+DROP POLICY IF EXISTS "listing_images_owner_update" ON storage.objects;
+CREATE POLICY "listing_images_owner_update"
+  ON storage.objects FOR UPDATE
+  USING (
+    bucket_id = 'listing-images'
+    AND (storage.foldername(name))[1] = 'listings'
+    AND (storage.foldername(name))[2] = (SELECT auth.uid()::text)
+  )
+  WITH CHECK (
+    bucket_id = 'listing-images'
+    AND (storage.foldername(name))[1] = 'listings'
+    AND (storage.foldername(name))[2] = (SELECT auth.uid()::text)
+  );
+
+-- ── listing-documents bucket ─────────────────────────────────────────────────
+-- Private bucket — no public read. Access via signed URLs only.
+
+-- Owners and admins can read their own documents
+DROP POLICY IF EXISTS "listing_documents_owner_read" ON storage.objects;
+CREATE POLICY "listing_documents_owner_read"
+  ON storage.objects FOR SELECT
+  USING (
+    bucket_id = 'listing-documents'
+    AND (
+      (
+        (storage.foldername(name))[1] = 'documents'
+        AND (storage.foldername(name))[2] = (SELECT auth.uid()::text)
+      )
+      OR (SELECT public.is_admin())
+    )
+  );
+
+-- Authenticated users can upload to their own folder only
+-- Path format: documents/{user_id}/{uuid}.{ext}
+DROP POLICY IF EXISTS "listing_documents_owner_insert" ON storage.objects;
+CREATE POLICY "listing_documents_owner_insert"
+  ON storage.objects FOR INSERT
+  WITH CHECK (
+    bucket_id = 'listing-documents'
+    AND auth.role() = 'authenticated'
+    AND (storage.foldername(name))[1] = 'documents'
+    AND (storage.foldername(name))[2] = (SELECT auth.uid()::text)
+  );
+
+-- Users can delete their own documents; admins can delete any
+DROP POLICY IF EXISTS "listing_documents_owner_delete" ON storage.objects;
+CREATE POLICY "listing_documents_owner_delete"
+  ON storage.objects FOR DELETE
+  USING (
+    bucket_id = 'listing-documents'
+    AND (
+      (
+        (storage.foldername(name))[1] = 'documents'
+        AND (storage.foldername(name))[2] = (SELECT auth.uid()::text)
+      )
+      OR (SELECT public.is_admin())
+    )
+  );

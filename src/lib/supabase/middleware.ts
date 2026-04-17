@@ -14,6 +14,28 @@ const SECURITY_HEADERS = {
   "Referrer-Policy": "strict-origin-when-cross-origin",
   "Permissions-Policy": "camera=(), microphone=(), geolocation=()",
   "Strict-Transport-Security": "max-age=63072000; includeSubDomains; preload",
+  // Content-Security-Policy: tight policy for a marketplace app.
+  // - default-src 'self': only same-origin by default
+  // - script-src: Next.js inline scripts need 'unsafe-inline' in dev; in prod
+  //   nonces are preferred but require per-request generation. 'unsafe-eval'
+  //   is needed for some Next.js internals. Vercel Analytics is self-hosted.
+  // - img-src: allow Supabase Storage, Unsplash (seed data), and data URIs
+  // - connect-src: Supabase API, PostHog, Upstash
+  // - frame-ancestors 'none': equivalent to X-Frame-Options DENY
+  "Content-Security-Policy": [
+    "default-src 'self'",
+    "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://va.vercel-scripts.com",
+    "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
+    "font-src 'self' https://fonts.gstatic.com",
+    "img-src 'self' data: blob: https://*.supabase.co https://images.unsplash.com",
+    "connect-src 'self' https://*.supabase.co https://*.posthog.com https://*.upstash.io wss://*.supabase.co",
+    "media-src 'self' blob: https://*.supabase.co",
+    "object-src 'none'",
+    "base-uri 'self'",
+    "form-action 'self'",
+    "frame-ancestors 'none'",
+    "upgrade-insecure-requests",
+  ].join("; "),
 };
 
 export async function updateSession(request: NextRequest) {
@@ -126,6 +148,10 @@ export async function updateSession(request: NextRequest) {
   for (const [key, value] of Object.entries(SECURITY_HEADERS)) {
     response.headers.set(key, value);
   }
+
+  // Request correlation ID — propagated to all downstream logs
+  const requestId = request.headers.get("x-request-id") ?? crypto.randomUUID();
+  response.headers.set("x-request-id", requestId);
 
   response.headers.set("Cache-Control", "private, max-age=0, no-cache");
   response.headers.set("x-pathname", pathname);

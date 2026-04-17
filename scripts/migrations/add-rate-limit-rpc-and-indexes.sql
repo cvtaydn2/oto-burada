@@ -50,6 +50,8 @@ exception when others then null;
 end $$;
 
 -- The main RPC called by src/lib/utils/rate-limit.ts
+-- Drop first to allow return type change (safe — function is stateless)
+drop function if exists public.check_api_rate_limit(text, integer, bigint);
 create or replace function public.check_api_rate_limit(
   p_key text,
   p_limit integer,

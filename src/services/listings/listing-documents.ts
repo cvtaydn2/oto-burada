@@ -45,6 +45,20 @@ async function validateMagicBytes(file: File): Promise<boolean> {
   return false;
 }
 
+/**
+ * Returns the verified MIME type from magic bytes, or null if unrecognized.
+ * Used to set the correct Content-Type on storage upload.
+ */
+export async function getVerifiedDocumentMimeType(file: File): Promise<string | null> {
+  const header = await readFileHeader(file);
+  for (const [mimeType, magicBytes] of Object.entries(MAGIC_BYTES)) {
+    if (matchesMagicBytes(header, magicBytes)) {
+      return mimeType;
+    }
+  }
+  return null;
+}
+
 export async function validateExpertDocumentFile(file: File) {
   if (!mimeTypeSet.has(file.type)) {
     return "Sadece PDF, JPG, PNG veya WebP formatinda belge yukleyebilirsin.";
@@ -62,8 +76,21 @@ export async function validateExpertDocumentFile(file: File) {
   return null;
 }
 
-export function buildExpertDocumentStoragePath(userId: string, fileName: string) {
-  const extension = fileName.includes(".") ? fileName.split(".").pop()?.toLowerCase() ?? "pdf" : "pdf";
+export function buildExpertDocumentStoragePath(
+  userId: string,
+  _fileName: string,
+  verifiedMimeType?: string,
+): string {
+  // Derive extension from verified MIME type — never trust user-supplied filename
+  const MIME_TO_EXTENSION: Record<string, string> = {
+    "application/pdf": "pdf",
+    "image/jpeg": "jpg",
+    "image/png": "png",
+    "image/webp": "webp",
+  };
+  const extension = verifiedMimeType
+    ? (MIME_TO_EXTENSION[verifiedMimeType] ?? "pdf")
+    : "pdf";
   return `documents/${userId}/${crypto.randomUUID()}.${extension}`;
 }
 
