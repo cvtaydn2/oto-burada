@@ -7,7 +7,7 @@ import { loadLocalEnv } from "./load-local-env.mjs";
 
 loadLocalEnv();
 
-const schemaPath = path.resolve(process.cwd(), "schema.sql");
+const schemaPath = path.resolve(process.cwd(), "database", "schema.snapshot.sql");
 const databaseUrl = process.env.SUPABASE_DB_URL;
 
 function resolvePsqlCommand() {

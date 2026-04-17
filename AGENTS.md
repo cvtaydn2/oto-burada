@@ -61,6 +61,16 @@ Primary success criteria:
 - Keep the architecture simple and maintainable.
 - Do not introduce microservices.
 - Do not introduce a separate Express/Nest backend for MVP.
+---
+
+## Database Rules
+- Use `database/schema.snapshot.sql` as the single source of truth for the full schema.
+- For NEW changes, create a new migration in `database/migrations/` using the `00XX_name.sql` pattern.
+- Always track applied migrations using `npm run db:migrate`.
+- Keep the baseline clean in `database/schema.base.sql`.
+- Use RLS (Row Level Security) for all tables; never bypass RLS in client components.
+- Use `(SELECT auth.uid())` instead of just `auth.uid()` in policies for better performance.
+- Always set `search_path = public` for `SECURITY DEFINER` functions.
 
 ---
 

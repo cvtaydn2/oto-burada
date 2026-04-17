@@ -14,7 +14,7 @@ const supabase = createClient(supabaseUrl, serviceRoleKey);
 
 async function applySchema() {
   console.log("Reading schema file...");
-  const schemaPath = path.join(process.cwd(), "schema.sql");
+  const schemaPath = path.join(process.cwd(), "database", "schema.snapshot.sql");
   const schema = fs.readFileSync(schemaPath, "utf-8");
 
   console.log("Applying schema via RPC...");

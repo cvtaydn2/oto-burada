@@ -19,7 +19,7 @@
     "test:e2e:mobile": "playwright test --project='Mobile Chrome'",
     "test:a11y": "playwright test e2e/accessibility.spec.ts",
     "db:check-env": "node scripts/check-supabase-env.mjs",
-    "db:migrate-payments": "node scripts/migrate-payments-plan-id.mjs",
+    "db:migrate": "node scripts/run-migrations.mjs",
     "db:apply-schema": "node scripts/apply-supabase-schema.mjs",
     "db:seed-demo": "node scripts/seed-supabase-demo.mjs",
     "db:seed-references": "node scripts/seed-marketplace-references.mjs",

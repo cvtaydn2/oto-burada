@@ -38,9 +38,9 @@ async function createTables() {
   }
   
   console.log("\n⚠️ Tables need to be created manually in Supabase.");
-  console.log("Please run the SQL from schema.sql in Supabase SQL Editor:");
+  console.log("Please run the SQL from database/schema.snapshot.sql in Supabase SQL Editor:");
   console.log("1. Go to Supabase Dashboard -> SQL Editor");
-  console.log("2. Copy content from schema.sql and run");
+  console.log("2. Copy content from database/schema.snapshot.sql and run");
   console.log("3. Then run this script again to seed data\n");
 }
 

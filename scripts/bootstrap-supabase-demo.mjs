@@ -5,6 +5,7 @@ import process from "node:process";
 const scriptPaths = [
   "scripts/check-supabase-env.mjs",
   "scripts/apply-supabase-schema.mjs",
+  "scripts/run-migrations.mjs",
   "scripts/seed-supabase-demo.mjs",
   "scripts/verify-supabase-demo.mjs",
 ];

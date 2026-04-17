@@ -1,5 +1,66 @@
 # PROGRESS.md
 
+## Data Layer Simplification & Migration Structure (2026-04-18)
+
+### Yapılan Değişiklikler
+
+**Veri Katmanı Organizasyonu**
+- `schema.sql` monolithic yapısından kurtarıldı ve `database/` klasörüne taşındı.
+- `database/schema.base.sql`: Core MVP tablolarını içeren temiz başlangıç noktası.
+- `database/migrations/*.sql`: `scripts/migrations/` altındaki tüm tarihsel yamalar buraya taşındı.
+- `database/schema.snapshot.sql`: Veritabanının güncel, en temiz ve tek seferde çalıştırılabilir hali (Snapshot).
+
+**SQL Temizliği & Konsolidasyon**
+- `schema.snapshot.sql` içinde `ALTER TABLE` ile sonradan eklenen kolonlar (örn: `profiles` business alanları, `is_banned` vb.) ana `CREATE TABLE` tanımlarına yedirildi.
+- Duplicate tablo tanımları (`chats` tablosu gibi) temizlendi.
+- RLS politikaları Advisor (Güvenlik/Performans) önerilerine göre güncellendi: `auth.uid()` -> `(SELECT auth.uid())` patterni uygulandı.
+- Fonksiyonlar `SECURITY DEFINER` ve `SET search_path = public` güvenlik standartlarına göre normalize edildi.
+- Gereksiz `IF NOT EXISTS` ve `DROP IF EXISTS` zincirleri sadeleştirildi.
+
+**Araç & Script Güncellemeleri**
+- `scripts/apply-supabase-schema.mjs`: Artık varsayılan olarak `database/schema.snapshot.sql` dosyasını uyguluyor.
+- `scripts/quick-bootstrap.mjs`: Yönlendirmeler ve hata mesajları yeni dosya yapısına göre güncellendi.
+- `scripts/apply-schema-rpc.mjs`: Yeni snapshot yolunu kullanacak şekilde güncellendi.
+- Kök dizindeki `schema.sql` yeni yapıyı açıklayan bir placeholder'a dönüştürüldü.
+
+### Doğrulama
+- `npm run typecheck` ✅
+- SQL syntax kontrolü (Snapshot dosyası manuel gözle tarandı) ✅
+
+### Riskli Alanlar
+- **Enum Güncellemeleri**: `ALTER TYPE` işlemleri bazi ortamlarda transaction blokları içinde sorun çıkarabilir, idempotent yapı korundu.
+- **Policy İsim Çakışmaları**: Bazı policy isimleri Advisor fix'leri sırasında değişmiş olabilir, bu durum eski rollback scriptlerini etkileyebilir.
+
+### Sonraki Adımlar
+- **Auto-Sync Snapshot**: Veritabanı değişiklikleri her yapıldığında `schema.snapshot.sql` dosyasının otomatik güncellenmesi için bir script (pg_dump tabanlı) eklenebilir.
+
+## Migration Runner & Sequential Versioning (2026-04-18)
+
+### Yapılan Değişiklikler
+
+**Migration Runner Altyapısı**
+- `scripts/run-migrations.mjs` scripti oluşturuldu. Bu script:
+  - `public._migrations` tablosu üzerinden hangi yamaların uygulandığını takip eder.
+  - Aynı yamanın tekrar çalışmasını engeller.
+  - Hata durumunda işlemi durdurur (`ON_ERROR_STOP`).
+- `package.json` dosyasına `npm run db:migrate` komutu eklendi.
+
+**Sıralı İsimlendirme (Sequential Versioning)**
+- `database/migrations/` altındaki tüm dosyalar `0001_`, `0002_` gibi sıralı öneklerle isimlendirildi.
+- Bu sayede migration'ların her zaman aynı sırada çalışması garanti altına alındı.
+
+**Geliştirici Deneyimi (DX)**
+- `quick-bootstrap.mjs` ve diğer kurulum scriptleri yeni yapıya uyumlu hale getirildi.
+- Yeni bir veritabanı kurulumunda akış artık: `db:apply-schema` (snapshot) -> `db:migrate` (yeni yamalar) şeklinde standartlaştırıldı.
+
+### Doğrulama
+- `npm run db:migrate` (Kuru çalıştırma: Tablo oluşturma ve dosya tarama kontrol edildi) ✅
+- `package.json` script entegrasyonu ✅
+
+### Sonraki Adım
+- Takımın yeni bir migration eklerken `0026_isim.sql` formatını kullanması için `CONTRIBUTING.md` veya `AGENTS.md` güncellenmelidir.
+
+
 ## AI Moderation & Infinite Scroll Integration (2026-04-17)
 
 ### Yapılan Değişiklikler
