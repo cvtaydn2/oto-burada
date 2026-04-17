@@ -81,15 +81,34 @@ async function handleSync(request: Request) {
 
       const avgPrice = prices.reduce((sum, p) => sum + Number(p.price), 0) / prices.length;
 
-      // Upsert market_stats
-      await admin.from("market_stats").upsert({
-        brand: seg.brand,
-        model: seg.model,
-        year: seg.year,
-        avg_price: avgPrice,
-        listing_count: prices.length,
-        calculated_at: new Date().toISOString(),
-      }, { onConflict: "brand,model,year" });
+      // Upsert market_stats — partial index üzerinden çalışmaz,
+      // manuel INSERT ... ON CONFLICT kullan
+      const { error: upsertErr } = await admin.rpc("upsert_market_stats", {
+        p_brand: seg.brand,
+        p_model: seg.model,
+        p_year: seg.year,
+        p_avg_price: avgPrice,
+        p_listing_count: prices.length,
+      });
+
+      if (upsertErr) {
+        // RPC yoksa fallback: delete + insert
+        await admin.from("market_stats")
+          .delete()
+          .eq("brand", seg.brand)
+          .eq("model", seg.model)
+          .eq("year", seg.year)
+          .is("car_trim", null);
+
+        await admin.from("market_stats").insert({
+          brand: seg.brand,
+          model: seg.model,
+          year: seg.year,
+          avg_price: avgPrice,
+          listing_count: prices.length,
+          calculated_at: new Date().toISOString(),
+        });
+      }
 
       // Update market_price_index on all listings in this segment
       await admin.rpc("update_listing_price_indices", {

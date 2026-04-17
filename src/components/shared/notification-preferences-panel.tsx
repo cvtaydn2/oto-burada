@@ -47,6 +47,7 @@ export function NotificationPreferencesPanel({ initialPreferences }: Notificatio
   const [prefs, setPrefs] = useState(initialPreferences);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const update = (key: keyof Omit<NotificationPreferences, "userId">, value: boolean) => {
     setPrefs(prev => ({ ...prev, [key]: value }));
@@ -55,15 +56,20 @@ export function NotificationPreferencesPanel({ initialPreferences }: Notificatio
   const handleSave = async () => {
     setSaving(true);
     setSaved(false);
+    setError(null);
     try {
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const { userId: _uid, ...rest } = prefs;
-      await fetch("/api/notifications/preferences", {
+      const res = await fetch("/api/notifications/preferences", {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(rest),
       });
+      if (!res.ok) throw new Error("Kayıt başarısız");
       setSaved(true);
       setTimeout(() => setSaved(false), 3000);
+    } catch {
+      setError("Tercihler kaydedilemedi. Lütfen tekrar dene.");
     } finally {
       setSaving(false);
     }
@@ -152,6 +158,9 @@ export function NotificationPreferencesPanel({ initialPreferences }: Notificatio
       </div>
 
       <div className="mt-6 flex items-center justify-end gap-3">
+        {error && (
+          <p className="text-sm font-medium text-red-600">{error}</p>
+        )}
         {saved && (
           <div className="flex items-center gap-1.5 text-sm font-medium text-emerald-600">
             <CheckCircle2 size={15} />

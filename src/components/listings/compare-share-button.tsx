@@ -22,11 +22,23 @@ export function CompareShareButton({ ids }: CompareShareButtonProps) {
         });
         return;
       } catch {
-        // Fallback to clipboard
+        // User cancelled or share failed — fallback to clipboard
       }
     }
 
-    await navigator.clipboard.writeText(url);
+    // Clipboard API — HTTPS veya localhost gerektirir
+    try {
+      await navigator.clipboard.writeText(url);
+    } catch {
+      // Fallback: input trick for HTTP environments
+      const input = document.createElement("input");
+      input.value = url;
+      document.body.appendChild(input);
+      input.select();
+      document.execCommand("copy");
+      document.body.removeChild(input);
+    }
+
     setCopied(true);
     setTimeout(() => setCopied(false), 2500);
   };

@@ -108,6 +108,33 @@ BEGIN
 END;
 $$;
 
+-- upsert_market_stats: DELETE + INSERT pattern (partial index ile onConflict çalışmaz)
+DROP FUNCTION IF EXISTS public.upsert_market_stats(text, text, integer, numeric, integer);
+
+CREATE OR REPLACE FUNCTION public.upsert_market_stats(
+  p_brand         text,
+  p_model         text,
+  p_year          integer,
+  p_avg_price     numeric,
+  p_listing_count integer
+)
+RETURNS void
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = 'public'
+AS $$
+BEGIN
+  DELETE FROM public.market_stats
+  WHERE brand = p_brand
+    AND model = p_model
+    AND year  = p_year
+    AND car_trim IS NULL;
+
+  INSERT INTO public.market_stats (brand, model, year, avg_price, listing_count, calculated_at)
+  VALUES (p_brand, p_model, p_year, p_avg_price, p_listing_count, timezone('utc', now()));
+END;
+$$;
+
 -- ── 4. notification_preferences ──────────────────────────────────────────────
 
 CREATE TABLE IF NOT EXISTS public.notification_preferences (
