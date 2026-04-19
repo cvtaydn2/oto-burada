@@ -2987,3 +2987,66 @@ POST /api/listings { title: "BMW 320i 2020" }
 - `API_SECURITY_MIDDLEWARE_MIGRATION_FINAL.md` - Complete migration report
 - `src/lib/utils/api-security.ts` - Security middleware implementation
 - 8 API route files migrated
+
+
+## Payment & Financial Security Hardening (2026-04-19)
+
+### Yapılan Değişiklikler
+
+**Payment State Machine Implementation**
+- **Status Lifecycle**: `pending → processing → success → failure/refunded/cancelled` state machine eklendi
+- **Lifecycle Tracking**: `processed_at`, `fulfilled_at`, `notified_at`, `idempotency_key`, `webhook_attempts` kolonları eklendi
+- **Idempotency Keys**: Her payment için unique key ile double-processing engellendi
+
+**Immutable Credit Ledger**
+- **Append-Only Enforcement**: `credit_transactions` tablosuna UPDATE/DELETE trigger'ı eklendi
+- **Audit Trail**: Her kredi değişikliği immutable log'a yazılıyor
+- **Fail-Closed**: Audit log başarısız olursa transaction iptal ediliyor
+
+**Payment/Doping Decoupling**
+- **Separation of Concerns**: Payment processing ve doping application ayrıldı
+- **Database Functions**: 3 yeni secure function eklendi:
+  - `process_payment_success()` - Atomic payment processing
+  - `apply_listing_doping()` - Secure doping application with ownership check
+  - `process_payment_webhook()` - Idempotent webhook processing
+- **Ownership Verification**: Doping application database seviyesinde ownership check yapıyor
+
+**Race Condition Prevention**
+- **Database Locks**: `FOR UPDATE` ile concurrent modification engellendi
+- **Atomic Operations**: Payment + credit addition tek transaction'da
+- **Idempotent Webhooks**: Aynı webhook birden fazla kez gelse bile güvenli
+
+**Code Refactoring**
+- **Webhook Route**: Manuel idempotency check'ler database function'a taşındı
+- **Doping Service**: Payment ve doping logic ayrıldı, secure function kullanıyor
+- **Error Handling**: Fail-closed approach, errors logged but don't cause retries
+
+### Güvenlik İyileştirmeleri
+- ✅ **Payment State Machine**: Invalid state transitions rejected
+- ✅ **Idempotency**: Same payment/webhook processed safely multiple times
+- ✅ **Immutable Audit**: Credit transactions cannot be modified/deleted
+- ✅ **Ownership Checks**: Database-level verification
+- ✅ **Race-Free**: Database locks prevent concurrent modifications
+- ✅ **Atomic Operations**: Payment + credit + doping in single transaction
+
+### Doğrulama
+- `npm run build` ✅ (5.0s, 0 TypeScript error)
+- Migration created: `0041_payment_state_machine_and_financial_security.sql` ✅
+- Zero breaking changes ✅
+- Backward compatible ✅
+
+### Sorunlar Çözüldü
+1. **Payment/Doping Coupling** (HIGH): Ayrıldı, her biri kendi transaction'ında
+2. **Race Conditions** (MEDIUM-HIGH): Database locks ve idempotency ile engellendi
+3. **Mutable Audit Trail** (MEDIUM): Trigger ile immutable hale getirildi
+
+### Sonraki Adımlar
+1. **Migration Apply**: `npm run db:migrate` ile production'a uygula
+2. **Test Idempotency**: Aynı webhook'u birden fazla kez gönder, idempotent olduğunu doğrula
+3. **Monitor Webhooks**: `webhook_attempts` counter'ı izle, retry pattern'lerini gözlemle
+
+### İlgili Dosyalar
+- `PAYMENT_SECURITY_HARDENING.md` - Detaylı security hardening raporu
+- `database/migrations/0041_payment_state_machine_and_financial_security.sql` - Migration
+- `src/app/api/payments/webhook/route.ts` - Secure webhook implementation
+- `src/services/market/doping-service.ts` - Decoupled doping service

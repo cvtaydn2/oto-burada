@@ -23,7 +23,14 @@ interface DopingUpdates {
 
 /**
  * Applies premium doping effects to a listing.
- * Extends the visibility of the listing based on the doping type.
+ * 
+ * SECURITY: This function now delegates to a secure database function
+ * that enforces ownership checks and prevents race conditions.
+ * 
+ * Payment processing is separated from doping application:
+ * 1. Payment is processed first (via webhook or direct)
+ * 2. Doping is applied only after payment confirmation
+ * 3. Each step is idempotent and atomic
  */
 export async function applyDopingToListing(
   listingId: string, 
@@ -34,42 +41,13 @@ export async function applyDopingToListing(
   if (!isPaymentEnabled()) {
     return { success: false, message: "Doping ödemeleri henüz aktif değil. Lütfen bizimle iletişime geçin." };
   }
+  
   const admin = createSupabaseAdminClient();
 
-  const now = new Date();
-  const SevenDaysLater = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000).toISOString();
-  const FifteenDaysLater = new Date(now.getTime() + 15 * 24 * 60 * 60 * 1000).toISOString();
-
-  const updates: DopingUpdates = {};
-  
-  if (dopingTypes.includes("featured")) {
-    updates.featured = true;
-    updates.featured_until = SevenDaysLater;
-  }
-  
-  if (dopingTypes.includes("urgent")) {
-    updates.urgent_until = SevenDaysLater;
-  }
-  
-  if (dopingTypes.includes("highlighted")) {
-    updates.highlighted_until = FifteenDaysLater;
-  }
-
-  // 1. Verify listing ownership
-  const { data: listing } = await admin
-    .from("listings")
-    .select("seller_id")
-    .eq("id", listingId)
-    .single();
-
-  if (!listing || listing.seller_id !== userId) {
-    return { success: false, message: "İlan sahibi doğrulanamadı." };
-  }
-
-  // 3. Calculate Total
+  // 1. Calculate Total
   const totalAmount = dopingTypes.reduce((sum, type) => sum + DOPING_PRICES[type].price, 0);
 
-  // 4. Process Payment
+  // 2. Process Payment
   const paymentResult = await payment.processPayment({
     amount: totalAmount,
     orderId: `DOP-${listingId}-${Date.now()}`,
@@ -83,21 +61,22 @@ export async function applyDopingToListing(
 
   // If 3DS is required (paymentUrl provided), return it for redirect
   if (paymentResult.paymentUrl) {
-    // We create a pending payment record for tracking
-    await admin.from("payments").insert({
+    // Create a pending payment record for tracking
+    const { data: paymentRecord } = await admin.from("payments").insert({
       user_id: userId,
       listing_id: listingId,
       amount: totalAmount,
       provider: "iyzico",
       status: "pending",
       iyzico_token: paymentResult.transactionId,
+      idempotency_key: `doping-${listingId}-${paymentResult.transactionId}`,
       metadata: {
+        type: "doping",
         listingId,
         dopingTypes,
-        type: "doping",
-        durationDays: 7
+        durationDays: dopingTypes.includes('highlighted') ? 15 : 7,
       }
-    });
+    }).select('id').single();
 
     return { 
       success: true, 
@@ -107,65 +86,52 @@ export async function applyDopingToListing(
     };
   }
 
-  // 4. Update listing with doping (atomic: only apply if not already active)
-  // Using conditional WHERE prevents race conditions when two requests arrive simultaneously.
-  // If another request already set featured_until to a future date, this update returns 0 rows.
-  const updateConditions: Record<string, unknown> = { id: listingId };
-
-  // Build a per-field atomic update via RPC to avoid PostgREST's lack of WHERE on UPDATE
-  const { data: updatedRows, error } = await admin
-    .from("listings")
-    .update(updates)
-    .eq("id", listingId)
-    // Only overwrite featured_until if it's not already set to a future date
-    .or(
-      dopingTypes
-        .map((t) => {
-          if (t === "featured") return "featured_until.is.null,featured_until.lt.now()";
-          if (t === "urgent") return "urgent_until.is.null,urgent_until.lt.now()";
-          if (t === "highlighted") return "highlighted_until.is.null,highlighted_until.lt.now()";
-          return null;
-        })
-        .filter(Boolean)
-        .join(","),
-    )
-    .select("id");
-
-  void updateConditions; // suppress unused var warning
-
-  if (error) return { success: false, message: "Doping uygulanırken bir hata oluştu." };
-
-  // If 0 rows updated, a concurrent request already applied the same doping
-  if (!updatedRows || updatedRows.length === 0) {
-    return { success: false, message: "Bu doping zaten aktif. Lütfen süre dolmadan tekrar denemeyin." };
-  }
-
-  // 5. Log payment & doping application history
-  const { data: paymentRecord } = await admin.from("payments").insert({
+  // 3. Direct payment success (no 3DS) - create payment record first
+  const { data: paymentRecord, error: paymentError } = await admin.from("payments").insert({
     user_id: userId,
     listing_id: listingId,
     amount: totalAmount,
     provider: "iyzico",
-    status: paymentResult.status,
+    status: "success",
     iyzico_token: paymentResult.transactionId,
+    idempotency_key: `doping-${listingId}-${paymentResult.transactionId}`,
+    processed_at: new Date().toISOString(),
     metadata: {
+      type: "doping",
       listingId,
       dopingTypes,
+      durationDays: dopingTypes.includes('highlighted') ? 15 : 7,
       transaction_id: paymentResult.transactionId
     }
   }).select('id').single();
 
-  // 6. Log individual doping applications for detailed history
-  for (const type of dopingTypes) {
-    await logDopingApplication({
-      listingId,
-      userId,
-      dopingType: type,
-      durationDays: type === 'highlighted' ? 15 : 7,
-      paymentId: paymentRecord?.id,
-      metadata: { transactionId: paymentResult.transactionId }
-    });
+  if (paymentError || !paymentRecord) {
+    return { success: false, message: "Ödeme kaydı oluşturulamadı." };
   }
+
+  // 4. Apply doping using secure database function
+  // This function enforces ownership and prevents race conditions
+  const { data: dopingResult, error: dopingError } = await admin.rpc("apply_listing_doping", {
+    p_listing_id: listingId,
+    p_user_id: userId,
+    p_doping_types: dopingTypes,
+    p_duration_days: dopingTypes.includes('highlighted') ? 15 : 7,
+    p_payment_id: paymentRecord.id,
+  });
+
+  if (dopingError) {
+    return { success: false, message: "Doping uygulanırken bir hata oluştu." };
+  }
+
+  // Check if any dopings were actually applied
+  if (dopingResult?.applied_count === 0) {
+    return { success: false, message: "Bu doping zaten aktif. Lütfen süre dolmadan tekrar denemeyin." };
+  }
+
+  // 5. Mark payment as fulfilled
+  await admin.from("payments")
+    .update({ fulfilled_at: new Date().toISOString() })
+    .eq("id", paymentRecord.id);
 
   return { success: true, message: "Dopingler başarıyla uygulandı!" };
 }
