@@ -19,34 +19,54 @@ export interface UserDopingRecord {
   highlightedUntil: string | null;
 }
 
+export interface UserProfile {
+  id: string;
+  fullName: string;
+  phone: string;
+  city: string;
+  avatarUrl: string | null;
+  role: string;
+  userType: string;
+  balanceCredits: number;
+  isVerified: boolean;
+  isBanned: boolean;
+  businessName?: string;
+  businessSlug?: string;
+  verifiedBusiness?: boolean;
+  email: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
 export interface UserDetailData {
-  profile: any;
+  profile: UserProfile;
   payments: UserPaymentRecord[];
   dopings: UserDopingRecord[];
   listings: { id: string; title: string; status: string }[];
-  creditTransactions: any[];
-  dopingHistory: any[];
+  creditTransactions: { id: string; amount: number; type: string; description: string; createdAt: string }[];
+  dopingHistory: { id: string; listingId: string; listingTitle: string; dopingType: string; expiresAt: string; createdAt: string }[];
   listingCount: number;
   activeListingCount: number;
 }
 
-export function mapProfile(p: any) {
+export function mapProfile(p: Record<string, unknown>, email = ""): UserProfile {
   return {
-    id: p.id,
-    fullName: p.full_name || "",
-    phone: p.phone || "",
-    city: p.city || "",
-    avatarUrl: p.avatar_url,
-    role: p.role || "user",
-    userType: p.user_type || "individual",
-    balanceCredits: p.balance_credits || 0,
-    isVerified: p.is_verified || false,
-    isBanned: p.is_banned || false,
-    businessName: p.business_name,
-    businessSlug: p.business_slug,
-    verifiedBusiness: p.verified_business,
-    createdAt: p.created_at,
-    updatedAt: p.updated_at,
+    id: p.id as string,
+    email,
+    fullName: (p.full_name as string) || "",
+    phone: (p.phone as string) || "",
+    city: (p.city as string) || "",
+    avatarUrl: p.avatar_url as string,
+    role: (p.role as string) || "user",
+    userType: (p.user_type as string) || "individual",
+    balanceCredits: (p.balance_credits as number) || 0,
+    isVerified: (p.is_verified as boolean) || false,
+    isBanned: (p.is_banned as boolean) || false,
+    businessName: p.business_name as string,
+    businessSlug: p.business_slug as string,
+    verifiedBusiness: p.verified_business as boolean,
+    createdAt: p.created_at as string,
+    updatedAt: p.updated_at as string,
   };
 }
 
@@ -54,12 +74,14 @@ export async function getUserDetail(userId: string): Promise<UserDetailData | nu
   const admin = createSupabaseAdminClient();
 
   const [
+    { data: { user: authUser } },
     { data: profile },
     { data: payments },
     { data: listings },
     { data: creditTransactions },
     { data: dopingHistory },
   ] = await Promise.all([
+    admin.auth.admin.getUserById(userId),
     admin.from("profiles").select(
       "id, full_name, phone, city, avatar_url, role, user_type, balance_credits, is_verified, is_banned, business_name, business_address, business_logo_url, business_description, tax_id, tax_office, website_url, verified_business, business_slug, created_at, updated_at"
     ).eq("id", userId).single(),
@@ -107,18 +129,18 @@ export async function getUserDetail(userId: string): Promise<UserDetailData | nu
     }));
 
   return {
-    profile: mapProfile(profile),
+    profile: mapProfile(profile as Record<string, unknown>, authUser?.email || ""),
     payments: (payments || []) as UserPaymentRecord[],
     dopings,
     listings: (listings || []).map((l) => ({ id: l.id, title: l.title || l.id, status: l.status })),
-    creditTransactions: (creditTransactions || []).map((t: any) => ({
+    creditTransactions: (creditTransactions || []).map((t) => ({
       id: t.id,
       amount: t.amount,
       type: t.transaction_type,
       description: t.description,
       createdAt: t.created_at
     })),
-    dopingHistory: (dopingHistory || []).map((d: any) => ({
+    dopingHistory: (dopingHistory || []).map((d) => ({
       id: d.id,
       listingId: d.listing_id,
       listingTitle: d.listings?.title || d.listing_id,

@@ -15,8 +15,8 @@ export async function getAllUsers(query?: string, page = 1, limit = 20) {
       {
         lastSignInAt: u.last_sign_in_at ?? null,
         emailVerified: Boolean(u.email_confirmed_at ?? u.confirmed_at),
-        phoneVerified: Boolean((u as any).phone_confirmed_at),
-        identityVerified: Boolean((u.app_metadata as any)?.identity_verified),
+        phoneVerified: Boolean((u as { phone_confirmed_at?: string }).phone_confirmed_at),
+        identityVerified: Boolean((u.app_metadata as { identity_verified?: boolean })?.identity_verified),
       },
     ])
   );
@@ -41,7 +41,7 @@ export async function getAllUsers(query?: string, page = 1, limit = 20) {
     return { users: [] as Profile[], total: 0, page, limit };
   }
 
-  const users = (profiles || []).map((p: any) => {
+  const users = (profiles || []).map((p) => {
     const auth = authMap[p.id];
     return {
       id: p.id,

@@ -1,6 +1,5 @@
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { hasSupabaseAdminEnv } from "@/lib/supabase/env";
-import { logger } from "@/lib/utils/logger";
 import { Listing, ListingFilters, UserRole, Profile } from "@/types";
 import { ListingRow } from "./listing-submission-types";
 
@@ -168,7 +167,15 @@ export function mapListingRow(row: ListingRow): Listing {
   };
 }
 
-export function applyListingFilterPredicates<T extends { eq: any; gte: any; lte: any; filter: any; textSearch: any; ilike: any; contains: any; or: any }>(
+export function applyListingFilterPredicates<T extends { 
+  eq: (col: string, val: any) => T; 
+  gte: (col: string, val: any) => T; 
+  lte: (col: string, val: any) => T; 
+  ilike: (col: string, val: string) => T;
+  contains: (col: string, val: any) => T;
+  or: (filter: string) => T;
+  textSearch: (col: string, query: string, options?: { config?: string }) => T;
+}>(
   query: T,
   filters: ListingFilters,
 ): T {
@@ -226,7 +233,7 @@ export async function getDatabaseListings(options?: {
     if (options?.statuses?.length) query = query.in("status", options.statuses);
 
     const filters = options?.filters;
-    if (filters) applyListingFilterPredicates(query, filters);
+    if (filters) query = applyListingFilterPredicates(query, filters);
 
     const sort = filters?.sort ?? "newest";
     if (!filters?.sort || filters.sort === "newest") query = query.order("featured", { ascending: false });

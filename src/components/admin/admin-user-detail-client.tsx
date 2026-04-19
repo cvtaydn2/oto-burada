@@ -29,7 +29,7 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
-import { formatCurrency, safeFormatDate, formatNumber } from "@/lib/utils";
+import { safeFormatDate } from "@/lib/utils";
 import type { UserDetailData } from "@/services/admin/user-details";
 import { toggleUserBan, promoteUserToAdmin } from "@/services/admin/users";
 import { cn } from "@/lib/utils";
@@ -48,7 +48,7 @@ const DOPING_LABELS: Record<string, string> = {
 
 export function AdminUserDetailClient({ detail, userId }: AdminUserDetailClientProps) {
   const router = useRouter();
-  const { profile, payments, dopings, listings, listingCount, activeListingCount, creditTransactions, dopingHistory } = detail;
+  const { profile, dopings, listings, listingCount, activeListingCount, creditTransactions, dopingHistory } = detail;
 
   // Grant credits state
   const [credits, setCredits] = useState(10);
@@ -58,7 +58,7 @@ export function AdminUserDetailClient({ detail, userId }: AdminUserDetailClientP
   // Grant doping state
   const [dopingListingId, setDopingListingId] = useState("");
   const [dopingTypes, setDopingTypes] = useState<string[]>(["featured"]);
-  const [dopingDays, setDopingDays] = useState(7);
+  const [dopingDays] = useState(7);
   const [isGrantingDoping, setIsGrantingDoping] = useState(false);
 
   // User actions state

@@ -9,7 +9,7 @@ export interface CreditTransactionInput {
   type: CreditTransactionType;
   description?: string;
   referenceId?: string;
-  metadata?: Record<string, any>;
+  metadata?: Record<string, unknown>;
 }
 
 /**
@@ -83,7 +83,7 @@ export async function logDopingApplication(input: {
   dopingType: string;
   durationDays: number;
   paymentId?: string;
-  metadata?: Record<string, any>;
+  metadata?: Record<string, unknown>;
 }) {
   const admin = createSupabaseAdminClient();
   const expiresAt = new Date();

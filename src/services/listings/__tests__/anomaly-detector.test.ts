@@ -1,5 +1,5 @@
-import { describe, it, expect } from 'vitest';
 import { calculateFraudScore } from '../listing-submissions';
+import { ListingCreateInput, Listing } from '@/types';
 
 describe('AI AnomalyDetector (calculateFraudScore)', () => {
   const mockBaseInput = {
@@ -15,8 +15,9 @@ describe('AI AnomalyDetector (calculateFraudScore)', () => {
     bodyType: 'hatchback',
     city: 'İstanbul',
     district: 'Kadıköy',
-    tramerAmount: null,
-    damageStatusJson: null,
+    tramerAmount: null as number | null,
+    damageStatusJson: null as Record<string, string> | null,
+    vin: null as string | null,
   };
 
   const existingListingsBase = [
@@ -26,22 +27,16 @@ describe('AI AnomalyDetector (calculateFraudScore)', () => {
   ];
 
   it('should return 0 fraud score and no flagged status for normal listings', () => {
-    // Exact match is filtered if the inputs don't line up exactly, 
-    // wait I'll change price slightly to avoid duplicate logic triggering
-    const input = { ...mockBaseInput, price: 1_200_001 };
-    
-    // Average price = (1.15M + 1.25M + 1.2M) / 3 = 1.2M
-    // 1.2M is within 70% and 150% limits
-    const result = calculateFraudScore(input as any, existingListingsBase) as any;
+    const input = { ...mockBaseInput, price: 1_200_001 } as ListingCreateInput;
+    const result = calculateFraudScore(input, existingListingsBase as unknown as Listing[]);
     expect(result.fraudScore).toBe(0);
     expect(result.fraudReason).toBeNull();
     expect(result.suggestedStatus).toBeUndefined();
   });
 
   it('should flag listing when price is 30% below market average', () => {
-    // Average 1.2M, 30% below is 840,000 TL
-    const input = { ...mockBaseInput, price: 800_000 };
-    const result = calculateFraudScore(input as any, existingListingsBase) as any;
+    const input = { ...mockBaseInput, price: 800_000 } as ListingCreateInput;
+    const result = calculateFraudScore(input, existingListingsBase as unknown as Listing[]);
     
     expect(result.fraudScore).toBeGreaterThanOrEqual(70);
     expect(result.fraudReason).toContain('Fiyat ortalamanın %30 altında');
@@ -49,9 +44,8 @@ describe('AI AnomalyDetector (calculateFraudScore)', () => {
   });
 
   it('should flag listing when price is 50% above market average', () => {
-    // Average 1.2M, 50% above is 1.8M TL
-    const input = { ...mockBaseInput, price: 1_900_000 };
-    const result = calculateFraudScore(input as any, existingListingsBase) as any;
+    const input = { ...mockBaseInput, price: 1_900_000 } as ListingCreateInput;
+    const result = calculateFraudScore(input, existingListingsBase as unknown as Listing[]);
     
     expect(result.fraudScore).toBeGreaterThanOrEqual(50);
     expect(result.fraudReason).toContain('Fiyat ortalamanın %50 üzerinde');
@@ -59,9 +53,8 @@ describe('AI AnomalyDetector (calculateFraudScore)', () => {
   });
 
   it('should use fallback price check when less than 3 comparable cars exist', () => {
-    const input = { ...mockBaseInput, year: 2023, price: 600_000 };
-    // Pass empty array for existing listings
-    const result = calculateFraudScore(input as any, []) as any;
+    const input = { ...mockBaseInput, year: 2023, price: 600_000 } as ListingCreateInput;
+    const result = calculateFraudScore(input, []);
     
     expect(result.fraudScore).toBeGreaterThanOrEqual(60);
     expect(result.fraudReason).toContain('Pazar ortalamasının çok altında şüpheli fiyat');
@@ -69,8 +62,8 @@ describe('AI AnomalyDetector (calculateFraudScore)', () => {
 
   it('should flag mileage_anomaly for old vehicle with unrealistic low mileage', () => {
     const currentYear = new Date().getFullYear();
-    const input = { ...mockBaseInput, year: currentYear - 11, mileage: 5000, price: 1_200_001 }; // 11 years old, 5k km
-    const result = calculateFraudScore(input as any, []) as any;
+    const input = { ...mockBaseInput, year: currentYear - 11, mileage: 5000, price: 1_200_001 } as ListingCreateInput;
+    const result = calculateFraudScore(input, []);
     
     expect(result.fraudScore).toBeGreaterThanOrEqual(40);
     expect(result.fraudReason).toContain('mileage_anomaly');
@@ -78,10 +71,9 @@ describe('AI AnomalyDetector (calculateFraudScore)', () => {
   });
 
   it('should flag duplicate listing (spam detection)', () => {
-    const duplicateInput = { ...mockBaseInput }; // Same as existingListingsBase[2]
-    const result = calculateFraudScore(duplicateInput as any, existingListingsBase) as any;
+    const duplicateInput = { ...mockBaseInput } as ListingCreateInput; 
+    const result = calculateFraudScore(duplicateInput, existingListingsBase as unknown as Listing[]);
     
-    // 50 points directly for exact duplicate
     expect(result.fraudScore).toBeGreaterThanOrEqual(50);
     expect(result.fraudReason).toContain('Mükerrer ilan şüphesi');
   });
@@ -93,7 +85,7 @@ describe('AI AnomalyDetector (calculateFraudScore)', () => {
       { id: '10', slug: 'l-10', vin: 'ABCDEF123456', status: 'approved' },
     ];
     
-    const result = calculateFraudScore(inputWithVin as any, existingWithVin) as any;
+    const result = calculateFraudScore(inputWithVin as ListingCreateInput, existingWithVin as unknown as Listing[]);
     
     expect(result.fraudScore).toBeGreaterThanOrEqual(100);
     expect(result.fraudReason).toContain('Aynı şasi numaralı başka bir aktif ilan mevcut (VIN clone)');
@@ -104,7 +96,6 @@ describe('AI AnomalyDetector (calculateFraudScore)', () => {
       ...mockBaseInput,
       price: 1_200_001,
       tramerAmount: 0,
-       // Damage object with 3 changed / painted
       damageStatusJson: { 
         MotorKaputu: "boyali",
         SagOnKapi: "degisen",
@@ -112,7 +103,7 @@ describe('AI AnomalyDetector (calculateFraudScore)', () => {
       }
     };
 
-    const result = calculateFraudScore(inputObj as any, []) as any;
+    const result = calculateFraudScore(inputObj as ListingCreateInput, []);
     
     expect(result.fraudScore).toBeGreaterThanOrEqual(20);
     expect(result.fraudReason).toContain('Çoklu boya/değişen kaydına rağmen hasar kaydı 0');

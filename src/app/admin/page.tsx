@@ -6,11 +6,9 @@ import {
   Car,
   Flag,
   ShieldCheck,
-  ShieldAlert,
   ArrowUpRight,
   Monitor,
   Database,
-  Search,
 } from "lucide-react";
 
 import {

@@ -1,3 +1,4 @@
+import { safeJsonLd } from "@/lib/utils/json-ld";
 import type { Listing } from "@/types";
 
 interface ListingStructuredDataProps {
@@ -52,7 +53,7 @@ export function ListingStructuredData({ listings, url }: ListingStructuredDataPr
   return (
     <script
       type="application/ld+json"
-      dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }}
+      dangerouslySetInnerHTML={{ __html: safeJsonLd(schema) }}
     />
   );
 }
@@ -83,7 +84,7 @@ export function BreadcrumbStructuredData({ items }: BreadcrumbStructuredDataProp
   return (
     <script
       type="application/ld+json"
-      dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }}
+      dangerouslySetInnerHTML={{ __html: safeJsonLd(schema) }}
     />
   );
 }
@@ -114,7 +115,7 @@ export function OrganizationStructuredData({ name, url, logo, description }: Org
   return (
     <script
       type="application/ld+json"
-      dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }}
+      dangerouslySetInnerHTML={{ __html: safeJsonLd(schema) }}
     />
   );
 }
@@ -202,7 +203,7 @@ export function ListingDetailStructuredData({ listing, url, sellerName }: Listin
   return (
     <script
       type="application/ld+json"
-      dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }}
+      dangerouslySetInnerHTML={{ __html: safeJsonLd(schema) }}
     />
   );
 }
@@ -230,7 +231,7 @@ export function WebSiteStructuredData({ url }: WebSiteStructuredDataProps) {
   return (
     <script
       type="application/ld+json"
-      dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }}
+      dangerouslySetInnerHTML={{ __html: safeJsonLd(schema) }}
     />
   );
 }

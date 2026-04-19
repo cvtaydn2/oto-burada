@@ -1,6 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import * as listingModeration from '../listing-moderation';
-import * as listingSubmissions from '@/services/listings/listing-submissions';
 import * as moderationActions from '../moderation-actions';
 import * as notifications from '@/services/notifications/notification-records';
 import type { Listing } from '@/types';

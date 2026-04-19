@@ -9,8 +9,7 @@ import {
   Clock,
   CheckCircle2,
   TrendingUp,
-  AlertTriangle,
-  ExternalLink
+  AlertTriangle
 } from "lucide-react";
 import { DOPING_PRICES } from "@/lib/payment/constants";
 import { Button } from "@/components/ui/button";

@@ -1,3 +1,4 @@
+import { safeJsonLd } from "@/lib/utils/json-ld";
 import type { Listing } from "@/types";
 
 interface ListingJsonLdProps {
@@ -45,7 +46,7 @@ export function ListingJsonLd({ listing }: ListingJsonLdProps) {
   return (
     <script
       type="application/ld+json"
-      dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
+      dangerouslySetInnerHTML={{ __html: safeJsonLd(structuredData) }}
     />
   );
 }
@@ -76,7 +77,7 @@ export function OrganizationJsonLd({ url }: OrganizationJsonLdProps) {
   return (
     <script
       type="application/ld+json"
-      dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
+      dangerouslySetInnerHTML={{ __html: safeJsonLd(structuredData) }}
     />
   );
 }
@@ -100,7 +101,7 @@ export function BreadcrumbJsonLd({ items }: BreadcrumbJsonLdProps) {
   return (
     <script
       type="application/ld+json"
-      dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
+      dangerouslySetInnerHTML={{ __html: safeJsonLd(structuredData) }}
     />
   );
 }

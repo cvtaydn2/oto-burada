@@ -39,7 +39,6 @@ function getVerificationState(user: User | null | undefined) {
     identity_verified: false,
     phone_verified: false,
   };
-  const authUser = user;
 
   return {
     emailVerified: Boolean(appMetadata.email_verified ?? user?.email_confirmed_at ?? user?.confirmed_at),

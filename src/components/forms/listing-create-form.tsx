@@ -335,13 +335,6 @@ export function ListingCreateForm({
   const selectedBrand = useWatch({ control, name: "brand" });
   const selectedCity = useWatch({ control, name: "city" });
   const imageValues = useWatch({ control, name: "images" }) ?? [];
-  const uploadedImageCount = imageValues.filter(
-    (image) => (image.url ?? "").trim().length > 0 && (image.storagePath ?? "").trim().length > 0,
-  ).length;
-  // Edit modunda: form henüz hydrate olmamışsa initialListing'deki resim sayısını kullan
-  const effectiveImageCount = isEditing && uploadedImageCount === 0
-    ? (initialListing?.images.filter(img => img.url && img.storagePath).length ?? 0)
-    : uploadedImageCount;
   const plateValue = useWatch({ control, name: "licensePlate" });
   const isUploadingAnyImage = fields.some((field) => uploadStates[field.id]?.status === "uploading");
 

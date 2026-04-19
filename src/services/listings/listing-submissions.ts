@@ -2,9 +2,8 @@ import { cookies } from "next/headers";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { hasSupabaseAdminEnv } from "@/lib/supabase/env";
 import { listingSchema } from "@/lib/validators";
-import type { Listing, ListingCreateInput, ListingFilters } from "@/types";
+import type { Listing, ListingCreateInput } from "@/types";
 import { listingSubmissionsCookieName } from "./constants";
-import { logger } from "@/lib/utils/logger";
 
 // Feature Modules
 import { buildListingSlug } from "./listing-submission-helpers";

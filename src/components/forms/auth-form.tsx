@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { CarFront, ShieldCheck, BadgeCheck, ArrowRight, Sparkles, Lock, CreditCard } from "lucide-react";
+import { CarFront, ShieldCheck, BadgeCheck, Sparkles, Lock, CreditCard } from "lucide-react";
 import { useActionState } from "react";
 
 import type { AuthActionState } from "@/lib/auth/actions";
@@ -191,7 +191,7 @@ export function AuthForm({
                 </div>
               )}
 
-              <AuthSubmitButton label={isLogin ? "GİRİŞ YAP" : "KAYIT OL"} />
+              <AuthSubmitButton label={submitLabel} />
             </form>
 
             <div className="mt-10 pt-10 border-t border-slate-50 flex flex-col gap-4 text-center">
@@ -200,7 +200,7 @@ export function AuthForm({
                   href={alternateHref}
                   className="inline-flex h-12 w-full items-center justify-center gap-3 rounded-xl border border-slate-100 bg-white px-4 text-xs font-black text-slate-900 uppercase tracking-widest transition-all hover:bg-slate-50 shadow-sm"
                 >
-                  {isLogin ? "Hesap Oluştur" : "Zaten üyeniz mi var?"}
+                  {alternateLabel}
                 </Link>
             </div>
           </div>

@@ -1,11 +1,10 @@
 import type { PaymentRequest, PaymentResponse, PaymentProvider } from "./types";
 import { logger } from "@/lib/utils/logger";
 import { isPaymentEnabled } from "./config";
-// @ts-ignore - iyzipay types might be tricky sometimes
 import Iyzipay from "iyzipay";
 
 export class IyzicoProvider implements PaymentProvider {
-  private iyzipay: any;
+  private iyzipay: InstanceType<typeof Iyzipay> | undefined;
 
   constructor() {
     if (isPaymentEnabled()) {
@@ -73,21 +72,22 @@ export class IyzicoProvider implements PaymentProvider {
         ]
       };
 
-      this.iyzipay.checkoutFormInitialize.create(data, (err: any, result: any) => {
+      // @ts-ignore - iyzipay types are incorrectly requiring paymentCard for checkoutFormInitialize
+    this.iyzipay?.checkoutFormInitialize.create(data, (err: Error | null, result: any) => {
         if (err || result.status !== "success") {
           logger.payments.error("Iyzico checkoutFormInitialize failed", err || result);
           resolve({ 
             success: false, 
             status: "failure", 
-            error: result?.errorMessage || "Ödeme bağlantısı oluşturulamadı." 
+            error: (result?.errorMessage as string) || "Ödeme bağlantısı oluşturulamadı." 
           });
         } else {
           // Iyzico returns HTML and URL for the checkout form
           resolve({ 
             success: true, 
             status: "success", 
-            transactionId: result.token, 
-            paymentUrl: result.paymentPageUrl 
+            transactionId: result.token as string, 
+            paymentUrl: result.paymentPageUrl as string
           });
         }
       });
@@ -98,10 +98,10 @@ export class IyzicoProvider implements PaymentProvider {
     if (!isPaymentEnabled()) return { success: false, status: "failure" };
 
     return new Promise((resolve) => {
-      this.iyzipay.checkoutForm.retrieve({
-        locale: "tr",
+      this.iyzipay?.checkoutForm.retrieve({
+        locale: "TR",
         token: transactionId
-      }, (err: any, result: any) => {
+      }, (err: Error | null, result: any) => {
         if (err || result.status !== "success") {
           resolve({ success: false, status: "failure" });
         } else {

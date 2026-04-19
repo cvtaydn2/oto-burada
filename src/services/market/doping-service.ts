@@ -4,7 +4,6 @@ import { payment } from "@/lib/payment";
 import { isPaymentEnabled } from "@/lib/payment/config";
 import { DOPING_PRICES, DopingId } from "@/lib/payment/constants";
 import { logDopingApplication } from "@/services/billing/transaction-service";
-import { logger } from "@/lib/utils/logger";
 
 export type DopingType = DopingId;
 

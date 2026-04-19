@@ -63,7 +63,7 @@ export function AuthProvider({ children, initialUser = null }: AuthProviderProps
       mounted = false;
       subscription.unsubscribe();
     };
-  }, []);
+  }, [initialUser]);
 
   const value = useMemo<AuthContextValue>(
     () => ({

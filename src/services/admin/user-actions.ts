@@ -22,9 +22,10 @@ export async function grantCreditsToUser(
       referenceId: adminUserId,
       metadata: { note, grantedBy: adminUserId }
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
+    const errorMessage = error instanceof Error ? error.message : "Bilinmeyen bir hata oluştu.";
     logger.admin.error("grantCreditsToUser failed", error, { userId, credits });
-    return { success: false, error: error.message };
+    return { success: false, error: errorMessage };
   }
 
   // Audit log

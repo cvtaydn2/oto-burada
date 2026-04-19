@@ -1,4 +1,4 @@
-import { Listing, ListingCreateInput } from "@/types";
+import { Listing } from "@/types";
 
 /** DB row shape for a listing image — used internally for mapping. */
 export interface ListingImageRow {
