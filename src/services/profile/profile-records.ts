@@ -102,6 +102,9 @@ function mapProfileRow(row: ProfileRow, authUser?: User | null) {
  * Use this for read-only profile construction from auth context.
  * 
  * For profile bootstrap/creation, use a dedicated auth callback or onboarding flow.
+ * 
+ * SECURITY: Role is ONLY resolved from app_metadata (trusted, server-controlled).
+ * user_metadata.role is IGNORED to prevent privilege escalation.
  */
 export function buildProfileFromAuthUser(user: User) {
   const userMetadata = user.user_metadata as {
@@ -114,7 +117,6 @@ export function buildProfileFromAuthUser(user: User) {
     city?: string;
     full_name?: string;
     phone?: string;
-    role?: string;
     tax_id?: string;
     tax_office?: string;
     website_url?: string;
@@ -126,8 +128,10 @@ export function buildProfileFromAuthUser(user: User) {
   };
   const verificationState = getVerificationState(user);
   const timestamp = new Date().toISOString();
-  const resolvedRole =
-    appMetadata.role === "admin" || userMetadata.role === "admin" ? "admin" : "user";
+  
+  // SECURITY: Role ONLY from app_metadata (trusted source)
+  // user_metadata.role is NEVER used (user-writable, untrusted)
+  const resolvedRole = appMetadata.role === "admin" ? "admin" : "user";
 
   const rawProfile = {
     avatarUrl: userMetadata.avatar_url ?? null,

@@ -7,6 +7,8 @@
 
 # testing
 /coverage
+/test-results/
+/playwright-report/
 
 # next.js
 /.next/
@@ -43,3 +45,8 @@ next-env.d.ts
 # Redis test scripts (may contain credentials)
 src/lib/redis/test-connection.mjs
 src/lib/redis/test-*.mjs
+
+# Playwright artifacts
+playwright-report/
+test-results/
+.last-run.json

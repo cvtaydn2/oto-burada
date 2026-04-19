@@ -40,6 +40,28 @@ export async function updateSession(request: NextRequest) {
     return NextResponse.next({ request });
   }
 
+  const pathname = request.nextUrl.pathname;
+
+  // PERFORMANCE OPTIMIZATION: Skip middleware for static assets and public resources
+  // This reduces unnecessary auth checks and session refreshes on every asset load
+  const isStaticAsset = 
+    pathname.startsWith("/_next/static") ||
+    pathname.startsWith("/_next/image") ||
+    pathname.startsWith("/images") ||
+    pathname.startsWith("/fonts") ||
+    pathname.startsWith("/icons") ||
+    pathname.startsWith("/favicon") ||
+    pathname.match(/\.(ico|png|jpg|jpeg|svg|webp|gif|woff|woff2|ttf|eot|css|js|map)$/);
+
+  if (isStaticAsset) {
+    // Fast path: skip auth, just add security headers
+    const response = NextResponse.next({ request });
+    for (const [key, value] of Object.entries(SECURITY_HEADERS)) {
+      response.headers.set(key, value);
+    }
+    return response;
+  }
+
   let response = NextResponse.next({ request });
   const { url, anonKey } = getSupabaseEnv();
 
@@ -62,18 +84,26 @@ export async function updateSession(request: NextRequest) {
     },
   });
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  const pathname = request.nextUrl.pathname;
+  // PERFORMANCE OPTIMIZATION: Only refresh session for protected routes
+  // Public GET requests don't need session refresh
   const isProtectedRoute = protectedPrefixes.some((prefix) =>
     pathname.startsWith(prefix),
   );
+  const isAuthRoute = authRoutes.includes(pathname);
+  const isApiRoute = pathname.startsWith("/api");
+  const needsAuth = isProtectedRoute || isAuthRoute || isApiRoute;
+
+  let user = null;
+  if (needsAuth) {
+    const {
+      data: { user: fetchedUser },
+    } = await supabase.auth.getUser();
+    user = fetchedUser;
+  }
+
   const isAdminRoute = adminPrefixes.some((prefix) =>
     pathname.startsWith(prefix),
   );
-  const isAuthRoute = authRoutes.includes(pathname);
 
   // Redirect unauthenticated users away from protected routes
   if (!user && isProtectedRoute) {

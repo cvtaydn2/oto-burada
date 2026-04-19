@@ -1,5 +1,6 @@
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { hasSupabaseAdminEnv } from "@/lib/supabase/env";
+import { withCache } from "@/lib/utils/cache";
 
 export interface PriceEstimationResult {
   min: number;
@@ -19,56 +20,68 @@ export async function estimateVehiclePrice(params: {
   damageStatusJson?: Record<string, string> | null;
 }): Promise<PriceEstimationResult | null> {
   if (!hasSupabaseAdminEnv()) return null;
-  const admin = createSupabaseAdminClient();
 
-  // 1. Get the base average for the segment (optionally by trim)
-  let query = admin
-    .from("market_stats")
-    .select("avg_price, listing_count")
-    .eq("brand", params.brand)
-    .eq("model", params.model)
-    .eq("year", params.year);
+  // PERFORMANCE OPTIMIZATION: Cache market stats for 1 hour
+  // Market averages don't change frequently, safe to cache
+  const cacheKey = `market-stats:${params.brand}:${params.model}:${params.year}:${params.carTrim ?? "null"}`;
+  
+  const baseStats = await withCache(
+    cacheKey,
+    async () => {
+      const admin = createSupabaseAdminClient();
+      
+      // 1. Get the base average for the segment (optionally by trim)
+      let query = admin
+        .from("market_stats")
+        .select("avg_price, listing_count")
+        .eq("brand", params.brand)
+        .eq("model", params.model)
+        .eq("year", params.year);
 
-  if (params.carTrim) {
-    // Attempt trim matching if available, otherwise fallback to model-only in a retry
-    query = query.eq("car_trim", params.carTrim);
-  }
+      if (params.carTrim) {
+        query = query.eq("car_trim", params.carTrim);
+      }
 
-  const { data: stats } = await query.maybeSingle();
+      const { data: stats } = await query.maybeSingle();
 
-  let baseAvg = stats ? Number(stats.avg_price) : 0;
-  let count = stats ? Number(stats.listing_count) : 0;
+      let baseAvg = stats ? Number(stats.avg_price) : 0;
+      let count = stats ? Number(stats.listing_count) : 0;
 
-  // Fallback if trim-specific stats don't exist
-  if (!stats && params.carTrim) {
-    const { data: fallbackStats } = await admin
-      .from("market_stats")
-      .select("avg_price, listing_count")
-      .eq("brand", params.brand)
-      .eq("model", params.model)
-      .eq("year", params.year)
-      .is("car_trim", null)
-      .maybeSingle();
-    
-    if (fallbackStats) {
-      baseAvg = Number(fallbackStats.avg_price);
-      count = Number(fallbackStats.listing_count);
-    }
-  }
+      // Fallback if trim-specific stats don't exist
+      if (!stats && params.carTrim) {
+        const { data: fallbackStats } = await admin
+          .from("market_stats")
+          .select("avg_price, listing_count")
+          .eq("brand", params.brand)
+          .eq("model", params.model)
+          .eq("year", params.year)
+          .is("car_trim", null)
+          .maybeSingle();
+        
+        if (fallbackStats) {
+          baseAvg = Number(fallbackStats.avg_price);
+          count = Number(fallbackStats.listing_count);
+        }
+      }
 
-  if (baseAvg === 0) {
+      return { baseAvg, count };
+    },
+    3600, // 1 hour TTL
+  );
+
+  if (baseStats.baseAvg === 0) {
     return { min: 0, max: 0, avg: 0, confidence: "low", listingCount: 0 };
   }
 
-  const finalAvg = calculateValuation(baseAvg, params);
-  const confidence = count > 15 ? "high" : count > 5 ? "medium" : "low";
+  const finalAvg = calculateValuation(baseStats.baseAvg, params);
+  const confidence = baseStats.count > 15 ? "high" : baseStats.count > 5 ? "medium" : "low";
 
   return {
     min: finalAvg * 0.92, // Narrower range for more "expert" feel
     max: finalAvg * 1.08,
     avg: finalAvg,
     confidence,
-    listingCount: count,
+    listingCount: baseStats.count,
   };
 }
 
