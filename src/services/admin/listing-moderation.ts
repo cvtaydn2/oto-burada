@@ -4,6 +4,7 @@ import {
 } from "@/services/listings/listing-submissions";
 import { hasSupabaseAdminEnv } from "@/lib/supabase/env";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
+import { getRequiredAppUrl } from "@/lib/utils/env";
 import { listingSchema } from "@/lib/validators";
 import type { Listing } from "@/types";
 import { logger } from "@/lib/utils/logger";
@@ -47,7 +48,7 @@ async function sendModerationEmail(
 
     if (!sellerEmail) return;
 
-    const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://otoburada.com";
+    const appUrl = getRequiredAppUrl();
 
     if (action === "approve") {
       const { sendListingApprovedEmail } = await import("@/services/email/email-service");

@@ -1,6 +1,7 @@
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { sendTicketReplyEmail, sendTicketCreatedEmail } from "@/services/email/email-service";
+import { getRequiredAppUrl } from "@/lib/utils/env";
 import { logger } from "@/lib/utils/logger";
 
 export type TicketStatus = "open" | "in_progress" | "resolved" | "closed";
@@ -116,7 +117,7 @@ export async function createPublicTicket(input: {
   sendTicketCreatedEmail({
     ticketId: ticket.id,
     ticketSubject: input.subject,
-    ticketUrl: `${process.env.NEXT_PUBLIC_APP_URL ?? "https://otoburada.com"}/contact`,
+    ticketUrl: `${getRequiredAppUrl()}/contact`,
     toEmail: input.contactEmail,
     toName: input.contactName,
   }).catch((err) => logger.admin.warn("Public ticket created email failed silently", err));

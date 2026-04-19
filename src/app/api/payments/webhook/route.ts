@@ -193,7 +193,7 @@ export async function POST(request: Request): Promise<NextResponse> {
           
           if (meta?.type === "plan_purchase") {
             // Create job for credit addition (already done in process_payment_success, but create notification job)
-            await admin.rpc("create_fulfillment_job", {
+            const { error: jobError } = await admin.rpc("create_fulfillment_job", {
               p_payment_id: payment.id,
               p_job_type: "notification_send",
               p_metadata: {
@@ -206,6 +206,19 @@ export async function POST(request: Request): Promise<NextResponse> {
               },
             });
 
+            if (jobError) {
+              logger.payments.error("Notification job creation failed for plan_purchase", jobError, {
+                userId,
+                paymentId: payment.id,
+                token: payload.token,
+              });
+              captureServerError("Notification job creation failed", "payments", jobError, {
+                userId,
+                paymentId: payment.id,
+                jobType: "notification_send",
+              }, userId);
+            }
+
             captureServerEvent("plan_purchased", {
               userId,
               planId: meta.planId,
@@ -215,7 +228,7 @@ export async function POST(request: Request): Promise<NextResponse> {
 
           } else if (meta?.type === "doping" && meta.listingId && meta.dopingTypes) {
             // Create job for doping application
-            await admin.rpc("create_fulfillment_job", {
+            const { error: dopingJobError } = await admin.rpc("create_fulfillment_job", {
               p_payment_id: payment.id,
               p_job_type: "doping_apply",
               p_metadata: {
@@ -225,8 +238,23 @@ export async function POST(request: Request): Promise<NextResponse> {
               },
             });
 
+            if (dopingJobError) {
+              logger.payments.error("Doping job creation failed", dopingJobError, {
+                userId,
+                paymentId: payment.id,
+                listingId: meta.listingId,
+                token: payload.token,
+              });
+              captureServerError("Doping job creation failed", "payments", dopingJobError, {
+                userId,
+                paymentId: payment.id,
+                jobType: "doping_apply",
+                listingId: meta.listingId,
+              }, userId);
+            }
+
             // Create job for notification
-            await admin.rpc("create_fulfillment_job", {
+            const { error: notifJobError } = await admin.rpc("create_fulfillment_job", {
               p_payment_id: payment.id,
               p_job_type: "notification_send",
               p_metadata: {
@@ -239,6 +267,14 @@ export async function POST(request: Request): Promise<NextResponse> {
               },
             });
 
+            if (notifJobError) {
+              logger.payments.error("Notification job creation failed for doping", notifJobError, {
+                userId,
+                paymentId: payment.id,
+                token: payload.token,
+              });
+            }
+
             captureServerEvent("doping_payment_success", {
               userId,
               listingId: meta.listingId,
@@ -248,7 +284,7 @@ export async function POST(request: Request): Promise<NextResponse> {
           }
         } catch (err) {
           // Job creation failed — log but don't fail the webhook
-          // Jobs will be retried by the cron worker
+          // Payment is already committed in DB; jobs will be retried by the cron worker
           logger.payments.error("Fulfillment job creation failed", err, { userId, token: payload.token });
           captureServerError("Fulfillment job creation failed", "payments", err, { userId, token: payload.token }, userId);
         }

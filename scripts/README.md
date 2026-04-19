@@ -4,7 +4,7 @@
 
 **NEVER commit hardcoded passwords or credentials to version control.**
 
-All scripts in this directory should follow these security guidelines:
+All scripts in this directory follow strict security guidelines.
 
 ---
 
@@ -37,9 +37,9 @@ DEMO_USER_PASSWORD=your_secure_password_here
 
 ---
 
-## Script Usage
+## Available Scripts
 
-### Quick Bootstrap
+### Quick Bootstrap (Recommended)
 Creates demo users with secure passwords:
 
 ```bash
@@ -52,16 +52,11 @@ node scripts/quick-bootstrap.mjs
 - ✅ Stores role in `app_metadata` (trusted)
 - ✅ Never hardcodes credentials
 
----
-
-## Migration from Old Scripts
-
-If you have old scripts with hardcoded passwords:
-
-1. **Delete them** or move to `.gitignore`
-2. **Rotate all passwords** that were hardcoded
-3. **Use environment variables** for all credentials
-4. **Generate random passwords** as fallback
+### Other Utility Scripts
+- `seed-marketplace-references.mjs` - Seeds reference data (brands, models, cities)
+- `run-migrations.mjs` - Applies database migrations
+- `apply-schema-rpc.mjs` - Applies RPC functions
+- `check-supabase-env.mjs` - Validates environment configuration
 
 ---
 
@@ -78,9 +73,9 @@ Before committing any script:
 
 ---
 
-## Deprecated Scripts
+## Removed Scripts (Security Cleanup)
 
-The following scripts contain hardcoded credentials and should NOT be used:
+The following scripts have been **permanently deleted** due to hardcoded credentials:
 
 - ❌ `create-users.mjs` (hardcoded demo123)
 - ❌ `verify-users.mjs` (hardcoded demo123)
@@ -89,6 +84,8 @@ The following scripts contain hardcoded credentials and should NOT be used:
 - ❌ `create-user-admin.mjs` (hardcoded demo123)
 - ❌ `create-new.mjs` (hardcoded demo123)
 - ❌ `update-password.mjs` (hardcoded demo123)
+- ❌ `create-fresh.mjs` (hardcoded Demo123! + exposed keys)
+- ❌ `check-users.mjs` (hardcoded Demo123!)
 
 **Use `quick-bootstrap.mjs` instead** - it's secure and follows best practices.
 

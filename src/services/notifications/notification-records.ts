@@ -1,3 +1,17 @@
+/**
+ * Notification Records Service
+ * 
+ * PRIVILEGE BOUNDARIES:
+ * - Read operations: Use server client (RLS enforced)
+ * - User mutations: Use server client (RLS enforced)
+ * - System notifications: Use admin client (bypass RLS for system-generated notifications)
+ * 
+ * SECURITY RULES:
+ * - createDatabaseNotification() uses admin client - ONLY call from system/admin contexts
+ * - All user-facing operations use server client with RLS
+ * - Never expose admin functions to user-facing routes
+ */
+
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { hasSupabaseAdminEnv } from "@/lib/supabase/env";
@@ -66,6 +80,20 @@ export async function getStoredNotificationsByUser(userId: string) {
   return (await getDatabaseNotifications({ userId })) ?? [];
 }
 
+/**
+ * Create a system notification (admin-only operation).
+ * 
+ * ⚠️ SECURITY WARNING: This function uses admin client and bypasses RLS.
+ * Only call from:
+ * - System background jobs (cron, webhooks)
+ * - Admin dashboard operations
+ * - Internal service-to-service calls
+ * 
+ * NEVER call from user-facing API routes without proper admin authorization.
+ * 
+ * @param input - Notification data
+ * @returns Created notification or null on failure
+ */
 export async function createDatabaseNotification(input: {
   href?: string | null;
   message: string;
@@ -97,6 +125,20 @@ export async function createDatabaseNotification(input: {
   return mapNotificationRow(data);
 }
 
+/**
+ * Create multiple system notifications in bulk (admin-only operation).
+ * 
+ * ⚠️ SECURITY WARNING: This function uses admin client and bypasses RLS.
+ * Only call from:
+ * - System background jobs (cron, webhooks)
+ * - Admin dashboard operations
+ * - Internal service-to-service calls
+ * 
+ * NEVER call from user-facing API routes without proper admin authorization.
+ * 
+ * @param inputs - Array of notification data
+ * @returns Array of created notifications
+ */
 export async function createDatabaseNotificationsBulk(inputs: {
   href?: string | null;
   message: string;

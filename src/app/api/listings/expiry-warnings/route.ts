@@ -11,6 +11,7 @@
 
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { hasSupabaseAdminEnv } from "@/lib/supabase/env";
+import { getRequiredAppUrl } from "@/lib/utils/env";
 import { apiSuccess, apiError, API_ERROR_CODES } from "@/lib/utils/api-response";
 import { logger } from "@/lib/utils/logger";
 import { captureServerError } from "@/lib/monitoring/posthog-server";
@@ -50,7 +51,7 @@ async function handleCronRequest(request: Request) {
   }
 
   const admin = createSupabaseAdminClient();
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://otoburada.com";
+  const appUrl = getRequiredAppUrl();
 
   // Find listings that will expire in exactly WARN_DAYS_BEFORE days
   // published_at + EXPIRY_DAYS = expiry date

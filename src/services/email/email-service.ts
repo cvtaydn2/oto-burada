@@ -6,6 +6,7 @@
 
 import { Resend } from "resend";
 import { logger } from "@/lib/utils/logger";
+import { getRequiredAppUrl } from "@/lib/utils/env";
 import * as templates from "./email-templates";
 import type { SavedSearchAlertListing } from "./email-templates";
 
@@ -41,7 +42,7 @@ export async function sendTicketReplyEmail(params: {
     return { success: false, error: "Email servisi yapılandırılmamış (RESEND_API_KEY eksik)." };
   }
 
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://otoburada.com";
+  const appUrl = getRequiredAppUrl();
 
   try {
     const { data, error } = await resend.emails.send({
@@ -82,7 +83,7 @@ export async function sendTicketCreatedEmail(params: {
   const resend = getResendClient();
   if (!resend) return { success: false, error: "Email servisi yapılandırılmamış." };
 
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://otoburada.com";
+  const appUrl = getRequiredAppUrl();
 
   try {
     const { data, error } = await resend.emails.send({
@@ -122,7 +123,7 @@ export async function sendSavedSearchAlertEmail(params: {
     return { success: false, error: "Email servisi yapılandırılmamış (RESEND_API_KEY eksik)." };
   }
 
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://otoburada.com";
+  const appUrl = getRequiredAppUrl();
 
   try {
     const { data, error } = await resend.emails.send({
@@ -170,7 +171,7 @@ export async function sendListingApprovedEmail(params: {
   const resend = getResendClient();
   if (!resend) return { success: false, error: "Email servisi yapılandırılmamış." };
 
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://otoburada.com";
+  const appUrl = getRequiredAppUrl();
 
   try {
     const { data, error } = await resend.emails.send({
@@ -208,7 +209,7 @@ export async function sendListingRejectedEmail(params: {
   const resend = getResendClient();
   if (!resend) return { success: false, error: "Email servisi yapılandırılmamış." };
 
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://otoburada.com";
+  const appUrl = getRequiredAppUrl();
 
   try {
     const { data, error } = await resend.emails.send({

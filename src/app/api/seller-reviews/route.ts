@@ -9,10 +9,11 @@
  * - Rating must be 1-5
  */
 
-import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { apiSuccess, apiError, API_ERROR_CODES } from "@/lib/utils/api-response";
-import { enforceRateLimit, getUserRateLimitKey } from "@/lib/utils/rate-limit-middleware";
 import { sanitizeText } from "@/lib/utils/sanitize";
+import { rateLimitProfiles } from "@/lib/utils/rate-limit";
+import { withAuthAndCsrf } from "@/lib/utils/api-security";
+import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { z } from "zod";
 
 const reviewSchema = z.object({
@@ -30,21 +31,14 @@ const reviewSchema = z.object({
 const REVIEW_RATE_LIMIT = { limit: 5, windowMs: 60 * 60 * 1000 };
 
 export async function POST(request: Request) {
-  const supabase = await createSupabaseServerClient();
-  const {
-    data: { user },
-    error: authError,
-  } = await supabase.auth.getUser();
+  const security = await withAuthAndCsrf(request, {
+    ipRateLimit: rateLimitProfiles.general,
+    userRateLimit: REVIEW_RATE_LIMIT,
+    rateLimitKey: "seller-reviews:create",
+  });
 
-  if (authError || !user) {
-    return apiError(API_ERROR_CODES.UNAUTHORIZED, "Değerlendirme yapmak için giriş yapmalısın.", 401);
-  }
-
-  const rateLimit = await enforceRateLimit(
-    getUserRateLimitKey(user.id, "api:seller-reviews"),
-    REVIEW_RATE_LIMIT,
-  );
-  if (rateLimit) return rateLimit.response;
+  if (!security.ok) return security.response;
+  const user = security.user!;
 
   let body: unknown;
   try {
@@ -70,6 +64,8 @@ export async function POST(request: Request) {
   }
 
   const sanitizedComment = comment ? sanitizeText(comment) : null;
+
+  const supabase = await createSupabaseServerClient();
 
   // Upsert — one review per reviewer per seller
   const { data, error } = await supabase

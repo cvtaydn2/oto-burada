@@ -15,9 +15,11 @@ describe('AI AnomalyDetector (calculateFraudScore)', () => {
     bodyType: 'hatchback',
     city: 'İstanbul',
     district: 'Kadıköy',
+    whatsappPhone: '+905321234567',
+    vin: null as string | null,
     tramerAmount: null as number | null,
     damageStatusJson: null as Record<string, string> | null,
-    vin: null as string | null,
+    images: [],
   };
 
   const existingListingsBase = [

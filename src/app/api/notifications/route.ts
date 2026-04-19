@@ -1,4 +1,3 @@
-import { hasSupabaseAdminEnv } from "@/lib/supabase/env";
 import { apiError, API_ERROR_CODES, apiSuccess } from "@/lib/utils/api-response";
 import { rateLimitProfiles } from "@/lib/utils/rate-limit";
 import {
@@ -6,7 +5,7 @@ import {
   markAllDatabaseNotificationsRead,
 } from "@/services/notifications/notification-records";
 import { captureServerError } from "@/lib/monitoring/posthog-server";
-import { withAuth } from "@/lib/utils/api-security";
+import { withAuth, withAuthAndCsrf } from "@/lib/utils/api-security";
 
 export async function GET(request: Request) {
   // Security checks: Auth + Rate limiting
@@ -19,10 +18,6 @@ export async function GET(request: Request) {
   
   const user = security.user!; // Guaranteed by withAuth
 
-  if (!hasSupabaseAdminEnv()) {
-    return apiError(API_ERROR_CODES.SERVICE_UNAVAILABLE, "Bildirim servisi hazır değil.", 503);
-  }
-
   // P1 Security: Removed ensureProfileRecord() - GET should be read-only
   const notifications = await getStoredNotificationsByUser(user.id);
 
@@ -30,8 +25,8 @@ export async function GET(request: Request) {
 }
 
 export async function PATCH(request: Request) {
-  // Security checks: Auth + Rate limiting
-  const security = await withAuth(request, {
+  // Security checks: CSRF + Auth + Rate limiting
+  const security = await withAuthAndCsrf(request, {
     ipRateLimit: rateLimitProfiles.general,
     userRateLimit: rateLimitProfiles.general,
     rateLimitKey: "notifications:mark-all-read",
@@ -39,11 +34,7 @@ export async function PATCH(request: Request) {
 
   if (!security.ok) return security.response;
   
-  const user = security.user!; // Guaranteed by withAuth
-
-  if (!hasSupabaseAdminEnv()) {
-    return apiError(API_ERROR_CODES.SERVICE_UNAVAILABLE, "Bildirim servisi hazır değil.", 503);
-  }
+  const user = security.user!; // Guaranteed by withAuthAndCsrf
 
   // P1 Security: Removed ensureProfileRecord() - no side effects in mutations
   const updated = await markAllDatabaseNotificationsRead(user.id);

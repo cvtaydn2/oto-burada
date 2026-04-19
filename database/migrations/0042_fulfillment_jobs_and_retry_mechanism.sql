@@ -46,12 +46,12 @@ CREATE INDEX IF NOT EXISTS idx_fulfillment_jobs_dead_letter
 CREATE OR REPLACE FUNCTION update_fulfillment_jobs_updated_at()
 RETURNS TRIGGER
 LANGUAGE plpgsql
-AS $
+AS $$
 BEGIN
   NEW.updated_at = NOW();
   RETURN NEW;
 END;
-$;
+$$;
 
 DROP TRIGGER IF EXISTS fulfillment_jobs_updated_at ON fulfillment_jobs;
 
@@ -73,7 +73,7 @@ RETURNS UUID
 LANGUAGE plpgsql
 SECURITY DEFINER
 SET search_path = public
-AS $
+AS $$
 DECLARE
   v_job_id UUID;
 BEGIN
@@ -103,7 +103,7 @@ BEGIN
   
   RETURN v_job_id;
 END;
-$;
+$$;
 
 -- ══════════════════════════════════════════════════════════════════════════════
 -- 4. Get Ready Jobs Function
@@ -124,7 +124,7 @@ RETURNS TABLE (
 LANGUAGE plpgsql
 SECURITY DEFINER
 SET search_path = public
-AS $
+AS $$
 BEGIN
   RETURN QUERY
   SELECT 
@@ -149,7 +149,7 @@ BEGIN
   LIMIT p_limit
   FOR UPDATE OF j SKIP LOCKED; -- Prevent concurrent processing
 END;
-$;
+$$;
 
 -- ══════════════════════════════════════════════════════════════════════════════
 -- 5. Mark Job Processing Function
@@ -162,7 +162,7 @@ RETURNS BOOLEAN
 LANGUAGE plpgsql
 SECURITY DEFINER
 SET search_path = public
-AS $
+AS $$
 BEGIN
   UPDATE fulfillment_jobs
   SET 
@@ -174,7 +174,7 @@ BEGIN
   
   RETURN FOUND;
 END;
-$;
+$$;
 
 -- ══════════════════════════════════════════════════════════════════════════════
 -- 6. Mark Job Success Function
@@ -187,7 +187,7 @@ RETURNS BOOLEAN
 LANGUAGE plpgsql
 SECURITY DEFINER
 SET search_path = public
-AS $
+AS $$
 BEGIN
   UPDATE fulfillment_jobs
   SET 
@@ -200,7 +200,7 @@ BEGIN
   
   RETURN FOUND;
 END;
-$;
+$$;
 
 -- ══════════════════════════════════════════════════════════════════════════════
 -- 7. Mark Job Failed Function (with exponential backoff)
@@ -215,7 +215,7 @@ RETURNS JSONB
 LANGUAGE plpgsql
 SECURITY DEFINER
 SET search_path = public
-AS $
+AS $$
 DECLARE
   v_job RECORD;
   v_next_retry TIMESTAMPTZ;
@@ -271,7 +271,7 @@ BEGIN
     );
   END IF;
 END;
-$;
+$$;
 
 -- ══════════════════════════════════════════════════════════════════════════════
 -- 8. Get Dead Letter Jobs Function (for admin monitoring)
@@ -294,7 +294,7 @@ RETURNS TABLE (
 LANGUAGE plpgsql
 SECURITY DEFINER
 SET search_path = public
-AS $
+AS $$
 BEGIN
   RETURN QUERY
   SELECT 
@@ -319,7 +319,7 @@ BEGIN
   ORDER BY j.updated_at DESC
   LIMIT p_limit;
 END;
-$;
+$$;
 
 -- ══════════════════════════════════════════════════════════════════════════════
 -- 9. Retry Dead Letter Job Function (manual admin action)
@@ -332,7 +332,7 @@ RETURNS BOOLEAN
 LANGUAGE plpgsql
 SECURITY DEFINER
 SET search_path = public
-AS $
+AS $$
 BEGIN
   UPDATE fulfillment_jobs
   SET 
@@ -347,7 +347,7 @@ BEGIN
   
   RETURN FOUND;
 END;
-$;
+$$;
 
 -- ══════════════════════════════════════════════════════════════════════════════
 -- 10. Grant Permissions
@@ -389,4 +389,3 @@ COMMENT ON FUNCTION get_dead_letter_jobs IS
 
 COMMENT ON FUNCTION retry_dead_letter_job IS 
 'Manually retries a dead letter job (admin action).';
-

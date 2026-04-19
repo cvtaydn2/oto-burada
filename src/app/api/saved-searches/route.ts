@@ -1,4 +1,3 @@
-import { hasSupabaseAdminEnv } from "@/lib/supabase/env";
 import { apiError, API_ERROR_CODES, apiSuccess } from "@/lib/utils/api-response";
 import { rateLimitProfiles } from "@/lib/utils/rate-limit";
 import { issuesToFieldErrors } from "@/lib/utils/validation-helpers";
@@ -9,7 +8,7 @@ import {
 } from "@/services/saved-searches/saved-search-records";
 import { hasMeaningfulSavedSearchFilters } from "@/services/saved-searches/saved-search-utils";
 import { captureServerEvent } from "@/lib/monitoring/posthog-server";
-import { withAuth } from "@/lib/utils/api-security";
+import { withAuth, withAuthAndCsrf } from "@/lib/utils/api-security";
 
 export async function GET(request: Request) {
   // Security checks: Auth + Rate limiting
@@ -22,19 +21,14 @@ export async function GET(request: Request) {
   
   const user = security.user!; // Guaranteed by withAuth
 
-  if (!hasSupabaseAdminEnv()) {
-    return apiError(API_ERROR_CODES.SERVICE_UNAVAILABLE, "Kayıtlı arama servisi hazır değil.", 503);
-  }
-
-  // P1 Security: Removed ensureProfileRecord() - GET should be read-only
   const savedSearches = await getStoredSavedSearchesByUser(user.id);
 
   return apiSuccess({ savedSearches });
 }
 
 export async function POST(request: Request) {
-  // Security checks: Auth + Rate limiting
-  const security = await withAuth(request, {
+  // Security checks: CSRF + Auth + Rate limiting
+  const security = await withAuthAndCsrf(request, {
     ipRateLimit: rateLimitProfiles.general,
     userRateLimit: rateLimitProfiles.general,
     rateLimitKey: "saved-searches:create",
@@ -43,10 +37,6 @@ export async function POST(request: Request) {
   if (!security.ok) return security.response;
   
   const user = security.user!; // Guaranteed by withAuth
-
-  if (!hasSupabaseAdminEnv()) {
-    return apiError(API_ERROR_CODES.SERVICE_UNAVAILABLE, "Kayıtlı arama servisi hazır değil.", 503);
-  }
 
   let body: unknown;
 
