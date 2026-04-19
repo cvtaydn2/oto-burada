@@ -12,7 +12,6 @@ import { apiSuccess, apiError, API_ERROR_CODES } from "@/lib/utils/api-response"
 import {
   buildPendingListing,
   createDatabaseListing,
-  getExistingListingSlugs,
 } from "@/services/listings/listing-submissions";
 import { createDatabaseNotification } from "@/services/notifications/notification-records";
 import { getStoredProfileById, isUserBanned } from "@/services/profile/profile-records";
@@ -182,8 +181,8 @@ export async function POST(request: Request) {
     );
   }
 
-  const existingListings = await getExistingListingSlugs();
-  const createdListing = buildPendingListing(parsedListingInput.data, user.id, existingListings);
+  // Build listing with slug generation (collision handled by DB retry)
+  const createdListing = buildPendingListing(parsedListingInput.data, user.id, []);
   const result = await createDatabaseListing(createdListing);
 
   if (result.error === "slug_collision") {

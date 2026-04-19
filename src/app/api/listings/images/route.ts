@@ -1,8 +1,6 @@
 import { createSupabaseServerClient } from "@/lib/supabase/server";
-
 import { getSupabaseStorageEnv, hasSupabaseStorageEnv } from "@/lib/supabase/env";
 import { rateLimitProfiles } from "@/lib/utils/rate-limit";
-import { enforceRateLimit, getRateLimitKey, getUserRateLimitKey } from "@/lib/utils/rate-limit-middleware";
 import { apiSuccess, apiError, API_ERROR_CODES } from "@/lib/utils/api-response";
 import {
   buildListingImageStoragePath,
@@ -10,7 +8,7 @@ import {
   validateListingImageFile,
 } from "@/services/listings/listing-images";
 import { captureServerError } from "@/lib/monitoring/posthog-server";
-import { isValidRequestOrigin } from "@/lib/security";
+import { withAuthAndCsrf } from "@/lib/utils/api-security";
 
 /**
  * Sanitizes filename for DISPLAY purposes only.
@@ -34,19 +32,16 @@ function userOwnsStoragePath(userId: string, storagePath: string) {
 }
 
 export async function POST(request: Request) {
-  // CSRF check - reject cross-origin requests
-  if (!isValidRequestOrigin(request)) {
-    return apiError(API_ERROR_CODES.BAD_REQUEST, "Geçersiz istek kaynağı (CSRF).", 403);
-  }
+  // Security checks: CSRF + Auth + Rate limiting
+  const security = await withAuthAndCsrf(request, {
+    ipRateLimit: rateLimitProfiles.general,
+    userRateLimit: rateLimitProfiles.imageUpload,
+    rateLimitKey: "images:upload",
+  });
 
-  const ipRateLimit = await enforceRateLimit(
-    getRateLimitKey(request, "api:images:upload"),
-    rateLimitProfiles.general,
-  );
-
-  if (ipRateLimit) {
-    return ipRateLimit.response;
-  }
+  if (!security.ok) return security.response;
+  
+  const user = security.user!; // Guaranteed by withAuthAndCsrf
 
   if (!hasSupabaseStorageEnv()) {
     return apiError(
@@ -54,25 +49,6 @@ export async function POST(request: Request) {
       "Supabase Storage ortam değişkenleri eksik. Yükleme için .env.local dosyasını tamamlamalısın.",
       503,
     );
-  }
-
-  const supabase = await createSupabaseServerClient();
-  const {
-    data: { user },
-    error: userError,
-  } = await supabase.auth.getUser();
-
-  if (userError || !user) {
-    return apiError(API_ERROR_CODES.UNAUTHORIZED, "Oturum doğrulanamadı. Lütfen tekrar giriş yap.", 401);
-  }
-
-  const userRateLimit = await enforceRateLimit(
-    getUserRateLimitKey(user.id, "images:upload"),
-    rateLimitProfiles.imageUpload,
-  );
-
-  if (userRateLimit) {
-    return userRateLimit.response;
   }
 
   const formData = await request.formData();
@@ -91,12 +67,12 @@ export async function POST(request: Request) {
   const sanitizedFileName = sanitizeFileName(file.name);
   const { listingsBucket } = getSupabaseStorageEnv();
 
-
   // Use the VERIFIED MIME type (from magic bytes) — not the browser-declared file.type.
   const verifiedMimeType = await getVerifiedMimeType(file);
   const contentType = verifiedMimeType ?? file.type;
   const storagePath = buildListingImageStoragePath(user.id, sanitizedFileName, verifiedMimeType ?? undefined);
 
+  const supabase = await createSupabaseServerClient();
   const uploadResult = await supabase.storage.from(listingsBucket).upload(storagePath, file, {
     cacheControl: "86400", // 24h — UUID paths never change
     contentType,
@@ -132,10 +108,12 @@ export async function POST(request: Request) {
 }
 
 export async function DELETE(request: Request) {
-  // CSRF check - reject cross-origin requests
-  if (!isValidRequestOrigin(request)) {
-    return apiError(API_ERROR_CODES.BAD_REQUEST, "Geçersiz istek kaynağı (CSRF).", 403);
-  }
+  // Security checks: CSRF + Auth
+  const security = await withAuthAndCsrf(request);
+
+  if (!security.ok) return security.response;
+  
+  const user = security.user!; // Guaranteed by withAuthAndCsrf
 
   if (!hasSupabaseStorageEnv()) {
     return apiError(
@@ -143,16 +121,6 @@ export async function DELETE(request: Request) {
       "Supabase Storage ortam değişkenleri eksik. Fotoğraf silmek için .env.local dosyasını tamamlamalısın.",
       503,
     );
-  }
-
-  const supabase = await createSupabaseServerClient();
-  const {
-    data: { user },
-    error: userError,
-  } = await supabase.auth.getUser();
-
-  if (userError || !user) {
-    return apiError(API_ERROR_CODES.UNAUTHORIZED, "Oturum doğrulanamadı. Lütfen tekrar giriş yap.", 401);
   }
 
   let body: unknown;
@@ -173,6 +141,7 @@ export async function DELETE(request: Request) {
   }
 
   const { listingsBucket } = getSupabaseStorageEnv();
+  const supabase = await createSupabaseServerClient();
   const removeResult = await supabase.storage.from(listingsBucket).remove([storagePath]);
 
   if (removeResult.error) {

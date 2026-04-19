@@ -1,12 +1,6 @@
-import { createSupabaseServerClient } from "@/lib/supabase/server";
-import { hasSupabaseAdminEnv, hasSupabaseEnv } from "@/lib/supabase/env";
+import { hasSupabaseAdminEnv } from "@/lib/supabase/env";
 import { apiError, API_ERROR_CODES, apiSuccess } from "@/lib/utils/api-response";
 import { rateLimitProfiles } from "@/lib/utils/rate-limit";
-import {
-  enforceRateLimit,
-  getRateLimitKey,
-  getUserRateLimitKey,
-} from "@/lib/utils/rate-limit-middleware";
 import { issuesToFieldErrors } from "@/lib/utils/validation-helpers";
 import { savedSearchUpdateSchema } from "@/lib/validators";
 import {
@@ -14,64 +8,22 @@ import {
   updateDatabaseSavedSearch,
 } from "@/services/saved-searches/saved-search-records";
 import { captureServerError, captureServerEvent } from "@/lib/monitoring/posthog-server";
-import { isValidRequestOrigin } from "@/lib/security";
-
-async function getAuthenticatedUser() {
-  if (!hasSupabaseEnv()) {
-    return null;
-  }
-
-  const supabase = await createSupabaseServerClient();
-  const {
-    data: { user },
-    error,
-  } = await supabase.auth.getUser();
-
-  if (error || !user) {
-    return null;
-  }
-
-  return user;
-}
+import { withAuthAndCsrf } from "@/lib/utils/api-security";
 
 export async function PATCH(
   request: Request,
   context: { params: Promise<{ searchId: string }> },
 ) {
-  // CSRF check - reject cross-origin requests
-  if (!isValidRequestOrigin(request)) {
-    return apiError(API_ERROR_CODES.BAD_REQUEST, "Geçersiz istek kaynağı (CSRF).", 403);
-  }
+  // Security checks: CSRF + Auth + Rate limiting
+  const security = await withAuthAndCsrf(request, {
+    ipRateLimit: rateLimitProfiles.general,
+    userRateLimit: rateLimitProfiles.general,
+    rateLimitKey: "saved-searches:update",
+  });
 
-  const ipRateLimit = await enforceRateLimit(
-    getRateLimitKey(request, "api:saved-searches:update"),
-    rateLimitProfiles.general,
-  );
-
-  if (ipRateLimit) {
-    return ipRateLimit.response;
-  }
-
-  if (!hasSupabaseEnv()) {
-    captureServerEvent("saved_search_update_failed", { reason: "service_unavailable", responseStatus: 503 }, "server");
-    return apiError(API_ERROR_CODES.SERVICE_UNAVAILABLE, "Servis kullanılamıyor.", 503);
-  }
-
-  const user = await getAuthenticatedUser();
-
-  if (!user) {
-    captureServerEvent("saved_search_update_failed", { reason: "unauthorized", responseStatus: 401 }, "server");
-    return apiError(API_ERROR_CODES.UNAUTHORIZED, "Kayitli aramayi guncellemek icin giris yapmalisin.", 401);
-  }
-
-  const userRateLimit = await enforceRateLimit(
-    getUserRateLimitKey(user.id, "saved-searches:update"),
-    rateLimitProfiles.general,
-  );
-
-  if (userRateLimit) {
-    return userRateLimit.response;
-  }
+  if (!security.ok) return security.response;
+  
+  const user = security.user!; // Guaranteed by withAuthAndCsrf
 
   if (!hasSupabaseAdminEnv()) {
     captureServerEvent("saved_search_update_failed", {
@@ -148,31 +100,16 @@ export async function DELETE(
   request: Request,
   context: { params: Promise<{ searchId: string }> },
 ) {
-  // CSRF check - reject cross-origin requests
-  if (!isValidRequestOrigin(request)) {
-    return apiError(API_ERROR_CODES.BAD_REQUEST, "Geçersiz istek kaynağı (CSRF).", 403);
-  }
+  // Security checks: CSRF + Auth + Rate limiting
+  const security = await withAuthAndCsrf(request, {
+    ipRateLimit: rateLimitProfiles.general,
+    userRateLimit: rateLimitProfiles.general,
+    rateLimitKey: "saved-searches:delete",
+  });
 
-  const ipRateLimit = await enforceRateLimit(
-    getRateLimitKey(request, "api:saved-searches:delete"),
-    rateLimitProfiles.general,
-  );
-
-  if (ipRateLimit) {
-    return ipRateLimit.response;
-  }
-
-  if (!hasSupabaseEnv()) {
-    captureServerEvent("saved_search_delete_failed", { reason: "service_unavailable", responseStatus: 503 }, "server");
-    return apiError(API_ERROR_CODES.SERVICE_UNAVAILABLE, "Servis kullanılamıyor.", 503);
-  }
-
-  const user = await getAuthenticatedUser();
-
-  if (!user) {
-    captureServerEvent("saved_search_delete_failed", { reason: "unauthorized", responseStatus: 401 }, "server");
-    return apiError(API_ERROR_CODES.UNAUTHORIZED, "Kayitli aramayi silmek icin giris yapmalisin.", 401);
-  }
+  if (!security.ok) return security.response;
+  
+  const user = security.user!; // Guaranteed by withAuthAndCsrf
 
   if (!hasSupabaseAdminEnv()) {
     captureServerEvent("saved_search_delete_failed", {

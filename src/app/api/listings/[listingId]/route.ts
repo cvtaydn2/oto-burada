@@ -9,7 +9,6 @@ import {
   buildUpdatedListing,
   deleteDatabaseListing,
   findEditableListingById,
-  getExistingListingSlugs,
   updateDatabaseListing,
 } from "@/services/listings/listing-submissions";
 import { captureServerError, captureServerEvent } from "@/lib/monitoring/posthog-server";
@@ -104,11 +103,11 @@ export async function PATCH(
     );
   }
 
-  const allListings = await getExistingListingSlugs();
+  // Build updated listing (slug collision handled by DB constraint in updateDatabaseListing)
   const updatedListing = buildUpdatedListing(
     parsedListingInput.data,
     existingListing,
-    allListings,
+    [], // Empty array - no pre-check needed
   );
   const result = await updateDatabaseListing(updatedListing);
 

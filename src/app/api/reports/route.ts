@@ -1,12 +1,10 @@
-import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { hasSupabaseEnv } from "@/lib/supabase/env";
 import { rateLimitProfiles } from "@/lib/utils/rate-limit";
-import { enforceRateLimit, getRateLimitKey, getUserRateLimitKey } from "@/lib/utils/rate-limit-middleware";
 import { sanitizeDescription } from "@/lib/utils/sanitize";
 import { issuesToFieldErrors } from "@/lib/utils/validation-helpers";
 import { reportCreateSchema } from "@/lib/validators";
 import { apiSuccess, apiError, API_ERROR_CODES } from "@/lib/utils/api-response";
-import { isValidRequestOrigin } from "@/lib/security";
+import { withAuthAndCsrf } from "@/lib/utils/api-security";
 import {
   createOrUpdateDatabaseReport,
   getDatabaseActiveReport,
@@ -15,19 +13,16 @@ import { getStoredListingById } from "@/services/listings/listing-submissions";
 import { captureServerEvent } from "@/lib/monitoring/posthog-server";
 
 export async function POST(request: Request) {
-  // CSRF check
-  if (!isValidRequestOrigin(request)) {
-    return apiError(API_ERROR_CODES.BAD_REQUEST, "Geçersiz istek kaynağı.", 403);
-  }
+  // Security checks: CSRF + Auth + Rate limiting
+  const security = await withAuthAndCsrf(request, {
+    ipRateLimit: rateLimitProfiles.general,
+    userRateLimit: rateLimitProfiles.reportCreate,
+    rateLimitKey: "reports:create",
+  });
 
-  const ipRateLimit = await enforceRateLimit(
-    getRateLimitKey(request, "api:reports:create"),
-    rateLimitProfiles.general,
-  );
-
-  if (ipRateLimit) {
-    return ipRateLimit.response;
-  }
+  if (!security.ok) return security.response;
+  
+  const user = security.user!; // Guaranteed by withAuthAndCsrf
 
   if (!hasSupabaseEnv()) {
     return apiError(
@@ -54,25 +49,6 @@ export async function POST(request: Request) {
       400,
       issuesToFieldErrors(parsed.error.issues),
     );
-  }
-
-  const supabase = await createSupabaseServerClient();
-  const {
-    data: { user },
-    error: userError,
-  } = await supabase.auth.getUser();
-
-  if (userError || !user) {
-    return apiError(API_ERROR_CODES.UNAUTHORIZED, "Rapor göndermek için giriş yapmalısın.", 401);
-  }
-
-  const userRateLimit = await enforceRateLimit(
-    getUserRateLimitKey(user.id, "reports:create"),
-    rateLimitProfiles.reportCreate,
-  );
-
-  if (userRateLimit) {
-    return userRateLimit.response;
   }
 
   const listing = await getStoredListingById(parsed.data.listingId);

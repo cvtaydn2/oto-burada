@@ -1,11 +1,9 @@
 import { createSupabaseServerClient } from "@/lib/supabase/server";
-
 import {
   getSupabaseDocumentsStorageEnv,
   hasSupabaseDocumentsStorageEnv,
 } from "@/lib/supabase/env";
 import { rateLimitProfiles } from "@/lib/utils/rate-limit";
-import { enforceRateLimit, getRateLimitKey, getUserRateLimitKey } from "@/lib/utils/rate-limit-middleware";
 import { apiSuccess, apiError, API_ERROR_CODES } from "@/lib/utils/api-response";
 import {
   buildExpertDocumentStoragePath,
@@ -14,7 +12,7 @@ import {
   getVerifiedDocumentMimeType,
 } from "@/services/listings/listing-documents";
 import { captureServerError } from "@/lib/monitoring/posthog-server";
-import { isValidRequestOrigin } from "@/lib/security";
+import { withAuthAndCsrf } from "@/lib/utils/api-security";
 
 /**
  * Sanitizes filename for DISPLAY purposes only.
@@ -38,19 +36,16 @@ function userOwnsStoragePath(userId: string, storagePath: string) {
 }
 
 export async function POST(request: Request) {
-  // CSRF check - reject cross-origin requests
-  if (!isValidRequestOrigin(request)) {
-    return apiError(API_ERROR_CODES.BAD_REQUEST, "Geçersiz istek kaynağı (CSRF).", 403);
-  }
+  // Security checks: CSRF + Auth + Rate limiting
+  const security = await withAuthAndCsrf(request, {
+    ipRateLimit: rateLimitProfiles.general,
+    userRateLimit: rateLimitProfiles.imageUpload, // Using identical limit for now
+    rateLimitKey: "documents:upload",
+  });
 
-  const ipRateLimit = await enforceRateLimit(
-    getRateLimitKey(request, "api:documents:upload"),
-    rateLimitProfiles.general,
-  );
-
-  if (ipRateLimit) {
-    return ipRateLimit.response;
-  }
+  if (!security.ok) return security.response;
+  
+  const user = security.user!; // Guaranteed by withAuthAndCsrf
 
   if (!hasSupabaseDocumentsStorageEnv()) {
     return apiError(
@@ -58,25 +53,6 @@ export async function POST(request: Request) {
       "Supabase Storage ortam değişkenleri eksik. Yükleme için .env.local dosyasını tamamlamalısın.",
       503,
     );
-  }
-
-  const supabase = await createSupabaseServerClient();
-  const {
-    data: { user },
-    error: userError,
-  } = await supabase.auth.getUser();
-
-  if (userError || !user) {
-    return apiError(API_ERROR_CODES.UNAUTHORIZED, "Oturum doğrulanamadı. Lütfen tekrar giriş yap.", 401);
-  }
-
-  const userRateLimit = await enforceRateLimit(
-    getUserRateLimitKey(user.id, "documents:upload"),
-    rateLimitProfiles.imageUpload, // Using identical limit for now
-  );
-
-  if (userRateLimit) {
-    return userRateLimit.response;
   }
 
   const formData = await request.formData();
@@ -95,12 +71,12 @@ export async function POST(request: Request) {
   const sanitizedFileName = sanitizeFileName(file.name);
   const { documentsBucket } = getSupabaseDocumentsStorageEnv();
 
-
   // Use verified MIME type from magic bytes — never trust browser-declared file.type
   const verifiedMimeType = await getVerifiedDocumentMimeType(file);
   const contentType = verifiedMimeType ?? file.type;
   const storagePath = buildExpertDocumentStoragePath(user.id, sanitizedFileName, verifiedMimeType ?? undefined);
   
+  const supabase = await createSupabaseServerClient();
   const uploadResult = await supabase.storage.from(documentsBucket).upload(storagePath, file, {
     cacheControl: "3600",
     contentType,
@@ -136,10 +112,12 @@ export async function POST(request: Request) {
 }
 
 export async function DELETE(request: Request) {
-  // CSRF check - reject cross-origin requests
-  if (!isValidRequestOrigin(request)) {
-    return apiError(API_ERROR_CODES.BAD_REQUEST, "Geçersiz istek kaynağı (CSRF).", 403);
-  }
+  // Security checks: CSRF + Auth
+  const security = await withAuthAndCsrf(request);
+
+  if (!security.ok) return security.response;
+  
+  const user = security.user!; // Guaranteed by withAuthAndCsrf
 
   if (!hasSupabaseDocumentsStorageEnv()) {
     return apiError(
@@ -147,16 +125,6 @@ export async function DELETE(request: Request) {
       "Supabase Storage ortam değişkenleri eksik. Belge silmek için .env.local dosyasını tamamlamalısın.",
       503,
     );
-  }
-
-  const supabase = await createSupabaseServerClient();
-  const {
-    data: { user },
-    error: userError,
-  } = await supabase.auth.getUser();
-
-  if (userError || !user) {
-    return apiError(API_ERROR_CODES.UNAUTHORIZED, "Oturum doğrulanamadı. Lütfen tekrar giriş yap.", 401);
   }
 
   let body: unknown;
@@ -177,6 +145,7 @@ export async function DELETE(request: Request) {
   }
 
   const { documentsBucket } = getSupabaseDocumentsStorageEnv();
+  const supabase = await createSupabaseServerClient();
   const removeResult = await supabase.storage.from(documentsBucket).remove([storagePath]);
 
   if (removeResult.error) {
