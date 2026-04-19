@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Send, CheckCircle2, LoaderCircle } from "lucide-react";
+import { useTurnstile } from "@/hooks/use-turnstile";
 
 const SUBJECTS = [
   "İlanımla ilgili sorun yaşıyorum",
@@ -9,17 +10,39 @@ const SUBJECTS = [
   "Öneri / Şikayet",
   "Teknik destek",
   "Diğer",
-];
+] as const;
+
+type Subject = (typeof SUBJECTS)[number];
 
 export function ContactForm() {
   const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
-  const [form, setForm] = useState({ name: "", email: "", subject: SUBJECTS[0], message: "" });
+  const [errorMessage, setErrorMessage] = useState<string>("");
+  const [form, setForm] = useState<{
+    name: string;
+    email: string;
+    subject: Subject;
+    message: string;
+  }>({ name: "", email: "", subject: SUBJECTS[0], message: "" });
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const { token: turnstileToken, containerRef, reset: resetTurnstile, isEnabled: isTurnstileEnabled } = useTurnstile({
+    action: "contact_form",
+  });
+
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!form.name || !form.email || !form.message) return;
 
+    // Turnstile check (only if enabled)
+    if (isTurnstileEnabled && !turnstileToken) {
+      setErrorMessage("Lütfen doğrulama kontrolünü tamamlayın.");
+      return;
+    }
+
+    // Read honeypot value directly from the DOM to avoid React state
+    const hp = (e.currentTarget.elements.namedItem("_hp") as HTMLInputElement | null)?.value ?? "";
+
     setStatus("loading");
+    setErrorMessage("");
     try {
       const res = await fetch("/api/contact", {
         method: "POST",
@@ -29,15 +52,25 @@ export function ContactForm() {
           name: form.name,
           subject: form.subject,
           message: form.message,
+          _hp: hp,
+          turnstileToken: isTurnstileEnabled ? turnstileToken : undefined,
         }),
       });
+
+      const data = await res.json();
+
       if (res.ok) {
         setStatus("success");
+        resetTurnstile();
       } else {
         setStatus("error");
+        setErrorMessage(data.message || "Mesaj gönderilemedi. Lütfen tekrar deneyin.");
+        resetTurnstile();
       }
     } catch {
       setStatus("error");
+      setErrorMessage("Bağlantı hatası. Lütfen tekrar deneyin.");
+      resetTurnstile();
     }
   };
 
@@ -91,7 +124,7 @@ export function ContactForm() {
         <label className="block text-xs font-bold text-gray-700 mb-2">Konu</label>
         <select
           value={form.subject}
-          onChange={(e) => setForm((p) => ({ ...p, subject: e.target.value }))}
+          onChange={(e) => setForm((p) => ({ ...p, subject: e.target.value as Subject }))}
           className="w-full border border-gray-200 rounded-xl p-3 text-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-100 outline-none bg-card transition"
         >
           {SUBJECTS.map((s) => <option key={s}>{s}</option>)}
@@ -108,6 +141,24 @@ export function ContactForm() {
           placeholder="Mesajınızı buraya yazın..."
         />
       </div>
+      {/*
+        Honeypot field — hidden from real users via CSS, not `display:none` or
+        `type="hidden"` (bots skip those). Bots fill it in; the API rejects them.
+      */}
+      <div aria-hidden="true" style={{ position: "absolute", left: "-9999px", width: "1px", height: "1px", overflow: "hidden" }}>
+        <label htmlFor="_hp">Boş bırakın</label>
+        <input
+          id="_hp"
+          name="_hp"
+          type="text"
+          tabIndex={-1}
+          autoComplete="off"
+        />
+      </div>
+      {/* Turnstile widget (invisible challenge) */}
+      {isTurnstileEnabled && (
+        <div ref={containerRef} className="flex justify-center" />
+      )}
       <button
         type="submit"
         disabled={status === "loading"}
@@ -121,7 +172,7 @@ export function ContactForm() {
       </button>
       {status === "error" && (
         <p className="text-sm text-red-600 font-medium text-center">
-          Mesaj gönderilemedi. Lütfen tekrar deneyin veya doğrudan e-posta ile ulaşın.
+          {errorMessage || "Mesaj gönderilemedi. Lütfen tekrar deneyin veya doğrudan e-posta ile ulaşın."}
         </p>
       )}
     </form>

@@ -113,10 +113,18 @@ export async function POST(request: Request): Promise<NextResponse> {
     return NextResponse.json({ error: "Missing token" }, { status: 400 });
   }
 
-  // Verify signature
-  const signature = request.headers.get("x-iyz-signature") ?? "";
-  if (signature && !verifyIyzicoSignature(payload.token, signature, secretKey)) {
-    logger.payments.warn("Webhook signature verification failed", { token: payload.token });
+  // Verify signature — fail-closed: missing header is treated as invalid
+  const signature = request.headers.get("x-iyz-signature");
+  if (!signature) {
+    logger.payments.warn("Webhook rejected: missing x-iyz-signature header", {
+      token: payload.token,
+      merchantOrderId: payload.merchantOrderId,
+    });
+    captureServerEvent("payment_webhook_signature_missing", { token: payload.token });
+    return NextResponse.json({ error: "Missing signature" }, { status: 401 });
+  }
+  if (!verifyIyzicoSignature(payload.token, signature, secretKey)) {
+    logger.payments.warn("Webhook rejected: signature mismatch", { token: payload.token });
     captureServerEvent("payment_webhook_signature_invalid", { token: payload.token });
     return NextResponse.json({ error: "Invalid signature" }, { status: 401 });
   }
@@ -158,7 +166,26 @@ export async function POST(request: Request): Promise<NextResponse> {
       })
       .eq("id", existing.id);
   } else {
-    // No matching record — webhook arrived before our DB insert (race condition)
+    // No matching record — webhook arrived before our DB insert (race condition).
+    // Only create an orphan record if merchantOrderId matches our naming convention
+    // (DOP-<listingId>-<timestamp> or ORD-<...>) to reject fabricated tokens.
+    const knownPrefix = payload.merchantOrderId
+      ? /^(DOP|ORD|PLN)-/.test(payload.merchantOrderId)
+      : false;
+
+    if (!knownPrefix) {
+      logger.payments.warn("Webhook rejected: unknown merchantOrderId format", {
+        token: payload.token,
+        merchantOrderId: payload.merchantOrderId,
+      });
+      captureServerEvent("payment_webhook_unknown_order", {
+        token: payload.token,
+        merchantOrderId: payload.merchantOrderId,
+      });
+      // Return 200 so Iyzico doesn't keep retrying an intentionally rejected request
+      return NextResponse.json({ received: true, rejected: true });
+    }
+
     // Create a minimal record so we don't lose the event
     logger.payments.warn("Webhook received for unknown token — creating orphan record", {
       token: payload.token,

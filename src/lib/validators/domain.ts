@@ -457,3 +457,40 @@ export const listingFiltersSchema: z.ZodType<ListingFilters> = z
       path: ["minYear"],
     },
   );
+
+// ── Contact form ──────────────────────────────────────────────────────────────
+
+/**
+ * Zod schema for the public contact form.
+ *
+ * Includes a `_hp` honeypot field: bots fill it in, humans leave it empty.
+ * The field is rendered as a visually-hidden input in the form component.
+ */
+export const contactFormSchema = z.object({
+  name: z
+    .string()
+    .trim()
+    .min(2, "Ad soyad en az 2 karakter olmalıdır.")
+    .max(100, "Ad soyad en fazla 100 karakter olabilir."),
+  email: z
+    .string()
+    .trim()
+    .email("Geçerli bir e-posta adresi gir.")
+    .max(254, "E-posta adresi çok uzun."),
+  subject: z.enum([
+    "İlanımla ilgili sorun yaşıyorum",
+    "Kurumsal üyelik hakkında bilgi",
+    "Öneri / Şikayet",
+    "Teknik destek",
+    "Diğer",
+  ]),
+  message: z
+    .string()
+    .trim()
+    .min(10, "Mesaj en az 10 karakter olmalıdır.")
+    .max(2000, "Mesaj en fazla 2000 karakter olabilir."),
+  /** Honeypot — must be empty. Bots fill this; humans don't see it. */
+  _hp: z.string().max(0, "Bot detected").optional(),
+});
+
+export type ContactFormValues = z.infer<typeof contactFormSchema>;

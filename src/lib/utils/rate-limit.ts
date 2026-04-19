@@ -160,6 +160,9 @@ export const rateLimitProfiles = {
   /** Support ticket creation: 5 per hour per user */
   ticketCreate: { limit: 5, windowMs: 60 * 60 * 1000 } satisfies RateLimitConfig,
 
+  /** Public contact form: 3 per hour per IP — tighter than general to limit spam */
+  contactCreate: { limit: 3, windowMs: 60 * 60 * 1000 } satisfies RateLimitConfig,
+
   /** Listing bump: 3 per day per user */
   listingBump: { limit: 3, windowMs: 24 * 60 * 60 * 1000 } satisfies RateLimitConfig,
 
