@@ -27,7 +27,7 @@ export function toSlugSegment(value: string) {
 }
 
 export function buildListingSlug(input: ListingCreateInput, existingListings: { id: string; slug: string }[]) {
-  const baseSlug = toSlugSegment(`${input.year} ${input.brand} ${input.model} ${input.title}`);
+  const baseSlug = toSlugSegment(`${input.brand} ${input.model} ${input.year} ${input.city} ${input.title}`);
   const existingSlugs = new Set(existingListings.map((listing) => listing.slug));
 
   if (!existingSlugs.has(baseSlug)) {

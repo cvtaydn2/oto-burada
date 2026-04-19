@@ -14,14 +14,14 @@ export const revalidate = 60;
 
 export async function generateMetadata(): Promise<Metadata> {
   return {
-    title: "Arabanı Kolayca Sat. Doğru Arabayı Hızlıca Bul.",
-    description: "Türkiye'nin en güvenilir ikinci el otomobil pazarı. Ücretsiz ilan ver, binlerce araç arasından hayalindekini bul.",
+    title: "İkinci El Araba İlanları | OtoBurada - Güvenli Araç Pazaryeri",
+    description: "Türkiye genelinde ikinci el araba ilanları. Uygun fiyatlı araçları keşfet, kolayca satın al veya ücretsiz ilan vererek hemen sat. En güvenilir otomobil pazarı.",
     alternates: {
       canonical: getAppUrl(),
     },
     openGraph: {
-      title: "OtoBurada — Arabanı Kolayca Sat",
-      description: "Türkiye'nin en güvenilir ikinci el otomobil pazarı. Ücretsiz ilan ver, binlerce araç arasından hayalindekini bul.",
+      title: "İkinci El Araba İlanları | OtoBurada",
+      description: "Türkiye genelinde binlerce ikinci el araba ilanı. Güvenle satın al, kolayca sat.",
       type: "website",
       url: getAppUrl(),
       siteName: "OtoBurada",
@@ -78,7 +78,7 @@ export default async function HomePage() {
                 {featuredBrands.map((brand) => (
                   <Link
                     key={brand.slug}
-                    href={`/listings?brand=${encodeURIComponent(brand.brand)}`}
+                    href={`/satilik/${brand.slug}`}
                     className="group relative bg-white border border-slate-100 rounded-[2rem] p-6 shadow-sm transition-all duration-500 hover:shadow-2xl hover:shadow-blue-900/10 hover:-translate-y-1.5 overflow-hidden"
                   >
                     <div className="absolute top-0 right-0 size-24 bg-slate-50 rounded-full blur-2xl -mr-12 -mt-12 opacity-0 group-hover:opacity-100 transition-opacity" />
@@ -108,7 +108,7 @@ export default async function HomePage() {
                 {featuredCities.map((city) => (
                   <Link
                     key={city.slug}
-                    href={`/listings?city=${encodeURIComponent(city.city)}`}
+                    href={`/satilik-araba/${city.slug}`}
                     className="group relative bg-white border border-slate-100 rounded-[2rem] p-6 shadow-sm transition-all duration-500 hover:shadow-2xl hover:shadow-orange-900/10 hover:-translate-y-1.5 overflow-hidden"
                   >
                     <div className="absolute top-0 right-0 size-24 bg-slate-50 rounded-full blur-2xl -mr-12 -mt-12 opacity-0 group-hover:opacity-100 transition-opacity" />
@@ -221,6 +221,80 @@ export default async function HomePage() {
                   </div>
                 </div>
               ))}
+            </div>
+          </div>
+        </section>
+
+        {/* SEO Description & Growth Section */}
+        <section className="bg-slate-50 py-24">
+          <div className="max-w-7xl mx-auto px-6 lg:px-8">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-start">
+              <div>
+                <h1 className="text-3xl font-black text-slate-900 tracking-tight mb-8">
+                  Türkiye&apos;nin En Güvenilir İkinci El Araç Platformu
+                </h1>
+                <div className="prose prose-slate max-w-none text-slate-600 font-medium">
+                  <p className="text-lg leading-relaxed mb-6">
+                    OtoBurada ile ikinci el araba alım satım işlemlerinizi hızlı ve güvenli şekilde gerçekleştirin. 
+                    Türkiye genelinde binlerce güncel ilanı keşfedin, hayalinizdeki araca en uygun fiyatlarla ulaşın.
+                  </p>
+                  <p className="mb-6">
+                    Platformumuzda yer alan her ilan, kullanıcılarımıza özel geliştirilmiş AI destekli moderasyon ve 
+                    şeffaf ekspertiz süreçlerinden geçer. İster aracınızı hemen satmak isteyin, ister yeni bir araç arayışında olun, 
+                    OtoBurada her adımda yanınızda.
+                  </p>
+                </div>
+                
+                <div className="mt-12 grid grid-cols-2 gap-8">
+                  <div>
+                    <h3 className="text-sm font-black text-slate-900 uppercase tracking-widest mb-4">Popüler Markalar</h3>
+                    <ul className="space-y-2 text-sm">
+                      {references.brands.slice(0, 8).map(b => (
+                        <li key={b.slug}>
+                          <Link href={`/satilik/${b.slug}`} className="text-slate-500 hover:text-blue-600 transition-colors">
+                            {b.brand} İlanları
+                          </Link>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                  <div>
+                    <h3 className="text-sm font-black text-slate-900 uppercase tracking-widest mb-4">Popüler Şehirler</h3>
+                    <ul className="space-y-2 text-sm">
+                      {references.cities.slice(0, 8).map(c => (
+                        <li key={c.slug}>
+                          <Link href={`/satilik-araba/${c.slug}`} className="text-slate-500 hover:text-orange-600 transition-colors font-semibold">
+                            {c.city} Araç İlanları
+                          </Link>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                </div>
+              </div>
+
+              <div className="bg-white p-12 rounded-[3rem] shadow-xl border border-slate-100">
+                <h2 className="text-xl font-black text-slate-900 tracking-tight mb-6">Neden OtoBurada?</h2>
+                <ul className="space-y-6">
+                  {[
+                    "Ücretsiz ilan verme ve hızlı satış imkanı",
+                    "Doğrulanmış ilanlar ve güvenilir satıcı profilleri",
+                    "Gelişmiş filtreleme ile doğru araca 3 adımda ulaşım",
+                    "WhatsApp üzerinden doğrudan satıcı iletişimi",
+                    "Mobil uyumlu, hızlı ve sade kullanıcı deneyimi"
+                  ].map((benefit, index) => (
+                    <li key={index} className="flex gap-4 items-start">
+                      <div className="size-6 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center shrink-0 mt-1">
+                        <CheckCircle2 size={14} strokeWidth={3} />
+                      </div>
+                      <span className="text-slate-600 font-bold text-sm tracking-tight">{benefit}</span>
+                    </li>
+                  ))}
+                </ul>
+                <div className="mt-10 pt-10 border-t border-slate-100 italic text-slate-400 text-xs font-medium">
+                  * OtoBurada bir topluluk girişimidir ve kullanıcıların güvenli ticaret yapmalarını hedefler.
+                </div>
+              </div>
             </div>
           </div>
         </section>

@@ -25,7 +25,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   }
 
   const admin = createSupabaseAdminClient();
-  const [{ data: listings }, { data: brands }] = await Promise.all([
+  const [{ data: listings }, { data: brands }, { data: cities }] = await Promise.all([
     admin
       .from("listings")
       .select("slug, updated_at")
@@ -33,6 +33,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       .order("updated_at", { ascending: false })
       .limit(5000),
     admin.from("brands").select("name, slug").eq("is_active", true).order("name"),
+    admin.from("cities").select("name, slug").eq("is_active", true).order("name"),
   ]);
 
   const listingPages: MetadataRoute.Sitemap = (listings ?? []).map((listing) => ({
@@ -49,5 +50,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     priority: 0.7,
   }));
 
-  return [...staticPages, ...listingPages, ...brandPages];
+  const cityPages: MetadataRoute.Sitemap = (cities ?? []).map((city) => ({
+    url: `${baseUrl}/satilik-araba/${city.slug}`,
+    lastModified: new Date(),
+    changeFrequency: "daily" as const,
+    priority: 0.7,
+  }));
+
+  return [...staticPages, ...listingPages, ...brandPages, ...cityPages];
 }

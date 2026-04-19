@@ -5,14 +5,14 @@ import { sanitizeForMeta } from "@/lib/utils/sanitize";
 import type { Listing, ListingFilters } from "@/types";
 
 export function getAppUrl() {
-  // Priority 1: Explicit override via env variable
-  if (process.env.NEXT_PUBLIC_APP_URL) {
-    return process.env.NEXT_PUBLIC_APP_URL;
-  }
-
-  // Priority 2: Force production domain for SEO and Sitemap stability
+  // Priority 1: Force production domain for SEO and Sitemap stability
   if (process.env.VERCEL_ENV === "production" || process.env.NEXT_PUBLIC_VERCEL_ENV === "production") {
     return "https://www.otoburada.com.tr";
+  }
+
+  // Priority 2: Explicit override via env variable (can be used for testing)
+  if (process.env.NEXT_PUBLIC_APP_URL) {
+    return process.env.NEXT_PUBLIC_APP_URL;
   }
 
   // Priority 3: Vercel preview domain
