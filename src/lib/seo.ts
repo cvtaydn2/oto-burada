@@ -5,7 +5,23 @@ import { sanitizeForMeta } from "@/lib/utils/sanitize";
 import type { Listing, ListingFilters } from "@/types";
 
 export function getAppUrl() {
-  return process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
+  // Priority 1: Explicit override via env variable
+  if (process.env.NEXT_PUBLIC_APP_URL) {
+    return process.env.NEXT_PUBLIC_APP_URL;
+  }
+
+  // Priority 2: Force production domain for SEO and Sitemap stability
+  if (process.env.VERCEL_ENV === "production" || process.env.NEXT_PUBLIC_VERCEL_ENV === "production") {
+    return "https://www.otoburada.com.tr";
+  }
+
+  // Priority 3: Vercel preview domain
+  if (process.env.NEXT_PUBLIC_VERCEL_URL) {
+    return `https://${process.env.NEXT_PUBLIC_VERCEL_URL}`;
+  }
+
+  // Default: Local development
+  return "http://localhost:3000";
 }
 
 export function buildAbsoluteUrl(path: string) {

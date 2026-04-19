@@ -10,6 +10,7 @@ import { rateLimitProfiles } from "@/lib/utils/rate-limit";
 import { checkRateLimit } from "@/lib/utils/rate-limit-middleware";
 import { trackServerEvent, identifyServerUser } from "@/lib/monitoring/posthog-server";
 import { AnalyticsEvent } from "@/lib/analytics/events";
+import { getAppUrl } from "@/lib/seo";
 
 export interface AuthActionState {
   error?: string;
@@ -41,7 +42,7 @@ function sanitizeRedirectPath(next: string | null | undefined): string {
 }
 
 function getEmailRedirectUrl() {
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
+  const appUrl = getAppUrl();
   return `${appUrl.replace(/\/$/, "")}/auth/callback`;
 }
 
@@ -210,7 +211,6 @@ export async function forgotPasswordAction(
   }
 
   const supabase = await createSupabaseServerClient();
-  const getAppUrl = (await import("@/lib/seo")).getAppUrl;
 
   await supabase.auth.resetPasswordForEmail(email, {
     redirectTo: `${getAppUrl()}/auth/update-password`,
