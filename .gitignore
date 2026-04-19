@@ -39,3 +39,7 @@ next-env.d.ts
 .ai-studio-import/
 .figma-import/
 .env.local
+
+# Redis test scripts (may contain credentials)
+src/lib/redis/test-connection.mjs
+src/lib/redis/test-*.mjs

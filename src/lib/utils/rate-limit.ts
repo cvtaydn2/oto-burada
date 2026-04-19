@@ -5,6 +5,9 @@
  * 1. Redis Tier: Distributed, fast, and primary for production.
  * 2. Supabase RPC Tier: Persistent fallback if Redis is unavailable.
  * 3. In-memory Tier: Local fallback for development or total service outage.
+ * 
+ * SECURITY: In production, if all tiers fail for critical endpoints,
+ * the limiter can be configured to fail-closed (block requests).
  */
 
 export interface RateLimitConfig {
@@ -12,6 +15,12 @@ export interface RateLimitConfig {
   limit: number;
   /** Window size in milliseconds. */
   windowMs: number;
+  /** 
+   * If true, block requests when rate limiting infrastructure is unavailable (fail-closed).
+   * Recommended for critical endpoints in production (auth, payments, admin).
+   * Default: false (fail-open for backward compatibility)
+   */
+  failClosed?: boolean;
 }
 
 export interface RateLimitResult {
@@ -59,10 +68,15 @@ function cleanupInMemory() {
  * Priority: 
  * 1. Redis (Persistent, Fast, Distributed)
  * 2. Supabase RPC (Persistent, Reliable)
- * 3. In-memory (Ephemeral, Fallback)
+ * 3. In-memory (Ephemeral, Fallback) - only in development or if failClosed=false
+ * 
+ * SECURITY: If failClosed=true and all infrastructure fails in production,
+ * this function throws an error instead of allowing the request.
  */
 export async function checkRateLimit(key: string, config: RateLimitConfig): Promise<RateLimitResult> {
   const fullKey = `ratelimit:${key}`;
+  const isProduction = process.env.NODE_ENV === "production";
+  let allTiersFailed = false;
 
   // 1. Redis Tier (Highly optimized)
   if (redis) {
@@ -105,7 +119,28 @@ export async function checkRateLimit(key: string, config: RateLimitConfig): Prom
     }
   }
 
-  // Fallback to in-memory (Broken in serverless, but works in local dev)
+  // All distributed tiers failed
+  allTiersFailed = true;
+
+  // SECURITY: Fail-closed in production for critical endpoints
+  if (isProduction && config.failClosed) {
+    logger.api.error("Rate limiting infrastructure unavailable - failing closed", { 
+      key, 
+      limit: config.limit,
+      failClosed: true 
+    });
+    throw new Error("Rate limiting service unavailable");
+  }
+
+  // 3. Fallback to in-memory (Development or fail-open mode)
+  if (allTiersFailed && isProduction) {
+    logger.api.warn("Rate limiting infrastructure unavailable - using in-memory fallback", { 
+      key,
+      limit: config.limit,
+      failClosed: false
+    });
+  }
+
   cleanupInMemory();
   const now = Date.now();
   const existing = inMemoryStore.get(key);
@@ -137,10 +172,13 @@ export async function checkRateLimit(key: string, config: RateLimitConfig): Prom
 
 /**
  * Pre-configured rate limit profiles for different endpoint categories.
+ * 
+ * SECURITY NOTE: Critical endpoints (auth, payments, admin) use failClosed=true
+ * to block requests if rate limiting infrastructure is unavailable in production.
  */
 export const rateLimitProfiles = {
-  /** Auth attempts: 10 per 15 minutes per IP */
-  auth: { limit: 10, windowMs: 15 * 60 * 1000 } satisfies RateLimitConfig,
+  /** Auth attempts: 10 per 15 minutes per IP - FAIL-CLOSED */
+  auth: { limit: 10, windowMs: 15 * 60 * 1000, failClosed: true } satisfies RateLimitConfig,
 
   /** Listing creation: 10 per hour per user */
   listingCreate: { limit: 10, windowMs: 60 * 60 * 1000 } satisfies RateLimitConfig,
@@ -151,8 +189,8 @@ export const rateLimitProfiles = {
   /** Report creation: 5 per hour per user */
   reportCreate: { limit: 5, windowMs: 60 * 60 * 1000 } satisfies RateLimitConfig,
 
-  /** Admin moderate: 30 per minute per IP */
-  adminModerate: { limit: 30, windowMs: 60 * 1000 } satisfies RateLimitConfig,
+  /** Admin moderate: 30 per minute per IP - FAIL-CLOSED */
+  adminModerate: { limit: 30, windowMs: 60 * 1000, failClosed: true } satisfies RateLimitConfig,
 
   /** General API: 60 per minute per IP */
   general: { limit: 60, windowMs: 60 * 1000 } satisfies RateLimitConfig,
@@ -160,8 +198,8 @@ export const rateLimitProfiles = {
   /** Support ticket creation: 5 per hour per user */
   ticketCreate: { limit: 5, windowMs: 60 * 60 * 1000 } satisfies RateLimitConfig,
 
-  /** Public contact form: 3 per hour per IP — tighter than general to limit spam */
-  contactCreate: { limit: 3, windowMs: 60 * 60 * 1000 } satisfies RateLimitConfig,
+  /** Public contact form: 3 per hour per IP - FAIL-CLOSED (spam prevention) */
+  contactCreate: { limit: 3, windowMs: 60 * 60 * 1000, failClosed: true } satisfies RateLimitConfig,
 
   /** Listing bump: 3 per day per user */
   listingBump: { limit: 3, windowMs: 24 * 60 * 60 * 1000 } satisfies RateLimitConfig,

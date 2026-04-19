@@ -22,6 +22,7 @@
 
 import { NextResponse } from "next/server";
 import { hasSupabaseAdminEnv, hasSupabaseEnv } from "@/lib/supabase/env";
+import { checkInfrastructureHealth } from "@/lib/utils/infrastructure-health";
 
 export const dynamic = "force-dynamic";
 // Short cache — health checks should reflect current state
@@ -33,6 +34,7 @@ interface HealthResponse {
   timestamp: string;
   checks: {
     database: "ok" | "error" | "skip";
+    redis: "ok" | "down" | "skip";
     env: "ok" | "missing";
   };
 }
@@ -66,11 +68,15 @@ export async function GET(): Promise<NextResponse<HealthResponse>> {
     }
   }
 
+  // 3. Infrastructure check (Redis + rate limiting)
+  const infraHealth = await checkInfrastructureHealth();
+  const redisStatus: "ok" | "down" | "skip" = infraHealth.redis ? "ok" : "down";
+
   // Determine overall status
   const status: HealthResponse["status"] =
     !envOk || dbStatus === "error"
       ? "down"
-      : dbStatus === "skip"
+      : dbStatus === "skip" || !infraHealth.healthy
       ? "degraded"
       : "ok";
 
@@ -80,6 +86,7 @@ export async function GET(): Promise<NextResponse<HealthResponse>> {
     timestamp,
     checks: {
       database: dbStatus,
+      redis: redisStatus,
       env: envOk ? "ok" : "missing",
     },
   };
