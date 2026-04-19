@@ -2,7 +2,6 @@ import { NextResponse } from "next/server";
 
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { hasSupabaseEnv } from "@/lib/supabase/env";
-import { ensureProfileRecord } from "@/services/profile/profile-records";
 import {
   getLegacyStoredListings,
   getLegacyStoredUserListings,
@@ -40,8 +39,7 @@ export async function POST() {
     );
   }
 
-  await ensureProfileRecord(user);
-
+  // P1 Security: Removed ensureProfileRecord() - no side effects in migrations
   const legacyListings = await getLegacyStoredUserListings(user.id);
   const legacyReports = await getLegacyStoredReportsByReporter(user.id);
   let migratedListings = 0;

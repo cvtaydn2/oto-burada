@@ -2,7 +2,7 @@ import { hasSupabaseEnv, hasSupabaseAdminEnv } from "@/lib/supabase/env";
 import { captureServerError, captureServerEvent } from "@/lib/monitoring/posthog-server";
 import { apiSuccess, apiError, API_ERROR_CODES } from "@/lib/utils/api-response";
 import { requireApiUser } from "@/lib/auth/api-user";
-import { withAuthAndCsrf, withAuth } from "@/lib/utils/api-security";
+import { withAuthAndCsrf } from "@/lib/utils/api-security";
 import {
   addDatabaseFavorite,
   getDatabaseFavoriteIds,
@@ -10,7 +10,7 @@ import {
 } from "@/services/favorites/favorite-records";
 import { getStoredListingById } from "@/services/listings/listing-submissions";
 import { createDatabaseNotification } from "@/services/notifications/notification-records";
-import { ensureProfileRecord, getStoredProfileById } from "@/services/profile/profile-records";
+import { getStoredProfileById } from "@/services/profile/profile-records";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -77,7 +77,7 @@ export async function POST(request: Request) {
     return apiError(API_ERROR_CODES.BAD_REQUEST, "Sadece yayındaki ilanlar favorilere eklenebilir.", 400);
   }
 
-  await ensureProfileRecord(user);
+  // P1 Security: Removed ensureProfileRecord() - no side effects in mutations
   const favoriteIds = await addDatabaseFavorite(user.id, listingId);
 
   if (!favoriteIds) {
@@ -130,7 +130,7 @@ export async function DELETE(request: Request) {
     return apiError(API_ERROR_CODES.BAD_REQUEST, "Geçerli bir ilan seçmelisin.", 400);
   }
 
-  await ensureProfileRecord(user);
+  // P1 Security: Removed ensureProfileRecord() - no side effects in mutations
   const favoriteIds = await removeDatabaseFavorite(user.id, listingId);
 
   if (!favoriteIds) {

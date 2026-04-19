@@ -171,12 +171,13 @@ export async function POST(request: Request): Promise<NextResponse> {
     // If they fail, payment is still successful (already committed in DB)
     
     if (isSuccess && result?.success) {
-      // Fetch payment metadata for notifications
+      // Fetch payment metadata for fulfillment jobs
       const { data: payment } = await admin
         .from("payments")
-        .select("user_id, metadata, listing_id")
+        .select("user_id, metadata, listing_id, id")
         .eq("iyzico_token", payload.token)
         .single<{
+          id: string;
           user_id: string;
           metadata: PaymentMeta | null;
           listing_id: string | null;
@@ -187,14 +188,22 @@ export async function POST(request: Request): Promise<NextResponse> {
         const userId = payment.user_id;
 
         try {
+          // Create fulfillment jobs for background processing
+          // This prevents webhook timeout and enables retry logic
+          
           if (meta?.type === "plan_purchase") {
-            // Send notification for plan purchase
-            await createDatabaseNotification({
-              userId,
-              type: "system",
-              title: "Paket satın alındı",
-              message: `${meta.planName ?? "Paket"} başarıyla aktifleştirildi. ${meta.credits ?? 0} kredi hesabınıza eklendi.`,
-              href: "/dashboard/pricing",
+            // Create job for credit addition (already done in process_payment_success, but create notification job)
+            await admin.rpc("create_fulfillment_job", {
+              p_payment_id: payment.id,
+              p_job_type: "notification_send",
+              p_metadata: {
+                notification: {
+                  type: "system",
+                  title: "Paket satın alındı",
+                  message: `${meta.planName ?? "Paket"} başarıyla aktifleştirildi. ${meta.credits ?? 0} kredi hesabınıza eklendi.`,
+                  href: "/dashboard/pricing",
+                },
+              },
             });
 
             captureServerEvent("plan_purchased", {
@@ -205,42 +214,43 @@ export async function POST(request: Request): Promise<NextResponse> {
             }, userId);
 
           } else if (meta?.type === "doping" && meta.listingId && meta.dopingTypes) {
-            // Apply doping using secure database function
-            const { error: dopingError } = await admin.rpc("apply_listing_doping", {
-              p_listing_id: meta.listingId,
-              p_user_id: userId,
-              p_doping_types: meta.dopingTypes,
-              p_duration_days: meta.durationDays ?? 7,
-              p_payment_id: payment.listing_id, // payment record ID
-            });
-
-            if (dopingError) {
-              logger.payments.error("Doping application failed", dopingError, {
-                userId,
-                listingId: meta.listingId,
-              });
-            } else {
-              // Send notification
-              await createDatabaseNotification({
-                userId,
-                type: "system",
-                title: "Doping aktifleştirildi",
-                message: `İlanınız ${meta.durationDays ?? 7} gün boyunca öne çıkarıldı.`,
-                href: `/dashboard/listings`,
-              });
-
-              captureServerEvent("doping_applied_via_webhook", {
-                userId,
+            // Create job for doping application
+            await admin.rpc("create_fulfillment_job", {
+              p_payment_id: payment.id,
+              p_job_type: "doping_apply",
+              p_metadata: {
                 listingId: meta.listingId,
                 dopingTypes: meta.dopingTypes,
                 durationDays: meta.durationDays ?? 7,
-              }, userId);
-            }
+              },
+            });
+
+            // Create job for notification
+            await admin.rpc("create_fulfillment_job", {
+              p_payment_id: payment.id,
+              p_job_type: "notification_send",
+              p_metadata: {
+                notification: {
+                  type: "system",
+                  title: "Doping aktifleştirildi",
+                  message: `İlanınız ${meta.durationDays ?? 7} gün boyunca öne çıkarıldı.`,
+                  href: `/dashboard/listings`,
+                },
+              },
+            });
+
+            captureServerEvent("doping_payment_success", {
+              userId,
+              listingId: meta.listingId,
+              dopingTypes: meta.dopingTypes,
+              durationDays: meta.durationDays ?? 7,
+            }, userId);
           }
         } catch (err) {
-          // Notification/analytics failed — log but don't fail the webhook
-          logger.payments.error("Post-payment notification failed", err, { userId, token: payload.token });
-          captureServerError("Post-payment notification failed", "payments", err, { userId, token: payload.token }, userId);
+          // Job creation failed — log but don't fail the webhook
+          // Jobs will be retried by the cron worker
+          logger.payments.error("Fulfillment job creation failed", err, { userId, token: payload.token });
+          captureServerError("Fulfillment job creation failed", "payments", err, { userId, token: payload.token }, userId);
         }
       }
     }

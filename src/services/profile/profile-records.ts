@@ -1,6 +1,7 @@
 import type { User } from "@supabase/supabase-js";
 
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
+import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { hasSupabaseAdminEnv } from "@/lib/supabase/env";
 import { profileSchema } from "@/lib/validators";
 import type { Profile } from "@/types";
@@ -172,18 +173,15 @@ export function buildProfileFromAuthUser(user: User) {
 }
 
 /**
- * DEPRECATED: This function performs a side-effect (upsert) during read operations.
+ * REMOVED: This function was deprecated due to side-effects during read operations.
  * 
- * @deprecated Use buildProfileFromAuthUser() for read-only operations.
- * For profile creation, use a dedicated auth callback or createOrUpdateProfile().
+ * Use instead:
+ * - buildProfileFromAuthUser() for read-only profile construction
+ * - createOrUpdateProfile() for explicit profile creation (auth callbacks, onboarding)
  * 
- * This function will be removed in a future version.
- * Current behavior: Returns profile from auth metadata without DB upsert.
+ * @deprecated Removed in P1 security hardening (2026-04-19)
  */
-export async function ensureProfileRecord(user: User) {
-  // Return profile from auth metadata only - no DB side effects
-  return buildProfileFromAuthUser(user);
-}
+// export async function ensureProfileRecord(user: User) - REMOVED
 
 /**
  * Creates or updates a profile record in the database.
@@ -232,6 +230,12 @@ export async function createOrUpdateProfile(user: User) {
   return profile;
 }
 
+/**
+ * Get profile by ID (admin-only operation).
+ * Uses admin client to bypass RLS for admin dashboard operations.
+ * 
+ * For user-scoped profile reads, use getUserProfile() instead.
+ */
 export async function getStoredProfileById(profileId: string) {
   if (!hasSupabaseAdminEnv()) {
     return null;
@@ -255,6 +259,36 @@ export async function getStoredProfileById(profileId: string) {
   return null;
 }
 
+/**
+ * Get current user's profile (user-scoped operation).
+ * Uses server client with RLS enforcement.
+ * RLS policy ensures user can only read their own profile.
+ * 
+ * SECURITY: This is the preferred method for user profile reads.
+ */
+export async function getUserProfile(userId: string) {
+  const supabase = await createSupabaseServerClient();
+  const { data, error } = await supabase
+    .from("profiles")
+    .select("id, full_name, phone, city, avatar_url, role, user_type, balance_credits, is_verified, is_banned, business_name, business_address, business_logo_url, business_description, tax_id, tax_office, website_url, verified_business, business_slug, created_at, updated_at")
+    .eq("id", userId)
+    .maybeSingle<ProfileRow>();
+
+  if (!error && data) {
+    // Get auth user for verification state
+    const { data: { user } } = await supabase.auth.getUser();
+    return mapProfileRow(data, user);
+  }
+
+  return null;
+}
+
+/**
+ * Update profile (admin-only operation).
+ * Uses admin client to bypass RLS for admin dashboard operations.
+ * 
+ * For user-scoped profile updates, use updateUserProfile() instead.
+ */
 export async function updateProfileTable(
   userId: string,
   data: {
@@ -285,6 +319,41 @@ export async function updateProfileTable(
   }
 
   return getStoredProfileById(userId);
+}
+
+/**
+ * Update current user's profile (user-scoped operation).
+ * Uses server client with RLS enforcement.
+ * RLS policy ensures user can only update their own profile.
+ * 
+ * SECURITY: This is the preferred method for user profile updates.
+ */
+export async function updateUserProfile(
+  userId: string,
+  data: {
+    fullName: string;
+    phone: string;
+    city: string;
+    avatarUrl?: string | null;
+  },
+) {
+  const supabase = await createSupabaseServerClient();
+  const { error } = await supabase
+    .from("profiles")
+    .update({
+      avatar_url: data.avatarUrl ?? null,
+      city: data.city,
+      full_name: data.fullName,
+      phone: data.phone,
+      updated_at: new Date().toISOString(),
+    })
+    .eq("id", userId);
+
+  if (error) {
+    return null;
+  }
+
+  return getUserProfile(userId);
 }
 
 

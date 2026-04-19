@@ -1,7 +1,6 @@
 import { hasSupabaseAdminEnv } from "@/lib/supabase/env";
 import { apiError, API_ERROR_CODES, apiSuccess } from "@/lib/utils/api-response";
 import { rateLimitProfiles } from "@/lib/utils/rate-limit";
-import { ensureProfileRecord } from "@/services/profile/profile-records";
 import {
   deleteDatabaseNotification,
   markDatabaseNotificationRead,
@@ -28,7 +27,7 @@ export async function PATCH(
   }
 
   const { notificationId } = await context.params;
-  await ensureProfileRecord(user);
+  // P1 Security: Removed ensureProfileRecord() - no side effects in mutations
   const notification = await markDatabaseNotificationRead(user.id, notificationId);
 
   if (!notification) {
@@ -57,7 +56,7 @@ export async function DELETE(
   }
 
   const { notificationId } = await context.params;
-  await ensureProfileRecord(user);
+  // P1 Security: Removed ensureProfileRecord() - no side effects in mutations
   const deleted = await deleteDatabaseNotification(user.id, notificationId);
 
   if (!deleted) {

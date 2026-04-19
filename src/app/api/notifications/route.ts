@@ -1,7 +1,6 @@
 import { hasSupabaseAdminEnv } from "@/lib/supabase/env";
 import { apiError, API_ERROR_CODES, apiSuccess } from "@/lib/utils/api-response";
 import { rateLimitProfiles } from "@/lib/utils/rate-limit";
-import { ensureProfileRecord } from "@/services/profile/profile-records";
 import {
   getStoredNotificationsByUser,
   markAllDatabaseNotificationsRead,
@@ -24,7 +23,7 @@ export async function GET(request: Request) {
     return apiError(API_ERROR_CODES.SERVICE_UNAVAILABLE, "Bildirim servisi hazır değil.", 503);
   }
 
-  await ensureProfileRecord(user);
+  // P1 Security: Removed ensureProfileRecord() - GET should be read-only
   const notifications = await getStoredNotificationsByUser(user.id);
 
   return apiSuccess({ notifications });
@@ -46,7 +45,7 @@ export async function PATCH(request: Request) {
     return apiError(API_ERROR_CODES.SERVICE_UNAVAILABLE, "Bildirim servisi hazır değil.", 503);
   }
 
-  await ensureProfileRecord(user);
+  // P1 Security: Removed ensureProfileRecord() - no side effects in mutations
   const updated = await markAllDatabaseNotificationsRead(user.id);
 
   if (!updated) {

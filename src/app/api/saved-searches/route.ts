@@ -3,7 +3,6 @@ import { apiError, API_ERROR_CODES, apiSuccess } from "@/lib/utils/api-response"
 import { rateLimitProfiles } from "@/lib/utils/rate-limit";
 import { issuesToFieldErrors } from "@/lib/utils/validation-helpers";
 import { savedSearchCreateSchema } from "@/lib/validators";
-import { ensureProfileRecord } from "@/services/profile/profile-records";
 import {
   createOrUpdateDatabaseSavedSearch,
   getStoredSavedSearchesByUser,
@@ -27,7 +26,7 @@ export async function GET(request: Request) {
     return apiError(API_ERROR_CODES.SERVICE_UNAVAILABLE, "Kayıtlı arama servisi hazır değil.", 503);
   }
 
-  await ensureProfileRecord(user);
+  // P1 Security: Removed ensureProfileRecord() - GET should be read-only
   const savedSearches = await getStoredSavedSearchesByUser(user.id);
 
   return apiSuccess({ savedSearches });
@@ -76,7 +75,7 @@ export async function POST(request: Request) {
     );
   }
 
-  await ensureProfileRecord(user);
+  // P1 Security: Removed ensureProfileRecord() - no side effects in mutations
   const savedSearch = await createOrUpdateDatabaseSavedSearch(user.id, parsed.data);
 
   if (!savedSearch) {
