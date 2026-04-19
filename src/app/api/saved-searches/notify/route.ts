@@ -34,6 +34,27 @@ import { createSupabaseServerClient } from "@/lib/supabase/server";
 
 export const dynamic = "force-dynamic";
 
+/**
+ * Gets the application URL from environment variables.
+ * Fails closed in production if NEXT_PUBLIC_APP_URL is not set.
+ * 
+ * @throws Error in production if NEXT_PUBLIC_APP_URL is missing
+ * @returns Application URL
+ */
+function getAppUrl(): string {
+  const url = process.env.NEXT_PUBLIC_APP_URL;
+  
+  if (!url) {
+    if (process.env.NODE_ENV === "production") {
+      throw new Error("NEXT_PUBLIC_APP_URL must be set in production");
+    }
+    // Development fallback
+    return "http://localhost:3000";
+  }
+  
+  return url;
+}
+
 // Upstash Redis instance (lazy loaded conditionally)
 function getRedisClient() {
   if (!process.env.UPSTASH_REDIS_REST_URL || !process.env.UPSTASH_REDIS_REST_TOKEN) {
@@ -235,7 +256,7 @@ async function handleCronRequest(request: Request) {
       if (newListings.length === 0) continue;
 
       // Build search URL for the email CTA
-      const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://otoburada.com";
+      const appUrl = getAppUrl();
       const searchParams = createSearchParamsFromListingFilters(filters);
       const searchUrl = `${appUrl}/listings?${searchParams.toString()}`;
 

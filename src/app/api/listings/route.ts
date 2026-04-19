@@ -15,7 +15,7 @@ import {
   getExistingListingSlugs,
 } from "@/services/listings/listing-submissions";
 import { createDatabaseNotification } from "@/services/notifications/notification-records";
-import { ensureProfileRecord, getStoredProfileById, isUserBanned } from "@/services/profile/profile-records";
+import { getStoredProfileById, isUserBanned } from "@/services/profile/profile-records";
 import { checkListingLimit } from "@/services/listings/listing-limits";
 import { parseListingFiltersFromSearchParams } from "@/services/listings/listing-filters";
 import { getFilteredMarketplaceListings } from "@/services/listings/marketplace-listings";
@@ -153,10 +153,18 @@ export async function POST(request: Request) {
     );
   }
 
-  await ensureProfileRecord(user);
+  // Profile check - no side effects, read-only
   const profile = await getStoredProfileById(user.id);
   
-  if (!profile || !profile.emailVerified) {
+  if (!profile) {
+    return apiError(
+      API_ERROR_CODES.FORBIDDEN,
+      "Profil bilgileriniz bulunamadı. Lütfen tekrar giriş yapın.",
+      403,
+    );
+  }
+  
+  if (!profile.emailVerified) {
     return apiError(
       API_ERROR_CODES.FORBIDDEN,
       "İlan verebilmek için e-posta adresinizi doğrulamanız gerekmektedir.",

@@ -14,7 +14,18 @@ import {
   getVerifiedDocumentMimeType,
 } from "@/services/listings/listing-documents";
 import { captureServerError } from "@/lib/monitoring/posthog-server";
+import { isValidRequestOrigin } from "@/lib/security";
 
+/**
+ * Sanitizes filename for DISPLAY purposes only.
+ * 
+ * SECURITY NOTE: This does NOT provide path traversal protection.
+ * Storage paths use UUIDs (buildExpertDocumentStoragePath) and are not affected by this.
+ * This prevents XSS if filename is shown in UI without proper escaping.
+ * 
+ * @param fileName - Original filename from user upload
+ * @returns Sanitized filename safe for display
+ */
 function sanitizeFileName(fileName: string): string {
   return fileName
     .replace(/[^a-zA-Z0-9._-]/g, "_")
@@ -27,6 +38,11 @@ function userOwnsStoragePath(userId: string, storagePath: string) {
 }
 
 export async function POST(request: Request) {
+  // CSRF check - reject cross-origin requests
+  if (!isValidRequestOrigin(request)) {
+    return apiError(API_ERROR_CODES.BAD_REQUEST, "Geçersiz istek kaynağı (CSRF).", 403);
+  }
+
   const ipRateLimit = await enforceRateLimit(
     getRateLimitKey(request, "api:documents:upload"),
     rateLimitProfiles.general,
@@ -120,6 +136,11 @@ export async function POST(request: Request) {
 }
 
 export async function DELETE(request: Request) {
+  // CSRF check - reject cross-origin requests
+  if (!isValidRequestOrigin(request)) {
+    return apiError(API_ERROR_CODES.BAD_REQUEST, "Geçersiz istek kaynağı (CSRF).", 403);
+  }
+
   if (!hasSupabaseDocumentsStorageEnv()) {
     return apiError(
       API_ERROR_CODES.SERVICE_UNAVAILABLE,

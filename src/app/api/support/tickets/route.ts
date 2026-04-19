@@ -1,38 +1,25 @@
-import { getCurrentUser } from "@/lib/auth/session";
 import { createTicket } from "@/services/support/ticket-service";
 import type { TicketCategory, TicketPriority } from "@/services/support/ticket-service";
-import { enforceRateLimit, getRateLimitKey, getUserRateLimitKey } from "@/lib/utils/rate-limit-middleware";
 import { rateLimitProfiles } from "@/lib/utils/rate-limit";
 import { sanitizeText, sanitizeDescription } from "@/lib/utils/sanitize";
 import { logger } from "@/lib/utils/logger";
 import { captureServerError, captureServerEvent } from "@/lib/monitoring/posthog-server";
 import { apiError, apiSuccess, API_ERROR_CODES } from "@/lib/utils/api-response";
+import { withAuthAndCsrf, withAuth } from "@/lib/utils/api-security";
 
 const VALID_CATEGORIES: TicketCategory[] = ["listing", "account", "payment", "technical", "feedback", "other"];
 const VALID_PRIORITIES: TicketPriority[] = ["low", "medium", "high", "urgent"];
 
-// Ticket creation: 5 per hour per user
-const TICKET_RATE_LIMIT = { limit: 5, windowMs: 60 * 60 * 1000 };
-
 export async function POST(request: Request) {
-  // IP-level rate limit
-  const ipLimit = await enforceRateLimit(
-    getRateLimitKey(request, "api:tickets:create"),
-    rateLimitProfiles.general,
-  );
-  if (ipLimit) return ipLimit.response;
-
-  const user = await getCurrentUser();
-  if (!user) {
-    return apiError(API_ERROR_CODES.UNAUTHORIZED, "Oturum açmanız gerekiyor.", 401);
-  }
-
-  // User-level rate limit
-  const userLimit = await enforceRateLimit(
-    getUserRateLimitKey(user.id, "api:tickets:create"),
-    TICKET_RATE_LIMIT,
-  );
-  if (userLimit) return userLimit.response;
+  // Security checks: CSRF + Auth + Rate limiting
+  const security = await withAuthAndCsrf(request, {
+    ipRateLimit: rateLimitProfiles.general,
+    userRateLimit: rateLimitProfiles.ticketCreate,
+    rateLimitKey: "tickets:create",
+  });
+  
+  if (!security.ok) return security.response;
+  const user = security.user!; // Guaranteed by withAuthAndCsrf
 
   let body: unknown;
   try {
@@ -80,17 +67,14 @@ export async function POST(request: Request) {
 }
 
 export async function GET(request: Request) {
-  // IP-level rate limit
-  const ipLimit = await enforceRateLimit(
-    getRateLimitKey(request, "api:tickets:list"),
-    rateLimitProfiles.general,
-  );
-  if (ipLimit) return ipLimit.response;
-
-  const user = await getCurrentUser();
-  if (!user) {
-    return apiError(API_ERROR_CODES.UNAUTHORIZED, "Oturum açmanız gerekiyor.", 401);
-  }
+  // Security checks: Auth + Rate limiting
+  const security = await withAuth(request, {
+    ipRateLimit: rateLimitProfiles.general,
+    rateLimitKey: "tickets:list",
+  });
+  
+  if (!security.ok) return security.response;
+  const user = security.user!; // Guaranteed by withAuth
 
   try {
     const { getUserTickets } = await import("@/services/support/ticket-service");

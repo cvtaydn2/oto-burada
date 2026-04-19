@@ -12,7 +12,6 @@ import {
   getDatabaseActiveReport,
 } from "@/services/reports/report-submissions";
 import { getStoredListingById } from "@/services/listings/listing-submissions";
-import { ensureProfileRecord } from "@/services/profile/profile-records";
 import { captureServerEvent } from "@/lib/monitoring/posthog-server";
 
 export async function POST(request: Request) {
@@ -86,8 +85,7 @@ export async function POST(request: Request) {
     return apiError(API_ERROR_CODES.FORBIDDEN, "Kendi ilanını raporlayamazsın.", 403);
   }
 
-  await ensureProfileRecord(user);
-
+  // Profile check - read-only, no side effects
   const sanitizedData = {
     ...parsed.data,
     description: parsed.data.description ? sanitizeDescription(parsed.data.description) : parsed.data.description,

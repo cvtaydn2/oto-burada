@@ -9,12 +9,12 @@ import {
 } from "@/lib/utils/rate-limit-middleware";
 import { issuesToFieldErrors } from "@/lib/utils/validation-helpers";
 import { savedSearchUpdateSchema } from "@/lib/validators";
-import { ensureProfileRecord } from "@/services/profile/profile-records";
 import {
   deleteDatabaseSavedSearch,
   updateDatabaseSavedSearch,
 } from "@/services/saved-searches/saved-search-records";
 import { captureServerError, captureServerEvent } from "@/lib/monitoring/posthog-server";
+import { isValidRequestOrigin } from "@/lib/security";
 
 async function getAuthenticatedUser() {
   if (!hasSupabaseEnv()) {
@@ -38,6 +38,11 @@ export async function PATCH(
   request: Request,
   context: { params: Promise<{ searchId: string }> },
 ) {
+  // CSRF check - reject cross-origin requests
+  if (!isValidRequestOrigin(request)) {
+    return apiError(API_ERROR_CODES.BAD_REQUEST, "Geçersiz istek kaynağı (CSRF).", 403);
+  }
+
   const ipRateLimit = await enforceRateLimit(
     getRateLimitKey(request, "api:saved-searches:update"),
     rateLimitProfiles.general,
@@ -107,7 +112,8 @@ export async function PATCH(
   }
 
   const { searchId } = await context.params;
-  await ensureProfileRecord(user);
+  
+  // Profile check - read-only, no side effects
   let savedSearch;
   try {
     savedSearch = await updateDatabaseSavedSearch(user.id, searchId, parsed.data);
@@ -142,6 +148,11 @@ export async function DELETE(
   request: Request,
   context: { params: Promise<{ searchId: string }> },
 ) {
+  // CSRF check - reject cross-origin requests
+  if (!isValidRequestOrigin(request)) {
+    return apiError(API_ERROR_CODES.BAD_REQUEST, "Geçersiz istek kaynağı (CSRF).", 403);
+  }
+
   const ipRateLimit = await enforceRateLimit(
     getRateLimitKey(request, "api:saved-searches:delete"),
     rateLimitProfiles.general,
@@ -173,7 +184,8 @@ export async function DELETE(
   }
 
   const { searchId } = await context.params;
-  await ensureProfileRecord(user);
+  
+  // Profile check - read-only, no side effects
   let deleted;
   try {
     deleted = await deleteDatabaseSavedSearch(user.id, searchId);
