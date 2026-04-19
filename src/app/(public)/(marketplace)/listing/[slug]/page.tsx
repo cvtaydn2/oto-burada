@@ -12,7 +12,6 @@ import {
   XCircle,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { features } from "@/lib/features";
 import { ListingGallery } from "@/components/listings/listing-gallery";
 import { ListingDetailStructuredData, BreadcrumbStructuredData } from "@/components/seo/structured-data";
 import { CarCard } from "@/components/modules/listings/car-card";
@@ -38,9 +37,9 @@ import { getSellerRatingSummary } from "@/services/profile/seller-reviews";
 import { getMemberSinceYear, getMembershipYears, buildWhatsAppOfferLink } from "@/lib/utils/listing-utils";
 import { listingDetail, breadcrumbs as breadcrumbLabels } from "@/lib/constants/ui-strings";
 
-const SellerReviewForm = dynamic(
-  () => import("@/components/listings/seller-review-form").then((mod) => mod.SellerReviewForm),
-);
+// const SellerReviewForm = dynamic(
+//   () => import("@/components/listings/seller-review-form").then((mod) => mod.SellerReviewForm),
+// );
 
 const ListingMap = dynamic(
   () => import("@/components/shared/listing-map-wrapper").then((mod) => mod.ListingMapWrapper),
@@ -78,7 +77,7 @@ export async function generateMetadata({
 }: ListingDetailPageProps): Promise<Metadata> {
   const { slug } = await params;
   const listing = await getMarketplaceListingBySlug(slug);
-  if (!listing) return { title: "İlan Bulunamadı" };
+  if (!listing) return { title: "Ã„Â°lan BulunamadÃ„Â±" };
   return buildListingDetailMetadata(listing);
 }
 
@@ -100,20 +99,20 @@ export default async function ListingDetailPage({ params }: ListingDetailPagePro
   ]);
 
   // Buyer can review if: logged in AND not the seller
-  const canReview = Boolean(currentUser && currentUser.id !== listing.sellerId);
+  // const canReview = Boolean(currentUser && currentUser.id !== listing.sellerId);
 
-  // Server-side view kaydı (dedup: kullanıcı/IP bazlı günlük)
+  // Server-side view kaydÃ„Â± (dedup: kullanÃ„Â±cÃ„Â±/IP bazlÃ„Â± gÃƒÂ¼nlÃƒÂ¼k)
   const headersList = await headers();
   const viewerIp = headersList.get("x-forwarded-for")?.split(",")[0]?.trim()
     ?? headersList.get("x-real-ip")
     ?? undefined;
-  // Fire-and-forget — view kaydı sayfayı bloklamasın
+  // Fire-and-forget Ã¢â‚¬â€ view kaydÃ„Â± sayfayÃ„Â± bloklamasÃ„Â±n
   recordListingView(listing.id, {
     viewerId: currentUser?.id,
     viewerIp,
   }).catch(() => {});
 
-  // Server-side listing view event — fires once per SSR render
+  // Server-side listing view event Ã¢â‚¬â€ fires once per SSR render
   captureServerEvent("listing_viewed", {
     listingId: listing.id,
     listingSlug: listing.slug,
@@ -196,13 +195,13 @@ export default async function ListingDetailPage({ params }: ListingDetailPagePro
                       {listing.featured && (
                         <div className="bg-slate-900/90 backdrop-blur-md text-white text-[10px] font-black uppercase tracking-[0.2em] px-5 py-2.5 rounded-2xl shadow-xl flex items-center gap-2 border border-white/10">
                           <Zap size={14} className="text-amber-400 animate-pulse" />
-                          ÖNE ÇIKAN İLAN
+                          Ãƒâ€“NE Ãƒâ€¡IKAN Ã„Â°LAN
                         </div>
                       )}
                       {listing.expertInspection && (
                         <div className="bg-white/90 backdrop-blur-xl text-slate-900 text-[10px] font-black uppercase tracking-[0.2em] px-5 py-2.5 rounded-2xl shadow-xl border border-white flex items-center gap-2">
                           <ShieldCheck size={14} className="text-emerald-500" />
-                          EKSPERTİZ ONAYLI
+                          EKSPERTÃ„Â°Z ONAYLI
                         </div>
                       )}
                     </div>
@@ -236,13 +235,13 @@ export default async function ListingDetailPage({ params }: ListingDetailPagePro
                        <div className="p-2 bg-slate-50 rounded-xl">
                         <svg className="size-4 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
                       </div>
-                      {new Date(listing.createdAt).toLocaleDateString("tr-TR")} GÜNCELLENDİ
+                      {new Date(listing.createdAt).toLocaleDateString("tr-TR")} GÃƒÅ“NCELLENDÃ„Â°
                     </div>
                     <div className="flex items-center gap-2">
                       <div className="p-2 bg-slate-50 rounded-xl">
                         <Zap size={14} className="text-slate-400" />
                       </div>
-                      İLAN NO: {listing.id.slice(0, 8).toUpperCase()}
+                      Ã„Â°LAN NO: {listing.id.slice(0, 8).toUpperCase()}
                     </div>
                     <ViewCounter listingId={listing.id} initialCount={listing.viewCount} />
                   </div>
@@ -252,7 +251,7 @@ export default async function ListingDetailPage({ params }: ListingDetailPagePro
                   <div className="text-5xl md:text-6xl font-black text-blue-600 tracking-tighter mb-1">
                     {new Intl.NumberFormat("tr-TR").format(listing.price)}<span className="text-2xl ml-1">TL</span>
                   </div>
-                  <p className="text-[10px] text-slate-300 font-black uppercase tracking-[0.3em]">RESMİ SATIŞ FİYATI</p>
+                  <p className="text-[10px] text-slate-300 font-black uppercase tracking-[0.3em]">RESMÃ„Â° SATIÃ…Â FÃ„Â°YATI</p>
                 </div>
               </div>
 
@@ -291,7 +290,7 @@ export default async function ListingDetailPage({ params }: ListingDetailPagePro
                         <svg className="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
                           <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>
                         </svg>
-                        PDF RAPORU GÖRÜNTÜLE
+                        PDF RAPORU GÃƒâ€“RÃƒÅ“NTÃƒÅ“LE
                       </a>
                     )}
                   </div>
@@ -324,7 +323,7 @@ export default async function ListingDetailPage({ params }: ListingDetailPagePro
                 <div className="grid gap-10 lg:grid-cols-2 relative lg:items-center">
                   <div className="space-y-6">
                     <div className="p-6 rounded-3xl bg-slate-50 border border-slate-100 italic font-medium text-slate-600 leading-relaxed relative">
-                       <div className="absolute -top-3 left-6 px-3 py-1 bg-white border border-slate-100 rounded-lg text-[9px] font-black uppercase tracking-widest text-slate-400">Yapay Zeka Özeti</div>
+                       <div className="absolute -top-3 left-6 px-3 py-1 bg-white border border-slate-100 rounded-lg text-[9px] font-black uppercase tracking-widest text-slate-400">Yapay Zeka Ãƒâ€“zeti</div>
                        &ldquo;{insight.summary}&rdquo;
                     </div>
                     <div className="flex flex-wrap gap-3">
@@ -346,7 +345,7 @@ export default async function ListingDetailPage({ params }: ListingDetailPagePro
                     <div className="size-12 rounded-2xl bg-indigo-50 text-indigo-500 flex items-center justify-center">
                       <TrendingUp size={24} />
                     </div>
-                    Fiyat Değişim Trendi
+                    Fiyat DeÃ„Å¸iÃ…Å¸im Trendi
                   </h2>
                   <PriceHistoryChart history={priceHistory} currentPrice={listing.price} />
                 </div>
@@ -354,7 +353,7 @@ export default async function ListingDetailPage({ params }: ListingDetailPagePro
 
               {/* Description */}
               <div className="rounded-[3rem] border border-slate-200 bg-white p-10 shadow-sm">
-                <h2 className="mb-6 text-xl font-black text-slate-900 tracking-tight">İlan Hakkında</h2>
+                <h2 className="mb-6 text-xl font-black text-slate-900 tracking-tight">Ã„Â°lan HakkÃ„Â±nda</h2>
                 <div className="prose prose-slate max-w-none">
                   <p className="text-base leading-loose text-slate-600 font-medium whitespace-pre-wrap">{listing.description}</p>
                 </div>
@@ -368,7 +367,7 @@ export default async function ListingDetailPage({ params }: ListingDetailPagePro
                       <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/>
                     </svg>
                   </div>
-                  Gerçek Konum
+                  GerÃƒÂ§ek Konum
                 </h2>
                 <div className="rounded-[2rem] overflow-hidden border border-slate-100 shadow-inner">
                    <ListingMap city={listing.city} district={listing.district} className="h-80" />
@@ -378,7 +377,7 @@ export default async function ListingDetailPage({ params }: ListingDetailPagePro
               {/* Similar Listings */}
               {similarListings.length > 0 && (
                 <div className="pt-10 border-t border-slate-200/50">
-                  <h2 className="mb-10 text-3xl font-black text-slate-900 tracking-tighter">Sizin İçin Seçtiklerimiz</h2>
+                  <h2 className="mb-10 text-3xl font-black text-slate-900 tracking-tighter">Sizin Ã„Â°ÃƒÂ§in SeÃƒÂ§tiklerimiz</h2>
                   <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
                     {similarListings.map((item, index) => (
                       <CarCard key={item.id} listing={item} priority={index < 2} />
@@ -396,8 +395,8 @@ export default async function ListingDetailPage({ params }: ListingDetailPagePro
                 <div className="absolute top-0 left-0 w-full h-2 bg-slate-900" />
                 <div className="space-y-8">
                   <div className="space-y-2">
-                    <h2 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">İLAN SAHİBİ</h2>
-                    <p className="text-xs font-black text-blue-600 uppercase tracking-widest">{seller?.userType === "professional" ? "Kurumsal Galeri" : "Bireysel Satıcı"}</p>
+                    <h2 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Ã„Â°LAN SAHÃ„Â°BÃ„Â°</h2>
+                    <p className="text-xs font-black text-blue-600 uppercase tracking-widest">{seller?.userType === "professional" ? "Kurumsal Galeri" : "Bireysel SatÃ„Â±cÃ„Â±"}</p>
                   </div>
                   
                   <div className="flex items-center gap-5">
@@ -416,10 +415,10 @@ export default async function ListingDetailPage({ params }: ListingDetailPagePro
                       </div>
                     </div>
                     <div className="min-w-0">
-                      <h3 className="text-lg font-black text-slate-900 truncate tracking-tight">{seller?.businessName || seller?.fullName}</h3>
+                      <div className="flex items-center gap-2"><h3 className="text-lg font-black text-slate-900 truncate tracking-tight">{seller?.businessName || seller?.fullName}</h3>{seller?.verifiedBusiness && (<div className="flex size-5 items-center justify-center rounded-full bg-blue-600 text-white shadow-lg shadow-blue-200" title="DoÄŸrulanmÄ±ÅŸ Ä°ÅŸletme"><ShieldCheck size={12} strokeWidth={3} /></div>)}</div>
                       <div className="flex items-center gap-2 mt-1">
                         {seller?.isVerified && (
-                           <div className="bg-blue-50 text-blue-600 text-[8px] font-black uppercase tracking-widest px-2 py-0.5 rounded-md border border-blue-100">ONAYLI ÜYE</div>
+                           <div className="bg-blue-50 text-blue-600 text-[8px] font-black uppercase tracking-widest px-2 py-0.5 rounded-md border border-blue-100">ONAYLI ÃƒÅ“YE</div>
                         )}
                         {membershipYears !== null && <span className="text-[10px] text-slate-300 font-bold uppercase tracking-widest">EST. {memberSince}</span>}
                       </div>
@@ -434,7 +433,7 @@ export default async function ListingDetailPage({ params }: ListingDetailPagePro
                   {sellerRatingSummary.count > 0 && (
                     <div className="pt-8 border-t border-slate-50">
                        <div className="flex items-center justify-between mb-2">
-                         <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">MEMNUNİYET</span>
+                         <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">MEMNUNÃ„Â°YET</span>
                          <span className="text-lg font-black text-slate-900 tracking-tighter">{sellerRatingSummary.average.toFixed(1)}/5.0</span>
                        </div>
                        <div className="flex items-center gap-1">
@@ -445,17 +444,17 @@ export default async function ListingDetailPage({ params }: ListingDetailPagePro
                           )} />
                         ))}
                       </div>
-                      <p className="text-[10px] text-slate-400 mt-3 font-bold uppercase tracking-widest text-center">{sellerRatingSummary.count} DEĞERLENDİRME</p>
+                      <p className="text-[10px] text-slate-400 mt-3 font-bold uppercase tracking-widest text-center">{sellerRatingSummary.count} DEÃ„ÂERLENDÃ„Â°RME</p>
                     </div>
                   )}
 
                   <div className="pt-6 border-t border-slate-50 space-y-4">
                     <Link href={seller?.businessSlug ? `/gallery/${seller.businessSlug}` : `/seller/${listing.sellerId}`} className="flex justify-between items-center group/link">
-                      <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest group-hover/link:text-blue-600 transition-colors">TÜM İLANLARI</span>
+                      <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest group-hover/link:text-blue-600 transition-colors">TÃƒÅ“M Ã„Â°LANLARI</span>
                       <ChevronRight size={14} className="text-slate-300 group-hover/link:translate-x-1 group-hover/link:text-blue-600 transition-all" />
                     </Link>
                     <Link href="#ekspertiz" className="flex justify-between items-center group/link">
-                      <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest group-hover/link:text-emerald-600 transition-colors">RANDEVU OLUŞTUR</span>
+                      <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest group-hover/link:text-emerald-600 transition-colors">RANDEVU OLUÃ…ÂTUR</span>
                       <ChevronRight size={14} className="text-slate-300 group-hover/link:translate-x-1 group-hover/link:text-emerald-600 transition-all" />
                     </Link>
                   </div>
@@ -468,18 +467,18 @@ export default async function ListingDetailPage({ params }: ListingDetailPagePro
                 <div className="relative z-10 space-y-6">
                   <div className="space-y-1">
                     <h3 className="text-2xl font-black tracking-tight flex items-center gap-3">
-                      Hızlı Teklif
+                      HÃ„Â±zlÃ„Â± Teklif
                     </h3>
-                    <p className="text-[10px] text-blue-100 font-black uppercase tracking-widest opacity-80">BEKLEMEDEN SÜRECİ BAŞLAT</p>
+                    <p className="text-[10px] text-blue-100 font-black uppercase tracking-widest opacity-80">BEKLEMEDEN SÃƒÅ“RECÃ„Â° BAÃ…ÂLAT</p>
                   </div>
                   
                   <div className="grid grid-cols-1 gap-3">
-                    <a href={buildWhatsAppOfferLink(listing.whatsappPhone, listing.title, Math.round(listing.price * 0.95))} target="_blank" rel="noreferrer" className="bg-white/10 backdrop-blur-md border border-white/20 hover:bg-white/20 text-white py-4 rounded-2xl text-sm font-black transition-all text-center tracking-tight">₺{new Intl.NumberFormat("tr-TR").format(Math.round(listing.price * 0.95))} (%5 İndirim)</a>
-                    <a href={buildWhatsAppOfferLink(listing.whatsappPhone, listing.title, Math.round(listing.price * 0.98))} target="_blank" rel="noreferrer" className="bg-white/10 backdrop-blur-md border border-white/20 hover:bg-white/20 text-white py-4 rounded-2xl text-sm font-black transition-all text-center tracking-tight">₺{new Intl.NumberFormat("tr-TR").format(Math.round(listing.price * 0.98))} (%2 İndirim)</a>
+                    <a href={buildWhatsAppOfferLink(listing.whatsappPhone, listing.title, Math.round(listing.price * 0.95))} target="_blank" rel="noreferrer" className="bg-white/10 backdrop-blur-md border border-white/20 hover:bg-white/20 text-white py-4 rounded-2xl text-sm font-black transition-all text-center tracking-tight">Ã¢â€šÂº{new Intl.NumberFormat("tr-TR").format(Math.round(listing.price * 0.95))} (%5 Ã„Â°ndirim)</a>
+                    <a href={buildWhatsAppOfferLink(listing.whatsappPhone, listing.title, Math.round(listing.price * 0.98))} target="_blank" rel="noreferrer" className="bg-white/10 backdrop-blur-md border border-white/20 hover:bg-white/20 text-white py-4 rounded-2xl text-sm font-black transition-all text-center tracking-tight">Ã¢â€šÂº{new Intl.NumberFormat("tr-TR").format(Math.round(listing.price * 0.98))} (%2 Ã„Â°ndirim)</a>
                   </div>
                   
                   <a href={buildWhatsAppOfferLink(listing.whatsappPhone, listing.title)} target="_blank" rel="noreferrer" className="w-full bg-white text-blue-600 font-black h-16 rounded-[1.5rem] transition-all hover:scale-105 active:scale-95 shadow-xl flex justify-center items-center uppercase text-[11px] tracking-[0.2em]">
-                    KENDİ TEKLİFİNİ YAP
+                    KENDÃ„Â° TEKLÃ„Â°FÃ„Â°NÃ„Â° YAP
                   </a>
                 </div>
               </div>
@@ -488,13 +487,13 @@ export default async function ListingDetailPage({ params }: ListingDetailPagePro
               <div className="bg-white/50 backdrop-blur-sm border border-slate-200 rounded-[2.5rem] p-10 shadow-sm">
                 <h3 className="text-xs font-black text-slate-900 uppercase tracking-widest mb-6 flex items-center gap-2">
                    <ShieldCheck size={18} className="text-emerald-500" />
-                   GÜVENLİK PROTOKOLLERİ
+                   GÃƒÅ“VENLÃ„Â°K PROTOKOLLERÃ„Â°
                 </h3>
                 <div className="space-y-5">
                    {[
-                     "Aracı görmeden kapora göndermeyiniz.",
+                     "AracÃ„Â± gÃƒÂ¶rmeden kapora gÃƒÂ¶ndermeyiniz.",
                      "Resmi ekspertiz raporu talep ediniz.",
-                     "Ödemeyi güvenli noter kanalıyla yapınız."
+                     "Ãƒâ€“demeyi gÃƒÂ¼venli noter kanalÃ„Â±yla yapÃ„Â±nÃ„Â±z."
                    ].map(tip => (
                      <div key={tip} className="flex gap-4">
                         <div className="size-1.5 bg-emerald-500 rounded-full mt-1.5 shrink-0" />
@@ -507,7 +506,7 @@ export default async function ListingDetailPage({ params }: ListingDetailPagePro
                     <div className="size-8 rounded-xl bg-rose-50 flex items-center justify-center">
                        <XCircle size={14} />
                     </div>
-                    <span className="text-[10px] font-black uppercase tracking-widest">İLANİ ŞİKAYET ET</span>
+                    <span className="text-[10px] font-black uppercase tracking-widest">Ã„Â°LANÃ„Â° Ã…ÂÃ„Â°KAYET ET</span>
                   </Link>
                 </div>
               </div>

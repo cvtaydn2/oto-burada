@@ -90,7 +90,7 @@ export async function POST(request: Request) {
         return apiError(API_ERROR_CODES.SERVICE_UNAVAILABLE, "Redis yapılandırılmamış");
       }
     }
-  } catch (e) {
+  } catch {
     // Fallback to cron
   }
   return handleCronRequest(request);

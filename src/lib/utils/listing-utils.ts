@@ -25,7 +25,7 @@ export function buildWhatsAppOfferLink(
     ? `${title} ilanınız için ${formatPrice(offerPrice)} TL teklif vermek istiyorum.`
     : `${title} ilanınız için size özel teklif paylaşmak istiyorum.`;
 
-  return `https://wa.me/${phoneDigits}?text=${encodeURIComponent(message)}}`;
+  return `https://wa.me/${phoneDigits}?text=${encodeURIComponent(message)}`;
 }
 
 export function getListingStatusLabel(status: Listing["status"]): string {

@@ -167,49 +167,44 @@ export function mapListingRow(row: ListingRow): Listing {
   };
 }
 
-export function applyListingFilterPredicates<T extends { 
-  eq: (col: string, val: any) => T; 
-  gte: (col: string, val: any) => T; 
-  lte: (col: string, val: any) => T; 
-  ilike: (col: string, val: string) => T;
-  contains: (col: string, val: any) => T;
-  or: (filter: string) => T;
-  textSearch: (col: string, query: string, options?: { config?: string }) => T;
-}>(
+export function applyListingFilterPredicates<T>(
   query: T,
   filters: ListingFilters,
 ): T {
-  if (filters.sellerId) query = query.eq("seller_id", filters.sellerId);
-  if (filters.brand) query = query.eq("brand", filters.brand);
-  if (filters.model) query = query.eq("model", filters.model);
-  if (filters.carTrim) query = query.eq("car_trim", filters.carTrim);
-  if (filters.city) query = query.ilike("city", filters.city);
-  if (filters.district) query = query.ilike("district", filters.district);
-  if (filters.fuelType) query = query.eq("fuel_type", filters.fuelType);
-  if (filters.transmission) query = query.eq("transmission", filters.transmission);
-  if (filters.minPrice !== undefined) query = query.gte("price", filters.minPrice);
-  if (filters.maxPrice !== undefined) query = query.lte("price", filters.maxPrice);
-  if (filters.minYear !== undefined) query = query.gte("year", filters.minYear);
-  if (filters.maxYear !== undefined) query = query.lte("year", filters.maxYear);
-  if (filters.maxMileage !== undefined) query = query.lte("mileage", filters.maxMileage);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const q = query as any;
+
+  if (filters.sellerId) q.eq("seller_id", filters.sellerId);
+  if (filters.brand) q.eq("brand", filters.brand);
+  if (filters.model) q.eq("model", filters.model);
+  if (filters.carTrim) q.eq("car_trim", filters.carTrim);
+  if (filters.city) q.ilike("city", filters.city);
+  if (filters.district) q.ilike("district", filters.district);
+  if (filters.fuelType) q.eq("fuel_type", filters.fuelType);
+  if (filters.transmission) q.eq("transmission", filters.transmission);
+  if (filters.minPrice !== undefined) q.gte("price", filters.minPrice);
+  if (filters.maxPrice !== undefined) q.lte("price", filters.maxPrice);
+  if (filters.minYear !== undefined) q.gte("year", filters.minYear);
+  if (filters.maxYear !== undefined) q.lte("year", filters.maxYear);
+  if (filters.maxMileage !== undefined) q.lte("mileage", filters.maxMileage);
   if (filters.maxTramer !== undefined) {
     if (filters.maxTramer === 0) {
-      query = query.or("tramer_amount.is.null,tramer_amount.eq.0");
+      q.or("tramer_amount.is.null,tramer_amount.eq.0");
     } else {
-      query = query.lte("tramer_amount", filters.maxTramer);
+      q.lte("tramer_amount", filters.maxTramer);
     }
   }
   if (filters.hasExpertReport === true) {
-    query = query.contains("expert_inspection", { hasInspection: true });
+    q.contains("expert_inspection", { hasInspection: true });
   }
   if (filters.query) {
     const terms = filters.query.trim().split(/\s+/).filter(Boolean);
     if (terms.length > 0) {
       const tsQuery = terms.map((t) => `${t}:*`).join(" & ");
-      query = query.textSearch("search_vector", tsQuery, { config: "simple" });
+      q.textSearch("search_vector", tsQuery, { config: "simple" });
     }
   }
-  return query;
+  return q;
 }
 
 export async function getDatabaseListings(options?: {

@@ -334,7 +334,6 @@ export function ListingCreateForm({
 
   const selectedBrand = useWatch({ control, name: "brand" });
   const selectedCity = useWatch({ control, name: "city" });
-  const imageValues = useWatch({ control, name: "images" }) ?? [];
   const plateValue = useWatch({ control, name: "licensePlate" });
   const isUploadingAnyImage = fields.some((field) => uploadStates[field.id]?.status === "uploading");
 

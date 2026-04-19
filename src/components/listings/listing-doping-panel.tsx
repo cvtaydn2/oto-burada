@@ -83,18 +83,24 @@ export function ListingDopingPanel({ listingId, listingTitle }: ListingDopingPan
       const result = await response.json().catch(() => null) as {
         success?: boolean;
         message?: string;
-        paymentUrl?: string; // Fix: Add this
+        data?: {
+          paymentUrl?: string;
+          message?: string;
+        };
         error?: { message?: string };
       } | null;
       
       if (response.ok && result?.success) {
-        if (result.paymentUrl) {
+        const paymentUrl = result.data?.paymentUrl;
+        const successMessage = result.data?.message ?? result.message;
+
+        if (paymentUrl) {
           setStatus("success");
           setMessage("Ödeme sayfasına yönlendiriliyorsunuz...");
-          window.location.href = result.paymentUrl;
+          window.location.href = paymentUrl;
         } else {
           setStatus("success");
-          setMessage(result.message ?? "Dopingler başarıyla uygulandı.");
+          setMessage(successMessage ?? "Dopingler başarıyla uygulandı.");
           router.refresh();
         }
       } else {

@@ -72,14 +72,19 @@ export class IyzicoProvider implements PaymentProvider {
         ]
       };
 
-      // @ts-ignore - iyzipay types are incorrectly requiring paymentCard for checkoutFormInitialize
-    this.iyzipay?.checkoutFormInitialize.create(data, (err: Error | null, result: any) => {
+      // @ts-expect-error - iyzipay types are incorrectly requiring paymentCard for checkoutFormInitialize
+      this.iyzipay?.checkoutFormInitialize.create(data, (err: Error | null, result: {
+        status: string;
+        token?: string;
+        paymentPageUrl?: string;
+        errorMessage?: string;
+      }) => {
         if (err || result.status !== "success") {
           logger.payments.error("Iyzico checkoutFormInitialize failed", err || result);
           resolve({ 
             success: false, 
             status: "failure", 
-            error: (result?.errorMessage as string) || "Ödeme bağlantısı oluşturulamadı." 
+            error: result.errorMessage || "Ödeme bağlantısı oluşturulamadı." 
           });
         } else {
           // Iyzico returns HTML and URL for the checkout form
@@ -101,7 +106,11 @@ export class IyzicoProvider implements PaymentProvider {
       this.iyzipay?.checkoutForm.retrieve({
         locale: "TR",
         token: transactionId
-      }, (err: Error | null, result: any) => {
+      }, (err: Error | null, result: {
+        status: string;
+        paymentStatus?: string;
+        paymentId?: string;
+      }) => {
         if (err || result.status !== "success") {
           resolve({ success: false, status: "failure" });
         } else {

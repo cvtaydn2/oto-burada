@@ -1,4 +1,53 @@
-# Progress Log - OtoBurada
+## Iyzico Payment Activation & Doping Automation (2026-04-19)
+
+### Yapılan Değişiklikler
+
+**Payment & Doping Automation**
+- **Iyzico Integration**: İlan dopingleri ve kredi paketleri için Iyzico entegrasyonu tamamlandı. `/api/payments/webhook` üzerinden 3DS ve doğrudan ödemeler otomatik hale getirildi.
+- **Payment Result Page**: `/dashboard/payments/result` sayfası oluşturularak ödeme sonrası kullanıcı deneyimi iyileştirildi. Glassmorphic tasarım ve otomatik durum kontrolü (polling) eklendi.
+- **Webhook Redirect Logic**: Iyzico'nun 3DS sonrası yaptığı POST isteklerini algılayıp kullanıcıyı şık bir sonuç sayfasına yönlendiren mantık eklendi.
+- **Credit Synchronization**: Başarılı ödemeler sonrası kullanıcı kredilerinin ve ilan dopinglerinin anında güncellenmesi sağlandı.
+
+**Automation & Cron Jobs**
+- **Vercel Cron Alignment**: `vercel.json` içerisinde tanımlı olan saved search bildirimleri (`/api/saved-searches/notify`) ve ilan süresi dolma uyarıları (`/api/listings/expiry-warnings`) kod seviyesinde doğrulandı ve aktifleştirildi.
+- **Email Alerts**: Resend API üzerinden gönderilen bildirim e-postaları için altyapı üretim ortamına hazır hale getirildi.
+
+### Doğrulama
+- UI Kontrolü: Ödeme sonrası başarılı/başarısız durumları dashboard'da test edildi. ✅
+- Webhook: Local/Staging ortamında Iyzico payload'ları ile simüle edildi. ✅
+- `npm run lint` & `typecheck` ✅
+
+### Sonraki Adımlar
+- **Real Transactions**: Canlı API anahtarlarıyla ilk gerçek ödemenin dashboard üzerinden yapılması.
+- **Saved Search Test**: Yeni bir ilan girildiğinde, o kriterlerde araması olan bir kullanıcıya 24 saat içinde e-posta gidip gitmediğinin loglardan kontrolü.
+
+## Corporate Seller Hardening & Trust Visibility (2026-04-19)
+
+### Yapılan Değişiklikler
+
+**Corporate Identity & Trust Signals**
+- **Verified Business Badges**: "Doğrulanmış Galeri" rozeti `CarCard` (arama sonuçları) ve ilan detay sayfasına eklendi. Bu, profesyonel satıcıların bireysel satıcılardan görsel olarak ayrılmasını sağlayarak güveni artırır.
+- **Storefront Management**: Dashboard'a kurumsal satıcılar için özel bir "Kurumsal Mağaza Yönetimi" paneli eklendi. Satıcılar buradan mağaza linklerini görebilir, önizleyebilir ve doğrulama durumlarını takip edebilir.
+- **Badge Logic**: `listing.seller.verifiedBusiness` alanı tüm ilan sorgularına (marketplace, search, gallery) dahil edildi ve UI bileşenlerine bağlandı.
+
+**Service Hardening**
+- **Gallery Service Fix**: `getGalleryBySlug` fonksiyonu, veritabanındaki `listing_images` ilişkisini `Listing` tipindeki `images` dizisine doğru şekilde map edecek şekilde güncellendi. Galeri sayfalarında resimlerin görünmemesi sorunu çözüldü.
+- **Marketplace Seller Expansion**: `getMarketplaceSeller` servisi; `business_description`, `website_url` ve `verified_business` gibi kurumsal alanları dönecek şekilde genişletildi.
+- **Type Safety**: `Listing` ve `Profile` tipleri arasındaki ilişki, profesyonel kimlik verilerini destekleyecek şekilde `marketplace-listings` ve `listing-submission-query` katmanlarında güçlendirildi.
+
+**Database & Reliability**
+- **Uniqueness Constraint**: `profiles` tablosundaki `business_slug` alanı için benzersizlik kontrolü (unique index) doğrulandı.
+- **Build Validation**: Yeni eklenen profesyonel profil alanlarının `npm run build` ve `lint` süreçlerinden hatasız geçmesi sağlandı.
+
+### Doğrulama
+- `npm run build` ✅
+- `npm run typecheck` ✅
+- `npm run lint` ✅
+- UI Kontrolü: İlan kartlarında ve detay sayfalarında "Doğrulanmış Galeri" rozeti aktif. ✅
+
+### Sonraki Adımlar
+- **Doping Automation**: Ödeme onayı sonrası vitrin/doping sürelerinin otomatik uzatılması için `pg_cron` entegrasyonunun tamamlanması.
+- **Regional Content**: İllere göre özel "Galeri Vitrini" bloklarının ana sayfaya eklenmesi.
 
 ## Architecture Documentation (2026-04-18)
 *   **ADR Framework:** Projenin temel taşlarını (Tech Stack, Moderation, WhatsApp-first, Feature Gating) açıklayan ADR'lar `docs/adr/` altına eklendi.

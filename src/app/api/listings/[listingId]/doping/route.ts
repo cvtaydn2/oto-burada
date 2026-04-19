@@ -55,7 +55,7 @@ export async function POST(
         listingId,
         dopingTypes,
       }, user.id);
-      return apiSuccess(null, result.message);
+      return apiSuccess(result, result.message);
     } else {
       return apiError(API_ERROR_CODES.BAD_REQUEST, result.message, 400);
     }

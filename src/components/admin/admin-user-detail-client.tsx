@@ -7,18 +7,13 @@ import {
   ArrowLeft,
   Gift,
   Zap,
-  CreditCard,
   ShieldCheck,
   Ban,
   CheckCircle2,
-  XCircle,
   Loader2,
   User,
-  Calendar,
   Package,
-  Star,
   Activity,
-  ChevronRight,
   TrendingUp,
   History,
   Store,
@@ -31,7 +26,7 @@ import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { safeFormatDate } from "@/lib/utils";
 import type { UserDetailData } from "@/services/admin/user-details";
-import { toggleUserBan, promoteUserToAdmin } from "@/services/admin/users";
+import { toggleUserBan } from "@/services/admin/users";
 import { cn } from "@/lib/utils";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
@@ -130,6 +125,7 @@ export function AdminUserDetailClient({ detail, userId }: AdminUserDetailClientP
     }
   };
 
+/*
   const handlePromote = async () => {
     if (profile.role === "admin") return;
     setIsActioning(true);
@@ -143,6 +139,7 @@ export function AdminUserDetailClient({ detail, userId }: AdminUserDetailClientP
       setIsActioning(false);
     }
   };
+*/
 
   const toggleDopingType = (type: string) => {
     setDopingTypes((prev) =>
@@ -506,11 +503,3 @@ function InfoRow({ label, value }: { label: string; value: string }) {
   );
 }
 
-function InfoRowBox({ label, value }: { label: string; value: React.ReactNode }) {
-  return (
-    <div className="flex items-center justify-between py-3 border-b border-slate-50 last:border-0">
-      <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{label}</span>
-      <span className="text-xs font-bold text-slate-700">{value}</span>
-    </div>
-  );
-}

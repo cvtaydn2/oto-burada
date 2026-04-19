@@ -77,24 +77,27 @@ export async function getMarketplaceSeller(sellerId: string): Promise<Profile | 
       const admin = createSupabaseAdminClient();
       const { data, error } = await admin
         .from("profiles")
-        .select("id, full_name, phone, city, avatar_url, role, user_type, balance_credits, is_verified, business_name, business_logo_url, business_slug, created_at, updated_at")
+        .select(`
+          id, 
+          full_name, 
+          phone, 
+          city, 
+          avatar_url, 
+          role, 
+          user_type, 
+          balance_credits, 
+          is_verified, 
+          business_name, 
+          business_logo_url, 
+          business_slug, 
+          business_description,
+          website_url,
+          verified_business,
+          created_at, 
+          updated_at
+        `)
         .eq("id", sellerId)
-        .maybeSingle<{
-          id: string;
-          full_name: string;
-          phone: string | null;
-          city: string;
-          avatar_url: string | null;
-          role: "user" | "admin";
-          user_type: "individual" | "professional" | "staff";
-          balance_credits: number | null;
-          is_verified: boolean;
-          business_name: string | null;
-          business_logo_url: string | null;
-          business_slug: string | null;
-          created_at: string;
-          updated_at: string;
-        }>();
+        .maybeSingle();
 
       if (error || !data) {
         return null;
@@ -106,16 +109,17 @@ export async function getMarketplaceSeller(sellerId: string): Promise<Profile | 
         phone: data.phone || "",
         city: data.city,
         avatarUrl: data.avatar_url,
-        // emailVerified and phoneVerified are not exposed in the public seller profile
-        // for privacy reasons — they are only available in the authenticated profile context.
         emailVerified: false,
         isVerified: data.is_verified,
-        role: data.role,
-        userType: data.user_type,
+        role: data.role as Profile["role"],
+        userType: data.user_type as Profile["userType"],
         balanceCredits: data.balance_credits ?? 0,
         businessName: data.business_name,
         businessLogoUrl: data.business_logo_url,
         businessSlug: data.business_slug,
+        businessDescription: data.business_description,
+        websiteUrl: data.website_url,
+        verifiedBusiness: data.verified_business,
         createdAt: data.created_at,
         updatedAt: data.updated_at,
       } satisfies Profile;

@@ -14,13 +14,24 @@ export async function getGalleryBySlug(slug: string) {
 
   if (error || !profile) return null
 
-  // Fetch listings for this gallery — correct table name: listing_images
-  const { data: listings } = await supabase
+  // Fetch listings for this gallery
+  const { data: listingsData } = await supabase
     .from("listings")
-    .select("id, slug, title, brand, model, year, mileage, price, city, status, created_at, listing_images(id, public_url, is_cover, sort_order)")
+    .select("id, slug, title, brand, model, year, mileage, price, city, district, status, created_at, transmission, fuel_type, listing_images(id, public_url, is_cover, sort_order)")
     .eq("seller_id", profile.id)
     .eq("status", "approved")
     .order("created_at", { ascending: false })
+
+  const listings = (listingsData || []).map(l => ({
+    ...l,
+    fuelType: l.fuel_type,
+    images: (l.listing_images || []).map((img: { id: string; public_url: string; is_cover: boolean; sort_order: number }) => ({
+      id: img.id,
+      url: img.public_url,
+      isCover: img.is_cover,
+      sortOrder: img.sort_order
+    }))
+  }))
 
   // Gallery view count (last 30 days)
   const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().split("T")[0];

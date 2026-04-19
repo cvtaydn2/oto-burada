@@ -69,10 +69,17 @@ export function CarCard({ listing, priority = false, variant = "grid" }: CarCard
             {insights.badgeLabel}
           </div>
 
-          {listing.expertInspection && (
+          {listing.expertInspection?.hasInspection && (
             <div className="backdrop-blur-xl bg-white/90 border border-emerald-100/30 rounded-full px-4 py-1.5 text-[9px] font-black text-emerald-700 shadow-xl flex items-center gap-1.5 tracking-widest uppercase">
               <ShieldCheck size={12} className="text-emerald-500" />
               EKSPERTİZLİ
+            </div>
+          )}
+
+          {listing.seller?.verifiedBusiness && (
+            <div className="backdrop-blur-xl bg-blue-600/90 border border-blue-400/30 rounded-full px-4 py-1.5 text-[9px] font-black text-white shadow-xl flex items-center gap-1.5 tracking-widest uppercase">
+              <ShieldCheck size={12} className="text-blue-200" />
+              DOĞRULANMIŞ GALERİ
             </div>
           )}
         </div>

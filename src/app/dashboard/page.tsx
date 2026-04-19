@@ -247,6 +247,72 @@ async function DashboardDataSection({
         ))}
       </div>
 
+      {/* Professional Storefront Management */}
+      {profile?.userType === "professional" && profile.businessSlug && (
+        <section className="relative overflow-hidden rounded-[2.5rem] bg-white border border-white p-10 shadow-2xl shadow-slate-200/40 group">
+          <div className="absolute right-0 top-0 h-full w-1/4 bg-slate-50/50 -skew-x-12 translate-x-1/2" />
+          
+          <div className="relative z-10 flex flex-col lg:flex-row lg:items-center justify-between gap-10">
+            <div className="space-y-4">
+              <div className="inline-flex items-center gap-2 rounded-full bg-blue-50 px-4 py-1.5 text-[10px] font-black uppercase tracking-widest text-blue-600 border border-blue-100">
+                <LayoutDashboard size={12} strokeWidth={3} />
+                Kurumsal Mağaza Yönetimi
+              </div>
+              <h2 className="text-3xl font-black text-slate-900 tracking-tight">
+                {profile.businessName || "Mağazam"} <span className="text-blue-600">Aktif</span>
+              </h2>
+              <p className="text-sm font-bold text-slate-400 max-w-xl leading-relaxed">
+                Showroom sayfanız şu anda yayında. İlanlarınızın kurumsal bir kimlikle sergilendiği mağaza URL&apos;nizi müşterilerinizle paylaşabilirsiniz.
+              </p>
+            </div>
+            
+            <div className="flex flex-col sm:flex-row items-center gap-4">
+               <div className="group/url relative flex items-center h-16 w-full sm:w-[320px] rounded-2xl bg-slate-50 border border-slate-100 px-6 transition-all hover:border-blue-200 hover:bg-white overflow-hidden">
+                  <div className="flex-1 min-w-0 pr-4">
+                    <span className="text-[10px] font-black text-slate-300 uppercase tracking-widest block mb-0.5">Mağaza Linki</span>
+                    <span className="text-sm font-bold text-slate-600 truncate block">otoburada.com/gallery/{profile.businessSlug}</span>
+                  </div>
+                  <Link 
+                    href={`/gallery/${profile.businessSlug}`}
+                    target="_blank"
+                    className="flex size-10 items-center justify-center rounded-xl bg-white text-slate-400 shadow-sm border border-slate-100 transition-all hover:bg-slate-900 hover:text-white"
+                  >
+                    <Eye size={18} strokeWidth={2.5} />
+                  </Link>
+               </div>
+               
+               <Link
+                href={`/gallery/${profile.businessSlug}`}
+                target="_blank"
+                className="flex h-16 w-full sm:w-auto items-center gap-3 rounded-2xl bg-slate-900 px-10 text-xs font-black uppercase tracking-widest text-white shadow-xl shadow-slate-900/20 transition-all hover:bg-blue-600 hover:shadow-blue-600/20 active:scale-95"
+               >
+                 Mağazayı Önizle
+                 <ChevronRight size={16} strokeWidth={3} />
+               </Link>
+            </div>
+          </div>
+          
+          <div className="mt-10 grid grid-cols-1 sm:grid-cols-3 gap-6 pt-10 border-t border-slate-50">
+             {[
+               { label: "Mağaza Ziyareti", value: "Live", icon: Eye, sub: "İstatistikler yükleniyor..." },
+               { label: "Doğrulama Durumu", value: profile.verifiedBusiness ? "Onaylı" : "Beklemede", icon: ShieldCheck, sub: profile.verifiedBusiness ? "Kurumsal güven mührü aktif" : "Belge kontrolü devam ediyor" },
+               { label: "Toplu İşlemler", value: "Aktif", icon: Zap, sub: "XML / Excel entegrasyonu" }
+             ].map(i => (
+               <div key={i.label} className="flex gap-4">
+                 <div className="size-10 rounded-xl bg-slate-50 flex items-center justify-center text-slate-400 shrink-0">
+                    <i.icon size={20} />
+                 </div>
+                 <div>
+                   <div className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">{i.label}</div>
+                   <div className="text-sm font-black text-slate-800">{i.value}</div>
+                   <div className="text-[9px] font-bold text-slate-400 mt-0.5">{i.sub}</div>
+                 </div>
+               </div>
+             ))}
+          </div>
+        </section>
+      )}
+
       <div className="grid grid-cols-1 gap-12 lg:grid-cols-3">
         {/* Left: Recent Activity */}
         <div className="space-y-8 lg:col-span-2">

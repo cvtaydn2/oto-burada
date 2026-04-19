@@ -260,5 +260,20 @@ export async function POST(request: Request): Promise<NextResponse> {
     logger.payments.error("Post-payment action failed", err, { userId, token: payload.token });
   }
 
+  // ── Redirect for browser requests ────────────────────────────────────────
+  // If the request was made by a browser (e.g. Iyzico POSTing back after 3DS),
+  // redirect the user to a friendly result page instead of showing JSON.
+  const accept = request.headers.get("accept");
+  if (accept?.includes("text/html")) {
+    const origin = new URL(request.url).origin;
+    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || origin;
+    const resultUrl = new URL("/dashboard/payments/result", baseUrl);
+    resultUrl.searchParams.set("token", payload.token);
+    resultUrl.searchParams.set("status", payload.status.toLowerCase());
+    if (payload.merchantOrderId) resultUrl.searchParams.set("order", payload.merchantOrderId);
+    
+    return NextResponse.redirect(resultUrl.toString());
+  }
+
   return NextResponse.json({ received: true });
 }
