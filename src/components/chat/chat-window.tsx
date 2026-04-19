@@ -7,7 +7,7 @@ import { MessageBubble } from "./message-bubble";
 import { ChatInput } from "./chat-input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import type { Chat } from "@/types";
-import { Loader2 } from "lucide-react";
+import { Loader2, WifiOff } from "lucide-react";
 
 interface ChatWindowProps {
   chat: Chat;
@@ -15,7 +15,7 @@ interface ChatWindowProps {
 }
 
 export function ChatWindow({ chat, currentUserId }: ChatWindowProps) {
-  const { messages, setMessages, isTyping, isPartnerOnline, sendTypingStatus } = useChatRealtime(chat.id, currentUserId);
+  const { messages, setMessages, isTyping, isPartnerOnline, sendTypingStatus, connectionStatus } = useChatRealtime(chat.id, currentUserId);
   const scrollRef = useRef<HTMLDivElement>(null);
 
   // Initial Load & Mark Read
@@ -71,6 +71,31 @@ export function ChatWindow({ chat, currentUserId }: ChatWindowProps) {
           </p>
         </div>
       </div>
+
+      {/* Connection status banner */}
+      {connectionStatus !== "connected" && (
+        <div
+          role="status"
+          aria-live="polite"
+          className={`flex items-center justify-center gap-2 px-3 py-1.5 text-xs font-medium transition-colors ${
+            connectionStatus === "disconnected"
+              ? "bg-destructive/10 text-destructive"
+              : "bg-muted text-muted-foreground"
+          }`}
+        >
+          {connectionStatus === "disconnected" ? (
+            <>
+              <WifiOff className="w-3 h-3 shrink-0" />
+              <span>Bağlantı kesildi — yeniden bağlanılıyor...</span>
+            </>
+          ) : (
+            <>
+              <Loader2 className="w-3 h-3 animate-spin shrink-0" />
+              <span>Bağlanılıyor...</span>
+            </>
+          )}
+        </div>
+      )}
 
       {/* Messages */}
       <ScrollArea ref={scrollRef} className="flex-1 p-4 bg-dot-pattern">

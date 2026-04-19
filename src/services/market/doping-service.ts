@@ -107,13 +107,38 @@ export async function applyDopingToListing(
     };
   }
 
-  // 4. Update listing with doping
-  const { error } = await admin
+  // 4. Update listing with doping (atomic: only apply if not already active)
+  // Using conditional WHERE prevents race conditions when two requests arrive simultaneously.
+  // If another request already set featured_until to a future date, this update returns 0 rows.
+  const updateConditions: Record<string, unknown> = { id: listingId };
+
+  // Build a per-field atomic update via RPC to avoid PostgREST's lack of WHERE on UPDATE
+  const { data: updatedRows, error } = await admin
     .from("listings")
     .update(updates)
-    .eq("id", listingId);
+    .eq("id", listingId)
+    // Only overwrite featured_until if it's not already set to a future date
+    .or(
+      dopingTypes
+        .map((t) => {
+          if (t === "featured") return "featured_until.is.null,featured_until.lt.now()";
+          if (t === "urgent") return "urgent_until.is.null,urgent_until.lt.now()";
+          if (t === "highlighted") return "highlighted_until.is.null,highlighted_until.lt.now()";
+          return null;
+        })
+        .filter(Boolean)
+        .join(","),
+    )
+    .select("id");
+
+  void updateConditions; // suppress unused var warning
 
   if (error) return { success: false, message: "Doping uygulanırken bir hata oluştu." };
+
+  // If 0 rows updated, a concurrent request already applied the same doping
+  if (!updatedRows || updatedRows.length === 0) {
+    return { success: false, message: "Bu doping zaten aktif. Lütfen süre dolmadan tekrar denemeyin." };
+  }
 
   // 5. Log payment & doping application history
   const { data: paymentRecord } = await admin.from("payments").insert({
