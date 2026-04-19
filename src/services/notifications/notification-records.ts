@@ -1,4 +1,5 @@
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
+import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { hasSupabaseAdminEnv } from "@/lib/supabase/env";
 import { notificationSchema } from "@/lib/validators";
 import type { NotificationType } from "@/types";
@@ -29,16 +30,17 @@ function mapNotificationRow(row: NotificationRow) {
   });
 }
 
+/**
+ * Internal helper for fetching notifications.
+ * Uses server client (authenticated role) to enforce RLS.
+ * RLS policy: notifications_manage_own ensures user can only access their own notifications.
+ */
 async function getDatabaseNotifications(options?: {
   notificationId?: string;
   userId?: string;
 }) {
-  if (!hasSupabaseAdminEnv()) {
-    return null;
-  }
-
-  const admin = createSupabaseAdminClient();
-  let query = admin
+  const supabase = await createSupabaseServerClient();
+  let query = supabase
     .from("notifications")
     .select("id, user_id, type, title, message, href, read, created_at, updated_at")
     .order("created_at", { ascending: false });
@@ -128,13 +130,13 @@ export async function createDatabaseNotificationsBulk(inputs: {
   return data.map(mapNotificationRow);
 }
 
+/**
+ * Marks a notification as read for the current authenticated user.
+ * Uses server client to enforce RLS - user can only update their own notifications.
+ */
 export async function markDatabaseNotificationRead(userId: string, notificationId: string) {
-  if (!hasSupabaseAdminEnv()) {
-    return null;
-  }
-
-  const admin = createSupabaseAdminClient();
-  const { error } = await admin
+  const supabase = await createSupabaseServerClient();
+  const { error } = await supabase
     .from("notifications")
     .update({
       read: true,
@@ -150,13 +152,13 @@ export async function markDatabaseNotificationRead(userId: string, notificationI
   return (await getDatabaseNotifications({ notificationId, userId }))?.[0] ?? null;
 }
 
+/**
+ * Marks all unread notifications as read for the current authenticated user.
+ * Uses server client to enforce RLS - user can only update their own notifications.
+ */
 export async function markAllDatabaseNotificationsRead(userId: string) {
-  if (!hasSupabaseAdminEnv()) {
-    return false;
-  }
-
-  const admin = createSupabaseAdminClient();
-  const { error } = await admin
+  const supabase = await createSupabaseServerClient();
+  const { error } = await supabase
     .from("notifications")
     .update({
       read: true,
@@ -168,13 +170,13 @@ export async function markAllDatabaseNotificationsRead(userId: string) {
   return !error;
 }
 
+/**
+ * Deletes a notification for the current authenticated user.
+ * Uses server client to enforce RLS - user can only delete their own notifications.
+ */
 export async function deleteDatabaseNotification(userId: string, notificationId: string) {
-  if (!hasSupabaseAdminEnv()) {
-    return false;
-  }
-
-  const admin = createSupabaseAdminClient();
-  const { error } = await admin
+  const supabase = await createSupabaseServerClient();
+  const { error } = await supabase
     .from("notifications")
     .delete()
     .eq("id", notificationId)

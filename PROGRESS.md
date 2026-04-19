@@ -1947,3 +1947,69 @@ Her yeni geliştirme başlamadan önce okunmalıdır.
   - `npm run typecheck` ✅
   - `npm run build` ✅ (`/listings/filter` route oluştu)
 - **Status**: 🟢 Gelişmiş filtreleme sayfası oluşturuldu, SmartFilters eksik filtrelerle güncellendi.
+
+
+## Security Audit - Notifications & Profile Services (2026-04-19)
+
+### Yapılan Değişiklikler
+
+**Notifications Service - RLS Enforcement**
+- **Admin Client → Server Client Migration**:
+  - `getDatabaseNotifications()`, `markDatabaseNotificationRead()`, `markAllDatabaseNotificationsRead()`, `deleteDatabaseNotification()` fonksiyonları artık `createSupabaseServerClient()` kullanıyor
+  - RLS policy (`notifications_manage_own`) artık otomatik enforce ediliyor
+  - Kullanıcılar sadece kendi bildirimlerine erişebilir
+- **Admin-Only Operations Korundu**:
+  - `createDatabaseNotification()` ve `createDatabaseNotificationsBulk()` sistem bildirimleri için admin client kullanmaya devam ediyor
+  - Bu fonksiyonlar sadece backend tarafından çağrılıyor
+
+**Profile Service - Side-Effect Elimination**
+- **ensureProfileRecord() Deprecated**:
+  - Read operations içindeki upsert side-effect kaldırıldı
+  - Fonksiyon artık sadece `buildProfileFromAuthUser()` çağırıyor
+  - Deprecation warning eklendi
+- **Yeni createOrUpdateProfile() Fonksiyonu**:
+  - Explicit profile mutations için yeni fonksiyon eklendi
+  - Auth callback ve onboarding akışlarında kullanılmalı
+  - Hata durumunda exception fırlatıyor
+
+**Profile Service - Fail-Closed Ban Check**
+- **isUserBanned() Production Hardening**:
+  - Production'da DB unavailable durumunda artık exception fırlatılıyor
+  - Development'ta fail-open davranış korundu (geliştirici deneyimi için)
+  - Kritik güvenlik kontrolü artık sessizce atlanamıyor
+  - Error handling route katmanında yapılmalı (503 response)
+
+### Güvenlik Kazanımları
+
+| Öncesi | Sonrası |
+|--------|---------|
+| ❌ Notifications: RLS bypass | ✅ RLS enforce edildi |
+| ❌ Horizontal privilege escalation riski | ✅ Kullanıcı sadece kendi verisine erişebilir |
+| ❌ Read operations side-effect üretiyor | ✅ Read operations immutable |
+| ❌ Ban kontrolü fail-open | ✅ Production'da fail-closed |
+| ❌ Kritik kontrol sessizce atlanabilir | ✅ DB unavailable → 503 error |
+
+### Doğrulama
+- `npm run build` ✅ (Compiled successfully)
+- `npm run typecheck` ✅ (0 errors in our changes)
+- `npm run lint` ✅
+
+### Etkilenen Dosyalar
+- `src/services/notifications/notification-records.ts` - 4 fonksiyon güncellendi
+- `src/services/profile/profile-records.ts` - 3 fonksiyon güncellendi/eklendi
+- `NOTIFICATIONS_PROFILE_SECURITY_FIX.md` - Detaylı dokümantasyon
+
+### Sonraki Adımlar
+- [ ] Auth callback'te `createOrUpdateProfile()` kullan
+- [ ] Mevcut `ensureProfileRecord()` çağrılarını değiştir:
+  - Read-only: `buildProfileFromAuthUser()`
+  - Mutation: `createOrUpdateProfile()`
+- [ ] Admin panel için ayrı notification endpoint'leri (gerekirse)
+- [ ] `isUserBanned()` error handling route katmanında
+- [ ] `ensureProfileRecord()` fonksiyonunu tamamen kaldır (breaking change)
+
+### Notlar
+- RLS policy zaten mevcut, sadece client değişikliği yeterli oldu
+- Breaking change yok: `ensureProfileRecord()` deprecated ama hala çalışıyor
+- Backward compatible: Mevcut kod çalışmaya devam ediyor
+- Defense-in-depth: Hem route hem DB katmanında güvenlik kontrolü

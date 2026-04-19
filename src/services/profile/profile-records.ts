@@ -96,6 +96,13 @@ function mapProfileRow(row: ProfileRow, authUser?: User | null) {
   };
 }
 
+/**
+ * Builds a profile object from auth user metadata.
+ * Does NOT perform any database operations.
+ * Use this for read-only profile construction from auth context.
+ * 
+ * For profile bootstrap/creation, use a dedicated auth callback or onboarding flow.
+ */
 export function buildProfileFromAuthUser(user: User) {
   const userMetadata = user.user_metadata as {
     avatar_url?: string;
@@ -160,7 +167,27 @@ export function buildProfileFromAuthUser(user: User) {
   }
 }
 
+/**
+ * DEPRECATED: This function performs a side-effect (upsert) during read operations.
+ * 
+ * @deprecated Use buildProfileFromAuthUser() for read-only operations.
+ * For profile creation, use a dedicated auth callback or createOrUpdateProfile().
+ * 
+ * This function will be removed in a future version.
+ * Current behavior: Returns profile from auth metadata without DB upsert.
+ */
 export async function ensureProfileRecord(user: User) {
+  // Return profile from auth metadata only - no DB side effects
+  return buildProfileFromAuthUser(user);
+}
+
+/**
+ * Creates or updates a profile record in the database.
+ * Use this for explicit profile mutations (onboarding, auth callbacks, profile updates).
+ * 
+ * This is the proper way to bootstrap user profiles.
+ */
+export async function createOrUpdateProfile(user: User) {
   const profile = buildProfileFromAuthUser(user);
 
   if (!hasSupabaseAdminEnv()) {
@@ -195,7 +222,7 @@ export async function ensureProfileRecord(user: User) {
   );
 
   if (error) {
-    return profile;
+    throw new Error(`Failed to create/update profile: ${error.message}`);
   }
 
   return profile;
@@ -260,12 +287,22 @@ export async function updateProfileTable(
 /**
  * Checks if a user is banned.
  * Used in API routes before allowing mutations (listing creation, messaging, etc.)
- * Returns true if the user is banned, false otherwise.
- * Returns false (safe default) if the DB is unavailable.
+ * 
+ * SECURITY: Fail-closed behavior in production.
+ * - If DB is unavailable in production → throws error (blocks operation)
+ * - If DB is unavailable in development → returns false (allows operation for dev convenience)
+ * - If user record not found → returns false (user not banned)
+ * - If is_banned is true → returns true (user is banned)
+ * 
+ * @throws Error in production if database is unavailable
  */
 export async function isUserBanned(userId: string): Promise<boolean> {
   if (!hasSupabaseAdminEnv()) {
-    return false; // Safe default — don't block if DB unavailable
+    // Fail-closed in production, fail-open in development
+    if (process.env.NODE_ENV === "production") {
+      throw new Error("Database unavailable - cannot verify ban status");
+    }
+    return false; // Development: allow operation
   }
 
   const admin = createSupabaseAdminClient();
@@ -275,8 +312,17 @@ export async function isUserBanned(userId: string): Promise<boolean> {
     .eq("id", userId)
     .maybeSingle<{ is_banned: boolean | null }>();
 
-  if (error || !data) {
-    return false; // Safe default
+  if (error) {
+    // Database error in production should block the operation
+    if (process.env.NODE_ENV === "production") {
+      throw new Error(`Failed to check ban status: ${error.message}`);
+    }
+    return false; // Development: allow operation
+  }
+
+  if (!data) {
+    // User record not found - not banned
+    return false;
   }
 
   return data.is_banned === true;

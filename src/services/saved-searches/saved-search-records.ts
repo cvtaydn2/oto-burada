@@ -1,5 +1,21 @@
-import { createSupabaseAdminClient } from "@/lib/supabase/admin";
-import { hasSupabaseAdminEnv } from "@/lib/supabase/env";
+/**
+ * Saved searches database operations.
+ * 
+ * SECURITY: Uses server client (authenticated role) instead of admin client.
+ * RLS policy "saved_searches_manage_own" ensures users can only access their own searches.
+ * 
+ * Policy: FOR ALL USING ((SELECT auth.uid()) = user_id)
+ * 
+ * This means:
+ * - User can only SELECT their own saved searches
+ * - User can only INSERT searches with their own user_id
+ * - User can only UPDATE/DELETE their own searches
+ * 
+ * No need for explicit userId checks in this layer — RLS enforces it at DB level.
+ */
+
+import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { hasSupabaseEnv } from "@/lib/supabase/env";
 import { savedSearchSchema } from "@/lib/validators";
 import {
   buildSavedSearchTitle,
@@ -30,22 +46,26 @@ function mapSavedSearchRow(row: SavedSearchRow) {
   });
 }
 
+/**
+ * Get saved searches for the current authenticated user.
+ * RLS automatically filters to auth.uid() = user_id.
+ */
 async function getDatabaseSavedSearches(options?: {
   searchId?: string;
   userId?: string;
 }) {
-  if (!hasSupabaseAdminEnv()) {
+  if (!hasSupabaseEnv()) {
     return null;
   }
 
-  const admin = createSupabaseAdminClient();
-  let query = admin
+  const supabase = await createSupabaseServerClient();
+  let query = supabase
     .from("saved_searches")
     .select("id, user_id, title, filters, notifications_enabled, created_at, updated_at")
     .order("updated_at", { ascending: false });
 
   if (options?.userId) {
-    query = query.eq("user_id", options.userId);
+    query = query.eq("user_id", options.userId);  // Redundant but explicit — RLS already filters
   }
 
   if (options?.searchId) {
@@ -61,15 +81,26 @@ async function getDatabaseSavedSearches(options?: {
   return data.map(mapSavedSearchRow);
 }
 
+/**
+ * Get all saved searches for a specific user.
+ * RLS ensures only the authenticated user's searches are returned.
+ */
 export async function getStoredSavedSearchesByUser(userId: string) {
   return (await getDatabaseSavedSearches({ userId })) ?? [];
 }
 
+/**
+ * Create or update a saved search for the current authenticated user.
+ * RLS policy ensures user_id must match auth.uid().
+ * 
+ * If a search with the same filter signature exists, it's updated.
+ * Otherwise, a new search is created.
+ */
 export async function createOrUpdateDatabaseSavedSearch(
   userId: string,
   input: SavedSearchCreateInput,
 ) {
-  if (!hasSupabaseAdminEnv()) {
+  if (!hasSupabaseEnv()) {
     return null;
   }
 
@@ -81,10 +112,12 @@ export async function createOrUpdateDatabaseSavedSearch(
   const existingSearch = existingSearches.find(
     (search) => getSavedSearchSignature(search.filters) === getSavedSearchSignature(normalizedFilters),
   );
-  const admin = createSupabaseAdminClient();
+  const supabase = await createSupabaseServerClient();
 
   if (existingSearch?.id) {
-    const { error } = await admin
+    // Update existing search
+    // RLS ensures we can only update our own searches
+    const { error } = await supabase
       .from("saved_searches")
       .update({
         filters: normalizedFilters,
@@ -93,7 +126,7 @@ export async function createOrUpdateDatabaseSavedSearch(
         updated_at: timestamp,
       })
       .eq("id", existingSearch.id)
-      .eq("user_id", userId);
+      .eq("user_id", userId);  // Redundant but explicit — RLS already filters
 
     if (error) {
       return null;
@@ -102,7 +135,9 @@ export async function createOrUpdateDatabaseSavedSearch(
     return (await getDatabaseSavedSearches({ searchId: existingSearch.id, userId }))?.[0] ?? null;
   }
 
-  const { data, error } = await admin
+  // Create new search
+  // RLS ensures user_id must match auth.uid()
+  const { data, error } = await supabase
     .from("saved_searches")
     .insert({
       filters: normalizedFilters,
@@ -123,16 +158,20 @@ export async function createOrUpdateDatabaseSavedSearch(
   });
 }
 
+/**
+ * Update a saved search for the current authenticated user.
+ * RLS ensures we can only update our own searches.
+ */
 export async function updateDatabaseSavedSearch(
   userId: string,
   searchId: string,
   updates: { notificationsEnabled?: boolean; title?: string },
 ) {
-  if (!hasSupabaseAdminEnv()) {
+  if (!hasSupabaseEnv()) {
     return null;
   }
 
-  const admin = createSupabaseAdminClient();
+  const supabase = await createSupabaseServerClient();
   const payload: Record<string, unknown> = {
     updated_at: new Date().toISOString(),
   };
@@ -145,11 +184,12 @@ export async function updateDatabaseSavedSearch(
     payload.title = updates.title.trim();
   }
 
-  const { error } = await admin
+  // RLS ensures we can only update our own searches
+  const { error } = await supabase
     .from("saved_searches")
     .update(payload)
     .eq("id", searchId)
-    .eq("user_id", userId);
+    .eq("user_id", userId);  // Redundant but explicit — RLS already filters
 
   if (error) {
     return null;
@@ -158,17 +198,23 @@ export async function updateDatabaseSavedSearch(
   return (await getDatabaseSavedSearches({ searchId, userId }))?.[0] ?? null;
 }
 
+/**
+ * Delete a saved search for the current authenticated user.
+ * RLS ensures we can only delete our own searches.
+ */
 export async function deleteDatabaseSavedSearch(userId: string, searchId: string) {
-  if (!hasSupabaseAdminEnv()) {
+  if (!hasSupabaseEnv()) {
     return false;
   }
 
-  const admin = createSupabaseAdminClient();
-  const { error } = await admin
+  const supabase = await createSupabaseServerClient();
+  
+  // RLS ensures we can only delete our own searches
+  const { error } = await supabase
     .from("saved_searches")
     .delete()
     .eq("id", searchId)
-    .eq("user_id", userId);
+    .eq("user_id", userId);  // Redundant but explicit — RLS already filters
 
   return !error;
 }
