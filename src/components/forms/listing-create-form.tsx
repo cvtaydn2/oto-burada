@@ -272,10 +272,10 @@ const initialSubmitState: SubmitState = {
 
 
 const STEP_LABELS = [
-  "Temel Bilgiler",
-  "Konum ve Detaylar",
-  "Ekspertiz ve Kondisyon",
-  "Fotoğraflar ve Gönderim",
+  "Araç Bilgileri",
+  "Fiyat ve İletişim",
+  "Ekspertiz (İsteğe Bağlı)",
+  "Fotoğraflar",
 ] as const;
 
 import { EmailVerificationDialog } from "@/components/auth/email-verification-dialog";
@@ -459,17 +459,13 @@ export function ListingCreateForm({
     let fieldsToValidate: FieldPath<ListingCreateFormValues>[] = [];
     if (currentStep === 0) fieldsToValidate = ["brand", "model", "year", "mileage", "vin", "fuelType", "transmission"];
     if (currentStep === 1) fieldsToValidate = ["city", "district", "title", "description", "price", "whatsappPhone"];
+    // Step 2 (Inspection) is optional - no required fields to validate
     if (currentStep === 2) {
-      fieldsToValidate = [
-        "damageStatusJson",
-        "tramerAmount",
-        "expertInspection.hasInspection",
-        "expertInspection.inspectionDate",
-        "expertInspection.inspectedBy",
-      ];
+      // Skip validation for optional inspection step
+      fieldsToValidate = [];
     }
     
-    const isValid = await trigger(fieldsToValidate);
+    const isValid = fieldsToValidate.length === 0 || await trigger(fieldsToValidate);
     if (isValid) {
       const timeSpentSeconds = Math.round((Date.now() - stepStartTimeRef.current) / 1000);
       trackEvent(AnalyticsEvent.LISTING_WIZARD_STEP_COMPLETED, {
@@ -716,15 +712,15 @@ export function ListingCreateForm({
         <div className="mb-14 text-center">
           <div className="inline-flex items-center gap-2 rounded-full bg-slate-100 px-4 py-1.5 text-[10px] font-black uppercase tracking-widest text-slate-500 mb-6 border border-slate-200 shadow-sm">
             <Car size={12} strokeWidth={3} />
-            Satış Yolculuğu
+            {currentStep + 1} / {totalSteps}
           </div>
           <h1 className="text-4xl font-black tracking-tight text-slate-900 lg:text-6xl">
-            {isEditing ? "İlanı Güncelle" : "Arabanı Satışa Çıkar"}
+            {isEditing ? "İlanı Güncelle" : "İlan Ver"}
           </h1>
           <p className="mx-auto mt-4 max-w-2xl text-base font-bold text-slate-400">
             {isEditing
-              ? "Araç bilgilerini güncelleyerek ilanını taze tut. Değişiklikler uzman ekibimiz tarafından incelenecektir."
-              : "Hızlı, güvenli ve kolayca ilan ver. Doğru alıcıyla dakikalar içinde buluş."}
+              ? "Araç bilgilerini güncelleyerek ilanını taze tut."
+              : "Temel bilgileri gir, fotoğraf ekle, yayınla. Sadece 4 adım."}
           </p>
         </div>
 

@@ -82,7 +82,7 @@ export function ContactForm() {
         </div>
         <h3 className="text-xl font-black text-foreground">Mesajınız İletildi</h3>
         <p className="text-sm text-muted-foreground max-w-sm">
-          En kısa sürede size dönüş yapacağız. Ortalama yanıt süremiz 2 saattir.
+          Mesajınızı aldık. Ekibimiz en kısa sürede size dönüş yapacak.
         </p>
         <button
           onClick={() => { setStatus("idle"); setForm({ name: "", email: "", subject: SUBJECTS[0], message: "" }); }}
