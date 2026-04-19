@@ -14,7 +14,7 @@
  * 
  * Usage:
  * - Called by cron endpoint: /api/cron/process-fulfillments
- * - Runs every 2 minutes
+ * - Runs once daily at 04:00 UTC (Hobby plan limit)
  */
 
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";

@@ -8,7 +8,8 @@
  * - Only callable by Vercel Cron or authorized services
  * 
  * Schedule:
- * - Runs every 2 minutes (configured in vercel.json)
+ * - Runs once daily at 04:00 UTC (configured in vercel.json)
+ * - Note: Vercel Hobby plan limits cron jobs to once per day max
  * 
  * Flow:
  * 1. Verify cron secret

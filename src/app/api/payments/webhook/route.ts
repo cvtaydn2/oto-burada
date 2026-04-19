@@ -188,36 +188,20 @@ export async function POST(request: Request): Promise<NextResponse> {
         const userId = payment.user_id;
 
         try {
-          // Create fulfillment jobs for background processing
-          // This prevents webhook timeout and enables retry logic
-          
-          if (meta?.type === "plan_purchase") {
-            // Create job for credit addition (already done in process_payment_success, but create notification job)
-            const { error: jobError } = await admin.rpc("create_fulfillment_job", {
-              p_payment_id: payment.id,
-              p_job_type: "notification_send",
-              p_metadata: {
-                notification: {
-                  type: "system",
-                  title: "Paket satın alındı",
-                  message: `${meta.planName ?? "Paket"} başarıyla aktifleştirildi. ${meta.credits ?? 0} kredi hesabınıza eklendi.`,
-                  href: "/dashboard/pricing",
-                },
-              },
-            });
+          // Process fulfillment directly in webhook (no cron dependency)
+          // Payment is already committed — these are best-effort post-payment actions.
+          // Failures are logged but do NOT fail the webhook response.
 
-            if (jobError) {
-              logger.payments.error("Notification job creation failed for plan_purchase", jobError, {
-                userId,
-                paymentId: payment.id,
-                token: payload.token,
-              });
-              captureServerError("Notification job creation failed", "payments", jobError, {
-                userId,
-                paymentId: payment.id,
-                jobType: "notification_send",
-              }, userId);
-            }
+          if (meta?.type === "plan_purchase") {
+            // Credits are already added by process_payment_success() RPC.
+            // Just send the notification directly.
+            await createDatabaseNotification({
+              userId,
+              type: "system",
+              title: "Paket satın alındı",
+              message: `${meta.planName ?? "Paket"} başarıyla aktifleştirildi. ${meta.credits ?? 0} kredi hesabınıza eklendi.`,
+              href: "/dashboard/pricing",
+            });
 
             captureServerEvent("plan_purchased", {
               userId,
@@ -227,53 +211,43 @@ export async function POST(request: Request): Promise<NextResponse> {
             }, userId);
 
           } else if (meta?.type === "doping" && meta.listingId && meta.dopingTypes) {
-            // Create job for doping application
-            const { error: dopingJobError } = await admin.rpc("create_fulfillment_job", {
+            // Apply doping immediately — fast DB RPC, well within webhook timeout.
+            const { error: dopingError } = await admin.rpc("apply_listing_doping", {
+              p_listing_id: meta.listingId,
+              p_user_id: userId,
+              p_doping_types: meta.dopingTypes,
+              p_duration_days: meta.durationDays ?? 7,
               p_payment_id: payment.id,
-              p_job_type: "doping_apply",
-              p_metadata: {
-                listingId: meta.listingId,
-                dopingTypes: meta.dopingTypes,
-                durationDays: meta.durationDays ?? 7,
-              },
             });
 
-            if (dopingJobError) {
-              logger.payments.error("Doping job creation failed", dopingJobError, {
+            if (dopingError) {
+              logger.payments.error("Doping application failed in webhook", dopingError, {
                 userId,
                 paymentId: payment.id,
                 listingId: meta.listingId,
                 token: payload.token,
               });
-              captureServerError("Doping job creation failed", "payments", dopingJobError, {
+              captureServerError("Doping application failed in webhook", "payments", dopingError, {
                 userId,
                 paymentId: payment.id,
-                jobType: "doping_apply",
                 listingId: meta.listingId,
               }, userId);
-            }
-
-            // Create job for notification
-            const { error: notifJobError } = await admin.rpc("create_fulfillment_job", {
-              p_payment_id: payment.id,
-              p_job_type: "notification_send",
-              p_metadata: {
-                notification: {
-                  type: "system",
-                  title: "Doping aktifleştirildi",
-                  message: `İlanınız ${meta.durationDays ?? 7} gün boyunca öne çıkarıldı.`,
-                  href: `/dashboard/listings`,
-                },
-              },
-            });
-
-            if (notifJobError) {
-              logger.payments.error("Notification job creation failed for doping", notifJobError, {
+            } else {
+              logger.payments.info("Doping applied immediately via webhook", {
                 userId,
-                paymentId: payment.id,
-                token: payload.token,
+                listingId: meta.listingId,
+                dopingTypes: meta.dopingTypes,
               });
             }
+
+            // Send notification directly.
+            await createDatabaseNotification({
+              userId,
+              type: "system",
+              title: "Doping aktifleştirildi",
+              message: `İlanınız ${meta.durationDays ?? 7} gün boyunca öne çıkarıldı.`,
+              href: `/dashboard/listings`,
+            });
 
             captureServerEvent("doping_payment_success", {
               userId,
@@ -283,10 +257,10 @@ export async function POST(request: Request): Promise<NextResponse> {
             }, userId);
           }
         } catch (err) {
-          // Job creation failed — log but don't fail the webhook
-          // Payment is already committed in DB; jobs will be retried by the cron worker
-          logger.payments.error("Fulfillment job creation failed", err, { userId, token: payload.token });
-          captureServerError("Fulfillment job creation failed", "payments", err, { userId, token: payload.token }, userId);
+          // Post-payment actions failed — log but don't fail the webhook.
+          // Payment is already committed in DB.
+          logger.payments.error("Post-payment fulfillment failed", err, { userId, token: payload.token });
+          captureServerError("Post-payment fulfillment failed", "payments", err, { userId, token: payload.token }, userId);
         }
       }
     }
