@@ -1,67 +1,27 @@
-import { createSupabaseServerClient } from "@/lib/supabase/server";
-import { hasSupabaseAdminEnv, hasSupabaseEnv } from "@/lib/supabase/env";
+import { hasSupabaseAdminEnv } from "@/lib/supabase/env";
 import { apiError, API_ERROR_CODES, apiSuccess } from "@/lib/utils/api-response";
 import { rateLimitProfiles } from "@/lib/utils/rate-limit";
-import {
-  enforceRateLimit,
-  getRateLimitKey,
-  getUserRateLimitKey,
-} from "@/lib/utils/rate-limit-middleware";
 import { ensureProfileRecord } from "@/services/profile/profile-records";
 import {
   deleteDatabaseNotification,
   markDatabaseNotificationRead,
 } from "@/services/notifications/notification-records";
-
-async function getAuthenticatedUser() {
-  if (!hasSupabaseEnv()) {
-    return null;
-  }
-
-  const supabase = await createSupabaseServerClient();
-  const {
-    data: { user },
-    error,
-  } = await supabase.auth.getUser();
-
-  if (error || !user) {
-    return null;
-  }
-
-  return user;
-}
+import { withAuth } from "@/lib/utils/api-security";
 
 export async function PATCH(
   request: Request,
   context: { params: Promise<{ notificationId: string }> },
 ) {
-  const ipRateLimit = await enforceRateLimit(
-    getRateLimitKey(request, "api:notifications:update"),
-    rateLimitProfiles.general,
-  );
+  // Security checks: Auth + Rate limiting
+  const security = await withAuth(request, {
+    ipRateLimit: rateLimitProfiles.general,
+    userRateLimit: rateLimitProfiles.general,
+    rateLimitKey: "notifications:update",
+  });
 
-  if (ipRateLimit) {
-    return ipRateLimit.response;
-  }
-
-  if (!hasSupabaseEnv()) {
-    return apiError(API_ERROR_CODES.SERVICE_UNAVAILABLE, "Servis kullanılamıyor.", 503);
-  }
-
-  const user = await getAuthenticatedUser();
-
-  if (!user) {
-    return apiError(API_ERROR_CODES.UNAUTHORIZED, "Bildirimleri güncellemek için giriş yapmalısın.", 401);
-  }
-
-  const userRateLimit = await enforceRateLimit(
-    getUserRateLimitKey(user.id, "notifications:update"),
-    rateLimitProfiles.general,
-  );
-
-  if (userRateLimit) {
-    return userRateLimit.response;
-  }
+  if (!security.ok) return security.response;
+  
+  const user = security.user!; // Guaranteed by withAuth
 
   if (!hasSupabaseAdminEnv()) {
     return apiError(API_ERROR_CODES.SERVICE_UNAVAILABLE, "Bildirim servisi hazır değil.", 503);
@@ -82,24 +42,15 @@ export async function DELETE(
   request: Request,
   context: { params: Promise<{ notificationId: string }> },
 ) {
-  const ipRateLimit = await enforceRateLimit(
-    getRateLimitKey(request, "api:notifications:delete"),
-    rateLimitProfiles.general,
-  );
+  // Security checks: Auth + Rate limiting
+  const security = await withAuth(request, {
+    ipRateLimit: rateLimitProfiles.general,
+    rateLimitKey: "notifications:delete",
+  });
 
-  if (ipRateLimit) {
-    return ipRateLimit.response;
-  }
-
-  if (!hasSupabaseEnv()) {
-    return apiError(API_ERROR_CODES.SERVICE_UNAVAILABLE, "Servis kullanılamıyor.", 503);
-  }
-
-  const user = await getAuthenticatedUser();
-
-  if (!user) {
-    return apiError(API_ERROR_CODES.UNAUTHORIZED, "Bildirimleri silmek için giriş yapmalısın.", 401);
-  }
+  if (!security.ok) return security.response;
+  
+  const user = security.user!; // Guaranteed by withAuth
 
   if (!hasSupabaseAdminEnv()) {
     return apiError(API_ERROR_CODES.SERVICE_UNAVAILABLE, "Bildirim servisi hazır değil.", 503);
