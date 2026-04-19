@@ -3,7 +3,7 @@
 import dynamic from "next/dynamic"
 import { useState, useTransition, useRef, useCallback, useEffect } from "react"
 import { useRouter } from "next/navigation"
-import { LayoutGrid, List, ArrowDownUp, Star, BadgeCheck, TrendingDown, SlidersHorizontal } from "lucide-react"
+import { LayoutGrid, List, ArrowDownUp, Star, BadgeCheck, TrendingDown, SlidersHorizontal, X } from "lucide-react"
 
 import Link from "next/link"
 import { type Listing, type ListingFilters, type BrandCatalogItem, type CityOption } from "@/types"
@@ -12,6 +12,10 @@ import { ListingsGridSkeleton } from "@/components/listings/listings-grid-skelet
 import { cn, formatTL } from "@/lib/utils"
 import { createSearchParamsFromListingFilters } from "@/services/listings/listing-filters"
 import { useInfiniteQuery } from "@tanstack/react-query"
+import { marketplace } from "@/lib/constants/ui-strings"
+import { useKeyboard } from "@/hooks/use-keyboard"
+
+const DEBOUNCE_DELAY_MS = 400
 
 function useIntersectionObserver({
   onIntersect,
@@ -55,25 +59,24 @@ const MobileFilterDrawer = dynamic(
 )
 
 const SORT_OPTIONS = [
-  { value: "newest", label: "En Yeni" },
-  { value: "oldest", label: "En Eski" },
-  { value: "price_asc", label: "Fiyat (Düşükten Yükseğe)" },
-  { value: "price_desc", label: "Fiyat (Yüksekten Düşüğe)" },
-  { value: "mileage_asc", label: "Kilometre (Düşükten Yükseğe)" },
-  { value: "mileage_desc", label: "Kilometre (Yüksekten Düşüğe)" },
-  { value: "year_desc", label: "Yıl (Yeniden Eskiye)" },
-  { value: "year_asc", label: "Yıl (Eskiden Yeniye)" },
+  { value: "newest", label: marketplace.sortOptions.newest },
+  { value: "oldest", label: marketplace.sortOptions.oldest },
+  { value: "price_asc", label: marketplace.sortOptions.priceAsc },
+  { value: "price_desc", label: marketplace.sortOptions.priceDesc },
+  { value: "mileage_asc", label: marketplace.sortOptions.mileageAsc },
+  { value: "mileage_desc", label: marketplace.sortOptions.mileageDesc },
+  { value: "year_desc", label: marketplace.sortOptions.yearDesc },
+  { value: "year_asc", label: marketplace.sortOptions.yearAsc },
 ]
 
 const QUICK_FILTERS = [
-  { label: "Tüm İlanlar", type: "reset" as const, icon: null },
-  { label: "Ekspertizli", type: "expert" as const, icon: BadgeCheck },
-  { label: "Fiyatı Düşen", type: "price_low" as const, icon: TrendingDown },
-  { label: "Yeni Eklenen", type: "newest" as const, icon: Star },
+  { label: marketplace.quickFilters.all, type: "reset" as const, icon: null },
+  { label: marketplace.quickFilters.expert, type: "expert" as const, icon: BadgeCheck },
+  { label: marketplace.quickFilters.priceDrop, type: "price_low" as const, icon: TrendingDown },
+  { label: marketplace.quickFilters.newest, type: "newest" as const, icon: Star },
 ]
 
 const PAGE_SIZE_OPTIONS = [12, 24, 48]
-const DEBOUNCE_DELAY_MS = 400
 
 interface ListingsPageClientProps {
   initialResult: {
@@ -139,15 +142,10 @@ export function ListingsPageClient({
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid")
   const [isSortOpen, setIsSortOpen] = useState(false)
 
-  // Close sort dropdown on Escape key
-  useEffect(() => {
-    if (!isSortOpen) return
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Escape") setIsSortOpen(false)
-    }
-    document.addEventListener("keydown", handleKeyDown)
-    return () => document.removeEventListener("keydown", handleKeyDown)
-  }, [isSortOpen])
+  useKeyboard({
+    onEscape: useCallback(() => setIsSortOpen(false), []),
+    enabled: isSortOpen,
+  })
 
   const activeFiltersCount = Object.entries(filters).filter(([key, val]) => {
     if (key === "limit" || key === "sort" || key === "page") return false

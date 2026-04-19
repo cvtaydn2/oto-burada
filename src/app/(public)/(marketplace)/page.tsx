@@ -169,7 +169,7 @@ export default async function HomePage() {
               <CarFront size={48} className="mx-auto text-muted-foreground/30 mb-4" />
               <h3 className="text-lg font-bold text-card-foreground mb-2">Henüz ilan bulunmuyor</h3>
               <p className="text-muted-foreground text-sm max-w-sm mx-auto">
-                İlk ilanı sen vererek platformda yerini alabilirsin. Türkiye'nin en güvenilir pazarına hemen katıl!
+                İlk ilanı sen vererek platformda yerini alabilirsin. Türkiye&apos;nin en güvenilir pazarına hemen katıl!
               </p>
               <Link href="/dashboard/listings/create" className="mt-6 inline-flex items-center justify-center bg-primary text-primary-foreground px-6 py-2.5 rounded-xl font-bold hover:bg-primary/90 transition">
                 Hemen İlan Ver

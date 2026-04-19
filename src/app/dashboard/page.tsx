@@ -27,6 +27,8 @@ import { getDatabaseFavoriteCount } from "@/services/favorites/favorite-records"
 import { getStoredUserListings } from "@/services/listings/listing-submissions";
 import { getStoredProfileById, buildProfileFromAuthUser } from "@/services/profile/profile-records";
 import { cn } from "@/lib/utils";
+import { DashboardContentSkeleton } from "@/components/dashboard/dashboard-content-skeleton";
+import { dashboard } from "@/lib/constants/ui-strings";
 
 export const dynamic = "force-dynamic";
 
@@ -50,7 +52,7 @@ export default async function DashboardPage() {
             <div>
               <div className="mb-4 inline-flex items-center gap-2 rounded-full bg-white/10 px-4 py-1.5 text-[10px] font-black uppercase tracking-widest text-blue-300 backdrop-blur-md border border-white/10">
                 <LayoutDashboard size={12} strokeWidth={3} />
-                Kontrol Merkezi
+                {dashboard.controlCenter}
               </div>
               <h1 className="text-4xl font-black tracking-tight lg:text-5xl">
                 Hoş Geldin, <span className="text-blue-400">{user.email?.split("@")[0]}</span>
@@ -66,7 +68,7 @@ export default async function DashboardPage() {
                 className="flex h-16 items-center gap-3 rounded-2xl bg-blue-600 px-8 text-sm font-black uppercase tracking-widest text-white shadow-xl shadow-blue-600/40 transition-all hover:bg-blue-700 hover:scale-105 active:scale-95"
               >
                 <Plus size={20} strokeWidth={3} />
-                Yeni İlan Başlat
+                {dashboard.newListing}
               </Link>
             </div>
           </div>
@@ -74,11 +76,11 @@ export default async function DashboardPage() {
           {/* New Tabbed Nav - Cinema Style */}
           <div className="relative z-10 mt-12 flex items-center gap-2 border-t border-white/10 pt-8 overflow-x-auto no-scrollbar">
             {[
-              { label: "Özet", href: "/dashboard", icon: LayoutDashboard, active: true },
-              { label: "İlanlarım", href: "/dashboard/listings", icon: ClipboardList },
-              { label: "Mesajlar", href: "/dashboard/messages", icon: MessageSquare },
-              { label: "Favoriler", href: "/dashboard/favorites", icon: Star },
-              { label: "Ayarlar", href: "/dashboard/profile", icon: Settings },
+              { label: dashboard.summary, href: "/dashboard", icon: LayoutDashboard, active: true },
+              { label: dashboard.myListings, href: "/dashboard/listings", icon: ClipboardList },
+              { label: dashboard.messages, href: "/dashboard/messages", icon: MessageSquare },
+              { label: dashboard.favorites, href: "/dashboard/favorites", icon: Star },
+              { label: dashboard.settings, href: "/dashboard/profile", icon: Settings },
             ].map((tab) => (
               <Link
                 key={tab.label}
@@ -414,26 +416,6 @@ async function DashboardDataSection({
               ))}
             </div>
           </div>
-        </div>
-      </div>
-      </div>
-  );
-}
-
-function DashboardContentSkeleton() {
-  return (
-    <div className="space-y-12 animate-pulse">
-      <div className="h-64 h-64 rounded-[2.5rem] bg-slate-200" />
-      <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
-        {Array.from({ length: 4 }).map((_, i) => (
-          <div key={i} className="h-48 rounded-[2rem] bg-slate-200" />
-        ))}
-      </div>
-      <div className="grid grid-cols-1 gap-12 lg:grid-cols-3">
-        <div className="h-[600px] rounded-[2.5rem] bg-slate-200 lg:col-span-2" />
-        <div className="space-y-12">
-          <div className="h-64 rounded-[2.5rem] bg-slate-200" />
-          <div className="h-80 rounded-[2.5rem] bg-slate-200" />
         </div>
       </div>
     </div>

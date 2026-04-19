@@ -1,31 +1,54 @@
-import { CalendarDays, CircleGauge, Fuel, Settings2 } from "lucide-react"
-import { formatNumber } from "@/lib/utils"
-import { type Listing } from "@/types"
+import type { Listing } from "@/types";
+import { CalendarDays, CircleGauge, Fuel, Settings2 } from "lucide-react";
+import { formatNumber } from "@/lib/utils";
+
+interface SpecBoxProps {
+  icon: React.ReactNode;
+  label: string;
+  value: string;
+}
+
+export function SpecBox({ icon, label, value }: SpecBoxProps) {
+  return (
+    <div className="bg-white border border-slate-200 rounded-[2rem] p-6 flex flex-col items-center justify-center text-center shadow-sm hover:shadow-md transition-all hover:-translate-y-1">
+      <div className="size-14 bg-slate-50 text-slate-900 rounded-2xl flex items-center justify-center mb-4 shadow-inner">
+        {icon}
+      </div>
+      <div className="space-y-1">
+        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{label}</p>
+        <p className="text-sm font-black text-slate-900 tracking-tight">{value}</p>
+      </div>
+    </div>
+  );
+}
 
 interface ListingSpecsProps {
-  listing: Listing
+  listing: Listing;
 }
 
 export function ListingSpecs({ listing }: ListingSpecsProps) {
-  const specs = [
-    { label: "Yıl", value: listing.year, icon: CalendarDays },
-    { label: "KM", value: `${formatNumber(listing.mileage)} km`, icon: CircleGauge },
-    { label: "Yakıt", value: listing.fuelType, icon: Fuel },
-    { label: "Vites", value: listing.transmission, icon: Settings2 },
-  ]
-
   return (
-    <div className="grid grid-cols-4 gap-3">
-      {specs.map((spec) => (
-        <div
-          key={spec.label}
-          className="flex flex-col items-center justify-center p-3 rounded-lg border border-border bg-card"
-        >
-          <spec.icon className="w-5 h-5 text-blue-600 mb-1" />
-          <span className="text-[10px] font-medium text-muted-foreground uppercase">{spec.label}</span>
-          <span className="text-sm font-semibold text-foreground">{spec.value}</span>
-        </div>
-      ))}
+    <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
+      <SpecBox 
+        icon={<CalendarDays className="size-6" />} 
+        label="Model Yılı" 
+        value={String(listing.year)} 
+      />
+      <SpecBox 
+        icon={<CircleGauge className="size-6" />} 
+        label="Kilometre" 
+        value={`${formatNumber(listing.mileage)} km`} 
+      />
+      <SpecBox 
+        icon={<Fuel className="size-6" />} 
+        label="Yakıt Tipi" 
+        value={listing.fuelType} 
+      />
+      <SpecBox 
+        icon={<Settings2 className="size-6" />} 
+        label="Vites Tipi" 
+        value={listing.transmission} 
+      />
     </div>
-  )
+  );
 }

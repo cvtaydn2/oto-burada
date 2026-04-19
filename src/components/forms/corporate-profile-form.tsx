@@ -110,7 +110,7 @@ export function CorporateProfileForm({
               />
               <div className="size-12 rounded-xl border border-border bg-muted/30 flex items-center justify-center shrink-0 overflow-hidden">
                 {values.businessLogoUrl ? (
-                  <Image src={values.businessLogoUrl} alt="Logo Preview" fill className="object-contain p-1" />
+                  <Image src={values.businessLogoUrl} alt="Logo Preview" fill sizes="48px" className="object-contain p-1" />
                 ) : (
                   <ImageIcon className="size-5 text-slate-300" />
                 )}

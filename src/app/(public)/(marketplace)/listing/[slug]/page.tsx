@@ -3,18 +3,15 @@ import dynamic from "next/dynamic";
 import Image from "next/image";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
+import { headers } from "next/headers";
 import {
-  CalendarDays,
-  CircleGauge,
-  Fuel,
-  Settings2,
   ChevronRight,
   ShieldCheck,
   TrendingUp,
   Zap,
   XCircle,
 } from "lucide-react";
-import { cn, formatNumber } from "@/lib/utils";
+import { cn } from "@/lib/utils";
 import { features } from "@/lib/features";
 import { ListingGallery } from "@/components/listings/listing-gallery";
 import { ListingDetailStructuredData, BreadcrumbStructuredData } from "@/components/seo/structured-data";
@@ -24,6 +21,8 @@ import { DamageReportCard } from "@/components/listings/damage-report-card";
 import { MarketValueCard } from "@/components/listings/market-value-card";
 import { ViewCounter } from "@/components/listings/view-counter";
 import { PriceHistoryChart } from "@/components/listings/price-history-chart";
+import { ListingSpecs } from "@/components/listings/listing-specs";
+import { TrustSummary } from "@/components/listings/trust-summary";
 import { buildListingDetailMetadata, buildAbsoluteUrl } from "@/lib/seo";
 import {
   getMarketplaceListingBySlug,
@@ -34,9 +33,10 @@ import { getListingCardInsights } from "@/services/listings/listing-card-insight
 import { getListingPriceHistory } from "@/services/listings/listing-price-history";
 import { captureServerEvent } from "@/lib/monitoring/posthog-server";
 import { recordListingView } from "@/services/listings/listing-views";
-import { headers } from "next/headers";
 import { getCurrentUser } from "@/lib/auth/session";
 import { getSellerRatingSummary } from "@/services/profile/seller-reviews";
+import { getMemberSinceYear, getMembershipYears, buildWhatsAppOfferLink } from "@/lib/utils/listing-utils";
+import { listingDetail, breadcrumbs as breadcrumbLabels } from "@/lib/constants/ui-strings";
 
 const SellerReviewForm = dynamic(
   () => import("@/components/listings/seller-review-form").then((mod) => mod.SellerReviewForm),
@@ -124,29 +124,14 @@ export default async function ListingDetailPage({ params }: ListingDetailPagePro
     year: listing.year,
     status: listing.status,
   });
+  
   const insight = getListingCardInsights(listing);
-  const memberSince = seller?.createdAt
-    ? new Date(seller.createdAt).getFullYear()
-    : null;
-  const membershipYears = memberSince
-    ? Math.max(new Date().getFullYear() - memberSince, 0)
-    : null;
-  const whatsappPhoneDigits = listing.whatsappPhone.replace(/\D/g, "");
-  const buildOfferLink = (offerPrice?: number) => {
-    if (!whatsappPhoneDigits) {
-      return "#";
-    }
-
-    const message = offerPrice
-      ? `${listing.title} ilanınız için ${new Intl.NumberFormat("tr-TR").format(offerPrice)} TL teklif vermek istiyorum.`
-      : `${listing.title} ilanınız için size özel teklif paylaşmak istiyorum.`;
-
-    return `https://wa.me/${whatsappPhoneDigits}?text=${encodeURIComponent(message)}`;
-  };
-
-  const breadcrumbs = [
-    { name: "Ana Sayfa", url: "/" },
-    { name: "Otomobil", url: "/listings" },
+  const memberSince = getMemberSinceYear(seller?.createdAt ?? null);
+  const membershipYears = getMembershipYears(memberSince);
+  
+  const pageBreadcrumbs = [
+    { name: breadcrumbLabels.home, url: "/" },
+    { name: breadcrumbLabels.cars, url: "/listings" },
     { name: listing.brand, url: `/listings?brand=${encodeURIComponent(listing.brand)}` },
     { name: listing.model, url: `/listing/${listing.slug}` }
   ];
@@ -154,7 +139,7 @@ export default async function ListingDetailPage({ params }: ListingDetailPagePro
   return (
     <>
       <ListingDetailStructuredData listing={listing} url={buildAbsoluteUrl(`/listing/${listing.slug}`)} sellerName={seller?.businessName ?? seller?.fullName ?? undefined} />
-      <BreadcrumbStructuredData items={breadcrumbs.map(b => ({ name: b.name, url: buildAbsoluteUrl(b.url) }))} />
+      <BreadcrumbStructuredData items={pageBreadcrumbs.map(b => ({ name: b.name, url: buildAbsoluteUrl(b.url) }))} />
       
       <MobileStickyActions
           listingId={listing.id}
@@ -170,15 +155,15 @@ export default async function ListingDetailPage({ params }: ListingDetailPagePro
           {/* Top Header/Breadcrumb Area */}
           <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-6 mb-10">
             <nav className="flex flex-wrap items-center gap-3">
-              {breadcrumbs.map((b, i) => (
+              {pageBreadcrumbs.map((b, i) => (
                 <div key={b.url} className="flex items-center gap-3">
                   <Link href={b.url} className={cn(
                     "text-[11px] font-black uppercase tracking-widest transition-all hover:text-blue-600",
-                    i === breadcrumbs.length - 1 ? "text-slate-900" : "text-slate-400"
+                    i === pageBreadcrumbs.length - 1 ? "text-slate-900" : "text-slate-400"
                   )}>
                     {b.name}
                   </Link>
-                  {i < breadcrumbs.length - 1 && (
+                  {i < pageBreadcrumbs.length - 1 && (
                     <div className="size-1 rounded-full bg-slate-200" />
                   )}
                 </div>
@@ -272,43 +257,17 @@ export default async function ListingDetailPage({ params }: ListingDetailPagePro
               </div>
 
               {/* Key Specs Grid */}
-              <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
-                <SpecBox icon={<CalendarDays className="size-6" />} label="Model Yılı" value={String(listing.year)} />
-                <SpecBox icon={<CircleGauge className="size-6" />} label="Kilometre" value={`${formatNumber(listing.mileage)} km`} />
-                <SpecBox icon={<Fuel className="size-6" />} label="Yakıt Tipi" value={listing.fuelType} />
-                <SpecBox icon={<Settings2 className="size-6" />} label="Vites Tipi" value={listing.transmission} />
-              </div>
+              <ListingSpecs listing={listing} />
 
               {/* Status & Trust Overview */}
               <div className="rounded-[3rem] border border-slate-200 bg-white p-10 shadow-sm relative group overflow-hidden">
                 <div className="absolute top-0 right-0 w-96 h-96 bg-slate-50 rounded-full blur-3xl opacity-20 -mr-48 -mt-48" />
-                <h2 className="text-xl font-black text-slate-900 tracking-tight mb-8 relative">Kurumsal Güven & Durum Özeti</h2>
-                <div className="grid gap-6 sm:grid-cols-2 xl:grid-cols-4 relative">
-                  <TrustCard
-                    title="Ekspertiz"
-                    value={listing.expertInspection?.hasInspection ? "Onaylı" : "Yok"}
-                    description={listing.expertInspection?.inspectionDate ? `Resmi rapor mevcut` : "Ekspertiz beyan edilmedi"}
-                    tone={listing.expertInspection?.hasInspection ? "emerald" : "amber"}
-                  />
-                  <TrustCard
-                    title="Tramer"
-                    value={listing.tramerAmount && listing.tramerAmount > 0 ? `${new Intl.NumberFormat("tr-TR").format(listing.tramerAmount)} TL` : "SIFIR"}
-                    description={listing.tramerAmount && listing.tramerAmount > 0 ? "Hasar kaydı detayları" : "Hasar kaydı bulunmuyor"}
-                    tone={listing.tramerAmount && listing.tramerAmount > 0 ? "amber" : "emerald"}
-                  />
-                  <TrustCard
-                    title="Satıcı"
-                    value={seller?.isVerified ? "ONAYLI" : "AKTİF"}
-                    description={seller?.isVerified ? "Kimlik doğrulanmış" : "Profil yayında"}
-                    tone={seller?.isVerified ? "emerald" : "blue"}
-                  />
-                  <TrustCard
-                    title="İlan Durumu"
-                    value="GÜNCEL"
-                    description={`${new Date(listing.updatedAt).toLocaleDateString("tr-TR")} güncellendi`}
-                    tone="blue"
-                  />
-                </div>
+                <h2 className="text-xl font-black text-slate-900 tracking-tight mb-8 relative">{listingDetail.trustSummary}</h2>
+                <TrustSummary 
+                  listing={listing} 
+                  seller={seller} 
+                  updatedAt={listing.updatedAt} 
+                />
               </div>
 
               {/* Technical RecordsSection */}
@@ -366,7 +325,7 @@ export default async function ListingDetailPage({ params }: ListingDetailPagePro
                   <div className="space-y-6">
                     <div className="p-6 rounded-3xl bg-slate-50 border border-slate-100 italic font-medium text-slate-600 leading-relaxed relative">
                        <div className="absolute -top-3 left-6 px-3 py-1 bg-white border border-slate-100 rounded-lg text-[9px] font-black uppercase tracking-widest text-slate-400">Yapay Zeka Özeti</div>
-                       "{insight.summary}"
+                       &ldquo;{insight.summary}&rdquo;
                     </div>
                     <div className="flex flex-wrap gap-3">
                       {insight.highlights.map(h => (
@@ -445,7 +404,7 @@ export default async function ListingDetailPage({ params }: ListingDetailPagePro
                     <div className="relative shrink-0">
                       <div className="relative size-16 rounded-[1.5rem] border-4 border-slate-50 shadow-lg bg-white overflow-hidden flex items-center justify-center">
                         {seller?.businessLogoUrl ? (
-                          <Image src={seller.businessLogoUrl} alt={seller.fullName || ""} fill className="object-cover" />
+                          <Image src={seller.businessLogoUrl} alt={seller.fullName || ""} fill sizes="64px" className="object-cover" />
                         ) : (
                           <div className="size-full bg-slate-100 flex items-center justify-center font-black text-xl text-slate-300">
                              {seller?.fullName?.[0] || "S"}
@@ -515,11 +474,11 @@ export default async function ListingDetailPage({ params }: ListingDetailPagePro
                   </div>
                   
                   <div className="grid grid-cols-1 gap-3">
-                    <a href={buildOfferLink(Math.round(listing.price * 0.95))} target="_blank" rel="noreferrer" className="bg-white/10 backdrop-blur-md border border-white/20 hover:bg-white/20 text-white py-4 rounded-2xl text-sm font-black transition-all text-center tracking-tight">₺{new Intl.NumberFormat("tr-TR").format(Math.round(listing.price * 0.95))} (%5 İndirim)</a>
-                    <a href={buildOfferLink(Math.round(listing.price * 0.98))} target="_blank" rel="noreferrer" className="bg-white/10 backdrop-blur-md border border-white/20 hover:bg-white/20 text-white py-4 rounded-2xl text-sm font-black transition-all text-center tracking-tight">₺{new Intl.NumberFormat("tr-TR").format(Math.round(listing.price * 0.98))} (%2 İndirim)</a>
+                    <a href={buildWhatsAppOfferLink(listing.whatsappPhone, listing.title, Math.round(listing.price * 0.95))} target="_blank" rel="noreferrer" className="bg-white/10 backdrop-blur-md border border-white/20 hover:bg-white/20 text-white py-4 rounded-2xl text-sm font-black transition-all text-center tracking-tight">₺{new Intl.NumberFormat("tr-TR").format(Math.round(listing.price * 0.95))} (%5 İndirim)</a>
+                    <a href={buildWhatsAppOfferLink(listing.whatsappPhone, listing.title, Math.round(listing.price * 0.98))} target="_blank" rel="noreferrer" className="bg-white/10 backdrop-blur-md border border-white/20 hover:bg-white/20 text-white py-4 rounded-2xl text-sm font-black transition-all text-center tracking-tight">₺{new Intl.NumberFormat("tr-TR").format(Math.round(listing.price * 0.98))} (%2 İndirim)</a>
                   </div>
                   
-                  <a href={buildOfferLink()} target="_blank" rel="noreferrer" className="w-full bg-white text-blue-600 font-black h-16 rounded-[1.5rem] transition-all hover:scale-105 active:scale-95 shadow-xl flex justify-center items-center uppercase text-[11px] tracking-[0.2em]">
+                  <a href={buildWhatsAppOfferLink(listing.whatsappPhone, listing.title)} target="_blank" rel="noreferrer" className="w-full bg-white text-blue-600 font-black h-16 rounded-[1.5rem] transition-all hover:scale-105 active:scale-95 shadow-xl flex justify-center items-center uppercase text-[11px] tracking-[0.2em]">
                     KENDİ TEKLİFİNİ YAP
                   </a>
                 </div>
@@ -559,46 +518,5 @@ export default async function ListingDetailPage({ params }: ListingDetailPagePro
       </main>
 
     </>
-  );
-}
-
-function SpecBox({ icon, label, value }: { icon: React.ReactNode; label: string; value: string }) {
-  return (
-    <div className="bg-white border border-slate-200 rounded-[2rem] p-6 flex flex-col items-center justify-center text-center shadow-sm hover:shadow-md transition-all hover:-translate-y-1">
-      <div className="size-14 bg-slate-50 text-slate-900 rounded-2xl flex items-center justify-center mb-4 shadow-inner">
-        {icon}
-      </div>
-      <div className="space-y-1">
-        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{label}</p>
-        <p className="text-sm font-black text-slate-900 tracking-tight">{value}</p>
-      </div>
-    </div>
-  );
-}
-
-function TrustCard({
-  title,
-  value,
-  description,
-  tone,
-}: {
-  title: string;
-  value: string;
-  description: string;
-  tone: "emerald" | "amber" | "blue" | "slate";
-}) {
-  const toneClasses = {
-    amber: "border-amber-100 bg-amber-50 text-amber-700",
-    blue: "border-blue-100 bg-blue-50 text-blue-700",
-    emerald: "border-emerald-100 bg-emerald-50 text-emerald-700",
-    slate: "border-slate-100 bg-slate-50 text-slate-700",
-  } as const;
-
-  return (
-    <div className={cn("rounded-3xl border p-6 transition-all hover:shadow-lg", toneClasses[tone])}>
-      <div className="text-[10px] font-black uppercase tracking-[0.2em] opacity-80">{title}</div>
-      <div className="mt-2 text-xl font-black tracking-tighter">{value}</div>
-      <p className="mt-3 text-[11px] font-bold leading-relaxed opacity-60 uppercase tracking-wide">{description}</p>
-    </div>
   );
 }

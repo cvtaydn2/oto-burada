@@ -132,3 +132,38 @@ export const carPartLabels: Record<typeof carParts[number], string> = {
   on_tampon: "Ön Tampon",
   arka_tampon: "Arka Tampon"
 };
+
+export const fuelTypeLabels: Record<typeof fuelTypes[number], string> = {
+  benzin: "Benzin",
+  dizel: "Dizel",
+  lpg: "LPG",
+  hibrit: "Hibrit",
+  elektrik: "Elektrik"
+};
+
+export const transmissionTypeLabels: Record<typeof transmissionTypes[number], string> = {
+  manuel: "Manuel",
+  otomatik: "Otomatik",
+  yari_otomatik: "Yarı Otomatik"
+};
+
+export const listingStatusLabels: Record<typeof listingStatuses[number], string> = {
+  draft: "Taslak",
+  pending: "Onay Bekliyor",
+  pending_ai_review: "AI İncelemesinde",
+  approved: "Yayında",
+  rejected: "Reddedildi",
+  flagged: "Bayraklandı",
+  archived: "Arşivlendi"
+};
+
+export const userRoleLabels: Record<typeof userRoles[number], string> = {
+  user: "Kullanıcı",
+  admin: "Yönetici"
+};
+
+export const userTypeLabels = {
+  individual: "Bireysel",
+  professional: "Kurumsal",
+  staff: "Personel"
+} as const;

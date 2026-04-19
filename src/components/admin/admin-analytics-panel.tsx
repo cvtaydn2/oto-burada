@@ -39,13 +39,13 @@ export function AdminAnalyticsPanel({ data }: AdminAnalyticsPanelProps) {
   return (
     <div className="space-y-8">
       <div className="grid gap-8 lg:grid-cols-2">
-        <div className="rounded-2xl border border-slate-100 bg-slate-50/20 p-6 flex flex-col">
+        <div className="rounded-2xl border border-slate-100 bg-slate-50/20 p-6 flex flex-col min-h-[300px]">
           <div className="flex items-center gap-2 mb-6">
              <div className="size-1.5 rounded-full bg-blue-500" />
              <h3 className="text-[11px] font-black text-slate-400 uppercase tracking-[0.2em] italic">İlan Durumu Dağılımı</h3>
           </div>
-          {/* position:relative + explicit height — ResponsiveContainer'ın flex parent'ta boyut ölçmesi için */}
-          <div style={{ position: "relative", height: 250, width: "100%" }}>
+          {/* position:relative + explicit min-height — ResponsiveContainer'ın boyut ölçmesi için */}
+          <div className="flex-1 min-h-[250px]">
             {statusData.length > 0 ? (
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
@@ -84,12 +84,12 @@ export function AdminAnalyticsPanel({ data }: AdminAnalyticsPanelProps) {
           </div>
         </div>
 
-        <div className="rounded-2xl border border-slate-100 bg-slate-50/20 p-6">
+        <div className="rounded-2xl border border-slate-100 bg-slate-50/20 p-6 min-h-[300px]">
           <div className="flex items-center gap-2 mb-6">
              <div className="size-1.5 rounded-full bg-indigo-500" />
              <h3 className="text-[11px] font-black text-slate-400 uppercase tracking-[0.2em] italic">İlan Trendi (Son 7 Gün)</h3>
           </div>
-          <div style={{ position: "relative", height: 250, width: "100%" }}>
+          <div className="min-h-[250px]">
             {(data.recentTrends || []).length > 0 ? (
               <ResponsiveContainer width="100%" height="100%">
                 <LineChart data={data.recentTrends}>
@@ -142,12 +142,12 @@ export function AdminAnalyticsPanel({ data }: AdminAnalyticsPanelProps) {
         </div>
       </div>
 
-      <div className="rounded-2xl border border-slate-100 bg-slate-50/20 p-6">
+      <div className="rounded-2xl border border-slate-100 bg-slate-50/20 p-6 min-h-[300px]">
         <div className="flex items-center gap-2 mb-6">
            <div className="size-1.5 rounded-full bg-emerald-500" />
            <h3 className="text-[11px] font-black text-slate-400 uppercase tracking-[0.2em] italic">Marka Bazlı Kapasite (Top 5)</h3>
         </div>
-        <div style={{ position: "relative", height: 250, width: "100%" }}>
+        <div className="min-h-[250px]">
           {(data.listingsByBrand || []).length > 0 ? (
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={(data.listingsByBrand || []).slice(0, 5)} layout="vertical" margin={{ left: 20 }}>

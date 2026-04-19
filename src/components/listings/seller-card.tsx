@@ -37,7 +37,7 @@ export function SellerCard({
         <div className="flex items-center gap-4 mb-6">
           <div className="size-16 rounded-[20px] bg-muted/30 flex items-center justify-center font-black text-2xl text-muted-foreground/70 border border-border/50 shrink-0 overflow-hidden relative">
             {seller?.businessLogoUrl ? (
-              <Image src={seller.businessLogoUrl} alt={seller.businessName || seller.fullName || ""} fill className="object-contain p-1" />
+              <Image src={seller.businessLogoUrl} alt={seller.businessName || seller.fullName || ""} fill sizes="64px" className="object-contain p-1" />
             ) : (
               (seller?.businessName || seller?.fullName || "S").slice(0, 1)
             )}
