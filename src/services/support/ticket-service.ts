@@ -49,23 +49,22 @@ export async function createTicket(
   userId: string,
   input: CreateTicketInput,
 ): Promise<Ticket> {
+  // Use server client (authenticated role) with security definer RPC
+  // This respects RLS policies instead of bypassing them
   const supabase = await createSupabaseServerClient();
-  const { data, error } = await supabase
-    .from("tickets")
-    .insert({
-      user_id: userId,
-      subject: input.subject,
-      description: input.description,
-      category: input.category,
-      priority: input.priority ?? "medium",
-      listing_id: input.listingId ?? null,
-    })
-    .select()
-    .single();
+  
+  const { data, error } = await supabase.rpc("create_user_ticket", {
+    p_subject: input.subject,
+    p_description: input.description,
+    p_category: input.category,
+    p_priority: input.priority ?? "medium",
+    p_listing_id: input.listingId ?? null,
+  });
 
   if (error) throw error;
+  if (!data) throw new Error("Failed to create user ticket");
 
-  const ticket = mapTicket(data);
+  const ticket = data as unknown as Ticket;
 
   // Kullanıcıya "talebiniz alındı" e-postası gönder (arka planda, hata olursa sessiz geç)
   if (userId) {
@@ -90,7 +89,10 @@ export async function createPublicTicket(input: {
   contactEmail: string;
   contactName: string;
 } & CreateTicketInput): Promise<Ticket> {
-  const admin = createSupabaseAdminClient();
+  // Use server client (anon role) with security definer RPC
+  // This respects RLS policies instead of bypassing them with admin client
+  const supabase = await createSupabaseServerClient();
+  
   const description = [
     `İletişim Adı: ${input.contactName}`,
     `İletişim E-postası: ${input.contactEmail}`,
@@ -98,22 +100,18 @@ export async function createPublicTicket(input: {
     input.description,
   ].join("\n");
 
-  const { data, error } = await admin
-    .from("tickets")
-    .insert({
-      user_id: null,
-      subject: input.subject,
-      description,
-      category: input.category,
-      priority: input.priority ?? "medium",
-      listing_id: input.listingId ?? null,
-    })
-    .select()
-    .single();
+  const { data, error } = await supabase.rpc("create_public_ticket", {
+    p_subject: input.subject,
+    p_description: description,
+    p_category: input.category,
+    p_priority: input.priority ?? "medium",
+    p_listing_id: input.listingId ?? null,
+  });
 
   if (error) throw error;
+  if (!data) throw new Error("Failed to create public ticket");
 
-  const ticket = mapTicket(data);
+  const ticket = data as unknown as Ticket;
 
   sendTicketCreatedEmail({
     ticketId: ticket.id,
@@ -126,6 +124,11 @@ export async function createPublicTicket(input: {
   return ticket;
 }
 
+/**
+ * Get all tickets (admin-only).
+ * Uses admin client because this is only called from admin dashboard.
+ * RLS is bypassed intentionally for admin read operations.
+ */
 export async function getAllTickets(options?: {
   status?: TicketStatus;
   limit?: number;
@@ -171,94 +174,46 @@ export async function updateTicketStatus(
   status: TicketStatus,
   adminResponse?: string,
 ): Promise<Ticket> {
-  const admin = createSupabaseAdminClient();
-  const updates: Record<string, unknown> = {
-    status,
-    updated_at: new Date().toISOString(),
-  };
-  if (adminResponse) {
-    updates.admin_response = adminResponse;
-  }
-  if (status === "resolved" || status === "closed") {
-    updates.resolved_at = new Date().toISOString();
-  }
+  // Use server client (authenticated admin) with security definer RPC
+  // This enforces admin check inside the RPC function
+  const supabase = await createSupabaseServerClient();
+  
+  const { data, error } = await supabase.rpc("admin_update_ticket", {
+    p_ticket_id: ticketId,
+    p_status: status,
+    p_admin_response: adminResponse ?? null,
+  });
 
-  const { data, error } = await admin
-    .from("tickets")
-    .update(updates)
-    .eq("id", ticketId)
-    .select("*, profiles!tickets_user_id_fkey(full_name)")
-    .single();
+  if (error) throw error;
+  if (!data) throw new Error("Failed to update ticket");
 
-  if (error) {
-    logger.admin.error("updateTicketStatus error", error);
-    // Fallback: join olmadan dene
-    const { data: fallbackData, error: fallbackError } = await admin
-      .from("tickets")
-      .update(updates)
-      .eq("id", ticketId)
-      .select("*")
-      .single();
-    
-    if (fallbackError) throw fallbackError;
-    const ticket = mapTicket(fallbackData);
-    
-    // Email gönderme mantığı
-    if (adminResponse && ticket.userId) {
-      getUserEmailAndName(ticket.userId)
-        .then(({ email, name }) => {
-          if (email) {
-            sendTicketReplyEmail({
-              toEmail: email,
-              toName: name ?? "Kullanıcı",
-              ticketSubject: ticket.subject,
-              adminResponse,
-              ticketId,
-            }).catch((err) => logger.admin.warn("Ticket reply email failed silently", err));
-          }
-        })
-        .catch(() => null);
-    }
-    
-    return ticket;
-  }
-
-  const ticket = mapTicketWithProfile(data);
+  const ticket = data as unknown as Ticket;
 
   // Admin yanıt yazdıysa kullanıcıya e-posta gönder
   if (adminResponse && ticket.userId) {
-    const email = ticket.userEmail;
-    const name = ticket.userName ?? "Kullanıcı";
-
-    if (email) {
-      sendTicketReplyEmail({
-        toEmail: email,
-        toName: name,
-        ticketSubject: ticket.subject,
-        adminResponse,
-        ticketId,
-      }).catch((err) => logger.admin.warn("Ticket reply email failed silently", err));
-    } else {
-      // Profile'da email yoksa Auth'dan çek
-      getUserEmailAndName(ticket.userId)
-        .then(({ email: authEmail, name: authName }) => {
-          if (authEmail) {
-            sendTicketReplyEmail({
-              toEmail: authEmail,
-              toName: authName ?? name,
-              ticketSubject: ticket.subject,
-              adminResponse: adminResponse!,
-              ticketId,
-            }).catch(() => null);
-          }
-        })
-        .catch(() => null);
-    }
+    getUserEmailAndName(ticket.userId)
+      .then(({ email, name }) => {
+        if (email) {
+          sendTicketReplyEmail({
+            toEmail: email,
+            toName: name ?? "Kullanıcı",
+            ticketSubject: ticket.subject,
+            adminResponse,
+            ticketId,
+          }).catch((err) => logger.admin.warn("Ticket reply email failed silently", err));
+        }
+      })
+      .catch(() => null);
   }
 
   return ticket;
 }
 
+/**
+ * Get ticket count by status (admin-only).
+ * Uses admin client because this is only called from admin dashboard.
+ * RLS is bypassed intentionally for admin read operations.
+ */
 export async function getTicketCount(): Promise<Record<TicketStatus, number>> {
   const admin = createSupabaseAdminClient();
   const { data, error } = await admin.from("tickets").select("status");
