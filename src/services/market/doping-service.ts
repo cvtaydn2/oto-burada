@@ -4,6 +4,7 @@ import { payment } from "@/lib/payment";
 import { isPaymentEnabled } from "@/lib/payment/config";
 import { DOPING_PRICES, DopingId } from "@/lib/payment/constants";
 import { logDopingApplication } from "@/services/billing/transaction-service";
+import { BuyerInfo } from "@/lib/payment/types";
 
 export type DopingType = DopingId;
 
@@ -35,7 +36,8 @@ interface DopingUpdates {
 export async function applyDopingToListing(
   listingId: string, 
   userId: string, 
-  dopingTypes: DopingType[]
+  dopingTypes: DopingType[],
+  buyer?: BuyerInfo
 ): Promise<DopingResult> {
   if (!hasSupabaseAdminEnv()) return { success: false, message: "Server connection failed" };
   if (!isPaymentEnabled()) {
@@ -53,6 +55,7 @@ export async function applyDopingToListing(
     orderId: `DOP-${listingId}-${Date.now()}`,
     listingId,
     userId,
+    buyer,
   });
 
   if (!paymentResult.success) {

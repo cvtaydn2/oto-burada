@@ -9,6 +9,8 @@ import { apiError, apiSuccess, API_ERROR_CODES } from "@/lib/utils/api-response"
 import { isValidRequestOrigin } from "@/lib/security";
 import { enforceRateLimit, getUserRateLimitKey } from "@/lib/utils/rate-limit-middleware";
 import { z } from "zod";
+import { getUserProfile } from "@/services/profile/profile-records";
+import { headers } from "next/headers";
 
 const purchaseSchema = z.object({
   planId: z.string().uuid("Geçersiz plan ID."),
@@ -145,6 +147,19 @@ export async function POST(req: Request) {
       return apiError(API_ERROR_CODES.INTERNAL_ERROR, "Ödeme kaydı oluşturulamadı.", 500);
     }
 
+    // Fetch user profile for Iyzico buyer fields
+    const profile = await getUserProfile(user.id);
+    if (!profile || !profile.fullName || !user.email) {
+      return apiError(API_ERROR_CODES.BAD_REQUEST, "Ödeme için profil bilgileriniz (isim, e-posta) eksik.", 400);
+    }
+
+    const nameParts = profile.fullName.trim().split(" ");
+    const name = nameParts[0] || "User";
+    const surname = nameParts.length > 1 ? nameParts.slice(1).join(" ") : "Kullanıcı";
+    
+    const headersList = await headers();
+    const ip = headersList.get("x-forwarded-for")?.split(",")[0] || headersList.get("x-real-ip") || "127.0.0.1";
+
     // Initiate Iyzico payment
     const { payment } = await import("@/lib/payment");
     const paymentResult = await payment.processPayment({
@@ -152,6 +167,20 @@ export async function POST(req: Request) {
       orderId,
       listingId: paymentRecord.id, // reuse field for payment record ID
       userId: user.id,
+      buyer: {
+        id: user.id,
+        name,
+        surname,
+        email: user.email,
+        gsmNumber: profile.phone || "+905320000000",
+        address: profile.businessAddress || "Türkiye",
+        city: profile.city || "Istanbul",
+        country: "Turkey",
+        zipCode: "34000",
+        ip,
+        registrationDate: new Date(profile.createdAt).toISOString().slice(0, 19).replace('T', ' '),
+        lastLoginDate: new Date().toISOString().slice(0, 19).replace('T', ' '),
+      }
     });
 
     if (!paymentResult.success) {

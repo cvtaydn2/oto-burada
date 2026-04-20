@@ -4,6 +4,8 @@ import { apiError, apiSuccess, API_ERROR_CODES } from "@/lib/utils/api-response"
 import { logger } from "@/lib/utils/logger";
 import { captureServerError, captureServerEvent } from "@/lib/monitoring/posthog-server";
 import { enforceRateLimit, getUserRateLimitKey } from "@/lib/utils/rate-limit-middleware";
+import { getUserProfile } from "@/services/profile/profile-records";
+import { headers } from "next/headers";
 
 const VALID_DOPING_TYPES: DopingType[] = ["featured", "urgent", "highlighted"];
 // Doping: 10 per day per user
@@ -47,7 +49,32 @@ export async function POST(
   }
 
   try {
-    const result = await applyDopingToListing(listingId, user.id, dopingTypes as DopingType[]);
+    const profile = await getUserProfile(user.id);
+    if (!profile || !profile.fullName || !user.email) {
+      return apiError(API_ERROR_CODES.BAD_REQUEST, "Ödeme için profil bilgileriniz (isim, e-posta) eksik.", 400);
+    }
+
+    const nameParts = profile.fullName.trim().split(" ");
+    const name = nameParts[0] || "User";
+    const surname = nameParts.length > 1 ? nameParts.slice(1).join(" ") : "Kullanıcı";
+    
+    const headersList = await headers();
+    const ip = headersList.get("x-forwarded-for")?.split(",")[0] || headersList.get("x-real-ip") || "127.0.0.1";
+
+    const result = await applyDopingToListing(listingId, user.id, dopingTypes as DopingType[], {
+      id: user.id,
+      name,
+      surname,
+      email: user.email,
+      gsmNumber: profile.phone || "+905320000000",
+      address: profile.businessAddress || "Türkiye",
+      city: profile.city || "Istanbul",
+      country: "Turkey",
+      zipCode: "34000",
+      ip,
+      registrationDate: new Date(profile.createdAt).toISOString().slice(0, 19).replace('T', ' '),
+      lastLoginDate: new Date().toISOString().slice(0, 19).replace('T', ' '),
+    });
 
     if (result.success) {
       captureServerEvent("listing_doping_applied", {

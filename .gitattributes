@@ -1,0 +1,23 @@
+# Handle line endings automatically for files detected as text 
+# and leave binary files untouched
+* text=auto
+
+# Handle specific files that should always have LF (Unix) line endings
+*.sh text eol=lf
+*.bash text eol=lf
+*.js text
+*.ts text
+*.tsx text
+*.json text
+*.md text
+*.css text
+*.html text
+
+# Ensure binary files are not treated as text
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.pdf binary
+*.svg text

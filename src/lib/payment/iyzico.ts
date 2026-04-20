@@ -17,6 +17,12 @@ export class IyzicoProvider implements PaymentProvider {
   }
 
   async processPayment(request: PaymentRequest): Promise<PaymentResponse> {
+    const buyer = request.buyer;
+
+    if (!buyer) {
+      return { success: false, status: "failure", error: "Müşteri bilgileri eksik (iyzico)." };
+    }
+
     if (!isPaymentEnabled()) {
       return { success: false, status: "failure", error: "Iyzico keys missing." };
     }
@@ -33,33 +39,33 @@ export class IyzicoProvider implements PaymentProvider {
         callbackUrl: `${process.env.NEXT_PUBLIC_APP_URL}/api/payments/webhook`,
         enabledInstallments: [1, 2, 3, 6, 9],
         buyer: {
-          id: request.userId,
-          name: "User",
-          surname: "OtoBurada",
-          gsmNumber: "+905320000000",
-          email: "user@otoburada.com",
-          identityNumber: "11111111111",
-          lastLoginDate: new Date().toISOString().slice(0, 19).replace('T', ' '),
-          registrationDate: "2023-01-01 00:00:00",
-          registrationAddress: "Sanal Adres",
-          ip: "127.0.0.1",
-          city: "Istanbul",
-          country: "Turkey",
-          zipCode: "34000"
+          id: buyer.id,
+          name: buyer.name,
+          surname: buyer.surname,
+          gsmNumber: buyer.gsmNumber,
+          email: buyer.email,
+          identityNumber: buyer.identityNumber || "11111111111",
+          lastLoginDate: buyer.lastLoginDate,
+          registrationDate: buyer.registrationDate,
+          registrationAddress: buyer.address,
+          ip: buyer.ip,
+          city: buyer.city,
+          country: buyer.country,
+          zipCode: buyer.zipCode
         },
         shippingAddress: {
-          contactName: "User",
-          city: "Istanbul",
-          country: "Turkey",
-          address: "Sanal Adres",
-          zipCode: "34000"
+          contactName: `${buyer.name} ${buyer.surname}`,
+          city: buyer.city,
+          country: buyer.country,
+          address: buyer.address,
+          zipCode: buyer.zipCode
         },
         billingAddress: {
-          contactName: "User",
-          city: "Istanbul",
-          country: "Turkey",
-          address: "Sanal Adres",
-          zipCode: "34000"
+          contactName: `${buyer.name} ${buyer.surname}`,
+          city: buyer.city,
+          country: buyer.country,
+          address: buyer.address,
+          zipCode: buyer.zipCode
         },
         basketItems: [
           {
