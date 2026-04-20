@@ -40,3 +40,32 @@ export function getAppUrlWithFallback(fallback = "http://localhost:3000"): strin
   const url = process.env.NEXT_PUBLIC_APP_URL ?? fallback;
   return url.replace(/\/$/, "");
 }
+
+/**
+ * Get internal Supabase Storage Render URL for image transformation.
+ */
+export function getOptimizedImageUrl(
+  path: string | null | undefined, 
+  options: { width?: number; height?: number; quality?: number; resize?: "cover" | "contain" } = {}
+): string {
+  if (!path) return "/placeholder-car.jpg";
+  
+  // If it's already an external URL, return as is
+  if (path.startsWith("http")) return path;
+
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL?.replace(/\/$/, "");
+  if (!supabaseUrl) return path;
+
+  const { width = 800, height, quality = 75, resize = "cover" } = options;
+  
+  // Format: https://[id].supabase.co/storage/v1/render/image/public/[bucket]/[path]?width=x&height=y&quality=z&resize=x
+  // We assume 'listings' bucket as default
+  const bucket = "listings";
+  const params = new URLSearchParams();
+  params.append("width", width.toString());
+  if (height) params.append("height", height.toString());
+  params.append("quality", quality.toString());
+  params.append("resize", resize);
+
+  return `${supabaseUrl}/storage/v1/render/image/public/${bucket}/${path}?${params.toString()}`;
+}

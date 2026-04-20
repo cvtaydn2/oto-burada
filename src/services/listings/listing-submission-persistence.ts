@@ -290,20 +290,11 @@ export async function updateDatabaseListing(listing: Listing) {
     }
   }
 
-  // 3. Physical Storage Cleanup
+  // 3. Physical Storage Cleanup (Async Queue)
   if (pathsToDelete.length > 0) {
-    try {
-      const bucketName = process.env.SUPABASE_STORAGE_BUCKET_LISTINGS ?? "listing-images";
-      const { error: storageErr } = await admin.storage
-        .from(bucketName)
-        .remove(pathsToDelete);
-      
-      if (storageErr) {
-        console.error("[StorageCleanup] Failed to remove orphaned images:", storageErr);
-      }
-    } catch (err) {
-      console.error("[StorageCleanup] Unexpected error during cleanup:", err);
-    }
+    const bucketName = process.env.SUPABASE_STORAGE_BUCKET_LISTINGS ?? "listing-images";
+    const { queueFileCleanup } = await import("@/lib/storage/registry");
+    await queueFileCleanup(bucketName, pathsToDelete);
   }
 
   // OPTIMIZATION: Construct listing from update result + images (no extra fetch)

@@ -51,6 +51,20 @@ export async function withSecurity(
       };
     }
   }
+
+  // 1.1 Body Size Limit (Issue 6)
+  // Prevents "JSON Payload Bombs" causing OOM in Serverless Functions
+  const contentLength = request.headers.get("content-length");
+  const MAX_BODY_SIZE = 1 * 1024 * 1024; // 1MB for generic APIs
+  
+  if (contentLength && parseInt(contentLength, 10) > MAX_BODY_SIZE) {
+    // Note: If you have large file uploads on a route, bypass this check there.
+    // For general JSON APIs, 1MB is more than enough.
+    return {
+      ok: false,
+      response: apiError(API_ERROR_CODES.BAD_REQUEST, "İstek gövdesi çok büyük (Maks 1MB).", 413),
+    };
+  }
   
   // 2. IP-based Rate Limiting
   if (options.ipRateLimit) {

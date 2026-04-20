@@ -58,18 +58,11 @@ export async function recordListingView(
     });
   }
 
-  // Update denormalized view_count on the listing
-  const { count: totalViews } = await admin
-    .from("listing_views")
-    .select("id", { count: "exact", head: true })
-    .eq("listing_id", listingId);
-
-  if (totalViews !== null) {
-    await admin
-      .from("listings")
-      .update({ view_count: totalViews })
-      .eq("id", listingId);
-  }
+  // ── PILL: Issue 9 - Batch View Updates (MVCC Fix) ──────────────────────────
+  // Instead of doing expensive SELECT count + UPDATE on every page load,
+  // we record the intent in a buffer table via RPC.
+  // A background cron syncs this to the main 'listings' table later.
+  await admin.rpc("increment_listing_view_buffered", { p_listing_id: listingId });
 }
 
 /**

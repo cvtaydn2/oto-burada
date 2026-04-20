@@ -134,12 +134,10 @@ export async function deleteDatabaseListing(listingId: string, sellerId: string)
     const storagePaths = listing.images.map((img) => img.storagePath).filter((path) => path.length > 0);
     if (storagePaths.length > 0) {
       const bucketName = process.env.SUPABASE_STORAGE_BUCKET_LISTINGS ?? "listing-images";
-      // YENİ: Try-Catch bloğu ile veritabanı kilitlenmesini önleme
-      try {
-        await admin.storage.from(bucketName).remove(storagePaths);
-      } catch (error) {
-        console.warn(`[Storage] Resimler silinemedi ama ilan silinmeye devam ediyor. İlan ID: ${listingId}`, error);
-      }
+      // ── PILL: Issue 2 - Async File Cleanup ─────────────────────────
+      // Instead of manual removal which can fail or timeout, we queue it.
+      const { queueFileCleanup } = await import("@/lib/storage/registry");
+      await queueFileCleanup(bucketName, storagePaths);
     }
   }
 

@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { createSupabaseBrowserClient } from "@/lib/supabase/browser";
 import type { Message } from "@/types";
-import type { RealtimeChannel, RealtimePostgresInsertPayload, REALTIME_SUBSCRIBE_STATES } from "@supabase/supabase-js";
+import type { RealtimeChannel, REALTIME_SUBSCRIBE_STATES } from "@supabase/supabase-js";
 
 interface RealtimeMessageRow {
   id: string;

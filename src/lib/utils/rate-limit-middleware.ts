@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-
+import { getNormalizedIp } from "@/lib/utils/ip";
 import { checkRateLimit, type RateLimitConfig, type RateLimitResult } from "@/lib/utils/rate-limit";
 
 export { checkRateLimit };
@@ -7,11 +7,14 @@ export { checkRateLimit };
 /**
  * Extract a request identifier for rate limiting.
  * Uses X-Forwarded-For, X-Real-IP, or falls back to a generic key.
+ * SECURITY: Normalizes IPv6 to /64 subnet to prevent lease-based bypass.
  */
 export function getRateLimitKey(request: Request, prefix: string) {
   const forwarded = request.headers.get("x-forwarded-for");
   const realIp = request.headers.get("x-real-ip");
-  const ip = forwarded?.split(",")[0]?.trim() || realIp || "unknown";
+  const rawIp = forwarded?.split(",")[0]?.trim() || realIp || "unknown";
+  
+  const ip = getNormalizedIp(rawIp);
   return `${prefix}:${ip}`;
 }
 

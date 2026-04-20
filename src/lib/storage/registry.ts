@@ -106,3 +106,24 @@ export async function countDailyUserUploads(userId: string): Promise<number> {
 
   return count ?? 0;
 }
+
+/**
+ * ── PILL: Issue 2 - Storage Cleanup Queue ─────────────────────────
+ * Add files to a background cleanup queue instead of deleting synchronously.
+ */
+export async function queueFileCleanup(bucketName: string, filePaths: string[]) {
+  if (filePaths.length === 0) return;
+  
+  const admin = createSupabaseAdminClient();
+  const rows = filePaths.map(path => ({
+    bucket_name: bucketName,
+    file_path: path,
+    status: 'pending'
+  }));
+
+  const { error } = await admin.from("storage_cleanup_queue").insert(rows);
+
+  if (error) {
+    logger.storage.error("Failed to queue files for cleanup", error, { bucketName, count: filePaths.length });
+  }
+}
