@@ -140,21 +140,10 @@ export async function deleteDatabaseListing(listingId: string, sellerId: string)
     }
   }
 
-  // Cleanup related records
   await admin.from("listing_images").delete().eq("listing_id", listingId);
   await admin.from("favorites").delete().eq("listing_id", listingId);
   await admin.from("reports").delete().eq("listing_id", listingId);
-  
   const { error } = await admin.from("listings").delete().eq("id", listingId);
-
-  // If the listing was previously visible (archived/sold), update stats in background
-  if (!error && listing.status === "archived") {
-    const { after } = await import("next/server");
-    after(async () => {
-      const { updateMarketStats } = await import("@/services/market/market-stats");
-      await updateMarketStats(listing.brand, listing.model, listing.year).catch(() => {});
-    });
-  }
 
   return error ? null : { id: listingId, deleted: true };
 }

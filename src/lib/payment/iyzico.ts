@@ -31,8 +31,8 @@ export class IyzicoProvider implements PaymentProvider {
       const data = {
         locale: "tr",
         conversationId: request.orderId,
-        price: request.amount.toFixed(2),
-        paidPrice: request.amount.toFixed(2),
+        price: Number(request.amount).toFixed(2),
+        paidPrice: Number(request.amount).toFixed(2),
         currency: "TRY",
         basketId: request.listingId,
         paymentGroup: "PRODUCT",
@@ -73,7 +73,7 @@ export class IyzicoProvider implements PaymentProvider {
             name: "OtoBurada Hizmet",
             category1: "Classifieds",
             itemType: "VIRTUAL",
-            price: request.amount.toFixed(2)
+            price: Number(request.amount).toFixed(2)
           }
         ]
       };
