@@ -1,3 +1,4 @@
+import sizeOf from "image-size";
 import {
   listingImageAcceptedMimeTypes,
   listingImageMaxSizeInBytes,
@@ -88,6 +89,24 @@ export async function validateListingImageFile(file: File): Promise<string | nul
   const verifiedMime = await getVerifiedMimeType(file);
   if (!verifiedMime) {
     return "Gecerli bir görsel dosyasi secmelisin.";
+  }
+
+  // 4. Pixel Flood Protection: Check dimensions (Width x Height)
+  // Excessive dimensions can crash Vercel Image Optimization (OOM)
+  try {
+    const buffer = await file.arrayBuffer();
+    const dimensions = sizeOf(new Uint8Array(buffer));
+    const MAX_DIMENSION = 4000;
+    
+    if (dimensions.width && dimensions.width > MAX_DIMENSION) {
+      return `Görsel genişliği çok fazla (${dimensions.width}px). En fazla ${MAX_DIMENSION}px olabilir.`;
+    }
+    if (dimensions.height && dimensions.height > MAX_DIMENSION) {
+      return `Görsel yüksekliği çok fazla (${dimensions.height}px). En fazla ${MAX_DIMENSION}px olabilir.`;
+    }
+  } catch (_err) {
+    // If we can't read dimensions, it's safer to reject or log
+    return "Görsel boyutları okunamadı. Lütfen geçerli bir dosya yükleyin.";
   }
 
   return null;

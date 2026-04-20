@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, Suspense } from "react";
-import { useSearchParams } from "next/navigation";
+import { useSearchParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { 
   CheckCircle2, 
@@ -18,6 +18,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { createSupabaseBrowserClient } from "@/lib/supabase/browser";
 
 function PaymentResultContent() {
+  const router = useRouter();
   const searchParams = useSearchParams();
   const [loading, setLoading] = useState(true);
   const [status, setStatus] = useState<"success" | "failure" | "pending">("pending");
@@ -56,6 +57,9 @@ function PaymentResultContent() {
           setPaymentData(data);
           setStatus(data.status === "success" ? "success" : "failure");
           setLoading(false);
+          if (data.status === "success") {
+            router.refresh();
+          }
           return true;
         }
         return false;
@@ -79,7 +83,7 @@ function PaymentResultContent() {
     }
 
     verifyPayment();
-  }, [token, statusParam]);
+  }, [token, statusParam, router]);
 
   if (loading) {
     return (

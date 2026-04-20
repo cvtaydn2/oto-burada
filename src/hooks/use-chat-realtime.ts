@@ -97,6 +97,7 @@ export function useChatRealtime(chatId: string, currentUserId: string): UseChatR
 
       channelRef.current = channel;
 
+      channel
         .on(
           "broadcast",
           { event: "message" },

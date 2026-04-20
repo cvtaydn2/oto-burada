@@ -651,6 +651,7 @@ export function ListingCreateForm({
       }
 
       void flushQueuedImageCleanup();
+      router.refresh();
 
       if (isEditing) {
         router.replace("/dashboard/listings?updated=true");
