@@ -1,7 +1,6 @@
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { hasSupabaseAdminEnv } from "@/lib/supabase/env";
 import { Listing } from "@/types";
-import { getDatabaseListings } from "./listing-submission-query";
 
 export function mapListingToDatabaseRow(listing: Listing) {
   return {

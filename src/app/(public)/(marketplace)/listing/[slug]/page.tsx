@@ -141,7 +141,7 @@ export default async function ListingDetailPage({ params }: ListingDetailPagePro
           currentUserId={currentUser?.id ?? null}
       /> 
 
-      <main className="min-h-screen bg-background flex flex-col selection:bg-blue-500 selection:text-white">
+      <main className="min-h-screen bg-background flex flex-col">
         <div className="mx-auto max-w-[1400px] px-6 py-10 w-full flex-1">
           
           <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-6 mb-10">
@@ -149,13 +149,13 @@ export default async function ListingDetailPage({ params }: ListingDetailPagePro
               {pageBreadcrumbs.map((b, i) => (
                 <div key={b.url} className="flex items-center gap-3">
                   <Link href={b.url} className={cn(
-                    "text-[11px] font-bold uppercase tracking-widest transition-all hover:text-blue-600",
+                    "text-[10px] font-bold uppercase tracking-widest transition-all hover:text-primary",
                     i === pageBreadcrumbs.length - 1 ? "text-foreground" : "text-muted-foreground"
                   )}>
                     {b.name}
                   </Link>
                   {i < pageBreadcrumbs.length - 1 && (
-                    <div className="size-1 rounded-full bg-slate-200" />
+                    <div className="size-1 rounded-full bg-border" />
                   )}
                 </div>
               ))}
@@ -174,22 +174,21 @@ export default async function ListingDetailPage({ params }: ListingDetailPagePro
           <div className="flex flex-col lg:flex-row items-start gap-12">
             
             <div className="w-full min-w-0 flex-1 space-y-10">
-              
-              <div className="relative group">
+                           <div className="relative group">
                 <div className="bg-card rounded-2xl p-6 border border-border shadow-sm">
                   <div className="relative aspect-[16/9] overflow-hidden rounded-2xl border border-border/40 bg-muted">
                     <ListingGallery images={listing.images} title={listing.title} />
                     
                     <div className="absolute left-8 top-8 z-20 flex flex-col gap-3">
                       {listing.featured && (
-                        <div className="bg-slate-900/90 backdrop-blur-md text-white text-[10px] font-bold uppercase tracking-widest px-5 py-2.5 rounded-2xl shadow-sm flex items-center gap-2 border border-white/10">
-                          <Zap size={14} className="text-amber-400 animate-pulse" />
+                        <div className="bg-foreground text-background text-[10px] font-bold uppercase tracking-widest px-5 py-2.5 rounded-xl shadow-lg flex items-center gap-2 border border-border/10">
+                          <Zap size={14} className="text-primary animate-pulse" />
                           ÖNE ÇIKAN İLAN
                         </div>
                       )}
                       {listing.expertInspection && (
-                        <div className="bg-card/90 backdrop-blur-xl text-foreground text-[10px] font-bold uppercase tracking-widest px-5 py-2.5 rounded-2xl shadow-sm border border-border flex items-center gap-2">
-                          <ShieldCheck size={14} className="text-emerald-500" />
+                        <div className="bg-card text-foreground text-[10px] font-bold uppercase tracking-widest px-5 py-2.5 rounded-xl shadow-lg border border-border flex items-center gap-2">
+                          <ShieldCheck size={14} className="text-primary" />
                           EKSPERTİZ ONAYLI
                         </div>
                       )}
@@ -202,8 +201,8 @@ export default async function ListingDetailPage({ params }: ListingDetailPagePro
                 <div className="space-y-6 relative z-10 w-full">
                   <div className="space-y-2">
                     <div className="flex items-center gap-3">
-                       <span className="px-3 py-1 bg-blue-50 text-blue-600 rounded-lg text-[10px] font-bold uppercase tracking-widest">{listing.brand}</span>
-                       <span className="px-3 py-1 bg-muted text-muted-foreground rounded-lg text-[10px] font-bold uppercase tracking-widest">{listing.year} MODELL</span>
+                       <span className="px-3 py-1 bg-primary/10 text-primary rounded-lg text-[10px] font-bold uppercase tracking-widest leading-none">{listing.brand}</span>
+                       <span className="px-3 py-1 bg-muted text-muted-foreground rounded-lg text-[10px] font-bold uppercase tracking-widest leading-none">{listing.year} MODELL</span>
                     </div>
                     <h1 className="text-4xl md:text-5xl font-bold text-foreground leading-[1.1] tracking-tighter">
                       {listing.title}
@@ -215,27 +214,27 @@ export default async function ListingDetailPage({ params }: ListingDetailPagePro
                       <div className="p-2 bg-muted rounded-xl">
                         <svg className="size-4 text-muted-foreground" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
                       </div>
-                      {listing.city}, {listing.district}
+                      <span className="leading-none">{listing.city}, {listing.district}</span>
                     </div>
                     <div className="flex items-center gap-2">
                        <div className="p-2 bg-muted rounded-xl">
                         <svg className="size-4 text-muted-foreground" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
                       </div>
-                      {new Date(listing.createdAt).toLocaleDateString("tr-TR")} GÜNCELLENDİ
+                      <span className="leading-none">{new Date(listing.createdAt).toLocaleDateString("tr-TR")} GÜNCELLENDİ</span>
                     </div>
                     <div className="flex items-center gap-2">
                       <div className="p-2 bg-muted rounded-xl">
                         <Zap size={14} className="text-muted-foreground" />
                       </div>
-                      İLAN NO: {listing.id.slice(0, 8).toUpperCase()}
+                      <span className="leading-none">İLAN NO: {listing.id.slice(0, 8).toUpperCase()}</span>
                     </div>
                     <ViewCounter listingId={listing.id} initialCount={listing.viewCount} />
                   </div>
                 </div>
 
                 <div className="text-left md:text-right w-full md:w-auto relative z-10">
-                  <div className="text-5xl md:text-6xl font-bold text-blue-600 tracking-tighter mb-1">
-                    {new Intl.NumberFormat("tr-TR").format(listing.price)}<span className="text-2xl ml-1">TL</span>
+                  <div className="text-5xl md:text-6xl font-bold text-foreground tracking-tighter mb-1">
+                    {new Intl.NumberFormat("tr-TR").format(listing.price)}<span className="text-2xl ml-1 text-muted-foreground/40 font-medium">TL</span>
                   </div>
                   <p className="text-[10px] text-muted-foreground/60 font-bold uppercase tracking-widest">RESMİ SATIŞ FİYATI</p>
                 </div>
@@ -256,7 +255,7 @@ export default async function ListingDetailPage({ params }: ListingDetailPagePro
                 <div className="rounded-2xl border border-border bg-card p-10 shadow-sm">
                   <div className="mb-8 flex items-center justify-between">
                     <h2 className="flex items-center gap-4 text-xl font-bold text-foreground tracking-tight">
-                      <div className="size-12 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center">
+                      <div className="size-12 rounded-2xl bg-primary/10 text-primary flex items-center justify-center">
                         <ShieldCheck size={24} />
                       </div>
                       Ekspertiz Raporu
@@ -266,7 +265,7 @@ export default async function ListingDetailPage({ params }: ListingDetailPagePro
                         href={listing.expertInspection.documentUrl}
                         target="_blank"
                         rel="noreferrer"
-                        className="flex items-center gap-3 rounded-2xl bg-slate-900 px-6 py-3 text-[10px] font-bold uppercase tracking-widest text-white shadow-sm hover:opacity-90 transition-all"
+                        className="flex items-center gap-3 rounded-xl bg-primary px-6 py-3 text-[10px] font-bold uppercase tracking-widest text-primary-foreground shadow-sm hover:opacity-90 transition-all"
                       >
                         PDF RAPORU GÖRÜNTÜLE
                       </a>
@@ -277,7 +276,7 @@ export default async function ListingDetailPage({ params }: ListingDetailPagePro
 
                 <div className="rounded-2xl border border-border bg-card p-10 shadow-sm">
                   <h2 className="mb-8 flex items-center gap-4 text-xl font-bold text-foreground tracking-tight">
-                    <div className="size-12 rounded-2xl bg-amber-50 text-amber-500 flex items-center justify-center">
+                    <div className="size-12 rounded-2xl bg-primary/10 text-primary flex items-center justify-center">
                       <Zap size={24} />
                     </div>
                     Kaporta & Boya Durumu
@@ -288,20 +287,20 @@ export default async function ListingDetailPage({ params }: ListingDetailPagePro
 
               <div className="rounded-2xl border border-border bg-card p-10 shadow-sm relative overflow-hidden group">
                 <h2 className="mb-8 flex items-center gap-4 text-xl font-bold text-foreground tracking-tight relative">
-                  <div className="size-12 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center">
+                  <div className="size-12 rounded-2xl bg-primary/10 text-primary flex items-center justify-center">
                     <Zap size={24} />
                   </div>
                   Piyasa Analizi
                 </h2>
                 <div className="grid gap-10 lg:grid-cols-2 relative lg:items-center">
                   <div className="space-y-6">
-                    <div className="p-6 rounded-3xl bg-muted border border-border/40 italic font-medium text-slate-600 leading-relaxed relative">
+                    <div className="p-6 rounded-2xl bg-muted border border-border/40 italic font-medium text-foreground/70 leading-relaxed relative">
                        <div className="absolute -top-3 left-6 px-3 py-1 bg-card border border-border/40 rounded-lg text-[9px] font-bold uppercase tracking-widest text-muted-foreground">Yapay Zeka Özeti</div>
                        &ldquo;{insight.summary}&rdquo;
                     </div>
                     <div className="flex flex-wrap gap-3">
                       {insight.highlights.map(h => (
-                        <div key={h} className="rounded-xl bg-card border border-border/40 px-4 py-2 text-[10px] font-bold uppercase tracking-widest text-muted-foreground shadow-sm">
+                        <div key={h} className="rounded-xl bg-card border border-border px-4 py-2 text-[10px] font-bold uppercase tracking-widest text-muted-foreground shadow-sm">
                           {h}
                         </div>
                       ))}
@@ -314,7 +313,7 @@ export default async function ListingDetailPage({ params }: ListingDetailPagePro
               {priceHistory.length >= 2 && (
                 <div className="rounded-2xl border border-border bg-card p-10 shadow-sm">
                   <h2 className="mb-8 flex items-center gap-4 text-xl font-bold text-foreground tracking-tight">
-                    <div className="size-12 rounded-2xl bg-indigo-50 text-indigo-500 flex items-center justify-center">
+                    <div className="size-12 rounded-2xl bg-primary/10 text-primary flex items-center justify-center">
                       <TrendingUp size={24} />
                     </div>
                     Fiyat Değişim Trendi
@@ -325,14 +324,14 @@ export default async function ListingDetailPage({ params }: ListingDetailPagePro
 
               <div className="rounded-2xl border border-border bg-card p-10 shadow-sm">
                 <h2 className="mb-6 text-xl font-bold text-foreground tracking-tight">İlan Hakkında</h2>
-                <div className="prose prose-slate max-w-none">
-                  <p className="text-base leading-loose text-slate-600 font-medium whitespace-pre-wrap">{listing.description}</p>
+                <div className="prose prose-neutral max-w-none">
+                  <p className="text-base leading-loose text-foreground/80 font-medium whitespace-pre-wrap">{listing.description}</p>
                 </div>
               </div>
 
               <div className="rounded-2xl border border-border bg-card p-10 shadow-sm" style={{ isolation: "isolate" }}>
                 <h2 className="mb-8 flex items-center gap-4 text-xl font-bold text-foreground tracking-tight">
-                  <div className="size-12 rounded-2xl bg-rose-50 text-rose-500 flex items-center justify-center">
+                  <div className="size-12 rounded-2xl bg-primary/10 text-primary flex items-center justify-center">
                     <ChevronRight size={24} className="rotate-90" />
                   </div>
                   Gerçek Konum
@@ -383,14 +382,14 @@ export default async function ListingDetailPage({ params }: ListingDetailPagePro
                       <div className="flex items-center gap-2">
                         <h3 className="text-lg font-bold text-foreground truncate tracking-tight">{seller?.businessName || seller?.fullName}</h3>
                         {seller?.verifiedBusiness && (
-                          <div className="flex size-5 items-center justify-center rounded-full bg-blue-600 text-white shadow-sm" title="Doğrulanmış İşletme">
+                          <div className="flex size-5 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-sm" title="Doğrulanmış İşletme">
                             <ShieldCheck size={12} strokeWidth={3} />
                           </div>
                         )}
                       </div>
                       <div className="flex items-center gap-2 mt-1">
                         {seller?.isVerified && (
-                           <div className="bg-blue-50 text-blue-600 text-[8px] font-bold uppercase tracking-widest px-2 py-0.5 rounded-md border border-blue-100">ONAYLI ÜYE</div>
+                           <div className="bg-primary/10 text-primary text-[8px] font-bold uppercase tracking-widest px-2 py-0.5 rounded-md border border-primary/20">ONAYLI ÜYE</div>
                         )}
                         {membershipYears !== null && <span className="text-[10px] text-muted-foreground/40 font-semibold uppercase tracking-widest">EST. {memberSince}</span>}
                       </div>
@@ -421,11 +420,11 @@ export default async function ListingDetailPage({ params }: ListingDetailPagePro
 
                   <div className="pt-6 border-t border-border/50 space-y-4">
                     <Link href={seller?.businessSlug ? `/gallery/${seller.businessSlug}` : `/seller/${listing.sellerId}`} className="flex justify-between items-center group/link">
-                       <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest group-hover/link:text-blue-600 transition-colors">TÜM İLANLARI</span>
+                       <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest group-hover/link:text-primary transition-colors">TÜM İLANLARI</span>
                       <ChevronRight size={14} className="text-muted-foreground transition-all group-hover/link:translate-x-1" />
                     </Link>
                     <Link href="#ekspertiz" className="flex justify-between items-center group/link">
-                      <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest group-hover/link:text-emerald-600 transition-colors">RANDEVU OLUŞTUR</span>
+                      <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest group-hover/link:text-primary transition-colors">RANDEVU OLUŞTUR</span>
                       <ChevronRight size={14} className="text-muted-foreground transition-all group-hover/link:translate-x-1" />
                     </Link>
                   </div>
@@ -490,7 +489,7 @@ export default async function ListingDetailPage({ params }: ListingDetailPagePro
               {listing.price.toLocaleString("tr-TR")} ₺
             </div>
           </div>
-          <Button className="h-12 flex-[1.5] rounded-xl bg-[#25D366] text-xs font-bold uppercase tracking-widest text-white hover:bg-[#1fb355] shadow-sm shadow-[#25D366]/20" asChild>
+          <Button className="h-12 flex-[1.5] rounded-xl bg-[#25D366] text-xs font-bold uppercase tracking-widest text-white hover:opacity-90 shadow-lg shadow-emerald-500/20 transition-all active:scale-95" asChild>
             <a href={`https://wa.me/${listing.whatsappPhone.replace(/\D/g, "")}`} target="_blank" rel="noopener noreferrer">
               <MessageSquare size={16} className="mr-2 fill-current" />
               WhatsApp

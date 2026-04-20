@@ -123,14 +123,13 @@ export async function DELETE(request: Request) {
     );
   }
 
-  let body: any;
+  let storagePath: string | undefined;
   try {
-    body = await request.json();
+    const body = await request.json() as Record<string, unknown>;
+    storagePath = typeof body.storagePath === 'string' ? body.storagePath : undefined;
   } catch {
     return apiError(API_ERROR_CODES.BAD_REQUEST, "Silme isteği okunamadı.", 400);
   }
-
-  const storagePath = body?.storagePath;
 
   if (!storagePath) {
     return apiError(API_ERROR_CODES.BAD_REQUEST, "Fotoğraf yolu eksik.", 400);

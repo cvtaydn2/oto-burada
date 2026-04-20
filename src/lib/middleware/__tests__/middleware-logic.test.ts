@@ -1,7 +1,8 @@
 import { describe, it, expect, vi } from "vitest";
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest } from "next/server";
 import { handleAuthRedirects } from "../auth";
 import { checkApiSecurity } from "../api-security";
+import type { User } from "@supabase/supabase-js";
 
 describe("Middleware Logic - Auth Redirects", () => {
   const factory = (path: string) => {
@@ -23,7 +24,7 @@ describe("Middleware Logic - Auth Redirects", () => {
 
   it("should redirect non-admin users from /admin to /dashboard", () => {
     const req = factory("/admin/users");
-    const mockUser = { id: "1", app_metadata: { role: "user" } } as any;
+    const mockUser = { id: "1", app_metadata: { role: "user" } } as unknown as User;
     const res = handleAuthRedirects(req, mockUser, { 
       isProtectedRoute: true, 
       isAdminRoute: true, 
@@ -36,7 +37,7 @@ describe("Middleware Logic - Auth Redirects", () => {
 
   it("should allow admin users on /admin", () => {
     const req = factory("/admin/users");
-    const mockUser = { id: "1", app_metadata: { role: "admin" } } as any;
+    const mockUser = { id: "1", app_metadata: { role: "admin" } } as unknown as User;
     const res = handleAuthRedirects(req, mockUser, { 
       isProtectedRoute: true, 
       isAdminRoute: true, 
@@ -48,7 +49,7 @@ describe("Middleware Logic - Auth Redirects", () => {
 
   it("should redirect authenticated users from /login to /dashboard", () => {
     const req = factory("/login");
-    const mockUser = { id: "1" } as any;
+    const mockUser = { id: "1" } as unknown as User;
     const res = handleAuthRedirects(req, mockUser, { 
       isProtectedRoute: false, 
       isAdminRoute: false, 

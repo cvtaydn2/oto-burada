@@ -48,7 +48,9 @@ export const listingSelect = `
     placeholder_blur
   ),
   profiles!seller_id (
+    id,
     full_name,
+    phone,
     city,
     avatar_url,
     role,
@@ -57,7 +59,10 @@ export const listingSelect = `
     business_logo_url,
     is_verified,
     verified_business,
-    business_slug
+    business_slug,
+    email_verified,
+    created_at,
+    updated_at
   )
 `;
 
@@ -134,8 +139,9 @@ export function mapListingRow(row: ListingRow): Listing {
     sellerId: row.seller_id,
     viewCount: row.view_count ?? 0,
     seller: row.profiles ? {
+      id: row.profiles.id,
       fullName: row.profiles.full_name,
-      phone: "",
+      phone: row.profiles.phone ?? "",
       city: row.profiles.city,
       avatarUrl: row.profiles.avatar_url,
       role: row.profiles.role as UserRole,
@@ -145,9 +151,9 @@ export function mapListingRow(row: ListingRow): Listing {
       isVerified: row.profiles.is_verified,
       verifiedBusiness: row.profiles.verified_business,
       businessSlug: row.profiles.business_slug,
-      emailVerified: false,
-      createdAt: "",
-      updatedAt: "",
+      emailVerified: row.profiles.email_verified ?? false,
+      createdAt: row.profiles.created_at ?? "",
+      updatedAt: row.profiles.updated_at ?? "",
     } : undefined,
     slug: row.slug,
     status: row.status,

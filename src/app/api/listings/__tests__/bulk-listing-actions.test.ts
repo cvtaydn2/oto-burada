@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { POST as bulkArchivePOST } from "../bulk-archive/route";
 import { withAuthAndCsrf } from "@/lib/utils/api-security";
@@ -80,7 +81,7 @@ describe("Bulk Listing Actions (Archive)", () => {
     vi.mocked(withAuthAndCsrf).mockResolvedValue({
       ok: true,
       user: mockUser
-    } as any);
+    } as unknown as Awaited<ReturnType<typeof withAuthAndCsrf>>);
 
     const mockUpdate = vi.fn().mockReturnValue({
       in: vi.fn().mockReturnThis(),
@@ -90,7 +91,7 @@ describe("Bulk Listing Actions (Archive)", () => {
 
     vi.mocked(createSupabaseServerClient).mockResolvedValue({
       from: vi.fn().mockReturnValue({ update: mockUpdate })
-    } as any);
+    } as unknown as any);
 
     const req = new Request("http://localhost/api/listings/bulk-archive", {
       method: "POST",

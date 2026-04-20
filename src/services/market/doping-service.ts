@@ -3,7 +3,6 @@ import { hasSupabaseAdminEnv } from "@/lib/supabase/env";
 import { payment } from "@/lib/payment";
 import { isPaymentEnabled } from "@/lib/payment/config";
 import { DOPING_PRICES, DopingId } from "@/lib/payment/constants";
-import { logDopingApplication } from "@/services/billing/transaction-service";
 import { BuyerInfo } from "@/lib/payment/types";
 
 export type DopingType = DopingId;
@@ -15,12 +14,7 @@ export interface DopingResult {
   transactionId?: string;
 }
 
-interface DopingUpdates {
-  featured?: boolean;
-  featured_until?: string | null;
-  urgent_until?: string | null;
-  highlighted_until?: string | null;
-}
+
 
 /**
  * Applies premium doping effects to a listing.
@@ -65,7 +59,7 @@ export async function applyDopingToListing(
   // If 3DS is required (paymentUrl provided), return it for redirect
   if (paymentResult.paymentUrl) {
     // Create a pending payment record for tracking
-    const { data: paymentRecord } = await admin.from("payments").insert({
+    await admin.from("payments").insert({
       user_id: userId,
       listing_id: listingId,
       amount: totalAmount,

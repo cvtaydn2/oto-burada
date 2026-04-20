@@ -6,12 +6,10 @@ import {
   Fuel, 
   MapPin, 
   Settings2, 
-  Sparkles,
   TrendingDown,
   ArrowRight,
   CarFront,
-  Zap,
-  Flame
+  Zap
 } from "lucide-react"
 import { formatNumber, formatPrice, supabaseImageUrl } from "@/lib/utils"
 import { type Listing } from "@/types"
@@ -22,7 +20,7 @@ interface ListingCardProps {
 }
 
 export function ListingCard({ listing, priority = false }: ListingCardProps) {
-  const coverImage = listing.images.find(img => img.isCover) || listing.images[0]
+  const coverImage = listing.images.find((image) => image.isCover) || listing.images[0]
   const isAdvantageous = (listing.marketPriceIndex ?? 1) < 0.95
   const detailHref = `/listing/${listing.slug}`
   const now = new Date().toISOString()

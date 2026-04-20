@@ -1,3 +1,32 @@
+## Marketplace & Dashboard Calm UI Modernization (2026-04-20)
+
+### Yapılan Değişiklikler
+
+**Marketplace & Content Modernization**
+- **Listings Page (`listings-page-client.tsx`)**: Hardcoded renkler temizlendi. Kontrol çubuğu, hızlı filtre çipler ve aktif filtre etiketleri Calm UI standartlarına taşındı. Boş durumlar ve sonuç grid'i görsel hiyerarşi açısından optimize edildi.
+- **Listing Detail Page (`listing/[slug]/page.tsx`)**: Galeri rozetleri, fiyat alanı, spesifikasyon tabloları ve satıcı sidebar'ı normalize edildi. Fiyat en baskın veri noktası olarak korundu, dekoratif unsurlar (rose-500, emerald-500 vb.) tema değişkenleriyle değiştirildi.
+- **Mobile Experience**: Alt yapışkan eylem çubuğu ve WhatsApp butonları mobil-first prensiplerine göre sadeleştirildi ve erişilebilirliği artırıldı.
+
+**Dashboard Architecture Refactoring**
+- **Monolithic Page Breakdown**: `app/dashboard/page.tsx` içerisindeki devasa yapı, her biri bağımsız ve Calm UI uyumlu 7 modüler bileşene bölündü:
+    - `DashboardHeader`: Başlık ve navigasyon tabları.
+    - `DashboardStats`: İstatistik kartları.
+    - `DashboardVerificationAlert`: E-posta doğrulama uyarısı.
+    - `DashboardListingsTable`: Son ilanlar tablosu.
+    - `DashboardProfessionalCard`: Kurumsal satıcı yönetim kartı.
+    - `DashboardCreditsCard`: Kredi ve doping yönetim paneli.
+    - `DashboardQuickLinks`: Hızlı erişim bağlantıları.
+- **Maintainability**: Kod okunabilirliği artırıldı, `Suspense` sınırları netleştirildi ve dashboard daha operasyonel bir havaya büründü.
+
+### Doğrulama
+- UI Kontrolü: İlan detay, listeleme ve dashboard sayfaları görsel olarak tutarlı. ✅
+- Mimari: Dashboard bileşenleri `src/components/dashboard/` altında organize edildi. ✅
+- `npm run lint` & `npm run typecheck` ✅
+
+### Sonraki Adımlar
+- **Admin Panel Refinement**: Dashboard'da yapılan modülerleştirme ve görsel sadeleştirme adımları admin moderasyon panellerine de uygulanmalı.
+- **Realtime Filter Sync**: Arama sonuçlarındaki "Smart Filter" bileşeninin geçiş animasyonları ve mobil tepkiselliği son bir kez elden geçirilebilir.
+
 ## Marketplace Visual Identity Normalization (2026-04-20)
 
 ### Yapılan Değişiklikler

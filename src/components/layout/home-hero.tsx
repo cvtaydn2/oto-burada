@@ -1,5 +1,5 @@
 import Image from "next/image"
-import { Search, CarFront, MapPin, ChevronRight, Sparkles } from "lucide-react"
+import { Search, CarFront, MapPin, ChevronRight } from "lucide-react"
 
 interface HomeHeroProps {
   cities: string[];
@@ -19,22 +19,22 @@ export function HomeHero({ cities }: HomeHeroProps) {
           quality={85}
           className="object-cover"
         />
-        <div className="absolute inset-0 bg-gradient-to-r from-slate-950/90 via-slate-900/60 to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-r from-background/90 via-background/60 to-transparent" />
         <div className="absolute inset-x-0 bottom-0 h-40 bg-gradient-to-t from-background to-transparent" />
       </div>
       
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full relative z-10">
         <div className="max-w-3xl text-left space-y-8">
-          <div className="inline-flex items-center gap-2 bg-muted/20 border border-white/10 rounded-full px-5 py-2 text-white/80 text-[10px] font-bold uppercase tracking-widest">
+          <div className="inline-flex items-center gap-2 bg-foreground/10 border border-foreground/10 rounded-full px-5 py-2 text-foreground/80 text-[10px] font-bold uppercase tracking-widest backdrop-blur-md">
             Sade Araç Pazaryeri
           </div>
           
           <div className="space-y-4">
-            <h1 className="text-4xl md:text-6xl font-bold text-white tracking-tight leading-[1.1]">
-              Arabanı <span className="text-primary-foreground underline decoration-primary/30 underline-offset-8">Kolayca</span> Sat. <br />
-              Doğruyu <span className="text-primary-foreground/90">Hızlıca</span> Bul.
+            <h1 className="text-4xl md:text-6xl font-bold text-foreground tracking-tight leading-[1.1]">
+              Arabanı <span className="text-primary underline decoration-primary/30 underline-offset-8">Kolayca</span> Sat. <br />
+              Doğruyu <span className="text-foreground/90">Hızlıca</span> Bul.
             </h1>
-            <p className="text-lg text-slate-300 max-w-xl font-medium leading-relaxed">
+            <p className="text-lg text-muted-foreground max-w-xl font-medium leading-relaxed">
               Türkiye&apos;nin en güvenilir, şeffaf ve sade otomobil pazarı. 
               Gereksiz detaylardan uzak, sadece sonuca odaklı.
             </p>
@@ -43,32 +43,32 @@ export function HomeHero({ cities }: HomeHeroProps) {
           <form
             action="/listings"
             method="GET"
-            className="group/form bg-white/10 p-2 rounded-2xl border border-white/20 shadow-sm max-w-4xl flex flex-col md:flex-row gap-2 transition-all hover:bg-white/15"
+            className="group/form bg-card/80 p-2 rounded-2xl border border-border shadow-sm max-w-4xl flex flex-col md:flex-row gap-2 transition-all hover:bg-card/90 backdrop-blur-lg"
           >
             <div className="flex-1 flex flex-col md:flex-row gap-2 p-2">
               <div className="flex-1 relative">
-                <CarFront size={18} className="absolute left-6 top-1/2 -translate-y-1/2 text-white/40" />
+                <CarFront size={18} className="absolute left-6 top-1/2 -translate-y-1/2 text-muted-foreground" />
                 <input 
                   type="text" 
                   name="query"
                   placeholder="Marka, model veya ilan başlığı..." 
-                  className="w-full bg-white/10 border-none text-white placeholder:text-white/30 rounded-xl pl-14 pr-6 h-14 outline-none transition focus:bg-white/20 font-medium"
+                  className="w-full bg-muted/50 border-none text-foreground placeholder:text-muted-foreground/50 rounded-xl pl-14 pr-6 h-14 outline-none transition focus:bg-muted font-medium"
                 />
               </div>
 
               <div className="w-full md:w-56 relative">
-                <MapPin size={18} className="absolute left-6 top-1/2 -translate-y-1/2 text-white/40 pointer-events-none" />
+                <MapPin size={18} className="absolute left-6 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none" />
                 <select 
                   name="city"
-                  className="w-full bg-white/10 border-none text-white rounded-xl pl-14 pr-10 h-14 outline-none appearance-none cursor-pointer focus:bg-white/20 font-medium"
+                  className="w-full bg-muted/50 border-none text-foreground rounded-xl pl-14 pr-10 h-14 outline-none appearance-none cursor-pointer focus:bg-muted font-medium"
                 >
-                  <option value="" className="bg-slate-900">Tüm Şehirler</option>
+                  <option value="" className="bg-card">Tüm Şehirler</option>
                   {cities.map((city) => (
-                    <option key={city} value={city} className="bg-slate-900">{city}</option>
+                    <option key={city} value={city} className="bg-card">{city}</option>
                   ))}
                 </select>
                 <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none">
-                   <ChevronRight size={14} className="rotate-90 text-white/40" />
+                   <ChevronRight size={14} className="rotate-90 text-muted-foreground" />
                 </div>
               </div>
             </div>
@@ -84,18 +84,18 @@ export function HomeHero({ cities }: HomeHeroProps) {
 
           <div className="flex items-center gap-8 pt-6">
              <div className="flex flex-col">
-                <span className="text-2xl font-bold text-white leading-none tracking-tighter">10K+</span>
-                <span className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-1">Aktif İlan</span>
+                <span className="text-2xl font-bold text-foreground leading-none tracking-tighter">10K+</span>
+                <span className="text-[10px] text-muted-foreground font-bold uppercase tracking-widest mt-1">Aktif İlan</span>
              </div>
-             <div className="h-8 w-px bg-white/10" />
+             <div className="h-8 w-px bg-border" />
              <div className="flex flex-col">
-                <span className="text-2xl font-bold text-white leading-none tracking-tighter">2M+</span>
-                <span className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-1">Aylık Ziyaret</span>
+                <span className="text-2xl font-bold text-foreground leading-none tracking-tighter">2M+</span>
+                <span className="text-[10px] text-muted-foreground font-bold uppercase tracking-widest mt-1">Aylık Ziyaret</span>
              </div>
-             <div className="h-8 w-px bg-white/10" />
+             <div className="h-8 w-px bg-border" />
              <div className="flex flex-col">
-                <span className="text-2xl font-bold text-white leading-none tracking-tighter">4.9/5</span>
-                <span className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-1">Kullanıcı Memnuniyeti</span>
+                <span className="text-2xl font-bold text-foreground leading-none tracking-tighter">4.9/5</span>
+                <span className="text-[10px] text-muted-foreground font-bold uppercase tracking-widest mt-1">Kullanıcı Memnuniyeti</span>
              </div>
           </div>
         </div>

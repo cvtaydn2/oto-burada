@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Zap, Trophy, BadgeCheck, CarFront, ChevronRight, CheckCircle2, ShieldCheck } from "lucide-react";
+import { Zap, CarFront, ChevronRight, CheckCircle2, ShieldCheck, MapPin } from "lucide-react";
 import Link from "next/link";
 
 import { HomeHero } from "@/components/layout/home-hero";
@@ -8,7 +8,7 @@ import { getAppUrl } from "@/lib/seo";
 import { getPublicMarketplaceListings } from "@/services/listings/marketplace-listings";
 import { WebSiteStructuredData, OrganizationStructuredData } from "@/components/seo/structured-data";
 import { getLiveMarketplaceReferenceData } from "@/services/reference/live-reference-data";
-import { cn } from "@/lib/utils";
+
 
 export const revalidate = 60;
 
@@ -76,10 +76,10 @@ export default async function HomePage() {
                   <Link
                     key={brand.slug}
                     href={`/satilik/${brand.slug}`}
-                    className="group bg-card border border-border rounded-xl p-4 transition-all hover:border-primary/30 hover:bg-muted/30"
+                    className="group bg-card border border-border rounded-xl p-4 transition-all hover:bg-muted"
                   >
                     <div className="flex items-center gap-3">
-                      <div className="size-10 rounded-lg bg-muted text-muted-foreground flex items-center justify-center group-hover:bg-primary group-hover:text-white transition-colors">
+                      <div className="size-10 rounded-lg bg-muted text-muted-foreground flex items-center justify-center group-hover:bg-primary group-hover:text-primary-foreground transition-colors">
                         <CarFront size={18} />
                       </div>
                       <div className="min-w-0">
@@ -103,10 +103,10 @@ export default async function HomePage() {
                   <Link
                     key={city.slug}
                     href={`/satilik-araba/${city.slug}`}
-                    className="group bg-card border border-border rounded-xl p-4 transition-all hover:border-primary/30 hover:bg-muted/30"
+                    className="group bg-card border border-border rounded-xl p-4 transition-all hover:bg-muted"
                   >
                     <div className="flex items-center gap-3">
-                      <div className="size-10 rounded-lg bg-muted text-muted-foreground flex items-center justify-center group-hover:bg-primary group-hover:text-white transition-colors">
+                      <div className="size-10 rounded-lg bg-muted text-muted-foreground flex items-center justify-center group-hover:bg-primary group-hover:text-primary-foreground transition-colors">
                         <MapPin size={18} />
                       </div>
                       <div className="min-w-0">
@@ -178,7 +178,7 @@ export default async function HomePage() {
         </section>
 
         {/* Trust & Performance - Calm UI */}
-        <section className="bg-muted/30 py-24 relative overflow-hidden border-y border-border">
+        <section className="bg-muted py-24 relative overflow-hidden border-y border-border">
           <div className="max-w-7xl mx-auto px-6 lg:px-8 relative z-10">
             <div className="text-center mb-16">
               <h2 className="text-3xl font-bold text-foreground mb-4 tracking-tight">Güvenilir Araç Pazarı</h2>
@@ -206,15 +206,15 @@ export default async function HomePage() {
         </section>
 
         {/* SEO Description & Growth Section */}
-        <section className="bg-slate-50 py-24">
+        <section className="bg-background py-24 border-b border-border">
           <div className="max-w-7xl mx-auto px-6 lg:px-8">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-start">
               <div>
-                <h1 className="text-3xl font-bold text-slate-900 tracking-tight mb-8">
+                <h1 className="text-3xl font-bold text-foreground tracking-tight mb-8">
                   Türkiye&apos;nin En Güvenilir İkinci El Araç Platformu
                 </h1>
-                <div className="prose prose-slate max-w-none text-slate-600 font-medium">
-                  <p className="text-lg leading-relaxed mb-6">
+                <div className="prose-sm text-muted-foreground font-medium">
+                  <p className="text-lg leading-relaxed mb-6 italic text-foreground">
                     OtoBurada ile ikinci el araba alım satım işlemlerinizi hızlı ve güvenli şekilde gerçekleştirin. 
                     Türkiye genelinde binlerce güncel ilanı keşfedin, hayalinizdeki araca en uygun fiyatlarla ulaşın.
                   </p>
@@ -227,11 +227,11 @@ export default async function HomePage() {
                 
                 <div className="mt-12 grid grid-cols-2 gap-8">
                   <div>
-                    <h3 className="text-sm font-bold text-slate-900 uppercase tracking-widest mb-4">Popüler Markalar</h3>
+                    <h3 className="text-sm font-bold text-foreground uppercase tracking-widest mb-4">Popüler Markalar</h3>
                     <ul className="space-y-2 text-sm">
                       {references.brands.slice(0, 8).map(b => (
                         <li key={b.slug}>
-                          <Link href={`/satilik/${b.slug}`} className="text-slate-500 hover:text-blue-600 transition-colors">
+                          <Link href={`/satilik/${b.slug}`} className="text-muted-foreground hover:text-primary transition-colors">
                             {b.brand} İlanları
                           </Link>
                         </li>
@@ -239,11 +239,11 @@ export default async function HomePage() {
                     </ul>
                   </div>
                   <div>
-                    <h3 className="text-sm font-bold text-slate-900 uppercase tracking-widest mb-4">Popüler Şehirler</h3>
+                    <h3 className="text-sm font-bold text-foreground uppercase tracking-widest mb-4">Popüler Şehirler</h3>
                     <ul className="space-y-2 text-sm">
                       {references.cities.slice(0, 8).map(c => (
                         <li key={c.slug}>
-                          <Link href={`/satilik-araba/${c.slug}`} className="text-slate-500 hover:text-orange-600 transition-colors font-semibold">
+                          <Link href={`/satilik-araba/${c.slug}`} className="text-muted-foreground hover:text-primary transition-colors font-semibold">
                             {c.city} Araç İlanları
                           </Link>
                         </li>
@@ -253,8 +253,8 @@ export default async function HomePage() {
                 </div>
               </div>
 
-              <div className="bg-white p-12 rounded-2xl shadow-sm border border-slate-200">
-                <h2 className="text-xl font-bold text-slate-900 tracking-tight mb-6">Neden OtoBurada?</h2>
+              <div className="bg-card p-12 rounded-2xl border border-border shadow-sm">
+                <h2 className="text-xl font-bold text-foreground tracking-tight mb-6">Neden OtoBurada?</h2>
                 <ul className="space-y-6">
                   {[
                     "Ücretsiz ilan verme ve hızlı satış imkanı",
@@ -264,14 +264,14 @@ export default async function HomePage() {
                     "Mobil uyumlu, hızlı ve sade kullanıcı deneyimi"
                   ].map((benefit, index) => (
                     <li key={index} className="flex gap-4 items-start">
-                      <div className="size-6 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center shrink-0 mt-1">
+                      <div className="size-6 rounded-full bg-primary/10 text-primary flex items-center justify-center shrink-0 mt-1">
                         <CheckCircle2 size={14} strokeWidth={3} />
                       </div>
-                      <span className="text-slate-600 font-bold text-sm tracking-tight">{benefit}</span>
+                      <span className="text-foreground/80 font-bold text-sm tracking-tight">{benefit}</span>
                     </li>
                   ))}
                 </ul>
-                <div className="mt-10 pt-10 border-t border-slate-100 italic text-slate-400 text-xs font-medium">
+                <div className="mt-10 pt-10 border-t border-border italic text-muted-foreground/50 text-xs font-medium uppercase tracking-[0.1em]">
                   * OtoBurada bir topluluk girişimidir ve kullanıcıların güvenli ticaret yapmalarını hedefler.
                 </div>
               </div>

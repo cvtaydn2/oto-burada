@@ -15,7 +15,7 @@ export async function applyDoping(application: DopingApplication) {
   const until = new Date();
   until.setDate(until.getDate() + application.durationDays);
 
-  const updateMap: Record<string, any> = {
+  const updateMap: Record<string, string | boolean | null> = {
     updated_at: new Date().toISOString()
   };
 

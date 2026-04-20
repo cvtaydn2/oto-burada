@@ -124,7 +124,7 @@ export async function POST(request: Request): Promise<NextResponse> {
     try {
       await admin.from("payment_webhook_logs").insert({
         token,
-        payload: payload as any,
+        payload: payload as unknown as Record<string, unknown>,
         headers: rawHeaders,
         status,
         error_message: errorMsg,

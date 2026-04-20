@@ -65,7 +65,7 @@ export async function adjustUserCredits(input: CreditTransactionInput) {
     throw new Error(`Critical: Financial operation failed: ${error.message}`);
   }
 
-  const result = data as any;
+  const result = data as { transaction_id: string; new_balance: number };
   return { 
     transactionId: result.transaction_id, 
     newBalance: result.new_balance 

@@ -23,9 +23,9 @@ describe("Email Validation (Disposable Filter)", () => {
   it("should handle invalid inputs gracefully", () => {
     expect(isDisposableEmail("")).toBe(false);
     expect(isDisposableEmail("not-an-email")).toBe(false);
-    // @ts-ignore
+    // @ts-expect-error - testing invalid input
     expect(isDisposableEmail(null)).toBe(false);
-    // @ts-ignore
+    // @ts-expect-error - testing invalid input
     expect(isDisposableEmail(undefined)).toBe(false);
   });
 

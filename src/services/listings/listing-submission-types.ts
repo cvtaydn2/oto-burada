@@ -31,7 +31,9 @@ export interface ListingRow {
   license_plate?: string | null;
   listing_images?: ListingImageRow[] | null;
   profiles?: {
+    id: string;
     full_name: string;
+    phone: string | null;
     city: string;
     avatar_url: string | null;
     role: string;
@@ -41,6 +43,9 @@ export interface ListingRow {
     is_verified: boolean;
     verified_business: boolean;
     business_slug: string | null;
+    email_verified: boolean;
+    created_at: string;
+    updated_at: string;
   } | null;
   mileage: number;
   model: string;

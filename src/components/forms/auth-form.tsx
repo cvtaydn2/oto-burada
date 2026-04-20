@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { CarFront, ShieldCheck, BadgeCheck, Sparkles, Lock, CreditCard } from "lucide-react";
+import { CarFront, ShieldCheck, BadgeCheck, Lock, CreditCard } from "lucide-react";
 import { useActionState } from "react";
 
 import type { AuthActionState } from "@/lib/auth/actions";

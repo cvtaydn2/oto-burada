@@ -1,5 +1,7 @@
-import { Calendar, CheckCircle2, MapPin, MessageSquare, Star, Car, Clock } from "lucide-react";
+import { Calendar, CheckCircle2, MapPin, MessageSquare, Star, Car, Clock, User, Share2 } from "lucide-react";
+import Image from "next/image";
 import { notFound } from "next/navigation";
+import { Button } from "@/components/ui/button";
 
 import { ListingCardGrid } from "@/components/listings/listing-card-grid";
 import { TrustBadge } from "@/components/shared/trust-badge";

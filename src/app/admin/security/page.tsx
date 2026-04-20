@@ -147,7 +147,7 @@ export default async function SecurityPage() {
         <CardHeader>
           <CardTitle>Yasaklı IP Adresleri</CardTitle>
           <CardDescription>
-            Bu IP'ler contact form'u kullanamaz
+            Bu IP&apos;ler contact form&apos;u kullanamaz
           </CardDescription>
         </CardHeader>
         <CardContent>
