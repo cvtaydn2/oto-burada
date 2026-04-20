@@ -267,14 +267,42 @@ export async function updateDatabaseListing(listing: Listing) {
     return { error: "database_error" as const };
   }
 
-  // Update images: delete old, insert new
+  // 1. Identify orphaned images before updating DB
+  const { data: oldImages } = await admin
+    .from("listing_images")
+    .select("storage_path")
+    .eq("listing_id", listing.id);
+
+  const oldPaths = (oldImages ?? []).map(img => img.storage_path).filter(Boolean);
+  const newPaths = listing.images.map(img => img.storagePath).filter(Boolean);
+  const pathsToDelete = oldPaths.filter(path => !newPaths.includes(path));
+
+  // 2. Update DB images: delete old, insert new
+  // Note: We use a sequential approach here; if image insert fails, we already deleted rows.
+  // Ideally this should be in a transaction but Supabase client doesn't support complex cross-table transactions easily without RPC.
   await admin.from("listing_images").delete().eq("listing_id", listing.id);
   const imageRows = mapListingImagesToDatabaseRows(listing);
+  
   if (imageRows.length > 0) {
     const imageInsertResult = await admin.from("listing_images").insert(imageRows);
     if (imageInsertResult.error) {
-      // Image insert failed — listing is already updated, return error
       return { error: "database_error" as const };
+    }
+  }
+
+  // 3. Physical Storage Cleanup
+  if (pathsToDelete.length > 0) {
+    try {
+      const bucketName = process.env.SUPABASE_STORAGE_BUCKET_LISTINGS ?? "listing-images";
+      const { error: storageErr } = await admin.storage
+        .from(bucketName)
+        .remove(pathsToDelete);
+      
+      if (storageErr) {
+        console.error("[StorageCleanup] Failed to remove orphaned images:", storageErr);
+      }
+    } catch (err) {
+      console.error("[StorageCleanup] Unexpected error during cleanup:", err);
     }
   }
 
