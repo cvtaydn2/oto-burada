@@ -1,6 +1,7 @@
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { hasSupabaseAdminEnv } from "@/lib/supabase/env";
 import { Listing, ListingFilters, UserRole, Profile } from "@/types";
+import { logger } from "@/lib/utils/logger";
 import { ListingRow } from "./listing-submission-types";
 
 export const listingSelect = `
@@ -60,7 +61,6 @@ export const listingSelect = `
     is_verified,
     verified_business,
     business_slug,
-    email_verified,
     created_at,
     updated_at
   )
@@ -151,7 +151,7 @@ export function mapListingRow(row: ListingRow): Listing {
       isVerified: row.profiles.is_verified,
       verifiedBusiness: row.profiles.verified_business,
       businessSlug: row.profiles.business_slug,
-      emailVerified: row.profiles.email_verified ?? false,
+      emailVerified: false,
       createdAt: row.profiles.created_at ?? "",
       updatedAt: row.profiles.updated_at ?? "",
     } : undefined,
@@ -317,6 +317,13 @@ export async function getFilteredDatabaseListings(
     dataQuery.returns<ListingRow[]>(),
     countQuery,
   ]);
+
+  if (dataResult.error) {
+    logger.error("Failed to fetch listings data", dataResult.error);
+  }
+  if (countResult.error) {
+    logger.error("Failed to count listings", countResult.error);
+  }
 
   const listings = dataResult.data ? dataResult.data.map(mapListingRow) : [];
   const totalCount = countResult.count ?? 0;

@@ -43,7 +43,6 @@ export interface ListingRow {
     is_verified: boolean;
     verified_business: boolean;
     business_slug: string | null;
-    email_verified: boolean;
     created_at: string;
     updated_at: string;
   } | null;
