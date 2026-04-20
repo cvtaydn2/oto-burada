@@ -40,9 +40,9 @@ export default async function AdminListingsPage({ searchParams }: AdminListingsP
         <div>
           <div className="flex items-center gap-2 mb-2">
             <div className="size-2 rounded-full bg-blue-500 shadow-[0_0_8px_rgba(59,130,246,0.5)]" />
-            <span className="text-[10px] font-black text-muted-foreground/70 uppercase tracking-[0.2em] italic">Envanter Denetimi</span>
+            <span className="text-[10px] font-bold text-muted-foreground/70 uppercase tracking-[0.2em] italic">Envanter Denetimi</span>
           </div>
-          <h1 className="text-3xl font-black text-foreground tracking-tight">
+          <h1 className="text-3xl font-bold text-foreground tracking-tight">
             İlan <span className="text-blue-600">Yönetimi</span>
           </h1>
           <p className="mt-1.5 text-sm text-muted-foreground font-medium italic italic">Platformdaki tüm ilanları denetleyin, onaylayın veya yayından kaldırın.</p>
@@ -69,31 +69,31 @@ export default async function AdminListingsPage({ searchParams }: AdminListingsP
                 <TabsTrigger 
                   value="pending" 
                   asChild
-                  className="h-20 rounded-none border-b-4 border-transparent data-[state=active]:border-blue-600 data-[state=active]:bg-transparent data-[state=active]:shadow-none font-black uppercase tracking-widest text-[11px] gap-3 transition-all data-[state=active]:text-blue-600"
+                  className="h-20 rounded-none border-b-4 border-transparent data-[state=active]:border-blue-600 data-[state=active]:bg-transparent data-[state=active]:shadow-none font-bold uppercase tracking-widest text-[11px] gap-3 transition-all data-[state=active]:text-blue-600"
                 >
                   <a href={`?status=pending${q ? `&q=${q}` : ""}`}>
                     Onay Bekleyen
-                    <Badge variant="secondary" className="bg-amber-100 text-amber-700 hover:bg-amber-100 border-none rounded-lg px-2 py-0.5 font-black">{pendingCount}</Badge>
+                    <Badge variant="secondary" className="bg-amber-100 text-amber-700 hover:bg-amber-100 border-none rounded-lg px-2 py-0.5 font-bold">{pendingCount}</Badge>
                   </a>
                 </TabsTrigger>
                 <TabsTrigger 
                   value="approved" 
                   asChild
-                  className="h-20 rounded-none border-b-4 border-transparent data-[state=active]:border-blue-600 data-[state=active]:bg-transparent data-[state=active]:shadow-none font-black uppercase tracking-widest text-[11px] gap-3 transition-all data-[state=active]:text-blue-600"
+                  className="h-20 rounded-none border-b-4 border-transparent data-[state=active]:border-blue-600 data-[state=active]:bg-transparent data-[state=active]:shadow-none font-bold uppercase tracking-widest text-[11px] gap-3 transition-all data-[state=active]:text-blue-600"
                 >
                   <a href={`?status=approved${q ? `&q=${q}` : ""}`}>
                     Yayında Olanlar
-                    <Badge variant="secondary" className="bg-blue-50 text-blue-600 hover:bg-blue-50 border-none rounded-lg px-2 py-0.5 font-black">{approvedCount}</Badge>
+                    <Badge variant="secondary" className="bg-blue-50 text-blue-600 hover:bg-blue-50 border-none rounded-lg px-2 py-0.5 font-bold">{approvedCount}</Badge>
                   </a>
                 </TabsTrigger>
                 <TabsTrigger 
                   value="history" 
                   asChild
-                  className="h-20 rounded-none border-b-4 border-transparent data-[state=active]:border-blue-600 data-[state=active]:bg-transparent data-[state=active]:shadow-none font-black uppercase tracking-widest text-[11px] gap-3 transition-all data-[state=active]:text-blue-600"
+                  className="h-20 rounded-none border-b-4 border-transparent data-[state=active]:border-blue-600 data-[state=active]:bg-transparent data-[state=active]:shadow-none font-bold uppercase tracking-widest text-[11px] gap-3 transition-all data-[state=active]:text-blue-600"
                 >
                   <a href={`?status=history${q ? `&q=${q}` : ""}`}>
                     Arşiv & Ret
-                    <Badge variant="secondary" className="bg-muted text-muted-foreground hover:bg-muted border-none rounded-lg px-2 py-0.5 font-black">{historyCount}</Badge>
+                    <Badge variant="secondary" className="bg-muted text-muted-foreground hover:bg-muted border-none rounded-lg px-2 py-0.5 font-bold">{historyCount}</Badge>
                   </a>
                 </TabsTrigger>
               </TabsList>
@@ -120,21 +120,21 @@ export default async function AdminListingsPage({ searchParams }: AdminListingsP
       {/* Summary Stats Footer */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 px-2">
           <div className="p-8 bg-card rounded-3xl border border-border shadow-sm relative overflow-hidden group">
-            <div className="absolute -right-2 -top-2 size-20 bg-muted/30 rounded-full blur-2xl group-hover:scale-110 transition-transform" />
-            <h3 className="text-muted-foreground/70 font-black uppercase text-[10px] tracking-widest mb-2 italic">Bu Segmentte</h3>
-            <span className="text-3xl font-black text-foreground tracking-tighter">{total}</span>
+            <div className="absolute -right-2 -top-2 size-20 bg-muted/30 rounded-full blur-2xl group- transition-transform" />
+            <h3 className="text-muted-foreground/70 font-bold uppercase text-[10px] tracking-widest mb-2 italic">Bu Segmentte</h3>
+            <span className="text-3xl font-bold text-foreground tracking-tighter">{total}</span>
           </div>
           
           <div className="p-8 bg-card rounded-3xl border border-blue-100 shadow-sm relative overflow-hidden group">
-            <div className="absolute -right-2 -top-2 size-20 bg-blue-50 rounded-full blur-2xl group-hover:scale-110 transition-transform" />
-            <h3 className="text-blue-600 font-black uppercase text-[10px] tracking-widest mb-2 italic">Aktif Satıştakiler</h3>
-            <span className="text-3xl font-black text-foreground tracking-tighter">{approvedCount}</span>
+            <div className="absolute -right-2 -top-2 size-20 bg-blue-50 rounded-full blur-2xl group- transition-transform" />
+            <h3 className="text-blue-600 font-bold uppercase text-[10px] tracking-widest mb-2 italic">Aktif Satıştakiler</h3>
+            <span className="text-3xl font-bold text-foreground tracking-tighter">{approvedCount}</span>
           </div>
 
           <div className="p-8 bg-card rounded-3xl border border-amber-100 shadow-sm relative overflow-hidden group">
-            <div className="absolute -right-2 -top-2 size-20 bg-amber-50 rounded-full blur-2xl group-hover:scale-110 transition-transform" />
-            <h3 className="text-amber-600 font-black uppercase text-[10px] tracking-widest mb-2 italic">Onay Bekleyen</h3>
-            <span className="text-3xl font-black text-foreground tracking-tighter">{pendingCount}</span>
+            <div className="absolute -right-2 -top-2 size-20 bg-amber-50 rounded-full blur-2xl group- transition-transform" />
+            <h3 className="text-amber-600 font-bold uppercase text-[10px] tracking-widest mb-2 italic">Onay Bekleyen</h3>
+            <span className="text-3xl font-bold text-foreground tracking-tighter">{pendingCount}</span>
           </div>
       </div>
     </main>

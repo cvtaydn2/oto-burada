@@ -71,8 +71,8 @@ export function TicketList({ initialTickets }: TicketListProps) {
                  </div>
                  <div className="space-y-1">
                     <div className="flex items-center gap-2">
-                       <h4 className="text-sm font-black text-slate-800 tracking-tight">{ticket.subject}</h4>
-                       <Badge className={`rounded-lg px-2 py-0.5 text-[8px] font-black uppercase tracking-widest border-none ${
+                       <h4 className="text-sm font-bold text-slate-800 tracking-tight">{ticket.subject}</h4>
+                       <Badge className={`rounded-lg px-2 py-0.5 text-[8px] font-bold uppercase tracking-widest border-none ${
                          ticket.priority === 'high' ? 'bg-rose-100 text-rose-600' : 
                          ticket.priority === 'medium' ? 'bg-amber-100 text-amber-600' : 
                          'bg-blue-100 text-blue-600'
@@ -82,11 +82,11 @@ export function TicketList({ initialTickets }: TicketListProps) {
                     </div>
                     <p className="text-xs text-slate-500 font-medium italic line-clamp-1">{ticket.message}</p>
                     <div className="flex items-center gap-4 pt-1">
-                       <div className="flex items-center gap-1.5 text-[10px] font-black text-slate-400 uppercase italic">
+                       <div className="flex items-center gap-1.5 text-[10px] font-bold text-slate-400 uppercase italic">
                           <User size={12} className="text-slate-300" />
                           {ticket.profile?.full_name || "Misafir"}
                        </div>
-                       <div className="flex items-center gap-1.5 text-[10px] font-black text-slate-400 uppercase italic">
+                       <div className="flex items-center gap-1.5 text-[10px] font-bold text-slate-400 uppercase italic">
                           <Calendar size={12} className="text-slate-300" />
                           {new Date(ticket.created_at).toLocaleDateString("tr-TR")}
                        </div>
@@ -96,9 +96,9 @@ export function TicketList({ initialTickets }: TicketListProps) {
 
               <div className="flex items-center gap-4 shrink-0">
                  <div className="flex flex-col items-end gap-1">
-                    <Badge className={`rounded-xl h-8 px-4 flex items-center gap-2 border-none font-black text-[9px] uppercase tracking-widest italic ${
-                      ticket.status === 'open' ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-100' :
-                      ticket.status === 'in_progress' ? 'bg-amber-500 text-white shadow-lg shadow-amber-100' :
+                    <Badge className={`rounded-xl h-8 px-4 flex items-center gap-2 border-none font-bold text-[9px] uppercase tracking-widest italic ${
+                      ticket.status === 'open' ? 'bg-emerald-600 text-white shadow-sm shadow-emerald-100' :
+                      ticket.status === 'in_progress' ? 'bg-amber-500 text-white shadow-sm shadow-amber-100' :
                       'bg-slate-200 text-slate-500'
                     }`}>
                        {ticket.status === 'open' && <AlertCircle size={10} />}
@@ -120,23 +120,23 @@ export function TicketList({ initialTickets }: TicketListProps) {
                           }
                        </Button>
                     </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end" className="w-[180px] rounded-2xl p-2 shadow-xl">
+                    <DropdownMenuContent align="end" className="w-[180px] rounded-2xl p-2 shadow-sm">
                        <DropdownMenuItem 
-                         className="cursor-pointer gap-2 font-black text-[10px] uppercase tracking-widest rounded-xl"
+                         className="cursor-pointer gap-2 font-bold text-[10px] uppercase tracking-widest rounded-xl"
                          onClick={() => handleStatusChange(ticket.id, "in_progress")}
                          disabled={ticket.status === "in_progress"}
                        >
                          İşleme Al
                        </DropdownMenuItem>
                        <DropdownMenuItem 
-                         className="cursor-pointer gap-2 font-black text-[10px] uppercase tracking-widest rounded-xl text-emerald-600"
+                         className="cursor-pointer gap-2 font-bold text-[10px] uppercase tracking-widest rounded-xl text-emerald-600"
                          onClick={() => handleStatusChange(ticket.id, "resolved")}
                          disabled={ticket.status === "resolved"}
                        >
                          Tamamlandı
                        </DropdownMenuItem>
                        <DropdownMenuItem 
-                         className="cursor-pointer gap-2 font-black text-[10px] uppercase tracking-widest rounded-xl text-slate-400"
+                         className="cursor-pointer gap-2 font-bold text-[10px] uppercase tracking-widest rounded-xl text-slate-400"
                          onClick={() => handleStatusChange(ticket.id, "closed")}
                          disabled={ticket.status === "closed"}
                        >
@@ -154,7 +154,7 @@ export function TicketList({ initialTickets }: TicketListProps) {
               <MessageCircle size={40} />
            </div>
            <div>
-              <p className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-300 italic">Henüz bir destek talebi bulunmuyor</p>
+              <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-slate-300 italic">Henüz bir destek talebi bulunmuyor</p>
               <p className="text-xs text-slate-400 font-medium mt-1">İşler gayet yolunda görünüyor.</p>
            </div>
         </div>

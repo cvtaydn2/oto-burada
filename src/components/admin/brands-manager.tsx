@@ -151,11 +151,11 @@ export function BrandsManager({ initialBrands, showTableOnly }: BrandsManagerPro
         <table className="w-full text-left border-collapse">
           <thead>
             <tr className="bg-slate-50/50 border-b border-slate-100">
-              <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Marka</th>
-              <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">URL (Slug)</th>
-              <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Koleksiyon</th>
-              <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Durum</th>
-              <th className="px-6 py-4 text-right text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">İşlem</th>
+              <th className="px-6 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em]">Marka</th>
+              <th className="px-6 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em]">URL (Slug)</th>
+              <th className="px-6 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em]">Koleksiyon</th>
+              <th className="px-6 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em]">Durum</th>
+              <th className="px-6 py-4 text-right text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em]">İşlem</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-50">
@@ -163,10 +163,10 @@ export function BrandsManager({ initialBrands, showTableOnly }: BrandsManagerPro
               <tr key={brand.id} className="hover:bg-blue-50/20 transition-colors group">
                 <td className="px-6 py-5">
                   <div className="flex items-center gap-3">
-                    <div className="size-9 rounded-xl bg-slate-100 border border-slate-200 flex items-center justify-center text-slate-400 group-hover:bg-white group-hover:text-blue-600 group-hover:border-blue-100 transition-all font-black text-xs">
+                    <div className="size-9 rounded-xl bg-slate-100 border border-slate-200 flex items-center justify-center text-slate-400 group-hover:bg-white group-hover:text-blue-600 group-hover:border-blue-100 transition-all font-bold text-xs">
                       {brand.name.substring(0, 2).toUpperCase()}
                     </div>
-                    <span className="text-sm font-black text-slate-800 tracking-tight">{brand.name}</span>
+                    <span className="text-sm font-bold text-slate-800 tracking-tight">{brand.name}</span>
                   </div>
                 </td>
                 <td className="px-6 py-5">
@@ -181,7 +181,7 @@ export function BrandsManager({ initialBrands, showTableOnly }: BrandsManagerPro
                     className="flex items-center gap-2 px-3 py-1.5 rounded-lg border border-slate-200 bg-white hover:border-blue-300 hover:text-blue-600 transition-all group/btn shadow-sm"
                   >
                     <Car size={14} className="text-slate-400 group-hover/btn:text-blue-500" />
-                    <span className="text-[10px] font-black text-slate-600 uppercase italic group-hover/btn:text-blue-600">Föyü Aç</span>
+                    <span className="text-[10px] font-bold text-slate-600 uppercase italic group-hover/btn:text-blue-600">Föyü Aç</span>
                     <ChevronRight size={12} className="text-slate-300 group-hover/btn:text-blue-400" />
                   </button>
                 </td>
@@ -189,12 +189,12 @@ export function BrandsManager({ initialBrands, showTableOnly }: BrandsManagerPro
                   {brand.is_active ? (
                     <div className="flex items-center gap-1.5 text-emerald-600">
                       <CheckCircle2 size={14} />
-                      <span className="text-[10px] font-black uppercase tracking-widest italic">Yayında</span>
+                      <span className="text-[10px] font-bold uppercase tracking-widest italic">Yayında</span>
                     </div>
                   ) : (
                     <div className="flex items-center gap-1.5 text-slate-400">
                       <XCircle size={14} />
-                      <span className="text-[10px] font-black uppercase tracking-widest italic">Gizli</span>
+                      <span className="text-[10px] font-bold uppercase tracking-widest italic">Gizli</span>
                     </div>
                   )}
                 </td>
@@ -205,19 +205,19 @@ export function BrandsManager({ initialBrands, showTableOnly }: BrandsManagerPro
                         <MoreVertical className="h-4 w-4" />
                       </Button>
                     </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end" className="w-[200px] rounded-2xl p-2 shadow-xl border-slate-100">
-                      <DropdownMenuLabel className="text-[10px] font-black uppercase tracking-widest text-slate-400 px-3 py-2">Marka Ayarları</DropdownMenuLabel>
+                    <DropdownMenuContent align="end" className="w-[200px] rounded-2xl p-2 shadow-sm border-slate-100">
+                      <DropdownMenuLabel className="text-[10px] font-bold uppercase tracking-widest text-slate-400 px-3 py-2">Marka Ayarları</DropdownMenuLabel>
                       <DropdownMenuSeparator className="bg-slate-50" />
                       <DropdownMenuItem 
                         onClick={() => setEditingBrand(brand)}
-                        className="cursor-pointer gap-2 font-black text-[10px] uppercase tracking-widest rounded-xl px-3 py-2.5 hover:bg-slate-50 transition-all"
+                        className="cursor-pointer gap-2 font-bold text-[10px] uppercase tracking-widest rounded-xl px-3 py-2.5 hover:bg-slate-50 transition-all"
                       >
                         <Edit size={14} />
                         DÜZENLE
                       </DropdownMenuItem>
                       <DropdownMenuItem 
                         onClick={() => setAddModelModal(brand)}
-                        className="cursor-pointer gap-2 font-black text-[10px] uppercase tracking-widest rounded-xl px-3 py-2.5 hover:bg-slate-50 transition-all"
+                        className="cursor-pointer gap-2 font-bold text-[10px] uppercase tracking-widest rounded-xl px-3 py-2.5 hover:bg-slate-50 transition-all"
                       >
                         <Plus size={14} />
                         MODEL EKLE
@@ -226,7 +226,7 @@ export function BrandsManager({ initialBrands, showTableOnly }: BrandsManagerPro
                       <DropdownMenuItem 
                         onClick={() => handleToggleStatus(brand)}
                         disabled={loadingId === brand.id}
-                        className="cursor-pointer gap-2 font-black text-[10px] uppercase tracking-widest rounded-xl px-3 py-2.5 hover:bg-slate-50 transition-all"
+                        className="cursor-pointer gap-2 font-bold text-[10px] uppercase tracking-widest rounded-xl px-3 py-2.5 hover:bg-slate-50 transition-all"
                       >
                         {loadingId === brand.id ? (
                           <Loader2 className="animate-spin" size={14} />
@@ -240,7 +240,7 @@ export function BrandsManager({ initialBrands, showTableOnly }: BrandsManagerPro
                       <DropdownMenuSeparator className="bg-slate-50" />
                       <DropdownMenuItem 
                         onClick={() => setDeleteId(brand.id)}
-                        className="cursor-pointer gap-2 font-black text-[10px] uppercase tracking-widest rounded-xl px-3 py-2.5 text-rose-600 hover:bg-rose-50 transition-all font-black"
+                        className="cursor-pointer gap-2 font-bold text-[10px] uppercase tracking-widest rounded-xl px-3 py-2.5 text-rose-600 hover:bg-rose-50 transition-all font-bold"
                       >
                         <Trash2 size={14} />
                         SİL
@@ -270,13 +270,13 @@ export function BrandsManager({ initialBrands, showTableOnly }: BrandsManagerPro
       {/* Add Brand Modal */}
       {addBrandModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
-          <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl">
+          <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-sm">
             <div className="mb-6 flex items-center gap-4">
               <div className="flex size-12 items-center justify-center rounded-xl bg-blue-100 text-blue-600">
                 <Plus size={24} />
               </div>
               <div>
-                <h3 className="text-lg font-black text-slate-900">Yeni Marka Ekle</h3>
+                <h3 className="text-lg font-bold text-slate-900">Yeni Marka Ekle</h3>
                 <p className="text-sm text-slate-500">Araç veritabanına yeni marka ekleyin</p>
               </div>
             </div>
@@ -317,13 +317,13 @@ export function BrandsManager({ initialBrands, showTableOnly }: BrandsManagerPro
       {/* Add Model Modal */}
       {addModelModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
-          <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl">
+          <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-sm">
             <div className="mb-6 flex items-center gap-4">
               <div className="flex size-12 items-center justify-center rounded-xl bg-blue-100 text-blue-600">
                 <Car size={24} />
               </div>
               <div>
-                <h3 className="text-lg font-black text-slate-900">Yeni Model Ekle</h3>
+                <h3 className="text-lg font-bold text-slate-900">Yeni Model Ekle</h3>
                 <p className="text-sm text-slate-500">{addModelModal.name} için yeni model</p>
               </div>
             </div>
@@ -379,13 +379,13 @@ export function BrandsManager({ initialBrands, showTableOnly }: BrandsManagerPro
       {/* Edit Brand Modal */}
       {editingBrand && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
-          <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl">
+          <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-sm">
             <div className="mb-6 flex items-center gap-4">
               <div className="flex size-12 items-center justify-center rounded-xl bg-blue-100 text-blue-600">
                 <Edit size={24} />
               </div>
               <div>
-                <h3 className="text-lg font-black text-slate-900">Markayı Düzenle</h3>
+                <h3 className="text-lg font-bold text-slate-900">Markayı Düzenle</h3>
                 <p className="text-sm text-slate-500">{editingBrand.name} bilgilerini güncelleyin</p>
               </div>
             </div>
@@ -423,13 +423,13 @@ export function BrandsManager({ initialBrands, showTableOnly }: BrandsManagerPro
       {/* Delete Confirmation Modal */}
       {deleteId && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
-          <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl">
+          <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-sm">
             <div className="mb-6 flex items-center gap-4 text-rose-600">
               <div className="flex size-12 items-center justify-center rounded-xl bg-rose-100">
                 <AlertTriangle size={24} />
               </div>
               <div>
-                <h3 className="text-lg font-black">Markayı Sil?</h3>
+                <h3 className="text-lg font-bold">Markayı Sil?</h3>
                 <p className="text-sm text-slate-500">Bu işlem geri alınamaz ve markaya bağlı her şey (modeller vb.) etkilenebilir.</p>
               </div>
             </div>

@@ -54,9 +54,9 @@ export function PricingPlans({ initialPlans }: PricingPlansProps) {
           return (
             <Card
               key={plan.id}
-              className={`relative flex flex-col transition-all duration-300 hover:shadow-xl ${
+              className={`relative flex flex-col transition-all duration-300 hover:shadow-sm ${
                 isFeatured
-                  ? "border-primary shadow-lg scale-105 z-10"
+                  ? "border-primary shadow-sm scale-105 z-10"
                   : "border-border"
               }`}
             >

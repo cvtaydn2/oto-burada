@@ -22,9 +22,9 @@ export function ForgotPasswordForm() {
         <div className="relative z-10 w-full max-w-lg space-y-12">
           <div className="flex items-center gap-4">
             <div className="h-px w-12 bg-primary" />
-            <span className="text-[10px] font-black uppercase tracking-[0.4em] text-primary italic">Güvenlik Protokolü</span>
+            <span className="text-[10px] font-bold uppercase tracking-[0.4em] text-primary italic">Güvenlik Protokolü</span>
           </div>
-          <h2 className="text-7xl font-black italic text-white leading-tight tracking-tightest uppercase">
+          <h2 className="text-7xl font-bold italic text-white leading-tight tracking-tightest uppercase">
             HESAP <span className="text-primary tracking-widest block">ERİŞİMİ</span>
           </h2>
           <p className="text-muted-foreground/70 font-medium text-lg leading-relaxed italic border-l-4 border-primary pl-8">
@@ -39,12 +39,12 @@ export function ForgotPasswordForm() {
           <div className="space-y-4">
             <Link
               href="/login"
-              className="inline-flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-muted-foreground/70 hover:text-primary transition-colors italic"
+              className="inline-flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-muted-foreground/70 hover:text-primary transition-colors italic"
             >
               <ChevronLeft size={14} />
               GİRİŞE DÖN
             </Link>
-            <h1 className="text-4xl font-black italic uppercase tracking-tighter text-foreground leading-tight">
+            <h1 className="text-4xl font-bold italic uppercase tracking-tighter text-foreground leading-tight">
               Şifremi <span className="text-primary italic">Unuttum</span>
             </h1>
             <p className="text-sm font-medium text-muted-foreground italic">
@@ -64,7 +64,7 @@ export function ForgotPasswordForm() {
           ) : (
             <form action={formAction} className="space-y-6">
               <div className="space-y-2 group">
-                <label className="text-[10px] font-black px-1 uppercase tracking-widest text-muted-foreground/70 italic group-focus-within:text-primary transition-colors">
+                <label className="text-[10px] font-bold px-1 uppercase tracking-widest text-muted-foreground/70 italic group-focus-within:text-primary transition-colors">
                   E-POSTA ADRESİ
                 </label>
                 <div className="relative">
@@ -73,7 +73,7 @@ export function ForgotPasswordForm() {
                     type="email"
                     name="email"
                     placeholder="isim@mail.com"
-                    className="h-16 w-full pl-14 pr-6 rounded-[1.5rem] bg-card border-2 border-border/50 shadow-xl shadow-slate-200/40 focus:border-primary outline-none transition-all font-black italic tracking-tighter text-foreground"
+                    className="h-16 w-full pl-14 pr-6 rounded-xl bg-card border-2 border-border/50 shadow-sm shadow-slate-200/40 focus:border-primary outline-none transition-all font-bold italic tracking-tighter text-foreground"
                     required
                     autoComplete="email"
                   />

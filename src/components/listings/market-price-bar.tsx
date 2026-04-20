@@ -42,13 +42,13 @@ export function MarketPriceBar({ currentPrice, averagePrice, className }: Market
           style={{ left: `${safePosition}%` }}
         >
           <div className={cn(
-            "relative size-5 rounded-full border-4 border-white shadow-lg",
+            "relative size-5 rounded-full border-4 border-white shadow-sm",
             isGoodPrice ? "bg-emerald-500" : isHighPrice ? "bg-amber-500" : "bg-indigo-500"
           )}>
             {/* Label below pointer */}
             <div className="absolute top-full left-1/2 -translate-x-1/2 pt-2 whitespace-nowrap">
               <span className={cn(
-                "text-[10px] font-black px-1.5 py-0.5 rounded shadow-sm",
+                "text-[10px] font-bold px-1.5 py-0.5 rounded shadow-sm",
                 isGoodPrice ? "bg-emerald-600 text-white" : isHighPrice ? "bg-amber-600 text-white" : "bg-slate-800 text-white"
               )}>
                 BU İLAN

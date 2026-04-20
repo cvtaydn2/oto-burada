@@ -110,7 +110,7 @@ export function SellerReviewForm({
               onClick={() => setRating(star)}
               onMouseEnter={() => setHovered(star)}
               onMouseLeave={() => setHovered(0)}
-              className="p-0.5 transition-transform hover:scale-110 focus:outline-none"
+              className="p-0.5 transition-transform  focus:outline-none"
               aria-label={`${star} yıldız`}
             >
               <Star

@@ -37,7 +37,7 @@ export default async function DashboardProfilePage() {
             <User className="text-primary" size={16} />
             <span className="text-xs font-bold text-muted-foreground uppercase tracking-widest">Üyelik Merkezi</span>
           </div>
-          <h1 className="text-2xl font-black text-foreground">
+          <h1 className="text-2xl font-bold text-foreground">
             Profil Ayarları
           </h1>
           <p className="text-sm font-medium text-muted-foreground mt-1">Hesap bilgilerinizi ve doğrulama durumunuzu yönetin.</p>
@@ -45,7 +45,7 @@ export default async function DashboardProfilePage() {
         <div className="flex items-center gap-3">
           <div className="text-right">
             <div className="flex items-center gap-2 justify-end">
-              <span className="text-xl font-black text-foreground">{completion}%</span>
+              <span className="text-xl font-bold text-foreground">{completion}%</span>
               <div className="w-16 h-1.5 bg-muted rounded-full overflow-hidden">
                 <div className="h-full bg-emerald-500 transition-all" style={{ width: `${completion}%` }} />
               </div>

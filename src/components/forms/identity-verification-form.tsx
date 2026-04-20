@@ -11,7 +11,7 @@ export function IdentityVerificationForm({ isVerified }: IdentityVerificationFor
   if (isVerified) {
     return (
       <div className="rounded-xl border border-emerald-100 bg-emerald-50/30 p-4 flex items-center gap-3">
-        <div className="size-10 rounded-full bg-emerald-500 flex items-center justify-center text-white shrink-0 shadow-lg shadow-emerald-100">
+        <div className="size-10 rounded-full bg-emerald-500 flex items-center justify-center text-white shrink-0 shadow-sm shadow-emerald-100">
           <ShieldCheck size={20} />
         </div>
         <div>

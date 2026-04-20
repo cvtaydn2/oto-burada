@@ -95,12 +95,12 @@ export function ValuationForm({ brands }: ValuationFormProps) {
            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-600 text-xs font-bold uppercase tracking-wider">
               <Sparkles size={14} /> Hesaplama Tamamlandı
            </div>
-           <h3 className="text-xl font-black italic uppercase tracking-tighter">
+           <h3 className="text-xl font-bold italic uppercase tracking-tighter">
               Tahmini Piyasa Degeri
            </h3>
         </div>
 
-        <div className="p-8 rounded-[2rem] bg-slate-900 text-white shadow-2xl space-y-6 relative overflow-hidden">
+        <div className="p-8 rounded-2xl bg-slate-900 text-white shadow-sm space-y-6 relative overflow-hidden">
            {/* Glow Effect */}
            <div className="absolute top-0 right-0 size-64 bg-primary/20 blur-[100px] pointer-events-none" />
            
@@ -110,8 +110,8 @@ export function ValuationForm({ brands }: ValuationFormProps) {
                  <p className="text-2xl font-bold opacity-80">{formatCurrency(result.min)}</p>
               </div>
               <div className="text-center p-6 rounded-3xl bg-white/5 border border-white/10 shadow-inner">
-                 <p className="text-sm font-black text-primary uppercase tracking-[0.2em] mb-2 italic">Ortalama</p>
-                 <p className="text-4xl md:text-5xl font-black text-glow">{formatCurrency(result.avg)}</p>
+                 <p className="text-sm font-bold text-primary uppercase tracking-[0.2em] mb-2 italic">Ortalama</p>
+                 <p className="text-4xl md:text-5xl font-bold text-glow">{formatCurrency(result.avg)}</p>
               </div>
               <div className="text-center md:text-right">
                  <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">Maximum</p>
@@ -139,7 +139,7 @@ export function ValuationForm({ brands }: ValuationFormProps) {
               Tekrar Hesapla
            </Button>
            <Button 
-              className="h-14 rounded-2xl font-bold italic shadow-lg shadow-primary/20"
+              className="h-14 rounded-2xl font-bold italic shadow-sm shadow-primary/20"
               onClick={() => router.push(`/listings?brand=${encodeURIComponent(selectedBrand)}&model=${encodeURIComponent(selectedModel)}`)}
            >
               Piyasayi Gor
@@ -153,7 +153,7 @@ export function ValuationForm({ brands }: ValuationFormProps) {
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
       <div className="grid md:grid-cols-2 gap-6">
         <div className="space-y-2">
-          <Label className="text-xs font-black uppercase tracking-widest text-muted-foreground italic ml-1">Marka</Label>
+          <Label className="text-xs font-bold uppercase tracking-widest text-muted-foreground italic ml-1">Marka</Label>
           <Select 
             onValueChange={(v) => {
               setValue("brand", v);
@@ -175,7 +175,7 @@ export function ValuationForm({ brands }: ValuationFormProps) {
         </div>
 
         <div className="space-y-2">
-          <Label className="text-xs font-black uppercase tracking-widest text-muted-foreground italic ml-1">Model</Label>
+          <Label className="text-xs font-bold uppercase tracking-widest text-muted-foreground italic ml-1">Model</Label>
           <Select 
             disabled={!selectedBrand}
             onValueChange={(v) => setValue("model", v)}
@@ -195,7 +195,7 @@ export function ValuationForm({ brands }: ValuationFormProps) {
         </div>
 
         <div className="space-y-2">
-          <Label className="text-xs font-black uppercase tracking-widest text-muted-foreground italic ml-1">Model Yılı</Label>
+          <Label className="text-xs font-bold uppercase tracking-widest text-muted-foreground italic ml-1">Model Yılı</Label>
           <Input 
             type="number" 
             placeholder="Örn: 2022" 
@@ -206,7 +206,7 @@ export function ValuationForm({ brands }: ValuationFormProps) {
         </div>
 
         <div className="space-y-2">
-          <Label className="text-xs font-black uppercase tracking-widest text-muted-foreground italic ml-1">Kilometre</Label>
+          <Label className="text-xs font-bold uppercase tracking-widest text-muted-foreground italic ml-1">Kilometre</Label>
           <Input 
             placeholder="Örn: 45.000" 
             className="h-14 rounded-2xl border-border bg-slate-50/50 font-bold"
@@ -226,7 +226,7 @@ export function ValuationForm({ brands }: ValuationFormProps) {
       <Button 
         type="submit" 
         disabled={loading}
-        className="w-full h-16 rounded-[1.25rem] text-lg font-black italic uppercase tracking-tighter shadow-xl shadow-primary/20 hover:scale-[1.01] active:scale-[0.99] transition-all"
+        className="w-full h-16 rounded-xl text-lg font-bold italic uppercase tracking-tighter shadow-sm shadow-primary/20 hover:scale-[1.01] active:scale-[0.99] transition-all"
       >
         {loading ? (
           <>

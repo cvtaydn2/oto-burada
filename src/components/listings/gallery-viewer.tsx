@@ -98,14 +98,14 @@ export function GalleryViewer({ images, title }: GalleryViewerProps) {
           <>
             <button
               onClick={goToPrevious}
-              className="absolute left-4 top-1/2 -translate-y-1/2 bg-card/90 shadow-lg rounded-full p-3 hover:bg-card transition-all"
+              className="absolute left-4 top-1/2 -translate-y-1/2 bg-card/90 shadow-sm rounded-full p-3 hover:bg-card transition-all"
               aria-label="Önceki"
             >
               <ChevronLeft size={20} />
             </button>
             <button
               onClick={goToNext}
-              className="absolute right-4 top-1/2 -translate-y-1/2 bg-card/90 shadow-lg rounded-full p-3 hover:bg-card transition-all"
+              className="absolute right-4 top-1/2 -translate-y-1/2 bg-card/90 shadow-sm rounded-full p-3 hover:bg-card transition-all"
               aria-label="Sonraki"
             >
               <ChevronRight size={20} />

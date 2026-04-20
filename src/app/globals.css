@@ -199,7 +199,7 @@
     border: 1px solid #e2e8f0 !important;
   }
 
-  .shadow-2xl, .card-shadow, .shadow-sm, .shadow-md {
+  .shadow-sm, .card-shadow, .shadow-sm, .shadow-md {
     box-shadow: none !important;
   }
 

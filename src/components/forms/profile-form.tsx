@@ -49,7 +49,7 @@ export function ProfileForm({
     <>
       <form action={formAction} className="space-y-5">
         <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-          <div className="rounded-[1.25rem] border border-border/70 bg-muted/20 p-4">
+          <div className="rounded-xl border border-border/70 bg-muted/20 p-4">
             <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
               <UserRound className="size-4 text-primary" />
               Tam Ad
@@ -58,7 +58,7 @@ export function ProfileForm({
               {values.fullName || "Henüz eklenmedi"}
             </p>
           </div>
-          <div className="rounded-[1.25rem] border border-border/70 bg-muted/20 p-4">
+          <div className="rounded-xl border border-border/70 bg-muted/20 p-4">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
                 <Mail className="size-4 text-primary" />
@@ -74,7 +74,7 @@ export function ProfileForm({
               {isVerifiedLocally ? "Doğrulandı" : "Doğrulanmadı"}
             </p>
           </div>
-          <div className="rounded-[1.25rem] border border-border/70 bg-muted/20 p-4">
+          <div className="rounded-xl border border-border/70 bg-muted/20 p-4">
             <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
               <MapPin className="size-4 text-primary" />
               Şehir
@@ -83,7 +83,7 @@ export function ProfileForm({
               {values.city || "Henüz eklenmedi"}
             </p>
           </div>
-          <div className="rounded-[1.25rem] border border-primary/10 bg-gradient-to-br from-primary/10 via-background to-background p-4">
+          <div className="rounded-xl border border-primary/10 bg-gradient-to-br from-primary/10 via-background to-background p-4">
             <div className="flex items-center gap-2 text-sm font-medium text-primary">
               <Camera className="size-4" />
               Avatar
@@ -190,7 +190,7 @@ export function ProfileForm({
             />
           </label>
 
-          <div className="rounded-[1.5rem] border border-primary/10 bg-gradient-to-br from-primary/10 via-background to-background p-4">
+          <div className="rounded-xl border border-primary/10 bg-gradient-to-br from-primary/10 via-background to-background p-4">
             <p className="text-xs font-semibold uppercase tracking-[0.14em] text-primary">
               Hazırlık Notu
             </p>

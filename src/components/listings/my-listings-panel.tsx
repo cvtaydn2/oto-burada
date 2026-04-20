@@ -209,7 +209,7 @@ export function MyListingsPanel({
       {showForm && children && (
         <div className="rounded-2xl border border-blue-200 bg-blue-50/20 p-6 shadow-sm">
           <div className="mb-6 flex items-center justify-between">
-            <h3 className="text-lg font-black text-foreground">{activeEditId ? "İlanı Düzenle" : "Yeni İlan Ver"}</h3>
+            <h3 className="text-lg font-bold text-foreground">{activeEditId ? "İlanı Düzenle" : "Yeni İlan Ver"}</h3>
             <button onClick={() => setShowForm(false)} className="rounded-xl p-2 bg-card border border-border text-muted-foreground/70 hover:text-muted-foreground transition-all hover:bg-muted/30">
               <X size={20} />
             </button>
@@ -220,7 +220,7 @@ export function MyListingsPanel({
 
       {!showForm && (
         <button onClick={() => setShowForm(true)} className="flex w-full items-center justify-center gap-3 rounded-2xl border-2 border-dashed border-blue-200 bg-card py-6 text-base font-bold text-blue-600 transition-all hover:bg-blue-50 hover:border-blue-300 active:scale-[0.99] group shadow-sm">
-          <div className="size-10 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center group-hover:scale-110 transition-transform">
+          <div className="size-10 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center group- transition-transform">
             <Plus size={24} />
           </div>
           YENİ İLAN YAYINLA
@@ -232,7 +232,7 @@ export function MyListingsPanel({
           <div className="size-20 bg-muted/30 rounded-2xl flex items-center justify-center mx-auto mb-6 text-slate-300">
             <Rocket size={40} />
           </div>
-          <h3 className="text-xl font-black text-muted-foreground">Henüz İlanınız Yok</h3>
+          <h3 className="text-xl font-bold text-muted-foreground">Henüz İlanınız Yok</h3>
           <p className="mt-2 text-muted-foreground/70 font-medium max-w-xs mx-auto">Hemen ilk arabanızı ekleyerek Türkiye&apos;nin en hızlı pazar yerinde satışa başlayın!</p>
         </div>
       )}
@@ -400,7 +400,7 @@ function ListingCard({
 
       <div className="relative h-20 w-24 sm:h-24 sm:w-32 shrink-0 overflow-hidden rounded-xl bg-muted/30 border border-border/50">
         {listing.images?.[0]?.url ? (
-          <Image src={listing.images[0].url} alt="" fill sizes="128px" className="object-cover group-hover:scale-110 transition-transform duration-700" placeholder={listing.images[0].placeholderBlur ? "blur" : "empty"} blurDataURL={listing.images[0].placeholderBlur ?? undefined} />
+          <Image src={listing.images[0].url} alt="" fill sizes="128px" className="object-cover group- transition-transform duration-700" placeholder={listing.images[0].placeholderBlur ? "blur" : "empty"} blurDataURL={listing.images[0].placeholderBlur ?? undefined} />
         ) : (
           <div className="flex h-full items-center justify-center text-slate-300"><Rocket size={20} /></div>
         )}
@@ -416,7 +416,7 @@ function ListingCard({
           </span>
         </div>
         <p className="font-bold text-foreground truncate tracking-tight text-sm mb-1 group-hover:text-blue-600 transition-colors">{listing.title}</p>
-        <p className="text-base font-black text-blue-600 tracking-tight leading-none">{formatCurrency(listing.price)} ₺</p>
+        <p className="text-base font-bold text-blue-600 tracking-tight leading-none">{formatCurrency(listing.price)} ₺</p>
         <div className="mt-auto flex flex-wrap items-center gap-2 text-[10px] text-muted-foreground/70 font-bold uppercase tracking-wider pt-1">
           <span>{listing.year}</span>
           <span className="hidden sm:inline">•</span>
@@ -451,7 +451,7 @@ function ListingCard({
             </DialogTrigger>
             <DialogContent className="sm:max-w-xl rounded-2xl border-none">
               <DialogHeader>
-                <DialogTitle className="text-2xl font-black">İlanını <span className="text-blue-600">Öne Çıkar</span></DialogTitle>
+                <DialogTitle className="text-2xl font-bold">İlanını <span className="text-blue-600">Öne Çıkar</span></DialogTitle>
                 <DialogDescription className="sr-only">
                   İlanınızı öne çıkarmak için doping paketi seçin.
                 </DialogDescription>

@@ -16,7 +16,7 @@ export function AdminHeaderActions() {
       <MarketSyncButton />
       <Button 
         variant="default"
-        className="rounded-xl bg-slate-900 border-none hover:bg-black text-white shadow-lg shadow-slate-200 font-bold px-6 h-12 transition-all hover:-translate-y-0.5 flex items-center gap-2" 
+        className="rounded-xl bg-slate-900 border-none hover:bg-black text-white shadow-sm shadow-slate-200 font-bold px-6 h-12 transition-all hover:-translate-y-0.5 flex items-center gap-2" 
         onClick={handlePrint}
       >
         <Printer size={18} />

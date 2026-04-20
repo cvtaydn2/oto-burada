@@ -53,7 +53,7 @@ export default async function EditListingPage({ params }: EditListingPageProps) 
             </Link>
             <span className="text-xs font-bold text-muted-foreground uppercase tracking-widest">İlan Yönetimi</span>
           </div>
-          <h1 className="text-2xl font-black text-foreground">
+          <h1 className="text-2xl font-bold text-foreground">
             İlanı Düzenle
           </h1>
           <p className="text-sm font-medium text-muted-foreground mt-1">

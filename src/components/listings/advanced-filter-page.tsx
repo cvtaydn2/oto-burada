@@ -543,7 +543,7 @@ export function AdvancedFilterPage({
             <button
               onClick={handleApply}
               disabled={isPending}
-              className="w-full sm:w-auto flex items-center justify-center gap-2 bg-blue-500 text-white px-8 py-3 rounded-xl text-sm font-bold hover:bg-blue-600 transition shadow-lg shadow-blue-500/20 disabled:opacity-70"
+              className="w-full sm:w-auto flex items-center justify-center gap-2 bg-blue-500 text-white px-8 py-3 rounded-xl text-sm font-bold hover:bg-blue-600 transition shadow-sm shadow-blue-500/20 disabled:opacity-70"
             >
               <Search size={16} />
               {isPending ? "Yükleniyor..." : "Sonuçları Gör"}

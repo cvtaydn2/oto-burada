@@ -101,24 +101,24 @@ export function PlanForm({ initialData, onSuccess, onCancel }: PlanFormProps) {
       <div className="space-y-4">
         <div className="grid gap-4">
           <div className="space-y-2">
-            <Label className="text-xs font-black uppercase tracking-widest text-muted-foreground">Paket Adı</Label>
+            <Label className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Paket Adı</Label>
             <Input {...form.register("name")} placeholder="Örn: Premium Plus" className="rounded-xl" />
             {form.formState.errors.name && <p className="text-[10px] font-bold text-rose-500">{form.formState.errors.name.message as string}</p>}
           </div>
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label className="text-xs font-black uppercase tracking-widest text-muted-foreground">Fiyat (TL)</Label>
+              <Label className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Fiyat (TL)</Label>
               <Input {...form.register("price")} type="number" className="rounded-xl" />
             </div>
             <div className="space-y-2">
-              <Label className="text-xs font-black uppercase tracking-widest text-muted-foreground">İlan Kredisi</Label>
+              <Label className="text-xs font-bold uppercase tracking-widest text-muted-foreground">İlan Kredisi</Label>
               <Input {...form.register("credits")} type="number" className="rounded-xl" />
             </div>
           </div>
 
           <div className="pt-2">
-            <Label className="text-xs font-black uppercase tracking-widest text-muted-foreground mb-4 block">Paket Özellikleri</Label>
+            <Label className="text-xs font-bold uppercase tracking-widest text-muted-foreground mb-4 block">Paket Özellikleri</Label>
             <div className="grid grid-cols-2 gap-4">
                {[
                  { id: "featured_listings", label: "Öne Çıkan İlanlar" },
@@ -148,7 +148,7 @@ export function PlanForm({ initialData, onSuccess, onCancel }: PlanFormProps) {
               checked={form.watch("is_active")}
               onCheckedChange={(checked) => form.setValue("is_active", !!checked)}
             />
-            <Label htmlFor="is_active" className="text-xs font-black uppercase tracking-widest text-muted-foreground">Bu paketi hemen yayına al</Label>
+            <Label htmlFor="is_active" className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Bu paketi hemen yayına al</Label>
           </div>
         </div>
       </div>
@@ -157,14 +157,14 @@ export function PlanForm({ initialData, onSuccess, onCancel }: PlanFormProps) {
         <Button
           type="button"
           variant="outline"
-          className="flex-1 rounded-xl h-11 font-black text-[10px] tracking-widest uppercase border-border"
+          className="flex-1 rounded-xl h-11 font-bold text-[10px] tracking-widest uppercase border-border"
           onClick={onCancel}
         >
           İptal
         </Button>
         <Button
           type="submit"
-          className="flex-1 rounded-xl h-11 font-black text-[10px] tracking-widest uppercase bg-indigo-600 hover:bg-indigo-700 shadow-lg shadow-indigo-100"
+          className="flex-1 rounded-xl h-11 font-bold text-[10px] tracking-widest uppercase bg-indigo-600 hover:bg-indigo-700 shadow-sm shadow-indigo-100"
           disabled={loading}
         >
           {loading ? <Loader2 className="animate-spin size-4" /> : initialData ? "GÜNCELLE" : "OLUŞTUR"}

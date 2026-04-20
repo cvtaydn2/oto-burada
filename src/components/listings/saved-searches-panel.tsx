@@ -93,7 +93,7 @@ export function SavedSearchesPanel({ initialSavedSearches }: SavedSearchesPanelP
 
   if (savedSearches.length === 0) {
     return (
-      <div className="rounded-[2rem] border border-dashed border-border/70 bg-background p-12 text-center shadow-sm">
+      <div className="rounded-2xl border border-dashed border-border/70 bg-background p-12 text-center shadow-sm">
         <div className="mx-auto mb-4 flex size-16 items-center justify-center rounded-full bg-primary/10 text-primary">
           <Search size={32} />
         </div>

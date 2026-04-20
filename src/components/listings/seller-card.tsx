@@ -31,11 +31,11 @@ export function SellerCard({
   ratingSummary,
 }: SellerCardProps) {
   return (
-    <div className="rounded-[40px] border border-border/50 bg-card overflow-hidden shadow-xl shadow-slate-200/20">
+    <div className="rounded-[40px] border border-border/50 bg-card overflow-hidden shadow-sm shadow-slate-200/20">
       <div className="p-8">
         {/* Seller Header */}
         <div className="flex items-center gap-4 mb-6">
-          <div className="size-16 rounded-[20px] bg-muted/30 flex items-center justify-center font-black text-2xl text-muted-foreground/70 border border-border/50 shrink-0 overflow-hidden relative">
+          <div className="size-16 rounded-[20px] bg-muted/30 flex items-center justify-center font-bold text-2xl text-muted-foreground/70 border border-border/50 shrink-0 overflow-hidden relative">
             {seller?.businessLogoUrl ? (
               <Image src={seller.businessLogoUrl} alt={seller.businessName || seller.fullName || ""} fill sizes="64px" className="object-contain p-1" />
             ) : (
@@ -44,13 +44,13 @@ export function SellerCard({
           </div>
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 mb-1">
-              <span className="text-xl font-black font-heading text-foreground truncate">
+              <span className="text-xl font-bold font-heading text-foreground truncate">
                 {seller?.businessName || seller?.fullName || "Bireysel Satıcı"}
               </span>
             </div>
             <div className="flex items-center gap-3">
               <span className={cn(
-                "text-[10px] font-black uppercase px-2 py-0.5 rounded-lg tracking-widest italic",
+                "text-[10px] font-bold uppercase px-2 py-0.5 rounded-lg tracking-widest italic",
                 seller?.userType === "professional" ? "bg-primary/10 text-primary" : "bg-muted text-muted-foreground"
               )}>
                 {seller?.userType === "professional" ? "Kurumsal Galeri" : "Bireysel"}
@@ -58,7 +58,7 @@ export function SellerCard({
               {seller?.businessSlug && (
                 <Link 
                   href={`/gallery/${seller.businessSlug}`}
-                  className="text-[10px] font-black uppercase text-primary hover:underline italic tracking-widest"
+                  className="text-[10px] font-bold uppercase text-primary hover:underline italic tracking-widest"
                 >
                   {"Profil ->"}
                 </Link>
@@ -95,7 +95,7 @@ export function SellerCard({
               </p>
               <Link
                 href={loginUrl}
-                className="w-full inline-flex items-center justify-center h-12 rounded-2xl bg-slate-900 text-sm font-black text-white hover:bg-black transition-all uppercase tracking-widest italic"
+                className="w-full inline-flex items-center justify-center h-12 rounded-2xl bg-slate-900 text-sm font-bold text-white hover:bg-black transition-all uppercase tracking-widest italic"
               >
                 Giriş Yap
               </Link>
@@ -105,7 +105,7 @@ export function SellerCard({
 
         {/* Trust Signals */}
         <div className="mt-8 pt-8 border-t border-border/50">
-          <h4 className="text-[11px] font-black uppercase tracking-widest text-muted-foreground/70 italic mb-4">Güven Sinyalleri</h4>
+          <h4 className="text-[11px] font-bold uppercase tracking-widest text-muted-foreground/70 italic mb-4">Güven Sinyalleri</h4>
           {trustSummary.signals.length > 0 ? (
             <ul className="space-y-3">
               {trustSummary.signals.map((signal) => (

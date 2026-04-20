@@ -68,11 +68,11 @@ export function InventoryTable({ listings, adminUserId }: InventoryTableProps) {
       <table className="w-full text-left">
         <thead>
           <tr className="border-b border-slate-100 bg-slate-50/30">
-            <th className="px-6 py-4 text-[11px] font-black text-slate-400 uppercase tracking-widest">İlan</th>
-            <th className="px-6 py-4 text-[11px] font-black text-slate-400 uppercase tracking-widest">Fiyat</th>
-            <th className="px-6 py-4 text-[11px] font-black text-slate-400 uppercase tracking-widest">Durum</th>
-            <th className="px-6 py-4 text-[11px] font-black text-slate-400 uppercase tracking-widest">Doping</th>
-            <th className="px-6 py-4 text-right text-[11px] font-black text-slate-400 uppercase tracking-widest">İşlemler</th>
+            <th className="px-6 py-4 text-[11px] font-bold text-slate-400 uppercase tracking-widest">İlan</th>
+            <th className="px-6 py-4 text-[11px] font-bold text-slate-400 uppercase tracking-widest">Fiyat</th>
+            <th className="px-6 py-4 text-[11px] font-bold text-slate-400 uppercase tracking-widest">Durum</th>
+            <th className="px-6 py-4 text-[11px] font-bold text-slate-400 uppercase tracking-widest">Doping</th>
+            <th className="px-6 py-4 text-right text-[11px] font-bold text-slate-400 uppercase tracking-widest">İşlemler</th>
           </tr>
         </thead>
         <tbody className="divide-y divide-slate-50">
@@ -97,24 +97,24 @@ export function InventoryTable({ listings, adminUserId }: InventoryTableProps) {
                    </div>
                    <div className="flex flex-col min-w-0">
                       <span className="text-sm font-bold text-slate-900 truncate max-w-[180px] sm:max-w-[240px]">{listing.title}</span>
-                      <span className="text-[10px] text-slate-400 uppercase font-black tracking-tighter">
+                      <span className="text-[10px] text-slate-400 uppercase font-bold tracking-tighter">
                         {listing.brand} {listing.model} • {listing.year} • {formatNumber(listing.mileage)} km
                       </span>
                    </div>
                 </div>
               </td>
               <td className="px-6 py-4">
-                 <span className="text-sm font-black text-slate-900">{formatCurrency(listing.price)}</span>
+                 <span className="text-sm font-bold text-slate-900">{formatCurrency(listing.price)}</span>
               </td>
               <td className="px-6 py-4">
                 {listing.status === "approved" ? (
-                  <Badge className="bg-emerald-100 text-emerald-700 hover:bg-emerald-100 border-none rounded-lg text-[9px] font-black uppercase tracking-tighter">Yayında</Badge>
+                  <Badge className="bg-emerald-100 text-emerald-700 hover:bg-emerald-100 border-none rounded-lg text-[9px] font-bold uppercase tracking-tighter">Yayında</Badge>
                 ) : listing.status === "archived" ? (
-                  <Badge className="bg-slate-100 text-slate-500 hover:bg-slate-100 border-none rounded-lg text-[9px] font-black uppercase tracking-tighter">Arşivlenmiş</Badge>
+                  <Badge className="bg-slate-100 text-slate-500 hover:bg-slate-100 border-none rounded-lg text-[9px] font-bold uppercase tracking-tighter">Arşivlenmiş</Badge>
                 ) : listing.status === "rejected" ? (
-                  <Badge className="bg-rose-100 text-rose-700 hover:bg-rose-100 border-none rounded-lg text-[9px] font-black uppercase tracking-tighter">Reddedildi</Badge>
+                  <Badge className="bg-rose-100 text-rose-700 hover:bg-rose-100 border-none rounded-lg text-[9px] font-bold uppercase tracking-tighter">Reddedildi</Badge>
                 ) : (
-                  <Badge className="bg-amber-100 text-amber-700 hover:bg-amber-100 border-none rounded-lg text-[9px] font-black uppercase tracking-tighter">Beklemede</Badge>
+                  <Badge className="bg-amber-100 text-amber-700 hover:bg-amber-100 border-none rounded-lg text-[9px] font-bold uppercase tracking-tighter">Beklemede</Badge>
                 )}
               </td>
               <td className="px-6 py-4">
@@ -135,7 +135,7 @@ export function InventoryTable({ listings, adminUserId }: InventoryTableProps) {
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end" className="w-[180px] rounded-xl">
-                    <DropdownMenuLabel className="text-[10px] font-black uppercase tracking-widest text-slate-400 italic">İlan Kontrolü</DropdownMenuLabel>
+                    <DropdownMenuLabel className="text-[10px] font-bold uppercase tracking-widest text-slate-400 italic">İlan Kontrolü</DropdownMenuLabel>
                     <DropdownMenuSeparator />
                     <DropdownMenuItem asChild>
                        <a href={`/listing/${listing.slug}`} target="_blank" className="cursor-pointer gap-2 font-bold">

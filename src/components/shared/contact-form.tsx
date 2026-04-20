@@ -80,7 +80,7 @@ export function ContactForm() {
         <div className="flex size-16 items-center justify-center rounded-full bg-emerald-50 text-emerald-500">
           <CheckCircle2 size={32} />
         </div>
-        <h3 className="text-xl font-black text-foreground">Mesajınız İletildi</h3>
+        <h3 className="text-xl font-bold text-foreground">Mesajınız İletildi</h3>
         <p className="text-sm text-muted-foreground max-w-sm">
           Mesajınızı aldık. Ekibimiz en kısa sürede size dönüş yapacak.
         </p>

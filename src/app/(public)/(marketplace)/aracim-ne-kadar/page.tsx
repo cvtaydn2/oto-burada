@@ -24,7 +24,7 @@ export default async function AracimNeKadarPage() {
             <Calculator size={14} />
             Yapay Zeka Destekli Değerleme
           </div>
-          <h1 className="text-4xl md:text-6xl font-black tracking-tighter italic uppercase leading-none">
+          <h1 className="text-4xl md:text-6xl font-bold tracking-tighter italic uppercase leading-none">
             Aracım <span className="text-primary">Ne Kadar?</span>
           </h1>
           <p className="max-w-2xl mx-auto text-lg text-muted-foreground/70 font-medium italic">
@@ -38,13 +38,13 @@ export default async function AracimNeKadarPage() {
         <div className="grid lg:grid-cols-[1fr_350px] gap-8">
           
           {/* Main Form Area */}
-          <div className="bg-card rounded-[2.5rem] p-8 md:p-12 shadow-2xl shadow-slate-200 border border-border">
+          <div className="bg-card rounded-2xl p-8 md:p-12 shadow-sm shadow-slate-200 border border-border">
              <div className="flex items-center gap-4 mb-8">
                 <div className="size-12 rounded-2xl bg-primary/10 flex items-center justify-center text-primary">
                    <CarFront size={24} />
                 </div>
                 <div>
-                   <h2 className="text-2xl font-black italic tracking-tight">Araç Bilgilerini Girin</h2>
+                   <h2 className="text-2xl font-bold italic tracking-tight">Araç Bilgilerini Girin</h2>
                    <p className="text-sm text-muted-foreground font-medium">Lütfen aracınızın temel özelliklerini seçin.</p>
                 </div>
              </div>
@@ -56,9 +56,9 @@ export default async function AracimNeKadarPage() {
 
           {/* Sidebar / Trust Info */}
           <aside className="space-y-6">
-             <div className="p-6 rounded-3xl bg-indigo-600 text-white space-y-4 shadow-xl shadow-indigo-200">
+             <div className="p-6 rounded-3xl bg-indigo-600 text-white space-y-4 shadow-sm shadow-indigo-200">
                 <TrendingUp size={32} className="opacity-80" />
-                <h3 className="text-lg font-black italic uppercase leading-tight">Neden OtoBurada Değerleme?</h3>
+                <h3 className="text-lg font-bold italic uppercase leading-tight">Neden OtoBurada Değerleme?</h3>
                 <ul className="space-y-4">
                    <li className="flex gap-3 text-sm font-medium leading-relaxed">
                       <BadgeCheck size={18} className="shrink-0" />
@@ -78,7 +78,7 @@ export default async function AracimNeKadarPage() {
              <div className="p-6 rounded-3xl bg-card border border-border shadow-sm space-y-4">
                 <div className="flex items-center gap-2 text-amber-600">
                    <Info size={18} />
-                   <span className="text-sm font-black italic uppercase">Biliyor musunuz?</span>
+                   <span className="text-sm font-bold italic uppercase">Biliyor musunuz?</span>
                 </div>
                 <p className="text-xs text-muted-foreground leading-relaxed font-medium capitalize">
                    Doğru fiyatlandırılmış bir araç, piyasa ortalamasına göre 3 kat daha hızlı satılır.

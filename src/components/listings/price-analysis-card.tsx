@@ -19,7 +19,7 @@ export function PriceAnalysisCard({
   const avgPrice = price / (marketPriceIndex || 1.0);
 
   return (
-    <div className="overflow-hidden rounded-[2rem] border border-border/80 bg-background shadow-sm">
+    <div className="overflow-hidden rounded-2xl border border-border/80 bg-background shadow-sm">
       <div className="border-b border-border/50 p-6 sm:p-8">
         <div className="mb-1 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
           İlan Fiyatı
@@ -30,7 +30,7 @@ export function PriceAnalysisCard({
         </div>
 
         {/* Market Analysis Visual */}
-        <div className="rounded-[1.5rem] border border-border/70 bg-muted/30 p-5">
+        <div className="rounded-xl border border-border/70 bg-muted/30 p-5">
           <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <span className="flex items-center gap-1.5 text-sm font-semibold text-foreground">
               Yapay Zeka Fiyat Analizi

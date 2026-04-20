@@ -42,7 +42,7 @@ export function AdminAnalyticsPanel({ data }: AdminAnalyticsPanelProps) {
         <div className="rounded-2xl border border-slate-100 bg-slate-50/20 p-6 flex flex-col min-h-[300px]">
           <div className="flex items-center gap-2 mb-6">
              <div className="size-1.5 rounded-full bg-blue-500" />
-             <h3 className="text-[11px] font-black text-slate-400 uppercase tracking-[0.2em] italic">İlan Durumu Dağılımı</h3>
+             <h3 className="text-[11px] font-bold text-slate-400 uppercase tracking-[0.2em] italic">İlan Durumu Dağılımı</h3>
           </div>
           {/* position:relative + explicit min-height — ResponsiveContainer'ın boyut ölçmesi için */}
           <div className="flex-1 min-h-[250px]">
@@ -87,7 +87,7 @@ export function AdminAnalyticsPanel({ data }: AdminAnalyticsPanelProps) {
         <div className="rounded-2xl border border-slate-100 bg-slate-50/20 p-6 min-h-[300px]">
           <div className="flex items-center gap-2 mb-6">
              <div className="size-1.5 rounded-full bg-indigo-500" />
-             <h3 className="text-[11px] font-black text-slate-400 uppercase tracking-[0.2em] italic">İlan Trendi (Son 7 Gün)</h3>
+             <h3 className="text-[11px] font-bold text-slate-400 uppercase tracking-[0.2em] italic">İlan Trendi (Son 7 Gün)</h3>
           </div>
           <div className="min-h-[250px]">
             {(data.recentTrends || []).length > 0 ? (
@@ -145,7 +145,7 @@ export function AdminAnalyticsPanel({ data }: AdminAnalyticsPanelProps) {
       <div className="rounded-2xl border border-slate-100 bg-slate-50/20 p-6 min-h-[300px]">
         <div className="flex items-center gap-2 mb-6">
            <div className="size-1.5 rounded-full bg-emerald-500" />
-           <h3 className="text-[11px] font-black text-slate-400 uppercase tracking-[0.2em] italic">Marka Bazlı Kapasite (Top 5)</h3>
+           <h3 className="text-[11px] font-bold text-slate-400 uppercase tracking-[0.2em] italic">Marka Bazlı Kapasite (Top 5)</h3>
         </div>
         <div className="min-h-[250px]">
           {(data.listingsByBrand || []).length > 0 ? (

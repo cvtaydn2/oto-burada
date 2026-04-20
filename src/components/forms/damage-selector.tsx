@@ -70,8 +70,8 @@ export function DamageSelector({ value, onChange, className }: DamageSelectorPro
 
       <div className="grid grid-cols-1 gap-8 lg:grid-cols-2">
         {/* Visual Car Diagram */}
-        <div className="relative flex items-center justify-center rounded-[2rem] border border-border/50 bg-muted/30/50 p-6 sm:p-10">
-          <svg viewBox="0 0 240 460" className="h-auto w-full max-w-[220px] drop-shadow-2xl">
+        <div className="relative flex items-center justify-center rounded-2xl border border-border/50 bg-muted/30/50 p-6 sm:p-10">
+          <svg viewBox="0 0 240 460" className="h-auto w-full max-w-[220px] drop-shadow-sm">
             {/* Base Car Body Shadow */}
             <path d="M50,40 Q50,20 120,20 Q190,20 190,40 L195,100 L200,300 Q200,440 120,440 Q40,440 40,300 L45,100 Z" fill="rgba(0,0,0,0.05)" />
             
@@ -191,7 +191,7 @@ export function DamageSelector({ value, onChange, className }: DamageSelectorPro
           {/* Active Overlay Tooltip */}
           {activePart && (
             <div className="absolute inset-x-6 top-1/2 z-30 -translate-y-1/2 animate-in zoom-in-95 duration-200">
-              <div className="rounded-2xl border border-border bg-card p-5 shadow-2xl">
+              <div className="rounded-2xl border border-border bg-card p-5 shadow-sm">
                 <div className="mb-4 flex items-center justify-between border-b pb-2">
                   <span className="text-sm font-bold uppercase tracking-wide text-foreground">
                     {carPartLabels[activePart as keyof typeof carPartLabels]}
@@ -290,7 +290,7 @@ export function DamageSelector({ value, onChange, className }: DamageSelectorPro
               ))}
             </div>
             
-            <div className="rounded-2xl bg-indigo-600 p-4 text-white shadow-lg shadow-indigo-200">
+            <div className="rounded-2xl bg-indigo-600 p-4 text-white shadow-sm shadow-indigo-200">
                <p className="text-xs font-bold uppercase tracking-widest opacity-80">Hızlı İpucu</p>
                <p className="mt-2 text-sm leading-relaxed font-medium">
                  Görsel üzerinde her parçayı kolayca işaretleyebilirsin. Şeffaf ekspertiz bilgisi alıcıların %40 daha hızlı karar vermesini sağlar.

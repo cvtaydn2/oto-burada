@@ -41,7 +41,7 @@ export function VehicleInfoStep({
             <div className="flex gap-3">
               <div className="relative flex-1">
                 <div className="absolute inset-y-0 left-0 w-10 flex items-center justify-center border-r border-gray-100 bg-gray-50 rounded-l-lg">
-                   <span className="text-[10px] font-black text-blue-800">TR</span>
+                   <span className="text-[10px] font-bold text-blue-800">TR</span>
                 </div>
                 <input
                   {...register("licensePlate")}

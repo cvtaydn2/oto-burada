@@ -55,8 +55,8 @@ export function AuthForm({
         </div>
 
         <div className="relative z-10">
-          <Link href="/" className="inline-flex items-center gap-3 text-2xl font-black tracking-tighter text-white">
-            <div className="size-10 rounded-xl bg-blue-600 flex items-center justify-center shadow-lg shadow-blue-600/30">
+          <Link href="/" className="inline-flex items-center gap-3 text-2xl font-bold tracking-tighter text-white">
+            <div className="size-10 rounded-xl bg-blue-600 flex items-center justify-center shadow-sm shadow-blue-600/30">
               <CarFront size={22} className="text-white" />
             </div>
             OtoBurada <span className="text-blue-500 ml-1">Elite</span>
@@ -65,11 +65,11 @@ export function AuthForm({
 
         <div className="relative z-10 max-w-xl space-y-8">
           <div className="space-y-4">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 backdrop-blur-md border border-white/10 text-[10px] font-black uppercase tracking-[0.2em] text-blue-400">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 backdrop-blur-md border border-white/10 text-[10px] font-bold uppercase tracking-[0.2em] text-blue-400">
               <Sparkles size={12} />
               PREMIUM EXPERIENCE
             </div>
-            <h1 className="text-6xl font-black leading-[1.1] tracking-tighter">
+            <h1 className="text-6xl font-bold leading-[1.1] tracking-tighter">
               İkinci Elin <span className="text-blue-500 italic">En Temiz</span> Hali.
             </h1>
           </div>
@@ -84,7 +84,7 @@ export function AuthForm({
           </div>
         </div>
 
-        <div className="relative z-10 flex items-center gap-8 text-[10px] font-black uppercase tracking-widest text-slate-500">
+        <div className="relative z-10 flex items-center gap-8 text-[10px] font-bold uppercase tracking-widest text-slate-500">
           <span>© 2026 OtoBurada</span>
           <div className="flex gap-4">
             <Link href="/legal/terms" className="hover:text-white transition-colors">Şartlar</Link>
@@ -98,8 +98,8 @@ export function AuthForm({
         <div className="w-full max-w-sm space-y-10">
           {/* Mobile Header */}
           <div className="text-center lg:hidden space-y-4">
-            <Link href="/" className="inline-flex items-center gap-3 text-3xl font-black tracking-tighter text-slate-900 mx-auto">
-              <div className="size-10 rounded-xl bg-blue-600 flex items-center justify-center shadow-lg shadow-blue-600/20">
+            <Link href="/" className="inline-flex items-center gap-3 text-3xl font-bold tracking-tighter text-slate-900 mx-auto">
+              <div className="size-10 rounded-xl bg-blue-600 flex items-center justify-center shadow-sm shadow-blue-600/20">
                 <CarFront size={22} className="text-white" />
               </div>
               OtoBurada
@@ -107,19 +107,19 @@ export function AuthForm({
           </div>
 
           <div className="space-y-2 text-center lg:text-left">
-            <h1 className="text-4xl font-black tracking-tighter text-slate-900">{title}</h1>
+            <h1 className="text-4xl font-bold tracking-tighter text-slate-900">{title}</h1>
             <p className="text-sm font-bold text-slate-400 uppercase tracking-widest">{description}</p>
           </div>
 
           {/* Form Card */}
-          <div className="bg-white rounded-[2.5rem] p-10 border border-slate-200 shadow-2xl shadow-slate-200/40 relative overflow-hidden">
+          <div className="bg-white rounded-2xl p-10 border border-slate-200 shadow-sm shadow-slate-200/40 relative overflow-hidden">
              <div className="absolute top-0 left-0 w-full h-1.5 bg-blue-600" />
              
              <form action={formAction} className="space-y-6">
               {next ? <input type="hidden" name="next" value={next} /> : null}
               
               <div className="space-y-2">
-                <label htmlFor="email" className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">
+                <label htmlFor="email" className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">
                   E-posta Adresi
                 </label>
                 <input
@@ -130,17 +130,17 @@ export function AuthForm({
                   autoComplete="email"
                   placeholder="isim@example.com"
                   required
-                  className="h-14 w-full rounded-2xl border border-slate-100 bg-slate-50 px-5 text-sm font-black text-slate-900 outline-none transition-all placeholder:text-slate-300 focus:bg-white focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
+                  className="h-14 w-full rounded-2xl border border-slate-100 bg-slate-50 px-5 text-sm font-bold text-slate-900 outline-none transition-all placeholder:text-slate-300 focus:bg-white focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
                 />
               </div>
 
               <div className="space-y-2">
                 <div className="flex items-center justify-between px-1">
-                  <label htmlFor="password" className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                  <label htmlFor="password" className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
                     Güvenli Şifre
                   </label>
                   {isLogin && (
-                    <Link href="/forgot-password" className="text-[10px] font-black text-blue-600 hover:text-blue-700 uppercase tracking-widest">
+                    <Link href="/forgot-password" className="text-[10px] font-bold text-blue-600 hover:text-blue-700 uppercase tracking-widest">
                       Unuttum?
                     </Link>
                   )}
@@ -153,7 +153,7 @@ export function AuthForm({
                   placeholder="••••••••"
                   required
                   minLength={6}
-                  className="h-14 w-full rounded-2xl border border-slate-100 bg-slate-50 px-5 text-sm font-black text-slate-900 outline-none transition-all placeholder:text-slate-300 focus:bg-white focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
+                  className="h-14 w-full rounded-2xl border border-slate-100 bg-slate-50 px-5 text-sm font-bold text-slate-900 outline-none transition-all placeholder:text-slate-300 focus:bg-white focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
                 />
               </div>
 
@@ -174,7 +174,7 @@ export function AuthForm({
               {state.error && (
                 <div
                   role="alert"
-                  className="rounded-2xl border border-rose-100 bg-rose-50 px-5 py-4 text-xs font-black text-rose-600 uppercase tracking-widest leading-relaxed"
+                  className="rounded-2xl border border-rose-100 bg-rose-50 px-5 py-4 text-xs font-bold text-rose-600 uppercase tracking-widest leading-relaxed"
                 >
                   <Sparkles size={14} className="inline mr-2 mb-0.5" />
                   {state.error}
@@ -184,7 +184,7 @@ export function AuthForm({
               {state.success && (
                 <div
                   role="status"
-                  className="rounded-2xl border border-emerald-100 bg-emerald-50 px-5 py-4 text-xs font-black text-emerald-700 uppercase tracking-widest leading-relaxed"
+                  className="rounded-2xl border border-emerald-100 bg-emerald-50 px-5 py-4 text-xs font-bold text-emerald-700 uppercase tracking-widest leading-relaxed"
                 >
                   <BadgeCheck size={14} className="inline mr-2 mb-0.5" />
                   {state.success}
@@ -195,10 +195,10 @@ export function AuthForm({
             </form>
 
             <div className="mt-10 pt-10 border-t border-slate-50 flex flex-col gap-4 text-center">
-                <p className="text-[10px] font-black text-slate-300 uppercase tracking-[0.3em] mb-2">Veya Diğer Seçenekler</p>
+                <p className="text-[10px] font-bold text-slate-300 uppercase tracking-[0.3em] mb-2">Veya Diğer Seçenekler</p>
                 <Link
                   href={alternateHref}
-                  className="inline-flex h-12 w-full items-center justify-center gap-3 rounded-xl border border-slate-100 bg-white px-4 text-xs font-black text-slate-900 uppercase tracking-widest transition-all hover:bg-slate-50 shadow-sm"
+                  className="inline-flex h-12 w-full items-center justify-center gap-3 rounded-xl border border-slate-100 bg-white px-4 text-xs font-bold text-slate-900 uppercase tracking-widest transition-all hover:bg-slate-50 shadow-sm"
                 >
                   {alternateLabel}
                 </Link>
@@ -218,11 +218,11 @@ export function AuthForm({
 function FeatureItem({ icon, title, desc }: { icon: React.ReactNode; title: string; desc: string }) {
   return (
     <div className="flex gap-4 p-4 rounded-2xl hover:bg-white/5 transition-colors group">
-      <div className="size-11 rounded-xl bg-white/10 flex items-center justify-center text-blue-400 group-hover:scale-110 transition-transform">
+      <div className="size-11 rounded-xl bg-white/10 flex items-center justify-center text-blue-400 group- transition-transform">
         {icon}
       </div>
       <div>
-        <h3 className="text-sm font-black tracking-tight">{title}</h3>
+        <h3 className="text-sm font-bold tracking-tight">{title}</h3>
         <p className="text-xs text-slate-500 font-medium leading-relaxed">{desc}</p>
       </div>
     </div>
@@ -231,7 +231,7 @@ function FeatureItem({ icon, title, desc }: { icon: React.ReactNode; title: stri
 
 function SecurityBadge({ icon, label }: { icon: React.ReactNode; label: string }) {
   return (
-    <div className="flex items-center gap-2 text-[9px] font-black text-slate-300 tracking-[0.2em]">
+    <div className="flex items-center gap-2 text-[9px] font-bold text-slate-300 tracking-[0.2em]">
        <div className="text-slate-400">
          {icon}
        </div>

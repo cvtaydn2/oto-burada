@@ -41,7 +41,7 @@ export function HeaderMobileNav({
       </button>
 
       {isOpen && (
-        <div className="absolute top-16 left-0 right-0 bg-background border-b border-border shadow-xl animate-in slide-in-from-top-2">
+        <div className="absolute top-16 left-0 right-0 bg-background border-b border-border shadow-sm animate-in slide-in-from-top-2">
           <div className="p-4 space-y-4">
             <SearchWithSuggestions
               placeholder="Marka, model veya şehir ara..."

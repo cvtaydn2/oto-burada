@@ -68,7 +68,7 @@ export default async function DashboardListingsPage({ searchParams }: DashboardL
     <div className="space-y-8">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h2 className="text-3xl font-black text-foreground tracking-tight">İlanlarım</h2>
+          <h2 className="text-3xl font-bold text-foreground tracking-tight">İlanlarım</h2>
           <p className="mt-1 text-sm text-muted-foreground font-medium italic">
             Toplam {storedListings.length} ilandan {storedListings.filter((l) => l.status === "approved").length} tanesi yayında.
           </p>
@@ -85,7 +85,7 @@ export default async function DashboardListingsPage({ searchParams }: DashboardL
           </div>
           <Link
             href="/dashboard/listings?create=true"
-            className="bg-blue-600 text-white px-6 py-2.5 rounded-xl text-sm font-black shadow-lg shadow-blue-100 hover:bg-blue-700 hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center gap-2"
+            className="bg-blue-600 text-white px-6 py-2.5 rounded-xl text-sm font-bold shadow-sm shadow-blue-100 hover:bg-blue-700 hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center gap-2"
           >
             <Plus size={18} strokeWidth={3} />
             YENİ İLAN
@@ -121,7 +121,7 @@ export default async function DashboardListingsPage({ searchParams }: DashboardL
       >
         <div className="mt-8 bg-card rounded-3xl border border-border p-8 shadow-sm">
           <div className="mb-8 pb-6 border-b border-border/50">
-             <h3 className="text-xl font-black text-foreground">{isEditingExisting ? "İlanı Düzenle" : "Hızlı İlan Oluştur"}</h3>
+             <h3 className="text-xl font-bold text-foreground">{isEditingExisting ? "İlanı Düzenle" : "Hızlı İlan Oluştur"}</h3>
              <p className="text-sm text-muted-foreground/70 font-medium mt-1">Gerekli bilgileri eksiksiz doldurarak ilanınızı yayınlayın.</p>
           </div>
           <ListingCreateForm

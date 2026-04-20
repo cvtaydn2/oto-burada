@@ -125,7 +125,7 @@ export function SearchWithSuggestions({
         <div
           id={suggestionsId}
           role="listbox"
-          className="absolute top-full left-0 right-0 mt-2 bg-white rounded-xl border border-slate-200 shadow-lg z-50 overflow-hidden"
+          className="absolute top-full left-0 right-0 mt-2 bg-white rounded-xl border border-slate-200 shadow-sm z-50 overflow-hidden"
         >
           {filteredSuggestions.length > 0 ? (
             <div className="py-2">

@@ -82,13 +82,13 @@ export function FavoritesPageClient({ listings, userId }: FavoritesPageClientPro
           <div className="mb-5 flex size-20 items-center justify-center rounded-2xl border border-border/50 bg-muted/30">
             <Heart size={36} className="text-muted-foreground/50" />
           </div>
-          <h2 className="text-xl font-black text-foreground">Henüz favori ilan yok</h2>
+          <h2 className="text-xl font-bold text-foreground">Henüz favori ilan yok</h2>
           <p className="mt-2 max-w-xs text-sm text-muted-foreground leading-relaxed">
             İlanları gezerken kalp ikonuna tıklayarak buraya ekleyebilirsin.
           </p>
           <Link
             href="/listings"
-            className="mt-6 inline-flex items-center gap-2 rounded-xl bg-blue-600 px-6 py-2.5 text-sm font-bold text-white shadow-lg shadow-blue-600/20 transition hover:bg-blue-700"
+            className="mt-6 inline-flex items-center gap-2 rounded-xl bg-blue-600 px-6 py-2.5 text-sm font-bold text-white shadow-sm shadow-blue-600/20 transition hover:bg-blue-700"
           >
             İlanları Keşfet
             <ArrowRight size={15} />
@@ -140,7 +140,7 @@ export function FavoritesPageClient({ listings, userId }: FavoritesPageClientPro
       {/* Toolbar */}
       <div className="flex items-center justify-between gap-3">
         <p className="text-sm font-medium text-muted-foreground">
-          <span className="font-black text-foreground">{favoriteListings.length}</span> favori ilan
+          <span className="font-bold text-foreground">{favoriteListings.length}</span> favori ilan
         </p>
         <div className="flex items-center gap-2">
           <SortAsc size={15} className="text-muted-foreground/70" />
@@ -174,7 +174,7 @@ export function FavoritesPageClient({ listings, userId }: FavoritesPageClientPro
         className="group flex items-center justify-between rounded-2xl border border-border bg-card px-6 py-4 transition hover:border-blue-300 hover:shadow-sm"
       >
         <div>
-          <p className="text-sm font-black text-foreground">Daha fazla ilan keşfet</p>
+          <p className="text-sm font-bold text-foreground">Daha fazla ilan keşfet</p>
           <p className="text-xs text-muted-foreground/70 mt-0.5">Binlerce araç seni bekliyor</p>
         </div>
         <div className="flex size-10 items-center justify-center rounded-xl bg-muted/30 text-muted-foreground transition group-hover:bg-blue-600 group-hover:text-white">
@@ -210,7 +210,7 @@ function FavoriteCard({
             alt={listing.title}
             fill
             sizes="(min-width: 1280px) 33vw, (min-width: 640px) 50vw, 100vw"
-            className="object-cover transition-transform duration-500 group-hover:scale-105"
+            className="object-cover transition-transform duration-500 group-"
             priority={priority}
             placeholder={coverImage.placeholderBlur ? "blur" : "empty"}
             blurDataURL={coverImage.placeholderBlur ?? undefined}
@@ -224,17 +224,17 @@ function FavoriteCard({
         {/* Badges */}
         <div className="absolute left-3 top-3 flex flex-col gap-1.5">
           {isAdvantageous && (
-            <span className="flex items-center gap-1 rounded-full bg-orange-500/90 px-2.5 py-1 text-[10px] font-black text-white backdrop-blur">
+            <span className="flex items-center gap-1 rounded-full bg-orange-500/90 px-2.5 py-1 text-[10px] font-bold text-white backdrop-blur">
               <TrendingDown size={10} /> AVANTAJLI
             </span>
           )}
           {hasExpert && (
-            <span className="flex items-center gap-1 rounded-full bg-emerald-500/90 px-2.5 py-1 text-[10px] font-black text-white backdrop-blur">
+            <span className="flex items-center gap-1 rounded-full bg-emerald-500/90 px-2.5 py-1 text-[10px] font-bold text-white backdrop-blur">
               <ShieldCheck size={10} /> EKSPERTİZLİ
             </span>
           )}
           {listing.featured && (
-            <span className="flex items-center gap-1 rounded-full bg-blue-600/90 px-2.5 py-1 text-[10px] font-black text-white backdrop-blur">
+            <span className="flex items-center gap-1 rounded-full bg-blue-600/90 px-2.5 py-1 text-[10px] font-bold text-white backdrop-blur">
               <Zap size={10} /> VİTRİN
             </span>
           )}
@@ -254,7 +254,7 @@ function FavoriteCard({
         </button>
 
         {/* Photo count */}
-        <div className="absolute bottom-3 right-3 rounded-lg bg-black/50 px-2 py-1 text-[10px] font-black text-white backdrop-blur">
+        <div className="absolute bottom-3 right-3 rounded-lg bg-black/50 px-2 py-1 text-[10px] font-bold text-white backdrop-blur">
           {listing.images.length} FOTO
         </div>
       </div>
@@ -264,15 +264,15 @@ function FavoriteCard({
         {/* Title + price */}
         <div className="flex items-start justify-between gap-2">
           <div className="min-w-0">
-            <p className="text-[10px] font-black uppercase tracking-widest text-blue-500">
+            <p className="text-[10px] font-bold uppercase tracking-widest text-blue-500">
               {listing.brand} {listing.model}
             </p>
-            <h3 className="mt-0.5 truncate text-sm font-black text-foreground leading-tight">
+            <h3 className="mt-0.5 truncate text-sm font-bold text-foreground leading-tight">
               {listing.title}
             </h3>
           </div>
           <div className="shrink-0 text-right">
-            <p className="text-lg font-black text-blue-600 leading-tight">
+            <p className="text-lg font-bold text-blue-600 leading-tight">
               {formatPrice(listing.price)}
             </p>
             <p className="text-[10px] font-bold text-muted-foreground/70">TL</p>
@@ -297,7 +297,7 @@ function FavoriteCard({
           </span>
           <Link
             href={`/listing/${listing.slug}`}
-            className="flex items-center gap-1 rounded-lg bg-blue-50 px-3 py-1.5 text-[11px] font-black text-blue-600 transition hover:bg-blue-100"
+            className="flex items-center gap-1 rounded-lg bg-blue-50 px-3 py-1.5 text-[11px] font-bold text-blue-600 transition hover:bg-blue-100"
           >
             İncele
             <ExternalLink size={11} />
@@ -350,7 +350,7 @@ function StatCard({
         {icon}
       </div>
       <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">{label}</p>
-      <p className={cn("mt-0.5 text-xl font-black leading-tight", c.text)}>{value}</p>
+      <p className={cn("mt-0.5 text-xl font-bold leading-tight", c.text)}>{value}</p>
       <p className="mt-0.5 text-[10px] text-muted-foreground/70 truncate">{sub}</p>
     </div>
   );
@@ -383,7 +383,7 @@ function GuestBanner({ compact = false }: { compact?: boolean }) {
   return (
     <div className="rounded-2xl border border-blue-100 bg-blue-50 p-6 text-center">
       <LogIn className="mx-auto mb-3 size-10 text-blue-500" />
-      <h3 className="text-lg font-black text-foreground">Bulut senkronizasyonu</h3>
+      <h3 className="text-lg font-bold text-foreground">Bulut senkronizasyonu</h3>
       <p className="mt-1 text-sm text-muted-foreground">
         Favorilerin şu an sadece bu cihazda. Giriş yaparak tüm cihazlardan eriş.
       </p>

@@ -710,11 +710,11 @@ export function ListingCreateForm({
     <div className="mx-auto min-h-screen w-full flex-1 bg-slate-50/50 px-4 py-12 lg:px-8">
       <div className="mx-auto max-w-[1000px]">
         <div className="mb-14 text-center">
-          <div className="inline-flex items-center gap-2 rounded-full bg-slate-100 px-4 py-1.5 text-[10px] font-black uppercase tracking-widest text-slate-500 mb-6 border border-slate-200 shadow-sm">
+          <div className="inline-flex items-center gap-2 rounded-full bg-slate-100 px-4 py-1.5 text-[10px] font-bold uppercase tracking-widest text-slate-500 mb-6 border border-slate-200 shadow-sm">
             <Car size={12} strokeWidth={3} />
             {currentStep + 1} / {totalSteps}
           </div>
-          <h1 className="text-4xl font-black tracking-tight text-slate-900 lg:text-6xl">
+          <h1 className="text-4xl font-bold tracking-tight text-slate-900 lg:text-6xl">
             {isEditing ? "İlanı Güncelle" : "İlan Ver"}
           </h1>
           <p className="mx-auto mt-4 max-w-2xl text-base font-bold text-slate-400">
@@ -727,41 +727,41 @@ export function ListingCreateForm({
         <StepIndicator currentStep={currentStep} />
 
         <form onSubmit={handleFormSubmit} className="mt-16">
-          <div className="relative rounded-[2.5rem] border border-white bg-white p-6 shadow-2xl shadow-slate-200/60 lg:p-12">
+          <div className="relative rounded-2xl border border-white bg-white p-6 shadow-sm shadow-slate-200/60 lg:p-12">
             
             {/* Step Corner Badge */}
-            <div className="absolute -right-3 -top-3 hidden lg:flex size-20 items-center justify-center rounded-3xl bg-slate-900 text-white shadow-xl shadow-slate-900/30 transform transition-transform hover:scale-110">
+            <div className="absolute -right-3 -top-3 hidden lg:flex size-20 items-center justify-center rounded-3xl bg-slate-900 text-white shadow-sm shadow-slate-900/30 transform transition-transform ">
               <div className="flex flex-col items-center leading-none">
-                <span className="text-[10px] uppercase font-black opacity-60 mb-1">Adım</span>
-                <span className="text-3xl font-black">{currentStep + 1}</span>
+                <span className="text-[10px] uppercase font-bold opacity-60 mb-1">Adım</span>
+                <span className="text-3xl font-bold">{currentStep + 1}</span>
               </div>
             </div>
 
             <div className="space-y-8">
               {submitState.status === "success" && submitState.message && (
                 <div className="flex items-center gap-4 rounded-3xl bg-emerald-50 p-6 border border-emerald-100 shadow-sm animate-in fade-in zoom-in-95 duration-500">
-                  <div className="flex size-10 items-center justify-center rounded-2xl bg-emerald-500 text-white shadow-lg shadow-emerald-500/30">
+                  <div className="flex size-10 items-center justify-center rounded-2xl bg-emerald-500 text-white shadow-sm shadow-emerald-500/30">
                     <CheckCircle2 size={24} strokeWidth={3} />
                   </div>
-                  <p className="text-base font-black text-emerald-900 tracking-tight">{submitState.message}</p>
+                  <p className="text-base font-bold text-emerald-900 tracking-tight">{submitState.message}</p>
                 </div>
               )}
 
               {submitState.status === "error" && submitState.message && (
                 <div className="flex items-center gap-4 rounded-3xl bg-rose-50 p-6 border border-rose-100 shadow-sm animate-in fade-in zoom-in-95 duration-500">
-                  <div className="flex size-10 items-center justify-center rounded-2xl bg-rose-500 text-white shadow-lg shadow-rose-500/30">
+                  <div className="flex size-10 items-center justify-center rounded-2xl bg-rose-500 text-white shadow-sm shadow-rose-500/30">
                     <AlertCircle size={24} strokeWidth={3} />
                   </div>
-                  <p className="text-base font-black text-rose-900 tracking-tight">{submitState.message}</p>
+                  <p className="text-base font-bold text-rose-900 tracking-tight">{submitState.message}</p>
                 </div>
               )}
 
               {errors.root && (
                 <div className="flex items-center gap-4 rounded-3xl bg-rose-50 p-6 border border-rose-100 shadow-sm">
-                  <div className="flex size-10 items-center justify-center rounded-2xl bg-rose-500 text-white shadow-lg shadow-rose-500/30">
+                  <div className="flex size-10 items-center justify-center rounded-2xl bg-rose-500 text-white shadow-sm shadow-rose-500/30">
                     <AlertCircle size={24} strokeWidth={3} />
                   </div>
-                  <p className="text-base font-black text-rose-900 tracking-tight">{errors.root.message}</p>
+                  <p className="text-base font-bold text-rose-900 tracking-tight">{errors.root.message}</p>
                 </div>
               )}
 
@@ -808,7 +808,7 @@ export function ListingCreateForm({
                     type="button"
                     onClick={handlePrevStep}
                     disabled={isSubmitting}
-                    className="flex items-center gap-2 text-xs font-black uppercase tracking-widest text-slate-400 transition-all hover:text-slate-900 active:scale-95 disabled:opacity-30"
+                    className="flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-slate-400 transition-all hover:text-slate-900  disabled:opacity-30"
                   >
                     <svg className="size-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
                       <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
@@ -823,7 +823,7 @@ export function ListingCreateForm({
                   <button
                     type="button"
                     onClick={handleNextStep}
-                    className="flex h-14 items-center gap-3 rounded-2xl bg-slate-900 px-10 text-xs font-black uppercase tracking-[0.2em] text-white shadow-2xl shadow-slate-900/30 transition-all hover:bg-black hover:scale-105 active:scale-95"
+                    className="flex h-14 items-center gap-3 rounded-2xl bg-slate-900 px-10 text-xs font-bold uppercase tracking-[0.2em] text-white shadow-sm shadow-slate-900/30 transition-all hover:bg-black  "
                   >
                     Sonraki Adım
                     <ChevronRight size={18} strokeWidth={3} />
@@ -833,7 +833,7 @@ export function ListingCreateForm({
                     type="submit"
                     onClick={() => (submitIntentRef.current = true)}
                     disabled={isSubmitting || isUploadingAnyImage}
-                    className="flex h-16 items-center gap-4 rounded-2xl bg-blue-600 px-12 text-sm font-black uppercase tracking-[0.2em] text-white shadow-2xl shadow-blue-600/30 transition-all hover:bg-blue-700 hover:scale-105 active:scale-95 disabled:opacity-50 disabled:grayscale"
+                    className="flex h-16 items-center gap-4 rounded-2xl bg-blue-600 px-12 text-sm font-bold uppercase tracking-[0.2em] text-white shadow-sm shadow-blue-600/30 transition-all hover:bg-blue-700   disabled:opacity-50 disabled:grayscale"
                   >
                     {isSubmitting ? (
                       <>

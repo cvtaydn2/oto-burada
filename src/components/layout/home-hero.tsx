@@ -43,7 +43,7 @@ export function HomeHero({ cities }: HomeHeroProps) {
           <form
             action="/listings"
             method="GET"
-            className="group/form bg-white/10 p-2 rounded-2xl border border-white/20 shadow-lg max-w-4xl flex flex-col md:flex-row gap-2 transition-all hover:bg-white/15"
+            className="group/form bg-white/10 p-2 rounded-2xl border border-white/20 shadow-sm max-w-4xl flex flex-col md:flex-row gap-2 transition-all hover:bg-white/15"
           >
             <div className="flex-1 flex flex-col md:flex-row gap-2 p-2">
               <div className="flex-1 relative">

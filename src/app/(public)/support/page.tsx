@@ -54,7 +54,7 @@ export default async function SupportPage() {
   return (
     <div className="mx-auto max-w-5xl px-5 py-14 space-y-20">
       <div className="text-center space-y-4">
-        <h1 className="text-4xl font-black text-foreground">Destek Merkezi</h1>
+        <h1 className="text-4xl font-bold text-foreground">Destek Merkezi</h1>
         <p className="text-muted-foreground font-medium text-lg">
           Sorularınız için aşağıdaki SSS bölümünü inceleyin veya bir destek talebi oluşturun.
         </p>
@@ -62,19 +62,19 @@ export default async function SupportPage() {
 
       {user && userTickets.length > 0 && (
         <section className="space-y-6">
-          <h2 className="text-xl font-black text-foreground">Destek Taleplerim</h2>
+          <h2 className="text-xl font-bold text-foreground">Destek Taleplerim</h2>
           <TicketList tickets={userTickets} />
         </section>
       )}
 
       <section className="space-y-6">
-        <h2 className="text-xl font-black text-foreground">Sık Sorulan Sorular</h2>
+        <h2 className="text-xl font-bold text-foreground">Sık Sorulan Sorular</h2>
         <div className="space-y-4">
           {FAQ_CATEGORIES.map((cat, idx) => (
             <div key={idx} className="rounded-xl border border-border bg-card">
               <div className="px-6 py-5 border-b border-border/50 flex items-center gap-3">
                 <span className={`size-2 rounded-full ${cat.iconColor.replace("text-", "bg-")}`} />
-                <h3 className="text-sm font-black uppercase tracking-wider text-foreground">{cat.title}</h3>
+                <h3 className="text-sm font-bold uppercase tracking-wider text-foreground">{cat.title}</h3>
               </div>
               <div className="divide-y divide-slate-50">
                 {cat.items.map((item, i) => (
@@ -88,7 +88,7 @@ export default async function SupportPage() {
 
       <section className="space-y-6">
         <div className="rounded-xl border border-border bg-card p-8">
-          <h2 className="text-xl font-black text-foreground mb-6">Yeni Destek Talebi Oluştur</h2>
+          <h2 className="text-xl font-bold text-foreground mb-6">Yeni Destek Talebi Oluştur</h2>
           {user ? (
             <TicketForm />
           ) : (

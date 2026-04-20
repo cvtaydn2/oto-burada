@@ -56,7 +56,7 @@ export function FavoritesPriceAlerts() {
         <CardTitle className="flex items-center gap-2 text-lg font-bold text-foreground">
           <Bell className="text-blue-500" size={20} />
           Fiyat Düşüşü Uyarı Ayarları
-          <span className="ml-auto text-[10px] font-black uppercase tracking-widest text-blue-400 bg-blue-50 border border-blue-100 px-2 py-0.5 rounded-full">
+          <span className="ml-auto text-[10px] font-bold uppercase tracking-widest text-blue-400 bg-blue-50 border border-blue-100 px-2 py-0.5 rounded-full">
             Yakında
           </span>
         </CardTitle>

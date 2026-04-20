@@ -231,7 +231,7 @@ export function ListingsPageClient({
       <div className="mb-12">
         <div className="flex flex-col gap-8 lg:flex-row lg:items-end lg:justify-between">
           <div className="space-y-2">
-            <h1 className="text-4xl lg:text-5xl font-black text-slate-900 tracking-tight leading-none">
+            <h1 className="text-4xl lg:text-5xl font-bold text-slate-900 tracking-tight leading-none">
               {filters.brand
                 ? `${filters.brand}${filters.model ? ` ${filters.model}` : ""} İlanları`
                 : "Tüm Satılık Araçlar"}
@@ -289,7 +289,7 @@ export function ListingsPageClient({
             <div className="relative">
               <button
                 onClick={() => setIsSortOpen(!isSortOpen)}
-                className="flex h-11 items-center gap-3 rounded-2xl border border-slate-200 bg-white px-5 text-xs font-black text-slate-600 hover:border-slate-300 transition-all uppercase tracking-widest"
+                className="flex h-11 items-center gap-3 rounded-2xl border border-slate-200 bg-white px-5 text-xs font-bold text-slate-600 hover:border-slate-300 transition-all uppercase tracking-widest"
               >
                 <ArrowDownUp size={14} strokeWidth={3} />
                 <span className="hidden sm:inline">{currentSortLabel}</span>
@@ -299,7 +299,7 @@ export function ListingsPageClient({
               {isSortOpen && (
                 <>
                   <div className="fixed inset-0 z-40" onClick={() => setIsSortOpen(false)} />
-                  <ul className="absolute right-0 top-full z-50 mt-3 w-64 rounded-2xl border border-slate-200 bg-white p-2 shadow-lg animate-in fade-in zoom-in-95 duration-200">
+                  <ul className="absolute right-0 top-full z-50 mt-3 w-64 rounded-2xl border border-slate-200 bg-white p-2 shadow-sm animate-in fade-in zoom-in-95 duration-200">
                     {SORT_OPTIONS.map((option) => (
                       <li key={option.value}>
                         <button
@@ -308,7 +308,7 @@ export function ListingsPageClient({
                             setIsSortOpen(false)
                           }}
                           className={cn(
-                            "w-full px-4 py-3 text-left text-xs font-black rounded-2xl transition-all uppercase tracking-widest",
+                            "w-full px-4 py-3 text-left text-xs font-bold rounded-2xl transition-all uppercase tracking-widest",
                             (filters.sort ?? "newest") === option.value
                               ? "bg-slate-900 text-white"
                               : "text-slate-500 hover:bg-slate-50"
@@ -343,11 +343,11 @@ export function ListingsPageClient({
                   else if (qf.type === "newest") handleFilterChange("sort", "newest")
                 }}
                 className={cn(
-                  "flex items-center gap-2 rounded-full border px-6 py-2.5 text-[10px] font-black uppercase tracking-widest transition-all shadow-sm active:scale-95",
+                  "flex items-center gap-2 rounded-full border px-6 py-2.5 text-[10px] font-bold uppercase tracking-widest transition-all shadow-sm active:scale-95",
                   qf.type === "reset"
                     ? "border-slate-200 bg-white text-slate-500 hover:border-slate-900 hover:text-slate-900"
                     : isActive
-                    ? "border-slate-900 bg-slate-900 text-white shadow-xl shadow-slate-900/10"
+                    ? "border-slate-900 bg-slate-900 text-white shadow-sm shadow-slate-900/10"
                     : "border-slate-200 bg-white text-slate-500 hover:border-slate-900 hover:text-slate-900"
                 )}
               >
@@ -361,7 +361,7 @@ export function ListingsPageClient({
         {/* Active Filter Tags */}
         {activeFiltersCount > 0 && (
           <div className="mt-6 flex flex-wrap items-center gap-3">
-            <span className="text-[10px] font-black text-slate-300 uppercase tracking-widest pl-1">Aktif Süzgeçler:</span>
+            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest pl-1">Aktif Süzgeçler:</span>
             {filters.brand && (
               <FilterTag
                 label={filters.brand}
@@ -437,7 +437,7 @@ export function ListingsPageClient({
             )}
             <button
               onClick={handleReset}
-              className="text-[10px] font-black text-rose-500 hover:text-rose-600 uppercase tracking-widest pl-2"
+              className="text-[10px] font-bold text-rose-500 hover:text-rose-600 uppercase tracking-widest pl-2"
             >
               Temizle
             </button>
@@ -455,7 +455,7 @@ export function ListingsPageClient({
             isPending && "opacity-50 pointer-events-none grayscale"
           )}>
             <div className="bg-slate-900 p-6">
-               <h3 className="text-sm font-black text-white uppercase tracking-[0.2em] flex items-center gap-2">
+               <h3 className="text-sm font-bold text-white uppercase tracking-[0.2em] flex items-center gap-2">
                   <SlidersHorizontal size={14} />
                   Filtreleme
                </h3>
@@ -479,21 +479,21 @@ export function ListingsPageClient({
         {/* Results */}
         <div className="flex-1 min-w-0">
           {isPending ? (
-            <div className="bg-white rounded-[2.5rem] p-10 border border-slate-100 shadow-sm min-h-[600px]">
+            <div className="bg-white rounded-2xl p-10 border border-slate-100 shadow-sm min-h-[600px]">
               <ListingsGridSkeleton />
             </div>
           ) : initialResult.listings.length > 0 ? (
             <div className="space-y-8">
               <div className="flex flex-col gap-4 rounded-3xl border border-slate-100 bg-white/50 p-6 sm:flex-row sm:items-center sm:justify-between">
                 <p className="text-sm font-bold text-slate-500">
-                  Toplam <span className="text-slate-900 font-black">{initialResult.total}</span> ilan arasından <span className="text-slate-900 font-black">{allListings.length}</span> araç gösteriliyor
+                  Toplam <span className="text-slate-900 font-bold">{initialResult.total}</span> ilan arasından <span className="text-slate-900 font-bold">{allListings.length}</span> araç gösteriliyor
                 </p>
                 <div className="flex items-center gap-3">
-                  <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Gösterim:</span>
+                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Gösterim:</span>
                   <select
                     value={filters.limit ?? initialResult.limit}
                     onChange={(event) => handleFilterChange("limit", Number(event.target.value))}
-                    className="h-8 rounded-lg border border-slate-200 bg-white px-3 text-xs font-black text-slate-700 outline-none focus:ring-2 focus:ring-blue-100"
+                    className="h-8 rounded-lg border border-slate-200 bg-white px-3 text-xs font-bold text-slate-700 outline-none focus:ring-2 focus:ring-blue-100"
                   >
                     {PAGE_SIZE_OPTIONS.map((option) => (
                       <option key={option} value={option}>{option}</option>
@@ -548,7 +548,7 @@ export function ListingsPageClient({
               </p>
               <button
                 onClick={handleReset}
-                className="h-10 rounded-lg bg-blue-500 px-8 text-sm font-bold text-white hover:bg-blue-600 transition-all shadow-lg shadow-blue-500/20"
+                className="h-10 rounded-lg bg-blue-500 px-8 text-sm font-bold text-white hover:bg-blue-600 transition-all shadow-sm shadow-blue-500/20"
               >
                 Filtreleri Temizle
               </button>
@@ -570,11 +570,11 @@ function ChevronIcon({ className }: { className?: string }) {
 
 function FilterTag({ label, onRemove }: { label: string; onRemove: () => void }) {
   return (
-    <div className="group flex items-center gap-2 rounded-full border border-slate-200 bg-white pl-4 pr-2 py-2 text-[10px] font-black text-slate-600 uppercase tracking-widest shadow-sm hover:border-slate-900 transition-all">
+    <div className="group flex items-center gap-2 rounded-xl border border-slate-200 bg-white pl-3 pr-1.5 py-1.5 text-[10px] font-bold text-slate-600 uppercase tracking-wider shadow-sm hover:border-slate-400 transition-all">
       <span>{label}</span>
       <button 
         onClick={onRemove} 
-        className="size-5 rounded-full bg-slate-100 text-slate-400 flex items-center justify-center hover:bg-rose-500 hover:text-white transition-all active:scale-90"
+        className="size-5 rounded-lg bg-slate-50 text-slate-400 flex items-center justify-center hover:bg-rose-500 hover:text-white transition-all active:scale-90"
       >
         <svg className="size-2.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="4">
           <path d="M18 6 6 18M6 6l12 12" />

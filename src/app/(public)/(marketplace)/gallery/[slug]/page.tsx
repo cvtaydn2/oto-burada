@@ -52,7 +52,7 @@ export default async function GalleryPage({ params }: GalleryPageProps) {
              <div className="flex size-9 items-center justify-center rounded-md bg-primary text-white">
                 <Car size={20} />
              </div>
-              <h2 className="text-xl font-black text-foreground">
+              <h2 className="text-xl font-bold text-foreground">
                  Galerinin İlanları
               </h2>
           </div>

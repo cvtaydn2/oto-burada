@@ -53,7 +53,7 @@ export function ChatWindow({ chat, currentUserId }: ChatWindowProps) {
   };
 
   return (
-    <div className="flex flex-col h-[600px] w-full border rounded-xl overflow-hidden bg-background shadow-2xl">
+    <div className="flex flex-col h-[600px] w-full border rounded-xl overflow-hidden bg-background shadow-sm">
       {/* Header */}
       <div className="p-4 border-b flex items-center justify-between bg-muted/30 backdrop-blur-md">
         <div>

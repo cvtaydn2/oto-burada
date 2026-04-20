@@ -56,7 +56,7 @@ export function Pagination({
                     className={cn(
                         "flex size-10 items-center justify-center rounded-xl text-sm font-bold transition-all",
                         isActive 
-                            ? "bg-indigo-600 text-white shadow-lg shadow-indigo-200 scale-110" 
+                            ? "bg-indigo-600 text-white shadow-sm shadow-indigo-200 scale-110" 
                             : "bg-card text-muted-foreground border border-border hover:border-indigo-300 hover:text-indigo-600"
                     )}
                 >

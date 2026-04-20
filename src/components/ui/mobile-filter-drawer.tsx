@@ -122,7 +122,7 @@ export function MobileFilterDrawer({
         <SlidersHorizontal className="size-4" />
         Filtreler
         {activeCount > 0 && (
-          <span className="bg-primary text-primary-foreground rounded-full px-1.5 py-0.5 text-xs font-medium">
+          <span className="bg-primary text-primary-foreground rounded-lg px-1.5 py-0.5 text-xs font-medium">
             {activeCount}
           </span>
         )}
@@ -159,7 +159,7 @@ export function MobileFilterDrawer({
                         key={brand.slug}
                         onClick={() => handleBrandSelect(brand.brand)}
                         className={cn(
-                          "rounded-lg border px-3 py-2.5 text-left text-sm transition-colors",
+                          "rounded-xl border px-3 py-2.5 text-left text-sm transition-colors",
                           draftFilters.brand === brand.brand
                             ? "border-primary bg-primary/5 text-primary"
                             : "border-border hover:bg-muted"
@@ -188,7 +188,7 @@ export function MobileFilterDrawer({
                         }))
                       }
                       disabled={!draftFilters.brand}
-                      className="w-full rounded-lg border border-border px-3 py-2.5 text-sm disabled:bg-muted disabled:text-muted-foreground"
+                      className="w-full rounded-xl border border-border px-3 py-2.5 text-sm disabled:bg-muted disabled:text-muted-foreground"
                     >
                       <option value="">Tüm modeller</option>
                       {models.map((model) => (
@@ -207,7 +207,7 @@ export function MobileFilterDrawer({
                         }))
                       }
                       disabled={!draftFilters.model}
-                      className="w-full rounded-lg border border-border px-3 py-2.5 text-sm disabled:bg-muted disabled:text-muted-foreground"
+                      className="w-full rounded-xl border border-border px-3 py-2.5 text-sm disabled:bg-muted disabled:text-muted-foreground"
                     >
                       <option value="">Tüm paketler</option>
                       {trims.map((trim) => (
@@ -230,7 +230,7 @@ export function MobileFilterDrawer({
                         key={city.city}
                         onClick={() => handleCitySelect(city.city)}
                         className={cn(
-                          "rounded-lg border px-3 py-2.5 text-left text-sm transition-colors",
+                          "rounded-xl border px-3 py-2.5 text-left text-sm transition-colors",
                           draftFilters.city === city.city
                             ? "border-primary bg-primary/5 text-primary"
                             : "border-border hover:bg-muted"
@@ -251,7 +251,7 @@ export function MobileFilterDrawer({
                         }))
                       }
                       disabled={!draftFilters.city}
-                      className="w-full rounded-lg border border-border px-3 py-2.5 text-sm disabled:bg-muted disabled:text-muted-foreground"
+                      className="w-full rounded-xl border border-border px-3 py-2.5 text-sm disabled:bg-muted disabled:text-muted-foreground"
                     >
                       <option value="">Tüm ilçeler</option>
                       {districts.map((district) => (
@@ -274,14 +274,14 @@ export function MobileFilterDrawer({
                       placeholder="Min fiyat"
                       value={draftFilters.minPrice || ""}
                       onChange={(e) => setDraftFilters((current) => ({ ...current, minPrice: e.target.value ? Number(e.target.value) : undefined, page: 1 }))}
-                      className="flex-1 rounded-lg border border-border px-3 py-2 text-sm"
+                      className="flex-1 rounded-xl border border-border px-3 py-2 text-sm"
                     />
                     <input
                       type="number"
                       placeholder="Max fiyat"
                       value={draftFilters.maxPrice || ""}
                       onChange={(e) => setDraftFilters((current) => ({ ...current, maxPrice: e.target.value ? Number(e.target.value) : undefined, page: 1 }))}
-                      className="flex-1 rounded-lg border border-border px-3 py-2 text-sm"
+                      className="flex-1 rounded-xl border border-border px-3 py-2 text-sm"
                     />
                   </div>
                 </FilterSection>
@@ -297,7 +297,7 @@ export function MobileFilterDrawer({
                         key={fuel.value}
                         onClick={() => handleFuelSelect(fuel.value)}
                         className={cn(
-                          "rounded-lg border px-3 py-2 text-sm transition-colors",
+                          "rounded-xl border px-3 py-2 text-sm transition-colors",
                           draftFilters.fuelType === fuel.value
                             ? "border-primary bg-primary/5 text-primary"
                             : "border-border hover:bg-muted"
@@ -320,7 +320,7 @@ export function MobileFilterDrawer({
                         key={trans.value}
                         onClick={() => handleTransmissionSelect(trans.value)}
                         className={cn(
-                          "rounded-lg border px-3 py-2 text-sm transition-colors",
+                          "rounded-xl border px-3 py-2 text-sm transition-colors",
                           draftFilters.transmission === trans.value
                             ? "border-primary bg-primary/5 text-primary"
                             : "border-border hover:bg-muted"
@@ -343,14 +343,14 @@ export function MobileFilterDrawer({
                       placeholder="Min yıl"
                       value={draftFilters.minYear || ""}
                       onChange={(e) => setDraftFilters((current) => ({ ...current, minYear: e.target.value ? Number(e.target.value) : undefined, page: 1 }))}
-                      className="flex-1 rounded-lg border border-border px-3 py-2 text-sm"
+                      className="flex-1 rounded-xl border border-border px-3 py-2 text-sm"
                     />
                     <input
                       type="number"
                       placeholder="Max yıl"
                       value={draftFilters.maxYear || ""}
                       onChange={(e) => setDraftFilters((current) => ({ ...current, maxYear: e.target.value ? Number(e.target.value) : undefined, page: 1 }))}
-                      className="flex-1 rounded-lg border border-border px-3 py-2 text-sm"
+                      className="flex-1 rounded-xl border border-border px-3 py-2 text-sm"
                     />
                   </div>
                 </FilterSection>
@@ -366,7 +366,7 @@ export function MobileFilterDrawer({
                       placeholder="Maks km"
                       value={draftFilters.maxMileage ? draftFilters.maxMileage : ""}
                       onChange={(e) => setDraftFilters((current) => ({ ...current, maxMileage: e.target.value ? Number(e.target.value) : undefined, page: 1 }))}
-                      className="flex-1 rounded-lg border border-border px-3 py-2 text-sm"
+                      className="flex-1 rounded-xl border border-border px-3 py-2 text-sm"
                     />
                   </div>
                 </FilterSection>
@@ -404,7 +404,7 @@ export function MobileFilterDrawer({
                           page: 1,
                         }))
                       }
-                      className="w-full rounded-lg border border-border px-3 py-2 text-sm"
+                      className="w-full rounded-xl border border-border px-3 py-2 text-sm"
                     />
                   </div>
                 </FilterSection>

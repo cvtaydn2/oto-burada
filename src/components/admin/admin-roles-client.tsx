@@ -78,16 +78,16 @@ export function AdminRolesClient({ initialRoles }: AdminRolesClientProps) {
           <div>
             <div className="flex items-center gap-2 mb-2">
               <Key className="text-primary" size={16} />
-              <span className="text-xs font-black text-slate-400 uppercase tracking-[0.2em] italic">Erişim kontrolü</span>
+              <span className="text-xs font-bold text-slate-400 uppercase tracking-[0.2em] italic">Erişim kontrolü</span>
             </div>
-            <h1 className="text-3xl font-black text-slate-800 tracking-tight">
+            <h1 className="text-3xl font-bold text-slate-800 tracking-tight">
               Roller ve <span className="text-blue-600">Yetkiler</span>
             </h1>
             <p className="mt-1.5 text-sm text-slate-500 font-medium italic">Sistem personelinin yetki seviyelerini ve erişim limitlerini tanımlayın.</p>
           </div>
           <Button 
             onClick={() => setShowCreateModal(true)}
-            className="flex h-11 items-center gap-2 rounded-xl bg-blue-600 px-6 text-sm font-black uppercase tracking-widest hover:bg-blue-700 transition-all shadow-lg shadow-blue-100"
+            className="flex h-11 items-center gap-2 rounded-xl bg-blue-600 px-6 text-sm font-bold uppercase tracking-widest hover:bg-blue-700 transition-all shadow-sm shadow-blue-100"
           >
             <Plus size={16} />
             Yeni rol tanımla
@@ -106,9 +106,9 @@ export function AdminRolesClient({ initialRoles }: AdminRolesClientProps) {
                 </div>
                 <div>
                   <div className="flex items-center gap-2">
-                    <h3 className="text-lg font-black text-slate-900">{role.name}</h3>
+                    <h3 className="text-lg font-bold text-slate-900">{role.name}</h3>
                     {role.is_system && (
-                      <span className="text-[8px] font-black uppercase tracking-widest text-slate-400 bg-slate-100 px-2 py-0.5 rounded">Sistem</span>
+                      <span className="text-[8px] font-bold uppercase tracking-widest text-slate-400 bg-slate-100 px-2 py-0.5 rounded">Sistem</span>
                     )}
                   </div>
                   <p className="text-xs text-slate-500 font-medium">{role.user_count} atanmış kişi</p>
@@ -157,7 +157,7 @@ export function AdminRolesClient({ initialRoles }: AdminRolesClientProps) {
                 <Shield className="fill-indigo-600/10" size={32} />
               </div>
               <div>
-                <h4 className="text-lg font-black text-slate-900">Gelişmiş erişim logları</h4>
+                <h4 className="text-lg font-bold text-slate-900">Gelişmiş erişim logları</h4>
                 <p className="text-sm text-slate-500">Hangi yetkinin ne zaman ve kim tarafından kullanıldığını inceleyin.</p>
               </div>
             </div>
@@ -174,13 +174,13 @@ export function AdminRolesClient({ initialRoles }: AdminRolesClientProps) {
         {/* Create/Edit Modal */}
         {(editModal || showCreateModal) && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
-            <div className="w-full max-w-xl rounded-2xl bg-white p-8 shadow-2xl overflow-y-auto max-h-[90vh]">
+            <div className="w-full max-w-xl rounded-2xl bg-white p-8 shadow-sm overflow-y-auto max-h-[90vh]">
               <div className="mb-6 flex items-center gap-4">
                 <div className="flex size-14 items-center justify-center rounded-2xl bg-blue-50 text-blue-600">
                   <Shield size={28} />
                 </div>
                 <div>
-                  <h3 className="text-xl font-black text-slate-900 leading-tight">
+                  <h3 className="text-xl font-bold text-slate-900 leading-tight">
                     {editModal ? "Rolü Düzenle" : "Yeni Rol Tanımla"}
                   </h3>
                   <p className="text-sm text-slate-500 font-medium italic mt-0.5">
@@ -208,13 +208,13 @@ export function AdminRolesClient({ initialRoles }: AdminRolesClientProps) {
       {/* Delete Confirmation Modal */}
       {deleteModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
-          <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl">
+          <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-sm">
             <div className="mb-6 flex items-center gap-4">
               <div className="flex size-12 items-center justify-center rounded-xl bg-rose-100 text-rose-600">
                 <Trash2 size={24} />
               </div>
               <div>
-                <h3 className="text-lg font-black text-slate-900">Rolü Sil</h3>
+                <h3 className="text-lg font-bold text-slate-900">Rolü Sil</h3>
                 <p className="text-sm text-slate-500">Bu işlem geri alınamaz</p>
               </div>
             </div>

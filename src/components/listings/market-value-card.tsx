@@ -36,7 +36,7 @@ export function MarketValueCard({ listing }: MarketValueCardProps) {
         </div>
         <div className="p-2 rounded-lg bg-card border border-gray-100 cursor-help group relative">
            <Info size={16} className="text-gray-400 group-hover:text-blue-500 transition-colors" />
-           <div className="absolute bottom-full right-0 mb-3 w-64 p-4 bg-gray-900 text-white text-[11px] rounded-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all shadow-xl z-20 font-medium leading-relaxed border border-white/10">
+           <div className="absolute bottom-full right-0 mb-3 w-64 p-4 bg-gray-900 text-white text-[11px] rounded-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all shadow-sm z-20 font-medium leading-relaxed border border-white/10">
               Bu değer; aracın markası, modeli, yılı, kilometresi ve <strong className="text-blue-300">ekspertiz durumu</strong> analiz edilerek OtoBurada AI tarafından hesaplanmaktadır.
            </div>
         </div>

@@ -51,7 +51,7 @@ export function ViewCounter({ listingId, initialCount }: ViewCounterProps) {
         <Eye size={14} className="text-primary" />
         <span>Görüntülenme</span>
       </div>
-      <div className="flex items-center gap-1.5 font-black text-sm tabular-nums">
+      <div className="flex items-center gap-1.5 font-bold text-sm tabular-nums">
         {count.toLocaleString("tr-TR")}
         {count > 100 && (
           <TrendingUp size={14} className="text-emerald-500" />

@@ -83,7 +83,7 @@ export function AdminRecentActions({ actions }: AdminRecentActionsProps) {
               <History size={20} />
            </div>
            <div>
-              <h2 className="text-xl font-black text-slate-800 tracking-tight">Aksiyon Geçmişi</h2>
+              <h2 className="text-xl font-bold text-slate-800 tracking-tight">Aksiyon Geçmişi</h2>
               <p className="text-sm text-slate-400 font-medium italic">Kayıtlı moderasyon aksiyonu bulunamadı.</p>
            </div>
         </div>
@@ -103,11 +103,11 @@ export function AdminRecentActions({ actions }: AdminRecentActionsProps) {
               <History size={24} />
            </div>
            <div>
-              <h2 className="text-xl font-black text-slate-800 tracking-tight">Moderasyon Geçmişi</h2>
+              <h2 className="text-xl font-bold text-slate-800 tracking-tight">Moderasyon Geçmişi</h2>
               <p className="text-sm text-slate-400 font-medium">Son alınan kararlar ve sistem günlüğü</p>
            </div>
         </div>
-        <div className="bg-slate-50 border border-slate-100 px-4 py-2 rounded-xl text-xs font-black text-slate-500 uppercase tracking-widest">
+        <div className="bg-slate-50 border border-slate-100 px-4 py-2 rounded-xl text-xs font-bold text-slate-500 uppercase tracking-widest">
           {actions.length} KAYIT
         </div>
       </div>
@@ -123,7 +123,7 @@ export function AdminRecentActions({ actions }: AdminRecentActionsProps) {
                   type="button"
                   onClick={() => setActiveFilter(filter.value)}
                   className={cn(
-                    "px-4 py-2 text-[11px] font-black uppercase tracking-wider rounded-lg transition-all whitespace-nowrap",
+                    "px-4 py-2 text-[11px] font-bold uppercase tracking-wider rounded-lg transition-all whitespace-nowrap",
                     isActive
                       ? "bg-white text-blue-600 shadow-sm border border-slate-100"
                       : "text-slate-400 hover:text-slate-600"
@@ -146,7 +146,7 @@ export function AdminRecentActions({ actions }: AdminRecentActionsProps) {
                   type="button"
                   onClick={() => setActiveActionFilter(filter.value)}
                   className={cn(
-                    "px-4 py-2 text-[11px] font-black uppercase tracking-wider rounded-lg transition-all whitespace-nowrap",
+                    "px-4 py-2 text-[11px] font-bold uppercase tracking-wider rounded-lg transition-all whitespace-nowrap",
                     isActive
                       ? "bg-white text-blue-600 shadow-sm border border-slate-100"
                       : "text-slate-400 hover:text-slate-600"
@@ -193,31 +193,31 @@ export function AdminRecentActions({ actions }: AdminRecentActionsProps) {
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
                       <span className={cn(
-                        "px-3 py-1 rounded-lg text-[10px] font-black uppercase tracking-widest",
+                        "px-3 py-1 rounded-lg text-[10px] font-bold uppercase tracking-widest",
                         isApprove ? "bg-emerald-50 text-emerald-600" : 
                         isReject ? "bg-rose-50 text-rose-600" :
                         "bg-blue-50 text-blue-600"
                       )}>
                         {moderationActionLabels[action.action]}
                       </span>
-                      <span className="px-3 py-1 rounded-lg bg-slate-50 text-slate-400 text-[10px] font-black uppercase tracking-widest">
+                      <span className="px-3 py-1 rounded-lg bg-slate-50 text-slate-400 text-[10px] font-bold uppercase tracking-widest">
                         {targetTypeLabels[action.targetType]}
                       </span>
                     </div>
-                    <span className="text-[10px] font-black text-slate-300 uppercase italic">
+                    <span className="text-[10px] font-bold text-slate-300 uppercase italic">
                       {formatDate(action.createdAt)}
                     </span>
                   </div>
 
                   <div className="space-y-1">
-                    <h4 className="text-sm font-black text-slate-800 line-clamp-1 group-hover:text-blue-600 transition-colors">
+                    <h4 className="text-sm font-bold text-slate-800 line-clamp-1 group-hover:text-blue-600 transition-colors">
                       {item.targetLabel}
                     </h4>
                     <p className="text-xs text-slate-400 font-medium">İşlem: <span className="text-slate-600">{item.actorLabel}</span></p>
                   </div>
 
                   <div className="rounded-xl border border-slate-50 bg-slate-50/50 p-4">
-                    <div className="flex items-center gap-2 text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">
+                    <div className="flex items-center gap-2 text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">
                       <Sparkles className="size-3" />
                       Yönetici Notu
                     </div>
@@ -231,7 +231,7 @@ export function AdminRecentActions({ actions }: AdminRecentActionsProps) {
                   {item.targetHref && (
                     <Link
                       href={item.targetHref}
-                      className="group/btn flex items-center justify-center gap-2 w-full h-10 rounded-xl border border-slate-100 bg-white text-xs font-black text-slate-500 hover:bg-blue-600 hover:text-white hover:border-blue-600 transition-all"
+                      className="group/btn flex items-center justify-center gap-2 w-full h-10 rounded-xl border border-slate-100 bg-white text-xs font-bold text-slate-500 hover:bg-blue-600 hover:text-white hover:border-blue-600 transition-all"
                     >
                       DETAYI GÖRÜNTÜLE
                       <ArrowRight className="size-3 group-hover/btn:translate-x-1 transition-transform" />

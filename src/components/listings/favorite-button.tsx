@@ -41,7 +41,7 @@ export function FavoriteButton({
         <Heart className={cn("size-4", active && "fill-current")} />
       </button>
       {showGuestHint && !isAuthenticated && (
-        <div className="absolute bottom-full left-1/2 z-20 mb-2 w-56 -translate-x-1/2 rounded-xl bg-slate-900 px-3 py-2 text-xs text-white opacity-0 shadow-lg transition-opacity group-hover:opacity-100">
+        <div className="absolute bottom-full left-1/2 z-20 mb-2 w-56 -translate-x-1/2 rounded-xl bg-slate-900 px-3 py-2 text-xs text-white opacity-0 shadow-sm transition-opacity group-hover:opacity-100">
           Bu cihazda kaydedilir. Giriş yaparsan favorilerin tüm cihazlarda senkronize olur.
           <Link
             href="/login"

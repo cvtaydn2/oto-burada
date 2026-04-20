@@ -84,7 +84,7 @@ export default async function HomePage() {
                     <div className="absolute top-0 right-0 size-24 bg-slate-50 rounded-full blur-2xl -mr-12 -mt-12 opacity-0 group-hover:opacity-100 transition-opacity" />
                     
                     <div className="relative z-10">
-                      <div className="size-12 rounded-2xl bg-slate-50 text-slate-400 flex items-center justify-center mb-6 group-hover:bg-blue-600 group-hover:text-white group-hover:shadow-lg group-hover:shadow-blue-200 transition-all duration-300">
+                      <div className="size-12 rounded-2xl bg-slate-50 text-slate-400 flex items-center justify-center mb-6 group-hover:bg-blue-600 group-hover:text-white group-hover:shadow-sm group-hover:shadow-blue-200 transition-all duration-300">
                         <CarFront size={20} strokeWidth={2.5} />
                       </div>
                       <h4 className="text-lg font-bold text-slate-900 tracking-tight group-hover:text-blue-600 transition-colors">{brand.brand}</h4>
@@ -114,7 +114,7 @@ export default async function HomePage() {
                     <div className="absolute top-0 right-0 size-24 bg-slate-50 rounded-full blur-2xl -mr-12 -mt-12 opacity-0 group-hover:opacity-100 transition-opacity" />
                     
                     <div className="relative z-10">
-                      <div className="size-12 rounded-2xl bg-slate-50 text-slate-400 flex items-center justify-center mb-6 group-hover:bg-orange-500 group-hover:text-white group-hover:shadow-lg group-hover:shadow-orange-200 transition-all duration-300">
+                      <div className="size-12 rounded-2xl bg-slate-50 text-slate-400 flex items-center justify-center mb-6 group-hover:bg-orange-500 group-hover:text-white group-hover:shadow-sm group-hover:shadow-orange-200 transition-all duration-300">
                         <BadgeCheck size={20} strokeWidth={2.5} />
                       </div>
                       <h4 className="text-lg font-bold text-slate-900 tracking-tight group-hover:text-orange-600 transition-colors">{city.city}</h4>
@@ -177,7 +177,7 @@ export default async function HomePage() {
             </div>
           )}
           <div className="mt-12 flex justify-center">
-            <Link href="/listings" className="bg-primary text-primary-foreground px-8 py-3 rounded-xl font-bold hover:bg-primary/90 transition shadow-lg shadow-primary/20">
+            <Link href="/listings" className="bg-primary text-primary-foreground px-8 py-3 rounded-xl font-bold hover:bg-primary/90 transition shadow-sm shadow-primary/20">
               Tüm İlanları Keşfet
             </Link>
           </div>
@@ -205,7 +205,7 @@ export default async function HomePage() {
               ].map((item, i) => (
                 <div key={i} className="group relative bg-white/5 border border-white/10 p-10 rounded-2xl transition-all duration-300 hover:bg-white/10">
                   <div className={cn(
-                    "size-20 rounded-xl flex items-center justify-center mb-8 transition-transform duration-500 group-hover:rotate-3 shadow-lg",
+                    "size-20 rounded-xl flex items-center justify-center mb-8 transition-transform duration-500 group-hover:rotate-3 shadow-sm",
                     item.color === "blue" ? "bg-blue-600 text-white shadow-blue-500/20" :
                     item.color === "emerald" ? "bg-emerald-500 text-white shadow-emerald-500/20" :
                     "bg-indigo-600 text-white shadow-indigo-500/20"

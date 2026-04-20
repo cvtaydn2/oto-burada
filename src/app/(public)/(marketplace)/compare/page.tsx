@@ -116,7 +116,7 @@ export default async function ComparePage({ searchParams }: ComparePageProps) {
               </Link>
               <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Analitik kıyaslama</span>
            </div>
-             <h1 className="text-2xl font-black text-foreground">
+             <h1 className="text-2xl font-bold text-foreground">
                 Araç Karşılaştırma
              </h1>
            <p className="mt-2.5 text-sm font-medium leading-relaxed text-muted-foreground">
@@ -133,7 +133,7 @@ export default async function ComparePage({ searchParams }: ComparePageProps) {
              <div className="flex size-10 items-center justify-center rounded-lg bg-primary/10 text-primary">
                 <CheckCircle2 size={18} />
              </div>
-             <h2 className="text-lg font-black text-foreground">Rasyonel Analiz</h2>
+             <h2 className="text-lg font-bold text-foreground">Rasyonel Analiz</h2>
           </div>
           <p className="text-sm leading-relaxed text-muted-foreground font-medium">
             Model yılı, fiyat dengesi ve kilometre verilerini karşılaştırarak en iyi fiyat/performans dengesini sunar.
@@ -184,17 +184,17 @@ export default async function ComparePage({ searchParams }: ComparePageProps) {
                           src={coverImage.url}
                           alt={car.title}
                           fill
-                          className="object-cover group-hover:scale-110 transition-transform duration-700"
+                          className="object-cover group- transition-transform duration-700"
                         />
                       ) : null}
                     </div>
-                    <div className="mb-1 text-xl font-black leading-tight text-foreground">
+                    <div className="mb-1 text-xl font-bold leading-tight text-foreground">
                       {car.brand} {car.model}
                     </div>
                     <div className="mb-3 line-clamp-1 text-xs text-muted-foreground font-medium">
                       {car.title}
                     </div>
-                    <div className="mb-5 text-2xl font-black text-foreground">
+                    <div className="mb-5 text-2xl font-bold text-foreground">
                       {formatCurrency(car.price)}
                     </div>
                     <Link

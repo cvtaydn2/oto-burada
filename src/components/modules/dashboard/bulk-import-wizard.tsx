@@ -176,19 +176,19 @@ export function BulkImportWizard() {
     return (
       <div className="space-y-6">
         <Card 
-          className="border-2 border-dashed border-muted-foreground/20 bg-secondary/10 hover:bg-secondary/20 transition-all rounded-[2.5rem] overflow-hidden group cursor-pointer relative"
+          className="border-2 border-dashed border-muted-foreground/20 bg-secondary/10 hover:bg-secondary/20 transition-all rounded-2xl overflow-hidden group cursor-pointer relative"
           onClick={() => fileInputRef.current?.click()}
         >
           <CardContent className="flex flex-col items-center justify-center py-20 text-center gap-4">
             {isProcessing ? (
               <Loader2 className="size-20 text-primary animate-spin" />
             ) : (
-              <div className="size-20 rounded-3xl bg-primary/10 flex items-center justify-center text-primary group-hover:scale-110 transition-transform">
+              <div className="size-20 rounded-3xl bg-primary/10 flex items-center justify-center text-primary group- transition-transform">
                 <Upload size={40} strokeWidth={2.5} />
               </div>
             )}
             <div className="space-y-1">
-              <h2 className="text-2xl font-black italic uppercase">CSV Dosyanızı Buraya Sürükleyin</h2>
+              <h2 className="text-2xl font-bold italic uppercase">CSV Dosyanızı Buraya Sürükleyin</h2>
               <p className="text-muted-foreground font-medium italic">Veya tıklayarak dosya seçin (.csv)</p>
             </div>
             <input 
@@ -212,17 +212,17 @@ export function BulkImportWizard() {
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-secondary/30 p-6 rounded-3xl border border-border">
          <div className="flex gap-6">
             <div className="space-y-1">
-               <p className="text-xs font-black text-muted-foreground uppercase">Toplam Satır</p>
-               <p className="text-2xl font-black italic">{rows.length}</p>
+               <p className="text-xs font-bold text-muted-foreground uppercase">Toplam Satır</p>
+               <p className="text-2xl font-bold italic">{rows.length}</p>
             </div>
             <div className="space-y-1 text-emerald-600">
-               <p className="text-xs font-black opacity-70 uppercase tracking-tighter">Geçerli</p>
-               <p className="text-2xl font-black italic">{validCount}</p>
+               <p className="text-xs font-bold opacity-70 uppercase tracking-tighter">Geçerli</p>
+               <p className="text-2xl font-bold italic">{validCount}</p>
             </div>
             {invalidCount > 0 && (
               <div className="space-y-1 text-rose-600">
-                <p className="text-xs font-black opacity-70 uppercase tracking-tighter">Hatalı</p>
-                <p className="text-2xl font-black italic">{invalidCount}</p>
+                <p className="text-xs font-bold opacity-70 uppercase tracking-tighter">Hatalı</p>
+                <p className="text-2xl font-bold italic">{invalidCount}</p>
               </div>
             )}
          </div>
@@ -231,7 +231,7 @@ export function BulkImportWizard() {
               Temizle
             </Button>
             <Button 
-               className="h-14 px-10 rounded-2xl font-black text-lg shadow-xl shadow-primary/20 flex items-center gap-2"
+               className="h-14 px-10 rounded-2xl font-bold text-lg shadow-sm shadow-primary/20 flex items-center gap-2"
                disabled={validCount === 0 || isUploading}
                onClick={handleUpload}
             >
@@ -270,7 +270,7 @@ export function BulkImportWizard() {
                   <p className="text-xs font-medium text-muted-foreground">{row.brand} {row.model} ({row.year})</p>
                 </TableCell>
                 <TableCell>
-                  <p className="font-black text-sm italic">₺{new Intl.NumberFormat("tr-TR").format(row.price)}</p>
+                  <p className="font-bold text-sm italic">₺{new Intl.NumberFormat("tr-TR").format(row.price)}</p>
                 </TableCell>
                 <TableCell>
                   {row.errors.length > 0 ? (

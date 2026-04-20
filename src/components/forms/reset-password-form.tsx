@@ -60,9 +60,9 @@ export function ResetPasswordForm() {
         <div className="relative z-10 w-full max-w-lg space-y-12">
           <div className="flex items-center gap-4">
             <div className="h-px w-12 bg-primary" />
-            <span className="text-[10px] font-black uppercase tracking-[0.4em] text-primary italic">Güvenlik Güncelleme</span>
+            <span className="text-[10px] font-bold uppercase tracking-[0.4em] text-primary italic">Güvenlik Güncelleme</span>
           </div>
-          <h2 className="text-7xl font-black italic text-white leading-tight tracking-tightest uppercase">
+          <h2 className="text-7xl font-bold italic text-white leading-tight tracking-tightest uppercase">
             YENİ <span className="text-primary tracking-widest block">ŞİFRE</span>
           </h2>
           <p className="text-muted-foreground/70 font-medium text-lg leading-relaxed italic border-l-4 border-primary pl-8">
@@ -75,7 +75,7 @@ export function ResetPasswordForm() {
       <div className="flex items-center justify-center p-8 lg:p-24 relative overflow-hidden bg-muted/30/50">
         <div className="w-full max-w-md space-y-10 relative z-10">
           <div className="space-y-4">
-            <h1 className="text-4xl font-black italic uppercase tracking-tighter text-foreground leading-tight">
+            <h1 className="text-4xl font-bold italic uppercase tracking-tighter text-foreground leading-tight">
               Şifreyi <span className="text-primary italic">Yenile</span>
             </h1>
             <p className="text-sm font-medium text-muted-foreground italic">
@@ -92,7 +92,7 @@ export function ResetPasswordForm() {
           ) : (
             <form onSubmit={handleSubmit} className="space-y-6">
               <div className="space-y-2 group">
-                <label className="text-[10px] font-black px-1 uppercase tracking-widest text-muted-foreground/70 italic group-focus-within:text-primary transition-colors">
+                <label className="text-[10px] font-bold px-1 uppercase tracking-widest text-muted-foreground/70 italic group-focus-within:text-primary transition-colors">
                   YENİ ŞİFRE
                 </label>
                 <div className="relative">
@@ -104,13 +104,13 @@ export function ResetPasswordForm() {
                     onChange={(e) => setPassword(e.target.value)}
                     minLength={8}
                     required
-                    className="h-16 w-full pl-14 pr-6 rounded-[1.5rem] bg-card border-2 border-border/50 shadow-xl shadow-slate-200/40 focus:border-primary outline-none transition-all font-black italic tracking-tighter text-foreground"
+                    className="h-16 w-full pl-14 pr-6 rounded-xl bg-card border-2 border-border/50 shadow-sm shadow-slate-200/40 focus:border-primary outline-none transition-all font-bold italic tracking-tighter text-foreground"
                   />
                 </div>
               </div>
 
               <div className="space-y-2 group">
-                <label className="text-[10px] font-black px-1 uppercase tracking-widest text-muted-foreground/70 italic group-focus-within:text-primary transition-colors">
+                <label className="text-[10px] font-bold px-1 uppercase tracking-widest text-muted-foreground/70 italic group-focus-within:text-primary transition-colors">
                   ŞİFRE TEKRAR
                 </label>
                 <div className="relative">
@@ -122,7 +122,7 @@ export function ResetPasswordForm() {
                     onChange={(e) => setConfirm(e.target.value)}
                     minLength={8}
                     required
-                    className="h-16 w-full pl-14 pr-6 rounded-[1.5rem] bg-card border-2 border-border/50 shadow-xl shadow-slate-200/40 focus:border-primary outline-none transition-all font-black italic tracking-tighter text-foreground"
+                    className="h-16 w-full pl-14 pr-6 rounded-xl bg-card border-2 border-border/50 shadow-sm shadow-slate-200/40 focus:border-primary outline-none transition-all font-bold italic tracking-tighter text-foreground"
                   />
                 </div>
               </div>
@@ -136,7 +136,7 @@ export function ResetPasswordForm() {
               <button
                 type="submit"
                 disabled={isLoading}
-                className="h-16 w-full rounded-[1.5rem] bg-slate-900 text-white flex items-center justify-center gap-3 text-sm font-black uppercase tracking-widest hover:bg-black transition-all shadow-2xl shadow-slate-900/20 italic disabled:opacity-60 disabled:cursor-not-allowed"
+                className="h-16 w-full rounded-xl bg-slate-900 text-white flex items-center justify-center gap-3 text-sm font-bold uppercase tracking-widest hover:bg-black transition-all shadow-sm shadow-slate-900/20 italic disabled:opacity-60 disabled:cursor-not-allowed"
               >
                 {isLoading ? (
                   <LoaderCircle size={20} className="animate-spin" />
@@ -156,7 +156,7 @@ export function ResetPasswordForm() {
                 <Lock size={16} />
               </div>
               <div className="space-y-1">
-                <p className="text-[11px] font-black text-foreground uppercase">Güvenlik İpucu</p>
+                <p className="text-[11px] font-bold text-foreground uppercase">Güvenlik İpucu</p>
                 <p className="text-[10px] font-medium text-muted-foreground/70 leading-relaxed">
                   En az 8 karakter, bir büyük harf ve bir rakam içeren şifreler her zaman daha güvenlidir.
                 </p>

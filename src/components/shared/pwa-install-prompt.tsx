@@ -46,7 +46,7 @@ export function PWAInstallPrompt() {
 
   return (
     <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 w-[92%] max-w-sm animate-in fade-in slide-in-from-bottom-5 duration-500">
-      <div className="bg-card/95 backdrop-blur-xl border border-border shadow-2xl rounded-2xl p-4 overflow-hidden">
+      <div className="bg-card/95 backdrop-blur-xl border border-border shadow-sm rounded-2xl p-4 overflow-hidden">
         <button 
           onClick={handleDismiss}
           className="absolute top-2 right-2 p-1 text-muted-foreground hover:bg-muted rounded-full transition-colors"
@@ -55,7 +55,7 @@ export function PWAInstallPrompt() {
         </button>
  
         <div className="flex items-center gap-3">
-          <div className="size-11 bg-gradient-to-br from-indigo-600 to-emerald-600 rounded-xl flex items-center justify-center shadow-lg shrink-0">
+          <div className="size-11 bg-gradient-to-br from-indigo-600 to-emerald-600 rounded-xl flex items-center justify-center shadow-sm shrink-0">
             <Download className="text-white" size={20} />
           </div>
           <div className="flex-1 pr-4">

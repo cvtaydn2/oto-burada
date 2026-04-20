@@ -61,7 +61,7 @@ export function SmartFilters({
         <h2 className="text-base font-bold flex items-center gap-2 text-gray-800">
           <Filter size={16} className="text-blue-500" /> Filtrele
           {activeCount > 0 && (
-            <span className="inline-flex items-center justify-center size-5 rounded-full bg-blue-500 text-white text-[10px] font-black">
+            <span className="inline-flex items-center justify-center size-5 rounded-full bg-blue-500 text-white text-[10px] font-bold">
               {activeCount}
             </span>
           )}

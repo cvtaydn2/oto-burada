@@ -22,15 +22,15 @@ export default async function AdminReferencePage({
         <div>
            <div className="flex items-center gap-2 mb-2">
               <div className="size-2 rounded-full bg-blue-500 shadow-[0_0_8px_rgba(59,130,246,0.5)]" />
-              <span className="text-[10px] font-black text-muted-foreground/70 uppercase tracking-[0.2em] italic">Veri & Envanter</span>
+              <span className="text-[10px] font-bold text-muted-foreground/70 uppercase tracking-[0.2em] italic">Veri & Envanter</span>
            </div>
-           <h1 className="text-3xl font-black text-foreground tracking-tight">
+           <h1 className="text-3xl font-bold text-foreground tracking-tight">
              Araç <span className="text-blue-600">Veritabanı</span>
            </h1>
            <p className="mt-1.5 text-sm text-muted-foreground font-medium italic">Sistemdeki marka, model ve donanım kütüphanesini yönetin.</p>
         </div>
         <div className="flex items-center gap-3">
-           <Button variant="outline" className="rounded-xl font-black text-[10px] tracking-widest uppercase h-11 px-6 bg-card border-border">
+           <Button variant="outline" className="rounded-xl font-bold text-[10px] tracking-widest uppercase h-11 px-6 bg-card border-border">
               <Filter size={16} className="mr-2" />
               FİLTRELE
            </Button>
@@ -45,7 +45,7 @@ export default async function AdminReferencePage({
                      <Database size={20} />
                   </div>
                   <div>
-                     <h3 className="text-sm font-black text-foreground">Marka Kütüphanesi</h3>
+                     <h3 className="text-sm font-bold text-foreground">Marka Kütüphanesi</h3>
                      <p className="text-[10px] text-muted-foreground/70 font-bold uppercase tracking-tighter">Toplam {brands.length} marka kayıtlı</p>
                   </div>
                </div>

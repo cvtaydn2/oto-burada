@@ -23,7 +23,7 @@ export default function GlobalError({
         <div className="fixed bottom-6 left-1/2 -translate-x-1/2">
           <button
             onClick={reset}
-            className="rounded-xl bg-blue-600 px-6 py-3 text-sm font-bold text-white shadow-lg hover:bg-blue-700 transition-colors"
+            className="rounded-xl bg-blue-600 px-6 py-3 text-sm font-bold text-white shadow-sm hover:bg-blue-700 transition-colors"
           >
             Tekrar Dene
           </button>

@@ -89,7 +89,7 @@ function PaymentResultContent() {
           <Loader2 className="h-16 w-16 text-blue-600 animate-spin relative z-10" />
         </div>
         <div className="text-center">
-          <h2 className="text-2xl font-black text-slate-900">İşleminiz Kontrol Ediliyor</h2>
+          <h2 className="text-2xl font-bold text-slate-900">İşleminiz Kontrol Ediliyor</h2>
           <p className="text-slate-400 font-bold mt-1">Lütfen sayfayı kapatmayın...</p>
         </div>
       </div>
@@ -100,7 +100,7 @@ function PaymentResultContent() {
 
   return (
     <div className="max-w-2xl mx-auto py-12 px-4 anime-in fade-in slide-in-from-bottom-8 duration-700">
-      <Card className="overflow-hidden border-none shadow-2xl bg-white/80 backdrop-blur-xl rounded-[2.5rem]">
+      <Card className="overflow-hidden border-none shadow-sm bg-white/80 backdrop-blur-xl rounded-2xl">
         <div className={`h-3 w-full ${isSuccess ? "bg-emerald-500" : "bg-rose-500"}`} />
         
         <CardContent className="pt-12 pb-10 px-8 text-center">
@@ -119,7 +119,7 @@ function PaymentResultContent() {
             </div>
           </div>
 
-          <h1 className="text-3xl lg:text-4xl font-black text-slate-900 tracking-tight">
+          <h1 className="text-3xl lg:text-4xl font-bold text-slate-900 tracking-tight">
             {isSuccess ? "Ödeme Başarılı!" : "Ödeme Başarısız"}
           </h1>
           
@@ -132,11 +132,11 @@ function PaymentResultContent() {
           {paymentData && (
             <div className="mt-10 p-6 rounded-3xl bg-slate-50 border border-slate-100 grid grid-cols-2 gap-4 text-left">
               <div>
-                <span className="text-[10px] font-black uppercase tracking-widest text-slate-400 block mb-1">İşlem Tutarı</span>
-                <span className="text-lg font-black text-slate-900">{paymentData.amount} ₺</span>
+                <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400 block mb-1">İşlem Tutarı</span>
+                <span className="text-lg font-bold text-slate-900">{paymentData.amount} ₺</span>
               </div>
               <div>
-                <span className="text-[10px] font-black uppercase tracking-widest text-slate-400 block mb-1">Referans No</span>
+                <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400 block mb-1">Referans No</span>
                 <span className="text-xs font-bold text-slate-600 truncate block">{paymentData.id.split('-')[0]}</span>
               </div>
             </div>
@@ -145,13 +145,13 @@ function PaymentResultContent() {
           <div className="mt-10 flex flex-col gap-3">
             {isSuccess ? (
               <>
-                <Button asChild className="h-14 rounded-2xl bg-blue-600 text-white font-black uppercase tracking-widest shadow-xl shadow-blue-500/20 hover:bg-blue-700 hover:scale-[1.02] active:scale-[0.98] transition-all">
+                <Button asChild className="h-14 rounded-2xl bg-blue-600 text-white font-bold uppercase tracking-widest shadow-sm shadow-blue-500/20 hover:bg-blue-700 hover:scale-[1.02] active:scale-[0.98] transition-all">
                   <Link href="/dashboard/listings">
                     İlanlarıma Git
                     <ClipboardList className="ml-2 h-5 w-5" />
                   </Link>
                 </Button>
-                <Button asChild variant="ghost" className="h-14 rounded-2xl font-black text-slate-400 hover:text-slate-900 hover:bg-slate-50 transition-all">
+                <Button asChild variant="ghost" className="h-14 rounded-2xl font-bold text-slate-400 hover:text-slate-900 hover:bg-slate-50 transition-all">
                   <Link href="/dashboard">
                     Panel Özetine Dön
                     <Home className="ml-2 h-5 w-5" />
@@ -160,13 +160,13 @@ function PaymentResultContent() {
               </>
             ) : (
               <>
-                <Button asChild className="h-14 rounded-2xl bg-rose-600 text-white font-black uppercase tracking-widest shadow-xl shadow-rose-500/20 hover:bg-rose-700 hover:scale-[1.02] active:scale-[0.98] transition-all">
+                <Button asChild className="h-14 rounded-2xl bg-rose-600 text-white font-bold uppercase tracking-widest shadow-sm shadow-rose-500/20 hover:bg-rose-700 hover:scale-[1.02] active:scale-[0.98] transition-all">
                   <button onClick={() => window.history.back()}>
                     Tekrar Dene
                     <Zap className="ml-2 h-5 w-5" />
                   </button>
                 </Button>
-                <Button asChild variant="ghost" className="h-14 rounded-2xl font-black text-slate-400 hover:text-slate-900 hover:bg-slate-50 transition-all">
+                <Button asChild variant="ghost" className="h-14 rounded-2xl font-bold text-slate-400 hover:text-slate-900 hover:bg-slate-50 transition-all">
                   <Link href="/dashboard/pricing">
                     Paketlere Göz At
                     <ArrowRight className="ml-2 h-5 w-5" />
@@ -184,11 +184,11 @@ function PaymentResultContent() {
              <MessageSquare size={18} />
            </div>
            <div className="text-left">
-             <div className="text-xs font-black text-slate-900">Yardıma mı ihtiyacınız var?</div>
+             <div className="text-xs font-bold text-slate-900">Yardıma mı ihtiyacınız var?</div>
              <div className="text-[10px] font-bold text-slate-400">Canlı destek ekibimize ulaşın.</div>
            </div>
         </div>
-        <div className="text-[10px] font-black text-slate-300 uppercase tracking-[0.2em]">
+        <div className="text-[10px] font-bold text-slate-300 uppercase tracking-[0.2em]">
           Güvenli Ödeme Altyapısı © Iyzico
         </div>
       </div>

@@ -81,7 +81,7 @@ export function ListingCard({ listing, priority = false }: ListingCardProps) {
             )}
           </div>
 
-          <div className="absolute bottom-4 right-4 px-2.5 py-1.5 bg-black/40 backdrop-blur-md rounded-lg text-[10px] text-white/90 font-black uppercase tracking-widest">
+          <div className="absolute bottom-4 right-4 px-2.5 py-1.5 bg-black/40 backdrop-blur-md rounded-lg text-[10px] text-white/90 font-bold uppercase tracking-widest">
             {listing.images.length} FOTO
           </div>
           

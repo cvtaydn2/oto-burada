@@ -149,7 +149,7 @@ export function Listing360View({ isOpen, imageUrl, onClose }: Listing360ViewProp
       {/* Header */}
       <div className="flex items-center justify-between px-6 py-4 flex-shrink-0">
         <div className="flex items-center gap-2">
-          <div className="flex items-center gap-1.5 bg-blue-600 px-3 py-1 rounded-full text-white text-xs font-black uppercase tracking-widest">
+          <div className="flex items-center gap-1.5 bg-blue-600 px-3 py-1 rounded-full text-white text-xs font-bold uppercase tracking-widest">
             360° Panorama
           </div>
         </div>

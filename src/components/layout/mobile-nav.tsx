@@ -19,7 +19,7 @@ export function MobileNav() {
       {/* Mobile FAB */}
       <Link
         href="/dashboard/listings/create"
-        className="fixed bottom-28 right-6 z-50 flex h-14 w-14 items-center justify-center rounded-full bg-indigo-600 text-white shadow-2xl shadow-indigo-500/40 transition-transform active:scale-95"
+        className="fixed bottom-28 right-6 z-50 flex h-14 w-14 items-center justify-center rounded-full bg-indigo-600 text-white shadow-sm shadow-indigo-500/40 transition-transform active:scale-95"
         aria-label="İlan Ver"
       >
         <Plus className="size-6" />
@@ -40,7 +40,7 @@ export function MobileNav() {
                   href={item.href}
                   aria-current={isActive ? "page" : undefined}
                   className={cn(
-                    "flex min-h-14 flex-col items-center justify-center gap-1 rounded-2xl px-2 py-2 text-[12px] font-black transition-all focus-visible:outline-none",
+                    "flex min-h-14 flex-col items-center justify-center gap-1 rounded-2xl px-2 py-2 text-[12px] font-bold transition-all focus-visible:outline-none",
                     isActive
                       ? "text-indigo-600"
                       : "text-slate-400 hover:text-slate-600",

@@ -18,9 +18,9 @@ const toneClasses: Record<TrustTone, string> = {
 
 export function TrustCard({ title, value, description, tone }: TrustCardProps) {
   return (
-    <div className={cn("rounded-3xl border p-6 transition-all hover:shadow-lg", toneClasses[tone])}>
-      <div className="text-[10px] font-black uppercase tracking-[0.2em] opacity-80">{title}</div>
-      <div className="mt-2 text-xl font-black tracking-tighter">{value}</div>
+    <div className={cn("rounded-3xl border p-6 transition-all hover:shadow-sm", toneClasses[tone])}>
+      <div className="text-[10px] font-bold uppercase tracking-[0.2em] opacity-80">{title}</div>
+      <div className="mt-2 text-xl font-bold tracking-tighter">{value}</div>
       <p className="mt-3 text-[11px] font-bold leading-relaxed opacity-60 uppercase tracking-wide">{description}</p>
     </div>
   );

@@ -68,8 +68,8 @@ export function DamageReportCard({ damageStatus, tramerAmount }: DamageReportCar
               </div>
               {tramerAmount != null && (
                 <div className="text-right">
-                  <div className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] leading-none mb-1">Tramer Kaydı</div>
-                  <div className="text-base font-black text-gray-900 leading-none">
+                  <div className="text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em] leading-none mb-1">Tramer Kaydı</div>
+                  <div className="text-base font-bold text-gray-900 leading-none">
                     {tramerAmount === 0 ? "Hasar Kayıtsız" : `${tramerAmount.toLocaleString("tr-TR")} TL`}
                   </div>
                 </div>
@@ -79,25 +79,25 @@ export function DamageReportCard({ damageStatus, tramerAmount }: DamageReportCar
             <div className="grid grid-cols-2 gap-2 mb-4 text-[11px]">
               <div className="bg-emerald-50 rounded-xl p-3 border border-emerald-100 flex items-center justify-between">
                 <span className="font-bold text-gray-400 uppercase tracking-tighter">Orijinal</span>
-                <span className="text-lg font-black text-emerald-600">{statusCounts.orjinal}</span>
+                <span className="text-lg font-bold text-emerald-600">{statusCounts.orjinal}</span>
               </div>
               <div className="bg-orange-50 rounded-xl p-3 border border-orange-100 flex items-center justify-between">
                 <span className="font-bold text-gray-400 uppercase tracking-tighter">Boyalı</span>
-                <span className="text-lg font-black text-orange-600">{statusCounts.boyali + statusCounts.lokal_boyali}</span>
+                <span className="text-lg font-bold text-orange-600">{statusCounts.boyali + statusCounts.lokal_boyali}</span>
               </div>
               <div className="bg-red-50 rounded-xl p-3 border border-red-100 flex items-center justify-between">
                 <span className="font-bold text-gray-400 uppercase tracking-tighter">Değişen</span>
-                <span className="text-lg font-black text-red-600">{statusCounts.degisen}</span>
+                <span className="text-lg font-bold text-red-600">{statusCounts.degisen}</span>
               </div>
               <div className="bg-gray-50 rounded-xl p-3 border border-gray-100 flex items-center justify-between">
                 <span className="font-bold text-gray-400 uppercase tracking-tighter">Bilinmiyor</span>
-                <span className="text-lg font-black text-gray-600">{statusCounts.bilinmiyor}</span>
+                <span className="text-lg font-bold text-gray-600">{statusCounts.bilinmiyor}</span>
               </div>
             </div>
 
             <button
               onClick={() => setIsExpanded(!isExpanded)}
-              className="w-full flex items-center justify-center gap-2 py-3 rounded-2xl border border-blue-100 bg-blue-50/50 text-blue-600 text-xs font-black uppercase tracking-wider hover:bg-blue-100 transition-all shadow-sm group"
+              className="w-full flex items-center justify-center gap-2 py-3 rounded-2xl border border-blue-100 bg-blue-50/50 text-blue-600 text-xs font-bold uppercase tracking-wider hover:bg-blue-100 transition-all shadow-sm group"
             >
               {isExpanded ? "Detayları Gizle" : "Boya/Değişen Detayları"}
               {isExpanded ? <ChevronUp size={16} /> : <ChevronDown size={16} className="group-hover:translate-y-0.5 transition-transform" />}

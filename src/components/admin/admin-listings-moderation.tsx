@@ -54,7 +54,7 @@ export function AdminListingsModeration({ pendingListings }: AdminListingsModera
 
   if (pendingListings.length === 0) {
     return (
-      <section className="rounded-[2rem] border border-border/80 bg-background p-6 shadow-sm sm:p-8">
+      <section className="rounded-2xl border border-border/80 bg-background p-6 shadow-sm sm:p-8">
         <p className="text-sm font-medium uppercase tracking-[0.18em] text-primary/80">Moderasyon</p>
         <h2 className="mt-3 text-2xl font-semibold tracking-tight">Bekleyen ilan yok</h2>
         <p className="mt-3 max-w-2xl text-sm leading-6 text-muted-foreground sm:text-base">
@@ -229,7 +229,7 @@ export function AdminListingsModeration({ pendingListings }: AdminListingsModera
   };
 
   return (
-    <section className="rounded-[2rem] border border-border/80 bg-background p-6 shadow-sm sm:p-8">
+    <section className="rounded-2xl border border-border/80 bg-background p-6 shadow-sm sm:p-8">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <p className="text-sm font-medium uppercase tracking-[0.18em] text-primary/80">Moderasyon</p>
@@ -283,7 +283,7 @@ export function AdminListingsModeration({ pendingListings }: AdminListingsModera
       )}
 
       <div className="mt-6 space-y-6">
-        <div className="rounded-[1.5rem] border border-border/70 bg-muted/20 p-4">
+        <div className="rounded-xl border border-border/70 bg-muted/20 p-4">
           <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
             <div className="space-y-2">
               <div className="flex flex-wrap items-center gap-2">
@@ -430,10 +430,10 @@ export function AdminListingsModeration({ pendingListings }: AdminListingsModera
                   </div>
 
                   <div className="flex flex-wrap items-center gap-3">
-                    <span className="inline-flex rounded-full bg-sky-100 px-3 py-1 text-[10px] font-black uppercase tracking-widest text-sky-700">
+                    <span className="inline-flex rounded-full bg-sky-100 px-3 py-1 text-[10px] font-bold uppercase tracking-widest text-sky-700">
                       {listing.status === "pending" ? "İnceleme Bekliyor" : listing.status}
                     </span>
-                    <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">ID: {listing.id.split("-")[0]}</span>
+                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">ID: {listing.id.split("-")[0]}</span>
                   </div>
 
                   {listing.images && listing.images.length > 0 && (
@@ -569,7 +569,7 @@ export function AdminListingsModeration({ pendingListings }: AdminListingsModera
                     </span>
                   </div>
 
-                  <div className={`rounded-[1.25rem] border p-4 ${currentToneClass}`}>
+                  <div className={`rounded-xl border p-4 ${currentToneClass}`}>
                     <div className="flex items-center gap-2 text-sm font-semibold">
                       <Sparkles className="size-4" />
                       Hızlı moderasyon özeti

@@ -73,14 +73,14 @@ export function ModelsManager({ brand, onClose }: ModelsManagerProps) {
   };
 
   return (
-    <div className="flex flex-col h-full bg-white animate-in slide-in-from-right duration-300 shadow-2xl border-l border-slate-200">
+    <div className="flex flex-col h-full bg-white animate-in slide-in-from-right duration-300 shadow-sm border-l border-slate-200">
       <div className="p-6 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
         <div className="flex items-center gap-3">
-          <div className="size-10 rounded-xl bg-white border border-slate-200 flex items-center justify-center text-blue-600 shadow-sm font-black text-xs">
+          <div className="size-10 rounded-xl bg-white border border-slate-200 flex items-center justify-center text-blue-600 shadow-sm font-bold text-xs">
             {brand.name.substring(0, 2).toUpperCase()}
           </div>
           <div>
-            <h3 className="text-sm font-black text-slate-800 tracking-tight">{brand.name}</h3>
+            <h3 className="text-sm font-bold text-slate-800 tracking-tight">{brand.name}</h3>
             <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest italic">Model Kütüphanesi</p>
           </div>
         </div>
@@ -108,7 +108,7 @@ export function ModelsManager({ brand, onClose }: ModelsManagerProps) {
           <Button 
             onClick={handleAddModel}
             disabled={addingModel || !newModelName.trim()}
-            className="absolute right-2 top-2 h-10 rounded-xl bg-blue-600 font-black text-[10px] tracking-widest uppercase hover:bg-blue-700 disabled:opacity-50"
+            className="absolute right-2 top-2 h-10 rounded-xl bg-blue-600 font-bold text-[10px] tracking-widest uppercase hover:bg-blue-700 disabled:opacity-50"
           >
             {addingModel ? <Loader2 size={16} className="animate-spin" /> : "EKLE"}
           </Button>
@@ -124,7 +124,7 @@ export function ModelsManager({ brand, onClose }: ModelsManagerProps) {
         ) : models.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-12 text-slate-400 border-2 border-dashed border-slate-100 rounded-3xl gap-4 bg-white">
             <Car size={32} className="opacity-20" />
-            <p className="text-[10px] font-black uppercase tracking-widest italic">Hiç model bulunamadı</p>
+            <p className="text-[10px] font-bold uppercase tracking-widest italic">Hiç model bulunamadı</p>
           </div>
         ) : (
           models.map((model) => (
@@ -137,7 +137,7 @@ export function ModelsManager({ brand, onClose }: ModelsManagerProps) {
                     <ChevronRight size={14} />
                  </div>
                  <div>
-                    <span className="text-sm font-black text-slate-700 tracking-tight">{model.name}</span>
+                    <span className="text-sm font-bold text-slate-700 tracking-tight">{model.name}</span>
                     <p className="text-[9px] text-slate-400 font-bold italic">/{model.slug}</p>
                  </div>
               </div>
@@ -155,7 +155,7 @@ export function ModelsManager({ brand, onClose }: ModelsManagerProps) {
       <div className="p-6 border-t border-slate-100 bg-slate-50/30">
         <div className="flex items-center gap-3">
            <div className="size-2 rounded-full bg-emerald-500" />
-           <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] italic">Toplam {models.length} model aktif</p>
+           <p className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em] italic">Toplam {models.length} model aktif</p>
         </div>
       </div>
     </div>

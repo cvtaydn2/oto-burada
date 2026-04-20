@@ -47,7 +47,7 @@ export default async function DashboardSavedSearchesPage() {
 
   return (
     <section className="space-y-6">
-      <div className="rounded-[2rem] border border-border/80 bg-background p-6 shadow-sm sm:p-8">
+      <div className="rounded-2xl border border-border/80 bg-background p-6 shadow-sm sm:p-8">
         <p className="text-sm font-medium uppercase tracking-[0.18em] text-primary/80">Kayıtlı Aramalar</p>
         <h1 className="mt-3 text-3xl font-semibold tracking-tight">İlgi alanlarına göre arama sonuçları</h1>
         <p className="mt-3 max-w-2xl text-sm leading-6 text-muted-foreground sm:text-base">

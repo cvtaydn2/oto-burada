@@ -19,7 +19,7 @@ async function AnalyticsContent({ range }: { range: string }) {
         <div className="size-16 rounded-2xl bg-rose-50 flex items-center justify-center text-rose-500 mb-4">
           <TrendingUp size={32} />
         </div>
-        <h2 className="text-xl font-black text-foreground">Analitik Verileri Yüklenemedi</h2>
+        <h2 className="text-xl font-bold text-foreground">Analitik Verileri Yüklenemedi</h2>
         <p className="text-muted-foreground font-medium mt-2 max-w-md italic">
           Veritabanı bağlantısı veya yetkilendirme ile ilgili bir sorun oluştu.
         </p>

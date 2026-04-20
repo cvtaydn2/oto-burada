@@ -75,7 +75,7 @@ export function PlansTable({ initialPlans }: PlansTableProps) {
       <div className="p-6 border-b border-slate-100 bg-slate-50/10 flex justify-end">
         <Button 
           onClick={() => setShowCreateForm(true)}
-          className="bg-indigo-600 hover:bg-indigo-700 rounded-xl font-black text-[10px] tracking-widest uppercase h-11 px-6 shadow-lg shadow-indigo-100 gap-2"
+          className="bg-indigo-600 hover:bg-indigo-700 rounded-xl font-bold text-[10px] tracking-widest uppercase h-11 px-6 shadow-sm shadow-indigo-100 gap-2"
         >
           <Plus size={16} />
           YENİ PAKET EKLE
@@ -86,12 +86,12 @@ export function PlansTable({ initialPlans }: PlansTableProps) {
         <table className="w-full text-left border-collapse">
           <thead>
             <tr className="bg-slate-50/50">
-              <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Paket Adı</th>
-              <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Fiyat</th>
-              <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Kredi (İlan)</th>
-              <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Özellikler</th>
-              <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Durum</th>
-              <th className="px-6 py-4 text-right text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">İşlem</th>
+              <th className="px-6 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em]">Paket Adı</th>
+              <th className="px-6 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em]">Fiyat</th>
+              <th className="px-6 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em]">Kredi (İlan)</th>
+              <th className="px-6 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em]">Özellikler</th>
+              <th className="px-6 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em]">Durum</th>
+              <th className="px-6 py-4 text-right text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em]">İşlem</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-50">
@@ -102,14 +102,14 @@ export function PlansTable({ initialPlans }: PlansTableProps) {
                     <div className="size-9 rounded-xl bg-indigo-50 border border-indigo-100 flex items-center justify-center text-indigo-500">
                       <Tag size={16} />
                     </div>
-                    <span className="text-sm font-black text-slate-800 uppercase tracking-tight">{plan.name}</span>
+                    <span className="text-sm font-bold text-slate-800 uppercase tracking-tight">{plan.name}</span>
                   </div>
                 </td>
                 <td className="px-6 py-5">
-                  <span className="text-sm font-black text-slate-900">{formatCurrency(plan.price)}</span>
+                  <span className="text-sm font-bold text-slate-900">{formatCurrency(plan.price)}</span>
                 </td>
                 <td className="px-6 py-5">
-                  <Badge className="bg-slate-100 text-slate-600 border-none font-black text-[10px] py-1 px-2.5 rounded-lg uppercase italic">
+                  <Badge className="bg-slate-100 text-slate-600 border-none font-bold text-[10px] py-1 px-2.5 rounded-lg uppercase italic">
                     {plan.credits} İLAN
                   </Badge>
                 </td>
@@ -117,7 +117,7 @@ export function PlansTable({ initialPlans }: PlansTableProps) {
                   <div className="flex gap-1.5 flex-wrap max-w-[200px]">
                     {Object.entries(plan.features).map(([key, val]) => (
                       val === true && (
-                        <Badge key={key} className="bg-emerald-50 text-emerald-600 border-emerald-100 text-[8px] font-black uppercase tracking-tighter">
+                        <Badge key={key} className="bg-emerald-50 text-emerald-600 border-emerald-100 text-[8px] font-bold uppercase tracking-tighter">
                           {key.replace('_', ' ')}
                         </Badge>
                       )
@@ -128,12 +128,12 @@ export function PlansTable({ initialPlans }: PlansTableProps) {
                   {plan.is_active ? (
                     <div className="flex items-center gap-1.5 text-emerald-600">
                       <CheckCircle2 size={14} />
-                      <span className="text-[10px] font-black uppercase tracking-widest italic">Aktif</span>
+                      <span className="text-[10px] font-bold uppercase tracking-widest italic">Aktif</span>
                     </div>
                   ) : (
                     <div className="flex items-center gap-1.5 text-slate-400">
                       <XCircle size={14} />
-                      <span className="text-[10px] font-black uppercase tracking-widest italic">Pasif</span>
+                      <span className="text-[10px] font-bold uppercase tracking-widest italic">Pasif</span>
                     </div>
                   )}
                 </td>
@@ -144,12 +144,12 @@ export function PlansTable({ initialPlans }: PlansTableProps) {
                         <MoreVertical className="h-4 w-4" />
                       </Button>
                     </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end" className="w-[200px] rounded-2xl p-2 shadow-xl border-slate-100">
-                      <DropdownMenuLabel className="text-[10px] font-black uppercase tracking-widest text-slate-400 px-3 py-2">Paket Kontrolü</DropdownMenuLabel>
+                    <DropdownMenuContent align="end" className="w-[200px] rounded-2xl p-2 shadow-sm border-slate-100">
+                      <DropdownMenuLabel className="text-[10px] font-bold uppercase tracking-widest text-slate-400 px-3 py-2">Paket Kontrolü</DropdownMenuLabel>
                       <DropdownMenuSeparator className="bg-slate-50" />
                       <DropdownMenuItem 
                         onClick={() => setEditModal(plan)}
-                        className="cursor-pointer gap-2 font-black text-[10px] uppercase tracking-widest rounded-xl px-3 py-2.5 hover:bg-slate-50"
+                        className="cursor-pointer gap-2 font-bold text-[10px] uppercase tracking-widest rounded-xl px-3 py-2.5 hover:bg-slate-50"
                       >
                         <Edit3 size={14} />
                         DÜZENLE
@@ -157,7 +157,7 @@ export function PlansTable({ initialPlans }: PlansTableProps) {
                       <DropdownMenuItem 
                         onClick={() => handleToggleStatus(plan)}
                         disabled={isLoading === plan.id}
-                        className="cursor-pointer gap-2 font-black text-[10px] uppercase tracking-widest rounded-xl px-3 py-2.5 hover:bg-slate-50"
+                        className="cursor-pointer gap-2 font-bold text-[10px] uppercase tracking-widest rounded-xl px-3 py-2.5 hover:bg-slate-50"
                       >
                         {isLoading === plan.id ? <Loader2 className="animate-spin" size={14} /> : plan.is_active ? <XCircle size={14} /> : <CheckCircle2 size={14} />}
                         {plan.is_active ? "PASİFE AL" : "AKTİF ET"}
@@ -165,7 +165,7 @@ export function PlansTable({ initialPlans }: PlansTableProps) {
                       <DropdownMenuSeparator className="bg-slate-50" />
                       <DropdownMenuItem 
                         onClick={() => setDeleteModal(plan)}
-                        className="cursor-pointer gap-2 font-black text-[10px] uppercase tracking-widest rounded-xl px-3 py-2.5 text-rose-600 hover:bg-rose-50"
+                        className="cursor-pointer gap-2 font-bold text-[10px] uppercase tracking-widest rounded-xl px-3 py-2.5 text-rose-600 hover:bg-rose-50"
                       >
                         <Trash2 size={14} />
                         SİL
@@ -182,13 +182,13 @@ export function PlansTable({ initialPlans }: PlansTableProps) {
       {/* Edit Modal / Create Modal */}
       {(editModal || showCreateForm) && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
-          <div className="w-full max-w-xl rounded-2xl bg-white p-8 shadow-2xl max-h-[90vh] overflow-y-auto">
+          <div className="w-full max-w-xl rounded-2xl bg-white p-8 shadow-sm max-h-[90vh] overflow-y-auto">
             <div className="mb-6 flex items-center gap-4">
               <div className="flex size-14 items-center justify-center rounded-2xl bg-indigo-50 text-indigo-600">
                 {editModal ? <Edit3 size={28} /> : <Plus size={28} />}
               </div>
               <div>
-                <h3 className="text-xl font-black text-slate-900 leading-tight">
+                <h3 className="text-xl font-bold text-slate-900 leading-tight">
                   {editModal ? "Paketi Düzenle" : "Yeni Paket Oluştur"}
                 </h3>
                 <p className="text-sm text-slate-500 font-medium italic mt-0.5">
@@ -216,13 +216,13 @@ export function PlansTable({ initialPlans }: PlansTableProps) {
       {/* Delete Confirmation Modal */}
       {deleteModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
-          <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl">
+          <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-sm">
             <div className="mb-6 flex items-center gap-4">
               <div className="flex size-12 items-center justify-center rounded-xl bg-rose-100 text-rose-600">
                 <Trash2 size={24} />
               </div>
               <div>
-                <h3 className="text-lg font-black text-slate-900">Paketi Sil</h3>
+                <h3 className="text-lg font-bold text-slate-900">Paketi Sil</h3>
                 <p className="text-sm text-slate-500">Bu işlem geri alınamaz</p>
               </div>
             </div>

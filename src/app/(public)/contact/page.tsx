@@ -140,7 +140,7 @@ export default function ContactPage() {
         </div>
 
         <div className="lg:col-span-4">
-          <div className="bg-indigo-900 rounded-3xl p-10 text-white shadow-xl h-full flex flex-col justify-between relative overflow-hidden">
+          <div className="bg-indigo-900 rounded-3xl p-10 text-white shadow-sm h-full flex flex-col justify-between relative overflow-hidden">
             <div className="absolute top-0 right-0 w-64 h-64 bg-card/5 blur-[100px] pointer-events-none" />
             <div className="relative z-10">
               <ShieldCheck className="text-blue-400 mb-6" size={48} />
@@ -172,7 +172,7 @@ function ContactCard({ icon, title, description, value, color }: {
 }) {
   return (
     <div className="bg-card rounded-2xl p-8 border border-border/50 shadow-sm hover:shadow-md transition-all group">
-      <div className={`size-14 rounded-2xl ${color} flex items-center justify-center text-white mb-5 shadow-lg`}>
+      <div className={`size-14 rounded-2xl ${color} flex items-center justify-center text-white mb-5 shadow-sm`}>
         {icon}
       </div>
       <h3 className="text-xs font-bold uppercase tracking-widest text-muted-foreground/70 mb-2">{title}</h3>

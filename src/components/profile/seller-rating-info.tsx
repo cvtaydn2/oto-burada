@@ -33,7 +33,7 @@ export function SellerRatingInfo({
         ))}
       </div>
       {showLabels && (
-        <div className="flex items-center gap-1 text-xs font-black italic uppercase tracking-tighter">
+        <div className="flex items-center gap-1 text-xs font-bold italic uppercase tracking-tighter">
           <span className="text-foreground">{average > 0 ? average.toFixed(1) : "Yeni"}</span>
           {count > 0 && (
             <span className="text-muted-foreground">({count} Yorum)</span>

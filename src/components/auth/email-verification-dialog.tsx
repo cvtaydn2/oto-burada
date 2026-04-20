@@ -82,7 +82,7 @@ export function EmailVerificationDialog({
 
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[425px] rounded-[2rem]">
+      <DialogContent className="sm:max-w-[425px] rounded-2xl">
         <DialogHeader>
           <div className="flex justify-center mb-4">
             <div className={`p-4 rounded-full ${step === "success" ? "bg-emerald-100 text-emerald-600" : "bg-primary/10 text-primary"}`}>

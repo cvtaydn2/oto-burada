@@ -93,7 +93,7 @@ export function UserActionMenu({ userId, isBanned, isAdmin }: UserActionMenuProp
             {isLoading ? <LoaderCircle className="animate-spin" size={18} /> : <MoreVertical size={18} />}
           </Button>
         </DropdownMenuTrigger>
-        <DropdownMenuContent align="end" className="w-48 rounded-2xl border-slate-200 p-2 shadow-xl">
+        <DropdownMenuContent align="end" className="w-48 rounded-2xl border-slate-200 p-2 shadow-sm">
           <DropdownMenuItem 
             onClick={handleBanToggle}
             className="flex items-center gap-2 rounded-xl p-3 text-sm font-bold text-slate-700 hover:bg-slate-50 cursor-pointer"

@@ -28,9 +28,9 @@ export default async function AdminTicketsPage({
         <div>
           <div className="flex items-center gap-2 mb-2">
             <div className="size-2 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]" />
-            <span className="text-[10px] font-black text-muted-foreground/70 uppercase tracking-[0.2em] italic">Müşteri Deneyimi</span>
+            <span className="text-[10px] font-bold text-muted-foreground/70 uppercase tracking-[0.2em] italic">Müşteri Deneyimi</span>
           </div>
-          <h1 className="text-3xl font-black text-foreground tracking-tight">
+          <h1 className="text-3xl font-bold text-foreground tracking-tight">
             Destek <span className="text-emerald-600">Talepleri</span>
           </h1>
           <p className="mt-1.5 text-sm text-muted-foreground font-medium italic">
@@ -40,7 +40,7 @@ export default async function AdminTicketsPage({
         {openCount > 0 && (
           <div className="flex items-center gap-2 rounded-2xl bg-amber-50 border border-amber-200 px-4 py-2">
             <div className="size-2 rounded-full bg-amber-500 animate-pulse" />
-            <span className="text-xs font-black text-amber-700 uppercase tracking-widest">
+            <span className="text-xs font-bold text-amber-700 uppercase tracking-widest">
               {openCount} bekleyen talep
             </span>
           </div>
@@ -60,7 +60,7 @@ export default async function AdminTicketsPage({
           <div className="size-10 rounded-xl bg-card border border-border flex items-center justify-center text-emerald-500 shadow-sm">
             <MessageSquare size={20} />
           </div>
-          <h3 className="text-sm font-black text-foreground">
+          <h3 className="text-sm font-bold text-foreground">
             Tüm Talepler
             <span className="ml-2 text-muted-foreground/70 font-bold">({allTickets.length})</span>
           </h3>
@@ -79,8 +79,8 @@ export default async function AdminTicketsPage({
 function StatCard({ label, count, color }: { label: string; count: number; color: string }) {
   return (
     <div className={`rounded-2xl border p-5 ${color}`}>
-      <p className="text-2xl font-black">{count}</p>
-      <p className="text-[10px] font-black uppercase tracking-widest mt-1 opacity-70">{label}</p>
+      <p className="text-2xl font-bold">{count}</p>
+      <p className="text-[10px] font-bold uppercase tracking-widest mt-1 opacity-70">{label}</p>
     </div>
   );
 }

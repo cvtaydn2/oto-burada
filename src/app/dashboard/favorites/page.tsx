@@ -18,11 +18,11 @@ export default async function DashboardFavoritesPage() {
             <div className="flex size-8 items-center justify-center rounded-lg bg-rose-50 text-rose-500">
               <Heart size={16} className="fill-rose-500" />
             </div>
-            <span className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/70 italic">
+            <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground/70 italic">
               Kişisel Envanter
             </span>
           </div>
-          <h1 className="text-2xl font-black tracking-tight text-foreground">
+          <h1 className="text-2xl font-bold tracking-tight text-foreground">
             Favori İlanlarım
           </h1>
           <p className="mt-1 text-sm text-muted-foreground font-medium">

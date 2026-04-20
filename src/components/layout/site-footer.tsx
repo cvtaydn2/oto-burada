@@ -25,7 +25,7 @@ export async function SiteFooter() {
         <div className="grid gap-10 lg:grid-cols-4 lg:gap-12">
           <div className="lg:col-span-1">
             <Link href="/" className="flex items-center gap-2.5 group">
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-500 to-indigo-600 text-white shadow-lg shadow-indigo-500/25">
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-500 to-indigo-600 text-white shadow-sm shadow-indigo-500/25">
                 <CarFront size={20} />
               </div>
               <span className="text-xl font-bold text-foreground">OtoBurada</span>

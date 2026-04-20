@@ -80,9 +80,9 @@ export function AdminAnalyticsClient({ data, timeRange: initialTimeRange }: Admi
         <div>
           <div className="flex items-center gap-2 mb-2">
             <div className="size-2 rounded-full bg-indigo-500 shadow-[0_0_8px_rgba(79,70,229,0.5)]" />
-            <span className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] italic">Platform İçgörüleri</span>
+            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em] italic">Platform İçgörüleri</span>
           </div>
-          <h1 className="text-3xl font-black text-slate-800 tracking-tight">
+          <h1 className="text-3xl font-bold text-slate-800 tracking-tight">
             Raporlar & <span className="text-indigo-600">Analitik</span>
           </h1>
           <p className="mt-1.5 text-sm text-slate-500 font-medium italic">Platform performansını, kullanıcı davranışlarını ve finansal verileri buradan takip edin.</p>
@@ -93,7 +93,7 @@ export function AdminAnalyticsClient({ data, timeRange: initialTimeRange }: Admi
               <button
                 key={range}
                 onClick={() => handleTimeRangeChange(range)}
-                className={`px-4 py-2 text-[11px] font-black uppercase tracking-wider rounded-lg transition-all ${
+                className={`px-4 py-2 text-[11px] font-bold uppercase tracking-wider rounded-lg transition-all ${
                   timeRange === range
                     ? "bg-slate-800 text-white shadow-sm"
                     : "text-slate-500 hover:text-slate-800"
@@ -119,7 +119,7 @@ export function AdminAnalyticsClient({ data, timeRange: initialTimeRange }: Admi
               a.click();
               URL.revokeObjectURL(url);
             }}
-            className="flex h-11 items-center gap-2 rounded-xl bg-indigo-600 px-6 text-sm font-black uppercase tracking-widest text-white hover:bg-indigo-700 transition-all shadow-lg shadow-indigo-100"
+            className="flex h-11 items-center gap-2 rounded-xl bg-indigo-600 px-6 text-sm font-bold uppercase tracking-widest text-white hover:bg-indigo-700 transition-all shadow-sm shadow-indigo-100"
           >
             <Download size={16} />
             Export
@@ -136,7 +136,7 @@ export function AdminAnalyticsClient({ data, timeRange: initialTimeRange }: Admi
               <MousePointer size={16} />
             </div>
           </div>
-          <div className="text-2xl font-black text-slate-800 mb-1">{trafficMetrics.total.toLocaleString("tr-TR")}</div>
+          <div className="text-2xl font-bold text-slate-800 mb-1">{trafficMetrics.total.toLocaleString("tr-TR")}</div>
           <div className="text-xs font-medium text-slate-500 flex items-center">
             <span className="text-emerald-500 mr-1 flex items-center">
               <TrendingUp size={12} className="mr-0.5" /> %{trafficMetrics.change}
@@ -151,7 +151,7 @@ export function AdminAnalyticsClient({ data, timeRange: initialTimeRange }: Admi
               <Car size={16} />
             </div>
           </div>
-          <div className="text-2xl font-black text-slate-800 mb-1">{trafficMetrics.newListings.toLocaleString("tr-TR")}</div>
+          <div className="text-2xl font-bold text-slate-800 mb-1">{trafficMetrics.newListings.toLocaleString("tr-TR")}</div>
           <div className="text-xs font-medium text-slate-500 flex items-center">
             <span className="text-emerald-500 mr-1 flex items-center">
               <TrendingUp size={12} className="mr-0.5" /> %{trafficMetrics.listingsChange}
@@ -166,7 +166,7 @@ export function AdminAnalyticsClient({ data, timeRange: initialTimeRange }: Admi
               <Users size={16} />
             </div>
           </div>
-          <div className="text-2xl font-black text-slate-800 mb-1">{trafficMetrics.users.toLocaleString("tr-TR")}</div>
+          <div className="text-2xl font-bold text-slate-800 mb-1">{trafficMetrics.users.toLocaleString("tr-TR")}</div>
           <div className="text-xs font-medium text-slate-500 flex items-center">
             <span className="text-rose-500 mr-1 flex items-center">
               <TrendingDown size={12} className="mr-0.5" /> %{Math.abs(trafficMetrics.usersChange)}
@@ -181,7 +181,7 @@ export function AdminAnalyticsClient({ data, timeRange: initialTimeRange }: Admi
               <Wallet size={16} />
             </div>
           </div>
-          <div className="text-2xl font-black text-slate-800 mb-1">{formatCurrency(trafficMetrics.revenue)}</div>
+          <div className="text-2xl font-bold text-slate-800 mb-1">{formatCurrency(trafficMetrics.revenue)}</div>
           <div className="text-xs font-medium text-slate-500 flex items-center">
             <span className="text-emerald-500 mr-1 flex items-center">
               <TrendingUp size={12} className="mr-0.5" /> %{trafficMetrics.revenueChange}
@@ -197,7 +197,7 @@ export function AdminAnalyticsClient({ data, timeRange: initialTimeRange }: Admi
         <div className="lg:col-span-2 bg-white border border-slate-200 rounded-2xl p-6 shadow-sm flex flex-col">
           <div className="flex justify-between items-start mb-6">
             <div>
-              <h2 className="text-lg font-black text-slate-800">İlan Performans Trendi</h2>
+              <h2 className="text-lg font-bold text-slate-800">İlan Performans Trendi</h2>
               <p className="text-xs text-slate-500 mt-1">Son 6 ay içindeki yeni ve aktif ilan sayısı gelişimi.</p>
             </div>
             <div className="flex items-center gap-2">
@@ -273,7 +273,7 @@ export function AdminAnalyticsClient({ data, timeRange: initialTimeRange }: Admi
 
         {/* User Acquisition */}
         <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm flex flex-col">
-          <h2 className="text-lg font-black text-slate-800 mb-1">Kullanıcı Kazanımı</h2>
+          <h2 className="text-lg font-bold text-slate-800 mb-1">Kullanıcı Kazanımı</h2>
           <p className="text-xs text-slate-500 mb-6">Kanallara göre yeni kayıtlar.</p>
 
           <div className="space-y-6 flex-1">
@@ -295,7 +295,7 @@ export function AdminAnalyticsClient({ data, timeRange: initialTimeRange }: Admi
             ))}
           </div>
 
-          <button className="w-full mt-6 bg-white border border-slate-200 text-slate-600 py-2 rounded-xl text-xs font-black uppercase tracking-widest hover:bg-slate-50 transition-all">
+          <button className="w-full mt-6 bg-white border border-slate-200 text-slate-600 py-2 rounded-xl text-xs font-bold uppercase tracking-widest hover:bg-slate-50 transition-all">
             Detaylı Kanal Analizi
           </button>
         </div>
@@ -306,14 +306,14 @@ export function AdminAnalyticsClient({ data, timeRange: initialTimeRange }: Admi
         {/* Revenue Distribution */}
         <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm flex flex-col items-center">
           <div className="w-full text-left mb-6">
-            <h2 className="text-lg font-black text-slate-800">Gelir Dağılımı</h2>
+            <h2 className="text-lg font-bold text-slate-800">Gelir Dağılımı</h2>
             <p className="text-xs text-slate-500 mt-1">Gelir kaynaklarının oransal görünümü.</p>
           </div>
           
           <div className="relative w-48 h-48 flex items-center justify-center">
             <div className="w-full h-full rounded-full border-[24px] border-slate-100 relative" style={{ borderTopColor: "#3b82f6", borderRightColor: "#06b6d4", borderBottomColor: "#8b5cf6", transform: "rotate(45deg)" }} />
             <div className="absolute inset-0 m-auto w-32 h-32 bg-white rounded-full flex flex-col items-center justify-center">
-              <span className="text-2xl font-black text-slate-800">100%</span>
+              <span className="text-2xl font-bold text-slate-800">100%</span>
               <span className="text-[10px] text-slate-400 font-bold">Toplam</span>
             </div>
           </div>
@@ -322,14 +322,14 @@ export function AdminAnalyticsClient({ data, timeRange: initialTimeRange }: Admi
         {/* Top Galleries */}
         <div className="lg:col-span-2 bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
           <div className="mb-6">
-            <h2 className="text-lg font-black text-slate-800">En İyi Performans Gösteren Galeriler</h2>
+            <h2 className="text-lg font-bold text-slate-800">En İyi Performans Gösteren Galeriler</h2>
             <p className="text-xs text-slate-500 mt-1">İlan izlenme ve müşteri adayı (lead) dönüşümüne göre galeriler.</p>
           </div>
 
           <div className="overflow-x-auto">
             <table className="w-full text-left">
               <thead>
-                <tr className="text-[11px] font-black text-slate-400 uppercase tracking-wider border-b border-slate-100">
+                <tr className="text-[11px] font-bold text-slate-400 uppercase tracking-wider border-b border-slate-100">
                   <th className="pb-3 font-medium">Galeri Adı</th>
                   <th className="pb-3 font-medium text-center">Aktif İlan</th>
                   <th className="pb-3 font-medium text-center">İzlenme</th>
@@ -347,7 +347,7 @@ export function AdminAnalyticsClient({ data, timeRange: initialTimeRange }: Admi
                     <td className="py-3 text-center text-slate-600 font-bold">{gallery.listings}</td>
                     <td className="py-3 text-center text-slate-600 font-bold">{gallery.views.toLocaleString("tr-TR")}</td>
                     <td className="py-3 text-center text-slate-600 font-bold">{gallery.leads}</td>
-                    <td className="py-3 text-right font-black text-emerald-600">%{gallery.conversion}</td>
+                    <td className="py-3 text-right font-bold text-emerald-600">%{gallery.conversion}</td>
                   </tr>
                 ))}
               </tbody>

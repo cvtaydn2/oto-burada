@@ -10,13 +10,13 @@ interface SpecBoxProps {
 
 export function SpecBox({ icon, label, value }: SpecBoxProps) {
   return (
-    <div className="bg-white border border-slate-200 rounded-[2rem] p-6 flex flex-col items-center justify-center text-center shadow-sm hover:shadow-md transition-all hover:-translate-y-1">
+    <div className="bg-white border border-slate-200 rounded-2xl p-6 flex flex-col items-center justify-center text-center shadow-sm hover:shadow-md transition-all hover:-translate-y-1">
       <div className="size-14 bg-slate-50 text-slate-900 rounded-2xl flex items-center justify-center mb-4 shadow-inner">
         {icon}
       </div>
       <div className="space-y-1">
-        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{label}</p>
-        <p className="text-sm font-black text-slate-900 tracking-tight">{value}</p>
+        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{label}</p>
+        <p className="text-sm font-bold text-slate-900 tracking-tight">{value}</p>
       </div>
     </div>
   );

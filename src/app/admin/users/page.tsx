@@ -43,9 +43,9 @@ export default async function AdminUserManagementPage({
         <div>
           <div className="flex items-center gap-2 mb-2">
             <div className="size-2 rounded-full bg-blue-500 shadow-[0_0_8px_rgba(59,130,246,0.5)]" />
-            <span className="text-[10px] font-black text-muted-foreground/70 uppercase tracking-[0.2em] italic">Admin Çözüm Merkezi</span>
+            <span className="text-[10px] font-bold text-muted-foreground/70 uppercase tracking-[0.2em] italic">Admin Çözüm Merkezi</span>
           </div>
-          <h1 className="text-3xl font-black text-foreground tracking-tight">
+          <h1 className="text-3xl font-bold text-foreground tracking-tight">
             Kullanıcı <span className="text-blue-600">Yönetimi</span>
           </h1>
           <p className="mt-1.5 text-sm text-muted-foreground font-medium italic">
@@ -65,9 +65,9 @@ export default async function AdminUserManagementPage({
                 className="flex flex-col p-6 rounded-2xl border border-border/50 bg-card shadow-sm hover:border-blue-100 transition-all group relative overflow-hidden"
               >
                 <div className="absolute -right-2 -top-2 size-16 bg-blue-50 rounded-full blur-xl opacity-0 group-hover:opacity-100 transition-opacity" />
-                <span className="text-[10px] font-black text-muted-foreground/70 uppercase tracking-widest mb-2">{stat.label}</span>
+                <span className="text-[10px] font-bold text-muted-foreground/70 uppercase tracking-widest mb-2">{stat.label}</span>
                 <div className="flex items-baseline gap-2">
-                  <span className={cn("text-3xl font-black tracking-tighter", stat.color)}>{stat.value}</span>
+                  <span className={cn("text-3xl font-bold tracking-tighter", stat.color)}>{stat.value}</span>
                   {idx === 0 && (
                     <span className="text-[10px] font-bold text-muted-foreground/70 bg-muted/30 px-2 py-0.5 rounded-md">
                       Sayfa {currentPage}/{totalPages}
@@ -88,14 +88,14 @@ export default async function AdminUserManagementPage({
                 <caption className="sr-only">Platform kullanıcıları listesi</caption>
                 <thead>
                   <tr className="bg-muted/30/50 border-b border-border/50">
-                    <th className="p-6 text-[10px] font-black text-muted-foreground/70 uppercase tracking-[0.2em]">Profil</th>
-                    <th className="p-6 text-[10px] font-black text-muted-foreground/70 uppercase tracking-[0.2em]">İletişim</th>
-                    <th className="p-6 text-[10px] font-black text-muted-foreground/70 uppercase tracking-[0.2em]">Rol</th>
-                    <th className="p-6 text-[10px] font-black text-muted-foreground/70 uppercase tracking-[0.2em]">Kredi</th>
-                    <th className="p-6 text-[10px] font-black text-muted-foreground/70 uppercase tracking-[0.2em]">Kayıt</th>
-                    <th className="p-6 text-[10px] font-black text-muted-foreground/70 uppercase tracking-[0.2em]">Son Giriş</th>
-                    <th className="p-6 text-[10px] font-black text-muted-foreground/70 uppercase tracking-[0.2em]">Durum</th>
-                    <th className="p-6 text-right text-[10px] font-black text-muted-foreground/70 uppercase tracking-[0.2em]">İşlem</th>
+                    <th className="p-6 text-[10px] font-bold text-muted-foreground/70 uppercase tracking-[0.2em]">Profil</th>
+                    <th className="p-6 text-[10px] font-bold text-muted-foreground/70 uppercase tracking-[0.2em]">İletişim</th>
+                    <th className="p-6 text-[10px] font-bold text-muted-foreground/70 uppercase tracking-[0.2em]">Rol</th>
+                    <th className="p-6 text-[10px] font-bold text-muted-foreground/70 uppercase tracking-[0.2em]">Kredi</th>
+                    <th className="p-6 text-[10px] font-bold text-muted-foreground/70 uppercase tracking-[0.2em]">Kayıt</th>
+                    <th className="p-6 text-[10px] font-bold text-muted-foreground/70 uppercase tracking-[0.2em]">Son Giriş</th>
+                    <th className="p-6 text-[10px] font-bold text-muted-foreground/70 uppercase tracking-[0.2em]">Durum</th>
+                    <th className="p-6 text-right text-[10px] font-bold text-muted-foreground/70 uppercase tracking-[0.2em]">İşlem</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-50">
@@ -108,7 +108,7 @@ export default async function AdminUserManagementPage({
                             <Link href={`/admin/users/${u.id}`}>
                               <div
                                 className={cn(
-                                  "flex size-11 items-center justify-center rounded-xl text-sm font-black transition-all group-hover:scale-110 cursor-pointer",
+                                  "flex size-11 items-center justify-center rounded-xl text-sm font-bold transition-all group- cursor-pointer",
                                   u.role === "admin"
                                     ? "bg-blue-600 text-white shadow-md shadow-blue-100"
                                     : "bg-muted text-muted-foreground",
@@ -120,7 +120,7 @@ export default async function AdminUserManagementPage({
                             <div>
                               <Link
                                 href={`/admin/users/${u.id}`}
-                                className="text-sm font-black text-foreground block leading-none mb-1 group-hover:text-blue-600 transition-colors uppercase hover:underline"
+                                className="text-sm font-bold text-foreground block leading-none mb-1 group-hover:text-blue-600 transition-colors uppercase hover:underline"
                               >
                                 {u.fullName || "İsimsiz Kullanıcı"}
                               </Link>
@@ -139,7 +139,7 @@ export default async function AdminUserManagementPage({
                           <Badge
                             variant={u.role === "admin" ? "default" : u.userType === "professional" ? "secondary" : "outline"}
                             className={cn(
-                              "text-[10px] font-black px-3 py-1 rounded-lg uppercase tracking-wider",
+                              "text-[10px] font-bold px-3 py-1 rounded-lg uppercase tracking-wider",
                               u.role === "admin" ? "bg-blue-600 text-white" : "",
                             )}
                           >
@@ -147,7 +147,7 @@ export default async function AdminUserManagementPage({
                           </Badge>
                         </td>
                         <td className="p-6">
-                          <span className="text-xs font-black text-indigo-600">
+                          <span className="text-xs font-bold text-indigo-600">
                             {(u.balanceCredits ?? 0)} kr
                           </span>
                         </td>
@@ -171,7 +171,7 @@ export default async function AdminUserManagementPage({
                             />
                             <span
                               className={cn(
-                                "text-[10px] font-black uppercase tracking-widest",
+                                "text-[10px] font-bold uppercase tracking-widest",
                                 !u.isBanned ? "text-emerald-600" : "text-muted-foreground/70",
                               )}
                             >
@@ -202,7 +202,7 @@ export default async function AdminUserManagementPage({
               <div className="size-10 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center">
                 <UserCog size={18} />
               </div>
-              <h3 className="text-base font-black text-foreground tracking-tight">Hızlı İşlemler</h3>
+              <h3 className="text-base font-bold text-foreground tracking-tight">Hızlı İşlemler</h3>
             </div>
             <div className="space-y-3">
               <Link href="/admin/roles">
@@ -218,19 +218,19 @@ export default async function AdminUserManagementPage({
           </div>
 
           <div className="rounded-3xl border border-border bg-card p-6 shadow-sm">
-            <h4 className="text-sm font-black text-foreground mb-3">Özet</h4>
+            <h4 className="text-sm font-bold text-foreground mb-3">Özet</h4>
             <div className="space-y-2 text-xs text-muted-foreground">
               <div className="flex justify-between">
                 <span>Toplam kayıt</span>
-                <span className="font-black text-foreground">{total}</span>
+                <span className="font-bold text-foreground">{total}</span>
               </div>
               <div className="flex justify-between">
                 <span>Bu sayfada</span>
-                <span className="font-black text-foreground">{users.length}</span>
+                <span className="font-bold text-foreground">{users.length}</span>
               </div>
               <div className="flex justify-between">
                 <span>Yasaklı</span>
-                <span className="font-black text-rose-600">{totalBanned ?? 0}</span>
+                <span className="font-bold text-rose-600">{totalBanned ?? 0}</span>
               </div>
             </div>
           </div>

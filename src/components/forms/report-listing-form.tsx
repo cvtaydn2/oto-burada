@@ -93,7 +93,7 @@ export function ReportListingForm({ listingId, sellerId, userId }: ReportListing
   return (
     <form
       onSubmit={handleSubmit}
-      className="space-y-3 rounded-[1.5rem] border border-destructive/20 bg-gradient-to-br from-destructive/5 via-background to-background p-4"
+      className="space-y-3 rounded-xl border border-destructive/20 bg-gradient-to-br from-destructive/5 via-background to-background p-4"
     >
       <div className="flex items-center gap-2 text-sm font-semibold text-destructive">
         <AlertTriangle className="size-4" />

@@ -56,7 +56,7 @@ export function NotificationDropdown({ userId }: { userId?: string }) {
       <DropdownMenu.Portal>
         <DropdownMenu.Content
           className={cn(
-            "z-50 min-w-[320px] max-w-[380px] rounded-2xl border border-border bg-background p-1.5 shadow-2xl shadow-indigo-500/10 outline-none",
+            "z-50 min-w-[320px] max-w-[380px] rounded-2xl border border-border bg-background p-1.5 shadow-sm shadow-indigo-500/10 outline-none",
             "animate-in fade-in zoom-in-95 duration-200"
           )}
           align="end"

@@ -45,9 +45,9 @@ export default async function AdminReportsPage({ searchParams }: { searchParams:
         <div>
           <div className="flex items-center gap-2 mb-2">
             <div className="size-2 rounded-full bg-rose-500 shadow-[0_0_8px_rgba(244,63,94,0.5)]" />
-            <span className="text-[10px] font-black text-muted-foreground/70 uppercase tracking-[0.2em] italic">Şikayet Denetimi</span>
+            <span className="text-[10px] font-bold text-muted-foreground/70 uppercase tracking-[0.2em] italic">Şikayet Denetimi</span>
           </div>
-          <h1 className="text-3xl font-black text-foreground tracking-tight">
+          <h1 className="text-3xl font-bold text-foreground tracking-tight">
             Kullanıcı <span className="text-rose-600">Raporları</span>
           </h1>
           <p className="mt-1.5 text-sm text-muted-foreground font-medium italic">İlanlar hakkında gelen topluluk geri bildirimlerini ve şikayetleri yönetin.</p>
@@ -64,7 +64,7 @@ export default async function AdminReportsPage({ searchParams }: { searchParams:
                   <ShieldAlert size={28} />
                 </div>
                 <div>
-                   <h3 className="text-base font-black text-rose-900 leading-tight uppercase tracking-tight">İnceleme Önceliği</h3>
+                   <h3 className="text-base font-bold text-rose-900 leading-tight uppercase tracking-tight">İnceleme Önceliği</h3>
                    <p className="mt-1 text-sm text-rose-700/80 font-bold italic leading-relaxed">Dolandırıcılık ve Kapora şikayetleri sistem tarafından otomatik olarak en üste taşınır.</p>
                 </div>
              </div>
@@ -79,37 +79,37 @@ export default async function AdminReportsPage({ searchParams }: { searchParams:
         <div className="space-y-6">
           <div className="grid gap-4">
              <div className="rounded-3xl border border-border bg-card p-6 shadow-sm hover:border-blue-100 transition-all group">
-                <span className="mb-2 block text-[10px] font-black text-muted-foreground/70 uppercase tracking-widest group-hover:text-blue-600 transition-colors" aria-hidden="true">Açık</span>
-                <span className="text-3xl font-black text-foreground tracking-tighter" aria-label={`Açık şikayet: ${actionableReports.filter(r => r.status === "open").length}`}>{actionableReports.filter(r => r.status === "open").length}</span>
+                <span className="mb-2 block text-[10px] font-bold text-muted-foreground/70 uppercase tracking-widest group-hover:text-blue-600 transition-colors" aria-hidden="true">Açık</span>
+                <span className="text-3xl font-bold text-foreground tracking-tighter" aria-label={`Açık şikayet: ${actionableReports.filter(r => r.status === "open").length}`}>{actionableReports.filter(r => r.status === "open").length}</span>
              </div>
              <div className="rounded-3xl border border-border bg-card p-6 shadow-sm hover:border-blue-100 transition-all group">
-                <span className="mb-2 block text-[10px] font-black text-muted-foreground/70 uppercase tracking-widest group-hover:text-amber-600 transition-colors" aria-hidden="true">İncelemede</span>
-                <span className="text-3xl font-black text-foreground tracking-tighter" aria-label={`İncelemede: ${actionableReports.filter(r => r.status === "reviewing").length}`}>{actionableReports.filter(r => r.status === "reviewing").length}</span>
+                <span className="mb-2 block text-[10px] font-bold text-muted-foreground/70 uppercase tracking-widest group-hover:text-amber-600 transition-colors" aria-hidden="true">İncelemede</span>
+                <span className="text-3xl font-bold text-foreground tracking-tighter" aria-label={`İncelemede: ${actionableReports.filter(r => r.status === "reviewing").length}`}>{actionableReports.filter(r => r.status === "reviewing").length}</span>
              </div>
              <div className="rounded-3xl border border-border bg-card p-6 shadow-sm hover:border-blue-100 transition-all group">
-                <span className="mb-2 block text-[10px] font-black text-muted-foreground/70 uppercase tracking-widest group-hover:text-emerald-600 transition-colors" aria-hidden="true">Çözüldü</span>
-                <span className="text-3xl font-black text-emerald-600 tracking-tighter" aria-label={`Çözülen şikayet: ${storedReports.filter(r => r.status === "resolved").length}`}>{storedReports.filter(r => r.status === "resolved").length}</span>
+                <span className="mb-2 block text-[10px] font-bold text-muted-foreground/70 uppercase tracking-widest group-hover:text-emerald-600 transition-colors" aria-hidden="true">Çözüldü</span>
+                <span className="text-3xl font-bold text-emerald-600 tracking-tighter" aria-label={`Çözülen şikayet: ${storedReports.filter(r => r.status === "resolved").length}`}>{storedReports.filter(r => r.status === "resolved").length}</span>
              </div>
              <div className="rounded-3xl border border-border bg-card p-6 shadow-sm hover:border-blue-100 transition-all group">
-                <span className="mb-2 block text-[10px] font-black text-muted-foreground/70 uppercase tracking-widest group-hover:text-muted-foreground transition-colors" aria-hidden="true">Geçersiz</span>
-                <span className="text-3xl font-black text-muted-foreground/70 tracking-tighter" aria-label={`Geçersiz şikayet: ${storedReports.filter(r => r.status === "dismissed").length}`}>{storedReports.filter(r => r.status === "dismissed").length}</span>
+                <span className="mb-2 block text-[10px] font-bold text-muted-foreground/70 uppercase tracking-widest group-hover:text-muted-foreground transition-colors" aria-hidden="true">Geçersiz</span>
+                <span className="text-3xl font-bold text-muted-foreground/70 tracking-tighter" aria-label={`Geçersiz şikayet: ${storedReports.filter(r => r.status === "dismissed").length}`}>{storedReports.filter(r => r.status === "dismissed").length}</span>
              </div>
           </div>
 
-          <div className="rounded-3xl border border-blue-600 bg-blue-600 p-6 shadow-lg shadow-blue-100 relative overflow-hidden text-white group">
+          <div className="rounded-3xl border border-blue-600 bg-blue-600 p-6 shadow-sm shadow-blue-100 relative overflow-hidden text-white group">
              <div className="absolute -right-4 -bottom-4 size-24 bg-card/10 rounded-full blur-2xl group-hover:scale-125 transition-transform" />
-             <h4 className="font-black text-lg mb-2">Hızlı Filtre</h4>
+             <h4 className="font-bold text-lg mb-2">Hızlı Filtre</h4>
              <p className="text-blue-100 text-xs font-medium mb-4 leading-relaxed italic">Sadece yüksek riskli şikayetleri listeleyerek zaman kazanın.</p>
              <div className="space-y-2">
                <a 
                   href={urgent === "true" ? "/admin/reports" : "/admin/reports?urgent=true"}
-                  className="w-full bg-card text-blue-600 rounded-xl py-3 font-black text-[10px] tracking-widest uppercase hover:bg-blue-50 transition-colors flex items-center justify-center cursor-pointer"
+                  className="w-full bg-card text-blue-600 rounded-xl py-3 font-bold text-[10px] tracking-widest uppercase hover:bg-blue-50 transition-colors flex items-center justify-center cursor-pointer"
                >
                   {urgent === "true" ? "TÜMÜNÜ GÖSTER" : "ACİL OLANLAR"}
                </a>
                <a
                   href={show === "all" ? "/admin/reports" : "/admin/reports?show=all"}
-                  className="w-full bg-blue-700 text-white rounded-xl py-3 font-black text-[10px] tracking-widest uppercase hover:bg-blue-800 transition-colors flex items-center justify-center cursor-pointer"
+                  className="w-full bg-blue-700 text-white rounded-xl py-3 font-bold text-[10px] tracking-widest uppercase hover:bg-blue-800 transition-colors flex items-center justify-center cursor-pointer"
                >
                   {show === "all" ? "SADECE AKTİFLER" : "TÜM GEÇMİŞ"}
                </a>

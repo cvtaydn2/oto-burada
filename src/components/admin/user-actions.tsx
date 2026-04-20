@@ -72,7 +72,7 @@ export function UserActions({ userId, userName, userType, isBanned, isVerified }
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" className="w-[200px] rounded-xl">
-          <DropdownMenuLabel className="text-[10px] font-black uppercase tracking-widest text-slate-400">Yönetim: {userName}</DropdownMenuLabel>
+          <DropdownMenuLabel className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Yönetim: {userName}</DropdownMenuLabel>
           <DropdownMenuSeparator />
           
           {!isVerified && (

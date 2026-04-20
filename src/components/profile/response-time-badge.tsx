@@ -23,8 +23,8 @@ export function ResponseTimeBadge({ sellerId }: ResponseTimeBadgeProps) {
         <Clock size={14} />
       ) }
       <div className="flex flex-col leading-none">
-        <span className="text-[10px] font-black uppercase tracking-widest italic">Yanıt Hızı</span>
-        <span className="text-xs font-black italic">~{responseMinutes} Dakika</span>
+        <span className="text-[10px] font-bold uppercase tracking-widest italic">Yanıt Hızı</span>
+        <span className="text-xs font-bold italic">~{responseMinutes} Dakika</span>
       </div>
     </div>
   );

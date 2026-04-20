@@ -22,7 +22,7 @@ export default async function BulkImportPage() {
             <ArrowLeft size={16} />
             Dashboard&apos;a Dön
           </Link>
-          <h1 className="text-4xl font-black italic tracking-tight uppercase">Toplu İlan Yükleme</h1>
+          <h1 className="text-4xl font-bold italic tracking-tight uppercase">Toplu İlan Yükleme</h1>
           <p className="text-muted-foreground font-medium">Profesyonel satıcılar için hızlı araç girişi</p>
         </div>
         <Button variant="outline" className="h-12 px-6 rounded-xl font-bold bg-background border-2 border-border hover:bg-secondary/50" asChild>
@@ -49,24 +49,24 @@ export default async function BulkImportPage() {
         <div className="space-y-6">
           <Card className="rounded-3xl border border-border shadow-sm">
             <CardHeader>
-              <CardTitle className="text-lg font-black uppercase tracking-tight">Klavuz</CardTitle>
+              <CardTitle className="text-lg font-bold uppercase tracking-tight">Klavuz</CardTitle>
               <CardDescription className="font-medium italic">Başarılı bir yükleme için adımlar</CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
               <div className="flex gap-4">
-                <div className="size-8 rounded-full bg-secondary flex items-center justify-center shrink-0 text-sm font-black">1</div>
+                <div className="size-8 rounded-full bg-secondary flex items-center justify-center shrink-0 text-sm font-bold">1</div>
                 <p className="text-sm font-medium leading-relaxed">Örnek şablonu indirin ve Excel veya Google Sheets ile açın.</p>
               </div>
               <div className="flex gap-4">
-                <div className="size-8 rounded-full bg-secondary flex items-center justify-center shrink-0 text-sm font-black">2</div>
+                <div className="size-8 rounded-full bg-secondary flex items-center justify-center shrink-0 text-sm font-bold">2</div>
                 <p className="text-sm font-medium leading-relaxed">Sütun başlıklarını değiştirmeden araç verilerinizi girin.</p>
               </div>
               <div className="flex gap-4">
-                <div className="size-8 rounded-full bg-secondary flex items-center justify-center shrink-0 text-sm font-black">3</div>
+                <div className="size-8 rounded-full bg-secondary flex items-center justify-center shrink-0 text-sm font-bold">3</div>
                 <p className="text-sm font-medium leading-relaxed">Dosyanızı <span className="text-primary font-bold">CSV (Virgülle Ayrılmış)</span> formatında kaydedin.</p>
               </div>
               <div className="flex gap-4">
-                <div className="size-8 rounded-full bg-secondary flex items-center justify-center shrink-0 text-sm font-black">4</div>
+                <div className="size-8 rounded-full bg-secondary flex items-center justify-center shrink-0 text-sm font-bold">4</div>
                 <p className="text-sm font-medium leading-relaxed">Buraya yükleyin ve hataları kontrol edip onaylayın.</p>
               </div>
             </CardContent>
@@ -78,7 +78,7 @@ export default async function BulkImportPage() {
                  <CheckCircle2 size={24} />
               </div>
               <div>
-                <p className="text-sm font-black text-emerald-900 uppercase tracking-tighter">Limitler</p>
+                <p className="text-sm font-bold text-emerald-900 uppercase tracking-tighter">Limitler</p>
                 <p className="text-xs font-bold text-emerald-700/70 italic">Tek seferde maksimum 50 ilan.</p>
               </div>
             </CardContent>

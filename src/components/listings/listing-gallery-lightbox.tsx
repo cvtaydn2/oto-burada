@@ -54,7 +54,7 @@ export function ListingGalleryLightbox({
       aria-label={`${title} - Fotoğraf görüntüleyici`}
     >
       <div className="flex items-center justify-between p-6">
-        <div className="text-sm font-black uppercase tracking-widest text-white">
+        <div className="text-sm font-bold uppercase tracking-widest text-white">
           {title}{" "}
           <span className="ml-2 text-white/40">
             ({currentIndex + 1} / {images.length})
@@ -63,7 +63,7 @@ export function ListingGalleryLightbox({
         <button
           onClick={onClose}
           aria-label="Kapat"
-          className="flex size-12 items-center justify-center rounded-full bg-card/10 text-white shadow-2xl transition-all hover:bg-card/20"
+          className="flex size-12 items-center justify-center rounded-full bg-card/10 text-white shadow-sm transition-all hover:bg-card/20"
         >
           <X size={24} />
         </button>

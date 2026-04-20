@@ -49,7 +49,7 @@ export function MobileStickyActions({
                     ) : (
                         <a
                             href={loginUrl}
-                            className="flex w-full items-center justify-center gap-2 rounded-xl bg-indigo-600 h-12 px-4 text-sm font-bold text-white shadow-lg active:scale-95 transition-all"
+                            className="flex w-full items-center justify-center gap-2 rounded-xl bg-indigo-600 h-12 px-4 text-sm font-bold text-white shadow-sm active:scale-95 transition-all"
                         >
                             İletişim İçin Giriş Yap
                         </a>

@@ -25,11 +25,11 @@ function CustomTooltip({ active, payload, label }: {
 }) {
   if (!active || !payload?.length) return null;
   return (
-    <div className="rounded-xl border border-border bg-card px-4 py-3 shadow-xl">
+    <div className="rounded-xl border border-border bg-card px-4 py-3 shadow-sm">
       <p className="text-[10px] font-bold text-muted-foreground/70 uppercase tracking-widest mb-1">
         {safeFormatDate(label, "dd MMM yyyy")}
       </p>
-      <p className="text-lg font-black text-foreground">
+      <p className="text-lg font-bold text-foreground">
         {formatCurrency(payload[0]?.value ?? 0)}
       </p>
     </div>

@@ -49,7 +49,7 @@ export default async function AdminOverviewPage() {
       <div className="max-w-[1400px] mx-auto px-4 lg:px-8 space-y-12">
         
         {/* Elite Admin Header */}
-        <section className="relative overflow-hidden rounded-[2.5rem] bg-slate-900 px-8 py-12 text-white shadow-2xl shadow-slate-900/20">
+        <section className="relative overflow-hidden rounded-2xl bg-slate-900 px-8 py-12 text-white shadow-sm shadow-slate-900/20">
           <div className="absolute right-0 top-0 h-full w-1/4 bg-gradient-to-l from-white/5 to-transparent opacity-50" />
           <div className="absolute -left-20 -top-20 h-64 w-64 rounded-full bg-blue-500/10 blur-3xl" />
           
@@ -57,11 +57,11 @@ export default async function AdminOverviewPage() {
             <div>
               <div className="mb-4 inline-flex items-center gap-3 rounded-full bg-white/10 px-4 py-1.5 backdrop-blur-md border border-white/5">
                 <div className={cn("size-2 rounded-full shadow-[0_0_10px_currentColor]", systemOnline ? "bg-emerald-400 text-emerald-400" : "bg-rose-400 text-rose-400")} />
-                <span className="text-[10px] font-black uppercase tracking-widest text-slate-300">
+                <span className="text-[10px] font-bold uppercase tracking-widest text-slate-300">
                   Sistem: <span className={cn(systemOnline ? "text-emerald-400" : "text-rose-400")}>{systemOnline ? "ONLINE" : "OFFLINE"}</span>
                 </span>
               </div>
-              <h1 className="text-4xl font-black tracking-tight lg:text-6xl">
+              <h1 className="text-4xl font-bold tracking-tight lg:text-6xl">
                 Yönetim <span className="text-blue-500">Merkezi</span>
               </h1>
               <p className="mt-4 max-w-xl text-lg font-bold text-slate-400 lowercase first-letter:uppercase">
@@ -102,7 +102,7 @@ export default async function AdminOverviewPage() {
                 />
               </Suspense>
             ) : persistenceHealthPromise ? (
-               <Suspense fallback={<div className="h-60 animate-pulse bg-card rounded-[2.5rem]" />}>
+               <Suspense fallback={<div className="h-60 animate-pulse bg-card rounded-2xl" />}>
                  <PersistenceOnlySection persistenceHealthPromise={persistenceHealthPromise} />
                </Suspense>
             ) : null}
@@ -115,7 +115,7 @@ export default async function AdminOverviewPage() {
                 reportsPromise={reportsPromise}
               />
             </Suspense>
-            <Suspense fallback={<div className="h-[420px] animate-pulse rounded-[2.5rem] border border-border bg-card shadow-sm" />}>
+            <Suspense fallback={<div className="h-[420px] animate-pulse rounded-2xl border border-border bg-card shadow-sm" />}>
               <AdminBroadcastPanel />
             </Suspense>
           </div>
@@ -135,8 +135,8 @@ function QuickSystemStat({ icon, label, value, color }: { icon: React.ReactNode,
         {icon}
       </div>
       <div>
-        <p className="text-[9px] font-black uppercase tracking-widest text-slate-500">{label}</p>
-        <p className="text-sm font-black text-white">{value}</p>
+        <p className="text-[9px] font-bold uppercase tracking-widest text-slate-500">{label}</p>
+        <p className="text-sm font-bold text-white">{value}</p>
       </div>
     </div>
   );
@@ -154,11 +154,11 @@ async function AdminRevenueBadge({
   }
 
   return (
-    <div className="min-w-[180px] rounded-3xl border border-white/5 bg-white/5 p-6 backdrop-blur-xl shadow-2xl relative group overflow-hidden">
+    <div className="min-w-[180px] rounded-3xl border border-white/5 bg-white/5 p-6 backdrop-blur-xl shadow-sm relative group overflow-hidden">
       <div className="absolute -right-4 -top-4 size-20 bg-emerald-500/10 rounded-full blur-2xl group-hover:scale-125 transition-transform" />
-      <span className="relative z-10 block text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1">Ciro Hacmi</span>
+      <span className="relative z-10 block text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-1">Ciro Hacmi</span>
       <div className="relative z-10 flex items-center gap-2">
-        <span className="text-2xl font-black tracking-tighter text-white">₺{analyticsData.kpis.totalRevenue.toLocaleString("tr-TR")}</span>
+        <span className="text-2xl font-bold tracking-tighter text-white">₺{analyticsData.kpis.totalRevenue.toLocaleString("tr-TR")}</span>
         <ArrowUpRight size={14} className="text-emerald-400" />
       </div>
     </div>
@@ -221,7 +221,7 @@ async function PersistenceOnlySection({
   const persistenceHealth = await persistenceHealthPromise;
   if (!persistenceHealth) return null;
   return (
-    <div className="rounded-[2.5rem] overflow-hidden border border-white bg-white shadow-xl shadow-slate-200/50">
+    <div className="rounded-2xl overflow-hidden border border-white bg-white shadow-sm shadow-slate-200/50">
       <AdminPersistencePanel health={persistenceHealth} />
     </div>
   );
@@ -238,18 +238,18 @@ async function AdminAnalyticsSection({
 
   return (
     <div className="space-y-12">
-      <div className="overflow-hidden rounded-[2.5rem] border border-white bg-white p-10 shadow-2xl shadow-slate-200/50 group">
+      <div className="overflow-hidden rounded-2xl border border-white bg-white p-10 shadow-sm shadow-slate-200/50 group">
         <div className="mb-10 flex items-center justify-between">
           <div className="flex items-center gap-5">
             <div className="flex size-14 items-center justify-center rounded-2xl bg-blue-50 text-blue-600 shadow-inner group-hover:bg-blue-600 group-hover:text-white transition-all duration-500">
               <Zap size={28} strokeWidth={2.5} className="fill-current" />
             </div>
             <div>
-              <h2 className="text-2xl font-black text-slate-900 tracking-tight">Akış Analitiği</h2>
-              <p className="text-xs font-black uppercase tracking-widest text-slate-400 mt-1">İlan yayın performans dağılımı</p>
+              <h2 className="text-2xl font-bold text-slate-900 tracking-tight">Akış Analitiği</h2>
+              <p className="text-xs font-bold uppercase tracking-widest text-slate-400 mt-1">İlan yayın performans dağılımı</p>
             </div>
           </div>
-          <Button variant="ghost" size="sm" className="rounded-xl h-10 px-6 font-black text-[10px] tracking-widest uppercase hover:bg-slate-50 transition-colors" asChild>
+          <Button variant="ghost" size="sm" className="rounded-xl h-10 px-6 font-bold text-[10px] tracking-widest uppercase hover:bg-slate-50 transition-colors" asChild>
             <a href="/admin/analytics">TAM RAPORU GÖR</a>
           </Button>
         </div>
@@ -259,7 +259,7 @@ async function AdminAnalyticsSection({
       </div>
 
       {persistenceHealth && (
-        <div className="rounded-[2.5rem] overflow-hidden border border-white bg-white shadow-xl shadow-slate-200/50">
+        <div className="rounded-2xl overflow-hidden border border-white bg-white shadow-sm shadow-slate-200/50">
           <AdminPersistencePanel health={persistenceHealth} />
         </div>
       )}
@@ -278,7 +278,7 @@ async function AdminRecentActionsSection({
 
   if (recentActions.length === 0) {
     return (
-      <div className="rounded-[2.5rem] border border-white bg-white p-8 shadow-xl shadow-slate-200/50">
+      <div className="rounded-2xl border border-white bg-white p-8 shadow-sm shadow-slate-200/50">
         <AdminRecentActions actions={[]} />
       </div>
     );
@@ -323,7 +323,7 @@ async function AdminRecentActionsSection({
   });
 
   return (
-    <div className="rounded-[2.5rem] overflow-hidden border border-white bg-white shadow-xl shadow-slate-200/50 transition-all hover:shadow-2xl">
+    <div className="rounded-2xl overflow-hidden border border-white bg-white shadow-sm shadow-slate-200/50 transition-all hover:shadow-sm">
       <AdminRecentActions actions={recentActionItems} />
     </div>
   );
@@ -333,7 +333,7 @@ function AdminMetricsSkeleton() {
   return (
     <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-4">
       {Array.from({ length: 4 }).map((_, i) => (
-        <div key={i} className="h-40 animate-pulse rounded-[2rem] bg-slate-200" />
+        <div key={i} className="h-40 animate-pulse rounded-2xl bg-slate-200" />
       ))}
     </div>
   );
@@ -342,12 +342,12 @@ function AdminMetricsSkeleton() {
 function AdminAnalyticsSkeleton() {
   return (
     <div className="space-y-12">
-      <div className="h-[460px] animate-pulse rounded-[2.5rem] bg-slate-200" />
-      <div className="h-[300px] animate-pulse rounded-[2.5rem] bg-slate-200" />
+      <div className="h-[460px] animate-pulse rounded-2xl bg-slate-200" />
+      <div className="h-[300px] animate-pulse rounded-2xl bg-slate-200" />
     </div>
   );
 }
 
 function AdminRecentActionsSkeleton() {
-  return <div className="h-[640px] animate-pulse rounded-[2.5rem] bg-slate-200" />;
+  return <div className="h-[640px] animate-pulse rounded-2xl bg-slate-200" />;
 }

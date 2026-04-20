@@ -22,7 +22,7 @@ export function SafeWhatsAppButton({ whatsappLink }: SafeWhatsAppButtonProps) {
     <AlertDialog>
       <AlertDialogTrigger asChild>
         <button
-          className="flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-green-500 to-emerald-600 h-12 px-4 text-[15px] text-white font-semibold shadow-lg shadow-green-500/25 transition-all hover:from-green-600 hover:to-emerald-700 hover:shadow-green-500/40"
+          className="flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-green-500 to-emerald-600 h-12 px-4 text-[15px] text-white font-semibold shadow-sm shadow-green-500/25 transition-all hover:from-green-600 hover:to-emerald-700 hover:shadow-green-500/40"
         >
           <MessageCircle className="size-5" />
           WhatsApp ile İletişime Geç

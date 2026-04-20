@@ -55,7 +55,7 @@ export function LegacySyncCard({
   };
 
   return (
-    <section className="rounded-[2rem] border border-primary/15 bg-primary/5 p-6 shadow-sm sm:p-8">
+    <section className="rounded-2xl border border-primary/15 bg-primary/5 p-6 shadow-sm sm:p-8">
       <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_280px] lg:items-start">
         <div className="flex items-start gap-3">
           <div className="flex size-11 shrink-0 items-center justify-center rounded-2xl bg-background text-primary shadow-sm">
@@ -75,7 +75,7 @@ export function LegacySyncCard({
           </div>
         </div>
 
-        <div className="rounded-[1.5rem] border border-primary/10 bg-gradient-to-br from-white via-white to-primary/10 p-5">
+        <div className="rounded-xl border border-primary/10 bg-gradient-to-br from-white via-white to-primary/10 p-5">
           <p className="text-xs font-semibold uppercase tracking-[0.16em] text-primary">
             Hazir veri
           </p>
@@ -90,7 +90,7 @@ export function LegacySyncCard({
       </div>
 
       <div className="mt-6 grid gap-4 md:grid-cols-3">
-        <div className="rounded-[1.5rem] border border-border/70 bg-background p-4">
+        <div className="rounded-xl border border-border/70 bg-background p-4">
           <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
             <ClipboardList className="size-4 text-primary" />
             Legacy ilan
@@ -99,7 +99,7 @@ export function LegacySyncCard({
             {legacyListingsCount}
           </p>
         </div>
-        <div className="rounded-[1.5rem] border border-border/70 bg-background p-4">
+        <div className="rounded-xl border border-border/70 bg-background p-4">
           <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
             <TriangleAlert className="size-4 text-primary" />
             Legacy rapor
@@ -108,7 +108,7 @@ export function LegacySyncCard({
             {legacyReportsCount}
           </p>
         </div>
-        <div className="rounded-[1.5rem] border border-border/70 bg-background p-4">
+        <div className="rounded-xl border border-border/70 bg-background p-4">
           <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
             <ArrowRight className="size-4 text-primary" />
             Beklenen sonuc
@@ -127,7 +127,7 @@ export function LegacySyncCard({
         ].map((step, index) => (
           <div
             key={step}
-            className="rounded-[1.5rem] border border-border/70 bg-background px-4 py-4"
+            className="rounded-xl border border-border/70 bg-background px-4 py-4"
           >
             <p className="text-xs font-semibold uppercase tracking-[0.14em] text-primary">
               Adim {index + 1}

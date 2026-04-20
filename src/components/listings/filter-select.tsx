@@ -23,7 +23,7 @@ export function FilterSelect({
     <SelectPrimitive.Root value={value || ""} onValueChange={onValueChange}>
       <SelectPrimitive.Trigger
         className={cn(
-          "flex h-14 w-full items-center justify-between rounded-2xl border border-border/40 bg-secondary/30 px-6 py-2 text-sm font-black text-foreground outline-none hover:bg-secondary/50 focus:ring-4 focus:ring-primary/5 disabled:cursor-not-allowed disabled:opacity-50 transition-all uppercase italic tracking-tight",
+          "flex h-14 w-full items-center justify-between rounded-2xl border border-border/40 bg-secondary/30 px-6 py-2 text-sm font-bold text-foreground outline-none hover:bg-secondary/50 focus:ring-4 focus:ring-primary/5 disabled:cursor-not-allowed disabled:opacity-50 transition-all uppercase italic tracking-tight",
           className
         )}
       >
@@ -45,7 +45,7 @@ export function FilterSelect({
                 key={option.value}
                 value={option.value}
                 className={cn(
-                  "relative flex cursor-pointer select-none items-center rounded-xl py-4 pl-12 pr-6 text-[13px] font-black text-foreground/70 outline-none transition-all uppercase italic tracking-tight",
+                  "relative flex cursor-pointer select-none items-center rounded-xl py-4 pl-12 pr-6 text-[13px] font-bold text-foreground/70 outline-none transition-all uppercase italic tracking-tight",
                   "data-[highlighted]:bg-primary data-[highlighted]:text-white data-[highlighted]:translate-x-1"
                 )}
               >

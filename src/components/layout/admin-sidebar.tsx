@@ -85,11 +85,11 @@ export function AdminSidebar() {
     <aside aria-label="Admin paneli navigasyonu" className="fixed left-0 top-0 hidden h-screen w-72 flex-col border-r border-slate-200 bg-white md:flex z-50">
       <div className="flex h-20 items-center px-8 border-b border-slate-100">
         <Link href="/" className="flex items-center gap-3 group">
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-600 text-white shadow-lg shadow-blue-100 transition-all group-hover:scale-110 group-hover:rotate-3">
+          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-600 text-white shadow-sm shadow-blue-100 transition-all group- group-hover:rotate-3">
             <ShieldCheck size={22} />
           </div>
           <div className="flex flex-col">
-            <span className="text-sm font-black tracking-tight text-slate-800 leading-none">
+            <span className="text-sm font-bold tracking-tight text-slate-800 leading-none">
               OTOBURADA
             </span>
             <span className="text-[10px] font-bold text-blue-600 uppercase tracking-[0.2em] mt-1 leading-none">
@@ -141,7 +141,7 @@ export function AdminSidebar() {
                  <ShieldCheck className="text-blue-600 size-6" />
               </div>
               <div className="flex flex-col overflow-hidden">
-                 <span className="text-xs font-black text-slate-800 uppercase italic leading-none">Admin Modu</span>
+                 <span className="text-xs font-bold text-slate-800 uppercase italic leading-none">Admin Modu</span>
                  <span className="text-[9px] text-slate-400 font-bold uppercase tracking-wider mt-1 truncate">Tam Yetkili Erişim</span>
               </div>
            </div>

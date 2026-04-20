@@ -19,11 +19,11 @@ export function InspectionStep({ form }: InspectionStepProps) {
       {/* OPTIONAL STEP INDICATOR */}
       <div className="rounded-2xl bg-blue-50 border border-blue-100 p-6">
         <div className="flex items-start gap-3">
-          <div className="flex size-10 items-center justify-center rounded-xl bg-blue-500 text-white font-black text-sm flex-shrink-0">
+          <div className="flex size-10 items-center justify-center rounded-xl bg-blue-500 text-white font-bold text-sm flex-shrink-0">
             ℹ️
           </div>
           <div>
-            <h3 className="font-black text-blue-900 mb-1">Bu Adım İsteğe Bağlı</h3>
+            <h3 className="font-bold text-blue-900 mb-1">Bu Adım İsteğe Bağlı</h3>
             <p className="text-sm text-blue-700">
               Ekspertiz ve hasar bilgilerini eklemek ilanınızın güvenilirliğini artırır, ancak zorunlu değildir. 
               Temel bilgilerle de ilan verebilirsiniz.

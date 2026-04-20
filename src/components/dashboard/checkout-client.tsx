@@ -102,7 +102,7 @@ export function CheckoutClient({ plan, isPaymentEnabled }: CheckoutClientProps) 
                 {plan.credits === 0 ? "Sınırsız ilan" : `${plan.credits} ilan hakkı`}
               </p>
             </div>
-            <Badge className="text-lg font-black px-4 py-2 bg-blue-50 text-blue-700 border-blue-200">
+            <Badge className="text-lg font-bold px-4 py-2 bg-blue-50 text-blue-700 border-blue-200">
               {new Intl.NumberFormat("tr-TR", { style: "currency", currency: "TRY" }).format(plan.price)}
             </Badge>
           </div>

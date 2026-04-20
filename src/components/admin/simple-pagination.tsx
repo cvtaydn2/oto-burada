@@ -35,8 +35,8 @@ export function SimplePagination({ currentPage, totalPages }: SimplePaginationPr
       </Button>
       
       <div className="flex items-center gap-2">
-        <span className="text-xs font-black text-slate-400 uppercase tracking-widest">SAYFA</span>
-        <span className="text-sm font-black text-slate-800">{currentPage} / {totalPages}</span>
+        <span className="text-xs font-bold text-slate-400 uppercase tracking-widest">SAYFA</span>
+        <span className="text-sm font-bold text-slate-800">{currentPage} / {totalPages}</span>
       </div>
 
       <Button

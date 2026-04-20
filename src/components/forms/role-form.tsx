@@ -81,18 +81,18 @@ export function RoleForm({ initialData, onSuccess, onCancel }: RoleFormProps) {
       <div className="space-y-4">
         <div className="grid gap-4">
           <div className="space-y-2">
-            <Label className="text-xs font-black uppercase tracking-widest text-muted-foreground">Rol Adı</Label>
+            <Label className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Rol Adı</Label>
             <Input {...form.register("name")} placeholder="Örn: Bölge Sorumlusu" className="rounded-xl" />
             {form.formState.errors.name && <p className="text-[10px] font-bold text-rose-500">{form.formState.errors.name.message}</p>}
           </div>
 
           <div className="space-y-2">
-            <Label className="text-xs font-black uppercase tracking-widest text-muted-foreground">Açıklama</Label>
+            <Label className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Açıklama</Label>
             <Textarea {...form.register("description")} placeholder="Bu rolün görevlerini kısaca açıklayın..." className="rounded-xl min-h-[80px]" />
           </div>
 
           <div className="pt-2">
-            <Label className="text-xs font-black uppercase tracking-widest text-muted-foreground mb-4 block">Yetki Tanımları</Label>
+            <Label className="text-xs font-bold uppercase tracking-widest text-muted-foreground mb-4 block">Yetki Tanımları</Label>
             <div className="grid gap-3">
                {availablePermissions.map((perm) => (
                  <div 
@@ -111,7 +111,7 @@ export function RoleForm({ initialData, onSuccess, onCancel }: RoleFormProps) {
                       onClick={(e) => e.stopPropagation()}
                     />
                     <div className="space-y-1 cursor-pointer">
-                      <label htmlFor={perm.id} className="text-sm font-black text-foreground block cursor-pointer">{perm.label}</label>
+                      <label htmlFor={perm.id} className="text-sm font-bold text-foreground block cursor-pointer">{perm.label}</label>
                       <p className="text-[10px] text-muted-foreground font-medium italic leading-tight">{perm.description}</p>
                     </div>
                  </div>
@@ -126,14 +126,14 @@ export function RoleForm({ initialData, onSuccess, onCancel }: RoleFormProps) {
         <Button
           type="button"
           variant="outline"
-          className="flex-1 rounded-xl h-11 font-black text-[10px] tracking-widest uppercase border-border"
+          className="flex-1 rounded-xl h-11 font-bold text-[10px] tracking-widest uppercase border-border"
           onClick={onCancel}
         >
           İptal
         </Button>
         <Button
           type="submit"
-          className="flex-1 rounded-xl h-11 font-black text-[10px] tracking-widest uppercase bg-blue-600 hover:bg-blue-700 shadow-lg shadow-blue-100"
+          className="flex-1 rounded-xl h-11 font-bold text-[10px] tracking-widest uppercase bg-blue-600 hover:bg-blue-700 shadow-sm shadow-blue-100"
           disabled={loading}
         >
           {loading ? <Loader2 className="animate-spin size-4" /> : initialData ? "GÜNCELLE" : "ROLÜ OLUŞTUR"}

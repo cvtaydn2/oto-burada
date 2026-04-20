@@ -99,29 +99,29 @@ export function AdminPersistencePanel({ health }: AdminPersistencePanelProps) {
             </div>
             <div className="space-y-1">
               <div className="flex items-center gap-2">
-                 <span className="text-[10px] font-black text-blue-600 uppercase tracking-widest">Sistem Sağlığı</span>
+                 <span className="text-[10px] font-bold text-blue-600 uppercase tracking-widest">Sistem Sağlığı</span>
                  <div className="size-1 rounded-full bg-slate-300" />
                  <span className="text-[10px] font-bold text-muted-foreground/70 uppercase tracking-widest italic">{formatDate(new Date().toISOString())}</span>
               </div>
-              <h2 className="text-2xl font-black text-foreground tracking-tight">Veri Katmanı Durumu</h2>
+              <h2 className="text-2xl font-bold text-foreground tracking-tight">Veri Katmanı Durumu</h2>
               <p className="text-sm text-muted-foreground font-medium max-w-xl">{health.message}</p>
             </div>
           </div>
 
           <div className="rounded-2xl border border-blue-100 bg-blue-50/50 p-6 relative overflow-hidden group">
             <div className="absolute -right-4 -top-4 size-24 bg-blue-600/5 rounded-full blur-2xl group-hover:bg-blue-600/10 transition-colors" />
-            <div className="flex items-center gap-2 text-[10px] font-black text-blue-600 uppercase tracking-widest mb-3">
+            <div className="flex items-center gap-2 text-[10px] font-bold text-blue-600 uppercase tracking-widest mb-3">
               <ShieldCheck className="size-3" />
               Hazırlık Skoru
             </div>
             <div className="flex items-baseline gap-1">
-               <span className="text-4xl font-black text-foreground tracking-tighter">
+               <span className="text-4xl font-bold text-foreground tracking-tighter">
                  {readyEnvCount}
                </span>
                <span className="text-xl font-bold text-muted-foreground/70">/4</span>
             </div>
             <p className="mt-2 text-[11px] font-bold text-muted-foreground uppercase tracking-wider">
-              Erişilebilir Tablo: <span className="text-blue-600 font-black">{accessibleTables}/{health.tables.length}</span>
+              Erişilebilir Tablo: <span className="text-blue-600 font-bold">{accessibleTables}/{health.tables.length}</span>
             </p>
           </div>
         </div>
@@ -178,7 +178,7 @@ export function AdminPersistencePanel({ health }: AdminPersistencePanelProps) {
                 className="rounded-xl border border-border/50 bg-muted/30 p-4 transition-all hover:border-blue-100 hover:bg-card hover:shadow-sm group"
               >
                 <p className="text-[10px] font-bold text-muted-foreground/70 uppercase tracking-widest group-hover:text-blue-600 transition-colors">{table.label}</p>
-                <p className="mt-1 text-2xl font-black text-foreground tracking-tight">{table.count}</p>
+                <p className="mt-1 text-2xl font-bold text-foreground tracking-tight">{table.count}</p>
               </div>
             ))}
           </div>
@@ -187,7 +187,7 @@ export function AdminPersistencePanel({ health }: AdminPersistencePanelProps) {
         <div className="mt-8 rounded-2xl border border-blue-50 bg-blue-50/20 p-5 flex items-start gap-3">
           <Info className="size-5 text-blue-500 shrink-0 mt-0.5" />
           <div className="space-y-1">
-             <p className="text-[11px] font-black text-blue-600 uppercase tracking-widest">Storage Bilgisi</p>
+             <p className="text-[11px] font-bold text-blue-600 uppercase tracking-widest">Storage Bilgisi</p>
              <p className="text-sm text-muted-foreground font-medium leading-relaxed">{health.storage.message}</p>
           </div>
         </div>
@@ -199,7 +199,7 @@ export function AdminPersistencePanel({ health }: AdminPersistencePanelProps) {
             <TerminalSquare size={24} />
           </div>
           <div className="space-y-0.5">
-            <h3 className="text-xl font-black text-foreground tracking-tight">Migration Runbook</h3>
+            <h3 className="text-xl font-bold text-foreground tracking-tight">Migration Runbook</h3>
             <p className="text-sm text-muted-foreground font-medium">Sistemi sıfırdan kurmak veya güncellemek için izlenecek adımlar</p>
           </div>
         </div>
@@ -208,9 +208,9 @@ export function AdminPersistencePanel({ health }: AdminPersistencePanelProps) {
           {runbook.map((step) => (
             <div key={step.title} className="rounded-2xl border border-border/50 bg-card p-6 shadow-sm hover:border-blue-200 transition-all">
               <div className="flex items-center justify-between gap-4 mb-4">
-                <p className="text-base font-black text-foreground">{step.title}</p>
+                <p className="text-base font-bold text-foreground">{step.title}</p>
                 <span className={cn(
-                  "px-3 py-1 rounded-lg text-[10px] font-black uppercase tracking-widest border",
+                  "px-3 py-1 rounded-lg text-[10px] font-bold uppercase tracking-widest border",
                   statusClasses[step.status]
                 )}>
                   {statusLabel[step.status]}

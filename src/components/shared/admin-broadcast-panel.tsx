@@ -45,7 +45,7 @@ export function AdminBroadcastPanel() {
   };
 
   return (
-    <section className="rounded-[2rem] border border-border/80 bg-background p-6 shadow-sm sm:p-8">
+    <section className="rounded-2xl border border-border/80 bg-background p-6 shadow-sm sm:p-8">
       <div className="flex items-center gap-3 mb-6">
         <div className="p-3 bg-indigo-50 rounded-2xl text-indigo-600">
           <Megaphone size={24} />
@@ -104,7 +104,7 @@ export function AdminBroadcastPanel() {
         <button
           type="submit"
           disabled={isSending || !title || !message}
-          className="w-full h-12 inline-flex items-center justify-center gap-2 rounded-xl bg-indigo-600 text-white font-semibold hover:bg-indigo-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-indigo-600/20"
+          className="w-full h-12 inline-flex items-center justify-center gap-2 rounded-xl bg-indigo-600 text-white font-semibold hover:bg-indigo-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-sm shadow-indigo-600/20"
         >
           {isSending ? (
             <>

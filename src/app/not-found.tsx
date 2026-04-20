@@ -6,9 +6,9 @@ export default function NotFound() {
     <main className="flex min-h-[80vh] flex-col items-center justify-center bg-card px-4 text-center" aria-labelledby="not-found-heading">
       {/* Big 404 with car icon overlay */}
       <div className="relative mb-8 select-none">
-        <span className="text-[160px] font-black leading-none text-blue-50 tracking-tighter">404</span>
+        <span className="text-[160px] font-bold leading-none text-blue-50 tracking-tighter">404</span>
         <div className="absolute inset-0 flex items-center justify-center">
-          <div className="flex h-20 w-20 items-center justify-center rounded-2xl bg-blue-500 text-white shadow-xl shadow-blue-200">
+          <div className="flex h-20 w-20 items-center justify-center rounded-2xl bg-blue-500 text-white shadow-sm shadow-blue-200">
             <Car size={44} />
           </div>
         </div>
@@ -24,7 +24,7 @@ export default function NotFound() {
       <div className="flex flex-col items-center gap-4 sm:flex-row">
         <Link
           href="/"
-          className="inline-flex h-12 items-center justify-center gap-2 rounded-xl bg-blue-500 px-8 text-sm font-bold text-white shadow-lg shadow-blue-200 transition hover:bg-blue-600 active:scale-95"
+          className="inline-flex h-12 items-center justify-center gap-2 rounded-xl bg-blue-500 px-8 text-sm font-bold text-white shadow-sm shadow-blue-200 transition hover:bg-blue-600 active:scale-95"
         >
           <Home size={18} />
           Ana Sayfaya Dön

@@ -153,12 +153,12 @@ export function AdminUserDetailClient({ detail, userId }: AdminUserDetailClientP
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
         <div className="flex items-center gap-5">
           <Link href="/admin/users">
-            <Button variant="ghost" size="icon" className="group rounded-2xl bg-white border border-slate-200 shadow-sm transition-all hover:bg-slate-900 hover:text-white hover:scale-110">
+            <Button variant="ghost" size="icon" className="group rounded-2xl bg-white border border-slate-200 shadow-sm transition-all hover:bg-slate-900 hover:text-white ">
               <ArrowLeft size={20} className="group-hover:-translate-x-1 transition-transform" />
             </Button>
           </Link>
           <div className="space-y-1">
-            <h1 className="text-3xl font-black text-slate-900 tracking-tighter">
+            <h1 className="text-3xl font-bold text-slate-900 tracking-tighter">
               {profile.fullName || "İsimsiz Kullanıcı"}
             </h1>
             <div className="flex items-center gap-3">
@@ -175,7 +175,7 @@ export function AdminUserDetailClient({ detail, userId }: AdminUserDetailClientP
 
         <div className="flex items-center gap-3">
           <div className={cn(
-            "px-5 py-2.5 rounded-2xl font-black text-[11px] uppercase tracking-[0.15em] shadow-sm border flex items-center gap-2",
+            "px-5 py-2.5 rounded-2xl font-bold text-[11px] uppercase tracking-[0.15em] shadow-sm border flex items-center gap-2",
             profile.isBanned 
               ? "bg-rose-50 text-rose-600 border-rose-100" 
               : "bg-emerald-50 text-emerald-600 border-emerald-100"
@@ -184,7 +184,7 @@ export function AdminUserDetailClient({ detail, userId }: AdminUserDetailClientP
             {profile.isBanned ? "YASAKLI" : "HESAP AKTİF"}
           </div>
           <div className={cn(
-            "px-5 py-2.5 rounded-2xl font-black text-[11px] uppercase tracking-[0.15em] shadow-sm border flex items-center gap-2",
+            "px-5 py-2.5 rounded-2xl font-bold text-[11px] uppercase tracking-[0.15em] shadow-sm border flex items-center gap-2",
             profile.role === "admin" ? "bg-indigo-600 text-white border-indigo-500" : "bg-white text-slate-600 border-slate-200"
           )}>
             <ShieldCheck size={14} strokeWidth={3} />
@@ -197,14 +197,14 @@ export function AdminUserDetailClient({ detail, userId }: AdminUserDetailClientP
         {/* Left Stats Column */}
         <div className="lg:col-span-3 space-y-6">
           {/* Quick Snapshot */}
-          <div className="rounded-[2.5rem] border border-slate-200 bg-white p-8 shadow-sm space-y-6">
+          <div className="rounded-2xl border border-slate-200 bg-white p-8 shadow-sm space-y-6">
              <div className="flex items-center gap-4">
                 <div className="size-14 rounded-2xl bg-indigo-50 text-indigo-600 flex items-center justify-center shadow-inner">
                   <TrendingUp size={28} />
                 </div>
                 <div>
-                   <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Kredi Bakiyesi</p>
-                   <p className="text-3xl font-black text-slate-900 tracking-tighter">{profile.balanceCredits}</p>
+                   <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Kredi Bakiyesi</p>
+                   <p className="text-3xl font-bold text-slate-900 tracking-tighter">{profile.balanceCredits}</p>
                 </div>
              </div>
              
@@ -216,8 +216,8 @@ export function AdminUserDetailClient({ detail, userId }: AdminUserDetailClientP
           </div>
 
           {/* Profile Basic Info */}
-          <div className="rounded-[2.5rem] border border-slate-200 bg-white p-8 shadow-sm space-y-6">
-            <h3 className="text-sm font-black text-slate-900 uppercase tracking-widest flex items-center gap-2">
+          <div className="rounded-2xl border border-slate-200 bg-white p-8 shadow-sm space-y-6">
+            <h3 className="text-sm font-bold text-slate-900 uppercase tracking-widest flex items-center gap-2">
               <User size={18} className="text-slate-400" />
               İletişim Detayları
             </h3>
@@ -234,7 +234,7 @@ export function AdminUserDetailClient({ detail, userId }: AdminUserDetailClientP
                 disabled={isActioning}
                 variant="outline"
                 className={cn(
-                  "w-full rounded-2xl font-black text-[10px] tracking-widest h-12 flex items-center gap-2 transition-all active:scale-95 uppercase shadow-sm",
+                  "w-full rounded-2xl font-bold text-[10px] tracking-widest h-12 flex items-center gap-2 transition-all  uppercase shadow-sm",
                   profile.isBanned
                     ? "border-emerald-200 text-emerald-600 hover:bg-emerald-50"
                     : "border-rose-200 text-rose-600 hover:bg-rose-50"
@@ -251,13 +251,13 @@ export function AdminUserDetailClient({ detail, userId }: AdminUserDetailClientP
         <div className="lg:col-span-9 space-y-8">
            <Tabs defaultValue="actions" className="w-full">
               <TabsList className="bg-white p-1 rounded-2xl border border-slate-200 h-14 w-fit shadow-sm">
-                <TabsTrigger value="actions" className="rounded-xl px-8 font-black text-[10px] tracking-widest uppercase data-[state=active]:bg-slate-900 data-[state=active]:text-white">
+                <TabsTrigger value="actions" className="rounded-xl px-8 font-bold text-[10px] tracking-widest uppercase data-[state=active]:bg-slate-900 data-[state=active]:text-white">
                   Yönetim & Aksiyonlar
                 </TabsTrigger>
-                <TabsTrigger value="history" className="rounded-xl px-8 font-black text-[10px] tracking-widest uppercase data-[state=active]:bg-slate-900 data-[state=active]:text-white">
+                <TabsTrigger value="history" className="rounded-xl px-8 font-bold text-[10px] tracking-widest uppercase data-[state=active]:bg-slate-900 data-[state=active]:text-white">
                   Aktivite Geçmişi
                 </TabsTrigger>
-                <TabsTrigger value="listings" className="rounded-xl px-8 font-black text-[10px] tracking-widest uppercase data-[state=active]:bg-slate-900 data-[state=active]:text-white">
+                <TabsTrigger value="listings" className="rounded-xl px-8 font-bold text-[10px] tracking-widest uppercase data-[state=active]:bg-slate-900 data-[state=active]:text-white">
                   İlanlar ({listings.length})
                 </TabsTrigger>
               </TabsList>
@@ -265,17 +265,17 @@ export function AdminUserDetailClient({ detail, userId }: AdminUserDetailClientP
               <TabsContent value="actions" className="mt-8 space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                    {/* Kredi Tanımlama */}
-                   <div className="rounded-[2.5rem] border border-indigo-100 bg-white p-10 shadow-xl shadow-indigo-50/20 space-y-8 relative overflow-hidden group">
+                   <div className="rounded-2xl border border-indigo-100 bg-white p-10 shadow-sm shadow-indigo-50/20 space-y-8 relative overflow-hidden group">
                       <div className="absolute top-0 right-0 p-8 opacity-0 group-hover:opacity-5 transition-opacity">
                          <Gift size={120} />
                       </div>
                       <div className="flex items-center gap-4">
-                        <div className="size-14 rounded-2xl bg-indigo-600 text-white flex items-center justify-center shadow-lg shadow-indigo-200">
+                        <div className="size-14 rounded-2xl bg-indigo-600 text-white flex items-center justify-center shadow-sm shadow-indigo-200">
                           <Gift size={28} />
                         </div>
                         <div>
-                          <h3 className="text-xl font-black text-slate-900 tracking-tight">Hediye Kredi</h3>
-                          <p className="text-[10px] text-slate-400 font-black uppercase tracking-widest">Bakiyeye anında ekleme yap</p>
+                          <h3 className="text-xl font-bold text-slate-900 tracking-tight">Hediye Kredi</h3>
+                          <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">Bakiyeye anında ekleme yap</p>
                         </div>
                       </div>
                       
@@ -286,8 +286,8 @@ export function AdminUserDetailClient({ detail, userId }: AdminUserDetailClientP
                                 key={val}
                                 onClick={() => setCredits(val)}
                                 className={cn(
-                                  "py-2.5 rounded-xl border text-xs font-black transition-all",
-                                  credits === val ? "bg-indigo-600 border-indigo-600 text-white shadow-lg shadow-indigo-100" : "bg-white border-slate-100 text-slate-500 hover:border-indigo-200"
+                                  "py-2.5 rounded-xl border text-xs font-bold transition-all",
+                                  credits === val ? "bg-indigo-600 border-indigo-600 text-white shadow-sm shadow-indigo-100" : "bg-white border-slate-100 text-slate-500 hover:border-indigo-200"
                                 )}
                               >
                                 {val}
@@ -295,13 +295,13 @@ export function AdminUserDetailClient({ detail, userId }: AdminUserDetailClientP
                            ))}
                         </div>
                         <div className="space-y-2">
-                           <Label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Miktar ve Açıklama</Label>
+                           <Label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Miktar ve Açıklama</Label>
                            <div className="flex gap-3">
                               <Input 
                                 type="number" 
                                 value={credits} 
                                 onChange={e => setCredits(Number(e.target.value))}
-                                className="w-24 h-12 rounded-2xl font-black text-center text-lg border-slate-200"
+                                className="w-24 h-12 rounded-2xl font-bold text-center text-lg border-slate-200"
                               />
                               <Input 
                                 value={creditNote}
@@ -314,7 +314,7 @@ export function AdminUserDetailClient({ detail, userId }: AdminUserDetailClientP
                         <Button
                           onClick={handleGrantCredits}
                           disabled={isGrantingCredits || !creditNote.trim()}
-                          className="w-full rounded-2xl bg-indigo-600 hover:bg-indigo-700 h-14 font-black text-[11px] tracking-[0.2em] shadow-xl shadow-indigo-100 uppercase"
+                          className="w-full rounded-2xl bg-indigo-600 hover:bg-indigo-700 h-14 font-bold text-[11px] tracking-[0.2em] shadow-sm shadow-indigo-100 uppercase"
                         >
                           {isGrantingCredits ? <Loader2 className="animate-spin" /> : "KREDİLERİ TANIMLA"}
                         </Button>
@@ -322,23 +322,23 @@ export function AdminUserDetailClient({ detail, userId }: AdminUserDetailClientP
                    </div>
 
                    {/* Doping Tanımlama */}
-                   <div className="rounded-[2.5rem] border border-amber-100 bg-white p-10 shadow-xl shadow-amber-50/20 space-y-8 relative overflow-hidden group">
+                   <div className="rounded-2xl border border-amber-100 bg-white p-10 shadow-sm shadow-amber-50/20 space-y-8 relative overflow-hidden group">
                       <div className="absolute top-0 right-0 p-8 opacity-0 group-hover:opacity-5 transition-opacity">
                          <Zap size={120} />
                       </div>
                       <div className="flex items-center gap-4">
-                        <div className="size-14 rounded-2xl bg-amber-500 text-white flex items-center justify-center shadow-lg shadow-amber-200">
+                        <div className="size-14 rounded-2xl bg-amber-500 text-white flex items-center justify-center shadow-sm shadow-amber-200">
                           <Zap size={28} />
                         </div>
                         <div>
-                          <h3 className="text-xl font-black text-slate-900 tracking-tight">Ücretsiz Doping</h3>
-                          <p className="text-[10px] text-slate-400 font-black uppercase tracking-widest">İlana özel doping tanımla</p>
+                          <h3 className="text-xl font-bold text-slate-900 tracking-tight">Ücretsiz Doping</h3>
+                          <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">İlana özel doping tanımla</p>
                         </div>
                       </div>
 
                       <div className="space-y-6">
                         <div className="space-y-2">
-                           <Label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">İlan Seçimi</Label>
+                           <Label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">İlan Seçimi</Label>
                            <select
                               value={dopingListingId}
                               onChange={(e) => setDopingListingId(e.target.value)}
@@ -357,8 +357,8 @@ export function AdminUserDetailClient({ detail, userId }: AdminUserDetailClientP
                                 key={type}
                                 onClick={() => toggleDopingType(type)}
                                 className={cn(
-                                  "flex-1 py-3 rounded-xl border text-[9px] font-black uppercase tracking-widest transition-all",
-                                  dopingTypes.includes(type) ? "bg-amber-500 border-amber-500 text-white shadow-lg shadow-amber-100" : "bg-white border-slate-100 text-slate-500 hover:border-amber-200"
+                                  "flex-1 py-3 rounded-xl border text-[9px] font-bold uppercase tracking-widest transition-all",
+                                  dopingTypes.includes(type) ? "bg-amber-500 border-amber-500 text-white shadow-sm shadow-amber-100" : "bg-white border-slate-100 text-slate-500 hover:border-amber-200"
                                 )}
                              >
                                {DOPING_LABELS[type]}
@@ -369,7 +369,7 @@ export function AdminUserDetailClient({ detail, userId }: AdminUserDetailClientP
                         <Button
                           onClick={handleGrantDoping}
                           disabled={isGrantingDoping || !dopingListingId || dopingTypes.length === 0}
-                          className="w-full rounded-2xl bg-slate-900 hover:bg-black h-14 font-black text-[11px] tracking-[0.2em] shadow-xl shadow-slate-200 uppercase"
+                          className="w-full rounded-2xl bg-slate-900 hover:bg-black h-14 font-bold text-[11px] tracking-[0.2em] shadow-sm shadow-slate-200 uppercase"
                         >
                           {isGrantingDoping ? <Loader2 className="animate-spin" /> : "DOPİNG UYGULA"}
                         </Button>
@@ -381,9 +381,9 @@ export function AdminUserDetailClient({ detail, userId }: AdminUserDetailClientP
               <TabsContent value="history" className="mt-8 space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
                  <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                     {/* Kredi Hareketleri */}
-                    <div className="rounded-[2.5rem] border border-slate-200 bg-white p-8 shadow-sm">
+                    <div className="rounded-2xl border border-slate-200 bg-white p-8 shadow-sm">
                        <div className="flex items-center justify-between mb-8">
-                          <h3 className="text-sm font-black text-slate-900 uppercase tracking-widest flex items-center gap-2">
+                          <h3 className="text-sm font-bold text-slate-900 uppercase tracking-widest flex items-center gap-2">
                             <History size={18} className="text-indigo-500" />
                             Kredi Hareketleri
                           </h3>
@@ -392,26 +392,26 @@ export function AdminUserDetailClient({ detail, userId }: AdminUserDetailClientP
                           {creditTransactions.length > 0 ? creditTransactions.map(t => (
                              <div key={t.id} className="flex items-center justify-between p-4 rounded-3xl bg-slate-50 border border-slate-100/50">
                                 <div className="space-y-1">
-                                   <p className="text-xs font-black text-slate-800 tracking-tight">{t.description}</p>
+                                   <p className="text-xs font-bold text-slate-800 tracking-tight">{t.description}</p>
                                    <div className="flex items-center gap-2 text-[10px] text-slate-400 font-bold">
                                       <Clock size={10} />
                                       {safeFormatDate(t.createdAt, "dd MMM HH:mm")}
                                    </div>
                                 </div>
-                                <div className={cn("text-sm font-black tracking-tighter", t.amount >= 0 ? "text-emerald-600" : "text-rose-600")}>
+                                <div className={cn("text-sm font-bold tracking-tighter", t.amount >= 0 ? "text-emerald-600" : "text-rose-600")}>
                                    {t.amount >= 0 ? `+${t.amount}` : t.amount}
                                 </div>
                              </div>
                           )) : (
-                             <div className="py-12 text-center text-slate-300 italic text-[10px] font-black uppercase tracking-widest">Kayıt Bulunmuyor</div>
+                             <div className="py-12 text-center text-slate-300 italic text-[10px] font-bold uppercase tracking-widest">Kayıt Bulunmuyor</div>
                           )}
                        </div>
                     </div>
 
                     {/* Doping Geçmişi */}
-                    <div className="rounded-[2.5rem] border border-slate-200 bg-white p-8 shadow-sm">
+                    <div className="rounded-2xl border border-slate-200 bg-white p-8 shadow-sm">
                        <div className="flex items-center justify-between mb-8">
-                          <h3 className="text-sm font-black text-slate-900 uppercase tracking-widest flex items-center gap-2">
+                          <h3 className="text-sm font-bold text-slate-900 uppercase tracking-widest flex items-center gap-2">
                             <Activity size={18} className="text-amber-500" />
                             Doping Başvuruları
                           </h3>
@@ -420,20 +420,20 @@ export function AdminUserDetailClient({ detail, userId }: AdminUserDetailClientP
                           {dopingHistory.length > 0 ? dopingHistory.map(d => (
                              <div key={d.id} className="flex items-center justify-between p-4 rounded-3xl bg-slate-50 border border-slate-100/50">
                                 <div className="space-y-1">
-                                   <p className="text-xs font-black text-slate-800 tracking-tight truncate max-w-[180px]">{d.listingTitle}</p>
+                                   <p className="text-xs font-bold text-slate-800 tracking-tight truncate max-w-[180px]">{d.listingTitle}</p>
                                    <div className="flex items-center gap-2">
-                                      <Badge className="bg-amber-100 text-amber-700 border-none text-[8px] font-black uppercase px-2 py-0.5">
+                                      <Badge className="bg-amber-100 text-amber-700 border-none text-[8px] font-bold uppercase px-2 py-0.5">
                                          {DOPING_LABELS[d.dopingType] || d.dopingType}
                                       </Badge>
                                       <span className="text-[10px] text-slate-400 font-bold">{safeFormatDate(d.createdAt, "dd MMM")}</span>
                                    </div>
                                 </div>
-                                <div className="text-[9px] font-black text-slate-400 uppercase tracking-widest">
+                                <div className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">
                                    Tamamlandı
                                 </div>
                              </div>
                           )) : (
-                             <div className="py-12 text-center text-slate-300 italic text-[10px] font-black uppercase tracking-widest">Kayıt Bulunmuyor</div>
+                             <div className="py-12 text-center text-slate-300 italic text-[10px] font-bold uppercase tracking-widest">Kayıt Bulunmuyor</div>
                           )}
                        </div>
                     </div>
@@ -444,24 +444,24 @@ export function AdminUserDetailClient({ detail, userId }: AdminUserDetailClientP
                  <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
                     {listings.map(l => (
                        <Link key={l.id} href={`/listing/${l.id}`} className="block group">
-                          <div className="rounded-[2rem] border border-slate-200 bg-white p-6 shadow-sm group-hover:shadow-xl transition-all group-hover:-translate-y-1">
+                          <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm group-hover:shadow-sm transition-all group-hover:-translate-y-1">
                              <div className="flex justify-between items-start mb-4">
                                 <Badge className={cn(
-                                   "border-none text-[8px] font-black uppercase tracking-widest px-2.5 py-1",
+                                   "border-none text-[8px] font-bold uppercase tracking-widest px-2.5 py-1",
                                    l.status === "approved" ? "bg-emerald-100 text-emerald-700" : "bg-slate-100 text-slate-500"
                                 )}>
                                    {l.status}
                                 </Badge>
                              </div>
-                             <h4 className="font-black text-slate-900 truncate leading-none tracking-tight">{l.title}</h4>
+                             <h4 className="font-bold text-slate-900 truncate leading-none tracking-tight">{l.title}</h4>
                              <p className="text-[9px] text-slate-400 mt-2 font-mono uppercase">#{l.id.substring(0, 12)}</p>
                           </div>
                        </Link>
                     ))}
                     {listings.length === 0 && (
-                       <div className="col-span-full py-20 text-center bg-white rounded-[2.5rem] border border-dashed border-slate-200">
+                       <div className="col-span-full py-20 text-center bg-white rounded-2xl border border-dashed border-slate-200">
                           <Package size={48} className="mx-auto text-slate-200 mb-4" />
-                          <p className="text-xs font-black text-slate-400 uppercase tracking-widest">Henüz İlanı Yok</p>
+                          <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">Henüz İlanı Yok</p>
                        </div>
                     )}
                  </div>
@@ -487,9 +487,9 @@ function StatItem({ icon, label, value, color }: { icon: React.ReactNode; label:
           <div className={cn("size-8 rounded-xl flex items-center justify-center shadow-sm", colorMap[color])}>
              {icon}
           </div>
-          <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{label}</span>
+          <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{label}</span>
        </div>
-       <span className="text-lg font-black text-slate-900 tracking-tighter">{value}</span>
+       <span className="text-lg font-bold text-slate-900 tracking-tighter">{value}</span>
     </div>
   );
 }
@@ -497,8 +497,8 @@ function StatItem({ icon, label, value, color }: { icon: React.ReactNode; label:
 function InfoRow({ label, value }: { label: string; value: string }) {
   return (
     <div className="space-y-1">
-      <p className="text-[9px] font-black text-slate-300 uppercase tracking-[0.2em]">{label}</p>
-      <p className="text-xs font-black text-slate-700 truncate">{value}</p>
+      <p className="text-[9px] font-bold text-slate-300 uppercase tracking-[0.2em]">{label}</p>
+      <p className="text-xs font-bold text-slate-700 truncate">{value}</p>
     </div>
   );
 }

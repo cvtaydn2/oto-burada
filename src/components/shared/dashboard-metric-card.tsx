@@ -95,12 +95,12 @@ export function DashboardMetricCard({
               </span>
             )}
           </div>
-          <p className={cn("mt-4 text-3xl font-black tracking-tight", palette.text)}>{value}</p>
+          <p className={cn("mt-4 text-3xl font-bold tracking-tight", palette.text)}>{value}</p>
           <p className="mt-2 text-xs font-medium text-muted-foreground/70 line-clamp-1">{helper}</p>
         </div>
         <div
           className={cn(
-            "flex size-12 shrink-0 items-center justify-center rounded-xl transition-transform group-hover:scale-110",
+            "flex size-12 shrink-0 items-center justify-center rounded-xl transition-transform group-",
             palette.icon,
           )}
         >

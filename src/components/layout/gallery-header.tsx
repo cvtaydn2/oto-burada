@@ -23,13 +23,13 @@ export function GalleryHeader({ profile }: GalleryHeaderProps) {
                 className="object-contain"
               />
             ) : (
-              <div className="text-4xl font-black text-primary italic uppercase">
+              <div className="text-4xl font-bold text-primary italic uppercase">
                 {(profile.businessName || profile.fullName).substring(0, 2)}
               </div>
             )}
             
             {profile.verifiedBusiness && (
-              <div className="absolute -bottom-2 -right-2 bg-blue-600 text-white p-1.5 rounded-xl border-4 border-white shadow-lg">
+              <div className="absolute -bottom-2 -right-2 bg-blue-600 text-white p-1.5 rounded-xl border-4 border-white shadow-sm">
                 <ShieldCheck size={20} />
               </div>
             )}
@@ -39,7 +39,7 @@ export function GalleryHeader({ profile }: GalleryHeaderProps) {
           <div className="flex-1 space-y-4">
             <div>
               <div className="flex flex-wrap items-center gap-3 mb-2">
-                <h1 className="text-3xl font-black tracking-tight italic uppercase">
+                <h1 className="text-3xl font-bold tracking-tight italic uppercase">
                   {profile.businessName || profile.fullName}
                 </h1>
                 <Badge className="bg-primary/10 text-primary border-none font-bold px-3 py-1">
@@ -83,8 +83,8 @@ export function GalleryHeader({ profile }: GalleryHeaderProps) {
                     <Phone size={20} />
                   </div>
                   <div>
-                    <p className="text-[10px] font-black uppercase text-slate-400 leading-none mb-1">Galerici İletişim</p>
-                    <p className="text-sm font-black text-slate-700">{profile.phone}</p>
+                    <p className="text-[10px] font-bold uppercase text-slate-400 leading-none mb-1">Galerici İletişim</p>
+                    <p className="text-sm font-bold text-slate-700">{profile.phone}</p>
                   </div>
                </div>
                
@@ -94,8 +94,8 @@ export function GalleryHeader({ profile }: GalleryHeaderProps) {
                       <ShieldCheck size={20} />
                     </div>
                     <div>
-                      <p className="text-[10px] font-black uppercase text-slate-400 leading-none mb-1">Vergi Levhalı İşletme</p>
-                      <p className="text-sm font-black text-slate-700">{profile.taxOffice} / {profile.taxId}</p>
+                      <p className="text-[10px] font-bold uppercase text-slate-400 leading-none mb-1">Vergi Levhalı İşletme</p>
+                      <p className="text-sm font-bold text-slate-700">{profile.taxOffice} / {profile.taxId}</p>
                     </div>
                  </div>
                )}

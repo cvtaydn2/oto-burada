@@ -53,7 +53,7 @@ export function ChatInput({ onSendMessage, onTyping }: ChatInputProps) {
         size="icon" 
         onClick={handleSend} 
         disabled={!content.trim()}
-        className="rounded-full shadow-md hover:scale-105 transition-transform"
+        className="rounded-full shadow-md  transition-transform"
         aria-label="Gönder"
       >
         <SendHorizontal className="w-5 h-5" />

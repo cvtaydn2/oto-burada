@@ -23,7 +23,7 @@ export default async function FavoritesPage() {
               </Link>
               <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Kişisel envanter</span>
            </div>
-           <h1 className="text-3xl font-black leading-tight text-foreground md:text-4xl">
+           <h1 className="text-3xl font-bold leading-tight text-foreground md:text-4xl">
                Favori ilanlarım
            </h1>
            <p className="mt-2.5 text-sm font-medium leading-relaxed text-muted-foreground">

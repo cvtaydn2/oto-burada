@@ -14,7 +14,7 @@ export default async function AdminLayout({
       {/* Skip navigation */}
       <a
         href="#admin-main"
-        className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[9999] focus:rounded-lg focus:bg-primary focus:px-4 focus:py-2 focus:text-sm focus:font-bold focus:text-primary-foreground focus:shadow-lg"
+        className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[9999] focus:rounded-lg focus:bg-primary focus:px-4 focus:py-2 focus:text-sm focus:font-bold focus:text-primary-foreground focus:shadow-sm"
       >
         Ana içeriğe geç
       </a>
@@ -30,7 +30,7 @@ export default async function AdminLayout({
          <footer className="p-10 text-center flex flex-col items-center gap-2 border-t border-border bg-card shadow-[0_-4px_20px_rgba(0,0,0,0.02)]">
             <div className="flex items-center gap-2 opacity-30 grayscale hover:opacity-100 hover:grayscale-0 transition-all cursor-default" aria-hidden="true">
                <div className="size-1 rounded-full bg-blue-600" />
-               <span className="text-[9px] font-black text-foreground uppercase tracking-[0.2em]">OtoBurada Engine</span>
+               <span className="text-[9px] font-bold text-foreground uppercase tracking-[0.2em]">OtoBurada Engine</span>
                <div className="size-1 rounded-full bg-blue-600" />
             </div>
             <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest italic">

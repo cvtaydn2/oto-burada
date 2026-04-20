@@ -41,7 +41,7 @@ export function AdminReportsModeration({
 
   if (reports.length === 0) {
     return (
-      <section className="rounded-[2rem] border border-border/80 bg-background p-6 shadow-sm sm:p-8">
+      <section className="rounded-2xl border border-border/80 bg-background p-6 shadow-sm sm:p-8">
         <p className="text-sm font-medium uppercase tracking-[0.18em] text-primary/80">Raporlar</p>
         <h2 className="mt-3 text-2xl font-semibold tracking-tight">Incelenecek rapor yok</h2>
         <p className="mt-3 max-w-2xl text-sm leading-6 text-muted-foreground sm:text-base">
@@ -89,7 +89,7 @@ export function AdminReportsModeration({
   };
 
   return (
-    <section className="rounded-[2rem] border border-border/80 bg-background p-6 shadow-sm sm:p-8">
+    <section className="rounded-2xl border border-border/80 bg-background p-6 shadow-sm sm:p-8">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <p className="text-sm font-medium uppercase tracking-[0.18em] text-primary/80">Raporlar</p>
@@ -156,7 +156,7 @@ export function AdminReportsModeration({
                     </span>
                   </div>
 
-                  <div className={`rounded-[1.25rem] border p-4 ${severityTone}`}>
+                  <div className={`rounded-xl border p-4 ${severityTone}`}>
                     <div className="flex items-center gap-2 text-sm font-semibold">
                       <Sparkles className="size-4" />
                       Hizli inceleme notu
