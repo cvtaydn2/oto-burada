@@ -58,6 +58,15 @@ function formatEntry(entry: LogEntry): string {
   return parts.join(" ");
 }
 
+/**
+ * ── PILL: Issue 4 - Structured Logging & Sanitization ──
+ * Prevents Log Forging attacks by stripping control characters from input strings.
+ */
+function sanitizeLogString(str: string): string {
+  // Replace newlines and carriage returns to prevent multi-line log injection
+  return str.replace(/[\r\n]/g, ' ').trim();
+}
+
 function createLogEntry(
   level: LogLevel,
   message: string,
@@ -67,19 +76,29 @@ function createLogEntry(
 ): LogEntry {
   const entry: LogEntry = {
     level,
-    message,
+    message: sanitizeLogString(message),
     timestamp: new Date().toISOString(),
   };
+
   if (context) entry.context = context;
-  if (data && Object.keys(data).length > 0) entry.data = data;
+  
+  // Sanitize all string values in data record
+  if (data && Object.keys(data).length > 0) {
+    const sanitizedData: Record<string, unknown> = {};
+    for (const [key, value] of Object.entries(data)) {
+      sanitizedData[key] = typeof value === 'string' ? sanitizeLogString(value) : value;
+    }
+    entry.data = sanitizedData;
+  }
+
   if (error instanceof Error) {
     entry.error = {
-      message: error.message,
+      message: sanitizeLogString(error.message),
       name: error.name,
       stack: isProduction ? undefined : error.stack,
     };
   } else if (error) {
-    entry.error = { message: String(error) };
+    entry.error = { message: sanitizeLogString(String(error)) };
   }
   return entry;
 }

@@ -14,6 +14,9 @@ export async function processOutboxQueue() {
     .from("transaction_outbox")
     .select("*")
     .eq("status", "pending")
+    .eq("is_poison_pill", false) // ── PILL: Issue 2 - Skip toxic messages
+    .gte("hard_deadline", new Date().toISOString()) // ── PILL: Issue 8 - Only process if not expired
+    .lte("next_attempt_at", new Date().toISOString())
     .order("created_at", { ascending: true })
     .limit(50);
 
@@ -58,11 +61,12 @@ export async function processOutboxQueue() {
         .update({ 
           status, 
           retry_count: retryCount, 
+          is_poison_pill: status === "failed", // ── PILL: Issue 2 - Isolate poison pill
           error_message: (err as Error).message 
         })
         .eq("id", item.id);
         
-      logger.system.error(`Outbox: Failed to process item ${item.id}`, err);
+      logger.system.error(`Outbox: Failed to process item ${item.id}. Status: ${status}`, err);
     }
   }
 }

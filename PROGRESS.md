@@ -28,6 +28,34 @@
 
 ---
 
+## Indestructible Architecture Hardening (Chaos-Resilient Level) - 2026-04-21
+
+### Yapılan Değişiklikler
+
+**🌩️ Dağıtık Sistem Dayanıklılığı (Chaos Resilience)**
+- **Read-Your-Writes Consistency (Issue 1)**: `markStickyMaster` ve `getReadSupabaseClient` güncellemeleri ile yazma sonrası stale-read (bayat veri) problemi çözüldü. Mutasyon sonrası 5 saniye boyunca ana DB kullanımı zorunlu kılındı.
+- **Poison Pill Protection (Issue 2)**: Outbox worker'ına granular izolasyon eklendi. Çökerten (zehirli) mesajlar saptanarak `is_poison_pill` olarak işaretlenir ve kuyruktan izole edilir.
+
+**🛡️ İleri Güvenlik ve Tehdit Önleme**
+- **Structured Log Sanitization (Issue 4)**: `logger.ts` katmanında tüm girdiler sanitizasyondan geçirilerek log injection (\n, \r) saldırıları engellendi. JSON formatı mutlak kılındı.
+- **HPP & Parameter Canonicalization (Issue 7)**: `sanitizeQueryParams` ve `Zod` şeması ile URL parametreleri kanonik hale getirildi. Dizi tipi parametreler ve mükerrer anahtarlar temizlenerek Cache Bypass riskleri minimize edildi.
+- **Hard Deadline & Timeout (Issue 8)**: Outbox kuyruğuna 24-48 saatlik kesin sonlanma süreleri (`hard_deadline`) eklendi. Sonsuz retry döngüleri ve maliyet patlamaları engellendi.
+
+**⚙️ Operasyonel Verimlilik (FinOps)**
+- **Sticky Master Tracker**: `user_read_writes_tracker` tablosu ile sunucu tarafında mutasyon zamanlaması takibi altyapısı kuruldu.
+- **Canonical Search Cache**: Popüler ve kanonik aramalar için veritabanı seviyesinde önbellek şeması hazırlandı.
+
+### Doğrulama
+- Mimari: `0056_indestructible_architecture_hardening.sql` başarıyla uygulandı. ✅
+- Güvenlik: Log injection ve HPP süzgeçleri test edildi. ✅
+- Performans: Sticky Master (Read-Your-Writes) mantığı doğrulandı. ✅
+- `npm run typecheck` & `npm run lint` ✅
+
+### Gelecek Vizyonu
+- **Behavioral Fingerprinting**: Mouse/Klavye hızı analizi ile "Human-Farm" botlarının tespiti.
+- **Zero-Trust Secret Injection**: Global ENV yerine sadece modüllere özel secret injection.
+- **NTP Leeway Implementation**: Dağıtık sunucular arası 30-60s saattoleransı.
+
 ## Decacorn Architecture Hardening (World-Class Level) - 2026-04-21
 
 ### Yapılan Değişiklikler
