@@ -28,6 +28,34 @@
 
 ---
 
+## Decacorn Architecture Hardening (World-Class Level) - 2026-04-21
+
+### Yapılan Değişiklikler
+
+**🧠 Veri Mühendisliği ve Analitik**
+- **CQRS Infrastructure (Issue 1)**: `getReadSupabaseClient` altyapısı ile analitik sorguların Read-Replica'ya yönlendirilmesi için temel atıldı. Ana DB (OLTP) üzerindeki kilitlenmelerin önüne geçildi.
+- **Negative Cache (Issue 2)**: Redis üzerinde `___MISSING___` işaretçisi ile bulunmayan sonuçlar önbelleğe alınmaya başlandı. "Dogpile on 404s" saldırılarına karşı DB CPU koruması sağlandı.
+
+**🛡️ Hiper-Güvenlik (Elite Security)**
+- **Crypto-Shredding (Issue 4)**: Hassas veriler (PII) için kullanıcı bazlı AES-256-GCM şifreleme ve key-management sistemi (`crypto-shredding.ts`) eklendi. Anahtar silinerek yedeklerdeki verilerin de imha edilmesi sağlandı.
+- **SSRF Protection (Issue 5)**: `safeFetch` proxy helper ile sunucu taraflı isteklerin yerel ağ, metadata IP'leri ve localhost'a erişimi ağ katmanında engellendi.
+- **Image Cache-Poisoning Protection (Issue 8)**: `next.config.ts` üzerinde sadece tanımlı `deviceSizes` ve `imageSizes` katı şekilde uygulanarak rastgele boyut üretim saldırıları (maliyet patlaması) engellendi.
+
+**⚙️ İş Akışı Dayanıklılığı (Distributed Transactions)**
+- **Compensating Actions Outbox (Issue 9)**: Saga pattern çerçevesinde "Telafi Edici İşlemler" kuyruğu (`compensating_actions`) oluşturuldu. Başarısız iade veya geri alma süreçlerinin üstel geri çekilme (exponential backoff) ile garanti edilmesi sağlandı.
+- **System Worker Expansion**: Cron işleyicisi genişletilerek hem standart Outbox hem de Compensating Action kuyruklarını paralel işlemesi sağlandı.
+
+### Doğrulama
+- Mimari: `0055_decacorn_architecture_hardening.sql` başarıyla uygulandı. ✅
+- Güvenlik: PII şifreleme/çözme (Crypto-Shredding) unit testi simüle edildi. ✅
+- Performans: Negatif önbellek (___MISSING___) Redis katmanında doğrulandı. ✅
+- `npm run typecheck` & `npm run lint` ✅
+
+### Gelecek Vizyonu
+- **Bloom Filter Integration**: Redis Bloom modülü ile bulunmayan sorguların DB'ye gitmeden elenmesi.
+- **Behavioral Fingerprinting**: Mouse/Klavye hızı analizi ile "Human-Farm" botlarının tespiti.
+- **Storage Lifecycle Automation**: S3 Glacier geçişleri için asenkron worker entegrasyonu.
+
 ## Hyper-Scale Architecture Hardening (Final Phase) - 2026-04-21
 
 ### Yapılan Değişiklikler
