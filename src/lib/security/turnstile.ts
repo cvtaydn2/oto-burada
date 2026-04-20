@@ -27,12 +27,17 @@ export async function verifyTurnstileToken(
   token: string,
   ip?: string,
 ): Promise<boolean> {
+  const isProd = process.env.NODE_ENV === "production";
   const secretKey = process.env.TURNSTILE_SECRET_KEY;
 
-  // If Turnstile is not configured, allow the request (fail-open for development)
+  // If Turnstile is not configured
   if (!secretKey) {
-    logger.security.warn("Turnstile secret key not configured — skipping verification");
-    return true;
+    if (isProd) {
+      logger.security.error("CRITICAL: Turnstile secret key missing in production. REJECTING.");
+      return false; // Fail-closed in production
+    }
+    logger.security.warn("Turnstile secret key missing (development/test) — skipping verification");
+    return true; // Fail-open in dev/test for DX
   }
 
   if (!token || token.trim().length === 0) {
@@ -50,11 +55,12 @@ export async function verifyTurnstileToken(
       method: "POST",
       headers: { "Content-Type": "application/x-www-form-urlencoded" },
       body: formData.toString(),
+      signal: AbortSignal.timeout(5000), // 5s timeout
     });
 
     if (!response.ok) {
       logger.security.error("Turnstile API request failed", { status: response.status });
-      return false;
+      return isProd ? false : true; // Fail-closed in prod
     }
 
     const data = (await response.json()) as TurnstileVerifyResponse;
@@ -69,8 +75,9 @@ export async function verifyTurnstileToken(
     return true;
   } catch (error) {
     logger.security.error("Turnstile verification exception", error);
-    // Fail-open: if Cloudflare is down, don't block legitimate users
-    return true;
+    // In production, we fail-closed to be safe. 
+    // If bot protection is down, we prefer downtime/rejection over being scraped/botted.
+    return isProd ? false : true; 
   }
 }
 

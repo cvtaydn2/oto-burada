@@ -46,32 +46,30 @@ export async function logCreditTransaction(input: CreditTransactionInput) {
 
 /**
  * Atomic credit adjustment with audit trail.
- * Uses a single database transaction through an RPC (if available) or individual calls.
+ * Guaranteed consistent by using a single database transaction via RPC.
  */
 export async function adjustUserCredits(input: CreditTransactionInput) {
   const admin = createSupabaseAdminClient();
   
-  // 1. Log the intent/transaction first
-  const log = await logCreditTransaction(input);
-  if (!log) {
-    throw new Error("Transaction could not be logged. Aborting credit adjustment for security.");
-  }
-
-  // 2. Perform the actual balance update
-  // We use the increment_user_credits RPC which handles atomic update.
-  const { data: newBalance, error: updateError } = await admin.rpc("increment_user_credits", {
+  const { data, error } = await admin.rpc("adjust_user_credits_atomic", {
     p_user_id: input.userId,
-    p_credits: input.amount
+    p_amount: input.amount,
+    p_type: input.type,
+    p_description: input.description || null,
+    p_reference_id: input.referenceId || null,
+    p_metadata: input.metadata || {}
   });
 
-  if (updateError) {
-    logger.payments.error("Critical: Credit balance update failed after logging transaction", updateError, { 
-      transactionId: log.id 
-    });
-    throw updateError;
+  if (error) {
+    logger.payments.error("Atomic credit adjustment failed", error, { input });
+    throw new Error(`Critical: Financial operation failed: ${error.message}`);
   }
 
-  return { transactionId: log.id, newBalance };
+  const result = data as any;
+  return { 
+    transactionId: result.transaction_id, 
+    newBalance: result.new_balance 
+  };
 }
 
 /**

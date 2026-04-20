@@ -92,11 +92,15 @@ export async function POST(request: Request): Promise<NextResponse> {
     return NextResponse.json({ error: "Not configured" }, { status: 503 });
   }
 
-  // Parse form-encoded body (Iyzico sends application/x-www-form-urlencoded)
+  const startTime = Date.now();
+  const rawHeaders = Object.fromEntries(request.headers.entries());
+  
+  // ── 1. Parse Request ───────────────────────────────────────────────────
   let payload: IyzicoWebhookPayload;
+  let rawBody = "";
   try {
-    const text = await request.text();
-    const params = new URLSearchParams(text);
+    rawBody = await request.text();
+    const params = new URLSearchParams(rawBody);
     payload = {
       token: params.get("token") ?? "",
       status: params.get("status") ?? "",
@@ -109,62 +113,73 @@ export async function POST(request: Request): Promise<NextResponse> {
     return NextResponse.json({ error: "Invalid body" }, { status: 400 });
   }
 
-  if (!payload.token) {
-    return NextResponse.json({ error: "Missing token" }, { status: 400 });
-  }
+  const token = payload.token;
+  if (!token) return NextResponse.json({ error: "Missing token" }, { status: 400 });
 
-  // Verify signature — fail-closed: missing header is treated as invalid
+  const admin = createSupabaseAdminClient();
+  const ip = request.headers.get("x-forwarded-for")?.split(",")[0] || "unknown";
+
+  // Helper for audit logging
+  const logWebhookAttempt = async (status: string, errorMsg?: string) => {
+    try {
+      await admin.from("payment_webhook_logs").insert({
+        token,
+        payload: payload as any,
+        headers: rawHeaders,
+        status,
+        error_message: errorMsg,
+        processing_ms: Date.now() - startTime,
+        ip_address: ip,
+      });
+    } catch (err) {
+      console.error("[WebhookAudit] Failed to save log:", err);
+    }
+  };
+
+  // ── 2. Security Checks ──────────────────────────────────────────────────
   const signature = request.headers.get("x-iyz-signature");
   if (!signature) {
-    logger.payments.warn("Webhook rejected: missing x-iyz-signature header", {
-      token: payload.token,
-      merchantOrderId: payload.merchantOrderId,
-    });
-    captureServerEvent("payment_webhook_signature_missing", { token: payload.token });
+    await logWebhookAttempt("invalid_signature", "Missing x-iyz-signature");
+    logger.payments.warn("Webhook rejected: missing x-iyz-signature header", { token });
     return NextResponse.json({ error: "Missing signature" }, { status: 401 });
   }
-  if (!verifyIyzicoSignature(payload.token, signature, secretKey)) {
-    logger.payments.warn("Webhook rejected: signature mismatch", { token: payload.token });
-    captureServerEvent("payment_webhook_signature_invalid", { token: payload.token });
+
+  if (!verifyIyzicoSignature(token, signature, secretKey)) {
+    await logWebhookAttempt("invalid_signature", "Signature mismatch");
+    logger.payments.warn("Webhook rejected: signature mismatch", { token });
     return NextResponse.json({ error: "Invalid signature" }, { status: 401 });
   }
 
-  const admin = createSupabaseAdminClient();
+  // ── 3. Processing ───────────────────────────────────────────────────────
   const isSuccess = payload.status === "SUCCESS";
-
-  // ── Idempotent Webhook Processing via Database Function ─────────────────
-  // Use the secure database function that handles:
-  // 1. Idempotency checks
-  // 2. State machine validation
-  // 3. Atomic payment processing
-  // 4. Race condition prevention
   
   try {
     const { data: result, error: rpcError } = await admin.rpc("process_payment_webhook", {
-      p_iyzico_token: payload.token,
+      p_iyzico_token: token,
       p_status: payload.status,
       p_iyzico_payment_id: payload.paymentId ?? null,
     });
 
     if (rpcError) {
-      logger.payments.error("Webhook RPC failed", rpcError, { token: payload.token });
-      captureServerError("Webhook RPC failed", "payments", rpcError, { token: payload.token });
-      
-      // Return 200 to prevent Iyzico retries (we logged the error)
+      await logWebhookAttempt("error", `RPC Fail: ${rpcError.message}`);
+      logger.payments.error("Webhook RPC failed", rpcError, { token });
       return NextResponse.json({ received: true, error: true });
     }
 
-    // Check if this was an idempotent call
     if (result?.idempotent) {
-      logger.payments.info("Webhook already processed (idempotent)", { token: payload.token });
+      await logWebhookAttempt("processed", "Idempotent hit");
+      logger.payments.info("Webhook already processed (idempotent)", { token });
       return NextResponse.json({ received: true, idempotent: true });
     }
 
-    // Check if this was an orphan record
     if (result?.orphan) {
-      logger.payments.warn("Webhook created orphan record", { token: payload.token });
+      await logWebhookAttempt("processed", "Orphan record created");
+      logger.payments.warn("Webhook created orphan record", { token });
       return NextResponse.json({ received: true, orphan: true });
     }
+
+    // Success processing... (await fulfillment and then log "processed")
+    // Note: I'll log "processed" at the very end of success block
 
     // ── Post-payment actions (success only) ─────────────────────────────────
     // These are non-critical actions that happen AFTER payment is processed
@@ -265,14 +280,15 @@ export async function POST(request: Request): Promise<NextResponse> {
       }
     }
 
+    await logWebhookAttempt("processed", isSuccess ? "Payment success" : "Payment failure recorded");
     return NextResponse.json({ received: true, success: result?.success });
 
   } catch (err) {
     // Unexpected error in webhook processing
-    logger.payments.error("Webhook processing unexpected error", err, { token: payload.token });
-    captureServerError("Webhook processing unexpected error", "payments", err, { token: payload.token });
+    const errMsg = err instanceof Error ? err.message : "Unknown error";
+    await logWebhookAttempt("error", `System Error: ${errMsg}`);
+    logger.payments.error("Webhook processing unexpected error", err, { token });
     
-    // Return 200 to prevent Iyzico retries
     return NextResponse.json({ received: true, error: true });
   }
 
