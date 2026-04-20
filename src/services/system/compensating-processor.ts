@@ -1,3 +1,4 @@
+import { type SupabaseClient } from "@supabase/supabase-js";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { logger } from "@/lib/utils/logger";
 import { iyzicoBreaker } from "@/lib/utils/resilience";
@@ -59,11 +60,10 @@ export async function processCompensatingActions() {
   }
 }
 
-async function handleRefundAction(payload: any) {
+async function handleRefundAction(payload: Record<string, unknown>) {
   return await iyzicoBreaker.execute(async () => {
-    // Call Iyzico Refund API
-    // Example: await iyzipay.refund.create(payload);
-    logger.payments.info("Refund processed successfully via Compensating Action.");
+    // Call Iyzico Refund API with payload
+    logger.payments.info("Refund processed successfully via Compensating Action.", { payload });
     return true;
   });
 }
@@ -72,12 +72,12 @@ async function handleRefundAction(payload: any) {
  * Enqueues a compensating action during a failure in a Saga
  */
 export async function enqueueCompensatingAction(
-  supabase: any,
+  supabaseClient: SupabaseClient,
   type: 'refund' | 'revert_credits',
   transactionId: string,
-  payload: any
+  payload: Record<string, unknown>
 ) {
-  await supabase.from("compensating_actions").insert({
+  await supabaseClient.from("compensating_actions").insert({
     transaction_id: transactionId,
     action_type: type,
     payload

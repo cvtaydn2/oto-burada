@@ -8,8 +8,8 @@ OtoBurada projesi; sıradan bir MVP'den (Minimum Viable Product), saniyede 50.00
 ---
 
 ## 🏆 Mimari Başarılar (Hardening Summary)
-- ✅ **The Seam (Final Integration):** Sunucu-İstemci uyumsuzlukları giderildi. URL Sync, Hydration-Safe Dates, Auth Sync, Broadcast Sync ve Race Condition koruması eklendi.
-- ✅ **God-Tier Hardening:** Price Protection, Secret Rotation, Scraping Depth Limits.
+- ✅ **The Seam (Final Integration):** Sunucu-İstemci uyumsuzlukları giderildi. Medya UX, CLS koruması, URL Sync, Hydration-Safe Dates, Auth Sync, Broadcast Sync ve Race Condition koruması eklendi.
+- ✅ **God-Tier Hardening:** Image Orientation, Scrollbar Gutter, Background Uploads (Instant Preview), LCP Priority.
 - ✅ **Ultimate Indestructible:** Concurrent Outbox, Atomic Quotas, Sequential IDs.
 - ✅ **Enterprise Infrastructure:** Connection Pooling, SIEM Logs, Circuit Breakers.
 
@@ -19,20 +19,20 @@ OtoBurada projesi; sıradan bir MVP'den (Minimum Viable Product), saniyede 50.00
 
 ### Yapılan Değişiklikler
 
-**🚀 Algılanan Performans ve Medya UX (Perceived Performance)**
-- **Search Race Condition Guard (Issue 2)**: `SafeAsync` (AbortController) eklendi. Arama kutusuna hızlı yazıldığında, eski ve yavaş yanıtların yeni sonuçları ezmesi tarayıcı seviyesinde engellendi.
+**🖼️ Medya ve Görsel UX (Media Operations)**
+- **Instant Previews (Issue 1)**: `URL.createObjectURL` kullanılarak Main Thread'i dondurmayan anında önizleme mekanizması kuruldu. Base64 dönüşümü kaynaklı tarayıcı kilitlenmeleri engellendi.
+- **Background Uploads (Issue 2)**: `useMediaUpload` hook'u ile dosyalar seçildiği an arka planda yüklenmeye başlar. Form gönderimi (submit) anında gerçekleşir.
+- **Safe Media Handling (Issue 10, 6)**: `SafeImage` bileşeni eklendi. Kırık görseller (404) yakalanıp fallback gösterilir, `decoding="async"` ile kaydırma (scroll) akıcılığı korunur.
+- **LCP & Priority (Issue 4)**: Carousel ve kritik görseller için `priority` ve `fetchPriority` desteği eklendi. SEO LCP puanı optimize edildi.
 
-**🧭 Tarayıcı ve Mobil Fiziği (Browser Physics)**
-- **100vh Layout Fix (Issue 9)**: Global CSS'te `dvh` (Dynamic Viewport Height) ve `svh` standartlarına geçildi. Sanal klavye açıldığında tasarımın ezilme (layout breaking) sorunu çözüldü.
-- **Gesture Conflict Shield (Issue 10)**: `prevent-gesture-conflicts` sınıfı ve `overscroll-behavior-y: contain` kuralı eklendi. Carousel veya yatay kaydırma sırasında yanlışlıkla Pull-to-Refresh tetiklenmesi engellendi.
-
-**🔐 Durum ve Yetki Senkronizasyonu (State & Auth)**
-- **Multi-Tab Sync (Issue 6)**: `BroadcastChannel` API entegre edildi. Bir sekmede yapılan çıkış (Sign Out) işlemi, tüm açık sekmelerde anında algılanarak UI senkronizasyonu sağlandı.
-- **Action Intent Tracking (Issue 5)**: `useActionIntent` hook'u eklendi. Giriş yapmamış kullanıcıların yarım kalan aksiyonları ("Favoriye ekle" gibi) hafızaya alınarak, giriş sonrası otomatik tamamlanması sağlandı (Conversion Recovery).
+**🧭 Core Web Vitals ve Layout (SEO Integrity)**
+- **Scrollbar Shift Prevention (Issue 9)**: `scrollbar-gutter: stable` ile Modal açılışlarında sayfanın zıplaması engellendi.
+- **EXIF Orientation Fix (Issue 3)**: CSS `image-orientation: from-image` ile mobil telefonlardan yüklenen ters/yan fotoğraflar düzeltildi.
+- **CLS Protection (Issue 5)**: Tüm görsel kapsayıcılarına sabit aspect-ratio ve skeleton/blur placeholder desteği verildi.
 
 **🔄 Sunucu-İstemci Uyum (SSR/CSR Alignment)**
-- **Auth Sync (Issue 10)**: `onAuthStateChange` + `router.refresh()` ile oturum kaymaları çözüldü.
-- **URL Query State (Issue 5)**: Liste filtrelerinin (Fiyat, Yıl vb.) URL ile senkron çalışması sağlandı.
+- **Hydration-Safe Dates (Issue 7)**: `FormattedDate` ile Server-Client saat farkı kaynaklı Next.js hataları çözüldü.
+- **Auth & Tab Sync (Issue 10, 6)**: `onAuthStateChange` + `BroadcastChannel` ile çoklu sekme senkronizasyonu sağlandı.
 
 ### Doğrulama
 - Mimari: `RootProviders` ve `AuthProvider` güncellendi. ✅

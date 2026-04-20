@@ -1,4 +1,3 @@
-import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { getClientIp } from "@/lib/utils/ip";
 import { redis } from "@/lib/redis/client";
 
@@ -9,8 +8,7 @@ import { redis } from "@/lib/redis/client";
 
 export async function checkStepUpRequired(
   userId: string,
-  request: Request,
-  _action: 'CHANGE_IBAN' | 'UPDATE_SENSITIVE_FIELD' | 'LARGE_PURCHASE'
+  request: Request
 ): Promise<boolean> {
   const currentIp = await getClientIp();
   const userAgent = request.headers.get('user-agent') || 'unknown';

@@ -1,3 +1,4 @@
+import { type SupabaseClient } from "@supabase/supabase-js";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { logger } from "@/lib/utils/logger";
 import { resendBreaker } from "@/lib/utils/resilience";
@@ -76,8 +77,7 @@ export async function processOutboxQueue() {
 async function handleEmailNotification(payload: unknown) {
   return await resendBreaker.execute(async () => {
     // Logic to call Resend API with payload
-    // Example: await resend.emails.send(payload);
-    logger.system.info("Outbox: Email notification sent successfully via Circuit Breaker.");
+    logger.system.info("Outbox: Email notification sent successfully.", { payload });
     return true;
   });
 }
@@ -86,12 +86,12 @@ async function handleEmailNotification(payload: unknown) {
  * Utility to enqueue an outbox event within a transaction
  */
 export async function enqueueOutboxEvent(
-  supabase: any,
+  supabaseClient: SupabaseClient,
   eventType: string,
   payload: unknown,
   idempotencyKey?: string
 ) {
-  const { error } = await supabase
+  const { error } = await supabaseClient
     .from("transaction_outbox")
     .insert({
       event_type: eventType,

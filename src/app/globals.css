@@ -117,15 +117,19 @@
 
 @layer base {
   html {
-    /* PILL: Issue 9 - Mobile Keyboard (100vh fix) */
+    /* PILL: Issue 9 - Scrollbar Shift Prevention */
+    scrollbar-gutter: stable both-edges; 
     @apply min-h-svh font-sans antialiased scroll-smooth;
-    overscroll-behavior-y: none; /* Global pull-to-refresh prevention on root if needed */
+    overscroll-behavior-y: none;
   }
   * {
     @apply border-border/60 outline-ring/30 transition-colors duration-200;
   }
+  img {
+    /* PILL: Issue 3 - EXIF Orientation Fix */
+    image-orientation: from-image;
+  }
   body {
-    /* PILL: Issue 10 - Gesture Wars */
     @apply min-h-svh bg-background text-foreground selection:bg-primary/20 overscroll-behavior-y-none;
   }
   h1, h2, h3, h4, h5, h6 {

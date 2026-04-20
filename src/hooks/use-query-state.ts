@@ -22,9 +22,11 @@ export function useQueryState<T extends string | number | boolean>(
     (newValue: T | ((prev: T) => T)) => {
       const current = new URLSearchParams(Array.from(searchParams.entries()));
       
+      const prevValue = (searchParams.get(key) as unknown as T) ?? defaultValue;
+      
       const nextValue = typeof newValue === 'function' 
-        ? (newValue as any)(value) 
-        : newValue;
+        ? (newValue as (prev: T) => T)(prevValue) 
+        : (newValue as T);
 
       if (nextValue === defaultValue || nextValue === undefined || nextValue === null) {
         current.delete(key);
@@ -38,7 +40,7 @@ export function useQueryState<T extends string | number | boolean>(
       // SSR soft navigation
       router.push(`${pathname}${query}`, { scroll: options.scroll });
     },
-    [key, defaultValue, pathname, router, searchParams, value, options.scroll]
+    [key, defaultValue, pathname, router, searchParams, options.scroll]
   );
 
   return [value, setValue] as const;

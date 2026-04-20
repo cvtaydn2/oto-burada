@@ -44,7 +44,7 @@ export async function processReconciliation() {
   }
 }
 
-async function simulateExternalStatusCheck(userId: string): Promise<'active' | 'expired'> {
+async function simulateExternalStatusCheck(_userId: string): Promise<'active' | 'expired'> {
   // In real life: await iyzico.subscription.get(userId);
   return 'active'; 
 }

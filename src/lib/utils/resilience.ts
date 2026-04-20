@@ -98,8 +98,7 @@ export async function withRedisLock<T>(
 export async function getCachedOrRevalidate<T>(
   cacheKey: string,
   fetchFn: () => Promise<T>,
-  ttlSeconds = 60,
-  _staleSeconds = 3600
+  ttlSeconds = 60
 ): Promise<T> {
   if (!redis) return await fetchFn();
 

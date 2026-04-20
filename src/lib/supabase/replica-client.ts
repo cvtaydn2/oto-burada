@@ -1,3 +1,4 @@
+import { type SupabaseClient } from "@supabase/supabase-js";
 import { cookies } from "next/headers";
 import { createSupabaseServerClient } from "./server";
 
@@ -42,7 +43,7 @@ export async function markStickyMaster() {
 /**
  * Helper to check if a query should be offloaded to replica
  */
-export async function withReadReplica<T>(fn: (client: any) => Promise<T>): Promise<T> {
+export async function withReadReplica<T>(fn: (client: SupabaseClient) => Promise<T>): Promise<T> {
   const client = await getReadSupabaseClient();
   return fn(client);
 }
