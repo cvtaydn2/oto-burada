@@ -97,7 +97,7 @@ $$;
 
 -- Profiles
 CREATE TABLE IF NOT EXISTS public.profiles (
-  id uuid PRIMARY KEY REFERENCES auth.users (id) ON DELETE CASCADE,
+  id uuid PRIMARY KEY REFERENCES auth.users (id) ON DELETE RESTRICT,
   full_name text NOT NULL DEFAULT '',
   phone text NOT NULL DEFAULT '',
   city text NOT NULL DEFAULT '',
@@ -172,7 +172,7 @@ CREATE TABLE IF NOT EXISTS public.districts (
 -- Listings
 CREATE TABLE IF NOT EXISTS public.listings (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  seller_id uuid NOT NULL REFERENCES public.profiles (id) ON DELETE CASCADE,
+  seller_id uuid NOT NULL REFERENCES public.profiles (id) ON DELETE RESTRICT,
   slug text NOT NULL UNIQUE,
   title text NOT NULL,
   brand text NOT NULL,
@@ -254,7 +254,7 @@ CREATE TABLE IF NOT EXISTS public.notifications (
 -- Moderation
 CREATE TABLE IF NOT EXISTS public.reports (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  listing_id uuid NOT NULL REFERENCES public.listings (id) ON DELETE CASCADE,
+  listing_id uuid NOT NULL REFERENCES public.listings (id) ON DELETE RESTRICT,
   reporter_id uuid NOT NULL REFERENCES public.profiles (id) ON DELETE CASCADE,
   reason public.report_reason NOT NULL,
   description text,
@@ -265,7 +265,7 @@ CREATE TABLE IF NOT EXISTS public.reports (
 
 CREATE TABLE IF NOT EXISTS public.admin_actions (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  admin_user_id uuid NOT NULL REFERENCES public.profiles (id) ON DELETE CASCADE,
+  admin_user_id uuid NOT NULL REFERENCES public.profiles (id) ON DELETE SET NULL,
   target_type public.moderation_target_type NOT NULL,
   target_id uuid NOT NULL,
   action public.moderation_action NOT NULL,

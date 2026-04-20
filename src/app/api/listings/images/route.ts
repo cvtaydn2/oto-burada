@@ -16,10 +16,13 @@ import { logger } from "@/lib/utils/logger";
  * Sanitizes filename for DISPLAY purposes only.
  */
 function sanitizeFileName(fileName: string): string {
-  return fileName
+  // Prepend short UUID to prevent name collisions in same bucket/folder
+  const uniquePrefix = crypto.randomUUID().split("-")[0];
+  const cleanName = fileName
     .replace(/[^a-zA-Z0-9._-]/g, "_")
-    .replace(/\.+/g, ".")
-    .substring(0, 200);
+    .replace(/\.+/g, ".");
+  
+  return `${uniquePrefix}-${cleanName}`.substring(0, 200);
 }
 
 export async function POST(request: Request) {
@@ -33,6 +36,18 @@ export async function POST(request: Request) {
   if (!security.ok) return security.response;
   
   const user = security.user!;
+
+  // ── 0. Guard against Vercel Payload Limit (4.5MB) ──────────────────────
+  // request.formData() will crash the process if the stream is too large.
+  const contentLength = request.headers.get("content-length");
+  const MAX_PAYLOAD_SIZE = 5 * 1024 * 1024; // 5MB limit
+  if (contentLength && parseInt(contentLength, 10) > MAX_PAYLOAD_SIZE) {
+    return apiError(
+      API_ERROR_CODES.BAD_REQUEST, 
+      "Toplam dosya boyutu 5MB'dan küçük olmalıdır.", 
+      413
+    );
+  }
 
   if (!hasSupabaseStorageEnv()) {
     return apiError(

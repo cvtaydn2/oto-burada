@@ -2,6 +2,11 @@ export const protectedPrefixes = ["/dashboard", "/admin"];
 export const adminPrefixes = ["/admin"];
 export const authRoutes = ["/login", "/register"];
 
+// API Security Config
+export const protectedApiPrefixes = ["/api/listings", "/api/dashboard", "/api/profile"];
+export const adminApiPrefixes = ["/api/admin"];
+export const publicApiRoutes = ["/api/health", "/api/contact", "/api/market/estimate"];
+
 export function classifyRoute(pathname: string) {
   const isStaticAsset = 
     pathname.startsWith("/_next/static") ||
@@ -16,6 +21,11 @@ export function classifyRoute(pathname: string) {
   const isAdminRoute = adminPrefixes.some((prefix) => pathname.startsWith(prefix));
   const isAuthRoute = authRoutes.includes(pathname);
   const isApiRoute = pathname.startsWith("/api");
+  
+  // Specific API checks
+  const isProtectedApi = protectedApiPrefixes.some(p => pathname.startsWith(p)) && !publicApiRoutes.includes(pathname);
+  const isAdminApi = adminApiPrefixes.some(p => pathname.startsWith(p));
+  const isPublicApi = publicApiRoutes.includes(pathname) || (isApiRoute && !isProtectedApi && !isAdminApi);
 
   return {
     isStaticAsset,
@@ -23,6 +33,9 @@ export function classifyRoute(pathname: string) {
     isAdminRoute,
     isAuthRoute,
     isApiRoute,
-    needsAuth: isProtectedRoute || isAuthRoute || isApiRoute,
+    isProtectedApi,
+    isAdminApi,
+    isPublicApi,
+    needsAuth: isProtectedRoute || isAuthRoute || isProtectedApi || isAdminApi,
   };
 }

@@ -13,7 +13,7 @@ CREATE TYPE public.transmission_type AS ENUM ('manuel', 'otomatik', 'yari_otomat
 
 -- Tables
 CREATE TABLE public.profiles (
-  id uuid PRIMARY KEY REFERENCES auth.users (id) ON DELETE CASCADE,
+  id uuid PRIMARY KEY REFERENCES auth.users (id) ON DELETE RESTRICT,
   full_name text NOT NULL DEFAULT '',
   phone text NOT NULL DEFAULT '',
   city text NOT NULL DEFAULT '',
@@ -39,7 +39,7 @@ CREATE TABLE public.models (
 
 CREATE TABLE public.listings (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  seller_id uuid NOT NULL REFERENCES public.profiles (id) ON DELETE CASCADE,
+  seller_id uuid NOT NULL REFERENCES public.profiles (id) ON DELETE RESTRICT,
   slug text NOT NULL UNIQUE,
   title text NOT NULL,
   brand text NOT NULL,
