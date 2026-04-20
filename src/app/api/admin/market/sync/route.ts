@@ -13,14 +13,24 @@ import { hasSupabaseAdminEnv } from "@/lib/supabase/env";
 import { apiSuccess, apiError, API_ERROR_CODES } from "@/lib/utils/api-response";
 import { logger } from "@/lib/utils/logger";
 import { captureServerEvent } from "@/lib/monitoring/posthog-server";
+import { isSupabaseAdminUser } from "@/lib/auth/api-admin"; 
 
 export const dynamic = "force-dynamic";
 
-function verifyCronOrAdmin(request: Request): boolean {
-  // Cron secret
+async function verifyCronOrAdmin(request: Request): Promise<boolean> {
+  // 1. Try Cron secret
   const cronSecret = process.env.CRON_SECRET;
   const authHeader = request.headers.get("authorization");
   if (cronSecret && authHeader === `Bearer ${cronSecret}`) return true;
+
+  // 2. Try Admin session
+  try {
+    const isAdmin = await isSupabaseAdminUser();
+    if (isAdmin) return true;
+  } catch {
+    return false;
+  }
+
   return false;
 }
 
@@ -33,8 +43,9 @@ export async function POST(request: Request) {
 }
 
 async function handleSync(request: Request) {
-  if (!verifyCronOrAdmin(request)) {
-    return apiError(API_ERROR_CODES.UNAUTHORIZED, "Yetkisiz erişim.", 401);
+  const isAuthorized = await verifyCronOrAdmin(request);
+  if (!isAuthorized) {
+    return apiError(API_ERROR_CODES.UNAUTHORIZED, "Yetkisiz erişim. (Cron Secret veya Admin yetkisi gerekli)", 401);
   }
 
   if (!hasSupabaseAdminEnv()) {

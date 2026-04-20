@@ -1,11 +1,12 @@
 import { apiError, apiSuccess, API_ERROR_CODES } from "@/lib/utils/api-response";
 import { rateLimitProfiles } from "@/lib/utils/rate-limit";
 import { withAuthAndCsrf } from "@/lib/utils/api-security";
-import { createSupabaseAdminClient } from "@/lib/supabase/admin";
+import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { logger } from "@/lib/utils/logger";
-import { captureServerError, captureServerEvent } from "@/lib/monitoring/posthog-server";
+import { captureServerEvent } from "@/lib/monitoring/posthog-server";
+import { bulkListingActionSchema } from "@/lib/validators";
 
-// Bulk draft: 20 per hour per user
+// Bulk draft: 20 operations per hour per user
 const BULK_DRAFT_RATE_LIMIT = { limit: 20, windowMs: 60 * 60 * 1000 };
 
 export async function POST(req: Request) {
@@ -25,33 +26,50 @@ export async function POST(req: Request) {
     return apiError(API_ERROR_CODES.BAD_REQUEST, "İstek gövdesi okunamadı.", 400);
   }
 
-  const { ids } = body as { ids?: unknown };
-
-  if (!ids || !Array.isArray(ids) || ids.length === 0) {
-    return apiError(API_ERROR_CODES.BAD_REQUEST, "Geçersiz ID listesi.", 400);
+  const validation = bulkListingActionSchema.safeParse(body);
+  if (!validation.success) {
+    return apiError(
+      API_ERROR_CODES.VALIDATION_ERROR,
+      validation.error.issues[0]?.message || "Doğrulama hatası.",
+      400
+    );
   }
 
-  if (ids.length > 50) {
-    return apiError(API_ERROR_CODES.BAD_REQUEST, "En fazla 50 ilan taslağa çekilebilir.", 400);
-  }
+  const { ids } = validation.data;
+  const supabase = await createSupabaseServerClient();
 
-  const admin = createSupabaseAdminClient();
-  const { error } = await admin
+  // Bulk update filtered by seller_id for ownership
+  const { error, data } = await supabase
     .from("listings")
-    .update({ status: "draft", updated_at: new Date().toISOString() })
-    .in("id", ids.map(String))
-    .eq("seller_id", user.id);
+    .update({ 
+      status: "draft",
+      updated_at: new Date().toISOString() 
+    })
+    .in("id", ids)
+    .eq("seller_id", user.id)
+    .select("id");
 
   if (error) {
-    logger.listings.error("Bulk draft DB error", error, { userId: user.id, count: ids.length });
-    captureServerError("Bulk draft DB error", "listings", error, { userId: user.id });
+    logger.listings.error("Bulk draft DB error", error, { ids, userId: user.id });
     return apiError(API_ERROR_CODES.INTERNAL_ERROR, "İşlem sırasında bir hata oluştu.", 500);
   }
 
+  const affectedCount = data?.length ?? 0;
+
+  logger.listings.info("Bulk draft success", { 
+    userId: user.id, 
+    requestedIds: ids, 
+    affectedCount 
+  });
+
   captureServerEvent("listings_bulk_drafted", {
     userId: user.id,
-    count: ids.length,
+    count: affectedCount,
+    ids: ids
   }, user.id);
 
-  return apiSuccess({ count: ids.length }, "İlanlar taslağa çekildi.");
+  return apiSuccess(
+    { count: affectedCount }, 
+    "İlanlar başarıyla taslağa çekildi."
+  );
 }
