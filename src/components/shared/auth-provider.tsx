@@ -40,6 +40,14 @@ export function AuthProvider({ children, initialUser = null }: AuthProviderProps
     const supabase = createSupabaseBrowserClient();
     let mounted = true;
 
+    // ── PILL: Issue 6 - Multi-Tab Sync ──
+    const authChannel = new BroadcastChannel("auth_sync");
+    authChannel.onmessage = (event) => {
+      if (event.data === "SIGNOUT") {
+        router.refresh();
+      }
+    };
+
     if (!initialUser) {
       void supabase.auth.getUser().then(({ data }: UserResponse) => {
         if (!mounted) return;
@@ -55,10 +63,10 @@ export function AuthProvider({ children, initialUser = null }: AuthProviderProps
 
       const newUser = session?.user ?? null;
       
-      // ── PILL: Issue 10 - SSR/CSR Auth Gap Closure ──
-      // Force refresh the server components if the auth state changes 
-      // (e.g. login/logout in another tab).
       if (user?.id !== newUser?.id) {
+        if (event === "SIGNED_OUT") {
+          authChannel.postMessage("SIGNOUT");
+        }
         router.refresh();
       }
 
@@ -69,6 +77,7 @@ export function AuthProvider({ children, initialUser = null }: AuthProviderProps
     return () => {
       mounted = false;
       subscription.unsubscribe();
+      authChannel.close();
     };
   }, [initialUser, user?.id, router]);
 

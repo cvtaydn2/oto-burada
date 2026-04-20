@@ -8,7 +8,7 @@ OtoBurada projesi; sıradan bir MVP'den (Minimum Viable Product), saniyede 50.00
 ---
 
 ## 🏆 Mimari Başarılar (Hardening Summary)
-- ✅ **The Seam (Final Integration):** Sunucu-İstemci uyumsuzlukları giderildi. URL Sync, Hydration-Safe Dates ve Auth Sync eklendi.
+- ✅ **The Seam (Final Integration):** Sunucu-İstemci uyumsuzlukları giderildi. URL Sync, Hydration-Safe Dates, Auth Sync, Broadcast Sync ve Race Condition koruması eklendi.
 - ✅ **God-Tier Hardening:** Price Protection, Secret Rotation, Scraping Depth Limits.
 - ✅ **Ultimate Indestructible:** Concurrent Outbox, Atomic Quotas, Sequential IDs.
 - ✅ **Enterprise Infrastructure:** Connection Pooling, SIEM Logs, Circuit Breakers.
@@ -19,16 +19,20 @@ OtoBurada projesi; sıradan bir MVP'den (Minimum Viable Product), saniyede 50.00
 
 ### Yapılan Değişiklikler
 
-**🔄 Asenkron Devlet ve Önbellek (Async State)**
-- **Auth Sync (Issue 10)**: `auth-provider.tsx` içerisinde `onAuthStateChange` dinleyicisi güncellendi. Başka sekmede yapılan çıkışlar anında yakalanıp `router.refresh()` ile tüm UI senkronize edilir hale getirildi.
-- **URL Query State (Issue 5)**: `useQueryState` hook'u eklendi. Arama filtreleri React state'i yerine URL'e bağlandı; geri tuşuna basıldığında filtre kaybı (Search Amnesia) engellendi.
+**🚀 Algılanan Performans ve Medya UX (Perceived Performance)**
+- **Search Race Condition Guard (Issue 2)**: `SafeAsync` (AbortController) eklendi. Arama kutusuna hızlı yazıldığında, eski ve yavaş yanıtların yeni sonuçları ezmesi tarayıcı seviyesinde engellendi.
 
-**🏗️ UX ve Form Bütünlüğü (UX Integrity)**
-- **Precise Field Errors (Issue 2)**: `handleServerErrors` yardımcısı eklendi. Sunucu taraflı iş kuralları hataları toast mesajı yerine doğrudan ilgili form kutusunun altına (Field-level) yansıtılmaya başlandı.
-- **Hydration-Safe Dates (Issue 7)**: `FormattedDate` bileşeni eklendi. Sunucu (UTC) ve İstemci (Local) arasındaki saat dilimi farkından kaynaklanan Next.js Hydration hataları kalıcı olarak çözüldü.
+**🧭 Tarayıcı ve Mobil Fiziği (Browser Physics)**
+- **100vh Layout Fix (Issue 9)**: Global CSS'te `dvh` (Dynamic Viewport Height) ve `svh` standartlarına geçildi. Sanal klavye açıldığında tasarımın ezilme (layout breaking) sorunu çözüldü.
+- **Gesture Conflict Shield (Issue 10)**: `prevent-gesture-conflicts` sınıfı ve `overscroll-behavior-y: contain` kuralı eklendi. Carousel veya yatay kaydırma sırasında yanlışlıkla Pull-to-Refresh tetiklenmesi engellendi.
 
-**🔌 Gerçek Zamanlı İletişim (Realtime)**
-- **Network Awareness (Issue 8)**: `useNetworkStatus` hook'u eklendi. İnternet kesintileri anında yakalanarak kullanıcının "Karanlık Mağara"da (Offline) kaybolması engellendi.
+**🔐 Durum ve Yetki Senkronizasyonu (State & Auth)**
+- **Multi-Tab Sync (Issue 6)**: `BroadcastChannel` API entegre edildi. Bir sekmede yapılan çıkış (Sign Out) işlemi, tüm açık sekmelerde anında algılanarak UI senkronizasyonu sağlandı.
+- **Action Intent Tracking (Issue 5)**: `useActionIntent` hook'u eklendi. Giriş yapmamış kullanıcıların yarım kalan aksiyonları ("Favoriye ekle" gibi) hafızaya alınarak, giriş sonrası otomatik tamamlanması sağlandı (Conversion Recovery).
+
+**🔄 Sunucu-İstemci Uyum (SSR/CSR Alignment)**
+- **Auth Sync (Issue 10)**: `onAuthStateChange` + `router.refresh()` ile oturum kaymaları çözüldü.
+- **URL Query State (Issue 5)**: Liste filtrelerinin (Fiyat, Yıl vb.) URL ile senkron çalışması sağlandı.
 
 ### Doğrulama
 - Mimari: `RootProviders` ve `AuthProvider` güncellendi. ✅

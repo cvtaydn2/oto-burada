@@ -117,13 +117,16 @@
 
 @layer base {
   html {
-    @apply h-full font-sans antialiased scroll-smooth;
+    /* PILL: Issue 9 - Mobile Keyboard (100vh fix) */
+    @apply min-h-svh font-sans antialiased scroll-smooth;
+    overscroll-behavior-y: none; /* Global pull-to-refresh prevention on root if needed */
   }
   * {
     @apply border-border/60 outline-ring/30 transition-colors duration-200;
   }
   body {
-    @apply min-h-full bg-background text-foreground selection:bg-primary/20;
+    /* PILL: Issue 10 - Gesture Wars */
+    @apply min-h-svh bg-background text-foreground selection:bg-primary/20 overscroll-behavior-y-none;
   }
   h1, h2, h3, h4, h5, h6 {
     @apply font-heading tracking-tight font-bold;
@@ -131,6 +134,15 @@
 }
 
 @layer utilities {
+  /* PILL: Issue 10 - Carousel & Scroll Protection */
+  .prevent-gesture-conflicts {
+    overscroll-behavior-y: contain;
+    touch-action: pan-y;
+  }
+  
+  .min-h-screen-safe {
+    min-height: 100svh; /* Dynamic viewport height */
+  }
   .glass {
     @apply bg-white/70 dark:bg-black/70 backdrop-blur-xl border border-slate-200 dark:border-white/10 shadow-sm rounded-xl;
   }
