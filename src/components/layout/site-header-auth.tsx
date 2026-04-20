@@ -49,7 +49,7 @@ export function SiteHeaderAuth({
         ) : (
           <Link href={accountHref} className="flex items-center gap-2 group">
             {isAuthenticated && userId ? (
-              <div className="size-8 overflow-hidden rounded-full border border-gray-200 bg-blue-500 flex items-center justify-center text-white text-xs font-bold select-none">
+              <div className="size-8 overflow-hidden rounded-full border border-border bg-blue-500 flex items-center justify-center text-white text-xs font-bold select-none">
                 <span>U</span>
               </div>
             ) : (

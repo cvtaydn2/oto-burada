@@ -60,7 +60,7 @@ function FilterSection({
           {Icon && <Icon size={16} className={activeCount && activeCount > 0 ? "text-blue-600" : "text-muted-foreground/70"} />}
           {title}
           {activeCount !== undefined && activeCount > 0 && (
-            <span className="flex size-5 items-center justify-center rounded-full bg-blue-600 text-[10px] font-medium text-white">
+            <span className="flex size-5 items-center justify-center rounded-md bg-blue-600 text-[10px] font-medium text-white">
               {activeCount}
             </span>
           )}
@@ -142,7 +142,7 @@ export function ListingsFilterPanel({
                 key={preset.id}
                 type="button"
                 onClick={() => onApplyPreset?.(preset.id)}
-                className="px-2.5 py-1.5 bg-card rounded-md text-xs font-medium text-foreground/90 border border-border hover:border-blue-300 hover:text-blue-600 transition-colors"
+                className="px-2.5 py-1.5 bg-card rounded-lg text-xs font-medium text-foreground/90 border border-border hover:border-blue-300 hover:text-blue-600 transition-colors"
               >
                 {preset.label}
               </button>
@@ -244,7 +244,7 @@ export function ListingsFilterPanel({
                     key={type}
                     onClick={() => onFilterChange("fuelType", filters.fuelType === type ? undefined : type)}
                     className={cn(
-                      "px-3 py-1.5 rounded-md text-xs font-medium transition-colors",
+                      "px-3 py-1.5 rounded-lg text-xs font-medium transition-colors",
                       filters.fuelType === type 
                         ? "bg-blue-600 text-white" 
                         : "bg-muted text-muted-foreground hover:bg-slate-200"
@@ -264,7 +264,7 @@ export function ListingsFilterPanel({
                     key={type}
                     onClick={() => onFilterChange("transmission", filters.transmission === type ? undefined : type)}
                     className={cn(
-                      "px-3 py-1.5 rounded-md text-xs font-medium transition-colors",
+                      "px-3 py-1.5 rounded-lg text-xs font-medium transition-colors",
                       filters.transmission === type 
                         ? "bg-blue-600 text-white" 
                         : "bg-muted text-muted-foreground hover:bg-slate-200"

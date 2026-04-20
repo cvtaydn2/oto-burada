@@ -19,8 +19,8 @@
 - `npm run lint` & `typecheck` ✅
 
 ### Sonraki Adımlar
-- **Mobile Filter Tags**: `/listings` sayfasındaki aktif filtre etiketlerinin (km, yıl, tramer) yeni badge tasarımıyla uyumlu hale getirilmesi.
-- **Dark Mode Audit**: Yeni sınırlandırılmış renk ve gölge paletinin karanlık moddaki kontrast dengesinin kontrolü.
+- **Dark Mode Audit**: Yeni sınırlandırılmış renk ve gölge paletinin karanlık moddaki kontrast dengesinin kontrolü sağlandı. `ListingDetailActions`, `FilterTag` ve `SiteHeaderAuth` gibi bileşenlerdeki hardcoded renkler tema değişkenleriyle güncellendi. ✅
+- **Component Detail Polish**: `RangeSlider`, `MobileFilterDrawer` ve `ListingsFilterPanel` bileşenlerindeki interaktif elemanlar (butonlar, badge'ler) sistem standartlarına (`rounded-lg`, `rounded-xl`) çekildi. Gereksiz "active scale" animasyonları temizlendi. ✅
 
 ## Iyzico Payment Activation & Doping Automation (2026-04-19)
 
