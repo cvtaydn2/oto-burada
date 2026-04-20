@@ -9,7 +9,12 @@ const mimeTypeSet = new Set<string>(listingImageAcceptedMimeTypes);
 const MAGIC_BYTES: Record<string, number[]> = {
   "image/jpeg": [0xff, 0xd8, 0xff],
   "image/png": [0x89, 0x50, 0x4e, 0x47],
-  "image/webp": [0x52, 0x49, 0x46, 0x46],
+  "image/webp": [0x52, 0x49, 0x46, 0x46], // "RIFF"
+};
+
+// Offset magic bytes for specific formats
+const SECONDARY_MAGIC_BYTES: Record<string, { offset: number; pattern: number[] }> = {
+  "image/webp": { offset: 8, pattern: [0x57, 0x45, 0x42, 0x50] }, // "WEBP"
 };
 
 // Safe file extensions derived from verified MIME types
@@ -43,12 +48,24 @@ function matchesMagicBytes(header: number[], magicBytes: number[]): boolean {
 /**
  * Reads the file header and returns the verified MIME type from magic bytes.
  * Returns null if the file header does not match any known image type.
+ * 
+ * SECURITY: Checks both primary header and secondary offsets (like WebP's WEBP mark).
  */
 export async function getVerifiedMimeType(file: File): Promise<string | null> {
   const header = await readFileHeader(file);
 
   for (const [mimeType, magicBytes] of Object.entries(MAGIC_BYTES)) {
     if (matchesMagicBytes(header, magicBytes)) {
+      // Secondary check for multi-format headers (like RIFF)
+      const secondary = SECONDARY_MAGIC_BYTES[mimeType];
+      if (secondary) {
+        const secondaryBuffer = await file.slice(secondary.offset, secondary.offset + secondary.pattern.length).arrayBuffer();
+        const secondaryHeader = Array.from(new Uint8Array(secondaryBuffer));
+        if (matchesMagicBytes(secondaryHeader, secondary.pattern)) {
+          return mimeType;
+        }
+        continue; // Primary matched but secondary failed (e.g., RIFF but not WEBP)
+      }
       return mimeType;
     }
   }

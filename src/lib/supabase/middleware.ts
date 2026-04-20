@@ -58,8 +58,14 @@ export async function updateSession(request: NextRequest) {
   // 4. ROUTE GUARDS (Redirects)
   const redirectResponse = handleAuthRedirects(request, user, route);
   if (redirectResponse) {
-    // Note: Don't forget security headers even on redirects
-    return applySecurityHeaders(redirectResponse);
+    // SECURITY: Ensure Supabase session cookies from the new response 
+    // are copied to the redirect response, preventing silent auth drops.
+    const finalResponse = redirectResponse;
+    response.cookies.getAll().forEach((cookie) => {
+      finalResponse.cookies.set(cookie.name, cookie.value);
+    });
+    
+    return applySecurityHeaders(finalResponse);
   }
 
   // 5. API SECURITY (CSRF/Origin)
