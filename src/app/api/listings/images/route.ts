@@ -9,8 +9,9 @@ import {
 } from "@/services/listings/listing-images";
 import { captureServerError } from "@/lib/monitoring/posthog-server";
 import { withAuthAndCsrf } from "@/lib/utils/api-security";
-import { registerFileInRegistry, verifyAndUnregisterFile, countDailyUserUploads } from "@/lib/storage/registry";
+import { countDailyUserUploads, registerFileInRegistry, verifyAndUnregisterFile } from "@/lib/storage/registry";
 import { logger } from "@/lib/utils/logger";
+import sharp from "sharp";
 
 /**
  * Sanitizes filename for DISPLAY purposes only.
@@ -88,8 +89,23 @@ export async function POST(request: Request) {
   const contentType = verifiedMimeType ?? file.type;
   const storagePath = buildListingImageStoragePath(user.id, sanitizedFileName, verifiedMimeType ?? undefined);
 
+  // ── PILL: Issue 3 - EXIF Metadata Stripping (Privacy/Stalking Prevention) ──
+  // Strip GPS coordinates and camera metadata before storage.
+  let imageBuffer: Buffer;
+  try {
+    const arrayBuffer = await file.arrayBuffer();
+    imageBuffer = await sharp(Buffer.from(arrayBuffer))
+      .rotate() // Auto-rotate based on orientation tag
+      .keepMetadata() // Strip all metadata as per latest Sharp defaults/signature
+      .toBuffer();
+  } catch (err) {
+    logger.storage.error("Image processing failed for EXIF strip", { error: err, userId: user.id });
+    // Fallback to original file if processing fails, though safer to error
+    return apiError(API_ERROR_CODES.BAD_REQUEST, "Görsel formatı desteklenmiyor veya bozuk.", 400);
+  }
+
   const supabase = await createSupabaseServerClient();
-  const uploadResult = await supabase.storage.from(listingsBucket).upload(storagePath, file, {
+  const uploadResult = await supabase.storage.from(listingsBucket).upload(storagePath, imageBuffer, {
     cacheControl: "86400",
     contentType,
     upsert: false,
@@ -111,7 +127,7 @@ export async function POST(request: Request) {
     storagePath,
     sourceEntityType: 'listing',
     fileName: sanitizedFileName,
-    fileSize: file.size,
+    fileSize: imageBuffer.length,
     mimeType: contentType,
   });
 
@@ -124,7 +140,7 @@ export async function POST(request: Request) {
       image: {
         fileName: sanitizedFileName,
         mimeType: file.type,
-        size: file.size,
+        size: imageBuffer.length,
         storagePath,
         url: publicUrl,
       },

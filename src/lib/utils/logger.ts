@@ -146,4 +146,5 @@ export const logger = {
   market: createLogger("market"),
   api: createLogger("api"),
   security: createLogger("security"),
+  system: createLogger("system"),
 };

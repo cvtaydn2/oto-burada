@@ -28,6 +28,35 @@
 
 ---
 
+## Hyper-Scale Architecture Hardening (Final Phase) - 2026-04-21
+
+### Yapılan Değişiklikler
+
+**🌩️ Sistem Dayanıklılığı (Resilience)**
+- **Thundering Herd Protection**: Redis tabanlı Mutex kilitleri (`withRedisLock`) implemente edildi. Popüler ilanların cache revalidation anında veritabanına hücum etmesi (Cache Stampede) engellendi.
+- **Circuit Breaker Pattern**: Dış servisler (Iyzico, Resend) için devre kesici (`CircuitBreaker`) altyapısı kuruldu. Dış servis çöküşlerinin OtoBurada'yı kaskad olarak kilitlemesi engellendi.
+
+**🛡️ Gelişmiş Güvenlik ve Gizlilik**
+- **EXIF Metadata Stripping**: `sharp` entegrasyonu ile ilan fotoğraflarındaki GPS ve hassas cihaz verileri (stalking önleme) yükleme anında temizlenmeye başlandı.
+- **Anti-Phishing/DLP**: Sohbet mesajlarında IBAN, telefon numarası ve şüpheli harici linkler için sunucu taraflı regex maskeleme (`sanitizeChatMessage`) eklendi.
+- **Step-up Authentication Infrastructure**: Kritik işlemler (IBAN değişikliği vb.) için şüpheli IP/Cihaz değişikliklerini saptayan `checkStepUpRequired` altyapısı hazırlandı.
+
+**📦 Güvenilir Veri Akışı ve Ölçekleme**
+- **Transaction Outbox Pattern**: Finansal işlemler ve bildirimler için `transaction_outbox` tablosu ve asenkron işleyici (`outbox-processor`) eklendi. Ana işlem başarıyla tamamlandığında yan işlemlerin (e-posta vb.) garanti edilmesi sağlandı.
+- **Audit Log Optimization**: `admin_actions` tablosuna zaman bazlı sorguları hızlandırmak için `BRIN` indeksi eklendi (Hiper-ölçek log yönetimi).
+- **Soft Reservation Infrastructure**: İlanlar için `locked_until` ve `locked_by` alanları ile checkout sırasında çift satış/rezervasyon çakışması önleme altyapısı kuruldu.
+
+### Doğrulama
+- Mimari: `0054_hyper_scale_hardening.sql` başarıyla uygulandı. ✅
+- Güvenlik: Sharp EXIF strip testi başarılı. ✅
+- Performans: Redis Mutex ve Circuit Breaker yapıları entegre edildi. ✅
+- `npm run typecheck` & `npm run lint` ✅
+
+### Sonraki Adımlar
+- **DLP Dashboard**: Admin panelinden dinamik yasaklı kelime/regex yönetimi.
+- **Table Partitioning**: `messages` ve `listings` tabloları için tarih bazlı partitioning geçişi.
+- **Outbox Worker Monitoring**: Başarısız outbox işlemlerinin dashboard üzerinden izlenmesi.
+
 ## Production Readiness & Scaling Hardening (2026-04-20)
 
 ### Yapılan Değişiklikler
