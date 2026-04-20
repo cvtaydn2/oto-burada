@@ -319,10 +319,10 @@ export async function getFilteredDatabaseListings(
   ]);
 
   if (dataResult.error) {
-    logger.error("Failed to fetch listings data", dataResult.error);
+    logger.db.error("Failed to fetch listings data", dataResult.error);
   }
   if (countResult.error) {
-    logger.error("Failed to count listings", countResult.error);
+    logger.db.error("Failed to count listings", countResult.error);
   }
 
   const listings = dataResult.data ? dataResult.data.map(mapListingRow) : [];
