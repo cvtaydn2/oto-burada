@@ -48,30 +48,25 @@ export default async function AdminOverviewPage() {
     <main className="min-h-screen bg-slate-50/50 pb-20 pt-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
       <div className="max-w-[1400px] mx-auto px-4 lg:px-8 space-y-12">
         
-        {/* Elite Admin Header */}
-        <section className="relative overflow-hidden rounded-2xl bg-slate-900 px-8 py-12 text-white shadow-sm shadow-slate-900/20">
-          <div className="absolute right-0 top-0 h-full w-1/4 bg-gradient-to-l from-white/5 to-transparent opacity-50" />
-          <div className="absolute -left-20 -top-20 h-64 w-64 rounded-full bg-blue-500/10 blur-3xl" />
-          
-          <div className="relative z-10 flex flex-col gap-8 md:flex-row md:items-end md:justify-between">
-            <div>
-              <div className="mb-4 inline-flex items-center gap-3 rounded-full bg-white/10 px-4 py-1.5 backdrop-blur-md border border-white/5">
-                <div className={cn("size-2 rounded-full shadow-[0_0_10px_currentColor]", systemOnline ? "bg-emerald-400 text-emerald-400" : "bg-rose-400 text-rose-400")} />
-                <span className="text-[10px] font-bold uppercase tracking-widest text-slate-300">
-                  Sistem: <span className={cn(systemOnline ? "text-emerald-400" : "text-rose-400")}>{systemOnline ? "ONLINE" : "OFFLINE"}</span>
-                </span>
+        {/* Admin Header */}
+        <section className="bg-background border border-border rounded-2xl p-6 lg:p-8 shadow-sm">
+          <div className="flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
+            <div className="space-y-1">
+              <div className="inline-flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-muted-foreground/60 mb-2">
+                <ShieldCheck size={12} />
+                YÖNETİM MERKEZİ
               </div>
-              <h1 className="text-4xl font-bold tracking-tight lg:text-6xl">
-                Yönetim <span className="text-blue-500">Merkezi</span>
+              <h1 className="text-2xl font-bold tracking-tight text-foreground">
+                Sistem <span className="text-primary">Genel Bakış</span>
               </h1>
-              <p className="mt-4 max-w-xl text-lg font-bold text-slate-400 lowercase first-letter:uppercase">
-                Platform genelindeki operasyonları, moderasyon kuyruğunu ve sistem sağlığını buradan yönetin.
+              <p className="text-sm font-medium text-muted-foreground">
+                Kritik metrikleri, ilan akışını ve sistem sağlığını buradan yönetin.
               </p>
             </div>
-
-            <div className="flex flex-wrap gap-4">
+            
+            <div className="flex flex-wrap gap-3">
               {features.adminAnalytics && (
-                <Suspense fallback={<div className="h-[80px] min-w-[180px] animate-pulse rounded-2xl bg-white/5" />}>
+                <Suspense fallback={<div className="h-11 min-w-[120px] animate-pulse rounded-xl bg-muted" />}>
                   <AdminRevenueBadge analyticsPromise={analyticsPromise} />
                 </Suspense>
               )}
@@ -79,11 +74,11 @@ export default async function AdminOverviewPage() {
             </div>
           </div>
 
-          <div className="relative z-10 mt-12 grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-8 border-t border-white/10 pt-8">
-            <QuickSystemStat icon={<Database size={16} />} label="DB Sağlığı" value={systemOnline ? "%100" : "%0"} color="emerald" />
-            <QuickSystemStat icon={<Monitor size={16} />} label="Sunucu Yükü" value="Normal" color="blue" />
-            <QuickSystemStat icon={<ShieldCheck size={16} />} label="Güvenlik" value="Aktif" color="indigo" />
-            <QuickSystemStat icon={<Activity size={16} />} label="Uptime" value="%99.9" color="emerald" />
+          <div className="mt-8 flex flex-wrap items-center gap-4 border-t border-border pt-6">
+            <QuickSystemStat icon={<Database size={14} />} label="DB Sağlığı" value={systemOnline ? "Mükemmel" : "Hata"} color={systemOnline ? "emerald" : "rose"} />
+            <QuickSystemStat icon={<Monitor size={14} />} label="Sunucu" value="Normal" color="blue" />
+            <QuickSystemStat icon={<ShieldCheck size={14} />} label="Güvenlik" value="Aktif" color="indigo" />
+            <QuickSystemStat icon={<Activity size={14} />} label="Uptime" value="%99.9" color="emerald" />
           </div>
         </section>
 
@@ -125,18 +120,21 @@ export default async function AdminOverviewPage() {
   );
 }
 
-function QuickSystemStat({ icon, label, value, color }: { icon: React.ReactNode, label: string, value: string, color: "emerald" | "blue" | "indigo" }) {
+function QuickSystemStat({ icon, label, value, color }: { icon: React.ReactNode, label: string, value: string, color: "emerald" | "blue" | "indigo" | "rose" }) {
   return (
     <div className="flex items-center gap-3">
       <div className={cn(
-        "flex size-10 items-center justify-center rounded-xl bg-white/5 border border-white/10 shadow-inner",
-        color === "emerald" ? "text-emerald-400" : color === "blue" ? "text-blue-400" : "text-indigo-400"
+        "flex size-9 items-center justify-center rounded-xl bg-muted/50 border border-border transition-colors",
+        color === "emerald" ? "text-emerald-600" : 
+        color === "blue" ? "text-blue-600" : 
+        color === "rose" ? "text-rose-600" :
+        "text-indigo-600"
       )}>
         {icon}
       </div>
       <div>
-        <p className="text-[9px] font-bold uppercase tracking-widest text-slate-500">{label}</p>
-        <p className="text-sm font-bold text-white">{value}</p>
+        <p className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground/60">{label}</p>
+        <p className="text-sm font-bold text-foreground">{value}</p>
       </div>
     </div>
   );
@@ -221,7 +219,7 @@ async function PersistenceOnlySection({
   const persistenceHealth = await persistenceHealthPromise;
   if (!persistenceHealth) return null;
   return (
-    <div className="rounded-2xl overflow-hidden border border-white bg-white shadow-sm shadow-slate-200/50">
+    <div className="rounded-2xl overflow-hidden border border-border bg-card shadow-sm">
       <AdminPersistencePanel health={persistenceHealth} />
     </div>
   );
@@ -238,19 +236,19 @@ async function AdminAnalyticsSection({
 
   return (
     <div className="space-y-12">
-      <div className="overflow-hidden rounded-2xl border border-white bg-white p-10 shadow-sm shadow-slate-200/50 group">
-        <div className="mb-10 flex items-center justify-between">
-          <div className="flex items-center gap-5">
-            <div className="flex size-14 items-center justify-center rounded-2xl bg-blue-50 text-blue-600 shadow-inner group-hover:bg-blue-600 group-hover:text-white transition-all duration-500">
-              <Zap size={28} strokeWidth={2.5} className="fill-current" />
+      <div className="overflow-hidden rounded-2xl border border-border bg-card p-6 lg:p-8 shadow-sm group">
+        <div className="mb-8 flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <div className="flex size-12 items-center justify-center rounded-xl bg-primary/5 text-primary shadow-inner group-hover:bg-primary group-hover:text-primary-foreground transition-all duration-300">
+              <Zap size={24} className="fill-current" />
             </div>
             <div>
-              <h2 className="text-2xl font-bold text-slate-900 tracking-tight">Akış Analitiği</h2>
-              <p className="text-xs font-bold uppercase tracking-widest text-slate-400 mt-1">İlan yayın performans dağılımı</p>
+              <h2 className="text-xl font-bold text-foreground tracking-tight">Akış Analitiği</h2>
+              <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mt-1">İlan yayın performans dağılımı</p>
             </div>
           </div>
-          <Button variant="ghost" size="sm" className="rounded-xl h-10 px-6 font-bold text-[10px] tracking-widest uppercase hover:bg-slate-50 transition-colors" asChild>
-            <a href="/admin/analytics">TAM RAPORU GÖR</a>
+          <Button variant="ghost" size="sm" className="rounded-lg h-9 px-4 font-bold text-[10px] tracking-widest uppercase hover:bg-muted transition-colors" asChild>
+            <a href="/admin/analytics">TAM RAPOR</a>
           </Button>
         </div>
         <div className="min-h-[300px]">
@@ -323,7 +321,7 @@ async function AdminRecentActionsSection({
   });
 
   return (
-    <div className="rounded-2xl overflow-hidden border border-white bg-white shadow-sm shadow-slate-200/50 transition-all hover:shadow-sm">
+    <div className="rounded-2xl overflow-hidden border border-border bg-card shadow-sm transition-all hover:shadow-md">
       <AdminRecentActions actions={recentActionItems} />
     </div>
   );

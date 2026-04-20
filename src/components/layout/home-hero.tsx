@@ -12,7 +12,7 @@ export function HomeHero({ cities }: HomeHeroProps) {
       <div className="absolute inset-0 z-0">
         <Image
           src="https://images.unsplash.com/photo-1555215695-3004980ad54e?auto=format&fit=crop&w=2000&q=80"
-          alt="Premium car marketplace hero"
+          alt="Satılık araba ilanları"
           fill
           priority
           sizes="100vw"
@@ -24,19 +24,19 @@ export function HomeHero({ cities }: HomeHeroProps) {
       </div>
       
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full relative z-10">
-        <div className="max-w-3xl text-left space-y-8 animate-in fade-in slide-in-from-left-8 duration-1000">
-          <div className="inline-flex items-center gap-2 bg-blue-500/10 border border-blue-400/20 rounded-full px-5 py-2 text-blue-400 text-xs font-bold uppercase tracking-[0.2em]">
-            Yeni Nesil Pazaryeri
+        <div className="max-w-3xl text-left space-y-8">
+          <div className="inline-flex items-center gap-2 bg-muted/20 border border-white/10 rounded-full px-5 py-2 text-white/80 text-[10px] font-bold uppercase tracking-widest">
+            Sade Araç Pazaryeri
           </div>
           
           <div className="space-y-4">
-            <h1 className="text-5xl md:text-7xl font-bold text-white tracking-tighter leading-[0.9]">
-              Arabanı <span className="text-blue-500">Kolayca</span> Sat. <br />
-              Doğruyu <span className="text-indigo-400">Hızlıca</span> Bul.
+            <h1 className="text-4xl md:text-6xl font-bold text-white tracking-tight leading-[1.1]">
+              Arabanı <span className="text-primary-foreground underline decoration-primary/30 underline-offset-8">Kolayca</span> Sat. <br />
+              Doğruyu <span className="text-primary-foreground/90">Hızlıca</span> Bul.
             </h1>
-            <p className="text-xl text-slate-300 max-w-xl font-medium leading-relaxed">
-              Türkiye&apos;nin en güvenilir, şeffaf ve yüksek teknolojili otomobil pazarı. 
-              Sade deneyim, tam güven.
+            <p className="text-lg text-slate-300 max-w-xl font-medium leading-relaxed">
+              Türkiye&apos;nin en güvenilir, şeffaf ve sade otomobil pazarı. 
+              Gereksiz detaylardan uzak, sadece sonuca odaklı.
             </p>
           </div>
 
@@ -52,7 +52,7 @@ export function HomeHero({ cities }: HomeHeroProps) {
                   type="text" 
                   name="query"
                   placeholder="Marka, model veya ilan başlığı..." 
-                  className="w-full bg-white/10 border-none text-white placeholder:text-white/30 rounded-xl pl-14 pr-6 h-14 outline-none transition focus:bg-white/20 font-bold"
+                  className="w-full bg-white/10 border-none text-white placeholder:text-white/30 rounded-xl pl-14 pr-6 h-14 outline-none transition focus:bg-white/20 font-medium"
                 />
               </div>
 
@@ -60,7 +60,7 @@ export function HomeHero({ cities }: HomeHeroProps) {
                 <MapPin size={18} className="absolute left-6 top-1/2 -translate-y-1/2 text-white/40 pointer-events-none" />
                 <select 
                   name="city"
-                  className="w-full bg-white/10 border-none text-white rounded-xl pl-14 pr-10 h-14 outline-none appearance-none cursor-pointer focus:bg-white/20 font-bold"
+                  className="w-full bg-white/10 border-none text-white rounded-xl pl-14 pr-10 h-14 outline-none appearance-none cursor-pointer focus:bg-white/20 font-medium"
                 >
                   <option value="" className="bg-slate-900">Tüm Şehirler</option>
                   {cities.map((city) => (
@@ -75,9 +75,9 @@ export function HomeHero({ cities }: HomeHeroProps) {
 
             <button 
               type="submit"
-              className="m-1 bg-white text-slate-950 font-bold rounded-xl px-10 h-16 transition-all hover:bg-blue-500 hover:text-white active:scale-95 shadow-md flex items-center justify-center gap-3 uppercase text-[11px] tracking-widest"
+              className="m-1 bg-primary text-primary-foreground font-bold rounded-xl px-10 h-16 transition-all hover:opacity-90 active:scale-95 flex items-center justify-center gap-3 uppercase text-[11px] tracking-widest"
             >
-              <Search size={18} strokeWidth={3} />
+              <Search size={18} strokeWidth={2} />
               İLANLARI KEŞFET
             </button>
           </form>

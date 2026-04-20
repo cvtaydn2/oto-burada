@@ -54,43 +54,40 @@ export default async function HomePage() {
         {/* Modern Hero */}
         <HomeHero cities={references.cities.map((city) => city.city)} />
 
-        {/* Premium Discovery */}
-        <section className="max-w-7xl mx-auto px-6 lg:px-8 py-24">
-          <div className="flex flex-col md:flex-row justify-between items-baseline gap-4 mb-12">
+        {/* Quick Discovery */}
+        <section className="max-w-7xl mx-auto px-6 lg:px-8 py-16">
+          <div className="flex flex-col md:flex-row justify-between items-baseline gap-4 mb-8">
             <div>
-              <h2 className="text-4xl font-bold text-slate-900 tracking-tighter leading-none mb-3">Hızlı Keşfet</h2>
-              <p className="text-xs font-bold text-slate-400 uppercase tracking-[0.3em]">HAYALİNİZDEKİ ARACA GİDEN EN KISA YOL</p>
+              <h2 className="text-2xl font-bold text-foreground tracking-tight mb-1">Hızlı Keşfet</h2>
+              <p className="text-[10px] font-bold text-muted-foreground/60 uppercase tracking-widest">ARADIĞIN ARACA GİDEN EN KISA YOL</p>
             </div>
-            <Link href="/listings" className="group flex items-center gap-2 text-xs font-bold text-blue-600 uppercase tracking-widest transition-all">
+            <Link href="/listings" className="group flex items-center gap-2 text-sm font-semibold text-primary hover:underline transition-all">
               Tümünü İncele <ChevronRight size={14} className="group-hover:translate-x-1 transition-transform" />
             </Link>
           </div>
           
-          <div className="grid gap-12 lg:grid-cols-2">
+          <div className="grid gap-10 lg:grid-cols-2">
             <div>
-              <div className="mb-6 flex items-center gap-3">
-                <div className="size-8 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center">
-                   <CarFront size={18} strokeWidth={2.5} />
-                </div>
-                <h3 className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400">Markalar</h3>
+              <div className="mb-4 flex items-center gap-3">
+                <h3 className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/60">Markalar</h3>
               </div>
-              <div className="grid grid-cols-2 md:grid-cols-3 gap-6">
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                 {featuredBrands.map((brand) => (
                   <Link
                     key={brand.slug}
                     href={`/satilik/${brand.slug}`}
-                    className="group relative bg-white border border-slate-200 rounded-2xl p-6 shadow-sm transition-all duration-300 hover:shadow-md overflow-hidden"
+                    className="group bg-card border border-border rounded-xl p-4 transition-all hover:border-primary/30 hover:bg-muted/30"
                   >
-                    <div className="absolute top-0 right-0 size-24 bg-slate-50 rounded-full blur-2xl -mr-12 -mt-12 opacity-0 group-hover:opacity-100 transition-opacity" />
-                    
-                    <div className="relative z-10">
-                      <div className="size-12 rounded-2xl bg-slate-50 text-slate-400 flex items-center justify-center mb-6 group-hover:bg-blue-600 group-hover:text-white group-hover:shadow-sm group-hover:shadow-blue-200 transition-all duration-300">
-                        <CarFront size={20} strokeWidth={2.5} />
+                    <div className="flex items-center gap-3">
+                      <div className="size-10 rounded-lg bg-muted text-muted-foreground flex items-center justify-center group-hover:bg-primary group-hover:text-white transition-colors">
+                        <CarFront size={18} />
                       </div>
-                      <h4 className="text-lg font-bold text-slate-900 tracking-tight group-hover:text-blue-600 transition-colors">{brand.brand}</h4>
-                      <p className="mt-1 text-[9px] font-bold text-slate-400 uppercase tracking-widest">
-                        {brand.models.length} MODEL &middot; {brand.models.reduce((sum, model) => sum + model.trims.length, 0)} PAKET
-                      </p>
+                      <div className="min-w-0">
+                        <h4 className="text-sm font-bold text-foreground truncate">{brand.brand}</h4>
+                        <p className="text-[9px] font-medium text-muted-foreground uppercase tracking-tight">
+                          {brand.models.length} Model
+                        </p>
+                      </div>
                     </div>
                   </Link>
                 ))}
@@ -98,29 +95,26 @@ export default async function HomePage() {
             </div>
 
             <div>
-              <div className="mb-6 flex items-center gap-3">
-                <div className="size-8 rounded-xl bg-orange-50 text-orange-600 flex items-center justify-center">
-                   <Trophy size={18} strokeWidth={2.5} />
-                </div>
-                <h3 className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400">Şehirler</h3>
+              <div className="mb-4 flex items-center gap-3">
+                <h3 className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/60">Şehirler</h3>
               </div>
-              <div className="grid grid-cols-2 md:grid-cols-3 gap-6">
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                 {featuredCities.map((city) => (
                   <Link
                     key={city.slug}
                     href={`/satilik-araba/${city.slug}`}
-                    className="group relative bg-white border border-slate-200 rounded-2xl p-6 shadow-sm transition-all duration-300 hover:shadow-md overflow-hidden"
+                    className="group bg-card border border-border rounded-xl p-4 transition-all hover:border-primary/30 hover:bg-muted/30"
                   >
-                    <div className="absolute top-0 right-0 size-24 bg-slate-50 rounded-full blur-2xl -mr-12 -mt-12 opacity-0 group-hover:opacity-100 transition-opacity" />
-                    
-                    <div className="relative z-10">
-                      <div className="size-12 rounded-2xl bg-slate-50 text-slate-400 flex items-center justify-center mb-6 group-hover:bg-orange-500 group-hover:text-white group-hover:shadow-sm group-hover:shadow-orange-200 transition-all duration-300">
-                        <BadgeCheck size={20} strokeWidth={2.5} />
+                    <div className="flex items-center gap-3">
+                      <div className="size-10 rounded-lg bg-muted text-muted-foreground flex items-center justify-center group-hover:bg-primary group-hover:text-white transition-colors">
+                        <MapPin size={18} />
                       </div>
-                      <h4 className="text-lg font-bold text-slate-900 tracking-tight group-hover:text-orange-600 transition-colors">{city.city}</h4>
-                      <p className="mt-1 text-[9px] font-bold text-slate-400 uppercase tracking-widest">
-                        {city.districts.length} İLÇE
-                      </p>
+                      <div className="min-w-0">
+                        <h4 className="text-sm font-bold text-foreground truncate">{city.city}</h4>
+                        <p className="text-[9px] font-medium text-muted-foreground uppercase tracking-tight">
+                          {city.districts.length} İlçe
+                        </p>
+                      </div>
                     </div>
                   </Link>
                 ))}
@@ -183,42 +177,28 @@ export default async function HomePage() {
           </div>
         </section>
 
-        {/* Elite Trust & Performance */}
-        <section className="bg-slate-900 py-32 relative overflow-hidden">
-          {/* Abstract Background Accents */}
-          <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-blue-600/10 rounded-full blur-[120px] -mr-64 -mt-64" />
-          <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-indigo-600/10 rounded-full blur-[120px] -ml-64 -mb-64" />
-
+        {/* Trust & Performance - Calm UI */}
+        <section className="bg-muted/30 py-24 relative overflow-hidden border-y border-border">
           <div className="max-w-7xl mx-auto px-6 lg:px-8 relative z-10">
-            <div className="text-center mb-24">
-              <h2 className="text-4xl md:text-6xl font-bold text-white mb-6 tracking-tighter">Güvenilir Araç Pazarı</h2>
-              <p className="text-slate-400 max-w-2xl mx-auto text-sm font-bold uppercase tracking-[0.2em] opacity-80">
+            <div className="text-center mb-16">
+              <h2 className="text-3xl font-bold text-foreground mb-4 tracking-tight">Güvenilir Araç Pazarı</h2>
+              <p className="text-muted-foreground max-w-2xl mx-auto text-[10px] font-bold uppercase tracking-widest text-muted-foreground/50">
                 TÜM İLANLARIMIZ KİMLİK ONAYLI VE ŞEFFAF EKSPERTİZ DESTEĞİYLE SUNULUR.
               </p>
             </div>
             
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
               {[
-                { icon: <ShieldCheck size={40} strokeWidth={1} />, title: "Kurumsal Onay", desc: "Tüm satıcı profilleri moderasyon ekibimiz tarafından titizlikle incelenir ve kimlikleri doğrulanır.", color: "blue" },
-                { icon: <CheckCircle2 size={40} strokeWidth={1} />, title: "Dijital Ekspertiz", desc: "Aracın tüm geçmişi ve teknik durumu bağımsız dijital raporlarla %100 şeffaflıkla sunulur.", color: "emerald" },
-                { icon: <Zap size={40} strokeWidth={1} />, title: "AI Değerleme", desc: "Yapay zeka altyapımız ile aracınızın gerçek piyasa değerini anlık verilerle saniyeler içinde öğrenin.", color: "indigo" },
+                { icon: <ShieldCheck size={28} strokeWidth={2} />, title: "Kurumsal Onay", desc: "Tüm satıcı profilleri moderasyon ekibimiz tarafından titizlikle incelenir ve kimlikleri doğrulanır.", color: "muted" },
+                { icon: <CheckCircle2 size={28} strokeWidth={2} />, title: "Dijital Ekspertiz", desc: "Aracın tüm geçmişi ve teknik durumu bağımsız dijital raporlarla %100 şeffaflıkla sunulur.", color: "muted" },
+                { icon: <Zap size={28} strokeWidth={2} />, title: "AI Değerleme", desc: "Yapay zeka altyapımız ile aracınızın gerçek piyasa değerini anlık verilerle saniyeler içinde öğrenin.", color: "muted" },
               ].map((item, i) => (
-                <div key={i} className="group relative bg-white/5 border border-white/10 p-10 rounded-2xl transition-all duration-300 hover:bg-white/10">
-                  <div className={cn(
-                    "size-20 rounded-xl flex items-center justify-center mb-8 transition-transform duration-500 group-hover:rotate-3 shadow-sm",
-                    item.color === "blue" ? "bg-blue-600 text-white shadow-blue-500/20" :
-                    item.color === "emerald" ? "bg-emerald-500 text-white shadow-emerald-500/20" :
-                    "bg-indigo-600 text-white shadow-indigo-500/20"
-                  )}>
+                <div key={i} className="group relative bg-card border border-border p-8 rounded-2xl transition-all duration-300">
+                   <div className="size-14 rounded-xl flex items-center justify-center mb-6 bg-muted text-muted-foreground border border-border/50">
                     {item.icon}
                   </div>
-                  <h3 className="text-2xl font-bold text-white mb-4 tracking-tight">{item.title}</h3>
-                  <p className="text-slate-400 text-sm leading-relaxed font-medium">{item.desc}</p>
-                  
-                  {/* Premium Corner Accent */}
-                  <div className="absolute top-8 right-8 text-white/5 font-bold text-6xl select-none group-hover:text-white/10 transition-colors">
-                    0{i + 1}
-                  </div>
+                  <h3 className="text-xl font-bold text-card-foreground mb-3 tracking-tight">{item.title}</h3>
+                  <p className="text-xs text-muted-foreground leading-relaxed font-medium">{item.desc}</p>
                 </div>
               ))}
             </div>

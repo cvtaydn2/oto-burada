@@ -15,15 +15,15 @@ export default async function DashboardFavoritesPage() {
       <div className="flex items-center justify-between">
         <div>
           <div className="flex items-center gap-2 mb-1">
-            <div className="flex size-8 items-center justify-center rounded-lg bg-rose-50 text-rose-500">
-              <Heart size={16} className="fill-rose-500" />
+            <div className="flex size-7 items-center justify-center rounded-lg bg-muted text-muted-foreground">
+              <Heart size={14} className="fill-current" />
             </div>
-            <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground/70 italic">
-              Kişisel Envanter
+            <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/60">
+              Favori Listesi
             </span>
           </div>
-          <h1 className="text-2xl font-bold tracking-tight text-foreground">
-            Favori İlanlarım
+          <h1 className="text-3xl font-bold tracking-tight text-foreground">
+            Favorilerim
           </h1>
           <p className="mt-1 text-sm text-muted-foreground font-medium">
             Takip ettiğin araçları buradan yönet.

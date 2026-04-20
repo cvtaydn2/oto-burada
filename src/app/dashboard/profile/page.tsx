@@ -34,11 +34,11 @@ export default async function DashboardProfilePage() {
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
         <div>
           <div className="flex items-center gap-2 mb-2">
-            <User className="text-primary" size={16} />
-            <span className="text-xs font-bold text-muted-foreground uppercase tracking-widest">Üyelik Merkezi</span>
+            <User className="text-muted-foreground" size={14} />
+            <span className="text-[10px] font-bold text-muted-foreground/60 uppercase tracking-widest">Yönetim Merkezi</span>
           </div>
-          <h1 className="text-2xl font-bold text-foreground">
-            Profil Ayarları
+          <h1 className="text-3xl font-bold text-foreground tracking-tight">
+            Hesap & Profil
           </h1>
           <p className="text-sm font-medium text-muted-foreground mt-1">Hesap bilgilerinizi ve doğrulama durumunuzu yönetin.</p>
         </div>
@@ -50,7 +50,7 @@ export default async function DashboardProfilePage() {
                 <div className="h-full bg-emerald-500 transition-all" style={{ width: `${completion}%` }} />
               </div>
             </div>
-            <p className="text-[10px] font-bold text-muted-foreground/70 uppercase tracking-wider">Profil Tamamlandı</p>
+            <p className="text-[10px] font-bold text-muted-foreground/50 uppercase tracking-widest">Profil Tamamlandı</p>
           </div>
         </div>
       </div>
@@ -155,15 +155,15 @@ function VerificationItem({ label, isVerified }: { label: string; isVerified: bo
     <div className={cn(
       "flex items-center justify-between p-3 rounded-lg border transition-all",
       isVerified
-        ? "bg-emerald-50 border-emerald-100 text-emerald-700"
-        : "bg-muted/30 border-border/50 text-muted-foreground/70"
+        ? "bg-emerald-50/50 border-emerald-100 text-emerald-700"
+        : "bg-muted/30 border-border/50 text-muted-foreground/50"
     )}>
-      <span className="text-xs font-medium">{label}</span>
+      <span className="text-[11px] font-bold uppercase tracking-wider">{label}</span>
       <div className={cn(
         "size-5 rounded-full border flex items-center justify-center transition-all",
         isVerified ? "bg-emerald-500 border-emerald-500 text-white" : "border-border"
       )}>
-        {isVerified && <CheckCircle2 size={12} strokeWidth={3} />}
+        {isVerified && <CheckCircle2 size={11} strokeWidth={3} />}
       </div>
     </div>
   );

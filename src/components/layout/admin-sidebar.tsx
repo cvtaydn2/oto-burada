@@ -85,14 +85,14 @@ export function AdminSidebar() {
     <aside aria-label="Admin paneli navigasyonu" className="fixed left-0 top-0 hidden h-screen w-72 flex-col border-r border-slate-200 bg-white md:flex z-50">
       <div className="flex h-20 items-center px-8 border-b border-slate-100">
         <Link href="/" className="flex items-center gap-3 group">
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-600 text-white shadow-sm shadow-blue-100 transition-all group- group-hover:rotate-3">
-            <ShieldCheck size={22} />
+          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary text-primary-foreground shadow-sm">
+            <ShieldCheck size={20} />
           </div>
           <div className="flex flex-col">
-            <span className="text-sm font-bold tracking-tight text-slate-800 leading-none">
+            <span className="text-sm font-bold tracking-tight text-foreground leading-none">
               OTOBURADA
             </span>
-            <span className="text-[10px] font-bold text-blue-600 uppercase tracking-[0.2em] mt-1 leading-none">
+            <span className="text-[10px] font-bold text-primary uppercase tracking-widest mt-1 leading-none">
               KONTROL
             </span>
           </div>
@@ -101,7 +101,7 @@ export function AdminSidebar() {
 
       <nav aria-label="Admin menü" className="flex-1 overflow-y-auto p-6 space-y-1.5 custom-scrollbar">
         <div className="mb-4">
-           <span className="px-4 text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em]">Ana Menü</span>
+           <span className="px-4 text-[10px] font-bold text-muted-foreground/50 uppercase tracking-widest">Ana Menü</span>
         </div>
         {ADMIN_NAV_ITEMS.map((item) => {
           const isActive = pathname === item.href;
@@ -113,11 +113,11 @@ export function AdminSidebar() {
               className={cn(
                 "group flex items-center gap-3 rounded-xl px-4 py-3.5 text-sm font-bold transition-all relative overflow-hidden",
                 isActive 
-                  ? "bg-blue-600 text-white shadow-md shadow-blue-100" 
-                  : "text-slate-500 hover:bg-blue-50 hover:text-blue-600"
+                  ? "bg-primary text-primary-foreground" 
+                  : "text-muted-foreground hover:bg-muted"
               )}
             >
-              <item.icon size={20} className={cn(isActive ? "text-white" : "text-slate-400 group-hover:text-blue-600")} />
+              <item.icon size={18} className={cn(isActive ? "text-primary-foreground" : "text-muted-foreground group-hover:text-foreground")} />
               {item.title}
               {isActive && (
                  <div className="absolute right-0 top-0 h-full w-1 bg-white/20" />
@@ -136,15 +136,15 @@ export function AdminSidebar() {
         </Link>
         
         <div className="pt-2">
-           <div className="flex items-center gap-3 p-3 rounded-2xl bg-white border border-slate-200 shadow-sm">
-              <div className="size-10 rounded-xl bg-blue-50 flex items-center justify-center border border-blue-100">
-                 <ShieldCheck className="text-blue-600 size-6" />
-              </div>
-              <div className="flex flex-col overflow-hidden">
-                 <span className="text-xs font-bold text-slate-800 uppercase italic leading-none">Admin Modu</span>
-                 <span className="text-[9px] text-slate-400 font-bold uppercase tracking-wider mt-1 truncate">Tam Yetkili Erişim</span>
-              </div>
-           </div>
+          <div className="flex items-center gap-3 p-3 rounded-2xl bg-card border border-border shadow-sm">
+            <div className="size-10 rounded-xl bg-muted flex items-center justify-center border border-border">
+              <ShieldCheck className="text-primary size-5" />
+            </div>
+            <div className="flex flex-col overflow-hidden">
+              <span className="text-[10px] font-bold text-foreground uppercase leading-none">Admin Modu</span>
+              <span className="text-[9px] text-muted-foreground font-medium uppercase tracking-widest mt-1 truncate">Tam Yetkili Erişim</span>
+            </div>
+          </div>
         </div>
       </div>
     </aside>

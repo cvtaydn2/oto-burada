@@ -40,20 +40,20 @@ export function VehicleInfoStep({
             <label className="block text-sm font-bold text-gray-700">Plaka ile Sorgula</label>
             <div className="flex gap-3">
               <div className="relative flex-1">
-                <div className="absolute inset-y-0 left-0 w-10 flex items-center justify-center border-r border-gray-100 bg-gray-50 rounded-l-lg">
-                   <span className="text-[10px] font-bold text-blue-800">TR</span>
+                <div className="absolute inset-y-0 left-0 w-10 flex items-center justify-center border-r border-border bg-muted/30 rounded-l-lg">
+                   <span className="text-[10px] font-bold text-primary">TR</span>
                 </div>
                 <input
                   {...register("licensePlate")}
                   placeholder="34 ABC 123"
-                  className="h-12 w-full border border-gray-200 rounded-lg pl-14 pr-4 text-sm font-bold placeholder-gray-300 outline-none focus:border-blue-500 transition-all uppercase"
+                  className="h-12 w-full border border-border rounded-lg pl-14 pr-4 text-sm font-semibold placeholder-muted-foreground/30 outline-none focus:ring-2 focus:ring-primary/20 transition-all uppercase"
                 />
               </div>
               <button
                 type="button"
                 onClick={onPlateLookup}
                 disabled={isPlateLoading}
-                className="inline-flex h-12 items-center justify-center gap-2 rounded-lg bg-blue-500 px-6 text-sm font-bold text-white transition-all hover:bg-blue-600 disabled:opacity-50"
+                className="inline-flex h-12 items-center justify-center gap-2 rounded-lg bg-primary px-6 text-sm font-semibold text-primary-foreground transition-all hover:opacity-90 disabled:opacity-50"
               >
                 {isPlateLoading ? <LoaderCircle className="size-4 animate-spin" /> : <Search size={18} />}
                 Sorgula
@@ -72,7 +72,7 @@ export function VehicleInfoStep({
             placeholder="17 haneli şasi numarasını giriniz..."
             error={errors.vin?.message as string}
             helperText="Güvenlik doğrulaması için zorunludur."
-            className="uppercase tracking-widest font-mono"
+            className="uppercase tracking-wide font-mono"
           />
         </div>
       </FormSection>
@@ -146,7 +146,7 @@ export function VehicleInfoStep({
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
           <div className="space-y-2">
-            <label className="block text-sm font-bold text-gray-700">Yakıt Tipi <span className="text-red-500">*</span></label>
+            <label className="block text-sm font-semibold text-foreground">Yakıt Tipi <span className="text-destructive">*</span></label>
             <Controller
               control={control}
               name="fuelType"
@@ -161,7 +161,7 @@ export function VehicleInfoStep({
           </div>
 
           <div className="space-y-2">
-            <label className="block text-sm font-bold text-gray-700">Vites Tipi <span className="text-red-500">*</span></label>
+            <label className="block text-sm font-semibold text-foreground">Vites Tipi <span className="text-destructive">*</span></label>
             <Controller
               control={control}
               name="transmission"

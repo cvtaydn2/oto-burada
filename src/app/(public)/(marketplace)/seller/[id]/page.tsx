@@ -42,123 +42,100 @@ export default async function SellerProfilePage({ params }: SellerProfilePagePro
   ]);
 
   return (
-    <div className="mx-auto max-w-[1280px] space-y-6 px-4 py-6 sm:px-6 lg:px-6 lg:py-8">
+    <div className="mx-auto max-w-[1280px] space-y-8 px-4 py-8 sm:px-6 lg:px-8">
       {/* Seller Header */}
-      <section className="overflow-hidden rounded-xl border border-border bg-card shadow-sm">
-        {/* Cover */}
-        <div className="h-16 bg-muted sm:h-20" />
-        
-        <div className="relative px-6 pb-8 sm:px-8">
-          <div className="-mt-10 flex flex-col items-start gap-5 sm:-mt-12 sm:flex-row sm:items-end">
+      <section className="rounded-xl border border-border bg-card p-6 lg:p-8 shadow-sm">
+        <div className="flex flex-col gap-8 md:flex-row md:items-start md:justify-between">
+          <div className="flex flex-col gap-6 sm:flex-row sm:items-center">
             {/* Avatar */}
-            <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-xl border-4 border-white bg-muted text-xl font-bold text-muted-foreground shadow sm:h-16 sm:w-16 sm:text-2xl">
-              {seller.fullName?.[0]?.toUpperCase() ?? "S"}
+            <div className="relative flex h-20 w-20 shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-muted/50 border border-border">
+              {seller.avatarUrl ? (
+                <Image
+                  src={seller.avatarUrl}
+                  alt={seller.fullName || "Satıcı"}
+                  fill
+                  className="object-cover"
+                />
+              ) : (
+                <User size={32} className="text-muted-foreground/30" />
+              )}
             </div>
-            
-            <div className="min-w-0 flex-1">
-              <div className="mb-2 flex items-center gap-2 flex-wrap">
-                <h1 className="text-2xl font-bold text-foreground sm:text-3xl">
+
+            {/* Info */}
+            <div className="space-y-1.5">
+              <div className="flex flex-wrap items-center gap-2">
+                <h1 className="text-xl font-bold tracking-tight text-foreground">
                   {seller.fullName || "İsimsiz Satıcı"}
                 </h1>
-                {sellerListings.some(l => l.featured) && (
-                  <span className="inline-flex items-center gap-1 rounded-full bg-amber-100 px-2.5 py-1 text-xs font-medium text-amber-700">
-                    <Star size={10} />
-                    Öne çıkan
-                  </span>
-                )}
-              </div>
-              <div className="flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
-                <span className="flex items-center gap-1.5">
-                  <MapPin size={14} className="text-muted-foreground/70" /> 
-                  {seller.city || "Konum belirtilmedi"}
-                </span>
-                <span className="flex items-center gap-1.5">
-                  <Calendar size={14} className="text-muted-foreground/70" />
-                  {memberSinceYear} den beri üye
-                </span>
-                <span className="inline-flex items-center rounded-full bg-primary/10 px-3 py-1 text-xs font-medium text-primary">
+                <span className="inline-flex items-center rounded-full bg-muted px-2 py-0.5 text-[9px] font-bold uppercase tracking-widest text-muted-foreground border border-border">
                   Bireysel Satıcı
                 </span>
               </div>
+              
+              <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs font-medium text-muted-foreground/70">
+                <div className="flex items-center gap-1.5">
+                  <MapPin size={12} />
+                  {seller.city || "Konum belirtilmedi"}
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <Calendar size={12} />
+                  {memberSinceYear}&apos;den beri üye
+                </div>
+              </div>
             </div>
-            
-            <div className="flex w-full gap-2 sm:w-auto">
-              {seller.phone && (
-                <a
-                  href={`https://wa.me/${seller.phone.replace(/\D/g, "")}?text=${encodeURIComponent("Merhaba, OtoBurada üzerinden ilanlarınızla ilgileniyorum.")}`}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="flex h-10 flex-1 items-center justify-center gap-2 rounded-lg bg-[#25D366] px-4 text-sm font-bold text-white transition-all hover:bg-[#20bd5a] sm:flex-none"
-                >
-                  <MessageSquare size={16} />
+          </div>
+
+          {/* Actions */}
+          <div className="flex w-full gap-2 sm:w-auto">
+            {seller.phone && (
+              <Button size="lg" className="flex-1 rounded-xl bg-[#25D366] hover:bg-[#1fb355] text-white font-bold text-xs tracking-widest uppercase md:px-8 shadow-sm" asChild>
+                <a href={`https://wa.me/${seller.phone.replace(/\D/g, "")}`} target="_blank" rel="noopener noreferrer">
+                  <MessageSquare size={16} className="mr-2 fill-current" />
                   WhatsApp
                 </a>
-              )}
-            </div>
+              </Button>
+            )}
+            <Button variant="outline" size="icon" className="h-12 w-12 shrink-0 rounded-xl">
+              <Share2 size={18} />
+            </Button>
           </div>
+        </div>
 
-          {/* Stats Cards */}
-          <div className="mt-6 grid gap-3 sm:grid-cols-3">
-            <div className="rounded-lg border border-border bg-card p-4">
-              <div className="flex items-center gap-3">
-                <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-muted text-muted-foreground">
-                  <Car size={18} />
+        {/* Stats Grid */}
+        <div className="mt-8 grid grid-cols-2 gap-3 sm:grid-cols-3">
+           {[
+             { label: "Aktif İlan", value: totalListingsCount, icon: Car },
+             { label: "Öne Çıkan", value: featuredListingCount, icon: CheckCircle2 },
+             { label: "Üyelik Yılı", value: memberSinceYear, icon: Clock }
+           ].map((stat) => (
+             <div key={stat.label} className="rounded-xl border border-border bg-muted/30 p-4 transition-colors hover:bg-muted/50">
+                <div className="flex items-center gap-3">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-background border border-border text-muted-foreground/60">
+                    <stat.icon size={18} />
+                  </div>
+                  <div>
+                    <div className="text-lg font-bold text-foreground leading-none">{stat.value}</div>
+                    <div className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/40 mt-1">{stat.label}</div>
+                  </div>
                 </div>
-                <div>
-                  <div className="text-xl font-bold text-foreground">{totalListingsCount}</div>
-                  <div className="text-xs text-muted-foreground font-medium">Aktif ilan</div>
-                </div>
-              </div>
-            </div>
+             </div>
+           ))}
+        </div>
 
-            <div className="rounded-lg border border-border bg-card p-4">
-              <div className="flex items-center gap-3">
-                <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-muted text-muted-foreground">
-                  <CheckCircle2 size={18} />
-                </div>
-                <div>
-                  <div className="text-xl font-bold text-foreground">{featuredListingCount}</div>
-                  <div className="text-xs text-muted-foreground font-medium">Öne çıkan ilan</div>
-                </div>
-              </div>
+        {/* Trust Factors */}
+        <div className="mt-6 flex flex-wrap items-center gap-3 pt-6 border-t border-border">
+          <span className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground/30 mr-2">GÜVEN SİNYALLERİ</span>
+          {trustSummary.signals.map((signal) => (
+            <div key={signal} className="flex items-center gap-1.5 rounded-full bg-emerald-50/50 px-2.5 py-0.5 text-[9px] font-bold text-emerald-600 border border-emerald-100/50 uppercase tracking-tight">
+              <CheckCircle2 size={11} />
+              {signal}
             </div>
-
-            <div className="rounded-lg border border-border bg-card p-4">
-              <div className="flex items-center gap-3">
-                <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-muted text-muted-foreground">
-                  <Clock size={18} />
-                </div>
-                <div>
-                  <div className="text-xl font-bold text-foreground">{memberSinceYear}</div>
-                  <div className="text-xs text-muted-foreground font-medium">Üyelik yılı</div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Trust Section */}
-          <div className="mt-5 rounded-lg bg-muted/30 p-4">
-            <div className="mb-3 flex items-center justify-between">
-              <h3 className="text-sm font-semibold text-foreground">Güvenilirlik özeti</h3>
-              {ratingSummary.count > 0 && (
-                <SellerRatingInfo
-                  average={ratingSummary.average}
-                  count={ratingSummary.count}
-                />
-              )}
-            </div>
-            <div className="flex flex-wrap gap-4">
-              {trustSummary.signals.map((signal) => (
-                <div key={signal} className="flex items-center gap-2 text-sm text-emerald-700">
-                  <CheckCircle2 size={18} className="text-emerald-500" />
-                  {signal}
-                </div>
-              ))}
-              <TrustBadge
+          ))}
+          <div className="ml-auto">
+             <TrustBadge
                 badgeLabel={trustSummary.badgeLabel}
                 score={trustSummary.score}
               />
-            </div>
           </div>
         </div>
       </section>

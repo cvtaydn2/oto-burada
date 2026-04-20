@@ -120,22 +120,22 @@ export function ContactActions({ listingId, listingSlug, sellerId, currentUserId
             // Guest: giriş yap butonu göster
             <button
               onClick={() => router.push(`/login?next=${encodeURIComponent(returnPath)}`)}
-              className="flex w-full items-center justify-center gap-2 rounded-xl bg-card border border-gray-300 h-12 px-4 text-[15px] font-bold text-gray-700 hover:bg-gray-50 transition-all active:scale-95"
+              className="flex w-full items-center justify-center gap-2 rounded-xl bg-card border border-border h-12 px-4 text-sm font-bold text-foreground hover:bg-muted transition-all active:scale-95"
             >
-              <Phone className="size-5 text-blue-500" />
+              <Phone className="size-5 text-primary" />
               Numarayı Görmek İçin Giriş Yap
             </button>
           ) : (
             <button
               onClick={handleReveal}
               disabled={isLogging}
-              className="flex w-full items-center justify-center gap-2 rounded-xl bg-card border border-gray-300 h-12 px-4 text-[15px] font-bold text-gray-700 hover:bg-gray-50 transition-all active:scale-95 disabled:opacity-70"
+              className="flex w-full items-center justify-center gap-2 rounded-xl bg-card border border-border h-12 px-4 text-sm font-bold text-foreground hover:bg-muted transition-all active:scale-95 disabled:opacity-70"
             >
               {isLogging ? (
                 <Loader2 className="animate-spin size-5" />
               ) : (
                 <>
-                  <Phone className="size-5 text-blue-500" />
+                  <Phone className="size-5 text-primary" />
                   Numarayı Göster
                 </>
               )}
@@ -144,9 +144,9 @@ export function ContactActions({ listingId, listingSlug, sellerId, currentUserId
         ) : (
           <a
             href={`tel:${revealedPhone}`}
-            className="flex w-full items-center justify-center gap-2 rounded-xl bg-gray-50 border border-gray-200 h-12 px-4 text-[15px] font-bold text-gray-900 animate-in fade-in zoom-in-95 duration-200"
+            className="flex w-full items-center justify-center gap-2 rounded-xl bg-muted border border-border h-12 px-4 text-sm font-bold text-foreground"
           >
-            <Phone className="size-5 text-blue-500" />
+            <Phone className="size-5 text-primary" />
             {revealedPhone ? formatPhone(revealedPhone) : "N/A"}
           </a>
         )}
@@ -156,7 +156,7 @@ export function ContactActions({ listingId, listingSlug, sellerId, currentUserId
       <AlertDialog>
         <AlertDialogTrigger asChild>
           <button
-            className="flex w-full items-center justify-center gap-2 rounded-xl bg-emerald-500 text-white h-12 px-4 text-[15px] font-bold border border-emerald-500 transition-all hover:bg-emerald-600 active:scale-95 shadow-md"
+            className="flex w-full items-center justify-center gap-2 rounded-xl bg-[#25D366] text-white h-12 px-4 text-sm font-bold border border-[#25D366] transition-all hover:bg-[#1fb355] active:scale-95 shadow-sm"
           >
             <MessageCircle className="size-5" />
             WhatsApp ile İletişime Geç
@@ -224,13 +224,13 @@ export function ContactActions({ listingId, listingSlug, sellerId, currentUserId
       <button
         onClick={handleStartChat}
         disabled={isChatting}
-        className="flex w-full items-center justify-center gap-2 rounded-xl bg-blue-50 h-12 px-4 text-[15px] font-bold text-blue-700 border border-blue-100 transition-all hover:bg-blue-100 active:scale-95 disabled:opacity-70"
+        className="flex w-full items-center justify-center gap-2 rounded-xl bg-muted h-12 px-4 text-sm font-bold text-foreground border border-border transition-all hover:bg-muted/80 active:scale-95 disabled:opacity-70"
       >
         {isChatting ? (
           <Loader2 className="animate-spin size-5" />
         ) : (
           <>
-            <MessageCircle className="size-5" />
+            <MessageCircle className="size-5 text-primary" />
             Uygulama İçi Mesaj
           </>
         )}

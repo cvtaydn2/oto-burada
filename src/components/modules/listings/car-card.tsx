@@ -23,9 +23,8 @@ export function CarCard({ listing, priority = false, variant = "grid" }: CarCard
   const insights = getListingCardInsights(listing)
 
   return (
-    <div 
       className={cn(
-        "group relative block overflow-hidden rounded-2xl border border-slate-200 bg-white transition-all duration-300",
+        "group relative block overflow-hidden rounded-2xl border border-slate-100 bg-card transition-all duration-300 hover:shadow-md",
         variant === "grid" ? "flex-col" : "flex flex-row"
       )}
     >
@@ -57,21 +56,21 @@ export function CarCard({ listing, priority = false, variant = "grid" }: CarCard
         </Link>
         
         <div className="absolute left-4 top-4 z-10 flex flex-col gap-2">
-          {/* AI Badge - Subtle Info */}
+          {/* AI Badge - Calm UI */}
           <div className={cn(
-            "border rounded-full px-4 py-1.5 text-[10px] font-bold text-white flex items-center gap-2 tracking-widest uppercase",
-            insights.tone === "emerald" ? "bg-emerald-600/90 border-emerald-400" : 
-            insights.tone === "rose" ? "bg-rose-600/90 border-rose-400" :
-            insights.tone === "amber" ? "bg-amber-600/90 border-amber-400" :
-            "bg-slate-700/90 border-slate-500"
+            "rounded-full px-3 py-1 text-[10px] font-semibold flex items-center gap-1.5 uppercase tracking-wide",
+            insights.tone === "emerald" ? "bg-emerald-50 text-emerald-600" : 
+            insights.tone === "rose" ? "bg-rose-50 text-rose-600" :
+            insights.tone === "amber" ? "bg-amber-50 text-amber-600" :
+            "bg-muted text-muted-foreground"
           )}>
             {insights.tone === "emerald" && <Zap size={10} className="fill-current" />}
             {insights.badgeLabel}
           </div>
 
           {listing.expertInspection?.hasInspection && (
-            <div className="bg-emerald-50/90 border border-emerald-200 rounded-full px-4 py-1.5 text-[9px] font-bold text-emerald-700 flex items-center gap-1.5 tracking-widest uppercase">
-              <ShieldCheck size={12} className="text-emerald-500" />
+            <div className="bg-emerald-500/10 text-emerald-600 rounded-full px-3 py-1 text-[9px] font-bold flex items-center gap-1.5 uppercase tracking-wide">
+              <ShieldCheck size={12} />
               EKSPERTİZLİ
             </div>
           )}
@@ -101,12 +100,12 @@ export function CarCard({ listing, priority = false, variant = "grid" }: CarCard
 
       <div className="flex flex-1 flex-col p-6">
         <Link href={detailHref} className="group/title block">
-          <h3 className="font-bold text-[1.1rem] text-slate-900 truncate leading-none tracking-tight group-hover/title:text-slate-600 transition-colors">
+          <h3 className="font-bold text-base text-card-foreground truncate leading-none tracking-tight group-hover/title:text-primary transition-colors">
             {listing.title}
           </h3>
-          <div className="flex items-center gap-2 mt-2.5">
-             <span className="text-[10px] text-slate-500 font-bold uppercase tracking-widest bg-slate-100 px-2 py-0.5 rounded-md">{listing.year}</span>
-             <span className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">{listing.brand} &middot; {listing.model}</span>
+          <div className="flex items-center gap-2 mt-2">
+             <span className="text-[10px] text-muted-foreground font-semibold uppercase tracking-wide bg-muted px-2 py-0.5 rounded-md">{listing.year}</span>
+             <span className="text-[10px] text-muted-foreground/60 font-medium uppercase tracking-wide">{listing.brand} &middot; {listing.model}</span>
           </div>
         </Link>
 
@@ -149,16 +148,16 @@ export function CarCard({ listing, priority = false, variant = "grid" }: CarCard
         {/* Footer Area */}
         <div className="mt-6 flex items-center justify-between">
           <div className="flex flex-col">
-             <p className="flex items-center gap-1.5 text-[10px] text-slate-500 font-bold uppercase tracking-widest">
-               <MapPin size={12} className="text-slate-400" />
+             <p className="flex items-center gap-1.5 text-[10px] text-muted-foreground font-semibold uppercase tracking-wide">
+               <MapPin size={12} className="text-muted-foreground/50" />
                {listing.city} &middot; {listing.district}
              </p>
-             <span className="text-sm font-bold text-slate-700 mt-1 tracking-tight">{formatNumber(listing.mileage)} KM</span>
+             <span className="text-sm font-bold text-foreground mt-1 tracking-tight">{formatNumber(listing.mileage)} KM</span>
           </div>
           
-          <div className="group/btn flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-white bg-slate-900 px-6 py-3 rounded-xl hover:bg-black transition-all active:scale-95 cursor-pointer">
+          <div className="group/btn flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-primary-foreground bg-primary px-4 py-2.5 rounded-xl hover:opacity-90 transition-all active:scale-95 cursor-pointer">
             İncele
-            <ChevronRight size={14} strokeWidth={2.5} />
+            <ChevronRight size={14} className="group-hover/btn:translate-x-0.5 transition-transform" />
           </div>
         </div>
       </div>

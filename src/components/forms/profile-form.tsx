@@ -83,9 +83,9 @@ export function ProfileForm({
               {values.city || "Henüz eklenmedi"}
             </p>
           </div>
-          <div className="rounded-xl border border-primary/10 bg-gradient-to-br from-primary/10 via-background to-background p-4">
-            <div className="flex items-center gap-2 text-sm font-medium text-primary">
-              <Camera className="size-4" />
+          <div className="rounded-xl border border-border bg-card p-4">
+            <div className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-primary">
+              <Camera className="size-3" />
               Avatar
             </div>
             <p className="mt-2 text-sm font-semibold text-foreground">
@@ -94,9 +94,9 @@ export function ProfileForm({
           </div>
         </div>
 
-        <section className="rounded-[1.75rem] border border-border/80 bg-background p-5 shadow-sm sm:p-6">
+        <section className="rounded-2xl border border-border bg-card p-5 shadow-sm sm:p-6">
           <div className="flex items-start gap-3">
-            <div className="flex size-11 shrink-0 items-center justify-center rounded-2xl bg-primary/10 text-primary">
+            <div className="flex size-11 shrink-0 items-center justify-center rounded-xl bg-muted text-muted-foreground">
               <UserRound className="size-5" />
             </div>
             <div className="space-y-1">
@@ -163,9 +163,9 @@ export function ProfileForm({
         </div>
       </section>
 
-      <section className="rounded-[1.75rem] border border-border/80 bg-background p-5 shadow-sm sm:p-6">
+      <section className="rounded-2xl border border-border bg-card p-5 shadow-sm sm:p-6">
         <div className="flex items-start gap-3">
-          <div className="flex size-11 shrink-0 items-center justify-center rounded-2xl bg-primary/10 text-primary">
+          <div className="flex size-11 shrink-0 items-center justify-center rounded-xl bg-muted text-muted-foreground">
             <Camera className="size-5" />
           </div>
           <div className="space-y-1">
@@ -190,11 +190,11 @@ export function ProfileForm({
             />
           </label>
 
-          <div className="rounded-xl border border-primary/10 bg-gradient-to-br from-primary/10 via-background to-background p-4">
-            <p className="text-xs font-semibold uppercase tracking-[0.14em] text-primary">
+          <div className="rounded-xl border border-border bg-muted/20 p-4">
+            <p className="text-[10px] font-bold uppercase tracking-widest text-primary">
               Hazırlık Notu
             </p>
-            <p className="mt-2 text-sm leading-6 text-muted-foreground">
+            <p className="mt-2 text-xs leading-relaxed text-muted-foreground font-medium">
               Profil güncel olursa ilan detay sayfalarında daha güvenli ve düzenli bir satıcı görünümü elde edilir.
             </p>
           </div>

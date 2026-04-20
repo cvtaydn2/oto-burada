@@ -228,22 +228,22 @@ export function ListingsPageClient({
     <div className="mx-auto max-w-[1440px] px-4 py-10 lg:px-10 lg:py-12 bg-slate-50/30 min-h-screen">
 
       {/* Header & Control Center */}
-      <div className="mb-12">
-        <div className="flex flex-col gap-8 lg:flex-row lg:items-end lg:justify-between">
-          <div className="space-y-2">
-            <h1 className="text-4xl lg:text-5xl font-bold text-slate-900 tracking-tight leading-none">
+      <div className="mb-8">
+        <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
+          <div className="space-y-1">
+            <h1 className="text-2xl lg:text-3xl font-bold text-foreground tracking-tight">
               {filters.brand
                 ? `${filters.brand}${filters.model ? ` ${filters.model}` : ""} İlanları`
-                : "Tüm Satılık Araçlar"}
+                : "Satılık Araçlar"}
             </h1>
-            <p className="text-base font-bold text-slate-400 flex items-center gap-2">
-              <span className="size-1.5 rounded-full bg-blue-500 animate-pulse" />
+            <p className="text-sm font-medium text-muted-foreground flex items-center gap-2">
+              <span className="size-1.5 rounded-full bg-primary/40" />
               Şu an {initialResult.total} aktif ilan listeleniyor
             </p>
           </div>
 
           {/* Controls - Layout Bar */}
-          <div className="flex flex-wrap items-center gap-3 bg-white border border-slate-200 p-2 rounded-2xl shadow-sm">
+          <div className="flex flex-wrap items-center gap-2 bg-background border border-border p-1.5 rounded-xl shadow-sm">
             <MobileFilterDrawer
               brands={brands}
               cities={cities}

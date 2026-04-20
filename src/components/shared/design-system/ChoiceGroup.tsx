@@ -31,10 +31,10 @@ export function ChoiceGroup<T extends string>({
             type="button"
             onClick={() => onChange(option)}
             className={cn(
-              "flex-1 py-3 px-4 rounded-xl text-sm font-bold transition-all duration-200 shadow-sm",
+              "flex-1 py-3 px-4 rounded-xl text-sm font-semibold transition-all duration-200 border",
               isActive 
-                ? "bg-blue-500 text-white shadow-blue-500/20" 
-                : "bg-white border border-gray-200 text-gray-600 hover:bg-gray-50 border-gray-200"
+                ? "bg-primary text-primary-foreground border-primary shadow-sm" 
+                : "bg-background border-border text-muted-foreground hover:bg-muted/50"
             )}
           >
             {labels?.[option] ?? option}

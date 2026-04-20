@@ -88,7 +88,7 @@ export function FavoritesPageClient({ listings, userId }: FavoritesPageClientPro
           </p>
           <Link
             href="/listings"
-            className="mt-6 inline-flex items-center gap-2 rounded-xl bg-blue-600 px-6 py-2.5 text-sm font-bold text-white shadow-sm shadow-blue-600/20 transition hover:bg-blue-700"
+            className="mt-6 inline-flex items-center gap-2 rounded-xl bg-primary px-6 py-2.5 text-sm font-bold text-primary-foreground shadow-sm hover:opacity-90 transition-all"
           >
             İlanları Keşfet
             <ArrowRight size={15} />
@@ -324,10 +324,10 @@ function SpecItem({ icon, value }: { icon: React.ReactNode; value: string }) {
 type StatColor = "rose" | "blue" | "emerald" | "amber";
 
 const colorMap: Record<StatColor, { bg: string; text: string; icon: string }> = {
-  rose:    { bg: "bg-rose-50",    text: "text-rose-600",    icon: "text-rose-400" },
-  blue:    { bg: "bg-blue-50",    text: "text-blue-600",    icon: "text-blue-400" },
-  emerald: { bg: "bg-emerald-50", text: "text-emerald-600", icon: "text-emerald-400" },
-  amber:   { bg: "bg-amber-50",   text: "text-amber-600",   icon: "text-amber-400" },
+  rose:    { bg: "bg-muted/30", text: "text-foreground", icon: "text-rose-500" },
+  blue:    { bg: "bg-muted/30", text: "text-foreground", icon: "text-blue-500" },
+  emerald: { bg: "bg-muted/30", text: "text-foreground", icon: "text-emerald-500" },
+  amber:   { bg: "bg-muted/30", text: "text-foreground", icon: "text-amber-500" },
 };
 
 function StatCard({

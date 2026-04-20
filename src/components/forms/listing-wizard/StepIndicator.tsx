@@ -29,7 +29,7 @@ export function StepIndicator({ currentStep }: StepIndicatorProps) {
         
         {/* Active Progress Line */}
         <div 
-          className="absolute left-0 top-[22px] h-1.5 bg-slate-900 rounded-full z-1 transition-all duration-700 ease-out shadow-[0_0_15px_rgba(15,23,42,0.3)]"
+          className="absolute left-0 top-[22px] h-1.5 bg-primary rounded-full z-1 transition-all duration-700 ease-out"
           style={{ width: `${(currentStep / (stepsConfig.length - 1)) * 100}%` }}
         />
         
@@ -42,27 +42,22 @@ export function StepIndicator({ currentStep }: StepIndicatorProps) {
             <div key={step.label} className="relative z-10 flex flex-col items-center">
               <div
                 className={cn(
-                  "size-12 rounded-full flex items-center justify-center transition-all duration-500 ring-[6px] ring-slate-50 shadow-sm",
+                  "size-11 rounded-full flex items-center justify-center transition-all duration-500 ring-4 ring-slate-50 shadow-sm",
                   isCompleted ? "bg-emerald-500 text-white" : 
-                  isActive ? "bg-slate-900 text-white scale-110 shadow-sm shadow-slate-900/40" : 
-                  "bg-white text-slate-300 border border-slate-200"
+                  isActive ? "bg-primary text-primary-foreground scale-105" : 
+                  "bg-white text-muted-foreground/40 border border-border"
                 )}
               >
-                {isCompleted ? <Check size={20} strokeWidth={4} /> : <Icon size={20} strokeWidth={isActive ? 3 : 2} />}
+                {isCompleted ? <Check size={18} strokeWidth={3} /> : <Icon size={18} strokeWidth={isActive ? 2.5 : 2} />}
               </div>
               <div className="absolute top-16 whitespace-nowrap text-center">
                 <span className={cn(
-                  "text-[10px] font-bold uppercase tracking-widest transition-all duration-300",
-                  isActive ? "text-slate-900 translate-y-0 opacity-100" : 
-                  isCompleted ? "text-emerald-600 opacity-80" : "text-slate-300 opacity-60"
+                  "text-[10px] font-semibold uppercase tracking-wide transition-all duration-300",
+                  isActive ? "text-primary opacity-100" : 
+                  isCompleted ? "text-emerald-600 opacity-80" : "text-muted-foreground/50"
                 )}>
                   {step.label}
                 </span>
-                {isActive && (
-                  <div className="mt-1 flex justify-center">
-                    <div className="size-1 rounded-full bg-slate-900 animate-bounce" />
-                  </div>
-                )}
               </div>
             </div>
           );

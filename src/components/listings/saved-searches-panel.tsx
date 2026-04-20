@@ -42,7 +42,7 @@ export function SavedSearchesPanel({ initialSavedSearches }: SavedSearchesPanelP
       const payload = await response.json().catch(() => null) as { success?: boolean; error?: { message?: string } } | null;
 
       if (!response.ok || !payload?.success) {
-        const message = payload?.error?.message ?? "Kayitli arama guncellenemedi.";
+        const message = payload?.error?.message ?? "Kayıtlı arama güncellenemedi.";
         posthog?.capture("saved_search_toggle_failed", { searchId, nextValue, responseStatus: response.status, message });
         setErrorMessage(message);
         return;
@@ -57,8 +57,8 @@ export function SavedSearchesPanel({ initialSavedSearches }: SavedSearchesPanelP
       );
       posthog?.capture("saved_search_toggled", { searchId, notificationsEnabled: nextValue });
     } catch {
-      posthog?.capture("saved_search_toggle_failed", { searchId, nextValue, message: "Baglanti sirasinda bir hata olustu. Lutfen tekrar dene." });
-      setErrorMessage("Baglanti sirasinda bir hata olustu. Lutfen tekrar dene.");
+      posthog?.capture("saved_search_toggle_failed", { searchId, nextValue, message: "Bağlantı sırasında bir hata oluştu. Lütfen tekrar dene." });
+      setErrorMessage("Bağlantı sırasında bir hata oluştu. Lütfen tekrar dene.");
     } finally {
       setActiveAction(null);
     }
@@ -127,22 +127,22 @@ export function SavedSearchesPanel({ initialSavedSearches }: SavedSearchesPanelP
         return (
           <div
             key={search.id}
-            className="group flex flex-col items-start justify-between gap-4 rounded-[1.75rem] border border-border/70 bg-background p-5 shadow-sm transition-colors hover:border-primary/50 sm:flex-row sm:items-center"
+            className="group flex flex-col items-start justify-between gap-4 rounded-2xl border border-border bg-card p-5 shadow-sm transition-all hover:border-primary/30 sm:flex-row sm:items-center"
           >
             <div className="flex items-start gap-4">
-              <div className="flex size-12 shrink-0 items-center justify-center rounded-2xl bg-primary/10 text-primary">
-                <Search className="size-6" />
+              <div className="flex size-11 shrink-0 items-center justify-center rounded-xl bg-muted text-muted-foreground">
+                <Search className="size-5" />
               </div>
               <div>
                 <div className="mb-1 flex flex-wrap items-center gap-3">
                   <h3 className="text-lg font-bold text-foreground">{search.title}</h3>
-                  <span className="rounded-full bg-primary/10 px-2 py-0.5 text-xs font-bold text-primary">
+                  <span className="rounded-full bg-emerald-50 px-2 py-0.5 text-[10px] font-bold text-emerald-600 border border-emerald-100">
                     {search.resultCount} aktif ilan
                   </span>
                 </div>
-                <p className="text-sm text-muted-foreground">{search.filtersSummary}</p>
-                <p className="mt-2 text-xs text-muted-foreground">
-                  Son guncelleme: {formatDate(search.updatedAt)}
+                <p className="text-xs text-muted-foreground font-medium">{search.filtersSummary}</p>
+                <p className="mt-2 text-[10px] uppercase font-bold tracking-widest text-muted-foreground/40">
+                  Son güncelleme: {formatDate(search.updatedAt)}
                 </p>
               </div>
             </div>

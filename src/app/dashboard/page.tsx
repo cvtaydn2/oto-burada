@@ -40,41 +40,38 @@ export default async function DashboardPage() {
   const favoriteCountPromise = getDatabaseFavoriteCount(user.id);
 
   return (
-    <div className="min-h-screen bg-slate-50/50 pb-20 pt-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
+    <div className="min-h-screen bg-background pb-20 pt-8">
       <div className="max-w-[1400px] mx-auto px-4 lg:px-8 space-y-12">
         
-        {/* Elite Header section */}
-        <section className="relative overflow-hidden rounded-2xl bg-slate-900 px-8 py-10 text-white shadow-sm shadow-slate-900/20">
-          <div className="absolute right-0 top-0 h-full w-1/3 bg-gradient-to-l from-white/10 to-transparent opacity-50" />
-          <div className="absolute -left-20 -top-20 h-64 w-64 rounded-full bg-blue-500/20 blur-3xl" />
-          
-          <div className="relative z-10 flex flex-col gap-8 md:flex-row md:items-end md:justify-between">
-            <div>
-              <div className="mb-4 inline-flex items-center gap-2 rounded-full bg-white/10 px-4 py-1.5 text-[10px] font-bold uppercase tracking-widest text-blue-300 backdrop-blur-md border border-white/10">
-                <LayoutDashboard size={12} strokeWidth={3} />
+        {/* Dashboard Header */}
+        <section className="bg-background border border-border rounded-2xl p-6 lg:p-8 shadow-sm">
+          <div className="flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
+            <div className="space-y-1">
+              <div className="inline-flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-muted-foreground/60 mb-2">
+                <LayoutDashboard size={12} />
                 {dashboard.controlCenter}
               </div>
-              <h1 className="text-4xl font-bold tracking-tight lg:text-5xl">
-                Hoş Geldin, <span className="text-blue-400">{user.email?.split("@")[0]}</span>
+              <h1 className="text-2xl font-bold tracking-tight text-foreground">
+                Hoş Geldin, <span className="text-primary">{user.email?.split("@")[0]}</span>
               </h1>
-              <p className="mt-3 max-w-xl text-lg font-bold text-slate-400">
-                OtoBurada üzerindeki ticari faaliyetlerini buradan yönetebilir, performansını anlık olarak izleyebilirsin.
+              <p className="text-sm font-medium text-muted-foreground">
+                Profilini ve ilanlarını buradan yönetebilirsin.
               </p>
             </div>
             
-            <div className="flex flex-wrap gap-4">
+            <div className="flex flex-wrap gap-3">
               <Link
                 href="/dashboard/listings?create=true"
-                className="flex h-16 items-center gap-3 rounded-2xl bg-blue-600 px-8 text-sm font-bold uppercase tracking-widest text-white shadow-sm shadow-blue-600/40 transition-all hover:bg-blue-700  "
+                className="flex h-11 items-center gap-2 rounded-xl bg-primary px-6 text-sm font-semibold text-primary-foreground shadow-sm hover:opacity-90 transition-all"
               >
-                <Plus size={20} strokeWidth={3} />
+                <Plus size={18} />
                 {dashboard.newListing}
               </Link>
             </div>
           </div>
 
-          {/* New Tabbed Nav - Cinema Style */}
-          <div className="relative z-10 mt-12 flex items-center gap-2 border-t border-white/10 pt-8 overflow-x-auto no-scrollbar">
+          {/* Navigation Tabs */}
+          <div className="mt-8 flex items-center gap-1 border-t border-border pt-6 overflow-x-auto no-scrollbar">
             {[
               { label: dashboard.summary, href: "/dashboard", icon: LayoutDashboard, active: true },
               { label: dashboard.myListings, href: "/dashboard/listings", icon: ClipboardList },
@@ -86,13 +83,13 @@ export default async function DashboardPage() {
                 key={tab.label}
                 href={tab.href}
                 className={cn(
-                  "flex h-12 items-center gap-3 rounded-xl px-6 text-xs font-bold uppercase tracking-widest transition-all whitespace-nowrap",
+                  "flex h-10 items-center gap-2 rounded-lg px-4 text-xs font-semibold whitespace-nowrap transition-all",
                   tab.active 
-                    ? "bg-white text-slate-900 shadow-sm shadow-white/10" 
-                    : "text-slate-400 hover:text-white hover:bg-white/5"
+                    ? "bg-primary text-primary-foreground" 
+                    : "text-muted-foreground hover:bg-muted hover:text-foreground"
                 )}
               >
-                <tab.icon size={16} strokeWidth={tab.active ? 3 : 2} />
+                <tab.icon size={14} />
                 {tab.label}
               </Link>
             ))}
@@ -133,115 +130,63 @@ async function DashboardDataSection({
   const approvedListingsCount = storedListings.filter((listing) => listing.status === "approved").length;
 
   return (
-    <div className="space-y-12">
+    <div className="space-y-8">
       {/* Verification & Alerts */}
-      {!profile?.emailVerified ? (
-        <section className="relative flex flex-col items-center justify-between gap-8 overflow-hidden rounded-2xl bg-gradient-to-br from-rose-600 to-rose-700 p-8 text-white shadow-sm shadow-rose-900/20 md:flex-row">
-          <div className="absolute -right-20 -top-20 h-64 w-64 rounded-full bg-white/10 blur-3xl" />
-          <div className="relative z-10 flex items-center gap-8">
-            <div className="flex size-20 shrink-0 items-center justify-center rounded-3xl bg-white/20 backdrop-blur-xl border border-white/20 shadow-inner">
-              <ShieldAlert size={40} strokeWidth={2.5} className="text-white" />
+      {!profile?.emailVerified && (
+        <section className="relative flex flex-col items-center justify-between gap-6 overflow-hidden rounded-xl bg-destructive/10 p-6 text-destructive border border-destructive/20 md:flex-row animate-in fade-in slide-in-from-top-4 duration-500">
+          <div className="flex items-center gap-4">
+            <div className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-destructive/20">
+              <ShieldCheck size={20} />
             </div>
             <div>
-              <h3 className="text-2xl font-bold tracking-tight">Kısıtlı Erişim: E-posta Doğrulanmadı</h3>
-              <p className="mt-2 max-w-xl text-lg font-bold text-rose-100">
-                Pazaryerinde güvenliği sağlamak için ilan vermeden önce e-postanı doğrulaman gerekiyor. Bu işlem sadece 30 saniye sürer.
-              </p>
+              <h4 className="text-sm font-bold tracking-tight">E-posta Adresini Doğrula</h4>
+              <p className="text-xs font-medium opacity-80 mt-0.5">İlan verebilmek ve tüm özellikleri kullanabilmek için e-posta doğrulamanız gerekiyor.</p>
             </div>
           </div>
-          <Link
-            href="/dashboard/profile"
-            className="group relative z-10 flex h-16 items-center gap-3 whitespace-nowrap rounded-2xl bg-white px-10 text-sm font-bold uppercase tracking-widest text-rose-600 shadow-sm transition-all  "
-          >
-            Hemen Doğrula
-            <ArrowRight size={18} strokeWidth={3} className="transition-transform group-hover:translate-x-1" />
-          </Link>
-        </section>
-      ) : (
-        <section className="flex items-center justify-between rounded-3xl border border-white bg-white p-6 shadow-sm shadow-slate-200/50 group hover:shadow-sm transition-all duration-500">
-          <div className="flex items-center gap-6">
-            <div className="flex size-14 items-center justify-center rounded-2xl bg-emerald-50 text-emerald-600 shadow-inner">
-              <ShieldCheck size={28} strokeWidth={2.5} />
-            </div>
-            <div>
-              <div className="flex items-center gap-2">
-                <span className="text-xl font-bold text-slate-900">Hesap Güvenliği Aktif</span>
-                <BadgeCheck className="text-blue-500" size={20} />
-              </div>
-              <p className="text-xs font-bold uppercase tracking-[0.2em] text-slate-400 mt-1">Sınırsız ilan yayınlama ve işlem yetkisi tanımlandı.</p>
-            </div>
-          </div>
-          <div className="hidden sm:flex items-center gap-1.5 rounded-full bg-emerald-100 px-4 py-1.5 text-[10px] font-bold uppercase tracking-widest text-emerald-700">
-            <div className="size-1.5 rounded-full bg-emerald-500 animate-pulse" />
-            DOĞRULANMIŞ ÜYE
-          </div>
+          <Button variant="destructive" size="sm" className="rounded-lg h-9 px-6 font-bold text-[10px] tracking-widest uppercase" asChild>
+            <Link href="/dashboard/profile">DOĞRULA</Link>
+          </Button>
         </section>
       )}
 
       {/* Main Stats Grid */}
-      <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-4 grid-cols-2 lg:grid-cols-4">
         {[
           {
             label: "Aktif İlanlarım",
             value: approvedListingsCount,
             icon: ClipboardList,
-            color: "blue",
-            sub: `${storedListings.length} toplam kayıt`,
-            bg: "bg-blue-600",
+            color: "text-blue-600",
           },
           {
             label: "Bekleyen Onay",
             value: pendingListingsCount,
             icon: Clock,
-            color: "amber",
-            sub: "Uzman incelemesinde",
-            bg: "bg-amber-500",
+            color: "text-amber-600",
           },
           {
             label: "Favori Kaydı",
             value: favoriteCount,
             icon: Heart,
-            color: "rose",
-            sub: "Kullanıcı etkileşimi",
-            bg: "bg-rose-500",
+            color: "text-rose-600",
           },
           {
             label: "Sistem Kredisi",
             value: profile?.balanceCredits ?? 0,
             icon: Zap,
-            color: "indigo",
-            sub: "Öne çıkarma bakiyen",
-            bg: "bg-indigo-600",
+            color: "text-indigo-600",
           },
         ].map((stat) => (
-          <div key={stat.label} className="group relative flex flex-col justify-between overflow-hidden rounded-2xl border border-white bg-white p-8 shadow-sm shadow-slate-200/50 transition-all hover:-translate-y-1 hover:shadow-sm">
-            <div className={cn("absolute -right-8 -top-8 size-32 rounded-full opacity-[0.03] transition-transform group-", stat.bg)} />
-            
-            <div className="mb-6 flex items-start justify-between">
-              <div className="flex size-14 items-center justify-center rounded-2xl bg-slate-50 text-slate-900 shadow-inner group-hover:bg-slate-100 transition-colors">
-                <stat.icon size={24} strokeWidth={2.5} className={cn(
-                  stat.color === "blue" ? "text-blue-600" :
-                  stat.color === "amber" ? "text-amber-600" :
-                  stat.color === "rose" ? "text-rose-600" :
-                  "text-indigo-600"
-                )} />
-              </div>
-              <div className="flex h-8 items-center gap-1.5 rounded-full bg-slate-50 px-3 text-[10px] font-bold uppercase tracking-widest text-slate-400">
-                <TrendingUp size={12} className="text-emerald-500" />
-                Live
+          <div key={stat.label} className="flex flex-col justify-between rounded-xl border border-border bg-card p-5 transition-all hover:bg-muted/30">
+            <div className="mb-4 flex items-center justify-between">
+              <div className={cn("flex size-9 items-center justify-center rounded-lg bg-muted border border-border text-muted-foreground")}>
+                <stat.icon size={18} />
               </div>
             </div>
             
             <div>
-              <div className="text-sm font-bold uppercase tracking-widest text-slate-400 mb-1">{stat.label}</div>
-              <div className="flex items-baseline gap-2">
-                <div className="text-5xl font-bold text-slate-900 tracking-tighter">{stat.value}</div>
-                <div className="text-xs font-bold text-slate-300">ADET</div>
-              </div>
-              <div className="mt-4 flex items-center gap-2">
-                <div className={cn("size-2 rounded-full", stat.bg)} />
-                <span className="text-[10px] font-bold uppercase tracking-widest text-slate-500">{stat.sub}</span>
-              </div>
+              <div className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/60 mb-1">{stat.label}</div>
+              <div className="text-2xl font-bold text-foreground tracking-tight">{stat.value}</div>
             </div>
           </div>
         ))}
@@ -249,63 +194,61 @@ async function DashboardDataSection({
 
       {/* Professional Storefront Management */}
       {profile?.userType === "professional" && profile.businessSlug && (
-        <section className="relative overflow-hidden rounded-2xl bg-white border border-white p-10 shadow-sm shadow-slate-200/40 group">
-          <div className="absolute right-0 top-0 h-full w-1/4 bg-slate-50/50 -skew-x-12 translate-x-1/2" />
-          
-          <div className="relative z-10 flex flex-col lg:flex-row lg:items-center justify-between gap-10">
-            <div className="space-y-4">
-              <div className="inline-flex items-center gap-2 rounded-full bg-blue-50 px-4 py-1.5 text-[10px] font-bold uppercase tracking-widest text-blue-600 border border-blue-100">
-                <LayoutDashboard size={12} strokeWidth={3} />
-                Kurumsal Mağaza Yönetimi
+        <section className="overflow-hidden rounded-xl bg-card border border-border p-6 lg:p-8 shadow-sm relative group">
+          <div className="relative flex flex-col md:flex-row md:items-center justify-between gap-8">
+            <div className="space-y-3">
+              <div className="inline-flex items-center gap-2 rounded-full bg-primary/5 px-3 py-1 text-[9px] font-bold uppercase tracking-widest text-primary border border-primary/10">
+                <LayoutDashboard size={12} />
+                Kurumsal Kontrol Paneli
               </div>
-              <h2 className="text-3xl font-bold text-slate-900 tracking-tight">
-                {profile.businessName || "Mağazam"} <span className="text-blue-600">Aktif</span>
+              <h2 className="text-xl font-bold text-foreground tracking-tight">
+                {profile.businessName || "Mağazam"} <span className="text-primary font-medium">Yayında</span>
               </h2>
-              <p className="text-sm font-bold text-slate-400 max-w-xl leading-relaxed">
-                Showroom sayfanız şu anda yayında. İlanlarınızın kurumsal bir kimlikle sergilendiği mağaza URL&apos;nizi müşterilerinizle paylaşabilirsiniz.
+              <p className="text-xs font-medium text-muted-foreground max-w-lg">
+                Showroom sayfanız şu anda yayında. Müşterileriniz tüm ilanlarınıza tek bir adresten ulaşabilir.
               </p>
             </div>
             
-            <div className="flex flex-col sm:flex-row items-center gap-4">
-               <div className="group/url relative flex items-center h-16 w-full sm:w-[320px] rounded-2xl bg-slate-50 border border-slate-100 px-6 transition-all hover:border-blue-200 hover:bg-white overflow-hidden">
+            <div className="flex flex-col sm:flex-row items-center gap-3">
+               <div className="flex items-center h-12 w-full sm:w-auto rounded-lg bg-muted/50 border border-border px-4 transition-all hover:bg-muted">
                   <div className="flex-1 min-w-0 pr-4">
-                    <span className="text-[10px] font-bold text-slate-300 uppercase tracking-widest block mb-0.5">Mağaza Linki</span>
-                    <span className="text-sm font-bold text-slate-600 truncate block">otoburada.com/gallery/{profile.businessSlug}</span>
+                    <span className="text-[9px] font-bold text-muted-foreground/50 uppercase tracking-widest block leading-none mb-1">Mağaza URL</span>
+                    <span className="text-xs font-semibold text-muted-foreground truncate block">otoburada.com/gallery/{profile.businessSlug}</span>
                   </div>
                   <Link 
                     href={`/gallery/${profile.businessSlug}`}
                     target="_blank"
-                    className="flex size-10 items-center justify-center rounded-xl bg-white text-slate-400 shadow-sm border border-slate-100 transition-all hover:bg-slate-900 hover:text-white"
+                    className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-background text-muted-foreground shadow-sm border border-border transition-all hover:bg-foreground hover:text-background"
                   >
-                    <Eye size={18} strokeWidth={2.5} />
+                    <Eye size={14} />
                   </Link>
                </div>
                
                <Link
                 href={`/gallery/${profile.businessSlug}`}
                 target="_blank"
-                className="flex h-16 w-full sm:w-auto items-center gap-3 rounded-2xl bg-slate-900 px-10 text-xs font-bold uppercase tracking-widest text-white shadow-sm shadow-slate-900/20 transition-all hover:bg-blue-600 hover:shadow-blue-600/20 "
+                className="flex h-12 w-full sm:w-auto items-center gap-2 rounded-xl bg-primary px-8 text-xs font-bold uppercase tracking-widest text-primary-foreground shadow-sm hover:opacity-90 transition-all"
                >
-                 Mağazayı Önizle
-                 <ChevronRight size={16} strokeWidth={3} />
+                 Mağazaya Git
+                 <ChevronRight size={14} />
                </Link>
             </div>
           </div>
           
-          <div className="mt-10 grid grid-cols-1 sm:grid-cols-3 gap-6 pt-10 border-t border-slate-50">
+          <div className="mt-8 grid grid-cols-1 sm:grid-cols-3 gap-6 pt-6 border-t border-border">
              {[
-               { label: "Mağaza Ziyareti", value: "Live", icon: Eye, sub: "İstatistikler yükleniyor..." },
-               { label: "Doğrulama Durumu", value: profile.verifiedBusiness ? "Onaylı" : "Beklemede", icon: ShieldCheck, sub: profile.verifiedBusiness ? "Kurumsal güven mührü aktif" : "Belge kontrolü devam ediyor" },
-               { label: "Toplu İşlemler", value: "Aktif", icon: Zap, sub: "XML / Excel entegrasyonu" }
+               { label: "Durum", value: "Aktif", icon: Eye, sub: "İstatistikler yükleniyor" },
+               { label: "Güven Durumu", value: profile.verifiedBusiness ? "Onaylı" : "İnceleniyor", icon: ShieldCheck, sub: profile.verifiedBusiness ? "Güven mührü aktif" : "Belge kontrolü yapılıyor" },
+               { label: "Özellikler", value: "Kurumsal", icon: Zap, sub: "Sınırsız İlan & XML" }
              ].map(i => (
-               <div key={i.label} className="flex gap-4">
-                 <div className="size-10 rounded-xl bg-slate-50 flex items-center justify-center text-slate-400 shrink-0">
-                    <i.icon size={20} />
+               <div key={i.label} className="flex gap-3">
+                 <div className="size-9 rounded-lg bg-muted/40 border border-border flex items-center justify-center text-muted-foreground/60 shrink-0">
+                    <i.icon size={16} />
                  </div>
                  <div>
-                   <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">{i.label}</div>
-                   <div className="text-sm font-bold text-slate-800">{i.value}</div>
-                   <div className="text-[9px] font-bold text-slate-400 mt-0.5">{i.sub}</div>
+                   <div className="text-[9px] font-bold text-muted-foreground/40 uppercase tracking-widest mb-0.5">{i.label}</div>
+                   <div className="text-sm font-bold text-foreground leading-tight">{i.value}</div>
+                   <div className="text-[10px] font-medium text-muted-foreground/60">{i.sub}</div>
                  </div>
                </div>
              ))}
@@ -313,89 +256,81 @@ async function DashboardDataSection({
         </section>
       )}
 
-      <div className="grid grid-cols-1 gap-12 lg:grid-cols-3">
+      <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
         {/* Left: Recent Activity */}
-        <div className="space-y-8 lg:col-span-2">
-          <div className="rounded-2xl border border-white bg-white p-10 shadow-sm shadow-slate-200/40">
-            <div className="mb-10 flex items-center justify-between">
+        <div className="space-y-6 lg:col-span-2">
+          <div className="rounded-xl border border-border bg-card p-6 shadow-sm">
+            <div className="mb-6 flex items-center justify-between">
               <div>
-                <h3 className="text-2xl font-bold text-slate-900 tracking-tight">Son Yayınlananlar</h3>
-                <p className="mt-1 text-sm font-bold text-slate-400">Aktif ilanlarının performansını ve durumunu izle.</p>
+                <h3 className="text-lg font-bold text-foreground tracking-tight">Son İlanlar</h3>
+                <p className="text-xs font-medium text-muted-foreground">Aktif ilanlarının performansını buradan izle.</p>
               </div>
-              <Link href="/dashboard/listings" className="flex items-center gap-2 rounded-xl bg-slate-50 px-5 py-2.5 text-xs font-bold uppercase tracking-widest text-slate-900 transition-colors hover:bg-slate-100">
-                Tümünü Gör
-                <ChevronRight size={14} strokeWidth={3} />
+              <Link href="/dashboard/listings" className="flex items-center gap-1.5 rounded-lg bg-muted h-9 px-4 text-xs font-bold uppercase tracking-widest text-foreground transition-colors hover:bg-muted/80">
+                TÜMÜ
+                <ChevronRight size={14} />
               </Link>
             </div>
 
             <div className="overflow-x-auto">
-              <table className="w-full min-w-[600px]">
+              <table className="w-full min-w-[500px]">
                 <thead>
-                  <tr className="border-b border-slate-50 text-[10px] font-bold uppercase tracking-[0.2em] text-slate-300">
-                    <th className="pb-6 text-left">Araç / İlan Bilgisi</th>
-                    <th className="pb-6 text-left">Fiyat</th>
-                    <th className="pb-6 text-left">Durum</th>
-                    <th className="pb-6 text-right">Performans</th>
+                  <tr className="border-b border-border text-[9px] font-bold uppercase tracking-widest text-muted-foreground/60">
+                    <th className="pb-3 text-left font-bold">ARAÇ</th>
+                    <th className="pb-3 text-left font-bold">FİYAT</th>
+                    <th className="pb-3 text-left font-bold">DURUM</th>
+                    <th className="pb-3 text-right font-bold">AKSİYON</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-50">
+                <tbody className="divide-y divide-border">
                   {storedListings.slice(0, 5).map((listing) => (
-                    <tr key={listing.id} className="group transition-all hover:bg-slate-50/50">
-                      <td className="py-6">
-                        <Link href={`/listing/${listing.slug}`} className="flex items-center gap-5">
-                          <div className="relative size-16 shrink-0 overflow-hidden rounded-2xl border border-slate-100 shadow-sm">
+                    <tr key={listing.id} className="group hover:bg-muted/30 transition-colors">
+                      <td className="py-3 pr-4">
+                        <Link href={`/listing/${listing.slug}`} className="flex items-center gap-3">
+                          <div className="relative size-10 shrink-0 overflow-hidden rounded-lg border border-border bg-muted">
                             <Image
-                              src={listing.images[0]?.url || "https://placehold.co/100x75?text=No+Image"}
+                              src={listing.images[0]?.url || "https://placehold.co/100x75?text=Ara%C3%A7"}
                               alt={listing.title}
                               fill
-                              className="object-cover transition-transform duration-500 group-"
+                              className="object-cover"
                             />
-                            {listing.status === "approved" && (
-                              <div className="absolute right-1 top-1 size-2 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.8)]" />
-                            )}
                           </div>
                           <div className="min-w-0">
-                            <div className="truncate font-bold text-slate-900 text-base leading-none mb-2 group-hover:text-blue-600 transition-colors">
+                            <div className="truncate font-bold text-foreground text-sm leading-tight transition-colors group-hover:text-primary">
                               {listing.title}
                             </div>
-                            <div className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-slate-400">
-                              <span className="text-blue-500">{listing.year}</span>
-                              <span className="size-1 rounded-full bg-slate-200" />
-                              {listing.brand} {listing.model}
+                            <div className="text-[10px] font-medium text-muted-foreground mt-0.5">
+                              {listing.year} &middot; {listing.brand}
                             </div>
                           </div>
                         </Link>
                       </td>
-                      <td className="py-6">
-                        <div className="font-bold text-slate-900 text-lg tracking-tight">
-                          {listing.price.toLocaleString("tr-TR")} <span className="text-xs text-slate-400">₺</span>
+                      <td className="py-3">
+                        <div className="font-bold text-foreground text-sm">
+                          {listing.price.toLocaleString("tr-TR")} ₺
                         </div>
                       </td>
-                      <td className="py-6">
+                      <td className="py-3">
                         <div className={cn(
-                          "inline-flex items-center gap-2 rounded-lg px-3 py-1.5 text-[10px] font-bold uppercase tracking-widest",
+                          "inline-flex items-center rounded-full px-2 py-0.5 text-[9px] font-bold uppercase tracking-widest",
                           listing.status === "approved" ? "bg-emerald-50 text-emerald-600" :
                           listing.status === "pending" ? "bg-amber-50 text-amber-600" :
-                          "bg-slate-100 text-slate-400"
+                          "bg-muted text-muted-foreground/60"
                         )}>
-                          {listing.status === "approved" ? "Yayında" :
-                           listing.status === "pending" ? "Onay Bekliyor" : "Arşivlendi"}
+                          {listing.status === "approved" ? "YAYINDA" :
+                           listing.status === "pending" ? "ONAYDA" : "PASİF"}
                         </div>
                       </td>
-                      <td className="py-6 text-right">
-                        <div className="flex items-center justify-end gap-4">
-                          <div className="flex flex-col items-end">
-                            <div className="flex items-center gap-1.5 text-slate-900 font-bold">
-                              <Eye size={14} className="text-blue-500" />
+                      <td className="py-3 text-right">
+                        <div className="flex items-center justify-end gap-2">
+                           <div className="flex items-center gap-1 text-[10px] font-bold text-muted-foreground mr-1">
+                              <Eye size={12} />
                               {listing.viewCount ?? 0}
-                            </div>
-                            <span className="text-[9px] font-bold text-slate-300 uppercase tracking-widest">İzlenme</span>
-                          </div>
+                           </div>
                           <Link
                             href={`/dashboard/listings?edit=${listing.id}`}
-                            className="flex size-10 items-center justify-center rounded-xl bg-slate-50 text-slate-400 transition-all hover:bg-slate-900 hover:text-white"
+                            className="flex size-8 items-center justify-center rounded-lg bg-muted text-muted-foreground transition-colors hover:bg-foreground hover:text-background"
                           >
-                            <Settings size={18} strokeWidth={2.5} />
+                            <Settings size={14} />
                           </Link>
                         </div>
                       </td>
@@ -404,18 +339,15 @@ async function DashboardDataSection({
                 </tbody>
               </table>
               {storedListings.length === 0 && (
-                <div className="py-20 text-center">
-                  <div className="mx-auto mb-6 flex size-24 items-center justify-center rounded-3xl bg-slate-50 text-slate-200">
-                    <ClipboardList size={40} />
+                <div className="py-12 text-center">
+                  <div className="mx-auto mb-4 flex size-16 items-center justify-center rounded-2xl bg-muted text-muted-foreground/30">
+                    <ClipboardList size={32} />
                   </div>
-                  <h4 className="text-lg font-bold text-slate-900">Henüz İlanın Yok</h4>
-                  <p className="mt-2 text-sm font-bold text-slate-400">İlk ilanını vererek satışa başlayabilirsin.</p>
-                  <Link
-                    href="/dashboard/listings?create=true"
-                    className="mt-8 inline-flex h-12 items-center gap-2 rounded-xl bg-blue-600 px-8 text-xs font-bold uppercase tracking-widest text-white shadow-sm shadow-blue-600/30 transition-all hover:bg-blue-700"
-                  >
-                    Hemen İlan Ver
-                  </Link>
+                  <h4 className="text-sm font-bold text-foreground">İlan bulunamadı</h4>
+                  <p className="mt-1 text-xs font-medium text-muted-foreground">Henüz ilan yayınlamamışsınız.</p>
+                  <Button className="mt-6 rounded-xl" asChild>
+                    <Link href="/dashboard/listings?create=true">İlan Yayınla</Link>
+                  </Button>
                 </div>
               )}
             </div>
@@ -423,61 +355,59 @@ async function DashboardDataSection({
         </div>
 
         {/* Right Sidebar: Contextual Tools */}
-        <div className="space-y-12">
+        <div className="space-y-8">
           {/* Credit Management Panel */}
-          <div className="relative overflow-hidden rounded-2xl bg-indigo-600 p-8 text-white shadow-sm shadow-indigo-900/20">
-            <div className="absolute -right-10 -top-10 size-40 rounded-full bg-white/10 blur-3xl" />
-            <h3 className="relative z-10 text-xl font-bold tracking-tight mb-2">Pazaryeri Kredileri</h3>
-            <p className="relative z-10 text-sm font-bold text-indigo-100 mb-8 opacity-80">İlanlarını öne çıkarmak için kullanabileceğin bakiyen.</p>
+          <div className="relative overflow-hidden rounded-xl border border-border bg-card p-6 shadow-sm">
+            <h3 className="text-lg font-bold tracking-tight mb-1 text-foreground">Doping Kredileri</h3>
+            <p className="text-xs font-medium text-muted-foreground mb-6">İlanlarını öne çıkarmak için kredi kullan.</p>
             
-            <div className="relative z-10 flex items-center justify-between rounded-3xl bg-white/10 backdrop-blur-xl border border-white/10 p-6 mb-8">
+            <div className="flex items-center justify-between rounded-xl bg-muted/50 border border-border p-5 mb-6">
               <div>
-                <div className="text-[10px] font-bold uppercase tracking-widest text-indigo-200 mb-1">Bakiyen</div>
+                <div className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground mb-1">MEVCUT BAKİYE</div>
                 <div className="flex items-center gap-2">
-                  <Zap size={24} fill="currentColor" className="text-amber-400" />
-                  <span className="text-4xl font-bold tracking-tighter">{profile?.balanceCredits ?? 0}</span>
+                  <Zap size={20} className="text-primary" />
+                  <span className="text-3xl font-bold tracking-tighter text-foreground">{profile?.balanceCredits ?? 0}</span>
                 </div>
               </div>
-              <div className="flex size-14 items-center justify-center rounded-2xl bg-white/10 border border-white/20">
-                <Sparkles size={24} className="text-amber-200" />
+              <div className="flex size-11 items-center justify-center rounded-xl bg-muted border border-border">
+                <Sparkles size={20} className="text-primary/40" />
               </div>
             </div>
 
             <Link
               href="/dashboard/pricing"
-              className="relative z-10 flex h-14 items-center justify-center rounded-2xl bg-white text-xs font-bold uppercase tracking-widest text-indigo-600 shadow-sm transition-all   w-full"
+              className="flex h-11 items-center justify-center rounded-xl bg-primary text-xs font-bold uppercase tracking-widest text-primary-foreground shadow-sm hover:opacity-90 transition-all w-full"
             >
-              Kredi Yükle
+              KREDİ AL
             </Link>
           </div>
 
           {/* Quick Shortcuts */}
-          <div className="space-y-6">
-            <h4 className="flex items-center gap-3 text-sm font-bold uppercase tracking-widest text-slate-400">
-              <div className="h-px flex-1 bg-slate-100" />
-              Hızlı Erişim
-              <div className="h-px flex-1 bg-slate-100" />
-            </h4>
+          <div className="space-y-4">
+            <div className="flex items-center gap-3">
+              <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest whitespace-nowrap">HIZLI ERİŞİM</span>
+              <div className="h-px w-full bg-border" />
+            </div>
             
-            <div className="grid gap-3">
+            <div className="grid gap-2">
               {[
-                { label: "Toplu İlan Yükle", href: "/dashboard/bulk-import", icon: Zap, color: "text-amber-500", bg: "bg-amber-50" },
-                { label: "Favori İlanlarım", href: "/dashboard/favorites", icon: Heart, color: "text-rose-500", bg: "bg-rose-50" },
-                { label: "Profil Ayarları", href: "/dashboard/profile", icon: User, color: "text-blue-500", bg: "bg-blue-50" },
-                { label: "Mesaj Kutusu", href: "/dashboard/messages", icon: MessageSquare, color: "text-indigo-500", bg: "bg-indigo-50" },
+                { label: "İlan Yayınla", href: "/dashboard/listings?create=true", icon: Zap, color: "text-amber-600", bg: "bg-amber-50" },
+                { label: "Favorilerim", href: "/dashboard/favorites", icon: Heart, color: "text-rose-600", bg: "bg-rose-50" },
+                { label: "Profil Ayarları", href: "/dashboard/profile", icon: User, color: "text-blue-600", bg: "bg-blue-50" },
+                { label: "Mesajlar", href: "/dashboard/messages", icon: MessageSquare, color: "text-indigo-600", bg: "bg-indigo-50" },
               ].map((item) => (
                 <Link
                   key={item.label}
                   href={item.href}
-                  className="group flex items-center justify-between rounded-2xl border border-white bg-white p-5 shadow-sm shadow-slate-200/30 transition-all hover:shadow-sm hover:-translate-x-1"
+                  className="group flex items-center justify-between rounded-xl border border-border bg-card p-4 shadow-sm transition-all hover:bg-muted"
                 >
-                  <div className="flex items-center gap-4">
-                    <div className={cn("flex size-10 items-center justify-center rounded-xl shadow-inner", item.bg)}>
-                      <item.icon size={18} strokeWidth={2.5} className={item.color} />
+                  <div className="flex items-center gap-3">
+                    <div className={cn("flex size-9 items-center justify-center rounded-lg", item.bg)}>
+                      <item.icon size={16} className={item.color} />
                     </div>
-                    <span className="text-sm font-bold text-slate-900 tracking-tight">{item.label}</span>
+                    <span className="text-sm font-bold text-foreground tracking-tight">{item.label}</span>
                   </div>
-                  <ChevronRight size={16} strokeWidth={3} className="text-slate-200 transition-all group-hover:text-slate-900 group-hover:translate-x-1" />
+                  <ChevronRight size={14} className="text-muted-foreground transition-all group-hover:translate-x-1" />
                 </Link>
               ))}
             </div>
