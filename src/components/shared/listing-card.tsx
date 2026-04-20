@@ -21,7 +21,7 @@ import { getListingBadgeStates, getListingCoverImage } from "@/lib/utils/listing
 import { cva, type VariantProps } from "class-variance-authority";
 
 const cardVariants = cva(
-  "group relative overflow-hidden transition-all duration-500 ease-in-out showroom-card",
+  "group relative overflow-hidden transition-[border-color,box-shadow,transform] duration-normal ease-standard showroom-card",
   {
     variants: {
       variant: {
@@ -81,10 +81,10 @@ export function ListingCard({
             alt={listing.title}
             fill
             priority={priority}
-            className="object-cover transition-transform duration-1000 ease-out group-hover:scale-110"
+            className="object-cover transition-transform duration-slow ease-expressive group-hover:scale-110"
           />
           {/* Glass Overlay for depth */}
-          <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent opacity-80 group-hover:opacity-40 transition-opacity duration-500" />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent opacity-80 group-hover:opacity-40 transition-opacity duration-normal" />
         </Link>
 
         {/* Floating Badges */}
@@ -105,7 +105,7 @@ export function ListingCard({
           <div className="absolute top-4 right-4 z-20">
             <FavoriteButton
               listingId={listing.id}
-              className="size-10 rounded-2xl bg-white/10 backdrop-blur-xl border border-white/20 text-white hover:bg-white hover:text-rose-500 transition-all duration-500 shadow-xl"
+              className="size-10 rounded-2xl bg-white/10 backdrop-blur-xl border border-white/20 text-white hover:bg-white hover:text-rose-500 transition-[background-color,color,transform] duration-normal ease-expressive shadow-xl active:scale-90"
             />
           </div>
         )}
@@ -155,7 +155,7 @@ export function ListingCard({
             <h2 className="text-2xl font-bold text-foreground tracking-tight line-clamp-1 group-hover/title:text-primary transition-colors duration-300">
               {listing.model}
             </h2>
-            <p className="text-sm font-medium text-slate-400 line-clamp-1 italic group-hover/title:text-slate-500 transition-colors">
+            <p className="text-sm font-medium text-slate-400 line-clamp-1 italic group-hover/title:text-slate-500 transition-colors duration-fast">
               {listing.title}
             </p>
           </Link>
@@ -182,7 +182,7 @@ export function ListingCard({
           isList && "sm:mt-6"
         )}>
           <div className="flex items-center gap-3">
-            <div className="size-8 rounded-xl bg-slate-50 flex items-center justify-center text-slate-400 group-hover:text-primary group-hover:bg-primary/5 transition-all duration-500">
+            <div className="size-8 rounded-xl bg-slate-50 flex items-center justify-center text-slate-400 group-hover:text-primary group-hover:bg-primary/5 transition-[background-color,color] duration-normal ease-standard">
               <MapPin size={14} />
             </div>
             <span className="text-[11px] font-bold text-slate-500 uppercase tracking-widest">
@@ -192,7 +192,7 @@ export function ListingCard({
 
           <Link 
             href={detailHref}
-            className="flex items-center gap-2 text-[11px] font-extrabold uppercase tracking-[0.15em] text-primary group-hover:gap-3 transition-all cursor-pointer"
+            className="flex items-center gap-2 text-[11px] font-extrabold uppercase tracking-[0.15em] text-primary group-hover:gap-3 transition-[gap] duration-normal ease-expressive cursor-pointer"
           >
             DETAY
             <ChevronRight size={16} strokeWidth={3} />
@@ -218,7 +218,7 @@ function Badge({ icon: Icon, label, className }: { icon: React.ElementType, labe
 function Stat({ icon: Icon, label, sub }: { icon: React.ElementType, label: string, sub?: string }) {
   return (
     <div className="flex flex-col gap-2">
-      <div className="size-10 rounded-2xl bg-muted/30 flex items-center justify-center text-slate-400 group-hover:bg-primary/5 group-hover:text-primary transition-all duration-500">
+      <div className="size-10 rounded-2xl bg-muted/30 flex items-center justify-center text-slate-400 group-hover:bg-primary/5 group-hover:text-primary transition-[background-color,color,transform] duration-normal ease-standard group-hover:scale-105">
         <Icon size={16} />
       </div>
       <div className="flex items-baseline gap-1 min-w-0">
