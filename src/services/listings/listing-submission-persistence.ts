@@ -1,6 +1,7 @@
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { hasSupabaseAdminEnv } from "@/lib/supabase/env";
 import { Listing } from "@/types";
+import { sanitizeDescription } from "@/lib/utils/sanitize";
 
 export function mapListingToDatabaseRow(listing: Listing) {
   return {
@@ -17,7 +18,7 @@ export function mapListingToDatabaseRow(listing: Listing) {
     price: listing.price,
     city: listing.city,
     district: listing.district,
-    description: listing.description,
+    description: sanitizeDescription(listing.description),
     whatsapp_phone: listing.whatsappPhone,
     license_plate: listing.licensePlate ?? null,
     status: listing.status,

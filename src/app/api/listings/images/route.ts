@@ -9,7 +9,7 @@ import {
 } from "@/services/listings/listing-images";
 import { captureServerError } from "@/lib/monitoring/posthog-server";
 import { withAuthAndCsrf } from "@/lib/utils/api-security";
-import { registerFileInRegistry, verifyAndUnregisterFile } from "@/lib/storage/registry";
+import { registerFileInRegistry, verifyAndUnregisterFile, countDailyUserUploads } from "@/lib/storage/registry";
 import { logger } from "@/lib/utils/logger";
 
 /**
@@ -58,6 +58,18 @@ export async function POST(request: Request) {
   }
 
   const formData = await request.formData();
+
+  // ── PILL: Issue 1 - Daily Upload Limit Protection ────────────────────
+  const DAILY_LIMIT = 50;
+  const currentUploadCount = await countDailyUserUploads(user.id);
+  if (currentUploadCount >= DAILY_LIMIT) {
+    return apiError(
+      API_ERROR_CODES.RATE_LIMITED, 
+      `Günlük fotoğraf yükleme limitine (${DAILY_LIMIT}) ulaştınız. Lütfen yarın tekrar deneyin.`,
+      429
+    );
+  }
+
   const file = formData.get("file");
 
   if (!(file instanceof File)) {

@@ -54,12 +54,6 @@ export function buildListingRecord(
     const shortId = crypto.randomUUID().split("-")[0];
     slug = `${slug}-${shortId}`;
   }
-  const fraudAssessment = calculateFraudScore(
-    input,
-    existingListing
-      ? existingListings.filter((listing) => listing.id !== existingListing.id)
-      : existingListings,
-  );
   
   const timestamp = new Date().toISOString();
 
@@ -84,9 +78,9 @@ export function buildListingRecord(
     licensePlate: input.licensePlate ?? null,
     tramerAmount: input.tramerAmount ?? null,
     damageStatusJson: input.damageStatusJson ?? null,
-    fraudScore: fraudAssessment.fraudScore,
-    fraudReason: fraudAssessment.fraudReason,
-    status: options?.status ?? fraudAssessment.suggestedStatus ?? existingListing?.status ?? "pending_ai_review",
+    fraudScore: 0,
+    fraudReason: null,
+    status: options?.status ?? existingListing?.status ?? "pending_ai_review",
     featured: existingListing?.featured ?? false,
     expertInspection: input.expertInspection,
     bumpedAt: existingListing?.bumpedAt ?? null,

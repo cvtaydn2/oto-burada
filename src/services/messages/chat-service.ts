@@ -177,6 +177,7 @@ export async function getChatMessages(chatId: string, supabase?: SupabaseClient)
 
 /**
  * Sends a message in a specific chat.
+ * Uses Server API when called from browser to enforce rate limits and security.
  */
 export async function sendMessage(
   chatId: string, 
@@ -184,6 +185,27 @@ export async function sendMessage(
   content: string,
   supabase?: SupabaseClient
 ): Promise<Message | null> {
+  // If running in browser, use the Secure API Route to benefit from Rate Limiting & CSRF protection
+  if (typeof window !== "undefined") {
+    try {
+      const response = await fetch("/api/messages", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ chatId, content }),
+      });
+      const result = await response.json();
+      if (!response.ok) {
+        logger.messages.error("Send Message API Error", result.error);
+        return null;
+      }
+      return result.data;
+    } catch (err) {
+      logger.messages.error("Send Message Fetch Error", err);
+      return null;
+    }
+  }
+
+  // Fallback for server-side or custom client injections
   const client = getClient(supabase);
 
   const { data, error } = await client
@@ -193,7 +215,7 @@ export async function sendMessage(
     .single();
 
   if (error) {
-    logger.messages.error("Send Message Error", error, { chatId });
+    logger.messages.error("Send Message DB Error", error, { chatId });
     return null;
   }
 

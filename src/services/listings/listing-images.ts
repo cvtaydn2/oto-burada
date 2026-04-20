@@ -104,7 +104,7 @@ export async function validateListingImageFile(file: File): Promise<string | nul
     if (dimensions.height && dimensions.height > MAX_DIMENSION) {
       return `Görsel yüksekliği çok fazla (${dimensions.height}px). En fazla ${MAX_DIMENSION}px olabilir.`;
     }
-  } catch (_err) {
+  } catch {
     // If we can't read dimensions, it's safer to reject or log
     return "Görsel boyutları okunamadı. Lütfen geçerli bir dosya yükleyin.";
   }

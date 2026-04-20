@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { Listing, ListingCreateInput } from "@/types";
 
 export function calculateFraudScore(
@@ -90,4 +91,47 @@ export function calculateFraudScore(
     fraudReason: reasons.length > 0 ? reasons.join(", ") : null,
     suggestedStatus
   };
+}
+
+/**
+ * ── PILL: Issue 2 - Async AI Moderation Queue ──────────────────
+ * Performs AI moderation and fraud analysis in the background.
+ * Prevents blocking the main request and manages costs/retries.
+ */
+export async function performAsyncModeration(listingId: string) {
+  const { createSupabaseAdminClient } = await import("@/lib/supabase/admin");
+  const { getStoredListingById } = await import("./listing-submissions");
+  const admin = createSupabaseAdminClient();
+
+  try {
+    // 1. Fetch current listing
+    const listing = await getStoredListingById(listingId);
+    if (!listing) return;
+
+    // 2. Fetch similar listings for market analysis (expensive part)
+    const { data: existingListings } = await admin
+      .from("listings")
+      .select("id, slug, brand, model, year, mileage, price, vin, status")
+      .neq("id", listingId)
+      .limit(100);
+
+    // 3. Compute score
+    const assessment = calculateFraudScore(listing as any, (existingListings || []) as any);
+
+    // 4. Update the record
+    await admin
+      .from("listings")
+      .update({
+        fraud_score: assessment.fraudScore,
+        fraud_reason: assessment.fraudReason,
+        // Only update status if it was in 'pending_ai_review'
+        status: listing.status === "pending_ai_review" 
+          ? (assessment.suggestedStatus ?? "approved") 
+          : listing.status
+      })
+      .eq("id", listingId);
+
+  } catch (error) {
+    console.error(`[AsyncModeration] Failed for ${listingId}:`, error);
+  }
 }

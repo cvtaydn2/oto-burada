@@ -4,13 +4,15 @@
  * Hardened for production: strictly strips all HTML and escapes sensitive characters.
  */
 
+import DOMPurify from "isomorphic-dompurify";
+
 /**
  * Sanitize a user-provided string for safe storage and rendering.
  * Removes all HTML tags and returns plain text.
  */
 export function sanitizeText(value: string): string {
   if (!value) return "";
-  return stripAllHtml(value);
+  return DOMPurify.sanitize(value, { ALLOWED_TAGS: [], ALLOWED_ATTR: [] }).trim();
 }
 
 /**

@@ -254,6 +254,7 @@ export interface ListingFilters {
   page?: number;
   limit?: number;
   sellerId?: string;
+  cursor?: string; // Keyset pagination cursor (usually a composite value or base64)
 }
 
 export interface ExpertInspection {

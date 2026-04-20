@@ -19,6 +19,7 @@ interface CacheEntry<T> {
 
 class MemoryCache {
   private cache = new Map<string, CacheEntry<unknown>>();
+  private readonly MAX_ENTRIES = 2000;
 
   /**
    * Get cached value if exists and not expired
@@ -43,6 +44,13 @@ class MemoryCache {
    * Set cached value with TTL in seconds
    */
   set<T>(key: string, data: T, ttlSeconds: number): void {
+    // ── PILL: Issue 3 - Memory Poisoning Prevention ──────────────────
+    if (this.cache.size >= this.MAX_ENTRIES) {
+      // Evict the oldest entry (Map maintains insertion order)
+      const firstKey = this.cache.keys().next().value;
+      if (firstKey) this.cache.delete(firstKey);
+    }
+
     const expiresAt = Date.now() + ttlSeconds * 1000;
     this.cache.set(key, { data, expiresAt });
   }

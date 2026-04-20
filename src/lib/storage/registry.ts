@@ -84,3 +84,25 @@ export async function verifyAndUnregisterFile(userId: string, bucketId: string, 
 
   return true;
 }
+
+/**
+ * Counts how many files a user has uploaded today.
+ */
+export async function countDailyUserUploads(userId: string): Promise<number> {
+  const admin = createSupabaseAdminClient();
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  const { count, error } = await admin
+    .from("storage_objects_registry")
+    .select("*", { count: "exact", head: true })
+    .eq("owner_id", userId)
+    .gte("created_at", today.toISOString());
+
+  if (error) {
+    logger.storage.error("Failed to count daily uploads", error, { userId });
+    return 0;
+  }
+
+  return count ?? 0;
+}

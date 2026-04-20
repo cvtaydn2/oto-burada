@@ -18,6 +18,8 @@ import { getStoredProfileById, isUserBanned } from "@/services/profile/profile-r
 import { checkListingLimit } from "@/services/listings/listing-limits";
 import { parseListingFiltersFromSearchParams } from "@/services/listings/listing-filters";
 import { getFilteredMarketplaceListings } from "@/services/listings/marketplace-listings";
+import { waitUntil } from "@vercel/functions";
+import { performAsyncModeration } from "@/services/listings/listing-submission-moderation";
 
 export async function GET(request: Request) {
   // Rate limit public search — 120 requests per minute per IP
@@ -190,6 +192,11 @@ export async function POST(request: Request) {
   }
 
   if (result.listing) {
+    // ── PILL: Issue 2 - Async AI Moderation ──────────────────────────
+    // Schedule fraud assessment in the background. 
+    // User gets response immediately, worker finishes later.
+    waitUntil(performAsyncModeration(result.listing.id));
+
     await createDatabaseNotification({
       href: `/dashboard/listings?edit=${result.listing.id}`,
       message: `"${result.listing.title}" ilanın moderasyon incelemesine alındı. Onaylandığında sana haber vereceğiz.`,

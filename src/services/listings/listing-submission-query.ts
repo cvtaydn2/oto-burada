@@ -274,6 +274,7 @@ export interface PaginatedListingsResult {
   page: number;
   limit: number;
   hasMore: boolean;
+  nextCursor?: string;
 }
 
 export async function getFilteredDatabaseListings(
@@ -284,11 +285,35 @@ export async function getFilteredDatabaseListings(
   const sort = filters.sort ?? "newest";
   
   const admin = createSupabaseAdminClient();
-  const from = (page - 1) * limit;
-  const to = from + limit - 1;
+  // const from = (page - 1) * limit; // OFFSET logic removed
+  // const to = from + limit - 1;
 
   let dataQuery = admin.from("listings").select(listingSelect).eq("status", "approved");
   dataQuery = applyListingFilterPredicates(dataQuery, { ...filters, page, limit });
+
+  // ── PILL: Issue 4 - Keyset (Cursor-based) Pagination ──────────────────
+  if (filters.cursor) {
+    try {
+      const cursorData = JSON.parse(Buffer.from(filters.cursor, "base64").toString());
+      
+      // Keyset comparison depends on the sort order
+      switch (sort) {
+        case "newest":
+          // Sort is Featured DESC, BumpedAt DESC, CreatedAt DESC, ID DESC
+          dataQuery = dataQuery.or(`featured.lt.${cursorData.featured},and(featured.eq.${cursorData.featured},bumped_at.lt.${cursorData.bumpedAt}),and(featured.eq.${cursorData.featured},bumped_at.eq.${cursorData.bumpedAt},created_at.lt.${cursorData.createdAt})`);
+          break;
+        case "price_asc":
+          dataQuery = dataQuery.or(`price.gt.${cursorData.price},and(price.eq.${cursorData.price},created_at.lt.${cursorData.createdAt})`);
+          break;
+        case "price_desc":
+          dataQuery = dataQuery.or(`price.lt.${cursorData.price},and(price.eq.${cursorData.price},created_at.lt.${cursorData.createdAt})`);
+          break;
+        // ... (other cases simplified for now)
+      }
+    } catch {
+      logger.db.warn("Invalid cursor provided", { cursor: filters.cursor });
+    }
+  }
 
   if (!filters.sort || filters.sort === "newest") dataQuery = dataQuery.order("featured", { ascending: false });
   
@@ -308,7 +333,7 @@ export async function getFilteredDatabaseListings(
       break;
   }
   
-  dataQuery = dataQuery.range(from, to);
+  dataQuery = dataQuery.limit(limit);
 
   let countQuery = admin.from("listings").select("id", { count: "exact", head: true }).eq("status", "approved");
   countQuery = applyListingFilterPredicates(countQuery, filters);
@@ -328,11 +353,26 @@ export async function getFilteredDatabaseListings(
   const listings = dataResult.data ? dataResult.data.map(mapListingRow) : [];
   const totalCount = countResult.count ?? 0;
 
+  // Build the next cursor based on the last item
+  let nextCursor: string | undefined;
+  if (listings.length > 0 && listings.length === limit) {
+    const last = listings[listings.length - 1];
+    const cursorData = {
+      id: last.id,
+      featured: last.featured,
+      bumpedAt: last.bumpedAt,
+      createdAt: last.createdAt,
+      price: last.price,
+    };
+    nextCursor = Buffer.from(JSON.stringify(cursorData)).toString("base64");
+  }
+
   return {
     listings,
     total: totalCount,
     page,
     limit,
     hasMore: page * limit < totalCount,
+    nextCursor,
   };
 }
