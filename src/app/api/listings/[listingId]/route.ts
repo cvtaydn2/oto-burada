@@ -115,6 +115,14 @@ export async function PATCH(
     return apiError(API_ERROR_CODES.BAD_REQUEST, "Bu başlıkla başka bir ilan zaten mevcut.", 409);
   }
 
+  if (result.error === "concurrent_update_detected") {
+    return apiError(
+      API_ERROR_CODES.CONFLICT, 
+      "İlan başka bir sekmede veya cihazda güncellenmiş. Lütfen sayfayı yenileyip tekrar dene.", 
+      409
+    );
+  }
+
   if (result.error) {
     logger.listings.error("PATCH /api/listings/[id] DB update failed", null, {
       listingId,

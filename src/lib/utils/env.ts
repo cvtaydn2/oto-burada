@@ -46,7 +46,14 @@ export function getAppUrlWithFallback(fallback = "http://localhost:3000"): strin
  */
 export function getOptimizedImageUrl(
   path: string | null | undefined, 
-  options: { width?: number; height?: number; quality?: number; resize?: "cover" | "contain" } = {}
+  options: { 
+    width?: number; 
+    height?: number; 
+    quality?: number; 
+    resize?: "cover" | "contain";
+    /** Cache buster timestamp (Issue 8) */
+    v?: string | number;
+  } = {}
 ): string {
   if (!path) return "/placeholder-car.jpg";
   
@@ -56,16 +63,21 @@ export function getOptimizedImageUrl(
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL?.replace(/\/$/, "");
   if (!supabaseUrl) return path;
 
-  const { width = 800, height, quality = 75, resize = "cover" } = options;
+  const { width = 800, height, quality = 75, resize = "cover", v } = options;
   
-  // Format: https://[id].supabase.co/storage/v1/render/image/public/[bucket]/[path]?width=x&height=y&quality=z&resize=x
-  // We assume 'listings' bucket as default
   const bucket = "listings";
   const params = new URLSearchParams();
   params.append("width", width.toString());
   if (height) params.append("height", height.toString());
   params.append("quality", quality.toString());
   params.append("resize", resize);
+  
+  // ── PILL: Issue 8 - Storage Cache Buster ──────────────────────────
+  // If a version is provided (like updated_at timestamp), we append it 
+  // to force CDN/Browser to fetch the fresh image if it changed.
+  if (v) {
+    params.append("v", v.toString());
+  }
 
   return `${supabaseUrl}/storage/v1/render/image/public/${bucket}/${path}?${params.toString()}`;
 }

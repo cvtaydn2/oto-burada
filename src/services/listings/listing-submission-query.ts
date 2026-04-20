@@ -37,6 +37,7 @@ export const listingSelect = `
   published_at,
   bumped_at,
   view_count,
+  version,
   created_at,
   updated_at,
   listing_images (
@@ -92,6 +93,7 @@ export const legacyListingSelect = `
   tramer_amount,
   damage_status_json,
   view_count,
+  version,
   bumped_at,
   featured_until,
   urgent_until,
@@ -170,6 +172,7 @@ export function mapListingRow(row: ListingRow): Listing {
     vin: row.vin ?? null,
     licensePlate: row.license_plate ?? null,
     year: row.year,
+    version: row.version ?? 0,
   };
 }
 

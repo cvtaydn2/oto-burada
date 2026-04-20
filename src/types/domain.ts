@@ -112,6 +112,8 @@ export interface Listing {
   seller?: Partial<Profile>;
   bumpedAt?: string | null;
   viewCount: number;
+  /** Optimistic Concurrency version (Issue 5) */
+  version: number;
   createdAt: string;
   updatedAt: string;
 }

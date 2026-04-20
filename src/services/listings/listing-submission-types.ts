@@ -58,6 +58,7 @@ export interface ListingRow {
   tramer_amount?: number | null;
   transmission: Listing["transmission"];
   updated_at: string;
+  version?: number;
   bumped_at?: string | null;
   market_price_index?: number | null;
   whatsapp_phone: string;

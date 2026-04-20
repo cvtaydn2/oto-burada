@@ -42,6 +42,9 @@ export function mapListingToDatabaseRow(listing: Listing) {
     bumped_at: listing.bumpedAt ?? null,
     car_trim: listing.carTrim ?? null,
     expert_inspection: listing.expertInspection ?? null,
+    // ── PILL: Issue 5 - OCC Increment ──────────
+    // We increment version on every database level update.
+    version: (listing.version ?? 0) + 1,
   };
 }
 
@@ -118,6 +121,7 @@ export async function createDatabaseListing(
         published_at,
         bumped_at,
         view_count,
+        version,
         created_at,
         updated_at
       `)
@@ -193,6 +197,7 @@ export async function createDatabaseListing(
       expertInspection: insertResult.data.expert_inspection ?? undefined,
       bumpedAt: insertResult.data.bumped_at ?? null,
       viewCount: insertResult.data.view_count ?? 0,
+      version: insertResult.data.version ?? 0,
       createdAt: insertResult.data.created_at,
       updatedAt: insertResult.data.updated_at,
       images: currentListing.images, // Use the images we just inserted
@@ -221,7 +226,7 @@ export async function updateDatabaseListing(listing: Listing) {
   const updateResult = await admin
     .from("listings")
     .update(mapListingToDatabaseRow(listing))
-    .eq("id", listing.id)
+    .match({ id: listing.id, version: listing.version ?? 0 })
     .select(`
       id,
       seller_id,
@@ -255,6 +260,7 @@ export async function updateDatabaseListing(listing: Listing) {
       published_at,
       bumped_at,
       view_count,
+      version,
       created_at,
       updated_at
     `)
@@ -265,6 +271,11 @@ export async function updateDatabaseListing(listing: Listing) {
       return { error: "slug_collision" as const };
     }
     return { error: "database_error" as const };
+  }
+
+  // Check if zero rows were updated (meaning version mismatch)
+  if (!updateResult.data) {
+    return { error: "concurrent_update_detected" as const };
   }
 
   // 1. Identify orphaned images before updating DB
@@ -330,6 +341,7 @@ export async function updateDatabaseListing(listing: Listing) {
     expertInspection: updateResult.data.expert_inspection ?? undefined,
     bumpedAt: updateResult.data.bumped_at ?? null,
     viewCount: updateResult.data.view_count ?? 0,
+    version: updateResult.data.version ?? 0,
     createdAt: updateResult.data.created_at,
     updatedAt: updateResult.data.updated_at,
     images: listing.images, // Use the images we just inserted

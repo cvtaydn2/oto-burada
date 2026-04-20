@@ -25,6 +25,7 @@ describe("Listing Card Insights Service", () => {
     images: [],
     createdAt: "2024-01-01",
     updatedAt: "2024-01-01",
+    version: 1,
     ...overrides
   });
 

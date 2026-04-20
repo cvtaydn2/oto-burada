@@ -45,6 +45,7 @@ describe('listing-moderation service', () => {
     viewCount: 0,
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
+    version: 1,
   };
 
   beforeEach(() => {
