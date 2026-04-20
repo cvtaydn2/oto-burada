@@ -100,6 +100,8 @@ export function ListingsPageClient({
             isSortOpen={isSortOpen}
             setIsSortOpen={setIsSortOpen}
             handleFilterChange={handleFilterChange}
+            handleReset={handleReset}
+            applyFilters={applyFilters}
           />
         </div>
 
@@ -185,11 +187,19 @@ export function ListingsPageClient({
               </div>
 
               <div className={cn(
-                "animate-in fade-in duration-700",
+                "relative transition-opacity duration-normal",
+                isPending ? "opacity-50 pointer-events-none" : "opacity-100",
                 viewMode === "grid"
                   ? "grid grid-cols-1 gap-6 sm:grid-cols-2 xl:grid-cols-3"
                   : "flex flex-col gap-4"
               )}>
+                {isPending && (
+                  <div className="absolute inset-0 z-10 bg-background/20 backdrop-blur-[1px] flex items-center justify-center">
+                     <div className="w-full h-full animate-in fade-in duration-normal">
+                        <ListingsGridSkeleton />
+                     </div>
+                  </div>
+                )}
                 {isInitialPage && children ? (
                   children
                 ) : (

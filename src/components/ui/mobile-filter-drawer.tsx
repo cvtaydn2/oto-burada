@@ -13,6 +13,8 @@ interface MobileFilterDrawerProps {
   cities: CityOption[];
   filters: ListingFilters;
   activeCount: number;
+  onApply?: (filters: ListingFilters) => void;
+  onReset?: () => void;
 }
 
 const FUEL_TYPES = [
@@ -34,6 +36,8 @@ export function MobileFilterDrawer({
   cities,
   filters,
   activeCount,
+  onApply,
+  onReset,
 }: MobileFilterDrawerProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [expandedSection, setExpandedSection] = useState<string | null>("brand");
@@ -97,17 +101,12 @@ export function MobileFilterDrawer({
   };
 
   const handleApply = () => {
-    const params = createSearchParamsFromListingFilters({
-      ...draftFilters,
-      page: 1,
-    });
-    router.push(`${pathname}?${params.toString()}`, { scroll: false });
+    onApply?.(draftFilters);
     setIsOpen(false);
   };
 
   const handleReset = () => {
-    setDraftFilters({ sort: "newest", page: 1 });
-    router.push(pathname, { scroll: false });
+    onReset?.();
     setIsOpen(false);
   };
 

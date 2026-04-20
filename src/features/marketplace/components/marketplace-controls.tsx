@@ -34,6 +34,8 @@ interface MarketplaceControlsProps {
   isSortOpen: boolean;
   setIsSortOpen: (v: boolean) => void;
   handleFilterChange: <K extends keyof ListingFilters>(key: K, value: ListingFilters[K]) => void;
+  handleReset: () => void;
+  applyFilters: (filters: ListingFilters, immediate?: boolean) => void;
 }
 
 export function MarketplaceControls({
@@ -45,7 +47,9 @@ export function MarketplaceControls({
   setViewMode,
   isSortOpen,
   setIsSortOpen,
-  handleFilterChange
+  handleFilterChange,
+  handleReset,
+  applyFilters,
 }: MarketplaceControlsProps) {
   const currentSortLabel = SORT_OPTIONS.find(o => o.value === (filters.sort ?? "newest"))?.label || "En Yeni";
 
@@ -56,6 +60,8 @@ export function MarketplaceControls({
         cities={cities}
         filters={filters}
         activeCount={activeFiltersCount}
+        onApply={(f) => applyFilters(f, true)}
+        onReset={handleReset}
       />
 
       <Link

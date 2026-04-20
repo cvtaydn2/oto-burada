@@ -23,17 +23,23 @@ export function useMarketplaceLogic({ initialResult, initialFilters }: UseMarket
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
 
-  // URL Sync
-  const [filters, setFilters] = useState<ListingFilters>(initialFilters);
+  // 1. Applied State (Synced with URL)
+  const [appliedFilters, setAppliedFilters] = useState<ListingFilters>(initialFilters);
+  
+  // 2. Draft State (Local UI feedback)
+  const [filters, setDraftFilters] = useState<ListingFilters>(initialFilters);
+
+  // Sync back when URL/Props change
   useEffect(() => {
-    setFilters(initialFilters);
+    setAppliedFilters(initialFilters);
+    setDraftFilters(initialFilters);
   }, [initialFilters]);
 
-  // Infinite Query
-  const queryKey = ["listings", initialFilters];
+  // Infinite Query - Only depends on APPLIED filters
+  const queryKey = ["listings", appliedFilters];
 
   const fetchListings = async ({ pageParam }: { pageParam: number }) => {
-    const params = createSearchParamsFromListingFilters({ ...initialFilters, page: pageParam });
+    const params = createSearchParamsFromListingFilters({ ...appliedFilters, page: pageParam });
     const res = await fetch(`/api/listings?${params.toString()}`);
     if (!res.ok) throw new Error("İlanlar yüklenirken hata oluştu.");
     const json = await res.json();
@@ -65,6 +71,7 @@ export function useMarketplaceLogic({ initialResult, initialFilters }: UseMarket
       const params = createSearchParamsFromListingFilters(newFilters);
       startTransition(() => {
         router.push(`/listings?${params.toString()}`, { scroll: true });
+        // Applied state will be updated via useEffect from props
       });
     };
 
@@ -75,11 +82,12 @@ export function useMarketplaceLogic({ initialResult, initialFilters }: UseMarket
       if (debounceTimerRef.current) clearTimeout(debounceTimerRef.current);
       debounceTimerRef.current = setTimeout(fn, DEBOUNCE_DELAY_MS);
     }
-  }, [router, startTransition]);
+  }, [router]);
 
   const handleFilterChange = useCallback(<K extends keyof ListingFilters>(key: K, value: ListingFilters[K]) => {
     const newFilters: ListingFilters = { ...filters, [key]: value, page: 1 };
 
+    // Hiyerarşik resetler (Business logic)
     if (key === "brand") {
       newFilters.model = undefined;
       newFilters.carTrim = undefined;
@@ -91,26 +99,24 @@ export function useMarketplaceLogic({ initialResult, initialFilters }: UseMarket
       newFilters.district = undefined;
     }
 
-    setFilters(newFilters);
+    // Hemen UI'ı güncelle
+    setDraftFilters(newFilters);
 
-    const immediateKeys: (keyof ListingFilters)[] = ["sort", "limit", "brand", "model", "carTrim", "city", "district", "fuelType", "transmission", "hasExpertReport"];
-    if (immediateKeys.includes(key)) {
-      applyFilters(newFilters, true);
-      return;
-    }
-
-    applyFilters(newFilters, false);
+    const immediateKeys: (keyof ListingFilters)[] = ["sort", "limit", "hasExpertReport"];
+    const isImmediate = immediateKeys.includes(key);
+    
+    applyFilters(newFilters, isImmediate);
   }, [filters, applyFilters]);
 
   const handleReset = useCallback(() => {
     if (debounceTimerRef.current) clearTimeout(debounceTimerRef.current);
     const resetFilters: ListingFilters = { limit: filters.limit ?? initialResult.limit, page: 1, sort: "newest" };
-    setFilters(resetFilters);
+    setDraftFilters(resetFilters);
     const params = createSearchParamsFromListingFilters(resetFilters);
     startTransition(() => {
       router.push(`/listings?${params.toString()}`, { scroll: false });
     });
-  }, [filters.limit, initialResult.limit, router, startTransition]);
+  }, [filters.limit, initialResult.limit, router]);
 
   // Derived State
   const activeFiltersCount = Object.entries(filters).filter(([key, val]) => {
@@ -128,8 +134,8 @@ export function useMarketplaceLogic({ initialResult, initialFilters }: UseMarket
   }, []);
 
   return {
-    filters,
-    setFilters,
+    filters, // draft filters for UI
+    setFilters: setDraftFilters,
     isPending,
     viewMode,
     setViewMode,

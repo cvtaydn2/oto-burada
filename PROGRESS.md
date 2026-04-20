@@ -13,8 +13,28 @@ OtoBurada projesi; sıradan bir MVP'den (Minimum Viable Product), saniyede 50.00
 - ✅ **God-Tier Hardening:** Image Orientation, Scrollbar Gutter, Background Uploads (Instant Preview), LCP Priority.
 - ✅ **Ultimate Indestructible:** Concurrent Outbox, Atomic Quotas, Sequential IDs.
 - ✅ **Enterprise Infrastructure:** Connection Pooling, SIEM Logs, Circuit Breakers.
+- ✅ **Showroom Performance Filter:** Draft vs Applied state model, useTransition sync, Mobile/Desktop unified filter architecture.
 
 ---
+
+## 🚀 Showroom Performance & Filter Architecture - 2026-04-20
+
+### Yapılan Değişiklikler
+
+**🏗️ Mimari ve Performans (Architecture & Performance)**
+- **Atomic Filter State (Draft vs Applied)**: Filtreleme mimarisi, "Draft" ve "Applied" olmak üzere iki katmana ayrıldı. Bu sayede kullanıcı seçim yaparken UI zıplamaları (flickering) engellendi ve akıcılık artırıldı.
+- **Showroom Transition System**: `useTransition` entegrasyonu ile filtre değişimleri sırasında UI donması engellendi. Grid üzerine premium "Skeleton Overlay" eklendi.
+- **Infinite Scroll Coordination**: `useInfiniteQuery` sadece "Uygulanan" filtrelere bağlandı. Drafting aşamasındaki değişikliklerin sayfa resetlemesi tetiklemesi engellendi.
+
+**📱 Mobil ve UX (Mobile & UX)**
+- **Unified Mobile interactions**: `MobileFilterDrawer` artık bağımsız navigasyon yapmak yerine merkezi `applyFilters` sistemini kullanıyor. Mobil kullanıcılar için "Draft Seçim -> Explicit Uygula" akışı standardize edildi.
+- **Optimistic UI Feedback**: Filtre panelindeki anlık seçimler (Draft), URL güncellenene kadar UI'da anında yansıtılır (Zero-lag).
+
+### Doğrulama
+- Mimari: `useMarketplaceLogic` refactor edildi. ✅
+- UX: Mobil drawer sayaç ve apply akışı doğrulandı. ✅
+- Performans: `isPending` skeleton overlay test edildi. ✅
+- `npm run build` ✅
 
 ## 💎 Showroom Elite: UI Modernization & Final Polish - 2026-04-21
 
