@@ -33,7 +33,7 @@ export function ListingCard({ listing, priority = false }: ListingCardProps) {
   return (
     <Link 
       href={detailHref}
-      className={`group block showroom-card rounded-[24px] overflow-hidden${isHighlightedActive ? " ring-2 ring-purple-400/60 shadow-purple-100" : ""}`}
+      className={`group block showroom-card rounded-2xl overflow-hidden${isHighlightedActive ? " ring-2 ring-purple-400/60 shadow-purple-100" : ""}`}
     >
       <div className="flex flex-col sm:flex-row">
         {/* Image Section - The "Showroom" Frame */}
@@ -44,7 +44,7 @@ export function ListingCard({ listing, priority = false }: ListingCardProps) {
               alt={listing.title}
               fill
               sizes="(min-width: 640px) 300px, 100vw"
-              className="object-cover group-hover:scale-110 transition-transform duration-700 ease-out"
+              className="object-cover transition-opacity duration-300"
               priority={priority}
               placeholder={coverImage.placeholderBlur ? "blur" : "empty"}
               blurDataURL={coverImage.placeholderBlur ?? undefined}
@@ -58,26 +58,24 @@ export function ListingCard({ listing, priority = false }: ListingCardProps) {
           {/* Elite Badges */}
           <div className="absolute top-4 left-4 flex flex-col gap-2">
             {isFeaturedActive && (
-              <div className="bg-blue-600/95 backdrop-blur shadow-xl text-white text-[10px] font-black uppercase tracking-widest px-3 py-1.5 rounded-lg flex items-center gap-1.5 animate-in fade-in slide-in-from-left-2 transition-all group-hover:bg-blue-500">
-                <Sparkles className="w-3.5 h-3.5 fill-white/20" />
+              <div className="bg-blue-500/10 text-blue-700 text-[10px] font-bold uppercase tracking-widest px-2.5 py-1 rounded-md flex items-center gap-1.5 transition-colors border border-blue-200/50">
                 VİTRİN
               </div>
             )}
             {isUrgentActive && (
-              <div className="bg-red-600/95 backdrop-blur shadow-xl text-white text-[10px] font-black uppercase tracking-widest px-3 py-1.5 rounded-lg flex items-center gap-1.5 animate-in fade-in slide-in-from-left-2 transition-all group-hover:bg-red-500">
-                <Zap className="w-3.5 h-3.5 fill-white/20" />
+              <div className="bg-red-500/10 text-red-700 text-[10px] font-bold uppercase tracking-widest px-2.5 py-1 rounded-md flex items-center gap-1.5 transition-colors border border-red-200/50">
+                <Zap className="w-3 h-3" />
                 ACİL SATILIK
               </div>
             )}
             {isHighlightedActive && (
-              <div className="bg-purple-600/95 backdrop-blur shadow-xl text-white text-[10px] font-black uppercase tracking-widest px-3 py-1.5 rounded-lg flex items-center gap-1.5 animate-in fade-in slide-in-from-left-2 transition-all group-hover:bg-purple-500">
-                <Flame className="w-3.5 h-3.5 fill-white/20" />
+              <div className="bg-purple-500/10 text-purple-700 text-[10px] font-bold uppercase tracking-widest px-2.5 py-1 rounded-md flex items-center gap-1.5 transition-colors border border-purple-200/50">
                 ÖNE ÇIKAN
               </div>
             )}
             {isAdvantageous && (
-              <div className="bg-orange-600/95 backdrop-blur shadow-xl text-white text-[10px] font-black uppercase tracking-widest px-3 py-1.5 rounded-lg flex items-center gap-1.5 animate-in fade-in slide-in-from-left-2 transition-all">
-                <TrendingDown className="w-3.5 h-3.5" />
+              <div className="bg-orange-500/10 text-orange-700 text-[10px] font-bold uppercase tracking-widest px-2.5 py-1 rounded-md flex items-center gap-1.5 transition-colors border border-orange-200/50">
+                <TrendingDown className="w-3 h-3" />
                 AVANTAJLI
               </div>
             )}
@@ -97,10 +95,10 @@ export function ListingCard({ listing, priority = false }: ListingCardProps) {
             {/* Title & Price - Elite Pairing */}
             <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
               <div className="min-w-0 flex-1">
-                <div className="text-[10px] font-black text-primary/60 uppercase tracking-[0.2em] mb-1 italic">
+                <div className="text-[10px] font-bold text-primary/60 uppercase tracking-[0.2em] mb-1 italic">
                   {listing.brand}
                 </div>
-                <h3 className="text-xl md:text-2xl font-black text-card-foreground tracking-tight leading-tight truncate group-hover:text-primary transition-colors">
+                <h3 className="text-xl md:text-2xl font-bold text-card-foreground tracking-tight leading-tight truncate group-hover:text-primary transition-colors">
                   {listing.model}
                 </h3>
                 <p className="text-sm text-muted-foreground font-medium truncate mt-1">
@@ -109,13 +107,13 @@ export function ListingCard({ listing, priority = false }: ListingCardProps) {
               </div>
               <div className="shrink-0 text-left sm:text-right flex flex-col items-end">
                 <div className="flex items-baseline gap-1.5">
-                  <span className="text-2xl sm:text-3xl font-black tracking-tightest text-primary italic">
+                  <span className="text-2xl sm:text-3xl font-bold tracking-tightest text-primary italic">
                     {formatPrice(listing.price)}
                   </span>
-                  <span className="text-xs font-black text-primary/40 italic">TL</span>
+                  <span className="text-xs font-semibold text-primary/40 italic">TL</span>
                 </div>
                 {isAdvantageous && (
-                  <span className="text-[9px] font-black text-orange-600 uppercase tracking-widest mt-1">PAZAR LİDERİ FİYAT</span>
+                  <span className="text-[9px] font-bold text-orange-600 uppercase tracking-widest mt-1">PAZAR LİDERİ FİYAT</span>
                 )}
               </div>
             </div>
@@ -128,7 +126,7 @@ export function ListingCard({ listing, priority = false }: ListingCardProps) {
                 </div>
                 <div className="flex flex-col">
                   <span className="text-[9px] font-bold text-muted-foreground uppercase tracking-widest">MODEL</span>
-                  <span className="text-xs font-black text-card-foreground">{listing.year}</span>
+                  <span className="text-xs font-semibold text-card-foreground">{listing.year}</span>
                 </div>
               </div>
 
@@ -138,7 +136,7 @@ export function ListingCard({ listing, priority = false }: ListingCardProps) {
                 </div>
                 <div className="flex flex-col">
                   <span className="text-[9px] font-bold text-muted-foreground uppercase tracking-widest">MESAFE</span>
-                  <span className="text-xs font-black text-card-foreground">{formatNumber(listing.mileage)} <span className="text-[9px]">KM</span></span>
+                  <span className="text-xs font-semibold text-card-foreground">{formatNumber(listing.mileage)} <span className="text-[9px]">KM</span></span>
                 </div>
               </div>
 
@@ -148,7 +146,7 @@ export function ListingCard({ listing, priority = false }: ListingCardProps) {
                 </div>
                 <div className="flex flex-col">
                   <span className="text-[9px] font-bold text-muted-foreground uppercase tracking-widest">VİTES</span>
-                  <span className="text-xs font-black text-card-foreground">{listing.transmission}</span>
+                  <span className="text-xs font-semibold text-card-foreground">{listing.transmission}</span>
                 </div>
               </div>
 
@@ -158,7 +156,7 @@ export function ListingCard({ listing, priority = false }: ListingCardProps) {
                 </div>
                 <div className="flex flex-col">
                   <span className="text-[9px] font-bold text-muted-foreground uppercase tracking-widest">YAKIT</span>
-                  <span className="text-xs font-black text-card-foreground">{listing.fuelType}</span>
+                  <span className="text-xs font-semibold text-card-foreground">{listing.fuelType}</span>
                 </div>
               </div>
             </div>
@@ -170,12 +168,12 @@ export function ListingCard({ listing, priority = false }: ListingCardProps) {
               <div className="size-7 rounded-full bg-primary/10 flex items-center justify-center shadow-inner">
                 <MapPin className="size-3.5 text-primary" />
               </div>
-              <span className="text-xs font-black uppercase tracking-widest text-card-foreground">{listing.city}</span>
+              <span className="text-xs font-bold uppercase tracking-widest text-card-foreground">{listing.city}</span>
             </div>
             
-            <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-primary group-hover:gap-4 transition-all duration-300 italic">
+            <div className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-primary group-hover:gap-4 transition-all duration-300 italic">
               DETAYLI İNCELE
-              <ArrowRight size={14} className="animate-pulse" />
+              <ArrowRight size={14} />
             </div>
           </div>
         </div>

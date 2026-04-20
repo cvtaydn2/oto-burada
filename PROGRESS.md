@@ -1,3 +1,27 @@
+## Marketplace Visual Identity Normalization (2026-04-20)
+
+### Yapılan Değişiklikler
+
+**Global Design System Cleanup**
+- **Typography Normalization**: Uygulama genelinde `font-black` (900) kullanımı kaldırılarak hiyerarşi `font-bold` (700) ve `font-semibold` (600) seviyesine çekildi. Okunabilirlik artırıldı ve görsel yorgunluk azaltıldı.
+- **Radius Standardization**: Inconsistent radii (`2.5rem`, `3rem`, `rounded-full`) disipline edildi. Kartlar için `rounded-2xl` (16px), buton ve inputlar için `rounded-xl` (12px) standart hale getirildi.
+- **Shadow & Depth Flattening**: Ağır ve renkli gölgeler (`shadow-2xl`, `shadow-blue-900/10`) kaldırılarak `shadow-sm` ve ince border (`border-slate-200`) temelli, daha düz ve profesyonel bir yapı kuruldu.
+- **Motion Stripping**: Sadece dekoratif amaçlı olan hover transform (`scale-110`), pulse animasyonları ve floating efektleri kaldırılarak web sitesinin daha hızlı ve stabil hissedilmesi sağlandı.
+
+**Component-Level Refinement**
+- **Badge Desaturation**: `ListingCard` ve `CarCard` üzerindeki canlı renkli rozetler (VİTRİN, ACİL vb.), %10 opaklıkta zeminler ve yüksek kontrastlı metinlerle normalize edildi. Görsellerin önüne geçmesi engellendi.
+- **Home Page Overhaul**: Hero bölümündeki dekoratif unsurlar ve "Premium" dili temizlenerek, kullanıcıya doğrudan fayda sağlayan "Hızlı Keşfet" ve "Güvenilir Araç Pazarı" odaklı bir yapıya geçildi.
+- **Consistency**: Marketplace grid'i (`ListingsPageClient`) ve dashboard ilan panelleri aynı görsel dil otoritesine bağlandı.
+
+### Doğrulama
+- UI Kontrolü: Marketplace grid, Home Hero ve Dashboard panelleri yeni "Calm UI" standartlarına uygun. ✅
+- Performans: Gereksiz JS animasyonları ve ağır CSS transformları temizlendi. ✅
+- `npm run lint` & `typecheck` ✅
+
+### Sonraki Adımlar
+- **Mobile Filter Tags**: `/listings` sayfasındaki aktif filtre etiketlerinin (km, yıl, tramer) yeni badge tasarımıyla uyumlu hale getirilmesi.
+- **Dark Mode Audit**: Yeni sınırlandırılmış renk ve gölge paletinin karanlık moddaki kontrast dengesinin kontrolü.
+
 ## Iyzico Payment Activation & Doping Automation (2026-04-19)
 
 ### Yapılan Değişiklikler

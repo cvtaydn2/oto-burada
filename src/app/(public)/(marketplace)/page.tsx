@@ -58,11 +58,11 @@ export default async function HomePage() {
         <section className="max-w-7xl mx-auto px-6 lg:px-8 py-24">
           <div className="flex flex-col md:flex-row justify-between items-baseline gap-4 mb-12">
             <div>
-              <h2 className="text-4xl font-black text-slate-900 tracking-tighter leading-none mb-3">Premium Keşif</h2>
-              <p className="text-xs font-black text-slate-400 uppercase tracking-[0.3em]">HAYALİNİZDEKİ ARACA GİDEN EN KISA YOL</p>
+              <h2 className="text-4xl font-bold text-slate-900 tracking-tighter leading-none mb-3">Hızlı Keşfet</h2>
+              <p className="text-xs font-bold text-slate-400 uppercase tracking-[0.3em]">HAYALİNİZDEKİ ARACA GİDEN EN KISA YOL</p>
             </div>
-            <Link href="/listings" className="group flex items-center gap-2 text-xs font-black text-blue-600 uppercase tracking-widest transition-all hover:gap-3">
-              Tümünü İncele <ChevronRight size={14} strokeWidth={3} className="group-hover:translate-x-1 transition-transform" />
+            <Link href="/listings" className="group flex items-center gap-2 text-xs font-bold text-blue-600 uppercase tracking-widest transition-all">
+              Tümünü İncele <ChevronRight size={14} className="group-hover:translate-x-1 transition-transform" />
             </Link>
           </div>
           
@@ -72,14 +72,14 @@ export default async function HomePage() {
                 <div className="size-8 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center">
                    <CarFront size={18} strokeWidth={2.5} />
                 </div>
-                <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Markalar</h3>
+                <h3 className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400">Markalar</h3>
               </div>
               <div className="grid grid-cols-2 md:grid-cols-3 gap-6">
                 {featuredBrands.map((brand) => (
                   <Link
                     key={brand.slug}
                     href={`/satilik/${brand.slug}`}
-                    className="group relative bg-white border border-slate-100 rounded-[2rem] p-6 shadow-sm transition-all duration-500 hover:shadow-2xl hover:shadow-blue-900/10 hover:-translate-y-1.5 overflow-hidden"
+                    className="group relative bg-white border border-slate-200 rounded-2xl p-6 shadow-sm transition-all duration-300 hover:shadow-md overflow-hidden"
                   >
                     <div className="absolute top-0 right-0 size-24 bg-slate-50 rounded-full blur-2xl -mr-12 -mt-12 opacity-0 group-hover:opacity-100 transition-opacity" />
                     
@@ -87,8 +87,8 @@ export default async function HomePage() {
                       <div className="size-12 rounded-2xl bg-slate-50 text-slate-400 flex items-center justify-center mb-6 group-hover:bg-blue-600 group-hover:text-white group-hover:shadow-lg group-hover:shadow-blue-200 transition-all duration-300">
                         <CarFront size={20} strokeWidth={2.5} />
                       </div>
-                      <h4 className="text-lg font-black text-slate-900 tracking-tight group-hover:text-blue-600 transition-colors">{brand.brand}</h4>
-                      <p className="mt-1 text-[9px] font-black text-slate-400 uppercase tracking-widest">
+                      <h4 className="text-lg font-bold text-slate-900 tracking-tight group-hover:text-blue-600 transition-colors">{brand.brand}</h4>
+                      <p className="mt-1 text-[9px] font-bold text-slate-400 uppercase tracking-widest">
                         {brand.models.length} MODEL &middot; {brand.models.reduce((sum, model) => sum + model.trims.length, 0)} PAKET
                       </p>
                     </div>
@@ -102,14 +102,14 @@ export default async function HomePage() {
                 <div className="size-8 rounded-xl bg-orange-50 text-orange-600 flex items-center justify-center">
                    <Trophy size={18} strokeWidth={2.5} />
                 </div>
-                <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Şehirler</h3>
+                <h3 className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400">Şehirler</h3>
               </div>
               <div className="grid grid-cols-2 md:grid-cols-3 gap-6">
                 {featuredCities.map((city) => (
                   <Link
                     key={city.slug}
                     href={`/satilik-araba/${city.slug}`}
-                    className="group relative bg-white border border-slate-100 rounded-[2rem] p-6 shadow-sm transition-all duration-500 hover:shadow-2xl hover:shadow-orange-900/10 hover:-translate-y-1.5 overflow-hidden"
+                    className="group relative bg-white border border-slate-200 rounded-2xl p-6 shadow-sm transition-all duration-300 hover:shadow-md overflow-hidden"
                   >
                     <div className="absolute top-0 right-0 size-24 bg-slate-50 rounded-full blur-2xl -mr-12 -mt-12 opacity-0 group-hover:opacity-100 transition-opacity" />
                     
@@ -117,9 +117,9 @@ export default async function HomePage() {
                       <div className="size-12 rounded-2xl bg-slate-50 text-slate-400 flex items-center justify-center mb-6 group-hover:bg-orange-500 group-hover:text-white group-hover:shadow-lg group-hover:shadow-orange-200 transition-all duration-300">
                         <BadgeCheck size={20} strokeWidth={2.5} />
                       </div>
-                      <h4 className="text-lg font-black text-slate-900 tracking-tight group-hover:text-orange-600 transition-colors">{city.city}</h4>
-                      <p className="mt-1 text-[9px] font-black text-slate-400 uppercase tracking-widest">
-                        {city.districts.length} ÜSTÜN İLÇE
+                      <h4 className="text-lg font-bold text-slate-900 tracking-tight group-hover:text-orange-600 transition-colors">{city.city}</h4>
+                      <p className="mt-1 text-[9px] font-bold text-slate-400 uppercase tracking-widest">
+                        {city.districts.length} İLÇE
                       </p>
                     </div>
                   </Link>
@@ -191,7 +191,7 @@ export default async function HomePage() {
 
           <div className="max-w-7xl mx-auto px-6 lg:px-8 relative z-10">
             <div className="text-center mb-24">
-              <h2 className="text-4xl md:text-6xl font-black text-white mb-6 tracking-tighter">Güvenli Ticaretin Standartı</h2>
+              <h2 className="text-4xl md:text-6xl font-bold text-white mb-6 tracking-tighter">Güvenilir Araç Pazarı</h2>
               <p className="text-slate-400 max-w-2xl mx-auto text-sm font-bold uppercase tracking-[0.2em] opacity-80">
                 TÜM İLANLARIMIZ KİMLİK ONAYLI VE ŞEFFAF EKSPERTİZ DESTEĞİYLE SUNULUR.
               </p>
@@ -203,20 +203,20 @@ export default async function HomePage() {
                 { icon: <CheckCircle2 size={40} strokeWidth={1} />, title: "Dijital Ekspertiz", desc: "Aracın tüm geçmişi ve teknik durumu bağımsız dijital raporlarla %100 şeffaflıkla sunulur.", color: "emerald" },
                 { icon: <Zap size={40} strokeWidth={1} />, title: "AI Değerleme", desc: "Yapay zeka altyapımız ile aracınızın gerçek piyasa değerini anlık verilerle saniyeler içinde öğrenin.", color: "indigo" },
               ].map((item, i) => (
-                <div key={i} className="group relative bg-white/5 backdrop-blur-sm border border-white/10 p-10 rounded-[3rem] transition-all duration-500 hover:bg-white/10 hover:border-white/20 hover:-translate-y-2">
+                <div key={i} className="group relative bg-white/5 border border-white/10 p-10 rounded-2xl transition-all duration-300 hover:bg-white/10">
                   <div className={cn(
-                    "size-20 rounded-[2rem] flex items-center justify-center mb-8 transition-transform duration-500 group-hover:scale-110 group-hover:rotate-3 shadow-2xl",
+                    "size-20 rounded-xl flex items-center justify-center mb-8 transition-transform duration-500 group-hover:rotate-3 shadow-lg",
                     item.color === "blue" ? "bg-blue-600 text-white shadow-blue-500/20" :
                     item.color === "emerald" ? "bg-emerald-500 text-white shadow-emerald-500/20" :
                     "bg-indigo-600 text-white shadow-indigo-500/20"
                   )}>
                     {item.icon}
                   </div>
-                  <h3 className="text-2xl font-black text-white mb-4 tracking-tight">{item.title}</h3>
+                  <h3 className="text-2xl font-bold text-white mb-4 tracking-tight">{item.title}</h3>
                   <p className="text-slate-400 text-sm leading-relaxed font-medium">{item.desc}</p>
                   
                   {/* Premium Corner Accent */}
-                  <div className="absolute top-8 right-8 text-white/5 font-black text-6xl select-none group-hover:text-white/10 transition-colors">
+                  <div className="absolute top-8 right-8 text-white/5 font-bold text-6xl select-none group-hover:text-white/10 transition-colors">
                     0{i + 1}
                   </div>
                 </div>
@@ -230,7 +230,7 @@ export default async function HomePage() {
           <div className="max-w-7xl mx-auto px-6 lg:px-8">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-start">
               <div>
-                <h1 className="text-3xl font-black text-slate-900 tracking-tight mb-8">
+                <h1 className="text-3xl font-bold text-slate-900 tracking-tight mb-8">
                   Türkiye&apos;nin En Güvenilir İkinci El Araç Platformu
                 </h1>
                 <div className="prose prose-slate max-w-none text-slate-600 font-medium">
@@ -247,7 +247,7 @@ export default async function HomePage() {
                 
                 <div className="mt-12 grid grid-cols-2 gap-8">
                   <div>
-                    <h3 className="text-sm font-black text-slate-900 uppercase tracking-widest mb-4">Popüler Markalar</h3>
+                    <h3 className="text-sm font-bold text-slate-900 uppercase tracking-widest mb-4">Popüler Markalar</h3>
                     <ul className="space-y-2 text-sm">
                       {references.brands.slice(0, 8).map(b => (
                         <li key={b.slug}>
@@ -259,7 +259,7 @@ export default async function HomePage() {
                     </ul>
                   </div>
                   <div>
-                    <h3 className="text-sm font-black text-slate-900 uppercase tracking-widest mb-4">Popüler Şehirler</h3>
+                    <h3 className="text-sm font-bold text-slate-900 uppercase tracking-widest mb-4">Popüler Şehirler</h3>
                     <ul className="space-y-2 text-sm">
                       {references.cities.slice(0, 8).map(c => (
                         <li key={c.slug}>
@@ -273,8 +273,8 @@ export default async function HomePage() {
                 </div>
               </div>
 
-              <div className="bg-white p-12 rounded-[3rem] shadow-xl border border-slate-100">
-                <h2 className="text-xl font-black text-slate-900 tracking-tight mb-6">Neden OtoBurada?</h2>
+              <div className="bg-white p-12 rounded-2xl shadow-sm border border-slate-200">
+                <h2 className="text-xl font-bold text-slate-900 tracking-tight mb-6">Neden OtoBurada?</h2>
                 <ul className="space-y-6">
                   {[
                     "Ücretsiz ilan verme ve hızlı satış imkanı",

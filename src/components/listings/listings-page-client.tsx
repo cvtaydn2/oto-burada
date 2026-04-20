@@ -242,8 +242,8 @@ export function ListingsPageClient({
             </p>
           </div>
 
-          {/* Controls - Glassmorphism Bar */}
-          <div className="flex flex-wrap items-center gap-3 bg-white/70 backdrop-blur-xl border border-white p-2 rounded-[2rem] shadow-xl shadow-slate-200/50">
+          {/* Controls - Layout Bar */}
+          <div className="flex flex-wrap items-center gap-3 bg-white border border-slate-200 p-2 rounded-2xl shadow-sm">
             <MobileFilterDrawer
               brands={brands}
               cities={cities}
@@ -253,7 +253,7 @@ export function ListingsPageClient({
 
             <Link
               href={`/listings/filter?${createSearchParamsFromListingFilters(filters).toString()}`}
-              className="flex h-11 items-center gap-2 rounded-2xl bg-slate-900 px-5 text-xs font-black text-white hover:bg-black transition-all hover:scale-105 active:scale-95 uppercase tracking-widest shadow-lg shadow-slate-900/20"
+              className="flex h-11 items-center gap-2 rounded-xl bg-slate-900 px-5 text-xs font-bold text-white hover:bg-black transition-all active:scale-95 uppercase tracking-widest"
             >
               <SlidersHorizontal size={14} strokeWidth={3} />
               Gelişmiş Filtrele
@@ -299,7 +299,7 @@ export function ListingsPageClient({
               {isSortOpen && (
                 <>
                   <div className="fixed inset-0 z-40" onClick={() => setIsSortOpen(false)} />
-                  <ul className="absolute right-0 top-full z-50 mt-3 w-64 rounded-3xl border border-slate-100 bg-white/95 backdrop-blur-2xl p-2 shadow-2xl animate-in fade-in zoom-in-95 duration-200">
+                  <ul className="absolute right-0 top-full z-50 mt-3 w-64 rounded-2xl border border-slate-200 bg-white p-2 shadow-lg animate-in fade-in zoom-in-95 duration-200">
                     {SORT_OPTIONS.map((option) => (
                       <li key={option.value}>
                         <button
@@ -451,7 +451,7 @@ export function ListingsPageClient({
         {/* Desktop Sidebar - Premium Shell */}
         <aside className="hidden lg:block w-[320px] shrink-0">
           <div className={cn(
-            "sticky top-28 rounded-[2.5rem] border border-slate-200 bg-white overflow-hidden shadow-2xl shadow-slate-200/50 transition-all",
+            "sticky top-28 rounded-2xl border border-slate-200 bg-white overflow-hidden shadow-sm transition-all",
             isPending && "opacity-50 pointer-events-none grayscale"
           )}>
             <div className="bg-slate-900 p-6">
