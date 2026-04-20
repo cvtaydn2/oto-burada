@@ -40,13 +40,20 @@ export function buildListingRecord(
   const existingListing = options?.existingListing;
   const id = existingListing?.id ?? options?.id ?? crypto.randomUUID();
   
-  // Delegate slug and fraud calculation to specialized modules
-  const slug = buildListingSlug(
+  // Base slug oluştur
+  let slug = buildListingSlug(
     input,
     existingListing
       ? existingListings.filter((listing) => listing.id !== existingListing.id)
       : existingListings,
   );
+
+  // YENİ: Race Condition (Çakışma) Koruması
+  // Eğer bu yeni bir ilansa, slug'ın sonuna eşsiz bir kısa ID ekle (Örn: renault-megane-1a2b3c4d)
+  if (!existingListing) {
+    const shortId = crypto.randomUUID().split("-")[0];
+    slug = `${slug}-${shortId}`;
+  }
   const fraudAssessment = calculateFraudScore(
     input,
     existingListing
@@ -126,17 +133,18 @@ export async function deleteDatabaseListing(listingId: string, sellerId: string)
   // Fetch the listing to verify ownership and status
   const listing = (await getDatabaseListings({ listingId, sellerId }))?.[0];
   
-  // Rule: Can delete anything EXCEPT 'approved' (must be archived/rejected/draft first)
-  if (!listing || listing.status === "approved") {
-    return null;
-  }
+  if (!listing) return null;
 
-  // Handle storage cleanup
   if (listing.images.length > 0) {
     const storagePaths = listing.images.map((img) => img.storagePath).filter((path) => path.length > 0);
     if (storagePaths.length > 0) {
       const bucketName = process.env.SUPABASE_STORAGE_BUCKET_LISTINGS ?? "listing-images";
-      await admin.storage.from(bucketName).remove(storagePaths);
+      // YENİ: Try-Catch bloğu ile veritabanı kilitlenmesini önleme
+      try {
+        await admin.storage.from(bucketName).remove(storagePaths);
+      } catch (error) {
+        console.warn(`[Storage] Resimler silinemedi ama ilan silinmeye devam ediyor. İlan ID: ${listingId}`, error);
+      }
     }
   }
 

@@ -7,7 +7,8 @@ import { parseListingFiltersFromSearchParams } from "@/services/listings/listing
 import { getFilteredMarketplaceListings } from "@/services/listings/marketplace-listings";
 import { getLiveMarketplaceReferenceData } from "@/services/reference/live-reference-data";
 
-export const revalidate = 60;
+// YENİ: Arama ve filtreleme sayfasında eski veriyi önlemek için force-dynamic kullanıyoruz.
+export const dynamic = "force-dynamic";
 
 interface ListingsPageProps {
   searchParams?: Promise<Record<string, string | string[] | undefined>>;

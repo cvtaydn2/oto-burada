@@ -16,31 +16,41 @@ import type { ListingCreateInput } from "@/types";
  */
 export async function processBulkListings(inputs: ListingCreateInput[]) {
   if (!hasSupabaseAdminEnv()) return { success: false, error: "Veritabanı bağlantısı yok." };
+  
+  // 1. Vercel Timeout Koruması: Hard Limit
+  if (inputs.length > 100) {
+    return { 
+      success: false, 
+      error: "Tek seferde en fazla 100 ilan yüklenebilir. Lütfen CSV dosyanızı bölerek yükleyin." 
+    };
+  }
+
   const user = await requireUser();
   const admin = createSupabaseAdminClient();
   
   try {
-    // Build records (slug collision handled by DB constraint)
     const preparedListings = inputs.map(input => {
-      return buildListingRecord(input, user.id, []); // Empty array - no pre-check needed
+      return buildListingRecord(input, user.id, []); 
     });
 
-    // Perform atomic bulk insert
-    const { error: insertError } = await admin
-      .from("listings")
-      .insert(preparedListings.map(mapListingToDatabaseRow));
+    const rowsToInsert = preparedListings.map(mapListingToDatabaseRow);
 
-    if (insertError) {
-      // Check for slug collision
-      if (insertError.code === "23505" && insertError.message?.includes("slug")) {
-        return {
-          success: false,
-          error: "Bazı ilanların başlıkları çakışıyor. Lütfen benzersiz başlıklar kullanın.",
-        };
-      }
+    // 2. Chunking (Parçalı Yükleme) - RAM ve Timeout dostu
+    const CHUNK_SIZE = 25;
+    for (let i = 0; i < rowsToInsert.length; i += CHUNK_SIZE) {
+      const chunk = rowsToInsert.slice(i, i + CHUNK_SIZE);
       
-      logger.listings.error("Bulk Insert SQL Error", insertError, { userId: user.id, count: inputs.length });
-      throw new Error("Veritabanına yazılırken bir hata oluştu.");
+      const { error: insertError } = await admin
+        .from("listings")
+        .insert(chunk);
+
+      if (insertError) {
+        if (insertError.code === "23505" && insertError.message?.includes("slug")) {
+          throw new Error("Bazı ilanların başlıkları çakışıyor. Lütfen benzersiz başlıklar kullanın.");
+        }
+        logger.listings.error("Bulk Insert SQL Error", insertError, { userId: user.id, batchIndex: i });
+        throw new Error(`Veritabanına yazılırken ${i}. satırda hata oluştu. İşlem durduruldu.`);
+      }
     }
 
     return { 

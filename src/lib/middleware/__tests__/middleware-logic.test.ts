@@ -15,7 +15,9 @@ describe("Middleware Logic - Auth Redirects", () => {
     const res = handleAuthRedirects(req, null, { 
       isProtectedRoute: true, 
       isAdminRoute: false, 
-      isAuthRoute: false 
+      isAuthRoute: false,
+      isProtectedApi: false,
+      isAdminApi: false
     });
     
     expect(res?.status).toBe(307); // Next.js temporary redirect
@@ -28,7 +30,9 @@ describe("Middleware Logic - Auth Redirects", () => {
     const res = handleAuthRedirects(req, mockUser, { 
       isProtectedRoute: true, 
       isAdminRoute: true, 
-      isAuthRoute: false 
+      isAuthRoute: false,
+      isProtectedApi: false,
+      isAdminApi: false
     });
     
     expect(res?.status).toBe(307);
@@ -41,7 +45,9 @@ describe("Middleware Logic - Auth Redirects", () => {
     const res = handleAuthRedirects(req, mockUser, { 
       isProtectedRoute: true, 
       isAdminRoute: true, 
-      isAuthRoute: false 
+      isAuthRoute: false,
+      isProtectedApi: false,
+      isAdminApi: false
     });
     
     expect(res).toBeNull(); // No redirect
@@ -53,7 +59,9 @@ describe("Middleware Logic - Auth Redirects", () => {
     const res = handleAuthRedirects(req, mockUser, { 
       isProtectedRoute: false, 
       isAdminRoute: false, 
-      isAuthRoute: true 
+      isAuthRoute: true,
+      isProtectedApi: false,
+      isAdminApi: false
     });
     
     expect(res?.status).toBe(307);
