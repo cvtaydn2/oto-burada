@@ -8,13 +8,32 @@ OtoBurada projesi; sıradan bir MVP'den (Minimum Viable Product), saniyede 50.00
 ---
 
 ## 🏆 Mimari Başarılar (Hardening Summary)
-- ✅ **MVP Foundation:** Next.js + Supabase + Shadcn/UI (Mobile First).
-- ✅ **Enterprise Hardening:** Connection Pooling, Pixel Flood Protection, Security Headers.
-- ✅ **Indestructible Hardening:** Circuit Breakers, Transaction Outbox, Saga Pattern, Crypto-Shredding.
-- ✅ **Hyper-Scale Mastery:** CQRS (Read-Replicas), Parameter Bucketization, Scraping Depth Limits.
-- ✅ **Operational Readiness:** ADR Documentation, Legal Override Protocol, Deployment Guide.
+- ✅ **The Seam (Final Integration):** Sunucu-İstemci uyumsuzlukları giderildi. URL Sync, Hydration-Safe Dates ve Auth Sync eklendi.
+- ✅ **God-Tier Hardening:** Price Protection, Secret Rotation, Scraping Depth Limits.
+- ✅ **Ultimate Indestructible:** Concurrent Outbox, Atomic Quotas, Sequential IDs.
+- ✅ **Enterprise Infrastructure:** Connection Pooling, SIEM Logs, Circuit Breakers.
 
 ---
+
+## 🧩 The Seam: Backend-Frontend Integration Hardening - 2026-04-21
+
+### Yapılan Değişiklikler
+
+**🔄 Asenkron Devlet ve Önbellek (Async State)**
+- **Auth Sync (Issue 10)**: `auth-provider.tsx` içerisinde `onAuthStateChange` dinleyicisi güncellendi. Başka sekmede yapılan çıkışlar anında yakalanıp `router.refresh()` ile tüm UI senkronize edilir hale getirildi.
+- **URL Query State (Issue 5)**: `useQueryState` hook'u eklendi. Arama filtreleri React state'i yerine URL'e bağlandı; geri tuşuna basıldığında filtre kaybı (Search Amnesia) engellendi.
+
+**🏗️ UX ve Form Bütünlüğü (UX Integrity)**
+- **Precise Field Errors (Issue 2)**: `handleServerErrors` yardımcısı eklendi. Sunucu taraflı iş kuralları hataları toast mesajı yerine doğrudan ilgili form kutusunun altına (Field-level) yansıtılmaya başlandı.
+- **Hydration-Safe Dates (Issue 7)**: `FormattedDate` bileşeni eklendi. Sunucu (UTC) ve İstemci (Local) arasındaki saat dilimi farkından kaynaklanan Next.js Hydration hataları kalıcı olarak çözüldü.
+
+**🔌 Gerçek Zamanlı İletişim (Realtime)**
+- **Network Awareness (Issue 8)**: `useNetworkStatus` hook'u eklendi. İnternet kesintileri anında yakalanarak kullanıcının "Karanlık Mağara"da (Offline) kaybolması engellendi.
+
+### Doğrulama
+- Mimari: `RootProviders` ve `AuthProvider` güncellendi. ✅
+- UX: Filtrelerin URL senkronizasyonu ve kursor DoS korumaları test edildi. ✅
+- `npm run typecheck` & `npm run lint` ✅
 
 ## ⚔️ Final Operasyonel Dokümantasyon (Operational Ready)
 - [Mimari Karar Kayıtları (ADR)](file:///c:/Users/Cevat/Documents/Github/oto-burada/DOCS/ARCHITECTURE.md)

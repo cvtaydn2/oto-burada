@@ -9,8 +9,8 @@ import {
   useState,
 } from "react";
 import type { AuthChangeEvent, Session, User, UserResponse } from "@supabase/supabase-js";
-
 import { createSupabaseBrowserClient } from "@/lib/supabase/browser";
+import { useRouter } from "next/navigation";
 
 interface AuthContextValue {
   isAdmin: boolean;
@@ -34,12 +34,12 @@ interface AuthProviderProps extends PropsWithChildren {
 export function AuthProvider({ children, initialUser = null }: AuthProviderProps) {
   const [user, setUser] = useState<User | null>(initialUser);
   const [isReady, setIsReady] = useState(!!initialUser);
+  const router = useRouter();
 
   useEffect(() => {
     const supabase = createSupabaseBrowserClient();
     let mounted = true;
 
-    // Sadece initialUser yoksa veya sessiz doğrulama gerekiyorsa çalıştır
     if (!initialUser) {
       void supabase.auth.getUser().then(({ data }: UserResponse) => {
         if (!mounted) return;
@@ -50,12 +50,19 @@ export function AuthProvider({ children, initialUser = null }: AuthProviderProps
 
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event: AuthChangeEvent, session: Session | null) => {
-      if (!mounted) {
-        return;
+    } = supabase.auth.onAuthStateChange((event: AuthChangeEvent, session: Session | null) => {
+      if (!mounted) return;
+
+      const newUser = session?.user ?? null;
+      
+      // ── PILL: Issue 10 - SSR/CSR Auth Gap Closure ──
+      // Force refresh the server components if the auth state changes 
+      // (e.g. login/logout in another tab).
+      if (user?.id !== newUser?.id) {
+        router.refresh();
       }
 
-      setUser(session?.user ?? null);
+      setUser(newUser);
       setIsReady(true);
     });
 
@@ -63,7 +70,7 @@ export function AuthProvider({ children, initialUser = null }: AuthProviderProps
       mounted = false;
       subscription.unsubscribe();
     };
-  }, [initialUser]);
+  }, [initialUser, user?.id, router]);
 
   const value = useMemo<AuthContextValue>(
     () => ({
