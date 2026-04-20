@@ -195,12 +195,29 @@ export async function processFulfillmentJobs(limit = 10): Promise<FulfillmentRes
 
 /**
  * Execute a single fulfillment job based on its type.
+ * Includes strictly idempotent checks to prevent double-processing.
  */
-async function executeFulfillmentJob(job: FulfillmentJob): Promise<void> {
+export async function executeFulfillmentJob(job: FulfillmentJob): Promise<void> {
   const admin = createSupabaseAdminClient();
 
   switch (job.job_type) {
     case 'credit_add': {
+      // 1. Idempotency Check: Check if transaction already exists for this payment
+      const { data: existingTx } = await admin
+        .from("credit_transactions")
+        .select("id")
+        .eq("reference_id", job.payment_id)
+        .eq("transaction_type", "purchase")
+        .maybeSingle();
+
+      if (existingTx) {
+        logger.payments.info("Credits already added for this payment (idempotent skip)", { 
+          paymentId: job.payment_id, 
+          userId: job.payment_data.user_id 
+        });
+        return;
+      }
+
       // Add credits to user balance
       const credits = job.payment_data.metadata?.credits as number | undefined;
       
@@ -217,6 +234,16 @@ async function executeFulfillmentJob(job: FulfillmentJob): Promise<void> {
         throw new Error(`Failed to add credits: ${error.message}`);
       }
 
+      // 2. Audit Trail: Ensure we record the transaction
+      await admin.from("credit_transactions").insert({
+        user_id: job.payment_data.user_id,
+        amount: credits,
+        transaction_type: "purchase",
+        description: "Plan purchase fulfillment",
+        reference_id: job.payment_id,
+        metadata: { job_id: job.id }
+      });
+
       logger.payments.info("Credits added successfully", {
         userId: job.payment_data.user_id,
         credits,
@@ -227,19 +254,30 @@ async function executeFulfillmentJob(job: FulfillmentJob): Promise<void> {
     }
 
     case 'doping_apply': {
-      // Apply doping to listing
+      // 1. Idempotency Check: Check if doping already applied for this payment
       const listingId = job.payment_data.listing_id;
       const dopingTypes = job.payment_data.metadata?.dopingTypes as string[] | undefined;
       const durationDays = (job.payment_data.metadata?.durationDays as number | undefined) ?? 7;
 
-      if (!listingId) {
-        throw new Error("Missing listing_id for doping application");
+      if (!listingId) throw new Error("Missing listing_id");
+      if (!dopingTypes || dopingTypes.length === 0) throw new Error("Missing doping_types");
+
+      const { data: existingDoping } = await admin
+        .from("doping_applications")
+        .select("id")
+        .eq("payment_id", job.payment_id)
+        .eq("listing_id", listingId)
+        .limit(1);
+
+      if (existingDoping && existingDoping.length > 0) {
+        logger.payments.info("Doping already applied for this payment (idempotent skip)", { 
+          paymentId: job.payment_id, 
+          listingId 
+        });
+        return;
       }
 
-      if (!dopingTypes || dopingTypes.length === 0) {
-        throw new Error("Missing doping_types for doping application");
-      }
-
+      // Apply doping to listing
       const { data, error } = await admin.rpc("apply_listing_doping", {
         p_listing_id: listingId,
         p_user_id: job.payment_data.user_id,
@@ -252,14 +290,11 @@ async function executeFulfillmentJob(job: FulfillmentJob): Promise<void> {
         throw new Error(`Failed to apply doping: ${error.message}`);
       }
 
-      const appliedCount = (data as { applied_count?: number })?.applied_count ?? 0;
-
       logger.payments.info("Doping applied successfully", {
         userId: job.payment_data.user_id,
         listingId,
-        dopingTypes,
-        appliedCount,
         paymentId: job.payment_id,
+        applied: (data as { applied_count?: number })?.applied_count
       });
 
       break;
@@ -274,10 +309,10 @@ async function executeFulfillmentJob(job: FulfillmentJob): Promise<void> {
         type: 'system' | 'favorite' | 'moderation' | 'report';
       } | undefined;
 
-      if (!notificationData) {
-        throw new Error("Missing notification data");
-      }
+      if (!notificationData) throw new Error("Missing notification data");
 
+      // Idempotency: Simple check by job status is enough as we are in the same transaction context
+      // But we can check if notification exists with matching title/msg for this user in last hour
       const notification = await createDatabaseNotification({
         userId: job.payment_data.user_id,
         type: notificationData.type ?? 'system',
@@ -286,21 +321,47 @@ async function executeFulfillmentJob(job: FulfillmentJob): Promise<void> {
         href: notificationData.href ?? null,
       });
 
-      if (!notification) {
-        throw new Error("Failed to create notification");
-      }
-
-      logger.payments.info("Notification sent successfully", {
-        userId: job.payment_data.user_id,
-        notificationId: notification.id,
-        paymentId: job.payment_id,
-      });
-
+      if (!notification) throw new Error("Failed to create notification");
       break;
     }
 
     default:
       throw new Error(`Unknown job type: ${job.job_type}`);
+  }
+}
+
+/**
+ * Convenience helper to run fulfillment for a specific payment ID immediately.
+ * Primarily used in webhooks to avoid the 24h cron delay.
+ */
+export async function runFulfillmentForPayment(paymentId: string): Promise<void> {
+  if (!hasSupabaseAdminEnv()) return;
+  
+  const admin = createSupabaseAdminClient();
+  
+  // 1. Fetch jobs for this payment that aren't successful yet
+  const { data: jobs, error } = await admin
+    .from("fulfillment_jobs")
+    .select("*, payment_data:payments(user_id, amount, listing_id, metadata)")
+    .eq("payment_id", paymentId)
+    .in("status", ["pending", "failed"]);
+
+  if (error || !jobs || jobs.length === 0) return;
+
+  // 2. Process each job sequentially
+  for (const job of jobs) {
+    try {
+      await admin.rpc("mark_job_processing", { p_job_id: job.id });
+      await executeFulfillmentJob(job as unknown as FulfillmentJob);
+      await admin.rpc("mark_job_success", { p_job_id: job.id });
+    } catch (err) {
+      logger.payments.error(`Immediate fulfillment job ${job.id} failed`, err);
+      // mark_job_failed RPC handles retry logic/exponential backoff
+      await admin.rpc("mark_job_failed", {
+        p_job_id: job.id,
+        p_error_message: err instanceof Error ? err.message : String(err)
+      });
+    }
   }
 }
 

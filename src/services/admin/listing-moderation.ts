@@ -1,4 +1,5 @@
 import { createDatabaseNotification } from "@/services/notifications/notification-records";
+import { after } from "next/server";
 import { 
   getDatabaseListings, 
 } from "@/services/listings/listing-submissions";
@@ -79,6 +80,7 @@ async function createModerationSideEffects(
   adminUserId: string,
   note?: string | null,
 ) {
+  // 1. Audit Action (Immediate)
   await createAdminModerationAction({
     action: action === "approve" ? "approve" : "reject",
     adminUserId,
@@ -87,6 +89,7 @@ async function createModerationSideEffects(
     targetType: "listing",
   });
 
+  // 2. Notification (Immediate)
   await createDatabaseNotification({
     href: `/dashboard/listings?edit=${listing.id}`,
     message:
@@ -98,21 +101,29 @@ async function createModerationSideEffects(
     userId: listing.sellerId,
   });
 
-  // Fire-and-forget email — doesn't block moderation response
-  sendModerationEmail(listing, action, note);
+  // 3. Fire-and-forget side effects using Next.js 'after'
+  // This ensures they run post-response and don't delay the admin UI
+  after(async () => {
+    try {
+      // Email
+      await sendModerationEmail(listing, action, note);
 
-  // If approved, recalculate market stats and invalidate cache
-  if (action === "approve") {
-    const { invalidateCache } = await import("@/lib/redis/client");
-    invalidateCache("listings:approved").catch((err) =>
-      logger.admin.warn("Cache invalidation failed after approval", { listingId: listing.id }, err)
-    );
+      // If approved, recalculate market stats and invalidate cache
+      if (action === "approve") {
+        const { invalidateCache } = await import("@/lib/redis/client");
+        await invalidateCache("listings:approved").catch((err) =>
+          logger.admin.warn("Cache invalidation failed after approval", { listingId: listing.id }, err)
+        );
 
-    const { updateMarketStats } = await import("@/services/market/market-stats");
-    updateMarketStats(listing.brand, listing.model, listing.year).catch((err) =>
-      logger.market.warn("Market stats update failed after approval", { listingId: listing.id }, err)
-    );
-  }
+        const { updateMarketStats } = await import("@/services/market/market-stats");
+        await updateMarketStats(listing.brand, listing.model, listing.year).catch((err) =>
+          logger.market.warn("Market stats update failed after approval", { listingId: listing.id }, err)
+        );
+      }
+    } catch (err) {
+      logger.admin.error("Background moderation side-effects failed", err, { listingId: listing.id });
+    }
+  });
 }
 
 export async function moderateListingWithSideEffects({

@@ -122,9 +122,16 @@ export async function archiveDatabaseListing(listingId: string) {
 export async function deleteDatabaseListing(listingId: string, sellerId: string) {
   if (!hasSupabaseAdminEnv()) return null;
   const admin = createSupabaseAdminClient();
+  
+  // Fetch the listing to verify ownership and status
   const listing = (await getDatabaseListings({ listingId, sellerId }))?.[0];
-  if (!listing || listing.status !== "archived") return null;
+  
+  // Rule: Can delete anything EXCEPT 'approved' (must be archived/rejected/draft first)
+  if (!listing || listing.status === "approved") {
+    return null;
+  }
 
+  // Handle storage cleanup
   if (listing.images.length > 0) {
     const storagePaths = listing.images.map((img) => img.storagePath).filter((path) => path.length > 0);
     if (storagePaths.length > 0) {
@@ -133,10 +140,21 @@ export async function deleteDatabaseListing(listingId: string, sellerId: string)
     }
   }
 
+  // Cleanup related records
   await admin.from("listing_images").delete().eq("listing_id", listingId);
   await admin.from("favorites").delete().eq("listing_id", listingId);
   await admin.from("reports").delete().eq("listing_id", listingId);
+  
   const { error } = await admin.from("listings").delete().eq("id", listingId);
+
+  // If the listing was previously visible (archived/sold), update stats in background
+  if (!error && listing.status === "archived") {
+    const { after } = await import("next/server");
+    after(async () => {
+      const { updateMarketStats } = await import("@/services/market/market-stats");
+      await updateMarketStats(listing.brand, listing.model, listing.year).catch(() => {});
+    });
+  }
 
   return error ? null : { id: listingId, deleted: true };
 }

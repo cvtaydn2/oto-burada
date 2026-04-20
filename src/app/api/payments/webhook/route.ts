@@ -25,8 +25,7 @@ import { NextResponse } from "next/server";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { hasSupabaseAdminEnv } from "@/lib/supabase/env";
 import { logger } from "@/lib/utils/logger";
-import { captureServerError, captureServerEvent } from "@/lib/monitoring/posthog-server";
-import { createDatabaseNotification } from "@/services/notifications/notification-records";
+import { runFulfillmentForPayment } from "@/services/billing/fulfillment-worker";
 
 export const dynamic = "force-dynamic";
 
@@ -65,20 +64,6 @@ function verifyIyzicoSignature(
     diff |= expected.charCodeAt(i) ^ signature.charCodeAt(i);
   }
   return diff === 0;
-}
-
-/**
- * Parse the metadata stored on the payment record to determine
- * what action to take after a successful payment.
- */
-interface PaymentMeta {
-  type: "plan_purchase" | "doping";
-  planId?: string;
-  planName?: string;
-  credits?: number;
-  listingId?: string;
-  dopingTypes?: string[];
-  durationDays?: number;
 }
 
 export async function POST(request: Request): Promise<NextResponse> {
@@ -186,97 +171,12 @@ export async function POST(request: Request): Promise<NextResponse> {
     // If they fail, payment is still successful (already committed in DB)
     
     if (isSuccess && result?.success) {
-      // Fetch payment metadata for fulfillment jobs
-      const { data: payment } = await admin
-        .from("payments")
-        .select("user_id, metadata, listing_id, id")
-        .eq("iyzico_token", payload.token)
-        .single<{
-          id: string;
-          user_id: string;
-          metadata: PaymentMeta | null;
-          listing_id: string | null;
-        }>();
-
-      if (payment) {
-        const meta = payment.metadata;
-        const userId = payment.user_id;
-
-        try {
-          // Process fulfillment directly in webhook (no cron dependency)
-          // Payment is already committed — these are best-effort post-payment actions.
-          // Failures are logged but do NOT fail the webhook response.
-
-          if (meta?.type === "plan_purchase") {
-            // Credits are already added by process_payment_success() RPC.
-            // Just send the notification directly.
-            await createDatabaseNotification({
-              userId,
-              type: "system",
-              title: "Paket satın alındı",
-              message: `${meta.planName ?? "Paket"} başarıyla aktifleştirildi. ${meta.credits ?? 0} kredi hesabınıza eklendi.`,
-              href: "/dashboard/pricing",
-            });
-
-            captureServerEvent("plan_purchased", {
-              userId,
-              planId: meta.planId,
-              planName: meta.planName,
-              credits: meta.credits,
-            }, userId);
-
-          } else if (meta?.type === "doping" && meta.listingId && meta.dopingTypes) {
-            // Apply doping immediately — fast DB RPC, well within webhook timeout.
-            const { error: dopingError } = await admin.rpc("apply_listing_doping", {
-              p_listing_id: meta.listingId,
-              p_user_id: userId,
-              p_doping_types: meta.dopingTypes,
-              p_duration_days: meta.durationDays ?? 7,
-              p_payment_id: payment.id,
-            });
-
-            if (dopingError) {
-              logger.payments.error("Doping application failed in webhook", dopingError, {
-                userId,
-                paymentId: payment.id,
-                listingId: meta.listingId,
-                token: payload.token,
-              });
-              captureServerError("Doping application failed in webhook", "payments", dopingError, {
-                userId,
-                paymentId: payment.id,
-                listingId: meta.listingId,
-              }, userId);
-            } else {
-              logger.payments.info("Doping applied immediately via webhook", {
-                userId,
-                listingId: meta.listingId,
-                dopingTypes: meta.dopingTypes,
-              });
-            }
-
-            // Send notification directly.
-            await createDatabaseNotification({
-              userId,
-              type: "system",
-              title: "Doping aktifleştirildi",
-              message: `İlanınız ${meta.durationDays ?? 7} gün boyunca öne çıkarıldı.`,
-              href: `/dashboard/listings`,
-            });
-
-            captureServerEvent("doping_payment_success", {
-              userId,
-              listingId: meta.listingId,
-              dopingTypes: meta.dopingTypes,
-              durationDays: meta.durationDays ?? 7,
-            }, userId);
-          }
-        } catch (err) {
-          // Post-payment actions failed — log but don't fail the webhook.
-          // Payment is already committed in DB.
-          logger.payments.error("Post-payment fulfillment failed", err, { userId, token: payload.token });
-          captureServerError("Post-payment fulfillment failed", "payments", err, { userId, token: payload.token }, userId);
-        }
+      try {
+        // Run fulfillment jobs immediately (no 24h cron wait)
+        // Note: The trigger public.trigger_create_fulfillment_jobs() already created the jobs.
+        await runFulfillmentForPayment(result.payment_id);
+      } catch (err) {
+        logger.payments.error("Post-payment fulfillment failed in webhook", err, { token: payload.token });
       }
     }
 
