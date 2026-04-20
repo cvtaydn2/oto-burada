@@ -193,9 +193,52 @@ export async function verifyUserBusiness(userId: string) {
 
 export async function deleteUser(userId: string) {
   const admin = createSupabaseAdminClient();
-  const { error } = await admin.auth.admin.deleteUser(userId);
-  if (error) throw new Error(`Kullanıcı silinemedi: ${error.message}`);
   
-  revalidatePath("/admin/users");
-  return { success: true };
+  try {
+    // 1. Overwrite profile with anonymized data (Hard Anonymization)
+    // This allows keeping the record for Referencing Integrity (e.g. past payments/listings)
+    // while scrubing all Personal Identifiable Information (PII).
+    const randomSuffix = Math.random().toString(36).substring(2, 7);
+    const { error: profileError } = await admin
+      .from("profiles")
+      .update({
+        full_name: `Anonymized User ${randomSuffix}`,
+        phone: "00000000000",
+        city: "Anonymized",
+        avatar_url: null,
+        business_name: null,
+        business_address: null,
+        business_logo_url: null,
+        business_description: null,
+        tax_id: null,
+        tax_office: null,
+        website_url: null,
+        business_slug: null,
+        is_banned: true,
+        ban_reason: "Account Deleted / Anonymized",
+        updated_at: new Date().toISOString()
+      })
+      .eq("id", userId);
+
+    if (profileError) {
+      logger.admin.error("Profile anonymization failed", profileError, { userId });
+      throw new Error(`Kullanıcı verileri anonimleştirilemedi: ${profileError.message}`);
+    }
+
+    // 2. Delete from Auth (This invalidates all tokens and removes from auth.users)
+    const { error: authError } = await admin.auth.admin.deleteUser(userId);
+    
+    if (authError) {
+      // Note: If deleting from auth fails because of FK constraints in other tables, 
+      // the profile remains anonymized (which is already a win for KVKK).
+      logger.admin.error("Auth user deletion failed", authError, { userId });
+      throw new Error(`Kullanıcı oturumu sonlandırılamadı: ${authError.message}`);
+    }
+
+    revalidatePath("/admin/users");
+    return { success: true };
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : "Beklenmedik bir hata oluştu.";
+    return { success: false, error: msg };
+  }
 }

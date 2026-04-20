@@ -111,7 +111,7 @@ export function buildListingRecord(
 export { getDatabaseListings, getFilteredDatabaseListings };
 export type { PaginatedListingsResult };
 
-export async function archiveDatabaseListing(listingId: string) {
+export async function archiveDatabaseListing(listingId: string, sellerId: string) {
   if (!hasSupabaseAdminEnv()) return null;
   const admin = createSupabaseAdminClient();
   const { error } = await admin
@@ -120,7 +120,8 @@ export async function archiveDatabaseListing(listingId: string) {
       status: "archived" satisfies Listing["status"],
       updated_at: new Date().toISOString(),
     })
-    .eq("id", listingId);
+    .eq("id", listingId)
+    .eq("seller_id", sellerId);
 
   if (error) return null;
   return (await getDatabaseListings({ listingId }))?.[0] ?? null;

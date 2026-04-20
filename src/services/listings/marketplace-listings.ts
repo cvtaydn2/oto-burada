@@ -7,6 +7,7 @@ import {
 } from "@/services/listings/listing-submissions";
 import { getPublicListings } from "@/services/listings/catalog";
 import { createExpertDocumentSignedUrl } from "@/services/listings/listing-documents";
+import { maskPhoneNumber } from "@/lib/utils/listing-utils";
 import type { Profile, ListingFilters, Listing } from "@/types";
 
 async function withNextCache<T>(
@@ -46,7 +47,10 @@ export async function getMarketplaceListingBySlug(slug: string) {
 
   if (storedListing && storedListing.status === "approved") {
     if (!storedListing.expertInspection?.documentPath) {
-      return storedListing;
+      return {
+        ...storedListing,
+        whatsappPhone: maskPhoneNumber(storedListing.whatsappPhone),
+      };
     }
 
     const signedUrl = await createExpertDocumentSignedUrl(
@@ -55,6 +59,7 @@ export async function getMarketplaceListingBySlug(slug: string) {
 
     return {
       ...storedListing,
+      whatsappPhone: maskPhoneNumber(storedListing.whatsappPhone),
       expertInspection: {
         ...storedListing.expertInspection,
         documentUrl: signedUrl ?? storedListing.expertInspection.documentUrl,

@@ -26,6 +26,7 @@ import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { hasSupabaseAdminEnv } from "@/lib/supabase/env";
 import { logger } from "@/lib/utils/logger";
 import { runFulfillmentForPayment } from "@/services/billing/fulfillment-worker";
+import { IyzicoProvider } from "@/lib/payment/iyzico";
 
 export const dynamic = "force-dynamic";
 
@@ -136,9 +137,40 @@ export async function POST(request: Request): Promise<NextResponse> {
   }
 
   // ── 3. Processing ───────────────────────────────────────────────────────
-  const isSuccess = payload.status === "SUCCESS";
-  
   try {
+    // ── 3. Processing ───────────────────────────────────────────────────────
+    const isSuccess = payload.status === "SUCCESS";
+
+    // ── 3.1 Verify with Iyzico API (Spoofing Protection) ────────────────────
+    if (isSuccess && payload.token) {
+      try {
+        const provider = new IyzicoProvider();
+        const verification = await provider.verifyPayment(payload.token);
+        if (!verification.success) {
+          await logWebhookAttempt("suspicious_payment", "Iyzico verification failed - possible spoofing attempt");
+          logger.payments.error("Webhook rejected: Iyzico verification failed (spoofing check)", { 
+            token: payload.token,
+            submittedPaymentId: payload.paymentId
+          });
+          return NextResponse.json({ received: true, error: "Verification failed" }, { status: 403 });
+        }
+        
+        // Use verified payment ID from Iyzico API if available
+        if (verification.transactionId && verification.transactionId !== payload.paymentId) {
+          logger.payments.warn("Webhook paymentId mismatch - using verified ID", { 
+            original: payload.paymentId, 
+            verified: verification.transactionId 
+          });
+          payload.paymentId = verification.transactionId;
+        }
+      } catch (verifyErr) {
+        // If Iyzico API is down, we log and proceed with caution 
+        // OR we can fail-closed. Let's fail-closed for financial integrity.
+        logger.payments.error("Iyzico verification API call failed", verifyErr, { token: payload.token });
+        return NextResponse.json({ received: true, error: "Verification unavailable" }, { status: 503 });
+      }
+    }
+
     const { data: result, error: rpcError } = await admin.rpc("process_payment_webhook", {
       p_iyzico_token: token,
       p_status: payload.status,

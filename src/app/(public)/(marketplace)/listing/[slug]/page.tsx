@@ -60,6 +60,12 @@ const ContactActions = dynamic(
 
 const MobileStickyActions = dynamic(
   () => import("@/components/listings/mobile-sticky-actions").then((mod) => mod.MobileStickyActions),
+  { ssr: false }
+);
+
+const SafeWhatsAppButton = dynamic(
+  () => import("@/components/listings/safe-whatsapp-button").then((mod) => mod.SafeWhatsAppButton),
+  { ssr: false }
 );
 
 interface ListingDetailPageProps {
@@ -439,13 +445,27 @@ export default async function ListingDetailPage({ params }: ListingDetailPagePro
                   </div>
                   
                   <div className="grid grid-cols-1 gap-2">
-                    <a href={buildWhatsAppOfferLink(listing.whatsappPhone, listing.title, Math.round(listing.price * 0.95))} target="_blank" rel="noreferrer" className="bg-background border border-border hover:border-primary/30 text-foreground py-3 rounded-xl text-sm font-semibold transition-all text-center tracking-tight">₺{new Intl.NumberFormat("tr-TR").format(Math.round(listing.price * 0.95))} (%5 Teklif)</a>
-                    <a href={buildWhatsAppOfferLink(listing.whatsappPhone, listing.title, Math.round(listing.price * 0.98))} target="_blank" rel="noreferrer" className="bg-background border border-border hover:border-primary/30 text-foreground py-3 rounded-xl text-sm font-semibold transition-all text-center tracking-tight">₺{new Intl.NumberFormat("tr-TR").format(Math.round(listing.price * 0.98))} (%2 Teklif)</a>
+                    <SafeWhatsAppButton 
+                      listingId={listing.id}
+                      listingTitle={listing.title}
+                      offerPrice={Math.round(listing.price * 0.95)}
+                      variant="outline"
+                      label={`₺${new Intl.NumberFormat("tr-TR").format(Math.round(listing.price * 0.95))} (%5 Teklif)`}
+                    />
+                    <SafeWhatsAppButton 
+                      listingId={listing.id}
+                      listingTitle={listing.title}
+                      offerPrice={Math.round(listing.price * 0.98)}
+                      variant="outline"
+                      label={`₺${new Intl.NumberFormat("tr-TR").format(Math.round(listing.price * 0.98))} (%2 Teklif)`}
+                    />
                   </div>
                   
-                  <a href={buildWhatsAppOfferLink(listing.whatsappPhone, listing.title)} target="_blank" rel="noreferrer" className="w-full bg-primary text-primary-foreground font-bold h-12 rounded-xl transition-all hover:opacity-90 shadow-sm flex justify-center items-center uppercase text-[10px] tracking-widest">
-                    KENDİ TEKLİFİNİ YAP
-                  </a>
+                  <SafeWhatsAppButton 
+                    listingId={listing.id}
+                    listingTitle={listing.title}
+                    label="KENDİ TEKLİFİNİ YAP"
+                  />
                 </div>
               </div>
 
@@ -489,12 +509,12 @@ export default async function ListingDetailPage({ params }: ListingDetailPagePro
               {listing.price.toLocaleString("tr-TR")} ₺
             </div>
           </div>
-          <Button className="h-12 flex-[1.5] rounded-xl bg-[#25D366] text-xs font-bold uppercase tracking-widest text-white hover:opacity-90 shadow-lg shadow-emerald-500/20 transition-all active:scale-95" asChild>
-            <a href={`https://wa.me/${listing.whatsappPhone.replace(/\D/g, "")}`} target="_blank" rel="noopener noreferrer">
-              <MessageSquare size={16} className="mr-2 fill-current" />
-              WhatsApp
-            </a>
-          </Button>
+          <SafeWhatsAppButton 
+            listingId={listing.id}
+            listingTitle={listing.title}
+            className="h-12 flex-[1.5] bg-[#25D366] text-xs shadow-emerald-500/20"
+            label="WhatsApp"
+          />
         </div>
       </div>
 
