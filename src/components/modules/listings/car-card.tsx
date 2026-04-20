@@ -36,7 +36,7 @@ export function CarCard({ listing, priority = false, variant = "grid" }: CarCard
         <Link href={detailHref} className="relative block h-full w-full">
           {coverImage ? (
             <Image
-              src={supabaseImageUrl(coverImage.url, variant === "grid" ? 600 : 400, 80)}
+              src={supabaseImageUrl(coverImage.url, variant === "grid" ? 480 : 320, 80)}
               alt={listing.title}
               fill
               sizes={variant === "grid" ? "(min-width: 1024px) 33vw, 50vw" : "320px"}

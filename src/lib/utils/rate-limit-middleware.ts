@@ -57,7 +57,7 @@ export async function enforceRateLimit(
 
       return { response, result };
     }
-  } catch (err) {
+  } catch {
     // If checkRateLimit throws (infrastructure failure)
     // checkRateLimit itself handles failClosed logic, but we catch it here to 
     // provide a clean fallback for any unexpected logic errors.

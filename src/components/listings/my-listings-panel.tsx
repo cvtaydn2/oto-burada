@@ -10,7 +10,7 @@ import {
   X, CheckSquare, Square, FileSpreadsheet,
 } from "lucide-react";
 
-import { formatCurrency, formatNumber } from "@/lib/utils";
+import { formatCurrency, formatNumber, supabaseImageUrl } from "@/lib/utils";
 import type { Listing } from "@/types";
 import {
   Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger,
@@ -400,7 +400,7 @@ function ListingCard({
 
       <div className="relative h-20 w-24 sm:h-24 sm:w-32 shrink-0 overflow-hidden rounded-xl bg-muted/30 border border-border/50">
         {listing.images?.[0]?.url ? (
-          <Image src={listing.images[0].url} alt="" fill sizes="128px" className="object-cover group- transition-transform duration-700" placeholder={listing.images[0].placeholderBlur ? "blur" : "empty"} blurDataURL={listing.images[0].placeholderBlur ?? undefined} />
+          <Image src={supabaseImageUrl(listing.images[0].url, 320, 75)} alt="" fill sizes="128px" className="object-cover group- transition-transform duration-700" placeholder={listing.images[0].placeholderBlur ? "blur" : "empty"} blurDataURL={listing.images[0].placeholderBlur ?? undefined} />
         ) : (
           <div className="flex h-full items-center justify-center text-slate-300"><Rocket size={20} /></div>
         )}

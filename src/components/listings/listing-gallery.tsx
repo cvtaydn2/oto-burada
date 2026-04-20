@@ -7,6 +7,7 @@ import { ChevronLeft, ChevronRight, Sparkles, Rotate3d } from "lucide-react";
 import useEmblaCarousel from "embla-carousel-react";
 import type { ListingImage } from "@/types";
 import { Listing360View } from "@/components/listings/listing-360-view";
+import { supabaseImageUrl } from "@/lib/utils";
 
 const ListingGalleryLightbox = dynamic(
   () => import("@/components/listings/listing-gallery-lightbox").then((mod) => mod.ListingGalleryLightbox),
@@ -88,7 +89,7 @@ export function ListingGallery({ images, title, has360View = false }: ListingGal
                     className="relative flex-[0_0_100%] min-w-0 aspect-[4/3] sm:aspect-[16/9] lg:aspect-[16/10]"
                   >
                     <Image
-                      src={image.url}
+                      src={supabaseImageUrl(image.url, 1200, 85)}
                       alt={`${title} - ${index + 1}`}
                       fill
                       priority={index === 0}
@@ -170,7 +171,7 @@ export function ListingGallery({ images, title, has360View = false }: ListingGal
                   }`}
                 >
                   <Image
-                    src={image.url}
+                    src={supabaseImageUrl(image.url, 200, 70)}
                     alt=""
                     fill
                     sizes="120px"

@@ -23,7 +23,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
-import { formatCurrency, formatNumber } from "@/lib/utils";
+import { formatCurrency, formatNumber, supabaseImageUrl } from "@/lib/utils";
 import { Listing } from "@/types/domain";
 import { forceActionOnListing } from "@/services/admin/inventory";
 
@@ -83,7 +83,7 @@ export function InventoryTable({ listings, adminUserId }: InventoryTableProps) {
                    <div className="relative size-12 rounded-xl bg-slate-100 border border-slate-200 overflow-hidden shrink-0">
                        {listing.images?.[0] ? (
                          <Image 
-                           src={listing.images[0].url} 
+                           src={supabaseImageUrl(listing.images[0].url, 128, 70)} 
                            alt="" 
                            fill 
                            className="object-cover" 

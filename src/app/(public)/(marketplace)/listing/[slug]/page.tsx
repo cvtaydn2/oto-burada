@@ -10,7 +10,6 @@ import {
   TrendingUp,
   Zap,
   XCircle,
-  MessageSquare,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { ListingGallery } from "@/components/listings/listing-gallery";
@@ -35,9 +34,8 @@ import { captureServerEvent } from "@/lib/monitoring/posthog-server";
 import { recordListingView } from "@/services/listings/listing-views";
 import { getCurrentUser } from "@/lib/auth/session";
 import { getSellerRatingSummary } from "@/services/profile/seller-reviews";
-import { getMemberSinceYear, getMembershipYears, buildWhatsAppOfferLink } from "@/lib/utils/listing-utils";
+import { getMemberSinceYear, getMembershipYears } from "@/lib/utils/listing-utils";
 import { listingDetail, breadcrumbs as breadcrumbLabels } from "@/lib/constants/ui-strings";
-import { Button } from "@/components/ui/button";
 
 const ListingMap = dynamic(
   () => import("@/components/shared/listing-map-wrapper").then((mod) => mod.ListingMapWrapper),
@@ -59,13 +57,11 @@ const ContactActions = dynamic(
 );
 
 const MobileStickyActions = dynamic(
-  () => import("@/components/listings/mobile-sticky-actions").then((mod) => mod.MobileStickyActions),
-  { ssr: false }
+  () => import("@/components/listings/mobile-sticky-actions").then((mod) => mod.MobileStickyActions)
 );
 
 const SafeWhatsAppButton = dynamic(
-  () => import("@/components/listings/safe-whatsapp-button").then((mod) => mod.SafeWhatsAppButton),
-  { ssr: false }
+  () => import("@/components/listings/safe-whatsapp-button").then((mod) => mod.SafeWhatsAppButton)
 );
 
 interface ListingDetailPageProps {
