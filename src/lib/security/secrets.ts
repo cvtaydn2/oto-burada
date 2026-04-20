@@ -16,13 +16,31 @@ const SECRET_REGISTRY = {
 
 type SecretKey = keyof typeof SECRET_REGISTRY;
 
+/**
+ * PILL: Issue 10 - Secret Rotation (Zero-Downtime)
+ * Supports multiple keys (comma-separated in ENV).
+ */
 export function getSecret(key: SecretKey): string {
-  const secret = SECRET_REGISTRY[key];
-  if (!secret) {
-    logger.security.error(`SECRET ACCESS FAILED: ${key} is missing in environment.`);
+  const rawValue = SECRET_REGISTRY[key] || "";
+  // Split by comma to handle multiple keys during rotation
+  const keys = rawValue.split(',').map(k => k.trim()).filter(Boolean);
+  
+  if (keys.length === 0) {
+    logger.security.error(`SECRET ACCESS FAILED: ${key} is missing.`);
     throw new Error(`Critical configuration missing: ${key}`);
   }
-  return secret;
+  
+  // Return primary (first) key. Consumer tasks should iterate if needed.
+  return keys[0];
+}
+
+/**
+ * Returns all valid keys for a secret, useful for verifying signatures 
+ * during a rotation phase (Overlapping Keys).
+ */
+export function getSecretRotationList(key: SecretKey): string[] {
+  const rawValue = SECRET_REGISTRY[key] || "";
+  return rawValue.split(',').map(k => k.trim()).filter(Boolean);
 }
 
 /**
