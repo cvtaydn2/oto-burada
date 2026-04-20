@@ -1,4 +1,4 @@
-"use client";
+
 
 import Link from "next/link";
 import { 
@@ -21,16 +21,16 @@ import { getListingBadgeStates, getListingCoverImage } from "@/lib/utils/listing
 import { cva, type VariantProps } from "class-variance-authority";
 
 const cardVariants = cva(
-  "group relative overflow-hidden transition-all duration-500 ease-in-out",
+  "group relative overflow-hidden transition-all duration-500 ease-in-out showroom-card",
   {
     variants: {
       variant: {
-        grid: "flex flex-col bg-card border border-border/50 rounded-2xl hover:shadow-xl hover:shadow-primary/5 hover:-translate-y-1",
-        list: "flex flex-col sm:flex-row bg-card border border-border/40 rounded-2xl hover:shadow-lg hover:bg-primary/[0.01]",
-        minimal: "flex flex-col bg-transparent border-none p-0 hover:opacity-90",
+        grid: "flex flex-col h-full hover:shadow-2xl hover:shadow-primary/10 hover:-translate-y-1.5",
+        list: "flex flex-col sm:flex-row min-h-[220px] hover:shadow-xl hover:bg-primary/[0.01]",
+        minimal: "flex flex-col border-none p-0 bg-transparent shadow-none hover:opacity-90",
       },
       isHighlighted: {
-        true: "ring-2 ring-primary/20 bg-gradient-to-br from-primary/[0.02] to-card",
+        true: "ring-2 ring-primary/20 bg-gradient-to-br from-primary/[0.03] to-card",
         false: "",
       }
     },
@@ -71,8 +71,8 @@ export function ListingCard({
     <div className={cn(cardVariants({ variant, isHighlighted: badgeStates.isHighlighted }), className)}>
       {/* ── Media Section ── */}
       <div className={cn(
-        "relative overflow-hidden bg-muted",
-        isGrid && "aspect-[4/3]",
+        "relative overflow-hidden bg-muted/20",
+        isGrid && "aspect-[4/3] w-full",
         isList && "aspect-[16/10] sm:aspect-auto sm:w-[320px] shrink-0",
       )}>
         <Link href={detailHref} className="block w-full h-full relative">
@@ -81,123 +81,121 @@ export function ListingCard({
             alt={listing.title}
             fill
             priority={priority}
-            className="object-cover transition-transform duration-700 group-hover:scale-105"
+            className="object-cover transition-transform duration-1000 ease-out group-hover:scale-110"
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent opacity-60 group-hover:opacity-30 transition-opacity" />
+          {/* Glass Overlay for depth */}
+          <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent opacity-80 group-hover:opacity-40 transition-opacity duration-500" />
         </Link>
 
-        {/* Floating Badges (Top Left) */}
-        <div className="absolute top-3 left-3 flex flex-col gap-1.5 z-10 pointer-events-none">
+        {/* Floating Badges */}
+        <div className="absolute top-4 left-4 flex flex-col gap-2 z-10 pointer-events-none">
           {badgeStates.isFeatured && (
-            <Badge icon={Sparkles} label="Vitrin" className="bg-blue-600/90 text-white shadow-sm" />
+            <Badge icon={Sparkles} label="VİTRİN" className="bg-primary text-white shadow-lg shadow-primary/20" />
           )}
           {badgeStates.isUrgent && (
-            <Badge icon={Zap} label="Acil" className="bg-rose-600/90 text-white shadow-sm" />
+            <Badge icon={Zap} label="ACİL" className="bg-rose-600 text-white shadow-lg shadow-rose-600/20" />
           )}
           {showTrust && badgeStates.hasInspection && (
-            <Badge icon={ShieldCheck} label="Ekspertizli" className="bg-emerald-600/90 text-white shadow-sm" />
+            <Badge icon={ShieldCheck} label="EKSPERTİZLİ" className="bg-emerald-600 text-white shadow-lg shadow-emerald-600/20" />
           )}
         </div>
 
-        {/* Favorite Button (Top Right) */}
+        {/* Favorite Button */}
         {showFavorite && (
-          <div className="absolute top-3 right-3 z-20">
+          <div className="absolute top-4 right-4 z-20">
             <FavoriteButton
               listingId={listing.id}
-              className="size-9 rounded-xl bg-white/10 backdrop-blur-md border border-white/20 text-white hover:bg-white hover:text-rose-500 transition-all duration-300"
+              className="size-10 rounded-2xl bg-white/10 backdrop-blur-xl border border-white/20 text-white hover:bg-white hover:text-rose-500 transition-all duration-500 shadow-xl"
             />
           </div>
         )}
 
-        {/* Image Count / Location Chips (Bottom) */}
-        <div className="absolute bottom-3 right-3 flex items-center gap-1.5 z-10">
-          <div className="px-2 py-1 rounded-md bg-black/40 backdrop-blur-md text-[9px] font-bold text-white/90 uppercase tracking-widest">
+        {/* Price Tag Overlay (Bottom Left on Grid) */}
+        <div className="absolute bottom-4 left-4 flex items-center gap-2 z-10 pointer-events-none">
+          {showInsights && badgeStates.isAdvantageous && (
+            <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-500 text-white backdrop-blur-md text-[10px] font-bold uppercase tracking-widest shadow-xl">
+              <TrendingDown size={12} />
+              FIRSAT
+            </div>
+          )}
+          <div className="px-3 py-1.5 rounded-xl bg-black/30 backdrop-blur-md text-[9px] font-bold text-white uppercase tracking-[0.2em]">
             {listing.images?.length || 0} FOTO
           </div>
         </div>
-
-        {/* Floating Price Index (Bottom Left Insight) */}
-        {showInsights && badgeStates.isAdvantageous && (
-          <div className="absolute bottom-3 left-3 z-10">
-            <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-emerald-500/90 text-white backdrop-blur-sm text-[9px] font-bold uppercase tracking-widest shadow-sm">
-              <TrendingDown size={10} />
-              Fırsat Fiyat
-            </div>
-          </div>
-        )}
       </div>
 
       {/* ── Content Section ── */}
       <div className={cn(
         "flex flex-1 flex-col",
-        isGrid && "p-5",
-        isList && "p-6 sm:pl-8 justify-between",
+        isGrid && "p-6",
+        isList && "p-8 sm:pl-10 justify-center",
       )}>
-        <div>
-          {/* Header row */}
-          <div className="flex items-center justify-between gap-4 mb-1">
-             <div className="flex items-center gap-2">
-               <span className="text-[10px] font-bold text-primary/60 uppercase tracking-[0.2em]">{listing.brand}</span>
-               <span className="w-1 h-1 rounded-full bg-border" />
-               <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">{listing.year}</span>
+        <div className="space-y-4">
+          {/* Brand & Market Intelligence */}
+          <div className="flex items-center justify-between gap-4">
+             <div className="flex items-center gap-3">
+               <span className="text-[11px] font-extrabold text-primary uppercase tracking-[0.25em]">{listing.brand}</span>
+               <div className="size-1 rounded-full bg-slate-300" />
+               <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-widest">{listing.year}</span>
              </div>
              {showInsights && (
                <div className={cn(
-                 "text-[9px] font-bold uppercase tracking-widest px-2 py-0.5 rounded-full border",
-                 insights.tone === "emerald" ? "bg-emerald-50 text-emerald-600 border-emerald-100" :
-                 insights.tone === "amber" ? "bg-amber-50 text-amber-600 border-amber-100" :
-                 "bg-muted text-muted-foreground border-border/50"
+                 "text-[10px] font-bold uppercase tracking-widest px-3 py-1 rounded-lg border shadow-sm",
+                 insights.tone === "emerald" ? "bg-emerald-50 text-emerald-700 border-emerald-100" :
+                 insights.tone === "amber" ? "bg-amber-50 text-amber-700 border-amber-100" :
+                 "bg-muted/50 text-muted-foreground border-border/10"
                )}>
                  {insights.badgeLabel}
                </div>
              )}
           </div>
 
-          <Link href={detailHref} className="block group/title">
-            <h2 className="text-xl font-bold text-foreground tracking-tight line-clamp-1 group-hover/title:text-primary transition-colors">
+          {/* Title & Description */}
+          <Link href={detailHref} className="block group/title space-y-1">
+            <h2 className="text-2xl font-bold text-foreground tracking-tight line-clamp-1 group-hover/title:text-primary transition-colors duration-300">
               {listing.model}
             </h2>
-            <p className="text-xs font-medium text-muted-foreground line-clamp-1 mt-0.5 italic">
+            <p className="text-sm font-medium text-slate-400 line-clamp-1 italic group-hover/title:text-slate-500 transition-colors">
               {listing.title}
             </p>
           </Link>
 
-          {/* Pricing Section */}
-          <div className="mt-4 flex items-baseline gap-1.5">
-            <span className="text-2xl font-bold tracking-tight text-foreground">
+          {/* Pricing */}
+          <div className="flex items-baseline gap-1.5">
+            <span className="text-3xl font-extrabold tracking-tighter text-foreground">
               {formatPrice(listing.price)}
             </span>
-            <span className="text-[10px] font-bold text-muted-foreground/60 uppercase">TL</span>
+            <span className="text-xs font-bold text-primary/40 uppercase tracking-widest">TL</span>
           </div>
 
-          {/* Stats Bar */}
-          <div className="mt-5 grid grid-cols-3 gap-2">
+          {/* Key Technical Specs */}
+          <div className="grid grid-cols-3 gap-3 pt-2">
             <Stat icon={CircleGauge} label={formatNumber(listing.mileage)} sub="KM" />
             <Stat icon={Settings2} label={listing.transmission === "otomatik" ? "Otomatik" : "Manuel"} />
             <Stat icon={Fuel} label={listing.fuelType === "benzin" ? "Benzin" : "Dizel"} />
           </div>
         </div>
 
-        {/* Footer Area */}
+        {/* Footer / Location */}
         <div className={cn(
-          "mt-6 flex items-center justify-between pt-4 border-t border-border/40",
-          isList && "sm:mt-0"
+          "mt-8 flex items-center justify-between pt-6 border-t border-slate-100",
+          isList && "sm:mt-6"
         )}>
-          <div className="flex items-center gap-1.5">
-            <div className="size-6 rounded-lg bg-muted flex items-center justify-center text-muted-foreground group-hover:text-primary transition-colors">
-              <MapPin size={12} />
+          <div className="flex items-center gap-3">
+            <div className="size-8 rounded-xl bg-slate-50 flex items-center justify-center text-slate-400 group-hover:text-primary group-hover:bg-primary/5 transition-all duration-500">
+              <MapPin size={14} />
             </div>
-            <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest leading-none">
+            <span className="text-[11px] font-bold text-slate-500 uppercase tracking-widest">
               {listing.city}
             </span>
           </div>
 
           <Link 
             href={detailHref}
-            className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.1em] text-primary hover:gap-3 transition-all cursor-pointer"
+            className="flex items-center gap-2 text-[11px] font-extrabold uppercase tracking-[0.15em] text-primary group-hover:gap-3 transition-all cursor-pointer"
           >
-            İncele
-            <ChevronRight size={14} />
+            DETAY
+            <ChevronRight size={16} strokeWidth={3} />
           </Link>
         </div>
       </div>
@@ -208,10 +206,10 @@ export function ListingCard({
 function Badge({ icon: Icon, label, className }: { icon: React.ElementType, label: string, className?: string }) {
   return (
     <div className={cn(
-      "flex h-6 items-center gap-1.5 rounded-md px-2.5 text-[9px] font-bold uppercase tracking-widest backdrop-blur-xl",
+      "flex h-8 items-center gap-2 rounded-xl px-4 text-[10px] font-bold uppercase tracking-widest backdrop-blur-xl border border-white/20",
       className
     )}>
-      <Icon size={12} className="opacity-80" />
+      <Icon size={14} strokeWidth={2.5} />
       {label}
     </div>
   );
@@ -219,13 +217,13 @@ function Badge({ icon: Icon, label, className }: { icon: React.ElementType, labe
 
 function Stat({ icon: Icon, label, sub }: { icon: React.ElementType, label: string, sub?: string }) {
   return (
-    <div className="flex flex-col gap-1.5">
-      <div className="size-8 rounded-xl bg-muted/50 flex items-center justify-center text-muted-foreground/60 group-hover:bg-primary/5 group-hover:text-primary transition-colors">
-        <Icon size={14} />
+    <div className="flex flex-col gap-2">
+      <div className="size-10 rounded-2xl bg-muted/30 flex items-center justify-center text-slate-400 group-hover:bg-primary/5 group-hover:text-primary transition-all duration-500">
+        <Icon size={16} />
       </div>
-      <div className="flex items-baseline gap-0.5">
-        <span className="text-[11px] font-bold text-foreground truncate max-w-full">{label}</span>
-        {sub && <span className="text-[8px] font-bold text-muted-foreground uppercase">{sub}</span>}
+      <div className="flex items-baseline gap-1 min-w-0">
+        <span className="text-[12px] font-bold text-slate-600 truncate">{label}</span>
+        {sub && <span className="text-[9px] font-bold text-slate-400 uppercase">{sub}</span>}
       </div>
     </div>
   );

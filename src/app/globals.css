@@ -53,7 +53,7 @@
   --font-heading: var(--font-outfit), var(--font-sans);
   --font-geist-mono: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, Monaco, monospace;
   
-  /* Showroom Elite Light Palette - High Precision */
+  /* Showroom Elite Light Palette - High Precision (Refined) */
   --background: oklch(0.99 0.002 240);
   --foreground: oklch(0.12 0.01 240);
   
@@ -63,110 +63,122 @@
   --popover: oklch(1 0 0);
   --popover-foreground: oklch(0.12 0.01 240);
   
-  /* Showroom Elite Blue - Clean Professional */
-  --primary: oklch(0.55 0.18 250);
+  /* Showroom Elite Blue - Primary Signature */
+  --primary: oklch(0.58 0.16 255);
   --primary-foreground: oklch(1 0 0);
   
-  --secondary: oklch(0.96 0.005 240);
+  --secondary: oklch(0.97 0.005 240);
   --secondary-foreground: oklch(0.2 0.02 240);
   
-  --muted: oklch(0.97 0.003 240);
-  --muted-foreground: oklch(0.4 0.01 240);
+  --muted: oklch(0.96 0.004 240);
+  --muted-foreground: oklch(0.45 0.02 240);
   
-  /* Precision Accent - Burnt Orange (High Contrast) */
-  --accent: oklch(0.65 0.2 45);
-  --accent-foreground: oklch(1 0 0);
+  /* Precision Accent - Burnt Orange / Amber */
+  --accent: oklch(0.7 0.14 45);
+  --accent-foreground: oklch(0.1 0.02 45);
   
-  --destructive: oklch(0.55 0.18 28);
+  --destructive: oklch(0.6 0.18 28);
   --destructive-foreground: oklch(1 0 0);
   
-  --border: oklch(0.92 0.005 240);
-  --input: oklch(0.92 0.005 240);
-  --ring: oklch(0.55 0.18 250);
+  --border: oklch(0.93 0.005 240);
+  --input: oklch(0.93 0.005 240);
+  --ring: oklch(0.58 0.16 255 / 0.3);
   
-  --radius: 0.75rem; /* 12px standard */
+  --radius: 0.85rem; /* 13.6px modern radius */
 }
 
 .dark {
-  /* Showroom Elite Dark Palette - Carbon & Deep Sea */
-  --background: oklch(0.08 0.01 250);
-  --foreground: oklch(0.98 0.005 250);
+  /* Showroom Elite Dark Palette - Deep Carbon */
+  --background: oklch(0.1 0.01 255);
+  --foreground: oklch(0.98 0.005 255);
   
-  --card: oklch(0.12 0.015 250);
-  --card-foreground: oklch(0.98 0.005 250);
+  --card: oklch(0.13 0.012 255);
+  --card-foreground: oklch(0.98 0.005 255);
   
-  --popover: oklch(0.1 0.01 250);
-  --popover-foreground: oklch(0.98 0.005 250);
+  --popover: oklch(0.11 0.01 255);
+  --popover-foreground: oklch(0.98 0.005 255);
   
-  --primary: oklch(0.65 0.2 260);
-  --primary-foreground: oklch(0.05 0.01 250);
+  --primary: oklch(0.65 0.18 260);
+  --primary-foreground: oklch(0.05 0.01 255);
   
-  --secondary: oklch(0.15 0.02 250);
-  --secondary-foreground: oklch(0.98 0.005 250);
+  --secondary: oklch(0.16 0.015 255);
+  --secondary-foreground: oklch(0.98 0.005 255);
   
-  --muted: oklch(0.14 0.01 250);
-  --muted-foreground: oklch(0.65 0.01 250);
+  --muted: oklch(0.15 0.01 255);
+  --muted-foreground: oklch(0.65 0.02 255);
   
-  --accent: oklch(0.75 0.15 45);
-  --accent-foreground: oklch(0.05 0.01 250);
+  --accent: oklch(0.78 0.14 45);
+  --accent-foreground: oklch(0.08 0.02 45);
   
-  --border: oklch(0.18 0.015 250);
-  --input: oklch(0.18 0.015 250);
-  --ring: oklch(0.65 0.2 260);
+  --border: oklch(0.2 0.012 255);
+  --input: oklch(0.2 0.012 255);
+  --ring: oklch(0.65 0.18 260 / 0.4);
 }
 
 @layer base {
   html {
-    /* PILL: Issue 9 - Scrollbar Shift Prevention */
     scrollbar-gutter: stable both-edges; 
-    @apply min-h-svh font-sans antialiased scroll-smooth;
+    @apply min-h-svh font-sans antialiased scroll-smooth selection:bg-primary/20 selection:text-primary;
     overscroll-behavior-y: none;
   }
   * {
-    @apply border-border/60 outline-ring/30 transition-colors duration-200;
+    @apply border-border/80 outline-ring/30;
   }
   img {
-    /* PILL: Issue 3 - EXIF Orientation Fix */
     image-orientation: from-image;
   }
   body {
-    @apply min-h-svh bg-background text-foreground selection:bg-primary/20 overscroll-y-none;
+    @apply min-h-svh bg-background text-foreground overscroll-y-none;
   }
   h1, h2, h3, h4, h5, h6 {
     @apply font-heading tracking-tight font-bold;
+    background-clip: text;
+    -webkit-background-clip: text;
+    color: transparent;
+    background-image: linear-gradient(to bottom right, var(--foreground), var(--foreground), color-mix(in oklch, var(--foreground), transparent 30%));
   }
 }
 
 @layer utilities {
-  /* PILL: Issue 10 - Carousel & Scroll Protection */
   .prevent-gesture-conflicts {
     overscroll-behavior-y: contain;
     touch-action: pan-y;
   }
   
   .min-h-screen-safe {
-    min-height: 100svh; /* Dynamic viewport height */
+    min-height: 100svh;
   }
+
   .glass {
-    @apply bg-white/70 dark:bg-black/70 backdrop-blur-xl border border-slate-200 dark:border-white/10 shadow-sm rounded-xl;
-  }
-  .showroom-card {
-    @apply bg-card border border-slate-100 hover:border-slate-200 shadow-sm hover:shadow-md transition-all duration-300 rounded-2xl;
-  }
-  .active-ring {
-    @apply ring-8 ring-primary/5 border-primary/20 transition-all duration-300;
-  }
-  .text-gradient {
-    @apply bg-clip-text text-transparent bg-gradient-to-br from-foreground to-foreground/70;
-  }
-  .bg-mesh {
-    background-image: 
-      radial-gradient(at 0% 0%, oklch(0.5 0.2 260 / 0.05) 0px, transparent 50%),
-      radial-gradient(at 100% 0%, oklch(0.7 0.15 45 / 0.05) 0px, transparent 50%);
+    @apply bg-white/60 dark:bg-black/60 backdrop-blur-2xl border border-white/20 dark:border-white/5 shadow-[0_8px_32px_rgba(0,0,0,0.04)] dark:shadow-[0_8px_32px_rgba(0,0,0,0.2)];
   }
 
   .text-gradient {
-    @apply bg-clip-text text-transparent bg-gradient-to-br from-foreground to-foreground/70;
+    @apply bg-clip-text text-transparent bg-gradient-to-br from-foreground via-foreground to-foreground/70;
+  }
+
+  .showroom-card {
+    @apply bg-card border border-border/50 hover:border-primary/20 shadow-sm hover:shadow-xl hover:shadow-primary/5 transition-all duration-500 rounded-2xl;
+  }
+
+  .active-ring {
+    @apply ring-8 ring-primary/5 border-primary/20 transition-all duration-500;
+  }
+
+  .bg-mesh {
+    background-image: 
+      radial-gradient(at 0% 0%, oklch(0.58 0.16 255 / 0.03) 0px, transparent 50%),
+      radial-gradient(at 100% 0%, oklch(0.7 0.14 45 / 0.03) 0px, transparent 50%);
+  }
+
+  .shimmer {
+    @apply relative overflow-hidden before:absolute before:inset-0 before:-translate-x-full before:animate-[shimmer_2s_infinite] before:bg-gradient-to-r before:from-transparent before:via-white/10 dark:before:via-white/5 before:to-transparent;
+  }
+}
+
+@keyframes shimmer {
+  100% {
+    transform: translateX(100%);
   }
 }
 

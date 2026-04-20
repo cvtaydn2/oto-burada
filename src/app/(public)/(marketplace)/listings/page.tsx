@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 
 import { ListingsPageClient } from "@/components/listings/listings-page-client";
+import { ListingCard } from "@/components/shared/listing-card";
 import { ListingStructuredData, OrganizationStructuredData, BreadcrumbStructuredData } from "@/components/seo/structured-data";
 import { buildListingsMetadata, buildAbsoluteUrl } from "@/lib/seo";
 import { parseListingFiltersFromSearchParams } from "@/services/listings/listing-filters";
@@ -51,7 +52,15 @@ export default async function ListingsPage({ searchParams }: ListingsPageProps) 
           brands={references.brands}
           cities={references.cities}
           initialFilters={initialFilters}
-        />
+        >
+          {result.listings.map((listing, index) => (
+            <ListingCard
+              key={listing.id}
+              listing={listing}
+              priority={index < 4}
+            />
+          ))}
+        </ListingsPageClient>
       </div>
     </>
   );

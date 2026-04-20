@@ -37,6 +37,7 @@ interface ListingsPageClientProps {
   brands: BrandCatalogItem[]
   cities: CityOption[]
   initialFilters: ListingFilters
+  children?: React.ReactNode
 }
 
 export function ListingsPageClient({
@@ -44,6 +45,7 @@ export function ListingsPageClient({
   brands,
   cities,
   initialFilters,
+  children
 }: ListingsPageClientProps) {
   const {
     filters,
@@ -78,6 +80,7 @@ export function ListingsPageClient({
     observer.observe(loadMoreRef.current)
     return () => observer.disconnect()
   }, [hasNextPage, isFetchingNextPage, fetchNextPage])
+  const isInitialPage = allListings.length === initialResult.listings.length;
 
   return (
     <div className="mx-auto max-w-[1440px] px-4 py-10 lg:px-10 lg:py-12 bg-background min-h-screen">
@@ -187,14 +190,18 @@ export function ListingsPageClient({
                   ? "grid grid-cols-1 gap-6 sm:grid-cols-2 xl:grid-cols-3"
                   : "flex flex-col gap-4"
               )}>
-                {allListings.map((listing, index) => (
-                  <ListingCard
-                    key={`${listing.id}-${index}`}
-                    listing={listing}
-                    priority={viewMode === "grid" ? index < 4 : index < 2}
-                    variant={viewMode}
-                  />
-                ))}
+                {isInitialPage && children ? (
+                  children
+                ) : (
+                  allListings.map((listing, index) => (
+                    <ListingCard
+                      key={`${listing.id}-${index}`}
+                      listing={listing}
+                      priority={(viewMode === "grid" ? index < 4 : index < 2) && isInitialPage}
+                      variant={viewMode}
+                    />
+                  ))
+                )}
               </div>
 
               {/* Infinite Scroll trigger */}
