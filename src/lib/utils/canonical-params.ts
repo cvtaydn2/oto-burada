@@ -41,6 +41,9 @@ export const SearchQuerySchema = z.object({
   city: z.string().max(50).optional(),
   page: z.coerce.number().int().min(1).default(1),
   limit: z.coerce.number().int().min(1).max(100).default(20),
+  // ── PILL: Issue 6 - Cursor DoS Protection ──
+  // Limit cursor length to prevent memory/CPU exhaustion during parsing.
+  cursor: z.string().max(256).optional(),
 });
 
 export type CanonicalSearch = z.infer<typeof SearchQuerySchema>;

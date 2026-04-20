@@ -1,5 +1,6 @@
 import { processOutboxQueue } from "@/services/system/outbox-processor";
 import { processCompensatingActions } from "@/services/system/compensating-processor";
+import { processComplianceVacuum } from "@/services/system/compliance-vacuum";
 import { apiSuccess, apiError, API_ERROR_CODES } from "@/lib/utils/api-response";
 import { logger } from "@/lib/utils/logger";
 
@@ -16,9 +17,10 @@ export async function GET(request: Request) {
   try {
     await Promise.all([
       processOutboxQueue(),
-      processCompensatingActions()
+      processCompensatingActions(),
+      processComplianceVacuum()
     ]);
-    return apiSuccess(null, "System queues processed.");
+    return apiSuccess(null, "System queues and compliance vacuum processed.");
   } catch (error) {
     logger.system.error("Cron: Outbox processing failed", error);
     return apiError(API_ERROR_CODES.INTERNAL_ERROR, "Outbox processing failed.");
