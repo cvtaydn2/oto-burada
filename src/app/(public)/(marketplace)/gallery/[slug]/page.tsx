@@ -4,7 +4,7 @@ import { headers } from "next/headers"
 import { getGalleryBySlug, recordGalleryView } from "@/services/gallery"
 import { getCurrentUser } from "@/lib/auth/session"
 import { GalleryHeader } from "@/components/layout/gallery-header"
-import { CarCard } from "@/components/modules/listings/car-card"
+import { ListingCard } from "@/components/shared/listing-card"
 import { Badge } from "@/components/ui/badge"
 import { Car, Eye } from "lucide-react"
 
@@ -72,7 +72,7 @@ export default async function GalleryPage({ params }: GalleryPageProps) {
         {listings.length > 0 ? (
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
             {listings.map((listing, index) => (
-              <CarCard 
+              <ListingCard 
                 key={listing.id} 
                 listing={listing} 
                 priority={index < 4}

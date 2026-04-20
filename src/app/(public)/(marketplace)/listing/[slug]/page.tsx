@@ -14,7 +14,7 @@ import {
 import { cn } from "@/lib/utils";
 import { ListingGallery } from "@/components/listings/listing-gallery";
 import { ListingDetailStructuredData, BreadcrumbStructuredData } from "@/components/seo/structured-data";
-import { CarCard } from "@/components/modules/listings/car-card";
+import { ListingCard } from "@/components/shared/listing-card";
 import { ExpertInspectionCard } from "@/components/listings/expert-inspection-card";
 import { DamageReportCard } from "@/components/listings/damage-report-card";
 import { MarketValueCard } from "@/components/listings/market-value-card";
@@ -348,7 +348,7 @@ export default async function ListingDetailPage({ params }: ListingDetailPagePro
                   <h2 className="mb-10 text-3xl font-bold text-foreground tracking-tighter">Sizin İçin Seçtiklerimiz</h2>
                   <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
                     {similarListings.map((item, index) => (
-                      <CarCard key={item.id} listing={item} priority={index < 2} />
+                      <ListingCard key={item.id} listing={item} priority={index < 2} />
                     ))}
                   </div>
                 </div>

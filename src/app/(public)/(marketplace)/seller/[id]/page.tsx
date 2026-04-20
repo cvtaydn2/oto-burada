@@ -3,7 +3,7 @@ import Image from "next/image";
 import { notFound } from "next/navigation";
 import { Button } from "@/components/ui/button";
 
-import { ListingCardGrid } from "@/components/listings/listing-card-grid";
+import { ListingCard } from "@/components/shared/listing-card";
 import { TrustBadge } from "@/components/shared/trust-badge";
 import { SellerRatingInfo } from "@/components/profile/seller-rating-info";
 import { getMarketplaceSeller, getPublicMarketplaceListings } from "@/services/listings/marketplace-listings";
@@ -153,7 +153,7 @@ export default async function SellerProfilePage({ params }: SellerProfilePagePro
         {sellerListings.length > 0 ? (
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {sellerListings.map((listing) => (
-              <ListingCardGrid key={listing.id} listing={listing} />
+              <ListingCard key={listing.id} listing={listing} />
             ))}
           </div>
         ) : (

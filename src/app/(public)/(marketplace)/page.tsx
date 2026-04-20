@@ -3,7 +3,7 @@ import { Zap, CarFront, ChevronRight, CheckCircle2, ShieldCheck, MapPin } from "
 import Link from "next/link";
 
 import { HomeHero } from "@/components/layout/home-hero";
-import { CarCard } from "@/components/modules/listings/car-card";
+import { ListingCard } from "@/components/shared/listing-card";
 import { getAppUrl } from "@/lib/seo";
 import { getPublicMarketplaceListings } from "@/services/listings/marketplace-listings";
 import { WebSiteStructuredData, OrganizationStructuredData } from "@/components/seo/structured-data";
@@ -137,7 +137,7 @@ export default async function HomePage() {
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
                 {featuredListings.map((listing, index) => (
-                  <CarCard key={listing.id} listing={listing} priority={index < 2} />
+                  <ListingCard key={listing.id} listing={listing} priority={index < 2} />
                 ))}
               </div>
             </div>
@@ -155,7 +155,7 @@ export default async function HomePage() {
           {latestListings.length > 0 ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
               {latestListings.map((listing) => (
-                <CarCard key={listing.id} listing={listing} />
+                <ListingCard key={listing.id} listing={listing} />
               ))}
             </div>
           ) : (

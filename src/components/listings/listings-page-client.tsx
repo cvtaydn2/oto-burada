@@ -7,7 +7,7 @@ import { LayoutGrid, List, ArrowDownUp, Star, BadgeCheck, TrendingDown, SlidersH
 
 import Link from "next/link"
 import { type Listing, type ListingFilters, type BrandCatalogItem, type CityOption } from "@/types"
-import { CarCard } from "@/components/modules/listings/car-card"
+import { ListingCard } from "@/components/shared/listing-card"
 import { ListingsGridSkeleton } from "@/components/listings/listings-grid-skeleton"
 import { cn, formatTL } from "@/lib/utils"
 import { createSearchParamsFromListingFilters } from "@/services/listings/listing-filters"
@@ -509,8 +509,8 @@ export function ListingsPageClient({
                   : "flex flex-col gap-4"
               )}>
                 {allListings.map((listing, index) => (
-                  <CarCard
-                    key={`${listing.id}-${index}`} /* In case of duplicates during optimistic updates */
+                  <ListingCard
+                    key={`${listing.id}-${index}`}
                     listing={listing}
                     priority={viewMode === "grid" ? index < 4 : index < 2}
                     variant={viewMode}
