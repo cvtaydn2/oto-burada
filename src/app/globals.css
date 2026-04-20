@@ -130,7 +130,7 @@
     image-orientation: from-image;
   }
   body {
-    @apply min-h-svh bg-background text-foreground selection:bg-primary/20 overscroll-behavior-y-none;
+    @apply min-h-svh bg-background text-foreground selection:bg-primary/20 overscroll-y-none;
   }
   h1, h2, h3, h4, h5, h6 {
     @apply font-heading tracking-tight font-bold;

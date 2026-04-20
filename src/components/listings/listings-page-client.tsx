@@ -1,73 +1,21 @@
 "use client"
 
-import dynamic from "next/dynamic"
-import { useState, useTransition, useRef, useCallback, useEffect } from "react"
-import { useRouter } from "next/navigation"
-import { LayoutGrid, List, ArrowDownUp, Star, BadgeCheck, TrendingDown, SlidersHorizontal } from "lucide-react"
+import { useRef } from "react"
+import { Star, BadgeCheck, TrendingDown } from "lucide-react"
 
-import Link from "next/link"
 import { type Listing, type ListingFilters, type BrandCatalogItem, type CityOption } from "@/types"
 import { ListingCard } from "@/components/shared/listing-card"
 import { ListingsGridSkeleton } from "@/components/listings/listings-grid-skeleton"
-import { cn, formatTL } from "@/lib/utils"
-import { createSearchParamsFromListingFilters } from "@/services/listings/listing-filters"
-import { useInfiniteQuery } from "@tanstack/react-query"
+import { cn } from "@/lib/utils"
 import { marketplace } from "@/lib/constants/ui-strings"
-import { useKeyboard } from "@/hooks/use-keyboard"
 
-const DEBOUNCE_DELAY_MS = 400
-
-function useIntersectionObserver({
-  onIntersect,
-  enabled = true,
-}: {
-  onIntersect: () => void
-  enabled?: boolean
-}) {
-  const ref = useRef<HTMLDivElement | null>(null)
-
-  useEffect(() => {
-    if (!enabled || !ref.current) return
-
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            onIntersect()
-          }
-        })
-      },
-      { rootMargin: "200px" } // trigger earlier
-    )
-
-    observer.observe(ref.current)
-    return () => observer.disconnect()
-  }, [onIntersect, enabled])
-
-  return ref
-}
-
-const SmartFilters = dynamic(
-  () => import("@/components/modules/listings/smart-filters").then((mod) => mod.SmartFilters),
-  {
-    loading: () => <div className="min-h-[320px] rounded-xl border border-border bg-card shadow-sm" />,
-  },
-)
-
-const MobileFilterDrawer = dynamic(
-  () => import("@/components/ui/mobile-filter-drawer").then((mod) => mod.MobileFilterDrawer),
-)
-
-const SORT_OPTIONS = [
-  { value: "newest", label: marketplace.sortOptions.newest },
-  { value: "oldest", label: marketplace.sortOptions.oldest },
-  { value: "price_asc", label: marketplace.sortOptions.priceAsc },
-  { value: "price_desc", label: marketplace.sortOptions.priceDesc },
-  { value: "mileage_asc", label: marketplace.sortOptions.mileageAsc },
-  { value: "mileage_desc", label: marketplace.sortOptions.mileageDesc },
-  { value: "year_desc", label: marketplace.sortOptions.yearDesc },
-  { value: "year_asc", label: marketplace.sortOptions.yearAsc },
-]
+// Marketplace Feature Components/Hooks
+import { useMarketplaceLogic } from "@/features/marketplace/hooks/use-marketplace-logic"
+import { MarketplaceHeader } from "@/features/marketplace/components/marketplace-header"
+import { MarketplaceControls } from "@/features/marketplace/components/marketplace-controls"
+import { MarketplaceSidebar } from "@/features/marketplace/components/marketplace-sidebar"
+import { ActiveFilterTags } from "@/features/marketplace/components/active-filter-tags"
+import { useEffect } from "react"
 
 const QUICK_FILTERS = [
   { label: marketplace.quickFilters.all, type: "reset" as const, icon: null },
@@ -97,132 +45,39 @@ export function ListingsPageClient({
   cities,
   initialFilters,
 }: ListingsPageClientProps) {
-  const router = useRouter()
-  const [isPending, startTransition] = useTransition()
-
-  // FIX: Sync filters state with initialFilters when URL changes (navigation)
-  const [filters, setFilters] = useState<ListingFilters>(initialFilters)
-  useEffect(() => {
-    setFilters(initialFilters)
-  }, [initialFilters])
-
-  // INFINITE RUNTIME
-  const queryKey = ["listings", initialFilters]
-
-  const fetchListings = async ({ pageParam }: { pageParam: number }) => {
-    const params = createSearchParamsFromListingFilters({ ...initialFilters, page: pageParam })
-    const res = await fetch(`/api/listings?${params.toString()}`)
-    if (!res.ok) throw new Error("İlanlar yüklenirken hata oluştu.")
-    const json = await res.json()
-    return json.data as typeof initialResult
-  }
-
   const {
-    data,
-    fetchNextPage,
+    filters,
+    setFilters,
+    isPending,
+    viewMode,
+    setViewMode,
+    isSortOpen,
+    setIsSortOpen,
+    activeFiltersCount,
+    allListings,
     hasNextPage,
     isFetchingNextPage,
-  } = useInfiniteQuery({
-    queryKey,
-    queryFn: fetchListings,
-    initialPageParam: 1,
-    getNextPageParam: (lastPage) => lastPage.hasMore ? lastPage.page + 1 : undefined,
-    initialData: {
-      pages: [initialResult],
-      pageParams: [1]
-    }
-  })
+    fetchNextPage,
+    handleFilterChange,
+    handleReset,
+    applyFilters
+  } = useMarketplaceLogic({ initialResult, initialFilters })
 
-  // Set up the intersection observer to fetch the next page
-  const loadMoreRef = useIntersectionObserver({
-    onIntersect: fetchNextPage,
-    enabled: hasNextPage && !isFetchingNextPage,
-  })
-
-  const [viewMode, setViewMode] = useState<"grid" | "list">("grid")
-  const [isSortOpen, setIsSortOpen] = useState(false)
-
-  useKeyboard({
-    onEscape: useCallback(() => setIsSortOpen(false), []),
-    enabled: isSortOpen,
-  })
-
-  const activeFiltersCount = Object.entries(filters).filter(([key, val]) => {
-    if (key === "limit" || key === "sort" || key === "page") return false
-    return val !== undefined && val !== ""
-  }).length
-
-  const filteredModels = (brands.find(b => b.brand === filters.brand)?.models || []).map(m => m.name)
-  const filteredTrims = (brands.find(b => b.brand === filters.brand)?.models?.find(m => m.name === filters.model)?.trims || [])
-  const filteredDistricts = (cities.find(c => c.city === filters.city)?.districts || [])
-
-  const debounceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
-
-  const applyFilters = useCallback((newFilters: ListingFilters, immediate = false) => {
-    const fn = () => {
-      const params = createSearchParamsFromListingFilters(newFilters)
-      startTransition(() => {
-        router.push(`/listings?${params.toString()}`, { scroll: true })
-      })
-    }
-
-    if (immediate) {
-      if (debounceTimerRef.current) clearTimeout(debounceTimerRef.current)
-      fn()
-    } else {
-      if (debounceTimerRef.current) clearTimeout(debounceTimerRef.current)
-      debounceTimerRef.current = setTimeout(fn, DEBOUNCE_DELAY_MS)
-    }
-  }, [router, startTransition])
-
-  const handleFilterChange = useCallback(<K extends keyof ListingFilters>(key: K, value: ListingFilters[K]) => {
-    const newFilters: ListingFilters = { ...filters, [key]: value, page: 1 }
-
-    if (key === "brand") {
-      newFilters.model = undefined
-      newFilters.carTrim = undefined
-    }
-
-    if (key === "model") {
-      newFilters.carTrim = undefined
-    }
-
-    if (key === "city") {
-      newFilters.district = undefined
-    }
-
-    setFilters(newFilters)
-
-    // Immediate navigation for sort, limit, select-type filters
-    const immediateKeys: (keyof ListingFilters)[] = ["sort", "limit", "brand", "model", "carTrim", "city", "district", "fuelType", "transmission", "hasExpertReport"]
-    if (immediateKeys.includes(key)) {
-      applyFilters(newFilters, true)
-      return
-    }
-
-    // Debounced for text/number inputs (price, year, mileage, query, maxTramer)
-    applyFilters(newFilters, false)
-  }, [filters, applyFilters])
-
-  const handleReset = useCallback(() => {
-    if (debounceTimerRef.current) clearTimeout(debounceTimerRef.current)
-    const resetFilters: ListingFilters = { limit: filters.limit ?? initialResult.limit, page: 1, sort: "newest" }
-    setFilters(resetFilters)
-    const params = createSearchParamsFromListingFilters(resetFilters)
-    startTransition(() => {
-      router.push(`/listings?${params.toString()}`, { scroll: false })
-    })
-  }, [filters.limit, initialResult.limit, router, startTransition])
-
-  // Cleanup debounce on unmount
+  // Intersection Observer for Infinite Scroll
+  const loadMoreRef = useRef<HTMLDivElement | null>(null)
   useEffect(() => {
-    return () => {
-      if (debounceTimerRef.current) clearTimeout(debounceTimerRef.current)
-    }
-  }, [])
+    if (!loadMoreRef.current || !hasNextPage || isFetchingNextPage) return
 
-  const currentSortLabel = SORT_OPTIONS.find(o => o.value === (filters.sort ?? "newest"))?.label || "En Yeni"
-  const allListings = data?.pages.flatMap(p => p.listings) ?? initialResult.listings
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting) fetchNextPage()
+      },
+      { rootMargin: "200px" }
+    )
+
+    observer.observe(loadMoreRef.current)
+    return () => observer.disconnect()
+  }, [hasNextPage, isFetchingNextPage, fetchNextPage])
 
   return (
     <div className="mx-auto max-w-[1440px] px-4 py-10 lg:px-10 lg:py-12 bg-background min-h-screen">
@@ -230,99 +85,19 @@ export function ListingsPageClient({
       {/* Header & Control Center */}
       <div className="mb-8">
         <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
-          <div className="space-y-1">
-            <h1 className="text-2xl lg:text-3xl font-bold text-foreground tracking-tight">
-              {filters.brand
-                ? `${filters.brand}${filters.model ? ` ${filters.model}` : ""} İlanları`
-                : "Satılık Araçlar"}
-            </h1>
-            <p className="text-sm font-medium text-muted-foreground flex items-center gap-2">
-              <span className="size-1.5 rounded-full bg-primary/40" />
-              Şu an {initialResult.total} aktif ilan listeleniyor
-            </p>
-          </div>
+          <MarketplaceHeader filters={filters} total={initialResult.total} />
 
-          {/* Controls - Layout Bar */}
-          <div className="flex flex-wrap items-center gap-2 bg-card border border-border p-1.5 rounded-xl shadow-sm">
-            <MobileFilterDrawer
-              brands={brands}
-              cities={cities}
-              filters={filters}
-              activeCount={activeFiltersCount}
-            />
-
-            <Link
-              href={`/listings/filter?${createSearchParamsFromListingFilters(filters).toString()}`}
-              className="flex h-11 items-center gap-2 rounded-xl bg-primary px-5 text-xs font-bold text-primary-foreground hover:opacity-90 transition-all active:scale-95 uppercase tracking-widest"
-            >
-              <SlidersHorizontal size={14} strokeWidth={3} />
-              Gelişmiş Filtrele
-            </Link>
-
-            <div className="h-8 w-px bg-border mx-1 hidden sm:block" />
-
-            <div className="hidden sm:flex items-center gap-1.5 p-1 rounded-xl bg-muted/30">
-              <button
-                onClick={() => setViewMode("grid")}
-                className={cn(
-                  "flex h-9 w-10 items-center justify-center rounded-lg transition-all",
-                  viewMode === "grid"
-                    ? "bg-card text-foreground shadow-sm border border-border/50"
-                    : "text-muted-foreground hover:text-foreground"
-                )}
-              >
-                <LayoutGrid size={18} />
-              </button>
-              <button
-                onClick={() => setViewMode("list")}
-                className={cn(
-                  "flex h-9 w-10 items-center justify-center rounded-lg transition-all",
-                  viewMode === "list"
-                    ? "bg-card text-foreground shadow-sm border border-border/50"
-                    : "text-muted-foreground hover:text-foreground"
-                )}
-              >
-                <List size={18} />
-              </button>
-            </div>
-
-            <div className="relative">
-              <button
-                onClick={() => setIsSortOpen(!isSortOpen)}
-                className="flex h-11 items-center gap-3 rounded-xl border border-border bg-card px-5 text-xs font-bold text-foreground hover:bg-muted/50 transition-all uppercase tracking-widest"
-              >
-                <ArrowDownUp size={14} strokeWidth={3} />
-                <span className="hidden sm:inline">{currentSortLabel}</span>
-                <ChevronIcon className={cn("transition-transform size-4 ml-1", isSortOpen && "rotate-180")} />
-              </button>
-
-              {isSortOpen && (
-                <>
-                  <div className="fixed inset-0 z-40" onClick={() => setIsSortOpen(false)} />
-                  <ul className="absolute right-0 top-full z-50 mt-3 w-64 rounded-2xl border border-border bg-card p-2 shadow-sm animate-in fade-in zoom-in-95 duration-200">
-                    {SORT_OPTIONS.map((option) => (
-                      <li key={option.value}>
-                        <button
-                          onClick={() => {
-                            handleFilterChange("sort", option.value as ListingFilters["sort"])
-                            setIsSortOpen(false)
-                          }}
-                          className={cn(
-                            "w-full px-4 py-3 text-left text-xs font-bold rounded-xl transition-all uppercase tracking-widest",
-                            (filters.sort ?? "newest") === option.value
-                              ? "bg-primary text-primary-foreground"
-                              : "text-muted-foreground hover:bg-muted"
-                          )}
-                        >
-                          {option.label}
-                        </button>
-                      </li>
-                    ))}
-                  </ul>
-                </>
-              )}
-            </div>
-          </div>
+          <MarketplaceControls 
+            filters={filters}
+            activeFiltersCount={activeFiltersCount}
+            brands={brands}
+            cities={cities}
+            viewMode={viewMode}
+            setViewMode={setViewMode}
+            isSortOpen={isSortOpen}
+            setIsSortOpen={setIsSortOpen}
+            handleFilterChange={handleFilterChange}
+          />
         </div>
 
         {/* Quick Filter Chips */}
@@ -358,123 +133,27 @@ export function ListingsPageClient({
           })}
         </div>
 
-        {/* Active Filter Tags */}
-        {activeFiltersCount > 0 && (
-          <div className="mt-6 flex flex-wrap items-center gap-3">
-            <span className="text-[10px] font-bold text-muted-foreground/60 uppercase tracking-widest pl-1">Aktif Süzgeçler:</span>
-            {filters.brand && (
-              <FilterTag
-                label={filters.brand}
-                onRemove={() => {
-                  const nextFilters = { ...filters, brand: undefined, carTrim: undefined, model: undefined, page: 1 };
-                  setFilters(nextFilters);
-                  applyFilters(nextFilters, true);
-                }}
-              />
-            )}
-            {filters.model && (
-              <FilterTag label={filters.model} onRemove={() => handleFilterChange("model", undefined)} />
-            )}
-            {filters.carTrim && (
-              <FilterTag label={filters.carTrim} onRemove={() => handleFilterChange("carTrim", undefined)} />
-            )}
-            {filters.city && (
-              <FilterTag
-                label={filters.city}
-                onRemove={() => {
-                  const nextFilters = { ...filters, city: undefined, district: undefined, page: 1 };
-                  setFilters(nextFilters);
-                  applyFilters(nextFilters, true);
-                }}
-              />
-            )}
-            {filters.district && (
-              <FilterTag label={filters.district} onRemove={() => handleFilterChange("district", undefined)} />
-            )}
-            {filters.fuelType && (
-              <FilterTag label={filters.fuelType === "benzin" ? "Benzin" : filters.fuelType === "dizel" ? "Dizel" : filters.fuelType} onRemove={() => handleFilterChange("fuelType", undefined)} />
-            )}
-            {filters.transmission && (
-              <FilterTag label={filters.transmission === "otomatik" ? "Otomatik" : filters.transmission === "manuel" ? "Manuel" : "Yarı Otomatik"} onRemove={() => handleFilterChange("transmission", undefined)} />
-            )}
-            {(filters.minPrice || filters.maxPrice) && (
-              <FilterTag
-                label={`${filters.minPrice ? formatTL(filters.minPrice) : "0"} — ${filters.maxPrice ? formatTL(filters.maxPrice) : "∞"}`}
-                onRemove={() => {
-                  const f = { ...filters, minPrice: undefined, maxPrice: undefined, page: 1 }
-                  setFilters(f)
-                  applyFilters(f, true)
-                }}
-              />
-            )}
-            {(filters.minYear || filters.maxYear) && (
-              <FilterTag
-                label={`Model ${filters.minYear ?? "eski"}-${filters.maxYear ?? "güncel"}`}
-                onRemove={() => {
-                  const nextFilters = { ...filters, minYear: undefined, maxYear: undefined, page: 1 }
-                  setFilters(nextFilters)
-                  applyFilters(nextFilters, true)
-                }}
-              />
-            )}
-            {filters.maxMileage !== undefined && (
-              <FilterTag
-                label={`Max ${filters.maxMileage.toLocaleString("tr-TR")} km`}
-                onRemove={() => handleFilterChange("maxMileage", undefined)}
-              />
-            )}
-            {filters.maxTramer !== undefined && (
-              <FilterTag
-                label={`Max ${filters.maxTramer.toLocaleString("tr-TR")} TL tramer`}
-                onRemove={() => handleFilterChange("maxTramer", undefined)}
-              />
-            )}
-            {filters.query && (
-              <FilterTag label={`"${filters.query}"`} onRemove={() => handleFilterChange("query", undefined)} />
-            )}
-            {filters.hasExpertReport && (
-              <FilterTag label="Ekspertizli" onRemove={() => handleFilterChange("hasExpertReport", undefined)} />
-            )}
-            <button
-              onClick={handleReset}
-              className="text-[10px] font-bold text-destructive hover:underline uppercase tracking-widest pl-2"
-            >
-              Temizle
-            </button>
-          </div>
-        )}
+        <ActiveFilterTags 
+          filters={filters}
+          handleFilterChange={handleFilterChange}
+          handleReset={handleReset}
+          applyFilters={applyFilters}
+          setFilters={setFilters}
+        />
       </div>
 
       {/* Main Layout */}
       <div className="flex flex-col gap-10 lg:flex-row">
 
-        {/* Desktop Sidebar */}
-        <aside className="hidden lg:block w-[320px] shrink-0">
-          <div className={cn(
-            "sticky top-28 rounded-2xl border border-border bg-card overflow-hidden shadow-sm transition-all",
-            isPending && "opacity-50 pointer-events-none grayscale"
-          )}>
-            <div className="bg-muted/50 p-6 border-b border-border">
-               <h3 className="text-sm font-bold text-foreground uppercase tracking-[0.2em] flex items-center gap-2">
-                  <SlidersHorizontal size={14} className="text-primary" />
-                  Filtreleme
-               </h3>
-            </div>
-            <div className="p-2">
-              <SmartFilters
-                brands={brands}
-                cities={cities}
-                filters={filters}
-                models={filteredModels}
-                trims={filteredTrims}
-                districts={filteredDistricts}
-                onFilterChange={handleFilterChange}
-                onReset={handleReset}
-                activeCount={activeFiltersCount}
-              />
-            </div>
-          </div>
-        </aside>
+        <MarketplaceSidebar 
+           brands={brands}
+           cities={cities}
+           filters={filters}
+           isPending={isPending}
+           activeFiltersCount={activeFiltersCount}
+           handleFilterChange={handleFilterChange}
+           handleReset={handleReset}
+        />
 
         {/* Results */}
         <div className="flex-1 min-w-0">
@@ -482,7 +161,7 @@ export function ListingsPageClient({
             <div className="bg-card rounded-2xl p-10 border border-border shadow-sm min-h-[600px]">
               <ListingsGridSkeleton />
             </div>
-          ) : initialResult.listings.length > 0 ? (
+          ) : allListings.length > 0 ? (
             <div className="space-y-8">
               <div className="flex flex-col gap-4 rounded-2xl border border-border bg-muted/30 p-6 sm:flex-row sm:items-center sm:justify-between">
                 <p className="text-sm font-bold text-muted-foreground">
@@ -559,28 +238,3 @@ export function ListingsPageClient({
     </div>
   )
 }
-
-function ChevronIcon({ className }: { className?: string }) {
-  return (
-    <svg className={className} width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <path d="m6 9 6 6 6-6" />
-    </svg>
-  )
-}
-
-function FilterTag({ label, onRemove }: { label: string; onRemove: () => void }) {
-  return (
-    <div className="group flex items-center gap-2 rounded-xl border border-border bg-card pl-3 pr-1.5 py-1.5 text-[10px] font-bold text-foreground uppercase tracking-widest shadow-sm hover:border-foreground/30 transition-all">
-      <span>{label}</span>
-      <button 
-        onClick={onRemove} 
-        className="size-5 rounded-lg bg-muted text-muted-foreground flex items-center justify-center hover:bg-destructive hover:text-destructive-foreground transition-all"
-      >
-        <svg className="size-2.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="4">
-          <path d="M18 6 6 18M6 6l12 12" />
-        </svg>
-      </button>
-    </div>
-  )
-}
-

@@ -2,7 +2,6 @@
 
 import Link from "next/link";
 import { 
-  Calendar, 
   CircleGauge, 
   Fuel, 
   MapPin, 
@@ -12,7 +11,6 @@ import {
   ChevronRight,
   TrendingDown,
   Sparkles,
-  Info
 } from "lucide-react";
 import { cn, formatNumber, formatPrice, supabaseImageUrl } from "@/lib/utils";
 import { type Listing } from "@/types";
@@ -207,7 +205,7 @@ export function ListingCard({
   );
 }
 
-function Badge({ icon: Icon, label, className }: { icon: any, label: string, className?: string }) {
+function Badge({ icon: Icon, label, className }: { icon: React.ElementType, label: string, className?: string }) {
   return (
     <div className={cn(
       "flex h-6 items-center gap-1.5 rounded-md px-2.5 text-[9px] font-bold uppercase tracking-widest backdrop-blur-xl",
@@ -219,7 +217,7 @@ function Badge({ icon: Icon, label, className }: { icon: any, label: string, cla
   );
 }
 
-function Stat({ icon: Icon, label, sub }: { icon: any, label: string, sub?: string }) {
+function Stat({ icon: Icon, label, sub }: { icon: React.ElementType, label: string, sub?: string }) {
   return (
     <div className="flex flex-col gap-1.5">
       <div className="size-8 rounded-xl bg-muted/50 flex items-center justify-center text-muted-foreground/60 group-hover:bg-primary/5 group-hover:text-primary transition-colors">

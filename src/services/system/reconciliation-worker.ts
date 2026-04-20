@@ -25,7 +25,7 @@ export async function processReconciliation() {
   for (const user of users) {
     try {
       // Simulate external API call to Iyzico/Stripe
-      const externalStatus = await simulateExternalStatusCheck(user.id);
+      const externalStatus = await simulateExternalStatusCheck();
       
       if (externalStatus === 'expired') {
         logger.system.warn(`Reconciliation: User ${user.id} subscription expired but was active in DB. Fixing...`);
@@ -44,7 +44,7 @@ export async function processReconciliation() {
   }
 }
 
-async function simulateExternalStatusCheck(_userId: string): Promise<'active' | 'expired'> {
+async function simulateExternalStatusCheck(): Promise<'active' | 'expired'> {
   // In real life: await iyzico.subscription.get(userId);
   return 'active'; 
 }

@@ -7,7 +7,7 @@ import crypto from 'node:crypto';
  * PII is encrypted with a per-user key. Deleting the key makes backups unreadable.
  */
 
-const MASTER_KEY = process.env.ENCRYPTION_MASTER_KEY || 'default-master-key-32-chars-long!!';
+// const MASTER_KEY = process.env.ENCRYPTION_MASTER_KEY || 'default-master-key-32-chars-long!!';
 const ALGORITHM = 'aes-256-gcm';
 
 export async function getOrCreateUserKey(userId: string): Promise<Buffer> {
@@ -70,7 +70,7 @@ export async function decryptPII(encryptedText: string, userId: string): Promise
     decrypted += decipher.final('utf8');
     
     return decrypted;
-  } catch (error) {
+  } catch (_error) {
     // If key was deleted (shredded), decryption will fail
     logger.security.warn("PII Decryption failed - possibly shredded or key missing", { userId });
     return "[VERİ İMHA EDİLDİ]";
