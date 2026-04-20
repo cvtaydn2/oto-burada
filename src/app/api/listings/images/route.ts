@@ -9,26 +9,17 @@ import {
 } from "@/services/listings/listing-images";
 import { captureServerError } from "@/lib/monitoring/posthog-server";
 import { withAuthAndCsrf } from "@/lib/utils/api-security";
+import { registerFileInRegistry, verifyAndUnregisterFile } from "@/lib/storage/registry";
+import { logger } from "@/lib/utils/logger";
 
 /**
  * Sanitizes filename for DISPLAY purposes only.
- * 
- * SECURITY NOTE: This does NOT provide path traversal protection.
- * Storage paths use UUIDs (buildListingImageStoragePath) and are not affected by this.
- * This prevents XSS if filename is shown in UI without proper escaping.
- * 
- * @param fileName - Original filename from user upload
- * @returns Sanitized filename safe for display
  */
 function sanitizeFileName(fileName: string): string {
   return fileName
     .replace(/[^a-zA-Z0-9._-]/g, "_")
     .replace(/\.+/g, ".")
     .substring(0, 200);
-}
-
-function userOwnsStoragePath(userId: string, storagePath: string) {
-  return storagePath.startsWith(`listings/${userId}/`);
 }
 
 export async function POST(request: Request) {
@@ -41,12 +32,12 @@ export async function POST(request: Request) {
 
   if (!security.ok) return security.response;
   
-  const user = security.user!; // Guaranteed by withAuthAndCsrf
+  const user = security.user!;
 
   if (!hasSupabaseStorageEnv()) {
     return apiError(
       API_ERROR_CODES.SERVICE_UNAVAILABLE,
-      "Supabase Storage ortam değişkenleri eksik. Yükleme için .env.local dosyasını tamamlamalısın.",
+      "Supabase Storage ortam değişkenleri eksik.",
       503,
     );
   }
@@ -59,7 +50,6 @@ export async function POST(request: Request) {
   }
 
   const validationError = await validateListingImageFile(file);
-
   if (validationError) {
     return apiError(API_ERROR_CODES.BAD_REQUEST, validationError, 400);
   }
@@ -67,14 +57,13 @@ export async function POST(request: Request) {
   const sanitizedFileName = sanitizeFileName(file.name);
   const { listingsBucket } = getSupabaseStorageEnv();
 
-  // Use the VERIFIED MIME type (from magic bytes) — not the browser-declared file.type.
   const verifiedMimeType = await getVerifiedMimeType(file);
   const contentType = verifiedMimeType ?? file.type;
   const storagePath = buildListingImageStoragePath(user.id, sanitizedFileName, verifiedMimeType ?? undefined);
 
   const supabase = await createSupabaseServerClient();
   const uploadResult = await supabase.storage.from(listingsBucket).upload(storagePath, file, {
-    cacheControl: "86400", // 24h — UUID paths never change
+    cacheControl: "86400",
     contentType,
     upsert: false,
   });
@@ -87,6 +76,17 @@ export async function POST(request: Request) {
     }, user.id);
     return apiError(API_ERROR_CODES.INTERNAL_ERROR, "Fotoğraf yüklenemedi. Lütfen tekrar dene.", 500);
   }
+
+  // ── Register in Registry ──────────────────────────────────────────────
+  await registerFileInRegistry({
+    ownerId: user.id,
+    bucketId: listingsBucket,
+    storagePath,
+    sourceEntityType: 'listing',
+    fileName: sanitizedFileName,
+    fileSize: file.size,
+    mimeType: contentType,
+  });
 
   const {
     data: { publicUrl },
@@ -113,43 +113,51 @@ export async function DELETE(request: Request) {
 
   if (!security.ok) return security.response;
   
-  const user = security.user!; // Guaranteed by withAuthAndCsrf
+  const user = security.user!;
 
   if (!hasSupabaseStorageEnv()) {
     return apiError(
       API_ERROR_CODES.SERVICE_UNAVAILABLE,
-      "Supabase Storage ortam değişkenleri eksik. Fotoğraf silmek için .env.local dosyasını tamamlamalısın.",
+      "Supabase Storage ortam değişkenleri eksik.",
       503,
     );
   }
 
-  let body: unknown;
-
+  let body: any;
   try {
     body = await request.json();
   } catch {
     return apiError(API_ERROR_CODES.BAD_REQUEST, "Silme isteği okunamadı.", 400);
   }
 
-  const storagePath =
-    typeof body === "object" && body !== null && "storagePath" in body
-      ? String(body.storagePath ?? "")
-      : "";
+  const storagePath = body?.storagePath;
 
-  if (!storagePath || !userOwnsStoragePath(user.id, storagePath)) {
-    return apiError(API_ERROR_CODES.BAD_REQUEST, "Fotoğraf yolu geçersiz.", 400);
+  if (!storagePath) {
+    return apiError(API_ERROR_CODES.BAD_REQUEST, "Fotoğraf yolu eksik.", 400);
   }
 
   const { listingsBucket } = getSupabaseStorageEnv();
+  // ── Verify Ownership via Registry ──────────────────────────────────────
+  const isOwner = await verifyAndUnregisterFile(user.id, listingsBucket ?? 'listing-images', storagePath);
+  
+  if (!isOwner) {
+    // Legacy fallback
+    const isLegacyOwner = storagePath.startsWith(`listings/${user.id}/`);
+    if (!isLegacyOwner) {
+      return apiError(API_ERROR_CODES.FORBIDDEN, "Bu işlem için yetkiniz yok.", 403);
+    }
+    logger.storage.warn("Falling back to legacy prefix check for image delete", { storagePath, userId: user.id });
+  }
+
   const supabase = await createSupabaseServerClient();
-  const removeResult = await supabase.storage.from(listingsBucket).remove([storagePath]);
+  const removeResult = await supabase.storage.from(listingsBucket ?? 'listing-images').remove([storagePath]);
 
   if (removeResult.error) {
     captureServerError("Image delete from storage failed", "storage", removeResult.error, {
       userId: user.id,
       storagePath,
     }, user.id);
-    return apiError(API_ERROR_CODES.INTERNAL_ERROR, "Fotoğraf silinemedi. Lütfen tekrar dene.", 500);
+    return apiError(API_ERROR_CODES.INTERNAL_ERROR, "Fotoğraf silinemedi.", 500);
   }
 
   return apiSuccess(null, "Fotoğraf kaldırıldı.");

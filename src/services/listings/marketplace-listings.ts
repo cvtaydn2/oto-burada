@@ -3,11 +3,11 @@ import {
   getStoredListingBySlug, 
   getStoredListingsByIds, 
   getStoredListingById,
-  getFilteredDatabaseListings,
   type PaginatedListingsResult 
 } from "@/services/listings/listing-submissions";
+import { getPublicListings } from "@/services/listings/catalog";
 import { createExpertDocumentSignedUrl } from "@/services/listings/listing-documents";
-import type { Profile, ListingFilters } from "@/types";
+import type { Profile, ListingFilters, Listing } from "@/types";
 
 async function withNextCache<T>(
   keyParts: string[],
@@ -29,8 +29,7 @@ async function withNextCache<T>(
 export async function getFilteredMarketplaceListings(
   filters: ListingFilters
 ): Promise<PaginatedListingsResult> {
-  const result = await getFilteredDatabaseListings(filters);
-  return result;
+  return getPublicListings(filters);
 }
 
 export async function getMarketplaceListingsByIds(ids: string[]) {
@@ -39,13 +38,13 @@ export async function getMarketplaceListingsByIds(ids: string[]) {
 }
 
 export async function getMarketplaceListingBySlug(slug: string) {
-  const storedListing = await withNextCache(
+  const storedListing = await withNextCache<Listing | null>(
     [`marketplace-listing:${slug}`],
     () => getStoredListingBySlug(slug),
     60,
   );
 
-  if (storedListing?.status === "approved") {
+  if (storedListing && storedListing.status === "approved") {
     if (!storedListing.expertInspection?.documentPath) {
       return storedListing;
     }
@@ -133,7 +132,7 @@ export async function getPublicMarketplaceListings(filters: ListingFilters = { p
 }
 
 export async function getAllKnownListings() {
-  const result = await getFilteredDatabaseListings({
+  const result = await getPublicListings({
     limit: 100,
     page: 1,
     sort: "newest"
@@ -146,30 +145,30 @@ export async function getSimilarMarketplaceListings(slug: string, brand: string,
     [`similar-marketplace-listings:${slug}:${brand}:${city}`],
     async () => {
       // Single query: fetch candidates by brand, then supplement with city if needed
-      const brandResult = await getFilteredDatabaseListings({
+      const brandResult = await getPublicListings({
         brand,
         limit: 10,
         page: 1,
         sort: "newest",
       });
 
-      const byBrand = brandResult.listings.filter((l) => l.slug !== slug);
+      const byBrand = brandResult.listings.filter((l: Listing) => l.slug !== slug);
 
       if (byBrand.length >= 3) {
         return byBrand.slice(0, 3);
       }
 
       // Not enough brand matches — fetch by city and merge
-      const cityResult = await getFilteredDatabaseListings({
+      const cityResult = await getPublicListings({
         city,
         limit: 10,
         page: 1,
         sort: "newest",
       });
 
-      const brandIds = new Set(byBrand.map((l) => l.id));
+      const brandIds = new Set(byBrand.map((l: Listing) => l.id));
       const byCity = cityResult.listings.filter(
-        (l) => l.slug !== slug && !brandIds.has(l.id),
+        (l: Listing) => l.slug !== slug && !brandIds.has(l.id),
       );
 
       return [...byBrand, ...byCity].slice(0, 3);
