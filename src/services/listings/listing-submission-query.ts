@@ -184,8 +184,8 @@ export function applyListingFilterPredicates<T>(
   if (filters.brand) q.eq("brand", filters.brand);
   if (filters.model) q.eq("model", filters.model);
   if (filters.carTrim) q.eq("car_trim", filters.carTrim);
-  if (filters.city) q.ilike("city", filters.city);
-  if (filters.district) q.ilike("district", filters.district);
+  if (filters.city) q.eq("city", filters.city);
+  if (filters.district) q.eq("district", filters.district);
   if (filters.fuelType) q.eq("fuel_type", filters.fuelType);
   if (filters.transmission) q.eq("transmission", filters.transmission);
   if (filters.minPrice !== undefined) q.gte("price", filters.minPrice);
@@ -207,7 +207,7 @@ export function applyListingFilterPredicates<T>(
     const terms = filters.query.trim().split(/\s+/).filter(Boolean);
     if (terms.length > 0) {
       const tsQuery = terms.map((t) => `${t}:*`).join(" & ");
-      q.textSearch("search_vector", tsQuery, { config: "simple" });
+      q.textSearch("search_vector", tsQuery, { config: "turkish_unaccent" });
     }
   }
   return q;

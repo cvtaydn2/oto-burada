@@ -1,3 +1,34 @@
+## Production Readiness & Scaling Hardening (2026-04-20)
+
+### Yapılan Değişiklikler
+
+**Hassas Veri Güvenliği (Expertise Reports)**
+- **Signed URL Strategy**: `createExpertDocumentSignedUrl` için URL geçerlilik süresi 600 saniyeden **60 saniyeye** düşürüldü.
+- **Storage Security**: `listing-documents` bucket'ı için RLS politikaları (`0048_production_hardening.sql`) uygulandı. Kullanıcıların sadece kendi belgelerini yönetebilmesi sağlandı, genel okuma yetkisi kaldırıldı.
+- **Access Audit**: İlan detay sayfalarının (`getMarketplaceListingBySlug`) bu belgeleri her zaman imzalı URL üzerinden servis ettiği doğrulandı.
+
+**Arama Performansı (Search Optimization)**
+- **FTS Configuration**: PostgreSQL Full Text Search (FTS) altyapısı, Türkçe karakter duyarlılığı ve unaccent desteği için `turkish_unaccent` konfigürasyonuna geçirildi.
+- **Index Optimization**: İl (`city`) ve İlçe (`district`) filtreleri, yavaş olan `ILIKE` operatöründen kurtarılarak btree indeksli **exact match (`eq`)** yapısına taşındı.
+- **GIN Index**: `search_vector` üzerindeki GIN indeksi (`listings_search_vector_gin_idx`) güncellendi.
+
+**WebSocket & Realtime Ölçeklendirme**
+- **Broadcast Migration**: Mesajlaşma altyapısı (`useChatRealtime`), veritabanı üzerindeki WebSocket yükünü ve WAL takibi maliyetini azaltmak için `Postgres Changes` yerine hafif **`Broadcast`** sistemine taşındı.
+- **Connection Lifecycle**: Realtime bağlantıların sadece `ChatWindow` bileşeni mount edildiğinde kurulduğu ve unmount anında temizlendiği doğrulandı.
+
+**Maliyet & Kaynak Koruması**
+- **Image Optimization Quota**: `next.config.ts` içindeki `remotePatterns` sıkılaştırıldı. Sadece projenin kendi Supabase storage host'una izin verilerek Unsplash ve diğer harici kaynakların Vercel Image Optimization kotasını tüketmesi engellendi.
+
+### Doğrulama
+- Mimari: `0048_production_hardening.sql` başarıyla uygulandı. ✅
+- Performans: `eq` filtreleri ve FTS search vector senkronize edildi. ✅
+- Güvenlik: Ekspertiz PDF'lerine public erişim kapalı, imzalı URL süresi 1 dakika. ✅
+- `npm run lint` & `typecheck` ✅
+
+### Sonraki Adımlar
+- **Image Transformation Audit**: Geri kalan tüm sahnelerde (dashboard, admin) Supabase image resizing parametrelerinin (width/height/quality) kullanıldığından emin olunmalı.
+- **Global Deployment**: Değişikliklerin Vercel staging ortamında load test ile WebSocket bağlantı limitleri açısından izlenmesi.
+
 ## Marketplace & Dashboard Calm UI Modernization (2026-04-20)
 
 ### Yapılan Değişiklikler

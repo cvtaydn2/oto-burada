@@ -23,6 +23,8 @@ export interface UseChatRealtimeResult {
   isPartnerOnline: boolean;
   /** Realtime bağlantı durumu: "connecting" | "connected" | "disconnected" */
   connectionStatus: ConnectionStatus;
+  /** Mesajı diğer katılımcıya broadcast eder */
+  broadcastMessage: (message: Message) => void;
 }
 
 export function useChatRealtime(chatId: string, currentUserId: string): UseChatRealtimeResult {
@@ -95,43 +97,27 @@ export function useChatRealtime(chatId: string, currentUserId: string): UseChatR
 
       channelRef.current = channel;
 
-      channel
         .on(
-          "postgres_changes",
-          {
-            event: "INSERT",
-            schema: "public",
-            table: "messages",
-            filter: `chat_id=eq.${chatId}`,
-          },
-          (payload: RealtimePostgresInsertPayload<RealtimeMessageRow>) => {
-            const raw = payload.new;
-            const newMessage: Message = {
-              id: raw.id,
-              chatId: raw.chat_id,
-              senderId: raw.sender_id,
-              content: raw.content,
-              isRead: raw.is_read,
-              createdAt: raw.created_at,
-            };
-
+          "broadcast",
+          { event: "message" },
+          ({ payload }: { payload: Message }) => {
             setMessages((prev) => {
-              if (prev.some((m) => m.id === newMessage.id)) return prev;
+              if (prev.some((m) => m.id === payload.id)) return prev;
 
               // Push notification when tab is hidden
               if (
-                newMessage.senderId !== currentUserId &&
+                payload.senderId !== currentUserId &&
                 typeof window !== "undefined" &&
                 document.hidden &&
                 Notification.permission === "granted"
               ) {
                 new Notification("Yeni Mesaj - OtoBurada", {
-                  body: newMessage.content,
+                  body: payload.content,
                   icon: "/favicon.ico",
                 });
               }
 
-              return [...prev, newMessage];
+              return [...prev, payload];
             });
           },
         )
@@ -208,12 +194,23 @@ export function useChatRealtime(chatId: string, currentUserId: string): UseChatR
     }
   };
 
+  const broadcastMessage = (message: Message) => {
+    if (channelRef.current) {
+      channelRef.current.send({
+        type: "broadcast",
+        event: "message",
+        payload: message,
+      });
+    }
+  };
+
   return {
     messages,
     setMessages,
     isTyping,
     onlineUsers,
     sendTypingStatus,
+    broadcastMessage,
     isPartnerOnline: onlineUsers.length > 1,
     connectionStatus,
   };

@@ -111,7 +111,7 @@ export async function createExpertDocumentSignedUrl(
 
   const { data, error } = await admin.storage
     .from(bucketName)
-    .createSignedUrl(storagePath, options?.expiresIn ?? 600);
+    .createSignedUrl(storagePath, options?.expiresIn ?? 60);
 
   if (error || !data?.signedUrl) {
     return null;

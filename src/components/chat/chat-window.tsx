@@ -15,7 +15,7 @@ interface ChatWindowProps {
 }
 
 export function ChatWindow({ chat, currentUserId }: ChatWindowProps) {
-  const { messages, setMessages, isTyping, isPartnerOnline, sendTypingStatus, connectionStatus } = useChatRealtime(chat.id, currentUserId);
+  const { messages, setMessages, isTyping, isPartnerOnline, sendTypingStatus, connectionStatus, broadcastMessage } = useChatRealtime(chat.id, currentUserId);
   const scrollRef = useRef<HTMLDivElement>(null);
 
   // Initial Load & Mark Read
@@ -49,6 +49,7 @@ export function ChatWindow({ chat, currentUserId }: ChatWindowProps) {
     const newMessage = await sendMessage(chat.id, currentUserId, content);
     if (newMessage) {
       setMessages((prev) => [...prev, newMessage]);
+      broadcastMessage(newMessage);
     }
   };
 
