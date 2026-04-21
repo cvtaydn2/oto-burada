@@ -57,7 +57,7 @@ describe('Preservation — mapListingRow source code verification', () => {
     const { readFileSync } = await import('fs');
     const { resolve } = await import('path');
     const source = readFileSync(
-      resolve(process.cwd(), 'src/services/listings/listing-submissions.ts'),
+      resolve(process.cwd(), 'src/services/listings/listing-submission-query.ts'),
       'utf-8'
     );
     // The preservation: mapListingRow must use nullish coalescing for view_count

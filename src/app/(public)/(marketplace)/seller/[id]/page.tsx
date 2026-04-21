@@ -60,6 +60,7 @@ export default async function SellerProfilePage({ params }: SellerProfilePagePro
                   src={seller.avatarUrl}
                   alt={seller.fullName || "Satıcı"}
                   fill
+                  sizes="80px"
                   className="object-cover"
                 />
               ) : (

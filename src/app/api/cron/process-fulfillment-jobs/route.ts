@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { withCronOrAdmin } from "@/lib/utils/api-security";
+import { logger } from "@/lib/utils/logger";
 
 /**
  * ── PILL: Issue 1 - Fulfillment Job Processor (DLQ & Retries) ──────
@@ -47,7 +48,7 @@ export async function GET(request: Request) {
 
       } catch (err: unknown) {
         const error = err as Error;
-        console.error(`[JobProcessor] Job ${job.id} failed:`, error);
+        logger.system.error("Fulfillment job failed", error, { jobId: job.id });
         
         // 5. Mark failure (SQL function handles backoff/DLQ logic)
         await admin.rpc("mark_job_failed", {
@@ -66,7 +67,7 @@ export async function GET(request: Request) {
       timestamp: new Date().toISOString()
     });
   } catch (err) {
-    console.error("[JobProcessor] Fatal error:", err);
+    logger.system.error("Fulfillment processor fatal error", err);
     return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
   }
 }

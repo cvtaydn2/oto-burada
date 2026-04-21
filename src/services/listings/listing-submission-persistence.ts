@@ -221,12 +221,15 @@ export async function createDatabaseListing(
 export async function updateDatabaseListing(listing: Listing) {
   if (!hasSupabaseAdminEnv()) return { error: "database_error" as const };
   const admin = createSupabaseAdminClient();
+  const listingsTable = admin.from("listings");
+  const updateQuery = listingsTable.update(mapListingToDatabaseRow(listing));
+  const filteredUpdateQuery =
+    "match" in updateQuery && typeof updateQuery.match === "function"
+      ? updateQuery.match({ id: listing.id, version: listing.version ?? 0 })
+      : updateQuery.eq("id", listing.id).eq("version", listing.version ?? 0);
   
   // OPTIMIZATION: Use .select() to return updated data in same query
-  const updateResult = await admin
-    .from("listings")
-    .update(mapListingToDatabaseRow(listing))
-    .match({ id: listing.id, version: listing.version ?? 0 })
+  const updateResult = await filteredUpdateQuery
     .select(`
       id,
       seller_id,

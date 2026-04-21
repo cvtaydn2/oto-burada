@@ -184,6 +184,7 @@ export default async function ComparePage({ searchParams }: ComparePageProps) {
                           src={coverImage.url}
                           alt={car.title}
                           fill
+                          sizes="(min-width: 1024px) 25vw, 100vw"
                           className="object-cover group- transition-transform duration-700"
                         />
                       ) : null}

@@ -23,7 +23,7 @@ describe("Listing Submission Helpers", () => {
 
     it("should generate a clean slug from vehicle info and title", () => {
       const slug = buildListingSlug(mockInput, []);
-      expect(slug).toBe("2022-volkswagen-golf-tertemiz-aile-arabasi");
+      expect(slug).toBe("volkswagen-golf-2022-istanbul-tertemiz-aile-arabasi");
     });
 
     it("should handle Turkish characters correctly", () => {
@@ -32,15 +32,15 @@ describe("Listing Submission Helpers", () => {
         title: "Şahane Ömürlük Çile"
       };
       const slug = buildListingSlug(inputWithTurkishValues, []);
-      expect(slug).toBe("2022-volkswagen-golf-sahane-omurluk-cile");
+      expect(slug).toBe("volkswagen-golf-2022-istanbul-sahane-omurluk-cile");
     });
 
     it("should add a numeric suffix if slug already exists", () => {
       const existing: Listing[] = [
-        { slug: "2022-volkswagen-golf-tertemiz-aile-arabasi" } as Listing
+        { slug: "volkswagen-golf-2022-istanbul-tertemiz-aile-arabasi" } as Listing
       ];
       const slug = buildListingSlug(mockInput, existing);
-      expect(slug).toBe("2022-volkswagen-golf-tertemiz-aile-arabasi-2");
+      expect(slug).toBe("volkswagen-golf-2022-istanbul-tertemiz-aile-arabasi-2");
     });
   });
 

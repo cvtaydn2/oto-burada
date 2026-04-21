@@ -46,7 +46,10 @@ const mockProfile: Partial<Profile> = {
 vi.mock("@/services/listings/listing-submissions", () => ({
   getStoredListingBySlug: vi.fn(),
   getStoredListingsByIds: vi.fn(),
-  getFilteredDatabaseListings: vi.fn(),
+}));
+
+vi.mock("@/services/listings/catalog", () => ({
+  getPublicListings: vi.fn(),
 }));
 
 vi.mock("@/services/profile/profile-records", () => ({
@@ -59,8 +62,8 @@ describe("Marketplace Listings Service", () => {
   });
 
   it("should get filtered marketplace listings", async () => {
-    const { getFilteredDatabaseListings } = await import("@/services/listings/listing-submissions");
-    vi.mocked(getFilteredDatabaseListings).mockResolvedValue({
+    const { getPublicListings } = await import("@/services/listings/catalog");
+    vi.mocked(getPublicListings).mockResolvedValue({
       listings: [],
       total: 0,
       page: 1,
@@ -108,8 +111,8 @@ describe("Marketplace Listings Service", () => {
   });
 
   it("should get public marketplace listings", async () => {
-    const { getFilteredDatabaseListings } = await import("@/services/listings/listing-submissions");
-    vi.mocked(getFilteredDatabaseListings).mockResolvedValue({
+    const { getPublicListings } = await import("@/services/listings/catalog");
+    vi.mocked(getPublicListings).mockResolvedValue({
       listings: [],
       total: 0,
       page: 1,
@@ -122,8 +125,8 @@ describe("Marketplace Listings Service", () => {
   });
 
   it("should get all known listings", async () => {
-    const { getFilteredDatabaseListings } = await import("@/services/listings/listing-submissions");
-    vi.mocked(getFilteredDatabaseListings).mockResolvedValue({
+    const { getPublicListings } = await import("@/services/listings/catalog");
+    vi.mocked(getPublicListings).mockResolvedValue({
       listings: [mockListing as Listing],
       total: 1,
       page: 1,
@@ -136,14 +139,22 @@ describe("Marketplace Listings Service", () => {
   });
 
   it("should get similar marketplace listings", async () => {
-    const { getFilteredDatabaseListings } = await import("@/services/listings/listing-submissions");
-    vi.mocked(getFilteredDatabaseListings).mockResolvedValue({
-      listings: [mockListing as Listing],
-      total: 1,
-      page: 1,
-      limit: 10,
-      hasMore: false
-    });
+    const { getPublicListings } = await import("@/services/listings/catalog");
+    vi.mocked(getPublicListings)
+      .mockResolvedValueOnce({
+        listings: [mockListing as Listing],
+        total: 1,
+        page: 1,
+        limit: 10,
+        hasMore: false
+      })
+      .mockResolvedValueOnce({
+        listings: [mockListing as Listing],
+        total: 1,
+        page: 1,
+        limit: 10,
+        hasMore: false
+      });
 
     const result = await getSimilarMarketplaceListings("current-slug", "BMW", "Istanbul");
     expect(result).toHaveLength(1);

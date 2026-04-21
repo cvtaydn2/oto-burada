@@ -35,7 +35,7 @@ export const bulkListingActionSchema = z.object({
   ids: z
     .array(z.string().uuid("Geçersiz ilan ID formatı"))
     .min(1, "En az bir ilan seçmelisiniz.")
-    .max(20, "Bir seferde en fazla 20 ilan işlenebilir."),
+    .max(20, "En fazla 20 ilan işlenebilir."),
 });
 
 export type BulkListingActionInput = z.infer<typeof bulkListingActionSchema>;

@@ -4,6 +4,8 @@ import { updateDatabaseListing } from "../listing-submission-persistence";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import type { Listing } from "@/types";
 
+const queueFileCleanup = vi.fn().mockResolvedValue(undefined);
+
 vi.mock("@/lib/supabase/admin", () => {
   const chain = {
     select: vi.fn().mockReturnThis(),
@@ -37,6 +39,10 @@ vi.mock("@/lib/supabase/env", () => ({
   hasSupabaseAdminEnv: vi.fn(() => true),
 }));
 
+vi.mock("@/lib/storage/registry", () => ({
+  queueFileCleanup,
+}));
+
 describe("Listing Storage Cleanup", () => {
   const admin = createSupabaseAdminClient() as unknown as Record<string, any>;
 
@@ -61,9 +67,7 @@ describe("Listing Storage Cleanup", () => {
 
     await updateDatabaseListing(listing);
 
-    // Verify storage cleanup called for old-1.jpg
-    expect(admin.storage.from).toHaveBeenCalledWith("listing-images");
-    expect(admin.storage.remove).toHaveBeenCalledWith(["old-1.jpg"]);
+    expect(queueFileCleanup).toHaveBeenCalledWith("listing-images", ["old-1.jpg"]);
   });
 
   it("should not delete images that are still present", async () => {
@@ -81,6 +85,6 @@ describe("Listing Storage Cleanup", () => {
 
     await updateDatabaseListing(listing);
 
-    expect(admin.storage.remove).not.toHaveBeenCalled();
+    expect(queueFileCleanup).not.toHaveBeenCalled();
   });
 });

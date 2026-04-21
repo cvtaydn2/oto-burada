@@ -1,16 +1,14 @@
 import { NextResponse } from "next/server";
-import { getCurrentUser } from "@/lib/auth/session";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { hasSupabaseAdminEnv } from "@/lib/supabase/env";
 import { logger } from "@/lib/utils/logger";
 import { captureServerEvent } from "@/lib/monitoring/posthog-server";
+import { withAdminRoute } from "@/lib/utils/api-security";
 
 export async function POST(request: Request) {
-  // 1. Auth check — only admins can ban IPs
-  const user = await getCurrentUser();
-  if (!user || user.role !== "admin") {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
-  }
+  const security = await withAdminRoute(request);
+  if (!security.ok) return security.response;
+  const user = security.user!;
 
   if (!hasSupabaseAdminEnv()) {
     return NextResponse.json({ error: "Service unavailable" }, { status: 503 });

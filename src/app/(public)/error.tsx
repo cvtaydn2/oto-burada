@@ -2,9 +2,9 @@
 
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
-import posthog from "posthog-js";
 import { Button } from "@/components/ui/button";
 import { AlertTriangle, Home } from "lucide-react";
+import { captureClientException } from "@/lib/monitoring/posthog-client";
 
 export default function Error({
   error,
@@ -16,8 +16,8 @@ export default function Error({
   const router = useRouter();
 
   useEffect(() => {
-    posthog.captureException(error);
-  }, [error]);
+    captureClientException(error, "public-route-error", { digest: error.digest });
+  }, [error, error.digest]);
 
   return (
     <div role="alert" className="flex min-h-[400px] flex-col items-center justify-center p-8 text-center">

@@ -78,6 +78,7 @@ export function PhotosStep({
                       src={imageVal.url!}
                       alt={`Fotoğraf ${index + 1}`}
                       fill
+                      sizes="(max-width: 768px) 50vw, 25vw"
                       className="object-cover"
                     />
 

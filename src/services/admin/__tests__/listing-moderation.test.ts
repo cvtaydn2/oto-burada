@@ -1,45 +1,74 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
-import * as listingModeration from '../listing-moderation';
-import * as moderationActions from '../moderation-actions';
-import * as notifications from '@/services/notifications/notification-records';
-import type { Listing } from '@/types';
+import { describe, it, expect, vi, beforeEach } from "vitest";
+import {
+  moderateListingWithSideEffects,
+  moderateListingsWithSideEffects,
+} from "../listing-moderation";
+import * as moderationActions from "../moderation-actions";
+import * as notifications from "@/services/notifications/notification-records";
+import { getDatabaseListings } from "@/services/listings/listing-submissions";
+import type { Listing } from "@/types";
 
-// Mock dependencies
-vi.mock('../listing-moderation', async () => {
-  const actual = await vi.importActual<typeof import('../listing-moderation')>('../listing-moderation');
-  return {
-    ...actual,
-    moderateDatabaseListing: vi.fn(),
-  };
-});
-vi.mock('@/services/listings/listing-submissions');
-vi.mock('../moderation-actions');
-vi.mock('@/services/notifications/notification-records');
-vi.mock('@/lib/redis/client', () => ({
+vi.mock("@/lib/supabase/env", () => ({
+  hasSupabaseAdminEnv: vi.fn(() => true),
+}));
+
+const listingsTable = {
+  update: vi.fn().mockReturnThis(),
+  eq: vi.fn().mockReturnThis(),
+  in: vi.fn().mockReturnThis(),
+  select: vi.fn().mockReturnThis(),
+  maybeSingle: vi.fn(),
+};
+
+vi.mock("@/lib/supabase/admin", () => ({
+  createSupabaseAdminClient: vi.fn(() => ({
+    from: vi.fn(() => listingsTable),
+    auth: {
+      admin: {
+        getUserById: vi.fn().mockResolvedValue({ data: { user: { email: null } } }),
+      },
+    },
+  })),
+}));
+
+vi.mock("@/services/listings/listing-submissions", () => ({
+  getDatabaseListings: vi.fn(),
+}));
+
+vi.mock("../moderation-actions", () => ({
+  createAdminModerationAction: vi.fn().mockResolvedValue(undefined),
+}));
+
+vi.mock("@/services/notifications/notification-records", () => ({
+  createDatabaseNotification: vi.fn().mockResolvedValue(undefined),
+}));
+
+vi.mock("@/lib/redis/client", () => ({
   invalidateCache: vi.fn().mockResolvedValue(undefined),
 }));
-vi.mock('@/services/market/market-stats', () => ({
+
+vi.mock("@/services/market/market-stats", () => ({
   updateMarketStats: vi.fn().mockResolvedValue(undefined),
 }));
 
-describe('listing-moderation service', () => {
+describe("listing-moderation service", () => {
   const mockListing: Listing = {
-    id: 'listing-123',
-    slug: 'test-car',
-    title: 'Test Car',
-    sellerId: 'seller-456',
-    brand: 'Fiat',
-    model: 'Egea',
+    id: "listing-123",
+    slug: "test-car",
+    title: "Test Car",
+    sellerId: "seller-456",
+    brand: "Fiat",
+    model: "Egea",
     year: 2022,
     mileage: 15000,
-    fuelType: 'benzin',
-    transmission: 'otomatik',
+    fuelType: "benzin",
+    transmission: "otomatik",
     price: 1000000,
-    city: 'Istanbul',
-    district: 'Kadikoy',
-    description: 'Test description',
-    whatsappPhone: '905551112233',
-    status: 'pending',
+    city: "Istanbul",
+    district: "Kadikoy",
+    description: "Test description",
+    whatsappPhone: "905551112233",
+    status: "pending",
     images: [],
     featured: false,
     viewCount: 0,
@@ -50,96 +79,96 @@ describe('listing-moderation service', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
+    listingsTable.update.mockReturnThis();
+    listingsTable.eq.mockReturnThis();
+    listingsTable.in.mockReturnThis();
+    listingsTable.select.mockReturnThis();
+    listingsTable.maybeSingle.mockResolvedValue({ data: { id: mockListing.id }, error: null });
   });
 
-  describe('listingModeration.moderateListingWithSideEffects', () => {
-    it('should approve a listing and trigger side effects', async () => {
-      vi.mocked(listingModeration.moderateDatabaseListing).mockResolvedValue({
-        ...mockListing,
-        status: 'approved',
-      });
+  it("should approve a listing and trigger side effects", async () => {
+    vi.mocked(getDatabaseListings).mockResolvedValue([{ ...mockListing, status: "approved" }]);
 
-      const result = await listingModeration.moderateListingWithSideEffects({
-        action: 'approve',
-        adminUserId: 'admin-1',
-        listingId: 'listing-123',
-      });
-
-      expect(result?.status).toBe('approved');
-      expect(listingModeration.moderateDatabaseListing).toHaveBeenCalledWith('listing-123', 'approved');
-      expect(moderationActions.createAdminModerationAction).toHaveBeenCalled();
-      expect(notifications.createDatabaseNotification).toHaveBeenCalledWith(
-        expect.objectContaining({
-          type: 'moderation',
-          title: 'Ilanin onaylandi',
-        })
-      );
+    const result = await moderateListingWithSideEffects({
+      action: "approve",
+      adminUserId: "admin-1",
+      listingId: mockListing.id,
     });
 
-    it('should reject a listing and trigger side effects', async () => {
-      vi.mocked(listingModeration.moderateDatabaseListing).mockResolvedValue({
-        ...mockListing,
-        status: 'rejected',
-      });
-
-      const result = await listingModeration.moderateListingWithSideEffects({
-        action: 'reject',
-        adminUserId: 'admin-1',
-        listingId: 'listing-123',
-        note: 'Invalid description',
-      });
-
-      expect(result?.status).toBe('rejected');
-      expect(listingModeration.moderateDatabaseListing).toHaveBeenCalledWith('listing-123', 'rejected');
-      expect(moderationActions.createAdminModerationAction).toHaveBeenCalledWith(
-        expect.objectContaining({
-          action: 'reject',
-          note: 'Invalid description',
-        })
-      );
-    });
-
-    it('should return null if database update fails', async () => {
-      vi.mocked(listingModeration.moderateDatabaseListing).mockResolvedValue(null);
-
-      const result = await listingModeration.moderateListingWithSideEffects({
-        action: 'approve',
-        adminUserId: 'admin-1',
-        listingId: 'missing-id',
-      });
-
-      expect(result).toBeNull();
-      expect(notifications.createDatabaseNotification).not.toHaveBeenCalled();
-    });
+    expect(result?.status).toBe("approved");
+    expect(moderationActions.createAdminModerationAction).toHaveBeenCalled();
+    expect(notifications.createDatabaseNotification).toHaveBeenCalledWith(
+      expect.objectContaining({
+        type: "moderation",
+        title: "Ilanin onaylandi",
+      }),
+    );
   });
 
-  describe('listingModeration.moderateListingsWithSideEffects', () => {
-    it('should handle multiple listings', async () => {
-      vi.mocked(listingModeration.moderateDatabaseListing).mockResolvedValueOnce({ ...mockListing, id: '1' });
-      vi.mocked(listingModeration.moderateDatabaseListing).mockResolvedValueOnce({ ...mockListing, id: '2' });
+  it("should reject a listing and trigger side effects", async () => {
+    vi.mocked(getDatabaseListings).mockResolvedValue([{ ...mockListing, status: "rejected" }]);
 
-      const result = await listingModeration.moderateListingsWithSideEffects({
-        action: 'approve',
-        adminUserId: 'admin-1',
-        listingIds: ['1', '2'],
-      });
-
-      expect(result.moderatedListings).toHaveLength(2);
-      expect(result.skippedListingIds).toHaveLength(0);
+    const result = await moderateListingWithSideEffects({
+      action: "reject",
+      adminUserId: "admin-1",
+      listingId: mockListing.id,
+      note: "Invalid description",
     });
 
-    it('should track skipped listings', async () => {
-      vi.mocked(listingModeration.moderateDatabaseListing).mockResolvedValueOnce({ ...mockListing, id: '1' });
-      vi.mocked(listingModeration.moderateDatabaseListing).mockResolvedValueOnce(null);
+    expect(result?.status).toBe("rejected");
+    expect(moderationActions.createAdminModerationAction).toHaveBeenCalledWith(
+      expect.objectContaining({
+        action: "reject",
+        note: "Invalid description",
+      }),
+    );
+  });
 
-      const result = await listingModeration.moderateListingsWithSideEffects({
-        action: 'approve',
-        adminUserId: 'admin-1',
-        listingIds: ['1', 'missing'],
-      });
+  it("should return null if database update fails", async () => {
+    listingsTable.maybeSingle.mockResolvedValueOnce({ data: null, error: null });
+    vi.mocked(getDatabaseListings).mockResolvedValue([]);
 
-      expect(result.moderatedListings).toHaveLength(1);
-      expect(result.skippedListingIds).toContain('missing');
+    const result = await moderateListingWithSideEffects({
+      action: "approve",
+      adminUserId: "admin-1",
+      listingId: "missing-id",
     });
+
+    expect(result).toBeNull();
+    expect(notifications.createDatabaseNotification).not.toHaveBeenCalled();
+  });
+
+  it("should handle multiple listings", async () => {
+    vi.mocked(getDatabaseListings)
+      .mockResolvedValueOnce([{ ...mockListing, id: "1", status: "approved" }])
+      .mockResolvedValueOnce([{ ...mockListing, id: "2", status: "approved" }]);
+
+    const result = await moderateListingsWithSideEffects({
+      action: "approve",
+      adminUserId: "admin-1",
+      listingIds: ["1", "2"],
+    });
+
+    expect(result.moderatedListings).toHaveLength(2);
+    expect(result.skippedListingIds).toHaveLength(0);
+  });
+
+  it("should track skipped listings", async () => {
+    vi.mocked(getDatabaseListings)
+      .mockResolvedValueOnce([{ ...mockListing, id: "1", status: "approved" }])
+      .mockResolvedValueOnce([]);
+
+    listingsTable.maybeSingle
+      .mockResolvedValueOnce({ data: { id: "1" }, error: null })
+      .mockResolvedValueOnce({ data: null, error: null });
+
+    const result = await moderateListingsWithSideEffects({
+      action: "approve",
+      adminUserId: "admin-1",
+      listingIds: ["1", "missing"],
+    });
+
+    expect(result.moderatedListings).toHaveLength(1);
+    expect(result.skippedListingIds).toContain("missing");
   });
 });

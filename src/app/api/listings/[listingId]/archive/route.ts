@@ -3,19 +3,20 @@ import { apiError, apiSuccess, API_ERROR_CODES } from "@/lib/utils/api-response"
 import { logger } from "@/lib/utils/logger";
 import { captureServerError, captureServerEvent } from "@/lib/monitoring/posthog-server";
 import { enforceRateLimit, getUserRateLimitKey } from "@/lib/utils/rate-limit-middleware";
+import { withUserAndCsrf } from "@/lib/utils/api-security";
 
 export async function POST(
-  _req: Request,
+  request: Request,
   { params }: { params: Promise<{ listingId: string }> },
 ) {
+  const security = await withUserAndCsrf(request, {
+    rateLimitKey: "listings:archive",
+  });
+  if (!security.ok) return security.response;
+  const user = security.user!;
+
   const { listingId } = await params;
-
   const supabase = await createSupabaseServerClient();
-  const { data: { user } } = await supabase.auth.getUser();
-
-  if (!user) {
-    return apiError(API_ERROR_CODES.UNAUTHORIZED, "Yetkisiz erişim.", 401);
-  }
 
   // Rate limit: 20 archive ops per hour per user
   const rateLimit = await enforceRateLimit(

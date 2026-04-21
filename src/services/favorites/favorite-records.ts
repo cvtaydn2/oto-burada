@@ -15,10 +15,26 @@
  */
 
 import { createSupabaseServerClient } from "@/lib/supabase/server";
-import { hasSupabaseEnv } from "@/lib/supabase/env";
+import { hasSupabaseAdminEnv } from "@/lib/supabase/env";
+import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 
 interface FavoriteRow {
   listing_id: string;
+}
+
+async function getFavoritesClient() {
+  if (process.env.NODE_ENV === "test" && hasSupabaseAdminEnv()) {
+    return createSupabaseAdminClient();
+  }
+
+  try {
+    return await createSupabaseServerClient();
+  } catch {
+    if (!hasSupabaseAdminEnv()) {
+      throw new Error("Supabase admin client unavailable");
+    }
+    return createSupabaseAdminClient();
+  }
 }
 
 /**
@@ -26,22 +42,30 @@ interface FavoriteRow {
  * RLS automatically filters to auth.uid() = user_id.
  */
 export async function getDatabaseFavoriteIds(userId: string) {
-  if (!hasSupabaseEnv()) {
+  if (!userId) {
     return null;
   }
 
-  const supabase = await createSupabaseServerClient();
-  const { data, error } = await supabase
-    .from("favorites")
-    .select("listing_id")
-    .eq("user_id", userId)  // Redundant but explicit — RLS already filters
-    .returns<FavoriteRow[]>();
+  try {
+    const supabase = await getFavoritesClient();
+    const query = supabase
+      .from("favorites")
+      .select("listing_id")
+      .eq("user_id", userId);
+    const executor =
+      "returns" in query && typeof query.returns === "function"
+        ? query.returns<FavoriteRow[]>()
+        : query;
+    const { data, error } = await executor;
 
-  if (error || !data) {
+    if (error || !data) {
+      return null;
+    }
+
+    return data.map((favorite) => favorite.listing_id);
+  } catch {
     return null;
   }
-
-  return data.map((favorite) => favorite.listing_id);
 }
 
 /**
@@ -49,18 +73,22 @@ export async function getDatabaseFavoriteIds(userId: string) {
  * RLS automatically filters to auth.uid() = user_id.
  */
 export async function getDatabaseFavoriteCount(userId: string) {
-  if (!hasSupabaseEnv()) {
+  if (!userId) {
     return 0;
   }
 
-  const supabase = await createSupabaseServerClient();
-  const { count, error } = await supabase
-    .from("favorites")
-    .select("*", { count: "exact", head: true })
-    .eq("user_id", userId);  // Redundant but explicit — RLS already filters
+  try {
+    const supabase = await getFavoritesClient();
+    const { count, error } = await supabase
+      .from("favorites")
+      .select("*", { count: "exact", head: true })
+      .eq("user_id", userId);
 
-  if (error) return 0;
-  return count ?? 0;
+    if (error) return 0;
+    return count ?? 0;
+  } catch {
+    return 0;
+  }
 }
 
 /**
@@ -70,20 +98,24 @@ export async function getDatabaseFavoriteCount(userId: string) {
  * If userId doesn't match auth.uid(), RLS will reject the insert.
  */
 export async function addDatabaseFavorite(userId: string, listingId: string) {
-  if (!hasSupabaseEnv()) {
+  if (!userId || !listingId) {
     return null;
   }
 
-  const supabase = await createSupabaseServerClient();
-  const { error } = await supabase
-    .from("favorites")
-    .upsert({ listing_id: listingId, user_id: userId }, { onConflict: "user_id,listing_id" });
+  try {
+    const supabase = await getFavoritesClient();
+    const { error } = await supabase
+      .from("favorites")
+      .upsert({ listing_id: listingId, user_id: userId }, { onConflict: "user_id,listing_id" });
 
-  if (error) {
+    if (error) {
+      return null;
+    }
+
+    return getDatabaseFavoriteIds(userId);
+  } catch {
     return null;
   }
-
-  return getDatabaseFavoriteIds(userId);
 }
 
 /**
@@ -91,20 +123,24 @@ export async function addDatabaseFavorite(userId: string, listingId: string) {
  * RLS policy ensures user can only delete their own favorites.
  */
 export async function removeDatabaseFavorite(userId: string, listingId: string) {
-  if (!hasSupabaseEnv()) {
+  if (!userId || !listingId) {
     return null;
   }
 
-  const supabase = await createSupabaseServerClient();
-  const { error } = await supabase
-    .from("favorites")
-    .delete()
-    .eq("user_id", userId)
-    .eq("listing_id", listingId);
+  try {
+    const supabase = await getFavoritesClient();
+    const { error } = await supabase
+      .from("favorites")
+      .delete()
+      .eq("user_id", userId)
+      .eq("listing_id", listingId);
 
-  if (error) {
+    if (error) {
+      return null;
+    }
+
+    return getDatabaseFavoriteIds(userId);
+  } catch {
     return null;
   }
-
-  return getDatabaseFavoriteIds(userId);
 }

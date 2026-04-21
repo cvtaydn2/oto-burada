@@ -1,7 +1,5 @@
 import { hasSupabaseEnv } from "@/lib/supabase/env";
 import { sanitizeText, sanitizeDescription } from "@/lib/utils/sanitize";
-import { isValidRequestOrigin } from "@/lib/security";
-import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { listingCreateFormSchema, listingCreateSchema } from "@/lib/validators";
 import { issuesToFieldErrors } from "@/lib/utils/validation-helpers";
 import { apiSuccess, apiError, API_ERROR_CODES } from "@/lib/utils/api-response";
@@ -19,15 +17,17 @@ import {
   recordSellerTrustGuardRejection,
   runListingTrustGuards,
 } from "@/services/listings/listing-submission-moderation";
+import { withUserAndCsrf } from "@/lib/utils/api-security";
 
 export async function PATCH(
   request: Request,
   context: { params: Promise<{ listingId: string }> },
 ) {
-  // CSRF check
-  if (!isValidRequestOrigin(request)) {
-    return apiError(API_ERROR_CODES.BAD_REQUEST, "Geçersiz istek kaynağı.", 403);
-  }
+  const security = await withUserAndCsrf(request, {
+    rateLimitKey: "listings:update",
+  });
+  if (!security.ok) return security.response;
+  const user = security.user!;
 
   if (!hasSupabaseEnv()) {
     return apiError(
@@ -52,12 +52,6 @@ export async function PATCH(
       400,
       issuesToFieldErrors(parsedFormValues.error.issues),
     );
-  }
-
-  const supabase = await createSupabaseServerClient();
-  const { data: { user }, error: userError } = await supabase.auth.getUser();
-  if (userError || !user) {
-    return apiError(API_ERROR_CODES.UNAUTHORIZED, "Oturum doğrulanamadı.", 401);
   }
 
   const { listingId } = await context.params;
@@ -200,25 +194,21 @@ export async function PATCH(
 }
 
 export async function DELETE(
-  _request: Request,
+  request: Request,
   context: { params: Promise<{ listingId: string }> },
 ) {
+  const security = await withUserAndCsrf(request, {
+    rateLimitKey: "listings:delete",
+  });
+  if (!security.ok) return security.response;
+  const user = security.user!;
+
   if (!hasSupabaseEnv()) {
     return apiError(
       API_ERROR_CODES.SERVICE_UNAVAILABLE,
       "Supabase ortam değişkenleri eksik. İlan silmek için .env.local dosyasını tamamlamalısın.",
       503,
     );
-  }
-
-  const supabase = await createSupabaseServerClient();
-  const {
-    data: { user },
-    error: userError,
-  } = await supabase.auth.getUser();
-
-  if (userError || !user) {
-    return apiError(API_ERROR_CODES.UNAUTHORIZED, "Oturum doğrulanamadı. Lütfen tekrar giriş yap.", 401);
   }
 
   const { listingId } = await context.params;

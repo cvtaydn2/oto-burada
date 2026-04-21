@@ -18,7 +18,7 @@ import { resolve } from 'path';
 
 describe('Bug 5 — router.push NOT called after successful submit (EXPECTED TO FAIL on unfixed code)', () => {
   const sourceCode = readFileSync(
-    resolve(process.cwd(), 'src/components/forms/listing-create-form.tsx'),
+    resolve(process.cwd(), 'src/features/listing-creation/hooks/use-listing-creation.ts'),
     'utf-8'
   );
 
@@ -31,7 +31,7 @@ describe('Bug 5 — router.push NOT called after successful submit (EXPECTED TO 
    *
    * Counterexample: successful submit (isEditing=false) → router.push never called
    */
-  it('should call router.push("/dashboard/listings") for new listing after successful submit', () => {
+  it('should call router.push("/dashboard/listings?created=pending") for new listing after successful submit', () => {
     // On unfixed code: the source contains only router.refresh() without router.push for new listings
     // The fix adds: else router.push("/dashboard/listings")
     // This test FAILS on unfixed code because router.push is not present in the success path
@@ -40,7 +40,7 @@ describe('Bug 5 — router.push NOT called after successful submit (EXPECTED TO 
     // The unfixed code pattern: "if (isEditing) router.replace(...); router.refresh();"
     // The fixed code pattern: "if (isEditing) router.replace(...); else router.push(...);"
 
-    const hasRouterPushInSuccessPath = sourceCode.includes('router.push("/dashboard/listings")');
+    const hasRouterPushInSuccessPath = sourceCode.includes('router.push("/dashboard/listings?created=pending")');
 
     // On unfixed code: router.push is NOT in the source → test FAILS
     expect(hasRouterPushInSuccessPath).toBe(true);
@@ -51,7 +51,7 @@ describe('Bug 5 — router.push NOT called after successful submit (EXPECTED TO 
     // This means the user stays on the same page after creating a listing
 
     // Extract the onSubmit handler section
-    const onSubmitMatch = sourceCode.match(/const onSubmit = handleSubmit\(async[\s\S]*?\}\);/);
+    const onSubmitMatch = sourceCode.match(/const submitListing = async \(values:[\s\S]*?\n  };/);
     expect(onSubmitMatch).not.toBeNull();
 
     const onSubmitCode = onSubmitMatch![0];

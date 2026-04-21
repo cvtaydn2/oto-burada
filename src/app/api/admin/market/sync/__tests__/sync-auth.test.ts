@@ -2,10 +2,15 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import { GET } from "../route";
 import { isSupabaseAdminUser } from "@/lib/auth/api-admin";
 import { hasSupabaseAdminEnv } from "@/lib/supabase/env";
+import { getCurrentUser } from "@/lib/auth/session";
 
 vi.mock("@/lib/auth/api-admin", () => ({
   isSupabaseAdminUser: vi.fn(),
   requireApiAdminUser: vi.fn(),
+}));
+
+vi.mock("@/lib/auth/session", () => ({
+  getCurrentUser: vi.fn(),
 }));
 
 vi.mock("@/lib/supabase/env", () => ({
@@ -43,6 +48,7 @@ describe("Market Sync Auth", () => {
     vi.resetAllMocks();
     process.env.CRON_SECRET = CRON_SECRET;
     vi.mocked(hasSupabaseAdminEnv).mockReturnValue(true);
+    vi.mocked(getCurrentUser).mockResolvedValue(null);
   });
 
   it("should allow access with valid CRON_SECRET", async () => {
@@ -56,6 +62,10 @@ describe("Market Sync Auth", () => {
   });
 
   it("should allow access with valid Admin session", async () => {
+    vi.mocked(getCurrentUser).mockResolvedValue({
+      id: "admin-1",
+      app_metadata: { role: "admin" },
+    } as never);
     vi.mocked(isSupabaseAdminUser).mockResolvedValue(true);
     
     const req = new Request("http://localhost/api/admin/market/sync");

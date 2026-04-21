@@ -23,10 +23,15 @@ export async function lookupVehicleByPlate(
   supabaseClient?: SupabaseClient
 ): Promise<PlateLookupResult | null> {
   // Rate limit: 10 lookups per hour per IP to prevent abuse of the DB lookup
-  const headersList = await headers();
-  const ip = headersList.get("x-forwarded-for")?.split(",")[0]?.trim()
-    ?? headersList.get("x-real-ip")
-    ?? "unknown";
+  let ip = "unknown";
+  try {
+    const headersList = await headers();
+    ip = headersList.get("x-forwarded-for")?.split(",")[0]?.trim()
+      ?? headersList.get("x-real-ip")
+      ?? "unknown";
+  } catch {
+    ip = "local";
+  }
   const rateLimit = await checkRateLimit(`plate-lookup:${ip}`, { limit: 10, windowMs: 60 * 60 * 1000 });
   if (!rateLimit.allowed) {
     logger.listings.warn("Plate lookup rate limited", { ip });

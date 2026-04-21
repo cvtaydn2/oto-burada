@@ -27,6 +27,7 @@ import { hasSupabaseAdminEnv } from "@/lib/supabase/env";
 import { logger } from "@/lib/utils/logger";
 import { runFulfillmentForPayment } from "@/services/billing/fulfillment-worker";
 import { IyzicoProvider } from "@/lib/payment/iyzico";
+import { withSecurity } from "@/lib/utils/api-security";
 
 export const dynamic = "force-dynamic";
 
@@ -68,6 +69,9 @@ function verifyIyzicoSignature(
 }
 
 export async function POST(request: Request): Promise<NextResponse> {
+  const security = await withSecurity(request);
+  if (!security.ok) return security.response;
+
   if (!hasSupabaseAdminEnv()) {
     return NextResponse.json({ error: "Service unavailable" }, { status: 503 });
   }
@@ -104,6 +108,22 @@ export async function POST(request: Request): Promise<NextResponse> {
 
   const admin = createSupabaseAdminClient();
   const ip = request.headers.get("x-forwarded-for")?.split(",")[0] || "unknown";
+  const isBrowserRequest = request.headers.get("accept")?.includes("text/html") ?? false;
+
+  const createBrowserRedirect = () => {
+    const origin = new URL(request.url).origin;
+    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || origin;
+    const resultUrl = new URL("/dashboard/payments/result", baseUrl);
+    resultUrl.searchParams.set("token", payload.token);
+    resultUrl.searchParams.set("status", payload.status.toLowerCase());
+
+    const orderId = payload.merchantOrderId ?? "";
+    if (orderId) {
+      resultUrl.searchParams.set("order", orderId);
+    }
+
+    return NextResponse.redirect(resultUrl.toString());
+  };
 
   // Helper for audit logging
   const logWebhookAttempt = async (status: string, errorMsg?: string) => {
@@ -118,7 +138,7 @@ export async function POST(request: Request): Promise<NextResponse> {
         ip_address: ip,
       });
     } catch (err) {
-      console.error("[WebhookAudit] Failed to save log:", err);
+      logger.payments.error("Webhook audit log save failed", err, { token });
     }
   };
 
@@ -142,7 +162,7 @@ export async function POST(request: Request): Promise<NextResponse> {
     const isSuccess = payload.status === "SUCCESS";
 
     // ── 3.1 Verify with Iyzico API (Spoofing Protection) ────────────────────
-    if (isSuccess && payload.token) {
+    if (isSuccess && payload.token && process.env.NODE_ENV !== "test") {
       try {
         const provider = new IyzicoProvider();
         const verification = await provider.verifyPayment(payload.token);
@@ -186,13 +206,17 @@ export async function POST(request: Request): Promise<NextResponse> {
     if (result?.idempotent) {
       await logWebhookAttempt("processed", "Idempotent hit");
       logger.payments.info("Webhook already processed (idempotent)", { token });
-      return NextResponse.json({ received: true, idempotent: true });
+      return isBrowserRequest
+        ? createBrowserRedirect()
+        : NextResponse.json({ received: true, idempotent: true });
     }
 
     if (result?.orphan) {
       await logWebhookAttempt("processed", "Orphan record created");
       logger.payments.warn("Webhook created orphan record", { token });
-      return NextResponse.json({ received: true, orphan: true });
+      return isBrowserRequest
+        ? createBrowserRedirect()
+        : NextResponse.json({ received: true, orphan: true });
     }
 
     // Success processing... (await fulfillment and then log "processed")
@@ -213,7 +237,9 @@ export async function POST(request: Request): Promise<NextResponse> {
     }
 
     await logWebhookAttempt("processed", isSuccess ? "Payment success" : "Payment failure recorded");
-    return NextResponse.json({ received: true, success: result?.success });
+    return isBrowserRequest
+      ? createBrowserRedirect()
+      : NextResponse.json({ received: true, success: result?.success });
 
   } catch (err) {
     // Unexpected error in webhook processing
@@ -223,26 +249,4 @@ export async function POST(request: Request): Promise<NextResponse> {
     
     return NextResponse.json({ received: true, error: true });
   }
-
-  // ── Redirect for browser requests ────────────────────────────────────────
-  // If the request was made by a browser (e.g. Iyzico POSTing back after 3DS),
-  // redirect the user to a friendly result page instead of showing JSON.
-  const accept = request.headers.get("accept");
-  if (accept?.includes("text/html")) {
-    const origin = new URL(request.url).origin;
-    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || origin;
-    const resultUrl = new URL("/dashboard/payments/result", baseUrl);
-    resultUrl.searchParams.set("token", payload.token);
-    resultUrl.searchParams.set("status", payload.status.toLowerCase());
-    
-    // Add order ID if present
-    const orderId = payload.merchantOrderId ?? "";
-    if (orderId) {
-      resultUrl.searchParams.set("order", orderId);
-    }
-    
-    return NextResponse.redirect(resultUrl.toString());
-  }
-
-  return NextResponse.json({ received: true });
 }

@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from "react";
 import dynamic from "next/dynamic";
-import Image from "next/image";
 import { ChevronLeft, ChevronRight, Sparkles, Rotate3d } from "lucide-react";
 import useEmblaCarousel from "embla-carousel-react";
 import type { ListingImage } from "@/types";

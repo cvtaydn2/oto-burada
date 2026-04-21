@@ -89,6 +89,7 @@ export function InventoryTable({ listings, adminUserId }: InventoryTableProps) {
                            src={supabaseImageUrl(listing.images[0].url, 128, 70)} 
                            alt="" 
                            fill 
+                           sizes="48px"
                            className="object-cover" 
                            priority={idx < 5} 
                          />

@@ -72,19 +72,19 @@ describe('listing-submissions logic', () => {
   describe('buildListingSlug', () => {
     it('should generate a simple slug', () => {
       const slug = buildListingSlug(mockInput, []);
-      expect(slug).toBe('2020-bmw-320i-clean-car');
+      expect(slug).toBe('bmw-320i-2020-istanbul-clean-car');
     });
 
     it('should handle Turkish characters', () => {
       const turkishInput = { ...mockInput, title: 'Çok Özel Şahane Araç' };
       const slug = buildListingSlug(turkishInput, []);
-      expect(slug).toBe('2020-bmw-320i-cok-ozel-sahane-arac');
+      expect(slug).toBe('bmw-320i-2020-istanbul-cok-ozel-sahane-arac');
     });
 
     it('should avoid collisions by adding suffixes', () => {
-      const existing = { slug: '2020-bmw-320i-clean-car' } as Listing;
+      const existing = { slug: 'bmw-320i-2020-istanbul-clean-car' } as Listing;
       const slug = buildListingSlug(mockInput, [existing]);
-      expect(slug).toBe('2020-bmw-320i-clean-car-2');
+      expect(slug).toBe('bmw-320i-2020-istanbul-clean-car-2');
     });
   });
 

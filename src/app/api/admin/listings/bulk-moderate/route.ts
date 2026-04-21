@@ -1,13 +1,13 @@
 import { headers } from "next/headers";
 import { z } from "zod";
 
-import { requireApiAdminUser } from "@/lib/auth/api-admin";
 import { apiError, API_ERROR_CODES, apiSuccess } from "@/lib/utils/api-response";
 import { checkRateLimit } from "@/lib/utils/rate-limit-middleware";
 import { rateLimitProfiles } from "@/lib/utils/rate-limit";
 import { sanitizeText } from "@/lib/utils/sanitize";
 import { moderateListingsWithSideEffects } from "@/services/admin/listing-moderation";
 import { captureServerError, captureServerEvent } from "@/lib/monitoring/posthog-server";
+import { withAdminRoute } from "@/lib/utils/api-security";
 
 const bulkModerationSchema = z.object({
   action: z.enum(["approve", "reject"]),
@@ -23,6 +23,10 @@ async function getClientIp() {
 }
 
 export async function POST(request: Request) {
+  const security = await withAdminRoute(request);
+  if (!security.ok) return security.response;
+  const adminUser = security.user!;
+
   const clientIp = await getClientIp();
   const ipRateLimit = await checkRateLimit(`admin:bulk-moderate:${clientIp}`, rateLimitProfiles.adminModerate);
 
@@ -33,12 +37,6 @@ export async function POST(request: Request) {
       responseStatus: 429,
     }, "server");
     return apiError(API_ERROR_CODES.RATE_LIMITED, "Çok fazla moderasyon isteği. Lütfen bekle.", 429);
-  }
-
-  const adminUser = await requireApiAdminUser();
-
-  if (adminUser instanceof Response) {
-    return adminUser;
   }
 
   let body: unknown;

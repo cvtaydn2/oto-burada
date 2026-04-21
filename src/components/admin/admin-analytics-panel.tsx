@@ -46,9 +46,9 @@ export function AdminAnalyticsPanel({ data }: AdminAnalyticsPanelProps) {
              <h3 className="text-[11px] font-bold text-slate-400 uppercase tracking-[0.2em] italic">İlan Durumu Dağılımı</h3>
           </div>
           {/* position:relative + explicit min-height — ResponsiveContainer'ın boyut ölçmesi için */}
-          <div className="flex-1 min-h-[250px]">
+          <div className="h-[250px] min-w-0 flex-1">
             {statusData.length > 0 ? (
-              <ResponsiveContainer width="100%" height="100%">
+              <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={250}>
                 <PieChart>
                   <Pie
                     data={statusData}
@@ -90,9 +90,9 @@ export function AdminAnalyticsPanel({ data }: AdminAnalyticsPanelProps) {
              <div className="size-1.5 rounded-full bg-indigo-500" />
              <h3 className="text-[11px] font-bold text-slate-400 uppercase tracking-[0.2em] italic">İlan Trendi (Son 7 Gün)</h3>
           </div>
-          <div className="min-h-[250px]">
+          <div className="h-[250px] min-w-0">
             {(data.recentTrends || []).length > 0 ? (
-              <ResponsiveContainer width="100%" height="100%">
+              <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={250}>
                 <LineChart data={data.recentTrends}>
                    <defs>
                     <linearGradient id="lineGradient" x1="0" y1="0" x2="0" y2="1">
@@ -148,9 +148,9 @@ export function AdminAnalyticsPanel({ data }: AdminAnalyticsPanelProps) {
            <div className="size-1.5 rounded-full bg-emerald-500" />
            <h3 className="text-[11px] font-bold text-slate-400 uppercase tracking-[0.2em] italic">Marka Bazlı Kapasite (Top 5)</h3>
         </div>
-        <div className="min-h-[250px]">
+        <div className="h-[250px] min-w-0">
           {(data.listingsByBrand || []).length > 0 ? (
-            <ResponsiveContainer width="100%" height="100%">
+            <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={250}>
               <BarChart data={(data.listingsByBrand || []).slice(0, 5)} layout="vertical" margin={{ left: 20 }}>
                 <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#e2e8f0" />
                 <XAxis type="number" axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: "#94a3b8", fontWeight: "bold" }} />

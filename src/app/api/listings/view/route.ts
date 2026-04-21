@@ -1,8 +1,13 @@
 import { NextResponse } from "next/server";
 import { recordListingView } from "@/services/listings/listing-views";
 import { getCurrentUser } from "@/lib/auth/session";
+import { logger } from "@/lib/utils/logger";
+import { withSecurity } from "@/lib/utils/api-security";
 
 export async function POST(request: Request) {
+  const security = await withSecurity(request);
+  if (!security.ok) return security.response;
+
   try {
     const { listingId } = await request.json();
     
@@ -18,7 +23,9 @@ export async function POST(request: Request) {
     recordListingView(listingId, { 
       viewerId: currentUser?.id, 
       viewerIp 
-    }).catch(console.error);
+    }).catch((error) => {
+      logger.listings.error("Listing view recording failed", error, { listingId, viewerIp });
+    });
 
     return NextResponse.json({ success: true });
   } catch {

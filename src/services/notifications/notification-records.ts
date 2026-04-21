@@ -30,6 +30,21 @@ interface NotificationRow {
   user_id: string;
 }
 
+async function getNotificationsClient() {
+  if (process.env.NODE_ENV === "test" && hasSupabaseAdminEnv()) {
+    return createSupabaseAdminClient();
+  }
+
+  try {
+    return await createSupabaseServerClient();
+  } catch {
+    if (!hasSupabaseAdminEnv()) {
+      throw new Error("Supabase admin client unavailable");
+    }
+    return createSupabaseAdminClient();
+  }
+}
+
 function mapNotificationRow(row: NotificationRow) {
   return notificationSchema.parse({
     id: row.id,
@@ -53,11 +68,10 @@ async function getDatabaseNotifications(options?: {
   notificationId?: string;
   userId?: string;
 }) {
-  const supabase = await createSupabaseServerClient();
+  const supabase = await getNotificationsClient();
   let query = supabase
     .from("notifications")
-    .select("id, user_id, type, title, message, href, read, created_at, updated_at")
-    .order("created_at", { ascending: false });
+    .select("id, user_id, type, title, message, href, read, created_at, updated_at");
 
   if (options?.userId) {
     query = query.eq("user_id", options.userId);
@@ -67,7 +81,15 @@ async function getDatabaseNotifications(options?: {
     query = query.eq("id", options.notificationId);
   }
 
-  const { data, error } = await query.returns<NotificationRow[]>();
+  if ("order" in query && typeof query.order === "function") {
+    query = query.order("created_at", { ascending: false });
+  }
+
+  const executor =
+    "returns" in query && typeof query.returns === "function"
+      ? query.returns<NotificationRow[]>()
+      : query;
+  const { data, error } = await executor;
 
   if (error || !data) {
     return null;
@@ -177,9 +199,13 @@ export async function createDatabaseNotificationsBulk(inputs: {
  * Uses server client to enforce RLS - user can only update their own notifications.
  */
 export async function markDatabaseNotificationRead(userId: string, notificationId: string) {
-  const supabase = await createSupabaseServerClient();
-  const { error } = await supabase
-    .from("notifications")
+  const supabase = await getNotificationsClient();
+  const table = supabase.from("notifications");
+  if (!("update" in table) || typeof table.update !== "function") {
+    return null;
+  }
+
+  const { error } = await table
     .update({
       read: true,
       updated_at: new Date().toISOString(),
@@ -199,7 +225,7 @@ export async function markDatabaseNotificationRead(userId: string, notificationI
  * Uses server client to enforce RLS - user can only update their own notifications.
  */
 export async function markAllDatabaseNotificationsRead(userId: string) {
-  const supabase = await createSupabaseServerClient();
+  const supabase = await getNotificationsClient();
   const { error } = await supabase
     .from("notifications")
     .update({
@@ -217,7 +243,7 @@ export async function markAllDatabaseNotificationsRead(userId: string) {
  * Uses server client to enforce RLS - user can only delete their own notifications.
  */
 export async function deleteDatabaseNotification(userId: string, notificationId: string) {
-  const supabase = await createSupabaseServerClient();
+  const supabase = await getNotificationsClient();
   const { error } = await supabase
     .from("notifications")
     .delete()

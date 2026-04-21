@@ -19,46 +19,54 @@ describe('profile-trust logic', () => {
     const result = getSellerTrustSummary(null, 0);
     expect(result.score).toBe(0);
     expect(result.signals).toHaveLength(0);
-    expect(result.badgeLabel).toBe("Yeni Satıcı");
+    expect(result.badgeLabel).toBeNull();
   });
 
-  it('should calculate base score for new profile correctly', () => {
-    // New profile with no verified traits = 0 score
+  it('should calculate base score for an older unverified profile correctly', () => {
     const result = getSellerTrustSummary(mockProfile, 0);
-    expect(result.score).toBe(0);
-    expect(result.signals).not.toContain('E-posta onayı');
-    expect(result.badgeLabel).toBe("Standart Üye");
+    expect(result.score).toBe(30);
+    expect(result.signals).toContain('4+ yıl hesap geçmişi');
+    expect(result.badgeLabel).toBeNull();
   });
 
 
-  it('should boost score for verified email (20 pts) and label correctly', () => {
-    const result = getSellerTrustSummary({ ...mockProfile, emailVerified: true }, 0);
-    expect(result.badgeLabel).toBe('Onaylı E-posta');
-    expect(result.score).toBe(20);
-    expect(result.signals).toContain('E-posta onayı (Güven Puanı +20)');
+  it('should boost score for verified email and include the signal', () => {
+    const result = getSellerTrustSummary({
+      ...mockProfile,
+      emailVerified: true,
+      verificationReviewedAt: '2026-01-01T00:00:00Z',
+    }, 0);
+    expect(result.badgeLabel).toBeNull();
+    expect(result.score).toBe(40);
+    expect(result.signals).toContain('E-posta onaylı');
   });
 
-  it('should boost score for Iyzico wallet verified (50 pts) and label correctly', () => {
-    const result = getSellerTrustSummary({ ...mockProfile, isWalletVerified: true }, 0);
-    expect(result.badgeLabel).toBe('Güvenilir Satıcı');
-    expect(result.score).toBe(50);
-    expect(result.signals).toContain('İyzico Cüzdan Doğrulaması (Güven Puanı +50)');
+  it('should assign verified seller badge for active identity-verified users', () => {
+    const result = getSellerTrustSummary({
+      ...mockProfile,
+      emailVerified: true,
+      isVerified: true,
+      verificationReviewedAt: '2026-01-01T00:00:00Z',
+    }, 0);
+    expect(result.badgeLabel).toBe('Doğrulanmış Satıcı');
+    expect(result.score).toBe(60);
+    expect(result.signals).toContain('Kimlik doğrulandı');
   });
 
-  it('should max out trust score across combinations and become Premium', () => {
+  it('should assign business badge for recently approved verification', () => {
     const result = getSellerTrustSummary({ 
       ...mockProfile, 
-      isWalletVerified: true, 
       emailVerified: true, 
-      avatarUrl: 'https://example.com/avatar.jpg' 
+      verificationStatus: 'approved',
+      verificationReviewedAt: '2026-01-01T00:00:00Z',
     }, 0);
-    expect(result.badgeLabel).toBe('Premium Doğrulanmış Satıcı');
-    expect(result.score).toBe(80);
-    expect(result.signals).toContain('Profil fotoğrafı (Güven Puanı +10)');
+    expect(result.badgeLabel).toBe('Doğrulanmış İşletme');
+    expect(result.score).toBe(75);
+    expect(result.signals).toContain('İşletme doğrulandı');
   });
 
   it('should reflect active listing count in signals', () => {
     const countSummary = getSellerTrustSummary(mockProfile, 10);
-    expect(countSummary.signals).toContain('10 aktif ilan');
+    expect(countSummary.signals).toContain('10 aktif ilan geçmişi');
   });
 });

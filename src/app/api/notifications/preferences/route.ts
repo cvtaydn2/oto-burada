@@ -1,11 +1,10 @@
-import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { apiError, apiSuccess, API_ERROR_CODES } from "@/lib/utils/api-response";
-import { isValidRequestOrigin } from "@/lib/security";
 import { z } from "zod";
 import {
   getNotificationPreferences,
   upsertNotificationPreferences,
 } from "@/services/notifications/notification-preferences";
+import { withUserAndCsrf, withUserRoute } from "@/lib/utils/api-security";
 
 const prefsSchema = z.object({
   notifyFavorite: z.boolean().optional(),
@@ -18,27 +17,21 @@ const prefsSchema = z.object({
   emailSavedSearch: z.boolean().optional(),
 });
 
-async function getUser() {
-  const supabase = await createSupabaseServerClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  return user;
-}
-
-export async function GET() {
-  const user = await getUser();
-  if (!user) return apiError(API_ERROR_CODES.UNAUTHORIZED, "Giriş yapmalısın.", 401);
+export async function GET(request: Request) {
+  const security = await withUserRoute(request);
+  if (!security.ok) return security.response;
+  const user = security.user!;
 
   const prefs = await getNotificationPreferences(user.id);
   return apiSuccess(prefs);
 }
 
 export async function PATCH(request: Request) {
-  if (!isValidRequestOrigin(request)) {
-    return apiError(API_ERROR_CODES.BAD_REQUEST, "Geçersiz istek kaynağı.", 403);
-  }
-
-  const user = await getUser();
-  if (!user) return apiError(API_ERROR_CODES.UNAUTHORIZED, "Giriş yapmalısın.", 401);
+  const security = await withUserAndCsrf(request, {
+    rateLimitKey: "notifications:preferences",
+  });
+  if (!security.ok) return security.response;
+  const user = security.user!;
 
   let body: unknown;
   try {

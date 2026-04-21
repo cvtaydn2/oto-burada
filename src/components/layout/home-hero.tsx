@@ -16,6 +16,7 @@ export function HomeHero({ cities }: HomeHeroProps) {
           src="/images/hero_bg.png"
           alt="Satılık araba ilanları"
           fill
+          loading="eager"
           sizes="100vw"
           quality={85}
           className="object-cover object-center"

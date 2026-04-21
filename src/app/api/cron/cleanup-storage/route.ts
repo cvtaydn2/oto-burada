@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { withCronOrAdmin } from "@/lib/utils/api-security";
+import { logger } from "@/lib/utils/logger";
 
 /**
  * ── PILL: Issue 2 - Storage Cleanup Queue (Orphaned Files) ────────────────
@@ -22,7 +23,7 @@ export async function GET(request: Request) {
       .limit(50);
 
     if (fetchError || !tasks) {
-      console.error("[Cron:Cleanup] Fetch error:", fetchError);
+      logger.system.error("Storage cleanup fetch failed", fetchError);
       return NextResponse.json({ error: fetchError?.message }, { status: 500 });
     }
 
@@ -35,7 +36,10 @@ export async function GET(request: Request) {
         .remove([task.file_path]);
 
       if (storageError) {
-        console.error(`[Cron:Cleanup] Storage Error for ${task.file_path}:`, storageError);
+        logger.system.error("Storage cleanup file delete failed", storageError, {
+          filePath: task.file_path,
+          bucketName: task.bucket_name,
+        });
         
         // 3a. Update with retry count and error
         await admin.from("storage_cleanup_queue").update({
@@ -62,7 +66,7 @@ export async function GET(request: Request) {
       timestamp: new Date().toISOString()
     });
   } catch (err) {
-    console.error("[Cron:Cleanup] Unexpected error:", err);
+    logger.system.error("Storage cleanup unexpected error", err);
     return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
   }
 }

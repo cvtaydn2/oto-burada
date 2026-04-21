@@ -105,17 +105,19 @@ export async function withSecurity(
       }
     }
 
-    // ── PILL: Issue 1 - Banned User JWT Revocation ──────────────────
-    // Even if JWT is valid for 1 hour, we check instance ban status.
-    const { createSupabaseAdminClient } = await import("@/lib/supabase/admin");
-    const admin = createSupabaseAdminClient();
-    const { data: isBanned } = await admin.rpc("is_user_banned", { p_user_id: user.id });
-    
-    if (isBanned) {
-      return {
-        ok: false,
-        response: apiError(API_ERROR_CODES.FORBIDDEN, "Hesabınız askıya alınmıştır.", 403),
-      };
+    // Instance-level ban checks matter for normal user sessions.
+    // Admin and cron/admin flows are already separately authorized.
+    if (!options.requireAdmin) {
+      const { createSupabaseAdminClient } = await import("@/lib/supabase/admin");
+      const admin = createSupabaseAdminClient();
+      const { data: isBanned } = await admin.rpc("is_user_banned", { p_user_id: user.id });
+      
+      if (isBanned) {
+        return {
+          ok: false,
+          response: apiError(API_ERROR_CODES.FORBIDDEN, "Hesabınız askıya alınmıştır.", 403),
+        };
+      }
     }
   }
   

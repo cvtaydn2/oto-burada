@@ -1,4 +1,3 @@
-import { requireApiAdminUser } from "@/lib/auth/api-admin";
 import { createAdminModerationAction } from "@/services/admin/moderation-actions";
 import { updateDatabaseReportStatus } from "@/services/reports/report-submissions";
 import { getStoredListingById } from "@/services/listings/listing-submissions";
@@ -10,6 +9,7 @@ import { headers } from "next/headers";
 import { sanitizeText } from "@/lib/utils/sanitize";
 import { apiSuccess, apiError, API_ERROR_CODES } from "@/lib/utils/api-response";
 import { captureServerEvent } from "@/lib/monitoring/posthog-server";
+import { withAdminRoute } from "@/lib/utils/api-security";
 
 async function getClientIp() {
   const headersList = await headers();
@@ -24,17 +24,15 @@ export async function PATCH(
   request: Request,
   context: { params: Promise<{ reportId: string }> },
 ) {
+  const security = await withAdminRoute(request);
+  if (!security.ok) return security.response;
+  const adminUser = security.user!;
+
   const clientIp = await getClientIp();
   const ipRateLimit = await checkRateLimit(`admin:reports:${clientIp}`, rateLimitProfiles.adminModerate);
 
   if (!ipRateLimit.allowed) {
     return apiError(API_ERROR_CODES.RATE_LIMITED, "Çok fazla rapor isteği. Lütfen bekle.", 429);
-  }
-
-  const adminUser = await requireApiAdminUser();
-
-  if (adminUser instanceof Response) {
-    return adminUser;
   }
 
   let body: unknown;

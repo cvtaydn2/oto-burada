@@ -10,12 +10,19 @@ export const getCurrentUser = cache(async () => {
     return null;
   }
 
-  const supabase = await createSupabaseServerClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  try {
+    const supabase = await createSupabaseServerClient();
+    if (!supabase || !("auth" in supabase) || !supabase.auth || typeof supabase.auth.getUser !== "function") {
+      return null;
+    }
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
 
-  return user;
+    return user;
+  } catch {
+    return null;
+  }
 });
 
 export async function requireUser() {

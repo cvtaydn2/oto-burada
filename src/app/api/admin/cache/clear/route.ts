@@ -1,11 +1,12 @@
 import { NextResponse } from "next/server";
-import { requireApiAdminUser } from "@/lib/auth/api-admin";
 import { revalidatePath } from "next/cache";
 import { captureServerError, captureServerEvent } from "@/lib/monitoring/posthog-server";
+import { withAdminRoute } from "@/lib/utils/api-security";
 
-export async function POST() {
-  const authResponse = await requireApiAdminUser();
-  if (authResponse instanceof Response) return authResponse;
+export async function POST(request: Request) {
+  const security = await withAdminRoute(request);
+  if (!security.ok) return security.response;
+  const authResponse = security.user!;
 
   try {
     revalidatePath("/", "layout");

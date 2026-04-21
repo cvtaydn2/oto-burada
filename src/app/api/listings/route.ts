@@ -2,13 +2,12 @@ import { hasSupabaseEnv } from "@/lib/supabase/env";
 import { captureServerError, trackServerEvent } from "@/lib/monitoring/posthog-server";
 import { AnalyticsEvent } from "@/lib/analytics/events";
 import { rateLimitProfiles } from "@/lib/utils/rate-limit";
-import { enforceRateLimit, getRateLimitKey, getUserRateLimitKey } from "@/lib/utils/rate-limit-middleware";
+import { enforceRateLimit, getRateLimitKey } from "@/lib/utils/rate-limit-middleware";
 import { sanitizeText, sanitizeDescription } from "@/lib/utils/sanitize";
-import { isValidRequestOrigin } from "@/lib/security";
 import { issuesToFieldErrors } from "@/lib/utils/validation-helpers";
-import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { listingCreateFormSchema, listingCreateSchema } from "@/lib/validators";
 import { apiSuccess, apiError, API_ERROR_CODES } from "@/lib/utils/api-response";
+import { withSecurity, withUserAndCsrf } from "@/lib/utils/api-security";
 import {
   buildPendingListing,
   createDatabaseListing,
@@ -26,6 +25,9 @@ import {
 } from "@/services/listings/listing-submission-moderation";
 
 export async function GET(request: Request) {
+  const security = await withSecurity(request);
+  if (!security.ok) return security.response;
+
   // Rate limit public search — 120 requests per minute per IP
   const ipRateLimit = await enforceRateLimit(
     getRateLimitKey(request, "api:listings:search"),
@@ -53,19 +55,16 @@ export async function GET(request: Request) {
 }
 
 export async function POST(request: Request) {
-  // CSRF check — reject cross-origin requests from untrusted origins
-  if (!isValidRequestOrigin(request)) {
-    return apiError(API_ERROR_CODES.BAD_REQUEST, "Geçersiz istek kaynağı (CSRF).", 403);
-  }
+  const security = await withUserAndCsrf(request, {
+    ipRateLimit: rateLimitProfiles.general,
+    userRateLimit: rateLimitProfiles.listingCreate,
+    rateLimitKey: "listings:create",
+  });
+  if (!security.ok) return security.response;
+  const user = security.user!;
 
-  const ipRateLimit = await enforceRateLimit(
-    getRateLimitKey(request, "api:listings:create"),
-    rateLimitProfiles.general,
-  );
-
-  if (ipRateLimit) {
-    return ipRateLimit.response;
-  }
+  const ipRateLimit = await enforceRateLimit(getRateLimitKey(request, "api:listings:create"), rateLimitProfiles.general);
+  if (ipRateLimit) return ipRateLimit.response;
 
   if (!hasSupabaseEnv()) {
     return apiError(
@@ -94,28 +93,9 @@ export async function POST(request: Request) {
     );
   }
 
-  const supabase = await createSupabaseServerClient();
-  const {
-    data: { user },
-    error: userError,
-  } = await supabase.auth.getUser();
-
-  if (userError || !user) {
-    return apiError(API_ERROR_CODES.UNAUTHORIZED, "Oturum doğrulanamadı. Lütfen tekrar giriş yap.", 401);
-  }
-
   const listingLimit = await checkListingLimit(user.id);
   if (!listingLimit.allowed) {
     return apiError(API_ERROR_CODES.FORBIDDEN, listingLimit.reason ?? "İlan sınırına ulaştın.", 403);
-  }
-
-  const userRateLimit = await enforceRateLimit(
-    getUserRateLimitKey(user.id, "listings:create"),
-    rateLimitProfiles.listingCreate,
-  );
-
-  if (userRateLimit) {
-    return userRateLimit.response;
   }
 
   const normalizedInput = {

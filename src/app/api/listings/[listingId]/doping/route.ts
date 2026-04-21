@@ -1,4 +1,3 @@
-import { getCurrentUser } from "@/lib/auth/session";
 import { applyDopingToListing, DopingType } from "@/services/market/doping-service";
 import { apiError, apiSuccess, API_ERROR_CODES } from "@/lib/utils/api-response";
 import { logger } from "@/lib/utils/logger";
@@ -6,6 +5,7 @@ import { captureServerError, captureServerEvent } from "@/lib/monitoring/posthog
 import { enforceRateLimit, getUserRateLimitKey } from "@/lib/utils/rate-limit-middleware";
 import { getUserProfile } from "@/services/profile/profile-records";
 import { headers } from "next/headers";
+import { withUserAndCsrf } from "@/lib/utils/api-security";
 
 const VALID_DOPING_TYPES: DopingType[] = ["featured", "urgent", "highlighted"];
 // Doping: 10 per day per user
@@ -15,12 +15,13 @@ export async function POST(
   req: Request,
   { params }: { params: Promise<{ listingId: string }> },
 ) {
-  const { listingId } = await params;
+  const security = await withUserAndCsrf(req, {
+    rateLimitKey: "listings:doping",
+  });
+  if (!security.ok) return security.response;
+  const user = security.user!;
 
-  const user = await getCurrentUser();
-  if (!user) {
-    return apiError(API_ERROR_CODES.UNAUTHORIZED, "Yetkisiz erişim.", 401);
-  }
+  const { listingId } = await params;
 
   // Rate limit
   const rateLimit = await enforceRateLimit(

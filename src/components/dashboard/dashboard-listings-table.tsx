@@ -70,6 +70,7 @@ export function DashboardListingsTable({ listings }: DashboardListingsTableProps
                         src={listing.images[0]?.url || "https://placehold.co/100x75?text=Ara%C3%A7"}
                         alt={listing.title}
                         fill
+                        sizes="48px"
                         className="object-cover"
                       />
                     </div>

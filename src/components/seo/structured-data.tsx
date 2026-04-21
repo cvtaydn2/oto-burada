@@ -6,6 +6,17 @@ async function getCspNonce() {
   return (await headers()).get("x-nonce") ?? undefined;
 }
 
+function JsonLdScript({ nonce, schema }: { nonce?: string; schema: Record<string, unknown> }) {
+  return (
+    <script
+      suppressHydrationWarning
+      nonce={nonce}
+      type="application/ld+json"
+      dangerouslySetInnerHTML={{ __html: safeJsonLd(schema) }}
+    />
+  );
+}
+
 interface ListingStructuredDataProps {
   listings: Listing[];
   url: string;
@@ -56,13 +67,7 @@ export async function ListingStructuredData({ listings, url }: ListingStructured
     })),
   };
 
-  return (
-    <script
-      nonce={nonce}
-      type="application/ld+json"
-      dangerouslySetInnerHTML={{ __html: safeJsonLd(schema) }}
-    />
-  );
+  return <JsonLdScript nonce={nonce} schema={schema} />;
 }
 
 interface BreadcrumbItem {
@@ -89,13 +94,7 @@ export async function BreadcrumbStructuredData({ items }: BreadcrumbStructuredDa
     "itemListElement": itemListElement
   };
 
-  return (
-    <script
-      nonce={nonce}
-      type="application/ld+json"
-      dangerouslySetInnerHTML={{ __html: safeJsonLd(schema) }}
-    />
-  );
+  return <JsonLdScript nonce={nonce} schema={schema} />;
 }
 
 interface OrganizationStructuredDataProps {
@@ -122,13 +121,7 @@ export async function OrganizationStructuredData({ name, url, logo, description 
     }
   };
 
-  return (
-    <script
-      nonce={nonce}
-      type="application/ld+json"
-      dangerouslySetInnerHTML={{ __html: safeJsonLd(schema) }}
-    />
-  );
+  return <JsonLdScript nonce={nonce} schema={schema} />;
 }
 
 interface ListingDetailStructuredDataProps {
@@ -212,13 +205,7 @@ export async function ListingDetailStructuredData({ listing, url, sellerName }: 
     },
   };
 
-  return (
-    <script
-      nonce={nonce}
-      type="application/ld+json"
-      dangerouslySetInnerHTML={{ __html: safeJsonLd(schema) }}
-    />
-  );
+  return <JsonLdScript nonce={nonce} schema={schema} />;
 }
 
 interface WebSiteStructuredDataProps {
@@ -242,11 +229,5 @@ export async function WebSiteStructuredData({ url }: WebSiteStructuredDataProps)
     },
   };
 
-  return (
-    <script
-      nonce={nonce}
-      type="application/ld+json"
-      dangerouslySetInnerHTML={{ __html: safeJsonLd(schema) }}
-    />
-  );
+  return <JsonLdScript nonce={nonce} schema={schema} />;
 }

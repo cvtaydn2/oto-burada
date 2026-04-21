@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { withCronOrAdmin } from "@/lib/utils/api-security";
+import { logger } from "@/lib/utils/logger";
 
 /**
  * ── PILL: Issue 9 - Batch View Sync Cron ──────────────────────────────────
@@ -17,7 +18,7 @@ export async function GET(request: Request) {
     const { data: updatedCount, error } = await admin.rpc("sync_listing_views_buffer");
 
     if (error) {
-      console.error("[Cron:SyncViews] Error syncing views:", error);
+      logger.system.error("Sync listing views failed", error);
       return NextResponse.json({ error: error.message }, { status: 500 });
     }
 
@@ -27,7 +28,7 @@ export async function GET(request: Request) {
       timestamp: new Date().toISOString()
     });
   } catch (err) {
-    console.error("[Cron:SyncViews] Unexpected error:", err);
+    logger.system.error("Sync listing views unexpected error", err);
     return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
   }
 }

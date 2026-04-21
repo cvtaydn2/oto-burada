@@ -17,6 +17,10 @@ interface CompareRadarChartProps {
 }
 
 export function CompareRadarChart({ cars }: CompareRadarChartProps) {
+  if (cars.length === 0) {
+    return null;
+  }
+
   // Normalize values for radar chart (0-100 scale)
   // Categories: Price (inverted), Year, Mileage (inverted), Damage Status (inverted)
   
@@ -63,8 +67,8 @@ export function CompareRadarChart({ cars }: CompareRadarChartProps) {
   const colors = ["#2563eb", "#e11d48", "#10b981", "#f59e0b"];
 
   return (
-    <div className="h-[400px] w-full py-4">
-      <ResponsiveContainer width="100%" height="100%">
+    <div className="h-[400px] min-w-0 w-full py-4">
+      <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={320}>
         <RadarChart cx="50%" cy="50%" outerRadius="70%" data={data}>
           <PolarGrid stroke="#e2e8f0" />
           <PolarAngleAxis dataKey="subject" tick={{ fontSize: 12, fontWeight: 500 }} />

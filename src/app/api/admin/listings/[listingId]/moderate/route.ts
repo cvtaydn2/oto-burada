@@ -1,4 +1,3 @@
-import { requireApiAdminUser } from "@/lib/auth/api-admin";
 import { moderateListingWithSideEffects } from "@/services/admin/listing-moderation";
 import { rateLimitProfiles } from "@/lib/utils/rate-limit";
 import { checkRateLimit } from "@/lib/utils/rate-limit-middleware";
@@ -6,6 +5,7 @@ import { headers } from "next/headers";
 import { sanitizeText } from "@/lib/utils/sanitize";
 import { apiSuccess, apiError, API_ERROR_CODES } from "@/lib/utils/api-response";
 import { captureServerError, captureServerEvent } from "@/lib/monitoring/posthog-server";
+import { withAdminRoute } from "@/lib/utils/api-security";
 
 async function getClientIp() {
   const headersList = await headers();
@@ -18,6 +18,10 @@ export async function POST(
   request: Request,
   context: { params: Promise<{ listingId: string }> },
 ) {
+  const security = await withAdminRoute(request);
+  if (!security.ok) return security.response;
+  const adminUser = security.user!;
+
   const clientIp = await getClientIp();
   const ipRateLimit = await checkRateLimit(`admin:moderate:${clientIp}`, rateLimitProfiles.adminModerate);
 
@@ -28,12 +32,6 @@ export async function POST(
       responseStatus: 429,
     }, "server");
     return apiError(API_ERROR_CODES.RATE_LIMITED, "Çok fazla moderasyon isteği. Lütfen bekle.", 429);
-  }
-
-  const adminUser = await requireApiAdminUser();
-
-  if (adminUser instanceof Response) {
-    return adminUser;
   }
 
   let body: unknown;

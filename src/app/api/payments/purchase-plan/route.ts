@@ -1,16 +1,15 @@
 import { NextResponse } from "next/server";
-import { getCurrentUser } from "@/lib/auth/session";
 import { logger } from "@/lib/utils/logger";
 import { captureServerError, captureServerEvent } from "@/lib/monitoring/posthog-server";
 import { isPaymentEnabled } from "@/lib/payment/config";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { hasSupabaseAdminEnv } from "@/lib/supabase/env";
 import { apiError, apiSuccess, API_ERROR_CODES } from "@/lib/utils/api-response";
-import { isValidRequestOrigin } from "@/lib/security";
 import { enforceRateLimit, getUserRateLimitKey } from "@/lib/utils/rate-limit-middleware";
 import { z } from "zod";
 import { getUserProfile } from "@/services/profile/profile-records";
 import { headers } from "next/headers";
+import { withUserAndCsrf } from "@/lib/utils/api-security";
 
 const purchaseSchema = z.object({
   planId: z.string().uuid("Geçersiz plan ID."),
@@ -20,15 +19,11 @@ const purchaseSchema = z.object({
 const PURCHASE_RATE_LIMIT = { limit: 5, windowMs: 60 * 60 * 1000 };
 
 export async function POST(req: Request) {
-  // CSRF check
-  if (!isValidRequestOrigin(req)) {
-    return apiError(API_ERROR_CODES.BAD_REQUEST, "Geçersiz istek kaynağı.", 403);
-  }
-
-  const user = await getCurrentUser();
-  if (!user) {
-    return apiError(API_ERROR_CODES.UNAUTHORIZED, "Yetkisiz erişim.", 401);
-  }
+  const security = await withUserAndCsrf(req, {
+    rateLimitKey: "payments:purchase",
+  });
+  if (!security.ok) return security.response;
+  const user = security.user!;
 
   // Rate limit
   const rateLimit = await enforceRateLimit(

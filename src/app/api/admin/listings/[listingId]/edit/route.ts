@@ -2,12 +2,12 @@ import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { hasSupabaseAdminEnv } from "@/lib/supabase/env";
 import { createAdminModerationAction } from "@/services/admin/moderation-actions";
 import { apiSuccess, apiError, API_ERROR_CODES } from "@/lib/utils/api-response";
-import { requireApiAdminUser } from "@/lib/auth/api-admin";
 import { z } from "zod";
 import { captureServerError, captureServerEvent } from "@/lib/monitoring/posthog-server";
 import { getStoredListingById } from "@/services/listings/listing-submissions";
 import { runListingTrustGuards, performAsyncModeration } from "@/services/listings/listing-submission-moderation";
 import { waitUntil } from "@vercel/functions";
+import { withAdminRoute } from "@/lib/utils/api-security";
 
 const adminEditSchema = z.object({
   title: z.string().min(5).max(200).optional(),
@@ -20,16 +20,13 @@ export async function PATCH(
   { params }: { params: Promise<{ listingId: string }> },
 ) {
   const { listingId } = await params;
+  const security = await withAdminRoute(request);
+  if (!security.ok) return security.response;
+  const user = security.user!;
 
   if (!hasSupabaseAdminEnv()) {
     captureServerEvent("admin_listing_edit_failed", { reason: "service_unavailable", responseStatus: 503 }, "server");
     return apiError(API_ERROR_CODES.SERVICE_UNAVAILABLE, "Servis kullanılamıyor.", 503);
-  }
-
-  const user = await requireApiAdminUser();
-
-  if (user instanceof Response) {
-    return user;
   }
 
   const admin = createSupabaseAdminClient();

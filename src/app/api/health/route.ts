@@ -23,6 +23,7 @@
 import { NextResponse } from "next/server";
 import { hasSupabaseAdminEnv, hasSupabaseEnv } from "@/lib/supabase/env";
 import { checkInfrastructureHealth } from "@/lib/utils/infrastructure-health";
+import { withSecurity } from "@/lib/utils/api-security";
 
 export const dynamic = "force-dynamic";
 // Short cache — health checks should reflect current state
@@ -39,7 +40,10 @@ interface HealthResponse {
   };
 }
 
-export async function GET(): Promise<NextResponse<HealthResponse>> {
+export async function GET(request: Request): Promise<NextResponse<HealthResponse>> {
+  const security = await withSecurity(request);
+  if (!security.ok) return security.response as NextResponse<HealthResponse>;
+
   const timestamp = new Date().toISOString();
   const version =
     process.env.VERCEL_GIT_COMMIT_SHA?.slice(0, 8) ??

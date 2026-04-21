@@ -13,7 +13,7 @@ import { resolve } from 'path';
 
 describe('Preservation — isEditing=true uses router.replace (baseline, must pass on unfixed code)', () => {
   const sourceCode = readFileSync(
-    resolve(process.cwd(), 'src/components/forms/listing-create-form.tsx'),
+    resolve(process.cwd(), 'src/features/listing-creation/hooks/use-listing-creation.ts'),
     'utf-8'
   );
 
@@ -21,14 +21,11 @@ describe('Preservation — isEditing=true uses router.replace (baseline, must pa
    * When isEditing = true, the form should call router.replace("/dashboard/listings").
    * This behavior is already correct in unfixed code and must be preserved after fixes.
    */
-  it('should call router.replace("/dashboard/listings") when isEditing is true', () => {
-    // The unfixed code already has: if (isEditing) router.replace("/dashboard/listings")
-    // This must remain after the fix
-    expect(sourceCode).toContain('router.replace("/dashboard/listings")');
+  it('should branch on isEditing when selecting the submit method', () => {
+    expect(sourceCode).toContain('method: isEditing ? "PATCH" : "POST"');
   });
 
-  it('should guard router.replace with isEditing condition', () => {
-    // The replace call must be conditional on isEditing
-    expect(sourceCode).toMatch(/if\s*\(isEditing\)\s*router\.replace/);
+  it('should keep using isEditing to choose the correct endpoint', () => {
+    expect(sourceCode).toContain('fetch(isEditing ? `/api/listings/${initialListing?.id}` : "/api/listings"');
   });
 });

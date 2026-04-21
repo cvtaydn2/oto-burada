@@ -280,10 +280,17 @@ export async function getDatabaseListings(options?: {
     return query.range(from, to);
   };
 
-  const primaryResult = await applyQueryOptions(listingSelect).returns<ListingRow[]>();
+  const runQuery = async <TResult>(query: TResult) => {
+    if ("returns" in (query as object) && typeof (query as { returns?: unknown }).returns === "function") {
+      return (query as { returns: <T>() => Promise<{ data: T | null; error: { message: string } | null }> }).returns<ListingRow[]>();
+    }
+    return query as Promise<{ data: ListingRow[] | null; error: { message: string } | null }>;
+  };
+
+  const primaryResult = await runQuery(applyQueryOptions(listingSelect));
   if (!primaryResult.error) return (primaryResult.data ?? []).map(mapListingRow);
 
-  const fallbackResult = await applyQueryOptions(legacyListingSelect).returns<ListingRow[]>();
+  const fallbackResult = await runQuery(applyQueryOptions(legacyListingSelect));
   if (fallbackResult.error || !fallbackResult.data) return null;
   return fallbackResult.data.map(mapListingRow);
 }
@@ -362,15 +369,21 @@ export async function getFilteredDatabaseListings(
       break;
   }
   
-  dataQuery = dataQuery.limit(limit);
+  if ("limit" in dataQuery && typeof dataQuery.limit === "function") {
+    dataQuery = dataQuery.limit(limit);
+  } else if ("range" in dataQuery && typeof dataQuery.range === "function") {
+    dataQuery = dataQuery.range(0, limit - 1);
+  }
 
   let countQuery = admin.from("listings").select("id", { count: "exact", head: true }).eq("status", "approved");
   countQuery = applyListingFilterPredicates(countQuery, filters);
 
-  const [dataResult, countResult] = await Promise.all([
-    dataQuery.returns<ListingRow[]>(),
-    countQuery,
-  ]);
+  const executeDataQuery =
+    "returns" in dataQuery && typeof dataQuery.returns === "function"
+      ? dataQuery.returns<ListingRow[]>()
+      : dataQuery;
+
+  const [dataResult, countResult] = await Promise.all([executeDataQuery, countQuery]);
 
   if (dataResult.error) {
     logger.db.error("Failed to fetch listings data", undefined, {
@@ -389,7 +402,7 @@ export async function getFilteredDatabaseListings(
     });
   }
 
-  const listings = dataResult.data ? dataResult.data.map(mapListingRow) : [];
+  const listings = dataResult.data ? (dataResult.data as ListingRow[]).map(mapListingRow) : [];
   const totalCount = countResult.count ?? 0;
 
   // Build the next cursor based on the last item

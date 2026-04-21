@@ -1,18 +1,19 @@
 import { NextResponse } from "next/server";
-import { requireApiAdminUser } from "@/lib/auth/api-admin";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { createDatabaseNotificationsBulk } from "@/services/notifications/notification-records";
 import { sanitizeText } from "@/lib/utils/sanitize";
 import { logger } from "@/lib/utils/logger";
 import { captureServerError, captureServerEvent } from "@/lib/monitoring/posthog-server";
 import { enforceRateLimit } from "@/lib/utils/rate-limit-middleware";
+import { withAdminRoute } from "@/lib/utils/api-security";
 
 // Broadcast: 5 per hour (admin-only, but still protect against accidents)
 const BROADCAST_RATE_LIMIT = { limit: 5, windowMs: 60 * 60 * 1000 };
 
 export async function POST(request: Request) {
-  const authResponse = await requireApiAdminUser();
-  if (authResponse instanceof Response) return authResponse;
+  const security = await withAdminRoute(request);
+  if (!security.ok) return security.response;
+  const authResponse = security.user!;
 
   // Rate limit even for admins
   const ip = request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? "unknown";

@@ -3,22 +3,23 @@ import { apiError, apiSuccess, API_ERROR_CODES } from "@/lib/utils/api-response"
 import { logger } from "@/lib/utils/logger";
 import { captureServerError, captureServerEvent } from "@/lib/monitoring/posthog-server";
 import { enforceRateLimit, getUserRateLimitKey } from "@/lib/utils/rate-limit-middleware";
+import { withUserAndCsrf } from "@/lib/utils/api-security";
 
 // Bump: 3 per day per user (prevents abuse)
 const BUMP_RATE_LIMIT = { limit: 3, windowMs: 24 * 60 * 60 * 1000 };
 
 export async function POST(
-  _req: Request,
+  request: Request,
   { params }: { params: Promise<{ listingId: string }> },
 ) {
+  const security = await withUserAndCsrf(request, {
+    rateLimitKey: "listings:bump",
+  });
+  if (!security.ok) return security.response;
+  const user = security.user!;
+
   const { listingId } = await params;
-
   const supabase = await createSupabaseServerClient();
-  const { data: { user } } = await supabase.auth.getUser();
-
-  if (!user) {
-    return apiError(API_ERROR_CODES.UNAUTHORIZED, "Yetkisiz erişim.", 401);
-  }
 
   // Rate limit: 3 bumps per day per user
   const rateLimit = await enforceRateLimit(

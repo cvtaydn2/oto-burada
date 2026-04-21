@@ -83,8 +83,8 @@ export function PriceHistoryChart({ history, currentPrice }: PriceHistoryChartPr
       </div>
 
       {/* Chart */}
-      <div style={{ position: "relative", height: 160, width: "100%" }}>
-        <ResponsiveContainer width="100%" height="100%">
+      <div className="relative h-40 min-w-0 w-full">
+        <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={160}>
           <AreaChart data={chartData} margin={{ top: 5, right: 5, left: 0, bottom: 5 }}>
             <defs>
               <linearGradient id="priceGradient" x1="0" y1="0" x2="0" y2="1">

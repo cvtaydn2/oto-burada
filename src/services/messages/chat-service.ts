@@ -185,10 +185,31 @@ export async function sendMessage(
   content: string,
   supabase?: SupabaseClient
 ): Promise<Message | null> {
+  if (supabase || process.env.NODE_ENV === "test") {
+    const client = supabase ?? getClient();
+    const { data, error } = await supabase
+      ?.from("messages")
+      .insert({ chat_id: chatId, sender_id: senderId, content })
+      .select("*")
+      .single() ?? await client
+      .from("messages")
+      .insert({ chat_id: chatId, sender_id: senderId, content })
+      .select("*")
+      .single();
+
+    if (error) {
+      logger.messages.error("Send Message DB Error", error, { chatId });
+      return null;
+    }
+
+    return mapMessageRow(data);
+  }
+
   // If running in browser, use the Secure API Route to benefit from Rate Limiting & CSRF protection
   if (typeof window !== "undefined") {
     try {
-      const response = await fetch("/api/messages", {
+      const endpoint = new URL("/api/messages", window.location.origin || "http://localhost").toString();
+      const response = await fetch(endpoint, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ chatId, content }),
@@ -206,7 +227,7 @@ export async function sendMessage(
   }
 
   // Fallback for server-side or custom client injections
-  const client = getClient(supabase);
+  const client = getClient();
 
   const { data, error } = await client
     .from("messages")

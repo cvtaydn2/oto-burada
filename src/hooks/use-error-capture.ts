@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback } from "react";
-import posthog from "posthog-js";
+import { captureClientEvent, captureClientException } from "@/lib/monitoring/posthog-client";
 
 /**
  * Client-side error capture hook.
@@ -16,22 +16,14 @@ export function useErrorCapture(context: string) {
     (error: unknown, action?: string, extra?: Record<string, unknown>) => {
       const properties: Record<string, unknown> = { context, ...extra };
       if (action) properties.action = action;
-
-      if (error instanceof Error) {
-        posthog.captureException(error, { properties });
-      } else {
-        posthog.capture("$exception", {
-          error_raw: String(error),
-          ...properties,
-        });
-      }
+      captureClientException(error, context, properties);
     },
     [context],
   );
 
   const captureFailure = useCallback(
     (event: string, message: string, extra?: Record<string, unknown>) => {
-      posthog.capture(event, {
+      captureClientEvent(event, {
         context,
         message,
         status: "failed",
@@ -43,7 +35,7 @@ export function useErrorCapture(context: string) {
 
   const captureSuccess = useCallback(
     (event: string, extra?: Record<string, unknown>) => {
-      posthog.capture(event, {
+      captureClientEvent(event, {
         context,
         status: "succeeded",
         ...extra,

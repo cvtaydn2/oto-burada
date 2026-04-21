@@ -1,7 +1,7 @@
 "use client";
 
 import Image, { ImageProps } from "next/image";
-import { useState, useEffect, useRef } from "react";
+import { useState, useRef } from "react";
 import { cn } from "@/lib/utils";
 
 /**
@@ -25,17 +25,13 @@ export function SafeImage({
   className,
   containerClassName,
   priority,
+  sizes,
   ...props
 }: SafeImageProps) {
   const [error, setError] = useState(false);
   const [loading, setLoading] = useState(true);
   const imgRef = useRef<HTMLImageElement>(null);
-
-  useEffect(() => {
-    if (imgRef.current?.complete) {
-      setLoading(false);
-    }
-  }, []);
+  const resolvedSizes = sizes ?? (props.fill ? "100vw" : undefined);
 
   return (
     <div 
@@ -46,9 +42,14 @@ export function SafeImage({
       )}
     >
       {error ? (
-        <img
+        <Image
           src={fallbackSrc}
           alt={alt}
+          fill={props.fill}
+          width={typeof props.width === "number" ? props.width : 400}
+          height={typeof props.height === "number" ? props.height : 300}
+          sizes={resolvedSizes}
+          unoptimized
           className={cn(
             "h-full w-full object-cover opacity-40 grayscale",
             className
@@ -59,6 +60,7 @@ export function SafeImage({
           ref={imgRef}
           src={src || fallbackSrc}
           alt={alt}
+          sizes={resolvedSizes}
           className={cn(
             "transition-opacity duration-500",
             "opacity-100",
@@ -66,7 +68,6 @@ export function SafeImage({
           )}
           onLoad={() => setLoading(false)}
           onError={() => {
-            console.error("SafeImage failed to load:", src);
             setError(true);
             setLoading(false);
           }}

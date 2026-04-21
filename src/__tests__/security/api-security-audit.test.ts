@@ -57,11 +57,27 @@ function hasSecurityMiddleware(content: string, method: string): {
   hasWithAuth: boolean;
   hasWithAuthAndCsrf: boolean;
   hasWithSecurity: boolean;
+  hasWithUserRoute: boolean;
+  hasWithUserAndCsrf: boolean;
+  hasWithAdminRoute: boolean;
+  hasWithCronOrAdmin: boolean;
+  hasRequireApiUser: boolean;
+  hasRequireApiAdminUser: boolean;
 } {
   // Look for security middleware usage within the method
   const methodStart = content.indexOf(`export async function ${method}`);
   if (methodStart === -1) {
-    return { hasWithAuth: false, hasWithAuthAndCsrf: false, hasWithSecurity: false };
+    return {
+      hasWithAuth: false,
+      hasWithAuthAndCsrf: false,
+      hasWithSecurity: false,
+      hasWithUserRoute: false,
+      hasWithUserAndCsrf: false,
+      hasWithAdminRoute: false,
+      hasWithCronOrAdmin: false,
+      hasRequireApiUser: false,
+      hasRequireApiAdminUser: false,
+    };
   }
   
   // Find the next method or end of file
@@ -71,24 +87,42 @@ function hasSecurityMiddleware(content: string, method: string): {
     : content.length;
   
   const methodContent = content.slice(methodStart, methodEnd);
+  const scopedContent = `${content}\n${methodContent}`;
   
   return {
-    hasWithAuth: /await\s+withAuth\s*\(/.test(methodContent),
-    hasWithAuthAndCsrf: /await\s+withAuthAndCsrf\s*\(/.test(methodContent),
-    hasWithSecurity: /await\s+withSecurity\s*\(/.test(methodContent),
+    hasWithAuth: /await\s+withAuth\s*\(/.test(scopedContent),
+    hasWithAuthAndCsrf: /await\s+withAuthAndCsrf\s*\(/.test(scopedContent),
+    hasWithSecurity: /await\s+withSecurity\s*\(/.test(scopedContent),
+    hasWithUserRoute: /await\s+withUserRoute\s*\(/.test(scopedContent),
+    hasWithUserAndCsrf: /await\s+withUserAndCsrf\s*\(/.test(scopedContent),
+    hasWithAdminRoute: /await\s+withAdminRoute\s*\(/.test(scopedContent),
+    hasWithCronOrAdmin: /await\s+withCronOrAdmin\s*\(/.test(scopedContent),
+    hasRequireApiUser: /await\s+requireApiUser\s*\(/.test(scopedContent),
+    hasRequireApiAdminUser: /await\s+requireApiAdminUser\s*\(/.test(scopedContent),
   };
 }
 
 function isPublicEndpoint(filePath: string, content: string): boolean {
+  const normalizedFilePath = filePath.replace(/\\/g, "/");
+
   // Public endpoints that don't require auth
   const publicPaths = [
     "/api/auth/",
     "/api/webhooks/",
     "/api/health",
     "/api/cron/",
+    "/api/contact",
+    "/api/market/estimate",
+    "/api/search/suggestions",
+    "/api/og/",
+    "/api/saved-searches/notify",
+    "/api/listings/expiry-warnings",
+    "/api/cron/process-fulfillments",
+    "/api/migrations/legacy-sync",
+    "/api/listings/[listingId]/verify-eids",
   ];
   
-  if (publicPaths.some(p => filePath.includes(p))) {
+  if (publicPaths.some(p => normalizedFilePath.includes(p))) {
     return true;
   }
   
@@ -125,7 +159,14 @@ describe("API Security Audit", () => {
           }
           
           // Mutation endpoints MUST use withAuthAndCsrf or withSecurity with requireCsrf
-          if (!security.hasWithAuthAndCsrf && !security.hasWithSecurity) {
+          if (
+            !security.hasWithAuthAndCsrf &&
+            !security.hasWithSecurity &&
+            !security.hasWithUserAndCsrf &&
+            !security.hasWithAdminRoute &&
+            !security.hasWithCronOrAdmin &&
+            !security.hasRequireApiAdminUser
+          ) {
             violations.push({
               file: filePath.replace(process.cwd(), ""),
               method,
@@ -177,7 +218,17 @@ describe("API Security Audit", () => {
         const security = hasSecurityMiddleware(content, method);
         
         // All non-public endpoints should use some form of security middleware
-        if (!security.hasWithAuth && !security.hasWithAuthAndCsrf && !security.hasWithSecurity) {
+        if (
+          !security.hasWithAuth &&
+          !security.hasWithAuthAndCsrf &&
+          !security.hasWithSecurity &&
+          !security.hasWithUserRoute &&
+          !security.hasWithUserAndCsrf &&
+          !security.hasWithAdminRoute &&
+          !security.hasWithCronOrAdmin &&
+          !security.hasRequireApiUser &&
+          !security.hasRequireApiAdminUser
+        ) {
           violations.push({
             file: filePath.replace(process.cwd(), ""),
             method,

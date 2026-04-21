@@ -9,7 +9,7 @@ exports[`Iyzico Payload Mapping > should match snapshot for payment init payload
       "id": "LISTING-1",
       "itemType": "VIRTUAL",
       "name": "OtoBurada Hizmet",
-      "price": "100",
+      "price": "100.00",
     },
   ],
   "billingAddress": {
@@ -45,9 +45,9 @@ exports[`Iyzico Payload Mapping > should match snapshot for payment init payload
     9,
   ],
   "locale": "tr",
-  "paidPrice": "100",
+  "paidPrice": "100.00",
   "paymentGroup": "PRODUCT",
-  "price": "100",
+  "price": "100.00",
   "shippingAddress": {
     "address": "Test Adresi 123",
     "city": "Istanbul",

@@ -23,6 +23,7 @@ export function GalleryHeader({ profile }: GalleryHeaderProps) {
                 src={profile.businessLogoUrl} 
                 alt={profile.businessName || profile.fullName || ""} 
                 fill
+                sizes="160px"
                 className="object-contain"
               />
             ) : (

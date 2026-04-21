@@ -13,26 +13,9 @@ import { hasSupabaseAdminEnv } from "@/lib/supabase/env";
 import { apiSuccess, apiError, API_ERROR_CODES } from "@/lib/utils/api-response";
 import { logger } from "@/lib/utils/logger";
 import { captureServerEvent } from "@/lib/monitoring/posthog-server";
-import { isSupabaseAdminUser } from "@/lib/auth/api-admin"; 
+import { withCronOrAdmin } from "@/lib/utils/api-security";
 
 export const dynamic = "force-dynamic";
-
-async function verifyCronOrAdmin(request: Request): Promise<boolean> {
-  // 1. Try Cron secret
-  const cronSecret = process.env.CRON_SECRET;
-  const authHeader = request.headers.get("authorization");
-  if (cronSecret && authHeader === `Bearer ${cronSecret}`) return true;
-
-  // 2. Try Admin session
-  try {
-    const isAdmin = await isSupabaseAdminUser();
-    if (isAdmin) return true;
-  } catch {
-    return false;
-  }
-
-  return false;
-}
 
 export async function GET(request: Request) {
   return handleSync(request);
@@ -43,10 +26,8 @@ export async function POST(request: Request) {
 }
 
 async function handleSync(request: Request) {
-  const isAuthorized = await verifyCronOrAdmin(request);
-  if (!isAuthorized) {
-    return apiError(API_ERROR_CODES.UNAUTHORIZED, "Yetkisiz erişim. (Cron Secret veya Admin yetkisi gerekli)", 401);
-  }
+  const security = await withCronOrAdmin(request);
+  if (!security.ok) return security.response;
 
   if (!hasSupabaseAdminEnv()) {
     return apiError(API_ERROR_CODES.SERVICE_UNAVAILABLE, "Servis kullanılamıyor.", 503);
