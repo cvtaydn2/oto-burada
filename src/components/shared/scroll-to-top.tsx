@@ -37,8 +37,8 @@ export function ScrollToTop() {
     <button
       onClick={scrollToTop}
       className={cn(
-        "fixed bottom-44 right-6 z-50 flex h-14 w-14 items-center justify-center rounded-2xl bg-card border-2 border-slate-900 text-foreground shadow-sm transition-all hover:bg-muted/30 active:scale-95 animate-in fade-in slide-in-from-bottom-4 duration-300",
-        "lg:bottom-8"
+        "fixed bottom-[12.5rem] left-6 z-40 flex h-14 w-14 items-center justify-center rounded-2xl bg-card border-2 border-slate-900 text-foreground shadow-sm transition-all hover:bg-muted/30 active:scale-95 animate-in fade-in slide-in-from-bottom-4 duration-300",
+        "lg:left-auto lg:right-6 lg:bottom-8"
       )}
       aria-label="Yukarı Çık"
     >

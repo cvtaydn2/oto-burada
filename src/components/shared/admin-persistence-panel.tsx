@@ -118,7 +118,7 @@ export function AdminPersistencePanel({ health }: AdminPersistencePanelProps) {
                <span className="text-4xl font-bold text-foreground tracking-tighter">
                  {readyEnvCount}
                </span>
-               <span className="text-xl font-bold text-muted-foreground/70">/4</span>
+               <span className="text-xl font-bold text-muted-foreground/70">/5</span>
             </div>
             <p className="mt-2 text-[11px] font-bold text-muted-foreground uppercase tracking-wider">
               Erişilebilir Tablo: <span className="text-blue-600 font-bold">{accessibleTables}/{health.tables.length}</span>

@@ -1,7 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import Image from "next/image";
+import { SafeImage } from "@/components/shared/safe-image";
+import { supabaseImageUrl } from "@/lib/utils";
 import { 
   ArrowRight, 
   CheckCircle2, 
@@ -97,7 +98,13 @@ export function ModerationCard({
            <div className="space-y-4">
               <div className="relative aspect-[4/3] w-full overflow-hidden rounded-2xl border border-border/50 bg-muted/20 shadow-inner group/preview">
                 {listing.images?.[0] ? (
-                  <Image src={listing.images[0].url} alt="" fill className="object-cover transition-transform duration-700 group-hover/preview:scale-110" sizes="256px" />
+                  <SafeImage 
+                    src={supabaseImageUrl(listing.images[0].url, 400, 75)} 
+                    alt={listing.title} 
+                    fill 
+                    className="object-cover transition-transform duration-700 group-hover/preview:scale-110" 
+                    sizes="256px" 
+                  />
                 ) : (
                   <div className="flex h-full items-center justify-center text-slate-300"><Rocket size={32} /></div>
                 )}
@@ -109,7 +116,7 @@ export function ModerationCard({
               <div className="grid grid-cols-3 gap-2">
                 {listing.images?.slice(1, 4).map((img, i) => (
                   <div key={img.id || i} className="relative aspect-square rounded-xl overflow-hidden border border-border/30 bg-muted/10">
-                    <Image src={img.url} alt="" fill className="object-cover opacity-80 hover:opacity-100 transition-opacity" sizes="64px" />
+                    <SafeImage src={supabaseImageUrl(img.url, 200, 75)} alt="" fill className="object-cover opacity-80 hover:opacity-100 transition-opacity" sizes="64px" />
                   </div>
                 ))}
               </div>

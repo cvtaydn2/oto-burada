@@ -40,9 +40,15 @@ export default async function AdminOverviewPage() {
   const recentActionsPromise = getRecentAdminModerationActions(10).catch(() => []);
   const persistenceHealthPromise = getPersistenceHealth().catch(() => null);
 
-  const admin = createSupabaseAdminClient();
-  const { error: pingError } = await admin.from("profiles").select("id").limit(1);
-  const systemOnline = !pingError;
+  let systemOnline = false;
+  try {
+    const admin = createSupabaseAdminClient();
+    const { error: pingError } = await admin.from("profiles").select("id").limit(1);
+    systemOnline = !pingError;
+  } catch (err) {
+    console.error("Admin client initialization failed:", err);
+    systemOnline = false;
+  }
 
   return (
     <main className="min-h-screen bg-slate-50/50 pb-20 pt-8 animate-in fade-in slide-in-from-bottom-4 duration-700">

@@ -128,7 +128,7 @@ export default async function ListingDetailPage({ params }: ListingDetailPagePro
       />
 
       <main className="min-h-screen bg-background flex flex-col">
-        <div className="mx-auto max-w-[1400px] px-3 sm:px-4 md:px-6 py-4 sm:py-6 md:py-10 w-full flex-1">
+        <div className="mx-auto max-w-[1400px] px-3 sm:px-4 md:px-6 py-4 sm:py-6 md:py-10 pb-32 lg:pb-10 w-full flex-1">
           
           <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-3 sm:gap-4 md:gap-6 mb-4 sm:mb-6 md:mb-8 lg:mb-10">
             <nav className="flex flex-wrap items-center gap-2 sm:gap-3">

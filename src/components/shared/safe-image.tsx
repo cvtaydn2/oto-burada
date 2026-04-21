@@ -40,7 +40,7 @@ export function SafeImage({
   return (
     <div 
       className={cn(
-        "relative overflow-hidden bg-muted/20", 
+        "relative overflow-hidden bg-muted/20 h-full w-full", 
         loading && "animate-pulse",
         containerClassName
       )}

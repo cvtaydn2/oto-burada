@@ -78,11 +78,21 @@ const ADMIN_NAV_ITEMS = [
   },
 ];
 
-export function AdminSidebar() {
+interface AdminSidebarProps {
+  isMobile?: boolean;
+}
+
+export function AdminSidebar({ isMobile }: AdminSidebarProps) {
   const pathname = usePathname();
 
   return (
-    <aside aria-label="Admin paneli navigasyonu" className="fixed left-0 top-0 hidden h-screen w-72 flex-col border-r border-slate-200 bg-white md:flex z-50">
+    <aside 
+      aria-label="Admin paneli navigasyonu" 
+      className={cn(
+        "flex-col border-r border-slate-200 bg-white z-50",
+        isMobile ? "flex h-full w-full" : "fixed left-0 top-0 hidden h-screen w-72 md:flex"
+      )}
+    >
       <div className="flex h-20 items-center px-8 border-b border-slate-100">
         <Link href="/" className="flex items-center gap-3 group">
           <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary text-primary-foreground shadow-sm">

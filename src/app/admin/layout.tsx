@@ -1,4 +1,5 @@
 import { AdminSidebar } from "@/components/layout/admin-sidebar";
+import { AdminMobileNav } from "@/components/layout/admin-mobile-nav";
 import { requireAdminUser } from "@/lib/auth/session";
 
 export default async function AdminLayout({
@@ -10,7 +11,7 @@ export default async function AdminLayout({
   await requireAdminUser();
 
   return (
-    <div className="flex min-h-screen bg-background">
+    <div className="flex flex-col md:flex-row min-h-screen bg-background">
       {/* Skip navigation */}
       <a
         href="#admin-main"
@@ -18,6 +19,7 @@ export default async function AdminLayout({
       >
         Ana içeriğe geç
       </a>
+      <AdminMobileNav />
       <AdminSidebar />
       <div className="flex-1 md:ml-72 flex flex-col min-h-screen">
          {/* Premium subtle reflection top line */}

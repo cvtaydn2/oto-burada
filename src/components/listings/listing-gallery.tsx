@@ -13,6 +13,8 @@ const ListingGalleryLightbox = dynamic(
   () => import("@/components/listings/listing-gallery-lightbox").then((mod) => mod.ListingGalleryLightbox),
 );
 
+import { SafeImage } from "@/components/shared/safe-image";
+
 interface ListingGalleryProps {
   images: ListingImage[];
   title: string;
@@ -88,7 +90,7 @@ export function ListingGallery({ images, title, has360View = false }: ListingGal
                     key={image.id || image.url}
                     className="relative flex-[0_0_100%] min-w-0 aspect-[4/3] sm:aspect-[16/9] lg:aspect-[16/10]"
                   >
-                    <Image
+                    <SafeImage
                       src={supabaseImageUrl(image.url, 1200, 85)}
                       alt={`${title} - ${index + 1}`}
                       fill
@@ -170,7 +172,7 @@ export function ListingGallery({ images, title, has360View = false }: ListingGal
                       : "border-transparent opacity-60 hover:opacity-100"
                   }`}
                 >
-                  <Image
+                  <SafeImage
                     src={supabaseImageUrl(image.url, 150, 70)}
                     alt=""
                     fill
