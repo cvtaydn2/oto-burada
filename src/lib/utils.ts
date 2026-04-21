@@ -133,16 +133,31 @@ export function formatTL(value: number): string {
  * Supabase Storage transform docs:
  * https://supabase.com/docs/guides/storage/serving/image-transformations
  */
+/**
+ * Appends Supabase Storage image transformation query parameters to a URL.
+ * Returns the original URL unchanged if it is not a Supabase Storage URL
+ * or if transformation is disabled via environment variable.
+ *
+ * @param url     - Original image URL from Supabase Storage
+ * @param width   - Desired output width in pixels
+ * @param quality - JPEG/WebP quality 1-100 (default 80)
+ */
 export function supabaseImageUrl(
   url: string,
   width: number,
   quality = 80,
 ): string {
   if (!url) return url;
+  
+  // Disable transformations by default if not explicitly enabled
+  // Supabase Image Transformation is a paid feature.
+  const isTransformationEnabled = process.env.NEXT_PUBLIC_ENABLE_IMAGE_TRANSFORMATION === "true";
+  
   // Only transform Supabase Storage public URLs
-  if (!url.includes(".supabase.co/storage/v1/object/public/")) {
+  if (!url.includes(".supabase.co/storage/v1/object/public/") || !isTransformationEnabled) {
     return url;
   }
+
   try {
     const parsed = new URL(url);
     parsed.searchParams.set("width", String(width));

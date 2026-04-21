@@ -1,16 +1,17 @@
 "use client";
 
 import Image, { ImageProps } from "next/image";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
 
 /**
  * World-Class UX: Safe Image (Issue 10, 6, 7 - "Media Seam")
- * - Handles broken images with a fallback placeholder.
- * - Enforces async decoding to prevent scroll jank.
- * - Optimizes bandwidth via Supabase loader if configured.
- * - Mitigates CLS with stable aspect ratios.
+ * - Handles broken images with a robust SVG fallback.
+ * - Prevents 404 recursion by using a data-uri for fallbacks.
+ * - Mitigates CLS with stable background placeholders.
  */
+
+const FALLBACK_IMAGE = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='300' viewBox='0 0 400 300'%3E%3Crect width='400' height='300' fill='%23f8fafc'/%3E%3Cpath d='M200 130c-15 0-25 10-25 20s10 20 25 20 25-10 25-20-10-20-25-20zm0 30c-5.5 0-10-4.5-10-10s4.5-10 10-10 10 4.5 10 10-4.5 10-10 10z' fill='%23cbd5e1'/%3E%3C/svg%3E";
 
 interface SafeImageProps extends Omit<ImageProps, "onError"> {
   fallbackSrc?: string;
@@ -20,7 +21,7 @@ interface SafeImageProps extends Omit<ImageProps, "onError"> {
 export function SafeImage({
   src,
   alt,
-  fallbackSrc = "/images/placeholders/car-fallback.jpg", // Create this or use a solid color
+  fallbackSrc = FALLBACK_IMAGE,
   className,
   containerClassName,
   priority,
@@ -28,6 +29,12 @@ export function SafeImage({
 }: SafeImageProps) {
   const [error, setError] = useState(false);
   const [loading, setLoading] = useState(true);
+
+  // Reset state if src changes
+  useEffect(() => {
+    setError(false);
+    setLoading(true);
+  }, [src]);
 
   return (
     <div 
@@ -38,7 +45,6 @@ export function SafeImage({
       )}
     >
       <Image
-        key={src.toString()}
         src={error ? fallbackSrc : src}
         alt={alt}
         className={cn(
@@ -51,12 +57,17 @@ export function SafeImage({
           setError(true);
           setLoading(false);
         }}
-        // PILL: Issue 6 - Async Decoding (Prevents Scroll Jank)
         decoding="async"
-        // PILL: Issue 4 - LCP Priority
         priority={priority}
         {...props}
       />
+      
+      {/* Optional: Add a subtle icon when loading for premium feel */}
+      {loading && !error && (
+        <div className="absolute inset-0 flex items-center justify-center bg-muted/50">
+           <div className="w-8 h-8 rounded-full border-2 border-primary/20 border-t-primary/80 animate-spin" />
+        </div>
+      )}
     </div>
   );
 }

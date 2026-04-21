@@ -13,8 +13,10 @@ export function getSecurityHeaders(nonce: string) {
     "https://va.vercel-scripts.com",
     "https://cdn.vercel-insights.com",
     "https://vercel.live",
+    "https://*.vercel.live",
     "https://*.posthog.com",
     "https://us-assets.i.posthog.com",
+    "'unsafe-eval'", // Required by some Vercel/PostHog features in production
   ];
   const styleSrc = ["'self'", "https://fonts.googleapis.com", "https://unpkg.com"];
 
@@ -31,7 +33,7 @@ export function getSecurityHeaders(nonce: string) {
     `script-src ${scriptSrc.join(" ")}`,
     `style-src ${styleSrc.join(" ")}`,
     "font-src 'self' https://fonts.gstatic.com https://unpkg.com https://vercel.live",
-    "img-src 'self' data: blob: https://*.supabase.co https://images.unsplash.com https://*.tile.openstreetmap.org https://unpkg.com https://vercel.live",
+    "img-src 'self' data: blob: https://*.supabase.co https://images.unsplash.com https://*.tile.openstreetmap.org https://unpkg.com https://vercel.live https://*.vercel.live https://*.public.blob.vercel-storage.com",
     "connect-src 'self' https://*.supabase.co https://*.posthog.com https://us-assets.i.posthog.com wss://*.supabase.co https://nominatim.openstreetmap.org https://*.upstash.io https://vercel.live wss://ws-us3.pusher.com",
     "worker-src 'self' blob:",
     "media-src 'self' blob: https://*.supabase.co",
