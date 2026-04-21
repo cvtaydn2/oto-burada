@@ -37,7 +37,7 @@ export function AdminUserStatsSidebar({
         
         <div className="grid grid-cols-1 gap-4 pt-4 border-t border-slate-50">
           <StatItem icon={<Package size={16} />} label="Toplam İlan" value={listingCount} color="blue" />
-          <StatItem icon={<CheckCircle2 size={16} />} label="Yayında" value={activeListingCount} color="emerald" />
+          <StatItem icon={<CheckCircle2 size={16} />} label="Aktif" value={activeListingCount} color="emerald" />
           <StatItem icon={<Activity size={16} />} label="Dopingler" value={featuredCount} color="amber" />
         </div>
       </div>

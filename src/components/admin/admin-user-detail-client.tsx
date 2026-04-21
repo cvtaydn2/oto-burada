@@ -13,6 +13,7 @@ import { cn } from "@/lib/utils";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 import { AdminUserHeader } from "./admin-user-header";
+import { trust } from "@/lib/constants/ui-strings";
 import { AdminUserStatsSidebar } from "./admin-user-stats-sidebar";
 import { AdminUserActionCards } from "./admin-user-action-cards";
 
@@ -192,7 +193,7 @@ export function AdminUserDetailClient({ detail, userId }: AdminUserDetailClientP
                               l.status === "pending" ? "bg-amber-100 text-amber-700" :
                               "bg-slate-100 text-slate-500"
                             )}>
-                              {l.status === "approved" ? "Yayında" : l.status === "pending" ? "Onay Bekliyor" : l.status}
+                              {l.status === "approved" ? trust.admin.listingStatus.approved : l.status === "pending" ? trust.admin.listingStatus.pending : l.status}
                             </Badge>
                             <span className="text-[10px] font-bold text-slate-400">ID: {l.id.substring(0, 4)}</span>
                           </div>
