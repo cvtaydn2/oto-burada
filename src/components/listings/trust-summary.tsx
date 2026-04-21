@@ -1,4 +1,5 @@
 import { cn } from "@/lib/utils";
+import { getProfileRestrictionState } from "@/services/profile/profile-restrictions";
 
 type TrustTone = "emerald" | "amber" | "blue" | "slate";
 
@@ -38,7 +39,9 @@ interface TrustSummaryProps {
 
 export function TrustSummary({ listing, seller, updatedAt }: TrustSummaryProps) {
   const lastUpdatedAt = new Date(updatedAt);
-  const sellerVerified = seller?.verifiedBusiness || seller?.isVerified;
+  const restrictionState = getProfileRestrictionState(seller);
+  const sellerVerified =
+    restrictionState === "active" && (seller?.verifiedBusiness || seller?.isVerified);
 
   const trustItems = [
     {
@@ -59,9 +62,25 @@ export function TrustSummary({ listing, seller, updatedAt }: TrustSummaryProps) 
     },
     {
       title: "Satıcı",
-      value: sellerVerified ? "DOĞRULANDI" : "DOĞRULANMADI",
-      description: seller?.verifiedBusiness ? "İşletme bilgileri onaylı" : seller?.isVerified ? "Kimlik doğrulandı" : "Profil var, ek doğrulama görünmüyor",
-      tone: sellerVerified ? "emerald" as const : "amber" as const,
+      value: restrictionState === "restricted_review"
+        ? "İNCELEMEDE"
+        : restrictionState === "banned"
+          ? "KISITLI"
+          : sellerVerified
+            ? "DOĞRULANDI"
+            : "DOĞRULANMADI",
+      description: restrictionState === "restricted_review"
+        ? "Güvenlik incelemesi tamamlanana kadar ek güven sinyali gösterilmez"
+        : restrictionState === "banned"
+          ? "Hesap kısıtlı durumda"
+          : seller?.verifiedBusiness
+            ? "İşletme bilgileri onaylı"
+            : seller?.isVerified
+              ? "Kimlik doğrulandı"
+              : "Profil var, ek doğrulama görünmüyor",
+      tone: restrictionState === "active"
+        ? sellerVerified ? "emerald" as const : "amber" as const
+        : "slate" as const,
     },
     {
       title: "Son Güncelleme",

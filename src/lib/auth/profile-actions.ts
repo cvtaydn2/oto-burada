@@ -4,6 +4,7 @@ import { profileUpdateSchema } from "@/lib/validators";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { hasSupabaseEnv } from "@/lib/supabase/env";
 import { updateProfileTable } from "@/services/profile/profile-records";
+import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 
 export interface ProfileActionState {
   error?: string;
@@ -137,6 +138,15 @@ export async function updateCorporateProfileAction(
     return { error: "Oturum dogrulanamadi.", fields: values };
   }
 
+  const admin = createSupabaseAdminClient();
+  const { data: existingProfile } = await admin
+    .from("profiles")
+    .select("verified_business")
+    .eq("id", user.id)
+    .maybeSingle<{ verified_business: boolean | null }>();
+
+  const canActAsBusiness = existingProfile?.verified_business === true;
+
   // Update metadata for quick access
   await supabase.auth.updateUser({
     data: {
@@ -157,7 +167,7 @@ export async function updateCorporateProfileAction(
       tax_office: parsed.data.taxOffice,
       website_url: parsed.data.websiteUrl,
       business_logo_url: parsed.data.businessLogoUrl,
-      user_type: 'professional' // Auto-upgrade to professional on filling these
+      user_type: canActAsBusiness ? "professional" : "individual",
     })
     .eq("id", user.id);
 

@@ -1,3 +1,21 @@
+# 2026-04-21 - Business Trust Enforcement
+
+## Yapılan Değişiklikler
+
+- `src/lib/auth/profile-actions.ts`, `src/services/gallery/index.ts` ve `src/components/dashboard/dashboard-professional-card.tsx`: Kurumsal/galeri statüsü otomatik olmaktan çıkarıldı. Corporate form artık kullanıcıyı kendiliğinden `professional` yapmıyor; public gallery ve dashboard showroom kartı yalnızca doğrulanmış işletmeler için açılıyor.
+- `src/services/profile/profile-restrictions.ts`, `src/services/profile/profile-trust.ts`, `src/services/listings/marketplace-listings.ts`, `src/services/listings/listing-submission-query.ts`, `src/components/listings/listing-detail/listing-seller-sidebar.tsx`, `src/components/listings/trust-summary.tsx` ve `src/app/(public)/(marketplace)/seller/[id]/page.tsx`: Restriction-aware trust katmanı eklendi. Geçici inceleme kısıtı veya ban altındaki satıcılar artık trust badge alamıyor; seller/detail/public trust sinyalleri downgrade ediliyor.
+- `src/services/admin/user-details.ts`, `src/components/admin/admin-user-header.tsx` ve `src/components/admin/admin-user-detail-client.tsx`: Admin user detail üst bilgisinde tek `yasaklı` durumu yerine `inceleme kısıtı` ile kalıcı ban ayrıştırıldı.
+
+## Doğrulama
+
+- `npm run typecheck` ✅
+- `npm run lint` ✅
+
+## Sonraki Adım
+
+- Admin kullanıcı listesinde de `inceleme kısıtı` durumunu ayrı badge olarak göster.
+- Verified business onayı verildiğinde işletme için kontrollü `professional`/gallery aktivasyon akışını netleştir.
+
 # 2026-04-21 - Seller-Level Abuse Enforcement
 
 ## Yapılan Değişiklikler

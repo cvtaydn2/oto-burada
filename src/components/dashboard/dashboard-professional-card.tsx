@@ -8,7 +8,7 @@ interface DashboardProfessionalCardProps {
 }
 
 export function DashboardProfessionalCard({ businessName, businessSlug, verifiedBusiness }: DashboardProfessionalCardProps) {
-  if (!businessSlug) return null;
+  if (!businessSlug || !verifiedBusiness) return null;
 
   const items = [
     { label: "Durum", value: "Aktif", icon: Eye, sub: "İstatistikler yükleniyor" },

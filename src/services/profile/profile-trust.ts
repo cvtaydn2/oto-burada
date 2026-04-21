@@ -1,7 +1,8 @@
 import type { Profile } from "@/types";
+import { getProfileRestrictionState } from "@/services/profile/profile-restrictions";
 
 interface SellerTrustSummary {
-  badgeLabel: string;
+  badgeLabel: string | null;
   score: number;
   signals: string[];
 }
@@ -16,6 +17,7 @@ function getAccountAgeMonths(createdAt?: string | null) {
 
 export function calculateTrustScore(seller: Partial<Profile> | null): number {
   if (!seller) return 0;
+  if (getProfileRestrictionState(seller) !== "active") return 0;
   
   let score = 0;
 
@@ -45,13 +47,30 @@ export function getSellerTrustSummary(
 ): SellerTrustSummary {
   if (!seller) {
     return {
-      badgeLabel: "Yeni Satıcı",
+      badgeLabel: null,
       score: 0,
       signals: [],
     };
   }
 
   const signals: string[] = [];
+
+  const restrictionState = getProfileRestrictionState(seller);
+  if (restrictionState === "restricted_review") {
+    return {
+      badgeLabel: null,
+      score: 0,
+      signals: ["Hesap güvenlik incelemesinde"],
+    };
+  }
+
+  if (restrictionState === "banned") {
+    return {
+      badgeLabel: null,
+      score: 0,
+      signals: ["Hesap kısıtlı"],
+    };
+  }
 
   const score = calculateTrustScore(seller);
   const accountAgeMonths = getAccountAgeMonths(seller.createdAt);
@@ -74,10 +93,9 @@ export function getSellerTrustSummary(
     signals.push("E-posta onaylı");
   }
 
-  let badgeLabel = "Standart Üye";
-  if (score >= 75) badgeLabel = "Güvenilir Satıcı";
-  else if (score >= 45) badgeLabel = "Doğrulanan Satıcı";
-  else if (score >= 20) badgeLabel = "İncelenebilir Satıcı";
+  let badgeLabel: string | null = null;
+  if (seller.verifiedBusiness && score >= 45) badgeLabel = "Doğrulanmış İşletme";
+  else if (seller.isVerified && seller.emailVerified && score >= 30) badgeLabel = "Doğrulanmış Satıcı";
 
   if (activeListingCount > 0) {
     signals.push(`${activeListingCount} aktif ilan geçmişi`);

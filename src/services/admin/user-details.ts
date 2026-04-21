@@ -30,6 +30,7 @@ export interface UserProfile {
   balanceCredits: number;
   isVerified: boolean;
   isBanned: boolean;
+  banReason?: string | null;
   businessName?: string;
   businessSlug?: string;
   verifiedBusiness?: boolean;
@@ -62,6 +63,7 @@ export function mapProfile(p: Record<string, unknown>, email = ""): UserProfile 
     balanceCredits: (p.balance_credits as number) || 0,
     isVerified: (p.is_verified as boolean) || false,
     isBanned: (p.is_banned as boolean) || false,
+    banReason: (p.ban_reason as string | null) ?? null,
     businessName: p.business_name as string,
     businessSlug: p.business_slug as string,
     verifiedBusiness: p.verified_business as boolean,
@@ -83,7 +85,7 @@ export async function getUserDetail(userId: string): Promise<UserDetailData | nu
   ] = await Promise.all([
     admin.auth.admin.getUserById(userId),
     admin.from("profiles").select(
-      "id, full_name, phone, city, avatar_url, role, user_type, balance_credits, is_verified, is_banned, business_name, business_address, business_logo_url, business_description, tax_id, tax_office, website_url, verified_business, business_slug, created_at, updated_at"
+      "id, full_name, phone, city, avatar_url, role, user_type, balance_credits, is_verified, is_banned, ban_reason, business_name, business_address, business_logo_url, business_description, tax_id, tax_office, website_url, verified_business, business_slug, created_at, updated_at"
     ).eq("id", userId).single(),
     admin
       .from("payments")

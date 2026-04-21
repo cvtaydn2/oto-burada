@@ -91,6 +91,8 @@ export async function getMarketplaceSeller(sellerId: string): Promise<Profile | 
           user_type, 
           balance_credits, 
           is_verified, 
+          is_banned,
+          ban_reason,
           business_name, 
           business_logo_url, 
           business_slug, 
@@ -124,6 +126,8 @@ export async function getMarketplaceSeller(sellerId: string): Promise<Profile | 
         businessDescription: data.business_description,
         websiteUrl: data.website_url,
         verifiedBusiness: data.verified_business,
+        isBanned: data.is_banned,
+        banReason: data.ban_reason,
         createdAt: data.created_at,
         updatedAt: data.updated_at,
       } satisfies Profile;

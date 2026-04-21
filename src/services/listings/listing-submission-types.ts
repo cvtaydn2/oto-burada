@@ -41,6 +41,8 @@ export interface ListingRow {
     business_name: string | null;
     business_logo_url: string | null;
     is_verified: boolean;
+    is_banned: boolean;
+    ban_reason: string | null;
     verified_business: boolean;
     business_slug: string | null;
     created_at: string;

@@ -41,6 +41,8 @@ export interface Profile {
    */
   isVerified: boolean;
   isBanned?: boolean;
+  banReason?: string | null;
+  restrictionState?: "active" | "restricted_review" | "banned";
   
   // Custom Trust Algorithm fields
   trustScore?: number;

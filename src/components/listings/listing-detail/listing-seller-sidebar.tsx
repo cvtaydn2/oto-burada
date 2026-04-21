@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Panel } from "@/components/shared/design-system/Panel";
 import { getSellerRatingSummary } from "@/services/profile/seller-reviews";
 import { getMemberSinceYear, getMembershipYears } from "@/lib/utils/listing-utils";
+import { getProfileRestrictionState } from "@/services/profile/profile-restrictions";
 import type { Listing, Profile } from "@/types";
 import type { User } from "@supabase/supabase-js";
 
@@ -21,8 +22,14 @@ export async function ListingSellerSidebar({
   const memberSince = getMemberSinceYear(seller?.createdAt ?? null);
   const membershipYears = getMembershipYears(memberSince);
   const isOwner = currentUser?.id === listing.sellerId;
-  const sellerVerified = seller?.verifiedBusiness || seller?.isVerified;
-  const sellerBadgeLabel = seller?.verifiedBusiness
+  const restrictionState = getProfileRestrictionState(seller);
+  const sellerVerified =
+    restrictionState === "active" && (seller?.verifiedBusiness || seller?.isVerified);
+  const sellerBadgeLabel = restrictionState === "restricted_review"
+    ? "İNCELENİYOR"
+    : restrictionState === "banned"
+      ? "KISITLI HESAP"
+      : seller?.verifiedBusiness
     ? "İŞLETME DOĞRULANDI"
     : seller?.isVerified
       ? "KİMLİK DOĞRULANDI"
@@ -43,7 +50,9 @@ export async function ListingSellerSidebar({
               <div className={`flex h-5 items-center gap-1.5 rounded-md px-2 text-[10px] font-bold uppercase tracking-widest border ${
                 sellerVerified
                   ? "bg-emerald-500/10 text-emerald-600 border-emerald-500/20"
-                  : "bg-amber-500/10 text-amber-700 border-amber-500/20"
+                  : restrictionState === "active"
+                    ? "bg-amber-500/10 text-amber-700 border-amber-500/20"
+                    : "bg-rose-500/10 text-rose-700 border-rose-500/20"
               }`}>
                 <ShieldCheck size={12} strokeWidth={3} />
                 {sellerBadgeLabel}

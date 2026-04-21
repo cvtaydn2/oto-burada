@@ -9,6 +9,7 @@ import { SellerRatingInfo } from "@/components/profile/seller-rating-info";
 import { getMarketplaceSeller, getPublicMarketplaceListings } from "@/services/listings/marketplace-listings";
 import { getSellerTrustSummary } from "@/services/profile/profile-trust";
 import { getSellerRatingSummary, getSellerReviews } from "@/services/profile/seller-reviews";
+import { getProfileRestrictionState } from "@/services/profile/profile-restrictions";
 import type { Listing } from "@/types";
 
 interface SellerProfilePageProps {
@@ -37,6 +38,7 @@ export default async function SellerProfilePage({ params }: SellerProfilePagePro
   const totalListingsCount = listingsResult.total;
   const featuredListingCount = sellerListings.filter((listing: Listing) => listing.featured).length;
   const trustSummary = getSellerTrustSummary(seller, totalListingsCount);
+  const restrictionState = getProfileRestrictionState(seller);
   const memberSinceYear = new Date(seller.createdAt).getFullYear();
   const [ratingSummary, reviews] = await Promise.all([
     getSellerRatingSummary(sellerId),
@@ -128,7 +130,14 @@ export default async function SellerProfilePage({ params }: SellerProfilePagePro
         <div className="mt-6 flex flex-wrap items-center gap-3 pt-6 border-t border-border">
           <span className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground/30 mr-2">GÜVEN SİNYALLERİ</span>
           {trustSummary.signals.map((signal) => (
-            <div key={signal} className="flex items-center gap-1.5 rounded-full bg-emerald-50/50 px-2.5 py-0.5 text-[9px] font-bold text-emerald-600 border border-emerald-100/50 uppercase tracking-tight">
+            <div
+              key={signal}
+              className={`flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-[9px] font-bold border uppercase tracking-tight ${
+                restrictionState === "active"
+                  ? "bg-emerald-50/50 text-emerald-600 border-emerald-100/50"
+                  : "bg-slate-100 text-slate-600 border-slate-200"
+              }`}
+            >
               <CheckCircle2 size={11} />
               {signal}
             </div>

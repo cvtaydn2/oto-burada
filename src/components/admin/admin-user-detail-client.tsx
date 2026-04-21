@@ -89,6 +89,7 @@ export function AdminUserDetailClient({ detail, userId }: AdminUserDetailClientP
         fullName={profile.fullName} 
         userType={profile.userType} 
         isBanned={profile.isBanned} 
+        banReason={profile.banReason}
         role={profile.role} 
       />
 

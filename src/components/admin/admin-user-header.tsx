@@ -4,16 +4,20 @@ import Link from "next/link";
 import { ArrowLeft, ShieldCheck, Store } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { getProfileRestrictionState } from "@/services/profile/profile-restrictions";
 
 interface AdminUserHeaderProps {
   userId: string;
   fullName: string;
   userType: string;
   isBanned: boolean;
+  banReason?: string | null;
   role: string;
 }
 
-export function AdminUserHeader({ userId, fullName, userType, isBanned, role }: AdminUserHeaderProps) {
+export function AdminUserHeader({ userId, fullName, userType, isBanned, banReason, role }: AdminUserHeaderProps) {
+  const restrictionState = getProfileRestrictionState({ isBanned, banReason });
+
   return (
     <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
       <div className="flex items-center gap-5">
@@ -41,12 +45,27 @@ export function AdminUserHeader({ userId, fullName, userType, isBanned, role }: 
       <div className="flex items-center gap-3">
         <div className={cn(
           "px-5 py-2.5 rounded-2xl font-bold text-[11px] uppercase tracking-[0.15em] shadow-sm border flex items-center gap-2",
-          isBanned 
-            ? "bg-rose-50 text-rose-600 border-rose-100" 
-            : "bg-emerald-50 text-emerald-600 border-emerald-100"
+          restrictionState === "banned"
+            ? "bg-rose-50 text-rose-600 border-rose-100"
+            : restrictionState === "restricted_review"
+              ? "bg-amber-50 text-amber-700 border-amber-100"
+              : "bg-emerald-50 text-emerald-600 border-emerald-100"
         )}>
-          <div className={cn("size-2 rounded-full", isBanned ? "bg-rose-500" : "bg-emerald-500 animate-pulse")} />
-          {isBanned ? "YASAKLI" : "HESAP AKTİF"}
+          <div
+            className={cn(
+              "size-2 rounded-full",
+              restrictionState === "banned"
+                ? "bg-rose-500"
+                : restrictionState === "restricted_review"
+                  ? "bg-amber-500"
+                  : "bg-emerald-500 animate-pulse",
+            )}
+          />
+          {restrictionState === "banned"
+            ? "YASAKLI"
+            : restrictionState === "restricted_review"
+              ? "İNCELEME KISITI"
+              : "HESAP AKTİF"}
         </div>
         <div className={cn(
           "px-5 py-2.5 rounded-2xl font-bold text-[11px] uppercase tracking-[0.15em] shadow-sm border flex items-center gap-2",

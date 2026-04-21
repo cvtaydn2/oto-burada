@@ -1,18 +1,27 @@
 import { createSupabaseAdminClient } from "@/lib/supabase/admin"
 import { hasSupabaseAdminEnv } from "@/lib/supabase/env"
 import { type Listing, type Profile } from "@/types"
+import { getProfileRestrictionState } from "@/services/profile/profile-restrictions";
 
 export async function getGalleryBySlug(slug: string) {
   if (!hasSupabaseAdminEnv()) return null;
   const supabase = createSupabaseAdminClient()
   const { data: profile, error } = await supabase
     .from("profiles")
-    .select("id, full_name, phone, city, avatar_url, role, user_type, is_verified, business_name, business_logo_url, business_slug, business_description, website_url, verified_business, created_at, updated_at")
+    .select("id, full_name, phone, city, avatar_url, role, user_type, is_verified, is_banned, ban_reason, business_name, business_logo_url, business_slug, business_description, website_url, verified_business, created_at, updated_at")
     .eq("business_slug", slug)
     .eq("user_type", "professional")
+    .eq("verified_business", true)
     .single()
 
   if (error || !profile) return null
+
+  if (getProfileRestrictionState({
+    isBanned: profile.is_banned,
+    banReason: profile.ban_reason,
+  }) !== "active") {
+    return null;
+  }
 
   // Fetch listings for this gallery
   const { data: listingsData } = await supabase
@@ -55,6 +64,8 @@ export async function getGalleryBySlug(slug: string) {
       phoneVerified: false,
       identityVerified: profile.is_verified,
       balanceCredits: 0,
+      isBanned: profile.is_banned,
+      banReason: profile.ban_reason,
       businessName: profile.business_name,
       businessLogoUrl: profile.business_logo_url,
       businessSlug: profile.business_slug,
