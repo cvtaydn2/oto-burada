@@ -1,0 +1,27 @@
+import { NextResponse } from "next/server";
+import { recordListingView } from "@/services/listings/listing-views";
+import { getCurrentUser } from "@/lib/auth/session";
+
+export async function POST(request: Request) {
+  try {
+    const { listingId } = await request.json();
+    
+    if (!listingId) {
+      return NextResponse.json({ error: "Missing listingId" }, { status: 400 });
+    }
+
+    const currentUser = await getCurrentUser();
+    const headersList = request.headers;
+    const viewerIp = headersList.get("x-forwarded-for")?.split(",")[0]?.trim() || undefined;
+
+    // Fire and forget recording
+    recordListingView(listingId, { 
+      viewerId: currentUser?.id, 
+      viewerIp 
+    }).catch(console.error);
+
+    return NextResponse.json({ success: true });
+  } catch {
+    return NextResponse.json({ error: "Failed to record view" }, { status: 500 });
+  }
+}

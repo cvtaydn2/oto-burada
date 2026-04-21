@@ -2,17 +2,17 @@ import { LineChart } from "lucide-react";
 import { PriceHistoryChart } from "@/components/listings/price-history-chart";
 import { SectionHeader } from "@/components/shared/design-system/SectionHeader";
 import { Panel } from "@/components/shared/design-system/Panel";
+import { getListingPriceHistory } from "@/services/listings/listing-price-history";
 import type { Listing } from "@/types";
 import type { ListingCardInsight } from "@/services/listings/listing-card-insights";
-import type { PriceHistoryPoint } from "@/services/listings/listing-price-history";
 
 interface ListingAnalysisSectionProps {
   listing: Listing;
   insight: ListingCardInsight;
-  priceHistory: PriceHistoryPoint[];
 }
 
-export function ListingAnalysisSection({ listing, insight, priceHistory }: ListingAnalysisSectionProps) {
+export async function ListingAnalysisSection({ listing, insight }: ListingAnalysisSectionProps) {
+  const priceHistory = await getListingPriceHistory(listing.id);
   return (
     <Panel padding="xl">
       <SectionHeader 

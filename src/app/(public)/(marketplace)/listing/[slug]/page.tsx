@@ -1,28 +1,21 @@
+import { Suspense } from "react";
 import Link from "next/link";
 import dynamic from "next/dynamic";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { headers } from "next/headers";
-import { ChevronRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 // SEO & Monitoring
 import { ListingDetailStructuredData, BreadcrumbStructuredData } from "@/components/seo/structured-data";
 import { buildListingDetailMetadata, buildAbsoluteUrl } from "@/lib/seo";
-import { captureServerEvent } from "@/lib/monitoring/posthog-server";
-import { recordListingView } from "@/services/listings/listing-views";
 import { getCurrentUser } from "@/lib/auth/session";
 
 // Services
 import {
   getMarketplaceListingBySlug,
   getMarketplaceSeller,
-  getSimilarMarketplaceListings,
 } from "@/services/listings/marketplace-listings";
 import { getListingCardInsights } from "@/services/listings/listing-card-insights";
-import { getListingPriceHistory } from "@/services/listings/listing-price-history";
-import { getSellerRatingSummary } from "@/services/profile/seller-reviews";
-import { getMemberSinceYear, getMembershipYears } from "@/lib/utils/listing-utils";
 import { breadcrumbs as breadcrumbLabels } from "@/lib/constants/ui-strings";
 
 // Section Components
@@ -32,9 +25,10 @@ import { ListingPriceTrust } from "@/components/listings/listing-detail/listing-
 import { ListingSpecsSection } from "@/components/listings/listing-detail/listing-specs-section";
 import { ListingReportSection } from "@/components/listings/listing-detail/listing-report-section";
 import { ListingAnalysisSection } from "@/components/listings/listing-detail/listing-analysis-section";
-import { ListingRelated } from "@/components/listings/listing-detail/listing-related";
+import { ListingRelated, ListingRelatedSkeleton } from "@/components/listings/listing-detail/listing-related";
 import { ListingSellerSidebar } from "@/components/listings/listing-detail/listing-seller-sidebar";
 import { Panel } from "@/components/shared/design-system/Panel";
+import { ListingViewTracker } from "@/features/marketplace/components/listing-view-tracker";
 
 const ListingMap = dynamic(
   () => import("@/components/shared/listing-map-wrapper").then((mod) => mod.ListingMapWrapper),
@@ -69,26 +63,12 @@ export default async function ListingDetailPage({ params }: ListingDetailPagePro
 
   if (!listing) notFound();
 
-  const [seller, similarListings, currentUser, sellerRatingSummary, priceHistory] = await Promise.all([
+  const [seller, currentUser] = await Promise.all([
     getMarketplaceSeller(listing.sellerId),
-    getSimilarMarketplaceListings(listing.slug, listing.brand, listing.city),
     getCurrentUser(),
-    getSellerRatingSummary(listing.sellerId),
-    getListingPriceHistory(listing.id),
   ]);
 
-  const headersList = await headers();
-  const viewerIp = headersList.get("x-forwarded-for")?.split(",")[0]?.trim() ?? headersList.get("x-real-ip") ?? undefined;
-
-  recordListingView(listing.id, { viewerId: currentUser?.id, viewerIp }).catch(() => {});
-
-  captureServerEvent("listing_viewed", {
-    listingId: listing.id, listingSlug: listing.slug, brand: listing.brand, model: listing.model, city: listing.city, price: listing.price, year: listing.year, status: listing.status,
-  });
-  
   const insight = getListingCardInsights(listing);
-  const memberSince = getMemberSinceYear(seller?.createdAt ?? null);
-  const membershipYears = getMembershipYears(memberSince);
   
   const pageBreadcrumbs = [
     { name: breadcrumbLabels.home, url: "/" },
@@ -99,8 +79,25 @@ export default async function ListingDetailPage({ params }: ListingDetailPagePro
 
   return (
     <>
-      <ListingDetailStructuredData listing={listing} url={buildAbsoluteUrl(`/listing/${listing.slug}`)} sellerName={seller?.businessName ?? seller?.fullName ?? undefined} />
-      <BreadcrumbStructuredData items={pageBreadcrumbs.map(b => ({ name: b.name, url: buildAbsoluteUrl(b.url) }))} />
+      {/* Tracking & SEO */}
+      <ListingViewTracker 
+        listingId={listing.id}
+        listingSlug={listing.slug}
+        brand={listing.brand}
+        model={listing.model}
+        city={listing.city}
+        price={listing.price}
+        year={listing.year}
+        status={listing.status}
+      />
+      <ListingDetailStructuredData 
+        listing={listing} 
+        url={buildAbsoluteUrl(`/listing/${listing.slug}`)} 
+        sellerName={seller?.businessName ?? seller?.fullName ?? undefined} 
+      />
+      <BreadcrumbStructuredData 
+        items={pageBreadcrumbs.map(b => ({ name: b.name, url: buildAbsoluteUrl(b.url) }))} 
+      />
 
       <main className="min-h-screen bg-background flex flex-col">
         <div className="mx-auto max-w-[1400px] px-6 py-10 w-full flex-1">
@@ -109,7 +106,13 @@ export default async function ListingDetailPage({ params }: ListingDetailPagePro
             <nav className="flex flex-wrap items-center gap-3">
               {pageBreadcrumbs.map((b, i) => (
                 <div key={b.url} className="flex items-center gap-3">
-                  <Link href={b.url} className={cn("text-[10px] font-bold uppercase tracking-widest transition-all hover:text-primary", i === pageBreadcrumbs.length - 1 ? "text-foreground" : "text-muted-foreground")}>
+                  <Link 
+                    href={b.url} 
+                    className={cn(
+                      "text-[10px] font-bold uppercase tracking-widest transition-all hover:text-primary", 
+                      i === pageBreadcrumbs.length - 1 ? "text-foreground" : "text-muted-foreground"
+                    )}
+                  >
                     {b.name}
                   </Link>
                   {i < pageBreadcrumbs.length - 1 && <div className="size-1 rounded-full bg-border" />}
@@ -126,7 +129,10 @@ export default async function ListingDetailPage({ params }: ListingDetailPagePro
               <ListingPriceTrust listing={listing} seller={seller} insight={insight} />
               <ListingSpecsSection listing={listing} />
               <ListingReportSection listing={listing} />
-              <ListingAnalysisSection listing={listing} insight={insight} priceHistory={priceHistory} />
+              
+              <Suspense fallback={<div className="h-64 animate-pulse rounded-3xl bg-muted" />}>
+                <ListingAnalysisSection listing={listing} insight={insight} />
+              </Suspense>
 
               <Panel padding="xl">
                 <h2 className="mb-6 text-xl font-bold text-foreground tracking-tight">İlan Hakkında</h2>
@@ -135,29 +141,32 @@ export default async function ListingDetailPage({ params }: ListingDetailPagePro
                 </div>
               </Panel>
 
-              <Panel padding="xl">
-                <h2 className="mb-8 flex items-center gap-4 text-xl font-bold text-foreground tracking-tight">
-                  <div className="size-12 rounded-2xl bg-primary/10 text-primary flex items-center justify-center">
-                    <ChevronRight size={24} className="rotate-90" />
+              <Suspense fallback={<div className="h-80 animate-pulse rounded-3xl bg-muted" />}>
+                <Panel padding="xl">
+                  <h2 className="mb-8 flex items-center gap-4 text-xl font-bold text-foreground tracking-tight">
+                    <div className="size-12 rounded-2xl bg-primary/10 text-primary flex items-center justify-center">
+                      <ChevronRight size={24} className="rotate-90" />
+                    </div>
+                    Gerçek Konum
+                  </h2>
+                  <div className="rounded-2xl overflow-hidden border border-border/40">
+                     <ListingMap city={listing.city} district={listing.district} className="h-80" />
                   </div>
-                  Gerçek Konum
-                </h2>
-                <div className="rounded-2xl overflow-hidden border border-border/40">
-                   <ListingMap city={listing.city} district={listing.district} className="h-80" />
-                </div>
-              </Panel>
+                </Panel>
+              </Suspense>
 
-              <ListingRelated similarListings={similarListings} />
+              <Suspense fallback={<ListingRelatedSkeleton />}>
+                <ListingRelated brand={listing.brand} slug={listing.slug} city={listing.city} />
+              </Suspense>
             </div>
 
-            <ListingSellerSidebar 
-              listing={listing} 
-              seller={seller} 
-              currentUser={currentUser} 
-              sellerRatingSummary={sellerRatingSummary} 
-              membershipYears={membershipYears ?? 0} 
-              memberSince={memberSince ?? new Date().getFullYear()} 
-            />
+            <Suspense fallback={<div className="w-full lg:w-[400px] h-[600px] animate-pulse rounded-3xl bg-muted" />}>
+              <ListingSellerSidebar 
+                listing={listing} 
+                seller={seller} 
+                currentUser={currentUser} 
+              />
+            </Suspense>
           </div>
         </div>
       </main>
@@ -172,3 +181,21 @@ export default async function ListingDetailPage({ params }: ListingDetailPagePro
     </>
   );
 }
+
+const ChevronRight = ({ size, className }: { size: number; className?: string }) => (
+  <svg 
+    xmlns="http://www.w3.org/2000/svg" 
+    width={size} 
+    height={size} 
+    viewBox="0 0 24 24" 
+    fill="none" 
+    stroke="currentColor" 
+    strokeWidth="2" 
+    strokeLinecap="round" 
+    strokeLinejoin="round" 
+    className={className}
+  >
+    <path d="m9 18 6-6-6-6"/>
+  </svg>
+);
+

@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { CarFront, CheckCircle2, MessageCircle, Shield, Users } from "lucide-react";
 import { getLiveMarketplaceReferenceData } from "@/services/reference/live-reference-data";
+import { CURRENT_YEAR } from "@/lib/utils/date-utils";
 
 const quickLinks = [
   { href: "/", label: "Ana Sayfa" },
@@ -102,7 +103,7 @@ export async function SiteFooter() {
 
         <div className="mt-12 flex flex-col items-center justify-between gap-4 border-t border-border/60 pt-8 sm:flex-row">
           <p className="text-sm text-muted-foreground">
-            © {new Date().getFullYear()} OtoBurada. Tüm hakları saklıdır.
+            © {CURRENT_YEAR} OtoBurada. Tüm hakları saklıdır.
           </p>
           <div className="flex items-center gap-6 text-sm text-muted-foreground">
             <Link href="/legal/privacy" className="hover:text-primary transition-colors">Gizlilik Politikası</Link>

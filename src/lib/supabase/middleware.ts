@@ -2,7 +2,7 @@ import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 
 import { getSupabaseEnv, hasSupabaseEnv } from "@/lib/supabase/env";
-import { applySecurityHeaders, applyRequestMetadata } from "@/lib/middleware/headers";
+import { applySecurityHeaders, applyRequestMetadata, generateNonce } from "@/lib/middleware/headers";
 import { classifyRoute } from "@/lib/middleware/routes";
 import { checkApiSecurity } from "@/lib/middleware/api-security";
 import { handleAuthRedirects } from "@/lib/middleware/auth";
@@ -16,16 +16,28 @@ export async function updateSession(request: NextRequest) {
     return NextResponse.next({ request });
   }
 
+  const nonce = generateNonce();
+  const requestHeaders = new Headers(request.headers);
+  requestHeaders.set("x-nonce", nonce);
+
   const pathname = request.nextUrl.pathname;
   const route = classifyRoute(pathname);
 
   // 1. PERFORMANCE: Skip heavy processing for static assets
   if (route.isStaticAsset) {
-    return applySecurityHeaders(NextResponse.next({ request }));
+    return applySecurityHeaders(NextResponse.next({ 
+      request: {
+        headers: requestHeaders,
+      }
+    }), nonce);
   }
 
   // Initial response
-  let response = NextResponse.next({ request });
+  let response = NextResponse.next({
+    request: {
+      headers: requestHeaders,
+    },
+  });
   const { url, anonKey } = getSupabaseEnv();
 
   // 2. SUPABASE SESSION SYNC
@@ -39,7 +51,11 @@ export async function updateSession(request: NextRequest) {
           request.cookies.set(name, value);
         });
 
-        response = NextResponse.next({ request });
+        response = NextResponse.next({
+          request: {
+            headers: requestHeaders,
+          },
+        });
 
         cookiesToSet.forEach(({ name, value, options }) => {
           response.cookies.set(name, value, options);
@@ -65,7 +81,7 @@ export async function updateSession(request: NextRequest) {
       finalResponse.cookies.set(cookie.name, cookie.value);
     });
     
-    return applySecurityHeaders(finalResponse);
+    return applySecurityHeaders(finalResponse, nonce);
   }
 
   // 5. API SECURITY (CSRF/Origin)
@@ -75,7 +91,7 @@ export async function updateSession(request: NextRequest) {
   }
 
   // 6. FINAL ENRICHMENT (Headers & Metadata)
-  applySecurityHeaders(response);
+  applySecurityHeaders(response, nonce);
   applyRequestMetadata(request, response, pathname);
 
   // Ensure no caching for authenticated/dynamic views

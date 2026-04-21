@@ -1,12 +1,16 @@
 import { ListingCard } from "@/components/shared/listing-card";
 import { Panel } from "@/components/shared/design-system/Panel";
-import type { Listing } from "@/types";
+import { getSimilarMarketplaceListings } from "@/services/listings/marketplace-listings";
 
 interface ListingRelatedProps {
-  similarListings: Listing[];
+  brand: string;
+  slug: string;
+  city: string;
 }
 
-export function ListingRelated({ similarListings }: ListingRelatedProps) {
+export async function ListingRelated({ brand, slug, city }: ListingRelatedProps) {
+  const similarListings = await getSimilarMarketplaceListings(slug, brand, city);
+
   if (similarListings.length === 0) return null;
 
   return (
@@ -15,6 +19,19 @@ export function ListingRelated({ similarListings }: ListingRelatedProps) {
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
         {similarListings.slice(0, 3).map((l) => (
           <ListingCard key={l.id} listing={l} />
+        ))}
+      </div>
+    </Panel>
+  );
+}
+
+export function ListingRelatedSkeleton() {
+  return (
+    <Panel padding="xl">
+      <div className="h-7 w-48 mb-8 bg-muted animate-pulse rounded-lg" />
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
+        {[1, 2, 3].map((i) => (
+          <div key={i} className="aspect-[4/5] rounded-3xl bg-muted animate-pulse" />
         ))}
       </div>
     </Panel>

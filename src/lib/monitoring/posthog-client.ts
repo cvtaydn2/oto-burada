@@ -5,3 +5,9 @@
 import posthog from "posthog-js";
 
 export { posthog };
+
+export function captureClientEvent(eventName: string, properties?: Record<string, any>) {
+  if (typeof window !== "undefined") {
+    posthog.capture(eventName, properties);
+  }
+}

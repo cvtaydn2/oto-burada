@@ -1,6 +1,8 @@
 import { ShieldCheck, MessageSquare, Phone, Store, Star, CalendarDays } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Panel } from "@/components/shared/design-system/Panel";
+import { getSellerRatingSummary } from "@/services/profile/seller-reviews";
+import { getMemberSinceYear, getMembershipYears } from "@/lib/utils/listing-utils";
 import type { Listing, Profile } from "@/types";
 import type { User } from "@supabase/supabase-js";
 
@@ -8,19 +10,16 @@ interface ListingSellerSidebarProps {
   listing: Listing;
   seller: Partial<Profile> | null;
   currentUser: User | null;
-  sellerRatingSummary: { average: number; count: number } | null;
-  membershipYears: number;
-  memberSince: number;
 }
 
-export function ListingSellerSidebar({ 
+export async function ListingSellerSidebar({ 
   listing, 
   seller, 
   currentUser, 
-  sellerRatingSummary, 
-  membershipYears, 
-  memberSince 
 }: ListingSellerSidebarProps) {
+  const sellerRatingSummary = await getSellerRatingSummary(listing.sellerId);
+  const memberSince = getMemberSinceYear(seller?.createdAt ?? null);
+  const membershipYears = getMembershipYears(memberSince);
   const isOwner = currentUser?.id === listing.sellerId;
 
   return (
