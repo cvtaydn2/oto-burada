@@ -24,7 +24,7 @@ export default function Error({
       <div className="mb-6 rounded-full bg-red-100 p-4" aria-hidden="true">
         <AlertTriangle className="size-8 text-red-600" />
       </div>
-      <h2 className="mb-2 text-2xl font-bold">Bir şeyler ters gitti</h2>
+      <h1 className="mb-2 text-2xl font-bold">Bir şeyler ters gitti</h1>
       <p className="mb-6 text-muted-foreground">
         Bu sayfayı yüklerken bir hata oluştu.
       </p>

@@ -68,17 +68,26 @@ export function ListingCard({
   const isList = variant === "list";
 
   return (
-    <div className={cn(cardVariants({ variant, isHighlighted: badgeStates.isHighlighted }), className)}>
+    <div 
+      className={cn(cardVariants({ variant, isHighlighted: badgeStates.isHighlighted }), className)}
+      role="article"
+      aria-labelledby={`listing-title-${listing.id}`}
+    >
       {/* ── Media Section ── */}
       <div className={cn(
         "relative overflow-hidden bg-muted/20",
         isGrid && "aspect-[4/3] w-full",
         isList && "aspect-[16/10] sm:aspect-auto sm:w-[320px] shrink-0",
       )}>
-        <Link href={detailHref} className="block w-full h-full relative">
+        <Link 
+          href={detailHref} 
+          tabIndex={-1} 
+          aria-hidden="true" 
+          className="block w-full h-full relative"
+        >
           <SafeImage
             src={coverImage ? supabaseImageUrl(coverImage.url, 640) : ""}
-            alt={listing.title}
+            alt="" // Decorative since it's inside a link with aria-hidden, aria-labelledby on container covers it
             fill
             priority={priority}
             className="object-cover transition-transform duration-slow ease-expressive group-hover:scale-110"
@@ -105,7 +114,7 @@ export function ListingCard({
           <div className="absolute top-4 right-4 z-20">
             <FavoriteButton
               listingId={listing.id}
-              className="size-10 rounded-2xl bg-white/10 backdrop-blur-xl border border-white/20 text-white hover:bg-white hover:text-rose-500 transition-[background-color,color,transform] duration-normal ease-expressive shadow-xl active:scale-90"
+              className="size-10 rounded-2xl bg-white/10 backdrop-blur-xl border border-white/20 text-white hover:bg-white hover:text-rose-500 transition-[background-color,color,transform] duration-normal ease-expressive shadow-xl active:scale-90 focus-ring"
             />
           </div>
         )}
@@ -135,7 +144,7 @@ export function ListingCard({
           <div className="flex items-center justify-between gap-4">
              <div className="flex items-center gap-3">
                <span className="text-[11px] font-extrabold text-primary uppercase tracking-[0.25em]">{listing.brand}</span>
-               <div className="size-1 rounded-full bg-slate-300" />
+               <div className="size-1 rounded-full bg-slate-300" aria-hidden="true" />
                <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-widest">{listing.year}</span>
              </div>
              {showInsights && (
@@ -151,7 +160,12 @@ export function ListingCard({
           </div>
 
           {/* Title & Description */}
-          <Link href={detailHref} className="block group/title space-y-1">
+          <Link 
+            href={detailHref} 
+            id={`listing-title-${listing.id}`}
+            className="block group/title space-y-1 focus-ring rounded-lg"
+            aria-label={`${listing.year} ${listing.brand} ${listing.model}: ${formatPrice(listing.price)} TL`}
+          >
             <h2 className="text-2xl font-bold text-foreground tracking-tight line-clamp-1 group-hover/title:text-primary transition-colors duration-300">
               {listing.model}
             </h2>
@@ -161,7 +175,7 @@ export function ListingCard({
           </Link>
 
           {/* Pricing */}
-          <div className="flex items-baseline gap-1.5">
+          <div className="flex items-baseline gap-1.5" aria-hidden="true">
             <span className="text-3xl font-extrabold tracking-tighter text-foreground">
               {formatPrice(listing.price)}
             </span>
@@ -170,7 +184,7 @@ export function ListingCard({
 
           {/* Key Technical Specs */}
           <div className="grid grid-cols-3 gap-3 pt-2">
-            <Stat icon={CircleGauge} label={formatNumber(listing.mileage)} sub="KM" />
+            <Stat icon={CircleGauge} label={`${formatNumber(listing.mileage)} KM`} sub={undefined} />
             <Stat icon={Settings2} label={listing.transmission === "otomatik" ? "Otomatik" : "Manuel"} />
             <Stat icon={Fuel} label={listing.fuelType === "benzin" ? "Benzin" : "Dizel"} />
           </div>
@@ -192,6 +206,8 @@ export function ListingCard({
 
           <Link 
             href={detailHref}
+            tabIndex={-1}
+            aria-hidden="true"
             className="flex items-center gap-2 text-[11px] font-extrabold uppercase tracking-[0.15em] text-primary group-hover:gap-3 transition-[gap] duration-normal ease-expressive cursor-pointer"
           >
             DETAY

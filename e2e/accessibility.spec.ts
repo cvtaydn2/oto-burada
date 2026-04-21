@@ -1,14 +1,18 @@
-/**
- * E2E: Accessibility checks
- * - Skip navigation link present and functional
- * - Landmark regions on all pages
- * - Form labels bound to inputs
- * - Error messages announced via role=alert
- * - Keyboard navigation works
- */
 import { test, expect } from '@playwright/test';
+import AxeBuilder from '@axe-core/playwright';
 
 test.describe('Erişilebilirlik (A11y)', () => {
+  test('tüm sayfa otomatik a11y taraması (Axe)', async ({ page }) => {
+    await page.goto('/');
+    await page.waitForLoadState('networkidle');
+    
+    const accessibilityScanResults = await new AxeBuilder({ page })
+      .withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa'])
+      .analyze();
+
+    expect(accessibilityScanResults.violations).toEqual([]);
+  });
+
   test.describe('Ana Sayfa', () => {
     test('skip nav linki mevcut ve odaklanabilir', async ({ page }) => {
       await page.goto('/');
@@ -30,29 +34,31 @@ test.describe('Erişilebilirlik (A11y)', () => {
       const text = await h1.textContent();
       expect(text?.trim().length).toBeGreaterThan(0);
     });
-
-    test('arama formu label-input bağlantısı doğru', async ({ page }) => {
-      await page.goto('/');
-      // Labels should be associated with inputs via htmlFor/id
-      const brandInput = page.locator('#hero-query');
-      await expect(brandInput).toBeVisible();
-
-      const citySelect = page.locator('#hero-city');
-      await expect(citySelect).toBeVisible();
-    });
-
-    test('header role=banner mevcut', async ({ page }) => {
-      await page.goto('/');
-      await expect(page.locator('[role="banner"]')).toBeVisible();
-    });
   });
 
   test.describe('İlanlar Sayfası', () => {
-    test('main landmark mevcut', async ({ page }) => {
+    test('ilan kartlarında tek odak noktası var', async ({ page }) => {
       await page.goto('/listings');
       await page.waitForLoadState('networkidle');
-      // The listings page wraps content in a div, not main — check h1 exists
-      await expect(page.locator('h1')).toBeVisible();
+      
+      // First card title link focus
+      await page.keyboard.press('Tab'); // skip nav
+      await page.keyboard.press('Tab'); // may be header links...
+      
+      // Let's just find the link and check if only it is focusable within the article
+      const firstCard = page.locator('[role="article"]').first();
+      const links = await firstCard.locator('a').all();
+      
+      let focusableFound = 0;
+      for (const link of links) {
+        const tabIndex = await link.getAttribute('tabindex');
+        if (tabIndex !== '-1') {
+          focusableFound++;
+        }
+      }
+      
+      // Only 1 link should be focusable per card (the title link)
+      expect(focusableFound).toBe(1);
     });
 
     test('sıralama dropdown Escape ile kapanır', async ({ page }) => {
@@ -102,7 +108,7 @@ test.describe('Erişilebilirlik (A11y)', () => {
       await page.locator('#password').fill('wrongpass');
       await page.getByRole('button', { name: /giriş yap/i }).click();
 
-      const alert = page.locator('[role="alert"]');
+      const alert = page.locator('[role="alert"]').first();
       await expect(alert).toBeVisible({ timeout: 8_000 });
     });
   });

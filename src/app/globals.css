@@ -173,6 +173,10 @@
     @apply bg-white/60 dark:bg-black/60 backdrop-blur-2xl border border-white/20 dark:border-white/5 shadow-[0_8px_32px_rgba(0,0,0,0.04)] dark:shadow-[0_8px_32px_rgba(0,0,0,0.2)];
   }
 
+  .focus-ring {
+    @apply outline-none ring-offset-2 focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none;
+  }
+
   .text-gradient {
     @apply bg-clip-text text-transparent bg-gradient-to-br from-foreground via-foreground to-foreground/70;
   }

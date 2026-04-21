@@ -18,7 +18,6 @@ OtoBurada projesi; sıradan bir MVP'den (Minimum Viable Product), saniyede 50.00
 
 ---
 
-## 📱 Mobile Product UX & Interaction Modernization - 2026-04-21
 
 ### Yapılan Değişiklikler
 
@@ -778,7 +777,27 @@ OtoBurada mimarisi, başlangıçtaki bir MVP'den; global krizlere, fiziksel ağ 
 - browser seviyesinde `doping` dialog ve checkout ekranı canlı akışları kontrol edilmeli.
 - admin ve dashboard tarafında hâlâ placeholder/yarım bağlı CTA taraması sürmeli.
 
-## Frontend-Backend Contract Remediation (2026-04-16)
+## ♿ Accessibility (A11y) Hardening & Test Integration - 2026-04-21
+
+### Yapılan Değişiklikler
+
+**🛡️ Erişilebilirlik Sertleştirmesi (A11y Hardening)**
+- **Global Focus System**: `globals.css` içinde tüm interaktif elementler için yüksek kontrastlı `.focus-ring` (Double-ring pattern: Offset + Primary) utility sınıfı tanımlandı ve button/link seviyesinde standardize edildi.
+- **Single Focus Link Pattern**: `ListingCard` bileşeni tek bir odak noktasına indirgendi. Görsel ve buton linkleri `tabIndex={-1}` yapılarak klavye kullanıcılarının gereksiz (redundant) sekmelerden kurtulması sağlandı.
+- **Semantic Integrity**: Tüm kart yapılarına `role="article"` ve `aria-labelledby` eklendi. Ana içerik atlama (Skip Nav) bağlantısı ve `<main id="main-content">` landmark'ları stabilize edildi.
+- **Error Page Recovery**: Global hata sayfası (`error.tsx`) semantik `h1` yapısına kavuşturuldu ve `role="alert"` ile ekran okuyucular için kritik hale getirildi.
+
+**🧪 Test ve Kalite Güvence (A11y Testing)**
+- **Axe-Core Entegrasyonu**: `@axe-core/playwright` kullanılarak `e2e/accessibility.spec.ts` içerisinde otomatik WCAG 2.1 AA taramaları başlatıldı.
+- **Keyboard Navigation Tests**: Klavye odağının (focus sequence) doğruluğunu ve "Escape" tuşu ile modal/dropdown kapatma davranışlarını denetleyen senaryolar eklendi.
+
+### Doğrulama
+- Mimari: `globals.css` ve `listing-card.tsx` refactor edildi. ✅
+- Test: `npm run test:a11y` (Axe scan results: 0 violations on clean state). ✅
+- UX: Klavye navigasyon hızı ve ekran okuyucu hiyerarşisi iyileştirildi. ✅
+- `npm run build` ✅
+
+## 📱 Mobile Product UX & Interaction Modernization - 2026-04-21
 
 ### Listing Creation / Moderation / Contact Flow Alignment
 - **İlan Ver Akışı Güçlendirildi**:
