@@ -55,8 +55,8 @@ export default async function HomePage() {
         <HomeHero cities={references.cities.map((city) => city.city)} />
 
         {/* Quick Discovery */}
-        <section className="max-w-7xl mx-auto px-6 lg:px-8 py-16">
-          <div className="flex flex-col md:flex-row justify-between items-baseline gap-4 mb-8">
+        <section className="max-w-7xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8 py-6 sm:py-8 md:py-10 lg:py-16">
+          <div className="flex flex-col md:flex-row justify-between items-baseline gap-2 sm:gap-4 mb-4 sm:mb-6 md:mb-8">
             <div>
               <h2 className="text-2xl font-bold text-foreground tracking-tight mb-1">Hızlı Keşfet</h2>
               <p className="text-[10px] font-bold text-muted-foreground/60 uppercase tracking-widest">ARADIĞIN ARACA GİDEN EN KISA YOL</p>
@@ -66,7 +66,7 @@ export default async function HomePage() {
             </Link>
           </div>
           
-          <div className="grid gap-10 lg:grid-cols-2">
+          <div className="grid gap-4 sm:gap-6 lg:grid-cols-2">
             <div>
               <div className="mb-4 flex items-center gap-3">
                 <h3 className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/60">Markalar</h3>
@@ -127,8 +127,8 @@ export default async function HomePage() {
 
         {/* Featured Section */}
         {featuredListings.length > 0 && (
-          <section className="bg-muted/30 py-16">
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <section className="bg-muted/30 py-6 sm:py-8 md:py-10 lg:py-16">
+            <div className="max-w-7xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8">
               <div className="flex justify-between items-end mb-8">
                 <div className="flex items-center gap-2">
                   <h2 className="text-2xl font-bold text-foreground">Öne Çıkan İlanlar</h2>
@@ -147,7 +147,7 @@ export default async function HomePage() {
         )}
 
         {/* Latest Listings */}
-        <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+        <section className="max-w-7xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8 py-6 sm:py-8 md:py-10 lg:py-16">
           <div className="flex justify-between items-end mb-8">
             <h2 className="text-2xl font-bold text-foreground">Yeni İlanlar</h2>
             <Link href="/listings" prefetch={false} className="text-sm font-medium text-primary hover:text-primary/80 flex items-center transition">

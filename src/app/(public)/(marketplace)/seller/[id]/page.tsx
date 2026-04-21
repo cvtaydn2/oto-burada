@@ -48,7 +48,7 @@ export default async function SellerProfilePage({ params }: SellerProfilePagePro
   ]);
 
   return (
-    <div className="mx-auto max-w-[1280px] space-y-8 px-4 py-8 sm:px-6 lg:px-8">
+    <div className="mx-auto max-w-[1280px] space-y-4 sm:space-y-6 md:space-y-8 px-3 sm:px-4 md:px-6 lg:px-8 py-4 sm:py-6 md:py-8">
       {/* Seller Header */}
       <section className={cn("rounded-xl border p-6 lg:p-8 shadow-sm transition-colors", trustUI.styles.bg, trustUI.styles.border)}>
         <div className="flex flex-col gap-8 md:flex-row md:items-start md:justify-between">

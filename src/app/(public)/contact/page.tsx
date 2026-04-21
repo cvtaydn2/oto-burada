@@ -10,11 +10,11 @@ export const metadata = {
 
 export default function ContactPage() {
   return (
-    <div className="mx-auto max-w-[1200px] px-4 sm:px-6 py-12 space-y-16">
+    <div className="mx-auto max-w-[1200px] px-3 sm:px-4 md:px-6 py-6 sm:py-8 md:py-12 space-y-8 sm:space-y-12 md:space-y-16">
 
       {/* Header */}
       <div className="text-center">
-        <h1 className="text-4xl font-extrabold text-foreground mb-4">Bize Ulaşın</h1>
+        <h1 className="text-2xl sm:text-3xl md:text-4xl font-extrabold text-foreground mb-2 sm:mb-4">Bize Ulaşın</h1>
         <p className="text-muted-foreground max-w-2xl mx-auto">
           Soru, öneri veya işbirlikleri için ekibimizle iletişime geçebilirsiniz. Size en kısa sürede dönüş yapacağız.
         </p>

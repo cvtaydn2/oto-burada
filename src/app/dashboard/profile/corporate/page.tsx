@@ -20,7 +20,7 @@ export default async function CorporateSettingsPage() {
   const isRejected = profile.verificationStatus === "rejected";
 
   return (
-    <div className="space-y-6 max-w-4xl mx-auto">
+    <div className="space-y-4 sm:space-y-6 max-w-4xl mx-auto px-3 sm:px-4">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">

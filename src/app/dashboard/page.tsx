@@ -25,7 +25,7 @@ export default async function DashboardPage() {
   const favoriteCountPromise = getDatabaseFavoriteCount(user.id);
 
   return (
-    <div className="mx-auto max-w-[1440px] px-4 py-10 lg:px-10 lg:py-12 bg-background min-h-screen">
+    <div className="mx-auto max-w-[1440px] px-3 sm:px-4 py-6 sm:py-8 md:py-10 lg:px-10 lg:py-12 bg-background min-h-screen">
       <DashboardHeader />
 
       <div className="space-y-10">
