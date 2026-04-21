@@ -26,6 +26,7 @@ export function SiteHeaderAuth({
       <div className="hidden items-center gap-2 border-r border-border pr-4 md:flex">
         <Link
           href={favoritesHref}
+          prefetch={false}
           className="text-muted-foreground transition-colors hover:text-red-500"
           title="Favoriler"
         >
@@ -34,6 +35,7 @@ export function SiteHeaderAuth({
         {features.chat && (
           <Link
             href="/dashboard/messages"
+            prefetch={false}
             className="text-muted-foreground transition-colors hover:text-primary"
             title="Mesajlar"
           >
@@ -47,7 +49,7 @@ export function SiteHeaderAuth({
         {!isReady ? (
           <div className="size-8 rounded-full bg-muted animate-pulse" />
         ) : (
-          <Link href={accountHref} className="flex items-center gap-2 group">
+          <Link href={accountHref} prefetch={false} className="flex items-center gap-2 group">
             {isAuthenticated && userId ? (
               <div className="size-8 overflow-hidden rounded-full border border-border bg-blue-500 flex items-center justify-center text-white text-xs font-bold select-none">
                 <span>U</span>
@@ -62,6 +64,7 @@ export function SiteHeaderAuth({
 
         <Link
           href={postListingHref}
+          prefetch={false}
           className="hidden h-10 items-center justify-center gap-1.5 rounded-lg bg-blue-500 px-4 text-sm font-bold text-white shadow-sm transition-all hover:bg-blue-600 sm:flex"
         >
           <PlusCircle size={16} />

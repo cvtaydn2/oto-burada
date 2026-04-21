@@ -61,7 +61,7 @@ export default async function HomePage() {
               <h2 className="text-2xl font-bold text-foreground tracking-tight mb-1">Hızlı Keşfet</h2>
               <p className="text-[10px] font-bold text-muted-foreground/60 uppercase tracking-widest">ARADIĞIN ARACA GİDEN EN KISA YOL</p>
             </div>
-            <Link href="/listings" className="group flex items-center gap-2 text-sm font-semibold text-primary hover:underline transition-all">
+            <Link href="/listings" prefetch={false} className="group flex items-center gap-2 text-sm font-semibold text-primary hover:underline transition-all">
               Tümünü İncele <ChevronRight size={14} className="group-hover:translate-x-1 transition-transform" />
             </Link>
           </div>
@@ -76,6 +76,7 @@ export default async function HomePage() {
                   <Link
                     key={brand.slug}
                     href={`/satilik/${brand.slug}`}
+                    prefetch={false}
                     className="group bg-card border border-border rounded-xl p-4 transition-all hover:bg-muted"
                   >
                     <div className="flex items-center gap-3">
@@ -103,6 +104,7 @@ export default async function HomePage() {
                   <Link
                     key={city.slug}
                     href={`/satilik-araba/${city.slug}`}
+                    prefetch={false}
                     className="group bg-card border border-border rounded-xl p-4 transition-all hover:bg-muted"
                   >
                     <div className="flex items-center gap-3">
@@ -131,7 +133,7 @@ export default async function HomePage() {
                 <div className="flex items-center gap-2">
                   <h2 className="text-2xl font-bold text-foreground">Öne Çıkan İlanlar</h2>
                 </div>
-                <Link href="/listings?featured=true" className="text-sm font-medium text-primary hover:text-primary/80 flex items-center">
+                <Link href="/listings?featured=true" prefetch={false} className="text-sm font-medium text-primary hover:text-primary/80 flex items-center">
                   Tümünü Gör <ChevronRight size={14} className="ml-1" />
                 </Link>
               </div>
@@ -148,7 +150,7 @@ export default async function HomePage() {
         <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
           <div className="flex justify-between items-end mb-8">
             <h2 className="text-2xl font-bold text-foreground">Yeni İlanlar</h2>
-            <Link href="/listings" className="text-sm font-medium text-primary hover:text-primary/80 flex items-center transition">
+            <Link href="/listings" prefetch={false} className="text-sm font-medium text-primary hover:text-primary/80 flex items-center transition">
               Tümünü Gör <ChevronRight size={14} className="ml-1" />
             </Link>
           </div>
@@ -165,13 +167,13 @@ export default async function HomePage() {
               <p className="text-muted-foreground text-sm max-w-sm mx-auto">
                 İlk ilanı sen vererek platformda yerini alabilirsin. Türkiye&apos;nin en güvenilir pazarına hemen katıl!
               </p>
-              <Link href="/dashboard/listings/create" className="mt-6 inline-flex items-center justify-center bg-primary text-primary-foreground px-6 py-2.5 rounded-xl font-bold hover:bg-primary/90 transition">
+              <Link href="/dashboard/listings/create" prefetch={false} className="mt-6 inline-flex items-center justify-center bg-primary text-primary-foreground px-6 py-2.5 rounded-xl font-bold hover:bg-primary/90 transition">
                 Hemen İlan Ver
               </Link>
             </div>
           )}
           <div className="mt-12 flex justify-center">
-            <Link href="/listings" className="bg-primary text-primary-foreground px-8 py-3 rounded-xl font-bold hover:bg-primary/90 transition shadow-sm shadow-primary/20">
+            <Link href="/listings" prefetch={false} className="bg-primary text-primary-foreground px-8 py-3 rounded-xl font-bold hover:bg-primary/90 transition shadow-sm shadow-primary/20">
               Tüm İlanları Keşfet
             </Link>
           </div>
@@ -231,7 +233,7 @@ export default async function HomePage() {
                     <ul className="space-y-2 text-sm">
                       {references.brands.slice(0, 8).map(b => (
                         <li key={b.slug}>
-                          <Link href={`/satilik/${b.slug}`} className="text-muted-foreground hover:text-primary transition-colors">
+                          <Link href={`/satilik/${b.slug}`} prefetch={false} className="text-muted-foreground hover:text-primary transition-colors">
                             {b.brand} İlanları
                           </Link>
                         </li>
@@ -243,7 +245,7 @@ export default async function HomePage() {
                     <ul className="space-y-2 text-sm">
                       {references.cities.slice(0, 8).map(c => (
                         <li key={c.slug}>
-                          <Link href={`/satilik-araba/${c.slug}`} className="text-muted-foreground hover:text-primary transition-colors font-semibold">
+                          <Link href={`/satilik-araba/${c.slug}`} prefetch={false} className="text-muted-foreground hover:text-primary transition-colors font-semibold">
                             {c.city} Araç İlanları
                           </Link>
                         </li>

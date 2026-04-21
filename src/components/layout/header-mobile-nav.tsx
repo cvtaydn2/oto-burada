@@ -42,6 +42,7 @@ export function HeaderMobileNav({
       <div className="grid grid-cols-1 gap-2">
         <Link 
           href={accountHref}
+          prefetch={false}
           className="flex items-center h-14 px-4 rounded-2xl text-sm font-semibold text-foreground bg-muted/50 hover:bg-muted transition-all active:scale-[0.98]"
         >
           <UserIcon size={20} className="mr-3 text-muted-foreground" />
@@ -53,6 +54,7 @@ export function HeaderMobileNav({
         {isReady && !isAuthenticated && (
           <Link
             href="/register"
+            prefetch={false}
             className="flex items-center h-14 px-4 rounded-2xl text-sm font-semibold text-foreground bg-muted/50 hover:bg-muted transition-all active:scale-[0.98]"
           >
             <UserPlus size={20} className="mr-3 text-muted-foreground" />
@@ -62,6 +64,7 @@ export function HeaderMobileNav({
 
         <Link 
           href={favoritesHref}
+          prefetch={false}
           className="flex items-center h-14 px-4 rounded-2xl text-sm font-semibold text-foreground bg-muted/50 hover:bg-muted transition-all active:scale-[0.98]"
         >
           <Heart size={20} className="mr-3 text-muted-foreground" />
@@ -71,6 +74,7 @@ export function HeaderMobileNav({
         {isAdmin && (
           <Link 
             href="/admin"
+            prefetch={false}
             className="flex items-center h-14 px-4 rounded-2xl text-sm font-semibold text-foreground bg-muted/50 hover:bg-muted transition-all active:scale-[0.98]"
           >
             <PlusCircle size={20} className="mr-3 text-muted-foreground" />
@@ -80,6 +84,7 @@ export function HeaderMobileNav({
 
         <Link 
           href={postListingHref}
+          prefetch={false}
           className="flex items-center justify-center h-14 px-4 rounded-2xl text-sm font-bold text-white bg-primary shadow-lg shadow-primary/20 hover:bg-primary/90 transition-all active:scale-[0.98]"
         >
           <PlusCircle size={20} className="mr-2" />
@@ -94,6 +99,7 @@ export function HeaderMobileNav({
             <Link
               key={item.href}
               href={item.href}
+              prefetch={false}
               className="shrink-0 px-5 py-2.5 rounded-full bg-secondary text-secondary-foreground text-sm font-semibold whitespace-nowrap active:scale-95 transition-all"
             >
               {item.label}
