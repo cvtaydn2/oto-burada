@@ -11,7 +11,7 @@ export function HomeHero({ cities }: HomeHeroProps) {
       {/* Background with advanced gradient overlay */}
       <div className="absolute inset-0 z-0">
         <Image
-          src="https://images.unsplash.com/photo-1555215695-3004980ad54e?auto=format&fit=crop&w=2000&q=80"
+          src="/images/hero_bg.png"
           alt="Satılık araba ilanları"
           fill
           priority
@@ -19,7 +19,7 @@ export function HomeHero({ cities }: HomeHeroProps) {
           quality={85}
           className="object-cover"
         />
-        <div className="absolute inset-0 bg-gradient-to-r from-background/90 via-background/60 to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-r from-background/70 via-background/30 to-transparent" />
         <div className="absolute inset-x-0 bottom-0 h-40 bg-gradient-to-t from-background to-transparent" />
       </div>
       
