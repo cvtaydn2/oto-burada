@@ -95,6 +95,13 @@ $$;
 
 -- 4. TABLES
 
+-- Verification Status Enum
+DO $$ BEGIN
+  CREATE TYPE public.verification_status AS ENUM ('none', 'pending', 'approved', 'rejected');
+EXCEPTION
+  WHEN duplicate_object THEN null;
+END $$;
+
 -- Profiles
 CREATE TABLE IF NOT EXISTS public.profiles (
   id uuid PRIMARY KEY REFERENCES auth.users (id) ON DELETE RESTRICT,
@@ -117,6 +124,13 @@ CREATE TABLE IF NOT EXISTS public.profiles (
   business_slug text,
   is_banned boolean NOT NULL DEFAULT false,
   ban_reason text,
+  trust_score integer,
+  verification_status public.verification_status NOT NULL DEFAULT 'none',
+  verification_requested_at timestamptz,
+  verification_reviewed_at timestamptz,
+  verification_feedback text,
+  subscription_synced_at timestamptz,
+  storage_usage_bytes bigint NOT NULL DEFAULT 0,
   created_at timestamptz NOT NULL DEFAULT timezone('utc', now()),
   updated_at timestamptz NOT NULL DEFAULT timezone('utc', now())
 );
@@ -194,11 +208,16 @@ CREATE TABLE IF NOT EXISTS public.listings (
   fraud_score integer NOT NULL DEFAULT 0 CHECK (fraud_score BETWEEN 0 AND 100),
   fraud_reason text,
   status public.listing_status NOT NULL DEFAULT 'pending',
+  status_updated_at timestamptz,
+  display_id bigint,
   market_price_index decimal(12,2),
   featured boolean NOT NULL DEFAULT false,
   expert_inspection jsonb,
   view_count integer NOT NULL DEFAULT 0,
   version integer NOT NULL DEFAULT 0,
+  locked_until timestamptz,
+  locked_by uuid REFERENCES auth.users(id),
+  deletion_deadline timestamptz,
   published_at timestamptz,
   bumped_at timestamptz,
   featured_until timestamptz,
@@ -237,6 +256,32 @@ CREATE TABLE IF NOT EXISTS public.saved_searches (
   notifications_enabled boolean NOT NULL DEFAULT true,
   created_at timestamptz NOT NULL DEFAULT timezone('utc', now()),
   updated_at timestamptz NOT NULL DEFAULT timezone('utc', now())
+);
+
+-- Storage Registry
+CREATE TABLE IF NOT EXISTS public.storage_objects_registry (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  owner_id uuid NOT NULL REFERENCES public.profiles(id) ON DELETE CASCADE,
+  bucket_id text NOT NULL,
+  storage_path text NOT NULL,
+  source_entity_type text,
+  source_entity_id uuid,
+  file_name text,
+  file_size bigint,
+  mime_type text,
+  lifecycle_tier text DEFAULT 'hot',
+  tier_moved_at timestamptz,
+  created_at timestamptz NOT NULL DEFAULT timezone('utc', now()),
+  UNIQUE (bucket_id, storage_path)
+);
+
+CREATE TABLE IF NOT EXISTS public.storage_cleanup_queue (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  storage_path text NOT NULL,
+  bucket_id text NOT NULL,
+  status text NOT NULL DEFAULT 'pending',
+  scheduled_for timestamptz NOT NULL DEFAULT timezone('utc', now()),
+  created_at timestamptz NOT NULL DEFAULT timezone('utc', now())
 );
 
 -- Comms
@@ -335,7 +380,16 @@ CREATE TABLE IF NOT EXISTS public.payments (
   status text NOT NULL,
   description text,
   metadata jsonb,
-  created_at timestamptz NOT NULL DEFAULT timezone('utc', now())
+  listing_id uuid REFERENCES public.listings(id) ON DELETE SET NULL,
+  iyzico_token text,
+  iyzico_payment_id text,
+  idempotency_key text,
+  webhook_attempts integer NOT NULL DEFAULT 0,
+  processed_at timestamptz,
+  fulfilled_at timestamptz,
+  notified_at timestamptz,
+  created_at timestamptz NOT NULL DEFAULT timezone('utc', now()),
+  updated_at timestamptz NOT NULL DEFAULT timezone('utc', now())
 );
 
 COMMENT ON COLUMN public.payments.plan_id IS 'Satın alınan paket ID (ödeme sistemi aktif olduğunda doldurulur)';
@@ -348,6 +402,64 @@ CREATE TABLE IF NOT EXISTS public.pricing_plans (
   credits integer NOT NULL,
   features jsonb,
   is_active boolean NOT NULL DEFAULT true
+);
+
+-- Credit Transactions (Append-only ledger)
+CREATE TABLE IF NOT EXISTS public.credit_transactions (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id uuid NOT NULL REFERENCES public.profiles(id) ON DELETE CASCADE,
+  amount integer NOT NULL,
+  transaction_type text NOT NULL,
+  description text,
+  reference_id uuid,
+  metadata jsonb DEFAULT '{}'::jsonb,
+  created_at timestamptz NOT NULL DEFAULT timezone('utc', now())
+);
+
+-- Doping Applications
+CREATE TABLE IF NOT EXISTS public.doping_applications (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  listing_id uuid NOT NULL REFERENCES public.listings(id) ON DELETE CASCADE,
+  user_id uuid NOT NULL REFERENCES public.profiles(id) ON DELETE CASCADE,
+  doping_type text NOT NULL,
+  duration_days integer NOT NULL,
+  started_at timestamptz NOT NULL DEFAULT timezone('utc', now()),
+  expires_at timestamptz NOT NULL,
+  payment_id uuid REFERENCES public.payments(id) ON DELETE SET NULL,
+  metadata jsonb DEFAULT '{}'::jsonb,
+  status text NOT NULL DEFAULT 'active'
+);
+
+-- Transaction Outbox (Reliability/Saga Pattern)
+CREATE TABLE IF NOT EXISTS public.transaction_outbox (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  event_type text NOT NULL,
+  payload jsonb NOT NULL,
+  status text NOT NULL DEFAULT 'pending',
+  error_message text,
+  retry_count integer NOT NULL DEFAULT 0,
+  idempotency_key text,
+  is_poison_pill boolean NOT NULL DEFAULT false,
+  hard_deadline timestamptz,
+  created_at timestamptz NOT NULL DEFAULT timezone('utc', now()),
+  processed_at timestamptz
+);
+
+-- Compensating Actions (Refund/Saga Reliability)
+CREATE TABLE IF NOT EXISTS public.compensating_actions (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  transaction_id text NOT NULL,
+  action_type text NOT NULL,
+  payload jsonb NOT NULL,
+  status text NOT NULL DEFAULT 'pending',
+  retry_count integer NOT NULL DEFAULT 0,
+  max_retries integer NOT NULL DEFAULT 10,
+  last_error text,
+  next_attempt_at timestamptz,
+  is_poison_pill boolean NOT NULL DEFAULT false,
+  hard_deadline timestamptz,
+  created_at timestamptz NOT NULL DEFAULT timezone('utc', now()),
+  processed_at timestamptz
 );
 
 -- Audits & Stats

@@ -158,30 +158,30 @@ export function ListingGallery({ images, title, has360View = false }: ListingGal
           </div>
 
           {/* Thumbnails */}
-          <div className="overflow-hidden" ref={thumbRef}>
-            <div className="flex gap-3">
+          <div className="overflow-hidden py-2" ref={thumbRef}>
+            <div className="flex gap-2 sm:gap-3">
               {images.map((image, index) => (
                 <button
                   key={image.id || image.url}
                   onClick={() => onThumbClick(index)}
-                  className={`relative flex-[0_0_80px] sm:flex-[0_0_120px] aspect-[4/3] rounded-xl overflow-hidden border-2 transition-all ${
+                  className={`relative flex-[0_0_60px] sm:flex-[0_0_100px] md:flex-[0_0_120px] aspect-[4/3] rounded-lg sm:rounded-xl overflow-hidden border-2 transition-all touch-manipulation ${
                     index === currentIndex
-                      ? "border-primary ring-4 ring-primary/20 scale-95"
+                      ? "border-primary ring-2 ring-primary/30 scale-95"
                       : "border-transparent opacity-60 hover:opacity-100"
                   }`}
                 >
                   <Image
-                    src={supabaseImageUrl(image.url, 200, 70)}
+                    src={supabaseImageUrl(image.url, 150, 70)}
                     alt=""
                     fill
-                    sizes="120px"
+                    sizes="80px"
                     className="object-cover"
                     placeholder={image.placeholderBlur ? "blur" : "empty"}
                     blurDataURL={image.placeholderBlur ?? undefined}
                   />
                   {image.type === "360" && (
                     <div className="absolute inset-0 flex items-center justify-center bg-black/30">
-                      <Rotate3d size={16} className="text-white" />
+                      <Rotate3d size={14} className="text-white" />
                     </div>
                   )}
                 </button>
