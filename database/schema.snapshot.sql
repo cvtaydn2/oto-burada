@@ -198,6 +198,7 @@ CREATE TABLE IF NOT EXISTS public.listings (
   featured boolean NOT NULL DEFAULT false,
   expert_inspection jsonb,
   view_count integer NOT NULL DEFAULT 0,
+  version integer NOT NULL DEFAULT 0,
   published_at timestamptz,
   bumped_at timestamptz,
   featured_until timestamptz,

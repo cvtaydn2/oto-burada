@@ -1,3 +1,21 @@
+# 2026-04-21 - CSP Dev Relaxation & Schema Snapshot Alignment
+
+## Yapılan Değişiklikler
+
+- `src/lib/middleware/headers.ts`: CSP politikası environment-aware hale getirildi. Production CSP sıkı bırakıldı; development ortamında Next/Vercel live feedback ve inline style/script kullanan debug araçları için geçici `unsafe-inline` / `unsafe-eval` izni eklendi.
+- `database/schema.snapshot.sql`: `public.listings.version` kolonu snapshot'a eklendi. Kod, migration ve schema snapshot tekrar hizalandı.
+
+## Doğrulama
+
+- `npm run typecheck` ✅
+- `npm run lint` ✅
+- `npm run db:migrate` ⚠️ Çalıştırma denendi fakat bu makinede `psql` binary'si bulunmadığı için canlı migration uygulanamadı.
+
+## Sonraki Adım
+
+- `psql` kurulu bir ortamda `npm run db:migrate` çalıştırarak `0053_expert_hardening_phase3.sql` migration'ını canlı Supabase veritabanına uygula.
+- Migration sonrası listings sorgu loglarında `column listings.version does not exist` hatasının kaybolduğunu doğrula.
+
 # 2026-04-21 - Image Runtime & Listings Observability Fix
 
 ## Yapılan Değişiklikler
