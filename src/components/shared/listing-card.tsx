@@ -106,7 +106,11 @@ export function ListingCard({
             <Badge icon={Zap} label="ACİL" className="bg-rose-600 text-white shadow-lg shadow-rose-600/20" />
           )}
           {showTrust && badgeStates.hasInspection && (
-            <Badge icon={ShieldCheck} label="EKSPERTİZLİ" className="bg-emerald-600 text-white shadow-lg shadow-emerald-600/20" />
+            <Badge 
+              icon={ShieldCheck} 
+              label="EKSPERTİZLİ" 
+              className="bg-white/10 backdrop-blur-xl border border-white/20 text-white shadow-2xl font-black tracking-widest scale-105" 
+            />
           )}
         </div>
 
@@ -122,10 +126,10 @@ export function ListingCard({
 
         {/* Price Tag Overlay (Bottom Left on Grid) */}
         <div className="absolute bottom-4 left-4 flex items-center gap-2 z-10 pointer-events-none">
-          {showInsights && badgeStates.isAdvantageous && (
-            <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-500 text-white backdrop-blur-md text-[10px] font-bold uppercase tracking-widest shadow-xl">
+          {showInsights && insights.tone === "emerald" && (
+            <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-500 text-white backdrop-blur-md text-[10px] font-bold uppercase tracking-widest shadow-xl animate-in fade-in slide-in-from-left-4 duration-500">
               <TrendingDown size={12} />
-              FIRSAT
+              {insights.badgeLabel}
             </div>
           )}
           <div className="px-3 py-1.5 rounded-xl bg-black/30 backdrop-blur-md text-[9px] font-bold text-white uppercase tracking-[0.2em]">
@@ -148,11 +152,11 @@ export function ListingCard({
                <div className="size-1 rounded-full bg-slate-300" aria-hidden="true" />
                <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-widest">{listing.year}</span>
              </div>
-             {showInsights && (
+             {showInsights && insights.tone !== "emerald" && (
                <div className={cn(
-                 "text-[10px] font-bold uppercase tracking-widest px-3 py-1 rounded-lg border shadow-sm",
-                 insights.tone === "emerald" ? "bg-emerald-50 text-emerald-700 border-emerald-100" :
+                 "text-[9px] font-black uppercase tracking-[0.15em] px-2.5 py-1 rounded-lg border shadow-sm transition-all group-hover:scale-105",
                  insights.tone === "amber" ? "bg-amber-50 text-amber-700 border-amber-100" :
+                 insights.tone === "indigo" ? "bg-indigo-50 text-indigo-700 border-indigo-100" :
                  "bg-muted/50 text-muted-foreground border-border/10"
                )}>
                  {insights.badgeLabel}

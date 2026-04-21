@@ -234,7 +234,11 @@ export default async function ListingDetailPage({ params }: ListingDetailPagePro
                   </div>
                 </div>
 
-                <div className="text-left md:text-right w-full md:w-auto relative z-10">
+                <div className="text-left md:text-right w-full md:w-auto relative z-10 flex flex-col items-start md:items-end gap-3">
+                  <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-emerald-500/10 border border-emerald-500/20 shadow-sm animate-in zoom-in duration-700">
+                    <TrendingUp size={14} className="text-emerald-500" />
+                    <span className="text-[10px] font-bold text-emerald-600 uppercase tracking-widest">{insight.badgeLabel} İLAN</span>
+                  </div>
                   <div className="text-5xl md:text-6xl font-bold text-foreground tracking-tighter mb-1">
                     {new Intl.NumberFormat("tr-TR").format(listing.price)}<span className="text-2xl ml-1 text-muted-foreground/40 font-medium">TL</span>
                   </div>
@@ -242,16 +246,36 @@ export default async function ListingDetailPage({ params }: ListingDetailPagePro
                 </div>
               </div>
 
-              <ListingSpecs listing={listing} />
-
-              <div className="rounded-2xl border border-border bg-card p-10 shadow-sm relative group overflow-hidden">
-                <h2 className="text-xl font-bold text-foreground tracking-tight mb-8 relative">{listingDetail.trustSummary}</h2>
-                <TrustSummary 
-                  listing={listing} 
-                  seller={seller} 
-                  updatedAt={listing.updatedAt} 
-                />
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <div className="rounded-2xl border border-border bg-card p-8 shadow-sm relative group overflow-hidden">
+                  <h2 className="text-[11px] font-bold text-muted-foreground uppercase tracking-widest mb-6 relative flex items-center gap-2">
+                    <ShieldCheck size={14} className="text-primary" />
+                    {listingDetail.trustSummary}
+                  </h2>
+                  <TrustSummary 
+                    listing={listing} 
+                    seller={seller} 
+                    updatedAt={listing.updatedAt} 
+                  />
+                </div>
+                
+                <div className="rounded-2xl border border-border bg-primary/5 p-8 shadow-sm relative overflow-hidden flex flex-col justify-center">
+                  <div className="absolute top-0 right-0 p-8 text-primary/10 -rotate-12 transform scale-150">
+                    <Zap size={120} />
+                  </div>
+                  <div className="relative z-10 space-y-4">
+                    <h2 className="text-[11px] font-bold text-primary uppercase tracking-widest">AI FİYAT ANALİZİ</h2>
+                    <p className="text-lg font-semibold text-foreground leading-tight">&ldquo;{insight.summary}&rdquo;</p>
+                    <div className="flex flex-wrap gap-2 pt-2">
+                      {insight.highlights.map(h => (
+                        <span key={h} className="px-2 py-1 bg-background/50 border border-border rounded-lg text-[9px] font-bold uppercase tracking-widest text-muted-foreground">{h}</span>
+                      ))}
+                    </div>
+                  </div>
+                </div>
               </div>
+
+              <ListingSpecs listing={listing} />
 
               <div id="ekspertiz" className="scroll-mt-24 space-y-10">
                 <div className="rounded-2xl border border-border bg-card p-10 shadow-sm">

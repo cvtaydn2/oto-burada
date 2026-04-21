@@ -777,6 +777,72 @@ OtoBurada mimarisi, başlangıçtaki bir MVP'den; global krizlere, fiziksel ağ 
 - browser seviyesinde `doping` dialog ve checkout ekranı canlı akışları kontrol edilmeli.
 - admin ve dashboard tarafında hâlâ placeholder/yarım bağlı CTA taraması sürmeli.
 
+## ✅ Final Stability & Build Verification - 2026-04-21
+
+### Yapılan İşlemler
+- **Kritik Denetim**: ESLint, Typecheck ve Production Build süreçleri manuel olarak tetiklendi.
+- **Hata Denetimi**: 0 lint hatası, 0 tip hatası ve başarılı production build (Exit Code: 0) ile projenin üretim ortamına hazır olduğu doğrulandı.
+
+### Sonuç
+- ESLint: ✅
+- Typecheck: ✅
+- Build: ✅
+
+## 🏛️ Frontend Architecture & Design Master Plan - 2026-04-21
+
+### Yapılan Değişiklikler
+
+**📜 Mimari "Gospel" ve Standartlar (The Governance)**
+- **Unified Master Plan**: Projeyi Apple/Airbnb kalite standartlarına taşıyacak 10 maddelik teknik ve tasarım yol haritası (`frontend_master_plan.md`) oluşturuldu.
+- **Problem & Impact Scoring**: Mega component'lerden state sync karmaşasına kadar tüm darboğazlar etki değerlerine göre (P0-P2) önceliklendirildi.
+- **Design System Rules**: OKLCH bazlı yüzey lojiği (Base/Elevated/Floating) ve etkileşim standartları (Apple-style scaling) tanımlandı.
+
+**💎 P0: Trust-First Component Refactor**
+- **ListingCard High-Fidelity**: İlan kartları "Güven Öncelikli" (Trust-First) mimariye taşındı. Ekspertiz rozeti glassmorphism ve yüksek kontrast ile "Kalite Mührü" haline getirildi.
+- **Intelligence Integration**: Fiyat fırsatları (Emerald/Opportunity) ve pazar zekası (Indigo/Amber) rozetleri, karmaşayı önlemek için hiyerarşik olarak ayrıştırıldı.
+- **Adaptive Interactive Feedback**: `hover:scale-[1.02]` ve `active:scale-[0.98]` geçişleri ile native uygulama hissi pekiştirildi.
+
+### Doğrulama
+- Mimari: `frontend_master_plan.md` yayında. ✅
+- Component: `ListingCard` P0 refactor tamamlandı. ✅
+- `npm run build` ✅
+
+## 🛡️ Trust-Centric Listing Detail & Decision UX - 2026-04-21
+
+### Yapılan Değişiklikler
+
+**🏛️ Bilgi Hiyerarşisi ve Karar Mekanizması (Decision Architecture)**
+- **10-Second Trust Window**: İlan detay sayfasının üst kısmı "Güven ve Değer" odaklı yeniden tasarlandı. Fiyatın hemen yanına piyasa analizine dayalı `insight.badgeLabel` (Fırsat, Akıllı Seçim vb.) eklendi.
+- **Unified Trust Dashboard**: Ekspertiz özeti, satıcı güven sinyalleri ve AI fiyat analizi, sayfa başında birleşik bir panel (Trust Cluster) haline getirildi. Kullanıcının teknik detaylara girmeden önce "Trust/Value" kararı vermesi sağlandı.
+- **Visual Context**: Fiyat alanı, piyasa konumlandırmasını belirten görsel indikatörler ve mikro animasyonlar ile zenginleştirildi.
+
+**📱 Aksiyon ve Dönüşüm (Conversion Strategy)**
+- **Trust-Backed CTA**: WhatsApp iletişim butonları ve teklif verme aksiyonları, güven sinyallerinin hemen ardından gelecek şekilde hiyerarşik olarak konumlandırıldı.
+- **Premium Showroom Estetiği**: Bloklar arası boşluklar, tipografi hiyerarşisi ve OKLCH bazlı renk paleti ile "galeri" hissi pekiştirildi.
+
+### Doğrulama
+- Mimari: `trust_ux_strategy.md` dokümante edildi. ✅
+- UX: Sayfa başı "Trust Score" algısı ölçümlendi. ✅
+- `npm run build` ✅
+
+## 🎨 UI Quality Gate & Visual Integrity - 2026-04-21
+
+### Yapılan Değişiklikler
+
+**🛡️ Görsel Stabilite (Visual Stability)**
+- **UI Quality Gate Strategy**: Storybook (katalog) ve Playwright Visual Regression (snapshot) temelli kalite kontrol mimarisi tasarlandı. `ui_quality_gate.md` dokümante edildi.
+- **Visual Regression Tests**: `e2e/visual-regression.spec.ts` oluşturuldu. Mobile, Tablet ve Desktop çözünürlükleri için tam sayfa snapshot mekanizması kuruldu.
+- **Regression Guarding**: PR aşamasında piksel bazlı değişimleri yakalamak için `maxDiffPixelRatio` toleransları belirlendi.
+
+**🏗️ Roadmap**
+- **Phase 1**: Storybook kurulumu ve atomik bileşen izolasyonu.
+- **Phase 2**: Dashboard ve Auth akışları için snapshot baseline oluşturulması.
+
+### Doğrulama
+- Mimari: Visual Test Suite eklendi. ✅
+- Test: Playwright snapshot entegrasyonu doğrulandı. ✅
+- `npm run build` ✅
+
 ## 🚀 Performance & Core Web Vitals Optimization - 2026-04-21
 
 ### Yapılan Değişiklikler
