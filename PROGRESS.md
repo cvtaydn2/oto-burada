@@ -1,3 +1,41 @@
+# 2026-04-21 - Premium Architecture Audit Follow-up
+
+## Yapılan Değişiklikler
+
+- `src/components/shared/structured-data.tsx`: Mükerrer JSON-LD katmanı kaldırıldı. Shared API artık canonical `src/components/seo/structured-data.tsx` bileşenlerine wrapper olarak bağlanıyor; SEO schema üretimi tek kaynaktan yönetiliyor.
+- `src/components/admin/admin-analytics-client.tsx` ve `src/components/admin/blocks/analytics/analytics-components.tsx`: Admin analitik yüzeyindeki uydurma metrikler temizlendi. KPI ve dağılım panelleri artık gerçek server contract alanlarını yansıtıyor; şehir dağılımı ve marka tablosu daha dürüst ve sürdürülebilir hale getirildi.
+
+## Doğrulama
+
+- `npm run typecheck` ✅
+- `npm run lint` ⚠️ Mevcut, bağımsız hata: `src/lib/monitoring/posthog-client.ts:9` içinde `@typescript-eslint/no-explicit-any`
+
+## Sonraki Adım
+
+- Marketplace filtre mimarisindeki desktop/mobile ayrışmasını ortak alan primitive'lerinde birleştir.
+- `AdminOverviewPage` ve `MyListingsPanel` üzerindeki orchestration yoğunluğunu feature-level controller bileşenlerine taşı.
+- Listing detail breadcrumb / action composition'ını shared route shell ile standardize et.
+
+# 2026-04-21 - Production Quality Inspection Follow-up
+
+## Yapılan Değişiklikler
+
+- `src/services/listings/listing-submissions.ts`: Kalıcı silme akışı sertleştirildi. Artık yalnızca `archived` durumundaki ilanlar fiziksel olarak silinebiliyor; aktif/pending ilanlar için veri kaybı riski kapatıldı.
+- `src/features/marketplace/hooks/use-marketplace-logic.ts` ve `src/components/listings/listings-page-client.tsx`: Filtre uygulandıktan sonra sonuç sayısı artık ilk SSR değerinde takılmıyor. Header ve sonuç özeti güncel toplamı gösteriyor.
+- `playwright.config.ts`: Playwright keşfi düzeltildi. `tests/` altında duran senaryolar tekrar koşu planına dahil edildi; `npx playwright test --list` ile doğrulandı.
+
+## Doğrulama
+
+- `npm run typecheck` ✅
+- `npx playwright test --list` ✅ (`tests/` ve `e2e/` senaryoları listeleniyor)
+- `npm run lint` ⚠️ Mevcut, bağımsız hata: `src/lib/monitoring/posthog-client.ts:9` içinde `@typescript-eslint/no-explicit-any`
+
+## Sonraki Adım
+
+- İlgisiz lint hatasını temizle.
+- Contact form alanlarını programatik label/description ile erişilebilir hale getir.
+- Misafir kullanıcı için mobil navigasyonda auth-ready olmadan dashboard linki gösterilmesini düzelt.
+
 # 🏁 OtoBurada: Project Alpha-to-Omega Completed
 
 **Durum:** Üretim Ortamına Hazır (Architectural Excellence Level) 🚀

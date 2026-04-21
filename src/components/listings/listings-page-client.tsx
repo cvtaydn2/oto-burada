@@ -57,6 +57,7 @@ export function ListingsPageClient({
     setIsSortOpen,
     activeFiltersCount,
     allListings,
+    total,
     hasNextPage,
     isFetchingNextPage,
     fetchNextPage,
@@ -88,7 +89,7 @@ export function ListingsPageClient({
       {/* Header & Control Center */}
       <div className="mb-8">
         <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
-          <MarketplaceHeader filters={filters} total={initialResult.total} />
+          <MarketplaceHeader filters={filters} total={total} />
 
           <MarketplaceControls 
             filters={filters}
@@ -170,7 +171,7 @@ export function ListingsPageClient({
             <div className="space-y-8">
               <div className="flex flex-col gap-4 rounded-2xl border border-border bg-muted/30 p-6 sm:flex-row sm:items-center sm:justify-between">
                 <p className="text-sm font-bold text-muted-foreground">
-                  Toplam <span className="text-foreground font-bold">{initialResult.total}</span> ilan arasından <span className="text-foreground font-bold">{allListings.length}</span> araç gösteriliyor
+                  Toplam <span className="text-foreground font-bold">{total}</span> ilan arasından <span className="text-foreground font-bold">{allListings.length}</span> araç gösteriliyor
                 </p>
                 <div className="flex items-center gap-3">
                   <span className="text-[10px] font-bold text-muted-foreground/60 uppercase tracking-widest">Gösterim:</span>

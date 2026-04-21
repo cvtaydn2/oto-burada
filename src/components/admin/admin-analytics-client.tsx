@@ -31,21 +31,20 @@ export function AdminAnalyticsClient({ data, timeRange: initialTimeRange }: Admi
     router.push(`/admin/analytics?range=${range}`);
   };
 
-  const trafficMetrics = useMemo(() => ({
-    total: data.kpis.totalListings,
-    change: data.kpis.previousPeriodListings > 0 
-      ? Math.round(((data.kpis.totalListings - data.kpis.previousPeriodListings) / data.kpis.previousPeriodListings) * 100) 
+  const dashboardMetrics = useMemo(() => ({
+    totalListings: data.kpis.totalListings,
+    listingsChange: data.kpis.previousPeriodListings > 0
+      ? Math.round(((data.kpis.totalListings - data.kpis.previousPeriodListings) / data.kpis.previousPeriodListings) * 100)
       : 0,
-    users: data.kpis.totalUsers,
-    usersChange: data.kpis.previousPeriodUsers > 0 
-      ? Math.round(((data.kpis.totalUsers - data.kpis.previousPeriodUsers) / data.kpis.previousPeriodUsers) * 100) 
+    totalUsers: data.kpis.totalUsers,
+    usersChange: data.kpis.previousPeriodUsers > 0
+      ? Math.round(((data.kpis.totalUsers - data.kpis.previousPeriodUsers) / data.kpis.previousPeriodUsers) * 100)
       : 0,
-    revenue: data.kpis.totalRevenue,
-    revenueChange: data.kpis.previousPeriodRevenue > 0 
-      ? Math.round(((data.kpis.totalRevenue - data.kpis.previousPeriodRevenue) / data.kpis.previousPeriodRevenue) * 100) 
+    totalRevenue: data.kpis.totalRevenue,
+    revenueChange: data.kpis.previousPeriodRevenue > 0
+      ? Math.round(((data.kpis.totalRevenue - data.kpis.previousPeriodRevenue) / data.kpis.previousPeriodRevenue) * 100)
       : 0,
-    newListings: data.kpis.pendingApproval,
-    listingsChange: 5.2,
+    pendingApproval: data.kpis.pendingApproval,
   }), [data.kpis]);
 
   const channelStats = useMemo(() => {
@@ -59,15 +58,7 @@ export function AdminAnalyticsClient({ data, timeRange: initialTimeRange }: Admi
     }));
   }, [data.listingsByCity]);
 
-  const galleryPerformance = useMemo(() => {
-    return data.listingsByBrand.slice(0, 5).map((b) => ({
-      name: b.brand,
-      listings: b.count,
-      views: b.count * 45,
-      leads: Math.round(b.count * 1.8),
-      conversion: 1.8,
-    }));
-  }, [data.listingsByBrand]);
+  const brandPerformance = useMemo(() => data.listingsByBrand.slice(0, 5), [data.listingsByBrand]);
 
   const handleExport = () => {
     const csv = [
@@ -124,10 +115,10 @@ export function AdminAnalyticsClient({ data, timeRange: initialTimeRange }: Admi
 
       {/* KPI Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <AnalyticsKPICard label="Toplam Trafik" value={trafficMetrics.total} change={trafficMetrics.change} icon={MousePointer} variant="blue" />
-        <AnalyticsKPICard label="Yeni İlanlar" value={trafficMetrics.newListings} change={trafficMetrics.listingsChange} icon={Car} variant="cyan" />
-        <AnalyticsKPICard label="Kullanıcılar" value={trafficMetrics.users} change={trafficMetrics.usersChange} icon={Users} variant="indigo" />
-        <AnalyticsKPICard label="Net Gelir" value={trafficMetrics.revenue} change={trafficMetrics.revenueChange} icon={Wallet} variant="emerald" isCurrency />
+        <AnalyticsKPICard label="Toplam İlan" value={dashboardMetrics.totalListings} change={dashboardMetrics.listingsChange} icon={MousePointer} variant="blue" />
+        <AnalyticsKPICard label="Bekleyen Onay" value={dashboardMetrics.pendingApproval} change={0} icon={Car} variant="cyan" />
+        <AnalyticsKPICard label="Toplam Kullanıcı" value={dashboardMetrics.totalUsers} change={dashboardMetrics.usersChange} icon={Users} variant="indigo" />
+        <AnalyticsKPICard label="Toplam Gelir" value={dashboardMetrics.totalRevenue} change={dashboardMetrics.revenueChange} icon={Wallet} variant="emerald" isCurrency />
       </div>
 
       {/* Charts Row */}
@@ -137,7 +128,12 @@ export function AdminAnalyticsClient({ data, timeRange: initialTimeRange }: Admi
           activeChart={activeChart === "pie" ? "bar" : activeChart} 
           onChartTypeChange={setActiveChart} 
         />
-        <AcquisitionPanel channels={channelStats} />
+        <AcquisitionPanel
+          channels={channelStats}
+          title="Şehir Dağılımı"
+          description="Aktif ilanların şehirlere göre dağılımı."
+          metricLabel="ilan"
+        />
       </div>
 
       {/* Bottom Row */}
@@ -168,23 +164,17 @@ export function AdminAnalyticsClient({ data, timeRange: initialTimeRange }: Admi
               <thead>
                 <tr className="text-[11px] font-bold text-slate-400 uppercase tracking-wider border-b border-slate-100">
                   <th className="pb-3">Marka</th>
-                  <th className="pb-3 text-center">Aktif</th>
-                  <th className="pb-3 text-center">İzlenme</th>
-                  <th className="pb-3 text-center">Lead</th>
-                  <th className="pb-3 text-right">Dönüşüm</th>
+                  <th className="pb-3 text-right">Aktif İlan</th>
                 </tr>
               </thead>
               <tbody className="text-sm divide-y divide-slate-50">
-                {galleryPerformance.map((item, idx) => (
+                {brandPerformance.map((item, idx) => (
                   <tr key={idx} className="hover:bg-slate-50 transition-colors">
                     <td className="py-3 flex items-center font-bold text-slate-800 uppercase tracking-tighter italic">
                       <div className={`w-2 h-2 rounded-full mr-2 ${idx === 0 ? "bg-blue-500" : "bg-slate-300"}`} />
-                      {item.name}
+                      {item.brand}
                     </td>
-                    <td className="py-3 text-center text-slate-600 font-bold">{item.listings}</td>
-                    <td className="py-3 text-center text-slate-600 font-bold">{item.views.toLocaleString("tr-TR")}</td>
-                    <td className="py-3 text-center text-slate-600 font-bold">{item.leads}</td>
-                    <td className="py-3 text-right font-bold text-emerald-600">%{item.conversion}</td>
+                    <td className="py-3 text-right text-slate-600 font-bold">{item.count.toLocaleString("tr-TR")}</td>
                   </tr>
                 ))}
               </tbody>

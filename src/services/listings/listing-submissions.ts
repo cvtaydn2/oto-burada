@@ -130,6 +130,7 @@ export async function deleteDatabaseListing(listingId: string, sellerId: string)
   const listing = (await getDatabaseListings({ listingId, sellerId }))?.[0];
   
   if (!listing) return null;
+  if (listing.status !== "archived") return null;
 
   if (listing.images.length > 0) {
     const storagePaths = listing.images.map((img) => img.storagePath).filter((path) => path.length > 0);

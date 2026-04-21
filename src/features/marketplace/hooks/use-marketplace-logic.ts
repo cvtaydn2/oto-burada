@@ -59,6 +59,7 @@ export function useMarketplaceLogic({ initialResult, initialFilters }: UseMarket
   const [isSortOpen, setIsSortOpen] = useState(false);
 
   const allListings = data?.pages.flatMap(p => p.listings) ?? initialResult.listings;
+  const total = data?.pages[0]?.total ?? initialResult.total;
 
   return {
     filters,
@@ -70,6 +71,7 @@ export function useMarketplaceLogic({ initialResult, initialFilters }: UseMarket
     setIsSortOpen,
     activeFiltersCount,
     allListings,
+    total,
     hasNextPage,
     isFetchingNextPage,
     fetchNextPage,
@@ -78,4 +80,3 @@ export function useMarketplaceLogic({ initialResult, initialFilters }: UseMarket
     applyFilters
   };
 }
-

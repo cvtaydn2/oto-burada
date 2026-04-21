@@ -151,11 +151,23 @@ interface AcquisitionChannel {
   width: number;
 }
 
-export function AcquisitionPanel({ channels }: { channels: AcquisitionChannel[] }) {
+interface AcquisitionPanelProps {
+  channels: AcquisitionChannel[];
+  title?: string;
+  description?: string;
+  metricLabel?: string;
+}
+
+export function AcquisitionPanel({
+  channels,
+  title = "Kullanıcı Kazanımı",
+  description = "Kanallara göre yeni kayıtlar.",
+  metricLabel = "kayıt",
+}: AcquisitionPanelProps) {
   return (
     <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm flex flex-col">
-      <h2 className="text-lg font-bold text-slate-800 mb-1">Kullanıcı Kazanımı</h2>
-      <p className="text-xs text-slate-500 mb-6">Kanallara göre yeni kayıtlar.</p>
+      <h2 className="text-lg font-bold text-slate-800 mb-1">{title}</h2>
+      <p className="text-xs text-slate-500 mb-6">{description}</p>
 
       <div className="space-y-6 flex-1">
         {channels.map((channel) => (
@@ -163,7 +175,7 @@ export function AcquisitionPanel({ channels }: { channels: AcquisitionChannel[] 
             <div className="flex justify-between text-sm mb-2">
               <span className="font-bold text-slate-700">{channel.name}</span>
               <span className="text-xs text-slate-500 font-medium">
-                {channel.count} Kayıt 
+                {channel.count} {metricLabel}
                 <span className={cn("font-bold ml-1", channel.change >= 0 ? "text-emerald-500" : "text-rose-500")}>
                   {channel.change >= 0 ? "+" : ""}{channel.change}%
                 </span>
@@ -177,7 +189,7 @@ export function AcquisitionPanel({ channels }: { channels: AcquisitionChannel[] 
       </div>
 
       <button className="w-full mt-6 bg-white border border-slate-200 text-slate-600 py-2 rounded-xl text-xs font-bold uppercase tracking-widest hover:bg-slate-50 transition-all">
-        Detaylı Kanal Analizi
+        Detaylı Dağılım
       </button>
     </div>
   );
