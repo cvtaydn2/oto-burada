@@ -16,8 +16,9 @@ import { cn, formatNumber, formatPrice, supabaseImageUrl } from "@/lib/utils";
 import { type Listing } from "@/types";
 import { FavoriteButton } from "@/components/listings/favorite-button";
 import { SafeImage } from "@/components/shared/safe-image";
-import { getListingCardInsights } from "@/services/listings/listing-card-insights";
 import { getListingBadgeStates, getListingCoverImage } from "@/lib/utils/listing-logic";
+import { getSellerTrustUI } from "@/lib/utils/trust-ui";
+import { getListingCardInsights } from "@/services/listings/listing-card-insights";
 import { cva, type VariantProps } from "class-variance-authority";
 
 const cardVariants = cva(
@@ -62,6 +63,8 @@ export function ListingCard({
   const badgeStates = getListingBadgeStates(listing);
   const insights = getListingCardInsights(listing);
   const coverImage = getListingCoverImage(listing);
+  const { isPremiumVisible } = getSellerTrustUI(listing.seller);
+  
   const detailHref = `/listing/${listing.slug}`;
 
   const isGrid = variant === "grid";
@@ -69,7 +72,7 @@ export function ListingCard({
 
   return (
     <div 
-      className={cn(cardVariants({ variant, isHighlighted: badgeStates.isHighlighted }), className)}
+      className={cn(cardVariants({ variant, isHighlighted: badgeStates.isHighlighted && isPremiumVisible }), className)}
       role="article"
       aria-labelledby={`listing-title-${listing.id}`}
     >
@@ -99,10 +102,10 @@ export function ListingCard({
 
         {/* Floating Badges */}
         <div className="absolute top-4 left-4 flex flex-col gap-2 z-10 pointer-events-none">
-          {badgeStates.isFeatured && (
+          {badgeStates.isFeatured && isPremiumVisible && (
             <Badge icon={Sparkles} label="VİTRİN" className="bg-primary text-white shadow-lg shadow-primary/20" />
           )}
-          {badgeStates.isUrgent && (
+          {badgeStates.isUrgent && isPremiumVisible && (
             <Badge icon={Zap} label="ACİL" className="bg-rose-600 text-white shadow-lg shadow-rose-600/20" />
           )}
           {showTrust && badgeStates.hasInspection && (

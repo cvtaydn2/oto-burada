@@ -49,7 +49,7 @@ function getVerificationState(user: User | null | undefined) {
   };
 }
 
-function mapProfileRow(row: ProfileRow, authUser?: User | null) {
+function mapProfileRow(row: ProfileRow, authUser?: User | null): Profile {
   const verificationState = getVerificationState(authUser);
   const parsed = profileSchema.safeParse({
     avatarUrl: row.avatar_url,
@@ -119,7 +119,7 @@ function mapProfileRow(row: ProfileRow, authUser?: User | null) {
  * SECURITY: Role is ONLY resolved from app_metadata (trusted, server-controlled).
  * user_metadata.role is IGNORED to prevent privilege escalation.
  */
-export function buildProfileFromAuthUser(user: User) {
+export function buildProfileFromAuthUser(user: User): Profile {
   const userMetadata = user.user_metadata as {
     avatar_url?: string;
     business_address?: string;
@@ -167,6 +167,7 @@ export function buildProfileFromAuthUser(user: User) {
     websiteUrl: userMetadata.website_url ?? null,
     verifiedBusiness: appMetadata.verified_business === true,
     businessSlug: userMetadata.business_slug ?? null,
+    verificationStatus: 'none' as const,
     createdAt: user.created_at ?? timestamp,
     updatedAt: timestamp,
   };

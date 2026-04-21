@@ -1,10 +1,11 @@
 "use client";
 
 import Image from "next/image";
-import { Building2, ShieldCheck, FileText, Image as ImageIcon } from "lucide-react";
+import { Building2, ShieldCheck, FileText, Image as ImageIcon, Lock } from "lucide-react";
 import { useActionState } from "react";
 import { AuthSubmitButton } from "@/components/forms/auth-submit-button";
 import type { ProfileActionState } from "@/lib/auth/profile-actions";
+import { cn } from "@/lib/utils";
 
 interface CorporateProfileFormProps {
   action: (
@@ -21,6 +22,7 @@ interface CorporateProfileFormProps {
     businessLogoUrl: string;
     businessSlug: string;
   };
+  isReadOnly?: boolean;
 }
 
 const initialState: ProfileActionState = {};
@@ -28,6 +30,7 @@ const initialState: ProfileActionState = {};
 export function CorporateProfileForm({
   action,
   initialValues,
+  isReadOnly = false,
 }: CorporateProfileFormProps) {
   const [state, formAction] = useActionState(action, initialState);
   
@@ -43,16 +46,19 @@ export function CorporateProfileForm({
   };
 
   return (
-    <form action={formAction} className="space-y-6">
+    <form action={formAction} className={cn("space-y-6", isReadOnly && "pointer-events-none opacity-80")}>
       <section className="rounded-[1.75rem] border border-border/80 bg-background p-5 shadow-sm sm:p-6">
         <div className="flex items-start gap-3">
           <div className="flex size-11 shrink-0 items-center justify-center rounded-2xl bg-indigo-100 text-indigo-600">
             <Building2 className="size-5" />
           </div>
           <div className="space-y-1">
-            <h3 className="text-lg font-bold tracking-tight text-foreground uppercase italic">
-              Galeri & Marka Bilgileri
-            </h3>
+            <div className="flex items-center gap-2">
+              <h3 className="text-lg font-bold tracking-tight text-foreground uppercase italic">
+                Galeri & Marka Bilgileri
+              </h3>
+              {isReadOnly && <Lock size={14} className="text-muted-foreground" />}
+            </div>
             <p className="text-sm leading-6 text-muted-foreground">
               Mağaza sayfanızda ve ilan kartlarınızda görünecek kurumsal kimlik bilgileri.
             </p>
@@ -68,7 +74,8 @@ export function CorporateProfileForm({
               placeholder="Örn: Cevat Otomotiv"
               defaultValue={values.businessName}
               required
-              className="h-12 w-full rounded-xl border border-input bg-background px-4 text-sm outline-none transition-colors focus:border-indigo-500"
+              disabled={isReadOnly}
+              className="h-12 w-full rounded-xl border border-input bg-background px-4 text-sm outline-none transition-colors focus:border-indigo-500 disabled:bg-muted/50"
             />
           </label>
 
@@ -82,7 +89,8 @@ export function CorporateProfileForm({
                 placeholder="galeri-adiniz"
                 defaultValue={values.businessSlug}
                 required
-                className="h-12 w-full rounded-xl border border-input bg-background pl-[80px] pr-4 text-sm outline-none transition-colors focus:border-indigo-500 font-medium"
+                disabled={isReadOnly}
+                className="h-12 w-full rounded-xl border border-input bg-background pl-[80px] pr-4 text-sm outline-none transition-colors focus:border-indigo-500 font-medium disabled:bg-muted/50"
               />
             </div>
           </label>
@@ -94,7 +102,8 @@ export function CorporateProfileForm({
               placeholder="Galeriniz hakkında kısa bilgi..."
               defaultValue={values.businessDescription}
               rows={3}
-              className="w-full rounded-xl border border-input bg-background p-4 text-sm outline-none transition-colors focus:border-indigo-500 resize-none"
+              disabled={isReadOnly}
+              className="w-full rounded-xl border border-input bg-background p-4 text-sm outline-none transition-colors focus:border-indigo-500 resize-none disabled:bg-muted/50"
             />
           </label>
 
@@ -106,7 +115,8 @@ export function CorporateProfileForm({
                 name="businessLogoUrl"
                 placeholder="https://..."
                 defaultValue={values.businessLogoUrl}
-                className="h-12 flex-1 rounded-xl border border-input bg-background px-4 text-sm outline-none transition-colors focus:border-indigo-500"
+                disabled={isReadOnly}
+                className="h-12 flex-1 rounded-xl border border-input bg-background px-4 text-sm outline-none transition-colors focus:border-indigo-500 disabled:bg-muted/50"
               />
               <div className="size-12 rounded-xl border border-border bg-muted/30 flex items-center justify-center shrink-0 overflow-hidden">
                 {values.businessLogoUrl ? (
@@ -142,7 +152,8 @@ export function CorporateProfileForm({
               type="text"
               name="taxOffice"
               defaultValue={values.taxOffice}
-              className="h-12 w-full rounded-xl border border-input bg-background px-4 text-sm outline-none transition-colors focus:border-indigo-500"
+              disabled={isReadOnly}
+              className="h-12 w-full rounded-xl border border-input bg-background px-4 text-sm outline-none transition-colors focus:border-indigo-500 disabled:bg-muted/50"
             />
           </label>
 
@@ -152,7 +163,8 @@ export function CorporateProfileForm({
               type="text"
               name="taxId"
               defaultValue={values.taxId}
-              className="h-12 w-full rounded-xl border border-input bg-background px-4 text-sm outline-none transition-colors focus:border-indigo-500"
+              disabled={isReadOnly}
+              className="h-12 w-full rounded-xl border border-input bg-background px-4 text-sm outline-none transition-colors focus:border-indigo-500 disabled:bg-muted/50"
             />
           </label>
 
@@ -162,7 +174,8 @@ export function CorporateProfileForm({
               type="text"
               name="businessAddress"
               defaultValue={values.businessAddress}
-              className="h-12 w-full rounded-xl border border-input bg-background px-4 text-sm outline-none transition-colors focus:border-indigo-500"
+              disabled={isReadOnly}
+              className="h-12 w-full rounded-xl border border-input bg-background px-4 text-sm outline-none transition-colors focus:border-indigo-500 disabled:bg-muted/50"
             />
           </label>
 
@@ -173,7 +186,8 @@ export function CorporateProfileForm({
               name="websiteUrl"
               placeholder="https://..."
               defaultValue={values.websiteUrl}
-              className="h-12 w-full rounded-xl border border-input bg-background px-4 text-sm outline-none transition-colors focus:border-indigo-500"
+              disabled={isReadOnly}
+              className="h-12 w-full rounded-xl border border-input bg-background px-4 text-sm outline-none transition-colors focus:border-indigo-500 disabled:bg-muted/50"
             />
           </label>
         </div>
@@ -192,9 +206,11 @@ export function CorporateProfileForm({
         </p>
       )}
 
-      <div className="flex justify-end">
-        <AuthSubmitButton label="Kurumsal Bilgileri Kaydet" />
-      </div>
+      {!isReadOnly && (
+        <div className="flex justify-end">
+          <AuthSubmitButton label="Kurumsal Bilgileri Kaydet" />
+        </div>
+      )}
     </form>
   );
 }

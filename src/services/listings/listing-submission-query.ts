@@ -63,6 +63,8 @@ export const listingSelect = `
     is_banned,
     ban_reason,
     verified_business,
+    verification_status,
+    trust_score,
     business_slug,
     created_at,
     updated_at
@@ -156,6 +158,8 @@ export function mapListingRow(row: ListingRow): Listing {
       isBanned: row.profiles.is_banned,
       banReason: row.profiles.ban_reason,
       verifiedBusiness: row.profiles.verified_business,
+      verificationStatus: row.profiles.verification_status,
+      trustScore: row.profiles.trust_score ?? undefined,
       businessSlug: row.profiles.business_slug,
       emailVerified: false,
       createdAt: row.profiles.created_at ?? "",

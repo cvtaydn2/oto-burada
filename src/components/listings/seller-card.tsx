@@ -6,7 +6,9 @@ import { CheckCircle2, Lock } from "lucide-react"
 import { TrustBadge } from "@/components/shared/trust-badge"
 import { ContactActions } from "@/components/listings/contact-actions"
 import type { Profile } from "@/types"
-import { cn } from "@/lib/utils"
+import { cn } from "@/lib/utils";
+import { trust } from "@/lib/constants/ui-strings";
+import { getSellerTrustUI } from "@/lib/utils/trust-ui";
 import { SellerRatingInfo } from "@/components/profile/seller-rating-info"
 
 interface SellerCardProps {
@@ -30,6 +32,7 @@ export function SellerCard({
   loginUrl,
   ratingSummary,
 }: SellerCardProps) {
+  const { isProfessional } = getSellerTrustUI(seller);
   return (
     <div className="rounded-[40px] border border-border/50 bg-card overflow-hidden shadow-sm shadow-slate-200/20">
       <div className="p-8">
@@ -51,11 +54,13 @@ export function SellerCard({
             <div className="flex items-center gap-3">
               <span className={cn(
                 "text-[10px] font-bold uppercase px-2 py-0.5 rounded-lg tracking-widest italic",
-                (seller?.userType === "professional" && !seller?.isBanned) ? "bg-primary/10 text-primary" : "bg-muted text-muted-foreground"
+                isProfessional 
+                  ? "bg-primary/10 text-primary border border-primary/20" 
+                  : "bg-muted text-muted-foreground"
               )}>
-                {(seller?.userType === "professional" && !seller?.isBanned) ? "Kurumsal Galeri" : "Bireysel"}
+                {isProfessional ? trust.professional : trust.individual}
               </span>
-              {seller?.businessSlug && !seller?.isBanned && (
+              {seller?.businessSlug && isProfessional && (
                 <Link 
                   href={`/gallery/${seller.businessSlug}`}
                   className="text-[10px] font-bold uppercase text-primary hover:underline italic tracking-widest"

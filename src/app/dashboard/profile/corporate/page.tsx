@@ -2,14 +2,19 @@ import { requireUser } from "@/lib/auth/session";
 import { getStoredProfileById, buildProfileFromAuthUser } from "@/services/profile/profile-records";
 import { CorporateProfileForm } from "@/components/forms/corporate-profile-form";
 import { updateCorporateProfileAction } from "@/lib/auth/profile-actions";
-import { Building2, ArrowLeft, CheckCircle2, Globe, MapPin } from "lucide-react";
+import { Building2, ArrowLeft, CheckCircle2, Globe, MapPin, AlertTriangle, XCircle } from "lucide-react";
 import Link from "next/link";
+import { trust } from "@/lib/constants/ui-strings";
 
 export const dynamic = "force-dynamic";
 
 export default async function CorporateSettingsPage() {
   const user = await requireUser();
   const profile = (await getStoredProfileById(user.id)) ?? buildProfileFromAuthUser(user);
+  
+  const isApproved = profile.verificationStatus === "approved";
+  const isPending = profile.verificationStatus === "pending";
+  const isRejected = profile.verificationStatus === "rejected";
 
   return (
     <div className="space-y-6 max-w-4xl mx-auto">
@@ -29,22 +34,59 @@ export default async function CorporateSettingsPage() {
             <p className="text-sm text-muted-foreground mt-0.5">Profesyonel galeri kimliğinizi yönetin</p>
           </div>
         </div>
-        {profile.verifiedBusiness && (
+        
+        {isApproved && (
           <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-50 text-emerald-700 text-xs font-bold border border-emerald-100">
             <CheckCircle2 size={14} />
-            DOĞRULANMIŞ İŞLETME
+            {trust.verifiedBusiness}
+          </div>
+        )}
+        {isPending && (
+          <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-amber-50 text-amber-700 text-xs font-bold border border-amber-100">
+            <AlertTriangle size={14} />
+            {trust.verificationPending}
+          </div>
+        )}
+        {isRejected && (
+          <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-rose-50 text-rose-700 text-xs font-bold border border-rose-100">
+            <XCircle size={14} />
+            {trust.verificationRejected}
           </div>
         )}
       </div>
 
-      {/* Info Banner */}
-      {!profile.verifiedBusiness && (
+      {/* Info/Warning Banner */}
+      {isPending && (
+        <div className="rounded-xl border border-amber-100 bg-amber-50/50 p-4 flex items-start gap-3">
+          <AlertTriangle size={18} className="text-amber-500 mt-0.5 shrink-0" />
+          <div>
+            <p className="text-sm font-bold text-amber-800 tracking-tight uppercase tracking-widest">{trust.accountUnderReview}</p>
+            <p className="text-xs text-amber-600 mt-1 font-medium">
+              {trust.verificationPendingDesc}
+            </p>
+          </div>
+        </div>
+      )}
+
+      {isRejected && (
+        <div className="rounded-xl border border-rose-100 bg-rose-50/50 p-4 flex items-start gap-3">
+          <XCircle size={18} className="text-rose-500 mt-0.5 shrink-0" />
+          <div>
+            <p className="text-sm font-bold text-rose-800 tracking-tight uppercase tracking-widest">{trust.verificationRejected}</p>
+            <p className="text-xs text-rose-600 mt-1 font-medium">
+              {trust.verificationRejectedDesc}
+            </p>
+          </div>
+        </div>
+      )}
+
+      {!isApproved && !isPending && !isRejected && (
         <div className="rounded-xl border border-blue-100 bg-blue-50/50 p-4 flex items-start gap-3">
           <Building2 size={18} className="text-blue-500 mt-0.5 shrink-0" />
           <div>
-            <p className="text-sm font-bold text-blue-800">Kurumsal Hesap Avantajları</p>
+            <p className="text-sm font-bold text-blue-800">Kurumsal Hesap Başvurusu</p>
             <p className="text-xs text-blue-600 mt-1">
-              Kurumsal mağaza açarak galeri sayfanızı oluşturun, tüm ilanlarınızı tek çatı altında toplayın ve alıcılara profesyonel bir görünüm sunun.
+              Kurumsal mağaza açarak galeri sayfanızı oluşturun, tüm ilanlarınızı tek çatı altında toplayın ve alıcılara profesyonel bir görünüm sunun. Başvurunuz ardından ekibimiz bilgilerinizi inceleyecektir.
             </p>
           </div>
         </div>
@@ -99,6 +141,7 @@ export default async function CorporateSettingsPage() {
           websiteUrl: profile.websiteUrl ?? "",
           businessLogoUrl: profile.businessLogoUrl ?? "",
         }}
+        isReadOnly={isPending}
       />
     </div>
   );

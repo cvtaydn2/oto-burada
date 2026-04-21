@@ -62,10 +62,12 @@ async function DashboardDataSection({
   const profile = storedProfile ?? buildProfileFromAuthUser(user);
   const pendingCount = storedListings.filter((l) => l.status === "pending").length;
   const approvedCount = storedListings.filter((l) => l.status === "approved").length;
-
   return (
     <div className="space-y-10">
-      <DashboardVerificationAlert isVerified={profile?.emailVerified} />
+      <DashboardVerificationAlert 
+        isEmailVerified={profile?.emailVerified} 
+        profile={profile} 
+      />
 
       <DashboardStats 
         approvedCount={approvedCount} 

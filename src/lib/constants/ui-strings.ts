@@ -282,3 +282,30 @@ export const seller = {
   ratings: "DEĞERLENDİRME",
   gallery: "Galeri"
 } as const;
+
+export const trust = {
+  // Labels
+  professional: "Kurumsal Galeri",
+  individual: "Bireysel",
+  verifiedBusiness: "İŞLETME DOĞRULANDI",
+  identityVerified: "KİMLİK DOĞRULANDI",
+  verificationPending: "İNCELENİYOR",
+  unverified: "DOĞRULAMA YOK",
+  restricted: "KISITLI HESAP",
+  
+  // Restriction Messages (Seller facing)
+  accountUnderReview: "Hesap İnceleme Altında",
+  restrictionNotice: "Güvenlik incelemesi tamamlanana kadar ek güven sinyali gösterilmez.",
+  dopingRestriction: "Güvenlik politikalarımız gereği, inceleme sürecindeki hesaplar premium özellikleri geçici olarak kullanamazlar.",
+  
+  // Contact Blocks (Buyer facing)
+  contactBlocked: "Kısıtlı İletişim",
+  contactBlockedDesc: "Bu satıcının iletişim seçenekleri hesap incelemesi nedeniyle geçici olarak kısıtlanmıştır.",
+  
+  // Detailed Feedback (Seller facing)
+  verificationRejected: "Başvuru Reddedildi",
+  verificationRejectedDesc: "İşletme bilgileriniz doğrulanamadı. Lütfen bilgileri kontrol edip tekrar başvurun.",
+  verificationPendingDesc: "Bilgileriniz uzman ekibimiz tarafından inceleniyor. Bu süreçte bazı özellikler kısıtlanabilir.",
+  accountRestrictedTitle: "Hesap İşlemlere Kısıtlandı",
+  accountRestrictedDesc: "Güvenlik politikası ihlali nedeniyle hesabınız kısıtlanmıştır. Lütfen destek ile iletişime geçin."
+} as const;

@@ -1,5 +1,6 @@
 import { cn } from "@/lib/utils";
-import { getProfileRestrictionState } from "@/services/profile/profile-restrictions";
+import { trust } from "@/lib/constants/ui-strings";
+import { getSellerTrustUI } from "@/lib/utils/trust-ui";
 
 type TrustTone = "emerald" | "amber" | "blue" | "slate";
 
@@ -33,15 +34,17 @@ interface TrustSummaryProps {
     tramerAmount?: number | null;
     fraudScore?: number;
   };
-  seller?: Partial<{ isVerified: boolean; verifiedBusiness?: boolean }> | null;
+  seller?: any | null; // Use any to allow partial profiles
   updatedAt: string;
 }
 
 export function TrustSummary({ listing, seller, updatedAt }: TrustSummaryProps) {
   const lastUpdatedAt = new Date(updatedAt);
-  const restrictionState = getProfileRestrictionState(seller);
-  const sellerVerified =
-    restrictionState === "active" && (seller?.verifiedBusiness || seller?.isVerified);
+  const { label, tone, isTrusted } = getSellerTrustUI(seller);
+  
+  const restrictionNotice = seller?.verificationStatus === "pending" || seller?.verificationStatus === "rejected" 
+    ? trust.restrictionNotice 
+    : null;
 
   const trustItems = [
     {
@@ -62,25 +65,9 @@ export function TrustSummary({ listing, seller, updatedAt }: TrustSummaryProps) 
     },
     {
       title: "Satıcı",
-      value: restrictionState === "restricted_review"
-        ? "İNCELEMEDE"
-        : restrictionState === "banned"
-          ? "KISITLI"
-          : sellerVerified
-            ? "DOĞRULANDI"
-            : "DOĞRULANMADI",
-      description: restrictionState === "restricted_review"
-        ? "Güvenlik incelemesi tamamlanana kadar ek güven sinyali gösterilmez"
-        : restrictionState === "banned"
-          ? "Hesap kısıtlı durumda"
-          : seller?.verifiedBusiness
-            ? "İşletme bilgileri onaylı"
-            : seller?.isVerified
-              ? "Kimlik doğrulandı"
-              : "Profil var, ek doğrulama görünmüyor",
-      tone: restrictionState === "active"
-        ? sellerVerified ? "emerald" as const : "amber" as const
-        : "slate" as const,
+      value: label,
+      description: restrictionNotice || (isTrusted ? "Doğrulanmış ve aktif profil" : "Profil doğrulaması tamamlanmamış"),
+      tone: tone,
     },
     {
       title: "Son Güncelleme",

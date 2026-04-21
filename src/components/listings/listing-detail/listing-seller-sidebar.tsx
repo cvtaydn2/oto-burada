@@ -1,4 +1,6 @@
 import { ShieldCheck, MessageSquare, Phone, Store, Star, CalendarDays } from "lucide-react";
+import { trust } from "@/lib/constants/ui-strings";
+import { getSellerTrustUI } from "@/lib/utils/trust-ui";
 import { Button } from "@/components/ui/button";
 import { Panel } from "@/components/shared/design-system/Panel";
 import { getSellerRatingSummary } from "@/services/profile/seller-reviews";
@@ -6,6 +8,8 @@ import { getMemberSinceYear, getMembershipYears } from "@/lib/utils/listing-util
 import { getProfileRestrictionState } from "@/services/profile/profile-restrictions";
 import type { Listing, Profile } from "@/types";
 import type { User } from "@supabase/supabase-js";
+import { ContactActions } from "@/components/listings/contact-actions";
+
 
 interface ListingSellerSidebarProps {
   listing: Listing;
@@ -22,18 +26,7 @@ export async function ListingSellerSidebar({
   const memberSince = getMemberSinceYear(seller?.createdAt ?? null);
   const membershipYears = getMembershipYears(memberSince);
   const isOwner = currentUser?.id === listing.sellerId;
-  const restrictionState = getProfileRestrictionState(seller);
-  const sellerVerified =
-    restrictionState === "active" && (seller?.verifiedBusiness || seller?.isVerified);
-  const sellerBadgeLabel = restrictionState === "restricted_review"
-    ? "İNCELENİYOR"
-    : restrictionState === "banned"
-      ? "KISITLI HESAP"
-      : seller?.verifiedBusiness
-    ? "İŞLETME DOĞRULANDI"
-    : seller?.isVerified
-      ? "KİMLİK DOĞRULANDI"
-      : "DOĞRULAMA YOK";
+  const { label, isTrusted, tone, isContactable } = getSellerTrustUI(seller);
 
   return (
     <div className="w-full lg:w-[400px] space-y-10 shrink-0">
@@ -48,14 +41,14 @@ export async function ListingSellerSidebar({
             </h3>
             <div className="flex items-center gap-2">
               <div className={`flex h-5 items-center gap-1.5 rounded-md px-2 text-[10px] font-bold uppercase tracking-widest border ${
-                sellerVerified
+                isTrusted
                   ? "bg-emerald-500/10 text-emerald-600 border-emerald-500/20"
-                  : restrictionState === "active"
-                    ? "bg-amber-500/10 text-amber-700 border-amber-500/20"
-                    : "bg-rose-500/10 text-rose-700 border-rose-500/20"
+                  : tone === "slate"
+                    ? "bg-slate-500/10 text-slate-700 border-slate-500/20"
+                    : "bg-amber-500/10 text-amber-700 border-amber-500/20"
               }`}>
                 <ShieldCheck size={12} strokeWidth={3} />
-                {sellerBadgeLabel}
+                {label}
               </div>
               <div className="flex h-5 items-center gap-1.5 rounded-md bg-muted px-2 text-[10px] font-bold uppercase tracking-widest text-muted-foreground border border-border">
                 {seller?.userType === "professional" ? "Galeri" : "Bireysel"}
@@ -87,20 +80,13 @@ export async function ListingSellerSidebar({
 
         <div className="space-y-4">
           {!isOwner && (
-            <>
-              <a href={`https://wa.me/${listing.whatsappPhone}?text=Merhaba, ${listing.title} ilanınızla ilgileniyorum.`} target="_blank" rel="noreferrer">
-                <Button className="w-full h-16 rounded-2xl bg-[#25D366] hover:bg-[#20ba59] text-white font-bold text-base shadow-lg shadow-green-500/10 flex items-center justify-center gap-3 group transition-all">
-                  <MessageSquare size={20} className="group-hover:scale-110 transition-transform" />
-                  WHATSAPP İLE SOR
-                </Button>
-              </a>
-              <a href={`tel:${listing.whatsappPhone}`}>
-                <Button variant="outline" className="w-full h-16 rounded-2xl border-2 border-border/60 font-bold text-base hover:bg-muted/50 flex items-center justify-center gap-3 group transition-all">
-                  <Phone size={20} className="group-hover:rotate-12 transition-transform" />
-                  HEMEN ARA
-                </Button>
-              </a>
-            </>
+            <ContactActions 
+              listingId={listing.id} 
+              listingSlug={listing.slug} 
+              sellerId={listing.sellerId} 
+              seller={seller}
+              currentUserId={currentUser?.id}
+            />
           )}
           <div className="pt-4 flex flex-col items-center gap-2">
             <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">SHOWROOM STANDARTI</p>

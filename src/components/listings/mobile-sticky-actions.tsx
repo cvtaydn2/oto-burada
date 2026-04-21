@@ -4,6 +4,7 @@ import dynamic from "next/dynamic";
 
 import { useAuthUser } from "@/components/shared/auth-provider";
 import { formatCurrency } from "@/lib/utils";
+import type { Profile } from "@/types";
 
 const ContactActions = dynamic(
   () => import("./contact-actions").then((mod) => mod.ContactActions),
@@ -16,6 +17,7 @@ interface MobileStickyActionsProps {
     listingId: string;
     listingSlug: string;
     sellerId: string;
+    seller?: Partial<Profile> | null;
     price: number;
     currentUserId?: string | null;
 }
@@ -24,6 +26,7 @@ export function MobileStickyActions({
     listingId, 
     listingSlug,
     sellerId,
+    seller,
     price,
     currentUserId,
 }: MobileStickyActionsProps) {
@@ -46,7 +49,7 @@ export function MobileStickyActions({
 
                     <div className="flex-1 max-w-[200px]">
                         {isAuthenticated ? (
-                            <ContactActions listingId={listingId} listingSlug={listingSlug} sellerId={sellerId} currentUserId={currentUserId} />
+                            <ContactActions listingId={listingId} listingSlug={listingSlug} sellerId={sellerId} seller={seller} currentUserId={currentUserId} />
                         ) : (
                             <a
                                 href={loginUrl}

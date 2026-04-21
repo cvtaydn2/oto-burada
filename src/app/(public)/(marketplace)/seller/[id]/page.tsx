@@ -11,6 +11,8 @@ import { getSellerTrustSummary } from "@/services/profile/profile-trust";
 import { getSellerRatingSummary, getSellerReviews } from "@/services/profile/seller-reviews";
 import { getProfileRestrictionState } from "@/services/profile/profile-restrictions";
 import type { Listing } from "@/types";
+import { getSellerTrustUI } from "@/lib/utils/trust-ui";
+
 
 interface SellerProfilePageProps {
   params: Promise<{
@@ -91,7 +93,7 @@ export default async function SellerProfilePage({ params }: SellerProfilePagePro
 
           {/* Actions */}
           <div className="flex w-full gap-2 sm:w-auto">
-            {seller.phone && (
+            {seller.phone && getSellerTrustUI(seller).isContactable && (
               <Button size="lg" className="flex-1 rounded-xl bg-[#25D366] hover:bg-[#1fb355] text-white font-bold text-xs tracking-widest uppercase md:px-8 shadow-sm" asChild>
                 <a href={`https://wa.me/${seller.phone.replace(/\D/g, "")}`} target="_blank" rel="noopener noreferrer">
                   <MessageSquare size={16} className="mr-2 fill-current" />

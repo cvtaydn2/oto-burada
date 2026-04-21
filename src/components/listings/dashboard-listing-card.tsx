@@ -16,6 +16,8 @@ import {
   Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger,
 } from "@/components/ui/dialog";
 import { ListingDopingPanel } from "./listing-doping-panel";
+import { getProfileRestrictionState } from "@/services/profile/profile-restrictions";
+
 import { Checkbox } from "@/components/ui/checkbox";
 import { cn } from "@/lib/utils";
 
@@ -186,7 +188,11 @@ export function DashboardListingCard({
                        {listing.title} ilanınız için doping paketi seçerek satışı hızlandırın.
                     </DialogDescription>
                   </DialogHeader>
-                  <ListingDopingPanel listingId={listing.id} listingTitle={listing.title} />
+                  <ListingDopingPanel 
+                    listingId={listing.id} 
+                    listingTitle={listing.title} 
+                    isRestricted={getProfileRestrictionState(listing.seller) !== "active"}
+                  />
                 </div>
               </DialogContent>
             </Dialog>

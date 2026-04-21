@@ -175,6 +175,7 @@ export default async function ListingDetailPage({ params }: ListingDetailPagePro
         listingId={listing.id} 
         listingSlug={listing.slug} 
         sellerId={listing.sellerId} 
+        seller={seller}
         price={listing.price} 
         currentUserId={currentUser?.id ?? null} 
       />

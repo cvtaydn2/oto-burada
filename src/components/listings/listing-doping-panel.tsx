@@ -11,6 +11,7 @@ import {
   TrendingUp,
   AlertTriangle
 } from "lucide-react";
+import { trust } from "@/lib/constants/ui-strings";
 import { DOPING_PRICES } from "@/lib/payment/constants";
 import { Button } from "@/components/ui/button";
 import {
@@ -42,9 +43,10 @@ const DOPING_OPTIONS = [
 interface ListingDopingPanelProps {
   listingId: string;
   listingTitle: string;
+  isRestricted?: boolean;
 }
 
-export function ListingDopingPanel({ listingId, listingTitle }: ListingDopingPanelProps) {
+export function ListingDopingPanel({ listingId, listingTitle, isRestricted }: ListingDopingPanelProps) {
   const router = useRouter();
   const [selected, setSelected] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
@@ -175,14 +177,30 @@ export function ListingDopingPanel({ listingId, listingTitle }: ListingDopingPan
             <span className="text-sm font-medium">Seçilen Hizmetler:</span>
             <span className="font-bold text-lg">{totalPrice}₺</span>
           </div>
-          <Button 
-            className="w-full h-12 text-lg font-bold"
-            disabled={selected.length === 0 || loading}
-            onClick={handleApply}
-          >
-            {loading ? "İşleniyor..." : "Dopingleri Uygula"}
-          </Button>
-          {message ? (
+
+          {isRestricted ? (
+            <div className="rounded-xl border border-amber-200 bg-amber-50 p-4 mb-4">
+              <div className="flex gap-3">
+                <AlertTriangle className="h-5 w-5 text-amber-600 shrink-0" />
+                <div className="space-y-1">
+                  <p className="text-sm font-bold text-amber-900">{trust.accountUnderReview}</p>
+                  <p className="text-xs text-amber-700 leading-relaxed">
+                    {trust.dopingRestriction}
+                  </p>
+                </div>
+              </div>
+            </div>
+          ) : (
+            <Button 
+              className="w-full h-12 text-lg font-bold"
+              disabled={selected.length === 0 || loading}
+              onClick={handleApply}
+            >
+              {loading ? "İşleniyor..." : "Dopingleri Uygula"}
+            </Button>
+          )}
+          
+          {!isRestricted && (message ? (
             <div
               className={`mt-3 flex items-center gap-2 rounded-xl border px-3 py-2 text-sm ${
                 status === "success"
@@ -197,7 +215,7 @@ export function ListingDopingPanel({ listingId, listingTitle }: ListingDopingPan
             <p className="text-[10px] text-center text-muted-foreground mt-3">
               Ödeme ve görünürlük artışı onayı işlem sonucunda burada gösterilir.
             </p>
-          )}
+          ))}
         </CardContent>
       </Card>
     </div>

@@ -7,14 +7,13 @@ import { getLiveMarketplaceReferenceData, mergeCityOptions } from "@/services/re
 import { CheckCircle2, User, Phone, Mail, ShieldCheck, Building2 } from "lucide-react";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
+import { trust } from "@/lib/constants/ui-strings";
 
 export const dynamic = "force-dynamic";
-// revalidate kaldırıldı — force-dynamic ile çakışıyor
 
 export default async function DashboardProfilePage() {
   const user = await requireUser();
 
-  // Paralel fetch
   const [storedProfile, references] = await Promise.all([
     getStoredProfileById(user.id),
     getLiveMarketplaceReferenceData(),
@@ -65,6 +64,7 @@ export default async function DashboardProfilePage() {
             </div>
             <div className="grid gap-2">
               <VerificationItem label="E-posta Onayı" isVerified={profile.emailVerified} />
+              <VerificationItem label="İşletme" status={profile.verificationStatus} />
               <VerificationItem label="Kimlik Doğrulama" isVerified={profile.isVerified} />
             </div>
           </div>
@@ -108,7 +108,6 @@ export default async function DashboardProfilePage() {
         </div>
 
         <div className="lg:col-span-8 space-y-4">
-          {/* Profile Form */}
           <div className="rounded-xl border border-border bg-card p-6">
             <div className="flex items-center gap-3 mb-6">
               <div className="size-10 rounded-lg bg-primary flex items-center justify-center text-white">
@@ -133,7 +132,6 @@ export default async function DashboardProfilePage() {
             />
           </div>
 
-          {/* Identity Verification */}
           <div className="rounded-xl border border-border bg-card p-6">
             <div className="flex items-center gap-3 mb-4">
               <ShieldCheck size={18} className="text-primary" />
@@ -150,21 +148,52 @@ export default async function DashboardProfilePage() {
   );
 }
 
-function VerificationItem({ label, isVerified }: { label: string; isVerified: boolean }) {
+function VerificationItem({ 
+  label, 
+  isVerified, 
+  status 
+}: { 
+  label: string; 
+  isVerified?: boolean; 
+  status?: "none" | "pending" | "approved" | "rejected" 
+}) {
+  const isApproved = isVerified || status === "approved";
+  const isPending = status === "pending";
+  const isRejected = status === "rejected";
+
   return (
     <div className={cn(
-      "flex items-center justify-between p-3 rounded-lg border transition-all",
-      isVerified
+      "flex flex-col p-3 rounded-lg border transition-all",
+      isApproved
         ? "bg-emerald-50/50 border-emerald-100 text-emerald-700"
-        : "bg-muted/30 border-border/50 text-muted-foreground/50"
+        : isPending
+          ? "bg-amber-50/50 border-amber-100 text-amber-700"
+          : isRejected
+            ? "bg-rose-50/50 border-rose-100 text-rose-700"
+            : "bg-muted/30 border-border/50 text-muted-foreground/50"
     )}>
-      <span className="text-[11px] font-bold uppercase tracking-wider">{label}</span>
-      <div className={cn(
-        "size-5 rounded-full border flex items-center justify-center transition-all",
-        isVerified ? "bg-emerald-500 border-emerald-500 text-white" : "border-border"
-      )}>
-        {isVerified && <CheckCircle2 size={11} strokeWidth={3} />}
+      <div className="flex items-center justify-between">
+        <span className="text-[11px] font-bold uppercase tracking-wider">{label}</span>
+        <div className={cn(
+          "size-5 rounded-full border flex items-center justify-center transition-all",
+          isApproved ? "bg-emerald-500 border-emerald-500 text-white" : "border-border"
+        )}>
+          {isApproved && <CheckCircle2 size={11} strokeWidth={3} />}
+          {isPending && <div className="size-1.5 rounded-full bg-amber-500" />}
+          {isRejected && <div className="size-1.5 rounded-full bg-rose-500" />}
+        </div>
       </div>
+      
+      {isPending && (
+        <p className="mt-2 text-[10px] font-medium leading-tight opacity-80">
+          {trust.verificationPendingDesc}
+        </p>
+      )}
+      {isRejected && (
+        <p className="mt-2 text-[10px] font-bold leading-tight uppercase tracking-tight">
+          {trust.verificationRejected}
+        </p>
+      )}
     </div>
   );
 }

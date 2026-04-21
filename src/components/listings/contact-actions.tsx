@@ -19,16 +19,20 @@ import { revealListingPhone } from "@/services/listings/listing-actions";
 import { getOrCreateChat } from "@/services/messages/chat-service";
 import { useRouter } from "next/navigation";
 import { createSupabaseBrowserClient } from "@/lib/supabase/browser";
+import { getSellerTrustUI } from "@/lib/utils/trust-ui";
+import { trust } from "@/lib/constants/ui-strings";
+import type { Profile } from "@/types";
 
 interface ContactActionsProps {
   listingId: string;
   listingSlug?: string;
   sellerId: string;
+  seller?: Partial<Profile> | null;
   /** Pass the current user's ID to hide contact actions on own listing */
   currentUserId?: string | null;
 }
 
-export function ContactActions({ listingId, listingSlug, sellerId, currentUserId }: ContactActionsProps) {
+export function ContactActions({ listingId, listingSlug, sellerId, seller, currentUserId }: ContactActionsProps) {
   const router = useRouter();
   const supabase = createSupabaseBrowserClient();
   const posthog = usePostHog();
@@ -38,12 +42,25 @@ export function ContactActions({ listingId, listingSlug, sellerId, currentUserId
   const [isChatting, setIsChatting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  const { isContactable } = getSellerTrustUI(seller);
+
   // Seller should not see contact actions on their own listing
   const isOwnListing = Boolean(currentUserId && currentUserId === sellerId);
   if (isOwnListing) {
     return (
       <div className="rounded-xl border border-border bg-muted/30 p-3 text-center text-xs font-medium text-muted-foreground">
         Bu sizin ilanınız.
+      </div>
+    );
+  }
+
+  if (!isContactable) {
+    return (
+      <div className="rounded-xl border border-amber-200 bg-amber-50 p-4 text-center">
+        <p className="text-xs font-bold text-amber-900 mb-1 leading-tight">{trust.contactBlocked}</p>
+        <p className="text-[10px] text-amber-700 leading-relaxed font-semibold uppercase tracking-wide">
+          {trust.contactBlockedDesc}
+        </p>
       </div>
     );
   }
