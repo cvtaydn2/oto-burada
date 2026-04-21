@@ -27,16 +27,16 @@ export async function ListingSellerSidebar({
 
   return (
     <div className="w-full lg:w-[400px] space-y-10 shrink-0">
-      <Panel padding="xl" className="sticky top-24">
+      <Panel padding="xl" className="lg:sticky lg:top-24 lg:max-h-[calc(100vh-120px)] lg:overflow-y-auto custom-scrollbar shadow-2xl">
         <div className="flex items-center gap-6 mb-8 border-b border-border/40 pb-8">
-          <div className="size-20 rounded-3xl bg-primary/10 flex items-center justify-center text-primary text-3xl font-bold shadow-inner">
+          <div className="size-20 rounded-3xl bg-primary/10 flex items-center justify-center text-primary text-3xl font-bold shadow-inner shrink-0">
             {(seller?.businessName || seller?.fullName || "?")[0]}
           </div>
           <div className="min-w-0 flex-1">
             <h3 className="text-xl font-bold text-foreground truncate tracking-tight mb-1">
               {seller?.businessName || seller?.fullName || "Bilinmeyen Satıcı"}
             </h3>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 flex-wrap">
               <div className={`flex h-5 items-center gap-1.5 rounded-md px-2 text-[10px] font-bold uppercase tracking-widest border ${
                 isTrusted
                   ? "bg-emerald-500/10 text-emerald-600 border-emerald-500/20"
@@ -75,7 +75,7 @@ export async function ListingSellerSidebar({
           </div>
         </div>
 
-        <div className="space-y-4">
+        <div className="space-y-6">
           {!isOwner && (
             <ContactActions 
               listingId={listing.id} 
@@ -85,10 +85,12 @@ export async function ListingSellerSidebar({
               currentUserId={currentUser?.id}
             />
           )}
-          <div className="pt-4 flex flex-col items-center gap-2">
+          <div className="pt-6 border-t border-border/40 flex flex-col items-center gap-3 pb-2">
             <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">SHOWROOM STANDARTI</p>
-            <div className="flex items-center gap-1">
-              <Store size={14} className="text-primary" />
+            <div className="flex items-center gap-2">
+              <div className="size-8 rounded-full bg-primary/10 flex items-center justify-center">
+                <Store size={14} className="text-primary" />
+              </div>
               <span className="text-xs font-bold text-foreground">{memberSince}’den beri OtoBurada üyesi</span>
             </div>
           </div>

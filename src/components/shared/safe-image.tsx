@@ -1,7 +1,7 @@
 "use client";
 
 import Image, { ImageProps } from "next/image";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { cn } from "@/lib/utils";
 
 /**
@@ -29,12 +29,13 @@ export function SafeImage({
 }: SafeImageProps) {
   const [error, setError] = useState(false);
   const [loading, setLoading] = useState(true);
+  const imgRef = useRef<HTMLImageElement>(null);
 
-  // Reset state if src changes
   useEffect(() => {
-    setError(false);
-    setLoading(true);
-  }, [src]);
+    if (imgRef.current?.complete) {
+      setLoading(false);
+    }
+  }, []);
 
   return (
     <div 
@@ -44,29 +45,35 @@ export function SafeImage({
         containerClassName
       )}
     >
-      <Image
-        src={error ? fallbackSrc : src}
-        alt={alt}
-        className={cn(
-          "transition-opacity duration-300",
-          loading ? "opacity-0" : "opacity-100",
-          className
-        )}
-        onLoad={() => setLoading(false)}
-        onError={() => {
-          setError(true);
-          setLoading(false);
-        }}
-        decoding="async"
-        priority={priority}
-        {...props}
-      />
-      
-      {/* Optional: Add a subtle icon when loading for premium feel */}
-      {loading && !error && (
-        <div className="absolute inset-0 flex items-center justify-center bg-muted/50">
-           <div className="w-8 h-8 rounded-full border-2 border-primary/20 border-t-primary/80 animate-spin" />
-        </div>
+      {error ? (
+        <img
+          src={fallbackSrc}
+          alt={alt}
+          className={cn(
+            "h-full w-full object-cover opacity-40 grayscale",
+            className
+          )}
+        />
+      ) : (
+        <Image
+          ref={imgRef}
+          src={src || fallbackSrc}
+          alt={alt}
+          className={cn(
+            "transition-opacity duration-500",
+            "opacity-100",
+            className
+          )}
+          onLoad={() => setLoading(false)}
+          onError={() => {
+            console.error("SafeImage failed to load:", src);
+            setError(true);
+            setLoading(false);
+          }}
+          decoding="async"
+          priority={priority}
+          {...props}
+        />
       )}
     </div>
   );
