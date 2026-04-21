@@ -56,7 +56,7 @@ export function DashboardListingCard({
   onToggleSelect,
   isArchiving = false,
   isBumping = false,
-  currentTime = Date.now(),
+  currentTime = 0,
   onArchive,
   onBump,
 }: DashboardListingCardProps) {

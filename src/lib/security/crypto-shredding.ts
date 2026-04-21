@@ -70,7 +70,7 @@ export async function decryptPII(encryptedText: string, userId: string): Promise
     decrypted += decipher.final('utf8');
     
     return decrypted;
-  } catch (_error) {
+  } catch {
     // If key was deleted (shredded), decryption will fail
     logger.security.warn("PII Decryption failed - possibly shredded or key missing", { userId });
     return "[VERİ İMHA EDİLDİ]";

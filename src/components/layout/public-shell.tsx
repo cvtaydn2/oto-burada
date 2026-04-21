@@ -4,8 +4,10 @@ import { MobileNav } from "@/components/layout/mobile-nav";
 import { SiteFooter } from "@/components/layout/site-footer";
 import { SiteHeader } from "@/components/layout/site-header";
 import { ScrollToTop } from "@/components/shared/scroll-to-top";
+import { getLiveMarketplaceReferenceData } from "@/services/reference/live-reference-data";
 
-export function PublicShell({ children }: PropsWithChildren) {
+export async function PublicShell({ children }: PropsWithChildren) {
+  const references = await getLiveMarketplaceReferenceData();
   return (
     <div className="min-h-screen flex flex-col bg-background">
       {/* Skip navigation — visible on focus for keyboard users */}
@@ -22,7 +24,7 @@ export function PublicShell({ children }: PropsWithChildren) {
         </main>
         <SiteFooter />
       </div>
-      <MobileNav />
+      <MobileNav searchSuggestions={references.searchSuggestions} />
       <ScrollToTop />
     </div>
   );

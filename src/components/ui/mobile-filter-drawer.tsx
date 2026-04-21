@@ -1,12 +1,10 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter, usePathname } from "next/navigation";
 import { X, SlidersHorizontal, ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import type { ListingFilters, BrandCatalogItem, CityOption } from "@/types";
-import { createSearchParamsFromListingFilters } from "@/services/listings/listing-filters";
 
 interface MobileFilterDrawerProps {
   brands: BrandCatalogItem[];
@@ -42,8 +40,6 @@ export function MobileFilterDrawer({
   const [isOpen, setIsOpen] = useState(false);
   const [expandedSection, setExpandedSection] = useState<string | null>("brand");
   const [draftFilters, setDraftFilters] = useState<ListingFilters>(filters);
-  const router = useRouter();
-  const pathname = usePathname();
   const models = (brands.find((brand) => brand.brand === draftFilters.brand)?.models || []).map((model) => model.name);
   const trims = (brands.find((brand) => brand.brand === draftFilters.brand)?.models?.find((model) => model.name === draftFilters.model)?.trims || []);
   const districts = (cities.find((city) => city.city === draftFilters.city)?.districts || []);

@@ -153,7 +153,7 @@ export function useListingCreation({
         setValue(`images.${index}`, nextImage, { shouldDirty: true, shouldValidate: true });
         setUploadStates(prev => ({ ...prev, [fieldId]: { message: "Tamamlandı", progress: 100, status: "uploaded", previewUrl: nextImage.url } }));
       }
-    } catch (_err) {
+    } catch {
       setUploadStates(prev => ({ ...prev, [fieldId]: { message: "Yükleme başarısız", progress: 0, status: "error" } }));
     }
   };

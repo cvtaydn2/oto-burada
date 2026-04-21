@@ -14,10 +14,29 @@ OtoBurada projesi; sıradan bir MVP'den (Minimum Viable Product), saniyede 50.00
 - ✅ **Ultimate Indestructible:** Concurrent Outbox, Atomic Quotas, Sequential IDs.
 - ✅ **Enterprise Infrastructure:** Connection Pooling, SIEM Logs, Circuit Breakers.
 - ✅ **Showroom Performance Filter:** Draft vs Applied state model, useTransition sync, Mobile/Desktop unified filter architecture.
+- ✅ **Mobile UX Modernization:** Thumb-first navigation, bottom-drawer menu system (Vaul), safe-area optimization, and glassmorphic sticky actions.
 
 ---
 
-## 🚀 Showroom Performance & Filter Architecture - 2026-04-20
+## 📱 Mobile Product UX & Interaction Modernization - 2026-04-21
+
+### Yapılan Değişiklikler
+
+**🏗️ Navigasyon ve Erişilebilirlik (Navigation & Accessibility)**
+- **Thumb-First Navigation**: Üst kısımdaki hamburger menü kaldırılarak, tüm ana fonksiyonlar alt navigasyondaki "Menü" sekmesine taşındı.
+- **Premium Bottom Drawer**: Menü ve filtreler için `vaul` entegrasyonu yapıldı; native hissettiren "swipe-to-close" ve momentum scroll desteği eklendi.
+- **Safe-Area Optimization**: `pb-safe` ve `env(safe-area-inset-bottom)` kullanılarak iOS/Android ekran altı çubukları ile çakışmalar giderildi.
+
+**💎 Görsel Dil ve Etkileşim (Aesthetics & Interaction)**
+- **Floating Glass Action Bar**: İlan detayındaki iletişim barı, navigasyonun üzerinde zarifçe yüzen "glassmorphism" yapısına kavuşturuldu.
+- **Haptic Simulation**: Tüm butonlara `active:scale-95` basılma hissi veren mikro animasyonlar eklendi.
+- **Viewport Stability**: `100dvh` kullanılarak mobil tarayıcıların adres çubuğu hareketlerindeki zıplamalar engellendi.
+
+### Doğrulama
+- Mimari: `MobileNav` ve `HeaderMobileNav` refactor edildi. ✅
+- UX: Tek elle kullanım (Bottom-centric) sağlandı. ✅
+- Performans: `pb-safe` ve `100dvh` test edildi. ✅
+- `npm run build` ✅
 
 ### Yapılan Değişiklikler
 

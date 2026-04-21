@@ -5,7 +5,6 @@ import { features } from "@/lib/features";
 
 import { SiteHeaderAuth } from "@/components/layout/site-header-auth";
 import { getLiveMarketplaceReferenceData } from "@/services/reference/live-reference-data";
-import { HeaderMobileNav } from "./header-mobile-nav";
 import { SearchWithSuggestions } from "@/components/ui/search-with-suggestions";
 import { ThemeToggle } from "@/components/shared/theme-toggle";
 
@@ -17,15 +16,6 @@ async function HeaderSearch() {
       placeholder="Marka, model veya kelime ara..."
       suggestions={references.searchSuggestions}
       className="w-full"
-    />
-  );
-}
-
-async function HeaderMobileNavWrapper() {
-  const references = await getLiveMarketplaceReferenceData();
-  return (
-    <HeaderMobileNav
-      searchSuggestions={references.searchSuggestions}
     />
   );
 }
@@ -69,9 +59,6 @@ export async function SiteHeader() {
           <div className="hidden md:block">
             <ThemeToggle />
           </div>
-          <Suspense fallback={<div className="size-9 rounded-lg bg-gray-100 animate-pulse lg:hidden" />}>
-            <HeaderMobileNavWrapper />
-          </Suspense>
         </div>
       </div>
     </header>

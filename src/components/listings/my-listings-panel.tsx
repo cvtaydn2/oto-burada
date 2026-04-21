@@ -5,14 +5,9 @@ import { useRouter } from "next/navigation";
 import { type Listing } from "@/types";
 import { DashboardListingCard } from "./dashboard-listing-card";
 import { 
-  PlusCircle, 
-  Search, 
-  SlidersHorizontal, 
-  FileDown, 
   Archive, 
   ChevronLeft, 
   ChevronRight,
-  PackageOpen,
   X,
   Plus,
   CheckSquare,

@@ -6,7 +6,6 @@ import {
   ArrowRight, 
   CheckCircle2, 
   LoaderCircle, 
-  MapPin, 
   MessageCircle, 
   Pencil, 
   Save, 
@@ -15,7 +14,6 @@ import {
   ShieldCheck, 
   X, 
   XCircle,
-  Check,
   Rocket
 } from "lucide-react";
 import { formatCurrency, formatDate, formatNumber, cn } from "@/lib/utils";
