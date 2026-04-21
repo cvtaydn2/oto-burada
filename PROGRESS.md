@@ -1,3 +1,40 @@
+# 2026-04-21 - Build Stabilization & Quality Polish
+
+## Yapılan Değişiklikler
+
+- `src/lib/monitoring/posthog-client.ts`: Lint hatası (`@typescript-eslint/no-explicit-any`) giderildi. `any` yerine `Record<string, unknown>` kullanılarak tip güvenliği artırıldı.
+- `src/services/listings/listing-submission-query.ts`: Prerender sırasında oluşan veritabanı hatalarının loglanması iyileştirildi (`[object Object]` yerine detaylı hata objesi basılıyor).
+
+## Doğrulama
+
+- `npm run lint` ✅ (0 hata)
+- `npm run typecheck` ✅ (0 hata)
+- `npm run build` ✅ (Hatasız tamamlandı)
+
+## Sonraki Adım
+
+- `MyListingsPanel` state/mutation toolbar'ını controller + presentational bloklara ayır.
+- `AdminOverviewPage` veri orkestrasyonunu server helper modülüne taşı.
+
+# 2026-04-21 - Targeted Marketplace Architecture Follow-up
+
+## Yapılan Değişiklikler
+
+- `src/components/ui/mobile-filter-drawer.tsx`: Mobil filtre drawer'ı artık shared `ListingsFilterPanel` üstünden çalışıyor. Ayrı filter implementation kaldırıldı; draft/apply akışı korunurken field mimarisi tek yüzeye indirildi.
+- `src/features/marketplace/components/filter-fields.tsx` ve `src/components/listings/listings-filter-panel.tsx`: Ortak filter primitive set'i `Trim` ve `Trust` alanlarıyla genişletildi. Desktop/mobile panel artık aynı paket/tramer/ekspertiz alanlarını paylaşabiliyor.
+- `src/app/(public)/(marketplace)/listings/page.tsx` ve `src/components/listings/listings-page-client.tsx`: Listings route üzerindeki SSR->client çift render kaldırıldı. İlk sonuçlar artık `initialResult` ile hydrate oluyor; server tarafında ayrı `ListingCard` children ağacı taşınmıyor.
+
+## Doğrulama
+
+- `npm run typecheck` ✅
+- `npm run lint` ✅
+
+## Sonraki Adım
+
+- `MyListingsPanel` state/mutation toolbar'ını controller + presentational bloklara ayır.
+- `AdminOverviewPage` veri orkestrasyonunu server helper modülüne taşı.
+- `ListingCard` için semantic design-system card/badge primitives tanımla.
+
 # 2026-04-21 - Premium Architecture Audit Follow-up
 
 ## Yapılan Değişiklikler

@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { SlidersHorizontal, Search, MapPin, Gauge, Settings2 } from "lucide-react"
+import { SlidersHorizontal, Search, MapPin, Gauge, Settings2, ShieldCheck } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { FilterFields } from "@/features/marketplace/components/filter-fields"
 import type { ListingFilters, BrandCatalogItem, CityOption } from "@/types"
@@ -81,12 +81,13 @@ export function ListingsFilterPanel({
   onReset,
   disabled = false,
 }: ListingsFilterPanelProps) {
-  const brandCount = filters.brand ? 1 : 0;
+  const brandCount = (filters.brand ? 1 : 0) + (filters.model ? 1 : 0) + (filters.carTrim ? 1 : 0);
   const locationCount = (filters.city ? 1 : 0) + (filters.district ? 1 : 0);
   const specsCount = (filters.fuelType ? 1 : 0) + (filters.transmission ? 1 : 0);
   const priceCount = (filters.minPrice ? 1 : 0) + (filters.maxPrice ? 1 : 0);
   const yearCount = (filters.minYear ? 1 : 0) + (filters.maxYear ? 1 : 0) + (filters.maxMileage ? 1 : 0);
-  const activeFiltersCount = brandCount + locationCount + specsCount + priceCount + yearCount + (filters.query ? 1 : 0);
+  const trustCount = (filters.hasExpertReport ? 1 : 0) + (filters.maxTramer ? 1 : 0);
+  const activeFiltersCount = brandCount + locationCount + specsCount + priceCount + yearCount + trustCount + (filters.query ? 1 : 0);
 
   return (
     <div className={cn(
@@ -132,6 +133,7 @@ export function ListingsFilterPanel({
           <div className="space-y-2">
             <FilterFields.Brand brands={brands} value={filters.brand} onChange={v => onFilterChange("brand", v)} hideLabel />
             <FilterFields.Model brands={brands} brand={filters.brand} value={filters.model} onChange={v => onFilterChange("model", v)} hideLabel />
+            <FilterFields.Trim brands={brands} brand={filters.brand} model={filters.model} value={filters.carTrim} onChange={v => onFilterChange("carTrim", v)} hideLabel />
           </div>
         </FilterSection>
 
@@ -198,6 +200,16 @@ export function ListingsFilterPanel({
                 />
              </div>
           </div>
+        </FilterSection>
+
+        <FilterSection title="EKSPERTİZ & TRAMER" icon={ShieldCheck} activeCount={trustCount}>
+          <FilterFields.Trust
+            hasExpertReport={filters.hasExpertReport}
+            maxTramer={filters.maxTramer}
+            onExpertReportChange={v => onFilterChange("hasExpertReport", v)}
+            onMaxTramerChange={v => onFilterChange("maxTramer", v)}
+            hideLabel
+          />
         </FilterSection>
       </div>
     </div>

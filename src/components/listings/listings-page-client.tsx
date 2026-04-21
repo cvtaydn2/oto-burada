@@ -37,15 +37,13 @@ interface ListingsPageClientProps {
   brands: BrandCatalogItem[]
   cities: CityOption[]
   initialFilters: ListingFilters
-  children?: React.ReactNode
 }
 
 export function ListingsPageClient({
   initialResult,
   brands,
   cities,
-  initialFilters,
-  children
+  initialFilters
 }: ListingsPageClientProps) {
   const {
     filters,
@@ -201,18 +199,14 @@ export function ListingsPageClient({
                      </div>
                   </div>
                 )}
-                {isInitialPage && children ? (
-                  children
-                ) : (
-                  allListings.map((listing, index) => (
-                    <ListingCard
-                      key={`${listing.id}-${index}`}
-                      listing={listing}
-                      priority={(viewMode === "grid" ? index < 4 : index < 2) && isInitialPage}
-                      variant={viewMode}
-                    />
-                  ))
-                )}
+                {allListings.map((listing, index) => (
+                  <ListingCard
+                    key={`${listing.id}-${index}`}
+                    listing={listing}
+                    priority={(viewMode === "grid" ? index < 4 : index < 2) && isInitialPage}
+                    variant={viewMode}
+                  />
+                ))}
               </div>
 
               {/* Infinite Scroll trigger */}
