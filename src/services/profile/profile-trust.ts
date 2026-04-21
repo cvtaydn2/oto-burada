@@ -17,17 +17,20 @@ function getAccountAgeMonths(createdAt?: string | null) {
 
 export function calculateTrustScore(seller: Partial<Profile> | null): number {
   if (!seller) return 0;
-  if (getProfileRestrictionState(seller) !== "active") return 0;
+  
+  const restrictionState = getProfileRestrictionState(seller);
+  if (restrictionState === "banned") return 0;
   
   let score = 0;
 
+  // 1. Account Age (Base Crust)
   const accountAgeMonths = getAccountAgeMonths(seller.createdAt);
-
   if (accountAgeMonths >= 24) score += 30;
   else if (accountAgeMonths >= 12) score += 22;
   else if (accountAgeMonths >= 6) score += 14;
   else if (accountAgeMonths >= 1) score += 8;
 
+  // 2. Verification Core Points
   if (seller.verificationStatus === "approved") {
     score += 35;
   } else if (seller.isVerified) {
@@ -38,7 +41,21 @@ export function calculateTrustScore(seller: Partial<Profile> | null): number {
     score += 10;
   }
 
-  return Math.min(score, 100);
+  // 3. Trust Decay (Staleness)
+  // If last verification review was > 12 months ago, trust decays
+  if (seller.verificationReviewedAt) {
+    const monthsSinceReview = getAccountAgeMonths(seller.verificationReviewedAt);
+    if (monthsSinceReview >= 12) {
+      score -= 15; // Penalty for stale verification
+    }
+  }
+
+  // 4. Risk-Based Suppression (Temporary Restrictions)
+  if (restrictionState === "restricted_review") {
+    score -= 40; // Severe penalty while under investigation
+  }
+
+  return Math.max(0, Math.min(score, 100));
 }
 
 export function getSellerTrustSummary(

@@ -99,6 +99,10 @@ export async function getMarketplaceSeller(sellerId: string): Promise<Profile | 
           business_description,
           website_url,
           verified_business,
+          verification_status,
+          verification_requested_at,
+          verification_reviewed_at,
+          verification_feedback,
           created_at, 
           updated_at
         `)
@@ -126,6 +130,10 @@ export async function getMarketplaceSeller(sellerId: string): Promise<Profile | 
         businessDescription: data.business_description,
         websiteUrl: data.website_url,
         verifiedBusiness: data.verified_business,
+        verificationStatus: data.verification_status,
+        verificationRequestedAt: data.verification_requested_at,
+        verificationReviewedAt: data.verification_reviewed_at,
+        verificationFeedback: data.verification_feedback,
         isBanned: data.is_banned,
         banReason: data.ban_reason,
         createdAt: data.created_at,

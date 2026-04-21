@@ -64,6 +64,7 @@ export interface Profile {
   // Verification Workflow
   verificationStatus?: VerificationStatus;
   verificationRequestedAt?: string | null;
+  verificationReviewedAt?: string | null;
   verificationFeedback?: string | null;
 
   
