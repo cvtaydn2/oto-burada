@@ -1,9 +1,12 @@
-import { History, ShieldCheck, ExternalLink, Search } from "lucide-react";
+import { History, ShieldCheck, ExternalLink, Search, ChevronLeft, ChevronRight } from "lucide-react";
 import { requireAdminUser } from "@/lib/auth/session";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
+
+const PAGE_SIZE = 50;
 
 interface AdminActionWithProfile {
   id: string;
@@ -20,22 +23,30 @@ interface AdminActionWithProfile {
 
 export const dynamic = "force-dynamic";
 
-export default async function AdminAuditPage({ searchParams }: { searchParams: Promise<{ q?: string }> }) {
+export default async function AdminAuditPage({ searchParams }: { searchParams: Promise<{ q?: string; page?: string }> }) {
   await requireAdminUser();
-  const { q } = await searchParams;
+  const { q, page } = await searchParams;
+  const currentPage = Number(page) || 1;
+  const offset = (currentPage - 1) * PAGE_SIZE;
+  
   const supabase = createSupabaseAdminClient();
 
-  let query = supabase
+  let baseQuery = supabase
     .from("admin_actions")
-    .select("*, profiles!admin_actions_admin_user_id_fkey(full_name)")
-    .order("created_at", { ascending: false })
-    .limit(500); // TODO: replace with cursor-based pagination when audit log grows large
+    .select("*, profiles!admin_actions_admin_user_id_fkey(full_name)", { count: "exact" });
 
   if (q) {
-    query = query.or(`action.ilike.%${q}%,note.ilike.%${q}%`);
+    baseQuery = baseQuery.or(`action.ilike.%${q}%,note.ilike.%${q}%`);
   }
 
-  const { data: actions } = await query as { data: AdminActionWithProfile[] | null };
+  const [{ data: actions, count }] = await Promise.all([
+    baseQuery
+      .order("created_at", { ascending: false })
+      .range(offset, offset + PAGE_SIZE - 1),
+  ]);
+
+  const totalItems = count || 0;
+  const totalPages = Math.ceil(totalItems / PAGE_SIZE);
 
   function getTargetHref(action: AdminActionWithProfile): string | null {
     if (action.target_type === "listing") return `/admin/listings?q=${action.target_id}`;
@@ -145,6 +156,46 @@ export default async function AdminAuditPage({ searchParams }: { searchParams: P
             </tbody>
           </table>
         </div>
+        
+        {totalPages > 1 && (
+          <div className="flex items-center justify-between border-t border-border px-6 py-4">
+            <div className="text-xs font-bold text-muted-foreground">
+              Toplam {totalItems} kayıt, sayfa {currentPage} / {totalPages}
+            </div>
+            <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                disabled={currentPage <= 1}
+                onClick={() => {
+                  const params = new URLSearchParams();
+                  if (q) params.set("q", q);
+                  params.set("page", String(currentPage - 1));
+                  window.location.href = `?${params.toString()}`;
+                }}
+                className="h-9 rounded-xl border-border font-bold"
+              >
+                <ChevronLeft size={16} className="mr-1" />
+                Önceki
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                disabled={currentPage >= totalPages}
+                onClick={() => {
+                  const params = new URLSearchParams();
+                  if (q) params.set("q", q);
+                  params.set("page", String(currentPage + 1));
+                  window.location.href = `?${params.toString()}`;
+                }}
+                className="h-9 rounded-xl border-border font-bold"
+              >
+                Sonraki
+                <ChevronRight size={16} className="ml-1" />
+              </Button>
+            </div>
+          </div>
+        )}
       </div>
     </main>
   );

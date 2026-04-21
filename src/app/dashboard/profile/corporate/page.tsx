@@ -5,6 +5,7 @@ import { updateCorporateProfileAction } from "@/lib/auth/profile-actions";
 import { Building2, ArrowLeft, CheckCircle2, Globe, MapPin, AlertTriangle, XCircle } from "lucide-react";
 import Link from "next/link";
 import { trust } from "@/lib/constants/ui-strings";
+import { getSellerTrustUI } from "@/lib/utils/trust-ui";
 
 export const dynamic = "force-dynamic";
 
@@ -12,8 +13,10 @@ export default async function CorporateSettingsPage() {
   const user = await requireUser();
   const profile = (await getStoredProfileById(user.id)) ?? buildProfileFromAuthUser(user);
   
-  const isApproved = profile.verificationStatus === "approved";
-  const isPending = profile.verificationStatus === "pending";
+  const trustUI = getSellerTrustUI(profile);
+  
+  const isApproved = trustUI.isApproved;
+  const isPending = trustUI.restrictionState === "restricted_review" && profile.verificationStatus === "pending";
   const isRejected = profile.verificationStatus === "rejected";
 
   return (

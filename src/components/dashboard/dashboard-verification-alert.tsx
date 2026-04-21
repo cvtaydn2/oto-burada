@@ -68,7 +68,7 @@ export function DashboardVerificationAlert({ isEmailVerified, profile }: Dashboa
   }
 
   // Case 4: Trust Upsell (Verified Email but no Identity/Business)
-  const isVerified = profile?.isVerified || profile?.verifiedBusiness;
+  const isVerified = profile?.verificationStatus === "approved";
   const isPending = profile?.verificationStatus === "pending";
 
   if (!isVerified && !isPending) {

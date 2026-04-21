@@ -157,7 +157,6 @@ export function mapListingRow(row: ListingRow): Listing {
       isVerified: row.profiles.is_verified,
       isBanned: row.profiles.is_banned,
       banReason: row.profiles.ban_reason,
-      verifiedBusiness: row.profiles.verified_business,
       verificationStatus: row.profiles.verification_status as Profile["verificationStatus"],
       trustScore: row.profiles.trust_score ?? undefined,
       businessSlug: row.profiles.business_slug,

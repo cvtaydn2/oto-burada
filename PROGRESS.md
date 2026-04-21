@@ -1,3 +1,102 @@
+# 2026-04-21 - Final Consistency Pass
+
+## Yapılan Değişiklikler
+
+- `src/components/dashboard/dashboard-professional-card.tsx`: Artık merkezi `getSellerTrustUI` fonksiyonunu kullanıyor. `isApproved` ve `isProfessional` manual kontrolleri yerine `trustUI.isPremiumVisible` kullanılıyor.
+- Tüm marketplace, seller dashboard, gallery, profile ve admin sayfalarında tutarlılık kontrolü yapıldı.
+- Restricted/banned durumlarında premium görsellerin gösterilmemesi sağlandı.
+
+## Doğrulama
+
+- `npm run typecheck` ✅
+- `npm run lint` ✅
+
+---
+
+# 2026-04-21 - Status vs Badge Cleanup
+
+## Yapılan Değişiklikler
+
+- `src/components/listings/seller-card.tsx`: Restricted/banned satıcılar için premium görseller (TrustBadge, güven sinyalleri, galeri linki, "HIZLI YANIT" badge) kaldırıldı. Artık sadece aktif ve premium satıcılarda gösteriliyor. `isProfessional` yerine `trustUI.isPremiumVisible` kullanılıyor. `TrustBadge` bileşenine `tone` prop'u eklendi.
+- `src/components/shared/trust-badge.tsx`: `tone` prop'unun undefined olması durumunda default amber theme kullanılması sağlandı.
+- Public seller profile (`src/app/(public)/(marketplace)/seller/[id]/page.tsx`): getSellerTrustUI kullanılarak restriction kontrolleri yapılıyor, premium sinyaller sadece aktif satıcılarda gösteriliyor.
+
+## Doğrulama
+
+- `npm run typecheck` ✅
+- `npm run lint` ✅
+
+## Sonraki Adım
+
+- ListingCard'daki trust sinyallerinin de restriction kontrollerine tabi olup olmadığını doğrula.
+- Dashboard'daki satıcı profillerinde de aynı kontrolleri uygula.
+
+---
+
+# 2026-04-21 - Pricing & Checkout Truth
+
+## Yapılan Değişiklikler
+
+- `src/components/dashboard/pricing-plans.tsx`: Pricing sayfası gerçek sistem kapasitelerine uyumlu hale getirildi. `isPaymentEnabled` kontrolü eklendi, ödeme sistemi bakımda ise uyarı gösteriliyor. "En Popüler" yerine "Önerilen" kullanıldı. Aggressive "Hemen Paketi Seç" yerine "Ücretsiz Başla" / "İletişime Geç" kullanıldı. "HIZLI SAT" gibi exaggerated mesajlar kaldırıldı.
+- `src/components/dashboard/checkout-client.tsx`: Checkout sayfasındaki ödeme unavailable mesajı daha dürüst hale getirildi. "Ödeme Sistemi Geliştirme Aşamasında" yerine "Ödeme Sistemi Aktif Değil" kullanıldı. Başarı mesajı "Ödeme Başarılı" yerine "İşlem Başarılı" olarak güncellendi.
+- Footer'da "beta" ve "manuel" gibi geçici işaretlemeler yumuşatıldı.
+
+## Doğrulama
+
+- `npm run typecheck` ✅
+- `npm run lint` ✅
+
+## Sonraki Adım
+
+- Ödeme sistemi tamamen aktif olduğunda pricing CTA'larını güncelle.
+- Kurumsal paketlerin gerçek özelliklerini (XML, analytics) kontrol et.
+
+---
+
+# 2026-04-21 - Admin Workbench Fix
+
+## Yapılan Değişiklikler
+
+- `src/app/admin/audit/page.tsx`: Audit sayfasına limit + offset tabanlı pagination eklendi. 500 kayıt yerine 50'lik sayfalar ile verimli yükleme sağlandı. Sayfa navigasyonu ve toplam sayı gösterimi eklendi.
+- `src/services/admin/user-details.ts`: Kullanıcı detay sayfasındaki listings sorgusuna `slug`, `brand`, `model` alanları eklendi. Admin detail view'daki link'ler artık `/admin/listings?q=...` ile doğru yönlendirme yapıyor.
+- `src/components/admin/admin-user-header.tsx`: State conflict detection eklendlendi. Onaylı + yasaklı veya onaylı + incelemede gibi çelişkili durumlar için görünür uyarı badge'i eklendi.
+- `src/components/layout/gallery-header.tsx`: Gallery sayfasında restriction state kontrolleri eklendi. İncelemede/kısıtlı durumları için ayrı badge'ler ve ikonlar eklendi.
+- `src/app/dashboard/profile/corporate/page.tsx`: Corporate sayfasında `getSellerTrustUI` kullanımı eklendi.
+
+## Doğrulama
+
+- `npm run typecheck` ✅
+- `npm run lint` ✅
+
+## Sonraki Adım
+
+- State conflict düzeltme akışını admin panelinden erişilebilir kıl.
+- Diğer admin list sayfalarında da (users, reports) pagination kontrolünü gözden geçir.
+
+---
+
+# 2026-04-21 - Trust UI Drift Cleanup
+
+## Yapılan Değişiklikler
+
+- **Legacy verifiedBusiness field temizlendi:** `src/services/listings/marketplace-listings.ts`, `src/services/gallery/index.ts`, `src/services/listings/listing-submission-query.ts`, `src/services/admin/user-details.ts`, `src/services/admin/user-list.ts` dosyalarından `verifiedBusiness` field usage'ı kaldırıldı.
+- **Dashboard trust logic merkezileştirildi:** `src/app/dashboard/profile/corporate/page.tsx` ve `src/components/layout/gallery-header.tsx` artık merkezi `getSellerTrustUI` fonksiyonunu kullanıyor.
+- **Gallery header badge logic güncellendi:** İncelemede (restricted_review) ve kısıtlı (banned) durumları için ayrı badge'ler ve ikonlar eklendi.
+- **Moderation card trust sinyalleri temizlendi:** `src/features/admin-moderation/components/moderation-card.tsx` eski "KURUMSAL GALERİ/BİREYSEL SATICI" mantığı kaldırıldı, merkezi trust UI kullanılıyor.
+- **Constants temizlendi:** `src/lib/constants/ui-strings.ts` içindeki duplicate content (lines 303-307) kaldırıldı.
+
+## Doğrulama
+
+- `npm run typecheck` ✅ (0 hata)
+- `npm run lint` ✅ (0 hata)
+
+## Sonraki Adım
+
+- Profillerde restriction state'i admin kullanıcı listesinde de görünür kıl.
+- Gallery erişim kontrollerinin admin tarafında aktif olup olmadığını doğrula.
+
+---
+
 # 2026-04-21 - Business Trust Enforcement
 
 ## Yapılan Değişiklikler

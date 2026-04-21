@@ -180,22 +180,33 @@ export function AdminUserDetailClient({ detail, userId }: AdminUserDetailClientP
             </TabsContent>
 
             <TabsContent value="listings" className="mt-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
-               <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-                  {listings.map(l => (
-                    <Link key={l.id} href={`/listing/${l.id}`} className="block group">
-                      <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm group-hover:shadow-md transition-all group-hover:-translate-y-1">
-                        <Badge className={cn(
-                          "border-none text-[8px] font-bold uppercase tracking-widest px-2.5 py-1 mb-4",
-                          l.status === "approved" ? "bg-emerald-100 text-emerald-700" : "bg-slate-100 text-slate-500"
-                        )}>
-                          {l.status}
-                        </Badge>
-                        <h4 className="font-bold text-slate-900 truncate tracking-tight">{l.title}</h4>
-                        <p className="text-[9px] text-slate-400 mt-2 font-mono uppercase">#{l.id.substring(0, 12)}</p>
-                      </div>
-                    </Link>
-                  ))}
-               </div>
+               {listings.length > 0 ? (
+                 <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+                    {listings.map(l => (
+                      <Link key={l.id} href={`/admin/listings?q=${l.slug || l.title}`} className="block group">
+                        <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm group-hover:shadow-md transition-all group-hover:-translate-y-1">
+                          <div className="flex justify-between items-start mb-4">
+                            <Badge className={cn(
+                              "border-none text-[8px] font-bold uppercase tracking-widest px-2.5 py-1",
+                              l.status === "approved" ? "bg-emerald-100 text-emerald-700" : 
+                              l.status === "pending" ? "bg-amber-100 text-amber-700" :
+                              "bg-slate-100 text-slate-500"
+                            )}>
+                              {l.status === "approved" ? "Yayında" : l.status === "pending" ? "Onay Bekliyor" : l.status}
+                            </Badge>
+                            <span className="text-[10px] font-bold text-slate-400">ID: {l.id.substring(0, 4)}</span>
+                          </div>
+                          <h4 className="font-bold text-slate-900 truncate tracking-tight">{l.title}</h4>
+                          <p className="text-[9px] text-slate-400 mt-2 font-mono uppercase truncate">{l.brand} {l.model}</p>
+                        </div>
+                      </Link>
+                    ))}
+                 </div>
+               ) : (
+                 <div className="py-20 text-center rounded-3xl border-2 border-dashed border-slate-200 bg-slate-50/50">
+                    <p className="text-sm font-bold text-slate-400 uppercase tracking-widest">Bu kullanıcının henüz ilanı bulunmuyor</p>
+                 </div>
+               )}
             </TabsContent>
           </Tabs>
         </div>

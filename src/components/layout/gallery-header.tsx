@@ -1,13 +1,16 @@
 import Image from "next/image";
 import { type Profile } from "@/types"
-import { MapPin, Globe, Phone, ShieldCheck, Calendar } from "lucide-react"
+import { MapPin, Globe, Phone, ShieldCheck, Calendar, AlertCircle } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
+import { getSellerTrustUI } from "@/lib/utils/trust-ui"
 
 interface GalleryHeaderProps {
   profile: Profile
 }
 
 export function GalleryHeader({ profile }: GalleryHeaderProps) {
+  const trustUI = getSellerTrustUI(profile);
+  
   return (
     <div className="bg-white border-b border-border shadow-sm">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-10">
@@ -28,9 +31,19 @@ export function GalleryHeader({ profile }: GalleryHeaderProps) {
               </div>
             )}
             
-            {profile.verifiedBusiness && (
+            {trustUI.isApproved && trustUI.restrictionState === "active" && (
               <div className="absolute -bottom-2 -right-2 bg-blue-600 text-white p-1.5 rounded-xl border-4 border-white shadow-sm">
                 <ShieldCheck size={20} />
+              </div>
+            )}
+            {trustUI.restrictionState === "restricted_review" && (
+              <div className="absolute -bottom-2 -right-2 bg-amber-500 text-white p-1.5 rounded-xl border-4 border-white shadow-sm">
+                <AlertCircle size={20} />
+              </div>
+            )}
+            {trustUI.restrictionState === "banned" && (
+              <div className="absolute -bottom-2 -right-2 bg-rose-600 text-white p-1.5 rounded-xl border-4 border-white shadow-sm">
+                <AlertCircle size={20} />
               </div>
             )}
           </div>
@@ -42,9 +55,21 @@ export function GalleryHeader({ profile }: GalleryHeaderProps) {
                 <h1 className="text-3xl font-bold tracking-tight italic uppercase">
                   {profile.businessName || profile.fullName}
                 </h1>
-                <Badge className="bg-primary/10 text-primary border-none font-bold px-3 py-1">
-                  KURUMSAL GALERİ
-                </Badge>
+                {trustUI.isPremiumVisible && (
+                  <Badge className="bg-primary/10 text-primary border-none font-bold px-3 py-1">
+                    KURUMSAL GALERİ
+                  </Badge>
+                )}
+                {trustUI.restrictionState === "restricted_review" && (
+                  <Badge className="bg-amber-100 text-amber-700 border-none font-bold px-3 py-1">
+                    İNCELEMEDE
+                  </Badge>
+                )}
+                {trustUI.restrictionState === "banned" && (
+                  <Badge className="bg-rose-100 text-rose-700 border-none font-bold px-3 py-1">
+                    KISITLI
+                  </Badge>
+                )}
               </div>
               
               <div className="flex flex-wrap items-center gap-x-6 gap-y-2 text-sm font-medium text-slate-500">
@@ -88,7 +113,7 @@ export function GalleryHeader({ profile }: GalleryHeaderProps) {
                   </div>
                </div>
                
-               {profile.taxId && (
+               {profile.taxId && profile.verificationStatus === "approved" && (
                  <div className="flex items-center gap-4 py-2 px-5 rounded-2xl bg-slate-50 border border-slate-100">
                     <div className="size-10 rounded-xl bg-blue-100 text-blue-600 flex items-center justify-center shrink-0">
                       <ShieldCheck size={20} />

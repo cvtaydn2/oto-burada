@@ -300,23 +300,23 @@ export const trust = {
   individual: "Bireysel",
   verifiedBusiness: "İŞLETME DOĞRULANDI",
   identityVerified: "KİMLİK DOĞRULANDI",
-  verificationPending: "İNCELENİYOR",
+  verificationPending: "PROFİL İNCELENİYOR",
   unverified: "DOĞRULAMA YOK",
-  restricted: "KISITLI HESAP",
+  restricted: "HESAP İNCELENİYOR",
   
   // Restriction Messages (Seller facing)
-  accountUnderReview: "Hesap İnceleme Altında",
-  restrictionNotice: "Güvenlik incelemesi tamamlanana kadar ek güven sinyali gösterilmez.",
-  dopingRestriction: "Güvenlik politikalarımız gereği, inceleme sürecindeki hesaplar premium özellikleri geçici olarak kullanamazlar.",
+  accountUnderReview: "Hesap İnceleme Sürecinde",
+  restrictionNotice: "Hesabınız güvenlik politikalarımız gereği geçici inceleme altındadır.",
+  dopingRestriction: "İnceleme sürecindeki hesaplar için ilan öne çıkarma özellikleri geçici olarak kapalıdır.",
   
   // Contact Blocks (Buyer facing)
-  contactBlocked: "Kısıtlı İletişim",
-  contactBlockedDesc: "Bu satıcının iletişim seçenekleri hesap incelemesi nedeniyle geçici olarak kısıtlanmıştır.",
+  contactBlocked: "Geçici Kısıtlama",
+  contactBlockedDesc: "Bu satıcı hesabı şu an hizmet standartları gereği inceleme altındadır. Lütfen daha sonra tekrar deneyin.",
   
   // Detailed Feedback (Seller facing)
-  verificationRejected: "Başvuru Reddedildi",
-  verificationRejectedDesc: "İşletme bilgileriniz doğrulanamadı. Lütfen bilgileri kontrol edip tekrar başvurun.",
-  verificationPendingDesc: "Bilgileriniz uzman ekibimiz tarafından inceleniyor. Bu süreçte bazı özellikler kısıtlanabilir.",
-  accountRestrictedTitle: "Hesap İşlemlere Kısıtlandı",
-  accountRestrictedDesc: "Güvenlik politikası ihlali nedeniyle hesabınız kısıtlanmıştır. Lütfen destek ile iletişime geçin."
+  verificationRejected: "Doğrulama Tamamlanamadı",
+  verificationRejectedDesc: "Gönderilen belgeler kriterlerimize uymadığı için doğrulama yapılamadı. Tekrar denemek için profil ayarlarına gidin.",
+  verificationPendingDesc: "Bilgileriniz moderasyon ekibimiz tarafından kontrol ediliyor. Ortalama 24 saat içinde sonuçlanacaktır.",
+  accountRestrictedTitle: "Hesap Erişimi Kısıtlandı",
+  accountRestrictedDesc: "Kullanım politikası ihlali veya güvenlik taraması nedeniyle hesabınız kısıtlanmıştır. Destek hattından bilgi alabilirsiniz."
 } as const;

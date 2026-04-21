@@ -25,18 +25,15 @@ interface TrustSummaryProps {
 export function TrustSummary({ listing, seller, updatedAt }: TrustSummaryProps) {
   const lastUpdatedAt = new Date(updatedAt);
   const trustUI = getSellerTrustUI(seller);
-  
-  const isRestricted = trustUI.restrictionState !== "active";
-  const restrictedStyle = trustUI.styles;
 
   const trustItems = [
     {
       title: "Ekspertiz",
       value: listing.expertInspection?.hasInspection ? "Onaylı" : "Yok",
       description: listing.expertInspection?.inspectionDate ? "Resmi rapor mevcut" : "Ekspertiz beyan edilmedi",
-      styles: isRestricted ? restrictedStyle : (listing.expertInspection?.hasInspection 
+      styles: listing.expertInspection?.hasInspection 
         ? { bg: "bg-emerald-50", text: "text-emerald-700", border: "border-emerald-100" } 
-        : { bg: "bg-amber-50", text: "text-amber-700", border: "border-amber-100" }),
+        : { bg: "bg-amber-50", text: "text-amber-700", border: "border-amber-100" },
     },
     {
       title: "Tramer",
@@ -46,9 +43,9 @@ export function TrustSummary({ listing, seller, updatedAt }: TrustSummaryProps) 
       description: listing.tramerAmount && listing.tramerAmount > 0 
         ? "Hasar kaydı detayları" 
         : "Hasar kaydı bulunmuyor",
-      styles: isRestricted ? restrictedStyle : (listing.tramerAmount && listing.tramerAmount > 0 
+      styles: listing.tramerAmount && listing.tramerAmount > 0 
         ? { bg: "bg-amber-50", text: "text-amber-700", border: "border-amber-100" } 
-        : { bg: "bg-emerald-50", text: "text-emerald-700", border: "border-emerald-100" }),
+        : { bg: "bg-emerald-50", text: "text-emerald-700", border: "border-emerald-100" },
     },
     {
       title: "Satıcı",
@@ -60,7 +57,7 @@ export function TrustSummary({ listing, seller, updatedAt }: TrustSummaryProps) 
       title: "Son Güncelleme",
       value: Number.isFinite(lastUpdatedAt.getTime()) ? lastUpdatedAt.toLocaleDateString("tr-TR") : "-",
       description: `${lastUpdatedAt.toLocaleDateString("tr-TR")} güncellendi`,
-      styles: isRestricted ? restrictedStyle : { bg: "bg-blue-50", text: "text-blue-700", border: "border-blue-100" },
+      styles: { bg: "bg-blue-50", text: "text-blue-700", border: "border-blue-100" },
     },
   ];
 

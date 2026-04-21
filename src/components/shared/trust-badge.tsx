@@ -31,7 +31,7 @@ export function TrustBadge({ badgeLabel, score, tone = "amber" }: TrustBadgeProp
       {badgeLabel ? (
         <div className={cn(
           "flex items-center gap-1.5 text-xs font-bold px-3 py-1.5 rounded-xl border uppercase tracking-tight",
-          themes[tone]
+          themes[tone || "amber"]
         )}>
           <ShieldCheck size={16} />
           {badgeLabel}

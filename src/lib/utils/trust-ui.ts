@@ -18,19 +18,25 @@ export function getSellerTrustUI(profile: Partial<Profile> | null | undefined) {
   // Safety Floor (40 points): Accounts below this score are stripped of premium markers.
   const meetsSafetyFloor = profile?.trustScore === undefined || profile.trustScore >= 40;
 
-  // 1. Badge Label Logic
-  let label: string = trust.unverified;
-  if (restrictionState === "restricted_review") {
-    label = trust.verificationPending;
-  } else if (restrictionState === "banned") {
-    label = trust.restricted;
-  } else if (isApproved) {
-    label = trust.verifiedBusiness;
+  // 1. Trust Badge Label (Public Brand Trust)
+  let trustLabel: string = trust.unverified;
+  if (isApproved) {
+    trustLabel = trust.verifiedBusiness;
   } else if (isIdentityVerified) {
-    label = trust.identityVerified;
+    trustLabel = trust.identityVerified;
+  } else if (restrictionState === "restricted_review") {
+    trustLabel = trust.verificationPending;
   }
 
-  // 2. Visual Tone Logic
+  // 2. Status Label (Operational State)
+  let statusLabel: string | undefined = undefined;
+  if (restrictionState === "banned") {
+    statusLabel = trust.restricted;
+  } else if (restrictionState === "restricted_review") {
+    statusLabel = trust.verificationPending;
+  }
+
+  // 3. Visual Tone Logic
   let tone: "emerald" | "amber" | "slate" | "blue" | "rose" = "amber";
   if (restrictionState === "banned") {
     tone = "rose";
@@ -40,11 +46,8 @@ export function getSellerTrustUI(profile: Partial<Profile> | null | undefined) {
     tone = "emerald";
   } else if (isIdentityVerified && meetsSafetyFloor) {
     tone = "blue";
-  } else {
-    tone = "amber";
   }
 
-  // 3. UI Theme Presets
   const themes = {
     emerald: {
       bg: "bg-emerald-500/10",
@@ -94,12 +97,15 @@ export function getSellerTrustUI(profile: Partial<Profile> | null | undefined) {
     isTrusted: isTrusted && meetsSafetyFloor,
     isApproved,
     isIdentityVerified,
-    label,
+    label: statusLabel || trustLabel, // Maintain backward compatibility for single-slot UIs
+    trustLabel,
+    statusLabel,
     tone,
     styles: themes[tone],
     subMessage,
     isContactable: isActive,
     isPremiumVisible: isApproved && isActive && meetsSafetyFloor,
-    isProfessional: profile?.userType === "professional" && isApproved && isActive && meetsSafetyFloor
+    // Professional type is a static attribute, not a trust state
+    isProfessional: profile?.userType === "professional"
   };
 }

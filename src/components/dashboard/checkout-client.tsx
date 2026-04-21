@@ -70,9 +70,9 @@ export function CheckoutClient({ plan, isPaymentEnabled }: CheckoutClientProps) 
           <CheckCircle2 className="size-12 text-emerald-600" />
         </div>
         <div>
-          <h2 className="text-2xl font-bold text-slate-900">Ödeme Başarılı!</h2>
+          <h2 className="text-2xl font-bold text-slate-900">İşlem Başarılı!</h2>
           <p className="mt-2 text-slate-500">
-            <span className="font-semibold">{plan.name}</span> paketiniz aktif edildi. Panele yönlendiriliyorsunuz...
+            <span className="font-semibold">{plan.name}</span> paketiniz onaylandı. Panelinize yönlendiriliyorsunuz...
           </p>
         </div>
       </div>
@@ -121,21 +121,22 @@ export function CheckoutClient({ plan, isPaymentEnabled }: CheckoutClientProps) 
       </Card>
 
       {/* Payment Notice */}
-      <Card className="border-amber-200 bg-amber-50">
-        <CardContent className="pt-6">
-          <div className="flex gap-3">
-            <AlertTriangle size={18} className="text-amber-600 shrink-0 mt-0.5" />
-            <div className="text-sm text-amber-800">
-              <p className="font-bold mb-1">Ödeme Sistemi Geliştirme Aşamasında</p>
-              <p>
-                Ödeme altyapısı (Iyzico) entegrasyonu tamamlanmaktadır. 
-                Şu an satın alma işlemi gerçekleştirilememektedir. 
-                Kurumsal paket için <a href="/contact" className="underline font-semibold">bizimle iletişime geçin</a>.
-              </p>
+      {!isPaymentEnabled && (
+        <Card className="border-amber-200 bg-amber-50">
+          <CardContent className="pt-6">
+            <div className="flex gap-3">
+              <AlertTriangle size={18} className="text-amber-600 shrink-0 mt-0.5" />
+              <div className="text-sm text-amber-800">
+                <p className="font-bold mb-1">Ödeme Sistemi Aktif Değil</p>
+                <p>
+                  Otomatik ödeme sistemimiz geçici olarak bakımdadır. 
+                  Paketinizi hemen aktif etmek için <a href="/contact" className="underline font-semibold">bizimle iletişime geçin</a> veya ücretsiz paketi kullanın.
+                </p>
+              </div>
             </div>
-          </div>
-        </CardContent>
-      </Card>
+          </CardContent>
+        </Card>
+      )}
 
       {status === "error" && (
         <div className="rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-700 font-medium">
@@ -163,9 +164,9 @@ export function CheckoutClient({ plan, isPaymentEnabled }: CheckoutClientProps) 
           </Button>
         )}
 
-        <div className="flex items-center justify-center gap-2 text-xs text-slate-400">
-          <ShieldCheck size={14} className="text-emerald-500" />
-          <span>{isPaymentEnabled ? "SSL korumalı güvenli ödeme" : "Paket aktivasyonu şu an manuel ilerliyor"}</span>
+        <div className="flex items-center justify-center gap-2 text-xs text-slate-400 font-medium">
+          <ShieldCheck size={14} className={isPaymentEnabled ? "text-emerald-500" : "text-slate-300"} />
+          <span>{isPaymentEnabled ? "Ödemeniz SSL ile korunmaktadır." : "Paket aktivasyonu için müşteri temsilcimiz sizinle iletişime geçecektir."}</span>
         </div>
       </div>
     </div>

@@ -76,11 +76,7 @@ async function DashboardDataSection({
         credits={profile?.balanceCredits ?? 0}
       />
 
-      <DashboardProfessionalCard 
-        businessName={profile?.businessName} 
-        businessSlug={profile?.businessSlug} 
-        verifiedBusiness={profile?.verifiedBusiness}
-      />
+      <DashboardProfessionalCard profile={profile} />
 
       <div className="grid grid-cols-1 gap-12 lg:grid-cols-3">
         <div className="lg:col-span-2">

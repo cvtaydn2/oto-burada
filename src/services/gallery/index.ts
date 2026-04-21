@@ -72,7 +72,6 @@ export async function getGalleryBySlug(slug: string) {
       businessSlug: profile.business_slug,
       businessDescription: profile.business_description,
       websiteUrl: profile.website_url,
-      verifiedBusiness: profile.verified_business,
       createdAt: profile.created_at,
       updatedAt: profile.updated_at,
     } as Profile,

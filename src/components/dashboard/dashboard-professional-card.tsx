@@ -1,14 +1,18 @@
 import Link from "next/link";
 import { Eye, ShieldCheck, Zap, LayoutDashboard, ChevronRight } from "lucide-react";
+import type { Profile } from "@/types";
+import { getSellerTrustUI } from "@/lib/utils/trust-ui";
 
 interface DashboardProfessionalCardProps {
-  businessName?: string | null;
-  businessSlug?: string | null;
-  verifiedBusiness?: boolean;
+  profile: Partial<Profile>;
 }
 
-export function DashboardProfessionalCard({ businessName, businessSlug, verifiedBusiness }: DashboardProfessionalCardProps) {
-  if (!businessSlug || !verifiedBusiness) {
+export function DashboardProfessionalCard({ profile }: DashboardProfessionalCardProps) {
+  const { businessName, businessSlug } = profile;
+  const trustUI = getSellerTrustUI(profile);
+
+  // Show upgrade card if not approved OR not premium visible
+  if (!businessSlug || !trustUI.isPremiumVisible) {
     return (
       <section className="overflow-hidden rounded-2xl bg-slate-900 border border-slate-800 p-6 lg:p-10 shadow-xl relative group mb-8 text-white">
         <div className="relative flex flex-col lg:flex-row lg:items-center justify-between gap-8">
@@ -28,7 +32,7 @@ export function DashboardProfessionalCard({ businessName, businessSlug, verified
           </div>
           
           <Link
-            href="/dashboard/profile/corporate"
+            href="/dashboard/profile"
             className="flex h-14 w-full sm:w-auto items-center justify-center gap-2 rounded-xl bg-white px-10 text-[10px] font-bold uppercase tracking-widest text-slate-900 shadow-xl hover:bg-slate-100 transition-all active:scale-95"
           >
             KURUMSAL&apos;A GEÇ
@@ -41,7 +45,12 @@ export function DashboardProfessionalCard({ businessName, businessSlug, verified
 
   const items = [
     { label: "Durum", value: "Aktif", icon: Eye, sub: "İstatistikler yükleniyor" },
-    { label: "Güven Durumu", value: verifiedBusiness ? "Onaylı" : "İnceleniyor", icon: ShieldCheck, sub: verifiedBusiness ? "Güven mührü aktif" : "Belge kontrolü yapılıyor" },
+    { 
+      label: "Güven Durumu", 
+      value: "Onaylı", 
+      icon: ShieldCheck, 
+      sub: "Güven mührü aktif" 
+    },
     { label: "Özellikler", value: "Kurumsal", icon: Zap, sub: "Sınırsız İlan & XML" }
   ];
 

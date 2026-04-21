@@ -63,7 +63,6 @@ export async function getAllUsers(query?: string, page = 1, limit = 20) {
       taxId: null,
       taxOffice: null,
       websiteUrl: null,
-      verifiedBusiness: p.verified_business,
       businessSlug: p.business_slug,
       isBanned: p.is_banned,
       createdAt: p.created_at,

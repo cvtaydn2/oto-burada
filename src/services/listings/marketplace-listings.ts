@@ -130,7 +130,6 @@ export async function getMarketplaceSeller(sellerId: string): Promise<Profile | 
         businessSlug: data.business_slug,
         businessDescription: data.business_description,
         websiteUrl: data.website_url,
-        verifiedBusiness: data.verified_business,
         verificationStatus: data.verification_status,
         verificationRequestedAt: data.verification_requested_at,
         verificationReviewedAt: data.verification_reviewed_at,

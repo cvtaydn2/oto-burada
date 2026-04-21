@@ -46,7 +46,7 @@ export interface UserDetailData {
   profile: UserProfile;
   payments: UserPaymentRecord[];
   dopings: UserDopingRecord[];
-  listings: { id: string; title: string; status: string }[];
+  listings: { id: string; slug: string; title: string; brand: string; model: string; status: string }[];
   creditTransactions: { id: string; amount: number; type: string; description: string; createdAt: string }[];
   dopingHistory: { id: string; listingId: string; listingTitle: string; dopingType: string; expiresAt: string; createdAt: string }[];
   listingCount: number;
@@ -69,7 +69,6 @@ export function mapProfile(p: Record<string, unknown>, email = ""): UserProfile 
     banReason: (p.ban_reason as string | null) ?? null,
     businessName: p.business_name as string,
     businessSlug: p.business_slug as string,
-    verifiedBusiness: p.verified_business as boolean,
     createdAt: p.created_at as string,
     updatedAt: p.updated_at as string,
     trustScore: (p.trust_score as number) || 0,
@@ -101,7 +100,7 @@ export async function getUserDetail(userId: string): Promise<UserDetailData | nu
       .limit(50),
     admin
       .from("listings")
-      .select("id, title, status, featured, featured_until, urgent_until, highlighted_until, created_at")
+      .select("id, slug, title, brand, model, status, featured, featured_until, urgent_until, highlighted_until, created_at")
       .eq("seller_id", userId)
       .order("created_at", { ascending: false }),
     admin
@@ -147,7 +146,14 @@ export async function getUserDetail(userId: string): Promise<UserDetailData | nu
     profile: mapProfile(profile as Record<string, unknown>, authUser?.email || ""),
     payments: payments as UserPaymentRecord[],
     dopings,
-    listings: listings.map((l) => ({ id: l.id, title: l.title || l.id, status: l.status })),
+    listings: listings.map((l) => ({ 
+      id: l.id, 
+      slug: l.slug, 
+      title: l.title || l.id, 
+      brand: l.brand, 
+      model: l.model,
+      status: l.status 
+    })),
     creditTransactions: creditTransactions.map((t) => ({
       id: t.id,
       amount: t.amount,

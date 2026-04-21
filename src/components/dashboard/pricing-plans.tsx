@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Check, Zap, Crown, User, Building2 } from "lucide-react";
+import { Check, Zap, Crown, User, Building2, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -13,6 +13,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { isPaymentEnabled } from "@/lib/payment/config";
 
 import { PricingPlan } from "@/services/admin/plans";
 
@@ -24,6 +25,7 @@ export function PricingPlans({ initialPlans }: PricingPlansProps) {
   const [plans] = useState(initialPlans);
   const [loading, setLoading] = useState<string | null>(null);
   const router = useRouter();
+  const paymentAvailable = isPaymentEnabled();
 
   const getPlanIcon = (name: string) => {
     if (name.includes("Bireysel")) return User;
@@ -42,26 +44,15 @@ export function PricingPlans({ initialPlans }: PricingPlansProps) {
       <div className="text-center space-y-4">
         <h2 className="text-3xl font-bold tracking-tight">Üyelik Paketleri</h2>
         <p className="text-muted-foreground max-w-2xl mx-auto">
-          İhtiyacınıza uygun paketi seçin, satışlarınızı profesyonel bir seviyeye taşıyın.
+          İhtiyacınıza uygun paketi seçin. Tüm paketlerde ilan vermmek ücretsizdir.
         </p>
 
-        {/* Persuasive Success Guide */}
-        <div className="flex flex-col sm:flex-row items-center justify-center gap-2 sm:gap-8 pt-4 pb-12">
-          <div className="flex items-center gap-2 text-xs font-bold text-muted-foreground opacity-60">
-            <span className="size-5 rounded-full bg-muted border flex items-center justify-center text-[10px]">1</span>
-            İLAN VER
+        {!paymentAvailable && (
+          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-amber-50 border border-amber-200 text-amber-800 text-sm font-medium">
+            <AlertCircle size={16} />
+            Ödeme sistemi şu an bakımda. Paket satın almak için bizimle iletişime geçin.
           </div>
-          <div className="hidden sm:block h-px w-8 bg-border" />
-          <div className="flex items-center gap-2 text-xs font-bold text-primary">
-            <span className="size-5 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center text-[10px]">2</span>
-            PAKET SEÇ
-          </div>
-          <div className="hidden sm:block h-px w-8 bg-border" />
-          <div className="flex items-center gap-2 text-xs font-bold text-muted-foreground opacity-60">
-            <span className="size-5 rounded-full bg-muted border flex items-center justify-center text-[10px]">3</span>
-            HIZLI SAT
-          </div>
-        </div>
+        )}
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
@@ -72,23 +63,23 @@ export function PricingPlans({ initialPlans }: PricingPlansProps) {
           return (
             <Card
               key={plan.id}
-              className={`relative flex flex-col transition-all duration-300 hover:shadow-sm ${
+              className={`relative flex flex-col transition-all duration-300 ${
                 isFeatured
-                  ? "border-primary shadow-sm scale-105 z-10"
+                  ? "border-primary shadow-sm z-10"
                   : "border-border"
               }`}
             >
-              {isFeatured && (
+              {isFeatured && plan.price > 0 && !isFeatured && (
                 <div className="absolute -top-4 left-1/2 -translate-x-1/2">
                   <Badge className="bg-primary text-primary-foreground px-4 py-1">
-                    En Popüler
+                    Önerilen
                   </Badge>
                 </div>
               )}
   
               <CardHeader>
-                <div className="p-3 w-fit rounded-xl bg-primary/10 mb-4">
-                  <Icon className="h-6 w-6 text-primary" />
+                <div className="p-3 w-fit rounded-xl bg-muted mb-4">
+                  <Icon className="h-6 w-6 text-muted-foreground" />
                 </div>
                 <CardTitle className="text-2xl font-bold">{plan.name}</CardTitle>
                 <CardDescription>
@@ -99,16 +90,23 @@ export function PricingPlans({ initialPlans }: PricingPlansProps) {
               <CardContent className="flex-1 space-y-6">
                 <div className="space-y-1">
                   <span className="text-4xl font-bold">{new Intl.NumberFormat("tr-TR", { style: "currency", currency: "TRY" }).format(plan.price)}</span>
-                  <span className="text-muted-foreground ml-1">/ ay</span>
+                  {plan.price > 0 && <span className="text-muted-foreground ml-1">/ ay</span>}
+                  {plan.price === 0 && <span className="text-muted-foreground ml-1 text-sm font-medium">Ücretsiz</span>}
                 </div>
   
                 <div className="space-y-4">
-                  <div className="flex items-center gap-2 font-medium text-primary">
-                    <div className="h-1 w-full bg-primary/10 rounded-full overflow-hidden">
-                      <div className="h-full bg-primary w-full" />
+                  {plan.price > 0 ? (
+                    <div className="flex items-center gap-2 font-medium text-primary">
+                      <div className="h-1 w-full bg-primary/10 rounded-full overflow-hidden">
+                        <div className="h-full bg-primary w-full" />
+                      </div>
+                      <span className="whitespace-nowrap">{plan.credits} İlan</span>
                     </div>
-                    <span className="whitespace-nowrap">{plan.credits} İlan</span>
-                  </div>
+                  ) : (
+                    <div className="text-sm text-muted-foreground">
+                      Ücretsiz ilan verin, istediğiniz kadar araç yayınlayın.
+                    </div>
+                  )}
   
                   <ul className="space-y-3">
                     {Object.keys(plan.features).map((key) => (
@@ -133,11 +131,18 @@ export function PricingPlans({ initialPlans }: PricingPlansProps) {
               <CardFooter>
                 <Button
                   className="w-full h-12 font-bold"
-                  variant={isFeatured ? "default" : "outline"}
-                  disabled={plan.price === 0 || loading !== null}
+                  variant={isFeatured && plan.price > 0 ? "default" : "outline"}
+                  disabled={loading !== null || (!paymentAvailable && plan.price > 0)}
                   onClick={() => handleSubscribe(plan.id)}
                 >
-                  {loading === plan.id ? "Hazırlanıyor..." : "Hemen Paketi Seç"}
+                  {loading === plan.id 
+                    ? "Hazırlanıyor..." 
+                    : plan.price === 0 
+                      ? "Ücretsiz Başla" 
+                      : paymentAvailable 
+                        ? "Paketi Seç" 
+                        : "İletişime Geç"
+                  }
                 </Button>
               </CardFooter>
             </Card>
@@ -148,7 +153,7 @@ export function PricingPlans({ initialPlans }: PricingPlansProps) {
       <div className="flex flex-col md:flex-row items-center justify-between gap-8 pt-8 border-t">
         <div className="flex flex-col md:flex-row items-center gap-6">
           <div className="bg-muted/50 rounded-2xl p-6 flex items-center gap-4 border max-w-sm">
-            <Building2 className="h-6 w-6 text-primary shrink-0" />
+            <Building2 className="h-6 w-6 text-muted-foreground shrink-0" />
             <div className="space-y-1">
               <p className="text-sm font-bold">Kurumsal Çözümler</p>
               <p className="text-xs text-muted-foreground leading-relaxed">
@@ -160,13 +165,12 @@ export function PricingPlans({ initialPlans }: PricingPlansProps) {
             </Button>
           </div>
 
-          <div className="flex items-center gap-4 text-muted-foreground/40">
+          <div className="flex items-center gap-4 text-muted-foreground/60">
             <div className="flex flex-col items-center gap-1">
-              <div className="flex items-center gap-1 opacity-50">
-                <span className="text-[10px] font-bold border rounded px-1">SSL</span>
-                <span className="text-[10px] font-bold border rounded px-1">256-BIT</span>
+              <div className="flex items-center gap-1">
+                <span className="text-[10px] font-bold border rounded px-1">BETA</span>
               </div>
-              <span className="text-[8px] font-bold uppercase tracking-widest text-center">Güvenli Ödeme Altyapısı</span>
+              <span className="text-[8px] font-bold uppercase tracking-widest text-center">Otomatik ve Manuel Aktivasyon</span>
             </div>
           </div>
         </div>

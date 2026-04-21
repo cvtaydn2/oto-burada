@@ -94,6 +94,7 @@ export default async function AdminUserManagementPage({
                     <th className="p-6 text-[10px] font-bold text-muted-foreground/70 uppercase tracking-[0.2em]">Kredi</th>
                     <th className="p-6 text-[10px] font-bold text-muted-foreground/70 uppercase tracking-[0.2em]">Kayıt</th>
                     <th className="p-6 text-[10px] font-bold text-muted-foreground/70 uppercase tracking-[0.2em]">Son Giriş</th>
+                    <th className="p-6 text-[10px] font-bold text-muted-foreground/70 uppercase tracking-[0.2em]">Doğrulama</th>
                     <th className="p-6 text-[10px] font-bold text-muted-foreground/70 uppercase tracking-[0.2em]">Durum</th>
                     <th className="p-6 text-right text-[10px] font-bold text-muted-foreground/70 uppercase tracking-[0.2em]">İşlem</th>
                   </tr>
@@ -101,6 +102,8 @@ export default async function AdminUserManagementPage({
                 <tbody className="divide-y divide-slate-50">
                   {users.map((u) => {
                     const userWithLogin = u as typeof u & { lastSignInAt: string | null };
+                    const vStatus = u.verificationStatus || "none";
+                    
                     return (
                       <tr key={u.id} className="group transition-colors hover:bg-blue-50/20">
                         <td className="p-6">
@@ -162,11 +165,28 @@ export default async function AdminUserManagementPage({
                           </span>
                         </td>
                         <td className="p-6">
+                          <Badge 
+                            variant="outline"
+                            className={cn(
+                              "text-[9px] font-bold px-2 py-0.5 rounded-md uppercase tracking-tighter border-none",
+                              vStatus === "approved" ? "bg-emerald-50 text-emerald-600" :
+                              vStatus === "pending" ? "bg-amber-50 text-amber-600 animate-pulse" :
+                              vStatus === "rejected" ? "bg-rose-50 text-rose-600" :
+                              "bg-slate-50 text-slate-400"
+                            )}
+                          >
+                            {vStatus === "approved" ? "Onaylı" : 
+                             vStatus === "pending" ? "Bekliyor" :
+                             vStatus === "rejected" ? "Reddedildi" : "Yok"}
+                          </Badge>
+                        </td>
+                        <td className="p-6">
                           <div className="flex items-center gap-2">
                             <div
                               className={cn(
                                 "size-2 rounded-full",
-                                !u.isBanned ? "bg-emerald-500 animate-pulse" : "bg-slate-300",
+                                !u.isBanned ? "bg-emerald-500" : "bg-slate-300",
+                                !u.isBanned && "animate-pulse"
                               )}
                             />
                             <span

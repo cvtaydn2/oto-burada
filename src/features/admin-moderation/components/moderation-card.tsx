@@ -140,20 +140,24 @@ export function ModerationCard({
                 )}
                 
                 {/* Seller Trust Context */}
-                {listing.seller && (
-                  <Link 
-                    href={`/admin/users/${listing.seller.id}`}
-                    className={cn(
-                      "inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[10px] font-bold shadow-sm border transition-all hover:scale-105 active:scale-95",
-                      getSellerTrustUI({ ...listing.seller }).tone === "emerald" ? "bg-emerald-50 text-emerald-600 border-emerald-100" :
-                      getSellerTrustUI({ ...listing.seller }).tone === "amber" ? "bg-amber-50 text-amber-600 border-amber-100" :
-                      "bg-rose-50 text-rose-600 border-rose-100"
-                    )}
-                  >
-                    <Shield size={12} />
-                    SATICI: {getSellerTrustUI({ ...listing.seller }).label} ({listing.seller.trustScore}%)
-                  </Link>
-                )}
+                {listing.seller && (() => {
+                  const trustUI = getSellerTrustUI(listing.seller);
+                  return (
+                    <Link 
+                      href={`/admin/users/${listing.seller.id}`}
+                      className={cn(
+                        "inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[10px] font-bold shadow-sm border transition-all hover:scale-105 active:scale-95",
+                        trustUI.tone === "emerald" ? "bg-emerald-50 text-emerald-600 border-emerald-100" :
+                        trustUI.tone === "amber" ? "bg-amber-50 text-amber-700 border-amber-100" :
+                        trustUI.tone === "slate" ? "bg-slate-50 text-slate-600 border-slate-100" :
+                        "bg-rose-50 text-rose-600 border-rose-100"
+                      )}
+                    >
+                      <Shield size={12} />
+                      {trustUI.label} ({trustUI.restrictionState === "active" ? listing.seller.trustScore : "Kısıtlı"}) Skor
+                    </Link>
+                  );
+                })()}
               </div>
 
               <div className="flex items-center gap-2">

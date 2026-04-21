@@ -32,7 +32,9 @@ export function SellerCard({
   loginUrl,
   ratingSummary,
 }: SellerCardProps) {
-  const { isProfessional } = getSellerTrustUI(seller);
+  const trustUI = getSellerTrustUI(seller);
+  const isContactable = trustUI.isContactable && trustUI.isPremiumVisible;
+  
   return (
     <div className="rounded-[40px] border border-border/50 bg-card overflow-hidden shadow-sm shadow-slate-200/20">
       <div className="p-8">
@@ -54,18 +56,22 @@ export function SellerCard({
             <div className="flex items-center gap-3">
               <span className={cn(
                 "text-[10px] font-bold uppercase px-2 py-0.5 rounded-lg tracking-widest italic",
-                isProfessional 
+                trustUI.isPremiumVisible 
                   ? "bg-primary/10 text-primary border border-primary/20" 
                   : "bg-muted text-muted-foreground"
               )}>
-                {isProfessional ? trust.professional : trust.individual}
+                {trustUI.isPremiumVisible ? trust.professional : trust.individual}
               </span>
-              {trustSummary.score > 85 && (
+              
+              {/* Quick response badge only for active, premium, contactable sellers */}
+              {isContactable && trustSummary.score > 85 && (
                 <span className="text-[10px] font-bold uppercase px-2 py-0.5 rounded-lg tracking-widest bg-emerald-50 text-emerald-600 border border-emerald-100 italic">
                   HIZLI YANIT
                 </span>
               )}
-              {seller?.businessSlug && isProfessional && (
+              
+              {/* Gallery link only for active professional sellers */}
+              {seller?.businessSlug && trustUI.isPremiumVisible && (
                 <Link 
                   href={`/gallery/${seller.businessSlug}`}
                   className="text-[10px] font-bold uppercase text-primary hover:underline italic tracking-widest"
@@ -77,17 +83,20 @@ export function SellerCard({
           </div>
         </div>
 
-        {/* Trust & Rating */}
-        <div className="space-y-4 py-6 border-y border-slate-50">
-          <SellerRatingInfo 
-            average={ratingSummary?.average || 0} 
-            count={ratingSummary?.count || 0} 
-          />
-          <TrustBadge
-            badgeLabel={trustSummary.badgeLabel}
-            score={trustSummary.score}
-          />
-        </div>
+        {/* Trust & Rating - hidden for restricted/banned sellers */}
+        {trustUI.restrictionState === "active" && (
+          <div className="space-y-4 py-6 border-y border-slate-50">
+            <SellerRatingInfo 
+              average={ratingSummary?.average || 0} 
+              count={ratingSummary?.count || 0} 
+            />
+            <TrustBadge
+              badgeLabel={trustSummary.badgeLabel}
+              score={trustSummary.score}
+              tone={trustUI.tone}
+            />
+          </div>
+        )}
 
         {/* Contact Actions */}
         {isLoggedIn ? (
@@ -113,24 +122,26 @@ export function SellerCard({
           </div>
         )}
 
-        {/* Trust Signals */}
-        <div className="mt-8 pt-8 border-t border-border/50">
-          <h4 className="text-[11px] font-bold uppercase tracking-widest text-muted-foreground/70 italic mb-4">Güven Sinyalleri</h4>
-          {trustSummary.signals.length > 0 ? (
-            <ul className="space-y-3">
-              {trustSummary.signals.map((signal) => (
-                <li key={signal} className="flex items-center gap-3 text-xs font-bold text-muted-foreground italic">
-                  <CheckCircle2 className="size-4 text-emerald-500" />
-                  {signal}
-                </li>
-              ))}
-            </ul>
-          ) : (
-            <p className="text-sm text-muted-foreground font-medium italic">
-              Ek sinyal bulunmuyor.
-            </p>
-          )}
-        </div>
+        {/* Trust Signals - only for active sellers */}
+        {trustUI.restrictionState === "active" && (
+          <div className="mt-8 pt-8 border-t border-border/50">
+            <h4 className="text-[11px] font-bold uppercase tracking-widest text-muted-foreground/70 italic mb-4">Güven Sinyalleri</h4>
+            {trustSummary.signals.length > 0 ? (
+              <ul className="space-y-3">
+                {trustSummary.signals.map((signal) => (
+                  <li key={signal} className="flex items-center gap-3 text-xs font-bold text-muted-foreground italic">
+                    <CheckCircle2 className="size-4 text-emerald-500" />
+                    {signal}
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p className="text-sm text-muted-foreground font-medium italic">
+                Ek sinyal bulunmuyor.
+              </p>
+            )}
+          </div>
+        )}
       </div>
     </div>
   )

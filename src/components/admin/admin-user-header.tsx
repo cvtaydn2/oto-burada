@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { ArrowLeft, ShieldCheck, Store, Shield } from "lucide-react";
+import { ArrowLeft, ShieldCheck, Store, Shield, AlertTriangle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { getSellerTrustUI } from "@/lib/utils/trust-ui";
@@ -18,6 +18,7 @@ interface AdminUserHeaderProps {
   trustScore?: number;
   verificationStatus?: VerificationStatus;
   idVerified?: boolean;
+  restrictionState?: "active" | "restricted_review" | "banned";
 }
 
 export function AdminUserHeader({ 
@@ -29,9 +30,18 @@ export function AdminUserHeader({
   role,
   trustScore = 0,
   verificationStatus,
-  idVerified
+  idVerified,
+  restrictionState
 }: AdminUserHeaderProps) {
   const trustUI = getSellerTrustUI({ isBanned, banReason, trustScore, verificationStatus, isVerified: idVerified });
+  
+  const hasConflict = (verificationStatus === "approved" && isBanned) || 
+                      (verificationStatus === "approved" && restrictionState === "restricted_review");
+  const conflictMessage = isBanned 
+    ? "ONAYLI + YASAKLI (ÇELİŞKİ)" 
+    : restrictionState === "restricted_review" 
+      ? "ONAYLI + İNCELEMEDE (ÇELİŞKİ)" 
+      : null;
 
   return (
     <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
@@ -58,6 +68,13 @@ export function AdminUserHeader({
       </div>
 
       <div className="flex items-center gap-3">
+        {hasConflict && (
+          <div className="px-4 py-2.5 rounded-2xl font-bold text-[10px] uppercase tracking-[0.12em] shadow-sm border flex items-center gap-2 bg-rose-600 text-white border-rose-500 animate-pulse">
+            <AlertTriangle size={14} />
+            {conflictMessage}
+          </div>
+        )}
+        
         {/* Trust Score Badge */}
         <div className={cn(
           "px-5 py-2.5 rounded-2xl font-bold text-[11px] uppercase tracking-[0.12em] shadow-sm border flex items-center gap-2.5",
