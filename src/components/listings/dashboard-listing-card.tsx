@@ -17,18 +17,19 @@ import {
 } from "@/components/ui/dialog";
 import { ListingDopingPanel } from "./listing-doping-panel";
 import { getSellerTrustUI } from "@/lib/utils/trust-ui";
+import { trust } from "@/lib/constants/ui-strings";
 
 import { Checkbox } from "@/components/ui/checkbox";
 import { cn } from "@/lib/utils";
 
 const statusLabelMap: Record<Listing["status"], string> = {
-  approved: "Yayında",
-  archived: "Arşivde",
-  draft: "Taslak",
-  pending: "İnceleniyor",
-  pending_ai_review: "Yapay Zeka",
-  flagged: "Şüpheli",
-  rejected: "Reddedildi",
+  approved: trust.admin.listingStatus.approved,
+  archived: trust.admin.listingStatus.archived,
+  draft: trust.admin.listingStatus.draft,
+  pending: trust.admin.listingStatus.pending,
+  pending_ai_review: trust.admin.listingStatus.pending_ai_review,
+  flagged: trust.admin.listingStatus.flagged,
+  rejected: trust.admin.listingStatus.rejected,
 };
 
 const statusClassMap: Record<Listing["status"], string> = {

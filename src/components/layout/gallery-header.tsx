@@ -57,17 +57,7 @@ export function GalleryHeader({ profile }: GalleryHeaderProps) {
                 </h1>
                 {trustUI.isPremiumVisible && (
                   <Badge className="bg-primary/10 text-primary border-none font-bold px-3 py-1">
-                    KURUMSAL GALERİ
-                  </Badge>
-                )}
-                {trustUI.restrictionState === "restricted_review" && (
-                  <Badge className="bg-amber-100 text-amber-700 border-none font-bold px-3 py-1">
-                    İNCELEMEDE
-                  </Badge>
-                )}
-                {trustUI.restrictionState === "banned" && (
-                  <Badge className="bg-rose-100 text-rose-700 border-none font-bold px-3 py-1">
-                    KISITLI
+                    {trustUI.label}
                   </Badge>
                 )}
               </div>

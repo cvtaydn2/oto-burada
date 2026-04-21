@@ -2,6 +2,7 @@
 
 import dynamic from "next/dynamic";
 import type { AdminAnalyticsData } from "@/services/admin/analytics";
+import { trust } from "@/lib/constants/ui-strings";
 
 const BarChart = dynamic(() => import("recharts").then((mod) => mod.BarChart), { ssr: false });
 const Bar = dynamic(() => import("recharts").then((mod) => mod.Bar), { ssr: false });
@@ -32,7 +33,7 @@ export function AdminAnalyticsPanel({ data }: AdminAnalyticsPanelProps) {
   }
 
   const statusData = (data.listingsByStatus || []).map((s) => ({
-    name: s.status === "approved" ? "Onaylı" : s.status === "pending" ? "Bekleyen" : "Reddedilen",
+    name: s.status === "approved" ? trust.admin.analyticsStatus.approved : s.status === "pending" ? trust.admin.analyticsStatus.pending : trust.admin.analyticsStatus.rejected,
     value: s.count || 0,
   }));
 

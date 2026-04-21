@@ -44,14 +44,14 @@ export function DashboardProfessionalCard({ profile }: DashboardProfessionalCard
   }
 
   const items = [
-    { label: "Durum", value: "Aktif", icon: Eye, sub: "İstatistikler yükleniyor" },
+    { label: "Durum", value: trustUI.restrictionState === "active" ? "Aktif" : "Kısıtlı", icon: Eye, sub: trustUI.restrictionState === "active" ? "İstatistikler yükleniyor" : trustUI.subMessage || "Hesap kısıtlı" },
     { 
       label: "Güven Durumu", 
-      value: "Onaylı", 
+      value: trustUI.label, 
       icon: ShieldCheck, 
-      sub: "Güven mührü aktif" 
+      sub: trustUI.isTrusted ? "Güven mührü aktif" : "Doğrulama gerekli" 
     },
-    { label: "Özellikler", value: "Kurumsal", icon: Zap, sub: "Sınırsız İlan & XML" }
+    { label: "Özellikler", value: trustUI.isProfessional ? "Kurumsal" : "Bireysel", icon: Zap, sub: trustUI.isProfessional ? "Sınırsız İlan & XML" : "Sınırlı İlan" }
   ];
 
   return (

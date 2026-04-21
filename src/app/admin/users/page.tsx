@@ -9,6 +9,7 @@ import { UserActionMenu } from "@/components/admin/user_action_menu";
 import { requireAdminUser } from "@/lib/auth/session";
 import { getAllUsers } from "@/services/admin/users";
 import { SimplePagination } from "@/components/admin/simple-pagination";
+import { trust } from "@/lib/constants/ui-strings";
 
 export const dynamic = "force-dynamic";
 
@@ -175,9 +176,9 @@ export default async function AdminUserManagementPage({
                               "bg-slate-50 text-slate-400"
                             )}
                           >
-                            {vStatus === "approved" ? "Onaylı" : 
-                             vStatus === "pending" ? "Bekliyor" :
-                             vStatus === "rejected" ? "Reddedildi" : "Yok"}
+                            {vStatus === "approved" ? trust.admin.verificationStatus.approved : 
+                             vStatus === "pending" ? trust.admin.verificationStatus.pending :
+                             vStatus === "rejected" ? trust.admin.verificationStatus.rejected : trust.admin.verificationStatus.none}
                           </Badge>
                         </td>
                         <td className="p-6">
@@ -195,7 +196,7 @@ export default async function AdminUserManagementPage({
                                 !u.isBanned ? "text-emerald-600" : "text-muted-foreground/70",
                               )}
                             >
-                              {!u.isBanned ? "Aktif" : "Yasaklı"}
+                              {!u.isBanned ? trust.admin.userStatus.active : trust.admin.userStatus.banned}
                             </span>
                           </div>
                         </td>

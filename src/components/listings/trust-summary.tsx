@@ -1,5 +1,6 @@
 import { cn } from "@/lib/utils";
 import { getSellerTrustUI } from "@/lib/utils/trust-ui";
+import { trust } from "@/lib/constants/ui-strings";
 import { type Profile } from "@/types";
 
 export function TrustCard({ title, value, description, styles }: { title: string; value: string; description: string; styles: { bg: string; text: string; border: string } }) {
@@ -50,7 +51,7 @@ export function TrustSummary({ listing, seller, updatedAt }: TrustSummaryProps) 
     {
       title: "Satıcı",
       value: trustUI.label,
-      description: trustUI.subMessage || (trustUI.isTrusted ? "Doğrulanmış ve aktif profil" : "Profil doğrulaması tamamlanmamış"),
+      description: trustUI.subMessage || (trustUI.isPremiumVisible ? "Aktif ve doğrulanmış" : trust.unverified),
       styles: trustUI.styles,
     },
     {

@@ -57,13 +57,13 @@ export function ListingDopingPanel({ listingId, listingTitle, trustUI }: Listing
 
   const isRestricted = !trustUI.isPremiumVisible;
   const blockTitle = trustUI.restrictionState === "banned" 
-    ? "Hesap Yasaklandı" 
+    ? trust.restricted 
     : trustUI.restrictionState === "restricted_review"
       ? trust.accountUnderReview
-      : "Yetersiz Güven Skoru";
+      : trust.unverified;
 
   const blockDesc = trustUI.restrictionState === "banned"
-    ? "Hesabınızdaki kısıtlama nedeniyle yeni doping alımı yapılamaz."
+    ? trust.accountRestrictedDesc
     : trustUI.restrictionState === "restricted_review"
       ? trust.dopingRestriction
       : "Premium özellikleri kullanabilmek için profil doğrulamanızı tamamlamanız ve %40 güven barajını aşmanız gerekmektedir.";

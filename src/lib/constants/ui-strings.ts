@@ -304,6 +304,45 @@ export const trust = {
   unverified: "DOĞRULAMA YOK",
   restricted: "HESAP İNCELENİYOR",
   
+  // Admin Labels (Explicit operational states)
+  admin: {
+    userStatus: {
+      active: "Aktif",
+      banned: "Yasaklı",
+      pending: "Bekliyor",
+      rejected: "Reddedildi",
+      none: "Yok",
+    },
+    verificationStatus: {
+      approved: "Onaylı",
+      pending: "Bekliyor",
+      rejected: "Reddedildi",
+      none: "Yok",
+    },
+    restrictionConflict: {
+      approvedBanned: "ONAYLI + YASAKLI (ÇELİŞKİ)",
+      approvedReview: "ONAYLI + İNCELEMEDE (ÇELİŞKİ)",
+    },
+    listingStatus: {
+      approved: "Yayında",
+      archived: "Arşivde",
+      draft: "Taslak",
+      pending: "İnceleniyor",
+      pending_ai_review: "Yapay Zeka İncelemesi",
+      flagged: "Şüpheli",
+      rejected: "Reddedildi",
+    },
+    analyticsStatus: {
+      approved: "Onaylı",
+      pending: "Bekleyen",
+      rejected: "Reddedilen",
+    },
+    environment: {
+      active: "Aktif",
+      inactive: "Pasif",
+    }
+  },
+  
   // Restriction Messages (Seller facing)
   accountUnderReview: "Hesap İnceleme Sürecinde",
   restrictionNotice: "Hesabınız güvenlik politikalarımız gereği geçici inceleme altındadır.",

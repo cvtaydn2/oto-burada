@@ -5,6 +5,7 @@ import { ArrowLeft, ShieldCheck, Store, Shield, AlertTriangle } from "lucide-rea
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { getSellerTrustUI } from "@/lib/utils/trust-ui";
+import { getTrustToneClass, getTrustDotColor } from "@/lib/utils/trust-helpers";
 
 import { type VerificationStatus } from "@/types";
 
@@ -78,10 +79,7 @@ export function AdminUserHeader({
         {/* Trust Score Badge */}
         <div className={cn(
           "px-5 py-2.5 rounded-2xl font-bold text-[11px] uppercase tracking-[0.12em] shadow-sm border flex items-center gap-2.5",
-          trustUI.tone === "emerald" ? "bg-emerald-50 text-emerald-700 border-emerald-100" :
-          trustUI.tone === "amber" ? "bg-amber-50 text-amber-700 border-amber-100" :
-          trustUI.tone === "blue" ? "bg-blue-50 text-blue-700 border-blue-100" :
-          "bg-rose-50 text-rose-700 border-rose-100"
+          getTrustToneClass(trustUI.tone, "badge")
         )}>
            <Shield size={14} />
            <span className="opacity-50">Güven:</span>
@@ -90,17 +88,14 @@ export function AdminUserHeader({
 
         <div className={cn(
           "px-5 py-2.5 rounded-2xl font-bold text-[11px] uppercase tracking-[0.15em] shadow-sm border flex items-center gap-2",
-          trustUI.tone === "emerald" ? "bg-emerald-50 text-emerald-600 border-emerald-100" :
-          trustUI.tone === "amber" ? "bg-amber-50 text-amber-700 border-amber-100" :
-          trustUI.tone === "blue" ? "bg-blue-50 text-blue-600 border-blue-100" :
-          "bg-rose-50 text-rose-600 border-rose-100"
+          getTrustToneClass(trustUI.tone, "badge")
         )}>
           <div
             className={cn(
               "size-2 rounded-full",
-              trustUI.tone === "rose" ? "bg-rose-500" :
-              trustUI.tone === "amber" ? "bg-amber-500" :
-              "bg-emerald-500 animate-pulse",
+              trustUI.tone === "rose" || trustUI.tone === "amber" 
+                ? getTrustDotColor(trustUI.tone)
+                : "bg-emerald-500 animate-pulse",
             )}
           />
           {trustUI.label}
