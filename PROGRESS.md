@@ -1,3 +1,20 @@
+# 2026-04-21 - Image Runtime & Listings Observability Fix
+
+## Yapılan Değişiklikler
+
+- `src/app/(public)/about/page.tsx`: `next/image` için kırılgan uzak Unsplash kaynağı kaldırıldı. About hero artık yerel `/images/hero_bg.png` asset'ini kullanıyor; dev runtime/config cache farklarından etkilenmiyor.
+- `src/services/listings/listing-submission-query.ts`: Listings sorgu hataları logger'ın beklediği formata taşındı. Artık Supabase hata `message`, `code`, `details`, `hint` alanları görünür loglanıyor; `[object Object]` kaybı kaldırıldı.
+
+## Doğrulama
+
+- `npm run typecheck`
+- `npm run lint`
+
+## Sonraki Adım
+
+- Gerçek listings query hatasını yeni log detaylarıyla izole et.
+- `next.config.ts` içindeki Supabase fallback hostname davranışını fail-closed hale getir.
+
 # 2026-04-21 - Build Stabilization & Quality Polish
 
 ## Yapılan Değişiklikler

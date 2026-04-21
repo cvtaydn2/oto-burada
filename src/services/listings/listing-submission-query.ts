@@ -347,10 +347,20 @@ export async function getFilteredDatabaseListings(
   ]);
 
   if (dataResult.error) {
-    logger.db.error("Failed to fetch listings data", { error: dataResult.error });
+    logger.db.error("Failed to fetch listings data", undefined, {
+      code: dataResult.error.code ?? undefined,
+      details: dataResult.error.details ?? undefined,
+      hint: dataResult.error.hint ?? undefined,
+      message: dataResult.error.message,
+    });
   }
   if (countResult.error) {
-    logger.db.error("Failed to count listings", { error: countResult.error });
+    logger.db.error("Failed to count listings", undefined, {
+      code: countResult.error.code ?? undefined,
+      details: countResult.error.details ?? undefined,
+      hint: countResult.error.hint ?? undefined,
+      message: countResult.error.message,
+    });
   }
 
   const listings = dataResult.data ? dataResult.data.map(mapListingRow) : [];

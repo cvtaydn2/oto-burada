@@ -32,11 +32,13 @@ export default function AboutPage() {
         <div className="lg:w-1/2 relative">
           <div className="aspect-[4/3] rounded-[4rem] bg-muted overflow-hidden shadow-3xl shadow-slate-200/50">
              <div className="absolute inset-0 bg-gradient-to-tr from-slate-900/40 to-transparent z-10" />
-             <Image 
-               src="https://images.unsplash.com/photo-1560179707-f14e90ef3623?q=80&w=2073&auto=format&fit=crop" 
-               alt="OtoBurada Office" 
-               fill 
+             <Image
+               src="/images/hero_bg.png"
+               alt="OtoBurada görseli"
+               fill
                className="object-cover"
+               sizes="(min-width: 1024px) 50vw, 100vw"
+               priority
              />
           </div>
           <div className="absolute -bottom-8 -left-8 bg-card p-8 rounded-2xl shadow-sm border border-border/50 z-20 hidden md:block">
