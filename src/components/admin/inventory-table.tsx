@@ -21,7 +21,10 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
+import {
+  Badge
+} from "@/components/ui/badge";
+import { trust } from "@/lib/constants/ui-strings";
 import { toast } from "sonner";
 import { formatCurrency, formatNumber, supabaseImageUrl } from "@/lib/utils";
 import { Listing } from "@/types/domain";
@@ -108,13 +111,13 @@ export function InventoryTable({ listings, adminUserId }: InventoryTableProps) {
               </td>
               <td className="px-6 py-4">
                 {listing.status === "approved" ? (
-                  <Badge className="bg-emerald-100 text-emerald-700 hover:bg-emerald-100 border-none rounded-lg text-[9px] font-bold uppercase tracking-tighter">Yayında</Badge>
+                  <Badge className="bg-emerald-100 text-emerald-700 hover:bg-emerald-100 border-none rounded-lg text-[9px] font-bold uppercase tracking-tighter">{trust.admin.listingStatus.approved}</Badge>
                 ) : listing.status === "archived" ? (
-                  <Badge className="bg-slate-100 text-slate-500 hover:bg-slate-100 border-none rounded-lg text-[9px] font-bold uppercase tracking-tighter">Arşivlenmiş</Badge>
+                  <Badge className="bg-slate-100 text-slate-500 hover:bg-slate-100 border-none rounded-lg text-[9px] font-bold uppercase tracking-tighter">{trust.admin.listingStatus.archived}</Badge>
                 ) : listing.status === "rejected" ? (
-                  <Badge className="bg-rose-100 text-rose-700 hover:bg-rose-100 border-none rounded-lg text-[9px] font-bold uppercase tracking-tighter">Reddedildi</Badge>
+                  <Badge className="bg-rose-100 text-rose-700 hover:bg-rose-100 border-none rounded-lg text-[9px] font-bold uppercase tracking-tighter">{trust.admin.listingStatus.rejected}</Badge>
                 ) : (
-                  <Badge className="bg-amber-100 text-amber-700 hover:bg-amber-100 border-none rounded-lg text-[9px] font-bold uppercase tracking-tighter">Beklemede</Badge>
+                  <Badge className="bg-amber-100 text-amber-700 hover:bg-amber-100 border-none rounded-lg text-[9px] font-bold uppercase tracking-tighter">{trust.admin.listingStatus.pending}</Badge>
                 )}
               </td>
               <td className="px-6 py-4">

@@ -2,31 +2,19 @@ import { SavedSearchesPanel } from "@/components/listings/saved-searches-panel";
 import { requireUser } from "@/lib/auth/session";
 import {
   createSearchParamsFromListingFilters,
-  filterListings,
 } from "@/services/listings/listing-filters";
-import { getPublicMarketplaceListings } from "@/services/listings/marketplace-listings";
 import { getStoredSavedSearchesByUser } from "@/services/saved-searches/saved-search-records";
 import {
   buildSavedSearchSummary,
-  getSavedSearchSignature,
 } from "@/services/saved-searches/saved-search-utils";
 
 export const dynamic = "force-dynamic";
-// revalidate kaldırıldı — force-dynamic ile çakışıyor
 
 export default async function DashboardSavedSearchesPage() {
   const user = await requireUser();
 
-  const [savedSearches, listings] = await Promise.all([
-    getStoredSavedSearchesByUser(user.id),
-    getPublicMarketplaceListings({ limit: 200, page: 1, sort: "newest" }),
-  ]);
-  const resultCountBySignature = new Map(
-    savedSearches.map((search) => [
-      getSavedSearchSignature(search.filters),
-      filterListings(listings.listings, search.filters).length,
-    ]),
-  );
+  const savedSearches = await getStoredSavedSearchesByUser(user.id);
+  
   const savedSearchItems = savedSearches.map((search) => {
     const searchParams = createSearchParamsFromListingFilters(search.filters);
 
@@ -39,7 +27,7 @@ export default async function DashboardSavedSearchesPage() {
       href: searchParams.toString() ? `/listings?${searchParams.toString()}` : "/listings",
       id: search.id ?? "",
       notificationsEnabled: search.notificationsEnabled,
-      resultCount: resultCountBySignature.get(getSavedSearchSignature(search.filters)) ?? 0,
+      resultCount: 0,
       title: search.title,
       updatedAt: search.updatedAt,
     };

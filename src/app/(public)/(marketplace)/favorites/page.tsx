@@ -1,17 +1,19 @@
 import { FavoritesPageClient } from "@/components/listings/favorites-page-client";
 import { getCurrentUser } from "@/lib/auth/session";
-import { getPublicMarketplaceListings } from "@/services/listings/marketplace-listings";
+import { getMarketplaceListingsByIds } from "@/services/listings/marketplace-listings";
+import { getDatabaseFavoriteIds } from "@/services/favorites/favorite-records";
 import { ChevronLeft } from "lucide-react";
 import Link from "next/link";
 
 export const dynamic = "force-dynamic";
-// revalidate kaldırıldı — force-dynamic ile çakışıyor
 
 export default async function FavoritesPage() {
-  const [user, listings] = await Promise.all([
-    getCurrentUser(),
-    getPublicMarketplaceListings({ limit: 100, page: 1, sort: "newest" }),
-  ]);
+  const user = await getCurrentUser();
+  
+  const favoriteIds = user?.id ? await getDatabaseFavoriteIds(user.id) : null;
+  const listings = favoriteIds && favoriteIds.length > 0 
+    ? await getMarketplaceListingsByIds(favoriteIds)
+    : [];
 
   return (
     <div className="mx-auto max-w-[1280px] space-y-8 px-5 py-8 lg:px-6 lg:py-10">
@@ -32,7 +34,7 @@ export default async function FavoritesPage() {
         </div>
       </div>
 
-      <FavoritesPageClient listings={listings.listings} userId={user?.id} />
+      <FavoritesPageClient listings={listings} userId={user?.id} />
     </div>
   );
 }

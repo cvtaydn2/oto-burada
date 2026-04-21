@@ -7,16 +7,13 @@ import { buildListingsMetadata, buildAbsoluteUrl } from "@/lib/seo";
 import { getPublicMarketplaceListings } from "@/services/listings/marketplace-listings";
 import { getLiveMarketplaceReferenceData } from "@/services/reference/live-reference-data";
 import type { ListingFilters } from "@/types";
+import { normalizeSlug } from "@/lib/utils/slug-utils";
 
 interface LandingPageProps {
   params: Promise<{
     brand: string;
     city?: string[];
   }>;
-}
-
-function normalizeSlug(slug: string) {
-  return slug.charAt(0).toUpperCase() + slug.slice(1).toLowerCase();
 }
 
 export async function generateMetadata({ params }: LandingPageProps): Promise<Metadata> {

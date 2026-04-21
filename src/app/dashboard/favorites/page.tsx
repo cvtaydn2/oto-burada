@@ -1,17 +1,21 @@
 import { Heart } from "lucide-react";
 import { FavoritesPageClient } from "@/components/listings/favorites-page-client";
 import { requireUser } from "@/lib/auth/session";
-import { getPublicMarketplaceListings } from "@/services/listings/marketplace-listings";
+import { getDatabaseFavoriteIds } from "@/services/favorites/favorite-records";
+import { getMarketplaceListingsByIds } from "@/services/listings/marketplace-listings";
 
 export const dynamic = "force-dynamic";
 
 export default async function DashboardFavoritesPage() {
   const user = await requireUser();
-  const listings = await getPublicMarketplaceListings({ limit: 100, page: 1, sort: "newest" });
+  
+  const favoriteIds = await getDatabaseFavoriteIds(user.id);
+  const listings = favoriteIds && favoriteIds.length > 0 
+    ? await getMarketplaceListingsByIds(favoriteIds)
+    : [];
 
   return (
     <div className="space-y-6">
-      {/* Page header */}
       <div className="flex items-center justify-between">
         <div>
           <div className="flex items-center gap-2 mb-1">
@@ -31,7 +35,7 @@ export default async function DashboardFavoritesPage() {
         </div>
       </div>
 
-      <FavoritesPageClient listings={listings.listings} userId={user.id} />
+      <FavoritesPageClient listings={listings} userId={user.id} />
     </div>
   );
 }

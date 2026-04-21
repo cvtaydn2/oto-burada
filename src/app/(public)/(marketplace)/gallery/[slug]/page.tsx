@@ -34,7 +34,7 @@ export default async function GalleryPage({ params }: GalleryPageProps) {
     notFound()
   }
 
-  const { profile, listings, viewCount30d } = data
+  const { profile, listings, viewCount30d, totalListings } = data
 
   // Record gallery view (fire-and-forget)
   const headersList = await headers()
@@ -64,7 +64,7 @@ export default async function GalleryPage({ params }: GalleryPageProps) {
               </div>
             )}
             <Badge variant="outline" className="border-border bg-card px-3 py-1 text-xs font-medium text-muted-foreground">
-              {listings.length} araç
+              {totalListings} araç
             </Badge>
           </div>
         </div>

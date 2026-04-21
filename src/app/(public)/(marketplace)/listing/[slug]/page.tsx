@@ -3,6 +3,7 @@ import Link from "next/link";
 import dynamic from "next/dynamic";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
+import { AlertCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 // SEO & Monitoring
@@ -14,6 +15,7 @@ import { getCurrentUser } from "@/lib/auth/session";
 import {
   getMarketplaceListingBySlug,
   getMarketplaceSeller,
+  getStoredListingBySlug,
 } from "@/services/listings/marketplace-listings";
 import { getListingCardInsights } from "@/services/listings/listing-card-insights";
 import { breadcrumbs as breadcrumbLabels } from "@/lib/constants/ui-strings";
@@ -61,7 +63,33 @@ export default async function ListingDetailPage({ params }: ListingDetailPagePro
   const { slug } = await params;
   const listing = await getMarketplaceListingBySlug(slug);
 
-  if (!listing) notFound();
+  if (!listing) {
+    const listingFromDb = await getStoredListingBySlug(slug);
+    if (listingFromDb && listingFromDb.status !== "approved") {
+      return (
+        <main className="min-h-screen bg-background flex flex-col">
+          <div className="mx-auto max-w-[1400px] px-6 py-10 w-full flex-1">
+            <div className="flex flex-col items-center justify-center min-h-[60vh] text-center">
+              <div className="w-20 h-20 rounded-full bg-amber-100 flex items-center justify-center mb-6">
+                <AlertCircle className="w-10 h-10 text-amber-600" />
+              </div>
+              <h1 className="text-2xl font-bold text-foreground mb-2">İlan Artık Aktif Değil</h1>
+              <p className="text-muted-foreground max-w-md mb-6">
+                Bu ilan satışa kapatılmış veya süresi dolmuş olabilir.
+              </p>
+              <Link 
+                href="/listings" 
+                className="inline-flex items-center justify-center h-12 px-8 rounded-xl bg-primary text-primary-foreground font-bold hover:bg-primary/90 transition"
+              >
+                Diğer İlanları İncele
+              </Link>
+            </div>
+          </div>
+        </main>
+      );
+    }
+    notFound();
+  }
 
   const [seller, currentUser] = await Promise.all([
     getMarketplaceSeller(listing.sellerId),
@@ -147,7 +175,7 @@ export default async function ListingDetailPage({ params }: ListingDetailPagePro
                     <div className="size-12 rounded-2xl bg-primary/10 text-primary flex items-center justify-center">
                       <ChevronRight size={24} className="rotate-90" />
                     </div>
-                    Gerçek Konum
+                    Konum
                   </h2>
                   <div className="rounded-2xl overflow-hidden border border-border/40">
                      <ListingMap city={listing.city} district={listing.district} className="h-80" />

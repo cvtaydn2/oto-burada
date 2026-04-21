@@ -66,9 +66,9 @@ export default async function DashboardProfilePage() {
               <h3 className="text-sm font-bold text-foreground">Doğrulama Durumu</h3>
             </div>
             <div className="grid gap-2">
-              <VerificationItem label="E-posta Onayı" isVerified={profile.emailVerified} />
-              <VerificationItem label="İşletme" profile={profile} />
-              <VerificationItem label="Kimlik Doğrulama" isVerified={profile.isVerified} />
+              <VerificationItem label="E-posta" isVerified={profile.emailVerified} />
+              <VerificationItem label="İşletme Profili" profile={profile} />
+              <VerificationItem label="Kimlik (Yakında)" isVerified={false} isPending={true} />
             </div>
           </div>
 
@@ -169,11 +169,13 @@ export default async function DashboardProfilePage() {
 function VerificationItem({ 
   label, 
   isVerified, 
+  isPending,
   status,
   profile
 }: { 
   label: string; 
-  isVerified?: boolean; 
+  isVerified?: boolean;
+  isPending?: boolean;
   status?: "none" | "pending" | "approved" | "rejected";
   profile?: Partial<Profile>;
 }) {
@@ -181,10 +183,10 @@ function VerificationItem({
   const trustUI = profile ? getSellerTrustUI(profile) : null;
   
   const isApproved = isVerified || status === "approved" || (trustUI?.isApproved && label.includes("İşletme"));
-  const isPending = status === "pending" || (trustUI?.restrictionState === "restricted_review" && label.includes("İşletme"));
+  const pending = isPending || status === "pending" || (trustUI?.restrictionState === "restricted_review" && label.includes("İşletme"));
   const isRejected = status === "rejected";
 
-  const theme = isApproved ? "emerald" : isPending ? "amber" : isRejected ? "rose" : "slate";
+  const theme = isApproved ? "emerald" : pending ? "amber" : isRejected ? "rose" : "slate";
   const styles = {
     emerald: "bg-emerald-50/50 border-emerald-100 text-emerald-700",
     amber: "bg-amber-50/50 border-amber-100 text-amber-700",
@@ -201,12 +203,12 @@ function VerificationItem({
           isApproved ? "bg-emerald-500 border-emerald-500 text-white" : "border-border"
         )}>
           {isApproved && <CheckCircle2 size={11} strokeWidth={3} />}
-          {isPending && <div className="size-1.5 rounded-full bg-amber-500" />}
+          {pending && <div className="size-1.5 rounded-full bg-amber-500" />}
           {isRejected && <div className="size-1.5 rounded-full bg-rose-500" />}
         </div>
       </div>
       
-      {isPending && (
+      {pending && (
         <p className="mt-2 text-[10px] font-medium leading-tight opacity-80">
           {trust.verificationPendingDesc}
         </p>

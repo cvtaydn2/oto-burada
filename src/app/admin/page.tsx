@@ -75,10 +75,10 @@ export default async function AdminOverviewPage() {
           </div>
 
           <div className="mt-8 flex flex-wrap items-center gap-4 border-t border-border pt-6">
-            <QuickSystemStat icon={<Database size={14} />} label="DB Sağlığı" value={systemOnline ? "Mükemmel" : "Hata"} color={systemOnline ? "emerald" : "rose"} />
-            <QuickSystemStat icon={<Monitor size={14} />} label="Sunucu" value="Normal" color="blue" />
-            <QuickSystemStat icon={<ShieldCheck size={14} />} label="Güvenlik" value="Aktif" color="indigo" />
-            <QuickSystemStat icon={<Activity size={14} />} label="Uptime" value="%99.9" color="emerald" />
+            <QuickSystemStat icon={<Database size={14} />} label="DB Sağlığı" value={systemOnline ? "Normal" : "Hata"} color={systemOnline ? "emerald" : "rose"} />
+            <QuickSystemStat icon={<Monitor size={14} />} label="Sunucu" value={systemOnline ? "Aktif" : "Hata"} color={systemOnline ? "blue" : "rose"} />
+            <QuickSystemStat icon={<ShieldCheck size={14} />} label="Güvenlik" value={systemOnline ? "Aktif" : "Kapali"} color={systemOnline ? "indigo" : "rose"} />
+            <QuickSystemStat icon={<Activity size={14} />} label="API" value={systemOnline ? "Normal" : "Hata"} color={systemOnline ? "emerald" : "rose"} />
           </div>
         </section>
 

@@ -24,13 +24,14 @@ export async function getGalleryBySlug(slug: string) {
     return null;
   }
 
-  // Fetch listings for this gallery
+  // Fetch listings for this gallery (paginated)
   const { data: listingsData } = await supabase
     .from("listings")
     .select("id, slug, title, brand, model, year, mileage, price, city, district, status, created_at, transmission, fuel_type, listing_images(id, public_url, is_cover, sort_order)")
     .eq("seller_id", profile.id)
     .eq("status", "approved")
     .order("created_at", { ascending: false })
+    .limit(20)
 
   const listings = (listingsData || []).map(l => ({
     ...l,
@@ -42,6 +43,13 @@ export async function getGalleryBySlug(slug: string) {
       sortOrder: img.sort_order
     }))
   }))
+
+  // Gallery total listing count
+  const { count: totalListings } = await supabase
+    .from("listings")
+    .select("*", { count: "exact", head: true })
+    .eq("seller_id", profile.id)
+    .eq("status", "approved");
 
   // Gallery view count (last 30 days)
   const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().split("T")[0];
@@ -76,6 +84,7 @@ export async function getGalleryBySlug(slug: string) {
       updatedAt: profile.updated_at,
     } as Profile,
     listings: (listings || []) as unknown as Listing[],
+    totalListings: totalListings ?? 0,
     viewCount30d: viewCount ?? 0,
   }
 }

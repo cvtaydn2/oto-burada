@@ -10,6 +10,13 @@ import { createExpertDocumentSignedUrl } from "@/services/listings/listing-docum
 import { maskPhoneNumber } from "@/lib/utils/listing-utils";
 import type { Profile, ListingFilters, Listing } from "@/types";
 
+export { 
+  getStoredListingBySlug, 
+  getStoredListingsByIds, 
+  getStoredListingById,
+  type PaginatedListingsResult 
+};
+
 async function withNextCache<T>(
   keyParts: string[],
   loader: () => Promise<T>,

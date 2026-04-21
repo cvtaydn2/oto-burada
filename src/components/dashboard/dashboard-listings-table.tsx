@@ -3,6 +3,7 @@ import Image from "next/image";
 import { Eye, Settings, ChevronRight, ClipboardList } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
+import { trust } from "@/lib/constants/ui-strings";
 
 interface Listing {
   id: string;
@@ -94,8 +95,7 @@ export function DashboardListingsTable({ listings }: DashboardListingsTableProps
                     listing.status === "pending" ? "bg-amber-50 text-amber-600 border border-amber-100" :
                     "bg-muted text-muted-foreground/60 border border-border"
                   )}>
-                    {listing.status === "approved" ? "YAYINDA" :
-                     listing.status === "pending" ? "ONAYDA" : "PASİF"}
+                    {trust.admin.listingStatus[listing.status as keyof typeof trust.admin.listingStatus] || listing.status}
                   </div>
                 </td>
                 <td className="py-4 text-right">

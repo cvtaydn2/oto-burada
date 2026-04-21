@@ -185,15 +185,15 @@ export default async function HomePage() {
             <div className="text-center mb-16">
               <h2 className="text-3xl font-bold text-foreground mb-4 tracking-tight">Güvenilir Araç Pazarı</h2>
               <p className="text-muted-foreground max-w-2xl mx-auto text-[10px] font-bold uppercase tracking-widest text-muted-foreground/50">
-                TÜM İLANLARIMIZ KİMLİK ONAYLI VE ŞEFFAF EKSPERTİZ DESTEĞİYLE SUNULUR.
+                TÜM İLANLARIMIZ MODERASYONDAN GEÇER VE ŞEFFAF FİYATLANDIRMA İLE SUNULUR.
               </p>
             </div>
             
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
               {[
-                { icon: <ShieldCheck size={28} strokeWidth={2} />, title: "Kurumsal Onay", desc: "Tüm satıcı profilleri moderasyon ekibimiz tarafından titizlikle incelenir ve kimlikleri doğrulanır.", color: "muted" },
-                { icon: <CheckCircle2 size={28} strokeWidth={2} />, title: "Dijital Ekspertiz", desc: "Aracın tüm geçmişi ve teknik durumu bağımsız dijital raporlarla %100 şeffaflıkla sunulur.", color: "muted" },
-                { icon: <Zap size={28} strokeWidth={2} />, title: "AI Değerleme", desc: "Yapay zeka altyapımız ile aracınızın gerçek piyasa değerini anlık verilerle saniyeler içinde öğrenin.", color: "muted" },
+                { icon: <ShieldCheck size={28} strokeWidth={2} />, title: "Moderasyon", desc: "Tüm ilanlar inceleme sürecinden geçer. Şüpheli içerikler engellenir.", color: "muted" },
+                { icon: <CheckCircle2 size={28} strokeWidth={2} />, title: "Ekspertiz Desteği", desc: "Araç geçmişi ve teknik durum şeffaf şekilde paylaşılır.", color: "muted" },
+                { icon: <Zap size={28} strokeWidth={2} />, title: "Hızlı İletişim", desc: "Satıcılarla doğrudan WhatsApp üzerinden iletişim kurun.", color: "muted" },
               ].map((item, i) => (
                 <div key={i} className="group relative bg-card border border-border p-8 rounded-2xl transition-all duration-300">
                    <div className="size-14 rounded-xl flex items-center justify-center mb-6 bg-muted text-muted-foreground border border-border/50">
@@ -260,7 +260,7 @@ export default async function HomePage() {
                 <ul className="space-y-6">
                   {[
                     "Ücretsiz ilan verme ve hızlı satış imkanı",
-                    "Doğrulanmış ilanlar ve güvenilir satıcı profilleri",
+                    "Moderasyondan geçen ilanlar ve güvenilir satıcı profilleri",
                     "Gelişmiş filtreleme ile doğru araca 3 adımda ulaşım",
                     "WhatsApp üzerinden doğrudan satıcı iletişimi",
                     "Mobil uyumlu, hızlı ve sade kullanıcı deneyimi"
