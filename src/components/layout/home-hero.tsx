@@ -8,23 +8,40 @@ interface HomeHeroProps {
 export function HomeHero({ cities }: HomeHeroProps) {
   return (
     <section className="relative min-h-[600px] flex items-center justify-center overflow-hidden pt-20 pb-16 md:py-0">
-      {/* Background with advanced gradient overlay */}
-      <div className="absolute inset-0 z-0">
+      <div className="absolute inset-0 bg-background" />
+
+      {/* Mobile background */}
+      <div className="absolute inset-0 z-0 lg:hidden">
         <Image
           src="/images/hero_bg.png"
           alt="Satılık araba ilanları"
           fill
           priority
-          sizes="(max-width: 768px) 100vw, (max-width: 1200px) 70vw, 50vw"
+          sizes="100vw"
           quality={85}
-          className="object-cover"
+          className="object-cover object-center"
         />
         <div className="absolute inset-0 bg-gradient-to-r from-background/70 via-background/30 to-transparent" />
         <div className="absolute inset-x-0 bottom-0 h-40 bg-gradient-to-t from-background to-transparent" />
       </div>
+
+      {/* Desktop media panel */}
+      <div className="absolute inset-y-6 left-0 z-0 hidden w-[46vw] min-w-[520px] max-w-[880px] overflow-hidden rounded-r-[3rem] lg:block">
+        <Image
+          src="/images/hero_bg.png"
+          alt="Satılık araba ilanları"
+          fill
+          priority
+          sizes="(max-width: 1280px) 46vw, 880px"
+          quality={85}
+          className="object-cover object-center"
+        />
+        <div className="absolute inset-0 bg-gradient-to-r from-background/15 via-transparent to-background/75" />
+        <div className="absolute inset-x-0 bottom-0 h-40 bg-gradient-to-t from-background to-transparent" />
+      </div>
       
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full relative z-10">
-        <div className="max-w-3xl text-left space-y-8">
+        <div className="max-w-3xl text-left space-y-8 lg:ml-[30%] xl:ml-[34%]">
           <div className="inline-flex items-center gap-2 bg-foreground/10 border border-foreground/10 rounded-full px-5 py-2 text-foreground/80 text-[10px] font-bold uppercase tracking-widest backdrop-blur-md">
             Sade Araç Pazaryeri
           </div>
