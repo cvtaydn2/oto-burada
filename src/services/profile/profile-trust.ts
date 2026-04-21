@@ -101,8 +101,14 @@ export function getSellerTrustSummary(
     signals.push("Yeni hesap");
   }
 
-  // Only show verification signals if TRUSTED
-  if (isTrusted) {
+  // Deterministic Staleness: If verification is > 24 months old, it's considered expired for labels
+  const monthsSinceReview = seller.verificationReviewedAt ? getAccountAgeMonths(seller.verificationReviewedAt) : 999;
+  const isStale = monthsSinceReview >= 24;
+
+  // Only show verification signals if TRUSTED and NOT STALE and ABOVE SAFETY FLOOR (40)
+  const showPremiumSignals = isTrusted && !isStale && score >= 40;
+
+  if (showPremiumSignals) {
     if (seller.verificationStatus === "approved") {
       signals.push("İşletme doğrulandı");
     } else if (seller.isVerified) {
@@ -115,10 +121,11 @@ export function getSellerTrustSummary(
   }
 
   let badgeLabel: string | null = null;
-  if (isTrusted) {
-    if (seller.verificationStatus === "approved" && score >= 45) {
+  // Labels are strictly suppressed for restricted, stale, or low-score accounts
+  if (showPremiumSignals) {
+    if (seller.verificationStatus === "approved" && score >= 50) {
       badgeLabel = "Doğrulanmış İşletme";
-    } else if (seller.isVerified && seller.emailVerified && score >= 30) {
+    } else if (seller.isVerified && seller.emailVerified && score >= 35) {
       badgeLabel = "Doğrulanmış Satıcı";
     }
   }
@@ -129,7 +136,7 @@ export function getSellerTrustSummary(
 
   return {
     badgeLabel,
-    score, // Score artık 0-100 arasında
+    score,
     signals: signals.slice(0, 4),
   };
 }
