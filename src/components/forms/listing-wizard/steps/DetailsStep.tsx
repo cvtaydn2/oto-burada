@@ -56,6 +56,9 @@ export function DetailsStep({ form, cities }: DetailsStepProps) {
             label="İlan Başlığı"
             required
             {...register("title")}
+            maxLength={200}
+            showCounter
+            currentLength={watch("title")?.length ?? 0}
             placeholder="Örn: Hatasız, Boyasız 2021 BMW 320i M Sport"
             error={errors.title?.message as string}
             helperText="Etkileyici bir başlık, alıcıların dikkatini daha hızlı çeker."
@@ -75,8 +78,11 @@ export function DetailsStep({ form, cities }: DetailsStepProps) {
             label="Açıklama"
             required
             as="textarea"
-            rows={5}
+            rows={8}
             {...register("description")}
+            maxLength={5000}
+            showCounter
+            currentLength={watch("description")?.length ?? 0}
             placeholder="Aracınızın durumu, bakımları ve öne çıkan özelliklerini burada detaylandırın..."
             error={errors.description?.message as string}
             className="resize-none"

@@ -1,8 +1,9 @@
 "use client";
 
 import { useRef, useState, useEffect } from "react";
-import Image from "next/image";
 import { ChevronLeft, ChevronRight, X, GripVertical } from "lucide-react";
+import { SafeImage } from "@/components/shared/safe-image";
+import { supabaseImageUrl } from "@/lib/utils";
 
 import type { ListingImage } from "@/types";
 
@@ -175,9 +176,9 @@ export function ListingGalleryLightbox({
             onMouseLeave={handleMouseUp}
             onClick={handleImageClick}
           >
-            <Image
+            <SafeImage
               key={`${currentImage.url}-${currentIndex}`}
-              src={currentImage.url}
+              src={supabaseImageUrl(currentImage.url, 1600, 85)}
               alt={`${title} - ${currentIndex + 1}`}
               fill
               className="object-contain select-none"

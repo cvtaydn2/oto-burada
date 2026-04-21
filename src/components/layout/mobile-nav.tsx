@@ -23,13 +23,15 @@ export function MobileNav({ searchSuggestions }: MobileNavProps) {
   return (
     <div className="lg:hidden">
       {/* Mobile FAB - Positioned smartly above bottom nav */}
-      <Link
-        href="/dashboard/listings/create"
-        className="fixed bottom-32 right-6 z-50 flex h-14 w-14 items-center justify-center rounded-full bg-primary text-white shadow-xl shadow-primary/30 transition-transform active:scale-90"
-        aria-label="İlan Ver"
-      >
-        <Plus className="size-7" />
-      </Link>
+      {!pathname.includes("/listing/") && (
+        <Link
+          href="/dashboard/listings/create"
+          className="fixed bottom-32 right-6 z-50 flex h-14 w-14 items-center justify-center rounded-full bg-primary text-white shadow-xl shadow-primary/30 transition-transform active:scale-90"
+          aria-label="İlan Ver"
+        >
+          <Plus className="size-7" />
+        </Link>
+      )}
 
       <nav
         aria-label="Mobil alt navigasyon"

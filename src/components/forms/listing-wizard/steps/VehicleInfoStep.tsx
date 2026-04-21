@@ -131,8 +131,14 @@ export function VehicleInfoStep({
             required
             type="number"
             {...register("year", { valueAsNumber: true })}
+            onInput={(e) => {
+              const target = e.target as HTMLInputElement;
+              if (target.value.length > 4) {
+                target.value = target.value.slice(0, 4);
+              }
+            }}
             min={minimumCarYear}
-            max={maximumCarYear + 1}
+            max={maximumCarYear}
             error={errors.year?.message as string}
           />
           <DesignInput

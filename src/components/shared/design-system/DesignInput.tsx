@@ -8,6 +8,9 @@ interface DesignInputProps extends React.InputHTMLAttributes<HTMLInputElement & 
   helperText?: string;
   as?: "input" | "select" | "textarea";
   rows?: number;
+  showCounter?: boolean;
+  maxLength?: number;
+  currentLength?: number;
 }
 
 /**
@@ -15,14 +18,24 @@ interface DesignInputProps extends React.InputHTMLAttributes<HTMLInputElement & 
  * Matches the HTML reference: Bold label + Standard border + Focus ring.
  */
 export const DesignInput = React.forwardRef<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement, DesignInputProps>(
-  ({ label, required, error, helperText, as = "input", className, children, ...props }, ref) => {
+  ({ label, required, error, helperText, as = "input", className, children, showCounter, maxLength, currentLength, ...props }, ref) => {
     const Component = as as React.ElementType;
     
     return (
       <div className="space-y-1.5">
-        <label className="block text-sm font-semibold text-foreground">
-          {label} {required && <span className="text-destructive">*</span>}
-        </label>
+        <div className="flex items-center justify-between">
+          <label className="block text-sm font-semibold text-foreground">
+            {label} {required && <span className="text-destructive">*</span>}
+          </label>
+          {showCounter && maxLength !== undefined && (
+            <span className={cn(
+              "text-[10px] font-mono",
+              (currentLength ?? 0) > maxLength * 0.9 ? "text-destructive" : "text-muted-foreground"
+            )}>
+              {currentLength ?? 0}/{maxLength}
+            </span>
+          )}
+        </div>
         
         <div className="relative">
           <Component
@@ -33,6 +46,7 @@ export const DesignInput = React.forwardRef<HTMLInputElement | HTMLSelectElement
               error ? "border-destructive bg-destructive/5" : "border-border bg-card",
               className
             )}
+            maxLength={maxLength}
             {...props}
           >
             {children}
