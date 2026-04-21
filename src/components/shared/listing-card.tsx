@@ -172,7 +172,7 @@ export function ListingCard({
             className="block group/title space-y-1 focus-ring rounded-lg"
             aria-label={`${listing.year} ${listing.brand} ${listing.model}: ${formatPrice(listing.price)} TL`}
           >
-            <h2 className="text-2xl font-bold text-foreground tracking-tight line-clamp-1 group-hover/title:text-primary transition-colors duration-300">
+            <h2 className="text-lg sm:text-xl lg:text-2xl font-bold text-foreground tracking-tight line-clamp-1 group-hover/title:text-primary transition-colors duration-300">
               {listing.model}
             </h2>
             <p className="text-sm font-medium text-slate-400 line-clamp-1 italic group-hover/title:text-slate-500 transition-colors duration-fast">
