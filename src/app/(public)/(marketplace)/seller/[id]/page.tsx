@@ -12,6 +12,7 @@ import { getSellerRatingSummary, getSellerReviews } from "@/services/profile/sel
 import { getProfileRestrictionState } from "@/services/profile/profile-restrictions";
 import type { Listing } from "@/types";
 import { getSellerTrustUI } from "@/lib/utils/trust-ui";
+import { cn } from "@/lib/utils";
 
 
 interface SellerProfilePageProps {
@@ -40,7 +41,7 @@ export default async function SellerProfilePage({ params }: SellerProfilePagePro
   const totalListingsCount = listingsResult.total;
   const featuredListingCount = sellerListings.filter((listing: Listing) => listing.featured).length;
   const trustSummary = getSellerTrustSummary(seller, totalListingsCount);
-  const restrictionState = getProfileRestrictionState(seller);
+  const trustUI = getSellerTrustUI(seller);
   const memberSinceYear = new Date(seller.createdAt).getFullYear();
   const [ratingSummary, reviews] = await Promise.all([
     getSellerRatingSummary(sellerId),
@@ -50,11 +51,11 @@ export default async function SellerProfilePage({ params }: SellerProfilePagePro
   return (
     <div className="mx-auto max-w-[1280px] space-y-8 px-4 py-8 sm:px-6 lg:px-8">
       {/* Seller Header */}
-      <section className="rounded-xl border border-border bg-card p-6 lg:p-8 shadow-sm">
+      <section className={cn("rounded-xl border p-6 lg:p-8 shadow-sm transition-colors", trustUI.styles.bg, trustUI.styles.border)}>
         <div className="flex flex-col gap-8 md:flex-row md:items-start md:justify-between">
           <div className="flex flex-col gap-6 sm:flex-row sm:items-center">
             {/* Avatar */}
-            <div className="relative flex h-20 w-20 shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-muted/50 border border-border">
+            <div className="relative flex h-20 w-20 shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-background/50 border border-border shadow-sm">
               {seller.avatarUrl ? (
                 <Image
                   src={seller.avatarUrl}
@@ -70,11 +71,11 @@ export default async function SellerProfilePage({ params }: SellerProfilePagePro
             {/* Info */}
             <div className="space-y-1.5">
               <div className="flex flex-wrap items-center gap-2">
-                <h1 className="text-xl font-bold tracking-tight text-foreground">
+                <h1 className={cn("text-xl font-bold tracking-tight", trustUI.styles.text)}>
                   {seller.fullName || "İsimsiz Satıcı"}
                 </h1>
-                <span className="inline-flex items-center rounded-full bg-muted px-2 py-0.5 text-[9px] font-bold uppercase tracking-widest text-muted-foreground border border-border">
-                  Bireysel Satıcı
+                <span className={cn("inline-flex items-center rounded-full px-2 py-0.5 text-[9px] font-bold uppercase tracking-widest border", trustUI.styles.bg, trustUI.styles.text, trustUI.styles.border)}>
+                  {trustUI.label}
                 </span>
               </div>
               
@@ -88,12 +89,18 @@ export default async function SellerProfilePage({ params }: SellerProfilePagePro
                   {memberSinceYear}&apos;den beri üye
                 </div>
               </div>
+
+              {trustUI.subMessage && (
+                <p className="text-[10px] font-bold text-rose-600/70 uppercase tracking-tight mt-1">
+                  {trustUI.subMessage}
+                </p>
+              )}
             </div>
           </div>
 
           {/* Actions */}
           <div className="flex w-full gap-2 sm:w-auto">
-            {seller.phone && getSellerTrustUI(seller).isContactable && (
+            {seller.phone && trustUI.isContactable && (
               <Button size="lg" className="flex-1 rounded-xl bg-[#25D366] hover:bg-[#1fb355] text-white font-bold text-xs tracking-widest uppercase md:px-8 shadow-sm" asChild>
                 <a href={`https://wa.me/${seller.phone.replace(/\D/g, "")}`} target="_blank" rel="noopener noreferrer">
                   <MessageSquare size={16} className="mr-2 fill-current" />
@@ -114,7 +121,7 @@ export default async function SellerProfilePage({ params }: SellerProfilePagePro
              { label: "Öne Çıkan", value: featuredListingCount, icon: CheckCircle2 },
              { label: "Üyelik Yılı", value: memberSinceYear, icon: Clock }
            ].map((stat) => (
-             <div key={stat.label} className="rounded-xl border border-border bg-muted/30 p-4 transition-colors hover:bg-muted/50">
+             <div key={stat.label} className="rounded-xl border border-border bg-background/50 p-4 transition-colors hover:bg-background/80">
                 <div className="flex items-center gap-3">
                   <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-background border border-border text-muted-foreground/60">
                     <stat.icon size={18} />
@@ -134,11 +141,12 @@ export default async function SellerProfilePage({ params }: SellerProfilePagePro
           {trustSummary.signals.map((signal) => (
             <div
               key={signal}
-              className={`flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-[9px] font-bold border uppercase tracking-tight ${
-                restrictionState === "active"
-                  ? "bg-emerald-50/50 text-emerald-600 border-emerald-100/50"
-                  : "bg-slate-100 text-slate-600 border-slate-200"
-              }`}
+              className={cn(
+                "flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-[9px] font-bold border uppercase tracking-tight",
+                trustUI.styles.bg,
+                trustUI.styles.text,
+                trustUI.styles.border
+              )}
             >
               <CheckCircle2 size={11} />
               {signal}
@@ -146,8 +154,9 @@ export default async function SellerProfilePage({ params }: SellerProfilePagePro
           ))}
           <div className="ml-auto">
              <TrustBadge
-                badgeLabel={trustSummary.badgeLabel}
-                score={trustSummary.score}
+                badgeLabel={trustUI.label}
+                score={seller.trustScore ?? 0}
+                tone={trustUI.tone}
               />
           </div>
         </div>

@@ -7,6 +7,7 @@ import { getStoredProfileById } from "@/services/profile/profile-records";
 import { getLiveMarketplaceReferenceData, mergeCityOptions } from "@/services/reference/live-reference-data";
 import { Plus } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { AccountTrustNotice } from "@/components/shared/account-trust-notice";
 
 export const dynamic = "force-dynamic";
 // revalidate kaldırıldı — force-dynamic ile çakışıyor
@@ -66,6 +67,7 @@ export default async function DashboardListingsPage({ searchParams }: DashboardL
 
   return (
     <div className="space-y-8">
+      <AccountTrustNotice seller={profile} />
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h2 className="text-3xl font-bold text-foreground tracking-tight">İlanlarım</h2>

@@ -47,7 +47,6 @@ interface ListingCardProps extends VariantProps<typeof cardVariants> {
   priority?: boolean;
   showFavorite?: boolean;
   showInsights?: boolean;
-  showTrust?: boolean;
   className?: string;
 }
 
@@ -57,7 +56,6 @@ export function ListingCard({
   priority = false,
   showFavorite = true,
   showInsights = true,
-  showTrust = true,
   className,
 }: ListingCardProps) {
   const badgeStates = getListingBadgeStates(listing);
@@ -108,7 +106,7 @@ export function ListingCard({
           {badgeStates.isUrgent && isPremiumVisible && (
             <Badge icon={Zap} label="ACİL" className="bg-rose-600 text-white shadow-lg shadow-rose-600/20" />
           )}
-          {showTrust && badgeStates.hasInspection && (
+          {isPremiumVisible && badgeStates.hasInspection && (
             <Badge 
               icon={ShieldCheck} 
               label="EKSPERTİZLİ" 

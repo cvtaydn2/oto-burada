@@ -14,6 +14,8 @@ import {
 import { trust } from "@/lib/constants/ui-strings";
 import { DOPING_PRICES } from "@/lib/payment/constants";
 import { Button } from "@/components/ui/button";
+import { getSellerTrustUI } from "@/lib/utils/trust-ui";
+import { cn } from "@/lib/utils";
 import {
   Card,
   CardContent,
@@ -43,21 +45,35 @@ const DOPING_OPTIONS = [
 interface ListingDopingPanelProps {
   listingId: string;
   listingTitle: string;
-  isRestricted?: boolean;
+  trustUI: ReturnType<typeof getSellerTrustUI>;
 }
 
-export function ListingDopingPanel({ listingId, listingTitle, isRestricted }: ListingDopingPanelProps) {
+export function ListingDopingPanel({ listingId, listingTitle, trustUI }: ListingDopingPanelProps) {
   const router = useRouter();
   const [selected, setSelected] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
   const [status, setStatus] = useState<"error" | "idle" | "success">("idle");
 
+  const isRestricted = !trustUI.isPremiumVisible;
+  const blockTitle = trustUI.restrictionState === "banned" 
+    ? "Hesap Yasaklandı" 
+    : trustUI.restrictionState === "restricted_review"
+      ? trust.accountUnderReview
+      : "Yetersiz Güven Skoru";
+
+  const blockDesc = trustUI.restrictionState === "banned"
+    ? "Hesabınızdaki kısıtlama nedeniyle yeni doping alımı yapılamaz."
+    : trustUI.restrictionState === "restricted_review"
+      ? trust.dopingRestriction
+      : "Premium özellikleri kullanabilmek için profil doğrulamanızı tamamlamanız ve %40 güven barajını aşmanız gerekmektedir.";
+
   const totalPrice = DOPING_OPTIONS
     .filter(opt => selected.includes(opt.id))
     .reduce((sum, opt) => sum + opt.price, 0);
 
   const toggleOption = (id: string) => {
+    if (isRestricted) return;
     setSelected(prev => 
       prev.includes(id) 
         ? prev.filter(i => i !== id)
@@ -66,6 +82,7 @@ export function ListingDopingPanel({ listingId, listingTitle, isRestricted }: Li
   };
 
   const handleApply = async () => {
+    if (isRestricted) return;
     if (selected.length === 0) {
       setStatus("error");
       setMessage("Lütfen en az bir doping seçin.");
@@ -129,7 +146,7 @@ export function ListingDopingPanel({ listingId, listingTitle, isRestricted }: Li
         </p>
       </div>
 
-      <div className="grid gap-4">
+      <div className={cn("grid gap-4", isRestricted && "opacity-50 pointer-events-none")}>
         {DOPING_OPTIONS.map((option) => (
           <div
             key={option.id}
@@ -179,13 +196,13 @@ export function ListingDopingPanel({ listingId, listingTitle, isRestricted }: Li
           </div>
 
           {isRestricted ? (
-            <div className="rounded-xl border border-amber-200 bg-amber-50 p-4 mb-4">
+            <div className="rounded-xl border border-rose-200 bg-rose-50 p-4 mb-4">
               <div className="flex gap-3">
-                <AlertTriangle className="h-5 w-5 text-amber-600 shrink-0" />
+                <AlertTriangle className="h-5 w-5 text-rose-600 shrink-0" />
                 <div className="space-y-1">
-                  <p className="text-sm font-bold text-amber-900">{trust.accountUnderReview}</p>
-                  <p className="text-xs text-amber-700 leading-relaxed">
-                    {trust.dopingRestriction}
+                  <p className="text-sm font-bold text-rose-900">{blockTitle}</p>
+                  <p className="text-xs text-rose-700 leading-relaxed">
+                    {blockDesc}
                   </p>
                 </div>
               </div>

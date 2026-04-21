@@ -91,6 +91,9 @@ export function AdminUserDetailClient({ detail, userId }: AdminUserDetailClientP
         isBanned={profile.isBanned} 
         banReason={profile.banReason}
         role={profile.role} 
+        trustScore={profile.trustScore}
+        verificationStatus={profile.verificationStatus}
+        idVerified={profile.isVerified}
       />
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">

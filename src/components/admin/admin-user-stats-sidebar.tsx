@@ -1,7 +1,7 @@
 "use client";
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
-import { Activity, CheckCircle2, Package, TrendingUp, User, Ban, Loader2 } from "lucide-react";
+import { Activity, CheckCircle2, Package, TrendingUp, User, Ban, Loader2, Shield, XCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn, safeFormatDate } from "@/lib/utils";
 
@@ -39,6 +39,33 @@ export function AdminUserStatsSidebar({
           <StatItem icon={<Package size={16} />} label="Toplam İlan" value={listingCount} color="blue" />
           <StatItem icon={<CheckCircle2 size={16} />} label="Yayında" value={activeListingCount} color="emerald" />
           <StatItem icon={<Activity size={16} />} label="Dopingler" value={featuredCount} color="amber" />
+        </div>
+      </div>
+
+      <div className="rounded-2xl border border-slate-200 bg-white p-8 shadow-sm space-y-6">
+        <h3 className="text-sm font-bold text-slate-900 uppercase tracking-widest flex items-center gap-2">
+          <Shield size={18} className="text-indigo-500" />
+          Güvenlik Matrisi
+        </h3>
+        <div className="space-y-4">
+          <VerificationRow 
+            label="E-Posta Doğrulama" 
+            isDone={profile.emailVerified} 
+            isCritical={true}
+          />
+          <VerificationRow 
+            label="Kimlik Doğrulama" 
+            isDone={profile.isVerified} 
+          />
+          <VerificationRow 
+            label="Kurumsal Belge" 
+            isDone={profile.verificationStatus === "approved"} 
+            isVisible={profile.userType === "professional"}
+          />
+          <VerificationRow 
+            label="Telefon Tanımlı" 
+            isDone={!!profile.phone} 
+          />
         </div>
       </div>
 
@@ -99,6 +126,20 @@ function InfoRow({ label, value }: { label: string; value: string }) {
     <div className="space-y-1">
       <p className="text-[9px] font-bold text-slate-300 uppercase tracking-[0.2em]">{label}</p>
       <p className="text-xs font-bold text-slate-700 truncate">{value}</p>
+    </div>
+  );
+}
+
+function VerificationRow({ label, isDone, isCritical, isVisible = true }: { label: string; isDone?: boolean; isCritical?: boolean; isVisible?: boolean }) {
+  if (!isVisible) return null;
+  return (
+    <div className="flex items-center justify-between">
+      <span className="text-[10px] font-bold text-slate-500 uppercase tracking-tight">{label}</span>
+      {isDone ? (
+        <CheckCircle2 size={14} className="text-emerald-500" />
+      ) : (
+        <XCircle size={14} className={cn(isCritical ? "text-rose-500" : "text-slate-200")} />
+      )}
     </div>
   );
 }

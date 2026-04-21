@@ -100,7 +100,7 @@ function mapProfileRow(row: ProfileRow, authUser?: User | null): Profile {
     websiteUrl: row.website_url,
     verifiedBusiness: row.verified_business ?? false,
     businessSlug: row.business_slug,
-    verificationStatus: (row.verification_status as any) || 'none',
+    verificationStatus: (row.verification_status as Profile["verificationStatus"]) || 'none',
     verificationRequestedAt: row.verification_requested_at,
     verificationFeedback: row.verification_feedback,
     balanceCredits: row.balance_credits || 0,

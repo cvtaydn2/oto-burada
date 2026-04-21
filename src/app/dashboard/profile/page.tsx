@@ -8,6 +8,9 @@ import { CheckCircle2, User, Phone, Mail, ShieldCheck, Building2 } from "lucide-
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { trust } from "@/lib/constants/ui-strings";
+import { getSellerTrustUI } from "@/lib/utils/trust-ui";
+import { Profile } from "@/types";
+
 
 export const dynamic = "force-dynamic";
 
@@ -64,7 +67,7 @@ export default async function DashboardProfilePage() {
             </div>
             <div className="grid gap-2">
               <VerificationItem label="E-posta Onayı" isVerified={profile.emailVerified} />
-              <VerificationItem label="İşletme" status={profile.verificationStatus} />
+              <VerificationItem label="İşletme" profile={profile} />
               <VerificationItem label="Kimlik Doğrulama" isVerified={profile.isVerified} />
             </div>
           </div>
@@ -151,27 +154,31 @@ export default async function DashboardProfilePage() {
 function VerificationItem({ 
   label, 
   isVerified, 
-  status 
+  status,
+  profile
 }: { 
   label: string; 
   isVerified?: boolean; 
-  status?: "none" | "pending" | "approved" | "rejected" 
+  status?: "none" | "pending" | "approved" | "rejected";
+  profile?: Partial<Profile>;
 }) {
-  const isApproved = isVerified || status === "approved";
-  const isPending = status === "pending";
+  // Use centralized logic if profile is provided, otherwise fallback to basic props
+  const trustUI = profile ? getSellerTrustUI(profile) : null;
+  
+  const isApproved = isVerified || status === "approved" || (trustUI?.isApproved && label.includes("İşletme"));
+  const isPending = status === "pending" || (trustUI?.restrictionState === "restricted_review" && label.includes("İşletme"));
   const isRejected = status === "rejected";
 
+  const theme = isApproved ? "emerald" : isPending ? "amber" : isRejected ? "rose" : "slate";
+  const styles = {
+    emerald: "bg-emerald-50/50 border-emerald-100 text-emerald-700",
+    amber: "bg-amber-50/50 border-amber-100 text-amber-700",
+    rose: "bg-rose-50/50 border-rose-100 text-rose-700",
+    slate: "bg-muted/30 border-border/50 text-muted-foreground/50"
+  }[theme];
+
   return (
-    <div className={cn(
-      "flex flex-col p-3 rounded-lg border transition-all",
-      isApproved
-        ? "bg-emerald-50/50 border-emerald-100 text-emerald-700"
-        : isPending
-          ? "bg-amber-50/50 border-amber-100 text-amber-700"
-          : isRejected
-            ? "bg-rose-50/50 border-rose-100 text-rose-700"
-            : "bg-muted/30 border-border/50 text-muted-foreground/50"
-    )}>
+    <div className={cn("flex flex-col p-3 rounded-lg border transition-all", styles)}>
       <div className="flex items-center justify-between">
         <span className="text-[11px] font-bold uppercase tracking-wider">{label}</span>
         <div className={cn(
@@ -189,7 +196,7 @@ function VerificationItem({
           {trust.verificationPendingDesc}
         </p>
       )}
-      {isRejected && (
+      {(isRejected || (trustUI?.restrictionState === "banned" && label.includes("İşletme"))) && (
         <p className="mt-2 text-[10px] font-bold leading-tight uppercase tracking-tight">
           {trust.verificationRejected}
         </p>

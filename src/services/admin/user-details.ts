@@ -37,6 +37,9 @@ export interface UserProfile {
   email: string;
   createdAt: string;
   updatedAt: string;
+  trustScore: number;
+  verificationStatus: "none" | "pending" | "approved" | "rejected";
+  emailVerified: boolean;
 }
 
 export interface UserDetailData {
@@ -69,6 +72,9 @@ export function mapProfile(p: Record<string, unknown>, email = ""): UserProfile 
     verifiedBusiness: p.verified_business as boolean,
     createdAt: p.created_at as string,
     updatedAt: p.updated_at as string,
+    trustScore: (p.trust_score as number) || 0,
+    verificationStatus: (p.verification_status as UserProfile["verificationStatus"]) || "none",
+    emailVerified: (p.email_verified as boolean) || false,
   };
 }
 
@@ -76,16 +82,16 @@ export async function getUserDetail(userId: string): Promise<UserDetailData | nu
   const admin = createSupabaseAdminClient();
 
   const [
-    { data: { user: authUser } },
-    { data: profile },
-    { data: payments },
-    { data: listings },
-    { data: creditTransactions },
-    { data: dopingHistory },
+    authRes,
+    profileRes,
+    paymentsRes,
+    listingsRes,
+    transactionsRes,
+    dopingHistoryRes,
   ] = await Promise.all([
     admin.auth.admin.getUserById(userId),
     admin.from("profiles").select(
-      "id, full_name, phone, city, avatar_url, role, user_type, balance_credits, is_verified, is_banned, ban_reason, business_name, business_address, business_logo_url, business_description, tax_id, tax_office, website_url, verified_business, business_slug, created_at, updated_at"
+      "id, full_name, phone, city, avatar_url, role, user_type, balance_credits, is_verified, is_banned, ban_reason, business_name, business_address, business_logo_url, business_description, tax_id, tax_office, website_url, verified_business, business_slug, created_at, updated_at, trust_score, verification_status, email_verified"
     ).eq("id", userId).single(),
     admin
       .from("payments")
@@ -112,9 +118,16 @@ export async function getUserDetail(userId: string): Promise<UserDetailData | nu
       .limit(20),
   ]);
 
-  if (!profile) return null;
+  if (!profileRes.data) return null;
 
-  const dopings: UserDopingRecord[] = (listings || [])
+  const authUser = authRes.data.user;
+  const profile = profileRes.data;
+  const payments = paymentsRes.data || [];
+  const listings = listingsRes.data || [];
+  const creditTransactions = transactionsRes.data || [];
+  const dopingHistory = dopingHistoryRes.data || [];
+
+  const dopings: UserDopingRecord[] = listings
     .filter((l) => l.featured || l.urgent_until || l.highlighted_until)
     .map((l) => ({
       listingId: l.id,
@@ -132,17 +145,17 @@ export async function getUserDetail(userId: string): Promise<UserDetailData | nu
 
   return {
     profile: mapProfile(profile as Record<string, unknown>, authUser?.email || ""),
-    payments: (payments || []) as UserPaymentRecord[],
+    payments: payments as UserPaymentRecord[],
     dopings,
-    listings: (listings || []).map((l) => ({ id: l.id, title: l.title || l.id, status: l.status })),
-    creditTransactions: (creditTransactions || []).map((t) => ({
+    listings: listings.map((l) => ({ id: l.id, title: l.title || l.id, status: l.status })),
+    creditTransactions: creditTransactions.map((t) => ({
       id: t.id,
       amount: t.amount,
       type: t.transaction_type,
       description: t.description,
       createdAt: t.created_at
     })),
-    dopingHistory: (dopingHistory || []).map((d) => ({
+    dopingHistory: dopingHistory.map((d: { id: string; listing_id: string; listings: { title: string } | null; doping_type: string; expires_at: string; created_at: string }) => ({
       id: d.id,
       listingId: d.listing_id,
       listingTitle: d.listings?.title || d.listing_id,
@@ -150,7 +163,7 @@ export async function getUserDetail(userId: string): Promise<UserDetailData | nu
       expiresAt: d.expires_at,
       createdAt: d.created_at
     })),
-    listingCount: (listings || []).length,
-    activeListingCount: (listings || []).filter((l) => l.status === "approved").length,
+    listingCount: listings.length,
+    activeListingCount: listings.filter((l) => l.status === "approved").length,
   };
 }

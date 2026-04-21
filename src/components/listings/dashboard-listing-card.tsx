@@ -16,7 +16,7 @@ import {
   Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger,
 } from "@/components/ui/dialog";
 import { ListingDopingPanel } from "./listing-doping-panel";
-import { getProfileRestrictionState } from "@/services/profile/profile-restrictions";
+import { getSellerTrustUI } from "@/lib/utils/trust-ui";
 
 import { Checkbox } from "@/components/ui/checkbox";
 import { cn } from "@/lib/utils";
@@ -191,7 +191,7 @@ export function DashboardListingCard({
                   <ListingDopingPanel 
                     listingId={listing.id} 
                     listingTitle={listing.title} 
-                    isRestricted={getProfileRestrictionState(listing.seller) !== "active"}
+                    trustUI={getSellerTrustUI(listing.seller)}
                   />
                 </div>
               </DialogContent>

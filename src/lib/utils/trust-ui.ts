@@ -31,16 +31,63 @@ export function getSellerTrustUI(profile: Partial<Profile> | null | undefined) {
   }
 
   // 2. Visual Tone Logic
-  let tone: "emerald" | "amber" | "slate" | "blue" = "amber";
-  if (restrictionState !== "active") {
-    tone = "slate"; // High risk/Review
+  let tone: "emerald" | "amber" | "slate" | "blue" | "rose" = "amber";
+  if (restrictionState === "banned") {
+    tone = "rose";
+  } else if (restrictionState === "restricted_review") {
+    tone = "slate";
   } else if (isApproved && meetsSafetyFloor) {
-    tone = "emerald"; // High trust
+    tone = "emerald";
   } else if (isIdentityVerified && meetsSafetyFloor) {
-    tone = "blue"; // Identity confirmed
+    tone = "blue";
   } else {
-    tone = "amber"; // Low trust/Unverified/Below Floor
+    tone = "amber";
   }
+
+  // 3. UI Theme Presets
+  const themes = {
+    emerald: {
+      bg: "bg-emerald-500/10",
+      text: "text-emerald-600",
+      border: "border-emerald-500/20",
+      dot: "bg-emerald-500",
+      notice: "bg-emerald-50 border-emerald-100 text-emerald-900"
+    },
+    amber: {
+      bg: "bg-amber-500/10",
+      text: "text-amber-700",
+      border: "border-amber-500/20",
+      dot: "bg-amber-500",
+      notice: "bg-amber-50 border-amber-100 text-amber-900"
+    },
+    slate: {
+      bg: "bg-slate-500/10",
+      text: "text-slate-700",
+      border: "border-slate-500/20",
+      dot: "bg-slate-500",
+      notice: "bg-slate-50 border-slate-100 text-slate-900"
+    },
+    blue: {
+      bg: "bg-blue-500/10",
+      text: "text-blue-600",
+      border: "border-blue-500/20",
+      dot: "bg-blue-500",
+      notice: "bg-blue-50 border-blue-100 text-blue-900"
+    },
+    rose: {
+      bg: "bg-rose-500/10",
+      text: "text-rose-600",
+      border: "border-rose-500/20",
+      dot: "bg-rose-500",
+      notice: "bg-rose-50 border-rose-100 text-rose-900"
+    }
+  } as const;
+
+  const subMessage = restrictionState === "restricted_review" 
+    ? trust.verificationPendingDesc 
+    : restrictionState === "banned" 
+      ? trust.accountRestrictedDesc 
+      : undefined;
 
   return {
     restrictionState,
@@ -49,6 +96,8 @@ export function getSellerTrustUI(profile: Partial<Profile> | null | undefined) {
     isIdentityVerified,
     label,
     tone,
+    styles: themes[tone],
+    subMessage,
     isContactable: isActive,
     isPremiumVisible: isApproved && isActive && meetsSafetyFloor,
     isProfessional: profile?.userType === "professional" && isApproved && isActive && meetsSafetyFloor

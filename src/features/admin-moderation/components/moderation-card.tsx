@@ -14,11 +14,13 @@ import {
   ShieldCheck, 
   X, 
   XCircle,
-  Rocket
+  Rocket,
+  Shield
 } from "lucide-react";
 import { formatCurrency, formatDate, formatNumber, cn } from "@/lib/utils";
 import type { Listing } from "@/types";
 import { getListingCardInsights } from "@/services/listings/listing-card-insights";
+import { getSellerTrustUI } from "@/lib/utils/trust-ui";
 
 interface ModerationCardProps {
   listing: Listing;
@@ -135,6 +137,22 @@ export function ModerationCard({
                   <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-50 border border-emerald-100 px-3 py-1.5 text-[10px] font-bold text-emerald-600 shadow-sm">
                     <ShieldCheck className="size-3" /> EKSPERTİZLİ
                   </span>
+                )}
+                
+                {/* Seller Trust Context */}
+                {listing.seller && (
+                  <Link 
+                    href={`/admin/users/${listing.seller.id}`}
+                    className={cn(
+                      "inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[10px] font-bold shadow-sm border transition-all hover:scale-105 active:scale-95",
+                      getSellerTrustUI({ ...listing.seller }).tone === "emerald" ? "bg-emerald-50 text-emerald-600 border-emerald-100" :
+                      getSellerTrustUI({ ...listing.seller }).tone === "amber" ? "bg-amber-50 text-amber-600 border-amber-100" :
+                      "bg-rose-50 text-rose-600 border-rose-100"
+                    )}
+                  >
+                    <Shield size={12} />
+                    SATICI: {getSellerTrustUI({ ...listing.seller }).label} ({listing.seller.trustScore}%)
+                  </Link>
                 )}
               </div>
 

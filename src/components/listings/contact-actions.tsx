@@ -21,6 +21,7 @@ import { useRouter } from "next/navigation";
 import { createSupabaseBrowserClient } from "@/lib/supabase/browser";
 import { getSellerTrustUI } from "@/lib/utils/trust-ui";
 import { trust } from "@/lib/constants/ui-strings";
+import { cn } from "@/lib/utils";
 import type { Profile } from "@/types";
 
 interface ContactActionsProps {
@@ -47,19 +48,34 @@ export function ContactActions({ listingId, listingSlug, sellerId, seller, curre
   // Seller should not see contact actions on their own listing
   const isOwnListing = Boolean(currentUserId && currentUserId === sellerId);
   if (isOwnListing) {
+    const { label, subMessage, tone } = getSellerTrustUI(seller);
+    const hasIssues = !isContactable;
+
     return (
-      <div className="rounded-xl border border-border bg-muted/30 p-3 text-center text-xs font-medium text-muted-foreground">
-        Bu sizin ilanınız.
+      <div className={cn(
+        "rounded-xl border p-3 text-center transition-all",
+        hasIssues 
+          ? (tone === "amber" ? "bg-amber-50 border-amber-100 text-amber-700" : "bg-rose-50 border-rose-100 text-rose-700")
+          : "bg-muted/30 border-border text-muted-foreground"
+      )}>
+        <p className="text-xs font-bold uppercase tracking-tight mb-1">Bu Sizin İlanınız</p>
+        {hasIssues && (
+          <div className="space-y-1">
+            <p className="text-[10px] font-bold uppercase tracking-widest opacity-80">{label}</p>
+            <p className="text-[10px] leading-relaxed font-medium">{subMessage}</p>
+          </div>
+        )}
       </div>
     );
   }
 
   if (!isContactable) {
+    const { label, subMessage } = getSellerTrustUI(seller);
     return (
       <div className="rounded-xl border border-amber-200 bg-amber-50 p-4 text-center">
-        <p className="text-xs font-bold text-amber-900 mb-1 leading-tight">{trust.contactBlocked}</p>
+        <p className="text-xs font-bold text-amber-900 mb-1 leading-tight">{label}</p>
         <p className="text-[10px] text-amber-700 leading-relaxed font-semibold uppercase tracking-wide">
-          {trust.contactBlockedDesc}
+          {subMessage || trust.contactBlockedDesc}
         </p>
       </div>
     );

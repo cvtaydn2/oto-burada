@@ -1,26 +1,39 @@
 import { ShieldCheck } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 interface TrustBadgeProps {
   badgeLabel?: string | null;
   score: number;
+  tone?: "emerald" | "amber" | "blue" | "slate" | "rose";
 }
 
-export function TrustBadge({ badgeLabel, score }: TrustBadgeProps) {
+export function TrustBadge({ badgeLabel, score, tone = "amber" }: TrustBadgeProps) {
+  const themes = {
+    emerald: "text-emerald-600 bg-emerald-50 border-emerald-100",
+    amber: "text-amber-600 bg-amber-50 border-amber-100",
+    blue: "text-blue-600 bg-blue-50 border-blue-100",
+    slate: "text-slate-600 bg-slate-50 border-slate-100",
+    rose: "text-rose-600 bg-rose-50 border-rose-100",
+  };
+
   return (
     <div className="flex items-center justify-between mb-6">
       <div className="flex items-center gap-2">
         <div className="text-center">
-          <div className="text-2xl font-semibold text-primary">
-            {score.toFixed(1)}
+          <div className="text-2xl font-semibold text-foreground">
+            {score.toFixed(0)}
           </div>
-          <div className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">
+          <div className="text-[10px] font-bold text-muted-foreground/40 uppercase tracking-[0.2em]">
             Güven Puanı
           </div>
         </div>
       </div>
       {badgeLabel ? (
-        <div className="flex items-center gap-1.5 text-sm font-medium text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/20 px-3 py-1.5 rounded-[0.75rem] border border-indigo-100 dark:border-indigo-800/50">
-          <ShieldCheck size={18} />
+        <div className={cn(
+          "flex items-center gap-1.5 text-xs font-bold px-3 py-1.5 rounded-xl border uppercase tracking-tight",
+          themes[tone]
+        )}>
+          <ShieldCheck size={16} />
           {badgeLabel}
         </div>
       ) : null}

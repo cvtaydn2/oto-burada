@@ -1,26 +1,11 @@
 import { cn } from "@/lib/utils";
 import { trust } from "@/lib/constants/ui-strings";
 import { getSellerTrustUI } from "@/lib/utils/trust-ui";
+import { type Profile } from "@/types";
 
-type TrustTone = "emerald" | "amber" | "blue" | "slate";
-
-interface TrustCardProps {
-  title: string;
-  value: string;
-  description: string;
-  tone: TrustTone;
-}
-
-const toneClasses: Record<TrustTone, string> = {
-  amber: "border-amber-100 bg-amber-50 text-amber-700",
-  blue: "border-blue-100 bg-blue-50 text-blue-700",
-  emerald: "border-emerald-100 bg-emerald-50 text-emerald-700",
-  slate: "border-slate-100 bg-slate-50 text-slate-700",
-};
-
-export function TrustCard({ title, value, description, tone }: TrustCardProps) {
+export function TrustCard({ title, value, description, styles }: { title: string; value: string; description: string; styles: { bg: string; text: string; border: string } }) {
   return (
-    <div className={cn("rounded-3xl border p-6 transition-all hover:shadow-sm", toneClasses[tone])}>
+    <div className={cn("rounded-3xl border p-6 transition-all hover:shadow-sm", styles.bg, styles.text, styles.border)}>
       <div className="text-[10px] font-bold uppercase tracking-[0.2em] opacity-80">{title}</div>
       <div className="mt-2 text-xl font-bold tracking-tighter">{value}</div>
       <p className="mt-3 text-[11px] font-bold leading-relaxed opacity-60 uppercase tracking-wide">{description}</p>
@@ -34,24 +19,25 @@ interface TrustSummaryProps {
     tramerAmount?: number | null;
     fraudScore?: number;
   };
-  seller?: any | null; // Use any to allow partial profiles
+  seller?: Partial<Profile> | null;
   updatedAt: string;
 }
 
 export function TrustSummary({ listing, seller, updatedAt }: TrustSummaryProps) {
   const lastUpdatedAt = new Date(updatedAt);
-  const { label, tone, isTrusted } = getSellerTrustUI(seller);
+  const trustUI = getSellerTrustUI(seller);
   
-  const restrictionNotice = seller?.verificationStatus === "pending" || seller?.verificationStatus === "rejected" 
-    ? trust.restrictionNotice 
-    : null;
+  const isRestricted = trustUI.restrictionState !== "active";
+  const restrictedStyle = trustUI.styles;
 
   const trustItems = [
     {
       title: "Ekspertiz",
       value: listing.expertInspection?.hasInspection ? "Onaylı" : "Yok",
       description: listing.expertInspection?.inspectionDate ? "Resmi rapor mevcut" : "Ekspertiz beyan edilmedi",
-      tone: listing.expertInspection?.hasInspection ? "emerald" as const : "amber" as const,
+      styles: isRestricted ? restrictedStyle : (listing.expertInspection?.hasInspection 
+        ? { bg: "bg-emerald-50", text: "text-emerald-700", border: "border-emerald-100" } 
+        : { bg: "bg-amber-50", text: "text-amber-700", border: "border-amber-100" }),
     },
     {
       title: "Tramer",
@@ -61,19 +47,21 @@ export function TrustSummary({ listing, seller, updatedAt }: TrustSummaryProps) 
       description: listing.tramerAmount && listing.tramerAmount > 0 
         ? "Hasar kaydı detayları" 
         : "Hasar kaydı bulunmuyor",
-      tone: listing.tramerAmount && listing.tramerAmount > 0 ? "amber" as const : "emerald" as const,
+      styles: isRestricted ? restrictedStyle : (listing.tramerAmount && listing.tramerAmount > 0 
+        ? { bg: "bg-amber-50", text: "text-amber-700", border: "border-amber-100" } 
+        : { bg: "bg-emerald-50", text: "text-emerald-700", border: "border-emerald-100" }),
     },
     {
       title: "Satıcı",
-      value: label,
-      description: restrictionNotice || (isTrusted ? "Doğrulanmış ve aktif profil" : "Profil doğrulaması tamamlanmamış"),
-      tone: tone,
+      value: trustUI.label,
+      description: trustUI.subMessage || (trustUI.isTrusted ? "Doğrulanmış ve aktif profil" : "Profil doğrulaması tamamlanmamış"),
+      styles: trustUI.styles,
     },
     {
       title: "Son Güncelleme",
       value: Number.isFinite(lastUpdatedAt.getTime()) ? lastUpdatedAt.toLocaleDateString("tr-TR") : "-",
       description: `${lastUpdatedAt.toLocaleDateString("tr-TR")} güncellendi`,
-      tone: "blue" as const,
+      styles: isRestricted ? restrictedStyle : { bg: "bg-blue-50", text: "text-blue-700", border: "border-blue-100" },
     },
   ];
 
