@@ -72,6 +72,10 @@ export default async function RootLayout({
       data-scroll-behavior="smooth"
       suppressHydrationWarning
     >
+      <head>
+        <link rel="preconnect" href="https://images.unsplash.com" />
+        {/* Supabase storage is dynamic based on project ID, but we can hint the main pattern if known or just fallback */}
+      </head>
       <body className="min-h-full bg-background text-foreground selection:bg-primary/10 selection:text-primary">
         <RootProviders user={user}>
           {children}

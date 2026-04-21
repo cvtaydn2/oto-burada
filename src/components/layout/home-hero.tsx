@@ -15,7 +15,7 @@ export function HomeHero({ cities }: HomeHeroProps) {
           alt="Satılık araba ilanları"
           fill
           priority
-          sizes="100vw"
+          sizes="(max-width: 768px) 100vw, (max-width: 1200px) 70vw, 50vw"
           quality={85}
           className="object-cover"
         />

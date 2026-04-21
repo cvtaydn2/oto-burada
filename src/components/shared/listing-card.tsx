@@ -89,6 +89,7 @@ export function ListingCard({
             src={coverImage ? supabaseImageUrl(coverImage.url, 640) : ""}
             alt="" // Decorative since it's inside a link with aria-hidden, aria-labelledby on container covers it
             fill
+            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
             priority={priority}
             className="object-cover transition-transform duration-slow ease-expressive group-hover:scale-110"
           />

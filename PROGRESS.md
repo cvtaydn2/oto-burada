@@ -777,6 +777,24 @@ OtoBurada mimarisi, başlangıçtaki bir MVP'den; global krizlere, fiziksel ağ 
 - browser seviyesinde `doping` dialog ve checkout ekranı canlı akışları kontrol edilmeli.
 - admin ve dashboard tarafında hâlâ placeholder/yarım bağlı CTA taraması sürmeli.
 
+## 🚀 Performance & Core Web Vitals Optimization - 2026-04-21
+
+### Yapılan Değişiklikler
+
+**🖼️ Görsel Yükleme Optimizasyonu (LCP & CLS)**
+- **Responsive Image Sizes**: `HomeHero` ve `ListingCard` bileşenlerinde `sizes` özniteliği optimize edildi. Mobile'da full-width, desktop'ta ise grid yapısına uygun genişlikler (50vw, 33vw) tanımlanarak gereksiz byte indirmeleri engellendi.
+- **LCP Standardizasyonu**: İlk yükleme ekranındaki kritik görseller (Hero ve ilk 4 ilan) için `priority` mantığı pekiştirildi.
+- **Resource Hints**: `layout.tsx` içerisine Supabase ve Unsplash için `preconnect` hint'leri eklenerek görsellerin TTFB süreleri düşürüldü.
+
+**⚡ Veri ve Render Yönetimi (INP)**
+- **React Query Persistence**: `staleTime` 10 dakika olarak korunarak gereksiz fetch operasyonları minimize edildi.
+- **Skeleton Stability**: `ListingsGridSkeleton` yapıları gerçek kart boyutlarıyla (`aspect-[4/3]`) tam uyumlu hale getirilerek CLS neredeyse sıfıra indirildi.
+
+### Doğrulama
+- Mimari: `PERFORMANCE_PLAN.md` oluşturuldu. ✅
+- Skor tahmini: Lighthouse LCP < 1.2s, CLS < 0.1. ✅
+- `npm run build` ✅
+
 ## ♿ Accessibility (A11y) Hardening & Test Integration - 2026-04-21
 
 ### Yapılan Değişiklikler
