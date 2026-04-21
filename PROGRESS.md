@@ -1,3 +1,21 @@
+# 2026-04-21 - Final Console Clean-up
+
+## Yapılan Değişiklikler
+
+- `src/lib/middleware/headers.ts`: `style-src` içinden nonce tamamen çıkarıldı. Böylece production ve development ortamlarında inline style CSP çakışması ortadan kaldırıldı.
+- `src/components/layout/home-hero.tsx`: Mobil hero görselindeki gereksiz `priority` kaldırıldı. Hidden breakpoint varyantından kaynaklanan preload warning yüzeyi azaltıldı.
+- `src/app/(public)/about/page.tsx`: About hero görselindeki `priority` kaldırıldı; kullanılmayan preload uyarısı riski azaltıldı.
+
+## Doğrulama
+
+- `npm run typecheck` ✅
+- `npm run lint` ✅
+
+## Sonraki Adım
+
+- Son deploy'u al.
+- Deploy sonrası canlı domainde console loglarını tekrar doğrula; hedef sıfır CSP warning ve sıfır preload warning.
+
 # 2026-04-21 - Production CSP Hardening Follow-up
 
 ## Yapılan Değişiklikler

@@ -16,12 +16,7 @@ export function getSecurityHeaders(nonce: string) {
     "https://*.posthog.com",
     "https://us-assets.i.posthog.com",
   ];
-  const styleSrc = [
-    "'self'",
-    `'nonce-${nonce}'`,
-    "https://fonts.googleapis.com",
-    "https://unpkg.com",
-  ];
+  const styleSrc = ["'self'", "https://fonts.googleapis.com", "https://unpkg.com"];
 
   if (!isProduction) {
     scriptSrc.push("'unsafe-inline'", "'unsafe-eval'");

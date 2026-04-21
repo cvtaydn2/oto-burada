@@ -38,7 +38,6 @@ export default function AboutPage() {
                fill
                className="object-cover"
                sizes="(min-width: 1024px) 50vw, 100vw"
-               priority
              />
           </div>
           <div className="absolute -bottom-8 -left-8 bg-card p-8 rounded-2xl shadow-sm border border-border/50 z-20 hidden md:block">
