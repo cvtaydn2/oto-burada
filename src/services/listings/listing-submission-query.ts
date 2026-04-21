@@ -240,11 +240,21 @@ export async function getDatabaseListings(options?: {
     if (options?.ids?.length) query = query.in("id", options.ids);
     if (options?.statuses?.length) query = query.in("status", options.statuses);
 
+    // CRITICAL: Filter out listings from banned users
+    query = query.eq("profiles.is_banned", false);
+
     const filters = options?.filters;
     if (filters) query = applyListingFilterPredicates(query, filters);
 
     const sort = filters?.sort ?? "newest";
-    if (!filters?.sort || filters.sort === "newest") query = query.order("featured", { ascending: false });
+    
+    // PRIORITY 1: Featured (Paid)
+    if (!filters?.sort || filters.sort === "newest") {
+      query = query.order("featured", { ascending: false });
+    }
+
+    // PRIORITY 2: Trust-based priority (Natural boost for verified)
+    query = query.order("profiles(verification_status)", { ascending: false, nullsFirst: false });
 
     switch (sort) {
       case "price_asc": query = query.order("price", { ascending: true }).order("created_at", { ascending: false }); break;
@@ -296,6 +306,10 @@ export async function getFilteredDatabaseListings(
   // const to = from + limit - 1;
 
   let dataQuery = admin.from("listings").select(listingSelect).eq("status", "approved");
+  
+  // CRITICAL: Filter out listings from banned users
+  dataQuery = dataQuery.eq("profiles.is_banned", false);
+
   dataQuery = applyListingFilterPredicates(dataQuery, { ...filters, page, limit });
 
   // ── PILL: Issue 4 - Keyset (Cursor-based) Pagination ──────────────────
@@ -306,7 +320,7 @@ export async function getFilteredDatabaseListings(
       // Keyset comparison depends on the sort order
       switch (sort) {
         case "newest":
-          // Sort is Featured DESC, BumpedAt DESC, CreatedAt DESC, ID DESC
+          // Sort is Featured DESC, VerificationStatus DESC, BumpedAt DESC, CreatedAt DESC
           dataQuery = dataQuery.or(`featured.lt.${cursorData.featured},and(featured.eq.${cursorData.featured},bumped_at.lt.${cursorData.bumpedAt}),and(featured.eq.${cursorData.featured},bumped_at.eq.${cursorData.bumpedAt},created_at.lt.${cursorData.createdAt})`);
           break;
         case "price_asc":
@@ -315,15 +329,20 @@ export async function getFilteredDatabaseListings(
         case "price_desc":
           dataQuery = dataQuery.or(`price.lt.${cursorData.price},and(price.eq.${cursorData.price},created_at.lt.${cursorData.createdAt})`);
           break;
-        // ... (other cases simplified for now)
       }
     } catch {
       logger.db.warn("Invalid cursor provided", { cursor: filters.cursor });
     }
   }
 
-  if (!filters.sort || filters.sort === "newest") dataQuery = dataQuery.order("featured", { ascending: false });
-  
+  // PRIORITY 1: Featured (Paid)
+  if (!filters.sort || filters.sort === "newest") {
+    dataQuery = dataQuery.order("featured", { ascending: false });
+  }
+
+  // PRIORITY 2: Trust-based priority (Natural boost for verified)
+  dataQuery = dataQuery.order("profiles(verification_status)", { ascending: false, nullsFirst: false });
+
   switch (sort) {
     case "price_asc": dataQuery = dataQuery.order("price", { ascending: true }).order("created_at", { ascending: false }); break;
     case "price_desc": dataQuery = dataQuery.order("price", { ascending: false }).order("created_at", { ascending: false }); break;

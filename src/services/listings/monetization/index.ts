@@ -24,6 +24,18 @@ export interface DopingApplication {
  */
 export async function applyDoping(application: DopingApplication) {
   const admin = createSupabaseAdminClient();
+
+  // 0. Security Guard: Only active, non-restricted users can use premium surfaces
+  const { data: profile } = await admin
+    .from("profiles")
+    .select("is_banned")
+    .eq("id", application.userId)
+    .single();
+
+  if (profile?.is_banned) {
+    logger.payments.warn("Blocked doping attempt from restricted user", { userId: application.userId });
+    throw new Error("Hesabınız inceleme altında olduğu için doping işlemi gerçekleştirilemez.");
+  }
   
   try {
     let paymentId: string | undefined;

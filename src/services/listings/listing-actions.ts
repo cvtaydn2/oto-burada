@@ -31,18 +31,32 @@ export async function revealListingPhone(listingId: string) {
     throw new Error("Lütfen bir saat sonra tekrar deneyin.");
   }
 
-  // Fetch only the phone number using admin client
-  // Also verify the listing is in an active state — do not reveal phones for
-  // archived or rejected listings.
+  // Fetch listing and seller trust status
   const admin = createSupabaseAdminClient();
   const { data, error } = await admin
     .from("listings")
-    .select("whatsapp_phone, status, seller_id")
+    .select(`
+      whatsapp_phone, 
+      status, 
+      seller_id,
+      profiles!seller_id (
+        is_banned,
+        ban_reason
+      )
+    `)
     .eq("id", listingId)
     .single();
 
   if (error || !data) {
     throw new Error("İlan bulunamadı.");
+  }
+
+  // CRITICAL: Block leads for restricted or risky sellers
+  const sellerProfile = Array.isArray(data.profiles) ? data.profiles[0] : data.profiles;
+  const isSellerBanned = sellerProfile?.is_banned || false;
+  
+  if (isSellerBanned) {
+    throw new Error("Satıcı hesabı inceleme altında. Şu an iletişim kurulamıyor.");
   }
 
   // Only allow phone reveal for approved listings
