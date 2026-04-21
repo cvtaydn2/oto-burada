@@ -1,3 +1,37 @@
+# 2026-04-21 - Seller-Level Abuse Enforcement
+
+## Yapılan Değişiklikler
+
+- `src/services/listings/listing-submission-moderation.ts`: Duplicate VIN, duplicate plaka ve aşırı fiyat trust-guard reddileri için satıcı bazlı tekrar sayacı eklendi. Sayaçlar hafif bir metadata olarak mevcut `profiles.ban_reason` alanında tutuluyor; son 24 saatte eşik aşılırsa kullanıcı mevcut `is_banned` mekanizmasıyla geçici güvenlik kısıtına alınıyor ve admin incelemesi bekleniyor.
+- `src/app/api/listings/route.ts` ve `src/app/api/listings/[listingId]/route.ts`: Create ve seller-edit reddi noktaları yeni abuse-enforcement helper'ına bağlandı. Tekil reddetmeler aynı davranışı koruyor; tekrar eden kötü niyetli denemelerde hesap otomatik olarak incelemeye alınıyor.
+
+## Doğrulama
+
+- `npm run typecheck` ✅
+- `npm run lint` ✅
+
+## Sonraki Adım
+
+- Geçici kısıta alınan kullanıcıları admin kullanıcı listesinde ayrı bir "incelemede" durumuyla görünür kıl.
+- Trust-guard abuse sayaçlarını ileride `profiles.ban_reason` yerine ayrık bir audit alanına taşı.
+
+# 2026-04-21 - Trust-First Marketplace Hardening
+
+## Yapılan Değişiklikler
+
+- `src/services/listings/listing-submission-moderation.ts` ve `src/app/api/listings/route.ts`: Listing create akışına senkron trust guard eklendi. Aynı VIN/plaka ile aktif veya incelemede ikinci ilan oluşturma engellendi; yeterli piyasa verisi varken aşırı fiyat outlier ilanlar daha kayıt aşamasında reddediliyor.
+- `src/components/listings/listing-detail/listing-seller-sidebar.tsx` ve `src/components/listings/trust-summary.tsx`: Sahte güven sinyalleri kaldırıldı. Satıcı artık gerçekten doğrulanmışsa doğrulanmış görünüyor; yorum yokken sahte `5.0` puan basılmıyor; trust kartları daha dürüst karar sinyalleri gösteriyor.
+
+## Doğrulama
+
+- `npm run typecheck` ✅
+- `npm run lint` ✅
+
+## Sonraki Adım
+
+- Fiyat guard reddi ve duplicate VIN/plaka reddi için hedefli unit test ekle.
+- Admin edit akışında fiyat/VIN/dekritik alan değişince fraud skoru ve moderasyon durumunu yeniden tetikle.
+
 # 2026-04-21 - Final Console Clean-up
 
 ## Yapılan Değişiklikler

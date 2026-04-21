@@ -1,5 +1,27 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { Listing, ListingCreateInput } from "@/types";
+import { createSupabaseAdminClient } from "@/lib/supabase/admin";
+import { hasSupabaseAdminEnv } from "@/lib/supabase/env";
+import { estimateVehiclePrice } from "@/services/market/price-estimation";
+
+const TRUST_GUARD_REJECTION_WINDOW_MS = 24 * 60 * 60 * 1000;
+const TRUST_GUARD_REJECTION_THRESHOLD = 3;
+const TRUST_GUARD_METADATA_PREFIX = "[AUTO_TRUST_GUARD]";
+const TRACKED_TRUST_GUARD_REASONS = new Set([
+  "duplicate_vin",
+  "duplicate_plate",
+  "extreme_price_outlier",
+]);
+
+interface TrustGuardRejectionAttempt {
+  at: string;
+  reason: "duplicate_vin" | "duplicate_plate" | "extreme_price_outlier";
+  source: "create" | "edit";
+}
+
+interface TrustGuardRejectionMetadata {
+  attempts: TrustGuardRejectionAttempt[];
+}
 
 export function calculateFraudScore(
   input: ListingCreateInput,
@@ -134,4 +156,209 @@ export async function performAsyncModeration(listingId: string) {
   } catch (error) {
     console.error(`[AsyncModeration] Failed for ${listingId}:`, error);
   }
+}
+
+export interface ListingTrustGuardResult {
+  allowed: boolean;
+  message?: string;
+  reason?: string;
+}
+
+function parseTrustGuardMetadata(banReason: string | null | undefined): TrustGuardRejectionMetadata {
+  if (!banReason) {
+    return { attempts: [] };
+  }
+
+  const markerIndex = banReason.indexOf(TRUST_GUARD_METADATA_PREFIX);
+  if (markerIndex === -1) {
+    return { attempts: [] };
+  }
+
+  const serialized = banReason.slice(markerIndex + TRUST_GUARD_METADATA_PREFIX.length).trim();
+  if (!serialized) {
+    return { attempts: [] };
+  }
+
+  try {
+    const parsed = JSON.parse(serialized) as { attempts?: TrustGuardRejectionAttempt[] };
+    return {
+      attempts: Array.isArray(parsed.attempts)
+        ? parsed.attempts.filter(
+            (attempt): attempt is TrustGuardRejectionAttempt =>
+              typeof attempt?.at === "string" &&
+              (attempt.source === "create" || attempt.source === "edit") &&
+              typeof attempt.reason === "string" &&
+              TRACKED_TRUST_GUARD_REASONS.has(attempt.reason),
+          )
+        : [],
+    };
+  } catch {
+    return { attempts: [] };
+  }
+}
+
+function buildTrustGuardMetadataBanReason(existingBanReason: string | null | undefined, metadata: TrustGuardRejectionMetadata) {
+  const serialized = `${TRUST_GUARD_METADATA_PREFIX}${JSON.stringify(metadata)}`;
+  if (!existingBanReason) {
+    return serialized;
+  }
+
+  const markerIndex = existingBanReason.indexOf(TRUST_GUARD_METADATA_PREFIX);
+  if (markerIndex === -1) {
+    return `${existingBanReason}\n${serialized}`;
+  }
+
+  return `${existingBanReason.slice(0, markerIndex).trimEnd()}\n${serialized}`.trim();
+}
+
+function summarizeTrustGuardAttempts(attempts: TrustGuardRejectionAttempt[]) {
+  const counts = attempts.reduce<Record<string, number>>((acc, attempt) => {
+    acc[attempt.reason] = (acc[attempt.reason] ?? 0) + 1;
+    return acc;
+  }, {});
+
+  const labels: Record<TrustGuardRejectionAttempt["reason"], string> = {
+    duplicate_plate: "mükerrer plaka",
+    duplicate_vin: "mükerrer VIN",
+    extreme_price_outlier: "aşırı fiyat denemesi",
+  };
+
+  return (Object.entries(counts) as [TrustGuardRejectionAttempt["reason"], number][])
+    .map(([reason, count]) => `${labels[reason]} x${count}`)
+    .join(", ");
+}
+
+export async function recordSellerTrustGuardRejection(input: {
+  sellerId: string;
+  reason?: string;
+  source: "create" | "edit";
+}) {
+  if (!hasSupabaseAdminEnv() || !input.reason || !TRACKED_TRUST_GUARD_REASONS.has(input.reason)) {
+    return { restricted: false };
+  }
+
+  const admin = createSupabaseAdminClient();
+  const { data: profile } = await admin
+    .from("profiles")
+    .select("is_banned, ban_reason")
+    .eq("id", input.sellerId)
+    .maybeSingle<{ is_banned: boolean; ban_reason: string | null }>();
+
+  if (!profile || profile.is_banned) {
+    return { restricted: Boolean(profile?.is_banned) };
+  }
+
+  const now = new Date();
+  const recentAttempts = parseTrustGuardMetadata(profile.ban_reason).attempts.filter((attempt) => {
+    const attemptAt = new Date(attempt.at).getTime();
+    return Number.isFinite(attemptAt) && now.getTime() - attemptAt <= TRUST_GUARD_REJECTION_WINDOW_MS;
+  });
+
+  const nextAttempts: TrustGuardRejectionAttempt[] = [
+    ...recentAttempts,
+    {
+      at: now.toISOString(),
+      reason: input.reason as TrustGuardRejectionAttempt["reason"],
+      source: input.source,
+    },
+  ];
+
+  if (nextAttempts.length >= TRUST_GUARD_REJECTION_THRESHOLD) {
+    const reviewReason = `Geçici güvenlik kısıtı: son 24 saatte tekrar eden trust-guard reddi (${summarizeTrustGuardAttempts(nextAttempts)}). Admin incelemesi gerekiyor.`;
+    await admin
+      .from("profiles")
+      .update({
+        is_banned: true,
+        ban_reason: reviewReason,
+        updated_at: now.toISOString(),
+      })
+      .eq("id", input.sellerId);
+
+    return {
+      restricted: true,
+      reviewReason,
+    };
+  }
+
+  await admin
+    .from("profiles")
+    .update({
+      ban_reason: buildTrustGuardMetadataBanReason(profile.ban_reason, { attempts: nextAttempts }),
+      updated_at: now.toISOString(),
+    })
+    .eq("id", input.sellerId);
+
+  return {
+    restricted: false,
+    attemptCount: nextAttempts.length,
+  };
+}
+
+export async function runListingTrustGuards(
+  input: ListingCreateInput,
+  options?: {
+    excludeListingId?: string;
+  },
+): Promise<ListingTrustGuardResult> {
+  if (!hasSupabaseAdminEnv()) {
+    return { allowed: true };
+  }
+
+  const admin = createSupabaseAdminClient();
+
+  const [vinDuplicateResult, plateDuplicateResult, priceEstimate] = await Promise.all([
+    admin
+      .from("listings")
+      .select("id", { head: true, count: "exact" })
+      .eq("vin", input.vin)
+      .neq("id", options?.excludeListingId ?? "")
+      .in("status", ["pending", "pending_ai_review", "approved", "flagged"]),
+    input.licensePlate
+      ? admin
+          .from("listings")
+          .select("id", { head: true, count: "exact" })
+          .eq("license_plate", input.licensePlate)
+          .neq("id", options?.excludeListingId ?? "")
+          .in("status", ["pending", "pending_ai_review", "approved", "flagged"])
+      : Promise.resolve(null),
+    estimateVehiclePrice({
+      brand: input.brand,
+      model: input.model,
+      year: input.year,
+      mileage: input.mileage,
+      carTrim: input.carTrim ?? null,
+      tramerAmount: input.tramerAmount ?? null,
+      damageStatusJson: input.damageStatusJson ?? null,
+    }),
+  ]);
+
+  if ((vinDuplicateResult.count ?? 0) > 0) {
+    return {
+      allowed: false,
+      reason: "duplicate_vin",
+      message: "Bu şasi numarasıyla aktif veya incelemede başka bir ilan zaten mevcut.",
+    };
+  }
+
+  if (input.licensePlate && (plateDuplicateResult?.count ?? 0) > 0) {
+    return {
+      allowed: false,
+      reason: "duplicate_plate",
+      message: "Bu plaka ile aktif veya incelemede başka bir ilan zaten mevcut.",
+    };
+  }
+
+  if (priceEstimate && priceEstimate.listingCount >= 5 && priceEstimate.avg > 0) {
+    const priceRatio = input.price / priceEstimate.avg;
+
+    if (priceRatio < 0.45 || priceRatio > 2.2) {
+      return {
+        allowed: false,
+        reason: "extreme_price_outlier",
+        message: "Girilen fiyat piyasa dengesinin aşırı dışında. Lütfen fiyatı kontrol edip tekrar gönder.",
+      };
+    }
+  }
+
+  return { allowed: true };
 }

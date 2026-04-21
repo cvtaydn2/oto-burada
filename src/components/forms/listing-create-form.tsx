@@ -118,6 +118,15 @@ export function ListingCreateForm({
                 </div>
               )}
 
+              {submitState.status === "warning" && submitState.message && (
+                <div className="flex items-center gap-4 rounded-3xl bg-amber-50 p-6 border border-amber-100 shadow-sm animate-in fade-in zoom-in-95 duration-500">
+                  <div className="flex size-10 items-center justify-center rounded-2xl bg-amber-500 text-white shadow-sm shadow-amber-500/30">
+                    <AlertCircle size={24} strokeWidth={3} />
+                  </div>
+                  <p className="text-base font-bold text-amber-900 tracking-tight">{submitState.message}</p>
+                </div>
+              )}
+
               <div className="min-h-[400px]">
                 {currentStep === 0 && <VehicleInfoStep form={form} brands={brands} isPlateLoading={isPlateLoading} onPlateLookup={handlePlateLookup} />}
                 {currentStep === 1 && <DetailsStep form={form} cities={cities} />}

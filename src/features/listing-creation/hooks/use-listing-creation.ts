@@ -32,7 +32,7 @@ export function useListingCreation({
   const isEditing = Boolean(initialListing);
   
   const [currentStep, setCurrentStep] = useState(0);
-  const [submitState, setSubmitState] = useState<{ status: "error" | "idle" | "success"; message?: string }>({ status: "idle" });
+  const [submitState, setSubmitState] = useState<{ status: "error" | "idle" | "success" | "warning"; message?: string }>({ status: "idle" });
   const [uploadStates, setUploadStates] = useState<Record<string, { status: string; progress: number; message: string; previewUrl?: string }>>({});
   const [isPlateLoading, setIsPlateLoading] = useState(false);
   const [isEmailVerifiedLocally, setIsEmailVerifiedLocally] = useState(isEmailVerified);
@@ -93,18 +93,39 @@ export function useListingCreation({
     try {
       const result = await lookupVehicleByPlate(plate);
       if (result) {
+        const currentValues = getValues();
+        const mismatchFields = [
+          currentValues.brand && currentValues.brand !== result.brand ? "marka" : null,
+          currentValues.model && currentValues.model !== result.model ? "model" : null,
+          currentValues.year && currentValues.year !== result.year ? "yıl" : null,
+          currentValues.fuelType && currentValues.fuelType !== result.fuelType ? "yakıt" : null,
+          currentValues.transmission && currentValues.transmission !== result.transmission ? "vites" : null,
+        ].filter(Boolean) as string[];
+
         setValue("brand", result.brand, { shouldDirty: true, shouldValidate: true });
         setValue("model", result.model, { shouldDirty: true, shouldValidate: true });
         setValue("year", result.year, { shouldDirty: true, shouldValidate: true });
         setValue("fuelType", result.fuelType as ListingCreateFormValues["fuelType"], { shouldDirty: true, shouldValidate: true });
         setValue("transmission", result.transmission as ListingCreateFormValues["transmission"], { shouldDirty: true, shouldValidate: true });
-        setSubmitState({ status: "success", message: "Araç bilgileri başarıyla getirildi ✨" });
+
+        if (mismatchFields.length > 0) {
+          setSubmitState({
+            status: "warning",
+            message: `Plakadan gelen öneri ile girdiğiniz ${mismatchFields.join(", ")} bilgileri farklıydı. Alanları kontrol edip doğru olanı siz seçin.`,
+          });
+        } else {
+          setSubmitState({
+            status: "success",
+            message: "Plakadan tahmini araç bilgileri öneri olarak dolduruldu. Resmi kayıt doğrulaması değildir.",
+          });
+        }
+
         setTimeout(() => setSubmitState({ status: "idle" }), 3000);
       } else {
-        setError("licensePlate", { message: "Bu plaka ile araç bilgisi bulunamadı." });
+        setError("licensePlate", { message: "Bu plaka için öneri üretilemedi. Araç bilgilerini manuel girin." });
       }
     } catch {
-      setError("licensePlate", { message: "Sorgulama sırasında bir hata oluştu." });
+      setError("licensePlate", { message: "Plaka önerisi alınamadı. Araç bilgilerini manuel girin." });
     } finally {
       setIsPlateLoading(false);
     }

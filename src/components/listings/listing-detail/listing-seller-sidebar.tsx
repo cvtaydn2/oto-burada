@@ -21,6 +21,12 @@ export async function ListingSellerSidebar({
   const memberSince = getMemberSinceYear(seller?.createdAt ?? null);
   const membershipYears = getMembershipYears(memberSince);
   const isOwner = currentUser?.id === listing.sellerId;
+  const sellerVerified = seller?.verifiedBusiness || seller?.isVerified;
+  const sellerBadgeLabel = seller?.verifiedBusiness
+    ? "İŞLETME DOĞRULANDI"
+    : seller?.isVerified
+      ? "KİMLİK DOĞRULANDI"
+      : "DOĞRULAMA YOK";
 
   return (
     <div className="w-full lg:w-[400px] space-y-10 shrink-0">
@@ -34,9 +40,13 @@ export async function ListingSellerSidebar({
               {seller?.businessName || seller?.fullName || "Bilinmeyen Satıcı"}
             </h3>
             <div className="flex items-center gap-2">
-              <div className="flex h-5 items-center gap-1.5 rounded-md bg-emerald-500/10 px-2 text-[10px] font-bold uppercase tracking-widest text-emerald-600 border border-emerald-500/20">
+              <div className={`flex h-5 items-center gap-1.5 rounded-md px-2 text-[10px] font-bold uppercase tracking-widest border ${
+                sellerVerified
+                  ? "bg-emerald-500/10 text-emerald-600 border-emerald-500/20"
+                  : "bg-amber-500/10 text-amber-700 border-amber-500/20"
+              }`}>
                 <ShieldCheck size={12} strokeWidth={3} />
-                ONAYLI
+                {sellerBadgeLabel}
               </div>
               <div className="flex h-5 items-center gap-1.5 rounded-md bg-muted px-2 text-[10px] font-bold uppercase tracking-widest text-muted-foreground border border-border">
                 {seller?.userType === "professional" ? "Galeri" : "Bireysel"}
@@ -49,9 +59,13 @@ export async function ListingSellerSidebar({
           <div className="p-4 rounded-2xl bg-muted/30 border border-border/40 text-center">
             <div className="flex items-center justify-center gap-1 text-primary mb-1">
               <Star size={14} fill="currentColor" />
-              <span className="text-sm font-bold">{sellerRatingSummary?.average?.toFixed(1) || "5.0"}</span>
+              <span className="text-sm font-bold">
+                {sellerRatingSummary.count > 0 ? sellerRatingSummary.average.toFixed(1) : "-"}
+              </span>
             </div>
-            <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Puan</p>
+            <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">
+              {sellerRatingSummary.count > 0 ? `${sellerRatingSummary.count} Yorum` : "Yorum Yok"}
+            </p>
           </div>
           <div className="p-4 rounded-2xl bg-muted/30 border border-border/40 text-center">
             <div className="flex items-center justify-center gap-1 text-foreground mb-1 font-bold text-sm">

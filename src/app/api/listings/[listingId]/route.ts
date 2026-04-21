@@ -13,6 +13,12 @@ import {
 } from "@/services/listings/listing-submissions";
 import { captureServerError, captureServerEvent } from "@/lib/monitoring/posthog-server";
 import { logger } from "@/lib/utils/logger";
+import { waitUntil } from "@vercel/functions";
+import {
+  performAsyncModeration,
+  recordSellerTrustGuardRejection,
+  runListingTrustGuards,
+} from "@/services/listings/listing-submission-moderation";
 
 export async function PATCH(
   request: Request,
@@ -103,13 +109,45 @@ export async function PATCH(
     );
   }
 
+  const criticalFieldsChanged =
+    parsedListingInput.data.price !== existingListing.price ||
+    parsedListingInput.data.vin !== (existingListing.vin ?? "") ||
+    (parsedListingInput.data.licensePlate ?? null) !== (existingListing.licensePlate ?? null) ||
+    parsedListingInput.data.title !== existingListing.title ||
+    parsedListingInput.data.description !== existingListing.description;
+
+  if (criticalFieldsChanged) {
+    const trustGuard = await runListingTrustGuards(parsedListingInput.data, {
+      excludeListingId: existingListing.id,
+    });
+
+    if (!trustGuard.allowed) {
+      const enforcement = await recordSellerTrustGuardRejection({
+        sellerId: user.id,
+        reason: trustGuard.reason,
+        source: "edit",
+      });
+
+      return apiError(
+        API_ERROR_CODES.FORBIDDEN,
+        enforcement.restricted
+          ? "Hesabın geçici olarak incelemeye alındı. Lütfen destek ekibiyle iletişime geç."
+          : trustGuard.message ?? "İlan güvenlik kurallarına takıldı.",
+        403,
+      );
+    }
+  }
+
   // Build updated listing (slug collision handled by DB constraint in updateDatabaseListing)
   const updatedListing = buildUpdatedListing(
     parsedListingInput.data,
     existingListing,
     [], // Empty array - no pre-check needed
   );
-  const result = await updateDatabaseListing(updatedListing);
+  const listingToPersist = criticalFieldsChanged
+    ? { ...updatedListing, status: "pending_ai_review" as const }
+    : updatedListing;
+  const result = await updateDatabaseListing(listingToPersist);
 
   if (result.error === "slug_collision") {
     return apiError(API_ERROR_CODES.BAD_REQUEST, "Bu başlıkla başka bir ilan zaten mevcut.", 409);
@@ -134,6 +172,10 @@ export async function PATCH(
   }
 
   if (result.listing) {
+    if (criticalFieldsChanged) {
+      waitUntil(performAsyncModeration(result.listing.id));
+    }
+
     captureServerEvent("listing_updated", {
       userId: user.id,
       listingId: result.listing.id,

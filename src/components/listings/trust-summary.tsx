@@ -30,12 +30,16 @@ interface TrustSummaryProps {
   listing: {
     expertInspection?: { hasInspection: boolean; inspectionDate?: string } | null;
     tramerAmount?: number | null;
+    fraudScore?: number;
   };
-  seller?: Partial<{ isVerified: boolean }> | null;
+  seller?: Partial<{ isVerified: boolean; verifiedBusiness?: boolean }> | null;
   updatedAt: string;
 }
 
 export function TrustSummary({ listing, seller, updatedAt }: TrustSummaryProps) {
+  const lastUpdatedAt = new Date(updatedAt);
+  const sellerVerified = seller?.verifiedBusiness || seller?.isVerified;
+
   const trustItems = [
     {
       title: "Ekspertiz",
@@ -55,14 +59,14 @@ export function TrustSummary({ listing, seller, updatedAt }: TrustSummaryProps) 
     },
     {
       title: "Satıcı",
-      value: seller?.isVerified ? "ONAYLI" : "AKTİF",
-      description: seller?.isVerified ? "Kimlik doğrulanmış" : "Profil yayında",
-      tone: seller?.isVerified ? "emerald" as const : "blue" as const,
+      value: sellerVerified ? "DOĞRULANDI" : "DOĞRULANMADI",
+      description: seller?.verifiedBusiness ? "İşletme bilgileri onaylı" : seller?.isVerified ? "Kimlik doğrulandı" : "Profil var, ek doğrulama görünmüyor",
+      tone: sellerVerified ? "emerald" as const : "amber" as const,
     },
     {
-      title: "İlan Durumu",
-      value: "GÜNCEL",
-      description: `${new Date(updatedAt).toLocaleDateString("tr-TR")} güncellendi`,
+      title: "Son Güncelleme",
+      value: Number.isFinite(lastUpdatedAt.getTime()) ? lastUpdatedAt.toLocaleDateString("tr-TR") : "-",
+      description: `${lastUpdatedAt.toLocaleDateString("tr-TR")} güncellendi`,
       tone: "blue" as const,
     },
   ];

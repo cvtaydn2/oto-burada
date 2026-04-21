@@ -19,7 +19,11 @@ import { checkListingLimit } from "@/services/listings/listing-limits";
 import { parseListingFiltersFromSearchParams } from "@/services/listings/listing-filters";
 import { getFilteredMarketplaceListings } from "@/services/listings/marketplace-listings";
 import { waitUntil } from "@vercel/functions";
-import { performAsyncModeration } from "@/services/listings/listing-submission-moderation";
+import {
+  performAsyncModeration,
+  recordSellerTrustGuardRejection,
+  runListingTrustGuards,
+} from "@/services/listings/listing-submission-moderation";
 
 export async function GET(request: Request) {
   // Rate limit public search — 120 requests per minute per IP
@@ -151,6 +155,24 @@ export async function POST(request: Request) {
       parsedListingInput.error.issues[0]?.message ?? "İlan bilgileri doğrulanamadı.",
       400,
       issuesToFieldErrors(parsedListingInput.error.issues),
+    );
+  }
+
+  const trustGuard = await runListingTrustGuards(parsedListingInput.data);
+
+  if (!trustGuard.allowed) {
+    const enforcement = await recordSellerTrustGuardRejection({
+      sellerId: user.id,
+      reason: trustGuard.reason,
+      source: "create",
+    });
+
+    return apiError(
+      API_ERROR_CODES.FORBIDDEN,
+      enforcement.restricted
+        ? "Hesabın geçici olarak incelemeye alındı. Lütfen destek ekibiyle iletişime geç."
+        : trustGuard.message ?? "İlan güvenlik kurallarına takıldı.",
+      403,
     );
   }
 

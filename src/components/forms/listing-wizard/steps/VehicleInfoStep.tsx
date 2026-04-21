@@ -32,12 +32,12 @@ export function VehicleInfoStep({
       {/* SECTION 1: AUTO LOOKUP */}
       <FormSection number={1} title="Hızlı Araç Tanımlama">
         <p className="text-sm text-gray-500 mb-6">
-          Aracınızı plakadan ön doldurabilir, şasi numarasını ise format kontrolü için ekleyebilirsiniz.
+          Plakadan sadece tahmini araç bilgisi önerisi alabilirsiniz. Bu alan resmi kayıt doğrulaması yapmaz; son kontrolü siz yapmalısınız.
         </p>
         
         <div className="grid gap-8">
           <div className="space-y-3">
-            <label className="block text-sm font-bold text-gray-700">Plaka ile Sorgula</label>
+            <label className="block text-sm font-bold text-gray-700">Plakadan Öneri Al</label>
             <div className="flex gap-3">
               <div className="relative flex-1">
                 <div className="absolute inset-y-0 left-0 w-10 flex items-center justify-center border-r border-border bg-muted/30 rounded-l-lg">
@@ -56,7 +56,7 @@ export function VehicleInfoStep({
                 className="inline-flex h-12 items-center justify-center gap-2 rounded-lg bg-primary px-6 text-sm font-semibold text-primary-foreground transition-all hover:opacity-90 disabled:opacity-50"
               >
                 {isPlateLoading ? <LoaderCircle className="size-4 animate-spin" /> : <Search size={18} />}
-                Sorgula
+                Öneri Getir
               </button>
             </div>
             {errors.licensePlate && (

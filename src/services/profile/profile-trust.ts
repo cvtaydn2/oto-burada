@@ -6,29 +6,36 @@ interface SellerTrustSummary {
   signals: string[];
 }
 
+function getAccountAgeMonths(createdAt?: string | null) {
+  if (!createdAt) return 0;
+  const createdTime = Date.parse(createdAt);
+  if (Number.isNaN(createdTime)) return 0;
+  const ageMs = Date.now() - createdTime;
+  return Math.max(0, Math.floor(ageMs / (1000 * 60 * 60 * 24 * 30)));
+}
+
 export function calculateTrustScore(seller: Partial<Profile> | null): number {
   if (!seller) return 0;
   
   let score = 0;
-  
-  // Rule 1: E-posta doğrulandıysa +20 puan
-  if (seller.emailVerified) {
+
+  const accountAgeMonths = getAccountAgeMonths(seller.createdAt);
+
+  if (accountAgeMonths >= 24) score += 30;
+  else if (accountAgeMonths >= 12) score += 22;
+  else if (accountAgeMonths >= 6) score += 14;
+  else if (accountAgeMonths >= 1) score += 8;
+
+  if (seller.verifiedBusiness) {
+    score += 35;
+  } else if (seller.isVerified) {
     score += 20;
   }
-  
-  // Rule 2: Profil fotoğrafı eklendiyse +10 puan
-  if (seller.avatarUrl && seller.avatarUrl.trim().length > 0) {
+
+  if (seller.emailVerified) {
     score += 10;
   }
-  
-  // Rule 3: Cüzdan doğrulaması (İyzico) yapıldıysa +50 puan
-  if (seller.isWalletVerified) {
-    score += 50;
-  }
-  
-  // Ekstra ufak güvenlik/gerçeklik sinyalleri (Opsiyonel ama iyi olur)
-  // Gelecekte ek puan kriterleri buraya eklenebilir.
-  
+
   return Math.min(score, 100);
 }
 
@@ -45,32 +52,35 @@ export function getSellerTrustSummary(
   }
 
   const signals: string[] = [];
-  
-  // Eğer veritabanından çekilen bir trustScore varsa o kullanılabilir,
-  // Yoksa runtime üzerinden güncel hesaplama yapılır.
-  const score = seller.trustScore !== undefined && seller.trustScore > 0 
-    ? seller.trustScore 
-    : calculateTrustScore(seller);
+
+  const score = calculateTrustScore(seller);
+  const accountAgeMonths = getAccountAgeMonths(seller.createdAt);
+
+  if (accountAgeMonths >= 12) {
+    signals.push(`${Math.floor(accountAgeMonths / 12)}+ yıl hesap geçmişi`);
+  } else if (accountAgeMonths >= 1) {
+    signals.push(`${accountAgeMonths} ay hesap geçmişi`);
+  } else {
+    signals.push("Yeni hesap");
+  }
+
+  if (seller.verifiedBusiness) {
+    signals.push("İşletme doğrulandı");
+  } else if (seller.isVerified) {
+    signals.push("Kimlik doğrulandı");
+  }
 
   if (seller.emailVerified) {
-    signals.push("E-posta onayı (Güven Puanı +20)");
-  }
-
-  if (seller.avatarUrl && seller.avatarUrl.trim().length > 0) {
-    signals.push("Profil fotoğrafı (Güven Puanı +10)");
-  }
-
-  if (seller.isWalletVerified) {
-    signals.push("İyzico Cüzdan Doğrulaması (Güven Puanı +50)");
+    signals.push("E-posta onaylı");
   }
 
   let badgeLabel = "Standart Üye";
-  if (score >= 80) badgeLabel = "Premium Doğrulanmış Satıcı";
-  else if (score >= 50) badgeLabel = "Güvenilir Satıcı";
-  else if (score >= 20) badgeLabel = "Onaylı E-posta";
+  if (score >= 75) badgeLabel = "Güvenilir Satıcı";
+  else if (score >= 45) badgeLabel = "Doğrulanan Satıcı";
+  else if (score >= 20) badgeLabel = "İncelenebilir Satıcı";
 
   if (activeListingCount > 0) {
-    signals.push(`${activeListingCount} aktif ilan`);
+    signals.push(`${activeListingCount} aktif ilan geçmişi`);
   }
 
   return {

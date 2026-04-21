@@ -5,6 +5,9 @@ import { apiSuccess, apiError, API_ERROR_CODES } from "@/lib/utils/api-response"
 import { requireApiAdminUser } from "@/lib/auth/api-admin";
 import { z } from "zod";
 import { captureServerError, captureServerEvent } from "@/lib/monitoring/posthog-server";
+import { getStoredListingById } from "@/services/listings/listing-submissions";
+import { runListingTrustGuards, performAsyncModeration } from "@/services/listings/listing-submission-moderation";
+import { waitUntil } from "@vercel/functions";
 
 const adminEditSchema = z.object({
   title: z.string().min(5).max(200).optional(),
@@ -57,6 +60,56 @@ export async function PATCH(
     return apiError(API_ERROR_CODES.BAD_REQUEST, "En az bir alan düzenlenmelidir.", 400);
   }
 
+  const existingListing = await getStoredListingById(listingId);
+  if (!existingListing) {
+    captureServerEvent("admin_listing_edit_failed", {
+      adminUserId: user.id,
+      listingId,
+      reason: "listing_not_found",
+      responseStatus: 404,
+    }, user.id);
+    return apiError(API_ERROR_CODES.NOT_FOUND, "İlan bulunamadı.", 404);
+  }
+
+  const criticalFieldsChanged =
+    updates.price !== undefined ||
+    updates.title !== undefined ||
+    updates.description !== undefined;
+
+  if (criticalFieldsChanged) {
+    const trustGuard = await runListingTrustGuards({
+      title: updates.title ?? existingListing.title,
+      brand: existingListing.brand,
+      model: existingListing.model,
+      carTrim: existingListing.carTrim ?? null,
+      year: existingListing.year,
+      mileage: existingListing.mileage,
+      fuelType: existingListing.fuelType,
+      transmission: existingListing.transmission,
+      price: updates.price ?? existingListing.price,
+      city: existingListing.city,
+      district: existingListing.district,
+      description: updates.description ?? existingListing.description,
+      whatsappPhone: existingListing.whatsappPhone,
+      vin: existingListing.vin ?? "",
+      licensePlate: existingListing.licensePlate ?? null,
+      tramerAmount: existingListing.tramerAmount ?? null,
+      damageStatusJson: existingListing.damageStatusJson ?? null,
+      images: existingListing.images,
+      expertInspection: existingListing.expertInspection,
+    }, {
+      excludeListingId: existingListing.id,
+    });
+
+    if (!trustGuard.allowed) {
+      return apiError(
+        API_ERROR_CODES.FORBIDDEN,
+        trustGuard.message ?? "İlan güvenlik kurallarına takıldı.",
+        403,
+      );
+    }
+  }
+
   // Build DB update object
   const dbUpdates: Record<string, unknown> = {
     updated_at: new Date().toISOString(),
@@ -64,6 +117,7 @@ export async function PATCH(
   if (updates.title !== undefined) dbUpdates.title = updates.title;
   if (updates.price !== undefined) dbUpdates.price = updates.price;
   if (updates.description !== undefined) dbUpdates.description = updates.description;
+  if (criticalFieldsChanged) dbUpdates.status = "pending_ai_review";
 
   const { data: updatedListing, error: updateError } = await admin
     .from("listings")
@@ -105,6 +159,10 @@ export async function PATCH(
     listingId,
     changedFields,
   }, user.id);
+
+  if (criticalFieldsChanged) {
+    waitUntil(performAsyncModeration(listingId));
+  }
 
   return apiSuccess({ listingId }, "İlan başarıyla düzenlendi.");
 }

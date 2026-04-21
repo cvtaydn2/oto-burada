@@ -11,13 +11,12 @@ export interface PlateLookupResult {
   year: number;
   fuelType: string;
   transmission: string;
+  source: "suggestion";
 }
 
 /**
- * Validates and looks up vehicle data by license plate.
- * Since a true high-fidelity plate-to-vehicle API is a paid external service,
- * we verify the plate format and dynamically fetch a compatible brand/model 
- * from the live database to ensure No "Fake Data" is used.
+ * Builds a non-authoritative vehicle suggestion from plate format.
+ * This is helper/autofill only and MUST NOT be treated as official registry validation.
  */
 export async function lookupVehicleByPlate(
   plate: string,
@@ -78,13 +77,15 @@ export async function lookupVehicleByPlate(
     const modelIndex = (normalizedPlate.charCodeAt(normalizedPlate.length - 1)) % models.length;
     const selectedModel = models[modelIndex];
 
-    // Build result using LIVE data from DB
+  // Build a deterministic suggestion using live marketplace reference data.
+  // This is intentionally NOT an official registry result.
     return {
       brand: selectedBrand.name,
       model: selectedModel.name,
       year: 2020 + (normalizedPlate.length % 5), // Deterministic year based on plate
       fuelType: "benzin",
       transmission: "otomatik",
+      source: "suggestion",
     };
   } catch (error) {
     logger.listings.error("Plate lookup failed", error, { plate });

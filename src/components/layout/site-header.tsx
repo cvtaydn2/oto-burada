@@ -25,7 +25,7 @@ export async function SiteHeader() {
     <header className="sticky top-0 left-0 right-0 z-50 h-[68px] border-b border-border/80 bg-background/98 backdrop-blur-sm" role="banner">
       <div className="mx-auto flex h-full w-full max-w-[1280px] items-center justify-between gap-2 px-3 sm:px-5 lg:px-6">
         <div className="flex items-center gap-8">
-          <Link href="/" className="flex items-center space-x-2 group shrink-0" aria-label="OtoBurada - Ana Sayfa">
+          <Link href="/" prefetch={false} className="flex items-center space-x-2 group shrink-0" aria-label="OtoBurada - Ana Sayfa">
             <div className="flex size-9 items-center justify-center rounded-lg bg-blue-500 text-white" aria-hidden="true">
               <CarFront size={18} className="stroke-[2.5]" />
             </div>
@@ -35,7 +35,7 @@ export async function SiteHeader() {
           </Link>
 
           <nav className="hidden items-center gap-6 text-sm font-medium text-muted-foreground lg:flex">
-            <Link href="/listings" className="hover:text-blue-500 transition-colors">İlanlar</Link>
+            <Link href="/listings" prefetch={false} className="hover:text-blue-500 transition-colors">İlanlar</Link>
             {features.compare && (
               <Link href="/compare" className="hover:text-blue-500 transition-colors">Karşılaştır</Link>
             )}
