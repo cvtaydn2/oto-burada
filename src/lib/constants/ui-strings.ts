@@ -284,6 +284,17 @@ export const seller = {
 } as const;
 
 export const trust = {
+  // Benefits (Upsell)
+  benefits: {
+    title: "Güvenini Kanıtla, Daha Hızlı Sat",
+    subtitle: "Hesabını doğrula ve alıcıların güvenini hemen kazan.",
+    motto: "Doğrulanmış profiller %45 daha fazla görüntülenme alır.",
+    list: [
+      "Profiline 'Doğrulanmış Üye' mührü eklenir",
+      "İlanların arama sonuçlarında güven sinyali ile görünür",
+      "Kurumsal mağaza özelliklerine erişim hakkı kazanırsın"
+    ]
+  },
   // Labels
   professional: "Kurumsal Galeri",
   individual: "Bireysel",

@@ -44,6 +44,24 @@ export function PricingPlans({ initialPlans }: PricingPlansProps) {
         <p className="text-muted-foreground max-w-2xl mx-auto">
           İhtiyacınıza uygun paketi seçin, satışlarınızı profesyonel bir seviyeye taşıyın.
         </p>
+
+        {/* Persuasive Success Guide */}
+        <div className="flex flex-col sm:flex-row items-center justify-center gap-2 sm:gap-8 pt-4 pb-12">
+          <div className="flex items-center gap-2 text-xs font-bold text-muted-foreground opacity-60">
+            <span className="size-5 rounded-full bg-muted border flex items-center justify-center text-[10px]">1</span>
+            İLAN VER
+          </div>
+          <div className="hidden sm:block h-px w-8 bg-border" />
+          <div className="flex items-center gap-2 text-xs font-bold text-primary">
+            <span className="size-5 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center text-[10px]">2</span>
+            PAKET SEÇ
+          </div>
+          <div className="hidden sm:block h-px w-8 bg-border" />
+          <div className="flex items-center gap-2 text-xs font-bold text-muted-foreground opacity-60">
+            <span className="size-5 rounded-full bg-muted border flex items-center justify-center text-[10px]">3</span>
+            HIZLI SAT
+          </div>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
@@ -93,12 +111,19 @@ export function PricingPlans({ initialPlans }: PricingPlansProps) {
                   </div>
   
                   <ul className="space-y-3">
-                    {Object.entries(plan.features).map(([key, val]) => (
+                    {Object.keys(plan.features).map((key) => (
                       <li key={key} className="flex items-start gap-3 text-sm">
                         <div className="mt-1 h-4 w-4 rounded-full bg-green-500/10 flex items-center justify-center">
                           <Check className="h-3 w-3 text-green-600" />
                         </div>
-                        <span className="capitalize">{key.replace('_', ' ')}: {val === true ? "Dahil" : val}</span>
+                        <span className="text-foreground/90 leading-tight">
+                          {key === "listing_xml" && "Sahibinden/Arabam Entegrasyonu (XML)"}
+                          {key === "unlimited_listing" && "Sınırsız İlan Yayınlama"}
+                          {key === "gallery_page" && "Kurumsal Showroom Sayfası"}
+                          {key === "dedicated_support" && "Özel Müşteri Temsilcisi"}
+                          {key === "analytics" && "Gelişmiş Satış Analitiği"}
+                          {!["listing_xml", "unlimited_listing", "gallery_page", "dedicated_support", "analytics"].includes(key) && key.replace('_', ' ')}
+                        </span>
                       </li>
                     ))}
                   </ul>
@@ -107,12 +132,12 @@ export function PricingPlans({ initialPlans }: PricingPlansProps) {
   
               <CardFooter>
                 <Button
-                  className="w-full"
+                  className="w-full h-12 font-bold"
                   variant={isFeatured ? "default" : "outline"}
                   disabled={plan.price === 0 || loading !== null}
                   onClick={() => handleSubscribe(plan.id)}
                 >
-                  {loading === plan.id ? "İşleniyor..." : "Hemen Başla"}
+                  {loading === plan.id ? "Hazırlanıyor..." : "Hemen Paketi Seç"}
                 </Button>
               </CardFooter>
             </Card>
@@ -120,19 +145,36 @@ export function PricingPlans({ initialPlans }: PricingPlansProps) {
         })}
       </div>
 
-      <div className="bg-muted/50 rounded-2xl p-8 flex flex-col md:flex-row items-center justify-between gap-6 border">
-        <div className="space-y-2">
-          <div className="flex items-center gap-2 text-primary font-semibold">
-            <Building2 className="h-5 w-5" />
-            <span>Kurumsal Çözümler</span>
+      <div className="flex flex-col md:flex-row items-center justify-between gap-8 pt-8 border-t">
+        <div className="flex flex-col md:flex-row items-center gap-6">
+          <div className="bg-muted/50 rounded-2xl p-6 flex items-center gap-4 border max-w-sm">
+            <Building2 className="h-6 w-6 text-primary shrink-0" />
+            <div className="space-y-1">
+              <p className="text-sm font-bold">Kurumsal Çözümler</p>
+              <p className="text-xs text-muted-foreground leading-relaxed">
+                Büyük filolar için özel teklif ve entegrasyon desteği alın.
+              </p>
+            </div>
+            <Button variant="link" size="sm" className="px-0 font-bold" asChild>
+              <a href="/contact">İLETİŞİM</a>
+            </Button>
           </div>
-          <p className="text-sm text-muted-foreground">
-            Büyük filolar veya zincir galeriler için özel fiyat teklifi alın.
-          </p>
+
+          <div className="flex items-center gap-4 text-muted-foreground/40">
+            <div className="flex flex-col items-center gap-1">
+              <div className="flex items-center gap-1 opacity-50">
+                <span className="text-[10px] font-bold border rounded px-1">SSL</span>
+                <span className="text-[10px] font-bold border rounded px-1">256-BIT</span>
+              </div>
+              <span className="text-[8px] font-bold uppercase tracking-widest text-center">Güvenli Ödeme Altyapısı</span>
+            </div>
+          </div>
         </div>
-        <Button variant="outline" asChild>
-          <a href="/contact">Bizimle İletişime Geçin</a>
-        </Button>
+
+        <div className="text-right space-y-1">
+          <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Destek & Yardım</p>
+          <p className="text-xs font-medium text-foreground/60">+90 (212) ... .. ..</p>
+        </div>
       </div>
     </div>
   );

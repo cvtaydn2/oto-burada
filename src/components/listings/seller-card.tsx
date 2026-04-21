@@ -60,6 +60,11 @@ export function SellerCard({
               )}>
                 {isProfessional ? trust.professional : trust.individual}
               </span>
+              {trustSummary.score > 85 && (
+                <span className="text-[10px] font-bold uppercase px-2 py-0.5 rounded-lg tracking-widest bg-emerald-50 text-emerald-600 border border-emerald-100 italic">
+                  HIZLI YANIT
+                </span>
+              )}
               {seller?.businessSlug && isProfessional && (
                 <Link 
                   href={`/gallery/${seller.businessSlug}`}

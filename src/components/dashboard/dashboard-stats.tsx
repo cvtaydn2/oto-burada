@@ -13,21 +13,25 @@ export function DashboardStats({ approvedCount, pendingCount, favoriteCount, cre
       label: "Aktif İlanlarım",
       value: approvedCount,
       icon: ClipboardList,
+      hint: "Daha fazla görünürlük",
     },
     {
       label: "Bekleyen Onay",
       value: pendingCount,
       icon: Clock,
+      hint: "İnceleme devam ediyor",
     },
     {
       label: "Favori Kaydı",
       value: favoriteCount,
       icon: Heart,
+      hint: "Doğrulanmış +45% daha fazla",
     },
     {
       label: "Sistem Kredisi",
       value: credits,
       icon: Zap,
+      hint: "Özellikleri hemen kullan",
     },
   ];
 
@@ -39,6 +43,11 @@ export function DashboardStats({ approvedCount, pendingCount, favoriteCount, cre
             <div className="flex size-10 items-center justify-center rounded-xl bg-muted border border-border text-muted-foreground group-hover:text-primary transition-colors">
               <stat.icon size={20} strokeWidth={2.5} />
             </div>
+            {stat.hint && (
+              <span className="text-[8px] font-bold uppercase tracking-widest text-primary/60 bg-primary/5 px-2 py-1 rounded-lg">
+                {stat.hint}
+              </span>
+            )}
           </div>
           
           <div>

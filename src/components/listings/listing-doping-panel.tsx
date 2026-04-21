@@ -136,28 +136,51 @@ export function ListingDopingPanel({ listingId, listingTitle, trustUI }: Listing
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col gap-2">
-        <h3 className="text-xl font-bold flex items-center gap-2">
-          <Rocket className="h-5 w-5 text-primary" />
-          Hızlı Satış Dopingleri
-        </h3>
-        <p className="text-sm text-muted-foreground">
-          <span className="font-semibold text-foreground">{listingTitle}</span> ilanınızı milyonlarca alıcıya ulaştırın.
-        </p>
+      {/* Header & Eligibility Context */}
+      <div className="space-y-4">
+        <div className="flex flex-col gap-2">
+          <h3 className="text-xl font-bold flex items-center gap-2">
+            <Rocket className="h-5 w-5 text-primary" />
+            Hızlı Satış Dopingleri
+          </h3>
+          <p className="text-sm text-muted-foreground">
+            <span className="font-semibold text-foreground">{listingTitle}</span> ilanınızı milyonlarca alıcıya ulaştırın.
+          </p>
+        </div>
+
+        {isRestricted && (
+          <div className="rounded-xl border border-rose-200 bg-rose-50 p-4 animate-in fade-in slide-in-from-top-2">
+            <div className="flex gap-3">
+              <AlertTriangle className="h-5 w-5 text-rose-600 shrink-0" />
+              <div className="space-y-1">
+                <p className="text-sm font-bold text-rose-900">{blockTitle}</p>
+                <p className="text-xs text-rose-700 leading-relaxed">
+                  {blockDesc}
+                </p>
+                <Button variant="link" className="h-auto p-0 text-xs font-bold text-rose-600 hover:text-rose-700" onClick={() => router.push('/dashboard/profile')}>
+                  Durumunu Düzelt {"->"}
+                </Button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
 
-      <div className={cn("grid gap-4", isRestricted && "opacity-50 pointer-events-none")}>
+      {/* Doping Options List */}
+      <div className={cn("grid gap-4 transition-opacity", isRestricted && "opacity-75 cursor-not-allowed")}>
         {DOPING_OPTIONS.map((option) => (
           <div
             key={option.id}
-            className={`group relative flex items-start gap-4 p-4 rounded-2xl border transition-all cursor-pointer ${
+            className={cn(
+              "group relative flex items-start gap-4 p-4 rounded-2xl border transition-all",
+              !isRestricted && "cursor-pointer hover:border-primary/50",
               selected.includes(option.id)
                 ? "border-primary bg-primary/5 shadow-sm"
-                : "border-border hover:border-primary/50"
-            }`}
-            onClick={() => toggleOption(option.id)}
+                : "border-border"
+            )}
+            onClick={() => !isRestricted && toggleOption(option.id)}
           >
-            <div className={`mt-1 p-3 rounded-xl ${option.color} text-white`}>
+            <div className={cn("mt-1 p-3 rounded-xl text-white", option.color)}>
               <option.icon className="h-5 w-5" />
             </div>
             
@@ -175,11 +198,12 @@ export function ListingDopingPanel({ listingId, listingTitle, trustUI }: Listing
               </div>
             </div>
 
-            <div className={`h-6 w-6 rounded-full border-2 flex items-center justify-center transition-colors ${
+            <div className={cn(
+              "h-6 w-6 rounded-full border-2 flex items-center justify-center transition-colors",
               selected.includes(option.id)
                 ? "border-primary bg-primary"
                 : "border-muted group-hover:border-primary/50"
-            }`}>
+            )}>
               {selected.includes(option.id) && (
                 <CheckCircle2 className="h-4 w-4 text-white" />
               )}
@@ -195,19 +219,7 @@ export function ListingDopingPanel({ listingId, listingTitle, trustUI }: Listing
             <span className="font-bold text-lg">{totalPrice}₺</span>
           </div>
 
-          {isRestricted ? (
-            <div className="rounded-xl border border-rose-200 bg-rose-50 p-4 mb-4">
-              <div className="flex gap-3">
-                <AlertTriangle className="h-5 w-5 text-rose-600 shrink-0" />
-                <div className="space-y-1">
-                  <p className="text-sm font-bold text-rose-900">{blockTitle}</p>
-                  <p className="text-xs text-rose-700 leading-relaxed">
-                    {blockDesc}
-                  </p>
-                </div>
-              </div>
-            </div>
-          ) : (
+          {!isRestricted && (
             <Button 
               className="w-full h-12 text-lg font-bold"
               disabled={selected.length === 0 || loading}

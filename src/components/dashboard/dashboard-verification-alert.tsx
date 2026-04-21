@@ -67,5 +67,30 @@ export function DashboardVerificationAlert({ isEmailVerified, profile }: Dashboa
     );
   }
 
+  // Case 4: Trust Upsell (Verified Email but no Identity/Business)
+  const isVerified = profile?.isVerified || profile?.verifiedBusiness;
+  const isPending = profile?.verificationStatus === "pending";
+
+  if (!isVerified && !isPending) {
+    return (
+      <section className="relative mb-8 flex flex-col items-center justify-between gap-6 overflow-hidden rounded-2xl bg-primary/5 p-6 text-primary border border-primary/10 md:flex-row shadow-sm animate-in fade-in slide-in-from-top-4 duration-500">
+        <div className="flex items-center gap-5">
+          <div className="flex size-12 shrink-0 items-center justify-center rounded-2xl bg-primary/10">
+            <ShieldCheck size={24} />
+          </div>
+          <div>
+            <h4 className="text-sm font-bold tracking-tight uppercase tracking-[0.05em]">{trust.benefits.title}</h4>
+            <p className="text-xs font-medium opacity-70 mt-1 max-w-lg leading-relaxed">
+              {trust.benefits.subtitle} <strong>{trust.benefits.motto}</strong>
+            </p>
+          </div>
+        </div>
+        <Button variant="default" size="sm" className="rounded-xl h-11 px-8 font-bold text-[10px] tracking-widest uppercase shadow-lg shadow-primary/20 hover:scale-105 active:scale-95 transition-all" asChild>
+          <Link href="/dashboard/profile">HEMEN BAŞLAT</Link>
+        </Button>
+      </section>
+    );
+  }
+
   return null;
 }

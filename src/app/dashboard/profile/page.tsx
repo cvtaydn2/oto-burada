@@ -140,9 +140,24 @@ export default async function DashboardProfilePage() {
               <ShieldCheck size={18} className="text-primary" />
               <div>
                 <h3 className="text-base font-bold text-foreground">Doğrulama Durumu</h3>
-                <p className="text-xs text-muted-foreground font-medium">E-posta doğrulaması ilan yayınlamak için zorunludur.</p>
+                <p className="text-xs text-muted-foreground font-medium">Güvenli bir alışveriş ortamı için kimlik doğrulaması önerilir.</p>
               </div>
             </div>
+
+            {!profile.isVerified && profile.verificationStatus !== "pending" && (
+              <div className="mb-6 rounded-xl bg-primary/5 p-4 border border-primary/10">
+                <h4 className="text-[10px] font-bold text-primary uppercase tracking-widest mb-3">Doğrulamanın Avantajları</h4>
+                <ul className="space-y-2">
+                  {trust.benefits.list.map((item, idx) => (
+                    <li key={idx} className="flex items-center gap-2 text-xs font-medium text-foreground/80">
+                      <CheckCircle2 size={12} className="text-primary" />
+                      {item}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+
             <IdentityVerificationForm userId={user.id} isVerified={profile.isVerified} />
           </div>
         </div>

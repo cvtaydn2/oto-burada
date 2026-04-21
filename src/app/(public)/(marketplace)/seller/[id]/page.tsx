@@ -9,10 +9,9 @@ import { SellerRatingInfo } from "@/components/profile/seller-rating-info";
 import { getMarketplaceSeller, getPublicMarketplaceListings } from "@/services/listings/marketplace-listings";
 import { getSellerTrustSummary } from "@/services/profile/profile-trust";
 import { getSellerRatingSummary, getSellerReviews } from "@/services/profile/seller-reviews";
-import { getProfileRestrictionState } from "@/services/profile/profile-restrictions";
-import type { Listing } from "@/types";
 import { getSellerTrustUI } from "@/lib/utils/trust-ui";
 import { cn } from "@/lib/utils";
+import { type Listing } from "@/types";
 
 
 interface SellerProfilePageProps {

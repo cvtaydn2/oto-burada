@@ -1,11 +1,8 @@
-import { ShieldCheck, MessageSquare, Phone, Store, Star, CalendarDays } from "lucide-react";
-import { trust } from "@/lib/constants/ui-strings";
+import { ShieldCheck, Store, Star, CalendarDays } from "lucide-react";
 import { getSellerTrustUI } from "@/lib/utils/trust-ui";
-import { Button } from "@/components/ui/button";
 import { Panel } from "@/components/shared/design-system/Panel";
 import { getSellerRatingSummary } from "@/services/profile/seller-reviews";
 import { getMemberSinceYear, getMembershipYears } from "@/lib/utils/listing-utils";
-import { getProfileRestrictionState } from "@/services/profile/profile-restrictions";
 import type { Listing, Profile } from "@/types";
 import type { User } from "@supabase/supabase-js";
 import { ContactActions } from "@/components/listings/contact-actions";
@@ -26,7 +23,7 @@ export async function ListingSellerSidebar({
   const memberSince = getMemberSinceYear(seller?.createdAt ?? null);
   const membershipYears = getMembershipYears(memberSince);
   const isOwner = currentUser?.id === listing.sellerId;
-  const { label, isTrusted, tone, isContactable } = getSellerTrustUI(seller);
+  const { label, isTrusted, tone } = getSellerTrustUI(seller);
 
   return (
     <div className="w-full lg:w-[400px] space-y-10 shrink-0">

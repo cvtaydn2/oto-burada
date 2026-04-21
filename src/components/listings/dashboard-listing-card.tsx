@@ -138,12 +138,25 @@ export function DashboardListingCard({
             <span className="text-[10px] font-bold text-primary/40 uppercase">TL</span>
           </div>
 
-          <div className="mt-2 flex items-center gap-3 text-[10px] text-muted-foreground/60 font-bold uppercase tracking-[0.1em]">
-            <span>{listing.year}</span>
-            <span className="w-1 h-1 rounded-full bg-border" />
-            <span>{formatNumber(listing.mileage)} KM</span>
-            <span className="w-1 h-1 rounded-full bg-border" />
-            <span className="truncate">{listing.city}</span>
+          <div className="mt-2 flex items-center justify-between gap-3 overflow-hidden">
+            <div className="flex items-center gap-3 text-[10px] text-muted-foreground/60 font-bold uppercase tracking-[0.1em]">
+              <span>{listing.year}</span>
+              <span className="w-1 h-1 rounded-full bg-border" />
+              <span>{formatNumber(listing.mileage)} KM</span>
+              <span className="w-1 h-1 rounded-full bg-border" />
+              <span className="truncate">{listing.city}</span>
+            </div>
+
+            {/* Contextual Funnel Nudge */}
+            {listing.status === "approved" && !getSellerTrustUI(listing.seller).isTrusted && (
+              <Link 
+                href="/dashboard/profile"
+                className="hidden md:flex items-center gap-2 px-3 py-1.5 rounded-full bg-amber-500/10 border border-amber-500/20 text-amber-600 hover:bg-amber-500 hover:text-white transition-all animate-pulse"
+              >
+                <div className="size-1.5 rounded-full bg-amber-500" />
+                <span className="text-[9px] font-bold uppercase tracking-widest leading-none">Güveni Artır</span>
+              </Link>
+            )}
           </div>
         </div>
 
@@ -173,30 +186,49 @@ export function DashboardListingCard({
             </button>
           ))}
 
-          {isApproved && (
-            <Dialog>
-              <DialogTrigger asChild>
-                <button type="button" className="flex items-center justify-center size-10 rounded-xl bg-blue-50 text-blue-600 hover:bg-blue-600 hover:text-white transition-all border border-blue-100 shadow-sm" title="Doping Uygula">
-                  <Rocket className="size-4" />
-                </button>
-              </DialogTrigger>
-              <DialogContent className="sm:max-w-xl rounded-3xl border-none shadow-2xl p-0 overflow-hidden">
-                <div className="p-8">
-                  <DialogHeader className="mb-6">
-                    <DialogTitle className="text-3xl font-bold tracking-tight">İlanını <span className="text-primary">Öne Çıkar</span></DialogTitle>
-                    <DialogDescription className="text-sm font-medium text-muted-foreground mt-2">
-                       {listing.title} ilanınız için doping paketi seçerek satışı hızlandırın.
-                    </DialogDescription>
-                  </DialogHeader>
-                  <ListingDopingPanel 
-                    listingId={listing.id} 
-                    listingTitle={listing.title} 
-                    trustUI={getSellerTrustUI(listing.seller)}
-                  />
-                </div>
-              </DialogContent>
-            </Dialog>
-          )}
+          {isApproved && (() => {
+            const trustUI = getSellerTrustUI(listing.seller);
+            const isEligible = trustUI.isPremiumVisible;
+
+            return (
+              <Dialog>
+                <DialogTrigger asChild>
+                  <button 
+                    type="button" 
+                    className={cn(
+                      "flex items-center justify-center size-10 rounded-xl transition-all border shadow-sm",
+                      isEligible 
+                        ? "bg-blue-50 text-blue-600 hover:bg-blue-600 hover:text-white border-blue-100" 
+                        : "bg-amber-50 text-amber-600 border-amber-100 opacity-80"
+                    )} 
+                    title={isEligible ? "Doping Uygula" : "Güven Skoru Gerekli"}
+                  >
+                    <Rocket className="size-4" />
+                  </button>
+                </DialogTrigger>
+                <DialogContent className="sm:max-w-xl rounded-3xl border-none shadow-2xl p-0 overflow-hidden">
+                  <div className="p-8">
+                    <DialogHeader className="mb-6">
+                      <DialogTitle className="text-3xl font-bold tracking-tight">
+                        {isEligible ? "İlanını " : "Premium "}
+                        <span className="text-primary">{isEligible ? "Öne Çıkar" : "İçin Doğrulanın"}</span>
+                      </DialogTitle>
+                      <DialogDescription className="text-sm font-medium text-muted-foreground mt-2">
+                         {isEligible 
+                           ? `${listing.title} ilanınız için doping paketi seçerek satışı hızlandırın.` 
+                           : "Doping ve öne çıkarma özelliklerini kullanabilmek için hesabınızı doğrulamanız gerekmektedir."}
+                      </DialogDescription>
+                    </DialogHeader>
+                    <ListingDopingPanel 
+                      listingId={listing.id} 
+                      listingTitle={listing.title} 
+                      trustUI={trustUI}
+                    />
+                  </div>
+                </DialogContent>
+              </Dialog>
+            );
+          })()}
 
           <button 
             type="button" 

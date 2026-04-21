@@ -8,7 +8,36 @@ interface DashboardProfessionalCardProps {
 }
 
 export function DashboardProfessionalCard({ businessName, businessSlug, verifiedBusiness }: DashboardProfessionalCardProps) {
-  if (!businessSlug || !verifiedBusiness) return null;
+  if (!businessSlug || !verifiedBusiness) {
+    return (
+      <section className="overflow-hidden rounded-2xl bg-slate-900 border border-slate-800 p-6 lg:p-10 shadow-xl relative group mb-8 text-white">
+        <div className="relative flex flex-col lg:flex-row lg:items-center justify-between gap-8">
+          <div className="space-y-4">
+            <div className="inline-flex items-center gap-2 rounded-xl bg-white/10 px-3 py-1 text-[10px] font-bold uppercase tracking-widest text-white/60 border border-white/10">
+              <Zap size={12} className="text-amber-400" />
+              Kurumsal Paketleri Keşfet
+            </div>
+            <div>
+              <h2 className="text-2xl font-bold tracking-tight">
+                Kendi Galerini Aç <span className="text-amber-400/40 font-medium ml-2">Premium</span>
+              </h2>
+              <p className="text-sm font-medium text-slate-400 max-w-lg mt-2 leading-relaxed">
+                Kurumsal üye olarak sınırsız ilan yayınlayabilir, XML entegrasyonu kullanabilir ve kendi showroom sayfanıza sahip olabilirsiniz.
+              </p>
+            </div>
+          </div>
+          
+          <Link
+            href="/dashboard/profile/corporate"
+            className="flex h-14 w-full sm:w-auto items-center justify-center gap-2 rounded-xl bg-white px-10 text-[10px] font-bold uppercase tracking-widest text-slate-900 shadow-xl hover:bg-slate-100 transition-all active:scale-95"
+          >
+            KURUMSAL&apos;A GEÇ
+            <ChevronRight size={14} strokeWidth={3} />
+          </Link>
+        </div>
+      </section>
+    );
+  }
 
   const items = [
     { label: "Durum", value: "Aktif", icon: Eye, sub: "İstatistikler yükleniyor" },

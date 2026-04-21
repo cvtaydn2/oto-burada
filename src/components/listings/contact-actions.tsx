@@ -1,8 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { Phone, MessageCircle, ShieldAlert, AlertTriangle, Loader2 } from "lucide-react";
 import { usePostHog } from "posthog-js/react";
+import { MessageCircle, AlertTriangle, Loader2, Phone, ShieldAlert } from "lucide-react";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -43,7 +43,7 @@ export function ContactActions({ listingId, listingSlug, sellerId, seller, curre
   const [isChatting, setIsChatting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const { isContactable } = getSellerTrustUI(seller);
+  const { isContactable, isTrusted } = getSellerTrustUI(seller);
 
   // Seller should not see contact actions on their own listing
   const isOwnListing = Boolean(currentUserId && currentUserId === sellerId);
@@ -146,6 +146,16 @@ export function ContactActions({ listingId, listingSlug, sellerId, seller, curre
 
   return (
     <div className="space-y-3">
+      {/* Trust Signal Reassurance */}
+      {isTrusted && !isRevealed && (
+        <div className="flex items-center gap-2 mb-2 p-3 rounded-xl bg-emerald-50/50 border border-emerald-100/50">
+          <div className="size-2 rounded-full bg-emerald-500 animate-pulse" />
+          <p className="text-[10px] font-bold text-emerald-700 uppercase tracking-widest">
+            Güvenilir Satıcı Bağlantısı Aktif
+          </p>
+        </div>
+      )}
+
       {/* Phone Number Reveal */}
       <div className="relative">
         {!isRevealed ? (
