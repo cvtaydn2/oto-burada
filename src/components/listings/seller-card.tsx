@@ -51,11 +51,11 @@ export function SellerCard({
             <div className="flex items-center gap-3">
               <span className={cn(
                 "text-[10px] font-bold uppercase px-2 py-0.5 rounded-lg tracking-widest italic",
-                seller?.userType === "professional" ? "bg-primary/10 text-primary" : "bg-muted text-muted-foreground"
+                (seller?.userType === "professional" && !seller?.isBanned) ? "bg-primary/10 text-primary" : "bg-muted text-muted-foreground"
               )}>
-                {seller?.userType === "professional" ? "Kurumsal Galeri" : "Bireysel"}
+                {(seller?.userType === "professional" && !seller?.isBanned) ? "Kurumsal Galeri" : "Bireysel"}
               </span>
-              {seller?.businessSlug && (
+              {seller?.businessSlug && !seller?.isBanned && (
                 <Link 
                   href={`/gallery/${seller.businessSlug}`}
                   className="text-[10px] font-bold uppercase text-primary hover:underline italic tracking-widest"

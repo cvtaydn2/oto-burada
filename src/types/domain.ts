@@ -22,7 +22,9 @@ export type ReportStatus = (typeof reportStatuses)[number];
 export type NotificationType = (typeof notificationTypes)[number];
 export type ModerationTargetType = (typeof moderationTargetTypes)[number];
 export type ModerationAction = (typeof moderationActions)[number];
+export type VerificationStatus = 'none' | 'pending' | 'approved' | 'rejected';
 export type ListingSortOption = (typeof listingSortOptions)[number];
+
 export type ExpertInspectionGrade = (typeof expertInspectionGrades)[number];
 export type ExpertInspectionStatus = (typeof expertInspectionStatuses)[number];
 
@@ -58,6 +60,12 @@ export interface Profile {
   websiteUrl?: string | null;
   verifiedBusiness?: boolean;
   businessSlug?: string | null;
+
+  // Verification Workflow
+  verificationStatus?: VerificationStatus;
+  verificationRequestedAt?: string | null;
+  verificationFeedback?: string | null;
+
   
   createdAt: string;
   updatedAt: string;

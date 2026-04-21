@@ -141,11 +141,11 @@ export async function updateCorporateProfileAction(
   const admin = createSupabaseAdminClient();
   const { data: existingProfile } = await admin
     .from("profiles")
-    .select("verified_business")
+    .select("verification_status, is_banned")
     .eq("id", user.id)
-    .maybeSingle<{ verified_business: boolean | null }>();
+    .maybeSingle<{ verification_status: string | null; is_banned: boolean | null }>();
 
-  const canActAsBusiness = existingProfile?.verified_business === true;
+  const canActAsBusiness = existingProfile?.verification_status === 'approved' && !existingProfile?.is_banned;
 
   // Update metadata for quick access
   await supabase.auth.updateUser({

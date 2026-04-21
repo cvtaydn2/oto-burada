@@ -28,6 +28,9 @@ interface ProfileRow {
   updated_at: string;
   verified_business: boolean | null;
   website_url: string | null;
+  verification_status: Profile["verificationStatus"];
+  verification_requested_at: string | null;
+  verification_feedback: string | null;
 }
 
 function getVerificationState(user: User | null | undefined) {
@@ -66,6 +69,10 @@ function mapProfileRow(row: ProfileRow, authUser?: User | null) {
     websiteUrl: row.website_url,
     verifiedBusiness: row.verified_business ?? false,
     businessSlug: row.business_slug,
+    verificationStatus: row.verification_status || 'none',
+    verificationRequestedAt: row.verification_requested_at,
+    verificationFeedback: row.verification_feedback,
+    balanceCredits: row.balance_credits || 0,
     updatedAt: row.updated_at,
   });
 
@@ -73,16 +80,17 @@ function mapProfileRow(row: ProfileRow, authUser?: User | null) {
     return parsed.data;
   }
 
+  // Fallback object must strictly follow profileSchema shape for reliable type inference
   return {
     id: row.id,
     fullName: row.full_name || "Kullanıcı",
     phone: row.phone || "",
-    city: "",
+    city: row.city || "",
     avatarUrl: row.avatar_url,
     emailVerified: verificationState.emailVerified,
     role: row.role || "user",
-    isVerified: row.is_verified || false,
-    isBanned: row.is_banned || false,
+    isVerified: row.is_verified ?? false,
+    isBanned: row.is_banned ?? false,
     businessName: row.business_name,
     businessAddress: row.business_address,
     businessLogoUrl: row.business_logo_url,
@@ -90,8 +98,12 @@ function mapProfileRow(row: ProfileRow, authUser?: User | null) {
     taxId: row.tax_id,
     taxOffice: row.tax_office,
     websiteUrl: row.website_url,
-    verifiedBusiness: row.verified_business || false,
+    verifiedBusiness: row.verified_business ?? false,
     businessSlug: row.business_slug,
+    verificationStatus: (row.verification_status as any) || 'none',
+    verificationRequestedAt: row.verification_requested_at,
+    verificationFeedback: row.verification_feedback,
+    balanceCredits: row.balance_credits || 0,
     createdAt: row.created_at,
     updatedAt: row.updated_at,
   };
@@ -244,7 +256,7 @@ export async function getStoredProfileById(profileId: string) {
   const admin = createSupabaseAdminClient();
   const { data, error } = await admin
     .from("profiles")
-    .select("id, full_name, phone, city, avatar_url, role, user_type, balance_credits, is_verified, is_banned, business_name, business_address, business_logo_url, business_description, tax_id, tax_office, website_url, verified_business, business_slug, created_at, updated_at")
+    .select("id, full_name, phone, city, avatar_url, role, user_type, balance_credits, is_verified, is_banned, business_name, business_address, business_logo_url, business_description, tax_id, tax_office, website_url, verified_business, business_slug, verification_status, verification_requested_at, verification_feedback, created_at, updated_at")
     .eq("id", profileId)
     .maybeSingle<ProfileRow>();
 
@@ -270,7 +282,7 @@ export async function getUserProfile(userId: string) {
   const supabase = await createSupabaseServerClient();
   const { data, error } = await supabase
     .from("profiles")
-    .select("id, full_name, phone, city, avatar_url, role, user_type, balance_credits, is_verified, is_banned, business_name, business_address, business_logo_url, business_description, tax_id, tax_office, website_url, verified_business, business_slug, created_at, updated_at")
+    .select("id, full_name, phone, city, avatar_url, role, user_type, balance_credits, is_verified, is_banned, business_name, business_address, business_logo_url, business_description, tax_id, tax_office, website_url, verified_business, business_slug, verification_status, verification_requested_at, verification_feedback, created_at, updated_at")
     .eq("id", userId)
     .maybeSingle<ProfileRow>();
 
@@ -398,5 +410,74 @@ export async function isUserBanned(userId: string): Promise<boolean> {
     return false;
   }
 
+
   return data.is_banned === true;
+}
+
+/**
+ * Seller triggers verification request.
+ * Moves state to 'pending' and stores timestamp.
+ */
+export async function requestVerification(userId: string): Promise<{ success: boolean; error?: string }> {
+  const supabase = await createSupabaseServerClient();
+  
+  // 1. Check current status
+  const { data: profile, error: fetchError } = await supabase
+    .from("profiles")
+    .select("verification_status, is_banned")
+    .eq("id", userId)
+    .single();
+
+  if (fetchError || !profile) {
+    return { success: false, error: "Profil bulunamadı." };
+  }
+
+  if (profile.is_banned) {
+    return { success: false, error: "Kısıtlanmış kullanıcılar onay talebinde bulunamaz." };
+  }
+
+  if (profile.verification_status === "pending") {
+    return { success: false, error: "Zaten bekleyen bir onay talebiniz bulunmaktadır." };
+  }
+
+  if (profile.verification_status === "approved") {
+    return { success: false, error: "Hesabınız zaten onaylıdır." };
+  }
+
+  // 2. Cooldown check: prevent spam if rejected less than 24h ago
+  if (profile.verification_status === "rejected") {
+    const { data: lastAction } = await supabase
+      .from("admin_actions")
+      .select("created_at")
+      .eq("target_id", userId)
+      .eq("action", "reject")
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .single();
+
+    if (lastAction) {
+      const lastUpdate = new Date(lastAction.created_at).getTime();
+      const now = Date.now();
+      const twentyFourHours = 24 * 60 * 60 * 1000;
+      if (now - lastUpdate < twentyFourHours) {
+        return { success: false, error: "Ret kararından sonra tekrar başvurmak için 24 saat beklemeniz gerekmektedir." };
+      }
+    }
+  }
+
+  // 3. Update to pending
+  const { error: updateError } = await supabase
+    .from("profiles")
+    .update({
+      verification_status: "pending",
+      verification_requested_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    })
+    .eq("id", userId);
+
+  if (updateError) {
+    return { success: false, error: updateError.message };
+  }
+
+  return { success: true };
 }

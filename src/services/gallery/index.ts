@@ -11,7 +11,8 @@ export async function getGalleryBySlug(slug: string) {
     .select("id, full_name, phone, city, avatar_url, role, user_type, is_verified, is_banned, ban_reason, business_name, business_logo_url, business_slug, business_description, website_url, verified_business, created_at, updated_at")
     .eq("business_slug", slug)
     .eq("user_type", "professional")
-    .eq("verified_business", true)
+    .eq("verification_status", "approved")
+    .eq("is_banned", false)
     .single()
 
   if (error || !profile) return null

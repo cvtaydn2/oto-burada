@@ -1,5 +1,5 @@
 import type { Profile } from "@/types";
-import { getProfileRestrictionState } from "@/services/profile/profile-restrictions";
+import { getProfileRestrictionState, isProfileTrustedForBadges } from "@/services/profile/profile-restrictions";
 
 interface SellerTrustSummary {
   badgeLabel: string | null;
@@ -28,7 +28,7 @@ export function calculateTrustScore(seller: Partial<Profile> | null): number {
   else if (accountAgeMonths >= 6) score += 14;
   else if (accountAgeMonths >= 1) score += 8;
 
-  if (seller.verifiedBusiness) {
+  if (seller.verificationStatus === "approved") {
     score += 35;
   } else if (seller.isVerified) {
     score += 20;
@@ -74,6 +74,7 @@ export function getSellerTrustSummary(
 
   const score = calculateTrustScore(seller);
   const accountAgeMonths = getAccountAgeMonths(seller.createdAt);
+  const isTrusted = isProfileTrustedForBadges(seller);
 
   if (accountAgeMonths >= 12) {
     signals.push(`${Math.floor(accountAgeMonths / 12)}+ yıl hesap geçmişi`);
@@ -83,19 +84,27 @@ export function getSellerTrustSummary(
     signals.push("Yeni hesap");
   }
 
-  if (seller.verifiedBusiness) {
-    signals.push("İşletme doğrulandı");
-  } else if (seller.isVerified) {
-    signals.push("Kimlik doğrulandı");
-  }
+  // Only show verification signals if TRUSTED
+  if (isTrusted) {
+    if (seller.verificationStatus === "approved") {
+      signals.push("İşletme doğrulandı");
+    } else if (seller.isVerified) {
+      signals.push("Kimlik doğrulandı");
+    }
 
-  if (seller.emailVerified) {
-    signals.push("E-posta onaylı");
+    if (seller.emailVerified) {
+      signals.push("E-posta onaylı");
+    }
   }
 
   let badgeLabel: string | null = null;
-  if (seller.verifiedBusiness && score >= 45) badgeLabel = "Doğrulanmış İşletme";
-  else if (seller.isVerified && seller.emailVerified && score >= 30) badgeLabel = "Doğrulanmış Satıcı";
+  if (isTrusted) {
+    if (seller.verificationStatus === "approved" && score >= 45) {
+      badgeLabel = "Doğrulanmış İşletme";
+    } else if (seller.isVerified && seller.emailVerified && score >= 30) {
+      badgeLabel = "Doğrulanmış Satıcı";
+    }
+  }
 
   if (activeListingCount > 0) {
     signals.push(`${activeListingCount} aktif ilan geçmişi`);
