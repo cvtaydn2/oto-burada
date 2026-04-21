@@ -10,9 +10,10 @@ import { PostHogProvider } from "@/components/providers/posthog-provider";
 
 interface RootProvidersProps extends PropsWithChildren {
   user: User | null;
+  nonce?: string;
 }
 
-export function RootProviders({ children, user }: RootProvidersProps) {
+export function RootProviders({ children, user, nonce }: RootProvidersProps) {
   const [queryClient] = useState(
     () =>
       new QueryClient({
@@ -34,6 +35,7 @@ export function RootProviders({ children, user }: RootProvidersProps) {
       defaultTheme="light"
       enableSystem
       disableTransitionOnChange
+      nonce={nonce}
     >
       <QueryClientProvider client={queryClient}>
         <AuthProvider initialUser={user}>

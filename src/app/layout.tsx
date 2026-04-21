@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { headers } from "next/headers";
 
 import { RootProviders } from "@/components/providers/root-providers";
 import { CookieConsent } from "@/components/shared/cookie-consent";
@@ -64,6 +65,7 @@ export default async function RootLayout({
   children: React.ReactNode;
 }>) {
   const user = await getCurrentUser();
+  const nonce = (await headers()).get("x-nonce") ?? undefined;
 
   return (
     <html
@@ -77,7 +79,7 @@ export default async function RootLayout({
         {/* Supabase storage is dynamic based on project ID, but we can hint the main pattern if known or just fallback */}
       </head>
       <body className="min-h-full bg-background text-foreground selection:bg-primary/10 selection:text-primary">
-        <RootProviders user={user}>
+        <RootProviders user={user} nonce={nonce}>
           {children}
           <Analytics />
           <SpeedInsights />

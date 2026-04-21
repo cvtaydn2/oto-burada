@@ -1,3 +1,23 @@
+# 2026-04-21 - Production CSP Hardening Follow-up
+
+## Yapılan Değişiklikler
+
+- `src/lib/middleware/headers.ts`: Production CSP script tarafında nonce/strict yapı korunurken, uygulamanın mevcut inline stil kullanımını bozmayacak şekilde `style-src` için minimum gerekli `unsafe-inline` izni eklendi.
+- `src/app/layout.tsx` ve `src/components/providers/root-providers.tsx`: Middleware nonce değeri root layout'tan provider katmanına geçirildi.
+- `src/components/seo/structured-data.tsx`: Tüm JSON-LD script etiketleri request nonce ile render edilecek şekilde güncellendi; production CSP altında bloklanmaları engellendi.
+
+## Doğrulama
+
+- `npm run typecheck` ✅
+- `npm run lint` ✅
+- Production site browser kontrolünde mevcut deploy üzerinde CSP inline script/style hataları gözlendi; bu patch deploy sonrası tekrar doğrulanmalı.
+
+## Sonraki Adım
+
+- Production deploy al.
+- Deploy sonrası `https://www.otoburada.com.tr/` console loglarını tekrar doğrula.
+- Eğer console temizlenirse kalan tek canlı bloklayıcı DB migration olacaktır.
+
 # 2026-04-21 - CSP Dev Relaxation & Schema Snapshot Alignment
 
 ## Yapılan Değişiklikler

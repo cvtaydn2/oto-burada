@@ -25,8 +25,11 @@ export function getSecurityHeaders(nonce: string) {
 
   if (!isProduction) {
     scriptSrc.push("'unsafe-inline'", "'unsafe-eval'");
-    styleSrc.push("'unsafe-inline'");
   }
+
+  // The app currently relies on React style attributes and a few runtime style elements.
+  // Keep script CSP strict, but allow inline styles so the UI does not break under production CSP.
+  styleSrc.push("'unsafe-inline'");
 
   const csp = [
     "default-src 'self'",

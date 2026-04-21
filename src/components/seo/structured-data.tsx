@@ -1,12 +1,18 @@
+import { headers } from "next/headers";
 import { safeJsonLd } from "@/lib/utils/json-ld";
 import type { Listing } from "@/types";
+
+async function getCspNonce() {
+  return (await headers()).get("x-nonce") ?? undefined;
+}
 
 interface ListingStructuredDataProps {
   listings: Listing[];
   url: string;
 }
 
-export function ListingStructuredData({ listings, url }: ListingStructuredDataProps) {
+export async function ListingStructuredData({ listings, url }: ListingStructuredDataProps) {
+  const nonce = await getCspNonce();
   const schema = {
     "@context": "https://schema.org",
     "@type": "ItemList",
@@ -52,6 +58,7 @@ export function ListingStructuredData({ listings, url }: ListingStructuredDataPr
 
   return (
     <script
+      nonce={nonce}
       type="application/ld+json"
       dangerouslySetInnerHTML={{ __html: safeJsonLd(schema) }}
     />
@@ -67,7 +74,8 @@ interface BreadcrumbStructuredDataProps {
   items: BreadcrumbItem[];
 }
 
-export function BreadcrumbStructuredData({ items }: BreadcrumbStructuredDataProps) {
+export async function BreadcrumbStructuredData({ items }: BreadcrumbStructuredDataProps) {
+  const nonce = await getCspNonce();
   const itemListElement = items.map((item, index) => ({
     "@type": "ListItem",
     "position": index + 1,
@@ -83,6 +91,7 @@ export function BreadcrumbStructuredData({ items }: BreadcrumbStructuredDataProp
 
   return (
     <script
+      nonce={nonce}
       type="application/ld+json"
       dangerouslySetInnerHTML={{ __html: safeJsonLd(schema) }}
     />
@@ -96,7 +105,8 @@ interface OrganizationStructuredDataProps {
   description: string;
 }
 
-export function OrganizationStructuredData({ name, url, logo, description }: OrganizationStructuredDataProps) {
+export async function OrganizationStructuredData({ name, url, logo, description }: OrganizationStructuredDataProps) {
+  const nonce = await getCspNonce();
   const schema = {
     "@context": "https://schema.org",
     "@type": "Organization",
@@ -114,6 +124,7 @@ export function OrganizationStructuredData({ name, url, logo, description }: Org
 
   return (
     <script
+      nonce={nonce}
       type="application/ld+json"
       dangerouslySetInnerHTML={{ __html: safeJsonLd(schema) }}
     />
@@ -126,7 +137,8 @@ interface ListingDetailStructuredDataProps {
   sellerName?: string;
 }
 
-export function ListingDetailStructuredData({ listing, url, sellerName }: ListingDetailStructuredDataProps) {
+export async function ListingDetailStructuredData({ listing, url, sellerName }: ListingDetailStructuredDataProps) {
+  const nonce = await getCspNonce();
   const coverImage = listing.images.find(img => img.isCover) ?? listing.images[0];
   const allImageUrls = listing.images.map(img => img.url).filter(Boolean);
 
@@ -202,6 +214,7 @@ export function ListingDetailStructuredData({ listing, url, sellerName }: Listin
 
   return (
     <script
+      nonce={nonce}
       type="application/ld+json"
       dangerouslySetInnerHTML={{ __html: safeJsonLd(schema) }}
     />
@@ -212,7 +225,8 @@ interface WebSiteStructuredDataProps {
   url: string;
 }
 
-export function WebSiteStructuredData({ url }: WebSiteStructuredDataProps) {
+export async function WebSiteStructuredData({ url }: WebSiteStructuredDataProps) {
+  const nonce = await getCspNonce();
   const schema = {
     "@context": "https://schema.org",
     "@type": "WebSite",
@@ -230,6 +244,7 @@ export function WebSiteStructuredData({ url }: WebSiteStructuredDataProps) {
 
   return (
     <script
+      nonce={nonce}
       type="application/ld+json"
       dangerouslySetInnerHTML={{ __html: safeJsonLd(schema) }}
     />
