@@ -280,11 +280,28 @@ export function ModerationCard({
 
            <div className="space-y-4">
              <div className="flex items-center justify-between">
-                <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">MODERASYON NOTU VE KARAR</label>
-                <div className="flex gap-2">
-                   {["Kurallara uygun", "Düşük kalite görsel", "Mükerrer ilan"].map(tag => (
-                     <button key={tag} onClick={() => setNotesByListingId(c => ({...c, [listing.id]: tag}))} className="text-[9px] font-bold uppercase px-2 py-1 rounded bg-muted hover:bg-muted-foreground/10 transition-colors">
-                       {tag}
+                <div className="flex flex-col gap-1">
+                   <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">MODERASYON NOTU VE KARAR</label>
+                   {!notesByListingId[listing.id] && (
+                     <span className="text-[9px] font-bold text-rose-500 animate-pulse">! KARAR İÇİN NOT GEREKLİ OLABİLİR</span>
+                   )}
+                </div>
+                <div className="flex flex-wrap gap-2 justify-end">
+                   {[
+                     { label: "Kurallara uygun", color: "bg-emerald-50 text-emerald-700 border-emerald-100" },
+                     { label: "Düşük kalite görsel", color: "bg-amber-50 text-amber-700 border-amber-100" },
+                     { label: "Mükerrer ilan", color: "bg-rose-50 text-rose-700 border-rose-100" },
+                     { label: "Yanıltıcı fiyat", color: "bg-rose-50 text-rose-700 border-rose-100" }
+                   ].map(tag => (
+                     <button 
+                       key={tag.label} 
+                       onClick={() => setNotesByListingId(c => ({...c, [listing.id]: tag.label}))} 
+                       className={cn(
+                         "text-[9px] font-bold uppercase px-2.5 py-1.5 rounded-lg border transition-all active:scale-95",
+                         notesByListingId[listing.id] === tag.label ? tag.color + " shadow-sm ring-2 ring-current ring-offset-1" : "bg-muted hover:bg-muted-foreground/10"
+                       )}
+                     >
+                       {tag.label}
                      </button>
                    ))}
                 </div>
@@ -293,7 +310,10 @@ export function ModerationCard({
                value={notesByListingId[listing.id] ?? ""}
                onChange={(e) => setNotesByListingId(c => ({ ...c, [listing.id]: e.target.value }))}
                placeholder="Buraya karar notlarınızı ekleyebilirsiniz..."
-               className="w-full min-h-[100px] rounded-2xl border border-border bg-muted/10 p-4 text-sm focus:ring-4 focus:ring-primary/5 outline-none transition-all placeholder:italic"
+               className={cn(
+                 "w-full min-h-[100px] rounded-2xl border bg-muted/10 p-4 text-sm focus:ring-4 focus:ring-primary/5 outline-none transition-all placeholder:italic",
+                 !notesByListingId[listing.id] ? "border-dashed border-muted-foreground/20" : "border-border"
+               )}
              />
            </div>
 

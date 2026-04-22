@@ -98,7 +98,7 @@ export async function POST(request: Request) {
   if (!result.success) {
     const statusCode = result.errorCode === "VALIDATION_ERROR" ? 400 : 403;
     return apiError(
-      (result.errorCode as any) || API_ERROR_CODES.INTERNAL_ERROR, 
+      (result.errorCode as keyof typeof API_ERROR_CODES) || API_ERROR_CODES.INTERNAL_ERROR, 
       result.error || "İlan oluşturulamadı.", 
       statusCode
     );

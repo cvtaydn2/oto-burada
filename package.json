@@ -25,6 +25,7 @@
     "db:seed-references": "node scripts/seed-marketplace-references.mjs",
     "db:verify-demo": "node scripts/verify-supabase-demo.mjs",
     "db:bootstrap-demo": "node scripts/bootstrap-supabase-demo.mjs",
+    "db:gen-types": "supabase gen types typescript --local > src/types/supabase.ts",
     "vercel:pull": "vercel env pull .env.local",
     "vercel:link": "vercel link",
     "deploy:preview": "vercel",
