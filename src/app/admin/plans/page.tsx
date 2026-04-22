@@ -12,7 +12,7 @@ export default async function AdminPlansPage() {
   await requireAdminUser();
 
   const [plans, purchases, stats] = await Promise.all([
-    getPricingPlans(),
+    getPricingPlans(true),
     getPlanPurchases(),
     getPlanStats(),
   ]);

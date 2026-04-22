@@ -1,13 +1,4 @@
-import {
-  Car,
-  CarFront,
-  CheckCircle2,
-  ChevronRight,
-  MapPin,
-  ShieldCheck,
-  Truck,
-  Zap,
-} from "lucide-react";
+import { CarFront, CheckCircle2, ChevronRight, MapPin, ShieldCheck, Zap } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
 
@@ -20,7 +11,6 @@ import { ListingCard } from "@/components/shared/listing-card";
 import { getAppUrl } from "@/lib/seo";
 import { getPublicMarketplaceListings } from "@/services/listings/marketplace-listings";
 import { getLiveMarketplaceReferenceData } from "@/services/reference/live-reference-data";
-import { getListingCountsByCategory } from "@/services/reference/reference-records";
 
 export const revalidate = 60;
 
@@ -44,10 +34,9 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default async function HomePage() {
-  const [listingsResult, references, categoryCounts] = await Promise.all([
+  const [listingsResult, references] = await Promise.all([
     getPublicMarketplaceListings({ limit: 12, sort: "newest" }),
     getLiveMarketplaceReferenceData(),
-    getListingCountsByCategory(),
   ]);
 
   const appUrl = getAppUrl();
@@ -56,14 +45,6 @@ export default async function HomePage() {
   const latestListings = listingsResult.listings.filter((l) => !featuredIds.has(l.id)).slice(0, 8);
   const featuredBrands = references.brands.slice(0, 6);
   const featuredCities = references.cities.slice(0, 6);
-
-  const categoryIcons: Record<string, typeof Car> = {
-    otomobil: CarFront,
-    suv: Car,
-    minivan: Car,
-    ticari: Truck,
-    mototosiklet: CarFront,
-  };
 
   return (
     <div className="flex flex-col min-h-screen bg-background">
@@ -76,42 +57,6 @@ export default async function HomePage() {
 
       <main className="flex-1 w-full">
         <HomeHero cities={references.cities.map((city) => city.city)} />
-
-        {/* Categories Grid */}
-        {categoryCounts.length > 0 && (
-          <section className="max-w-7xl mx-auto px-3 sm:px-4 py-6 sm:py-8">
-            <div className="mb-6 sm:mb-8">
-              <h2 className="text-xl sm:text-2xl font-bold text-foreground">Kategoriler</h2>
-              <p className="text-xs text-muted-foreground mt-1">İhtiyacına uygun kategoriyi seç</p>
-            </div>
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 sm:gap-4">
-              {categoryCounts.map((cat) => {
-                const Icon = categoryIcons[cat.category] || CarFront;
-                return (
-                  <Link
-                    key={cat.category}
-                    href={`/listings?category=${cat.category}`}
-                    prefetch={false}
-                    className="group bg-card border border-border rounded-2xl p-4 sm:p-5 hover:border-primary/50 transition-colors"
-                  >
-                    <div className="flex items-center justify-between mb-3">
-                      <Icon
-                        size={24}
-                        className="text-muted-foreground group-hover:text-primary transition-colors"
-                      />
-                      <span className="text-xs font-bold text-primary">
-                        {cat.count.toLocaleString("tr-TR")}
-                      </span>
-                    </div>
-                    <h3 className="text-sm font-semibold text-foreground capitalize">
-                      {cat.category}
-                    </h3>
-                  </Link>
-                );
-              })}
-            </div>
-          </section>
-        )}
 
         {/* Quick Discovery */}
         <section className="max-w-7xl mx-auto px-3 sm:px-4 md:px-6 py-8 sm:py-10 md:py-12">

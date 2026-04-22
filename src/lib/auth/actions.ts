@@ -8,6 +8,7 @@ import { identifyServerUser, trackServerEvent } from "@/lib/monitoring/posthog-s
 import { getAppUrl } from "@/lib/seo";
 import { hasSupabaseEnv } from "@/lib/supabase/env";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { logger } from "@/lib/utils/logger";
 import { rateLimitProfiles } from "@/lib/utils/rate-limit";
 import { checkRateLimit } from "@/lib/utils/rate-limit-middleware";
 import { loginSchema, registerSchema } from "@/lib/validators";
@@ -17,6 +18,7 @@ export interface AuthActionState {
   success?: string;
   fields?: {
     email?: string;
+    fullName?: string;
   };
 }
 
@@ -139,6 +141,7 @@ export async function registerAction(
 
   const values = {
     email: String(formData.get("email") ?? ""),
+    fullName: String(formData.get("fullName") ?? ""),
     password: String(formData.get("password") ?? ""),
   };
 
@@ -160,9 +163,13 @@ export async function registerAction(
 
   const supabase = await createSupabaseServerClient();
   const { data, error } = await supabase.auth.signUp({
-    ...parsed.data,
+    email: parsed.data.email,
+    password: parsed.data.password,
     options: {
       emailRedirectTo: getEmailRedirectUrl(),
+      data: {
+        full_name: parsed.data.fullName,
+      },
       // Do NOT set role in user_metadata — it is user-editable and cannot be
       // trusted for authorization. Role is managed via app_metadata (admin SDK only)
       // and the profiles.role column (RLS-protected).
@@ -172,7 +179,7 @@ export async function registerAction(
   if (error) {
     return {
       error: "Kayıt oluşturulamadı. Lütfen tekrar dene.",
-      fields: { email: values.email },
+      fields: { email: values.email, fullName: values.fullName },
     };
   }
 
@@ -197,7 +204,7 @@ export async function registerAction(
 
   return {
     success: "Hesabın oluşturuldu. E-posta doğrulaması açıksa gelen kutunu kontrol et.",
-    fields: { email: values.email },
+    fields: { email: values.email, fullName: values.fullName },
   };
 }
 
@@ -217,9 +224,17 @@ export async function forgotPasswordAction(
 
   const supabase = await createSupabaseServerClient();
 
-  await supabase.auth.resetPasswordForEmail(email, {
-    redirectTo: `${getAppUrl()}/auth/update-password`,
+  const { error } = await supabase.auth.resetPasswordForEmail(email, {
+    redirectTo: `${getAppUrl()}/reset-password`,
   });
+
+  if (error) {
+    logger.auth.error("Forgot password email dispatch failed", error, { email });
+    return {
+      error: "İşlem şu anda tamamlanamıyor. Lütfen biraz sonra tekrar dene.",
+      fields: { email },
+    };
+  }
 
   // Güvenlik: hesap var/yok bilgisi verme — her zaman başarı mesajı göster
   return {

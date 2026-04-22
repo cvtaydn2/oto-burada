@@ -14,12 +14,15 @@ export interface PricingPlan {
   is_active: boolean;
 }
 
-export async function getPricingPlans() {
+export async function getPricingPlans(includeInactive = false) {
   const admin = createSupabaseAdminClient();
-  const { data, error } = await admin
-    .from("pricing_plans")
-    .select("*")
-    .order("price", { ascending: true });
+  let query = admin.from("pricing_plans").select("*").order("price", { ascending: true });
+
+  if (!includeInactive) {
+    query = query.eq("is_active", true);
+  }
+
+  const { data, error } = await query;
 
   if (error) {
     logger.admin.error("getPricingPlans query failed", error);

@@ -48,6 +48,12 @@ interface IyzicoWebhookPayload {
   conversationId?: string;
 }
 
+const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+
+function isUuid(value: string | undefined): value is string {
+  return Boolean(value && UUID_PATTERN.test(value));
+}
+
 /**
  * Verify Iyzico webhook signature.
  * Iyzico sends: X-IYZ-SIGNATURE header = HMAC-SHA256(secretKey + token)
@@ -197,6 +203,23 @@ export async function POST(request: Request): Promise<NextResponse> {
       }
     }
 
+    if (isUuid(payload.conversationId)) {
+      const { error: bindError } = await admin
+        .from("payments")
+        .update({ iyzico_token: token })
+        .eq("id", payload.conversationId)
+        .is("iyzico_token", null);
+
+      if (bindError) {
+        await logWebhookAttempt("error", `Token bind failed: ${bindError.message}`);
+        logger.payments.error("Webhook conversation/payment bind failed", bindError, {
+          token,
+          paymentId: payload.conversationId,
+        });
+        return NextResponse.json({ received: true, error: true }, { status: 500 });
+      }
+    }
+
     const { data: result, error: rpcError } = await admin.rpc("process_payment_webhook", {
       p_iyzico_token: token,
       p_status: payload.status,
@@ -206,7 +229,7 @@ export async function POST(request: Request): Promise<NextResponse> {
     if (rpcError) {
       await logWebhookAttempt("error", `RPC Fail: ${rpcError.message}`);
       logger.payments.error("Webhook RPC failed", rpcError, { token });
-      return NextResponse.json({ received: true, error: true });
+      return NextResponse.json({ received: true, error: true }, { status: 500 });
     }
 
     if (result?.idempotent) {
@@ -257,6 +280,6 @@ export async function POST(request: Request): Promise<NextResponse> {
     await logWebhookAttempt("error", `System Error: ${errMsg}`);
     logger.payments.error("Webhook processing unexpected error", err, { token });
 
-    return NextResponse.json({ received: true, error: true });
+    return NextResponse.json({ received: true, error: true }, { status: 500 });
   }
 }

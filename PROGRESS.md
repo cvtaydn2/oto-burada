@@ -1,5 +1,19 @@
 # 2026-04-22 — Hydration Fix & Homepage Brand Badge Correction
 
+## [2026-04-23] - Payment Consistency & Pagination Hardening
+- **Durum:** ✅ TAMAMLANDI
+- **Yapılanlar:**
+  - `purchase-plan` akışında bekleyen ödeme çakışması engellendi; `idempotency_key`, pending lookup ve payment-token bind sonucu zorunlu kontrol eklendi.
+  - Iyzico webhook route’u `conversationId -> payment.id` bağı ile token reconcile edecek şekilde harden edildi; RPC/unexpected hata path’leri artık `500` dönüyor.
+  - `doping-service` akışı pending payment row ile başlatıldı; token bind doğrulaması, fail-closed payment status güncellemeleri ve fulfillment başarısızlığında `failure/cancelled` kompanzasyonu eklendi.
+  - Bozuk cursor tuple mantığı kaldırılarak `getFilteredDatabaseListings` güvenli ve deterministik page-based pagination’a döndürüldü.
+  - `database/schema.snapshot.sql`, `activate_free_pricing_plan` fonksiyonunu içerecek şekilde migration durumu ile hizalandı.
+
+## Doğrulama
+- `npm run typecheck` ✅
+- `npm run lint` ✅ (repo genelinde önceden var olan warning'ler dışında hata yok)
+- `npm run build` ✅
+
 ## [2026-04-22] - Layout Stability & Homepage Brand UI
 - **Durum:** ✅ TAMAMLANDI
 - **Yapılanlar:**

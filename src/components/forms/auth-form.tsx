@@ -124,6 +124,30 @@ export function AuthForm({
               {next ? <input type="hidden" name="next" value={next} /> : null}
 
               <div className="space-y-2">
+                {!isLogin && (
+                  <>
+                    <label
+                      htmlFor="fullName"
+                      className="text-xs font-medium text-muted-foreground ml-1"
+                    >
+                      Ad Soyad
+                    </label>
+                    <input
+                      id="fullName"
+                      type="text"
+                      name="fullName"
+                      defaultValue={state.fields?.fullName ?? ""}
+                      autoComplete="name"
+                      placeholder="Ad Soyad"
+                      required
+                      minLength={3}
+                      className="h-12 w-full rounded-xl border border-input bg-muted/30 px-4 text-sm font-medium text-foreground outline-none transition-all placeholder:text-muted-foreground/50 focus:bg-background focus:border-primary focus:ring-2 focus:ring-primary/10"
+                    />
+                  </>
+                )}
+              </div>
+
+              <div className="space-y-2">
                 <label htmlFor="email" className="text-xs font-medium text-muted-foreground ml-1">
                   E-posta Adresi
                 </label>

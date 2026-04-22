@@ -40,46 +40,77 @@ export async function applyDopingToListing(
   }
 
   const admin = createSupabaseAdminClient();
+  const { data: listing, error: listingError } = await admin
+    .from("listings")
+    .select("id")
+    .eq("id", listingId)
+    .eq("seller_id", userId)
+    .neq("status", "archived")
+    .maybeSingle();
+
+  if (listingError || !listing) {
+    return { success: false, message: "Doping uygulanabilir ilan bulunamadı." };
+  }
 
   // 1. Calculate Total
   const totalAmount = dopingTypes.reduce((sum, type) => sum + DOPING_PRICES[type].price, 0);
+  const durationDays = dopingTypes.includes("highlighted") ? 15 : 7;
+  const idempotencyKey = `doping-init:${userId}:${listingId}:${[...dopingTypes].sort().join(",")}`;
+  const metadata = {
+    type: "doping",
+    listingId,
+    dopingTypes,
+    durationDays,
+  };
+
+  const { data: paymentRecord, error: paymentInsertError } = await admin
+    .from("payments")
+    .insert({
+      user_id: userId,
+      listing_id: listingId,
+      amount: totalAmount,
+      provider: "iyzico",
+      status: "pending",
+      idempotency_key: idempotencyKey,
+      metadata,
+    })
+    .select("id")
+    .single<{ id: string }>();
+
+  if (paymentInsertError || !paymentRecord) {
+    return { success: false, message: "Ödeme kaydı oluşturulamadı." };
+  }
 
   // 2. Process Payment
   const paymentResult = await payment.processPayment({
     amount: totalAmount,
-    orderId: `DOP-${listingId}-${Date.now()}`,
+    orderId: `DOP-${paymentRecord.id}`,
     listingId,
     userId,
+    conversationId: paymentRecord.id,
     buyer,
   });
 
   if (!paymentResult.success) {
+    await admin.from("payments").update({ status: "failure" }).eq("id", paymentRecord.id);
     return { success: false, message: paymentResult.error || "Ödeme işlemi başarısız oldu." };
+  }
+
+  if (paymentResult.transactionId) {
+    const { error: tokenUpdateError, data: updatedPayments } = await admin
+      .from("payments")
+      .update({ iyzico_token: paymentResult.transactionId })
+      .eq("id", paymentRecord.id)
+      .select("id");
+
+    if (tokenUpdateError || !updatedPayments?.length) {
+      await admin.from("payments").update({ status: "failure" }).eq("id", paymentRecord.id);
+      return { success: false, message: "Ödeme kaydı doğrulanamadı." };
+    }
   }
 
   // If 3DS is required (paymentUrl provided), return it for redirect
   if (paymentResult.paymentUrl) {
-    // Create a pending payment record for tracking
-    await admin
-      .from("payments")
-      .insert({
-        user_id: userId,
-        listing_id: listingId,
-        amount: totalAmount,
-        provider: "iyzico",
-        status: "pending",
-        iyzico_token: paymentResult.transactionId,
-        idempotency_key: `doping-${listingId}-${paymentResult.transactionId}`,
-        metadata: {
-          type: "doping",
-          listingId,
-          dopingTypes,
-          durationDays: dopingTypes.includes("highlighted") ? 15 : 7,
-        },
-      })
-      .select("id")
-      .single();
-
     return {
       success: true,
       message: "Ödeme sayfasına yönlendiriliyorsunuz...",
@@ -88,49 +119,36 @@ export async function applyDopingToListing(
     };
   }
 
-  // 3. Direct payment success (no 3DS) - create payment record first
-  const { data: paymentRecord, error: paymentError } = await admin
+  await admin
     .from("payments")
-    .insert({
-      user_id: userId,
-      listing_id: listingId,
-      amount: totalAmount,
-      provider: "iyzico",
+    .update({
       status: "success",
-      iyzico_token: paymentResult.transactionId,
-      idempotency_key: `doping-${listingId}-${paymentResult.transactionId}`,
       processed_at: new Date().toISOString(),
       metadata: {
-        type: "doping",
-        listingId,
-        dopingTypes,
-        durationDays: dopingTypes.includes("highlighted") ? 15 : 7,
-        transaction_id: paymentResult.transactionId,
+        ...metadata,
+        transaction_id: paymentResult.transactionId ?? null,
       },
     })
-    .select("id")
-    .single();
+    .eq("id", paymentRecord.id);
 
-  if (paymentError || !paymentRecord) {
-    return { success: false, message: "Ödeme kaydı oluşturulamadı." };
-  }
-
-  // 4. Apply doping using secure database function
+  // 3. Apply doping using secure database function
   // This function enforces ownership and prevents race conditions
   const { data: dopingResult, error: dopingError } = await admin.rpc("apply_listing_doping", {
     p_listing_id: listingId,
     p_user_id: userId,
     p_doping_types: dopingTypes,
-    p_duration_days: dopingTypes.includes("highlighted") ? 15 : 7,
+    p_duration_days: durationDays,
     p_payment_id: paymentRecord.id,
   });
 
   if (dopingError) {
+    await admin.from("payments").update({ status: "failure" }).eq("id", paymentRecord.id);
     return { success: false, message: "Doping uygulanırken bir hata oluştu." };
   }
 
   // Check if any dopings were actually applied
   if (dopingResult?.applied_count === 0) {
+    await admin.from("payments").update({ status: "cancelled" }).eq("id", paymentRecord.id);
     return {
       success: false,
       message: "Bu doping zaten aktif. Lütfen süre dolmadan tekrar denemeyin.",

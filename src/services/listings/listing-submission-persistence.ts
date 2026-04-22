@@ -286,6 +286,9 @@ export async function updateDatabaseListing(listing: Listing) {
     .single();
 
   if (updateResult.error) {
+    if (updateResult.error.code === "PGRST116") {
+      return { error: "concurrent_update_detected" as const };
+    }
     if (updateResult.error.message.includes("slug_unique") || updateResult.error.code === "23505") {
       return { error: "slug_collision" as const };
     }

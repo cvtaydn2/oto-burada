@@ -196,7 +196,6 @@ export function applyListingFilterPredicates<T>(query: T, filters: ListingFilter
   if (filters.carTrim) q.eq("car_trim", filters.carTrim);
   if (filters.city) q.eq("city", filters.city);
   if (filters.district) q.eq("district", filters.district);
-  if (filters.category) q.eq("category", filters.category);
   if (filters.fuelType) q.eq("fuel_type", filters.fuelType);
   if (filters.transmission) q.eq("transmission", filters.transmission);
   if (filters.minPrice !== undefined) q.gte("price", filters.minPrice);
@@ -340,10 +339,10 @@ export async function getFilteredDatabaseListings(
   const page = filters.page ?? 1;
   const limit = filters.limit ?? 24;
   const sort = filters.sort ?? "newest";
+  const from = (page - 1) * limit;
+  const to = from + limit - 1;
 
   const admin = createSupabaseAdminClient();
-  // const from = (page - 1) * limit; // OFFSET logic removed
-  // const to = from + limit - 1;
 
   // Resolve citySlug to city name if city is not provided
   if (filters.citySlug && !filters.city) {
@@ -364,67 +363,6 @@ export async function getFilteredDatabaseListings(
   dataQuery = dataQuery.eq("profiles.is_banned", false);
 
   dataQuery = applyListingFilterPredicates(dataQuery, { ...filters, page, limit });
-
-  // ── Keyset (Cursor-based) Pagination ──────────────────────────────────────
-  // Cursor encodes the full ordering tuple so pages never produce duplicates/skips.
-  // Every branch ends with `.id` as a deterministic tie-breaker.
-  if (filters.cursor) {
-    try {
-      const cursorData = JSON.parse(Buffer.from(filters.cursor, "base64").toString()) as {
-        id: string;
-        featured: boolean;
-        bumpedAt: string | null;
-        createdAt: string;
-        price: number;
-        mileage: number;
-        year: number;
-      };
-
-      switch (sort) {
-        case "newest":
-          // Full ordering: featured DESC, bumped_at DESC NULLS LAST, created_at DESC, id DESC
-          dataQuery = dataQuery.or(
-            [
-              `featured.lt.${cursorData.featured}`,
-              `and(featured.eq.${cursorData.featured},bumped_at.lt.${cursorData.bumpedAt ?? "null"})`,
-              `and(featured.eq.${cursorData.featured},bumped_at.is.null,created_at.lt.${cursorData.createdAt})`,
-              `and(featured.eq.${cursorData.featured},bumped_at.eq.${cursorData.bumpedAt ?? "null"},created_at.lt.${cursorData.createdAt})`,
-              `and(featured.eq.${cursorData.featured},bumped_at.eq.${cursorData.bumpedAt ?? "null"},created_at.eq.${cursorData.createdAt},id.lt.${cursorData.id})`,
-            ].join(",")
-          );
-          break;
-        case "price_asc":
-          dataQuery = dataQuery.or(
-            `price.gt.${cursorData.price},and(price.eq.${cursorData.price},id.gt.${cursorData.id})`
-          );
-          break;
-        case "price_desc":
-          dataQuery = dataQuery.or(
-            `price.lt.${cursorData.price},and(price.eq.${cursorData.price},id.lt.${cursorData.id})`
-          );
-          break;
-        case "mileage_asc":
-          dataQuery = dataQuery.or(
-            `mileage.gt.${cursorData.mileage},and(mileage.eq.${cursorData.mileage},id.gt.${cursorData.id})`
-          );
-          break;
-        case "year_desc":
-          dataQuery = dataQuery.or(
-            `year.lt.${cursorData.year},and(year.eq.${cursorData.year},id.lt.${cursorData.id})`
-          );
-          break;
-        case "oldest":
-          dataQuery = dataQuery.or(
-            `created_at.gt.${cursorData.createdAt},and(created_at.eq.${cursorData.createdAt},id.gt.${cursorData.id})`
-          );
-          break;
-        default:
-          break;
-      }
-    } catch {
-      logger.db.warn("Invalid cursor provided", { cursor: filters.cursor });
-    }
-  }
 
   // PRIORITY 1: Featured (Paid)
   if (!filters.sort || filters.sort === "newest") {
@@ -479,10 +417,10 @@ export async function getFilteredDatabaseListings(
       break;
   }
 
-  if ("limit" in dataQuery && typeof dataQuery.limit === "function") {
+  if ("range" in dataQuery && typeof dataQuery.range === "function") {
+    dataQuery = dataQuery.range(from, to);
+  } else if ("limit" in dataQuery && typeof dataQuery.limit === "function") {
     dataQuery = dataQuery.limit(limit);
-  } else if ("range" in dataQuery && typeof dataQuery.range === "function") {
-    dataQuery = dataQuery.range(0, limit - 1);
   }
 
   let countQuery = admin
@@ -521,28 +459,11 @@ export async function getFilteredDatabaseListings(
   const listings = dataResult.data ? (dataResult.data as ListingRow[]).map(mapListingRow) : [];
   const totalCount = countResult.count ?? 0;
 
-  // Build the next cursor — encodes the full ordering tuple for all sort modes.
-  let nextCursor: string | undefined;
-  if (listings.length > 0 && listings.length === limit) {
-    const last = listings[listings.length - 1];
-    const cursorData = {
-      id: last.id, // deterministic tie-breaker for all sort modes
-      featured: last.featured,
-      bumpedAt: last.bumpedAt,
-      createdAt: last.createdAt,
-      price: last.price,
-      mileage: last.mileage,
-      year: last.year,
-    };
-    nextCursor = Buffer.from(JSON.stringify(cursorData)).toString("base64");
-  }
-
   return {
     listings,
     total: totalCount,
     page,
     limit,
     hasMore: page * limit < totalCount,
-    nextCursor,
   };
 }

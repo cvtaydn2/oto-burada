@@ -5,6 +5,7 @@ import { API_ERROR_CODES, apiError, apiSuccess } from "@/lib/utils/api-response"
 import { withUserAndCsrf } from "@/lib/utils/api-security";
 import { logger } from "@/lib/utils/logger";
 import { enforceRateLimit, getUserRateLimitKey } from "@/lib/utils/rate-limit-middleware";
+import { getDatabaseListings } from "@/services/listings/listing-submissions";
 import { applyDopingToListing, DopingType } from "@/services/market/doping-service";
 import { getUserProfile } from "@/services/profile/profile-records";
 
@@ -49,6 +50,17 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
   }
 
   try {
+    const listing = (
+      await getDatabaseListings({
+        listingId,
+        sellerId: user.id,
+      })
+    )?.[0];
+
+    if (!listing || listing.status === "archived") {
+      return apiError(API_ERROR_CODES.NOT_FOUND, "Doping uygulanabilir ilan bulunamadı.", 404);
+    }
+
     const profile = await getUserProfile(user.id);
     if (!profile || !profile.fullName || !user.email) {
       return apiError(

@@ -1,3 +1,4 @@
+import { expertDocumentMaxSizeInBytes } from "@/lib/constants/domain";
 import { captureServerError } from "@/lib/monitoring/posthog-server";
 import { registerFileInRegistry, verifyAndUnregisterFile } from "@/lib/storage/registry";
 import { getSupabaseDocumentsStorageEnv, hasSupabaseDocumentsStorageEnv } from "@/lib/supabase/env";
@@ -29,6 +30,7 @@ export async function POST(request: Request) {
     ipRateLimit: rateLimitProfiles.general,
     userRateLimit: rateLimitProfiles.imageUpload,
     rateLimitKey: "documents:upload",
+    maxBodySizeBytes: expertDocumentMaxSizeInBytes,
   });
 
   if (!security.ok) return security.response;

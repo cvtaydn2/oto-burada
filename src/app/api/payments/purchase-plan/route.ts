@@ -21,6 +21,7 @@ const purchaseSchema = z.object({
 
 // 5 purchase attempts per hour per user — prevents abuse
 const PURCHASE_RATE_LIMIT = { limit: 5, windowMs: 60 * 60 * 1000 };
+const PENDING_PAYMENT_WINDOW_MS = 15 * 60 * 1000;
 
 function resolveIdentityNumber(
   providedIdentityNumber: string | undefined,
@@ -146,9 +147,6 @@ export async function POST(req: Request) {
       );
     }
 
-    // Paid plan — create a pending payment record, then initiate Iyzico
-    const orderId = `PLAN-${plan.id.slice(0, 8)}-${user.id.slice(0, 8)}-${Date.now()}`;
-
     // Fetch user profile for Iyzico buyer fields before creating a pending payment row.
     const profile = await getUserProfile(user.id);
     if (!profile || !profile.fullName || !user.email) {
@@ -168,6 +166,36 @@ export async function POST(req: Request) {
       );
     }
 
+    const idempotencyKey = `plan-init:${user.id}:${plan.id}`;
+    const pendingCutoff = new Date(Date.now() - PENDING_PAYMENT_WINDOW_MS).toISOString();
+    const { data: existingPending, error: pendingLookupError } = await admin
+      .from("payments")
+      .select("id")
+      .eq("user_id", user.id)
+      .eq("plan_id", plan.id)
+      .eq("provider", "iyzico")
+      .eq("status", "pending")
+      .eq("idempotency_key", idempotencyKey)
+      .gte("created_at", pendingCutoff)
+      .order("created_at", { ascending: false })
+      .limit(1);
+
+    if (pendingLookupError) {
+      logger.payments.error("Pending payment lookup failed", pendingLookupError, {
+        userId: user.id,
+        planId,
+      });
+      return apiError(API_ERROR_CODES.INTERNAL_ERROR, "Ödeme başlatılamadı.", 500);
+    }
+
+    if ((existingPending ?? []).length > 0) {
+      return apiError(
+        API_ERROR_CODES.CONFLICT,
+        "Bu plan için bekleyen bir ödemeniz var. Lütfen mevcut ödemeyi tamamlayın.",
+        409
+      );
+    }
+
     const { data: paymentRecord, error: insertError } = await admin
       .from("payments")
       .insert({
@@ -184,8 +212,8 @@ export async function POST(req: Request) {
           planId: plan.id,
           planName: plan.name,
           credits: plan.credits,
-          orderId,
         },
+        idempotency_key: idempotencyKey,
       })
       .select("id")
       .single<{ id: string }>();
@@ -197,6 +225,8 @@ export async function POST(req: Request) {
       });
       return apiError(API_ERROR_CODES.INTERNAL_ERROR, "Ödeme kaydı oluşturulamadı.", 500);
     }
+
+    const orderId = `PLAN-${paymentRecord.id}`;
 
     const nameParts = profile.fullName.trim().split(" ");
     const name = nameParts[0] || "User";
@@ -215,6 +245,7 @@ export async function POST(req: Request) {
       orderId,
       listingId: paymentRecord.id, // reuse field for payment record ID
       userId: user.id,
+      conversationId: paymentRecord.id,
       buyer: {
         id: user.id,
         name,
@@ -255,10 +286,21 @@ export async function POST(req: Request) {
 
     // Update record with Iyzico token for webhook idempotency
     if (paymentResult.transactionId) {
-      await admin
+      const { error: tokenUpdateError, data: updatedPayments } = await admin
         .from("payments")
         .update({ iyzico_token: paymentResult.transactionId })
-        .eq("id", paymentRecord.id);
+        .eq("id", paymentRecord.id)
+        .select("id");
+
+      if (tokenUpdateError || !updatedPayments?.length) {
+        logger.payments.error("Payment token bind failed", tokenUpdateError, {
+          userId: user.id,
+          planId,
+          paymentId: paymentRecord.id,
+        });
+        await admin.from("payments").update({ status: "failure" }).eq("id", paymentRecord.id);
+        return apiError(API_ERROR_CODES.INTERNAL_ERROR, "Ödeme başlatılamadı.", 500);
+      }
     }
 
     captureServerEvent(

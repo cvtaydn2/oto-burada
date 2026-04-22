@@ -188,38 +188,6 @@ export async function getLiveMarketplaceReferenceData() {
   }
 }
 
-export async function getListingCountsByCategory() {
-  const supabase = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-  );
-
-  const { data, error } = await supabase
-    .from("listings")
-    .select("category")
-    .eq("status", "approved");
-
-  if (error || !data) return [];
-
-  const counts = data.reduce(
-    (acc, row) => {
-      const cat = row.category || "otomobil";
-      acc[cat] = (acc[cat] || 0) + 1;
-      return acc;
-    },
-    {} as Record<string, number>
-  );
-
-  const categoryOrder = ["otomobil", "suv", "minivan", "ticari", "motosiklet"];
-  return categoryOrder
-    .filter((cat) => counts[cat] > 0)
-    .map((cat) => ({
-      category: cat,
-      slug: cat,
-      count: counts[cat] || 0,
-    }));
-}
-
 /**
  * ADMIN / EDIT METHODS
  */

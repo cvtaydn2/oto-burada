@@ -31,7 +31,6 @@ function PaymentResultContent() {
   } | null>(null);
 
   const token = searchParams.get("token");
-  const statusParam = searchParams.get("status");
 
   useEffect(() => {
     async function verifyPayment() {
@@ -74,8 +73,7 @@ function PaymentResultContent() {
         } else {
           setLoading(false);
           if (!found) {
-            // If still not found, trust the URL param as fallback or show error
-            setStatus(statusParam === "success" ? "success" : "failure");
+            setStatus("failure");
           }
         }
       };
@@ -84,7 +82,7 @@ function PaymentResultContent() {
     }
 
     verifyPayment();
-  }, [token, statusParam, router]);
+  }, [token, router]);
 
   if (loading) {
     return (
