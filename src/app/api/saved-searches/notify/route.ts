@@ -29,17 +29,12 @@ import { createSearchParamsFromListingFilters } from "@/services/listings/listin
 import { normalizeSavedSearchFilters } from "@/services/saved-searches/saved-search-utils";
 import { logger } from "@/lib/utils/logger";
 import type { ListingFilters } from "@/types";
-import { Redis } from "@upstash/redis";
-import { createSupabaseServerClient } from "@/lib/supabase/server";
 
 export const dynamic = "force-dynamic";
 
 /**
  * Gets the application URL from environment variables.
  * Fails closed in production if NEXT_PUBLIC_APP_URL is not set.
- * 
- * @throws Error in production if NEXT_PUBLIC_APP_URL is missing
- * @returns Application URL
  */
 function getAppUrl(): string {
   const url = process.env.NEXT_PUBLIC_APP_URL;
@@ -48,22 +43,10 @@ function getAppUrl(): string {
     if (process.env.NODE_ENV === "production") {
       throw new Error("NEXT_PUBLIC_APP_URL must be set in production");
     }
-    // Development fallback
     return "http://localhost:3000";
   }
   
   return url;
-}
-
-// Upstash Redis instance (lazy loaded conditionally)
-function getRedisClient() {
-  if (!process.env.UPSTASH_REDIS_REST_URL || !process.env.UPSTASH_REDIS_REST_TOKEN) {
-    return null;
-  }
-  return new Redis({
-    url: process.env.UPSTASH_REDIS_REST_URL,
-    token: process.env.UPSTASH_REDIS_REST_TOKEN,
-  });
 }
 
 // How far back to look for new listings (24 hours)
@@ -71,139 +54,24 @@ const LOOKBACK_HOURS = 24;
 
 function verifyCronSecret(request: Request): boolean {
   const cronSecret = process.env.CRON_SECRET;
-  // CRON_SECRET must always be set in production — fail closed if missing
   if (!cronSecret) return false;
   const authHeader = request.headers.get("authorization");
   return authHeader === `Bearer ${cronSecret}`;
 }
 
-// Vercel Cron sends GET requests — this is the primary handler for Emails
-// BUT this is also the endpoint for SSE Realtime connection from clients!
-// GET handler: Routes to SSE or Cron based on Accept header
+/**
+ * Main handler for Vercel Cron.
+ * Triggers email notifications for saved searches with new matches.
+ */
 export async function GET(request: Request) {
-  const isEventStream = request.headers.get("accept") === "text/event-stream";
-  
-  if (isEventStream) {
-    return handleSSERequest(request);
-  }
-  
-  return handleCronRequest(request);
-}
-
-// Internal trigger for publishing a notification or triggering cron
-export async function POST(request: Request) {
-  try {
-    const contentType = request.headers.get("content-type");
-    if (contentType?.includes("application/json")) {
-      const payload = await request.json();
-      if (payload.action === "publish_notification" && payload.userId && payload.message) {
-        // Publish to Upstash Redis directly if requested
-        const redis = getRedisClient();
-        if (redis) {
-          const key = `notifications:${payload.userId}`;
-          // Add to a sorted set with timestamp as score
-          await redis.zadd(key, { score: Date.now(), member: JSON.stringify({
-            id: Date.now().toString(),
-            message: payload.message,
-            title: payload.title || "Yeni Bildirim",
-            link: payload.link,
-            createdAt: new Date().toISOString(),
-          }) });
-          return apiSuccess({ published: true });
-        }
-        return apiError(API_ERROR_CODES.SERVICE_UNAVAILABLE, "Redis yapılandırılmamış");
-      }
-    }
-  } catch {
-    // Fallback to cron
-  }
   return handleCronRequest(request);
 }
 
 /**
- * Handles SSE streams by polling Upstash Redis for user notifications.
- * Implements strict security and resource cleanup.
+ * Support POST for manual triggers (e.g., from admin panel)
  */
-async function handleSSERequest(request: Request) {
-  const supabase = await createSupabaseServerClient();
-  const { data: userData } = await supabase.auth.getUser();
-  const userId = userData?.user?.id;
-
-  if (!userId) {
-    return new Response("Unauthorized", { status: 401 });
-  }
-
-  const redis = getRedisClient();
-  if (!redis) {
-    logger.notifications.error("Redis client unavailable for SSE");
-    return new Response("Service Unavailable", { status: 503 });
-  }
-
-  const encoder = new TextEncoder();
-  let intervalId: NodeJS.Timeout | null = null;
-
-  const stream = new ReadableStream({
-    async start(controller) {
-      const send = (data: string) => {
-        try {
-          controller.enqueue(encoder.encode(data));
-        } catch (e) {
-          // Stream already closed
-        }
-      };
-
-      send('data: {"type":"connected"}\n\n');
-
-      const key = `notifications:${userId}`;
-      let lastCheck = Date.now();
-
-      const poll = async () => {
-        try {
-          const newNotifications = await redis.zrange(key, lastCheck + 1, "+inf", { 
-            byScore: true 
-          });
-
-          if (newNotifications && newNotifications.length > 0) {
-            for (const notice of newNotifications) {
-              send(`data: ${notice}\n\n`);
-            }
-            lastCheck = Date.now();
-          }
-          
-          // Keep-alive
-          send(':\n\n');
-        } catch (error) {
-          logger.notifications.error("SSE Polling Error", error);
-        }
-      };
-
-      intervalId = setInterval(poll, 5000);
-
-      // Event listener for abort
-      const onAbort = () => {
-        if (intervalId) clearInterval(intervalId);
-        try { controller.close(); } catch (e) {}
-      };
-
-      request.signal.addEventListener("abort", onAbort);
-    },
-    cancel() {
-      if (intervalId) clearInterval(intervalId);
-    }
-  });
-
-  // Tighter headers for authenticated stream
-  const appUrl = getAppUrl();
-  return new Response(stream, {
-    headers: {
-      "Content-Type": "text/event-stream",
-      "Cache-Control": "no-cache, no-transform, no-store",
-      "Connection": "keep-alive",
-      "X-Content-Type-Options": "nosniff",
-      "Access-Control-Allow-Origin": appUrl,
-      "Access-Control-Allow-Credentials": "true",
-    },
-  });
+export async function POST(request: Request) {
+  return handleCronRequest(request);
 }
 
 async function handleCronRequest(request: Request) {

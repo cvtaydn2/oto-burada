@@ -14,9 +14,21 @@ export function useNotifications(userId?: string) {
     queryKey: ["notifications", userId],
     queryFn: async () => {
       if (!userId) return [];
-      const response = await fetch("/api/notifications");
-      const payload = await response.json();
-      return payload.success ? payload.data?.notifications ?? [] : [];
+      try {
+        const response = await fetch("/api/notifications");
+        if (!response.ok) {
+          throw new Error(`Notification fetch failed with status: ${response.status}`);
+        }
+        const payload = await response.json();
+        if (!payload || typeof payload !== "object") {
+          throw new Error("Invalid notification payload format");
+        }
+        return payload.success ? payload.data?.notifications ?? [] : [];
+      } catch (err) {
+        // Fallback to empty list but log the issue for observability
+        console.warn("[NOTIFICATIONS] Failed to load notifications:", err);
+        return [];
+      }
     },
     enabled: !!userId,
   });

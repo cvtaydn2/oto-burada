@@ -19,7 +19,8 @@ export function NotificationDropdown({ userId }: { userId?: string }) {
   // Mark as read mutation
   const markReadMutation = useMutation({
     mutationFn: async (id: string) => {
-      await fetch(`/api/notifications/${id}`, { method: "PATCH" });
+      const response = await fetch(`/api/notifications/${id}`, { method: "PATCH" });
+      if (!response.ok) throw new Error("Bildirim okundu olarak isaretlenemedi");
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["notifications", userId] });
@@ -29,7 +30,8 @@ export function NotificationDropdown({ userId }: { userId?: string }) {
   // Mark all as read mutation
   const markAllReadMutation = useMutation({
     mutationFn: async () => {
-      await fetch("/api/notifications", { method: "PATCH" });
+      const response = await fetch("/api/notifications", { method: "PATCH" });
+      if (!response.ok) throw new Error("Tum bildirimler okundu olarak isaretlenemedi");
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["notifications", userId] });
@@ -56,7 +58,7 @@ export function NotificationDropdown({ userId }: { userId?: string }) {
       <DropdownMenu.Portal>
         <DropdownMenu.Content
           className={cn(
-            "z-50 min-w-[320px] max-w-[380px] rounded-2xl border border-border bg-background p-1.5 shadow-sm shadow-indigo-500/10 outline-none",
+            "z-50 w-[calc(100vw-32px)] sm:w-[380px] rounded-2xl border border-border bg-background p-1.5 shadow-sm shadow-indigo-500/10 outline-none",
             "animate-in fade-in zoom-in-95 duration-200"
           )}
           align="end"

@@ -28,7 +28,7 @@ export function GalleryHeader({ profile }: GalleryHeaderProps) {
               />
             ) : (
               <div className="text-4xl font-bold text-primary italic uppercase">
-                {(profile.businessName || profile.fullName).substring(0, 2)}
+                {(profile.businessName || profile.fullName || "?").slice(0, 2)}
               </div>
             )}
             
@@ -54,7 +54,7 @@ export function GalleryHeader({ profile }: GalleryHeaderProps) {
             <div>
               <div className="flex flex-wrap items-center gap-3 mb-2">
                 <h1 className="text-3xl font-bold tracking-tight italic uppercase">
-                  {profile.businessName || profile.fullName}
+                  {profile.businessName || profile.fullName || "İsimsiz Mağaza"}
                 </h1>
                 {trustUI.isPremiumVisible && (
                   <Badge className="bg-primary/10 text-primary border-none font-bold px-3 py-1">
@@ -81,7 +81,11 @@ export function GalleryHeader({ profile }: GalleryHeaderProps) {
                 )}
                 <div className="flex items-center gap-1.5">
                   <Calendar size={16} className="text-slate-400" />
-                  {new Date(profile.createdAt).getFullYear()}&apos;den beri üye
+                  {(() => {
+                    const date = profile.createdAt ? new Date(profile.createdAt) : null;
+                    const year = date && !isNaN(date.getTime()) ? date.getFullYear() : new Date().getFullYear();
+                    return year;
+                  })()}&apos;den beri üye
                 </div>
               </div>
             </div>

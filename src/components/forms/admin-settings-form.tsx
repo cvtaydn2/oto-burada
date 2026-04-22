@@ -11,6 +11,7 @@ import { toast } from "sonner";
 import { PlatformSettings, updateAllPlatformSettings } from "@/services/admin/settings";
 import { useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
+import { captureClientException } from "@/lib/monitoring/posthog-client";
 
 interface AdminSettingsFormProps {
   initialSettings: PlatformSettings;
@@ -42,7 +43,7 @@ export function AdminSettingsForm({ initialSettings }: AdminSettingsFormProps) {
       }
     } catch (error) {
       toast.error("Ayarlar kaydedilirken bir hata oluştu.");
-      console.error(error);
+      captureClientException(error, "admin_settings_save");
     } finally {
       setIsSaving(false);
     }
@@ -58,9 +59,11 @@ export function AdminSettingsForm({ initialSettings }: AdminSettingsFormProps) {
         router.refresh();
       } else {
         toast.error(data.error ?? "Önbellek temizlenemedi.");
+        captureClientException(new Error(data.error || "Cache clear failed"), "admin_settings_cache_clear");
       }
-    } catch {
+    } catch (error) {
       toast.error("Önbellek temizlenirken bir hata oluştu.");
+        captureClientException(error, "admin_settings_cache_clear_fatal");
     } finally {
       setIsClearingCache(false);
     }

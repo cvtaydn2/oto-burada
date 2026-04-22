@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useEffect, useRef } from "react";
 import { createSupabaseBrowserClient } from "@/lib/supabase/browser";
 import { toast } from "sonner";
 
@@ -30,7 +30,7 @@ export function useMediaUpload(bucket: string = "listings") {
     );
 
     const fileExt = fileObj.file.name.split(".").pop();
-    const fileName = `${Math.random().toString(36).substring(2)}-${Date.now()}.${fileExt}`;
+    const fileName = `${crypto.randomUUID()}-${Date.now()}.${fileExt}`;
     const filePath = `temp/${fileName}`;
 
     const { error } = await supabase.storage
@@ -73,17 +73,36 @@ export function useMediaUpload(bucket: string = "listings") {
     newFiles.forEach(uploadFile);
   }, [uploadFile]);
 
-  // PILL: Issue 1 - Memory Safety
+  const removeFile = useCallback((id: string) => {
+    setFiles((prev) => {
+      const fileToRemove = prev.find(f => f.id === id);
+      if (fileToRemove?.preview) {
+        URL.revokeObjectURL(fileToRemove.preview);
+      }
+      return prev.filter((f) => f.id !== id);
+    });
+  }, []);
+
+  const filesRef = useRef<UploadedFile[]>(files);
+  
+  useEffect(() => {
+    filesRef.current = files;
+  }, [files]);
+
+  // PILL: Issue 1 - Memory Safety (Unmount cleanup)
   useEffect(() => {
     return () => {
-      files.forEach((file) => URL.revokeObjectURL(file.preview));
+      filesRef.current.forEach((f) => {
+        if (f.preview) URL.revokeObjectURL(f.preview);
+      });
     };
-  }, [files]);
+  }, []);
 
   return {
     files,
     onFilesSelected,
-    removeFile: (id: string) => setFiles((prev) => prev.filter((f) => f.id !== id)),
+    removeFile,
     isUploading: files.some((f) => f.status === "uploading"),
+    hasError: files.some((f) => f.status === "error"),
   };
 }

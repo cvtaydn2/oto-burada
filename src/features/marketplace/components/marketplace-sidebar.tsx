@@ -23,7 +23,7 @@ export function MarketplaceSidebar({
   handleReset
 }: MarketplaceSidebarProps) {
   return (
-    <aside className="hidden lg:block w-[320px] shrink-0">
+    <aside className="hidden lg:block w-[280px] xl:w-[320px] shrink-0">
       <div className={cn(
         "sticky top-28 transition-all",
         isPending && "opacity-50 pointer-events-none grayscale"

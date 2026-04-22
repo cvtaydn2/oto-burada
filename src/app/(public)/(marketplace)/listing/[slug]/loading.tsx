@@ -45,7 +45,7 @@ export default function Loading() {
         </div>
 
         {/* Sidebar (Right) */}
-        <aside className="w-full shrink-0 space-y-6 lg:w-[380px]">
+        <aside className="w-full shrink-0 space-y-6 lg:max-w-[400px]">
           {/* Title & Price Desktop Header */}
           <div className="hidden space-y-4 lg:block">
             <div className="h-10 w-full animate-pulse rounded-xl bg-slate-200" />

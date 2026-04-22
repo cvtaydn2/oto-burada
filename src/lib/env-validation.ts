@@ -125,18 +125,15 @@ export function logEnvValidation(): void {
   const result = validateEnv();
 
   if (result.missing.length > 0) {
+    const isProd = process.env.NODE_ENV === "production";
     console.error(
-      `[ENV] ❌ Missing required environment variables:\n${result.missing
-        .map((k) => `  - ${k}`)
-        .join("\n")}\n\nSet these in Vercel Project Settings > Environment Variables or .env.local`,
+      `[ENV] ❌ Missing ${result.missing.length} required variables${isProd ? " (CRITICAL)" : ""}: ${result.missing.join(", ")}`,
     );
   }
 
   if (result.warnings.length > 0 && process.env.NODE_ENV !== "production") {
     console.warn(
-      `[ENV] ⚠️  Optional environment variables not set (features will be degraded):\n${result.warnings
-        .map((w) => `  - ${w}`)
-        .join("\n")}`,
+      `[ENV] ⚠️  ${result.warnings.length} optional variables not set. Features may be degraded.`,
     );
   }
 

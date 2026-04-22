@@ -31,6 +31,7 @@ import { getStoredReports } from "@/services/reports/report-submissions";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { features } from "@/lib/features";
 import { cn } from "@/lib/utils";
+import { captureServerError } from "@/lib/monitoring/posthog-server";
 
 export const dynamic = "force-dynamic";
 
@@ -47,8 +48,11 @@ export default async function AdminOverviewPage() {
     const admin = createSupabaseAdminClient();
     const { error: pingError } = await admin.from("profiles").select("id").limit(1);
     systemOnline = !pingError;
+    if (pingError) {
+      captureServerError("Admin DB ping failed", "admin_dashboard", pingError);
+    }
   } catch (err) {
-    console.error("Admin client initialization failed:", err);
+    captureServerError("Admin client initialization failed", "admin_dashboard", err);
     systemOnline = false;
   }
 

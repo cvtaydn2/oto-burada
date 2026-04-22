@@ -14,6 +14,13 @@ interface TableHealth {
   label: string;
 }
 
+interface RedisStats {
+  uptime: string | null;
+  memory: string | null;
+  clients: string | null;
+  version: string | null;
+}
+
 export interface PersistenceHealth {
   environment: {
     adminEnv: boolean;
@@ -29,6 +36,12 @@ export interface PersistenceHealth {
     bucketAccessible: boolean | null;
     bucketName: string | null;
     message: string;
+  };
+  redis: {
+    uptime: string | null;
+    memory: string | null;
+    clients: string | null;
+    version: string | null;
   };
   tables: TableHealth[];
 }
@@ -70,6 +83,13 @@ export async function getPersistenceHealth(): Promise<PersistenceHealth> {
   let checksCount = 0;
   let successCount = 0;
 
+  const redisStats: RedisStats = {
+    uptime: null,
+    memory: null,
+    clients: null,
+    version: null,
+  };
+
   // Check 1: Admin API
   checksCount++;
   if (environment.adminEnv) successCount++;
@@ -79,8 +99,32 @@ export async function getPersistenceHealth(): Promise<PersistenceHealth> {
   if (environment.redisEnv) {
     try {
       const redis = Redis.fromEnv();
-      const ping = await redis.ping();
-      if (ping === "PONG") successCount++;
+      const [ping, info] = await Promise.all([
+        redis.ping(),
+        (redis as any).info() as Promise<string>
+      ]);
+      
+      if (ping === "PONG") {
+        successCount++;
+        
+        // Parse basic info (Upstash returns a string)
+        if (typeof info === 'string') {
+          const uptimeMatch = info.match(/uptime_in_seconds:(\d+)/);
+          const memoryMatch = info.match(/used_memory_human:([^\r\n]+)/);
+          const clientsMatch = info.match(/connected_clients:(\d+)/);
+          const versionMatch = info.match(/redis_version:([^\r\n]+)/);
+          
+          if (uptimeMatch) {
+            const seconds = parseInt(uptimeMatch[1]);
+            const days = Math.floor(seconds / (3600 * 24));
+            const hours = Math.floor((seconds % (3600 * 24)) / 3600);
+            redisStats.uptime = `${days}g ${hours}s`;
+          }
+          if (memoryMatch) redisStats.memory = memoryMatch[1];
+          if (clientsMatch) redisStats.clients = clientsMatch[1];
+          if (versionMatch) redisStats.version = versionMatch[1];
+        }
+      }
     } catch {
       // Failed redis check
     }
@@ -93,6 +137,7 @@ export async function getPersistenceHealth(): Promise<PersistenceHealth> {
       message: "Supabase admin ortam degiskenleri eksik.",
       ready: false,
       storage,
+      redis: redisStats,
       tables: [],
     };
   }
@@ -140,6 +185,7 @@ export async function getPersistenceHealth(): Promise<PersistenceHealth> {
       : "Sistem bileşenleri sağlıklı şekilde çalışıyor.",
     ready: !failedTable && environment.adminEnv,
     storage,
+    redis: redisStats,
     tables: results.map((result) => ({
       count: result.count,
       key: result.key,

@@ -95,7 +95,9 @@ export function captureServerEvent(
     },
   });
 
-  ph.flush().catch(() => {});
+  ph.flush().catch((err) => {
+    console.error("[PostHog] Event flush failed:", err instanceof Error ? err.message : err);
+  });
 }
 
 // ─── Error & Warning Capture ────────────────────────────────────────────────────
@@ -150,7 +152,9 @@ export function captureServerError(
     });
   }
 
-  ph.flush().catch(() => {});
+  ph.flush().catch((err) => {
+    console.error("[PostHog] Event flush failed:", err instanceof Error ? err.message : err);
+  });
 }
 
 /**
@@ -175,7 +179,9 @@ export function captureServerWarning(
     },
   });
 
-  ph.flush().catch(() => {});
+  ph.flush().catch((err) => {
+    console.error("[PostHog] Event flush failed:", err instanceof Error ? err.message : err);
+  });
 }
 
 // ─── Server-Side Identify ───────────────────────────────────────────────────────
@@ -204,7 +210,9 @@ export function identifyServerUser(
     },
   });
 
-  ph.flush().catch(() => {});
+  ph.flush().catch((err) => {
+    console.error("[PostHog] Identity flush failed:", err instanceof Error ? err.message : err);
+  });
 }
 
 export { AnalyticsEvent };

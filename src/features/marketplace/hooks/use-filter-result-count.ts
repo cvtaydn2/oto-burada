@@ -35,8 +35,8 @@ export function useFilterResultCount(filters: ListingFilters, initialCount: numb
           setCount(total);
         }
       } catch (error) {
-        if ((error as Error).name !== "AbortError") {
-          console.error("Failed to fetch filter count:", error);
+        if ((error as Error).name !== "AbortError" && process.env.NODE_ENV !== "production") {
+          console.warn("Filter count fetch background failure:", error);
         }
       } finally {
         if (!controller.signal.aborted) {

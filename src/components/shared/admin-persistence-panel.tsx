@@ -1,4 +1,4 @@
-import { DatabaseZap, ShieldCheck, TerminalSquare, TriangleAlert, Info } from "lucide-react";
+import { DatabaseZap, ShieldCheck, TerminalSquare, TriangleAlert, Info, Cpu, Server, Users } from "lucide-react";
 
 import { DashboardMetricCard } from "@/components/shared/dashboard-metric-card";
 import type { PersistenceHealth } from "@/services/admin/persistence-health";
@@ -167,6 +167,38 @@ export function AdminPersistencePanel({ health }: AdminPersistencePanelProps) {
             helper={health.storage.bucketName ?? "Tanımsız"}
             icon={health.storage.bucketAccessible ? ShieldCheck : TriangleAlert}
             tone={health.storage.bucketAccessible ? "emerald" : "amber"}
+          />
+        </div>
+
+        {/* Redis Health Section */}
+        <div className="mt-8 pt-8 border-t border-border grid gap-4 grid-cols-2 md:grid-cols-4">
+          <DashboardMetricCard
+            label="Redis Memory"
+            value={health.redis.memory ?? "N/A"}
+            helper="Upstash usage"
+            icon={Cpu}
+            tone={health.redis.memory ? "emerald" : "amber"}
+          />
+          <DashboardMetricCard
+            label="Redis Uptime"
+            value={health.redis.uptime ?? "N/A"}
+            helper="System age"
+            icon={Server}
+            tone={health.redis.uptime ? "emerald" : "amber"}
+          />
+          <DashboardMetricCard
+            label="Redis Clients"
+            value={health.redis.clients ?? "0"}
+            helper="Active connections"
+            icon={Users}
+            tone={health.redis.clients ? "emerald" : "amber"}
+          />
+          <DashboardMetricCard
+            label="Redis Versiyon"
+            value={health.redis.version ?? "N/A"}
+            helper="Engine build"
+            icon={Info}
+            tone={health.redis.version ? "emerald" : "blue"}
           />
         </div>
 

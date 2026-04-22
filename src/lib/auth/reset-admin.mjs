@@ -27,31 +27,39 @@ const supabase = createClient(supabaseUrl, serviceRoleKey, {
 });
 
 async function resetAdminPassword() {
-  console.log(`Resetting password for ${targetEmail}...`);
+  const isProd = process.env.NODE_ENV === "production";
+  console.log(`[AUTH] Resetting password for ${targetEmail}...`);
   
-  // 1. Get user by email
-  const { data: { users }, error: getError } = await supabase.auth.admin.listUsers();
-  if (getError) {
-    console.error("Error listing users:", getError);
-    return;
-  }
-  
-  const targetUser = users.find(u => u.email === targetEmail);
-  if (!targetUser) {
-    console.error(`User ${targetEmail} not found`);
-    return;
-  }
-  
-  // 2. Update password
-  const { error } = await supabase.auth.admin.updateUserById(
-    targetUser.id,
-    { password: newPassword }
-  );
-  
-  if (error) {
-    console.error("Error updating password:", error);
-  } else {
-    console.log(`Password successfully reset for ${targetEmail}`);
+  try {
+    // 1. Get user by email
+    const { data: { users }, error: getError } = await supabase.auth.admin.listUsers();
+    if (getError) {
+      console.error("[AUTH] ❌ Error listing users:", getError.message);
+      return;
+    }
+    
+    const targetUser = users.find(u => u.email === targetEmail);
+    if (!targetUser) {
+      console.error(`[AUTH] ❌ User ${targetEmail} not found in database.`);
+      return;
+    }
+    
+    // 2. Update password
+    const { error } = await supabase.auth.admin.updateUserById(
+      targetUser.id,
+      { password: newPassword }
+    );
+    
+    if (error) {
+      console.error("[AUTH] ❌ Error updating password:", error.message);
+    } else {
+      console.log(`[AUTH] ✅ Password successfully reset for ${targetEmail}`);
+      if (isProd) {
+        console.warn("[SECURITY] ⚠️  Admin password reset in PRODUCTION environment.");
+      }
+    }
+  } catch (err) {
+    console.error("[AUTH] ❌ Fatal error during password reset:", err);
   }
 }
 

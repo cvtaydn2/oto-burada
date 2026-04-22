@@ -92,18 +92,22 @@ export async function requireAdminUser() {
 
 export async function getAuthenticatedUserOrThrow() {
   if (!hasSupabaseEnv()) {
-    throw new Error("Supabase ortam degiskenleri eksik.");
+    return null;
   }
 
-  const supabase = await createSupabaseServerClient();
-  const {
-    data: { user },
-    error,
-  } = await supabase.auth.getUser();
+  try {
+    const supabase = await createSupabaseServerClient();
+    const {
+      data: { user },
+      error,
+    } = await supabase.auth.getUser();
 
-  if (error || !user) {
-    throw new Error("Oturum dogrulanamadi.");
+    if (error || !user) {
+      return null;
+    }
+
+    return user;
+  } catch {
+    return null;
   }
-
-  return user;
 }

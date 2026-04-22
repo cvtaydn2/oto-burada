@@ -72,7 +72,6 @@ export default async function RootLayout({
       lang="tr"
       className={`${inter.variable} ${outfit.variable} h-full antialiased font-sans`}
       data-scroll-behavior="smooth"
-      suppressHydrationWarning
     >
       <head>
         <link rel="preconnect" href="https://images.unsplash.com" />
