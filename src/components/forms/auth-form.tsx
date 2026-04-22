@@ -184,7 +184,7 @@ export function AuthForm({
                   autoComplete={isLogin ? "current-password" : "new-password"}
                   placeholder="••••••••"
                   required
-                  minLength={6}
+                  minLength={8}
                   className="h-12 w-full rounded-xl border border-input bg-muted/30 px-4 text-sm font-medium text-foreground outline-none transition-all placeholder:text-muted-foreground/50 focus:bg-background focus:border-primary focus:ring-2 focus:ring-primary/10"
                 />
               </div>

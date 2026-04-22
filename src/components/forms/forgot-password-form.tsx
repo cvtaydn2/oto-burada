@@ -82,6 +82,7 @@ export function ForgotPasswordForm() {
                     id="forgot-email"
                     type="email"
                     name="email"
+                    defaultValue={(state as { fields?: { email?: string } }).fields?.email ?? ""}
                     placeholder="isim@mail.com"
                     className="h-16 w-full pl-14 pr-6 rounded-xl bg-card border-2 border-border/50 shadow-sm shadow-slate-200/40 focus:border-primary outline-none transition-all font-bold italic tracking-tighter text-foreground"
                     required

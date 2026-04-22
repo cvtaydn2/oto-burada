@@ -150,7 +150,7 @@ export async function registerAction(
   if (!parsed.success) {
     return {
       error: parsed.error.issues[0]?.message ?? "Bir hata oluştu. Lütfen tekrar dene.",
-      fields: { email: values.email },
+      fields: { email: values.email, fullName: values.fullName },
     };
   }
 

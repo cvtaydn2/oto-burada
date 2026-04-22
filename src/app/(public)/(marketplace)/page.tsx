@@ -148,7 +148,7 @@ export default async function HomePage() {
               <div className="flex justify-between items-center mb-6">
                 <h2 className="text-xl sm:text-2xl font-bold text-foreground">Öne Çıkan İlanlar</h2>
                 <Link
-                  href="/listings?featured=true"
+                  href="/listings"
                   prefetch={false}
                   className="text-sm font-medium text-primary hover:underline flex items-center"
                 >

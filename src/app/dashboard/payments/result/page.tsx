@@ -22,7 +22,7 @@ function PaymentResultContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [loading, setLoading] = useState(true);
-  const [status, setStatus] = useState<"success" | "failure" | "pending">("pending");
+  const [status, setStatus] = useState<"invalid" | "success" | "failure" | "pending">("pending");
   const [paymentData, setPaymentData] = useState<{
     id: string;
     amount: number;
@@ -35,6 +35,7 @@ function PaymentResultContent() {
   useEffect(() => {
     async function verifyPayment() {
       if (!token) {
+        setStatus("invalid");
         setLoading(false);
         return;
       }
@@ -72,9 +73,6 @@ function PaymentResultContent() {
           setTimeout(poll, 1500); // Wait 1.5s then check again
         } else {
           setLoading(false);
-          if (!found) {
-            setStatus("failure");
-          }
         }
       };
 
@@ -100,6 +98,8 @@ function PaymentResultContent() {
   }
 
   const isSuccess = status === "success";
+  const isInvalid = status === "invalid";
+  const isPending = status === "pending";
 
   return (
     <div className="max-w-2xl mx-auto py-12 px-4 anime-in fade-in slide-in-from-bottom-8 duration-700">
@@ -127,13 +127,23 @@ function PaymentResultContent() {
           </div>
 
           <h1 className="text-3xl lg:text-4xl font-bold text-slate-900 tracking-tight">
-            {isSuccess ? "Ödeme Başarılı!" : "Ödeme Başarısız"}
+            {isSuccess
+              ? "Ödeme Başarılı!"
+              : isInvalid
+                ? "Geçersiz Bağlantı"
+                : isPending
+                  ? "Ödeme Doğrulanıyor"
+                  : "Ödeme Başarısız"}
           </h1>
 
           <p className="mt-4 text-lg font-bold text-slate-500 leading-relaxed max-w-md mx-auto">
             {isSuccess
               ? `${paymentData?.plan_name ? `${paymentData.plan_name} paketiniz` : "Hizmetiniz"} başarıyla tanımlandı. OtoBurada'yı tercih ettiğiniz için teşekkür ederiz.`
-              : "Ödeme işlemi sırasında bir hata oluştu veya bankanız tarafından reddedildi."}
+              : isInvalid
+                ? "Bu ödeme bağlantısı geçersiz veya eksik. Lütfen ödeme akışını yeniden başlatın."
+                : isPending
+                  ? "Ödemeniz alındıysa doğrulama hâlâ sürüyor olabilir. Lütfen kısa süre sonra tekrar kontrol edin."
+                  : "Ödeme işlemi sırasında bir hata oluştu veya bankanız tarafından reddedildi."}
           </p>
 
           {paymentData && (
@@ -175,6 +185,28 @@ function PaymentResultContent() {
                   <Link href="/dashboard">
                     Panel Özetine Dön
                     <Home className="ml-2 h-5 w-5" />
+                  </Link>
+                </Button>
+              </>
+            ) : isPending ? (
+              <>
+                <Button
+                  asChild
+                  className="h-14 rounded-2xl bg-blue-600 text-white font-bold uppercase tracking-widest shadow-sm shadow-blue-500/20 hover:bg-blue-700 hover:scale-[1.02] active:scale-[0.98] transition-all"
+                >
+                  <Link href="/dashboard">
+                    Paneli Yenile
+                    <Home className="ml-2 h-5 w-5" />
+                  </Link>
+                </Button>
+                <Button
+                  asChild
+                  variant="ghost"
+                  className="h-14 rounded-2xl font-bold text-slate-400 hover:text-slate-900 hover:bg-slate-50 transition-all"
+                >
+                  <Link href="/dashboard/pricing">
+                    Paketlere Dön
+                    <ArrowRight className="ml-2 h-5 w-5" />
                   </Link>
                 </Button>
               </>
