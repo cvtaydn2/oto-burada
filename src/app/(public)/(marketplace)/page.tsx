@@ -37,7 +37,8 @@ export default async function HomePage() {
 
   const appUrl = getAppUrl();
   const featuredListings = listingsResult.listings.filter(l => l.featured).slice(0, 4);
-  const latestListings = listingsResult.listings.slice(0, 8);
+  const featuredIds = new Set(featuredListings.map(l => l.id));
+  const latestListings = listingsResult.listings.filter(l => !featuredIds.has(l.id)).slice(0, 8);
   const featuredBrands = references.brands.slice(0, 6);
   const featuredCities = references.cities.slice(0, 6);
 

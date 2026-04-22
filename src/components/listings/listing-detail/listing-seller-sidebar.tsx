@@ -25,6 +25,18 @@ export async function ListingSellerSidebar({
   const isOwner = currentUser?.id === listing.sellerId;
   const { label, isTrusted, tone } = getSellerTrustUI(seller);
 
+  // Human-friendly membership label — avoids "0 Yıl" for new members
+  const membershipLabel =
+    membershipYears === null ? "—" :
+    membershipYears === 0   ? "Yeni Üye" :
+    membershipYears === 1   ? "1 Yıl" :
+    `${membershipYears} Yıl`;
+
+  // Footer text — only shown when memberSince is known, avoids "null'den beri"
+  const memberSinceText = memberSince != null
+    ? `${memberSince}'den beri üye`
+    : "OtoBurada üyesi";
+
   return (
     <div className="w-full space-y-10 lg:w-[380px] lg:shrink-0">
       <Panel padding="xl" className="shadow-2xl lg:sticky lg:top-24 lg:max-h-[calc(100vh-120px)] lg:overflow-y-auto custom-scrollbar">
@@ -69,7 +81,7 @@ export async function ListingSellerSidebar({
           <div className="p-4 rounded-2xl bg-muted/30 border border-border/40 text-center">
             <div className="flex items-center justify-center gap-1 text-foreground mb-1 font-bold text-sm">
               <CalendarDays size={14} className="text-primary" />
-              {membershipYears !== null ? `${membershipYears} Yıl` : "—"}
+              {membershipLabel}
             </div>
             <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Üyelik</p>
           </div>
@@ -85,14 +97,12 @@ export async function ListingSellerSidebar({
               currentUserId={currentUser?.id}
             />
           )}
-          <div className="pt-6 border-t border-border/40 flex flex-col items-center gap-3 pb-2">
-            <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">SHOWROOM STANDARTI</p>
-            <div className="flex items-center gap-2">
-              <div className="size-8 rounded-full bg-primary/10 flex items-center justify-center">
-                <Store size={14} className="text-primary" />
-              </div>
-              <span className="text-xs font-bold text-foreground">{memberSince}’den beri OtoBurada üyesi</span>
+          {/* Footer — single source, no duplicate with the grid above */}
+          <div className="pt-6 border-t border-border/40 flex items-center justify-center gap-2 pb-2">
+            <div className="size-8 rounded-full bg-primary/10 flex items-center justify-center">
+              <Store size={14} className="text-primary" />
             </div>
+            <span className="text-xs font-bold text-muted-foreground">{memberSinceText}</span>
           </div>
         </div>
       </Panel>

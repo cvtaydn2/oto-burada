@@ -119,8 +119,7 @@ export function AdvancedFilterPage({
                 <Search size={14} />
                 {isPending ? "..." : `İLANLARI GÖR (${resultCount.toLocaleString("tr-TR")})`}
               </button>
-            </div>
-          </div>
+            </div>          </div>
 
           <div className="flex-1">
             {activeCount > 0 && (
@@ -226,15 +225,9 @@ export function AdvancedFilterPage({
 
           <div className="mt-auto flex flex-col gap-4 border-t border-border/40 bg-card/50 pt-8 sm:flex-row sm:items-center sm:justify-between sm:pt-10">
             <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest italic">
-              <span className="text-foreground">{isCounting ? "..." : resultCount.toLocaleString("tr-TR")}</span> İlan Eşleşti
+              <span className="text-foreground">{isCounting ? "..." : resultCount.toLocaleString("tr-TR")}</span> ilan eşleşti
             </p>
-            <button
-              onClick={handleApply}
-              disabled={isPending}
-              className="w-full rounded-2xl bg-primary px-12 py-4 text-sm font-black uppercase tracking-widest text-primary-foreground transition-all hover:bg-primary/90 disabled:opacity-70 sm:w-auto"
-            >
-              {isPending ? "..." : "SONUÇLARI GÖSTER"}
-            </button>
+            <SaveSearchButton filters={filters} resultCount={resultCount} userId={userId} />
           </div>
         </main>
       </div>

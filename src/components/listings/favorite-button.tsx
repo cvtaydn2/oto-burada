@@ -2,6 +2,7 @@
 
 import { Heart, LogIn } from "lucide-react";
 import Link from "next/link";
+import { useState, useEffect, useRef } from "react";
 
 import { useFavorites } from "@/hooks/use-favorites";
 import { cn } from "@/lib/utils";
@@ -19,13 +20,28 @@ export function FavoriteButton({
 }: FavoriteButtonProps) {
   const { hydrated, isAuthenticated, isFavorite, toggleFavorite } = useFavorites();
   const active = hydrated && isFavorite(listingId);
+  // Tooltip only shown after a click attempt by a guest — not on every hover
+  const [showHint, setShowHint] = useState(false);
+  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const handleClick = () => {
+    if (!isAuthenticated) {
+      setShowHint(true);
+      if (timerRef.current) clearTimeout(timerRef.current);
+      timerRef.current = setTimeout(() => setShowHint(false), 3000);
+      return;
+    }
     toggleFavorite(listingId);
   };
 
+  useEffect(() => {
+    return () => {
+      if (timerRef.current) clearTimeout(timerRef.current);
+    };
+  }, []);
+
   return (
-    <div className="relative group">
+    <div className="relative">
       <button
         type="button"
         aria-label={active ? "Favorilerden çıkar" : "Favorilere ekle"}
@@ -40,8 +56,11 @@ export function FavoriteButton({
       >
         <Heart className={cn("size-4", active && "fill-current")} />
       </button>
-      {showGuestHint && !isAuthenticated && (
-        <div className="absolute bottom-full left-1/2 z-20 mb-2 w-56 -translate-x-1/2 rounded-xl bg-slate-900 px-3 py-2 text-xs text-white opacity-0 shadow-sm transition-opacity group-hover:opacity-100">
+      {showGuestHint && !isAuthenticated && showHint && (
+        <div
+          role="tooltip"
+          className="absolute bottom-full left-1/2 z-20 mb-2 w-56 -translate-x-1/2 rounded-xl bg-slate-900 px-3 py-2 text-xs text-white shadow-sm animate-in fade-in slide-in-from-bottom-2 duration-200"
+        >
           Bu cihazda kaydedilir. Giriş yaparsan favorilerin tüm cihazlarda senkronize olur.
           <Link
             href="/login"

@@ -23,7 +23,15 @@ export function ListingDescription({ description }: ListingDescriptionProps) {
         )}
       </button>
       <div className={`mt-3 text-sm text-muted-foreground leading-relaxed ${!isExpanded && !isLong ? '' : isExpanded ? '' : 'line-clamp-3'}`}>
-        <p className="whitespace-pre-wrap">{description}</p>
+        {/* Strip bare markdown headings (## with no content) that render as noise */}
+        <p className="whitespace-pre-wrap">
+          {description
+            .split("\n")
+            .filter(line => !/^#{1,6}\s*$/.test(line))
+            .map(line => line.replace(/^#{1,6}\s+/, ""))
+            .join("\n")
+            .trim()}
+        </p>
       </div>
     </div>
   )

@@ -104,7 +104,9 @@ export function ListingsFilterPanel({
           </div>
           <div>
             <h2 className="text-sm font-black text-foreground uppercase tracking-widest italic leading-none">Filtrele</h2>
-            <p className="text-[10px] text-muted-foreground font-bold uppercase tracking-tight mt-1">{activeFiltersCount} AKTİF</p>
+            <p className="text-[10px] text-muted-foreground font-bold uppercase tracking-tight mt-1">
+              {activeFiltersCount > 0 ? `${activeFiltersCount} aktif filtre` : "Filtre yok"}
+            </p>
           </div>
         </div>
         {activeFiltersCount > 0 && (

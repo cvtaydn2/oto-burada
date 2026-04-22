@@ -125,7 +125,7 @@ export const marketplace = {
   quickFilters: {
     all: "Tüm İlanlar",
     expert: "Ekspertizli",
-    priceDrop: "Fiyatı Dışan",
+    priceDrop: "Fiyatı Düşen",
     newest: "Yeni Eklenen"
   },
   sortOptions: {
