@@ -162,6 +162,7 @@ export function parseListingFiltersFromSearchParams(
       "carTrim",
       "city",
       "district",
+      "category",
       "fuelType",
       "transmission",
       "sort",

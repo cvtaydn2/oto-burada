@@ -196,6 +196,7 @@ export function applyListingFilterPredicates<T>(query: T, filters: ListingFilter
   if (filters.carTrim) q.eq("car_trim", filters.carTrim);
   if (filters.city) q.eq("city", filters.city);
   if (filters.district) q.eq("district", filters.district);
+  if (filters.category) q.eq("category", filters.category);
   if (filters.fuelType) q.eq("fuel_type", filters.fuelType);
   if (filters.transmission) q.eq("transmission", filters.transmission);
   if (filters.minPrice !== undefined) q.gte("price", filters.minPrice);

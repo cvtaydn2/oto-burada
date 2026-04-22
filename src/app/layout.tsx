@@ -66,10 +66,14 @@ export default async function RootLayout({
   const nonce = (await headers()).get("x-nonce") ?? undefined;
 
   return (
-    <html lang="tr" className={`${inter.variable} ${outfit.variable} h-full antialiased font-sans`}>
+    <html
+      lang="tr"
+      className={`${inter.variable} ${outfit.variable} light`}
+      style={{ colorScheme: "light" }}
+      suppressHydrationWarning
+    >
       <head>
         <link rel="preconnect" href="https://images.unsplash.com" />
-        {/* Supabase storage is dynamic based on project ID, but we can hint the main pattern if known or just fallback */}
       </head>
       <body className="min-h-full bg-background text-foreground selection:bg-primary/10 selection:text-primary">
         <RootProviders user={user} nonce={nonce}>

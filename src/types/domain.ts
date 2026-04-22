@@ -254,6 +254,7 @@ export interface ListingFilters {
   city?: string;
   citySlug?: string;
   district?: string;
+  category?: string;
   minPrice?: number;
   maxPrice?: number;
   minYear?: number;
@@ -267,7 +268,7 @@ export interface ListingFilters {
   page?: number;
   limit?: number;
   sellerId?: string;
-  cursor?: string; // Keyset pagination cursor (usually a composite value or base64)
+  cursor?: string;
 }
 
 export interface ExpertInspection {

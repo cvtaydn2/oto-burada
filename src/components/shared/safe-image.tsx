@@ -13,7 +13,7 @@ import { cn } from "@/lib/utils";
  */
 
 const FALLBACK_IMAGE =
-  "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='300' viewBox='0 0 400 300'%3E%3Crect width='400' height='300' fill='%23f8fafc'/%3E%3Cpath d='M200 130c-15 0-25 10-25 20s10 20 25 20 25-10 25-20-10-20-25-20zm0 30c-5.5 0-10-4.5-10-10s4.5-10 10-10 10 4.5 10 10-4.5 10-10 10z' fill='%23cbd5e1'/%3E%3C/svg%3E";
+  "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='300' viewBox='0 0 400 300'%3E%3Crect width='400' height='300' fill='%23f8fafc'/%3E%3Cpath d='M200 130c-15 0-25 10-25 20s10 20 25 20 25-10 25-20-10-20-25-20zm0 30c-5.5 0-10-4.5-10-10s4.5-10 10-10 10 4.5 10 10-4.5 10-10 10z'/%3E%3C/svg%3E";
 
 interface SafeImageProps extends Omit<ImageProps, "onError"> {
   fallbackSrc?: string;
@@ -48,8 +48,6 @@ export function SafeImage({
           src={fallbackSrc}
           alt={alt}
           fill={props.fill}
-          width={typeof props.width === "number" ? props.width : 400}
-          height={typeof props.height === "number" ? props.height : 300}
           sizes={resolvedSizes}
           unoptimized
           className={cn("h-full w-full object-cover opacity-40 grayscale", className)}

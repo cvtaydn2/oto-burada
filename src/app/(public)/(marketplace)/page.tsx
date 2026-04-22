@@ -1,4 +1,13 @@
-import { CarFront, CheckCircle2, ChevronRight, MapPin, ShieldCheck, Zap } from "lucide-react";
+import {
+  Car,
+  CarFront,
+  CheckCircle2,
+  ChevronRight,
+  MapPin,
+  ShieldCheck,
+  Truck,
+  Zap,
+} from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
 
@@ -11,6 +20,7 @@ import { ListingCard } from "@/components/shared/listing-card";
 import { getAppUrl } from "@/lib/seo";
 import { getPublicMarketplaceListings } from "@/services/listings/marketplace-listings";
 import { getLiveMarketplaceReferenceData } from "@/services/reference/live-reference-data";
+import { getListingCountsByCategory } from "@/services/reference/reference-records";
 
 export const revalidate = 60;
 
@@ -34,9 +44,10 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default async function HomePage() {
-  const [listingsResult, references] = await Promise.all([
+  const [listingsResult, references, categoryCounts] = await Promise.all([
     getPublicMarketplaceListings({ limit: 12, sort: "newest" }),
     getLiveMarketplaceReferenceData(),
+    getListingCountsByCategory(),
   ]);
 
   const appUrl = getAppUrl();
@@ -45,6 +56,14 @@ export default async function HomePage() {
   const latestListings = listingsResult.listings.filter((l) => !featuredIds.has(l.id)).slice(0, 8);
   const featuredBrands = references.brands.slice(0, 6);
   const featuredCities = references.cities.slice(0, 6);
+
+  const categoryIcons: Record<string, typeof Car> = {
+    otomobil: CarFront,
+    suv: Car,
+    minivan: Car,
+    ticari: Truck,
+    mototosiklet: CarFront,
+  };
 
   return (
     <div className="flex flex-col min-h-screen bg-background">
@@ -56,15 +75,52 @@ export default async function HomePage() {
       />
 
       <main className="flex-1 w-full">
-        {/* Modern Hero */}
         <HomeHero cities={references.cities.map((city) => city.city)} />
+
+        {/* Categories Grid */}
+        {categoryCounts.length > 0 && (
+          <section className="max-w-7xl mx-auto px-3 sm:px-4 py-6 sm:py-8">
+            <div className="mb-6 sm:mb-8">
+              <h2 className="text-xl sm:text-2xl font-bold text-foreground">Kategoriler</h2>
+              <p className="text-xs text-muted-foreground mt-1">İhtiyacına uygun kategoriyi seç</p>
+            </div>
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 sm:gap-4">
+              {categoryCounts.map((cat) => {
+                const Icon = categoryIcons[cat.category] || CarFront;
+                return (
+                  <Link
+                    key={cat.category}
+                    href={`/listings?category=${cat.category}`}
+                    prefetch={false}
+                    className="group bg-card border border-border rounded-2xl p-4 sm:p-5 hover:border-primary/50 transition-colors"
+                  >
+                    <div className="flex items-center justify-between mb-3">
+                      <Icon
+                        size={24}
+                        className="text-muted-foreground group-hover:text-primary transition-colors"
+                      />
+                      <span className="text-xs font-bold text-primary">
+                        {cat.count.toLocaleString("tr-TR")}
+                      </span>
+                    </div>
+                    <h3 className="text-sm font-semibold text-foreground capitalize">
+                      {cat.category}
+                    </h3>
+                  </Link>
+                );
+              })}
+            </div>
+          </section>
+        )}
 
         {/* Quick Discovery */}
         <section className="max-w-7xl mx-auto px-3 sm:px-4 md:px-6 py-8 sm:py-10 md:py-12">
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 sm:gap-4 mb-6 sm:mb-8">
             <div>
               <h2 className="text-xl sm:text-2xl font-bold text-foreground">Hızlı Keşfet</h2>
-              <p className="text-xs text-muted-foreground mt-1">Aradiğın araca giden en kısa yol</p>
+              <p className="mt-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground/75">
+                Aradığın araca giden en kısa yol
+              </p>
             </div>
             <Link
               href="/listings"
@@ -77,75 +133,65 @@ export default async function HomePage() {
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
             {/* Brands */}
-            <div className="bg-card border border-border rounded-2xl p-4 sm:p-5">
-              <div className="flex items-center gap-2 mb-4">
-                <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+            <div>
+              <div className="mb-4 flex items-center gap-2">
+                <h3 className="text-[11px] font-bold uppercase tracking-[0.18em] text-muted-foreground">
                   Markalar
                 </h3>
               </div>
-              <div className="grid grid-cols-2 gap-3">
-                {featuredBrands.slice(0, 4).map((brand) => (
+              <div className="grid grid-cols-2 gap-3 xl:grid-cols-3">
+                {featuredBrands.slice(0, 6).map((brand) => (
                   <Link
                     key={brand.slug}
                     href={`/satilik/${brand.slug}`}
                     prefetch={false}
-                    className="group flex items-center gap-3 p-3 rounded-xl bg-muted/50 hover:bg-muted transition-colors"
+                    className="group flex items-center gap-3 rounded-2xl border border-border bg-card px-3 py-3 shadow-sm transition-colors hover:border-primary/20 hover:bg-muted/30"
                   >
-                    <div className="size-10 rounded-lg bg-background text-muted-foreground flex items-center justify-center group-hover:text-primary transition-colors">
-                      <CarFront size={18} />
+                    <div className="flex size-11 shrink-0 items-center justify-center rounded-xl bg-muted/70 text-muted-foreground transition-colors group-hover:bg-primary/10 group-hover:text-primary">
+                      <CarFront size={18} strokeWidth={1.9} />
                     </div>
                     <div className="min-w-0">
                       <h4 className="text-sm font-semibold text-foreground truncate">
                         {brand.brand}
                       </h4>
-                      <p className="text-xs text-muted-foreground">{brand.models.length} model</p>
+                      <p className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
+                        {brand.models.length} model
+                      </p>
                     </div>
                   </Link>
                 ))}
               </div>
-              <Link
-                href="/listings"
-                prefetch={false}
-                className="mt-4 text-xs font-medium text-primary hover:underline block text-center"
-              >
-                Tüm markalar →
-              </Link>
             </div>
 
             {/* Cities */}
-            <div className="bg-card border border-border rounded-2xl p-4 sm:p-5">
-              <div className="flex items-center gap-2 mb-4">
-                <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+            <div>
+              <div className="mb-4 flex items-center gap-2">
+                <h3 className="text-[11px] font-bold uppercase tracking-[0.18em] text-muted-foreground">
                   Şehirler
                 </h3>
               </div>
-              <div className="grid grid-cols-2 gap-3">
-                {featuredCities.slice(0, 4).map((city) => (
+              <div className="grid grid-cols-2 gap-3 xl:grid-cols-3">
+                {featuredCities.slice(0, 6).map((city) => (
                   <Link
                     key={city.slug}
                     href={`/satilik-araba/${city.slug}`}
                     prefetch={false}
-                    className="group flex items-center gap-3 p-3 rounded-xl bg-muted/50 hover:bg-muted transition-colors"
+                    className="group flex items-center gap-3 rounded-2xl border border-border bg-card px-3 py-3 shadow-sm transition-colors hover:border-primary/20 hover:bg-muted/30"
                   >
-                    <div className="size-10 rounded-lg bg-background text-muted-foreground flex items-center justify-center group-hover:text-primary transition-colors">
+                    <div className="flex size-10 items-center justify-center rounded-xl bg-muted text-muted-foreground transition-colors group-hover:bg-primary/10 group-hover:text-primary">
                       <MapPin size={18} />
                     </div>
                     <div className="min-w-0">
                       <h4 className="text-sm font-semibold text-foreground truncate">
                         {city.city}
                       </h4>
-                      <p className="text-xs text-muted-foreground">{city.districts.length} ilçe</p>
+                      <p className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
+                        {city.districts.length} ilçe
+                      </p>
                     </div>
                   </Link>
                 ))}
               </div>
-              <Link
-                href="/listings"
-                prefetch={false}
-                className="mt-4 text-xs font-medium text-primary hover:underline block text-center"
-              >
-                Tüm şehirler →
-              </Link>
             </div>
           </div>
         </section>

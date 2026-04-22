@@ -38,28 +38,38 @@ const cities = [
   { city: "Antalya", districts: ["Muratpasa", "Konyaalti", "Kepez"] },
 ];
 
-const carImages = [
-  "https://images.unsplash.com/photo-1541899481282-d53bffe3c35d",
-  "https://images.unsplash.com/photo-1494905998402-395d579af36f",
-  "https://images.unsplash.com/photo-1506469717960-433cebe3f181",
-  "https://images.unsplash.com/photo-1619405399517-d7fce0f13302",
-  "https://images.unsplash.com/photo-1492144534655-ae79c964c9d7",
-  "https://images.unsplash.com/photo-1552519507-da3b142c6e3d",
-  "https://images.unsplash.com/photo-1494976388531-d1058494cdd8",
-  "https://images.unsplash.com/photo-1523983388277-336a66bf9bcd",
-  "https://images.unsplash.com/photo-1520116468816-95b69f847357",
-  "https://images.unsplash.com/photo-1492144534655-ae79c964c9d7",
-  "https://images.unsplash.com/photo-1503376780353-7e6692767b70",
-  "https://images.unsplash.com/photo-1552519507-da3b142c6e3d",
-  "https://images.unsplash.com/photo-1583121274602-3e2820c69888",
-  "https://images.unsplash.com/photo-1494976388531-d1058494cdd8",
-  "https://images.unsplash.com/photo-1525609002752-ad9195461250",
-  "https://images.unsplash.com/photo-1553440569-bcc63803a83d",
-  "https://images.unsplash.com/photo-1542281286-9e0a16bb7366",
-  "https://images.unsplash.com/photo-1511919884226-fd3cad34687c",
-  "https://images.unsplash.com/photo-1502877338535-766e1452684a",
-  "https://images.unsplash.com/photo-1492144534655-ae79c964c9d7",
-];
+const carImagesByFuel = {
+  benzin: [
+    "https://images.unsplash.com/photo-1541899481282-d53bffe3c35d",
+    "https://images.unsplash.com/photo-1494905998402-395d579af36f",
+    "https://images.unsplash.com/photo-1506469717960-433cebe3f181",
+    "https://images.unsplash.com/photo-1619405399517-d7fce0f13302",
+    "https://images.unsplash.com/photo-1492144534655-ae79c964c9d7",
+  ],
+  dizel: [
+    "https://images.unsplash.com/photo-1552519507-da3b142c6e3d",
+    "https://images.unsplash.com/photo-1494976388531-d1058494cdd8",
+    "https://images.unsplash.com/photo-1523983388277-336a66bf9bcd",
+    "https://images.unsplash.com/photo-1520116468816-95b69f847357",
+    "https://images.unsplash.com/photo-1503376780353-7e6692767b70",
+  ],
+  lpg: [
+    "https://images.unsplash.com/photo-1552519507-da3b142c6e3d",
+    "https://images.unsplash.com/photo-1583121274602-3e2820c69888",
+    "https://images.unsplash.com/photo-1494976388531-d1058494cdd8",
+    "https://images.unsplash.com/photo-1553440569-bcc63803a83d",
+    "https://images.unsplash.com/photo-1542281286-9e0a16bb7366",
+  ],
+  hibrit: [
+    "https://images.unsplash.com/photo-1511919884226-fd3cad34687c",
+    "https://images.unsplash.com/photo-1502877338535-766e1452684a",
+    "https://images.unsplash.com/photo-1492144534655-ae79c964c9d7",
+    "https://images.unsplash.com/photo-1619405399517-d7fce0f13302",
+    "https://images.unsplash.com/photo-1541899481282-d53bffe3c35d",
+  ],
+};
+
+const fuelTypes = ["benzin", "dizel", "lpg", "hibrit"];
 
 async function generateListings(count = 50) {
   const { data: users } = await supabase.from("profiles").select("id");
@@ -81,6 +91,8 @@ async function generateListings(count = 50) {
     const price = 500000 + Math.floor(Math.random() * 2000000);
     const seller = users[Math.floor(Math.random() * users.length)];
     const id = crypto.randomUUID();
+    const fuelType = fuelTypes[Math.floor(Math.random() * fuelTypes.length)];
+    const fuelImages = carImagesByFuel[fuelType];
 
     listings.push({
       id,
@@ -91,7 +103,7 @@ async function generateListings(count = 50) {
       model,
       year,
       mileage,
-      fuel_type: ["benzin", "dizel", "lpg", "hibrit"][Math.floor(Math.random() * 4)],
+      fuel_type: fuelType,
       transmission: ["manuel", "otomatik"][Math.floor(Math.random() * 2)],
       price,
       city: loc.city,
@@ -116,9 +128,11 @@ async function generateListings(count = 50) {
   // Generate 3 images for each listing
   const images = [];
   for (const listing of listings) {
+    const listingFuel = listing.fuel_type;
+    const fuelImages = carImagesByFuel[listingFuel] || carImagesByFuel.benzin;
     for (let j = 0; j < 3; j++) {
       const imgUrl =
-        carImages[Math.floor(Math.random() * carImages.length)] +
+        fuelImages[Math.floor(Math.random() * fuelImages.length)] +
         "?auto=format&fit=crop&w=1200&q=80";
       images.push({
         listing_id: listing.id,

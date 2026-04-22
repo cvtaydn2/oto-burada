@@ -1,3 +1,18 @@
+# 2026-04-22 — Hydration Fix & Homepage Brand Badge Correction
+
+## [2026-04-22] - Layout Stability & Homepage Brand UI
+- **Durum:** ✅ TAMAMLANDI
+- **Yapılanlar:**
+  - `src/app/layout.tsx` içinde `html` elementine sabit `color-scheme: light` ve `suppressHydrationWarning` eklenerek `next-themes` kaynaklı hydration attribute farkı giderildi.
+  - Anasayfadaki marka kartlarında dış kaynaktan gelen `brands.image_url` görselleri kaldırıldı; yerine deterministik marka rozetleri kullanıldı.
+  - `0065_brand_image_urls.sql` içindeki Unsplash fotoğraf bazlı marka görsellerinin anasayfada marka kimliği yerine alakasız araç fotoğrafları göstermesine karşı UI güvenli hale getirildi.
+
+## Doğrulama
+- `npm run typecheck` ✅
+- `npm run lint` ✅ (repo genelinde önceden var olan warning'ler dışında hata yok)
+
+---
+
 # 2026-04-22 — Marketplace Intelligence: Price History & Market Analysis
 
 ## [2026-04-22] - Price History & Market Analysis

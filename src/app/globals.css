@@ -128,7 +128,7 @@
 @layer base {
   html {
     /* scrollbar-gutter: stable both-edges kaldırıldı — macOS/mobilde gereksiz boşluk yaratıyordu */
-    @apply min-h-svh font-sans antialiased scroll-smooth selection:bg-primary/20 selection:text-primary;
+    @apply min-h-svh font-sans antialiased;
     /* overscroll-behavior-y: none kaldırıldı — mobilde pull-to-refresh'i engelliyordu */
   }
   * {

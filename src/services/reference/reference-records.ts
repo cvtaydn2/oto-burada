@@ -23,7 +23,7 @@ function toSlug(name: string) {
  * PUBLIC / MARKETPLACE METHODS
  */
 
-type DBBrand = { id: string; name: string };
+type DBBrand = { id: string; name: string; image_url: string | null };
 type DBModel = { id: string; brand_id: string; name: string };
 type DBTrim = { model_id: string; name: string };
 type DBCity = { id: string; name: string; plate_code: number };
@@ -47,7 +47,7 @@ async function fetchLiveMarketplaceReferenceData() {
   ] = await Promise.all([
     supabase
       .from("brands")
-      .select("id, name")
+      .select("id, name, image_url")
       .eq("is_active", true)
       .order("sort_order", { ascending: true }),
     supabase
@@ -82,6 +82,7 @@ async function fetchLiveMarketplaceReferenceData() {
     brand: b.name,
     slug: toSlug(b.name),
     name: b.name,
+    image_url: b.image_url,
     models: safeModelsData
       .filter((m: DBModel) => m.brand_id === b.id)
       .map((m) => ({
@@ -185,6 +186,38 @@ export async function getLiveMarketplaceReferenceData() {
   } catch {
     return fetchLiveMarketplaceReferenceData();
   }
+}
+
+export async function getListingCountsByCategory() {
+  const supabase = createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+  );
+
+  const { data, error } = await supabase
+    .from("listings")
+    .select("category")
+    .eq("status", "approved");
+
+  if (error || !data) return [];
+
+  const counts = data.reduce(
+    (acc, row) => {
+      const cat = row.category || "otomobil";
+      acc[cat] = (acc[cat] || 0) + 1;
+      return acc;
+    },
+    {} as Record<string, number>
+  );
+
+  const categoryOrder = ["otomobil", "suv", "minivan", "ticari", "motosiklet"];
+  return categoryOrder
+    .filter((cat) => counts[cat] > 0)
+    .map((cat) => ({
+      category: cat,
+      slug: cat,
+      count: counts[cat] || 0,
+    }));
 }
 
 /**

@@ -17,6 +17,8 @@ import {
   optionalTrimmedString,
 } from "./shared";
 
+const vehicleCategories = ["otomobil", "suv", "minivan", "ticari", "motosiklet"] as const;
+
 export const listingFiltersSchema: z.ZodType<ListingFilters> = z
   .object({
     query: optionalTrimmedString,
@@ -25,6 +27,7 @@ export const listingFiltersSchema: z.ZodType<ListingFilters> = z
     carTrim: optionalTrimmedString,
     city: optionalTrimmedString,
     district: optionalTrimmedString,
+    category: z.preprocess(emptyStringToUndefined, z.enum(vehicleCategories).optional()),
     minPrice: z.preprocess(
       emptyStringToUndefined,
       z.coerce.number().finite().min(0, invalidMessage).optional()
