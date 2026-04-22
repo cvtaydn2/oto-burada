@@ -35,7 +35,7 @@ export default async function AdminListingsPage({ searchParams }: AdminListingsP
   const totalPages = Math.ceil(total / (limit || 12));
 
   return (
-    <main className="space-y-8 p-6 lg:p-8 max-w-full bg-muted/30/30 min-h-full">
+  <main className="space-y-8 p-6 lg:p-8 max-w-full bg-muted/30 min-h-full">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
         <div>
           <div className="flex items-center gap-2 mb-2">
@@ -50,7 +50,7 @@ export default async function AdminListingsPage({ searchParams }: AdminListingsP
       </div>
 
       <div className="bg-card rounded-3xl border border-border shadow-sm overflow-hidden flex flex-col">
-          <div className="p-6 border-b border-border/50 bg-muted/30/30 flex items-center justify-between gap-4">
+        <div className="p-6 border-b border-border/50 bg-muted/30 flex items-center justify-between gap-4">
              <form className="relative flex-1 max-w-xl group">
                 <input type="hidden" name="status" value={status} />
                 <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground/70 group-focus-within:text-blue-500 transition-colors" size={18} />
@@ -99,7 +99,7 @@ export default async function AdminListingsPage({ searchParams }: AdminListingsP
               </TabsList>
             </div>
 
-            <TabsContent value="pending" className="m-0 p-8 bg-muted/30/20">
+          <TabsContent value="pending" className="m-0 p-8 bg-muted/20">
                <AdminListingsModeration pendingListings={listings} />
             </TabsContent>
             
@@ -120,19 +120,19 @@ export default async function AdminListingsPage({ searchParams }: AdminListingsP
       {/* Summary Stats Footer */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 px-2">
           <div className="p-8 bg-card rounded-3xl border border-border shadow-sm relative overflow-hidden group">
-            <div className="absolute -right-2 -top-2 size-20 bg-muted/30 rounded-full blur-2xl group- transition-transform" />
+              <div className="absolute -right-2 -top-2 size-20 bg-muted/30 rounded-full blur-2xl transition-transform" />
             <h3 className="text-muted-foreground/70 font-bold uppercase text-[10px] tracking-widest mb-2 italic">Bu Segmentte</h3>
             <span className="text-3xl font-bold text-foreground tracking-tighter">{total}</span>
           </div>
           
           <div className="p-8 bg-card rounded-3xl border border-blue-100 shadow-sm relative overflow-hidden group">
-            <div className="absolute -right-2 -top-2 size-20 bg-blue-50 rounded-full blur-2xl group- transition-transform" />
+              <div className="absolute -right-2 -top-2 size-20 bg-blue-50 rounded-full blur-2xl transition-transform" />
             <h3 className="text-blue-600 font-bold uppercase text-[10px] tracking-widest mb-2 italic">Aktif Satıştakiler</h3>
             <span className="text-3xl font-bold text-foreground tracking-tighter">{approvedCount}</span>
           </div>
 
           <div className="p-8 bg-card rounded-3xl border border-amber-100 shadow-sm relative overflow-hidden group">
-            <div className="absolute -right-2 -top-2 size-20 bg-amber-50 rounded-full blur-2xl group- transition-transform" />
+              <div className="absolute -right-2 -top-2 size-20 bg-amber-50 rounded-full blur-2xl transition-transform" />
             <h3 className="text-amber-600 font-bold uppercase text-[10px] tracking-widest mb-2 italic">Onay Bekleyen</h3>
             <span className="text-3xl font-bold text-foreground tracking-tighter">{pendingCount}</span>
           </div>

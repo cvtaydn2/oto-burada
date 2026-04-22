@@ -107,8 +107,8 @@ export default async function ComparePage({ searchParams }: ComparePageProps) {
   );
 
   return (
-    <div className="mx-auto max-w-[1280px] space-y-8 px-5 py-8 lg:px-6 lg:py-10">
-      <div className="flex flex-col justify-between gap-6 md:flex-row md:items-end">
+    <div className="mx-auto max-w-[1280px] space-y-6 px-4 py-6 sm:px-5 sm:py-8 lg:px-6 lg:py-10">
+      <div className="flex flex-col justify-between gap-4 md:flex-row md:items-end md:gap-6">
         <div className="max-w-2xl">
            <div className="mb-4 flex items-center gap-3">
               <Link href="/" aria-label="Ana sayfaya dön" className="flex size-10 items-center justify-center rounded-lg border border-border bg-card text-muted-foreground transition-transform hover:bg-muted/30">
@@ -127,7 +127,7 @@ export default async function ComparePage({ searchParams }: ComparePageProps) {
         <CompareShareButton ids={idsToCompare} />
       </div>
 
-      <div className="grid grid-cols-1 items-center gap-6 rounded-xl border border-border bg-card p-6 lg:grid-cols-12 lg:p-8">
+      <div className="grid grid-cols-1 items-center gap-4 rounded-xl border border-border bg-card p-4 sm:p-6 lg:grid-cols-12 lg:gap-6 lg:p-8">
         <div className="space-y-4 lg:col-span-5">
           <div className="flex items-center gap-3">
              <div className="flex size-10 items-center justify-center rounded-lg bg-primary/10 text-primary">
@@ -150,13 +150,13 @@ export default async function ComparePage({ searchParams }: ComparePageProps) {
             })}
           </div>
         </div>
-        <div className="flex justify-center rounded-lg border border-border/50 bg-muted/30/50 p-5 lg:col-span-7 lg:p-6">
+              <div className="flex justify-center rounded-lg border border-border/50 bg-muted/50 p-3 sm:p-5 lg:col-span-7 lg:p-6">
             <CompareRadarChart cars={cars} />
         </div>
       </div>
 
       <div className="overflow-x-auto rounded-xl border border-border bg-card">
-        <table className="min-w-[600px] w-full border-collapse text-left">
+        <table className="min-w-[720px] w-full border-collapse text-left">
           <thead>
             <tr>
               <th className="w-56 border-b border-border bg-muted/30 p-5 align-top">
@@ -185,7 +185,7 @@ export default async function ComparePage({ searchParams }: ComparePageProps) {
                           alt={car.title}
                           fill
                           sizes="(min-width: 1024px) 25vw, 100vw"
-                          className="object-cover group- transition-transform duration-700"
+                          className="object-cover transition-transform duration-700"
                         />
                       ) : null}
                     </div>
@@ -241,7 +241,7 @@ export default async function ComparePage({ searchParams }: ComparePageProps) {
             {features.map((feature, idx) => (
               <tr
                 key={feature.label}
-                className={cn("group", idx % 2 === 0 ? "bg-card" : "bg-muted/30/30")}
+                    className={cn("group", idx % 2 === 0 ? "bg-card" : "bg-muted/30")}
               >
                 <td className="border-b border-border p-5 text-[10px] font-bold text-muted-foreground uppercase tracking-wider transition-colors group-hover:text-foreground">
                   {feature.label}

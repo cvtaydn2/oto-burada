@@ -104,7 +104,7 @@ export default function AboutPage() {
 function EliteValueCard({ icon, title, desc }: { icon: React.ReactNode, title: string, desc: string }) {
   return (
     <div className="bg-card/5 border border-white/10 p-8 rounded-3xl hover:bg-card/10 transition-all group">
-       <div className="size-12 rounded-2xl bg-card/10 flex items-center justify-center mb-6 group- transition-transform">
+              <div className="size-12 rounded-2xl bg-card/10 flex items-center justify-center mb-6 transition-transform">
           {icon}
        </div>
        <h3 className="text-sm font-bold italic uppercase tracking-widest mb-3">{title}</h3>

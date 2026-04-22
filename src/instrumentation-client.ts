@@ -102,16 +102,5 @@ if (posthogProjectToken) {
 
       return properties;
     },
-
-    // ── Cookie Consent Entegrasyonu ──
-    loaded: (client) => {
-      if (typeof window === "undefined") {
-        return;
-      }
-
-      if (window.localStorage.getItem("cookie-consent") === "true") {
-        client.opt_in_capturing();
-      }
-    },
   });
 }

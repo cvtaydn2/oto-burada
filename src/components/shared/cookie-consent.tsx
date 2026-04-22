@@ -2,43 +2,42 @@
 
 import { useEffect, useState } from "react";
 import { Cookie, X } from "lucide-react";
-import posthog from "posthog-js";
+import {
+  captureClientEvent,
+  getCookieConsent,
+  setCookieConsent,
+} from "@/lib/monitoring/posthog-client";
 
 export function CookieConsent() {
   const [isVisible, setIsVisible] = useState(false);
 
   useEffect(() => {
-    const consent = localStorage.getItem("cookie-consent");
+    const consent = getCookieConsent();
     if (!consent) {
       const timer = setTimeout(() => setIsVisible(true), 1500);
       return () => clearTimeout(timer);
     }
   }, []);
 
-  const handleAccept = () => {
-    localStorage.setItem("cookie-consent", "true");
-    posthog.opt_in_capturing();
-    posthog.capture("cookie_consent_accepted");
-    setIsVisible(false);
-  };
-
-  const handleDecline = () => {
-    localStorage.setItem("cookie-consent", "false");
-    posthog.opt_out_capturing();
+  const handleConsent = (accepted: boolean) => {
+    setCookieConsent(accepted);
+    if (accepted) {
+      captureClientEvent("cookie_consent_accepted");
+    }
     setIsVisible(false);
   };
 
   if (!isVisible) return null;
 
   return (
-    <div className="fixed bottom-24 left-4 right-4 z-50 animate-in fade-in slide-in-from-bottom-5 duration-500 sm:left-auto sm:right-6 sm:max-w-sm">
+    <div className="fixed bottom-[calc(env(safe-area-inset-bottom)+8rem)] left-4 right-4 z-50 animate-in fade-in slide-in-from-bottom-5 duration-500 sm:bottom-6 sm:left-auto sm:right-6 sm:max-w-sm">
       <div className="rounded-3xl border border-border bg-card/95 p-5 shadow-sm backdrop-blur-xl">
         <div className="flex items-start justify-between gap-4">
           <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-indigo-50 text-indigo-600">
             <Cookie size={20} />
           </div>
           <button
-            onClick={handleDecline}
+            onClick={() => handleConsent(false)}
             className="rounded-full p-1 text-muted-foreground/70 hover:bg-muted transition-colors"
             aria-label="Reddet"
           >
@@ -55,7 +54,7 @@ export function CookieConsent() {
 
         <div className="mt-5 flex items-center gap-3">
           <button
-            onClick={handleAccept}
+            onClick={() => handleConsent(true)}
             className="flex-1 rounded-xl bg-slate-900 px-4 py-2 text-xs font-bold text-white transition-all hover:bg-slate-800"
           >
             Anladım, Devam Et

@@ -29,7 +29,7 @@ export function StepIndicator({ currentStep }: StepIndicatorProps) {
         
         {/* Active Progress Line */}
         <div 
-          className="absolute left-0 top-[22px] h-1.5 bg-primary rounded-full z-1 transition-all duration-700 ease-out"
+          className="absolute left-0 top-[22px] h-1.5 bg-primary rounded-full z-[1] transition-all duration-700 ease-out"
           style={{ width: `${(currentStep / (stepsConfig.length - 1)) * 100}%` }}
         />
         

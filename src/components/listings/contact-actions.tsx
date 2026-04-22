@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { usePostHog } from "posthog-js/react";
 import { MessageCircle, AlertTriangle, Loader2, Phone, ShieldAlert } from "lucide-react";
 import {
   AlertDialog,
@@ -22,6 +21,7 @@ import { createSupabaseBrowserClient } from "@/lib/supabase/browser";
 import { getSellerTrustUI } from "@/lib/utils/trust-ui";
 import { trust } from "@/lib/constants/ui-strings";
 import { cn } from "@/lib/utils";
+import { captureClientEvent } from "@/lib/monitoring/posthog-client";
 import type { Profile } from "@/types";
 
 interface ContactActionsProps {
@@ -36,7 +36,6 @@ interface ContactActionsProps {
 export function ContactActions({ listingId, listingSlug, sellerId, seller, currentUserId }: ContactActionsProps) {
   const router = useRouter();
   const supabase = createSupabaseBrowserClient();
-  const posthog = usePostHog();
   const [isRevealed, setIsRevealed] = useState(false);
   const [revealedPhone, setRevealedPhone] = useState<string | null>(null);
   const [isLogging, setIsLogging] = useState(false);
@@ -98,7 +97,7 @@ export function ContactActions({ listingId, listingSlug, sellerId, seller, curre
       const result = await revealListingPhone(listingId);
       setRevealedPhone(result.phone);
       setIsRevealed(true);
-      posthog?.capture("contact_phone_revealed", { listingId, sellerId });
+      captureClientEvent("contact_phone_revealed", { listingId, sellerId });
     } catch (err) {
       const message = err instanceof Error ? err.message : "Bir hata oluştu";
       setError(message);
@@ -124,7 +123,7 @@ export function ContactActions({ listingId, listingSlug, sellerId, seller, curre
 
       const chat = await getOrCreateChat(listingId, user.id, sellerId);
       if (chat) {
-        posthog?.capture("chat_started", {
+        captureClientEvent("chat_started", {
           chatId: chat.id,
           listingId,
           sellerId,
@@ -242,7 +241,7 @@ export function ContactActions({ listingId, listingSlug, sellerId, seller, curre
                    href={whatsappLink}
                    target="_blank"
                    rel="noreferrer"
-                   onClick={() => posthog?.capture("contact_whatsapp_clicked", { listingId, sellerId })}
+                   onClick={() => captureClientEvent("contact_whatsapp_clicked", { listingId, sellerId })}
                    className="flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-green-500 to-emerald-600 w-full h-12 px-6 text-[15px] text-white font-bold shadow-sm"
                  >
                    Mesaj Gönder

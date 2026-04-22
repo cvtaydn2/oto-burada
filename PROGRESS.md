@@ -1,3 +1,25 @@
+# 2026-04-22 - Listing Detail Responsive & PostHog Consent Consolidation
+
+## Yapılan Değişiklikler
+
+- `src/app/(public)/(marketplace)/listing/[slug]/page.tsx` ve `src/components/listings/listing-detail/listing-seller-sidebar.tsx`: Listing detail content/sidebar düzeni `xl` breakpoint’e kadar tek kolonda kalacak şekilde sertleştirildi. Sabit `400px` varsayımı kaldırıldı, sidebar fallback genişliği `xl:max-w-[400px]` seviyesine çekildi, sticky davranış büyük ekranda korunurken küçük laptop/tablet kırığı azaltıldı. Breadcrumb/action header alanı dar ekranlarda daha toleranslı truncate ve tam genişlik action slot ile güçlendirildi. Sayfa alt boşluğu sabit `pb-32` yerine safe-area tabanlı hale getirildi.
+- `src/components/shared/cookie-consent.tsx` ve `src/components/listings/mobile-sticky-actions.tsx`: Mobilde cookie banner ile bottom CTA çakışması giderildi. Banner mobilde CTA yüksekliğini hesaba katan daha yukarı bir offset aldı; sticky CTA alt padding’i safe-area tabanlı hale getirildi. Z-index sıralaması korunarak tasarım dili bozulmadı.
+- `src/components/layout/home-hero.tsx`: Desktop hero görseli absolute width/margin hack’lerinden çıkarılıp akış içi responsive grid yapısına alındı. `w-[46vw]`, `min-w-[520px]`, `lg:ml-[30%]`, `xl:ml-[34%]` kaynaklı hizalama kırığı kaldırıldı; medya paneli ve içerik daha dengeli hizalandı.
+- `src/lib/monitoring/posthog-client.ts`, `src/instrumentation-client.ts`, `src/components/providers/posthog-provider.tsx`, `src/components/shared/cookie-consent.tsx`: Cookie consent, opt-in/opt-out senkronizasyonu, identify/reset ve pageview capture tek client helper akışında toplandı. `instrumentation-client` ile provider arasındaki duplicate consent kontrolü kaldırıldı; davranış opt-in tabanlı aynı kaldı.
+- `src/components/dashboard/checkout-client.tsx`, `src/components/forms/reset-password-form.tsx`, `src/components/listings/contact-actions.tsx`, `src/components/listings/listing-detail-actions.tsx`, `src/components/listings/safe-whatsapp-button.tsx`, `src/components/listings/saved-searches-panel.tsx`, `src/app/admin/error.tsx`: Doğrudan `posthog` / `usePostHog` kullanımları kaldırıldı. Client-side event ve exception çağrıları merkezi `posthog-client` yardımcılarına taşındı.
+
+## Doğrulama
+
+- `npm run lint` ✅
+- `npm run typecheck` ✅
+
+## Sonraki Adım
+
+- Browser’da listing detail ve home hero’yu tablet, 1024px ve mobil viewport’larda görsel olarak doğrula.
+- Cookie consent accept/decline akışında PostHog pageview ve event davranışının beklenen şekilde sürdüğünü browser + dashboard üzerinden teyit et.
+
+---
+
 # 2026-04-21 - Final Consistency Pass
 
 ## Yapılan Değişiklikler

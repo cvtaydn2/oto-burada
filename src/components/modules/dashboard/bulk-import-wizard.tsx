@@ -183,7 +183,7 @@ export function BulkImportWizard() {
             {isProcessing ? (
               <Loader2 className="size-20 text-primary animate-spin" />
             ) : (
-              <div className="size-20 rounded-3xl bg-primary/10 flex items-center justify-center text-primary group- transition-transform">
+              <div className="size-20 rounded-3xl bg-primary/10 flex items-center justify-center text-primary transition-transform">
                 <Upload size={40} strokeWidth={2.5} />
               </div>
             )}

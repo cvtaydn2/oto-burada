@@ -112,7 +112,7 @@ export function DamageReportCard({ damageStatus, tramerAmount }: DamageReportCar
       </div>
 
       {isExpanded && (
-        <div className="bg-muted/30/50 border-t border-border/50 p-5 animate-in slide-in-from-top-2 duration-300">
+      <div className="bg-muted/50 border-t border-border/50 p-5 animate-in slide-in-from-top-2 duration-300">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-2">
             {carParts.map((part) => {
               const status = (damageStatus[part] as keyof typeof carPartDamageStatusLabels) || "orjinal";

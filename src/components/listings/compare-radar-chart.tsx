@@ -36,7 +36,6 @@ export function CompareRadarChart({ cars }: CompareRadarChartProps) {
   const minYear = Math.min(...cars.map(c => c.year));
   const maxYear = Math.max(...cars.map(c => c.year));
   const maxMileage = Math.max(...cars.map(c => c.mileage));
-  Math.max(...cars.map(c => c.tramerAmount || 0), 10000);
 
   const data = categories.map(cat => {
     const row: Record<string, number | string> = { subject: cat.label };
@@ -67,11 +66,11 @@ export function CompareRadarChart({ cars }: CompareRadarChartProps) {
   const colors = ["#2563eb", "#e11d48", "#10b981", "#f59e0b"];
 
   return (
-    <div className="h-[400px] min-w-0 w-full py-4">
-      <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={320}>
-        <RadarChart cx="50%" cy="50%" outerRadius="70%" data={data}>
+    <div className="h-[320px] w-full min-w-0 py-2 sm:h-[360px] sm:py-4 lg:h-[400px]">
+      <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={280}>
+        <RadarChart cx="50%" cy="50%" outerRadius="68%" data={data}>
           <PolarGrid stroke="#e2e8f0" />
-          <PolarAngleAxis dataKey="subject" tick={{ fontSize: 12, fontWeight: 500 }} />
+          <PolarAngleAxis dataKey="subject" tick={{ fontSize: 11, fontWeight: 500 }} />
           <PolarRadiusAxis angle={30} domain={[0, 100]} tick={false} axisLine={false} />
           {cars.map((car, idx) => (
             <Radar
@@ -86,7 +85,7 @@ export function CompareRadarChart({ cars }: CompareRadarChartProps) {
           <Tooltip 
             contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)' }}
           />
-          <Legend verticalAlign="bottom" height={36}/>
+          <Legend verticalAlign="bottom" height={36} wrapperStyle={{ fontSize: "12px" }} />
         </RadarChart>
       </ResponsiveContainer>
     </div>

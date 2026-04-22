@@ -64,7 +64,7 @@ export function PWAInstallPrompt() {
           </div>
         </div>
  
-        <div className="mt-3 pt-3 border-t border-border/50/50">
+        <div className="mt-3 pt-3 border-t border-border/50">
           {platform === "ios" ? (
             <div className="flex items-center gap-2 text-[11px] text-foreground/90 font-medium">
               <span>Alttaki</span>

@@ -128,16 +128,16 @@ export default async function ListingDetailPage({ params }: ListingDetailPagePro
       />
 
       <main className="min-h-screen bg-background flex flex-col">
-        <div className="mx-auto max-w-[1400px] px-3 sm:px-4 md:px-6 py-4 sm:py-6 md:py-10 pb-32 lg:pb-10 w-full flex-1">
+        <div className="mx-auto max-w-[1400px] px-3 sm:px-4 md:px-6 py-4 sm:py-6 md:py-10 pb-[calc(env(safe-area-inset-bottom)+7rem)] sm:pb-[calc(env(safe-area-inset-bottom)+8rem)] lg:pb-10 w-full flex-1">
           
-          <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-3 sm:gap-4 md:gap-6 mb-4 sm:mb-6 md:mb-8 lg:mb-10">
-            <nav className="flex flex-wrap items-center gap-2 sm:gap-3">
+          <div className="mb-4 flex flex-col gap-3 sm:gap-4 md:mb-8 md:gap-6 lg:mb-10 lg:flex-row lg:items-center lg:justify-between">
+            <nav className="flex min-w-0 flex-wrap items-center gap-2 sm:gap-3">
               {pageBreadcrumbs.map((b, i) => (
-                <div key={b.url} className="flex items-center gap-2 sm:gap-3">
+                <div key={b.url} className="flex min-w-0 items-center gap-2 sm:gap-3">
                   <Link 
                     href={b.url} 
                     className={cn(
-                      "text-[9px] sm:text-[10px] font-bold uppercase tracking-widest transition-all hover:text-primary truncate max-w-[80px] sm:max-w-none", 
+                      "max-w-[calc(50vw-2.5rem)] truncate text-[9px] font-bold uppercase tracking-widest transition-all hover:text-primary sm:max-w-[180px] sm:text-[10px] md:max-w-none",
                       i === pageBreadcrumbs.length - 1 ? "text-foreground" : "text-muted-foreground"
                     )}
                   >
@@ -147,10 +147,12 @@ export default async function ListingDetailPage({ params }: ListingDetailPagePro
                 </div>
               ))}
             </nav>
-            <ListingDetailActions listingId={listing.id} price={listing.price} sellerId={listing.sellerId} title={listing.title} />
+            <div className="w-full lg:w-auto">
+              <ListingDetailActions listingId={listing.id} price={listing.price} sellerId={listing.sellerId} title={listing.title} />
+            </div>
           </div>
 
-          <div className="flex flex-col lg:flex-row items-start gap-6 sm:gap-8 md:gap-10 lg:gap-12">
+          <div className="flex flex-col items-start gap-6 sm:gap-8 md:gap-10 lg:flex-row lg:gap-12">
             <div className="w-full min-w-0 flex-1 space-y-4 sm:space-y-6 md:space-y-8 lg:space-y-10">
               <ListingGallerySection listing={listing} />
               <ListingHero listing={listing} insight={insight} />
@@ -188,7 +190,7 @@ export default async function ListingDetailPage({ params }: ListingDetailPagePro
               </Suspense>
             </div>
 
-            <Suspense fallback={<div className="w-full lg:w-[400px] h-[600px] animate-pulse rounded-3xl bg-muted" />}>
+            <Suspense fallback={<div className="h-[600px] w-full animate-pulse rounded-3xl bg-muted lg:max-w-md" />}>
               <ListingSellerSidebar 
                 listing={listing} 
                 seller={seller} 
@@ -227,4 +229,3 @@ const ChevronRight = ({ size, className }: { size: number; className?: string })
     <path d="m9 18 6-6-6-6"/>
   </svg>
 );
-

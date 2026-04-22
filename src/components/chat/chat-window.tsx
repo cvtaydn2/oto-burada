@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useChatRealtime } from "@/hooks/use-chat-realtime";
 import { sendMessage, getChatMessages, markMessagesAsRead } from "@/services/messages/chat-service";
 import { MessageBubble } from "./message-bubble";
@@ -17,15 +17,26 @@ interface ChatWindowProps {
 export function ChatWindow({ chat, currentUserId }: ChatWindowProps) {
   const { messages, setMessages, isTyping, isPartnerOnline, sendTypingStatus, connectionStatus, broadcastMessage } = useChatRealtime(chat.id, currentUserId);
   const scrollRef = useRef<HTMLDivElement>(null);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [isLoadingHistory, setIsLoadingHistory] = useState(true);
 
   // Initial Load & Mark Read
   useEffect(() => {
     const load = async () => {
-      const history = await getChatMessages(chat.id);
-      setMessages(history);
-      await markMessagesAsRead(chat.id, currentUserId);
+      setIsLoadingHistory(true);
+      setErrorMessage(null);
+
+      try {
+        const history = await getChatMessages(chat.id);
+        setMessages(history);
+        await markMessagesAsRead(chat.id, currentUserId);
+      } catch {
+        setErrorMessage("Mesajlar yüklenemedi. Lütfen tekrar deneyin.");
+      } finally {
+        setIsLoadingHistory(false);
+      }
     };
-    load();
+    void load();
   }, [chat.id, currentUserId, setMessages]);
 
   // Mark new messages as read when they arrive if window is focused
@@ -46,15 +57,24 @@ export function ChatWindow({ chat, currentUserId }: ChatWindowProps) {
   }, [messages, isTyping]);
 
   const handleSend = async (content: string) => {
-    const newMessage = await sendMessage(chat.id, currentUserId, content);
-    if (newMessage) {
-      setMessages((prev) => [...prev, newMessage]);
-      broadcastMessage(newMessage);
+    setErrorMessage(null);
+
+    try {
+      const newMessage = await sendMessage(chat.id, currentUserId, content);
+      if (newMessage) {
+        setMessages((prev) => [...prev, newMessage]);
+        broadcastMessage(newMessage);
+        return;
+      }
+
+      setErrorMessage("Mesaj gönderilemedi. Lütfen tekrar deneyin.");
+    } catch {
+      setErrorMessage("Mesaj gönderilemedi. Lütfen tekrar deneyin.");
     }
   };
 
   return (
-    <div className="flex flex-col h-[600px] w-full border rounded-xl overflow-hidden bg-background shadow-sm">
+    <div className="flex min-h-[420px] w-full flex-col overflow-hidden rounded-xl border bg-background shadow-sm h-[min(70vh,600px)] md:h-[min(75vh,600px)]">
       {/* Header */}
       <div className="p-4 border-b flex items-center justify-between bg-muted/30 backdrop-blur-md">
         <div>
@@ -98,6 +118,12 @@ export function ChatWindow({ chat, currentUserId }: ChatWindowProps) {
         </div>
       )}
 
+      {errorMessage && (
+        <div className="border-b border-destructive/20 bg-destructive/5 px-4 py-2 text-xs font-medium text-destructive">
+          {errorMessage}
+        </div>
+      )}
+
       {/* Messages */}
       <ScrollArea ref={scrollRef} className="flex-1 p-4 bg-dot-pattern">
         <div 
@@ -109,6 +135,13 @@ export function ChatWindow({ chat, currentUserId }: ChatWindowProps) {
           {messages.map((msg) => (
             <MessageBubble key={msg.id} message={msg} isMe={msg.senderId === currentUserId} />
           ))}
+
+          {isLoadingHistory && (
+            <div className="flex items-center gap-2 text-xs text-muted-foreground mb-4 ml-4">
+              <Loader2 className="w-3 h-3 animate-spin" />
+              <span>Mesajlar yükleniyor...</span>
+            </div>
+          )}
           
           {isTyping && (
             <div 

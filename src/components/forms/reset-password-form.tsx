@@ -4,11 +4,10 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Lock, ShieldCheck, LoaderCircle } from "lucide-react";
 import { createSupabaseBrowserClient } from "@/lib/supabase/browser";
-import { usePostHog } from "posthog-js/react";
+import { captureClientException } from "@/lib/monitoring/posthog-client";
 
 export function ResetPasswordForm() {
   const router = useRouter();
-  const posthog = usePostHog();
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -35,7 +34,7 @@ export function ResetPasswordForm() {
 
       if (updateError) {
         setError("Şifre güncellenemedi. Lütfen tekrar deneyin.");
-        posthog?.captureException(updateError);
+        captureClientException(updateError, "reset_password_update_user");
         return;
       }
 
@@ -43,7 +42,7 @@ export function ResetPasswordForm() {
       setTimeout(() => router.push("/dashboard"), 2000);
     } catch (err) {
       setError("Beklenmedik bir hata oluştu.");
-      posthog?.captureException(err instanceof Error ? err : new Error(String(err)));
+      captureClientException(err, "reset_password_submit");
     } finally {
       setIsLoading(false);
     }
@@ -72,7 +71,7 @@ export function ResetPasswordForm() {
       </div>
 
       {/* Form Side */}
-      <div className="flex items-center justify-center p-8 lg:p-24 relative overflow-hidden bg-muted/30/50">
+      <div className="flex items-center justify-center p-8 lg:p-24 relative overflow-hidden bg-muted/50">
         <div className="w-full max-w-md space-y-10 relative z-10">
           <div className="space-y-4">
             <h1 className="text-4xl font-bold italic uppercase tracking-tighter text-foreground leading-tight">

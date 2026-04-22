@@ -46,7 +46,7 @@ export function ViewCounter({ listingId, initialCount }: ViewCounterProps) {
   }, [listingId, supabase]);
 
   return (
-    <div className="flex items-center gap-4 py-2 px-4 rounded-2xl bg-muted/30 border border-border/50/50 w-fit">
+    <div className="flex w-fit items-center gap-4 rounded-2xl border border-border/50 bg-muted/30 px-4 py-2">
       <div className="flex items-center gap-2 text-muted-foreground font-bold text-xs uppercase tracking-tight italic">
         <Eye size={14} className="text-primary" />
         <span>Görüntülenme</span>

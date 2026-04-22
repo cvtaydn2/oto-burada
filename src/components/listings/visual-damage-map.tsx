@@ -20,7 +20,7 @@ export function VisualDamageMap({ damageStatus, className }: VisualDamageMapProp
   const getStatus = (part: string) => damageStatus[part] || "orjinal";
 
   return (
-    <div className={cn("relative flex items-center justify-center rounded-3xl border border-border/50 bg-muted/30/30 p-4", className)}>
+    <div className={cn("relative flex items-center justify-center rounded-3xl border border-border/50 bg-muted/30 p-4", className)}>
       <svg viewBox="0 0 240 460" className="h-auto w-full max-w-[180px] drop-shadow-sm">
         {/* Base Car Body Shadow */}
         <path d="M50,40 Q50,20 120,20 Q190,20 190,40 L195,100 L200,300 Q200,440 120,440 Q40,440 40,300 L45,100 Z" fill="rgba(0,0,0,0.05)" />

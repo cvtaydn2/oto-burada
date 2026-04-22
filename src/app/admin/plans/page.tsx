@@ -17,7 +17,7 @@ export default async function AdminPlansPage() {
   ]);
 
   return (
-    <main className="space-y-8 p-6 lg:p-8 bg-muted/30/30 min-h-full">
+  <main className="space-y-8 p-6 lg:p-8 bg-muted/30 min-h-full">
       <section className="flex flex-col justify-between gap-4 md:flex-row md:items-end">
         <div>
           <div className="flex items-center gap-2 mb-2">
@@ -70,13 +70,13 @@ export default async function AdminPlansPage() {
       {/* Paket Bazlı Satış Özeti */}
       {stats.byPlan.length > 0 && (
         <div className="rounded-3xl border border-border bg-card shadow-sm overflow-hidden">
-          <div className="p-6 border-b border-border/50 bg-muted/30/30">
+            <div className="p-6 border-b border-border/50 bg-muted/30">
             <h3 className="text-sm font-bold text-foreground">Paket Bazlı Satış Özeti</h3>
           </div>
           <div className="overflow-x-auto">
             <table className="w-full text-left">
               <thead>
-                <tr className="bg-muted/30/50 border-b border-border/50">
+                  <tr className="bg-muted/50 border-b border-border/50">
                   <th className="px-6 py-3 text-[10px] font-bold text-muted-foreground/70 uppercase tracking-widest">Paket</th>
                   <th className="px-6 py-3 text-[10px] font-bold text-muted-foreground/70 uppercase tracking-widest">Satış</th>
                   <th className="px-6 py-3 text-[10px] font-bold text-muted-foreground/70 uppercase tracking-widest">Gelir</th>
@@ -98,7 +98,7 @@ export default async function AdminPlansPage() {
 
       {/* Paket Listesi */}
       <div className="rounded-3xl border border-border bg-card shadow-sm overflow-hidden">
-        <div className="p-6 border-b border-border/50 bg-muted/30/30 flex items-center gap-3">
+            <div className="p-6 border-b border-border/50 bg-muted/30 flex items-center gap-3">
           <div className="size-10 rounded-xl bg-card border border-border flex items-center justify-center text-indigo-500 shadow-sm">
             <CreditCard size={20} />
           </div>
@@ -112,7 +112,7 @@ export default async function AdminPlansPage() {
 
       {/* Satın Alma Geçmişi */}
       <div className="rounded-3xl border border-border bg-card shadow-sm overflow-hidden">
-        <div className="p-6 border-b border-border/50 bg-muted/30/30">
+              <div className="p-6 border-b border-border/50 bg-muted/30">
           <h3 className="text-sm font-bold text-foreground">
             Satın Alma Geçmişi
             {purchases.length === 0 && (
@@ -140,7 +140,7 @@ export default async function AdminPlansPage() {
           <div className="overflow-x-auto">
             <table className="w-full text-left">
               <thead>
-                <tr className="bg-muted/30/50 border-b border-border/50">
+                  <tr className="bg-muted/50 border-b border-border/50">
                   <th className="px-6 py-3 text-[10px] font-bold text-muted-foreground/70 uppercase tracking-widest">Kullanıcı</th>
                   <th className="px-6 py-3 text-[10px] font-bold text-muted-foreground/70 uppercase tracking-widest">Paket</th>
                   <th className="px-6 py-3 text-[10px] font-bold text-muted-foreground/70 uppercase tracking-widest">Tutar</th>

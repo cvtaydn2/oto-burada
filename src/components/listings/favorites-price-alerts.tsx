@@ -56,15 +56,15 @@ export function FavoritesPriceAlerts() {
         <CardTitle className="flex items-center gap-2 text-lg font-bold text-foreground">
           <Bell className="text-blue-500" size={20} />
           Fiyat Düşüşü Uyarı Ayarları
-          <span className="ml-auto text-[10px] font-bold uppercase tracking-widest text-blue-400 bg-blue-50 border border-blue-100 px-2 py-0.5 rounded-full">
-            Yakında
+          <span className="ml-auto rounded-full border border-blue-100 bg-blue-50 px-2 py-0.5 text-[10px] font-bold uppercase tracking-widest text-blue-400">
+            Hazırlanıyor
           </span>
         </CardTitle>
       </CardHeader>
       <CardContent>
         <div className="space-y-6">
           <div className="rounded-xl bg-card border border-blue-100 p-4 text-sm text-muted-foreground leading-relaxed">
-            Fiyat düşüşü bildirimleri özelliği yakında aktif olacak. Şu an bu ayarlar kaydedilmekte, ancak e-posta gönderimi henüz aktif değil.
+            Fiyat düşüşü bildirimleri henüz aktif değil. Şimdiden tercihlerinizi kaydedebilirsiniz; özellik açıldığında bu seçimler kullanılacaktır.
           </div>
           <div className="opacity-60 pointer-events-none select-none">
             <p className="mb-2 text-xs font-bold uppercase tracking-wider text-muted-foreground/70">Fiyat Hassasiyeti</p>
@@ -100,7 +100,7 @@ export function FavoritesPriceAlerts() {
             </p>
             <Button size="sm" className="bg-blue-500 hover:bg-blue-600" onClick={handleSave} disabled={isSaving}>
               <Check size={16} className="mr-2" />
-              {isSaving ? "Kaydediliyor..." : "Ayarları Güncelle"}
+              {isSaving ? "Kaydediliyor..." : "Tercihi Kaydet"}
             </Button>
           </div>
         </div>

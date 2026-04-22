@@ -34,7 +34,7 @@ export function ForgotPasswordForm() {
       </div>
 
       {/* Form Side */}
-      <div className="flex items-center justify-center p-8 lg:p-24 relative overflow-hidden bg-muted/30/50">
+      <div className="flex items-center justify-center p-8 lg:p-24 relative overflow-hidden bg-muted/50">
         <div className="w-full max-w-md space-y-10 relative z-10">
           <div className="space-y-4">
             <Link

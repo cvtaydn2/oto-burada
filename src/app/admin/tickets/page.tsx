@@ -23,7 +23,7 @@ export default async function AdminTicketsPage({
   const openCount = counts.open + counts.in_progress;
 
   return (
-    <main className="space-y-8 p-6 lg:p-8 bg-muted/30/30 min-h-full">
+  <main className="space-y-8 p-6 lg:p-8 bg-muted/30 min-h-full">
       <section className="flex flex-col justify-between gap-4 md:flex-row md:items-end">
         <div>
           <div className="flex items-center gap-2 mb-2">
@@ -56,7 +56,7 @@ export default async function AdminTicketsPage({
       </div>
 
       <div className="rounded-3xl border border-border bg-card shadow-sm overflow-hidden">
-        <div className="p-6 border-b border-border/50 bg-muted/30/30 flex items-center gap-3">
+        <div className="p-6 border-b border-border/50 bg-muted/30 flex items-center gap-3">
           <div className="size-10 rounded-xl bg-card border border-border flex items-center justify-center text-emerald-500 shadow-sm">
             <MessageSquare size={20} />
           </div>

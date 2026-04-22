@@ -1,7 +1,10 @@
 "use client";
 
 import { useEffect } from "react";
-import { captureClientEvent } from "@/lib/monitoring/posthog-client";
+import {
+  captureClientEvent,
+  captureClientException,
+} from "@/lib/monitoring/posthog-client";
 
 interface ListingViewTrackerProps {
   listingId: string;
@@ -25,14 +28,27 @@ export function ListingViewTracker({
   status,
 }: ListingViewTrackerProps) {
   useEffect(() => {
-    // Record view in DB via API
-    fetch("/api/listings/view", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ listingId }),
-    }).catch(() => {});
+    const recordView = async () => {
+      try {
+        const response = await fetch("/api/listings/view", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ listingId }),
+        });
 
-    // Capture PostHog event
+        if (!response.ok) {
+          throw new Error(`Failed to record listing view: ${response.status}`);
+        }
+      } catch (error) {
+        captureClientException(error, "listing_view_record_failed", {
+          listingId,
+          listingSlug,
+        });
+      }
+    };
+
+    void recordView();
+
     captureClientEvent("listing_viewed", {
       listingId,
       listingSlug,

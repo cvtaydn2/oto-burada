@@ -39,7 +39,7 @@ export default async function AdminUserManagementPage({
   ];
 
   return (
-    <main className="space-y-8 p-6 lg:p-8 max-w-full bg-muted/30/30 min-h-full">
+  <main className="space-y-8 p-6 lg:p-8 max-w-full bg-muted/30 min-h-full">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
         <div>
           <div className="flex items-center gap-2 mb-2">
@@ -80,7 +80,7 @@ export default async function AdminUserManagementPage({
           </div>
 
           <div className="rounded-3xl border border-border bg-card overflow-hidden shadow-sm">
-            <div className="p-6 border-b border-border/50 bg-muted/30/30 flex flex-col md:flex-row md:items-center gap-4">
+          <div className="p-6 border-b border-border/50 bg-muted/30 flex flex-col md:flex-row md:items-center gap-4">
               <UserSearch defaultValue={q} />
             </div>
 
@@ -88,7 +88,7 @@ export default async function AdminUserManagementPage({
               <table className="w-full text-left border-collapse">
                 <caption className="sr-only">Platform kullanıcıları listesi</caption>
                 <thead>
-                  <tr className="bg-muted/30/50 border-b border-border/50">
+                  <tr className="bg-muted/50 border-b border-border/50">
                     <th className="p-6 text-[10px] font-bold text-muted-foreground/70 uppercase tracking-[0.2em]">Profil</th>
                     <th className="p-6 text-[10px] font-bold text-muted-foreground/70 uppercase tracking-[0.2em]">İletişim</th>
                     <th className="p-6 text-[10px] font-bold text-muted-foreground/70 uppercase tracking-[0.2em]">Rol</th>
@@ -112,7 +112,7 @@ export default async function AdminUserManagementPage({
                             <Link href={`/admin/users/${u.id}`}>
                               <div
                                 className={cn(
-                                  "flex size-11 items-center justify-center rounded-xl text-sm font-bold transition-all group- cursor-pointer",
+                          "flex size-11 items-center justify-center rounded-xl text-sm font-bold transition-all cursor-pointer",
                                   u.role === "admin"
                                     ? "bg-blue-600 text-white shadow-md shadow-blue-100"
                                     : "bg-muted text-muted-foreground",
@@ -210,7 +210,7 @@ export default async function AdminUserManagementPage({
               </table>
             </div>
 
-            <div className="p-4 bg-muted/30/50 border-t border-border/50">
+            <div className="p-4 bg-muted/50 border-t border-border/50">
               <SimplePagination currentPage={currentPage} totalPages={totalPages} />
             </div>
           </div>

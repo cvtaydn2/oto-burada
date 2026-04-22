@@ -6,7 +6,10 @@ import { CreditCard, ShieldCheck, ArrowLeft, CheckCircle2, AlertTriangle } from 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { usePostHog } from "posthog-js/react";
+import {
+  captureClientEvent,
+  captureClientException,
+} from "@/lib/monitoring/posthog-client";
 import type { PricingPlan } from "@/services/admin/plans";
 
 interface CheckoutClientProps {
@@ -16,7 +19,6 @@ interface CheckoutClientProps {
 
 export function CheckoutClient({ plan, isPaymentEnabled }: CheckoutClientProps) {
   const router = useRouter();
-  const posthog = usePostHog();
   const [isProcessing, setIsProcessing] = useState(false);
   const [status, setStatus] = useState<"idle" | "success" | "error">("idle");
   const [errorMessage, setErrorMessage] = useState("");
@@ -35,12 +37,11 @@ export function CheckoutClient({ plan, isPaymentEnabled }: CheckoutClientProps) 
       const data = await res.json();
 
       if (data.success) {
-        posthog?.capture("payment_success", { planId: plan.id, planName: plan.name, amount: plan.price });
+        captureClientEvent("payment_success", { planId: plan.id, planName: plan.name, amount: plan.price });
         setStatus("success");
         setTimeout(() => router.push("/dashboard"), 2000);
       } else {
-        // API'den dönen hata — kullanıcıya göster ve PostHog'a bildir
-        posthog?.capture("payment_failed", {
+        captureClientEvent("payment_failed", {
           planId: plan.id,
           planName: plan.name,
           amount: plan.price,
@@ -51,11 +52,7 @@ export function CheckoutClient({ plan, isPaymentEnabled }: CheckoutClientProps) 
         setErrorMessage(data.error ?? "Ödeme işlemi başarısız oldu.");
       }
     } catch (err) {
-      // Network/unexpected error — PostHog'a exception olarak gönder
-      posthog?.captureException(
-        err instanceof Error ? err : new Error(String(err)),
-        { planId: plan.id, context: "checkout_payment" }
-      );
+      captureClientException(err, "checkout_payment", { planId: plan.id });
       setStatus("error");
       setErrorMessage("Bağlantı hatası. Lütfen tekrar deneyin.");
     } finally {

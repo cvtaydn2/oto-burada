@@ -3,9 +3,9 @@
 import Link from "next/link";
 import { Bell, ChevronRight, LoaderCircle, Search, Trash2 } from "lucide-react";
 import { useState } from "react";
-import { usePostHog } from "posthog-js/react";
 
 import { formatDate } from "@/lib/utils";
+import { captureClientEvent } from "@/lib/monitoring/posthog-client";
 
 interface SavedSearchListItem {
   filtersSummary: string;
@@ -22,7 +22,6 @@ interface SavedSearchesPanelProps {
 }
 
 export function SavedSearchesPanel({ initialSavedSearches }: SavedSearchesPanelProps) {
-  const posthog = usePostHog();
   const [savedSearches, setSavedSearches] = useState(initialSavedSearches);
   const [activeAction, setActiveAction] = useState<string | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -43,7 +42,7 @@ export function SavedSearchesPanel({ initialSavedSearches }: SavedSearchesPanelP
 
       if (!response.ok || !payload?.success) {
         const message = payload?.error?.message ?? "Kayıtlı arama güncellenemedi.";
-        posthog?.capture("saved_search_toggle_failed", { searchId, nextValue, responseStatus: response.status, message });
+        captureClientEvent("saved_search_toggle_failed", { searchId, nextValue, responseStatus: response.status, message });
         setErrorMessage(message);
         return;
       }
@@ -53,11 +52,11 @@ export function SavedSearchesPanel({ initialSavedSearches }: SavedSearchesPanelP
           search.id === searchId
             ? { ...search, notificationsEnabled: nextValue }
             : search,
-        ),
+          ),
       );
-      posthog?.capture("saved_search_toggled", { searchId, notificationsEnabled: nextValue });
+      captureClientEvent("saved_search_toggled", { searchId, notificationsEnabled: nextValue });
     } catch {
-      posthog?.capture("saved_search_toggle_failed", { searchId, nextValue, message: "Bağlantı sırasında bir hata oluştu. Lütfen tekrar dene." });
+      captureClientEvent("saved_search_toggle_failed", { searchId, nextValue, message: "Bağlantı sırasında bir hata oluştu. Lütfen tekrar dene." });
       setErrorMessage("Bağlantı sırasında bir hata oluştu. Lütfen tekrar dene.");
     } finally {
       setActiveAction(null);
@@ -76,15 +75,15 @@ export function SavedSearchesPanel({ initialSavedSearches }: SavedSearchesPanelP
 
       if (!response.ok || !payload?.success) {
         const message = payload?.error?.message ?? "Kayitli arama silinemedi.";
-        posthog?.capture("saved_search_delete_failed", { searchId, responseStatus: response.status, message });
+        captureClientEvent("saved_search_delete_failed", { searchId, responseStatus: response.status, message });
         setErrorMessage(message);
         return;
       }
 
       setSavedSearches((current) => current.filter((search) => search.id !== searchId));
-      posthog?.capture("saved_search_deleted", { searchId });
+      captureClientEvent("saved_search_deleted", { searchId });
     } catch {
-      posthog?.capture("saved_search_delete_failed", { searchId, message: "Baglanti sirasinda bir hata olustu. Lutfen tekrar dene." });
+      captureClientEvent("saved_search_delete_failed", { searchId, message: "Baglanti sirasinda bir hata olustu. Lutfen tekrar dene." });
       setErrorMessage("Baglanti sirasinda bir hata olustu. Lutfen tekrar dene.");
     } finally {
       setActiveAction(null);

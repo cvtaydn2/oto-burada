@@ -56,11 +56,11 @@ export default async function AdminAuditPage({ searchParams }: { searchParams: P
   }
 
   return (
-    <main className="space-y-8 p-6 lg:p-8 bg-muted/30/30 min-h-full">
+  <main className="space-y-8 p-6 lg:p-8 bg-muted/30 min-h-full">
       <section className="flex flex-col justify-between gap-4 md:flex-row md:items-end">
         <div>
            <div className="flex items-center gap-2 mb-2">
-              <div className="size-2 rounded-full bg-muted/300 shadow-[0_0_8px_rgba(100,116,139,0.5)]" />
+            <div className="size-2 rounded-full bg-muted shadow-[0_0_8px_rgba(100,116,139,0.5)]" />
               <span className="text-[10px] font-bold text-muted-foreground/70 uppercase tracking-[0.2em] italic">Şeffaflık & Güvenlik</span>
            </div>
            <h1 className="text-3xl font-bold text-foreground tracking-tight">
@@ -71,7 +71,7 @@ export default async function AdminAuditPage({ searchParams }: { searchParams: P
       </section>
 
       <div className="overflow-hidden rounded-3xl border border-border bg-card shadow-sm">
-        <div className="flex flex-col justify-between gap-4 border-b border-border/50 bg-muted/30/30 p-6 md:flex-row md:items-center">
+        <div className="flex flex-col justify-between gap-4 border-b border-border/50 bg-muted/30 p-6 md:flex-row md:items-center">
             <h2 className="text-lg font-bold text-foreground tracking-tight italic">İşlem Günlüğü (Audit)</h2>
             <form className="relative w-full md:w-80 group">
               <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground/70 group-focus-within:text-blue-500 transition-colors" size={18} />
@@ -87,7 +87,7 @@ export default async function AdminAuditPage({ searchParams }: { searchParams: P
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>
-              <tr className="bg-muted/30/50">
+              <tr className="bg-muted/50">
                 <th className="px-6 py-4 text-[10px] font-bold text-muted-foreground/70 uppercase tracking-[0.2em]">Zamanlama</th>
                 <th className="px-6 py-4 text-[10px] font-bold text-muted-foreground/70 uppercase tracking-[0.2em]">Admin / Operatör</th>
                 <th className="px-6 py-4 text-[10px] font-bold text-muted-foreground/70 uppercase tracking-[0.2em]">Eylem</th>
@@ -103,7 +103,7 @@ export default async function AdminAuditPage({ searchParams }: { searchParams: P
                   </td>
                   <td className="px-6 py-5">
                      <div className="flex items-center gap-3">
-                        <div className="size-9 rounded-xl bg-muted border border-border flex items-center justify-center group-hover:bg-card group- transition-all">
+                            <div className="size-9 rounded-xl bg-muted border border-border flex items-center justify-center group-hover:bg-card transition-all">
                            <ShieldCheck size={16} className="text-muted-foreground/70 group-hover:text-blue-600" />
                         </div>
                         <span className="text-sm font-bold text-foreground uppercase tracking-tight">{action.profiles?.full_name || "Bilinmeyen Admin"}</span>

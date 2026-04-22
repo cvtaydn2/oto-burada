@@ -4,7 +4,7 @@ import { useState } from "react";
 import { MessageSquare, Loader2, AlertCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { revealListingPhone } from "@/services/listings/listing-actions";
-import { usePostHog } from "posthog-js/react";
+import { captureClientEvent } from "@/lib/monitoring/posthog-client";
 
 interface SafeWhatsAppButtonProps {
   listingId: string;
@@ -25,7 +25,6 @@ export function SafeWhatsAppButton({
   label,
   icon,
 }: SafeWhatsAppButtonProps) {
-  const posthog = usePostHog();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -46,7 +45,7 @@ export function SafeWhatsAppButton({
 
       const whatsappUrl = `https://wa.me/${phoneDigits}?text=${encodeURIComponent(message)}`;
       
-      posthog?.capture("whatsapp_reveal_click", {
+      captureClientEvent("whatsapp_reveal_click", {
         listingId,
         hasOffer: !!offerPrice,
       });

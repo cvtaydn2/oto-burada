@@ -3,6 +3,7 @@ import { notFound } from "next/navigation"
 import { headers } from "next/headers"
 import { getGalleryBySlug, recordGalleryView } from "@/services/gallery"
 import { getCurrentUser } from "@/lib/auth/session"
+import { logger } from "@/lib/utils/logger"
 import { GalleryHeader } from "@/components/layout/gallery-header"
 import { ListingCard } from "@/components/shared/listing-card"
 import { Badge } from "@/components/ui/badge"
@@ -40,10 +41,16 @@ export default async function GalleryPage({ params }: GalleryPageProps) {
   const headersList = await headers()
   const viewerIp = headersList.get("x-forwarded-for")?.split(",")[0]?.trim() ?? undefined
   const currentUser = await getCurrentUser()
-  recordGalleryView(profile.id, { viewerId: currentUser?.id, viewerIp }).catch(() => {})
+  recordGalleryView(profile.id, { viewerId: currentUser?.id, viewerIp }).catch((error) => {
+    logger.market.error("Gallery view record failed", error, {
+      galleryId: profile.id,
+      gallerySlug: slug,
+      viewerId: currentUser?.id,
+    })
+  })
 
   return (
-    <div className="min-h-screen bg-muted/30/40">
+    <div className="min-h-screen bg-muted/40">
       <GalleryHeader profile={profile} />
       
       <main className="mx-auto max-w-[1280px] px-4 py-8 sm:px-6 lg:px-6">

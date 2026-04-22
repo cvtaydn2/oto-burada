@@ -100,7 +100,7 @@ export function DashboardMetricCard({
         </div>
         <div
           className={cn(
-            "flex size-12 shrink-0 items-center justify-center rounded-xl transition-transform group-",
+        "flex size-12 shrink-0 items-center justify-center rounded-xl transition-transform",
             palette.icon,
           )}
         >

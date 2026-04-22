@@ -19,56 +19,41 @@
 
 import { Suspense, useEffect } from "react";
 import { usePathname, useSearchParams } from "next/navigation";
-import { PostHogProvider as PHProvider, usePostHog } from "posthog-js/react";
-import posthog from "posthog-js";
+import { PostHogProvider as PHProvider } from "posthog-js/react";
 
 import { useAuthUser } from "@/components/shared/auth-provider";
+import {
+  capturePostHogPageView,
+  identifyPostHogUser,
+  posthog,
+  resetPostHogUser,
+  syncPostHogConsent,
+} from "@/lib/monitoring/posthog-client";
 
 // ─── Automatic Pageview Tracker ─────────────────────────────────────────────────
 
 /**
  * Separate component because useSearchParams needs Suspense boundary.
- * Also handles:
- * - Cookie consent opt-in/opt-out
- * - User identity synchronization (identify/reset)
- * - Automatic $pageview capture
+ * Handles consent sync, user identity synchronization, and pageview capture.
  */
 function PostHogPageView() {
   const pathname = usePathname();
   const searchParams = useSearchParams();
-  const ph = usePostHog();
   const { isReady, user } = useAuthUser();
 
-  // ── Cookie consent ──
   useEffect(() => {
-    if (!ph) return;
-    if (typeof window === "undefined") return;
+    syncPostHogConsent();
+  }, [pathname, searchParams]);
 
-    const consent = window.localStorage.getItem("cookie-consent");
-    if (consent === "true") {
-      if (ph.has_opted_out_capturing()) {
-        ph.opt_in_capturing();
-      }
-    } else if (consent === "false") {
-      if (!ph.has_opted_out_capturing()) {
-        ph.opt_out_capturing();
-      }
-    }
-  }, [ph]);
-
-  // ── User identity sync (identify on login, reset on logout) ──
   useEffect(() => {
-    if (!ph || !isReady) return;
+    if (!isReady) return;
 
     if (!user) {
-      // Kullanıcı çıkış yaptı → anonim ID'ye geri dön.
-      // Bu, farklı kullanıcıların oturumlarının birbirine karışmasını önler.
-      ph.reset();
+      resetPostHogUser();
       return;
     }
 
-    // Kullanıcı oturum açtı → PostHog'da gerçek kullanıcıya bağla.
-    ph.identify(user.id, {
+    identifyPostHogUser(user.id, {
       email: user.email,
       role:
         (user.app_metadata as { role?: string } | undefined)?.role ?? "user",
@@ -76,17 +61,13 @@ function PostHogPageView() {
         (user.user_metadata as { trust_score?: number } | undefined)
           ?.trust_score ?? 0,
     });
-  }, [isReady, ph, user]);
+  }, [isReady, user]);
 
-  // ── Automatic pageview ──
   useEffect(() => {
-    if (!ph) return;
     if (typeof window === "undefined") return;
-    if (ph.has_opted_out_capturing()) return;
 
-    const url = window.location.href;
-    ph.capture("$pageview", { $current_url: url });
-  }, [pathname, searchParams, ph]);
+    capturePostHogPageView(window.location.href);
+  }, [pathname, searchParams]);
 
   return null;
 }

@@ -25,23 +25,23 @@ export function HomeHero({ cities }: HomeHeroProps) {
         <div className="absolute inset-x-0 bottom-0 h-40 bg-gradient-to-t from-background to-transparent" />
       </div>
 
-      {/* Desktop media panel */}
-      <div className="absolute inset-y-6 left-0 z-0 hidden w-[46vw] min-w-[520px] max-w-[880px] overflow-hidden rounded-r-[3rem] lg:block">
-        <Image
-          src="/images/hero_bg.png"
-          alt="Satılık araba ilanları"
-          fill
-          priority
-          sizes="(max-width: 1280px) 46vw, 880px"
-          quality={85}
-          className="object-cover object-center"
-        />
-        <div className="absolute inset-0 bg-gradient-to-r from-background/15 via-transparent to-background/75" />
-        <div className="absolute inset-x-0 bottom-0 h-40 bg-gradient-to-t from-background to-transparent" />
-      </div>
-      
       <div className="max-w-7xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8 w-full relative z-10">
-        <div className="max-w-3xl text-left space-y-6 sm:space-y-8 lg:ml-[30%] xl:ml-[34%]">
+        <div className="lg:grid lg:grid-cols-[minmax(0,0.95fr)_minmax(0,1.05fr)] lg:items-center lg:gap-10 xl:gap-16">
+          <div className="relative hidden min-h-[440px] overflow-hidden rounded-[3rem] lg:block lg:mr-2 xl:mr-4">
+            <Image
+              src="/images/hero_bg.png"
+              alt="Satılık araba ilanları"
+              fill
+              priority
+              sizes="(max-width: 1280px) 42vw, 560px"
+              quality={85}
+              className="object-cover object-center"
+            />
+            <div className="absolute inset-0 bg-gradient-to-r from-background/10 via-transparent to-background/55" />
+            <div className="absolute inset-x-0 bottom-0 h-40 bg-gradient-to-t from-background to-transparent" />
+          </div>
+
+          <div className="max-w-3xl text-left space-y-6 sm:space-y-8 lg:max-w-none lg:pl-2 xl:pl-4">
           <div className="inline-flex items-center gap-2 bg-foreground/10 border border-foreground/10 rounded-full px-4 sm:px-5 py-1.5 sm:py-2 text-foreground/80 text-[9px] sm:text-[10px] font-bold uppercase tracking-widest backdrop-blur-md">
             Sade Araç Pazaryeri
           </div>
@@ -127,6 +127,7 @@ export function HomeHero({ cities }: HomeHeroProps) {
                   <span className="text-[10px] text-muted-foreground font-bold uppercase tracking-widest mt-1">Kullanıcı Memnuniyeti</span>
                 </div>
               </div>
+          </div>
           </div>
         </div>
       </div>

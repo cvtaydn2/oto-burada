@@ -2,9 +2,11 @@
 
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
-import posthog from "posthog-js";
 import { Button } from "@/components/ui/button";
 import { Shield } from "lucide-react";
+import { captureClientException } from "@/lib/monitoring/posthog-client";
+
+const ERROR_CONTEXT = "admin_route_error";
 
 export default function Error({
   error,
@@ -16,7 +18,9 @@ export default function Error({
   const router = useRouter();
 
   useEffect(() => {
-    posthog.captureException(error);
+    captureClientException(error, ERROR_CONTEXT, {
+      digest: error.digest,
+    });
   }, [error]);
 
   return (

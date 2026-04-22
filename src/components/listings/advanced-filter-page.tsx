@@ -70,17 +70,17 @@ export function AdvancedFilterPage({
 
   return (
     <div className="min-h-screen bg-muted/30">
-      <div className="max-w-[1400px] mx-auto px-6 py-10 flex flex-col md:flex-row gap-10">
-        <aside className="w-full md:w-72 shrink-0">
-          <Panel padding="none" className="overflow-hidden sticky top-24">
+      <div className="mx-auto flex max-w-[1400px] flex-col gap-6 px-4 py-6 sm:px-6 sm:py-8 lg:flex-row lg:gap-10 lg:py-10">
+        <aside className="w-full shrink-0 lg:w-72">
+          <Panel padding="none" className="overflow-hidden lg:sticky lg:top-24">
             <div className="p-3">
-              <nav className="space-y-1">
+              <nav className="flex gap-2 overflow-x-auto pb-1 lg:flex-col lg:overflow-visible lg:space-y-1 lg:gap-0">
                 {SECTIONS.map((section) => (
                   <button
                     key={section.id}
                     onClick={() => setActiveSection(section.id)}
                     className={cn(
-                      "w-full flex items-center gap-3 px-4 py-3 rounded-xl font-bold text-xs uppercase tracking-widest transition-all",
+                      "flex min-w-fit items-center gap-3 rounded-xl px-4 py-3 text-xs font-bold uppercase tracking-widest transition-all lg:w-full",
                       activeSection === section.id
                         ? "bg-primary text-primary-foreground shadow-md"
                         : "text-muted-foreground hover:bg-muted/50"
@@ -95,8 +95,8 @@ export function AdvancedFilterPage({
           </Panel>
         </aside>
 
-        <main className="flex-1 bg-card border border-border/40 rounded-3xl p-8 md:p-12 shadow-sm min-h-[600px] flex flex-col">
-          <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center mb-10 pb-8 border-b border-border/40 gap-6">
+        <main className="flex min-h-[560px] flex-1 flex-col rounded-3xl border border-border/40 bg-card p-5 shadow-sm sm:p-8 md:p-10 lg:p-12">
+          <div className="mb-8 flex flex-col items-start justify-between gap-5 border-b border-border/40 pb-6 lg:mb-10 lg:flex-row lg:items-center lg:gap-6 lg:pb-8">
             <div className="flex items-center gap-4">
               <Link href="/listings" className="flex size-10 items-center justify-center rounded-2xl border border-border/40 bg-card text-muted-foreground hover:text-primary transition-all">
                 <ArrowLeft size={18} />
@@ -105,8 +105,8 @@ export function AdvancedFilterPage({
                 <h1 className="text-2xl font-black text-foreground tracking-tight uppercase italic">Gelişmiş Filtreleme</h1>
               </div>
             </div>
-            <div className="flex flex-wrap gap-3 w-full lg:w-auto">
-              <button onClick={resetFilters} className="flex-1 lg:flex-none flex items-center justify-center gap-2 bg-card border border-border/40 text-muted-foreground px-5 py-2.5 rounded-xl text-xs font-bold hover:bg-muted/50 transition-all">
+            <div className="flex w-full flex-col gap-3 sm:flex-row sm:flex-wrap lg:w-auto">
+              <button onClick={resetFilters} className="flex items-center justify-center gap-2 rounded-xl border border-border/40 bg-card px-5 py-2.5 text-xs font-bold text-muted-foreground transition-all hover:bg-muted/50 sm:flex-1 lg:flex-none">
                 <RotateCcw size={14} />
                 Sıfırla
               </button>
@@ -114,7 +114,7 @@ export function AdvancedFilterPage({
               <button
                 onClick={handleApply}
                 disabled={isPending}
-                className="flex-1 lg:flex-none flex items-center justify-center gap-2 bg-primary text-primary-foreground px-8 py-2.5 rounded-xl text-xs font-black uppercase tracking-wider hover:bg-primary/90 transition-all shadow-lg disabled:opacity-70"
+                className="flex items-center justify-center gap-2 rounded-xl bg-primary px-8 py-2.5 text-xs font-black uppercase tracking-wider text-primary-foreground transition-all hover:bg-primary/90 disabled:opacity-70 sm:flex-1 lg:flex-none"
               >
                 <Search size={14} />
                 {isPending ? "..." : `İLANLARI GÖR (${resultCount.toLocaleString("tr-TR")})`}
@@ -124,7 +124,7 @@ export function AdvancedFilterPage({
 
           <div className="flex-1">
             {activeCount > 0 && (
-              <div className="mb-10 flex items-center gap-3 text-[11px] font-bold uppercase tracking-widest text-primary bg-primary/5 border border-primary/10 rounded-2xl px-6 py-3">
+              <div className="mb-8 flex flex-wrap items-center gap-3 rounded-2xl border border-primary/10 bg-primary/5 px-4 py-3 text-[11px] font-bold uppercase tracking-widest text-primary sm:px-6 lg:mb-10">
                 <SlidersHorizontal size={14} />
                 <span>{activeCount} aktif filtre</span>
                 <button onClick={resetFilters} className="ml-auto text-rose-500 hover:text-rose-600 transition-colors">
@@ -224,14 +224,14 @@ export function AdvancedFilterPage({
             </div>
           </div>
 
-          <div className="mt-auto pt-10 border-t border-border/40 flex justify-between items-center bg-card/50">
+          <div className="mt-auto flex flex-col gap-4 border-t border-border/40 bg-card/50 pt-8 sm:flex-row sm:items-center sm:justify-between sm:pt-10">
             <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest italic">
               <span className="text-foreground">{isCounting ? "..." : resultCount.toLocaleString("tr-TR")}</span> İlan Eşleşti
             </p>
             <button
               onClick={handleApply}
               disabled={isPending}
-              className="bg-primary text-primary-foreground px-12 py-4 rounded-2xl text-sm font-black uppercase tracking-widest hover:bg-primary/90 transition-all shadow-xl shadow-primary/10 disabled:opacity-70"
+              className="w-full rounded-2xl bg-primary px-12 py-4 text-sm font-black uppercase tracking-widest text-primary-foreground transition-all hover:bg-primary/90 disabled:opacity-70 sm:w-auto"
             >
               {isPending ? "..." : "SONUÇLARI GÖSTER"}
             </button>

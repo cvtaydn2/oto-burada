@@ -210,7 +210,7 @@ function FavoriteCard({
             alt={listing.title}
             fill
             sizes="(min-width: 1280px) 33vw, (min-width: 640px) 50vw, 100vw"
-            className="object-cover transition-transform duration-500 group-"
+                    className="object-cover transition-transform duration-500"
             priority={priority}
             placeholder={coverImage.placeholderBlur ? "blur" : "empty"}
             blurDataURL={coverImage.placeholderBlur ?? undefined}
