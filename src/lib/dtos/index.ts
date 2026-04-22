@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 /**
  * Data Transfer Objects (DTOs) and Sanity Helpers
  * Used to ensure sensitive database fields (passwords, social security nos, internal notes) 
@@ -9,7 +10,7 @@ import { Profile, Listing } from "@/types";
 /**
  * Strips sensitive data from a profile object for public or dashboard display.
  */
-export function toProfileDTO(profile: Record<string, any> | null | undefined): Partial<Profile> {
+export function toProfileDTO(profile: any | null | undefined): Partial<Profile> {
   if (!profile) return {};
   
   // Map both camelCase and snake_case database fields
@@ -32,13 +33,13 @@ export function toProfileDTO(profile: Record<string, any> | null | undefined): P
  * Strips internal fields from a listing object.
  * Note: license_plate and vin should be masked for general public.
  */
-export function toListingDTO(listing: Record<string, any> | null | undefined, options: { 
+export function toListingDTO(listing: any | null | undefined, options: { 
   isOwner?: boolean; 
   isAdmin?: boolean;
 } = {}): Partial<Listing> {
   if (!listing) return {};
 
-  const dto: Record<string, any> = { ...listing };
+  const dto: any = { ...listing };
 
   // ── PILL: Issue 6 - Mask sensitive vehicle identifiers for non-authorized users ─────
   if (!options.isOwner && !options.isAdmin) {

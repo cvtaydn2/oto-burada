@@ -33,10 +33,11 @@ export function useNotifications(userId?: string) {
     enabled: !!userId,
   });
 
-  // 2. Realtime subscription
+  // 2. Realtime subscriptions (Supabase + SSE)
   useEffect(() => {
     if (!userId) return;
 
+    // A. Supabase Postgres Realtime
     const channel = supabase
       .channel(`notifications:${userId}`)
       .on(
@@ -48,10 +49,8 @@ export function useNotifications(userId?: string) {
           filter: `user_id=eq.${userId}`,
         },
         (payload: { new: { title: string; message: string } }) => {
-          // Invalidate query to refetch or manually update cache
           queryClient.invalidateQueries({ queryKey: ["notifications", userId] });
           
-          // Show browser notification if permitted
           if (typeof window !== "undefined" && window.Notification?.permission === "granted") {
             new window.Notification(payload.new.title, {
               body: payload.new.message,
@@ -61,8 +60,43 @@ export function useNotifications(userId?: string) {
       )
       .subscribe();
 
+    // B. SSE Notification Stream (Redis-based)
+    let eventSource: EventSource | null = null;
+    try {
+      eventSource = new EventSource("/api/notifications/stream");
+      
+      eventSource.onmessage = (event) => {
+        try {
+          const data = JSON.parse(event.data);
+          if (data.type === "connected") return;
+          
+          // Invalidate to refresh the list
+          queryClient.invalidateQueries({ queryKey: ["notifications", userId] });
+
+          // Visual feedback
+          if (typeof window !== "undefined" && window.Notification?.permission === "granted") {
+            new window.Notification(data.title || "Yeni Bildirim", {
+              body: data.message,
+            });
+          }
+        } catch (err) {
+          console.error("[SSE] Failed to parse message:", err);
+        }
+      };
+
+      eventSource.onerror = () => {
+        // EventSource automatically retries, but we can log for visibility
+        console.warn("[SSE] Connection interrupted, retrying...");
+      };
+    } catch (err) {
+      console.error("[SSE] Failed to initialize stream:", err);
+    }
+
     return () => {
       void channel.unsubscribe();
+      if (eventSource) {
+        eventSource.close();
+      }
     };
   }, [userId, supabase, queryClient]);
 

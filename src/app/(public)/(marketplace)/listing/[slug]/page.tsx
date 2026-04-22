@@ -31,6 +31,8 @@ import { ListingRelated, ListingRelatedSkeleton } from "@/components/listings/li
 import { ListingSellerSidebar } from "@/components/listings/listing-detail/listing-seller-sidebar";
 import { Panel } from "@/components/shared/design-system/Panel";
 import { ListingViewTracker } from "@/features/marketplace/components/listing-view-tracker";
+import { getListingPriceHistory } from "@/services/listings/listing-price-history";
+import { ListingPriceHistoryChart } from "@/components/listings/listing-detail/listing-price-history-chart";
 
 const ListingMap = dynamic(
   () => import("@/components/shared/listing-map-wrapper").then((mod) => mod.ListingMapWrapper),
@@ -91,9 +93,10 @@ export default async function ListingDetailPage({ params }: ListingDetailPagePro
     notFound();
   }
 
-  const [seller, currentUser] = await Promise.all([
+  const [seller, currentUser, priceHistory] = await Promise.all([
     getMarketplaceSeller(listing.sellerId),
     getCurrentUser(),
+    getListingPriceHistory(listing.id),
   ]);
 
   const insight = getListingCardInsights(listing);
@@ -160,9 +163,15 @@ export default async function ListingDetailPage({ params }: ListingDetailPagePro
               <ListingSpecsSection listing={listing} />
               <ListingReportSection listing={listing} />
               
-              <Suspense fallback={<div className="h-64 animate-pulse rounded-3xl bg-muted" />}>
+              <Suspense fallback={<div className="h-64 w-full animate-pulse rounded-3xl bg-muted" />}>
                 <ListingAnalysisSection listing={listing} insight={insight} />
               </Suspense>
+
+              {priceHistory.length >= 2 && (
+                <Suspense fallback={<div className="h-[400px] w-full animate-pulse rounded-3xl bg-muted" />}>
+                  <ListingPriceHistoryChart history={priceHistory} />
+                </Suspense>
+              )}
 
               <Panel padding="xl">
                 <h2 className="mb-6 text-xl font-bold text-foreground tracking-tight">İlan Hakkında</h2>
@@ -171,7 +180,7 @@ export default async function ListingDetailPage({ params }: ListingDetailPagePro
                 </div>
               </Panel>
 
-              <Suspense fallback={<div className="h-80 animate-pulse rounded-3xl bg-muted" />}>
+              <Suspense fallback={<div className="h-80 w-full animate-pulse rounded-3xl bg-muted" />}>
                 <Panel padding="xl">
                   <h2 className="mb-8 flex items-center gap-4 text-xl font-bold text-foreground tracking-tight">
                     <div className="size-12 rounded-2xl bg-primary/10 text-primary flex items-center justify-center">
@@ -190,7 +199,7 @@ export default async function ListingDetailPage({ params }: ListingDetailPagePro
               </Suspense>
             </div>
 
-            <Suspense fallback={<div className="h-[600px] w-full animate-pulse rounded-3xl bg-muted lg:max-w-md" />}>
+            <Suspense fallback={<div className="h-[600px] w-full animate-pulse rounded-3xl bg-muted lg:max-w-[400px]" />}>
               <ListingSellerSidebar 
                 listing={listing} 
                 seller={seller} 

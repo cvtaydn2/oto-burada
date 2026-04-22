@@ -78,7 +78,7 @@ export function DashboardProfessionalCard({ profile }: DashboardProfessionalCard
               <div className="flex-1 min-w-0 pr-6">
                 <span className="text-[9px] font-bold text-muted-foreground/30 uppercase tracking-widest block leading-none mb-1">Mağaza URL</span>
                 <span className="text-xs font-bold text-muted-foreground truncate block tracking-tight">
-                  {getAppUrl().replace(/^https?:\/\//, "")}/gallery/{businessSlug}
+                  {getAppUrl().replace(/^https?:\/\//, "").replace(/\/$/, "")}/gallery/{businessSlug}
                 </span>
               </div>
               <Link 

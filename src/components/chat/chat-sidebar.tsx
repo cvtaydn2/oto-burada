@@ -50,7 +50,7 @@ export function ChatSidebar({ currentUserId, activeChatId, onChatSelect }: ChatS
   );
 
   return (
-    <div className="flex h-[min(70vh,600px)] w-full flex-col rounded-l-xl border-r bg-background/50 md:h-[min(75vh,600px)] md:w-[280px] lg:w-[320px] xl:w-[350px]">
+    <div className="flex h-[min(70vh,600px)] w-full flex-col rounded-l-xl border-r bg-background/50 md:h-[min(75vh,600px)] md:w-[280px] xl:w-[320px]">
       <div className="p-4 border-b">
         <h2 className="text-xl font-bold mb-4 tracking-tight">Mesajlar</h2>
         <div className="relative">

@@ -11,6 +11,7 @@ import {
 } from "react";
 
 import { useAuthUser } from "@/components/shared/auth-provider";
+import { createSupabaseBrowserClient } from "@/lib/supabase/browser";
 import { readFavoriteIds, writeFavoriteIds } from "@/services/favorites/favorites-storage";
 
 interface FavoritesContextValue {
@@ -117,14 +118,11 @@ export function FavoritesProvider({ children }: PropsWithChildren) {
         const serverFavoriteIds = payload?.data?.favoriteIds ?? [];
 
         // Server is the source of truth for authenticated users.
-        // We do NOT blindly merge localStorage — that would re-add items
-        // the user deleted on another device/session.
         const safeServerIds = Array.isArray(serverFavoriteIds) ? serverFavoriteIds : [];
         const localIds = readFavoriteIds();
         const localOnlyIds = localIds.filter((id) => !safeServerIds.includes(id));
 
-        // Upload any local-only favorites that the server doesn't know about yet
-        // (e.g. items added while offline / before login).
+        // Upload any local-only favorites
         if (localOnlyIds.length > 0) {
           await Promise.allSettled(
             localOnlyIds.map((listingId) => requestFavoriteUpdate("POST", listingId)),
@@ -141,7 +139,6 @@ export function FavoritesProvider({ children }: PropsWithChildren) {
         }
       } catch {
         if (!cancelled) {
-          // Network error — fall back to local state, do not overwrite server truth
           setRemoteFavoriteIds(readFavoriteIds());
         }
       }
@@ -149,8 +146,27 @@ export function FavoritesProvider({ children }: PropsWithChildren) {
 
     void syncFavorites();
 
+    // Real-time synchronization
+    const supabase = createSupabaseBrowserClient();
+    const channel = supabase
+      .channel(`favorites-realtime-${userId}`)
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "favorites",
+          filter: `user_id=eq.${userId}`,
+        },
+        () => {
+          void syncFavorites();
+        }
+      )
+      .subscribe();
+
     return () => {
       cancelled = true;
+      void supabase.removeChannel(channel);
     };
   }, [userId]);
 

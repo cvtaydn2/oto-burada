@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { Suspense } from "react";
 import {
   Zap,
@@ -155,7 +156,7 @@ function QuickSystemStat({ icon, label, value, color }: { icon: React.ReactNode,
 async function AdminRevenueBadge({
   analyticsPromise,
 }: {
-  analyticsPromise: Promise<any>;
+  analyticsPromise: Promise<{ kpis: { totalRevenue: number } } | { error: string }>;
 }) {
   const analyticsData = await analyticsPromise;
 
@@ -184,8 +185,8 @@ async function AdminMetricsSection({
   analyticsPromise,
   reportsPromise,
 }: {
-  analyticsPromise: Promise<any>;
-  reportsPromise: Promise<any>;
+  analyticsPromise: Promise<{ kpis: { totalListings: number; totalUsers: number }; listingsByStatus: Array<{ status: string; count: number }>; listingTrend?: number; userTrend?: number } | { error: string }>;
+  reportsPromise: Promise<Array<{ id: string; status: string; listingId: string }> | { error: string }>;
 }) {
   const [analyticsResult, reportsResult] = await Promise.all([analyticsPromise, reportsPromise]);
   
@@ -195,7 +196,7 @@ async function AdminMetricsSection({
   const storedReports = Array.isArray(reportsResult) ? reportsResult : [];
   const reportsError = reportsResult && "error" in reportsResult ? reportsResult.error : null;
   
-  const actionableReports = storedReports.filter((report: any) => report.status === "open");
+  const actionableReports = storedReports.filter((report) => report.status === "open");
 
   return (
     <div className="space-y-4">
@@ -212,10 +213,10 @@ async function AdminMetricsSection({
       <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-4">
         <DashboardMetricCard
           label="Bekleyen İlanlar"
-          value={analyticsData ? String(analyticsData.listingsByStatus?.find((status: any) => status.status === "pending")?.count ?? 0) : "—"}
+          value={analyticsData ? String(analyticsData.listingsByStatus?.find((s) => s.status === "pending")?.count ?? 0) : "—"}
           helper="Moderasyon kuyruğu"
           icon={Car}
-          tone={ (analyticsData?.listingsByStatus?.find((status: any) => status.status === "pending")?.count ?? 0) > 0 ? "amber" : "blue"}
+          tone={ (analyticsData?.listingsByStatus?.find((s) => s.status === "pending")?.count ?? 0) > 0 ? "amber" : "blue"}
         />
         <DashboardMetricCard
           label="Aktif Şikayetler"
@@ -250,7 +251,7 @@ async function AdminMetricsSection({
 async function PersistenceOnlySection({
   persistenceHealthPromise,
 }: {
-  persistenceHealthPromise: Promise<any>;
+  persistenceHealthPromise: Promise<{ redis: { status: string; details?: any } } | { error: string }>;
 }) {
   const result = await persistenceHealthPromise;
   if (!result) return null;
@@ -328,8 +329,8 @@ async function AdminRecentActionsSection({
   recentActionsPromise,
   reportsPromise,
 }: {
-  recentActionsPromise: Promise<any>;
-  reportsPromise: Promise<any>;
+  recentActionsPromise: Promise<Array<{ id: string; adminUserId: string; targetType: string; targetId: string }> | { error: string }>;
+  reportsPromise: Promise<Array<{ id: string; status: string; listingId: string }> | { error: string }>;
 }) {
   const [recentActionsResult, reportsResult] = await Promise.all([recentActionsPromise, reportsPromise]);
 
@@ -352,11 +353,11 @@ async function AdminRecentActionsSection({
     );
   }
 
-  const actorIds = [...new Set(recentActions.map((action: any) => action.adminUserId))];
-  const targetListingIds = [...new Set(recentActions.filter((action: any) => action.targetType === "listing").map((action: any) => action.targetId))];
+  const actorIds = [...new Set(recentActions.map((action) => action.adminUserId))];
+  const targetListingIds = [...new Set(recentActions.filter((action) => action.targetType === "listing").map((action) => action.targetId))];
   const reportListingIds = recentActions
-    .filter((action: any) => action.targetType === "report")
-    .map((action: any) => storedReports.find((report: any) => report.id === action.targetId)?.listingId)
+    .filter((action) => action.targetType === "report")
+    .map((action) => storedReports.find((report) => report.id === action.targetId)?.listingId)
     .filter(Boolean) as string[];
 
   const allListingIds = [...new Set([...targetListingIds, ...reportListingIds])];
@@ -374,16 +375,16 @@ async function AdminRecentActionsSection({
   const actorsMap = Object.fromEntries((actorProfiles.data || []).map((profile) => [profile.id, profile]));
   const listingsMap = Object.fromEntries((actionListings.data || []).map((listing) => [listing.id, listing]));
 
-  const recentActionItems: AdminRecentActionItem[] = recentActions.map((action: any) => {
+  const recentActionItems: AdminRecentActionItem[] = recentActions.map((action) => {
     const actor = actorsMap[action.adminUserId];
     const listingId =
       action.targetType === "listing"
         ? action.targetId
-        : storedReports.find((report: any) => report.id === action.targetId)?.listingId ?? null;
+        : storedReports.find((report) => report.id === action.targetId)?.listingId ?? null;
     const targetListing = listingId ? listingsMap[listingId] : null;
 
     return {
-      action,
+      action: action as any, // AdminRecentActionItem expect slightly different shape sometimes
       actorLabel: actor?.full_name || "Sistem",
       targetHref: targetListing?.slug ? `/listing/${targetListing.slug}` : null,
       targetLabel: targetListing?.title || (action.targetType === "report" ? "Raporlanmış İlan" : "Bilinmeyen İlan"),

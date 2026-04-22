@@ -32,22 +32,7 @@ import type { ListingFilters } from "@/types";
 
 export const dynamic = "force-dynamic";
 
-/**
- * Gets the application URL from environment variables.
- * Fails closed in production if NEXT_PUBLIC_APP_URL is not set.
- */
-function getAppUrl(): string {
-  const url = process.env.NEXT_PUBLIC_APP_URL;
-  
-  if (!url) {
-    if (process.env.NODE_ENV === "production") {
-      throw new Error("NEXT_PUBLIC_APP_URL must be set in production");
-    }
-    return "http://localhost:3000";
-  }
-  
-  return url;
-}
+import { getAppUrlWithFallback } from "@/lib/utils/env";
 
 // How far back to look for new listings (24 hours)
 const LOOKBACK_HOURS = 24;
@@ -155,7 +140,7 @@ async function handleCronRequest(request: Request) {
       }
 
       // Build search URL for the email CTA
-      const appUrl = getAppUrl();
+      const appUrl = getAppUrlWithFallback();
       const searchParams = createSearchParamsFromListingFilters(filters);
       const searchUrl = `${appUrl}/listings?${searchParams.toString()}`;
 

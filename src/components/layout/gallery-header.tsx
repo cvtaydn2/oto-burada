@@ -28,7 +28,7 @@ export function GalleryHeader({ profile }: GalleryHeaderProps) {
               />
             ) : (
               <div className="text-4xl font-bold text-primary italic uppercase">
-                {(profile.businessName || profile.fullName || "?").slice(0, 2)}
+                {(profile.businessName || profile.fullName || "?").trim().slice(0, 2)}
               </div>
             )}
             

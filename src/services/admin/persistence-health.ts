@@ -101,7 +101,7 @@ export async function getPersistenceHealth(): Promise<PersistenceHealth> {
       const redis = Redis.fromEnv();
       const [ping, info] = await Promise.all([
         redis.ping(),
-        (redis as any).info() as Promise<string>
+        (redis as unknown as { info: () => Promise<string> }).info()
       ]);
       
       if (ping === "PONG") {
