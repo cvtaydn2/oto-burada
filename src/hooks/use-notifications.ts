@@ -10,7 +10,7 @@ export function useNotifications(userId?: string) {
   const supabase = createSupabaseBrowserClient();
 
   // 1. Initial fetch using TanStack Query
-  const { data: notifications = [], isLoading } = useQuery<Notification[]>({
+  const { data: notifications = [], isLoading, isError } = useQuery<Notification[]>({
     queryKey: ["notifications", userId],
     queryFn: async () => {
       if (!userId) return [];
@@ -25,7 +25,9 @@ export function useNotifications(userId?: string) {
         }
         return payload.data?.notifications ?? [];
       } catch (err) {
-        console.warn("[NOTIFICATIONS] Failed to load notifications:", err);
+        if (process.env.NODE_ENV !== "production") {
+          console.warn("[NOTIFICATIONS] Failed to load notifications:", err);
+        }
         throw err;
       }
     },
@@ -78,17 +80,22 @@ export function useNotifications(userId?: string) {
               body: data.message,
             });
           }
-        } catch (err) {
-          console.error("[SSE] Failed to parse message:", err);
+        } catch {
+          // SSE mesajı parse edilemedi — sessizce geç, stream devam eder
         }
       };
 
       eventSource.onerror = () => {
-        // EventSource automatically retries, but we can log for visibility
-        console.warn("[SSE] Connection interrupted, retrying...");
+        // EventSource automatically retries — only log in dev to avoid noise
+        if (process.env.NODE_ENV !== "production") {
+          console.warn("[SSE] Connection interrupted, retrying...");
+        }
       };
-    } catch (err) {
-      console.error("[SSE] Failed to initialize stream:", err);
+    } catch {
+      // SSE stream başlatılamadı — bildirimler Supabase realtime üzerinden gelmeye devam eder
+      if (process.env.NODE_ENV !== "production") {
+        console.warn("[SSE] Failed to initialize stream, falling back to Supabase realtime.");
+      }
     }
 
     return () => {
@@ -101,7 +108,6 @@ export function useNotifications(userId?: string) {
 
   const notificationsList = Array.isArray(notifications) ? notifications : [];
   const unreadCount = notificationsList.filter((n) => !n.read).length;
-  const isError = notifications === undefined && !isLoading;
 
   return {
     notifications: notificationsList,

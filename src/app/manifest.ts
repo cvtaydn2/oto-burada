@@ -4,7 +4,7 @@ export default function manifest(): MetadataRoute.Manifest {
   return {
     name: "OtoBurada - Araba İlan Pazarı",
     short_name: "OtoBurada",
-    description: "Türkiye'nin en güvenilir car-only classifieds pazarı.",
+    description: "Türkiye'nin en güvenilir araba ilan platformu. Sade, hızlı ve güvenli.",
     start_url: "/",
     display: "standalone",
     background_color: "#ffffff",

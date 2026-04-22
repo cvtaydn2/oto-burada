@@ -87,8 +87,9 @@ export function GalleryHeader({ profile }: GalleryHeaderProps) {
                   {(() => {
                     const date = profile.createdAt ? new Date(profile.createdAt) : null;
                     const isValid = date && !isNaN(date.getTime());
-                    return (isValid ? date.getFullYear() : new Date().getFullYear());
-                  })()}&apos;den beri üye
+                    if (!isValid) return "Üye";
+                    return `${date.getFullYear()}'den beri üye`;
+                  })()}
                 </div>
               </div>
             </div>

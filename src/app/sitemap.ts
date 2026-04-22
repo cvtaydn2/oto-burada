@@ -5,7 +5,10 @@ import { hasSupabaseAdminEnv } from "@/lib/supabase/env";
 
 export const revalidate = 3600; // Re-generate every hour
 
-const STATIC_PAGE_DATE = new Date("2026-01-01");
+// Static pages için lastModified: Sitemap her saat yeniden üretildiği için
+// son üretim zamanını temsil eden bir tarih kullanıyoruz.
+// Bu, SEO açısından daha anlamlı ve cache-friendly.
+const getStaticPageDate = () => new Date();
 const ITEMS_PER_SITEMAP = 1000;
 
 /**
@@ -39,34 +42,52 @@ export default async function sitemap({ id }: { id: number }): Promise<MetadataR
 
   // ── ID 0: Static Pages, Brands, and Cities ──────────────────────────────
   if (id === 0) {
+    const now = getStaticPageDate();
     const staticPages: MetadataRoute.Sitemap = [
-      { url: baseUrl, lastModified: STATIC_PAGE_DATE, changeFrequency: "daily", priority: 1.0 },
-      { url: `${baseUrl}/listings`, lastModified: STATIC_PAGE_DATE, changeFrequency: "hourly", priority: 0.9 },
+      { url: baseUrl, lastModified: now, changeFrequency: "daily", priority: 1.0 },
+      { url: `${baseUrl}/listings`, lastModified: now, changeFrequency: "hourly", priority: 0.9 },
+      { url: `${baseUrl}/aracim-ne-kadar`, lastModified: now, changeFrequency: "monthly", priority: 0.5 },
+      { url: `${baseUrl}/compare`, lastModified: now, changeFrequency: "monthly", priority: 0.4 },
     ];
 
     if (!hasSupabaseAdminEnv()) return staticPages;
 
     const admin = createSupabaseAdminClient();
-    const [{ data: brands }, { data: cities }] = await Promise.all([
+    const [{ data: brands }, { data: cities }, { data: sellers }] = await Promise.all([
       admin.from("brands").select("slug").eq("is_active", true).order("name"),
       admin.from("cities").select("slug").eq("is_active", true).order("name"),
+      // Onaylı ve aktif satıcı galerilerini sitemap'e ekle
+      admin.from("profiles")
+        .select("business_slug")
+        .eq("user_type", "professional")
+        .eq("verification_status", "approved")
+        .not("business_slug", "is", null),
     ]);
 
     const brandPages: MetadataRoute.Sitemap = (brands ?? []).map((brand) => ({
       url: `${baseUrl}/satilik/${brand.slug}`,
-      lastModified: STATIC_PAGE_DATE,
-      changeFrequency: "daily",
+      lastModified: now,
+      changeFrequency: "daily" as const,
       priority: 0.7,
     }));
 
     const cityPages: MetadataRoute.Sitemap = (cities ?? []).map((city) => ({
       url: `${baseUrl}/satilik-araba/${city.slug}`,
-      lastModified: STATIC_PAGE_DATE,
-      changeFrequency: "daily",
+      lastModified: now,
+      changeFrequency: "daily" as const,
       priority: 0.7,
     }));
 
-    return [...staticPages, ...brandPages, ...cityPages];
+    const galleryPages: MetadataRoute.Sitemap = (sellers ?? [])
+      .filter((s) => s.business_slug)
+      .map((s) => ({
+        url: `${baseUrl}/gallery/${s.business_slug}`,
+        lastModified: now,
+        changeFrequency: "weekly" as const,
+        priority: 0.6,
+      }));
+
+    return [...staticPages, ...brandPages, ...cityPages, ...galleryPages];
   }
 
   // ── ID > 0: Paginated Listings ──────────────────────────────────────────
