@@ -42,8 +42,6 @@ export default async function sitemap({ id }: { id: number }): Promise<MetadataR
     const staticPages: MetadataRoute.Sitemap = [
       { url: baseUrl, lastModified: STATIC_PAGE_DATE, changeFrequency: "daily", priority: 1.0 },
       { url: `${baseUrl}/listings`, lastModified: STATIC_PAGE_DATE, changeFrequency: "hourly", priority: 0.9 },
-      { url: `${baseUrl}/login`, changeFrequency: "monthly", priority: 0.3 },
-      { url: `${baseUrl}/register`, changeFrequency: "monthly", priority: 0.3 },
     ];
 
     if (!hasSupabaseAdminEnv()) return staticPages;
@@ -56,14 +54,14 @@ export default async function sitemap({ id }: { id: number }): Promise<MetadataR
 
     const brandPages: MetadataRoute.Sitemap = (brands ?? []).map((brand) => ({
       url: `${baseUrl}/satilik/${brand.slug}`,
-      lastModified: new Date(),
+      lastModified: STATIC_PAGE_DATE,
       changeFrequency: "daily",
       priority: 0.7,
     }));
 
     const cityPages: MetadataRoute.Sitemap = (cities ?? []).map((city) => ({
       url: `${baseUrl}/satilik-araba/${city.slug}`,
-      lastModified: new Date(),
+      lastModified: STATIC_PAGE_DATE,
       changeFrequency: "daily",
       priority: 0.7,
     }));

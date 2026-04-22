@@ -26,7 +26,7 @@ export async function ListingSellerSidebar({
   const { label, isTrusted, tone } = getSellerTrustUI(seller);
 
   return (
-    <div className="w-full space-y-10 lg:max-w-[400px] lg:shrink-0">
+    <div className="w-full space-y-10 lg:w-[380px] lg:shrink-0">
       <Panel padding="xl" className="shadow-2xl lg:sticky lg:top-24 lg:max-h-[calc(100vh-120px)] lg:overflow-y-auto custom-scrollbar">
         <div className="flex items-center gap-6 mb-8 border-b border-border/40 pb-8">
           <div className="size-20 rounded-3xl bg-primary/10 flex items-center justify-center text-primary text-3xl font-bold shadow-inner shrink-0">

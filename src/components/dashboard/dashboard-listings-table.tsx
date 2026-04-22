@@ -50,8 +50,8 @@ export function DashboardListingsTable({ listings }: DashboardListingsTableProps
         </Link>
       </div>
 
-      <div className="overflow-x-auto">
-        <table className="w-full min-w-[500px]">
+      <div className="-mx-6 overflow-x-auto px-6 lg:mx-0 lg:px-0">
+        <table className="w-full min-w-[600px]">
           <thead>
             <tr className="border-b border-border text-[10px] font-bold uppercase tracking-widest text-muted-foreground/40">
               <th className="pb-4 text-left font-bold">ARAÇ</th>

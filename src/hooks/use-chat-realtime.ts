@@ -72,10 +72,106 @@ export function useChatRealtime(chatId: string, currentUserId: string): UseChatR
     [chatId],
   );
 
+  // ── Subscribe helper (extracted so we can call it on reconnect) ──────────
+  const subscribeRef = useRef<(() => void) | undefined>(undefined);
+
+  const subscribe = useCallback(() => {
+    const supabase = supabaseRef.current;
+    if (!supabase || !chatId) return;
+
+    // Clean up any existing channel before re-subscribing
+    if (channelRef.current) {
+      void channelRef.current.unsubscribe();
+    }
+
+    if (retryTimeoutRef.current) {
+      clearTimeout(retryTimeoutRef.current);
+    }
+
+    setConnectionStatus("connecting");
+
+    const channel = supabase.channel(`chat:${chatId}`, {
+      config: { presence: { key: currentUserId } },
+    });
+
+    channelRef.current = channel;
+
+    channel
+      .on(
+        "broadcast",
+        { event: "message" },
+        ({ payload }: { payload: Message }) => {
+          setMessages((prev) => {
+            if (prev.some((m) => m.id === payload.id)) return prev;
+
+            // Push notification when tab is hidden
+            if (
+              payload.senderId !== currentUserId &&
+              typeof window !== "undefined" &&
+              document.hidden &&
+              Notification.permission === "granted"
+            ) {
+              new Notification("Yeni Mesaj - OtoBurada", {
+                body: payload.content,
+                icon: "/favicon.ico",
+              });
+            }
+
+            return [...prev, payload];
+          });
+        },
+      )
+      .on("presence", { event: "sync" }, () => {
+        const state = channel.presenceState();
+        setOnlineUsers(Object.keys(state));
+      })
+      .on(
+        "broadcast",
+        { event: "typing" },
+        ({ payload }: { payload: { userId: string; typing: boolean } }) => {
+          if (payload.userId !== currentUserId) {
+            setIsTyping(payload.typing);
+          }
+        },
+      )
+      .subscribe((status: `${REALTIME_SUBSCRIBE_STATES}`) => {
+        if (status === "SUBSCRIBED") {
+          setConnectionStatus("connected");
+          retryCountRef.current = 0; // Reset on success
+
+          // If we went offline and came back, re-fetch to fill gaps
+          if (missedMessagesRef.current) {
+            missedMessagesRef.current = false;
+            void syncMissedMessages();
+          }
+        } else if (status === "CHANNEL_ERROR" || status === "TIMED_OUT" || status === "CLOSED") {
+          setConnectionStatus("disconnected");
+          missedMessagesRef.current = true;
+
+          // Exponential backoff retry
+          if (status !== "CLOSED") {
+            const backoff = Math.min(1000 * Math.pow(2, retryCountRef.current), 30000);
+            retryCountRef.current++;
+            retryTimeoutRef.current = setTimeout(() => {
+              subscribeRef.current?.();
+            }, backoff);
+          }
+        }
+      });
+  }, [chatId, currentUserId, syncMissedMessages, setMessages]);
+
+  // Keep the ref updated so the timeout can call the latest version
+  useEffect(() => {
+    subscribeRef.current = subscribe;
+  }, [subscribe]);
+
+  const statusRef = useRef<ConnectionStatus>(connectionStatus);
+  useEffect(() => {
+    statusRef.current = connectionStatus;
+  }, [connectionStatus]);
+
   useEffect(() => {
     if (!chatId) return;
-    const supabase = supabaseRef.current;
-    if (!supabase) return;
 
     // Request Notification Permission
     if (typeof window !== "undefined" && "Notification" in window) {
@@ -84,90 +180,7 @@ export function useChatRealtime(chatId: string, currentUserId: string): UseChatR
       }
     }
 
-
-    // ── Subscribe helper (extracted so we can call it on reconnect) ──────────
-    const subscribe = useCallback(() => {
-      // Clean up any existing channel before re-subscribing
-      if (channelRef.current) {
-        void channelRef.current.unsubscribe();
-      }
-
-      if (retryTimeoutRef.current) {
-        clearTimeout(retryTimeoutRef.current);
-      }
-
-      setConnectionStatus("connecting");
-
-      const channel = supabase.channel(`chat:${chatId}`, {
-        config: { presence: { key: currentUserId } },
-      });
-
-      channelRef.current = channel;
-
-      channel
-        .on(
-          "broadcast",
-          { event: "message" },
-          ({ payload }: { payload: Message }) => {
-            setMessages((prev) => {
-              if (prev.some((m) => m.id === payload.id)) return prev;
-
-              // Push notification when tab is hidden
-              if (
-                payload.senderId !== currentUserId &&
-                typeof window !== "undefined" &&
-                document.hidden &&
-                Notification.permission === "granted"
-              ) {
-                new Notification("Yeni Mesaj - OtoBurada", {
-                  body: payload.content,
-                  icon: "/favicon.ico",
-                });
-              }
-
-              return [...prev, payload];
-            });
-          },
-        )
-        .on("presence", { event: "sync" }, () => {
-          const state = channel.presenceState();
-          setOnlineUsers(Object.keys(state));
-        })
-        .on(
-          "broadcast",
-          { event: "typing" },
-          ({ payload }: { payload: { userId: string; typing: boolean } }) => {
-            if (payload.userId !== currentUserId) {
-              setIsTyping(payload.typing);
-            }
-          },
-        )
-        .subscribe((status: `${REALTIME_SUBSCRIBE_STATES}`) => {
-          if (status === "SUBSCRIBED") {
-            setConnectionStatus("connected");
-            retryCountRef.current = 0; // Reset on success
-
-            // If we went offline and came back, re-fetch to fill gaps
-            if (missedMessagesRef.current) {
-              missedMessagesRef.current = false;
-              void syncMissedMessages();
-            }
-          } else if (status === "CHANNEL_ERROR" || status === "TIMED_OUT" || status === "CLOSED") {
-            setConnectionStatus("disconnected");
-            missedMessagesRef.current = true;
-
-            // Exponential backoff retry
-            if (status !== "CLOSED") {
-              const backoff = Math.min(1000 * Math.pow(2, retryCountRef.current), 30000);
-              retryCountRef.current++;
-              retryTimeoutRef.current = setTimeout(() => {
-                subscribe();
-              }, backoff);
-            }
-          }
-        });
-    }, [chatId, currentUserId, supabase, syncMissedMessages]);
-
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     subscribe();
 
     // ── Network-level offline / online listeners ──────────────────────────────
@@ -184,7 +197,7 @@ export function useChatRealtime(chatId: string, currentUserId: string): UseChatR
 
     // ── Page visibility listener (Safari background tab) ─────────────────────
     const handleVisibilityChange = () => {
-      if (document.visibilityState === "visible" && (missedMessagesRef.current || connectionStatus === "disconnected")) {
+      if (document.visibilityState === "visible" && (missedMessagesRef.current || statusRef.current === "disconnected")) {
         retryCountRef.current = 0;
         subscribe();
       }
@@ -203,7 +216,7 @@ export function useChatRealtime(chatId: string, currentUserId: string): UseChatR
         void channelRef.current.unsubscribe();
       }
     };
-  }, [chatId, currentUserId, syncMissedMessages]);
+  }, [chatId, subscribe]);
 
   const sendTypingStatus = (typing: boolean) => {
     if (channelRef.current) {

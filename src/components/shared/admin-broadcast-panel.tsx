@@ -25,11 +25,11 @@ export function AdminBroadcastPanel() {
         body: JSON.stringify({ title, message }),
       });
 
-      const payload = await response.json();
+      const payload = await response.json().catch(() => null);
 
-      if (!response.ok || !payload.success) {
+      if (!response.ok || !payload || !payload.success) {
         setStatus("error");
-        setErrorMsg(payload.error?.message || "Duyuru gönderilemedi.");
+        setErrorMsg(payload?.error?.message || "Duyuru gönderilemedi.");
         return;
       }
 

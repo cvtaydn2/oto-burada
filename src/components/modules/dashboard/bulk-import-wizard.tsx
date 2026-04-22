@@ -40,9 +40,6 @@ interface ListingRow {
   vin: string;
   isValid: boolean;
   errors: string[];
-  fuelType: string;
-  whatsappPhone: string;
-  images: unknown[];
 }
 
 export function BulkImportWizard() {
@@ -96,9 +93,6 @@ export function BulkImportWizard() {
         whatsapp_phone: rowData.whatsapp_phone || "",
         description: rowData.description || "",
         vin: rowData.vin || "",
-        fuelType: rowData.fuel_type || "",
-        whatsappPhone: rowData.whatsapp_phone || "",
-        images: [],
         isValid: errors.length === 0,
         errors
       } as ListingRow;
@@ -109,7 +103,7 @@ export function BulkImportWizard() {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    if (file.type !== "text/csv") {
+    if (file.type !== "text/csv" && !file.name.endsWith(".csv")) {
       toast.error("Lütfen sadece CSV dosyası yükleyin.");
       return;
     }
@@ -157,7 +151,13 @@ export function BulkImportWizard() {
         vin: row.vin,
         images: [],
       }));
-      const result = (await processBulkListings(transformedInputs)) as any;
+      const result = (await processBulkListings(transformedInputs)) as { 
+        success: boolean; 
+        count?: number; 
+        error?: string; 
+        partial?: boolean; 
+        message?: string;
+      };
       
       if (result.success) {
         if (result.partial) {

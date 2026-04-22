@@ -27,8 +27,8 @@ export function GalleryHeader({ profile }: GalleryHeaderProps) {
                 className="object-contain"
               />
             ) : (
-              <div className="text-4xl font-bold text-primary italic uppercase">
-                {(profile.businessName || profile.fullName || "?").trim().slice(0, 2)}
+              <div className="text-4xl font-bold text-primary italic uppercase select-none">
+                {((profile.businessName || profile.fullName || "M").trim() || "M").substring(0, 2)}
               </div>
             )}
             
@@ -83,8 +83,8 @@ export function GalleryHeader({ profile }: GalleryHeaderProps) {
                   <Calendar size={16} className="text-slate-400" />
                   {(() => {
                     const date = profile.createdAt ? new Date(profile.createdAt) : null;
-                    const year = date && !isNaN(date.getTime()) ? date.getFullYear() : new Date().getFullYear();
-                    return year;
+                    const isValid = date && !isNaN(date.getTime());
+                    return (isValid ? date.getFullYear() : new Date().getFullYear());
                   })()}&apos;den beri üye
                 </div>
               </div>

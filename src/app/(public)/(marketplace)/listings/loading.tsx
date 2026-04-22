@@ -5,7 +5,7 @@ export default function Loading() {
     <main className="mx-auto w-full max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
       <div className="flex flex-col gap-8 lg:flex-row">
         {/* Sidebar Skeleton */}
-        <aside className="hidden lg:block w-[280px] xl:w-[320px] shrink-0 space-y-6">
+        <aside className="hidden lg:block w-72 xl:w-80 shrink-0 space-y-6">
           <div className="h-10 w-full animate-pulse rounded-xl bg-slate-200" />
           <div className="space-y-4 rounded-3xl border border-border/50 bg-card p-6">
             {[1, 2, 3, 4, 5].map((i) => (

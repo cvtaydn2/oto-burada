@@ -20,7 +20,10 @@ export function NotificationDropdown({ userId }: { userId?: string }) {
   const markReadMutation = useMutation({
     mutationFn: async (id: string) => {
       const response = await fetch(`/api/notifications/${id}`, { method: "PATCH" });
-      if (!response.ok) throw new Error("Bildirim okundu olarak isaretlenemedi");
+      const payload = await response.json().catch(() => null);
+      if (!response.ok || !payload?.success) {
+        throw new Error(payload?.error?.message || "Bildirim okundu olarak işaretlenemedi");
+      }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["notifications", userId] });
@@ -31,7 +34,10 @@ export function NotificationDropdown({ userId }: { userId?: string }) {
   const markAllReadMutation = useMutation({
     mutationFn: async () => {
       const response = await fetch("/api/notifications", { method: "PATCH" });
-      if (!response.ok) throw new Error("Tum bildirimler okundu olarak isaretlenemedi");
+      const payload = await response.json().catch(() => null);
+      if (!response.ok || !payload?.success) {
+        throw new Error(payload?.error?.message || "Tüm bildirimler okundu olarak işaretlenemedi");
+      }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["notifications", userId] });

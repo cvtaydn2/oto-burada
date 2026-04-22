@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Zap, LoaderCircle, CheckCircle2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
@@ -12,6 +12,16 @@ export function MarketSyncButton() {
   const [result, setResult] = useState<{ success: boolean; message: string } | null>(null);
   const router = useRouter();
 
+  useEffect(() => {
+    let timeoutId: ReturnType<typeof setTimeout> | undefined;
+    if (result) {
+      timeoutId = setTimeout(() => setResult(null), 3000);
+    }
+    return () => {
+      if (timeoutId) clearTimeout(timeoutId);
+    };
+  }, [result]);
+
   const handleSync = async () => {
     setIsSyncing(true);
     setResult(null);
@@ -19,21 +29,19 @@ export function MarketSyncButton() {
       const response = await fetch("/api/admin/market/sync", {
         method: "POST",
       });
-      const data = await response.json();
+      const data = await response.json().catch(() => ({ success: false, error: "Sunucu hatası." }));
       
-      if (data.success) {
+      if (!response.ok || !data.success) {
+        setResult({ success: false, message: data.error || "Senkronizasyon başarısız." });
+      } else {
         setResult({ success: true, message: data.message });
         router.refresh();
-      } else {
-        setResult({ success: false, message: data.error || "Senkronizasyon başarısız." });
       }
     } catch (err) {
       captureError(err, "handleSync");
       setResult({ success: false, message: "Bağlantı hatası oluştu." });
     } finally {
       setIsSyncing(false);
-      // Clear message after 3 seconds
-      setTimeout(() => setResult(null), 3000);
     }
   };
 

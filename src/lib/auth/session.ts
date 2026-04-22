@@ -91,23 +91,9 @@ export async function requireAdminUser() {
 }
 
 export async function getAuthenticatedUserOrThrow() {
-  if (!hasSupabaseEnv()) {
-    return null;
+  const user = await getCurrentUser();
+  if (!user) {
+    throw new Error("Authentication required");
   }
-
-  try {
-    const supabase = await createSupabaseServerClient();
-    const {
-      data: { user },
-      error,
-    } = await supabase.auth.getUser();
-
-    if (error || !user) {
-      return null;
-    }
-
-    return user;
-  } catch {
-    return null;
-  }
+  return user;
 }

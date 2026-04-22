@@ -117,16 +117,16 @@ function log(
 
   switch (level) {
     case "debug":
-      console.debug(formatted, data ?? "");
+      console.debug(formatted);
       break;
     case "info":
-      console.info(formatted, data ?? "");
+      console.info(formatted);
       break;
     case "warn":
-      console.warn(formatted, entry.error ?? data ?? "");
+      console.warn(formatted, entry.error || "");
       break;
     case "error":
-      console.error(formatted, entry.error ?? data ?? "");
+      console.error(formatted, entry.error || "");
       break;
   }
 }

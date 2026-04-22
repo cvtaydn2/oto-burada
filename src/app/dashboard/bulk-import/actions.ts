@@ -29,7 +29,6 @@ export async function processBulkListings(inputs: ListingCreateInput[]) {
   const admin = createSupabaseAdminClient();
   
   let succeededCount = 0;
-  let failedCount = 0;
   const chunkErrors: string[] = [];
 
   try {
@@ -49,7 +48,6 @@ export async function processBulkListings(inputs: ListingCreateInput[]) {
         .insert(chunk);
 
       if (insertError) {
-        failedCount += chunk.length;
         let msg = `Satır ${i + 1}-${Math.min(i + CHUNK_SIZE, rowsToInsert.length)}: `;
         
         if (insertError.code === "23505" && insertError.message?.includes("slug")) {

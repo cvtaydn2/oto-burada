@@ -112,9 +112,19 @@ export function FavoritesProvider({ children }: PropsWithChildren) {
     let cancelled = false;
 
     const syncFavorites = async () => {
+      setIsSyncing(true);
       try {
         const response = await fetch("/api/favorites", { method: "GET" });
         const payload = await response.json().catch(() => null) as { success?: boolean; data?: { favoriteIds?: string[] } };
+
+        // If the initial GET fails, fall back to local state — don't corrupt remote truth.
+        if (!response.ok || !payload?.success) {
+          if (!cancelled) {
+            setRemoteFavoriteIds(readFavoriteIds());
+          }
+          return;
+        }
+
         const serverFavoriteIds = payload?.data?.favoriteIds ?? [];
 
         // Server is the source of truth for authenticated users.
@@ -127,19 +137,40 @@ export function FavoritesProvider({ children }: PropsWithChildren) {
           await Promise.allSettled(
             localOnlyIds.map((listingId) => requestFavoriteUpdate("POST", listingId)),
           );
+
+          // After uploads, always do a final authoritative GET — server is source of truth.
+          // We do NOT merge local IDs ourselves; only confirmed server state is canonical.
+          const finalResponse = await fetch("/api/favorites", { method: "GET" });
+          const finalPayload = await finalResponse.json().catch(() => null);
+          if (finalResponse.ok && finalPayload?.success) {
+            const finalIds = finalPayload.data?.favoriteIds;
+            if (Array.isArray(finalIds)) {
+              if (!cancelled) {
+                broadcastFavoritesUpdate(finalIds);
+                setRemoteFavoriteIds(finalIds);
+              }
+              return;
+            }
+          }
+          // Final GET failed — fall back to the initial server state (not local)
+          if (!cancelled) {
+            broadcastFavoritesUpdate(safeServerIds);
+            setRemoteFavoriteIds(safeServerIds);
+          }
+          return;
         }
 
-        const canonicalIds = localOnlyIds.length > 0
-          ? [...new Set([...safeServerIds, ...localOnlyIds])]
-          : safeServerIds;
-
         if (!cancelled) {
-          broadcastFavoritesUpdate(canonicalIds);
-          setRemoteFavoriteIds(canonicalIds);
+          broadcastFavoritesUpdate(safeServerIds);
+          setRemoteFavoriteIds(safeServerIds);
         }
       } catch {
         if (!cancelled) {
           setRemoteFavoriteIds(readFavoriteIds());
+        }
+      } finally {
+        if (!cancelled) {
+          setIsSyncing(false);
         }
       }
     };
@@ -180,7 +211,9 @@ export function FavoritesProvider({ children }: PropsWithChildren) {
     },
     [localFavoriteIds, remoteFavoriteIds, userId],
   );
-  const resolvedHydrated = userId ? remoteFavoriteIds !== null && !isSyncing : localHydrated;
+  // hydrated = true only when sync is fully complete (remoteFavoriteIds set AND not mid-sync).
+  // This prevents consumers from seeing a "ready" state while an initial sync is still in flight.
+  const resolvedHydrated = userId ? (remoteFavoriteIds !== null && !isSyncing) : localHydrated;
 
   const value = useMemo<FavoritesContextValue>(
     () => ({

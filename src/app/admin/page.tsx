@@ -156,7 +156,7 @@ function QuickSystemStat({ icon, label, value, color }: { icon: React.ReactNode,
 async function AdminRevenueBadge({
   analyticsPromise,
 }: {
-  analyticsPromise: Promise<{ kpis: { totalRevenue: number } } | { error: string }>;
+  analyticsPromise: Promise<any>;
 }) {
   const analyticsData = await analyticsPromise;
 
@@ -185,8 +185,8 @@ async function AdminMetricsSection({
   analyticsPromise,
   reportsPromise,
 }: {
-  analyticsPromise: Promise<{ kpis: { totalListings: number; totalUsers: number }; listingsByStatus: Array<{ status: string; count: number }>; listingTrend?: number; userTrend?: number } | { error: string }>;
-  reportsPromise: Promise<Array<{ id: string; status: string; listingId: string }> | { error: string }>;
+  analyticsPromise: Promise<any>;
+  reportsPromise: Promise<any>;
 }) {
   const [analyticsResult, reportsResult] = await Promise.all([analyticsPromise, reportsPromise]);
   
@@ -213,10 +213,10 @@ async function AdminMetricsSection({
       <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-4">
         <DashboardMetricCard
           label="Bekleyen İlanlar"
-          value={analyticsData ? String(analyticsData.listingsByStatus?.find((s) => s.status === "pending")?.count ?? 0) : "—"}
+          value={analyticsData ? String(analyticsData.listingsByStatus?.find((s: any) => s.status === "pending")?.count ?? 0) : "—"}
           helper="Moderasyon kuyruğu"
           icon={Car}
-          tone={ (analyticsData?.listingsByStatus?.find((s) => s.status === "pending")?.count ?? 0) > 0 ? "amber" : "blue"}
+          tone={ (analyticsData?.listingsByStatus?.find((s: any) => s.status === "pending")?.count ?? 0) > 0 ? "amber" : "blue"}
         />
         <DashboardMetricCard
           label="Aktif Şikayetler"
@@ -251,7 +251,7 @@ async function AdminMetricsSection({
 async function PersistenceOnlySection({
   persistenceHealthPromise,
 }: {
-  persistenceHealthPromise: Promise<{ redis: { status: string; details?: any } } | { error: string }>;
+  persistenceHealthPromise: Promise<any>;
 }) {
   const result = await persistenceHealthPromise;
   if (!result) return null;
@@ -329,8 +329,8 @@ async function AdminRecentActionsSection({
   recentActionsPromise,
   reportsPromise,
 }: {
-  recentActionsPromise: Promise<Array<{ id: string; adminUserId: string; targetType: string; targetId: string }> | { error: string }>;
-  reportsPromise: Promise<Array<{ id: string; status: string; listingId: string }> | { error: string }>;
+  recentActionsPromise: Promise<any[] | { error: string }>;
+  reportsPromise: Promise<any[] | { error: string }>;
 }) {
   const [recentActionsResult, reportsResult] = await Promise.all([recentActionsPromise, reportsPromise]);
 

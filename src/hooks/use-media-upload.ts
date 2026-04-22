@@ -30,7 +30,10 @@ export function useMediaUpload(bucket: string = "listings") {
     );
 
     const fileExt = fileObj.file.name.split(".").pop();
-    const fileName = `${crypto.randomUUID()}-${Date.now()}.${fileExt}`;
+    const randomId = typeof crypto?.randomUUID === "function" 
+      ? crypto.randomUUID() 
+      : Math.random().toString(36).substring(2, 11);
+    const fileName = `${randomId}-${Date.now()}.${fileExt}`;
     const filePath = `temp/${fileName}`;
 
     const { error } = await supabase.storage
@@ -42,9 +45,9 @@ export function useMediaUpload(bucket: string = "listings") {
 
     if (error) {
       toast.error(`Yükleme hatası: ${fileObj.file.name}`);
-      setFiles((prev) => 
-        prev.map((f) => f.id === fileObj.id ? { ...f, status: "error" } : f)
-      );
+      // Remove the file from state so the user doesn't stay with a "stuck" preview
+      setFiles((prev) => prev.filter((f) => f.id !== fileObj.id));
+      if (fileObj.preview) URL.revokeObjectURL(fileObj.preview);
       return;
     }
 
@@ -57,7 +60,9 @@ export function useMediaUpload(bucket: string = "listings") {
 
   const onFilesSelected = useCallback((selectedFiles: FileList | File[]) => {
     const newFiles: UploadedFile[] = Array.from(selectedFiles).map((file) => ({
-      id: crypto.randomUUID(),
+      id: typeof crypto?.randomUUID === "function" 
+        ? crypto.randomUUID() 
+        : Math.random().toString(36).substring(2, 11),
       file,
       url: "",
       // PILL: Issue 1 - Instant Preview (No Base64 Lock)

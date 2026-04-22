@@ -63,7 +63,7 @@ export async function POST(request: Request) {
     await redis.zremrangebyrank(key, 0, -51);
 
     return apiSuccess({ published: true, notification });
-  } catch (error) {
+  } catch {
     return apiError(API_ERROR_CODES.INTERNAL_ERROR, "Bildirim yayınlanamadı");
   }
 }

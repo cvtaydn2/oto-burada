@@ -6,8 +6,13 @@ loadLocalEnv();
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
-const targetEmail = process.env.ADMIN_EMAIL || "admin@otoburada.demo";
+const targetEmail = process.env.ADMIN_EMAIL;
 const newPassword = process.env.ADMIN_PASSWORD;
+
+if (!targetEmail) {
+  console.error("ADMIN_EMAIL must be provided via environment variable");
+  process.exit(1);
+}
 
 if (!supabaseUrl || !serviceRoleKey) {
   console.error("Missing required environment variables (SUPABASE_URL or SERVICE_ROLE_KEY)");

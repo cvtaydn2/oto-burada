@@ -21,7 +21,7 @@ export function FormattedDate({
   let formattedStr = "";
   try {
     formattedStr = format(dateObj, formatStr, { locale: tr });
-  } catch (err) {
+  } catch {
     formattedStr = "Geçersiz Tarih";
   }
 

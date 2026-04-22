@@ -199,7 +199,7 @@ export default async function ListingDetailPage({ params }: ListingDetailPagePro
               </Suspense>
             </div>
 
-            <Suspense fallback={<div className="h-[600px] w-full animate-pulse rounded-3xl bg-muted lg:max-w-[400px]" />}>
+            <Suspense fallback={<div className="h-[600px] w-full animate-pulse rounded-3xl bg-muted lg:w-[380px]" />}>
               <ListingSellerSidebar 
                 listing={listing} 
                 seller={seller} 

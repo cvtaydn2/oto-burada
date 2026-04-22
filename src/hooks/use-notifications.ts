@@ -16,18 +16,17 @@ export function useNotifications(userId?: string) {
       if (!userId) return [];
       try {
         const response = await fetch("/api/notifications");
-        if (!response.ok) {
-          throw new Error(`Notification fetch failed with status: ${response.status}`);
+        const payload = await response.json().catch(() => null);
+        if (!response.ok || !payload || typeof payload !== "object") {
+          throw new Error(`Notification fetch failed: ${response.status}`);
         }
-        const payload = await response.json();
-        if (!payload || typeof payload !== "object") {
-          throw new Error("Invalid notification payload format");
+        if (!payload.success) {
+          throw new Error(payload.error?.message || "Bildirimler yüklenemedi");
         }
-        return payload.success ? payload.data?.notifications ?? [] : [];
+        return payload.data?.notifications ?? [];
       } catch (err) {
-        // Fallback to empty list but log the issue for observability
         console.warn("[NOTIFICATIONS] Failed to load notifications:", err);
-        return [];
+        throw err;
       }
     },
     enabled: !!userId,
@@ -102,10 +101,12 @@ export function useNotifications(userId?: string) {
 
   const notificationsList = Array.isArray(notifications) ? notifications : [];
   const unreadCount = notificationsList.filter((n) => !n.read).length;
+  const isError = notifications === undefined && !isLoading;
 
   return {
     notifications: notificationsList,
     unreadCount,
     isLoading,
+    isError,
   };
 }

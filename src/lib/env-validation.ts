@@ -137,7 +137,7 @@ export function logEnvValidation(): void {
     );
   }
 
-  if (result.valid && result.warnings.length === 0) {
+  if (result.valid && result.warnings.length === 0 && process.env.NODE_ENV !== "production") {
     console.info("[ENV] ✅ All environment variables validated");
   }
 }

@@ -41,7 +41,10 @@ export default async function SellerProfilePage({ params }: SellerProfilePagePro
   const featuredListingCount = sellerListings.filter((listing: Listing) => listing.featured).length;
   const trustSummary = getSellerTrustSummary(seller, totalListingsCount);
   const trustUI = getSellerTrustUI(seller);
-  const memberSinceYear = new Date(seller.createdAt).getFullYear();
+  const memberSinceDate = seller.createdAt ? new Date(seller.createdAt) : null;
+  const memberSinceYear = (memberSinceDate && !isNaN(memberSinceDate.getTime()))
+    ? memberSinceDate.getFullYear()
+    : null;
   const [ratingSummary, reviews] = await Promise.all([
     getSellerRatingSummary(sellerId),
     getSellerReviews(sellerId),
@@ -86,7 +89,7 @@ export default async function SellerProfilePage({ params }: SellerProfilePagePro
                 </div>
                 <div className="flex items-center gap-1.5">
                   <Calendar size={12} />
-                  {memberSinceYear}&apos;den beri üye
+                  {memberSinceYear ?? new Date().getFullYear()}&apos;den beri üye
                 </div>
               </div>
 
@@ -119,7 +122,7 @@ export default async function SellerProfilePage({ params }: SellerProfilePagePro
            {[
              { label: "Aktif İlan", value: totalListingsCount, icon: Car },
              { label: "Öne Çıkan", value: featuredListingCount, icon: CheckCircle2 },
-             { label: "Üyelik Yılı", value: memberSinceYear, icon: Clock }
+             { label: "Üyelik Yılı", value: memberSinceYear ?? "—", icon: Clock }
            ].map((stat) => (
              <div key={stat.label} className="rounded-xl border border-border bg-background/50 p-4 transition-colors hover:bg-background/80">
                 <div className="flex items-center gap-3">
