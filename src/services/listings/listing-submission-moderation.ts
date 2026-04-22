@@ -3,6 +3,7 @@ import { Listing, ListingCreateInput } from "@/types";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { hasSupabaseAdminEnv } from "@/lib/supabase/env";
 import { estimateVehiclePrice } from "@/services/market/price-estimation";
+import { logger } from "@/lib/utils/logger";
 
 const TRUST_GUARD_REJECTION_WINDOW_MS = 24 * 60 * 60 * 1000;
 const TRUST_GUARD_REJECTION_THRESHOLD = 3;
@@ -154,7 +155,7 @@ export async function performAsyncModeration(listingId: string) {
       .eq("id", listingId);
 
   } catch (error) {
-    console.error(`[AsyncModeration] Failed for ${listingId}:`, error);
+    logger.listings.error("AsyncModeration failed", error, { listingId });
   }
 }
 

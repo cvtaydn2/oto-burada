@@ -1,4 +1,5 @@
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
+import { logger } from "@/lib/utils/logger";
 
 /**
  * ── PILL: Issue 5 - BOLA / Audit Logging ──────────────────────────
@@ -28,9 +29,16 @@ export async function logAuditAction(params: {
     });
 
     if (error) {
-      console.error("[Audit] Failed to log action:", error);
+      logger.security.error("Failed to log audit action", error, {
+        action: params.action,
+        resourceType: params.resourceType,
+        resourceId: params.resourceId,
+      });
     }
   } catch (err) {
-    console.error("[Audit] Unexpected error:", err);
+    logger.security.error("Unexpected audit log error", err, {
+      action: params.action,
+      resourceType: params.resourceType,
+    });
   }
 }

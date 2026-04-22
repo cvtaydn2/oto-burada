@@ -214,12 +214,12 @@ export async function sendMessage(
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ chatId, content }),
       });
-      const result = await response.json();
-      if (!response.ok) {
-        logger.messages.error("Send Message API Error", result.error);
+      const result = await response.json().catch(() => null);
+      if (!response.ok || !result) {
+        logger.messages.error("Send Message API Error", result?.error, { chatId });
         return null;
       }
-      return result.data;
+      return result.data ?? null;
     } catch (err) {
       logger.messages.error("Send Message Fetch Error", err);
       return null;

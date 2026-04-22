@@ -119,25 +119,27 @@ export function validateEnv(): EnvValidationResult {
 
 /**
  * Log validation results. Called from instrumentation.ts register().
- * Uses console directly — logger.ts may not be initialized yet.
+ * Uses logger utility — safe to call at startup since logger only wraps console.
  */
 export function logEnvValidation(): void {
   const result = validateEnv();
+  const isProd = process.env.NODE_ENV === "production";
 
   if (result.missing.length > 0) {
-    const isProd = process.env.NODE_ENV === "production";
+    // Use console.error directly here — logger context may not be initialized yet
+    // and this is a critical startup signal that must always surface.
     console.error(
       `[ENV] ❌ Missing ${result.missing.length} required variables${isProd ? " (CRITICAL)" : ""}: ${result.missing.join(", ")}`,
     );
   }
 
-  if (result.warnings.length > 0 && process.env.NODE_ENV !== "production") {
+  if (result.warnings.length > 0 && !isProd) {
     console.warn(
       `[ENV] ⚠️  ${result.warnings.length} optional variables not set. Features may be degraded.`,
     );
   }
 
-  if (result.valid && result.warnings.length === 0 && process.env.NODE_ENV !== "production") {
+  if (result.valid && result.warnings.length === 0 && !isProd) {
     console.info("[ENV] ✅ All environment variables validated");
   }
 }

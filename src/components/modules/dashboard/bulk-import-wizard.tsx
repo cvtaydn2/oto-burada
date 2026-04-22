@@ -114,9 +114,8 @@ export function BulkImportWizard() {
       const parsedRows = parseCSV(text);
       setRows(parsedRows);
       toast.success(`${parsedRows.length} satır başarıyla okundu.`);
-    } catch (err) {
+    } catch {
       toast.error("Dosya okunurken bir hata oluştu.");
-      console.error(err);
     } finally {
       setIsProcessing(false);
     }

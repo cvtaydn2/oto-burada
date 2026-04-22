@@ -1,4 +1,5 @@
 import { google } from "googleapis";
+import { logger } from "@/lib/utils/logger";
 
 /**
  * ── PILL: Issue 8 - Google Indexing API Automation ────────────────
@@ -11,7 +12,7 @@ export async function notifyGoogleOfListingChange(
 ) {
   const credentialsJson = process.env.GOOGLE_APPLICATION_CREDENTIALS_JSON;
   if (!credentialsJson) {
-    console.warn("[GoogleIndexing] GOOGLE_APPLICATION_CREDENTIALS_JSON missing. Skipping.");
+    logger.system.warn("GOOGLE_APPLICATION_CREDENTIALS_JSON missing — Google Indexing skipped", { url });
     return;
   }
 
@@ -31,16 +32,13 @@ export async function notifyGoogleOfListingChange(
     const indexing = google.indexing({ version: "v1", auth } as any);
 
     const res = await indexing.urlNotifications.publish({
-      requestBody: {
-        url,
-        type,
-      },
+      requestBody: { url, type },
     });
 
-    console.log(`[GoogleIndexing] Successfully notified Google for ${url}:`, res.data);
+    logger.system.info("Google Indexing notified", { url, type, status: res.status });
     return res.data;
   } catch (error) {
-    console.error(`[GoogleIndexing] Failed to notify Google for ${url}:`, error);
-    // Don't throw - this is a non-critical background enhancement
+    // Non-critical — don't throw, just log
+    logger.system.error("Google Indexing notification failed", error, { url, type });
   }
 }
