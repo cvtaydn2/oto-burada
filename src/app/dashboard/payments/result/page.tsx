@@ -12,7 +12,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Suspense, useEffect, useState } from "react";
+import { Suspense, useEffect, useRef, useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -39,6 +39,7 @@ function PaymentResultContent() {
     plan_name?: string;
   } | null>(null);
   const [retryNonce, setRetryNonce] = useState(0);
+  const requestInFlightRef = useRef(false);
 
   const token = searchParams.get("token");
 
@@ -60,11 +61,18 @@ function PaymentResultContent() {
       const maxAttempts = 5;
 
       const checkStatus = async () => {
+        if (requestInFlightRef.current) {
+          return false;
+        }
+
+        requestInFlightRef.current = true;
         const { data, error } = await supabase
           .from("payments")
           .select("*, plan_name")
           .eq("iyzico_token", token)
           .maybeSingle();
+
+        requestInFlightRef.current = false;
 
         if (cancelled) {
           return true;
@@ -117,6 +125,7 @@ function PaymentResultContent() {
 
     return () => {
       cancelled = true;
+      requestInFlightRef.current = false;
       if (pollTimeout) {
         clearTimeout(pollTimeout);
       }
@@ -124,6 +133,9 @@ function PaymentResultContent() {
   }, [token, router, retryNonce]);
 
   const retryVerification = () => {
+    if (requestInFlightRef.current) {
+      return;
+    }
     setPaymentData(null);
     setStatus("pending");
     setLoading(true);
@@ -256,13 +268,14 @@ function PaymentResultContent() {
                   </Link>
                 </Button>
               </>
-            ) : isWarningState ? (
+            ) : isPending ? (
               <>
                 <Button
                   className="h-14 rounded-2xl bg-blue-600 text-white font-bold uppercase tracking-widest shadow-sm shadow-blue-500/20 hover:bg-blue-700 hover:scale-[1.02] active:scale-[0.98] transition-all"
                   onClick={retryVerification}
+                  disabled={loading}
                 >
-                  Tekrar Kontrol Et
+                  Kontrolü Yenile
                   <Loader2 className="ml-2 h-5 w-5" />
                 </Button>
                 <Button
@@ -283,6 +296,37 @@ function PaymentResultContent() {
                   <Link href="/dashboard">
                     Panele Dön
                     <Home className="ml-2 h-5 w-5" />
+                  </Link>
+                </Button>
+              </>
+            ) : isUnverified || isVerificationError ? (
+              <>
+                <Button
+                  className="h-14 rounded-2xl bg-blue-600 text-white font-bold uppercase tracking-widest shadow-sm shadow-blue-500/20 hover:bg-blue-700 hover:scale-[1.02] active:scale-[0.98] transition-all"
+                  onClick={retryVerification}
+                  disabled={loading}
+                >
+                  Tekrar Kontrol Et
+                  <Loader2 className="ml-2 h-5 w-5" />
+                </Button>
+                <Button
+                  asChild
+                  variant="ghost"
+                  className="h-14 rounded-2xl font-bold text-slate-400 hover:text-slate-900 hover:bg-slate-50 transition-all"
+                >
+                  <Link href="/contact">
+                    Destek Al
+                    <MessageSquare className="ml-2 h-5 w-5" />
+                  </Link>
+                </Button>
+                <Button
+                  asChild
+                  variant="ghost"
+                  className="h-14 rounded-2xl font-bold text-slate-400 hover:text-slate-900 hover:bg-slate-50 transition-all"
+                >
+                  <Link href="/dashboard/pricing">
+                    Paketlere Dön
+                    <ArrowRight className="ml-2 h-5 w-5" />
                   </Link>
                 </Button>
               </>
@@ -313,11 +357,12 @@ function PaymentResultContent() {
                 <Button
                   asChild
                   className="h-14 rounded-2xl bg-rose-600 text-white font-bold uppercase tracking-widest shadow-sm shadow-rose-500/20 hover:bg-rose-700 hover:scale-[1.02] active:scale-[0.98] transition-all"
+                  onClick={() => window.history.back()}
                 >
-                  <button onClick={() => window.history.back()}>
+                  <span className="inline-flex items-center">
                     Tekrar Dene
                     <Zap className="ml-2 h-5 w-5" />
-                  </button>
+                  </span>
                 </Button>
                 <Button
                   asChild
@@ -327,6 +372,16 @@ function PaymentResultContent() {
                   <Link href="/dashboard/pricing">
                     Paketlere Göz At
                     <ArrowRight className="ml-2 h-5 w-5" />
+                  </Link>
+                </Button>
+                <Button
+                  asChild
+                  variant="ghost"
+                  className="h-14 rounded-2xl font-bold text-slate-400 hover:text-slate-900 hover:bg-slate-50 transition-all"
+                >
+                  <Link href="/contact">
+                    Destek Al
+                    <MessageSquare className="ml-2 h-5 w-5" />
                   </Link>
                 </Button>
               </>

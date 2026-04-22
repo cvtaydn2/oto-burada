@@ -146,13 +146,15 @@ export default async function HomePage() {
           <section className="bg-muted/30 py-8 sm:py-10 md:py-12">
             <div className="max-w-7xl mx-auto px-3 sm:px-4 md:px-6">
               <div className="flex justify-between items-center mb-6">
-                <h2 className="text-xl sm:text-2xl font-bold text-foreground">Öne Çıkan İlanlar</h2>
+                <h2 className="text-xl sm:text-2xl font-bold text-foreground">
+                  Vitrindeki İlanlar
+                </h2>
                 <Link
                   href="/listings"
                   prefetch={false}
                   className="text-sm font-medium text-primary hover:underline flex items-center"
                 >
-                  Tüm İlanları Gör <ChevronRight size={14} />
+                  Tüm İlanlara Git <ChevronRight size={14} />
                 </Link>
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">

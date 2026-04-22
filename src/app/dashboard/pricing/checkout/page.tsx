@@ -18,24 +18,37 @@ export default async function CheckoutPage({ searchParams }: CheckoutPageProps) 
 
   const { plan: planId } = await searchParams;
   const paymentEnabled = isPaymentEnabled();
+  let redirectTarget: string | null = null;
 
   if (!planId) {
-    redirect("/dashboard/pricing");
+    redirectTarget = "/dashboard/pricing";
+  }
+
+  if (redirectTarget) {
+    redirect(redirectTarget);
   }
 
   const plans = await getAdminPricingPlans();
   const selectedPlan = plans.find((p) => p.id === planId);
 
   if (!selectedPlan) {
-    redirect("/dashboard/pricing?plan=missing");
+    redirectTarget = "/dashboard/pricing?plan=missing";
   }
 
-  if (!selectedPlan.is_active) {
-    redirect("/dashboard/pricing?plan=inactive");
+  if (selectedPlan && !selectedPlan.is_active) {
+    redirectTarget = "/dashboard/pricing?plan=inactive";
   }
 
-  if (!paymentEnabled && selectedPlan.price > 0) {
-    redirect("/dashboard/pricing?payments=disabled");
+  if (selectedPlan && !paymentEnabled && selectedPlan.price > 0) {
+    redirectTarget = "/dashboard/pricing?payments=disabled";
+  }
+
+  if (redirectTarget) {
+    redirect(redirectTarget);
+  }
+
+  if (!selectedPlan) {
+    redirect("/dashboard/pricing");
   }
 
   return (

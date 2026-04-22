@@ -32,6 +32,8 @@ export function AuthForm({
 }: AuthFormProps) {
   const [state, formAction] = useActionState(action, initialState);
   const isLogin = mode === "login";
+  const passwordHintId = isLogin ? "login-password-hint" : "register-password-hint";
+  const fullNameHintId = "register-full-name-hint";
 
   return (
     <div className="flex min-h-screen flex-1 overflow-hidden bg-[#F8FAFC]">
@@ -141,8 +143,16 @@ export function AuthForm({
                       placeholder="Ad Soyad"
                       required
                       minLength={3}
+                      title="Ad soyad alanı en az 3 karakter olmalıdır."
+                      aria-describedby={fullNameHintId}
                       className="h-12 w-full rounded-xl border border-input bg-muted/30 px-4 text-sm font-medium text-foreground outline-none transition-all placeholder:text-muted-foreground/50 focus:bg-background focus:border-primary focus:ring-2 focus:ring-primary/10"
                     />
+                    <p
+                      id={fullNameHintId}
+                      className="px-1 text-[11px] font-medium text-muted-foreground"
+                    >
+                      İlan ve hesap işlemlerinde görünecek ad soyadınızı yazın.
+                    </p>
                   </>
                 )}
               </div>
@@ -182,11 +192,25 @@ export function AuthForm({
                   type="password"
                   name="password"
                   autoComplete={isLogin ? "current-password" : "new-password"}
-                  placeholder="••••••••"
+                  placeholder={isLogin ? "Şifrenizi girin" : "En az 8 karakter"}
                   required
                   minLength={8}
+                  title={
+                    isLogin
+                      ? "Lütfen hesabınıza ait şifreyi girin."
+                      : "Şifreniz en az 8 karakter olmalıdır."
+                  }
+                  aria-describedby={passwordHintId}
                   className="h-12 w-full rounded-xl border border-input bg-muted/30 px-4 text-sm font-medium text-foreground outline-none transition-all placeholder:text-muted-foreground/50 focus:bg-background focus:border-primary focus:ring-2 focus:ring-primary/10"
                 />
+                <p
+                  id={passwordHintId}
+                  className="px-1 text-[11px] font-medium text-muted-foreground"
+                >
+                  {isLogin
+                    ? "Hesabınızı açmak için mevcut şifrenizi girin."
+                    : "Güvenli bir şifre seçin. En az 8 karakter kullanın."}
+                </p>
               </div>
 
               {isLogin && (

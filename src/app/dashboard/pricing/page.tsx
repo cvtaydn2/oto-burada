@@ -36,6 +36,9 @@ export default async function PricingPage({ searchParams }: PricingPageProps) {
             <AlertTriangle size={16} />
             {planStateMessage}
           </div>
+          <p className="mt-2 text-sm text-slate-600">
+            Güncel olarak satın alınabilir paketleri aşağıda görebilirsiniz.
+          </p>
         </div>
       )}
       {!paymentEnabled && (

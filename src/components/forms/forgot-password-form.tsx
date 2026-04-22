@@ -11,6 +11,7 @@ const initialState = {};
 
 export function ForgotPasswordForm() {
   const [state, formAction] = useActionState(forgotPasswordAction, initialState);
+  const submittedEmail = (state as { fields?: { email?: string } }).fields?.email;
 
   return (
     <div className="min-h-screen grid lg:grid-cols-2 bg-card">
@@ -60,9 +61,28 @@ export function ForgotPasswordForm() {
               <p className="text-sm font-bold text-emerald-700">
                 ✅ {(state as { success: string }).success}
               </p>
+              {submittedEmail ? (
+                <p className="text-xs font-semibold text-emerald-700/80">
+                  Gönderilen adres: {submittedEmail}
+                </p>
+              ) : null}
               <p className="text-xs text-emerald-600">
                 Spam klasörünü de kontrol etmeyi unutmayın.
               </p>
+              <div className="pt-2 flex flex-col gap-3 sm:flex-row">
+                <Link
+                  href="/login"
+                  className="inline-flex h-11 items-center justify-center rounded-xl bg-emerald-600 px-4 text-xs font-bold uppercase tracking-widest text-white transition hover:bg-emerald-700"
+                >
+                  Girişe Dön
+                </Link>
+                <Link
+                  href="/forgot-password"
+                  className="inline-flex h-11 items-center justify-center rounded-xl border border-emerald-200 px-4 text-xs font-bold uppercase tracking-widest text-emerald-700 transition hover:bg-emerald-100"
+                >
+                  Başka E-posta Dene
+                </Link>
+              </div>
             </div>
           ) : (
             <form action={formAction} className="space-y-6">
