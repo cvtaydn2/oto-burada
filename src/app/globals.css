@@ -127,9 +127,9 @@
 
 @layer base {
   html {
-    scrollbar-gutter: stable both-edges; 
+    /* scrollbar-gutter: stable both-edges kaldırıldı — macOS/mobilde gereksiz boşluk yaratıyordu */
     @apply min-h-svh font-sans antialiased scroll-smooth selection:bg-primary/20 selection:text-primary;
-    overscroll-behavior-y: none;
+    /* overscroll-behavior-y: none kaldırıldı — mobilde pull-to-refresh'i engelliyordu */
   }
   * {
     @apply border-border/80 outline-ring/30;
@@ -138,7 +138,8 @@
     image-orientation: from-image;
   }
   body {
-    @apply min-h-svh bg-background text-foreground overscroll-y-none;
+    /* overscroll-y-none kaldırıldı — pull-to-refresh mobil UX için gerekli */
+    @apply min-h-svh bg-background text-foreground;
   }
   h1, h2, h3, h4, h5, h6 {
     @apply font-heading tracking-tight font-bold;
@@ -219,7 +220,7 @@
     height: 100dvh;
   }
   .touch-pressed {
-    @apply active:scale-[0.96] active:opacity-80 transition-all duration-150;
+    @apply active:scale-[0.97] active:opacity-80 transition-all duration-150;
   }
 
   .no-scrollbar::-webkit-scrollbar {

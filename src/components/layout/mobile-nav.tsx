@@ -18,12 +18,20 @@ interface MobileNavProps {
 export function MobileNav({ searchSuggestions }: MobileNavProps) {
   const pathname = usePathname();
   const { isAuthenticated, isReady } = useAuthUser();
+  // FAB sadece içerik keşif sayfalarında gösterilir.
+  // Form, ödeme, mesaj ve işlem sayfalarında klavye/içerik üstüne binmemesi için gizlenir.
+  const FAB_ALLOWED_PATHS = ["/", "/listings", "/favorites", "/compare"];
+  const showFAB = FAB_ALLOWED_PATHS.some(
+    (p) => pathname === p || (p !== "/" && pathname.startsWith(p + "/")),
+  ) && !pathname.startsWith("/dashboard/listings/create")
+    && !pathname.startsWith("/dashboard/listings/edit");
+
   const mobileNavigationItems = getMobileNavigationItems(isReady ? isAuthenticated : true);
 
   return (
     <div className="lg:hidden">
-      {/* Mobile FAB - Positioned smartly above bottom nav */}
-      {!pathname.includes("/listing/") && (
+      {/* Mobile FAB - Sadece keşif sayfalarında gösterilir, form/ödeme/mesaj sayfalarında gizlenir */}
+      {showFAB && (
         <Link
           href="/dashboard/listings/create"
           className="fixed bottom-32 right-6 z-50 flex h-14 w-14 items-center justify-center rounded-full bg-primary text-white shadow-xl shadow-primary/30 transition-transform active:scale-90"
@@ -48,7 +56,7 @@ export function MobileNav({ searchSuggestions }: MobileNavProps) {
                   href={item.href}
                   aria-current={isActive ? "page" : undefined}
                   className={cn(
-                    "flex flex-col items-center justify-center gap-1.5 py-1.5 transition-all active:scale-95",
+                    "flex flex-col items-center justify-center gap-1 py-2.5 min-h-[44px] transition-all active:scale-95",
                     isActive
                       ? "text-primary"
                       : "text-muted-foreground hover:text-foreground",
@@ -66,7 +74,7 @@ export function MobileNav({ searchSuggestions }: MobileNavProps) {
             <Drawer.Root>
               <Drawer.Trigger asChild>
                 <button
-                  className="flex w-full flex-col items-center justify-center gap-1.5 py-1.5 text-muted-foreground transition-all active:scale-95"
+                  className="flex w-full flex-col items-center justify-center gap-1 py-2.5 min-h-[44px] text-muted-foreground transition-all active:scale-95"
                   aria-label="Menüyü aç"
                 >
                   <Menu className="size-5.5 stroke-2" />

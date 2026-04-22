@@ -1,12 +1,12 @@
 import { CarFront } from "lucide-react";
 import { Suspense } from "react";
 import Link from "next/link";
-import { features } from "@/lib/features";
 
 import { SiteHeaderAuth } from "@/components/layout/site-header-auth";
 import { getLiveMarketplaceReferenceData } from "@/services/reference/live-reference-data";
 import { SearchWithSuggestions } from "@/components/ui/search-with-suggestions";
 import { ThemeToggle } from "@/components/shared/theme-toggle";
+import { DesktopNav } from "@/components/layout/desktop-nav";
 
 // Arama önerileri ayrı Suspense boundary'de — header'ın geri kalanını bloklamaz
 async function HeaderSearch() {
@@ -34,17 +34,12 @@ export async function SiteHeader() {
             </span>
           </Link>
 
-          <nav className="hidden items-center gap-6 text-sm font-medium text-muted-foreground lg:flex">
-            <Link href="/listings" prefetch={false} className="hover:text-blue-500 transition-colors">İlanlar</Link>
-            {features.compare && (
-              <Link href="/compare" className="hover:text-blue-500 transition-colors">Karşılaştır</Link>
-            )}
-          </nav>
+          <DesktopNav />
         </div>
 
         <div className="hidden flex-1 max-w-lg mx-8 lg:flex relative">
           <Suspense fallback={
-            <div className="w-full h-10 rounded-full bg-gray-100 animate-pulse" />
+            <div className="w-full h-10 rounded-full bg-muted animate-pulse" />
           }>
             <HeaderSearch />
           </Suspense>

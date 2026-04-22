@@ -2,6 +2,7 @@ import Link from "next/link";
 import { CarFront, CheckCircle2, MessageCircle, Shield, Users } from "lucide-react";
 import { getLiveMarketplaceReferenceData } from "@/services/reference/live-reference-data";
 import { CURRENT_YEAR } from "@/lib/utils/date-utils";
+import { FooterNavLink } from "@/components/layout/footer-nav-link";
 
 const quickLinks = [
   { href: "/", label: "Ana Sayfa" },
@@ -55,9 +56,7 @@ export async function SiteFooter() {
             <ul className="mt-5 space-y-3">
               {quickLinks.map((item) => (
                 <li key={item.href}>
-                  <Link href={item.href} className="text-sm text-muted-foreground hover:text-primary transition-colors">
-                    {item.label}
-                  </Link>
+                  <FooterNavLink href={item.href} label={item.label} />
                 </li>
               ))}
             </ul>
