@@ -184,7 +184,11 @@ export async function ListingDetailStructuredData({ listing, url, sellerName }: 
       "priceCurrency": "TRY",
       "availability": "https://schema.org/InStock",
       "url": url,
-      "priceValidUntil": new Date(listing.updatedAt).toISOString().split("T")[0],
+      ...((() => {
+        const d = listing.updatedAt ? new Date(listing.updatedAt) : null;
+        const isValid = d && !isNaN(d.getTime());
+        return isValid ? { "priceValidUntil": d.toISOString().split("T")[0] } : {};
+      })()),
       "seller": {
         "@type": sellerName ? "Person" : "Organization",
         "name": sellerName ?? "OtoBurada",

@@ -8,26 +8,33 @@ interface FormattedDateProps {
 }
 
 /**
- * Server-safe date component using suppressHydrationWarning.
- * This avoids hydration mismatches due to timezone differences between server and client.
+ * Server-safe date component.
+ * suppressHydrationWarning is intentional: server and client may render
+ * slightly different times due to timezone differences. This is expected
+ * and safe — the content is cosmetic, not security-sensitive.
  */
-export function FormattedDate({ 
-  date, 
-  formatStr = "d MMMM yyyy HH:mm", 
-  className 
+export function FormattedDate({
+  date,
+  formatStr = "d MMMM yyyy HH:mm",
+  className,
 }: FormattedDateProps) {
   const dateObj = typeof date === "string" ? new Date(date) : date;
-  
+  const isValid = dateObj instanceof Date && !isNaN(dateObj.getTime());
+
   let formattedStr = "";
-  try {
-    formattedStr = format(dateObj, formatStr, { locale: tr });
-  } catch {
-    formattedStr = "Geçersiz Tarih";
+  if (!isValid) {
+    formattedStr = "—";
+  } else {
+    try {
+      formattedStr = format(dateObj, formatStr, { locale: tr });
+    } catch {
+      formattedStr = "—";
+    }
   }
 
   return (
-    <time 
-      dateTime={dateObj instanceof Date ? dateObj.toISOString() : undefined} 
+    <time
+      dateTime={isValid ? dateObj.toISOString() : undefined}
       className={className}
       suppressHydrationWarning
     >
