@@ -26,7 +26,7 @@ export default function ContactPage() {
           icon={<MessageCircle size={28} />}
           title="WhatsApp"
           description="En hızlı çözüm için danışmanlarımıza anlık mesaj gönderin."
-          value="destek@otoburada.com"
+          value="+90 (212) 000 00 00"
           color="bg-emerald-500"
         />
         <ContactCard
@@ -113,7 +113,7 @@ export default function ContactPage() {
                 Şu anda sadece WhatsApp ve E-Posta üzerinden destek vermekteyiz. Lütfen yandaki iletişim kanallarını kullanın.
               </p>
               <div className="p-4 bg-blue-50 border border-blue-100 rounded-xl text-blue-800 text-sm font-bold">
-                WhatsApp: destek@otoburada.com
+                WhatsApp: +90 (212) 000 00 00
               </div>
             </div>
           )}

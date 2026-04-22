@@ -212,9 +212,9 @@ export default async function HomePage() {
           <div className="max-w-7xl mx-auto px-6 lg:px-8">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-start">
               <div>
-                <h1 className="text-3xl font-bold text-foreground tracking-tight mb-8">
+                <h2 className="text-3xl font-bold text-foreground tracking-tight mb-8">
                   Türkiye&apos;nin En Güvenilir İkinci El Araç Platformu
-                </h1>
+                </h2>
                 <div className="prose-sm text-muted-foreground font-medium">
                   <p className="text-lg leading-relaxed mb-6 italic text-foreground">
                     OtoBurada ile ikinci el araba alım satım işlemlerinizi hızlı ve güvenli şekilde gerçekleştirin. 

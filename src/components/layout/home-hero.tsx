@@ -42,7 +42,7 @@ export function HomeHero({ cities }: HomeHeroProps) {
           </div>
 
           <div className="max-w-3xl text-left space-y-6 sm:space-y-8 lg:max-w-none lg:pl-2 xl:pl-4">
-          <div className="inline-flex items-center gap-2 bg-foreground/10 border border-foreground/10 rounded-full px-4 sm:px-5 py-1.5 sm:py-2 text-foreground/80 text-[9px] sm:text-[10px] font-bold uppercase tracking-widest backdrop-blur-md">
+          <div className="inline-flex items-center gap-2 bg-foreground/10 border border-foreground/10 rounded-full px-4 sm:px-5 py-1.5 sm:py-2 text-foreground/80 text-[11px] font-bold uppercase tracking-widest backdrop-blur-md">
             Sade Araç Pazaryeri
           </div>
           
@@ -92,7 +92,7 @@ export function HomeHero({ cities }: HomeHeroProps) {
 
             <button 
               type="submit"
-              className="m-0.5 sm:m-1 bg-primary text-primary-foreground font-bold rounded-lg sm:rounded-xl px-4 sm:px-8 md:px-10 h-11 sm:h-14 md:h-16 transition-all hover:opacity-90 active:scale-95 flex items-center justify-center gap-2 sm:gap-3 uppercase text-[9px] sm:text-[10px] md:text-[11px] tracking-widest"
+              className="m-0.5 sm:m-1 bg-primary text-primary-foreground font-bold rounded-lg sm:rounded-xl px-4 sm:px-8 md:px-10 h-11 sm:h-14 md:h-16 transition-all hover:opacity-90 active:scale-95 flex items-center justify-center gap-2 sm:gap-3 uppercase text-[11px] tracking-widest"
             >
               <Search size={18} strokeWidth={2} />
               <span className="hidden sm:inline">İLANLARI KEŞFET</span>
@@ -102,29 +102,19 @@ export function HomeHero({ cities }: HomeHeroProps) {
 
           <div className="flex items-center gap-4 sm:gap-6 md:gap-8 pt-4 sm:pt-6">
              <div className="flex flex-col">
-                <span className="text-xl sm:text-2xl font-bold text-foreground leading-none tracking-tighter">10K+</span>
-                <span className="text-[9px] sm:text-[10px] text-muted-foreground font-bold uppercase tracking-widest mt-0.5 sm:mt-1">Aktif İlan</span>
+                <span className="text-xl sm:text-2xl font-bold text-foreground leading-none tracking-tighter">%100</span>
+                <span className="text-[11px] text-muted-foreground font-bold uppercase tracking-widest mt-0.5 sm:mt-1">Ücretsiz İlan</span>
               </div>
               <div className="w-px h-6 sm:h-8 bg-border" />
               <div className="flex flex-col">
-                <span className="text-xl sm:text-2xl font-bold text-foreground leading-none tracking-tighter">%100</span>
-                <span className="text-[9px] sm:text-[10px] text-muted-foreground font-bold uppercase tracking-widest mt-0.5 sm:mt-1">Ücretsiz İlan</span>
+                <span className="text-xl sm:text-2xl font-bold text-foreground leading-none tracking-tighter">7/24</span>
+                <span className="text-[11px] text-muted-foreground font-bold uppercase tracking-widest mt-0.5 sm:mt-1">Destek</span>
               </div>
               <div className="hidden sm:flex items-center gap-4 sm:gap-6 md:gap-8">
                 <div className="w-px h-6 sm:h-8 bg-border" />
                 <div className="flex flex-col">
-                  <span className="text-xl sm:text-2xl font-bold text-foreground leading-none tracking-tighter">7/24</span>
-                  <span className="text-[9px] sm:text-[10px] text-muted-foreground font-bold uppercase tracking-widest mt-0.5 sm:mt-1">Destek</span>
-                </div>
-                <div className="w-px h-8 bg-border" />
-                <div className="flex flex-col">
-                  <span className="text-2xl font-bold text-foreground leading-none tracking-tighter">2M+</span>
-                  <span className="text-[10px] text-muted-foreground font-bold uppercase tracking-widest mt-1">Aylık Ziyaret</span>
-                </div>
-                <div className="w-px h-8 bg-border" />
-                <div className="flex flex-col">
-                  <span className="text-2xl font-bold text-foreground leading-none tracking-tighter">4.9/5</span>
-                  <span className="text-[10px] text-muted-foreground font-bold uppercase tracking-widest mt-1">Kullanıcı Memnuniyeti</span>
+                  <span className="text-xl sm:text-2xl font-bold text-foreground leading-none tracking-tighter">Moderasyonlu</span>
+                  <span className="text-[11px] text-muted-foreground font-bold uppercase tracking-widest mt-0.5 sm:mt-1">Her İlan İncelenir</span>
                 </div>
               </div>
           </div>

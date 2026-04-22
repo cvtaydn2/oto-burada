@@ -142,11 +142,9 @@
   }
   h1, h2, h3, h4, h5, h6 {
     @apply font-heading tracking-tight font-bold;
-    background-clip: text;
-    -webkit-background-clip: text;
-    color: transparent;
-    background-image: linear-gradient(to bottom right, var(--foreground), var(--foreground), color-mix(in oklch, var(--foreground), transparent 30%));
   }
+
+  /* Use .text-gradient utility class explicitly where gradient headings are desired */
 
   /* Accessibility: Reduced Motion */
   @media (prefers-reduced-motion: reduce) {
