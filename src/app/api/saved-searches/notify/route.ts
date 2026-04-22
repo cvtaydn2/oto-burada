@@ -79,8 +79,8 @@ function verifyCronSecret(request: Request): boolean {
 
 // Vercel Cron sends GET requests — this is the primary handler for Emails
 // BUT this is also the endpoint for SSE Realtime connection from clients!
+// GET handler: Routes to SSE or Cron based on Accept header
 export async function GET(request: Request) {
-  // Distinguish between SSE (Browser Client) and Cron (Vercel/Internal)
   const isEventStream = request.headers.get("accept") === "text/event-stream";
   
   if (isEventStream) {
@@ -144,43 +144,48 @@ async function handleSSERequest(request: Request) {
 
   const stream = new ReadableStream({
     async start(controller) {
-      // Send initial connection successful
-      controller.enqueue(encoder.encode('data: {"type":"connected"}\n\n'));
+      const send = (data: string) => {
+        try {
+          controller.enqueue(encoder.encode(data));
+        } catch (e) {
+          // Stream already closed
+        }
+      };
+
+      send('data: {"type":"connected"}\n\n');
 
       const key = `notifications:${userId}`;
       let lastCheck = Date.now();
 
-      // Poll Redis for new notifications
-      intervalId = setInterval(async () => {
+      const poll = async () => {
         try {
-          if (request.signal.aborted) {
-            if (intervalId) clearInterval(intervalId);
-            return;
-          }
-
           const newNotifications = await redis.zrange(key, lastCheck + 1, "+inf", { 
             byScore: true 
           });
 
           if (newNotifications && newNotifications.length > 0) {
             for (const notice of newNotifications) {
-              controller.enqueue(encoder.encode(`data: ${notice}\n\n`));
+              send(`data: ${notice}\n\n`);
             }
             lastCheck = Date.now();
           }
           
-          // Keep-alive ping
-          controller.enqueue(encoder.encode(':\n\n'));
+          // Keep-alive
+          send(':\n\n');
         } catch (error) {
           logger.notifications.error("SSE Polling Error", error);
         }
-      }, 5000); // 5s is more reasonable for serverless polling
+      };
 
-      // Comprehensive cleanup
-      request.signal.addEventListener("abort", () => {
+      intervalId = setInterval(poll, 5000);
+
+      // Event listener for abort
+      const onAbort = () => {
         if (intervalId) clearInterval(intervalId);
         try { controller.close(); } catch (e) {}
-      });
+      };
+
+      request.signal.addEventListener("abort", onAbort);
     },
     cancel() {
       if (intervalId) clearInterval(intervalId);

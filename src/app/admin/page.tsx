@@ -37,10 +37,10 @@ export const dynamic = "force-dynamic";
 export default async function AdminOverviewPage() {
   await requireAdminUser();
 
-  const analyticsPromise = getAdminAnalytics("30d").catch((err) => ({ error: err.message || "Analitik verileri yüklenemedi" }));
-  const reportsPromise = getStoredReports().catch((err) => ({ error: err.message || "Raporlar yüklenemedi" }));
-  const recentActionsPromise = getRecentAdminModerationActions(10).catch((err) => ({ error: err.message || "Son işlemler yüklenemedi" }));
-  const persistenceHealthPromise = getPersistenceHealth().catch((err) => ({ error: err.message || "Sistem sağlığı kontrolü başarısız" }));
+  const analyticsPromise = getAdminAnalytics("30d").catch((err) => ({ error: "Analitik hatası: " + (err.message || "Veriler yüklenemedi") }));
+  const reportsPromise = getStoredReports().catch((err) => ({ error: "Rapor hatası: " + (err.message || "Raporlar yüklenemedi") }));
+  const recentActionsPromise = getRecentAdminModerationActions(10).catch((err) => ({ error: "Moderasyon hatası: " + (err.message || "Son işlemler yüklenemedi") }));
+  const persistenceHealthPromise = getPersistenceHealth().catch((err) => ({ error: "Persistence hatası: " + (err.message || "Sistem sağlığı kontrolü başarısız") }));
 
   let systemOnline = false;
   try {
@@ -196,9 +196,13 @@ async function AdminMetricsSection({
   return (
     <div className="space-y-4">
       {(analyticsError || reportsError) && (
-        <div className="p-3 text-xs font-medium text-rose-600 bg-rose-50 border border-rose-100 rounded-lg">
-          {analyticsError && <p>Analitik hatası: {analyticsError}</p>}
-          {reportsError && <p>Rapor hatası: {reportsError}</p>}
+        <div className="p-4 flex flex-col gap-2 rounded-2xl border border-rose-200 bg-rose-50/50 text-xs font-medium text-rose-700 shadow-sm animate-in fade-in slide-in-from-top-2">
+          <div className="flex items-center gap-2 font-bold text-rose-800">
+            <AlertTriangle size={14} />
+            Veri Yükleme Sorunları
+          </div>
+          {analyticsError && <p className="pl-6">• {analyticsError}</p>}
+          {reportsError && <p className="pl-6">• {reportsError}</p>}
         </div>
       )}
       <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-4">

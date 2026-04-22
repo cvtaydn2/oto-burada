@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 /**
  * Data Transfer Objects (DTOs) and Sanity Helpers
  * Used to ensure sensitive database fields (passwords, social security nos, internal notes) 
@@ -10,45 +9,22 @@ import { Profile, Listing } from "@/types";
 /**
  * Strips sensitive data from a profile object for public or dashboard display.
  */
-export function toProfileDTO(profile: any): Partial<Profile> {
+export function toProfileDTO(profile: Record<string, any> | null | undefined): Partial<Profile> {
   if (!profile) return {};
   
-  // Pick only safe fields
-  const p = profile as any;
-  const {
-    id,
-    fullName,
-    full_name,
-    avatarUrl,
-    avatar_url,
-    city,
-    role,
-    userType,
-    user_type,
-    isVerified,
-    is_verified,
-    businessName,
-    business_name,
-    businessLogoUrl,
-    business_logo_url,
-    businessSlug,
-    business_slug,
-    createdAt,
-    created_at,
-  } = p;
-
+  // Map both camelCase and snake_case database fields
   return {
-    id,
-    fullName: fullName || full_name,
-    avatarUrl: avatarUrl || avatar_url,
-    city,
-    role,
-    userType: userType || user_type,
-    isVerified: isVerified || is_verified,
-    businessName: businessName || business_name,
-    businessLogoUrl: businessLogoUrl || business_logo_url,
-    businessSlug: businessSlug || business_slug,
-    createdAt: createdAt || created_at,
+    id: profile.id,
+    fullName: profile.fullName || profile.full_name,
+    avatarUrl: profile.avatarUrl || profile.avatar_url,
+    city: profile.city,
+    role: profile.role,
+    userType: profile.userType || profile.user_type,
+    isVerified: profile.isVerified || profile.is_verified,
+    businessName: profile.businessName || profile.business_name,
+    businessLogoUrl: profile.businessLogoUrl || profile.business_logo_url,
+    businessSlug: profile.businessSlug || profile.business_slug,
+    createdAt: profile.createdAt || profile.created_at,
   };
 }
 
@@ -56,13 +32,13 @@ export function toProfileDTO(profile: any): Partial<Profile> {
  * Strips internal fields from a listing object.
  * Note: license_plate and vin should be masked for general public.
  */
-export function toListingDTO(listing: any, options: { 
+export function toListingDTO(listing: Record<string, any> | null | undefined, options: { 
   isOwner?: boolean; 
   isAdmin?: boolean;
 } = {}): Partial<Listing> {
   if (!listing) return {};
 
-  const dto: any = { ...listing };
+  const dto: Record<string, any> = { ...listing };
 
   // ── PILL: Issue 6 - Mask sensitive vehicle identifiers for non-authorized users ─────
   if (!options.isOwner && !options.isAdmin) {

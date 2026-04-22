@@ -1,5 +1,3 @@
-"use client";
-
 import { format } from "date-fns";
 import { tr } from "date-fns/locale";
 
@@ -10,8 +8,8 @@ interface FormattedDateProps {
 }
 
 /**
- * Hydration-safe date component using suppressHydrationWarning.
- * This avoids the "mounted" state flicker while keeping the UI consistent.
+ * Server-safe date component using suppressHydrationWarning.
+ * This avoids hydration mismatches due to timezone differences between server and client.
  */
 export function FormattedDate({ 
   date, 
@@ -29,7 +27,7 @@ export function FormattedDate({
 
   return (
     <time 
-      dateTime={dateObj.toISOString()} 
+      dateTime={dateObj instanceof Date ? dateObj.toISOString() : undefined} 
       className={className}
       suppressHydrationWarning
     >

@@ -60,12 +60,12 @@ export const corporateProfileSchema = z.object({
 
 export const loginSchema = z.object({
   email: z.string().email("Geçerli bir e-posta adresi giriniz"),
-  password: z.string().min(6, "Şifre en az 6 karakter olmalıdır"),
+  password: z.string().min(8, "Şifre en az 8 karakter olmalıdır"),
 });
 
 export const registerSchema = z.object({
   email: z.string().email("Geçerli bir e-posta adresi giriniz"),
-  password: z.string().min(6, "Şifre en az 6 karakter olmalıdır"),
+  password: z.string().min(8, "Şifre en az 8 karakter olmalıdır"),
   fullName: z.string().min(3, "Ad soyad en az 3 karakter olmalıdır"),
 });
 
