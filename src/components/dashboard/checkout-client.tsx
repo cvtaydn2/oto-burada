@@ -45,6 +45,13 @@ export function CheckoutClient({ plan, isPaymentEnabled }: CheckoutClientProps) 
       const data = await res
         .json()
         .catch(() => ({ success: false, error: "Sunucu yanıtı okunamadı." }));
+      const payload = data?.data;
+      const errorMessage =
+        typeof data?.error === "string"
+          ? data.error
+          : typeof data?.error?.message === "string"
+            ? data.error.message
+            : "Ödeme işlemi başarısız oldu.";
 
       if (res.ok && data.success) {
         captureClientEvent("payment_success", {
@@ -54,8 +61,8 @@ export function CheckoutClient({ plan, isPaymentEnabled }: CheckoutClientProps) 
         });
 
         // If Iyzico returned a payment URL (checkout form), redirect the user to it
-        if (data.paymentUrl) {
-          window.location.href = data.paymentUrl;
+        if (payload?.paymentUrl) {
+          window.location.href = payload.paymentUrl;
           return;
         }
 
@@ -66,11 +73,11 @@ export function CheckoutClient({ plan, isPaymentEnabled }: CheckoutClientProps) 
           planId: plan.id,
           planName: plan.name,
           amount: plan.price,
-          error: data.error,
+          error: errorMessage,
           status: res.status,
         });
         setStatus("error");
-        setErrorMessage(data.error ?? "Ödeme işlemi başarısız oldu.");
+        setErrorMessage(errorMessage);
       }
     } catch (err) {
       captureClientException(err, "checkout_payment", { planId: plan.id });

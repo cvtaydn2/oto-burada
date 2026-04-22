@@ -35,6 +35,7 @@ export async function POST(request: Request) {
     ipRateLimit: rateLimitProfiles.general,
     userRateLimit: rateLimitProfiles.imageUpload,
     rateLimitKey: "images:upload",
+    maxBodySizeBytes: false,
   });
 
   if (!security.ok) return security.response;
@@ -103,7 +104,6 @@ export async function POST(request: Request) {
     const arrayBuffer = await file.arrayBuffer();
     imageBuffer = await sharp(Buffer.from(arrayBuffer))
       .rotate() // Auto-rotate based on orientation tag
-      .keepMetadata() // Strip all metadata as per latest Sharp defaults/signature
       .toBuffer();
   } catch (err) {
     logger.storage.error("Image processing failed for EXIF strip", { error: err, userId: user.id });

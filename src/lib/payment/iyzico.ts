@@ -66,7 +66,7 @@ export class IyzicoProvider implements PaymentProvider {
         currency: "TRY",
         basketId: request.listingId,
         paymentGroup: "PRODUCT",
-        callbackUrl: request.callbackUrl,
+        callbackUrl: request.callbackUrl ?? callbackUrl,
         enabledInstallments: [1, 2, 3, 6, 9],
         buyer: {
           id: buyer.id,

@@ -1,5 +1,6 @@
 import { waitUntil } from "@vercel/functions";
 
+import { validateListingEdit } from "@/lib/listings/edit-guard";
 import { captureServerError, captureServerEvent } from "@/lib/monitoring/posthog-server";
 import { hasSupabaseEnv } from "@/lib/supabase/env";
 import { API_ERROR_CODES, apiError, apiSuccess } from "@/lib/utils/api-response";
@@ -121,6 +122,26 @@ export async function PATCH(request: Request, context: { params: Promise<{ id: s
     parsedListingInput.data.title !== existingListing.title ||
     parsedListingInput.data.description !== existingListing.description;
 
+  const editIntegrity = validateListingEdit(
+    {
+      brand: existingListing.brand,
+      model: existingListing.model,
+      view_count: existingListing.viewCount,
+    },
+    {
+      brand: parsedListingInput.data.brand,
+      model: parsedListingInput.data.model,
+    }
+  );
+
+  if (!editIntegrity.allowed) {
+    return apiError(
+      API_ERROR_CODES.FORBIDDEN,
+      editIntegrity.reason ?? "Bu ilan güncellemesi güvenlik nedeniyle engellendi.",
+      403
+    );
+  }
+
   if (criticalFieldsChanged) {
     const trustGuard = await runListingTrustGuards(parsedListingInput.data, {
       excludeListingId: existingListing.id,
@@ -144,9 +165,15 @@ export async function PATCH(request: Request, context: { params: Promise<{ id: s
   }
 
   const updatedListing = buildUpdatedListing(parsedListingInput.data, existingListing, []);
-  const listingToPersist = criticalFieldsChanged
-    ? { ...updatedListing, status: "pending_ai_review" as const }
-    : updatedListing;
+  const listingToPersist =
+    criticalFieldsChanged || editIntegrity.resetStats
+      ? {
+          ...updatedListing,
+          status: "pending_ai_review" as const,
+          viewCount: editIntegrity.resetStats ? 0 : updatedListing.viewCount,
+          bumpedAt: editIntegrity.resetStats ? null : updatedListing.bumpedAt,
+        }
+      : updatedListing;
   const result = await updateDatabaseListing(listingToPersist);
 
   if (result.error === "slug_collision") {

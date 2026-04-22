@@ -37,8 +37,8 @@ export async function requireApiAdminUser(): Promise<User | Response> {
       .eq("id", user.id)
       .maybeSingle<{ role: string }>();
 
-    if (profile && profile.role !== "admin") {
-      // DB says not admin — JWT may be stale after demotion. Reject.
+    if (!profile || profile.role !== "admin") {
+      // DB must explicitly confirm admin role; null/missing profile fails closed.
       return apiError(API_ERROR_CODES.FORBIDDEN, "Admin yetkisi gerekli.", 403);
     }
   }
@@ -72,7 +72,7 @@ export async function isSupabaseAdminUser(): Promise<boolean> {
       .eq("id", user.id)
       .maybeSingle<{ role: string }>();
 
-    if (profile && profile.role !== "admin") return false;
+    if (!profile || profile.role !== "admin") return false;
   }
 
   return true;

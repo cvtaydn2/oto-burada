@@ -268,3 +268,25 @@
 - lint-staged Execution Logic ✅
 - 0 ESLint Errors (Post-fix) ✅
 - Typecheck Validation ✅
+# 2026-04-23 — Payment, Auth & Listing Integrity Hardening
+
+## [2026-04-23] - Production Bug Fix Sweep
+- **Durum:** ✅ TAMAMLANDI
+- **Yapılanlar:**
+  - Checkout client ile `apiSuccess` response shape uyumsuzluğu giderildi; ücretli plan akışında `paymentUrl` redirect düzeltildi.
+  - Iyzico provider tarafında hesaplanan webhook callback URL gerçekten request payload'ına bağlandı.
+  - Ücretli plan satın alma akışında buyer/profile/TC kimlik doğrulaması payment kaydı açılmadan önceye taşındı; hardcoded TCKN fallback'ları kaldırıldı.
+  - Doping ödeme akışında geçerli 11 haneli TCKN zorunlu hale getirildi; test fallback kaldırıldı.
+  - Admin auth secondary DB check fail-closed hale getirildi; `profiles` kaydı yoksa admin erişimi reddediliyor.
+  - Listing edit integrity guard aktif edildi; yüksek görüntülenmeli ilanlarda brand/model bait-and-switch güncellemeleri bloklanıyor ve gerekli durumda metrikler sıfırlanıyor.
+  - Görsel upload akışında EXIF metadata koruyan yanlış Sharp kullanımı kaldırıldı.
+  - Global 1MB request limiti ile image upload route'unun 5MB hedefi çakışmayacak şekilde route-level bypass eklendi.
+  - Free plan double-credit race condition'ı için `0066_atomic_free_plan_activation.sql` migration'ı eklendi; atomik payment+credit akışı SQL tarafına taşındı.
+
+## Doğrulama
+- `npm run typecheck` ✅
+- `npm run lint` ✅ (repo genelinde önceden var olan warning'ler devam ediyor, yeni error yok)
+- `npm run build` ✅
+
+## Sonraki Adım
+- `0066_atomic_free_plan_activation.sql` migration'ını hedef Supabase ortamına uygulayıp free-plan paralel istek senaryosunu canlı veritabanında doğrulamak.

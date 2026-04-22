@@ -26,6 +26,7 @@ export interface SecurityOptions {
   ipRateLimit?: RateLimitConfig;
   userRateLimit?: RateLimitConfig;
   rateLimitKey?: string;
+  maxBodySizeBytes?: number | false;
 }
 
 export interface SecurityResult {
@@ -60,9 +61,14 @@ export async function withSecurity(
   // 1.1 Body Size Limit (Issue 6)
   // Prevents "JSON Payload Bombs" causing OOM in Serverless Functions
   const contentLength = request.headers.get("content-length");
-  const MAX_BODY_SIZE = 1 * 1024 * 1024; // 1MB for generic APIs
+  const maxBodySizeBytes =
+    options.maxBodySizeBytes === undefined ? 1 * 1024 * 1024 : options.maxBodySizeBytes;
 
-  if (contentLength && parseInt(contentLength, 10) > MAX_BODY_SIZE) {
+  if (
+    maxBodySizeBytes !== false &&
+    contentLength &&
+    parseInt(contentLength, 10) > maxBodySizeBytes
+  ) {
     // Note: If you have large file uploads on a route, bypass this check there.
     // For general JSON APIs, 1MB is more than enough.
     return {

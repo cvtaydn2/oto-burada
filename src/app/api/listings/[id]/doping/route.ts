@@ -58,6 +58,15 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
       );
     }
 
+    const identityNumber = profile.taxId && /^\d{11}$/.test(profile.taxId) ? profile.taxId : null;
+    if (!identityNumber) {
+      return apiError(
+        API_ERROR_CODES.BAD_REQUEST,
+        "Doping ödemesi için geçerli bir 11 haneli TC Kimlik Numarası gerekli.",
+        400
+      );
+    }
+
     const nameParts = profile.fullName.trim().split(" ");
     const name = nameParts[0] || "User";
     const surname = nameParts.length > 1 ? nameParts.slice(1).join(" ") : "Kullanıcı";
@@ -73,7 +82,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
       name,
       surname,
       email: user.email,
-      identityNumber: profile.taxId || "11111111111",
+      identityNumber,
       gsmNumber: profile.phone || "+905320000000",
       address: profile.businessAddress || "Türkiye",
       city: profile.city || "Istanbul",

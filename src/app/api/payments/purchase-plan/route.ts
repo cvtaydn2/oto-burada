@@ -1,5 +1,4 @@
 import { headers } from "next/headers";
-import { NextResponse } from "next/server";
 import { z } from "zod";
 
 import { captureServerError, captureServerEvent } from "@/lib/monitoring/posthog-server";
@@ -22,6 +21,14 @@ const purchaseSchema = z.object({
 
 // 5 purchase attempts per hour per user — prevents abuse
 const PURCHASE_RATE_LIMIT = { limit: 5, windowMs: 60 * 60 * 1000 };
+
+function resolveIdentityNumber(
+  providedIdentityNumber: string | undefined,
+  profileTaxId: string | null | undefined
+) {
+  const candidate = providedIdentityNumber ?? profileTaxId ?? null;
+  return candidate && /^\d{11}$/.test(candidate) ? candidate : null;
+}
 
 export async function POST(req: Request) {
   const security = await withUserAndCsrf(req, {
@@ -89,66 +96,35 @@ export async function POST(req: Request) {
     }
 
     if (plan.price === 0) {
-      // Free plan — credit directly without payment.
-      // IDEMPOTENCY GUARD: Check if this user already activated this free plan
-      // within the last 24 hours to prevent concurrent duplicate requests.
-      const windowStart = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
-      const { count: recentActivations } = await admin
-        .from("payments")
-        .select("id", { count: "exact", head: true })
-        .eq("user_id", user.id)
-        .eq("plan_id", plan.id)
-        .eq("provider", "free")
-        .eq("status", "success")
-        .gte("created_at", windowStart);
+      const { data: activationResult, error: activationError } = await admin.rpc(
+        "activate_free_pricing_plan",
+        {
+          p_user_id: user.id,
+          p_plan_id: plan.id,
+          p_plan_name: plan.name,
+          p_credits: plan.credits,
+        }
+      );
+      const activationPayload = (activationResult ?? null) as {
+        success?: boolean;
+        message?: string;
+      } | null;
 
-      if ((recentActivations ?? 0) > 0) {
-        return apiError(
-          API_ERROR_CODES.BAD_REQUEST,
-          "Bu ücretsiz planı son 24 saat içinde zaten aktifleştirdiniz.",
-          409
-        );
-      }
-
-      // Insert the payment record FIRST (before crediting) so a concurrent
-      // request hitting the same window will be blocked by the check above.
-      const { error: recordError } = await admin.from("payments").insert({
-        user_id: user.id,
-        amount: 0,
-        currency: "TRY",
-        provider: "free",
-        status: "success",
-        plan_id: plan.id,
-        plan_name: plan.name,
-        description: `Ücretsiz plan: ${plan.name}`,
-      });
-
-      if (recordError) {
-        logger.payments.error("Free plan payment record insert failed", recordError, {
+      if (activationError) {
+        logger.payments.error("Free plan activation failed", activationError, {
           userId: user.id,
           planId,
         });
-        return apiError(API_ERROR_CODES.INTERNAL_ERROR, "Plan kaydı oluşturulamadı.", 500);
+        return apiError(API_ERROR_CODES.INTERNAL_ERROR, "Plan aktifleştirilemedi.", 500);
       }
 
-      // Now credit — if this fails we have an orphan payment record but no
-      // double-credit. The record can be used to manually reconcile.
-      const { error: creditError } = await admin.rpc("increment_user_credits", {
-        p_user_id: user.id,
-        p_credits: plan.credits,
-      });
-
-      if (creditError) {
-        logger.payments.error("Free plan credit failed", creditError, { userId: user.id, planId });
-        // Roll back the payment record so the user can retry
-        await admin
-          .from("payments")
-          .delete()
-          .eq("user_id", user.id)
-          .eq("plan_id", plan.id)
-          .eq("provider", "free")
-          .gte("created_at", windowStart);
-        return apiError(API_ERROR_CODES.INTERNAL_ERROR, "Kredi eklenemedi.", 500);
+      if (!activationPayload?.success) {
+        return apiError(
+          API_ERROR_CODES.CONFLICT,
+          activationPayload?.message ??
+            "Bu ücretsiz planı son 24 saat içinde zaten aktifleştirdiniz.",
+          409
+        );
       }
 
       captureServerEvent(
@@ -172,6 +148,25 @@ export async function POST(req: Request) {
 
     // Paid plan — create a pending payment record, then initiate Iyzico
     const orderId = `PLAN-${plan.id.slice(0, 8)}-${user.id.slice(0, 8)}-${Date.now()}`;
+
+    // Fetch user profile for Iyzico buyer fields before creating a pending payment row.
+    const profile = await getUserProfile(user.id);
+    if (!profile || !profile.fullName || !user.email) {
+      return apiError(
+        API_ERROR_CODES.BAD_REQUEST,
+        "Ödeme için profil bilgileriniz (isim, e-posta) eksik.",
+        400
+      );
+    }
+
+    const resolvedIdentityNumber = resolveIdentityNumber(identityNumber, profile.taxId);
+    if (!resolvedIdentityNumber) {
+      return apiError(
+        API_ERROR_CODES.BAD_REQUEST,
+        "Ödeme için geçerli bir 11 haneli TC Kimlik Numarası gerekli.",
+        400
+      );
+    }
 
     const { data: paymentRecord, error: insertError } = await admin
       .from("payments")
@@ -203,16 +198,6 @@ export async function POST(req: Request) {
       return apiError(API_ERROR_CODES.INTERNAL_ERROR, "Ödeme kaydı oluşturulamadı.", 500);
     }
 
-    // Fetch user profile for Iyzico buyer fields
-    const profile = await getUserProfile(user.id);
-    if (!profile || !profile.fullName || !user.email) {
-      return apiError(
-        API_ERROR_CODES.BAD_REQUEST,
-        "Ödeme için profil bilgileriniz (isim, e-posta) eksik.",
-        400
-      );
-    }
-
     const nameParts = profile.fullName.trim().split(" ");
     const name = nameParts[0] || "User";
     const surname = nameParts.length > 1 ? nameParts.slice(1).join(" ") : "Kullanıcı";
@@ -236,7 +221,7 @@ export async function POST(req: Request) {
         surname,
         email: user.email,
         gsmNumber: profile.phone || "+905320000000",
-        identityNumber: identityNumber || profile.identityNumber || "11111111111", // Default to test ID if missing and allowed
+        identityNumber: resolvedIdentityNumber,
         address: profile.businessAddress || "Türkiye",
         city: profile.city || "Istanbul",
         country: "Turkey",
@@ -299,6 +284,6 @@ export async function POST(req: Request) {
   } catch (error) {
     logger.payments.error("Purchase plan unexpected error", error, { userId: user.id, planId });
     captureServerError("Purchase plan unexpected error", "payments", error, { userId: user.id });
-    return NextResponse.json({ success: false, error: "Sunucu hatası." }, { status: 500 });
+    return apiError(API_ERROR_CODES.INTERNAL_ERROR, "Sunucu hatası.", 500);
   }
 }
