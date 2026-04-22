@@ -59,7 +59,7 @@ export function AdminAnalyticsPanel({ data }: AdminAnalyticsPanelProps) {
             </h3>
           </div>
           {/* position:relative + explicit min-height — ResponsiveContainer'ın boyut ölçmesi için */}
-          <div className="h-[250px] min-w-0 flex-1">
+          <div className="h-[250px] min-w-0 flex-1 relative">
             {statusData.length > 0 ? (
               <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={250}>
                 <PieChart>
@@ -115,7 +115,7 @@ export function AdminAnalyticsPanel({ data }: AdminAnalyticsPanelProps) {
               İlan Trendi (Son 7 Gün)
             </h3>
           </div>
-          <div className="h-[250px] min-w-0">
+          <div className="h-[250px] min-w-0 relative">
             {(data.recentTrends || []).length > 0 ? (
               <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={250}>
                 <LineChart data={data.recentTrends}>
@@ -180,7 +180,7 @@ export function AdminAnalyticsPanel({ data }: AdminAnalyticsPanelProps) {
             Marka Bazlı Kapasite (Top 5)
           </h3>
         </div>
-        <div className="h-[250px] min-w-0">
+        <div className="h-[250px] min-w-0 relative">
           {(data.listingsByBrand || []).length > 0 ? (
             <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={250}>
               <BarChart

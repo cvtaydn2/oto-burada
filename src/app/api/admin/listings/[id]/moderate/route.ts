@@ -15,11 +15,12 @@ async function getClientIp() {
   return forwarded?.split(",")[0]?.trim() || realIp || "unknown";
 }
 
-export async function POST(request: Request, context: { params: Promise<{ listingId: string }> }) {
+export async function POST(request: Request, context: { params: Promise<{ id: string }> }) {
   const security = await withAdminRoute(request);
   if (!security.ok) return security.response;
   const adminUser = security.user!;
 
+  const { id: listingId } = await context.params;
   const clientIp = await getClientIp();
   const ipRateLimit = await checkRateLimit(
     `admin:moderate:${clientIp}`,
@@ -98,7 +99,6 @@ export async function POST(request: Request, context: { params: Promise<{ listin
     );
   }
 
-  const { listingId } = await context.params;
   let persistedListing;
   try {
     persistedListing = await moderateListingWithSideEffects({

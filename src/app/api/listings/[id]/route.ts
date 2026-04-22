@@ -20,7 +20,7 @@ import {
   updateDatabaseListing,
 } from "@/services/listings/listing-submissions";
 
-export async function PATCH(request: Request, context: { params: Promise<{ listingId: string }> }) {
+export async function PATCH(request: Request, context: { params: Promise<{ id: string }> }) {
   const security = await withUserAndCsrf(request, {
     rateLimitKey: "listings:update",
   });
@@ -48,7 +48,7 @@ export async function PATCH(request: Request, context: { params: Promise<{ listi
     );
   }
 
-  const { listingId } = await context.params;
+  const { id: listingId } = await context.params;
   const existingListing = await findEditableListingById(listingId, user.id);
   if (!existingListing) {
     return apiError(API_ERROR_CODES.NOT_FOUND, "Düzenlenebilir ilan bulunamadı.", 404);
@@ -58,7 +58,6 @@ export async function PATCH(request: Request, context: { params: Promise<{ listi
     ...parsedFormValues.data,
     title: sanitizeText(parsedFormValues.data.title),
     description: sanitizeDescription(parsedFormValues.data.description),
-    // damage_status_json: DB CHECK constraint'e uygun değerlere normalize et
     damageStatusJson: parsedFormValues.data.damageStatusJson
       ? Object.fromEntries(
           Object.entries(parsedFormValues.data.damageStatusJson).filter(([, v]) =>
@@ -144,12 +143,7 @@ export async function PATCH(request: Request, context: { params: Promise<{ listi
     }
   }
 
-  // Build updated listing (slug collision handled by DB constraint in updateDatabaseListing)
-  const updatedListing = buildUpdatedListing(
-    parsedListingInput.data,
-    existingListing,
-    [] // Empty array - no pre-check needed
-  );
+  const updatedListing = buildUpdatedListing(parsedListingInput.data, existingListing, []);
   const listingToPersist = criticalFieldsChanged
     ? { ...updatedListing, status: "pending_ai_review" as const }
     : updatedListing;
@@ -211,10 +205,7 @@ export async function PATCH(request: Request, context: { params: Promise<{ listi
   return apiError(API_ERROR_CODES.INTERNAL_ERROR, "İlan kaydedilemedi. Lütfen tekrar dene.", 500);
 }
 
-export async function DELETE(
-  request: Request,
-  context: { params: Promise<{ listingId: string }> }
-) {
+export async function DELETE(request: Request, context: { params: Promise<{ id: string }> }) {
   const security = await withUserAndCsrf(request, {
     rateLimitKey: "listings:delete",
   });
@@ -229,7 +220,7 @@ export async function DELETE(
     );
   }
 
-  const { listingId } = await context.params;
+  const { id: listingId } = await context.params;
   const result = await deleteDatabaseListing(listingId, user.id);
 
   if (!result) {

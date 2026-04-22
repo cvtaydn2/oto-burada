@@ -19,11 +19,8 @@ const adminEditSchema = z.object({
   description: z.string().min(10).max(5000).optional(),
 });
 
-export async function PATCH(
-  request: Request,
-  { params }: { params: Promise<{ listingId: string }> }
-) {
-  const { listingId } = await params;
+export async function PATCH(request: Request, { params }: { params: Promise<{ id: string }> }) {
+  const { id: listingId } = await params;
   const security = await withAdminRoute(request);
   if (!security.ok) return security.response;
   const user = security.user!;
@@ -39,7 +36,6 @@ export async function PATCH(
 
   const admin = createSupabaseAdminClient();
 
-  // Parse body
   const body = await request.json().catch(() => null);
   const parseResult = adminEditSchema.safeParse(body);
 
@@ -128,7 +124,6 @@ export async function PATCH(
     }
   }
 
-  // Build DB update object
   const dbUpdates: Record<string, unknown> = {
     updated_at: new Date().toISOString(),
   };
@@ -172,7 +167,6 @@ export async function PATCH(
     return apiError(API_ERROR_CODES.INTERNAL_ERROR, "İlan düzenlenemedi.", 500);
   }
 
-  // Audit log
   const changedFields = Object.keys(updates).join(", ");
   await createAdminModerationAction({
     action: "review",

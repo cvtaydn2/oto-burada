@@ -9,19 +9,17 @@ import { applyDopingToListing, DopingType } from "@/services/market/doping-servi
 import { getUserProfile } from "@/services/profile/profile-records";
 
 const VALID_DOPING_TYPES: DopingType[] = ["featured", "urgent", "highlighted"];
-// Doping: 10 per day per user
 const DOPING_RATE_LIMIT = { limit: 10, windowMs: 24 * 60 * 60 * 1000 };
 
-export async function POST(req: Request, { params }: { params: Promise<{ listingId: string }> }) {
+export async function POST(req: Request, { params }: { params: Promise<{ id: string }> }) {
   const security = await withUserAndCsrf(req, {
     rateLimitKey: "listings:doping",
   });
   if (!security.ok) return security.response;
   const user = security.user!;
 
-  const { listingId } = await params;
+  const { id: listingId } = await params;
 
-  // Rate limit
   const rateLimit = await enforceRateLimit(
     getUserRateLimitKey(user.id, "api:listings:doping"),
     DOPING_RATE_LIMIT
@@ -41,7 +39,6 @@ export async function POST(req: Request, { params }: { params: Promise<{ listing
     return apiError(API_ERROR_CODES.BAD_REQUEST, "Lütfen en az bir doping seçin.", 400);
   }
 
-  // Validate doping types
   const invalidTypes = dopingTypes.filter((t) => !VALID_DOPING_TYPES.includes(t as DopingType));
   if (invalidTypes.length > 0) {
     return apiError(
@@ -76,7 +73,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ listing
       name,
       surname,
       email: user.email,
-      identityNumber: profile.taxId || "11111111111", // Required by Iyzico
+      identityNumber: profile.taxId || "11111111111",
       gsmNumber: profile.phone || "+905320000000",
       address: profile.businessAddress || "Türkiye",
       city: profile.city || "Istanbul",

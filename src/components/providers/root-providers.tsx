@@ -33,7 +33,7 @@ export function RootProviders({ children, user, nonce }: RootProvidersProps) {
     <ThemeProvider
       attribute="class"
       defaultTheme="light"
-      enableSystem
+      enableSystem={false}
       disableTransitionOnChange
       nonce={nonce}
     >

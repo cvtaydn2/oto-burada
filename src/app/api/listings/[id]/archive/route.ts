@@ -5,20 +5,16 @@ import { withUserAndCsrf } from "@/lib/utils/api-security";
 import { logger } from "@/lib/utils/logger";
 import { enforceRateLimit, getUserRateLimitKey } from "@/lib/utils/rate-limit-middleware";
 
-export async function POST(
-  request: Request,
-  { params }: { params: Promise<{ listingId: string }> }
-) {
+export async function POST(request: Request, { params }: { params: Promise<{ id: string }> }) {
   const security = await withUserAndCsrf(request, {
     rateLimitKey: "listings:archive",
   });
   if (!security.ok) return security.response;
   const user = security.user!;
 
-  const { listingId } = await params;
+  const { id: listingId } = await params;
   const supabase = await createSupabaseServerClient();
 
-  // Rate limit: 20 archive ops per hour per user
   const rateLimit = await enforceRateLimit(getUserRateLimitKey(user.id, "api:listings:archive"), {
     limit: 20,
     windowMs: 60 * 60 * 1000,
@@ -26,7 +22,6 @@ export async function POST(
   if (rateLimit) return rateLimit.response;
 
   try {
-    // Verify ownership before archiving
     const { data: listing, error: fetchError } = await supabase
       .from("listings")
       .select("id, status, seller_id")

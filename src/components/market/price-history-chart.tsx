@@ -90,7 +90,7 @@ export function PriceHistoryChart({ listingId, currentPrice }: PriceHistoryChart
       </CardHeader>
       <CardContent className="pt-4">
         <div className="h-[200px] w-full">
-          <ResponsiveContainer width="100%" height="100%">
+          <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={160}>
             <LineChart data={formattedData}>
               <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsl(var(--muted))" />
               <XAxis
