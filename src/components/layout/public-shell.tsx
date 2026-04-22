@@ -19,7 +19,7 @@ export async function PublicShell({ children }: PropsWithChildren) {
       </a>
       <SiteHeader />
       <div className="flex flex-col flex-1 pt-[68px]">
-        <main id="main-content" className="flex-1 pb-24 lg:pb-0" role="main">
+        <main id="main-content" className="flex-1 pb-28 lg:pb-0" role="main">
           {children}
         </main>
         <SiteFooter />

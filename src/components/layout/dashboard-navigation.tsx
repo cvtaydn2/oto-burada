@@ -40,11 +40,11 @@ export function DashboardNavigation({ variant = "tabs" }: DashboardNavigationPro
                   className={cn(
                     "flex items-center gap-3 rounded-lg px-4 py-2.5 text-sm font-medium transition-all whitespace-nowrap md:whitespace-normal",
                     isActive
-                      ? "bg-blue-50 text-blue-600 md:border-l-4 md:border-blue-500 md:rounded-l-none"
+                      ? "bg-primary/10 text-primary md:border-l-4 md:border-primary md:rounded-l-none"
                       : "text-gray-600 hover:bg-gray-50 md:border-l-4 md:border-transparent hover:text-gray-800"
                   )}
                 >
-                  <Icon size={17} className={cn(isActive ? "text-blue-500" : "text-gray-400")} />
+                  <Icon size={17} className={cn(isActive ? "text-primary" : "text-gray-400")} />
                   <span>{item.label}</span>
                 </Link>
               </li>

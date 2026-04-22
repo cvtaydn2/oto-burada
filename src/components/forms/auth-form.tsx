@@ -44,7 +44,7 @@ export function AuthForm({
           className="absolute inset-0 bg-cover bg-center scale-105 transition-transform duration-1000"
           style={{
             backgroundImage:
-              'linear-gradient(to right, rgba(2, 6, 23, 0.95), rgba(2, 6, 23, 0.6)), url("https://images.unsplash.com/photo-1503376780353-7e6692767b70?auto=format&fit=crop&w=1920&q=80")',
+              'linear-gradient(to right, rgba(2, 6, 23, 0.95), rgba(2, 6, 23, 0.6)), url("/images/hero_bg.png")',
           }}
         />
         
@@ -151,7 +151,7 @@ export function AuthForm({
               </div>
 
               {isLogin && (
-                <label className="flex items-center gap-3 cursor-pointer group px-1">
+                <label className="flex items-center gap-3 cursor-pointer group px-1 min-h-[44px]">
                   <div className="relative flex items-center">
                     <input
                       id="remember-me"

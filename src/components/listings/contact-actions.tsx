@@ -4,7 +4,6 @@ import { useState } from "react";
 import { MessageCircle, AlertTriangle, Loader2, Phone, ShieldAlert } from "lucide-react";
 import {
   AlertDialog,
-  AlertDialogAction,
   AlertDialogCancel,
   AlertDialogContent,
   AlertDialogDescription,
@@ -232,33 +231,28 @@ export function ContactActions({ listingId, listingSlug, sellerId, seller, curre
             <AlertDialogCancel className="w-full sm:flex-1 h-12 rounded-xl border border-border text-muted-foreground font-semibold">
               Vazgeç
             </AlertDialogCancel>
-            <AlertDialogAction
-               asChild
-               className="w-full sm:flex-1 h-12 p-0 bg-transparent hover:bg-transparent"
-             >
-               {isRevealed && whatsappLink ? (
-                 <a
-                   href={whatsappLink}
-                   target="_blank"
-                   rel="noopener noreferrer"
-                   onClick={() => captureClientEvent("contact_whatsapp_clicked", { listingId, sellerId })}
-                   className="flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-green-500 to-emerald-600 w-full h-12 px-6 text-[15px] text-white font-bold shadow-sm"
-                 >
-                   Mesaj Gönder
-                   <MessageCircle className="size-4" />
-                 </a>
-               ) : (
-                 <button
-                   type="button"
-                   disabled={isLogging}
-                   onClick={handleReveal}
-                   className="flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-green-500 to-emerald-600 w-full h-12 px-6 text-[15px] text-white font-bold shadow-sm disabled:opacity-70"
-                 >
-                   {isLogging ? <Loader2 className="animate-spin size-4" /> : "Numarayı Gör ve İlerle"}
-                   {!isLogging && <MessageCircle className="size-4" />}
-                 </button>
-               )}
-             </AlertDialogAction>
+            {isRevealed && whatsappLink ? (
+              <a
+                href={whatsappLink}
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={() => captureClientEvent("contact_whatsapp_clicked", { listingId, sellerId })}
+                className="flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-green-500 to-emerald-600 w-full sm:flex-1 h-12 px-6 text-[15px] text-white font-bold shadow-sm"
+              >
+                Mesaj Gönder
+                <MessageCircle className="size-4" />
+              </a>
+            ) : (
+              <button
+                type="button"
+                disabled={isLogging}
+                onClick={handleReveal}
+                className="flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-green-500 to-emerald-600 w-full sm:flex-1 h-12 px-6 text-[15px] text-white font-bold shadow-sm disabled:opacity-70"
+              >
+                {isLogging ? <Loader2 className="animate-spin size-4" /> : "Numarayı Gör ve İlerle"}
+                {!isLogging && <MessageCircle className="size-4" />}
+              </button>
+            )}
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>

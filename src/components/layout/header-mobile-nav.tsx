@@ -28,7 +28,7 @@ export function HeaderMobileNav({
   const postListingHref = isAuthenticated ? "/dashboard/listings" : "/login";
 
   return (
-    <div className="p-4 space-y-6 pb-pb-safe">
+    <div className="p-4 space-y-6 pb-safe">
       <div className="flex items-center justify-between">
         <h2 className="text-xl font-bold">Menü</h2>
         <ThemeToggle />

@@ -58,7 +58,7 @@ export function NotificationDropdown({ userId }: { userId?: string }) {
         <button
           type="button"
           className="relative flex items-center justify-center w-10 h-10 rounded-xl text-muted-foreground hover:text-indigo-600 hover:bg-indigo-50/80 transition-all dark:hover:bg-indigo-900/30 outline-none"
-          title="Bildirimler"
+          aria-label="Bildirimler"
         >
           <Bell size={20} />
           {unreadCount > 0 && (

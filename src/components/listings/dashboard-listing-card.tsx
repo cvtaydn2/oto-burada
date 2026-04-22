@@ -165,14 +165,14 @@ export function DashboardListingCard({
         <div className="flex sm:flex-col gap-2 justify-end sm:justify-center pt-2 sm:pt-0 sm:pl-4 sm:border-l sm:border-border/40">
           <Link 
             href={`/dashboard/listings?edit=${listing.id}`} 
-            className="flex items-center justify-center size-10 rounded-xl bg-card border border-border/50 text-muted-foreground/70 hover:bg-primary/5 hover:text-primary hover:border-primary/20 transition-all shadow-sm group/btn" 
-            title="Düzenle"
+            className="flex items-center justify-center size-11 rounded-xl bg-card border border-border/50 text-muted-foreground/70 hover:bg-primary/5 hover:text-primary hover:border-primary/20 transition-all shadow-sm group/btn" 
+            aria-label="İlanı düzenle"
           >
             <Pencil className="size-4" />
           </Link>
 
           {isApproved && (listing.bumpedAt ? (
-            <div className="flex items-center justify-center size-10 rounded-xl bg-muted/40 text-slate-300 border border-border/30 cursor-help" title={`${bumpCooldownDays} gün sonra tekrar öne çıkarılabilir`}>
+            <div className="flex items-center justify-center size-11 rounded-xl bg-muted/40 text-slate-300 border border-border/30 cursor-help" title={`${bumpCooldownDays} gün sonra tekrar öne çıkarılabilir`}>
               <ArrowUpCircle className="size-4" />
             </div>
           ) : (
@@ -180,7 +180,7 @@ export function DashboardListingCard({
               type="button" 
               onClick={() => onBump(listing.id)} 
               disabled={isBumping || !canBump} 
-              className="flex items-center justify-center size-10 rounded-xl bg-emerald-50 text-emerald-600 hover:bg-emerald-600 hover:text-white transition-all disabled:opacity-30 border border-emerald-100 shadow-sm" 
+              className="flex items-center justify-center size-11 rounded-xl bg-emerald-50 text-emerald-600 hover:bg-emerald-600 hover:text-white transition-all disabled:opacity-30 border border-emerald-100 shadow-sm" 
               title="Üste Taşı"
             >
               {isBumping ? <Loader2 className="size-4 animate-spin" /> : <ArrowUpCircle className="size-4" />}
@@ -197,7 +197,7 @@ export function DashboardListingCard({
                   <button 
                     type="button" 
                     className={cn(
-                      "flex items-center justify-center size-10 rounded-xl transition-all border shadow-sm",
+                      "flex items-center justify-center size-11 rounded-xl transition-all border shadow-sm",
                       isEligible 
                         ? "bg-blue-50 text-blue-600 hover:bg-blue-600 hover:text-white border-blue-100" 
                         : "bg-amber-50 text-amber-600 border-amber-100 opacity-80"
@@ -236,7 +236,7 @@ export function DashboardListingCard({
             onClick={() => onArchive(listing.id)} 
             disabled={isArchiving} 
             className={cn(
-              "flex items-center justify-center size-10 rounded-xl transition-all disabled:opacity-30 border shadow-sm",
+              "flex items-center justify-center size-11 rounded-xl transition-all disabled:opacity-30 border shadow-sm",
               isArchived 
                 ? "bg-slate-900 border-slate-800 text-white hover:bg-slate-950" 
                 : "bg-rose-50 border-rose-100 text-rose-600 hover:bg-rose-600 hover:text-white"

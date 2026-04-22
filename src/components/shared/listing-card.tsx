@@ -143,7 +143,7 @@ export function ListingCard({
       <div className={cn(
         "flex flex-1 flex-col",
         isGrid && "p-6",
-        isList && "p-8 sm:pl-10 justify-center",
+        isList && "p-4 sm:p-8 sm:pl-10 justify-center",
       )}>
         <div className="space-y-4">
           {/* Brand & Market Intelligence */}
@@ -181,11 +181,11 @@ export function ListingCard({
           </Link>
 
           {/* Pricing */}
-          <div className="flex items-baseline gap-1.5" aria-hidden="true">
+          <div className="flex items-baseline gap-1.5" aria-label={`Fiyat: ${formatPrice(listing.price)} TL`}>
             <span className="text-3xl font-extrabold tracking-tighter text-foreground">
               {formatPrice(listing.price)}
             </span>
-            <span className="text-xs font-bold text-primary/40 uppercase tracking-widest">TL</span>
+            <span className="text-xs font-bold text-primary/40 uppercase tracking-widest" aria-hidden="true">TL</span>
           </div>
 
           {/* Key Technical Specs */}
@@ -240,7 +240,7 @@ function Badge({ icon: Icon, label, className }: { icon: React.ElementType, labe
 function Stat({ icon: Icon, label, sub }: { icon: React.ElementType, label: string, sub?: string }) {
   return (
     <div className="flex flex-col gap-2">
-      <div className="size-10 rounded-2xl bg-muted/30 flex items-center justify-center text-slate-400 group-hover:bg-primary/5 group-hover:text-primary transition-[background-color,color,transform] duration-normal ease-standard group-hover:scale-105">
+      <div className="size-11 rounded-2xl bg-muted/30 flex items-center justify-center text-slate-400 group-hover:bg-primary/5 group-hover:text-primary transition-[background-color,color,transform] duration-normal ease-standard group-hover:scale-105">
         <Icon size={16} />
       </div>
       <div className="flex items-baseline gap-1 min-w-0">

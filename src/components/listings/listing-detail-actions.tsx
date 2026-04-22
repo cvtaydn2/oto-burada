@@ -47,7 +47,7 @@ export function ListingDetailActions({
       )}
       <FavoriteButton
         listingId={listingId}
-        className="bg-card border border-border text-muted-foreground w-9 h-9 rounded-lg flex items-center justify-center hover:bg-red-50 hover:text-red-500 hover:border-red-200 transition shadow-sm"
+        className="bg-card border border-border text-muted-foreground w-11 h-11 rounded-lg flex items-center justify-center hover:bg-red-50 hover:text-red-500 hover:border-red-200 transition shadow-sm"
       />
       <Dialog>
         <DialogTrigger asChild>

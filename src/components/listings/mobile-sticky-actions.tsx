@@ -47,7 +47,7 @@ export function MobileStickyActions({
                         </div>
                     </div>
 
-                    <div className="flex-1 max-w-[200px]">
+                    <div className="flex-1 max-w-[240px]">
                         {isAuthenticated ? (
                             <ContactActions listingId={listingId} listingSlug={listingSlug} sellerId={sellerId} seller={seller} currentUserId={currentUserId} />
                         ) : (

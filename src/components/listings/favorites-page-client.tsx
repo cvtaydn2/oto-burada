@@ -247,8 +247,8 @@ function FavoriteCard({
             e.preventDefault();
             onRemove();
           }}
-          title="Favorilerden kaldır"
-          className="absolute right-3 top-3 flex size-8 items-center justify-center rounded-full bg-card/90 text-muted-foreground shadow-sm backdrop-blur transition hover:bg-red-50 hover:text-red-500"
+          aria-label="Favorilerden kaldır"
+          className="absolute right-3 top-3 flex size-11 items-center justify-center rounded-full bg-card/90 text-muted-foreground shadow-sm backdrop-blur transition hover:bg-red-50 hover:text-red-500"
         >
           <Trash2 size={14} />
         </button>
@@ -264,7 +264,7 @@ function FavoriteCard({
         {/* Title + price */}
         <div className="flex items-start justify-between gap-2">
           <div className="min-w-0">
-            <p className="text-[10px] font-bold uppercase tracking-widest text-blue-500">
+            <p className="text-[10px] font-bold uppercase tracking-widest text-primary">
               {listing.brand} {listing.model}
             </p>
             <h3 className="mt-0.5 truncate text-sm font-bold text-foreground leading-tight">
@@ -272,7 +272,7 @@ function FavoriteCard({
             </h3>
           </div>
           <div className="shrink-0 text-right">
-            <p className="text-lg font-bold text-blue-600 leading-tight">
+            <p className="text-lg font-bold text-primary leading-tight">
               {formatPrice(listing.price)}
             </p>
             <p className="text-[10px] font-bold text-muted-foreground/70">TL</p>

@@ -28,7 +28,7 @@ export function SiteHeaderAuth({
           href={favoritesHref}
           prefetch={false}
           className="text-muted-foreground transition-colors hover:text-red-500"
-          title="Favoriler"
+          aria-label="Favoriler"
         >
           <Heart size={22} strokeWidth={1.5} />
         </Link>
@@ -37,7 +37,7 @@ export function SiteHeaderAuth({
             href="/dashboard/messages"
             prefetch={false}
             className="text-muted-foreground transition-colors hover:text-primary"
-            title="Mesajlar"
+            aria-label="Mesajlar"
           >
             <MessageSquare size={22} strokeWidth={1.5} />
           </Link>
@@ -49,9 +49,9 @@ export function SiteHeaderAuth({
         {!isReady ? (
           <div className="size-8 rounded-full bg-muted animate-pulse" />
         ) : (
-          <Link href={accountHref} prefetch={false} className="flex items-center gap-2 group">
+          <Link href={accountHref} prefetch={false} className="flex items-center gap-2 group p-1">
             {isAuthenticated && userId ? (
-              <div className="size-8 overflow-hidden rounded-full border border-border bg-blue-500 flex items-center justify-center text-white text-xs font-bold select-none">
+              <div className="size-10 overflow-hidden rounded-full border border-border bg-blue-500 flex items-center justify-center text-white text-xs font-bold select-none">
                 <span>U</span>
               </div>
             ) : (

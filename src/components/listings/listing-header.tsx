@@ -44,7 +44,7 @@ export function ListingHeader({ listing }: ListingHeaderProps) {
 
         {/* Price Section */}
         <div className="lg:text-right">
-          <div className="text-3xl font-bold text-blue-600">
+          <div className="text-3xl font-bold text-primary">
             {formatPrice(listing.price)}
             <span className="text-lg font-semibold text-muted-foreground/70 ml-1">TL</span>
           </div>

@@ -34,7 +34,7 @@ export function MobileNav({ searchSuggestions }: MobileNavProps) {
       {showFAB && (
         <Link
           href="/dashboard/listings/create"
-          className="fixed bottom-32 right-6 z-50 flex h-14 w-14 items-center justify-center rounded-full bg-primary text-white shadow-xl shadow-primary/30 transition-transform active:scale-90"
+          className="fixed bottom-24 right-6 z-50 flex h-14 w-14 items-center justify-center rounded-full bg-primary text-white shadow-xl shadow-primary/30 transition-transform active:scale-90"
           aria-label="İlan Ver"
         >
           <Plus className="size-7" />
@@ -71,7 +71,7 @@ export function MobileNav({ searchSuggestions }: MobileNavProps) {
 
           {/* New "Menü" Tab replacing the header hamburger */}
           <li className="flex-1">
-            <Drawer.Root>
+            <Drawer.Root shouldScaleBackground>
               <Drawer.Trigger asChild>
                 <button
                   className="flex w-full flex-col items-center justify-center gap-1 py-2.5 min-h-[44px] text-muted-foreground transition-all active:scale-95"

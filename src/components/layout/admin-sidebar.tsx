@@ -89,11 +89,11 @@ export function AdminSidebar({ isMobile }: AdminSidebarProps) {
     <aside 
       aria-label="Admin paneli navigasyonu" 
       className={cn(
-        "flex-col border-r border-slate-200 bg-white z-50",
+        "flex-col border-r border-border bg-card z-50",
         isMobile ? "flex h-full w-full" : "fixed left-0 top-0 hidden h-screen w-72 md:flex"
       )}
     >
-      <div className="flex h-20 items-center px-8 border-b border-slate-100">
+      <div className="flex h-20 items-center px-8 border-b border-border">
         <Link href="/" className="flex items-center gap-3 group">
           <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary text-primary-foreground shadow-sm">
             <ShieldCheck size={20} />
@@ -137,9 +137,9 @@ export function AdminSidebar({ isMobile }: AdminSidebarProps) {
         })}
       </nav>
 
-      <div className="p-6 space-y-3 mt-auto border-t border-slate-100 bg-slate-50/50">
+      <div className="p-6 space-y-3 mt-auto border-t border-border bg-muted/30">
         <Link href="/dashboard" className="w-full block">
-           <Button variant="outline" className="w-full justify-start gap-3 rounded-xl border-slate-200 text-slate-600 font-bold hover:bg-white hover:text-blue-600 transition-all">
+           <Button variant="outline" className="w-full justify-start gap-3 rounded-xl border-border text-muted-foreground font-bold hover:bg-card hover:text-primary transition-all">
               <ChevronLeft size={18} />
               Kullanıcı Paneli
            </Button>

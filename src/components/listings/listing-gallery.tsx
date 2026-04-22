@@ -140,7 +140,7 @@ export function ListingGallery({ images, title, has360View = false }: ListingGal
               <div className="flex items-center gap-2 pointer-events-auto">
                 <button
                   onClick={() => setIsLightboxOpen(true)}
-                  className="px-3 py-1.5 rounded-full bg-card/90 backdrop-blur-md text-foreground text-[10px] font-bold uppercase tracking-widest italic hover:bg-card transition-all shadow-sm flex items-center gap-1.5"
+                  className="px-4 py-2.5 rounded-full bg-card/90 backdrop-blur-md text-foreground text-[10px] font-bold uppercase tracking-widest italic hover:bg-card transition-all shadow-sm flex items-center gap-1.5"
                 >
                   Tam Ekran
                   <Sparkles size={12} className="text-primary" />
@@ -148,7 +148,7 @@ export function ListingGallery({ images, title, has360View = false }: ListingGal
                 {show360Button && (
                   <button
                     onClick={() => setIs360Open(true)}
-                    className="px-3 py-1.5 rounded-full bg-blue-500 text-white text-[10px] font-bold uppercase tracking-widest hover:bg-blue-600 transition-all shadow-sm flex items-center gap-1.5"
+                    className="px-4 py-2.5 rounded-full bg-blue-500 text-white text-[10px] font-bold uppercase tracking-widest hover:bg-blue-600 transition-all shadow-sm flex items-center gap-1.5"
                   >
                     <Rotate3d size={12} />
                     360° Görünüm
@@ -165,7 +165,7 @@ export function ListingGallery({ images, title, has360View = false }: ListingGal
                 <button
                   key={image.id || image.url}
                   onClick={() => onThumbClick(index)}
-                  className={`relative flex-[0_0_60px] sm:flex-[0_0_100px] md:flex-[0_0_120px] aspect-[4/3] rounded-lg sm:rounded-xl overflow-hidden border-2 transition-all touch-manipulation ${
+                  className={`relative flex-[0_0_64px] sm:flex-[0_0_100px] md:flex-[0_0_120px] aspect-square rounded-lg sm:rounded-xl overflow-hidden border-2 transition-all touch-manipulation ${
                     index === currentIndex
                       ? "border-primary ring-2 ring-primary/30 scale-95"
                       : "border-transparent opacity-60 hover:opacity-100"

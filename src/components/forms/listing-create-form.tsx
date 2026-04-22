@@ -75,9 +75,9 @@ export function ListingCreateForm({
   };
 
   return (
-    <div className="mx-auto min-h-screen w-full flex-1 bg-slate-50/50 px-4 py-12 lg:px-8">
+    <div className="mx-auto min-h-screen w-full flex-1 bg-slate-50/50 px-4 py-6 sm:py-12 lg:px-8">
       <div className="mx-auto max-w-[1000px]">
-        <div className="mb-14 text-center">
+        <div className="mb-6 sm:mb-14 text-center">
           <div className="inline-flex items-center gap-2 rounded-full bg-slate-100 px-4 py-1.5 text-[10px] font-bold uppercase tracking-widest text-slate-500 mb-6 border border-slate-200 shadow-sm">
             <Car size={12} strokeWidth={3} />
             {currentStep + 1} / {totalSteps}
@@ -147,7 +147,7 @@ export function ListingCreateForm({
                   type="button"
                   onClick={handlePrevStep}
                   disabled={currentStep === 0}
-                  className="inline-flex h-14 items-center justify-center rounded-2xl border border-slate-200 bg-white px-8 text-sm font-bold text-slate-600 transition-all hover:bg-slate-50 disabled:opacity-30 disabled:grayscale uppercase tracking-widest"
+                  className="inline-flex h-14 items-center justify-center rounded-2xl border border-slate-200 bg-white px-8 text-sm font-bold text-slate-600 transition-all hover:bg-slate-50 disabled:opacity-50 disabled:grayscale uppercase tracking-widest"
                 >
                   Geri Dön
                 </button>

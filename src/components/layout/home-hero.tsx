@@ -64,8 +64,10 @@ export function HomeHero({ cities }: HomeHeroProps) {
           >
             <div className="flex-1 flex flex-col sm:flex-row gap-1 sm:gap-2 p-1 sm:p-2">
               <div className="flex-1 relative">
+                <label htmlFor="hero-query" className="sr-only">Marka veya model ara</label>
                 <CarFront size={16} className="absolute left-3 sm:left-6 top-1/2 -translate-y-1/2 text-muted-foreground" />
                 <input 
+                  id="hero-query"
                   type="text" 
                   name="query"
                   placeholder="Marka, model..." 
@@ -74,8 +76,10 @@ export function HomeHero({ cities }: HomeHeroProps) {
               </div>
 
               <div className="w-full md:w-56 relative">
+                <label htmlFor="hero-city" className="sr-only">Şehir seç</label>
                 <MapPin size={16} className="absolute left-3 sm:left-6 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none" />
                 <select 
+                  id="hero-city"
                   name="city"
                   className="w-full bg-muted/50 border-none text-foreground rounded-lg sm:rounded-xl pl-10 sm:pl-14 pr-8 sm:pr-10 h-11 sm:h-14 outline-none appearance-none cursor-pointer focus:bg-muted font-medium text-sm sm:text-base"
                 >
@@ -92,7 +96,7 @@ export function HomeHero({ cities }: HomeHeroProps) {
 
             <button 
               type="submit"
-              className="m-0.5 sm:m-1 bg-primary text-primary-foreground font-bold rounded-lg sm:rounded-xl px-4 sm:px-8 md:px-10 h-11 sm:h-14 md:h-16 transition-all hover:opacity-90 active:scale-95 flex items-center justify-center gap-2 sm:gap-3 uppercase text-[11px] tracking-widest"
+              className="m-0.5 sm:m-1 w-full md:w-auto bg-primary text-primary-foreground font-bold rounded-lg sm:rounded-xl px-4 sm:px-8 md:px-10 h-11 sm:h-14 md:h-16 transition-all hover:opacity-90 active:scale-95 flex items-center justify-center gap-2 sm:gap-3 uppercase text-[11px] tracking-widest"
             >
               <Search size={18} strokeWidth={2} />
               <span className="hidden sm:inline">İLANLARI KEŞFET</span>

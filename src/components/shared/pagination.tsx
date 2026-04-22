@@ -54,7 +54,7 @@ export function Pagination({
                     key={pageNum}
                     onClick={() => onPageChange(pageNum)}
                     className={cn(
-                        "flex size-10 items-center justify-center rounded-xl text-sm font-bold transition-all",
+                        "flex size-11 items-center justify-center rounded-xl text-sm font-bold transition-all",
                         isActive 
                             ? "bg-indigo-600 text-white shadow-sm shadow-indigo-200 scale-110" 
                             : "bg-card text-muted-foreground border border-border hover:border-indigo-300 hover:text-indigo-600"
@@ -71,7 +71,7 @@ export function Pagination({
             <button
                 onClick={() => onPageChange(currentPage - 1)}
                 disabled={currentPage === 1}
-                className="flex size-10 items-center justify-center rounded-xl border border-border bg-card text-muted-foreground hover:border-indigo-300 hover:text-indigo-600 disabled:opacity-30 disabled:pointer-events-none transition-all"
+                className="flex size-11 items-center justify-center rounded-xl border border-border bg-card text-muted-foreground hover:border-indigo-300 hover:text-indigo-600 disabled:opacity-30 disabled:pointer-events-none transition-all"
             >
                 <ChevronLeft size={18} />
             </button>
@@ -83,7 +83,7 @@ export function Pagination({
             <button
                 onClick={() => onPageChange(currentPage + 1)}
                 disabled={currentPage === totalPages}
-                className="flex size-10 items-center justify-center rounded-xl border border-border bg-card text-muted-foreground hover:border-indigo-300 hover:text-indigo-600 disabled:opacity-30 disabled:pointer-events-none transition-all"
+                className="flex size-11 items-center justify-center rounded-xl border border-border bg-card text-muted-foreground hover:border-indigo-300 hover:text-indigo-600 disabled:opacity-30 disabled:pointer-events-none transition-all"
             >
                 <ChevronRight size={18} />
             </button>

@@ -29,7 +29,7 @@ export function AdminMobileNav() {
             <div className="flex-1 overflow-y-auto">
                <div className="h-full">
                   {/* We reuse the sidebar but remove its fixed/hidden classes for the drawer version */}
-                  <div className="flex flex-col h-full bg-white">
+                  <div className="flex flex-col h-full bg-card">
                      <AdminSidebar isMobile />
                   </div>
                </div>
