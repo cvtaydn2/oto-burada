@@ -1,5 +1,6 @@
 import { headers } from "next/headers";
 import { safeJsonLd } from "@/lib/utils/json-ld";
+import { buildAbsoluteUrl } from "@/lib/seo";
 import type { Listing } from "@/types";
 
 async function getCspNonce() {
@@ -46,15 +47,15 @@ export async function ListingStructuredData({ listings, url }: ListingStructured
           "value": listing.mileage,
           "unitCode": "KMT",
         },
-        "image": listing.images[0]?.url,
-        "url": `${url}/listing/${listing.slug}`,
-        "offers": {
-          "@type": "Offer",
-          "price": listing.price,
-          "priceCurrency": "TRY",
-          "availability": "https://schema.org/InStock",
-          "url": `${url}/listing/${listing.slug}`,
-        },
+          "image": listing.images[0]?.url,
+          "url": buildAbsoluteUrl(`/listing/${listing.slug}`),
+          "offers": {
+            "@type": "Offer",
+            "price": listing.price,
+            "priceCurrency": "TRY",
+            "availability": "https://schema.org/InStock",
+            "url": buildAbsoluteUrl(`/listing/${listing.slug}`),
+          },
         "availableAtOrFrom": {
           "@type": "Place",
           "address": {

@@ -6,6 +6,7 @@ import { buildListingsMetadata, buildAbsoluteUrl } from "@/lib/seo";
 import { parseListingFiltersFromSearchParams } from "@/services/listings/listing-filters";
 import { getFilteredMarketplaceListings } from "@/services/listings/marketplace-listings";
 import { getLiveMarketplaceReferenceData } from "@/services/reference/live-reference-data";
+import { createSupabaseServerClient } from "@/lib/supabase/server";
 
 // Arama ve filtreleme sayfasında güncel veriyi göstermek için 1 saatlik revalidation kullanıyoruz.
 // force-dynamic yerine ISR ile hem SEO hem performans kazanıyoruz.
@@ -27,6 +28,9 @@ export async function generateMetadata({
 export default async function ListingsPage({ searchParams }: ListingsPageProps) {
   const resolvedSearchParams = searchParams ? await searchParams : undefined;
   const initialFilters = parseListingFiltersFromSearchParams(resolvedSearchParams);
+  const supabase = await createSupabaseServerClient();
+  const { data: { user } } = await supabase.auth.getUser();
+
   const [result, references] = await Promise.all([
     getFilteredMarketplaceListings(initialFilters),
     getLiveMarketplaceReferenceData(),
@@ -52,6 +56,7 @@ export default async function ListingsPage({ searchParams }: ListingsPageProps) 
           brands={references.brands}
           cities={references.cities}
           initialFilters={initialFilters}
+          userId={user?.id}
         />
       </div>
     </>

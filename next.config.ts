@@ -45,6 +45,8 @@ const nextConfig: NextConfig = {
     // Restore scroll position on back/forward navigation
     scrollRestoration: true,
   },
+  // Disabled PPR/cacheComponents for now to resolve build conflicts with route segment configs
+  cacheComponents: false,
   compress: true,
   poweredByHeader: false,
   generateEtags: true,

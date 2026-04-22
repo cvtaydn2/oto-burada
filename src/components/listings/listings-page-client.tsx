@@ -37,13 +37,15 @@ interface ListingsPageClientProps {
   brands: BrandCatalogItem[]
   cities: CityOption[]
   initialFilters: ListingFilters
+  userId?: string
 }
 
 export function ListingsPageClient({
   initialResult,
   brands,
   cities,
-  initialFilters
+  initialFilters,
+  userId
 }: ListingsPageClientProps) {
   const {
     filters,
@@ -101,6 +103,8 @@ export function ListingsPageClient({
             handleFilterChange={handleFilterChange}
             handleReset={handleReset}
             applyFilters={applyFilters}
+            userId={userId}
+            total={total}
           />
         </div>
 

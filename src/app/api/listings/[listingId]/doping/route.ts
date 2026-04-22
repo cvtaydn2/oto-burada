@@ -67,6 +67,7 @@ export async function POST(
       name,
       surname,
       email: user.email,
+      identityNumber: profile.taxId || "11111111111", // Required by Iyzico
       gsmNumber: profile.phone || "+905320000000",
       address: profile.businessAddress || "Türkiye",
       city: profile.city || "Istanbul",

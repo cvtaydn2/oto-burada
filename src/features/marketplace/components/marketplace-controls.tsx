@@ -24,6 +24,8 @@ const SORT_OPTIONS = [
   { value: "year_asc", label: marketplace.sortOptions.yearAsc },
 ];
 
+import { SaveSearchButton } from "@/components/listings/save-search-button";
+
 interface MarketplaceControlsProps {
   filters: ListingFilters;
   activeFiltersCount: number;
@@ -36,6 +38,8 @@ interface MarketplaceControlsProps {
   handleFilterChange: <K extends keyof ListingFilters>(key: K, value: ListingFilters[K]) => void;
   handleReset: () => void;
   applyFilters: (filters: ListingFilters, immediate?: boolean) => void;
+  userId?: string | null;
+  total: number;
 }
 
 export function MarketplaceControls({
@@ -50,6 +54,8 @@ export function MarketplaceControls({
   handleFilterChange,
   handleReset,
   applyFilters,
+  userId,
+  total,
 }: MarketplaceControlsProps) {
   const currentSortLabel = SORT_OPTIONS.find(o => o.value === (filters.sort ?? "newest"))?.label || "En Yeni";
 
@@ -71,6 +77,15 @@ export function MarketplaceControls({
         <SlidersHorizontal size={14} strokeWidth={3} />
         Gelişmiş Filtrele
       </Link>
+
+      <div className="hidden sm:block">
+        <SaveSearchButton 
+          filters={filters} 
+          resultCount={total} 
+          userId={userId} 
+          variant="compact"
+        />
+      </div>
 
       <div className="h-8 w-px bg-border mx-1 hidden sm:block" />
 
