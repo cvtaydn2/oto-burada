@@ -27,7 +27,10 @@ export function GalleryHeader({ profile }: GalleryHeaderProps) {
                 className="object-contain"
               />
             ) : (
-              <div className="text-4xl font-bold text-primary italic uppercase select-none">
+              <div
+                className="text-4xl font-bold text-primary italic uppercase select-none"
+                aria-label={`${profile.businessName || profile.fullName || "Mağaza"} logosu`}
+              >
                 {((profile.businessName || profile.fullName || "M").trim() || "M").substring(0, 2)}
               </div>
             )}

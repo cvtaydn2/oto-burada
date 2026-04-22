@@ -85,9 +85,10 @@ export function DashboardProfessionalCard({ profile }: DashboardProfessionalCard
                 href={`/gallery/${businessSlug}`}
                 target="_blank"
                 rel="noopener noreferrer"
+                aria-label={`${businessName || "Mağaza"} sayfasını yeni sekmede aç`}
                 className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-card text-muted-foreground shadow-sm border border-border transition-all hover:bg-foreground hover:text-background"
               >
-                <Eye size={14} />
+                <Eye size={14} aria-hidden="true" />
               </Link>
            </div>
            

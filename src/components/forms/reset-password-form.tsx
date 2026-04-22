@@ -91,43 +91,47 @@ export function ResetPasswordForm() {
           ) : (
             <form onSubmit={handleSubmit} className="space-y-6">
               <div className="space-y-2 group">
-                <label className="text-[10px] font-bold px-1 uppercase tracking-widest text-muted-foreground/70 italic group-focus-within:text-primary transition-colors">
+                <label htmlFor="new-password" className="text-[10px] font-bold px-1 uppercase tracking-widest text-muted-foreground/70 italic group-focus-within:text-primary transition-colors">
                   YENİ ŞİFRE
                 </label>
                 <div className="relative">
                   <Lock className="absolute left-5 top-1/2 -translate-y-1/2 text-muted-foreground/70 group-focus-within:text-primary transition-colors" size={20} />
                   <input
+                    id="new-password"
                     type="password"
                     placeholder="••••••••"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     minLength={8}
                     required
+                    autoComplete="new-password"
                     className="h-16 w-full pl-14 pr-6 rounded-xl bg-card border-2 border-border/50 shadow-sm shadow-slate-200/40 focus:border-primary outline-none transition-all font-bold italic tracking-tighter text-foreground"
                   />
                 </div>
               </div>
 
               <div className="space-y-2 group">
-                <label className="text-[10px] font-bold px-1 uppercase tracking-widest text-muted-foreground/70 italic group-focus-within:text-primary transition-colors">
+                <label htmlFor="confirm-password" className="text-[10px] font-bold px-1 uppercase tracking-widest text-muted-foreground/70 italic group-focus-within:text-primary transition-colors">
                   ŞİFRE TEKRAR
                 </label>
                 <div className="relative">
                   <Lock className="absolute left-5 top-1/2 -translate-y-1/2 text-muted-foreground/70 group-focus-within:text-primary transition-colors" size={20} />
                   <input
+                    id="confirm-password"
                     type="password"
                     placeholder="••••••••"
                     value={confirm}
                     onChange={(e) => setConfirm(e.target.value)}
                     minLength={8}
                     required
+                    autoComplete="new-password"
                     className="h-16 w-full pl-14 pr-6 rounded-xl bg-card border-2 border-border/50 shadow-sm shadow-slate-200/40 focus:border-primary outline-none transition-all font-bold italic tracking-tighter text-foreground"
                   />
                 </div>
               </div>
 
               {error && (
-                <div className="rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm font-semibold text-rose-600">
+                <div role="alert" className="rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm font-semibold text-rose-600">
                   {error}
                 </div>
               )}
@@ -157,7 +161,7 @@ export function ResetPasswordForm() {
               <div className="space-y-1">
                 <p className="text-[11px] font-bold text-foreground uppercase">Güvenlik İpucu</p>
                 <p className="text-[10px] font-medium text-muted-foreground/70 leading-relaxed">
-                  En az 8 karakter, bir büyük harf ve bir rakam içeren şifreler her zaman daha güvenlidir.
+                  En az 8 karakter içeren şifreler hesabınızı daha güvenli kılar.
                 </p>
               </div>
             </div>

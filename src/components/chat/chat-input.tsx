@@ -6,19 +6,26 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
 interface ChatInputProps {
-  onSendMessage: (content: string) => void;
+  onSendMessage: (content: string) => Promise<void> | void;
   onTyping: (isTyping: boolean) => void;
 }
 
 export function ChatInput({ onSendMessage, onTyping }: ChatInputProps) {
   const [content, setContent] = useState("");
+  const [isSending, setIsSending] = useState(false);
   const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
-  const handleSend = () => {
-    if (!content.trim()) return;
-    onSendMessage(content.trim());
+  const handleSend = async () => {
+    const trimmed = content.trim();
+    if (!trimmed || isSending) return;
+    setIsSending(true);
     setContent("");
     onTyping(false);
+    try {
+      await onSendMessage(trimmed);
+    } finally {
+      setIsSending(false);
+    }
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -34,8 +41,9 @@ export function ChatInput({ onSendMessage, onTyping }: ChatInputProps) {
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === "Enter") {
-      handleSend();
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      void handleSend();
     }
   };
 
@@ -48,12 +56,13 @@ export function ChatInput({ onSendMessage, onTyping }: ChatInputProps) {
         placeholder="Mesajınızı yazın..."
         className="flex-1"
         aria-label="Mesajınız"
+        disabled={isSending}
       />
       <Button 
         size="icon" 
-        onClick={handleSend} 
-        disabled={!content.trim()}
-        className="rounded-full shadow-md  transition-transform"
+        onClick={() => void handleSend()} 
+        disabled={!content.trim() || isSending}
+        className="rounded-full shadow-md transition-transform"
         aria-label="Gönder"
       >
         <SendHorizontal className="w-5 h-5" />

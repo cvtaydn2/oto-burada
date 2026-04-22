@@ -56,8 +56,8 @@ export function FavoritesPriceAlerts() {
         <CardTitle className="flex items-center gap-2 text-lg font-bold text-foreground">
           <Bell className="text-blue-500" size={20} />
           Fiyat Düşüşü Uyarı Ayarları
-          <span className="ml-auto rounded-full border border-emerald-100 bg-emerald-50 px-2 py-0.5 text-[10px] font-bold uppercase tracking-widest text-emerald-600">
-            Aktif
+          <span className="ml-auto rounded-full border border-blue-100 bg-blue-50 px-2 py-0.5 text-[10px] font-bold uppercase tracking-widest text-blue-600">
+            Yerel Ayar
           </span>
         </CardTitle>
       </CardHeader>
@@ -68,7 +68,7 @@ export function FavoritesPriceAlerts() {
 
           <div>
             <p className="mb-2 text-xs font-bold uppercase tracking-wider text-muted-foreground/70">Fiyat Hassasiyeti</p>
-            <p className="mb-3 text-xs text-muted-foreground">Fiyat en az ne kadar düştüğünde e-posta uyarısı almak istersiniz?</p>
+            <p className="mb-3 text-xs text-muted-foreground">Fiyat en az ne kadar düştüğünde bildirim almak istersiniz? (Tercihler cihazınıza kaydedilir.)</p>
             <div className="space-y-2">
               {[
                 { value: "2", label: "%2 ve Üzeri" },

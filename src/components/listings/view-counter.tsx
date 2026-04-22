@@ -46,12 +46,15 @@ export function ViewCounter({ listingId, initialCount }: ViewCounterProps) {
   }, [listingId, supabase]);
 
   return (
-    <div className="flex w-fit items-center gap-4 rounded-2xl border border-border/50 bg-muted/30 px-4 py-2">
-      <div className="flex items-center gap-2 text-muted-foreground font-bold text-xs uppercase tracking-tight italic">
+    <div
+      className="flex w-fit items-center gap-4 rounded-2xl border border-border/50 bg-muted/30 px-4 py-2"
+      aria-label={`${count.toLocaleString("tr-TR")} kez görüntülendi`}
+    >
+      <div className="flex items-center gap-2 text-muted-foreground font-bold text-xs uppercase tracking-tight italic" aria-hidden="true">
         <Eye size={14} className="text-primary" />
         <span>Görüntülenme</span>
       </div>
-      <div className="flex items-center gap-1.5 font-bold text-sm tabular-nums">
+      <div className="flex items-center gap-1.5 font-bold text-sm tabular-nums" aria-hidden="true">
         {count.toLocaleString("tr-TR")}
         {count > 100 && (
           <TrendingUp size={14} className="text-emerald-500" />

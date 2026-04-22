@@ -24,11 +24,12 @@ function ToggleRow({ label, description, checked, onChange, disabled }: ToggleRo
         <p className="text-xs text-muted-foreground mt-0.5">{description}</p>
       </div>
       <button
-        type="button"
-        role="switch"
-        aria-checked={checked}
-        disabled={disabled}
-        onClick={() => onChange(!checked)}
+          type="button"
+          role="switch"
+          aria-checked={checked}
+          aria-label={label}
+          disabled={disabled}
+          onClick={() => onChange(!checked)}
         className={`relative inline-flex h-6 w-11 shrink-0 items-center rounded-full transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 disabled:opacity-50 ${
           checked ? "bg-primary" : "bg-slate-200"
         }`}
@@ -170,6 +171,7 @@ export function NotificationPreferencesPanel({ initialPreferences }: Notificatio
         <button
           onClick={() => void handleSave()}
           disabled={saving}
+          aria-busy={saving}
           className="flex items-center gap-2 rounded-xl bg-primary px-5 py-2.5 text-sm font-bold text-white hover:bg-primary/90 transition-colors disabled:opacity-60"
         >
           {saving && <LoaderCircle size={15} className="animate-spin" />}

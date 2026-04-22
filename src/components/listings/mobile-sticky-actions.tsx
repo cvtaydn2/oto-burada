@@ -39,11 +39,11 @@ export function MobileStickyActions({
     return (
         <div className="fixed bottom-0 left-0 right-0 z-30 lg:hidden pointer-events-none">
             <div className="px-4 pb-[calc(env(safe-area-inset-bottom)+1rem)] pt-4 pointer-events-auto">
-                <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 p-4 glass rounded-[24px] shadow-2xl pb-safe">
+                <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 p-4 glass rounded-[24px] shadow-2xl">
                     <div className="flex flex-col">
-                        <span className="text-[10px] uppercase font-bold text-muted-foreground/70 tracking-wider">Fiyat</span>
-                        <div className="text-lg font-bold text-foreground">
-                            {formatCurrency(price)} <span className="text-xs font-semibold text-muted-foreground/70">TL</span>
+                        <span className="text-[10px] uppercase font-bold text-muted-foreground/70 tracking-wider" aria-hidden="true">Fiyat</span>
+                        <div className="text-lg font-bold text-foreground" aria-label={`Fiyat: ${formatCurrency(price)} TL`}>
+                            {formatCurrency(price)} <span className="text-xs font-semibold text-muted-foreground/70" aria-hidden="true">TL</span>
                         </div>
                     </div>
 

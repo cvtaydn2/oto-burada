@@ -119,7 +119,7 @@ export function ChatWindow({ chat, currentUserId }: ChatWindowProps) {
       )}
 
       {errorMessage && (
-        <div className="border-b border-destructive/20 bg-destructive/5 px-4 py-2 text-xs font-medium text-destructive">
+        <div role="alert" className="border-b border-destructive/20 bg-destructive/5 px-4 py-2 text-xs font-medium text-destructive">
           {errorMessage}
         </div>
       )}

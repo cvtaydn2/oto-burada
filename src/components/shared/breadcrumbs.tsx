@@ -26,9 +26,9 @@ export function Breadcrumbs({ items }: BreadcrumbsProps) {
         {items.map((item, index) => (
           <li key={item.url}>
             <div className="flex items-center">
-              <ChevronRight className="w-4 h-4 text-slate-300 mx-1" />
+              <ChevronRight className="w-4 h-4 text-slate-300 mx-1" aria-hidden="true" />
               {index === items.length - 1 ? (
-                <span className="ml-1 text-sm font-semibold text-foreground md:ml-2">
+                <span className="ml-1 text-sm font-semibold text-foreground md:ml-2" aria-current="page">
                   {item.name}
                 </span>
               ) : (

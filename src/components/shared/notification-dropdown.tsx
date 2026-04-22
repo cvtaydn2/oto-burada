@@ -8,13 +8,14 @@ import { useRouter } from "next/navigation";
 import * as DropdownMenu from "@radix-ui/react-dropdown-menu";
 
 import { cn, formatDate } from "@/lib/utils";
+import { AlertCircle } from "lucide-react";
 import { useNotifications } from "@/hooks/use-notifications";
 
 export function NotificationDropdown({ userId }: { userId?: string }) {
   const queryClient = useQueryClient();
   const router = useRouter();
   const [isOpen, setIsOpen] = useState(false);
-  const { notifications, unreadCount, isLoading } = useNotifications(userId);
+  const { notifications, unreadCount, isLoading, isError } = useNotifications(userId);
 
   // Mark as read mutation
   const markReadMutation = useMutation({
@@ -26,6 +27,10 @@ export function NotificationDropdown({ userId }: { userId?: string }) {
       }
     },
     onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["notifications", userId] });
+    },
+    onError: () => {
+      // Revert optimistic state by re-fetching
       queryClient.invalidateQueries({ queryKey: ["notifications", userId] });
     },
   });
@@ -40,6 +45,9 @@ export function NotificationDropdown({ userId }: { userId?: string }) {
       }
     },
     onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["notifications", userId] });
+    },
+    onError: () => {
       queryClient.invalidateQueries({ queryKey: ["notifications", userId] });
     },
   });
@@ -85,8 +93,16 @@ export function NotificationDropdown({ userId }: { userId?: string }) {
 
           <div className="max-h-[400px] overflow-y-auto overflow-x-hidden">
             {isLoading ? (
-              <div className="flex items-center justify-center py-10">
+              <div className="flex items-center justify-center py-10" role="status" aria-label="Bildirimler yükleniyor">
                 <LoaderCircle className="size-6 animate-spin text-muted-foreground" />
+              </div>
+            ) : isError ? (
+              <div className="flex flex-col items-center justify-center py-10 text-center px-6">
+                <div className="size-12 rounded-full bg-rose-50 flex items-center justify-center mb-3">
+                  <AlertCircle className="size-6 text-rose-400" />
+                </div>
+                <p className="text-sm font-medium text-foreground">Bildirimler yüklenemedi</p>
+                <p className="text-xs text-muted-foreground mt-1">Bir hata oluştu. Lütfen sayfayı yenile.</p>
               </div>
             ) : notifications.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-10 text-center px-6">

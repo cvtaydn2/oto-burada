@@ -156,10 +156,13 @@ export default async function ComparePage({ searchParams }: ComparePageProps) {
       </div>
 
       <div className="overflow-x-auto rounded-xl border border-border bg-card scrollbar-thin scrollbar-track-transparent scrollbar-thumb-slate-200">
-        <table className="min-w-[720px] w-full border-collapse text-left">
+        <table className="min-w-[720px] w-full border-collapse text-left" aria-label="Araç karşılaştırma tablosu">
+          <caption className="sr-only">
+            {cars.map(c => `${c.brand} ${c.model}`).join(", ")} araçlarının teknik karşılaştırması
+          </caption>
           <thead>
             <tr>
-              <th className="w-56 border-b border-border bg-muted/30 p-5 align-top">
+              <th scope="col" className="w-56 border-b border-border bg-muted/30 p-5 align-top">
                 <div className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
                   Teknik Parametreler
                 </div>
@@ -175,6 +178,7 @@ export default async function ComparePage({ searchParams }: ComparePageProps) {
                 return (
                   <th
                     key={car.id}
+                    scope="col"
                     className="group relative border-b border-l border-border p-5 align-top"
                   >
                     <CompareRemoveButton otherIds={otherIds} />
@@ -244,7 +248,7 @@ export default async function ComparePage({ searchParams }: ComparePageProps) {
                     className={cn("group", idx % 2 === 0 ? "bg-card" : "bg-muted/30")}
               >
                 <td className="border-b border-border p-5 text-[10px] font-bold text-muted-foreground uppercase tracking-wider transition-colors group-hover:text-foreground">
-                  {feature.label}
+                  <span>{feature.label}</span>
                 </td>
                 {cars.map((car) => {
                   const value = feature.render(car);

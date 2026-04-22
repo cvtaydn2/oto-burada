@@ -50,6 +50,7 @@ function FilterSection({
         type="button"
         onClick={() => setIsOpen(!isOpen)}
         disabled={disabled}
+        aria-expanded={isOpen}
         className="flex w-full items-center justify-between py-3 text-sm font-medium text-foreground hover:text-blue-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
       >
         <span className="flex items-center gap-2">

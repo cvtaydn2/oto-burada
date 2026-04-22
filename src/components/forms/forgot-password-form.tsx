@@ -64,12 +64,13 @@ export function ForgotPasswordForm() {
           ) : (
             <form action={formAction} className="space-y-6">
               <div className="space-y-2 group">
-                <label className="text-[10px] font-bold px-1 uppercase tracking-widest text-muted-foreground/70 italic group-focus-within:text-primary transition-colors">
+                <label htmlFor="forgot-email" className="text-[10px] font-bold px-1 uppercase tracking-widest text-muted-foreground/70 italic group-focus-within:text-primary transition-colors">
                   E-POSTA ADRESİ
                 </label>
                 <div className="relative">
                   <Mail className="absolute left-5 top-1/2 -translate-y-1/2 text-muted-foreground/70 group-focus-within:text-primary transition-colors" size={20} />
                   <input
+                    id="forgot-email"
                     type="email"
                     name="email"
                     placeholder="isim@mail.com"
@@ -81,7 +82,7 @@ export function ForgotPasswordForm() {
               </div>
 
               {(state as { error?: string }).error && (
-                <div className="rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm font-semibold text-rose-600">
+                <div role="alert" className="rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm font-semibold text-rose-600">
                   {(state as { error: string }).error}
                 </div>
               )}
