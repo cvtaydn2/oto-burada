@@ -14,7 +14,18 @@ export interface PricingPlan {
   is_active: boolean;
 }
 
-export async function getPricingPlans(includeInactive = false) {
+function mapPricingPlan(row: PricingPlan): PricingPlan {
+  return {
+    id: row.id,
+    name: row.name,
+    price: Number(row.price),
+    credits: Number(row.credits),
+    features: row.features ?? {},
+    is_active: Boolean(row.is_active),
+  };
+}
+
+async function listPricingPlans(includeInactive: boolean) {
   const admin = createSupabaseAdminClient();
   let query = admin.from("pricing_plans").select("*").order("price", { ascending: true });
 
@@ -29,7 +40,19 @@ export async function getPricingPlans(includeInactive = false) {
     return [];
   }
 
-  return data as PricingPlan[];
+  return (data as PricingPlan[]).map(mapPricingPlan);
+}
+
+export async function getPublicPricingPlans() {
+  return listPricingPlans(false);
+}
+
+export async function getAdminPricingPlans() {
+  return listPricingPlans(true);
+}
+
+export async function getPricingPlans(includeInactive = false) {
+  return includeInactive ? getAdminPricingPlans() : getPublicPricingPlans();
 }
 
 export async function updatePricingPlan(id: string, updates: Partial<PricingPlan>) {

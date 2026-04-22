@@ -272,12 +272,11 @@ export function useListingCreation({
       const payload = await response.json();
       if (!response.ok || !payload?.success) {
         if (response.status === 409) {
-          router.refresh();
           setSubmitState({
             status: "error",
             message:
               payload?.error?.message ??
-              "İlan başka bir yerde güncellendi. Sayfayı yenileyip tekrar deneyin.",
+              "İlan başka bir yerde güncellendi. Formdaki verileri kontrol edip sayfayı yenileyerek tekrar deneyin.",
           });
           return;
         }

@@ -1,4 +1,3 @@
-import { expertDocumentMaxSizeInBytes } from "@/lib/constants/domain";
 import { captureServerError } from "@/lib/monitoring/posthog-server";
 import { registerFileInRegistry, verifyAndUnregisterFile } from "@/lib/storage/registry";
 import { getSupabaseDocumentsStorageEnv, hasSupabaseDocumentsStorageEnv } from "@/lib/supabase/env";
@@ -10,6 +9,7 @@ import { rateLimitProfiles } from "@/lib/utils/rate-limit";
 import {
   buildExpertDocumentStoragePath,
   createExpertDocumentSignedUrl,
+  getExpertDocumentMaxUploadBytes,
   getVerifiedDocumentMimeType,
   validateExpertDocumentFile,
 } from "@/services/listings/listing-documents";
@@ -24,13 +24,43 @@ function sanitizeFileName(fileName: string): string {
     .substring(0, 200);
 }
 
+function mapUploadValidationError(message: string) {
+  if (message.includes("boyutu")) {
+    return apiError(API_ERROR_CODES.BAD_REQUEST, message, 413);
+  }
+
+  if (message.includes("format")) {
+    return apiError(API_ERROR_CODES.BAD_REQUEST, message, 415);
+  }
+
+  return apiError(API_ERROR_CODES.BAD_REQUEST, message, 400);
+}
+
+async function validateDocumentUploadRequest(request: Request) {
+  const formData = await request.formData();
+  const file = formData.get("file");
+
+  if (!(file instanceof File)) {
+    return {
+      errorResponse: apiError(API_ERROR_CODES.BAD_REQUEST, "Yüklenecek belge bulunamadı.", 400),
+    };
+  }
+
+  const validationError = await validateExpertDocumentFile(file);
+  if (validationError) {
+    return { errorResponse: mapUploadValidationError(validationError) };
+  }
+
+  return { file };
+}
+
 export async function POST(request: Request) {
   // Security checks: CSRF + Auth + Rate limiting
   const security = await withAuthAndCsrf(request, {
     ipRateLimit: rateLimitProfiles.general,
     userRateLimit: rateLimitProfiles.imageUpload,
     rateLimitKey: "documents:upload",
-    maxBodySizeBytes: expertDocumentMaxSizeInBytes,
+    maxBodySizeBytes: getExpertDocumentMaxUploadBytes(),
   });
 
   if (!security.ok) return security.response;
@@ -45,17 +75,11 @@ export async function POST(request: Request) {
     );
   }
 
-  const formData = await request.formData();
-  const file = formData.get("file");
-
-  if (!(file instanceof File)) {
-    return apiError(API_ERROR_CODES.BAD_REQUEST, "Yüklenecek belge bulunamadı.", 400);
+  const validation = await validateDocumentUploadRequest(request);
+  if ("errorResponse" in validation) {
+    return validation.errorResponse;
   }
-
-  const validationError = await validateExpertDocumentFile(file);
-  if (validationError) {
-    return apiError(API_ERROR_CODES.BAD_REQUEST, validationError, 400);
-  }
+  const { file } = validation;
 
   const sanitizedFileName = sanitizeFileName(file.name);
   const { documentsBucket } = getSupabaseDocumentsStorageEnv();

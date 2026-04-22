@@ -16,43 +16,66 @@ import { Suspense, useEffect, useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { captureClientException } from "@/lib/monitoring/posthog-client";
 import { createSupabaseBrowserClient } from "@/lib/supabase/browser";
+
+type PaymentResultStatus =
+  | "failure"
+  | "invalid"
+  | "pending"
+  | "success"
+  | "unverified"
+  | "verification_error";
 
 function PaymentResultContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [loading, setLoading] = useState(true);
-  const [status, setStatus] = useState<"invalid" | "success" | "failure" | "pending">("pending");
+  const [status, setStatus] = useState<PaymentResultStatus>("pending");
   const [paymentData, setPaymentData] = useState<{
     id: string;
     amount: number;
     status: string;
     plan_name?: string;
   } | null>(null);
+  const [retryNonce, setRetryNonce] = useState(0);
 
   const token = searchParams.get("token");
 
   useEffect(() => {
+    let cancelled = false;
+    let pollTimeout: ReturnType<typeof setTimeout> | null = null;
+
     async function verifyPayment() {
       if (!token) {
-        setStatus("invalid");
-        setLoading(false);
+        if (!cancelled) {
+          setStatus("invalid");
+          setLoading(false);
+        }
         return;
       }
 
       const supabase = createSupabaseBrowserClient();
-
-      // Poll the payments table to see if the webhook has finished processing
-      // We do this because the redirect might happen before the webhook DB update completes (race condition)
       let attempts = 0;
       const maxAttempts = 5;
 
       const checkStatus = async () => {
-        const { data } = await supabase
+        const { data, error } = await supabase
           .from("payments")
           .select("*, plan_name")
           .eq("iyzico_token", token)
           .maybeSingle();
+
+        if (cancelled) {
+          return true;
+        }
+
+        if (error) {
+          captureClientException(error, "payment_result_verification_query", { token });
+          setStatus("verification_error");
+          setLoading(false);
+          return true;
+        }
 
         if (data && data.status !== "pending") {
           setPaymentData(data);
@@ -63,24 +86,49 @@ function PaymentResultContent() {
           }
           return true;
         }
+
         return false;
       };
 
       const poll = async () => {
         const found = await checkStatus();
+        if (cancelled) {
+          return;
+        }
+
         if (!found && attempts < maxAttempts) {
           attempts++;
-          setTimeout(poll, 1500); // Wait 1.5s then check again
-        } else {
-          setLoading(false);
+          pollTimeout = setTimeout(() => {
+            void poll();
+          }, 1500);
+          return;
         }
+
+        if (!found) {
+          setStatus("unverified");
+        }
+        setLoading(false);
       };
 
-      poll();
+      void poll();
     }
 
-    verifyPayment();
-  }, [token, router]);
+    void verifyPayment();
+
+    return () => {
+      cancelled = true;
+      if (pollTimeout) {
+        clearTimeout(pollTimeout);
+      }
+    };
+  }, [token, router, retryNonce]);
+
+  const retryVerification = () => {
+    setPaymentData(null);
+    setStatus("pending");
+    setLoading(true);
+    setRetryNonce((current) => current + 1);
+  };
 
   if (loading) {
     return (
@@ -97,25 +145,37 @@ function PaymentResultContent() {
     );
   }
 
-  const isSuccess = status === "success";
+  const isFailure = status === "failure";
   const isInvalid = status === "invalid";
   const isPending = status === "pending";
+  const isSuccess = status === "success";
+  const isUnverified = status === "unverified";
+  const isVerificationError = status === "verification_error";
+  const isWarningState = isPending || isUnverified || isVerificationError;
 
   return (
     <div className="max-w-2xl mx-auto py-12 px-4 anime-in fade-in slide-in-from-bottom-8 duration-700">
       <Card className="overflow-hidden border-none shadow-sm bg-white/80 backdrop-blur-xl rounded-2xl">
-        <div className={`h-3 w-full ${isSuccess ? "bg-emerald-500" : "bg-rose-500"}`} />
+        <div
+          className={`h-3 w-full ${
+            isSuccess ? "bg-emerald-500" : isWarningState ? "bg-amber-500" : "bg-rose-500"
+          }`}
+        />
 
         <CardContent className="pt-12 pb-10 px-8 text-center">
           <div className="mb-8 flex justify-center">
             <div
               className={`relative h-24 w-24 flex items-center justify-center rounded-full animate-in zoom-in duration-500 ${
-                isSuccess ? "bg-emerald-50 text-emerald-600" : "bg-rose-50 text-rose-600"
+                isSuccess
+                  ? "bg-emerald-50 text-emerald-600"
+                  : isWarningState
+                    ? "bg-amber-50 text-amber-600"
+                    : "bg-rose-50 text-rose-600"
               }`}
             >
               <div
                 className={`absolute inset-0 rounded-full blur-xl opacity-40 ${
-                  isSuccess ? "bg-emerald-500" : "bg-rose-500"
+                  isSuccess ? "bg-emerald-500" : isWarningState ? "bg-amber-500" : "bg-rose-500"
                 }`}
               />
               {isSuccess ? (
@@ -133,7 +193,11 @@ function PaymentResultContent() {
                 ? "Geçersiz Bağlantı"
                 : isPending
                   ? "Ödeme Doğrulanıyor"
-                  : "Ödeme Başarısız"}
+                  : isUnverified
+                    ? "Ödeme Henüz Doğrulanamadı"
+                    : isVerificationError
+                      ? "Doğrulama Hatası"
+                      : "Ödeme Başarısız"}
           </h1>
 
           <p className="mt-4 text-lg font-bold text-slate-500 leading-relaxed max-w-md mx-auto">
@@ -143,7 +207,11 @@ function PaymentResultContent() {
                 ? "Bu ödeme bağlantısı geçersiz veya eksik. Lütfen ödeme akışını yeniden başlatın."
                 : isPending
                   ? "Ödemeniz alındıysa doğrulama hâlâ sürüyor olabilir. Lütfen kısa süre sonra tekrar kontrol edin."
-                  : "Ödeme işlemi sırasında bir hata oluştu veya bankanız tarafından reddedildi."}
+                  : isUnverified
+                    ? "Ödeme sonucu şu an doğrulanamadı. Birkaç dakika sonra tekrar kontrol edin veya panelden durumunu inceleyin."
+                    : isVerificationError
+                      ? "Ödeme doğrulaması sırasında geçici bir hata oluştu. Lütfen tekrar deneyin."
+                      : "Ödeme işlemi sırasında bir hata oluştu veya bankanız tarafından reddedildi."}
           </p>
 
           {paymentData && (
@@ -188,16 +256,14 @@ function PaymentResultContent() {
                   </Link>
                 </Button>
               </>
-            ) : isPending ? (
+            ) : isWarningState ? (
               <>
                 <Button
-                  asChild
                   className="h-14 rounded-2xl bg-blue-600 text-white font-bold uppercase tracking-widest shadow-sm shadow-blue-500/20 hover:bg-blue-700 hover:scale-[1.02] active:scale-[0.98] transition-all"
+                  onClick={retryVerification}
                 >
-                  <Link href="/dashboard">
-                    Paneli Yenile
-                    <Home className="ml-2 h-5 w-5" />
-                  </Link>
+                  Tekrar Kontrol Et
+                  <Loader2 className="ml-2 h-5 w-5" />
                 </Button>
                 <Button
                   asChild
@@ -209,8 +275,40 @@ function PaymentResultContent() {
                     <ArrowRight className="ml-2 h-5 w-5" />
                   </Link>
                 </Button>
+                <Button
+                  asChild
+                  variant="ghost"
+                  className="h-14 rounded-2xl font-bold text-slate-400 hover:text-slate-900 hover:bg-slate-50 transition-all"
+                >
+                  <Link href="/dashboard">
+                    Panele Dön
+                    <Home className="ml-2 h-5 w-5" />
+                  </Link>
+                </Button>
               </>
-            ) : (
+            ) : isInvalid ? (
+              <>
+                <Button
+                  asChild
+                  className="h-14 rounded-2xl bg-slate-900 text-white font-bold uppercase tracking-widest hover:bg-slate-800 transition-all"
+                >
+                  <Link href="/dashboard/pricing">
+                    Paketlere Dön
+                    <ArrowRight className="ml-2 h-5 w-5" />
+                  </Link>
+                </Button>
+                <Button
+                  asChild
+                  variant="ghost"
+                  className="h-14 rounded-2xl font-bold text-slate-400 hover:text-slate-900 hover:bg-slate-50 transition-all"
+                >
+                  <Link href="/contact">
+                    Destek Al
+                    <MessageSquare className="ml-2 h-5 w-5" />
+                  </Link>
+                </Button>
+              </>
+            ) : isFailure ? (
               <>
                 <Button
                   asChild
@@ -232,7 +330,7 @@ function PaymentResultContent() {
                   </Link>
                 </Button>
               </>
-            )}
+            ) : null}
           </div>
         </CardContent>
       </Card>

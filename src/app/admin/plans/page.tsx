@@ -4,7 +4,7 @@ import { PlansTable } from "@/components/admin/plans-table";
 import { Badge } from "@/components/ui/badge";
 import { requireAdminUser } from "@/lib/auth/session";
 import { formatCurrency, safeFormatDate } from "@/lib/utils";
-import { getPlanPurchases, getPlanStats, getPricingPlans } from "@/services/admin/plans";
+import { getAdminPricingPlans, getPlanPurchases, getPlanStats } from "@/services/admin/plans";
 
 export const dynamic = "force-dynamic";
 
@@ -12,7 +12,7 @@ export default async function AdminPlansPage() {
   await requireAdminUser();
 
   const [plans, purchases, stats] = await Promise.all([
-    getPricingPlans(true),
+    getAdminPricingPlans(),
     getPlanPurchases(),
     getPlanStats(),
   ]);
@@ -130,9 +130,9 @@ export default async function AdminPlansPage() {
             <CreditCard size={20} />
           </div>
           <div>
-            <h3 className="text-sm font-bold text-foreground">Aktif Paket Listesi</h3>
+            <h3 className="text-sm font-bold text-foreground">Paket Listesi</h3>
             <p className="text-[10px] text-muted-foreground/70 font-bold uppercase tracking-tighter">
-              Şu an yayında olan planlar
+              Aktif ve pasif planlar
             </p>
           </div>
         </div>

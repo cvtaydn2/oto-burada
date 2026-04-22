@@ -152,7 +152,7 @@ export default async function HomePage() {
                   prefetch={false}
                   className="text-sm font-medium text-primary hover:underline flex items-center"
                 >
-                  Tümünü Gör <ChevronRight size={14} />
+                  Tüm İlanları Gör <ChevronRight size={14} />
                 </Link>
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">

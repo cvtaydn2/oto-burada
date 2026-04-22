@@ -15,6 +15,7 @@ export interface ApiErrorResponse {
     code: string;
     message: string;
     fieldErrors?: Record<string, string>;
+    meta?: Record<string, unknown>;
   };
 }
 
@@ -40,7 +41,8 @@ export function apiError(
   code: string,
   message: string,
   status = 400,
-  fieldErrors?: Record<string, string>
+  fieldErrors?: Record<string, string>,
+  meta?: Record<string, unknown>
 ) {
   const body: ApiErrorResponse = {
     success: false,
@@ -49,6 +51,10 @@ export function apiError(
 
   if (fieldErrors) {
     body.error.fieldErrors = fieldErrors;
+  }
+
+  if (meta) {
+    body.error.meta = meta;
   }
 
   return NextResponse.json(body, { status });

@@ -29,6 +29,18 @@ function sanitizeFileName(fileName: string): string {
   return `${uniquePrefix}-${cleanName}`.substring(0, 200);
 }
 
+function mapUploadValidationError(message: string) {
+  if (message.includes("en fazla")) {
+    return apiError(API_ERROR_CODES.BAD_REQUEST, message, 413);
+  }
+
+  if (message.includes("format")) {
+    return apiError(API_ERROR_CODES.BAD_REQUEST, message, 415);
+  }
+
+  return apiError(API_ERROR_CODES.BAD_REQUEST, message, 400);
+}
+
 export async function POST(request: Request) {
   // Security checks: CSRF + Auth + Rate limiting
   const security = await withAuthAndCsrf(request, {
@@ -83,7 +95,7 @@ export async function POST(request: Request) {
 
   const validationError = await validateListingImageFile(file);
   if (validationError) {
-    return apiError(API_ERROR_CODES.BAD_REQUEST, validationError, 400);
+    return mapUploadValidationError(validationError);
   }
 
   const sanitizedFileName = sanitizeFileName(file.name);

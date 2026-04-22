@@ -1,4 +1,9 @@
-import { listingFiltersSchema } from "@/lib/validators";
+import { logger } from "@/lib/utils/logger";
+import {
+  listingFilterRecoveryFieldNames,
+  listingFilterRecoveryNumericFieldNames,
+  listingFiltersSchema,
+} from "@/lib/validators";
 import type {
   BrandCatalogItem,
   CityOption,
@@ -155,24 +160,9 @@ export function parseListingFiltersFromSearchParams(
     // This prevents a single bad URL param (e.g. "?minPrice=abc") from silently
     // wiping out all other filters the user set.
     const recovered: Record<string, unknown> = {};
-    const fieldOrder: (keyof import("@/types").ListingFilters)[] = [
-      "query",
-      "brand",
-      "model",
-      "carTrim",
-      "city",
-      "district",
-      "category",
-      "fuelType",
-      "transmission",
-      "sort",
-      "page",
-      "limit",
-      "hasExpertReport",
-    ];
 
     // First pass: string/enum fields (safe to try individually)
-    for (const key of fieldOrder) {
+    for (const key of listingFilterRecoveryFieldNames) {
       if (normalizedSearchParams[key] !== undefined) {
         const singleResult = listingFiltersSchema.safeParse({ [key]: normalizedSearchParams[key] });
         if (singleResult.success) {
@@ -183,15 +173,7 @@ export function parseListingFiltersFromSearchParams(
     }
 
     // Second pass: numeric range fields
-    const numericFields = [
-      "minPrice",
-      "maxPrice",
-      "minYear",
-      "maxYear",
-      "maxMileage",
-      "maxTramer",
-    ] as const;
-    for (const key of numericFields) {
+    for (const key of listingFilterRecoveryNumericFieldNames) {
       if (normalizedSearchParams[key] !== undefined) {
         const singleResult = listingFiltersSchema.safeParse({ [key]: normalizedSearchParams[key] });
         if (singleResult.success) {
@@ -199,6 +181,32 @@ export function parseListingFiltersFromSearchParams(
           if (val !== undefined) recovered[key] = val;
         }
       }
+    }
+
+    const recoveredResult = listingFiltersSchema.safeParse(recovered);
+    const droppedKeys = new Set<string>();
+
+    if (!recoveredResult.success) {
+      for (const issue of recoveredResult.error.issues) {
+        const pathKey = issue.path[0];
+        if (typeof pathKey === "string") {
+          delete recovered[pathKey];
+          droppedKeys.add(pathKey);
+        }
+      }
+    }
+
+    for (const key of Object.keys(normalizedSearchParams)) {
+      if (!(key in recovered)) {
+        droppedKeys.add(key);
+      }
+    }
+
+    if (droppedKeys.size > 0) {
+      logger.listings.warn("Dropping invalid listing filters during recovery", {
+        droppedKeys: [...droppedKeys],
+        searchParams: normalizedSearchParams,
+      });
     }
 
     return {

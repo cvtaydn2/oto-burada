@@ -177,14 +177,31 @@ export async function PATCH(request: Request, context: { params: Promise<{ id: s
   const result = await updateDatabaseListing(listingToPersist);
 
   if (result.error === "slug_collision") {
-    return apiError(API_ERROR_CODES.BAD_REQUEST, "Bu başlıkla başka bir ilan zaten mevcut.", 409);
+    return apiError(
+      API_ERROR_CODES.CONFLICT,
+      "Bu başlıkla başka bir ilan zaten mevcut.",
+      409,
+      undefined,
+      {
+        conflictType: "slug_collision",
+        listingId,
+        retryable: true,
+      }
+    );
   }
 
   if (result.error === "concurrent_update_detected") {
     return apiError(
       API_ERROR_CODES.CONFLICT,
       "İlan başka bir sekmede veya cihazda güncellenmiş. Lütfen sayfayı yenileyip tekrar dene.",
-      409
+      409,
+      undefined,
+      {
+        conflictType: "concurrent_update_detected",
+        listingId,
+        resolution: "reload_required",
+        retryable: true,
+      }
     );
   }
 

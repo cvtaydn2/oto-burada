@@ -28,6 +28,33 @@ const initialState: AuthActionState = {};
 // Accepts only relative paths with safe characters; rejects open-redirect attempts.
 const ALLOWED_NEXT_PATHS = /^\/[a-zA-Z0-9\-_/?=&%#.]+$/;
 
+function buildAuthFields(
+  email?: string,
+  fullName?: string
+): NonNullable<AuthActionState["fields"]> {
+  return {
+    email,
+    ...(fullName !== undefined ? { fullName } : {}),
+  };
+}
+
+function buildAuthErrorState(error: string, fields?: AuthActionState["fields"]): AuthActionState {
+  return {
+    error,
+    ...(fields ? { fields } : {}),
+  };
+}
+
+function buildAuthSuccessState(
+  success: string,
+  fields?: AuthActionState["fields"]
+): AuthActionState {
+  return {
+    success,
+    ...(fields ? { fields } : {}),
+  };
+}
+
 function sanitizeRedirectPath(next: string | null | undefined): string {
   if (!next) return "/dashboard";
   // Must start with / but not //  (protocol-relative open redirect)
@@ -65,9 +92,9 @@ export async function loginAction(
   const ipRateLimit = await checkRateLimit(`auth:login:${clientIp}`, rateLimitProfiles.auth);
 
   if (!ipRateLimit.allowed) {
-    return {
-      error: "Çok fazla giriş denemesi yaptın. Lütfen biraz bekle ve tekrar dene.",
-    };
+    return buildAuthErrorState(
+      "Çok fazla giriş denemesi yaptın. Lütfen biraz bekle ve tekrar dene."
+    );
   }
 
   const values = {
@@ -79,17 +106,17 @@ export async function loginAction(
   const parsed = loginSchema.safeParse(values);
 
   if (!parsed.success) {
-    return {
-      error: parsed.error.issues[0]?.message ?? "Bir hata oluştu. Lütfen tekrar dene.",
-      fields: { email: values.email },
-    };
+    return buildAuthErrorState(
+      parsed.error.issues[0]?.message ?? "Bir hata oluştu. Lütfen tekrar dene.",
+      buildAuthFields(values.email)
+    );
   }
 
   if (!hasSupabaseEnv()) {
-    return {
-      error: "Supabase ortam değişkenleri eksik. Giriş için .env.local dosyasını tamamlamalısın.",
-      fields: { email: values.email },
-    };
+    return buildAuthErrorState(
+      "Supabase ortam değişkenleri eksik. Giriş için .env.local dosyasını tamamlamalısın.",
+      buildAuthFields(values.email)
+    );
   }
 
   const supabase = await createSupabaseServerClient();
@@ -97,10 +124,10 @@ export async function loginAction(
   const { data, error } = await supabase.auth.signInWithPassword(parsed.data);
 
   if (error) {
-    return {
-      error: "Giriş yapılamadı. E-posta veya şifreyi kontrol et.",
-      fields: { email: values.email },
-    };
+    return buildAuthErrorState(
+      "Giriş yapılamadı. E-posta veya şifreyi kontrol et.",
+      buildAuthFields(values.email)
+    );
   }
 
   if (data.user) {
@@ -134,9 +161,9 @@ export async function registerAction(
   const ipRateLimit = await checkRateLimit(`auth:register:${clientIp}`, rateLimitProfiles.auth);
 
   if (!ipRateLimit.allowed) {
-    return {
-      error: "Çok fazla kayıt denemesi yaptın. Lütfen biraz bekle ve tekrar dene.",
-    };
+    return buildAuthErrorState(
+      "Çok fazla kayıt denemesi yaptın. Lütfen biraz bekle ve tekrar dene."
+    );
   }
 
   const values = {
@@ -148,17 +175,17 @@ export async function registerAction(
   const parsed = registerSchema.safeParse(values);
 
   if (!parsed.success) {
-    return {
-      error: parsed.error.issues[0]?.message ?? "Bir hata oluştu. Lütfen tekrar dene.",
-      fields: { email: values.email, fullName: values.fullName },
-    };
+    return buildAuthErrorState(
+      parsed.error.issues[0]?.message ?? "Bir hata oluştu. Lütfen tekrar dene.",
+      buildAuthFields(values.email, values.fullName)
+    );
   }
 
   if (!hasSupabaseEnv()) {
-    return {
-      error: "Supabase ortam değişkenleri eksik. Kayıt için .env.local dosyasını tamamlamalısın.",
-      fields: { email: values.email },
-    };
+    return buildAuthErrorState(
+      "Supabase ortam değişkenleri eksik. Kayıt için .env.local dosyasını tamamlamalısın.",
+      buildAuthFields(values.email, values.fullName)
+    );
   }
 
   const supabase = await createSupabaseServerClient();
@@ -177,10 +204,10 @@ export async function registerAction(
   });
 
   if (error) {
-    return {
-      error: "Kayıt oluşturulamadı. Lütfen tekrar dene.",
-      fields: { email: values.email, fullName: values.fullName },
-    };
+    return buildAuthErrorState(
+      "Kayıt oluşturulamadı. Lütfen tekrar dene.",
+      buildAuthFields(values.email, values.fullName)
+    );
   }
 
   if (data.user) {
@@ -202,10 +229,10 @@ export async function registerAction(
     redirect("/dashboard");
   }
 
-  return {
-    success: "Hesabın oluşturuldu. E-posta doğrulaması açıksa gelen kutunu kontrol et.",
-    fields: { email: values.email, fullName: values.fullName },
-  };
+  return buildAuthSuccessState(
+    "Hesabın oluşturuldu. E-posta doğrulaması açıksa gelen kutunu kontrol et.",
+    buildAuthFields(values.email, values.fullName)
+  );
 }
 
 export async function forgotPasswordAction(
@@ -215,11 +242,11 @@ export async function forgotPasswordAction(
   const email = String(formData.get("email") ?? "").trim();
 
   if (!email || !email.includes("@")) {
-    return { error: "Geçerli bir e-posta adresi girin." };
+    return buildAuthErrorState("Geçerli bir e-posta adresi girin.", buildAuthFields(email));
   }
 
   if (!hasSupabaseEnv()) {
-    return { error: "Servis şu anda kullanılamıyor." };
+    return buildAuthErrorState("Servis şu anda kullanılamıyor.", buildAuthFields(email));
   }
 
   const supabase = await createSupabaseServerClient();
@@ -230,17 +257,21 @@ export async function forgotPasswordAction(
 
   if (error) {
     logger.auth.error("Forgot password email dispatch failed", error, { email });
-    return {
-      error: "İşlem şu anda tamamlanamıyor. Lütfen biraz sonra tekrar dene.",
-      fields: { email },
-    };
+    const isTemporaryFailure =
+      error.status === 429 || /rate|limit|too many|temporar/i.test(error.message);
+    return buildAuthErrorState(
+      isTemporaryFailure
+        ? "İşlem şu anda geçici olarak yavaşlatıldı. Lütfen biraz sonra tekrar dene."
+        : "İşlem şu anda tamamlanamıyor. Lütfen biraz sonra tekrar dene.",
+      buildAuthFields(email)
+    );
   }
 
   // Güvenlik: hesap var/yok bilgisi verme — her zaman başarı mesajı göster
-  return {
-    success: "Sıfırlama bağlantısı e-posta adresinize gönderildi.",
-    fields: { email },
-  };
+  return buildAuthSuccessState(
+    "Sıfırlama bağlantısı e-posta adresinize gönderildi.",
+    buildAuthFields(email)
+  );
 }
 
 export async function logoutAction() {

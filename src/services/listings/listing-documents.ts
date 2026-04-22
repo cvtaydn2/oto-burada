@@ -24,6 +24,10 @@ export function getExpertDocumentConstraintsText() {
   return `${acceptedTypes} formati, en fazla ${formatFileSize(expertDocumentMaxSizeInBytes)}`;
 }
 
+export function getExpertDocumentMaxUploadBytes() {
+  return expertDocumentMaxSizeInBytes;
+}
+
 async function readFileHeader(file: File): Promise<number[]> {
   const buffer = await file.slice(0, 4).arrayBuffer();
   return Array.from(new Uint8Array(buffer));
@@ -64,8 +68,9 @@ export async function validateExpertDocumentFile(file: File) {
     return "Sadece PDF, JPG, PNG veya WebP formatinda belge yukleyebilirsin.";
   }
 
-  if (file.size > expertDocumentMaxSizeInBytes) {
-    return `Belge boyutu en fazla ${formatFileSize(expertDocumentMaxSizeInBytes)} olabilir.`;
+  const maxUploadBytes = getExpertDocumentMaxUploadBytes();
+  if (file.size > maxUploadBytes) {
+    return `Belge boyutu en fazla ${formatFileSize(maxUploadBytes)} olabilir.`;
   }
 
   const hasValidMagicBytes = await validateMagicBytes(file);

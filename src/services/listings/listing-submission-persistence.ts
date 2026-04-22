@@ -3,6 +3,26 @@ import { hasSupabaseAdminEnv } from "@/lib/supabase/env";
 import { sanitizeDescription } from "@/lib/utils/sanitize";
 import { Listing } from "@/types";
 
+type ListingPersistenceError =
+  | "concurrent_update_detected"
+  | "configuration_error"
+  | "database_error"
+  | "image_persistence_error"
+  | "slug_collision";
+
+type ListingPersistenceResult =
+  | { listing: Listing; error?: undefined }
+  | { listing?: undefined; error: ListingPersistenceError };
+
+function classifyPersistenceError(error: { code?: string; message?: string } | null | undefined) {
+  if (!error) return "database_error" as const;
+  if (error.code === "PGRST116") return "concurrent_update_detected" as const;
+  if (error.message?.includes("slug_unique") || error.code === "23505") {
+    return "slug_collision" as const;
+  }
+  return "database_error" as const;
+}
+
 export function mapListingToDatabaseRow(listing: Listing) {
   return {
     id: listing.id,
@@ -85,8 +105,11 @@ export function mapListingImagesToDatabaseRows(listing: Listing) {
  * @param maxRetries - Maximum number of retry attempts (default: 3)
  * @returns Result with created listing or error
  */
-export async function createDatabaseListing(listing: Listing, maxRetries: number = 3) {
-  if (!hasSupabaseAdminEnv()) return { error: "database_error" as const };
+export async function createDatabaseListing(
+  listing: Listing,
+  maxRetries: number = 3
+): Promise<ListingPersistenceResult> {
+  if (!hasSupabaseAdminEnv()) return { error: "configuration_error" as const };
 
   const admin = createSupabaseAdminClient();
   let currentListing = listing;
@@ -139,9 +162,8 @@ export async function createDatabaseListing(listing: Listing, maxRetries: number
 
     if (insertResult.error) {
       // Check for unique constraint violation (slug collision)
-      const isSlugCollision =
-        insertResult.error.message.includes("slug_unique") ||
-        (insertResult.error.code === "23505" && insertResult.error.message?.includes("slug"));
+      const classifiedError = classifyPersistenceError(insertResult.error);
+      const isSlugCollision = classifiedError === "slug_collision";
 
       if (isSlugCollision && attempt < maxRetries - 1) {
         // Generate new slug with suffix and retry
@@ -160,7 +182,7 @@ export async function createDatabaseListing(listing: Listing, maxRetries: number
       if (isSlugCollision) {
         return { error: "slug_collision" as const };
       }
-      return { error: "database_error" as const };
+      return { error: classifiedError };
     }
 
     // Listing inserted successfully, now insert images
@@ -170,7 +192,7 @@ export async function createDatabaseListing(listing: Listing, maxRetries: number
       if (imageInsertResult.error) {
         // Rollback: delete the listing
         await admin.from("listings").delete().eq("id", currentListing.id);
-        return { error: "database_error" as const };
+        return { error: "image_persistence_error" as const };
       }
     }
 
@@ -233,7 +255,7 @@ export async function createDatabaseListing(listing: Listing, maxRetries: number
  * - Reduces latency by ~100-200ms per listing update
  */
 export async function updateDatabaseListing(listing: Listing) {
-  if (!hasSupabaseAdminEnv()) return { error: "database_error" as const };
+  if (!hasSupabaseAdminEnv()) return { error: "configuration_error" as const };
   const admin = createSupabaseAdminClient();
   const listingsTable = admin.from("listings");
   const updateQuery = listingsTable.update(mapListingToDatabaseRow(listing));
@@ -286,13 +308,7 @@ export async function updateDatabaseListing(listing: Listing) {
     .single();
 
   if (updateResult.error) {
-    if (updateResult.error.code === "PGRST116") {
-      return { error: "concurrent_update_detected" as const };
-    }
-    if (updateResult.error.message.includes("slug_unique") || updateResult.error.code === "23505") {
-      return { error: "slug_collision" as const };
-    }
-    return { error: "database_error" as const };
+    return { error: classifyPersistenceError(updateResult.error) };
   }
 
   // Check if zero rows were updated (meaning version mismatch)
@@ -319,7 +335,7 @@ export async function updateDatabaseListing(listing: Listing) {
   if (imageRows.length > 0) {
     const imageInsertResult = await admin.from("listing_images").insert(imageRows);
     if (imageInsertResult.error) {
-      return { error: "database_error" as const };
+      return { error: "image_persistence_error" as const };
     }
   }
 

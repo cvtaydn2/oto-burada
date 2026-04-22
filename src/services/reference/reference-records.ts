@@ -28,8 +28,13 @@ type DBModel = { id: string; brand_id: string; name: string };
 type DBTrim = { model_id: string; name: string };
 type DBCity = { id: string; name: string; plate_code: number };
 type DBDistrict = { city_id: string; name: string };
+type MarketplaceReferenceData = {
+  brands: BrandCatalogItem[];
+  cities: CityOption[];
+  searchSuggestions: SearchSuggestionItem[];
+};
 
-async function fetchLiveMarketplaceReferenceData() {
+async function fetchLiveMarketplaceReferenceData(): Promise<MarketplaceReferenceData> {
   const { url, anonKey } = getSupabaseEnv();
   const supabase = createClient(url, anonKey, {
     auth: {

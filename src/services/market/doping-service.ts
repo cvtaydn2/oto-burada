@@ -14,6 +14,13 @@ export interface DopingResult {
   transactionId?: string;
 }
 
+type ExistingPaymentState = {
+  fulfilled_at: string | null;
+  id: string;
+  iyzico_token: string | null;
+  status: string;
+};
+
 /**
  * Applies premium doping effects to a listing.
  *
@@ -42,13 +49,11 @@ export async function applyDopingToListing(
   const admin = createSupabaseAdminClient();
   const { data: listing, error: listingError } = await admin
     .from("listings")
-    .select("id")
+    .select("id, seller_id, status")
     .eq("id", listingId)
-    .eq("seller_id", userId)
-    .neq("status", "archived")
-    .maybeSingle();
+    .single<{ id: string; seller_id: string; status: string }>();
 
-  if (listingError || !listing) {
+  if (listingError || !listing || listing.seller_id !== userId || listing.status === "archived") {
     return { success: false, message: "Doping uygulanabilir ilan bulunamadı." };
   }
 
@@ -63,21 +68,89 @@ export async function applyDopingToListing(
     durationDays,
   };
 
-  const { data: paymentRecord, error: paymentInsertError } = await admin
+  const { data: existingPayment, error: existingPaymentError } = await admin
     .from("payments")
-    .insert({
-      user_id: userId,
-      listing_id: listingId,
-      amount: totalAmount,
-      provider: "iyzico",
-      status: "pending",
-      idempotency_key: idempotencyKey,
-      metadata,
-    })
-    .select("id")
-    .single<{ id: string }>();
+    .select("id, iyzico_token, status, fulfilled_at")
+    .eq("user_id", userId)
+    .eq("listing_id", listingId)
+    .eq("provider", "iyzico")
+    .eq("idempotency_key", idempotencyKey)
+    .order("created_at", { ascending: false })
+    .limit(1)
+    .maybeSingle<ExistingPaymentState>();
+
+  if (existingPaymentError) {
+    return { success: false, message: "Bekleyen ödeme kontrol edilemedi." };
+  }
+
+  if (existingPayment?.status === "success" || existingPayment?.fulfilled_at) {
+    return {
+      success: false,
+      message: "Bu doping için ödeme zaten tamamlanmış. Lütfen ilan durumunu kontrol edin.",
+      transactionId: existingPayment.iyzico_token ?? undefined,
+    };
+  }
+
+  if (existingPayment?.status === "pending" && existingPayment.iyzico_token) {
+    return {
+      success: false,
+      message: "Bu ilan için bekleyen bir doping ödemeniz var. Lütfen mevcut ödemeyi tamamlayın.",
+      transactionId: existingPayment.iyzico_token ?? undefined,
+    };
+  }
+
+  let paymentRecord: { id: string } | null = null;
+  let paymentInsertError: { code?: string; message?: string } | null = null;
+
+  if (existingPayment?.status === "pending") {
+    paymentRecord = { id: existingPayment.id };
+  } else {
+    const insertResult = await admin
+      .from("payments")
+      .insert({
+        user_id: userId,
+        listing_id: listingId,
+        amount: totalAmount,
+        provider: "iyzico",
+        status: "pending",
+        idempotency_key: idempotencyKey,
+        metadata,
+      })
+      .select("id")
+      .single<{ id: string }>();
+
+    paymentRecord = insertResult.data;
+    paymentInsertError = insertResult.error;
+  }
 
   if (paymentInsertError || !paymentRecord) {
+    if (paymentInsertError?.code === "23505") {
+      const { data: existingPending, error: pendingLookupError } = await admin
+        .from("payments")
+        .select("id, iyzico_token")
+        .eq("user_id", userId)
+        .eq("listing_id", listingId)
+        .eq("provider", "iyzico")
+        .eq("status", "pending")
+        .eq("idempotency_key", idempotencyKey)
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .maybeSingle<{ id: string; iyzico_token: string | null }>();
+
+      if (pendingLookupError) {
+        return { success: false, message: "Bekleyen ödeme kontrol edilemedi." };
+      }
+
+      if (existingPending) {
+        return {
+          success: false,
+          message:
+            "Bu ilan için bekleyen bir doping ödemeniz var. Lütfen mevcut ödemeyi tamamlayın.",
+          transactionId: existingPending.iyzico_token ?? undefined,
+        };
+      }
+    }
+
     return { success: false, message: "Ödeme kaydı oluşturulamadı." };
   }
 
@@ -97,13 +170,12 @@ export async function applyDopingToListing(
   }
 
   if (paymentResult.transactionId) {
-    const { error: tokenUpdateError, data: updatedPayments } = await admin
+    const { error: tokenUpdateError } = await admin
       .from("payments")
       .update({ iyzico_token: paymentResult.transactionId })
-      .eq("id", paymentRecord.id)
-      .select("id");
+      .eq("id", paymentRecord.id);
 
-    if (tokenUpdateError || !updatedPayments?.length) {
+    if (tokenUpdateError) {
       await admin.from("payments").update({ status: "failure" }).eq("id", paymentRecord.id);
       return { success: false, message: "Ödeme kaydı doğrulanamadı." };
     }

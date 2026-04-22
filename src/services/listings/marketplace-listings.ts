@@ -1,5 +1,7 @@
+import { captureServerEvent } from "@/lib/monitoring/posthog-server";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { maskPhoneNumber } from "@/lib/utils/listing-utils";
+import { logger } from "@/lib/utils/logger";
 import { getPublicListings } from "@/services/listings/catalog";
 import { createExpertDocumentSignedUrl } from "@/services/listings/listing-documents";
 import {
@@ -16,6 +18,56 @@ export {
   getStoredListingsByIds,
   type PaginatedListingsResult,
 };
+
+const SUPPORTED_MARKETPLACE_FILTER_KEYS = new Set<keyof ListingFilters>([
+  "query",
+  "brand",
+  "model",
+  "carTrim",
+  "city",
+  "district",
+  "category",
+  "minPrice",
+  "maxPrice",
+  "minYear",
+  "maxYear",
+  "maxMileage",
+  "maxTramer",
+  "hasExpertReport",
+  "fuelType",
+  "transmission",
+  "sort",
+  "page",
+  "limit",
+  "citySlug",
+  "sellerId",
+  "cursor",
+]);
+
+function sanitizeMarketplaceFilters(filters: ListingFilters) {
+  const sanitized = {} as ListingFilters;
+  const droppedKeys: string[] = [];
+
+  for (const [key, value] of Object.entries(filters)) {
+    if (SUPPORTED_MARKETPLACE_FILTER_KEYS.has(key as keyof ListingFilters)) {
+      (sanitized as Record<string, unknown>)[key] = value;
+    } else {
+      droppedKeys.push(key);
+    }
+  }
+
+  if (droppedKeys.length > 0) {
+    logger.listings.warn("Dropping unsupported marketplace filter keys", {
+      droppedKeys,
+      filters,
+    });
+    captureServerEvent("marketplace_filters_sanitized", {
+      droppedKeys,
+    });
+  }
+
+  return sanitized;
+}
 
 async function withNextCache<T>(
   keyParts: string[],
@@ -41,7 +93,7 @@ async function withNextCache<T>(
 export async function getFilteredMarketplaceListings(
   filters: ListingFilters
 ): Promise<PaginatedListingsResult> {
-  return getPublicListings(filters);
+  return getPublicListings(sanitizeMarketplaceFilters(filters));
 }
 
 export async function getMarketplaceListingsByIds(ids: string[]) {

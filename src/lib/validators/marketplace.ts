@@ -19,6 +19,34 @@ import {
 
 const vehicleCategories = ["otomobil", "suv", "minivan", "ticari", "motosiklet"] as const;
 
+export const listingFilterRecoveryFieldNames = [
+  "query",
+  "brand",
+  "model",
+  "carTrim",
+  "city",
+  "district",
+  "category",
+  "fuelType",
+  "transmission",
+  "sort",
+  "page",
+  "limit",
+  "hasExpertReport",
+  "citySlug",
+  "sellerId",
+  "cursor",
+] as const;
+
+export const listingFilterRecoveryNumericFieldNames = [
+  "minPrice",
+  "maxPrice",
+  "minYear",
+  "maxYear",
+  "maxMileage",
+  "maxTramer",
+] as const;
+
 export const listingFiltersSchema: z.ZodType<ListingFilters> = z
   .object({
     query: optionalTrimmedString,
