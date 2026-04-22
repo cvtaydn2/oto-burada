@@ -79,12 +79,12 @@ export function HomeHero({ cities }: HomeHeroProps) {
                     id="hero-query"
                     type="text"
                     name="query"
-                    placeholder="Marka, model..."
+                    placeholder="Marka veya model ara..."
                     className="w-full bg-muted/50 border-none text-foreground placeholder:text-muted-foreground/50 rounded-lg sm:rounded-xl pl-10 sm:pl-14 pr-3 sm:pr-6 h-11 sm:h-14 outline-none transition focus:bg-muted font-medium text-sm sm:text-base"
                   />
                 </div>
 
-                <div className="w-full md:w-56 relative">
+                <div className="w-full md:w-72 lg:w-80 relative">
                   <label htmlFor="hero-city" className="sr-only">
                     Şehir seç
                   </label>
