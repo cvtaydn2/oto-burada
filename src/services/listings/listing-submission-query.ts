@@ -322,22 +322,60 @@ export async function getFilteredDatabaseListings(
 
   dataQuery = applyListingFilterPredicates(dataQuery, { ...filters, page, limit });
 
-  // ── PILL: Issue 4 - Keyset (Cursor-based) Pagination ──────────────────
+  // ── Keyset (Cursor-based) Pagination ──────────────────────────────────────
+  // Cursor encodes the full ordering tuple so pages never produce duplicates/skips.
+  // Every branch ends with `.id` as a deterministic tie-breaker.
   if (filters.cursor) {
     try {
-      const cursorData = JSON.parse(Buffer.from(filters.cursor, "base64").toString());
-      
-      // Keyset comparison depends on the sort order
+      const cursorData = JSON.parse(Buffer.from(filters.cursor, "base64").toString()) as {
+        id: string;
+        featured: boolean;
+        bumpedAt: string | null;
+        createdAt: string;
+        price: number;
+        mileage: number;
+        year: number;
+      };
+
       switch (sort) {
         case "newest":
-          // Sort is Featured DESC, VerificationStatus DESC, BumpedAt DESC, CreatedAt DESC
-          dataQuery = dataQuery.or(`featured.lt.${cursorData.featured},and(featured.eq.${cursorData.featured},bumped_at.lt.${cursorData.bumpedAt}),and(featured.eq.${cursorData.featured},bumped_at.eq.${cursorData.bumpedAt},created_at.lt.${cursorData.createdAt})`);
+          // Full ordering: featured DESC, bumped_at DESC NULLS LAST, created_at DESC, id DESC
+          dataQuery = dataQuery.or(
+            [
+              `featured.lt.${cursorData.featured}`,
+              `and(featured.eq.${cursorData.featured},bumped_at.lt.${cursorData.bumpedAt ?? "null"})`,
+              `and(featured.eq.${cursorData.featured},bumped_at.is.null,created_at.lt.${cursorData.createdAt})`,
+              `and(featured.eq.${cursorData.featured},bumped_at.eq.${cursorData.bumpedAt ?? "null"},created_at.lt.${cursorData.createdAt})`,
+              `and(featured.eq.${cursorData.featured},bumped_at.eq.${cursorData.bumpedAt ?? "null"},created_at.eq.${cursorData.createdAt},id.lt.${cursorData.id})`,
+            ].join(",")
+          );
           break;
         case "price_asc":
-          dataQuery = dataQuery.or(`price.gt.${cursorData.price},and(price.eq.${cursorData.price},created_at.lt.${cursorData.createdAt})`);
+          dataQuery = dataQuery.or(
+            `price.gt.${cursorData.price},and(price.eq.${cursorData.price},id.gt.${cursorData.id})`
+          );
           break;
         case "price_desc":
-          dataQuery = dataQuery.or(`price.lt.${cursorData.price},and(price.eq.${cursorData.price},created_at.lt.${cursorData.createdAt})`);
+          dataQuery = dataQuery.or(
+            `price.lt.${cursorData.price},and(price.eq.${cursorData.price},id.lt.${cursorData.id})`
+          );
+          break;
+        case "mileage_asc":
+          dataQuery = dataQuery.or(
+            `mileage.gt.${cursorData.mileage},and(mileage.eq.${cursorData.mileage},id.gt.${cursorData.id})`
+          );
+          break;
+        case "year_desc":
+          dataQuery = dataQuery.or(
+            `year.lt.${cursorData.year},and(year.eq.${cursorData.year},id.lt.${cursorData.id})`
+          );
+          break;
+        case "oldest":
+          dataQuery = dataQuery.or(
+            `created_at.gt.${cursorData.createdAt},and(created_at.eq.${cursorData.createdAt},id.gt.${cursorData.id})`
+          );
+          break;
+        default:
           break;
       }
     } catch {
@@ -375,7 +413,13 @@ export async function getFilteredDatabaseListings(
     dataQuery = dataQuery.range(0, limit - 1);
   }
 
-  let countQuery = admin.from("listings").select("id", { count: "exact", head: true }).eq("status", "approved");
+  let countQuery = admin
+    .from("listings")
+    .select("id", { count: "exact", head: true })
+    .eq("status", "approved")
+    // CRITICAL: Mirror the same banned-seller filter used in the data query.
+    // Without this, count and actual results diverge for banned sellers.
+    .eq("profiles.is_banned", false);
   countQuery = applyListingFilterPredicates(countQuery, filters);
 
   const executeDataQuery =
@@ -405,16 +449,18 @@ export async function getFilteredDatabaseListings(
   const listings = dataResult.data ? (dataResult.data as ListingRow[]).map(mapListingRow) : [];
   const totalCount = countResult.count ?? 0;
 
-  // Build the next cursor based on the last item
+  // Build the next cursor — encodes the full ordering tuple for all sort modes.
   let nextCursor: string | undefined;
   if (listings.length > 0 && listings.length === limit) {
     const last = listings[listings.length - 1];
     const cursorData = {
-      id: last.id,
+      id: last.id,           // deterministic tie-breaker for all sort modes
       featured: last.featured,
       bumpedAt: last.bumpedAt,
       createdAt: last.createdAt,
       price: last.price,
+      mileage: last.mileage,
+      year: last.year,
     };
     nextCursor = Buffer.from(JSON.stringify(cursorData)).toString("base64");
   }

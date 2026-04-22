@@ -74,19 +74,30 @@ export async function POST(req: Request) {
     }
 
     if (plan.price === 0) {
-      // Free plan — credit directly without payment
-      const { error: creditError } = await admin.rpc("increment_user_credits", {
-        p_user_id: user.id,
-        p_credits: plan.credits,
-      });
+      // Free plan — credit directly without payment.
+      // IDEMPOTENCY GUARD: Check if this user already activated this free plan
+      // within the last 24 hours to prevent concurrent duplicate requests.
+      const windowStart = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+      const { count: recentActivations } = await admin
+        .from("payments")
+        .select("id", { count: "exact", head: true })
+        .eq("user_id", user.id)
+        .eq("plan_id", plan.id)
+        .eq("provider", "free")
+        .eq("status", "success")
+        .gte("created_at", windowStart);
 
-      if (creditError) {
-        logger.payments.error("Free plan credit failed", creditError, { userId: user.id, planId });
-        return apiError(API_ERROR_CODES.INTERNAL_ERROR, "Kredi eklenemedi.", 500);
+      if ((recentActivations ?? 0) > 0) {
+        return apiError(
+          API_ERROR_CODES.BAD_REQUEST,
+          "Bu ücretsiz planı son 24 saat içinde zaten aktifleştirdiniz.",
+          409,
+        );
       }
 
-      // Record the free plan activation
-      await admin.from("payments").insert({
+      // Insert the payment record FIRST (before crediting) so a concurrent
+      // request hitting the same window will be blocked by the check above.
+      const { error: recordError } = await admin.from("payments").insert({
         user_id: user.id,
         amount: 0,
         currency: "TRY",
@@ -96,6 +107,31 @@ export async function POST(req: Request) {
         plan_name: plan.name,
         description: `Ücretsiz plan: ${plan.name}`,
       });
+
+      if (recordError) {
+        logger.payments.error("Free plan payment record insert failed", recordError, { userId: user.id, planId });
+        return apiError(API_ERROR_CODES.INTERNAL_ERROR, "Plan kaydı oluşturulamadı.", 500);
+      }
+
+      // Now credit — if this fails we have an orphan payment record but no
+      // double-credit. The record can be used to manually reconcile.
+      const { error: creditError } = await admin.rpc("increment_user_credits", {
+        p_user_id: user.id,
+        p_credits: plan.credits,
+      });
+
+      if (creditError) {
+        logger.payments.error("Free plan credit failed", creditError, { userId: user.id, planId });
+        // Roll back the payment record so the user can retry
+        await admin
+          .from("payments")
+          .delete()
+          .eq("user_id", user.id)
+          .eq("plan_id", plan.id)
+          .eq("provider", "free")
+          .gte("created_at", windowStart);
+        return apiError(API_ERROR_CODES.INTERNAL_ERROR, "Kredi eklenemedi.", 500);
+      }
 
       captureServerEvent("plan_purchased", {
         userId: user.id,

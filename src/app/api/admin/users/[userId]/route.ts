@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { requireApiAdminUser } from "@/lib/auth/api-admin";
+import { withAdminRoute } from "@/lib/utils/api-security";
 import { grantCreditsToUser, grantDopingToListing } from "@/services/admin/users";
 import { apiError, apiSuccess, API_ERROR_CODES } from "@/lib/utils/api-response";
 import { logger } from "@/lib/utils/logger";
@@ -25,8 +25,9 @@ export async function POST(
   request: Request,
   { params }: { params: Promise<{ userId: string }> },
 ) {
-  const adminUser = await requireApiAdminUser();
-  if (adminUser instanceof Response) return adminUser;
+  const security = await withAdminRoute(request);
+  if (!security.ok) return security.response;
+  const adminUser = security.user!;
 
   const { userId } = await params;
 

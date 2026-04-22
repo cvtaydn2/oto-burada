@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { requireApiAdminUser } from "@/lib/auth/api-admin";
+import { withAdminRoute } from "@/lib/utils/api-security";
 import { updateTicketStatus } from "@/services/support/ticket-service";
 import type { TicketStatus } from "@/services/support/ticket-service";
 import { logger } from "@/lib/utils/logger";
@@ -13,9 +13,9 @@ export async function PATCH(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  // Admin-only endpoint
-  const adminUser = await requireApiAdminUser();
-  if (adminUser instanceof Response) return adminUser;
+  const security = await withAdminRoute(request);
+  if (!security.ok) return security.response;
+  const adminUser = security.user!;
 
   const { id } = await params;
 
