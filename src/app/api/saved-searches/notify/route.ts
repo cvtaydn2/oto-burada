@@ -80,10 +80,13 @@ function verifyCronSecret(request: Request): boolean {
 // Vercel Cron sends GET requests — this is the primary handler for Emails
 // BUT this is also the endpoint for SSE Realtime connection from clients!
 export async function GET(request: Request) {
-  const accept = request.headers.get("accept");
-  if (accept === "text/event-stream") {
+  // Distinguish between SSE (Browser Client) and Cron (Vercel/Internal)
+  const isEventStream = request.headers.get("accept") === "text/event-stream";
+  
+  if (isEventStream) {
     return handleSSERequest(request);
   }
+  
   return handleCronRequest(request);
 }
 
@@ -118,8 +121,8 @@ export async function POST(request: Request) {
 }
 
 /**
- * Handles SSE streams by polling Upstash Redis for user notifications
- * since Upstash Redis HTTP does not support native PUB/SUB.
+ * Handles SSE streams by polling Upstash Redis for user notifications.
+ * Implements strict security and resource cleanup.
  */
 async function handleSSERequest(request: Request) {
   const supabase = await createSupabaseServerClient();
@@ -132,10 +135,13 @@ async function handleSSERequest(request: Request) {
 
   const redis = getRedisClient();
   if (!redis) {
+    logger.notifications.error("Redis client unavailable for SSE");
     return new Response("Service Unavailable", { status: 503 });
   }
 
   const encoder = new TextEncoder();
+  let intervalId: NodeJS.Timeout | null = null;
+
   const stream = new ReadableStream({
     async start(controller) {
       // Send initial connection successful
@@ -144,11 +150,14 @@ async function handleSSERequest(request: Request) {
       const key = `notifications:${userId}`;
       let lastCheck = Date.now();
 
-      // Poll Redis every 3 seconds for new notifications
-      // In a production serverless environment, long-lived streams might be killed by the provider (e.g. Vercel terminates edge/serverless after bounded time)
-      const intervalId = setInterval(async () => {
+      // Poll Redis for new notifications
+      intervalId = setInterval(async () => {
         try {
-          // Check for notifications where score > lastCheck
+          if (request.signal.aborted) {
+            if (intervalId) clearInterval(intervalId);
+            return;
+          }
+
           const newNotifications = await redis.zrange(key, lastCheck + 1, "+inf", { 
             byScore: true 
           });
@@ -157,29 +166,37 @@ async function handleSSERequest(request: Request) {
             for (const notice of newNotifications) {
               controller.enqueue(encoder.encode(`data: ${notice}\n\n`));
             }
-            lastCheck = Date.now(); // update cursor
+            lastCheck = Date.now();
           }
           
-          // Send a keep-alive ping to keep connection open
+          // Keep-alive ping
           controller.enqueue(encoder.encode(':\n\n'));
         } catch (error) {
           logger.notifications.error("SSE Polling Error", error);
         }
-      }, 3000);
+      }, 5000); // 5s is more reasonable for serverless polling
 
-      // Clean up interval on close
+      // Comprehensive cleanup
       request.signal.addEventListener("abort", () => {
-        clearInterval(intervalId);
+        if (intervalId) clearInterval(intervalId);
+        try { controller.close(); } catch (e) {}
       });
     },
+    cancel() {
+      if (intervalId) clearInterval(intervalId);
+    }
   });
 
+  // Tighter headers for authenticated stream
+  const appUrl = getAppUrl();
   return new Response(stream, {
     headers: {
       "Content-Type": "text/event-stream",
-      "Cache-Control": "no-cache, no-transform",
-      Connection: "keep-alive",
-      "Access-Control-Allow-Origin": "*",
+      "Cache-Control": "no-cache, no-transform, no-store",
+      "Connection": "keep-alive",
+      "X-Content-Type-Options": "nosniff",
+      "Access-Control-Allow-Origin": appUrl,
+      "Access-Control-Allow-Credentials": "true",
     },
   });
 }
@@ -229,11 +246,17 @@ async function handleCronRequest(request: Request) {
   }
 
   let notifiedCount = 0;
+  let errorCount = 0;
+  let skippedCount = 0;
 
   // 3. Process each saved search
   for (const savedSearch of savedSearches) {
     const userInfo = userEmailMap.get(savedSearch.user_id);
-    if (!userInfo?.email) continue;
+    
+    if (!userInfo?.email) {
+      skippedCount++;
+      continue;
+    }
 
     try {
       const filters = normalizeSavedSearchFilters(
@@ -253,7 +276,10 @@ async function handleCronRequest(request: Request) {
         (l) => l.createdAt >= lookbackDate,
       );
 
-      if (newListings.length === 0) continue;
+      if (newListings.length === 0) {
+        skippedCount++;
+        continue;
+      }
 
       // Build search URL for the email CTA
       const appUrl = getAppUrl();
@@ -286,18 +312,25 @@ async function handleCronRequest(request: Request) {
           searchId: savedSearch.id,
           listingCount: newListings.length,
         });
+      } else {
+        errorCount++;
       }
     } catch (err) {
+      errorCount++;
       logger.notifications.error("Failed to process saved search notification", err, {
         searchId: savedSearch.id,
         userId: savedSearch.user_id,
       });
-      // Continue processing other searches even if one fails
     }
   }
 
   return apiSuccess(
-    { processed: savedSearches.length, notified: notifiedCount },
-    `${notifiedCount} kullanıcıya bildirim gönderildi.`,
+    { 
+      processed: savedSearches.length, 
+      notified: notifiedCount, 
+      skipped: skippedCount,
+      errors: errorCount 
+    },
+    `${notifiedCount} kullanıcıya bildirim gönderildi, ${skippedCount} arama için yeni sonuç yok.`
   );
 }

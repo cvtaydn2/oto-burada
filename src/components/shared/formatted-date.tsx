@@ -1,15 +1,7 @@
-/* eslint-disable */
 "use client";
-/* eslint-disable react-hooks/set-state-in-effect */
 
-import { useEffect, useState, useMemo } from "react";
 import { format } from "date-fns";
 import { tr } from "date-fns/locale";
-
-/**
- * World-Class UX: Hydration-Safe Date (Issue 7 - "The Seam")
- * Prevents Next.js "Text content did not match" errors.
- */
 
 interface FormattedDateProps {
   date: string | Date;
@@ -17,34 +9,30 @@ interface FormattedDateProps {
   className?: string;
 }
 
+/**
+ * Hydration-safe date component using suppressHydrationWarning.
+ * This avoids the "mounted" state flicker while keeping the UI consistent.
+ */
 export function FormattedDate({ 
   date, 
   formatStr = "d MMMM yyyy HH:mm", 
   className 
 }: FormattedDateProps) {
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
-
-  const dateObj = useMemo(() => (typeof date === "string" ? new Date(date) : date), [date]);
-
-  const formattedStr = useMemo(() => {
-    if (!mounted) return "";
-    try {
-      return format(dateObj, formatStr, { locale: tr });
-    } catch (_err) {
-      return "Tarih hatası";
-    }
-  }, [dateObj, formatStr, mounted]);
-
-  if (!mounted) {
-    return <span className={className}>...</span>;
+  const dateObj = typeof date === "string" ? new Date(date) : date;
+  
+  let formattedStr = "";
+  try {
+    formattedStr = format(dateObj, formatStr, { locale: tr });
+  } catch (err) {
+    formattedStr = "Geçersiz Tarih";
   }
 
   return (
-    <time dateTime={dateObj.toISOString()} className={className}>
+    <time 
+      dateTime={dateObj.toISOString()} 
+      className={className}
+      suppressHydrationWarning
+    >
       {formattedStr}
     </time>
   );

@@ -81,6 +81,7 @@ export function DashboardProfessionalCard({ profile }: DashboardProfessionalCard
               <Link 
                 href={`/gallery/${businessSlug}`}
                 target="_blank"
+                rel="noopener noreferrer"
                 className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-card text-muted-foreground shadow-sm border border-border transition-all hover:bg-foreground hover:text-background"
               >
                 <Eye size={14} />
@@ -90,6 +91,7 @@ export function DashboardProfessionalCard({ profile }: DashboardProfessionalCard
            <Link
             href={`/gallery/${businessSlug}`}
             target="_blank"
+            rel="noopener noreferrer"
             className="flex h-14 w-full sm:w-auto items-center gap-2 rounded-xl bg-primary px-10 text-[10px] font-bold uppercase tracking-widest text-primary-foreground shadow-sm hover:opacity-90 transition-all active:scale-95"
            >
              Mağazaya Git

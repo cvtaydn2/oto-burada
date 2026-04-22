@@ -28,6 +28,10 @@ export async function processBulkListings(inputs: ListingCreateInput[]) {
   const user = await requireUser();
   const admin = createSupabaseAdminClient();
   
+  let succeededCount = 0;
+  let failedCount = 0;
+  const chunkErrors: string[] = [];
+
   try {
     const preparedListings = inputs.map(input => {
       return buildListingRecord(input, user.id, []); 
@@ -45,18 +49,35 @@ export async function processBulkListings(inputs: ListingCreateInput[]) {
         .insert(chunk);
 
       if (insertError) {
+        failedCount += chunk.length;
+        let msg = `Satır ${i + 1}-${Math.min(i + CHUNK_SIZE, rowsToInsert.length)}: `;
+        
         if (insertError.code === "23505" && insertError.message?.includes("slug")) {
-          throw new Error("Bazı ilanların başlıkları çakışıyor. Lütfen benzersiz başlıklar kullanın.");
+          msg += "Başlık çakışması (aynı başlıkta başka bir ilan var).";
+        } else {
+          msg += insertError.message || "Veritabanı hatası.";
         }
-        logger.listings.error("Bulk Insert SQL Error", insertError, { userId: user.id, batchIndex: i });
-        throw new Error(`Veritabanına yazılırken ${i}. satırda hata oluştu. İşlem durduruldu.`);
+        
+        chunkErrors.push(msg);
+        logger.listings.error("Bulk Insert Chunk Error", insertError, { userId: user.id, batchIndex: i });
+      } else {
+        succeededCount += chunk.length;
       }
+    }
+
+    if (chunkErrors.length > 0) {
+      return { 
+        success: succeededCount > 0, 
+        count: succeededCount,
+        error: `Yükleme tamamlandı ama bazı hatalar oluştu:\n${chunkErrors.join("\n")}`,
+        partial: true
+      };
     }
 
     return { 
       success: true, 
-      count: preparedListings.length,
-      message: `${preparedListings.length} ilan başarıyla oluşturuldu.`
+      count: succeededCount,
+      message: `${succeededCount} ilan başarıyla oluşturuldu.`
     };
 
   } catch (err) {

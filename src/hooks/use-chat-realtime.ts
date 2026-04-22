@@ -36,6 +36,8 @@ export function useChatRealtime(chatId: string, currentUserId: string): UseChatR
   const supabaseRef = useRef<ReturnType<typeof createSupabaseBrowserClient> | null>(null);
   // Tracks whether we missed messages while offline so we can re-fetch on reconnect
   const missedMessagesRef = useRef(false);
+  const retryTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const retryCountRef = useRef(0);
 
   if (supabaseRef.current == null) {
     supabaseRef.current = createSupabaseBrowserClient();
@@ -82,11 +84,16 @@ export function useChatRealtime(chatId: string, currentUserId: string): UseChatR
       }
     }
 
+
     // ── Subscribe helper (extracted so we can call it on reconnect) ──────────
-    const subscribe = () => {
+    const subscribe = useCallback(() => {
       // Clean up any existing channel before re-subscribing
       if (channelRef.current) {
         void channelRef.current.unsubscribe();
+      }
+
+      if (retryTimeoutRef.current) {
+        clearTimeout(retryTimeoutRef.current);
       }
 
       setConnectionStatus("connecting");
@@ -138,6 +145,7 @@ export function useChatRealtime(chatId: string, currentUserId: string): UseChatR
         .subscribe((status: `${REALTIME_SUBSCRIBE_STATES}`) => {
           if (status === "SUBSCRIBED") {
             setConnectionStatus("connected");
+            retryCountRef.current = 0; // Reset on success
 
             // If we went offline and came back, re-fetch to fill gaps
             if (missedMessagesRef.current) {
@@ -147,9 +155,18 @@ export function useChatRealtime(chatId: string, currentUserId: string): UseChatR
           } else if (status === "CHANNEL_ERROR" || status === "TIMED_OUT" || status === "CLOSED") {
             setConnectionStatus("disconnected");
             missedMessagesRef.current = true;
+
+            // Exponential backoff retry
+            if (status !== "CLOSED") {
+              const backoff = Math.min(1000 * Math.pow(2, retryCountRef.current), 30000);
+              retryCountRef.current++;
+              retryTimeoutRef.current = setTimeout(() => {
+                subscribe();
+              }, backoff);
+            }
           }
         });
-    };
+    }, [chatId, currentUserId, supabase, syncMissedMessages]);
 
     subscribe();
 
@@ -157,16 +174,18 @@ export function useChatRealtime(chatId: string, currentUserId: string): UseChatR
     const handleOffline = () => {
       setConnectionStatus("disconnected");
       missedMessagesRef.current = true;
+      if (retryTimeoutRef.current) clearTimeout(retryTimeoutRef.current);
     };
 
     const handleOnline = () => {
-      // Browser regained network — re-subscribe to pick up missed messages
+      retryCountRef.current = 0;
       subscribe();
     };
 
     // ── Page visibility listener (Safari background tab) ─────────────────────
     const handleVisibilityChange = () => {
-      if (document.visibilityState === "visible" && missedMessagesRef.current) {
+      if (document.visibilityState === "visible" && (missedMessagesRef.current || connectionStatus === "disconnected")) {
+        retryCountRef.current = 0;
         subscribe();
       }
     };
@@ -179,6 +198,7 @@ export function useChatRealtime(chatId: string, currentUserId: string): UseChatR
       window.removeEventListener("offline", handleOffline);
       window.removeEventListener("online", handleOnline);
       document.removeEventListener("visibilitychange", handleVisibilityChange);
+      if (retryTimeoutRef.current) clearTimeout(retryTimeoutRef.current);
       if (channelRef.current) {
         void channelRef.current.unsubscribe();
       }

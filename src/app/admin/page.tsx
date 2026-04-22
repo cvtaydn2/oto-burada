@@ -9,8 +9,10 @@ import {
   ArrowUpRight,
   Monitor,
   Database,
+  AlertTriangle,
 } from "lucide-react";
 
+import { AdminErrorDisplay } from "@/components/admin/admin-error-display";
 import {
   AdminRecentActions,
   type AdminRecentActionItem,
@@ -35,10 +37,10 @@ export const dynamic = "force-dynamic";
 export default async function AdminOverviewPage() {
   await requireAdminUser();
 
-  const analyticsPromise = getAdminAnalytics("30d").catch(() => null);
-  const reportsPromise = getStoredReports().catch(() => []);
-  const recentActionsPromise = getRecentAdminModerationActions(10).catch(() => []);
-  const persistenceHealthPromise = getPersistenceHealth().catch(() => null);
+  const analyticsPromise = getAdminAnalytics("30d").catch((err) => ({ error: err.message || "Analitik verileri yüklenemedi" }));
+  const reportsPromise = getStoredReports().catch((err) => ({ error: err.message || "Raporlar yüklenemedi" }));
+  const recentActionsPromise = getRecentAdminModerationActions(10).catch((err) => ({ error: err.message || "Son işlemler yüklenemedi" }));
+  const persistenceHealthPromise = getPersistenceHealth().catch((err) => ({ error: err.message || "Sistem sağlığı kontrolü başarısız" }));
 
   let systemOnline = false;
   try {
@@ -149,12 +151,17 @@ function QuickSystemStat({ icon, label, value, color }: { icon: React.ReactNode,
 async function AdminRevenueBadge({
   analyticsPromise,
 }: {
-  analyticsPromise: Promise<Awaited<ReturnType<typeof getAdminAnalytics>> | null>;
+  analyticsPromise: Promise<any>;
 }) {
   const analyticsData = await analyticsPromise;
 
-  if (!analyticsData) {
-    return null;
+  if (!analyticsData || "error" in analyticsData) {
+    return (
+      <div className="flex h-11 items-center px-4 rounded-xl bg-rose-50 text-rose-600 border border-rose-100 text-[10px] font-bold uppercase tracking-widest animate-in fade-in">
+        <AlertTriangle size={14} className="mr-2" />
+        HATA
+      </div>
+    );
   }
 
   return (
@@ -173,46 +180,61 @@ async function AdminMetricsSection({
   analyticsPromise,
   reportsPromise,
 }: {
-  analyticsPromise: Promise<Awaited<ReturnType<typeof getAdminAnalytics>> | null>;
-  reportsPromise: Promise<Awaited<ReturnType<typeof getStoredReports>>>;
+  analyticsPromise: Promise<any>;
+  reportsPromise: Promise<any>;
 }) {
-  const [analyticsData, storedReports] = await Promise.all([analyticsPromise, reportsPromise]);
-  const actionableReports = storedReports.filter((report) => report.status === "open");
+  const [analyticsResult, reportsResult] = await Promise.all([analyticsPromise, reportsPromise]);
+  
+  const analyticsData = analyticsResult && !("error" in analyticsResult) ? analyticsResult : null;
+  const analyticsError = analyticsResult && "error" in analyticsResult ? analyticsResult.error : null;
+  
+  const storedReports = Array.isArray(reportsResult) ? reportsResult : [];
+  const reportsError = reportsResult && "error" in reportsResult ? reportsResult.error : null;
+  
+  const actionableReports = storedReports.filter((report: any) => report.status === "open");
 
   return (
-    <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-4">
-      <DashboardMetricCard
-        label="Bekleyen İlanlar"
-        value={String(analyticsData?.listingsByStatus?.find((status) => status.status === "pending")?.count ?? 0)}
-        helper="Moderasyon kuyruğu"
-        icon={Car}
-        tone={ (analyticsData?.listingsByStatus?.find((status) => status.status === "pending")?.count ?? 0) > 0 ? "amber" : "blue"}
-      />
-      <DashboardMetricCard
-        label="Aktif Şikayetler"
-        value={String(actionableReports.length)}
-        helper="Kullanıcı ihbarları"
-        icon={Flag}
-        tone={actionableReports.length > 0 ? "rose" : "blue"}
-      />
-      <DashboardMetricCard
-        label="Toplam İlan"
-        value={String(analyticsData?.kpis.totalListings ?? 0)}
-        helper="Envanter hacmi"
-        icon={Activity}
-        tone="emerald"
-        trend={analyticsData?.listingTrend}
-        trendLabel="Haftalık"
-      />
-      <DashboardMetricCard
-        label="Kayıtlı Üye"
-        value={String(analyticsData?.kpis.totalUsers ?? 0)}
-        helper="Ekosistem büyüklüğü"
-        icon={UserPlus}
-        tone="indigo"
-        trend={analyticsData?.userTrend}
-        trendLabel="Haftalık"
-      />
+    <div className="space-y-4">
+      {(analyticsError || reportsError) && (
+        <div className="p-3 text-xs font-medium text-rose-600 bg-rose-50 border border-rose-100 rounded-lg">
+          {analyticsError && <p>Analitik hatası: {analyticsError}</p>}
+          {reportsError && <p>Rapor hatası: {reportsError}</p>}
+        </div>
+      )}
+      <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-4">
+        <DashboardMetricCard
+          label="Bekleyen İlanlar"
+          value={analyticsData ? String(analyticsData.listingsByStatus?.find((status: any) => status.status === "pending")?.count ?? 0) : "—"}
+          helper="Moderasyon kuyruğu"
+          icon={Car}
+          tone={ (analyticsData?.listingsByStatus?.find((status: any) => status.status === "pending")?.count ?? 0) > 0 ? "amber" : "blue"}
+        />
+        <DashboardMetricCard
+          label="Aktif Şikayetler"
+          value={reportsError ? "Hata" : String(actionableReports.length)}
+          helper="Kullanıcı ihbarları"
+          icon={Flag}
+          tone={actionableReports.length > 0 ? "rose" : "blue"}
+        />
+        <DashboardMetricCard
+          label="Toplam İlan"
+          value={analyticsData ? String(analyticsData.kpis.totalListings ?? 0) : "—"}
+          helper="Envanter hacmi"
+          icon={Activity}
+          tone="emerald"
+          trend={analyticsData?.listingTrend}
+          trendLabel="Haftalık"
+        />
+        <DashboardMetricCard
+          label="Kayıtlı Üye"
+          value={analyticsData ? String(analyticsData.kpis.totalUsers ?? 0) : "—"}
+          helper="Ekosistem büyüklüğü"
+          icon={UserPlus}
+          tone="indigo"
+          trend={analyticsData?.userTrend}
+          trendLabel="Haftalık"
+        />
+      </div>
     </div>
   );
 }
@@ -220,13 +242,23 @@ async function AdminMetricsSection({
 async function PersistenceOnlySection({
   persistenceHealthPromise,
 }: {
-  persistenceHealthPromise: Promise<Awaited<ReturnType<typeof getPersistenceHealth>> | null>;
+  persistenceHealthPromise: Promise<any>;
 }) {
-  const persistenceHealth = await persistenceHealthPromise;
-  if (!persistenceHealth) return null;
+  const result = await persistenceHealthPromise;
+  if (!result) return null;
+  
+  if ("error" in result) {
+    return (
+      <div className="rounded-2xl border border-rose-200 bg-rose-50 p-6 text-sm text-rose-700">
+        <p className="font-bold">Sistem sağlığı kontrolü yapılamadı</p>
+        <p>{result.error}</p>
+      </div>
+    );
+  }
+
   return (
     <div className="rounded-2xl overflow-hidden border border-border bg-card shadow-sm">
-      <AdminPersistencePanel health={persistenceHealth} />
+      <AdminPersistencePanel health={result} />
     </div>
   );
 }
@@ -235,10 +267,16 @@ async function AdminAnalyticsSection({
   analyticsPromise,
   persistenceHealthPromise,
 }: {
-  analyticsPromise: Promise<Awaited<ReturnType<typeof getAdminAnalytics>> | null>;
-  persistenceHealthPromise: Promise<Awaited<ReturnType<typeof getPersistenceHealth>> | null>;
+  analyticsPromise: Promise<any>;
+  persistenceHealthPromise: Promise<any>;
 }) {
-  const [analyticsData, persistenceHealth] = await Promise.all([analyticsPromise, persistenceHealthPromise]);
+  const [analyticsResult, persistenceResult] = await Promise.all([analyticsPromise, persistenceHealthPromise]);
+
+  const analyticsData = analyticsResult && !("error" in analyticsResult) ? analyticsResult : null;
+  const analyticsError = analyticsResult && "error" in analyticsResult ? analyticsResult.error : null;
+  
+  const persistenceHealth = persistenceResult && !("error" in persistenceResult) ? persistenceResult : null;
+  const persistenceError = persistenceResult && "error" in persistenceResult ? persistenceResult.error : null;
 
   return (
     <div className="space-y-12">
@@ -257,16 +295,23 @@ async function AdminAnalyticsSection({
             <a href="/admin/analytics">TAM RAPOR</a>
           </Button>
         </div>
-        <div className="min-h-[300px]">
-          <AdminAnalyticsPanel data={analyticsData} />
-        </div>
+        
+        {analyticsError ? (
+          <AdminErrorDisplay error={analyticsError} title="Analitik Verileri" className="py-20" />
+        ) : (
+          <div className="min-h-[300px]">
+            <AdminAnalyticsPanel data={analyticsData} />
+          </div>
+        )}
       </div>
 
-      {persistenceHealth && (
-        <div className="rounded-2xl overflow-hidden border border-white bg-white shadow-sm shadow-slate-200/50">
+      {persistenceError ? (
+        <AdminErrorDisplay error={persistenceError} title="Sistem Sağlığı" />
+      ) : persistenceHealth ? (
+        <div className="rounded-2xl overflow-hidden border border-border bg-card shadow-sm">
           <AdminPersistencePanel health={persistenceHealth} />
         </div>
-      )}
+      ) : null}
     </div>
   );
 }
@@ -275,10 +320,21 @@ async function AdminRecentActionsSection({
   recentActionsPromise,
   reportsPromise,
 }: {
-  recentActionsPromise: Promise<Awaited<ReturnType<typeof getRecentAdminModerationActions>>>;
-  reportsPromise: Promise<Awaited<ReturnType<typeof getStoredReports>>>;
+  recentActionsPromise: Promise<any>;
+  reportsPromise: Promise<any>;
 }) {
-  const [recentActions, storedReports] = await Promise.all([recentActionsPromise, reportsPromise]);
+  const [recentActionsResult, reportsResult] = await Promise.all([recentActionsPromise, reportsPromise]);
+
+  if (recentActionsResult && "error" in recentActionsResult) {
+    return (
+      <div className="rounded-2xl border border-border bg-card overflow-hidden shadow-sm">
+        <AdminErrorDisplay error={recentActionsResult.error} title="Son İşlemler" />
+      </div>
+    );
+  }
+
+  const recentActions = Array.isArray(recentActionsResult) ? recentActionsResult : [];
+  const storedReports = Array.isArray(reportsResult) ? reportsResult : [];
 
   if (recentActions.length === 0) {
     return (
@@ -288,11 +344,11 @@ async function AdminRecentActionsSection({
     );
   }
 
-  const actorIds = [...new Set(recentActions.map((action) => action.adminUserId))];
-  const targetListingIds = [...new Set(recentActions.filter((action) => action.targetType === "listing").map((action) => action.targetId))];
+  const actorIds = [...new Set(recentActions.map((action: any) => action.adminUserId))];
+  const targetListingIds = [...new Set(recentActions.filter((action: any) => action.targetType === "listing").map((action: any) => action.targetId))];
   const reportListingIds = recentActions
-    .filter((action) => action.targetType === "report")
-    .map((action) => storedReports.find((report) => report.id === action.targetId)?.listingId)
+    .filter((action: any) => action.targetType === "report")
+    .map((action: any) => storedReports.find((report: any) => report.id === action.targetId)?.listingId)
     .filter(Boolean) as string[];
 
   const allListingIds = [...new Set([...targetListingIds, ...reportListingIds])];
@@ -310,12 +366,12 @@ async function AdminRecentActionsSection({
   const actorsMap = Object.fromEntries((actorProfiles.data || []).map((profile) => [profile.id, profile]));
   const listingsMap = Object.fromEntries((actionListings.data || []).map((listing) => [listing.id, listing]));
 
-  const recentActionItems: AdminRecentActionItem[] = recentActions.map((action) => {
+  const recentActionItems: AdminRecentActionItem[] = recentActions.map((action: any) => {
     const actor = actorsMap[action.adminUserId];
     const listingId =
       action.targetType === "listing"
         ? action.targetId
-        : storedReports.find((report) => report.id === action.targetId)?.listingId ?? null;
+        : storedReports.find((report: any) => report.id === action.targetId)?.listingId ?? null;
     const targetListing = listingId ? listingsMap[listingId] : null;
 
     return {

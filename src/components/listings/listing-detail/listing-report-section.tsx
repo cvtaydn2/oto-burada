@@ -20,7 +20,7 @@ export function ListingReportSection({ listing }: ListingReportSectionProps) {
             <a
               href={listing.expertInspection.documentUrl}
               target="_blank"
-              rel="noreferrer"
+              rel="noopener noreferrer"
               className="flex items-center gap-3 rounded-xl bg-primary px-6 py-3 text-[10px] font-bold uppercase tracking-widest text-primary-foreground shadow-sm hover:opacity-90 transition-all"
             >
               PDF RAPORU GÖRÜNTÜLE

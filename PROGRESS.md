@@ -1,3 +1,27 @@
+# 2026-04-22 - Admin Resilience & Data Integrity Hardening
+
+## Yapılan Değişiklikler
+
+- **Admin UI Resilience (`AdminErrorDisplay`)**: Admin panelinde ve moderasyon araçlarında sessizce çöken veya null'a düşen error handling yapısı `AdminErrorDisplay` bileşeniyle standardize edildi. API hataları (z-index çakışmaları, RLS kısıtları vb.) artık kullanıcıya teknik detayları kaybetmeden anlamlı şekilde gösteriliyor.
+- **Support Ticket Transparency**: `TicketList` ve `AdminTicketList` bileşenlerindeki generic `Error()` fırlatma yapıları, API'den dönen gerçek hata mesajlarını (body parsing) yansıtacak şekilde güncellendi.
+- **Bulk Import Resilience**: Toplu ilan yükleme (`bulk-import/actions.ts`) akışı, "hep ya da hiç" modelinden "kısmi başarı" (partial success) modeline taşındı. Hatalı satırlar/chunk'lar süreci durdurmuyor; kullanıcıya kaç ilanın yüklendiği ve hangilerinin neden başarısız olduğu detaylı raporlanıyor.
+- **Saved Search Reliability**: `notify/route.ts` içindeki bildirim döngüsü sertleştirildi. Tekil e-posta/arama hataları tüm cron sürecini bozmaz hale getirildi; detaylı işlem istatistikleri (processed, notified, skipped, errors) API yanıtına eklendi.
+- **Security Cleanup (`reset-admin.mjs`)**: Admin parola sıfırlama betiğindeki hardcoded URL ve kimlik bilgileri kaldırıldı. Betik artık projenin `loadLocalEnv` altyapısını kullanarak `.env.local` üzerinden çalışıyor.
+- **Realtime Stability**: Sohbet WebSocket bağlantısındaki (`use-chat-realtime.ts`) "sessiz kopma" (silent disconnect) sorunu, katlanarak artan (exponential backoff) otomatik yeniden bağlanma ve offline durumu tespiti ile giderildi.
+- **Type Safety Pass**: `AdminUserStatsSidebar` ve chat hook'larındaki `any` tipleri, `ChatRealtimeEvent` ve `UserStats` interface'leri ile tip güvenli hale getirildi.
+
+## Doğrulama
+
+- `npm run lint` ✅
+- `npm run typecheck` ✅
+
+## Sonraki Adım
+
+- Admin panelinde `AdminErrorDisplay` kullanımını diğer tüm detay sayfalarına (audit logs, user management) yaygınlaştır.
+- Toplu import başarısızlıkları için "Hataları CSV olarak indir" butonu eklemeyi değerlendir.
+
+---
+
 # 2026-04-22 - Listing Detail Responsive & PostHog Consent Consolidation
 
 ## Yapılan Değişiklikler

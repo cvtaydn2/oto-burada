@@ -55,7 +55,10 @@ export function AdminTicketList({ tickets: initialTickets, initialStatus = "all"
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ status }),
       });
-      if (!res.ok) throw new Error();
+      if (!res.ok) {
+        const errorData = await res.json().catch(() => ({}));
+        throw new Error(errorData.error || "Durum güncellenemedi.");
+      }
       toast.success("Durum güncellendi");
       router.refresh();
     } catch {
@@ -71,7 +74,10 @@ export function AdminTicketList({ tickets: initialTickets, initialStatus = "all"
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ status: "in_progress", adminResponse: reply.trim() }),
       });
-      if (!res.ok) throw new Error();
+      if (!res.ok) {
+        const errorData = await res.json().catch(() => ({}));
+        throw new Error(errorData.error || "Yanıt gönderilemedi.");
+      }
       toast.success("Yanıt gönderildi");
       setReplyingTo(null);
       setReply("");

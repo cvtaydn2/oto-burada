@@ -1,5 +1,5 @@
 "use client";
-/* eslint-disable @typescript-eslint/no-explicit-any */
+
 
 import { useState } from "react";
 import { Loader2, Gift, Zap } from "lucide-react";
@@ -15,7 +15,7 @@ const DOPING_LABELS: Record<string, string> = {
 };
 
 interface AdminUserActionCardsProps {
-  listings: any[];
+  listings: { id: string; slug: string; title: string; brand: string; model: string; status: string }[];
   onGrantCredits: (credits: number, note: string) => Promise<void>;
   onGrantDoping: (listingId: string, types: string[]) => Promise<void>;
 }

@@ -50,7 +50,10 @@ export function TicketList({ initialTickets }: TicketListProps) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ status }),
       });
-      if (!res.ok) throw new Error();
+      if (!res.ok) {
+        const errorData = await res.json().catch(() => ({}));
+        throw new Error(errorData.error || "Destek talebi güncellenemedi.");
+      }
       toast.success("Durum güncellendi");
       router.refresh();
     } catch {

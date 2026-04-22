@@ -223,7 +223,7 @@ export function ExpertInspectionCard({
           <a
             href={expertInspection.documentUrl}
             target="_blank"
-            rel="noreferrer"
+            rel="noopener noreferrer"
             className="inline-flex items-center gap-2 rounded-xl border border-gray-200 bg-card px-6 py-2.5 text-sm font-bold text-gray-700 shadow-sm transition hover:border-blue-500 hover:text-blue-600"
           >
             <ClipboardList size={18} />

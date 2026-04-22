@@ -157,10 +157,17 @@ export function BulkImportWizard() {
         vin: row.vin,
         images: [],
       }));
-      const result = await processBulkListings(transformedInputs);
+      const result = (await processBulkListings(transformedInputs)) as any;
       
       if (result.success) {
-        toast.success(result.message);
+        if (result.partial) {
+          toast.warning(`Kısmi Başarı: ${result.count} ilan yüklendi.`, {
+            description: result.error,
+            duration: 10000,
+          });
+        } else {
+          toast.success(result.message || `${result.count} ilan başarıyla yüklendi.`);
+        }
         setRows([]); // Clear on success
       } else {
         toast.error(result.error || "Yükleme sırasında bir hata oluştu.");

@@ -1,12 +1,12 @@
 "use client";
-/* eslint-disable @typescript-eslint/no-explicit-any */
 
 import { Activity, CheckCircle2, Package, TrendingUp, User, Ban, Loader2, Shield, XCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn, safeFormatDate } from "@/lib/utils";
+import { UserProfile } from "@/services/admin/user-details";
 
 interface AdminUserStatsSidebarProps {
-  profile: any;
+  profile: UserProfile;
   listingCount: number;
   activeListingCount: number;
   featuredCount: number;

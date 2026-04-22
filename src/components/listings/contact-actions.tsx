@@ -240,7 +240,7 @@ export function ContactActions({ listingId, listingSlug, sellerId, seller, curre
                  <a
                    href={whatsappLink}
                    target="_blank"
-                   rel="noreferrer"
+                   rel="noopener noreferrer"
                    onClick={() => captureClientEvent("contact_whatsapp_clicked", { listingId, sellerId })}
                    className="flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-green-500 to-emerald-600 w-full h-12 px-6 text-[15px] text-white font-bold shadow-sm"
                  >

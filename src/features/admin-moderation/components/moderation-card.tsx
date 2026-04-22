@@ -299,10 +299,10 @@ export function ModerationCard({
 
            <div className="flex flex-wrap items-center justify-between gap-6 pt-4 border-t border-border/40">
               <div className="flex items-center gap-4">
-                 <Link href={`/listing/${listing.slug}`} target="_blank" className="text-[10px] font-bold uppercase tracking-widest text-primary flex items-center gap-2 hover:underline">
+                 <Link href={`/listing/${listing.slug}`} target="_blank" rel="noopener noreferrer" className="text-[10px] font-bold uppercase tracking-widest text-primary flex items-center gap-2 hover:underline">
                     PUBLİC SAYFAYI GÖR <ArrowRight className="size-3" />
                  </Link>
-                 <a href={`https://wa.me/${listing.whatsappPhone.replace(/\D/g, "")}`} target="_blank" rel="noreferrer" className="text-[10px] font-bold uppercase tracking-widest text-emerald-600 flex items-center gap-2 hover:underline">
+                 <a href={`https://wa.me/${listing.whatsappPhone.replace(/\D/g, "")}`} target="_blank" rel="noopener noreferrer" className="text-[10px] font-bold uppercase tracking-widest text-emerald-600 flex items-center gap-2 hover:underline">
                     <MessageCircle className="size-3" /> WHATSAPP İLETİŞİM
                  </a>
               </div>

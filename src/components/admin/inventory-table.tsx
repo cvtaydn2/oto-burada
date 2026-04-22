@@ -142,7 +142,7 @@ export function InventoryTable({ listings, adminUserId }: InventoryTableProps) {
                     <DropdownMenuLabel className="text-[10px] font-bold uppercase tracking-widest text-slate-400 italic">İlan Kontrolü</DropdownMenuLabel>
                     <DropdownMenuSeparator />
                     <DropdownMenuItem asChild>
-                       <a href={`/listing/${listing.slug}`} target="_blank" className="cursor-pointer gap-2 font-bold">
+                       <a href={`/listing/${listing.slug}`} target="_blank" rel="noopener noreferrer" className="cursor-pointer gap-2 font-bold">
                           <Eye size={14} />
                           İlanı Görüntüle
                        </a>
