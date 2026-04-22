@@ -128,11 +128,7 @@ export async function moderateListingWithSideEffects({
   listingId,
   note,
 }: ModerateListingInput) {
-  const { moderateDatabaseListing: runModeration } = await import("./listing-moderation");
   const persistedListing = await moderateDatabaseListing(
-    listingId,
-    action === "approve" ? "approved" : "rejected",
-  ) ?? await runModeration(
     listingId,
     action === "approve" ? "approved" : "rejected",
   );

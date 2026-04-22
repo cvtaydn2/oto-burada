@@ -100,20 +100,30 @@ export async function grantDopingToListing(
 }
 
 export async function toggleUserBan(userId: string, currentStatus: boolean) {
-  const admin = createSupabaseAdminClient();
-  const { error } = await admin
-    .from("profiles")
-    .update({ 
-       is_banned: !currentStatus,
-       ban_reason: !currentStatus ? "Admin tarafından yasaklandı" : null
-    })
-    .eq("id", userId);
-
-  if (error) throw new Error(`Yasak durumu güncellenemedi: ${error.message}`);
+  const { executeServerAction } = await import("@/lib/utils/action-utils");
   
-  revalidatePath("/admin/users");
-  revalidatePath(`/admin/users/${userId}`);
-  return { success: true };
+  return executeServerAction("toggleUserBan", async () => {
+    const admin = createSupabaseAdminClient();
+    const { error } = await admin
+      .from("profiles")
+      .update({ 
+         is_banned: !currentStatus,
+         ban_reason: !currentStatus ? "Admin tarafından yasaklandı" : null
+      })
+      .eq("id", userId);
+
+    if (error) throw new Error(error.message);
+
+    // If banned, cancel all active listings (Side Effect)
+    if (!currentStatus) {
+      await admin.from("listings").update({ status: "rejected" }).eq("seller_id", userId);
+    }
+    
+    return { newStatus: !currentStatus };
+  }, {
+    revalidatePaths: ["/admin/users", `/admin/users/${userId}`],
+    logContext: { userId, currentStatus }
+  });
 }
 
 export async function banUser(userId: string, reason: string) {

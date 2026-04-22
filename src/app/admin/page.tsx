@@ -138,12 +138,14 @@ async function AdminRevenueBadge({
   }
 
   return (
-    <div className="min-w-[180px] rounded-3xl border border-white/5 bg-white/5 p-6 backdrop-blur-xl shadow-sm relative group overflow-hidden">
-      <div className="absolute -right-4 -top-4 size-20 bg-emerald-500/10 rounded-full blur-2xl group-hover:scale-125 transition-transform" />
+    <div className="min-w-[180px] rounded-3xl border border-slate-200 bg-white p-6 shadow-sm relative group overflow-hidden transition-all hover:shadow-md">
+      <div className="absolute -right-4 -top-4 size-20 bg-emerald-500/5 rounded-full blur-2xl group-hover:scale-125 transition-transform" />
       <span className="relative z-10 block text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-1">Ciro Hacmi</span>
       <div className="relative z-10 flex items-center gap-2">
-        <span className="text-2xl font-bold tracking-tighter text-white">₺{analyticsData.kpis.totalRevenue.toLocaleString("tr-TR")}</span>
-        <ArrowUpRight size={14} className="text-emerald-400" />
+        <span className="text-2xl font-bold tracking-tighter text-slate-900">₺{analyticsData.kpis.totalRevenue.toLocaleString("tr-TR")}</span>
+        <div className="size-5 rounded-full bg-emerald-50 flex items-center justify-center">
+          <ArrowUpRight size={12} className="text-emerald-600" />
+        </div>
       </div>
     </div>
   );

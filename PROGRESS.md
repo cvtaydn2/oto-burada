@@ -1,3 +1,58 @@
+# 2026-04-22 — SOLID & Clean Code Architectural Refactor
+
+## [2026-04-22] - Backend & Architecture Hardening
+- **Durum:** ✅ TAMAMLANDI
+- **Yapılanlar:**
+  - Domain Use Case katmanı eklendi (`listing-create-v2`).
+  - Merkezi `ApiClient` ile frontend-backend ayrımı yapıldı.
+  - Admin Analytics modüler hale getirildi.
+  - Server Action wrapper (`executeServerAction`) standartlaştırıldı.
+  - Lint, Typecheck ve Build süreçleri başarıyla doğrulandı.
+
+## Yapılan Değişiklikler
+
+### 1. Domain Use Case Layer
+- **Listing Creation Refactor**: `POST /api/listings` route'undaki devasa iş mantığı `executeListingCreation` domain use-case'ine taşındı. API route artık sadece orkestrasyondan sorumlu.
+- **Improved Validation**: Sanitizasyon, quota kontrolü ve trust-guard kontrolleri use-case seviyesinde merkezi bir akışa bağlandı.
+
+### 2. Frontend Service Layer
+- **ApiClient**: Merkezi bir `ApiClient` servisi oluşturuldu. Bileşenlerin URL'leri doğrudan import etmesi ve manuel `fetch` çağrıları yapması engellendi.
+- **Admin UI Sync**: `AdminUserDetailClient` bileşeni yeni API istemcisini kullanacak şekilde refaktör edildi.
+
+### 3. Service Decomposition
+- **Analytics Service**: `getAdminAnalytics` fonksiyonu; `getBrandStats`, `getCityStats` ve `getStatusStats` gibi küçük, uzmanlaşmış fonksiyonlara bölündü.
+- **Action Wrapper**: Server action'lar için `executeServerAction` wrapper'ı oluşturuldu. `revalidatePath`, logging ve hata yönetimi bu wrapper ile standartlaştırıldı.
+- **User Actions**: `toggleUserBan` action'ı yeni wrapper'a taşındı ve banlandığında ilanları otomatik reddetme gibi yan etkiler merkezi hale getirildi.
+
+## Doğrulama
+- Listing Creation Flow (SOLID) ✅
+- Centralized ApiClient Implementation ✅
+- Decomposed Admin Analytics ✅
+- Standardized Server Action Wrapper ✅
+
+---
+
+# 2026-04-22 — Admin Frontend Sync & UI Hardening
+
+## Yapılan Değişiklikler
+
+### 1. Admin UI/UX Hardening
+- **Identity Visibility**: `AdminUserStatsSidebar` bileşenine TC Kimlik Numarası (TCKN) alanı eklendi. Gizlilik için varsayılan olarak maskelenmiş (***123) gösterim ve admin için "GÖSTER/GİZLE" kontrolü eklendi.
+- **Revenue Badge Fix**: Admin ana sayfasındaki "Ciro Hacmi" kartının açık temadaki görünürlük sorunu (beyaz üzerine beyaz) giderildi. Kontrast artırılarak premium bir görünüm kazandırıldı.
+- **Component Integrity**: `AdminUserStatsSidebar` için eksik olan `useState` ve `React` importları eklendi.
+
+### 2. Backend-Frontend Structural Integrity
+- **Listing Moderation Cleanup**: `listing-moderation.ts` dosyasındaki gereksiz dinamik import ve mükerrer fonksiyon çağrısı (`moderateDatabaseListing`) temizlendi. Kod yapısı daha güvenilir ve performanslı hale getirildi.
+- **API Contract Sync**: `UserProfile` servisi ve admin detay API'si arasındaki `identityNumber` veri akışı tamamen doğrulandı ve UI bileşenlerine bağlandı.
+
+## Doğrulama
+- Admin Identity Number Masking & Toggle ✅
+- Admin Revenue Badge Contrast ✅
+- Listing Moderation Logic Cleanup ✅
+- Admin User Sidebar Type Safety ✅
+
+---
+
 # 2026-04-22 — Marketplace Integrity & Payment Hardening
 
 ## Yapılan Değişiklikler

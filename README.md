@@ -47,8 +47,9 @@ npm run db:seed-demo
 ## 📐 Proje Yapısı
 - `src/app`: Sayfa ve rota tanımları (Marketplace, Dashboard, Admin).
 - `src/components`: UI bileşenleri ve özellik bazlı modüller.
+- `src/domain`: İş mantığı orkestrasyonu (Use Cases).
 - `src/lib`: Supabase istemcileri, yardımcı fonksiyonlar ve validatorlar.
-- `src/services`: Veri erişim ve iş mantığı katmanı.
+- `src/services`: Veri erişim, persistence ve dış servis entegrasyonları.
 - `database/`: SQL şemaları ve migration dosyaları.
 
 ## 📖 Dokümantasyon Modeli

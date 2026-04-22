@@ -8,7 +8,6 @@ import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { safeFormatDate } from "@/lib/utils";
 import type { UserDetailData } from "@/services/admin/user-details";
-import { toggleUserBan } from "@/services/admin/users";
 import { cn } from "@/lib/utils";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
@@ -34,53 +33,38 @@ export function AdminUserDetailClient({ detail, userId }: AdminUserDetailClientP
   const [isActioning, setIsActioning] = useState(false);
 
   const handleGrantCredits = async (credits: number, note: string) => {
-    try {
-      const res = await fetch(`/api/admin/users/${userId}`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ action: "grant_credits", credits, note }),
-      });
-      const data = await res.json();
-      if (!res.ok || !data.success) throw new Error(data.error ?? "Hata");
+    const { ApiClient } = await import("@/services/api-client");
+    const res = await ApiClient.admin.users.grantCredits(userId, credits, note);
+    if (res.success) {
       toast.success(`${credits} kredi başarıyla tanımlandı.`);
       router.refresh();
-    } catch (err) {
-      toast.error(err instanceof Error ? err.message : "İşlem başarısız");
+    } else {
+      toast.error(res.error || "İşlem başarısız");
     }
   };
 
   const handleGrantDoping = async (listingId: string, dopingTypes: string[]) => {
-    try {
-      const res = await fetch(`/api/admin/users/${userId}`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          action: "grant_doping",
-          listingId,
-          dopingTypes,
-          durationDays: 7,
-        }),
-      });
-      const data = await res.json();
-      if (!res.ok || !data.success) throw new Error(data.error ?? "Hata");
+    const { ApiClient } = await import("@/services/api-client");
+    const res = await ApiClient.admin.users.grantDoping(userId, listingId, dopingTypes);
+    if (res.success) {
       toast.success("Doping başarıyla tanımlandı.");
       router.refresh();
-    } catch (err) {
-      toast.error(err instanceof Error ? err.message : "İşlem başarısız");
+    } else {
+      toast.error(res.error || "İşlem başarısız");
     }
   };
 
   const handleBanToggle = async () => {
     setIsActioning(true);
-    try {
-      await toggleUserBan(userId, profile.isBanned);
+    const { ApiClient } = await import("@/services/api-client");
+    const res = await ApiClient.admin.users.toggleBan(userId, profile.isBanned);
+    if (res.success) {
       toast.success(profile.isBanned ? "Yasak kaldırıldı." : "Kullanıcı yasaklandı.");
       router.refresh();
-    } catch {
-      toast.error("İşlem başarısız.");
-    } finally {
-      setIsActioning(false);
+    } else {
+      toast.error(res.error || "İşlem başarısız.");
     }
+    setIsActioning(false);
   };
 
   return (

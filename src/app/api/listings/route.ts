@@ -1,26 +1,20 @@
-import { hasSupabaseEnv } from "@/lib/supabase/env";
 import { captureServerError, trackServerEvent } from "@/lib/monitoring/posthog-server";
 import { AnalyticsEvent } from "@/lib/analytics/events";
 import { rateLimitProfiles } from "@/lib/utils/rate-limit";
 import { enforceRateLimit, getRateLimitKey } from "@/lib/utils/rate-limit-middleware";
-import { sanitizeText, sanitizeDescription } from "@/lib/utils/sanitize";
-import { issuesToFieldErrors } from "@/lib/utils/validation-helpers";
-import { listingCreateFormSchema, listingCreateSchema } from "@/lib/validators";
 import { apiSuccess, apiError, API_ERROR_CODES } from "@/lib/utils/api-response";
 import { withSecurity, withUserAndCsrf } from "@/lib/utils/api-security";
 import {
-  buildPendingListing,
   createDatabaseListing,
 } from "@/services/listings/listing-submissions";
 import { createDatabaseNotification } from "@/services/notifications/notification-records";
-import { getStoredProfileById, isUserBanned } from "@/services/profile/profile-records";
+import { ListingCreateInput } from "@/types/domain";
 import { checkListingLimit } from "@/services/listings/listing-limits";
 import { parseListingFiltersFromSearchParams } from "@/services/listings/listing-filters";
 import { getFilteredMarketplaceListings } from "@/services/listings/marketplace-listings";
 import { waitUntil } from "@vercel/functions";
 import {
   performAsyncModeration,
-  recordSellerTrustGuardRejection,
   runListingTrustGuards,
 } from "@/services/listings/listing-submission-moderation";
 
@@ -63,182 +57,63 @@ export async function POST(request: Request) {
   if (!security.ok) return security.response;
   const user = security.user!;
 
-  const ipRateLimit = await enforceRateLimit(getRateLimitKey(request, "api:listings:create"), rateLimitProfiles.general);
-  if (ipRateLimit) return ipRateLimit.response;
-
-  if (!hasSupabaseEnv()) {
-    return apiError(
-      API_ERROR_CODES.SERVICE_UNAVAILABLE,
-      "Supabase ortam değişkenleri eksik. İlan oluşturmak için .env.local dosyasını tamamlamalısın.",
-      503,
-    );
-  }
-
   let body: unknown;
-
   try {
     body = await request.json();
   } catch {
-    return apiError(API_ERROR_CODES.BAD_REQUEST, "Gönderilen form verisi okunamadı. Lütfen tekrar dene.", 400);
+    return apiError(API_ERROR_CODES.BAD_REQUEST, "Geçersiz JSON verisi.", 400);
   }
 
-  const parsedFormValues = listingCreateFormSchema.safeParse(body);
-
-  if (!parsedFormValues.success) {
-    return apiError(
-      API_ERROR_CODES.VALIDATION_ERROR,
-      parsedFormValues.error.issues[0]?.message ?? "Form alanlarını kontrol et.",
-      400,
-      issuesToFieldErrors(parsedFormValues.error.issues),
-    );
-  }
-
-  const listingLimit = await checkListingLimit(user.id);
-  if (!listingLimit.allowed) {
-    return apiError(API_ERROR_CODES.FORBIDDEN, listingLimit.reason ?? "İlan sınırına ulaştın.", 403);
-  }
-
-  const normalizedInput = {
-    ...parsedFormValues.data,
-    title: sanitizeText(parsedFormValues.data.title),
-    description: sanitizeDescription(parsedFormValues.data.description),
-    // damage_status_json: DB CHECK constraint'e uygun değerlere normalize et
-    damageStatusJson: parsedFormValues.data.damageStatusJson
-      ? Object.fromEntries(
-          Object.entries(parsedFormValues.data.damageStatusJson).filter(
-            ([, v]) => ["orjinal", "orijinal", "boyali", "lokal_boyali", "degisen", "hasarli", "belirtilmemis", "bilinmiyor"].includes(v as string)
-          )
-        )
-      : null,
-    images: parsedFormValues.data.images
-      .filter(
-        (image: { url?: string; storagePath?: string }) =>
-          (image.url ?? "").trim().length > 0 &&
-          (image.storagePath ?? "").trim().length > 0,
-      )
-      .map((image: { url?: string; storagePath?: string; placeholderBlur?: string | null; imageType?: string }, index: number) => ({
-        storagePath: image.storagePath?.trim() ?? "",
-        url: image.url?.trim() ?? "",
-        order: index,
-        isCover: index === 0,
-        placeholderBlur: image.placeholderBlur ?? null,
-        // Preserve 360° type so the gallery can show the panorama viewer
-        type: image.imageType === "360" ? "360" as const : "photo" as const,
-      })),
-  };
-
-  const parsedListingInput = listingCreateSchema.safeParse(normalizedInput);
-
-  if (!parsedListingInput.success) {
-    return apiError(
-      API_ERROR_CODES.VALIDATION_ERROR,
-      parsedListingInput.error.issues[0]?.message ?? "İlan bilgileri doğrulanamadı.",
-      400,
-      issuesToFieldErrors(parsedListingInput.error.issues),
-    );
-  }
-
-  const trustGuard = await runListingTrustGuards(parsedListingInput.data);
-
-  if (!trustGuard.allowed) {
-    const enforcement = await recordSellerTrustGuardRejection({
-      sellerId: user.id,
-      reason: trustGuard.reason,
-      source: "create",
-    });
-
-    return apiError(
-      API_ERROR_CODES.FORBIDDEN,
-      enforcement.restricted
-        ? "Hesabın geçici olarak incelemeye alındı. Lütfen destek ekibiyle iletişime geç."
-        : trustGuard.message ?? "İlan güvenlik kurallarına takıldı.",
-      403,
-    );
-  }
-
-  // Profile check - no side effects, read-only
-  const profile = await getStoredProfileById(user.id);
+  // Orchestrate via Domain Use Case (SOLID)
+  const { executeListingCreation } = await import("@/domain/usecases/listing-create-v2");
   
-  if (!profile) {
+  const result = await executeListingCreation(body as Partial<ListingCreateInput>, user.id, {
+    checkQuota: (uid) => checkListingLimit(uid),
+    runTrustGuards: (input) => runListingTrustGuards(input),
+    saveListing: (listing) => createDatabaseListing(listing),
+    notifyUser: async (listing) => {
+      await createDatabaseNotification({
+        href: `/dashboard/listings?edit=${listing.id}`,
+        message: `"${listing.title}" ilanın incelemeye alındı.`,
+        title: "İlanın incelemeye alındı",
+        type: "moderation",
+        userId: user.id,
+      });
+    },
+    trackEvent: (listing) => {
+      trackServerEvent(AnalyticsEvent.SERVER_LISTING_CREATED, {
+        listingId: listing.id,
+        brand: listing.brand,
+        model: listing.model,
+        city: listing.city,
+        price: listing.price,
+        status: listing.status,
+      }, user.id);
+    },
+    runAsyncModeration: (id) => {
+      waitUntil(performAsyncModeration(id));
+    }
+  });
+
+  if (!result.success) {
+    const statusCode = result.errorCode === "VALIDATION_ERROR" ? 400 : 403;
     return apiError(
-      API_ERROR_CODES.FORBIDDEN,
-      "Profil bilgileriniz bulunamadı. Lütfen tekrar giriş yapın.",
-      403,
+      (result.errorCode as any) || API_ERROR_CODES.INTERNAL_ERROR, 
+      result.error || "İlan oluşturulamadı.", 
+      statusCode
     );
   }
-  
-  if (!profile.emailVerified) {
-    return apiError(
-      API_ERROR_CODES.FORBIDDEN,
-      "İlan verebilmek için e-posta adresinizi doğrulamanız gerekmektedir.",
-      403,
-    );
-  }
 
-  // Ban check — prevent banned users from creating listings
-  const banned = await isUserBanned(user.id);
-  if (banned) {
-    return apiError(
-      API_ERROR_CODES.FORBIDDEN,
-      "Hesabınız askıya alınmıştır. Lütfen destek ekibiyle iletişime geçin.",
-      403,
-    );
-  }
-
-  // Build listing with slug generation (collision handled by DB retry)
-  const createdListing = buildPendingListing(parsedListingInput.data, user.id, []);
-  const result = await createDatabaseListing(createdListing);
-
-  if (result.error === "slug_collision") {
-    return apiError(API_ERROR_CODES.BAD_REQUEST, "Bu başlıkla bir ilan zaten mevcut. Lütfen başlığı değiştir.", 409);
-  }
-
-  if (result.listing) {
-    // ── PILL: Issue 2 - Async AI Moderation ──────────────────────────
-    // Schedule fraud assessment in the background. 
-    // User gets response immediately, worker finishes later.
-    waitUntil(performAsyncModeration(result.listing.id));
-
-    await createDatabaseNotification({
-      href: `/dashboard/listings?edit=${result.listing.id}`,
-      message: `"${result.listing.title}" ilanın moderasyon incelemesine alındı. Onaylandığında sana haber vereceğiz.`,
-      title: "İlanın incelemeye alındı",
-      type: "moderation",
-      userId: user.id,
-    });
-
-    trackServerEvent(AnalyticsEvent.SERVER_LISTING_CREATED, {
-      listingId: result.listing.id,
-      brand: result.listing.brand,
-      model: result.listing.model,
-      city: result.listing.city,
-      price: result.listing.price,
-      fraudScore: result.listing.fraudScore,
-      status: result.listing.status,
-    }, user.id);
-
-    return apiSuccess(
-      {
-        message: "İlanın kaydedildi ve moderasyon incelemesine gönderildi.",
-        listing: {
-          id: result.listing.id,
-          slug: result.listing.slug,
-          status: result.listing.status,
-          title: result.listing.title,
-        },
+  return apiSuccess(
+    {
+      message: "İlanın kaydedildi ve moderasyon incelemesine gönderildi.",
+      listing: {
+        id: result.listing!.id,
+        slug: result.listing!.slug,
+        status: result.listing!.status,
       },
-      undefined,
-      201,
-    );
-  }
-
-  // createDatabaseListing returned { error: "database_error" } — log it
-  captureServerError("POST /api/listings — createDatabaseListing failed", "listings", null, {
-    userId: user.id,
-    listingId: createdListing.id,
-    brand: createdListing.brand,
-    model: createdListing.model,
-    resultError: result.error ?? "unknown",
-  }, user.id);
-
-  return apiError(API_ERROR_CODES.INTERNAL_ERROR, "İlan kaydedilemedi. Lütfen tekrar dene.", 500);}
+    },
+    undefined,
+    201
+  );
+}

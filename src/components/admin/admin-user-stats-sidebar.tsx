@@ -1,5 +1,6 @@
 "use client";
 
+import React from "react";
 import { Activity, CheckCircle2, Package, TrendingUp, User, Ban, Loader2, Shield, XCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn, safeFormatDate } from "@/lib/utils";
@@ -77,6 +78,9 @@ export function AdminUserStatsSidebar({
         <div className="space-y-4">
           <InfoRow label="E-Posta" value={profile.email || "—"} />
           <InfoRow label="Telefon" value={profile.phone || "—"} />
+          <IdentityNumberDisplay 
+            identityNumber={profile.identityNumber || undefined} 
+          />
           <InfoRow label="Lokasyon" value={profile.city || "—"} />
           <InfoRow label="Kayıt Tarihi" value={safeFormatDate(profile.createdAt, "dd MMMM yyyy")} />
         </div>
@@ -121,11 +125,25 @@ function StatItem({ icon, label, value, color }: { icon: React.ReactNode; label:
   );
 }
 
-function InfoRow({ label, value }: { label: string; value: string }) {
+function InfoRow({ label, value, fullValue }: { label: string; value: string; fullValue?: string }) {
+  const [showFull, setShowFull] = React.useState(false);
+
   return (
     <div className="space-y-1">
       <p className="text-[9px] font-bold text-slate-300 uppercase tracking-[0.2em]">{label}</p>
-      <p className="text-xs font-bold text-slate-700 truncate">{value}</p>
+      <div className="flex items-center justify-between gap-2">
+        <p className="text-xs font-bold text-slate-700 truncate">
+          {showFull && fullValue ? fullValue : value}
+        </p>
+        {fullValue && (
+          <button 
+            onClick={() => setShowFull(!showFull)}
+            className="text-[9px] font-extrabold text-indigo-500 hover:text-indigo-700 uppercase tracking-tighter"
+          >
+            {showFull ? "GİZLE" : "GÖSTER"}
+          </button>
+        )}
+      </div>
     </div>
   );
 }
@@ -141,5 +159,16 @@ function VerificationRow({ label, isDone, isCritical, isVisible = true }: { labe
         <XCircle size={14} className={cn(isCritical ? "text-rose-500" : "text-slate-200")} />
       )}
     </div>
+  );
+}
+function IdentityNumberDisplay({ identityNumber }: { identityNumber?: string }) {
+  if (!identityNumber) return <InfoRow label="TC Kimlik No" value="—" />;
+  
+  return (
+    <InfoRow 
+      label="TC Kimlik No" 
+      value={`***${identityNumber.slice(-3)}`} 
+      fullValue={identityNumber}
+    />
   );
 }
