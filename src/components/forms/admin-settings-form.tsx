@@ -53,8 +53,8 @@ export function AdminSettingsForm({ initialSettings }: AdminSettingsFormProps) {
     setIsClearingCache(true);
     try {
       const res = await fetch("/api/admin/cache/clear", { method: "POST" });
-      const data = await res.json();
-      if (data.success) {
+      const data = await res.json().catch(() => ({ success: false, error: "Sunucu yanıtı okunamadı." }));
+      if (res.ok && data.success) {
         toast.success("Önbellek başarıyla temizlendi.");
         router.refresh();
       } else {

@@ -2,7 +2,6 @@ import Link from "next/link";
 import { Eye, ShieldCheck, Zap, LayoutDashboard, ChevronRight } from "lucide-react";
 import type { Profile } from "@/types";
 import { getSellerTrustUI } from "@/lib/utils/trust-ui";
-import { getAppUrl } from "@/lib/seo";
 
 interface DashboardProfessionalCardProps {
   profile: Partial<Profile>;
@@ -78,7 +77,9 @@ export function DashboardProfessionalCard({ profile }: DashboardProfessionalCard
               <div className="flex-1 min-w-0 pr-6">
                 <span className="text-[9px] font-bold text-muted-foreground/30 uppercase tracking-widest block leading-none mb-1">Mağaza URL</span>
                 <span className="text-xs font-bold text-muted-foreground truncate block tracking-tight">
-                  {getAppUrl().replace(/^https?:\/\//, "").replace(/\/$/, "")}/gallery/{businessSlug}
+                  {typeof window !== "undefined"
+                    ? `${window.location.host}/gallery/${businessSlug}`
+                    : `otoburada.com.tr/gallery/${businessSlug}`}
                 </span>
               </div>
               <Link 

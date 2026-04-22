@@ -69,7 +69,7 @@ export async function ListingSellerSidebar({
           <div className="p-4 rounded-2xl bg-muted/30 border border-border/40 text-center">
             <div className="flex items-center justify-center gap-1 text-foreground mb-1 font-bold text-sm">
               <CalendarDays size={14} className="text-primary" />
-              {membershipYears} Yıl
+              {membershipYears !== null ? `${membershipYears} Yıl` : "—"}
             </div>
             <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Üyelik</p>
           </div>

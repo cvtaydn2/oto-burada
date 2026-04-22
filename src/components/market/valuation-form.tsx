@@ -73,11 +73,13 @@ export function ValuationForm({ brands }: ValuationFormProps) {
       });
 
       const response = await fetch(`/api/market/estimate?${params}`);
-      const json = await response.json();
 
       if (!response.ok) {
-        throw new Error(json.error?.message || "Bilgi getirilemedi.");
+        const errPayload = await response.json().catch(() => null);
+        throw new Error(errPayload?.error?.message || `Sunucu hatası (${response.status})`);
       }
+
+      const json = await response.json();
 
       setResult(json.data);
     } catch (err) {

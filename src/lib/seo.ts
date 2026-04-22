@@ -66,11 +66,21 @@ export function buildListingsMetadata(filters: ListingFilters): Metadata {
     descriptionParts.push(`Maksimum kilometre ${formatNumber(filters.maxMileage)} km.`);
   }
 
-  // SEO Fix: Canonical should point to the most specific "Page" (Brand/City), 
-  // not to every single filter permutation which creates duplicate content.
+  // SEO: Canonical, duplicate content üretmeyecek şekilde en spesifik sayfaya işaret eder.
+  // Türkiye pazarında değerli kombinasyonlar: marka, marka+model, şehir, marka+şehir
+  // Diğer filtre kombinasyonları (fiyat, km, yakıt vb.) /listings'e canonical verir.
   let canonicalPath = "/listings";
-  if (filters.brand && !filters.city) canonicalPath = `/satilik/${filters.brand.toLowerCase()}`;
-  else if (filters.brand && filters.city) canonicalPath = `/satilik/${filters.brand.toLowerCase()}/${filters.city.toLowerCase()}`;
+  if (filters.brand && filters.model && filters.city) {
+    canonicalPath = `/satilik/${filters.brand.toLowerCase()}/${filters.city.toLowerCase()}`;
+  } else if (filters.brand && filters.city) {
+    canonicalPath = `/satilik/${filters.brand.toLowerCase()}/${filters.city.toLowerCase()}`;
+  } else if (filters.brand && filters.model) {
+    canonicalPath = `/satilik/${filters.brand.toLowerCase()}`;
+  } else if (filters.brand) {
+    canonicalPath = `/satilik/${filters.brand.toLowerCase()}`;
+  } else if (filters.city) {
+    canonicalPath = `/satilik-araba/${filters.city.toLowerCase()}`;
+  }
 
   return {
     title,

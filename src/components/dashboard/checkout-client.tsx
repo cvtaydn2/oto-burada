@@ -34,9 +34,9 @@ export function CheckoutClient({ plan, isPaymentEnabled }: CheckoutClientProps) 
         body: JSON.stringify({ planId: plan.id }),
       });
 
-      const data = await res.json();
+      const data = await res.json().catch(() => ({ success: false, error: "Sunucu yanıtı okunamadı." }));
 
-      if (data.success) {
+      if (res.ok && data.success) {
         captureClientEvent("payment_success", { planId: plan.id, planName: plan.name, amount: plan.price });
         setStatus("success");
         setTimeout(() => router.push("/dashboard"), 2000);

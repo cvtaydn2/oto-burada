@@ -52,17 +52,23 @@ export function getSellerTypeLabel(userType: Profile["userType"]): string {
 
 export function getMemberSinceYear(createdAt: string | null | undefined): number | null {
   if (!createdAt) return null;
-  return new Date(createdAt).getFullYear();
+  const d = new Date(createdAt);
+  if (isNaN(d.getTime())) return null;
+  return d.getFullYear();
 }
 
 export function getMembershipYears(memberSince: number | null): number | null {
   if (memberSince === null) return null;
-  return Math.max(new Date().getFullYear() - memberSince, 0);
+  const years = new Date().getFullYear() - memberSince;
+  if (isNaN(years) || years < 0) return null;
+  return years;
 }
 
 export function getListingAgeDays(updatedAt: string): number {
-  const diffMs = Date.now() - new Date(updatedAt).getTime();
-  return Math.floor(diffMs / (1000 * 60 * 60 * 24));
+  const d = new Date(updatedAt);
+  if (isNaN(d.getTime())) return 0;
+  const diffMs = Date.now() - d.getTime();
+  return Math.max(0, Math.floor(diffMs / (1000 * 60 * 60 * 24)));
 }
 
 export function truncateText(text: string, maxLength: number): string {
@@ -88,8 +94,10 @@ export function debounce<T extends (...args: Parameters<T>) => void>(
 
 export function getListingAgeText(dateString: string): string {
   const date = new Date(dateString);
+  if (isNaN(date.getTime())) return "Bilinmiyor";
   const now = new Date();
   const diffMs = now.getTime() - date.getTime();
+  if (diffMs < 0) return "Bugün";
   const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
 
   if (diffDays === 0) return "Bugün";
