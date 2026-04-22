@@ -1,22 +1,22 @@
 /**
  * Favorites database operations.
- * 
+ *
  * SECURITY: Uses server client (authenticated role) instead of admin client.
  * RLS policy "favorites_manage_own" ensures users can only access their own favorites.
- * 
+ *
  * Policy: FOR ALL USING ((SELECT auth.uid()) = user_id)
- * 
+ *
  * This means:
  * - User can only SELECT their own favorites
  * - User can only INSERT favorites with their own user_id
  * - User can only UPDATE/DELETE their own favorites
- * 
+ *
  * No need for explicit userId checks in this layer — RLS enforces it at DB level.
  */
 
-import { createSupabaseServerClient } from "@/lib/supabase/server";
-import { hasSupabaseAdminEnv } from "@/lib/supabase/env";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
+import { hasSupabaseAdminEnv } from "@/lib/supabase/env";
+import { createSupabaseServerClient } from "@/lib/supabase/server";
 
 interface FavoriteRow {
   listing_id: string;
@@ -48,10 +48,7 @@ export async function getDatabaseFavoriteIds(userId: string) {
 
   try {
     const supabase = await getFavoritesClient();
-    const query = supabase
-      .from("favorites")
-      .select("listing_id")
-      .eq("user_id", userId);
+    const query = supabase.from("favorites").select("listing_id").eq("user_id", userId);
     const executor =
       "returns" in query && typeof query.returns === "function"
         ? query.returns<FavoriteRow[]>()
@@ -94,7 +91,7 @@ export async function getDatabaseFavoriteCount(userId: string) {
 /**
  * Add a favorite for the current authenticated user.
  * RLS policy ensures user_id must match auth.uid().
- * 
+ *
  * If userId doesn't match auth.uid(), RLS will reject the insert.
  */
 export async function addDatabaseFavorite(userId: string, listingId: string) {

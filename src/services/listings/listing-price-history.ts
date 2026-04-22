@@ -12,7 +12,7 @@ export async function getListingPriceHistory(listingId: string): Promise<PriceHi
   if (!hasSupabaseAdminEnv()) return [];
 
   const admin = createSupabaseAdminClient();
-  
+
   const { data, error } = await admin
     .from("listing_price_history")
     .select("price, created_at")
@@ -23,7 +23,7 @@ export async function getListingPriceHistory(listingId: string): Promise<PriceHi
     return [];
   }
 
-  return data.map(item => ({
+  return data.map((item) => ({
     price: Number(item.price),
     date: item.created_at as string,
   }));
@@ -36,10 +36,13 @@ export async function getListingPriceHistory(listingId: string): Promise<PriceHi
 export async function recordInitialPrice(listingId: string, price: number): Promise<void> {
   if (!hasSupabaseAdminEnv()) return;
   const admin = createSupabaseAdminClient();
-  await admin.from("listing_price_history").insert({
-    listing_id: listingId,
-    price,
-  }).then(() => undefined);
+  await admin
+    .from("listing_price_history")
+    .insert({
+      listing_id: listingId,
+      price,
+    })
+    .then(() => undefined);
 }
 
 /**

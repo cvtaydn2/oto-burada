@@ -1,9 +1,10 @@
 "use client";
 
-import { useState } from "react";
 import { useRouter } from "next/navigation";
-import type { Ticket, TicketStatus } from "@/services/support/ticket-service";
+import { useState } from "react";
 import { toast } from "sonner";
+
+import type { Ticket, TicketStatus } from "@/services/support/ticket-service";
 
 const STATUS_OPTIONS: { value: TicketStatus; label: string }[] = [
   { value: "open", label: "Açık" },
@@ -32,7 +33,11 @@ interface AdminTicketListProps {
   initialQuery?: string;
 }
 
-export function AdminTicketList({ tickets: initialTickets, initialStatus = "all", initialQuery = "" }: AdminTicketListProps) {
+export function AdminTicketList({
+  tickets: initialTickets,
+  initialStatus = "all",
+  initialQuery = "",
+}: AdminTicketListProps) {
   const router = useRouter();
   const [tickets] = useState(initialTickets);
   const [filter, setFilter] = useState<TicketStatus | "all">(initialStatus);
@@ -42,10 +47,11 @@ export function AdminTicketList({ tickets: initialTickets, initialStatus = "all"
 
   const filtered = tickets
     .filter((t) => filter === "all" || t.status === filter)
-    .filter((t) =>
-      !searchQuery ||
-      t.subject.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      t.description.toLowerCase().includes(searchQuery.toLowerCase()),
+    .filter(
+      (t) =>
+        !searchQuery ||
+        t.subject.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        t.description.toLowerCase().includes(searchQuery.toLowerCase())
     );
 
   const handleStatusChange = async (ticketId: string, status: TicketStatus) => {
@@ -89,9 +95,7 @@ export function AdminTicketList({ tickets: initialTickets, initialStatus = "all"
 
   if (tickets.length === 0) {
     return (
-      <div className="p-12 text-center text-slate-400 text-sm">
-        Henüz destek talebi bulunmuyor.
-      </div>
+      <div className="p-12 text-center text-slate-400 text-sm">Henüz destek talebi bulunmuyor.</div>
     );
   }
 
@@ -109,7 +113,9 @@ export function AdminTicketList({ tickets: initialTickets, initialStatus = "all"
         <button
           onClick={() => setFilter("all")}
           className={`text-xs font-bold px-3 py-1.5 rounded-full border transition-colors ${
-            filter === "all" ? "bg-slate-900 text-white border-slate-900" : "bg-white text-slate-500 border-slate-200 hover:border-slate-300"
+            filter === "all"
+              ? "bg-slate-900 text-white border-slate-900"
+              : "bg-white text-slate-500 border-slate-200 hover:border-slate-300"
           }`}
         >
           Tümü ({tickets.length})
@@ -121,7 +127,9 @@ export function AdminTicketList({ tickets: initialTickets, initialStatus = "all"
               key={s.value}
               onClick={() => setFilter(s.value)}
               className={`text-xs font-bold px-3 py-1.5 rounded-full border transition-colors ${
-                filter === s.value ? "bg-slate-900 text-white border-slate-900" : "bg-white text-slate-500 border-slate-200 hover:border-slate-300"
+                filter === s.value
+                  ? "bg-slate-900 text-white border-slate-900"
+                  : "bg-white text-slate-500 border-slate-200 hover:border-slate-300"
               }`}
             >
               {s.label} ({count})
@@ -136,23 +144,35 @@ export function AdminTicketList({ tickets: initialTickets, initialStatus = "all"
             <div className="flex items-start justify-between gap-4">
               <div className="flex-1 min-w-0">
                 <div className="flex flex-wrap items-center gap-2 mb-1">
-                  <span className={`text-[10px] font-bold px-2.5 py-1 rounded-full border uppercase tracking-wider ${STATUS_BADGES[ticket.status]}`}>
+                  <span
+                    className={`text-[10px] font-bold px-2.5 py-1 rounded-full border uppercase tracking-wider ${STATUS_BADGES[ticket.status]}`}
+                  >
                     {STATUS_OPTIONS.find((s) => s.value === ticket.status)?.label}
                   </span>
-                  <span className={`text-[10px] font-bold px-2.5 py-1 rounded-full uppercase tracking-wider ${PRIORITY_BADGES[ticket.priority]}`}>
-                    {ticket.priority === "urgent" ? "⚡ " : ""}{ticket.priority}
+                  <span
+                    className={`text-[10px] font-bold px-2.5 py-1 rounded-full uppercase tracking-wider ${PRIORITY_BADGES[ticket.priority]}`}
+                  >
+                    {ticket.priority === "urgent" ? "⚡ " : ""}
+                    {ticket.priority}
                   </span>
-                  <span className="text-[10px] text-slate-400 uppercase tracking-wider font-bold">{ticket.category}</span>
+                  <span className="text-[10px] text-slate-400 uppercase tracking-wider font-bold">
+                    {ticket.category}
+                  </span>
                 </div>
                 <h3 className="text-sm font-semibold text-slate-900">{ticket.subject}</h3>
                 <p className="text-xs text-slate-500 mt-1">{ticket.description}</p>
                 {ticket.adminResponse && (
                   <div className="mt-3 rounded-lg bg-emerald-50 border border-emerald-100 p-3">
-                    <p className="text-xs font-medium text-emerald-700">Yanıtınız: {ticket.adminResponse}</p>
+                    <p className="text-xs font-medium text-emerald-700">
+                      Yanıtınız: {ticket.adminResponse}
+                    </p>
                   </div>
                 )}
                 <p className="text-[10px] text-slate-400 mt-2">
-                  {new Date(ticket.createdAt).toLocaleDateString("tr-TR", { hour: "2-digit", minute: "2-digit" })}
+                  {new Date(ticket.createdAt).toLocaleDateString("tr-TR", {
+                    hour: "2-digit",
+                    minute: "2-digit",
+                  })}
                 </p>
               </div>
             </div>
@@ -173,7 +193,10 @@ export function AdminTicketList({ tickets: initialTickets, initialStatus = "all"
                     Yanıt Gönder
                   </button>
                   <button
-                    onClick={() => { setReplyingTo(null); setReply(""); }}
+                    onClick={() => {
+                      setReplyingTo(null);
+                      setReply("");
+                    }}
                     className="px-4 py-2 rounded-lg border border-slate-200 text-xs font-bold hover:bg-slate-50 transition-colors"
                   >
                     İptal

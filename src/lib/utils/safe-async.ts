@@ -23,6 +23,8 @@ export class SafeAsync {
    * Helper to check if an error is a planned cancellation.
    */
   static isAbort(error: unknown): boolean {
-    return error === "NEW_REQUEST_STARTED" || (error instanceof Error && error.name === "AbortError");
+    return (
+      error === "NEW_REQUEST_STARTED" || (error instanceof Error && error.name === "AbortError")
+    );
   }
 }

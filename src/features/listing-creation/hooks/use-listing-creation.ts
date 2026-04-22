@@ -1,15 +1,22 @@
 "use client";
 
-import { useState, useRef, useMemo, useCallback } from "react";
-import { useRouter } from "next/navigation";
-import { useForm, useFieldArray, useWatch, type FieldPath } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { listingCreateFormSchema } from "@/lib/validators";
+import { useRouter } from "next/navigation";
+import { useCallback, useMemo, useRef, useState } from "react";
+import { type FieldPath, useFieldArray, useForm, useWatch } from "react-hook-form";
+
 import { useAnalytics } from "@/hooks/use-analytics";
 import { AnalyticsEvent } from "@/lib/analytics/events";
-import { type Listing, type ListingCreateFormValues, type BrandCatalogItem, type CityOption } from "@/types";
+import { listingCreateFormSchema } from "@/lib/validators";
 import { validateListingImageFile } from "@/services/listings/listing-images";
 import { lookupVehicleByPlate } from "@/services/listings/plate-lookup";
+import {
+  type BrandCatalogItem,
+  type CityOption,
+  type Listing,
+  type ListingCreateFormValues,
+} from "@/types";
+
 import { buildDefaultValues } from "../utils/form-utils";
 
 interface UseListingCreationProps {
@@ -20,20 +27,30 @@ interface UseListingCreationProps {
   isEmailVerified: boolean;
 }
 
-const STEP_LABELS = ["Araç Bilgileri", "Fiyat ve İletişim", "Ekspertiz (İsteğe Bağlı)", "Fotoğraflar"];
+const STEP_LABELS = [
+  "Araç Bilgileri",
+  "Fiyat ve İletişim",
+  "Ekspertiz (İsteğe Bağlı)",
+  "Fotoğraflar",
+];
 
 export function useListingCreation({
   initialValues,
   initialListing,
-  isEmailVerified
+  isEmailVerified,
 }: UseListingCreationProps) {
   const router = useRouter();
   const { trackEvent } = useAnalytics();
   const isEditing = Boolean(initialListing);
-  
+
   const [currentStep, setCurrentStep] = useState(0);
-  const [submitState, setSubmitState] = useState<{ status: "error" | "idle" | "success" | "warning"; message?: string }>({ status: "idle" });
-  const [uploadStates, setUploadStates] = useState<Record<string, { status: string; progress: number; message: string; previewUrl?: string }>>({});
+  const [submitState, setSubmitState] = useState<{
+    status: "error" | "idle" | "success" | "warning";
+    message?: string;
+  }>({ status: "idle" });
+  const [uploadStates, setUploadStates] = useState<
+    Record<string, { status: string; progress: number; message: string; previewUrl?: string }>
+  >({});
   const [isPlateLoading, setIsPlateLoading] = useState(false);
   const [isEmailVerifiedLocally, setIsEmailVerifiedLocally] = useState(isEmailVerified);
   const [isVerifyDialogOpen, setIsVerifyDialogOpen] = useState(false);
@@ -42,7 +59,10 @@ export function useListingCreation({
   const submitIntentRef = useRef(false);
   const pendingImageCleanupRef = useRef<Set<string>>(new Set());
 
-  const formDefaultValues = useMemo(() => buildDefaultValues(initialValues, initialListing), [initialListing, initialValues]);
+  const formDefaultValues = useMemo(
+    () => buildDefaultValues(initialValues, initialListing),
+    [initialListing, initialValues]
+  );
 
   const form = useForm<ListingCreateFormValues>({
     defaultValues: formDefaultValues,
@@ -60,10 +80,12 @@ export function useListingCreation({
   // Wizard Navigation
   const handleNextStep = useCallback(async () => {
     let fieldsToValidate: FieldPath<ListingCreateFormValues>[] = [];
-    if (currentStep === 0) fieldsToValidate = ["brand", "model", "year", "mileage", "vin", "fuelType", "transmission"];
-    if (currentStep === 1) fieldsToValidate = ["city", "district", "title", "description", "price", "whatsappPhone"];
-    
-    const isValid = fieldsToValidate.length === 0 || await trigger(fieldsToValidate);
+    if (currentStep === 0)
+      fieldsToValidate = ["brand", "model", "year", "mileage", "vin", "fuelType", "transmission"];
+    if (currentStep === 1)
+      fieldsToValidate = ["city", "district", "title", "description", "price", "whatsappPhone"];
+
+    const isValid = fieldsToValidate.length === 0 || (await trigger(fieldsToValidate));
     if (isValid) {
       const timeSpentSeconds = Math.round((Date.now() - stepStartTimeRef.current) / 1000);
       trackEvent(AnalyticsEvent.LISTING_WIZARD_STEP_COMPLETED, {
@@ -71,13 +93,13 @@ export function useListingCreation({
         stepIndex: currentStep,
         timeSpentSeconds,
       });
-      setCurrentStep(prev => Math.min(prev + 1, STEP_LABELS.length - 1));
+      setCurrentStep((prev) => Math.min(prev + 1, STEP_LABELS.length - 1));
       window.scrollTo({ top: 0, behavior: "smooth" });
     }
   }, [currentStep, trigger, trackEvent]);
 
   const handlePrevStep = useCallback(() => {
-    setCurrentStep(prev => Math.max(prev - 1, 0));
+    setCurrentStep((prev) => Math.max(prev - 1, 0));
     window.scrollTo({ top: 0, behavior: "smooth" });
   }, []);
 
@@ -99,14 +121,22 @@ export function useListingCreation({
           currentValues.model && currentValues.model !== result.model ? "model" : null,
           currentValues.year && currentValues.year !== result.year ? "yıl" : null,
           currentValues.fuelType && currentValues.fuelType !== result.fuelType ? "yakıt" : null,
-          currentValues.transmission && currentValues.transmission !== result.transmission ? "vites" : null,
+          currentValues.transmission && currentValues.transmission !== result.transmission
+            ? "vites"
+            : null,
         ].filter(Boolean) as string[];
 
         setValue("brand", result.brand, { shouldDirty: true, shouldValidate: true });
         setValue("model", result.model, { shouldDirty: true, shouldValidate: true });
         setValue("year", result.year, { shouldDirty: true, shouldValidate: true });
-        setValue("fuelType", result.fuelType as ListingCreateFormValues["fuelType"], { shouldDirty: true, shouldValidate: true });
-        setValue("transmission", result.transmission as ListingCreateFormValues["transmission"], { shouldDirty: true, shouldValidate: true });
+        setValue("fuelType", result.fuelType as ListingCreateFormValues["fuelType"], {
+          shouldDirty: true,
+          shouldValidate: true,
+        });
+        setValue("transmission", result.transmission as ListingCreateFormValues["transmission"], {
+          shouldDirty: true,
+          shouldValidate: true,
+        });
 
         if (mismatchFields.length > 0) {
           setSubmitState({
@@ -116,16 +146,21 @@ export function useListingCreation({
         } else {
           setSubmitState({
             status: "success",
-            message: "Plakadan tahmini araç bilgileri öneri olarak dolduruldu. Resmi kayıt doğrulaması değildir.",
+            message:
+              "Plakadan tahmini araç bilgileri öneri olarak dolduruldu. Resmi kayıt doğrulaması değildir.",
           });
         }
 
         setTimeout(() => setSubmitState({ status: "idle" }), 3000);
       } else {
-        setError("licensePlate", { message: "Bu plaka için öneri üretilemedi. Araç bilgilerini manuel girin." });
+        setError("licensePlate", {
+          message: "Bu plaka için öneri üretilemedi. Araç bilgilerini manuel girin.",
+        });
       }
     } catch {
-      setError("licensePlate", { message: "Plaka önerisi alınamadı. Araç bilgilerini manuel girin." });
+      setError("licensePlate", {
+        message: "Plaka önerisi alınamadı. Araç bilgilerini manuel girin.",
+      });
     } finally {
       setIsPlateLoading(false);
     }
@@ -138,16 +173,30 @@ export function useListingCreation({
     const fileError = await validateListingImageFile(file);
     if (fileError) {
       setError(`images.${index}.url` as FieldPath<ListingCreateFormValues>, { message: fileError });
-      setUploadStates(prev => ({ ...prev, [fieldId]: { message: fileError, progress: 0, status: "error" } }));
+      setUploadStates((prev) => ({
+        ...prev,
+        [fieldId]: { message: fileError, progress: 0, status: "error" },
+      }));
       return;
     }
 
-    setUploadStates(prev => ({ ...prev, [fieldId]: { message: "Yükleniyor...", progress: 0, status: "uploading" } }));
-    
+    setUploadStates((prev) => ({
+      ...prev,
+      [fieldId]: { message: "Yükleniyor...", progress: 0, status: "uploading" },
+    }));
+
     try {
       const { default: imageCompression } = await import("browser-image-compression");
-      const compressedFile = await imageCompression(file, { maxSizeMB: 0.8, maxWidthOrHeight: 1600, useWebWorker: false });
-      const blurFile = await imageCompression(file, { maxSizeMB: 0.005, maxWidthOrHeight: 20, useWebWorker: false });
+      const compressedFile = await imageCompression(file, {
+        maxSizeMB: 0.8,
+        maxWidthOrHeight: 1600,
+        useWebWorker: false,
+      });
+      const blurFile = await imageCompression(file, {
+        maxSizeMB: 0.005,
+        maxWidthOrHeight: 20,
+        useWebWorker: false,
+      });
       const blurDataUrl = await imageCompression.getDataUrlFromFile(blurFile);
 
       const formData = new FormData();
@@ -159,11 +208,17 @@ export function useListingCreation({
       xhr.responseType = "json";
       xhr.upload.onprogress = (e) => {
         if (e.lengthComputable) {
-          setUploadStates(prev => ({ ...prev, [fieldId]: { ...prev[fieldId], progress: Math.round((e.loaded / e.total) * 100) } }));
+          setUploadStates((prev) => ({
+            ...prev,
+            [fieldId]: { ...prev[fieldId], progress: Math.round((e.loaded / e.total) * 100) },
+          }));
         }
       };
 
-      const payload = await new Promise<{ success: boolean; data: { image: { url: string; storagePath: string; fileName: string } } }>((resolve, reject) => {
+      const payload = await new Promise<{
+        success: boolean;
+        data: { image: { url: string; storagePath: string; fileName: string } };
+      }>((resolve, reject) => {
         xhr.onload = () => resolve(xhr.response);
         xhr.onerror = () => reject(new Error("Yükleme hatası"));
         xhr.send(formData);
@@ -172,10 +227,21 @@ export function useListingCreation({
       if (payload.success) {
         const nextImage = { ...payload.data.image, placeholderBlur: blurDataUrl };
         setValue(`images.${index}`, nextImage, { shouldDirty: true, shouldValidate: true });
-        setUploadStates(prev => ({ ...prev, [fieldId]: { message: "Tamamlandı", progress: 100, status: "uploaded", previewUrl: nextImage.url } }));
+        setUploadStates((prev) => ({
+          ...prev,
+          [fieldId]: {
+            message: "Tamamlandı",
+            progress: 100,
+            status: "uploaded",
+            previewUrl: nextImage.url,
+          },
+        }));
       }
     } catch {
-      setUploadStates(prev => ({ ...prev, [fieldId]: { message: "Yükleme başarısız", progress: 0, status: "error" } }));
+      setUploadStates((prev) => ({
+        ...prev,
+        [fieldId]: { message: "Yükleme başarısız", progress: 0, status: "error" },
+      }));
     }
   };
 
@@ -183,8 +249,8 @@ export function useListingCreation({
     const fieldId = fields[index].id;
     const currentPath = getValues(`images.${index}.storagePath`);
     if (currentPath) pendingImageCleanupRef.current.add(currentPath);
-    
-    setUploadStates(prev => {
+
+    setUploadStates((prev) => {
       const next = { ...prev };
       delete next[fieldId];
       return next;
@@ -195,18 +261,23 @@ export function useListingCreation({
   const submitListing = async (values: ListingCreateFormValues) => {
     setSubmitState({ status: "idle" });
     try {
-      const response = await fetch(isEditing ? `/api/listings/${initialListing?.id}` : "/api/listings", {
-        body: JSON.stringify(values),
-        headers: { "Content-Type": "application/json" },
-        method: isEditing ? "PATCH" : "POST",
-      });
+      const response = await fetch(
+        isEditing ? `/api/listings/${initialListing?.id}` : "/api/listings",
+        {
+          body: JSON.stringify(values),
+          headers: { "Content-Type": "application/json" },
+          method: isEditing ? "PATCH" : "POST",
+        }
+      );
       const payload = await response.json();
       if (!response.ok || !payload?.success) {
         setSubmitState({ status: "error", message: payload?.error?.message ?? "Bir hata oluştu." });
         return;
       }
       setSubmitState({ status: "success", message: "İlan başarıyla kaydedildi." });
-      trackEvent(isEditing ? AnalyticsEvent.LISTING_UPDATED : AnalyticsEvent.LISTING_SUBMITTED, { listingId: payload.data.listing.id });
+      trackEvent(isEditing ? AnalyticsEvent.LISTING_UPDATED : AnalyticsEvent.LISTING_SUBMITTED, {
+        listingId: payload.data.listing.id,
+      });
       router.push("/dashboard/listings?created=pending");
     } catch {
       setSubmitState({ status: "error", message: "Bağlantı hatası." });
@@ -233,6 +304,6 @@ export function useListingCreation({
     handleImageChange,
     handleRemoveImage,
     submitListing,
-    submitIntentRef
+    submitIntentRef,
   };
 }

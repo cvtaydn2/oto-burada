@@ -25,7 +25,7 @@ export function BulkActions({
   allPendingListingIds,
   bulkNote,
   onBulkNoteChange,
-  pendingListingsCount
+  pendingListingsCount,
 }: BulkActionsProps) {
   const PRESETS = [
     "Eksik/Düşük Kalite Fotoğraf",
@@ -33,7 +33,7 @@ export function BulkActions({
     "Uygunsuz İlan Başlığı",
     "Mükerrer İlan",
     "Hatalı Kategori",
-    "İletişim Bilgisi Hatalı"
+    "İletişim Bilgisi Hatalı",
   ];
 
   return (
@@ -45,14 +45,16 @@ export function BulkActions({
               {selectedCount} seçili ilan
             </span>
             <button
-               type="button"
-               onClick={onToggleAll}
-               className="rounded-full border border-border/70 bg-background px-3 py-1 text-xs font-semibold text-muted-foreground transition-colors hover:border-primary/40 hover:text-primary"
+              type="button"
+              onClick={onToggleAll}
+              className="rounded-full border border-border/70 bg-background px-3 py-1 text-xs font-semibold text-muted-foreground transition-colors hover:border-primary/40 hover:text-primary"
             >
               {allSelected ? "Seçimi temizle" : "Tümünü seç"}
             </button>
           </div>
-          <p className="text-sm text-muted-foreground">Seçili bekleyen ilanları tek hamlede onayla ya da reddet.</p>
+          <p className="text-sm text-muted-foreground">
+            Seçili bekleyen ilanları tek hamlede onayla ya da reddet.
+          </p>
         </div>
 
         <div className="flex flex-wrap gap-2">
@@ -62,7 +64,12 @@ export function BulkActions({
             onClick={() => onBulkModeration("approve", selectedListingIds)}
             className="inline-flex h-11 items-center justify-center gap-2 rounded-xl bg-primary px-4 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90 disabled:opacity-60"
           >
-            {activeBulkAction === "approve" ? <LoaderCircle className="size-4 animate-spin" /> : <CheckCircle2 className="size-4" />} Seçilenleri onayla
+            {activeBulkAction === "approve" ? (
+              <LoaderCircle className="size-4 animate-spin" />
+            ) : (
+              <CheckCircle2 className="size-4" />
+            )}{" "}
+            Seçilenleri onayla
           </button>
           <button
             type="button"
@@ -70,7 +77,12 @@ export function BulkActions({
             onClick={() => onBulkModeration("reject", selectedListingIds)}
             className="inline-flex h-11 items-center justify-center gap-2 rounded-xl border border-border bg-background px-4 text-sm font-semibold text-foreground transition-colors hover:bg-muted disabled:opacity-60"
           >
-            {activeBulkAction === "reject" ? <LoaderCircle className="size-4 animate-spin" /> : <XCircle className="size-4" />} Seçilenleri reddet
+            {activeBulkAction === "reject" ? (
+              <LoaderCircle className="size-4 animate-spin" />
+            ) : (
+              <XCircle className="size-4" />
+            )}{" "}
+            Seçilenleri reddet
           </button>
           <button
             type="button"

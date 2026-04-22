@@ -1,12 +1,14 @@
 import { z } from "zod";
+
 import { userRoles } from "@/lib/constants/domain";
-import { 
-  trimmedRequiredString, 
-  lenientPhoneSchema, 
-  invalidMessage, 
-  timestampSchema, 
+
+import {
   emptyStringToUndefined,
-  optionalTrimmedString
+  invalidMessage,
+  lenientPhoneSchema,
+  optionalTrimmedString,
+  timestampSchema,
+  trimmedRequiredString,
 } from "./shared";
 
 export const profileSchema = z.object({
@@ -26,7 +28,7 @@ export const profileSchema = z.object({
   userType: z.enum(["individual", "professional", "staff"]).optional(),
   balanceCredits: z.number().int().min(0).optional(),
   role: z.enum(userRoles),
-  
+
   // Corporate Fields
   businessName: z.string().trim().nullable().optional(),
   businessAddress: z.string().trim().nullable().optional(),
@@ -39,7 +41,7 @@ export const profileSchema = z.object({
   businessSlug: z.string().trim().nullable().optional(),
 
   // Verification Workflow
-  verificationStatus: z.enum(['none', 'pending', 'approved', 'rejected']).optional(),
+  verificationStatus: z.enum(["none", "pending", "approved", "rejected"]).optional(),
   verificationRequestedAt: z.string().nullable().optional(),
   verificationReviewedAt: z.string().nullable().optional(),
   verificationFeedback: z.string().nullable().optional(),
@@ -54,20 +56,29 @@ export const profileUpdateSchema = z.object({
   city: trimmedRequiredString,
   avatarUrl: z.preprocess(
     emptyStringToUndefined,
-    z.string().trim().url(invalidMessage).nullable().optional(),
+    z.string().trim().url(invalidMessage).nullable().optional()
   ),
   identityNumber: z.string().trim().length(11).nullable().optional(),
 });
 
 export const corporateProfileSchema = z.object({
   businessName: trimmedRequiredString,
-  businessSlug: trimmedRequiredString.regex(/^[a-z0-9-]+$/, "Slug sadece kucuk harf, rakam ve tire icerebilir"),
+  businessSlug: trimmedRequiredString.regex(
+    /^[a-z0-9-]+$/,
+    "Slug sadece kucuk harf, rakam ve tire icerebilir"
+  ),
   businessAddress: optionalTrimmedString,
   businessDescription: optionalTrimmedString,
   taxId: optionalTrimmedString,
   taxOffice: optionalTrimmedString,
-  websiteUrl: z.preprocess(emptyStringToUndefined, z.string().trim().url(invalidMessage).optional()),
-  businessLogoUrl: z.preprocess(emptyStringToUndefined, z.string().trim().url(invalidMessage).optional()),
+  websiteUrl: z.preprocess(
+    emptyStringToUndefined,
+    z.string().trim().url(invalidMessage).optional()
+  ),
+  businessLogoUrl: z.preprocess(
+    emptyStringToUndefined,
+    z.string().trim().url(invalidMessage).optional()
+  ),
 });
 
 export const loginSchema = z.object({

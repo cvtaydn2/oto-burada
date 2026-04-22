@@ -141,7 +141,7 @@ export function savedSearchAlertHtml(p: {
           </tr>
         </table>
       </td>
-    </tr>`,
+    </tr>`
     )
     .join("");
 
@@ -273,11 +273,15 @@ export function listingRejectedHtml(p: {
             <div style="background:#fef2f2;border-radius:12px;padding:16px 20px;margin-bottom:16px;border:1px solid #fecaca;">
               <p style="margin:0;color:#991b1b;font-size:15px;font-weight:700;">${p.listingTitle}</p>
             </div>
-            ${p.reason ? `
+            ${
+              p.reason
+                ? `
             <div style="background:#fff7ed;border-left:4px solid #f97316;padding:16px 20px;border-radius:0 12px 12px 0;margin-bottom:24px;">
               <p style="margin:0 0 4px;color:#9a3412;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;">Moderasyon Notu</p>
               <p style="margin:0;color:#7c2d12;font-size:14px;line-height:1.6;">${p.reason}</p>
-            </div>` : ""}
+            </div>`
+                : ""
+            }
             <p style="margin:0 0 24px;color:#475569;font-size:14px;line-height:1.6;">
               İlanını düzenleyerek tekrar gönderebilirsin. Sorularınız için destek ekibimizle iletişime geçebilirsin.
             </p>

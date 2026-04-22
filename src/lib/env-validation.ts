@@ -129,13 +129,13 @@ export function logEnvValidation(): void {
     // Use console.error directly here — logger context may not be initialized yet
     // and this is a critical startup signal that must always surface.
     console.error(
-      `[ENV] ❌ Missing ${result.missing.length} required variables${isProd ? " (CRITICAL)" : ""}: ${result.missing.join(", ")}`,
+      `[ENV] ❌ Missing ${result.missing.length} required variables${isProd ? " (CRITICAL)" : ""}: ${result.missing.join(", ")}`
     );
   }
 
   if (result.warnings.length > 0 && !isProd) {
     console.warn(
-      `[ENV] ⚠️  ${result.warnings.length} optional variables not set. Features may be degraded.`,
+      `[ENV] ⚠️  ${result.warnings.length} optional variables not set. Features may be degraded.`
     );
   }
 

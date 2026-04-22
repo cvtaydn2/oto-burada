@@ -64,7 +64,7 @@ export function applySecurityHeaders(response: NextResponse, nonce?: string) {
   for (const [key, value] of Object.entries(headers)) {
     response.headers.set(key, value);
   }
-  
+
   return response;
 }
 

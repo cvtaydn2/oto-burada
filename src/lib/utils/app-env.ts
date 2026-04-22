@@ -1,8 +1,8 @@
 /**
  * Vercel Ortam Bilgisi Yardımcı Araçları
- * 
- * Bu modül, uygulamanın hangi ortamda (Local, Preview, Production) çalıştığını 
- * anlamaya yardımcı olur ve ortama göre farklı davranışlar (örn: URL yönlendirmeleri) 
+ *
+ * Bu modül, uygulamanın hangi ortamda (Local, Preview, Production) çalıştığını
+ * anlamaya yardımcı olur ve ortama göre farklı davranışlar (örn: URL yönlendirmeleri)
  * sergilemesini sağlar.
  */
 
@@ -14,7 +14,7 @@ export type AppEnvironment = "development" | "preview" | "production";
  */
 export function getAppEnvironment(): AppEnvironment {
   const env = process.env.VERCEL_ENV || process.env.NODE_ENV;
-  
+
   if (env === "production") return "production";
   if (env === "preview") return "preview";
   return "development";

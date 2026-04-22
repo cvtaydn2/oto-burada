@@ -5,7 +5,7 @@ export interface RegisterFileOptions {
   ownerId: string;
   bucketId: string;
   storagePath: string;
-  sourceEntityType?: 'listing' | 'listing_document' | 'profile_avatar';
+  sourceEntityType?: "listing" | "listing_document" | "profile_avatar";
   sourceEntityId?: string;
   fileName?: string;
   fileSize?: number;
@@ -17,19 +17,22 @@ export interface RegisterFileOptions {
  */
 export async function registerFileInRegistry(options: RegisterFileOptions) {
   const admin = createSupabaseAdminClient();
-  
+
   const { data, error } = await admin
     .from("storage_objects_registry")
-    .upsert({
-      owner_id: options.ownerId,
-      bucket_id: options.bucketId,
-      storage_path: options.storagePath,
-      source_entity_type: options.sourceEntityType,
-      source_entity_id: options.sourceEntityId,
-      file_name: options.fileName,
-      file_size: options.fileSize,
-      mime_type: options.mimeType,
-    } as unknown as Record<string, string | number | null | undefined>, { onConflict: 'bucket_id,storage_path' })
+    .upsert(
+      {
+        owner_id: options.ownerId,
+        bucket_id: options.bucketId,
+        storage_path: options.storagePath,
+        source_entity_type: options.sourceEntityType,
+        source_entity_id: options.sourceEntityId,
+        file_name: options.fileName,
+        file_size: options.fileSize,
+        mime_type: options.mimeType,
+      } as unknown as Record<string, string | number | null | undefined>,
+      { onConflict: "bucket_id,storage_path" }
+    )
     .select()
     .single();
 
@@ -44,7 +47,11 @@ export async function registerFileInRegistry(options: RegisterFileOptions) {
 /**
  * Verifies if a user owns a file and removes it from the registry.
  */
-export async function verifyAndUnregisterFile(userId: string, bucketId: string, storagePath: string): Promise<boolean> {
+export async function verifyAndUnregisterFile(
+  userId: string,
+  bucketId: string,
+  storagePath: string
+): Promise<boolean> {
   const admin = createSupabaseAdminClient();
 
   // 1. Check ownership in registry
@@ -56,17 +63,19 @@ export async function verifyAndUnregisterFile(userId: string, bucketId: string, 
     .single();
 
   if (error || !data) {
-    logger.storage.warn("File ownership verification failed: Record not found in registry", { 
-      userId, bucketId, storagePath 
+    logger.storage.warn("File ownership verification failed: Record not found in registry", {
+      userId,
+      bucketId,
+      storagePath,
     });
     return false;
   }
 
   if (data.owner_id !== userId) {
-    logger.storage.error("Unauthorized file access attempt detected", { 
-      userId, 
-      actualOwnerId: data.owner_id, 
-      storagePath 
+    logger.storage.error("Unauthorized file access attempt detected", {
+      userId,
+      actualOwnerId: data.owner_id,
+      storagePath,
     });
     return false;
   }
@@ -113,17 +122,20 @@ export async function countDailyUserUploads(userId: string): Promise<number> {
  */
 export async function queueFileCleanup(bucketName: string, filePaths: string[]) {
   if (filePaths.length === 0) return;
-  
+
   const admin = createSupabaseAdminClient();
-  const rows = filePaths.map(path => ({
+  const rows = filePaths.map((path) => ({
     bucket_name: bucketName,
     file_path: path,
-    status: 'pending'
+    status: "pending",
   }));
 
   const { error } = await admin.from("storage_cleanup_queue").insert(rows);
 
   if (error) {
-    logger.storage.error("Failed to queue files for cleanup", error, { bucketName, count: filePaths.length });
+    logger.storage.error("Failed to queue files for cleanup", error, {
+      bucketName,
+      count: filePaths.length,
+    });
   }
 }

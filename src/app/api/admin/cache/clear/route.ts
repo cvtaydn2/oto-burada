@@ -1,5 +1,6 @@
-import { NextResponse } from "next/server";
 import { revalidatePath } from "next/cache";
+import { NextResponse } from "next/server";
+
 import { captureServerError, captureServerEvent } from "@/lib/monitoring/posthog-server";
 import { withAdminRoute } from "@/lib/utils/api-security";
 
@@ -13,16 +14,26 @@ export async function POST(request: Request) {
     revalidatePath("/listings", "page");
     revalidatePath("/admin", "page");
 
-    captureServerEvent("admin_cache_cleared", {
-      adminUserId: authResponse.id,
-    }, authResponse.id);
+    captureServerEvent(
+      "admin_cache_cleared",
+      {
+        adminUserId: authResponse.id,
+      },
+      authResponse.id
+    );
 
     return NextResponse.json({ success: true, message: "Önbellek başarıyla temizlendi." });
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : "Bilinmeyen hata";
-    captureServerError("Admin cache clear failed", "admin", error, {
-      adminUserId: authResponse.id,
-    }, authResponse.id);
+    captureServerError(
+      "Admin cache clear failed",
+      "admin",
+      error,
+      {
+        adminUserId: authResponse.id,
+      },
+      authResponse.id
+    );
     return NextResponse.json({ success: false, error: message }, { status: 500 });
   }
 }

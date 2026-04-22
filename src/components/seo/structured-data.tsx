@@ -1,6 +1,7 @@
 import { headers } from "next/headers";
-import { safeJsonLd } from "@/lib/utils/json-ld";
+
 import { buildAbsoluteUrl } from "@/lib/seo";
+import { safeJsonLd } from "@/lib/utils/json-ld";
 import type { Listing } from "@/types";
 
 async function getCspNonce() {
@@ -28,40 +29,41 @@ export async function ListingStructuredData({ listings, url }: ListingStructured
   const schema = {
     "@context": "https://schema.org",
     "@type": "ItemList",
-    "name": "OtoBurada - İkinci El ve Sıfır Araç İlanları",
-    "description": "Türkiye'nin en güvenilir 2. el ve sıfır otomobil pazarı. Binlerce araç içinden hayalindeki arabayı bul.",
-    "url": url,
-    "numberOfItems": listings.length,
-    "itemListElement": listings.slice(0, 10).map((listing, index) => ({
+    name: "OtoBurada - İkinci El ve Sıfır Araç İlanları",
+    description:
+      "Türkiye'nin en güvenilir 2. el ve sıfır otomobil pazarı. Binlerce araç içinden hayalindeki arabayı bul.",
+    url: url,
+    numberOfItems: listings.length,
+    itemListElement: listings.slice(0, 10).map((listing, index) => ({
       "@type": "ListItem",
-      "position": index + 1,
-      "item": {
+      position: index + 1,
+      item: {
         "@type": "Car",
-        "name": listing.title,
-        "description": `${listing.year} model, ${listing.mileage.toLocaleString("tr-TR")} km, ${listing.fuelType}, ${listing.transmission}`,
-        "brand": { "@type": "Brand", "name": listing.brand },
-        "model": listing.model,
-        "modelDate": listing.year.toString(),
-        "mileageFromOdometer": {
+        name: listing.title,
+        description: `${listing.year} model, ${listing.mileage.toLocaleString("tr-TR")} km, ${listing.fuelType}, ${listing.transmission}`,
+        brand: { "@type": "Brand", name: listing.brand },
+        model: listing.model,
+        modelDate: listing.year.toString(),
+        mileageFromOdometer: {
           "@type": "QuantitativeValue",
-          "value": listing.mileage,
-          "unitCode": "KMT",
+          value: listing.mileage,
+          unitCode: "KMT",
         },
-          "image": listing.images[0]?.url,
-          "url": buildAbsoluteUrl(`/listing/${listing.slug}`),
-          "offers": {
-            "@type": "Offer",
-            "price": listing.price,
-            "priceCurrency": "TRY",
-            "availability": "https://schema.org/InStock",
-            "url": buildAbsoluteUrl(`/listing/${listing.slug}`),
-          },
-        "availableAtOrFrom": {
+        image: listing.images[0]?.url,
+        url: buildAbsoluteUrl(`/listing/${listing.slug}`),
+        offers: {
+          "@type": "Offer",
+          price: listing.price,
+          priceCurrency: "TRY",
+          availability: "https://schema.org/InStock",
+          url: buildAbsoluteUrl(`/listing/${listing.slug}`),
+        },
+        availableAtOrFrom: {
           "@type": "Place",
-          "address": {
+          address: {
             "@type": "PostalAddress",
-            "addressLocality": listing.city,
-            "addressCountry": "TR",
+            addressLocality: listing.city,
+            addressCountry: "TR",
           },
         },
       },
@@ -84,15 +86,15 @@ export async function BreadcrumbStructuredData({ items }: BreadcrumbStructuredDa
   const nonce = await getCspNonce();
   const itemListElement = items.map((item, index) => ({
     "@type": "ListItem",
-    "position": index + 1,
-    "name": item.name,
-    "item": item.url
+    position: index + 1,
+    name: item.name,
+    item: item.url,
   }));
-  
+
   const schema = {
     "@context": "https://schema.org",
     "@type": "BreadcrumbList",
-    "itemListElement": itemListElement
+    itemListElement: itemListElement,
   };
 
   return <JsonLdScript nonce={nonce} schema={schema} />;
@@ -105,21 +107,26 @@ interface OrganizationStructuredDataProps {
   description: string;
 }
 
-export async function OrganizationStructuredData({ name, url, logo, description }: OrganizationStructuredDataProps) {
+export async function OrganizationStructuredData({
+  name,
+  url,
+  logo,
+  description,
+}: OrganizationStructuredDataProps) {
   const nonce = await getCspNonce();
   const schema = {
     "@context": "https://schema.org",
     "@type": "Organization",
-    "name": name,
-    "url": url,
-    "logo": logo,
-    "description": description,
-    "sameAs": [],
-    "contactPoint": {
+    name: name,
+    url: url,
+    logo: logo,
+    description: description,
+    sameAs: [],
+    contactPoint: {
       "@type": "ContactPoint",
-      "contactType": "customer service",
-      "availableLanguage": "Turkish"
-    }
+      contactType: "customer service",
+      availableLanguage: "Turkish",
+    },
   };
 
   return <JsonLdScript nonce={nonce} schema={schema} />;
@@ -131,10 +138,14 @@ interface ListingDetailStructuredDataProps {
   sellerName?: string;
 }
 
-export async function ListingDetailStructuredData({ listing, url, sellerName }: ListingDetailStructuredDataProps) {
+export async function ListingDetailStructuredData({
+  listing,
+  url,
+  sellerName,
+}: ListingDetailStructuredDataProps) {
   const nonce = await getCspNonce();
-  const coverImage = listing.images.find(img => img.isCover) ?? listing.images[0];
-  const allImageUrls = listing.images.map(img => img.url).filter(Boolean);
+  const coverImage = listing.images.find((img) => img.isCover) ?? listing.images[0];
+  const allImageUrls = listing.images.map((img) => img.url).filter(Boolean);
 
   // Map Turkish fuel types to schema.org values
   const fuelTypeMap: Record<string, string> = {
@@ -155,57 +166,57 @@ export async function ListingDetailStructuredData({ listing, url, sellerName }: 
   const schema = {
     "@context": "https://schema.org",
     "@type": "Car",
-    "name": listing.title,
-    "description": listing.description,
-    "url": url,
-    "brand": {
+    name: listing.title,
+    description: listing.description,
+    url: url,
+    brand: {
       "@type": "Brand",
-      "name": listing.brand,
+      name: listing.brand,
     },
-    "model": listing.model,
-    ...(listing.carTrim ? { "vehicleModelDate": listing.carTrim } : {}),
-    "modelDate": listing.year.toString(),
-    "productionDate": listing.year.toString(),
-    "vehicleModelDate": listing.year.toString(),
-    "mileageFromOdometer": {
+    model: listing.model,
+    ...(listing.carTrim ? { vehicleModelDate: listing.carTrim } : {}),
+    modelDate: listing.year.toString(),
+    productionDate: listing.year.toString(),
+    vehicleModelDate: listing.year.toString(),
+    mileageFromOdometer: {
       "@type": "QuantitativeValue",
-      "value": listing.mileage,
-      "unitCode": "KMT",
-      "unitText": "km",
+      value: listing.mileage,
+      unitCode: "KMT",
+      unitText: "km",
     },
-    "fuelType": fuelTypeMap[listing.fuelType] ?? listing.fuelType,
-    "vehicleTransmission": transmissionMap[listing.transmission] ?? listing.transmission,
-    ...(listing.vin ? { "vehicleIdentificationNumber": listing.vin } : {}),
-    "itemCondition": "https://schema.org/UsedCondition",
-    "image": allImageUrls.length > 0 ? allImageUrls : undefined,
-    "thumbnail": coverImage?.url,
-    "offers": {
+    fuelType: fuelTypeMap[listing.fuelType] ?? listing.fuelType,
+    vehicleTransmission: transmissionMap[listing.transmission] ?? listing.transmission,
+    ...(listing.vin ? { vehicleIdentificationNumber: listing.vin } : {}),
+    itemCondition: "https://schema.org/UsedCondition",
+    image: allImageUrls.length > 0 ? allImageUrls : undefined,
+    thumbnail: coverImage?.url,
+    offers: {
       "@type": "Offer",
-      "price": listing.price,
-      "priceCurrency": "TRY",
-      "availability": "https://schema.org/InStock",
-      "url": url,
-      ...((() => {
+      price: listing.price,
+      priceCurrency: "TRY",
+      availability: "https://schema.org/InStock",
+      url: url,
+      ...(() => {
         const d = listing.updatedAt ? new Date(listing.updatedAt) : null;
         const isValid = d && !isNaN(d.getTime());
-        return isValid ? { "priceValidUntil": d.toISOString().split("T")[0] } : {};
-      })()),
-      "seller": {
+        return isValid ? { priceValidUntil: d.toISOString().split("T")[0] } : {};
+      })(),
+      seller: {
         "@type": sellerName ? "Person" : "Organization",
-        "name": sellerName ?? "OtoBurada",
+        name: sellerName ?? "OtoBurada",
       },
     },
-    "seller": {
+    seller: {
       "@type": sellerName ? "Person" : "Organization",
-      "name": sellerName ?? "OtoBurada",
+      name: sellerName ?? "OtoBurada",
     },
-    "availableAtOrFrom": {
+    availableAtOrFrom: {
       "@type": "Place",
-      "address": {
+      address: {
         "@type": "PostalAddress",
-        "addressLocality": listing.city,
-        "addressRegion": listing.district,
-        "addressCountry": "TR",
+        addressLocality: listing.city,
+        addressRegion: listing.district,
+        addressCountry: "TR",
       },
     },
   };
@@ -222,13 +233,13 @@ export async function WebSiteStructuredData({ url }: WebSiteStructuredDataProps)
   const schema = {
     "@context": "https://schema.org",
     "@type": "WebSite",
-    "name": "OtoBurada",
-    "url": url,
-    "potentialAction": {
+    name: "OtoBurada",
+    url: url,
+    potentialAction: {
       "@type": "SearchAction",
-      "target": {
+      target: {
         "@type": "EntryPoint",
-        "urlTemplate": `${url}/listings?query={search_term_string}`,
+        urlTemplate: `${url}/listings?query={search_term_string}`,
       },
       "query-input": "required name=search_term_string",
     },

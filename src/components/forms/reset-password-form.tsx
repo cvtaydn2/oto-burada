@@ -1,10 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { LoaderCircle, Lock, ShieldCheck } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { Lock, ShieldCheck, LoaderCircle } from "lucide-react";
-import { createSupabaseBrowserClient } from "@/lib/supabase/browser";
+import { useState } from "react";
+
 import { captureClientException } from "@/lib/monitoring/posthog-client";
+import { createSupabaseBrowserClient } from "@/lib/supabase/browser";
 
 export function ResetPasswordForm() {
   const router = useRouter();
@@ -59,13 +60,16 @@ export function ResetPasswordForm() {
         <div className="relative z-10 w-full max-w-lg space-y-12">
           <div className="flex items-center gap-4">
             <div className="h-px w-12 bg-primary" />
-            <span className="text-[10px] font-bold uppercase tracking-[0.4em] text-primary italic">Güvenlik Güncelleme</span>
+            <span className="text-[10px] font-bold uppercase tracking-[0.4em] text-primary italic">
+              Güvenlik Güncelleme
+            </span>
           </div>
           <h2 className="text-7xl font-bold italic text-white leading-tight tracking-tightest uppercase">
             YENİ <span className="text-primary tracking-widest block">ŞİFRE</span>
           </h2>
           <p className="text-muted-foreground/70 font-medium text-lg leading-relaxed italic border-l-4 border-primary pl-8">
-            Güvenliğiniz bizim önceliğimizdir. Güçlü bir parola belirleyerek hesabınıza tekrar erişin.
+            Güvenliğiniz bizim önceliğimizdir. Güçlü bir parola belirleyerek hesabınıza tekrar
+            erişin.
           </p>
         </div>
       </div>
@@ -91,11 +95,17 @@ export function ResetPasswordForm() {
           ) : (
             <form onSubmit={handleSubmit} className="space-y-6">
               <div className="space-y-2 group">
-                <label htmlFor="new-password" className="text-[10px] font-bold px-1 uppercase tracking-widest text-muted-foreground/70 italic group-focus-within:text-primary transition-colors">
+                <label
+                  htmlFor="new-password"
+                  className="text-[10px] font-bold px-1 uppercase tracking-widest text-muted-foreground/70 italic group-focus-within:text-primary transition-colors"
+                >
                   YENİ ŞİFRE
                 </label>
                 <div className="relative">
-                  <Lock className="absolute left-5 top-1/2 -translate-y-1/2 text-muted-foreground/70 group-focus-within:text-primary transition-colors" size={20} />
+                  <Lock
+                    className="absolute left-5 top-1/2 -translate-y-1/2 text-muted-foreground/70 group-focus-within:text-primary transition-colors"
+                    size={20}
+                  />
                   <input
                     id="new-password"
                     type="password"
@@ -111,11 +121,17 @@ export function ResetPasswordForm() {
               </div>
 
               <div className="space-y-2 group">
-                <label htmlFor="confirm-password" className="text-[10px] font-bold px-1 uppercase tracking-widest text-muted-foreground/70 italic group-focus-within:text-primary transition-colors">
+                <label
+                  htmlFor="confirm-password"
+                  className="text-[10px] font-bold px-1 uppercase tracking-widest text-muted-foreground/70 italic group-focus-within:text-primary transition-colors"
+                >
                   ŞİFRE TEKRAR
                 </label>
                 <div className="relative">
-                  <Lock className="absolute left-5 top-1/2 -translate-y-1/2 text-muted-foreground/70 group-focus-within:text-primary transition-colors" size={20} />
+                  <Lock
+                    className="absolute left-5 top-1/2 -translate-y-1/2 text-muted-foreground/70 group-focus-within:text-primary transition-colors"
+                    size={20}
+                  />
                   <input
                     id="confirm-password"
                     type="password"
@@ -131,7 +147,10 @@ export function ResetPasswordForm() {
               </div>
 
               {error && (
-                <div role="alert" className="rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm font-semibold text-rose-600">
+                <div
+                  role="alert"
+                  className="rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm font-semibold text-rose-600"
+                >
                   {error}
                 </div>
               )}

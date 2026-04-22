@@ -21,12 +21,11 @@ export function useQueryState<T extends string | number | boolean>(
   const setValue = useCallback(
     (newValue: T | ((prev: T) => T)) => {
       const current = new URLSearchParams(Array.from(searchParams.entries()));
-      
+
       const prevValue = (searchParams.get(key) as unknown as T) ?? defaultValue;
-      
-      const nextValue = typeof newValue === 'function' 
-        ? (newValue as (prev: T) => T)(prevValue) 
-        : (newValue as T);
+
+      const nextValue =
+        typeof newValue === "function" ? (newValue as (prev: T) => T)(prevValue) : (newValue as T);
 
       if (nextValue === defaultValue || nextValue === undefined || nextValue === null) {
         current.delete(key);

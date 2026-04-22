@@ -1,6 +1,7 @@
 "use client";
 
 import { Star } from "lucide-react";
+
 import { cn } from "@/lib/utils";
 
 interface SellerRatingInfoProps {
@@ -10,11 +11,11 @@ interface SellerRatingInfoProps {
   showLabels?: boolean;
 }
 
-export function SellerRatingInfo({ 
-  average, 
-  count, 
+export function SellerRatingInfo({
+  average,
+  count,
   className,
-  showLabels = true 
+  showLabels = true,
 }: SellerRatingInfoProps) {
   return (
     <div className={cn("flex items-center gap-2", className)}>
@@ -35,9 +36,7 @@ export function SellerRatingInfo({
       {showLabels && (
         <div className="flex items-center gap-1 text-xs font-bold italic uppercase tracking-tighter">
           <span className="text-foreground">{average > 0 ? average.toFixed(1) : "Yeni"}</span>
-          {count > 0 && (
-            <span className="text-muted-foreground">({count} Yorum)</span>
-          )}
+          {count > 0 && <span className="text-muted-foreground">({count} Yorum)</span>}
         </div>
       )}
     </div>

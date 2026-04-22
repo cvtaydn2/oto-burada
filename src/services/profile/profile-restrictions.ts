@@ -2,12 +2,11 @@ import type { Profile } from "@/types";
 
 export type ProfileRestrictionState = "active" | "restricted_review" | "banned";
 
-const TEMP_RESTRICTION_MARKERS = [
-  "Geçici güvenlik kısıtı",
-  "Admin incelemesi gerekiyor",
-];
+const TEMP_RESTRICTION_MARKERS = ["Geçici güvenlik kısıtı", "Admin incelemesi gerekiyor"];
 
-export function getProfileRestrictionState(profile: Partial<Profile> | null | undefined): ProfileRestrictionState {
+export function getProfileRestrictionState(
+  profile: Partial<Profile> | null | undefined
+): ProfileRestrictionState {
   if (!profile?.isBanned) {
     return "active";
   }

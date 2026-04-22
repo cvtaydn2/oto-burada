@@ -1,11 +1,12 @@
 "use client";
 
+import { ArrowLeft, MessageSquare } from "lucide-react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
+
 import { ChatSidebar } from "@/components/chat/chat-sidebar";
 import { ChatWindow } from "@/components/chat/chat-window";
 import type { Chat } from "@/types";
-import { useRouter, useSearchParams } from "next/navigation";
-import { ArrowLeft, MessageSquare } from "lucide-react";
 
 interface ChatLayoutProps {
   initialChats: Chat[];
@@ -19,7 +20,7 @@ export function ChatLayout({ initialChats, currentUserId }: ChatLayoutProps) {
   const [showSidebar, setShowSidebar] = useState(!activeChatId);
 
   const activeChat = activeChatId
-    ? initialChats.find(c => c.id === activeChatId)
+    ? initialChats.find((c) => c.id === activeChatId)
     : initialChats[0];
 
   const handleChatSelect = (chat: Chat) => {
@@ -30,12 +31,14 @@ export function ChatLayout({ initialChats, currentUserId }: ChatLayoutProps) {
   return (
     <div className="flex-1 flex overflow-hidden relative">
       {/* Sidebar — mobilde toggle ile göster/gizle */}
-      <div className={`
+      <div
+        className={`
         ${showSidebar ? "flex" : "hidden"} md:flex
         w-full md:w-80 lg:w-96 shrink-0
         border-r border-slate-100 flex-col bg-slate-50/30
         absolute md:relative inset-0 z-10 md:z-auto
-      `}>
+      `}
+      >
         <ChatSidebar
           currentUserId={currentUserId}
           activeChatId={activeChat?.id}
@@ -44,10 +47,12 @@ export function ChatLayout({ initialChats, currentUserId }: ChatLayoutProps) {
       </div>
 
       {/* Chat Window */}
-      <div className={`
+      <div
+        className={`
         ${!showSidebar ? "flex" : "hidden"} md:flex
         flex-1 min-w-0 bg-white flex-col
-      `}>
+      `}
+      >
         {/* Mobil geri butonu */}
         <div className="flex items-center gap-3 border-b border-slate-100 p-3 md:hidden">
           <button

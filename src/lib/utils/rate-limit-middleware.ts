@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+
 import { getNormalizedIp } from "@/lib/utils/ip";
 import { checkRateLimit, type RateLimitConfig, type RateLimitResult } from "@/lib/utils/rate-limit";
 
@@ -13,7 +14,7 @@ export function getRateLimitKey(request: Request, prefix: string) {
   const forwarded = request.headers.get("x-forwarded-for");
   const realIp = request.headers.get("x-real-ip");
   const rawIp = forwarded?.split(",")[0]?.trim() || realIp || "unknown";
-  
+
   const ip = getNormalizedIp(rawIp);
   return `${prefix}:${ip}`;
 }
@@ -28,13 +29,13 @@ export function getUserRateLimitKey(userId: string, prefix: string) {
 /**
  * Check rate limit and return a 429 response if exceeded.
  * Returns null if the request is within limits.
- * 
+ *
  * SECURITY: Implements fail-open catch block. If Redis or DB fails,
  * it proceeds unless the config explicitly requests fail-closed.
  */
 export async function enforceRateLimit(
   key: string,
-  config: RateLimitConfig,
+  config: RateLimitConfig
 ): Promise<{ response: NextResponse; result: RateLimitResult } | null> {
   try {
     const result = await checkRateLimit(key, config);
@@ -55,14 +56,14 @@ export async function enforceRateLimit(
             "X-RateLimit-Remaining": "0",
             "X-RateLimit-Reset": String(Math.ceil(result.resetAt / 1000)),
           },
-        },
+        }
       );
 
       return { response, result };
     }
   } catch {
     // If checkRateLimit throws (infrastructure failure)
-    // checkRateLimit itself handles failClosed logic, but we catch it here to 
+    // checkRateLimit itself handles failClosed logic, but we catch it here to
     // provide a clean fallback for any unexpected logic errors.
     if (config.failClosed) {
       return {
@@ -70,7 +71,7 @@ export async function enforceRateLimit(
           { message: "Güvenlik servisi şu an kullanılamıyor. Lütfen az sonra tekrar deneyin." },
           { status: 503 }
         ),
-        result: { allowed: false, limit: config.limit, remaining: 0, resetAt: Date.now() + 60000 }
+        result: { allowed: false, limit: config.limit, remaining: 0, resetAt: Date.now() + 60000 },
       };
     }
     // Fail-open: proceed

@@ -1,4 +1,5 @@
 import { type SupabaseClient } from "@supabase/supabase-js";
+
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { logger } from "@/lib/utils/logger";
 import { resendBreaker } from "@/lib/utils/resilience";
@@ -28,46 +29,58 @@ export async function processOutboxQueue() {
   logger.system.info(`Outbox: Processing ${queue.length} events concurrently...`);
 
   // ── PILL: Issue 3 - Concurrent Processing (Avoid HOL Blocking) ──
-  // We process messages in parallel to ensure one slow external API (e.g. Email) 
+  // We process messages in parallel to ensure one slow external API (e.g. Email)
   // doesn't block other successful operations.
-  const results = await Promise.allSettled(queue.map(async (item) => {
-    try {
-      // Mark as processing
-      await supabase.from("transaction_outbox").update({ status: "processing" }).eq("id", item.id);
+  const results = await Promise.allSettled(
+    queue.map(async (item) => {
+      try {
+        // Mark as processing
+        await supabase
+          .from("transaction_outbox")
+          .update({ status: "processing" })
+          .eq("id", item.id);
 
-      switch (item.event_type) {
-        case "email_notification":
-          await handleEmailNotification(item.payload);
-          break;
-        case "audit_cleanup":
-          break;
-        default:
-          logger.system.warn(`Outbox: Unknown event type ${item.event_type}`);
+        switch (item.event_type) {
+          case "email_notification":
+            await handleEmailNotification(item.payload);
+            break;
+          case "audit_cleanup":
+            break;
+          default:
+            logger.system.warn(`Outbox: Unknown event type ${item.event_type}`);
+        }
+
+        await supabase
+          .from("transaction_outbox")
+          .update({
+            status: "completed",
+            processed_at: new Date().toISOString(),
+          })
+          .eq("id", item.id);
+      } catch (err) {
+        const retryCount = (item.retry_count || 0) + 1;
+        const status = retryCount >= 5 ? "failed" : "pending";
+
+        await supabase
+          .from("transaction_outbox")
+          .update({
+            status,
+            retry_count: retryCount,
+            is_poison_pill: status === "failed",
+            error_message: (err as Error).message,
+          })
+          .eq("id", item.id);
+
+        logger.system.error(`Outbox: Failed item ${item.id}. Status: ${status}`, err);
       }
+    })
+  );
 
-      await supabase.from("transaction_outbox").update({ 
-        status: "completed", 
-        processed_at: new Date().toISOString() 
-      }).eq("id", item.id);
-
-    } catch (err) {
-      const retryCount = (item.retry_count || 0) + 1;
-      const status = retryCount >= 5 ? "failed" : "pending";
-      
-      await supabase.from("transaction_outbox").update({ 
-        status, 
-        retry_count: retryCount, 
-        is_poison_pill: status === "failed",
-        error_message: (err as Error).message 
-      }).eq("id", item.id);
-        
-      logger.system.error(`Outbox: Failed item ${item.id}. Status: ${status}`, err);
-    }
-  }));
-
-  const failedCount = results.filter(r => r.status === 'rejected').length;
+  const failedCount = results.filter((r) => r.status === "rejected").length;
   if (failedCount > 0) {
-    logger.system.warn(`Outbox: Parallel processing finished with ${failedCount} worker-level errors.`);
+    logger.system.warn(
+      `Outbox: Parallel processing finished with ${failedCount} worker-level errors.`
+    );
   }
 }
 
@@ -91,13 +104,11 @@ export async function enqueueOutboxEvent(
   payload: unknown,
   idempotencyKey?: string
 ) {
-  const { error } = await supabaseClient
-    .from("transaction_outbox")
-    .insert({
-      event_type: eventType,
-      payload,
-      idempotency_key: idempotencyKey,
-    });
+  const { error } = await supabaseClient.from("transaction_outbox").insert({
+    event_type: eventType,
+    payload,
+    idempotency_key: idempotencyKey,
+  });
 
   if (error) {
     logger.system.error("Outbox: Failed to enqueue event", error, { eventType });

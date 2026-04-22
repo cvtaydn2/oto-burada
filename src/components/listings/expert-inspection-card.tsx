@@ -1,20 +1,21 @@
 "use client";
 
-import { useMemo } from "react";
 import {
+  Car,
   CheckCircle2,
   ClipboardList,
+  HelpCircle,
   Info,
   ShieldCheck,
   Sparkles,
   Wrench,
-  Car,
   XCircle,
-  HelpCircle,
 } from "lucide-react";
-import { expertInspectionGradeInfo } from "@/types";
-import type { ExpertInspection } from "@/types";
+import { useMemo } from "react";
+
 import { cn, formatDate } from "@/lib/utils";
+import type { ExpertInspection } from "@/types";
+import { expertInspectionGradeInfo } from "@/types";
 
 interface ExpertInspectionCardProps {
   expertInspection?: ExpertInspection;
@@ -78,14 +79,25 @@ function StatusBadge({ status }: { status: string }) {
   );
 }
 
-export function ExpertInspectionCard({
-  expertInspection,
-  className,
-}: ExpertInspectionCardProps) {
+export function ExpertInspectionCard({ expertInspection, className }: ExpertInspectionCardProps) {
   const hasData = useMemo(() => {
     if (!expertInspection) return false;
-    const keys = ["engine", "transmission", "suspension", "brakes", "electrical", "interior", "tires", "acHeating", "damageRecord", "bodyPaint"] as const;
-    return keys.some(k => expertInspection[k] === "var" || expertInspection[k] === "yok") || expertInspection.hasInspection;
+    const keys = [
+      "engine",
+      "transmission",
+      "suspension",
+      "brakes",
+      "electrical",
+      "interior",
+      "tires",
+      "acHeating",
+      "damageRecord",
+      "bodyPaint",
+    ] as const;
+    return (
+      keys.some((k) => expertInspection[k] === "var" || expertInspection[k] === "yok") ||
+      expertInspection.hasInspection
+    );
   }, [expertInspection]);
 
   // Ekspertiz yoksa bilgilendirici kart
@@ -98,17 +110,27 @@ export function ExpertInspectionCard({
           </div>
           <div>
             <h3 className="text-base font-bold text-foreground">Ekspertiz Bilgisi Paylaşılmamış</h3>
-            <p className="text-sm text-muted-foreground">Bu ilanda doğrulanmış ekspertiz raporu henüz eklenmemiş.</p>
+            <p className="text-sm text-muted-foreground">
+              Bu ilanda doğrulanmış ekspertiz raporu henüz eklenmemiş.
+            </p>
           </div>
         </div>
         <div className="grid gap-3 sm:grid-cols-2">
           <div className="rounded-xl border border-border bg-muted/30 p-4">
-            <div className="text-[11px] font-bold uppercase tracking-widest text-muted-foreground/70">Durum</div>
-            <div className="mt-2 text-sm font-bold text-foreground">Satıcı beyanı mevcut, bağımsız ekspertiz yok</div>
+            <div className="text-[11px] font-bold uppercase tracking-widest text-muted-foreground/70">
+              Durum
+            </div>
+            <div className="mt-2 text-sm font-bold text-foreground">
+              Satıcı beyanı mevcut, bağımsız ekspertiz yok
+            </div>
           </div>
           <div className="rounded-xl border border-border bg-muted/30 p-4">
-            <div className="text-[11px] font-bold uppercase tracking-widest text-muted-foreground/70">Öneri</div>
-            <div className="mt-2 text-sm font-bold text-foreground">Aracı görmeden önce ekspertiz raporu ve servis kontrolü isteyin</div>
+            <div className="text-[11px] font-bold uppercase tracking-widest text-muted-foreground/70">
+              Öneri
+            </div>
+            <div className="mt-2 text-sm font-bold text-foreground">
+              Aracı görmeden önce ekspertiz raporu ve servis kontrolü isteyin
+            </div>
           </div>
         </div>
       </div>
@@ -122,15 +144,18 @@ export function ExpertInspectionCard({
   // Puan hesapla: grade'e göre veya totalScore'dan
   const scoreDisplay = expertInspection.totalScore
     ? `${expertInspection.totalScore}`
-    : gradeInfo?.grade === "a" ? "9.8"
-    : gradeInfo?.grade === "b" ? "8.5"
-    : gradeInfo?.grade === "c" ? "7.2"
-    : gradeInfo?.grade === "d" ? "5.8"
-    : "4.5";
+    : gradeInfo?.grade === "a"
+      ? "9.8"
+      : gradeInfo?.grade === "b"
+        ? "8.5"
+        : gradeInfo?.grade === "c"
+          ? "7.2"
+          : gradeInfo?.grade === "d"
+            ? "5.8"
+            : "4.5";
 
   return (
     <div className={cn("flex flex-col gap-6", className)}>
-
       {/* 1. Onaylı Ekspertiz Banner - Tasarıma göre mavi */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 rounded-xl border border-blue-100 bg-blue-50 p-6 shadow-sm">
         <div className="flex items-center gap-4">
@@ -152,7 +177,9 @@ export function ExpertInspectionCard({
           </div>
         </div>
         <div className="shrink-0 rounded-lg border border-blue-100 bg-card px-6 py-3 text-center shadow-sm">
-          <div className="text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-1">Eksper Puanı</div>
+          <div className="text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-1">
+            Eksper Puanı
+          </div>
           <div className="text-3xl font-extrabold text-blue-500">
             {scoreDisplay}
             <span className="text-sm font-medium text-gray-400">/10</span>
@@ -164,14 +191,26 @@ export function ExpertInspectionCard({
       {expertInspection.notes && (
         <div className="rounded-xl border border-gray-200 bg-card p-6 shadow-sm">
           <h3 className="mb-4 flex items-center gap-2 text-sm font-bold text-gray-800">
-            <svg className="size-4 text-blue-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+            <svg
+              className="size-4 text-blue-500"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
             </svg>
             Uzman Görüşü
           </h3>
           <div className="relative rounded-xl border border-gray-100 bg-gray-50 p-5">
-            <svg className="absolute top-3 left-3 size-8 text-gray-200" viewBox="0 0 24 24" fill="currentColor">
-              <path d="M14.017 21v-7.391c0-5.704 3.731-9.57 8.983-10.609l.995 2.151c-2.432.917-3.995 3.638-3.995 5.849h4v10h-9.983zm-14.017 0v-7.391c0-5.704 3.748-9.57 9-10.609l.996 2.151c-2.433.917-3.996 3.638-3.996 5.849h3.983v10h-9.983z"/>
+            <svg
+              className="absolute top-3 left-3 size-8 text-gray-200"
+              viewBox="0 0 24 24"
+              fill="currentColor"
+            >
+              <path d="M14.017 21v-7.391c0-5.704 3.731-9.57 8.983-10.609l.995 2.151c-2.432.917-3.995 3.638-3.995 5.849h4v10h-9.983zm-14.017 0v-7.391c0-5.704 3.748-9.57 9-10.609l.996 2.151c-2.433.917-3.996 3.638-3.996 5.849h3.983v10h-9.983z" />
             </svg>
             <p className="relative z-10 pt-2 pl-2 text-sm italic leading-relaxed text-gray-600">
               {expertInspection.notes}
@@ -183,7 +222,9 @@ export function ExpertInspectionCard({
                 {expertInspection.inspectedBy[0]}
               </div>
               <div>
-                <div className="text-sm font-bold text-gray-800">{expertInspection.inspectedBy}</div>
+                <div className="text-sm font-bold text-gray-800">
+                  {expertInspection.inspectedBy}
+                </div>
                 <div className="text-[10px] font-medium text-gray-500">Ekspertiz Uzmanı</div>
               </div>
             </div>
@@ -196,14 +237,19 @@ export function ExpertInspectionCard({
         {INSPECTION_CATEGORIES.map((cat) => {
           const Icon = cat.icon;
           return (
-            <div key={cat.title} className="rounded-xl border border-gray-200 bg-card p-5 shadow-sm">
+            <div
+              key={cat.title}
+              className="rounded-xl border border-gray-200 bg-card p-5 shadow-sm"
+            >
               <h3 className="mb-4 flex items-center gap-2 border-b border-gray-100 pb-3 text-xs font-bold uppercase tracking-wider text-gray-800">
                 <Icon size={14} className="text-gray-400" />
                 {cat.title}
               </h3>
               <ul className="space-y-3">
                 {cat.items.map((item) => {
-                  const status = expertInspection[item.key as keyof ExpertInspection] as string ?? "bilinmiyor";
+                  const status =
+                    (expertInspection[item.key as keyof ExpertInspection] as string) ??
+                    "bilinmiyor";
                   return (
                     <li key={item.key} className="flex items-center justify-between text-sm">
                       <span className="text-gray-600">{item.label}</span>

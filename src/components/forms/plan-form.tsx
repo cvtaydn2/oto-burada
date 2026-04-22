@@ -1,16 +1,17 @@
 "use client";
 
+import { zodResolver } from "@hookform/resolvers/zod";
+import { Loader2 } from "lucide-react";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import * as z from "zod";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Label } from "@/components/ui/label";
-import { PricingPlan, createPricingPlan, updatePricingPlan } from "@/services/admin/plans";
 import { toast } from "sonner";
-import { Loader2 } from "lucide-react";
+import * as z from "zod";
+
+import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { createPricingPlan, PricingPlan, updatePricingPlan } from "@/services/admin/plans";
 
 const planSchema = z.object({
   name: z.string().min(2, "Paket adı en az 2 karakter olmalıdır"),
@@ -101,54 +102,83 @@ export function PlanForm({ initialData, onSuccess, onCancel }: PlanFormProps) {
       <div className="space-y-4">
         <div className="grid gap-4">
           <div className="space-y-2">
-            <Label className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Paket Adı</Label>
-            <Input {...form.register("name")} placeholder="Örn: Premium Plus" className="rounded-xl" />
-            {form.formState.errors.name && <p className="text-[10px] font-bold text-rose-500">{form.formState.errors.name.message as string}</p>}
+            <Label className="text-xs font-bold uppercase tracking-widest text-muted-foreground">
+              Paket Adı
+            </Label>
+            <Input
+              {...form.register("name")}
+              placeholder="Örn: Premium Plus"
+              className="rounded-xl"
+            />
+            {form.formState.errors.name && (
+              <p className="text-[10px] font-bold text-rose-500">
+                {form.formState.errors.name.message as string}
+              </p>
+            )}
           </div>
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Fiyat (TL)</Label>
+              <Label className="text-xs font-bold uppercase tracking-widest text-muted-foreground">
+                Fiyat (TL)
+              </Label>
               <Input {...form.register("price")} type="number" className="rounded-xl" />
             </div>
             <div className="space-y-2">
-              <Label className="text-xs font-bold uppercase tracking-widest text-muted-foreground">İlan Kredisi</Label>
+              <Label className="text-xs font-bold uppercase tracking-widest text-muted-foreground">
+                İlan Kredisi
+              </Label>
               <Input {...form.register("credits")} type="number" className="rounded-xl" />
             </div>
           </div>
 
           <div className="pt-2">
-            <Label className="text-xs font-bold uppercase tracking-widest text-muted-foreground mb-4 block">Paket Özellikleri</Label>
+            <Label className="text-xs font-bold uppercase tracking-widest text-muted-foreground mb-4 block">
+              Paket Özellikleri
+            </Label>
             <div className="grid grid-cols-2 gap-4">
-               {[
-                 { id: "featured_listings", label: "Öne Çıkan İlanlar" },
-                 { id: "express_support", label: "Hızlı Destek" },
-                 { id: "advanced_analytics", label: "Gelişmiş Analiz" },
-                 { id: "no_ads", label: "Reklamsız Deneyim" },
-                 { id: "custom_badge", label: "Özel Rozet" }
-               ].map((feature) => {
-                  const fieldName = `features.${feature.id as PlanFeatureKey}` as const;
-                  return (
-                    <div key={feature.id} className="flex items-center space-x-2 bg-muted/30 p-3 rounded-xl border border-border/50">
-                       <Checkbox 
-                         id={feature.id}
-                         checked={form.watch(fieldName)}
-                         onCheckedChange={(checked) => form.setValue(fieldName, !!checked)}
-                       />
-                       <label htmlFor={feature.id} className="text-xs font-bold text-foreground/90 cursor-pointer">{feature.label}</label>
-                    </div>
-                  );
-                })}
+              {[
+                { id: "featured_listings", label: "Öne Çıkan İlanlar" },
+                { id: "express_support", label: "Hızlı Destek" },
+                { id: "advanced_analytics", label: "Gelişmiş Analiz" },
+                { id: "no_ads", label: "Reklamsız Deneyim" },
+                { id: "custom_badge", label: "Özel Rozet" },
+              ].map((feature) => {
+                const fieldName = `features.${feature.id as PlanFeatureKey}` as const;
+                return (
+                  <div
+                    key={feature.id}
+                    className="flex items-center space-x-2 bg-muted/30 p-3 rounded-xl border border-border/50"
+                  >
+                    <Checkbox
+                      id={feature.id}
+                      checked={form.watch(fieldName)}
+                      onCheckedChange={(checked) => form.setValue(fieldName, !!checked)}
+                    />
+                    <label
+                      htmlFor={feature.id}
+                      className="text-xs font-bold text-foreground/90 cursor-pointer"
+                    >
+                      {feature.label}
+                    </label>
+                  </div>
+                );
+              })}
             </div>
           </div>
 
           <div className="flex items-center space-x-2 py-2">
-            <Checkbox 
-              id="is_active" 
+            <Checkbox
+              id="is_active"
               checked={form.watch("is_active")}
               onCheckedChange={(checked) => form.setValue("is_active", !!checked)}
             />
-            <Label htmlFor="is_active" className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Bu paketi hemen yayına al</Label>
+            <Label
+              htmlFor="is_active"
+              className="text-xs font-bold uppercase tracking-widest text-muted-foreground"
+            >
+              Bu paketi hemen yayına al
+            </Label>
           </div>
         </div>
       </div>
@@ -167,7 +197,13 @@ export function PlanForm({ initialData, onSuccess, onCancel }: PlanFormProps) {
           className="flex-1 rounded-xl h-11 font-bold text-[10px] tracking-widest uppercase bg-indigo-600 hover:bg-indigo-700 shadow-sm shadow-indigo-100"
           disabled={loading}
         >
-          {loading ? <Loader2 className="animate-spin size-4" /> : initialData ? "GÜNCELLE" : "OLUŞTUR"}
+          {loading ? (
+            <Loader2 className="animate-spin size-4" />
+          ) : initialData ? (
+            "GÜNCELLE"
+          ) : (
+            "OLUŞTUR"
+          )}
         </Button>
       </div>
     </form>

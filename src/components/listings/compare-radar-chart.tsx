@@ -1,15 +1,16 @@
 "use client";
 
 import {
+  Legend,
+  PolarAngleAxis,
+  PolarGrid,
+  PolarRadiusAxis,
   Radar,
   RadarChart,
-  PolarGrid,
-  PolarAngleAxis,
-  PolarRadiusAxis,
   ResponsiveContainer,
-  Legend,
   Tooltip,
 } from "recharts";
+
 import type { Listing } from "@/types";
 
 interface CompareRadarChartProps {
@@ -23,7 +24,7 @@ export function CompareRadarChart({ cars }: CompareRadarChartProps) {
 
   // Normalize values for radar chart (0-100 scale)
   // Categories: Price (inverted), Year, Mileage (inverted), Damage Status (inverted)
-  
+
   const categories = [
     { key: "price", label: "Ekonomi" },
     { key: "year", label: "Yaş/Model" },
@@ -32,14 +33,14 @@ export function CompareRadarChart({ cars }: CompareRadarChartProps) {
     { key: "trim", label: "Donanım" },
   ];
 
-  const maxPrice = Math.max(...cars.map(c => c.price));
-  const minYear = Math.min(...cars.map(c => c.year));
-  const maxYear = Math.max(...cars.map(c => c.year));
-  const maxMileage = Math.max(...cars.map(c => c.mileage));
+  const maxPrice = Math.max(...cars.map((c) => c.price));
+  const minYear = Math.min(...cars.map((c) => c.year));
+  const maxYear = Math.max(...cars.map((c) => c.year));
+  const maxMileage = Math.max(...cars.map((c) => c.mileage));
 
-  const data = categories.map(cat => {
+  const data = categories.map((cat) => {
     const row: Record<string, number | string> = { subject: cat.label };
-    
+
     cars.forEach((car) => {
       let value = 0;
       if (cat.key === "price") {
@@ -59,7 +60,7 @@ export function CompareRadarChart({ cars }: CompareRadarChartProps) {
       }
       row[car.id] = Math.round(Math.max(10, value));
     });
-    
+
     return row;
   });
 
@@ -82,8 +83,12 @@ export function CompareRadarChart({ cars }: CompareRadarChartProps) {
               fillOpacity={0.4}
             />
           ))}
-          <Tooltip 
-            contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)' }}
+          <Tooltip
+            contentStyle={{
+              borderRadius: "12px",
+              border: "none",
+              boxShadow: "0 10px 15px -3px rgb(0 0 0 / 0.1)",
+            }}
           />
           <Legend verticalAlign="bottom" height={36} wrapperStyle={{ fontSize: "12px" }} />
         </RadarChart>

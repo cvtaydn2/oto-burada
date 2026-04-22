@@ -1,4 +1,4 @@
-import { test, expect, type Page } from "@playwright/test";
+import { expect, type Page, test } from "@playwright/test";
 
 async function getFirstPublicListingHref(page: Page) {
   await page.goto("/");
@@ -143,7 +143,9 @@ test.describe("API Endpoints", () => {
     expect(res.status()).toBe(401);
   });
 
-  test("POST /api/admin/listings/test-id/moderate without auth should return 401", async ({ request }) => {
+  test("POST /api/admin/listings/test-id/moderate without auth should return 401", async ({
+    request,
+  }) => {
     const res = await request.post("/api/admin/listings/test-id/moderate", {
       data: {
         action: "approve",
@@ -152,7 +154,9 @@ test.describe("API Endpoints", () => {
     expect(res.status()).toBe(401);
   });
 
-  test("PATCH /api/admin/listings/test-id/edit without auth should return 401", async ({ request }) => {
+  test("PATCH /api/admin/listings/test-id/edit without auth should return 401", async ({
+    request,
+  }) => {
     const res = await request.patch("/api/admin/listings/test-id/edit", {
       data: {
         title: "Guncel baslik",
@@ -170,7 +174,9 @@ test.describe("API Endpoints", () => {
     expect(res.status()).toBe(401);
   });
 
-  test("POST /api/admin/listings/bulk-moderate without auth should return 401", async ({ request }) => {
+  test("POST /api/admin/listings/bulk-moderate without auth should return 401", async ({
+    request,
+  }) => {
     const res = await request.post("/api/admin/listings/bulk-moderate", {
       data: {
         action: "approve",

@@ -1,10 +1,11 @@
 "use server";
 
+import { captureServerError, captureServerWarning } from "@/lib/monitoring/posthog-server";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
+import { logger } from "@/lib/utils/logger";
+
 import type { PlatformSettings } from "./settings-types";
 import { defaultPlatformSettings } from "./settings-types";
-import { logger } from "@/lib/utils/logger";
-import { captureServerError, captureServerWarning } from "@/lib/monitoring/posthog-server";
 
 export type { PlatformSettings } from "./settings-types";
 
@@ -23,8 +24,13 @@ export async function getPlatformSettings(): Promise<PlatformSettings> {
 
     // Table may not exist yet — return defaults gracefully
     if (error) {
-      logger.settings.warn("platform_settings table not available, using defaults", { message: error.message });
-      captureServerWarning("platform_settings table not available", "settings", { code: error.code, message: error.message });
+      logger.settings.warn("platform_settings table not available, using defaults", {
+        message: error.message,
+      });
+      captureServerWarning("platform_settings table not available", "settings", {
+        code: error.code,
+        message: error.message,
+      });
       return defaultPlatformSettings;
     }
 
@@ -68,15 +74,27 @@ export async function getPlatformSettings(): Promise<PlatformSettings> {
 }
 
 export async function updateAllPlatformSettings(
-  settings: PlatformSettings,
+  settings: PlatformSettings
 ): Promise<{ success: boolean; error?: string }> {
   try {
     const supabase = createSupabaseAdminClient();
 
     const updates = [
-      { key: "general_appearance", value: settings.general_appearance, updated_at: new Date().toISOString() },
-      { key: "moderation_policies", value: settings.moderation_policies, updated_at: new Date().toISOString() },
-      { key: "notification_settings", value: settings.notification_settings, updated_at: new Date().toISOString() },
+      {
+        key: "general_appearance",
+        value: settings.general_appearance,
+        updated_at: new Date().toISOString(),
+      },
+      {
+        key: "moderation_policies",
+        value: settings.moderation_policies,
+        updated_at: new Date().toISOString(),
+      },
+      {
+        key: "notification_settings",
+        value: settings.notification_settings,
+        updated_at: new Date().toISOString(),
+      },
       { key: "performance", value: settings.performance, updated_at: new Date().toISOString() },
     ];
 

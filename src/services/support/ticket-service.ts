@@ -1,8 +1,8 @@
-import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
-import { sendTicketReplyEmail, sendTicketCreatedEmail } from "@/services/email/email-service";
+import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { getRequiredAppUrl } from "@/lib/utils/env";
 import { logger } from "@/lib/utils/logger";
+import { sendTicketCreatedEmail, sendTicketReplyEmail } from "@/services/email/email-service";
 
 export type TicketStatus = "open" | "in_progress" | "resolved" | "closed";
 export type TicketPriority = "low" | "medium" | "high" | "urgent";
@@ -46,14 +46,11 @@ export async function getUserTickets(userId: string): Promise<Ticket[]> {
   return (data ?? []).map(mapTicket);
 }
 
-export async function createTicket(
-  userId: string,
-  input: CreateTicketInput,
-): Promise<Ticket> {
+export async function createTicket(userId: string, input: CreateTicketInput): Promise<Ticket> {
   // Use server client (authenticated role) with security definer RPC
   // This respects RLS policies instead of bypassing them
   const supabase = await createSupabaseServerClient();
-  
+
   const { data, error } = await supabase.rpc("create_user_ticket", {
     p_subject: input.subject,
     p_description: input.description,
@@ -86,14 +83,16 @@ export async function createTicket(
   return ticket;
 }
 
-export async function createPublicTicket(input: {
-  contactEmail: string;
-  contactName: string;
-} & CreateTicketInput): Promise<Ticket> {
+export async function createPublicTicket(
+  input: {
+    contactEmail: string;
+    contactName: string;
+  } & CreateTicketInput
+): Promise<Ticket> {
   // Use server client (anon role) with security definer RPC
   // This respects RLS policies instead of bypassing them with admin client
   const supabase = await createSupabaseServerClient();
-  
+
   const description = [
     `İletişim Adı: ${input.contactName}`,
     `İletişim E-postası: ${input.contactEmail}`,
@@ -155,14 +154,14 @@ export async function getAllTickets(options?: {
       .from("tickets")
       .select("*")
       .order("created_at", { ascending: false });
-    
+
     if (options?.status) {
       fallbackQuery.eq("status", options.status);
     }
     if (options?.limit) {
       fallbackQuery.limit(options.limit);
     }
-    
+
     const { data: fallbackData, error: fallbackError } = await fallbackQuery;
     if (fallbackError) throw fallbackError;
     return (fallbackData ?? []).map(mapTicket);
@@ -173,12 +172,12 @@ export async function getAllTickets(options?: {
 export async function updateTicketStatus(
   ticketId: string,
   status: TicketStatus,
-  adminResponse?: string,
+  adminResponse?: string
 ): Promise<Ticket> {
   // Use server client (authenticated admin) with security definer RPC
   // This enforces admin check inside the RPC function
   const supabase = await createSupabaseServerClient();
-  
+
   const { data, error } = await supabase.rpc("admin_update_ticket", {
     p_ticket_id: ticketId,
     p_status: status,
@@ -247,7 +246,9 @@ export async function getTicketCount(): Promise<Record<TicketStatus, number>> {
 
 // ─── Yardımcı Fonksiyonlar ───────────────────────────────────────────────────
 
-async function getUserEmailAndName(userId: string): Promise<{ email: string | null; name: string | null }> {
+async function getUserEmailAndName(
+  userId: string
+): Promise<{ email: string | null; name: string | null }> {
   try {
     const admin = createSupabaseAdminClient();
     const { data } = await admin.auth.admin.getUserById(userId);

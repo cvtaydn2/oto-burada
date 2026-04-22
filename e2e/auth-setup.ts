@@ -10,8 +10,8 @@
  */
 
 import { chromium, type FullConfig } from "@playwright/test";
-import path from "path";
 import fs from "fs";
+import path from "path";
 
 const AUTH_FILE = path.join(process.cwd(), "playwright", ".auth", "user.json");
 

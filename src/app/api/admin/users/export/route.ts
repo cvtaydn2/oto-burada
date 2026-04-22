@@ -1,7 +1,7 @@
 import { requireApiAdminUser } from "@/lib/auth/api-admin";
+import { captureServerError, captureServerEvent } from "@/lib/monitoring/posthog-server";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { logger } from "@/lib/utils/logger";
-import { captureServerError, captureServerEvent } from "@/lib/monitoring/posthog-server";
 
 export async function GET() {
   const authResponse = await requireApiAdminUser();
@@ -16,18 +16,38 @@ export async function GET() {
 
     if (error) {
       logger.admin.error("User export query failed", error);
-      captureServerError("User export query failed", "admin", error, {
-        adminUserId: authResponse.id,
-      }, authResponse.id);
+      captureServerError(
+        "User export query failed",
+        "admin",
+        error,
+        {
+          adminUserId: authResponse.id,
+        },
+        authResponse.id
+      );
       return new Response("Export başarısız", { status: 500 });
     }
 
-    captureServerEvent("admin_users_exported", {
-      adminUserId: authResponse.id,
-      count: profiles?.length ?? 0,
-    }, authResponse.id);
+    captureServerEvent(
+      "admin_users_exported",
+      {
+        adminUserId: authResponse.id,
+        count: profiles?.length ?? 0,
+      },
+      authResponse.id
+    );
 
-    const headers = ["ID", "Ad Soyad", "Telefon", "Şehir", "Rol", "Tip", "Doğrulandı", "Yasaklı", "Kayıt Tarihi"];
+    const headers = [
+      "ID",
+      "Ad Soyad",
+      "Telefon",
+      "Şehir",
+      "Rol",
+      "Tip",
+      "Doğrulandı",
+      "Yasaklı",
+      "Kayıt Tarihi",
+    ];
     const rows = (profiles ?? []).map((p) => [
       p.id,
       p.full_name ?? "",
@@ -52,9 +72,15 @@ export async function GET() {
     });
   } catch (err) {
     logger.admin.error("User export unexpected error", err);
-    captureServerError("User export unexpected error", "admin", err, {
-      adminUserId: authResponse.id,
-    }, authResponse.id);
+    captureServerError(
+      "User export unexpected error",
+      "admin",
+      err,
+      {
+        adminUserId: authResponse.id,
+      },
+      authResponse.id
+    );
     return new Response("Sunucu hatası", { status: 500 });
   }
 }

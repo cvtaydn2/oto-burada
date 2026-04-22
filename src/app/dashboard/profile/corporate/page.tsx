@@ -1,22 +1,32 @@
-import { requireUser } from "@/lib/auth/session";
-import { getStoredProfileById, buildProfileFromAuthUser } from "@/services/profile/profile-records";
+import {
+  AlertTriangle,
+  ArrowLeft,
+  Building2,
+  CheckCircle2,
+  Globe,
+  MapPin,
+  XCircle,
+} from "lucide-react";
+import Link from "next/link";
+
 import { CorporateProfileForm } from "@/components/forms/corporate-profile-form";
 import { updateCorporateProfileAction } from "@/lib/auth/profile-actions";
-import { Building2, ArrowLeft, CheckCircle2, Globe, MapPin, AlertTriangle, XCircle } from "lucide-react";
-import Link from "next/link";
+import { requireUser } from "@/lib/auth/session";
 import { trust } from "@/lib/constants/ui-strings";
 import { getSellerTrustUI } from "@/lib/utils/trust-ui";
+import { buildProfileFromAuthUser, getStoredProfileById } from "@/services/profile/profile-records";
 
 export const dynamic = "force-dynamic";
 
 export default async function CorporateSettingsPage() {
   const user = await requireUser();
   const profile = (await getStoredProfileById(user.id)) ?? buildProfileFromAuthUser(user);
-  
+
   const trustUI = getSellerTrustUI(profile);
-  
+
   const isApproved = trustUI.isApproved;
-  const isPending = trustUI.restrictionState === "restricted_review" && profile.verificationStatus === "pending";
+  const isPending =
+    trustUI.restrictionState === "restricted_review" && profile.verificationStatus === "pending";
   const isRejected = profile.verificationStatus === "rejected";
 
   return (
@@ -31,13 +41,13 @@ export default async function CorporateSettingsPage() {
             <ArrowLeft size={18} />
           </Link>
           <div>
-            <h1 className="text-2xl font-bold text-foreground">
-              Kurumsal Mağaza Ayarları
-            </h1>
-            <p className="text-sm text-muted-foreground mt-0.5">Profesyonel galeri kimliğinizi yönetin</p>
+            <h1 className="text-2xl font-bold text-foreground">Kurumsal Mağaza Ayarları</h1>
+            <p className="text-sm text-muted-foreground mt-0.5">
+              Profesyonel galeri kimliğinizi yönetin
+            </p>
           </div>
         </div>
-        
+
         {isApproved && (
           <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-50 text-emerald-700 text-xs font-bold border border-emerald-100">
             <CheckCircle2 size={14} />
@@ -63,7 +73,9 @@ export default async function CorporateSettingsPage() {
         <div className="rounded-xl border border-amber-100 bg-amber-50/50 p-4 flex items-start gap-3">
           <AlertTriangle size={18} className="text-amber-500 mt-0.5 shrink-0" />
           <div>
-            <p className="text-sm font-bold text-amber-800 tracking-tight uppercase tracking-widest">{trust.accountUnderReview}</p>
+            <p className="text-sm font-bold text-amber-800 tracking-tight uppercase tracking-widest">
+              {trust.accountUnderReview}
+            </p>
             <p className="text-xs text-amber-600 mt-1 font-medium">
               {trust.verificationPendingDesc}
             </p>
@@ -75,7 +87,9 @@ export default async function CorporateSettingsPage() {
         <div className="rounded-xl border border-rose-100 bg-rose-50/50 p-4 flex items-start gap-3">
           <XCircle size={18} className="text-rose-500 mt-0.5 shrink-0" />
           <div>
-            <p className="text-sm font-bold text-rose-800 tracking-tight uppercase tracking-widest">{trust.verificationRejected}</p>
+            <p className="text-sm font-bold text-rose-800 tracking-tight uppercase tracking-widest">
+              {trust.verificationRejected}
+            </p>
             <p className="text-xs text-rose-600 mt-1 font-medium">
               {trust.verificationRejectedDesc}
             </p>
@@ -89,7 +103,9 @@ export default async function CorporateSettingsPage() {
           <div>
             <p className="text-sm font-bold text-blue-800">Kurumsal Hesap Başvurusu</p>
             <p className="text-xs text-blue-600 mt-1">
-              Kurumsal mağaza açarak galeri sayfanızı oluşturun, tüm ilanlarınızı tek çatı altında toplayın ve alıcılara profesyonel bir görünüm sunun. Başvurunuz ardından ekibimiz bilgilerinizi inceleyecektir.
+              Kurumsal mağaza açarak galeri sayfanızı oluşturun, tüm ilanlarınızı tek çatı altında
+              toplayın ve alıcılara profesyonel bir görünüm sunun. Başvurunuz ardından ekibimiz
+              bilgilerinizi inceleyecektir.
             </p>
           </div>
         </div>
@@ -114,7 +130,9 @@ export default async function CorporateSettingsPage() {
               </div>
               <div>
                 <p className="text-xs text-muted-foreground font-medium">Web Sitesi</p>
-                <p className="text-sm font-bold text-foreground truncate">{profile.websiteUrl.replace(/^https?:\/\//, "")}</p>
+                <p className="text-sm font-bold text-foreground truncate">
+                  {profile.websiteUrl.replace(/^https?:\/\//, "")}
+                </p>
               </div>
             </div>
           )}
@@ -125,7 +143,9 @@ export default async function CorporateSettingsPage() {
               </div>
               <div>
                 <p className="text-xs text-muted-foreground font-medium">Adres</p>
-                <p className="text-sm font-bold text-foreground truncate">{profile.businessAddress}</p>
+                <p className="text-sm font-bold text-foreground truncate">
+                  {profile.businessAddress}
+                </p>
               </div>
             </div>
           )}

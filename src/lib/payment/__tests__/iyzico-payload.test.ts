@@ -1,11 +1,12 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { describe, it, expect, vi } from "vitest";
+import { describe, expect, it, vi } from "vitest";
+
 import { IyzicoProvider } from "../iyzico";
 import { PaymentRequest } from "../types";
 
 // Mock config
 vi.mock("../config", () => ({
-  isPaymentEnabled: vi.fn(() => true)
+  isPaymentEnabled: vi.fn(() => true),
 }));
 
 // Mock Iyzipay
@@ -13,9 +14,11 @@ vi.mock("iyzipay", () => {
   return {
     default: class {
       checkoutFormInitialize = {
-        create: vi.fn((data, cb) => cb(null, { status: "success", token: "test-token", paymentPageUrl: "https://test.url" }))
+        create: vi.fn((data, cb) =>
+          cb(null, { status: "success", token: "test-token", paymentPageUrl: "https://test.url" })
+        ),
       };
-    }
+    },
   };
 });
 
@@ -40,16 +43,16 @@ describe("Iyzico Payload Mapping", () => {
       ip: "192.168.1.1",
       registrationDate: "2023-01-01 10:00:00",
       lastLoginDate: "2023-04-20 12:00:00",
-    }
+    },
   };
 
   it("should map buyer fields correctly to Iyzico structure", async () => {
-    const createSpy = vi.spyOn(provider['iyzipay']!.checkoutFormInitialize, 'create');
-    
+    const createSpy = vi.spyOn(provider["iyzipay"]!.checkoutFormInitialize, "create");
+
     await provider.processPayment(validRequest);
-    
+
     const payload = createSpy.mock.calls[0][0];
-    
+
     expect(payload.buyer.name).toBe("Cevat");
     expect(payload.buyer.surname).toBe("Aydin");
     expect(payload.buyer.email).toBe("cevat@example.com");
@@ -64,18 +67,18 @@ describe("Iyzico Payload Mapping", () => {
   it("should fail validation if buyer info is missing", async () => {
     const invalidRequest = { ...validRequest, buyer: undefined };
     const result = await provider.processPayment(invalidRequest as any);
-    
+
     expect(result.success).toBe(false);
     expect(result.error).toContain("Müşteri bilgileri eksik");
   });
 
   it("should match snapshot for payment init payload", async () => {
-    const createSpy = vi.spyOn(provider['iyzipay']!.checkoutFormInitialize, 'create');
-    
+    const createSpy = vi.spyOn(provider["iyzipay"]!.checkoutFormInitialize, "create");
+
     await provider.processPayment(validRequest);
-    
+
     const payload = createSpy.mock.calls[0][0];
-    
+
     // We remove dynamic dates if any, but in this case validRequest has static ones
     expect(payload).toMatchSnapshot();
   });

@@ -1,5 +1,7 @@
-import { TrendingDown, TrendingUp, CheckCircle2 } from "lucide-react";
+import { CheckCircle2, TrendingDown, TrendingUp } from "lucide-react";
+
 import { formatCurrency } from "@/lib/utils";
+
 import { MarketPriceBar } from "./market-price-bar";
 
 interface PriceAnalysisCardProps {
@@ -63,7 +65,8 @@ export function PriceAnalysisCard({
                 </strong>
               ) : (
                 <>
-                  {" "}ortalamasından
+                  {" "}
+                  ortalamasından
                   <strong
                     className={`ml-1 ${
                       marketStatus === "excellent"
@@ -85,42 +88,35 @@ export function PriceAnalysisCard({
       </div>
 
       {/* Trust Signals */}
-      <div className={`flex flex-col gap-4 p-6 sm:p-8 border-t border-border/50 ${isManipulated ? 'bg-red-50' : 'bg-muted/20'}`}>
+      <div
+        className={`flex flex-col gap-4 p-6 sm:p-8 border-t border-border/50 ${isManipulated ? "bg-red-50" : "bg-muted/20"}`}
+      >
         {isManipulated ? (
           <div className="flex items-start gap-3">
             <TrendingUp size={18} className="mt-0.5 shrink-0 text-red-500" />
             <div>
               <div className="text-sm font-bold text-red-700">Fiyat Manipülasyonu Şüphesi</div>
-                <p className="text-xs text-red-600/80 mt-1 leading-relaxed">
-                  Bu ilan fiyatı piyasa ortalamasının çok üzerindedir. Lütfen &quot;Fiyat Manipülasyonu&quot; olarak bildirin.
-                </p>
+              <p className="text-xs text-red-600/80 mt-1 leading-relaxed">
+                Bu ilan fiyatı piyasa ortalamasının çok üzerindedir. Lütfen &quot;Fiyat
+                Manipülasyonu&quot; olarak bildirin.
+              </p>
             </div>
           </div>
         ) : (
           <>
             <div className="flex items-start gap-3">
-              <CheckCircle2
-                size={18}
-                className="mt-0.5 shrink-0 text-emerald-500"
-              />
+              <CheckCircle2 size={18} className="mt-0.5 shrink-0 text-emerald-500" />
               <div>
-                <div className="text-sm font-semibold text-foreground">
-                  Fiyat Geçmişi Temiz
-                </div>
+                <div className="text-sm font-semibold text-foreground">Fiyat Geçmişi Temiz</div>
                 <div className="text-xs text-muted-foreground mt-0.5">
                   Son 30 günde suni fiyat artışı tespit edilmedi.
                 </div>
               </div>
             </div>
             <div className="flex items-start gap-3">
-              <CheckCircle2
-                size={18}
-                className="mt-0.5 shrink-0 text-emerald-500"
-              />
+              <CheckCircle2 size={18} className="mt-0.5 shrink-0 text-emerald-500" />
               <div>
-                <div className="text-sm font-semibold text-foreground">
-                  Gerçekçi Kilometre
-                </div>
+                <div className="text-sm font-semibold text-foreground">Gerçekçi Kilometre</div>
                 <div className="text-xs text-muted-foreground mt-0.5">
                   Aracın yaşına göre yıllık ortalama kullanım normal.
                 </div>

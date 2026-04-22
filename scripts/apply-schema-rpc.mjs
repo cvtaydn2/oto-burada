@@ -18,12 +18,12 @@ async function applySchema() {
   const schema = fs.readFileSync(schemaPath, "utf-8");
 
   console.log("Applying schema via RPC...");
-  
+
   // Split schema into statements and execute
   const statements = schema
     .split(/;\s*$/m)
-    .map(s => s.trim())
-    .filter(s => s.length > 0 && !s.startsWith("--"));
+    .map((s) => s.trim())
+    .filter((s) => s.length > 0 && !s.startsWith("--"));
 
   for (let i = 0; i < statements.length; i++) {
     const stmt = statements[i];
@@ -38,7 +38,7 @@ async function applySchema() {
       console.log(`Statement ${i + 1} might have issues: ${e.message}`);
     }
   }
-  
+
   console.log("Schema application complete!");
 }
 

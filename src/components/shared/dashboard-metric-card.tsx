@@ -71,7 +71,7 @@ export function DashboardMetricCard({
     <div
       className={cn(
         "rounded-2xl border p-5 shadow-sm transition-all hover:shadow-md hover:border-blue-200 group bg-card",
-        palette.panel,
+        palette.panel
       )}
     >
       <div className="flex items-start justify-between gap-4">
@@ -80,18 +80,20 @@ export function DashboardMetricCard({
             <div
               className={cn(
                 "inline-flex items-center rounded-lg border px-2 py-1 text-[10px] font-bold uppercase tracking-wider",
-                palette.badge,
+                palette.badge
               )}
             >
               {label}
             </div>
             {trend !== undefined && (
-              <span className={cn(
-                "text-[10px] font-bold px-1.5 py-0.5 rounded-md flex items-center gap-1",
-                trend >= 0 ? "bg-emerald-50 text-emerald-600" : "bg-rose-50 text-rose-600"
-              )}>
-                {trend >= 0 ? "+" : ""}{trend}%
-                {trendLabel && <span className="opacity-60">{trendLabel}</span>}
+              <span
+                className={cn(
+                  "text-[10px] font-bold px-1.5 py-0.5 rounded-md flex items-center gap-1",
+                  trend >= 0 ? "bg-emerald-50 text-emerald-600" : "bg-rose-50 text-rose-600"
+                )}
+              >
+                {trend >= 0 ? "+" : ""}
+                {trend}%{trendLabel && <span className="opacity-60">{trendLabel}</span>}
               </span>
             )}
           </div>
@@ -100,8 +102,8 @@ export function DashboardMetricCard({
         </div>
         <div
           className={cn(
-        "flex size-12 shrink-0 items-center justify-center rounded-xl transition-transform",
-            palette.icon,
+            "flex size-12 shrink-0 items-center justify-center rounded-xl transition-transform",
+            palette.icon
           )}
         >
           <Icon className="size-6" />

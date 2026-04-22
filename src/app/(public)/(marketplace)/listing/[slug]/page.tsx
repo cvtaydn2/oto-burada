@@ -1,8 +1,3 @@
-import { Suspense } from "react";
-import Link from "next/link";
-import dynamic from "next/dynamic";
-import type { Metadata } from "next";
-import { notFound } from "next/navigation";
 import {
   AlertCircle,
   Calendar,
@@ -21,40 +16,45 @@ import {
   Star,
   Store,
   TrendingDown,
-  TrendingUp,
   Zap,
 } from "lucide-react";
+import type { Metadata } from "next";
+import dynamic from "next/dynamic";
+import Link from "next/link";
+import { notFound } from "next/navigation";
+import { Suspense } from "react";
 
+import { CompareButton } from "@/components/listings/compare-button";
+import { DamageReportCard } from "@/components/listings/damage-report-card";
+import { ExpertInspectionCard } from "@/components/listings/expert-inspection-card";
+import { FavoriteButton } from "@/components/listings/favorite-button";
+import { ListingPriceHistoryChart } from "@/components/listings/listing-detail/listing-price-history-chart";
+// Components
+import { ListingGallery } from "@/components/listings/listing-gallery";
+import { ShareButton } from "@/components/listings/share-button";
 // SEO & Monitoring
-import { ListingDetailStructuredData, BreadcrumbStructuredData } from "@/components/seo/structured-data";
-import { buildListingDetailMetadata, buildAbsoluteUrl } from "@/lib/seo";
+import {
+  BreadcrumbStructuredData,
+  ListingDetailStructuredData,
+} from "@/components/seo/structured-data";
+import { ListingCard } from "@/components/shared/listing-card";
+import { ListingViewTracker } from "@/features/marketplace/components/listing-view-tracker";
 import { getCurrentUser } from "@/lib/auth/session";
-
+import { breadcrumbs as breadcrumbLabels } from "@/lib/constants/ui-strings";
+import { features } from "@/lib/features";
+import { buildAbsoluteUrl, buildListingDetailMetadata } from "@/lib/seo";
+import { cn, formatNumber, formatPrice } from "@/lib/utils";
+import { getMembershipYears, getMemberSinceYear } from "@/lib/utils/listing-utils";
+import { getListingCardInsights } from "@/services/listings/listing-card-insights";
+import { getListingPriceHistory } from "@/services/listings/listing-price-history";
 // Services
 import {
   getMarketplaceListingBySlug,
   getMarketplaceSeller,
-  getStoredListingBySlug,
   getSimilarMarketplaceListings,
+  getStoredListingBySlug,
 } from "@/services/listings/marketplace-listings";
-import { getListingCardInsights } from "@/services/listings/listing-card-insights";
-import { getListingPriceHistory } from "@/services/listings/listing-price-history";
 import { getSellerRatingSummary } from "@/services/profile/seller-reviews";
-import { getMemberSinceYear, getMembershipYears } from "@/lib/utils/listing-utils";
-import { breadcrumbs as breadcrumbLabels } from "@/lib/constants/ui-strings";
-import { cn, formatNumber, formatPrice } from "@/lib/utils";
-
-// Components
-import { ListingGallery } from "@/components/listings/listing-gallery";
-import { ListingViewTracker } from "@/features/marketplace/components/listing-view-tracker";
-import { ListingCard } from "@/components/shared/listing-card";
-import { FavoriteButton } from "@/components/listings/favorite-button";
-import { ShareButton } from "@/components/listings/share-button";
-import { ExpertInspectionCard } from "@/components/listings/expert-inspection-card";
-import { DamageReportCard } from "@/components/listings/damage-report-card";
-import { ListingPriceHistoryChart } from "@/components/listings/listing-detail/listing-price-history-chart";
-import { features } from "@/lib/features";
-import { CompareButton } from "@/components/listings/compare-button";
 
 const ListingMap = dynamic(
   () => import("@/components/shared/listing-map-wrapper").then((m) => m.ListingMapWrapper),
@@ -66,12 +66,12 @@ const ContactActions = dynamic(
   { loading: () => <div className="h-12 w-full animate-pulse rounded-xl bg-muted" /> }
 );
 
-const MobileStickyActions = dynamic(
-  () => import("@/components/listings/mobile-sticky-actions").then((m) => m.MobileStickyActions)
+const MobileStickyActions = dynamic(() =>
+  import("@/components/listings/mobile-sticky-actions").then((m) => m.MobileStickyActions)
 );
 
-const ReportListingForm = dynamic(
-  () => import("@/components/forms/report-listing-form").then((m) => m.ReportListingForm)
+const ReportListingForm = dynamic(() =>
+  import("@/components/forms/report-listing-form").then((m) => m.ReportListingForm)
 );
 
 interface ListingDetailPageProps {
@@ -133,16 +133,19 @@ export default async function ListingDetailPage({ params }: ListingDetailPagePro
   const memberSince = getMemberSinceYear(seller?.createdAt ?? null);
   const membershipYears = getMembershipYears(memberSince);
   const membershipLabel =
-    membershipYears === null ? null :
-    membershipYears === 0   ? "Yeni Üye" :
-    membershipYears === 1   ? "1 Yıldır Üye" :
-    `${membershipYears} Yıldır Üye`;
+    membershipYears === null
+      ? null
+      : membershipYears === 0
+        ? "Yeni Üye"
+        : membershipYears === 1
+          ? "1 Yıldır Üye"
+          : `${membershipYears} Yıldır Üye`;
 
   // Market price
   const marketIndex = listing.marketPriceIndex;
   const indexPercent = marketIndex != null ? Math.round((marketIndex - 1) * 100) : null;
   const isOpportunity = indexPercent != null && indexPercent < -5;
-  const isOverpriced  = indexPercent != null && indexPercent > 10;
+  const isOverpriced = indexPercent != null && indexPercent > 10;
 
   // Breadcrumbs
   const pageBreadcrumbs = [
@@ -184,7 +187,6 @@ export default async function ListingDetailPage({ params }: ListingDetailPagePro
 
       <main className="min-h-screen bg-muted/30">
         <div className="mx-auto max-w-[1400px] px-3 sm:px-4 lg:px-6 py-4 sm:py-6 pb-32 lg:pb-12">
-
           {/* ── Breadcrumb ── */}
           <nav
             aria-label="Breadcrumb"
@@ -196,9 +198,7 @@ export default async function ListingDetailPage({ params }: ListingDetailPagePro
                   href={b.url}
                   className={cn(
                     "text-[10px] font-bold uppercase tracking-widest transition-colors hover:text-primary",
-                    i === pageBreadcrumbs.length - 1
-                      ? "text-foreground"
-                      : "text-muted-foreground"
+                    i === pageBreadcrumbs.length - 1 ? "text-foreground" : "text-muted-foreground"
                   )}
                 >
                   {b.name}
@@ -214,7 +214,6 @@ export default async function ListingDetailPage({ params }: ListingDetailPagePro
               ZONE 1 — HERO: Gallery + Price/Contact (above the fold)
           ══════════════════════════════════════════════════════════════════ */}
           <div className="grid grid-cols-1 gap-4 sm:gap-6 lg:grid-cols-[1fr_360px] lg:gap-8 mb-6 sm:mb-8">
-
             {/* ── Left: Gallery ── */}
             <div className="space-y-4">
               <div className="overflow-hidden rounded-2xl border border-border bg-card shadow-sm">
@@ -300,7 +299,6 @@ export default async function ListingDetailPage({ params }: ListingDetailPagePro
 
             {/* ── Right: Price + Contact (sticky on desktop) ── */}
             <div className="space-y-4 lg:sticky lg:top-24 lg:self-start">
-
               {/* Price Card */}
               <div className="rounded-2xl border border-border bg-card p-6 shadow-sm">
                 <div className="mb-1 text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
@@ -315,35 +313,55 @@ export default async function ListingDetailPage({ params }: ListingDetailPagePro
 
                 {/* Market index pill */}
                 {indexPercent != null && (
-                  <div className={cn(
-                    "mb-4 flex items-center gap-3 rounded-xl border p-3",
-                    isOpportunity ? "border-emerald-200 bg-emerald-50" :
-                    isOverpriced  ? "border-amber-200 bg-amber-50" :
-                    "border-border bg-muted/30"
-                  )}>
-                    <div className={cn(
-                      "flex size-9 shrink-0 items-center justify-center rounded-lg font-bold text-xs",
-                      isOpportunity ? "bg-emerald-500 text-white" :
-                      isOverpriced  ? "bg-amber-500 text-white" :
-                      "bg-primary/10 text-primary"
-                    )}>
+                  <div
+                    className={cn(
+                      "mb-4 flex items-center gap-3 rounded-xl border p-3",
+                      isOpportunity
+                        ? "border-emerald-200 bg-emerald-50"
+                        : isOverpriced
+                          ? "border-amber-200 bg-amber-50"
+                          : "border-border bg-muted/30"
+                    )}
+                  >
+                    <div
+                      className={cn(
+                        "flex size-9 shrink-0 items-center justify-center rounded-lg font-bold text-xs",
+                        isOpportunity
+                          ? "bg-emerald-500 text-white"
+                          : isOverpriced
+                            ? "bg-amber-500 text-white"
+                            : "bg-primary/10 text-primary"
+                      )}
+                    >
                       {indexPercent > 0 ? `+${indexPercent}%` : `${indexPercent}%`}
                     </div>
                     <div>
-                      <div className={cn(
-                        "text-[10px] font-bold uppercase tracking-widest",
-                        isOpportunity ? "text-emerald-700" :
-                        isOverpriced  ? "text-amber-700" :
-                        "text-muted-foreground"
-                      )}>
-                        {isOpportunity ? "Piyasa Altı Fiyat" : isOverpriced ? "Piyasa Üstü" : "Piyasa Değeri"}
+                      <div
+                        className={cn(
+                          "text-[10px] font-bold uppercase tracking-widest",
+                          isOpportunity
+                            ? "text-emerald-700"
+                            : isOverpriced
+                              ? "text-amber-700"
+                              : "text-muted-foreground"
+                        )}
+                      >
+                        {isOpportunity
+                          ? "Piyasa Altı Fiyat"
+                          : isOverpriced
+                            ? "Piyasa Üstü"
+                            : "Piyasa Değeri"}
                       </div>
-                      <div className={cn(
-                        "text-xs font-medium",
-                        isOpportunity ? "text-emerald-600" :
-                        isOverpriced  ? "text-amber-600" :
-                        "text-muted-foreground"
-                      )}>
+                      <div
+                        className={cn(
+                          "text-xs font-medium",
+                          isOpportunity
+                            ? "text-emerald-600"
+                            : isOverpriced
+                              ? "text-amber-600"
+                              : "text-muted-foreground"
+                        )}
+                      >
                         {insight.summary}
                       </div>
                     </div>
@@ -405,7 +423,12 @@ export default async function ListingDetailPage({ params }: ListingDetailPagePro
                 {/* Trust signals */}
                 <div className="space-y-2 text-xs">
                   <div className="flex items-center gap-2 text-muted-foreground">
-                    <CheckCircle2 size={13} className={seller?.isVerified ? "text-emerald-500" : "text-muted-foreground/40"} />
+                    <CheckCircle2
+                      size={13}
+                      className={
+                        seller?.isVerified ? "text-emerald-500" : "text-muted-foreground/40"
+                      }
+                    />
                     <span>{seller?.isVerified ? "Doğrulanmış Satıcı" : "Doğrulama Yok"}</span>
                   </div>
                   {memberSince && (
@@ -456,7 +479,11 @@ export default async function ListingDetailPage({ params }: ListingDetailPagePro
           <div className="mb-6 sm:mb-8 grid grid-cols-2 gap-3 sm:grid-cols-4 sm:gap-4">
             {[
               { icon: CalendarDays, label: "Model Yılı", value: String(listing.year) },
-              { icon: CircleGauge, label: "Kilometre", value: `${formatNumber(listing.mileage)} km` },
+              {
+                icon: CircleGauge,
+                label: "Kilometre",
+                value: `${formatNumber(listing.mileage)} km`,
+              },
               { icon: Fuel, label: "Yakıt", value: listing.fuelType },
               { icon: Settings2, label: "Vites", value: listing.transmission },
             ].map(({ icon: Icon, label, value }) => (
@@ -479,7 +506,6 @@ export default async function ListingDetailPage({ params }: ListingDetailPagePro
               ZONE 3 — CONTENT: Description, Inspection, Damage, Analysis, Map
           ══════════════════════════════════════════════════════════════════ */}
           <div className="space-y-6">
-
             {/* Description */}
             {cleanDescription && (
               <section
@@ -564,11 +590,7 @@ export default async function ListingDetailPage({ params }: ListingDetailPagePro
                 </div>
               </div>
               <Suspense fallback={<div className="h-64 animate-pulse bg-muted" />}>
-                <ListingMap
-                  city={listing.city}
-                  district={listing.district}
-                  className="h-64"
-                />
+                <ListingMap city={listing.city} district={listing.district} className="h-64" />
               </Suspense>
             </section>
 

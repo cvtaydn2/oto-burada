@@ -1,9 +1,9 @@
-import { estimateVehiclePrice } from "@/services/market/price-estimation";
-import { apiSuccess, apiError, API_ERROR_CODES } from "@/lib/utils/api-response";
-import { enforceRateLimit, getRateLimitKey } from "@/lib/utils/rate-limit-middleware";
-import { logger } from "@/lib/utils/logger";
 import { captureServerError } from "@/lib/monitoring/posthog-server";
 import { getCachedData, setCachedData } from "@/lib/redis/client";
+import { API_ERROR_CODES, apiError, apiSuccess } from "@/lib/utils/api-response";
+import { logger } from "@/lib/utils/logger";
+import { enforceRateLimit, getRateLimitKey } from "@/lib/utils/rate-limit-middleware";
+import { estimateVehiclePrice } from "@/services/market/price-estimation";
 
 // Rate limit: 30 per minute per IP
 const ESTIMATE_RATE_LIMIT = { limit: 30, windowMs: 60 * 1000 };
@@ -11,7 +11,7 @@ const ESTIMATE_RATE_LIMIT = { limit: 30, windowMs: 60 * 1000 };
 export async function GET(request: Request) {
   const rateLimit = await enforceRateLimit(
     getRateLimitKey(request, "api:market:estimate"),
-    ESTIMATE_RATE_LIMIT,
+    ESTIMATE_RATE_LIMIT
   );
   if (rateLimit) return rateLimit.response;
 
@@ -36,7 +36,11 @@ export async function GET(request: Request) {
     const result = await estimateVehiclePrice({ brand, model, year, mileage });
 
     if (!result) {
-      return apiError(API_ERROR_CODES.NOT_FOUND, "Bu araç segmenti için yeterli veri bulunamadı.", 404);
+      return apiError(
+        API_ERROR_CODES.NOT_FOUND,
+        "Bu araç segmenti için yeterli veri bulunamadı.",
+        404
+      );
     }
 
     // Cache result for 5 minutes
@@ -46,6 +50,10 @@ export async function GET(request: Request) {
   } catch (error) {
     logger.market.error("Price estimation failed", error, { brand, model, year });
     captureServerError("Price estimation failed", "market", error, { brand, model, year });
-    return apiError(API_ERROR_CODES.INTERNAL_ERROR, "Fiyat tahmini hesaplanırken bir hata oluştu.", 500);
+    return apiError(
+      API_ERROR_CODES.INTERNAL_ERROR,
+      "Fiyat tahmini hesaplanırken bir hata oluştu.",
+      500
+    );
   }
 }

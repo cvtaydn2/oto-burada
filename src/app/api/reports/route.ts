@@ -1,16 +1,16 @@
+import { captureServerEvent } from "@/lib/monitoring/posthog-server";
 import { hasSupabaseEnv } from "@/lib/supabase/env";
+import { API_ERROR_CODES, apiError, apiSuccess } from "@/lib/utils/api-response";
+import { withAuthAndCsrf } from "@/lib/utils/api-security";
 import { rateLimitProfiles } from "@/lib/utils/rate-limit";
 import { sanitizeDescription } from "@/lib/utils/sanitize";
 import { issuesToFieldErrors } from "@/lib/utils/validation-helpers";
 import { reportCreateSchema } from "@/lib/validators";
-import { apiSuccess, apiError, API_ERROR_CODES } from "@/lib/utils/api-response";
-import { withAuthAndCsrf } from "@/lib/utils/api-security";
+import { getStoredListingById } from "@/services/listings/listing-submissions";
 import {
   createOrUpdateDatabaseReport,
   getDatabaseActiveReport,
 } from "@/services/reports/report-submissions";
-import { getStoredListingById } from "@/services/listings/listing-submissions";
-import { captureServerEvent } from "@/lib/monitoring/posthog-server";
 
 export async function POST(request: Request) {
   // Security checks: CSRF + Auth + Rate limiting
@@ -21,14 +21,14 @@ export async function POST(request: Request) {
   });
 
   if (!security.ok) return security.response;
-  
+
   const user = security.user!; // Guaranteed by withAuthAndCsrf
 
   if (!hasSupabaseEnv()) {
     return apiError(
       API_ERROR_CODES.SERVICE_UNAVAILABLE,
       "Supabase ortam değişkenleri eksik. Rapor göndermek için .env.local dosyasını tamamlamalısın.",
-      503,
+      503
     );
   }
 
@@ -47,7 +47,7 @@ export async function POST(request: Request) {
       API_ERROR_CODES.VALIDATION_ERROR,
       parsed.error.issues[0]?.message ?? "Form alanlarını kontrol et.",
       400,
-      issuesToFieldErrors(parsed.error.issues),
+      issuesToFieldErrors(parsed.error.issues)
     );
   }
 
@@ -64,27 +64,37 @@ export async function POST(request: Request) {
   // Profile check - read-only, no side effects
   const sanitizedData = {
     ...parsed.data,
-    description: parsed.data.description ? sanitizeDescription(parsed.data.description) : parsed.data.description,
+    description: parsed.data.description
+      ? sanitizeDescription(parsed.data.description)
+      : parsed.data.description,
   };
 
   const activeDatabaseReport = await getDatabaseActiveReport(sanitizedData.listingId, user.id);
   const persistedReport = await createOrUpdateDatabaseReport(
     sanitizedData,
     user.id,
-    activeDatabaseReport,
+    activeDatabaseReport
   );
 
   if (!persistedReport) {
-    return apiError(API_ERROR_CODES.INTERNAL_ERROR, "Rapor kaydedilemedi. Lütfen tekrar dene.", 500);
+    return apiError(
+      API_ERROR_CODES.INTERNAL_ERROR,
+      "Rapor kaydedilemedi. Lütfen tekrar dene.",
+      500
+    );
   }
 
-  captureServerEvent("report_submitted", {
-    userId: user.id,
-    reportId: persistedReport.id,
-    listingId: sanitizedData.listingId,
-    reason: sanitizedData.reason,
-    isUpdate: Boolean(activeDatabaseReport),
-  }, user.id);
+  captureServerEvent(
+    "report_submitted",
+    {
+      userId: user.id,
+      reportId: persistedReport.id,
+      listingId: sanitizedData.listingId,
+      reason: sanitizedData.reason,
+      isUpdate: Boolean(activeDatabaseReport),
+    },
+    user.id
+  );
 
   return apiSuccess(
     {
@@ -96,6 +106,6 @@ export async function POST(request: Request) {
     activeDatabaseReport
       ? "Aynı ilan için açık raporun güncellendi."
       : "Raporun inceleme sırasına alındı.",
-    201,
+    201
   );
 }

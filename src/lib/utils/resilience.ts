@@ -10,7 +10,7 @@ import { logger } from "@/lib/utils/logger";
  * Prevents cascading failures when external services are down.
  */
 export class CircuitBreaker {
-  private state: 'CLOSED' | 'OPEN' | 'HALF_OPEN' = 'CLOSED';
+  private state: "CLOSED" | "OPEN" | "HALF_OPEN" = "CLOSED";
   private failureCount = 0;
   private lastFailureTime = 0;
   private readonly threshold: number;
@@ -22,11 +22,11 @@ export class CircuitBreaker {
   }
 
   async execute<T>(fn: () => Promise<T>): Promise<T> {
-    if (this.state === 'OPEN') {
+    if (this.state === "OPEN") {
       if (Date.now() - this.lastFailureTime > this.timeout) {
-        this.state = 'HALF_OPEN';
+        this.state = "HALF_OPEN";
       } else {
-        throw new Error('CircuitBreaker: Service is currently unavailable (OPEN)');
+        throw new Error("CircuitBreaker: Service is currently unavailable (OPEN)");
       }
     }
 
@@ -42,15 +42,15 @@ export class CircuitBreaker {
 
   private onSuccess() {
     this.failureCount = 0;
-    this.state = 'CLOSED';
+    this.state = "CLOSED";
   }
 
   private onFailure() {
     this.failureCount++;
     this.lastFailureTime = Date.now();
     if (this.failureCount >= this.threshold) {
-      this.state = 'OPEN';
-      logger.system.error('CircuitBreaker: Circuit opened due to multiple failures');
+      this.state = "OPEN";
+      logger.system.error("CircuitBreaker: Circuit opened due to multiple failures");
     }
   }
 

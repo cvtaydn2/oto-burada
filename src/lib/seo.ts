@@ -6,7 +6,10 @@ import type { Listing, ListingFilters } from "@/types";
 
 export function getAppUrl() {
   // Priority 1: Force production domain for SEO and Sitemap stability
-  if (process.env.VERCEL_ENV === "production" || process.env.NEXT_PUBLIC_VERCEL_ENV === "production") {
+  if (
+    process.env.VERCEL_ENV === "production" ||
+    process.env.NEXT_PUBLIC_VERCEL_ENV === "production"
+  ) {
     return "https://www.otoburada.com.tr";
   }
 
@@ -51,8 +54,7 @@ export function buildListingsMetadata(filters: ListingFilters): Metadata {
     segments.push(filters.fuelType);
   }
 
-  const title =
-    segments.length > 0 ? `${segments.join(" ")} araba ilanları` : "Araba ilanları";
+  const title = segments.length > 0 ? `${segments.join(" ")} araba ilanları` : "Araba ilanları";
 
   const descriptionParts = [
     "Marka, model, şehir, fiyat ve teknik özelliklere göre filtrelenebilen sade araba ilan listesi.",
@@ -99,13 +101,15 @@ export function buildListingsMetadata(filters: ListingFilters): Metadata {
 
 export function buildListingDetailMetadata(listing: Listing): Metadata {
   const title = sanitizeForMeta(`${listing.title} - ${formatCurrency(listing.price)}`);
-  const description = sanitizeForMeta([
-    `${listing.city}/${listing.district} konumunda ${listing.year} model ${listing.brand} ${listing.model}.`,
-    `${formatNumber(listing.mileage)} km, ${listing.fuelType}, ${listing.transmission}.`,
-    listing.description,
-  ]
-    .join(" ")
-    .slice(0, 320));
+  const description = sanitizeForMeta(
+    [
+      `${listing.city}/${listing.district} konumunda ${listing.year} model ${listing.brand} ${listing.model}.`,
+      `${formatNumber(listing.mileage)} km, ${listing.fuelType}, ${listing.transmission}.`,
+      listing.description,
+    ]
+      .join(" ")
+      .slice(0, 320)
+  );
 
   return {
     title,
@@ -120,7 +124,9 @@ export function buildListingDetailMetadata(listing: Listing): Metadata {
           url: buildAbsoluteUrl(`/api/og/listing?slug=${listing.slug}`),
           width: 1200,
           height: 630,
-          alt: sanitizeForMeta(`${listing.brand} ${listing.model} ${listing.year} - ${listing.city}`),
+          alt: sanitizeForMeta(
+            `${listing.brand} ${listing.model} ${listing.year} - ${listing.city}`
+          ),
         },
       ],
       title: `${title} | Oto Burada`,
@@ -136,4 +142,3 @@ export function buildListingDetailMetadata(listing: Listing): Metadata {
     },
   };
 }
-

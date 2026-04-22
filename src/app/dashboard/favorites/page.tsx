@@ -1,4 +1,5 @@
 import { Heart } from "lucide-react";
+
 import { FavoritesPageClient } from "@/components/listings/favorites-page-client";
 import { requireUser } from "@/lib/auth/session";
 import { getDatabaseFavoriteIds } from "@/services/favorites/favorite-records";
@@ -8,11 +9,10 @@ export const dynamic = "force-dynamic";
 
 export default async function DashboardFavoritesPage() {
   const user = await requireUser();
-  
+
   const favoriteIds = await getDatabaseFavoriteIds(user.id);
-  const listings = favoriteIds && favoriteIds.length > 0 
-    ? await getMarketplaceListingsByIds(favoriteIds)
-    : [];
+  const listings =
+    favoriteIds && favoriteIds.length > 0 ? await getMarketplaceListingsByIds(favoriteIds) : [];
 
   return (
     <div className="space-y-6">
@@ -26,9 +26,7 @@ export default async function DashboardFavoritesPage() {
               Favori Listesi
             </span>
           </div>
-          <h1 className="text-3xl font-bold tracking-tight text-foreground">
-            Favorilerim
-          </h1>
+          <h1 className="text-3xl font-bold tracking-tight text-foreground">Favorilerim</h1>
           <p className="mt-1 text-sm text-muted-foreground font-medium">
             Takip ettiğin araçları buradan yönet.
           </p>

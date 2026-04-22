@@ -1,12 +1,13 @@
 "use server";
 
+import { Redis } from "@upstash/redis";
+
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import {
   getSupabaseStorageEnv,
   hasSupabaseAdminEnv,
   hasSupabaseStorageEnv,
 } from "@/lib/supabase/env";
-import { Redis } from "@upstash/redis";
 
 interface TableHealth {
   count: number;
@@ -71,7 +72,7 @@ export async function getPersistenceHealth(): Promise<PersistenceHealth> {
     storageEnv: hasSupabaseStorageEnv(),
     redisEnv: Boolean(process.env.UPSTASH_REDIS_REST_URL),
   };
-  
+
   const storage: StorageHealth = {
     bucketAccessible: null,
     bucketName: environment.storageEnv ? getSupabaseStorageEnv().listingsBucket : null,
@@ -101,19 +102,19 @@ export async function getPersistenceHealth(): Promise<PersistenceHealth> {
       const redis = Redis.fromEnv();
       const [ping, info] = await Promise.all([
         redis.ping(),
-        (redis as unknown as { info: () => Promise<string> }).info()
+        (redis as unknown as { info: () => Promise<string> }).info(),
       ]);
-      
+
       if (ping === "PONG") {
         successCount++;
-        
+
         // Parse basic info (Upstash returns a string)
-        if (typeof info === 'string') {
+        if (typeof info === "string") {
           const uptimeMatch = info.match(/uptime_in_seconds:(\d+)/);
           const memoryMatch = info.match(/used_memory_human:([^\r\n]+)/);
           const clientsMatch = info.match(/connected_clients:(\d+)/);
           const versionMatch = info.match(/redis_version:([^\r\n]+)/);
-          
+
           if (uptimeMatch) {
             const seconds = parseInt(uptimeMatch[1]);
             const days = Math.floor(seconds / (3600 * 24));
@@ -143,7 +144,7 @@ export async function getPersistenceHealth(): Promise<PersistenceHealth> {
   }
 
   const admin = createSupabaseAdminClient();
-  
+
   // Check 3: Storage
   checksCount++;
   if (environment.storageEnv && storage.bucketName) {
@@ -167,12 +168,12 @@ export async function getPersistenceHealth(): Promise<PersistenceHealth> {
         key: table.key,
         label: table.label,
       };
-    }),
+    })
   );
 
   // Check 4: Tables
   checksCount += tableDefinitions.length;
-  successCount += results.filter(r => !r.error).length;
+  successCount += results.filter((r) => !r.error).length;
 
   const healthScore = Math.round((successCount / checksCount) * 100);
   const failedTable = results.find((result) => result.error);
@@ -180,7 +181,7 @@ export async function getPersistenceHealth(): Promise<PersistenceHealth> {
   return {
     environment,
     healthScore,
-    message: failedTable 
+    message: failedTable
       ? `${failedTable.label} tablosu okunamadi: ${failedTable.error}`
       : "Sistem bileşenleri sağlıklı şekilde çalışıyor.",
     ready: !failedTable && environment.adminEnv,

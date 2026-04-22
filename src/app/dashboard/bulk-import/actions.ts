@@ -1,39 +1,42 @@
 "use server";
 
+import { requireUser } from "@/lib/auth/session";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { hasSupabaseAdminEnv } from "@/lib/supabase/env";
-import { requireUser } from "@/lib/auth/session";
-import { buildListingRecord, mapListingToDatabaseRow } from "@/services/listings/listing-submissions";
 import { logger } from "@/lib/utils/logger";
+import {
+  buildListingRecord,
+  mapListingToDatabaseRow,
+} from "@/services/listings/listing-submissions";
 import type { ListingCreateInput } from "@/types";
 
 /**
  * Server Action for Bulk Listing Creation
  * Processes an array of validated listing inputs from the CSV parser.
- * 
+ *
  * Note: Slug collisions are handled by DB unique constraint.
  * If a collision occurs, the entire batch fails and user must fix duplicates.
  */
 export async function processBulkListings(inputs: ListingCreateInput[]) {
   if (!hasSupabaseAdminEnv()) return { success: false, error: "Veritabanı bağlantısı yok." };
-  
+
   // 1. Vercel Timeout Koruması: Hard Limit
   if (inputs.length > 100) {
-    return { 
-      success: false, 
-      error: "Tek seferde en fazla 100 ilan yüklenebilir. Lütfen CSV dosyanızı bölerek yükleyin." 
+    return {
+      success: false,
+      error: "Tek seferde en fazla 100 ilan yüklenebilir. Lütfen CSV dosyanızı bölerek yükleyin.",
     };
   }
 
   const user = await requireUser();
   const admin = createSupabaseAdminClient();
-  
+
   let succeededCount = 0;
   const chunkErrors: string[] = [];
 
   try {
-    const preparedListings = inputs.map(input => {
-      return buildListingRecord(input, user.id, []); 
+    const preparedListings = inputs.map((input) => {
+      return buildListingRecord(input, user.id, []);
     });
 
     const rowsToInsert = preparedListings.map(mapListingToDatabaseRow);
@@ -42,47 +45,47 @@ export async function processBulkListings(inputs: ListingCreateInput[]) {
     const CHUNK_SIZE = 25;
     for (let i = 0; i < rowsToInsert.length; i += CHUNK_SIZE) {
       const chunk = rowsToInsert.slice(i, i + CHUNK_SIZE);
-      
-      const { error: insertError } = await admin
-        .from("listings")
-        .insert(chunk);
+
+      const { error: insertError } = await admin.from("listings").insert(chunk);
 
       if (insertError) {
         let msg = `Satır ${i + 1}-${Math.min(i + CHUNK_SIZE, rowsToInsert.length)}: `;
-        
+
         if (insertError.code === "23505" && insertError.message?.includes("slug")) {
           msg += "Başlık çakışması (aynı başlıkta başka bir ilan var).";
         } else {
           msg += insertError.message || "Veritabanı hatası.";
         }
-        
+
         chunkErrors.push(msg);
-        logger.listings.error("Bulk Insert Chunk Error", insertError, { userId: user.id, batchIndex: i });
+        logger.listings.error("Bulk Insert Chunk Error", insertError, {
+          userId: user.id,
+          batchIndex: i,
+        });
       } else {
         succeededCount += chunk.length;
       }
     }
 
     if (chunkErrors.length > 0) {
-      return { 
-        success: succeededCount > 0, 
+      return {
+        success: succeededCount > 0,
         count: succeededCount,
         error: `Yükleme tamamlandı ama bazı hatalar oluştu:\n${chunkErrors.join("\n")}`,
-        partial: true
+        partial: true,
       };
     }
 
-    return { 
-      success: true, 
+    return {
+      success: true,
       count: succeededCount,
-      message: `${succeededCount} ilan başarıyla oluşturuldu.`
+      message: `${succeededCount} ilan başarıyla oluşturuldu.`,
     };
-
   } catch (err) {
     const errorMessage = err instanceof Error ? err.message : "Beklenmedik bir hata oluştu.";
-    return { 
-      success: false, 
-      error: errorMessage
+    return {
+      success: false,
+      error: errorMessage,
     };
   }
 }

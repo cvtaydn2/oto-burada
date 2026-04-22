@@ -1,7 +1,8 @@
+import { ClipboardList, LayoutDashboard, MessageSquare, Plus, Settings, Star } from "lucide-react";
 import Link from "next/link";
-import { Plus, LayoutDashboard, ClipboardList, MessageSquare, Star, Settings } from "lucide-react";
-import { cn } from "@/lib/utils";
+
 import { dashboard } from "@/lib/constants/ui-strings";
+import { cn } from "@/lib/utils";
 
 interface DashboardHeaderProps {
   userEmail?: string;
@@ -31,7 +32,7 @@ export function DashboardHeader({ userEmail }: DashboardHeaderProps) {
             Profilini ve ilanlarını buradan yönetebilirsin.
           </p>
         </div>
-        
+
         <div className="flex flex-wrap gap-3">
           <Link
             href="/dashboard/listings?create=true"
@@ -50,8 +51,8 @@ export function DashboardHeader({ userEmail }: DashboardHeaderProps) {
             href={tab.href}
             className={cn(
               "flex h-10 items-center gap-2 rounded-lg px-4 text-[10px] font-bold uppercase tracking-widest whitespace-nowrap transition-all",
-              tab.active 
-                ? "bg-primary text-primary-foreground shadow-sm shadow-primary/20" 
+              tab.active
+                ? "bg-primary text-primary-foreground shadow-sm shadow-primary/20"
                 : "text-muted-foreground hover:bg-muted hover:text-foreground"
             )}
           >

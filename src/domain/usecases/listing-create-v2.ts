@@ -1,7 +1,7 @@
-import type { Listing, ListingCreateInput } from "@/types";
-import { listingCreateSchema } from "@/lib/validators";
-import { sanitizeText, sanitizeDescription } from "@/lib/utils/sanitize";
 import { logger } from "@/lib/utils/logger";
+import { sanitizeDescription, sanitizeText } from "@/lib/utils/sanitize";
+import { listingCreateSchema } from "@/lib/validators";
+import type { Listing, ListingCreateInput } from "@/types";
 
 export interface ListingCreationResult {
   success: boolean;
@@ -12,7 +12,9 @@ export interface ListingCreationResult {
 
 export interface ListingCreationDependencies {
   checkQuota: (userId: string) => Promise<{ allowed: boolean; reason?: string }>;
-  runTrustGuards: (input: ListingCreateInput) => Promise<{ allowed: boolean; reason?: string; message?: string }>;
+  runTrustGuards: (
+    input: ListingCreateInput
+  ) => Promise<{ allowed: boolean; reason?: string; message?: string }>;
   saveListing: (listing: Listing) => Promise<{ listing?: Listing; error?: string }>;
   notifyUser: (listing: Listing) => Promise<void>;
   trackEvent: (listing: Listing) => void;
@@ -32,7 +34,11 @@ export async function executeListingCreation(
   // 1. Quota Check
   const quota = await deps.checkQuota(userId);
   if (!quota.allowed) {
-    return { success: false, error: quota.reason || "İlan sınırına ulaştınız.", errorCode: "QUOTA_EXCEEDED" };
+    return {
+      success: false,
+      error: quota.reason || "İlan sınırına ulaştınız.",
+      errorCode: "QUOTA_EXCEEDED",
+    };
   }
 
   // 2. Normalization & Sanitization
@@ -40,27 +46,41 @@ export async function executeListingCreation(
     ...input,
     title: sanitizeText(input.title || ""),
     description: sanitizeDescription(input.description || ""),
-    images: (input.images || []).map((img: { storagePath: string; url: string; placeholderBlur?: string | null; type?: "photo" | "360" | "video" }, idx: number) => ({
-      ...img,
-      order: idx,
-      isCover: idx === 0,
-    }))
+    images: (input.images || []).map(
+      (
+        img: {
+          storagePath: string;
+          url: string;
+          placeholderBlur?: string | null;
+          type?: "photo" | "360" | "video";
+        },
+        idx: number
+      ) => ({
+        ...img,
+        order: idx,
+        isCover: idx === 0,
+      })
+    ),
   };
 
   // 3. Validation
   const validation = listingCreateSchema.safeParse(normalizedInput);
   if (!validation.success) {
-    return { 
-      success: false, 
-      error: validation.error.issues[0]?.message || "Geçersiz ilan verisi.", 
-      errorCode: "VALIDATION_ERROR" 
+    return {
+      success: false,
+      error: validation.error.issues[0]?.message || "Geçersiz ilan verisi.",
+      errorCode: "VALIDATION_ERROR",
     };
   }
 
   // 4. Trust Guards
   const trust = await deps.runTrustGuards(validation.data);
   if (!trust.allowed) {
-    return { success: false, error: trust.message || "Güvenlik kuralları ihlali.", errorCode: "TRUST_GUARD_REJECTION" };
+    return {
+      success: false,
+      error: trust.message || "Güvenlik kuralları ihlali.",
+      errorCode: "TRUST_GUARD_REJECTION",
+    };
   }
 
   // 5. Build Domain Object (Using existing helper for now to avoid duplication)
@@ -70,17 +90,20 @@ export async function executeListingCreation(
   // 6. Persistence
   const saveResult = await deps.saveListing(listingRecord);
   if (saveResult.error || !saveResult.listing) {
-    return { 
-      success: false, 
-      error: saveResult.error === "slug_collision" ? "Bu başlıkla bir ilan zaten mevcut." : "Veritabanı hatası.", 
-      errorCode: saveResult.error === "slug_collision" ? "SLUG_COLLISION" : "DB_ERROR" 
+    return {
+      success: false,
+      error:
+        saveResult.error === "slug_collision"
+          ? "Bu başlıkla bir ilan zaten mevcut."
+          : "Veritabanı hatası.",
+      errorCode: saveResult.error === "slug_collision" ? "SLUG_COLLISION" : "DB_ERROR",
     };
   }
 
   const listing = saveResult.listing;
 
   // 7. Side Effects (Non-blocking or handled via deps)
-  deps.notifyUser(listing).catch(e => logger.system.error("Creation notification failed", e));
+  deps.notifyUser(listing).catch((e) => logger.system.error("Creation notification failed", e));
   deps.trackEvent(listing);
   deps.runAsyncModeration(listing.id);
 

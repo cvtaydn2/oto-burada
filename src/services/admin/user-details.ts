@@ -47,9 +47,29 @@ export interface UserDetailData {
   profile: UserProfile;
   payments: UserPaymentRecord[];
   dopings: UserDopingRecord[];
-  listings: { id: string; slug: string; title: string; brand: string; model: string; status: string }[];
-  creditTransactions: { id: string; amount: number; type: string; description: string; createdAt: string }[];
-  dopingHistory: { id: string; listingId: string; listingTitle: string; dopingType: string; expiresAt: string; createdAt: string }[];
+  listings: {
+    id: string;
+    slug: string;
+    title: string;
+    brand: string;
+    model: string;
+    status: string;
+  }[];
+  creditTransactions: {
+    id: string;
+    amount: number;
+    type: string;
+    description: string;
+    createdAt: string;
+  }[];
+  dopingHistory: {
+    id: string;
+    listingId: string;
+    listingTitle: string;
+    dopingType: string;
+    expiresAt: string;
+    createdAt: string;
+  }[];
   listingCount: number;
   activeListingCount: number;
 }
@@ -82,42 +102,42 @@ export function mapProfile(p: Record<string, unknown>, email = ""): UserProfile 
 export async function getUserDetail(userId: string): Promise<UserDetailData | null> {
   const admin = createSupabaseAdminClient();
 
-  const [
-    authRes,
-    profileRes,
-    paymentsRes,
-    listingsRes,
-    transactionsRes,
-    dopingHistoryRes,
-  ] = await Promise.all([
-    admin.auth.admin.getUserById(userId),
-    admin.from("profiles").select(
-      "id, full_name, phone, city, avatar_url, role, user_type, balance_credits, is_verified, is_banned, ban_reason, identity_number, business_name, business_address, business_logo_url, business_description, tax_id, tax_office, website_url, verified_business, business_slug, created_at, updated_at, trust_score, verification_status, email_verified"
-    ).eq("id", userId).single(),
-    admin
-      .from("payments")
-      .select("id, amount, provider, status, metadata, created_at")
-      .eq("user_id", userId)
-      .order("created_at", { ascending: false })
-      .limit(50),
-    admin
-      .from("listings")
-      .select("id, slug, title, brand, model, status, featured, featured_until, urgent_until, highlighted_until, created_at")
-      .eq("seller_id", userId)
-      .order("created_at", { ascending: false }),
-    admin
-      .from("credit_transactions")
-      .select("*")
-      .eq("user_id", userId)
-      .order("created_at", { ascending: false })
-      .limit(20),
-    admin
-      .from("doping_applications")
-      .select("*, listings(title)")
-      .eq("user_id", userId)
-      .order("created_at", { ascending: false })
-      .limit(20),
-  ]);
+  const [authRes, profileRes, paymentsRes, listingsRes, transactionsRes, dopingHistoryRes] =
+    await Promise.all([
+      admin.auth.admin.getUserById(userId),
+      admin
+        .from("profiles")
+        .select(
+          "id, full_name, phone, city, avatar_url, role, user_type, balance_credits, is_verified, is_banned, ban_reason, identity_number, business_name, business_address, business_logo_url, business_description, tax_id, tax_office, website_url, verified_business, business_slug, created_at, updated_at, trust_score, verification_status, email_verified"
+        )
+        .eq("id", userId)
+        .single(),
+      admin
+        .from("payments")
+        .select("id, amount, provider, status, metadata, created_at")
+        .eq("user_id", userId)
+        .order("created_at", { ascending: false })
+        .limit(50),
+      admin
+        .from("listings")
+        .select(
+          "id, slug, title, brand, model, status, featured, featured_until, urgent_until, highlighted_until, created_at"
+        )
+        .eq("seller_id", userId)
+        .order("created_at", { ascending: false }),
+      admin
+        .from("credit_transactions")
+        .select("*")
+        .eq("user_id", userId)
+        .order("created_at", { ascending: false })
+        .limit(20),
+      admin
+        .from("doping_applications")
+        .select("*, listings(title)")
+        .eq("user_id", userId)
+        .order("created_at", { ascending: false })
+        .limit(20),
+    ]);
 
   if (!profileRes.data) return null;
 
@@ -148,29 +168,38 @@ export async function getUserDetail(userId: string): Promise<UserDetailData | nu
     profile: mapProfile(profile as Record<string, unknown>, authUser?.email || ""),
     payments: payments as UserPaymentRecord[],
     dopings,
-    listings: listings.map((l) => ({ 
-      id: l.id, 
-      slug: l.slug, 
-      title: l.title || l.id, 
-      brand: l.brand, 
+    listings: listings.map((l) => ({
+      id: l.id,
+      slug: l.slug,
+      title: l.title || l.id,
+      brand: l.brand,
       model: l.model,
-      status: l.status 
+      status: l.status,
     })),
     creditTransactions: creditTransactions.map((t) => ({
       id: t.id,
       amount: t.amount,
       type: t.transaction_type,
       description: t.description,
-      createdAt: t.created_at
+      createdAt: t.created_at,
     })),
-    dopingHistory: dopingHistory.map((d: { id: string; listing_id: string; listings: { title: string } | null; doping_type: string; expires_at: string; created_at: string }) => ({
-      id: d.id,
-      listingId: d.listing_id,
-      listingTitle: d.listings?.title || d.listing_id,
-      dopingType: d.doping_type,
-      expiresAt: d.expires_at,
-      createdAt: d.created_at
-    })),
+    dopingHistory: dopingHistory.map(
+      (d: {
+        id: string;
+        listing_id: string;
+        listings: { title: string } | null;
+        doping_type: string;
+        expires_at: string;
+        created_at: string;
+      }) => ({
+        id: d.id,
+        listingId: d.listing_id,
+        listingTitle: d.listings?.title || d.listing_id,
+        dopingType: d.doping_type,
+        expiresAt: d.expires_at,
+        createdAt: d.created_at,
+      })
+    ),
     listingCount: listings.length,
     activeListingCount: listings.filter((l) => l.status === "approved").length,
   };

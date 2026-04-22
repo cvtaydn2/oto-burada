@@ -1,36 +1,35 @@
-import { captureServerError, trackServerEvent } from "@/lib/monitoring/posthog-server";
+import { waitUntil } from "@vercel/functions";
+
 import { AnalyticsEvent } from "@/lib/analytics/events";
+import { captureServerError, trackServerEvent } from "@/lib/monitoring/posthog-server";
+import { API_ERROR_CODES, apiError, apiSuccess } from "@/lib/utils/api-response";
+import { withSecurity, withUserAndCsrf } from "@/lib/utils/api-security";
 import { rateLimitProfiles } from "@/lib/utils/rate-limit";
 import { enforceRateLimit, getRateLimitKey } from "@/lib/utils/rate-limit-middleware";
-import { apiSuccess, apiError, API_ERROR_CODES } from "@/lib/utils/api-response";
-import { withSecurity, withUserAndCsrf } from "@/lib/utils/api-security";
-import {
-  createDatabaseListing,
-} from "@/services/listings/listing-submissions";
-import { createDatabaseNotification } from "@/services/notifications/notification-records";
-import { ListingCreateInput } from "@/types/domain";
-import { checkListingLimit } from "@/services/listings/listing-limits";
 import { parseListingFiltersFromSearchParams } from "@/services/listings/listing-filters";
-import { getFilteredMarketplaceListings } from "@/services/listings/marketplace-listings";
-import { waitUntil } from "@vercel/functions";
+import { checkListingLimit } from "@/services/listings/listing-limits";
 import {
   performAsyncModeration,
   runListingTrustGuards,
 } from "@/services/listings/listing-submission-moderation";
+import { createDatabaseListing } from "@/services/listings/listing-submissions";
+import { getFilteredMarketplaceListings } from "@/services/listings/marketplace-listings";
+import { createDatabaseNotification } from "@/services/notifications/notification-records";
+import { ListingCreateInput } from "@/types/domain";
 
 export async function GET(request: Request) {
   const security = await withSecurity(request);
   if (!security.ok) return security.response;
 
   // Rate limit public search — 120 requests per minute per IP
-  const ipRateLimit = await enforceRateLimit(
-    getRateLimitKey(request, "api:listings:search"),
-    { limit: 120, windowMs: 60 * 1000 },
-  );
+  const ipRateLimit = await enforceRateLimit(getRateLimitKey(request, "api:listings:search"), {
+    limit: 120,
+    windowMs: 60 * 1000,
+  });
   if (ipRateLimit) return ipRateLimit.response;
 
   const { searchParams } = new URL(request.url);
-  
+
   // Convert URLSearchParams to a key-value object
   const paramsObj: Record<string, string> = {};
   searchParams.forEach((value, key) => {
@@ -38,7 +37,7 @@ export async function GET(request: Request) {
   });
 
   const filters = parseListingFiltersFromSearchParams(paramsObj);
-  
+
   try {
     const result = await getFilteredMarketplaceListings(filters);
     return apiSuccess(result);
@@ -66,7 +65,7 @@ export async function POST(request: Request) {
 
   // Orchestrate via Domain Use Case (SOLID)
   const { executeListingCreation } = await import("@/domain/usecases/listing-create-v2");
-  
+
   const result = await executeListingCreation(body as Partial<ListingCreateInput>, user.id, {
     checkQuota: (uid) => checkListingLimit(uid),
     runTrustGuards: (input) => runListingTrustGuards(input),
@@ -81,25 +80,29 @@ export async function POST(request: Request) {
       });
     },
     trackEvent: (listing) => {
-      trackServerEvent(AnalyticsEvent.SERVER_LISTING_CREATED, {
-        listingId: listing.id,
-        brand: listing.brand,
-        model: listing.model,
-        city: listing.city,
-        price: listing.price,
-        status: listing.status,
-      }, user.id);
+      trackServerEvent(
+        AnalyticsEvent.SERVER_LISTING_CREATED,
+        {
+          listingId: listing.id,
+          brand: listing.brand,
+          model: listing.model,
+          city: listing.city,
+          price: listing.price,
+          status: listing.status,
+        },
+        user.id
+      );
     },
     runAsyncModeration: (id) => {
       waitUntil(performAsyncModeration(id));
-    }
+    },
   });
 
   if (!result.success) {
     const statusCode = result.errorCode === "VALIDATION_ERROR" ? 400 : 403;
     return apiError(
-      (result.errorCode as keyof typeof API_ERROR_CODES) || API_ERROR_CODES.INTERNAL_ERROR, 
-      result.error || "İlan oluşturulamadı.", 
+      (result.errorCode as keyof typeof API_ERROR_CODES) || API_ERROR_CODES.INTERNAL_ERROR,
+      result.error || "İlan oluşturulamadı.",
       statusCode
     );
   }

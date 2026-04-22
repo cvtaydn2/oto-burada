@@ -63,7 +63,7 @@ export async function getUserListingCounts(userId: string): Promise<{
  */
 export async function checkListingLimit(
   userId: string,
-  limits: ListingLimits = DEFAULT_LISTING_LIMITS,
+  limits: ListingLimits = DEFAULT_LISTING_LIMITS
 ): Promise<{
   allowed: boolean;
   reason?: string;
@@ -79,14 +79,11 @@ export async function checkListingLimit(
   const admin = createSupabaseAdminClient();
 
   // Try the atomic RPC first (requires migration 0042_listing_quota_atomic_check.sql)
-  const { data: rpcResult, error: rpcError } = await admin.rpc(
-    "check_listing_quota_atomic",
-    {
-      p_user_id: userId,
-      p_monthly_limit: limits.monthly,
-      p_yearly_limit: limits.yearly,
-    },
-  );
+  const { data: rpcResult, error: rpcError } = await admin.rpc("check_listing_quota_atomic", {
+    p_user_id: userId,
+    p_monthly_limit: limits.monthly,
+    p_yearly_limit: limits.yearly,
+  });
 
   if (!rpcError && rpcResult !== null) {
     // RPC returns: { allowed: boolean, reason: string | null, monthly_count: int, yearly_count: int }

@@ -36,18 +36,7 @@ export const brandCatalog: BrandCatalogItem[] = [
   },
   {
     brand: "Fiat",
-    models: [
-      "Egea",
-      "Linea",
-      "500",
-      "500L",
-      "500X",
-      "Panda",
-      "Doblo",
-      "Ducato",
-      "Tipo",
-      "Punto",
-    ],
+    models: ["Egea", "Linea", "500", "500L", "500X", "Panda", "Doblo", "Ducato", "Tipo", "Punto"],
   },
   {
     brand: "Toyota",
@@ -144,36 +133,11 @@ export const brandCatalog: BrandCatalogItem[] = [
   },
   {
     brand: "Peugeot",
-    models: [
-      "208",
-      "308",
-      "3008",
-      "408",
-      "2008",
-      "5008",
-      "Rifter",
-      "Partner",
-      "Expert",
-      "508",
-    ],
+    models: ["208", "308", "3008", "408", "2008", "5008", "Rifter", "Partner", "Expert", "508"],
   },
   {
     brand: "Audi",
-    models: [
-      "A1",
-      "A3",
-      "A4",
-      "A5",
-      "A6",
-      "A7",
-      "A8",
-      "Q2",
-      "Q3",
-      "Q5",
-      "Q7",
-      "Q8",
-      "e-tron",
-    ],
+    models: ["A1", "A3", "A4", "A5", "A6", "A7", "A8", "Q2", "Q3", "Q5", "Q7", "Q8", "e-tron"],
   },
   {
     brand: "Opel",
@@ -204,40 +168,15 @@ export const brandCatalog: BrandCatalogItem[] = [
   },
   {
     brand: "Skoda",
-    models: [
-      "Fabia",
-      "Scala",
-      "Octavia",
-      "Superb",
-      "Kodiaq",
-      "Karoq",
-      "Enyaq",
-      "Slik出席",
-    ],
+    models: ["Fabia", "Scala", "Octavia", "Superb", "Kodiaq", "Karoq", "Enyaq", "Slik出席"],
   },
   {
     brand: "Seat",
-    models: [
-      "Ibiza",
-      "Leon",
-      "Ateca",
-      "Tarraco",
-      "Arona",
-      "Alhambra",
-      "Born",
-    ],
+    models: ["Ibiza", "Leon", "Ateca", "Tarraco", "Arona", "Alhambra", "Born"],
   },
   {
     brand: "Dacia",
-    models: [
-      "Sandero",
-      "Stepway",
-      "Duster",
-      "Logan",
-      "Jogger",
-      "Spring",
-      "Lodgy",
-    ],
+    models: ["Sandero", "Stepway", "Duster", "Logan", "Jogger", "Spring", "Lodgy"],
   },
   {
     brand: "Kia",
@@ -270,75 +209,27 @@ export const brandCatalog: BrandCatalogItem[] = [
   },
   {
     brand: "Mitsubishi",
-    models: [
-      "Space Star",
-      "ASX",
-      "Eclipse Cross",
-      "Outlander",
-      "Pajero",
-      "L200",
-      "Lancer",
-    ],
+    models: ["Space Star", "ASX", "Eclipse Cross", "Outlander", "Pajero", "L200", "Lancer"],
   },
   {
     brand: "Suzuki",
-    models: [
-      "Swift",
-      "Vitara",
-      "S-Cross",
-      "Jimny",
-      "Ignis",
-      "Across",
-      "Swace",
-    ],
+    models: ["Swift", "Vitara", "S-Cross", "Jimny", "Ignis", "Across", "Swace"],
   },
   {
     brand: "SsangYong",
-    models: [
-      "Tivoli",
-      "XLV",
-      "Korando",
-      "Rexton",
-      "Actyon",
-      "Rodius",
-    ],
+    models: ["Tivoli", "XLV", "Korando", "Rexton", "Actyon", "Rodius"],
   },
   {
     brand: "Subaru",
-    models: [
-      "Impreza",
-      "Legacy",
-      "Outback",
-      "Forester",
-      "XV",
-      "WRX",
-      "BRZ",
-      "Solterra",
-    ],
+    models: ["Impreza", "Legacy", "Outback", "Forester", "XV", "WRX", "BRZ", "Solterra"],
   },
   {
     brand: "Volvo",
-    models: [
-      "S60",
-      "S90",
-      "V60",
-      "V90",
-      "XC40",
-      "XC60",
-      "XC90",
-      "C40",
-    ],
+    models: ["S60", "S90", "V60", "V90", "XC40", "XC60", "XC90", "C40"],
   },
   {
     brand: "Jaguar",
-    models: [
-      "XE",
-      "XF",
-      "F-Type",
-      "E-PACE",
-      "F-PACE",
-      "I-PACE",
-    ],
+    models: ["XE", "XF", "F-Type", "E-PACE", "F-PACE", "I-PACE"],
   },
   {
     brand: "Land Rover",
@@ -353,26 +244,11 @@ export const brandCatalog: BrandCatalogItem[] = [
   },
   {
     brand: "Porsche",
-    models: [
-      "911",
-      "Cayenne",
-      "Macan",
-      "Taycan",
-      "Panamera",
-      "718 Cayman",
-      "718 Boxster",
-    ],
+    models: ["911", "Cayenne", "Macan", "Taycan", "Panamera", "718 Cayman", "718 Boxster"],
   },
   {
     brand: "MINI",
-    models: [
-      "Cooper",
-      "Cooper S",
-      "Clubman",
-      "Countryman",
-      "Electric",
-      "John Cooper Works",
-    ],
+    models: ["Cooper", "Cooper S", "Clubman", "Countryman", "Electric", "John Cooper Works"],
   },
   {
     brand: "Togg",
@@ -384,56 +260,19 @@ export const brandCatalog: BrandCatalogItem[] = [
   },
   {
     brand: "Alfa Romeo",
-    models: [
-      "Giulia",
-      "Stelvio",
-      "Giulietta",
-      "Giulia Quadrifoglio",
-      "Tonale",
-    ],
+    models: ["Giulia", "Stelvio", "Giulietta", "Giulia Quadrifoglio", "Tonale"],
   },
   {
     brand: "Mazda",
-    models: [
-      "Mazda2",
-      "Mazda3",
-      "Mazda6",
-      "CX-3",
-      "CX-30",
-      "CX-5",
-      "CX-9",
-      "MX-5",
-      "MX-30",
-    ],
+    models: ["Mazda2", "Mazda3", "Mazda6", "CX-3", "CX-30", "CX-5", "CX-9", "MX-5", "MX-30"],
   },
   {
     brand: "Lexus",
-    models: [
-      "CT",
-      "IS",
-      "ES",
-      "GS",
-      "LS",
-      "NX",
-      "RX",
-      "GX",
-      "LX",
-      "UX",
-      "RZ",
-    ],
+    models: ["CT", "IS", "ES", "GS", "LS", "NX", "RX", "GX", "LX", "UX", "RZ"],
   },
   {
     brand: "Infiniti",
-    models: [
-      "Q30",
-      "Q50",
-      "Q60",
-      "Q70",
-      "QX30",
-      "QX50",
-      "QX60",
-      "QX80",
-    ],
+    models: ["Q30", "Q50", "Q60", "Q70", "QX30", "QX50", "QX60", "QX80"],
   },
   {
     brand: "Chevrolet",
@@ -452,23 +291,11 @@ export const brandCatalog: BrandCatalogItem[] = [
   },
   {
     brand: "Dodge",
-    models: [
-      "Challenger",
-      "Charger",
-      "Durango",
-      "Hornet",
-    ],
+    models: ["Challenger", "Charger", "Durango", "Hornet"],
   },
   {
     brand: "Jeep",
-    models: [
-      "Renegade",
-      "Compass",
-      "Cherokee",
-      "Grand Cherokee",
-      "Wrangler",
-      "Gladiator",
-    ],
+    models: ["Renegade", "Compass", "Cherokee", "Grand Cherokee", "Wrangler", "Gladiator"],
   },
   {
     brand: "Isuzu",
@@ -493,23 +320,17 @@ export const brandCatalog: BrandCatalogItem[] = [
 ];
 
 export function getModelsByBrand(brand: string): string[] {
-  const found = brandCatalog.find(
-    (item) => item.brand.toLowerCase() === brand.toLowerCase()
-  );
+  const found = brandCatalog.find((item) => item.brand.toLowerCase() === brand.toLowerCase());
   return found?.models || [];
 }
 
 export function brandExists(brand: string): boolean {
-  return brandCatalog.some(
-    (item) => item.brand.toLowerCase() === brand.toLowerCase()
-  );
+  return brandCatalog.some((item) => item.brand.toLowerCase() === brand.toLowerCase());
 }
 
 export function modelExists(brand: string, model: string): boolean {
   const models = getModelsByBrand(brand);
-  return models.some(
-    (m) => m.toLowerCase() === model.toLowerCase()
-  );
+  return models.some((m) => m.toLowerCase() === model.toLowerCase());
 }
 
 export const allBrands = brandCatalog.map((item) => item.brand);

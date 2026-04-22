@@ -1,23 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { AlertCircle, Ban, MoreHorizontal, ShieldCheck, Trash2, UserCog } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { 
-  MoreHorizontal, 
-  ShieldCheck, 
-  Ban, 
-  UserCog, 
-  Trash2,
-  AlertCircle
-} from "lucide-react";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+import { useState } from "react";
+import { toast } from "sonner";
+
 import {
   AlertDialog,
   AlertDialogAction,
@@ -29,9 +16,16 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
-import { toast } from "sonner";
-import { banUser, verifyUserBusiness, updateUserRole, deleteUser } from "@/services/admin/users";
+import { banUser, deleteUser, updateUserRole, verifyUserBusiness } from "@/services/admin/users";
 
 interface UserActionsProps {
   userId: string;
@@ -41,7 +35,13 @@ interface UserActionsProps {
   isVerified?: boolean;
 }
 
-export function UserActions({ userId, userName, userType, isBanned, isVerified }: UserActionsProps) {
+export function UserActions({
+  userId,
+  userName,
+  userType,
+  isBanned,
+  isVerified,
+}: UserActionsProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [banDialogOpen, setBanDialogOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
@@ -72,11 +72,13 @@ export function UserActions({ userId, userName, userType, isBanned, isVerified }
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" className="w-[200px] rounded-xl">
-          <DropdownMenuLabel className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Yönetim: {userName}</DropdownMenuLabel>
+          <DropdownMenuLabel className="text-[10px] font-bold uppercase tracking-widest text-slate-400">
+            Yönetim: {userName}
+          </DropdownMenuLabel>
           <DropdownMenuSeparator />
-          
+
           {!isVerified && (
-            <DropdownMenuItem 
+            <DropdownMenuItem
               className="gap-2 font-bold cursor-pointer text-emerald-600 focus:text-emerald-700"
               onClick={() => handleAction(() => verifyUserBusiness(userId), "İşletme doğrulandı")}
             >
@@ -85,18 +87,23 @@ export function UserActions({ userId, userName, userType, isBanned, isVerified }
             </DropdownMenuItem>
           )}
 
-          <DropdownMenuItem 
-              className="gap-2 font-bold cursor-pointer"
-              onClick={() => handleAction(() => updateUserRole(userId, userType === "professional" ? "user" : "professional"), "Kullanıcı tipi güncellendi")}
+          <DropdownMenuItem
+            className="gap-2 font-bold cursor-pointer"
+            onClick={() =>
+              handleAction(
+                () => updateUserRole(userId, userType === "professional" ? "user" : "professional"),
+                "Kullanıcı tipi güncellendi"
+              )
+            }
           >
             <UserCog size={16} />
             {userType === "professional" ? "Bireysele Çevir" : "Galeriye Çevir"}
           </DropdownMenuItem>
 
           <DropdownMenuSeparator />
-          
+
           {!isBanned ? (
-            <DropdownMenuItem 
+            <DropdownMenuItem
               className="gap-2 font-bold cursor-pointer text-rose-600 focus:text-rose-700"
               onClick={() => setBanDialogOpen(true)}
             >
@@ -105,12 +112,12 @@ export function UserActions({ userId, userName, userType, isBanned, isVerified }
             </DropdownMenuItem>
           ) : (
             <DropdownMenuItem className="gap-2 font-bold cursor-pointer text-slate-600 italic">
-               <AlertCircle size={16} />
-               Zaten Engelli
+              <AlertCircle size={16} />
+              Zaten Engelli
             </DropdownMenuItem>
           )}
 
-          <DropdownMenuItem 
+          <DropdownMenuItem
             className="gap-2 font-bold cursor-pointer text-slate-400 hover:text-red-600 transition-colors"
             onClick={() => setDeleteDialogOpen(true)}
           >
@@ -126,7 +133,8 @@ export function UserActions({ userId, userName, userType, isBanned, isVerified }
           <AlertDialogHeader>
             <AlertDialogTitle>Kullanıcıyı Engelle</AlertDialogTitle>
             <AlertDialogDescription>
-              <strong>{userName}</strong> kullanıcısını engellemek üzeresiniz. Engelleme nedenini girin.
+              <strong>{userName}</strong> kullanıcısını engellemek üzeresiniz. Engelleme nedenini
+              girin.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <Input
@@ -160,7 +168,8 @@ export function UserActions({ userId, userName, userType, isBanned, isVerified }
           <AlertDialogHeader>
             <AlertDialogTitle>Hesabı Kalıcı Sil</AlertDialogTitle>
             <AlertDialogDescription>
-              <strong>{userName}</strong> kullanıcısının hesabını kalıcı olarak silmek istediğinizden emin misiniz? Bu işlem geri alınamaz.
+              <strong>{userName}</strong> kullanıcısının hesabını kalıcı olarak silmek
+              istediğinizden emin misiniz? Bu işlem geri alınamaz.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

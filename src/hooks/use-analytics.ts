@@ -1,10 +1,11 @@
 import { usePostHog } from "posthog-js/react";
+import { useCallback } from "react";
+
 import {
   AnalyticsEvent,
   type ClientAnalyticsEvent,
   type EventPayload,
 } from "@/lib/analytics/events";
-import { useCallback } from "react";
 
 /**
  * Tip-güvenli analitik hook'u.
@@ -31,14 +32,11 @@ export function useAnalytics() {
    * Event Dictionary'de tanımlı client event'lerini ve ilgili property'leri zorunlu kılar.
    */
   const trackEvent = useCallback(
-    <T extends ClientAnalyticsEvent>(
-      eventName: T,
-      properties?: EventPayload<T>,
-    ) => {
+    <T extends ClientAnalyticsEvent>(eventName: T, properties?: EventPayload<T>) => {
       if (!posthog) return;
       posthog.capture(eventName, properties ?? {});
     },
-    [posthog],
+    [posthog]
   );
 
   return { trackEvent };

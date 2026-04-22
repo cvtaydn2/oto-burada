@@ -1,7 +1,10 @@
-import { cn } from "@/lib/utils";
 import React from "react";
 
-interface DesignInputProps extends React.InputHTMLAttributes<HTMLInputElement & HTMLSelectElement & HTMLTextAreaElement> {
+import { cn } from "@/lib/utils";
+
+interface DesignInputProps extends React.InputHTMLAttributes<
+  HTMLInputElement & HTMLSelectElement & HTMLTextAreaElement
+> {
   label: string;
   required?: boolean;
   error?: string;
@@ -17,10 +20,28 @@ interface DesignInputProps extends React.InputHTMLAttributes<HTMLInputElement & 
  * Shared Input component following the Showroom Elite design system.
  * Matches the HTML reference: Bold label + Standard border + Focus ring.
  */
-export const DesignInput = React.forwardRef<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement, DesignInputProps>(
-  ({ label, required, error, helperText, as = "input", className, children, showCounter, maxLength, currentLength, ...props }, ref) => {
+export const DesignInput = React.forwardRef<
+  HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement,
+  DesignInputProps
+>(
+  (
+    {
+      label,
+      required,
+      error,
+      helperText,
+      as = "input",
+      className,
+      children,
+      showCounter,
+      maxLength,
+      currentLength,
+      ...props
+    },
+    ref
+  ) => {
     const Component = as as React.ElementType;
-    
+
     return (
       <div className="space-y-1.5">
         <div className="flex items-center justify-between">
@@ -28,15 +49,19 @@ export const DesignInput = React.forwardRef<HTMLInputElement | HTMLSelectElement
             {label} {required && <span className="text-destructive">*</span>}
           </label>
           {showCounter && maxLength !== undefined && (
-            <span className={cn(
-              "text-[10px] font-mono",
-              (currentLength ?? 0) > maxLength * 0.9 ? "text-destructive" : "text-muted-foreground"
-            )}>
+            <span
+              className={cn(
+                "text-[10px] font-mono",
+                (currentLength ?? 0) > maxLength * 0.9
+                  ? "text-destructive"
+                  : "text-muted-foreground"
+              )}
+            >
               {currentLength ?? 0}/{maxLength}
             </span>
           )}
         </div>
-        
+
         <div className="relative">
           <Component
             ref={ref}
@@ -58,9 +83,7 @@ export const DesignInput = React.forwardRef<HTMLInputElement | HTMLSelectElement
             {error}
           </p>
         ) : helperText ? (
-          <p className="text-[10px] text-muted-foreground mt-1.5 ml-1">
-            {helperText}
-          </p>
+          <p className="text-[10px] text-muted-foreground mt-1.5 ml-1">{helperText}</p>
         ) : null}
       </div>
     );

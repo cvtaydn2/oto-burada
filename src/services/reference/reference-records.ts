@@ -1,8 +1,8 @@
 import { createClient } from "@supabase/supabase-js";
 import { revalidatePath } from "next/cache";
 
-import { getSupabaseEnv, hasSupabaseAdminEnv } from "@/lib/supabase/env";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
+import { getSupabaseEnv, hasSupabaseAdminEnv } from "@/lib/supabase/env";
 import type { BrandCatalogItem, CityOption, SearchSuggestionItem } from "@/types";
 
 /**
@@ -13,7 +13,10 @@ function sortLocale(values: string[]) {
 }
 
 function toSlug(name: string) {
-  return name.toLowerCase().replace(/ /g, "-").replace(/[^\w-]+/g, "");
+  return name
+    .toLowerCase()
+    .replace(/ /g, "-")
+    .replace(/[^\w-]+/g, "");
 }
 
 /**
@@ -40,13 +43,33 @@ async function fetchLiveMarketplaceReferenceData() {
     { data: modelsData },
     { data: trimsData },
     { data: citiesData },
-    { data: districtsData }
+    { data: districtsData },
   ] = await Promise.all([
-    supabase.from("brands").select("id, name").eq("is_active", true).order("sort_order", { ascending: true }),
-    supabase.from("models").select("id, brand_id, name").eq("is_active", true).order("sort_order", { ascending: true }),
-    supabase.from("car_trims").select("model_id, name").eq("is_active", true).order("sort_order", { ascending: true }),
-    supabase.from("cities").select("id, name, plate_code").eq("is_active", true).order("name", { ascending: true }),
-    supabase.from("districts").select("city_id, name").eq("is_active", true).order("name", { ascending: true })
+    supabase
+      .from("brands")
+      .select("id, name")
+      .eq("is_active", true)
+      .order("sort_order", { ascending: true }),
+    supabase
+      .from("models")
+      .select("id, brand_id, name")
+      .eq("is_active", true)
+      .order("sort_order", { ascending: true }),
+    supabase
+      .from("car_trims")
+      .select("model_id, name")
+      .eq("is_active", true)
+      .order("sort_order", { ascending: true }),
+    supabase
+      .from("cities")
+      .select("id, name, plate_code")
+      .eq("is_active", true)
+      .order("name", { ascending: true }),
+    supabase
+      .from("districts")
+      .select("city_id, name")
+      .eq("is_active", true)
+      .order("name", { ascending: true }),
   ]);
 
   const safeBrandsData = Array.isArray(brandsData) ? (brandsData as DBBrand[]) : [];
@@ -61,33 +84,47 @@ async function fetchLiveMarketplaceReferenceData() {
     name: b.name,
     models: safeModelsData
       .filter((m: DBModel) => m.brand_id === b.id)
-      .map(m => ({
+      .map((m) => ({
         name: m.name,
-        trims: sortLocale(safeTrimsData.filter(t => t.model_id === m.id).map(t => t.name))
+        trims: sortLocale(safeTrimsData.filter((t) => t.model_id === m.id).map((t) => t.name)),
       }))
-      .sort((left, right) => left.name.localeCompare(right.name, "tr"))
+      .sort((left, right) => left.name.localeCompare(right.name, "tr")),
   }));
 
   const cities: CityOption[] = safeCitiesData.map((c: DBCity) => ({
     city: c.name,
     slug: toSlug(c.name),
     cityPlate: c.plate_code,
-    districts: sortLocale(safeDistrictsData.filter((d: DBDistrict) => d.city_id === c.id).map((d: DBDistrict) => d.name))
+    districts: sortLocale(
+      safeDistrictsData.filter((d: DBDistrict) => d.city_id === c.id).map((d: DBDistrict) => d.name)
+    ),
   }));
 
   const uniqueSuggestions = new Map<string, SearchSuggestionItem>();
-  
+
   for (const b of safeBrandsData) {
-    uniqueSuggestions.set(`brand:${b.name.toLowerCase()}`, { label: b.name, type: "brand", value: b.name });
+    uniqueSuggestions.set(`brand:${b.name.toLowerCase()}`, {
+      label: b.name,
+      type: "brand",
+      value: b.name,
+    });
     const brandModels = safeModelsData.filter((m: DBModel) => m.brand_id === b.id).slice(0, 5);
     for (const m of brandModels) {
       const val = `${b.name} ${m.name}`;
-      uniqueSuggestions.set(`model:${val.toLowerCase()}`, { label: val, type: "model", value: val });
+      uniqueSuggestions.set(`model:${val.toLowerCase()}`, {
+        label: val,
+        type: "model",
+        value: val,
+      });
     }
   }
 
   for (const c of safeCitiesData) {
-    uniqueSuggestions.set(`city:${c.name.toLowerCase()}`, { label: c.name, type: "city", value: c.name });
+    uniqueSuggestions.set(`city:${c.name.toLowerCase()}`, {
+      label: c.name,
+      type: "city",
+      value: c.name,
+    });
   }
 
   const searchSuggestions = [...uniqueSuggestions.values()]
@@ -102,10 +139,10 @@ async function fetchLiveMarketplaceReferenceData() {
     })
     .slice(0, 100);
 
-  return { 
+  return {
     brands,
     cities,
-    searchSuggestions
+    searchSuggestions,
   };
 }
 
@@ -129,7 +166,11 @@ export function mergeCityOptions(cities: CityOption[], extraCities: string[]) {
 }
 
 export async function getLiveMarketplaceReferenceData() {
-  if (process.env.NODE_ENV === 'test' || typeof window !== 'undefined' || !process.env.NEXT_RUNTIME) {
+  if (
+    process.env.NODE_ENV === "test" ||
+    typeof window !== "undefined" ||
+    !process.env.NEXT_RUNTIME
+  ) {
     return fetchLiveMarketplaceReferenceData();
   }
 
@@ -138,7 +179,7 @@ export async function getLiveMarketplaceReferenceData() {
     const getCached = unstable_cache(
       async () => fetchLiveMarketplaceReferenceData(),
       ["live-marketplace-reference-data"],
-      { revalidate: 3600 },
+      { revalidate: 3600 }
     );
     return getCached();
   } catch {
@@ -180,10 +221,7 @@ export async function getAdminModelsByBrand(brandId: string) {
 export async function updateBrandStatus(id: string, active: boolean) {
   if (!hasSupabaseAdminEnv()) return { success: false };
   const admin = createSupabaseAdminClient();
-  const { error } = await admin
-    .from("brands")
-    .update({ is_active: active })
-    .eq("id", id);
+  const { error } = await admin.from("brands").update({ is_active: active }).eq("id", id);
 
   if (error) throw error;
   revalidatePath("/admin/reference");
@@ -194,7 +232,7 @@ export async function upsertBrand(name: string, id?: string) {
   if (!hasSupabaseAdminEnv()) return { success: false };
   const admin = createSupabaseAdminClient();
   const slug = toSlug(name);
-  
+
   if (id) {
     const { error } = await admin.from("brands").update({ name, slug }).eq("id", id);
     if (error) throw error;
@@ -211,10 +249,8 @@ export async function addModel(brandId: string, name: string) {
   if (!hasSupabaseAdminEnv()) return { success: false };
   const admin = createSupabaseAdminClient();
   const slug = toSlug(name);
-  
-  const { error } = await admin
-    .from("models")
-    .insert({ brand_id: brandId, name, slug });
+
+  const { error } = await admin.from("models").insert({ brand_id: brandId, name, slug });
 
   if (error) throw error;
   revalidatePath("/admin/reference");

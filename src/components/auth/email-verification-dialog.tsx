@@ -1,6 +1,10 @@
 "use client";
 
+import { CheckCircle2, LoaderCircle, Mail } from "lucide-react";
 import { useState } from "react";
+import { toast } from "sonner";
+
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
@@ -8,14 +12,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import {
-  InputOTP,
-  InputOTPGroup,
-  InputOTPSlot,
-} from "@/components/ui/input-otp";
-import { LoaderCircle, Mail, CheckCircle2 } from "lucide-react";
-import { toast } from "sonner";
+import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp";
 import { useErrorCapture } from "@/hooks/use-error-capture";
 
 interface EmailVerificationDialogProps {
@@ -85,7 +82,9 @@ export function EmailVerificationDialog({
       <DialogContent className="sm:max-w-[425px] rounded-2xl">
         <DialogHeader>
           <div className="flex justify-center mb-4">
-            <div className={`p-4 rounded-full ${step === "success" ? "bg-emerald-100 text-emerald-600" : "bg-primary/10 text-primary"}`}>
+            <div
+              className={`p-4 rounded-full ${step === "success" ? "bg-emerald-100 text-emerald-600" : "bg-primary/10 text-primary"}`}
+            >
               {step === "success" ? <CheckCircle2 size={32} /> : <Mail size={32} />}
             </div>
           </div>
@@ -139,7 +138,10 @@ export function EmailVerificationDialog({
               <Button
                 variant="ghost"
                 className="w-full text-sm"
-                onClick={() => { setStep("send"); setOtp(""); }}
+                onClick={() => {
+                  setStep("send");
+                  setOtp("");
+                }}
                 disabled={isLoading}
               >
                 Tekrar Gönder

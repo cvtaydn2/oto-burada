@@ -4,7 +4,7 @@
  * are NOT passed from Server Components to Client Components.
  */
 
-import { Profile, Listing } from "@/types";
+import { Listing, Profile } from "@/types";
 
 type RawProfile = {
   id?: string;
@@ -58,10 +58,13 @@ type RawListing = Partial<Listing> & {
  * Strips internal fields from a listing object.
  * license_plate ve VIN yetkisiz kullanıcılar için maskelenir.
  */
-export function toListingDTO(listing: RawListing | null | undefined, options: {
-  isOwner?: boolean;
-  isAdmin?: boolean;
-} = {}): Partial<Listing> {
+export function toListingDTO(
+  listing: RawListing | null | undefined,
+  options: {
+    isOwner?: boolean;
+    isAdmin?: boolean;
+  } = {}
+): Partial<Listing> {
   if (!listing) return {};
 
   const dto: RawListing = { ...listing };

@@ -1,4 +1,4 @@
-import { clsx, type ClassValue } from "clsx";
+import { type ClassValue, clsx } from "clsx";
 import { twMerge } from "tailwind-merge";
 
 export function cn(...inputs: ClassValue[]) {
@@ -36,9 +36,7 @@ export function formatDate(value: string | null | undefined): string {
  * Safe wrapper around date-fns formatDistanceToNow.
  * Returns "—" for null/undefined/invalid dates instead of throwing RangeError.
  */
-export function safeFormatDistanceToNow(
-  value: string | null | undefined,
-): string {
+export function safeFormatDistanceToNow(value: string | null | undefined): string {
   if (!value) return "—";
   const date = new Date(value);
   if (isNaN(date.getTime())) return "—";
@@ -69,10 +67,7 @@ export function safeFormatDistanceToNow(
  * Safe date formatter using date-fns format pattern.
  * Returns "—" for null/undefined/invalid dates instead of throwing RangeError.
  */
-export function safeFormatDate(
-  value: string | null | undefined,
-  pattern: string,
-): string {
+export function safeFormatDate(value: string | null | undefined, pattern: string): string {
   if (!value) return "—";
   const date = new Date(value);
   if (isNaN(date.getTime())) return "—";
@@ -142,17 +137,13 @@ export function formatTL(value: number): string {
  * @param width   - Desired output width in pixels
  * @param quality - JPEG/WebP quality 1-100 (default 80)
  */
-export function supabaseImageUrl(
-  url: string,
-  width: number,
-  quality = 80,
-): string {
+export function supabaseImageUrl(url: string, width: number, quality = 80): string {
   if (!url) return url;
-  
+
   // Disable transformations by default if not explicitly enabled
   // Supabase Image Transformation is a paid feature.
   const isTransformationEnabled = process.env.NEXT_PUBLIC_ENABLE_IMAGE_TRANSFORMATION === "true";
-  
+
   // Only transform Supabase Storage public URLs
   if (!url.includes(".supabase.co/storage/v1/object/public/") || !isTransformationEnabled) {
     return url;

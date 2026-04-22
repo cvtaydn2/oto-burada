@@ -1,4 +1,4 @@
-import { describe, it, expect } from "vitest";
+import { describe, expect, it } from "vitest";
 
 describe.skip("Admin Inventory Service", () => {
   it("should get admin inventory", async () => {

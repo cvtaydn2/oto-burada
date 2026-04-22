@@ -1,7 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import { Cookie, X } from "lucide-react";
+import { useEffect, useState } from "react";
+
 import {
   captureClientEvent,
   getCookieConsent,
@@ -49,11 +50,14 @@ export function CookieConsent() {
             <X size={18} aria-hidden="true" />
           </button>
         </div>
-        
+
         <div className="mt-4">
-          <h3 id="cookie-consent-title" className="text-sm font-bold text-foreground">Çerez Odaklı Deneyim</h3>
+          <h3 id="cookie-consent-title" className="text-sm font-bold text-foreground">
+            Çerez Odaklı Deneyim
+          </h3>
           <p className="mt-2 text-xs leading-relaxed text-muted-foreground">
-            Size daha iyi bir deneyim sunmak için çerezleri kullanıyoruz. Sitemizi kullanarak çerez politikamızı ve KVKK metinlerimizi kabul etmiş sayılırsınız.
+            Size daha iyi bir deneyim sunmak için çerezleri kullanıyoruz. Sitemizi kullanarak çerez
+            politikamızı ve KVKK metinlerimizi kabul etmiş sayılırsınız.
           </p>
         </div>
 

@@ -20,14 +20,17 @@ export function getYearOptions(minYear = 1990) {
 /**
  * Formats a date string or object into a human-readable format.
  */
-export function formatDate(date: string | Date | null, options: Intl.DateTimeFormatOptions = {
-  day: 'numeric',
-  month: 'long',
-  year: 'numeric'
-}) {
+export function formatDate(
+  date: string | Date | null,
+  options: Intl.DateTimeFormatOptions = {
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+  }
+) {
   if (!date) return "";
-  const d = typeof date === 'string' ? new Date(date) : date;
-  return new Intl.DateTimeFormat('tr-TR', options).format(d);
+  const d = typeof date === "string" ? new Date(date) : date;
+  return new Intl.DateTimeFormat("tr-TR", options).format(d);
 }
 
 /**
@@ -35,7 +38,7 @@ export function formatDate(date: string | Date | null, options: Intl.DateTimeFor
  */
 export function getTimeAgo(date: string | Date | null) {
   if (!date) return "";
-  const d = typeof date === 'string' ? new Date(date) : date;
+  const d = typeof date === "string" ? new Date(date) : date;
   const now = new Date();
   const diffInSeconds = Math.floor((now.getTime() - d.getTime()) / 1000);
 

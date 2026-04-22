@@ -1,7 +1,8 @@
 "use server";
 
-import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { revalidatePath } from "next/cache";
+
+import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { logger } from "@/lib/utils/logger";
 import { adjustUserCredits, logDopingApplication } from "@/services/billing/transaction-service";
 import { createDatabaseNotification } from "@/services/notifications/notification-records";
@@ -10,17 +11,17 @@ export async function grantCreditsToUser(
   userId: string,
   credits: number,
   note: string,
-  adminUserId: string,
+  adminUserId: string
 ): Promise<{ success: boolean; error?: string }> {
   const admin = createSupabaseAdminClient();
   try {
     await adjustUserCredits({
       userId,
       amount: credits,
-      type: 'admin_adjustment',
+      type: "admin_adjustment",
       description: `Hediye kredi (Admin: ${adminUserId}): ${note}`,
       referenceId: adminUserId,
-      metadata: { note, grantedBy: adminUserId }
+      metadata: { note, grantedBy: adminUserId },
     });
   } catch (error: unknown) {
     const errorMessage = error instanceof Error ? error.message : "Bilinmeyen bir hata oluştu.";
@@ -57,12 +58,16 @@ export async function grantDopingToListing(
   listingId: string,
   dopingTypes: string[],
   durationDays: number,
-  adminUserId: string,
+  adminUserId: string
 ): Promise<{ success: boolean; error?: string }> {
   const admin = createSupabaseAdminClient();
   const until = new Date(Date.now() + durationDays * 24 * 60 * 60 * 1000).toISOString();
 
-  const { data: listing } = await admin.from("listings").select("seller_id").eq("id", listingId).single();
+  const { data: listing } = await admin
+    .from("listings")
+    .select("seller_id")
+    .eq("id", listingId)
+    .single();
   const userId = listing?.seller_id;
 
   const updates: Record<string, unknown> = { updated_at: new Date().toISOString() };
@@ -90,7 +95,7 @@ export async function grantDopingToListing(
       userId,
       dopingType: type,
       durationDays,
-      metadata: { adminUserId, reason: 'admin_grant' }
+      metadata: { adminUserId, reason: "admin_grant" },
     });
   }
 
@@ -101,43 +106,47 @@ export async function grantDopingToListing(
 
 export async function toggleUserBan(userId: string, currentStatus: boolean) {
   const { executeServerAction } = await import("@/lib/utils/action-utils");
-  
-  return executeServerAction("toggleUserBan", async () => {
-    const admin = createSupabaseAdminClient();
-    const { error } = await admin
-      .from("profiles")
-      .update({ 
-         is_banned: !currentStatus,
-         ban_reason: !currentStatus ? "Admin tarafından yasaklandı" : null
-      })
-      .eq("id", userId);
 
-    if (error) throw new Error(error.message);
+  return executeServerAction(
+    "toggleUserBan",
+    async () => {
+      const admin = createSupabaseAdminClient();
+      const { error } = await admin
+        .from("profiles")
+        .update({
+          is_banned: !currentStatus,
+          ban_reason: !currentStatus ? "Admin tarafından yasaklandı" : null,
+        })
+        .eq("id", userId);
 
-    // If banned, cancel all active listings (Side Effect)
-    if (!currentStatus) {
-      await admin.from("listings").update({ status: "rejected" }).eq("seller_id", userId);
+      if (error) throw new Error(error.message);
+
+      // If banned, cancel all active listings (Side Effect)
+      if (!currentStatus) {
+        await admin.from("listings").update({ status: "rejected" }).eq("seller_id", userId);
+      }
+
+      return { newStatus: !currentStatus };
+    },
+    {
+      revalidatePaths: ["/admin/users", `/admin/users/${userId}`],
+      logContext: { userId, currentStatus },
     }
-    
-    return { newStatus: !currentStatus };
-  }, {
-    revalidatePaths: ["/admin/users", `/admin/users/${userId}`],
-    logContext: { userId, currentStatus }
-  });
+  );
 }
 
 export async function banUser(userId: string, reason: string) {
   const admin = createSupabaseAdminClient();
   const { error } = await admin
     .from("profiles")
-    .update({ 
-       is_banned: true,
-       ban_reason: reason || "Admin tarafından yasaklandı"
+    .update({
+      is_banned: true,
+      ban_reason: reason || "Admin tarafından yasaklandı",
     })
     .eq("id", userId);
 
   if (error) throw new Error(`Kullanıcı yasaklanamadı: ${error.message}`);
-  
+
   revalidatePath("/admin/users");
   revalidatePath(`/admin/users/${userId}`);
   return { success: true };
@@ -216,8 +225,8 @@ export async function handleVerificationReview(
       verification_feedback: feedback || null,
       verification_reviewed_at: new Date().toISOString(),
       verification_reviewed_by: adminUserId || null,
-      verified_business: status === "approved", 
-      updated_at: new Date().toISOString()
+      verified_business: status === "approved",
+      updated_at: new Date().toISOString(),
     })
     .eq("id", userId);
 
@@ -242,16 +251,17 @@ export async function handleVerificationReview(
     userId,
     type: "system",
     title: status === "approved" ? "Hesabınız doğrulandı!" : "Doğrulama talebi reddedildi",
-    message: status === "approved" 
-      ? "Tebrikler! İşletme hesabınız onaylandı. Artık galeriniz herkese görünür." 
-      : `Doğrulama talebiniz maalesef reddedildi. ${feedback ? `Sebep: ${feedback}` : "Lütfen bilgilerinizi kontrol edip tekrar deneyin."}`,
+    message:
+      status === "approved"
+        ? "Tebrikler! İşletme hesabınız onaylandı. Artık galeriniz herkese görünür."
+        : `Doğrulama talebiniz maalesef reddedildi. ${feedback ? `Sebep: ${feedback}` : "Lütfen bilgilerinizi kontrol edip tekrar deneyin."}`,
     href: "/dashboard/profile",
-  }).catch(err => logger.admin.warn("Verification notification failed", { userId, status }, err));
+  }).catch((err) => logger.admin.warn("Verification notification failed", { userId, status }, err));
 
   revalidatePath("/admin/users");
   revalidatePath(`/admin/users/${userId}`);
   revalidatePath("/galeriler"); // Revalidate gallery list
-  
+
   return { success: true };
 }
 
@@ -264,7 +274,7 @@ export async function verifyUserBusiness(userId: string) {
 
 export async function deleteUser(userId: string) {
   const admin = createSupabaseAdminClient();
-  
+
   try {
     // 1. Overwrite profile with anonymized data (Hard Anonymization)
     // This allows keeping the record for Referencing Integrity (e.g. past payments/listings)
@@ -288,7 +298,7 @@ export async function deleteUser(userId: string) {
         business_slug: null,
         is_banned: true,
         ban_reason: "Account Deleted / Anonymized",
-        updated_at: new Date().toISOString()
+        updated_at: new Date().toISOString(),
       })
       .eq("id", userId);
 
@@ -299,9 +309,9 @@ export async function deleteUser(userId: string) {
 
     // 2. Delete from Auth (This invalidates all tokens and removes from auth.users)
     const { error: authError } = await admin.auth.admin.deleteUser(userId);
-    
+
     if (authError) {
-      // Note: If deleting from auth fails because of FK constraints in other tables, 
+      // Note: If deleting from auth fails because of FK constraints in other tables,
       // the profile remains anonymized (which is already a win for KVKK).
       logger.admin.error("Auth user deletion failed", authError, { userId });
       throw new Error(`Kullanıcı oturumu sonlandırılamadı: ${authError.message}`);

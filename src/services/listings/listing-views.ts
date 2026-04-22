@@ -10,7 +10,7 @@ import { hasSupabaseAdminEnv } from "@/lib/supabase/env";
  */
 export async function recordListingView(
   listingId: string,
-  options: { viewerId?: string; viewerIp?: string },
+  options: { viewerId?: string; viewerIp?: string }
 ) {
   if (!hasSupabaseAdminEnv()) {
     return;
@@ -28,7 +28,7 @@ export async function recordListingView(
         viewer_ip: options.viewerIp ?? null,
         viewed_on: viewedOn,
       },
-      { onConflict: "listing_id,viewer_id,viewed_on", ignoreDuplicates: true },
+      { onConflict: "listing_id,viewer_id,viewed_on", ignoreDuplicates: true }
     );
 
     if (error) {
@@ -89,9 +89,7 @@ export async function getListingViewCount(listingId: string): Promise<number> {
 /**
  * Get view counts for multiple listings at once.
  */
-export async function getListingViewCounts(
-  listingIds: string[],
-): Promise<Record<string, number>> {
+export async function getListingViewCounts(listingIds: string[]): Promise<Record<string, number>> {
   if (!hasSupabaseAdminEnv() || listingIds.length === 0) {
     return {};
   }

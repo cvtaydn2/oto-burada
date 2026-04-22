@@ -1,8 +1,9 @@
 import { NextResponse } from "next/server";
-import { recordListingView } from "@/services/listings/listing-views";
+
 import { getCurrentUser } from "@/lib/auth/session";
-import { logger } from "@/lib/utils/logger";
 import { withSecurity } from "@/lib/utils/api-security";
+import { logger } from "@/lib/utils/logger";
+import { recordListingView } from "@/services/listings/listing-views";
 
 export async function POST(request: Request) {
   const security = await withSecurity(request);
@@ -10,7 +11,7 @@ export async function POST(request: Request) {
 
   try {
     const { listingId } = await request.json();
-    
+
     if (!listingId) {
       return NextResponse.json({ error: "Missing listingId" }, { status: 400 });
     }
@@ -20,9 +21,9 @@ export async function POST(request: Request) {
     const viewerIp = headersList.get("x-forwarded-for")?.split(",")[0]?.trim() || undefined;
 
     // Fire and forget recording
-    recordListingView(listingId, { 
-      viewerId: currentUser?.id, 
-      viewerIp 
+    recordListingView(listingId, {
+      viewerId: currentUser?.id,
+      viewerIp,
     }).catch((error) => {
       logger.listings.error("Listing view recording failed", error, { listingId, viewerIp });
     });

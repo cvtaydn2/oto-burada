@@ -62,38 +62,38 @@
   --font-sans: var(--font-inter), system-ui, sans-serif;
   --font-heading: var(--font-outfit), var(--font-sans);
   --font-geist-mono: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, Monaco, monospace;
-  
+
   /* Showroom Elite Light Palette - High Precision (Refined) */
   --background: oklch(0.99 0.002 240);
   --foreground: oklch(0.12 0.01 240);
-  
+
   --card: oklch(1 0 0);
   --card-foreground: oklch(0.12 0.01 240);
-  
+
   --popover: oklch(1 0 0);
   --popover-foreground: oklch(0.12 0.01 240);
-  
+
   /* Showroom Elite Blue - Primary Signature */
   --primary: oklch(0.58 0.16 255);
   --primary-foreground: oklch(1 0 0);
-  
+
   --secondary: oklch(0.97 0.005 240);
   --secondary-foreground: oklch(0.2 0.02 240);
-  
+
   --muted: oklch(0.96 0.004 240);
   --muted-foreground: oklch(0.45 0.02 240);
-  
+
   /* Precision Accent - Burnt Orange / Amber */
   --accent: oklch(0.7 0.14 45);
   --accent-foreground: oklch(0.1 0.02 45);
-  
+
   --destructive: oklch(0.6 0.18 28);
   --destructive-foreground: oklch(1 0 0);
-  
+
   --border: oklch(0.93 0.005 240);
   --input: oklch(0.93 0.005 240);
   --ring: oklch(0.58 0.16 255 / 0.3);
-  
+
   --radius: 0.85rem; /* 13.6px modern radius */
 }
 
@@ -101,25 +101,25 @@
   /* Showroom Elite Dark Palette - Deep Carbon */
   --background: oklch(0.1 0.01 255);
   --foreground: oklch(0.98 0.005 255);
-  
+
   --card: oklch(0.13 0.012 255);
   --card-foreground: oklch(0.98 0.005 255);
-  
+
   --popover: oklch(0.11 0.01 255);
   --popover-foreground: oklch(0.98 0.005 255);
-  
+
   --primary: oklch(0.65 0.18 260);
   --primary-foreground: oklch(0.05 0.01 255);
-  
+
   --secondary: oklch(0.16 0.015 255);
   --secondary-foreground: oklch(0.98 0.005 255);
-  
+
   --muted: oklch(0.15 0.01 255);
   --muted-foreground: oklch(0.65 0.02 255);
-  
+
   --accent: oklch(0.78 0.14 45);
   --accent-foreground: oklch(0.08 0.02 45);
-  
+
   --border: oklch(0.2 0.012 255);
   --input: oklch(0.2 0.012 255);
   --ring: oklch(0.65 0.18 260 / 0.4);
@@ -141,7 +141,12 @@
     /* overscroll-y-none kaldırıldı — pull-to-refresh mobil UX için gerekli */
     @apply min-h-svh bg-background text-foreground;
   }
-  h1, h2, h3, h4, h5, h6 {
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
     @apply font-heading tracking-tight font-bold;
   }
 
@@ -149,7 +154,9 @@
 
   /* Accessibility: Reduced Motion */
   @media (prefers-reduced-motion: reduce) {
-    *, ::before, ::after {
+    *,
+    ::before,
+    ::after {
       animation-duration: 0.01ms !important;
       animation-iteration-count: 1 !important;
       transition-duration: 0.01ms !important;
@@ -163,7 +170,7 @@
     overscroll-behavior-y: contain;
     touch-action: pan-y;
   }
-  
+
   .min-h-screen-safe {
     min-height: 100svh;
   }
@@ -197,7 +204,7 @@
   }
 
   .bg-mesh {
-    background-image: 
+    background-image:
       radial-gradient(at 0% 0%, oklch(0.58 0.16 255 / 0.03) 0px, transparent 50%),
       radial-gradient(at 100% 0%, oklch(0.7 0.14 45 / 0.03) 0px, transparent 50%);
   }
@@ -258,17 +265,24 @@
   @page {
     margin: 1.5cm;
   }
-  
-  html, body {
+
+  html,
+  body {
     background-color: white !important;
     font-size: 11pt;
   }
 
   /* Hide UI Noise */
-  header, footer, nav, 
-  button, .favorite-button, .share-button,
-  .mobile-sticky-actions, .mobile-filter-trigger,
-  aside, .listing-print-action, 
+  header,
+  footer,
+  nav,
+  button,
+  .favorite-button,
+  .share-button,
+  .mobile-sticky-actions,
+  .mobile-filter-trigger,
+  aside,
+  .listing-print-action,
   .similar-listings,
   .report-listing-form {
     display: none !important;
@@ -293,16 +307,24 @@
   }
 
   /* Professional Touches */
-  .rounded-3xl, .rounded-\[32px\], .rounded-xl, .rounded-2xl {
+  .rounded-3xl,
+  .rounded-\[32px\],
+  .rounded-xl,
+  .rounded-2xl {
     border-radius: 8px !important;
     border: 1px solid #e2e8f0 !important;
   }
 
-  .shadow-sm, .card-shadow, .shadow-sm, .shadow-md {
+  .shadow-sm,
+  .card-shadow,
+  .shadow-sm,
+  .shadow-md {
     box-shadow: none !important;
   }
 
-  .bg-secondary\/20, .bg-secondary\/10, .bg-muted\/20 {
+  .bg-secondary\/20,
+  .bg-secondary\/10,
+  .bg-muted\/20 {
     background-color: #f8fafc !important;
     -webkit-print-color-adjust: exact;
     print-color-adjust: exact;
@@ -315,7 +337,8 @@
   }
 
   /* Ensure text is readable */
-  .text-slate-700, .text-muted-foreground {
+  .text-slate-700,
+  .text-muted-foreground {
     color: #334155 !important;
   }
 }

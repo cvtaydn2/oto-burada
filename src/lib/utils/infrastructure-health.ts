@@ -1,6 +1,6 @@
 /**
  * Infrastructure Health Checks
- * 
+ *
  * Validates that required infrastructure (Redis, Supabase) is available
  * for critical production operations.
  */
@@ -73,7 +73,7 @@ export async function checkInfrastructureHealth(): Promise<HealthCheckResult> {
 /**
  * Validate that critical infrastructure is available on startup.
  * Logs warnings if infrastructure is missing in production.
- * 
+ *
  * Call this in middleware or API route initialization.
  */
 export function validateProductionInfrastructure(): void {

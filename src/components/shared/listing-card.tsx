@@ -1,25 +1,24 @@
-
-
-import Link from "next/link";
-import { 
-  CircleGauge, 
-  Fuel, 
-  MapPin, 
-  Settings2, 
-  ShieldCheck, 
-  Zap,
+import { cva, type VariantProps } from "class-variance-authority";
+import {
   ChevronRight,
-  TrendingDown,
+  CircleGauge,
+  Fuel,
+  MapPin,
+  Settings2,
+  ShieldCheck,
   Sparkles,
+  TrendingDown,
+  Zap,
 } from "lucide-react";
-import { cn, formatNumber, formatPrice, supabaseImageUrl } from "@/lib/utils";
-import { type Listing } from "@/types";
+import Link from "next/link";
+
 import { FavoriteButton } from "@/components/listings/favorite-button";
 import { SafeImage } from "@/components/shared/safe-image";
+import { cn, formatNumber, formatPrice, supabaseImageUrl } from "@/lib/utils";
 import { getListingBadgeStates, getListingCoverImage } from "@/lib/utils/listing-logic";
 import { getSellerTrustUI } from "@/lib/utils/trust-ui";
 import { getListingCardInsights } from "@/services/listings/listing-card-insights";
-import { cva, type VariantProps } from "class-variance-authority";
+import { type Listing } from "@/types";
 
 const cardVariants = cva(
   "group relative overflow-hidden transition-[border-color,box-shadow,transform] duration-normal ease-standard showroom-card",
@@ -33,7 +32,7 @@ const cardVariants = cva(
       isHighlighted: {
         true: "ring-2 ring-primary/20 bg-gradient-to-br from-primary/[0.03] to-card",
         false: "",
-      }
+      },
     },
     defaultVariants: {
       variant: "grid",
@@ -62,28 +61,33 @@ export function ListingCard({
   const insights = getListingCardInsights(listing);
   const coverImage = getListingCoverImage(listing);
   const { isPremiumVisible } = getSellerTrustUI(listing.seller);
-  
+
   const detailHref = `/listing/${listing.slug}`;
 
   const isGrid = variant === "grid";
   const isList = variant === "list";
 
   return (
-    <div 
-      className={cn(cardVariants({ variant, isHighlighted: badgeStates.isHighlighted && isPremiumVisible }), className)}
+    <div
+      className={cn(
+        cardVariants({ variant, isHighlighted: badgeStates.isHighlighted && isPremiumVisible }),
+        className
+      )}
       role="article"
       aria-labelledby={`listing-title-${listing.id}`}
     >
       {/* ── Media Section ── */}
-      <div className={cn(
-        "relative overflow-hidden bg-muted/20",
-        isGrid && "aspect-[4/3] w-full",
-        isList && "aspect-[16/10] sm:aspect-auto sm:w-[320px] shrink-0",
-      )}>
-        <Link 
-          href={detailHref} 
-          tabIndex={-1} 
-          aria-hidden="true" 
+      <div
+        className={cn(
+          "relative overflow-hidden bg-muted/20",
+          isGrid && "aspect-[4/3] w-full",
+          isList && "aspect-[16/10] sm:aspect-auto sm:w-[320px] shrink-0"
+        )}
+      >
+        <Link
+          href={detailHref}
+          tabIndex={-1}
+          aria-hidden="true"
           className="block w-full h-full relative"
         >
           <SafeImage
@@ -101,16 +105,24 @@ export function ListingCard({
         {/* Floating Badges */}
         <div className="absolute top-4 left-4 flex flex-col gap-2 z-10 pointer-events-none">
           {badgeStates.isFeatured && isPremiumVisible && (
-            <Badge icon={Sparkles} label="VİTRİN" className="bg-primary text-white shadow-lg shadow-primary/20" />
+            <Badge
+              icon={Sparkles}
+              label="VİTRİN"
+              className="bg-primary text-white shadow-lg shadow-primary/20"
+            />
           )}
           {badgeStates.isUrgent && isPremiumVisible && (
-            <Badge icon={Zap} label="ACİL" className="bg-rose-600 text-white shadow-lg shadow-rose-600/20" />
+            <Badge
+              icon={Zap}
+              label="ACİL"
+              className="bg-rose-600 text-white shadow-lg shadow-rose-600/20"
+            />
           )}
           {isPremiumVisible && badgeStates.hasInspection && (
-            <Badge 
-              icon={ShieldCheck} 
-              label="EKSPERTİZLİ" 
-              className="bg-white/10 backdrop-blur-xl border border-white/20 text-white shadow-2xl font-black tracking-widest scale-105" 
+            <Badge
+              icon={ShieldCheck}
+              label="EKSPERTİZLİ"
+              className="bg-white/10 backdrop-blur-xl border border-white/20 text-white shadow-2xl font-black tracking-widest scale-105"
             />
           )}
         </div>
@@ -140,34 +152,44 @@ export function ListingCard({
       </div>
 
       {/* ── Content Section ── */}
-      <div className={cn(
-        "flex flex-1 flex-col",
-        isGrid && "p-6",
-        isList && "p-4 sm:p-8 sm:pl-10 justify-center",
-      )}>
+      <div
+        className={cn(
+          "flex flex-1 flex-col",
+          isGrid && "p-6",
+          isList && "p-4 sm:p-8 sm:pl-10 justify-center"
+        )}
+      >
         <div className="space-y-4">
           {/* Brand & Market Intelligence */}
           <div className="flex items-center justify-between gap-4">
-             <div className="flex items-center gap-3">
-               <span className="text-[11px] font-extrabold text-primary uppercase tracking-[0.25em]">{listing.brand}</span>
-               <div className="size-1 rounded-full bg-slate-300" aria-hidden="true" />
-               <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-widest">{listing.year}</span>
-             </div>
-             {showInsights && insights.tone !== "emerald" && (
-               <div className={cn(
-                 "text-[9px] font-black uppercase tracking-[0.15em] px-2.5 py-1 rounded-lg border shadow-sm transition-all group-hover:scale-105",
-                 insights.tone === "amber" ? "bg-amber-50 text-amber-700 border-amber-100" :
-                 insights.tone === "indigo" ? "bg-indigo-50 text-indigo-700 border-indigo-100" :
-                 "bg-muted/50 text-muted-foreground border-border/10"
-               )}>
-                 {insights.badgeLabel}
-               </div>
-             )}
+            <div className="flex items-center gap-3">
+              <span className="text-[11px] font-extrabold text-primary uppercase tracking-[0.25em]">
+                {listing.brand}
+              </span>
+              <div className="size-1 rounded-full bg-slate-300" aria-hidden="true" />
+              <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-widest">
+                {listing.year}
+              </span>
+            </div>
+            {showInsights && insights.tone !== "emerald" && (
+              <div
+                className={cn(
+                  "text-[9px] font-black uppercase tracking-[0.15em] px-2.5 py-1 rounded-lg border shadow-sm transition-all group-hover:scale-105",
+                  insights.tone === "amber"
+                    ? "bg-amber-50 text-amber-700 border-amber-100"
+                    : insights.tone === "indigo"
+                      ? "bg-indigo-50 text-indigo-700 border-indigo-100"
+                      : "bg-muted/50 text-muted-foreground border-border/10"
+                )}
+              >
+                {insights.badgeLabel}
+              </div>
+            )}
           </div>
 
           {/* Title & Description */}
-          <Link 
-            href={detailHref} 
+          <Link
+            href={detailHref}
             id={`listing-title-${listing.id}`}
             className="block group/title space-y-1 focus-ring rounded-lg"
             aria-label={`${listing.year} ${listing.brand} ${listing.model}: ${formatPrice(listing.price)} TL`}
@@ -181,26 +203,43 @@ export function ListingCard({
           </Link>
 
           {/* Pricing */}
-          <div className="flex items-baseline gap-1.5" aria-label={`Fiyat: ${formatPrice(listing.price)} TL`}>
+          <div
+            className="flex items-baseline gap-1.5"
+            aria-label={`Fiyat: ${formatPrice(listing.price)} TL`}
+          >
             <span className="text-3xl font-extrabold tracking-tighter text-foreground">
               {formatPrice(listing.price)}
             </span>
-            <span className="text-xs font-bold text-primary/40 uppercase tracking-widest" aria-hidden="true">TL</span>
+            <span
+              className="text-xs font-bold text-primary/40 uppercase tracking-widest"
+              aria-hidden="true"
+            >
+              TL
+            </span>
           </div>
 
           {/* Key Technical Specs */}
           <div className="grid grid-cols-3 gap-3 pt-2">
-            <Stat icon={CircleGauge} label={`${formatNumber(listing.mileage)} KM`} sub={undefined} />
-            <Stat icon={Settings2} label={listing.transmission === "otomatik" ? "Otomatik" : "Manuel"} />
+            <Stat
+              icon={CircleGauge}
+              label={`${formatNumber(listing.mileage)} KM`}
+              sub={undefined}
+            />
+            <Stat
+              icon={Settings2}
+              label={listing.transmission === "otomatik" ? "Otomatik" : "Manuel"}
+            />
             <Stat icon={Fuel} label={listing.fuelType === "benzin" ? "Benzin" : "Dizel"} />
           </div>
         </div>
 
         {/* Footer / Location */}
-        <div className={cn(
-          "mt-8 flex items-center justify-between pt-6 border-t border-slate-100",
-          isList && "sm:mt-6"
-        )}>
+        <div
+          className={cn(
+            "mt-8 flex items-center justify-between pt-6 border-t border-slate-100",
+            isList && "sm:mt-6"
+          )}
+        >
           <div className="flex items-center gap-3">
             <div className="size-8 rounded-xl bg-slate-50 flex items-center justify-center text-slate-400 group-hover:text-primary group-hover:bg-primary/5 transition-[background-color,color] duration-normal ease-standard">
               <MapPin size={14} />
@@ -210,7 +249,7 @@ export function ListingCard({
             </span>
           </div>
 
-          <Link 
+          <Link
             href={detailHref}
             tabIndex={-1}
             aria-hidden="true"
@@ -225,19 +264,37 @@ export function ListingCard({
   );
 }
 
-function Badge({ icon: Icon, label, className }: { icon: React.ElementType, label: string, className?: string }) {
+function Badge({
+  icon: Icon,
+  label,
+  className,
+}: {
+  icon: React.ElementType;
+  label: string;
+  className?: string;
+}) {
   return (
-    <div className={cn(
-      "flex h-8 items-center gap-2 rounded-xl px-4 text-[10px] font-bold uppercase tracking-widest backdrop-blur-xl border border-white/20",
-      className
-    )}>
+    <div
+      className={cn(
+        "flex h-8 items-center gap-2 rounded-xl px-4 text-[10px] font-bold uppercase tracking-widest backdrop-blur-xl border border-white/20",
+        className
+      )}
+    >
       <Icon size={14} strokeWidth={2.5} />
       {label}
     </div>
   );
 }
 
-function Stat({ icon: Icon, label, sub }: { icon: React.ElementType, label: string, sub?: string }) {
+function Stat({
+  icon: Icon,
+  label,
+  sub,
+}: {
+  icon: React.ElementType;
+  label: string;
+  sub?: string;
+}) {
   return (
     <div className="flex flex-col gap-2">
       <div className="size-11 rounded-2xl bg-muted/30 flex items-center justify-center text-slate-400 group-hover:bg-primary/5 group-hover:text-primary transition-[background-color,color,transform] duration-normal ease-standard group-hover:scale-105">

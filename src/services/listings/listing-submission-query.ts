@@ -1,7 +1,8 @@
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { hasSupabaseAdminEnv } from "@/lib/supabase/env";
-import { Listing, ListingFilters, UserRole, Profile } from "@/types";
 import { logger } from "@/lib/utils/logger";
+import { Listing, ListingFilters, Profile, UserRole } from "@/types";
+
 import { ListingRow } from "./listing-submission-types";
 
 export const listingSelect = `
@@ -144,26 +145,28 @@ export function mapListingRow(row: ListingRow): Listing {
     carTrim: row.car_trim ?? null,
     sellerId: row.seller_id,
     viewCount: row.view_count ?? 0,
-    seller: row.profiles ? {
-      id: row.profiles.id,
-      fullName: row.profiles.full_name,
-      phone: row.profiles.phone ?? "",
-      city: row.profiles.city,
-      avatarUrl: row.profiles.avatar_url,
-      role: row.profiles.role as UserRole,
-      userType: row.profiles.user_type as Profile["userType"],
-      businessName: row.profiles.business_name,
-      businessLogoUrl: row.profiles.business_logo_url,
-      isVerified: row.profiles.is_verified,
-      isBanned: row.profiles.is_banned,
-      banReason: row.profiles.ban_reason,
-      verificationStatus: row.profiles.verification_status as Profile["verificationStatus"],
-      trustScore: row.profiles.trust_score ?? undefined,
-      businessSlug: row.profiles.business_slug,
-      emailVerified: false,
-      createdAt: row.profiles.created_at ?? "",
-      updatedAt: row.profiles.updated_at ?? "",
-    } : undefined,
+    seller: row.profiles
+      ? {
+          id: row.profiles.id,
+          fullName: row.profiles.full_name,
+          phone: row.profiles.phone ?? "",
+          city: row.profiles.city,
+          avatarUrl: row.profiles.avatar_url,
+          role: row.profiles.role as UserRole,
+          userType: row.profiles.user_type as Profile["userType"],
+          businessName: row.profiles.business_name,
+          businessLogoUrl: row.profiles.business_logo_url,
+          isVerified: row.profiles.is_verified,
+          isBanned: row.profiles.is_banned,
+          banReason: row.profiles.ban_reason,
+          verificationStatus: row.profiles.verification_status as Profile["verificationStatus"],
+          trustScore: row.profiles.trust_score ?? undefined,
+          businessSlug: row.profiles.business_slug,
+          emailVerified: false,
+          createdAt: row.profiles.created_at ?? "",
+          updatedAt: row.profiles.updated_at ?? "",
+        }
+      : undefined,
     slug: row.slug,
     status: row.status,
     title: row.title,
@@ -183,10 +186,7 @@ export function mapListingRow(row: ListingRow): Listing {
   };
 }
 
-export function applyListingFilterPredicates<T>(
-  query: T,
-  filters: ListingFilters,
-): T {
+export function applyListingFilterPredicates<T>(query: T, filters: ListingFilters): T {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const q = query as any;
 
@@ -250,7 +250,7 @@ export async function getDatabaseListings(options?: {
     if (filters) query = applyListingFilterPredicates(query, filters);
 
     const sort = filters?.sort ?? "newest";
-    
+
     // PRIORITY 1: Featured (Paid)
     if (!filters?.sort || filters.sort === "newest") {
       query = query.order("featured", { ascending: false });
@@ -260,16 +260,38 @@ export async function getDatabaseListings(options?: {
     query = query.order("profiles(verification_status)", { ascending: false, nullsFirst: false });
 
     switch (sort) {
-      case "price_asc": query = query.order("price", { ascending: true }).order("created_at", { ascending: false }); break;
-      case "price_desc": query = query.order("price", { ascending: false }).order("created_at", { ascending: false }); break;
-      case "mileage_asc": query = query.order("mileage", { ascending: true }).order("created_at", { ascending: false }); break;
-      case "year_desc": query = query.order("year", { ascending: false }).order("created_at", { ascending: false }); break;
-      case "oldest": query = query.order("created_at", { ascending: true }); break;
-      case "mileage_desc": query = query.order("mileage", { ascending: false }).order("created_at", { ascending: false }); break;
-      case "year_asc": query = query.order("year", { ascending: true }).order("created_at", { ascending: false }); break;
+      case "price_asc":
+        query = query.order("price", { ascending: true }).order("created_at", { ascending: false });
+        break;
+      case "price_desc":
+        query = query
+          .order("price", { ascending: false })
+          .order("created_at", { ascending: false });
+        break;
+      case "mileage_asc":
+        query = query
+          .order("mileage", { ascending: true })
+          .order("created_at", { ascending: false });
+        break;
+      case "year_desc":
+        query = query.order("year", { ascending: false }).order("created_at", { ascending: false });
+        break;
+      case "oldest":
+        query = query.order("created_at", { ascending: true });
+        break;
+      case "mileage_desc":
+        query = query
+          .order("mileage", { ascending: false })
+          .order("created_at", { ascending: false });
+        break;
+      case "year_asc":
+        query = query.order("year", { ascending: true }).order("created_at", { ascending: false });
+        break;
       case "newest":
       default:
-        query = query.order("bumped_at", { ascending: false, nullsFirst: false }).order("created_at", { ascending: false });
+        query = query
+          .order("bumped_at", { ascending: false, nullsFirst: false })
+          .order("created_at", { ascending: false });
         break;
     }
 
@@ -281,8 +303,15 @@ export async function getDatabaseListings(options?: {
   };
 
   const runQuery = async <TResult>(query: TResult) => {
-    if ("returns" in (query as object) && typeof (query as { returns?: unknown }).returns === "function") {
-      return (query as { returns: <T>() => Promise<{ data: T | null; error: { message: string } | null }> }).returns<ListingRow[]>();
+    if (
+      "returns" in (query as object) &&
+      typeof (query as { returns?: unknown }).returns === "function"
+    ) {
+      return (
+        query as {
+          returns: <T>() => Promise<{ data: T | null; error: { message: string } | null }>;
+        }
+      ).returns<ListingRow[]>();
     }
     return query as Promise<{ data: ListingRow[] | null; error: { message: string } | null }>;
   };
@@ -305,12 +334,12 @@ export interface PaginatedListingsResult {
 }
 
 export async function getFilteredDatabaseListings(
-  filters: ListingFilters,
+  filters: ListingFilters
 ): Promise<PaginatedListingsResult> {
   const page = filters.page ?? 1;
   const limit = filters.limit ?? 24;
   const sort = filters.sort ?? "newest";
-  
+
   const admin = createSupabaseAdminClient();
   // const from = (page - 1) * limit; // OFFSET logic removed
   // const to = from + limit - 1;
@@ -322,14 +351,14 @@ export async function getFilteredDatabaseListings(
       .select("name")
       .eq("slug", filters.citySlug)
       .maybeSingle();
-    
+
     if (cityData) {
       filters = { ...filters, city: cityData.name };
     }
   }
 
   let dataQuery = admin.from("listings").select(listingSelect).eq("status", "approved");
-  
+
   // CRITICAL: Filter out listings from banned users
   dataQuery = dataQuery.eq("profiles.is_banned", false);
 
@@ -402,16 +431,45 @@ export async function getFilteredDatabaseListings(
   }
 
   // PRIORITY 2: Trust-based priority (Natural boost for verified)
-  dataQuery = dataQuery.order("profiles(verification_status)", { ascending: false, nullsFirst: false });
+  dataQuery = dataQuery.order("profiles(verification_status)", {
+    ascending: false,
+    nullsFirst: false,
+  });
 
   switch (sort) {
-    case "price_asc": dataQuery = dataQuery.order("price", { ascending: true }).order("created_at", { ascending: false }); break;
-    case "price_desc": dataQuery = dataQuery.order("price", { ascending: false }).order("created_at", { ascending: false }); break;
-    case "mileage_asc": dataQuery = dataQuery.order("mileage", { ascending: true }).order("created_at", { ascending: false }); break;
-    case "year_desc": dataQuery = dataQuery.order("year", { ascending: false }).order("created_at", { ascending: false }); break;
-    case "oldest": dataQuery = dataQuery.order("created_at", { ascending: true }); break;
-    case "mileage_desc": dataQuery = dataQuery.order("mileage", { ascending: false }).order("created_at", { ascending: false }); break;
-    case "year_asc": dataQuery = dataQuery.order("year", { ascending: true }).order("created_at", { ascending: false }); break;
+    case "price_asc":
+      dataQuery = dataQuery
+        .order("price", { ascending: true })
+        .order("created_at", { ascending: false });
+      break;
+    case "price_desc":
+      dataQuery = dataQuery
+        .order("price", { ascending: false })
+        .order("created_at", { ascending: false });
+      break;
+    case "mileage_asc":
+      dataQuery = dataQuery
+        .order("mileage", { ascending: true })
+        .order("created_at", { ascending: false });
+      break;
+    case "year_desc":
+      dataQuery = dataQuery
+        .order("year", { ascending: false })
+        .order("created_at", { ascending: false });
+      break;
+    case "oldest":
+      dataQuery = dataQuery.order("created_at", { ascending: true });
+      break;
+    case "mileage_desc":
+      dataQuery = dataQuery
+        .order("mileage", { ascending: false })
+        .order("created_at", { ascending: false });
+      break;
+    case "year_asc":
+      dataQuery = dataQuery
+        .order("year", { ascending: true })
+        .order("created_at", { ascending: false });
+      break;
     case "newest":
     default:
       dataQuery = dataQuery
@@ -419,7 +477,7 @@ export async function getFilteredDatabaseListings(
         .order("created_at", { ascending: false });
       break;
   }
-  
+
   if ("limit" in dataQuery && typeof dataQuery.limit === "function") {
     dataQuery = dataQuery.limit(limit);
   } else if ("range" in dataQuery && typeof dataQuery.range === "function") {
@@ -467,7 +525,7 @@ export async function getFilteredDatabaseListings(
   if (listings.length > 0 && listings.length === limit) {
     const last = listings[listings.length - 1];
     const cursorData = {
-      id: last.id,           // deterministic tie-breaker for all sort modes
+      id: last.id, // deterministic tie-breaker for all sort modes
       featured: last.featured,
       bumpedAt: last.bumpedAt,
       createdAt: last.createdAt,

@@ -12,7 +12,11 @@ export interface MarketStatUpdateResult {
  * Recalculates market statistics for a specific car segment and updates all relevant listings.
  * This ensures the 'Market Price Index' remains accurate relative to active inventory.
  */
-export async function updateMarketStats(brand: string, model: string, year: number): Promise<MarketStatUpdateResult | null> {
+export async function updateMarketStats(
+  brand: string,
+  model: string,
+  year: number
+): Promise<MarketStatUpdateResult | null> {
   if (!hasSupabaseAdminEnv()) return null;
   const admin = createSupabaseAdminClient();
 
@@ -34,16 +38,17 @@ export async function updateMarketStats(brand: string, model: string, year: numb
   const avgPrice = total / count;
 
   // 2. Update or Insert into market_stats table for historical tracking
-  const { error: statsError } = await admin
-    .from("market_stats")
-    .upsert({
+  const { error: statsError } = await admin.from("market_stats").upsert(
+    {
       brand,
       model,
       year,
       avg_price: avgPrice,
       listing_count: count,
       calculated_at: new Date().toISOString(),
-    }, { onConflict: "brand,model,year" });
+    },
+    { onConflict: "brand,model,year" }
+  );
 
   if (statsError) {
     logger.market.error("Failed to update market_stats", statsError, { brand, model, year });
@@ -60,7 +65,11 @@ export async function updateMarketStats(brand: string, model: string, year: numb
   });
 
   if (rpcError) {
-    logger.market.error("Failed to update listing indices via RPC", rpcError, { brand, model, year });
+    logger.market.error("Failed to update listing indices via RPC", rpcError, {
+      brand,
+      model,
+      year,
+    });
     return null;
   }
 
@@ -87,8 +96,8 @@ export async function refreshTopMarketSegments() {
 
   if (!data) return;
 
-  const segments = new Set(data.map(i => `${i.brand}|${i.model}|${i.year}`));
-  
+  const segments = new Set(data.map((i) => `${i.brand}|${i.model}|${i.year}`));
+
   for (const segment of segments) {
     const [brand, model, year] = segment.split("|");
     await updateMarketStats(brand, model, Number(year));

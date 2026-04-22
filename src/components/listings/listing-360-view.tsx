@@ -1,7 +1,7 @@
 "use client";
 
-import { useRef, useEffect, useCallback } from "react";
-import { X, MousePointerClick, Smartphone } from "lucide-react";
+import { MousePointerClick, Smartphone, X } from "lucide-react";
+import { useCallback, useEffect, useRef } from "react";
 
 interface Listing360ViewProps {
   isOpen: boolean;
@@ -92,7 +92,9 @@ export function Listing360View({ isOpen, imageUrl, onClose }: Listing360ViewProp
   // Keyboard escape
   useEffect(() => {
     if (!isOpen) return;
-    const handler = (e: KeyboardEvent) => { if (e.key === "Escape") onClose(); };
+    const handler = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose();
+    };
     window.addEventListener("keydown", handler);
     return () => window.removeEventListener("keydown", handler);
   }, [isOpen, onClose]);
@@ -104,17 +106,22 @@ export function Listing360View({ isOpen, imageUrl, onClose }: Listing360ViewProp
     if (hintRef.current) hintRef.current.style.opacity = "0";
   }, []);
 
-  const onMouseMove = useCallback((e: React.MouseEvent) => {
-    if (!dragging.current || !imgRef.current) return;
-    const dx = e.clientX - lastX.current;
-    lastX.current = e.clientX;
-    const sensitivity = (imgRef.current.naturalWidth / (canvasRef.current?.width ?? 800));
-    offsetRef.current -= dx * sensitivity;
-    if (animFrameRef.current) cancelAnimationFrame(animFrameRef.current);
-    animFrameRef.current = requestAnimationFrame(draw);
-  }, [draw]);
+  const onMouseMove = useCallback(
+    (e: React.MouseEvent) => {
+      if (!dragging.current || !imgRef.current) return;
+      const dx = e.clientX - lastX.current;
+      lastX.current = e.clientX;
+      const sensitivity = imgRef.current.naturalWidth / (canvasRef.current?.width ?? 800);
+      offsetRef.current -= dx * sensitivity;
+      if (animFrameRef.current) cancelAnimationFrame(animFrameRef.current);
+      animFrameRef.current = requestAnimationFrame(draw);
+    },
+    [draw]
+  );
 
-  const onMouseUp = useCallback(() => { dragging.current = false; }, []);
+  const onMouseUp = useCallback(() => {
+    dragging.current = false;
+  }, []);
 
   // Touch events
   const onTouchStart = useCallback((e: React.TouchEvent) => {
@@ -123,19 +130,24 @@ export function Listing360View({ isOpen, imageUrl, onClose }: Listing360ViewProp
     if (hintRef.current) hintRef.current.style.opacity = "0";
   }, []);
 
-  const onTouchMove = useCallback((e: React.TouchEvent) => {
-    if (!dragging.current || !imgRef.current) return;
-    const touch = e.touches[0];
-    if (!touch) return;
-    const dx = touch.clientX - lastX.current;
-    lastX.current = touch.clientX;
-    const sensitivity = (imgRef.current.naturalWidth / (canvasRef.current?.width ?? 800));
-    offsetRef.current -= dx * sensitivity;
-    if (animFrameRef.current) cancelAnimationFrame(animFrameRef.current);
-    animFrameRef.current = requestAnimationFrame(draw);
-  }, [draw]);
+  const onTouchMove = useCallback(
+    (e: React.TouchEvent) => {
+      if (!dragging.current || !imgRef.current) return;
+      const touch = e.touches[0];
+      if (!touch) return;
+      const dx = touch.clientX - lastX.current;
+      lastX.current = touch.clientX;
+      const sensitivity = imgRef.current.naturalWidth / (canvasRef.current?.width ?? 800);
+      offsetRef.current -= dx * sensitivity;
+      if (animFrameRef.current) cancelAnimationFrame(animFrameRef.current);
+      animFrameRef.current = requestAnimationFrame(draw);
+    },
+    [draw]
+  );
 
-  const onTouchEnd = useCallback(() => { dragging.current = false; }, []);
+  const onTouchEnd = useCallback(() => {
+    dragging.current = false;
+  }, []);
 
   if (!isOpen) return null;
 

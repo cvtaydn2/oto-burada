@@ -1,13 +1,15 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+
 import type { Listing, Profile } from "@/types";
-import { 
+
+import {
+  getAllKnownListings,
   getFilteredMarketplaceListings,
-  getMarketplaceListingsByIds,
   getMarketplaceListingBySlug,
+  getMarketplaceListingsByIds,
   getMarketplaceSeller,
   getPublicMarketplaceListings,
-  getAllKnownListings,
-  getSimilarMarketplaceListings
+  getSimilarMarketplaceListings,
 } from "../marketplace-listings";
 
 const mockListing: Partial<Listing> = {
@@ -29,7 +31,7 @@ const mockListing: Partial<Listing> = {
   status: "approved",
   viewCount: 100,
   featured: false,
-  images: []
+  images: [],
 };
 
 const mockProfile: Partial<Profile> = {
@@ -40,7 +42,7 @@ const mockProfile: Partial<Profile> = {
   emailVerified: true,
   isVerified: false,
   role: "user",
-  createdAt: "2024-01-01"
+  createdAt: "2024-01-01",
 };
 
 vi.mock("@/services/listings/listing-submissions", () => ({
@@ -68,7 +70,7 @@ describe("Marketplace Listings Service", () => {
       total: 0,
       page: 1,
       limit: 12,
-      hasMore: false
+      hasMore: false,
     });
 
     const result = await getFilteredMarketplaceListings({ page: 1, limit: 12 });
@@ -95,7 +97,7 @@ describe("Marketplace Listings Service", () => {
     const { getStoredListingBySlug } = await import("@/services/listings/listing-submissions");
     vi.mocked(getStoredListingBySlug).mockResolvedValue({
       ...mockListing,
-      status: "pending"
+      status: "pending",
     } as unknown as Listing);
 
     const result = await getMarketplaceListingBySlug("test-listing");
@@ -117,7 +119,7 @@ describe("Marketplace Listings Service", () => {
       total: 0,
       page: 1,
       limit: 12,
-      hasMore: false
+      hasMore: false,
     });
 
     const result = await getPublicMarketplaceListings();
@@ -131,7 +133,7 @@ describe("Marketplace Listings Service", () => {
       total: 1,
       page: 1,
       limit: 100,
-      hasMore: false
+      hasMore: false,
     });
 
     const result = await getAllKnownListings();
@@ -146,14 +148,14 @@ describe("Marketplace Listings Service", () => {
         total: 1,
         page: 1,
         limit: 10,
-        hasMore: false
+        hasMore: false,
       })
       .mockResolvedValueOnce({
         listings: [mockListing as Listing],
         total: 1,
         page: 1,
         limit: 10,
-        hasMore: false
+        hasMore: false,
       });
 
     const result = await getSimilarMarketplaceListings("current-slug", "BMW", "Istanbul");

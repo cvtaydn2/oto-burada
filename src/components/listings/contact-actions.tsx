@@ -1,7 +1,9 @@
 "use client";
 
+import { AlertTriangle, Loader2, MessageCircle, Phone, ShieldAlert } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { MessageCircle, AlertTriangle, Loader2, Phone, ShieldAlert } from "lucide-react";
+
 import {
   AlertDialog,
   AlertDialogCancel,
@@ -12,15 +14,13 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-
+import { trust } from "@/lib/constants/ui-strings";
+import { captureClientEvent } from "@/lib/monitoring/posthog-client";
+import { createSupabaseBrowserClient } from "@/lib/supabase/browser";
+import { cn } from "@/lib/utils";
+import { getSellerTrustUI } from "@/lib/utils/trust-ui";
 import { revealListingPhone } from "@/services/listings/listing-actions";
 import { getOrCreateChat } from "@/services/messages/chat-service";
-import { useRouter } from "next/navigation";
-import { createSupabaseBrowserClient } from "@/lib/supabase/browser";
-import { getSellerTrustUI } from "@/lib/utils/trust-ui";
-import { trust } from "@/lib/constants/ui-strings";
-import { cn } from "@/lib/utils";
-import { captureClientEvent } from "@/lib/monitoring/posthog-client";
 import type { Profile } from "@/types";
 
 interface ContactActionsProps {
@@ -32,7 +32,13 @@ interface ContactActionsProps {
   currentUserId?: string | null;
 }
 
-export function ContactActions({ listingId, listingSlug, sellerId, seller, currentUserId }: ContactActionsProps) {
+export function ContactActions({
+  listingId,
+  listingSlug,
+  sellerId,
+  seller,
+  currentUserId,
+}: ContactActionsProps) {
   const router = useRouter();
   const supabase = createSupabaseBrowserClient();
   const [isRevealed, setIsRevealed] = useState(false);
@@ -50,12 +56,16 @@ export function ContactActions({ listingId, listingSlug, sellerId, seller, curre
     const hasIssues = !isContactable;
 
     return (
-      <div className={cn(
-        "rounded-xl border p-3 text-center transition-all",
-        hasIssues 
-          ? (tone === "amber" ? "bg-amber-50 border-amber-100 text-amber-700" : "bg-rose-50 border-rose-100 text-rose-700")
-          : "bg-muted/30 border-border text-muted-foreground"
-      )}>
+      <div
+        className={cn(
+          "rounded-xl border p-3 text-center transition-all",
+          hasIssues
+            ? tone === "amber"
+              ? "bg-amber-50 border-amber-100 text-amber-700"
+              : "bg-rose-50 border-rose-100 text-rose-700"
+            : "bg-muted/30 border-border text-muted-foreground"
+        )}
+      >
         <p className="text-xs font-bold uppercase tracking-tight mb-1">Bu Sizin İlanınız</p>
         {hasIssues && (
           <div className="space-y-1">
@@ -89,7 +99,7 @@ export function ContactActions({ listingId, listingSlug, sellerId, seller, curre
 
   const handleReveal = async () => {
     if (isRevealed || isLogging) return;
-    
+
     setIsLogging(true);
     setError(null);
     try {
@@ -108,7 +118,9 @@ export function ContactActions({ listingId, listingSlug, sellerId, seller, curre
   const handleStartChat = async () => {
     setIsChatting(true);
     try {
-      const { data: { user } } = await supabase.auth.getUser();
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
       if (!user) {
         const returnPath = listingSlug ? `/listing/${listingSlug}` : "/listings";
         router.push(`/login?next=${encodeURIComponent(returnPath)}`);
@@ -138,7 +150,7 @@ export function ContactActions({ listingId, listingSlug, sellerId, seller, curre
     }
   };
 
-  const whatsappLink = revealedPhone 
+  const whatsappLink = revealedPhone
     ? `https://wa.me/${revealedPhone.replace(/\D/g, "")}?text=${encodeURIComponent("Merhaba, OtoBurada üzerinden ilanınızla ilgileniyorum.")}`
     : null;
 
@@ -196,9 +208,7 @@ export function ContactActions({ listingId, listingSlug, sellerId, seller, curre
       {/* WhatsApp Button with Safety Dialog */}
       <AlertDialog>
         <AlertDialogTrigger asChild>
-          <button
-            className="flex w-full items-center justify-center gap-2 rounded-xl bg-[#25D366] text-white h-12 px-4 text-sm font-bold border border-[#25D366] transition-all hover:bg-[#1fb355] active:scale-95 shadow-sm"
-          >
+          <button className="flex w-full items-center justify-center gap-2 rounded-xl bg-[#25D366] text-white h-12 px-4 text-sm font-bold border border-[#25D366] transition-all hover:bg-[#1fb355] active:scale-95 shadow-sm">
             <MessageCircle className="size-5" />
             WhatsApp ile İletişime Geç
           </button>
@@ -217,11 +227,17 @@ export function ContactActions({ listingId, listingSlug, sellerId, seller, curre
                 <div className="space-y-3 text-sm text-foreground/90 bg-muted/30 p-4 rounded-xl border border-border">
                   <div className="flex gap-3">
                     <AlertTriangle className="size-5 shrink-0 text-amber-500" />
-                    <span><strong>Kapora Göndermeyin:</strong> Aracı görmeden, ekspertiz yaptırmadan kesinlikle ön ödeme yapmayın.</span>
+                    <span>
+                      <strong>Kapora Göndermeyin:</strong> Aracı görmeden, ekspertiz yaptırmadan
+                      kesinlikle ön ödeme yapmayın.
+                    </span>
                   </div>
                   <div className="flex gap-3">
                     <AlertTriangle className="size-5 shrink-0 text-amber-500" />
-                    <span><strong>Resmi Satıcı:</strong> Ödemenizi sadece noter huzurunda, araç sahibi adına kayıtlı hesaba yapın.</span>
+                    <span>
+                      <strong>Resmi Satıcı:</strong> Ödemenizi sadece noter huzurunda, araç sahibi
+                      adına kayıtlı hesaba yapın.
+                    </span>
                   </div>
                 </div>
               </div>
@@ -236,7 +252,9 @@ export function ContactActions({ listingId, listingSlug, sellerId, seller, curre
                 href={whatsappLink}
                 target="_blank"
                 rel="noopener noreferrer"
-                onClick={() => captureClientEvent("contact_whatsapp_clicked", { listingId, sellerId })}
+                onClick={() =>
+                  captureClientEvent("contact_whatsapp_clicked", { listingId, sellerId })
+                }
                 className="flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-green-500 to-emerald-600 w-full sm:flex-1 h-12 px-6 text-[15px] text-white font-bold shadow-sm"
               >
                 Mesaj Gönder

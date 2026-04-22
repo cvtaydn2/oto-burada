@@ -7,12 +7,13 @@
  * Validates: Requirements 3.3, 3.4
  */
 
-import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { createSupabaseAdminClient } from '@/lib/supabase/admin';
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
-vi.mock('@/lib/supabase/admin');
+import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 
-describe('Preservation — getSupportTickets full_name mapping (baseline, must pass on unfixed code)', () => {
+vi.mock("@/lib/supabase/admin");
+
+describe("Preservation — getSupportTickets full_name mapping (baseline, must pass on unfixed code)", () => {
   const mockFrom = vi.fn();
 
   beforeEach(() => {
@@ -27,15 +28,15 @@ describe('Preservation — getSupportTickets full_name mapping (baseline, must p
    *
    * This behavior is preserved in both unfixed and fixed code.
    */
-  it('should correctly map full_name from profiles when query succeeds', async () => {
+  it("should correctly map full_name from profiles when query succeeds", async () => {
     const mockTicketRow = {
-      id: 'ticket-1',
-      subject: 'Test konusu',
-      description: 'Test açıklama',
-      status: 'open',
-      priority: 'medium',
-      created_at: '2024-01-01T00:00:00Z',
-      profiles: { full_name: 'Ahmet Yılmaz', email: 'ahmet@example.com' },
+      id: "ticket-1",
+      subject: "Test konusu",
+      description: "Test açıklama",
+      status: "open",
+      priority: "medium",
+      created_at: "2024-01-01T00:00:00Z",
+      profiles: { full_name: "Ahmet Yılmaz", email: "ahmet@example.com" },
     };
 
     mockFrom.mockReturnValue({
@@ -47,15 +48,15 @@ describe('Preservation — getSupportTickets full_name mapping (baseline, must p
       }),
     });
 
-    const { getSupportTickets } = await import('../support');
+    const { getSupportTickets } = await import("../support");
     const result = await getSupportTickets();
 
     expect(result).toHaveLength(1);
     expect(result[0].profile).toBeDefined();
-    expect(result[0].profile?.full_name).toBe('Ahmet Yılmaz');
+    expect(result[0].profile?.full_name).toBe("Ahmet Yılmaz");
   });
 
-  it('should return empty array when query returns no data', async () => {
+  it("should return empty array when query returns no data", async () => {
     mockFrom.mockReturnValue({
       select: vi.fn().mockReturnValue({
         order: vi.fn().mockResolvedValue({
@@ -65,21 +66,21 @@ describe('Preservation — getSupportTickets full_name mapping (baseline, must p
       }),
     });
 
-    const { getSupportTickets } = await import('../support');
+    const { getSupportTickets } = await import("../support");
     const result = await getSupportTickets();
 
     expect(result).toEqual([]);
   });
 
-  it('should correctly map ticket fields (id, subject, status, priority)', async () => {
+  it("should correctly map ticket fields (id, subject, status, priority)", async () => {
     const mockTicketRow = {
-      id: 'ticket-42',
-      subject: 'Ödeme sorunu',
-      description: 'Ödeme yapılamıyor',
-      status: 'pending',
-      priority: 'high',
-      created_at: '2024-06-15T10:00:00Z',
-      profiles: { full_name: 'Fatma Kaya', email: 'fatma@example.com' },
+      id: "ticket-42",
+      subject: "Ödeme sorunu",
+      description: "Ödeme yapılamıyor",
+      status: "pending",
+      priority: "high",
+      created_at: "2024-06-15T10:00:00Z",
+      profiles: { full_name: "Fatma Kaya", email: "fatma@example.com" },
     };
 
     mockFrom.mockReturnValue({
@@ -91,24 +92,24 @@ describe('Preservation — getSupportTickets full_name mapping (baseline, must p
       }),
     });
 
-    const { getSupportTickets } = await import('../support');
+    const { getSupportTickets } = await import("../support");
     const result = await getSupportTickets();
 
-    expect(result[0].id).toBe('ticket-42');
-    expect(result[0].subject).toBe('Ödeme sorunu');
-    expect(result[0].status).toBe('pending');
-    expect(result[0].priority).toBe('high');
+    expect(result[0].id).toBe("ticket-42");
+    expect(result[0].subject).toBe("Ödeme sorunu");
+    expect(result[0].status).toBe("pending");
+    expect(result[0].priority).toBe("high");
   });
 
-  it('should handle profiles as array (Supabase join can return array)', async () => {
+  it("should handle profiles as array (Supabase join can return array)", async () => {
     const mockTicketRow = {
-      id: 'ticket-2',
-      subject: 'Soru',
-      description: 'Açıklama',
-      status: 'open',
-      priority: 'low',
-      created_at: '2024-01-02T00:00:00Z',
-      profiles: [{ full_name: 'Mehmet Demir', email: 'mehmet@example.com' }],
+      id: "ticket-2",
+      subject: "Soru",
+      description: "Açıklama",
+      status: "open",
+      priority: "low",
+      created_at: "2024-01-02T00:00:00Z",
+      profiles: [{ full_name: "Mehmet Demir", email: "mehmet@example.com" }],
     };
 
     mockFrom.mockReturnValue({
@@ -120,9 +121,9 @@ describe('Preservation — getSupportTickets full_name mapping (baseline, must p
       }),
     });
 
-    const { getSupportTickets } = await import('../support');
+    const { getSupportTickets } = await import("../support");
     const result = await getSupportTickets();
 
-    expect(result[0].profile?.full_name).toBe('Mehmet Demir');
+    expect(result[0].profile?.full_name).toBe("Mehmet Demir");
   });
 });

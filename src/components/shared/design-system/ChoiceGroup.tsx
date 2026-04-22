@@ -14,9 +14,9 @@ interface ChoiceGroupProps<T extends string> {
  * A segmented selection group matching the Showroom Elite design.
  * Uses a toggle-button group style for Fuel Type, Transmission, etc.
  */
-export function ChoiceGroup<T extends string>({ 
-  options, 
-  value, 
+export function ChoiceGroup<T extends string>({
+  options,
+  value,
   onChange,
   className,
   labels,
@@ -32,8 +32,8 @@ export function ChoiceGroup<T extends string>({
             onClick={() => onChange(option)}
             className={cn(
               "flex-1 py-3 px-4 rounded-xl text-sm font-semibold transition-all duration-200 border",
-              isActive 
-                ? "bg-primary text-primary-foreground border-primary shadow-sm" 
+              isActive
+                ? "bg-primary text-primary-foreground border-primary shadow-sm"
                 : "bg-background border-border text-muted-foreground hover:bg-muted/50"
             )}
           >

@@ -1,26 +1,27 @@
 import { NextResponse } from "next/server";
-import { apiError, apiSuccess, API_ERROR_CODES } from "@/lib/utils/api-response";
+
+import { captureServerError, captureServerEvent } from "@/lib/monitoring/posthog-server";
+import { isValidRequestOrigin } from "@/lib/security";
+import { getDisposableEmailMessage, isDisposableEmail } from "@/lib/security/email-validation";
+import { isTurnstileEnabled, verifyTurnstileToken } from "@/lib/security/turnstile";
+import { createSupabaseAdminClient } from "@/lib/supabase/admin";
+import { hasSupabaseAdminEnv } from "@/lib/supabase/env";
+import { API_ERROR_CODES, apiError, apiSuccess } from "@/lib/utils/api-response";
+import { logger } from "@/lib/utils/logger";
 import { rateLimitProfiles } from "@/lib/utils/rate-limit";
 import { enforceRateLimit, getRateLimitKey } from "@/lib/utils/rate-limit-middleware";
 import { sanitizeDescription, sanitizeText } from "@/lib/utils/sanitize";
-import { captureServerError, captureServerEvent } from "@/lib/monitoring/posthog-server";
-import { logger } from "@/lib/utils/logger";
-import { isValidRequestOrigin } from "@/lib/security";
 import { contactFormSchema } from "@/lib/validators/domain";
 import { createPublicTicket } from "@/services/support/ticket-service";
-import { verifyTurnstileToken, isTurnstileEnabled } from "@/lib/security/turnstile";
-import { isDisposableEmail, getDisposableEmailMessage } from "@/lib/security/email-validation";
-import { createSupabaseAdminClient } from "@/lib/supabase/admin";
-import { hasSupabaseAdminEnv } from "@/lib/supabase/env";
 
 // ── Spam heuristics ───────────────────────────────────────────────────────────
 
 /** Patterns that strongly indicate spam or automated abuse. */
 const SPAM_PATTERNS = [
   /\b(viagra|cialis|casino|crypto|bitcoin|nft|loan|forex|investment)\b/i,
-  /https?:\/\/[^\s]{30,}/,          // long URLs in message body
-  /(.)\1{6,}/,                       // 7+ repeated characters (aaaaaaa)
-  /\b\d{10,}\b/,                     // 10+ digit number sequences (phone spam)
+  /https?:\/\/[^\s]{30,}/, // long URLs in message body
+  /(.)\1{6,}/, // 7+ repeated characters (aaaaaaa)
+  /\b\d{10,}\b/, // 10+ digit number sequences (phone spam)
 ];
 
 /** Returns true when the message body matches a known spam pattern. */
@@ -47,7 +48,7 @@ async function logAbuse(
   ip: string,
   reason: string,
   userAgent: string | null,
-  metadata: Record<string, unknown> = {},
+  metadata: Record<string, unknown> = {}
 ): Promise<void> {
   if (!hasSupabaseAdminEnv()) return;
 
@@ -69,9 +70,10 @@ async function logAbuse(
 
 export async function POST(request: Request): Promise<NextResponse> {
   // Extract IP and User-Agent early for logging
-  const clientIp = request.headers.get("x-forwarded-for")?.split(",")[0]?.trim()
-    ?? request.headers.get("x-real-ip")
-    ?? "unknown";
+  const clientIp =
+    request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ??
+    request.headers.get("x-real-ip") ??
+    "unknown";
   const userAgent = request.headers.get("user-agent");
 
   // 1. CSRF — origin must match our app domain
@@ -83,7 +85,7 @@ export async function POST(request: Request): Promise<NextResponse> {
   // 2. Rate limit — 3 submissions per hour per IP (tighter than general)
   const ipLimit = await enforceRateLimit(
     getRateLimitKey(request, "api:contact:create"),
-    rateLimitProfiles.contactCreate,
+    rateLimitProfiles.contactCreate
   );
   if (ipLimit) {
     await logAbuse("", clientIp, "rate_limit", userAgent);
@@ -127,7 +129,7 @@ export async function POST(request: Request): Promise<NextResponse> {
       return apiError(
         API_ERROR_CODES.BAD_REQUEST,
         "Doğrulama token'ı eksik. Lütfen sayfayı yenileyin.",
-        400,
+        400
       );
     }
 
@@ -141,7 +143,7 @@ export async function POST(request: Request): Promise<NextResponse> {
       return apiError(
         API_ERROR_CODES.BAD_REQUEST,
         "Doğrulama başarısız. Lütfen tekrar deneyin.",
-        400,
+        400
       );
     }
   }
@@ -154,11 +156,7 @@ export async function POST(request: Request): Promise<NextResponse> {
       reason: "disposable_email",
       ip: clientIp,
     });
-    return apiError(
-      API_ERROR_CODES.VALIDATION_ERROR,
-      getDisposableEmailMessage(),
-      400,
-    );
+    return apiError(API_ERROR_CODES.VALIDATION_ERROR, getDisposableEmailMessage(), 400);
   }
 
   // 8. Check IP banlist and abuse history (Supabase RPC)
@@ -185,8 +183,9 @@ export async function POST(request: Request): Promise<NextResponse> {
         });
         return apiError(
           API_ERROR_CODES.BAD_REQUEST,
-          abuseCheck.message as string || "Çok fazla istek gönderildi. Lütfen daha sonra tekrar deneyin.",
-          429,
+          (abuseCheck.message as string) ||
+            "Çok fazla istek gönderildi. Lütfen daha sonra tekrar deneyin.",
+          429
         );
       }
     } catch (error) {
@@ -206,7 +205,7 @@ export async function POST(request: Request): Promise<NextResponse> {
     return apiError(
       API_ERROR_CODES.BAD_REQUEST,
       "Mesajınız spam içeriği nedeniyle gönderilemedi. Lütfen içeriği düzenleyip tekrar deneyin.",
-      400,
+      400
     );
   }
 
@@ -221,7 +220,7 @@ export async function POST(request: Request): Promise<NextResponse> {
     return apiError(
       API_ERROR_CODES.VALIDATION_ERROR,
       "Mesajınız konu başlığından farklı bir içerik içermelidir.",
-      400,
+      400
     );
   }
 
@@ -251,6 +250,10 @@ export async function POST(request: Request): Promise<NextResponse> {
   } catch (error) {
     logger.api.error("Public contact form submission failed", error);
     captureServerError("Public contact form submission failed", "support", error);
-    return apiError(API_ERROR_CODES.INTERNAL_ERROR, "Mesaj gönderilemedi. Lütfen tekrar dene.", 500);
+    return apiError(
+      API_ERROR_CODES.INTERNAL_ERROR,
+      "Mesaj gönderilemedi. Lütfen tekrar dene.",
+      500
+    );
   }
 }

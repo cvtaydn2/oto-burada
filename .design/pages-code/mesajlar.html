@@ -1,72 +1,94 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="tr">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>OtoBurada - Mesajlarım</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-</head>
-<body class="bg-gray-50 h-screen flex flex-col font-sans">
-    
+    <link
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
+      rel="stylesheet"
+    />
+  </head>
+  <body class="bg-gray-50 h-screen flex flex-col font-sans">
     <main class="flex-1 max-w-[1200px] mx-auto w-full px-4 py-6 overflow-hidden">
-        <div class="bg-white border border-gray-200 rounded-2xl shadow-sm h-full flex overflow-hidden">
-            
-            <div class="w-80 border-r border-gray-100 flex flex-col flex-shrink-0">
-                <div class="p-4 border-b border-gray-50 flex items-center justify-between">
-                    <h2 class="text-lg font-bold">Mesajlarım</h2>
-                    <span class="bg-blue-50 text-blue-500 text-[10px] font-bold px-2 py-1 rounded-full">2 Yeni</span>
+      <div
+        class="bg-white border border-gray-200 rounded-2xl shadow-sm h-full flex overflow-hidden"
+      >
+        <div class="w-80 border-r border-gray-100 flex flex-col flex-shrink-0">
+          <div class="p-4 border-b border-gray-50 flex items-center justify-between">
+            <h2 class="text-lg font-bold">Mesajlarım</h2>
+            <span class="bg-blue-50 text-blue-500 text-[10px] font-bold px-2 py-1 rounded-full"
+              >2 Yeni</span
+            >
+          </div>
+          <div class="flex-1 overflow-y-auto">
+            <div class="p-4 bg-blue-50/50 border-l-4 border-blue-500 cursor-pointer">
+              <div class="flex items-center mb-1">
+                <img src="https://i.pravatar.cc/150?img=11" class="w-10 h-10 rounded-full mr-3" />
+                <div class="flex-1">
+                  <div class="flex justify-between">
+                    <span class="text-sm font-bold">Mehmet Aksoy</span>
+                    <span class="text-[10px] text-gray-400">14:20</span>
+                  </div>
+                  <p class="text-xs text-blue-600 font-medium truncate">Son fiyat ne olur?</p>
                 </div>
-                <div class="flex-1 overflow-y-auto">
-                    <div class="p-4 bg-blue-50/50 border-l-4 border-blue-500 cursor-pointer">
-                        <div class="flex items-center mb-1">
-                            <img src="https://i.pravatar.cc/150?img=11" class="w-10 h-10 rounded-full mr-3">
-                            <div class="flex-1">
-                                <div class="flex justify-between">
-                                    <span class="text-sm font-bold">Mehmet Aksoy</span>
-                                    <span class="text-[10px] text-gray-400">14:20</span>
-                                </div>
-                                <p class="text-xs text-blue-600 font-medium truncate">Son fiyat ne olur?</p>
-                            </div>
-                        </div>
-                        <div class="text-[10px] text-gray-400 ml-13 italic">İlan: BMW 320i M Sport</div>
-                    </div>
-                </div>
+              </div>
+              <div class="text-[10px] text-gray-400 ml-13 italic">İlan: BMW 320i M Sport</div>
             </div>
-
-            <div class="flex-1 flex flex-col bg-gray-50/30">
-                <div class="p-4 bg-white border-b border-gray-100 flex justify-between items-center">
-                    <div class="flex items-center">
-                        <img src="https://images.unsplash.com/photo-1555215695-3004980ad54e?w=100" class="w-12 h-8 rounded object-cover mr-3">
-                        <div>
-                            <div class="text-sm font-bold text-gray-800">2021 BMW 3 Serisi 320i M Sport</div>
-                            <div class="text-xs text-blue-500 font-bold">2.450.000 TL</div>
-                        </div>
-                    </div>
-                    <button class="text-blue-500 text-xs font-bold border border-blue-200 px-4 py-2 rounded-lg hover:bg-blue-50">İlana Git</button>
-                </div>
-
-                <div class="flex-1 overflow-y-auto p-6 space-y-4">
-                    <div class="flex justify-start">
-                        <div class="bg-white border border-gray-200 rounded-2xl rounded-tl-sm px-4 py-2 text-sm shadow-sm max-w-xs">
-                            Merhaba, araçta değişen var mı?
-                        </div>
-                    </div>
-                    <div class="flex justify-end">
-                        <div class="bg-blue-500 text-white rounded-2xl rounded-tr-sm px-4 py-2 text-sm shadow-sm max-w-xs">
-                            Hayır, sadece sol ön çamurlukta lokal boya mevcut.
-                        </div>
-                    </div>
-                </div>
-
-                <div class="p-4 bg-white border-t border-gray-100">
-                    <div class="flex items-center bg-gray-50 rounded-xl px-4 py-2">
-                        <input type="text" placeholder="Mesajınızı yazın..." class="flex-1 bg-transparent outline-none text-sm py-2">
-                        <button class="text-blue-500 p-2"><i class="fa-regular fa-paper-plane text-xl"></i></button>
-                    </div>
-                </div>
-            </div>
+          </div>
         </div>
+
+        <div class="flex-1 flex flex-col bg-gray-50/30">
+          <div class="p-4 bg-white border-b border-gray-100 flex justify-between items-center">
+            <div class="flex items-center">
+              <img
+                src="https://images.unsplash.com/photo-1555215695-3004980ad54e?w=100"
+                class="w-12 h-8 rounded object-cover mr-3"
+              />
+              <div>
+                <div class="text-sm font-bold text-gray-800">2021 BMW 3 Serisi 320i M Sport</div>
+                <div class="text-xs text-blue-500 font-bold">2.450.000 TL</div>
+              </div>
+            </div>
+            <button
+              class="text-blue-500 text-xs font-bold border border-blue-200 px-4 py-2 rounded-lg hover:bg-blue-50"
+            >
+              İlana Git
+            </button>
+          </div>
+
+          <div class="flex-1 overflow-y-auto p-6 space-y-4">
+            <div class="flex justify-start">
+              <div
+                class="bg-white border border-gray-200 rounded-2xl rounded-tl-sm px-4 py-2 text-sm shadow-sm max-w-xs"
+              >
+                Merhaba, araçta değişen var mı?
+              </div>
+            </div>
+            <div class="flex justify-end">
+              <div
+                class="bg-blue-500 text-white rounded-2xl rounded-tr-sm px-4 py-2 text-sm shadow-sm max-w-xs"
+              >
+                Hayır, sadece sol ön çamurlukta lokal boya mevcut.
+              </div>
+            </div>
+          </div>
+
+          <div class="p-4 bg-white border-t border-gray-100">
+            <div class="flex items-center bg-gray-50 rounded-xl px-4 py-2">
+              <input
+                type="text"
+                placeholder="Mesajınızı yazın..."
+                class="flex-1 bg-transparent outline-none text-sm py-2"
+              />
+              <button class="text-blue-500 p-2">
+                <i class="fa-regular fa-paper-plane text-xl"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
     </main>
-</body>
+  </body>
 </html>

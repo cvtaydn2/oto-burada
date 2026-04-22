@@ -8,10 +8,10 @@
 export const SECURITY_PATTERNS = {
   // Turkish IBAN pattern
   IBAN: /TR\d{24}|TR \d{4} \d{4} \d{4} \d{4} \d{4} \d{4} \d{2}/gi,
-  
+
   // Turkish Mobile Phone pattern
   PHONE: /(\+90|0)?\s?5\d{2}\s?\d{3}\s?\d{2}\s?\d{2}/g,
-  
+
   // Generic URL pattern (excluding internal domains)
   URL: /(https?:\/\/(?!otoburada\.app|localhost|vercel\.app)[^\s]+)/gi,
 };
@@ -31,7 +31,7 @@ export function sanitizeChatMessage(content: string): string {
 
   // Mask Phone
   sanitized = sanitized.replace(SECURITY_PATTERNS.PHONE, (match) => {
-    const clean = match.replace(/\s/g, '');
+    const clean = match.replace(/\s/g, "");
     if (clean.length >= 10) {
       return match.substring(0, match.length - 4) + "****";
     }
@@ -49,7 +49,7 @@ export function sanitizeChatMessage(content: string): string {
  */
 export function basicSanitize(content: string): string {
   return content
-    .replace(/<[^>]*>?/gm, '') // Remove HTML
-    .replace(/\s+/g, ' ')      // Collapse whitespace
+    .replace(/<[^>]*>?/gm, "") // Remove HTML
+    .replace(/\s+/g, " ") // Collapse whitespace
     .trim();
 }

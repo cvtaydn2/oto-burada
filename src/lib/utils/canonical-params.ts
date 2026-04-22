@@ -21,20 +21,20 @@ function bucketize(value: string | null, bucketSize: number): string | null {
 export function sanitizeQueryParams(params: URLSearchParams) {
   const sanitized = new URLSearchParams();
   const keys = Array.from(new Set(params.keys()));
-  
+
   for (const key of keys) {
     const k = key.toLowerCase();
     const value = params.get(key);
     if (!value) continue;
 
-    if (k.includes('[') || k.includes(']')) continue;
-    
+    if (k.includes("[") || k.includes("]")) continue;
+
     // ── PILL: Issue 5 - Apply Bucketization ──
     let v = value.trim();
-    if (k.includes('price')) v = bucketize(v, 10000) || v; // 10k buckets
-    if (k.includes('km')) v = bucketize(v, 5000) || v;     // 5k buckets
-    if (k.includes('year')) v = bucketize(v, 2) || v;       // 2 year buckets
-    
+    if (k.includes("price")) v = bucketize(v, 10000) || v; // 10k buckets
+    if (k.includes("km")) v = bucketize(v, 5000) || v; // 5k buckets
+    if (k.includes("year")) v = bucketize(v, 2) || v; // 2 year buckets
+
     sanitized.set(k, v);
   }
 

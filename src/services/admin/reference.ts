@@ -4,7 +4,7 @@ import * as ReferenceService from "@/services/reference/reference-records";
 
 /**
  * Proxy functions for Admin Reference UI.
- * These maintain the existing API for the admin dashboard screens 
+ * These maintain the existing API for the admin dashboard screens
  * while delegating the logic to the unified ReferenceService.
  */
 

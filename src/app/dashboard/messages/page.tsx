@@ -1,10 +1,11 @@
-import { requireUser } from "@/lib/auth/session";
-import { getUserChats } from "@/services/messages/chat-service";
-import { createSupabaseServerClient } from "@/lib/supabase/server";
-import { ChatLayout } from "@/components/chat/chat-layout";
-import { MessageSquare, ShieldCheck, RefreshCw } from "lucide-react";
-import { logger } from "@/lib/utils/logger";
+import { MessageSquare, RefreshCw, ShieldCheck } from "lucide-react";
 import Link from "next/link";
+
+import { ChatLayout } from "@/components/chat/chat-layout";
+import { requireUser } from "@/lib/auth/session";
+import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { logger } from "@/lib/utils/logger";
+import { getUserChats } from "@/services/messages/chat-service";
 
 export default async function MessagesPage() {
   const user = await requireUser();
@@ -38,9 +39,7 @@ export default async function MessagesPage() {
             <MessageSquare className="text-primary" size={16} />
             <span className="text-xs text-muted-foreground">İletişim merkezi</span>
           </div>
-          <h1 className="text-3xl font-bold tracking-tight text-foreground">
-            İç mesajlaşma
-          </h1>
+          <h1 className="text-3xl font-bold tracking-tight text-foreground">İç mesajlaşma</h1>
           <p className="mt-1 text-sm text-muted-foreground">
             İlan sahipleri ve alıcılar ile güvenli bir ortamda pazarlığınızı yapın.
           </p>

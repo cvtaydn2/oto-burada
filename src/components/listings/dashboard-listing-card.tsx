@@ -1,26 +1,25 @@
 "use client";
 
-import Link from "next/link";
+import { Archive, ArrowUpCircle, Loader2, Pencil, Rocket, RotateCcw } from "lucide-react";
 import Image from "next/image";
-import { 
-  Archive, 
-  ArrowUpCircle, 
-  Loader2, 
-  Pencil, 
-  Rocket, 
-  RotateCcw 
-} from "lucide-react";
-import { formatCurrency, formatNumber, supabaseImageUrl } from "@/lib/utils";
-import type { Listing } from "@/types";
-import {
-  Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger,
-} from "@/components/ui/dialog";
-import { ListingDopingPanel } from "./listing-doping-panel";
-import { getSellerTrustUI } from "@/lib/utils/trust-ui";
-import { trust } from "@/lib/constants/ui-strings";
+import Link from "next/link";
 
 import { Checkbox } from "@/components/ui/checkbox";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { trust } from "@/lib/constants/ui-strings";
+import { formatCurrency, formatNumber, supabaseImageUrl } from "@/lib/utils";
 import { cn } from "@/lib/utils";
+import { getSellerTrustUI } from "@/lib/utils/trust-ui";
+import type { Listing } from "@/types";
+
+import { ListingDopingPanel } from "./listing-doping-panel";
 
 const statusLabelMap: Record<Listing["status"], string> = {
   approved: trust.admin.listingStatus.approved,
@@ -66,30 +65,40 @@ export function DashboardListingCard({
   const isArchived = listing.status === "archived";
   const isApproved = listing.status === "approved";
 
-  const canBump = isApproved && (() => {
-    if (!listing.bumpedAt) return true;
-    const cooldownEnd = new Date(new Date(listing.bumpedAt).getTime() + 7 * 24 * 60 * 60 * 1000);
-    return new Date() >= cooldownEnd;
-  })();
+  const canBump =
+    isApproved &&
+    (() => {
+      if (!listing.bumpedAt) return true;
+      const cooldownEnd = new Date(new Date(listing.bumpedAt).getTime() + 7 * 24 * 60 * 60 * 1000);
+      return new Date() >= cooldownEnd;
+    })();
 
   const bumpCooldownDays = listing.bumpedAt
-    ? Math.max(0, Math.ceil((new Date(listing.bumpedAt).getTime() + 7 * 24 * 60 * 60 * 1000 - currentTime) / (24 * 60 * 60 * 1000)))
+    ? Math.max(
+        0,
+        Math.ceil(
+          (new Date(listing.bumpedAt).getTime() + 7 * 24 * 60 * 60 * 1000 - currentTime) /
+            (24 * 60 * 60 * 1000)
+        )
+      )
     : 0;
 
   return (
-    <div className={cn(
-      "group flex gap-3 rounded-2xl border transition-all duration-500",
-      isSelected 
-        ? "border-primary bg-primary/5 ring-1 ring-primary/10" 
-        : "border-border/50 bg-card hover:border-primary/20 hover:shadow-xl hover:shadow-primary/5",
-      isArchived && "opacity-70 grayscale-[0.5]"
-    )}>
+    <div
+      className={cn(
+        "group flex gap-3 rounded-2xl border transition-all duration-500",
+        isSelected
+          ? "border-primary bg-primary/5 ring-1 ring-primary/10"
+          : "border-border/50 bg-card hover:border-primary/20 hover:shadow-xl hover:shadow-primary/5",
+        isArchived && "opacity-70 grayscale-[0.5]"
+      )}
+    >
       {/* ── Selection Area ── */}
       <div className="flex items-start pt-4 pl-4">
-        <Checkbox 
-          checked={isSelected} 
-          onCheckedChange={onToggleSelect} 
-          className="size-4.5 rounded-lg border-border data-[state=checked]:bg-primary data-[state=checked]:border-primary transition-all shadow-sm" 
+        <Checkbox
+          checked={isSelected}
+          onCheckedChange={onToggleSelect}
+          className="size-4.5 rounded-lg border-border data-[state=checked]:bg-primary data-[state=checked]:border-primary transition-all shadow-sm"
         />
       </div>
 
@@ -97,14 +106,14 @@ export function DashboardListingCard({
         {/* ── Thumbnail ── */}
         <div className="relative h-24 w-full sm:w-36 shrink-0 overflow-hidden rounded-xl bg-muted/30 border border-border/40 shadow-sm transition-transform duration-500 group-hover:shadow-md">
           {listing.images?.[0]?.url ? (
-            <Image 
-              src={supabaseImageUrl(listing.images[0].url, 320, 75)} 
-              alt="" 
-              fill 
-              sizes="(max-width: 640px) 100vw, 144px" 
-              className="object-cover group-hover:scale-105 transition-transform duration-700" 
-              placeholder={listing.images[0].placeholderBlur ? "blur" : "empty"} 
-              blurDataURL={listing.images[0].placeholderBlur ?? undefined} 
+            <Image
+              src={supabaseImageUrl(listing.images[0].url, 320, 75)}
+              alt=""
+              fill
+              sizes="(max-width: 640px) 100vw, 144px"
+              className="object-cover group-hover:scale-105 transition-transform duration-700"
+              placeholder={listing.images[0].placeholderBlur ? "blur" : "empty"}
+              blurDataURL={listing.images[0].placeholderBlur ?? undefined}
             />
           ) : (
             <div className="flex h-full items-center justify-center text-slate-300">
@@ -121,13 +130,17 @@ export function DashboardListingCard({
         {/* ── Core Info ── */}
         <div className="min-w-0 flex-1 flex flex-col justify-center gap-1">
           <div className="flex items-center gap-2 mb-1">
-            <span className={cn(
-              "text-[9px] font-bold uppercase tracking-widest px-2.5 py-1 rounded-lg border shadow-sm",
-              statusClassMap[listing.status]
-            )}>
+            <span
+              className={cn(
+                "text-[9px] font-bold uppercase tracking-widest px-2.5 py-1 rounded-lg border shadow-sm",
+                statusClassMap[listing.status]
+              )}
+            >
               {statusLabelMap[listing.status]}
             </span>
-            <span className="text-[10px] font-bold text-muted-foreground/50 uppercase tracking-[0.2em]">{listing.brand}</span>
+            <span className="text-[10px] font-bold text-muted-foreground/50 uppercase tracking-[0.2em]">
+              {listing.brand}
+            </span>
           </div>
 
           <p className="font-bold text-foreground text-base tracking-tight truncate group-hover:text-primary transition-colors">
@@ -135,7 +148,9 @@ export function DashboardListingCard({
           </p>
 
           <div className="flex items-baseline gap-1.5">
-            <span className="text-xl font-bold text-primary tracking-tight">{formatCurrency(listing.price)}</span>
+            <span className="text-xl font-bold text-primary tracking-tight">
+              {formatCurrency(listing.price)}
+            </span>
             <span className="text-[10px] font-bold text-primary/40 uppercase">TL</span>
           </div>
 
@@ -150,12 +165,14 @@ export function DashboardListingCard({
 
             {/* Contextual Funnel Nudge */}
             {listing.status === "approved" && !getSellerTrustUI(listing.seller).isTrusted && (
-              <Link 
+              <Link
                 href="/dashboard/profile"
                 className="hidden md:flex items-center gap-2 px-3 py-1.5 rounded-full bg-amber-500/10 border border-amber-500/20 text-amber-600 hover:bg-amber-500 hover:text-white transition-all animate-pulse"
               >
                 <div className="size-1.5 rounded-full bg-amber-500" />
-                <span className="text-[9px] font-bold uppercase tracking-widest leading-none">Güveni Artır</span>
+                <span className="text-[9px] font-bold uppercase tracking-widest leading-none">
+                  Güveni Artır
+                </span>
               </Link>
             )}
           </div>
@@ -163,87 +180,104 @@ export function DashboardListingCard({
 
         {/* ── Actions ── */}
         <div className="flex sm:flex-col gap-2 justify-end sm:justify-center pt-2 sm:pt-0 sm:pl-4 sm:border-l sm:border-border/40">
-          <Link 
-            href={`/dashboard/listings?edit=${listing.id}`} 
-            className="flex items-center justify-center size-11 rounded-xl bg-card border border-border/50 text-muted-foreground/70 hover:bg-primary/5 hover:text-primary hover:border-primary/20 transition-all shadow-sm group/btn" 
+          <Link
+            href={`/dashboard/listings?edit=${listing.id}`}
+            className="flex items-center justify-center size-11 rounded-xl bg-card border border-border/50 text-muted-foreground/70 hover:bg-primary/5 hover:text-primary hover:border-primary/20 transition-all shadow-sm group/btn"
             aria-label="İlanı düzenle"
           >
             <Pencil className="size-4" />
           </Link>
 
-          {isApproved && (listing.bumpedAt ? (
-            <div className="flex items-center justify-center size-11 rounded-xl bg-muted/40 text-slate-300 border border-border/30 cursor-help" title={`${bumpCooldownDays} gün sonra tekrar öne çıkarılabilir`}>
-              <ArrowUpCircle className="size-4" />
-            </div>
-          ) : (
-            <button 
-              type="button" 
-              onClick={() => onBump(listing.id)} 
-              disabled={isBumping || !canBump} 
-              className="flex items-center justify-center size-11 rounded-xl bg-emerald-50 text-emerald-600 hover:bg-emerald-600 hover:text-white transition-all disabled:opacity-30 border border-emerald-100 shadow-sm" 
-              title="Üste Taşı"
-            >
-              {isBumping ? <Loader2 className="size-4 animate-spin" /> : <ArrowUpCircle className="size-4" />}
-            </button>
-          ))}
+          {isApproved &&
+            (listing.bumpedAt ? (
+              <div
+                className="flex items-center justify-center size-11 rounded-xl bg-muted/40 text-slate-300 border border-border/30 cursor-help"
+                title={`${bumpCooldownDays} gün sonra tekrar öne çıkarılabilir`}
+              >
+                <ArrowUpCircle className="size-4" />
+              </div>
+            ) : (
+              <button
+                type="button"
+                onClick={() => onBump(listing.id)}
+                disabled={isBumping || !canBump}
+                className="flex items-center justify-center size-11 rounded-xl bg-emerald-50 text-emerald-600 hover:bg-emerald-600 hover:text-white transition-all disabled:opacity-30 border border-emerald-100 shadow-sm"
+                title="Üste Taşı"
+              >
+                {isBumping ? (
+                  <Loader2 className="size-4 animate-spin" />
+                ) : (
+                  <ArrowUpCircle className="size-4" />
+                )}
+              </button>
+            ))}
 
-          {isApproved && (() => {
-            const trustUI = getSellerTrustUI(listing.seller);
-            const isEligible = trustUI.isPremiumVisible;
+          {isApproved &&
+            (() => {
+              const trustUI = getSellerTrustUI(listing.seller);
+              const isEligible = trustUI.isPremiumVisible;
 
-            return (
-              <Dialog>
-                <DialogTrigger asChild>
-                  <button 
-                    type="button" 
-                    className={cn(
-                      "flex items-center justify-center size-11 rounded-xl transition-all border shadow-sm",
-                      isEligible 
-                        ? "bg-blue-50 text-blue-600 hover:bg-blue-600 hover:text-white border-blue-100" 
-                        : "bg-amber-50 text-amber-600 border-amber-100 opacity-80"
-                    )} 
-                    title={isEligible ? "Doping Uygula" : "Güven Skoru Gerekli"}
-                  >
-                    <Rocket className="size-4" />
-                  </button>
-                </DialogTrigger>
-                <DialogContent className="sm:max-w-xl rounded-3xl border-none shadow-2xl p-0 overflow-hidden">
-                  <div className="p-8">
-                    <DialogHeader className="mb-6">
-                      <DialogTitle className="text-3xl font-bold tracking-tight">
-                        {isEligible ? "İlanını " : "Premium "}
-                        <span className="text-primary">{isEligible ? "Öne Çıkar" : "İçin Doğrulanın"}</span>
-                      </DialogTitle>
-                      <DialogDescription className="text-sm font-medium text-muted-foreground mt-2">
-                         {isEligible 
-                           ? `${listing.title} ilanınız için doping paketi seçerek satışı hızlandırın.` 
-                           : "Doping ve öne çıkarma özelliklerini kullanabilmek için hesabınızı doğrulamanız gerekmektedir."}
-                      </DialogDescription>
-                    </DialogHeader>
-                    <ListingDopingPanel 
-                      listingId={listing.id} 
-                      listingTitle={listing.title} 
-                      trustUI={trustUI}
-                    />
-                  </div>
-                </DialogContent>
-              </Dialog>
-            );
-          })()}
+              return (
+                <Dialog>
+                  <DialogTrigger asChild>
+                    <button
+                      type="button"
+                      className={cn(
+                        "flex items-center justify-center size-11 rounded-xl transition-all border shadow-sm",
+                        isEligible
+                          ? "bg-blue-50 text-blue-600 hover:bg-blue-600 hover:text-white border-blue-100"
+                          : "bg-amber-50 text-amber-600 border-amber-100 opacity-80"
+                      )}
+                      title={isEligible ? "Doping Uygula" : "Güven Skoru Gerekli"}
+                    >
+                      <Rocket className="size-4" />
+                    </button>
+                  </DialogTrigger>
+                  <DialogContent className="sm:max-w-xl rounded-3xl border-none shadow-2xl p-0 overflow-hidden">
+                    <div className="p-8">
+                      <DialogHeader className="mb-6">
+                        <DialogTitle className="text-3xl font-bold tracking-tight">
+                          {isEligible ? "İlanını " : "Premium "}
+                          <span className="text-primary">
+                            {isEligible ? "Öne Çıkar" : "İçin Doğrulanın"}
+                          </span>
+                        </DialogTitle>
+                        <DialogDescription className="text-sm font-medium text-muted-foreground mt-2">
+                          {isEligible
+                            ? `${listing.title} ilanınız için doping paketi seçerek satışı hızlandırın.`
+                            : "Doping ve öne çıkarma özelliklerini kullanabilmek için hesabınızı doğrulamanız gerekmektedir."}
+                        </DialogDescription>
+                      </DialogHeader>
+                      <ListingDopingPanel
+                        listingId={listing.id}
+                        listingTitle={listing.title}
+                        trustUI={trustUI}
+                      />
+                    </div>
+                  </DialogContent>
+                </Dialog>
+              );
+            })()}
 
-          <button 
-            type="button" 
-            onClick={() => onArchive(listing.id)} 
-            disabled={isArchiving} 
+          <button
+            type="button"
+            onClick={() => onArchive(listing.id)}
+            disabled={isArchiving}
             className={cn(
               "flex items-center justify-center size-11 rounded-xl transition-all disabled:opacity-30 border shadow-sm",
-              isArchived 
-                ? "bg-slate-900 border-slate-800 text-white hover:bg-slate-950" 
+              isArchived
+                ? "bg-slate-900 border-slate-800 text-white hover:bg-slate-950"
                 : "bg-rose-50 border-rose-100 text-rose-600 hover:bg-rose-600 hover:text-white"
-            )} 
+            )}
             title={isArchived ? "Yeniden Yayına Al" : "Arşivle"}
           >
-            {isArchiving ? <Loader2 className="size-4 animate-spin" /> : isArchived ? <RotateCcw className="size-4" /> : <Archive className="size-4" />}
+            {isArchiving ? (
+              <Loader2 className="size-4 animate-spin" />
+            ) : isArchived ? (
+              <RotateCcw className="size-4" />
+            ) : (
+              <Archive className="size-4" />
+            )}
           </button>
         </div>
       </div>

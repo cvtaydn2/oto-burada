@@ -14,7 +14,7 @@ export const trimmedRequiredString = z.string().trim().min(1, requiredMessage);
 
 export const optionalTrimmedString = z.preprocess(
   emptyStringToUndefined,
-  z.string().trim().min(1, requiredMessage).optional(),
+  z.string().trim().min(1, requiredMessage).optional()
 );
 
 export const positiveCurrencySchema = z.coerce.number().finite().min(1, invalidMessage);

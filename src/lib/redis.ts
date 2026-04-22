@@ -1,1 +1,1 @@
-export { redis, default } from "./redis/client";
+export { default, redis } from "./redis/client";

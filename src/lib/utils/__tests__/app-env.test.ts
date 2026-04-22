@@ -1,5 +1,6 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
-import { getBaseUrl, getAppEnvironment } from "../app-env";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+
+import { getAppEnvironment, getBaseUrl } from "../app-env";
 
 describe("App Environment Utilities", () => {
   const originalEnv = process.env;

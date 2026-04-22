@@ -9,22 +9,19 @@
  * - Rating must be 1-5
  */
 
-import { apiSuccess, apiError, API_ERROR_CODES } from "@/lib/utils/api-response";
-import { sanitizeText } from "@/lib/utils/sanitize";
-import { rateLimitProfiles } from "@/lib/utils/rate-limit";
-import { withAuthAndCsrf } from "@/lib/utils/api-security";
-import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { z } from "zod";
+
+import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { API_ERROR_CODES, apiError, apiSuccess } from "@/lib/utils/api-response";
+import { withAuthAndCsrf } from "@/lib/utils/api-security";
+import { rateLimitProfiles } from "@/lib/utils/rate-limit";
+import { sanitizeText } from "@/lib/utils/sanitize";
 
 const reviewSchema = z.object({
   sellerId: z.string().uuid("Geçersiz satıcı ID."),
   listingId: z.string().uuid("Geçersiz ilan ID.").optional(),
   rating: z.number().int().min(1, "Puan en az 1 olmalı.").max(5, "Puan en fazla 5 olabilir."),
-  comment: z
-    .string()
-    .trim()
-    .max(500, "Yorum en fazla 500 karakter olabilir.")
-    .optional(),
+  comment: z.string().trim().max(500, "Yorum en fazla 500 karakter olabilir.").optional(),
 });
 
 // 5 reviews per hour per user
@@ -52,7 +49,7 @@ export async function POST(request: Request) {
     return apiError(
       API_ERROR_CODES.VALIDATION_ERROR,
       parsed.error.issues[0]?.message ?? "Geçersiz değerlendirme verisi.",
-      400,
+      400
     );
   }
 
@@ -78,20 +75,26 @@ export async function POST(request: Request) {
         rating,
         comment: sanitizedComment,
       },
-      { onConflict: "seller_id,reviewer_id" },
+      { onConflict: "seller_id,reviewer_id" }
     )
     .select("id, rating, comment, created_at")
     .single();
 
   if (error) {
     const { captureServerError } = await import("@/lib/monitoring/posthog-server");
-    captureServerError("Seller review upsert failed", "reviews", error, { sellerId, reviewerId: user.id }, user.id);
-    return apiError(API_ERROR_CODES.INTERNAL_ERROR, "Değerlendirme kaydedilemedi. Lütfen tekrar dene.", 500);
+    captureServerError(
+      "Seller review upsert failed",
+      "reviews",
+      error,
+      { sellerId, reviewerId: user.id },
+      user.id
+    );
+    return apiError(
+      API_ERROR_CODES.INTERNAL_ERROR,
+      "Değerlendirme kaydedilemedi. Lütfen tekrar dene.",
+      500
+    );
   }
 
-  return apiSuccess(
-    { review: data },
-    "Değerlendirmeniz kaydedildi.",
-    201,
-  );
+  return apiSuccess({ review: data }, "Değerlendirmeniz kaydedildi.", 201);
 }

@@ -208,14 +208,7 @@ export const cityOptions: CityOption[] = [
   {
     city: "Amasya",
     cityPlate: 5,
-    districts: [
-      "Gümüşhacıköy",
-      "Hamamözü",
-      "Merkez",
-      "Merzifon",
-      "Suluova",
-      "Taşova",
-    ],
+    districts: ["Gümüşhacıköy", "Hamamözü", "Merkez", "Merzifon", "Suluova", "Taşova"],
   },
   {
     city: "Antalya",
@@ -242,14 +235,7 @@ export const cityOptions: CityOption[] = [
   {
     city: "Ardahan",
     cityPlate: 75,
-    districts: [
-      "Çıldır",
-      "Damal",
-      "Göle",
-      "Hanak",
-      "Merkez",
-      "Posof",
-    ],
+    districts: ["Çıldır", "Damal", "Göle", "Hanak", "Merkez", "Posof"],
   },
   {
     city: "Artvin",
@@ -322,14 +308,7 @@ export const cityOptions: CityOption[] = [
   {
     city: "Batman",
     cityPlate: 72,
-    districts: [
-      "Beşiri",
-      "Gercüş",
-      "Hasankeyf",
-      "Kozluk",
-      "Merkez",
-      "Sason",
-    ],
+    districts: ["Beşiri", "Gercüş", "Hasankeyf", "Kozluk", "Merkez", "Sason"],
   },
   {
     city: "Bayburt",
@@ -339,42 +318,17 @@ export const cityOptions: CityOption[] = [
   {
     city: "Bilecik",
     cityPlate: 11,
-    districts: [
-      "Bozüyük",
-      "Gölpazarı",
-      "Merkez",
-      "Osmaneli",
-      "Pazaryeri",
-      "Söğüt",
-      "Yenipazar",
-    ],
+    districts: ["Bozüyük", "Gölpazarı", "Merkez", "Osmaneli", "Pazaryeri", "Söğüt", "Yenipazar"],
   },
   {
     city: "Bingöl",
     cityPlate: 12,
-    districts: [
-      "Adaklı",
-      "Bingöl",
-      "Genç",
-      "Karlıova",
-      "Kiğı",
-      "Solhan",
-      "Yayladere",
-      "Yedisu",
-    ],
+    districts: ["Adaklı", "Bingöl", "Genç", "Karlıova", "Kiğı", "Solhan", "Yayladere", "Yedisu"],
   },
   {
     city: "Bitlis",
     cityPlate: 13,
-    districts: [
-      "Adilcevaz",
-      "Ahlat",
-      "Güroyayla",
-      "Hizan",
-      "Merkez",
-      "Mutki",
-      "Tatvan",
-    ],
+    districts: ["Adilcevaz", "Ahlat", "Güroyayla", "Hizan", "Merkez", "Mutki", "Tatvan"],
   },
   {
     city: "Bolu",
@@ -673,14 +627,7 @@ export const cityOptions: CityOption[] = [
   {
     city: "Gümüşhane",
     cityPlate: 29,
-    districts: [
-      "Gümüşhane",
-      "Kelkit",
-      "Köse",
-      "Kürtün",
-      "Şiran",
-      "Torul",
-    ],
+    districts: ["Gümüşhane", "Kelkit", "Köse", "Kürtün", "Şiran", "Torul"],
   },
   {
     city: "Hakkari",
@@ -748,16 +695,7 @@ export const cityOptions: CityOption[] = [
   {
     city: "Kars",
     cityPlate: 36,
-    districts: [
-      "Akyaka",
-      "Arpaçay",
-      "Digor",
-      "Kağızman",
-      "Kars",
-      "Sarıkamış",
-      "Selim",
-      "Susuz",
-    ],
+    districts: ["Akyaka", "Arpaçay", "Digor", "Kağızman", "Kars", "Sarıkamış", "Selim", "Susuz"],
   },
   {
     city: "Kastamonu",
@@ -820,15 +758,7 @@ export const cityOptions: CityOption[] = [
   {
     city: "Kırşehir",
     cityPlate: 40,
-    districts: [
-      "Akçakent",
-      "Akpınar",
-      "Boztepe",
-      "Çiçekdağı",
-      "Kaman",
-      "Kırşehir",
-      "Mucur",
-    ],
+    districts: ["Akçakent", "Akpınar", "Boztepe", "Çiçekdağı", "Kaman", "Kırşehir", "Mucur"],
   },
   {
     city: "Kilis",
@@ -958,27 +888,12 @@ export const cityOptions: CityOption[] = [
   {
     city: "Nevşehir",
     cityPlate: 50,
-    districts: [
-      "Acıgöl",
-      "Avanos",
-      "Derinkuyu",
-      "Gülşehir",
-      "Kozaklı",
-      "Nevşehir",
-      "Ürgüp",
-    ],
+    districts: ["Acıgöl", "Avanos", "Derinkuyu", "Gülşehir", "Kozaklı", "Nevşehir", "Ürgüp"],
   },
   {
     city: "Niğde",
     cityPlate: 51,
-    districts: [
-      "Altunhisar",
-      "Bor",
-      "Çamardı",
-      "Çiftlik",
-      "Niğde",
-      "Ulukışla",
-    ],
+    districts: ["Altunhisar", "Bor", "Çamardı", "Çiftlik", "Niğde", "Ulukışla"],
   },
   {
     city: "Ordu",
@@ -1008,15 +923,7 @@ export const cityOptions: CityOption[] = [
   {
     city: "Osmaniye",
     cityPlate: 80,
-    districts: [
-      "Bahçe",
-      "Düziçi",
-      "Hasanbeyli",
-      "Kadirli",
-      "Osmaniye",
-      "Sumbas",
-      "Toprakkale",
-    ],
+    districts: ["Bahçe", "Düziçi", "Hasanbeyli", "Kadirli", "Osmaniye", "Sumbas", "Toprakkale"],
   },
   {
     city: "Rize",
@@ -1082,15 +989,7 @@ export const cityOptions: CityOption[] = [
   {
     city: "Şırnak",
     cityPlate: 73,
-    districts: [
-      "Beytüşşurap",
-      "Cizre",
-      "Güçlükonak",
-      "İdil",
-      "Silopi",
-      "Şırnak",
-      "Uludere",
-    ],
+    districts: ["Beytüşşurap", "Cizre", "Güçlükonak", "İdil", "Silopi", "Şırnak", "Uludere"],
   },
   {
     city: "Tekirdağ",
@@ -1167,14 +1066,7 @@ export const cityOptions: CityOption[] = [
   {
     city: "Uşak",
     cityPlate: 64,
-    districts: [
-      "Banaz",
-      "Eşme",
-      "Karahallı",
-      "Sivaslı",
-      "Ulubey",
-      "Uşak",
-    ],
+    districts: ["Banaz", "Eşme", "Karahallı", "Sivaslı", "Ulubey", "Uşak"],
   },
   {
     city: "Van",
@@ -1198,14 +1090,7 @@ export const cityOptions: CityOption[] = [
   {
     city: "Yalova",
     cityPlate: 77,
-    districts: [
-      "Altınova",
-      "Armutlu",
-      "Çiftlikköy",
-      "Çınarcık",
-      "Merkez",
-      "Termal",
-    ],
+    districts: ["Altınova", "Armutlu", "Çiftlikköy", "Çınarcık", "Merkez", "Termal"],
   },
   {
     city: "Zonguldak",
@@ -1257,42 +1142,26 @@ export const cityOptions: CityOption[] = [
   {
     city: "Karabük",
     cityPlate: 78,
-    districts: [
-      "Eflani",
-      "Eskipazar",
-      "Karabük",
-      "Ovacık",
-      "Safranbolu",
-      "Ulus",
-      "Yenice",
-    ],
+    districts: ["Eflani", "Eskipazar", "Karabük", "Ovacık", "Safranbolu", "Ulus", "Yenice"],
   },
 ];
 
 export function getDistrictsByCity(city: string): string[] {
-  const found = cityOptions.find(
-    (item) => item.city.toLowerCase() === city.toLowerCase()
-  );
+  const found = cityOptions.find((item) => item.city.toLowerCase() === city.toLowerCase());
   return found?.districts || [];
 }
 
 export function cityExists(city: string): boolean {
-  return cityOptions.some(
-    (item) => item.city.toLowerCase() === city.toLowerCase()
-  );
+  return cityOptions.some((item) => item.city.toLowerCase() === city.toLowerCase());
 }
 
 export function districtExists(city: string, district: string): boolean {
   const districts = getDistrictsByCity(city);
-  return districts.some(
-    (d) => d.toLowerCase() === district.toLowerCase()
-  );
+  return districts.some((d) => d.toLowerCase() === district.toLowerCase());
 }
 
 export function getCityPlate(city: string): number | null {
-  const found = cityOptions.find(
-    (item) => item.city.toLowerCase() === city.toLowerCase()
-  );
+  const found = cityOptions.find((item) => item.city.toLowerCase() === city.toLowerCase());
   return found?.cityPlate || null;
 }
 

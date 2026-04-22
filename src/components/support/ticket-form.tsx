@@ -1,7 +1,9 @@
 "use client";
 
-import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useState } from "react";
+import { toast } from "sonner";
+
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import {
@@ -11,7 +13,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { toast } from "sonner";
 import type { TicketCategory, TicketPriority } from "@/services/support/ticket-service";
 
 const CATEGORIES: { value: TicketCategory; label: string }[] = [
@@ -47,7 +48,12 @@ export function TicketForm() {
       const res = await fetch("/api/support/tickets", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ subject: subject.trim(), description: description.trim(), category, priority }),
+        body: JSON.stringify({
+          subject: subject.trim(),
+          description: description.trim(),
+          category,
+          priority,
+        }),
       });
 
       if (!res.ok) throw new Error("Failed to create ticket");

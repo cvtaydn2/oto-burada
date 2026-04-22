@@ -1,12 +1,13 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { getUserChats } from "@/services/messages/chat-service";
-import type { Chat } from "@/types";
-import { cn, safeFormatDistanceToNow } from "@/lib/utils";
 import { Search } from "lucide-react";
+import { useEffect, useState } from "react";
+
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { cn, safeFormatDistanceToNow } from "@/lib/utils";
+import { getUserChats } from "@/services/messages/chat-service";
+import type { Chat } from "@/types";
 
 interface ChatSidebarProps {
   currentUserId: string;
@@ -45,7 +46,7 @@ export function ChatSidebar({ currentUserId, activeChatId, onChatSelect }: ChatS
     };
   }, [currentUserId]);
 
-  const filteredChats = chats.filter(chat => 
+  const filteredChats = chats.filter((chat) =>
     chat.listing?.title?.toLowerCase().includes(search.toLowerCase())
   );
 
@@ -55,9 +56,9 @@ export function ChatSidebar({ currentUserId, activeChatId, onChatSelect }: ChatS
         <h2 className="text-xl font-bold mb-4 tracking-tight">Mesajlar</h2>
         <div className="relative">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-          <Input 
-            className="pl-9 bg-muted/50 border-none h-9 text-sm" 
-            placeholder="Konuşma ara..." 
+          <Input
+            className="pl-9 bg-muted/50 border-none h-9 text-sm"
+            placeholder="Konuşma ara..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
           />
@@ -66,7 +67,9 @@ export function ChatSidebar({ currentUserId, activeChatId, onChatSelect }: ChatS
 
       <ScrollArea className="flex-1">
         {loading ? (
-          <div className="p-8 text-center text-sm text-muted-foreground animate-pulse">Yükleniyor...</div>
+          <div className="p-8 text-center text-sm text-muted-foreground animate-pulse">
+            Yükleniyor...
+          </div>
         ) : error ? (
           <div className="p-8 text-center text-sm text-destructive">
             Mesajlar yüklenemedi.
@@ -74,7 +77,10 @@ export function ChatSidebar({ currentUserId, activeChatId, onChatSelect }: ChatS
               onClick={() => {
                 setError(false);
                 setLoading(true);
-                void getUserChats(currentUserId).then(setChats).catch(() => setError(true)).finally(() => setLoading(false));
+                void getUserChats(currentUserId)
+                  .then(setChats)
+                  .catch(() => setError(true))
+                  .finally(() => setLoading(false));
               }}
               className="block mx-auto mt-2 text-xs underline text-muted-foreground hover:text-foreground"
             >
@@ -82,7 +88,9 @@ export function ChatSidebar({ currentUserId, activeChatId, onChatSelect }: ChatS
             </button>
           </div>
         ) : filteredChats.length === 0 ? (
-          <div className="p-8 text-center text-sm text-muted-foreground">Henüz bir konuşma yok.</div>
+          <div className="p-8 text-center text-sm text-muted-foreground">
+            Henüz bir konuşma yok.
+          </div>
         ) : (
           <div className="flex flex-col">
             {filteredChats.map((chat) => {

@@ -1,160 +1,239 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="tr">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>OtoBurada - Hayalindeki Aracı Bul</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
+      rel="stylesheet"
+    />
     <style>
-        /* Hero arka plan resmi için özel sınıf (Gerçek bir araç görseli ile değiştirilebilir) */
-        .hero-bg {
-            background-image: linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.6)), url('https://images.unsplash.com/photo-1503375822722-ec8cb7a4c7e6?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80');
-            background-size: cover;
-            background-position: center;
-        }
+      /* Hero arka plan resmi için özel sınıf (Gerçek bir araç görseli ile değiştirilebilir) */
+      .hero-bg {
+        background-image:
+          linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.6)),
+          url("https://images.unsplash.com/photo-1503375822722-ec8cb7a4c7e6?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80");
+        background-size: cover;
+        background-position: center;
+      }
     </style>
-</head>
-<body class="bg-gray-50 text-gray-800 font-sans">
-
+  </head>
+  <body class="bg-gray-50 text-gray-800 font-sans">
     <header class="bg-white border-b border-gray-200 sticky top-0 z-50">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex justify-between items-center h-16">
-                
-                <div class="flex items-center space-x-8">
-                    <a href="#" class="text-blue-500 text-2xl font-bold flex items-center">
-                        <i class="fa-solid fa-car-side mr-2"></i>OtoBurada
-                    </a>
-                    <nav class="hidden md:flex space-x-6">
-                        <a href="#" class="text-gray-600 hover:text-blue-500 font-medium text-sm transition">İlanlar</a>
-                        <a href="#" class="text-gray-600 hover:text-blue-500 font-medium text-sm transition">Karşılaştır</a>
-                    </nav>
-                </div>
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex justify-between items-center h-16">
+          <div class="flex items-center space-x-8">
+            <a href="#" class="text-blue-500 text-2xl font-bold flex items-center">
+              <i class="fa-solid fa-car-side mr-2"></i>OtoBurada
+            </a>
+            <nav class="hidden md:flex space-x-6">
+              <a href="#" class="text-gray-600 hover:text-blue-500 font-medium text-sm transition"
+                >İlanlar</a
+              >
+              <a href="#" class="text-gray-600 hover:text-blue-500 font-medium text-sm transition"
+                >Karşılaştır</a
+              >
+            </nav>
+          </div>
 
-                <div class="hidden lg:flex flex-1 max-w-lg mx-8">
-                    <div class="relative w-full">
-                        <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400">
-                            <i class="fa-solid fa-magnifying-glass text-sm"></i>
-                        </span>
-                        <input type="text" placeholder="Marka, model veya kelime ara..." class="w-full bg-gray-100 border-transparent text-gray-700 text-sm rounded-full focus:bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-200 block pl-10 py-2 transition">
-                    </div>
-                </div>
-
-                <div class="flex items-center space-x-4">
-                    <a href="#" class="text-gray-500 hover:text-red-500 transition"><i class="fa-regular fa-heart text-xl"></i></a>
-                    <a href="#" class="text-gray-500 hover:text-blue-500 transition"><i class="fa-regular fa-message text-xl"></i></a>
-                    <div class="h-6 border-l border-gray-300 mx-2"></div>
-                    <a href="#" class="text-sm font-medium text-gray-600 hover:text-blue-500 transition">Giriş Yap</a>
-                    <button class="bg-blue-500 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-600 transition shadow-sm">
-                        İlan Ver
-                    </button>
-                </div>
+          <div class="hidden lg:flex flex-1 max-w-lg mx-8">
+            <div class="relative w-full">
+              <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400">
+                <i class="fa-solid fa-magnifying-glass text-sm"></i>
+              </span>
+              <input
+                type="text"
+                placeholder="Marka, model veya kelime ara..."
+                class="w-full bg-gray-100 border-transparent text-gray-700 text-sm rounded-full focus:bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-200 block pl-10 py-2 transition"
+              />
             </div>
+          </div>
+
+          <div class="flex items-center space-x-4">
+            <a href="#" class="text-gray-500 hover:text-red-500 transition"
+              ><i class="fa-regular fa-heart text-xl"></i
+            ></a>
+            <a href="#" class="text-gray-500 hover:text-blue-500 transition"
+              ><i class="fa-regular fa-message text-xl"></i
+            ></a>
+            <div class="h-6 border-l border-gray-300 mx-2"></div>
+            <a href="#" class="text-sm font-medium text-gray-600 hover:text-blue-500 transition"
+              >Giriş Yap</a
+            >
+            <button
+              class="bg-blue-500 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-600 transition shadow-sm"
+            >
+              İlan Ver
+            </button>
+          </div>
         </div>
+      </div>
     </header>
 
     <section class="hero-bg h-[500px] flex items-center relative">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full relative z-10 text-center">
-            <h1 class="text-4xl md:text-5xl font-extrabold text-white mb-4 tracking-tight">Hayalindeki Aracı Bugün Bul</h1>
-            <p class="text-lg text-gray-200 mb-10 max-w-2xl mx-auto font-light">Türkiye'nin en geniş araç ağıyla, güvenli ve hızlı otomobil alışverişinin adresi.</p>
-            
-            <div class="bg-white p-4 rounded-2xl shadow-xl max-w-4xl mx-auto text-left flex flex-col md:flex-row gap-4">
-                
-                <div class="flex-1">
-                    <label class="block text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1 pl-1">Marka / Model</label>
-                    <div class="relative">
-                        <i class="fa-solid fa-car absolute left-3 top-3 text-gray-400"></i>
-                        <input type="text" placeholder="Örn: BMW 3 Serisi" class="w-full bg-gray-50 border border-gray-200 text-gray-700 rounded-lg focus:border-blue-500 focus:ring-1 focus:ring-blue-500 block pl-10 p-2.5 outline-none">
-                    </div>
-                </div>
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full relative z-10 text-center">
+        <h1 class="text-4xl md:text-5xl font-extrabold text-white mb-4 tracking-tight">
+          Hayalindeki Aracı Bugün Bul
+        </h1>
+        <p class="text-lg text-gray-200 mb-10 max-w-2xl mx-auto font-light">
+          Türkiye'nin en geniş araç ağıyla, güvenli ve hızlı otomobil alışverişinin adresi.
+        </p>
 
-                <div class="flex-1">
-                    <label class="block text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1 pl-1">Şehir</label>
-                    <div class="relative">
-                        <i class="fa-solid fa-location-dot absolute left-3 top-3 text-gray-400"></i>
-                        <select class="w-full bg-gray-50 border border-gray-200 text-gray-700 rounded-lg focus:border-blue-500 focus:ring-1 focus:ring-blue-500 block pl-10 p-2.5 outline-none appearance-none">
-                            <option>Tüm Şehirler</option>
-                            <option>İstanbul</option>
-                            <option>Ankara</option>
-                            <option>İzmir</option>
-                        </select>
-                    </div>
-                </div>
-
-                <div class="flex-1">
-                    <label class="block text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1 pl-1">Fiyat Aralığı</label>
-                    <div class="flex space-x-2">
-                        <input type="text" placeholder="Min TL" class="w-1/2 bg-gray-50 border border-gray-200 text-gray-700 rounded-lg focus:border-blue-500 focus:ring-1 focus:ring-blue-500 block p-2.5 outline-none text-sm">
-                        <input type="text" placeholder="Maks TL" class="w-1/2 bg-gray-50 border border-gray-200 text-gray-700 rounded-lg focus:border-blue-500 focus:ring-1 focus:ring-blue-500 block p-2.5 outline-none text-sm">
-                    </div>
-                </div>
-
-                <div class="flex items-end">
-                    <button class="w-full md:w-auto bg-blue-500 hover:bg-blue-600 text-white font-medium rounded-lg px-8 py-2.5 transition shadow-md flex items-center justify-center">
-                        <i class="fa-solid fa-magnifying-glass mr-2"></i> İlanları Ara
-                    </button>
-                </div>
-
+        <div
+          class="bg-white p-4 rounded-2xl shadow-xl max-w-4xl mx-auto text-left flex flex-col md:flex-row gap-4"
+        >
+          <div class="flex-1">
+            <label
+              class="block text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1 pl-1"
+              >Marka / Model</label
+            >
+            <div class="relative">
+              <i class="fa-solid fa-car absolute left-3 top-3 text-gray-400"></i>
+              <input
+                type="text"
+                placeholder="Örn: BMW 3 Serisi"
+                class="w-full bg-gray-50 border border-gray-200 text-gray-700 rounded-lg focus:border-blue-500 focus:ring-1 focus:ring-blue-500 block pl-10 p-2.5 outline-none"
+              />
             </div>
+          </div>
+
+          <div class="flex-1">
+            <label
+              class="block text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1 pl-1"
+              >Şehir</label
+            >
+            <div class="relative">
+              <i class="fa-solid fa-location-dot absolute left-3 top-3 text-gray-400"></i>
+              <select
+                class="w-full bg-gray-50 border border-gray-200 text-gray-700 rounded-lg focus:border-blue-500 focus:ring-1 focus:ring-blue-500 block pl-10 p-2.5 outline-none appearance-none"
+              >
+                <option>Tüm Şehirler</option>
+                <option>İstanbul</option>
+                <option>Ankara</option>
+                <option>İzmir</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="flex-1">
+            <label
+              class="block text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1 pl-1"
+              >Fiyat Aralığı</label
+            >
+            <div class="flex space-x-2">
+              <input
+                type="text"
+                placeholder="Min TL"
+                class="w-1/2 bg-gray-50 border border-gray-200 text-gray-700 rounded-lg focus:border-blue-500 focus:ring-1 focus:ring-blue-500 block p-2.5 outline-none text-sm"
+              />
+              <input
+                type="text"
+                placeholder="Maks TL"
+                class="w-1/2 bg-gray-50 border border-gray-200 text-gray-700 rounded-lg focus:border-blue-500 focus:ring-1 focus:ring-blue-500 block p-2.5 outline-none text-sm"
+              />
+            </div>
+          </div>
+
+          <div class="flex items-end">
+            <button
+              class="w-full md:w-auto bg-blue-500 hover:bg-blue-600 text-white font-medium rounded-lg px-8 py-2.5 transition shadow-md flex items-center justify-center"
+            >
+              <i class="fa-solid fa-magnifying-glass mr-2"></i> İlanları Ara
+            </button>
+          </div>
         </div>
+      </div>
     </section>
 
     <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-        <div class="flex justify-between items-end mb-8">
-            <h2 class="text-2xl font-bold text-gray-800">Popüler Kategoriler</h2>
-            <a href="#" class="text-sm font-medium text-blue-500 hover:text-blue-600 flex items-center">Tümünü Gör <i class="fa-solid fa-chevron-right ml-1 text-[10px]"></i></a>
-        </div>
+      <div class="flex justify-between items-end mb-8">
+        <h2 class="text-2xl font-bold text-gray-800">Popüler Kategoriler</h2>
+        <a href="#" class="text-sm font-medium text-blue-500 hover:text-blue-600 flex items-center"
+          >Tümünü Gör <i class="fa-solid fa-chevron-right ml-1 text-[10px]"></i
+        ></a>
+      </div>
 
-        <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
-            <a href="#" class="bg-white border border-gray-100 rounded-2xl p-6 text-center hover:shadow-lg hover:border-blue-100 transition group">
-                <div class="w-12 h-12 mx-auto bg-blue-50 text-blue-500 rounded-full flex items-center justify-center mb-4 group-hover:bg-blue-500 group-hover:text-white transition">
-                    <i class="fa-solid fa-bolt text-xl"></i>
-                </div>
-                <h3 class="font-bold text-gray-800 mb-1">Elektrikli</h3>
-                <p class="text-xs text-gray-500">1,240 İlan</p>
-            </a>
-            
-            <a href="#" class="bg-white border border-gray-100 rounded-2xl p-6 text-center hover:shadow-lg hover:border-blue-100 transition group">
-                <div class="w-12 h-12 mx-auto bg-blue-50 text-blue-500 rounded-full flex items-center justify-center mb-4 group-hover:bg-blue-500 group-hover:text-white transition">
-                    <i class="fa-solid fa-truck-pickup text-xl"></i>
-                </div>
-                <h3 class="font-bold text-gray-800 mb-1">SUV</h3>
-                <p class="text-xs text-gray-500">4,850 İlan</p>
-            </a>
+      <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+        <a
+          href="#"
+          class="bg-white border border-gray-100 rounded-2xl p-6 text-center hover:shadow-lg hover:border-blue-100 transition group"
+        >
+          <div
+            class="w-12 h-12 mx-auto bg-blue-50 text-blue-500 rounded-full flex items-center justify-center mb-4 group-hover:bg-blue-500 group-hover:text-white transition"
+          >
+            <i class="fa-solid fa-bolt text-xl"></i>
+          </div>
+          <h3 class="font-bold text-gray-800 mb-1">Elektrikli</h3>
+          <p class="text-xs text-gray-500">1,240 İlan</p>
+        </a>
 
-            <a href="#" class="bg-white border border-gray-100 rounded-2xl p-6 text-center hover:shadow-lg hover:border-blue-100 transition group">
-                <div class="w-12 h-12 mx-auto bg-blue-50 text-blue-500 rounded-full flex items-center justify-center mb-4 group-hover:bg-blue-500 group-hover:text-white transition">
-                    <i class="fa-solid fa-car-side text-xl"></i>
-                </div>
-                <h3 class="font-bold text-gray-800 mb-1">Sedan</h3>
-                <p class="text-xs text-gray-500">12,400 İlan</p>
-            </a>
+        <a
+          href="#"
+          class="bg-white border border-gray-100 rounded-2xl p-6 text-center hover:shadow-lg hover:border-blue-100 transition group"
+        >
+          <div
+            class="w-12 h-12 mx-auto bg-blue-50 text-blue-500 rounded-full flex items-center justify-center mb-4 group-hover:bg-blue-500 group-hover:text-white transition"
+          >
+            <i class="fa-solid fa-truck-pickup text-xl"></i>
+          </div>
+          <h3 class="font-bold text-gray-800 mb-1">SUV</h3>
+          <p class="text-xs text-gray-500">4,850 İlan</p>
+        </a>
 
-            <a href="#" class="bg-white border border-gray-100 rounded-2xl p-6 text-center hover:shadow-lg hover:border-blue-100 transition group">
-                <div class="w-12 h-12 mx-auto bg-blue-50 text-blue-500 rounded-full flex items-center justify-center mb-4 group-hover:bg-blue-500 group-hover:text-white transition">
-                    <i class="fa-solid fa-clock-rotate-left text-xl"></i>
-                </div>
-                <h3 class="font-bold text-gray-800 mb-1">Klasik</h3>
-                <p class="text-xs text-gray-500">450 İlan</p>
-            </a>
+        <a
+          href="#"
+          class="bg-white border border-gray-100 rounded-2xl p-6 text-center hover:shadow-lg hover:border-blue-100 transition group"
+        >
+          <div
+            class="w-12 h-12 mx-auto bg-blue-50 text-blue-500 rounded-full flex items-center justify-center mb-4 group-hover:bg-blue-500 group-hover:text-white transition"
+          >
+            <i class="fa-solid fa-car-side text-xl"></i>
+          </div>
+          <h3 class="font-bold text-gray-800 mb-1">Sedan</h3>
+          <p class="text-xs text-gray-500">12,400 İlan</p>
+        </a>
 
-            <a href="#" class="bg-white border border-gray-100 rounded-2xl p-6 text-center hover:shadow-lg hover:border-blue-100 transition group">
-                <div class="w-12 h-12 mx-auto bg-blue-50 text-blue-500 rounded-full flex items-center justify-center mb-4 group-hover:bg-blue-500 group-hover:text-white transition">
-                    <i class="fa-solid fa-van-shuttle text-xl"></i>
-                </div>
-                <h3 class="font-bold text-gray-800 mb-1">Ticari</h3>
-                <p class="text-xs text-gray-500">2,100 İlan</p>
-            </a>
+        <a
+          href="#"
+          class="bg-white border border-gray-100 rounded-2xl p-6 text-center hover:shadow-lg hover:border-blue-100 transition group"
+        >
+          <div
+            class="w-12 h-12 mx-auto bg-blue-50 text-blue-500 rounded-full flex items-center justify-center mb-4 group-hover:bg-blue-500 group-hover:text-white transition"
+          >
+            <i class="fa-solid fa-clock-rotate-left text-xl"></i>
+          </div>
+          <h3 class="font-bold text-gray-800 mb-1">Klasik</h3>
+          <p class="text-xs text-gray-500">450 İlan</p>
+        </a>
 
-            <a href="#" class="bg-white border border-gray-100 rounded-2xl p-6 text-center hover:shadow-lg hover:border-blue-100 transition group">
-                <div class="w-12 h-12 mx-auto bg-blue-50 text-blue-500 rounded-full flex items-center justify-center mb-4 group-hover:bg-blue-500 group-hover:text-white transition">
-                    <i class="fa-solid fa-car-rear text-xl"></i>
-                </div>
-                <h3 class="font-bold text-gray-800 mb-1">Hatchback</h3>
-                <p class="text-xs text-gray-500">8,920 İlan</p>
-            </a>
-        </div>
+        <a
+          href="#"
+          class="bg-white border border-gray-100 rounded-2xl p-6 text-center hover:shadow-lg hover:border-blue-100 transition group"
+        >
+          <div
+            class="w-12 h-12 mx-auto bg-blue-50 text-blue-500 rounded-full flex items-center justify-center mb-4 group-hover:bg-blue-500 group-hover:text-white transition"
+          >
+            <i class="fa-solid fa-van-shuttle text-xl"></i>
+          </div>
+          <h3 class="font-bold text-gray-800 mb-1">Ticari</h3>
+          <p class="text-xs text-gray-500">2,100 İlan</p>
+        </a>
+
+        <a
+          href="#"
+          class="bg-white border border-gray-100 rounded-2xl p-6 text-center hover:shadow-lg hover:border-blue-100 transition group"
+        >
+          <div
+            class="w-12 h-12 mx-auto bg-blue-50 text-blue-500 rounded-full flex items-center justify-center mb-4 group-hover:bg-blue-500 group-hover:text-white transition"
+          >
+            <i class="fa-solid fa-car-rear text-xl"></i>
+          </div>
+          <h3 class="font-bold text-gray-800 mb-1">Hatchback</h3>
+          <p class="text-xs text-gray-500">8,920 İlan</p>
+        </a>
+      </div>
     </section>
-
-</body>
+  </body>
 </html>

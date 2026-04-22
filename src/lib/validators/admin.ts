@@ -1,15 +1,17 @@
 import { z } from "zod";
-import type { AdminModerationAction } from "@/types";
-import { 
-  moderationTargetTypes, 
-  moderationActions, 
-  maximumNoteLength 
+
+import {
+  maximumNoteLength,
+  moderationActions,
+  moderationTargetTypes,
 } from "@/lib/constants/domain";
-import { 
-  optionalTrimmedString, 
-  trimmedRequiredString, 
-  emptyStringToUndefined, 
-  timestampSchema 
+import type { AdminModerationAction } from "@/types";
+
+import {
+  emptyStringToUndefined,
+  optionalTrimmedString,
+  timestampSchema,
+  trimmedRequiredString,
 } from "./shared";
 
 export const adminModerationActionSchema: z.ZodType<AdminModerationAction> = z.object({
@@ -26,7 +28,7 @@ export const adminModerationActionSchema: z.ZodType<AdminModerationAction> = z.o
       .min(3, "Not en az 3 karakter olmalı")
       .max(maximumNoteLength, `Not en fazla ${maximumNoteLength} karakter olabilir`)
       .nullable()
-      .optional(),
+      .optional()
   ),
   createdAt: timestampSchema,
 });

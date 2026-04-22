@@ -1,8 +1,10 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { describe, it, expect, vi, beforeEach } from "vitest";
-import { POST } from "../route";
-import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { createHmac } from "crypto";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+
+import { createSupabaseAdminClient } from "@/lib/supabase/admin";
+
+import { POST } from "../route";
 
 vi.mock("@/lib/supabase/admin", () => {
   const mockInsert = vi.fn().mockResolvedValue({ error: null });
@@ -53,16 +55,18 @@ describe("Payment Webhook Hardening", () => {
   it("should block invalid signatures and log the attempt", async () => {
     const payload = { token: "token-123", status: "SUCCESS" };
     const req = createRequest(payload, "wrong-signature");
-    
+
     const response = await POST(req);
     expect(response.status).toBe(401);
 
     const admin = createSupabaseAdminClient() as any;
     expect(admin.from).toHaveBeenCalledWith("payment_webhook_logs");
-    expect(admin.from().insert).toHaveBeenCalledWith(expect.objectContaining({
-      token: "token-123",
-      status: "invalid_signature"
-    }));
+    expect(admin.from().insert).toHaveBeenCalledWith(
+      expect.objectContaining({
+        token: "token-123",
+        status: "invalid_signature",
+      })
+    );
   });
 
   it("should handle idempotent requests correctly", async () => {
@@ -76,11 +80,13 @@ describe("Payment Webhook Hardening", () => {
 
     const response = await POST(req);
     const data = await response.json();
-    
+
     expect(data.idempotent).toBe(true);
-    expect(admin.from().insert).toHaveBeenCalledWith(expect.objectContaining({
-      status: "processed"
-    }));
+    expect(admin.from().insert).toHaveBeenCalledWith(
+      expect.objectContaining({
+        status: "processed",
+      })
+    );
   });
 
   it("should handle orphan records when token is unknown to system", async () => {
@@ -94,7 +100,7 @@ describe("Payment Webhook Hardening", () => {
 
     const response = await POST(req);
     const data = await response.json();
-    
+
     expect(data.orphan).toBe(true);
   });
 });

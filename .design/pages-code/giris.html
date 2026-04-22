@@ -1,141 +1,192 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="tr">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>OtoBurada - Giriş Yap</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
+      rel="stylesheet"
+    />
     <style>
-        .login-bg {
-            background-image: linear-gradient(to right, rgba(15, 23, 42, 0.9), rgba(15, 23, 42, 0.7)), url('https://images.unsplash.com/photo-1603584173870-7f23fdae1b7a?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80');
-            background-size: cover;
-            background-position: center;
-        }
+      .login-bg {
+        background-image:
+          linear-gradient(to right, rgba(15, 23, 42, 0.9), rgba(15, 23, 42, 0.7)),
+          url("https://images.unsplash.com/photo-1603584173870-7f23fdae1b7a?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80");
+        background-size: cover;
+        background-position: center;
+      }
     </style>
-</head>
-<body class="bg-white text-gray-800 font-sans h-screen flex overflow-hidden">
-
+  </head>
+  <body class="bg-white text-gray-800 font-sans h-screen flex overflow-hidden">
     <div class="hidden lg:flex lg:w-1/2 login-bg flex-col justify-between p-12 text-white relative">
-        <div>
-            <a href="#" class="text-blue-400 text-2xl font-bold flex items-center">
-                <i class="fa-solid fa-car-side mr-2"></i>OtoBurada
-            </a>
-        </div>
+      <div>
+        <a href="#" class="text-blue-400 text-2xl font-bold flex items-center">
+          <i class="fa-solid fa-car-side mr-2"></i>OtoBurada
+        </a>
+      </div>
 
-        <div class="max-w-lg">
-            <h1 class="text-4xl lg:text-5xl font-extrabold mb-6 leading-tight">Türkiye'nin En Güvenilir Otomobil Pazarına Hoş Geldiniz.</h1>
-            <p class="text-gray-300 text-lg mb-10 font-light">Binlerce güncel ilan, detaylı ekspertiz raporları ve güvenli ödeme seçenekleri ile hayalinizdeki araca bir adım daha yakınsınız.</p>
-            
-            <div class="flex space-x-4">
-                <div class="flex items-center bg-white/10 border border-white/20 backdrop-blur-sm px-4 py-2 rounded-lg">
-                    <i class="fa-solid fa-check-circle text-blue-400 mr-2"></i>
-                    <span class="text-sm font-medium">100% Ekspertiz Garantisi</span>
-                </div>
-                <div class="flex items-center bg-white/10 border border-white/20 backdrop-blur-sm px-4 py-2 rounded-lg">
-                    <i class="fa-solid fa-shield-halved text-blue-400 mr-2"></i>
-                    <span class="text-sm font-medium">Güvenli Ödeme Sistemi</span>
-                </div>
-            </div>
-        </div>
+      <div class="max-w-lg">
+        <h1 class="text-4xl lg:text-5xl font-extrabold mb-6 leading-tight">
+          Türkiye'nin En Güvenilir Otomobil Pazarına Hoş Geldiniz.
+        </h1>
+        <p class="text-gray-300 text-lg mb-10 font-light">
+          Binlerce güncel ilan, detaylı ekspertiz raporları ve güvenli ödeme seçenekleri ile
+          hayalinizdeki araca bir adım daha yakınsınız.
+        </p>
 
-        <div class="text-xs text-gray-400 flex space-x-4">
-            <span>© 2024 OtoBurada A.Ş.</span>
-            <span>•</span>
-            <a href="#" class="hover:text-white transition">Kullanım Şartları</a>
-            <span>•</span>
-            <a href="#" class="hover:text-white transition">Gizlilik</a>
+        <div class="flex space-x-4">
+          <div
+            class="flex items-center bg-white/10 border border-white/20 backdrop-blur-sm px-4 py-2 rounded-lg"
+          >
+            <i class="fa-solid fa-check-circle text-blue-400 mr-2"></i>
+            <span class="text-sm font-medium">100% Ekspertiz Garantisi</span>
+          </div>
+          <div
+            class="flex items-center bg-white/10 border border-white/20 backdrop-blur-sm px-4 py-2 rounded-lg"
+          >
+            <i class="fa-solid fa-shield-halved text-blue-400 mr-2"></i>
+            <span class="text-sm font-medium">Güvenli Ödeme Sistemi</span>
+          </div>
         </div>
+      </div>
+
+      <div class="text-xs text-gray-400 flex space-x-4">
+        <span>© 2024 OtoBurada A.Ş.</span>
+        <span>•</span>
+        <a href="#" class="hover:text-white transition">Kullanım Şartları</a>
+        <span>•</span>
+        <a href="#" class="hover:text-white transition">Gizlilik</a>
+      </div>
     </div>
 
     <div class="w-full lg:w-1/2 flex items-center justify-center p-8 sm:p-12 overflow-y-auto">
-        <div class="max-w-md w-full">
-            
-            <div class="lg:hidden mb-8 text-center">
-                <a href="#" class="text-blue-500 text-3xl font-bold flex items-center justify-center">
-                    <i class="fa-solid fa-car-side mr-2"></i>OtoBurada
-                </a>
-            </div>
-
-            <div class="text-center mb-8">
-                <h2 class="text-2xl font-bold text-gray-800">Tekrar Hoş Geldiniz</h2>
-                <p class="text-gray-500 text-sm mt-2">Devam etmek için bilgilerinizi giriniz.</p>
-            </div>
-
-            <div class="flex border-b border-gray-200 mb-8">
-                <button class="w-1/2 py-3 text-sm font-bold text-blue-500 border-b-2 border-blue-500">Giriş Yap</button>
-                <button class="w-1/2 py-3 text-sm font-medium text-gray-500 hover:text-gray-700 transition">Kayıt Ol</button>
-            </div>
-
-            <form class="space-y-5">
-                <div>
-                    <label class="block text-xs font-bold text-gray-700 mb-1">E-posta veya Telefon</label>
-                    <div class="relative">
-                        <i class="fa-regular fa-envelope absolute left-3 top-3 text-gray-400"></i>
-                        <input type="text" placeholder="ornek@mail.com" class="w-full border border-gray-300 text-gray-800 rounded-lg pl-10 p-2.5 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none transition">
-                    </div>
-                </div>
-
-                <div>
-                    <div class="flex justify-between items-center mb-1">
-                        <label class="block text-xs font-bold text-gray-700">Şifre</label>
-                        <a href="#" class="text-xs font-medium text-blue-500 hover:text-blue-600">Şifremi Unuttum?</a>
-                    </div>
-                    <div class="relative">
-                        <i class="fa-solid fa-lock absolute left-3 top-3 text-gray-400"></i>
-                        <input type="password" placeholder="••••••••" class="w-full border border-gray-300 text-gray-800 rounded-lg pl-10 pr-10 p-2.5 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none transition">
-                        <button type="button" class="absolute right-3 top-3 text-gray-400 hover:text-gray-600">
-                            <i class="fa-regular fa-eye-slash"></i>
-                        </button>
-                    </div>
-                </div>
-
-                <div class="flex items-center">
-                    <input type="checkbox" id="remember" class="w-4 h-4 text-blue-500 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 cursor-pointer">
-                    <label for="remember" class="ml-2 text-sm text-gray-600 cursor-pointer">Beni Hatırla</label>
-                </div>
-
-                <button type="button" class="w-full bg-blue-500 text-white font-bold rounded-lg px-4 py-3 hover:bg-blue-600 transition shadow-md flex items-center justify-center">
-                    Giriş Yap <i class="fa-solid fa-arrow-right ml-2 text-sm"></i>
-                </button>
-            </form>
-
-            <div class="mt-8">
-                <div class="relative">
-                    <div class="absolute inset-0 flex items-center">
-                        <div class="w-full border-t border-gray-200"></div>
-                    </div>
-                    <div class="relative flex justify-center text-sm">
-                        <span class="px-2 bg-white text-gray-400 text-[10px] font-bold uppercase tracking-widest">Veya Şununla Devam Et</span>
-                    </div>
-                </div>
-
-                <div class="mt-6 space-y-3">
-                    <button class="w-full flex items-center justify-center px-4 py-2.5 border border-gray-300 rounded-lg shadow-sm bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 transition">
-                        <img src="https://upload.wikimedia.org/wikipedia/commons/5/53/Google_%22G%22_Logo.svg" alt="Google" class="h-5 w-5 mr-2">
-                        Google ile Devam Et
-                    </button>
-                    <button class="w-full flex items-center justify-center px-4 py-2.5 border border-gray-300 rounded-lg shadow-sm bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 transition">
-                        <i class="fa-brands fa-facebook text-blue-600 text-lg mr-2"></i>
-                        Facebook ile Devam Et
-                    </button>
-                </div>
-            </div>
-
-            <p class="mt-8 text-center text-sm text-gray-600">
-                Henüz hesabınız yok mu? <a href="#" class="font-bold text-blue-500 hover:text-blue-600">Ücretsiz Kayıt Ol</a>
-            </p>
-
-            <div class="mt-6 flex justify-center space-x-6 text-gray-400">
-                <div class="flex items-center text-[10px] font-bold tracking-wider">
-                    <i class="fa-solid fa-shield-check mr-1"></i> SSL SECURE
-                </div>
-                <div class="flex items-center text-[10px] font-bold tracking-wider">
-                    <i class="fa-solid fa-certificate mr-1"></i> VERIFIED ADS
-                </div>
-            </div>
-
+      <div class="max-w-md w-full">
+        <div class="lg:hidden mb-8 text-center">
+          <a href="#" class="text-blue-500 text-3xl font-bold flex items-center justify-center">
+            <i class="fa-solid fa-car-side mr-2"></i>OtoBurada
+          </a>
         </div>
+
+        <div class="text-center mb-8">
+          <h2 class="text-2xl font-bold text-gray-800">Tekrar Hoş Geldiniz</h2>
+          <p class="text-gray-500 text-sm mt-2">Devam etmek için bilgilerinizi giriniz.</p>
+        </div>
+
+        <div class="flex border-b border-gray-200 mb-8">
+          <button class="w-1/2 py-3 text-sm font-bold text-blue-500 border-b-2 border-blue-500">
+            Giriş Yap
+          </button>
+          <button
+            class="w-1/2 py-3 text-sm font-medium text-gray-500 hover:text-gray-700 transition"
+          >
+            Kayıt Ol
+          </button>
+        </div>
+
+        <form class="space-y-5">
+          <div>
+            <label class="block text-xs font-bold text-gray-700 mb-1">E-posta veya Telefon</label>
+            <div class="relative">
+              <i class="fa-regular fa-envelope absolute left-3 top-3 text-gray-400"></i>
+              <input
+                type="text"
+                placeholder="ornek@mail.com"
+                class="w-full border border-gray-300 text-gray-800 rounded-lg pl-10 p-2.5 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none transition"
+              />
+            </div>
+          </div>
+
+          <div>
+            <div class="flex justify-between items-center mb-1">
+              <label class="block text-xs font-bold text-gray-700">Şifre</label>
+              <a href="#" class="text-xs font-medium text-blue-500 hover:text-blue-600"
+                >Şifremi Unuttum?</a
+              >
+            </div>
+            <div class="relative">
+              <i class="fa-solid fa-lock absolute left-3 top-3 text-gray-400"></i>
+              <input
+                type="password"
+                placeholder="••••••••"
+                class="w-full border border-gray-300 text-gray-800 rounded-lg pl-10 pr-10 p-2.5 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none transition"
+              />
+              <button
+                type="button"
+                class="absolute right-3 top-3 text-gray-400 hover:text-gray-600"
+              >
+                <i class="fa-regular fa-eye-slash"></i>
+              </button>
+            </div>
+          </div>
+
+          <div class="flex items-center">
+            <input
+              type="checkbox"
+              id="remember"
+              class="w-4 h-4 text-blue-500 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 cursor-pointer"
+            />
+            <label for="remember" class="ml-2 text-sm text-gray-600 cursor-pointer"
+              >Beni Hatırla</label
+            >
+          </div>
+
+          <button
+            type="button"
+            class="w-full bg-blue-500 text-white font-bold rounded-lg px-4 py-3 hover:bg-blue-600 transition shadow-md flex items-center justify-center"
+          >
+            Giriş Yap <i class="fa-solid fa-arrow-right ml-2 text-sm"></i>
+          </button>
+        </form>
+
+        <div class="mt-8">
+          <div class="relative">
+            <div class="absolute inset-0 flex items-center">
+              <div class="w-full border-t border-gray-200"></div>
+            </div>
+            <div class="relative flex justify-center text-sm">
+              <span
+                class="px-2 bg-white text-gray-400 text-[10px] font-bold uppercase tracking-widest"
+                >Veya Şununla Devam Et</span
+              >
+            </div>
+          </div>
+
+          <div class="mt-6 space-y-3">
+            <button
+              class="w-full flex items-center justify-center px-4 py-2.5 border border-gray-300 rounded-lg shadow-sm bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 transition"
+            >
+              <img
+                src="https://upload.wikimedia.org/wikipedia/commons/5/53/Google_%22G%22_Logo.svg"
+                alt="Google"
+                class="h-5 w-5 mr-2"
+              />
+              Google ile Devam Et
+            </button>
+            <button
+              class="w-full flex items-center justify-center px-4 py-2.5 border border-gray-300 rounded-lg shadow-sm bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 transition"
+            >
+              <i class="fa-brands fa-facebook text-blue-600 text-lg mr-2"></i>
+              Facebook ile Devam Et
+            </button>
+          </div>
+        </div>
+
+        <p class="mt-8 text-center text-sm text-gray-600">
+          Henüz hesabınız yok mu?
+          <a href="#" class="font-bold text-blue-500 hover:text-blue-600">Ücretsiz Kayıt Ol</a>
+        </p>
+
+        <div class="mt-6 flex justify-center space-x-6 text-gray-400">
+          <div class="flex items-center text-[10px] font-bold tracking-wider">
+            <i class="fa-solid fa-shield-check mr-1"></i> SSL SECURE
+          </div>
+          <div class="flex items-center text-[10px] font-bold tracking-wider">
+            <i class="fa-solid fa-certificate mr-1"></i> VERIFIED ADS
+          </div>
+        </div>
+      </div>
     </div>
-</body>
+  </body>
 </html>

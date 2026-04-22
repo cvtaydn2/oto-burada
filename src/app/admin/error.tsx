@@ -1,9 +1,10 @@
 "use client";
 
-import { useEffect } from "react";
-import { useRouter } from "next/navigation";
-import { Button } from "@/components/ui/button";
 import { Shield } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { useEffect } from "react";
+
+import { Button } from "@/components/ui/button";
 import { captureClientException } from "@/lib/monitoring/posthog-client";
 
 const ERROR_CONTEXT = "admin_route_error";
@@ -24,7 +25,10 @@ export default function Error({
   }, [error]);
 
   return (
-    <div role="alert" className="flex min-h-[400px] flex-col items-center justify-center p-8 text-center">
+    <div
+      role="alert"
+      className="flex min-h-[400px] flex-col items-center justify-center p-8 text-center"
+    >
       <div className="mb-6 rounded-full bg-red-100 p-4" aria-hidden="true">
         <Shield className="size-8 text-red-600" />
       </div>

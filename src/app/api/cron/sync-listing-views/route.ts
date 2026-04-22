@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { withCronOrAdmin } from "@/lib/utils/api-security";
 import { logger } from "@/lib/utils/logger";
@@ -25,7 +26,7 @@ export async function GET(request: Request) {
     return NextResponse.json({
       success: true,
       updatedCount,
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     });
   } catch (err) {
     logger.system.error("Sync listing views unexpected error", err);

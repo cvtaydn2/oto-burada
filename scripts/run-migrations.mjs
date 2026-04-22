@@ -2,6 +2,7 @@ import { spawnSync } from "node:child_process";
 import fs from "node:fs";
 import path from "node:path";
 import process from "node:process";
+
 import { loadLocalEnv } from "./load-local-env.mjs";
 
 loadLocalEnv();
@@ -40,14 +41,16 @@ async function runSql(sql) {
 }
 
 async function runFile(filePath) {
-  const result = spawnSync(psqlCommand, [databaseUrl, "-v", "ON_ERROR_STOP=1", "-f", filePath], { stdio: "inherit" });
+  const result = spawnSync(psqlCommand, [databaseUrl, "-v", "ON_ERROR_STOP=1", "-f", filePath], {
+    stdio: "inherit",
+  });
   if (result.error) throw result.error;
   if (result.status !== 0) throw new Error(`Migration failed: ${path.basename(filePath)}`);
 }
 
 async function main() {
   console.log("Checking migration tracking table...");
-  
+
   await runSql(`
     CREATE TABLE IF NOT EXISTS public._migrations (
       id serial PRIMARY KEY,
@@ -56,10 +59,13 @@ async function main() {
     );
   `);
 
-  const appliedMigrations = (await runSql("SELECT name FROM public._migrations")).split("\n").filter(Boolean);
-  
-  const files = fs.readdirSync(migrationsDir)
-    .filter(f => f.endsWith(".sql"))
+  const appliedMigrations = (await runSql("SELECT name FROM public._migrations"))
+    .split("\n")
+    .filter(Boolean);
+
+  const files = fs
+    .readdirSync(migrationsDir)
+    .filter((f) => f.endsWith(".sql"))
     .sort(); // Alpha-numerical sort
 
   console.log(`Found ${files.length} migration files.`);
@@ -89,7 +95,7 @@ async function main() {
   }
 }
 
-main().catch(err => {
+main().catch((err) => {
   console.error(err);
   process.exit(1);
 });

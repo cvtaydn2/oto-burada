@@ -1,9 +1,10 @@
 "use client";
 
 import { UseFormReturn } from "react-hook-form";
-import { CityOption, ListingCreateFormValues } from "@/types";
-import { FormSection } from "@/components/shared/design-system/FormSection";
+
 import { DesignInput } from "@/components/shared/design-system/DesignInput";
+import { FormSection } from "@/components/shared/design-system/FormSection";
+import { CityOption, ListingCreateFormValues } from "@/types";
 
 interface DetailsStepProps {
   form: UseFormReturn<ListingCreateFormValues, unknown, ListingCreateFormValues>;
@@ -11,9 +12,13 @@ interface DetailsStepProps {
 }
 
 export function DetailsStep({ form, cities }: DetailsStepProps) {
-  const { register, watch, formState: { errors } } = form;
+  const {
+    register,
+    watch,
+    formState: { errors },
+  } = form;
   const selectedCity = watch("city");
-  const districtOptions = cities.find(c => c.city === selectedCity)?.districts || [];
+  const districtOptions = cities.find((c) => c.city === selectedCity)?.districts || [];
 
   return (
     <div className="space-y-10">
@@ -29,7 +34,9 @@ export function DetailsStep({ form, cities }: DetailsStepProps) {
           >
             <option value="">Seçiniz</option>
             {cities.map((c) => (
-              <option key={c.city} value={c.city}>{c.city}</option>
+              <option key={c.city} value={c.city}>
+                {c.city}
+              </option>
             ))}
           </DesignInput>
 
@@ -43,7 +50,9 @@ export function DetailsStep({ form, cities }: DetailsStepProps) {
           >
             <option value="">Seçiniz</option>
             {districtOptions.map((d) => (
-              <option key={d} value={d}>{d}</option>
+              <option key={d} value={d}>
+                {d}
+              </option>
             ))}
           </DesignInput>
         </div>

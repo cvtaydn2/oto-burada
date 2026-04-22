@@ -1,28 +1,32 @@
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
-import { 
-  getStoredListingBySlug, 
-  getStoredListingsByIds, 
-  getStoredListingById,
-  type PaginatedListingsResult 
-} from "@/services/listings/listing-submissions";
+import { maskPhoneNumber } from "@/lib/utils/listing-utils";
 import { getPublicListings } from "@/services/listings/catalog";
 import { createExpertDocumentSignedUrl } from "@/services/listings/listing-documents";
-import { maskPhoneNumber } from "@/lib/utils/listing-utils";
-import type { Profile, ListingFilters, Listing } from "@/types";
-
-export { 
-  getStoredListingBySlug, 
-  getStoredListingsByIds, 
+import {
   getStoredListingById,
-  type PaginatedListingsResult 
+  getStoredListingBySlug,
+  getStoredListingsByIds,
+  type PaginatedListingsResult,
+} from "@/services/listings/listing-submissions";
+import type { Listing, ListingFilters, Profile } from "@/types";
+
+export {
+  getStoredListingById,
+  getStoredListingBySlug,
+  getStoredListingsByIds,
+  type PaginatedListingsResult,
 };
 
 async function withNextCache<T>(
   keyParts: string[],
   loader: () => Promise<T>,
-  revalidate = 60,
+  revalidate = 60
 ): Promise<T> {
-  if (process.env.NODE_ENV === "test" || typeof window !== "undefined" || !process.env.NEXT_RUNTIME) {
+  if (
+    process.env.NODE_ENV === "test" ||
+    typeof window !== "undefined" ||
+    !process.env.NEXT_RUNTIME
+  ) {
     return loader();
   }
 
@@ -49,7 +53,7 @@ export async function getMarketplaceListingBySlug(slug: string) {
   const storedListing = await withNextCache<Listing | null>(
     [`marketplace-listing:${slug}`],
     () => getStoredListingBySlug(slug),
-    60,
+    60
   );
 
   if (storedListing && storedListing.status === "approved") {
@@ -61,7 +65,7 @@ export async function getMarketplaceListingBySlug(slug: string) {
     }
 
     const signedUrl = await createExpertDocumentSignedUrl(
-      storedListing.expertInspection.documentPath,
+      storedListing.expertInspection.documentPath
     );
 
     return {
@@ -88,7 +92,8 @@ export async function getMarketplaceSeller(sellerId: string): Promise<Profile | 
       const admin = createSupabaseAdminClient();
       const { data, error } = await admin
         .from("profiles")
-        .select(`
+        .select(
+          `
           id, 
           full_name, 
           phone, 
@@ -110,7 +115,8 @@ export async function getMarketplaceSeller(sellerId: string): Promise<Profile | 
           trust_score,
           created_at, 
           updated_at
-        `)
+        `
+        )
         .eq("id", sellerId)
         .maybeSingle();
 
@@ -143,11 +149,13 @@ export async function getMarketplaceSeller(sellerId: string): Promise<Profile | 
         updatedAt: data.updated_at,
       } satisfies Profile;
     },
-    300,
+    300
   );
 }
 
-export async function getPublicMarketplaceListings(filters: ListingFilters = { page: 1, limit: 12, sort: "newest" }) {
+export async function getPublicMarketplaceListings(
+  filters: ListingFilters = { page: 1, limit: 12, sort: "newest" }
+) {
   return getFilteredMarketplaceListings(filters);
 }
 
@@ -155,7 +163,7 @@ export async function getAllKnownListings() {
   const result = await getPublicListings({
     limit: 100,
     page: 1,
-    sort: "newest"
+    sort: "newest",
   });
   return result.listings;
 }
@@ -188,11 +196,11 @@ export async function getSimilarMarketplaceListings(slug: string, brand: string,
 
       const brandIds = new Set(byBrand.map((l: Listing) => l.id));
       const byCity = cityResult.listings.filter(
-        (l: Listing) => l.slug !== slug && !brandIds.has(l.id),
+        (l: Listing) => l.slug !== slug && !brandIds.has(l.id)
       );
 
       return [...byBrand, ...byCity].slice(0, 3);
     },
-    120,
+    120
   );
 }

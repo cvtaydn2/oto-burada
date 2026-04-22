@@ -16,7 +16,14 @@ export const fuelTypes = ["benzin", "dizel", "lpg", "hibrit", "elektrik"] as con
 
 export const transmissionTypes = ["manuel", "otomatik", "yari_otomatik"] as const;
 
-export const reportReasons = ["fake_listing", "wrong_info", "spam", "price_manipulation", "invalid_verification", "other"] as const;
+export const reportReasons = [
+  "fake_listing",
+  "wrong_info",
+  "spam",
+  "price_manipulation",
+  "invalid_verification",
+  "other",
+] as const;
 
 export const reportStatuses = ["open", "reviewing", "resolved", "dismissed"] as const;
 
@@ -81,7 +88,12 @@ export const maximumCarYear = CURRENT_YEAR + 1;
 export const maximumMileage = 1_000_000;
 export const listingImageAcceptedMimeTypes = ["image/jpeg", "image/png", "image/webp"] as const;
 export const listingImageMaxSizeInBytes = 5 * 1024 * 1024;
-export const expertDocumentAcceptedMimeTypes = ["application/pdf", "image/jpeg", "image/png", "image/webp"] as const;
+export const expertDocumentAcceptedMimeTypes = [
+  "application/pdf",
+  "image/jpeg",
+  "image/png",
+  "image/webp",
+] as const;
 export const expertDocumentMaxSizeInBytes = 10 * 1024 * 1024; // 10MB
 export const maximumListingPrice = 100_000_000;
 export const maximumDescriptionLength = 5000;
@@ -92,15 +104,15 @@ export const carPartDamageStatuses = [
   "boyali",
   "lokal_boyali",
   "degisen",
-  "bilinmiyor"
+  "bilinmiyor",
 ] as const;
 
-export const carPartDamageStatusLabels: Record<typeof carPartDamageStatuses[number], string> = {
+export const carPartDamageStatusLabels: Record<(typeof carPartDamageStatuses)[number], string> = {
   orjinal: "Orijinal",
   boyali: "Boyalı",
   lokal_boyali: "Lokal Boyalı",
   degisen: "Değişen",
-  bilinmiyor: "Bilinmiyor"
+  bilinmiyor: "Bilinmiyor",
 };
 
 export const carParts = [
@@ -116,10 +128,10 @@ export const carParts = [
   "sag_arka_kapi",
   "sag_arka_camurluk",
   "on_tampon",
-  "arka_tampon"
+  "arka_tampon",
 ] as const;
 
-export const carPartLabels: Record<typeof carParts[number], string> = {
+export const carPartLabels: Record<(typeof carParts)[number], string> = {
   kaput: "Kaput",
   tavan: "Tavan",
   bagaj: "Bagaj",
@@ -132,40 +144,40 @@ export const carPartLabels: Record<typeof carParts[number], string> = {
   sag_arka_kapi: "Sağ Arka Kapı",
   sag_arka_camurluk: "Sağ Arka Çamurluk",
   on_tampon: "Ön Tampon",
-  arka_tampon: "Arka Tampon"
+  arka_tampon: "Arka Tampon",
 };
 
-export const fuelTypeLabels: Record<typeof fuelTypes[number], string> = {
+export const fuelTypeLabels: Record<(typeof fuelTypes)[number], string> = {
   benzin: "Benzin",
   dizel: "Dizel",
   lpg: "LPG",
   hibrit: "Hibrit",
-  elektrik: "Elektrik"
+  elektrik: "Elektrik",
 };
 
-export const transmissionTypeLabels: Record<typeof transmissionTypes[number], string> = {
+export const transmissionTypeLabels: Record<(typeof transmissionTypes)[number], string> = {
   manuel: "Manuel",
   otomatik: "Otomatik",
-  yari_otomatik: "Yarı Otomatik"
+  yari_otomatik: "Yarı Otomatik",
 };
 
-export const listingStatusLabels: Record<typeof listingStatuses[number], string> = {
+export const listingStatusLabels: Record<(typeof listingStatuses)[number], string> = {
   draft: "Taslak",
   pending: "Onay Bekliyor",
   pending_ai_review: "AI İncelemesinde",
   approved: "Yayında",
   rejected: "Reddedildi",
   flagged: "Bayraklandı",
-  archived: "Arşivlendi"
+  archived: "Arşivlendi",
 };
 
-export const userRoleLabels: Record<typeof userRoles[number], string> = {
+export const userRoleLabels: Record<(typeof userRoles)[number], string> = {
   user: "Kullanıcı",
-  admin: "Yönetici"
+  admin: "Yönetici",
 };
 
 export const userTypeLabels = {
   individual: "Bireysel",
   professional: "Kurumsal",
-  staff: "Personel"
+  staff: "Personel",
 } as const;

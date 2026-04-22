@@ -1,8 +1,9 @@
 import { redirect } from "next/navigation";
-import { requireUser } from "@/lib/auth/session";
-import { getPricingPlans } from "@/services/admin/plans";
+
 import { CheckoutClient } from "@/components/dashboard/checkout-client";
+import { requireUser } from "@/lib/auth/session";
 import { isPaymentEnabled } from "@/lib/payment/config";
+import { getPricingPlans } from "@/services/admin/plans";
 
 interface CheckoutPageProps {
   searchParams: Promise<{ plan?: string }>;

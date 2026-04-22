@@ -67,25 +67,28 @@ export async function getNotificationPreferences(userId: string): Promise<Notifi
 
 export async function upsertNotificationPreferences(
   userId: string,
-  prefs: Partial<Omit<NotificationPreferences, "userId">>,
+  prefs: Partial<Omit<NotificationPreferences, "userId">>
 ): Promise<NotificationPreferences> {
   if (!hasSupabaseAdminEnv()) {
     return { userId, ...DEFAULT_PREFERENCES, ...prefs };
   }
 
   const admin = createSupabaseAdminClient();
-  await admin.from("notification_preferences").upsert({
-    user_id: userId,
-    notify_favorite: prefs.notifyFavorite ?? DEFAULT_PREFERENCES.notifyFavorite,
-    notify_moderation: prefs.notifyModeration ?? DEFAULT_PREFERENCES.notifyModeration,
-    notify_message: prefs.notifyMessage ?? DEFAULT_PREFERENCES.notifyMessage,
-    notify_price_drop: prefs.notifyPriceDrop ?? DEFAULT_PREFERENCES.notifyPriceDrop,
-    notify_saved_search: prefs.notifySavedSearch ?? DEFAULT_PREFERENCES.notifySavedSearch,
-    email_moderation: prefs.emailModeration ?? DEFAULT_PREFERENCES.emailModeration,
-    email_expiry_warning: prefs.emailExpiryWarning ?? DEFAULT_PREFERENCES.emailExpiryWarning,
-    email_saved_search: prefs.emailSavedSearch ?? DEFAULT_PREFERENCES.emailSavedSearch,
-    updated_at: new Date().toISOString(),
-  }, { onConflict: "user_id" });
+  await admin.from("notification_preferences").upsert(
+    {
+      user_id: userId,
+      notify_favorite: prefs.notifyFavorite ?? DEFAULT_PREFERENCES.notifyFavorite,
+      notify_moderation: prefs.notifyModeration ?? DEFAULT_PREFERENCES.notifyModeration,
+      notify_message: prefs.notifyMessage ?? DEFAULT_PREFERENCES.notifyMessage,
+      notify_price_drop: prefs.notifyPriceDrop ?? DEFAULT_PREFERENCES.notifyPriceDrop,
+      notify_saved_search: prefs.notifySavedSearch ?? DEFAULT_PREFERENCES.notifySavedSearch,
+      email_moderation: prefs.emailModeration ?? DEFAULT_PREFERENCES.emailModeration,
+      email_expiry_warning: prefs.emailExpiryWarning ?? DEFAULT_PREFERENCES.emailExpiryWarning,
+      email_saved_search: prefs.emailSavedSearch ?? DEFAULT_PREFERENCES.emailSavedSearch,
+      updated_at: new Date().toISOString(),
+    },
+    { onConflict: "user_id" }
+  );
 
   return getNotificationPreferences(userId);
 }

@@ -1,12 +1,12 @@
 "use client";
 
 import { TriangleAlert } from "lucide-react";
-import { type Listing } from "@/types";
 
+import { BulkActions } from "@/features/admin-moderation/components/bulk-actions";
+import { ModerationCard } from "@/features/admin-moderation/components/moderation-card";
 // Admin Moderation Feature Components/Hooks
 import { useModerationLogic } from "@/features/admin-moderation/hooks/use-moderation-logic";
-import { ModerationCard } from "@/features/admin-moderation/components/moderation-card";
-import { BulkActions } from "@/features/admin-moderation/components/bulk-actions";
+import { type Listing } from "@/types";
 
 interface AdminListingsModerationProps {
   pendingListings: Listing[];
@@ -18,7 +18,9 @@ export function AdminListingsModeration({ pendingListings }: AdminListingsModera
   if (pendingListings.length === 0) {
     return (
       <section className="rounded-2xl border border-border/80 bg-background p-6 shadow-sm sm:p-8">
-        <p className="text-sm font-medium uppercase tracking-[0.18em] text-primary/80">Moderasyon</p>
+        <p className="text-sm font-medium uppercase tracking-[0.18em] text-primary/80">
+          Moderasyon
+        </p>
         <h2 className="mt-3 text-2xl font-semibold tracking-tight">Bekleyen ilan yok</h2>
         <p className="mt-3 max-w-2xl text-sm leading-6 text-muted-foreground sm:text-base">
           Yeni ilanlar geldikçe burada inceleme sırası oluşacak.
@@ -31,7 +33,9 @@ export function AdminListingsModeration({ pendingListings }: AdminListingsModera
     <section className="rounded-2xl border border-border/80 bg-background p-6 shadow-sm sm:p-8">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <p className="text-sm font-medium uppercase tracking-[0.18em] text-primary/80">Moderasyon</p>
+          <p className="text-sm font-medium uppercase tracking-[0.18em] text-primary/80">
+            Moderasyon
+          </p>
           <h2 className="mt-3 text-2xl font-semibold tracking-tight">Bekleyen ilanlar</h2>
           <p className="mt-3 max-w-3xl text-sm leading-6 text-muted-foreground sm:text-base">
             İlanları kontrol ederek yayınlama ya da reddetme kararını buradan verebilirsin.
@@ -41,15 +45,18 @@ export function AdminListingsModeration({ pendingListings }: AdminListingsModera
           {pendingListings.length} ilan bekliyor
         </div>
       </div>
-      
+
       {/* Tabs */}
       <div className="mt-6 flex border-b border-border">
         <button
           type="button"
-          onClick={() => { actions.setActiveTab("all"); actions.setSelectedListingIds([]); }}
+          onClick={() => {
+            actions.setActiveTab("all");
+            actions.setSelectedListingIds([]);
+          }}
           className={`px-4 py-3 text-sm font-semibold border-b-2 transition-colors ${
-            state.activeTab === "all" 
-              ? "border-primary text-primary" 
+            state.activeTab === "all"
+              ? "border-primary text-primary"
               : "border-transparent text-muted-foreground hover:text-foreground"
           }`}
         >
@@ -57,15 +64,27 @@ export function AdminListingsModeration({ pendingListings }: AdminListingsModera
         </button>
         <button
           type="button"
-          onClick={() => { actions.setActiveTab("ai_flagged"); actions.setSelectedListingIds([]); }}
+          onClick={() => {
+            actions.setActiveTab("ai_flagged");
+            actions.setSelectedListingIds([]);
+          }}
           className={`flex items-center gap-2 px-4 py-3 text-sm font-semibold border-b-2 transition-colors ${
-            state.activeTab === "ai_flagged" 
-              ? "border-rose-500 text-rose-500" 
+            state.activeTab === "ai_flagged"
+              ? "border-rose-500 text-rose-500"
               : "border-transparent text-muted-foreground hover:text-rose-500"
           }`}
         >
           <TriangleAlert className="size-4" />
-          AI Tarafından Kırmızı İşaretlenenler ({pendingListings.filter(l => l.status === "flagged" || l.status === "pending_ai_review" || (l.fraudScore ?? 0) > 0).length})
+          AI Tarafından Kırmızı İşaretlenenler (
+          {
+            pendingListings.filter(
+              (l) =>
+                l.status === "flagged" ||
+                l.status === "pending_ai_review" ||
+                (l.fraudScore ?? 0) > 0
+            ).length
+          }
+          )
         </button>
       </div>
 
@@ -82,10 +101,12 @@ export function AdminListingsModeration({ pendingListings }: AdminListingsModera
       )}
 
       <div className="mt-6 space-y-6">
-        <BulkActions 
+        <BulkActions
           selectedCount={state.selectedListingIds.length}
           allSelected={state.allSelected}
-          onToggleAll={() => actions.setSelectedListingIds(state.allSelected ? [] : state.allPendingListingIds)}
+          onToggleAll={() =>
+            actions.setSelectedListingIds(state.allSelected ? [] : state.allPendingListingIds)
+          }
           activeBulkAction={state.activeBulkAction}
           onBulkModeration={actions.handleBulkModeration}
           selectedListingIds={state.selectedListingIds}
@@ -102,21 +123,21 @@ export function AdminListingsModeration({ pendingListings }: AdminListingsModera
         )}
 
         {state.filteredListings.map((listing) => (
-          <ModerationCard 
-             key={listing.id}
-             listing={listing}
-             selectedListingIds={state.selectedListingIds}
-             toggleListingSelection={actions.toggleListingSelection}
-             activeAction={state.activeAction}
-             handleModeration={actions.handleModeration}
-             editingListingId={state.editingListingId}
-             setEditingListingId={actions.setEditingListingId}
-             editValues={state.editValues}
-             setEditValues={actions.setEditValues}
-             handleSaveEdit={actions.handleSaveEdit}
-             isSavingEdit={state.isSavingEdit}
-             notesByListingId={state.notesByListingId}
-             setNotesByListingId={actions.setNotesByListingId}
+          <ModerationCard
+            key={listing.id}
+            listing={listing}
+            selectedListingIds={state.selectedListingIds}
+            toggleListingSelection={actions.toggleListingSelection}
+            activeAction={state.activeAction}
+            handleModeration={actions.handleModeration}
+            editingListingId={state.editingListingId}
+            setEditingListingId={actions.setEditingListingId}
+            editValues={state.editValues}
+            setEditValues={actions.setEditValues}
+            handleSaveEdit={actions.handleSaveEdit}
+            isSavingEdit={state.isSavingEdit}
+            notesByListingId={state.notesByListingId}
+            setNotesByListingId={actions.setNotesByListingId}
           />
         ))}
       </div>

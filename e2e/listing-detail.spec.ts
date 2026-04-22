@@ -7,7 +7,7 @@
  * - Mobile layout
  * - 404 handling
  */
-import { test, expect } from "@playwright/test";
+import { expect, test } from "@playwright/test";
 
 test.describe("İlan Detay Sayfası", () => {
   let listingSlug: string | null = null;
@@ -103,7 +103,10 @@ test.describe("İlan Detay Sayfası", () => {
     const hasContact = await contactArea.isVisible().catch(() => false);
     if (!hasContact) {
       // Fallback: herhangi bir iletişim butonu
-      const anyContactBtn = page.locator('button').filter({ hasText: /whatsapp|numarayı|giriş yap/i }).first();
+      const anyContactBtn = page
+        .locator("button")
+        .filter({ hasText: /whatsapp|numarayı|giriş yap/i })
+        .first();
       await expect(anyContactBtn).toBeVisible({ timeout: 8_000 });
     }
   });
@@ -135,9 +138,7 @@ test.describe("İlan Detay Sayfası", () => {
   test("404 sayfası geçersiz slug için gösterilir", async ({ page }) => {
     await page.goto("/listing/bu-ilan-kesinlikle-mevcut-degil-xyz-123");
     // not-found heading'i bekle
-    const notFoundContent = page
-      .getByText(/bulunamadı|yoldan çıkmış|404/i)
-      .first();
+    const notFoundContent = page.getByText(/bulunamadı|yoldan çıkmış|404/i).first();
     await expect(notFoundContent).toBeVisible({ timeout: 8_000 });
   });
 

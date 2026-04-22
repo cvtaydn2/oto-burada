@@ -1,25 +1,15 @@
 "use client";
 
-import { useState } from "react";
+import { AlertTriangle, CheckCircle2, Clock, Rocket, Star, TrendingUp, Zap } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { 
-  Rocket, 
-  Star, 
-  Zap, 
-  Clock,
-  CheckCircle2,
-  TrendingUp,
-  AlertTriangle
-} from "lucide-react";
+import { useState } from "react";
+
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
 import { trust } from "@/lib/constants/ui-strings";
 import { DOPING_PRICES } from "@/lib/payment/constants";
-import { Button } from "@/components/ui/button";
-import { getSellerTrustUI } from "@/lib/utils/trust-ui";
 import { cn } from "@/lib/utils";
-import {
-  Card,
-  CardContent,
-} from "@/components/ui/card";
+import { getSellerTrustUI } from "@/lib/utils/trust-ui";
 
 const DOPING_OPTIONS = [
   {
@@ -56,29 +46,28 @@ export function ListingDopingPanel({ listingId, listingTitle, trustUI }: Listing
   const [status, setStatus] = useState<"error" | "idle" | "success">("idle");
 
   const isRestricted = !trustUI.isPremiumVisible;
-  const blockTitle = trustUI.restrictionState === "banned" 
-    ? trust.restricted 
-    : trustUI.restrictionState === "restricted_review"
-      ? trust.accountUnderReview
-      : trust.unverified;
+  const blockTitle =
+    trustUI.restrictionState === "banned"
+      ? trust.restricted
+      : trustUI.restrictionState === "restricted_review"
+        ? trust.accountUnderReview
+        : trust.unverified;
 
-  const blockDesc = trustUI.restrictionState === "banned"
-    ? trust.accountRestrictedDesc
-    : trustUI.restrictionState === "restricted_review"
-      ? trust.dopingRestriction
-      : "Premium özellikleri kullanabilmek için profil doğrulamanızı tamamlamanız ve %40 güven barajını aşmanız gerekmektedir.";
+  const blockDesc =
+    trustUI.restrictionState === "banned"
+      ? trust.accountRestrictedDesc
+      : trustUI.restrictionState === "restricted_review"
+        ? trust.dopingRestriction
+        : "Premium özellikleri kullanabilmek için profil doğrulamanızı tamamlamanız ve %40 güven barajını aşmanız gerekmektedir.";
 
-  const totalPrice = DOPING_OPTIONS
-    .filter(opt => selected.includes(opt.id))
-    .reduce((sum, opt) => sum + opt.price, 0);
+  const totalPrice = DOPING_OPTIONS.filter((opt) => selected.includes(opt.id)).reduce(
+    (sum, opt) => sum + opt.price,
+    0
+  );
 
   const toggleOption = (id: string) => {
     if (isRestricted) return;
-    setSelected(prev => 
-      prev.includes(id) 
-        ? prev.filter(i => i !== id)
-        : [...prev, id]
-    );
+    setSelected((prev) => (prev.includes(id) ? prev.filter((i) => i !== id) : [...prev, id]));
   };
 
   const handleApply = async () => {
@@ -99,7 +88,7 @@ export function ListingDopingPanel({ listingId, listingTitle, trustUI }: Listing
         body: JSON.stringify({ dopingTypes: selected }),
         headers: { "Content-Type": "application/json" },
       });
-      const result = await response.json().catch(() => null) as {
+      const result = (await response.json().catch(() => null)) as {
         success?: boolean;
         message?: string;
         data?: {
@@ -108,7 +97,7 @@ export function ListingDopingPanel({ listingId, listingTitle, trustUI }: Listing
         };
         error?: { message?: string };
       } | null;
-      
+
       if (response.ok && result?.success) {
         const paymentUrl = result.data?.paymentUrl;
         const successMessage = result.data?.message ?? result.message;
@@ -144,7 +133,8 @@ export function ListingDopingPanel({ listingId, listingTitle, trustUI }: Listing
             Hızlı Satış Dopingleri
           </h3>
           <p className="text-sm text-muted-foreground">
-            <span className="font-semibold text-foreground">{listingTitle}</span> ilanınızı milyonlarca alıcıya ulaştırın.
+            <span className="font-semibold text-foreground">{listingTitle}</span> ilanınızı
+            milyonlarca alıcıya ulaştırın.
           </p>
         </div>
 
@@ -154,10 +144,12 @@ export function ListingDopingPanel({ listingId, listingTitle, trustUI }: Listing
               <AlertTriangle className="h-5 w-5 text-rose-600 shrink-0" />
               <div className="space-y-1">
                 <p className="text-sm font-bold text-rose-900">{blockTitle}</p>
-                <p className="text-xs text-rose-700 leading-relaxed">
-                  {blockDesc}
-                </p>
-                <Button variant="link" className="h-auto p-0 text-xs font-bold text-rose-600 hover:text-rose-700" onClick={() => router.push('/dashboard/profile')}>
+                <p className="text-xs text-rose-700 leading-relaxed">{blockDesc}</p>
+                <Button
+                  variant="link"
+                  className="h-auto p-0 text-xs font-bold text-rose-600 hover:text-rose-700"
+                  onClick={() => router.push("/dashboard/profile")}
+                >
                   Durumunu Düzelt {"->"}
                 </Button>
               </div>
@@ -167,7 +159,12 @@ export function ListingDopingPanel({ listingId, listingTitle, trustUI }: Listing
       </div>
 
       {/* Doping Options List */}
-      <div className={cn("grid gap-4 transition-opacity", isRestricted && "opacity-75 cursor-not-allowed")}>
+      <div
+        className={cn(
+          "grid gap-4 transition-opacity",
+          isRestricted && "opacity-75 cursor-not-allowed"
+        )}
+      >
         {DOPING_OPTIONS.map((option) => (
           <div
             key={option.id}
@@ -183,30 +180,28 @@ export function ListingDopingPanel({ listingId, listingTitle, trustUI }: Listing
             <div className={cn("mt-1 p-3 rounded-xl text-white", option.color)}>
               <option.icon className="h-5 w-5" />
             </div>
-            
+
             <div className="flex-1 space-y-1">
               <div className="flex items-center justify-between">
                 <span className="font-bold">{option.name}</span>
                 <span className="font-bold text-primary">{option.price}₺</span>
               </div>
-              <p className="text-sm text-muted-foreground mr-8">
-                {option.description}
-              </p>
+              <p className="text-sm text-muted-foreground mr-8">{option.description}</p>
               <div className="flex items-center gap-1.5 text-xs text-muted-foreground pt-1">
                 <Clock className="h-3 w-3" />
                 <span>{option.days} Gün Sürer</span>
               </div>
             </div>
 
-            <div className={cn(
-              "h-6 w-6 rounded-full border-2 flex items-center justify-center transition-colors",
-              selected.includes(option.id)
-                ? "border-primary bg-primary"
-                : "border-muted group-hover:border-primary/50"
-            )}>
-              {selected.includes(option.id) && (
-                <CheckCircle2 className="h-4 w-4 text-white" />
+            <div
+              className={cn(
+                "h-6 w-6 rounded-full border-2 flex items-center justify-center transition-colors",
+                selected.includes(option.id)
+                  ? "border-primary bg-primary"
+                  : "border-muted group-hover:border-primary/50"
               )}
+            >
+              {selected.includes(option.id) && <CheckCircle2 className="h-4 w-4 text-white" />}
             </div>
           </div>
         ))}
@@ -220,7 +215,7 @@ export function ListingDopingPanel({ listingId, listingTitle, trustUI }: Listing
           </div>
 
           {!isRestricted && (
-            <Button 
+            <Button
               className="w-full h-12 text-lg font-bold"
               disabled={selected.length === 0 || loading}
               onClick={handleApply}
@@ -228,23 +223,28 @@ export function ListingDopingPanel({ listingId, listingTitle, trustUI }: Listing
               {loading ? "İşleniyor..." : "Dopingleri Uygula"}
             </Button>
           )}
-          
-          {!isRestricted && (message ? (
-            <div
-              className={`mt-3 flex items-center gap-2 rounded-xl border px-3 py-2 text-sm ${
-                status === "success"
-                  ? "border-emerald-200 bg-emerald-50 text-emerald-700"
-                  : "border-red-200 bg-red-50 text-red-700"
-              }`}
-            >
-              {status === "success" ? <CheckCircle2 className="h-4 w-4 shrink-0" /> : <AlertTriangle className="h-4 w-4 shrink-0" />}
-              <span>{message}</span>
-            </div>
-          ) : (
-            <p className="text-[10px] text-center text-muted-foreground mt-3">
-              Ödeme ve görünürlük artışı onayı işlem sonucunda burada gösterilir.
-            </p>
-          ))}
+
+          {!isRestricted &&
+            (message ? (
+              <div
+                className={`mt-3 flex items-center gap-2 rounded-xl border px-3 py-2 text-sm ${
+                  status === "success"
+                    ? "border-emerald-200 bg-emerald-50 text-emerald-700"
+                    : "border-red-200 bg-red-50 text-red-700"
+                }`}
+              >
+                {status === "success" ? (
+                  <CheckCircle2 className="h-4 w-4 shrink-0" />
+                ) : (
+                  <AlertTriangle className="h-4 w-4 shrink-0" />
+                )}
+                <span>{message}</span>
+              </div>
+            ) : (
+              <p className="text-[10px] text-center text-muted-foreground mt-3">
+                Ödeme ve görünürlük artışı onayı işlem sonucunda burada gösterilir.
+              </p>
+            ))}
         </CardContent>
       </Card>
     </div>

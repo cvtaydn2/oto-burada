@@ -1,7 +1,7 @@
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { logger } from "@/lib/utils/logger";
 
-export type CreditTransactionType = 'purchase' | 'doping_spend' | 'admin_adjustment' | 'refund';
+export type CreditTransactionType = "purchase" | "doping_spend" | "admin_adjustment" | "refund";
 
 export interface CreditTransactionInput {
   userId: string;
@@ -17,7 +17,7 @@ export interface CreditTransactionInput {
  */
 export async function logCreditTransaction(input: CreditTransactionInput) {
   const admin = createSupabaseAdminClient();
-  
+
   try {
     const { data, error } = await admin
       .from("credit_transactions")
@@ -27,7 +27,7 @@ export async function logCreditTransaction(input: CreditTransactionInput) {
         transaction_type: input.type,
         description: input.description,
         reference_id: input.referenceId,
-        metadata: input.metadata || {}
+        metadata: input.metadata || {},
       })
       .select()
       .single();
@@ -50,14 +50,14 @@ export async function logCreditTransaction(input: CreditTransactionInput) {
  */
 export async function adjustUserCredits(input: CreditTransactionInput) {
   const admin = createSupabaseAdminClient();
-  
+
   const { data, error } = await admin.rpc("adjust_user_credits_atomic", {
     p_user_id: input.userId,
     p_amount: input.amount,
     p_type: input.type,
     p_description: input.description || null,
     p_reference_id: input.referenceId || null,
-    p_metadata: input.metadata || {}
+    p_metadata: input.metadata || {},
   });
 
   if (error) {
@@ -66,9 +66,9 @@ export async function adjustUserCredits(input: CreditTransactionInput) {
   }
 
   const result = data as { transaction_id: string; new_balance: number };
-  return { 
-    transactionId: result.transaction_id, 
-    newBalance: result.new_balance 
+  return {
+    transactionId: result.transaction_id,
+    newBalance: result.new_balance,
   };
 }
 
@@ -96,7 +96,7 @@ export async function logDopingApplication(input: {
       duration_days: input.durationDays,
       expires_at: expiresAt.toISOString(),
       payment_id: input.paymentId,
-      metadata: input.metadata || {}
+      metadata: input.metadata || {},
     })
     .select()
     .single();

@@ -1,6 +1,7 @@
-import { cn } from "@/lib/utils";
-import { ReactNode } from "react";
 import { LucideIcon } from "lucide-react";
+import { ReactNode } from "react";
+
+import { cn } from "@/lib/utils";
 
 interface SectionHeaderProps {
   title: string;
@@ -10,12 +11,12 @@ interface SectionHeaderProps {
   className?: string;
 }
 
-export function SectionHeader({ 
-  title, 
-  subtitle, 
-  icon: Icon, 
+export function SectionHeader({
+  title,
+  subtitle,
+  icon: Icon,
   action,
-  className 
+  className,
 }: SectionHeaderProps) {
   return (
     <div className={cn("flex items-center justify-between gap-4 mb-8", className)}>
@@ -26,9 +27,7 @@ export function SectionHeader({
           </div>
         )}
         <div className="space-y-1">
-          <h2 className="text-xl md:text-2xl font-bold text-foreground tracking-tight">
-            {title}
-          </h2>
+          <h2 className="text-xl md:text-2xl font-bold text-foreground tracking-tight">{title}</h2>
           {subtitle && (
             <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest leading-none">
               {subtitle}
@@ -36,11 +35,7 @@ export function SectionHeader({
           )}
         </div>
       </div>
-      {action && (
-        <div className="shrink-0">
-          {action}
-        </div>
-      )}
+      {action && <div className="shrink-0">{action}</div>}
     </div>
   );
 }

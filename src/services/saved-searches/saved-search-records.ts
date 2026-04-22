@@ -1,21 +1,21 @@
 /**
  * Saved searches database operations.
- * 
+ *
  * SECURITY: Uses server client (authenticated role) instead of admin client.
  * RLS policy "saved_searches_manage_own" ensures users can only access their own searches.
- * 
+ *
  * Policy: FOR ALL USING ((SELECT auth.uid()) = user_id)
- * 
+ *
  * This means:
  * - User can only SELECT their own saved searches
  * - User can only INSERT searches with their own user_id
  * - User can only UPDATE/DELETE their own searches
- * 
+ *
  * No need for explicit userId checks in this layer — RLS enforces it at DB level.
  */
 
-import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { hasSupabaseEnv } from "@/lib/supabase/env";
+import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { savedSearchSchema } from "@/lib/validators";
 import {
   buildSavedSearchTitle,
@@ -50,10 +50,7 @@ function mapSavedSearchRow(row: SavedSearchRow) {
  * Get saved searches for the current authenticated user.
  * RLS automatically filters to auth.uid() = user_id.
  */
-async function getDatabaseSavedSearches(options?: {
-  searchId?: string;
-  userId?: string;
-}) {
+async function getDatabaseSavedSearches(options?: { searchId?: string; userId?: string }) {
   if (!hasSupabaseEnv()) {
     return null;
   }
@@ -65,7 +62,7 @@ async function getDatabaseSavedSearches(options?: {
     .order("updated_at", { ascending: false });
 
   if (options?.userId) {
-    query = query.eq("user_id", options.userId);  // Redundant but explicit — RLS already filters
+    query = query.eq("user_id", options.userId); // Redundant but explicit — RLS already filters
   }
 
   if (options?.searchId) {
@@ -92,13 +89,13 @@ export async function getStoredSavedSearchesByUser(userId: string) {
 /**
  * Create or update a saved search for the current authenticated user.
  * RLS policy ensures user_id must match auth.uid().
- * 
+ *
  * If a search with the same filter signature exists, it's updated.
  * Otherwise, a new search is created.
  */
 export async function createOrUpdateDatabaseSavedSearch(
   userId: string,
-  input: SavedSearchCreateInput,
+  input: SavedSearchCreateInput
 ) {
   if (!hasSupabaseEnv()) {
     return null;
@@ -110,7 +107,8 @@ export async function createOrUpdateDatabaseSavedSearch(
   const notificationsEnabled = input.notificationsEnabled ?? true;
   const existingSearches = await getStoredSavedSearchesByUser(userId);
   const existingSearch = existingSearches.find(
-    (search) => getSavedSearchSignature(search.filters) === getSavedSearchSignature(normalizedFilters),
+    (search) =>
+      getSavedSearchSignature(search.filters) === getSavedSearchSignature(normalizedFilters)
   );
   const supabase = await createSupabaseServerClient();
 
@@ -126,7 +124,7 @@ export async function createOrUpdateDatabaseSavedSearch(
         updated_at: timestamp,
       })
       .eq("id", existingSearch.id)
-      .eq("user_id", userId);  // Redundant but explicit — RLS already filters
+      .eq("user_id", userId); // Redundant but explicit — RLS already filters
 
     if (error) {
       return null;
@@ -165,7 +163,7 @@ export async function createOrUpdateDatabaseSavedSearch(
 export async function updateDatabaseSavedSearch(
   userId: string,
   searchId: string,
-  updates: { notificationsEnabled?: boolean; title?: string },
+  updates: { notificationsEnabled?: boolean; title?: string }
 ) {
   if (!hasSupabaseEnv()) {
     return null;
@@ -189,7 +187,7 @@ export async function updateDatabaseSavedSearch(
     .from("saved_searches")
     .update(payload)
     .eq("id", searchId)
-    .eq("user_id", userId);  // Redundant but explicit — RLS already filters
+    .eq("user_id", userId); // Redundant but explicit — RLS already filters
 
   if (error) {
     return null;
@@ -208,13 +206,13 @@ export async function deleteDatabaseSavedSearch(userId: string, searchId: string
   }
 
   const supabase = await createSupabaseServerClient();
-  
+
   // RLS ensures we can only delete our own searches
   const { error } = await supabase
     .from("saved_searches")
     .delete()
     .eq("id", searchId)
-    .eq("user_id", userId);  // Redundant but explicit — RLS already filters
+    .eq("user_id", userId); // Redundant but explicit — RLS already filters
 
   return !error;
 }

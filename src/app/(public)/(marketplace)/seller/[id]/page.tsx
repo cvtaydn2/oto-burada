@@ -1,18 +1,30 @@
-import { Calendar, CheckCircle2, MapPin, MessageSquare, Star, Car, Clock, User, Share2 } from "lucide-react";
+import {
+  Calendar,
+  Car,
+  CheckCircle2,
+  Clock,
+  MapPin,
+  MessageSquare,
+  Share2,
+  Star,
+  User,
+} from "lucide-react";
 import Image from "next/image";
 import { notFound } from "next/navigation";
-import { Button } from "@/components/ui/button";
 
+import { SellerRatingInfo } from "@/components/profile/seller-rating-info";
 import { ListingCard } from "@/components/shared/listing-card";
 import { TrustBadge } from "@/components/shared/trust-badge";
-import { SellerRatingInfo } from "@/components/profile/seller-rating-info";
-import { getMarketplaceSeller, getPublicMarketplaceListings } from "@/services/listings/marketplace-listings";
+import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
+import { getSellerTrustUI } from "@/lib/utils/trust-ui";
+import {
+  getMarketplaceSeller,
+  getPublicMarketplaceListings,
+} from "@/services/listings/marketplace-listings";
 import { getSellerTrustSummary } from "@/services/profile/profile-trust";
 import { getSellerRatingSummary, getSellerReviews } from "@/services/profile/seller-reviews";
-import { getSellerTrustUI } from "@/lib/utils/trust-ui";
-import { cn } from "@/lib/utils";
 import { type Listing } from "@/types";
-
 
 interface SellerProfilePageProps {
   params: Promise<{
@@ -23,28 +35,27 @@ interface SellerProfilePageProps {
 export default async function SellerProfilePage({ params }: SellerProfilePageProps) {
   const resolvedParams = await params;
   const sellerId = resolvedParams.id;
-  
+
   const seller = await getMarketplaceSeller(sellerId);
   if (!seller) {
     notFound();
   }
 
-  const listingsResult = await getPublicMarketplaceListings({ 
-    sellerId, 
+  const listingsResult = await getPublicMarketplaceListings({
+    sellerId,
     limit: 24,
     page: 1,
-    sort: "newest"
+    sort: "newest",
   });
-  
+
   const sellerListings = listingsResult.listings;
   const totalListingsCount = listingsResult.total;
   const featuredListingCount = sellerListings.filter((listing: Listing) => listing.featured).length;
   const trustSummary = getSellerTrustSummary(seller, totalListingsCount);
   const trustUI = getSellerTrustUI(seller);
   const memberSinceDate = seller.createdAt ? new Date(seller.createdAt) : null;
-  const memberSinceYear = (memberSinceDate && !isNaN(memberSinceDate.getTime()))
-    ? memberSinceDate.getFullYear()
-    : null;
+  const memberSinceYear =
+    memberSinceDate && !isNaN(memberSinceDate.getTime()) ? memberSinceDate.getFullYear() : null;
   const [ratingSummary, reviews] = await Promise.all([
     getSellerRatingSummary(sellerId),
     getSellerReviews(sellerId),
@@ -53,7 +64,13 @@ export default async function SellerProfilePage({ params }: SellerProfilePagePro
   return (
     <div className="mx-auto max-w-[1280px] space-y-4 sm:space-y-6 md:space-y-8 px-3 sm:px-4 md:px-6 lg:px-8 py-4 sm:py-6 md:py-8">
       {/* Seller Header */}
-      <section className={cn("rounded-xl border p-6 lg:p-8 shadow-sm transition-colors", trustUI.styles.bg, trustUI.styles.border)}>
+      <section
+        className={cn(
+          "rounded-xl border p-6 lg:p-8 shadow-sm transition-colors",
+          trustUI.styles.bg,
+          trustUI.styles.border
+        )}
+      >
         <div className="flex flex-col gap-8 md:flex-row md:items-start md:justify-between">
           <div className="flex flex-col gap-6 sm:flex-row sm:items-center">
             {/* Avatar */}
@@ -77,11 +94,18 @@ export default async function SellerProfilePage({ params }: SellerProfilePagePro
                 <h1 className={cn("text-xl font-bold tracking-tight", trustUI.styles.text)}>
                   {seller.fullName || "İsimsiz Satıcı"}
                 </h1>
-                <span className={cn("inline-flex items-center rounded-full px-2 py-0.5 text-[9px] font-bold uppercase tracking-widest border", trustUI.styles.bg, trustUI.styles.text, trustUI.styles.border)}>
+                <span
+                  className={cn(
+                    "inline-flex items-center rounded-full px-2 py-0.5 text-[9px] font-bold uppercase tracking-widest border",
+                    trustUI.styles.bg,
+                    trustUI.styles.text,
+                    trustUI.styles.border
+                  )}
+                >
                   {trustUI.label}
                 </span>
               </div>
-              
+
               <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs font-medium text-muted-foreground/70">
                 <div className="flex items-center gap-1.5">
                   <MapPin size={12} />
@@ -104,8 +128,16 @@ export default async function SellerProfilePage({ params }: SellerProfilePagePro
           {/* Actions */}
           <div className="flex w-full gap-2 sm:w-auto">
             {seller.phone && trustUI.isContactable && (
-              <Button size="lg" className="flex-1 rounded-xl bg-[#25D366] hover:bg-[#1fb355] text-white font-bold text-xs tracking-widest uppercase md:px-8 shadow-sm" asChild>
-                <a href={`https://wa.me/${seller.phone.replace(/\D/g, "")}`} target="_blank" rel="noopener noreferrer">
+              <Button
+                size="lg"
+                className="flex-1 rounded-xl bg-[#25D366] hover:bg-[#1fb355] text-white font-bold text-xs tracking-widest uppercase md:px-8 shadow-sm"
+                asChild
+              >
+                <a
+                  href={`https://wa.me/${seller.phone.replace(/\D/g, "")}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
                   <MessageSquare size={16} className="mr-2 fill-current" />
                   WhatsApp
                 </a>
@@ -119,28 +151,35 @@ export default async function SellerProfilePage({ params }: SellerProfilePagePro
 
         {/* Stats Grid */}
         <div className="mt-8 grid grid-cols-2 gap-3 sm:grid-cols-3">
-           {[
-             { label: "Aktif İlan", value: totalListingsCount, icon: Car },
-             { label: "Öne Çıkan", value: featuredListingCount, icon: CheckCircle2 },
-             { label: "Üyelik Yılı", value: memberSinceYear ?? "—", icon: Clock }
-           ].map((stat) => (
-             <div key={stat.label} className="rounded-xl border border-border bg-background/50 p-4 transition-colors hover:bg-background/80">
-                <div className="flex items-center gap-3">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-background border border-border text-muted-foreground/60">
-                    <stat.icon size={18} />
-                  </div>
-                  <div>
-                    <div className="text-lg font-bold text-foreground leading-none">{stat.value}</div>
-                    <div className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/40 mt-1">{stat.label}</div>
+          {[
+            { label: "Aktif İlan", value: totalListingsCount, icon: Car },
+            { label: "Öne Çıkan", value: featuredListingCount, icon: CheckCircle2 },
+            { label: "Üyelik Yılı", value: memberSinceYear ?? "—", icon: Clock },
+          ].map((stat) => (
+            <div
+              key={stat.label}
+              className="rounded-xl border border-border bg-background/50 p-4 transition-colors hover:bg-background/80"
+            >
+              <div className="flex items-center gap-3">
+                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-background border border-border text-muted-foreground/60">
+                  <stat.icon size={18} />
+                </div>
+                <div>
+                  <div className="text-lg font-bold text-foreground leading-none">{stat.value}</div>
+                  <div className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/40 mt-1">
+                    {stat.label}
                   </div>
                 </div>
-             </div>
-           ))}
+              </div>
+            </div>
+          ))}
         </div>
 
         {/* Trust Factors */}
         <div className="mt-6 flex flex-wrap items-center gap-3 pt-6 border-t border-border">
-          <span className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground/30 mr-2">GÜVEN SİNYALLERİ</span>
+          <span className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground/30 mr-2">
+            GÜVEN SİNYALLERİ
+          </span>
           {trustSummary.signals.map((signal) => (
             <div
               key={signal}
@@ -156,11 +195,11 @@ export default async function SellerProfilePage({ params }: SellerProfilePagePro
             </div>
           ))}
           <div className="ml-auto">
-             <TrustBadge
-                badgeLabel={trustUI.label}
-                score={seller.trustScore ?? 0}
-                tone={trustUI.tone}
-              />
+            <TrustBadge
+              badgeLabel={trustUI.label}
+              score={seller.trustScore ?? 0}
+              tone={trustUI.tone}
+            />
           </div>
         </div>
       </section>
@@ -172,7 +211,7 @@ export default async function SellerProfilePage({ params }: SellerProfilePagePro
             Satıcının İlanları ({totalListingsCount})
           </h2>
         </div>
-        
+
         {sellerListings.length > 0 ? (
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {sellerListings.map((listing) => (
@@ -184,7 +223,9 @@ export default async function SellerProfilePage({ params }: SellerProfilePagePro
             <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-muted">
               <Car size={32} className="text-muted-foreground/70" />
             </div>
-            <h3 className="mb-2 text-lg font-semibold text-foreground">Bu satıcının aktif ilanı yok</h3>
+            <h3 className="mb-2 text-lg font-semibold text-foreground">
+              Bu satıcının aktif ilanı yok
+            </h3>
             <p className="text-muted-foreground">Satıcı henüz araç ilanı yayınlamamış.</p>
           </div>
         )}
@@ -194,13 +235,8 @@ export default async function SellerProfilePage({ params }: SellerProfilePagePro
       {reviews.length > 0 && (
         <section className="space-y-4">
           <div className="flex items-center gap-3">
-            <h2 className="text-xl font-bold text-foreground sm:text-2xl">
-              Değerlendirmeler
-            </h2>
-            <SellerRatingInfo
-              average={ratingSummary.average}
-              count={ratingSummary.count}
-            />
+            <h2 className="text-xl font-bold text-foreground sm:text-2xl">Değerlendirmeler</h2>
+            <SellerRatingInfo average={ratingSummary.average} count={ratingSummary.count} />
           </div>
           <div className="grid gap-4 sm:grid-cols-2">
             {reviews.map((review) => (

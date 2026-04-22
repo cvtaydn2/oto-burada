@@ -1,13 +1,13 @@
 import { headers } from "next/headers";
 import { z } from "zod";
 
-import { apiError, API_ERROR_CODES, apiSuccess } from "@/lib/utils/api-response";
-import { checkRateLimit } from "@/lib/utils/rate-limit-middleware";
+import { captureServerError, captureServerEvent } from "@/lib/monitoring/posthog-server";
+import { API_ERROR_CODES, apiError, apiSuccess } from "@/lib/utils/api-response";
+import { withAdminRoute } from "@/lib/utils/api-security";
 import { rateLimitProfiles } from "@/lib/utils/rate-limit";
+import { checkRateLimit } from "@/lib/utils/rate-limit-middleware";
 import { sanitizeText } from "@/lib/utils/sanitize";
 import { moderateListingsWithSideEffects } from "@/services/admin/listing-moderation";
-import { captureServerError, captureServerEvent } from "@/lib/monitoring/posthog-server";
-import { withAdminRoute } from "@/lib/utils/api-security";
 
 const bulkModerationSchema = z.object({
   action: z.enum(["approve", "reject"]),
@@ -28,15 +28,26 @@ export async function POST(request: Request) {
   const adminUser = security.user!;
 
   const clientIp = await getClientIp();
-  const ipRateLimit = await checkRateLimit(`admin:bulk-moderate:${clientIp}`, rateLimitProfiles.adminModerate);
+  const ipRateLimit = await checkRateLimit(
+    `admin:bulk-moderate:${clientIp}`,
+    rateLimitProfiles.adminModerate
+  );
 
   if (!ipRateLimit.allowed) {
-    captureServerEvent("admin_bulk_moderation_failed", {
-      reason: "rate_limited",
-      clientIp,
-      responseStatus: 429,
-    }, "server");
-    return apiError(API_ERROR_CODES.RATE_LIMITED, "Çok fazla moderasyon isteği. Lütfen bekle.", 429);
+    captureServerEvent(
+      "admin_bulk_moderation_failed",
+      {
+        reason: "rate_limited",
+        clientIp,
+        responseStatus: 429,
+      },
+      "server"
+    );
+    return apiError(
+      API_ERROR_CODES.RATE_LIMITED,
+      "Çok fazla moderasyon isteği. Lütfen bekle.",
+      429
+    );
   }
 
   let body: unknown;
@@ -44,34 +55,50 @@ export async function POST(request: Request) {
   try {
     body = await request.json();
   } catch {
-    captureServerEvent("admin_bulk_moderation_failed", {
-      reason: "invalid_json",
-      adminUserId: adminUser.id,
-      responseStatus: 400,
-    }, adminUser.id);
+    captureServerEvent(
+      "admin_bulk_moderation_failed",
+      {
+        reason: "invalid_json",
+        adminUserId: adminUser.id,
+        responseStatus: 400,
+      },
+      adminUser.id
+    );
     return apiError(API_ERROR_CODES.BAD_REQUEST, "Moderasyon isteği okunamadı.", 400);
   }
 
   const parsed = bulkModerationSchema.safeParse(body);
 
   if (!parsed.success) {
-    captureServerEvent("admin_bulk_moderation_failed", {
-      reason: "invalid_payload",
-      adminUserId: adminUser.id,
-      responseStatus: 400,
-    }, adminUser.id);
+    captureServerEvent(
+      "admin_bulk_moderation_failed",
+      {
+        reason: "invalid_payload",
+        adminUserId: adminUser.id,
+        responseStatus: 400,
+      },
+      adminUser.id
+    );
     return apiError(API_ERROR_CODES.BAD_REQUEST, "Geçersiz toplu moderasyon isteği.", 400);
   }
 
   const note = parsed.data.note ? sanitizeText(parsed.data.note) : "";
 
   if (note.length > 0 && note.length < 3) {
-    captureServerEvent("admin_bulk_moderation_failed", {
-      reason: "invalid_note",
-      adminUserId: adminUser.id,
-      responseStatus: 400,
-    }, adminUser.id);
-    return apiError(API_ERROR_CODES.BAD_REQUEST, "Moderasyon notu girersen en az 3 karakter olmalı.", 400);
+    captureServerEvent(
+      "admin_bulk_moderation_failed",
+      {
+        reason: "invalid_note",
+        adminUserId: adminUser.id,
+        responseStatus: 400,
+      },
+      adminUser.id
+    );
+    return apiError(
+      API_ERROR_CODES.BAD_REQUEST,
+      "Moderasyon notu girersen en az 3 karakter olmalı.",
+      400
+    );
   }
 
   let result;
@@ -83,31 +110,53 @@ export async function POST(request: Request) {
       note,
     });
   } catch (error) {
-    captureServerError("Admin bulk moderation failed", "admin", error, {
-      adminUserId: adminUser.id,
-      action: parsed.data.action,
-      listingCount: parsed.data.listingIds.length,
-    }, adminUser.id);
-    return apiError(API_ERROR_CODES.INTERNAL_ERROR, "Toplu moderasyon sırasında bir hata oluştu.", 500);
+    captureServerError(
+      "Admin bulk moderation failed",
+      "admin",
+      error,
+      {
+        adminUserId: adminUser.id,
+        action: parsed.data.action,
+        listingCount: parsed.data.listingIds.length,
+      },
+      adminUser.id
+    );
+    return apiError(
+      API_ERROR_CODES.INTERNAL_ERROR,
+      "Toplu moderasyon sırasında bir hata oluştu.",
+      500
+    );
   }
 
   if (result.moderatedListings.length === 0) {
-    captureServerEvent("admin_bulk_moderation_failed", {
-      reason: "no_matching_pending_listings",
-      adminUserId: adminUser.id,
-      action: parsed.data.action,
-      listingCount: parsed.data.listingIds.length,
-      responseStatus: 404,
-    }, adminUser.id);
-    return apiError(API_ERROR_CODES.NOT_FOUND, "Toplu moderasyon için uygun bekleyen ilan bulunamadı.", 404);
+    captureServerEvent(
+      "admin_bulk_moderation_failed",
+      {
+        reason: "no_matching_pending_listings",
+        adminUserId: adminUser.id,
+        action: parsed.data.action,
+        listingCount: parsed.data.listingIds.length,
+        responseStatus: 404,
+      },
+      adminUser.id
+    );
+    return apiError(
+      API_ERROR_CODES.NOT_FOUND,
+      "Toplu moderasyon için uygun bekleyen ilan bulunamadı.",
+      404
+    );
   }
 
-  captureServerEvent("admin_bulk_moderation_completed", {
-    adminUserId: adminUser.id,
-    action: parsed.data.action,
-    moderatedCount: result.moderatedListings.length,
-    skippedCount: result.skippedListingIds.length,
-  }, adminUser.id);
+  captureServerEvent(
+    "admin_bulk_moderation_completed",
+    {
+      adminUserId: adminUser.id,
+      action: parsed.data.action,
+      moderatedCount: result.moderatedListings.length,
+      skippedCount: result.skippedListingIds.length,
+    },
+    adminUser.id
+  );
 
   return apiSuccess(
     {
@@ -117,6 +166,6 @@ export async function POST(request: Request) {
     },
     parsed.data.action === "approve"
       ? `${result.moderatedListings.length} ilan onaylandı.`
-      : `${result.moderatedListings.length} ilan reddedildi.`,
+      : `${result.moderatedListings.length} ilan reddedildi.`
   );
 }

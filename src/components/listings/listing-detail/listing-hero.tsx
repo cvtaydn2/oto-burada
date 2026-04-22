@@ -1,12 +1,12 @@
-import { TrendingUp, MapPin, Calendar, Hash } from "lucide-react";
-import { ViewCounter } from "@/components/listings/view-counter";
+import { Calendar, Hash, MapPin, TrendingUp } from "lucide-react";
 
-import type { Listing } from "@/types";
+import { ViewCounter } from "@/components/listings/view-counter";
 import type { ListingCardInsight } from "@/services/listings/listing-card-insights";
+import type { Listing } from "@/types";
 
 interface ListingHeroProps {
   listing: Listing;
-  insight: ListingCardInsight; 
+  insight: ListingCardInsight;
 }
 
 export function ListingHero({ listing, insight }: ListingHeroProps) {
@@ -32,13 +32,17 @@ export function ListingHero({ listing, insight }: ListingHeroProps) {
             <div className="p-1.5 sm:p-2 bg-muted rounded-lg sm:rounded-xl">
               <MapPin size={12} className="sm:size-14 text-muted-foreground" />
             </div>
-            <span className="leading-none">{listing.city}, {listing.district}</span>
+            <span className="leading-none">
+              {listing.city}, {listing.district}
+            </span>
           </div>
           <div className="flex items-center gap-2">
             <div className="p-1.5 sm:p-2 bg-muted rounded-lg sm:rounded-xl">
               <Calendar size={12} className="sm:size-14 text-muted-foreground" />
             </div>
-            <span className="leading-none">{new Date(listing.createdAt).toLocaleDateString("tr-TR")}</span>
+            <span className="leading-none">
+              {new Date(listing.createdAt).toLocaleDateString("tr-TR")}
+            </span>
           </div>
           <div className="hidden sm:flex items-center gap-2">
             <div className="p-2 bg-muted rounded-xl">
@@ -59,9 +63,13 @@ export function ListingHero({ listing, insight }: ListingHeroProps) {
         </div>
         <div className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-foreground tracking-tighter">
           {new Intl.NumberFormat("tr-TR").format(listing.price)}
-          <span className="text-lg sm:text-xl md:text-2xl ml-1 text-muted-foreground/40 font-medium tracking-normal">TL</span>
+          <span className="text-lg sm:text-xl md:text-2xl ml-1 text-muted-foreground/40 font-medium tracking-normal">
+            TL
+          </span>
         </div>
-        <p className="text-[9px] sm:text-[10px] text-muted-foreground/60 font-bold uppercase tracking-widest">RESMİ SATIŞ FİYATI</p>
+        <p className="text-[9px] sm:text-[10px] text-muted-foreground/60 font-bold uppercase tracking-widest">
+          RESMİ SATIŞ FİYATI
+        </p>
       </div>
     </div>
   );

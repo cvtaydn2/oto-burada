@@ -2,7 +2,7 @@ import { type Listing } from "@/types";
 
 export function getListingBadgeStates(listing: Listing) {
   const now = new Date().toISOString();
-  
+
   const isFeatured = listing.featured && (!listing.featuredUntil || listing.featuredUntil > now);
   const isUrgent = !!listing.urgentUntil && listing.urgentUntil > now;
   const isHighlighted = !!listing.highlightedUntil && listing.highlightedUntil > now;

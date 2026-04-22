@@ -1,32 +1,32 @@
 /**
  * Fulfillment Worker Service
- * 
+ *
  * Processes background jobs for payment fulfillments:
  * - Credit additions
  * - Doping applications
  * - Notification sending
- * 
+ *
  * Features:
  * - Idempotent job processing
  * - Exponential backoff retry
  * - Dead letter queue for failed jobs
  * - Concurrent processing with SKIP LOCKED
- * 
+ *
  * Usage:
  * - Called by cron endpoint: /api/cron/process-fulfillments
  * - Runs once daily at 04:00 UTC (Hobby plan limit)
  */
 
+import { captureServerError, captureServerEvent } from "@/lib/monitoring/posthog-server";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { hasSupabaseAdminEnv } from "@/lib/supabase/env";
 import { logger } from "@/lib/utils/logger";
-import { captureServerError, captureServerEvent } from "@/lib/monitoring/posthog-server";
 import { createDatabaseNotification } from "@/services/notifications/notification-records";
 
 export interface FulfillmentJob {
   id: string;
   payment_id: string;
-  job_type: 'credit_add' | 'doping_apply' | 'notification_send';
+  job_type: "credit_add" | "doping_apply" | "notification_send";
   attempts: number;
   max_attempts: number;
   metadata: Record<string, unknown>;
@@ -48,7 +48,7 @@ export interface FulfillmentResult {
 
 /**
  * Process a batch of ready fulfillment jobs.
- * 
+ *
  * @param limit Maximum number of jobs to process in this batch
  * @returns Processing result summary
  */
@@ -112,14 +112,13 @@ export async function processFulfillmentJobs(limit = 10): Promise<FulfillmentRes
         } else {
           result.succeeded++;
           logger.payments.info("Fulfillment job succeeded", { jobId: job.id, type: job.job_type });
-          
+
           captureServerEvent("fulfillment_job_success", {
             jobId: job.id,
             jobType: job.job_type,
             attempts: job.attempts + 1,
           });
         }
-
       } catch (error) {
         // Mark as failed (with retry or dead letter)
         const errorMessage = error instanceof Error ? error.message : String(error);
@@ -139,15 +138,15 @@ export async function processFulfillmentJobs(limit = 10): Promise<FulfillmentRes
           logger.payments.error("Failed to mark job as failed", failError, { jobId: job.id });
         } else {
           const status = (failResult as { status?: string })?.status;
-          
-          if (status === 'dead_letter') {
+
+          if (status === "dead_letter") {
             result.dead_letter++;
             logger.payments.error("Fulfillment job moved to dead letter queue", error, {
               jobId: job.id,
               type: job.job_type,
               attempts: job.attempts + 1,
             });
-            
+
             captureServerError("Fulfillment job dead letter", "payments", error, {
               jobId: job.id,
               jobType: job.job_type,
@@ -161,7 +160,7 @@ export async function processFulfillmentJobs(limit = 10): Promise<FulfillmentRes
               attempts: job.attempts + 1,
               nextRetry: (failResult as { next_retry?: string })?.next_retry,
             });
-            
+
             captureServerEvent("fulfillment_job_retry", {
               jobId: job.id,
               jobType: job.job_type,
@@ -185,7 +184,6 @@ export async function processFulfillmentJobs(limit = 10): Promise<FulfillmentRes
       error_count: result.errors.length,
     });
     return result;
-
   } catch (error) {
     logger.payments.error("Fulfillment worker error", error);
     captureServerError("Fulfillment worker error", "payments", error);
@@ -201,7 +199,7 @@ export async function executeFulfillmentJob(job: FulfillmentJob): Promise<void> 
   const admin = createSupabaseAdminClient();
 
   switch (job.job_type) {
-    case 'credit_add': {
+    case "credit_add": {
       // 1. Idempotency Check: Check if transaction already exists for this payment
       const { data: existingTx } = await admin
         .from("credit_transactions")
@@ -211,16 +209,16 @@ export async function executeFulfillmentJob(job: FulfillmentJob): Promise<void> 
         .maybeSingle();
 
       if (existingTx) {
-        logger.payments.info("Credits already added for this payment (idempotent skip)", { 
-          paymentId: job.payment_id, 
-          userId: job.payment_data.user_id 
+        logger.payments.info("Credits already added for this payment (idempotent skip)", {
+          paymentId: job.payment_id,
+          userId: job.payment_data.user_id,
         });
         return;
       }
 
       // Add credits to user balance
       const credits = job.payment_data.metadata?.credits as number | undefined;
-      
+
       if (!credits || credits <= 0) {
         throw new Error(`Invalid credits amount: ${credits}`);
       }
@@ -241,7 +239,7 @@ export async function executeFulfillmentJob(job: FulfillmentJob): Promise<void> 
         transaction_type: "purchase",
         description: "Plan purchase fulfillment",
         reference_id: job.payment_id,
-        metadata: { job_id: job.id }
+        metadata: { job_id: job.id },
       });
 
       logger.payments.info("Credits added successfully", {
@@ -253,7 +251,7 @@ export async function executeFulfillmentJob(job: FulfillmentJob): Promise<void> 
       break;
     }
 
-    case 'doping_apply': {
+    case "doping_apply": {
       // 1. Idempotency Check: Check if doping already applied for this payment
       const listingId = job.payment_data.listing_id;
       const dopingTypes = job.payment_data.metadata?.dopingTypes as string[] | undefined;
@@ -270,9 +268,9 @@ export async function executeFulfillmentJob(job: FulfillmentJob): Promise<void> 
         .limit(1);
 
       if (existingDoping && existingDoping.length > 0) {
-        logger.payments.info("Doping already applied for this payment (idempotent skip)", { 
-          paymentId: job.payment_id, 
-          listingId 
+        logger.payments.info("Doping already applied for this payment (idempotent skip)", {
+          paymentId: job.payment_id,
+          listingId,
         });
         return;
       }
@@ -294,20 +292,22 @@ export async function executeFulfillmentJob(job: FulfillmentJob): Promise<void> 
         userId: job.payment_data.user_id,
         listingId,
         paymentId: job.payment_id,
-        applied: (data as { applied_count?: number })?.applied_count
+        applied: (data as { applied_count?: number })?.applied_count,
       });
 
       break;
     }
 
-    case 'notification_send': {
+    case "notification_send": {
       // Send notification to user
-      const notificationData = job.metadata.notification as {
-        title: string;
-        message: string;
-        href?: string;
-        type: 'system' | 'favorite' | 'moderation' | 'report';
-      } | undefined;
+      const notificationData = job.metadata.notification as
+        | {
+            title: string;
+            message: string;
+            href?: string;
+            type: "system" | "favorite" | "moderation" | "report";
+          }
+        | undefined;
 
       if (!notificationData) throw new Error("Missing notification data");
 
@@ -315,7 +315,7 @@ export async function executeFulfillmentJob(job: FulfillmentJob): Promise<void> 
       // But we can check if notification exists with matching title/msg for this user in last hour
       const notification = await createDatabaseNotification({
         userId: job.payment_data.user_id,
-        type: notificationData.type ?? 'system',
+        type: notificationData.type ?? "system",
         title: notificationData.title,
         message: notificationData.message,
         href: notificationData.href ?? null,
@@ -336,9 +336,9 @@ export async function executeFulfillmentJob(job: FulfillmentJob): Promise<void> 
  */
 export async function runFulfillmentForPayment(paymentId: string): Promise<void> {
   if (!hasSupabaseAdminEnv()) return;
-  
+
   const admin = createSupabaseAdminClient();
-  
+
   // 1. Fetch jobs for this payment that aren't successful yet
   const { data: jobs, error } = await admin
     .from("fulfillment_jobs")
@@ -359,7 +359,7 @@ export async function runFulfillmentForPayment(paymentId: string): Promise<void>
       // mark_job_failed RPC handles retry logic/exponential backoff
       await admin.rpc("mark_job_failed", {
         p_job_id: job.id,
-        p_error_message: err instanceof Error ? err.message : String(err)
+        p_error_message: err instanceof Error ? err.message : String(err),
       });
     }
   }
@@ -409,4 +409,3 @@ export async function retryDeadLetterJob(jobId: string): Promise<boolean> {
 
   return data === true;
 }
-

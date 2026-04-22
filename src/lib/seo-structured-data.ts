@@ -1,5 +1,5 @@
-import type { Listing } from "@/types";
 import { buildAbsoluteUrl } from "@/lib/seo";
+import type { Listing } from "@/types";
 
 export function buildVehicleJsonLd(listing: Listing) {
   const coverImage = listing.images.find((img) => img.isCover) ?? listing.images[0];
@@ -35,9 +35,7 @@ export function buildVehicleJsonLd(listing: Listing) {
   };
 }
 
-export function buildBreadcrumbJsonLd(
-  items: Array<{ name: string; url: string }>
-) {
+export function buildBreadcrumbJsonLd(items: Array<{ name: string; url: string }>) {
   return {
     "@context": "https://schema.org",
     "@type": "BreadcrumbList",

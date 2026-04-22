@@ -5,7 +5,7 @@
  * - Unauthenticated redirect to /login
  * - Logout clears session
  */
-import { test, expect } from "@playwright/test";
+import { expect, test } from "@playwright/test";
 
 const TEST_EMAIL = process.env.E2E_TEST_EMAIL ?? "";
 const TEST_PASSWORD = process.env.E2E_TEST_PASSWORD ?? "";
@@ -37,7 +37,10 @@ test.describe("Kimlik Doğrulama", () => {
   test("giriş sayfasında kayıt linki çalışır", async ({ page }) => {
     await page.goto("/login");
     await page.waitForLoadState("networkidle");
-    await page.getByRole("link", { name: /kayıt ol/i }).first().click();
+    await page
+      .getByRole("link", { name: /kayıt ol/i })
+      .first()
+      .click();
     await expect(page).toHaveURL("/register");
     await expect(page.locator("#email")).toBeVisible();
     await expect(page.locator("#password")).toBeVisible();
@@ -55,7 +58,10 @@ test.describe("Kimlik Doğrulama", () => {
   test("kayıt sayfasında giriş yap linki çalışır", async ({ page }) => {
     await page.goto("/register");
     await page.waitForLoadState("networkidle");
-    await page.getByRole("link", { name: /giriş yap/i }).first().click();
+    await page
+      .getByRole("link", { name: /giriş yap/i })
+      .first()
+      .click();
     await expect(page).toHaveURL("/login");
   });
 

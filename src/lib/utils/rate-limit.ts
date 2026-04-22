@@ -1,11 +1,11 @@
 /**
  * Smart, multi-tiered rate limiter for API routes.
- * 
+ *
  * Supports three layers of enforcement:
  * 1. Redis Tier: Distributed, fast, and primary for production.
  * 2. Supabase RPC Tier: Persistent fallback if Redis is unavailable.
  * 3. In-memory Tier: Local fallback for development or total service outage.
- * 
+ *
  * SECURITY: In production, if all tiers fail for critical endpoints,
  * the limiter can be configured to fail-closed (block requests).
  */
@@ -15,7 +15,7 @@ export interface RateLimitConfig {
   limit: number;
   /** Window size in milliseconds. */
   windowMs: number;
-  /** 
+  /**
    * If true, block requests when rate limiting infrastructure is unavailable (fail-closed).
    * Recommended for critical endpoints in production (auth, payments, admin).
    * Default: false (fail-open for backward compatibility)
@@ -35,9 +35,9 @@ interface RateLimitEntry {
   resetAt: number;
 }
 
+import { redis } from "@/lib/redis";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { hasSupabaseAdminEnv } from "@/lib/supabase/env";
-import { redis } from "@/lib/redis";
 import { logger } from "@/lib/utils/logger";
 
 const inMemoryStore = new Map<string, RateLimitEntry>();
@@ -57,7 +57,7 @@ function cleanupInMemory() {
       inMemoryStore.delete(key);
       deletedCount++;
     }
-    // Rate limit attack'lerinde bellekte milyonlarca key biriktiğinde 
+    // Rate limit attack'lerinde bellekte milyonlarca key biriktiğinde
     // garbage collection veya the loop bloklanmasın diye:
     if (deletedCount >= MAX_DELETIONS_PER_CLEANUP) break;
   }
@@ -65,15 +65,18 @@ function cleanupInMemory() {
 
 /**
  * Check whether a given key (IP, userId, etc.) exceeds the configured rate limit.
- * Priority: 
+ * Priority:
  * 1. Redis (Persistent, Fast, Distributed)
  * 2. Supabase RPC (Persistent, Reliable)
  * 3. In-memory (Ephemeral, Fallback) - only in development or if failClosed=false
- * 
+ *
  * SECURITY: If failClosed=true and all infrastructure fails in production,
  * this function throws an error instead of allowing the request.
  */
-export async function checkRateLimit(key: string, config: RateLimitConfig): Promise<RateLimitResult> {
+export async function checkRateLimit(
+  key: string,
+  config: RateLimitConfig
+): Promise<RateLimitResult> {
   const fullKey = `ratelimit:${key}`;
   const isProduction = process.env.NODE_ENV === "production";
   let allTiersFailed = false;
@@ -84,10 +87,10 @@ export async function checkRateLimit(key: string, config: RateLimitConfig): Prom
       const now = Date.now();
       const count = await redis.incr(fullKey);
       await redis.expire(fullKey, Math.ceil(config.windowMs / 1000));
-      
+
       const ttl = await redis.ttl(fullKey);
       const resetAt = now + (ttl > 0 ? ttl * 1000 : config.windowMs);
-      
+
       return {
         allowed: count <= config.limit,
         limit: config.limit,
@@ -112,7 +115,7 @@ export async function checkRateLimit(key: string, config: RateLimitConfig): Prom
       if (!error && data) {
         return data as RateLimitResult;
       }
-      
+
       logger.api.warn("Rate limit DB error, falling back to in-memory", { key }, error);
     } catch (e) {
       logger.api.warn("Rate limit DB exception, falling back to in-memory", { key }, e);
@@ -124,20 +127,20 @@ export async function checkRateLimit(key: string, config: RateLimitConfig): Prom
 
   // SECURITY: Fail-closed in production for critical endpoints
   if (isProduction && config.failClosed) {
-    logger.api.error("Rate limiting infrastructure unavailable - failing closed", { 
-      key, 
+    logger.api.error("Rate limiting infrastructure unavailable - failing closed", {
+      key,
       limit: config.limit,
-      failClosed: true 
+      failClosed: true,
     });
     throw new Error("Rate limiting service unavailable");
   }
 
   // 3. Fallback to in-memory (Development or fail-open mode)
   if (allTiersFailed && isProduction) {
-    logger.api.warn("Rate limiting infrastructure unavailable - using in-memory fallback", { 
+    logger.api.warn("Rate limiting infrastructure unavailable - using in-memory fallback", {
       key,
       limit: config.limit,
-      failClosed: false
+      failClosed: false,
     });
   }
 
@@ -172,7 +175,7 @@ export async function checkRateLimit(key: string, config: RateLimitConfig): Prom
 
 /**
  * Pre-configured rate limit profiles for different endpoint categories.
- * 
+ *
  * SECURITY NOTE: Critical endpoints (auth, payments, admin) use failClosed=true
  * to block requests if rate limiting infrastructure is unavailable in production.
  */

@@ -1,5 +1,6 @@
 import { type SupabaseClient } from "@supabase/supabase-js";
 import { cookies } from "next/headers";
+
 import { createSupabaseServerClient } from "./server";
 
 /**
@@ -19,7 +20,7 @@ export async function getReadSupabaseClient() {
 
   // Production'da SUPABASE_READ_REPLICA_URL tanımlıysa ona bağlanır
   if (process.env.SUPABASE_READ_REPLICA_URL) {
-    return await createSupabaseServerClient(); 
+    return await createSupabaseServerClient();
   }
 
   return await createSupabaseServerClient();
@@ -31,12 +32,12 @@ export async function getReadSupabaseClient() {
  */
 export async function markStickyMaster() {
   const cookieStore = await cookies();
-  cookieStore.set("sticky_master", "1", { 
-    maxAge: 5, 
-    path: '/', 
-    httpOnly: true, 
-    secure: true, 
-    sameSite: 'lax' 
+  cookieStore.set("sticky_master", "1", {
+    maxAge: 5,
+    path: "/",
+    httpOnly: true,
+    secure: true,
+    sameSite: "lax",
   });
 }
 

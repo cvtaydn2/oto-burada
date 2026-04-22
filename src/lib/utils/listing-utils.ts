@@ -1,5 +1,9 @@
+import {
+  fuelTypeLabels,
+  listingStatusLabels,
+  transmissionTypeLabels,
+} from "@/lib/constants/domain";
 import type { Listing, Profile } from "@/types";
-import { fuelTypeLabels, transmissionTypeLabels, listingStatusLabels } from "@/lib/constants/domain";
 
 export function formatPrice(value: number, currency = "TL"): string {
   return `${new Intl.NumberFormat("tr-TR").format(value)} ${currency}`;
@@ -13,11 +17,7 @@ export function formatListingMileage(mileage: number): string {
   return `${new Intl.NumberFormat("tr-TR").format(mileage)} km`;
 }
 
-export function buildWhatsAppOfferLink(
-  phone: string,
-  title: string,
-  offerPrice?: number
-): string {
+export function buildWhatsAppOfferLink(phone: string, title: string, offerPrice?: number): string {
   const phoneDigits = phone.replace(/\D/g, "");
   if (!phoneDigits) return "#";
 
@@ -37,7 +37,9 @@ export function getFuelTypeLabel(fuelType: string): string {
 }
 
 export function getTransmissionLabel(transmission: string): string {
-  return transmissionTypeLabels[transmission as keyof typeof transmissionTypeLabels] ?? transmission;
+  return (
+    transmissionTypeLabels[transmission as keyof typeof transmissionTypeLabels] ?? transmission
+  );
 }
 
 export function getSellerTypeLabel(userType: Profile["userType"]): string {
@@ -113,19 +115,19 @@ export function generateListingId(id: string): string {
 }
 
 /**
- * Masks a phone number for public display (KVKK protection). 
+ * Masks a phone number for public display (KVKK protection).
  * Format mask: +90 555 *** ** **
  */
 export function maskPhoneNumber(phone: string | null | undefined): string {
   if (!phone) return "Numara belirtilmedi";
   const str = String(phone);
   const clean = str.replace(/\D/g, "");
-  
+
   if (clean.length < 5) return "**** ****";
-  
+
   if (clean.startsWith("90")) {
     return `+90 ${clean.slice(2, 5)} *** ** **`;
   }
-  
+
   return `${str.slice(0, 4)} *** ** **`;
 }

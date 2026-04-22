@@ -1,9 +1,9 @@
 "use server";
 
-import { createSupabaseAdminClient } from "@/lib/supabase/admin";
-import { Profile } from "@/types/domain";
-import { logger } from "@/lib/utils/logger";
 import { captureServerError } from "@/lib/monitoring/posthog-server";
+import { createSupabaseAdminClient } from "@/lib/supabase/admin";
+import { logger } from "@/lib/utils/logger";
+import { Profile } from "@/types/domain";
 
 export async function getAllUsers(query?: string, page = 1, limit = 20) {
   const admin = createSupabaseAdminClient();
@@ -16,24 +16,30 @@ export async function getAllUsers(query?: string, page = 1, limit = 20) {
         lastSignInAt: u.last_sign_in_at ?? null,
         emailVerified: Boolean(u.email_confirmed_at ?? u.confirmed_at),
         phoneVerified: Boolean((u as { phone_confirmed_at?: string }).phone_confirmed_at),
-        identityVerified: Boolean((u.app_metadata as { identity_verified?: boolean })?.identity_verified),
+        identityVerified: Boolean(
+          (u.app_metadata as { identity_verified?: boolean })?.identity_verified
+        ),
       },
     ])
   );
 
-  let rpc = admin.from("profiles").select(
-    "id, full_name, phone, city, avatar_url, role, user_type, balance_credits, is_verified, is_banned, business_name, business_logo_url, business_slug, verified_business, created_at, updated_at",
-    { count: "exact" }
-  );
+  let rpc = admin
+    .from("profiles")
+    .select(
+      "id, full_name, phone, city, avatar_url, role, user_type, balance_credits, is_verified, is_banned, business_name, business_logo_url, business_slug, verified_business, created_at, updated_at",
+      { count: "exact" }
+    );
 
   if (query) {
     rpc = rpc.or(`full_name.ilike.%${query}%,phone.ilike.%${query}%,id.ilike.%${query}%`);
   }
 
   const from = (page - 1) * limit;
-  const { data: profiles, error, count } = await rpc
-    .order("created_at", { ascending: false })
-    .range(from, from + limit - 1);
+  const {
+    data: profiles,
+    error,
+    count,
+  } = await rpc.order("created_at", { ascending: false }).range(from, from + limit - 1);
 
   if (error) {
     logger.admin.error("getAllUsers query failed", error, { query });

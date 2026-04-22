@@ -1,5 +1,6 @@
-import { indexing_v3 } from "googleapis";
 import { JWT } from "google-auth-library";
+import { indexing_v3 } from "googleapis";
+
 import { logger } from "@/lib/utils/logger";
 
 /**
@@ -13,7 +14,9 @@ export async function notifyGoogleOfListingChange(
 ) {
   const credentialsJson = process.env.GOOGLE_APPLICATION_CREDENTIALS_JSON;
   if (!credentialsJson) {
-    logger.system.warn("GOOGLE_APPLICATION_CREDENTIALS_JSON missing — Google Indexing skipped", { url });
+    logger.system.warn("GOOGLE_APPLICATION_CREDENTIALS_JSON missing — Google Indexing skipped", {
+      url,
+    });
     return;
   }
 

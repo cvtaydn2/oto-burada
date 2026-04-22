@@ -1,6 +1,5 @@
 "use client";
 
-import { useMemo, useState } from "react";
 import {
   AlertCircle,
   Bell,
@@ -12,6 +11,7 @@ import {
   Trash2,
 } from "lucide-react";
 import Link from "next/link";
+import { useMemo, useState } from "react";
 
 import { cn, formatDate } from "@/lib/utils";
 
@@ -37,7 +37,7 @@ export function NotificationsPanel({ initialNotifications }: NotificationsPanelP
 
   const filteredItems = useMemo(
     () => (showUnreadOnly ? items.filter((item) => !item.read) : items),
-    [items, showUnreadOnly],
+    [items, showUnreadOnly]
   );
   const unreadCount = items.filter((item) => !item.read).length;
 
@@ -77,7 +77,10 @@ export function NotificationsPanel({ initialNotifications }: NotificationsPanelP
       const response = await fetch("/api/notifications", {
         method: "PATCH",
       });
-      const payload = await response.json().catch(() => null) as { success?: boolean; error?: { message?: string } } | null;
+      const payload = (await response.json().catch(() => null)) as {
+        success?: boolean;
+        error?: { message?: string };
+      } | null;
 
       if (!response.ok || !payload?.success) {
         setErrorMessage(payload?.error?.message ?? "Bildirimler guncellenemedi.");
@@ -100,7 +103,10 @@ export function NotificationsPanel({ initialNotifications }: NotificationsPanelP
       const response = await fetch(`/api/notifications/${id}`, {
         method: "PATCH",
       });
-      const payload = await response.json().catch(() => null) as { success?: boolean; error?: { message?: string } } | null;
+      const payload = (await response.json().catch(() => null)) as {
+        success?: boolean;
+        error?: { message?: string };
+      } | null;
 
       if (!response.ok || !payload?.success) {
         setErrorMessage(payload?.error?.message ?? "Bildirim guncellenemedi.");
@@ -108,7 +114,7 @@ export function NotificationsPanel({ initialNotifications }: NotificationsPanelP
       }
 
       setItems((current) =>
-        current.map((item) => (item.id === id ? { ...item, read: true } : item)),
+        current.map((item) => (item.id === id ? { ...item, read: true } : item))
       );
     } catch {
       setErrorMessage("Baglanti sirasinda bir hata olustu. Lutfen tekrar dene.");
@@ -125,7 +131,10 @@ export function NotificationsPanel({ initialNotifications }: NotificationsPanelP
       const response = await fetch(`/api/notifications/${id}`, {
         method: "DELETE",
       });
-      const payload = await response.json().catch(() => null) as { success?: boolean; error?: { message?: string } } | null;
+      const payload = (await response.json().catch(() => null)) as {
+        success?: boolean;
+        error?: { message?: string };
+      } | null;
 
       if (!response.ok || !payload?.success) {
         setErrorMessage(payload?.error?.message ?? "Bildirim silinemedi.");
@@ -156,7 +165,7 @@ export function NotificationsPanel({ initialNotifications }: NotificationsPanelP
               "px-4 py-2 rounded-xl text-sm font-medium transition-all",
               showUnreadOnly
                 ? "bg-indigo-100 text-indigo-700"
-                : "bg-muted text-muted-foreground hover:bg-slate-200",
+                : "bg-muted text-muted-foreground hover:bg-slate-200"
             )}
           >
             {showUnreadOnly ? "Tumu" : "Okunmamis"}
@@ -166,7 +175,11 @@ export function NotificationsPanel({ initialNotifications }: NotificationsPanelP
             disabled={activeAction === "mark-all" || unreadCount === 0}
             className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium bg-indigo-500 text-white hover:bg-indigo-600 transition-all disabled:cursor-not-allowed disabled:opacity-60"
           >
-            {activeAction === "mark-all" ? <LoaderCircle size={16} className="animate-spin" /> : <Check size={16} />}
+            {activeAction === "mark-all" ? (
+              <LoaderCircle size={16} className="animate-spin" />
+            ) : (
+              <Check size={16} />
+            )}
             Tumunu Oku
           </button>
         </div>
@@ -191,11 +204,14 @@ export function NotificationsPanel({ initialNotifications }: NotificationsPanelP
                 className={cn(
                   "flex gap-4 p-5 transition-all hover:bg-muted/30 sm:p-6",
                   !isLast && "border-b border-border/50",
-                  !notif.read && "bg-indigo-50/50",
+                  !notif.read && "bg-indigo-50/50"
                 )}
               >
                 <div
-                  className={cn("flex size-12 shrink-0 items-center justify-center rounded-2xl", getIconColor(notif.type))}
+                  className={cn(
+                    "flex size-12 shrink-0 items-center justify-center rounded-2xl",
+                    getIconColor(notif.type)
+                  )}
                 >
                   {getIconForType(notif.type)}
                 </div>
@@ -205,7 +221,9 @@ export function NotificationsPanel({ initialNotifications }: NotificationsPanelP
                       <h4
                         className={cn(
                           "truncate pr-4 text-base",
-                          !notif.read ? "font-bold text-foreground" : "font-semibold text-muted-foreground",
+                          !notif.read
+                            ? "font-bold text-foreground"
+                            : "font-semibold text-muted-foreground"
                         )}
                       >
                         {notif.title}
@@ -236,7 +254,11 @@ export function NotificationsPanel({ initialNotifications }: NotificationsPanelP
                       className="mt-1 p-2 rounded-xl text-muted-foreground/70 hover:text-indigo-600 hover:bg-indigo-50 transition-all disabled:cursor-not-allowed disabled:opacity-60"
                       title="Okundu olarak işaretle"
                     >
-                      {isReading ? <LoaderCircle size={16} className="animate-spin" /> : <Check size={16} />}
+                      {isReading ? (
+                        <LoaderCircle size={16} className="animate-spin" />
+                      ) : (
+                        <Check size={16} />
+                      )}
                     </button>
                   ) : null}
                   <button
@@ -245,7 +267,11 @@ export function NotificationsPanel({ initialNotifications }: NotificationsPanelP
                     className="mt-1 p-2 rounded-xl text-muted-foreground/70 hover:text-red-500 hover:bg-red-50 transition-all disabled:cursor-not-allowed disabled:opacity-60"
                     title="Sil"
                   >
-                    {isDeleting ? <LoaderCircle size={16} className="animate-spin" /> : <Trash2 size={16} />}
+                    {isDeleting ? (
+                      <LoaderCircle size={16} className="animate-spin" />
+                    ) : (
+                      <Trash2 size={16} />
+                    )}
                   </button>
                 </div>
               </div>
@@ -257,7 +283,9 @@ export function NotificationsPanel({ initialNotifications }: NotificationsPanelP
               <Bell size={32} className="text-muted-foreground/70" />
             </div>
             <h3 className="text-lg font-bold text-foreground mb-2">Bildirim yok</h3>
-            <p className="text-muted-foreground">Favori, moderasyon ve rapor olaylari burada gorunecek.</p>
+            <p className="text-muted-foreground">
+              Favori, moderasyon ve rapor olaylari burada gorunecek.
+            </p>
           </div>
         )}
       </div>

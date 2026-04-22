@@ -1,20 +1,18 @@
-import { applyDopingToListing, DopingType } from "@/services/market/doping-service";
-import { apiError, apiSuccess, API_ERROR_CODES } from "@/lib/utils/api-response";
-import { logger } from "@/lib/utils/logger";
-import { captureServerError, captureServerEvent } from "@/lib/monitoring/posthog-server";
-import { enforceRateLimit, getUserRateLimitKey } from "@/lib/utils/rate-limit-middleware";
-import { getUserProfile } from "@/services/profile/profile-records";
 import { headers } from "next/headers";
+
+import { captureServerError, captureServerEvent } from "@/lib/monitoring/posthog-server";
+import { API_ERROR_CODES, apiError, apiSuccess } from "@/lib/utils/api-response";
 import { withUserAndCsrf } from "@/lib/utils/api-security";
+import { logger } from "@/lib/utils/logger";
+import { enforceRateLimit, getUserRateLimitKey } from "@/lib/utils/rate-limit-middleware";
+import { applyDopingToListing, DopingType } from "@/services/market/doping-service";
+import { getUserProfile } from "@/services/profile/profile-records";
 
 const VALID_DOPING_TYPES: DopingType[] = ["featured", "urgent", "highlighted"];
 // Doping: 10 per day per user
 const DOPING_RATE_LIMIT = { limit: 10, windowMs: 24 * 60 * 60 * 1000 };
 
-export async function POST(
-  req: Request,
-  { params }: { params: Promise<{ listingId: string }> },
-) {
+export async function POST(req: Request, { params }: { params: Promise<{ listingId: string }> }) {
   const security = await withUserAndCsrf(req, {
     rateLimitKey: "listings:doping",
   });
@@ -26,7 +24,7 @@ export async function POST(
   // Rate limit
   const rateLimit = await enforceRateLimit(
     getUserRateLimitKey(user.id, "api:listings:doping"),
-    DOPING_RATE_LIMIT,
+    DOPING_RATE_LIMIT
   );
   if (rateLimit) return rateLimit.response;
 
@@ -46,21 +44,32 @@ export async function POST(
   // Validate doping types
   const invalidTypes = dopingTypes.filter((t) => !VALID_DOPING_TYPES.includes(t as DopingType));
   if (invalidTypes.length > 0) {
-    return apiError(API_ERROR_CODES.VALIDATION_ERROR, `Geçersiz doping türleri: ${invalidTypes.join(", ")}`, 400);
+    return apiError(
+      API_ERROR_CODES.VALIDATION_ERROR,
+      `Geçersiz doping türleri: ${invalidTypes.join(", ")}`,
+      400
+    );
   }
 
   try {
     const profile = await getUserProfile(user.id);
     if (!profile || !profile.fullName || !user.email) {
-      return apiError(API_ERROR_CODES.BAD_REQUEST, "Ödeme için profil bilgileriniz (isim, e-posta) eksik.", 400);
+      return apiError(
+        API_ERROR_CODES.BAD_REQUEST,
+        "Ödeme için profil bilgileriniz (isim, e-posta) eksik.",
+        400
+      );
     }
 
     const nameParts = profile.fullName.trim().split(" ");
     const name = nameParts[0] || "User";
     const surname = nameParts.length > 1 ? nameParts.slice(1).join(" ") : "Kullanıcı";
-    
+
     const headersList = await headers();
-    const ip = headersList.get("x-forwarded-for")?.split(",")[0] || headersList.get("x-real-ip") || "127.0.0.1";
+    const ip =
+      headersList.get("x-forwarded-for")?.split(",")[0] ||
+      headersList.get("x-real-ip") ||
+      "127.0.0.1";
 
     const result = await applyDopingToListing(listingId, user.id, dopingTypes as DopingType[], {
       id: user.id,
@@ -74,16 +83,20 @@ export async function POST(
       country: "Turkey",
       zipCode: "34000",
       ip,
-      registrationDate: new Date(profile.createdAt).toISOString().slice(0, 19).replace('T', ' '),
-      lastLoginDate: new Date().toISOString().slice(0, 19).replace('T', ' '),
+      registrationDate: new Date(profile.createdAt).toISOString().slice(0, 19).replace("T", " "),
+      lastLoginDate: new Date().toISOString().slice(0, 19).replace("T", " "),
     });
 
     if (result.success) {
-      captureServerEvent("listing_doping_applied", {
-        userId: user.id,
-        listingId,
-        dopingTypes,
-      }, user.id);
+      captureServerEvent(
+        "listing_doping_applied",
+        {
+          userId: user.id,
+          listingId,
+          dopingTypes,
+        },
+        user.id
+      );
       return apiSuccess(result, result.message);
     } else {
       return apiError(API_ERROR_CODES.BAD_REQUEST, result.message, 400);

@@ -9,10 +9,7 @@ interface MessageBubbleProps {
 export function MessageBubble({ message, isMe }: MessageBubbleProps) {
   return (
     <div
-      className={cn(
-        "flex w-full mb-4",
-        isMe ? "justify-end" : "justify-start"
-      )}
+      className={cn("flex w-full mb-4", isMe ? "justify-end" : "justify-start")}
       aria-label={isMe ? "Gönderdiğiniz mesaj" : "Gelen mesaj"}
     >
       <div
@@ -24,12 +21,7 @@ export function MessageBubble({ message, isMe }: MessageBubbleProps) {
         )}
       >
         <p className="whitespace-pre-wrap break-words">{message.content}</p>
-        <div
-          className={cn(
-            "text-[10px] mt-1 opacity-70",
-            isMe ? "text-right" : "text-left"
-          )}
-        >
+        <div className={cn("text-[10px] mt-1 opacity-70", isMe ? "text-right" : "text-left")}>
           {safeFormatDate(message.createdAt, "HH:mm")}
         </div>
       </div>

@@ -1,10 +1,10 @@
 import { createClient } from "@supabase/supabase-js";
-import fs from "fs";
 import crypto from "crypto";
+import fs from "fs";
 
 // Load .env.local manually
 const envFile = fs.readFileSync(".env.local", "utf-8");
-envFile.split("\n").forEach(line => {
+envFile.split("\n").forEach((line) => {
   if (line && !line.startsWith("#")) {
     const [key, ...valueParts] = line.split("=");
     if (key && valueParts.length) {
@@ -28,7 +28,7 @@ if (!supabaseUrl || !serviceRoleKey) {
 
 // Use service role key directly for admin operations
 const supabaseAdmin = createClient(supabaseUrl, serviceRoleKey, {
-  auth: { autoRefreshToken: false, persistSession: false }
+  auth: { autoRefreshToken: false, persistSession: false },
 });
 
 async function createTables() {
@@ -51,38 +51,62 @@ async function createTables() {
 
 async function seedDemoData() {
   console.log("\n👥 Creating demo users...");
-  
+
   // SECURITY: Password from environment or randomly generated
   const demoUsers = [
-    { email: "admin@otoburada.demo", role: "admin", fullName: "Mert Aydın", phone: "+905321112233", city: "İstanbul" },
-    { email: "emre@otoburada.demo", role: "user", fullName: "Emre Yılmaz", phone: "+905321234567", city: "İstanbul" },
-    { email: "ayse@otoburada.demo", role: "user", fullName: "Ayşe Demir", phone: "+905339876543", city: "Ankara" },
-    { email: "burak@otoburada.demo", role: "user", fullName: "Burak Kaya", phone: "+905359998877", city: "İzmir" },
+    {
+      email: "admin@otoburada.demo",
+      role: "admin",
+      fullName: "Mert Aydın",
+      phone: "+905321112233",
+      city: "İstanbul",
+    },
+    {
+      email: "emre@otoburada.demo",
+      role: "user",
+      fullName: "Emre Yılmaz",
+      phone: "+905321234567",
+      city: "İstanbul",
+    },
+    {
+      email: "ayse@otoburada.demo",
+      role: "user",
+      fullName: "Ayşe Demir",
+      phone: "+905339876543",
+      city: "Ankara",
+    },
+    {
+      email: "burak@otoburada.demo",
+      role: "user",
+      fullName: "Burak Kaya",
+      phone: "+905359998877",
+      city: "İzmir",
+    },
   ];
-  
+
   for (const user of demoUsers) {
     try {
       const { data, error } = await supabaseAdmin.auth.admin.createUser({
         email: user.email,
         password: demoPassword,
         email_confirm: true,
-        user_metadata: { 
+        user_metadata: {
           full_name: user.fullName,
           phone: user.phone,
-          city: user.city
+          city: user.city,
         },
         app_metadata: {
-          role: user.role // SECURITY: Role in app_metadata (trusted)
-        }
+          role: user.role, // SECURITY: Role in app_metadata (trusted)
+        },
       });
-      
+
       if (data?.user && !error) {
         await supabaseAdmin.from("profiles").insert({
           id: data.user.id,
           full_name: user.fullName,
           phone: user.phone,
           city: user.city,
-          role: user.role
+          role: user.role,
         });
         console.log(`✅ Created user: ${user.email}`);
       } else if (error?.message?.includes("already been registered")) {
@@ -99,7 +123,7 @@ async function seedDemoData() {
   console.log("\n📧 Login credentials:");
   console.log("   Email: admin@otoburada.demo");
   console.log(`   Password: ${demoPassword}`);
-  
+
   if (!process.env.DEMO_USER_PASSWORD) {
     console.log("\n⚠️  IMPORTANT: Save this password! It was randomly generated.");
     console.log("   To use a custom password, set DEMO_USER_PASSWORD in .env.local");
@@ -109,14 +133,14 @@ async function seedDemoData() {
 async function main() {
   console.log("🚀 Quick Bootstrap Script");
   console.log("========================\n");
-  
+
   await createTables();
   await seedDemoData();
-  
+
   console.log("\n✅ Bootstrap complete!");
 }
 
-main().catch(error => {
+main().catch((error) => {
   console.error("\n❌ Bootstrap failed:", error.message || error);
   process.exit(1);
 });

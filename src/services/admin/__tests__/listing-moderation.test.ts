@@ -1,12 +1,14 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+
+import { getDatabaseListings } from "@/services/listings/listing-submissions";
+import * as notifications from "@/services/notifications/notification-records";
+import type { Listing } from "@/types";
+
 import {
-  moderateListingWithSideEffects,
   moderateListingsWithSideEffects,
+  moderateListingWithSideEffects,
 } from "../listing-moderation";
 import * as moderationActions from "../moderation-actions";
-import * as notifications from "@/services/notifications/notification-records";
-import { getDatabaseListings } from "@/services/listings/listing-submissions";
-import type { Listing } from "@/types";
 
 vi.mock("@/lib/supabase/env", () => ({
   hasSupabaseAdminEnv: vi.fn(() => true),
@@ -101,7 +103,7 @@ describe("listing-moderation service", () => {
       expect.objectContaining({
         type: "moderation",
         title: "Ilanin onaylandi",
-      }),
+      })
     );
   });
 
@@ -120,7 +122,7 @@ describe("listing-moderation service", () => {
       expect.objectContaining({
         action: "reject",
         note: "Invalid description",
-      }),
+      })
     );
   });
 

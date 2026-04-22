@@ -1,16 +1,25 @@
 "use client";
 
-import { useState, useTransition } from "react";
 import {
-  Shield, Key, Eye, ChevronRight, CheckCircle2,
-  Plus, Edit3, Trash2, Loader2, X,
+  CheckCircle2,
+  ChevronRight,
+  Edit3,
+  Eye,
+  Key,
+  Loader2,
+  Plus,
+  Shield,
+  Trash2,
+  X,
 } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { useState, useTransition } from "react";
+import { toast } from "sonner";
+
+import { RoleForm } from "@/components/forms/role-form";
+import { Button } from "@/components/ui/button";
 import type { AdminRole } from "@/services/admin/roles";
 import { deleteRole } from "@/services/admin/roles";
-import { Button } from "@/components/ui/button";
-import { RoleForm } from "@/components/forms/role-form";
-import { toast } from "sonner";
-import { useRouter } from "next/navigation";
 
 interface AdminRolesClientProps {
   initialRoles: AdminRole[];
@@ -19,9 +28,9 @@ interface AdminRolesClientProps {
 // Stable color map — custom roles get a default color
 const ROLE_COLORS: Record<string, string> = {
   "Süper Admin": "bg-slate-900",
-  "Moderatör":   "bg-blue-600",
-  "Destek Ekibi":"bg-indigo-600",
-  "Kullanıcı":   "bg-slate-400",
+  Moderatör: "bg-blue-600",
+  "Destek Ekibi": "bg-indigo-600",
+  Kullanıcı: "bg-slate-400",
 };
 
 function getRoleColor(name: string) {
@@ -31,12 +40,20 @@ function getRoleColor(name: string) {
 function getAccessLabel(permissions: string[]) {
   if (permissions.includes("all")) return "Tüm yetkiler";
   const moduleLabels: Record<string, string> = {
-    listings: "İlan", reports: "Rapor", tickets: "Ticket",
-    users: "Kullanıcı", settings: "Ayarlar", plans: "Paket",
+    listings: "İlan",
+    reports: "Rapor",
+    tickets: "Ticket",
+    users: "Kullanıcı",
+    settings: "Ayarlar",
+    plans: "Paket",
   };
   const actionLabels: Record<string, string> = {
-    manage: "Yönet", approve: "Onayla", reject: "Reddet",
-    create: "Oluştur", view: "Görüntüle", update: "Güncelle",
+    manage: "Yönet",
+    approve: "Onayla",
+    reject: "Reddet",
+    create: "Oluştur",
+    view: "Görüntüle",
+    update: "Güncelle",
   };
   const labels = permissions.map((p) => {
     const [mod, act] = p.split(".");
@@ -46,8 +63,16 @@ function getAccessLabel(permissions: string[]) {
 }
 
 // ── Modal wrapper ─────────────────────────────────────────────────────────────
-function Modal({ title, subtitle, onClose, children }: {
-  title: string; subtitle?: string; onClose: () => void; children: React.ReactNode;
+function Modal({
+  title,
+  subtitle,
+  onClose,
+  children,
+}: {
+  title: string;
+  subtitle?: string;
+  onClose: () => void;
+  children: React.ReactNode;
 }) {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
@@ -77,8 +102,16 @@ function Modal({ title, subtitle, onClose, children }: {
 }
 
 // ── Delete confirmation modal ─────────────────────────────────────────────────
-function DeleteModal({ role, onConfirm, onCancel, isPending }: {
-  role: AdminRole; onConfirm: () => void; onCancel: () => void; isPending: boolean;
+function DeleteModal({
+  role,
+  onConfirm,
+  onCancel,
+  isPending,
+}: {
+  role: AdminRole;
+  onConfirm: () => void;
+  onCancel: () => void;
+  isPending: boolean;
 }) {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
@@ -93,7 +126,8 @@ function DeleteModal({ role, onConfirm, onCancel, isPending }: {
           </div>
         </div>
         <p className="mb-6 text-sm text-slate-600 leading-relaxed">
-          <span className="font-bold text-slate-900">{role.name}</span> rolünü silmek istediğinizden emin misiniz?
+          <span className="font-bold text-slate-900">{role.name}</span> rolünü silmek istediğinizden
+          emin misiniz?
           {role.user_count > 0 && (
             <span className="block mt-2 text-amber-600 font-medium">
               ⚠️ Bu role atanmış {role.user_count} kullanıcı var.
@@ -101,7 +135,12 @@ function DeleteModal({ role, onConfirm, onCancel, isPending }: {
           )}
         </p>
         <div className="flex gap-3">
-          <Button variant="outline" className="flex-1 rounded-xl font-bold" onClick={onCancel} disabled={isPending}>
+          <Button
+            variant="outline"
+            className="flex-1 rounded-xl font-bold"
+            onClick={onCancel}
+            disabled={isPending}
+          >
             İptal
           </Button>
           <Button
@@ -122,11 +161,11 @@ export function AdminRolesClient({ initialRoles }: AdminRolesClientProps) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
 
-  const [editTarget, setEditTarget]   = useState<AdminRole | null>(null);
+  const [editTarget, setEditTarget] = useState<AdminRole | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<AdminRole | null>(null);
-  const [showCreate, setShowCreate]   = useState(false);
-  const [viewTarget, setViewTarget]   = useState<AdminRole | null>(null);
-  const [isDeleting, setIsDeleting]   = useState(false);
+  const [showCreate, setShowCreate] = useState(false);
+  const [viewTarget, setViewTarget] = useState<AdminRole | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const handleDelete = async () => {
     if (!deleteTarget) return;
@@ -186,7 +225,9 @@ export function AdminRolesClient({ initialRoles }: AdminRolesClientProps) {
             >
               {/* Card header */}
               <div className="space-y-3 p-6 bg-slate-50 border-b border-slate-100">
-                <div className={`size-10 rounded-xl ${getRoleColor(role.name)} flex items-center justify-center text-white`}>
+                <div
+                  className={`size-10 rounded-xl ${getRoleColor(role.name)} flex items-center justify-center text-white`}
+                >
                   <Shield size={20} />
                 </div>
                 <div>
@@ -268,7 +309,11 @@ export function AdminRolesClient({ initialRoles }: AdminRolesClientProps) {
                 </p>
               </div>
             </div>
-            <Button variant="outline" className="flex h-10 items-center gap-2 rounded-lg border border-slate-300 bg-white px-4 text-sm font-medium text-slate-900 transition-all hover:border-blue-300 hover:text-blue-600" asChild>
+            <Button
+              variant="outline"
+              className="flex h-10 items-center gap-2 rounded-lg border border-slate-300 bg-white px-4 text-sm font-medium text-slate-900 transition-all hover:border-blue-300 hover:text-blue-600"
+              asChild
+            >
               <a href="/admin/audit">
                 Logları görüntüle
                 <ChevronRight size={18} />
@@ -280,7 +325,11 @@ export function AdminRolesClient({ initialRoles }: AdminRolesClientProps) {
 
       {/* Create modal */}
       {showCreate && (
-        <Modal title="Yeni Rol Tanımla" subtitle="Özel yetki seti oluşturun" onClose={() => setShowCreate(false)}>
+        <Modal
+          title="Yeni Rol Tanımla"
+          subtitle="Özel yetki seti oluşturun"
+          onClose={() => setShowCreate(false)}
+        >
           <RoleForm onSuccess={handleFormSuccess} onCancel={() => setShowCreate(false)} />
         </Modal>
       )}
@@ -288,19 +337,32 @@ export function AdminRolesClient({ initialRoles }: AdminRolesClientProps) {
       {/* Edit modal */}
       {editTarget && (
         <Modal title="Rolü Düzenle" subtitle={editTarget.name} onClose={() => setEditTarget(null)}>
-          <RoleForm initialData={editTarget} onSuccess={handleFormSuccess} onCancel={() => setEditTarget(null)} />
+          <RoleForm
+            initialData={editTarget}
+            onSuccess={handleFormSuccess}
+            onCancel={() => setEditTarget(null)}
+          />
         </Modal>
       )}
 
       {/* View modal */}
       {viewTarget && (
-        <Modal title={viewTarget.name} subtitle={viewTarget.description ?? undefined} onClose={() => setViewTarget(null)}>
+        <Modal
+          title={viewTarget.name}
+          subtitle={viewTarget.description ?? undefined}
+          onClose={() => setViewTarget(null)}
+        >
           <div className="space-y-4">
             <div>
-              <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2">Yetkiler</p>
+              <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2">
+                Yetkiler
+              </p>
               <div className="space-y-2">
                 {viewTarget.permissions.map((p) => (
-                  <div key={p} className="flex items-center gap-2 rounded-lg bg-slate-50 border border-slate-200 px-3 py-2">
+                  <div
+                    key={p}
+                    className="flex items-center gap-2 rounded-lg bg-slate-50 border border-slate-200 px-3 py-2"
+                  >
                     <CheckCircle2 size={14} className="text-emerald-500 shrink-0" />
                     <span className="text-sm font-medium text-slate-700">{p}</span>
                   </div>
@@ -309,15 +371,25 @@ export function AdminRolesClient({ initialRoles }: AdminRolesClientProps) {
             </div>
             <div className="grid grid-cols-2 gap-3 pt-2 border-t border-slate-100">
               <div>
-                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Atanmış Kullanıcı</p>
+                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+                  Atanmış Kullanıcı
+                </p>
                 <p className="text-lg font-bold text-slate-900 mt-1">{viewTarget.user_count}</p>
               </div>
               <div>
-                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Tür</p>
-                <p className="text-sm font-bold text-slate-900 mt-1">{viewTarget.is_system ? "Sistem Rolü" : "Özel Rol"}</p>
+                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+                  Tür
+                </p>
+                <p className="text-sm font-bold text-slate-900 mt-1">
+                  {viewTarget.is_system ? "Sistem Rolü" : "Özel Rol"}
+                </p>
               </div>
             </div>
-            <Button className="w-full rounded-xl" variant="outline" onClick={() => setViewTarget(null)}>
+            <Button
+              className="w-full rounded-xl"
+              variant="outline"
+              onClick={() => setViewTarget(null)}
+            >
               Kapat
             </Button>
           </div>

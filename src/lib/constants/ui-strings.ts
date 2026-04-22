@@ -10,7 +10,7 @@ export const navigation = {
   login: "Giriş Yap",
   register: "Kayıt Ol",
   dashboard: "Panel",
-  admin: "Yönetim"
+  admin: "Yönetim",
 } as const;
 
 export const listingDetail = {
@@ -55,8 +55,8 @@ export const listingDetail = {
   securityTips: [
     "Aracı görmeden kapora göndermeyiniz.",
     "Resmi ekspertiz raporu talep ediniz.",
-    "Ödemeyi güvenli noter kanalıyla yapınız."
-  ]
+    "Ödemeyi güvenli noter kanalıyla yapınız.",
+  ],
 } as const;
 
 export const dashboard = {
@@ -94,13 +94,14 @@ export const dashboard = {
   emailVerified: "E-posta Doğrulandı",
   emailNotVerified: "E-posta Doğrulanmadı",
   limitedAccess: "Kısıtlı Erişim: E-posta Doğrulanmadı",
-  verifyEmailDesc: "Pazaryerinde güvenliği sağlamak için ilan vermeden önce e-postanı doğrulaman gerekiyor. Bu işlem sadece 30 saniye sürer.",
+  verifyEmailDesc:
+    "Pazaryerinde güvenliği sağlamak için ilan vermeden önce e-postanı doğrulaman gerekiyor. Bu işlem sadece 30 saniye sürer.",
   verifyNow: "Hemen Doğrula",
   accountSecure: "Hesap Güvenliği Aktif",
   unlimitedPosting: "Sınırsız ilan yayınlama ve işlem yetkisi tanımlandı.",
   verifiedMember: "DOĞRULANMIŞ ÜYE",
-  allListingsCount: (total: number, approved: number) => 
-    `Toplam ${total} ilandan ${approved} tanesi yayında.`
+  allListingsCount: (total: number, approved: number) =>
+    `Toplam ${total} ilandan ${approved} tanesi yayında.`,
 } as const;
 
 export const marketplace = {
@@ -116,7 +117,8 @@ export const marketplace = {
   viewAll: "Tümünü İncele",
   discoverAll: "Tüm İlanları Keşfet",
   noListings: "Henüz ilan bulunmuyor",
-  firstListingDesc: "İlk ilanı sen vererek platformda yerini alabilirsin. Türkiye'nin en güvenilir pazarına hemen katıl!",
+  firstListingDesc:
+    "İlk ilanı sen vererek platformda yerini alabilirsin. Türkiye'nin en güvenilir pazarına hemen katıl!",
   postFirst: "Hemen İlan Ver",
   activeListings: "Şu an aktif ilan listeleniyor",
   filter: "Filtreleme",
@@ -126,7 +128,7 @@ export const marketplace = {
     all: "Tüm İlanlar",
     expert: "Ekspertizli",
     priceDrop: "Fiyatı Düşen",
-    newest: "Yeni Eklenen"
+    newest: "Yeni Eklenen",
   },
   sortOptions: {
     newest: "En Yeni",
@@ -136,21 +138,22 @@ export const marketplace = {
     mileageAsc: "Kilometre (Düşükten Yükseğe)",
     mileageDesc: "Kilometre (Yüksekten Düşüğe)",
     yearDesc: "Yıl (Yeniden Eskiye)",
-    yearAsc: "Yıl (Eskiden Yeniye)"
+    yearAsc: "Yıl (Eskiden Yeniye)",
   },
   activeFilters: "Aktif Süzgeçler",
   clearAll: "Temizle",
-  showing: (total: number, shown: number) => 
+  showing: (total: number, shown: number) =>
     `Toplam ${total} ilan arasından ${shown} araç gösteriliyor`,
   showingSingle: (total: number) => `${total} ilan`,
   noResults: "Sonuç bulunamadı",
-  noResultsDesc: "Aradığınız kriterlere uygun araç bulunamadı. Filtreleri değiştirip tekrar deneyin.",
+  noResultsDesc:
+    "Aradığınız kriterlere uygun araç bulunamadı. Filtreleri değiştirip tekrar deneyin.",
   clearFilters: "Filtreleri Temizle",
   loadMore: "Daha Fazla Göster",
   allViewed: "Mevcut tüm ilanları görüntülediniz.",
   loadingMore: "Daha fazla yükleniyor...",
   brandListings: (brand: string) => `${brand} İlanları`,
-  totalActive: "aktif"
+  totalActive: "aktif",
 } as const;
 
 export const admin = {
@@ -178,12 +181,12 @@ export const admin = {
   fullReport: "TAM RAPORU GÖR",
   recentActions: "Son İşlemler",
   noRecentActions: "Henüz işlem yok",
-  system: "Sistem"
+  system: "Sistem",
 } as const;
 
 export const breadcrumbs = {
   home: "Ana Sayfa",
-  cars: "Otomobil"
+  cars: "Otomobil",
 } as const;
 
 export interface BreadcrumbItem {
@@ -223,7 +226,7 @@ export const common = {
   pending: "Onay Bekliyor",
   archived: "Arşivlendi",
   draft: "Taslak",
-  rejected: "Reddedildi"
+  rejected: "Reddedildi",
 } as const;
 
 export const auth = {
@@ -237,7 +240,7 @@ export const auth = {
   forgotPassword: "Şifremi Unuttum",
   resetPassword: "Şifre Sıfırla",
   noAccount: "Hesabın yok mu?",
-  hasAccount: "Zaten hesabın var mı?"
+  hasAccount: "Zaten hesabın var mı?",
 } as const;
 
 export const profile = {
@@ -253,7 +256,7 @@ export const profile = {
   corporateDesc: "Ticarî araç alım satımı için",
   personalInfo: "Kimlik Bilgileri",
   personalInfoDesc: "Bireysel bilgileriniz ilanlarınızda görünür.",
-  emailRequired: "E-posta doğrulaması ilan yayınlamak için zorunludur."
+  emailRequired: "E-posta doğrulaması ilan yayınlamak için zorunludur.",
 } as const;
 
 export const filters = {
@@ -271,7 +274,7 @@ export const filters = {
   fuelType: "Yakıt Tipi",
   transmission: "Vites Tipi",
   hasExpertReport: "Ekspertiz Raporu",
-  query: "Arama"
+  query: "Arama",
 } as const;
 
 export const seller = {
@@ -280,7 +283,7 @@ export const seller = {
   memberSince: "Üyelik",
   satisfaction: "MEMNUNİYET",
   ratings: "DEĞERLENDİRME",
-  gallery: "Galeri"
+  gallery: "Galeri",
 } as const;
 
 export const trust = {
@@ -292,8 +295,8 @@ export const trust = {
     list: [
       "Profiline 'Doğrulanmış Üye' mührü eklenir",
       "İlanların arama sonuçlarında güven sinyali ile görünür",
-      "Kurumsal mağaza özelliklerine erişim hakkı kazanırsın"
-    ]
+      "Kurumsal mağaza özelliklerine erişim hakkı kazanırsın",
+    ],
   },
   // Labels
   professional: "Kurumsal Galeri",
@@ -303,7 +306,7 @@ export const trust = {
   verificationPending: "PROFİL İNCELENİYOR",
   unverified: "DOĞRULAMA YOK",
   restricted: "HESAP İNCELENİYOR",
-  
+
   // Admin Labels (Explicit operational states)
   admin: {
     userStatus: {
@@ -340,22 +343,27 @@ export const trust = {
     environment: {
       active: "Aktif",
       inactive: "Pasif",
-    }
+    },
   },
-  
+
   // Restriction Messages (Seller facing)
   accountUnderReview: "Hesap İnceleme Sürecinde",
   restrictionNotice: "Hesabınız güvenlik politikalarımız gereği geçici inceleme altındadır.",
-  dopingRestriction: "İnceleme sürecindeki hesaplar için ilan öne çıkarma özellikleri geçici olarak kapalıdır.",
-  
+  dopingRestriction:
+    "İnceleme sürecindeki hesaplar için ilan öne çıkarma özellikleri geçici olarak kapalıdır.",
+
   // Contact Blocks (Buyer facing)
   contactBlocked: "Geçici Kısıtlama",
-  contactBlockedDesc: "Bu satıcı hesabı şu an hizmet standartları gereği inceleme altındadır. Lütfen daha sonra tekrar deneyin.",
-  
+  contactBlockedDesc:
+    "Bu satıcı hesabı şu an hizmet standartları gereği inceleme altındadır. Lütfen daha sonra tekrar deneyin.",
+
   // Detailed Feedback (Seller facing)
   verificationRejected: "Doğrulama Tamamlanamadı",
-  verificationRejectedDesc: "Gönderilen belgeler kriterlerimize uymadığı için doğrulama yapılamadı. Tekrar denemek için profil ayarlarına gidin.",
-  verificationPendingDesc: "Bilgileriniz moderasyon ekibimiz tarafından kontrol ediliyor. Ortalama 24 saat içinde sonuçlanacaktır.",
+  verificationRejectedDesc:
+    "Gönderilen belgeler kriterlerimize uymadığı için doğrulama yapılamadı. Tekrar denemek için profil ayarlarına gidin.",
+  verificationPendingDesc:
+    "Bilgileriniz moderasyon ekibimiz tarafından kontrol ediliyor. Ortalama 24 saat içinde sonuçlanacaktır.",
   accountRestrictedTitle: "Hesap Erişimi Kısıtlandı",
-  accountRestrictedDesc: "Kullanım politikası ihlali veya güvenlik taraması nedeniyle hesabınız kısıtlanmıştır. Destek hattından bilgi alabilirsiniz."
+  accountRestrictedDesc:
+    "Kullanım politikası ihlali veya güvenlik taraması nedeniyle hesabınız kısıtlanmıştır. Destek hattından bilgi alabilirsiniz.",
 } as const;

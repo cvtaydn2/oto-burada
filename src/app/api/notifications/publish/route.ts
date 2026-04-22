@@ -12,7 +12,8 @@
  */
 
 import { Redis } from "@upstash/redis";
-import { apiSuccess, apiError, API_ERROR_CODES } from "@/lib/utils/api-response";
+
+import { API_ERROR_CODES, apiError, apiSuccess } from "@/lib/utils/api-response";
 import { withAdminRoute } from "@/lib/utils/api-security";
 
 export const dynamic = "force-dynamic";
@@ -44,9 +45,7 @@ export async function POST(request: Request) {
   const providedSecret = request.headers.get("x-internal-secret");
 
   const isInternalCall =
-    internalSecret &&
-    providedSecret &&
-    safeCompare(internalSecret, providedSecret);
+    internalSecret && providedSecret && safeCompare(internalSecret, providedSecret);
 
   if (!isInternalCall) {
     // Path B: Admin session (CSRF + admin role check via withAdminRoute).

@@ -1,17 +1,22 @@
-import { createSupabaseServerClient } from "@/lib/supabase/server";
+import sharp from "sharp";
+
+import { captureServerError } from "@/lib/monitoring/posthog-server";
+import {
+  countDailyUserUploads,
+  registerFileInRegistry,
+  verifyAndUnregisterFile,
+} from "@/lib/storage/registry";
 import { getSupabaseStorageEnv, hasSupabaseStorageEnv } from "@/lib/supabase/env";
+import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { API_ERROR_CODES, apiError, apiSuccess } from "@/lib/utils/api-response";
+import { withAuthAndCsrf } from "@/lib/utils/api-security";
+import { logger } from "@/lib/utils/logger";
 import { rateLimitProfiles } from "@/lib/utils/rate-limit";
-import { apiSuccess, apiError, API_ERROR_CODES } from "@/lib/utils/api-response";
 import {
   buildListingImageStoragePath,
   getVerifiedMimeType,
   validateListingImageFile,
 } from "@/services/listings/listing-images";
-import { captureServerError } from "@/lib/monitoring/posthog-server";
-import { withAuthAndCsrf } from "@/lib/utils/api-security";
-import { countDailyUserUploads, registerFileInRegistry, verifyAndUnregisterFile } from "@/lib/storage/registry";
-import { logger } from "@/lib/utils/logger";
-import sharp from "sharp";
 
 /**
  * Sanitizes filename for DISPLAY purposes only.
@@ -19,10 +24,8 @@ import sharp from "sharp";
 function sanitizeFileName(fileName: string): string {
   // Prepend short UUID to prevent name collisions in same bucket/folder
   const uniquePrefix = crypto.randomUUID().split("-")[0];
-  const cleanName = fileName
-    .replace(/[^a-zA-Z0-9._-]/g, "_")
-    .replace(/\.+/g, ".");
-  
+  const cleanName = fileName.replace(/[^a-zA-Z0-9._-]/g, "_").replace(/\.+/g, ".");
+
   return `${uniquePrefix}-${cleanName}`.substring(0, 200);
 }
 
@@ -35,7 +38,7 @@ export async function POST(request: Request) {
   });
 
   if (!security.ok) return security.response;
-  
+
   const user = security.user!;
 
   // ── 0. Guard against Vercel Payload Limit (4.5MB) ──────────────────────
@@ -44,8 +47,8 @@ export async function POST(request: Request) {
   const MAX_PAYLOAD_SIZE = 5 * 1024 * 1024; // 5MB limit
   if (contentLength && parseInt(contentLength, 10) > MAX_PAYLOAD_SIZE) {
     return apiError(
-      API_ERROR_CODES.BAD_REQUEST, 
-      "Toplam dosya boyutu 5MB'dan küçük olmalıdır.", 
+      API_ERROR_CODES.BAD_REQUEST,
+      "Toplam dosya boyutu 5MB'dan küçük olmalıdır.",
       413
     );
   }
@@ -54,7 +57,7 @@ export async function POST(request: Request) {
     return apiError(
       API_ERROR_CODES.SERVICE_UNAVAILABLE,
       "Supabase Storage ortam değişkenleri eksik.",
-      503,
+      503
     );
   }
 
@@ -65,7 +68,7 @@ export async function POST(request: Request) {
   const currentUploadCount = await countDailyUserUploads(user.id);
   if (currentUploadCount >= DAILY_LIMIT) {
     return apiError(
-      API_ERROR_CODES.RATE_LIMITED, 
+      API_ERROR_CODES.RATE_LIMITED,
       `Günlük fotoğraf yükleme limitine (${DAILY_LIMIT}) ulaştınız. Lütfen yarın tekrar deneyin.`,
       429
     );
@@ -87,7 +90,11 @@ export async function POST(request: Request) {
 
   const verifiedMimeType = await getVerifiedMimeType(file);
   const contentType = verifiedMimeType ?? file.type;
-  const storagePath = buildListingImageStoragePath(user.id, sanitizedFileName, verifiedMimeType ?? undefined);
+  const storagePath = buildListingImageStoragePath(
+    user.id,
+    sanitizedFileName,
+    verifiedMimeType ?? undefined
+  );
 
   // ── PILL: Issue 3 - EXIF Metadata Stripping (Privacy/Stalking Prevention) ──
   // Strip GPS coordinates and camera metadata before storage.
@@ -105,19 +112,31 @@ export async function POST(request: Request) {
   }
 
   const supabase = await createSupabaseServerClient();
-  const uploadResult = await supabase.storage.from(listingsBucket).upload(storagePath, imageBuffer, {
-    cacheControl: "86400",
-    contentType,
-    upsert: false,
-  });
+  const uploadResult = await supabase.storage
+    .from(listingsBucket)
+    .upload(storagePath, imageBuffer, {
+      cacheControl: "86400",
+      contentType,
+      upsert: false,
+    });
 
   if (uploadResult.error) {
-    captureServerError("Image upload to storage failed", "storage", uploadResult.error, {
-      userId: user.id,
-      storagePath,
-      bucket: listingsBucket,
-    }, user.id);
-    return apiError(API_ERROR_CODES.INTERNAL_ERROR, "Fotoğraf yüklenemedi. Lütfen tekrar dene.", 500);
+    captureServerError(
+      "Image upload to storage failed",
+      "storage",
+      uploadResult.error,
+      {
+        userId: user.id,
+        storagePath,
+        bucket: listingsBucket,
+      },
+      user.id
+    );
+    return apiError(
+      API_ERROR_CODES.INTERNAL_ERROR,
+      "Fotoğraf yüklenemedi. Lütfen tekrar dene.",
+      500
+    );
   }
 
   // ── Register in Registry ──────────────────────────────────────────────
@@ -125,7 +144,7 @@ export async function POST(request: Request) {
     ownerId: user.id,
     bucketId: listingsBucket,
     storagePath,
-    sourceEntityType: 'listing',
+    sourceEntityType: "listing",
     fileName: sanitizedFileName,
     fileSize: imageBuffer.length,
     mimeType: contentType,
@@ -146,7 +165,7 @@ export async function POST(request: Request) {
       },
     },
     "Fotoğraf yüklendi.",
-    201,
+    201
   );
 }
 
@@ -155,21 +174,21 @@ export async function DELETE(request: Request) {
   const security = await withAuthAndCsrf(request);
 
   if (!security.ok) return security.response;
-  
+
   const user = security.user!;
 
   if (!hasSupabaseStorageEnv()) {
     return apiError(
       API_ERROR_CODES.SERVICE_UNAVAILABLE,
       "Supabase Storage ortam değişkenleri eksik.",
-      503,
+      503
     );
   }
 
   let storagePath: string | undefined;
   try {
-    const body = await request.json() as Record<string, unknown>;
-    storagePath = typeof body.storagePath === 'string' ? body.storagePath : undefined;
+    const body = (await request.json()) as Record<string, unknown>;
+    storagePath = typeof body.storagePath === "string" ? body.storagePath : undefined;
   } catch {
     return apiError(API_ERROR_CODES.BAD_REQUEST, "Silme isteği okunamadı.", 400);
   }
@@ -180,25 +199,40 @@ export async function DELETE(request: Request) {
 
   const { listingsBucket } = getSupabaseStorageEnv();
   // ── Verify Ownership via Registry ──────────────────────────────────────
-  const isOwner = await verifyAndUnregisterFile(user.id, listingsBucket ?? 'listing-images', storagePath);
-  
+  const isOwner = await verifyAndUnregisterFile(
+    user.id,
+    listingsBucket ?? "listing-images",
+    storagePath
+  );
+
   if (!isOwner) {
     // Legacy fallback
     const isLegacyOwner = storagePath.startsWith(`listings/${user.id}/`);
     if (!isLegacyOwner) {
       return apiError(API_ERROR_CODES.FORBIDDEN, "Bu işlem için yetkiniz yok.", 403);
     }
-    logger.storage.warn("Falling back to legacy prefix check for image delete", { storagePath, userId: user.id });
+    logger.storage.warn("Falling back to legacy prefix check for image delete", {
+      storagePath,
+      userId: user.id,
+    });
   }
 
   const supabase = await createSupabaseServerClient();
-  const removeResult = await supabase.storage.from(listingsBucket ?? 'listing-images').remove([storagePath]);
+  const removeResult = await supabase.storage
+    .from(listingsBucket ?? "listing-images")
+    .remove([storagePath]);
 
   if (removeResult.error) {
-    captureServerError("Image delete from storage failed", "storage", removeResult.error, {
-      userId: user.id,
-      storagePath,
-    }, user.id);
+    captureServerError(
+      "Image delete from storage failed",
+      "storage",
+      removeResult.error,
+      {
+        userId: user.id,
+        storagePath,
+      },
+      user.id
+    );
     return apiError(API_ERROR_CODES.INTERNAL_ERROR, "Fotoğraf silinemedi.", 500);
   }
 

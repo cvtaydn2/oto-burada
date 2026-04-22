@@ -1,5 +1,5 @@
-import Link from "next/link";
 import { ArrowRight } from "lucide-react";
+import Link from "next/link";
 
 interface SectionHeaderProps {
   title: string;
@@ -8,12 +8,7 @@ interface SectionHeaderProps {
   actionLabel?: string;
 }
 
-export function SectionHeader({
-  title,
-  description,
-  actionHref,
-  actionLabel,
-}: SectionHeaderProps) {
+export function SectionHeader({ title, description, actionHref, actionLabel }: SectionHeaderProps) {
   return (
     <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
       <div className="max-w-2xl space-y-2">

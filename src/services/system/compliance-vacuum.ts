@@ -9,7 +9,7 @@ import { logger } from "@/lib/utils/logger";
 
 export async function processComplianceVacuum() {
   const supabase = await createSupabaseServerClient();
-  
+
   const now = new Date().toISOString();
 
   logger.system.info("Compliance: Starting data vacuum process...");
@@ -19,7 +19,7 @@ export async function processComplianceVacuum() {
     .from("listings")
     .delete()
     .lte("deletion_deadline", now)
-    .select('id');
+    .select("id");
 
   if (listError) {
     logger.system.error("Compliance: Failed to vacuum listings", listError);
@@ -30,17 +30,17 @@ export async function processComplianceVacuum() {
   // 2. Cleanup orphaned storage objects (associated with deleted listings)
   // This would ideally be a DB trigger or a logic that lists files in storage registry
   // marked as 'archived' in Issue 7's lifecycle.
-  
+
   // 3. User PII Key Shredding (Issue 4)
   // Check for users marked as deleted more than 30 days ago and delete their encryption keys
   const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
-  
+
   const { data: shreddedKeys, error: keyError } = await supabase
     .from("user_encryption_keys")
     .delete()
     .lte("created_at", thirtyDaysAgo)
     // .filter('user_id', 'not.in', supabase.from('profiles').select('id')) // Subquery trick or join
-    .select('user_id');
+    .select("user_id");
 
   if (keyError) {
     logger.system.error("Compliance: Failed to shred keys", keyError);

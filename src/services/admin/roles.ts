@@ -38,9 +38,9 @@ export async function getAdminRoles(): Promise<AdminRole[]> {
     // Map DB rows to AdminRole, injecting live user counts for system roles
     const systemRoleNameToKey: Record<string, string> = {
       "Süper Admin": "admin",
-      "Moderatör": "moderator",
+      Moderatör: "moderator",
       "Destek Ekibi": "support",
-      "Kullanıcı": "user",
+      Kullanıcı: "user",
     };
 
     return customRoles.map((r) => ({
@@ -97,7 +97,7 @@ export async function getAdminRoles(): Promise<AdminRole[]> {
 export async function createRole(
   name: string,
   description: string,
-  permissions: string[],
+  permissions: string[]
 ): Promise<AdminRole> {
   const admin = createSupabaseAdminClient();
 
@@ -105,7 +105,13 @@ export async function createRole(
     .from("custom_roles")
     .insert({ name, description: description || null, permissions, is_system: false })
     .select("id, name, description, permissions, is_system")
-    .single<{ id: string; name: string; description: string | null; permissions: string[]; is_system: boolean }>();
+    .single<{
+      id: string;
+      name: string;
+      description: string | null;
+      permissions: string[];
+      is_system: boolean;
+    }>();
 
   if (error) {
     if (error.code === "42P01") {
@@ -126,7 +132,7 @@ export async function createRole(
  */
 export async function updateRole(
   id: string,
-  updates: { name?: string; description?: string; permissions?: string[] },
+  updates: { name?: string; description?: string; permissions?: string[] }
 ): Promise<AdminRole> {
   const admin = createSupabaseAdminClient();
 
@@ -146,7 +152,13 @@ export async function updateRole(
     .update({ ...updates, updated_at: new Date().toISOString() })
     .eq("id", id)
     .select("id, name, description, permissions, is_system")
-    .single<{ id: string; name: string; description: string | null; permissions: string[]; is_system: boolean }>();
+    .single<{
+      id: string;
+      name: string;
+      description: string | null;
+      permissions: string[];
+      is_system: boolean;
+    }>();
 
   if (error) {
     throw new Error(`Rol güncellenemedi: ${error.message}`);

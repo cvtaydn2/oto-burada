@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+
 import { cn } from "@/lib/utils";
 
 interface FooterNavLinkProps {
@@ -19,7 +20,7 @@ export function FooterNavLink({ href, label }: FooterNavLinkProps) {
       href={href}
       className={cn(
         "text-sm transition-colors hover:text-primary",
-        isActive ? "text-primary font-semibold" : "text-muted-foreground",
+        isActive ? "text-primary font-semibold" : "text-muted-foreground"
       )}
       aria-current={isActive ? "page" : undefined}
     >

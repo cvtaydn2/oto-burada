@@ -1,7 +1,7 @@
-import { hasSupabaseEnv, hasSupabaseAdminEnv } from "@/lib/supabase/env";
-import { captureServerError, captureServerEvent } from "@/lib/monitoring/posthog-server";
-import { apiSuccess, apiError, API_ERROR_CODES } from "@/lib/utils/api-response";
 import { requireApiUser } from "@/lib/auth/api-user";
+import { captureServerError, captureServerEvent } from "@/lib/monitoring/posthog-server";
+import { hasSupabaseAdminEnv, hasSupabaseEnv } from "@/lib/supabase/env";
+import { API_ERROR_CODES, apiError, apiSuccess } from "@/lib/utils/api-response";
 import { withAuthAndCsrf } from "@/lib/utils/api-security";
 import {
   addDatabaseFavorite,
@@ -48,7 +48,7 @@ export async function POST(request: Request) {
   });
 
   if (!security.ok) return security.response;
-  
+
   const user = security.user!; // Guaranteed by withAuthAndCsrf
 
   if (!hasSupabaseEnv() || !hasSupabaseAdminEnv()) {
@@ -74,14 +74,24 @@ export async function POST(request: Request) {
 
   // Only allow favoriting active (approved) listings
   if (listing.status !== "approved") {
-    return apiError(API_ERROR_CODES.BAD_REQUEST, "Sadece yayındaki ilanlar favorilere eklenebilir.", 400);
+    return apiError(
+      API_ERROR_CODES.BAD_REQUEST,
+      "Sadece yayındaki ilanlar favorilere eklenebilir.",
+      400
+    );
   }
 
   // P1 Security: Removed ensureProfileRecord() - no side effects in mutations
   const favoriteIds = await addDatabaseFavorite(user.id, listingId);
 
   if (!favoriteIds) {
-    captureServerError("Favorite add failed", "favorites", null, { userId: user.id, listingId }, user.id);
+    captureServerError(
+      "Favorite add failed",
+      "favorites",
+      null,
+      { userId: user.id, listingId },
+      user.id
+    );
     return apiError(API_ERROR_CODES.INTERNAL_ERROR, "Favori eklenemedi.", 500);
   }
 
@@ -111,7 +121,7 @@ export async function DELETE(request: Request) {
   const security = await withAuthAndCsrf(request);
 
   if (!security.ok) return security.response;
-  
+
   const user = security.user!; // Guaranteed by withAuthAndCsrf
 
   if (!hasSupabaseEnv() || !hasSupabaseAdminEnv()) {
@@ -134,7 +144,13 @@ export async function DELETE(request: Request) {
   const favoriteIds = await removeDatabaseFavorite(user.id, listingId);
 
   if (!favoriteIds) {
-    captureServerError("Favorite remove failed", "favorites", null, { userId: user.id, listingId }, user.id);
+    captureServerError(
+      "Favorite remove failed",
+      "favorites",
+      null,
+      { userId: user.id, listingId },
+      user.id
+    );
     return apiError(API_ERROR_CODES.INTERNAL_ERROR, "Favori kaldırılamadı.", 500);
   }
 

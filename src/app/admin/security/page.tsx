@@ -1,11 +1,12 @@
+import { AlertTriangle, Ban, Shield, TrendingUp } from "lucide-react";
 import { redirect } from "next/navigation";
+
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { getCurrentUser } from "@/lib/auth/session";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { hasSupabaseAdminEnv } from "@/lib/supabase/env";
-import { Shield, Ban, AlertTriangle, TrendingUp } from "lucide-react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 
 interface AbuseLog {
   id: string;
@@ -36,10 +37,7 @@ async function getAbuseData() {
       .select("*")
       .order("created_at", { ascending: false })
       .limit(100),
-    admin
-      .from("ip_banlist")
-      .select("*")
-      .order("banned_at", { ascending: false }),
+    admin.from("ip_banlist").select("*").order("banned_at", { ascending: false }),
     admin
       .from("contact_abuse_log")
       .select("reason")
@@ -51,10 +49,13 @@ async function getAbuseData() {
 
   // Calculate stats
   const last24h = statsResult.data || [];
-  const reasonCounts = last24h.reduce((acc, log) => {
-    acc[log.reason] = (acc[log.reason] || 0) + 1;
-    return acc;
-  }, {} as Record<string, number>);
+  const reasonCounts = last24h.reduce(
+    (acc, log) => {
+      acc[log.reason] = (acc[log.reason] || 0) + 1;
+      return acc;
+    },
+    {} as Record<string, number>
+  );
 
   return {
     logs,
@@ -90,9 +91,7 @@ export default async function SecurityPage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold">Güvenlik & Abuse Yönetimi</h1>
-          <p className="text-muted-foreground mt-1">
-            Contact form spam ve bot saldırılarını izle
-          </p>
+          <p className="text-muted-foreground mt-1">Contact form spam ve bot saldırılarını izle</p>
         </div>
         <Shield className="w-8 h-8 text-muted-foreground" />
       </div>
@@ -146,9 +145,7 @@ export default async function SecurityPage() {
       <Card>
         <CardHeader>
           <CardTitle>Yasaklı IP Adresleri</CardTitle>
-          <CardDescription>
-            Bu IP&apos;ler contact form&apos;u kullanamaz
-          </CardDescription>
+          <CardDescription>Bu IP&apos;ler contact form&apos;u kullanamaz</CardDescription>
         </CardHeader>
         <CardContent>
           {bannedIPs.length === 0 ? (
@@ -189,9 +186,7 @@ export default async function SecurityPage() {
       <Card>
         <CardHeader>
           <CardTitle>Abuse Log (Son 100)</CardTitle>
-          <CardDescription>
-            Tüm contact form denemeleri (başarılı ve başarısız)
-          </CardDescription>
+          <CardDescription>Tüm contact form denemeleri (başarılı ve başarısız)</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="space-y-2">
@@ -202,9 +197,7 @@ export default async function SecurityPage() {
               >
                 <div className="flex-1 space-y-1">
                   <div className="flex items-center gap-2">
-                    <Badge
-                      className={reasonColors[log.reason] || "bg-gray-100 text-gray-800"}
-                    >
+                    <Badge className={reasonColors[log.reason] || "bg-gray-100 text-gray-800"}>
                       {log.reason}
                     </Badge>
                     <span className="font-mono text-xs text-muted-foreground">
@@ -226,12 +219,7 @@ export default async function SecurityPage() {
                     <form action="/api/admin/security/ban" method="POST">
                       <input type="hidden" name="ip" value={log.ip_address} />
                       <input type="hidden" name="reason" value={`Abuse: ${log.reason}`} />
-                      <Button
-                        type="submit"
-                        size="sm"
-                        variant="destructive"
-                        className="text-xs"
-                      >
+                      <Button type="submit" size="sm" variant="destructive" className="text-xs">
                         <Ban className="w-3 h-3 mr-1" />
                         Ban IP
                       </Button>

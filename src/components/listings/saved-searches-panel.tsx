@@ -1,11 +1,11 @@
 "use client";
 
-import Link from "next/link";
 import { Bell, ChevronRight, LoaderCircle, Search, Trash2 } from "lucide-react";
+import Link from "next/link";
 import { useState } from "react";
 
-import { formatDate } from "@/lib/utils";
 import { captureClientEvent } from "@/lib/monitoring/posthog-client";
+import { formatDate } from "@/lib/utils";
 
 interface SavedSearchListItem {
   filtersSummary: string;
@@ -38,25 +38,35 @@ export function SavedSearchesPanel({ initialSavedSearches }: SavedSearchesPanelP
         },
         body: JSON.stringify({ notificationsEnabled: nextValue }),
       });
-      const payload = await response.json().catch(() => null) as { success?: boolean; error?: { message?: string } } | null;
+      const payload = (await response.json().catch(() => null)) as {
+        success?: boolean;
+        error?: { message?: string };
+      } | null;
 
       if (!response.ok || !payload?.success) {
         const message = payload?.error?.message ?? "Kayıtlı arama güncellenemedi.";
-        captureClientEvent("saved_search_toggle_failed", { searchId, nextValue, responseStatus: response.status, message });
+        captureClientEvent("saved_search_toggle_failed", {
+          searchId,
+          nextValue,
+          responseStatus: response.status,
+          message,
+        });
         setErrorMessage(message);
         return;
       }
 
       setSavedSearches((current) =>
         current.map((search) =>
-          search.id === searchId
-            ? { ...search, notificationsEnabled: nextValue }
-            : search,
-          ),
+          search.id === searchId ? { ...search, notificationsEnabled: nextValue } : search
+        )
       );
       captureClientEvent("saved_search_toggled", { searchId, notificationsEnabled: nextValue });
     } catch {
-      captureClientEvent("saved_search_toggle_failed", { searchId, nextValue, message: "Bağlantı sırasında bir hata oluştu. Lütfen tekrar dene." });
+      captureClientEvent("saved_search_toggle_failed", {
+        searchId,
+        nextValue,
+        message: "Bağlantı sırasında bir hata oluştu. Lütfen tekrar dene.",
+      });
       setErrorMessage("Bağlantı sırasında bir hata oluştu. Lütfen tekrar dene.");
     } finally {
       setActiveAction(null);
@@ -71,11 +81,18 @@ export function SavedSearchesPanel({ initialSavedSearches }: SavedSearchesPanelP
       const response = await fetch(`/api/saved-searches/${searchId}`, {
         method: "DELETE",
       });
-      const payload = await response.json().catch(() => null) as { success?: boolean; error?: { message?: string } } | null;
+      const payload = (await response.json().catch(() => null)) as {
+        success?: boolean;
+        error?: { message?: string };
+      } | null;
 
       if (!response.ok || !payload?.success) {
         const message = payload?.error?.message ?? "Kayitli arama silinemedi.";
-        captureClientEvent("saved_search_delete_failed", { searchId, responseStatus: response.status, message });
+        captureClientEvent("saved_search_delete_failed", {
+          searchId,
+          responseStatus: response.status,
+          message,
+        });
         setErrorMessage(message);
         return;
       }
@@ -83,7 +100,10 @@ export function SavedSearchesPanel({ initialSavedSearches }: SavedSearchesPanelP
       setSavedSearches((current) => current.filter((search) => search.id !== searchId));
       captureClientEvent("saved_search_deleted", { searchId });
     } catch {
-      captureClientEvent("saved_search_delete_failed", { searchId, message: "Baglanti sirasinda bir hata olustu. Lutfen tekrar dene." });
+      captureClientEvent("saved_search_delete_failed", {
+        searchId,
+        message: "Baglanti sirasinda bir hata olustu. Lutfen tekrar dene.",
+      });
       setErrorMessage("Baglanti sirasinda bir hata olustu. Lutfen tekrar dene.");
     } finally {
       setActiveAction(null);
@@ -98,8 +118,8 @@ export function SavedSearchesPanel({ initialSavedSearches }: SavedSearchesPanelP
         </div>
         <h3 className="text-xl font-bold text-foreground">Kayitli arama yok</h3>
         <p className="mx-auto mt-2 max-w-md text-sm text-muted-foreground">
-          Listings sayfasinda filtrelerini ayarlayip &quot;Aramayi Kaydet&quot; butonuna tikladiginda
-          burada tekrar ulasabilecegin bir arama olusur.
+          Listings sayfasinda filtrelerini ayarlayip &quot;Aramayi Kaydet&quot; butonuna
+          tikladiginda burada tekrar ulasabilecegin bir arama olusur.
         </p>
         <Link
           href="/listings"
@@ -149,11 +169,17 @@ export function SavedSearchesPanel({ initialSavedSearches }: SavedSearchesPanelP
             <div className="flex w-full items-center gap-3 sm:w-auto">
               <button
                 type="button"
-                onClick={() => void handleToggleNotifications(search.id, !search.notificationsEnabled)}
+                onClick={() =>
+                  void handleToggleNotifications(search.id, !search.notificationsEnabled)
+                }
                 disabled={toggling || deleting}
                 className="flex h-11 flex-1 items-center justify-center gap-2 rounded-xl bg-muted px-4 text-sm font-semibold text-foreground transition-colors hover:bg-muted/80 disabled:cursor-not-allowed disabled:opacity-60 sm:flex-none"
               >
-                {toggling ? <LoaderCircle className="size-4 animate-spin" /> : <Bell className="size-4" />}
+                {toggling ? (
+                  <LoaderCircle className="size-4 animate-spin" />
+                ) : (
+                  <Bell className="size-4" />
+                )}
                 {search.notificationsEnabled ? "Bildirimler Acik" : "Bildirimleri Ac"}
               </button>
               <button
@@ -163,7 +189,11 @@ export function SavedSearchesPanel({ initialSavedSearches }: SavedSearchesPanelP
                 className="flex size-11 items-center justify-center rounded-xl bg-muted/50 text-muted-foreground transition-colors hover:bg-destructive/10 hover:text-destructive disabled:cursor-not-allowed disabled:opacity-60"
                 title="Sil"
               >
-                {deleting ? <LoaderCircle className="size-4 animate-spin" /> : <Trash2 className="size-5" />}
+                {deleting ? (
+                  <LoaderCircle className="size-4 animate-spin" />
+                ) : (
+                  <Trash2 className="size-5" />
+                )}
               </button>
               <Link
                 href={search.href}

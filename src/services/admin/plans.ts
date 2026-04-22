@@ -1,7 +1,8 @@
 "use server";
 
-import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { revalidatePath } from "next/cache";
+
+import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { logger } from "@/lib/utils/logger";
 
 export interface PricingPlan {
@@ -30,10 +31,7 @@ export async function getPricingPlans() {
 
 export async function updatePricingPlan(id: string, updates: Partial<PricingPlan>) {
   const admin = createSupabaseAdminClient();
-  const { error } = await admin
-    .from("pricing_plans")
-    .update(updates)
-    .eq("id", id);
+  const { error } = await admin.from("pricing_plans").update(updates).eq("id", id);
 
   if (error) {
     throw new Error(error.message);
@@ -50,11 +48,8 @@ export async function togglePlanStatus(id: string, currentStatus: boolean) {
 
 export async function deletePricingPlan(id: string) {
   const admin = createSupabaseAdminClient();
-  
-  const { error } = await admin
-    .from("pricing_plans")
-    .delete()
-    .eq("id", id);
+
+  const { error } = await admin.from("pricing_plans").delete().eq("id", id);
 
   if (error) {
     throw new Error(error.message);
@@ -67,9 +62,7 @@ export async function deletePricingPlan(id: string) {
 
 export async function createPricingPlan(plan: Omit<PricingPlan, "id">) {
   const admin = createSupabaseAdminClient();
-  const { error } = await admin
-    .from("pricing_plans")
-    .insert(plan);
+  const { error } = await admin.from("pricing_plans").insert(plan);
 
   if (error) {
     throw new Error(error.message);
@@ -100,7 +93,9 @@ export async function getPlanPurchases(planId?: string): Promise<PlanPurchaseRec
 
   let query = admin
     .from("payments")
-    .select("id, user_id, plan_id, plan_name, amount, status, provider, created_at, profiles(full_name)")
+    .select(
+      "id, user_id, plan_id, plan_name, amount, status, provider, created_at, profiles(full_name)"
+    )
     .order("created_at", { ascending: false })
     .limit(100);
 

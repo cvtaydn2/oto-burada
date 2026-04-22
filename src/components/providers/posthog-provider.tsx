@@ -17,9 +17,9 @@
  * Docs: https://posthog.com/docs/error-tracking/installation/nextjs
  */
 
-import { Suspense, useEffect } from "react";
 import { usePathname, useSearchParams } from "next/navigation";
 import { PostHogProvider as PHProvider } from "posthog-js/react";
+import { Suspense, useEffect } from "react";
 
 import { useAuthUser } from "@/components/shared/auth-provider";
 import {
@@ -55,11 +55,8 @@ function PostHogPageView() {
 
     identifyPostHogUser(user.id, {
       email: user.email,
-      role:
-        (user.app_metadata as { role?: string } | undefined)?.role ?? "user",
-      trust_score:
-        (user.user_metadata as { trust_score?: number } | undefined)
-          ?.trust_score ?? 0,
+      role: (user.app_metadata as { role?: string } | undefined)?.role ?? "user",
+      trust_score: (user.user_metadata as { trust_score?: number } | undefined)?.trust_score ?? 0,
     });
   }, [isReady, user]);
 

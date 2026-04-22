@@ -4,21 +4,14 @@
  */
 
 export {
-  getUserDetail,
-  type UserDetailData
-} from "./user-details";
-
-export {
+  banUser,
+  deleteUser,
   grantCreditsToUser,
   grantDopingToListing,
-  toggleUserBan,
-  banUser,
   promoteUserToAdmin,
+  toggleUserBan,
   updateUserRole,
   verifyUserBusiness,
-  deleteUser
 } from "./user-actions";
-
-export {
-  getAllUsers
-} from "./user-list";
+export { getUserDetail, type UserDetailData } from "./user-details";
+export { getAllUsers } from "./user-list";

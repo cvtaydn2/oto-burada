@@ -1,8 +1,9 @@
-import Link from "next/link";
 import { CarFront, CheckCircle2, MessageCircle, Shield, Users } from "lucide-react";
-import { getLiveMarketplaceReferenceData } from "@/services/reference/live-reference-data";
-import { CURRENT_YEAR } from "@/lib/utils/date-utils";
+import Link from "next/link";
+
 import { FooterNavLink } from "@/components/layout/footer-nav-link";
+import { CURRENT_YEAR } from "@/lib/utils/date-utils";
+import { getLiveMarketplaceReferenceData } from "@/services/reference/live-reference-data";
 
 const quickLinks = [
   { href: "/", label: "Ana Sayfa" },
@@ -33,8 +34,8 @@ export async function SiteFooter() {
               <span className="text-xl font-bold text-foreground">OtoBurada</span>
             </Link>
             <p className="mt-4 text-sm leading-relaxed text-muted-foreground">
-              Arabalar için sade, güven odaklı ve ücretsiz ilan deneyimi. Arabanı sat,
-              hayalindeki arabayı bul.
+              Arabalar için sade, güven odaklı ve ücretsiz ilan deneyimi. Arabanı sat, hayalindeki
+              arabayı bul.
             </p>
             <div className="mt-6 flex flex-wrap gap-2">
               <span className="inline-flex items-center rounded-full bg-primary/10 px-3 py-1.5 text-xs font-semibold text-primary">
@@ -69,8 +70,8 @@ export async function SiteFooter() {
             <ul className="mt-5 space-y-3">
               {references.brands.slice(0, 6).map((brand) => (
                 <li key={brand.brand}>
-                  <Link 
-                    href={`/listings?brand=${encodeURIComponent(brand.brand)}`} 
+                  <Link
+                    href={`/listings?brand=${encodeURIComponent(brand.brand)}`}
                     className="text-sm text-muted-foreground hover:text-primary transition-colors"
                   >
                     {brand.brand}
@@ -105,9 +106,15 @@ export async function SiteFooter() {
             © {CURRENT_YEAR} OtoBurada. Tüm hakları saklıdır.
           </p>
           <div className="flex items-center gap-6 text-sm text-muted-foreground">
-            <Link href="/legal/privacy" className="hover:text-primary transition-colors">Gizlilik Politikası</Link>
-            <Link href="/legal/terms" className="hover:text-primary transition-colors">Kullanım Şartları</Link>
-            <Link href="/contact" className="hover:text-primary transition-colors">İletişim</Link>
+            <Link href="/legal/privacy" className="hover:text-primary transition-colors">
+              Gizlilik Politikası
+            </Link>
+            <Link href="/legal/terms" className="hover:text-primary transition-colors">
+              Kullanım Şartları
+            </Link>
+            <Link href="/contact" className="hover:text-primary transition-colors">
+              İletişim
+            </Link>
           </div>
         </div>
       </div>

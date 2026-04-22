@@ -1,4 +1,5 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+
 import type { DopingResult } from "../doping-service";
 
 // Mock all external dependencies
@@ -82,7 +83,11 @@ describe("Doping Service", () => {
 
   it("should apply multiple doping types", async () => {
     const { applyDopingToListing } = await import("../doping-service");
-    const result = await applyDopingToListing("listing-1", "user-123", ["featured", "urgent", "highlighted"]);
+    const result = await applyDopingToListing("listing-1", "user-123", [
+      "featured",
+      "urgent",
+      "highlighted",
+    ]);
     expect(result.success).toBe(true);
   });
 

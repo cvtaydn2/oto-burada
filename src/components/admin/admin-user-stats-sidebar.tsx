@@ -1,7 +1,18 @@
 "use client";
 
+import {
+  Activity,
+  Ban,
+  CheckCircle2,
+  Loader2,
+  Package,
+  Shield,
+  TrendingUp,
+  User,
+  XCircle,
+} from "lucide-react";
 import React from "react";
-import { Activity, CheckCircle2, Package, TrendingUp, User, Ban, Loader2, Shield, XCircle } from "lucide-react";
+
 import { Button } from "@/components/ui/button";
 import { cn, safeFormatDate } from "@/lib/utils";
 import { UserProfile } from "@/services/admin/user-details";
@@ -15,13 +26,13 @@ interface AdminUserStatsSidebarProps {
   onBanToggle: () => void;
 }
 
-export function AdminUserStatsSidebar({ 
-  profile, 
-  listingCount, 
-  activeListingCount, 
-  featuredCount, 
-  isActioning, 
-  onBanToggle 
+export function AdminUserStatsSidebar({
+  profile,
+  listingCount,
+  activeListingCount,
+  featuredCount,
+  isActioning,
+  onBanToggle,
 }: AdminUserStatsSidebarProps) {
   return (
     <aside className="space-y-6">
@@ -31,15 +42,34 @@ export function AdminUserStatsSidebar({
             <TrendingUp size={28} />
           </div>
           <div>
-            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Kredi Bakiyesi</p>
-            <p className="text-3xl font-bold text-slate-900 tracking-tighter">{profile.balanceCredits}</p>
+            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+              Kredi Bakiyesi
+            </p>
+            <p className="text-3xl font-bold text-slate-900 tracking-tighter">
+              {profile.balanceCredits}
+            </p>
           </div>
         </div>
-        
+
         <div className="grid grid-cols-1 gap-4 pt-4 border-t border-slate-50">
-          <StatItem icon={<Package size={16} />} label="Toplam İlan" value={listingCount} color="blue" />
-          <StatItem icon={<CheckCircle2 size={16} />} label="Aktif" value={activeListingCount} color="emerald" />
-          <StatItem icon={<Activity size={16} />} label="Dopingler" value={featuredCount} color="amber" />
+          <StatItem
+            icon={<Package size={16} />}
+            label="Toplam İlan"
+            value={listingCount}
+            color="blue"
+          />
+          <StatItem
+            icon={<CheckCircle2 size={16} />}
+            label="Aktif"
+            value={activeListingCount}
+            color="emerald"
+          />
+          <StatItem
+            icon={<Activity size={16} />}
+            label="Dopingler"
+            value={featuredCount}
+            color="amber"
+          />
         </div>
       </div>
 
@@ -49,24 +79,18 @@ export function AdminUserStatsSidebar({
           Güvenlik Matrisi
         </h3>
         <div className="space-y-4">
-          <VerificationRow 
-            label="E-Posta Doğrulama" 
-            isDone={profile.emailVerified} 
+          <VerificationRow
+            label="E-Posta Doğrulama"
+            isDone={profile.emailVerified}
             isCritical={true}
           />
-          <VerificationRow 
-            label="Kimlik Doğrulama" 
-            isDone={profile.isVerified} 
-          />
-          <VerificationRow 
-            label="Kurumsal Belge" 
-            isDone={profile.verificationStatus === "approved"} 
+          <VerificationRow label="Kimlik Doğrulama" isDone={profile.isVerified} />
+          <VerificationRow
+            label="Kurumsal Belge"
+            isDone={profile.verificationStatus === "approved"}
             isVisible={profile.userType === "professional"}
           />
-          <VerificationRow 
-            label="Telefon Tanımlı" 
-            isDone={!!profile.phone} 
-          />
+          <VerificationRow label="Telefon Tanımlı" isDone={!!profile.phone} />
         </div>
       </div>
 
@@ -78,13 +102,11 @@ export function AdminUserStatsSidebar({
         <div className="space-y-4">
           <InfoRow label="E-Posta" value={profile.email || "—"} />
           <InfoRow label="Telefon" value={profile.phone || "—"} />
-          <IdentityNumberDisplay 
-            identityNumber={profile.identityNumber || undefined} 
-          />
+          <IdentityNumberDisplay identityNumber={profile.identityNumber || undefined} />
           <InfoRow label="Lokasyon" value={profile.city || "—"} />
           <InfoRow label="Kayıt Tarihi" value={safeFormatDate(profile.createdAt, "dd MMMM yyyy")} />
         </div>
-        
+
         <div className="pt-6 border-t border-slate-50">
           <Button
             onClick={onBanToggle}
@@ -92,7 +114,9 @@ export function AdminUserStatsSidebar({
             variant="outline"
             className={cn(
               "w-full rounded-2xl font-bold text-[10px] tracking-widest h-12 flex items-center gap-2 transition-all uppercase shadow-sm",
-              profile.isBanned ? "border-emerald-200 text-emerald-600 hover:bg-emerald-50" : "border-rose-200 text-rose-600 hover:bg-rose-50"
+              profile.isBanned
+                ? "border-emerald-200 text-emerald-600 hover:bg-emerald-50"
+                : "border-rose-200 text-rose-600 hover:bg-rose-50"
             )}
           >
             {isActioning ? <Loader2 size={16} className="animate-spin" /> : <Ban size={16} />}
@@ -104,28 +128,53 @@ export function AdminUserStatsSidebar({
   );
 }
 
-function StatItem({ icon, label, value, color }: { icon: React.ReactNode; label: string; value: number | string; color: string }) {
+function StatItem({
+  icon,
+  label,
+  value,
+  color,
+}: {
+  icon: React.ReactNode;
+  label: string;
+  value: number | string;
+  color: string;
+}) {
   const colorMap: Record<string, string> = {
     indigo: "bg-indigo-50 text-indigo-600",
     emerald: "bg-emerald-50 text-emerald-600",
     amber: "bg-amber-50 text-amber-600",
-    blue: "bg-blue-50 text-blue-600"
+    blue: "bg-blue-50 text-blue-600",
   };
 
   return (
     <div className="flex items-center justify-between py-3 px-4 rounded-2xl bg-slate-50 transition-colors hover:bg-slate-100">
       <div className="flex items-center gap-3">
-        <div className={cn("size-8 rounded-xl flex items-center justify-center shadow-sm", colorMap[color])}>
+        <div
+          className={cn(
+            "size-8 rounded-xl flex items-center justify-center shadow-sm",
+            colorMap[color]
+          )}
+        >
           {icon}
         </div>
-        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{label}</span>
+        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+          {label}
+        </span>
       </div>
       <span className="text-lg font-bold text-slate-900 tracking-tighter">{value}</span>
     </div>
   );
 }
 
-function InfoRow({ label, value, fullValue }: { label: string; value: string; fullValue?: string }) {
+function InfoRow({
+  label,
+  value,
+  fullValue,
+}: {
+  label: string;
+  value: string;
+  fullValue?: string;
+}) {
   const [showFull, setShowFull] = React.useState(false);
 
   return (
@@ -136,7 +185,7 @@ function InfoRow({ label, value, fullValue }: { label: string; value: string; fu
           {showFull && fullValue ? fullValue : value}
         </p>
         {fullValue && (
-          <button 
+          <button
             onClick={() => setShowFull(!showFull)}
             className="text-[9px] font-extrabold text-indigo-500 hover:text-indigo-700 uppercase tracking-tighter"
           >
@@ -148,7 +197,17 @@ function InfoRow({ label, value, fullValue }: { label: string; value: string; fu
   );
 }
 
-function VerificationRow({ label, isDone, isCritical, isVisible = true }: { label: string; isDone?: boolean; isCritical?: boolean; isVisible?: boolean }) {
+function VerificationRow({
+  label,
+  isDone,
+  isCritical,
+  isVisible = true,
+}: {
+  label: string;
+  isDone?: boolean;
+  isCritical?: boolean;
+  isVisible?: boolean;
+}) {
   if (!isVisible) return null;
   return (
     <div className="flex items-center justify-between">
@@ -163,11 +222,11 @@ function VerificationRow({ label, isDone, isCritical, isVisible = true }: { labe
 }
 function IdentityNumberDisplay({ identityNumber }: { identityNumber?: string }) {
   if (!identityNumber) return <InfoRow label="TC Kimlik No" value="—" />;
-  
+
   return (
-    <InfoRow 
-      label="TC Kimlik No" 
-      value={`***${identityNumber.slice(-3)}`} 
+    <InfoRow
+      label="TC Kimlik No"
+      value={`***${identityNumber.slice(-3)}`}
       fullValue={identityNumber}
     />
   );

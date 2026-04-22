@@ -1,16 +1,16 @@
 import type {
+  expertInspectionGrades,
+  expertInspectionStatuses,
   fuelTypes,
   listingSortOptions,
   listingStatuses,
   moderationActions,
   moderationTargetTypes,
+  notificationTypes,
   reportReasons,
   reportStatuses,
-  notificationTypes,
   transmissionTypes,
   userRoles,
-  expertInspectionGrades,
-  expertInspectionStatuses,
 } from "@/lib/constants/domain";
 
 export type UserRole = (typeof userRoles)[number];
@@ -22,7 +22,7 @@ export type ReportStatus = (typeof reportStatuses)[number];
 export type NotificationType = (typeof notificationTypes)[number];
 export type ModerationTargetType = (typeof moderationTargetTypes)[number];
 export type ModerationAction = (typeof moderationActions)[number];
-export type VerificationStatus = 'none' | 'pending' | 'approved' | 'rejected';
+export type VerificationStatus = "none" | "pending" | "approved" | "rejected";
 export type ListingSortOption = (typeof listingSortOptions)[number];
 
 export type ExpertInspectionGrade = (typeof expertInspectionGrades)[number];
@@ -46,11 +46,11 @@ export interface Profile {
   banReason?: string | null;
   identityNumber?: string | null;
   restrictionState?: "active" | "restricted_review" | "banned";
-  
+
   // Custom Trust Algorithm fields
   trustScore?: number;
   isWalletVerified?: boolean;
-  
+
   // Corporate Fields
   businessName?: string | null;
   businessAddress?: string | null;
@@ -68,7 +68,6 @@ export interface Profile {
   verificationReviewedAt?: string | null;
   verificationFeedback?: string | null;
 
-  
   createdAt: string;
   updatedAt: string;
 }
@@ -276,7 +275,7 @@ export interface ExpertInspection {
   inspectionDate?: string;
   overallGrade?: ExpertInspectionGrade;
   totalScore?: number;
-  
+
   damageRecord?: ExpertInspectionStatus;
   bodyPaint?: ExpertInspectionStatus;
   engine?: ExpertInspectionStatus;
@@ -287,14 +286,18 @@ export interface ExpertInspection {
   interior?: ExpertInspectionStatus;
   tires?: ExpertInspectionStatus;
   acHeating?: ExpertInspectionStatus;
-  
+
   notes?: string;
   inspectedBy?: string;
   documentUrl?: string; // Tramer/Ekspertiz Kanıt Dosyası
   documentPath?: string;
 }
 
-export const expertInspectionGradeInfo: { grade: ExpertInspectionGrade; label: string; color: string }[] = [
+export const expertInspectionGradeInfo: {
+  grade: ExpertInspectionGrade;
+  label: string;
+  color: string;
+}[] = [
   { grade: "a", label: "A Mükemmel", color: "#22c55e" },
   { grade: "b", label: "B İyi", color: "#84cc16" },
   { grade: "c", label: "C Orta", color: "#eab308" },

@@ -1,16 +1,20 @@
 "use client";
 
-import { UseFormReturn, UseFieldArrayReturn } from "react-hook-form";
-import { Upload, Trash2, LoaderCircle, Star, Info, Rotate3d } from "lucide-react";
+import { Info, LoaderCircle, Rotate3d, Star, Trash2, Upload } from "lucide-react";
 import Image from "next/image";
+import { UseFieldArrayReturn, UseFormReturn } from "react-hook-form";
+
+import { FormSection } from "@/components/shared/design-system/FormSection";
 import { cn } from "@/lib/utils";
 import type { ListingCreateFormValues } from "@/types";
-import { FormSection } from "@/components/shared/design-system/FormSection";
 
 interface PhotosStepProps {
   form: UseFormReturn<ListingCreateFormValues, unknown, ListingCreateFormValues>;
   fieldArray: UseFieldArrayReturn<ListingCreateFormValues, "images", "id">;
-  uploadStates: Record<string, { status: string; progress: number; message?: string; previewUrl?: string }>;
+  uploadStates: Record<
+    string,
+    { status: string; progress: number; message?: string; previewUrl?: string }
+  >;
   onImageChange: (index: number, file: File | null) => void;
   onRemoveImage: (index: number) => void;
 }
@@ -69,7 +73,7 @@ export function PhotosStep({
                       ? "border-solid border-blue-400 ring-2 ring-blue-200"
                       : "border-solid border-gray-100"
                     : "border-gray-200 hover:border-blue-300",
-                  uploadState?.status === "error" && "border-red-200 bg-red-50",
+                  uploadState?.status === "error" && "border-red-200 bg-red-50"
                 )}
               >
                 {hasUrl ? (
@@ -95,7 +99,7 @@ export function PhotosStep({
                           "flex items-center gap-1 px-2 py-1 rounded-lg text-[10px] font-bold transition-colors",
                           is360
                             ? "bg-blue-500 text-white"
-                            : "bg-white/90 text-gray-700 hover:bg-blue-500 hover:text-white",
+                            : "bg-white/90 text-gray-700 hover:bg-blue-500 hover:text-white"
                         )}
                       >
                         <Rotate3d size={13} />

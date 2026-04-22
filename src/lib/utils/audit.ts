@@ -8,7 +8,11 @@ import { logger } from "@/lib/utils/logger";
  */
 export async function logAuditAction(params: {
   userId?: string;
-  action: "READ_PRIVATE_PROFILE" | "UPDATE_SENSITIVE_FIELD" | "DELETE_LISTING_ADMIN" | "VIEW_FINANCIAL_RECORDS";
+  action:
+    | "READ_PRIVATE_PROFILE"
+    | "UPDATE_SENSITIVE_FIELD"
+    | "DELETE_LISTING_ADMIN"
+    | "VIEW_FINANCIAL_RECORDS";
   resourceType: string;
   resourceId?: string;
   metadata?: Record<string, unknown>;
@@ -25,7 +29,7 @@ export async function logAuditAction(params: {
       resource_id: params.resourceId,
       metadata: params.metadata || {},
       ip_address: params.ip,
-      user_agent: params.ua
+      user_agent: params.ua,
     });
 
     if (error) {

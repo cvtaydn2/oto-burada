@@ -22,12 +22,13 @@
 
 import { createHmac } from "crypto";
 import { NextResponse } from "next/server";
+
+import { IyzicoProvider } from "@/lib/payment/iyzico";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { hasSupabaseAdminEnv } from "@/lib/supabase/env";
+import { withSecurity } from "@/lib/utils/api-security";
 import { logger } from "@/lib/utils/logger";
 import { runFulfillmentForPayment } from "@/services/billing/fulfillment-worker";
-import { IyzicoProvider } from "@/lib/payment/iyzico";
-import { withSecurity } from "@/lib/utils/api-security";
 
 export const dynamic = "force-dynamic";
 
@@ -51,14 +52,8 @@ interface IyzicoWebhookPayload {
  * Verify Iyzico webhook signature.
  * Iyzico sends: X-IYZ-SIGNATURE header = HMAC-SHA256(secretKey + token)
  */
-function verifyIyzicoSignature(
-  token: string,
-  signature: string,
-  secretKey: string,
-): boolean {
-  const expected = createHmac("sha256", secretKey)
-    .update(token)
-    .digest("hex");
+function verifyIyzicoSignature(token: string, signature: string, secretKey: string): boolean {
+  const expected = createHmac("sha256", secretKey).update(token).digest("hex");
   // Constant-time comparison to prevent timing attacks
   if (expected.length !== signature.length) return false;
   let diff = 0;
@@ -84,7 +79,7 @@ export async function POST(request: Request): Promise<NextResponse> {
 
   const startTime = Date.now();
   const rawHeaders = Object.fromEntries(request.headers.entries());
-  
+
   // ── 1. Parse Request ───────────────────────────────────────────────────
   let payload: IyzicoWebhookPayload;
   let rawBody = "";
@@ -167,27 +162,38 @@ export async function POST(request: Request): Promise<NextResponse> {
         const provider = new IyzicoProvider();
         const verification = await provider.verifyPayment(payload.token);
         if (!verification.success) {
-          await logWebhookAttempt("suspicious_payment", "Iyzico verification failed - possible spoofing attempt");
-          logger.payments.error("Webhook rejected: Iyzico verification failed (spoofing check)", { 
+          await logWebhookAttempt(
+            "suspicious_payment",
+            "Iyzico verification failed - possible spoofing attempt"
+          );
+          logger.payments.error("Webhook rejected: Iyzico verification failed (spoofing check)", {
             token: payload.token,
-            submittedPaymentId: payload.paymentId
+            submittedPaymentId: payload.paymentId,
           });
-          return NextResponse.json({ received: true, error: "Verification failed" }, { status: 403 });
+          return NextResponse.json(
+            { received: true, error: "Verification failed" },
+            { status: 403 }
+          );
         }
-        
+
         // Use verified payment ID from Iyzico API if available
         if (verification.transactionId && verification.transactionId !== payload.paymentId) {
-          logger.payments.warn("Webhook paymentId mismatch - using verified ID", { 
-            original: payload.paymentId, 
-            verified: verification.transactionId 
+          logger.payments.warn("Webhook paymentId mismatch - using verified ID", {
+            original: payload.paymentId,
+            verified: verification.transactionId,
           });
           payload.paymentId = verification.transactionId;
         }
       } catch (verifyErr) {
-        // If Iyzico API is down, we log and proceed with caution 
+        // If Iyzico API is down, we log and proceed with caution
         // OR we can fail-closed. Let's fail-closed for financial integrity.
-        logger.payments.error("Iyzico verification API call failed", verifyErr, { token: payload.token });
-        return NextResponse.json({ received: true, error: "Verification unavailable" }, { status: 503 });
+        logger.payments.error("Iyzico verification API call failed", verifyErr, {
+          token: payload.token,
+        });
+        return NextResponse.json(
+          { received: true, error: "Verification unavailable" },
+          { status: 503 }
+        );
       }
     }
 
@@ -225,28 +231,32 @@ export async function POST(request: Request): Promise<NextResponse> {
     // ── Post-payment actions (success only) ─────────────────────────────────
     // These are non-critical actions that happen AFTER payment is processed
     // If they fail, payment is still successful (already committed in DB)
-    
+
     if (isSuccess && result?.success) {
       try {
         // Run fulfillment jobs immediately (no 24h cron wait)
         // Note: The trigger public.trigger_create_fulfillment_jobs() already created the jobs.
         await runFulfillmentForPayment(result.payment_id);
       } catch (err) {
-        logger.payments.error("Post-payment fulfillment failed in webhook", err, { token: payload.token });
+        logger.payments.error("Post-payment fulfillment failed in webhook", err, {
+          token: payload.token,
+        });
       }
     }
 
-    await logWebhookAttempt("processed", isSuccess ? "Payment success" : "Payment failure recorded");
+    await logWebhookAttempt(
+      "processed",
+      isSuccess ? "Payment success" : "Payment failure recorded"
+    );
     return isBrowserRequest
       ? createBrowserRedirect()
       : NextResponse.json({ received: true, success: result?.success });
-
   } catch (err) {
     // Unexpected error in webhook processing
     const errMsg = err instanceof Error ? err.message : "Unknown error";
     await logWebhookAttempt("error", `System Error: ${errMsg}`);
     logger.payments.error("Webhook processing unexpected error", err, { token });
-    
+
     return NextResponse.json({ received: true, error: true });
   }
 }

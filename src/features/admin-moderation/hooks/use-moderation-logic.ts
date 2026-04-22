@@ -1,14 +1,17 @@
 "use client";
 
-import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useState } from "react";
+
 import { useErrorCapture } from "@/hooks/use-error-capture";
 import { type Listing } from "@/types";
 
 export function useModerationLogic(pendingListings: Listing[]) {
-  const { captureError, captureFailure, captureSuccess } = useErrorCapture("admin-listings-moderation");
+  const { captureError, captureFailure, captureSuccess } = useErrorCapture(
+    "admin-listings-moderation"
+  );
   const router = useRouter();
-  
+
   // State
   const [activeAction, setActiveAction] = useState<string | null>(null);
   const [activeBulkAction, setActiveBulkAction] = useState<"approve" | "reject" | null>(null);
@@ -19,18 +22,27 @@ export function useModerationLogic(pendingListings: Listing[]) {
   const [bulkNote, setBulkNote] = useState("");
 
   const [editingListingId, setEditingListingId] = useState<string | null>(null);
-  const [editValues, setEditValues] = useState<{ title: string; price: number; description: string } | null>(null);
+  const [editValues, setEditValues] = useState<{
+    title: string;
+    price: number;
+    description: string;
+  } | null>(null);
   const [isSavingEdit, setIsSavingEdit] = useState(false);
-  
+
   const [activeTab, setActiveTab] = useState<"all" | "ai_flagged">("all");
 
   // Filtering
-  const filteredListings = activeTab === "ai_flagged" 
-    ? pendingListings.filter(l => l.status === "flagged" || l.status === "pending_ai_review" || (l.fraudScore ?? 0) > 0)
-    : pendingListings;
+  const filteredListings =
+    activeTab === "ai_flagged"
+      ? pendingListings.filter(
+          (l) =>
+            l.status === "flagged" || l.status === "pending_ai_review" || (l.fraudScore ?? 0) > 0
+        )
+      : pendingListings;
 
   const allPendingListingIds = filteredListings.map((listing) => listing.id);
-  const allSelected = filteredListings.length > 0 && selectedListingIds.length === filteredListings.length;
+  const allSelected =
+    filteredListings.length > 0 && selectedListingIds.length === filteredListings.length;
 
   // Actions
   const handleModeration = async (listingId: string, action: "approve" | "reject") => {
@@ -53,7 +65,11 @@ export function useModerationLogic(pendingListings: Listing[]) {
 
       if (!response.ok || !payload?.success) {
         const message = payload?.error?.message ?? "Moderasyon işlemi tamamlanamadı.";
-        captureFailure("admin_listing_moderation_failed", message, { action, listingId, responseStatus: response.status });
+        captureFailure("admin_listing_moderation_failed", message, {
+          action,
+          listingId,
+          responseStatus: response.status,
+        });
         setErrorMessage(message);
         return;
       }
@@ -96,7 +112,11 @@ export function useModerationLogic(pendingListings: Listing[]) {
 
       if (!response.ok || !payload?.success) {
         const message = payload?.error?.message ?? "Toplu moderasyon işlemi tamamlanamadı.";
-        captureFailure("admin_bulk_moderation_failed", message, { action, attemptedCount: uniqueListingIds.length, responseStatus: response.status });
+        captureFailure("admin_bulk_moderation_failed", message, {
+          action,
+          attemptedCount: uniqueListingIds.length,
+          responseStatus: response.status,
+        });
         setErrorMessage(message);
         return;
       }
@@ -105,11 +125,22 @@ export function useModerationLogic(pendingListings: Listing[]) {
       const skippedIds = payload.data?.skippedListingIds ?? [];
       setSelectedListingIds((current) => current.filter((id) => !moderatedIds.includes(id)));
       setBulkNote("");
-      captureSuccess("admin_bulk_moderation_completed", { action, moderatedCount: moderatedIds.length, skippedCount: skippedIds.length });
-      setSuccessMessage(skippedIds.length > 0 ? `${payload.message} ${skippedIds.length} ilan atlandı.` : payload.message);
+      captureSuccess("admin_bulk_moderation_completed", {
+        action,
+        moderatedCount: moderatedIds.length,
+        skippedCount: skippedIds.length,
+      });
+      setSuccessMessage(
+        skippedIds.length > 0
+          ? `${payload.message} ${skippedIds.length} ilan atlandı.`
+          : payload.message
+      );
       router.refresh();
     } catch (err) {
-      captureError(err, "handleBulkModeration", { action, attemptedCount: uniqueListingIds.length });
+      captureError(err, "handleBulkModeration", {
+        action,
+        attemptedCount: uniqueListingIds.length,
+      });
       setErrorMessage("Toplu moderasyon sırasında bağlantı hatası oluştu.");
     } finally {
       setActiveBulkAction(null);
@@ -132,7 +163,10 @@ export function useModerationLogic(pendingListings: Listing[]) {
       const payload = await response.json();
       if (!response.ok || !payload.success) {
         const message = payload.error?.message ?? "Düzenleme kaydedilemedi.";
-        captureFailure("admin_listing_edit_failed", message, { listingId: editingListingId, responseStatus: response.status });
+        captureFailure("admin_listing_edit_failed", message, {
+          listingId: editingListingId,
+          responseStatus: response.status,
+        });
         setErrorMessage(message);
         return;
       }
@@ -152,7 +186,9 @@ export function useModerationLogic(pendingListings: Listing[]) {
 
   const toggleListingSelection = (listingId: string) => {
     setSelectedListingIds((current) =>
-      current.includes(listingId) ? current.filter((id) => id !== listingId) : [...current, listingId]
+      current.includes(listingId)
+        ? current.filter((id) => id !== listingId)
+        : [...current, listingId]
     );
   };
 
@@ -171,7 +207,7 @@ export function useModerationLogic(pendingListings: Listing[]) {
       activeTab,
       filteredListings,
       allPendingListingIds,
-      allSelected
+      allSelected,
     },
     actions: {
       setActiveTab,
@@ -185,7 +221,7 @@ export function useModerationLogic(pendingListings: Listing[]) {
       handleSaveEdit,
       toggleListingSelection,
       setErrorMessage, // for clearing
-      setSuccessMessage
-    }
+      setSuccessMessage,
+    },
   };
 }

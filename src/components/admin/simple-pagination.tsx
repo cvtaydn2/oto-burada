@@ -1,8 +1,9 @@
 "use client";
 
 import { ChevronLeft, ChevronRight } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import { useRouter, useSearchParams } from "next/navigation";
+
+import { Button } from "@/components/ui/button";
 
 interface SimplePaginationProps {
   currentPage: number;
@@ -33,10 +34,12 @@ export function SimplePagination({ currentPage, totalPages }: SimplePaginationPr
         <ChevronLeft size={16} className="mr-1" />
         Önceki
       </Button>
-      
+
       <div className="flex items-center gap-2">
         <span className="text-xs font-bold text-slate-400 uppercase tracking-widest">SAYFA</span>
-        <span className="text-sm font-bold text-slate-800">{currentPage} / {totalPages}</span>
+        <span className="text-sm font-bold text-slate-800">
+          {currentPage} / {totalPages}
+        </span>
       </div>
 
       <Button

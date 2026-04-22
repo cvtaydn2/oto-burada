@@ -1,9 +1,10 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+
 import {
+  buildListingImageStoragePath,
   formatFileSize,
   getListingImageConstraintsText,
   validateListingImageFile,
-  buildListingImageStoragePath
 } from "../listing-images";
 
 vi.mock("@/lib/constants/domain", () => ({

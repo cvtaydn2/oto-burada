@@ -32,7 +32,10 @@ function loadFallbackEnvFile(filePath) {
     }
 
     const key = trimmed.slice(0, separatorIndex).trim();
-    const value = trimmed.slice(separatorIndex + 1).trim().replace(/^['"]|['"]$/g, "");
+    const value = trimmed
+      .slice(separatorIndex + 1)
+      .trim()
+      .replace(/^['"]|['"]$/g, "");
 
     if (!process.env[key]) {
       process.env[key] = value;

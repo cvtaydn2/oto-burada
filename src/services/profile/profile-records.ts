@@ -1,8 +1,8 @@
 import type { User } from "@supabase/supabase-js";
 
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
-import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { hasSupabaseAdminEnv } from "@/lib/supabase/env";
+import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { profileSchema } from "@/lib/validators";
 import type { Profile } from "@/types";
 
@@ -34,18 +34,22 @@ interface ProfileRow {
 }
 
 function getVerificationState(user: User | null | undefined) {
-  const appMetadata = (user?.app_metadata as {
-    email_verified?: boolean;
-    identity_verified?: boolean;
-    phone_verified?: boolean;
-  } | undefined) ?? {
+  const appMetadata = (user?.app_metadata as
+    | {
+        email_verified?: boolean;
+        identity_verified?: boolean;
+        phone_verified?: boolean;
+      }
+    | undefined) ?? {
     email_verified: false,
     identity_verified: false,
     phone_verified: false,
   };
 
   return {
-    emailVerified: Boolean(appMetadata.email_verified ?? user?.email_confirmed_at ?? user?.confirmed_at),
+    emailVerified: Boolean(
+      appMetadata.email_verified ?? user?.email_confirmed_at ?? user?.confirmed_at
+    ),
   };
 }
 
@@ -69,7 +73,7 @@ function mapProfileRow(row: ProfileRow, authUser?: User | null): Profile {
     websiteUrl: row.website_url,
     verifiedBusiness: row.verified_business ?? false,
     businessSlug: row.business_slug,
-    verificationStatus: row.verification_status || 'none',
+    verificationStatus: row.verification_status || "none",
     verificationRequestedAt: row.verification_requested_at,
     verificationFeedback: row.verification_feedback,
     balanceCredits: row.balance_credits || 0,
@@ -100,7 +104,7 @@ function mapProfileRow(row: ProfileRow, authUser?: User | null): Profile {
     websiteUrl: row.website_url,
     verifiedBusiness: row.verified_business ?? false,
     businessSlug: row.business_slug,
-    verificationStatus: (row.verification_status as Profile["verificationStatus"]) || 'none',
+    verificationStatus: (row.verification_status as Profile["verificationStatus"]) || "none",
     verificationRequestedAt: row.verification_requested_at,
     verificationFeedback: row.verification_feedback,
     balanceCredits: row.balance_credits || 0,
@@ -113,9 +117,9 @@ function mapProfileRow(row: ProfileRow, authUser?: User | null): Profile {
  * Builds a profile object from auth user metadata.
  * Does NOT perform any database operations.
  * Use this for read-only profile construction from auth context.
- * 
+ *
  * For profile bootstrap/creation, use a dedicated auth callback or onboarding flow.
- * 
+ *
  * SECURITY: Role is ONLY resolved from app_metadata (trusted, server-controlled).
  * user_metadata.role is IGNORED to prevent privilege escalation.
  */
@@ -141,7 +145,7 @@ export function buildProfileFromAuthUser(user: User): Profile {
   };
   const verificationState = getVerificationState(user);
   const timestamp = new Date().toISOString();
-  
+
   // SECURITY: Role ONLY from app_metadata (trusted source)
   // user_metadata.role is NEVER used (user-writable, untrusted)
   const resolvedRole = appMetadata.role === "admin" ? "admin" : "user";
@@ -153,7 +157,7 @@ export function buildProfileFromAuthUser(user: User): Profile {
     phone: userMetadata.phone ?? "",
     city: userMetadata.city ?? "",
     emailVerified: verificationState.emailVerified,
-    isVerified: false, 
+    isVerified: false,
     role: resolvedRole as Profile["role"],
     userType: "individual" as const,
     balanceCredits: 0,
@@ -167,7 +171,7 @@ export function buildProfileFromAuthUser(user: User): Profile {
     websiteUrl: userMetadata.website_url ?? null,
     verifiedBusiness: appMetadata.verified_business === true,
     businessSlug: userMetadata.business_slug ?? null,
-    verificationStatus: 'none' as const,
+    verificationStatus: "none" as const,
     createdAt: user.created_at ?? timestamp,
     updatedAt: timestamp,
   };
@@ -187,11 +191,11 @@ export function buildProfileFromAuthUser(user: User): Profile {
 
 /**
  * REMOVED: This function was deprecated due to side-effects during read operations.
- * 
+ *
  * Use instead:
  * - buildProfileFromAuthUser() for read-only profile construction
  * - createOrUpdateProfile() for explicit profile creation (auth callbacks, onboarding)
- * 
+ *
  * @deprecated Removed in P1 security hardening (2026-04-19)
  */
 // export async function ensureProfileRecord(user: User) - REMOVED
@@ -199,7 +203,7 @@ export function buildProfileFromAuthUser(user: User): Profile {
 /**
  * Creates or updates a profile record in the database.
  * Use this for explicit profile mutations (onboarding, auth callbacks, profile updates).
- * 
+ *
  * This is the proper way to bootstrap user profiles.
  */
 export async function createOrUpdateProfile(user: User) {
@@ -233,7 +237,7 @@ export async function createOrUpdateProfile(user: User) {
       business_slug: profile.businessSlug ?? null,
       updated_at: profile.updatedAt,
     },
-    { onConflict: "id" },
+    { onConflict: "id" }
   );
 
   if (error) {
@@ -246,7 +250,7 @@ export async function createOrUpdateProfile(user: User) {
 /**
  * Get profile by ID (admin-only operation).
  * Uses admin client to bypass RLS for admin dashboard operations.
- * 
+ *
  * For user-scoped profile reads, use getUserProfile() instead.
  */
 export async function getStoredProfileById(profileId: string) {
@@ -257,7 +261,9 @@ export async function getStoredProfileById(profileId: string) {
   const admin = createSupabaseAdminClient();
   const { data, error } = await admin
     .from("profiles")
-    .select("id, full_name, phone, city, avatar_url, role, user_type, balance_credits, is_verified, is_banned, business_name, business_address, business_logo_url, business_description, tax_id, tax_office, website_url, verified_business, business_slug, verification_status, verification_requested_at, verification_feedback, created_at, updated_at")
+    .select(
+      "id, full_name, phone, city, avatar_url, role, user_type, balance_credits, is_verified, is_banned, business_name, business_address, business_logo_url, business_description, tax_id, tax_office, website_url, verified_business, business_slug, verification_status, verification_requested_at, verification_feedback, created_at, updated_at"
+    )
     .eq("id", profileId)
     .maybeSingle<ProfileRow>();
 
@@ -276,20 +282,24 @@ export async function getStoredProfileById(profileId: string) {
  * Get current user's profile (user-scoped operation).
  * Uses server client with RLS enforcement.
  * RLS policy ensures user can only read their own profile.
- * 
+ *
  * SECURITY: This is the preferred method for user profile reads.
  */
 export async function getUserProfile(userId: string) {
   const supabase = await createSupabaseServerClient();
   const { data, error } = await supabase
     .from("profiles")
-    .select("id, full_name, phone, city, avatar_url, role, user_type, balance_credits, is_verified, is_banned, business_name, business_address, business_logo_url, business_description, tax_id, tax_office, website_url, verified_business, business_slug, verification_status, verification_requested_at, verification_feedback, created_at, updated_at")
+    .select(
+      "id, full_name, phone, city, avatar_url, role, user_type, balance_credits, is_verified, is_banned, business_name, business_address, business_logo_url, business_description, tax_id, tax_office, website_url, verified_business, business_slug, verification_status, verification_requested_at, verification_feedback, created_at, updated_at"
+    )
     .eq("id", userId)
     .maybeSingle<ProfileRow>();
 
   if (!error && data) {
     // Get auth user for verification state
-    const { data: { user } } = await supabase.auth.getUser();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
     return mapProfileRow(data, user);
   }
 
@@ -299,7 +309,7 @@ export async function getUserProfile(userId: string) {
 /**
  * Update profile (admin-only operation).
  * Uses admin client to bypass RLS for admin dashboard operations.
- * 
+ *
  * For user-scoped profile updates, use updateUserProfile() instead.
  */
 export async function updateProfileTable(
@@ -309,7 +319,7 @@ export async function updateProfileTable(
     phone: string;
     city: string;
     avatarUrl?: string | null;
-  },
+  }
 ) {
   if (!hasSupabaseAdminEnv()) {
     return null;
@@ -338,7 +348,7 @@ export async function updateProfileTable(
  * Update current user's profile (user-scoped operation).
  * Uses server client with RLS enforcement.
  * RLS policy ensures user can only update their own profile.
- * 
+ *
  * SECURITY: This is the preferred method for user profile updates.
  */
 export async function updateUserProfile(
@@ -348,7 +358,7 @@ export async function updateUserProfile(
     phone: string;
     city: string;
     avatarUrl?: string | null;
-  },
+  }
 ) {
   const supabase = await createSupabaseServerClient();
   const { error } = await supabase
@@ -369,17 +379,16 @@ export async function updateUserProfile(
   return getUserProfile(userId);
 }
 
-
 /**
  * Checks if a user is banned.
  * Used in API routes before allowing mutations (listing creation, messaging, etc.)
- * 
+ *
  * SECURITY: Fail-closed behavior in production.
  * - If DB is unavailable in production → throws error (blocks operation)
  * - If DB is unavailable in development → returns false (allows operation for dev convenience)
  * - If user record not found → returns false (user not banned)
  * - If is_banned is true → returns true (user is banned)
- * 
+ *
  * @throws Error in production if database is unavailable
  */
 export async function isUserBanned(userId: string): Promise<boolean> {
@@ -411,7 +420,6 @@ export async function isUserBanned(userId: string): Promise<boolean> {
     return false;
   }
 
-
   return data.is_banned === true;
 }
 
@@ -419,9 +427,11 @@ export async function isUserBanned(userId: string): Promise<boolean> {
  * Seller triggers verification request.
  * Moves state to 'pending' and stores timestamp.
  */
-export async function requestVerification(userId: string): Promise<{ success: boolean; error?: string }> {
+export async function requestVerification(
+  userId: string
+): Promise<{ success: boolean; error?: string }> {
   const supabase = await createSupabaseServerClient();
-  
+
   // 1. Check current status
   const { data: profile, error: fetchError } = await supabase
     .from("profiles")
@@ -461,7 +471,10 @@ export async function requestVerification(userId: string): Promise<{ success: bo
       const now = Date.now();
       const twentyFourHours = 24 * 60 * 60 * 1000;
       if (now - lastUpdate < twentyFourHours) {
-        return { success: false, error: "Ret kararından sonra tekrar başvurmak için 24 saat beklemeniz gerekmektedir." };
+        return {
+          success: false,
+          error: "Ret kararından sonra tekrar başvurmak için 24 saat beklemeniz gerekmektedir.",
+        };
       }
     }
   }
@@ -472,7 +485,7 @@ export async function requestVerification(userId: string): Promise<{ success: bo
     .update({
       verification_status: "pending",
       verification_requested_at: new Date().toISOString(),
-      updated_at: new Date().toISOString()
+      updated_at: new Date().toISOString(),
     })
     .eq("id", userId);
 

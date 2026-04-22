@@ -1,5 +1,7 @@
 "use client";
 
+import type { AuthChangeEvent, Session, User, UserResponse } from "@supabase/supabase-js";
+import { useRouter } from "next/navigation";
 import {
   createContext,
   type PropsWithChildren,
@@ -8,9 +10,8 @@ import {
   useMemo,
   useState,
 } from "react";
-import type { AuthChangeEvent, Session, User, UserResponse } from "@supabase/supabase-js";
+
 import { createSupabaseBrowserClient } from "@/lib/supabase/browser";
-import { useRouter } from "next/navigation";
 
 interface AuthContextValue {
   isAdmin: boolean;
@@ -62,7 +63,7 @@ export function AuthProvider({ children, initialUser = null }: AuthProviderProps
       if (!mounted) return;
 
       const newUser = session?.user ?? null;
-      
+
       if (user?.id !== newUser?.id) {
         if (event === "SIGNED_OUT") {
           authChannel.postMessage("SIGNOUT");
@@ -89,7 +90,7 @@ export function AuthProvider({ children, initialUser = null }: AuthProviderProps
       user,
       userId: user?.id ?? null,
     }),
-    [isReady, user],
+    [isReady, user]
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

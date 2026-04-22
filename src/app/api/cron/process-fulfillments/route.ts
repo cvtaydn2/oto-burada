@@ -1,29 +1,30 @@
 /**
  * POST /api/cron/process-fulfillments
- * 
+ *
  * Cron endpoint for processing payment fulfillment jobs.
- * 
+ *
  * Security:
  * - Requires CRON_SECRET in Authorization header
  * - Only callable by Vercel Cron or authorized services
- * 
+ *
  * Schedule:
  * - Runs once daily at 04:00 UTC (configured in vercel.json)
  * - Note: Vercel Hobby plan limits cron jobs to once per day max
- * 
+ *
  * Flow:
  * 1. Verify cron secret
  * 2. Process batch of ready jobs (max 10)
  * 3. Return processing summary
- * 
+ *
  * Vercel Cron docs:
  * https://vercel.com/docs/cron-jobs
  */
 
 import { NextResponse } from "next/server";
-import { processFulfillmentJobs } from "@/services/billing/fulfillment-worker";
-import { logger } from "@/lib/utils/logger";
+
 import { captureServerError, captureServerEvent } from "@/lib/monitoring/posthog-server";
+import { logger } from "@/lib/utils/logger";
+import { processFulfillmentJobs } from "@/services/billing/fulfillment-worker";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
@@ -35,20 +36,14 @@ export async function GET(request: Request): Promise<NextResponse> {
 
   if (!cronSecret) {
     logger.payments.error("CRON_SECRET not configured");
-    return NextResponse.json(
-      { error: "Cron not configured" },
-      { status: 503 }
-    );
+    return NextResponse.json({ error: "Cron not configured" }, { status: 503 });
   }
 
   if (authHeader !== `Bearer ${cronSecret}`) {
     logger.payments.warn("Unauthorized cron request", {
       ip: request.headers.get("x-forwarded-for") ?? "unknown",
     });
-    return NextResponse.json(
-      { error: "Unauthorized" },
-      { status: 401 }
-    );
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
   // 2. Process fulfillment jobs
@@ -72,7 +67,6 @@ export async function GET(request: Request): Promise<NextResponse> {
       ...result,
       duration_ms: duration,
     });
-
   } catch (error) {
     logger.payments.error("Cron fulfillment processing failed", error);
     captureServerError("Cron fulfillment processing failed", "payments", error);
@@ -91,4 +85,3 @@ export async function GET(request: Request): Promise<NextResponse> {
 export async function POST(request: Request): Promise<NextResponse> {
   return GET(request);
 }
-

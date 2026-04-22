@@ -1,6 +1,7 @@
-import type { PaymentRequest, PaymentResponse, PaymentProvider } from "./types";
-import { IyzicoProvider } from "./iyzico";
 import { logger } from "@/lib/utils/logger";
+
+import { IyzicoProvider } from "./iyzico";
+import type { PaymentProvider, PaymentRequest, PaymentResponse } from "./types";
 
 class PaymentManager {
   private provider: PaymentProvider;
@@ -15,7 +16,11 @@ class PaymentManager {
       return await this.provider.processPayment(request);
     } catch (error) {
       logger.payments.error("Payment processing failed", error, { amount: request.amount });
-      return { success: false, status: "failure", error: "Ödeme işlemi sırasında bir sistem hatası oluştu." };
+      return {
+        success: false,
+        status: "failure",
+        error: "Ödeme işlemi sırasında bir sistem hatası oluştu.",
+      };
     }
   }
 

@@ -1,4 +1,5 @@
 import { ShieldCheck } from "lucide-react";
+
 import { cn } from "@/lib/utils";
 
 interface TrustBadgeProps {
@@ -20,19 +21,19 @@ export function TrustBadge({ badgeLabel, score, tone = "amber" }: TrustBadgeProp
     <div className="flex items-center justify-between mb-6">
       <div className="flex items-center gap-2">
         <div className="text-center">
-          <div className="text-2xl font-semibold text-foreground">
-            {score.toFixed(0)}
-          </div>
+          <div className="text-2xl font-semibold text-foreground">{score.toFixed(0)}</div>
           <div className="text-[10px] font-bold text-muted-foreground/40 uppercase tracking-[0.2em]">
             Güven Puanı
           </div>
         </div>
       </div>
       {badgeLabel ? (
-        <div className={cn(
-          "flex items-center gap-1.5 text-xs font-bold px-3 py-1.5 rounded-xl border uppercase tracking-tight",
-          themes[tone || "amber"]
-        )}>
+        <div
+          className={cn(
+            "flex items-center gap-1.5 text-xs font-bold px-3 py-1.5 rounded-xl border uppercase tracking-tight",
+            themes[tone || "amber"]
+          )}
+        >
           <ShieldCheck size={16} />
           {badgeLabel}
         </div>

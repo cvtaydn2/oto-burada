@@ -1,8 +1,8 @@
 "use client";
 
-import { cn } from "@/lib/utils";
-import { type ListingFilters, type BrandCatalogItem, type CityOption } from "@/types";
 import { ListingsFilterPanel } from "@/components/listings/listings-filter-panel";
+import { cn } from "@/lib/utils";
+import { type BrandCatalogItem, type CityOption, type ListingFilters } from "@/types";
 
 interface MarketplaceSidebarProps {
   brands: BrandCatalogItem[];
@@ -20,15 +20,17 @@ export function MarketplaceSidebar({
   filters,
   isPending,
   handleFilterChange,
-  handleReset
+  handleReset,
 }: MarketplaceSidebarProps) {
   return (
     <aside className="hidden lg:block w-72 xl:w-80 shrink-0">
-      <div className={cn(
-        "sticky top-28 transition-all",
-        isPending && "opacity-50 pointer-events-none grayscale"
-      )}>
-        <ListingsFilterPanel 
+      <div
+        className={cn(
+          "sticky top-28 transition-all",
+          isPending && "opacity-50 pointer-events-none grayscale"
+        )}
+      >
+        <ListingsFilterPanel
           brands={brands}
           cities={cities}
           filters={filters}

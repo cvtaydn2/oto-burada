@@ -1,8 +1,8 @@
 import type { User } from "@supabase/supabase-js";
 
-import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { hasSupabaseEnv } from "@/lib/supabase/env";
-import { apiError, API_ERROR_CODES } from "@/lib/utils/api-response";
+import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { API_ERROR_CODES, apiError } from "@/lib/utils/api-response";
 
 export async function requireApiUser(): Promise<User | Response> {
   if (!hasSupabaseEnv()) {

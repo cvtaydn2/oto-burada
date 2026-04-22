@@ -1,11 +1,12 @@
 /**
  * GET /api/notifications/stream
- * 
+ *
  * SSE Realtime connection for user notifications.
  * Polls Upstash Redis for new messages targeting the authenticated user.
  */
 
 import { Redis } from "@upstash/redis";
+
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { logger } from "@/lib/utils/logger";
 
@@ -25,7 +26,9 @@ function getRedisClient() {
 function getAppUrl(): string {
   const url = process.env.NEXT_PUBLIC_APP_URL;
   if (!url) {
-    return process.env.NODE_ENV === "production" ? "https://otoburada.com" : "http://localhost:3000";
+    return process.env.NODE_ENV === "production"
+      ? "https://otoburada.com"
+      : "http://localhost:3000";
   }
   return url;
 }
@@ -71,8 +74,8 @@ export async function GET(request: Request) {
       const poll = async () => {
         try {
           // Poll for new notifications since last check
-          const newNotifications = await redis.zrange(key, lastCheck + 1, "+inf", { 
-            byScore: true 
+          const newNotifications = await redis.zrange(key, lastCheck + 1, "+inf", {
+            byScore: true,
           });
 
           if (newNotifications && newNotifications.length > 0) {
@@ -81,9 +84,9 @@ export async function GET(request: Request) {
             }
             lastCheck = Date.now();
           }
-          
+
           // Keep-alive heartbeat
-          send(':\n\n');
+          send(":\n\n");
         } catch (error) {
           logger.notifications.error("SSE Polling Error", error);
         }
@@ -93,23 +96,25 @@ export async function GET(request: Request) {
 
       const onAbort = () => {
         if (intervalId) clearInterval(intervalId);
-        try { controller.close(); } catch {}
+        try {
+          controller.close();
+        } catch {}
       };
 
       request.signal.addEventListener("abort", onAbort);
     },
     cancel() {
       if (intervalId) clearInterval(intervalId);
-    }
+    },
   });
 
   const appUrl = getAppUrl();
-  
+
   return new Response(stream, {
     headers: {
       "Content-Type": "text/event-stream",
       "Cache-Control": "no-cache, no-transform, no-store",
-      "Connection": "keep-alive",
+      Connection: "keep-alive",
       "X-Content-Type-Options": "nosniff",
       "Access-Control-Allow-Origin": appUrl,
       "Access-Control-Allow-Credentials": "true",

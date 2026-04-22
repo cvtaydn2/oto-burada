@@ -1,13 +1,20 @@
-import { createTicket } from "@/services/support/ticket-service";
-import type { TicketCategory, TicketPriority } from "@/services/support/ticket-service";
-import { rateLimitProfiles } from "@/lib/utils/rate-limit";
-import { sanitizeText, sanitizeDescription } from "@/lib/utils/sanitize";
-import { logger } from "@/lib/utils/logger";
 import { captureServerError, captureServerEvent } from "@/lib/monitoring/posthog-server";
-import { apiError, apiSuccess, API_ERROR_CODES } from "@/lib/utils/api-response";
-import { withAuthAndCsrf, withAuth } from "@/lib/utils/api-security";
+import { API_ERROR_CODES, apiError, apiSuccess } from "@/lib/utils/api-response";
+import { withAuth, withAuthAndCsrf } from "@/lib/utils/api-security";
+import { logger } from "@/lib/utils/logger";
+import { rateLimitProfiles } from "@/lib/utils/rate-limit";
+import { sanitizeDescription, sanitizeText } from "@/lib/utils/sanitize";
+import type { TicketCategory, TicketPriority } from "@/services/support/ticket-service";
+import { createTicket } from "@/services/support/ticket-service";
 
-const VALID_CATEGORIES: TicketCategory[] = ["listing", "account", "payment", "technical", "feedback", "other"];
+const VALID_CATEGORIES: TicketCategory[] = [
+  "listing",
+  "account",
+  "payment",
+  "technical",
+  "feedback",
+  "other",
+];
 const VALID_PRIORITIES: TicketPriority[] = ["low", "medium", "high", "urgent"];
 
 export async function POST(request: Request) {
@@ -17,7 +24,7 @@ export async function POST(request: Request) {
     userRateLimit: rateLimitProfiles.ticketCreate,
     rateLimitKey: "tickets:create",
   });
-  
+
   if (!security.ok) return security.response;
   const user = security.user!; // Guaranteed by withAuthAndCsrf
 
@@ -52,17 +59,25 @@ export async function POST(request: Request) {
       listingId: typeof listingId === "string" ? listingId : undefined,
     });
 
-    captureServerEvent("support_ticket_created", {
-      userId: user.id,
-      ticketId: ticket.id,
-      category: (category as TicketCategory) ?? "other",
-    }, user.id);
+    captureServerEvent(
+      "support_ticket_created",
+      {
+        userId: user.id,
+        ticketId: ticket.id,
+        category: (category as TicketCategory) ?? "other",
+      },
+      user.id
+    );
 
     return apiSuccess(ticket, "Destek talebiniz oluşturuldu.", 201);
   } catch (error) {
     logger.api.error("Ticket creation failed", error, { userId: user.id });
     captureServerError("Ticket creation failed", "support", error, { userId: user.id });
-    return apiError(API_ERROR_CODES.INTERNAL_ERROR, "Destek talebi oluşturulamadı. Lütfen tekrar dene.", 500);
+    return apiError(
+      API_ERROR_CODES.INTERNAL_ERROR,
+      "Destek talebi oluşturulamadı. Lütfen tekrar dene.",
+      500
+    );
   }
 }
 
@@ -72,7 +87,7 @@ export async function GET(request: Request) {
     ipRateLimit: rateLimitProfiles.general,
     rateLimitKey: "tickets:list",
   });
-  
+
   if (!security.ok) return security.response;
   const user = security.user!; // Guaranteed by withAuth
 

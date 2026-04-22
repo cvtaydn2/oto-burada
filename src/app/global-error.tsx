@@ -2,6 +2,7 @@
 
 import NextError from "next/error";
 import { useEffect } from "react";
+
 import { captureClientException } from "@/lib/monitoring/posthog-client";
 
 export default function GlobalError({

@@ -1,6 +1,6 @@
-import { test, expect } from "@playwright/test";
+import { expect, test } from "@playwright/test";
 
-// Not: Bu testin çalışması için .env dosyasında SUPABASE_DEMO_USER_PASSWORD tanımlı olmalı 
+// Not: Bu testin çalışması için .env dosyasında SUPABASE_DEMO_USER_PASSWORD tanımlı olmalı
 // ve veritabanı seed edilmiş olmalıdır.
 const TEST_USER = "emre@otoburada.demo";
 const TEST_PASSWORD = process.env.SUPABASE_DEMO_USER_PASSWORD || "test-123456";
@@ -20,7 +20,7 @@ test.describe("Listing Creation Wizard", () => {
   test("should complete the 5-step listing wizard", async ({ page }) => {
     // 1. İlan formuna git
     await page.goto("/dashboard/listings");
-    
+
     // "Yeni İlan Ver" butonuna tıkla (MyListingsPanel içindeki buton)
     await page.getByRole("button", { name: /Yeni İlan Ver/i }).click();
 
@@ -28,7 +28,7 @@ test.describe("Listing Creation Wizard", () => {
 
     // STEP 1: Araç Bilgileri
     await page.getByLabel(/Plaka/i).fill("34 OTO 2026");
-    
+
     // Marka ve Model seçimi (Native select)
     await page.getByLabel(/Marka/i).selectOption("Volkswagen");
     await page.getByLabel(/Model/i).selectOption("Golf");
@@ -39,7 +39,7 @@ test.describe("Listing Creation Wizard", () => {
 
     // STEP 2: Konum ve Detaylar
     await expect(page.getByRole("heading", { name: /Konum ve Teknik Detaylar/i })).toBeVisible();
-    
+
     // Şehir ve İlçe seçimi (Native select)
     await page.getByLabel(/Şehir/i).selectOption("İstanbul");
     await page.getByLabel(/İlçe/i).selectOption("Beşiktaş");
@@ -50,7 +50,9 @@ test.describe("Listing Creation Wizard", () => {
 
     // Başlık, Açıklama ve Fiyat (Native inputs)
     await page.getByLabel(/İlan Başlığı/i).fill("Temiz ve Bakımlı Golf - E2E Test");
-    await page.getByLabel(/İçerik \/ Açıklama/i).fill("Bu ilan Playwright E2E testi tarafından otomatik oluşturulmuştur.");
+    await page
+      .getByLabel(/İçerik \/ Açıklama/i)
+      .fill("Bu ilan Playwright E2E testi tarafından otomatik oluşturulmuştur.");
     await page.getByLabel(/Fiyat/i).fill("1250000");
 
     await page.getByRole("button", { name: /Sonraki Adım/i }).click();
@@ -59,16 +61,16 @@ test.describe("Listing Creation Wizard", () => {
     await expect(page.getByRole("heading", { name: /Ekspertiz Bilgileri/i }).first()).toBeVisible();
     // Parçaları tıklayarak durum değiştirme (DamageSelector)
     // Kaput'a tıklayalım
-    await page.getByText(/Kaput/i).click(); 
-    
+    await page.getByText(/Kaput/i).click();
+
     await page.getByRole("button", { name: /Sonraki Adım/i }).click();
 
     // STEP 4: Fotoğraflar
     await expect(page.getByRole("heading", { name: /Fotoğraflar/i })).toBeVisible();
-    
+
     // Not: Dosya yükleme testi backend'e bağlı olduğundan atlanıyor
     // Gerçek test senaryosunda upload kontrolü eklenebilir
-    
+
     // Gönder butonunun varlığını kontrol et
     await expect(page.getByRole("button", { name: /İlanı Yayınla/i })).toBeVisible();
   });

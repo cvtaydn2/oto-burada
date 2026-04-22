@@ -17,16 +17,18 @@ export interface SellerReview {
 
 export async function getSellerReviews(sellerId: string) {
   const supabase = await createSupabaseServerClient();
-  
+
   const { data, error } = await supabase
     .from("seller_reviews")
-    .select(`
+    .select(
+      `
       *,
       reviewer:profiles!reviewer_id (
         full_name,
         avatar_url
       )
-    `)
+    `
+    )
     .eq("seller_id", sellerId)
     .order("created_at", { ascending: false });
 
@@ -40,7 +42,7 @@ export async function getSellerReviews(sellerId: string) {
 
 export async function getSellerRatingSummary(sellerId: string) {
   const supabase = await createSupabaseServerClient();
-  
+
   const { data, error } = await supabase
     .from("seller_reviews")
     .select("rating")
@@ -61,7 +63,9 @@ export async function submitSellerReview(params: {
   comment?: string;
 }) {
   const supabase = await createSupabaseServerClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
 
   if (!user) throw new Error("Unauthorized");
 
@@ -69,7 +73,7 @@ export async function submitSellerReview(params: {
     .from("seller_reviews")
     .insert({
       ...params,
-      reviewer_id: user.id
+      reviewer_id: user.id,
     })
     .select()
     .single();

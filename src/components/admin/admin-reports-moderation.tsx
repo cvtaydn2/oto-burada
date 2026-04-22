@@ -1,21 +1,15 @@
 "use client";
 
+import { ArrowRight, Eye, LoaderCircle, ShieldCheck, Sparkles, XCircle } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import {
-  ArrowRight,
-  Eye,
-  LoaderCircle,
-  ShieldCheck,
-  Sparkles,
-  XCircle,
-} from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
+
+import { useErrorCapture } from "@/hooks/use-error-capture";
 import { reportReasonLabels, reportStatusLabels } from "@/lib/constants/domain";
 import { formatDate } from "@/lib/utils";
 import type { Report, ReportStatus } from "@/types";
-import { useErrorCapture } from "@/hooks/use-error-capture";
 
 interface AdminReportsModerationProps {
   listingMetaById: Record<string, { slug: string; title: string }>;
@@ -29,10 +23,7 @@ const statusClassMap: Record<ReportStatus, string> = {
   reviewing: "bg-sky-100 text-sky-700",
 };
 
-export function AdminReportsModeration({
-  listingMetaById,
-  reports,
-}: AdminReportsModerationProps) {
+export function AdminReportsModeration({ listingMetaById, reports }: AdminReportsModerationProps) {
   const { captureError } = useErrorCapture("admin-reports-moderation");
   const router = useRouter();
   const [activeAction, setActiveAction] = useState<string | null>(null);
@@ -67,7 +58,10 @@ export function AdminReportsModeration({
         },
         method: "PATCH",
       });
-      const payload = await response.json().catch(() => null) as { success?: boolean; error?: { message: string } } | null;
+      const payload = (await response.json().catch(() => null)) as {
+        success?: boolean;
+        error?: { message: string };
+      } | null;
 
       if (!response.ok || !payload?.success) {
         toast.error(payload?.error?.message ?? "Rapor durumu güncellenemedi.");
@@ -92,7 +86,9 @@ export function AdminReportsModeration({
     <section className="rounded-2xl border border-border/80 bg-background p-6 shadow-sm sm:p-8">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <p className="text-sm font-medium uppercase tracking-[0.18em] text-primary/80">Raporlar</p>
+          <p className="text-sm font-medium uppercase tracking-[0.18em] text-primary/80">
+            Raporlar
+          </p>
           <h2 className="mt-3 text-2xl font-semibold tracking-tight">Kullanici raporlari</h2>
           <p className="mt-3 max-w-3xl text-sm leading-6 text-muted-foreground sm:text-base">
             Acik ve incelemede olan raporlari durum guncelleyerek yonetebilirsin.
@@ -212,7 +208,11 @@ export function AdminReportsModeration({
                     onClick={() => report.id && void handleStatusUpdate(report.id, "reviewing")}
                     className="inline-flex h-11 items-center justify-center gap-2 rounded-xl border border-border bg-background px-4 text-sm font-semibold text-foreground transition-colors hover:bg-muted disabled:cursor-not-allowed disabled:opacity-60"
                   >
-                    {reviewing ? <LoaderCircle className="size-4 animate-spin" /> : <Eye className="size-4" />}
+                    {reviewing ? (
+                      <LoaderCircle className="size-4 animate-spin" />
+                    ) : (
+                      <Eye className="size-4" />
+                    )}
                     Incelemeye Al
                   </button>
 
@@ -222,7 +222,11 @@ export function AdminReportsModeration({
                     onClick={() => report.id && void handleStatusUpdate(report.id, "resolved")}
                     className="inline-flex h-11 items-center justify-center gap-2 rounded-xl bg-primary px-4 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-60"
                   >
-                    {resolved ? <LoaderCircle className="size-4 animate-spin" /> : <ShieldCheck className="size-4" />}
+                    {resolved ? (
+                      <LoaderCircle className="size-4 animate-spin" />
+                    ) : (
+                      <ShieldCheck className="size-4" />
+                    )}
                     Cozuldu
                   </button>
 
@@ -232,7 +236,11 @@ export function AdminReportsModeration({
                     onClick={() => report.id && void handleStatusUpdate(report.id, "dismissed")}
                     className="inline-flex h-11 items-center justify-center gap-2 rounded-xl border border-border bg-background px-4 text-sm font-semibold text-foreground transition-colors hover:bg-muted disabled:cursor-not-allowed disabled:opacity-60"
                   >
-                    {dismissed ? <LoaderCircle className="size-4 animate-spin" /> : <XCircle className="size-4" />}
+                    {dismissed ? (
+                      <LoaderCircle className="size-4 animate-spin" />
+                    ) : (
+                      <XCircle className="size-4" />
+                    )}
                     Kapat
                   </button>
                 </div>

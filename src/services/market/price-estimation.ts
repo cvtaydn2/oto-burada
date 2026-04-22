@@ -24,12 +24,12 @@ export async function estimateVehiclePrice(params: {
   // PERFORMANCE OPTIMIZATION: Cache market stats for 1 hour
   // Market averages don't change frequently, safe to cache
   const cacheKey = `market-stats:${params.brand}:${params.model}:${params.year}:${params.carTrim ?? "null"}`;
-  
+
   const baseStats = await withCache(
     cacheKey,
     async () => {
       const admin = createSupabaseAdminClient();
-      
+
       // 1. Get the base average for the segment (optionally by trim)
       let query = admin
         .from("market_stats")
@@ -57,7 +57,7 @@ export async function estimateVehiclePrice(params: {
           .eq("year", params.year)
           .is("car_trim", null)
           .maybeSingle();
-        
+
         if (fallbackStats) {
           baseAvg = Number(fallbackStats.avg_price);
           count = Number(fallbackStats.listing_count);
@@ -66,7 +66,7 @@ export async function estimateVehiclePrice(params: {
 
       return { baseAvg, count };
     },
-    3600, // 1 hour TTL
+    3600 // 1 hour TTL
   );
 
   if (baseStats.baseAvg === 0) {
@@ -96,7 +96,7 @@ export function calculateValuation(
     mileage: number;
     tramerAmount?: number | null;
     damageStatusJson?: Record<string, string> | null;
-  },
+  }
 ) {
   // 1. Mileage adjustment
   const currentYear = new Date().getFullYear();
@@ -115,7 +115,7 @@ export function calculateValuation(
   let damageAdjustment = 0;
   if (params.damageStatusJson) {
     const nonOriginalParts = Object.values(params.damageStatusJson).filter(
-      (v) => v !== "original" && v !== "var",
+      (v) => v !== "original" && v !== "var"
     ).length;
     damageAdjustment = Math.min(nonOriginalParts * 0.018, 0.25);
   }

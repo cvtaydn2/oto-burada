@@ -1,5 +1,5 @@
 import { z } from "zod";
-import type { ListingFilters } from "@/types";
+
 import {
   fuelTypes,
   listingSortOptions,
@@ -8,11 +8,13 @@ import {
   minimumCarYear,
   transmissionTypes,
 } from "@/lib/constants/domain";
+import type { ListingFilters } from "@/types";
+
 import {
-  optionalTrimmedString,
-  invalidMessage,
   emptyStringToUndefined,
+  invalidMessage,
   nonNegativeNumberSchema,
+  optionalTrimmedString,
 } from "./shared";
 
 export const listingFiltersSchema: z.ZodType<ListingFilters> = z
@@ -23,27 +25,45 @@ export const listingFiltersSchema: z.ZodType<ListingFilters> = z
     carTrim: optionalTrimmedString,
     city: optionalTrimmedString,
     district: optionalTrimmedString,
-    minPrice: z.preprocess(emptyStringToUndefined, z.coerce.number().finite().min(0, invalidMessage).optional()),
-    maxPrice: z.preprocess(emptyStringToUndefined, z.coerce.number().finite().min(0, invalidMessage).optional()),
+    minPrice: z.preprocess(
+      emptyStringToUndefined,
+      z.coerce.number().finite().min(0, invalidMessage).optional()
+    ),
+    maxPrice: z.preprocess(
+      emptyStringToUndefined,
+      z.coerce.number().finite().min(0, invalidMessage).optional()
+    ),
     minYear: z.preprocess(
       emptyStringToUndefined,
-      z.coerce.number().int().min(minimumCarYear, invalidMessage).max(maximumCarYear, invalidMessage).optional(),
+      z.coerce
+        .number()
+        .int()
+        .min(minimumCarYear, invalidMessage)
+        .max(maximumCarYear, invalidMessage)
+        .optional()
     ),
     maxYear: z.preprocess(
       emptyStringToUndefined,
-      z.coerce.number().int().min(minimumCarYear, invalidMessage).max(maximumCarYear, invalidMessage).optional(),
+      z.coerce
+        .number()
+        .int()
+        .min(minimumCarYear, invalidMessage)
+        .max(maximumCarYear, invalidMessage)
+        .optional()
     ),
     maxMileage: z.preprocess(
       emptyStringToUndefined,
-      nonNegativeNumberSchema.max(maximumMileage, invalidMessage).optional(),
+      nonNegativeNumberSchema.max(maximumMileage, invalidMessage).optional()
     ),
-    maxTramer: z.preprocess(
-      emptyStringToUndefined,
-      nonNegativeNumberSchema.optional(),
-    ),
+    maxTramer: z.preprocess(emptyStringToUndefined, nonNegativeNumberSchema.optional()),
     hasExpertReport: z.preprocess(
-      (value) => value === "true" || value === true ? true : value === "false" || value === false ? false : undefined,
-      z.boolean().optional(),
+      (value) =>
+        value === "true" || value === true
+          ? true
+          : value === "false" || value === false
+            ? false
+            : undefined,
+      z.boolean().optional()
     ),
     fuelType: z.preprocess(emptyStringToUndefined, z.enum(fuelTypes).optional()),
     transmission: z.preprocess(emptyStringToUndefined, z.enum(transmissionTypes).optional()),
@@ -62,7 +82,7 @@ export const listingFiltersSchema: z.ZodType<ListingFilters> = z
     {
       message: "Minimum fiyat maksimum fiyattan büyük olamaz",
       path: ["minPrice"],
-    },
+    }
   )
   .refine(
     (values) =>
@@ -72,5 +92,5 @@ export const listingFiltersSchema: z.ZodType<ListingFilters> = z
     {
       message: "Minimum yıl maksimum yıldan büyük olamaz",
       path: ["minYear"],
-    },
+    }
   );

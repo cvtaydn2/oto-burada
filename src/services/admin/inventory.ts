@@ -1,12 +1,13 @@
 "use server";
 
+import { captureServerError, captureServerEvent } from "@/lib/monitoring/posthog-server";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
-import { createAdminModerationAction } from "./moderation-actions";
-import { moderateListingWithSideEffects } from "./listing-moderation";
+import { logger } from "@/lib/utils/logger";
 import { createDatabaseNotification } from "@/services/notifications/notification-records";
 import { Listing } from "@/types/domain";
-import { logger } from "@/lib/utils/logger";
-import { captureServerError, captureServerEvent } from "@/lib/monitoring/posthog-server";
+
+import { moderateListingWithSideEffects } from "./listing-moderation";
+import { createAdminModerationAction } from "./moderation-actions";
 
 export async function getAdminInventory(filters?: {
   status?: string;
@@ -24,7 +25,7 @@ export async function getAdminInventory(filters?: {
     .from("listings")
     .select(
       "*, images:listing_images(id, listing_id, storage_path, public_url, sort_order, is_cover, placeholder_blur)",
-      { count: "exact" },
+      { count: "exact" }
     )
     .order("created_at", { ascending: false });
 
@@ -38,7 +39,7 @@ export async function getAdminInventory(filters?: {
 
   if (filters?.query) {
     query = query.or(
-      `title.ilike.%${filters.query}%,brand.ilike.%${filters.query}%,model.ilike.%${filters.query}%,vin.ilike.%${filters.query}%`,
+      `title.ilike.%${filters.query}%,brand.ilike.%${filters.query}%,model.ilike.%${filters.query}%,vin.ilike.%${filters.query}%`
     );
   }
 
@@ -51,9 +52,17 @@ export async function getAdminInventory(filters?: {
   }
 
   const listings = (data || []).map(
-    (listing: Record<string, unknown> & {
-      images?: { public_url: string; sort_order: number; is_cover: boolean; storage_path: string; placeholder_blur: string | null }[];
-    }) => ({
+    (
+      listing: Record<string, unknown> & {
+        images?: {
+          public_url: string;
+          sort_order: number;
+          is_cover: boolean;
+          storage_path: string;
+          placeholder_blur: string | null;
+        }[];
+      }
+    ) => ({
       // camelCase mapping — DB returns snake_case, Listing type expects camelCase
       id: listing.id,
       slug: listing.slug,
@@ -89,14 +98,14 @@ export async function getAdminInventory(filters?: {
       createdAt: listing.created_at as string,
       updatedAt: listing.updated_at as string,
       images: (listing.images || []).map((img) => ({
-        id: img.public_url,  // admin list view only — id not needed for display
+        id: img.public_url, // admin list view only — id not needed for display
         url: img.public_url || "",
         order: img.sort_order || 0,
         isCover: img.is_cover || false,
         storagePath: img.storage_path || "",
         placeholderBlur: img.placeholder_blur || null,
       })),
-    }),
+    })
   );
 
   return { listings: listings as unknown as Listing[], total: count ?? 0, page, limit };
@@ -105,7 +114,7 @@ export async function getAdminInventory(filters?: {
 export async function forceActionOnListing(
   listingId: string,
   action: "archive" | "delete" | "approve" | "reject",
-  adminUserId?: string,
+  adminUserId?: string
 ) {
   const admin = createSupabaseAdminClient();
 
@@ -116,7 +125,10 @@ export async function forceActionOnListing(
     if (!adminUserId) {
       // If no adminUserId provided (legacy call), fall through to direct update
       // but log a warning — callers should always pass adminUserId.
-      logger.admin.warn("forceActionOnListing called without adminUserId for moderation", { listingId, action });
+      logger.admin.warn("forceActionOnListing called without adminUserId for moderation", {
+        listingId,
+        action,
+      });
     }
 
     const result = await moderateListingWithSideEffects({

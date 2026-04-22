@@ -1,5 +1,8 @@
+import {
+  getProfileRestrictionState,
+  isProfileTrustedForBadges,
+} from "@/services/profile/profile-restrictions";
 import type { Profile } from "@/types";
-import { getProfileRestrictionState, isProfileTrustedForBadges } from "@/services/profile/profile-restrictions";
 
 interface SellerTrustSummary {
   badgeLabel: string | null;
@@ -17,10 +20,10 @@ function getAccountAgeMonths(createdAt?: string | null) {
 
 export function calculateTrustScore(seller: Partial<Profile> | null): number {
   if (!seller) return 0;
-  
+
   const restrictionState = getProfileRestrictionState(seller);
   if (restrictionState === "banned") return 0;
-  
+
   let score = 0;
 
   // 1. Account Age (Base Crust)
@@ -60,7 +63,7 @@ export function calculateTrustScore(seller: Partial<Profile> | null): number {
 
 export function getSellerTrustSummary(
   seller: Profile | null,
-  activeListingCount: number,
+  activeListingCount: number
 ): SellerTrustSummary {
   if (!seller) {
     return {
@@ -102,7 +105,9 @@ export function getSellerTrustSummary(
   }
 
   // Deterministic Staleness: If verification is > 24 months old, it's considered expired for labels
-  const monthsSinceReview = seller.verificationReviewedAt ? getAccountAgeMonths(seller.verificationReviewedAt) : 999;
+  const monthsSinceReview = seller.verificationReviewedAt
+    ? getAccountAgeMonths(seller.verificationReviewedAt)
+    : 999;
   const isStale = monthsSinceReview >= 24;
 
   // Only show verification signals if TRUSTED and NOT STALE and ABOVE SAFETY FLOOR (40)

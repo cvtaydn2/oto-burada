@@ -1,17 +1,22 @@
 /**
  * Centralized API Security Middleware
- * 
+ *
  * Provides canonical wrappers for standardized route protection.
  */
 
-import { NextResponse } from "next/server";
-import { isValidRequestOrigin } from "@/lib/security";
-import { getCurrentUser } from "@/lib/auth/session";
-import { isSupabaseAdminUser } from "@/lib/auth/api-admin";
-import { enforceRateLimit, getRateLimitKey, getUserRateLimitKey } from "@/lib/utils/rate-limit-middleware";
-import { apiError, API_ERROR_CODES } from "@/lib/utils/api-response";
-import type { RateLimitConfig } from "@/lib/utils/rate-limit";
 import type { User } from "@supabase/supabase-js";
+import { NextResponse } from "next/server";
+
+import { isSupabaseAdminUser } from "@/lib/auth/api-admin";
+import { getCurrentUser } from "@/lib/auth/session";
+import { isValidRequestOrigin } from "@/lib/security";
+import { API_ERROR_CODES, apiError } from "@/lib/utils/api-response";
+import type { RateLimitConfig } from "@/lib/utils/rate-limit";
+import {
+  enforceRateLimit,
+  getRateLimitKey,
+  getUserRateLimitKey,
+} from "@/lib/utils/rate-limit-middleware";
 
 export interface SecurityOptions {
   requireAuth?: boolean;
@@ -40,7 +45,7 @@ export type SecurityCheckResult = SecurityResult | SecurityError;
  */
 export async function withSecurity(
   request: Request,
-  options: SecurityOptions = {},
+  options: SecurityOptions = {}
 ): Promise<SecurityCheckResult> {
   // 1. CSRF Protection
   if (options.requireCsrf) {
@@ -56,7 +61,7 @@ export async function withSecurity(
   // Prevents "JSON Payload Bombs" causing OOM in Serverless Functions
   const contentLength = request.headers.get("content-length");
   const MAX_BODY_SIZE = 1 * 1024 * 1024; // 1MB for generic APIs
-  
+
   if (contentLength && parseInt(contentLength, 10) > MAX_BODY_SIZE) {
     // Note: If you have large file uploads on a route, bypass this check there.
     // For general JSON APIs, 1MB is more than enough.
@@ -65,17 +70,17 @@ export async function withSecurity(
       response: apiError(API_ERROR_CODES.BAD_REQUEST, "İstek gövdesi çok büyük (Maks 1MB).", 413),
     };
   }
-  
+
   // 2. IP-based Rate Limiting
   if (options.ipRateLimit) {
     const key = options.rateLimitKey ? `api:${options.rateLimitKey}` : "api:general";
     const ipLimit = await enforceRateLimit(getRateLimitKey(request, key), options.ipRateLimit);
     if (ipLimit) return { ok: false, response: ipLimit.response };
   }
-  
+
   // 3. Auth & Admin Checks
   let user: User | null = null;
-  
+
   // Special case: Cron Secret bypass
   if (options.requireCron) {
     const cronSecret = process.env.CRON_SECRET;
@@ -111,7 +116,7 @@ export async function withSecurity(
       const { createSupabaseAdminClient } = await import("@/lib/supabase/admin");
       const admin = createSupabaseAdminClient();
       const { data: isBanned } = await admin.rpc("is_user_banned", { p_user_id: user.id });
-      
+
       if (isBanned) {
         return {
           ok: false,
@@ -120,14 +125,17 @@ export async function withSecurity(
       }
     }
   }
-  
+
   // 4. User-based Rate Limiting
   if (options.userRateLimit && user) {
     const key = options.rateLimitKey ?? "general";
-    const userLimit = await enforceRateLimit(getUserRateLimitKey(user.id, key), options.userRateLimit);
+    const userLimit = await enforceRateLimit(
+      getUserRateLimitKey(user.id, key),
+      options.userRateLimit
+    );
     if (userLimit) return { ok: false, response: userLimit.response };
   }
-  
+
   return { ok: true, user: user ?? undefined };
 }
 
@@ -138,7 +146,7 @@ export async function withSecurity(
 /** withUserRoute: Standard authenticated check (GET/Read) */
 export async function withUserRoute(
   request: Request,
-  options: Omit<SecurityOptions, "requireAuth" | "requireAdmin" | "requireCron"> = {},
+  options: Omit<SecurityOptions, "requireAuth" | "requireAdmin" | "requireCron"> = {}
 ) {
   return withSecurity(request, { ...options, requireAuth: true });
 }
@@ -146,7 +154,10 @@ export async function withUserRoute(
 /** withUserAndCsrf: Authenticated + CSRF check (Mutations) */
 export async function withUserAndCsrf(
   request: Request,
-  options: Omit<SecurityOptions, "requireAuth" | "requireCsrf" | "requireAdmin" | "requireCron"> = {},
+  options: Omit<
+    SecurityOptions,
+    "requireAuth" | "requireCsrf" | "requireAdmin" | "requireCron"
+  > = {}
 ) {
   return withSecurity(request, { ...options, requireAuth: true, requireCsrf: true });
 }
@@ -154,7 +165,7 @@ export async function withUserAndCsrf(
 /** withAdminRoute: Strictly for Admin-only operations */
 export async function withAdminRoute(
   request: Request,
-  options: Omit<SecurityOptions, "requireAdmin" | "requireAuth" | "requireCron"> = {},
+  options: Omit<SecurityOptions, "requireAdmin" | "requireAuth" | "requireCron"> = {}
 ) {
   return withSecurity(request, { ...options, requireAdmin: true, requireCsrf: true });
 }
@@ -162,7 +173,7 @@ export async function withAdminRoute(
 /** withCronOrAdmin: Shared tasks (Sync, Cleanup) triggered by Vercel Cron or Admin UI */
 export async function withCronOrAdmin(
   request: Request,
-  options: Omit<SecurityOptions, "requireCron" | "requireAdmin"> = {},
+  options: Omit<SecurityOptions, "requireCron" | "requireAdmin"> = {}
 ) {
   return withSecurity(request, { ...options, requireCron: true, requireAdmin: true });
 }

@@ -40,7 +40,7 @@ export function apiError(
   code: string,
   message: string,
   status = 400,
-  fieldErrors?: Record<string, string>,
+  fieldErrors?: Record<string, string>
 ) {
   const body: ApiErrorResponse = {
     success: false,

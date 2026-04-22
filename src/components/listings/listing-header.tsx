@@ -1,14 +1,15 @@
-import { MapPin, Sparkles } from "lucide-react"
-import { formatPrice } from "@/lib/utils"
-import { type Listing } from "@/types"
-import { Badge } from "@/components/ui/badge"
+import { MapPin, Sparkles } from "lucide-react";
+
+import { Badge } from "@/components/ui/badge";
+import { formatPrice } from "@/lib/utils";
+import { type Listing } from "@/types";
 
 interface ListingHeaderProps {
-  listing: Listing
+  listing: Listing;
 }
 
 export function ListingHeader({ listing }: ListingHeaderProps) {
-  const isAdvantageous = (listing.marketPriceIndex ?? 1) < 0.95
+  const isAdvantageous = (listing.marketPriceIndex ?? 1) < 0.95;
 
   return (
     <div className="bg-card rounded-xl border border-border p-5">
@@ -17,7 +18,8 @@ export function ListingHeader({ listing }: ListingHeaderProps) {
         <div className="space-y-2">
           <div className="flex flex-wrap items-center gap-2">
             <h1 className="text-2xl sm:text-3xl font-bold text-foreground">
-              {listing.brand} <span className="font-medium text-muted-foreground">{listing.model}</span>
+              {listing.brand}{" "}
+              <span className="font-medium text-muted-foreground">{listing.model}</span>
             </h1>
             {listing.featured && (
               <Badge className="bg-amber-500 text-white text-xs font-medium">
@@ -32,7 +34,7 @@ export function ListingHeader({ listing }: ListingHeaderProps) {
             )}
           </div>
           <p className="text-base text-muted-foreground">{listing.title}</p>
-          
+
           {/* Location */}
           <div className="flex items-center gap-2">
             <MapPin className="w-4 h-4 text-blue-600" />
@@ -51,5 +53,5 @@ export function ListingHeader({ listing }: ListingHeaderProps) {
         </div>
       </div>
     </div>
-  )
+  );
 }

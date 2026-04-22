@@ -21,13 +21,13 @@
 
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { hasSupabaseAdminEnv } from "@/lib/supabase/env";
-import { apiSuccess, apiError, API_ERROR_CODES } from "@/lib/utils/api-response";
+import { API_ERROR_CODES, apiError, apiSuccess } from "@/lib/utils/api-response";
+import { logger } from "@/lib/utils/logger";
 import { sendSavedSearchAlertEmail } from "@/services/email/email-service";
 import type { SavedSearchAlertListing } from "@/services/email/email-templates";
-import { getFilteredDatabaseListings } from "@/services/listings/listing-submissions";
 import { createSearchParamsFromListingFilters } from "@/services/listings/listing-filters";
+import { getFilteredDatabaseListings } from "@/services/listings/listing-submissions";
 import { normalizeSavedSearchFilters } from "@/services/saved-searches/saved-search-utils";
-import { logger } from "@/lib/utils/logger";
 import type { ListingFilters } from "@/types";
 
 export const dynamic = "force-dynamic";
@@ -110,16 +110,14 @@ async function handleCronRequest(request: Request) {
   // 3. Process each saved search
   for (const savedSearch of savedSearches) {
     const userInfo = userEmailMap.get(savedSearch.user_id);
-    
+
     if (!userInfo?.email) {
       skippedCount++;
       continue;
     }
 
     try {
-      const filters = normalizeSavedSearchFilters(
-        (savedSearch.filters ?? {}) as ListingFilters,
-      );
+      const filters = normalizeSavedSearchFilters((savedSearch.filters ?? {}) as ListingFilters);
 
       // Query new listings matching this search, created in the last 24h
       const result = await getFilteredDatabaseListings({
@@ -130,9 +128,7 @@ async function handleCronRequest(request: Request) {
       });
 
       // Filter to only listings created after lookback date
-      const newListings = result.listings.filter(
-        (l) => l.createdAt >= lookbackDate,
-      );
+      const newListings = result.listings.filter((l) => l.createdAt >= lookbackDate);
 
       if (newListings.length === 0) {
         skippedCount++;
@@ -183,11 +179,11 @@ async function handleCronRequest(request: Request) {
   }
 
   return apiSuccess(
-    { 
-      processed: savedSearches.length, 
-      notified: notifiedCount, 
+    {
+      processed: savedSearches.length,
+      notified: notifiedCount,
       skipped: skippedCount,
-      errors: errorCount 
+      errors: errorCount,
     },
     `${notifiedCount} kullanıcıya bildirim gönderildi, ${skippedCount} arama için yeni sonuç yok.`
   );

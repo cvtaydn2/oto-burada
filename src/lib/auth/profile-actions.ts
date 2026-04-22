@@ -1,10 +1,10 @@
 "use server";
 
-import { profileUpdateSchema } from "@/lib/validators";
-import { createSupabaseServerClient } from "@/lib/supabase/server";
-import { hasSupabaseEnv } from "@/lib/supabase/env";
-import { updateProfileTable } from "@/services/profile/profile-records";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
+import { hasSupabaseEnv } from "@/lib/supabase/env";
+import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { profileUpdateSchema } from "@/lib/validators";
+import { updateProfileTable } from "@/services/profile/profile-records";
 
 export interface ProfileActionState {
   error?: string;
@@ -14,7 +14,7 @@ export interface ProfileActionState {
     phone?: string;
     city?: string;
     avatarUrl?: string;
-    
+
     // Corporate fields
     businessName?: string;
     businessSlug?: string;
@@ -31,7 +31,7 @@ const initialState: ProfileActionState = {};
 
 export async function updateProfileAction(
   previousState: ProfileActionState = initialState,
-  formData: FormData,
+  formData: FormData
 ): Promise<ProfileActionState> {
   void previousState;
 
@@ -108,7 +108,7 @@ export async function updateProfileAction(
 
 export async function updateCorporateProfileAction(
   _previousState: ProfileActionState | undefined,
-  formData: FormData,
+  formData: FormData
 ): Promise<ProfileActionState> {
   const values = {
     businessName: String(formData.get("businessName") ?? ""),
@@ -132,7 +132,9 @@ export async function updateCorporateProfileAction(
   }
 
   const supabase = await createSupabaseServerClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
 
   if (!user) {
     return { error: "Oturum dogrulanamadi.", fields: values };
@@ -145,14 +147,15 @@ export async function updateCorporateProfileAction(
     .eq("id", user.id)
     .maybeSingle<{ verification_status: string | null; is_banned: boolean | null }>();
 
-  const canActAsBusiness = existingProfile?.verification_status === 'approved' && !existingProfile?.is_banned;
+  const canActAsBusiness =
+    existingProfile?.verification_status === "approved" && !existingProfile?.is_banned;
 
   // Update metadata for quick access
   await supabase.auth.updateUser({
     data: {
       business_name: parsed.data.businessName,
       business_slug: parsed.data.businessSlug,
-    }
+    },
   });
 
   // Update table
@@ -172,8 +175,8 @@ export async function updateCorporateProfileAction(
     .eq("id", user.id);
 
   if (error) {
-    if (error.code === '23505') {
-       return { error: "Bu mağaza URL'i (slug) zaten kullanımda.", fields: values };
+    if (error.code === "23505") {
+      return { error: "Bu mağaza URL'i (slug) zaten kullanımda.", fields: values };
     }
     return { error: "Guncelleme sirasinda bir hata olustu.", fields: values };
   }

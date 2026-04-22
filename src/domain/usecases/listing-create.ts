@@ -8,7 +8,7 @@
  * The repository parameter makes the use-case independently testable
  * without coupling it to a specific persistence implementation.
  */
-import type { ListingCreateInput, Listing } from "@/types";
+import type { Listing, ListingCreateInput } from "@/types";
 
 export interface PendingListingCreatePayload extends ListingCreateInput {
   sellerId: string;
@@ -21,7 +21,7 @@ export interface ListingRepository {
 export async function executeListingCreate(
   input: ListingCreateInput,
   sellerId: string,
-  repository: ListingRepository,
+  repository: ListingRepository
 ): Promise<Listing | null> {
   const payload: PendingListingCreatePayload = { ...input, sellerId };
   return repository.createPendingListing(payload);

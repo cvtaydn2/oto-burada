@@ -1,15 +1,16 @@
-import { UserCog, ShieldCheck } from "lucide-react";
+import { ShieldCheck, UserCog } from "lucide-react";
 import Link from "next/link";
+
+import { SimplePagination } from "@/components/admin/simple-pagination";
+import { UserActionMenu } from "@/components/admin/user_action_menu";
 import { UserHeaderActions } from "@/components/admin/user-header-actions";
 import { UserSearch } from "@/components/admin/user-search";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { cn, safeFormatDate, safeFormatDistanceToNow } from "@/lib/utils";
-import { UserActionMenu } from "@/components/admin/user_action_menu";
 import { requireAdminUser } from "@/lib/auth/session";
-import { getAllUsers } from "@/services/admin/users";
-import { SimplePagination } from "@/components/admin/simple-pagination";
 import { trust } from "@/lib/constants/ui-strings";
+import { cn, safeFormatDate, safeFormatDistanceToNow } from "@/lib/utils";
+import { getAllUsers } from "@/services/admin/users";
 
 export const dynamic = "force-dynamic";
 
@@ -26,25 +27,39 @@ export default async function AdminUserManagementPage({
 
   // Tüm DB'den gerçek sayılar — sadece mevcut sayfa değil
   const admin = (await import("@/lib/supabase/admin")).createSupabaseAdminClient();
-  const [{ count: totalActive }, { count: totalProfessional }, { count: totalBanned }] = await Promise.all([
-    admin.from("profiles").select("*", { count: "exact", head: true }).eq("is_banned", false),
-    admin.from("profiles").select("*", { count: "exact", head: true }).eq("user_type", "professional"),
-    admin.from("profiles").select("*", { count: "exact", head: true }).eq("is_banned", true),
-  ]);
+  const [{ count: totalActive }, { count: totalProfessional }, { count: totalBanned }] =
+    await Promise.all([
+      admin.from("profiles").select("*", { count: "exact", head: true }).eq("is_banned", false),
+      admin
+        .from("profiles")
+        .select("*", { count: "exact", head: true })
+        .eq("user_type", "professional"),
+      admin.from("profiles").select("*", { count: "exact", head: true }).eq("is_banned", true),
+    ]);
 
   const stats = [
     { label: "Tüm Kullanıcılar", value: total.toLocaleString("tr-TR"), color: "text-foreground" },
-    { label: "Aktif", value: (totalActive ?? 0).toLocaleString("tr-TR"), color: "text-emerald-600" },
-    { label: "Kurumsal", value: (totalProfessional ?? 0).toLocaleString("tr-TR"), color: "text-blue-600" },
+    {
+      label: "Aktif",
+      value: (totalActive ?? 0).toLocaleString("tr-TR"),
+      color: "text-emerald-600",
+    },
+    {
+      label: "Kurumsal",
+      value: (totalProfessional ?? 0).toLocaleString("tr-TR"),
+      color: "text-blue-600",
+    },
   ];
 
   return (
-  <main className="space-y-8 p-6 lg:p-8 max-w-full bg-muted/30 min-h-full">
+    <main className="space-y-8 p-6 lg:p-8 max-w-full bg-muted/30 min-h-full">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
         <div>
           <div className="flex items-center gap-2 mb-2">
             <div className="size-2 rounded-full bg-blue-500 shadow-[0_0_8px_rgba(59,130,246,0.5)]" />
-            <span className="text-[10px] font-bold text-muted-foreground/70 uppercase tracking-[0.2em] italic">Admin Çözüm Merkezi</span>
+            <span className="text-[10px] font-bold text-muted-foreground/70 uppercase tracking-[0.2em] italic">
+              Admin Çözüm Merkezi
+            </span>
           </div>
           <h1 className="text-3xl font-bold text-foreground tracking-tight">
             Kullanıcı <span className="text-blue-600">Yönetimi</span>
@@ -66,9 +81,13 @@ export default async function AdminUserManagementPage({
                 className="flex flex-col p-6 rounded-2xl border border-border/50 bg-card shadow-sm hover:border-blue-100 transition-all group relative overflow-hidden"
               >
                 <div className="absolute -right-2 -top-2 size-16 bg-blue-50 rounded-full blur-xl opacity-0 group-hover:opacity-100 transition-opacity" />
-                <span className="text-[10px] font-bold text-muted-foreground/70 uppercase tracking-widest mb-2">{stat.label}</span>
+                <span className="text-[10px] font-bold text-muted-foreground/70 uppercase tracking-widest mb-2">
+                  {stat.label}
+                </span>
                 <div className="flex items-baseline gap-2">
-                  <span className={cn("text-3xl font-bold tracking-tighter", stat.color)}>{stat.value}</span>
+                  <span className={cn("text-3xl font-bold tracking-tighter", stat.color)}>
+                    {stat.value}
+                  </span>
                   {idx === 0 && (
                     <span className="text-[10px] font-bold text-muted-foreground/70 bg-muted/30 px-2 py-0.5 rounded-md">
                       Sayfa {currentPage}/{totalPages}
@@ -80,7 +99,7 @@ export default async function AdminUserManagementPage({
           </div>
 
           <div className="rounded-3xl border border-border bg-card overflow-hidden shadow-sm">
-          <div className="p-6 border-b border-border/50 bg-muted/30 flex flex-col md:flex-row md:items-center gap-4">
+            <div className="p-6 border-b border-border/50 bg-muted/30 flex flex-col md:flex-row md:items-center gap-4">
               <UserSearch defaultValue={q} />
             </div>
 
@@ -89,22 +108,40 @@ export default async function AdminUserManagementPage({
                 <caption className="sr-only">Platform kullanıcıları listesi</caption>
                 <thead>
                   <tr className="bg-muted/50 border-b border-border/50">
-                    <th className="p-6 text-[10px] font-bold text-muted-foreground/70 uppercase tracking-[0.2em]">Profil</th>
-                    <th className="p-6 text-[10px] font-bold text-muted-foreground/70 uppercase tracking-[0.2em]">İletişim</th>
-                    <th className="p-6 text-[10px] font-bold text-muted-foreground/70 uppercase tracking-[0.2em]">Rol</th>
-                    <th className="p-6 text-[10px] font-bold text-muted-foreground/70 uppercase tracking-[0.2em]">Kredi</th>
-                    <th className="p-6 text-[10px] font-bold text-muted-foreground/70 uppercase tracking-[0.2em]">Kayıt</th>
-                    <th className="p-6 text-[10px] font-bold text-muted-foreground/70 uppercase tracking-[0.2em]">Son Giriş</th>
-                    <th className="p-6 text-[10px] font-bold text-muted-foreground/70 uppercase tracking-[0.2em]">Doğrulama</th>
-                    <th className="p-6 text-[10px] font-bold text-muted-foreground/70 uppercase tracking-[0.2em]">Durum</th>
-                    <th className="p-6 text-right text-[10px] font-bold text-muted-foreground/70 uppercase tracking-[0.2em]">İşlem</th>
+                    <th className="p-6 text-[10px] font-bold text-muted-foreground/70 uppercase tracking-[0.2em]">
+                      Profil
+                    </th>
+                    <th className="p-6 text-[10px] font-bold text-muted-foreground/70 uppercase tracking-[0.2em]">
+                      İletişim
+                    </th>
+                    <th className="p-6 text-[10px] font-bold text-muted-foreground/70 uppercase tracking-[0.2em]">
+                      Rol
+                    </th>
+                    <th className="p-6 text-[10px] font-bold text-muted-foreground/70 uppercase tracking-[0.2em]">
+                      Kredi
+                    </th>
+                    <th className="p-6 text-[10px] font-bold text-muted-foreground/70 uppercase tracking-[0.2em]">
+                      Kayıt
+                    </th>
+                    <th className="p-6 text-[10px] font-bold text-muted-foreground/70 uppercase tracking-[0.2em]">
+                      Son Giriş
+                    </th>
+                    <th className="p-6 text-[10px] font-bold text-muted-foreground/70 uppercase tracking-[0.2em]">
+                      Doğrulama
+                    </th>
+                    <th className="p-6 text-[10px] font-bold text-muted-foreground/70 uppercase tracking-[0.2em]">
+                      Durum
+                    </th>
+                    <th className="p-6 text-right text-[10px] font-bold text-muted-foreground/70 uppercase tracking-[0.2em]">
+                      İşlem
+                    </th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-50">
                   {users.map((u) => {
                     const userWithLogin = u as typeof u & { lastSignInAt: string | null };
                     const vStatus = u.verificationStatus || "none";
-                    
+
                     return (
                       <tr key={u.id} className="group transition-colors hover:bg-blue-50/20">
                         <td className="p-6">
@@ -112,10 +149,10 @@ export default async function AdminUserManagementPage({
                             <Link href={`/admin/users/${u.id}`}>
                               <div
                                 className={cn(
-                          "flex size-11 items-center justify-center rounded-xl text-sm font-bold transition-all cursor-pointer",
+                                  "flex size-11 items-center justify-center rounded-xl text-sm font-bold transition-all cursor-pointer",
                                   u.role === "admin"
                                     ? "bg-blue-600 text-white shadow-md shadow-blue-100"
-                                    : "bg-muted text-muted-foreground",
+                                    : "bg-muted text-muted-foreground"
                                 )}
                               >
                                 {(u.fullName || "U")[0].toUpperCase()}
@@ -141,18 +178,28 @@ export default async function AdminUserManagementPage({
                         </td>
                         <td className="p-6">
                           <Badge
-                            variant={u.role === "admin" ? "default" : u.userType === "professional" ? "secondary" : "outline"}
+                            variant={
+                              u.role === "admin"
+                                ? "default"
+                                : u.userType === "professional"
+                                  ? "secondary"
+                                  : "outline"
+                            }
                             className={cn(
                               "text-[10px] font-bold px-3 py-1 rounded-lg uppercase tracking-wider",
-                              u.role === "admin" ? "bg-blue-600 text-white" : "",
+                              u.role === "admin" ? "bg-blue-600 text-white" : ""
                             )}
                           >
-                            {u.role === "admin" ? "Admin" : u.userType === "professional" ? "Kurumsal" : "Bireysel"}
+                            {u.role === "admin"
+                              ? "Admin"
+                              : u.userType === "professional"
+                                ? "Kurumsal"
+                                : "Bireysel"}
                           </Badge>
                         </td>
                         <td className="p-6">
                           <span className="text-xs font-bold text-indigo-600">
-                            {(u.balanceCredits ?? 0)} kr
+                            {u.balanceCredits ?? 0} kr
                           </span>
                         </td>
                         <td className="p-6">
@@ -166,19 +213,26 @@ export default async function AdminUserManagementPage({
                           </span>
                         </td>
                         <td className="p-6">
-                          <Badge 
+                          <Badge
                             variant="outline"
                             className={cn(
                               "text-[9px] font-bold px-2 py-0.5 rounded-md uppercase tracking-tighter border-none",
-                              vStatus === "approved" ? "bg-emerald-50 text-emerald-600" :
-                              vStatus === "pending" ? "bg-amber-50 text-amber-600 animate-pulse" :
-                              vStatus === "rejected" ? "bg-rose-50 text-rose-600" :
-                              "bg-slate-50 text-slate-400"
+                              vStatus === "approved"
+                                ? "bg-emerald-50 text-emerald-600"
+                                : vStatus === "pending"
+                                  ? "bg-amber-50 text-amber-600 animate-pulse"
+                                  : vStatus === "rejected"
+                                    ? "bg-rose-50 text-rose-600"
+                                    : "bg-slate-50 text-slate-400"
                             )}
                           >
-                            {vStatus === "approved" ? trust.admin.verificationStatus.approved : 
-                             vStatus === "pending" ? trust.admin.verificationStatus.pending :
-                             vStatus === "rejected" ? trust.admin.verificationStatus.rejected : trust.admin.verificationStatus.none}
+                            {vStatus === "approved"
+                              ? trust.admin.verificationStatus.approved
+                              : vStatus === "pending"
+                                ? trust.admin.verificationStatus.pending
+                                : vStatus === "rejected"
+                                  ? trust.admin.verificationStatus.rejected
+                                  : trust.admin.verificationStatus.none}
                           </Badge>
                         </td>
                         <td className="p-6">
@@ -193,15 +247,21 @@ export default async function AdminUserManagementPage({
                             <span
                               className={cn(
                                 "text-[10px] font-bold uppercase tracking-widest",
-                                !u.isBanned ? "text-emerald-600" : "text-muted-foreground/70",
+                                !u.isBanned ? "text-emerald-600" : "text-muted-foreground/70"
                               )}
                             >
-                              {!u.isBanned ? trust.admin.userStatus.active : trust.admin.userStatus.banned}
+                              {!u.isBanned
+                                ? trust.admin.userStatus.active
+                                : trust.admin.userStatus.banned}
                             </span>
                           </div>
                         </td>
                         <td className="p-6 text-right">
-                          <UserActionMenu userId={u.id} isBanned={!!u.isBanned} isAdmin={u.role === "admin"} />
+                          <UserActionMenu
+                            userId={u.id}
+                            isBanned={!!u.isBanned}
+                            isAdmin={u.role === "admin"}
+                          />
                         </td>
                       </tr>
                     );

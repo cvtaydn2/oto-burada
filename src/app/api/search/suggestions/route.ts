@@ -1,7 +1,7 @@
+import { getCachedData, setCachedData } from "@/lib/redis/client";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { apiSuccess } from "@/lib/utils/api-response";
 import { enforceRateLimit, getRateLimitKey } from "@/lib/utils/rate-limit-middleware";
-import { getCachedData, setCachedData } from "@/lib/redis/client";
 
 export const dynamic = "force-dynamic";
 
@@ -19,7 +19,7 @@ function sanitizeSearchQuery(q: string): string {
 export async function GET(request: Request) {
   const rateLimit = await enforceRateLimit(
     getRateLimitKey(request, "api:search:suggestions"),
-    SUGGESTIONS_RATE_LIMIT,
+    SUGGESTIONS_RATE_LIMIT
   );
   if (rateLimit) return rateLimit.response;
 
@@ -56,11 +56,13 @@ export async function GET(request: Request) {
 
     const result = {
       brands: brandsResult.data ?? [],
-      models: (modelsResult.data ?? []).map((m: { name: string; slug: string; brands?: { name: string }[] | null }) => ({
-        name: m.name,
-        slug: m.slug,
-        brandName: m.brands?.[0]?.name,
-      })),
+      models: (modelsResult.data ?? []).map(
+        (m: { name: string; slug: string; brands?: { name: string }[] | null }) => ({
+          name: m.name,
+          slug: m.slug,
+          brandName: m.brands?.[0]?.name,
+        })
+      ),
     };
 
     await setCachedData(cacheKey, result, 120);

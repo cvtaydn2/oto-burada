@@ -64,7 +64,7 @@ function formatEntry(entry: LogEntry): string {
  */
 function sanitizeLogString(str: string): string {
   // Replace newlines and carriage returns to prevent multi-line log injection
-  return str.replace(/[\r\n]/g, ' ').trim();
+  return str.replace(/[\r\n]/g, " ").trim();
 }
 
 function createLogEntry(
@@ -72,7 +72,7 @@ function createLogEntry(
   message: string,
   context?: string,
   data?: Record<string, unknown>,
-  error?: unknown,
+  error?: unknown
 ): LogEntry {
   const entry: LogEntry = {
     level,
@@ -81,12 +81,12 @@ function createLogEntry(
   };
 
   if (context) entry.context = context;
-  
+
   // Sanitize all string values in data record
   if (data && Object.keys(data).length > 0) {
     const sanitizedData: Record<string, unknown> = {};
     for (const [key, value] of Object.entries(data)) {
-      sanitizedData[key] = typeof value === 'string' ? sanitizeLogString(value) : value;
+      sanitizedData[key] = typeof value === "string" ? sanitizeLogString(value) : value;
     }
     entry.data = sanitizedData;
   }
@@ -108,7 +108,7 @@ function log(
   message: string,
   context?: string,
   data?: Record<string, unknown>,
-  error?: unknown,
+  error?: unknown
 ) {
   if (!shouldLog(level)) return;
 
@@ -136,8 +136,7 @@ export function createLogger(context: string) {
     debug: (message: string, data?: Record<string, unknown>) =>
       log("debug", message, context, data),
 
-    info: (message: string, data?: Record<string, unknown>) =>
-      log("info", message, context, data),
+    info: (message: string, data?: Record<string, unknown>) => log("info", message, context, data),
 
     warn: (message: string, data?: Record<string, unknown>, error?: unknown) =>
       log("warn", message, context, data, error),

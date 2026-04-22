@@ -1,6 +1,8 @@
-import { describe, it, expect } from "vitest";
-import { filterListings } from "../listing-filters";
+import { describe, expect, it } from "vitest";
+
 import type { Listing, ListingFilters } from "@/types";
+
+import { filterListings } from "../listing-filters";
 
 const mockListings: Partial<Listing>[] = [
   {

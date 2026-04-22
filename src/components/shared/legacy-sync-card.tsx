@@ -14,10 +14,7 @@ interface SyncState {
   status: "error" | "idle" | "success";
 }
 
-export function LegacySyncCard({
-  legacyListingsCount,
-  legacyReportsCount,
-}: LegacySyncCardProps) {
+export function LegacySyncCard({ legacyListingsCount, legacyReportsCount }: LegacySyncCardProps) {
   const router = useRouter();
   const [isSyncing, setIsSyncing] = useState(false);
   const [syncState, setSyncState] = useState<SyncState>({ status: "idle" });
@@ -69,8 +66,8 @@ export function LegacySyncCard({
               Tarayicidaki eski kayitlari Supabase&apos;e tasi
             </h2>
             <p className="text-sm leading-6 text-muted-foreground sm:text-base">
-              Bu cihazda kalan {legacyListingsCount} ilan ve {legacyReportsCount} rapor kaydini
-              yeni tablo yapisina tek tikla tasiyabilirsin.
+              Bu cihazda kalan {legacyListingsCount} ilan ve {legacyReportsCount} rapor kaydini yeni
+              tablo yapisina tek tikla tasiyabilirsin.
             </p>
           </div>
         </div>
@@ -125,10 +122,7 @@ export function LegacySyncCard({
           "Eksik ilan ve raporlar Supabase tablolarina yazilir.",
           "Basarili aktarim sonrasi legacy kayitlar temizlenir.",
         ].map((step, index) => (
-          <div
-            key={step}
-            className="rounded-xl border border-border/70 bg-background px-4 py-4"
-          >
+          <div key={step} className="rounded-xl border border-border/70 bg-background px-4 py-4">
             <p className="text-xs font-semibold uppercase tracking-[0.14em] text-primary">
               Adim {index + 1}
             </p>
@@ -144,7 +138,11 @@ export function LegacySyncCard({
           onClick={() => void handleSync()}
           className="inline-flex h-11 items-center justify-center gap-2 rounded-xl bg-primary px-5 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-70"
         >
-          {isSyncing ? <LoaderCircle className="size-4 animate-spin" /> : <DatabaseZap className="size-4" />}
+          {isSyncing ? (
+            <LoaderCircle className="size-4 animate-spin" />
+          ) : (
+            <DatabaseZap className="size-4" />
+          )}
           {isSyncing ? "Senkronize ediliyor..." : "Supabase'e tasi"}
         </button>
 

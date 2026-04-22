@@ -1,5 +1,7 @@
 import process from "node:process";
+
 import { createClient } from "@supabase/supabase-js";
+
 import { loadLocalEnv } from "./load-local-env.mjs";
 
 loadLocalEnv();
@@ -94,7 +96,8 @@ async function generateListings(count = 50) {
       price,
       city: loc.city,
       district,
-      description: "Araç özenle kullanılmış olup bakımları zamanında yapılmıştır. Herhangi bir sorunu yoktur, alıcısına şimdiden hayırlı olsun.",
+      description:
+        "Araç özenle kullanılmış olup bakımları zamanında yapılmıştır. Herhangi bir sorunu yoktur, alıcısına şimdiden hayırlı olsun.",
       whatsapp_phone: "+90532" + Math.floor(1000000 + Math.random() * 8999999),
       status: "approved",
       market_price_index: 0.9 + Math.random() * 0.2, // Between 0.9 and 1.1
@@ -114,7 +117,9 @@ async function generateListings(count = 50) {
   const images = [];
   for (const listing of listings) {
     for (let j = 0; j < 3; j++) {
-      const imgUrl = carImages[Math.floor(Math.random() * carImages.length)] + "?auto=format&fit=crop&w=1200&q=80";
+      const imgUrl =
+        carImages[Math.floor(Math.random() * carImages.length)] +
+        "?auto=format&fit=crop&w=1200&q=80";
       images.push({
         listing_id: listing.id,
         public_url: imgUrl,

@@ -19,9 +19,7 @@ export const primaryNavigationItems: PublicNavigationItem[] = [
   },
 ];
 
-export const mobileNavigationItems: PublicNavigationItem[] = [
-  ...primaryNavigationItems,
-];
+export const mobileNavigationItems: PublicNavigationItem[] = [...primaryNavigationItems];
 
 export function getMobileNavigationItems(isAuthenticated: boolean): PublicNavigationItem[] {
   if (isAuthenticated) {

@@ -21,9 +21,10 @@
  */
 
 import { NextResponse } from "next/server";
+
 import { hasSupabaseAdminEnv, hasSupabaseEnv } from "@/lib/supabase/env";
-import { checkInfrastructureHealth } from "@/lib/utils/infrastructure-health";
 import { withSecurity } from "@/lib/utils/api-security";
+import { checkInfrastructureHealth } from "@/lib/utils/infrastructure-health";
 
 export const dynamic = "force-dynamic";
 // Short cache — health checks should reflect current state
@@ -46,9 +47,7 @@ export async function GET(request: Request): Promise<NextResponse<HealthResponse
 
   const timestamp = new Date().toISOString();
   const version =
-    process.env.VERCEL_GIT_COMMIT_SHA?.slice(0, 8) ??
-    process.env.npm_package_version ??
-    "unknown";
+    process.env.VERCEL_GIT_COMMIT_SHA?.slice(0, 8) ?? process.env.npm_package_version ?? "unknown";
 
   // 1. Env check — are required vars present?
   const envOk = hasSupabaseEnv();
@@ -81,8 +80,8 @@ export async function GET(request: Request): Promise<NextResponse<HealthResponse
     !envOk || dbStatus === "error"
       ? "down"
       : dbStatus === "skip" || !infraHealth.healthy
-      ? "degraded"
-      : "ok";
+        ? "degraded"
+        : "ok";
 
   const body: HealthResponse = {
     status,

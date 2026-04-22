@@ -11,9 +11,12 @@ interface ListingSnapshot {
   view_count: number;
 }
 
-export function validateListingEdit(current: ListingSnapshot, updates: Partial<ListingSnapshot>): { 
-  allowed: boolean; 
-  resetStats: boolean; 
+export function validateListingEdit(
+  current: ListingSnapshot,
+  updates: Partial<ListingSnapshot>
+): {
+  allowed: boolean;
+  resetStats: boolean;
   reason?: string;
 } {
   // If the listing is "Established" (e.g. > 1000 views), be very strict.
@@ -29,8 +32,9 @@ export function validateListingEdit(current: ListingSnapshot, updates: Partial<L
   }
 
   // If major changes occur in any listing, we might want to reset SEO metrics
-  const majorChange = (updates.brand && updates.brand !== current.brand) || 
-                      (updates.model && updates.model !== current.model);
+  const majorChange =
+    (updates.brand && updates.brand !== current.brand) ||
+    (updates.model && updates.model !== current.model);
 
   if (majorChange) {
     logger.market.info("Listing major change detected. Resetting SEO stats.", { current, updates });

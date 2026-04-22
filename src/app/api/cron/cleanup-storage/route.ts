@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { withCronOrAdmin } from "@/lib/utils/api-security";
 import { logger } from "@/lib/utils/logger";
@@ -40,22 +41,28 @@ export async function GET(request: Request) {
           filePath: task.file_path,
           bucketName: task.bucket_name,
         });
-        
+
         // 3a. Update with retry count and error
-        await admin.from("storage_cleanup_queue").update({
-          attempts: task.attempts + 1,
-          last_error: storageError.message,
-          status: task.attempts >= 3 ? "failed" : "pending", 
-        }).eq("id", task.id);
-        
+        await admin
+          .from("storage_cleanup_queue")
+          .update({
+            attempts: task.attempts + 1,
+            last_error: storageError.message,
+            status: task.attempts >= 3 ? "failed" : "pending",
+          })
+          .eq("id", task.id);
+
         results.failed++;
       } else {
         // 3b. Mark as deleted
-        await admin.from("storage_cleanup_queue").update({
-          status: "deleted",
-          processed_at: new Date().toISOString()
-        }).eq("id", task.id);
-        
+        await admin
+          .from("storage_cleanup_queue")
+          .update({
+            status: "deleted",
+            processed_at: new Date().toISOString(),
+          })
+          .eq("id", task.id);
+
         results.success++;
       }
     }
@@ -63,7 +70,7 @@ export async function GET(request: Request) {
     return NextResponse.json({
       success: true,
       processed: results,
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     });
   } catch (err) {
     logger.system.error("Storage cleanup unexpected error", err);

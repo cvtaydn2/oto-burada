@@ -19,7 +19,7 @@ export function useNetworkStatus() {
       setIsOnline(true);
       toast.success("Bağlantı sağlandı.");
     };
-    
+
     const handleOffline = () => {
       setIsOnline(false);
       toast.error("İnternet bağlantınız koptu. Bazı işlemler çalışmayabilir.", {

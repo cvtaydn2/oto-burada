@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { withCronOrAdmin } from "@/lib/utils/api-security";
 import { logger } from "@/lib/utils/logger";
@@ -17,7 +18,7 @@ export async function GET(request: Request) {
   try {
     // 1. Fetch ready jobs (skip locked is handled by SQL function)
     const { data: jobs, error: fetchError } = await admin.rpc("get_ready_fulfillment_jobs", {
-      p_limit: 10
+      p_limit: 10,
     });
 
     if (fetchError || !jobs) {
@@ -33,30 +34,29 @@ export async function GET(request: Request) {
 
         // 3. Logic based on job type
         if (job.job_type === "credit_add") {
-           // RPC for atomic credit add
-           const { error: creditError } = await admin.rpc("adjust_user_credits_atomic", {
-             p_user_id: job.payment_data.user_id,
-             p_amount: job.payment_data.amount,
-             p_reference: `Payment:${job.payment_id}`
-           });
-           if (creditError) throw creditError;
-        } 
-        
+          // RPC for atomic credit add
+          const { error: creditError } = await admin.rpc("adjust_user_credits_atomic", {
+            p_user_id: job.payment_data.user_id,
+            p_amount: job.payment_data.amount,
+            p_reference: `Payment:${job.payment_id}`,
+          });
+          if (creditError) throw creditError;
+        }
+
         // 4. Mark success
         await admin.rpc("mark_job_success", { p_job_id: job.id });
         results.success++;
-
       } catch (err: unknown) {
         const error = err as Error;
         logger.system.error("Fulfillment job failed", error, { jobId: job.id });
-        
+
         // 5. Mark failure (SQL function handles backoff/DLQ logic)
         await admin.rpc("mark_job_failed", {
           p_job_id: job.id,
           p_error_message: error.message || "Unknown error",
-          p_error_details: { stack: error.stack }
+          p_error_details: { stack: error.stack },
         });
-        
+
         results.failed++;
       }
     }
@@ -64,7 +64,7 @@ export async function GET(request: Request) {
     return NextResponse.json({
       success: true,
       processed: results,
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     });
   } catch (err) {
     logger.system.error("Fulfillment processor fatal error", err);

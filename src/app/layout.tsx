@@ -1,17 +1,16 @@
+import "./globals.css";
+
+import { Analytics } from "@vercel/analytics/next";
+import { SpeedInsights } from "@vercel/speed-insights/next";
 import type { Metadata } from "next";
+import { Inter, Outfit } from "next/font/google";
 import { headers } from "next/headers";
 
 import { RootProviders } from "@/components/providers/root-providers";
 import { CookieConsent } from "@/components/shared/cookie-consent";
 import { PWAInstallPrompt } from "@/components/shared/pwa-install-prompt";
-import { getAppUrl } from "@/lib/seo";
 import { getCurrentUser } from "@/lib/auth/session";
-
-import { Analytics } from "@vercel/analytics/next";
-import { SpeedInsights } from "@vercel/speed-insights/next";
-
-import { Inter, Outfit } from "next/font/google";
-import "./globals.css";
+import { getAppUrl } from "@/lib/seo";
 
 const inter = Inter({
   subsets: ["latin", "latin-ext"],
@@ -33,8 +32,7 @@ export const metadata: Metadata = {
     default: "Oto Burada",
     template: "%s | Oto Burada",
   },
-  description:
-    "Sade, güvenilir ve mobil odaklı bir araba ilan pazaryeri deneyimi.",
+  description: "Sade, güvenilir ve mobil odaklı bir araba ilan pazaryeri deneyimi.",
   alternates: {
     canonical: "/",
   },
@@ -56,7 +54,7 @@ export const metadata: Metadata = {
     "theme-color": "#4f46e5",
     "mobile-web-app-capable": "yes",
     "apple-mobile-web-app-status-bar-style": "default",
-  }
+  },
 };
 
 export default async function RootLayout({

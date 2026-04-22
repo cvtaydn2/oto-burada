@@ -1,11 +1,11 @@
 /**
  * Notification Records Service
- * 
+ *
  * PRIVILEGE BOUNDARIES:
  * - Read operations: Use server client (RLS enforced)
  * - User mutations: Use server client (RLS enforced)
  * - System notifications: Use admin client (bypass RLS for system-generated notifications)
- * 
+ *
  * SECURITY RULES:
  * - createDatabaseNotification() uses admin client - ONLY call from system/admin contexts
  * - All user-facing operations use server client with RLS
@@ -13,8 +13,8 @@
  */
 
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
-import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { hasSupabaseAdminEnv } from "@/lib/supabase/env";
+import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { notificationSchema } from "@/lib/validators";
 import type { NotificationType } from "@/types";
 
@@ -64,10 +64,7 @@ function mapNotificationRow(row: NotificationRow) {
  * Uses server client (authenticated role) to enforce RLS.
  * RLS policy: notifications_manage_own ensures user can only access their own notifications.
  */
-async function getDatabaseNotifications(options?: {
-  notificationId?: string;
-  userId?: string;
-}) {
+async function getDatabaseNotifications(options?: { notificationId?: string; userId?: string }) {
   const supabase = await getNotificationsClient();
   let query = supabase
     .from("notifications")
@@ -104,15 +101,15 @@ export async function getStoredNotificationsByUser(userId: string) {
 
 /**
  * Create a system notification (admin-only operation).
- * 
+ *
  * ⚠️ SECURITY WARNING: This function uses admin client and bypasses RLS.
  * Only call from:
  * - System background jobs (cron, webhooks)
  * - Admin dashboard operations
  * - Internal service-to-service calls
- * 
+ *
  * NEVER call from user-facing API routes without proper admin authorization.
- * 
+ *
  * @param input - Notification data
  * @returns Created notification or null on failure
  */
@@ -149,25 +146,27 @@ export async function createDatabaseNotification(input: {
 
 /**
  * Create multiple system notifications in bulk (admin-only operation).
- * 
+ *
  * ⚠️ SECURITY WARNING: This function uses admin client and bypasses RLS.
  * Only call from:
  * - System background jobs (cron, webhooks)
  * - Admin dashboard operations
  * - Internal service-to-service calls
- * 
+ *
  * NEVER call from user-facing API routes without proper admin authorization.
- * 
+ *
  * @param inputs - Array of notification data
  * @returns Array of created notifications
  */
-export async function createDatabaseNotificationsBulk(inputs: {
-  href?: string | null;
-  message: string;
-  title: string;
-  type: NotificationType;
-  userId: string;
-}[]) {
+export async function createDatabaseNotificationsBulk(
+  inputs: {
+    href?: string | null;
+    message: string;
+    title: string;
+    type: NotificationType;
+    userId: string;
+  }[]
+) {
   if (!hasSupabaseAdminEnv() || inputs.length === 0) {
     return [];
   }

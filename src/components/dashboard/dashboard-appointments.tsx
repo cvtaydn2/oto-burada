@@ -1,7 +1,8 @@
 "use client";
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Calendar } from "lucide-react";
+
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 
 interface Appointment {
@@ -47,17 +48,28 @@ export function DashboardAppointments({ appointments = [] }: DashboardAppointmen
             {appointments.map((appointment) => (
               <div key={appointment.id} className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                  <div className={cn(
-                    "flex h-10 w-10 flex-col items-center justify-center rounded-lg border text-center",
-                    appointment.type === "expertise" ? "bg-blue-50 border-blue-100" : "bg-slate-50 border-slate-100"
-                  )}>
-                    <span className="text-[10px] font-bold text-slate-600">{formatDate(appointment.date).split(" ")[0]}</span>
-                    <span className="text-[9px] text-slate-400">{formatMonth(appointment.date).split(" ")[0]}</span>
+                  <div
+                    className={cn(
+                      "flex h-10 w-10 flex-col items-center justify-center rounded-lg border text-center",
+                      appointment.type === "expertise"
+                        ? "bg-blue-50 border-blue-100"
+                        : "bg-slate-50 border-slate-100"
+                    )}
+                  >
+                    <span className="text-[10px] font-bold text-slate-600">
+                      {formatDate(appointment.date).split(" ")[0]}
+                    </span>
+                    <span className="text-[9px] text-slate-400">
+                      {formatMonth(appointment.date).split(" ")[0]}
+                    </span>
                   </div>
                   <div>
-                    <div className="text-sm font-bold text-slate-900">{appointment.customerName}</div>
+                    <div className="text-sm font-bold text-slate-900">
+                      {appointment.customerName}
+                    </div>
                     <div className="text-[10px] font-medium text-slate-500">
-                      {appointment.type === "expertise" ? "Ekspertiz Randevusu" : "Araç Gösterimi"} - {appointment.description}
+                      {appointment.type === "expertise" ? "Ekspertiz Randevusu" : "Araç Gösterimi"}{" "}
+                      - {appointment.description}
                     </div>
                   </div>
                 </div>

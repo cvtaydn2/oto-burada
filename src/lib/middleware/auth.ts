@@ -1,12 +1,12 @@
-import { NextResponse, type NextRequest } from "next/server";
 import type { User } from "@supabase/supabase-js";
+import { type NextRequest, NextResponse } from "next/server";
 
 export function handleAuthRedirects(
-  request: NextRequest, 
-  user: User | null, 
-  routeInfo: { 
-    isProtectedRoute: boolean; 
-    isAdminRoute: boolean; 
+  request: NextRequest,
+  user: User | null,
+  routeInfo: {
+    isProtectedRoute: boolean;
+    isAdminRoute: boolean;
     isAuthRoute: boolean;
     isProtectedApi: boolean;
     isAdminApi: boolean;

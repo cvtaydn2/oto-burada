@@ -1,10 +1,11 @@
 import { NextResponse } from "next/server";
-import { withAdminRoute } from "@/lib/utils/api-security";
-import { grantCreditsToUser, grantDopingToListing } from "@/services/admin/users";
-import { apiError, apiSuccess, API_ERROR_CODES } from "@/lib/utils/api-response";
-import { logger } from "@/lib/utils/logger";
-import { captureServerError, captureServerEvent } from "@/lib/monitoring/posthog-server";
 import { z } from "zod";
+
+import { captureServerError, captureServerEvent } from "@/lib/monitoring/posthog-server";
+import { API_ERROR_CODES, apiError, apiSuccess } from "@/lib/utils/api-response";
+import { withAdminRoute } from "@/lib/utils/api-security";
+import { logger } from "@/lib/utils/logger";
+import { grantCreditsToUser, grantDopingToListing } from "@/services/admin/users";
 
 const grantCreditsSchema = z.object({
   action: z.literal("grant_credits"),
@@ -21,10 +22,7 @@ const grantDopingSchema = z.object({
 
 const bodySchema = z.discriminatedUnion("action", [grantCreditsSchema, grantDopingSchema]);
 
-export async function POST(
-  request: Request,
-  { params }: { params: Promise<{ userId: string }> },
-) {
+export async function POST(request: Request, { params }: { params: Promise<{ userId: string }> }) {
   const security = await withAdminRoute(request);
   if (!security.ok) return security.response;
   const adminUser = security.user!;
@@ -40,7 +38,11 @@ export async function POST(
 
   const parsed = bodySchema.safeParse(body);
   if (!parsed.success) {
-    return apiError(API_ERROR_CODES.BAD_REQUEST, "Geçersiz istek: " + parsed.error.issues[0]?.message, 400);
+    return apiError(
+      API_ERROR_CODES.BAD_REQUEST,
+      "Geçersiz istek: " + parsed.error.issues[0]?.message,
+      400
+    );
   }
 
   try {
@@ -49,15 +51,23 @@ export async function POST(
         userId,
         parsed.data.credits,
         parsed.data.note,
-        adminUser.id,
+        adminUser.id
       );
-      if (!result.success) return apiError(API_ERROR_CODES.INTERNAL_ERROR, result.error ?? "Hata", 500);
-      captureServerEvent("admin_credits_granted", {
-        adminUserId: adminUser.id,
-        targetUserId: userId,
-        credits: parsed.data.credits,
-      }, adminUser.id);
-      return apiSuccess({ userId, credits: parsed.data.credits }, `${parsed.data.credits} kredi başarıyla tanımlandı.`);
+      if (!result.success)
+        return apiError(API_ERROR_CODES.INTERNAL_ERROR, result.error ?? "Hata", 500);
+      captureServerEvent(
+        "admin_credits_granted",
+        {
+          adminUserId: adminUser.id,
+          targetUserId: userId,
+          credits: parsed.data.credits,
+        },
+        adminUser.id
+      );
+      return apiSuccess(
+        { userId, credits: parsed.data.credits },
+        `${parsed.data.credits} kredi başarıyla tanımlandı.`
+      );
     }
 
     if (parsed.data.action === "grant_doping") {
@@ -65,26 +75,37 @@ export async function POST(
         parsed.data.listingId,
         parsed.data.dopingTypes,
         parsed.data.durationDays,
-        adminUser.id,
+        adminUser.id
       );
-      if (!result.success) return apiError(API_ERROR_CODES.INTERNAL_ERROR, result.error ?? "Hata", 500);
-      captureServerEvent("admin_doping_granted", {
-        adminUserId: adminUser.id,
-        targetUserId: userId,
-        listingId: parsed.data.listingId,
-        dopingTypes: parsed.data.dopingTypes,
-        durationDays: parsed.data.durationDays,
-      }, adminUser.id);
+      if (!result.success)
+        return apiError(API_ERROR_CODES.INTERNAL_ERROR, result.error ?? "Hata", 500);
+      captureServerEvent(
+        "admin_doping_granted",
+        {
+          adminUserId: adminUser.id,
+          targetUserId: userId,
+          listingId: parsed.data.listingId,
+          dopingTypes: parsed.data.dopingTypes,
+          durationDays: parsed.data.durationDays,
+        },
+        adminUser.id
+      );
       return apiSuccess({ listingId: parsed.data.listingId }, "Doping başarıyla tanımlandı.");
     }
 
     return apiError(API_ERROR_CODES.BAD_REQUEST, "Bilinmeyen aksiyon.", 400);
   } catch (err) {
     logger.admin.error("Admin user action failed", err, { userId });
-    captureServerError("Admin user action failed", "admin", err, {
-      adminUserId: adminUser.id,
-      targetUserId: userId,
-    }, adminUser.id);
+    captureServerError(
+      "Admin user action failed",
+      "admin",
+      err,
+      {
+        adminUserId: adminUser.id,
+        targetUserId: userId,
+      },
+      adminUser.id
+    );
     return NextResponse.json({ error: "Sunucu hatası" }, { status: 500 });
   }
 }

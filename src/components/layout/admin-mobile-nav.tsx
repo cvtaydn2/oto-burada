@@ -1,10 +1,12 @@
 "use client";
 
 import { Menu, ShieldCheck } from "lucide-react";
-import { Drawer } from "vaul";
-import { AdminSidebar } from "./admin-sidebar";
-import { Button } from "@/components/ui/button";
 import Link from "next/link";
+import { Drawer } from "vaul";
+
+import { Button } from "@/components/ui/button";
+
+import { AdminSidebar } from "./admin-sidebar";
 
 export function AdminMobileNav() {
   return (
@@ -18,7 +20,11 @@ export function AdminMobileNav() {
 
       <Drawer.Root direction="left">
         <Drawer.Trigger asChild>
-          <Button variant="outline" size="sm" className="rounded-xl flex items-center gap-2 font-bold text-[10px] tracking-widest uppercase h-10 border-slate-200">
+          <Button
+            variant="outline"
+            size="sm"
+            className="rounded-xl flex items-center gap-2 font-bold text-[10px] tracking-widest uppercase h-10 border-slate-200"
+          >
             <Menu size={16} />
             Menü
           </Button>
@@ -27,12 +33,12 @@ export function AdminMobileNav() {
           <Drawer.Overlay className="fixed inset-0 z-[70] bg-black/40 backdrop-blur-sm" />
           <Drawer.Content className="fixed inset-y-0 left-0 z-[80] flex w-[280px] flex-col bg-background shadow-2xl focus:outline-none">
             <div className="flex-1 overflow-y-auto">
-               <div className="h-full">
-                  {/* We reuse the sidebar but remove its fixed/hidden classes for the drawer version */}
-                  <div className="flex flex-col h-full bg-card">
-                     <AdminSidebar isMobile />
-                  </div>
-               </div>
+              <div className="h-full">
+                {/* We reuse the sidebar but remove its fixed/hidden classes for the drawer version */}
+                <div className="flex flex-col h-full bg-card">
+                  <AdminSidebar isMobile />
+                </div>
+              </div>
             </div>
           </Drawer.Content>
         </Drawer.Portal>

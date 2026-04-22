@@ -1,7 +1,8 @@
 "use client";
 
+import { Bell, CheckCircle2, LoaderCircle, Mail } from "lucide-react";
 import { useState } from "react";
-import { Bell, Mail, LoaderCircle, CheckCircle2 } from "lucide-react";
+
 import type { NotificationPreferences } from "@/services/notifications/notification-preferences";
 
 interface NotificationPreferencesPanelProps {
@@ -24,12 +25,12 @@ function ToggleRow({ label, description, checked, onChange, disabled }: ToggleRo
         <p className="text-xs text-muted-foreground mt-0.5">{description}</p>
       </div>
       <button
-          type="button"
-          role="switch"
-          aria-checked={checked}
-          aria-label={label}
-          disabled={disabled}
-          onClick={() => onChange(!checked)}
+        type="button"
+        role="switch"
+        aria-checked={checked}
+        aria-label={label}
+        disabled={disabled}
+        onClick={() => onChange(!checked)}
         className={`relative inline-flex h-6 w-11 shrink-0 items-center rounded-full transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 disabled:opacity-50 ${
           checked ? "bg-primary" : "bg-slate-200"
         }`}
@@ -44,14 +45,16 @@ function ToggleRow({ label, description, checked, onChange, disabled }: ToggleRo
   );
 }
 
-export function NotificationPreferencesPanel({ initialPreferences }: NotificationPreferencesPanelProps) {
+export function NotificationPreferencesPanel({
+  initialPreferences,
+}: NotificationPreferencesPanelProps) {
   const [prefs, setPrefs] = useState(initialPreferences);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const update = (key: keyof Omit<NotificationPreferences, "userId">, value: boolean) => {
-    setPrefs(prev => ({ ...prev, [key]: value }));
+    setPrefs((prev) => ({ ...prev, [key]: value }));
   };
 
   const handleSave = async () => {
@@ -84,7 +87,9 @@ export function NotificationPreferencesPanel({ initialPreferences }: Notificatio
         </div>
         <div>
           <h2 className="text-lg font-bold text-foreground">Bildirim Tercihleri</h2>
-          <p className="text-xs text-muted-foreground">Hangi bildirimleri almak istediğinizi seçin</p>
+          <p className="text-xs text-muted-foreground">
+            Hangi bildirimleri almak istediğinizi seçin
+          </p>
         </div>
       </div>
 
@@ -93,38 +98,40 @@ export function NotificationPreferencesPanel({ initialPreferences }: Notificatio
         <div>
           <div className="flex items-center gap-2 mb-3 pb-3 border-b border-border/50">
             <Bell size={14} className="text-muted-foreground/70" />
-            <span className="text-xs font-bold text-muted-foreground uppercase tracking-widest">Uygulama İçi</span>
+            <span className="text-xs font-bold text-muted-foreground uppercase tracking-widest">
+              Uygulama İçi
+            </span>
           </div>
           <div className="divide-y divide-slate-50">
             <ToggleRow
               label="Favori bildirimleri"
               description="Birisi ilanınızı favorilere eklediğinde"
               checked={prefs.notifyFavorite}
-              onChange={v => update("notifyFavorite", v)}
+              onChange={(v) => update("notifyFavorite", v)}
             />
             <ToggleRow
               label="Moderasyon bildirimleri"
               description="İlanınız onaylandığında veya reddedildiğinde"
               checked={prefs.notifyModeration}
-              onChange={v => update("notifyModeration", v)}
+              onChange={(v) => update("notifyModeration", v)}
             />
             <ToggleRow
               label="Mesaj bildirimleri"
               description="Yeni mesaj aldığınızda"
               checked={prefs.notifyMessage}
-              onChange={v => update("notifyMessage", v)}
+              onChange={(v) => update("notifyMessage", v)}
             />
             <ToggleRow
               label="Fiyat düşüşü bildirimleri"
               description="Favorilediğiniz ilanın fiyatı düştüğünde"
               checked={prefs.notifyPriceDrop}
-              onChange={v => update("notifyPriceDrop", v)}
+              onChange={(v) => update("notifyPriceDrop", v)}
             />
             <ToggleRow
               label="Kayıtlı arama bildirimleri"
               description="Kayıtlı aramanıza yeni ilan eklendiğinde"
               checked={prefs.notifySavedSearch}
-              onChange={v => update("notifySavedSearch", v)}
+              onChange={(v) => update("notifySavedSearch", v)}
             />
           </div>
         </div>
@@ -133,35 +140,35 @@ export function NotificationPreferencesPanel({ initialPreferences }: Notificatio
         <div>
           <div className="flex items-center gap-2 mb-3 pb-3 border-b border-border/50">
             <Mail size={14} className="text-muted-foreground/70" />
-            <span className="text-xs font-bold text-muted-foreground uppercase tracking-widest">E-posta</span>
+            <span className="text-xs font-bold text-muted-foreground uppercase tracking-widest">
+              E-posta
+            </span>
           </div>
           <div className="divide-y divide-slate-50">
             <ToggleRow
               label="Moderasyon e-postaları"
               description="İlan onay/red kararları e-posta ile bildirilsin"
               checked={prefs.emailModeration}
-              onChange={v => update("emailModeration", v)}
+              onChange={(v) => update("emailModeration", v)}
             />
             <ToggleRow
               label="İlan sona erme uyarısı"
               description="İlanınız sona ermeden 7 gün önce hatırlatma"
               checked={prefs.emailExpiryWarning}
-              onChange={v => update("emailExpiryWarning", v)}
+              onChange={(v) => update("emailExpiryWarning", v)}
             />
             <ToggleRow
               label="Kayıtlı arama e-postaları"
               description="Günlük yeni ilan özeti e-posta ile gelsin"
               checked={prefs.emailSavedSearch}
-              onChange={v => update("emailSavedSearch", v)}
+              onChange={(v) => update("emailSavedSearch", v)}
             />
           </div>
         </div>
       </div>
 
       <div className="mt-6 flex items-center justify-end gap-3">
-        {error && (
-          <p className="text-sm font-medium text-red-600">{error}</p>
-        )}
+        {error && <p className="text-sm font-medium text-red-600">{error}</p>}
         {saved && (
           <div className="flex items-center gap-1.5 text-sm font-medium text-emerald-600">
             <CheckCircle2 size={15} />

@@ -1,13 +1,12 @@
-import { createDatabaseNotification } from "@/services/notifications/notification-records";
-import { 
-  getDatabaseListings, 
-} from "@/services/listings/listing-submissions";
-import { hasSupabaseAdminEnv } from "@/lib/supabase/env";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
+import { hasSupabaseAdminEnv } from "@/lib/supabase/env";
 import { getRequiredAppUrl } from "@/lib/utils/env";
-import { listingSchema } from "@/lib/validators";
-import type { Listing } from "@/types";
 import { logger } from "@/lib/utils/logger";
+import { listingSchema } from "@/lib/validators";
+import { getDatabaseListings } from "@/services/listings/listing-submissions";
+import { createDatabaseNotification } from "@/services/notifications/notification-records";
+import type { Listing } from "@/types";
+
 import { createAdminModerationAction } from "./moderation-actions";
 
 export type ListingModerationDecision = "approve" | "reject";
@@ -35,7 +34,7 @@ function buildDefaultModerationNote(listing: Listing, action: ListingModerationD
 async function sendModerationEmail(
   listing: Listing,
   action: ListingModerationDecision,
-  note?: string | null,
+  note?: string | null
 ) {
   try {
     const { createSupabaseAdminClient } = await import("@/lib/supabase/admin");
@@ -43,8 +42,7 @@ async function sendModerationEmail(
     const { data: authUser } = await admin.auth.admin.getUserById(listing.sellerId);
     const sellerEmail = authUser?.user?.email;
     const sellerName =
-      (authUser?.user?.user_metadata as { full_name?: string } | undefined)?.full_name ??
-      "Satıcı";
+      (authUser?.user?.user_metadata as { full_name?: string } | undefined)?.full_name ?? "Satıcı";
 
     if (!sellerEmail) return;
 
@@ -77,7 +75,7 @@ async function createModerationSideEffects(
   listing: Listing,
   action: ListingModerationDecision,
   adminUserId: string,
-  note?: string | null,
+  note?: string | null
 ) {
   // 1. Audit Action (Immediate)
   await createAdminModerationAction({
@@ -109,12 +107,20 @@ async function createModerationSideEffects(
     if (action === "approve") {
       const { invalidateCache } = await import("@/lib/redis/client");
       await invalidateCache("listings:approved").catch((err) =>
-        logger.admin.warn("Cache invalidation failed after approval", { listingId: listing.id }, err)
+        logger.admin.warn(
+          "Cache invalidation failed after approval",
+          { listingId: listing.id },
+          err
+        )
       );
 
       const { updateMarketStats } = await import("@/services/market/market-stats");
       await updateMarketStats(listing.brand, listing.model, listing.year).catch((err) =>
-        logger.market.warn("Market stats update failed after approval", { listingId: listing.id }, err)
+        logger.market.warn(
+          "Market stats update failed after approval",
+          { listingId: listing.id },
+          err
+        )
       );
     }
   } catch (err) {
@@ -130,7 +136,7 @@ export async function moderateListingWithSideEffects({
 }: ModerateListingInput) {
   const persistedListing = await moderateDatabaseListing(
     listingId,
-    action === "approve" ? "approved" : "rejected",
+    action === "approve" ? "approved" : "rejected"
   );
 
   if (!persistedListing) {
@@ -159,8 +165,8 @@ export async function moderateListingsWithSideEffects({
     const batch = uniqueIds.slice(i, i + CONCURRENCY);
     const results = await Promise.allSettled(
       batch.map((listingId) =>
-        moderateListingWithSideEffects({ action, adminUserId, listingId, note }),
-      ),
+        moderateListingWithSideEffects({ action, adminUserId, listingId, note })
+      )
     );
 
     for (let j = 0; j < results.length; j++) {
@@ -179,7 +185,7 @@ export async function moderateListingsWithSideEffects({
 
 export async function moderateDatabaseListing(
   listingId: string,
-  status: Extract<Listing["status"], "approved" | "rejected">,
+  status: Extract<Listing["status"], "approved" | "rejected">
 ) {
   if (!hasSupabaseAdminEnv()) {
     return null;
@@ -258,7 +264,7 @@ export async function adminDeleteDatabaseListing(listingId: string) {
 
 export function moderateStoredListing(
   existingListing: Listing,
-  status: Extract<Listing["status"], "approved" | "rejected">,
+  status: Extract<Listing["status"], "approved" | "rejected">
 ) {
   return listingSchema.parse({
     ...existingListing,

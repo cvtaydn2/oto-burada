@@ -323,7 +323,7 @@ async function ensureUsers() {
   const existingUsers = new Map(
     (await listAllUsers())
       .filter((user) => typeof user.email === "string")
-      .map((user) => [user.email, user]),
+      .map((user) => [user.email, user])
   );
 
   const ensuredUsers = new Map();
@@ -334,7 +334,7 @@ async function ensureUsers() {
     if (!user) {
       if (!demoPassword) {
         throw new Error(
-          `SUPABASE_DEMO_USER_PASSWORD is required to create missing demo user ${entry.email}.`,
+          `SUPABASE_DEMO_USER_PASSWORD is required to create missing demo user ${entry.email}.`
         );
       }
 
@@ -376,7 +376,7 @@ async function ensureUsers() {
       console.log(
         demoPassword
           ? `Updated auth user ${entry.email}`
-          : `Verified auth user metadata ${entry.email}`,
+          : `Verified auth user metadata ${entry.email}`
       );
     }
 

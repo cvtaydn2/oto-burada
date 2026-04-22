@@ -2,8 +2,9 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { cn } from "@/lib/utils";
+
 import { features } from "@/lib/features";
+import { cn } from "@/lib/utils";
 
 const navItems = [
   { href: "/listings", label: "İlanlar" },
@@ -28,7 +29,7 @@ export function DesktopNav() {
             prefetch={false}
             className={cn(
               "transition-colors hover:text-blue-500",
-              isActive && "text-blue-500 font-semibold",
+              isActive && "text-blue-500 font-semibold"
             )}
             aria-current={isActive ? "page" : undefined}
           >

@@ -1,8 +1,9 @@
 "use client";
 
-import { useEffect } from "react";
-import { createSupabaseBrowserClient } from "@/lib/supabase/browser";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useEffect } from "react";
+
+import { createSupabaseBrowserClient } from "@/lib/supabase/browser";
 import type { Notification } from "@/types";
 
 export function useNotifications(userId?: string) {
@@ -10,7 +11,11 @@ export function useNotifications(userId?: string) {
   const supabase = createSupabaseBrowserClient();
 
   // 1. Initial fetch using TanStack Query
-  const { data: notifications = [], isLoading, isError } = useQuery<Notification[]>({
+  const {
+    data: notifications = [],
+    isLoading,
+    isError,
+  } = useQuery<Notification[]>({
     queryKey: ["notifications", userId],
     queryFn: async () => {
       if (!userId) return [];
@@ -51,7 +56,7 @@ export function useNotifications(userId?: string) {
         },
         (payload: { new: { title: string; message: string } }) => {
           queryClient.invalidateQueries({ queryKey: ["notifications", userId] });
-          
+
           if (typeof window !== "undefined" && window.Notification?.permission === "granted") {
             new window.Notification(payload.new.title, {
               body: payload.new.message,
@@ -65,12 +70,12 @@ export function useNotifications(userId?: string) {
     let eventSource: EventSource | null = null;
     try {
       eventSource = new EventSource("/api/notifications/stream");
-      
+
       eventSource.onmessage = (event) => {
         try {
           const data = JSON.parse(event.data);
           if (data.type === "connected") return;
-          
+
           // Invalidate to refresh the list
           queryClient.invalidateQueries({ queryKey: ["notifications", userId] });
 

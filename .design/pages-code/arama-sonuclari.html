@@ -1,233 +1,379 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="tr">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>OtoBurada - Arama Sonuçları</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-</head>
-<body class="bg-gray-50 text-gray-800 font-sans">
-
+    <link
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
+      rel="stylesheet"
+    />
+  </head>
+  <body class="bg-gray-50 text-gray-800 font-sans">
     <header class="bg-white border-b border-gray-200 sticky top-0 z-50">
-        <div class="max-w-[1400px] mx-auto px-4 flex justify-between items-center h-16">
-            <a href="#" class="text-blue-500 text-xl font-bold flex items-center">
-                <i class="fa-solid fa-car-side mr-2"></i>OtoBurada
-            </a>
-            <div class="hidden md:flex relative w-96">
-                <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400">
-                    <i class="fa-solid fa-magnifying-glass text-sm"></i>
-                </span>
-                <input type="text" placeholder="Marka, model veya kelime ara..." class="w-full bg-gray-100 border-transparent text-gray-700 text-sm rounded-full focus:bg-white focus:border-blue-500 pl-10 py-2 outline-none">
-            </div>
-            <div class="flex items-center space-x-4">
-                <button class="bg-blue-500 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-600 transition shadow-sm">
-                    <i class="fa-solid fa-plus mr-1"></i> İlan Ver
-                </button>
-            </div>
+      <div class="max-w-[1400px] mx-auto px-4 flex justify-between items-center h-16">
+        <a href="#" class="text-blue-500 text-xl font-bold flex items-center">
+          <i class="fa-solid fa-car-side mr-2"></i>OtoBurada
+        </a>
+        <div class="hidden md:flex relative w-96">
+          <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400">
+            <i class="fa-solid fa-magnifying-glass text-sm"></i>
+          </span>
+          <input
+            type="text"
+            placeholder="Marka, model veya kelime ara..."
+            class="w-full bg-gray-100 border-transparent text-gray-700 text-sm rounded-full focus:bg-white focus:border-blue-500 pl-10 py-2 outline-none"
+          />
         </div>
+        <div class="flex items-center space-x-4">
+          <button
+            class="bg-blue-500 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-600 transition shadow-sm"
+          >
+            <i class="fa-solid fa-plus mr-1"></i> İlan Ver
+          </button>
+        </div>
+      </div>
     </header>
 
     <div class="max-w-[1400px] mx-auto px-4 py-8 flex flex-col md:flex-row gap-6">
+      <aside class="w-full md:w-64 flex-shrink-0">
+        <div class="flex justify-between items-center mb-4">
+          <h2 class="text-lg font-bold flex items-center">
+            <i class="fa-solid fa-filter mr-2"></i> Filtrele
+          </h2>
+          <button class="text-sm text-blue-500 hover:text-blue-600">Sıfırla</button>
+        </div>
 
-        <aside class="w-full md:w-64 flex-shrink-0">
-            <div class="flex justify-between items-center mb-4">
-                <h2 class="text-lg font-bold flex items-center"><i class="fa-solid fa-filter mr-2"></i> Filtrele</h2>
-                <button class="text-sm text-blue-500 hover:text-blue-600">Sıfırla</button>
+        <div class="bg-white border border-gray-200 rounded-xl p-4 space-y-6">
+          <div class="relative">
+            <i
+              class="fa-solid fa-magnifying-glass absolute left-3 top-2.5 text-gray-400 text-sm"
+            ></i>
+            <input
+              type="text"
+              placeholder="Marka ara..."
+              class="w-full border border-gray-200 rounded-lg pl-9 p-2 text-sm focus:border-blue-500 outline-none"
+            />
+          </div>
+
+          <div>
+            <h3 class="font-bold text-sm mb-3 flex justify-between items-center cursor-pointer">
+              Marka & Model <i class="fa-solid fa-chevron-down text-gray-400 text-xs"></i>
+            </h3>
+            <div class="space-y-2">
+              <label class="flex items-center space-x-2 cursor-pointer text-sm">
+                <input
+                  type="checkbox"
+                  checked
+                  class="rounded border-gray-300 text-blue-500 focus:ring-blue-500"
+                />
+                <span>BMW</span>
+              </label>
+              <label class="flex items-center space-x-2 cursor-pointer text-sm">
+                <input
+                  type="checkbox"
+                  class="rounded border-gray-300 text-blue-500 focus:ring-blue-500"
+                />
+                <span>Mercedes-Benz</span>
+              </label>
+              <label class="flex items-center space-x-2 cursor-pointer text-sm">
+                <input
+                  type="checkbox"
+                  class="rounded border-gray-300 text-blue-500 focus:ring-blue-500"
+                />
+                <span>Audi</span>
+              </label>
+              <button class="text-blue-500 text-xs font-medium mt-2">+ 12 Marka Daha</button>
             </div>
+          </div>
 
-            <div class="bg-white border border-gray-200 rounded-xl p-4 space-y-6">
-                
-                <div class="relative">
-                    <i class="fa-solid fa-magnifying-glass absolute left-3 top-2.5 text-gray-400 text-sm"></i>
-                    <input type="text" placeholder="Marka ara..." class="w-full border border-gray-200 rounded-lg pl-9 p-2 text-sm focus:border-blue-500 outline-none">
-                </div>
+          <hr class="border-gray-100" />
 
-                <div>
-                    <h3 class="font-bold text-sm mb-3 flex justify-between items-center cursor-pointer">Marka & Model <i class="fa-solid fa-chevron-down text-gray-400 text-xs"></i></h3>
-                    <div class="space-y-2">
-                        <label class="flex items-center space-x-2 cursor-pointer text-sm">
-                            <input type="checkbox" checked class="rounded border-gray-300 text-blue-500 focus:ring-blue-500">
-                            <span>BMW</span>
-                        </label>
-                        <label class="flex items-center space-x-2 cursor-pointer text-sm">
-                            <input type="checkbox" class="rounded border-gray-300 text-blue-500 focus:ring-blue-500">
-                            <span>Mercedes-Benz</span>
-                        </label>
-                        <label class="flex items-center space-x-2 cursor-pointer text-sm">
-                            <input type="checkbox" class="rounded border-gray-300 text-blue-500 focus:ring-blue-500">
-                            <span>Audi</span>
-                        </label>
-                        <button class="text-blue-500 text-xs font-medium mt-2">+ 12 Marka Daha</button>
-                    </div>
-                </div>
-
-                <hr class="border-gray-100">
-
-                <div>
-                    <h3 class="font-bold text-sm mb-3 flex justify-between items-center cursor-pointer">Fiyat (TL) <i class="fa-solid fa-chevron-down text-gray-400 text-xs"></i></h3>
-                    <div class="flex items-center space-x-2">
-                        <input type="text" placeholder="Min" value="500,000" class="w-1/2 border border-gray-200 rounded-lg p-2 text-sm focus:border-blue-500 outline-none">
-                        <span class="text-gray-400">-</span>
-                        <input type="text" placeholder="Max" value="3,500,000" class="w-1/2 border border-gray-200 rounded-lg p-2 text-sm focus:border-blue-500 outline-none">
-                    </div>
-                </div>
-
-                <hr class="border-gray-100">
-
-                <div>
-                    <h3 class="font-bold text-sm mb-3 flex justify-between items-center cursor-pointer">Yakıt Tipi <i class="fa-solid fa-chevron-down text-gray-400 text-xs"></i></h3>
-                    <div class="space-y-2">
-                        <label class="flex items-center space-x-2 cursor-pointer text-sm">
-                            <input type="checkbox" checked class="rounded border-gray-300 text-blue-500 focus:ring-blue-500">
-                            <span>Benzin</span>
-                        </label>
-                        <label class="flex items-center space-x-2 cursor-pointer text-sm">
-                            <input type="checkbox" class="rounded border-gray-300 text-blue-500 focus:ring-blue-500">
-                            <span>Dizel</span>
-                        </label>
-                        <label class="flex items-center space-x-2 cursor-pointer text-sm">
-                            <input type="checkbox" class="rounded border-gray-300 text-blue-500 focus:ring-blue-500">
-                            <span>Elektrik</span>
-                        </label>
-                    </div>
-                </div>
+          <div>
+            <h3 class="font-bold text-sm mb-3 flex justify-between items-center cursor-pointer">
+              Fiyat (TL) <i class="fa-solid fa-chevron-down text-gray-400 text-xs"></i>
+            </h3>
+            <div class="flex items-center space-x-2">
+              <input
+                type="text"
+                placeholder="Min"
+                value="500,000"
+                class="w-1/2 border border-gray-200 rounded-lg p-2 text-sm focus:border-blue-500 outline-none"
+              />
+              <span class="text-gray-400">-</span>
+              <input
+                type="text"
+                placeholder="Max"
+                value="3,500,000"
+                class="w-1/2 border border-gray-200 rounded-lg p-2 text-sm focus:border-blue-500 outline-none"
+              />
             </div>
-        </aside>
+          </div>
 
-        <main class="flex-1">
-            
-            <div class="mb-6">
-                <div class="flex justify-between items-center mb-4">
-                    <div>
-                        <h1 class="text-2xl font-bold">Otomobil İlanları</h1>
-                        <p class="text-sm text-gray-500">Toplam 14,520 sonuçtan 1-24 arası gösteriliyor</p>
-                    </div>
-                    <div class="flex space-x-2">
-                        <div class="bg-white border border-gray-200 rounded-lg p-1 flex">
-                            <button class="bg-gray-100 text-gray-700 px-3 py-1.5 rounded-md"><i class="fa-solid fa-border-all"></i></button>
-                            <button class="text-gray-400 px-3 py-1.5 hover:text-gray-600"><i class="fa-solid fa-list"></i></button>
-                        </div>
-                        <select class="bg-white border border-gray-200 text-gray-700 rounded-lg p-2 text-sm outline-none">
-                            <option>Önerilen Sıralama</option>
-                            <option>Fiyata Göre (Artan)</option>
-                            <option>Fiyata Göre (Azalan)</option>
-                        </select>
-                    </div>
-                </div>
+          <hr class="border-gray-100" />
 
-                <div class="flex flex-wrap gap-2">
-                    <span class="bg-blue-50 text-blue-600 text-xs px-3 py-1.5 rounded-full flex items-center border border-blue-100">
-                        BMW <button class="ml-2 hover:text-blue-800"><i class="fa-solid fa-xmark"></i></button>
-                    </span>
-                    <span class="bg-blue-50 text-blue-600 text-xs px-3 py-1.5 rounded-full flex items-center border border-blue-100">
-                        2020 - 2024 <button class="ml-2 hover:text-blue-800"><i class="fa-solid fa-xmark"></i></button>
-                    </span>
-                    <span class="bg-blue-50 text-blue-600 text-xs px-3 py-1.5 rounded-full flex items-center border border-blue-100">
-                        İstanbul <button class="ml-2 hover:text-blue-800"><i class="fa-solid fa-xmark"></i></button>
-                    </span>
-                    <button class="text-sm text-gray-500 hover:text-red-500 ml-2">Tümünü Temizle</button>
-                </div>
+          <div>
+            <h3 class="font-bold text-sm mb-3 flex justify-between items-center cursor-pointer">
+              Yakıt Tipi <i class="fa-solid fa-chevron-down text-gray-400 text-xs"></i>
+            </h3>
+            <div class="space-y-2">
+              <label class="flex items-center space-x-2 cursor-pointer text-sm">
+                <input
+                  type="checkbox"
+                  checked
+                  class="rounded border-gray-300 text-blue-500 focus:ring-blue-500"
+                />
+                <span>Benzin</span>
+              </label>
+              <label class="flex items-center space-x-2 cursor-pointer text-sm">
+                <input
+                  type="checkbox"
+                  class="rounded border-gray-300 text-blue-500 focus:ring-blue-500"
+                />
+                <span>Dizel</span>
+              </label>
+              <label class="flex items-center space-x-2 cursor-pointer text-sm">
+                <input
+                  type="checkbox"
+                  class="rounded border-gray-300 text-blue-500 focus:ring-blue-500"
+                />
+                <span>Elektrik</span>
+              </label>
             </div>
+          </div>
+        </div>
+      </aside>
 
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                
-                <div class="bg-white border border-gray-200 rounded-xl overflow-hidden hover:shadow-lg transition group">
-                    <div class="relative h-48 bg-gray-200">
-                        <img src="https://images.unsplash.com/photo-1555215695-3004980ad54e?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=60" alt="Araç" class="w-full h-full object-cover">
-                        <div class="absolute top-3 left-3 bg-blue-500 text-white text-[10px] font-bold px-2 py-1 rounded">Ekspertizli</div>
-                        <button class="absolute top-3 right-3 w-8 h-8 bg-white/80 rounded-full flex items-center justify-center text-gray-500 hover:text-red-500 hover:bg-white transition backdrop-blur-sm">
-                            <i class="fa-regular fa-heart"></i>
-                        </button>
-                    </div>
-                    <div class="p-4">
-                        <h3 class="font-bold text-lg text-gray-800 truncate">BMW 3 Serisi 320i Sedan</h3>
-                        <p class="text-sm text-gray-500 mb-3">2021</p>
-                        
-                        <div class="flex justify-between text-xs text-gray-500 mb-4 border-b border-gray-100 pb-3">
-                            <span class="flex items-center"><i class="fa-solid fa-gear mr-1"></i> Otomatik</span>
-                            <span class="flex items-center"><i class="fa-solid fa-gas-pump mr-1"></i> Benzin</span>
-                        </div>
-                        
-                        <p class="text-xs text-gray-400 mb-1"><i class="fa-solid fa-location-dot mr-1"></i> İstanbul, Kadıköy</p>
-                        <div class="text-xl font-extrabold text-blue-500 mb-2">2.450.000 TL</div>
-                        
-                        <div class="flex justify-between items-center pt-2 border-t border-gray-50">
-                            <span class="text-xs text-gray-500">42.500 km</span>
-                            <a href="#" class="text-xs font-bold text-blue-500 hover:text-blue-600">İncele <i class="fa-solid fa-chevron-right text-[10px]"></i></a>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="bg-white border border-gray-200 rounded-xl overflow-hidden hover:shadow-lg transition group">
-                    <div class="relative h-48 bg-gray-200">
-                        <img src="https://images.unsplash.com/photo-1618843479313-40f8afb4b4d8?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=60" alt="Araç" class="w-full h-full object-cover">
-                        <div class="absolute top-3 left-3 bg-green-500 text-white text-[10px] font-bold px-2 py-1 rounded">Yeni İlan</div>
-                        <button class="absolute top-3 right-3 w-8 h-8 bg-white/80 rounded-full flex items-center justify-center text-red-500 hover:bg-white transition backdrop-blur-sm">
-                            <i class="fa-solid fa-heart"></i>
-                        </button>
-                    </div>
-                    <div class="p-4">
-                        <h3 class="font-bold text-lg text-gray-800 truncate">Mercedes-Benz C-Class C200</h3>
-                        <p class="text-sm text-gray-500 mb-3">2022</p>
-                        
-                        <div class="flex justify-between text-xs text-gray-500 mb-4 border-b border-gray-100 pb-3">
-                            <span class="flex items-center"><i class="fa-solid fa-gear mr-1"></i> Otomatik</span>
-                            <span class="flex items-center"><i class="fa-solid fa-gas-pump mr-1"></i> Benzin</span>
-                        </div>
-                        
-                        <p class="text-xs text-gray-400 mb-1"><i class="fa-solid fa-location-dot mr-1"></i> Ankara, Çankaya</p>
-                        <div class="text-xl font-extrabold text-blue-500 mb-2">3.100.000 TL</div>
-                        
-                        <div class="flex justify-between items-center pt-2 border-t border-gray-50">
-                            <span class="text-xs text-gray-500">15.000 km</span>
-                            <a href="#" class="text-xs font-bold text-blue-500 hover:text-blue-600">İncele <i class="fa-solid fa-chevron-right text-[10px]"></i></a>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="bg-white border border-gray-200 rounded-xl overflow-hidden hover:shadow-lg transition group">
-                    <div class="relative h-48 bg-gray-200">
-                        <img src="https://images.unsplash.com/photo-1563720223185-11003d516935?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=60" alt="Araç" class="w-full h-full object-cover">
-                        <button class="absolute top-3 right-3 w-8 h-8 bg-white/80 rounded-full flex items-center justify-center text-gray-500 hover:text-red-500 hover:bg-white transition backdrop-blur-sm">
-                            <i class="fa-regular fa-heart"></i>
-                        </button>
-                    </div>
-                    <div class="p-4">
-                        <h3 class="font-bold text-lg text-gray-800 truncate">Tesla Model 3 Long Range</h3>
-                        <p class="text-sm text-gray-500 mb-3">2023</p>
-                        
-                        <div class="flex justify-between text-xs text-gray-500 mb-4 border-b border-gray-100 pb-3">
-                            <span class="flex items-center"><i class="fa-solid fa-gear mr-1"></i> Otomatik</span>
-                            <span class="flex items-center"><i class="fa-solid fa-plug mr-1"></i> Elektrik</span>
-                        </div>
-                        
-                        <p class="text-xs text-gray-400 mb-1"><i class="fa-solid fa-location-dot mr-1"></i> İzmir, Bornova</p>
-                        <div class="text-xl font-extrabold text-blue-500 mb-2">2.100.000 TL</div>
-                        
-                        <div class="flex justify-between items-center pt-2 border-t border-gray-50">
-                            <span class="text-xs text-gray-500">8.500 km</span>
-                            <a href="#" class="text-xs font-bold text-blue-500 hover:text-blue-600">İncele <i class="fa-solid fa-chevron-right text-[10px]"></i></a>
-                        </div>
-                    </div>
-                </div>
-
+      <main class="flex-1">
+        <div class="mb-6">
+          <div class="flex justify-between items-center mb-4">
+            <div>
+              <h1 class="text-2xl font-bold">Otomobil İlanları</h1>
+              <p class="text-sm text-gray-500">Toplam 14,520 sonuçtan 1-24 arası gösteriliyor</p>
             </div>
-            
-            <div class="mt-8 flex justify-center">
-                <nav class="flex items-center space-x-1">
-                    <button class="px-3 py-2 border border-gray-200 rounded-lg text-gray-500 hover:bg-gray-50 disabled:opacity-50"><i class="fa-solid fa-chevron-left text-xs"></i></button>
-                    <button class="px-3 py-2 border border-blue-500 bg-blue-50 text-blue-600 font-medium rounded-lg">1</button>
-                    <button class="px-3 py-2 border border-gray-200 text-gray-600 hover:bg-gray-50 rounded-lg font-medium">2</button>
-                    <button class="px-3 py-2 border border-gray-200 text-gray-600 hover:bg-gray-50 rounded-lg font-medium">3</button>
-                    <span class="px-2 text-gray-400">...</span>
-                    <button class="px-3 py-2 border border-gray-200 text-gray-600 hover:bg-gray-50 rounded-lg font-medium">24</button>
-                    <button class="px-3 py-2 border border-gray-200 rounded-lg text-gray-500 hover:bg-gray-50"><i class="fa-solid fa-chevron-right text-xs"></i></button>
-                </nav>
+            <div class="flex space-x-2">
+              <div class="bg-white border border-gray-200 rounded-lg p-1 flex">
+                <button class="bg-gray-100 text-gray-700 px-3 py-1.5 rounded-md">
+                  <i class="fa-solid fa-border-all"></i>
+                </button>
+                <button class="text-gray-400 px-3 py-1.5 hover:text-gray-600">
+                  <i class="fa-solid fa-list"></i>
+                </button>
+              </div>
+              <select
+                class="bg-white border border-gray-200 text-gray-700 rounded-lg p-2 text-sm outline-none"
+              >
+                <option>Önerilen Sıralama</option>
+                <option>Fiyata Göre (Artan)</option>
+                <option>Fiyata Göre (Azalan)</option>
+              </select>
             </div>
+          </div>
 
-        </main>
+          <div class="flex flex-wrap gap-2">
+            <span
+              class="bg-blue-50 text-blue-600 text-xs px-3 py-1.5 rounded-full flex items-center border border-blue-100"
+            >
+              BMW
+              <button class="ml-2 hover:text-blue-800"><i class="fa-solid fa-xmark"></i></button>
+            </span>
+            <span
+              class="bg-blue-50 text-blue-600 text-xs px-3 py-1.5 rounded-full flex items-center border border-blue-100"
+            >
+              2020 - 2024
+              <button class="ml-2 hover:text-blue-800"><i class="fa-solid fa-xmark"></i></button>
+            </span>
+            <span
+              class="bg-blue-50 text-blue-600 text-xs px-3 py-1.5 rounded-full flex items-center border border-blue-100"
+            >
+              İstanbul
+              <button class="ml-2 hover:text-blue-800"><i class="fa-solid fa-xmark"></i></button>
+            </span>
+            <button class="text-sm text-gray-500 hover:text-red-500 ml-2">Tümünü Temizle</button>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div
+            class="bg-white border border-gray-200 rounded-xl overflow-hidden hover:shadow-lg transition group"
+          >
+            <div class="relative h-48 bg-gray-200">
+              <img
+                src="https://images.unsplash.com/photo-1555215695-3004980ad54e?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=60"
+                alt="Araç"
+                class="w-full h-full object-cover"
+              />
+              <div
+                class="absolute top-3 left-3 bg-blue-500 text-white text-[10px] font-bold px-2 py-1 rounded"
+              >
+                Ekspertizli
+              </div>
+              <button
+                class="absolute top-3 right-3 w-8 h-8 bg-white/80 rounded-full flex items-center justify-center text-gray-500 hover:text-red-500 hover:bg-white transition backdrop-blur-sm"
+              >
+                <i class="fa-regular fa-heart"></i>
+              </button>
+            </div>
+            <div class="p-4">
+              <h3 class="font-bold text-lg text-gray-800 truncate">BMW 3 Serisi 320i Sedan</h3>
+              <p class="text-sm text-gray-500 mb-3">2021</p>
+
+              <div
+                class="flex justify-between text-xs text-gray-500 mb-4 border-b border-gray-100 pb-3"
+              >
+                <span class="flex items-center"
+                  ><i class="fa-solid fa-gear mr-1"></i> Otomatik</span
+                >
+                <span class="flex items-center"
+                  ><i class="fa-solid fa-gas-pump mr-1"></i> Benzin</span
+                >
+              </div>
+
+              <p class="text-xs text-gray-400 mb-1">
+                <i class="fa-solid fa-location-dot mr-1"></i> İstanbul, Kadıköy
+              </p>
+              <div class="text-xl font-extrabold text-blue-500 mb-2">2.450.000 TL</div>
+
+              <div class="flex justify-between items-center pt-2 border-t border-gray-50">
+                <span class="text-xs text-gray-500">42.500 km</span>
+                <a href="#" class="text-xs font-bold text-blue-500 hover:text-blue-600"
+                  >İncele <i class="fa-solid fa-chevron-right text-[10px]"></i
+                ></a>
+              </div>
+            </div>
+          </div>
+
+          <div
+            class="bg-white border border-gray-200 rounded-xl overflow-hidden hover:shadow-lg transition group"
+          >
+            <div class="relative h-48 bg-gray-200">
+              <img
+                src="https://images.unsplash.com/photo-1618843479313-40f8afb4b4d8?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=60"
+                alt="Araç"
+                class="w-full h-full object-cover"
+              />
+              <div
+                class="absolute top-3 left-3 bg-green-500 text-white text-[10px] font-bold px-2 py-1 rounded"
+              >
+                Yeni İlan
+              </div>
+              <button
+                class="absolute top-3 right-3 w-8 h-8 bg-white/80 rounded-full flex items-center justify-center text-red-500 hover:bg-white transition backdrop-blur-sm"
+              >
+                <i class="fa-solid fa-heart"></i>
+              </button>
+            </div>
+            <div class="p-4">
+              <h3 class="font-bold text-lg text-gray-800 truncate">Mercedes-Benz C-Class C200</h3>
+              <p class="text-sm text-gray-500 mb-3">2022</p>
+
+              <div
+                class="flex justify-between text-xs text-gray-500 mb-4 border-b border-gray-100 pb-3"
+              >
+                <span class="flex items-center"
+                  ><i class="fa-solid fa-gear mr-1"></i> Otomatik</span
+                >
+                <span class="flex items-center"
+                  ><i class="fa-solid fa-gas-pump mr-1"></i> Benzin</span
+                >
+              </div>
+
+              <p class="text-xs text-gray-400 mb-1">
+                <i class="fa-solid fa-location-dot mr-1"></i> Ankara, Çankaya
+              </p>
+              <div class="text-xl font-extrabold text-blue-500 mb-2">3.100.000 TL</div>
+
+              <div class="flex justify-between items-center pt-2 border-t border-gray-50">
+                <span class="text-xs text-gray-500">15.000 km</span>
+                <a href="#" class="text-xs font-bold text-blue-500 hover:text-blue-600"
+                  >İncele <i class="fa-solid fa-chevron-right text-[10px]"></i
+                ></a>
+              </div>
+            </div>
+          </div>
+
+          <div
+            class="bg-white border border-gray-200 rounded-xl overflow-hidden hover:shadow-lg transition group"
+          >
+            <div class="relative h-48 bg-gray-200">
+              <img
+                src="https://images.unsplash.com/photo-1563720223185-11003d516935?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=60"
+                alt="Araç"
+                class="w-full h-full object-cover"
+              />
+              <button
+                class="absolute top-3 right-3 w-8 h-8 bg-white/80 rounded-full flex items-center justify-center text-gray-500 hover:text-red-500 hover:bg-white transition backdrop-blur-sm"
+              >
+                <i class="fa-regular fa-heart"></i>
+              </button>
+            </div>
+            <div class="p-4">
+              <h3 class="font-bold text-lg text-gray-800 truncate">Tesla Model 3 Long Range</h3>
+              <p class="text-sm text-gray-500 mb-3">2023</p>
+
+              <div
+                class="flex justify-between text-xs text-gray-500 mb-4 border-b border-gray-100 pb-3"
+              >
+                <span class="flex items-center"
+                  ><i class="fa-solid fa-gear mr-1"></i> Otomatik</span
+                >
+                <span class="flex items-center"
+                  ><i class="fa-solid fa-plug mr-1"></i> Elektrik</span
+                >
+              </div>
+
+              <p class="text-xs text-gray-400 mb-1">
+                <i class="fa-solid fa-location-dot mr-1"></i> İzmir, Bornova
+              </p>
+              <div class="text-xl font-extrabold text-blue-500 mb-2">2.100.000 TL</div>
+
+              <div class="flex justify-between items-center pt-2 border-t border-gray-50">
+                <span class="text-xs text-gray-500">8.500 km</span>
+                <a href="#" class="text-xs font-bold text-blue-500 hover:text-blue-600"
+                  >İncele <i class="fa-solid fa-chevron-right text-[10px]"></i
+                ></a>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="mt-8 flex justify-center">
+          <nav class="flex items-center space-x-1">
+            <button
+              class="px-3 py-2 border border-gray-200 rounded-lg text-gray-500 hover:bg-gray-50 disabled:opacity-50"
+            >
+              <i class="fa-solid fa-chevron-left text-xs"></i>
+            </button>
+            <button
+              class="px-3 py-2 border border-blue-500 bg-blue-50 text-blue-600 font-medium rounded-lg"
+            >
+              1
+            </button>
+            <button
+              class="px-3 py-2 border border-gray-200 text-gray-600 hover:bg-gray-50 rounded-lg font-medium"
+            >
+              2
+            </button>
+            <button
+              class="px-3 py-2 border border-gray-200 text-gray-600 hover:bg-gray-50 rounded-lg font-medium"
+            >
+              3
+            </button>
+            <span class="px-2 text-gray-400">...</span>
+            <button
+              class="px-3 py-2 border border-gray-200 text-gray-600 hover:bg-gray-50 rounded-lg font-medium"
+            >
+              24
+            </button>
+            <button
+              class="px-3 py-2 border border-gray-200 rounded-lg text-gray-500 hover:bg-gray-50"
+            >
+              <i class="fa-solid fa-chevron-right text-xs"></i>
+            </button>
+          </nav>
+        </div>
+      </main>
     </div>
-
-</body>
+  </body>
 </html>

@@ -1,19 +1,13 @@
 "use client";
 
-import { useState, useRef } from "react";
-import { 
-  Upload, 
-  CheckCircle2, 
-  Loader2,
-  Trash2
-} from "lucide-react";
+import { CheckCircle2, Loader2, Trash2, Upload } from "lucide-react";
+import { useRef, useState } from "react";
 import { toast } from "sonner";
-import { processBulkListings } from "@/app/dashboard/bulk-import/actions";
-import type { ListingCreateInput } from "@/types";
 
+import { processBulkListings } from "@/app/dashboard/bulk-import/actions";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import {
   Table,
   TableBody,
@@ -22,6 +16,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import type { ListingCreateInput } from "@/types";
 
 interface ListingRow {
   id: string;
@@ -49,15 +44,20 @@ export function BulkImportWizard() {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const parseCSV = (text: string): ListingRow[] => {
-    const lines = text.split("\n").filter(line => line.trim().length > 0);
+    const lines = text.split("\n").filter((line) => line.trim().length > 0);
     if (lines.length < 2) return [];
 
-    const headers = lines[0].toLowerCase().split(",").map(h => h.trim().replace(/^"|"$/g, ""));
+    const headers = lines[0]
+      .toLowerCase()
+      .split(",")
+      .map((h) => h.trim().replace(/^"|"$/g, ""));
     const dataLines = lines.slice(1);
 
     return dataLines.map((line, index) => {
-      const values = line.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/).map(v => v.trim().replace(/^"|"$/g, ""));
-      
+      const values = line
+        .split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/)
+        .map((v) => v.trim().replace(/^"|"$/g, ""));
+
       const rowData: Record<string, string> = {};
       headers.forEach((header, i) => {
         rowData[header] = values[i];
@@ -74,8 +74,12 @@ export function BulkImportWizard() {
       if (isNaN(year) || year < 1950 || year > 2100) errors.push("Geçersiz yıl");
       if (isNaN(price) || price <= 0) errors.push("Geçersiz fiyat");
       if (isNaN(mileage) || mileage < 0) errors.push("Geçersiz km");
-      if (!["benzin", "dizel", "lpg", "hibrit", "elektrik"].includes(rowData.fuel_type?.toLowerCase())) errors.push("Geçersiz yakıt");
-      if (!["manuel", "otomatik", "yari_otomatik"].includes(rowData.transmission?.toLowerCase())) errors.push("Geçersiz vites");
+      if (
+        !["benzin", "dizel", "lpg", "hibrit", "elektrik"].includes(rowData.fuel_type?.toLowerCase())
+      )
+        errors.push("Geçersiz yakıt");
+      if (!["manuel", "otomatik", "yari_otomatik"].includes(rowData.transmission?.toLowerCase()))
+        errors.push("Geçersiz vites");
       if (!rowData.vin || rowData.vin.length < 5) errors.push("Geçersiz VIN");
 
       return {
@@ -94,7 +98,7 @@ export function BulkImportWizard() {
         description: rowData.description || "",
         vin: rowData.vin || "",
         isValid: errors.length === 0,
-        errors
+        errors,
       } as ListingRow;
     });
   };
@@ -122,11 +126,11 @@ export function BulkImportWizard() {
   };
 
   const removeRow = (id: string) => {
-    setRows(prev => prev.filter(r => r.id !== id));
+    setRows((prev) => prev.filter((r) => r.id !== id));
   };
 
   const handleUpload = async () => {
-    const validRows = rows.filter(r => r.isValid);
+    const validRows = rows.filter((r) => r.isValid);
     if (validRows.length === 0) {
       toast.error("Yüklenecek geçerli bir ilan bulunamadı.");
       return;
@@ -134,7 +138,7 @@ export function BulkImportWizard() {
 
     setIsUploading(true);
     try {
-      const transformedInputs: ListingCreateInput[] = validRows.map(row => ({
+      const transformedInputs: ListingCreateInput[] = validRows.map((row) => ({
         title: row.title,
         brand: row.brand,
         model: row.model,
@@ -150,14 +154,14 @@ export function BulkImportWizard() {
         vin: row.vin,
         images: [],
       }));
-      const result = (await processBulkListings(transformedInputs)) as { 
-        success: boolean; 
-        count?: number; 
-        error?: string; 
-        partial?: boolean; 
+      const result = (await processBulkListings(transformedInputs)) as {
+        success: boolean;
+        count?: number;
+        error?: string;
+        partial?: boolean;
         message?: string;
       };
-      
+
       if (result.success) {
         if (result.partial) {
           toast.warning(`Kısmi Başarı: ${result.count} ilan yüklendi.`, {
@@ -181,7 +185,7 @@ export function BulkImportWizard() {
   if (rows.length === 0) {
     return (
       <div className="space-y-6">
-        <Card 
+        <Card
           className="border-2 border-dashed border-muted-foreground/20 bg-secondary/10 hover:bg-secondary/20 transition-all rounded-2xl overflow-hidden group cursor-pointer relative"
           onClick={() => fileInputRef.current?.click()}
         >
@@ -194,15 +198,19 @@ export function BulkImportWizard() {
               </div>
             )}
             <div className="space-y-1">
-              <h2 className="text-2xl font-bold italic uppercase">CSV Dosyanızı Buraya Sürükleyin</h2>
-              <p className="text-muted-foreground font-medium italic">Veya tıklayarak dosya seçin (.csv)</p>
+              <h2 className="text-2xl font-bold italic uppercase">
+                CSV Dosyanızı Buraya Sürükleyin
+              </h2>
+              <p className="text-muted-foreground font-medium italic">
+                Veya tıklayarak dosya seçin (.csv)
+              </p>
             </div>
-            <input 
-              type="file" 
-              className="hidden" 
-              accept=".csv" 
+            <input
+              type="file"
+              className="hidden"
+              accept=".csv"
               ref={fileInputRef}
-              onChange={handleFileChange} 
+              onChange={handleFileChange}
             />
           </CardContent>
         </Card>
@@ -210,41 +218,45 @@ export function BulkImportWizard() {
     );
   }
 
-  const validCount = rows.filter(r => r.isValid).length;
+  const validCount = rows.filter((r) => r.isValid).length;
   const invalidCount = rows.length - validCount;
 
   return (
     <div className="space-y-6">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-secondary/30 p-6 rounded-3xl border border-border">
-         <div className="flex gap-6">
-            <div className="space-y-1">
-               <p className="text-xs font-bold text-muted-foreground uppercase">Toplam Satır</p>
-               <p className="text-2xl font-bold italic">{rows.length}</p>
+        <div className="flex gap-6">
+          <div className="space-y-1">
+            <p className="text-xs font-bold text-muted-foreground uppercase">Toplam Satır</p>
+            <p className="text-2xl font-bold italic">{rows.length}</p>
+          </div>
+          <div className="space-y-1 text-emerald-600">
+            <p className="text-xs font-bold opacity-70 uppercase tracking-tighter">Geçerli</p>
+            <p className="text-2xl font-bold italic">{validCount}</p>
+          </div>
+          {invalidCount > 0 && (
+            <div className="space-y-1 text-rose-600">
+              <p className="text-xs font-bold opacity-70 uppercase tracking-tighter">Hatalı</p>
+              <p className="text-2xl font-bold italic">{invalidCount}</p>
             </div>
-            <div className="space-y-1 text-emerald-600">
-               <p className="text-xs font-bold opacity-70 uppercase tracking-tighter">Geçerli</p>
-               <p className="text-2xl font-bold italic">{validCount}</p>
-            </div>
-            {invalidCount > 0 && (
-              <div className="space-y-1 text-rose-600">
-                <p className="text-xs font-bold opacity-70 uppercase tracking-tighter">Hatalı</p>
-                <p className="text-2xl font-bold italic">{invalidCount}</p>
-              </div>
-            )}
-         </div>
-         <div className="flex gap-3">
-            <Button variant="outline" className="h-14 px-8 rounded-2xl font-bold border-2" onClick={() => setRows([])}>
-              Temizle
-            </Button>
-            <Button 
-               className="h-14 px-10 rounded-2xl font-bold text-lg shadow-sm shadow-primary/20 flex items-center gap-2"
-               disabled={validCount === 0 || isUploading}
-               onClick={handleUpload}
-            >
-              {isUploading ? <Loader2 className="animate-spin" /> : <CheckCircle2 size={24} />}
-              {validCount} İlanı Moderasyona Gönder
-            </Button>
-         </div>
+          )}
+        </div>
+        <div className="flex gap-3">
+          <Button
+            variant="outline"
+            className="h-14 px-8 rounded-2xl font-bold border-2"
+            onClick={() => setRows([])}
+          >
+            Temizle
+          </Button>
+          <Button
+            className="h-14 px-10 rounded-2xl font-bold text-lg shadow-sm shadow-primary/20 flex items-center gap-2"
+            disabled={validCount === 0 || isUploading}
+            onClick={handleUpload}
+          >
+            {isUploading ? <Loader2 className="animate-spin" /> : <CheckCircle2 size={24} />}
+            {validCount} İlanı Moderasyona Gönder
+          </Button>
+        </div>
       </div>
 
       <div className="rounded-3xl border border-border bg-background overflow-hidden overflow-x-auto shadow-sm">
@@ -264,25 +276,38 @@ export function BulkImportWizard() {
               <TableRow key={row.id} className="border-border group">
                 <TableCell>
                   {row.isValid ? (
-                    <Badge className="bg-emerald-500 hover:bg-emerald-600 rounded-lg py-1">Geçerli</Badge>
+                    <Badge className="bg-emerald-500 hover:bg-emerald-600 rounded-lg py-1">
+                      Geçerli
+                    </Badge>
                   ) : (
-                    <Badge variant="destructive" className="rounded-lg py-1">Hatalı</Badge>
+                    <Badge variant="destructive" className="rounded-lg py-1">
+                      Hatalı
+                    </Badge>
                   )}
                 </TableCell>
                 <TableCell>
                   <p className="font-bold text-sm line-clamp-1">{row.title}</p>
                 </TableCell>
                 <TableCell>
-                  <p className="text-xs font-medium text-muted-foreground">{row.brand} {row.model} ({row.year})</p>
+                  <p className="text-xs font-medium text-muted-foreground">
+                    {row.brand} {row.model} ({row.year})
+                  </p>
                 </TableCell>
                 <TableCell>
-                  <p className="font-bold text-sm italic">₺{new Intl.NumberFormat("tr-TR").format(row.price)}</p>
+                  <p className="font-bold text-sm italic">
+                    ₺{new Intl.NumberFormat("tr-TR").format(row.price)}
+                  </p>
                 </TableCell>
                 <TableCell>
                   {row.errors.length > 0 ? (
                     <div className="flex flex-wrap gap-1">
                       {row.errors.map((error, idx) => (
-                        <span key={idx} className="text-[10px] font-bold bg-rose-100 text-rose-700 px-2 py-0.5 rounded-full">{error}</span>
+                        <span
+                          key={idx}
+                          className="text-[10px] font-bold bg-rose-100 text-rose-700 px-2 py-0.5 rounded-full"
+                        >
+                          {error}
+                        </span>
                       ))}
                     </div>
                   ) : (
@@ -290,14 +315,14 @@ export function BulkImportWizard() {
                   )}
                 </TableCell>
                 <TableCell>
-                   <Button 
-                      variant="ghost" 
-                      size="icon" 
-                      className="size-8 text-muted-foreground hover:text-rose-600 hover:bg-rose-50 rounded-lg opacity-0 group-hover:opacity-100 transition-all"
-                      onClick={() => removeRow(row.id)}
-                   >
-                     <Trash2 size={16} />
-                   </Button>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="size-8 text-muted-foreground hover:text-rose-600 hover:bg-rose-50 rounded-lg opacity-0 group-hover:opacity-100 transition-all"
+                    onClick={() => removeRow(row.id)}
+                  >
+                    <Trash2 size={16} />
+                  </Button>
                 </TableCell>
               </TableRow>
             ))}

@@ -1,8 +1,6 @@
 import { Listing, ListingCreateInput } from "@/types";
-import { 
-  createDatabaseListing, 
-  updateDatabaseListing 
-} from "../listing-submission-persistence";
+
+import { createDatabaseListing, updateDatabaseListing } from "../listing-submission-persistence";
 import { buildListingRecord } from "../listing-submissions";
 import { getExistingListingSlugs } from "../listing-submissions";
 
@@ -13,7 +11,9 @@ import { getExistingListingSlugs } from "../listing-submissions";
 
 export async function createNewListing(input: ListingCreateInput, sellerId: string) {
   const existingSlugs = await getExistingListingSlugs();
-  const listing = buildListingRecord(input, sellerId, existingSlugs, { status: "pending_ai_review" });
+  const listing = buildListingRecord(input, sellerId, existingSlugs, {
+    status: "pending_ai_review",
+  });
   return createDatabaseListing(listing);
 }
 

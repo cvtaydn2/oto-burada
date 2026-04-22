@@ -45,6 +45,7 @@ npm run deploy:preview
 Vercel uses atomic deployments — the new build is fully ready before traffic switches. No downtime during deploys.
 
 **What can still cause issues:**
+
 - DB schema changes that are not backward-compatible (see Migrations)
 - Redis key format changes (old instances may read stale keys)
 - Breaking API contract changes (clients may have cached old responses)
@@ -56,15 +57,19 @@ Vercel uses atomic deployments — the new build is fully ready before traffic s
 OtoBurada projesi, Vercel'in standard **Local**, **Preview** ve **Production** ortamlarını kullanır.
 
 ### Local Development
+
 Yerel makinenizde geliştirme yaptığınız ortam. `.env.local` dosyasını kullanır.
 
 ### Preview
+
 Her Git branch'i için otomatik oluşturulan test ortamı. Canlı veritabanına zarar vermeden QA yapmak için kullanılır.
 
 ### Production
+
 Kullanıcıların eriştiği asıl canlı ortam (`main` branch).
 
 ### Syncing Environment Variables
+
 Vercel üzerindeki ortam değişkenlerini (API anahtarları vb.) yerel makinenize çekmek için:
 
 1. **Vercel CLI Kurulumu**: `npm i -g vercel`
@@ -138,32 +143,32 @@ Before running any migration in production:
 
 ### Required (app won't start without these)
 
-| Variable | Description |
-|----------|-------------|
-| `NEXT_PUBLIC_SUPABASE_URL` | Supabase project URL |
-| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Supabase anon key |
-| `SUPABASE_SERVICE_ROLE_KEY` | Supabase service role key (server-only) |
-| `NEXT_PUBLIC_APP_URL` | Public URL (e.g. `https://oto-burada.vercel.app`) |
+| Variable                        | Description                                       |
+| ------------------------------- | ------------------------------------------------- |
+| `NEXT_PUBLIC_SUPABASE_URL`      | Supabase project URL                              |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Supabase anon key                                 |
+| `SUPABASE_SERVICE_ROLE_KEY`     | Supabase service role key (server-only)           |
+| `NEXT_PUBLIC_APP_URL`           | Public URL (e.g. `https://oto-burada.vercel.app`) |
 
 ### Required in Production
 
-| Variable | Description |
-|----------|-------------|
-| `CRON_SECRET` | Cron job auth secret (`openssl rand -hex 32`) |
-| `NEXT_PUBLIC_POSTHOG_PROJECT_TOKEN` | PostHog analytics token |
+| Variable                            | Description                                   |
+| ----------------------------------- | --------------------------------------------- |
+| `CRON_SECRET`                       | Cron job auth secret (`openssl rand -hex 32`) |
+| `NEXT_PUBLIC_POSTHOG_PROJECT_TOKEN` | PostHog analytics token                       |
 
 ### Optional (features degrade gracefully without these)
 
-| Variable | Feature |
-|----------|---------|
-| `UPSTASH_REDIS_REST_URL` | Distributed rate limiting |
-| `UPSTASH_REDIS_REST_TOKEN` | Distributed rate limiting |
-| `RESEND_API_KEY` | Transactional emails |
-| `RESEND_FROM_EMAIL` | Email sender address |
-| `SUPABASE_STORAGE_BUCKET_LISTINGS` | Image uploads |
-| `SUPABASE_STORAGE_BUCKET_DOCUMENTS` | Document uploads |
-| `IYZICO_API_KEY` | Payment processing |
-| `IYZICO_SECRET_KEY` | Payment processing |
+| Variable                            | Feature                   |
+| ----------------------------------- | ------------------------- |
+| `UPSTASH_REDIS_REST_URL`            | Distributed rate limiting |
+| `UPSTASH_REDIS_REST_TOKEN`          | Distributed rate limiting |
+| `RESEND_API_KEY`                    | Transactional emails      |
+| `RESEND_FROM_EMAIL`                 | Email sender address      |
+| `SUPABASE_STORAGE_BUCKET_LISTINGS`  | Image uploads             |
+| `SUPABASE_STORAGE_BUCKET_DOCUMENTS` | Document uploads          |
+| `IYZICO_API_KEY`                    | Payment processing        |
+| `IYZICO_SECRET_KEY`                 | Payment processing        |
 
 ### Syncing to Local
 
@@ -174,6 +179,7 @@ npm run vercel:pull   # pulls .env.local from Vercel
 ### Startup Validation
 
 The app validates env vars at startup via `src/lib/env-validation.ts`. Check Vercel function logs for:
+
 - `[ENV] ✅ All environment variables validated` — all good
 - `[ENV] ❌ Missing required environment variables` — action required
 
@@ -188,6 +194,7 @@ GET /api/health
 ```
 
 Response:
+
 ```json
 {
   "status": "ok",
@@ -201,12 +208,14 @@ Response:
 ```
 
 Status codes:
+
 - `200` — healthy
 - `503` — down (database unreachable or required env missing)
 
 ### Uptime Monitoring
 
 Configure your uptime monitor (BetterUptime, UptimeRobot, etc.) to:
+
 - Poll `https://oto-burada.vercel.app/api/health` every 60 seconds
 - Alert on non-200 response or response time > 5s
 
@@ -272,6 +281,7 @@ DROP INDEX IF EXISTS listings_published_at_idx;
 ```
 
 **Before rolling back a DB migration:**
+
 1. Ensure the code rollback is deployed first (code must be compatible with old schema)
 2. Check for data written in the new schema format — may need data migration
 3. Test rollback on staging first
@@ -295,9 +305,9 @@ redis-cli -u $UPSTASH_REDIS_REST_URL FLUSHDB
 
 ### Schedule
 
-| Job | Schedule | Description |
-|-----|----------|-------------|
-| `/api/saved-searches/notify` | `0 9 * * *` | Daily at 09:00 UTC — email alerts for saved searches |
+| Job                             | Schedule     | Description                                            |
+| ------------------------------- | ------------ | ------------------------------------------------------ |
+| `/api/saved-searches/notify`    | `0 9 * * *`  | Daily at 09:00 UTC — email alerts for saved searches   |
 | `/api/listings/expiry-warnings` | `0 10 * * *` | Daily at 10:00 UTC — warn sellers of expiring listings |
 
 ### Manual Trigger
@@ -312,6 +322,7 @@ curl -X GET https://oto-burada.vercel.app/api/listings/expiry-warnings \
 Vercel Dashboard → Cron Jobs → [job] → Logs
 
 If a cron job fails:
+
 1. Check Vercel function logs for the error
 2. Check PostHog for `$exception` events from `server` distinct ID
 3. Manually trigger to verify fix: `curl -X GET ... -H "Authorization: Bearer $CRON_SECRET"`
@@ -329,12 +340,12 @@ If a cron job fails:
 
 ### Severity Levels
 
-| Level | Description | Response Time |
-|-------|-------------|---------------|
-| P0 | Site down, data loss | Immediate |
-| P1 | Core feature broken (listing create, search) | < 1 hour |
-| P2 | Non-critical feature broken | < 4 hours |
-| P3 | Minor UX issue | Next sprint |
+| Level | Description                                  | Response Time |
+| ----- | -------------------------------------------- | ------------- |
+| P0    | Site down, data loss                         | Immediate     |
+| P1    | Core feature broken (listing create, search) | < 1 hour      |
+| P2    | Non-critical feature broken                  | < 4 hours     |
+| P3    | Minor UX issue                               | Next sprint   |
 
 ### P0 Checklist
 
@@ -351,20 +362,24 @@ If a cron job fails:
 ### Common Issues
 
 **"Supabase connection refused"**
+
 - Check Supabase project status: https://status.supabase.com
 - Check `SUPABASE_SERVICE_ROLE_KEY` hasn't expired
 - Check connection pool limits in Supabase Dashboard
 
 **"Rate limit exceeded" on all requests**
+
 - Redis may be down → rate limiting falls back to in-memory (resets on cold start)
 - Check Upstash Dashboard for Redis status
 - Temporary fix: increase `general` rate limit profile in `src/lib/utils/rate-limit.ts`
 
 **"CRON_SECRET not set" in logs**
+
 - Set `CRON_SECRET` in Vercel Project Settings → Environment Variables
 - Redeploy to pick up the new env var
 
 **"Build failed"**
+
 - Check GitHub Actions CI for the failing step
 - Common causes: TypeScript errors, missing env vars in build, dependency conflicts
 
@@ -376,11 +391,11 @@ Feature flags are implemented as environment variables. This avoids external dep
 
 ### Current Flags
 
-| Flag | Env Var | Default | Description |
-|------|---------|---------|-------------|
-| Payments | `IYZICO_API_KEY` | off | Enable payment processing |
-| Email | `RESEND_API_KEY` | off | Enable transactional emails |
-| Rate Limiting | `UPSTASH_REDIS_REST_URL` | degraded | Distributed rate limiting |
+| Flag          | Env Var                  | Default  | Description                 |
+| ------------- | ------------------------ | -------- | --------------------------- |
+| Payments      | `IYZICO_API_KEY`         | off      | Enable payment processing   |
+| Email         | `RESEND_API_KEY`         | off      | Enable transactional emails |
+| Rate Limiting | `UPSTASH_REDIS_REST_URL` | degraded | Distributed rate limiting   |
 
 ### Adding a Feature Flag
 

@@ -7,25 +7,27 @@
  * Validates: Requirements 3.5, 3.6
  */
 
-import { describe, it, expect } from 'vitest';
-import { readFileSync } from 'fs';
-import { resolve } from 'path';
+import { readFileSync } from "fs";
+import { resolve } from "path";
+import { describe, expect, it } from "vitest";
 
-describe('Preservation — isEditing=true uses router.replace (baseline, must pass on unfixed code)', () => {
+describe("Preservation — isEditing=true uses router.replace (baseline, must pass on unfixed code)", () => {
   const sourceCode = readFileSync(
-    resolve(process.cwd(), 'src/features/listing-creation/hooks/use-listing-creation.ts'),
-    'utf-8'
+    resolve(process.cwd(), "src/features/listing-creation/hooks/use-listing-creation.ts"),
+    "utf-8"
   );
 
   /**
    * When isEditing = true, the form should call router.replace("/dashboard/listings").
    * This behavior is already correct in unfixed code and must be preserved after fixes.
    */
-  it('should branch on isEditing when selecting the submit method', () => {
+  it("should branch on isEditing when selecting the submit method", () => {
     expect(sourceCode).toContain('method: isEditing ? "PATCH" : "POST"');
   });
 
-  it('should keep using isEditing to choose the correct endpoint', () => {
-    expect(sourceCode).toContain('fetch(isEditing ? `/api/listings/${initialListing?.id}` : "/api/listings"');
+  it("should keep using isEditing to choose the correct endpoint", () => {
+    expect(sourceCode).toContain(
+      'fetch(isEditing ? `/api/listings/${initialListing?.id}` : "/api/listings"'
+    );
   });
 });

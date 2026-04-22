@@ -11,6 +11,6 @@ export function createSupabaseBrowserClient() {
 
   const { url, anonKey } = getSupabaseEnv();
   client = createBrowserClient(url, anonKey);
-  
+
   return client;
 }

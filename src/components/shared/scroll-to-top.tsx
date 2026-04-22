@@ -1,37 +1,38 @@
-"use client"
+"use client";
 
-import { useEffect, useState } from "react"
-import { ArrowUp } from "lucide-react"
-import { cn } from "@/lib/utils"
+import { ArrowUp } from "lucide-react";
+import { useEffect, useState } from "react";
+
+import { cn } from "@/lib/utils";
 
 export function ScrollToTop() {
-  const [isVisible, setIsVisible] = useState(false)
+  const [isVisible, setIsVisible] = useState(false);
 
   useEffect(() => {
     // Throttle: scroll event'i her 100ms'de bir işle — her pixel'de state update önlenir
-    let ticking = false
+    let ticking = false;
     const toggleVisibility = () => {
       if (!ticking) {
         window.requestAnimationFrame(() => {
-          setIsVisible(window.scrollY > 300)
-          ticking = false
-        })
-        ticking = true
+          setIsVisible(window.scrollY > 300);
+          ticking = false;
+        });
+        ticking = true;
       }
-    }
+    };
 
-    window.addEventListener("scroll", toggleVisibility, { passive: true })
-    return () => window.removeEventListener("scroll", toggleVisibility)
-  }, [])
+    window.addEventListener("scroll", toggleVisibility, { passive: true });
+    return () => window.removeEventListener("scroll", toggleVisibility);
+  }, []);
 
   const scrollToTop = () => {
     window.scrollTo({
       top: 0,
-      behavior: "smooth"
-    })
-  }
+      behavior: "smooth",
+    });
+  };
 
-  if (!isVisible) return null
+  if (!isVisible) return null;
 
   return (
     <button
@@ -44,5 +45,5 @@ export function ScrollToTop() {
     >
       <ArrowUp size={24} strokeWidth={3} />
     </button>
-  )
+  );
 }

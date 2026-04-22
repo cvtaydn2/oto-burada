@@ -1,12 +1,12 @@
 import { CarFront } from "lucide-react";
-import { Suspense } from "react";
 import Link from "next/link";
+import { Suspense } from "react";
 
-import { SiteHeaderAuth } from "@/components/layout/site-header-auth";
-import { getLiveMarketplaceReferenceData } from "@/services/reference/live-reference-data";
-import { SearchWithSuggestions } from "@/components/ui/search-with-suggestions";
-import { ThemeToggle } from "@/components/shared/theme-toggle";
 import { DesktopNav } from "@/components/layout/desktop-nav";
+import { SiteHeaderAuth } from "@/components/layout/site-header-auth";
+import { ThemeToggle } from "@/components/shared/theme-toggle";
+import { SearchWithSuggestions } from "@/components/ui/search-with-suggestions";
+import { getLiveMarketplaceReferenceData } from "@/services/reference/live-reference-data";
 
 // Arama önerileri ayrı Suspense boundary'de — header'ın geri kalanını bloklamaz
 async function HeaderSearch() {
@@ -19,14 +19,25 @@ async function HeaderSearch() {
     />
   );
 }
- 
+
 export async function SiteHeader() {
   return (
-    <header className="sticky top-0 left-0 right-0 z-50 h-[68px] border-b border-border/80 bg-background/98 backdrop-blur-sm" role="banner">
+    <header
+      className="sticky top-0 left-0 right-0 z-50 h-[68px] border-b border-border/80 bg-background/98 backdrop-blur-sm"
+      role="banner"
+    >
       <div className="mx-auto flex h-full w-full max-w-[1280px] items-center justify-between gap-2 px-3 sm:px-5 lg:px-6">
         <div className="flex items-center gap-8">
-          <Link href="/" prefetch={false} className="flex items-center space-x-2 group shrink-0" aria-label="OtoBurada - Ana Sayfa">
-            <div className="flex size-9 items-center justify-center rounded-lg bg-blue-500 text-white" aria-hidden="true">
+          <Link
+            href="/"
+            prefetch={false}
+            className="flex items-center space-x-2 group shrink-0"
+            aria-label="OtoBurada - Ana Sayfa"
+          >
+            <div
+              className="flex size-9 items-center justify-center rounded-lg bg-blue-500 text-white"
+              aria-hidden="true"
+            >
               <CarFront size={18} className="stroke-[2.5]" />
             </div>
             <span className="text-xl font-bold tracking-tight text-blue-500">
@@ -38,9 +49,7 @@ export async function SiteHeader() {
         </div>
 
         <div className="hidden flex-1 max-w-lg mx-8 lg:flex relative">
-          <Suspense fallback={
-            <div className="w-full h-10 rounded-full bg-muted animate-pulse" />
-          }>
+          <Suspense fallback={<div className="w-full h-10 rounded-full bg-muted animate-pulse" />}>
             <HeaderSearch />
           </Suspense>
         </div>

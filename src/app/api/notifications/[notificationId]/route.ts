@@ -1,14 +1,14 @@
-import { apiError, API_ERROR_CODES, apiSuccess } from "@/lib/utils/api-response";
+import { API_ERROR_CODES, apiError, apiSuccess } from "@/lib/utils/api-response";
+import { withAuthAndCsrf } from "@/lib/utils/api-security";
 import { rateLimitProfiles } from "@/lib/utils/rate-limit";
 import {
   deleteDatabaseNotification,
   markDatabaseNotificationRead,
 } from "@/services/notifications/notification-records";
-import { withAuthAndCsrf } from "@/lib/utils/api-security";
 
 export async function PATCH(
   request: Request,
-  context: { params: Promise<{ notificationId: string }> },
+  context: { params: Promise<{ notificationId: string }> }
 ) {
   // Security checks: CSRF + Auth + Rate limiting
   const security = await withAuthAndCsrf(request, {
@@ -18,7 +18,7 @@ export async function PATCH(
   });
 
   if (!security.ok) return security.response;
-  
+
   const user = security.user!; // Guaranteed by withAuthAndCsrf
 
   const { notificationId } = await context.params;
@@ -33,7 +33,7 @@ export async function PATCH(
 
 export async function DELETE(
   request: Request,
-  context: { params: Promise<{ notificationId: string }> },
+  context: { params: Promise<{ notificationId: string }> }
 ) {
   // Security checks: CSRF + Auth + Rate limiting
   const security = await withAuthAndCsrf(request, {
@@ -42,7 +42,7 @@ export async function DELETE(
   });
 
   if (!security.ok) return security.response;
-  
+
   const user = security.user!; // Guaranteed by withAuthAndCsrf
 
   const { notificationId } = await context.params;

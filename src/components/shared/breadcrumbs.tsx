@@ -1,5 +1,5 @@
-import Link from "next/link";
 import { ChevronRight, Home } from "lucide-react";
+import Link from "next/link";
 
 interface BreadcrumbItem {
   name: string;
@@ -12,7 +12,10 @@ interface BreadcrumbsProps {
 
 export function Breadcrumbs({ items }: BreadcrumbsProps) {
   return (
-    <nav className="flex px-4 py-3 text-muted-foreground bg-muted/50 rounded-xl border border-border/50 mb-6" aria-label="Breadcrumb">
+    <nav
+      className="flex px-4 py-3 text-muted-foreground bg-muted/50 rounded-xl border border-border/50 mb-6"
+      aria-label="Breadcrumb"
+    >
       <ol className="inline-flex items-center space-x-1 md:space-x-3">
         <li className="inline-flex items-center">
           <Link
@@ -28,7 +31,10 @@ export function Breadcrumbs({ items }: BreadcrumbsProps) {
             <div className="flex items-center">
               <ChevronRight className="w-4 h-4 text-slate-300 mx-1" aria-hidden="true" />
               {index === items.length - 1 ? (
-                <span className="ml-1 text-sm font-semibold text-foreground md:ml-2" aria-current="page">
+                <span
+                  className="ml-1 text-sm font-semibold text-foreground md:ml-2"
+                  aria-current="page"
+                >
                   {item.name}
                 </span>
               ) : (

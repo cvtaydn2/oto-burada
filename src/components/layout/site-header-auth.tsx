@@ -1,7 +1,7 @@
 "use client";
 
-import Link from "next/link";
 import { Heart, MessageSquare, PlusCircle } from "lucide-react";
+import Link from "next/link";
 
 import { useAuthUser } from "@/components/shared/auth-provider";
 import { features } from "@/lib/features";

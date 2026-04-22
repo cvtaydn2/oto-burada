@@ -1,8 +1,9 @@
 "use client";
 
+import { Building2, FileText, Image as ImageIcon, Lock, ShieldCheck } from "lucide-react";
 import Image from "next/image";
-import { Building2, ShieldCheck, FileText, Image as ImageIcon, Lock } from "lucide-react";
 import { useActionState } from "react";
+
 import { AuthSubmitButton } from "@/components/forms/auth-submit-button";
 import type { ProfileActionState } from "@/lib/auth/profile-actions";
 import { cn } from "@/lib/utils";
@@ -10,7 +11,7 @@ import { cn } from "@/lib/utils";
 interface CorporateProfileFormProps {
   action: (
     state: ProfileActionState | undefined,
-    formData: FormData,
+    formData: FormData
   ) => Promise<ProfileActionState>;
   initialValues: {
     businessName: string;
@@ -33,7 +34,7 @@ export function CorporateProfileForm({
   isReadOnly = false,
 }: CorporateProfileFormProps) {
   const [state, formAction] = useActionState(action, initialState);
-  
+
   const values = {
     businessName: state.fields?.businessName ?? initialValues.businessName,
     businessSlug: state.fields?.businessSlug ?? initialValues.businessSlug,
@@ -46,7 +47,10 @@ export function CorporateProfileForm({
   };
 
   return (
-    <form action={formAction} className={cn("space-y-6", isReadOnly && "pointer-events-none opacity-80")}>
+    <form
+      action={formAction}
+      className={cn("space-y-6", isReadOnly && "pointer-events-none opacity-80")}
+    >
       <section className="rounded-[1.75rem] border border-border/80 bg-background p-5 shadow-sm sm:p-6">
         <div className="flex items-start gap-3">
           <div className="flex size-11 shrink-0 items-center justify-center rounded-2xl bg-indigo-100 text-indigo-600">
@@ -82,7 +86,9 @@ export function CorporateProfileForm({
           <label className="block space-y-2 text-sm font-bold text-foreground">
             <span>Mağaza URL (Slug)</span>
             <div className="relative">
-              <span className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground/70 text-xs font-medium">/gallery/</span>
+              <span className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground/70 text-xs font-medium">
+                /gallery/
+              </span>
               <input
                 type="text"
                 name="businessSlug"
@@ -120,7 +126,13 @@ export function CorporateProfileForm({
               />
               <div className="size-12 rounded-xl border border-border bg-muted/30 flex items-center justify-center shrink-0 overflow-hidden">
                 {values.businessLogoUrl ? (
-                  <Image src={values.businessLogoUrl} alt="Logo Preview" fill sizes="48px" className="object-contain p-1" />
+                  <Image
+                    src={values.businessLogoUrl}
+                    alt="Logo Preview"
+                    fill
+                    sizes="48px"
+                    className="object-contain p-1"
+                  />
                 ) : (
                   <ImageIcon className="size-5 text-slate-300" />
                 )}

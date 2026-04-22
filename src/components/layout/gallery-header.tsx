@@ -1,27 +1,27 @@
+import { AlertCircle, Calendar, Globe, MapPin, Phone, ShieldCheck } from "lucide-react";
 import Image from "next/image";
-import { type Profile } from "@/types"
-import { MapPin, Globe, Phone, ShieldCheck, Calendar, AlertCircle } from "lucide-react"
-import { Badge } from "@/components/ui/badge"
-import { getSellerTrustUI } from "@/lib/utils/trust-ui"
+
+import { Badge } from "@/components/ui/badge";
+import { getSellerTrustUI } from "@/lib/utils/trust-ui";
+import { type Profile } from "@/types";
 
 interface GalleryHeaderProps {
-  profile: Profile
+  profile: Profile;
 }
 
 export function GalleryHeader({ profile }: GalleryHeaderProps) {
   const trustUI = getSellerTrustUI(profile);
-  
+
   return (
     <div className="bg-white border-b border-border shadow-sm">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-10">
         <div className="flex flex-col md:flex-row gap-8 items-start">
-          
           {/* Logo / Avatar */}
           <div className="size-32 sm:size-40 rounded-3xl bg-slate-50 border border-slate-100 p-4 shrink-0 flex items-center justify-center relative shadow-sm">
             {profile.businessLogoUrl ? (
-              <Image 
-                src={profile.businessLogoUrl} 
-                alt={profile.businessName || profile.fullName || ""} 
+              <Image
+                src={profile.businessLogoUrl}
+                alt={profile.businessName || profile.fullName || ""}
                 fill
                 sizes="160px"
                 className="object-contain"
@@ -34,7 +34,7 @@ export function GalleryHeader({ profile }: GalleryHeaderProps) {
                 {((profile.businessName || profile.fullName || "M").trim() || "M").substring(0, 2)}
               </div>
             )}
-            
+
             {trustUI.isApproved && trustUI.restrictionState === "active" && (
               <div className="absolute -bottom-2 -right-2 bg-blue-600 text-white p-1.5 rounded-xl border-4 border-white shadow-sm">
                 <ShieldCheck size={20} />
@@ -65,16 +65,16 @@ export function GalleryHeader({ profile }: GalleryHeaderProps) {
                   </Badge>
                 )}
               </div>
-              
+
               <div className="flex flex-wrap items-center gap-x-6 gap-y-2 text-sm font-medium text-slate-500">
                 <div className="flex items-center gap-1.5">
                   <MapPin size={16} className="text-slate-400" />
                   {profile.city || "Şehir Belirtilmemiş"}
                 </div>
                 {profile.websiteUrl && (
-                  <a 
-                    href={profile.websiteUrl} 
-                    target="_blank" 
+                  <a
+                    href={profile.websiteUrl}
+                    target="_blank"
                     rel="noopener noreferrer"
                     className="flex items-center gap-1.5 text-primary hover:underline"
                   >
@@ -101,32 +101,38 @@ export function GalleryHeader({ profile }: GalleryHeaderProps) {
             )}
 
             <div className="flex flex-wrap gap-3 pt-4 border-t border-slate-100">
-               {/* Contact Actions can go here if needed */}
-               <div className="flex items-center gap-4 py-2 px-5 rounded-2xl bg-slate-50 border border-slate-100">
-                  <div className="size-10 rounded-xl bg-emerald-100 text-emerald-600 flex items-center justify-center shrink-0">
-                    <Phone size={20} />
+              {/* Contact Actions can go here if needed */}
+              <div className="flex items-center gap-4 py-2 px-5 rounded-2xl bg-slate-50 border border-slate-100">
+                <div className="size-10 rounded-xl bg-emerald-100 text-emerald-600 flex items-center justify-center shrink-0">
+                  <Phone size={20} />
+                </div>
+                <div>
+                  <p className="text-[10px] font-bold uppercase text-slate-400 leading-none mb-1">
+                    Galerici İletişim
+                  </p>
+                  <p className="text-sm font-bold text-slate-700">{profile.phone}</p>
+                </div>
+              </div>
+
+              {profile.taxId && profile.verificationStatus === "approved" && (
+                <div className="flex items-center gap-4 py-2 px-5 rounded-2xl bg-slate-50 border border-slate-100">
+                  <div className="size-10 rounded-xl bg-blue-100 text-blue-600 flex items-center justify-center shrink-0">
+                    <ShieldCheck size={20} />
                   </div>
                   <div>
-                    <p className="text-[10px] font-bold uppercase text-slate-400 leading-none mb-1">Galerici İletişim</p>
-                    <p className="text-sm font-bold text-slate-700">{profile.phone}</p>
+                    <p className="text-[10px] font-bold uppercase text-slate-400 leading-none mb-1">
+                      Vergi Levhalı İşletme
+                    </p>
+                    <p className="text-sm font-bold text-slate-700">
+                      {profile.taxOffice} / {profile.taxId}
+                    </p>
                   </div>
-               </div>
-               
-               {profile.taxId && profile.verificationStatus === "approved" && (
-                 <div className="flex items-center gap-4 py-2 px-5 rounded-2xl bg-slate-50 border border-slate-100">
-                    <div className="size-10 rounded-xl bg-blue-100 text-blue-600 flex items-center justify-center shrink-0">
-                      <ShieldCheck size={20} />
-                    </div>
-                    <div>
-                      <p className="text-[10px] font-bold uppercase text-slate-400 leading-none mb-1">Vergi Levhalı İşletme</p>
-                      <p className="text-sm font-bold text-slate-700">{profile.taxOffice} / {profile.taxId}</p>
-                    </div>
-                 </div>
-               )}
+                </div>
+              )}
             </div>
           </div>
         </div>
       </div>
     </div>
-  )
+  );
 }

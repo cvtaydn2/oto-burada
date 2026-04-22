@@ -12,14 +12,14 @@
  * router.push("/dashboard/listings") is never called.
  */
 
-import { describe, it, expect } from 'vitest';
-import { readFileSync } from 'fs';
-import { resolve } from 'path';
+import { readFileSync } from "fs";
+import { resolve } from "path";
+import { describe, expect, it } from "vitest";
 
-describe('Bug 5 — router.push NOT called after successful submit (EXPECTED TO FAIL on unfixed code)', () => {
+describe("Bug 5 — router.push NOT called after successful submit (EXPECTED TO FAIL on unfixed code)", () => {
   const sourceCode = readFileSync(
-    resolve(process.cwd(), 'src/features/listing-creation/hooks/use-listing-creation.ts'),
-    'utf-8'
+    resolve(process.cwd(), "src/features/listing-creation/hooks/use-listing-creation.ts"),
+    "utf-8"
   );
 
   /**
@@ -40,13 +40,15 @@ describe('Bug 5 — router.push NOT called after successful submit (EXPECTED TO 
     // The unfixed code pattern: "if (isEditing) router.replace(...); router.refresh();"
     // The fixed code pattern: "if (isEditing) router.replace(...); else router.push(...);"
 
-    const hasRouterPushInSuccessPath = sourceCode.includes('router.push("/dashboard/listings?created=pending")');
+    const hasRouterPushInSuccessPath = sourceCode.includes(
+      'router.push("/dashboard/listings?created=pending")'
+    );
 
     // On unfixed code: router.push is NOT in the source → test FAILS
     expect(hasRouterPushInSuccessPath).toBe(true);
   });
 
-  it('should NOT have router.refresh() as the only navigation call after successful submit', () => {
+  it("should NOT have router.refresh() as the only navigation call after successful submit", () => {
     // On unfixed code: router.refresh() is called without router.push for new listings
     // This means the user stays on the same page after creating a listing
 
@@ -59,11 +61,10 @@ describe('Bug 5 — router.push NOT called after successful submit (EXPECTED TO 
     // On unfixed code: onSubmit contains router.refresh() but NOT router.push
     // This test FAILS on unfixed code
     const hasRefreshWithoutPush =
-      onSubmitCode.includes('router.refresh()') &&
-      !onSubmitCode.includes('router.push(');
+      onSubmitCode.includes("router.refresh()") && !onSubmitCode.includes("router.push(");
 
     // The bug condition: refresh without push → user stays on page
-    // On unfixed code: hasRefreshWithoutPush = true → expect(false).toBe(false) passes... 
+    // On unfixed code: hasRefreshWithoutPush = true → expect(false).toBe(false) passes...
     // We want this to FAIL on unfixed code, so we assert the opposite:
     expect(hasRefreshWithoutPush).toBe(false);
   });

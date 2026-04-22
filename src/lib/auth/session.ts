@@ -1,8 +1,8 @@
-import { cache } from "react";
 import { redirect } from "next/navigation";
+import { cache } from "react";
 
-import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { hasSupabaseEnv } from "@/lib/supabase/env";
+import { createSupabaseServerClient } from "@/lib/supabase/server";
 import type { UserRole } from "@/types";
 
 export const getCurrentUser = cache(async () => {
@@ -12,7 +12,12 @@ export const getCurrentUser = cache(async () => {
 
   try {
     const supabase = await createSupabaseServerClient();
-    if (!supabase || !("auth" in supabase) || !supabase.auth || typeof supabase.auth.getUser !== "function") {
+    if (
+      !supabase ||
+      !("auth" in supabase) ||
+      !supabase.auth ||
+      typeof supabase.auth.getUser !== "function"
+    ) {
       return null;
     }
     const {
@@ -79,7 +84,7 @@ export async function requireAdminUser() {
   // 2. Secondary DB check to guard against stale JWT after demotion.
   // Fails CLOSED — if the DB check throws or returns non-admin, deny access.
   const dbRole = await getDBUserRole(user.id);
-  
+
   // dbRole null means either env missing or not found/error.
   // We only allow if dbRole is explicitly "admin".
   // If env is missing (local dev), we fallback to JWT check only (convenience).

@@ -1,12 +1,15 @@
 import { Zap } from "lucide-react";
+
+import { AdminAnalyticsPanel } from "@/components/admin/admin-analytics-panel";
 import { AdminErrorDisplay } from "@/components/admin/admin-error-display";
 import { AdminPersistencePanel } from "@/components/shared/admin-persistence-panel";
-import { AdminAnalyticsPanel } from "@/components/admin/admin-analytics-panel";
 import { Button } from "@/components/ui/button";
 import type { AdminAnalyticsData } from "@/services/admin/analytics";
 import type { PersistenceHealth } from "@/services/admin/persistence-health";
 
-interface AsyncErrorResult { error: string };
+interface AsyncErrorResult {
+  error: string;
+}
 
 interface AdminAnalyticsSectionProps {
   analyticsPromise: Promise<AdminAnalyticsData | null | AsyncErrorResult>;
@@ -17,13 +20,19 @@ export async function AdminAnalyticsSection({
   analyticsPromise,
   persistenceHealthPromise,
 }: AdminAnalyticsSectionProps) {
-  const [analyticsResult, persistenceResult] = await Promise.all([analyticsPromise, persistenceHealthPromise]);
+  const [analyticsResult, persistenceResult] = await Promise.all([
+    analyticsPromise,
+    persistenceHealthPromise,
+  ]);
 
   const analyticsData = analyticsResult && !("error" in analyticsResult) ? analyticsResult : null;
-  const analyticsError = analyticsResult && "error" in analyticsResult ? analyticsResult.error : null;
-  
-  const persistenceHealth = persistenceResult && !("error" in persistenceResult) ? persistenceResult : null;
-  const persistenceError = persistenceResult && "error" in persistenceResult ? persistenceResult.error : null;
+  const analyticsError =
+    analyticsResult && "error" in analyticsResult ? analyticsResult.error : null;
+
+  const persistenceHealth =
+    persistenceResult && !("error" in persistenceResult) ? persistenceResult : null;
+  const persistenceError =
+    persistenceResult && "error" in persistenceResult ? persistenceResult.error : null;
 
   return (
     <div className="space-y-12">
@@ -35,14 +44,21 @@ export async function AdminAnalyticsSection({
             </div>
             <div>
               <h2 className="text-xl font-bold text-foreground tracking-tight">Akış Analitiği</h2>
-              <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mt-1">İlan yayın performans dağılımı</p>
+              <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mt-1">
+                İlan yayın performans dağılımı
+              </p>
             </div>
           </div>
-          <Button variant="ghost" size="sm" className="rounded-lg h-9 px-4 font-bold text-[10px] tracking-widest uppercase hover:bg-muted transition-colors" asChild>
+          <Button
+            variant="ghost"
+            size="sm"
+            className="rounded-lg h-9 px-4 font-bold text-[10px] tracking-widest uppercase hover:bg-muted transition-colors"
+            asChild
+          >
             <a href="/admin/analytics">TAM RAPOR</a>
           </Button>
         </div>
-        
+
         {analyticsError ? (
           <AdminErrorDisplay error={analyticsError} title="Analitik Verileri" className="py-20" />
         ) : (

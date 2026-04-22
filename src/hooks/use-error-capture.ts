@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback } from "react";
+
 import { captureClientEvent, captureClientException } from "@/lib/monitoring/posthog-client";
 
 /**
@@ -18,7 +19,7 @@ export function useErrorCapture(context: string) {
       if (action) properties.action = action;
       captureClientException(error, context, properties);
     },
-    [context],
+    [context]
   );
 
   const captureFailure = useCallback(
@@ -30,7 +31,7 @@ export function useErrorCapture(context: string) {
         ...extra,
       });
     },
-    [context],
+    [context]
   );
 
   const captureSuccess = useCallback(
@@ -41,7 +42,7 @@ export function useErrorCapture(context: string) {
         ...extra,
       });
     },
-    [context],
+    [context]
   );
 
   return { captureError, captureFailure, captureSuccess };

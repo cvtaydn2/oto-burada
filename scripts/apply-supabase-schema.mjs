@@ -43,17 +43,15 @@ if (!databaseUrl) {
 console.log(`Applying schema from ${schemaPath}`);
 const psqlCommand = resolvePsqlCommand();
 
-const result = spawnSync(
-  psqlCommand,
-  [databaseUrl, "-v", "ON_ERROR_STOP=1", "-f", schemaPath],
-  {
-    shell: false,
-    stdio: "inherit",
-  },
-);
+const result = spawnSync(psqlCommand, [databaseUrl, "-v", "ON_ERROR_STOP=1", "-f", schemaPath], {
+  shell: false,
+  stdio: "inherit",
+});
 
 if (result.error) {
-  console.error("Failed to execute psql. Make sure PostgreSQL client tools are installed and on PATH.");
+  console.error(
+    "Failed to execute psql. Make sure PostgreSQL client tools are installed and on PATH."
+  );
   console.error(result.error.message);
   process.exit(1);
 }

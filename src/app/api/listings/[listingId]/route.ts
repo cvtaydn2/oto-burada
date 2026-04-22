@@ -1,28 +1,26 @@
+import { waitUntil } from "@vercel/functions";
+
+import { captureServerError, captureServerEvent } from "@/lib/monitoring/posthog-server";
 import { hasSupabaseEnv } from "@/lib/supabase/env";
-import { sanitizeText, sanitizeDescription } from "@/lib/utils/sanitize";
-import { listingCreateFormSchema, listingCreateSchema } from "@/lib/validators";
+import { API_ERROR_CODES, apiError, apiSuccess } from "@/lib/utils/api-response";
+import { withUserAndCsrf } from "@/lib/utils/api-security";
+import { logger } from "@/lib/utils/logger";
+import { sanitizeDescription, sanitizeText } from "@/lib/utils/sanitize";
 import { issuesToFieldErrors } from "@/lib/utils/validation-helpers";
-import { apiSuccess, apiError, API_ERROR_CODES } from "@/lib/utils/api-response";
+import { listingCreateFormSchema, listingCreateSchema } from "@/lib/validators";
+import {
+  performAsyncModeration,
+  recordSellerTrustGuardRejection,
+  runListingTrustGuards,
+} from "@/services/listings/listing-submission-moderation";
 import {
   buildUpdatedListing,
   deleteDatabaseListing,
   findEditableListingById,
   updateDatabaseListing,
 } from "@/services/listings/listing-submissions";
-import { captureServerError, captureServerEvent } from "@/lib/monitoring/posthog-server";
-import { logger } from "@/lib/utils/logger";
-import { waitUntil } from "@vercel/functions";
-import {
-  performAsyncModeration,
-  recordSellerTrustGuardRejection,
-  runListingTrustGuards,
-} from "@/services/listings/listing-submission-moderation";
-import { withUserAndCsrf } from "@/lib/utils/api-security";
 
-export async function PATCH(
-  request: Request,
-  context: { params: Promise<{ listingId: string }> },
-) {
+export async function PATCH(request: Request, context: { params: Promise<{ listingId: string }> }) {
   const security = await withUserAndCsrf(request, {
     rateLimitKey: "listings:update",
   });
@@ -30,11 +28,7 @@ export async function PATCH(
   const user = security.user!;
 
   if (!hasSupabaseEnv()) {
-    return apiError(
-      API_ERROR_CODES.SERVICE_UNAVAILABLE,
-      "Supabase ortam değişkenleri eksik.",
-      503,
-    );
+    return apiError(API_ERROR_CODES.SERVICE_UNAVAILABLE, "Supabase ortam değişkenleri eksik.", 503);
   }
 
   let body: unknown;
@@ -50,7 +44,7 @@ export async function PATCH(
       API_ERROR_CODES.VALIDATION_ERROR,
       parsedFormValues.error.issues[0]?.message ?? "Form alanlarını kontrol et.",
       400,
-      issuesToFieldErrors(parsedFormValues.error.issues),
+      issuesToFieldErrors(parsedFormValues.error.issues)
     );
   }
 
@@ -67,25 +61,43 @@ export async function PATCH(
     // damage_status_json: DB CHECK constraint'e uygun değerlere normalize et
     damageStatusJson: parsedFormValues.data.damageStatusJson
       ? Object.fromEntries(
-          Object.entries(parsedFormValues.data.damageStatusJson).filter(
-            ([, v]) => ["orjinal", "orijinal", "boyali", "lokal_boyali", "degisen", "hasarli", "belirtilmemis", "bilinmiyor"].includes(v as string)
+          Object.entries(parsedFormValues.data.damageStatusJson).filter(([, v]) =>
+            [
+              "orjinal",
+              "orijinal",
+              "boyali",
+              "lokal_boyali",
+              "degisen",
+              "hasarli",
+              "belirtilmemis",
+              "bilinmiyor",
+            ].includes(v as string)
           )
         )
       : null,
     images: parsedFormValues.data.images
       .filter(
         (image: { url?: string; storagePath?: string }) =>
-          (image.url ?? "").trim().length > 0 &&
-          (image.storagePath ?? "").trim().length > 0,
+          (image.url ?? "").trim().length > 0 && (image.storagePath ?? "").trim().length > 0
       )
-      .map((image: { url?: string; storagePath?: string; placeholderBlur?: string | null; imageType?: string }, index: number) => ({
-        storagePath: image.storagePath?.trim() ?? "",
-        url: image.url?.trim() ?? "",
-        order: index,
-        isCover: index === 0,
-        placeholderBlur: image.placeholderBlur ?? null,
-        type: image.imageType === "360" ? "360" as const : "photo" as const,
-      })),
+      .map(
+        (
+          image: {
+            url?: string;
+            storagePath?: string;
+            placeholderBlur?: string | null;
+            imageType?: string;
+          },
+          index: number
+        ) => ({
+          storagePath: image.storagePath?.trim() ?? "",
+          url: image.url?.trim() ?? "",
+          order: index,
+          isCover: index === 0,
+          placeholderBlur: image.placeholderBlur ?? null,
+          type: image.imageType === "360" ? ("360" as const) : ("photo" as const),
+        })
+      ),
   };
 
   const parsedListingInput = listingCreateSchema.safeParse(normalizedInput);
@@ -99,7 +111,7 @@ export async function PATCH(
       API_ERROR_CODES.VALIDATION_ERROR,
       parsedListingInput.error.issues[0]?.message ?? "İlan bilgileri doğrulanamadı.",
       400,
-      issuesToFieldErrors(parsedListingInput.error.issues),
+      issuesToFieldErrors(parsedListingInput.error.issues)
     );
   }
 
@@ -126,8 +138,8 @@ export async function PATCH(
         API_ERROR_CODES.FORBIDDEN,
         enforcement.restricted
           ? "Hesabın geçici olarak incelemeye alındı. Lütfen destek ekibiyle iletişime geç."
-          : trustGuard.message ?? "İlan güvenlik kurallarına takıldı.",
-        403,
+          : (trustGuard.message ?? "İlan güvenlik kurallarına takıldı."),
+        403
       );
     }
   }
@@ -136,7 +148,7 @@ export async function PATCH(
   const updatedListing = buildUpdatedListing(
     parsedListingInput.data,
     existingListing,
-    [], // Empty array - no pre-check needed
+    [] // Empty array - no pre-check needed
   );
   const listingToPersist = criticalFieldsChanged
     ? { ...updatedListing, status: "pending_ai_review" as const }
@@ -149,8 +161,8 @@ export async function PATCH(
 
   if (result.error === "concurrent_update_detected") {
     return apiError(
-      API_ERROR_CODES.CONFLICT, 
-      "İlan başka bir sekmede veya cihazda güncellenmiş. Lütfen sayfayı yenileyip tekrar dene.", 
+      API_ERROR_CODES.CONFLICT,
+      "İlan başka bir sekmede veya cihazda güncellenmiş. Lütfen sayfayı yenileyip tekrar dene.",
       409
     );
   }
@@ -161,7 +173,13 @@ export async function PATCH(
       userId: user.id,
       error: result.error,
     });
-    captureServerError("Listing update DB failed", "listings", result.error, { listingId, userId: user.id }, user.id);
+    captureServerError(
+      "Listing update DB failed",
+      "listings",
+      result.error,
+      { listingId, userId: user.id },
+      user.id
+    );
     return apiError(API_ERROR_CODES.INTERNAL_ERROR, "İlan kaydedilemedi. Lütfen tekrar dene.", 500);
   }
 
@@ -186,7 +204,7 @@ export async function PATCH(
           title: result.listing.title,
         },
       },
-      "İlan bilgilerin güncellendi.",
+      "İlan bilgilerin güncellendi."
     );
   }
 
@@ -195,7 +213,7 @@ export async function PATCH(
 
 export async function DELETE(
   request: Request,
-  context: { params: Promise<{ listingId: string }> },
+  context: { params: Promise<{ listingId: string }> }
 ) {
   const security = await withUserAndCsrf(request, {
     rateLimitKey: "listings:delete",
@@ -207,7 +225,7 @@ export async function DELETE(
     return apiError(
       API_ERROR_CODES.SERVICE_UNAVAILABLE,
       "Supabase ortam değişkenleri eksik. İlan silmek için .env.local dosyasını tamamlamalısın.",
-      503,
+      503
     );
   }
 
@@ -215,7 +233,11 @@ export async function DELETE(
   const result = await deleteDatabaseListing(listingId, user.id);
 
   if (!result) {
-    return apiError(API_ERROR_CODES.NOT_FOUND, "Silinecek ilan bulunamadı. Sadece arşivlenmiş ilanlar silinebilir.", 404);
+    return apiError(
+      API_ERROR_CODES.NOT_FOUND,
+      "Silinecek ilan bulunamadı. Sadece arşivlenmiş ilanlar silinebilir.",
+      404
+    );
   }
 
   captureServerEvent("listing_deleted", {

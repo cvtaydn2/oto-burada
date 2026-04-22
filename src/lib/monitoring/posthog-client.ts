@@ -39,10 +39,7 @@ export function setCookieConsent(consentGranted: boolean) {
     return;
   }
 
-  window.localStorage.setItem(
-    COOKIE_CONSENT_STORAGE_KEY,
-    consentGranted ? "true" : "false",
-  );
+  window.localStorage.setItem(COOKIE_CONSENT_STORAGE_KEY, consentGranted ? "true" : "false");
   syncPostHogConsent();
 }
 
@@ -55,7 +52,7 @@ export function captureClientEvent(eventName: string, properties?: Record<string
 export function captureClientException(
   error: unknown,
   context: string,
-  properties?: Record<string, unknown>,
+  properties?: Record<string, unknown>
 ) {
   if (typeof window === "undefined") {
     return;
@@ -77,10 +74,7 @@ export function captureClientException(
   });
 }
 
-export function identifyPostHogUser(
-  userId: string,
-  properties?: Record<string, unknown>,
-) {
+export function identifyPostHogUser(userId: string, properties?: Record<string, unknown>) {
   posthog.identify(userId, properties);
 }
 

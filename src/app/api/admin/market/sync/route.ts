@@ -8,12 +8,12 @@
  * Security: admin auth OR CRON_SECRET header.
  */
 
+import { captureServerEvent } from "@/lib/monitoring/posthog-server";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { hasSupabaseAdminEnv } from "@/lib/supabase/env";
-import { apiSuccess, apiError, API_ERROR_CODES } from "@/lib/utils/api-response";
-import { logger } from "@/lib/utils/logger";
-import { captureServerEvent } from "@/lib/monitoring/posthog-server";
+import { API_ERROR_CODES, apiError, apiSuccess } from "@/lib/utils/api-response";
 import { withCronOrAdmin } from "@/lib/utils/api-security";
+import { logger } from "@/lib/utils/logger";
 
 export const dynamic = "force-dynamic";
 
@@ -51,7 +51,11 @@ async function handleSync(request: Request) {
   for (const s of segments) {
     const key = `${s.brand}|${s.model}|${s.year}`;
     if (!uniqueSegments.has(key)) {
-      uniqueSegments.set(key, { brand: s.brand as string, model: s.model as string, year: s.year as number });
+      uniqueSegments.set(key, {
+        brand: s.brand as string,
+        model: s.model as string,
+        year: s.year as number,
+      });
     }
   }
 
@@ -85,7 +89,8 @@ async function handleSync(request: Request) {
 
       if (upsertErr) {
         // RPC yoksa fallback: delete + insert
-        await admin.from("market_stats")
+        await admin
+          .from("market_stats")
           .delete()
           .eq("brand", seg.brand)
           .eq("model", seg.model)
@@ -125,6 +130,6 @@ async function handleSync(request: Request) {
 
   return apiSuccess(
     { totalSegments: uniqueSegments.size, updated, failed },
-    `${updated} segment güncellendi.`,
+    `${updated} segment güncellendi.`
   );
 }

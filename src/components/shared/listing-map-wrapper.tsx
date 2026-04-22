@@ -2,13 +2,10 @@
 
 import dynamic from "next/dynamic";
 
-const ListingMap = dynamic(
-  () => import("./listing-map").then((mod) => mod.ListingMap),
-  {
-    ssr: false,
-    loading: () => <div className="h-60 animate-pulse rounded-xl bg-muted" />,
-  }
-);
+const ListingMap = dynamic(() => import("./listing-map").then((mod) => mod.ListingMap), {
+  ssr: false,
+  loading: () => <div className="h-60 animate-pulse rounded-xl bg-muted" />,
+});
 
 interface ListingMapWrapperProps {
   city: string;

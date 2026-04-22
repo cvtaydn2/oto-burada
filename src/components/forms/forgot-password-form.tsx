@@ -1,10 +1,11 @@
 "use client";
 
+import { ChevronLeft, Fingerprint, Mail, ShieldCheck } from "lucide-react";
 import Link from "next/link";
 import { useActionState } from "react";
-import { ChevronLeft, Mail, ShieldCheck, Fingerprint } from "lucide-react";
-import { forgotPasswordAction } from "@/lib/auth/actions";
+
 import { AuthSubmitButton } from "@/components/forms/auth-submit-button";
+import { forgotPasswordAction } from "@/lib/auth/actions";
 
 const initialState = {};
 
@@ -22,7 +23,9 @@ export function ForgotPasswordForm() {
         <div className="relative z-10 w-full max-w-lg space-y-12">
           <div className="flex items-center gap-4">
             <div className="h-px w-12 bg-primary" />
-            <span className="text-[10px] font-bold uppercase tracking-[0.4em] text-primary italic">Güvenlik Protokolü</span>
+            <span className="text-[10px] font-bold uppercase tracking-[0.4em] text-primary italic">
+              Güvenlik Protokolü
+            </span>
           </div>
           <h2 className="text-7xl font-bold italic text-white leading-tight tracking-tightest uppercase">
             HESAP <span className="text-primary tracking-widest block">ERİŞİMİ</span>
@@ -64,11 +67,17 @@ export function ForgotPasswordForm() {
           ) : (
             <form action={formAction} className="space-y-6">
               <div className="space-y-2 group">
-                <label htmlFor="forgot-email" className="text-[10px] font-bold px-1 uppercase tracking-widest text-muted-foreground/70 italic group-focus-within:text-primary transition-colors">
+                <label
+                  htmlFor="forgot-email"
+                  className="text-[10px] font-bold px-1 uppercase tracking-widest text-muted-foreground/70 italic group-focus-within:text-primary transition-colors"
+                >
                   E-POSTA ADRESİ
                 </label>
                 <div className="relative">
-                  <Mail className="absolute left-5 top-1/2 -translate-y-1/2 text-muted-foreground/70 group-focus-within:text-primary transition-colors" size={20} />
+                  <Mail
+                    className="absolute left-5 top-1/2 -translate-y-1/2 text-muted-foreground/70 group-focus-within:text-primary transition-colors"
+                    size={20}
+                  />
                   <input
                     id="forgot-email"
                     type="email"
@@ -82,12 +91,18 @@ export function ForgotPasswordForm() {
               </div>
 
               {(state as { error?: string }).error && (
-                <div role="alert" className="rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm font-semibold text-rose-600">
+                <div
+                  role="alert"
+                  className="rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm font-semibold text-rose-600"
+                >
                   {(state as { error: string }).error}
                 </div>
               )}
 
-              <AuthSubmitButton label="SIFIRLAMA BAĞLANTISI GÖNDER" icon={<Fingerprint size={20} />} />
+              <AuthSubmitButton
+                label="SIFIRLAMA BAĞLANTISI GÖNDER"
+                icon={<Fingerprint size={20} />}
+              />
             </form>
           )}
 
@@ -95,7 +110,8 @@ export function ForgotPasswordForm() {
             <div className="flex items-center gap-4 p-6 rounded-3xl bg-indigo-50 border border-indigo-100">
               <ShieldCheck className="text-primary shrink-0" size={24} />
               <p className="text-[11px] font-bold text-indigo-900/60 leading-relaxed italic">
-                Eğer e-posta almazsanız, lütfen spam klasörünü kontrol edin veya 10 dakika sonra tekrar deneyin.
+                Eğer e-posta almazsanız, lütfen spam klasörünü kontrol edin veya 10 dakika sonra
+                tekrar deneyin.
               </p>
             </div>
           </div>

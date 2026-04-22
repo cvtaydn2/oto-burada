@@ -1,13 +1,17 @@
+import { waitUntil } from "@vercel/functions";
+import { z } from "zod";
+
+import { captureServerError, captureServerEvent } from "@/lib/monitoring/posthog-server";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { hasSupabaseAdminEnv } from "@/lib/supabase/env";
-import { createAdminModerationAction } from "@/services/admin/moderation-actions";
-import { apiSuccess, apiError, API_ERROR_CODES } from "@/lib/utils/api-response";
-import { z } from "zod";
-import { captureServerError, captureServerEvent } from "@/lib/monitoring/posthog-server";
-import { getStoredListingById } from "@/services/listings/listing-submissions";
-import { runListingTrustGuards, performAsyncModeration } from "@/services/listings/listing-submission-moderation";
-import { waitUntil } from "@vercel/functions";
+import { API_ERROR_CODES, apiError, apiSuccess } from "@/lib/utils/api-response";
 import { withAdminRoute } from "@/lib/utils/api-security";
+import { createAdminModerationAction } from "@/services/admin/moderation-actions";
+import {
+  performAsyncModeration,
+  runListingTrustGuards,
+} from "@/services/listings/listing-submission-moderation";
+import { getStoredListingById } from "@/services/listings/listing-submissions";
 
 const adminEditSchema = z.object({
   title: z.string().min(5).max(200).optional(),
@@ -17,7 +21,7 @@ const adminEditSchema = z.object({
 
 export async function PATCH(
   request: Request,
-  { params }: { params: Promise<{ listingId: string }> },
+  { params }: { params: Promise<{ listingId: string }> }
 ) {
   const { listingId } = await params;
   const security = await withAdminRoute(request);
@@ -25,7 +29,11 @@ export async function PATCH(
   const user = security.user!;
 
   if (!hasSupabaseAdminEnv()) {
-    captureServerEvent("admin_listing_edit_failed", { reason: "service_unavailable", responseStatus: 503 }, "server");
+    captureServerEvent(
+      "admin_listing_edit_failed",
+      { reason: "service_unavailable", responseStatus: 503 },
+      "server"
+    );
     return apiError(API_ERROR_CODES.SERVICE_UNAVAILABLE, "Servis kullanılamıyor.", 503);
   }
 
@@ -36,73 +44,86 @@ export async function PATCH(
   const parseResult = adminEditSchema.safeParse(body);
 
   if (!parseResult.success) {
-    captureServerEvent("admin_listing_edit_failed", {
-      adminUserId: user.id,
-      listingId,
-      reason: "invalid_payload",
-      responseStatus: 400,
-    }, user.id);
+    captureServerEvent(
+      "admin_listing_edit_failed",
+      {
+        adminUserId: user.id,
+        listingId,
+        reason: "invalid_payload",
+        responseStatus: 400,
+      },
+      user.id
+    );
     return apiError(API_ERROR_CODES.BAD_REQUEST, "Geçersiz düzenleme verisi.", 400);
   }
 
   const updates = parseResult.data;
 
   if (Object.keys(updates).length === 0) {
-    captureServerEvent("admin_listing_edit_failed", {
-      adminUserId: user.id,
-      listingId,
-      reason: "empty_payload",
-      responseStatus: 400,
-    }, user.id);
+    captureServerEvent(
+      "admin_listing_edit_failed",
+      {
+        adminUserId: user.id,
+        listingId,
+        reason: "empty_payload",
+        responseStatus: 400,
+      },
+      user.id
+    );
     return apiError(API_ERROR_CODES.BAD_REQUEST, "En az bir alan düzenlenmelidir.", 400);
   }
 
   const existingListing = await getStoredListingById(listingId);
   if (!existingListing) {
-    captureServerEvent("admin_listing_edit_failed", {
-      adminUserId: user.id,
-      listingId,
-      reason: "listing_not_found",
-      responseStatus: 404,
-    }, user.id);
+    captureServerEvent(
+      "admin_listing_edit_failed",
+      {
+        adminUserId: user.id,
+        listingId,
+        reason: "listing_not_found",
+        responseStatus: 404,
+      },
+      user.id
+    );
     return apiError(API_ERROR_CODES.NOT_FOUND, "İlan bulunamadı.", 404);
   }
 
   const criticalFieldsChanged =
-    updates.price !== undefined ||
-    updates.title !== undefined ||
-    updates.description !== undefined;
+    updates.price !== undefined || updates.title !== undefined || updates.description !== undefined;
 
   if (criticalFieldsChanged) {
-    const trustGuard = await runListingTrustGuards({
-      title: updates.title ?? existingListing.title,
-      brand: existingListing.brand,
-      model: existingListing.model,
-      carTrim: existingListing.carTrim ?? null,
-      year: existingListing.year,
-      mileage: existingListing.mileage,
-      fuelType: existingListing.fuelType,
-      transmission: existingListing.transmission,
-      price: updates.price ?? existingListing.price,
-      city: existingListing.city,
-      district: existingListing.district,
-      description: updates.description ?? existingListing.description,
-      whatsappPhone: existingListing.whatsappPhone,
-      vin: existingListing.vin ?? "",
-      licensePlate: existingListing.licensePlate ?? null,
-      tramerAmount: existingListing.tramerAmount ?? null,
-      damageStatusJson: existingListing.damageStatusJson ?? null,
-      images: existingListing.images,
-      expertInspection: existingListing.expertInspection,
-    }, {
-      excludeListingId: existingListing.id,
-    });
+    const trustGuard = await runListingTrustGuards(
+      {
+        title: updates.title ?? existingListing.title,
+        brand: existingListing.brand,
+        model: existingListing.model,
+        carTrim: existingListing.carTrim ?? null,
+        year: existingListing.year,
+        mileage: existingListing.mileage,
+        fuelType: existingListing.fuelType,
+        transmission: existingListing.transmission,
+        price: updates.price ?? existingListing.price,
+        city: existingListing.city,
+        district: existingListing.district,
+        description: updates.description ?? existingListing.description,
+        whatsappPhone: existingListing.whatsappPhone,
+        vin: existingListing.vin ?? "",
+        licensePlate: existingListing.licensePlate ?? null,
+        tramerAmount: existingListing.tramerAmount ?? null,
+        damageStatusJson: existingListing.damageStatusJson ?? null,
+        images: existingListing.images,
+        expertInspection: existingListing.expertInspection,
+      },
+      {
+        excludeListingId: existingListing.id,
+      }
+    );
 
     if (!trustGuard.allowed) {
       return apiError(
         API_ERROR_CODES.FORBIDDEN,
         trustGuard.message ?? "İlan güvenlik kurallarına takıldı.",
-        403,
+        403
       );
     }
   }
@@ -124,20 +145,30 @@ export async function PATCH(
     .maybeSingle<{ id: string }>();
 
   if (!updateError && !updatedListing) {
-    captureServerEvent("admin_listing_edit_failed", {
-      adminUserId: user.id,
-      listingId,
-      reason: "listing_not_found",
-      responseStatus: 404,
-    }, user.id);
+    captureServerEvent(
+      "admin_listing_edit_failed",
+      {
+        adminUserId: user.id,
+        listingId,
+        reason: "listing_not_found",
+        responseStatus: 404,
+      },
+      user.id
+    );
     return apiError(API_ERROR_CODES.NOT_FOUND, "İlan bulunamadı.", 404);
   }
 
   if (updateError) {
-    captureServerError("Admin listing edit failed", "admin", updateError, {
-      adminUserId: user.id,
-      listingId,
-    }, user.id);
+    captureServerError(
+      "Admin listing edit failed",
+      "admin",
+      updateError,
+      {
+        adminUserId: user.id,
+        listingId,
+      },
+      user.id
+    );
     return apiError(API_ERROR_CODES.INTERNAL_ERROR, "İlan düzenlenemedi.", 500);
   }
 
@@ -151,11 +182,15 @@ export async function PATCH(
     targetType: "listing",
   });
 
-  captureServerEvent("admin_listing_edited", {
-    adminUserId: user.id,
-    listingId,
-    changedFields,
-  }, user.id);
+  captureServerEvent(
+    "admin_listing_edited",
+    {
+      adminUserId: user.id,
+      listingId,
+      changedFields,
+    },
+    user.id
+  );
 
   if (criticalFieldsChanged) {
     waitUntil(performAsyncModeration(listingId));

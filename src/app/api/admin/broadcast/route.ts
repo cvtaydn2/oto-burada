@@ -1,11 +1,12 @@
 import { NextResponse } from "next/server";
-import { createSupabaseAdminClient } from "@/lib/supabase/admin";
-import { createDatabaseNotificationsBulk } from "@/services/notifications/notification-records";
-import { sanitizeText } from "@/lib/utils/sanitize";
-import { logger } from "@/lib/utils/logger";
+
 import { captureServerError, captureServerEvent } from "@/lib/monitoring/posthog-server";
-import { enforceRateLimit } from "@/lib/utils/rate-limit-middleware";
+import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { withAdminRoute } from "@/lib/utils/api-security";
+import { logger } from "@/lib/utils/logger";
+import { enforceRateLimit } from "@/lib/utils/rate-limit-middleware";
+import { sanitizeText } from "@/lib/utils/sanitize";
+import { createDatabaseNotificationsBulk } from "@/services/notifications/notification-records";
 
 // Broadcast: 5 per hour (admin-only, but still protect against accidents)
 const BROADCAST_RATE_LIMIT = { limit: 5, windowMs: 60 * 60 * 1000 };
@@ -24,16 +25,25 @@ export async function POST(request: Request) {
   try {
     body = await request.json();
   } catch {
-    return NextResponse.json({ success: false, error: { message: "İstek gövdesi okunamadı." } }, { status: 400 });
+    return NextResponse.json(
+      { success: false, error: { message: "İstek gövdesi okunamadı." } },
+      { status: 400 }
+    );
   }
 
   const { title, message } = body as { title?: unknown; message?: unknown };
 
   if (!title || typeof title !== "string" || title.trim().length < 3) {
-    return NextResponse.json({ success: false, error: { message: "Başlık en az 3 karakter olmalıdır." } }, { status: 400 });
+    return NextResponse.json(
+      { success: false, error: { message: "Başlık en az 3 karakter olmalıdır." } },
+      { status: 400 }
+    );
   }
   if (!message || typeof message !== "string" || message.trim().length < 5) {
-    return NextResponse.json({ success: false, error: { message: "Mesaj en az 5 karakter olmalıdır." } }, { status: 400 });
+    return NextResponse.json(
+      { success: false, error: { message: "Mesaj en az 5 karakter olmalıdır." } },
+      { status: 400 }
+    );
   }
 
   // Sanitize inputs
@@ -43,14 +53,15 @@ export async function POST(request: Request) {
   try {
     const admin = createSupabaseAdminClient();
 
-    const { data: profiles, error: fetchError } = await admin
-      .from("profiles")
-      .select("id");
+    const { data: profiles, error: fetchError } = await admin.from("profiles").select("id");
 
     if (fetchError) {
       logger.admin.error("Broadcast: fetch profiles failed", fetchError);
       captureServerError("Broadcast fetch profiles failed", "admin", fetchError);
-      return NextResponse.json({ success: false, error: { message: "Kullanıcı listesi alınamadı." } }, { status: 500 });
+      return NextResponse.json(
+        { success: false, error: { message: "Kullanıcı listesi alınamadı." } },
+        { status: 500 }
+      );
     }
 
     if (!profiles || profiles.length === 0) {
@@ -72,7 +83,7 @@ export async function POST(request: Request) {
             title: sanitizedTitle,
             message: sanitizedMessage,
             href: "/",
-          })),
+          }))
         );
         successCount += batch.length;
       } catch (batchError) {
@@ -88,12 +99,16 @@ export async function POST(request: Request) {
       logger.admin.warn("Broadcast partially failed", { successCount, failCount });
     }
 
-    captureServerEvent("admin_broadcast_sent", {
-      adminUserId: authResponse.id,
-      successCount,
-      failCount,
-      title: sanitizedTitle,
-    }, authResponse.id);
+    captureServerEvent(
+      "admin_broadcast_sent",
+      {
+        adminUserId: authResponse.id,
+        successCount,
+        failCount,
+        title: sanitizedTitle,
+      },
+      authResponse.id
+    );
 
     return NextResponse.json({
       success: true,
@@ -105,7 +120,7 @@ export async function POST(request: Request) {
     captureServerError("Broadcast unexpected error", "admin", error);
     return NextResponse.json(
       { success: false, error: { message: "Duyuru gönderilirken bir hata oluştu." } },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

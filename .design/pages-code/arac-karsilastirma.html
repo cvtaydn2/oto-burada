@@ -1,188 +1,309 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="tr">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>OtoBurada - Araç Karşılaştırma</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
+      rel="stylesheet"
+    />
     <style>
-        /* Grid satırlarının alt çizgilerini hizalamak için özel ayar */
-        .compare-row {
-            display: grid;
-            grid-template-columns: 200px repeat(4, minmax(250px, 1fr));
-            gap: 1rem;
-            align-items: center;
-        }
+      /* Grid satırlarının alt çizgilerini hizalamak için özel ayar */
+      .compare-row {
+        display: grid;
+        grid-template-columns: 200px repeat(4, minmax(250px, 1fr));
+        gap: 1rem;
+        align-items: center;
+      }
     </style>
-</head>
-<body class="bg-gray-50 text-gray-800 font-sans min-h-screen flex flex-col">
-
+  </head>
+  <body class="bg-gray-50 text-gray-800 font-sans min-h-screen flex flex-col">
     <header class="bg-white border-b border-gray-200 sticky top-0 z-50">
-        <div class="max-w-[1400px] mx-auto px-4 flex justify-between items-center h-16">
-            <a href="#" class="text-blue-500 text-xl font-bold flex items-center">
-                <i class="fa-solid fa-car-side mr-2"></i>OtoBurada
-            </a>
-            <div class="hidden md:flex relative w-96">
-                <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400">
-                    <i class="fa-solid fa-magnifying-glass text-sm"></i>
-                </span>
-                <input type="text" placeholder="Marka, model veya kelime ara..." class="w-full bg-gray-100 border-transparent text-gray-700 text-sm rounded-full focus:bg-white focus:border-blue-500 pl-10 py-2 outline-none">
-            </div>
-            <div class="flex items-center space-x-4">
-                <a href="#" class="text-gray-500 hover:text-red-500 transition"><i class="fa-regular fa-heart text-xl"></i></a>
-                <a href="#" class="text-gray-500 hover:text-blue-500 transition"><i class="fa-regular fa-message text-xl"></i></a>
-                <button class="bg-blue-500 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-600 transition shadow-sm ml-4">
-                    <i class="fa-solid fa-plus mr-1"></i> İlan Ver
-                </button>
-            </div>
+      <div class="max-w-[1400px] mx-auto px-4 flex justify-between items-center h-16">
+        <a href="#" class="text-blue-500 text-xl font-bold flex items-center">
+          <i class="fa-solid fa-car-side mr-2"></i>OtoBurada
+        </a>
+        <div class="hidden md:flex relative w-96">
+          <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400">
+            <i class="fa-solid fa-magnifying-glass text-sm"></i>
+          </span>
+          <input
+            type="text"
+            placeholder="Marka, model veya kelime ara..."
+            class="w-full bg-gray-100 border-transparent text-gray-700 text-sm rounded-full focus:bg-white focus:border-blue-500 pl-10 py-2 outline-none"
+          />
         </div>
+        <div class="flex items-center space-x-4">
+          <a href="#" class="text-gray-500 hover:text-red-500 transition"
+            ><i class="fa-regular fa-heart text-xl"></i
+          ></a>
+          <a href="#" class="text-gray-500 hover:text-blue-500 transition"
+            ><i class="fa-regular fa-message text-xl"></i
+          ></a>
+          <button
+            class="bg-blue-500 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-600 transition shadow-sm ml-4"
+          >
+            <i class="fa-solid fa-plus mr-1"></i> İlan Ver
+          </button>
+        </div>
+      </div>
     </header>
 
     <main class="max-w-[1400px] mx-auto px-4 py-8 flex-1 w-full">
-        
-        <div class="flex justify-between items-end mb-8">
-            <div>
-                <div class="text-blue-500 text-xs font-bold uppercase tracking-wider mb-2 flex items-center">
-                    <i class="fa-solid fa-arrow-right-arrow-left mr-2"></i> Kıyaslama Paneli
-                </div>
-                <h1 class="text-3xl font-bold text-gray-800 mb-2">Araç Karşılaştırma</h1>
-                <p class="text-gray-500 text-sm max-w-2xl">Seçtiğiniz 3 farklı aracı tüm teknik özellikleriyle ve avantajlarıyla yan yana inceleyin. Farklılıklar otomatik olarak vurgulanmıştır.</p>
-            </div>
-            <div class="flex space-x-3">
-                <button class="bg-white border border-gray-300 text-gray-700 px-4 py-2 rounded-lg text-sm font-medium hover:bg-gray-50 transition flex items-center">
-                    <i class="fa-solid fa-sliders mr-2"></i> Kriterleri Yönet
-                </button>
-                <button class="bg-blue-500 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-600 transition flex items-center shadow-sm">
-                    <i class="fa-solid fa-plus mr-2"></i> Araç Ekle
-                </button>
-            </div>
+      <div class="flex justify-between items-end mb-8">
+        <div>
+          <div
+            class="text-blue-500 text-xs font-bold uppercase tracking-wider mb-2 flex items-center"
+          >
+            <i class="fa-solid fa-arrow-right-arrow-left mr-2"></i> Kıyaslama Paneli
+          </div>
+          <h1 class="text-3xl font-bold text-gray-800 mb-2">Araç Karşılaştırma</h1>
+          <p class="text-gray-500 text-sm max-w-2xl">
+            Seçtiğiniz 3 farklı aracı tüm teknik özellikleriyle ve avantajlarıyla yan yana
+            inceleyin. Farklılıklar otomatik olarak vurgulanmıştır.
+          </p>
         </div>
-
-        <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-x-auto">
-            <div class="min-w-[1200px] p-6">
-                
-                <div class="compare-row mb-8">
-                    <div class="self-start mt-4">
-                        <div class="bg-gray-50 rounded-lg p-4 text-center mb-4 border border-gray-100">
-                            <div class="text-xs text-gray-500 font-bold uppercase tracking-wider mb-1">Seçili Araçlar</div>
-                            <div class="text-2xl font-black text-gray-800">3 / 4</div>
-                        </div>
-                        <ul class="space-y-1">
-                            <li><a href="#" class="block px-4 py-2 bg-blue-50 text-blue-600 font-medium rounded-lg border-l-4 border-blue-500">Temel Özellikler</a></li>
-                            <li><a href="#" class="block px-4 py-2 text-gray-600 hover:bg-gray-50 rounded-lg font-medium transition">Motor & Performans</a></li>
-                            <li><a href="#" class="block px-4 py-2 text-gray-600 hover:bg-gray-50 rounded-lg font-medium transition">Yakıt & Tüketim</a></li>
-                            <li><a href="#" class="block px-4 py-2 text-gray-600 hover:bg-gray-50 rounded-lg font-medium transition">Donanım Paketleri</a></li>
-                        </ul>
-                    </div>
-
-                    <div class="border border-gray-200 rounded-xl overflow-hidden hover:border-blue-300 transition relative">
-                        <button class="absolute top-2 right-2 w-6 h-6 bg-white/80 rounded-full flex items-center justify-center text-gray-400 hover:text-red-500 z-10"><i class="fa-solid fa-xmark"></i></button>
-                        <div class="bg-gray-100 h-40 relative">
-                            <span class="absolute top-2 left-2 bg-white px-2 py-0.5 rounded text-[10px] font-bold text-gray-600 shadow-sm">2023</span>
-                            <img src="https://images.unsplash.com/photo-1541899481282-d53bffe3c35d?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=60" alt="Golf" class="w-full h-full object-cover">
-                        </div>
-                        <div class="p-4 text-center">
-                            <h3 class="font-bold text-gray-800 text-sm mb-1 h-10 line-clamp-2">Volkswagen Golf 1.5 eTSI</h3>
-                            <div class="text-lg font-extrabold text-blue-500 mb-3">1.850.000 TL</div>
-                            <button class="w-full bg-blue-50 hover:bg-blue-500 hover:text-white text-blue-600 border border-blue-100 py-2 rounded-lg text-xs font-bold transition flex justify-center items-center">
-                                <i class="fa-regular fa-comments mr-2"></i> Hızlı Mesaj
-                            </button>
-                        </div>
-                    </div>
-
-                    <div class="border border-gray-200 rounded-xl overflow-hidden hover:border-blue-300 transition relative">
-                        <button class="absolute top-2 right-2 w-6 h-6 bg-white/80 rounded-full flex items-center justify-center text-gray-400 hover:text-red-500 z-10"><i class="fa-solid fa-xmark"></i></button>
-                        <div class="bg-gray-100 h-40 relative">
-                            <span class="absolute top-2 left-2 bg-white px-2 py-0.5 rounded text-[10px] font-bold text-gray-600 shadow-sm">2022</span>
-                            <img src="https://images.unsplash.com/photo-1533473359331-0135ef1b58bf?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=60" alt="Peugeot" class="w-full h-full object-cover">
-                        </div>
-                        <div class="p-4 text-center">
-                            <h3 class="font-bold text-gray-800 text-sm mb-1 h-10 line-clamp-2">Peugeot 308 1.2 PureTech GT</h3>
-                            <div class="text-lg font-extrabold text-blue-500 mb-3">1.690.000 TL</div>
-                            <button class="w-full bg-blue-50 hover:bg-blue-500 hover:text-white text-blue-600 border border-blue-100 py-2 rounded-lg text-xs font-bold transition flex justify-center items-center">
-                                <i class="fa-regular fa-comments mr-2"></i> Hızlı Mesaj
-                            </button>
-                        </div>
-                    </div>
-
-                    <div class="border border-gray-200 rounded-xl overflow-hidden hover:border-blue-300 transition relative">
-                        <button class="absolute top-2 right-2 w-6 h-6 bg-white/80 rounded-full flex items-center justify-center text-gray-400 hover:text-red-500 z-10"><i class="fa-solid fa-xmark"></i></button>
-                        <div class="bg-gray-100 h-40 relative">
-                            <span class="absolute top-2 left-2 bg-white px-2 py-0.5 rounded text-[10px] font-bold text-gray-600 shadow-sm">2023</span>
-                            <img src="https://images.unsplash.com/photo-1606611013016-960c05ba3540?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=60" alt="Civic" class="w-full h-full object-cover">
-                        </div>
-                        <div class="p-4 text-center">
-                            <h3 class="font-bold text-gray-800 text-sm mb-1 h-10 line-clamp-2">Honda Civic 1.5 VTEC Turbo</h3>
-                            <div class="text-lg font-extrabold text-blue-500 mb-3">1.745.000 TL</div>
-                            <button class="w-full bg-blue-50 hover:bg-blue-500 hover:text-white text-blue-600 border border-blue-100 py-2 rounded-lg text-xs font-bold transition flex justify-center items-center">
-                                <i class="fa-regular fa-comments mr-2"></i> Hızlı Mesaj
-                            </button>
-                        </div>
-                    </div>
-
-                    <button class="h-full min-h-[300px] border-2 border-dashed border-gray-300 rounded-xl flex flex-col items-center justify-center text-gray-400 hover:text-blue-500 hover:border-blue-500 hover:bg-blue-50 transition group bg-gray-50">
-                        <div class="w-12 h-12 rounded-full bg-white border border-gray-200 flex items-center justify-center mb-3 group-hover:border-blue-200 shadow-sm">
-                            <i class="fa-solid fa-plus text-xl"></i>
-                        </div>
-                        <span class="font-medium text-sm">Yeni Araç Ekle</span>
-                    </button>
-                </div>
-
-                <div class="border-t border-gray-100">
-                    
-                    <div class="compare-row border-b border-gray-100 py-4 hover:bg-gray-50 transition">
-                        <div class="font-bold text-sm text-gray-700 pl-4">Yıl</div>
-                        <div class="text-center text-sm text-gray-600">2023</div>
-                        <div class="text-center text-sm text-gray-600 bg-yellow-50 text-yellow-700 font-medium py-1 rounded">2022</div>
-                        <div class="text-center text-sm text-gray-600">2023</div>
-                        <div class="text-center text-sm text-gray-300">-</div>
-                    </div>
-
-                    <div class="compare-row border-b border-gray-100 py-4 hover:bg-gray-50 transition">
-                        <div class="font-bold text-sm text-gray-700 pl-4">Kilometre</div>
-                        <div class="text-center text-sm text-gray-600">12.400 km</div>
-                        <div class="text-center text-sm text-gray-600 bg-red-50 text-red-600 font-medium py-1 rounded">24.000 km</div>
-                        <div class="text-center text-sm text-gray-600 bg-green-50 text-green-600 font-medium py-1 rounded">8.500 km</div>
-                        <div class="text-center text-sm text-gray-300">-</div>
-                    </div>
-
-                    <div class="compare-row border-b border-gray-100 py-4 hover:bg-gray-50 transition">
-                        <div class="font-bold text-sm text-gray-700 pl-4">Yakıt Tipi</div>
-                        <div class="text-center text-sm text-gray-600">Yarı Hibrit (Benzin)</div>
-                        <div class="text-center text-sm text-gray-600">Benzin</div>
-                        <div class="text-center text-sm text-gray-600">Benzin</div>
-                        <div class="text-center text-sm text-gray-300">-</div>
-                    </div>
-
-                    <div class="compare-row border-b border-gray-100 py-4 hover:bg-gray-50 transition">
-                        <div class="font-bold text-sm text-gray-700 pl-4">Vites Tipi</div>
-                        <div class="text-center text-sm text-gray-600">Yarı Otomatik</div>
-                        <div class="text-center text-sm text-gray-600">Otomatik</div>
-                        <div class="text-center text-sm text-gray-600">Otomatik</div>
-                        <div class="text-center text-sm text-gray-300">-</div>
-                    </div>
-
-                    <div class="compare-row border-b border-gray-100 py-4 hover:bg-gray-50 transition">
-                        <div class="font-bold text-sm text-gray-700 pl-4">Motor Hacmi</div>
-                        <div class="text-center text-sm text-gray-600">1498 cc</div>
-                        <div class="text-center text-sm text-gray-600 bg-yellow-50 text-yellow-700 font-medium py-1 rounded">1199 cc</div>
-                        <div class="text-center text-sm text-gray-600">1498 cc</div>
-                        <div class="text-center text-sm text-gray-300">-</div>
-                    </div>
-
-                    <div class="compare-row py-4 hover:bg-gray-50 transition">
-                        <div class="font-bold text-sm text-gray-700 pl-4">Motor Gücü</div>
-                        <div class="text-center text-sm text-gray-600">150 hp</div>
-                        <div class="text-center text-sm text-gray-600 bg-red-50 text-red-600 font-medium py-1 rounded">130 hp</div>
-                        <div class="text-center text-sm text-gray-600 bg-green-50 text-green-600 font-medium py-1 rounded">182 hp</div>
-                        <div class="text-center text-sm text-gray-300">-</div>
-                    </div>
-
-                </div>
-            </div>
+        <div class="flex space-x-3">
+          <button
+            class="bg-white border border-gray-300 text-gray-700 px-4 py-2 rounded-lg text-sm font-medium hover:bg-gray-50 transition flex items-center"
+          >
+            <i class="fa-solid fa-sliders mr-2"></i> Kriterleri Yönet
+          </button>
+          <button
+            class="bg-blue-500 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-600 transition flex items-center shadow-sm"
+          >
+            <i class="fa-solid fa-plus mr-2"></i> Araç Ekle
+          </button>
         </div>
+      </div>
+
+      <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-x-auto">
+        <div class="min-w-[1200px] p-6">
+          <div class="compare-row mb-8">
+            <div class="self-start mt-4">
+              <div class="bg-gray-50 rounded-lg p-4 text-center mb-4 border border-gray-100">
+                <div class="text-xs text-gray-500 font-bold uppercase tracking-wider mb-1">
+                  Seçili Araçlar
+                </div>
+                <div class="text-2xl font-black text-gray-800">3 / 4</div>
+              </div>
+              <ul class="space-y-1">
+                <li>
+                  <a
+                    href="#"
+                    class="block px-4 py-2 bg-blue-50 text-blue-600 font-medium rounded-lg border-l-4 border-blue-500"
+                    >Temel Özellikler</a
+                  >
+                </li>
+                <li>
+                  <a
+                    href="#"
+                    class="block px-4 py-2 text-gray-600 hover:bg-gray-50 rounded-lg font-medium transition"
+                    >Motor & Performans</a
+                  >
+                </li>
+                <li>
+                  <a
+                    href="#"
+                    class="block px-4 py-2 text-gray-600 hover:bg-gray-50 rounded-lg font-medium transition"
+                    >Yakıt & Tüketim</a
+                  >
+                </li>
+                <li>
+                  <a
+                    href="#"
+                    class="block px-4 py-2 text-gray-600 hover:bg-gray-50 rounded-lg font-medium transition"
+                    >Donanım Paketleri</a
+                  >
+                </li>
+              </ul>
+            </div>
+
+            <div
+              class="border border-gray-200 rounded-xl overflow-hidden hover:border-blue-300 transition relative"
+            >
+              <button
+                class="absolute top-2 right-2 w-6 h-6 bg-white/80 rounded-full flex items-center justify-center text-gray-400 hover:text-red-500 z-10"
+              >
+                <i class="fa-solid fa-xmark"></i>
+              </button>
+              <div class="bg-gray-100 h-40 relative">
+                <span
+                  class="absolute top-2 left-2 bg-white px-2 py-0.5 rounded text-[10px] font-bold text-gray-600 shadow-sm"
+                  >2023</span
+                >
+                <img
+                  src="https://images.unsplash.com/photo-1541899481282-d53bffe3c35d?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=60"
+                  alt="Golf"
+                  class="w-full h-full object-cover"
+                />
+              </div>
+              <div class="p-4 text-center">
+                <h3 class="font-bold text-gray-800 text-sm mb-1 h-10 line-clamp-2">
+                  Volkswagen Golf 1.5 eTSI
+                </h3>
+                <div class="text-lg font-extrabold text-blue-500 mb-3">1.850.000 TL</div>
+                <button
+                  class="w-full bg-blue-50 hover:bg-blue-500 hover:text-white text-blue-600 border border-blue-100 py-2 rounded-lg text-xs font-bold transition flex justify-center items-center"
+                >
+                  <i class="fa-regular fa-comments mr-2"></i> Hızlı Mesaj
+                </button>
+              </div>
+            </div>
+
+            <div
+              class="border border-gray-200 rounded-xl overflow-hidden hover:border-blue-300 transition relative"
+            >
+              <button
+                class="absolute top-2 right-2 w-6 h-6 bg-white/80 rounded-full flex items-center justify-center text-gray-400 hover:text-red-500 z-10"
+              >
+                <i class="fa-solid fa-xmark"></i>
+              </button>
+              <div class="bg-gray-100 h-40 relative">
+                <span
+                  class="absolute top-2 left-2 bg-white px-2 py-0.5 rounded text-[10px] font-bold text-gray-600 shadow-sm"
+                  >2022</span
+                >
+                <img
+                  src="https://images.unsplash.com/photo-1533473359331-0135ef1b58bf?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=60"
+                  alt="Peugeot"
+                  class="w-full h-full object-cover"
+                />
+              </div>
+              <div class="p-4 text-center">
+                <h3 class="font-bold text-gray-800 text-sm mb-1 h-10 line-clamp-2">
+                  Peugeot 308 1.2 PureTech GT
+                </h3>
+                <div class="text-lg font-extrabold text-blue-500 mb-3">1.690.000 TL</div>
+                <button
+                  class="w-full bg-blue-50 hover:bg-blue-500 hover:text-white text-blue-600 border border-blue-100 py-2 rounded-lg text-xs font-bold transition flex justify-center items-center"
+                >
+                  <i class="fa-regular fa-comments mr-2"></i> Hızlı Mesaj
+                </button>
+              </div>
+            </div>
+
+            <div
+              class="border border-gray-200 rounded-xl overflow-hidden hover:border-blue-300 transition relative"
+            >
+              <button
+                class="absolute top-2 right-2 w-6 h-6 bg-white/80 rounded-full flex items-center justify-center text-gray-400 hover:text-red-500 z-10"
+              >
+                <i class="fa-solid fa-xmark"></i>
+              </button>
+              <div class="bg-gray-100 h-40 relative">
+                <span
+                  class="absolute top-2 left-2 bg-white px-2 py-0.5 rounded text-[10px] font-bold text-gray-600 shadow-sm"
+                  >2023</span
+                >
+                <img
+                  src="https://images.unsplash.com/photo-1606611013016-960c05ba3540?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=60"
+                  alt="Civic"
+                  class="w-full h-full object-cover"
+                />
+              </div>
+              <div class="p-4 text-center">
+                <h3 class="font-bold text-gray-800 text-sm mb-1 h-10 line-clamp-2">
+                  Honda Civic 1.5 VTEC Turbo
+                </h3>
+                <div class="text-lg font-extrabold text-blue-500 mb-3">1.745.000 TL</div>
+                <button
+                  class="w-full bg-blue-50 hover:bg-blue-500 hover:text-white text-blue-600 border border-blue-100 py-2 rounded-lg text-xs font-bold transition flex justify-center items-center"
+                >
+                  <i class="fa-regular fa-comments mr-2"></i> Hızlı Mesaj
+                </button>
+              </div>
+            </div>
+
+            <button
+              class="h-full min-h-[300px] border-2 border-dashed border-gray-300 rounded-xl flex flex-col items-center justify-center text-gray-400 hover:text-blue-500 hover:border-blue-500 hover:bg-blue-50 transition group bg-gray-50"
+            >
+              <div
+                class="w-12 h-12 rounded-full bg-white border border-gray-200 flex items-center justify-center mb-3 group-hover:border-blue-200 shadow-sm"
+              >
+                <i class="fa-solid fa-plus text-xl"></i>
+              </div>
+              <span class="font-medium text-sm">Yeni Araç Ekle</span>
+            </button>
+          </div>
+
+          <div class="border-t border-gray-100">
+            <div class="compare-row border-b border-gray-100 py-4 hover:bg-gray-50 transition">
+              <div class="font-bold text-sm text-gray-700 pl-4">Yıl</div>
+              <div class="text-center text-sm text-gray-600">2023</div>
+              <div
+                class="text-center text-sm text-gray-600 bg-yellow-50 text-yellow-700 font-medium py-1 rounded"
+              >
+                2022
+              </div>
+              <div class="text-center text-sm text-gray-600">2023</div>
+              <div class="text-center text-sm text-gray-300">-</div>
+            </div>
+
+            <div class="compare-row border-b border-gray-100 py-4 hover:bg-gray-50 transition">
+              <div class="font-bold text-sm text-gray-700 pl-4">Kilometre</div>
+              <div class="text-center text-sm text-gray-600">12.400 km</div>
+              <div
+                class="text-center text-sm text-gray-600 bg-red-50 text-red-600 font-medium py-1 rounded"
+              >
+                24.000 km
+              </div>
+              <div
+                class="text-center text-sm text-gray-600 bg-green-50 text-green-600 font-medium py-1 rounded"
+              >
+                8.500 km
+              </div>
+              <div class="text-center text-sm text-gray-300">-</div>
+            </div>
+
+            <div class="compare-row border-b border-gray-100 py-4 hover:bg-gray-50 transition">
+              <div class="font-bold text-sm text-gray-700 pl-4">Yakıt Tipi</div>
+              <div class="text-center text-sm text-gray-600">Yarı Hibrit (Benzin)</div>
+              <div class="text-center text-sm text-gray-600">Benzin</div>
+              <div class="text-center text-sm text-gray-600">Benzin</div>
+              <div class="text-center text-sm text-gray-300">-</div>
+            </div>
+
+            <div class="compare-row border-b border-gray-100 py-4 hover:bg-gray-50 transition">
+              <div class="font-bold text-sm text-gray-700 pl-4">Vites Tipi</div>
+              <div class="text-center text-sm text-gray-600">Yarı Otomatik</div>
+              <div class="text-center text-sm text-gray-600">Otomatik</div>
+              <div class="text-center text-sm text-gray-600">Otomatik</div>
+              <div class="text-center text-sm text-gray-300">-</div>
+            </div>
+
+            <div class="compare-row border-b border-gray-100 py-4 hover:bg-gray-50 transition">
+              <div class="font-bold text-sm text-gray-700 pl-4">Motor Hacmi</div>
+              <div class="text-center text-sm text-gray-600">1498 cc</div>
+              <div
+                class="text-center text-sm text-gray-600 bg-yellow-50 text-yellow-700 font-medium py-1 rounded"
+              >
+                1199 cc
+              </div>
+              <div class="text-center text-sm text-gray-600">1498 cc</div>
+              <div class="text-center text-sm text-gray-300">-</div>
+            </div>
+
+            <div class="compare-row py-4 hover:bg-gray-50 transition">
+              <div class="font-bold text-sm text-gray-700 pl-4">Motor Gücü</div>
+              <div class="text-center text-sm text-gray-600">150 hp</div>
+              <div
+                class="text-center text-sm text-gray-600 bg-red-50 text-red-600 font-medium py-1 rounded"
+              >
+                130 hp
+              </div>
+              <div
+                class="text-center text-sm text-gray-600 bg-green-50 text-green-600 font-medium py-1 rounded"
+              >
+                182 hp
+              </div>
+              <div class="text-center text-sm text-gray-300">-</div>
+            </div>
+          </div>
+        </div>
+      </div>
     </main>
-
-</body>
+  </body>
 </html>

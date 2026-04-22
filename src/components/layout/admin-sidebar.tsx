@@ -1,24 +1,25 @@
 "use client";
 
-import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { 
-  LayoutDashboard, 
-  Car, 
-  Flag, 
-  Users, 
-  Settings, 
+import {
+  BarChart3,
+  Car,
   ChevronLeft,
-  History,
   CreditCard,
   Database,
+  Flag,
+  History,
+  KeyRound,
+  LayoutDashboard,
   MessageSquare,
+  Settings,
   ShieldCheck,
-  BarChart3,
-  KeyRound
+  Users,
 } from "lucide-react";
-import { cn } from "@/lib/utils";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+
 import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 
 const ADMIN_NAV_ITEMS = [
   {
@@ -86,8 +87,8 @@ export function AdminSidebar({ isMobile }: AdminSidebarProps) {
   const pathname = usePathname();
 
   return (
-    <aside 
-      aria-label="Admin paneli navigasyonu" 
+    <aside
+      aria-label="Admin paneli navigasyonu"
       className={cn(
         "flex-col border-r border-border bg-card z-50",
         isMobile ? "flex h-full w-full" : "fixed left-0 top-0 hidden h-screen w-72 md:flex"
@@ -109,9 +110,14 @@ export function AdminSidebar({ isMobile }: AdminSidebarProps) {
         </Link>
       </div>
 
-      <nav aria-label="Admin menü" className="flex-1 overflow-y-auto p-6 space-y-1.5 custom-scrollbar">
+      <nav
+        aria-label="Admin menü"
+        className="flex-1 overflow-y-auto p-6 space-y-1.5 custom-scrollbar"
+      >
         <div className="mb-4">
-           <span className="px-4 text-[10px] font-bold text-muted-foreground/50 uppercase tracking-widest">Ana Menü</span>
+          <span className="px-4 text-[10px] font-bold text-muted-foreground/50 uppercase tracking-widest">
+            Ana Menü
+          </span>
         </div>
         {ADMIN_NAV_ITEMS.map((item) => {
           const isActive = pathname === item.href;
@@ -122,16 +128,21 @@ export function AdminSidebar({ isMobile }: AdminSidebarProps) {
               aria-current={isActive ? "page" : undefined}
               className={cn(
                 "group flex items-center gap-3 rounded-xl px-4 py-3.5 text-sm font-bold transition-all relative overflow-hidden",
-                isActive 
-                  ? "bg-primary text-primary-foreground" 
+                isActive
+                  ? "bg-primary text-primary-foreground"
                   : "text-muted-foreground hover:bg-muted"
               )}
             >
-              <item.icon size={18} className={cn(isActive ? "text-primary-foreground" : "text-muted-foreground group-hover:text-foreground")} />
+              <item.icon
+                size={18}
+                className={cn(
+                  isActive
+                    ? "text-primary-foreground"
+                    : "text-muted-foreground group-hover:text-foreground"
+                )}
+              />
               {item.title}
-              {isActive && (
-                 <div className="absolute right-0 top-0 h-full w-1 bg-white/20" />
-              )}
+              {isActive && <div className="absolute right-0 top-0 h-full w-1 bg-white/20" />}
             </Link>
           );
         })}
@@ -139,20 +150,27 @@ export function AdminSidebar({ isMobile }: AdminSidebarProps) {
 
       <div className="p-6 space-y-3 mt-auto border-t border-border bg-muted/30">
         <Link href="/dashboard" className="w-full block">
-           <Button variant="outline" className="w-full justify-start gap-3 rounded-xl border-border text-muted-foreground font-bold hover:bg-card hover:text-primary transition-all">
-              <ChevronLeft size={18} />
-              Kullanıcı Paneli
-           </Button>
+          <Button
+            variant="outline"
+            className="w-full justify-start gap-3 rounded-xl border-border text-muted-foreground font-bold hover:bg-card hover:text-primary transition-all"
+          >
+            <ChevronLeft size={18} />
+            Kullanıcı Paneli
+          </Button>
         </Link>
-        
+
         <div className="pt-2">
           <div className="flex items-center gap-3 p-3 rounded-2xl bg-card border border-border shadow-sm">
             <div className="size-10 rounded-xl bg-muted flex items-center justify-center border border-border">
               <ShieldCheck className="text-primary size-5" />
             </div>
             <div className="flex flex-col overflow-hidden">
-              <span className="text-[10px] font-bold text-foreground uppercase leading-none">Admin Modu</span>
-              <span className="text-[9px] text-muted-foreground font-medium uppercase tracking-widest mt-1 truncate">Tam Yetkili Erişim</span>
+              <span className="text-[10px] font-bold text-foreground uppercase leading-none">
+                Admin Modu
+              </span>
+              <span className="text-[9px] text-muted-foreground font-medium uppercase tracking-widest mt-1 truncate">
+                Tam Yetkili Erişim
+              </span>
             </div>
           </div>
         </div>

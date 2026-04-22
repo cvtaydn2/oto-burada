@@ -47,7 +47,7 @@ export function isValidRequestOrigin(request: Request): boolean {
       const appUrl = new URL(rawAppUrl);
       if (
         originUrl.protocol === appUrl.protocol &&
-        originUrl.host === appUrl.host          // host includes port when non-default
+        originUrl.host === appUrl.host // host includes port when non-default
       ) {
         return true;
       }
@@ -61,10 +61,7 @@ export function isValidRequestOrigin(request: Request): boolean {
   if (host && originUrl.host === host) return true;
 
   // 3. Allow localhost in non-production environments only.
-  if (
-    process.env.NODE_ENV !== "production" &&
-    originUrl.hostname === "localhost"
-  ) {
+  if (process.env.NODE_ENV !== "production" && originUrl.hostname === "localhost") {
     return true;
   }
 
@@ -74,21 +71,20 @@ export function isValidRequestOrigin(request: Request): boolean {
 // ── Sanitization ─────────────────────────────────────────────────────────────
 
 export {
-  sanitizeText,
+  escapeHtml,
   sanitizeDescription,
   sanitizeForMeta,
-  escapeHtml,
+  sanitizeText,
 } from "@/lib/utils/sanitize";
 
 // ── Rate limiting ─────────────────────────────────────────────────────────────
 
 export {
   checkRateLimit,
-  rateLimitProfiles,
   type RateLimitConfig,
+  rateLimitProfiles,
   type RateLimitResult,
 } from "@/lib/utils/rate-limit";
-
 export {
   enforceRateLimit,
   getRateLimitKey,

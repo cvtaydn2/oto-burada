@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useCallback } from "react";
+import { useCallback, useEffect } from "react";
 
 interface KeyboardShortcut {
   key: string;
@@ -11,26 +11,29 @@ interface KeyboardShortcut {
 }
 
 export function useKeyboardShortcuts(shortcuts: KeyboardShortcut[]) {
-  const handleKeyDown = useCallback((event: KeyboardEvent) => {
-    if (!shortcuts || shortcuts.length === 0) return;
-    
-    const key = event.key;
-    if (!key) return;
-    
-    const matchingShortcut = shortcuts.find(
-      (shortcut) =>
-        shortcut &&
-        shortcut.key &&
-        key.toLowerCase() === shortcut.key.toLowerCase() &&
-        (shortcut.ctrl ? event.ctrlKey || event.metaKey : true) &&
-        (shortcut.shift ? event.shiftKey : !event.shiftKey)
-    );
+  const handleKeyDown = useCallback(
+    (event: KeyboardEvent) => {
+      if (!shortcuts || shortcuts.length === 0) return;
 
-    if (matchingShortcut) {
-      event.preventDefault();
-      matchingShortcut.action();
-    }
-  }, [shortcuts]);
+      const key = event.key;
+      if (!key) return;
+
+      const matchingShortcut = shortcuts.find(
+        (shortcut) =>
+          shortcut &&
+          shortcut.key &&
+          key.toLowerCase() === shortcut.key.toLowerCase() &&
+          (shortcut.ctrl ? event.ctrlKey || event.metaKey : true) &&
+          (shortcut.shift ? event.shiftKey : !event.shiftKey)
+      );
+
+      if (matchingShortcut) {
+        event.preventDefault();
+        matchingShortcut.action();
+      }
+    },
+    [shortcuts]
+  );
 
   useEffect(() => {
     window.addEventListener("keydown", handleKeyDown);
@@ -38,11 +41,19 @@ export function useKeyboardShortcuts(shortcuts: KeyboardShortcut[]) {
   }, [handleKeyDown]);
 }
 
-export function KeyboardShortcutHints({ shortcuts }: { shortcuts: { key: string; description: string }[] }) {
+export function KeyboardShortcutHints({
+  shortcuts,
+}: {
+  shortcuts: { key: string; description: string }[];
+}) {
   if (typeof window === "undefined") return null;
 
   return (
-    <div className="hidden lg:flex items-center gap-2 text-xs text-slate-400" role="status" aria-live="polite">
+    <div
+      className="hidden lg:flex items-center gap-2 text-xs text-slate-400"
+      role="status"
+      aria-live="polite"
+    >
       {shortcuts.map((s, i) => (
         <span key={i} className="flex items-center gap-1">
           <kbd className="px-1.5 py-0.5 bg-slate-100 rounded text-[10px] font-mono">{s.key}</kbd>

@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useRef, useState } from "react";
+
 import { cn } from "@/lib/utils";
 
 interface RangeSliderProps {
@@ -48,7 +49,7 @@ export function RangeSlider({
         onChangeMax(emitMax >= max ? undefined : emitMax);
       }, 400);
     },
-    [min, max, onChangeMin, onChangeMax],
+    [min, max, onChangeMin, onChangeMax]
   );
 
   const handleMinChange = (value: number) => {
@@ -81,18 +82,25 @@ export function RangeSlider({
   const minPercent = ((displayMin - min) / (max - min)) * 100;
   const maxPercent = ((displayMax - min) / (max - min)) * 100;
 
-  const format = formatLabel ?? ((v: number) => `${v.toLocaleString("tr-TR")}${unit ? ` ${unit}` : ""}`);
+  const format =
+    formatLabel ?? ((v: number) => `${v.toLocaleString("tr-TR")}${unit ? ` ${unit}` : ""}`);
 
   return (
     <div className={cn("space-y-3", className)}>
       <div className="flex items-center justify-between text-[13px] font-bold italic text-slate-900 border-b border-slate-100 pb-1.5">
         <span className="flex flex-col">
-          <span className="text-[9px] font-bold uppercase text-slate-400 tracking-widest leading-none mb-1">En Az</span>
+          <span className="text-[9px] font-bold uppercase text-slate-400 tracking-widest leading-none mb-1">
+            En Az
+          </span>
           {format(displayMin)}
         </span>
-        <div className="size-6 rounded-full bg-slate-50 flex items-center justify-center border border-slate-100 italic font-bold text-slate-300">/</div>
+        <div className="size-6 rounded-full bg-slate-50 flex items-center justify-center border border-slate-100 italic font-bold text-slate-300">
+          /
+        </div>
         <span className="flex flex-col text-right">
-          <span className="text-[9px] font-bold uppercase text-slate-400 tracking-widest leading-none mb-1">En Çok</span>
+          <span className="text-[9px] font-bold uppercase text-slate-400 tracking-widest leading-none mb-1">
+            En Çok
+          </span>
           {format(displayMax)}
         </span>
       </div>
@@ -126,7 +134,7 @@ export function RangeSlider({
             "pointer-events-none absolute left-0 h-6 w-full appearance-none bg-transparent outline-none",
             "[&::-webkit-slider-thumb]:pointer-events-auto [&::-webkit-slider-thumb]:h-5 [&::-webkit-slider-thumb]:w-5 [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:cursor-grab [&::-webkit-slider-thumb]:active:cursor-grabbing [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:border-2 [&::-webkit-slider-thumb]:border-white [&::-webkit-slider-thumb]:bg-primary [&::-webkit-slider-thumb]:shadow-sm [&::-webkit-slider-thumb]:transition-transform",
             "active:[&::-webkit-slider-thumb]:scale-125",
-            "[&::-moz-range-thumb]:pointer-events-auto [&::-moz-range-thumb]:h-5 [&::-moz-range-thumb]:w-5 [&::-moz-range-thumb]:cursor-grab [&::-moz-range-thumb]:active:cursor-grabbing [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:border-2 [&::-moz-range-thumb]:border-white [&::-moz-range-thumb]:bg-primary [&::-moz-range-thumb]:shadow-sm",
+            "[&::-moz-range-thumb]:pointer-events-auto [&::-moz-range-thumb]:h-5 [&::-moz-range-thumb]:w-5 [&::-moz-range-thumb]:cursor-grab [&::-moz-range-thumb]:active:cursor-grabbing [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:border-2 [&::-moz-range-thumb]:border-white [&::-moz-range-thumb]:bg-primary [&::-moz-range-thumb]:shadow-sm"
           )}
           style={{ zIndex: activeThumb === "min" ? 10 : 3 }}
         />
@@ -147,7 +155,7 @@ export function RangeSlider({
             "pointer-events-none absolute left-0 h-6 w-full appearance-none bg-transparent outline-none",
             "[&::-webkit-slider-thumb]:pointer-events-auto [&::-webkit-slider-thumb]:h-5 [&::-webkit-slider-thumb]:w-5 [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:cursor-grab [&::-webkit-slider-thumb]:active:cursor-grabbing [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:border-2 [&::-webkit-slider-thumb]:border-white [&::-webkit-slider-thumb]:bg-primary [&::-webkit-slider-thumb]:shadow-sm [&::-webkit-slider-thumb]:transition-transform",
             "active:[&::-webkit-slider-thumb]:scale-125",
-            "[&::-moz-range-thumb]:pointer-events-auto [&::-moz-range-thumb]:h-5 [&::-moz-range-thumb]:w-5 [&::-moz-range-thumb]:cursor-grab [&::-moz-range-thumb]:active:cursor-grabbing [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:border-2 [&::-moz-range-thumb]:border-white [&::-moz-range-thumb]:bg-primary [&::-moz-range-thumb]:shadow-sm",
+            "[&::-moz-range-thumb]:pointer-events-auto [&::-moz-range-thumb]:h-5 [&::-moz-range-thumb]:w-5 [&::-moz-range-thumb]:cursor-grab [&::-moz-range-thumb]:active:cursor-grabbing [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:border-2 [&::-moz-range-thumb]:border-white [&::-moz-range-thumb]:bg-primary [&::-moz-range-thumb]:shadow-sm"
           )}
           style={{ zIndex: activeThumb === "max" ? 10 : 4 }}
         />

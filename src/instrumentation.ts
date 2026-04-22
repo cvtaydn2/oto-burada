@@ -13,11 +13,13 @@ export function register() {
   // Validate required environment variables at server startup.
   // Logs clearly if anything is missing so operators know immediately.
   if (process.env.NEXT_RUNTIME === "nodejs") {
-    import("./lib/env-validation").then(({ logEnvValidation }) => {
-      logEnvValidation();
-    }).catch(() => {
-      // Non-critical — never let env validation crash the app
-    });
+    import("./lib/env-validation")
+      .then(({ logEnvValidation }) => {
+        logEnvValidation();
+      })
+      .catch(() => {
+        // Non-critical — never let env validation crash the app
+      });
   }
 }
 
@@ -32,7 +34,7 @@ export const onRequestError = async (
     routerKind: string;
     routePath: string;
     routeType: string;
-  },
+  }
 ) => {
   // Only run in Node.js runtime — PostHog Node SDK doesn't support Edge
   if (process.env.NEXT_RUNTIME !== "nodejs") return;
@@ -46,9 +48,7 @@ export const onRequestError = async (
     let distinctId: string | undefined;
     const cookieHeader = request.headers.cookie;
     if (cookieHeader) {
-      const cookieString = Array.isArray(cookieHeader)
-        ? cookieHeader.join("; ")
-        : cookieHeader;
+      const cookieString = Array.isArray(cookieHeader) ? cookieHeader.join("; ") : cookieHeader;
 
       // PostHog cookie format: ph_<token>_posthog=<encoded JSON>
       const match = cookieString.match(/ph_phc_.*?_posthog=([^;]+)/);

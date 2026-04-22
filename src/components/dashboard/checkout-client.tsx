@@ -1,15 +1,13 @@
 "use client";
 
-import { useState } from "react";
+import { AlertTriangle, ArrowLeft, CheckCircle2, CreditCard, ShieldCheck } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { CreditCard, ShieldCheck, ArrowLeft, CheckCircle2, AlertTriangle } from "lucide-react";
+import { useState } from "react";
+
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import {
-  captureClientEvent,
-  captureClientException,
-} from "@/lib/monitoring/posthog-client";
+import { captureClientEvent, captureClientException } from "@/lib/monitoring/posthog-client";
 import type { PricingPlan } from "@/services/admin/plans";
 
 interface CheckoutClientProps {
@@ -38,17 +36,23 @@ export function CheckoutClient({ plan, isPaymentEnabled }: CheckoutClientProps) 
       const res = await fetch("/api/payments/purchase-plan", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ 
+        body: JSON.stringify({
           planId: plan.id,
-          identityNumber: plan.price > 0 ? identityNumber : undefined
+          identityNumber: plan.price > 0 ? identityNumber : undefined,
         }),
       });
 
-      const data = await res.json().catch(() => ({ success: false, error: "Sunucu yanıtı okunamadı." }));
+      const data = await res
+        .json()
+        .catch(() => ({ success: false, error: "Sunucu yanıtı okunamadı." }));
 
       if (res.ok && data.success) {
-        captureClientEvent("payment_success", { planId: plan.id, planName: plan.name, amount: plan.price });
-        
+        captureClientEvent("payment_success", {
+          planId: plan.id,
+          planName: plan.name,
+          amount: plan.price,
+        });
+
         // If Iyzico returned a payment URL (checkout form), redirect the user to it
         if (data.paymentUrl) {
           window.location.href = data.paymentUrl;
@@ -86,7 +90,8 @@ export function CheckoutClient({ plan, isPaymentEnabled }: CheckoutClientProps) 
         <div>
           <h2 className="text-2xl font-bold text-slate-900">İşlem Başarılı!</h2>
           <p className="mt-2 text-slate-500">
-            <span className="font-semibold">{plan.name}</span> paketiniz onaylandı. Panelinize yönlendiriliyorsunuz...
+            <span className="font-semibold">{plan.name}</span> paketiniz onaylandı. Panelinize
+            yönlendiriliyorsunuz...
           </p>
         </div>
       </div>
@@ -117,19 +122,22 @@ export function CheckoutClient({ plan, isPaymentEnabled }: CheckoutClientProps) 
               </p>
             </div>
             <Badge className="text-lg font-bold px-4 py-2 bg-blue-50 text-blue-700 border-blue-200">
-              {new Intl.NumberFormat("tr-TR", { style: "currency", currency: "TRY" }).format(plan.price)}
+              {new Intl.NumberFormat("tr-TR", { style: "currency", currency: "TRY" }).format(
+                plan.price
+              )}
             </Badge>
           </div>
 
           <div className="border-t pt-4 space-y-2">
-            {Object.entries(plan.features).map(([key, val]) => (
-              val && (
-                <div key={key} className="flex items-center gap-2 text-sm text-slate-600">
-                  <CheckCircle2 size={14} className="text-emerald-500 shrink-0" />
-                  <span className="capitalize">{key.replace(/_/g, " ")}</span>
-                </div>
-              )
-            ))}
+            {Object.entries(plan.features).map(
+              ([key, val]) =>
+                val && (
+                  <div key={key} className="flex items-center gap-2 text-sm text-slate-600">
+                    <CheckCircle2 size={14} className="text-emerald-500 shrink-0" />
+                    <span className="capitalize">{key.replace(/_/g, " ")}</span>
+                  </div>
+                )
+            )}
           </div>
         </CardContent>
       </Card>
@@ -143,8 +151,12 @@ export function CheckoutClient({ plan, isPaymentEnabled }: CheckoutClientProps) 
               <div className="text-sm text-amber-800">
                 <p className="font-bold mb-1">Ödeme Sistemi Aktif Değil</p>
                 <p>
-                  Otomatik ödeme sistemimiz geçici olarak bakımdadır. 
-                  Paketinizi hemen aktif etmek için <a href="/contact" className="underline font-semibold">bizimle iletişime geçin</a> veya ücretsiz paketi kullanın.
+                  Otomatik ödeme sistemimiz geçici olarak bakımdadır. Paketinizi hemen aktif etmek
+                  için{" "}
+                  <a href="/contact" className="underline font-semibold">
+                    bizimle iletişime geçin
+                  </a>{" "}
+                  veya ücretsiz paketi kullanın.
                 </p>
               </div>
             </div>
@@ -188,7 +200,9 @@ export function CheckoutClient({ plan, isPaymentEnabled }: CheckoutClientProps) 
             disabled={isProcessing}
           >
             <CreditCard size={20} />
-            {isProcessing ? "İşleniyor..." : `${new Intl.NumberFormat("tr-TR", { style: "currency", currency: "TRY" }).format(plan.price)} Öde`}
+            {isProcessing
+              ? "İşleniyor..."
+              : `${new Intl.NumberFormat("tr-TR", { style: "currency", currency: "TRY" }).format(plan.price)} Öde`}
           </Button>
         ) : (
           <Button asChild className="w-full h-14 text-base font-bold gap-2">
@@ -200,8 +214,15 @@ export function CheckoutClient({ plan, isPaymentEnabled }: CheckoutClientProps) 
         )}
 
         <div className="flex items-center justify-center gap-2 text-xs text-slate-400 font-medium">
-          <ShieldCheck size={14} className={isPaymentEnabled ? "text-emerald-500" : "text-slate-300"} />
-          <span>{isPaymentEnabled ? "Ödemeniz SSL ile korunmaktadır." : "Paket aktivasyonu için müşteri temsilcimiz sizinle iletişime geçecektir."}</span>
+          <ShieldCheck
+            size={14}
+            className={isPaymentEnabled ? "text-emerald-500" : "text-slate-300"}
+          />
+          <span>
+            {isPaymentEnabled
+              ? "Ödemeniz SSL ile korunmaktadır."
+              : "Paket aktivasyonu için müşteri temsilcimiz sizinle iletişime geçecektir."}
+          </span>
         </div>
       </div>
     </div>

@@ -2,7 +2,7 @@
 
 import { AlertTriangle, LoaderCircle } from "lucide-react";
 import Link from "next/link";
-import { useState, type FormEvent } from "react";
+import { type FormEvent, useState } from "react";
 
 import { reportReasonLabels, reportReasons } from "@/lib/constants/domain";
 
@@ -60,7 +60,7 @@ export function ReportListingForm({ listingId, sellerId, userId }: ReportListing
         },
         method: "POST",
       });
-      const payload = await response.json().catch(() => null) as {
+      const payload = (await response.json().catch(() => null)) as {
         success?: boolean;
         error?: { message: string };
         message?: string;
@@ -147,7 +147,11 @@ export function ReportListingForm({ listingId, sellerId, userId }: ReportListing
         disabled={isSubmitting}
         className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-xl border border-destructive/30 bg-background px-4 text-sm font-semibold text-destructive transition-colors hover:bg-destructive/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-destructive/40 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
       >
-        {isSubmitting ? <LoaderCircle className="size-4 animate-spin" /> : <AlertTriangle className="size-4" />}
+        {isSubmitting ? (
+          <LoaderCircle className="size-4 animate-spin" />
+        ) : (
+          <AlertTriangle className="size-4" />
+        )}
         {isSubmitting ? "Rapor gonderiliyor..." : "Raporu gonder"}
       </button>
     </form>

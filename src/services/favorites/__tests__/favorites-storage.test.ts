@@ -1,4 +1,5 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+
 import { readFavoriteIds, writeFavoriteIds } from "../favorites-storage";
 
 describe("Favorites Storage Service", () => {
@@ -84,9 +85,6 @@ describe("Favorites Storage Service", () => {
     });
 
     writeFavoriteIds([]);
-    expect(mockSetItem).toHaveBeenCalledWith(
-      "oto-burada:favorites",
-      "[]"
-    );
+    expect(mockSetItem).toHaveBeenCalledWith("oto-burada:favorites", "[]");
   });
 });

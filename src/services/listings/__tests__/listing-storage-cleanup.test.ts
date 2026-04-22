@@ -1,8 +1,10 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { describe, it, expect, vi, beforeEach } from "vitest";
-import { updateDatabaseListing } from "../listing-submission-persistence";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import type { Listing } from "@/types";
+
+import { updateDatabaseListing } from "../listing-submission-persistence";
 
 const queueFileCleanup = vi.fn().mockResolvedValue(undefined);
 
@@ -53,9 +55,9 @@ describe("Listing Storage Cleanup", () => {
   it("should identify and delete orphaned storage images during update", async () => {
     // 1. Mock the identified orphans check (listing_images table)
     (admin.from() as any).then.mockImplementationOnce((resolve: (val: any) => void) => {
-      resolve({ 
-        data: [{ storage_path: "old-1.jpg" }, { storage_path: "keep.jpg" }], 
-        error: null 
+      resolve({
+        data: [{ storage_path: "old-1.jpg" }, { storage_path: "keep.jpg" }],
+        error: null,
       });
     });
 
@@ -72,9 +74,9 @@ describe("Listing Storage Cleanup", () => {
 
   it("should not delete images that are still present", async () => {
     (admin.from() as any).then.mockImplementationOnce((resolve: (val: any) => void) => {
-      resolve({ 
-        data: [{ storage_path: "keep.jpg" }], 
-        error: null 
+      resolve({
+        data: [{ storage_path: "keep.jpg" }],
+        error: null,
       });
     });
 

@@ -1,30 +1,31 @@
 import { cookies } from "next/headers";
+
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { hasSupabaseAdminEnv } from "@/lib/supabase/env";
 import { listingSchema } from "@/lib/validators";
 import type { Listing, ListingCreateInput } from "@/types";
-import { listingSubmissionsCookieName } from "./constants";
 
+import { listingSubmissionsCookieName } from "./constants";
 // Feature Modules
 import { buildListingSlug } from "./listing-submission-helpers";
 import { calculateFraudScore } from "./listing-submission-moderation";
 
 export { buildListingSlug, calculateFraudScore };
-import { 
-  getDatabaseListings, 
-  getFilteredDatabaseListings, 
-  PaginatedListingsResult 
-} from "./listing-submission-query";
-import { 
-  createDatabaseListing, 
-  updateDatabaseListing, 
+import {
+  createDatabaseListing,
+  mapListingImagesToDatabaseRows,
   mapListingToDatabaseRow,
-  mapListingImagesToDatabaseRows
+  updateDatabaseListing,
 } from "./listing-submission-persistence";
-import { ListingRow, ListingImageRow } from "./listing-submission-types";
+import {
+  getDatabaseListings,
+  getFilteredDatabaseListings,
+  PaginatedListingsResult,
+} from "./listing-submission-query";
+import { ListingImageRow, ListingRow } from "./listing-submission-types";
 
 // Re-export types for backward compatibility
-export type { ListingRow, ListingImageRow };
+export type { ListingImageRow, ListingRow };
 
 /** Orchestrates the creation of a listing record with all computed fields (slug, fraud score). */
 export function buildListingRecord(
@@ -35,17 +36,17 @@ export function buildListingRecord(
     existingListing?: Listing;
     id?: string;
     status?: Listing["status"];
-  },
+  }
 ) {
   const existingListing = options?.existingListing;
   const id = existingListing?.id ?? options?.id ?? crypto.randomUUID();
-  
+
   // Base slug oluştur
   let slug = buildListingSlug(
     input,
     existingListing
       ? existingListings.filter((listing) => listing.id !== existingListing.id)
-      : existingListings,
+      : existingListings
   );
 
   // YENİ: Race Condition (Çakışma) Koruması
@@ -54,7 +55,7 @@ export function buildListingRecord(
     const shortId = crypto.randomUUID().split("-")[0];
     slug = `${slug}-${shortId}`;
   }
-  
+
   const timestamp = new Date().toISOString();
 
   return listingSchema.parse({
@@ -125,15 +126,17 @@ export async function archiveDatabaseListing(listingId: string, sellerId: string
 export async function deleteDatabaseListing(listingId: string, sellerId: string) {
   if (!hasSupabaseAdminEnv()) return null;
   const admin = createSupabaseAdminClient();
-  
+
   // Fetch the listing to verify ownership and status
   const listing = (await getDatabaseListings({ listingId, sellerId }))?.[0];
-  
+
   if (!listing) return null;
   if (listing.status !== "archived") return null;
 
   if (listing.images.length > 0) {
-    const storagePaths = listing.images.map((img) => img.storagePath).filter((path) => path.length > 0);
+    const storagePaths = listing.images
+      .map((img) => img.storagePath)
+      .filter((path) => path.length > 0);
     if (storagePaths.length > 0) {
       const bucketName = process.env.SUPABASE_STORAGE_BUCKET_LISTINGS ?? "listing-images";
       // ── PILL: Issue 2 - Async File Cleanup ─────────────────────────
@@ -158,7 +161,9 @@ export function parseStoredListings(rawValue?: string | null) {
     const parsed = JSON.parse(rawValue);
     const result = listingSchema.array().safeParse(parsed);
     return result.success ? result.data : [];
-  } catch { return []; }
+  } catch {
+    return [];
+  }
 }
 
 export function serializeStoredListings(listings: Listing[]) {
@@ -168,30 +173,57 @@ export function serializeStoredListings(listings: Listing[]) {
 export async function getLegacyStoredListings() {
   const cookieStore = await cookies();
   return parseStoredListings(cookieStore.get(listingSubmissionsCookieName)?.value).sort(
-    (left, right) => Date.parse(right.updatedAt) - Date.parse(left.updatedAt),
+    (left, right) => Date.parse(right.updatedAt) - Date.parse(left.updatedAt)
   );
 }
 
 // Orchestration Helpers
-export function buildPendingListing(input: ListingCreateInput, sellerId: string, existingListings: { id: string; slug: string }[]) {
+export function buildPendingListing(
+  input: ListingCreateInput,
+  sellerId: string,
+  existingListings: { id: string; slug: string }[]
+) {
   return buildListingRecord(input, sellerId, existingListings, { status: "pending" });
 }
 
-export function buildUpdatedListing(input: ListingCreateInput, existingListing: Listing, existingListings: { id: string; slug: string }[]) {
-  const nextStatus = existingListing.status === "draft" || existingListing.status === "pending" ? existingListing.status : "pending";
-  return buildListingRecord(input, existingListing.sellerId, existingListings, { existingListing, status: nextStatus });
+export function buildUpdatedListing(
+  input: ListingCreateInput,
+  existingListing: Listing,
+  existingListings: { id: string; slug: string }[]
+) {
+  const nextStatus =
+    existingListing.status === "draft" || existingListing.status === "pending"
+      ? existingListing.status
+      : "pending";
+  return buildListingRecord(input, existingListing.sellerId, existingListings, {
+    existingListing,
+    status: nextStatus,
+  });
 }
 
 export async function findEditableListingById(listingId: string, sellerId: string) {
-  const dbListings = await getDatabaseListings({ listingId, sellerId, statuses: ["draft", "pending", "approved", "rejected"] });
+  const dbListings = await getDatabaseListings({
+    listingId,
+    sellerId,
+    statuses: ["draft", "pending", "approved", "rejected"],
+  });
   if (dbListings?.length) return dbListings[0];
   const cookieListings = await getLegacyStoredListings();
-  return cookieListings.find(l => l.id === listingId && l.sellerId === sellerId && (l.status === "draft" || l.status === "pending")) ?? null;
+  return (
+    cookieListings.find(
+      (l) =>
+        l.id === listingId &&
+        l.sellerId === sellerId &&
+        (l.status === "draft" || l.status === "pending")
+    ) ?? null
+  );
 }
 
 export async function getStoredUserListings(sellerId: string) {
   const databaseListings = await getDatabaseListings({ sellerId });
-  return (databaseListings ?? []).sort((left, right) => Date.parse(right.createdAt) - Date.parse(left.createdAt));
+  return (databaseListings ?? []).sort(
+    (left, right) => Date.parse(right.createdAt) - Date.parse(left.createdAt)
+  );
 }
 
 export async function getExistingListingSlugs(): Promise<{ id: string; slug: string }[]> {
@@ -231,10 +263,15 @@ export async function upsertDatabaseListingRecord(listing: Listing) {
   if (!hasSupabaseAdminEnv()) return null;
   const updatedListing = await updateDatabaseListing(listing);
   if (updatedListing.listing) return updatedListing.listing; // Corrected to return listing directly for compatibility
-  
+
   const created = await createDatabaseListing(listing);
   return created.listing ?? null;
 }
 
 // Export persistence functions for direct use if needed
-export { createDatabaseListing, updateDatabaseListing, mapListingToDatabaseRow, mapListingImagesToDatabaseRows };
+export {
+  createDatabaseListing,
+  mapListingImagesToDatabaseRows,
+  mapListingToDatabaseRow,
+  updateDatabaseListing,
+};

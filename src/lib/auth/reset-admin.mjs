@@ -1,4 +1,5 @@
 import { createClient } from "@supabase/supabase-js";
+
 import { loadLocalEnv } from "../../../scripts/load-local-env.mjs";
 
 // Load environment variables from .env.local or .env
@@ -31,14 +32,15 @@ if (newPassword.length < 12) {
 }
 
 // Production guard: require explicit confirmation flag
-const isProd = process.env.NODE_ENV === "production" ||
+const isProd =
+  process.env.NODE_ENV === "production" ||
   process.env.VERCEL_ENV === "production" ||
   process.env.NEXT_PUBLIC_VERCEL_ENV === "production";
 
 if (isProd && confirmFlag !== "yes") {
   console.error(
     "[SECURITY] ❌ Production reset requires CONFIRM_RESET=yes to be set explicitly.\n" +
-    "  This prevents accidental execution in production environments."
+      "  This prevents accidental execution in production environments."
   );
   process.exit(1);
 }
@@ -46,25 +48,30 @@ if (isProd && confirmFlag !== "yes") {
 const supabase = createClient(supabaseUrl, serviceRoleKey, {
   auth: {
     autoRefreshToken: false,
-    persistSession: false
-  }
+    persistSession: false,
+  },
 });
 
 async function resetAdminPassword() {
   console.log(`[AUTH] Resetting password for ${targetEmail}...`);
   if (isProd) {
-    console.warn("[SECURITY] ⚠️  Running in PRODUCTION environment. Proceeding with explicit confirmation.");
+    console.warn(
+      "[SECURITY] ⚠️  Running in PRODUCTION environment. Proceeding with explicit confirmation."
+    );
   }
 
   try {
     // 1. Get user by email — use paginated search to avoid loading all users
-    const { data: { users }, error: getError } = await supabase.auth.admin.listUsers({ perPage: 1000 });
+    const {
+      data: { users },
+      error: getError,
+    } = await supabase.auth.admin.listUsers({ perPage: 1000 });
     if (getError) {
       console.error("[AUTH] ❌ Error listing users:", getError.message);
       return;
     }
 
-    const targetUser = users.find(u => u.email === targetEmail);
+    const targetUser = users.find((u) => u.email === targetEmail);
     if (!targetUser) {
       console.error(`[AUTH] ❌ User ${targetEmail} not found in database.`);
       return;
@@ -78,15 +85,16 @@ async function resetAdminPassword() {
       .single();
 
     if (!profile || profile.role !== "admin") {
-      console.error(`[AUTH] ❌ User ${targetEmail} does not have admin role. Aborting to prevent accidental reset.`);
+      console.error(
+        `[AUTH] ❌ User ${targetEmail} does not have admin role. Aborting to prevent accidental reset.`
+      );
       process.exit(1);
     }
 
     // 3. Update password
-    const { error } = await supabase.auth.admin.updateUserById(
-      targetUser.id,
-      { password: newPassword }
-    );
+    const { error } = await supabase.auth.admin.updateUserById(targetUser.id, {
+      password: newPassword,
+    });
 
     if (error) {
       console.error("[AUTH] ❌ Error updating password:", error.message);

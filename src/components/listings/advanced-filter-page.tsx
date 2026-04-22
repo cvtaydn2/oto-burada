@@ -1,30 +1,30 @@
 "use client";
 
-import { useState, useCallback } from "react";
-import { useRouter } from "next/navigation";
-import Link from "next/link";
 import {
   ArrowLeft,
+  Car,
+  Gauge,
+  MapPin,
   RotateCcw,
   Search,
-  SlidersHorizontal,
-  MapPin,
-  Gauge,
-  Car,
-  Zap,
   ShieldCheck,
+  SlidersHorizontal,
+  Zap,
 } from "lucide-react";
-import { cn } from "@/lib/utils";
-import { type ListingFilters, type BrandCatalogItem, type CityOption } from "@/types";
-import { Panel } from "@/components/shared/design-system/Panel";
-import { createSearchParamsFromListingFilters } from "@/services/listings/listing-filters";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useCallback, useState } from "react";
+
 import { SaveSearchButton } from "@/components/listings/save-search-button";
 import { useAuthUser } from "@/components/shared/auth-provider";
-import { useUnifiedFilters } from "@/features/marketplace/hooks/use-unified-filters";
-import { useFilterResultCount } from "@/features/marketplace/hooks/use-filter-result-count";
-
+import { Panel } from "@/components/shared/design-system/Panel";
 import { FilterFields } from "@/features/marketplace/components/filter-fields";
+import { useFilterResultCount } from "@/features/marketplace/hooks/use-filter-result-count";
+import { useUnifiedFilters } from "@/features/marketplace/hooks/use-unified-filters";
 import { maximumCarYear } from "@/lib/constants/domain";
+import { cn } from "@/lib/utils";
+import { createSearchParamsFromListingFilters } from "@/services/listings/listing-filters";
+import { type BrandCatalogItem, type CityOption, type ListingFilters } from "@/types";
 
 interface AdvancedFilterPageProps {
   brands: BrandCatalogItem[];
@@ -42,13 +42,8 @@ export function AdvancedFilterPage({
   totalCount,
 }: AdvancedFilterPageProps) {
   const router = useRouter();
-  const {
-    filters,
-    updateFilter,
-    resetFilters,
-    activeCount,
-    isPending
-  } = useUnifiedFilters(initialFilters);
+  const { filters, updateFilter, resetFilters, activeCount, isPending } =
+    useUnifiedFilters(initialFilters);
 
   const [activeSection, setActiveSection] = useState<FilterSection>("brand");
   const { count: resultCount, isLoading: isCounting } = useFilterResultCount(filters, totalCount);
@@ -98,15 +93,23 @@ export function AdvancedFilterPage({
         <main className="flex min-h-[560px] flex-1 flex-col rounded-3xl border border-border/40 bg-card p-5 shadow-sm sm:p-8 md:p-10 lg:p-12">
           <div className="mb-8 flex flex-col items-start justify-between gap-5 border-b border-border/40 pb-6 lg:mb-10 lg:flex-row lg:items-center lg:gap-6 lg:pb-8">
             <div className="flex items-center gap-4">
-              <Link href="/listings" className="flex size-10 items-center justify-center rounded-2xl border border-border/40 bg-card text-muted-foreground hover:text-primary transition-all">
+              <Link
+                href="/listings"
+                className="flex size-10 items-center justify-center rounded-2xl border border-border/40 bg-card text-muted-foreground hover:text-primary transition-all"
+              >
                 <ArrowLeft size={18} />
               </Link>
               <div>
-                <h1 className="text-2xl font-black text-foreground tracking-tight uppercase italic">Gelişmiş Filtreleme</h1>
+                <h1 className="text-2xl font-black text-foreground tracking-tight uppercase italic">
+                  Gelişmiş Filtreleme
+                </h1>
               </div>
             </div>
             <div className="flex w-full flex-col gap-3 sm:flex-row sm:flex-wrap lg:w-auto">
-              <button onClick={resetFilters} className="flex items-center justify-center gap-2 rounded-xl border border-border/40 bg-card px-5 py-2.5 text-xs font-bold text-muted-foreground transition-all hover:bg-muted/50 sm:flex-1 lg:flex-none">
+              <button
+                onClick={resetFilters}
+                className="flex items-center justify-center gap-2 rounded-xl border border-border/40 bg-card px-5 py-2.5 text-xs font-bold text-muted-foreground transition-all hover:bg-muted/50 sm:flex-1 lg:flex-none"
+              >
                 <RotateCcw size={14} />
                 Sıfırla
               </button>
@@ -119,14 +122,18 @@ export function AdvancedFilterPage({
                 <Search size={14} />
                 {isPending ? "..." : `İLANLARI GÖR (${resultCount.toLocaleString("tr-TR")})`}
               </button>
-            </div>          </div>
+            </div>{" "}
+          </div>
 
           <div className="flex-1">
             {activeCount > 0 && (
               <div className="mb-8 flex flex-wrap items-center gap-3 rounded-2xl border border-primary/10 bg-primary/5 px-4 py-3 text-[11px] font-bold uppercase tracking-widest text-primary sm:px-6 lg:mb-10">
                 <SlidersHorizontal size={14} />
                 <span>{activeCount} aktif filtre</span>
-                <button onClick={resetFilters} className="ml-auto text-rose-500 hover:text-rose-600 transition-colors">
+                <button
+                  onClick={resetFilters}
+                  className="ml-auto text-rose-500 hover:text-rose-600 transition-colors"
+                >
                   Tümünü Temizle
                 </button>
               </div>
@@ -135,8 +142,17 @@ export function AdvancedFilterPage({
             <div className="max-w-3xl">
               {activeSection === "brand" && (
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-8">
-                  <FilterFields.Brand brands={brands} value={filters.brand} onChange={v => updateFilter("brand", v)} />
-                  <FilterFields.Model brands={brands} brand={filters.brand} value={filters.model} onChange={v => updateFilter("model", v)} />
+                  <FilterFields.Brand
+                    brands={brands}
+                    value={filters.brand}
+                    onChange={(v) => updateFilter("brand", v)}
+                  />
+                  <FilterFields.Model
+                    brands={brands}
+                    brand={filters.brand}
+                    value={filters.model}
+                    onChange={(v) => updateFilter("model", v)}
+                  />
                 </div>
               )}
 
@@ -149,16 +165,23 @@ export function AdvancedFilterPage({
                     max={filters.maxPrice}
                     minPlaceholder="Min"
                     maxPlaceholder="Max"
-                    onMinChange={v => updateFilter("minPrice", v)}
-                    onMaxChange={v => updateFilter("maxPrice", v)}
+                    onMinChange={(v) => updateFilter("minPrice", v)}
+                    onMaxChange={(v) => updateFilter("maxPrice", v)}
                   />
                   <div className="space-y-1.5">
-                    <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest px-1">Maksimum KM</label>
+                    <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest px-1">
+                      Maksimum KM
+                    </label>
                     <input
                       type="number"
                       placeholder="Örn: 100.000"
                       value={filters.maxMileage ?? ""}
-                      onChange={(e) => updateFilter("maxMileage", e.target.value ? Number(e.target.value) : undefined)}
+                      onChange={(e) =>
+                        updateFilter(
+                          "maxMileage",
+                          e.target.value ? Number(e.target.value) : undefined
+                        )
+                      }
                       className="w-full h-12 border border-border/40 rounded-xl px-4 py-2 text-sm bg-muted/20 outline-none focus:ring-2 focus:ring-primary/20 transition-all placeholder:text-muted-foreground/30"
                     />
                   </div>
@@ -173,39 +196,46 @@ export function AdvancedFilterPage({
                   max={filters.maxYear}
                   minPlaceholder="1950"
                   maxPlaceholder={String(maximumCarYear)}
-                  onMinChange={v => updateFilter("minYear", v)}
-                  onMaxChange={v => updateFilter("maxYear", v)}
+                  onMinChange={(v) => updateFilter("minYear", v)}
+                  onMaxChange={(v) => updateFilter("maxYear", v)}
                 />
               )}
 
               {activeSection === "location" && (
-                <FilterFields.Location 
-                  cities={cities} 
-                  city={filters.city} 
+                <FilterFields.Location
+                  cities={cities}
+                  city={filters.city}
                   district={filters.district}
-                  onCityChange={v => updateFilter("city", v)}
-                  onDistrictChange={v => updateFilter("district", v)}
+                  onCityChange={(v) => updateFilter("city", v)}
+                  onDistrictChange={(v) => updateFilter("district", v)}
                 />
               )}
 
               {activeSection === "technical" && (
-                <FilterFields.Technical 
+                <FilterFields.Technical
                   fuelType={filters.fuelType}
                   transmission={filters.transmission}
-                  onFuelChange={v => updateFilter("fuelType", v)}
-                  onTransmissionChange={v => updateFilter("transmission", v)}
+                  onFuelChange={(v) => updateFilter("fuelType", v)}
+                  onTransmissionChange={(v) => updateFilter("transmission", v)}
                 />
               )}
 
               {activeSection === "trust" && (
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-8 items-end">
-                   <div className="space-y-1.5">
-                    <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest px-1">Maks. Tramer Hashar Kaydı (TL)</label>
+                  <div className="space-y-1.5">
+                    <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest px-1">
+                      Maks. Tramer Hashar Kaydı (TL)
+                    </label>
                     <input
                       type="number"
                       placeholder="Örn: 15.000"
                       value={filters.maxTramer ?? ""}
-                      onChange={(e) => updateFilter("maxTramer", e.target.value ? Number(e.target.value) : undefined)}
+                      onChange={(e) =>
+                        updateFilter(
+                          "maxTramer",
+                          e.target.value ? Number(e.target.value) : undefined
+                        )
+                      }
                       className="w-full h-12 border border-border/40 rounded-xl px-4 py-2 text-sm bg-muted/20 outline-none focus:ring-2 focus:ring-primary/20 transition-all placeholder:text-muted-foreground/30"
                     />
                   </div>
@@ -213,10 +243,14 @@ export function AdvancedFilterPage({
                     <input
                       type="checkbox"
                       checked={filters.hasExpertReport === true}
-                      onChange={() => updateFilter("hasExpertReport", filters.hasExpertReport ? undefined : true)}
+                      onChange={() =>
+                        updateFilter("hasExpertReport", filters.hasExpertReport ? undefined : true)
+                      }
                       className="size-5 rounded-lg border-muted/50 text-primary focus:ring-0 cursor-pointer"
                     />
-                    <span className="text-xs font-bold text-foreground/80 group-hover:text-foreground">Ekspertiz raporlu ilanlar</span>
+                    <span className="text-xs font-bold text-foreground/80 group-hover:text-foreground">
+                      Ekspertiz raporlu ilanlar
+                    </span>
                   </label>
                 </div>
               )}
@@ -225,7 +259,10 @@ export function AdvancedFilterPage({
 
           <div className="mt-auto flex flex-col gap-4 border-t border-border/40 bg-card/50 pt-8 sm:flex-row sm:items-center sm:justify-between sm:pt-10">
             <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest italic">
-              <span className="text-foreground">{isCounting ? "..." : resultCount.toLocaleString("tr-TR")}</span> ilan eşleşti
+              <span className="text-foreground">
+                {isCounting ? "..." : resultCount.toLocaleString("tr-TR")}
+              </span>{" "}
+              ilan eşleşti
             </p>
             <SaveSearchButton filters={filters} resultCount={resultCount} userId={userId} />
           </div>

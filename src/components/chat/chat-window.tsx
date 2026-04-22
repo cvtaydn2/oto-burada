@@ -1,13 +1,15 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
-import { useChatRealtime } from "@/hooks/use-chat-realtime";
-import { sendMessage, getChatMessages, markMessagesAsRead } from "@/services/messages/chat-service";
-import { MessageBubble } from "./message-bubble";
-import { ChatInput } from "./chat-input";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import type { Chat } from "@/types";
 import { Loader2, WifiOff } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { useChatRealtime } from "@/hooks/use-chat-realtime";
+import { getChatMessages, markMessagesAsRead, sendMessage } from "@/services/messages/chat-service";
+import type { Chat } from "@/types";
+
+import { ChatInput } from "./chat-input";
+import { MessageBubble } from "./message-bubble";
 
 interface ChatWindowProps {
   chat: Chat;
@@ -15,7 +17,15 @@ interface ChatWindowProps {
 }
 
 export function ChatWindow({ chat, currentUserId }: ChatWindowProps) {
-  const { messages, setMessages, isTyping, isPartnerOnline, sendTypingStatus, connectionStatus, broadcastMessage } = useChatRealtime(chat.id, currentUserId);
+  const {
+    messages,
+    setMessages,
+    isTyping,
+    isPartnerOnline,
+    sendTypingStatus,
+    connectionStatus,
+    broadcastMessage,
+  } = useChatRealtime(chat.id, currentUserId);
   const scrollRef = useRef<HTMLDivElement>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [isLoadingHistory, setIsLoadingHistory] = useState(true);
@@ -41,15 +51,15 @@ export function ChatWindow({ chat, currentUserId }: ChatWindowProps) {
 
   // Mark new messages as read when they arrive if window is focused
   useEffect(() => {
-     if (messages.length > 0 && typeof document !== "undefined" && !document.hidden) {
-        markMessagesAsRead(chat.id, currentUserId);
-     }
+    if (messages.length > 0 && typeof document !== "undefined" && !document.hidden) {
+      markMessagesAsRead(chat.id, currentUserId);
+    }
   }, [messages, chat.id, currentUserId]);
 
   // Auto Scroll
   useEffect(() => {
     if (scrollRef.current) {
-      const scrollContainer = scrollRef.current.querySelector('[data-radix-scroll-area-viewport]');
+      const scrollContainer = scrollRef.current.querySelector("[data-radix-scroll-area-viewport]");
       if (scrollContainer) {
         scrollContainer.scrollTop = scrollContainer.scrollHeight;
       }
@@ -80,7 +90,9 @@ export function ChatWindow({ chat, currentUserId }: ChatWindowProps) {
         <div>
           <h3 className="font-semibold text-sm">{chat.listing?.title || "İlan Mesajlaşma"}</h3>
           <div className="flex items-center gap-1.5 mt-0.5">
-            <span className={`w-2 h-2 rounded-full ${isPartnerOnline ? "bg-green-500" : "bg-gray-400"}`} />
+            <span
+              className={`w-2 h-2 rounded-full ${isPartnerOnline ? "bg-green-500" : "bg-gray-400"}`}
+            />
             <span className="text-[11px] text-muted-foreground uppercase tracking-wider font-medium">
               {isPartnerOnline ? "Çevrimiçi" : "Çevrimdışı"}
             </span>
@@ -119,17 +131,20 @@ export function ChatWindow({ chat, currentUserId }: ChatWindowProps) {
       )}
 
       {errorMessage && (
-        <div role="alert" className="border-b border-destructive/20 bg-destructive/5 px-4 py-2 text-xs font-medium text-destructive">
+        <div
+          role="alert"
+          className="border-b border-destructive/20 bg-destructive/5 px-4 py-2 text-xs font-medium text-destructive"
+        >
           {errorMessage}
         </div>
       )}
 
       {/* Messages */}
       <ScrollArea ref={scrollRef} className="flex-1 p-4 bg-dot-pattern">
-        <div 
-          className="flex flex-col gap-1 min-h-full justify-end" 
-          role="log" 
-          aria-live="polite" 
+        <div
+          className="flex flex-col gap-1 min-h-full justify-end"
+          role="log"
+          aria-live="polite"
           aria-relevant="additions"
         >
           {messages.map((msg) => (
@@ -142,9 +157,9 @@ export function ChatWindow({ chat, currentUserId }: ChatWindowProps) {
               <span>Mesajlar yükleniyor...</span>
             </div>
           )}
-          
+
           {isTyping && (
-            <div 
+            <div
               className="flex gap-2 items-center text-muted-foreground text-xs animate-pulse mb-4 ml-4"
               aria-live="assertive"
             >

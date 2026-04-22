@@ -1,11 +1,13 @@
 import { z } from "zod";
-import type { Report, ReportCreateInput } from "@/types";
+
 import { reportReasons, reportStatuses } from "@/lib/constants/domain";
-import { 
-  optionalTrimmedString, 
-  trimmedRequiredString, 
-  timestampSchema, 
-  emptyStringToUndefined
+import type { Report, ReportCreateInput } from "@/types";
+
+import {
+  emptyStringToUndefined,
+  optionalTrimmedString,
+  timestampSchema,
+  trimmedRequiredString,
 } from "./shared";
 
 export const reportSchema: z.ZodType<Report> = z.object({
@@ -15,13 +17,13 @@ export const reportSchema: z.ZodType<Report> = z.object({
   reason: z.enum(reportReasons),
   description: z.preprocess(
     emptyStringToUndefined,
-    z.string().trim().min(5, "Açıklama en az 5 karakter olmalı").nullable().optional(),
+    z.string().trim().min(5, "Açıklama en az 5 karakter olmalı").nullable().optional()
   ),
   status: z.enum(reportStatuses),
   createdAt: timestampSchema,
   updatedAt: z.preprocess(
     emptyStringToUndefined,
-    z.string().trim().min(1, "Geçerli bir tarih gir").nullable().optional(),
+    z.string().trim().min(1, "Geçerli bir tarih gir").nullable().optional()
   ),
 });
 
@@ -30,7 +32,7 @@ export const reportCreateSchema: z.ZodType<ReportCreateInput> = z.object({
   reason: z.enum(reportReasons),
   description: z.preprocess(
     emptyStringToUndefined,
-    z.string().trim().min(5, "Aciklama en az 5 karakter olmali").nullable().optional(),
+    z.string().trim().min(5, "Aciklama en az 5 karakter olmali").nullable().optional()
   ),
 });
 

@@ -11,7 +11,7 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  NODE_VERSION: '20'
+  NODE_VERSION: "20"
 
 jobs:
   # ── 1. Type check + lint ────────────────────────────────────────────────────
@@ -24,7 +24,7 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
-          cache: 'npm'
+          cache: "npm"
 
       - name: Install dependencies
         run: npm ci
@@ -45,7 +45,7 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
-          cache: 'npm'
+          cache: "npm"
 
       - name: Install dependencies
         run: npm ci
@@ -76,16 +76,16 @@ jobs:
       # Minimal env vars needed for a successful build
       NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL || 'https://placeholder.supabase.co' }}
       NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'placeholder-anon-key' }}
-      NEXT_PUBLIC_APP_URL: 'https://oto-burada.vercel.app'
-      NEXT_PUBLIC_POSTHOG_PROJECT_TOKEN: 'placeholder'
-      NEXT_PUBLIC_POSTHOG_HOST: 'https://us.i.posthog.com'
+      NEXT_PUBLIC_APP_URL: "https://oto-burada.vercel.app"
+      NEXT_PUBLIC_POSTHOG_PROJECT_TOKEN: "placeholder"
+      NEXT_PUBLIC_POSTHOG_HOST: "https://us.i.posthog.com"
     steps:
       - uses: actions/checkout@v4
 
       - uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
-          cache: 'npm'
+          cache: "npm"
 
       - name: Install dependencies
         run: npm ci
@@ -110,14 +110,14 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        project: [chromium, 'Mobile Chrome']
+        project: [chromium, "Mobile Chrome"]
     env:
       NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
       NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
       SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
-      NEXT_PUBLIC_APP_URL: 'http://localhost:3000'
+      NEXT_PUBLIC_APP_URL: "http://localhost:3000"
       NEXT_PUBLIC_POSTHOG_PROJECT_TOKEN: ${{ secrets.NEXT_PUBLIC_POSTHOG_PROJECT_TOKEN || 'placeholder' }}
-      NEXT_PUBLIC_POSTHOG_HOST: 'https://us.i.posthog.com'
+      NEXT_PUBLIC_POSTHOG_HOST: "https://us.i.posthog.com"
       CRON_SECRET: ${{ secrets.CRON_SECRET }}
       E2E_TEST_EMAIL: ${{ secrets.E2E_TEST_EMAIL }}
       E2E_TEST_PASSWORD: ${{ secrets.E2E_TEST_PASSWORD }}
@@ -127,7 +127,7 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
-          cache: 'npm'
+          cache: "npm"
 
       - name: Install dependencies
         run: npm ci
@@ -162,14 +162,14 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
-          cache: 'npm'
+          cache: "npm"
 
       - name: Install dependencies
         run: npm ci
 
       - name: npm audit (high severity only)
         run: npm audit --audit-level=high
-        continue-on-error: true  # Don't fail CI on audit warnings — review manually
+        continue-on-error: true # Don't fail CI on audit warnings — review manually
 
       - name: Check for secrets in code
         uses: trufflesecurity/trufflehog@main

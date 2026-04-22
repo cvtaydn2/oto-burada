@@ -1,7 +1,8 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { Download, X, Share } from "lucide-react";
+import { Download, Share, X } from "lucide-react";
+import { useEffect, useState } from "react";
+
 import { features } from "@/lib/features";
 
 export function PWAInstallPrompt() {
@@ -47,23 +48,27 @@ export function PWAInstallPrompt() {
   return (
     <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 w-[92%] max-w-sm animate-in fade-in slide-in-from-bottom-5 duration-500">
       <div className="bg-card/95 backdrop-blur-xl border border-border shadow-sm rounded-2xl p-4 overflow-hidden">
-        <button 
+        <button
           onClick={handleDismiss}
           className="absolute top-2 right-2 p-1 text-muted-foreground hover:bg-muted rounded-full transition-colors"
         >
           <X size={14} />
         </button>
- 
+
         <div className="flex items-center gap-3">
           <div className="size-11 bg-gradient-to-br from-indigo-600 to-emerald-600 rounded-xl flex items-center justify-center shadow-sm shrink-0">
             <Download className="text-white" size={20} />
           </div>
           <div className="flex-1 pr-4">
-            <h3 className="font-bold text-foreground text-sm leading-tight">OtoBurada&apos;yı Yükle</h3>
-            <p className="text-[10px] text-muted-foreground mt-0.5">İlanlara ana ekranından anında ulaş.</p>
+            <h3 className="font-bold text-foreground text-sm leading-tight">
+              OtoBurada&apos;yı Yükle
+            </h3>
+            <p className="text-[10px] text-muted-foreground mt-0.5">
+              İlanlara ana ekranından anında ulaş.
+            </p>
           </div>
         </div>
- 
+
         <div className="mt-3 pt-3 border-t border-border/50">
           {platform === "ios" ? (
             <div className="flex items-center gap-2 text-[11px] text-foreground/90 font-medium">
@@ -76,7 +81,7 @@ export function PWAInstallPrompt() {
           ) : (
             <button
               onClick={() => {
-                window.location.reload(); 
+                window.location.reload();
               }}
               className="w-full h-9 bg-slate-900 text-white rounded-lg font-bold text-xs hover:bg-slate-800 transition-colors"
             >

@@ -1,9 +1,9 @@
 /**
  * Cloudflare Turnstile verification for bot protection.
- * 
+ *
  * Turnstile is Cloudflare's privacy-friendly CAPTCHA alternative.
  * In "invisible" mode, users don't see a challenge unless suspicious.
- * 
+ *
  * Docs: https://developers.cloudflare.com/turnstile/
  */
 
@@ -18,15 +18,12 @@ interface TurnstileVerifyResponse {
 
 /**
  * Verify a Turnstile token on the server side.
- * 
+ *
  * @param token - The token returned by the Turnstile widget on the client
  * @param ip - The user's IP address (optional but recommended)
  * @returns true if verification passed, false otherwise
  */
-export async function verifyTurnstileToken(
-  token: string,
-  ip?: string,
-): Promise<boolean> {
+export async function verifyTurnstileToken(token: string, ip?: string): Promise<boolean> {
   const isProd = process.env.NODE_ENV === "production";
   const secretKey = process.env.TURNSTILE_SECRET_KEY;
 
@@ -75,9 +72,9 @@ export async function verifyTurnstileToken(
     return true;
   } catch (error) {
     logger.security.error("Turnstile verification exception", error);
-    // In production, we fail-closed to be safe. 
+    // In production, we fail-closed to be safe.
     // If bot protection is down, we prefer downtime/rejection over being scraped/botted.
-    return isProd ? false : true; 
+    return isProd ? false : true;
   }
 }
 

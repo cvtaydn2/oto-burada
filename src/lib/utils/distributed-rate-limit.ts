@@ -1,12 +1,13 @@
 import { Ratelimit } from "@upstash/ratelimit";
 import { Redis } from "@upstash/redis";
+
 import { logger } from "@/lib/utils/logger";
 
 let ratelimit: Ratelimit | null = null;
 
 function getRatelimit() {
   if (ratelimit) return ratelimit;
-  
+
   if (!process.env.UPSTASH_REDIS_REST_URL || !process.env.UPSTASH_REDIS_REST_TOKEN) {
     return null;
   }
@@ -17,7 +18,7 @@ function getRatelimit() {
     analytics: true,
     prefix: "@upstash/ratelimit/oto-burada",
   });
-  
+
   return ratelimit;
 }
 
@@ -27,19 +28,16 @@ function getRatelimit() {
  */
 export async function checkGlobalRateLimit(ip: string) {
   const limiter = getRatelimit();
-  
+
   if (!limiter) {
     return { success: true, limit: 100, remaining: 100, reset: 0 };
   }
 
   try {
-    const { success, limit, remaining, reset } = await limiter.limit(
-      `edge_ratelimit_${ip}`
-    );
+    const { success, limit, remaining, reset } = await limiter.limit(`edge_ratelimit_${ip}`);
     return { success, limit, remaining, reset };
   } catch (error) {
     logger.api.error("Distributed Rate Limit Error", error);
     return { success: true, limit: 100, remaining: 100, reset: 0 };
   }
 }
-

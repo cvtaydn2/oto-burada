@@ -1,18 +1,12 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { 
-  X, 
-  Plus, 
-  Trash2, 
-  Loader2, 
-  ChevronRight,
-  Car
-} from "lucide-react";
+import { Car, ChevronRight, Loader2, Plus, Trash2, X } from "lucide-react";
+import { useEffect, useState } from "react";
+import { toast } from "sonner";
+
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { getModelsByBrand, createModel, deleteModel } from "@/services/admin/reference";
-import { toast } from "sonner";
+import { createModel, deleteModel, getModelsByBrand } from "@/services/admin/reference";
 
 interface Model {
   id: string;
@@ -65,7 +59,7 @@ export function ModelsManager({ brand, onClose }: ModelsManagerProps) {
   const handleDeleteModel = async (id: string) => {
     try {
       await deleteModel(id);
-      setModels(prev => prev.filter(m => m.id !== id));
+      setModels((prev) => prev.filter((m) => m.id !== id));
       toast.success("Model silindi");
     } catch {
       toast.error("Model silinemedi");
@@ -81,10 +75,12 @@ export function ModelsManager({ brand, onClose }: ModelsManagerProps) {
           </div>
           <div>
             <h3 className="text-sm font-bold text-slate-800 tracking-tight">{brand.name}</h3>
-            <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest italic">Model Kütüphanesi</p>
+            <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest italic">
+              Model Kütüphanesi
+            </p>
           </div>
         </div>
-        <button 
+        <button
           onClick={onClose}
           className="size-10 rounded-xl hover:bg-white hover:border-slate-200 border border-transparent flex items-center justify-center text-slate-400 transition-all"
         >
@@ -97,15 +93,15 @@ export function ModelsManager({ brand, onClose }: ModelsManagerProps) {
           <div className="absolute inset-y-0 left-4 flex items-center text-slate-400">
             <Plus size={18} />
           </div>
-          <Input 
+          <Input
             value={newModelName}
             onChange={(e) => setNewModelName(e.target.value)}
             disabled={addingModel}
-            onKeyDown={(e) => e.key === 'Enter' && handleAddModel()}
+            onKeyDown={(e) => e.key === "Enter" && handleAddModel()}
             placeholder="Yeni model adı (Örn: Model 3)"
             className="pl-12 h-14 rounded-2xl border-slate-200 bg-white shadow-sm focus:border-blue-400 focus:ring-blue-100 transition-all font-bold placeholder:text-slate-300"
           />
-          <Button 
+          <Button
             onClick={handleAddModel}
             disabled={addingModel || !newModelName.trim()}
             className="absolute right-2 top-2 h-10 rounded-xl bg-blue-600 font-bold text-[10px] tracking-widest uppercase hover:bg-blue-700 disabled:opacity-50"
@@ -119,29 +115,35 @@ export function ModelsManager({ brand, onClose }: ModelsManagerProps) {
         {loading ? (
           <div className="flex flex-col items-center justify-center h-40 text-slate-400 gap-3">
             <Loader2 size={24} className="animate-spin" />
-            <span className="text-xs font-bold uppercase tracking-widest italic">Modeller Yükleniyor...</span>
+            <span className="text-xs font-bold uppercase tracking-widest italic">
+              Modeller Yükleniyor...
+            </span>
           </div>
         ) : models.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-12 text-slate-400 border-2 border-dashed border-slate-100 rounded-3xl gap-4 bg-white">
             <Car size={32} className="opacity-20" />
-            <p className="text-[10px] font-bold uppercase tracking-widest italic">Hiç model bulunamadı</p>
+            <p className="text-[10px] font-bold uppercase tracking-widest italic">
+              Hiç model bulunamadı
+            </p>
           </div>
         ) : (
           models.map((model) => (
-            <div 
+            <div
               key={model.id}
               className="flex items-center justify-between p-4 rounded-2xl border border-slate-100 bg-white hover:border-blue-200 hover:shadow-md hover:shadow-blue-50/50 transition-all group"
             >
               <div className="flex items-center gap-3">
-                 <div className="size-8 rounded-lg bg-slate-50 text-slate-300 flex items-center justify-center group-hover:bg-blue-50 group-hover:text-blue-500 transition-colors">
-                    <ChevronRight size={14} />
-                 </div>
-                 <div>
-                    <span className="text-sm font-bold text-slate-700 tracking-tight">{model.name}</span>
-                    <p className="text-[9px] text-slate-400 font-bold italic">/{model.slug}</p>
-                 </div>
+                <div className="size-8 rounded-lg bg-slate-50 text-slate-300 flex items-center justify-center group-hover:bg-blue-50 group-hover:text-blue-500 transition-colors">
+                  <ChevronRight size={14} />
+                </div>
+                <div>
+                  <span className="text-sm font-bold text-slate-700 tracking-tight">
+                    {model.name}
+                  </span>
+                  <p className="text-[9px] text-slate-400 font-bold italic">/{model.slug}</p>
+                </div>
               </div>
-              <button 
+              <button
                 onClick={() => handleDeleteModel(model.id)}
                 className="size-8 rounded-lg hover:bg-rose-50 hover:text-rose-600 text-slate-300 flex items-center justify-center transition-all opacity-0 group-hover:opacity-100"
               >
@@ -154,8 +156,10 @@ export function ModelsManager({ brand, onClose }: ModelsManagerProps) {
 
       <div className="p-6 border-t border-slate-100 bg-slate-50/30">
         <div className="flex items-center gap-3">
-           <div className="size-2 rounded-full bg-emerald-500" />
-           <p className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em] italic">Toplam {models.length} model aktif</p>
+          <div className="size-2 rounded-full bg-emerald-500" />
+          <p className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em] italic">
+            Toplam {models.length} model aktif
+          </p>
         </div>
       </div>
     </div>

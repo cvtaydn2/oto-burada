@@ -1,11 +1,7 @@
 import { LucideIcon } from "lucide-react";
+import { BarChart3, PieChart, TrendingDown, TrendingUp } from "lucide-react";
+
 import { formatCurrency } from "@/lib/utils";
-import { 
-  TrendingUp, 
-  TrendingDown, 
-  BarChart3,
-  PieChart
-} from "lucide-react";
 import { cn } from "@/lib/utils";
 
 /**
@@ -20,13 +16,13 @@ interface KPICardProps {
   isCurrency?: boolean;
 }
 
-export function AnalyticsKPICard({ 
-  label, 
-  value, 
-  change, 
-  icon: Icon, 
+export function AnalyticsKPICard({
+  label,
+  value,
+  change,
+  icon: Icon,
   variant,
-  isCurrency = false 
+  isCurrency = false,
 }: KPICardProps) {
   const variants = {
     blue: "bg-blue-50 text-blue-500",
@@ -39,7 +35,9 @@ export function AnalyticsKPICard({
     <div className="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm">
       <div className="flex justify-between items-start mb-2">
         <div className="text-sm text-slate-500 font-bold">{label}</div>
-        <div className={cn("w-8 h-8 rounded-lg flex items-center justify-center", variants[variant])}>
+        <div
+          className={cn("w-8 h-8 rounded-lg flex items-center justify-center", variants[variant])}
+        >
           <Icon size={16} />
         </div>
       </div>
@@ -47,8 +45,17 @@ export function AnalyticsKPICard({
         {isCurrency ? formatCurrency(value as number) : value.toLocaleString("tr-TR")}
       </div>
       <div className="text-xs font-medium text-slate-500 flex items-center">
-        <span className={cn("mr-1 flex items-center", change >= 0 ? "text-emerald-500" : "text-rose-500")}>
-          {change >= 0 ? <TrendingUp size={12} className="mr-0.5" /> : <TrendingDown size={12} className="mr-0.5" />} 
+        <span
+          className={cn(
+            "mr-1 flex items-center",
+            change >= 0 ? "text-emerald-500" : "text-rose-500"
+          )}
+        >
+          {change >= 0 ? (
+            <TrendingUp size={12} className="mr-0.5" />
+          ) : (
+            <TrendingDown size={12} className="mr-0.5" />
+          )}
           %{Math.abs(change)}
         </span>
         <span className="text-slate-400">geçen aya göre</span>
@@ -67,31 +74,43 @@ interface TrendChartProps {
 }
 
 export function PerformanceTrendChart({ data, activeChart, onChartTypeChange }: TrendChartProps) {
-  const maxListings = Math.max(...data.map(t => t.listings), 1);
+  const maxListings = Math.max(...data.map((t) => t.listings), 1);
 
   return (
     <div className="lg:col-span-2 bg-white border border-slate-200 rounded-2xl p-6 shadow-sm flex flex-col">
       <div className="flex justify-between items-start mb-6">
         <div>
           <h2 className="text-lg font-bold text-slate-800">İlan Performans Trendi</h2>
-          <p className="text-xs text-slate-500 mt-1">Son 6 ay içindeki yeni ve aktif ilan sayısı gelişimi.</p>
+          <p className="text-xs text-slate-500 mt-1">
+            Son 6 ay içindeki yeni ve aktif ilan sayısı gelişimi.
+          </p>
         </div>
         <div className="flex items-center gap-2">
           <button
             onClick={() => onChartTypeChange("bar")}
-            className={cn("p-2 rounded-lg transition-all", activeChart === "bar" ? "bg-slate-100 text-slate-800" : "text-slate-400 hover:text-slate-600")}
+            className={cn(
+              "p-2 rounded-lg transition-all",
+              activeChart === "bar"
+                ? "bg-slate-100 text-slate-800"
+                : "text-slate-400 hover:text-slate-600"
+            )}
           >
             <BarChart3 size={18} />
           </button>
           <button
             onClick={() => onChartTypeChange("line")}
-            className={cn("p-2 rounded-lg transition-all", activeChart === "line" ? "bg-slate-100 text-slate-800" : "text-slate-400 hover:text-slate-600")}
+            className={cn(
+              "p-2 rounded-lg transition-all",
+              activeChart === "line"
+                ? "bg-slate-100 text-slate-800"
+                : "text-slate-400 hover:text-slate-600"
+            )}
           >
             <PieChart size={18} />
           </button>
         </div>
       </div>
-      
+
       <div className="flex-1 relative min-h-[250px] flex items-end">
         <div className="absolute left-0 top-0 h-full flex flex-col justify-between text-[10px] text-slate-400 font-bold py-4">
           <span>{maxListings}</span>
@@ -100,12 +119,12 @@ export function PerformanceTrendChart({ data, activeChart, onChartTypeChange }: 
           <span>{Math.round(maxListings * 0.25)}</span>
           <span>0</span>
         </div>
-        
+
         <div className="ml-10 w-full h-full border-b border-slate-200 relative">
           <div className="absolute top-1/4 w-full border-t border-slate-100 border-dashed" />
           <div className="absolute top-2/4 w-full border-t border-slate-100 border-dashed" />
           <div className="absolute top-3/4 w-full border-t border-slate-100 border-dashed" />
-          
+
           {activeChart === "bar" ? (
             <div className="absolute bottom-0 w-full flex items-end justify-around h-full pb-4 gap-2">
               {data.map((trend, idx) => (
@@ -121,10 +140,10 @@ export function PerformanceTrendChart({ data, activeChart, onChartTypeChange }: 
               ))}
             </div>
           ) : (
-            <div 
+            <div
               className="absolute bottom-0 left-0 w-full h-full bg-blue-500/20 rounded-t-xl"
               style={{
-                clipPath: `polygon(0 100%, ${data.map((t, i) => `${(i / (data.length - 1)) * 100}% ${100 - (t.listings / maxListings) * 100}%`).join(", ")}, 100% 100%)`
+                clipPath: `polygon(0 100%, ${data.map((t, i) => `${(i / (data.length - 1)) * 100}% ${100 - (t.listings / maxListings) * 100}%`).join(", ")}, 100% 100%)`,
               }}
             />
           )}
@@ -133,7 +152,9 @@ export function PerformanceTrendChart({ data, activeChart, onChartTypeChange }: 
 
       <div className="ml-10 mt-2 flex justify-between text-[10px] text-slate-400 font-bold">
         {data.map((trend, idx) => (
-          <span key={idx}>{new Date(trend.date).toLocaleDateString("tr-TR", { month: "short" })}</span>
+          <span key={idx}>
+            {new Date(trend.date).toLocaleDateString("tr-TR", { month: "short" })}
+          </span>
         ))}
       </div>
     </div>
@@ -176,13 +197,22 @@ export function AcquisitionPanel({
               <span className="font-bold text-slate-700">{channel.name}</span>
               <span className="text-xs text-slate-500 font-medium">
                 {channel.count} {metricLabel}
-                <span className={cn("font-bold ml-1", channel.change >= 0 ? "text-emerald-500" : "text-rose-500")}>
-                  {channel.change >= 0 ? "+" : ""}{channel.change}%
+                <span
+                  className={cn(
+                    "font-bold ml-1",
+                    channel.change >= 0 ? "text-emerald-500" : "text-rose-500"
+                  )}
+                >
+                  {channel.change >= 0 ? "+" : ""}
+                  {channel.change}%
                 </span>
               </span>
             </div>
             <div className="w-full bg-slate-100 rounded-full h-2">
-              <div className={cn(channel.color, "h-2 rounded-full transition-all")} style={{ width: `${channel.width}%` }} />
+              <div
+                className={cn(channel.color, "h-2 rounded-full transition-all")}
+                style={{ width: `${channel.width}%` }}
+              />
             </div>
           </div>
         ))}

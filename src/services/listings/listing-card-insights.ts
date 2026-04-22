@@ -1,4 +1,5 @@
 import type { Listing } from "@/types";
+
 import { analyzeListingValue } from "./pricing-engine";
 
 export type ListingCardInsightTone = "indigo" | "emerald" | "amber" | "rose" | "blue";

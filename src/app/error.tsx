@@ -1,8 +1,9 @@
 "use client";
 
-import { useEffect } from "react";
-import { Button } from "@/components/ui/button";
 import { AlertCircle, RotateCcw } from "lucide-react";
+import { useEffect } from "react";
+
+import { Button } from "@/components/ui/button";
 
 export default function GlobalError({
   error,
@@ -21,21 +22,24 @@ export default function GlobalError({
       <div className="mb-6 flex size-24 items-center justify-center rounded-full bg-rose-50">
         <AlertCircle className="size-12 text-rose-500" />
       </div>
-      <h1 className="mb-3 text-3xl font-bold text-foreground tracking-tight">Bir Şeyler Yanlış Gitti</h1>
+      <h1 className="mb-3 text-3xl font-bold text-foreground tracking-tight">
+        Bir Şeyler Yanlış Gitti
+      </h1>
       <p className="mb-8 max-w-md text-muted-foreground font-medium">
-        Uygulama çalışırken beklenmedik bir hata oluştu. Sorunu çözmek için sayfayı yenilemeyi deneyebilirsiniz.
+        Uygulama çalışırken beklenmedik bir hata oluştu. Sorunu çözmek için sayfayı yenilemeyi
+        deneyebilirsiniz.
       </p>
       <div className="flex flex-col sm:flex-row gap-4">
-        <Button 
+        <Button
           onClick={() => reset()}
           className="rounded-xl px-8 h-12 font-bold flex items-center gap-2"
         >
           <RotateCcw size={18} />
           Tekrar Dene
         </Button>
-        <Button 
+        <Button
           variant="outline"
-          onClick={() => window.location.href = "/"}
+          onClick={() => (window.location.href = "/")}
           className="rounded-xl px-8 h-12 font-bold"
         >
           Ana Sayfaya Dön

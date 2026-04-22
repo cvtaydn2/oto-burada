@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useCallback } from "react";
+import { useCallback, useEffect } from "react";
 
 type KeyboardEventHandler = (event: KeyboardEvent) => void;
 
@@ -46,10 +46,7 @@ interface UseClickOutsideOptions {
   enabled?: boolean;
 }
 
-export function useClickOutside({
-  onClickOutside,
-  enabled = true,
-}: UseClickOutsideOptions) {
+export function useClickOutside({ onClickOutside, enabled = true }: UseClickOutsideOptions) {
   useEffect(() => {
     if (!enabled) return;
 

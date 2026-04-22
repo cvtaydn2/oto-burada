@@ -1,4 +1,5 @@
-import { describe, it, expect } from "vitest";
+import { describe, expect, it } from "vitest";
+
 import { calculateValuation } from "../price-estimation";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -60,7 +61,7 @@ describe("Price Estimation Logic", () => {
       mileage: 0,
       tramerAmount: 200000,
     });
-    expect(resultWithHighTramer).toBe(baseAvg * 0.80);
+    expect(resultWithHighTramer).toBe(baseAvg * 0.8);
   });
 
   it("should apply damage adjustment (capped at 25%)", () => {
@@ -84,13 +85,17 @@ describe("Price Estimation Logic", () => {
     // 10.000km extra (1.2%) + 100k Tramer (15%) + 5 parts damage (9%)
     // Base 1M -> Mileage adj (988k) -> (988k * (1 - 0.15 - 0.09)) = 988k * 0.76 = 750,880
     const damageStatus = {
-      p1: "painted", p2: "painted", p3: "painted", p4: "painted", p5: "painted"
+      p1: "painted",
+      p2: "painted",
+      p3: "painted",
+      p4: "painted",
+      p5: "painted",
     };
     const result = calculateValuation(baseAvg, {
-        year: currentYear,
-        mileage: 10000,
-        tramerAmount: 100000,
-        damageStatusJson: damageStatus
+      year: currentYear,
+      mileage: 10000,
+      tramerAmount: 100000,
+      damageStatusJson: damageStatus,
     });
     expect(result).toBe(750880);
   });
@@ -103,7 +108,11 @@ expect.extend({
     if (pass) {
       return { message: () => `expected ${received} to be close to ${expected}`, pass: true };
     } else {
-      return { message: () => `expected ${received} to be close to ${expected}, diff ${Math.abs(received - expected)}`, pass: false };
+      return {
+        message: () =>
+          `expected ${received} to be close to ${expected}, diff ${Math.abs(received - expected)}`,
+        pass: false,
+      };
     }
-  }
+  },
 });

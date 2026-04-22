@@ -1,6 +1,7 @@
 import { trust } from "@/lib/constants/ui-strings";
 import { getProfileRestrictionState } from "@/services/profile/profile-restrictions";
 import type { Profile } from "@/types";
+
 import { trustThemes } from "./trust-helpers";
 
 /**
@@ -8,11 +9,11 @@ import { trustThemes } from "./trust-helpers";
  */
 export function getSellerTrustUI(profile: Partial<Profile> | null | undefined) {
   const restrictionState = getProfileRestrictionState(profile);
-  
+
   const isApproved = profile?.verificationStatus === "approved";
   const isIdentityVerified = profile?.isVerified === true;
   const isActive = restrictionState === "active";
-  
+
   // High-level Trust Signal
   const isTrusted = isActive && (isApproved || isIdentityVerified);
 
@@ -49,11 +50,12 @@ export function getSellerTrustUI(profile: Partial<Profile> | null | undefined) {
     tone = "blue";
   }
 
-  const subMessage = restrictionState === "restricted_review" 
-    ? trust.verificationPendingDesc 
-    : restrictionState === "banned" 
-      ? trust.accountRestrictedDesc 
-      : undefined;
+  const subMessage =
+    restrictionState === "restricted_review"
+      ? trust.verificationPendingDesc
+      : restrictionState === "banned"
+        ? trust.accountRestrictedDesc
+        : undefined;
 
   return {
     restrictionState,
@@ -69,6 +71,6 @@ export function getSellerTrustUI(profile: Partial<Profile> | null | undefined) {
     isContactable: isActive,
     isPremiumVisible: isApproved && isActive && meetsSafetyFloor,
     // Professional type is a static attribute, not a trust state
-    isProfessional: profile?.userType === "professional"
+    isProfessional: profile?.userType === "professional",
   };
 }

@@ -1,15 +1,16 @@
 "use client";
 
+import { Menu, Plus } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Menu, Plus } from "lucide-react";
 import { Drawer } from "vaul";
 
 import { getMobileNavigationItems } from "@/components/layout/public-navigation";
 import { useAuthUser } from "@/components/shared/auth-provider";
 import { cn } from "@/lib/utils";
-import { HeaderMobileNav } from "./header-mobile-nav";
 import type { SearchSuggestionItem } from "@/types";
+
+import { HeaderMobileNav } from "./header-mobile-nav";
 
 interface MobileNavProps {
   searchSuggestions: SearchSuggestionItem[];
@@ -21,10 +22,10 @@ export function MobileNav({ searchSuggestions }: MobileNavProps) {
   // FAB sadece içerik keşif sayfalarında gösterilir.
   // Form, ödeme, mesaj ve işlem sayfalarında klavye/içerik üstüne binmemesi için gizlenir.
   const FAB_ALLOWED_PATHS = ["/", "/listings", "/favorites", "/compare"];
-  const showFAB = FAB_ALLOWED_PATHS.some(
-    (p) => pathname === p || (p !== "/" && pathname.startsWith(p + "/")),
-  ) && !pathname.startsWith("/dashboard/listings/create")
-    && !pathname.startsWith("/dashboard/listings/edit");
+  const showFAB =
+    FAB_ALLOWED_PATHS.some((p) => pathname === p || (p !== "/" && pathname.startsWith(p + "/"))) &&
+    !pathname.startsWith("/dashboard/listings/create") &&
+    !pathname.startsWith("/dashboard/listings/edit");
 
   const mobileNavigationItems = getMobileNavigationItems(isReady ? isAuthenticated : true);
 
@@ -57,9 +58,7 @@ export function MobileNav({ searchSuggestions }: MobileNavProps) {
                   aria-current={isActive ? "page" : undefined}
                   className={cn(
                     "flex flex-col items-center justify-center gap-1 py-2.5 min-h-[44px] transition-all active:scale-95",
-                    isActive
-                      ? "text-primary"
-                      : "text-muted-foreground hover:text-foreground",
+                    isActive ? "text-primary" : "text-muted-foreground hover:text-foreground"
                   )}
                 >
                   <Icon className={cn("size-5.5", isActive ? "stroke-[2.5]" : "stroke-2")} />

@@ -1,35 +1,36 @@
-import { createAdminModerationAction } from "@/services/admin/moderation-actions";
-import { updateDatabaseReportStatus } from "@/services/reports/report-submissions";
-import { getStoredListingById } from "@/services/listings/listing-submissions";
-import { createDatabaseNotification } from "@/services/notifications/notification-records";
-import type { ReportStatus } from "@/types";
+import { headers } from "next/headers";
+
+import { captureServerEvent } from "@/lib/monitoring/posthog-server";
+import { API_ERROR_CODES, apiError, apiSuccess } from "@/lib/utils/api-response";
+import { withAdminRoute } from "@/lib/utils/api-security";
 import { rateLimitProfiles } from "@/lib/utils/rate-limit";
 import { checkRateLimit } from "@/lib/utils/rate-limit-middleware";
-import { headers } from "next/headers";
 import { sanitizeText } from "@/lib/utils/sanitize";
-import { apiSuccess, apiError, API_ERROR_CODES } from "@/lib/utils/api-response";
-import { captureServerEvent } from "@/lib/monitoring/posthog-server";
-import { withAdminRoute } from "@/lib/utils/api-security";
+import { createAdminModerationAction } from "@/services/admin/moderation-actions";
+import { getStoredListingById } from "@/services/listings/listing-submissions";
+import { createDatabaseNotification } from "@/services/notifications/notification-records";
+import { updateDatabaseReportStatus } from "@/services/reports/report-submissions";
+import type { ReportStatus } from "@/types";
 
 async function getClientIp() {
   const headersList = await headers();
   const forwarded = headersList.get("x-forwarded-for");
   const realIp = headersList.get("x-real-ip");
-  return (forwarded?.split(",")[0]?.trim() || realIp || "unknown");
+  return forwarded?.split(",")[0]?.trim() || realIp || "unknown";
 }
 
 const allowedStatuses: ReportStatus[] = ["reviewing", "resolved", "dismissed"];
 
-export async function PATCH(
-  request: Request,
-  context: { params: Promise<{ reportId: string }> },
-) {
+export async function PATCH(request: Request, context: { params: Promise<{ reportId: string }> }) {
   const security = await withAdminRoute(request);
   if (!security.ok) return security.response;
   const adminUser = security.user!;
 
   const clientIp = await getClientIp();
-  const ipRateLimit = await checkRateLimit(`admin:reports:${clientIp}`, rateLimitProfiles.adminModerate);
+  const ipRateLimit = await checkRateLimit(
+    `admin:reports:${clientIp}`,
+    rateLimitProfiles.adminModerate
+  );
 
   if (!ipRateLimit.allowed) {
     return apiError(API_ERROR_CODES.RATE_LIMITED, "Çok fazla rapor isteği. Lütfen bekle.", 429);
@@ -44,11 +45,11 @@ export async function PATCH(
   }
 
   const status =
-    typeof body === "object" && body !== null && "status" in body
-      ? String(body.status ?? "")
-      : "";
+    typeof body === "object" && body !== null && "status" in body ? String(body.status ?? "") : "";
   const rawNote =
-    typeof body === "object" && body !== null && "note" in body ? String(body.note ?? "").trim() : "";
+    typeof body === "object" && body !== null && "note" in body
+      ? String(body.note ?? "").trim()
+      : "";
   const note = rawNote ? sanitizeText(rawNote) : "";
 
   if (!allowedStatuses.includes(status as ReportStatus)) {
@@ -56,7 +57,11 @@ export async function PATCH(
   }
 
   if (note.length > 0 && note.length < 3) {
-    return apiError(API_ERROR_CODES.BAD_REQUEST, "Moderasyon notu girersen en az 3 karakter olmalı.", 400);
+    return apiError(
+      API_ERROR_CODES.BAD_REQUEST,
+      "Moderasyon notu girersen en az 3 karakter olmalı.",
+      400
+    );
   }
 
   const { reportId } = await context.params;
@@ -67,8 +72,7 @@ export async function PATCH(
   }
 
   await createAdminModerationAction({
-    action:
-      status === "reviewing" ? "review" : status === "resolved" ? "resolve" : "dismiss",
+    action: status === "reviewing" ? "review" : status === "resolved" ? "resolve" : "dismiss",
     adminUserId: adminUser.id,
     note: note || `Rapor durumu ${status} olarak güncellendi.`,
     targetId: persistedReport.id ?? reportId,
@@ -78,11 +82,7 @@ export async function PATCH(
   const relatedListing = await getStoredListingById(persistedReport.listingId);
   const reportHref = relatedListing?.slug ? `/listing/${relatedListing.slug}` : null;
   const reportStatusMessage =
-    status === "reviewing"
-      ? "incelemeye alindi"
-      : status === "resolved"
-        ? "cozuldu"
-        : "kapatildi";
+    status === "reviewing" ? "incelemeye alindi" : status === "resolved" ? "cozuldu" : "kapatildi";
 
   await createDatabaseNotification({
     href: reportHref,
@@ -94,12 +94,16 @@ export async function PATCH(
     userId: persistedReport.reporterId,
   });
 
-  captureServerEvent("admin_report_resolved", {
-    adminUserId: adminUser.id,
-    reportId,
-    status,
-    listingId: persistedReport.listingId,
-  }, adminUser.id);
+  captureServerEvent(
+    "admin_report_resolved",
+    {
+      adminUserId: adminUser.id,
+      reportId,
+      status,
+      listingId: persistedReport.listingId,
+    },
+    adminUser.id
+  );
 
   return apiSuccess(
     {
@@ -108,6 +112,6 @@ export async function PATCH(
         status: persistedReport.status,
       },
     },
-    "Rapor durumu güncellendi.",
+    "Rapor durumu güncellendi."
   );
 }

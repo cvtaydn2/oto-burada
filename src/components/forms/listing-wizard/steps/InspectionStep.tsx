@@ -1,18 +1,24 @@
 "use client";
 
-import { UseFormReturn, Controller } from "react-hook-form";
+import { Controller, UseFormReturn } from "react-hook-form";
+
+import { DesignInput } from "@/components/shared/design-system/DesignInput";
+import { FormSection } from "@/components/shared/design-system/FormSection";
 import { ListingCreateFormValues } from "@/types";
+
 import { DamageSelector } from "../../damage-selector";
 import { ExpertInspectionEditor } from "../../expert-inspection-editor";
-import { FormSection } from "@/components/shared/design-system/FormSection";
-import { DesignInput } from "@/components/shared/design-system/DesignInput";
 
 interface InspectionStepProps {
   form: UseFormReturn<ListingCreateFormValues, unknown, ListingCreateFormValues>;
 }
 
 export function InspectionStep({ form }: InspectionStepProps) {
-  const { control, register, formState: { errors } } = form;
+  const {
+    control,
+    register,
+    formState: { errors },
+  } = form;
 
   return (
     <div className="space-y-10">
@@ -25,8 +31,8 @@ export function InspectionStep({ form }: InspectionStepProps) {
           <div>
             <h3 className="font-bold text-blue-900 mb-1">Bu Adım İsteğe Bağlı</h3>
             <p className="text-sm text-blue-700">
-              Ekspertiz ve hasar bilgilerini eklemek ilanınızın güvenilirliğini artırır, ancak zorunlu değildir. 
-              Temel bilgilerle de ilan verebilirsiniz.
+              Ekspertiz ve hasar bilgilerini eklemek ilanınızın güvenilirliğini artırır, ancak
+              zorunlu değildir. Temel bilgilerle de ilan verebilirsiniz.
             </p>
           </div>
         </div>
@@ -35,9 +41,10 @@ export function InspectionStep({ form }: InspectionStepProps) {
       {/* SECTION 1: DAMAGE STATUS */}
       <FormSection number={1} title="Kaporta ve Hasar Durumu (İsteğe Bağlı)">
         <p className="text-sm text-gray-500 mb-8">
-          Aracın kaporta durumunu (boya/değişen) görsel üzerinden işaretleyin ve varsa Tramer kaydını belirtin.
+          Aracın kaporta durumunu (boya/değişen) görsel üzerinden işaretleyin ve varsa Tramer
+          kaydını belirtin.
         </p>
-        
+
         <div className="mb-10">
           <Controller
             control={control}
@@ -66,12 +73,11 @@ export function InspectionStep({ form }: InspectionStepProps) {
       {/* SECTION 2: EXPERT INSPECTION */}
       <FormSection number={2} title="Detaylı Ekspertiz Raporu (İsteğe Bağlı)">
         <p className="text-sm text-gray-500 mb-8">
-          Aracınızın mekanik ve teknik kondisyonu hakkında detaylı bilgi vererek alıcılara daha fazla güven aşılayın.
+          Aracınızın mekanik ve teknik kondisyonu hakkında detaylı bilgi vererek alıcılara daha
+          fazla güven aşılayın.
         </p>
-        
-        <ExpertInspectionEditor
-          form={form}
-        />
+
+        <ExpertInspectionEditor form={form} />
       </FormSection>
     </div>
   );

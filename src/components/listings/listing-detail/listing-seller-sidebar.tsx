@@ -1,12 +1,12 @@
-import { ShieldCheck, Store, Star, CalendarDays } from "lucide-react";
-import { getSellerTrustUI } from "@/lib/utils/trust-ui";
-import { Panel } from "@/components/shared/design-system/Panel";
-import { getSellerRatingSummary } from "@/services/profile/seller-reviews";
-import { getMemberSinceYear, getMembershipYears } from "@/lib/utils/listing-utils";
-import type { Listing, Profile } from "@/types";
 import type { User } from "@supabase/supabase-js";
-import { ContactActions } from "@/components/listings/contact-actions";
+import { CalendarDays, ShieldCheck, Star, Store } from "lucide-react";
 
+import { ContactActions } from "@/components/listings/contact-actions";
+import { Panel } from "@/components/shared/design-system/Panel";
+import { getMembershipYears, getMemberSinceYear } from "@/lib/utils/listing-utils";
+import { getSellerTrustUI } from "@/lib/utils/trust-ui";
+import { getSellerRatingSummary } from "@/services/profile/seller-reviews";
+import type { Listing, Profile } from "@/types";
 
 interface ListingSellerSidebarProps {
   listing: Listing;
@@ -14,10 +14,10 @@ interface ListingSellerSidebarProps {
   currentUser: User | null;
 }
 
-export async function ListingSellerSidebar({ 
-  listing, 
-  seller, 
-  currentUser, 
+export async function ListingSellerSidebar({
+  listing,
+  seller,
+  currentUser,
 }: ListingSellerSidebarProps) {
   const sellerRatingSummary = await getSellerRatingSummary(listing.sellerId);
   const memberSince = getMemberSinceYear(seller?.createdAt ?? null);
@@ -27,19 +27,23 @@ export async function ListingSellerSidebar({
 
   // Human-friendly membership label — avoids "0 Yıl" for new members
   const membershipLabel =
-    membershipYears === null ? "—" :
-    membershipYears === 0   ? "Yeni Üye" :
-    membershipYears === 1   ? "1 Yıl" :
-    `${membershipYears} Yıl`;
+    membershipYears === null
+      ? "—"
+      : membershipYears === 0
+        ? "Yeni Üye"
+        : membershipYears === 1
+          ? "1 Yıl"
+          : `${membershipYears} Yıl`;
 
   // Footer text — only shown when memberSince is known, avoids "null'den beri"
-  const memberSinceText = memberSince != null
-    ? `${memberSince}'den beri üye`
-    : "OtoBurada üyesi";
+  const memberSinceText = memberSince != null ? `${memberSince}'den beri üye` : "OtoBurada üyesi";
 
   return (
     <div className="w-full space-y-10 lg:w-[380px] lg:shrink-0">
-      <Panel padding="xl" className="shadow-2xl lg:sticky lg:top-24 lg:max-h-[calc(100vh-120px)] lg:overflow-y-auto custom-scrollbar">
+      <Panel
+        padding="xl"
+        className="shadow-2xl lg:sticky lg:top-24 lg:max-h-[calc(100vh-120px)] lg:overflow-y-auto custom-scrollbar"
+      >
         <div className="flex items-center gap-6 mb-8 border-b border-border/40 pb-8">
           <div className="size-20 rounded-3xl bg-primary/10 flex items-center justify-center text-primary text-3xl font-bold shadow-inner shrink-0">
             {(seller?.businessName || seller?.fullName || "?")[0]}
@@ -49,13 +53,15 @@ export async function ListingSellerSidebar({
               {seller?.businessName || seller?.fullName || "Bilinmeyen Satıcı"}
             </h3>
             <div className="flex items-center gap-2 flex-wrap">
-              <div className={`flex h-5 items-center gap-1.5 rounded-md px-2 text-[10px] font-bold uppercase tracking-widest border ${
-                isTrusted
-                  ? "bg-emerald-500/10 text-emerald-600 border-emerald-500/20"
-                  : tone === "slate"
-                    ? "bg-slate-500/10 text-slate-700 border-slate-500/20"
-                    : "bg-amber-500/10 text-amber-700 border-amber-500/20"
-              }`}>
+              <div
+                className={`flex h-5 items-center gap-1.5 rounded-md px-2 text-[10px] font-bold uppercase tracking-widest border ${
+                  isTrusted
+                    ? "bg-emerald-500/10 text-emerald-600 border-emerald-500/20"
+                    : tone === "slate"
+                      ? "bg-slate-500/10 text-slate-700 border-slate-500/20"
+                      : "bg-amber-500/10 text-amber-700 border-amber-500/20"
+                }`}
+              >
                 <ShieldCheck size={12} strokeWidth={3} />
                 {label}
               </div>
@@ -83,16 +89,18 @@ export async function ListingSellerSidebar({
               <CalendarDays size={14} className="text-primary" />
               {membershipLabel}
             </div>
-            <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Üyelik</p>
+            <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">
+              Üyelik
+            </p>
           </div>
         </div>
 
         <div className="space-y-6">
           {!isOwner && (
-            <ContactActions 
-              listingId={listing.id} 
-              listingSlug={listing.slug} 
-              sellerId={listing.sellerId} 
+            <ContactActions
+              listingId={listing.id}
+              listingSlug={listing.slug}
+              sellerId={listing.sellerId}
               seller={seller}
               currentUserId={currentUser?.id}
             />

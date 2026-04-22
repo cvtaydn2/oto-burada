@@ -1,21 +1,25 @@
 # AGENTS.md
 
 ## Mission
+
 Build a mobile-first, production-lean MVP for a **car-only classifieds marketplace** where users can publish listings for free.
 
 The product must feel:
+
 - simpler than generic classifieds websites
 - safer and more trustworthy
 - fast on mobile
 - easy to maintain and extend
 
 Primary success criteria:
+
 1. A user can create a listing in under 2 minutes.
 2. A user can filter and reach a relevant car listing in under 3 interactions.
 3. The codebase is understandable for a new developer.
 4. The app builds, lints, and typechecks cleanly.
 
 ## Documentation Hierarchy (Source of Truth)
+
 1. **AGENTS.md**: The "Compass". Vision, non-negotiable rules, and architectural standards.
 2. **README.md**: The "Entry Point". Quick start, setup, and high-level tech overview.
 3. **TASKS.md**: The "Backlog". Execution order and detailed acceptance criteria.
@@ -24,6 +28,7 @@ Primary success criteria:
 ---
 
 ## Workflow Rules
+
 - Work strictly in `TASKS.md` order.
 - Before starting any new development, read `PROGRESS.md` to avoid repeating completed work.
 - Update `PROGRESS.md` after each completed task with status, decisions, validations, and next step.
@@ -33,6 +38,7 @@ Primary success criteria:
 ---
 
 ## Non-negotiable Product Rules
+
 - This marketplace is **only for cars**.
 - Individual listings are free.
 - The MVP should prioritize speed, clarity, trust, and usability.
@@ -44,10 +50,10 @@ Primary success criteria:
 - **In-App Chat**: While basic infrastructure might exist for future scaling, it is **Secondary** and should not be prioritized or featured as a main USP for the MVP.
 - **Out of Scope (MVP)**: EİDS (E-Devlet), SMS OTP, and Phone Verification are strictly out of scope to maintain simplicity and speed.
 
-
 ---
 
 ## Final Tech Stack
+
 - Next.js (App Router)
 - TypeScript (strict)
 - Tailwind CSS
@@ -63,6 +69,7 @@ Primary success criteria:
 ---
 
 ## Architecture Rules
+
 - Use a single full-stack Next.js codebase.
 - Use server components by default.
 - Use client components only when interactivity is needed.
@@ -73,6 +80,7 @@ Primary success criteria:
 - Do not introduce a separate Express/Nest backend for MVP.
 
 ### Resilience & Performance (God-Tier Pills)
+
 - **Zero-Trust Connection**: Never wait for external network requests (Iyzico, Email) inside a DB transaction. Use `fulfillment_jobs` or outbox pattern.
 - **Fail-Closed Security**: If a critical check (like Iyzico signature verification) fails, halt the process immediately.
 - **Parametric Indexing**: Keep all foreign keys indexed. Avoid `SELECT *` in hot paths.
@@ -82,6 +90,7 @@ Primary success criteria:
 ---
 
 ## Database Rules
+
 - Use `database/schema.snapshot.sql` as the single source of truth for the full schema.
 - For NEW changes, create a new migration in `database/migrations/` using the `00XX_name.sql` pattern.
 - Always track applied migrations using `npm run db:migrate`.
@@ -93,6 +102,7 @@ Primary success criteria:
 ---
 
 ## Code Quality Rules
+
 - Use TypeScript strict mode.
 - Keep components small and reusable.
 - Do not put business logic inside presentational UI components.
@@ -107,6 +117,7 @@ Primary success criteria:
 ---
 
 ## Folder Structure
+
 Use this structure unless there is a strong reason to improve it:
 
 ```txt
@@ -180,3 +191,4 @@ src/
 ### Seed Data Note
 - Seed script (`npm run db:seed-references`) tamamlandı. Gerçek Supabase DB'ye çalıştırıldı.
 - Minimum 50 ilan, 10 marka, 3+ şehir hedefi karşılandı.
+```

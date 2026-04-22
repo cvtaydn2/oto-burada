@@ -95,22 +95,15 @@ function broadcastCompareUpdate(nextIds: string[]) {
 }
 
 export function CompareProvider({ children }: CompareProviderProps) {
-  const localCompareIds = useSyncExternalStore(
-    subscribe,
-    getCompareIdsSnapshot,
-    getServerSnapshot,
-  );
-  const localHydrated = useSyncExternalStore(
-    subscribe,
-    () => true,
-    getHydrationSnapshot,
-  );
+  const localCompareIds = useSyncExternalStore(subscribe, getCompareIdsSnapshot, getServerSnapshot);
+  const localHydrated = useSyncExternalStore(subscribe, () => true, getHydrationSnapshot);
 
   const value = useMemo<CompareContextValue>(
     () => ({
       compareIds: localCompareIds,
       hydrated: localHydrated,
-      isInCompare: (listingId) => (Array.isArray(localCompareIds) ? localCompareIds.includes(listingId) : false),
+      isInCompare: (listingId) =>
+        Array.isArray(localCompareIds) ? localCompareIds.includes(listingId) : false,
       addToCompare: (listingId) => {
         if (localCompareIds.includes(listingId)) {
           return false;
@@ -131,7 +124,7 @@ export function CompareProvider({ children }: CompareProviderProps) {
         broadcastCompareUpdate([]);
       },
     }),
-    [localCompareIds, localHydrated],
+    [localCompareIds, localHydrated]
   );
 
   return <CompareContext.Provider value={value}>{children}</CompareContext.Provider>;

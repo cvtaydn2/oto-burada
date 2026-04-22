@@ -5,7 +5,7 @@
 
 export class ApiClient {
   private static async request<T>(
-    path: string, 
+    path: string,
     options?: RequestInit
   ): Promise<{ data?: T; error?: string; success: boolean }> {
     try {
@@ -25,9 +25,9 @@ export class ApiClient {
 
       return { success: true, data: json.data };
     } catch (err) {
-      return { 
-        success: false, 
-        error: err instanceof Error ? err.message : "Beklenmedik bir ağ hatası." 
+      return {
+        success: false,
+        error: err instanceof Error ? err.message : "Beklenmedik bir ağ hatası.",
       };
     }
   }
@@ -45,7 +45,7 @@ export class ApiClient {
           method: "POST",
           body: JSON.stringify({ action: "grant_doping", listingId, dopingTypes, durationDays: 7 }),
         }),
-        
+
       toggleBan: (userId: string, currentStatus: boolean) =>
         ApiClient.request(`/api/admin/users/${userId}`, {
           method: "POST",
@@ -58,7 +58,7 @@ export class ApiClient {
           method: "POST",
           body: JSON.stringify({ action, note }),
         }),
-    }
+    },
   };
 
   static listings = {
@@ -67,7 +67,7 @@ export class ApiClient {
         method: "POST",
         body: JSON.stringify(data),
       }),
-      
+
     delete: (id: string) =>
       ApiClient.request(`/api/listings/${id}`, {
         method: "DELETE",

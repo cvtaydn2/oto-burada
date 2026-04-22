@@ -1,30 +1,21 @@
 export function hasSupabaseEnv() {
-  return Boolean(
-    process.env.NEXT_PUBLIC_SUPABASE_URL &&
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
-  );
+  return Boolean(process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY);
 }
 
 export function hasSupabaseAdminEnv() {
   return Boolean(
     process.env.NEXT_PUBLIC_SUPABASE_URL &&
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY &&
-      process.env.SUPABASE_SERVICE_ROLE_KEY,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY &&
+    process.env.SUPABASE_SERVICE_ROLE_KEY
   );
 }
 
 export function hasSupabaseStorageEnv() {
-  return Boolean(
-    hasSupabaseAdminEnv() &&
-      process.env.SUPABASE_STORAGE_BUCKET_LISTINGS,
-  );
+  return Boolean(hasSupabaseAdminEnv() && process.env.SUPABASE_STORAGE_BUCKET_LISTINGS);
 }
 
 export function hasSupabaseDocumentsStorageEnv() {
-  return Boolean(
-    hasSupabaseAdminEnv() &&
-      process.env.SUPABASE_STORAGE_BUCKET_DOCUMENTS,
-  );
+  return Boolean(hasSupabaseAdminEnv() && process.env.SUPABASE_STORAGE_BUCKET_DOCUMENTS);
 }
 
 export function getSupabaseEnv() {

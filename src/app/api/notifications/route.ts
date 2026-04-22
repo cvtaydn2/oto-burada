@@ -1,11 +1,11 @@
-import { apiError, API_ERROR_CODES, apiSuccess } from "@/lib/utils/api-response";
+import { captureServerError } from "@/lib/monitoring/posthog-server";
+import { API_ERROR_CODES, apiError, apiSuccess } from "@/lib/utils/api-response";
+import { withAuth, withAuthAndCsrf } from "@/lib/utils/api-security";
 import { rateLimitProfiles } from "@/lib/utils/rate-limit";
 import {
   getStoredNotificationsByUser,
   markAllDatabaseNotificationsRead,
 } from "@/services/notifications/notification-records";
-import { captureServerError } from "@/lib/monitoring/posthog-server";
-import { withAuth, withAuthAndCsrf } from "@/lib/utils/api-security";
 
 export async function GET(request: Request) {
   // Security checks: Auth + Rate limiting
@@ -15,7 +15,7 @@ export async function GET(request: Request) {
   });
 
   if (!security.ok) return security.response;
-  
+
   const user = security.user!; // Guaranteed by withAuth
 
   // P1 Security: Removed ensureProfileRecord() - GET should be read-only
@@ -33,14 +33,20 @@ export async function PATCH(request: Request) {
   });
 
   if (!security.ok) return security.response;
-  
+
   const user = security.user!; // Guaranteed by withAuthAndCsrf
 
   // P1 Security: Removed ensureProfileRecord() - no side effects in mutations
   const updated = await markAllDatabaseNotificationsRead(user.id);
 
   if (!updated) {
-    captureServerError("Mark all notifications read failed", "notifications", null, { userId: user.id }, user.id);
+    captureServerError(
+      "Mark all notifications read failed",
+      "notifications",
+      null,
+      { userId: user.id },
+      user.id
+    );
     return apiError(API_ERROR_CODES.INTERNAL_ERROR, "Bildirimler güncellenemedi.", 500);
   }
 

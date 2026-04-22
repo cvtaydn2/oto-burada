@@ -1,9 +1,11 @@
 "use client";
 
-import { carPartDamageStatusLabels, carPartLabels, carParts } from "@/lib/constants/domain";
-import { cn } from "@/lib/utils";
 import { AlertCircle, CheckCircle2, ChevronDown, ChevronUp, Info } from "lucide-react";
 import { useState } from "react";
+
+import { carPartDamageStatusLabels, carPartLabels, carParts } from "@/lib/constants/domain";
+import { cn } from "@/lib/utils";
+
 import { VisualDamageMap } from "./visual-damage-map";
 
 interface DamageReportCardProps {
@@ -49,7 +51,8 @@ export function DamageReportCard({ damageStatus, tramerAmount }: DamageReportCar
     statusCounts[status]++;
   });
 
-  const hasIssues = statusCounts.boyali > 0 || statusCounts.degisen > 0 || statusCounts.lokal_boyali > 0;
+  const hasIssues =
+    statusCounts.boyali > 0 || statusCounts.degisen > 0 || statusCounts.lokal_boyali > 0;
 
   return (
     <div className="rounded-2xl border border-border bg-card overflow-hidden shadow-sm">
@@ -64,13 +67,19 @@ export function DamageReportCard({ damageStatus, tramerAmount }: DamageReportCar
                 ) : (
                   <CheckCircle2 size={20} className="text-emerald-500" />
                 )}
-                <h3 className="font-bold text-foreground text-base italic">Ekspertiz Özet Durumu</h3>
+                <h3 className="font-bold text-foreground text-base italic">
+                  Ekspertiz Özet Durumu
+                </h3>
               </div>
               {tramerAmount != null && (
                 <div className="text-right">
-                  <div className="text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em] leading-none mb-1">Tramer Kaydı</div>
+                  <div className="text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em] leading-none mb-1">
+                    Tramer Kaydı
+                  </div>
                   <div className="text-base font-bold text-gray-900 leading-none">
-                    {tramerAmount === 0 ? "Hasar Kayıtsız" : `${tramerAmount.toLocaleString("tr-TR")} TL`}
+                    {tramerAmount === 0
+                      ? "Hasar Kayıtsız"
+                      : `${tramerAmount.toLocaleString("tr-TR")} TL`}
                   </div>
                 </div>
               )}
@@ -83,14 +92,18 @@ export function DamageReportCard({ damageStatus, tramerAmount }: DamageReportCar
               </div>
               <div className="bg-orange-50 rounded-xl p-3 border border-orange-100 flex items-center justify-between">
                 <span className="font-bold text-gray-400 uppercase tracking-tighter">Boyalı</span>
-                <span className="text-lg font-bold text-orange-600">{statusCounts.boyali + statusCounts.lokal_boyali}</span>
+                <span className="text-lg font-bold text-orange-600">
+                  {statusCounts.boyali + statusCounts.lokal_boyali}
+                </span>
               </div>
               <div className="bg-red-50 rounded-xl p-3 border border-red-100 flex items-center justify-between">
                 <span className="font-bold text-gray-400 uppercase tracking-tighter">Değişen</span>
                 <span className="text-lg font-bold text-red-600">{statusCounts.degisen}</span>
               </div>
               <div className="bg-gray-50 rounded-xl p-3 border border-gray-100 flex items-center justify-between">
-                <span className="font-bold text-gray-400 uppercase tracking-tighter">Bilinmiyor</span>
+                <span className="font-bold text-gray-400 uppercase tracking-tighter">
+                  Bilinmiyor
+                </span>
                 <span className="text-lg font-bold text-gray-600">{statusCounts.bilinmiyor}</span>
               </div>
             </div>
@@ -100,7 +113,14 @@ export function DamageReportCard({ damageStatus, tramerAmount }: DamageReportCar
               className="w-full flex items-center justify-center gap-2 py-3 rounded-2xl border border-blue-100 bg-blue-50/50 text-blue-600 text-xs font-bold uppercase tracking-wider hover:bg-blue-100 transition-all shadow-sm group"
             >
               {isExpanded ? "Detayları Gizle" : "Boya/Değişen Detayları"}
-              {isExpanded ? <ChevronUp size={16} /> : <ChevronDown size={16} className="group-hover:translate-y-0.5 transition-transform" />}
+              {isExpanded ? (
+                <ChevronUp size={16} />
+              ) : (
+                <ChevronDown
+                  size={16}
+                  className="group-hover:translate-y-0.5 transition-transform"
+                />
+              )}
             </button>
           </div>
 
@@ -112,19 +132,29 @@ export function DamageReportCard({ damageStatus, tramerAmount }: DamageReportCar
       </div>
 
       {isExpanded && (
-      <div className="bg-muted/50 border-t border-border/50 p-5 animate-in slide-in-from-top-2 duration-300">
+        <div className="bg-muted/50 border-t border-border/50 p-5 animate-in slide-in-from-top-2 duration-300">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-2">
             {carParts.map((part) => {
-              const status = (damageStatus[part] as keyof typeof carPartDamageStatusLabels) || "orjinal";
+              const status =
+                (damageStatus[part] as keyof typeof carPartDamageStatusLabels) || "orjinal";
               return (
-                <div key={part} className="flex items-center justify-between py-1.5 border-b border-white last:border-0 sm:last:border-b">
-                  <span className="text-[13px] font-medium text-muted-foreground">{carPartLabels[part]}</span>
-                  <span className={cn(
-                    "text-[12px] font-bold px-2 py-0.5 rounded-md border",
-                    status === "orjinal" ? "bg-emerald-50 text-emerald-700 border-emerald-100" :
-                    status === "degisen" ? "bg-red-50 text-red-700 border-red-100" : 
-                    "bg-amber-50 text-amber-700 border-amber-100"
-                  )}>
+                <div
+                  key={part}
+                  className="flex items-center justify-between py-1.5 border-b border-white last:border-0 sm:last:border-b"
+                >
+                  <span className="text-[13px] font-medium text-muted-foreground">
+                    {carPartLabels[part]}
+                  </span>
+                  <span
+                    className={cn(
+                      "text-[12px] font-bold px-2 py-0.5 rounded-md border",
+                      status === "orjinal"
+                        ? "bg-emerald-50 text-emerald-700 border-emerald-100"
+                        : status === "degisen"
+                          ? "bg-red-50 text-red-700 border-red-100"
+                          : "bg-amber-50 text-amber-700 border-amber-100"
+                    )}
+                  >
                     {carPartDamageStatusLabels[status]}
                   </span>
                 </div>

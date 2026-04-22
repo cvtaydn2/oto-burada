@@ -1,8 +1,6 @@
 import sizeOf from "image-size";
-import {
-  listingImageAcceptedMimeTypes,
-  listingImageMaxSizeInBytes,
-} from "@/lib/constants/domain";
+
+import { listingImageAcceptedMimeTypes, listingImageMaxSizeInBytes } from "@/lib/constants/domain";
 
 const mimeTypeSet = new Set<string>(listingImageAcceptedMimeTypes);
 
@@ -49,7 +47,7 @@ function matchesMagicBytes(header: number[], magicBytes: number[]): boolean {
 /**
  * Reads the file header and returns the verified MIME type from magic bytes.
  * Returns null if the file header does not match any known image type.
- * 
+ *
  * SECURITY: Checks both primary header and secondary offsets (like WebP's WEBP mark).
  */
 export async function getVerifiedMimeType(file: File): Promise<string | null> {
@@ -60,7 +58,9 @@ export async function getVerifiedMimeType(file: File): Promise<string | null> {
       // Secondary check for multi-format headers (like RIFF)
       const secondary = SECONDARY_MAGIC_BYTES[mimeType];
       if (secondary) {
-        const secondaryBuffer = await file.slice(secondary.offset, secondary.offset + secondary.pattern.length).arrayBuffer();
+        const secondaryBuffer = await file
+          .slice(secondary.offset, secondary.offset + secondary.pattern.length)
+          .arrayBuffer();
         const secondaryHeader = Array.from(new Uint8Array(secondaryBuffer));
         if (matchesMagicBytes(secondaryHeader, secondary.pattern)) {
           return mimeType;
@@ -97,7 +97,7 @@ export async function validateListingImageFile(file: File): Promise<string | nul
     const buffer = await file.arrayBuffer();
     const dimensions = sizeOf(new Uint8Array(buffer));
     const MAX_DIMENSION = 4000;
-    
+
     if (dimensions.width && dimensions.width > MAX_DIMENSION) {
       return `Görsel genişliği çok fazla (${dimensions.width}px). En fazla ${MAX_DIMENSION}px olabilir.`;
     }
@@ -120,11 +120,9 @@ export async function validateListingImageFile(file: File): Promise<string | nul
 export function buildListingImageStoragePath(
   userId: string,
   _fileName: string,
-  verifiedMimeType?: string,
+  verifiedMimeType?: string
 ): string {
   // Prefer verified MIME type extension; fall back to jpg if unknown
-  const extension = verifiedMimeType
-    ? (MIME_TO_EXTENSION[verifiedMimeType] ?? "jpg")
-    : "jpg";
+  const extension = verifiedMimeType ? (MIME_TO_EXTENSION[verifiedMimeType] ?? "jpg") : "jpg";
   return `listings/${userId}/${crypto.randomUUID()}.${extension}`;
 }

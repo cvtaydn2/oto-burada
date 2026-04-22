@@ -1,6 +1,6 @@
 /**
  * Input sanitization utilities.
- * 
+ *
  * Hardened for production: strictly strips all HTML and escapes sensitive characters.
  */
 
@@ -57,17 +57,19 @@ export function escapeHtml(value: string): string {
  * This is a 'greedy' strip that removes anything between < and >.
  */
 function stripAllHtml(value: string): string {
-  return value
-    // 1. Remove script tags and their content entirey
-    .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, "")
-    // 2. Remove style tags and their content entirely
-    .replace(/<style\b[^<]*(?:(?!<\/style>)<[^<]*)*<\/style>/gi, "")
-    // 3. Remove all other tags
-    .replace(/<[^>]*>/g, "")
-    // 4. Decode any basic entities if they were trying to be smart
-    .replace(/&lt;/g, "<")
-    .replace(/&gt;/g, ">")
-    // 5. One last pass to ensure no tags were hidden inside entities
-    .replace(/<[^>]*>/g, "")
-    .trim();
+  return (
+    value
+      // 1. Remove script tags and their content entirey
+      .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, "")
+      // 2. Remove style tags and their content entirely
+      .replace(/<style\b[^<]*(?:(?!<\/style>)<[^<]*)*<\/style>/gi, "")
+      // 3. Remove all other tags
+      .replace(/<[^>]*>/g, "")
+      // 4. Decode any basic entities if they were trying to be smart
+      .replace(/&lt;/g, "<")
+      .replace(/&gt;/g, ">")
+      // 5. One last pass to ensure no tags were hidden inside entities
+      .replace(/<[^>]*>/g, "")
+      .trim()
+  );
 }

@@ -1,9 +1,9 @@
 import type { User } from "@supabase/supabase-js";
 
-import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
-import { hasSupabaseEnv, hasSupabaseAdminEnv } from "@/lib/supabase/env";
-import { apiError, API_ERROR_CODES } from "@/lib/utils/api-response";
+import { hasSupabaseAdminEnv, hasSupabaseEnv } from "@/lib/supabase/env";
+import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { API_ERROR_CODES, apiError } from "@/lib/utils/api-response";
 
 export async function requireApiAdminUser(): Promise<User | Response> {
   if (!hasSupabaseEnv()) {
@@ -21,8 +21,7 @@ export async function requireApiAdminUser(): Promise<User | Response> {
   }
 
   // Primary check: JWT app_metadata (fast, no extra DB call)
-  const jwtRole =
-    (user.app_metadata as { role?: string } | null | undefined)?.role ?? "user";
+  const jwtRole = (user.app_metadata as { role?: string } | null | undefined)?.role ?? "user";
 
   if (jwtRole !== "admin") {
     return apiError(API_ERROR_CODES.FORBIDDEN, "Admin yetkisi gerekli.", 403);
@@ -56,7 +55,9 @@ export async function isSupabaseAdminUser(): Promise<boolean> {
   if (!hasSupabaseEnv()) return false;
 
   const supabase = await createSupabaseServerClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
 
   if (!user) return false;
 

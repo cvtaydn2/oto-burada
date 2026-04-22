@@ -1,13 +1,13 @@
-import { createSupabaseServerClient } from "@/lib/supabase/server";
-import { apiError, apiSuccess, API_ERROR_CODES } from "@/lib/utils/api-response";
-import { logger } from "@/lib/utils/logger";
 import { captureServerError, captureServerEvent } from "@/lib/monitoring/posthog-server";
-import { enforceRateLimit, getUserRateLimitKey } from "@/lib/utils/rate-limit-middleware";
+import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { API_ERROR_CODES, apiError, apiSuccess } from "@/lib/utils/api-response";
 import { withUserAndCsrf } from "@/lib/utils/api-security";
+import { logger } from "@/lib/utils/logger";
+import { enforceRateLimit, getUserRateLimitKey } from "@/lib/utils/rate-limit-middleware";
 
 export async function POST(
   request: Request,
-  { params }: { params: Promise<{ listingId: string }> },
+  { params }: { params: Promise<{ listingId: string }> }
 ) {
   const security = await withUserAndCsrf(request, {
     rateLimitKey: "listings:archive",
@@ -19,10 +19,10 @@ export async function POST(
   const supabase = await createSupabaseServerClient();
 
   // Rate limit: 20 archive ops per hour per user
-  const rateLimit = await enforceRateLimit(
-    getUserRateLimitKey(user.id, "api:listings:archive"),
-    { limit: 20, windowMs: 60 * 60 * 1000 },
-  );
+  const rateLimit = await enforceRateLimit(getUserRateLimitKey(user.id, "api:listings:archive"), {
+    limit: 20,
+    windowMs: 60 * 60 * 1000,
+  });
   if (rateLimit) return rateLimit.response;
 
   try {
@@ -35,7 +35,11 @@ export async function POST(
       .single();
 
     if (fetchError || !listing) {
-      return apiError(API_ERROR_CODES.NOT_FOUND, "İlan bulunamadı veya bu işlem için yetkiniz yok.", 404);
+      return apiError(
+        API_ERROR_CODES.NOT_FOUND,
+        "İlan bulunamadı veya bu işlem için yetkiniz yok.",
+        404
+      );
     }
 
     if (listing.status === "archived") {
@@ -54,10 +58,14 @@ export async function POST(
       return apiError(API_ERROR_CODES.INTERNAL_ERROR, "İlan arşivlenirken bir hata oluştu.", 500);
     }
 
-    captureServerEvent("listing_archived", {
-      userId: user.id,
-      listingId,
-    }, user.id);
+    captureServerEvent(
+      "listing_archived",
+      {
+        userId: user.id,
+        listingId,
+      },
+      user.id
+    );
 
     return apiSuccess({ listingId }, "İlan başarıyla arşivlendi.");
   } catch (error) {

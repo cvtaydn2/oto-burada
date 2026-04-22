@@ -1,10 +1,11 @@
 "use client";
 
+import { AlertCircle, Loader2, MessageSquare } from "lucide-react";
 import { useState } from "react";
-import { MessageSquare, Loader2, AlertCircle } from "lucide-react";
+
+import { captureClientEvent } from "@/lib/monitoring/posthog-client";
 import { cn } from "@/lib/utils";
 import { revealListingPhone } from "@/services/listings/listing-actions";
-import { captureClientEvent } from "@/lib/monitoring/posthog-client";
 
 interface SafeWhatsAppButtonProps {
   listingId: string;
@@ -37,14 +38,14 @@ export function SafeWhatsAppButton({
 
     try {
       const { phone } = await revealListingPhone(listingId);
-      
+
       const phoneDigits = phone.replace(/\D/g, "");
       const message = offerPrice
         ? `${listingTitle} ilanınız için ${new Intl.NumberFormat("tr-TR").format(offerPrice)} TL teklif vermek istiyorum.`
         : `${listingTitle} ilanınız için iletişime geçmek istiyorum.`;
 
       const whatsappUrl = `https://wa.me/${phoneDigits}?text=${encodeURIComponent(message)}`;
-      
+
       captureClientEvent("whatsapp_reveal_click", {
         listingId,
         hasOffer: !!offerPrice,
@@ -86,11 +87,14 @@ export function SafeWhatsAppButton({
         ) : (
           <>
             {icon || <MessageSquare size={16} />}
-            {label || (offerPrice ? `₺${new Intl.NumberFormat("tr-TR").format(offerPrice)} Teklif Yap` : "WhatsApp ile Ulaş")}
+            {label ||
+              (offerPrice
+                ? `₺${new Intl.NumberFormat("tr-TR").format(offerPrice)} Teklif Yap`
+                : "WhatsApp ile Ulaş")}
           </>
         )}
       </button>
-      
+
       {error && (
         <div className="absolute -top-10 left-0 right-0 animate-in fade-in slide-in-from-bottom-2">
           <div className="bg-destructive text-destructive-foreground text-[10px] py-1 px-3 rounded-lg flex items-center gap-1.5 shadow-lg">

@@ -1,20 +1,17 @@
+import { captureServerError } from "@/lib/monitoring/posthog-server";
+import { registerFileInRegistry, verifyAndUnregisterFile } from "@/lib/storage/registry";
+import { getSupabaseDocumentsStorageEnv, hasSupabaseDocumentsStorageEnv } from "@/lib/supabase/env";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
-import {
-  getSupabaseDocumentsStorageEnv,
-  hasSupabaseDocumentsStorageEnv,
-} from "@/lib/supabase/env";
+import { API_ERROR_CODES, apiError, apiSuccess } from "@/lib/utils/api-response";
+import { withAuthAndCsrf } from "@/lib/utils/api-security";
+import { logger } from "@/lib/utils/logger";
 import { rateLimitProfiles } from "@/lib/utils/rate-limit";
-import { apiSuccess, apiError, API_ERROR_CODES } from "@/lib/utils/api-response";
 import {
   buildExpertDocumentStoragePath,
   createExpertDocumentSignedUrl,
-  validateExpertDocumentFile,
   getVerifiedDocumentMimeType,
+  validateExpertDocumentFile,
 } from "@/services/listings/listing-documents";
-import { captureServerError } from "@/lib/monitoring/posthog-server";
-import { withAuthAndCsrf } from "@/lib/utils/api-security";
-import { registerFileInRegistry, verifyAndUnregisterFile } from "@/lib/storage/registry";
-import { logger } from "@/lib/utils/logger";
 
 /**
  * Sanitizes filename for DISPLAY purposes only.
@@ -35,14 +32,14 @@ export async function POST(request: Request) {
   });
 
   if (!security.ok) return security.response;
-  
+
   const user = security.user!;
 
   if (!hasSupabaseDocumentsStorageEnv()) {
     return apiError(
       API_ERROR_CODES.SERVICE_UNAVAILABLE,
       "Supabase Storage ortam değişkenleri eksik.",
-      503,
+      503
     );
   }
 
@@ -63,8 +60,12 @@ export async function POST(request: Request) {
 
   const verifiedMimeType = await getVerifiedDocumentMimeType(file);
   const contentType = verifiedMimeType ?? file.type;
-  const storagePath = buildExpertDocumentStoragePath(user.id, sanitizedFileName, verifiedMimeType ?? undefined);
-  
+  const storagePath = buildExpertDocumentStoragePath(
+    user.id,
+    sanitizedFileName,
+    verifiedMimeType ?? undefined
+  );
+
   const supabase = await createSupabaseServerClient();
   const uploadResult = await supabase.storage.from(documentsBucket).upload(storagePath, file, {
     cacheControl: "3600",
@@ -73,11 +74,17 @@ export async function POST(request: Request) {
   });
 
   if (uploadResult.error) {
-    captureServerError("Document upload to storage failed", "storage", uploadResult.error, {
-      userId: user.id,
-      storagePath,
-      bucket: documentsBucket,
-    }, user.id);
+    captureServerError(
+      "Document upload to storage failed",
+      "storage",
+      uploadResult.error,
+      {
+        userId: user.id,
+        storagePath,
+        bucket: documentsBucket,
+      },
+      user.id
+    );
     return apiError(API_ERROR_CODES.INTERNAL_ERROR, "Belge yüklenemedi. Lütfen tekrar dene.", 500);
   }
 
@@ -86,7 +93,7 @@ export async function POST(request: Request) {
     ownerId: user.id,
     bucketId: documentsBucket,
     storagePath,
-    sourceEntityType: 'listing_document',
+    sourceEntityType: "listing_document",
     fileName: sanitizedFileName,
     fileSize: file.size,
     mimeType: contentType,
@@ -107,7 +114,7 @@ export async function POST(request: Request) {
       },
     },
     "Belge yüklendi.",
-    201,
+    201
   );
 }
 
@@ -116,21 +123,21 @@ export async function DELETE(request: Request) {
   const security = await withAuthAndCsrf(request);
 
   if (!security.ok) return security.response;
-  
+
   const user = security.user!;
 
   if (!hasSupabaseDocumentsStorageEnv()) {
     return apiError(
       API_ERROR_CODES.SERVICE_UNAVAILABLE,
       "Supabase Storage ortam değişkenleri eksik.",
-      503,
+      503
     );
   }
 
   let storagePath: string | undefined;
   try {
-    const body = await request.json() as Record<string, unknown>;
-    storagePath = typeof body.storagePath === 'string' ? body.storagePath : undefined;
+    const body = (await request.json()) as Record<string, unknown>;
+    storagePath = typeof body.storagePath === "string" ? body.storagePath : undefined;
   } catch {
     return apiError(API_ERROR_CODES.BAD_REQUEST, "Silme isteği okunamadı.", 400);
   }
@@ -143,24 +150,33 @@ export async function DELETE(request: Request) {
 
   // ── Verify Ownership via Registry ──────────────────────────────────────
   const isOwner = await verifyAndUnregisterFile(user.id, documentsBucket, storagePath);
-  
+
   if (!isOwner) {
     // Legacy fallback
     const isLegacyOwner = storagePath.startsWith(`documents/${user.id}/`);
     if (!isLegacyOwner) {
       return apiError(API_ERROR_CODES.FORBIDDEN, "Bu işlem için yetkiniz yok.", 403);
     }
-    logger.storage.warn("Falling back to legacy prefix check for document delete", { storagePath, userId: user.id });
+    logger.storage.warn("Falling back to legacy prefix check for document delete", {
+      storagePath,
+      userId: user.id,
+    });
   }
 
   const supabase = await createSupabaseServerClient();
   const removeResult = await supabase.storage.from(documentsBucket).remove([storagePath]);
 
   if (removeResult.error) {
-    captureServerError("Document delete from storage failed", "storage", removeResult.error, {
-      userId: user.id,
-      storagePath,
-    }, user.id);
+    captureServerError(
+      "Document delete from storage failed",
+      "storage",
+      removeResult.error,
+      {
+        userId: user.id,
+        storagePath,
+      },
+      user.id
+    );
     return apiError(API_ERROR_CODES.INTERNAL_ERROR, "Belge silinemedi.", 500);
   }
 

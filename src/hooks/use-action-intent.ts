@@ -1,8 +1,9 @@
 "use client";
 
-import { useCallback } from "react";
-import { useAuthUser } from "@/components/shared/auth-provider";
 import { useRouter } from "next/navigation";
+import { useCallback } from "react";
+
+import { useAuthUser } from "@/components/shared/auth-provider";
 
 /**
  * World-Class UX: Action Intent Tracking (Issue 5 - "The Seam")

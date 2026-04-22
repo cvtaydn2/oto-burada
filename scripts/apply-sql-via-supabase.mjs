@@ -11,6 +11,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import process from "node:process";
+
 import { loadLocalEnv } from "./load-local-env.mjs";
 
 loadLocalEnv();
@@ -51,9 +52,9 @@ async function runSqlViaRpc(sqlText) {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      "apikey": SERVICE_ROLE_KEY,
-      "Authorization": `Bearer ${SERVICE_ROLE_KEY}`,
-      "Prefer": "return=representation",
+      apikey: SERVICE_ROLE_KEY,
+      Authorization: `Bearer ${SERVICE_ROLE_KEY}`,
+      Prefer: "return=representation",
     },
     body: JSON.stringify({ query: sqlText }),
   });
@@ -74,8 +75,8 @@ async function runSqlViaPostgrestRpc(sqlText) {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      "apikey": SERVICE_ROLE_KEY,
-      "Authorization": `Bearer ${SERVICE_ROLE_KEY}`,
+      apikey: SERVICE_ROLE_KEY,
+      Authorization: `Bearer ${SERVICE_ROLE_KEY}`,
     },
     body: JSON.stringify({ sql_text: sqlText }),
   });

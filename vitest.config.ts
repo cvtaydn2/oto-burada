@@ -1,19 +1,19 @@
-import { defineConfig } from 'vitest/config';
-import react from '@vitejs/plugin-react';
-import tsconfigPaths from 'vite-tsconfig-paths';
+import react from "@vitejs/plugin-react";
+import tsconfigPaths from "vite-tsconfig-paths";
+import { defineConfig } from "vitest/config";
 
 export default defineConfig({
   plugins: [react(), tsconfigPaths()],
   test: {
-    environment: 'jsdom',
+    environment: "jsdom",
     globals: true,
-    setupFiles: ['./src/test/setup.ts'],
-    include: ['src/**/*.test.{ts,tsx}'],
-    exclude: ['node_modules', '.next', 'tests', 'src/**/*.int.test.{ts,tsx}'],
+    setupFiles: ["./src/test/setup.ts"],
+    include: ["src/**/*.test.{ts,tsx}"],
+    exclude: ["node_modules", ".next", "tests", "src/**/*.int.test.{ts,tsx}"],
     coverage: {
-      provider: 'v8',
-      reporter: ['text', 'json', 'html', 'lcov'],
-      reportsDirectory: './coverage',
+      provider: "v8",
+      reporter: ["text", "json", "html", "lcov"],
+      reportsDirectory: "./coverage",
       // Target: 90%+ on business-critical paths
       thresholds: {
         lines: 80,
@@ -22,20 +22,20 @@ export default defineConfig({
         statements: 80,
       },
       include: [
-        'src/services/**/*.ts',
-        'src/lib/utils/**/*.ts',
-        'src/lib/validators/**/*.ts',
-        'src/lib/security/**/*.ts',
+        "src/services/**/*.ts",
+        "src/lib/utils/**/*.ts",
+        "src/lib/validators/**/*.ts",
+        "src/lib/security/**/*.ts",
       ],
       exclude: [
-        'src/**/*.test.ts',
-        'src/**/*.test.tsx',
-        'src/**/__tests__/**',
-        'src/test/**',
-        'src/**/*.d.ts',
+        "src/**/*.test.ts",
+        "src/**/*.test.tsx",
+        "src/**/__tests__/**",
+        "src/test/**",
+        "src/**/*.d.ts",
         // DB-dependent services — covered by integration tests
-        'src/services/*/listing-submissions.ts',
-        'src/services/*/marketplace-listings.ts',
+        "src/services/*/listing-submissions.ts",
+        "src/services/*/marketplace-listings.ts",
       ],
     },
   },

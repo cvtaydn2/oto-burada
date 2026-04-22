@@ -10,6 +10,7 @@
  */
 
 import { PostHog } from "posthog-node";
+
 import {
   AnalyticsEvent,
   type EventPayload,
@@ -23,14 +24,12 @@ let posthogInstance: PostHog | null = null;
 
 export function getPostHogServer(): PostHog | null {
   const token =
-    process.env.NEXT_PUBLIC_POSTHOG_PROJECT_TOKEN ??
-    process.env.NEXT_PUBLIC_POSTHOG_KEY;
+    process.env.NEXT_PUBLIC_POSTHOG_PROJECT_TOKEN ?? process.env.NEXT_PUBLIC_POSTHOG_KEY;
   if (!token) return null;
 
   if (!posthogInstance) {
     posthogInstance = new PostHog(token, {
-      host:
-        process.env.NEXT_PUBLIC_POSTHOG_HOST ?? "https://us.i.posthog.com",
+      host: process.env.NEXT_PUBLIC_POSTHOG_HOST ?? "https://us.i.posthog.com",
       flushAt: 1, // flush immediately — important for serverless
       flushInterval: 0,
     });
@@ -60,7 +59,7 @@ export function getPostHogServer(): PostHog | null {
 export function trackServerEvent<T extends ServerAnalyticsEvent>(
   event: T,
   properties: EventPayload<T>,
-  distinctId?: string,
+  distinctId?: string
 ) {
   captureServerEvent(event, properties as Record<string, unknown>, distinctId);
 }
@@ -74,7 +73,7 @@ export function trackServerEvent<T extends ServerAnalyticsEvent>(
 export function captureServerEvent(
   event: string,
   properties?: Record<string, unknown>,
-  distinctId?: string,
+  distinctId?: string
 ) {
   const ph = getPostHogServer();
   if (!ph) return;
@@ -99,7 +98,9 @@ export function captureServerEvent(
   ph.flush().catch((err) => {
     // Flush failure is non-critical — log at warn level only in dev
     if (process.env.NODE_ENV !== "production") {
-      logger.system.warn("PostHog event flush failed", { error: err instanceof Error ? err.message : String(err) });
+      logger.system.warn("PostHog event flush failed", {
+        error: err instanceof Error ? err.message : String(err),
+      });
     }
   });
 }
@@ -118,7 +119,7 @@ export function captureServerError(
   context: string,
   error?: unknown,
   data?: Record<string, unknown>,
-  distinctId?: string,
+  distinctId?: string
 ) {
   const ph = getPostHogServer();
   if (!ph) return;
@@ -158,7 +159,9 @@ export function captureServerError(
 
   ph.flush().catch((err) => {
     if (process.env.NODE_ENV !== "production") {
-      logger.system.warn("PostHog error flush failed", { error: err instanceof Error ? err.message : String(err) });
+      logger.system.warn("PostHog error flush failed", {
+        error: err instanceof Error ? err.message : String(err),
+      });
     }
   });
 }
@@ -169,7 +172,7 @@ export function captureServerError(
 export function captureServerWarning(
   message: string,
   context: string,
-  data?: Record<string, unknown>,
+  data?: Record<string, unknown>
 ) {
   const ph = getPostHogServer();
   if (!ph) return;
@@ -187,7 +190,9 @@ export function captureServerWarning(
 
   ph.flush().catch((err) => {
     if (process.env.NODE_ENV !== "production") {
-      logger.system.warn("PostHog warning flush failed", { error: err instanceof Error ? err.message : String(err) });
+      logger.system.warn("PostHog warning flush failed", {
+        error: err instanceof Error ? err.message : String(err),
+      });
     }
   });
 }
@@ -205,7 +210,7 @@ export function identifyServerUser(
     role?: string;
     trust_score?: number;
     user_type?: string;
-  },
+  }
 ) {
   const ph = getPostHogServer();
   if (!ph) return;
@@ -220,7 +225,9 @@ export function identifyServerUser(
 
   ph.flush().catch((err) => {
     if (process.env.NODE_ENV !== "production") {
-      logger.system.warn("PostHog identify flush failed", { error: err instanceof Error ? err.message : String(err) });
+      logger.system.warn("PostHog identify flush failed", {
+        error: err instanceof Error ? err.message : String(err),
+      });
     }
   });
 }

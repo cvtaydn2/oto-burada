@@ -1,6 +1,6 @@
 "use client";
 
-import { ShieldCheck, Mail } from "lucide-react";
+import { Mail, ShieldCheck } from "lucide-react";
 
 interface IdentityVerificationFormProps {
   userId: string;
@@ -31,8 +31,8 @@ export function IdentityVerificationForm({ isVerified }: IdentityVerificationFor
       <div>
         <h4 className="text-sm font-bold text-foreground/90">E-posta Doğrulama</h4>
         <p className="text-xs text-muted-foreground mt-1 leading-relaxed">
-          İlan verebilmek için e-posta adresinizi doğrulamanız gerekmektedir.
-          Kayıt sırasında gönderilen doğrulama bağlantısını kontrol edin.
+          İlan verebilmek için e-posta adresinizi doğrulamanız gerekmektedir. Kayıt sırasında
+          gönderilen doğrulama bağlantısını kontrol edin.
         </p>
       </div>
     </div>

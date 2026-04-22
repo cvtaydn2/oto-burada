@@ -1,14 +1,17 @@
 import { listingFiltersSchema } from "@/lib/validators";
-import type { BrandCatalogItem, CityOption, Listing, ListingFilters, ListingSortOption } from "@/types";
+import type {
+  BrandCatalogItem,
+  CityOption,
+  Listing,
+  ListingFilters,
+  ListingSortOption,
+} from "@/types";
 
 function normalizeText(value: string) {
   return value.toLocaleLowerCase("tr-TR");
 }
 
-export function getModelsForBrand(
-  catalog: BrandCatalogItem[],
-  brand?: string,
-) {
+export function getModelsForBrand(catalog: BrandCatalogItem[], brand?: string) {
   if (!brand) {
     return [];
   }
@@ -16,10 +19,7 @@ export function getModelsForBrand(
   return catalog.find((item) => item.brand === brand)?.models ?? [];
 }
 
-export function getDistrictsForCity(
-  cities: CityOption[],
-  city?: string,
-) {
+export function getDistrictsForCity(cities: CityOption[], city?: string) {
   if (!city) {
     return [];
   }
@@ -32,22 +32,13 @@ export function getDistrictsForCity(
  * All filtering is performed at the database level via `getFilteredDatabaseListings`.
  * This function remains for reference and potential unit testing only.
  */
-export function filterListings(
-  listings: Listing[],
-  filters: ListingFilters,
-) {
+export function filterListings(listings: Listing[], filters: ListingFilters) {
   const query = filters.query ? normalizeText(filters.query) : undefined;
 
   const filtered = listings.filter((listing) => {
     if (query) {
       const searchTarget = normalizeText(
-        [
-          listing.title,
-          listing.brand,
-          listing.model,
-          listing.city,
-          listing.district,
-        ].join(" "),
+        [listing.title, listing.brand, listing.model, listing.city, listing.district].join(" ")
       );
 
       if (!searchTarget.includes(query)) {
@@ -75,7 +66,10 @@ export function filterListings(
       return false;
     }
 
-    if (filters.transmission && normalizeText(listing.transmission) !== normalizeText(filters.transmission)) {
+    if (
+      filters.transmission &&
+      normalizeText(listing.transmission) !== normalizeText(filters.transmission)
+    ) {
       return false;
     }
 
@@ -109,10 +103,7 @@ export function filterListings(
  * @deprecated Used only by `filterListings` which is itself deprecated.
  * Sorting is handled at the database level.
  */
-export function sortListings(
-  listings: Listing[],
-  sort: ListingSortOption = "newest",
-) {
+export function sortListings(listings: Listing[], sort: ListingSortOption = "newest") {
   const sorted = [...listings];
 
   sorted.sort((left, right) => {
@@ -141,7 +132,7 @@ export function sortListings(
 }
 
 export function parseListingFiltersFromSearchParams(
-  searchParams?: Record<string, string | string[] | undefined>,
+  searchParams?: Record<string, string | string[] | undefined>
 ) {
   const normalizedSearchParams = Object.fromEntries(
     Object.entries(searchParams ?? {}).flatMap(([key, value]) => {
@@ -154,7 +145,7 @@ export function parseListingFiltersFromSearchParams(
       }
 
       return [];
-    }),
+    })
   );
 
   const parsed = listingFiltersSchema.safeParse(normalizedSearchParams);
@@ -165,8 +156,17 @@ export function parseListingFiltersFromSearchParams(
     // wiping out all other filters the user set.
     const recovered: Record<string, unknown> = {};
     const fieldOrder: (keyof import("@/types").ListingFilters)[] = [
-      "query", "brand", "model", "carTrim", "city", "district",
-      "fuelType", "transmission", "sort", "page", "limit",
+      "query",
+      "brand",
+      "model",
+      "carTrim",
+      "city",
+      "district",
+      "fuelType",
+      "transmission",
+      "sort",
+      "page",
+      "limit",
       "hasExpertReport",
     ];
 
@@ -182,7 +182,14 @@ export function parseListingFiltersFromSearchParams(
     }
 
     // Second pass: numeric range fields
-    const numericFields = ["minPrice", "maxPrice", "minYear", "maxYear", "maxMileage", "maxTramer"] as const;
+    const numericFields = [
+      "minPrice",
+      "maxPrice",
+      "minYear",
+      "maxYear",
+      "maxMileage",
+      "maxTramer",
+    ] as const;
     for (const key of numericFields) {
       if (normalizedSearchParams[key] !== undefined) {
         const singleResult = listingFiltersSchema.safeParse({ [key]: normalizedSearchParams[key] });

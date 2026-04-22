@@ -8,8 +8,8 @@ export default function TermsPage() {
         <section className="mb-8">
           <h2 className="text-xl font-bold text-foreground">1. Kabul Edilme</h2>
           <p className="mt-2 text-muted-foreground">
-            OtoBurada platformunu kullanarak, bu kullanım şartlarını kabul etmiş sayılırsınız. 
-            Eğer bu şartları kabul etmiyorsanız, lütfen sitemizi kullanmayınız.
+            OtoBurada platformunu kullanarak, bu kullanım şartlarını kabul etmiş sayılırsınız. Eğer
+            bu şartları kabul etmiyorsanız, lütfen sitemizi kullanmayınız.
           </p>
         </section>
 
@@ -26,7 +26,7 @@ export default function TermsPage() {
         <section className="mb-8">
           <h2 className="text-xl font-bold text-foreground">3. Moderasyon</h2>
           <p className="mt-2 text-muted-foreground">
-            OtoBurada, topluluk güvenliğini korumak adına herhangi bir ilanı sebep göstermeksizin 
+            OtoBurada, topluluk güvenliğini korumak adına herhangi bir ilanı sebep göstermeksizin
             reddetme veya yayından kaldırma hakkını saklı tutar.
           </p>
         </section>

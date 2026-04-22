@@ -1,8 +1,8 @@
-import { Listing, ListingCreateInput } from "@/types";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { hasSupabaseAdminEnv } from "@/lib/supabase/env";
-import { estimateVehiclePrice } from "@/services/market/price-estimation";
 import { logger } from "@/lib/utils/logger";
+import { estimateVehiclePrice } from "@/services/market/price-estimation";
+import { Listing, ListingCreateInput } from "@/types";
 
 const TRUST_GUARD_REJECTION_WINDOW_MS = 24 * 60 * 60 * 1000;
 const TRUST_GUARD_REJECTION_THRESHOLD = 3;
@@ -67,12 +67,19 @@ export function calculateFraudScore(
 
   // --- ANOMALY DETECTOR LOGIC ---
   const similarListings = existingListings.filter(
-    (l) => l.brand === input.brand && l.model === input.model && l.year === input.year && l.price && l.price > 0
+    (l) =>
+      l.brand === input.brand &&
+      l.model === input.model &&
+      l.year === input.year &&
+      l.price &&
+      l.price > 0
   );
 
   if (similarListings.length >= 3) {
-    const avgPrice = similarListings.reduce((sum, current) => sum + (current.price || 0), 0) / similarListings.length;
-    
+    const avgPrice =
+      similarListings.reduce((sum, current) => sum + (current.price || 0), 0) /
+      similarListings.length;
+
     if (input.price < avgPrice * 0.7) {
       score += 70;
       reasons.push(`Fiyat ortalamanın %30 altında (${Math.round(avgPrice)} TL)`);
@@ -108,10 +115,10 @@ export function calculateFraudScore(
     }
   }
 
-  return { 
-    fraudScore: Math.min(score, 100), 
+  return {
+    fraudScore: Math.min(score, 100),
     fraudReason: reasons.length > 0 ? reasons.join(", ") : null,
-    suggestedStatus
+    suggestedStatus,
   };
 }
 
@@ -180,12 +187,12 @@ export async function performAsyncModeration(listingId: string) {
         fraud_score: assessment.fraudScore,
         fraud_reason: assessment.fraudReason,
         // Only update status if it was in 'pending_ai_review'
-        status: listing.status === "pending_ai_review" 
-          ? (assessment.suggestedStatus ?? "approved") 
-          : listing.status
+        status:
+          listing.status === "pending_ai_review"
+            ? (assessment.suggestedStatus ?? "approved")
+            : listing.status,
       })
       .eq("id", listingId);
-
   } catch (error) {
     logger.listings.error("AsyncModeration failed", error, { listingId });
   }
@@ -197,7 +204,9 @@ export interface ListingTrustGuardResult {
   reason?: string;
 }
 
-function parseTrustGuardMetadata(banReason: string | null | undefined): TrustGuardRejectionMetadata {
+function parseTrustGuardMetadata(
+  banReason: string | null | undefined
+): TrustGuardRejectionMetadata {
   if (!banReason) {
     return { attempts: [] };
   }
@@ -221,7 +230,7 @@ function parseTrustGuardMetadata(banReason: string | null | undefined): TrustGua
               typeof attempt?.at === "string" &&
               (attempt.source === "create" || attempt.source === "edit") &&
               typeof attempt.reason === "string" &&
-              TRACKED_TRUST_GUARD_REASONS.has(attempt.reason),
+              TRACKED_TRUST_GUARD_REASONS.has(attempt.reason)
           )
         : [],
     };
@@ -230,7 +239,10 @@ function parseTrustGuardMetadata(banReason: string | null | undefined): TrustGua
   }
 }
 
-function buildTrustGuardMetadataBanReason(existingBanReason: string | null | undefined, metadata: TrustGuardRejectionMetadata) {
+function buildTrustGuardMetadataBanReason(
+  existingBanReason: string | null | undefined,
+  metadata: TrustGuardRejectionMetadata
+) {
   const serialized = `${TRUST_GUARD_METADATA_PREFIX}${JSON.stringify(metadata)}`;
   if (!existingBanReason) {
     return serialized;
@@ -284,7 +296,9 @@ export async function recordSellerTrustGuardRejection(input: {
   const now = new Date();
   const recentAttempts = parseTrustGuardMetadata(profile.ban_reason).attempts.filter((attempt) => {
     const attemptAt = new Date(attempt.at).getTime();
-    return Number.isFinite(attemptAt) && now.getTime() - attemptAt <= TRUST_GUARD_REJECTION_WINDOW_MS;
+    return (
+      Number.isFinite(attemptAt) && now.getTime() - attemptAt <= TRUST_GUARD_REJECTION_WINDOW_MS
+    );
   });
 
   const nextAttempts: TrustGuardRejectionAttempt[] = [
@@ -331,7 +345,7 @@ export async function runListingTrustGuards(
   input: ListingCreateInput,
   options?: {
     excludeListingId?: string;
-  },
+  }
 ): Promise<ListingTrustGuardResult> {
   if (!hasSupabaseAdminEnv()) {
     return { allowed: true };
@@ -388,7 +402,8 @@ export async function runListingTrustGuards(
       return {
         allowed: false,
         reason: "extreme_price_outlier",
-        message: "Girilen fiyat piyasa dengesinin aşırı dışında. Lütfen fiyatı kontrol edip tekrar gönder.",
+        message:
+          "Girilen fiyat piyasa dengesinin aşırı dışında. Lütfen fiyatı kontrol edip tekrar gönder.",
       };
     }
   }

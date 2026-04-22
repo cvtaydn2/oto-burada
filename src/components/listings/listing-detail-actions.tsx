@@ -2,13 +2,11 @@
 
 import { Flag } from "lucide-react";
 
-import { useAuthUser } from "@/components/shared/auth-provider";
+import { ReportListingForm } from "@/components/forms/report-listing-form";
 import { CompareButton } from "@/components/listings/compare-button";
 import { FavoriteButton } from "@/components/listings/favorite-button";
 import { ShareButton } from "@/components/listings/share-button";
-import { ReportListingForm } from "@/components/forms/report-listing-form";
-import { captureClientEvent } from "@/lib/monitoring/posthog-client";
-import { features } from "@/lib/features";
+import { useAuthUser } from "@/components/shared/auth-provider";
 import {
   Dialog,
   DialogContent,
@@ -16,6 +14,8 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import { features } from "@/lib/features";
+import { captureClientEvent } from "@/lib/monitoring/posthog-client";
 
 interface ListingDetailActionsProps {
   listingId: string;

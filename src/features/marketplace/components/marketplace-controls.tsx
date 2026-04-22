@@ -1,16 +1,16 @@
 "use client";
 
-
-import { LayoutGrid, List, ArrowDownUp, SlidersHorizontal } from "lucide-react";
-import Link from "next/link";
+import { ArrowDownUp, LayoutGrid, List, SlidersHorizontal } from "lucide-react";
 import dynamic from "next/dynamic";
-import { cn } from "@/lib/utils";
-import { type ListingFilters, type BrandCatalogItem, type CityOption } from "@/types";
-import { createSearchParamsFromListingFilters } from "@/services/listings/listing-filters";
-import { marketplace } from "@/lib/constants/ui-strings";
+import Link from "next/link";
 
-const MobileFilterDrawer = dynamic(
-  () => import("@/components/ui/mobile-filter-drawer").then((mod) => mod.MobileFilterDrawer),
+import { marketplace } from "@/lib/constants/ui-strings";
+import { cn } from "@/lib/utils";
+import { createSearchParamsFromListingFilters } from "@/services/listings/listing-filters";
+import { type BrandCatalogItem, type CityOption, type ListingFilters } from "@/types";
+
+const MobileFilterDrawer = dynamic(() =>
+  import("@/components/ui/mobile-filter-drawer").then((mod) => mod.MobileFilterDrawer)
 );
 
 const SORT_OPTIONS = [
@@ -57,7 +57,8 @@ export function MarketplaceControls({
   userId,
   total,
 }: MarketplaceControlsProps) {
-  const currentSortLabel = SORT_OPTIONS.find(o => o.value === (filters.sort ?? "newest"))?.label || "En Yeni";
+  const currentSortLabel =
+    SORT_OPTIONS.find((o) => o.value === (filters.sort ?? "newest"))?.label || "En Yeni";
 
   return (
     <div className="flex flex-wrap items-center gap-2 bg-card border border-border p-1.5 rounded-xl shadow-sm">
@@ -79,12 +80,7 @@ export function MarketplaceControls({
       </Link>
 
       <div className="hidden sm:block">
-        <SaveSearchButton 
-          filters={filters} 
-          resultCount={total} 
-          userId={userId} 
-          variant="compact"
-        />
+        <SaveSearchButton filters={filters} resultCount={total} userId={userId} variant="compact" />
       </div>
 
       <div className="h-8 w-px bg-border mx-1 hidden sm:block" />
@@ -121,7 +117,9 @@ export function MarketplaceControls({
         >
           <ArrowDownUp size={14} strokeWidth={3} />
           <span className="hidden sm:inline">{currentSortLabel}</span>
-          <ChevronIcon className={cn("transition-transform size-4 ml-1", isSortOpen && "rotate-180")} />
+          <ChevronIcon
+            className={cn("transition-transform size-4 ml-1", isSortOpen && "rotate-180")}
+          />
         </button>
 
         {isSortOpen && (
@@ -156,7 +154,17 @@ export function MarketplaceControls({
 
 function ChevronIcon({ className }: { className?: string }) {
   return (
-    <svg className={className} width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <svg
+      className={className}
+      width="16"
+      height="16"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
       <path d="m6 9 6 6 6-6" />
     </svg>
   );

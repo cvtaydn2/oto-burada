@@ -1,273 +1,473 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="tr">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>OtoBurada Admin - Moderasyon</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-</head>
-<body class="bg-gray-50 flex h-screen overflow-hidden font-sans text-gray-800">
-
+    <link
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
+      rel="stylesheet"
+    />
+  </head>
+  <body class="bg-gray-50 flex h-screen overflow-hidden font-sans text-gray-800">
     <aside class="w-20 lg:w-64 bg-white border-r border-gray-200 flex flex-col flex-shrink-0 z-20">
-        <div class="h-16 flex items-center justify-center lg:justify-start lg:px-6 border-b border-gray-100">
-            <span class="text-blue-500 text-2xl font-bold flex items-center">
-                <i class="fa-solid fa-car-side"></i><span class="hidden lg:block ml-2">OtoBurada</span>
-            </span>
+      <div
+        class="h-16 flex items-center justify-center lg:justify-start lg:px-6 border-b border-gray-100"
+      >
+        <span class="text-blue-500 text-2xl font-bold flex items-center">
+          <i class="fa-solid fa-car-side"></i><span class="hidden lg:block ml-2">OtoBurada</span>
+        </span>
+      </div>
+      <nav class="flex-1 overflow-y-auto py-4">
+        <div
+          class="hidden lg:block px-6 mb-2 text-xs font-semibold text-gray-400 uppercase tracking-wider"
+        >
+          Yönetim Menüsü
         </div>
-        <nav class="flex-1 overflow-y-auto py-4">
-            <div class="hidden lg:block px-6 mb-2 text-xs font-semibold text-gray-400 uppercase tracking-wider">Yönetim Menüsü</div>
-            <ul class="space-y-1">
-                <li><a href="#" class="flex items-center justify-center lg:justify-start px-6 py-3 text-gray-600 hover:bg-gray-50"><i class="fa-solid fa-border-all w-5 h-5 lg:mr-3"></i><span class="hidden lg:block font-medium">Dashboard</span></a></li>
-                <li><a href="#" class="flex items-center justify-center lg:justify-start px-6 py-3 text-gray-600 hover:bg-gray-50"><i class="fa-solid fa-list w-5 h-5 lg:mr-3"></i><span class="hidden lg:block font-medium">İlan Yönetimi</span></a></li>
-                <li><a href="#" class="flex items-center justify-center lg:justify-start px-6 py-3 text-gray-600 hover:bg-gray-50"><i class="fa-solid fa-users w-5 h-5 lg:mr-3"></i><span class="hidden lg:block font-medium">Kullanıcılar</span></a></li>
-                <li><a href="#" class="flex items-center justify-center lg:justify-start px-6 py-3 text-blue-600 bg-blue-50 border-r-4 border-blue-600"><i class="fa-solid fa-shield-halved w-5 h-5 lg:mr-3"></i><span class="hidden lg:block font-bold">Moderasyon</span></a></li>
-                <li><a href="#" class="flex items-center justify-center lg:justify-start px-6 py-3 text-gray-600 hover:bg-gray-50"><i class="fa-solid fa-chart-simple w-5 h-5 lg:mr-3"></i><span class="hidden lg:block font-medium">Analitik</span></a></li>
-                <li><a href="#" class="flex items-center justify-center lg:justify-start px-6 py-3 text-gray-600 hover:bg-gray-50"><i class="fa-solid fa-gear w-5 h-5 lg:mr-3"></i><span class="hidden lg:block font-medium">Entegrasyonlar</span></a></li>
-            </ul>
-        </nav>
+        <ul class="space-y-1">
+          <li>
+            <a
+              href="#"
+              class="flex items-center justify-center lg:justify-start px-6 py-3 text-gray-600 hover:bg-gray-50"
+              ><i class="fa-solid fa-border-all w-5 h-5 lg:mr-3"></i
+              ><span class="hidden lg:block font-medium">Dashboard</span></a
+            >
+          </li>
+          <li>
+            <a
+              href="#"
+              class="flex items-center justify-center lg:justify-start px-6 py-3 text-gray-600 hover:bg-gray-50"
+              ><i class="fa-solid fa-list w-5 h-5 lg:mr-3"></i
+              ><span class="hidden lg:block font-medium">İlan Yönetimi</span></a
+            >
+          </li>
+          <li>
+            <a
+              href="#"
+              class="flex items-center justify-center lg:justify-start px-6 py-3 text-gray-600 hover:bg-gray-50"
+              ><i class="fa-solid fa-users w-5 h-5 lg:mr-3"></i
+              ><span class="hidden lg:block font-medium">Kullanıcılar</span></a
+            >
+          </li>
+          <li>
+            <a
+              href="#"
+              class="flex items-center justify-center lg:justify-start px-6 py-3 text-blue-600 bg-blue-50 border-r-4 border-blue-600"
+              ><i class="fa-solid fa-shield-halved w-5 h-5 lg:mr-3"></i
+              ><span class="hidden lg:block font-bold">Moderasyon</span></a
+            >
+          </li>
+          <li>
+            <a
+              href="#"
+              class="flex items-center justify-center lg:justify-start px-6 py-3 text-gray-600 hover:bg-gray-50"
+              ><i class="fa-solid fa-chart-simple w-5 h-5 lg:mr-3"></i
+              ><span class="hidden lg:block font-medium">Analitik</span></a
+            >
+          </li>
+          <li>
+            <a
+              href="#"
+              class="flex items-center justify-center lg:justify-start px-6 py-3 text-gray-600 hover:bg-gray-50"
+              ><i class="fa-solid fa-gear w-5 h-5 lg:mr-3"></i
+              ><span class="hidden lg:block font-medium">Entegrasyonlar</span></a
+            >
+          </li>
+        </ul>
+      </nav>
     </aside>
 
     <div class="flex-1 flex flex-col h-full overflow-hidden">
-        
-        <header class="h-16 bg-white border-b border-gray-200 flex items-center justify-between px-6 flex-shrink-0 z-10">
-            <div class="relative w-64 md:w-96">
-                <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400"><i class="fa-solid fa-magnifying-glass"></i></span>
-                <input type="text" placeholder="İlan, kullanıcı veya ticket ara..." class="w-full bg-gray-50 border border-transparent focus:border-blue-500 focus:bg-white text-gray-700 text-sm rounded-lg block pl-10 p-2 outline-none transition">
-            </div>
-            <div class="flex items-center space-x-4">
-                <button class="text-gray-400 hover:text-gray-600 relative"><i class="fa-regular fa-bell text-xl"></i><span class="absolute top-0 right-0 block h-2 w-2 rounded-full bg-red-500 ring-2 ring-white"></span></button>
-                <div class="flex items-center space-x-3 border-l pl-4 border-gray-200">
-                    <div class="text-right hidden md:block">
-                        <div class="text-sm font-semibold text-gray-800">Admin Panel</div>
-                        <div class="text-xs text-gray-500">OtoBurada Yönetici</div>
-                    </div>
-                    <img class="h-8 w-8 rounded-full border border-gray-200" src="https://i.pravatar.cc/150?img=11" alt="Admin">
-                </div>
-            </div>
-        </header>
-
-        <div class="flex flex-1 overflow-hidden">
-            
-            <div class="w-80 bg-white border-r border-gray-200 flex flex-col flex-shrink-0">
-                <div class="p-4 border-b border-gray-100 flex justify-between items-center">
-                    <div class="flex items-center">
-                        <h2 class="text-lg font-bold text-gray-800 mr-2">Rapor Kuyruğu</h2>
-                        <span class="bg-gray-100 text-gray-600 text-xs font-bold px-2 py-0.5 rounded-full">5</span>
-                    </div>
-                    <button class="text-gray-400 hover:text-gray-600"><i class="fa-solid fa-filter"></i></button>
-                </div>
-                <div class="p-3 border-b border-gray-100 bg-gray-50">
-                    <div class="relative">
-                        <i class="fa-solid fa-magnifying-glass absolute left-3 top-2.5 text-gray-400 text-xs"></i>
-                        <input type="text" placeholder="Raporlarda ara..." class="w-full bg-white border border-gray-200 rounded-md pl-8 p-1.5 text-sm focus:border-blue-500 outline-none">
-                    </div>
-                </div>
-                
-                <div class="flex-1 overflow-y-auto p-3 space-y-2">
-                    <div class="p-4 border border-blue-200 bg-blue-50/50 rounded-lg cursor-pointer shadow-sm relative">
-                        <div class="absolute left-0 top-0 bottom-0 w-1 bg-blue-500 rounded-l-lg"></div>
-                        <div class="flex justify-between items-start mb-1">
-                            <span class="text-xs font-medium text-gray-500 flex items-center"><i class="fa-regular fa-file-lines mr-1"></i> R-1024</span>
-                            <span class="bg-red-50 text-red-500 text-[10px] px-2 py-0.5 rounded font-bold">Kritik</span>
-                        </div>
-                        <h3 class="text-sm font-bold text-gray-800 mb-2">2022 BMW 320i Sedan - M Sport</h3>
-                        <div class="flex text-xs text-gray-500 items-center">
-                            <i class="fa-regular fa-flag text-red-400 mr-1"></i> 5 Rapor • 10 dakika önce
-                        </div>
-                    </div>
-
-                    <div class="p-4 border border-gray-100 rounded-lg hover:border-gray-200 hover:bg-gray-50 cursor-pointer transition">
-                        <div class="flex justify-between items-start mb-1">
-                            <span class="text-xs font-medium text-gray-500 flex items-center"><i class="fa-regular fa-comment mr-1"></i> R-1025</span>
-                            <span class="bg-yellow-50 text-yellow-600 text-[10px] px-2 py-0.5 rounded font-bold">Orta Öncelik</span>
-                        </div>
-                        <h3 class="text-sm font-medium text-gray-800 mb-2 truncate italic">Kullanıcı Yorumu: "Araba hasarlı çıktı..."</h3>
-                        <div class="flex text-xs text-gray-500 items-center">
-                            <i class="fa-regular fa-flag text-yellow-500 mr-1"></i> 2 Rapor • 25 dakika önce
-                        </div>
-                    </div>
-
-                    <div class="p-4 border border-gray-100 rounded-lg hover:border-gray-200 hover:bg-gray-50 cursor-pointer transition">
-                        <div class="flex justify-between items-start mb-1">
-                            <span class="text-xs font-medium text-gray-500 flex items-center"><i class="fa-regular fa-file-lines mr-1"></i> R-1026</span>
-                            <span class="bg-red-50 text-red-500 text-[10px] px-2 py-0.5 rounded font-bold">Kritik</span>
-                        </div>
-                        <h3 class="text-sm font-bold text-gray-800 mb-2">2015 Volkswagen Golf 1.6 TDI</h3>
-                        <div class="flex text-xs text-gray-500 items-center">
-                            <i class="fa-regular fa-flag text-red-400 mr-1"></i> 8 Rapor • 1 saat önce
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="flex-1 flex flex-col bg-white overflow-y-auto">
-                <div class="p-8 max-w-3xl mx-auto w-full">
-                    
-                    <div class="flex justify-between items-start mb-6">
-                        <div>
-                            <div class="flex items-center mb-1">
-                                <span class="bg-gray-100 text-gray-600 text-xs font-bold px-2 py-1 rounded mr-2">İlan İnceleme</span>
-                                <span class="text-gray-400 text-sm font-medium">#R-1024</span>
-                            </div>
-                            <h1 class="text-2xl font-bold text-gray-800 mt-2">2022 BMW 320i Sedan - M Sport</h1>
-                            <div class="flex items-center mt-2 text-sm text-gray-600 bg-red-50 text-red-600 px-3 py-1.5 rounded-lg border border-red-100 inline-flex">
-                                <i class="fa-solid fa-triangle-exclamation mr-2"></i> Birincil Şikayet Nedeni: Fiyat Manipülasyonu / Hatalı Bilgi
-                            </div>
-                        </div>
-                        <button class="border border-gray-200 px-4 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-50 flex items-center">
-                            <i class="fa-solid fa-clock-rotate-left mr-2"></i> Geçmişi Gör
-                        </button>
-                    </div>
-
-                    <div class="mb-8">
-                        <h3 class="text-sm font-bold text-gray-800 mb-3 flex items-center"><i class="fa-regular fa-image mr-2 text-gray-400"></i> İçerik Önizleme</h3>
-                        <div class="flex space-x-3">
-                            <div class="w-40 h-28 bg-gray-200 rounded-lg overflow-hidden relative">
-                                <span class="absolute top-1 left-1 bg-black/60 text-white text-[10px] px-1.5 py-0.5 rounded">Ana Görsel</span>
-                                <img src="https://images.unsplash.com/photo-1555215695-3004980ad54e?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=60" class="w-full h-full object-cover">
-                            </div>
-                            <div class="w-24 h-28 bg-gray-200 rounded-lg overflow-hidden relative">
-                                <img src="https://images.unsplash.com/photo-1549399542-7e3f8b79c341?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=60" class="w-full h-full object-cover">
-                            </div>
-                            <div class="w-24 h-28 bg-gray-100 border border-gray-200 border-dashed rounded-lg flex flex-col items-center justify-center text-gray-400 cursor-pointer hover:bg-gray-50">
-                                <i class="fa-solid fa-images mb-1"></i>
-                                <span class="text-[10px] font-bold">+5 Fotoğraf<br>Daha</span>
-                            </div>
-                            <div class="flex items-end">
-                                <button class="text-xs text-blue-500 font-medium hover:underline mb-2 ml-2">Tümünü Gör</button>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="mb-8">
-                        <h3 class="text-sm font-bold text-gray-800 mb-3 flex items-center"><i class="fa-regular fa-flag mr-2 text-gray-400"></i> Rapor Detayları</h3>
-                        <div class="border border-gray-200 rounded-xl overflow-hidden">
-                            <div class="border-b border-gray-200 p-4 bg-gray-50/50">
-                                <div class="flex justify-between items-center mb-3">
-                                    <div class="flex items-center">
-                                        <span class="bg-red-500 text-white text-xs font-bold px-2 py-1 rounded-full mr-3">5 Rapor</span>
-                                        <span class="font-bold text-gray-800">Fiyat Manipülasyonu</span>
-                                    </div>
-                                    <i class="fa-solid fa-chevron-up text-gray-400 text-xs"></i>
-                                </div>
-                                <div class="pl-14">
-                                    <p class="text-sm text-gray-600 mb-3">Kullanıcılar bu aracın fiyatının piyasa ortalamasının %40 altında olduğunu ve sahte bir kampanya süsü verildiğini belirtmiştir.</p>
-                                    <div class="bg-white border border-gray-200 p-3 rounded-lg relative">
-                                        <div class="absolute w-1 h-full bg-red-400 left-0 top-0 rounded-l-lg"></div>
-                                        <p class="text-xs text-gray-700 italic"><span class="font-bold">Kullanıcı Notu:</span> "Bu araç için verilen fiyat imkansız, kapora dolandırıcılığı olabilir."</p>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="p-4 hover:bg-gray-50 cursor-pointer transition flex justify-between items-center">
-                                <div class="flex items-center">
-                                    <span class="bg-gray-200 text-gray-600 text-xs font-bold px-2 py-1 rounded-full mr-3">1 Rapor</span>
-                                    <span class="font-medium text-gray-700">Hatalı Teknik Bilgi</span>
-                                </div>
-                                <i class="fa-solid fa-chevron-down text-gray-400 text-xs"></i>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div>
-                        <h3 class="text-sm font-bold text-gray-800 mb-3 flex items-center"><i class="fa-solid fa-gavel mr-2 text-blue-500"></i> Moderatör Kararı</h3>
-                        
-                        <div class="mb-4">
-                            <label class="block text-xs font-bold text-gray-500 mb-2">İnceleme Notu (Opsiyonel)</label>
-                            <textarea rows="3" placeholder="Reddetme nedenini veya inceleme detaylarını buraya ekleyin..." class="w-full border border-gray-200 rounded-lg p-3 text-sm focus:border-blue-500 outline-none bg-gray-50 focus:bg-white transition resize-none"></textarea>
-                        </div>
-
-                        <div class="flex items-center justify-between mt-6 pt-4 border-t border-gray-100">
-                            <div>
-                                <span class="text-[10px] font-bold text-gray-400 uppercase tracking-wider mr-4">Onay İşlemleri</span>
-                                <button class="border border-gray-200 text-gray-700 hover:bg-gray-50 px-4 py-2 rounded-lg text-sm font-medium mr-2 transition"><i class="fa-solid fa-check text-green-500 mr-1"></i> Raporu Temizle ve Onayla</button>
-                            </div>
-                            <div class="flex items-center">
-                                <span class="text-[10px] font-bold text-gray-400 uppercase tracking-wider mr-4">Red İşlemleri</span>
-                                <button class="border border-red-200 text-red-600 hover:bg-red-50 px-4 py-2 rounded-lg text-sm font-medium mr-2 transition">Sebep Seç</button>
-                                <button class="bg-red-500 hover:bg-red-600 text-white px-5 py-2 rounded-lg text-sm font-bold transition shadow-sm"><i class="fa-solid fa-trash-can mr-1"></i> İçeriği Kaldır</button>
-                            </div>
-                        </div>
-                    </div>
-
-                </div>
-            </div>
-
-            <div class="w-72 bg-gray-50 border-l border-gray-200 flex flex-col flex-shrink-0 overflow-y-auto">
-                
-                <div class="p-6 border-b border-gray-200">
-                    <h3 class="text-sm font-bold text-gray-800 mb-4 flex items-center"><i class="fa-solid fa-robot mr-2 text-blue-500"></i> Otomatik Moderasyon</h3>
-                    
-                    <div class="bg-white border border-gray-200 p-4 rounded-xl shadow-sm">
-                        <div class="mb-5">
-                            <div class="flex justify-between items-center mb-2">
-                                <label class="text-xs font-bold text-gray-700">Otomatik Askıya Alma Eşiği</label>
-                                <span class="bg-blue-50 text-blue-600 text-[10px] font-bold px-2 py-0.5 rounded">10 Rapor</span>
-                            </div>
-                            <div class="h-1.5 w-full bg-gray-200 rounded-full relative mb-2">
-                                <div class="absolute h-full bg-blue-500 rounded-full w-1/2"></div>
-                                <div class="absolute w-3 h-3 bg-white border-2 border-blue-500 rounded-full -top-[3px] left-1/2 -translate-x-1/2 shadow"></div>
-                            </div>
-                            <p class="text-[10px] text-gray-500">Bir ilan 10 farklı kullanıcıdan rapor alırsa otomatik olarak incelenmek üzere yayından kaldırılır.</p>
-                        </div>
-                        
-                        <div class="mb-4">
-                            <div class="flex justify-between items-center mb-2">
-                                <label class="text-xs font-bold text-gray-700">Yorum Spam Filtresi</label>
-                                <span class="bg-blue-50 text-blue-600 text-[10px] font-bold px-2 py-0.5 rounded">5 Rapor</span>
-                            </div>
-                            <div class="h-1.5 w-full bg-gray-200 rounded-full relative mb-2">
-                                <div class="absolute h-full bg-blue-500 rounded-full w-1/4"></div>
-                                <div class="absolute w-3 h-3 bg-white border-2 border-blue-500 rounded-full -top-[3px] left-1/4 -translate-x-1/2 shadow"></div>
-                            </div>
-                            <p class="text-[10px] text-gray-500">Bir yorum 5 rapor alırsa moderatör onayına kadar gizlenir.</p>
-                        </div>
-                        
-                        <button class="w-full bg-blue-500 hover:bg-blue-600 text-white text-xs font-bold py-2 rounded-lg transition">Ayarları Güncelle</button>
-                    </div>
-                </div>
-
-                <div class="p-6 border-b border-gray-200">
-                    <h3 class="text-sm font-bold text-gray-800 mb-3">Hızlı Aksiyonlar</h3>
-                    <div class="bg-white border border-gray-200 rounded-xl overflow-hidden">
-                        <button class="w-full text-left p-3 border-b border-gray-100 hover:bg-gray-50 text-xs font-medium text-gray-700 flex justify-between items-center transition">
-                            <span><i class="fa-solid fa-chevron-right text-gray-400 mr-2 text-[10px]"></i> Yanlış Fiyatlandırma Olarak İşaretle</span>
-                        </button>
-                        <button class="w-full text-left p-3 border-b border-gray-100 hover:bg-gray-50 text-xs font-medium text-gray-700 flex justify-between items-center transition">
-                            <span><i class="fa-solid fa-chevron-right text-gray-400 mr-2 text-[10px]"></i> İletişim Bilgisi Paylaşımı (Red)</span>
-                        </button>
-                        <button class="w-full text-left p-3 border-b border-gray-100 hover:bg-gray-50 text-xs font-medium text-gray-700 flex justify-between items-center transition">
-                            <span><i class="fa-solid fa-chevron-right text-gray-400 mr-2 text-[10px]"></i> Yinelenen İlan (Kaldır)</span>
-                        </button>
-                        <button class="w-full text-left p-3 hover:bg-gray-50 text-xs font-medium text-gray-700 flex justify-between items-center transition">
-                            <span><i class="fa-solid fa-chevron-right text-gray-400 mr-2 text-[10px]"></i> Reklam İçerikli Yorum (Spam)</span>
-                        </button>
-                    </div>
-                </div>
-
-                <div class="p-6">
-                    <h3 class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-4">Raporlanan Kullanıcı</h3>
-                    <div class="flex items-center mb-4">
-                        <div class="w-10 h-10 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center font-bold text-sm mr-3">MK</div>
-                        <div>
-                            <div class="text-sm font-bold text-gray-800">Mehmet Kaya</div>
-                            <div class="text-[10px] text-gray-500">Kayıt: 12.05.2023</div>
-                        </div>
-                    </div>
-                    <div class="grid grid-cols-2 gap-2">
-                        <div class="bg-white border border-gray-200 rounded-lg p-2 text-center">
-                            <div class="text-lg font-bold text-red-500">4</div>
-                            <div class="text-[9px] font-bold text-gray-500 uppercase">Aktif Rapor</div>
-                        </div>
-                        <div class="bg-white border border-gray-200 rounded-lg p-2 text-center">
-                            <div class="text-lg font-bold text-gray-800">27</div>
-                            <div class="text-[9px] font-bold text-gray-500 uppercase">Onaylı İlan</div>
-                        </div>
-                    </div>
-                </div>
-
-            </div>
+      <header
+        class="h-16 bg-white border-b border-gray-200 flex items-center justify-between px-6 flex-shrink-0 z-10"
+      >
+        <div class="relative w-64 md:w-96">
+          <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400"
+            ><i class="fa-solid fa-magnifying-glass"></i
+          ></span>
+          <input
+            type="text"
+            placeholder="İlan, kullanıcı veya ticket ara..."
+            class="w-full bg-gray-50 border border-transparent focus:border-blue-500 focus:bg-white text-gray-700 text-sm rounded-lg block pl-10 p-2 outline-none transition"
+          />
         </div>
+        <div class="flex items-center space-x-4">
+          <button class="text-gray-400 hover:text-gray-600 relative">
+            <i class="fa-regular fa-bell text-xl"></i
+            ><span
+              class="absolute top-0 right-0 block h-2 w-2 rounded-full bg-red-500 ring-2 ring-white"
+            ></span>
+          </button>
+          <div class="flex items-center space-x-3 border-l pl-4 border-gray-200">
+            <div class="text-right hidden md:block">
+              <div class="text-sm font-semibold text-gray-800">Admin Panel</div>
+              <div class="text-xs text-gray-500">OtoBurada Yönetici</div>
+            </div>
+            <img
+              class="h-8 w-8 rounded-full border border-gray-200"
+              src="https://i.pravatar.cc/150?img=11"
+              alt="Admin"
+            />
+          </div>
+        </div>
+      </header>
+
+      <div class="flex flex-1 overflow-hidden">
+        <div class="w-80 bg-white border-r border-gray-200 flex flex-col flex-shrink-0">
+          <div class="p-4 border-b border-gray-100 flex justify-between items-center">
+            <div class="flex items-center">
+              <h2 class="text-lg font-bold text-gray-800 mr-2">Rapor Kuyruğu</h2>
+              <span class="bg-gray-100 text-gray-600 text-xs font-bold px-2 py-0.5 rounded-full"
+                >5</span
+              >
+            </div>
+            <button class="text-gray-400 hover:text-gray-600">
+              <i class="fa-solid fa-filter"></i>
+            </button>
+          </div>
+          <div class="p-3 border-b border-gray-100 bg-gray-50">
+            <div class="relative">
+              <i
+                class="fa-solid fa-magnifying-glass absolute left-3 top-2.5 text-gray-400 text-xs"
+              ></i>
+              <input
+                type="text"
+                placeholder="Raporlarda ara..."
+                class="w-full bg-white border border-gray-200 rounded-md pl-8 p-1.5 text-sm focus:border-blue-500 outline-none"
+              />
+            </div>
+          </div>
+
+          <div class="flex-1 overflow-y-auto p-3 space-y-2">
+            <div
+              class="p-4 border border-blue-200 bg-blue-50/50 rounded-lg cursor-pointer shadow-sm relative"
+            >
+              <div class="absolute left-0 top-0 bottom-0 w-1 bg-blue-500 rounded-l-lg"></div>
+              <div class="flex justify-between items-start mb-1">
+                <span class="text-xs font-medium text-gray-500 flex items-center"
+                  ><i class="fa-regular fa-file-lines mr-1"></i> R-1024</span
+                >
+                <span class="bg-red-50 text-red-500 text-[10px] px-2 py-0.5 rounded font-bold"
+                  >Kritik</span
+                >
+              </div>
+              <h3 class="text-sm font-bold text-gray-800 mb-2">2022 BMW 320i Sedan - M Sport</h3>
+              <div class="flex text-xs text-gray-500 items-center">
+                <i class="fa-regular fa-flag text-red-400 mr-1"></i> 5 Rapor • 10 dakika önce
+              </div>
+            </div>
+
+            <div
+              class="p-4 border border-gray-100 rounded-lg hover:border-gray-200 hover:bg-gray-50 cursor-pointer transition"
+            >
+              <div class="flex justify-between items-start mb-1">
+                <span class="text-xs font-medium text-gray-500 flex items-center"
+                  ><i class="fa-regular fa-comment mr-1"></i> R-1025</span
+                >
+                <span class="bg-yellow-50 text-yellow-600 text-[10px] px-2 py-0.5 rounded font-bold"
+                  >Orta Öncelik</span
+                >
+              </div>
+              <h3 class="text-sm font-medium text-gray-800 mb-2 truncate italic">
+                Kullanıcı Yorumu: "Araba hasarlı çıktı..."
+              </h3>
+              <div class="flex text-xs text-gray-500 items-center">
+                <i class="fa-regular fa-flag text-yellow-500 mr-1"></i> 2 Rapor • 25 dakika önce
+              </div>
+            </div>
+
+            <div
+              class="p-4 border border-gray-100 rounded-lg hover:border-gray-200 hover:bg-gray-50 cursor-pointer transition"
+            >
+              <div class="flex justify-between items-start mb-1">
+                <span class="text-xs font-medium text-gray-500 flex items-center"
+                  ><i class="fa-regular fa-file-lines mr-1"></i> R-1026</span
+                >
+                <span class="bg-red-50 text-red-500 text-[10px] px-2 py-0.5 rounded font-bold"
+                  >Kritik</span
+                >
+              </div>
+              <h3 class="text-sm font-bold text-gray-800 mb-2">2015 Volkswagen Golf 1.6 TDI</h3>
+              <div class="flex text-xs text-gray-500 items-center">
+                <i class="fa-regular fa-flag text-red-400 mr-1"></i> 8 Rapor • 1 saat önce
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="flex-1 flex flex-col bg-white overflow-y-auto">
+          <div class="p-8 max-w-3xl mx-auto w-full">
+            <div class="flex justify-between items-start mb-6">
+              <div>
+                <div class="flex items-center mb-1">
+                  <span class="bg-gray-100 text-gray-600 text-xs font-bold px-2 py-1 rounded mr-2"
+                    >İlan İnceleme</span
+                  >
+                  <span class="text-gray-400 text-sm font-medium">#R-1024</span>
+                </div>
+                <h1 class="text-2xl font-bold text-gray-800 mt-2">2022 BMW 320i Sedan - M Sport</h1>
+                <div
+                  class="flex items-center mt-2 text-sm text-gray-600 bg-red-50 text-red-600 px-3 py-1.5 rounded-lg border border-red-100 inline-flex"
+                >
+                  <i class="fa-solid fa-triangle-exclamation mr-2"></i> Birincil Şikayet Nedeni:
+                  Fiyat Manipülasyonu / Hatalı Bilgi
+                </div>
+              </div>
+              <button
+                class="border border-gray-200 px-4 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-50 flex items-center"
+              >
+                <i class="fa-solid fa-clock-rotate-left mr-2"></i> Geçmişi Gör
+              </button>
+            </div>
+
+            <div class="mb-8">
+              <h3 class="text-sm font-bold text-gray-800 mb-3 flex items-center">
+                <i class="fa-regular fa-image mr-2 text-gray-400"></i> İçerik Önizleme
+              </h3>
+              <div class="flex space-x-3">
+                <div class="w-40 h-28 bg-gray-200 rounded-lg overflow-hidden relative">
+                  <span
+                    class="absolute top-1 left-1 bg-black/60 text-white text-[10px] px-1.5 py-0.5 rounded"
+                    >Ana Görsel</span
+                  >
+                  <img
+                    src="https://images.unsplash.com/photo-1555215695-3004980ad54e?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=60"
+                    class="w-full h-full object-cover"
+                  />
+                </div>
+                <div class="w-24 h-28 bg-gray-200 rounded-lg overflow-hidden relative">
+                  <img
+                    src="https://images.unsplash.com/photo-1549399542-7e3f8b79c341?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=60"
+                    class="w-full h-full object-cover"
+                  />
+                </div>
+                <div
+                  class="w-24 h-28 bg-gray-100 border border-gray-200 border-dashed rounded-lg flex flex-col items-center justify-center text-gray-400 cursor-pointer hover:bg-gray-50"
+                >
+                  <i class="fa-solid fa-images mb-1"></i>
+                  <span class="text-[10px] font-bold">+5 Fotoğraf<br />Daha</span>
+                </div>
+                <div class="flex items-end">
+                  <button class="text-xs text-blue-500 font-medium hover:underline mb-2 ml-2">
+                    Tümünü Gör
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <div class="mb-8">
+              <h3 class="text-sm font-bold text-gray-800 mb-3 flex items-center">
+                <i class="fa-regular fa-flag mr-2 text-gray-400"></i> Rapor Detayları
+              </h3>
+              <div class="border border-gray-200 rounded-xl overflow-hidden">
+                <div class="border-b border-gray-200 p-4 bg-gray-50/50">
+                  <div class="flex justify-between items-center mb-3">
+                    <div class="flex items-center">
+                      <span
+                        class="bg-red-500 text-white text-xs font-bold px-2 py-1 rounded-full mr-3"
+                        >5 Rapor</span
+                      >
+                      <span class="font-bold text-gray-800">Fiyat Manipülasyonu</span>
+                    </div>
+                    <i class="fa-solid fa-chevron-up text-gray-400 text-xs"></i>
+                  </div>
+                  <div class="pl-14">
+                    <p class="text-sm text-gray-600 mb-3">
+                      Kullanıcılar bu aracın fiyatının piyasa ortalamasının %40 altında olduğunu ve
+                      sahte bir kampanya süsü verildiğini belirtmiştir.
+                    </p>
+                    <div class="bg-white border border-gray-200 p-3 rounded-lg relative">
+                      <div class="absolute w-1 h-full bg-red-400 left-0 top-0 rounded-l-lg"></div>
+                      <p class="text-xs text-gray-700 italic">
+                        <span class="font-bold">Kullanıcı Notu:</span> "Bu araç için verilen fiyat
+                        imkansız, kapora dolandırıcılığı olabilir."
+                      </p>
+                    </div>
+                  </div>
+                </div>
+                <div
+                  class="p-4 hover:bg-gray-50 cursor-pointer transition flex justify-between items-center"
+                >
+                  <div class="flex items-center">
+                    <span
+                      class="bg-gray-200 text-gray-600 text-xs font-bold px-2 py-1 rounded-full mr-3"
+                      >1 Rapor</span
+                    >
+                    <span class="font-medium text-gray-700">Hatalı Teknik Bilgi</span>
+                  </div>
+                  <i class="fa-solid fa-chevron-down text-gray-400 text-xs"></i>
+                </div>
+              </div>
+            </div>
+
+            <div>
+              <h3 class="text-sm font-bold text-gray-800 mb-3 flex items-center">
+                <i class="fa-solid fa-gavel mr-2 text-blue-500"></i> Moderatör Kararı
+              </h3>
+
+              <div class="mb-4">
+                <label class="block text-xs font-bold text-gray-500 mb-2"
+                  >İnceleme Notu (Opsiyonel)</label
+                >
+                <textarea
+                  rows="3"
+                  placeholder="Reddetme nedenini veya inceleme detaylarını buraya ekleyin..."
+                  class="w-full border border-gray-200 rounded-lg p-3 text-sm focus:border-blue-500 outline-none bg-gray-50 focus:bg-white transition resize-none"
+                ></textarea>
+              </div>
+
+              <div class="flex items-center justify-between mt-6 pt-4 border-t border-gray-100">
+                <div>
+                  <span class="text-[10px] font-bold text-gray-400 uppercase tracking-wider mr-4"
+                    >Onay İşlemleri</span
+                  >
+                  <button
+                    class="border border-gray-200 text-gray-700 hover:bg-gray-50 px-4 py-2 rounded-lg text-sm font-medium mr-2 transition"
+                  >
+                    <i class="fa-solid fa-check text-green-500 mr-1"></i> Raporu Temizle ve Onayla
+                  </button>
+                </div>
+                <div class="flex items-center">
+                  <span class="text-[10px] font-bold text-gray-400 uppercase tracking-wider mr-4"
+                    >Red İşlemleri</span
+                  >
+                  <button
+                    class="border border-red-200 text-red-600 hover:bg-red-50 px-4 py-2 rounded-lg text-sm font-medium mr-2 transition"
+                  >
+                    Sebep Seç
+                  </button>
+                  <button
+                    class="bg-red-500 hover:bg-red-600 text-white px-5 py-2 rounded-lg text-sm font-bold transition shadow-sm"
+                  >
+                    <i class="fa-solid fa-trash-can mr-1"></i> İçeriği Kaldır
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div
+          class="w-72 bg-gray-50 border-l border-gray-200 flex flex-col flex-shrink-0 overflow-y-auto"
+        >
+          <div class="p-6 border-b border-gray-200">
+            <h3 class="text-sm font-bold text-gray-800 mb-4 flex items-center">
+              <i class="fa-solid fa-robot mr-2 text-blue-500"></i> Otomatik Moderasyon
+            </h3>
+
+            <div class="bg-white border border-gray-200 p-4 rounded-xl shadow-sm">
+              <div class="mb-5">
+                <div class="flex justify-between items-center mb-2">
+                  <label class="text-xs font-bold text-gray-700">Otomatik Askıya Alma Eşiği</label>
+                  <span class="bg-blue-50 text-blue-600 text-[10px] font-bold px-2 py-0.5 rounded"
+                    >10 Rapor</span
+                  >
+                </div>
+                <div class="h-1.5 w-full bg-gray-200 rounded-full relative mb-2">
+                  <div class="absolute h-full bg-blue-500 rounded-full w-1/2"></div>
+                  <div
+                    class="absolute w-3 h-3 bg-white border-2 border-blue-500 rounded-full -top-[3px] left-1/2 -translate-x-1/2 shadow"
+                  ></div>
+                </div>
+                <p class="text-[10px] text-gray-500">
+                  Bir ilan 10 farklı kullanıcıdan rapor alırsa otomatik olarak incelenmek üzere
+                  yayından kaldırılır.
+                </p>
+              </div>
+
+              <div class="mb-4">
+                <div class="flex justify-between items-center mb-2">
+                  <label class="text-xs font-bold text-gray-700">Yorum Spam Filtresi</label>
+                  <span class="bg-blue-50 text-blue-600 text-[10px] font-bold px-2 py-0.5 rounded"
+                    >5 Rapor</span
+                  >
+                </div>
+                <div class="h-1.5 w-full bg-gray-200 rounded-full relative mb-2">
+                  <div class="absolute h-full bg-blue-500 rounded-full w-1/4"></div>
+                  <div
+                    class="absolute w-3 h-3 bg-white border-2 border-blue-500 rounded-full -top-[3px] left-1/4 -translate-x-1/2 shadow"
+                  ></div>
+                </div>
+                <p class="text-[10px] text-gray-500">
+                  Bir yorum 5 rapor alırsa moderatör onayına kadar gizlenir.
+                </p>
+              </div>
+
+              <button
+                class="w-full bg-blue-500 hover:bg-blue-600 text-white text-xs font-bold py-2 rounded-lg transition"
+              >
+                Ayarları Güncelle
+              </button>
+            </div>
+          </div>
+
+          <div class="p-6 border-b border-gray-200">
+            <h3 class="text-sm font-bold text-gray-800 mb-3">Hızlı Aksiyonlar</h3>
+            <div class="bg-white border border-gray-200 rounded-xl overflow-hidden">
+              <button
+                class="w-full text-left p-3 border-b border-gray-100 hover:bg-gray-50 text-xs font-medium text-gray-700 flex justify-between items-center transition"
+              >
+                <span
+                  ><i class="fa-solid fa-chevron-right text-gray-400 mr-2 text-[10px]"></i> Yanlış
+                  Fiyatlandırma Olarak İşaretle</span
+                >
+              </button>
+              <button
+                class="w-full text-left p-3 border-b border-gray-100 hover:bg-gray-50 text-xs font-medium text-gray-700 flex justify-between items-center transition"
+              >
+                <span
+                  ><i class="fa-solid fa-chevron-right text-gray-400 mr-2 text-[10px]"></i> İletişim
+                  Bilgisi Paylaşımı (Red)</span
+                >
+              </button>
+              <button
+                class="w-full text-left p-3 border-b border-gray-100 hover:bg-gray-50 text-xs font-medium text-gray-700 flex justify-between items-center transition"
+              >
+                <span
+                  ><i class="fa-solid fa-chevron-right text-gray-400 mr-2 text-[10px]"></i>
+                  Yinelenen İlan (Kaldır)</span
+                >
+              </button>
+              <button
+                class="w-full text-left p-3 hover:bg-gray-50 text-xs font-medium text-gray-700 flex justify-between items-center transition"
+              >
+                <span
+                  ><i class="fa-solid fa-chevron-right text-gray-400 mr-2 text-[10px]"></i> Reklam
+                  İçerikli Yorum (Spam)</span
+                >
+              </button>
+            </div>
+          </div>
+
+          <div class="p-6">
+            <h3 class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-4">
+              Raporlanan Kullanıcı
+            </h3>
+            <div class="flex items-center mb-4">
+              <div
+                class="w-10 h-10 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center font-bold text-sm mr-3"
+              >
+                MK
+              </div>
+              <div>
+                <div class="text-sm font-bold text-gray-800">Mehmet Kaya</div>
+                <div class="text-[10px] text-gray-500">Kayıt: 12.05.2023</div>
+              </div>
+            </div>
+            <div class="grid grid-cols-2 gap-2">
+              <div class="bg-white border border-gray-200 rounded-lg p-2 text-center">
+                <div class="text-lg font-bold text-red-500">4</div>
+                <div class="text-[9px] font-bold text-gray-500 uppercase">Aktif Rapor</div>
+              </div>
+              <div class="bg-white border border-gray-200 rounded-lg p-2 text-center">
+                <div class="text-lg font-bold text-gray-800">27</div>
+                <div class="text-[9px] font-bold text-gray-500 uppercase">Onaylı İlan</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
-</body>
+  </body>
 </html>

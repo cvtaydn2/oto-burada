@@ -1,15 +1,16 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import dynamic from "next/dynamic";
-import { ChevronLeft, ChevronRight, Sparkles, Rotate3d } from "lucide-react";
 import useEmblaCarousel from "embla-carousel-react";
-import type { ListingImage } from "@/types";
+import { ChevronLeft, ChevronRight, Rotate3d, Sparkles } from "lucide-react";
+import dynamic from "next/dynamic";
+import { useEffect, useState } from "react";
+
 import { Listing360View } from "@/components/listings/listing-360-view";
 import { supabaseImageUrl } from "@/lib/utils";
+import type { ListingImage } from "@/types";
 
-const ListingGalleryLightbox = dynamic(
-  () => import("@/components/listings/listing-gallery-lightbox").then((mod) => mod.ListingGalleryLightbox),
+const ListingGalleryLightbox = dynamic(() =>
+  import("@/components/listings/listing-gallery-lightbox").then((mod) => mod.ListingGalleryLightbox)
 );
 
 import { SafeImage } from "@/components/shared/safe-image";
@@ -79,7 +80,6 @@ export function ListingGallery({ images, title, has360View = false }: ListingGal
     <>
       <div className="bg-card rounded-3xl border border-border/60 overflow-hidden shadow-sm">
         <div className="p-4 sm:p-6 space-y-4">
-
           {/* Main Viewport */}
           <div className="relative group">
             <div className="overflow-hidden rounded-2xl bg-muted touch-pan-y" ref={emblaRef}>

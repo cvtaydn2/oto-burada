@@ -1,4 +1,6 @@
-import { apiError, API_ERROR_CODES, apiSuccess } from "@/lib/utils/api-response";
+import { captureServerEvent } from "@/lib/monitoring/posthog-server";
+import { API_ERROR_CODES, apiError, apiSuccess } from "@/lib/utils/api-response";
+import { withAuth, withAuthAndCsrf } from "@/lib/utils/api-security";
 import { rateLimitProfiles } from "@/lib/utils/rate-limit";
 import { issuesToFieldErrors } from "@/lib/utils/validation-helpers";
 import { savedSearchCreateSchema } from "@/lib/validators";
@@ -7,8 +9,6 @@ import {
   getStoredSavedSearchesByUser,
 } from "@/services/saved-searches/saved-search-records";
 import { hasMeaningfulSavedSearchFilters } from "@/services/saved-searches/saved-search-utils";
-import { captureServerEvent } from "@/lib/monitoring/posthog-server";
-import { withAuth, withAuthAndCsrf } from "@/lib/utils/api-security";
 
 export async function GET(request: Request) {
   // Security checks: Auth + Rate limiting
@@ -18,7 +18,7 @@ export async function GET(request: Request) {
   });
 
   if (!security.ok) return security.response;
-  
+
   const user = security.user!; // Guaranteed by withAuth
 
   const savedSearches = await getStoredSavedSearchesByUser(user.id);
@@ -35,7 +35,7 @@ export async function POST(request: Request) {
   });
 
   if (!security.ok) return security.response;
-  
+
   const user = security.user!; // Guaranteed by withAuth
 
   let body: unknown;
@@ -53,7 +53,7 @@ export async function POST(request: Request) {
       API_ERROR_CODES.VALIDATION_ERROR,
       parsed.error.issues[0]?.message ?? "Arama alanlarını kontrol et.",
       400,
-      issuesToFieldErrors(parsed.error.issues),
+      issuesToFieldErrors(parsed.error.issues)
     );
   }
 
@@ -61,7 +61,7 @@ export async function POST(request: Request) {
     return apiError(
       API_ERROR_CODES.BAD_REQUEST,
       "Kayitli arama icin en az bir filtre veya arama kelimesi secmelisin.",
-      400,
+      400
     );
   }
 
@@ -69,18 +69,26 @@ export async function POST(request: Request) {
   const savedSearch = await createOrUpdateDatabaseSavedSearch(user.id, parsed.data);
 
   if (!savedSearch) {
-    return apiError(API_ERROR_CODES.INTERNAL_ERROR, "Arama kaydedilemedi. Lütfen tekrar dene.", 500);
+    return apiError(
+      API_ERROR_CODES.INTERNAL_ERROR,
+      "Arama kaydedilemedi. Lütfen tekrar dene.",
+      500
+    );
   }
 
-  captureServerEvent("saved_search_created", {
-    userId: user.id,
-    savedSearchId: savedSearch.id,
-    filters: parsed.data.filters,
-  }, user.id);
+  captureServerEvent(
+    "saved_search_created",
+    {
+      userId: user.id,
+      savedSearchId: savedSearch.id,
+      filters: parsed.data.filters,
+    },
+    user.id
+  );
 
   return apiSuccess(
     { savedSearch },
     "Araman kaydedildi. Yeni sonuclar geldiginde dashboard'dan takip edebilirsin.",
-    201,
+    201
   );
 }

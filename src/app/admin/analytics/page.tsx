@@ -1,8 +1,9 @@
-import { Suspense } from "react";
 import { TrendingUp } from "lucide-react";
-import { getAdminAnalytics } from "@/services/admin/analytics";
-import { requireAdminUser } from "@/lib/auth/session";
+import { Suspense } from "react";
+
 import { AdminAnalyticsClient } from "@/components/admin/admin-analytics-client";
+import { requireAdminUser } from "@/lib/auth/session";
+import { getAdminAnalytics } from "@/services/admin/analytics";
 
 export const dynamic = "force-dynamic";
 

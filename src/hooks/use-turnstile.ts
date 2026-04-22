@@ -2,15 +2,15 @@ import { useEffect, useRef, useState } from "react";
 
 /**
  * Cloudflare Turnstile React hook.
- * 
+ *
  * Manages the Turnstile widget lifecycle and provides a token for server-side verification.
- * 
+ *
  * Usage:
  * ```tsx
  * const { token, containerRef, reset } = useTurnstile();
- * 
+ *
  * <div ref={containerRef} />
- * 
+ *
  * // On form submit:
  * if (!token) {
  *   alert("Please complete the verification");
@@ -36,7 +36,7 @@ declare global {
           size?: "normal" | "compact";
           action?: string;
           cData?: string;
-        },
+        }
       ) => string;
       reset: (widgetId: string) => void;
       remove: (widgetId: string) => void;

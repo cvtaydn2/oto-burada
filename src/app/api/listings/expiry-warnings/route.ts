@@ -9,12 +9,12 @@
  * Vercel automatically sends this header when CRON_SECRET env var is set.
  */
 
+import { captureServerError } from "@/lib/monitoring/posthog-server";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { hasSupabaseAdminEnv } from "@/lib/supabase/env";
+import { API_ERROR_CODES, apiError, apiSuccess } from "@/lib/utils/api-response";
 import { getRequiredAppUrl } from "@/lib/utils/env";
-import { apiSuccess, apiError, API_ERROR_CODES } from "@/lib/utils/api-response";
 import { logger } from "@/lib/utils/logger";
-import { captureServerError } from "@/lib/monitoring/posthog-server";
 import { createDatabaseNotificationsBulk } from "@/services/notifications/notification-records";
 
 export const dynamic = "force-dynamic";
@@ -57,10 +57,10 @@ async function handleCronRequest(request: Request) {
   // published_at + EXPIRY_DAYS = expiry date
   // We want: expiry date is between now+6d and now+8d (±1 day window to avoid missing due to cron timing)
   const warnFrom = new Date(
-    Date.now() - (EXPIRY_DAYS - WARN_DAYS_BEFORE - 1) * 24 * 60 * 60 * 1000,
+    Date.now() - (EXPIRY_DAYS - WARN_DAYS_BEFORE - 1) * 24 * 60 * 60 * 1000
   ).toISOString();
   const warnTo = new Date(
-    Date.now() - (EXPIRY_DAYS - WARN_DAYS_BEFORE + 1) * 24 * 60 * 60 * 1000,
+    Date.now() - (EXPIRY_DAYS - WARN_DAYS_BEFORE + 1) * 24 * 60 * 60 * 1000
   ).toISOString();
 
   const { data: expiringListings, error } = await admin
@@ -111,8 +111,7 @@ async function handleCronRequest(request: Request) {
   }
 
   const resend = new Resend(resendKey);
-  const fromEmail =
-    process.env.RESEND_FROM_EMAIL ?? "OtoBurada <onboarding@resend.dev>";
+  const fromEmail = process.env.RESEND_FROM_EMAIL ?? "OtoBurada <onboarding@resend.dev>";
 
   let warnedCount = 0;
 
@@ -162,7 +161,7 @@ async function handleCronRequest(request: Request) {
 
   return apiSuccess(
     { warned: warnedCount, total: expiringListings.length },
-    `${warnedCount} satıcıya ilan sona erme uyarısı gönderildi.`,
+    `${warnedCount} satıcıya ilan sona erme uyarısı gönderildi.`
   );
 }
 

@@ -89,7 +89,7 @@ if (posthogProjectToken) {
             // Replace email in pathname
             properties[urlKey] = urlValue.replace(
               /[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/g,
-              "[EMAIL_REDACTED]",
+              "[EMAIL_REDACTED]"
             );
           } else if (urlModified) {
             // Reconstruct URL with masked params

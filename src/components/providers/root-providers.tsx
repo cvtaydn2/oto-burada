@@ -1,12 +1,12 @@
 "use client";
 
+import { type User } from "@supabase/supabase-js";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { type PropsWithChildren, useState } from "react";
 
-import { type User } from "@supabase/supabase-js";
+import { PostHogProvider } from "@/components/providers/posthog-provider";
 import { AuthProvider } from "@/components/shared/auth-provider";
 import { ThemeProvider } from "@/components/shared/theme-provider";
-import { PostHogProvider } from "@/components/providers/posthog-provider";
 
 interface RootProvidersProps extends PropsWithChildren {
   user: User | null;
@@ -26,7 +26,7 @@ export function RootProviders({ children, user, nonce }: RootProvidersProps) {
             retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30_000),
           },
         },
-      }),
+      })
   );
 
   return (
@@ -39,9 +39,7 @@ export function RootProviders({ children, user, nonce }: RootProvidersProps) {
     >
       <QueryClientProvider client={queryClient}>
         <AuthProvider initialUser={user}>
-          <PostHogProvider>
-            {children}
-          </PostHogProvider>
+          <PostHogProvider>{children}</PostHogProvider>
         </AuthProvider>
       </QueryClientProvider>
     </ThemeProvider>

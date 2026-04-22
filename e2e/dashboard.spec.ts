@@ -4,9 +4,9 @@
  * Bu testler E2E_TEST_EMAIL + E2E_TEST_PASSWORD set edilmişse çalışır.
  * Playwright global setup (auth-setup.ts) session'ı önceden kaydeder.
  */
-import { test, expect } from "@playwright/test";
-import path from "path";
+import { expect, test } from "@playwright/test";
 import fs from "fs";
+import path from "path";
 
 const AUTH_FILE = path.join(process.cwd(), "playwright", ".auth", "user.json");
 const hasAuth = fs.existsSync(AUTH_FILE);

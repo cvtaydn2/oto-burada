@@ -1,8 +1,8 @@
 "use client";
 
+import { BellRing, CheckCircle2, LoaderCircle, LogIn } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useSearchParams } from "next/navigation";
-import { BellRing, CheckCircle2, LoaderCircle, LogIn } from "lucide-react";
 import { useState } from "react";
 
 import { cn } from "@/lib/utils";
@@ -52,7 +52,7 @@ export function SaveSearchButton({
           notificationsEnabled: true,
         }),
       });
-      const payload = await response.json().catch(() => null) as {
+      const payload = (await response.json().catch(() => null)) as {
         success?: boolean;
         error?: { message?: string };
         message?: string;
@@ -113,16 +113,24 @@ export function SaveSearchButton({
           disabled={isSaving}
           className="inline-flex h-11 items-center justify-center gap-2 rounded-xl border border-border bg-card px-4 text-xs font-bold text-foreground hover:bg-muted/50 transition-all uppercase tracking-widest disabled:cursor-not-allowed disabled:opacity-60"
         >
-          {isSaving ? <LoaderCircle className="size-3.5 animate-spin" /> : <BellRing className={cn("size-3.5", status === "success" && "text-emerald-600")} />}
+          {isSaving ? (
+            <LoaderCircle className="size-3.5 animate-spin" />
+          ) : (
+            <BellRing className={cn("size-3.5", status === "success" && "text-emerald-600")} />
+          )}
           <span className="hidden md:inline">
             {isSaving ? "Kaydediliyor..." : status === "success" ? "Kaydedildi" : "Aramayı Kaydet"}
           </span>
         </button>
         {message && (
-          <div className={cn(
-            "absolute top-full right-0 mt-2 z-50 w-48 p-2 rounded-lg border shadow-lg text-[10px] font-bold uppercase tracking-tight",
-            status === "error" ? "bg-destructive/10 border-destructive text-destructive" : "bg-emerald-50 border-emerald-200 text-emerald-700"
-          )}>
+          <div
+            className={cn(
+              "absolute top-full right-0 mt-2 z-50 w-48 p-2 rounded-lg border shadow-lg text-[10px] font-bold uppercase tracking-tight",
+              status === "error"
+                ? "bg-destructive/10 border-destructive text-destructive"
+                : "bg-emerald-50 border-emerald-200 text-emerald-700"
+            )}
+          >
             {message}
           </div>
         )}
@@ -138,17 +146,16 @@ export function SaveSearchButton({
         disabled={isSaving}
         className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-border bg-card px-4 text-sm font-semibold text-foreground/90 transition-all hover:bg-muted/30 disabled:cursor-not-allowed disabled:opacity-60"
       >
-        {isSaving ? <LoaderCircle className="size-4 animate-spin" /> : <BellRing className="size-4" />}
+        {isSaving ? (
+          <LoaderCircle className="size-4 animate-spin" />
+        ) : (
+          <BellRing className="size-4" />
+        )}
         {isSaving ? "Kaydediliyor..." : `Aramayı Kaydet (${resultCount})`}
       </button>
 
       {message ? (
-        <p
-          className={cn(
-            "text-xs",
-            status === "error" ? "text-destructive" : "text-emerald-700",
-          )}
-        >
+        <p className={cn("text-xs", status === "error" ? "text-destructive" : "text-emerald-700")}>
           {status === "success" ? <CheckCircle2 className="mr-1 inline size-3.5" /> : null}
           {message}
         </p>

@@ -1,41 +1,40 @@
 import { z } from "zod";
-import type { 
-  Listing, 
-  ListingCreateInput, 
-  ListingImage, 
-  ExpertInspection 
-} from "@/types";
-import type { ListingCreateFormValues } from "@/types";
+
 import {
+  expertInspectionGrades,
+  expertInspectionStatuses,
   fuelTypes,
   listingStatuses,
   maximumCarYear,
+  maximumDescriptionLength,
+  maximumListingPrice,
   maximumMileage,
   minimumCarYear,
   minimumListingImages,
   transmissionTypes,
-  maximumListingPrice,
-  maximumDescriptionLength,
-  expertInspectionGrades,
-  expertInspectionStatuses,
 } from "@/lib/constants/domain";
-import {
-  trimmedRequiredString,
-  optionalTrimmedString,
-  invalidMessage,
-  requiredMessage,
-  emptyStringToUndefined,
-  positiveCurrencySchema,
-  nonNegativeNumberSchema,
-  lenientPhoneSchema,
-  timestampSchema,
-} from "./shared";
+import type { ExpertInspection, Listing, ListingCreateInput, ListingImage } from "@/types";
+import type { ListingCreateFormValues } from "@/types";
+
 import { profileSchema } from "./auth";
+import {
+  emptyStringToUndefined,
+  invalidMessage,
+  lenientPhoneSchema,
+  nonNegativeNumberSchema,
+  optionalTrimmedString,
+  positiveCurrencySchema,
+  requiredMessage,
+  timestampSchema,
+  trimmedRequiredString,
+} from "./shared";
 
 export const listingImageSchema: z.ZodType<ListingImage> = z.object({
   id: optionalTrimmedString,
-  listingId: z
-    .preprocess(emptyStringToUndefined, z.string().trim().min(1, requiredMessage).nullable().optional()),
+  listingId: z.preprocess(
+    emptyStringToUndefined,
+    z.string().trim().min(1, requiredMessage).nullable().optional()
+  ),
   storagePath: trimmedRequiredString,
   url: z.string().trim().url(invalidMessage),
   order: z.coerce.number().int().min(0, invalidMessage),
@@ -60,7 +59,10 @@ export const expertInspectionSchema: z.ZodType<ExpertInspection> = z.object({
   acHeating: z.enum(expertInspectionStatuses),
   notes: optionalTrimmedString,
   inspectedBy: optionalTrimmedString,
-  documentUrl: z.preprocess(emptyStringToUndefined, z.string().trim().url(invalidMessage).optional()),
+  documentUrl: z.preprocess(
+    emptyStringToUndefined,
+    z.string().trim().url(invalidMessage).optional()
+  ),
   documentPath: optionalTrimmedString,
 });
 
@@ -69,28 +71,42 @@ export const listingCreateSchema: z.ZodType<ListingCreateInput> = z.object({
   brand: trimmedRequiredString,
   model: trimmedRequiredString,
   carTrim: z.string().trim().optional().nullable(),
-  year: z.coerce.number().int().min(minimumCarYear, invalidMessage).max(maximumCarYear, invalidMessage),
+  year: z.coerce
+    .number()
+    .int()
+    .min(minimumCarYear, invalidMessage)
+    .max(maximumCarYear, invalidMessage),
   mileage: nonNegativeNumberSchema.max(maximumMileage, invalidMessage),
   fuelType: z.enum(fuelTypes),
   transmission: z.enum(transmissionTypes),
-  price: positiveCurrencySchema.max(maximumListingPrice, `Fiyat en fazla ${maximumListingPrice.toLocaleString("tr-TR")} TL olabilir`),
+  price: positiveCurrencySchema.max(
+    maximumListingPrice,
+    `Fiyat en fazla ${maximumListingPrice.toLocaleString("tr-TR")} TL olabilir`
+  ),
   city: trimmedRequiredString,
   district: trimmedRequiredString,
   description: trimmedRequiredString
     .min(20, "Açıklama en az 20 karakter olmalı")
-    .max(maximumDescriptionLength, `Açıklama en fazla ${maximumDescriptionLength} karakter olabilir`),
+    .max(
+      maximumDescriptionLength,
+      `Açıklama en fazla ${maximumDescriptionLength} karakter olabilir`
+    ),
   whatsappPhone: lenientPhoneSchema,
   vin: z
     .string()
     .trim()
     .length(17, "Şasi numarası (VIN) tam olarak 17 karakter olmalıdır")
     .regex(/^[A-HJ-NPR-Z0-9]+$/i, "Geçersiz şasi numarası formatı (I, O, Q harfleri içermez)"),
-  licensePlate: z.string().trim().min(5, "Geçerli bir plaka gir").max(12, "Gecersiz plaka").nullable().optional(),
+  licensePlate: z
+    .string()
+    .trim()
+    .min(5, "Geçerli bir plaka gir")
+    .max(12, "Gecersiz plaka")
+    .nullable()
+    .optional(),
   tramerAmount: nonNegativeNumberSchema.nullable().optional(),
   damageStatusJson: z.record(z.string(), z.string()).nullable().optional(),
-  images: z
-    .array(listingImageSchema)
-    .min(minimumListingImages, "En az 3 fotoğraf eklemelisin"),
+  images: z.array(listingImageSchema).min(minimumListingImages, "En az 3 fotoğraf eklemelisin"),
   expertInspection: expertInspectionSchema.optional(),
 });
 
@@ -99,23 +115,39 @@ export const listingCreateFormSchema: z.ZodType<ListingCreateFormValues> = z.obj
   brand: trimmedRequiredString,
   model: trimmedRequiredString,
   carTrim: z.string().trim().optional().nullable(),
-  year: z.coerce.number().int().min(minimumCarYear, invalidMessage).max(maximumCarYear, invalidMessage),
+  year: z.coerce
+    .number()
+    .int()
+    .min(minimumCarYear, invalidMessage)
+    .max(maximumCarYear, invalidMessage),
   mileage: nonNegativeNumberSchema.max(maximumMileage, invalidMessage),
   fuelType: z.enum(fuelTypes),
   transmission: z.enum(transmissionTypes),
-  price: positiveCurrencySchema.max(maximumListingPrice, `Fiyat en fazla ${maximumListingPrice.toLocaleString("tr-TR")} TL olabilir`),
+  price: positiveCurrencySchema.max(
+    maximumListingPrice,
+    `Fiyat en fazla ${maximumListingPrice.toLocaleString("tr-TR")} TL olabilir`
+  ),
   city: trimmedRequiredString,
   district: trimmedRequiredString,
   description: trimmedRequiredString
     .min(20, "Açıklama en az 20 karakter olmalı")
-    .max(maximumDescriptionLength, `Açıklama en fazla ${maximumDescriptionLength} karakter olabilir`),
+    .max(
+      maximumDescriptionLength,
+      `Açıklama en fazla ${maximumDescriptionLength} karakter olabilir`
+    ),
   whatsappPhone: lenientPhoneSchema,
   vin: z
     .string()
     .trim()
     .length(17, "Şasi numarası (VIN) tam olarak 17 karakter olmalıdır")
     .regex(/^[A-HJ-NPR-Z0-9]+$/i, "Geçersiz şasi numarası formatı (I, O, Q harfleri içermez)"),
-  licensePlate: z.string().trim().min(5, "Geçerli bir plaka gir").max(12, "Gecersiz plaka").nullable().optional(),
+  licensePlate: z
+    .string()
+    .trim()
+    .min(5, "Geçerli bir plaka gir")
+    .max(12, "Gecersiz plaka")
+    .nullable()
+    .optional(),
   tramerAmount: nonNegativeNumberSchema.nullable().optional(),
   damageStatusJson: z.record(z.string(), z.string()).nullable().optional(),
   expertInspection: expertInspectionSchema.optional(),
@@ -129,7 +161,7 @@ export const listingCreateFormSchema: z.ZodType<ListingCreateFormValues> = z.obj
         url: z.string().trim().optional(),
         placeholderBlur: z.string().trim().nullable().optional(),
         imageType: z.enum(["photo", "360"]).optional(),
-      }),
+      })
     )
     .superRefine((images, context) => {
       const populatedImages = images.filter(
@@ -137,7 +169,7 @@ export const listingCreateFormSchema: z.ZodType<ListingCreateFormValues> = z.obj
           image.url &&
           image.url.trim().length > 0 &&
           image.storagePath &&
-          image.storagePath.trim().length > 0,
+          image.storagePath.trim().length > 0
       );
 
       if (populatedImages.length < minimumListingImages) {
@@ -165,7 +197,11 @@ export const listingCreateFormSchema: z.ZodType<ListingCreateFormValues> = z.obj
           return;
         }
 
-        const parsedUrl = z.string().trim().url("Geçerli bir fotoğraf bağlantısı gir").safeParse(image.url);
+        const parsedUrl = z
+          .string()
+          .trim()
+          .url("Geçerli bir fotoğraf bağlantısı gir")
+          .safeParse(image.url);
 
         if (!parsedUrl.success) {
           context.addIssue({
@@ -186,7 +222,11 @@ export const listingSchema: z.ZodType<Listing> = z.object({
   brand: trimmedRequiredString,
   model: trimmedRequiredString,
   carTrim: z.string().trim().optional().nullable(),
-  year: z.coerce.number().int().min(minimumCarYear, invalidMessage).max(maximumCarYear, invalidMessage),
+  year: z.coerce
+    .number()
+    .int()
+    .min(minimumCarYear, invalidMessage)
+    .max(maximumCarYear, invalidMessage),
   mileage: nonNegativeNumberSchema.max(maximumMileage, invalidMessage),
   fuelType: z.enum(fuelTypes),
   transmission: z.enum(transmissionTypes),
@@ -217,7 +257,12 @@ export const listingSchema: z.ZodType<Listing> = z.object({
   updatedAt: timestampSchema,
 });
 
-export const favoriteSchema: z.ZodType<{ id?: string; userId: string; listingId: string; createdAt: string }> = z.object({
+export const favoriteSchema: z.ZodType<{
+  id?: string;
+  userId: string;
+  listingId: string;
+  createdAt: string;
+}> = z.object({
   id: optionalTrimmedString,
   userId: trimmedRequiredString,
   listingId: trimmedRequiredString,

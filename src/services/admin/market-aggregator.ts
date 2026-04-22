@@ -13,7 +13,8 @@ export async function aggregateMarketStats() {
       .eq("status", "approved");
 
     if (fetchError) throw fetchError;
-    if (!rawListings || rawListings.length === 0) return { success: true, message: "No approved listings to aggregate." };
+    if (!rawListings || rawListings.length === 0)
+      return { success: true, message: "No approved listings to aggregate." };
 
     interface SimpleListing {
       brand: string;
@@ -26,7 +27,8 @@ export async function aggregateMarketStats() {
     const listings = rawListings as unknown as SimpleListing[];
 
     // 2. Group by Brand/Model/Year
-    const groups: Record<string, { brand: string; model: string; year: number; prices: number[] }> = {};
+    const groups: Record<string, { brand: string; model: string; year: number; prices: number[] }> =
+      {};
 
     listings.forEach((l) => {
       const key = `${l.brand}-${l.model}-${l.year}`.toLowerCase();
@@ -37,7 +39,7 @@ export async function aggregateMarketStats() {
     });
 
     // 3. Calculate Averages and Prep Upsert
-    const statsToUpsert = Object.values(groups).map(g => {
+    const statsToUpsert = Object.values(groups).map((g) => {
       const avgPrice = Math.round(g.prices.reduce((a, b) => a + b, 0) / g.prices.length);
       return {
         brand: g.brand,
@@ -45,7 +47,7 @@ export async function aggregateMarketStats() {
         year: g.year,
         avg_price: avgPrice,
         listing_count: g.prices.length,
-        calculated_at: new Date().toISOString()
+        calculated_at: new Date().toISOString(),
       };
     });
 
@@ -53,34 +55,37 @@ export async function aggregateMarketStats() {
     // We use brand, model, year as a unique combination for upserting
     // (We might need a unique constraint on these columns in DB, but for now we'll do manual cleanup or just upsert)
     // For simplicity, let's clear and re-insert if no unique constraint
-    await supabaseAdmin.from("market_stats").delete().neq("id", "00000000-0000-0000-0000-000000000000"); // Clear all
-    
-    const { error: upsertError } = await supabaseAdmin
+    await supabaseAdmin
       .from("market_stats")
-      .insert(statsToUpsert);
+      .delete()
+      .neq("id", "00000000-0000-0000-0000-000000000000"); // Clear all
+
+    const { error: upsertError } = await supabaseAdmin.from("market_stats").insert(statsToUpsert);
 
     if (upsertError) throw upsertError;
 
     // 5. Update market_price_index for each listing
     for (const l of listings) {
-        const key = `${l.brand}-${l.model}-${l.year}`.toLowerCase();
-        const stat = statsToUpsert.find(s => `${s.brand}-${s.model}-${s.year}`.toLowerCase() === key);
-        if (stat) {
-            const index = parseFloat((l.price / stat.avg_price).toFixed(3));
-            await supabaseAdmin
-                .from("listings")
-                .update({ market_price_index: index })
-                .eq("brand", l.brand)
-                .eq("model", l.model)
-                .eq("year", l.year)
-                .eq("price", l.price); // Rough match to avoid complex IDs here
-        }
+      const key = `${l.brand}-${l.model}-${l.year}`.toLowerCase();
+      const stat = statsToUpsert.find(
+        (s) => `${s.brand}-${s.model}-${s.year}`.toLowerCase() === key
+      );
+      if (stat) {
+        const index = parseFloat((l.price / stat.avg_price).toFixed(3));
+        await supabaseAdmin
+          .from("listings")
+          .update({ market_price_index: index })
+          .eq("brand", l.brand)
+          .eq("model", l.model)
+          .eq("year", l.year)
+          .eq("price", l.price); // Rough match to avoid complex IDs here
+      }
     }
 
-    return { 
-      success: true, 
+    return {
+      success: true,
       message: `${statsToUpsert.length} pazar segmenti güncellendi.`,
-      count: statsToUpsert.length 
+      count: statsToUpsert.length,
     };
   } catch (error: unknown) {
     logger.market.error("Market aggregation failed", error);

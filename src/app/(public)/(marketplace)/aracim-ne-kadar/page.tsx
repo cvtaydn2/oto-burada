@@ -1,10 +1,12 @@
-import { CarFront, Calculator, BadgeCheck, TrendingUp, Info } from "lucide-react";
-import { getLiveMarketplaceReferenceData } from "@/services/reference/live-reference-data";
+import { BadgeCheck, Calculator, CarFront, Info, TrendingUp } from "lucide-react";
+
 import { ValuationForm } from "@/components/market/valuation-form";
+import { getLiveMarketplaceReferenceData } from "@/services/reference/live-reference-data";
 
 export const metadata = {
   title: "Aracım Ne Kadar? | Ücretsiz Araç Değerleme",
-  description: "Arabanızın güncel piyasa değerini saniyeler içinde öğrenin. Gerçek ilan verilerine dayalı, yapay zeka destekli fiyat tahmini.",
+  description:
+    "Arabanızın güncel piyasa değerini saniyeler içinde öğrenin. Gerçek ilan verilerine dayalı, yapay zeka destekli fiyat tahmini.",
 };
 
 export default async function AracimNeKadarPage() {
@@ -28,7 +30,8 @@ export default async function AracimNeKadarPage() {
             Aracım <span className="text-primary">Ne Kadar?</span>
           </h1>
           <p className="max-w-2xl mx-auto text-lg text-muted-foreground/70 font-medium italic">
-            Piyasadaki binlerce aktif ilanı ve geçmiş verileri analiz ederek aracınızın güncel değerini anında hesaplayın.
+            Piyasadaki binlerce aktif ilanı ve geçmiş verileri analiz ederek aracınızın güncel
+            değerini anında hesaplayın.
           </p>
         </div>
       </section>
@@ -36,56 +39,56 @@ export default async function AracimNeKadarPage() {
       {/* Main Content */}
       <div className="mx-auto max-w-5xl px-4 -mt-12">
         <div className="grid lg:grid-cols-[1fr_350px] gap-8">
-          
           {/* Main Form Area */}
           <div className="bg-card rounded-2xl p-8 md:p-12 shadow-sm shadow-slate-200 border border-border">
-             <div className="flex items-center gap-4 mb-8">
-                <div className="size-12 rounded-2xl bg-primary/10 flex items-center justify-center text-primary">
-                   <CarFront size={24} />
-                </div>
-                <div>
-                   <h2 className="text-2xl font-bold italic tracking-tight">Araç Bilgilerini Girin</h2>
-                   <p className="text-sm text-muted-foreground font-medium">Lütfen aracınızın temel özelliklerini seçin.</p>
-                </div>
-             </div>
+            <div className="flex items-center gap-4 mb-8">
+              <div className="size-12 rounded-2xl bg-primary/10 flex items-center justify-center text-primary">
+                <CarFront size={24} />
+              </div>
+              <div>
+                <h2 className="text-2xl font-bold italic tracking-tight">Araç Bilgilerini Girin</h2>
+                <p className="text-sm text-muted-foreground font-medium">
+                  Lütfen aracınızın temel özelliklerini seçin.
+                </p>
+              </div>
+            </div>
 
-             <ValuationForm 
-                brands={references.brands} 
-             />
+            <ValuationForm brands={references.brands} />
           </div>
 
           {/* Sidebar / Trust Info */}
           <aside className="space-y-6">
-             <div className="p-6 rounded-3xl bg-indigo-600 text-white space-y-4 shadow-sm shadow-indigo-200">
-                <TrendingUp size={32} className="opacity-80" />
-                <h3 className="text-lg font-bold italic uppercase leading-tight">Neden OtoBurada Değerleme?</h3>
-                <ul className="space-y-4">
-                   <li className="flex gap-3 text-sm font-medium leading-relaxed">
-                      <BadgeCheck size={18} className="shrink-0" />
-                      Yapay zeka modellerimiz her gün binlerce yeni ilanla eğitilir.
-                   </li>
-                   <li className="flex gap-3 text-sm font-medium leading-relaxed">
-                      <BadgeCheck size={18} className="shrink-0" />
-                      Sadece plaka veya beyana değil, gerçek pazar verisine dayanır.
-                   </li>
-                   <li className="flex gap-3 text-sm font-medium leading-relaxed">
-                      <BadgeCheck size={18} className="shrink-0" />
-                      Tamamen ücretsiz ve anonimdir.
-                   </li>
-                </ul>
-             </div>
+            <div className="p-6 rounded-3xl bg-indigo-600 text-white space-y-4 shadow-sm shadow-indigo-200">
+              <TrendingUp size={32} className="opacity-80" />
+              <h3 className="text-lg font-bold italic uppercase leading-tight">
+                Neden OtoBurada Değerleme?
+              </h3>
+              <ul className="space-y-4">
+                <li className="flex gap-3 text-sm font-medium leading-relaxed">
+                  <BadgeCheck size={18} className="shrink-0" />
+                  Yapay zeka modellerimiz her gün binlerce yeni ilanla eğitilir.
+                </li>
+                <li className="flex gap-3 text-sm font-medium leading-relaxed">
+                  <BadgeCheck size={18} className="shrink-0" />
+                  Sadece plaka veya beyana değil, gerçek pazar verisine dayanır.
+                </li>
+                <li className="flex gap-3 text-sm font-medium leading-relaxed">
+                  <BadgeCheck size={18} className="shrink-0" />
+                  Tamamen ücretsiz ve anonimdir.
+                </li>
+              </ul>
+            </div>
 
-             <div className="p-6 rounded-3xl bg-card border border-border shadow-sm space-y-4">
-                <div className="flex items-center gap-2 text-amber-600">
-                   <Info size={18} />
-                   <span className="text-sm font-bold italic uppercase">Biliyor musunuz?</span>
-                </div>
-                <p className="text-xs text-muted-foreground leading-relaxed font-medium capitalize">
-                   Doğru fiyatlandırılmış bir araç, piyasa ortalamasına göre 3 kat daha hızlı satılır.
-                </p>
-             </div>
+            <div className="p-6 rounded-3xl bg-card border border-border shadow-sm space-y-4">
+              <div className="flex items-center gap-2 text-amber-600">
+                <Info size={18} />
+                <span className="text-sm font-bold italic uppercase">Biliyor musunuz?</span>
+              </div>
+              <p className="text-xs text-muted-foreground leading-relaxed font-medium capitalize">
+                Doğru fiyatlandırılmış bir araç, piyasa ortalamasına göre 3 kat daha hızlı satılır.
+              </p>
+            </div>
           </aside>
-
         </div>
       </div>
     </main>

@@ -1,11 +1,11 @@
-import type { PropsWithChildren } from "react";
+import { ArrowLeft, Coins, ShieldCheck } from "lucide-react";
 import Link from "next/link";
+import type { PropsWithChildren } from "react";
 
-import { logoutAction } from "@/lib/auth/actions";
 import { DashboardNavigation } from "@/components/layout/dashboard-navigation";
-import { ArrowLeft, ShieldCheck, Coins } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { logoutAction } from "@/lib/auth/actions";
 
 interface DashboardShellProps extends PropsWithChildren {
   email: string | null;
@@ -13,7 +13,12 @@ interface DashboardShellProps extends PropsWithChildren {
   balanceCredits?: number;
 }
 
-export function DashboardShell({ children, email, isAdmin, balanceCredits = 0 }: DashboardShellProps) {
+export function DashboardShell({
+  children,
+  email,
+  isAdmin,
+  balanceCredits = 0,
+}: DashboardShellProps) {
   return (
     <div className="min-h-screen bg-muted/30">
       {/* Skip navigation */}
@@ -24,7 +29,6 @@ export function DashboardShell({ children, email, isAdmin, balanceCredits = 0 }:
         Ana içeriğe geç
       </a>
       <div className="mx-auto max-w-[1400px] w-full px-4 py-8">
-
         {/* Top Header */}
         <section className="mb-6 rounded-2xl border border-border bg-card p-5 shadow-sm">
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
@@ -48,14 +52,20 @@ export function DashboardShell({ children, email, isAdmin, balanceCredits = 0 }:
 
             <div className="flex items-center gap-3">
               <Link href="/dashboard/pricing">
-                <Badge variant="secondary" className="flex items-center gap-1.5 h-9 px-3 rounded-xl bg-amber-50 text-amber-700 border-amber-100 hover:bg-amber-100 transition-colors cursor-pointer">
+                <Badge
+                  variant="secondary"
+                  className="flex items-center gap-1.5 h-9 px-3 rounded-xl bg-amber-50 text-amber-700 border-amber-100 hover:bg-amber-100 transition-colors cursor-pointer"
+                >
                   <Coins size={14} className="text-amber-500" />
                   <span className="font-bold">{balanceCredits} İlan Hakkı</span>
                 </Badge>
               </Link>
               {isAdmin && (
                 <Link href="/admin">
-                  <Button variant="outline" className="h-9 border-blue-100 bg-blue-50/50 text-blue-700 hover:bg-blue-50 gap-2 font-bold rounded-xl shadow-sm text-xs">
+                  <Button
+                    variant="outline"
+                    className="h-9 border-blue-100 bg-blue-50/50 text-blue-700 hover:bg-blue-50 gap-2 font-bold rounded-xl shadow-sm text-xs"
+                  >
                     <ShieldCheck size={15} />
                     Admin Paneli
                   </Button>
@@ -75,9 +85,11 @@ export function DashboardShell({ children, email, isAdmin, balanceCredits = 0 }:
 
         {/* Main Layout: Sidebar + Content */}
         <div className="flex flex-col md:flex-row gap-6 lg:gap-8">
-
           {/* Sidebar Navigation — mobilde yatay scroll */}
-          <aside aria-label="Kullanıcı paneli navigasyonu" className="w-full md:w-56 lg:w-64 shrink-0">
+          <aside
+            aria-label="Kullanıcı paneli navigasyonu"
+            className="w-full md:w-56 lg:w-64 shrink-0"
+          >
             <nav className="rounded-xl border border-border bg-card overflow-hidden md:sticky md:top-24 shadow-sm">
               <DashboardNavigation variant="sidebar" />
             </nav>

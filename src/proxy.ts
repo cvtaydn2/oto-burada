@@ -1,4 +1,5 @@
 import { type NextRequest, NextResponse } from "next/server";
+
 import { updateSession } from "@/lib/supabase/middleware";
 import { checkGlobalRateLimit } from "@/lib/utils/distributed-rate-limit";
 
@@ -27,7 +28,7 @@ export async function proxy(request: NextRequest) {
   // 1. GLOBAL RATE LIMITING
   // Get client IP (Vercel provides this in headers)
   const ip = request.headers.get("x-forwarded-for")?.split(",")[0] || "127.0.0.1";
-  
+
   // Apply rate limiting to all requests (Public + API)
   // We can exclude specific heavy assets if needed, but Redis is fast enough
   const { success, limit, remaining, reset } = await checkGlobalRateLimit(ip);

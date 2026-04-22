@@ -1,5 +1,6 @@
-import { describe, it, expect } from "vitest";
-import { isDisposableEmail, getDisposableDomainCount } from "../email-validation";
+import { describe, expect, it } from "vitest";
+
+import { getDisposableDomainCount, isDisposableEmail } from "../email-validation";
 
 describe("Email Validation (Disposable Filter)", () => {
   it("should detect known disposable domains", () => {

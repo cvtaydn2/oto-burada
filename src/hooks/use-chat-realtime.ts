@@ -1,7 +1,8 @@
+import type { REALTIME_SUBSCRIBE_STATES, RealtimeChannel } from "@supabase/supabase-js";
 import { useCallback, useEffect, useRef, useState } from "react";
+
 import { createSupabaseBrowserClient } from "@/lib/supabase/browser";
 import type { Message } from "@/types";
-import type { RealtimeChannel, REALTIME_SUBSCRIBE_STATES } from "@supabase/supabase-js";
 
 interface RealtimeMessageRow {
   id: string;
@@ -69,7 +70,7 @@ export function useChatRealtime(chatId: string, currentUserId: string): UseChatR
       setMessages(fetched);
       onSync?.(fetched);
     },
-    [chatId],
+    [chatId]
   );
 
   // ── Subscribe helper (extracted so we can call it on reconnect) ──────────
@@ -97,30 +98,26 @@ export function useChatRealtime(chatId: string, currentUserId: string): UseChatR
     channelRef.current = channel;
 
     channel
-      .on(
-        "broadcast",
-        { event: "message" },
-        ({ payload }: { payload: Message }) => {
-          setMessages((prev) => {
-            if (prev.some((m) => m.id === payload.id)) return prev;
+      .on("broadcast", { event: "message" }, ({ payload }: { payload: Message }) => {
+        setMessages((prev) => {
+          if (prev.some((m) => m.id === payload.id)) return prev;
 
-            // Push notification when tab is hidden
-            if (
-              payload.senderId !== currentUserId &&
-              typeof window !== "undefined" &&
-              document.hidden &&
-              Notification.permission === "granted"
-            ) {
-              new Notification("Yeni Mesaj - OtoBurada", {
-                body: payload.content,
-                icon: "/favicon.ico",
-              });
-            }
+          // Push notification when tab is hidden
+          if (
+            payload.senderId !== currentUserId &&
+            typeof window !== "undefined" &&
+            document.hidden &&
+            Notification.permission === "granted"
+          ) {
+            new Notification("Yeni Mesaj - OtoBurada", {
+              body: payload.content,
+              icon: "/favicon.ico",
+            });
+          }
 
-            return [...prev, payload];
-          });
-        },
-      )
+          return [...prev, payload];
+        });
+      })
       .on("presence", { event: "sync" }, () => {
         const state = channel.presenceState();
         setOnlineUsers(Object.keys(state));
@@ -132,7 +129,7 @@ export function useChatRealtime(chatId: string, currentUserId: string): UseChatR
           if (payload.userId !== currentUserId) {
             setIsTyping(payload.typing);
           }
-        },
+        }
       )
       .subscribe((status: `${REALTIME_SUBSCRIBE_STATES}`) => {
         if (status === "SUBSCRIBED") {
@@ -197,7 +194,10 @@ export function useChatRealtime(chatId: string, currentUserId: string): UseChatR
 
     // ── Page visibility listener (Safari background tab) ─────────────────────
     const handleVisibilityChange = () => {
-      if (document.visibilityState === "visible" && (missedMessagesRef.current || statusRef.current === "disconnected")) {
+      if (
+        document.visibilityState === "visible" &&
+        (missedMessagesRef.current || statusRef.current === "disconnected")
+      ) {
         retryCountRef.current = 0;
         subscribe();
       }

@@ -1,13 +1,13 @@
 "use client";
 
+import { ArrowRight, Filter, History, Search, Sparkles } from "lucide-react";
 import Link from "next/link";
 import { useMemo, useState } from "react";
-import { ArrowRight, Search, Sparkles, History, Filter } from "lucide-react";
 
 import { moderationActionLabels } from "@/lib/constants/domain";
 import { formatDate } from "@/lib/utils";
-import type { AdminModerationAction, ModerationAction } from "@/types";
 import { cn } from "@/lib/utils";
+import type { AdminModerationAction, ModerationAction } from "@/types";
 
 export interface AdminRecentActionItem {
   action: AdminModerationAction;
@@ -43,7 +43,8 @@ const actionFilters: Array<{ label: string; value: ModerationAction | "all" }> =
 
 export function AdminRecentActions({ actions }: AdminRecentActionsProps) {
   const [activeFilter, setActiveFilter] = useState<(typeof filters)[number]["value"]>("all");
-  const [activeActionFilter, setActiveActionFilter] = useState<(typeof actionFilters)[number]["value"]>("all");
+  const [activeActionFilter, setActiveActionFilter] =
+    useState<(typeof actionFilters)[number]["value"]>("all");
   const [query, setQuery] = useState("");
 
   const filteredActions = useMemo(() => {
@@ -79,17 +80,21 @@ export function AdminRecentActions({ actions }: AdminRecentActionsProps) {
     return (
       <section className="rounded-3xl border border-slate-200 bg-white p-8 shadow-sm">
         <div className="flex items-center gap-3 mb-6">
-           <div className="size-10 rounded-xl bg-slate-50 flex items-center justify-center text-slate-400">
-              <History size={20} />
-           </div>
-           <div>
-              <h2 className="text-xl font-bold text-slate-800 tracking-tight">Aksiyon Geçmişi</h2>
-              <p className="text-sm text-slate-400 font-medium italic">Kayıtlı moderasyon aksiyonu bulunamadı.</p>
-           </div>
+          <div className="size-10 rounded-xl bg-slate-50 flex items-center justify-center text-slate-400">
+            <History size={20} />
+          </div>
+          <div>
+            <h2 className="text-xl font-bold text-slate-800 tracking-tight">Aksiyon Geçmişi</h2>
+            <p className="text-sm text-slate-400 font-medium italic">
+              Kayıtlı moderasyon aksiyonu bulunamadı.
+            </p>
+          </div>
         </div>
         <div className="rounded-2xl border border-dashed border-slate-200 p-12 text-center">
-           <Sparkles className="mx-auto size-12 text-slate-100 mb-4" />
-           <p className="text-slate-400 font-medium">Yeni moderasyon kararları alındıkça burada görünecektir.</p>
+          <Sparkles className="mx-auto size-12 text-slate-100 mb-4" />
+          <p className="text-slate-400 font-medium">
+            Yeni moderasyon kararları alındıkça burada görünecektir.
+          </p>
         </div>
       </section>
     );
@@ -99,13 +104,15 @@ export function AdminRecentActions({ actions }: AdminRecentActionsProps) {
     <section className="rounded-3xl border border-slate-200 bg-white p-8 shadow-sm">
       <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between mb-8">
         <div className="flex items-center gap-3">
-           <div className="size-12 rounded-2xl bg-blue-50 flex items-center justify-center text-blue-600 shadow-sm shadow-blue-50">
-              <History size={24} />
-           </div>
-           <div>
-              <h2 className="text-xl font-bold text-slate-800 tracking-tight">Moderasyon Geçmişi</h2>
-              <p className="text-sm text-slate-400 font-medium">Son alınan kararlar ve sistem günlüğü</p>
-           </div>
+          <div className="size-12 rounded-2xl bg-blue-50 flex items-center justify-center text-blue-600 shadow-sm shadow-blue-50">
+            <History size={24} />
+          </div>
+          <div>
+            <h2 className="text-xl font-bold text-slate-800 tracking-tight">Moderasyon Geçmişi</h2>
+            <p className="text-sm text-slate-400 font-medium">
+              Son alınan kararlar ve sistem günlüğü
+            </p>
+          </div>
         </div>
         <div className="bg-slate-50 border border-slate-100 px-4 py-2 rounded-xl text-xs font-bold text-slate-500 uppercase tracking-widest">
           {actions.length} KAYIT
@@ -114,7 +121,7 @@ export function AdminRecentActions({ actions }: AdminRecentActionsProps) {
 
       <div className="space-y-4 mb-8">
         <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-hide">
-           <div className="flex items-center gap-2 p-1 bg-slate-50 rounded-xl border border-slate-100">
+          <div className="flex items-center gap-2 p-1 bg-slate-50 rounded-xl border border-slate-100">
             {filters.map((filter) => {
               const isActive = activeFilter === filter.value;
               return (
@@ -134,7 +141,7 @@ export function AdminRecentActions({ actions }: AdminRecentActionsProps) {
               );
             })}
           </div>
-          
+
           <div className="h-4 w-px bg-slate-200 mx-2" />
 
           <div className="flex items-center gap-2 p-1 bg-slate-50 rounded-xl border border-slate-100">
@@ -175,8 +182,10 @@ export function AdminRecentActions({ actions }: AdminRecentActionsProps) {
       <div className="grid gap-4 max-h-[600px] overflow-y-auto pr-2 custom-scrollbar">
         {filteredActions.length === 0 ? (
           <div className="rounded-2xl border border-dashed border-slate-200 p-8 text-center bg-slate-50">
-             <Filter className="mx-auto size-8 text-slate-200 mb-2" />
-             <p className="text-sm font-medium text-slate-400">Arama kriterlerine uygun sonuç bulunamadı.</p>
+            <Filter className="mx-auto size-8 text-slate-200 mb-2" />
+            <p className="text-sm font-medium text-slate-400">
+              Arama kriterlerine uygun sonuç bulunamadı.
+            </p>
           </div>
         ) : (
           filteredActions.map((item) => {
@@ -192,12 +201,16 @@ export function AdminRecentActions({ actions }: AdminRecentActionsProps) {
                 <div className="flex flex-col gap-4">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
-                      <span className={cn(
-                        "px-3 py-1 rounded-lg text-[10px] font-bold uppercase tracking-widest",
-                        isApprove ? "bg-emerald-50 text-emerald-600" : 
-                        isReject ? "bg-rose-50 text-rose-600" :
-                        "bg-blue-50 text-blue-600"
-                      )}>
+                      <span
+                        className={cn(
+                          "px-3 py-1 rounded-lg text-[10px] font-bold uppercase tracking-widest",
+                          isApprove
+                            ? "bg-emerald-50 text-emerald-600"
+                            : isReject
+                              ? "bg-rose-50 text-rose-600"
+                              : "bg-blue-50 text-blue-600"
+                        )}
+                      >
                         {moderationActionLabels[action.action]}
                       </span>
                       <span className="px-3 py-1 rounded-lg bg-slate-50 text-slate-400 text-[10px] font-bold uppercase tracking-widest">
@@ -213,7 +226,9 @@ export function AdminRecentActions({ actions }: AdminRecentActionsProps) {
                     <h4 className="text-sm font-bold text-slate-800 line-clamp-1 group-hover:text-blue-600 transition-colors">
                       {item.targetLabel}
                     </h4>
-                    <p className="text-xs text-slate-400 font-medium">İşlem: <span className="text-slate-600">{item.actorLabel}</span></p>
+                    <p className="text-xs text-slate-400 font-medium">
+                      İşlem: <span className="text-slate-600">{item.actorLabel}</span>
+                    </p>
                   </div>
 
                   <div className="rounded-xl border border-slate-50 bg-slate-50/50 p-4">
@@ -222,9 +237,11 @@ export function AdminRecentActions({ actions }: AdminRecentActionsProps) {
                       Yönetici Notu
                     </div>
                     <p className="text-[13px] leading-relaxed text-slate-600 font-medium italic">
-                      &quot;{action.note?.trim()
+                      &quot;
+                      {action.note?.trim()
                         ? action.note
-                        : `${targetTypeLabels[action.targetType]} için moderasyon kararı kaydedildi.`}&quot;
+                        : `${targetTypeLabels[action.targetType]} için moderasyon kararı kaydedildi.`}
+                      &quot;
                     </p>
                   </div>
 

@@ -1,18 +1,16 @@
 import { NextResponse } from "next/server";
-import { withAdminRoute } from "@/lib/utils/api-security";
-import { updateTicketStatus } from "@/services/support/ticket-service";
-import type { TicketStatus } from "@/services/support/ticket-service";
-import { logger } from "@/lib/utils/logger";
+
 import { captureServerError, captureServerEvent } from "@/lib/monitoring/posthog-server";
+import { API_ERROR_CODES, apiError, apiSuccess } from "@/lib/utils/api-response";
+import { withAdminRoute } from "@/lib/utils/api-security";
+import { logger } from "@/lib/utils/logger";
 import { sanitizeText } from "@/lib/utils/sanitize";
-import { apiError, apiSuccess, API_ERROR_CODES } from "@/lib/utils/api-response";
+import type { TicketStatus } from "@/services/support/ticket-service";
+import { updateTicketStatus } from "@/services/support/ticket-service";
 
 const VALID_STATUSES: TicketStatus[] = ["open", "in_progress", "resolved", "closed"];
 
-export async function PATCH(
-  request: Request,
-  { params }: { params: Promise<{ id: string }> }
-) {
+export async function PATCH(request: Request, { params }: { params: Promise<{ id: string }> }) {
   const security = await withAdminRoute(request);
   if (!security.ok) return security.response;
   const adminUser = security.user!;
@@ -29,19 +27,31 @@ export async function PATCH(
   const { status, adminResponse } = body as { status?: string; adminResponse?: string };
 
   if (status && !VALID_STATUSES.includes(status as TicketStatus)) {
-    return apiError(API_ERROR_CODES.BAD_REQUEST, `Geçersiz durum. Geçerli değerler: ${VALID_STATUSES.join(", ")}`, 400);
+    return apiError(
+      API_ERROR_CODES.BAD_REQUEST,
+      `Geçersiz durum. Geçerli değerler: ${VALID_STATUSES.join(", ")}`,
+      400
+    );
   }
 
   const sanitizedResponse = adminResponse ? sanitizeText(adminResponse) : undefined;
 
   try {
-    const ticket = await updateTicketStatus(id, (status as TicketStatus) ?? "in_progress", sanitizedResponse);
+    const ticket = await updateTicketStatus(
+      id,
+      (status as TicketStatus) ?? "in_progress",
+      sanitizedResponse
+    );
 
-    captureServerEvent("admin_ticket_updated", {
-      adminUserId: adminUser.id,
-      ticketId: id,
-      status: status ?? "in_progress",
-    }, adminUser.id);
+    captureServerEvent(
+      "admin_ticket_updated",
+      {
+        adminUserId: adminUser.id,
+        ticketId: id,
+        status: status ?? "in_progress",
+      },
+      adminUser.id
+    );
 
     return apiSuccess(ticket, "Ticket durumu güncellendi.");
   } catch (error) {

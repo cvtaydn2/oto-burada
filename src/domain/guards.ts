@@ -1,1 +1,5 @@
-export { requireUser as ensureAuthenticated, requireAdminUser as ensureAdmin, getAuthenticatedUserOrThrow } from "@/lib/auth/session";
+export {
+  requireAdminUser as ensureAdmin,
+  requireUser as ensureAuthenticated,
+  getAuthenticatedUserOrThrow,
+} from "@/lib/auth/session";

@@ -1,7 +1,8 @@
 "use client";
 
+import { CheckCircle2, Loader2, Star } from "lucide-react";
 import { useState } from "react";
-import { Star, Loader2, CheckCircle2 } from "lucide-react";
+
 import { cn } from "@/lib/utils";
 
 interface SellerReviewFormProps {
@@ -84,14 +85,9 @@ export function SellerReviewForm({
   }
 
   return (
-    <form
-      onSubmit={handleSubmit}
-      className="rounded-xl border border-border bg-card p-5 space-y-4"
-    >
+    <form onSubmit={handleSubmit} className="rounded-xl border border-border bg-card p-5 space-y-4">
       <div>
-        <p className="text-sm font-bold text-foreground mb-1">
-          {sellerName} için değerlendirme
-        </p>
+        <p className="text-sm font-bold text-foreground mb-1">{sellerName} için değerlendirme</p>
         <p className="text-xs text-muted-foreground">
           Deneyimini paylaş, diğer alıcılara yardımcı ol.
         </p>
@@ -119,7 +115,7 @@ export function SellerReviewForm({
                   "transition-colors",
                   star <= (hovered || rating)
                     ? "fill-amber-400 text-amber-400"
-                    : "fill-slate-100 text-slate-200",
+                    : "fill-slate-100 text-slate-200"
                 )}
               />
             </button>
@@ -149,9 +145,7 @@ export function SellerReviewForm({
           placeholder="Satıcıyla iletişim, güvenilirlik, araç durumu hakkında ne düşünüyorsun?"
           className="w-full resize-none rounded-lg border border-border bg-muted/30 px-3 py-2.5 text-sm text-foreground placeholder:text-muted-foreground/70 focus:border-blue-400 focus:bg-card focus:outline-none focus:ring-2 focus:ring-blue-100 transition"
         />
-        <p className="mt-1 text-right text-[10px] text-muted-foreground/70">
-          {comment.length}/500
-        </p>
+        <p className="mt-1 text-right text-[10px] text-muted-foreground/70">{comment.length}/500</p>
       </div>
 
       {errorMessage && (

@@ -1,7 +1,8 @@
-import { createSupabaseBrowserClient } from "@/lib/supabase/browser";
-import type { Chat, Message, Profile, Listing } from "@/types";
-import { logger } from "@/lib/utils/logger";
 import { SupabaseClient } from "@supabase/supabase-js";
+
+import { createSupabaseBrowserClient } from "@/lib/supabase/browser";
+import { logger } from "@/lib/utils/logger";
+import type { Chat, Listing, Message, Profile } from "@/types";
 
 /**
  * Common helper to get client, defaults to browser client
@@ -100,7 +101,7 @@ function mapChatRow(row: ChatRow): Chat {
     listing: mapListingRow(row.listing),
     buyer: mapProfileRow(row.buyer ?? row.profiles_buyer_id?.[0]),
     seller: mapProfileRow(row.seller ?? row.profiles_seller_id?.[0]),
-    lastMessage: row.last_message ? mapMessageRow(row.last_message) : undefined
+    lastMessage: row.last_message ? mapMessageRow(row.last_message) : undefined,
   };
 }
 
@@ -111,7 +112,7 @@ function mapMessageRow(row: MessageRow): Message {
     senderId: row.sender_id,
     content: row.content,
     isRead: row.is_read,
-    createdAt: row.created_at
+    createdAt: row.created_at,
   };
 }
 
@@ -119,8 +120,8 @@ function mapMessageRow(row: MessageRow): Message {
  * Creates or retrieves a chat between a buyer and a seller for a specific listing.
  */
 export async function getOrCreateChat(
-  listingId: string, 
-  buyerId: string, 
+  listingId: string,
+  buyerId: string,
   sellerId: string,
   supabase?: SupabaseClient
 ): Promise<Chat | null> {
@@ -129,7 +130,9 @@ export async function getOrCreateChat(
   try {
     const { data: existingChat } = await client
       .from("chats")
-      .select("*, listing:listings(id, title, price, slug, brand, model), buyer:profiles!buyer_id(id, full_name, avatar_url, city), seller:profiles!seller_id(id, full_name, avatar_url, city)")
+      .select(
+        "*, listing:listings(id, title, price, slug, brand, model), buyer:profiles!buyer_id(id, full_name, avatar_url, city), seller:profiles!seller_id(id, full_name, avatar_url, city)"
+      )
       .eq("listing_id", listingId)
       .eq("buyer_id", buyerId)
       .eq("seller_id", sellerId)
@@ -140,7 +143,9 @@ export async function getOrCreateChat(
     const { data: newChat, error: createError } = await client
       .from("chats")
       .insert({ listing_id: listingId, buyer_id: buyerId, seller_id: sellerId })
-      .select("*, listing:listings(id, title, price, slug, brand, model), buyer:profiles!buyer_id(id, full_name, avatar_url, city), seller:profiles!seller_id(id, full_name, avatar_url, city)")
+      .select(
+        "*, listing:listings(id, title, price, slug, brand, model), buyer:profiles!buyer_id(id, full_name, avatar_url, city), seller:profiles!seller_id(id, full_name, avatar_url, city)"
+      )
       .single();
 
     if (createError) {
@@ -158,7 +163,10 @@ export async function getOrCreateChat(
 /**
  * Fetches all messages for a specific chat.
  */
-export async function getChatMessages(chatId: string, supabase?: SupabaseClient): Promise<Message[]> {
+export async function getChatMessages(
+  chatId: string,
+  supabase?: SupabaseClient
+): Promise<Message[]> {
   const client = getClient(supabase);
 
   const { data, error } = await client
@@ -180,22 +188,24 @@ export async function getChatMessages(chatId: string, supabase?: SupabaseClient)
  * Uses Server API when called from browser to enforce rate limits and security.
  */
 export async function sendMessage(
-  chatId: string, 
-  senderId: string, 
+  chatId: string,
+  senderId: string,
   content: string,
   supabase?: SupabaseClient
 ): Promise<Message | null> {
   if (supabase || process.env.NODE_ENV === "test") {
     const client = supabase ?? getClient();
-    const { data, error } = await supabase
-      ?.from("messages")
-      .insert({ chat_id: chatId, sender_id: senderId, content })
-      .select("*")
-      .single() ?? await client
-      .from("messages")
-      .insert({ chat_id: chatId, sender_id: senderId, content })
-      .select("*")
-      .single();
+    const { data, error } =
+      (await supabase
+        ?.from("messages")
+        .insert({ chat_id: chatId, sender_id: senderId, content })
+        .select("*")
+        .single()) ??
+      (await client
+        .from("messages")
+        .insert({ chat_id: chatId, sender_id: senderId, content })
+        .select("*")
+        .single());
 
     if (error) {
       logger.messages.error("Send Message DB Error", error, { chatId });
@@ -208,7 +218,10 @@ export async function sendMessage(
   // If running in browser, use the Secure API Route to benefit from Rate Limiting & CSRF protection
   if (typeof window !== "undefined") {
     try {
-      const endpoint = new URL("/api/messages", window.location.origin || "http://localhost").toString();
+      const endpoint = new URL(
+        "/api/messages",
+        window.location.origin || "http://localhost"
+      ).toString();
       const response = await fetch(endpoint, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -251,7 +264,9 @@ export async function getUserChats(userId: string, supabase?: SupabaseClient): P
 
   const { data, error } = await client
     .from("chats")
-    .select("*, listing:listings(id, title, price, slug, brand, model), buyer:profiles!buyer_id(id, full_name, avatar_url, city), seller:profiles!seller_id(id, full_name, avatar_url, city)")
+    .select(
+      "*, listing:listings(id, title, price, slug, brand, model), buyer:profiles!buyer_id(id, full_name, avatar_url, city), seller:profiles!seller_id(id, full_name, avatar_url, city)"
+    )
     .or(`buyer_id.eq.${userId},seller_id.eq.${userId}`)
     .order("last_message_at", { ascending: false });
 
@@ -266,7 +281,11 @@ export async function getUserChats(userId: string, supabase?: SupabaseClient): P
 /**
  * Marks all unread messages in a chat as read for the current user.
  */
-export async function markMessagesAsRead(chatId: string, userId: string, supabase?: SupabaseClient): Promise<boolean> {
+export async function markMessagesAsRead(
+  chatId: string,
+  userId: string,
+  supabase?: SupabaseClient
+): Promise<boolean> {
   const client = getClient(supabase);
 
   const { error } = await client

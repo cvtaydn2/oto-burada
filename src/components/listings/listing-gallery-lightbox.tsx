@@ -1,10 +1,10 @@
 "use client";
 
-import { useRef, useState, useEffect } from "react";
-import { ChevronLeft, ChevronRight, X, GripVertical } from "lucide-react";
+import { ChevronLeft, ChevronRight, GripVertical, X } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+
 import { SafeImage } from "@/components/shared/safe-image";
 import { supabaseImageUrl } from "@/lib/utils";
-
 import type { ListingImage } from "@/types";
 
 interface ListingGalleryLightboxProps {
@@ -195,14 +195,20 @@ export function ListingGalleryLightbox({
           <>
             {/* Desktop arrows */}
             <button
-              onClick={(e) => { e.stopPropagation(); onPrev(); }}
+              onClick={(e) => {
+                e.stopPropagation();
+                onPrev();
+              }}
               aria-label="Önceki fotoğraf"
               className="absolute left-4 sm:left-6 size-12 sm:size-16 items-center justify-center rounded-full bg-card/5 text-white transition-all hover:bg-card/20 hidden sm:flex"
             >
               <ChevronLeft size={28} className="sm:size-32" />
             </button>
             <button
-              onClick={(e) => { e.stopPropagation(); onNext(); }}
+              onClick={(e) => {
+                e.stopPropagation();
+                onNext();
+              }}
               aria-label="Sonraki fotoğraf"
               className="absolute right-4 sm:right-6 size-12 sm:size-16 items-center justify-center rounded-full bg-card/5 text-white transition-all hover:bg-card/20 hidden sm:flex"
             >
@@ -212,7 +218,10 @@ export function ListingGalleryLightbox({
             {/* Mobile swipe zones */}
             <div
               className="absolute left-0 top-0 bottom-0 w-1/4 flex items-center justify-start pl-2 sm:hidden"
-              onClick={(e) => { e.stopPropagation(); onPrev(); }}
+              onClick={(e) => {
+                e.stopPropagation();
+                onPrev();
+              }}
             >
               <div className="size-14 items-center justify-center rounded-full bg-card/20 text-white/60 flex">
                 <ChevronLeft size={24} />
@@ -220,7 +229,10 @@ export function ListingGalleryLightbox({
             </div>
             <div
               className="absolute right-0 top-0 bottom-0 w-1/4 flex items-center justify-end pr-2 sm:hidden"
-              onClick={(e) => { e.stopPropagation(); onNext(); }}
+              onClick={(e) => {
+                e.stopPropagation();
+                onNext();
+              }}
             >
               <div className="size-14 items-center justify-center rounded-full bg-card/20 text-white/60 flex">
                 <ChevronRight size={24} />
@@ -245,7 +257,9 @@ export function ListingGalleryLightbox({
         {images.map((_, index) => (
           <button
             key={index}
-            onClick={(e) => { e.stopPropagation(); }}
+            onClick={(e) => {
+              e.stopPropagation();
+            }}
             className={`h-2 sm:h-1.5 rounded-full transition-all ${
               index === currentIndex ? "w-6 sm:w-8 bg-primary" : "w-2 sm:w-1.5 bg-card/40"
             }`}

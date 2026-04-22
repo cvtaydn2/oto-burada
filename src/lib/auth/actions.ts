@@ -1,16 +1,16 @@
 "use server";
 
-import { redirect } from "next/navigation";
 import { headers } from "next/headers";
+import { redirect } from "next/navigation";
 
-import { loginSchema, registerSchema } from "@/lib/validators";
-import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { AnalyticsEvent } from "@/lib/analytics/events";
+import { identifyServerUser, trackServerEvent } from "@/lib/monitoring/posthog-server";
+import { getAppUrl } from "@/lib/seo";
 import { hasSupabaseEnv } from "@/lib/supabase/env";
+import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { rateLimitProfiles } from "@/lib/utils/rate-limit";
 import { checkRateLimit } from "@/lib/utils/rate-limit-middleware";
-import { trackServerEvent, identifyServerUser } from "@/lib/monitoring/posthog-server";
-import { AnalyticsEvent } from "@/lib/analytics/events";
-import { getAppUrl } from "@/lib/seo";
+import { loginSchema, registerSchema } from "@/lib/validators";
 
 export interface AuthActionState {
   error?: string;
@@ -50,12 +50,12 @@ async function getClientIp() {
   const headersList = await headers();
   const forwarded = headersList.get("x-forwarded-for");
   const realIp = headersList.get("x-real-ip");
-  return (forwarded?.split(",")[0]?.trim() || realIp || "unknown");
+  return forwarded?.split(",")[0]?.trim() || realIp || "unknown";
 }
 
 export async function loginAction(
   previousState: AuthActionState = initialState,
-  formData: FormData,
+  formData: FormData
 ): Promise<AuthActionState> {
   void previousState;
 
@@ -85,8 +85,7 @@ export async function loginAction(
 
   if (!hasSupabaseEnv()) {
     return {
-      error:
-        "Supabase ortam değişkenleri eksik. Giriş için .env.local dosyasını tamamlamalısın.",
+      error: "Supabase ortam değişkenleri eksik. Giriş için .env.local dosyasını tamamlamalısın.",
       fields: { email: values.email },
     };
   }
@@ -103,10 +102,14 @@ export async function loginAction(
   }
 
   if (data.user) {
-    trackServerEvent(AnalyticsEvent.SERVER_AUTH_LOGIN, {
-      userId: data.user.id,
-      method: "email",
-    }, data.user.id);
+    trackServerEvent(
+      AnalyticsEvent.SERVER_AUTH_LOGIN,
+      {
+        userId: data.user.id,
+        method: "email",
+      },
+      data.user.id
+    );
 
     identifyServerUser(data.user.id, {
       email: data.user.email,
@@ -121,7 +124,7 @@ export async function loginAction(
 
 export async function registerAction(
   previousState: AuthActionState = initialState,
-  formData: FormData,
+  formData: FormData
 ): Promise<AuthActionState> {
   void previousState;
 
@@ -150,8 +153,7 @@ export async function registerAction(
 
   if (!hasSupabaseEnv()) {
     return {
-      error:
-        "Supabase ortam değişkenleri eksik. Kayıt için .env.local dosyasını tamamlamalısın.",
+      error: "Supabase ortam değişkenleri eksik. Kayıt için .env.local dosyasını tamamlamalısın.",
       fields: { email: values.email },
     };
   }
@@ -175,10 +177,14 @@ export async function registerAction(
   }
 
   if (data.user) {
-    trackServerEvent(AnalyticsEvent.SERVER_AUTH_REGISTER, {
-      userId: data.user.id,
-      method: "email",
-    }, data.user.id);
+    trackServerEvent(
+      AnalyticsEvent.SERVER_AUTH_REGISTER,
+      {
+        userId: data.user.id,
+        method: "email",
+      },
+      data.user.id
+    );
 
     identifyServerUser(data.user.id, {
       email: data.user.email,
@@ -190,15 +196,14 @@ export async function registerAction(
   }
 
   return {
-    success:
-      "Hesabın oluşturuldu. E-posta doğrulaması açıksa gelen kutunu kontrol et.",
+    success: "Hesabın oluşturuldu. E-posta doğrulaması açıksa gelen kutunu kontrol et.",
     fields: { email: values.email },
   };
 }
 
 export async function forgotPasswordAction(
   _previousState: AuthActionState | undefined,
-  formData: FormData,
+  formData: FormData
 ): Promise<AuthActionState> {
   const email = String(formData.get("email") ?? "").trim();
 
@@ -229,7 +234,9 @@ export async function logoutAction() {
   }
 
   const supabase = await createSupabaseServerClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
 
   if (user) {
     trackServerEvent(AnalyticsEvent.SERVER_AUTH_LOGOUT, { userId: user.id }, user.id);

@@ -1,19 +1,19 @@
+import type { User } from "@supabase/supabase-js";
 import { Suspense } from "react";
+
+import { DashboardContentSkeleton } from "@/components/dashboard/dashboard-content-skeleton";
+import { DashboardCreditsCard } from "@/components/dashboard/dashboard-credits-card";
+import { DashboardHeader } from "@/components/dashboard/dashboard-header";
+import { DashboardListingsTable } from "@/components/dashboard/dashboard-listings-table";
+import { DashboardProfessionalCard } from "@/components/dashboard/dashboard-professional-card";
+import { DashboardQuickLinks } from "@/components/dashboard/dashboard-quick-links";
+import { DashboardStats } from "@/components/dashboard/dashboard-stats";
+import { DashboardVerificationAlert } from "@/components/dashboard/dashboard-verification-alert";
 import { requireUser } from "@/lib/auth/session";
 import { getDatabaseFavoriteCount } from "@/services/favorites/favorite-records";
 import { getStoredUserListings } from "@/services/listings/listing-submissions";
-import { getStoredProfileById, buildProfileFromAuthUser } from "@/services/profile/profile-records";
-import { DashboardHeader } from "@/components/dashboard/dashboard-header";
-import { DashboardStats } from "@/components/dashboard/dashboard-stats";
-import { DashboardVerificationAlert } from "@/components/dashboard/dashboard-verification-alert";
-import { DashboardListingsTable } from "@/components/dashboard/dashboard-listings-table";
-import { DashboardProfessionalCard } from "@/components/dashboard/dashboard-professional-card";
-import { DashboardCreditsCard } from "@/components/dashboard/dashboard-credits-card";
-import { DashboardQuickLinks } from "@/components/dashboard/dashboard-quick-links";
-import { DashboardContentSkeleton } from "@/components/dashboard/dashboard-content-skeleton";
-
+import { buildProfileFromAuthUser, getStoredProfileById } from "@/services/profile/profile-records";
 import type { Listing, Profile } from "@/types";
-import type { User } from "@supabase/supabase-js";
 
 export const dynamic = "force-dynamic";
 
@@ -58,21 +58,18 @@ async function DashboardDataSection({
     profilePromise,
     favoriteCountPromise,
   ]);
-  
+
   const profile = storedProfile ?? buildProfileFromAuthUser(user);
   const pendingCount = storedListings.filter((l) => l.status === "pending").length;
   const approvedCount = storedListings.filter((l) => l.status === "approved").length;
   return (
     <div className="space-y-10">
-      <DashboardVerificationAlert 
-        isEmailVerified={profile?.emailVerified} 
-        profile={profile} 
-      />
+      <DashboardVerificationAlert isEmailVerified={profile?.emailVerified} profile={profile} />
 
-      <DashboardStats 
-        approvedCount={approvedCount} 
-        pendingCount={pendingCount} 
-        favoriteCount={favoriteCount} 
+      <DashboardStats
+        approvedCount={approvedCount}
+        pendingCount={pendingCount}
+        favoriteCount={favoriteCount}
         credits={profile?.balanceCredits ?? 0}
       />
 
@@ -91,4 +88,3 @@ async function DashboardDataSection({
     </div>
   );
 }
-

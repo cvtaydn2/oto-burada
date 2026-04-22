@@ -1,13 +1,14 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
+
 import { ListingsPageClient } from "@/components/listings/listings-page-client";
-import { ListingStructuredData, BreadcrumbStructuredData } from "@/components/seo/structured-data";
+import { BreadcrumbStructuredData, ListingStructuredData } from "@/components/seo/structured-data";
 import { Breadcrumbs } from "@/components/shared/breadcrumbs";
-import { buildListingsMetadata, buildAbsoluteUrl } from "@/lib/seo";
+import { buildAbsoluteUrl, buildListingsMetadata } from "@/lib/seo";
+import { normalizeSlug } from "@/lib/utils/slug-utils";
 import { getPublicMarketplaceListings } from "@/services/listings/marketplace-listings";
 import { getLiveMarketplaceReferenceData } from "@/services/reference/live-reference-data";
 import type { ListingFilters } from "@/types";
-import { normalizeSlug } from "@/lib/utils/slug-utils";
 
 interface CityPageProps {
   params: Promise<{
@@ -20,18 +21,18 @@ export async function generateMetadata({ params }: CityPageProps): Promise<Metad
   const { city: citySlug } = resolvedParams;
 
   const references = await getLiveMarketplaceReferenceData();
-  const city = references.cities.find(c => c.slug === citySlug)?.city ?? normalizeSlug(citySlug);
+  const city = references.cities.find((c) => c.slug === citySlug)?.city ?? normalizeSlug(citySlug);
 
   const filters: ListingFilters = {
     city,
   };
 
   const metadata = buildListingsMetadata(filters);
-  
+
   // Custom SEO-optimized title for City landing pages
   metadata.title = `${city} Satılık İkinci El Araba İlanları | OtoBurada`;
   metadata.description = `${city} genelindeki en güncel satılık ikinci el araba ilanlarını incele. ${city}'da uygun fiyatlı araçları keşfet, güvenle satın al veya sat.`;
-  
+
   if (metadata.alternates) {
     metadata.alternates.canonical = buildAbsoluteUrl(`/satilik-araba/${citySlug}`);
   }
@@ -44,8 +45,8 @@ export default async function CityPage({ params }: CityPageProps) {
   const { city: citySlug } = resolvedParams;
 
   const references = await getLiveMarketplaceReferenceData();
-  const city = references.cities.find(c => c.slug === citySlug)?.city;
-  
+  const city = references.cities.find((c) => c.slug === citySlug)?.city;
+
   if (!city) {
     notFound();
   }
@@ -65,12 +66,14 @@ export default async function CityPage({ params }: CityPageProps) {
 
   return (
     <>
-      <BreadcrumbStructuredData items={breadcrumbs.map(b => ({ name: b.name, url: buildAbsoluteUrl(b.url) }))} />
-      <ListingStructuredData 
-        listings={listings.listings.filter(l => l.city === city)} 
-        url={buildAbsoluteUrl(`/satilik-araba/${citySlug}`)} 
+      <BreadcrumbStructuredData
+        items={breadcrumbs.map((b) => ({ name: b.name, url: buildAbsoluteUrl(b.url) }))}
       />
-      
+      <ListingStructuredData
+        listings={listings.listings.filter((l) => l.city === city)}
+        url={buildAbsoluteUrl(`/satilik-araba/${citySlug}`)}
+      />
+
       <div className="bg-card border-b border-border">
         <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
           <Breadcrumbs items={breadcrumbs.slice(1)} />
@@ -78,7 +81,8 @@ export default async function CityPage({ params }: CityPageProps) {
             {city} Satılık İkinci El Araba İlanları
           </h1>
           <p className="mt-4 text-lg text-muted-foreground max-w-3xl font-medium leading-relaxed">
-            {city} genelindeki tüm güncel araba ilanlarını keşfet. {city}&apos;da kriterlerine ve bütçene en uygun ikinci el aracı OtoBurada güvencesiyle hemen bul.
+            {city} genelindeki tüm güncel araba ilanlarını keşfet. {city}&apos;da kriterlerine ve
+            bütçene en uygun ikinci el aracı OtoBurada güvencesiyle hemen bul.
           </p>
         </div>
       </div>

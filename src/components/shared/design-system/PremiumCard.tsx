@@ -1,5 +1,6 @@
-import { cn } from "@/lib/utils";
 import { ReactNode } from "react";
+
+import { cn } from "@/lib/utils";
 
 interface PremiumCardProps {
   children: ReactNode;
@@ -9,12 +10,12 @@ interface PremiumCardProps {
   hoverable?: boolean;
 }
 
-export function PremiumCard({ 
-  children, 
-  className, 
+export function PremiumCard({
+  children,
+  className,
   variant = "default",
   padding = "md",
-  hoverable = false 
+  hoverable = false,
 }: PremiumCardProps) {
   const paddings = {
     none: "p-0",
@@ -31,19 +32,31 @@ export function PremiumCard({
   };
 
   return (
-    <div className={cn(
-      "rounded-2xl transition-all duration-300",
-      variants[variant],
-      paddings[padding],
-      hoverable && "hover:shadow-lg hover:-translate-y-1 hover:border-indigo-100",
-      className
-    )}>
+    <div
+      className={cn(
+        "rounded-2xl transition-all duration-300",
+        variants[variant],
+        paddings[padding],
+        hoverable && "hover:shadow-lg hover:-translate-y-1 hover:border-indigo-100",
+        className
+      )}
+    >
       {children}
     </div>
   );
 }
 
-export function CardTitle({ title, subtitle, icon: Icon, className }: { title: string; subtitle?: string; icon?: React.ElementType; className?: string }) {
+export function CardTitle({
+  title,
+  subtitle,
+  icon: Icon,
+  className,
+}: {
+  title: string;
+  subtitle?: string;
+  icon?: React.ElementType;
+  className?: string;
+}) {
   return (
     <div className={cn("mb-6", className)}>
       <div className="flex items-center gap-2 mb-1.5 text-indigo-600 font-bold tracking-widest uppercase text-[10px]">

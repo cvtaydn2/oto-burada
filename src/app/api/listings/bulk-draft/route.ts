@@ -1,9 +1,9 @@
-import { apiError, apiSuccess, API_ERROR_CODES } from "@/lib/utils/api-response";
-import { rateLimitProfiles } from "@/lib/utils/rate-limit";
-import { withAuthAndCsrf } from "@/lib/utils/api-security";
-import { createSupabaseServerClient } from "@/lib/supabase/server";
-import { logger } from "@/lib/utils/logger";
 import { captureServerEvent } from "@/lib/monitoring/posthog-server";
+import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { API_ERROR_CODES, apiError, apiSuccess } from "@/lib/utils/api-response";
+import { withAuthAndCsrf } from "@/lib/utils/api-security";
+import { logger } from "@/lib/utils/logger";
+import { rateLimitProfiles } from "@/lib/utils/rate-limit";
 import { bulkListingActionSchema } from "@/lib/validators";
 
 // Bulk draft: 20 operations per hour per user
@@ -41,9 +41,9 @@ export async function POST(req: Request) {
   // Bulk update filtered by seller_id for ownership
   const { error, data } = await supabase
     .from("listings")
-    .update({ 
+    .update({
       status: "draft",
-      updated_at: new Date().toISOString() 
+      updated_at: new Date().toISOString(),
     })
     .in("id", ids)
     .eq("seller_id", user.id)
@@ -56,20 +56,21 @@ export async function POST(req: Request) {
 
   const affectedCount = data?.length ?? 0;
 
-  logger.listings.info("Bulk draft success", { 
-    userId: user.id, 
-    requestedIds: ids, 
-    affectedCount 
+  logger.listings.info("Bulk draft success", {
+    userId: user.id,
+    requestedIds: ids,
+    affectedCount,
   });
 
-  captureServerEvent("listings_bulk_drafted", {
-    userId: user.id,
-    count: affectedCount,
-    ids: ids
-  }, user.id);
-
-  return apiSuccess(
-    { count: affectedCount }, 
-    "İlanlar başarıyla taslağa çekildi."
+  captureServerEvent(
+    "listings_bulk_drafted",
+    {
+      userId: user.id,
+      count: affectedCount,
+      ids: ids,
+    },
+    user.id
   );
+
+  return apiSuccess({ count: affectedCount }, "İlanlar başarıyla taslağa çekildi.");
 }

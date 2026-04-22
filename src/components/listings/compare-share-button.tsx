@@ -1,7 +1,7 @@
 "use client";
 
+import { Check, Share2 } from "lucide-react";
 import { useState } from "react";
-import { Share2, Check } from "lucide-react";
 
 interface CompareShareButtonProps {
   ids: string[];

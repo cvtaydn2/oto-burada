@@ -1,9 +1,14 @@
 import { AdminErrorDisplay } from "@/components/admin/admin-error-display";
-import { AdminRecentActions, type AdminRecentActionItem } from "@/components/admin/admin-recent-actions";
+import {
+  type AdminRecentActionItem,
+  AdminRecentActions,
+} from "@/components/admin/admin-recent-actions";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import type { AdminModerationAction, Report } from "@/types";
 
-interface AsyncErrorResult { error: string };
+interface AsyncErrorResult {
+  error: string;
+}
 
 interface AdminRecentActionsSectionProps {
   recentActionsPromise: Promise<AdminModerationAction[] | AsyncErrorResult>;
@@ -14,7 +19,10 @@ export async function AdminRecentActionsSection({
   recentActionsPromise,
   reportsPromise,
 }: AdminRecentActionsSectionProps) {
-  const [recentActionsResult, reportsResult] = await Promise.all([recentActionsPromise, reportsPromise]);
+  const [recentActionsResult, reportsResult] = await Promise.all([
+    recentActionsPromise,
+    reportsPromise,
+  ]);
 
   if (recentActionsResult && "error" in recentActionsResult) {
     return (
@@ -36,7 +44,13 @@ export async function AdminRecentActionsSection({
   }
 
   const actorIds = [...new Set(recentActions.map((action) => action.adminUserId))];
-  const targetListingIds = [...new Set(recentActions.filter((action) => action.targetType === "listing").map((action) => action.targetId))];
+  const targetListingIds = [
+    ...new Set(
+      recentActions
+        .filter((action) => action.targetType === "listing")
+        .map((action) => action.targetId)
+    ),
+  ];
   const reportListingIds = recentActions
     .filter((action) => action.targetType === "report")
     .map((action) => storedReports.find((report) => report.id === action.targetId)?.listingId)
@@ -54,22 +68,28 @@ export async function AdminRecentActionsSection({
       : Promise.resolve({ data: [], error: null }),
   ]);
 
-  const actorsMap = Object.fromEntries((actorProfiles.data || []).map((profile) => [profile.id, profile]));
-  const listingsMap = Object.fromEntries((actionListings.data || []).map((listing) => [listing.id, listing]));
+  const actorsMap = Object.fromEntries(
+    (actorProfiles.data || []).map((profile) => [profile.id, profile])
+  );
+  const listingsMap = Object.fromEntries(
+    (actionListings.data || []).map((listing) => [listing.id, listing])
+  );
 
   const recentActionItems: AdminRecentActionItem[] = recentActions.map((action) => {
     const actor = actorsMap[action.adminUserId];
     const listingId =
       action.targetType === "listing"
         ? action.targetId
-        : storedReports.find((report) => report.id === action.targetId)?.listingId ?? null;
+        : (storedReports.find((report) => report.id === action.targetId)?.listingId ?? null);
     const targetListing = listingId ? listingsMap[listingId] : null;
 
     return {
       action,
       actorLabel: actor?.full_name || "Sistem",
       targetHref: targetListing?.slug ? `/listing/${targetListing.slug}` : null,
-      targetLabel: targetListing?.title || (action.targetType === "report" ? "Raporlanmış İlan" : "Bilinmeyen İlan"),
+      targetLabel:
+        targetListing?.title ||
+        (action.targetType === "report" ? "Raporlanmış İlan" : "Bilinmeyen İlan"),
     };
   });
 

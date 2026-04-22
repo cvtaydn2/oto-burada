@@ -1,9 +1,11 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { describe, it, expect, vi, beforeEach } from "vitest";
-import { withUserRoute, withUserAndCsrf, withAdminRoute, withCronOrAdmin } from "../api-security";
-import { getCurrentUser } from "@/lib/auth/session";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+
 import { isSupabaseAdminUser } from "@/lib/auth/api-admin";
+import { getCurrentUser } from "@/lib/auth/session";
 import { isValidRequestOrigin } from "@/lib/security";
+
+import { withAdminRoute, withCronOrAdmin, withUserAndCsrf, withUserRoute } from "../api-security";
 
 vi.mock("@/lib/auth/session", () => ({
   getCurrentUser: vi.fn(),
@@ -42,10 +44,10 @@ describe("API Security Wrappers", () => {
   it("withUserAndCsrf should require both auth and valid origin", async () => {
     vi.mocked(getCurrentUser).mockResolvedValue(mockUser);
     vi.mocked(isValidRequestOrigin).mockReturnValue(false);
-    
+
     const req = new Request("http://localhost/api/test", { method: "POST" });
     const result = await withUserAndCsrf(req);
-    
+
     expect(result.ok).toBe(false);
     expect((result as any).response.status).toBe(403);
   });
@@ -53,10 +55,10 @@ describe("API Security Wrappers", () => {
   it("withAdminRoute should require admin role", async () => {
     vi.mocked(getCurrentUser).mockResolvedValue(mockUser);
     vi.mocked(isSupabaseAdminUser).mockResolvedValue(false);
-    
+
     const req = new Request("http://localhost/api/admin/test");
     const result = await withAdminRoute(req);
-    
+
     expect(result.ok).toBe(false);
     expect((result as any).response.status).toBe(403);
   });
@@ -64,9 +66,9 @@ describe("API Security Wrappers", () => {
   it("withCronOrAdmin should allow access with valid Cron secret", async () => {
     process.env.CRON_SECRET = "secret-123";
     const req = new Request("http://localhost/api/sync", {
-      headers: { authorization: "Bearer secret-123" }
+      headers: { authorization: "Bearer secret-123" },
     });
-    
+
     const result = await withCronOrAdmin(req);
     expect(result.ok).toBe(true);
   });
@@ -75,10 +77,10 @@ describe("API Security Wrappers", () => {
     process.env.CRON_SECRET = "secret-123";
     vi.mocked(getCurrentUser).mockResolvedValue(mockUser);
     vi.mocked(isSupabaseAdminUser).mockResolvedValue(true);
-    
+
     const req = new Request("http://localhost/api/sync");
     const result = await withCronOrAdmin(req);
-    
+
     expect(result.ok).toBe(true);
     if (result.ok) {
       expect(result.user).toBeDefined();

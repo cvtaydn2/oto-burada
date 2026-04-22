@@ -1,11 +1,12 @@
-import { requireUser } from "@/lib/auth/session";
-import { getListingById } from "@/services/listings/marketplace-listings";
-import { getLiveMarketplaceReferenceData } from "@/services/reference/live-reference-data";
-import { getStoredProfileById } from "@/services/profile/profile-records";
-import { ListingCreateForm } from "@/components/forms/listing-create-form";
 import { ChevronLeft, ShieldAlert } from "lucide-react";
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
+
+import { ListingCreateForm } from "@/components/forms/listing-create-form";
+import { requireUser } from "@/lib/auth/session";
+import { getListingById } from "@/services/listings/marketplace-listings";
+import { getStoredProfileById } from "@/services/profile/profile-records";
+import { getLiveMarketplaceReferenceData } from "@/services/reference/live-reference-data";
 
 interface EditListingPageProps {
   params: Promise<{ id: string }>;
@@ -51,11 +52,11 @@ export default async function EditListingPage({ params }: EditListingPageProps) 
             >
               <ChevronLeft className="size-4" />
             </Link>
-            <span className="text-xs font-bold text-muted-foreground uppercase tracking-widest">İlan Yönetimi</span>
+            <span className="text-xs font-bold text-muted-foreground uppercase tracking-widest">
+              İlan Yönetimi
+            </span>
           </div>
-          <h1 className="text-2xl font-bold text-foreground">
-            İlanı Düzenle
-          </h1>
+          <h1 className="text-2xl font-bold text-foreground">İlanı Düzenle</h1>
           <p className="text-sm font-medium text-muted-foreground mt-1">
             Araç bilgilerini ve fiyat bilgisini güncelleyin.
           </p>

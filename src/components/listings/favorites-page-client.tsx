@@ -1,8 +1,5 @@
 "use client";
 
-import Image from "next/image";
-import Link from "next/link";
-import { useMemo, useState } from "react";
 import {
   ArrowRight,
   CarFront,
@@ -20,6 +17,9 @@ import {
   TrendingUp,
   Zap,
 } from "lucide-react";
+import Image from "next/image";
+import Link from "next/link";
+import { useMemo, useState } from "react";
 
 import { ListingsGridSkeleton } from "@/components/listings/listings-grid-skeleton";
 import { useFavorites } from "@/hooks/use-favorites";
@@ -47,16 +47,22 @@ export function FavoritesPageClient({ listings, userId }: FavoritesPageClientPro
 
   const favoriteListings = useMemo(
     () => listings.filter((l) => favoriteIds.includes(l.id)),
-    [listings, favoriteIds],
+    [listings, favoriteIds]
   );
 
   const sortedListings = useMemo(() => {
     const copy = [...favoriteListings];
     switch (sort) {
-      case "price_asc":   return copy.sort((a, b) => a.price - b.price);
-      case "price_desc":  return copy.sort((a, b) => b.price - a.price);
-      case "mileage_asc": return copy.sort((a, b) => a.mileage - b.mileage);
-      default:            return copy.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+      case "price_asc":
+        return copy.sort((a, b) => a.price - b.price);
+      case "price_desc":
+        return copy.sort((a, b) => b.price - a.price);
+      case "mileage_asc":
+        return copy.sort((a, b) => a.mileage - b.mileage);
+      default:
+        return copy.sort(
+          (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+        );
     }
   }, [favoriteListings, sort]);
 
@@ -150,7 +156,9 @@ export function FavoritesPageClient({ listings, userId }: FavoritesPageClientPro
             className="rounded-lg border border-border bg-card px-3 py-1.5 text-xs font-semibold text-foreground/90 outline-none focus:border-blue-400"
           >
             {SORT_OPTIONS.map((o) => (
-              <option key={o.value} value={o.value}>{o.label}</option>
+              <option key={o.value} value={o.value}>
+                {o.label}
+              </option>
             ))}
           </select>
         </div>
@@ -210,7 +218,7 @@ function FavoriteCard({
             alt={listing.title}
             fill
             sizes="(min-width: 1280px) 33vw, (min-width: 640px) 50vw, 100vw"
-                    className="object-cover transition-transform duration-500"
+            className="object-cover transition-transform duration-500"
             priority={priority}
             placeholder={coverImage.placeholderBlur ? "blur" : "empty"}
             blurDataURL={coverImage.placeholderBlur ?? undefined}
@@ -314,7 +322,9 @@ function SpecItem({ icon, value }: { icon: React.ReactNode; value: string }) {
   return (
     <div className="flex flex-col items-center gap-0.5">
       <span className="text-muted-foreground/70">{icon}</span>
-      <span className="text-center text-[10px] font-bold text-muted-foreground capitalize leading-tight">{value}</span>
+      <span className="text-center text-[10px] font-bold text-muted-foreground capitalize leading-tight">
+        {value}
+      </span>
     </div>
   );
 }
@@ -324,10 +334,10 @@ function SpecItem({ icon, value }: { icon: React.ReactNode; value: string }) {
 type StatColor = "rose" | "blue" | "emerald" | "amber";
 
 const colorMap: Record<StatColor, { bg: string; text: string; icon: string }> = {
-  rose:    { bg: "bg-muted/30", text: "text-foreground", icon: "text-rose-500" },
-  blue:    { bg: "bg-muted/30", text: "text-foreground", icon: "text-blue-500" },
+  rose: { bg: "bg-muted/30", text: "text-foreground", icon: "text-rose-500" },
+  blue: { bg: "bg-muted/30", text: "text-foreground", icon: "text-blue-500" },
   emerald: { bg: "bg-muted/30", text: "text-foreground", icon: "text-emerald-500" },
-  amber:   { bg: "bg-muted/30", text: "text-foreground", icon: "text-amber-500" },
+  amber: { bg: "bg-muted/30", text: "text-foreground", icon: "text-amber-500" },
 };
 
 function StatCard({
@@ -346,10 +356,17 @@ function StatCard({
   const c = colorMap[color];
   return (
     <div className={cn("rounded-2xl border border-border/50 p-4", c.bg)}>
-      <div className={cn("mb-2 flex size-8 items-center justify-center rounded-lg bg-card shadow-sm", c.icon)}>
+      <div
+        className={cn(
+          "mb-2 flex size-8 items-center justify-center rounded-lg bg-card shadow-sm",
+          c.icon
+        )}
+      >
         {icon}
       </div>
-      <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">{label}</p>
+      <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
+        {label}
+      </p>
       <p className={cn("mt-0.5 text-xl font-bold leading-tight", c.text)}>{value}</p>
       <p className="mt-0.5 text-[10px] text-muted-foreground/70 truncate">{sub}</p>
     </div>

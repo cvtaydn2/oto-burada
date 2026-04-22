@@ -1,8 +1,10 @@
-import type { PaymentRequest, PaymentResponse, PaymentProvider } from "./types";
-import { logger } from "@/lib/utils/logger";
-import { isPaymentEnabled } from "./config";
-import { getAppUrl } from "@/lib/seo";
 import Iyzipay from "iyzipay";
+
+import { getAppUrl } from "@/lib/seo";
+import { logger } from "@/lib/utils/logger";
+
+import { isPaymentEnabled } from "./config";
+import type { PaymentProvider, PaymentRequest, PaymentResponse } from "./types";
 
 /** Iyzico için zorunlu buyer alanlarını doğrular. Eksik/bozuk alanda hata döner. */
 function validateBuyer(buyer: NonNullable<PaymentRequest["buyer"]>): string | null {
@@ -17,7 +19,8 @@ function validateBuyer(buyer: NonNullable<PaymentRequest["buyer"]>): string | nu
   // identityNumber Türkiye TC kimlik numarası — 11 haneli rakam olmalı.
   // Sahte fallback ("11111111111") kesinlikle gönderilmez.
   if (!buyer.identityNumber?.trim()) return "TC kimlik numarası zorunludur.";
-  if (!/^\d{11}$/.test(buyer.identityNumber.trim())) return "TC kimlik numarası 11 haneli rakam olmalıdır.";
+  if (!/^\d{11}$/.test(buyer.identityNumber.trim()))
+    return "TC kimlik numarası 11 haneli rakam olmalıdır.";
   return null;
 }
 
@@ -29,7 +32,7 @@ export class IyzicoProvider implements PaymentProvider {
       this.iyzipay = new Iyzipay({
         apiKey: process.env.IYZICO_API_KEY as string,
         secretKey: process.env.IYZICO_SECRET_KEY as string,
-        uri: process.env.IYZICO_BASE_URL || "https://sandbox-api.iyzipay.com"
+        uri: process.env.IYZICO_BASE_URL || "https://sandbox-api.iyzipay.com",
       });
     }
   }
@@ -78,21 +81,21 @@ export class IyzicoProvider implements PaymentProvider {
           ip: buyer.ip.trim(),
           city: buyer.city.trim(),
           country: buyer.country.trim(),
-          zipCode: buyer.zipCode
+          zipCode: buyer.zipCode,
         },
         shippingAddress: {
           contactName: `${buyer.name.trim()} ${buyer.surname.trim()}`,
           city: buyer.city.trim(),
           country: buyer.country.trim(),
           address: buyer.address.trim(),
-          zipCode: buyer.zipCode
+          zipCode: buyer.zipCode,
         },
         billingAddress: {
           contactName: `${buyer.name.trim()} ${buyer.surname.trim()}`,
           city: buyer.city.trim(),
           country: buyer.country.trim(),
           address: buyer.address.trim(),
-          zipCode: buyer.zipCode
+          zipCode: buyer.zipCode,
         },
         basketItems: [
           {
@@ -100,35 +103,41 @@ export class IyzicoProvider implements PaymentProvider {
             name: "OtoBurada Hizmet",
             category1: "Classifieds",
             itemType: "VIRTUAL",
-            price: Number(request.amount).toFixed(2)
-          }
-        ]
+            price: Number(request.amount).toFixed(2),
+          },
+        ],
       };
 
       // @ts-expect-error - iyzipay types are incorrectly requiring paymentCard for checkoutFormInitialize
-      this.iyzipay?.checkoutFormInitialize.create(data, (err: Error | null, result: {
-        status: string;
-        token?: string;
-        paymentPageUrl?: string;
-        errorMessage?: string;
-      }) => {
-        if (err || result.status !== "success") {
-          logger.payments.error("Iyzico checkoutFormInitialize failed", err || result);
-          resolve({ 
-            success: false, 
-            status: "failure", 
-            error: result.errorMessage || "Ödeme bağlantısı oluşturulamadı." 
-          });
-        } else {
-          // Iyzico returns HTML and URL for the checkout form
-          resolve({ 
-            success: true, 
-            status: "success", 
-            transactionId: result.token as string, 
-            paymentUrl: result.paymentPageUrl as string
-          });
+      this.iyzipay?.checkoutFormInitialize.create(
+        data,
+        (
+          err: Error | null,
+          result: {
+            status: string;
+            token?: string;
+            paymentPageUrl?: string;
+            errorMessage?: string;
+          }
+        ) => {
+          if (err || result.status !== "success") {
+            logger.payments.error("Iyzico checkoutFormInitialize failed", err || result);
+            resolve({
+              success: false,
+              status: "failure",
+              error: result.errorMessage || "Ödeme bağlantısı oluşturulamadı.",
+            });
+          } else {
+            // Iyzico returns HTML and URL for the checkout form
+            resolve({
+              success: true,
+              status: "success",
+              transactionId: result.token as string,
+              paymentUrl: result.paymentPageUrl as string,
+            });
+          }
         }
-      });
+      );
     });
   }
 
@@ -136,24 +145,30 @@ export class IyzicoProvider implements PaymentProvider {
     if (!isPaymentEnabled()) return { success: false, status: "failure" };
 
     return new Promise((resolve) => {
-      this.iyzipay?.checkoutForm.retrieve({
-        locale: "TR",
-        token: transactionId
-      }, (err: Error | null, result: {
-        status: string;
-        paymentStatus?: string;
-        paymentId?: string;
-      }) => {
-        if (err || result.status !== "success") {
-          resolve({ success: false, status: "failure" });
-        } else {
-          resolve({ 
-            success: result.paymentStatus === "SUCCESS", 
-            status: result.paymentStatus === "SUCCESS" ? "success" : "failure", 
-            transactionId: result.paymentId 
-          });
+      this.iyzipay?.checkoutForm.retrieve(
+        {
+          locale: "TR",
+          token: transactionId,
+        },
+        (
+          err: Error | null,
+          result: {
+            status: string;
+            paymentStatus?: string;
+            paymentId?: string;
+          }
+        ) => {
+          if (err || result.status !== "success") {
+            resolve({ success: false, status: "failure" });
+          } else {
+            resolve({
+              success: result.paymentStatus === "SUCCESS",
+              status: result.paymentStatus === "SUCCESS" ? "success" : "failure",
+              transactionId: result.paymentId,
+            });
+          }
         }
-      });
+      );
     });
   }
 }

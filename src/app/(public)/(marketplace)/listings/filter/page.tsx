@@ -1,8 +1,9 @@
 import type { Metadata } from "next";
-import { getLiveMarketplaceReferenceData } from "@/services/reference/live-reference-data";
+
+import { AdvancedFilterPage } from "@/components/listings/advanced-filter-page";
 import { parseListingFiltersFromSearchParams } from "@/services/listings/listing-filters";
 import { getFilteredMarketplaceListings } from "@/services/listings/marketplace-listings";
-import { AdvancedFilterPage } from "@/components/listings/advanced-filter-page";
+import { getLiveMarketplaceReferenceData } from "@/services/reference/live-reference-data";
 
 export const metadata: Metadata = {
   title: "Gelişmiş Filtreleme | OtoBurada",

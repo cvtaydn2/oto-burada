@@ -1,5 +1,5 @@
-import { ListingCard } from "@/components/shared/listing-card";
 import { Panel } from "@/components/shared/design-system/Panel";
+import { ListingCard } from "@/components/shared/listing-card";
 import { getSimilarMarketplaceListings } from "@/services/listings/marketplace-listings";
 
 interface ListingRelatedProps {

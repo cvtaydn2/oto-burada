@@ -99,7 +99,7 @@ export async function getDatabaseActiveReport(listingId: string, reporterId: str
 export async function createOrUpdateDatabaseReport(
   input: ReportCreateInput,
   reporterId: string,
-  existingReport?: Report | null,
+  existingReport?: Report | null
 ) {
   if (!hasSupabaseAdminEnv()) {
     return null;
@@ -197,15 +197,11 @@ export async function getLegacyStoredReports() {
 
   return parseStoredReports(cookieStore.get(reportsCookieName)?.value).sort(
     (left, right) =>
-      Date.parse(right.updatedAt ?? right.createdAt) - Date.parse(left.updatedAt ?? left.createdAt),
+      Date.parse(right.updatedAt ?? right.createdAt) - Date.parse(left.updatedAt ?? left.createdAt)
   );
 }
 
-export function buildReport(
-  input: ReportCreateInput,
-  reporterId: string,
-  existingReport?: Report,
-) {
+export function buildReport(input: ReportCreateInput, reporterId: string, existingReport?: Report) {
   const timestamp = new Date().toISOString();
 
   return reportSchema.parse({
@@ -230,16 +226,12 @@ export function replaceStoredReport(existingReports: Report[], nextReport: Repor
   return existingReports.map((report) => (report.id === nextReport.id ? nextReport : report));
 }
 
-export function getExistingActiveReport(
-  reports: Report[],
-  listingId: string,
-  reporterId: string,
-) {
+export function getExistingActiveReport(reports: Report[], listingId: string, reporterId: string) {
   return reports.find(
     (report) =>
       report.listingId === listingId &&
       report.reporterId === reporterId &&
-      (report.status === "open" || report.status === "reviewing"),
+      (report.status === "open" || report.status === "reviewing")
   );
 }
 
@@ -259,8 +251,7 @@ export async function getStoredReports() {
   const databaseReports = await getDatabaseReports();
   return (databaseReports ?? []).sort(
     (left, right) =>
-      Date.parse(right.updatedAt ?? right.createdAt) -
-      Date.parse(left.updatedAt ?? left.createdAt),
+      Date.parse(right.updatedAt ?? right.createdAt) - Date.parse(left.updatedAt ?? left.createdAt)
   );
 }
 
@@ -268,8 +259,7 @@ export async function getStoredReportsByReporter(reporterId: string) {
   const databaseReports = await getDatabaseReports({ reporterId });
   return (databaseReports ?? []).sort(
     (left, right) =>
-      Date.parse(right.updatedAt ?? right.createdAt) -
-      Date.parse(left.updatedAt ?? left.createdAt),
+      Date.parse(right.updatedAt ?? right.createdAt) - Date.parse(left.updatedAt ?? left.createdAt)
   );
 }
 
@@ -280,7 +270,7 @@ export async function getLegacyStoredReportsByReporter(reporterId: string) {
     .sort(
       (left, right) =>
         Date.parse(right.updatedAt ?? right.createdAt) -
-        Date.parse(left.updatedAt ?? left.createdAt),
+        Date.parse(left.updatedAt ?? left.createdAt)
     );
 }
 
@@ -303,7 +293,7 @@ export async function upsertDatabaseReportRecord(report: Report) {
         status: report.status,
         updated_at: report.updatedAt ?? report.createdAt,
       },
-      { onConflict: "id" },
+      { onConflict: "id" }
     )
     .select("id, listing_id, reporter_id, reason, description, status, created_at, updated_at")
     .single<ReportRow>();

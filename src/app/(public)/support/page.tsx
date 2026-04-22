@@ -1,8 +1,8 @@
-import { getCurrentUser } from "@/lib/auth/session";
-import { getUserTickets } from "@/services/support/ticket-service";
+import { FaqAccordion } from "@/components/shared/faq-accordion";
 import { TicketForm } from "@/components/support/ticket-form";
 import { TicketList } from "@/components/support/ticket-list";
-import { FaqAccordion } from "@/components/shared/faq-accordion";
+import { getCurrentUser } from "@/lib/auth/session";
+import { getUserTickets } from "@/services/support/ticket-service";
 
 const FAQ_CATEGORIES = [
   {
@@ -10,10 +10,22 @@ const FAQ_CATEGORIES = [
     iconColor: "text-emerald-500",
     title: "İLAN YÖNETİMİ",
     items: [
-      { q: "İlan nasıl verilir?", a: "Dashboard'a gidip 'Yeni İlan Oluştur' butonuna tıklayın. 3 adımlı formu doldurarak ilanınızı oluşturabilirsiniz." },
-      { q: "Resim kalitesi standartları", a: "Minimum 3 fotoğraf eklemeli, 1920x1080 çözünürlük önerilir. Araç ön, arka ve yan profilleri açıkça görünür olmalıdır." },
-      { q: "İlan onay süreci", a: "İlanlarınız moderasyon ekibimiz tarafından 24 saat içinde incelenir. Onaylandıktan sonra yayına alınır." },
-      { q: "Öne çıkarma özellikleri", a: "İlanlarınızı öne çıkarmak için 'Fiyatlandırma' bölümünden destekli ilan paketleri satın alabilirsiniz." },
+      {
+        q: "İlan nasıl verilir?",
+        a: "Dashboard'a gidip 'Yeni İlan Oluştur' butonuna tıklayın. 3 adımlı formu doldurarak ilanınızı oluşturabilirsiniz.",
+      },
+      {
+        q: "Resim kalitesi standartları",
+        a: "Minimum 3 fotoğraf eklemeli, 1920x1080 çözünürlük önerilir. Araç ön, arka ve yan profilleri açıkça görünür olmalıdır.",
+      },
+      {
+        q: "İlan onay süreci",
+        a: "İlanlarınız moderasyon ekibimiz tarafından 24 saat içinde incelenir. Onaylandıktan sonra yayına alınır.",
+      },
+      {
+        q: "Öne çıkarma özellikleri",
+        a: "İlanlarınızı öne çıkarmak için 'Fiyatlandırma' bölümünden destekli ilan paketleri satın alabilirsiniz.",
+      },
     ],
   },
   {
@@ -21,10 +33,22 @@ const FAQ_CATEGORIES = [
     iconColor: "text-rose-500",
     title: "GÜVENLİK & GİZLİLİK",
     items: [
-      { q: "Şüpheli ilan bildirimi", a: "Güvenmediğiniz bir ilan gördüğünüzde 'Şikayet Et' butonu ile bildirebilirsiniz. Moderasyon ekibimiz en kısa sürede inceler." },
-      { q: "Güvenli ödeme rehberi", a: "Kapora göndermeden önce aracı görmeyi ve noter huzurunda işlem yapmayı öneriyoruz." },
-      { q: "Kişisel verilerin korunması", a: "Verileriniz GDPR ve KVKK kapsamında korunmaktadır. Detaylı bilgi için Gizlilik Politikamızı inceleyebilirsiniz." },
-      { q: "Hesap güvenliği", a: "Güçlü bir şifre kullanın ve iki faktörlü doğrulamayı etkinleştirin." },
+      {
+        q: "Şüpheli ilan bildirimi",
+        a: "Güvenmediğiniz bir ilan gördüğünüzde 'Şikayet Et' butonu ile bildirebilirsiniz. Moderasyon ekibimiz en kısa sürede inceler.",
+      },
+      {
+        q: "Güvenli ödeme rehberi",
+        a: "Kapora göndermeden önce aracı görmeyi ve noter huzurunda işlem yapmayı öneriyoruz.",
+      },
+      {
+        q: "Kişisel verilerin korunması",
+        a: "Verileriniz GDPR ve KVKK kapsamında korunmaktadır. Detaylı bilgi için Gizlilik Politikamızı inceleyebilirsiniz.",
+      },
+      {
+        q: "Hesap güvenliği",
+        a: "Güçlü bir şifre kullanın ve iki faktörlü doğrulamayı etkinleştirin.",
+      },
     ],
   },
   {
@@ -32,10 +56,22 @@ const FAQ_CATEGORIES = [
     iconColor: "text-primary",
     title: "TEKNİK KONULAR",
     items: [
-      { q: "Şifremi unuttum", a: "Giriş sayfasındaki 'Şifremi Unuttum' bağlantısını kullanarak şifrenizi sıfırlayabilirsiniz." },
-      { q: "E-posta doğrulama", a: "Kayıt olduktan sonra e-posta adresinize gönderilen doğrulama bağlantısına tıklayarak hesabınızı aktive edebilirsiniz." },
-      { q: "Mobil uygulama desteği", a: "OtoBurada'yı mobil tarayıcınızdan kullanabilir, cihazınıza 'Ana Ekle' seçeneğiyle kısayol oluşturabilirsiniz." },
-      { q: "Tarayıcı uyumluluğu", a: "Chrome, Firefox, Safari ve Edge'in güncel sürümlerini destekliyoruz." },
+      {
+        q: "Şifremi unuttum",
+        a: "Giriş sayfasındaki 'Şifremi Unuttum' bağlantısını kullanarak şifrenizi sıfırlayabilirsiniz.",
+      },
+      {
+        q: "E-posta doğrulama",
+        a: "Kayıt olduktan sonra e-posta adresinize gönderilen doğrulama bağlantısına tıklayarak hesabınızı aktive edebilirsiniz.",
+      },
+      {
+        q: "Mobil uygulama desteği",
+        a: "OtoBurada'yı mobil tarayıcınızdan kullanabilir, cihazınıza 'Ana Ekle' seçeneğiyle kısayol oluşturabilirsiniz.",
+      },
+      {
+        q: "Tarayıcı uyumluluğu",
+        a: "Chrome, Firefox, Safari ve Edge'in güncel sürümlerini destekliyoruz.",
+      },
     ],
   },
 ];
@@ -74,7 +110,9 @@ export default async function SupportPage() {
             <div key={idx} className="rounded-xl border border-border bg-card">
               <div className="px-6 py-5 border-b border-border/50 flex items-center gap-3">
                 <span className={`size-2 rounded-full ${cat.iconColor.replace("text-", "bg-")}`} />
-                <h3 className="text-sm font-bold uppercase tracking-wider text-foreground">{cat.title}</h3>
+                <h3 className="text-sm font-bold uppercase tracking-wider text-foreground">
+                  {cat.title}
+                </h3>
               </div>
               <div className="divide-y divide-slate-50">
                 {cat.items.map((item, i) => (

@@ -1,17 +1,14 @@
 "use client";
 
+import { BadgeCheck, CarFront, CreditCard, Lock, ShieldCheck } from "lucide-react";
 import Link from "next/link";
-import { CarFront, ShieldCheck, BadgeCheck, Lock, CreditCard } from "lucide-react";
 import { useActionState } from "react";
 
-import type { AuthActionState } from "@/lib/auth/actions";
 import { AuthSubmitButton } from "@/components/forms/auth-submit-button";
+import type { AuthActionState } from "@/lib/auth/actions";
 
 interface AuthFormProps {
-  action: (
-    state: AuthActionState | undefined,
-    formData: FormData,
-  ) => Promise<AuthActionState>;
+  action: (state: AuthActionState | undefined, formData: FormData) => Promise<AuthActionState>;
   title: string;
   description: string;
   submitLabel: string;
@@ -47,7 +44,7 @@ export function AuthForm({
               'linear-gradient(to right, rgba(2, 6, 23, 0.95), rgba(2, 6, 23, 0.6)), url("/images/hero_bg.png")',
           }}
         />
-        
+
         {/* Abstract Overlays */}
         <div className="absolute top-0 left-0 w-full h-full">
           <div className="absolute top-[-10%] right-[-10%] w-[50%] h-[50%] bg-blue-600/20 rounded-full blur-[120px]" />
@@ -55,7 +52,10 @@ export function AuthForm({
         </div>
 
         <div className="relative z-10">
-          <Link href="/" className="inline-flex items-center gap-3 text-2xl font-bold tracking-tighter text-white">
+          <Link
+            href="/"
+            className="inline-flex items-center gap-3 text-2xl font-bold tracking-tighter text-white"
+          >
             <div className="size-10 rounded-xl bg-primary flex items-center justify-center shadow-sm shadow-primary/20">
               <CarFront size={22} className="text-white" />
             </div>
@@ -72,14 +72,23 @@ export function AuthForm({
               İkinci Elin <span className="text-primary">En Temiz</span> Hali.
             </h1>
           </div>
-          
+
           <p className="max-w-md text-lg font-medium leading-relaxed text-slate-400">
-            Binlerce güncel ilan, şeffaf ekspertiz verileri ve güven odaklı moderasyon ile hayalinizdeki araca ulaşın.
+            Binlerce güncel ilan, şeffaf ekspertiz verileri ve güven odaklı moderasyon ile
+            hayalinizdeki araca ulaşın.
           </p>
 
           <div className="flex flex-col gap-3">
-            <FeatureItem icon={<ShieldCheck size={18} />} title="Resmi Ekspertiz" desc="Sadece doğrulanmış raporlar yayına alınır" />
-            <FeatureItem icon={<BadgeCheck size={18} />} title="Hızlı WhatsApp" desc="Fiyat teklifi ve randevu tek tıkla elinizde" />
+            <FeatureItem
+              icon={<ShieldCheck size={18} />}
+              title="Resmi Ekspertiz"
+              desc="Sadece doğrulanmış raporlar yayına alınır"
+            />
+            <FeatureItem
+              icon={<BadgeCheck size={18} />}
+              title="Hızlı WhatsApp"
+              desc="Fiyat teklifi ve randevu tek tıkla elinizde"
+            />
           </div>
         </div>
 
@@ -93,7 +102,10 @@ export function AuthForm({
         <div className="w-full max-w-sm space-y-10">
           {/* Mobile Header */}
           <div className="text-center lg:hidden space-y-4">
-            <Link href="/" className="inline-flex items-center gap-3 text-3xl font-bold tracking-tighter text-foreground mx-auto">
+            <Link
+              href="/"
+              className="inline-flex items-center gap-3 text-3xl font-bold tracking-tighter text-foreground mx-auto"
+            >
               <div className="size-10 rounded-xl bg-primary flex items-center justify-center shadow-sm shadow-primary/20">
                 <CarFront size={22} className="text-white" />
               </div>
@@ -108,9 +120,9 @@ export function AuthForm({
 
           {/* Form Card */}
           <div className="bg-card rounded-2xl p-8 border border-border shadow-sm relative">
-             <form action={formAction} className="space-y-6">
+            <form action={formAction} className="space-y-6">
               {next ? <input type="hidden" name="next" value={next} /> : null}
-              
+
               <div className="space-y-2">
                 <label htmlFor="email" className="text-xs font-medium text-muted-foreground ml-1">
                   E-posta Adresi
@@ -133,7 +145,10 @@ export function AuthForm({
                     Şifre
                   </label>
                   {isLogin && (
-                    <Link href="/forgot-password" className="text-xs font-medium text-primary hover:underline">
+                    <Link
+                      href="/forgot-password"
+                      className="text-xs font-medium text-primary hover:underline"
+                    >
                       Unuttum?
                     </Link>
                   )}
@@ -160,7 +175,9 @@ export function AuthForm({
                       className="size-4 rounded border-input text-primary focus:ring-primary/20"
                     />
                   </div>
-                  <span className="text-xs font-medium text-muted-foreground group-hover:text-foreground transition-colors">Beni Hatırla</span>
+                  <span className="text-xs font-medium text-muted-foreground group-hover:text-foreground transition-colors">
+                    Beni Hatırla
+                  </span>
                 </label>
               )}
 
@@ -186,18 +203,18 @@ export function AuthForm({
             </form>
 
             <div className="mt-8 pt-8 border-t border-border flex flex-col gap-4 text-center">
-                <Link
-                  href={alternateHref}
-                  className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-xl border border-input bg-background px-4 text-sm font-medium text-foreground transition-all hover:bg-muted"
-                >
-                  {alternateLabel}
-                </Link>
+              <Link
+                href={alternateHref}
+                className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-xl border border-input bg-background px-4 text-sm font-medium text-foreground transition-all hover:bg-muted"
+              >
+                {alternateLabel}
+              </Link>
             </div>
           </div>
 
           <div className="flex justify-center gap-8">
-             <SecurityBadge icon={<Lock size={12} />} label="AES-256 GÜVENLİ" />
-             <SecurityBadge icon={<CreditCard size={12} />} label="PCI-DSS UYUMLU" />
+            <SecurityBadge icon={<Lock size={12} />} label="AES-256 GÜVENLİ" />
+            <SecurityBadge icon={<CreditCard size={12} />} label="PCI-DSS UYUMLU" />
           </div>
         </div>
       </section>
@@ -205,7 +222,15 @@ export function AuthForm({
   );
 }
 
-function FeatureItem({ icon, title, desc }: { icon: React.ReactNode; title: string; desc: string }) {
+function FeatureItem({
+  icon,
+  title,
+  desc,
+}: {
+  icon: React.ReactNode;
+  title: string;
+  desc: string;
+}) {
   return (
     <div className="flex gap-4 p-4 rounded-2xl hover:bg-white/5 transition-colors group">
       <div className="size-11 rounded-xl bg-white/10 flex items-center justify-center text-white/50 group-hover:text-white transition-colors">
@@ -222,10 +247,8 @@ function FeatureItem({ icon, title, desc }: { icon: React.ReactNode; title: stri
 function SecurityBadge({ icon, label }: { icon: React.ReactNode; label: string }) {
   return (
     <div className="flex items-center gap-2 text-[9px] font-bold text-muted-foreground/30 tracking-widest">
-       <div className="text-muted-foreground/20">
-         {icon}
-       </div>
-       {label}
+      <div className="text-muted-foreground/20">{icon}</div>
+      {label}
     </div>
   );
 }

@@ -1,8 +1,9 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { ChevronLeft, ChevronRight, Maximize2, Play, X } from "lucide-react";
 import Image from "next/image";
-import { ChevronLeft, ChevronRight, Play, Maximize2, X } from "lucide-react";
+import { useCallback, useState } from "react";
+
 import { cn } from "@/lib/utils";
 import type { ListingImage } from "@/types";
 
@@ -17,8 +18,8 @@ export function GalleryViewer({ images, title }: GalleryViewerProps) {
 
   const currentImage = images[currentIndex];
   const hasMultiple = images.length > 1;
-  const hasVideo = images.some(img => img.type === "video");
-  const has360 = images.some(img => img.type === "360");
+  const hasVideo = images.some((img) => img.type === "video");
+  const has360 = images.some((img) => img.type === "360");
 
   const goToPrevious = useCallback(() => {
     setCurrentIndex((prev) => (prev > 0 ? prev - 1 : images.length - 1));
@@ -28,11 +29,14 @@ export function GalleryViewer({ images, title }: GalleryViewerProps) {
     setCurrentIndex((prev) => (prev < images.length - 1 ? prev + 1 : 0));
   }, [images.length]);
 
-  const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
-    if (e.key === "ArrowLeft") goToPrevious();
-    if (e.key === "ArrowRight") goToNext();
-    if (e.key === "Escape") setIsFullscreen(false);
-  }, [goToPrevious, goToNext]);
+  const handleKeyDown = useCallback(
+    (e: React.KeyboardEvent) => {
+      if (e.key === "ArrowLeft") goToPrevious();
+      if (e.key === "ArrowRight") goToNext();
+      if (e.key === "Escape") setIsFullscreen(false);
+    },
+    [goToPrevious, goToNext]
+  );
 
   if (!images.length) {
     return (
@@ -43,7 +47,7 @@ export function GalleryViewer({ images, title }: GalleryViewerProps) {
   }
 
   return (
-    <div 
+    <div
       className={cn(
         "relative rounded-3xl overflow-hidden bg-muted/30",
         isFullscreen ? "fixed inset-0 z-50" : "aspect-[4/3]"
@@ -124,8 +128,8 @@ export function GalleryViewer({ images, title }: GalleryViewerProps) {
                 onClick={() => setCurrentIndex(idx)}
                 className={cn(
                   "relative w-16 h-12 rounded-lg overflow-hidden shrink-0 border-2 transition-all",
-                  idx === currentIndex 
-                    ? "border-white ring-2 ring-primary" 
+                  idx === currentIndex
+                    ? "border-white ring-2 ring-primary"
                     : "border-transparent opacity-70 hover:opacity-100"
                 )}
               >

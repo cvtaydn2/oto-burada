@@ -1,10 +1,8 @@
 "use client";
 
 import { useEffect } from "react";
-import {
-  captureClientEvent,
-  captureClientException,
-} from "@/lib/monitoring/posthog-client";
+
+import { captureClientEvent, captureClientException } from "@/lib/monitoring/posthog-client";
 
 interface ListingViewTrackerProps {
   listingId: string;

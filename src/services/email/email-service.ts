@@ -5,10 +5,12 @@
  */
 
 import { Resend } from "resend";
-import { logger } from "@/lib/utils/logger";
+
 import { getRequiredAppUrl } from "@/lib/utils/env";
-import * as templates from "./email-templates";
+import { logger } from "@/lib/utils/logger";
+
 import type { SavedSearchAlertListing } from "./email-templates";
+import * as templates from "./email-templates";
 
 function getResendClient(): Resend | null {
   const apiKey = process.env.RESEND_API_KEY;
@@ -63,7 +65,10 @@ export async function sendTicketReplyEmail(params: {
       return { success: false, error: error.message };
     }
 
-    logger.admin.info("Ticket reply email sent", { ticketId: params.ticketId, messageId: data?.id });
+    logger.admin.info("Ticket reply email sent", {
+      ticketId: params.ticketId,
+      messageId: data?.id,
+    });
     return { success: true, messageId: data?.id };
   } catch (err) {
     logger.admin.error("Ticket reply email unexpected error", err, { ticketId: params.ticketId });
@@ -188,7 +193,9 @@ export async function sendListingApprovedEmail(params: {
     });
 
     if (error) {
-      logger.listings.error("Listing approved email failed", error, { listingTitle: params.listingTitle });
+      logger.listings.error("Listing approved email failed", error, {
+        listingTitle: params.listingTitle,
+      });
       return { success: false, error: error.message };
     }
 
@@ -226,7 +233,9 @@ export async function sendListingRejectedEmail(params: {
     });
 
     if (error) {
-      logger.listings.error("Listing rejected email failed", error, { listingTitle: params.listingTitle });
+      logger.listings.error("Listing rejected email failed", error, {
+        listingTitle: params.listingTitle,
+      });
       return { success: false, error: error.message };
     }
 

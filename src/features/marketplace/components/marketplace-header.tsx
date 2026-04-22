@@ -1,6 +1,3 @@
-
-
-
 import { type ListingFilters } from "@/types";
 
 interface MarketplaceHeaderProps {

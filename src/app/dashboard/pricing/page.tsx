@@ -8,7 +8,7 @@ export const metadata = {
 
 export default async function PricingPage() {
   const plans = await getPricingPlans();
-  
+
   return (
     <div className="container py-12">
       <PricingPlans initialPlans={plans} />

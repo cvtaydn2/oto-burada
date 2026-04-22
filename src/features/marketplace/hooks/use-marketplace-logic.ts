@@ -1,9 +1,11 @@
 "use client";
 
-import { useState } from "react";
 import { useInfiniteQuery } from "@tanstack/react-query";
-import { type Listing, type ListingFilters } from "@/types";
+import { useState } from "react";
+
 import { createSearchParamsFromListingFilters } from "@/services/listings/listing-filters";
+import { type Listing, type ListingFilters } from "@/types";
+
 import { useUnifiedFilters } from "./use-unified-filters";
 
 interface UseMarketplaceLogicProps {
@@ -25,7 +27,7 @@ export function useMarketplaceLogic({ initialResult, initialFilters }: UseMarket
     resetFilters,
     applyFilters,
     activeCount: activeFiltersCount,
-    isPending
+    isPending,
   } = useUnifiedFilters(initialFilters);
 
   // Infinite Query - Only depends on filters (which are synced with URL)
@@ -39,26 +41,21 @@ export function useMarketplaceLogic({ initialResult, initialFilters }: UseMarket
     return json.data as typeof initialResult;
   };
 
-  const {
-    data,
-    fetchNextPage,
-    hasNextPage,
-    isFetchingNextPage,
-  } = useInfiniteQuery({
+  const { data, fetchNextPage, hasNextPage, isFetchingNextPage } = useInfiniteQuery({
     queryKey,
     queryFn: fetchListings,
     initialPageParam: 1,
-    getNextPageParam: (lastPage) => lastPage.hasMore ? lastPage.page + 1 : undefined,
+    getNextPageParam: (lastPage) => (lastPage.hasMore ? lastPage.page + 1 : undefined),
     initialData: {
       pages: [initialResult],
-      pageParams: [1]
-    }
+      pageParams: [1],
+    },
   });
 
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   const [isSortOpen, setIsSortOpen] = useState(false);
 
-  const allListings = data?.pages.flatMap(p => p.listings) ?? initialResult.listings;
+  const allListings = data?.pages.flatMap((p) => p.listings) ?? initialResult.listings;
   const total = data?.pages[0]?.total ?? initialResult.total;
 
   return {
@@ -77,6 +74,6 @@ export function useMarketplaceLogic({ initialResult, initialFilters }: UseMarket
     fetchNextPage,
     handleFilterChange: updateFilter,
     handleReset: resetFilters,
-    applyFilters
+    applyFilters,
   };
 }

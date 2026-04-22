@@ -1,7 +1,9 @@
 "use client";
 
-import { useState } from "react";
 import { SlidersHorizontal } from "lucide-react";
+import { useState } from "react";
+
+import { ListingsFilterPanel } from "@/components/listings/listings-filter-panel";
 import { Button } from "@/components/ui/button";
 import {
   Drawer,
@@ -12,8 +14,7 @@ import {
   DrawerTitle,
   DrawerTrigger,
 } from "@/components/ui/drawer";
-import { ListingsFilterPanel } from "@/components/listings/listings-filter-panel";
-import type { ListingFilters, BrandCatalogItem, CityOption } from "@/types";
+import type { BrandCatalogItem, CityOption, ListingFilters } from "@/types";
 
 interface MobileFilterDrawerProps {
   brands: BrandCatalogItem[];
@@ -51,7 +52,7 @@ export function MobileFilterDrawer({
 
   const handleDraftFilterChange = <K extends keyof ListingFilters>(
     key: K,
-    value: ListingFilters[K],
+    value: ListingFilters[K]
   ) => {
     setDraftFilters((current) => ({
       ...current,
@@ -93,7 +94,9 @@ export function MobileFilterDrawer({
 
       <DrawerContent className="max-h-[92vh]">
         <DrawerHeader className="border-b border-border/50">
-          <DrawerTitle className="text-sm font-black uppercase tracking-[0.2em] italic text-center">İlanları Filtrele</DrawerTitle>
+          <DrawerTitle className="text-sm font-black uppercase tracking-[0.2em] italic text-center">
+            İlanları Filtrele
+          </DrawerTitle>
         </DrawerHeader>
 
         <div className="overflow-y-auto px-1 py-2">
@@ -110,7 +113,11 @@ export function MobileFilterDrawer({
         <DrawerFooter className="border-t border-border/50 bg-background/80 backdrop-blur-md pt-4">
           <div className="flex gap-3">
             <DrawerClose asChild>
-              <Button variant="outline" onClick={handleReset} className="flex-1 h-12 rounded-xl font-bold">
+              <Button
+                variant="outline"
+                onClick={handleReset}
+                className="flex-1 h-12 rounded-xl font-bold"
+              >
                 Temizle
               </Button>
             </DrawerClose>

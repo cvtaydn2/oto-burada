@@ -1,19 +1,23 @@
+import { headers } from "next/headers";
 import { NextResponse } from "next/server";
-import { logger } from "@/lib/utils/logger";
+import { z } from "zod";
+
 import { captureServerError, captureServerEvent } from "@/lib/monitoring/posthog-server";
 import { isPaymentEnabled } from "@/lib/payment/config";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { hasSupabaseAdminEnv } from "@/lib/supabase/env";
-import { apiError, apiSuccess, API_ERROR_CODES } from "@/lib/utils/api-response";
-import { enforceRateLimit, getUserRateLimitKey } from "@/lib/utils/rate-limit-middleware";
-import { z } from "zod";
-import { getUserProfile } from "@/services/profile/profile-records";
-import { headers } from "next/headers";
+import { API_ERROR_CODES, apiError, apiSuccess } from "@/lib/utils/api-response";
 import { withUserAndCsrf } from "@/lib/utils/api-security";
+import { logger } from "@/lib/utils/logger";
+import { enforceRateLimit, getUserRateLimitKey } from "@/lib/utils/rate-limit-middleware";
+import { getUserProfile } from "@/services/profile/profile-records";
 
 const purchaseSchema = z.object({
   planId: z.string().uuid("Geçersiz plan ID."),
-  identityNumber: z.string().regex(/^\d{11}$/, "TC Kimlik Numarası 11 haneli rakam olmalıdır.").optional(),
+  identityNumber: z
+    .string()
+    .regex(/^\d{11}$/, "TC Kimlik Numarası 11 haneli rakam olmalıdır.")
+    .optional(),
 });
 
 // 5 purchase attempts per hour per user — prevents abuse
@@ -29,7 +33,7 @@ export async function POST(req: Request) {
   // Rate limit
   const rateLimit = await enforceRateLimit(
     getUserRateLimitKey(user.id, "api:payments:purchase"),
-    PURCHASE_RATE_LIMIT,
+    PURCHASE_RATE_LIMIT
   );
   if (rateLimit) return rateLimit.response;
 
@@ -37,7 +41,7 @@ export async function POST(req: Request) {
     return apiError(
       API_ERROR_CODES.SERVICE_UNAVAILABLE,
       "Ödeme sistemi henüz aktif değil. Lütfen bizimle iletişime geçin.",
-      503,
+      503
     );
   }
 
@@ -54,7 +58,11 @@ export async function POST(req: Request) {
 
   const parsed = purchaseSchema.safeParse(body);
   if (!parsed.success) {
-    return apiError(API_ERROR_CODES.VALIDATION_ERROR, parsed.error.issues[0]?.message ?? "Geçersiz veri.", 400);
+    return apiError(
+      API_ERROR_CODES.VALIDATION_ERROR,
+      parsed.error.issues[0]?.message ?? "Geçersiz veri.",
+      400
+    );
   }
 
   const { planId, identityNumber } = parsed.data;
@@ -68,7 +76,13 @@ export async function POST(req: Request) {
       .select("id, name, price, credits, is_active")
       .eq("id", planId)
       .eq("is_active", true)
-      .maybeSingle<{ id: string; name: string; price: number; credits: number; is_active: boolean }>();
+      .maybeSingle<{
+        id: string;
+        name: string;
+        price: number;
+        credits: number;
+        is_active: boolean;
+      }>();
 
     if (planError || !plan) {
       return apiError(API_ERROR_CODES.NOT_FOUND, "Plan bulunamadı veya aktif değil.", 404);
@@ -92,7 +106,7 @@ export async function POST(req: Request) {
         return apiError(
           API_ERROR_CODES.BAD_REQUEST,
           "Bu ücretsiz planı son 24 saat içinde zaten aktifleştirdiniz.",
-          409,
+          409
         );
       }
 
@@ -110,7 +124,10 @@ export async function POST(req: Request) {
       });
 
       if (recordError) {
-        logger.payments.error("Free plan payment record insert failed", recordError, { userId: user.id, planId });
+        logger.payments.error("Free plan payment record insert failed", recordError, {
+          userId: user.id,
+          planId,
+        });
         return apiError(API_ERROR_CODES.INTERNAL_ERROR, "Plan kaydı oluşturulamadı.", 500);
       }
 
@@ -134,18 +151,22 @@ export async function POST(req: Request) {
         return apiError(API_ERROR_CODES.INTERNAL_ERROR, "Kredi eklenemedi.", 500);
       }
 
-      captureServerEvent("plan_purchased", {
-        userId: user.id,
-        planId: plan.id,
-        planName: plan.name,
-        credits: plan.credits,
-        price: 0,
-        provider: "free",
-      }, user.id);
+      captureServerEvent(
+        "plan_purchased",
+        {
+          userId: user.id,
+          planId: plan.id,
+          planName: plan.name,
+          credits: plan.credits,
+          price: 0,
+          provider: "free",
+        },
+        user.id
+      );
 
       return apiSuccess(
         { credits: plan.credits, planName: plan.name },
-        `${plan.name} planı aktifleştirildi. ${plan.credits} kredi hesabınıza eklendi.`,
+        `${plan.name} planı aktifleştirildi. ${plan.credits} kredi hesabınıza eklendi.`
       );
     }
 
@@ -175,22 +196,32 @@ export async function POST(req: Request) {
       .single<{ id: string }>();
 
     if (insertError || !paymentRecord) {
-      logger.payments.error("Payment record insert failed", insertError, { userId: user.id, planId });
+      logger.payments.error("Payment record insert failed", insertError, {
+        userId: user.id,
+        planId,
+      });
       return apiError(API_ERROR_CODES.INTERNAL_ERROR, "Ödeme kaydı oluşturulamadı.", 500);
     }
 
     // Fetch user profile for Iyzico buyer fields
     const profile = await getUserProfile(user.id);
     if (!profile || !profile.fullName || !user.email) {
-      return apiError(API_ERROR_CODES.BAD_REQUEST, "Ödeme için profil bilgileriniz (isim, e-posta) eksik.", 400);
+      return apiError(
+        API_ERROR_CODES.BAD_REQUEST,
+        "Ödeme için profil bilgileriniz (isim, e-posta) eksik.",
+        400
+      );
     }
 
     const nameParts = profile.fullName.trim().split(" ");
     const name = nameParts[0] || "User";
     const surname = nameParts.length > 1 ? nameParts.slice(1).join(" ") : "Kullanıcı";
-    
+
     const headersList = await headers();
-    const ip = headersList.get("x-forwarded-for")?.split(",")[0] || headersList.get("x-real-ip") || "127.0.0.1";
+    const ip =
+      headersList.get("x-forwarded-for")?.split(",")[0] ||
+      headersList.get("x-real-ip") ||
+      "127.0.0.1";
 
     // Initiate Iyzico payment
     const { payment } = await import("@/lib/payment");
@@ -211,28 +242,29 @@ export async function POST(req: Request) {
         country: "Turkey",
         zipCode: "34000",
         ip,
-        registrationDate: new Date(profile.createdAt).toISOString().slice(0, 19).replace('T', ' '),
-        lastLoginDate: new Date().toISOString().slice(0, 19).replace('T', ' '),
-      }
+        registrationDate: new Date(profile.createdAt).toISOString().slice(0, 19).replace("T", " "),
+        lastLoginDate: new Date().toISOString().slice(0, 19).replace("T", " "),
+      },
     });
 
     if (!paymentResult.success) {
       // Update record to failed
-      await admin
-        .from("payments")
-        .update({ status: "failure" })
-        .eq("id", paymentRecord.id);
+      await admin.from("payments").update({ status: "failure" }).eq("id", paymentRecord.id);
 
-      captureServerEvent("plan_purchase_failed", {
-        userId: user.id,
-        planId: plan.id,
-        error: paymentResult.error,
-      }, user.id);
+      captureServerEvent(
+        "plan_purchase_failed",
+        {
+          userId: user.id,
+          planId: plan.id,
+          error: paymentResult.error,
+        },
+        user.id
+      );
 
       return apiError(
         API_ERROR_CODES.INTERNAL_ERROR,
         paymentResult.error ?? "Ödeme başlatılamadı.",
-        502,
+        502
       );
     }
 
@@ -244,12 +276,16 @@ export async function POST(req: Request) {
         .eq("id", paymentRecord.id);
     }
 
-    captureServerEvent("plan_purchase_initiated", {
-      userId: user.id,
-      planId: plan.id,
-      planName: plan.name,
-      amount: plan.price,
-    }, user.id);
+    captureServerEvent(
+      "plan_purchase_initiated",
+      {
+        userId: user.id,
+        planId: plan.id,
+        planName: plan.name,
+        amount: plan.price,
+      },
+      user.id
+    );
 
     return apiSuccess(
       {
@@ -258,9 +294,8 @@ export async function POST(req: Request) {
         paymentUrl: paymentResult.paymentUrl ?? null,
         transactionId: paymentResult.transactionId ?? null,
       },
-      "Ödeme başlatıldı.",
+      "Ödeme başlatıldı."
     );
-
   } catch (error) {
     logger.payments.error("Purchase plan unexpected error", error, { userId: user.id, planId });
     captureServerError("Purchase plan unexpected error", "payments", error, { userId: user.id });

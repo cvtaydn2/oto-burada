@@ -12,6 +12,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import process from "node:process";
+
 import { loadLocalEnv } from "./load-local-env.mjs";
 
 loadLocalEnv();
@@ -37,7 +38,7 @@ async function runSql(sql) {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      "Authorization": `Bearer ${SERVICE_ROLE_KEY}`,
+      Authorization: `Bearer ${SERVICE_ROLE_KEY}`,
     },
     body: JSON.stringify({ query: sql }),
   });
@@ -143,10 +144,7 @@ async function checkAppliedMigrations() {
   });
 
   // _migrations tablosu var mı kontrol et
-  const { data, error } = await admin
-    .from("_migrations")
-    .select("name")
-    .order("name");
+  const { data, error } = await admin.from("_migrations").select("name").order("name");
 
   if (error) {
     // Tablo yok — hiç migration uygulanmamış
@@ -169,7 +167,8 @@ async function main() {
     console.log("⚠️  _migrations tablosu bulunamadı — tüm dosyalar pending.");
   }
 
-  const allFiles = fs.readdirSync(MIGRATIONS_DIR)
+  const allFiles = fs
+    .readdirSync(MIGRATIONS_DIR)
     .filter((f) => f.endsWith(".sql"))
     .sort();
 

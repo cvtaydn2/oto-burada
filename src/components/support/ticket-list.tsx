@@ -37,7 +37,9 @@ export function TicketList({ tickets }: TicketListProps) {
           <div className="flex items-start justify-between gap-4">
             <div className="flex-1 min-w-0">
               <div className="flex flex-wrap items-center gap-2 mb-2">
-                <span className={`text-[10px] font-bold px-2.5 py-1 rounded-full border uppercase tracking-wider ${STATUS_COLORS[ticket.status] ?? STATUS_COLORS.closed}`}>
+                <span
+                  className={`text-[10px] font-bold px-2.5 py-1 rounded-full border uppercase tracking-wider ${STATUS_COLORS[ticket.status] ?? STATUS_COLORS.closed}`}
+                >
                   {STATUS_LABELS[ticket.status]}
                 </span>
                 <span className="text-[10px] text-slate-400 uppercase tracking-wider font-bold">

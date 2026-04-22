@@ -2,10 +2,10 @@ import { headers } from "next/headers";
 
 export async function getClientIp() {
   const headersList = await headers();
-  
+
   // ── PILL: Issue 4 - Anti-Spoofing IP Resolution ──────────────────
   // We prioritize headers set by the trusted edge proxy (Vercel, Cloudflare).
-  // x-real-ip is set by Vercel and cannot be easily spoofed by the client 
+  // x-real-ip is set by Vercel and cannot be easily spoofed by the client
   // if you verify it comes from the edge.
   const vercelIp = headersList.get("x-real-ip");
   if (vercelIp) return vercelIp;
@@ -17,11 +17,11 @@ export async function getClientIp() {
   // if we are behind multiple proxies, but usually the first is the client.
   // SECURITY: Never rely on user-sent x-forwarded-for alone.
   const forwarded = headersList.get("x-forwarded-for");
-  return (forwarded?.split(",")[0]?.trim() || "unknown");
+  return forwarded?.split(",")[0]?.trim() || "unknown";
 }
 
 /**
- * Normalizes IP addresses for rate limiting. 
+ * Normalizes IP addresses for rate limiting.
  * For IPv6, it extracts the /64 subnet to prevent "Subnet Rotation" attacks.
  */
 export function getNormalizedIp(ip: string): string {

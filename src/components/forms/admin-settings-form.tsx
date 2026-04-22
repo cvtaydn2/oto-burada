@@ -1,17 +1,18 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { Save, Globe, Lock, Bell, Zap, LoaderCircle, RefreshCw, AlertTriangle } from "lucide-react";
+import { AlertTriangle, Bell, Globe, LoaderCircle, Lock, RefreshCw, Save, Zap } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
+import { toast } from "sonner";
+
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
-import { Badge } from "@/components/ui/badge";
-import { toast } from "sonner";
-import { PlatformSettings, updateAllPlatformSettings } from "@/services/admin/settings";
-import { useRouter } from "next/navigation";
-import { cn } from "@/lib/utils";
+import { Switch } from "@/components/ui/switch";
 import { captureClientException } from "@/lib/monitoring/posthog-client";
+import { cn } from "@/lib/utils";
+import { PlatformSettings, updateAllPlatformSettings } from "@/services/admin/settings";
 
 interface AdminSettingsFormProps {
   initialSettings: PlatformSettings;
@@ -53,31 +54,33 @@ export function AdminSettingsForm({ initialSettings }: AdminSettingsFormProps) {
     setIsClearingCache(true);
     try {
       const res = await fetch("/api/admin/cache/clear", { method: "POST" });
-      const data = await res.json().catch(() => ({ success: false, error: "Sunucu yanıtı okunamadı." }));
+      const data = await res
+        .json()
+        .catch(() => ({ success: false, error: "Sunucu yanıtı okunamadı." }));
       if (res.ok && data.success) {
         toast.success("Önbellek başarıyla temizlendi.");
         router.refresh();
       } else {
         toast.error(data.error ?? "Önbellek temizlenemedi.");
-        captureClientException(new Error(data.error || "Cache clear failed"), "admin_settings_cache_clear");
+        captureClientException(
+          new Error(data.error || "Cache clear failed"),
+          "admin_settings_cache_clear"
+        );
       }
     } catch (error) {
       toast.error("Önbellek temizlenirken bir hata oluştu.");
-        captureClientException(error, "admin_settings_cache_clear_fatal");
+      captureClientException(error, "admin_settings_cache_clear_fatal");
     } finally {
       setIsClearingCache(false);
     }
   };
 
-  const updateSubSetting = <
-    K extends keyof PlatformSettings,
-    S extends keyof PlatformSettings[K],
-  >(
+  const updateSubSetting = <K extends keyof PlatformSettings, S extends keyof PlatformSettings[K]>(
     category: K,
     key: S,
-    value: PlatformSettings[K][S],
+    value: PlatformSettings[K][S]
   ) => {
-    setSettings(prev => ({
+    setSettings((prev) => ({
       ...prev,
       [category]: {
         ...prev[category],
@@ -88,7 +91,12 @@ export function AdminSettingsForm({ initialSettings }: AdminSettingsFormProps) {
   };
 
   return (
-    <div className={cn("space-y-6 transition-opacity duration-300", isSaving && "opacity-70 pointer-events-none")}>
+    <div
+      className={cn(
+        "space-y-6 transition-opacity duration-300",
+        isSaving && "opacity-70 pointer-events-none"
+      )}
+    >
       {/* Header */}
       <section className="flex flex-col justify-between gap-4 md:flex-row md:items-end">
         <div>
@@ -100,7 +108,10 @@ export function AdminSettingsForm({ initialSettings }: AdminSettingsFormProps) {
 
         <div className="flex items-center gap-3">
           {hasChanges && (
-            <Badge variant="outline" className="gap-1.5 border-amber-200 bg-amber-50 text-amber-700 font-bold text-[10px] uppercase tracking-widest">
+            <Badge
+              variant="outline"
+              className="gap-1.5 border-amber-200 bg-amber-50 text-amber-700 font-bold text-[10px] uppercase tracking-widest"
+            >
               <AlertTriangle size={11} />
               Kaydedilmemiş değişiklikler
             </Badge>
@@ -117,7 +128,6 @@ export function AdminSettingsForm({ initialSettings }: AdminSettingsFormProps) {
       </section>
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-
         {/* Genel Görünüm */}
         <div className="space-y-6 rounded-2xl border border-border bg-card p-8 shadow-sm">
           <div className="flex items-center gap-4 mb-2">
@@ -129,38 +139,54 @@ export function AdminSettingsForm({ initialSettings }: AdminSettingsFormProps) {
 
           <div className="space-y-5">
             <div className="space-y-2">
-              <Label className="text-[11px] font-bold text-muted-foreground/70 uppercase tracking-widest ml-1">Site Başlığı</Label>
+              <Label className="text-[11px] font-bold text-muted-foreground/70 uppercase tracking-widest ml-1">
+                Site Başlığı
+              </Label>
               <Input
                 value={settings.general_appearance?.site_title ?? ""}
-                onChange={(e) => updateSubSetting("general_appearance", "site_title", e.target.value)}
+                onChange={(e) =>
+                  updateSubSetting("general_appearance", "site_title", e.target.value)
+                }
                 className="h-12 rounded-xl bg-muted/30 border-transparent focus:bg-card focus:border-blue-300 focus:ring-4 focus:ring-blue-50 font-bold"
               />
             </div>
             <div className="space-y-2">
-              <Label className="text-[11px] font-bold text-muted-foreground/70 uppercase tracking-widest ml-1">Destek E-Posta</Label>
+              <Label className="text-[11px] font-bold text-muted-foreground/70 uppercase tracking-widest ml-1">
+                Destek E-Posta
+              </Label>
               <Input
                 type="email"
                 value={settings.general_appearance?.support_email ?? ""}
-                onChange={(e) => updateSubSetting("general_appearance", "support_email", e.target.value)}
+                onChange={(e) =>
+                  updateSubSetting("general_appearance", "support_email", e.target.value)
+                }
                 className="h-12 rounded-xl bg-muted/30 border-transparent focus:bg-card focus:border-blue-300 focus:ring-4 focus:ring-blue-50 font-bold"
               />
             </div>
 
             {/* Bakım Modu — kritik toggle, kırmızı uyarı ile */}
-            <div className={cn(
-              "flex items-center justify-between rounded-2xl p-5 border transition-colors",
-              settings.general_appearance?.maintenance_mode
-                ? "bg-red-50 border-red-200"
-                : "bg-muted/30 border-border/50"
-            )}>
+            <div
+              className={cn(
+                "flex items-center justify-between rounded-2xl p-5 border transition-colors",
+                settings.general_appearance?.maintenance_mode
+                  ? "bg-red-50 border-red-200"
+                  : "bg-muted/30 border-border/50"
+              )}
+            >
               <div className="flex flex-col gap-1">
-                <span className={cn(
-                  "text-sm font-bold uppercase tracking-tight",
-                  settings.general_appearance?.maintenance_mode ? "text-red-700" : "text-foreground"
-                )}>
+                <span
+                  className={cn(
+                    "text-sm font-bold uppercase tracking-tight",
+                    settings.general_appearance?.maintenance_mode
+                      ? "text-red-700"
+                      : "text-foreground"
+                  )}
+                >
                   Bakım Modu
                   {settings.general_appearance?.maintenance_mode && (
-                    <span className="ml-2 text-[10px] bg-red-100 text-red-600 px-2 py-0.5 rounded-full font-bold uppercase tracking-widest">AKTİF</span>
+                    <span className="ml-2 text-[10px] bg-red-100 text-red-600 px-2 py-0.5 rounded-full font-bold uppercase tracking-widest">
+                      AKTİF
+                    </span>
                   )}
                 </span>
                 <span className="text-[10px] text-muted-foreground/70 font-bold uppercase tracking-wider italic">
@@ -169,7 +195,9 @@ export function AdminSettingsForm({ initialSettings }: AdminSettingsFormProps) {
               </div>
               <Switch
                 checked={settings.general_appearance?.maintenance_mode ?? false}
-                onCheckedChange={(val) => updateSubSetting("general_appearance", "maintenance_mode", val)}
+                onCheckedChange={(val) =>
+                  updateSubSetting("general_appearance", "maintenance_mode", val)
+                }
               />
             </div>
           </div>
@@ -187,26 +215,40 @@ export function AdminSettingsForm({ initialSettings }: AdminSettingsFormProps) {
           <div className="space-y-5">
             <div className="flex items-center justify-between rounded-2xl bg-muted/30 p-5 border border-border/50">
               <div className="flex flex-col gap-1">
-                <span className="text-sm font-bold text-foreground uppercase tracking-tight">Otomatik Onay</span>
-                <span className="text-[10px] text-muted-foreground/70 font-bold uppercase tracking-wider italic">Eski üyelerin ilanlarını otomatik yayınla</span>
+                <span className="text-sm font-bold text-foreground uppercase tracking-tight">
+                  Otomatik Onay
+                </span>
+                <span className="text-[10px] text-muted-foreground/70 font-bold uppercase tracking-wider italic">
+                  Eski üyelerin ilanlarını otomatik yayınla
+                </span>
               </div>
               <Switch
                 checked={settings.moderation_policies?.auto_approve_regulars ?? false}
-                onCheckedChange={(val) => updateSubSetting("moderation_policies", "auto_approve_regulars", val)}
+                onCheckedChange={(val) =>
+                  updateSubSetting("moderation_policies", "auto_approve_regulars", val)
+                }
               />
             </div>
             <div className="flex items-center justify-between rounded-2xl bg-muted/30 p-5 border border-border/50">
               <div className="flex flex-col gap-1">
-                <span className="text-sm font-bold text-foreground uppercase tracking-tight">VIN Kontrolü</span>
-                <span className="text-[10px] text-muted-foreground/70 font-bold uppercase tracking-wider italic">API üzerinden gerçeklik testi yap</span>
+                <span className="text-sm font-bold text-foreground uppercase tracking-tight">
+                  VIN Kontrolü
+                </span>
+                <span className="text-[10px] text-muted-foreground/70 font-bold uppercase tracking-wider italic">
+                  API üzerinden gerçeklik testi yap
+                </span>
               </div>
               <Switch
                 checked={settings.moderation_policies?.vin_check_enabled ?? false}
-                onCheckedChange={(val) => updateSubSetting("moderation_policies", "vin_check_enabled", val)}
+                onCheckedChange={(val) =>
+                  updateSubSetting("moderation_policies", "vin_check_enabled", val)
+                }
               />
             </div>
             <div className="flex items-center justify-between gap-4">
-              <Label className="text-[11px] font-bold text-muted-foreground/70 uppercase tracking-widest ml-1">Maksimum Ücretsiz İlan</Label>
+              <Label className="text-[11px] font-bold text-muted-foreground/70 uppercase tracking-widest ml-1">
+                Maksimum Ücretsiz İlan
+              </Label>
               <Input
                 type="number"
                 min={1}
@@ -236,22 +278,34 @@ export function AdminSettingsForm({ initialSettings }: AdminSettingsFormProps) {
           <div className="space-y-4">
             <div className="flex items-center justify-between rounded-2xl border border-border/50 p-5">
               <div className="flex flex-col gap-1">
-                <span className="text-sm font-bold text-foreground uppercase tracking-tight">Slack Entegrasyonu</span>
-                <span className="text-[10px] text-muted-foreground/70 font-bold uppercase tracking-wider italic">Yeni ilanlar için kanal bildirimi</span>
+                <span className="text-sm font-bold text-foreground uppercase tracking-tight">
+                  Slack Entegrasyonu
+                </span>
+                <span className="text-[10px] text-muted-foreground/70 font-bold uppercase tracking-wider italic">
+                  Yeni ilanlar için kanal bildirimi
+                </span>
               </div>
               <Switch
                 checked={settings.notification_settings?.new_listing_slack ?? false}
-                onCheckedChange={(val) => updateSubSetting("notification_settings", "new_listing_slack", val)}
+                onCheckedChange={(val) =>
+                  updateSubSetting("notification_settings", "new_listing_slack", val)
+                }
               />
             </div>
             <div className="flex items-center justify-between rounded-2xl border border-border/50 p-5">
               <div className="flex flex-col gap-1">
-                <span className="text-sm font-bold text-foreground uppercase tracking-tight">Rapor Uyarıları</span>
-                <span className="text-[10px] text-muted-foreground/70 font-bold uppercase tracking-wider italic">Adminlere anlık email gönder</span>
+                <span className="text-sm font-bold text-foreground uppercase tracking-tight">
+                  Rapor Uyarıları
+                </span>
+                <span className="text-[10px] text-muted-foreground/70 font-bold uppercase tracking-wider italic">
+                  Adminlere anlık email gönder
+                </span>
               </div>
               <Switch
                 checked={settings.notification_settings?.report_email_alerts ?? false}
-                onCheckedChange={(val) => updateSubSetting("notification_settings", "report_email_alerts", val)}
+                onCheckedChange={(val) =>
+                  updateSubSetting("notification_settings", "report_email_alerts", val)
+                }
               />
             </div>
           </div>
@@ -270,7 +324,9 @@ export function AdminSettingsForm({ initialSettings }: AdminSettingsFormProps) {
             {/* Önbellek Temizle — ayrı API çağrısı, kaydet butonuna bağlı değil */}
             <div className="flex items-center justify-between rounded-2xl border-2 border-dashed border-border/50 p-5">
               <div className="flex flex-col gap-1">
-                <span className="text-sm font-bold text-foreground uppercase tracking-tight">Önbellek Temizle</span>
+                <span className="text-sm font-bold text-foreground uppercase tracking-tight">
+                  Önbellek Temizle
+                </span>
                 <span className="text-[10px] text-muted-foreground/70 font-bold uppercase tracking-wider italic">
                   Tüm sayfa önbelleklerini sıfırla
                 </span>
@@ -282,10 +338,11 @@ export function AdminSettingsForm({ initialSettings }: AdminSettingsFormProps) {
                 className="font-bold text-[10px] tracking-widest text-muted-foreground border-border hover:bg-red-50 hover:text-red-600 hover:border-red-200 transition-all gap-1.5"
                 onClick={handleClearCache}
               >
-                {isClearingCache
-                  ? <LoaderCircle className="animate-spin" size={13} />
-                  : <RefreshCw size={13} />
-                }
+                {isClearingCache ? (
+                  <LoaderCircle className="animate-spin" size={13} />
+                ) : (
+                  <RefreshCw size={13} />
+                )}
                 SIFIRLA
               </Button>
             </div>

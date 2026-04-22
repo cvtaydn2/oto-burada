@@ -8,12 +8,13 @@
  * Validates: Requirements 1.3, 1.4
  */
 
-import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { createSupabaseAdminClient } from '@/lib/supabase/admin';
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
-vi.mock('@/lib/supabase/admin');
+import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 
-describe('Bug 2 — profiles.email column error (EXPECTED TO FAIL on unfixed code)', () => {
+vi.mock("@/lib/supabase/admin");
+
+describe("Bug 2 — profiles.email column error (EXPECTED TO FAIL on unfixed code)", () => {
   const mockFrom = vi.fn();
 
   beforeEach(() => {
@@ -28,9 +29,9 @@ describe('Bug 2 — profiles.email column error (EXPECTED TO FAIL on unfixed cod
    *
    * Counterexample: getSupportTickets() → returns [] due to DB error (email column missing)
    */
-  it('should NOT select email from profiles table (query must not include email column)', async () => {
+  it("should NOT select email from profiles table (query must not include email column)", async () => {
     // Capture the select string passed to Supabase
-    let capturedSelectString = '';
+    let capturedSelectString = "";
 
     mockFrom.mockReturnValue({
       select: vi.fn().mockImplementation((selectStr: string) => {
@@ -41,7 +42,7 @@ describe('Bug 2 — profiles.email column error (EXPECTED TO FAIL on unfixed cod
       }),
     });
 
-    const { getSupportTickets } = await import('../support');
+    const { getSupportTickets } = await import("../support");
     await getSupportTickets();
 
     // On unfixed code, the select string contains "email" inside profiles(...)
@@ -49,21 +50,21 @@ describe('Bug 2 — profiles.email column error (EXPECTED TO FAIL on unfixed cod
     expect(capturedSelectString).not.toMatch(/profiles\s*\([^)]*email/);
   });
 
-  it('should return tickets even when DB returns profiles.email error', async () => {
+  it("should return tickets even when DB returns profiles.email error", async () => {
     // Simulate the exact Supabase error for missing email column
     mockFrom.mockReturnValue({
       select: vi.fn().mockReturnValue({
         order: vi.fn().mockResolvedValue({
           data: null,
           error: {
-            code: '42703',
-            message: 'column profiles_1.email does not exist',
+            code: "42703",
+            message: "column profiles_1.email does not exist",
           },
         }),
       }),
     });
 
-    const { getSupportTickets } = await import('../support');
+    const { getSupportTickets } = await import("../support");
     const result = await getSupportTickets();
 
     // On unfixed code: returns [] because the query errors out

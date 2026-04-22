@@ -14,7 +14,7 @@ async function testListingsFilters() {
   // Get initial listings
   const res = await fetch(`${API_BASE}/api/listings`);
   const listings = await res.json();
-  
+
   console.log(`Total listings: ${listings.length || 0}`);
 
   // Test URL filters

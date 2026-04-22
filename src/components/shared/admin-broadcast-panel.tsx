@@ -1,7 +1,7 @@
 "use client";
 
+import { AlertCircle, CheckCircle2, LoaderCircle, Megaphone } from "lucide-react";
 import { useState } from "react";
-import { Megaphone, LoaderCircle, CheckCircle2, AlertCircle } from "lucide-react";
 
 export function AdminBroadcastPanel() {
   const [title, setTitle] = useState("");
@@ -52,7 +52,9 @@ export function AdminBroadcastPanel() {
         </div>
         <div>
           <h2 className="text-xl font-bold text-foreground">Sistem Duyurusu Gönder</h2>
-          <p className="text-sm text-muted-foreground">Tüm kullanıcılara anlık bildirim gönderir.</p>
+          <p className="text-sm text-muted-foreground">
+            Tüm kullanıcılara anlık bildirim gönderir.
+          </p>
         </div>
       </div>
 

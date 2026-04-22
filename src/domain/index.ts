@@ -8,26 +8,29 @@
 
 // Core entity types
 export type {
-  Profile,
-  Listing,
-  ListingImage,
-  ListingCreateInput,
-  ListingCreateFormValues,
-  Favorite,
-  Report,
-  ReportCreateInput,
   AdminModerationAction,
-  ListingFilters,
-  ExpertInspection,
   Chat,
+  ExpertInspection,
+  Favorite,
+  Listing,
+  ListingCreateFormValues,
+  ListingCreateInput,
+  ListingFilters,
+  ListingImage,
   Message,
   Notification,
+  Profile,
+  Report,
+  ReportCreateInput,
   SavedSearch,
 } from "@/types";
 
 // Domain guards / auth helpers
-export { ensureAuthenticated, ensureAdmin, getAuthenticatedUserOrThrow } from "@/domain/guards";
+export { ensureAdmin, ensureAuthenticated, getAuthenticatedUserOrThrow } from "@/domain/guards";
 
 // Use-cases
+export type {
+  ListingRepository,
+  PendingListingCreatePayload,
+} from "@/domain/usecases/listing-create";
 export { executeListingCreate } from "@/domain/usecases/listing-create";
-export type { ListingRepository, PendingListingCreatePayload } from "@/domain/usecases/listing-create";

@@ -1,8 +1,9 @@
+import { AlertCircle, AlertTriangle, ShieldCheck } from "lucide-react";
 import Link from "next/link";
-import { ShieldCheck, AlertTriangle, AlertCircle } from "lucide-react";
+
 import { Button } from "@/components/ui/button";
-import { getProfileRestrictionState } from "@/services/profile/profile-restrictions";
 import { trust } from "@/lib/constants/ui-strings";
+import { getProfileRestrictionState } from "@/services/profile/profile-restrictions";
 import type { Profile } from "@/types";
 
 interface DashboardVerificationAlertProps {
@@ -10,7 +11,10 @@ interface DashboardVerificationAlertProps {
   profile?: Partial<Profile> | null;
 }
 
-export function DashboardVerificationAlert({ isEmailVerified, profile }: DashboardVerificationAlertProps) {
+export function DashboardVerificationAlert({
+  isEmailVerified,
+  profile,
+}: DashboardVerificationAlertProps) {
   const restrictionState = getProfileRestrictionState(profile);
 
   // Case 1: Banned/Restricted
@@ -22,8 +26,12 @@ export function DashboardVerificationAlert({ isEmailVerified, profile }: Dashboa
             <AlertCircle size={24} />
           </div>
           <div>
-            <h4 className="text-base font-bold tracking-tight uppercase tracking-widest">{trust.accountRestrictedTitle}</h4>
-            <p className="text-xs font-medium opacity-70 mt-1 max-w-lg leading-relaxed">{trust.accountRestrictedDesc}</p>
+            <h4 className="text-base font-bold tracking-tight uppercase tracking-widest">
+              {trust.accountRestrictedTitle}
+            </h4>
+            <p className="text-xs font-medium opacity-70 mt-1 max-w-lg leading-relaxed">
+              {trust.accountRestrictedDesc}
+            </p>
           </div>
         </div>
       </section>
@@ -39,8 +47,12 @@ export function DashboardVerificationAlert({ isEmailVerified, profile }: Dashboa
             <AlertTriangle size={24} />
           </div>
           <div>
-            <h4 className="text-base font-bold tracking-tight uppercase tracking-widest">{trust.accountUnderReview}</h4>
-            <p className="text-xs font-medium opacity-70 mt-1 max-w-lg leading-relaxed">{trust.verificationPendingDesc}</p>
+            <h4 className="text-base font-bold tracking-tight uppercase tracking-widest">
+              {trust.accountUnderReview}
+            </h4>
+            <p className="text-xs font-medium opacity-70 mt-1 max-w-lg leading-relaxed">
+              {trust.verificationPendingDesc}
+            </p>
           </div>
         </div>
       </section>
@@ -57,10 +69,17 @@ export function DashboardVerificationAlert({ isEmailVerified, profile }: Dashboa
           </div>
           <div>
             <h4 className="text-base font-bold tracking-tight">E-posta Adresini Doğrula</h4>
-            <p className="text-xs font-medium opacity-70 mt-1 max-w-lg leading-relaxed">İlan verebilmek ve tüm özellikleri kullanabilmek için e-posta doğrulamanız gerekiyor.</p>
+            <p className="text-xs font-medium opacity-70 mt-1 max-w-lg leading-relaxed">
+              İlan verebilmek ve tüm özellikleri kullanabilmek için e-posta doğrulamanız gerekiyor.
+            </p>
           </div>
         </div>
-        <Button variant="destructive" size="sm" className="rounded-xl h-11 px-8 font-bold text-[10px] tracking-widest uppercase shadow-sm shadow-destructive/20 active:scale-95 transition-all" asChild>
+        <Button
+          variant="destructive"
+          size="sm"
+          className="rounded-xl h-11 px-8 font-bold text-[10px] tracking-widest uppercase shadow-sm shadow-destructive/20 active:scale-95 transition-all"
+          asChild
+        >
           <Link href="/dashboard/profile">DOĞRULA</Link>
         </Button>
       </section>
@@ -79,13 +98,20 @@ export function DashboardVerificationAlert({ isEmailVerified, profile }: Dashboa
             <ShieldCheck size={24} />
           </div>
           <div>
-            <h4 className="text-sm font-bold tracking-tight uppercase tracking-[0.05em]">{trust.benefits.title}</h4>
+            <h4 className="text-sm font-bold tracking-tight uppercase tracking-[0.05em]">
+              {trust.benefits.title}
+            </h4>
             <p className="text-xs font-medium opacity-70 mt-1 max-w-lg leading-relaxed">
               {trust.benefits.subtitle} <strong>{trust.benefits.motto}</strong>
             </p>
           </div>
         </div>
-        <Button variant="default" size="sm" className="rounded-xl h-11 px-8 font-bold text-[10px] tracking-widest uppercase shadow-lg shadow-primary/20 hover:scale-105 active:scale-95 transition-all" asChild>
+        <Button
+          variant="default"
+          size="sm"
+          className="rounded-xl h-11 px-8 font-bold text-[10px] tracking-widest uppercase shadow-lg shadow-primary/20 hover:scale-105 active:scale-95 transition-all"
+          asChild
+        >
           <Link href="/dashboard/profile">HEMEN BAŞLAT</Link>
         </Button>
       </section>

@@ -1,15 +1,15 @@
 "use client";
 
-import { useQueryClient, useMutation } from "@tanstack/react-query";
-import { Bell, LoaderCircle } from "lucide-react";
-import Link from "next/link";
-import { useState } from "react";
-import { useRouter } from "next/navigation";
 import * as DropdownMenu from "@radix-ui/react-dropdown-menu";
-
-import { cn, formatDate } from "@/lib/utils";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { Bell, LoaderCircle } from "lucide-react";
 import { AlertCircle } from "lucide-react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
+
 import { useNotifications } from "@/hooks/use-notifications";
+import { cn, formatDate } from "@/lib/utils";
 
 export function NotificationDropdown({ userId }: { userId?: string }) {
   const queryClient = useQueryClient();
@@ -93,7 +93,11 @@ export function NotificationDropdown({ userId }: { userId?: string }) {
 
           <div className="max-h-[400px] overflow-y-auto overflow-x-hidden">
             {isLoading ? (
-              <div className="flex items-center justify-center py-10" role="status" aria-label="Bildirimler yükleniyor">
+              <div
+                className="flex items-center justify-center py-10"
+                role="status"
+                aria-label="Bildirimler yükleniyor"
+              >
                 <LoaderCircle className="size-6 animate-spin text-muted-foreground" />
               </div>
             ) : isError ? (
@@ -102,7 +106,9 @@ export function NotificationDropdown({ userId }: { userId?: string }) {
                   <AlertCircle className="size-6 text-rose-400" />
                 </div>
                 <p className="text-sm font-medium text-foreground">Bildirimler yüklenemedi</p>
-                <p className="text-xs text-muted-foreground mt-1">Bir hata oluştu. Lütfen sayfayı yenile.</p>
+                <p className="text-xs text-muted-foreground mt-1">
+                  Bir hata oluştu. Lütfen sayfayı yenile.
+                </p>
               </div>
             ) : notifications.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-10 text-center px-6">
@@ -110,7 +116,9 @@ export function NotificationDropdown({ userId }: { userId?: string }) {
                   <Bell className="size-6 text-muted-foreground opacity-40" />
                 </div>
                 <p className="text-sm font-medium text-foreground">Henüz bildirim yok</p>
-                <p className="text-xs text-muted-foreground mt-1">İlanların onaylandığında veya bir mesaj geldiğinde burada görünecek.</p>
+                <p className="text-xs text-muted-foreground mt-1">
+                  İlanların onaylandığında veya bir mesaj geldiğinde burada görünecek.
+                </p>
               </div>
             ) : (
               <div className="space-y-0.5">
@@ -119,7 +127,9 @@ export function NotificationDropdown({ userId }: { userId?: string }) {
                     key={notification.id}
                     className={cn(
                       "group flex flex-col gap-1 rounded-xl p-3 outline-none transition-colors cursor-pointer",
-                      notification.read ? "bg-background hover:bg-muted/30" : "bg-indigo-50/50 hover:bg-indigo-50 dark:bg-indigo-900/10 dark:hover:bg-indigo-900/20"
+                      notification.read
+                        ? "bg-background hover:bg-muted/30"
+                        : "bg-indigo-50/50 hover:bg-indigo-50 dark:bg-indigo-900/10 dark:hover:bg-indigo-900/20"
                     )}
                     onClick={() => {
                       if (!notification.read && notification.id) {
@@ -132,10 +142,14 @@ export function NotificationDropdown({ userId }: { userId?: string }) {
                     }}
                   >
                     <div className="flex items-start justify-between gap-2">
-                       <span className={cn(
-                        "text-xs font-bold leading-tight",
-                        notification.read ? "text-foreground/90" : "text-indigo-900 dark:text-indigo-200"
-                      )}>
+                      <span
+                        className={cn(
+                          "text-xs font-bold leading-tight",
+                          notification.read
+                            ? "text-foreground/90"
+                            : "text-indigo-900 dark:text-indigo-200"
+                        )}
+                      >
                         {notification.title}
                       </span>
                       {!notification.read && (

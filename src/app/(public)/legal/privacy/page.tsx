@@ -8,23 +8,23 @@ export default function PrivacyPage() {
         <section className="mb-8">
           <h2 className="text-xl font-bold text-foreground">1. Toplanan Veriler</h2>
           <p className="mt-2 text-muted-foreground">
-            Kayıt aşamasında e-posta adresiniz ve adınız; ilan verme aşamasında ise telefon numaranız 
-            ve araç bilgileriniz güvenli bir şekilde saklanmaktadır.
+            Kayıt aşamasında e-posta adresiniz ve adınız; ilan verme aşamasında ise telefon
+            numaranız ve araç bilgileriniz güvenli bir şekilde saklanmaktadır.
           </p>
         </section>
 
         <section className="mb-8">
           <h2 className="text-xl font-bold text-foreground">2. Veri Kullanımı</h2>
           <p className="mt-2 text-muted-foreground">
-            Verileriniz sadece ilanlarınızın yayınlanması ve sizinle iletişime geçilmesi amacıyla kullanılır. 
-            Üçüncü taraflarla reklam amacıyla paylaşılmaz.
+            Verileriniz sadece ilanlarınızın yayınlanması ve sizinle iletişime geçilmesi amacıyla
+            kullanılır. Üçüncü taraflarla reklam amacıyla paylaşılmaz.
           </p>
         </section>
 
         <section className="mb-8">
           <h2 className="text-xl font-bold text-foreground">3. Çerezler</h2>
           <p className="mt-2 text-muted-foreground">
-            Platformumuzun çalışması için gerekli olan teknik çerezler dışında takip amaçlı çerez 
+            Platformumuzun çalışması için gerekli olan teknik çerezler dışında takip amaçlı çerez
             ayarları kullanıcı onayı ile yönetilir.
           </p>
         </section>

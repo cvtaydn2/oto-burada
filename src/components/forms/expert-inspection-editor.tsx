@@ -1,33 +1,33 @@
 "use client";
 
-import { UseFormReturn } from "react-hook-form";
-import { 
-  ShieldCheck, 
-  CheckCircle2, 
-  XCircle, 
-  HelpCircle,
+import {
   Calendar,
-  User,
+  CheckCircle2,
   FileText,
-  Star
+  HelpCircle,
+  ShieldCheck,
+  Star,
+  User,
+  XCircle,
 } from "lucide-react";
-import { ExpertInspectionGrade, ExpertInspectionStatus } from "@/types";
+import { UseFormReturn } from "react-hook-form";
 
-import { 
-  expertInspectionGradeInfo, 
-  expertInspectionStatusLabels, 
-  ListingCreateFormValues 
-} from "@/types/domain";
+import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { 
-  Select, 
-  SelectContent, 
-  SelectItem, 
-  SelectTrigger, 
-  SelectValue 
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { Input } from "@/components/ui/input";
+import { ExpertInspectionGrade, ExpertInspectionStatus } from "@/types";
+import {
+  expertInspectionGradeInfo,
+  expertInspectionStatusLabels,
+  ListingCreateFormValues,
+} from "@/types/domain";
 
 interface ExpertInspectionEditorProps {
   form: UseFormReturn<ListingCreateFormValues>;
@@ -48,7 +48,7 @@ const INSPECTION_FIELDS = [
 
 export function ExpertInspectionEditor({ form }: ExpertInspectionEditorProps) {
   const { register, watch, setValue } = form;
-  
+
   const hasInspection = watch("expertInspection.hasInspection");
 
   return (
@@ -60,7 +60,9 @@ export function ExpertInspectionEditor({ form }: ExpertInspectionEditorProps) {
           </div>
           <div>
             <h4 className="font-bold text-foreground">Profesyonel Ekspertiz Raporu</h4>
-            <p className="text-xs text-muted-foreground">İlanınıza güven katar, 5 kat daha hızlı satış sağlar.</p>
+            <p className="text-xs text-muted-foreground">
+              İlanınıza güven katar, 5 kat daha hızlı satış sağlar.
+            </p>
           </div>
         </div>
         <div className="flex items-center gap-2">
@@ -73,8 +75,8 @@ export function ExpertInspectionEditor({ form }: ExpertInspectionEditorProps) {
               })
             }
             className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
-              !hasInspection 
-                ? "bg-slate-200 text-foreground/90 shadow-sm" 
+              !hasInspection
+                ? "bg-slate-200 text-foreground/90 shadow-sm"
                 : "text-muted-foreground hover:bg-muted"
             }`}
           >
@@ -89,8 +91,8 @@ export function ExpertInspectionEditor({ form }: ExpertInspectionEditorProps) {
               })
             }
             className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
-              hasInspection 
-                ? "bg-primary text-white shadow-sm" 
+              hasInspection
+                ? "bg-primary text-white shadow-sm"
                 : "text-muted-foreground hover:bg-muted"
             }`}
           >
@@ -134,7 +136,7 @@ export function ExpertInspectionEditor({ form }: ExpertInspectionEditorProps) {
                 <Star className="size-3 text-primary" />
                 Genel Değerlendirme
               </Label>
-              <Select 
+              <Select
                 onValueChange={(val) =>
                   setValue("expertInspection.overallGrade", val as ExpertInspectionGrade, {
                     shouldDirty: true,
@@ -195,22 +197,31 @@ export function ExpertInspectionEditor({ form }: ExpertInspectionEditorProps) {
                             {
                               shouldDirty: true,
                               shouldValidate: true,
-                            },
+                            }
                           )
                         }
                         className={`flex-1 py-1 px-1.5 rounded-md text-[10px] font-bold transition-all flex items-center justify-center gap-1 ${
-                          watch(`expertInspection.${field.name}` as "expertInspection.damageRecord") === s.status
-                            ? s.status === "var" 
-                              ? "bg-emerald-100 text-emerald-700" 
+                          watch(
+                            `expertInspection.${field.name}` as "expertInspection.damageRecord"
+                          ) === s.status
+                            ? s.status === "var"
+                              ? "bg-emerald-100 text-emerald-700"
                               : s.status === "yok"
                                 ? "bg-rose-100 text-rose-700"
                                 : "bg-muted text-foreground/90"
                             : "text-muted-foreground/60 hover:text-muted-foreground"
                         }`}
                       >
-                        {watch(`expertInspection.${field.name}` as "expertInspection.damageRecord") === s.status && (
-                          s.status === "var" ? <CheckCircle2 size={10} /> : s.status === "yok" ? <XCircle size={10} /> : <HelpCircle size={10} />
-                        )}
+                        {watch(
+                          `expertInspection.${field.name}` as "expertInspection.damageRecord"
+                        ) === s.status &&
+                          (s.status === "var" ? (
+                            <CheckCircle2 size={10} />
+                          ) : s.status === "yok" ? (
+                            <XCircle size={10} />
+                          ) : (
+                            <HelpCircle size={10} />
+                          ))}
                         {s.label}
                       </button>
                     ))}
@@ -222,7 +233,9 @@ export function ExpertInspectionEditor({ form }: ExpertInspectionEditorProps) {
 
           {/* Notes */}
           <div className="space-y-2">
-            <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Eksper Notları / Önemli Tespitler</Label>
+            <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+              Eksper Notları / Önemli Tespitler
+            </Label>
             <Textarea
               placeholder="Araçla ilgili eksperin vurguladığı özel durumları buraya yazabilirsiniz..."
               {...register("expertInspection.notes")}
@@ -237,7 +250,8 @@ export function ExpertInspectionEditor({ form }: ExpertInspectionEditorProps) {
           <HelpCircle className="size-10 text-muted-foreground/30 mb-3" />
           <h5 className="font-bold text-sm">Raporun Yok mu?</h5>
           <p className="text-xs text-muted-foreground max-w-[280px] mt-1">
-            Ekspertiz raporun yoksa bu aşamayı boş bırakabilirsin. Ancak raporlu ilanlar alıcıların daha çok ilgisini çeker.
+            Ekspertiz raporun yoksa bu aşamayı boş bırakabilirsin. Ancak raporlu ilanlar alıcıların
+            daha çok ilgisini çeker.
           </p>
         </div>
       )}

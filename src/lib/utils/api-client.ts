@@ -17,7 +17,7 @@ export type ApiClientResponse<T = unknown> = ApiClientSuccessResponse<T> | ApiCl
 
 export async function fetchApi<T>(
   url: string,
-  options?: RequestInit,
+  options?: RequestInit
 ): Promise<{ data?: T; error?: string; fieldErrors?: Record<string, string> }> {
   try {
     const response = await fetch(url, {
@@ -40,7 +40,9 @@ export async function fetchApi<T>(
     const contentType = response.headers.get("content-type");
     if (!contentType?.includes("application/json")) {
       if (!response.ok) {
-        return { error: `HTTP ${response.status}: Beklenmeyen yanıt formatı (${contentType || "unknown"})` };
+        return {
+          error: `HTTP ${response.status}: Beklenmeyen yanıt formatı (${contentType || "unknown"})`,
+        };
       }
       return { error: "Sunucu JSON yanıt döndürmedi." };
     }
@@ -54,10 +56,12 @@ export async function fetchApi<T>(
 
     if (!response.ok) {
       return {
-        error: json && typeof json === "object" && "error" in json && json.error?.message
-          ? json.error.message
-          : `HTTP ${response.status}: ${response.statusText}`,
-        fieldErrors: json && typeof json === "object" && "error" in json ? json.error?.fieldErrors : undefined,
+        error:
+          json && typeof json === "object" && "error" in json && json.error?.message
+            ? json.error.message
+            : `HTTP ${response.status}: ${response.statusText}`,
+        fieldErrors:
+          json && typeof json === "object" && "error" in json ? json.error?.fieldErrors : undefined,
       };
     }
 

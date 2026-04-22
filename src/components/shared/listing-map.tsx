@@ -1,9 +1,10 @@
 "use client";
 
-import { useEffect, useRef } from "react";
-import { MapPin } from "lucide-react";
 // Leaflet CSS — npm paketinden, CSP uyumlu (unpkg.com CDN'e bağımlılık yok)
 import "leaflet/dist/leaflet.css";
+
+import { MapPin } from "lucide-react";
+import { useEffect, useRef } from "react";
 
 interface ListingMapProps {
   city: string;
@@ -13,26 +14,26 @@ interface ListingMapProps {
 
 // Türkiye şehir koordinatları (yaklaşık merkez)
 const CITY_COORDS: Record<string, [number, number]> = {
-  "İstanbul": [41.0082, 28.9784],
-  "Ankara": [39.9334, 32.8597],
-  "İzmir": [38.4192, 27.1287],
-  "Bursa": [40.1885, 29.0610],
-  "Antalya": [36.8969, 30.7133],
-  "Adana": [37.0000, 35.3213],
-  "Konya": [37.8746, 32.4932],
-  "Gaziantep": [37.0662, 37.3833],
-  "Mersin": [36.8000, 34.6333],
-  "Kayseri": [38.7312, 35.4787],
-  "Eskişehir": [39.7767, 30.5206],
-  "Diyarbakır": [37.9144, 40.2306],
-  "Samsun": [41.2867, 36.3300],
-  "Denizli": [37.7765, 29.0864],
-  "Şanlıurfa": [37.1591, 38.7969],
-  "Trabzon": [41.0015, 39.7178],
-  "Kocaeli": [40.8533, 29.8815],
-  "Malatya": [38.3552, 38.3095],
-  "Erzurum": [39.9055, 41.2658],
-  "Van": [38.4891, 43.4089],
+  İstanbul: [41.0082, 28.9784],
+  Ankara: [39.9334, 32.8597],
+  İzmir: [38.4192, 27.1287],
+  Bursa: [40.1885, 29.061],
+  Antalya: [36.8969, 30.7133],
+  Adana: [37.0, 35.3213],
+  Konya: [37.8746, 32.4932],
+  Gaziantep: [37.0662, 37.3833],
+  Mersin: [36.8, 34.6333],
+  Kayseri: [38.7312, 35.4787],
+  Eskişehir: [39.7767, 30.5206],
+  Diyarbakır: [37.9144, 40.2306],
+  Samsun: [41.2867, 36.33],
+  Denizli: [37.7765, 29.0864],
+  Şanlıurfa: [37.1591, 38.7969],
+  Trabzon: [41.0015, 39.7178],
+  Kocaeli: [40.8533, 29.8815],
+  Malatya: [38.3552, 38.3095],
+  Erzurum: [39.9055, 41.2658],
+  Van: [38.4891, 43.4089],
 };
 
 function getCoords(city: string): [number, number] {
@@ -61,7 +62,8 @@ export function ListingMap({ city, district, className = "" }: ListingMapProps) 
 
       // OpenStreetMap tile layer — tamamen ücretsiz
       L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-        attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> katkıda bulunanlar',
+        attribution:
+          '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> katkıda bulunanlar',
         maxZoom: 19,
       }).addTo(map);
 
@@ -85,13 +87,15 @@ export function ListingMap({ city, district, className = "" }: ListingMapProps) 
       });
 
       const marker = L.marker(coords, { icon }).addTo(map);
-      marker.bindPopup(
-        `<div style="font-family: sans-serif; font-size: 13px; font-weight: 600; padding: 4px 2px;">
+      marker
+        .bindPopup(
+          `<div style="font-family: sans-serif; font-size: 13px; font-weight: 600; padding: 4px 2px;">
           <div style="color: #1e293b;">${city}${district ? `, ${district}` : ""}</div>
           <div style="color: #64748b; font-size: 11px; margin-top: 2px;">Araç konumu (yaklaşık)</div>
         </div>`,
-        { closeButton: false }
-      ).openPopup();
+          { closeButton: false }
+        )
+        .openPopup();
 
       mapInstanceRef.current = map;
     });
@@ -114,7 +118,8 @@ export function ListingMap({ city, district, className = "" }: ListingMapProps) 
       <div className="absolute bottom-3 left-3 z-[400] flex items-center gap-1.5 rounded-lg bg-card/90 backdrop-blur-sm px-3 py-1.5 shadow-sm border border-border pointer-events-none">
         <MapPin size={13} className="text-blue-500" />
         <span className="text-xs font-bold text-foreground/90">
-          {city}{district ? `, ${district}` : ""}
+          {city}
+          {district ? `, ${district}` : ""}
         </span>
         <span className="text-[10px] text-muted-foreground/70 ml-1">(yaklaşık)</span>
       </div>

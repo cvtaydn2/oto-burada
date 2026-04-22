@@ -1,13 +1,10 @@
-import { Skeleton } from "@/components/ui/skeleton"
+import { Skeleton } from "@/components/ui/skeleton";
 
 export function ListingsGridSkeleton({ count = 6 }: { count?: number }) {
   return (
     <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
       {Array.from({ length: count }, (_, index) => (
-        <div
-          key={index}
-          className="rounded-xl border border-border bg-card overflow-hidden"
-        >
+        <div key={index} className="rounded-xl border border-border bg-card overflow-hidden">
           <Skeleton className="aspect-[4/3] w-full" />
           <div className="p-3 space-y-2">
             <Skeleton className="h-5 w-3/4" />
@@ -24,7 +21,7 @@ export function ListingsGridSkeleton({ count = 6 }: { count?: number }) {
         </div>
       ))}
     </div>
-  )
+  );
 }
 
 export function ListingsListSkeleton({ count = 4 }: { count?: number }) {
@@ -53,5 +50,5 @@ export function ListingsListSkeleton({ count = 4 }: { count?: number }) {
         </div>
       ))}
     </div>
-  )
+  );
 }

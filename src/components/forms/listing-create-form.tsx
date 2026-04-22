@@ -1,23 +1,17 @@
 "use client";
 
-import {
-  CheckCircle2,
-  ChevronRight,
-  LoaderCircle,
-  AlertCircle,
-  Car,
-} from "lucide-react";
+import { AlertCircle, Car, CheckCircle2, ChevronRight, LoaderCircle } from "lucide-react";
+
+import { EmailVerificationDialog } from "@/components/auth/email-verification-dialog";
+// Feature Hook
+import { useListingCreation } from "@/features/listing-creation/hooks/use-listing-creation";
 import { type BrandCatalogItem, type CityOption, type Listing } from "@/types";
 
 import { StepIndicator } from "./listing-wizard/StepIndicator";
-import { VehicleInfoStep } from "./listing-wizard/steps/VehicleInfoStep";
 import { DetailsStep } from "./listing-wizard/steps/DetailsStep";
 import { InspectionStep } from "./listing-wizard/steps/InspectionStep";
 import { PhotosStep } from "./listing-wizard/steps/PhotosStep";
-import { EmailVerificationDialog } from "@/components/auth/email-verification-dialog";
-
-// Feature Hook
-import { useListingCreation } from "@/features/listing-creation/hooks/use-listing-creation";
+import { VehicleInfoStep } from "./listing-wizard/steps/VehicleInfoStep";
 
 interface ListingCreateFormProps {
   initialValues: { city: string; whatsappPhone: string };
@@ -53,7 +47,7 @@ export function ListingCreateForm({
     handleImageChange,
     handleRemoveImage,
     submitListing,
-    submitIntentRef
+    submitIntentRef,
   } = useListingCreation({ brands, cities, initialListing, initialValues, isEmailVerified });
 
   const onSubmit = form.handleSubmit(async (values) => {
@@ -91,7 +85,6 @@ export function ListingCreateForm({
 
         <form onSubmit={handleFormSubmit} className="mt-16">
           <div className="relative rounded-2xl border border-white bg-white p-6 shadow-sm shadow-slate-200/60 lg:p-12">
-            
             <div className="absolute -right-3 -top-3 hidden lg:flex size-20 items-center justify-center rounded-3xl bg-slate-900 text-white shadow-sm shadow-slate-900/30">
               <div className="flex flex-col items-center leading-none">
                 <span className="text-[10px] uppercase font-bold opacity-60 mb-1">Adım</span>
@@ -105,7 +98,9 @@ export function ListingCreateForm({
                   <div className="flex size-10 items-center justify-center rounded-2xl bg-emerald-500 text-white shadow-sm shadow-emerald-500/30">
                     <CheckCircle2 size={24} strokeWidth={3} />
                   </div>
-                  <p className="text-base font-bold text-emerald-900 tracking-tight">{submitState.message}</p>
+                  <p className="text-base font-bold text-emerald-900 tracking-tight">
+                    {submitState.message}
+                  </p>
                 </div>
               )}
 
@@ -114,7 +109,9 @@ export function ListingCreateForm({
                   <div className="flex size-10 items-center justify-center rounded-2xl bg-rose-500 text-white shadow-sm shadow-rose-500/30">
                     <AlertCircle size={24} strokeWidth={3} />
                   </div>
-                  <p className="text-base font-bold text-rose-900 tracking-tight">{submitState.message}</p>
+                  <p className="text-base font-bold text-rose-900 tracking-tight">
+                    {submitState.message}
+                  </p>
                 </div>
               )}
 
@@ -123,17 +120,26 @@ export function ListingCreateForm({
                   <div className="flex size-10 items-center justify-center rounded-2xl bg-amber-500 text-white shadow-sm shadow-amber-500/30">
                     <AlertCircle size={24} strokeWidth={3} />
                   </div>
-                  <p className="text-base font-bold text-amber-900 tracking-tight">{submitState.message}</p>
+                  <p className="text-base font-bold text-amber-900 tracking-tight">
+                    {submitState.message}
+                  </p>
                 </div>
               )}
 
               <div className="min-h-[400px]">
-                {currentStep === 0 && <VehicleInfoStep form={form} brands={brands} isPlateLoading={isPlateLoading} onPlateLookup={handlePlateLookup} />}
+                {currentStep === 0 && (
+                  <VehicleInfoStep
+                    form={form}
+                    brands={brands}
+                    isPlateLoading={isPlateLoading}
+                    onPlateLookup={handlePlateLookup}
+                  />
+                )}
                 {currentStep === 1 && <DetailsStep form={form} cities={cities} />}
                 {currentStep === 2 && <InspectionStep form={form} />}
                 {currentStep === 3 && (
-                  <PhotosStep 
-                    form={form} 
+                  <PhotosStep
+                    form={form}
                     fieldArray={fieldArray}
                     uploadStates={uploadStates}
                     onImageChange={handleImageChange}
@@ -155,7 +161,9 @@ export function ListingCreateForm({
                 {currentStep === totalSteps - 1 ? (
                   <button
                     type="submit"
-                    onClick={() => { submitIntentRef.current = true; }}
+                    onClick={() => {
+                      submitIntentRef.current = true;
+                    }}
                     disabled={form.formState.isSubmitting}
                     className="inline-flex h-14 items-center justify-center gap-2 rounded-2xl bg-primary px-10 text-sm font-bold text-primary-foreground shadow-sm shadow-primary/20 transition-all hover:opacity-90 disabled:opacity-50 uppercase tracking-widest"
                   >

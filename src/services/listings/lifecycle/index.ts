@@ -1,5 +1,6 @@
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { Listing } from "@/types";
+
 import { getDatabaseListings } from "../listing-submission-query";
 
 /**
@@ -28,7 +29,7 @@ export async function deleteArchivedListing(listingId: string, sellerId: string)
 
   // Cleanup storage images
   if (listing.images.length > 0) {
-    const storagePaths = listing.images.map(img => img.storagePath).filter(Boolean);
+    const storagePaths = listing.images.map((img) => img.storagePath).filter(Boolean);
     if (storagePaths.length > 0) {
       const bucketName = process.env.SUPABASE_STORAGE_BUCKET_LISTINGS ?? "listing-images";
       await admin.storage.from(bucketName).remove(storagePaths);
@@ -39,7 +40,7 @@ export async function deleteArchivedListing(listingId: string, sellerId: string)
   await admin.from("listing_images").delete().eq("listing_id", listingId);
   await admin.from("favorites").delete().eq("listing_id", listingId);
   await admin.from("reports").delete().eq("listing_id", listingId);
-  
+
   const { error } = await admin.from("listings").delete().eq("id", listingId);
   return !error;
 }
@@ -48,9 +49,9 @@ export async function updateListingStatus(listingId: string, status: Listing["st
   const admin = createSupabaseAdminClient();
   const { error } = await admin
     .from("listings")
-    .update({ 
+    .update({
       status,
-      updated_at: new Date().toISOString()
+      updated_at: new Date().toISOString(),
     })
     .eq("id", listingId);
 

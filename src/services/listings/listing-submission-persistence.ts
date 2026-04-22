@@ -1,7 +1,7 @@
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { hasSupabaseAdminEnv } from "@/lib/supabase/env";
-import { Listing } from "@/types";
 import { sanitizeDescription } from "@/lib/utils/sanitize";
+import { Listing } from "@/types";
 
 export function mapListingToDatabaseRow(listing: Listing) {
   return {
@@ -25,13 +25,24 @@ export function mapListingToDatabaseRow(listing: Listing) {
     featured: listing.featured,
     updated_at: listing.updatedAt,
     tramer_amount: listing.tramerAmount ?? null,
-    damage_status_json: listing.damageStatusJson && Object.keys(listing.damageStatusJson).length > 0
-      ? Object.fromEntries(
-          Object.entries(listing.damageStatusJson)
-            .map(([k, v]) => [k, v === "orjinal" ? "orijinal" : v])
-            .filter(([, v]) => ["orijinal", "boyali", "lokal_boyali", "degisen", "hasarli", "belirtilmemis", "bilinmiyor"].includes(v as string))
-        )
-      : null,
+    damage_status_json:
+      listing.damageStatusJson && Object.keys(listing.damageStatusJson).length > 0
+        ? Object.fromEntries(
+            Object.entries(listing.damageStatusJson)
+              .map(([k, v]) => [k, v === "orjinal" ? "orijinal" : v])
+              .filter(([, v]) =>
+                [
+                  "orijinal",
+                  "boyali",
+                  "lokal_boyali",
+                  "degisen",
+                  "hasarli",
+                  "belirtilmemis",
+                  "bilinmiyor",
+                ].includes(v as string)
+              )
+          )
+        : null,
     fraud_score: listing.fraudScore ?? 0,
     fraud_reason: listing.fraudReason ?? null,
     featured_until: listing.featuredUntil ?? null,
@@ -61,25 +72,22 @@ export function mapListingImagesToDatabaseRows(listing: Listing) {
 
 /**
  * Creates a listing in the database with automatic slug collision retry.
- * 
+ *
  * PERFORMANCE OPTIMIZATION:
  * - Uses .insert().select() to return data in ONE query (no roundtrip)
  * - Eliminates getDatabaseListings() call after insert
  * - Reduces latency by ~50-100ms per listing creation
- * 
+ *
  * If a slug collision occurs (unique constraint violation), automatically
  * generates a new slug with a numeric suffix and retries up to 3 times.
- * 
+ *
  * @param listing - Listing to create
  * @param maxRetries - Maximum number of retry attempts (default: 3)
  * @returns Result with created listing or error
  */
-export async function createDatabaseListing(
-  listing: Listing,
-  maxRetries: number = 3,
-) {
+export async function createDatabaseListing(listing: Listing, maxRetries: number = 3) {
   if (!hasSupabaseAdminEnv()) return { error: "database_error" as const };
-  
+
   const admin = createSupabaseAdminClient();
   let currentListing = listing;
 
@@ -88,7 +96,8 @@ export async function createDatabaseListing(
     const insertResult = await admin
       .from("listings")
       .insert(mapListingToDatabaseRow(currentListing))
-      .select(`
+      .select(
+        `
         id,
         seller_id,
         slug,
@@ -124,28 +133,29 @@ export async function createDatabaseListing(
         version,
         created_at,
         updated_at
-      `)
+      `
+      )
       .single();
 
     if (insertResult.error) {
       // Check for unique constraint violation (slug collision)
-      const isSlugCollision = 
-        insertResult.error.message.includes("slug_unique") || 
+      const isSlugCollision =
+        insertResult.error.message.includes("slug_unique") ||
         (insertResult.error.code === "23505" && insertResult.error.message?.includes("slug"));
-      
+
       if (isSlugCollision && attempt < maxRetries - 1) {
         // Generate new slug with suffix and retry
         const baseSlug = listing.slug.replace(/-\d+$/, ""); // Remove existing suffix
         const newSlug = `${baseSlug}-${attempt + 2}`; // Start from -2, -3, etc.
-        
+
         currentListing = {
           ...currentListing,
           slug: newSlug,
         };
-        
+
         continue; // Retry with new slug
       }
-      
+
       // Max retries reached or other error
       if (isSlugCollision) {
         return { error: "slug_collision" as const };
@@ -184,8 +194,10 @@ export async function createDatabaseListing(
       licensePlate: insertResult.data.license_plate ?? null,
       vin: insertResult.data.vin ?? null,
       carTrim: insertResult.data.car_trim ?? null,
-      tramerAmount: insertResult.data.tramer_amount != null ? Number(insertResult.data.tramer_amount) : null,
-      damageStatusJson: (insertResult.data.damage_status_json as Record<string, string> | null) ?? null,
+      tramerAmount:
+        insertResult.data.tramer_amount != null ? Number(insertResult.data.tramer_amount) : null,
+      damageStatusJson:
+        (insertResult.data.damage_status_json as Record<string, string> | null) ?? null,
       fraudScore: insertResult.data.fraud_score ?? 0,
       fraudReason: insertResult.data.fraud_reason ?? null,
       status: insertResult.data.status,
@@ -193,7 +205,9 @@ export async function createDatabaseListing(
       featuredUntil: insertResult.data.featured_until ?? null,
       urgentUntil: insertResult.data.urgent_until ?? null,
       highlightedUntil: insertResult.data.highlighted_until ?? null,
-      marketPriceIndex: insertResult.data.market_price_index ? Number(insertResult.data.market_price_index) : null,
+      marketPriceIndex: insertResult.data.market_price_index
+        ? Number(insertResult.data.market_price_index)
+        : null,
       expertInspection: insertResult.data.expert_inspection ?? undefined,
       bumpedAt: insertResult.data.bumped_at ?? null,
       viewCount: insertResult.data.view_count ?? 0,
@@ -212,7 +226,7 @@ export async function createDatabaseListing(
 
 /**
  * Updates a listing in the database.
- * 
+ *
  * PERFORMANCE OPTIMIZATION:
  * - Uses .update().select() to return data in ONE query (no roundtrip)
  * - Eliminates getDatabaseListings() calls before/after update
@@ -227,10 +241,11 @@ export async function updateDatabaseListing(listing: Listing) {
     "match" in updateQuery && typeof updateQuery.match === "function"
       ? updateQuery.match({ id: listing.id, version: listing.version ?? 0 })
       : updateQuery.eq("id", listing.id).eq("version", listing.version ?? 0);
-  
+
   // OPTIMIZATION: Use .select() to return updated data in same query
   const updateResult = await filteredUpdateQuery
-    .select(`
+    .select(
+      `
       id,
       seller_id,
       slug,
@@ -266,7 +281,8 @@ export async function updateDatabaseListing(listing: Listing) {
       version,
       created_at,
       updated_at
-    `)
+    `
+    )
     .single();
 
   if (updateResult.error) {
@@ -287,16 +303,16 @@ export async function updateDatabaseListing(listing: Listing) {
     .select("storage_path")
     .eq("listing_id", listing.id);
 
-  const oldPaths = (oldImages ?? []).map(img => img.storage_path).filter(Boolean);
-  const newPaths = listing.images.map(img => img.storagePath).filter(Boolean);
-  const pathsToDelete = oldPaths.filter(path => !newPaths.includes(path));
+  const oldPaths = (oldImages ?? []).map((img) => img.storage_path).filter(Boolean);
+  const newPaths = listing.images.map((img) => img.storagePath).filter(Boolean);
+  const pathsToDelete = oldPaths.filter((path) => !newPaths.includes(path));
 
   // 2. Update DB images: delete old, insert new
   // Note: We use a sequential approach here; if image insert fails, we already deleted rows.
   // Ideally this should be in a transaction but Supabase client doesn't support complex cross-table transactions easily without RPC.
   await admin.from("listing_images").delete().eq("listing_id", listing.id);
   const imageRows = mapListingImagesToDatabaseRows(listing);
-  
+
   if (imageRows.length > 0) {
     const imageInsertResult = await admin.from("listing_images").insert(imageRows);
     if (imageInsertResult.error) {
@@ -331,8 +347,10 @@ export async function updateDatabaseListing(listing: Listing) {
     licensePlate: updateResult.data.license_plate ?? null,
     vin: updateResult.data.vin ?? null,
     carTrim: updateResult.data.car_trim ?? null,
-    tramerAmount: updateResult.data.tramer_amount != null ? Number(updateResult.data.tramer_amount) : null,
-    damageStatusJson: (updateResult.data.damage_status_json as Record<string, string> | null) ?? null,
+    tramerAmount:
+      updateResult.data.tramer_amount != null ? Number(updateResult.data.tramer_amount) : null,
+    damageStatusJson:
+      (updateResult.data.damage_status_json as Record<string, string> | null) ?? null,
     fraudScore: updateResult.data.fraud_score ?? 0,
     fraudReason: updateResult.data.fraud_reason ?? null,
     status: updateResult.data.status,
@@ -340,7 +358,9 @@ export async function updateDatabaseListing(listing: Listing) {
     featuredUntil: updateResult.data.featured_until ?? null,
     urgentUntil: updateResult.data.urgent_until ?? null,
     highlightedUntil: updateResult.data.highlighted_until ?? null,
-    marketPriceIndex: updateResult.data.market_price_index ? Number(updateResult.data.market_price_index) : null,
+    marketPriceIndex: updateResult.data.market_price_index
+      ? Number(updateResult.data.market_price_index)
+      : null,
     expertInspection: updateResult.data.expert_inspection ?? undefined,
     bumpedAt: updateResult.data.bumped_at ?? null,
     viewCount: updateResult.data.view_count ?? 0,

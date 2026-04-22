@@ -1,9 +1,10 @@
 import { NextResponse } from "next/server";
+
+import { captureServerEvent } from "@/lib/monitoring/posthog-server";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { hasSupabaseAdminEnv } from "@/lib/supabase/env";
-import { logger } from "@/lib/utils/logger";
-import { captureServerEvent } from "@/lib/monitoring/posthog-server";
 import { withAdminRoute } from "@/lib/utils/api-security";
+import { logger } from "@/lib/utils/logger";
 
 export async function POST(request: Request) {
   const security = await withAdminRoute(request);

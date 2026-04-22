@@ -1,11 +1,12 @@
 "use client";
 
-import { useState, useRef, useMemo } from "react";
+import { ArrowRight, History, Search, TrendingUp, X } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { Search, X, TrendingUp, ArrowRight, History } from "lucide-react";
+import { useMemo, useRef, useState } from "react";
+
 import { useKeyboardShortcuts } from "@/hooks/use-keyboard-shortcuts";
-import type { SearchSuggestionItem } from "@/types";
 import { cn } from "@/lib/utils";
+import type { SearchSuggestionItem } from "@/types";
 
 interface SearchSuggestion {
   type: "brand" | "city" | "model" | "trending" | "category";
@@ -48,9 +49,7 @@ export function SearchWithSuggestions({
 
     const list = Array.isArray(suggestions) ? suggestions : [];
     return list
-      .filter((suggestion) =>
-        suggestion.label.toLocaleLowerCase("tr-TR").includes(normalizedQuery),
-      )
+      .filter((suggestion) => suggestion.label.toLocaleLowerCase("tr-TR").includes(normalizedQuery))
       .slice(0, 6)
       .map<SearchSuggestion>((suggestion) => ({
         label: suggestion.label,
@@ -65,13 +64,13 @@ export function SearchWithSuggestions({
   const handleSearch = (searchQuery: string, type?: string) => {
     if (searchQuery.trim()) {
       const params = new URLSearchParams(currentFilters ?? {});
-      
+
       if (type === "trending" && searchQuery === "mileage_asc") {
         params.set("sort", "mileage_asc");
       } else {
         params.set("query", searchQuery.trim());
       }
-      
+
       params.delete("page");
       router.push(`/listings?${params.toString()}`);
       setQuery("");
@@ -85,7 +84,7 @@ export function SearchWithSuggestions({
       key: "k",
       ctrl: true,
       action: () => inputRef.current?.focus(),
-      description: "Ara"
+      description: "Ara",
     },
     {
       key: "Escape",
@@ -93,21 +92,23 @@ export function SearchWithSuggestions({
         setQuery("");
         setIsFocused(false);
         inputRef.current?.blur();
-      }
+      },
     },
     {
       key: "Enter",
-      action: () => handleSearch(query)
-    }
+      action: () => handleSearch(query),
+    },
   ]);
 
   return (
     <div className={cn("relative w-full max-w-2xl", className)}>
       <div className="relative group">
-        <span className={cn(
-          "absolute left-4 top-1/2 -translate-y-1/2 transition-colors duration-200",
-          isFocused ? "text-primary" : "text-muted-foreground/50"
-        )}>
+        <span
+          className={cn(
+            "absolute left-4 top-1/2 -translate-y-1/2 transition-colors duration-200",
+            isFocused ? "text-primary" : "text-muted-foreground/50"
+          )}
+        >
           <Search size={18} strokeWidth={2.5} />
         </span>
         <input
@@ -133,7 +134,10 @@ export function SearchWithSuggestions({
         />
         {query && (
           <button
-            onClick={() => { setQuery(""); inputRef.current?.focus(); }}
+            onClick={() => {
+              setQuery("");
+              inputRef.current?.focus();
+            }}
             className="absolute right-3 top-1/2 -translate-y-1/2 p-1.5 rounded-xl hover:bg-muted text-muted-foreground/40 hover:text-foreground transition-colors"
             aria-label="Temizle"
           >
@@ -152,7 +156,9 @@ export function SearchWithSuggestions({
             <div className="py-4">
               <div className="px-5 py-2 flex items-center gap-2">
                 <TrendingUp size={14} className="text-primary" />
-                <p className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em] italic">Popüler Aramalar</p>
+                <p className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em] italic">
+                  Popüler Aramalar
+                </p>
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-1 px-2">
                 {POPULAR_SEARCHES.map((s, i) => (
@@ -164,7 +170,9 @@ export function SearchWithSuggestions({
                     <div className="size-8 rounded-xl bg-muted flex items-center justify-center text-muted-foreground group-hover:bg-primary/10 group-hover:text-primary transition-colors">
                       <History size={14} />
                     </div>
-                    <span className="text-sm font-bold text-foreground/80 group-hover:text-foreground">{s.label}</span>
+                    <span className="text-sm font-bold text-foreground/80 group-hover:text-foreground">
+                      {s.label}
+                    </span>
                   </button>
                 ))}
               </div>
@@ -172,7 +180,9 @@ export function SearchWithSuggestions({
           ) : filteredSuggestions.length > 0 ? (
             <div className="py-3">
               <div className="px-5 py-2">
-                <p className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em] italic">Eşleşen Sonuçlar</p>
+                <p className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em] italic">
+                  Eşleşen Sonuçlar
+                </p>
               </div>
               <div className="px-2 space-y-1">
                 {filteredSuggestions.map((s, i) => (
@@ -192,27 +202,32 @@ export function SearchWithSuggestions({
                         {s.type === "brand" ? "Marka" : s.type === "city" ? "Şehir" : "Model"}
                       </span>
                     </div>
-                    <ArrowRight size={14} className="ml-auto text-muted-foreground/20 group-hover:text-primary group-hover:translate-x-1 transition-all" />
+                    <ArrowRight
+                      size={14}
+                      className="ml-auto text-muted-foreground/20 group-hover:text-primary group-hover:translate-x-1 transition-all"
+                    />
                   </button>
                 ))}
               </div>
             </div>
           ) : (
             <div className="py-12 px-6 text-center">
-               <div className="size-12 rounded-full bg-muted mx-auto flex items-center justify-center mb-4">
-                  <Search size={20} className="text-muted-foreground/30" />
-               </div>
-               <p className="text-sm font-bold text-foreground">Sonuç bulunamadı</p>
-               <p className="text-xs text-muted-foreground mt-1">Farklı bir anahtar kelime deneyebilirsiniz.</p>
+              <div className="size-12 rounded-full bg-muted mx-auto flex items-center justify-center mb-4">
+                <Search size={20} className="text-muted-foreground/30" />
+              </div>
+              <p className="text-sm font-bold text-foreground">Sonuç bulunamadı</p>
+              <p className="text-xs text-muted-foreground mt-1">
+                Farklı bir anahtar kelime deneyebilirsiniz.
+              </p>
             </div>
           )}
         </div>
       )}
 
       {showSuggestions && (
-        <div 
-          className="fixed inset-0 z-[90] bg-background/5 backdrop-blur-[2px]" 
-          onClick={() => setIsFocused(false)} 
+        <div
+          className="fixed inset-0 z-[90] bg-background/5 backdrop-blur-[2px]"
+          onClick={() => setIsFocused(false)}
           aria-hidden="true"
         />
       )}

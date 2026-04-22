@@ -1,7 +1,8 @@
 "use client";
 
+import { AlertTriangle, Home, RefreshCw } from "lucide-react";
 import { Component, ReactNode } from "react";
-import { AlertTriangle, RefreshCw, Home } from "lucide-react";
+
 import { Button } from "@/components/ui/button";
 import { logger } from "@/lib/utils/logger";
 
@@ -59,7 +60,7 @@ export class ErrorBoundary extends Component<Props, State> {
               <RefreshCw className="mr-2 h-4 w-4" />
               Tekrar Dene
             </Button>
-            <Button variant="ghost" size="sm" onClick={() => window.location.href = "/"}>
+            <Button variant="ghost" size="sm" onClick={() => (window.location.href = "/")}>
               <Home className="mr-2 h-4 w-4" />
               Ana Sayfa
             </Button>
@@ -77,9 +78,5 @@ interface PageErrorBoundaryProps {
 }
 
 export function PageErrorBoundary({ children }: PageErrorBoundaryProps) {
-  return (
-    <ErrorBoundary>
-      {children}
-    </ErrorBoundary>
-  );
+  return <ErrorBoundary>{children}</ErrorBoundary>;
 }

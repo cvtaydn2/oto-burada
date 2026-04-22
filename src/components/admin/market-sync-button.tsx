@@ -1,9 +1,10 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { Zap, LoaderCircle, CheckCircle2 } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { CheckCircle2, LoaderCircle, Zap } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
+
+import { Button } from "@/components/ui/button";
 import { useErrorCapture } from "@/hooks/use-error-capture";
 
 export function MarketSyncButton() {
@@ -30,7 +31,7 @@ export function MarketSyncButton() {
         method: "POST",
       });
       const data = await response.json().catch(() => ({ success: false, error: "Sunucu hatası." }));
-      
+
       if (!response.ok || !data.success) {
         setResult({ success: false, message: data.error || "Senkronizasyon başarısız." });
       } else {
@@ -47,7 +48,7 @@ export function MarketSyncButton() {
 
   return (
     <div className="flex flex-col items-end gap-2">
-      <Button 
+      <Button
         onClick={handleSync}
         disabled={isSyncing}
         variant="outline"
@@ -63,9 +64,11 @@ export function MarketSyncButton() {
         {isSyncing ? "Senkronize Ediliyor..." : "Pazar Verilerini Güncelle"}
       </Button>
       {result && (
-        <span className={`text-[10px] font-bold px-2 py-0.5 rounded ${
-          result.success ? "text-emerald-600 bg-emerald-50" : "text-rose-600 bg-rose-50"
-        }`}>
+        <span
+          className={`text-[10px] font-bold px-2 py-0.5 rounded ${
+            result.success ? "text-emerald-600 bg-emerald-50" : "text-rose-600 bg-rose-50"
+          }`}
+        >
           {result.message}
         </span>
       )}

@@ -1,13 +1,17 @@
+import { Plus } from "lucide-react";
 import Link from "next/link";
-import { MyListingsPanel } from "@/components/listings/my-listings-panel";
+
 import { ListingCreateForm } from "@/components/forms/listing-create-form";
+import { MyListingsPanel } from "@/components/listings/my-listings-panel";
+import { AccountTrustNotice } from "@/components/shared/account-trust-notice";
 import { requireUser } from "@/lib/auth/session";
+import { cn } from "@/lib/utils";
 import { getStoredUserListings } from "@/services/listings/listing-submissions";
 import { getStoredProfileById } from "@/services/profile/profile-records";
-import { getLiveMarketplaceReferenceData, mergeCityOptions } from "@/services/reference/live-reference-data";
-import { Plus } from "lucide-react";
-import { cn } from "@/lib/utils";
-import { AccountTrustNotice } from "@/components/shared/account-trust-notice";
+import {
+  getLiveMarketplaceReferenceData,
+  mergeCityOptions,
+} from "@/services/reference/live-reference-data";
 
 export const dynamic = "force-dynamic";
 // revalidate kaldırıldı — force-dynamic ile çakışıyor
@@ -40,7 +44,7 @@ export default async function DashboardListingsPage({ searchParams }: DashboardL
     getStoredProfileById(user.id),
   ]);
   const selectedListing = resolvedSearchParams?.edit
-    ? storedListings.find((l) => l.id === resolvedSearchParams.edit) ?? null
+    ? (storedListings.find((l) => l.id === resolvedSearchParams.edit) ?? null)
     : null;
   const mergedBrands = references.brands.some((item) => item.brand === selectedListing?.brand)
     ? references.brands
@@ -72,17 +76,25 @@ export default async function DashboardListingsPage({ searchParams }: DashboardL
         <div>
           <h2 className="text-3xl font-bold text-foreground tracking-tight">İlanlarım</h2>
           <p className="mt-1 text-sm text-muted-foreground font-medium italic">
-            Toplam {storedListings.length} ilandan {storedListings.filter((l) => l.status === "approved").length} tanesi yayında.
+            Toplam {storedListings.length} ilandan{" "}
+            {storedListings.filter((l) => l.status === "approved").length} tanesi yayında.
           </p>
         </div>
         <div className="flex items-center gap-4">
-          <div className={cn(
-            "flex items-center gap-2 px-4 py-2 rounded-xl border text-[10px] uppercase font-bold tracking-widest transition-all",
-            isEmailVerified 
-              ? "bg-emerald-50/50 border-emerald-100 text-emerald-600" 
-              : "bg-amber-50/50 border-amber-100 text-amber-600"
-          )}>
-            <div className={cn("w-1.5 h-1.5 rounded-full", isEmailVerified ? "bg-emerald-500" : "bg-amber-500")} />
+          <div
+            className={cn(
+              "flex items-center gap-2 px-4 py-2 rounded-xl border text-[10px] uppercase font-bold tracking-widest transition-all",
+              isEmailVerified
+                ? "bg-emerald-50/50 border-emerald-100 text-emerald-600"
+                : "bg-amber-50/50 border-amber-100 text-amber-600"
+            )}
+          >
+            <div
+              className={cn(
+                "w-1.5 h-1.5 rounded-full",
+                isEmailVerified ? "bg-emerald-500" : "bg-amber-500"
+              )}
+            />
             {isEmailVerified ? "Doğrulanmış" : "Doğrulanmadı"}
           </div>
           <Link
@@ -113,15 +125,19 @@ export default async function DashboardListingsPage({ searchParams }: DashboardL
         </div>
       )}
 
-      <MyListingsPanel 
-        activeEditId={selectedListing?.id} 
+      <MyListingsPanel
+        activeEditId={selectedListing?.id}
         initialShowForm={hasRequestedCreate && !isEditingExisting}
         listings={storedListings}
       >
         <div className="mt-8 bg-card rounded-2xl border border-border p-8 shadow-sm">
           <div className="mb-8 pb-6 border-b border-border/50">
-             <h3 className="text-xl font-bold text-foreground">{isEditingExisting ? "İlanı Düzenle" : "Hızlı İlan Oluştur"}</h3>
-             <p className="text-xs text-muted-foreground font-medium mt-1">Gerekli bilgileri eksiksiz doldurarak ilanınızı yayınlayın.</p>
+            <h3 className="text-xl font-bold text-foreground">
+              {isEditingExisting ? "İlanı Düzenle" : "Hızlı İlan Oluştur"}
+            </h3>
+            <p className="text-xs text-muted-foreground font-medium mt-1">
+              Gerekli bilgileri eksiksiz doldurarak ilanınızı yayınlayın.
+            </p>
           </div>
           <ListingCreateForm
             key={selectedListing?.id ?? "create-listing"}

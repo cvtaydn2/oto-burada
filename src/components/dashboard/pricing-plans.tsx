@@ -1,8 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { AlertCircle, Building2, Check, Crown, User, Zap } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { Check, Zap, Crown, User, Building2, AlertCircle } from "lucide-react";
+import { useState } from "react";
+
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -12,9 +14,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { isPaymentEnabled } from "@/lib/payment/config";
-
 import { PricingPlan } from "@/services/admin/plans";
 
 interface PricingPlansProps {
@@ -59,24 +59,20 @@ export function PricingPlans({ initialPlans }: PricingPlansProps) {
         {plans.map((plan) => {
           const Icon = getPlanIcon(plan.name);
           const isFeatured = plan.name.includes("Paket 1");
-          
+
           return (
             <Card
               key={plan.id}
               className={`relative flex flex-col transition-all duration-300 ${
-                isFeatured
-                  ? "border-primary shadow-sm z-10"
-                  : "border-border"
+                isFeatured ? "border-primary shadow-sm z-10" : "border-border"
               }`}
             >
               {isFeatured && plan.price > 0 && !isFeatured && (
                 <div className="absolute -top-4 left-1/2 -translate-x-1/2">
-                  <Badge className="bg-primary text-primary-foreground px-4 py-1">
-                    Önerilen
-                  </Badge>
+                  <Badge className="bg-primary text-primary-foreground px-4 py-1">Önerilen</Badge>
                 </div>
               )}
-  
+
               <CardHeader>
                 <div className="p-3 w-fit rounded-xl bg-muted mb-4">
                   <Icon className="h-6 w-6 text-muted-foreground" />
@@ -86,14 +82,20 @@ export function PricingPlans({ initialPlans }: PricingPlansProps) {
                   {plan.credits === 0 ? "Sınırsız İlan" : `${plan.credits} İlan Hakkı`}
                 </CardDescription>
               </CardHeader>
-  
+
               <CardContent className="flex-1 space-y-6">
                 <div className="space-y-1">
-                  <span className="text-4xl font-bold">{new Intl.NumberFormat("tr-TR", { style: "currency", currency: "TRY" }).format(plan.price)}</span>
+                  <span className="text-4xl font-bold">
+                    {new Intl.NumberFormat("tr-TR", { style: "currency", currency: "TRY" }).format(
+                      plan.price
+                    )}
+                  </span>
                   {plan.price > 0 && <span className="text-muted-foreground ml-1">/ ay</span>}
-                  {plan.price === 0 && <span className="text-muted-foreground ml-1 text-sm font-medium">Ücretsiz</span>}
+                  {plan.price === 0 && (
+                    <span className="text-muted-foreground ml-1 text-sm font-medium">Ücretsiz</span>
+                  )}
                 </div>
-  
+
                 <div className="space-y-4">
                   {plan.price > 0 ? (
                     <div className="flex items-center gap-2 font-medium text-primary">
@@ -107,7 +109,7 @@ export function PricingPlans({ initialPlans }: PricingPlansProps) {
                       Ücretsiz ilan verin, istediğiniz kadar araç yayınlayın.
                     </div>
                   )}
-  
+
                   <ul className="space-y-3">
                     {Object.keys(plan.features).map((key) => (
                       <li key={key} className="flex items-start gap-3 text-sm">
@@ -120,14 +122,20 @@ export function PricingPlans({ initialPlans }: PricingPlansProps) {
                           {key === "gallery_page" && "Kurumsal Showroom Sayfası"}
                           {key === "dedicated_support" && "Özel Müşteri Temsilcisi"}
                           {key === "analytics" && "Gelişmiş Satış Analitiği"}
-                          {!["listing_xml", "unlimited_listing", "gallery_page", "dedicated_support", "analytics"].includes(key) && key.replace('_', ' ')}
+                          {![
+                            "listing_xml",
+                            "unlimited_listing",
+                            "gallery_page",
+                            "dedicated_support",
+                            "analytics",
+                          ].includes(key) && key.replace("_", " ")}
                         </span>
                       </li>
                     ))}
                   </ul>
                 </div>
               </CardContent>
-  
+
               <CardFooter>
                 <Button
                   className="w-full h-12 font-bold"
@@ -135,14 +143,13 @@ export function PricingPlans({ initialPlans }: PricingPlansProps) {
                   disabled={loading !== null || (!paymentAvailable && plan.price > 0)}
                   onClick={() => handleSubscribe(plan.id)}
                 >
-                  {loading === plan.id 
-                    ? "Hazırlanıyor..." 
-                    : plan.price === 0 
-                      ? "Ücretsiz Başla" 
-                      : paymentAvailable 
-                        ? "Paketi Seç" 
-                        : "İletişime Geç"
-                  }
+                  {loading === plan.id
+                    ? "Hazırlanıyor..."
+                    : plan.price === 0
+                      ? "Ücretsiz Başla"
+                      : paymentAvailable
+                        ? "Paketi Seç"
+                        : "İletişime Geç"}
                 </Button>
               </CardFooter>
             </Card>
@@ -170,13 +177,17 @@ export function PricingPlans({ initialPlans }: PricingPlansProps) {
               <div className="flex items-center gap-1">
                 <span className="text-[10px] font-bold border rounded px-1">BETA</span>
               </div>
-              <span className="text-[8px] font-bold uppercase tracking-widest text-center">Otomatik ve Manuel Aktivasyon</span>
+              <span className="text-[8px] font-bold uppercase tracking-widest text-center">
+                Otomatik ve Manuel Aktivasyon
+              </span>
             </div>
           </div>
         </div>
 
         <div className="text-right space-y-1">
-          <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Destek & Yardım</p>
+          <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">
+            Destek & Yardım
+          </p>
           <p className="text-xs font-medium text-foreground/60">+90 (212) ... .. ..</p>
         </div>
       </div>

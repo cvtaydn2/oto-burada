@@ -1,18 +1,15 @@
-import { getClientIp } from "@/lib/utils/ip";
 import { redis } from "@/lib/redis/client";
+import { getClientIp } from "@/lib/utils/ip";
 
 /**
  * Hyper-Scale Step-up Authentication (Item 4 - ATO Prevention)
  * Forces extra verification for critical actions if context is suspicious.
  */
 
-export async function checkStepUpRequired(
-  userId: string,
-  request: Request
-): Promise<boolean> {
+export async function checkStepUpRequired(userId: string, request: Request): Promise<boolean> {
   const currentIp = await getClientIp();
-  const userAgent = request.headers.get('user-agent') || 'unknown';
-  
+  const userAgent = request.headers.get("user-agent") || "unknown";
+
   if (!redis) return false;
 
   // 1. Simple heuristic: Check if IP has changed recently for this user
@@ -26,7 +23,7 @@ export async function checkStepUpRequired(
 
   // 2. If IP or UserAgent is different, require step-up for critical actions
   if (lastContext.ip !== currentIp || lastContext.ua !== userAgent) {
-    return true; 
+    return true;
   }
 
   return false;
@@ -41,5 +38,5 @@ export async function isSecuritySessionActive(userId: string): Promise<boolean> 
 export async function activateSecuritySession(userId: string) {
   if (!redis) return;
   const activeKey = `security_session:${userId}`;
-  await redis.set(activeKey, 'true', { ex: 3600 });
+  await redis.set(activeKey, "true", { ex: 3600 });
 }

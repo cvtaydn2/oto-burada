@@ -11,17 +11,17 @@ export async function removeImageBackground(imageUrl: string): Promise<string | 
   try {
     // Note: In a real production scenario, you would call an external API here:
     // const response = await fetch('https://api.remove.bg/v1.0/removebg', { ... });
-    
-    // For now, we simulate a delay and return the original image 
+
+    // For now, we simulate a delay and return the original image
     // to keep the UI flowing without breaking the experience.
-    await new Promise(resolve => setTimeout(resolve, 1500));
+    await new Promise((resolve) => setTimeout(resolve, 1500));
 
     // Integration Example (Placeholder):
     // if (process.env.REMOVE_BG_API_KEY) {
     //    // Real implementation goes here
     // }
 
-    return imageUrl; 
+    return imageUrl;
   } catch (error) {
     logger.messages.error("AI Background Removal Failed", error, { imageUrl });
     return null;
@@ -33,12 +33,12 @@ export async function removeImageBackground(imageUrl: string): Promise<string | 
  */
 export async function analyzeVehicleImage(_imageUrl: string) {
   void _imageUrl; // Parameter intentionally unused in mock
-  await new Promise(resolve => setTimeout(resolve, 800));
-  
+  await new Promise((resolve) => setTimeout(resolve, 800));
+
   return {
     isVehicle: true,
     confidence: 0.98,
     detectedColor: "Beyaz",
-    detectedType: "Sedan"
+    detectedType: "Sedan",
   };
 }

@@ -1,10 +1,11 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Bell, Check } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
+
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 interface PriceAlertSettings {
   emailNotifications: boolean;
@@ -34,7 +35,10 @@ export function FavoritesPriceAlerts() {
   }, []);
 
   const handleThresholdChange = (value: string) => {
-    setSettings((prev) => ({ ...prev, priceThreshold: value as PriceAlertSettings["priceThreshold"] }));
+    setSettings((prev) => ({
+      ...prev,
+      priceThreshold: value as PriceAlertSettings["priceThreshold"],
+    }));
   };
 
   const handleSave = async () => {
@@ -63,12 +67,14 @@ export function FavoritesPriceAlerts() {
       </CardHeader>
       <CardContent>
         <div className="space-y-6">
-
-
-
           <div>
-            <p className="mb-2 text-xs font-bold uppercase tracking-wider text-muted-foreground/70">Fiyat Hassasiyeti</p>
-            <p className="mb-3 text-xs text-muted-foreground">Fiyat en az ne kadar düştüğünde bildirim almak istersiniz? (Tercihler cihazınıza kaydedilir.)</p>
+            <p className="mb-2 text-xs font-bold uppercase tracking-wider text-muted-foreground/70">
+              Fiyat Hassasiyeti
+            </p>
+            <p className="mb-3 text-xs text-muted-foreground">
+              Fiyat en az ne kadar düştüğünde bildirim almak istersiniz? (Tercihler cihazınıza
+              kaydedilir.)
+            </p>
             <div className="space-y-2">
               {[
                 { value: "2", label: "%2 ve Üzeri" },
@@ -76,7 +82,10 @@ export function FavoritesPriceAlerts() {
                 { value: "10", label: "%10 ve Üzeri" },
                 { value: "any", label: "Herhangi Bir Değişim" },
               ].map((option) => (
-                <label key={option.value} className="flex cursor-pointer items-center gap-3 rounded-lg p-3 hover:bg-card/50 transition-colors">
+                <label
+                  key={option.value}
+                  className="flex cursor-pointer items-center gap-3 rounded-lg p-3 hover:bg-card/50 transition-colors"
+                >
                   <div className="relative">
                     <input
                       type="radio"
@@ -98,7 +107,12 @@ export function FavoritesPriceAlerts() {
             <p className="text-[10px] italic text-muted-foreground/70">
               * Ayarlar tüm favori ilanlarınız için geçerli olacaktır.
             </p>
-            <Button size="sm" className="bg-blue-500 hover:bg-blue-600" onClick={handleSave} disabled={isSaving}>
+            <Button
+              size="sm"
+              className="bg-blue-500 hover:bg-blue-600"
+              onClick={handleSave}
+              disabled={isSaving}
+            >
               <Check size={16} className="mr-2" />
               {isSaving ? "Kaydediliyor..." : "Tercihi Kaydet"}
             </Button>

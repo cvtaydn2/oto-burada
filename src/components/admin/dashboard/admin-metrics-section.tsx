@@ -1,9 +1,12 @@
-import { AlertTriangle, Car, Flag, Activity, UserPlus } from "lucide-react";
+import { Activity, AlertTriangle, Car, Flag, UserPlus } from "lucide-react";
+
 import { DashboardMetricCard } from "@/components/shared/dashboard-metric-card";
 import type { AdminAnalyticsData } from "@/services/admin/analytics";
 import type { Report } from "@/types";
 
-interface AsyncErrorResult { error: string };
+interface AsyncErrorResult {
+  error: string;
+}
 
 interface AdminMetricsSectionProps {
   analyticsPromise: Promise<AdminAnalyticsData | null | AsyncErrorResult>;
@@ -15,17 +18,19 @@ export async function AdminMetricsSection({
   reportsPromise,
 }: AdminMetricsSectionProps) {
   const [analyticsResult, reportsResult] = await Promise.all([analyticsPromise, reportsPromise]);
-  
+
   const analyticsData = analyticsResult && !("error" in analyticsResult) ? analyticsResult : null;
-  const analyticsError = analyticsResult && "error" in analyticsResult ? analyticsResult.error : null;
-  
+  const analyticsError =
+    analyticsResult && "error" in analyticsResult ? analyticsResult.error : null;
+
   const storedReports = Array.isArray(reportsResult) ? reportsResult : [];
   const reportsError = reportsResult && "error" in reportsResult ? reportsResult.error : null;
-  
+
   const actionableReports = storedReports.filter((report) => report.status === "open");
 
   // Derive pending count from typed listingsByStatus
-  const pendingCount = analyticsData?.listingsByStatus?.find((s) => s.status === "pending")?.count ?? 0;
+  const pendingCount =
+    analyticsData?.listingsByStatus?.find((s) => s.status === "pending")?.count ?? 0;
 
   return (
     <div className="space-y-4">

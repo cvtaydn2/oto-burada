@@ -1,7 +1,8 @@
 "use client";
 
+import { CheckCircle2, LoaderCircle, Send } from "lucide-react";
 import { useState } from "react";
-import { Send, CheckCircle2, LoaderCircle } from "lucide-react";
+
 import { useTurnstile } from "@/hooks/use-turnstile";
 
 const SUBJECTS = [
@@ -24,7 +25,12 @@ export function ContactForm() {
     message: string;
   }>({ name: "", email: "", subject: SUBJECTS[0], message: "" });
 
-  const { token: turnstileToken, containerRef, reset: resetTurnstile, isEnabled: isTurnstileEnabled } = useTurnstile({
+  const {
+    token: turnstileToken,
+    containerRef,
+    reset: resetTurnstile,
+    isEnabled: isTurnstileEnabled,
+  } = useTurnstile({
     action: "contact_form",
   });
 
@@ -85,7 +91,10 @@ export function ContactForm() {
           Mesajınızı aldık. Ekibimiz en kısa sürede size dönüş yapacak.
         </p>
         <button
-          onClick={() => { setStatus("idle"); setForm({ name: "", email: "", subject: SUBJECTS[0], message: "" }); }}
+          onClick={() => {
+            setStatus("idle");
+            setForm({ name: "", email: "", subject: SUBJECTS[0], message: "" });
+          }}
           className="mt-2 text-xs font-bold text-primary hover:underline"
         >
           Yeni mesaj gönder
@@ -127,7 +136,9 @@ export function ContactForm() {
           onChange={(e) => setForm((p) => ({ ...p, subject: e.target.value as Subject }))}
           className="w-full border border-gray-200 rounded-xl p-3 text-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-100 outline-none bg-card transition"
         >
-          {SUBJECTS.map((s) => <option key={s}>{s}</option>)}
+          {SUBJECTS.map((s) => (
+            <option key={s}>{s}</option>
+          ))}
         </select>
       </div>
       <div>
@@ -145,34 +156,40 @@ export function ContactForm() {
         Honeypot field — hidden from real users via CSS, not `display:none` or
         `type="hidden"` (bots skip those). Bots fill it in; the API rejects them.
       */}
-      <div aria-hidden="true" style={{ position: "absolute", left: "-9999px", width: "1px", height: "1px", overflow: "hidden" }}>
+      <div
+        aria-hidden="true"
+        style={{
+          position: "absolute",
+          left: "-9999px",
+          width: "1px",
+          height: "1px",
+          overflow: "hidden",
+        }}
+      >
         <label htmlFor="_hp">Boş bırakın</label>
-        <input
-          id="_hp"
-          name="_hp"
-          type="text"
-          tabIndex={-1}
-          autoComplete="off"
-        />
+        <input id="_hp" name="_hp" type="text" tabIndex={-1} autoComplete="off" />
       </div>
       {/* Turnstile widget (invisible challenge) */}
-      {isTurnstileEnabled && (
-        <div ref={containerRef} className="flex justify-center" />
-      )}
+      {isTurnstileEnabled && <div ref={containerRef} className="flex justify-center" />}
       <button
         type="submit"
         disabled={status === "loading"}
         className="w-full bg-blue-500 hover:bg-blue-600 disabled:opacity-60 text-white font-bold py-3.5 rounded-xl transition shadow-md flex items-center justify-center gap-2"
       >
         {status === "loading" ? (
-          <><LoaderCircle size={18} className="animate-spin" /> Gönderiliyor...</>
+          <>
+            <LoaderCircle size={18} className="animate-spin" /> Gönderiliyor...
+          </>
         ) : (
-          <><Send size={18} /> Mesajı Gönder</>
+          <>
+            <Send size={18} /> Mesajı Gönder
+          </>
         )}
       </button>
       {status === "error" && (
         <p className="text-sm text-red-600 font-medium text-center">
-          {errorMessage || "Mesaj gönderilemedi. Lütfen tekrar deneyin veya doğrudan e-posta ile ulaşın."}
+          {errorMessage ||
+            "Mesaj gönderilemedi. Lütfen tekrar deneyin veya doğrudan e-posta ile ulaşın."}
         </p>
       )}
     </form>

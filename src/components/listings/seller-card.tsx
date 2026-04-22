@@ -1,27 +1,28 @@
-"use client"
+"use client";
 
+import { CheckCircle2, Lock } from "lucide-react";
 import Image from "next/image";
-import Link from "next/link"
-import { CheckCircle2, Lock } from "lucide-react"
-import { TrustBadge } from "@/components/shared/trust-badge"
-import { ContactActions } from "@/components/listings/contact-actions"
-import type { Profile } from "@/types"
-import { cn } from "@/lib/utils";
+import Link from "next/link";
+
+import { ContactActions } from "@/components/listings/contact-actions";
+import { SellerRatingInfo } from "@/components/profile/seller-rating-info";
+import { TrustBadge } from "@/components/shared/trust-badge";
 import { trust } from "@/lib/constants/ui-strings";
+import { cn } from "@/lib/utils";
 import { getSellerTrustUI } from "@/lib/utils/trust-ui";
-import { SellerRatingInfo } from "@/components/profile/seller-rating-info"
+import type { Profile } from "@/types";
 
 interface SellerCardProps {
-  seller: Profile | null
+  seller: Profile | null;
   trustSummary: {
-    badgeLabel: string
-    score: number
-    signals: string[]
-  }
-  isLoggedIn: boolean
-  listingId: string
-  loginUrl: string
-  ratingSummary?: { average: number; count: number }
+    badgeLabel: string;
+    score: number;
+    signals: string[];
+  };
+  isLoggedIn: boolean;
+  listingId: string;
+  loginUrl: string;
+  ratingSummary?: { average: number; count: number };
 }
 
 export function SellerCard({
@@ -34,7 +35,7 @@ export function SellerCard({
 }: SellerCardProps) {
   const trustUI = getSellerTrustUI(seller);
   const isContactable = trustUI.isContactable && trustUI.isPremiumVisible;
-  
+
   return (
     <div className="rounded-[40px] border border-border/50 bg-card overflow-hidden shadow-sm shadow-slate-200/20">
       <div className="p-8">
@@ -42,7 +43,13 @@ export function SellerCard({
         <div className="flex items-center gap-4 mb-6">
           <div className="size-16 rounded-[20px] bg-muted/30 flex items-center justify-center font-bold text-2xl text-muted-foreground/70 border border-border/50 shrink-0 overflow-hidden relative">
             {seller?.businessLogoUrl ? (
-              <Image src={seller.businessLogoUrl} alt={seller.businessName || seller.fullName || ""} fill sizes="64px" className="object-contain p-1" />
+              <Image
+                src={seller.businessLogoUrl}
+                alt={seller.businessName || seller.fullName || ""}
+                fill
+                sizes="64px"
+                className="object-contain p-1"
+              />
             ) : (
               (seller?.businessName || seller?.fullName || "S").slice(0, 1)
             )}
@@ -54,25 +61,27 @@ export function SellerCard({
               </span>
             </div>
             <div className="flex items-center gap-3">
-              <span className={cn(
-                "text-[10px] font-bold uppercase px-2 py-0.5 rounded-lg tracking-widest italic",
-                trustUI.isPremiumVisible 
-                  ? "bg-primary/10 text-primary border border-primary/20" 
-                  : "bg-muted text-muted-foreground"
-              )}>
+              <span
+                className={cn(
+                  "text-[10px] font-bold uppercase px-2 py-0.5 rounded-lg tracking-widest italic",
+                  trustUI.isPremiumVisible
+                    ? "bg-primary/10 text-primary border border-primary/20"
+                    : "bg-muted text-muted-foreground"
+                )}
+              >
                 {trustUI.isPremiumVisible ? trust.professional : trust.individual}
               </span>
-              
+
               {/* Quick response badge only for active, premium, contactable sellers */}
               {isContactable && trustSummary.score > 85 && (
                 <span className="text-[10px] font-bold uppercase px-2 py-0.5 rounded-lg tracking-widest bg-emerald-50 text-emerald-600 border border-emerald-100 italic">
                   HIZLI YANIT
                 </span>
               )}
-              
+
               {/* Gallery link only for active professional sellers */}
               {seller?.businessSlug && trustUI.isPremiumVisible && (
-                <Link 
+                <Link
                   href={`/gallery/${seller.businessSlug}`}
                   className="text-[10px] font-bold uppercase text-primary hover:underline italic tracking-widest"
                 >
@@ -86,9 +95,9 @@ export function SellerCard({
         {/* Trust & Rating - hidden for restricted/banned sellers */}
         {trustUI.restrictionState === "active" && (
           <div className="space-y-4 py-6 border-y border-slate-50">
-            <SellerRatingInfo 
-              average={ratingSummary?.average || 0} 
-              count={ratingSummary?.count || 0} 
+            <SellerRatingInfo
+              average={ratingSummary?.average || 0}
+              count={ratingSummary?.count || 0}
             />
             <TrustBadge
               badgeLabel={trustSummary.badgeLabel}
@@ -125,11 +134,16 @@ export function SellerCard({
         {/* Trust Signals - only for active sellers */}
         {trustUI.restrictionState === "active" && (
           <div className="mt-8 pt-8 border-t border-border/50">
-            <h4 className="text-[11px] font-bold uppercase tracking-widest text-muted-foreground/70 italic mb-4">Güven Sinyalleri</h4>
+            <h4 className="text-[11px] font-bold uppercase tracking-widest text-muted-foreground/70 italic mb-4">
+              Güven Sinyalleri
+            </h4>
             {trustSummary.signals.length > 0 ? (
               <ul className="space-y-3">
                 {trustSummary.signals.map((signal) => (
-                  <li key={signal} className="flex items-center gap-3 text-xs font-bold text-muted-foreground italic">
+                  <li
+                    key={signal}
+                    className="flex items-center gap-3 text-xs font-bold text-muted-foreground italic"
+                  >
                     <CheckCircle2 className="size-4 text-emerald-500" />
                     {signal}
                   </li>
@@ -144,5 +158,5 @@ export function SellerCard({
         )}
       </div>
     </div>
-  )
+  );
 }

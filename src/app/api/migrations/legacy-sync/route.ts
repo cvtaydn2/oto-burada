@@ -1,14 +1,17 @@
 import { NextResponse } from "next/server";
 
-import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { hasSupabaseEnv } from "@/lib/supabase/env";
+import { createSupabaseServerClient } from "@/lib/supabase/server";
+import {
+  listingSubmissionsCookieName,
+  listingSubmissionsCookieOptions,
+} from "@/services/listings/constants";
 import {
   getLegacyStoredListings,
   getLegacyStoredUserListings,
   serializeStoredListings,
   upsertDatabaseListingRecord,
 } from "@/services/listings/listing-submissions";
-import { listingSubmissionsCookieName, listingSubmissionsCookieOptions } from "@/services/listings/constants";
 import {
   getLegacyStoredReports,
   getLegacyStoredReportsByReporter,
@@ -22,7 +25,7 @@ export async function POST() {
   if (!hasSupabaseEnv()) {
     return NextResponse.json(
       { message: "Supabase ortam degiskenleri eksik. Legacy sync baslatilamadi." },
-      { status: 503 },
+      { status: 503 }
     );
   }
 
@@ -35,7 +38,7 @@ export async function POST() {
   if (error || !user) {
     return NextResponse.json(
       { message: "Legacy verileri tasimak icin giris yapmalisin." },
-      { status: 401 },
+      { status: 401 }
     );
   }
 
@@ -80,12 +83,12 @@ export async function POST() {
   response.cookies.set(
     listingSubmissionsCookieName,
     serializeStoredListings(remainingListings),
-    listingSubmissionsCookieOptions,
+    listingSubmissionsCookieOptions
   );
   response.cookies.set(
     reportsCookieName,
     serializeStoredReports(remainingReports),
-    reportsCookieOptions,
+    reportsCookieOptions
   );
 
   return response;

@@ -1,11 +1,13 @@
-import { describe, it, expect } from "vitest";
+import { describe, expect, it } from "vitest";
+
 import type { ListingFilters } from "@/types";
+
 import {
-  normalizeSavedSearchFilters,
-  hasMeaningfulSavedSearchFilters,
-  getSavedSearchSignature,
-  buildSavedSearchTitle,
   buildSavedSearchSummary,
+  buildSavedSearchTitle,
+  getSavedSearchSignature,
+  hasMeaningfulSavedSearchFilters,
+  normalizeSavedSearchFilters,
 } from "../saved-search-utils";
 
 describe("Saved Search Utils Service", () => {
@@ -73,7 +75,13 @@ describe("Saved Search Utils Service", () => {
     });
 
     it("should generate signature for multiple filters", () => {
-      const filters: ListingFilters = { brand: "BMW", carTrim: "M Sport", city: "Istanbul", minPrice: 500000, hasExpertReport: true };
+      const filters: ListingFilters = {
+        brand: "BMW",
+        carTrim: "M Sport",
+        city: "Istanbul",
+        minPrice: 500000,
+        hasExpertReport: true,
+      };
       const signature = getSavedSearchSignature(filters);
       expect(signature).toContain("brand=BMW");
       expect(signature).toContain("carTrim=M+Sport");
@@ -116,10 +124,10 @@ describe("Saved Search Utils Service", () => {
     });
 
     it("should truncate long titles", () => {
-      const filters: ListingFilters = { 
-        brand: "Very Long Brand Name", 
+      const filters: ListingFilters = {
+        brand: "Very Long Brand Name",
         model: "Very Long Model Name That Is Too Long",
-        city: "Very Long City Name"
+        city: "Very Long City Name",
       };
       const title = buildSavedSearchTitle(filters);
       expect(title.length).toBeLessThanOrEqual(120);

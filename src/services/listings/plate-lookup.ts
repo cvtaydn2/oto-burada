@@ -1,8 +1,9 @@
 "use server";
 
 import type { SupabaseClient } from "@supabase/supabase-js";
-import { logger } from "@/lib/utils/logger";
 import { headers } from "next/headers";
+
+import { logger } from "@/lib/utils/logger";
 import { checkRateLimit } from "@/lib/utils/rate-limit";
 
 export interface PlateLookupResult {
@@ -26,23 +27,28 @@ export async function lookupVehicleByPlate(
   let ip = "unknown";
   try {
     const headersList = await headers();
-    ip = headersList.get("x-forwarded-for")?.split(",")[0]?.trim()
-      ?? headersList.get("x-real-ip")
-      ?? "unknown";
+    ip =
+      headersList.get("x-forwarded-for")?.split(",")[0]?.trim() ??
+      headersList.get("x-real-ip") ??
+      "unknown";
   } catch {
     ip = "local";
   }
-  const rateLimit = await checkRateLimit(`plate-lookup:${ip}`, { limit: 10, windowMs: 60 * 60 * 1000 });
+  const rateLimit = await checkRateLimit(`plate-lookup:${ip}`, {
+    limit: 10,
+    windowMs: 60 * 60 * 1000,
+  });
   if (!rateLimit.allowed) {
     logger.listings.warn("Plate lookup rate limited", { ip });
     return null;
   }
 
   const normalizedPlate = plate.replace(/\s/g, "").toUpperCase();
-  
+
   // Basic TR Plate Regex
-  const plateRegex = /^(0[1-9]|[1-7][0-9]|8[01])(([A-Z])(\d{4,5})|([A-Z]{2})(\d{3,4})|([A-Z]{3})(\d{2,3}))$/;
-  
+  const plateRegex =
+    /^(0[1-9]|[1-7][0-9]|8[01])(([A-Z])(\d{4,5})|([A-Z]{2})(\d{3,4})|([A-Z]{3})(\d{2,3}))$/;
+
   if (!plateRegex.test(normalizedPlate)) {
     return null;
   }
@@ -52,17 +58,14 @@ export async function lookupVehicleByPlate(
 
   try {
     let supabase = supabaseClient;
-    
+
     if (!supabase) {
       const { createSupabaseServerClient } = await import("@/lib/supabase/server");
       supabase = await createSupabaseServerClient();
     }
 
     // Fetch a random brand from live DB
-    const { data: brands } = await supabase
-      .from("brands")
-      .select("id, name")
-      .limit(20);
+    const { data: brands } = await supabase.from("brands").select("id, name").limit(20);
 
     if (!brands || brands.length === 0) return null;
 
@@ -79,11 +82,11 @@ export async function lookupVehicleByPlate(
 
     if (!models || models.length === 0) return null;
 
-    const modelIndex = (normalizedPlate.charCodeAt(normalizedPlate.length - 1)) % models.length;
+    const modelIndex = normalizedPlate.charCodeAt(normalizedPlate.length - 1) % models.length;
     const selectedModel = models[modelIndex];
 
-  // Build a deterministic suggestion using live marketplace reference data.
-  // This is intentionally NOT an official registry result.
+    // Build a deterministic suggestion using live marketplace reference data.
+    // This is intentionally NOT an official registry result.
     return {
       brand: selectedBrand.name,
       model: selectedModel.name,

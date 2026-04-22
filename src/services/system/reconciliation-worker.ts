@@ -3,13 +3,13 @@ import { logger } from "@/lib/utils/logger";
 
 /**
  * World-Class Integrity: Reconciliation Worker (Issue 3)
- * Cross-checks database status with external providers (Pull) 
+ * Cross-checks database status with external providers (Pull)
  * to catch events missed by webhooks (Push).
  */
 
 export async function processReconciliation() {
   const supabase = await createSupabaseServerClient();
-  
+
   logger.system.info("Reconciliation: Starting daily status audit...");
 
   // 1. Audit Corporate Subscriptions
@@ -26,17 +26,25 @@ export async function processReconciliation() {
     try {
       // Simulate external API call to Iyzico/Stripe
       const externalStatus = await simulateExternalStatusCheck();
-      
-      if (externalStatus === 'expired') {
-        logger.system.warn(`Reconciliation: User ${user.id} subscription expired but was active in DB. Fixing...`);
-        await supabase.from("profiles").update({ 
-          role: "user",
-          subscription_synced_at: new Date().toISOString()
-        }).eq("id", user.id);
+
+      if (externalStatus === "expired") {
+        logger.system.warn(
+          `Reconciliation: User ${user.id} subscription expired but was active in DB. Fixing...`
+        );
+        await supabase
+          .from("profiles")
+          .update({
+            role: "user",
+            subscription_synced_at: new Date().toISOString(),
+          })
+          .eq("id", user.id);
       } else {
-        await supabase.from("profiles").update({ 
-          subscription_synced_at: new Date().toISOString()
-        }).eq("id", user.id);
+        await supabase
+          .from("profiles")
+          .update({
+            subscription_synced_at: new Date().toISOString(),
+          })
+          .eq("id", user.id);
       }
     } catch (err) {
       logger.system.error(`Reconciliation: Failed to check user ${user.id}`, err);
@@ -44,7 +52,7 @@ export async function processReconciliation() {
   }
 }
 
-async function simulateExternalStatusCheck(): Promise<'active' | 'expired'> {
+async function simulateExternalStatusCheck(): Promise<"active" | "expired"> {
   // In real life: await iyzico.subscription.get(userId);
-  return 'active'; 
+  return "active";
 }

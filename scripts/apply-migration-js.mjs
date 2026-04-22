@@ -8,8 +8,10 @@
 import fs from "node:fs";
 import path from "node:path";
 import process from "node:process";
-import { loadLocalEnv } from "./load-local-env.mjs";
+
 import { createClient } from "@supabase/supabase-js";
+
+import { loadLocalEnv } from "./load-local-env.mjs";
 
 loadLocalEnv();
 
@@ -42,10 +44,7 @@ console.log(`📡 ${SUPABASE_URL}\n`);
 // (eğer yoksa), sonra migration'ı uygula.
 async function bootstrap() {
   // Önce basit bir test sorgusu çalıştır
-  const { data, error } = await admin
-    .from("_migrations")
-    .select("name")
-    .limit(1);
+  const { data, error } = await admin.from("_migrations").select("name").limit(1);
 
   if (error && error.code === "42P01") {
     // Tablo yok — oluştur
@@ -62,8 +61,8 @@ async function applyViaFetch(sqlText) {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      "apikey": SERVICE_ROLE_KEY,
-      "Authorization": `Bearer ${SERVICE_ROLE_KEY}`,
+      apikey: SERVICE_ROLE_KEY,
+      Authorization: `Bearer ${SERVICE_ROLE_KEY}`,
     },
     body: JSON.stringify({ query: sqlText }),
   });

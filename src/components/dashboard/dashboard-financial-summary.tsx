@@ -1,8 +1,9 @@
 "use client";
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Check, Clock, Wallet } from "lucide-react";
+
+import { Badge } from "@/components/ui/badge";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 interface FinancialSummaryProps {
   successfulSalesAmount?: number;
@@ -33,8 +34,12 @@ export function DashboardFinancialSummary({
                 <Check size={16} />
               </div>
               <div>
-                <div className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Başarılı Satışlar</div>
-                <div className="font-bold text-slate-900">{successfulSalesAmount.toLocaleString("tr-TR")} ₺</div>
+                <div className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
+                  Başarılı Satışlar
+                </div>
+                <div className="font-bold text-slate-900">
+                  {successfulSalesAmount.toLocaleString("tr-TR")} ₺
+                </div>
               </div>
             </div>
             <Badge variant="secondary" className="bg-blue-50 text-blue-600 hover:bg-blue-100">
@@ -48,8 +53,12 @@ export function DashboardFinancialSummary({
                 <Clock size={16} />
               </div>
               <div>
-                <div className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Bekleyen Kaporalar</div>
-                <div className="font-bold text-slate-900">{pendingDepositsAmount.toLocaleString("tr-TR")} ₺</div>
+                <div className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
+                  Bekleyen Kaporalar
+                </div>
+                <div className="font-bold text-slate-900">
+                  {pendingDepositsAmount.toLocaleString("tr-TR")} ₺
+                </div>
               </div>
             </div>
             <Badge variant="secondary" className="bg-slate-100 text-slate-600 hover:bg-slate-200">

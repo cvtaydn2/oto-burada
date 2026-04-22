@@ -1,10 +1,11 @@
 "use server";
 
-import { createSupabaseAdminClient } from "@/lib/supabase/admin";
-import { getCurrentUser } from "@/lib/auth/session";
-import { checkRateLimit } from "@/lib/utils/rate-limit";
 import { headers } from "next/headers";
+
+import { getCurrentUser } from "@/lib/auth/session";
 import { captureServerEvent } from "@/lib/monitoring/posthog-server";
+import { createSupabaseAdminClient } from "@/lib/supabase/admin";
+import { checkRateLimit } from "@/lib/utils/rate-limit";
 
 /**
  * Server Action to reveal a listing's phone number.
@@ -22,10 +23,10 @@ export async function revealListingPhone(listingId: string) {
   const headersList = await headers();
   const ip = headersList.get("x-forwarded-for") || "unknown";
 
-  const rateLimit = await checkRateLimit(
-    `reveal-phone:user:${user.id}`,
-    { limit: 20, windowMs: 60 * 60 * 1000 },
-  );
+  const rateLimit = await checkRateLimit(`reveal-phone:user:${user.id}`, {
+    limit: 20,
+    windowMs: 60 * 60 * 1000,
+  });
 
   if (!rateLimit.allowed) {
     throw new Error("Lütfen bir saat sonra tekrar deneyin.");
@@ -35,7 +36,8 @@ export async function revealListingPhone(listingId: string) {
   const admin = createSupabaseAdminClient();
   const { data, error } = await admin
     .from("listings")
-    .select(`
+    .select(
+      `
       whatsapp_phone, 
       status, 
       seller_id,
@@ -43,7 +45,8 @@ export async function revealListingPhone(listingId: string) {
         is_banned,
         ban_reason
       )
-    `)
+    `
+    )
     .eq("id", listingId)
     .single();
 
@@ -54,7 +57,7 @@ export async function revealListingPhone(listingId: string) {
   // CRITICAL: Block leads for restricted or risky sellers
   const sellerProfile = Array.isArray(data.profiles) ? data.profiles[0] : data.profiles;
   const isSellerBanned = sellerProfile?.is_banned || false;
-  
+
   if (isSellerBanned) {
     throw new Error("Satıcı hesabı inceleme altında. Şu an iletişim kurulamıyor.");
   }
@@ -84,4 +87,3 @@ export async function revealListingPhone(listingId: string) {
     phone: data.whatsapp_phone,
   };
 }
-

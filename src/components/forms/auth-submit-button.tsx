@@ -1,7 +1,7 @@
 "use client";
 
-import { useFormStatus } from "react-dom";
 import { LoaderCircle } from "lucide-react";
+import { useFormStatus } from "react-dom";
 
 interface AuthSubmitButtonProps {
   label: string;

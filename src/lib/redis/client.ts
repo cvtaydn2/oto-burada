@@ -1,4 +1,5 @@
 import { Redis } from "@upstash/redis";
+
 import { logger } from "@/lib/utils/logger";
 
 const getRedisConfig = () => {

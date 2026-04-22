@@ -79,7 +79,7 @@ export async function validateExpertDocumentFile(file: File) {
 export function buildExpertDocumentStoragePath(
   userId: string,
   _fileName: string,
-  verifiedMimeType?: string,
+  verifiedMimeType?: string
 ): string {
   // Derive extension from verified MIME type — never trust user-supplied filename
   const MIME_TO_EXTENSION: Record<string, string> = {
@@ -88,9 +88,7 @@ export function buildExpertDocumentStoragePath(
     "image/png": "png",
     "image/webp": "webp",
   };
-  const extension = verifiedMimeType
-    ? (MIME_TO_EXTENSION[verifiedMimeType] ?? "pdf")
-    : "pdf";
+  const extension = verifiedMimeType ? (MIME_TO_EXTENSION[verifiedMimeType] ?? "pdf") : "pdf";
   return `documents/${userId}/${crypto.randomUUID()}.${extension}`;
 }
 
@@ -99,7 +97,7 @@ export async function createExpertDocumentSignedUrl(
   options?: {
     bucketName?: string;
     expiresIn?: number;
-  },
+  }
 ) {
   const { createSupabaseAdminClient } = await import("@/lib/supabase/admin");
   const admin = createSupabaseAdminClient();

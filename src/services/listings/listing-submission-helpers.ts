@@ -26,8 +26,13 @@ export function toSlugSegment(value: string) {
     .replace(/-{2,}/g, "-");
 }
 
-export function buildListingSlug(input: ListingCreateInput, existingListings: { id: string; slug: string }[]) {
-  const baseSlug = toSlugSegment(`${input.brand} ${input.model} ${input.year} ${input.city} ${input.title}`);
+export function buildListingSlug(
+  input: ListingCreateInput,
+  existingListings: { id: string; slug: string }[]
+) {
+  const baseSlug = toSlugSegment(
+    `${input.brand} ${input.model} ${input.year} ${input.city} ${input.title}`
+  );
   const existingSlugs = new Set(existingListings.map((listing) => listing.slug));
 
   if (!existingSlugs.has(baseSlug)) {

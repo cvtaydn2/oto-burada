@@ -1,4 +1,5 @@
 import type { MetadataRoute } from "next";
+
 import { getAppUrl } from "@/lib/seo";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { hasSupabaseAdminEnv } from "@/lib/supabase/env";
@@ -31,10 +32,7 @@ export async function generateSitemaps() {
   const numberOfListingSitemaps = Math.ceil(totalListings / ITEMS_PER_SITEMAP);
 
   // ID 0 is reserved for static/meta pages. Listing sitemaps start from 1.
-  return [
-    { id: 0 },
-    ...Array.from({ length: numberOfListingSitemaps }, (_, i) => ({ id: i + 1 })),
-  ];
+  return [{ id: 0 }, ...Array.from({ length: numberOfListingSitemaps }, (_, i) => ({ id: i + 1 }))];
 }
 
 export default async function sitemap({ id }: { id: number }): Promise<MetadataRoute.Sitemap> {
@@ -46,32 +44,36 @@ export default async function sitemap({ id }: { id: number }): Promise<MetadataR
     const staticPages: MetadataRoute.Sitemap = [
       { url: baseUrl, lastModified: now, changeFrequency: "daily", priority: 1.0 },
       { url: `${baseUrl}/listings`, lastModified: now, changeFrequency: "hourly", priority: 0.9 },
-      { url: `${baseUrl}/aracim-ne-kadar`, lastModified: now, changeFrequency: "monthly", priority: 0.5 },
+      {
+        url: `${baseUrl}/aracim-ne-kadar`,
+        lastModified: now,
+        changeFrequency: "monthly",
+        priority: 0.5,
+      },
       { url: `${baseUrl}/compare`, lastModified: now, changeFrequency: "monthly", priority: 0.4 },
     ];
 
     if (!hasSupabaseAdminEnv()) return staticPages;
 
     const admin = createSupabaseAdminClient();
-    const [
-      { data: brands },
-      { data: cities },
-      { data: sellers },
-      combinationsResult
-    ] = await Promise.all([
-      admin.from("brands").select("slug").eq("is_active", true).order("name"),
-      admin.from("cities").select("slug").eq("is_active", true).order("name"),
-      // Onaylı ve aktif satıcı galerilerini sitemap'e ekle
-      admin.from("profiles")
-        .select("business_slug")
-        .eq("user_type", "professional")
-        .eq("verification_status", "approved")
-        .not("business_slug", "is", null),
-      // Aktif ilanların bulunduğu Marka + Şehir kombinasyonlarını sitemap'e ekle
-      admin.rpc("get_active_brand_city_combinations"),
-    ]);
+    const [{ data: brands }, { data: cities }, { data: sellers }, combinationsResult] =
+      await Promise.all([
+        admin.from("brands").select("slug").eq("is_active", true).order("name"),
+        admin.from("cities").select("slug").eq("is_active", true).order("name"),
+        // Onaylı ve aktif satıcı galerilerini sitemap'e ekle
+        admin
+          .from("profiles")
+          .select("business_slug")
+          .eq("user_type", "professional")
+          .eq("verification_status", "approved")
+          .not("business_slug", "is", null),
+        // Aktif ilanların bulunduğu Marka + Şehir kombinasyonlarını sitemap'e ekle
+        admin.rpc("get_active_brand_city_combinations"),
+      ]);
 
-    const combinations = combinationsResult?.data as { brand_slug: string, city_slug: string }[] | null;
+    const combinations = combinationsResult?.data as
+      | { brand_slug: string; city_slug: string }[]
+      | null;
 
     const brandPages: MetadataRoute.Sitemap = (brands ?? []).map((brand) => ({
       url: `${baseUrl}/satilik/${brand.slug}`,

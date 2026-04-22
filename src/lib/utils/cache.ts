@@ -1,11 +1,11 @@
 /**
  * Simple in-memory cache for server-side data.
- * 
+ *
  * PERFORMANCE OPTIMIZATION:
  * - Reduces expensive DB queries for frequently accessed data
  * - TTL-based expiration prevents stale data
  * - Memory-efficient: auto-cleanup on access
- * 
+ *
  * Use cases:
  * - Market stats (updated hourly)
  * - Analytics aggregates (updated daily)
@@ -26,7 +26,7 @@ class MemoryCache {
    */
   get<T>(key: string): T | null {
     const entry = this.cache.get(key) as CacheEntry<T> | undefined;
-    
+
     if (!entry) {
       return null;
     }
@@ -94,14 +94,17 @@ export const serverCache = new MemoryCache();
 
 // Cleanup expired entries every 5 minutes
 if (typeof setInterval !== "undefined") {
-  setInterval(() => {
-    serverCache.cleanup();
-  }, 5 * 60 * 1000);
+  setInterval(
+    () => {
+      serverCache.cleanup();
+    },
+    5 * 60 * 1000
+  );
 }
 
 /**
  * Helper to wrap expensive operations with caching
- * 
+ *
  * @example
  * const stats = await withCache(
  *   "market-stats-bmw-320-2020",
@@ -112,7 +115,7 @@ if (typeof setInterval !== "undefined") {
 export async function withCache<T>(
   key: string,
   fn: () => Promise<T>,
-  ttlSeconds: number,
+  ttlSeconds: number
 ): Promise<T> {
   // Try cache first
   const cached = serverCache.get<T>(key);
@@ -122,9 +125,9 @@ export async function withCache<T>(
 
   // Cache miss: execute function
   const result = await fn();
-  
+
   // Store in cache
   serverCache.set(key, result, ttlSeconds);
-  
+
   return result;
 }

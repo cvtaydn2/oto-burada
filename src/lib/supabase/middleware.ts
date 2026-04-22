@@ -1,11 +1,15 @@
 import { createServerClient } from "@supabase/ssr";
-import { NextResponse, type NextRequest } from "next/server";
+import { type NextRequest, NextResponse } from "next/server";
 
-import { getSupabaseEnv, hasSupabaseEnv } from "@/lib/supabase/env";
-import { applySecurityHeaders, applyRequestMetadata, generateNonce } from "@/lib/middleware/headers";
-import { classifyRoute } from "@/lib/middleware/routes";
 import { checkApiSecurity } from "@/lib/middleware/api-security";
 import { handleAuthRedirects } from "@/lib/middleware/auth";
+import {
+  applyRequestMetadata,
+  applySecurityHeaders,
+  generateNonce,
+} from "@/lib/middleware/headers";
+import { classifyRoute } from "@/lib/middleware/routes";
+import { getSupabaseEnv, hasSupabaseEnv } from "@/lib/supabase/env";
 
 /**
  * Global Middleware Orchestrator.
@@ -25,11 +29,14 @@ export async function updateSession(request: NextRequest) {
 
   // 1. PERFORMANCE: Skip heavy processing for static assets
   if (route.isStaticAsset) {
-    return applySecurityHeaders(NextResponse.next({ 
-      request: {
-        headers: requestHeaders,
-      }
-    }), nonce);
+    return applySecurityHeaders(
+      NextResponse.next({
+        request: {
+          headers: requestHeaders,
+        },
+      }),
+      nonce
+    );
   }
 
   // Initial response
@@ -67,20 +74,22 @@ export async function updateSession(request: NextRequest) {
   // 3. AUTH / SESSION REFRESH
   let user = null;
   if (route.needsAuth) {
-    const { data: { user: fetchedUser } } = await supabase.auth.getUser();
+    const {
+      data: { user: fetchedUser },
+    } = await supabase.auth.getUser();
     user = fetchedUser;
   }
 
   // 4. ROUTE GUARDS (Redirects)
   const redirectResponse = handleAuthRedirects(request, user, route);
   if (redirectResponse) {
-    // SECURITY: Ensure Supabase session cookies from the new response 
+    // SECURITY: Ensure Supabase session cookies from the new response
     // are copied to the redirect response, preventing silent auth drops.
     const finalResponse = redirectResponse;
     response.cookies.getAll().forEach((cookie) => {
       finalResponse.cookies.set(cookie.name, cookie.value);
     });
-    
+
     return applySecurityHeaders(finalResponse, nonce);
   }
 

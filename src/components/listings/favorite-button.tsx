@@ -2,7 +2,7 @@
 
 import { Heart, LogIn } from "lucide-react";
 import Link from "next/link";
-import { useState, useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import { useFavorites } from "@/hooks/use-favorites";
 import { cn } from "@/lib/utils";
@@ -51,7 +51,7 @@ export function FavoriteButton({
         className={cn(
           "flex items-center justify-center rounded-full border border-border/70 bg-background/95 text-foreground shadow-sm transition-colors hover:bg-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60",
           active && "border-primary/30 bg-primary/10 text-primary",
-          className,
+          className
         )}
       >
         <Heart className={cn("size-4", active && "fill-current")} />

@@ -1,7 +1,7 @@
 "use client";
 
-import { useRouter } from "next/navigation";
 import { Check, Plus } from "lucide-react";
+import { useRouter } from "next/navigation";
 
 import { useCompare } from "@/components/shared/compare-provider";
 

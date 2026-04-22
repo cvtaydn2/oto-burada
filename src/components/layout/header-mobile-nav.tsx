@@ -1,12 +1,12 @@
 "use client";
 
-import Link from "next/link";
 import { Heart, PlusCircle, User as UserIcon, UserPlus } from "lucide-react";
+import Link from "next/link";
 
 import { useAuthUser } from "@/components/shared/auth-provider";
+import { ThemeToggle } from "@/components/shared/theme-toggle";
 import { SearchWithSuggestions } from "@/components/ui/search-with-suggestions";
 import type { SearchSuggestionItem } from "@/types";
-import { ThemeToggle } from "@/components/shared/theme-toggle";
 
 interface HeaderMobileNavProps {
   searchSuggestions: SearchSuggestionItem[];
@@ -19,9 +19,7 @@ const mobileQuickLinks = [
   { href: "/listings?minYear=2020&sort=year_desc", label: "Yeni Model" },
 ] as const;
 
-export function HeaderMobileNav({
-  searchSuggestions,
-}: HeaderMobileNavProps) {
+export function HeaderMobileNav({ searchSuggestions }: HeaderMobileNavProps) {
   const { isAdmin, isAuthenticated, isReady } = useAuthUser();
   const accountHref = isAuthenticated ? "/dashboard" : "/login";
   const favoritesHref = isAuthenticated ? "/dashboard/favorites" : "/favorites";
@@ -40,7 +38,7 @@ export function HeaderMobileNav({
       />
 
       <div className="grid grid-cols-1 gap-2">
-        <Link 
+        <Link
           href={accountHref}
           prefetch={false}
           className="flex items-center h-14 px-4 rounded-2xl text-sm font-semibold text-foreground bg-muted/50 hover:bg-muted transition-all active:scale-[0.98]"
@@ -48,7 +46,11 @@ export function HeaderMobileNav({
           <UserIcon size={20} className="mr-3 text-muted-foreground" />
           {!isReady ? (
             <span className="h-4 w-16 rounded bg-muted animate-pulse inline-block" />
-          ) : isAuthenticated ? "Hesabım" : "Giriş Yap"}
+          ) : isAuthenticated ? (
+            "Hesabım"
+          ) : (
+            "Giriş Yap"
+          )}
         </Link>
 
         {isReady && !isAuthenticated && (
@@ -62,7 +64,7 @@ export function HeaderMobileNav({
           </Link>
         )}
 
-        <Link 
+        <Link
           href={favoritesHref}
           prefetch={false}
           className="flex items-center h-14 px-4 rounded-2xl text-sm font-semibold text-foreground bg-muted/50 hover:bg-muted transition-all active:scale-[0.98]"
@@ -72,7 +74,7 @@ export function HeaderMobileNav({
         </Link>
 
         {isAdmin && (
-          <Link 
+          <Link
             href="/admin"
             prefetch={false}
             className="flex items-center h-14 px-4 rounded-2xl text-sm font-semibold text-foreground bg-muted/50 hover:bg-muted transition-all active:scale-[0.98]"
@@ -82,7 +84,7 @@ export function HeaderMobileNav({
           </Link>
         )}
 
-        <Link 
+        <Link
           href={postListingHref}
           prefetch={false}
           className="flex items-center justify-center h-14 px-4 rounded-2xl text-sm font-bold text-white bg-primary shadow-lg shadow-primary/20 hover:bg-primary/90 transition-all active:scale-[0.98]"
@@ -93,7 +95,9 @@ export function HeaderMobileNav({
       </div>
 
       <div className="pt-4 border-t border-border">
-        <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-3 px-1">Hızlı Erişim</p>
+        <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-3 px-1">
+          Hızlı Erişim
+        </p>
         <div className="flex gap-2 overflow-x-auto pb-4 no-scrollbar">
           {mobileQuickLinks.map((item) => (
             <Link

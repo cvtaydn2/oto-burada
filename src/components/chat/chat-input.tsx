@@ -1,7 +1,8 @@
 "use client";
 
-import { useState, useRef } from "react";
 import { SendHorizontal } from "lucide-react";
+import { useRef, useState } from "react";
+
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
@@ -30,11 +31,11 @@ export function ChatInput({ onSendMessage, onTyping }: ChatInputProps) {
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setContent(e.target.value);
-    
+
     // Typing indicator logic
     onTyping(true);
     if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
-    
+
     typingTimeoutRef.current = setTimeout(() => {
       onTyping(false);
     }, 2000);
@@ -48,7 +49,11 @@ export function ChatInput({ onSendMessage, onTyping }: ChatInputProps) {
   };
 
   return (
-    <div className="p-4 border-t bg-background flex items-center gap-2" role="form" aria-label="Mesaj gönder">
+    <div
+      className="p-4 border-t bg-background flex items-center gap-2"
+      role="form"
+      aria-label="Mesaj gönder"
+    >
       <Input
         value={content}
         onChange={handleChange}
@@ -58,9 +63,9 @@ export function ChatInput({ onSendMessage, onTyping }: ChatInputProps) {
         aria-label="Mesajınız"
         disabled={isSending}
       />
-      <Button 
-        size="icon" 
-        onClick={() => void handleSend()} 
+      <Button
+        size="icon"
+        onClick={() => void handleSend()}
         disabled={!content.trim() || isSending}
         className="rounded-full shadow-md transition-transform"
         aria-label="Gönder"

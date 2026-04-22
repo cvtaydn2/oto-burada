@@ -1,8 +1,17 @@
 "use client";
 
+import {
+  Bell,
+  Heart,
+  LayoutGrid,
+  ListChecks,
+  MessageSquare,
+  Search,
+  UserCircle2,
+  Zap,
+} from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Heart, LayoutGrid, ListChecks, UserCircle2, Zap, MessageSquare, Bell, Search } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 

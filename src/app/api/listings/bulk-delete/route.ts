@@ -1,10 +1,10 @@
-import { apiError, apiSuccess, API_ERROR_CODES } from "@/lib/utils/api-response";
-import { rateLimitProfiles } from "@/lib/utils/rate-limit";
-import { withAuthAndCsrf } from "@/lib/utils/api-security";
-import { deleteDatabaseListing } from "@/services/listings/listing-submissions";
-import { logger } from "@/lib/utils/logger";
 import { captureServerEvent } from "@/lib/monitoring/posthog-server";
+import { API_ERROR_CODES, apiError, apiSuccess } from "@/lib/utils/api-response";
+import { withAuthAndCsrf } from "@/lib/utils/api-security";
+import { logger } from "@/lib/utils/logger";
+import { rateLimitProfiles } from "@/lib/utils/rate-limit";
 import { bulkListingActionSchema } from "@/lib/validators";
+import { deleteDatabaseListing } from "@/services/listings/listing-submissions";
 
 // Bulk delete: 10 operations per hour per user (stricter due to side effects)
 const BULK_DELETE_RATE_LIMIT = { limit: 10, windowMs: 60 * 60 * 1000 };
@@ -38,30 +38,29 @@ export async function POST(req: Request) {
   const { ids } = validation.data;
 
   // Process deletions (deleteDatabaseListing handles ownership and image cleanup)
-  const results = await Promise.all(
-    ids.map((id) => deleteDatabaseListing(id, user.id))
-  );
+  const results = await Promise.all(ids.map((id) => deleteDatabaseListing(id, user.id)));
 
   const successCount = results.filter(Boolean).length;
 
-  logger.listings.info("Bulk delete attempt", { 
-    userId: user.id, 
-    requestedIds: ids, 
-    successCount 
+  logger.listings.info("Bulk delete attempt", {
+    userId: user.id,
+    requestedIds: ids,
+    successCount,
   });
 
   if (successCount === 0 && ids.length > 0) {
     return apiError(API_ERROR_CODES.NOT_FOUND, "Silinebilir (arşivlenmiş) ilan bulunamadı.", 404);
   }
 
-  captureServerEvent("listings_bulk_deleted", {
-    userId: user.id,
-    count: successCount,
-    requestedIds: ids
-  }, user.id);
-
-  return apiSuccess(
-    { count: successCount },
-    `${successCount} ilan başarıyla silindi.`
+  captureServerEvent(
+    "listings_bulk_deleted",
+    {
+      userId: user.id,
+      count: successCount,
+      requestedIds: ids,
+    },
+    user.id
   );
+
+  return apiSuccess({ count: successCount }, `${successCount} ilan başarıyla silindi.`);
 }

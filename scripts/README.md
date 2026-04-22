@@ -11,11 +11,13 @@ All scripts in this directory follow strict security guidelines.
 ## Password Handling
 
 ### ❌ WRONG (Hardcoded)
+
 ```javascript
 const password = "demo123"; // NEVER DO THIS
 ```
 
 ### ✅ CORRECT (Environment Variable)
+
 ```javascript
 const password = process.env.DEMO_USER_PASSWORD || crypto.randomBytes(16).toString("hex");
 ```
@@ -40,6 +42,7 @@ DEMO_USER_PASSWORD=your_secure_password_here
 ## Available Scripts
 
 ### Quick Bootstrap (Recommended)
+
 Creates demo users with secure passwords:
 
 ```bash
@@ -47,12 +50,14 @@ node scripts/quick-bootstrap.mjs
 ```
 
 **Features**:
+
 - ✅ Reads password from `DEMO_USER_PASSWORD` env var
 - ✅ Generates random password if not set
 - ✅ Stores role in `app_metadata` (trusted)
 - ✅ Never hardcodes credentials
 
 ### Other Utility Scripts
+
 - `seed-marketplace-references.mjs` - Seeds reference data (brands, models, cities)
 - `run-migrations.mjs` - Applies database migrations
 - `apply-schema-rpc.mjs` - Applies RPC functions
@@ -96,6 +101,7 @@ The following scripts have been **permanently deleted** due to hardcoded credent
 **NEVER run development scripts in production!**
 
 For production user creation:
+
 1. Use Supabase Dashboard
 2. Use secure admin API with proper authentication
 3. Generate strong random passwords

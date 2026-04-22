@@ -1,9 +1,10 @@
 "use server";
 
-import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { revalidatePath } from "next/cache";
-import { logger } from "@/lib/utils/logger";
+
 import { captureServerError } from "@/lib/monitoring/posthog-server";
+import { createSupabaseAdminClient } from "@/lib/supabase/admin";
+import { logger } from "@/lib/utils/logger";
 
 interface SupportTicketRow {
   created_at: string;
@@ -33,7 +34,7 @@ export async function getSupportTickets() {
     id: ticket.id,
     message: ticket.description,
     priority: ticket.priority,
-    profile: Array.isArray(ticket.profiles) ? ticket.profiles[0] : ticket.profiles ?? undefined,
+    profile: Array.isArray(ticket.profiles) ? ticket.profiles[0] : (ticket.profiles ?? undefined),
     status: ticket.status,
     subject: ticket.subject,
   }));
