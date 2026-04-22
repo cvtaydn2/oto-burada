@@ -71,6 +71,14 @@ Primary success criteria:
 - Keep the architecture simple and maintainable.
 - Do not introduce microservices.
 - Do not introduce a separate Express/Nest backend for MVP.
+
+### Resilience & Performance (God-Tier Pills)
+- **Zero-Trust Connection**: Never wait for external network requests (Iyzico, Email) inside a DB transaction. Use `fulfillment_jobs` or outbox pattern.
+- **Fail-Closed Security**: If a critical check (like Iyzico signature verification) fails, halt the process immediately.
+- **Parametric Indexing**: Keep all foreign keys indexed. Avoid `SELECT *` in hot paths.
+- **Modular Fulfillment**: Decouple payment from fulfillment logic via idempotent jobs.
+- **Market Integrity**: Banned users' listings must be filtered at the database level using `!inner` joins for performance and accuracy.
+
 ---
 
 ## Database Rules

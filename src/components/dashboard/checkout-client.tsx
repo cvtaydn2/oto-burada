@@ -22,8 +22,15 @@ export function CheckoutClient({ plan, isPaymentEnabled }: CheckoutClientProps) 
   const [isProcessing, setIsProcessing] = useState(false);
   const [status, setStatus] = useState<"idle" | "success" | "error">("idle");
   const [errorMessage, setErrorMessage] = useState("");
+  const [identityNumber, setIdentityNumber] = useState("");
 
   const handlePayment = async () => {
+    if (plan.price > 0 && (!identityNumber || identityNumber.length !== 11)) {
+      setStatus("error");
+      setErrorMessage("Lütfen geçerli bir 11 haneli TC Kimlik Numarası giriniz.");
+      return;
+    }
+
     setIsProcessing(true);
     setStatus("idle");
 
@@ -31,13 +38,23 @@ export function CheckoutClient({ plan, isPaymentEnabled }: CheckoutClientProps) 
       const res = await fetch("/api/payments/purchase-plan", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ planId: plan.id }),
+        body: JSON.stringify({ 
+          planId: plan.id,
+          identityNumber: plan.price > 0 ? identityNumber : undefined
+        }),
       });
 
       const data = await res.json().catch(() => ({ success: false, error: "Sunucu yanıtı okunamadı." }));
 
       if (res.ok && data.success) {
         captureClientEvent("payment_success", { planId: plan.id, planName: plan.name, amount: plan.price });
+        
+        // If Iyzico returned a payment URL (checkout form), redirect the user to it
+        if (data.paymentUrl) {
+          window.location.href = data.paymentUrl;
+          return;
+        }
+
         setStatus("success");
         setTimeout(() => router.push("/dashboard"), 2000);
       } else {
@@ -138,6 +155,27 @@ export function CheckoutClient({ plan, isPaymentEnabled }: CheckoutClientProps) 
       {status === "error" && (
         <div className="rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-700 font-medium">
           {errorMessage}
+        </div>
+      )}
+
+      {/* Identity Number for Paid Plans */}
+      {plan.price > 0 && isPaymentEnabled && (
+        <div className="space-y-2">
+          <label htmlFor="tc-no" className="text-sm font-bold text-slate-700">
+            TC Kimlik Numarası <span className="text-red-500">*</span>
+          </label>
+          <input
+            id="tc-no"
+            type="text"
+            maxLength={11}
+            placeholder="11 haneli TC kimlik numaranız"
+            className="w-full h-12 px-4 rounded-xl border border-border focus:ring-2 focus:ring-primary focus:outline-none text-sm"
+            value={identityNumber}
+            onChange={(e) => setIdentityNumber(e.target.value.replace(/\D/g, ""))}
+          />
+          <p className="text-[10px] text-slate-400 font-medium leading-relaxed">
+            * Iyzico ödeme sisteminde faturalandırma için yasal olarak zorunludur.
+          </p>
         </div>
       )}
 

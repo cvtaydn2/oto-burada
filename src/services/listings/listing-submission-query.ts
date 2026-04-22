@@ -49,7 +49,7 @@ export const listingSelect = `
     is_cover,
     placeholder_blur
   ),
-  profiles!seller_id (
+  profiles!inner!seller_id (
     id,
     full_name,
     phone,
@@ -315,6 +315,19 @@ export async function getFilteredDatabaseListings(
   // const from = (page - 1) * limit; // OFFSET logic removed
   // const to = from + limit - 1;
 
+  // Resolve citySlug to city name if city is not provided
+  if (filters.citySlug && !filters.city) {
+    const { data: cityData } = await admin
+      .from("cities")
+      .select("name")
+      .eq("slug", filters.citySlug)
+      .maybeSingle();
+    
+    if (cityData) {
+      filters = { ...filters, city: cityData.name };
+    }
+  }
+
   let dataQuery = admin.from("listings").select(listingSelect).eq("status", "approved");
   
   // CRITICAL: Filter out listings from banned users
@@ -415,7 +428,7 @@ export async function getFilteredDatabaseListings(
 
   let countQuery = admin
     .from("listings")
-    .select("id", { count: "exact", head: true })
+    .select("id, profiles!inner!seller_id(is_banned)", { count: "exact", head: true })
     .eq("status", "approved")
     // CRITICAL: Mirror the same banned-seller filter used in the data query.
     // Without this, count and actual results diverge for banned sellers.

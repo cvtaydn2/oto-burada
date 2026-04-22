@@ -40,6 +40,7 @@ export interface UserProfile {
   trustScore: number;
   verificationStatus: "none" | "pending" | "approved" | "rejected";
   emailVerified: boolean;
+  identityNumber?: string | null;
 }
 
 export interface UserDetailData {
@@ -74,6 +75,7 @@ export function mapProfile(p: Record<string, unknown>, email = ""): UserProfile 
     trustScore: (p.trust_score as number) || 0,
     verificationStatus: (p.verification_status as UserProfile["verificationStatus"]) || "none",
     emailVerified: (p.email_verified as boolean) || false,
+    identityNumber: p.identity_number as string | null,
   };
 }
 
@@ -90,7 +92,7 @@ export async function getUserDetail(userId: string): Promise<UserDetailData | nu
   ] = await Promise.all([
     admin.auth.admin.getUserById(userId),
     admin.from("profiles").select(
-      "id, full_name, phone, city, avatar_url, role, user_type, balance_credits, is_verified, is_banned, ban_reason, business_name, business_address, business_logo_url, business_description, tax_id, tax_office, website_url, verified_business, business_slug, created_at, updated_at, trust_score, verification_status, email_verified"
+      "id, full_name, phone, city, avatar_url, role, user_type, balance_credits, is_verified, is_banned, ban_reason, identity_number, business_name, business_address, business_logo_url, business_description, tax_id, tax_office, website_url, verified_business, business_slug, created_at, updated_at, trust_score, verification_status, email_verified"
     ).eq("id", userId).single(),
     admin
       .from("payments")

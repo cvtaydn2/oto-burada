@@ -18,6 +18,11 @@ export const profileSchema = z.object({
   emailVerified: z.boolean(),
   isVerified: z.boolean(),
   isBanned: z.boolean().optional(),
+  banReason: z.string().nullable().optional(),
+  identityNumber: z.string().trim().length(11).nullable().optional(),
+  restrictionState: z.enum(["active", "restricted_review", "banned"]).optional(),
+  trustScore: z.number().optional(),
+  isWalletVerified: z.boolean().optional(),
   userType: z.enum(["individual", "professional", "staff"]).optional(),
   balanceCredits: z.number().int().min(0).optional(),
   role: z.enum(userRoles),
@@ -33,6 +38,12 @@ export const profileSchema = z.object({
   verifiedBusiness: z.boolean().optional(),
   businessSlug: z.string().trim().nullable().optional(),
 
+  // Verification Workflow
+  verificationStatus: z.enum(['none', 'pending', 'approved', 'rejected']).optional(),
+  verificationRequestedAt: z.string().nullable().optional(),
+  verificationReviewedAt: z.string().nullable().optional(),
+  verificationFeedback: z.string().nullable().optional(),
+
   createdAt: timestampSchema,
   updatedAt: timestampSchema,
 });
@@ -45,6 +56,7 @@ export const profileUpdateSchema = z.object({
     emptyStringToUndefined,
     z.string().trim().url(invalidMessage).nullable().optional(),
   ),
+  identityNumber: z.string().trim().length(11).nullable().optional(),
 });
 
 export const corporateProfileSchema = z.object({

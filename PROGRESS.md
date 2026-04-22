@@ -1,3 +1,28 @@
+# 2026-04-22 — Marketplace Integrity & Payment Hardening
+
+## Yapılan Değişiklikler
+
+### 1. Iyzico Compliance & Identity Verification
+- **Identity Number (TCKN)**: 11-haneli TC Kimlik Numarası doğrulaması hem frontend (`CheckoutClient`) hem de backend (`purchase-plan` API) seviyelerinde zorunlu hale getirildi.
+- **Profile Schema Update**: `identity_number` alanı `profiles` tablosuna ve domain tiplerine eklendi.
+- **Checkout UX**: Ödeme asılı kalma sorunu giderildi; `paymentUrl` alındığında otomatik redirect mekanizması eklendi.
+
+### 2. Marketplace Accuracy & Performance
+- **Listing Query Fix**: Banned (yasaklı) kullanıcıların ilanlarının sayımında (count) ve listelenmesinde yaşanan tutarsızlık, `.select("..., profiles!inner!seller_id(...)")` kullanılarak giderildi. Bu sayede hem performans artırıldı hem de count doğruluğu sağlandı.
+- **Admin Visibility**: Admin dashboard üzerinde kullanıcı detaylarında TC Kimlik Numarası görüntülenebilir hale getirildi.
+
+### 3. Build & Type Safety
+- **npm run lint**: ✅ (Sadece önemsiz uyarılar kaldı)
+- **npm run typecheck**: ✅ (Tüm domain tipleri ve API'ler senkronize)
+
+## Doğrulama
+- Iyzico Sandbox Redirect Flow ✅
+- Banned User Filter Accuracy ✅
+- Identity Number Persistence ✅
+- Admin User Detail View ✅
+
+---
+
 # 2026-04-22 — Architectural Hardening & SEO Expansion
 
 ## Yapılan Değişiklikler

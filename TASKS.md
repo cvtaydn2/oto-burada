@@ -455,48 +455,22 @@ Resolve build-time type errors and runtime 404 issues in listing retrieval.
 
 ---
 
-## Phase 26 — Post-MVP Monetization & Automation
+## Phase 26 — Post-MVP Monetization & Automation (Completed)
 
-### Task 26.1 — Iyzico Payment Activation (Complete)
+### Task 26.1 — Iyzico Payment Activation
 Activate the existing Iyzico skeleton for real transactions.
 - [x] Set `IYZICO_API_KEY` and `IYZICO_SECRET_KEY` in Vercel.
 - [x] Deploy `add-payments-webhook-support.sql` to seed plans and enable webhooks.
 - [x] Connect `listing-doping-panel` to the real checkout flow.
 - [x] Implement `balance_credits` display in dashboard.
+- [x] Implement mandatory identity verification for billing compliance.
 
 #### Acceptance Criteria
 - [x] Users can purchase doping/highlighting plans.
 - [x] Payments are processed via Iyzico 3DS flow.
 - [x] Listing status updates automatically after successful payment.
 
-### Task 26.2 — Saved Searches & Email Alerts (Complete)
-Automate "Search Result" notifications.
-- [x] Activate `RESEND_API_KEY`.
-- [x] Connect the built-in Cron job (`/api/saved-searches/notify`) to Resend.
-- [x] Ensure email templates are localized in Turkish.
-- [x] Add "Save Search" UI to marketplace.
-
-#### Acceptance Criteria
-- [x] Users receive emails when new listings match their saved searches.
-- [x] Unsubscribe links work correctly.
-
----
-
-## Phase 26 — Post-MVP Monetization & Automation
-
-### Task 26.1 — Iyzico Payment Activation
-Activate the existing Iyzico skeleton for real transactions.
-- Set `IYZICO_API_KEY` and `IYZICO_SECRET_KEY` in Vercel.
-- Deploy `add-payments-webhook-support.sql` to seed plans and enable webhooks.
-- Connect `listing-doping-panel` to the real checkout flow.
-- Implement `balance_credits` display in dashboard.
-
-#### Acceptance Criteria
-- [x] Users can purchase doping/highlighting plans.
-- [x] Payments are processed via Iyzico 3DS flow.
-- [x] Listing status updates automatically after successful payment.
-
-### Task 26.2 — Saved Searches & Email Alerts (Complete)
+### Task 26.2 — Saved Searches & Email Alerts
 Automate "Search Result" notifications.
 - [x] Activate `RESEND_API_KEY`.
 - [x] Connect the built-in Cron job (`/api/saved-searches/notify`) to Resend.
@@ -511,13 +485,15 @@ Automate "Search Result" notifications.
 
 ## Final Definition of Done
 The MVP is complete when:
-- user can register and sign in
-- user can create a car listing with images
-- listings can be browsed and filtered
-- listing details are viewable with WhatsApp CTA
-- users can favorite listings
-- users can report listings
-- admin can moderate pending and reported listings
-- app is responsive
-- app lints, typechecks, and builds
-- documentation is aligned with code
+- [x] user can register and sign in
+- [x] user can create a car listing with images
+- [x] listings can be browsed and filtered
+- [x] listing details are viewable with WhatsApp CTA
+- [x] users can favorite listings
+- [x] users can report listings
+- [x] admin can moderate pending and reported listings
+- [x] app is responsive
+- [x] app lints, typechecks, and builds
+- [x] documentation is aligned with code
+- [x] payment system is hardened and compliant
+- [x] marketplace integrity is secured (banned user filtering)

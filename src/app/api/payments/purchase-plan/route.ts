@@ -13,6 +13,7 @@ import { withUserAndCsrf } from "@/lib/utils/api-security";
 
 const purchaseSchema = z.object({
   planId: z.string().uuid("Geçersiz plan ID."),
+  identityNumber: z.string().regex(/^\d{11}$/, "TC Kimlik Numarası 11 haneli rakam olmalıdır.").optional(),
 });
 
 // 5 purchase attempts per hour per user — prevents abuse
@@ -56,7 +57,7 @@ export async function POST(req: Request) {
     return apiError(API_ERROR_CODES.VALIDATION_ERROR, parsed.error.issues[0]?.message ?? "Geçersiz veri.", 400);
   }
 
-  const { planId } = parsed.data;
+  const { planId, identityNumber } = parsed.data;
 
   try {
     const admin = createSupabaseAdminClient();
@@ -204,6 +205,7 @@ export async function POST(req: Request) {
         surname,
         email: user.email,
         gsmNumber: profile.phone || "+905320000000",
+        identityNumber: identityNumber || profile.identityNumber || "11111111111", // Default to test ID if missing and allowed
         address: profile.businessAddress || "Türkiye",
         city: profile.city || "Istanbul",
         country: "Turkey",

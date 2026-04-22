@@ -50,6 +50,9 @@ export const listingFiltersSchema: z.ZodType<ListingFilters> = z
     sort: z.preprocess(emptyStringToUndefined, z.enum(listingSortOptions).optional()),
     page: z.preprocess(emptyStringToUndefined, z.coerce.number().int().min(1).optional()),
     limit: z.preprocess(emptyStringToUndefined, z.coerce.number().int().min(1).max(100).optional()),
+    citySlug: optionalTrimmedString,
+    sellerId: optionalTrimmedString,
+    cursor: optionalTrimmedString,
   })
   .refine(
     (values) =>
