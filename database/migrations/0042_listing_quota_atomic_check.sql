@@ -24,8 +24,9 @@ DECLARE
   v_start_of_year  TIMESTAMPTZ;
   v_lock_key       BIGINT;
 BEGIN
-  -- Derive a stable per-user advisory lock key from the UUID
-  v_lock_key := ('x' || substr(p_user_id::text, 1, 16))::bit(64)::bigint;
+  -- Derive a stable per-user advisory lock key from the UUID.
+  -- Replace hyphens before hex conversion to avoid cast errors.
+  v_lock_key := ('x' || substr(replace(p_user_id::text, '-', ''), 1, 16))::bit(64)::bigint;
 
   -- Acquire an exclusive advisory lock for this user for the duration of the transaction.
   -- This serializes concurrent quota checks for the same user.
