@@ -44,7 +44,7 @@ console.log(`📡 ${SUPABASE_URL}\n`);
 // (eğer yoksa), sonra migration'ı uygula.
 async function bootstrap() {
   // Önce basit bir test sorgusu çalıştır
-  const { data, error } = await admin.from("_migrations").select("name").limit(1);
+  const { error } = await admin.from("_migrations").select("name").limit(1);
 
   if (error && error.code === "42P01") {
     // Tablo yok — oluştur
@@ -52,24 +52,6 @@ async function bootstrap() {
     // Bu noktada tablo oluşturamıyoruz çünkü raw SQL yok
     // Devam et, sadece migration'ı kaydetmeye çalış
   }
-}
-
-async function applyViaFetch(sqlText) {
-  // Supabase'in dahili /pg endpoint'i (undocumented ama çalışıyor)
-  const url = `${SUPABASE_URL}/pg`;
-  const response = await fetch(url, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      apikey: SERVICE_ROLE_KEY,
-      Authorization: `Bearer ${SERVICE_ROLE_KEY}`,
-    },
-    body: JSON.stringify({ query: sqlText }),
-  });
-
-  if (response.ok) return { success: true };
-  const text = await response.text();
-  return { success: false, error: text, status: response.status };
 }
 
 async function main() {

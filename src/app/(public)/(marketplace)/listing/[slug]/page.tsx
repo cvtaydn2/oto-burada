@@ -46,11 +46,7 @@ import { features } from "@/lib/features";
 import { buildAbsoluteUrl, buildListingDetailMetadata } from "@/lib/seo";
 import { cn, formatNumber, formatPrice } from "@/lib/utils";
 import { getMembershipYears, getMemberSinceYear } from "@/lib/utils/listing-utils";
-import { getListingCardInsights } from "@/services/listings/listing-card-insights";
-import {
-  getListingPriceHistory,
-  getMarketValuation,
-} from "@/services/listings/listing-price-history";
+import { getMarketValuation } from "@/services/listings/listing-price-history";
 import {
   getMarketplaceListingBySlug,
   getMarketplaceSeller,
@@ -120,24 +116,20 @@ export default async function ListingDetailPage({ params }: ListingDetailPagePro
   }
 
   // ── Data fetching ─────────────────────────────────────────────────────────
-  const [seller, currentUser, priceHistory, similarListings, sellerRating, marketValuation] =
-    await Promise.all([
-      getMarketplaceSeller(listing.sellerId),
-      getCurrentUser(),
-      getListingPriceHistory(listing.id),
-      getSimilarMarketplaceListings(listing.slug, listing.brand, listing.city),
-      getSellerRatingSummary(listing.sellerId),
-      getMarketValuation({
-        price: listing.price,
-        brand: listing.brand,
-        model: listing.model,
-        year: listing.year,
-      }),
-    ]);
+  const [seller, currentUser, similarListings, sellerRating, marketValuation] = await Promise.all([
+    getMarketplaceSeller(listing.sellerId),
+    getCurrentUser(),
+    getSimilarMarketplaceListings(listing.slug, listing.brand, listing.city),
+    getSellerRatingSummary(listing.sellerId),
+    getMarketValuation({
+      price: listing.price,
+      brand: listing.brand,
+      model: listing.model,
+      year: listing.year,
+    }),
+  ]);
 
-  const insight = getListingCardInsights(listing);
   const isOwner = currentUser?.id === listing.sellerId;
-  const loginUrl = `/login?next=${encodeURIComponent(`/listing/${listing.slug}`)}`;
 
   // Seller membership
   const memberSince = getMemberSinceYear(seller?.createdAt ?? null);

@@ -159,7 +159,7 @@ function DeleteModal({
 // ── Main component ────────────────────────────────────────────────────────────
 export function AdminRolesClient({ initialRoles }: AdminRolesClientProps) {
   const router = useRouter();
-  const [isPending, startTransition] = useTransition();
+  const [, startTransition] = useTransition();
 
   const [editTarget, setEditTarget] = useState<AdminRole | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<AdminRole | null>(null);

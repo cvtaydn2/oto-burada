@@ -9,13 +9,13 @@
  *   E2E_TEST_EMAIL=... E2E_TEST_PASSWORD=... npx playwright test
  */
 
-import { chromium, type FullConfig } from "@playwright/test";
+import { chromium } from "@playwright/test";
 import fs from "fs";
 import path from "path";
 
 const AUTH_FILE = path.join(process.cwd(), "playwright", ".auth", "user.json");
 
-export default async function globalSetup(_config: FullConfig) {
+export default async function globalSetup(): Promise<void> {
   const email = process.env.E2E_TEST_EMAIL;
   const password = process.env.E2E_TEST_PASSWORD;
 

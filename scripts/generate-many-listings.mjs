@@ -92,7 +92,6 @@ async function generateListings(count = 50) {
     const seller = users[Math.floor(Math.random() * users.length)];
     const id = crypto.randomUUID();
     const fuelType = fuelTypes[Math.floor(Math.random() * fuelTypes.length)];
-    const fuelImages = carImagesByFuel[fuelType];
 
     listings.push({
       id,

@@ -7,7 +7,7 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
     const { id } = await params;
     const history = await getListingPriceHistory(id);
     return NextResponse.json(history);
-  } catch (error) {
+  } catch {
     return NextResponse.json({ error: "Failed to fetch price history" }, { status: 500 });
   }
 }

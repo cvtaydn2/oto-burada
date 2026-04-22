@@ -123,6 +123,12 @@ function isPublicEndpoint(filePath: string, content: string): boolean {
     "/api/cron/process-fulfillments",
     "/api/migrations/legacy-sync",
     "/api/listings/[listingId]/verify-eids",
+    // verify-eids uses [id] param in actual route
+    "/api/listings/[id]/verify-eids",
+    // price-history is a public read endpoint (no auth required)
+    "/api/listings/[id]/price-history",
+    // SSE stream handles its own auth internally via supabase.auth.getUser()
+    "/api/notifications/stream",
   ];
 
   if (publicPaths.some((p) => normalizedFilePath.includes(p))) {
