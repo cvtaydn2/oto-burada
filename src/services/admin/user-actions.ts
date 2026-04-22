@@ -259,9 +259,8 @@ export async function deleteUser(userId: string) {
     // 1. Overwrite profile with anonymized data (Hard Anonymization)
     // This allows keeping the record for Referencing Integrity (e.g. past payments/listings)
     // while scrubing all Personal Identifiable Information (PII).
-    const randomSuffix = (typeof crypto?.randomUUID === "function"
-      ? crypto.randomUUID().replace(/-/g, "").slice(0, 8)
-      : Math.random().toString(36).substring(2, 10));
+    // Node runtime always has crypto.randomUUID() — no fallback needed.
+    const randomSuffix = crypto.randomUUID().replace(/-/g, "").slice(0, 8);
     const { error: profileError } = await admin
       .from("profiles")
       .update({

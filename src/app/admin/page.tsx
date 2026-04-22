@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { Suspense } from "react";
 import {
   Zap,
@@ -26,23 +25,26 @@ import { Button } from "@/components/ui/button";
 import { AdminHeaderActions } from "@/components/admin/admin-header-actions";
 import { requireAdminUser } from "@/lib/auth/session";
 import { getRecentAdminModerationActions } from "@/services/admin/moderation-actions";
-import { getPersistenceHealth } from "@/services/admin/persistence-health";
-import { getAdminAnalytics } from "@/services/admin/analytics";
+import { getPersistenceHealth, type PersistenceHealth } from "@/services/admin/persistence-health";
+import { getAdminAnalytics, type AdminAnalyticsData } from "@/services/admin/analytics";
 import { getStoredReports } from "@/services/reports/report-submissions";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { features } from "@/lib/features";
 import { cn } from "@/lib/utils";
 import { captureServerError } from "@/lib/monitoring/posthog-server";
+import type { AdminModerationAction, Report } from "@/types";
+
+type AsyncErrorResult = { error: string };
 
 export const dynamic = "force-dynamic";
 
 export default async function AdminOverviewPage() {
   await requireAdminUser();
 
-  const analyticsPromise = getAdminAnalytics("30d").catch((err) => ({ error: "Analitik hatası: " + (err.message || "Veriler yüklenemedi") }));
-  const reportsPromise = getStoredReports().catch((err) => ({ error: "Rapor hatası: " + (err.message || "Raporlar yüklenemedi") }));
-  const recentActionsPromise = getRecentAdminModerationActions(10).catch((err) => ({ error: "Moderasyon hatası: " + (err.message || "Son işlemler yüklenemedi") }));
-  const persistenceHealthPromise = getPersistenceHealth().catch((err) => ({ error: "Persistence hatası: " + (err.message || "Sistem sağlığı kontrolü başarısız") }));
+  const analyticsPromise = getAdminAnalytics("30d").catch((err): AsyncErrorResult => ({ error: "Analitik hatası: " + (err.message || "Veriler yüklenemedi") }));
+  const reportsPromise = getStoredReports().catch((err): AsyncErrorResult => ({ error: "Rapor hatası: " + (err.message || "Raporlar yüklenemedi") }));
+  const recentActionsPromise = getRecentAdminModerationActions(10).catch((err): AsyncErrorResult => ({ error: "Moderasyon hatası: " + (err.message || "Son işlemler yüklenemedi") }));
+  const persistenceHealthPromise = getPersistenceHealth().catch((err): AsyncErrorResult => ({ error: "Persistence hatası: " + (err.message || "Sistem sağlığı kontrolü başarısız") }));
 
   let systemOnline = false;
   try {
@@ -156,7 +158,7 @@ function QuickSystemStat({ icon, label, value, color }: { icon: React.ReactNode,
 async function AdminRevenueBadge({
   analyticsPromise,
 }: {
-  analyticsPromise: Promise<any>;
+  analyticsPromise: Promise<AdminAnalyticsData | null | AsyncErrorResult>;
 }) {
   const analyticsData = await analyticsPromise;
 
@@ -185,8 +187,8 @@ async function AdminMetricsSection({
   analyticsPromise,
   reportsPromise,
 }: {
-  analyticsPromise: Promise<any>;
-  reportsPromise: Promise<any>;
+  analyticsPromise: Promise<AdminAnalyticsData | null | AsyncErrorResult>;
+  reportsPromise: Promise<Report[] | AsyncErrorResult>;
 }) {
   const [analyticsResult, reportsResult] = await Promise.all([analyticsPromise, reportsPromise]);
   
@@ -197,6 +199,9 @@ async function AdminMetricsSection({
   const reportsError = reportsResult && "error" in reportsResult ? reportsResult.error : null;
   
   const actionableReports = storedReports.filter((report) => report.status === "open");
+
+  // Derive pending count from typed listingsByStatus
+  const pendingCount = analyticsData?.listingsByStatus?.find((s) => s.status === "pending")?.count ?? 0;
 
   return (
     <div className="space-y-4">
@@ -213,10 +218,10 @@ async function AdminMetricsSection({
       <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-4">
         <DashboardMetricCard
           label="Bekleyen İlanlar"
-          value={analyticsData ? String(analyticsData.listingsByStatus?.find((s: any) => s.status === "pending")?.count ?? 0) : "—"}
+          value={analyticsData ? String(pendingCount) : "—"}
           helper="Moderasyon kuyruğu"
           icon={Car}
-          tone={ (analyticsData?.listingsByStatus?.find((s: any) => s.status === "pending")?.count ?? 0) > 0 ? "amber" : "blue"}
+          tone={pendingCount > 0 ? "amber" : "blue"}
         />
         <DashboardMetricCard
           label="Aktif Şikayetler"
@@ -251,7 +256,7 @@ async function AdminMetricsSection({
 async function PersistenceOnlySection({
   persistenceHealthPromise,
 }: {
-  persistenceHealthPromise: Promise<any>;
+  persistenceHealthPromise: Promise<PersistenceHealth | AsyncErrorResult>;
 }) {
   const result = await persistenceHealthPromise;
   if (!result) return null;
@@ -276,8 +281,8 @@ async function AdminAnalyticsSection({
   analyticsPromise,
   persistenceHealthPromise,
 }: {
-  analyticsPromise: Promise<any>;
-  persistenceHealthPromise: Promise<any>;
+  analyticsPromise: Promise<AdminAnalyticsData | null | AsyncErrorResult>;
+  persistenceHealthPromise: Promise<PersistenceHealth | AsyncErrorResult>;
 }) {
   const [analyticsResult, persistenceResult] = await Promise.all([analyticsPromise, persistenceHealthPromise]);
 
@@ -329,8 +334,8 @@ async function AdminRecentActionsSection({
   recentActionsPromise,
   reportsPromise,
 }: {
-  recentActionsPromise: Promise<any[] | { error: string }>;
-  reportsPromise: Promise<any[] | { error: string }>;
+  recentActionsPromise: Promise<AdminModerationAction[] | AsyncErrorResult>;
+  reportsPromise: Promise<Report[] | AsyncErrorResult>;
 }) {
   const [recentActionsResult, reportsResult] = await Promise.all([recentActionsPromise, reportsPromise]);
 
@@ -384,7 +389,7 @@ async function AdminRecentActionsSection({
     const targetListing = listingId ? listingsMap[listingId] : null;
 
     return {
-      action: action as any, // AdminRecentActionItem expect slightly different shape sometimes
+      action,
       actorLabel: actor?.full_name || "Sistem",
       targetHref: targetListing?.slug ? `/listing/${targetListing.slug}` : null,
       targetLabel: targetListing?.title || (action.targetType === "report" ? "Raporlanmış İlan" : "Bilinmeyen İlan"),

@@ -20,6 +20,15 @@ interface UploadedFile {
   progress: number;
 }
 
+/**
+ * Generates a collision-resistant client-side ID.
+ * This hook is "use client" — crypto.randomUUID() is always available in modern browsers.
+ * Fail-fast is intentional: if this throws, the environment is fundamentally broken.
+ */
+function createClientId(): string {
+  return crypto.randomUUID();
+}
+
 export function useMediaUpload(bucket: string = "listings") {
   const [files, setFiles] = useState<UploadedFile[]>([]);
   const supabase = createSupabaseBrowserClient();
@@ -30,9 +39,7 @@ export function useMediaUpload(bucket: string = "listings") {
     );
 
     const fileExt = fileObj.file.name.split(".").pop();
-    const randomId = typeof crypto?.randomUUID === "function" 
-      ? crypto.randomUUID() 
-      : Math.random().toString(36).substring(2, 11);
+    const randomId = createClientId();
     const fileName = `${randomId}-${Date.now()}.${fileExt}`;
     const filePath = `temp/${fileName}`;
 
@@ -60,9 +67,7 @@ export function useMediaUpload(bucket: string = "listings") {
 
   const onFilesSelected = useCallback((selectedFiles: FileList | File[]) => {
     const newFiles: UploadedFile[] = Array.from(selectedFiles).map((file) => ({
-      id: typeof crypto?.randomUUID === "function" 
-        ? crypto.randomUUID() 
-        : Math.random().toString(36).substring(2, 11),
+      id: createClientId(),
       file,
       url: "",
       // PILL: Issue 1 - Instant Preview (No Base64 Lock)

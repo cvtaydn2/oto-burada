@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { Listing, ListingCreateInput } from "@/types";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { hasSupabaseAdminEnv } from "@/lib/supabase/env";
@@ -138,8 +137,41 @@ export async function performAsyncModeration(listingId: string) {
       .neq("id", listingId)
       .limit(100);
 
-    // 3. Compute score
-    const assessment = calculateFraudScore(listing as any, (existingListings || []) as any);
+    // 3. Compute score — explicit map to match calculateFraudScore input shape
+    const fraudInput: Parameters<typeof calculateFraudScore>[0] = {
+      title: listing.title,
+      brand: listing.brand,
+      model: listing.model,
+      year: listing.year,
+      mileage: listing.mileage,
+      fuelType: listing.fuelType,
+      transmission: listing.transmission,
+      price: listing.price,
+      city: listing.city,
+      district: listing.district,
+      description: listing.description ?? "",
+      whatsappPhone: listing.whatsappPhone ?? "",
+      vin: listing.vin ?? "",
+      licensePlate: listing.licensePlate ?? undefined,
+      tramerAmount: listing.tramerAmount ?? undefined,
+      damageStatusJson: listing.damageStatusJson ?? undefined,
+      expertInspection: listing.expertInspection,
+      images: listing.images,
+    };
+
+    const comparisonListings = (existingListings ?? []).map((item) => ({
+      id: item.id ?? "",
+      slug: item.slug ?? "",
+      brand: item.brand ?? undefined,
+      model: item.model ?? undefined,
+      year: item.year ?? undefined,
+      mileage: item.mileage ?? undefined,
+      price: item.price ?? undefined,
+      vin: item.vin ?? undefined,
+      status: item.status ?? undefined,
+    }));
+
+    const assessment = calculateFraudScore(fraudInput, comparisonListings);
 
     // 4. Update the record
     await admin

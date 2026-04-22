@@ -1,4 +1,5 @@
-import { google } from "googleapis";
+import { indexing_v3 } from "googleapis";
+import { JWT } from "google-auth-library";
 import { logger } from "@/lib/utils/logger";
 
 /**
@@ -19,17 +20,13 @@ export async function notifyGoogleOfListingChange(
   try {
     const credentials = JSON.parse(credentialsJson);
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const auth = new (google.auth.JWT as any)(
-      credentials.client_email,
-      undefined,
-      credentials.private_key,
-      ["https://www.googleapis.com/auth/indexing"],
-      undefined
-    );
+    const auth = new JWT({
+      email: credentials.client_email,
+      key: credentials.private_key,
+      scopes: ["https://www.googleapis.com/auth/indexing"],
+    });
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const indexing = google.indexing({ version: "v1", auth } as any);
+    const indexing = new indexing_v3.Indexing({ auth });
 
     const res = await indexing.urlNotifications.publish({
       requestBody: { url, type },
