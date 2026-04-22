@@ -3,8 +3,27 @@ import Link from "next/link";
 import dynamic from "next/dynamic";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { AlertCircle } from "lucide-react";
-import { cn } from "@/lib/utils";
+import {
+  AlertCircle,
+  Calendar,
+  CalendarDays,
+  CheckCircle2,
+  ChevronRight,
+  CircleGauge,
+  Eye,
+  Flag,
+  Fuel,
+  Hash,
+  MapPin,
+  Settings2,
+  ShieldCheck,
+  Sparkles,
+  Star,
+  Store,
+  TrendingDown,
+  TrendingUp,
+  Zap,
+} from "lucide-react";
 
 // SEO & Monitoring
 import { ListingDetailStructuredData, BreadcrumbStructuredData } from "@/components/seo/structured-data";
@@ -16,36 +35,43 @@ import {
   getMarketplaceListingBySlug,
   getMarketplaceSeller,
   getStoredListingBySlug,
+  getSimilarMarketplaceListings,
 } from "@/services/listings/marketplace-listings";
 import { getListingCardInsights } from "@/services/listings/listing-card-insights";
-import { breadcrumbs as breadcrumbLabels } from "@/lib/constants/ui-strings";
-
-// Section Components
-import { ListingHero } from "@/components/listings/listing-detail/listing-hero";
-import { ListingGallerySection } from "@/components/listings/listing-detail/listing-gallery-section";
-import { ListingPriceTrust } from "@/components/listings/listing-detail/listing-price-trust";
-import { ListingSpecsSection } from "@/components/listings/listing-detail/listing-specs-section";
-import { ListingReportSection } from "@/components/listings/listing-detail/listing-report-section";
-import { ListingAnalysisSection } from "@/components/listings/listing-detail/listing-analysis-section";
-import { ListingRelated, ListingRelatedSkeleton } from "@/components/listings/listing-detail/listing-related";
-import { ListingSellerSidebar } from "@/components/listings/listing-detail/listing-seller-sidebar";
-import { Panel } from "@/components/shared/design-system/Panel";
-import { ListingViewTracker } from "@/features/marketplace/components/listing-view-tracker";
 import { getListingPriceHistory } from "@/services/listings/listing-price-history";
+import { getSellerRatingSummary } from "@/services/profile/seller-reviews";
+import { getMemberSinceYear, getMembershipYears } from "@/lib/utils/listing-utils";
+import { breadcrumbs as breadcrumbLabels } from "@/lib/constants/ui-strings";
+import { cn, formatNumber, formatPrice } from "@/lib/utils";
+
+// Components
+import { ListingGallery } from "@/components/listings/listing-gallery";
+import { ListingViewTracker } from "@/features/marketplace/components/listing-view-tracker";
+import { ListingCard } from "@/components/shared/listing-card";
+import { FavoriteButton } from "@/components/listings/favorite-button";
+import { ShareButton } from "@/components/listings/share-button";
+import { ExpertInspectionCard } from "@/components/listings/expert-inspection-card";
+import { DamageReportCard } from "@/components/listings/damage-report-card";
 import { ListingPriceHistoryChart } from "@/components/listings/listing-detail/listing-price-history-chart";
+import { features } from "@/lib/features";
+import { CompareButton } from "@/components/listings/compare-button";
 
 const ListingMap = dynamic(
-  () => import("@/components/shared/listing-map-wrapper").then((mod) => mod.ListingMapWrapper),
-  { loading: () => <div className="h-60 animate-pulse rounded-xl bg-muted" /> }
+  () => import("@/components/shared/listing-map-wrapper").then((m) => m.ListingMapWrapper),
+  { loading: () => <div className="h-64 animate-pulse rounded-xl bg-muted" /> }
 );
 
-const ListingDetailActions = dynamic(
-  () => import("@/components/listings/listing-detail-actions").then((mod) => mod.ListingDetailActions),
-  { loading: () => <div className="h-9 w-44 animate-pulse rounded-lg bg-muted" /> }
+const ContactActions = dynamic(
+  () => import("@/components/listings/contact-actions").then((m) => m.ContactActions),
+  { loading: () => <div className="h-12 w-full animate-pulse rounded-xl bg-muted" /> }
 );
 
 const MobileStickyActions = dynamic(
-  () => import("@/components/listings/mobile-sticky-actions").then((mod) => mod.MobileStickyActions)
+  () => import("@/components/listings/mobile-sticky-actions").then((m) => m.MobileStickyActions)
+);
+
+const ReportListingForm = dynamic(
+  () => import("@/components/forms/report-listing-form").then((m) => m.ReportListingForm)
 );
 
 interface ListingDetailPageProps {
@@ -65,53 +91,79 @@ export default async function ListingDetailPage({ params }: ListingDetailPagePro
   const { slug } = await params;
   const listing = await getMarketplaceListingBySlug(slug);
 
+  // ── Not found / inactive ──────────────────────────────────────────────────
   if (!listing) {
     const listingFromDb = await getStoredListingBySlug(slug);
     if (listingFromDb && listingFromDb.status !== "approved") {
       return (
-        <main className="min-h-screen bg-background flex flex-col">
-          <div className="mx-auto max-w-[1400px] px-6 py-10 w-full flex-1">
-            <div className="flex flex-col items-center justify-center min-h-[60vh] text-center">
-              <div className="w-20 h-20 rounded-full bg-amber-100 flex items-center justify-center mb-6">
-                <AlertCircle className="w-10 h-10 text-amber-600" />
-              </div>
-              <h1 className="text-2xl font-bold text-foreground mb-2">İlan Artık Aktif Değil</h1>
-              <p className="text-muted-foreground max-w-md mb-6">
-                Bu ilan satışa kapatılmış veya süresi dolmuş olabilir.
-              </p>
-              <Link 
-                href="/listings" 
-                className="inline-flex items-center justify-center h-12 px-8 rounded-xl bg-primary text-primary-foreground font-bold hover:bg-primary/90 transition"
-              >
-                Diğer İlanları İncele
-              </Link>
-            </div>
+        <main className="flex min-h-[70vh] flex-col items-center justify-center px-4 text-center">
+          <div className="mb-6 flex size-20 items-center justify-center rounded-full bg-amber-100">
+            <AlertCircle className="size-10 text-amber-600" />
           </div>
+          <h1 className="mb-2 text-2xl font-bold text-foreground">İlan Artık Aktif Değil</h1>
+          <p className="mb-8 max-w-md text-muted-foreground">
+            Bu ilan satışa kapatılmış veya süresi dolmuş olabilir.
+          </p>
+          <Link
+            href="/listings"
+            className="inline-flex h-12 items-center justify-center rounded-xl bg-primary px-8 font-bold text-primary-foreground hover:bg-primary/90 transition"
+          >
+            Diğer İlanları İncele
+          </Link>
         </main>
       );
     }
     notFound();
   }
 
-  const [seller, currentUser, priceHistory] = await Promise.all([
+  // ── Data fetching ─────────────────────────────────────────────────────────
+  const [seller, currentUser, priceHistory, similarListings, sellerRating] = await Promise.all([
     getMarketplaceSeller(listing.sellerId),
     getCurrentUser(),
     getListingPriceHistory(listing.id),
+    getSimilarMarketplaceListings(listing.slug, listing.brand, listing.city),
+    getSellerRatingSummary(listing.sellerId),
   ]);
 
   const insight = getListingCardInsights(listing);
-  
+  const isOwner = currentUser?.id === listing.sellerId;
+  const loginUrl = `/login?next=${encodeURIComponent(`/listing/${listing.slug}`)}`;
+
+  // Seller membership
+  const memberSince = getMemberSinceYear(seller?.createdAt ?? null);
+  const membershipYears = getMembershipYears(memberSince);
+  const membershipLabel =
+    membershipYears === null ? null :
+    membershipYears === 0   ? "Yeni Üye" :
+    membershipYears === 1   ? "1 Yıldır Üye" :
+    `${membershipYears} Yıldır Üye`;
+
+  // Market price
+  const marketIndex = listing.marketPriceIndex;
+  const indexPercent = marketIndex != null ? Math.round((marketIndex - 1) * 100) : null;
+  const isOpportunity = indexPercent != null && indexPercent < -5;
+  const isOverpriced  = indexPercent != null && indexPercent > 10;
+
+  // Breadcrumbs
   const pageBreadcrumbs = [
     { name: breadcrumbLabels.home, url: "/" },
     { name: breadcrumbLabels.cars, url: "/listings" },
     { name: listing.brand, url: `/listings?brand=${encodeURIComponent(listing.brand)}` },
-    { name: listing.model, url: `/listing/${listing.slug}` }
+    { name: listing.model, url: `/listing/${listing.slug}` },
   ];
+
+  // Description cleanup
+  const cleanDescription = listing.description
+    .split("\n")
+    .filter((line) => !/^#{1,6}\s*$/.test(line))
+    .map((line) => line.replace(/^#{1,6}\s+/, ""))
+    .join("\n")
+    .trim();
 
   return (
     <>
-      {/* Tracking & SEO */}
-      <ListingViewTracker 
+      {/* ── Tracking & SEO ── */}
+      <ListingViewTracker
         listingId={listing.id}
         listingSlug={listing.slug}
         brand={listing.brand}
@@ -121,120 +173,455 @@ export default async function ListingDetailPage({ params }: ListingDetailPagePro
         year={listing.year}
         status={listing.status}
       />
-      <ListingDetailStructuredData 
-        listing={listing} 
-        url={buildAbsoluteUrl(`/listing/${listing.slug}`)} 
-        sellerName={seller?.businessName ?? seller?.fullName ?? undefined} 
+      <ListingDetailStructuredData
+        listing={listing}
+        url={buildAbsoluteUrl(`/listing/${listing.slug}`)}
+        sellerName={seller?.businessName ?? seller?.fullName ?? undefined}
       />
-      <BreadcrumbStructuredData 
-        items={pageBreadcrumbs.map(b => ({ name: b.name, url: buildAbsoluteUrl(b.url) }))} 
+      <BreadcrumbStructuredData
+        items={pageBreadcrumbs.map((b) => ({ name: b.name, url: buildAbsoluteUrl(b.url) }))}
       />
 
-      <main className="min-h-screen bg-background flex flex-col">
-        <div className="mx-auto max-w-[1400px] px-3 sm:px-4 md:px-6 py-4 sm:py-6 md:py-10 pb-[calc(env(safe-area-inset-bottom)+7rem)] sm:pb-[calc(env(safe-area-inset-bottom)+8rem)] lg:pb-10 w-full flex-1">
-          
-          <div className="mb-4 flex flex-col gap-3 sm:gap-4 md:mb-8 md:gap-6 lg:mb-10 lg:flex-row lg:items-center lg:justify-between">
-            <nav className="flex min-w-0 flex-wrap items-center gap-2 sm:gap-3">
-              {pageBreadcrumbs.map((b, i) => (
-                <div key={b.url} className="flex min-w-0 items-center gap-2 sm:gap-3">
-                  <Link 
-                    href={b.url} 
-                    className={cn(
-                      "max-w-[calc(50vw-2.5rem)] truncate text-[9px] font-bold uppercase tracking-widest transition-all hover:text-primary sm:max-w-[180px] sm:text-[10px] md:max-w-none",
-                      i === pageBreadcrumbs.length - 1 ? "text-foreground" : "text-muted-foreground"
-                    )}
-                  >
-                    {b.name}
-                  </Link>
-                  {i < pageBreadcrumbs.length - 1 && <div className="size-1 rounded-full bg-border" />}
+      <main className="min-h-screen bg-muted/30">
+        <div className="mx-auto max-w-[1400px] px-3 sm:px-4 lg:px-6 py-4 sm:py-6 pb-32 lg:pb-12">
+
+          {/* ── Breadcrumb ── */}
+          <nav
+            aria-label="Breadcrumb"
+            className="mb-4 flex items-center gap-1.5 overflow-x-auto no-scrollbar"
+          >
+            {pageBreadcrumbs.map((b, i) => (
+              <div key={b.url} className="flex shrink-0 items-center gap-1.5">
+                <Link
+                  href={b.url}
+                  className={cn(
+                    "text-[10px] font-bold uppercase tracking-widest transition-colors hover:text-primary",
+                    i === pageBreadcrumbs.length - 1
+                      ? "text-foreground"
+                      : "text-muted-foreground"
+                  )}
+                >
+                  {b.name}
+                </Link>
+                {i < pageBreadcrumbs.length - 1 && (
+                  <ChevronRight size={12} className="text-border" />
+                )}
+              </div>
+            ))}
+          </nav>
+
+          {/* ══════════════════════════════════════════════════════════════════
+              ZONE 1 — HERO: Gallery + Price/Contact (above the fold)
+          ══════════════════════════════════════════════════════════════════ */}
+          <div className="grid grid-cols-1 gap-4 sm:gap-6 lg:grid-cols-[1fr_360px] lg:gap-8 mb-6 sm:mb-8">
+
+            {/* ── Left: Gallery ── */}
+            <div className="space-y-4">
+              <div className="overflow-hidden rounded-2xl border border-border bg-card shadow-sm">
+                <ListingGallery images={listing.images} title={listing.title} />
+              </div>
+
+              {/* Title block — visible on all breakpoints, primary info */}
+              <div className="rounded-2xl border border-border bg-card p-5 sm:p-6">
+                {/* Badges row */}
+                <div className="mb-3 flex flex-wrap items-center gap-2">
+                  <span className="rounded-lg bg-primary/10 px-2.5 py-1 text-[10px] font-bold uppercase tracking-widest text-primary">
+                    {listing.brand}
+                  </span>
+                  <span className="rounded-lg bg-muted px-2.5 py-1 text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
+                    {listing.year} Model
+                  </span>
+                  {listing.featured && (
+                    <span className="flex items-center gap-1 rounded-lg bg-amber-500/10 px-2.5 py-1 text-[10px] font-bold uppercase tracking-widest text-amber-600">
+                      <Sparkles size={10} />
+                      Öne Çıkan
+                    </span>
+                  )}
+                  {listing.expertInspection?.hasInspection && (
+                    <span className="flex items-center gap-1 rounded-lg bg-emerald-500/10 px-2.5 py-1 text-[10px] font-bold uppercase tracking-widest text-emerald-600">
+                      <ShieldCheck size={10} />
+                      Ekspertizli
+                    </span>
+                  )}
+                  {isOpportunity && (
+                    <span className="flex items-center gap-1 rounded-lg bg-emerald-500/10 px-2.5 py-1 text-[10px] font-bold uppercase tracking-widest text-emerald-600">
+                      <TrendingDown size={10} />
+                      Avantajlı Fiyat
+                    </span>
+                  )}
                 </div>
-              ))}
-            </nav>
-            <div className="w-full lg:w-auto">
-              <ListingDetailActions listingId={listing.id} price={listing.price} sellerId={listing.sellerId} title={listing.title} />
+
+                {/* Title */}
+                <h1 className="mb-1 text-2xl font-bold tracking-tight text-foreground sm:text-3xl">
+                  {listing.model}
+                </h1>
+                <p className="mb-4 text-sm text-muted-foreground">{listing.title}</p>
+
+                {/* Meta row */}
+                <div className="flex flex-wrap items-center gap-x-5 gap-y-2 text-xs text-muted-foreground">
+                  <span className="flex items-center gap-1.5">
+                    <MapPin size={13} className="text-primary" />
+                    {listing.city}, {listing.district}
+                  </span>
+                  <span className="flex items-center gap-1.5">
+                    <Calendar size={13} />
+                    {new Date(listing.createdAt).toLocaleDateString("tr-TR")}
+                  </span>
+                  <span className="flex items-center gap-1.5">
+                    <Eye size={13} />
+                    {(listing.viewCount || 0).toLocaleString("tr-TR")} görüntülenme
+                  </span>
+                  <span className="flex items-center gap-1.5 text-muted-foreground/60">
+                    <Hash size={13} />
+                    {listing.id.slice(0, 8).toUpperCase()}
+                  </span>
+                </div>
+
+                {/* Action row */}
+                <div className="mt-4 flex items-center gap-2 border-t border-border/50 pt-4">
+                  <ShareButton
+                    title={listing.title}
+                    price={listing.price}
+                    className="flex h-9 items-center gap-1.5 rounded-lg border border-border bg-muted/30 px-3 text-xs font-bold text-muted-foreground transition hover:bg-muted"
+                  />
+                  {features.compare && (
+                    <CompareButton
+                      listingId={listing.id}
+                      className="flex h-9 items-center gap-1.5 rounded-lg border border-border bg-muted/30 px-3 text-xs font-bold text-muted-foreground transition hover:bg-muted"
+                    />
+                  )}
+                  <FavoriteButton
+                    listingId={listing.id}
+                    className="size-9 rounded-lg border border-border bg-muted/30 text-muted-foreground hover:bg-red-50 hover:text-red-500 hover:border-red-200 transition"
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* ── Right: Price + Contact (sticky on desktop) ── */}
+            <div className="space-y-4 lg:sticky lg:top-24 lg:self-start">
+
+              {/* Price Card */}
+              <div className="rounded-2xl border border-border bg-card p-6 shadow-sm">
+                <div className="mb-1 text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
+                  Satış Fiyatı
+                </div>
+                <div className="mb-4 flex items-baseline gap-2">
+                  <span className="text-4xl font-bold tracking-tight text-foreground">
+                    {formatPrice(listing.price)}
+                  </span>
+                  <span className="text-xl font-medium text-muted-foreground/60">TL</span>
+                </div>
+
+                {/* Market index pill */}
+                {indexPercent != null && (
+                  <div className={cn(
+                    "mb-4 flex items-center gap-3 rounded-xl border p-3",
+                    isOpportunity ? "border-emerald-200 bg-emerald-50" :
+                    isOverpriced  ? "border-amber-200 bg-amber-50" :
+                    "border-border bg-muted/30"
+                  )}>
+                    <div className={cn(
+                      "flex size-9 shrink-0 items-center justify-center rounded-lg font-bold text-xs",
+                      isOpportunity ? "bg-emerald-500 text-white" :
+                      isOverpriced  ? "bg-amber-500 text-white" :
+                      "bg-primary/10 text-primary"
+                    )}>
+                      {indexPercent > 0 ? `+${indexPercent}%` : `${indexPercent}%`}
+                    </div>
+                    <div>
+                      <div className={cn(
+                        "text-[10px] font-bold uppercase tracking-widest",
+                        isOpportunity ? "text-emerald-700" :
+                        isOverpriced  ? "text-amber-700" :
+                        "text-muted-foreground"
+                      )}>
+                        {isOpportunity ? "Piyasa Altı Fiyat" : isOverpriced ? "Piyasa Üstü" : "Piyasa Değeri"}
+                      </div>
+                      <div className={cn(
+                        "text-xs font-medium",
+                        isOpportunity ? "text-emerald-600" :
+                        isOverpriced  ? "text-amber-600" :
+                        "text-muted-foreground"
+                      )}>
+                        {insight.summary}
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Contact Actions */}
+                {!isOwner ? (
+                  <Suspense fallback={<div className="h-32 animate-pulse rounded-xl bg-muted" />}>
+                    <ContactActions
+                      listingId={listing.id}
+                      listingSlug={listing.slug}
+                      sellerId={listing.sellerId}
+                      seller={seller}
+                      currentUserId={currentUser?.id}
+                    />
+                  </Suspense>
+                ) : (
+                  <div className="rounded-xl border border-border bg-muted/30 p-4 text-center text-sm font-medium text-muted-foreground">
+                    Bu sizin ilanınız
+                  </div>
+                )}
+              </div>
+
+              {/* Seller Card */}
+              <div className="rounded-2xl border border-border bg-card p-5">
+                <div className="mb-4 flex items-center gap-3">
+                  <div className="flex size-12 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-xl font-bold text-primary">
+                    {(seller?.businessName || seller?.fullName || "?")[0]}
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <div className="truncate text-sm font-bold text-foreground">
+                      {seller?.businessName || seller?.fullName || "Satıcı"}
+                    </div>
+                    <div className="mt-0.5 flex items-center gap-2">
+                      <span className="rounded-md bg-muted px-2 py-0.5 text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
+                        {seller?.userType === "professional" ? "Galeri" : "Bireysel"}
+                      </span>
+                      {membershipLabel && (
+                        <span className="text-[10px] text-muted-foreground">{membershipLabel}</span>
+                      )}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Rating */}
+                {sellerRating.count > 0 && (
+                  <div className="mb-4 flex items-center gap-2 rounded-xl bg-muted/30 px-3 py-2">
+                    <Star size={14} className="fill-amber-400 text-amber-400" />
+                    <span className="text-sm font-bold text-foreground">
+                      {sellerRating.average.toFixed(1)}
+                    </span>
+                    <span className="text-xs text-muted-foreground">
+                      ({sellerRating.count} değerlendirme)
+                    </span>
+                  </div>
+                )}
+
+                {/* Trust signals */}
+                <div className="space-y-2 text-xs">
+                  <div className="flex items-center gap-2 text-muted-foreground">
+                    <CheckCircle2 size={13} className={seller?.isVerified ? "text-emerald-500" : "text-muted-foreground/40"} />
+                    <span>{seller?.isVerified ? "Doğrulanmış Satıcı" : "Doğrulama Yok"}</span>
+                  </div>
+                  {memberSince && (
+                    <div className="flex items-center gap-2 text-muted-foreground">
+                      <Store size={13} className="text-primary" />
+                      <span>{memberSince}&apos;den beri üye</span>
+                    </div>
+                  )}
+                </div>
+
+                {seller?.businessSlug && (
+                  <Link
+                    href={`/gallery/${seller.businessSlug}`}
+                    className="mt-4 flex h-9 w-full items-center justify-center gap-2 rounded-xl bg-muted text-xs font-bold text-foreground transition hover:bg-muted/80"
+                  >
+                    Tüm İlanları Gör
+                    <ChevronRight size={14} />
+                  </Link>
+                )}
+              </div>
+
+              {/* Safety Notice */}
+              <div className="rounded-2xl border border-amber-200 bg-amber-50 p-4">
+                <div className="mb-2 text-[10px] font-bold uppercase tracking-widest text-amber-700">
+                  Güvenli Alışveriş
+                </div>
+                <ul className="space-y-1.5 text-xs text-amber-800">
+                  <li className="flex items-start gap-2">
+                    <span className="mt-0.5 shrink-0">•</span>
+                    Aracı görmeden kapora göndermeyin
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="mt-0.5 shrink-0">•</span>
+                    Ödemeyi noter huzurunda yapın
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="mt-0.5 shrink-0">•</span>
+                    Ekspertiz raporu isteyin
+                  </li>
+                </ul>
+              </div>
             </div>
           </div>
 
-          <div className="flex flex-col items-start gap-6 sm:gap-8 md:gap-10 lg:flex-row lg:gap-12">
-            <div className="w-full min-w-0 flex-1 space-y-4 sm:space-y-6 md:space-y-8 lg:space-y-10">
-              <ListingGallerySection listing={listing} />
-              <ListingHero listing={listing} insight={insight} />
-              <ListingPriceTrust listing={listing} seller={seller} insight={insight} />
-              <ListingSpecsSection listing={listing} />
-              <ListingReportSection listing={listing} />
-              
-              <Suspense fallback={<div className="h-64 w-full animate-pulse rounded-3xl bg-muted" />}>
-                <ListingAnalysisSection listing={listing} insight={insight} />
-              </Suspense>
+          {/* ══════════════════════════════════════════════════════════════════
+              ZONE 2 — SPECS: 4-column quick facts
+          ══════════════════════════════════════════════════════════════════ */}
+          <div className="mb-6 sm:mb-8 grid grid-cols-2 gap-3 sm:grid-cols-4 sm:gap-4">
+            {[
+              { icon: CalendarDays, label: "Model Yılı", value: String(listing.year) },
+              { icon: CircleGauge, label: "Kilometre", value: `${formatNumber(listing.mileage)} km` },
+              { icon: Fuel, label: "Yakıt", value: listing.fuelType },
+              { icon: Settings2, label: "Vites", value: listing.transmission },
+            ].map(({ icon: Icon, label, value }) => (
+              <div
+                key={label}
+                className="flex flex-col items-center justify-center rounded-2xl border border-border bg-card p-4 text-center shadow-sm"
+              >
+                <div className="mb-2 flex size-10 items-center justify-center rounded-xl bg-muted text-muted-foreground">
+                  <Icon size={18} />
+                </div>
+                <div className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
+                  {label}
+                </div>
+                <div className="mt-1 text-sm font-bold text-foreground">{value}</div>
+              </div>
+            ))}
+          </div>
 
-              {priceHistory.length >= 2 && (
-                <Suspense fallback={<div className="h-[400px] w-full animate-pulse rounded-3xl bg-muted" />}>
+          {/* ══════════════════════════════════════════════════════════════════
+              ZONE 3 — CONTENT: Description, Inspection, Damage, Analysis, Map
+          ══════════════════════════════════════════════════════════════════ */}
+          <div className="space-y-6">
+
+            {/* Description */}
+            {cleanDescription && (
+              <section
+                id="aciklama"
+                className="scroll-mt-24 rounded-2xl border border-border bg-card p-6"
+              >
+                <h2 className="mb-4 text-lg font-bold text-foreground">İlan Açıklaması</h2>
+                <p className="text-sm leading-relaxed text-muted-foreground whitespace-pre-wrap">
+                  {cleanDescription}
+                </p>
+              </section>
+            )}
+
+            {/* Expert Inspection */}
+            <section
+              id="ekspertiz"
+              className="scroll-mt-24 rounded-2xl border border-border bg-card p-6"
+            >
+              <div className="mb-6 flex items-center justify-between gap-4">
+                <div className="flex items-center gap-3">
+                  <div className="flex size-10 items-center justify-center rounded-xl bg-primary/10 text-primary">
+                    <ShieldCheck size={20} />
+                  </div>
+                  <h2 className="text-lg font-bold text-foreground">Ekspertiz Raporu</h2>
+                </div>
+                {listing.expertInspection?.documentUrl && (
+                  <a
+                    href={listing.expertInspection.documentUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-2 rounded-xl bg-primary px-4 py-2 text-[10px] font-bold uppercase tracking-widest text-primary-foreground transition hover:opacity-90"
+                  >
+                    PDF Raporu
+                  </a>
+                )}
+              </div>
+              <ExpertInspectionCard expertInspection={listing.expertInspection} />
+            </section>
+
+            {/* Damage Report */}
+            <section
+              id="hasar"
+              className="scroll-mt-24 rounded-2xl border border-border bg-card p-6"
+            >
+              <div className="mb-6 flex items-center gap-3">
+                <div className="flex size-10 items-center justify-center rounded-xl bg-primary/10 text-primary">
+                  <Zap size={20} />
+                </div>
+                <h2 className="text-lg font-bold text-foreground">Kaporta & Boya Durumu</h2>
+              </div>
+              <DamageReportCard
+                damageStatus={listing.damageStatusJson}
+                tramerAmount={listing.tramerAmount}
+              />
+            </section>
+
+            {/* Price History Chart */}
+            {priceHistory.length >= 2 && (
+              <section id="fiyat" className="scroll-mt-24">
+                <Suspense fallback={<div className="h-64 animate-pulse rounded-2xl bg-muted" />}>
                   <ListingPriceHistoryChart history={priceHistory} />
                 </Suspense>
-              )}
+              </section>
+            )}
 
-              <Panel padding="xl">
-                <h2 className="mb-6 text-xl font-bold text-foreground tracking-tight">İlan Hakkında</h2>
-                <div className="prose prose-neutral max-w-none">
-                  <p className="text-base leading-loose text-foreground/80 font-medium whitespace-pre-wrap">{listing.description}</p>
-                </div>
-              </Panel>
-
-              <Suspense fallback={<div className="h-80 w-full animate-pulse rounded-3xl bg-muted" />}>
-                <Panel padding="xl">
-                  <h2 className="mb-8 flex items-center gap-4 text-xl font-bold text-foreground tracking-tight">
-                    <div className="size-12 rounded-2xl bg-primary/10 text-primary flex items-center justify-center">
-                      <ChevronRight size={24} className="rotate-90" />
-                    </div>
-                    Konum
-                  </h2>
-                  <div className="rounded-2xl overflow-hidden border border-border/40">
-                     <ListingMap city={listing.city} district={listing.district} className="h-80" />
+            {/* Map */}
+            <section
+              id="konum"
+              className="scroll-mt-24 overflow-hidden rounded-2xl border border-border bg-card"
+            >
+              <div className="border-b border-border p-5">
+                <div className="flex items-center gap-3">
+                  <div className="flex size-10 items-center justify-center rounded-xl bg-primary/10 text-primary">
+                    <MapPin size={20} />
                   </div>
-                </Panel>
+                  <div>
+                    <h2 className="text-lg font-bold text-foreground">Konum</h2>
+                    <p className="text-xs text-muted-foreground">
+                      {listing.city}, {listing.district}
+                    </p>
+                  </div>
+                </div>
+              </div>
+              <Suspense fallback={<div className="h-64 animate-pulse bg-muted" />}>
+                <ListingMap
+                  city={listing.city}
+                  district={listing.district}
+                  className="h-64"
+                />
               </Suspense>
+            </section>
 
-              <Suspense fallback={<ListingRelatedSkeleton />}>
-                <ListingRelated brand={listing.brand} slug={listing.slug} city={listing.city} />
+            {/* Report Listing */}
+            <section className="rounded-2xl border border-border bg-card p-6">
+              <div className="mb-4 flex items-center gap-3">
+                <div className="flex size-10 items-center justify-center rounded-xl bg-rose-500/10 text-rose-500">
+                  <Flag size={20} />
+                </div>
+                <h2 className="text-lg font-bold text-foreground">İlanı Bildir</h2>
+              </div>
+              <Suspense fallback={<div className="h-24 animate-pulse rounded-xl bg-muted" />}>
+                <ReportListingForm
+                  listingId={listing.id}
+                  sellerId={listing.sellerId}
+                  userId={currentUser?.id}
+                />
               </Suspense>
-            </div>
+            </section>
 
-            <Suspense fallback={<div className="h-[600px] w-full animate-pulse rounded-3xl bg-muted lg:w-[380px]" />}>
-              <ListingSellerSidebar 
-                listing={listing} 
-                seller={seller} 
-                currentUser={currentUser} 
-              />
-            </Suspense>
+            {/* Similar Listings */}
+            {similarListings.length > 0 && (
+              <section className="rounded-2xl border border-border bg-card p-6">
+                <div className="mb-6 flex items-center justify-between">
+                  <h2 className="text-lg font-bold text-foreground">Benzer İlanlar</h2>
+                  <Link
+                    href={`/listings?brand=${encodeURIComponent(listing.brand)}`}
+                    className="flex items-center gap-1 text-xs font-bold text-primary hover:underline"
+                  >
+                    Tümünü Gör
+                    <ChevronRight size={14} />
+                  </Link>
+                </div>
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                  {similarListings.map((l) => (
+                    <ListingCard key={l.id} listing={l} />
+                  ))}
+                </div>
+              </section>
+            )}
           </div>
         </div>
       </main>
 
-      <MobileStickyActions 
-        listingId={listing.id} 
-        listingSlug={listing.slug} 
-        sellerId={listing.sellerId} 
+      {/* Mobile sticky CTA */}
+      <MobileStickyActions
+        listingId={listing.id}
+        listingSlug={listing.slug}
+        sellerId={listing.sellerId}
         seller={seller}
-        price={listing.price} 
-        currentUserId={currentUser?.id ?? null} 
+        price={listing.price}
+        currentUserId={currentUser?.id ?? null}
       />
     </>
   );
 }
-
-const ChevronRight = ({ size, className }: { size: number; className?: string }) => (
-  <svg 
-    xmlns="http://www.w3.org/2000/svg" 
-    width={size} 
-    height={size} 
-    viewBox="0 0 24 24" 
-    fill="none" 
-    stroke="currentColor" 
-    strokeWidth="2" 
-    strokeLinecap="round" 
-    strokeLinejoin="round" 
-    className={className}
-  >
-    <path d="m9 18 6-6-6-6"/>
-  </svg>
-);
