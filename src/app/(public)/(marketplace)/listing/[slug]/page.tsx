@@ -28,10 +28,11 @@ import { CompareButton } from "@/components/listings/compare-button";
 import { DamageReportCard } from "@/components/listings/damage-report-card";
 import { ExpertInspectionCard } from "@/components/listings/expert-inspection-card";
 import { FavoriteButton } from "@/components/listings/favorite-button";
-import { ListingPriceHistoryChart } from "@/components/listings/listing-detail/listing-price-history-chart";
 // Components
 import { ListingGallery } from "@/components/listings/listing-gallery";
 import { ShareButton } from "@/components/listings/share-button";
+import { MarketValuationBadge } from "@/components/market/market-valuation-badge";
+import { PriceHistoryChart } from "@/components/market/price-history-chart";
 // SEO & Monitoring
 import {
   BreadcrumbStructuredData,
@@ -46,8 +47,10 @@ import { buildAbsoluteUrl, buildListingDetailMetadata } from "@/lib/seo";
 import { cn, formatNumber, formatPrice } from "@/lib/utils";
 import { getMembershipYears, getMemberSinceYear } from "@/lib/utils/listing-utils";
 import { getListingCardInsights } from "@/services/listings/listing-card-insights";
-import { getListingPriceHistory } from "@/services/listings/listing-price-history";
-// Services
+import {
+  getListingPriceHistory,
+  getMarketValuation,
+} from "@/services/listings/listing-price-history";
 import {
   getMarketplaceListingBySlug,
   getMarketplaceSeller,
@@ -117,13 +120,20 @@ export default async function ListingDetailPage({ params }: ListingDetailPagePro
   }
 
   // ── Data fetching ─────────────────────────────────────────────────────────
-  const [seller, currentUser, priceHistory, similarListings, sellerRating] = await Promise.all([
-    getMarketplaceSeller(listing.sellerId),
-    getCurrentUser(),
-    getListingPriceHistory(listing.id),
-    getSimilarMarketplaceListings(listing.slug, listing.brand, listing.city),
-    getSellerRatingSummary(listing.sellerId),
-  ]);
+  const [seller, currentUser, priceHistory, similarListings, sellerRating, marketValuation] =
+    await Promise.all([
+      getMarketplaceSeller(listing.sellerId),
+      getCurrentUser(),
+      getListingPriceHistory(listing.id),
+      getSimilarMarketplaceListings(listing.slug, listing.brand, listing.city),
+      getSellerRatingSummary(listing.sellerId),
+      getMarketValuation({
+        price: listing.price,
+        brand: listing.brand,
+        model: listing.model,
+        year: listing.year,
+      }),
+    ]);
 
   const insight = getListingCardInsights(listing);
   const isOwner = currentUser?.id === listing.sellerId;
@@ -140,12 +150,6 @@ export default async function ListingDetailPage({ params }: ListingDetailPagePro
         : membershipYears === 1
           ? "1 Yıldır Üye"
           : `${membershipYears} Yıldır Üye`;
-
-  // Market price
-  const marketIndex = listing.marketPriceIndex;
-  const indexPercent = marketIndex != null ? Math.round((marketIndex - 1) * 100) : null;
-  const isOpportunity = indexPercent != null && indexPercent < -5;
-  const isOverpriced = indexPercent != null && indexPercent > 10;
 
   // Breadcrumbs
   const pageBreadcrumbs = [
@@ -242,7 +246,7 @@ export default async function ListingDetailPage({ params }: ListingDetailPagePro
                       Ekspertizli
                     </span>
                   )}
-                  {isOpportunity && (
+                  {marketValuation.status === "good" && (
                     <span className="flex items-center gap-1 rounded-lg bg-emerald-500/10 px-2.5 py-1 text-[10px] font-bold uppercase tracking-widest text-emerald-600">
                       <TrendingDown size={10} />
                       Avantajlı Fiyat
@@ -311,62 +315,12 @@ export default async function ListingDetailPage({ params }: ListingDetailPagePro
                   <span className="text-xl font-medium text-muted-foreground/60">TL</span>
                 </div>
 
-                {/* Market index pill */}
-                {indexPercent != null && (
-                  <div
-                    className={cn(
-                      "mb-4 flex items-center gap-3 rounded-xl border p-3",
-                      isOpportunity
-                        ? "border-emerald-200 bg-emerald-50"
-                        : isOverpriced
-                          ? "border-amber-200 bg-amber-50"
-                          : "border-border bg-muted/30"
-                    )}
-                  >
-                    <div
-                      className={cn(
-                        "flex size-9 shrink-0 items-center justify-center rounded-lg font-bold text-xs",
-                        isOpportunity
-                          ? "bg-emerald-500 text-white"
-                          : isOverpriced
-                            ? "bg-amber-500 text-white"
-                            : "bg-primary/10 text-primary"
-                      )}
-                    >
-                      {indexPercent > 0 ? `+${indexPercent}%` : `${indexPercent}%`}
-                    </div>
-                    <div>
-                      <div
-                        className={cn(
-                          "text-[10px] font-bold uppercase tracking-widest",
-                          isOpportunity
-                            ? "text-emerald-700"
-                            : isOverpriced
-                              ? "text-amber-700"
-                              : "text-muted-foreground"
-                        )}
-                      >
-                        {isOpportunity
-                          ? "Piyasa Altı Fiyat"
-                          : isOverpriced
-                            ? "Piyasa Üstü"
-                            : "Piyasa Değeri"}
-                      </div>
-                      <div
-                        className={cn(
-                          "text-xs font-medium",
-                          isOpportunity
-                            ? "text-emerald-600"
-                            : isOverpriced
-                              ? "text-amber-600"
-                              : "text-muted-foreground"
-                        )}
-                      >
-                        {insight.summary}
-                      </div>
-                    </div>
-                  </div>
-                )}
+                {/* Market valuation badge */}
+                <MarketValuationBadge
+                  status={marketValuation.status}
+                  diff={marketValuation.diff}
+                  className="mb-6"
+                />
 
                 {/* Contact Actions */}
                 {!isOwner ? (
@@ -563,13 +517,54 @@ export default async function ListingDetailPage({ params }: ListingDetailPagePro
             </section>
 
             {/* Price History Chart */}
-            {priceHistory.length >= 2 && (
-              <section id="fiyat" className="scroll-mt-24">
-                <Suspense fallback={<div className="h-64 animate-pulse rounded-2xl bg-muted" />}>
-                  <ListingPriceHistoryChart history={priceHistory} />
-                </Suspense>
-              </section>
-            )}
+            <section
+              id="fiyat"
+              className="scroll-mt-24 rounded-2xl border border-border bg-card p-6"
+            >
+              <div className="mb-6 flex items-center gap-3">
+                <div className="flex size-10 items-center justify-center rounded-xl bg-primary/10 text-primary">
+                  <TrendingDown size={20} />
+                </div>
+                <div>
+                  <h2 className="text-lg font-bold text-foreground">Piyasa Analizi</h2>
+                  <p className="text-xs text-muted-foreground">
+                    İlanın fiyat geçmişi ve piyasa karşılaştırması
+                  </p>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-[1fr_300px] gap-6">
+                <PriceHistoryChart listingId={listing.id} currentPrice={listing.price} />
+
+                <div className="space-y-4">
+                  <div className="rounded-xl bg-muted/30 p-4">
+                    <div className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-1">
+                      Piyasa Ortalaması
+                    </div>
+                    <div className="text-lg font-bold">
+                      {marketValuation.avgPrice
+                        ? formatPrice(marketValuation.avgPrice)
+                        : "Veri Yok"}
+                    </div>
+                    <div className="text-[11px] text-muted-foreground mt-1">
+                      {marketValuation.listingCount
+                        ? `${marketValuation.listingCount} benzer ilan baz alındı`
+                        : "Benzer ilan bulunamadı"}
+                    </div>
+                  </div>
+
+                  <div className="rounded-xl bg-muted/30 p-4">
+                    <div className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-1">
+                      Fiyat Durumu
+                    </div>
+                    <MarketValuationBadge
+                      status={marketValuation.status}
+                      diff={marketValuation.diff}
+                    />
+                  </div>
+                </div>
+              </div>
+            </section>
 
             {/* Map */}
             <section

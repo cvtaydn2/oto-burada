@@ -22,6 +22,8 @@ export interface PaymentRequest {
   listingId: string;
   userId: string;
   buyer?: BuyerInfo;
+  conversationId?: string;
+  callbackUrl?: string;
 }
 
 export interface PaymentResponse {

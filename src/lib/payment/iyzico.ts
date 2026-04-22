@@ -59,14 +59,14 @@ export class IyzicoProvider implements PaymentProvider {
 
     return new Promise((resolve) => {
       const data = {
-        locale: "tr",
-        conversationId: request.orderId,
+        locale: "TR",
+        conversationId: request.conversationId,
         price: Number(request.amount).toFixed(2),
         paidPrice: Number(request.amount).toFixed(2),
         currency: "TRY",
         basketId: request.listingId,
         paymentGroup: "PRODUCT",
-        callbackUrl,
+        callbackUrl: request.callbackUrl,
         enabledInstallments: [1, 2, 3, 6, 9],
         buyer: {
           id: buyer.id,
@@ -108,9 +108,8 @@ export class IyzicoProvider implements PaymentProvider {
         ],
       };
 
-      // @ts-expect-error - iyzipay types are incorrectly requiring paymentCard for checkoutFormInitialize
       this.iyzipay?.checkoutFormInitialize.create(
-        data,
+        data as unknown as Parameters<typeof this.iyzipay.checkoutFormInitialize.create>[0],
         (
           err: Error | null,
           result: {

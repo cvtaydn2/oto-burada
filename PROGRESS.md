@@ -1,3 +1,16 @@
+# 2026-04-22 — Marketplace Intelligence: Price History & Market Analysis
+
+## [2026-04-22] - Price History & Market Analysis
+- **Durum:** ✅ TAMAMLANDI
+- **Yapılanlar:**
+  - `listing_price_history` altyapısı aktifleştirildi.
+  - Merkezi `getMarketValuation` servisi ile piyasa karşılaştırma algoritması kuruldu.
+  - Recharts tabanlı `PriceHistoryChart` bileşeni eklendi.
+  - İlan detay sayfasına kapsamlı **Piyasa Analizi** (Market Analysis) bölümü entegre edildi.
+  - "Fırsat Fiyat" (Opportunity) etiketleri gerçek verilere bağlandı.
+
+---
+
 # 2026-04-22 — SOLID & Clean Code Architectural Refactor
 
 ## [2026-04-22] - Backend & Architecture Hardening

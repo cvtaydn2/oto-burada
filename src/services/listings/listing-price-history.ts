@@ -74,3 +74,44 @@ export async function getPriceChangeSummary(listingId: string): Promise<{
     direction: changeAmount > 0 ? "up" : changeAmount < 0 ? "down" : "stable",
   };
 }
+
+/**
+ * Compares a listing's current price against the market average.
+ * Returns a score and a recommendation label.
+ */
+export async function getMarketValuation(params: {
+  price: number;
+  brand: string;
+  model: string;
+  year: number;
+}) {
+  if (!hasSupabaseAdminEnv()) return { status: "unknown" as const, diff: 0 };
+  const admin = createSupabaseAdminClient();
+
+  const { data: stats } = await admin
+    .from("market_stats")
+    .select("avg_price, listing_count")
+    .eq("brand", params.brand)
+    .eq("model", params.model)
+    .eq("year", params.year)
+    .is("car_trim", null)
+    .maybeSingle();
+
+  if (!stats || !stats.avg_price) {
+    return { status: "unknown" as const, diff: 0 };
+  }
+
+  const avgPrice = Number(stats.avg_price);
+  const diffPercent = ((params.price - avgPrice) / avgPrice) * 100;
+
+  let status: "good" | "fair" | "high" = "fair";
+  if (diffPercent < -5) status = "good";
+  if (diffPercent > 5) status = "high";
+
+  return {
+    status,
+    diff: Math.abs(Math.round(diffPercent)),
+    avgPrice,
+    listingCount: stats.listing_count,
+  };
+}
