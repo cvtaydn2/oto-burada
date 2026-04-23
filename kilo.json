@@ -1,8 +1,10 @@
 {
-  "mcpServers": {
+  "$schema": "https://app.kilo.ai/config.json",
+  "mcp": {
     "supabase": {
-      "type": "http",
-      "url": "https://mcp.supabase.com/mcp?project_ref=yagcxhrhtfhwaxzhyrkj"
+      "type": "remote",
+      "url": "https://mcp.supabase.com/mcp?project_ref=yagcxhrhtfhwaxzhyrkj",
+      "enabled": true
     }
   }
 }

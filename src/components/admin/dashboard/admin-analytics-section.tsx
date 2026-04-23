@@ -2,7 +2,7 @@ import { Zap } from "lucide-react";
 
 import { AdminAnalyticsPanel } from "@/components/admin/admin-analytics-panel";
 import { AdminErrorDisplay } from "@/components/admin/admin-error-display";
-import { AdminPersistencePanel } from "@/components/shared/admin-persistence-panel";
+import { AdminPersistencePanel } from "@/components/admin/admin-persistence-panel";
 import { Button } from "@/components/ui/button";
 import type { AdminAnalyticsData } from "@/services/admin/analytics";
 import type { PersistenceHealth } from "@/services/admin/persistence-health";

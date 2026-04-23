@@ -131,3 +131,35 @@ export async function withCache<T>(
 
   return result;
 }
+
+/**
+ * Next.js ISR-aware cache wrapper.
+ *
+ * Uses `unstable_cache` in Next.js server runtime for ISR revalidation support.
+ * Falls back to a plain function call in test environments, browser, or when
+ * NEXT_RUNTIME is not set (e.g. local scripts).
+ *
+ * @param keyParts  - Cache key segments (used by Next.js for invalidation)
+ * @param loader    - Async function that fetches the data
+ * @param revalidate - Revalidation interval in seconds (default: 60)
+ */
+export async function withNextCache<T>(
+  keyParts: string[],
+  loader: () => Promise<T>,
+  revalidate = 60
+): Promise<T> {
+  if (
+    process.env.NODE_ENV === "test" ||
+    typeof window !== "undefined" ||
+    !process.env.NEXT_RUNTIME
+  ) {
+    return loader();
+  }
+
+  try {
+    const { unstable_cache } = await import("next/cache");
+    return unstable_cache(loader, keyParts, { revalidate })();
+  } catch {
+    return loader();
+  }
+}

@@ -8,6 +8,7 @@ import {
 } from "lucide-react";
 import { Suspense } from "react";
 
+import { AdminBroadcastPanel } from "@/components/admin/admin-broadcast-panel";
 import { AdminHeaderActions } from "@/components/admin/admin-header-actions";
 import {
   AdminAnalyticsSection,
@@ -23,7 +24,6 @@ import {
 } from "@/components/admin/dashboard/admin-recent-actions-section";
 // Dashboard Components
 import { QuickSystemStat } from "@/components/admin/dashboard/quick-system-stat";
-import { AdminBroadcastPanel } from "@/components/shared/admin-broadcast-panel";
 import { requireAdminUser } from "@/lib/auth/session";
 import { features } from "@/lib/features";
 import { captureServerError } from "@/lib/monitoring/posthog-server";

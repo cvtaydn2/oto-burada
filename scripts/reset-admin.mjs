@@ -1,6 +1,6 @@
 import { createClient } from "@supabase/supabase-js";
 
-import { loadLocalEnv } from "../../../scripts/load-local-env.mjs";
+import { loadLocalEnv } from "./load-local-env.mjs";
 
 // Load environment variables from .env.local or .env
 loadLocalEnv();

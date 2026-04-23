@@ -29,7 +29,7 @@ export function AdminBroadcastPanel() {
 
       if (!response.ok || !payload || !payload.success) {
         setStatus("error");
-        setErrorMsg(payload?.error?.message || "Duyuru gönderilemedi.");
+        setErrorMsg(payload?.error?.message || "Duyuru g├Ânderilemedi.");
         return;
       }
 
@@ -38,7 +38,7 @@ export function AdminBroadcastPanel() {
       setMessage("");
     } catch {
       setStatus("error");
-      setErrorMsg("Bağlantı hatası oluştu.");
+      setErrorMsg("Ba─şlant─▒ hatas─▒ olu┼ştu.");
     } finally {
       setIsSending(false);
     }
@@ -51,9 +51,9 @@ export function AdminBroadcastPanel() {
           <Megaphone size={24} />
         </div>
         <div>
-          <h2 className="text-xl font-bold text-foreground">Sistem Duyurusu Gönder</h2>
+          <h2 className="text-xl font-bold text-foreground">Sistem Duyurusu G├Ânder</h2>
           <p className="text-sm text-muted-foreground">
-            Tüm kullanıcılara anlık bildirim gönderir.
+            T├╝m kullan─▒c─▒lara anl─▒k bildirim g├Ânderir.
           </p>
         </div>
       </div>
@@ -61,14 +61,14 @@ export function AdminBroadcastPanel() {
       <form onSubmit={handleBroadcast} className="space-y-4">
         <div>
           <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-1.5 block">
-            Duyuru Başlığı
+            Duyuru Ba┼şl─▒─ş─▒
           </label>
           <input
             type="text"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
             disabled={isSending}
-            placeholder="Örn: Hafta Sonu Bakım Çalışması"
+            placeholder="├ûrn: Hafta Sonu Bak─▒m ├çal─▒┼şmas─▒"
             className="w-full rounded-xl border border-border bg-background px-4 py-2.5 text-sm outline-none focus:border-indigo-500 transition-colors"
             required
           />
@@ -76,13 +76,13 @@ export function AdminBroadcastPanel() {
 
         <div>
           <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-1.5 block">
-            Mesaj İçeriği
+            Mesaj ─░├ğeri─şi
           </label>
           <textarea
             value={message}
             onChange={(e) => setMessage(e.target.value)}
             disabled={isSending}
-            placeholder="Duyuru detaylarını buraya yazın..."
+            placeholder="Duyuru detaylar─▒n─▒ buraya yaz─▒n..."
             rows={4}
             className="w-full rounded-xl border border-border bg-background px-4 py-2.5 text-sm outline-none focus:border-indigo-500 transition-colors"
             required
@@ -92,7 +92,7 @@ export function AdminBroadcastPanel() {
         {status === "success" && (
           <div className="p-4 bg-emerald-50 border border-emerald-100 rounded-xl flex items-center gap-2 text-emerald-700 text-sm font-medium">
             <CheckCircle2 size={18} />
-            Duyuru tüm kullanıcılara başarıyla iletildi.
+            Duyuru t├╝m kullan─▒c─▒lara ba┼şar─▒yla iletildi.
           </div>
         )}
 
@@ -111,12 +111,12 @@ export function AdminBroadcastPanel() {
           {isSending ? (
             <>
               <LoaderCircle className="size-5 animate-spin" />
-              Gönderiliyor...
+              G├Ânderiliyor...
             </>
           ) : (
             <>
               <Megaphone size={18} />
-              Şimdi Yayınla
+              ┼Şimdi Yay─▒nla
             </>
           )}
         </button>

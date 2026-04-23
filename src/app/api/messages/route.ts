@@ -1,8 +1,8 @@
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { API_ERROR_CODES, apiError, apiSuccess } from "@/lib/utils/api-response";
 import { withAuthAndCsrf } from "@/lib/utils/api-security";
+import { sanitizeChatMessage } from "@/lib/utils/chat-sanitization";
 import { rateLimitProfiles } from "@/lib/utils/rate-limit";
-import { sanitizeChatMessage } from "@/lib/utils/sanitization";
 
 /**
  * POST /api/messages

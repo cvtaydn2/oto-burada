@@ -1,37 +1,31 @@
 import type { NextConfig } from "next";
 
-// Extract the Supabase project hostname from the URL env variable.
-// Falls back to the hardcoded value so existing deployments keep working
-// without any env changes.
-function getSupabaseHostname(): string {
+/**
+ * Extracts the Supabase project hostname from the NEXT_PUBLIC_SUPABASE_URL env var.
+ * Returns null if the env var is missing or invalid — the remotePattern is then omitted.
+ */
+function getSupabaseHostname(): string | null {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL ?? "";
   try {
-    return new URL(url).hostname;
+    const hostname = new URL(url).hostname;
+    return hostname || null;
   } catch {
-    // Fallback for existing deployments
-    return "yagcxhrhtfhwaxzhyrkj.supabase.co";
+    return null;
   }
 }
+
+const supabaseHostname = getSupabaseHostname();
 
 const nextConfig: NextConfig = {
   images: {
     remotePatterns: [
-      {
-        protocol: "https",
-        hostname: getSupabaseHostname(),
-      },
-      {
-        protocol: "https",
-        hostname: "images.unsplash.com",
-      },
-      {
-        protocol: "https",
-        hostname: "plus.unsplash.com",
-      },
-      {
-        protocol: "https",
-        hostname: "images.pexels.com",
-      },
+      // Only add Supabase pattern when the env var is configured
+      ...(supabaseHostname
+        ? [{ protocol: "https" as const, hostname: supabaseHostname }]
+        : []),
+      { protocol: "https" as const, hostname: "images.unsplash.com" },
+      { protocol: "https" as const, hostname: "plus.unsplash.com" },
+      { protocol: "https" as const, hostname: "images.pexels.com" },
     ],
     formats: ["image/avif", "image/webp"],
     deviceSizes: [640, 750, 828, 1080, 1200, 1920],

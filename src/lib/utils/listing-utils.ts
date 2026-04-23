@@ -1,31 +1,28 @@
+/**
+ * Listing-specific utility functions.
+ *
+ * Covers: formatting, label lookups, badge state derivation, phone masking,
+ * and WhatsApp link generation.
+ */
 import {
   fuelTypeLabels,
   listingStatusLabels,
   transmissionTypeLabels,
 } from "@/lib/constants/domain";
+import { formatNumber, formatPrice } from "@/lib/utils";
 import type { Listing, Profile } from "@/types";
 
-export function formatPrice(value: number, currency = "TL"): string {
-  return `${new Intl.NumberFormat("tr-TR").format(value)} ${currency}`;
-}
+// Re-export formatPrice so existing imports from listing-utils still work
+export { formatPrice };
 
-export function formatListingPrice(price: number): string {
-  return new Intl.NumberFormat("tr-TR").format(price);
-}
+// ─── Formatting ──────────────────────────────────────────────────────────────
 
+/**
+ * Formats a mileage value as a Turkish-locale string with "km" suffix.
+ * e.g. 125000 → "125.000 km"
+ */
 export function formatListingMileage(mileage: number): string {
-  return `${new Intl.NumberFormat("tr-TR").format(mileage)} km`;
-}
-
-export function buildWhatsAppOfferLink(phone: string, title: string, offerPrice?: number): string {
-  const phoneDigits = phone.replace(/\D/g, "");
-  if (!phoneDigits) return "#";
-
-  const message = offerPrice
-    ? `${title} ilanınız için ${formatPrice(offerPrice)} TL teklif vermek istiyorum.`
-    : `${title} ilanınız için size özel teklif paylaşmak istiyorum.`;
-
-  return `https://wa.me/${phoneDigits}?text=${encodeURIComponent(message)}`;
+  return `${formatNumber(mileage)} km`;
 }
 
 export function getListingStatusLabel(status: Listing["status"]): string {
@@ -52,6 +49,21 @@ export function getSellerTypeLabel(userType: Profile["userType"]): string {
   }
 }
 
+export function truncateText(text: string, maxLength: number): string {
+  if (text.length <= maxLength) return text;
+  return `${text.slice(0, maxLength)}...`;
+}
+
+export function calculateDiscountedPrice(price: number, discountPercent: number): number {
+  return Math.round(price * (1 - discountPercent / 100));
+}
+
+export function generateListingId(id: string): string {
+  return id.slice(0, 8).toUpperCase();
+}
+
+// ─── Date & Age ──────────────────────────────────────────────────────────────
+
 export function getMemberSinceYear(createdAt: string | null | undefined): number | null {
   if (!createdAt) return null;
   const d = new Date(createdAt);
@@ -73,27 +85,6 @@ export function getListingAgeDays(updatedAt: string): number {
   return Math.max(0, Math.floor(diffMs / (1000 * 60 * 60 * 24)));
 }
 
-export function truncateText(text: string, maxLength: number): string {
-  if (text.length <= maxLength) return text;
-  return `${text.slice(0, maxLength)}...`;
-}
-
-export function calculateDiscountedPrice(price: number, discountPercent: number): number {
-  return Math.round(price * (1 - discountPercent / 100));
-}
-
-export function debounce<T extends (...args: Parameters<T>) => void>(
-  fn: T,
-  delayMs: number
-): (...args: Parameters<T>) => void {
-  let timeoutId: ReturnType<typeof setTimeout> | null = null;
-
-  return (...args: Parameters<T>) => {
-    if (timeoutId) clearTimeout(timeoutId);
-    timeoutId = setTimeout(() => fn(...args), delayMs);
-  };
-}
-
 export function getListingAgeText(dateString: string): string {
   const date = new Date(dateString);
   if (isNaN(date.getTime())) return "Bilinmiyor";
@@ -110,13 +101,50 @@ export function getListingAgeText(dateString: string): string {
   return `${Math.floor(diffDays / 365)} yıl önce`;
 }
 
-export function generateListingId(id: string): string {
-  return id.slice(0, 8).toUpperCase();
+// ─── Badge & Display State ────────────────────────────────────────────────────
+
+/**
+ * Derives which promotional/trust badges are currently active for a listing.
+ * All time comparisons use ISO strings for consistency.
+ */
+export function getListingBadgeStates(listing: Listing) {
+  const now = new Date().toISOString();
+
+  return {
+    isFeatured: listing.featured && (!listing.featuredUntil || listing.featuredUntil > now),
+    isUrgent: !!listing.urgentUntil && listing.urgentUntil > now,
+    isHighlighted: !!listing.highlightedUntil && listing.highlightedUntil > now,
+    isAdvantageous: (listing.marketPriceIndex ?? 1) < 0.95,
+    hasInspection: !!listing.expertInspection?.hasInspection,
+  };
 }
 
 /**
+ * Returns the cover image for a listing, falling back to the first image.
+ */
+export function getListingCoverImage(listing: Listing) {
+  if (!listing.images || listing.images.length === 0) return null;
+  return listing.images.find((img) => img.isCover) ?? listing.images[0];
+}
+
+// ─── Contact ─────────────────────────────────────────────────────────────────
+
+export function buildWhatsAppOfferLink(phone: string, title: string, offerPrice?: number): string {
+  const phoneDigits = phone.replace(/\D/g, "");
+  if (!phoneDigits) return "#";
+
+  const message = offerPrice
+    ? `${title} ilanınız için ${formatPrice(offerPrice)} TL teklif vermek istiyorum.`
+    : `${title} ilanınız için size özel teklif paylaşmak istiyorum.`;
+
+  return `https://wa.me/${phoneDigits}?text=${encodeURIComponent(message)}`;
+}
+
+// ─── Privacy ─────────────────────────────────────────────────────────────────
+
+/**
  * Masks a phone number for public display (KVKK protection).
- * Format mask: +90 555 *** ** **
+ * e.g. +90 555 123 45 67 → "+90 555 *** ** **"
  */
 export function maskPhoneNumber(phone: string | null | undefined): string {
   if (!phone) return "Numara belirtilmedi";

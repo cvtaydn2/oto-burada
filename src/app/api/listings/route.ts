@@ -64,7 +64,7 @@ export async function POST(request: Request) {
   }
 
   // Orchestrate via Domain Use Case (SOLID)
-  const { executeListingCreation } = await import("@/domain/usecases/listing-create-v2");
+  const { executeListingCreation } = await import("@/domain/usecases/listing-create");
 
   const result = await executeListingCreation(body as Partial<ListingCreateInput>, user.id, {
     checkQuota: (uid) => checkListingLimit(uid),

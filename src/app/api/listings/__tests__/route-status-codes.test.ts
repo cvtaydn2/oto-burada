@@ -60,7 +60,7 @@ vi.mock("@/services/notifications/notification-records", () => ({
 }));
 
 const mockExecuteListingCreation = vi.fn();
-vi.mock("@/domain/usecases/listing-create-v2", () => ({
+vi.mock("@/domain/usecases/listing-create", () => ({
   executeListingCreation: (...args: any[]) => mockExecuteListingCreation(...args),
 }));
 

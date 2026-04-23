@@ -3,15 +3,20 @@ import { type NextRequest, NextResponse } from "next/server";
 import { isValidRequestOrigin } from "@/lib/security";
 
 /**
- * Standardized API Security Middleware.
- * Enforces CSRF protection for all mutations.
+ * Middleware-layer CSRF check for Next.js Edge Runtime.
+ *
+ * This runs in the global middleware (proxy.ts → updateSession) and operates
+ * on NextRequest. It is intentionally separate from the route-handler security
+ * helpers in `@/lib/utils/api-security`, which operate on the Web API Request
+ * object and run inside individual API routes.
+ *
+ * Responsibility: Reject cross-origin mutation requests before they reach any
+ * route handler.
  */
 export function checkApiSecurity(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
 
-  // Only apply to direct /api calls (not Next.js internal /api/auth etc)
   if (pathname.startsWith("/api")) {
-    // 1. Force CSRF for all Mutations
     const isMutation = ["POST", "PUT", "PATCH", "DELETE"].includes(request.method);
 
     if (isMutation && !isValidRequestOrigin(request)) {
@@ -20,7 +25,7 @@ export function checkApiSecurity(request: NextRequest) {
         response: new NextResponse(
           JSON.stringify({
             error: "Forbidden",
-            message: "Gecersiz istek kaynagi (CSRF Protection).",
+            message: "Geçersiz istek kaynağı (CSRF koruması).",
           }),
           { status: 403, headers: { "Content-Type": "application/json" } }
         ),
@@ -28,5 +33,5 @@ export function checkApiSecurity(request: NextRequest) {
     }
   }
 
-  return { isValid: true };
+  return { isValid: true, response: null };
 }

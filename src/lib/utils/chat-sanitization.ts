@@ -1,11 +1,14 @@
 /**
- * Hyper-Scale Data Sanitization & Protection
+ * Chat-specific sanitization utilities.
+ *
+ * Masks sensitive data (phone numbers, IBANs, external URLs) in user-generated
+ * chat messages to prevent off-platform routing and phishing.
  */
 
 /**
- * Regex patterns for identifying sensitive or dangerous content.
+ * Regex patterns for identifying sensitive or dangerous content in chat.
  */
-export const SECURITY_PATTERNS = {
+export const CHAT_SECURITY_PATTERNS = {
   // Turkish IBAN pattern
   IBAN: /TR\d{24}|TR \d{4} \d{4} \d{4} \d{4} \d{4} \d{4} \d{2}/gi,
 
@@ -17,20 +20,18 @@ export const SECURITY_PATTERNS = {
 };
 
 /**
- * Masks sensitive patterns in content to prevent off-platform routing and phishing.
- * @param content The raw message content
- * @returns Masked content
+ * Masks sensitive patterns in a chat message to prevent off-platform routing and phishing.
  */
 export function sanitizeChatMessage(content: string): string {
   let sanitized = content;
 
   // Mask IBAN
-  sanitized = sanitized.replace(SECURITY_PATTERNS.IBAN, (match) => {
+  sanitized = sanitized.replace(CHAT_SECURITY_PATTERNS.IBAN, (match) => {
     return match.substring(0, 4) + "*".repeat(match.length - 4);
   });
 
   // Mask Phone
-  sanitized = sanitized.replace(SECURITY_PATTERNS.PHONE, (match) => {
+  sanitized = sanitized.replace(CHAT_SECURITY_PATTERNS.PHONE, (match) => {
     const clean = match.replace(/\s/g, "");
     if (clean.length >= 10) {
       return match.substring(0, match.length - 4) + "****";
@@ -38,14 +39,17 @@ export function sanitizeChatMessage(content: string): string {
     return match;
   });
 
-  // Mask suspicious URLs
-  sanitized = sanitized.replace(SECURITY_PATTERNS.URL, "[GÜVENLİ OLMAYAN BAĞLANTI MASKELENDİ]");
+  // Mask suspicious external URLs
+  sanitized = sanitized.replace(
+    CHAT_SECURITY_PATTERNS.URL,
+    "[GÜVENLİ OLMAYAN BAĞLANTI MASKELENDİ]"
+  );
 
   return sanitized;
 }
 
 /**
- * Strips HTML tags and excessive whitespace.
+ * Strips HTML tags and collapses excessive whitespace.
  */
 export function basicSanitize(content: string): string {
   return content

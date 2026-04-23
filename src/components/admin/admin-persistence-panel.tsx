@@ -21,9 +21,9 @@ type StepStatus = "blocked" | "done" | "ready" | "todo";
 
 const statusLabel: Record<StepStatus, string> = {
   blocked: "Bloklu",
-  done: "Tamamlandı",
-  ready: "Hazır",
-  todo: "Sırada",
+  done: "Tamamland─▒",
+  ready: "Haz─▒r",
+  todo: "S─▒rada",
 };
 
 const statusClasses: Record<StepStatus, string> = {
@@ -57,35 +57,35 @@ export function AdminPersistencePanel({ health }: AdminPersistencePanelProps) {
     {
       command: "npm run db:check-env",
       description:
-        "Bootstrap için gerekli env değerlerini önce doğrula. Eksik değişken varsa schema veya seed adımına geçme.",
+        "Bootstrap i├ğin gerekli env de─şerlerini ├Ânce do─şrula. Eksik de─şi┼şken varsa schema veya seed ad─▒m─▒na ge├ğme.",
       status: allBootstrapEnvReady ? "done" : "blocked",
-      title: "1. Ortam değişkenlerini kontrol et",
+      title: "1. Ortam de─şi┼şkenlerini kontrol et",
     },
     {
       command: "npm run db:apply-schema",
       description:
-        "schema.sql dosyasını hedef Supabase Postgres veritabanına uygula. Bu adım psql ve SUPABASE_DB_URL bekler.",
+        "schema.sql dosyas─▒n─▒ hedef Supabase Postgres veritaban─▒na uygula. Bu ad─▒m psql ve SUPABASE_DB_URL bekler.",
       status: health.ready ? "done" : health.environment.databaseUrlEnv ? "ready" : "blocked",
-      title: "2. Schema'yı uygula",
+      title: "2. Schema'y─▒ uygula",
     },
     {
       command: "npm run db:seed-demo",
       description:
-        "Demo auth kullanıcılarını, profilleri, ilanları, görselleri, favorileri ve raporları tabloya yaz.",
+        "Demo auth kullan─▒c─▒lar─▒n─▒, profilleri, ilanlar─▒, g├Ârselleri, favorileri ve raporlar─▒ tabloya yaz.",
       status: demoSeedReady ? "done" : health.ready && allBootstrapEnvReady ? "ready" : "todo",
-      title: "3. Demo veriyi yükle",
+      title: "3. Demo veriyi y├╝kle",
     },
     {
       command: "npm run db:verify-demo",
       description:
-        "Seed sonrası auth kullanıcıları, tablo sayıları ve storage bucket erişimini script tarafında doğrula.",
+        "Seed sonras─▒ auth kullan─▒c─▒lar─▒, tablo say─▒lar─▒ ve storage bucket eri┼şimini script taraf─▒nda do─şrula.",
       status: demoSeedReady && health.storage.bucketAccessible ? "ready" : "todo",
-      title: "4. Seed sonucunu doğrula",
+      title: "4. Seed sonucunu do─şrula",
     },
     {
       command: "Dashboard > Legacy Sync",
       description:
-        "Canlı veya test kullanıcısında cookie tabanlı eski kayıtlar varsa dashboard içindeki Legacy Sync kartı ile tabloya taşı.",
+        "Canl─▒ veya test kullan─▒c─▒s─▒nda cookie tabanl─▒ eski kay─▒tlar varsa dashboard i├ğindeki Legacy Sync kart─▒ ile tabloya ta┼ş─▒.",
       status: health.ready ? "ready" : "todo",
       title: "5. Legacy veriyi backfill et",
     },
@@ -109,7 +109,7 @@ export function AdminPersistencePanel({ health }: AdminPersistencePanelProps) {
             <div className="space-y-1">
               <div className="flex items-center gap-2">
                 <span className="text-[10px] font-bold text-blue-600 uppercase tracking-widest">
-                  Sistem Sağlığı
+                  Sistem Sa─şl─▒─ş─▒
                 </span>
                 <div className="size-1 rounded-full bg-slate-300" />
                 <span className="text-[10px] font-bold text-muted-foreground/70 uppercase tracking-widest italic">
@@ -117,7 +117,7 @@ export function AdminPersistencePanel({ health }: AdminPersistencePanelProps) {
                 </span>
               </div>
               <h2 className="text-2xl font-bold text-foreground tracking-tight">
-                Veri Katmanı Durumu
+                Veri Katman─▒ Durumu
               </h2>
               <p className="text-sm text-muted-foreground font-medium max-w-xl">{health.message}</p>
             </div>
@@ -127,7 +127,7 @@ export function AdminPersistencePanel({ health }: AdminPersistencePanelProps) {
             <div className="absolute -right-4 -top-4 size-24 bg-blue-600/5 rounded-full blur-2xl group-hover:bg-blue-600/10 transition-colors" />
             <div className="flex items-center gap-2 text-[10px] font-bold text-blue-600 uppercase tracking-widest mb-3">
               <ShieldCheck className="size-3" />
-              Hazırlık Skoru
+              Haz─▒rl─▒k Skoru
             </div>
             <div className="flex items-baseline gap-1">
               <span className="text-4xl font-bold text-foreground tracking-tighter">
@@ -136,7 +136,7 @@ export function AdminPersistencePanel({ health }: AdminPersistencePanelProps) {
               <span className="text-xl font-bold text-muted-foreground/70">/5</span>
             </div>
             <p className="mt-2 text-[11px] font-bold text-muted-foreground uppercase tracking-wider">
-              Erişilebilir Tablo:{" "}
+              Eri┼şilebilir Tablo:{" "}
               <span className="text-blue-600 font-bold">
                 {accessibleTables}/{health.tables.length}
               </span>
@@ -168,8 +168,8 @@ export function AdminPersistencePanel({ health }: AdminPersistencePanelProps) {
           />
           <DashboardMetricCard
             label="Seed"
-            value={health.environment.demoPasswordEnv ? "Hazır" : "Eksik"}
-            helper="Demo şifre statüsü"
+            value={health.environment.demoPasswordEnv ? "Haz─▒r" : "Eksik"}
+            helper="Demo ┼şifre stat├╝s├╝"
             icon={ShieldCheck}
             tone={health.environment.demoPasswordEnv ? "emerald" : "amber"}
           />
@@ -179,10 +179,10 @@ export function AdminPersistencePanel({ health }: AdminPersistencePanelProps) {
               health.storage.bucketAccessible === null
                 ? "Bilinmiyor"
                 : health.storage.bucketAccessible
-                  ? "Erişilebilir"
+                  ? "Eri┼şilebilir"
                   : "Hata"
             }
-            helper={health.storage.bucketName ?? "Tanımsız"}
+            helper={health.storage.bucketName ?? "Tan─▒ms─▒z"}
             icon={health.storage.bucketAccessible ? ShieldCheck : TriangleAlert}
             tone={health.storage.bucketAccessible ? "emerald" : "amber"}
           />
@@ -259,7 +259,7 @@ export function AdminPersistencePanel({ health }: AdminPersistencePanelProps) {
           <div className="space-y-0.5">
             <h3 className="text-xl font-bold text-foreground tracking-tight">Migration Runbook</h3>
             <p className="text-sm text-muted-foreground font-medium">
-              Sistemi sıfırdan kurmak veya güncellemek için izlenecek adımlar
+              Sistemi s─▒f─▒rdan kurmak veya g├╝ncellemek i├ğin izlenecek ad─▒mlar
             </p>
           </div>
         </div>

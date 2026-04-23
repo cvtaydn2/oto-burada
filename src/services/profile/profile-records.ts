@@ -495,3 +495,52 @@ export async function requestVerification(
 
   return { success: true };
 }
+
+/**
+ * Fetches a seller's public profile for marketplace display.
+ *
+ * Only returns fields safe for public consumption — no sensitive data.
+ * Uses admin client to bypass RLS (public read, no auth required).
+ */
+export async function getPublicSellerProfile(sellerId: string): Promise<Profile | null> {
+  if (!hasSupabaseAdminEnv()) return null;
+
+  const admin = createSupabaseAdminClient();
+  const { data, error } = await admin
+    .from("profiles")
+    .select(
+      `id, full_name, phone, city, avatar_url, role, user_type,
+       balance_credits, is_verified, is_banned, ban_reason,
+       business_name, business_logo_url, business_slug, business_description,
+       website_url, verified_business, verification_status,
+       trust_score, created_at, updated_at`
+    )
+    .eq("id", sellerId)
+    .maybeSingle();
+
+  if (error || !data) return null;
+
+  return {
+    id: data.id,
+    fullName: data.full_name,
+    phone: data.phone || "",
+    city: data.city,
+    avatarUrl: data.avatar_url,
+    emailVerified: false,
+    isVerified: data.is_verified,
+    role: data.role as Profile["role"],
+    userType: data.user_type as Profile["userType"],
+    balanceCredits: data.balance_credits ?? 0,
+    businessName: data.business_name,
+    businessLogoUrl: data.business_logo_url,
+    businessSlug: data.business_slug,
+    businessDescription: data.business_description,
+    websiteUrl: data.website_url,
+    verificationStatus: data.verification_status as Profile["verificationStatus"],
+    trustScore: data.trust_score ?? 0,
+    isBanned: data.is_banned,
+    banReason: data.ban_reason,
+    createdAt: data.created_at,
+    updatedAt: data.updated_at,
+  } satisfies Profile;
+}
