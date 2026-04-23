@@ -275,6 +275,96 @@ export function applyListingFilterPredicates(query: any, filters: ListingFilters
   return q;
 }
 
+/**
+ * INTERNAL: Applies core listing query requirements:
+ * 1. Filtering by ID/Slug/Status
+ * 2. EXCLUDING listings from banned sellers (using !inner join)
+ * 3. Applying domain-specific filters (price, year, etc.)
+ * 4. Applying the standardized sorting hierarchy (Featured -> Trust -> SortParam)
+ */
+function buildListingBaseQuery(
+  admin: ReturnType<typeof createSupabaseAdminClient>,
+  selectClause: string,
+  options?: {
+    ids?: string[];
+    listingId?: string;
+    sellerId?: string;
+    slug?: string;
+    statuses?: Listing["status"][];
+    filters?: ListingFilters;
+  }
+): any {
+  let query = admin.from("listings").select(selectClause);
+
+  // 1. Primary Identifiers
+  const sellerId = options?.sellerId ?? options?.filters?.sellerId;
+  if (sellerId) query = query.eq("seller_id", sellerId);
+  if (options?.listingId) query = query.eq("id", options.listingId);
+  if (options?.slug) query = query.eq("slug", options.slug);
+  if (options?.ids?.length) query = query.in("id", options.ids);
+  if (options?.statuses?.length) query = query.in("status", options.statuses);
+
+  // 2. Market Integrity: Filter out listings from banned users
+  // This depends on the !inner join being present in the selectClause
+  query = query.eq("profiles.is_banned", false);
+
+  // 3. Predicates (Price, Year, Mileage, etc.)
+  const filters = options?.filters;
+  if (filters) query = applyListingFilterPredicates(query, filters);
+
+  // 4. Sorting Hierarchy
+  const sort = filters?.sort ?? "newest";
+
+  // PRIORITY 1: Featured (Paid) - Always top for default/newest sorting
+  if (!filters?.sort || filters.sort === "newest") {
+    query = query.order("featured", { ascending: false });
+  }
+
+  // PRIORITY 2: Trust-based priority (Verified sellers boost)
+  query = query.order("profiles(verification_status)", { ascending: false, nullsFirst: false });
+
+  // PRIORITY 3: User Selected Sort
+  switch (sort) {
+    case "price_asc":
+      query = query.order("price", { ascending: true }).order("created_at", { ascending: false });
+      break;
+    case "price_desc":
+      query = query.order("price", { ascending: false }).order("created_at", { ascending: false });
+      break;
+    case "mileage_asc":
+      query = query.order("mileage", { ascending: true }).order("created_at", { ascending: false });
+      break;
+    case "year_desc":
+      query = query.order("year", { ascending: false }).order("created_at", { ascending: false });
+      break;
+    case "oldest":
+      query = query.order("created_at", { ascending: true });
+      break;
+    case "mileage_desc":
+      query = query
+        .order("mileage", { ascending: false })
+        .order("created_at", { ascending: false });
+      break;
+    case "year_asc":
+      query = query.order("year", { ascending: true }).order("created_at", { ascending: false });
+      break;
+    case "newest":
+    default:
+      query = query
+        .order("bumped_at", { ascending: false, nullsFirst: false })
+        .order("created_at", { ascending: false });
+      break;
+  }
+
+  // 5. Pagination
+  const page = filters?.page ?? 1;
+  const limit = filters?.limit ?? 50;
+  const from = (page - 1) * limit;
+  const to = from + limit - 1;
+
+  return query.range(from, to);
+}
+
 export async function getDatabaseListings(options?: {
   ids?: string[];
   listingId?: string;
@@ -286,83 +376,21 @@ export async function getDatabaseListings(options?: {
   if (!hasSupabaseAdminEnv()) return null;
   const admin = createSupabaseAdminClient();
 
-  const applyQueryOptions = (selectClause: string) => {
-    let query = admin.from("listings").select(selectClause);
-    const sellerId = options?.sellerId ?? options?.filters?.sellerId;
-    if (sellerId) query = query.eq("seller_id", sellerId);
-    if (options?.listingId) query = query.eq("id", options.listingId);
-    if (options?.slug) query = query.eq("slug", options.slug);
-    if (options?.ids?.length) query = query.in("id", options.ids);
-    if (options?.statuses?.length) query = query.in("status", options.statuses);
-
-    // CRITICAL: Filter out listings from banned users
-    query = query.eq("profiles.is_banned", false);
-
-    const filters = options?.filters;
-    if (filters) query = applyListingFilterPredicates(query, filters);
-
-    const sort = filters?.sort ?? "newest";
-
-    // PRIORITY 1: Featured (Paid)
-    if (!filters?.sort || filters.sort === "newest") {
-      query = query.order("featured", { ascending: false });
-    }
-
-    // PRIORITY 2: Trust-based priority (Natural boost for verified)
-    query = query.order("profiles(verification_status)", { ascending: false, nullsFirst: false });
-
-    switch (sort) {
-      case "price_asc":
-        query = query.order("price", { ascending: true }).order("created_at", { ascending: false });
-        break;
-      case "price_desc":
-        query = query
-          .order("price", { ascending: false })
-          .order("created_at", { ascending: false });
-        break;
-      case "mileage_asc":
-        query = query
-          .order("mileage", { ascending: true })
-          .order("created_at", { ascending: false });
-        break;
-      case "year_desc":
-        query = query.order("year", { ascending: false }).order("created_at", { ascending: false });
-        break;
-      case "oldest":
-        query = query.order("created_at", { ascending: true });
-        break;
-      case "mileage_desc":
-        query = query
-          .order("mileage", { ascending: false })
-          .order("created_at", { ascending: false });
-        break;
-      case "year_asc":
-        query = query.order("year", { ascending: true }).order("created_at", { ascending: false });
-        break;
-      case "newest":
-      default:
-        query = query
-          .order("bumped_at", { ascending: false, nullsFirst: false })
-          .order("created_at", { ascending: false });
-        break;
-    }
-
-    const page = filters?.page ?? 1;
-    const limit = filters?.limit ?? 50;
-    const from = (page - 1) * limit;
-    const to = from + limit - 1;
-    return query.range(from, to);
-  };
-
   const runQuery = async (query: any) => {
     return (query as any)["returns"]();
   };
 
-  const primaryResult = await runQuery(applyQueryOptions(listingSelect));
+  const primaryResult = await runQuery(buildListingBaseQuery(admin, listingSelect, options));
   if (!primaryResult.error) return (primaryResult.data ?? []).map(mapListingRow);
 
-  const fallbackResult = await runQuery(applyQueryOptions(legacyListingSelect));
-  if (fallbackResult.error || !fallbackResult.data) return null;
+  // Fallback to legacy select if schema is in transition (graceful degradation)
+  const fallbackResult = await runQuery(buildListingBaseQuery(admin, legacyListingSelect, options));
+  if (fallbackResult.error || !fallbackResult.data) {
+    if (fallbackResult.error) {
+      logger.db.error("Listing retrieval failed after fallback", fallbackResult.error);
+    }
+    return null;
+  }
   return fallbackResult.data.map(mapListingRow);
 }
 
@@ -380,10 +408,6 @@ export async function getFilteredDatabaseListings(
 ): Promise<PaginatedListingsResult> {
   const page = filters.page ?? 1;
   const limit = filters.limit ?? 24;
-  const sort = filters.sort ?? "newest";
-  const from = (page - 1) * limit;
-  const to = from + limit - 1;
-
   const admin = createSupabaseAdminClient();
 
   // Resolve citySlug to city name if city is not provided
@@ -399,100 +423,29 @@ export async function getFilteredDatabaseListings(
     }
   }
 
-  let dataQuery = admin.from("listings").select(marketplaceListingSelect).eq("status", "approved");
-
-  // CRITICAL: Filter out listings from banned users
-  dataQuery = dataQuery.eq("profiles.is_banned", false);
-
-  dataQuery = applyListingFilterPredicates(dataQuery, { ...filters, page, limit });
-
-  // PRIORITY 1: Featured (Paid)
-  if (!filters.sort || filters.sort === "newest") {
-    dataQuery = dataQuery.order("featured", { ascending: false });
-  }
-
-  // PRIORITY 2: Trust-based priority (Natural boost for verified)
-  dataQuery = dataQuery.order("profiles(verification_status)", {
-    ascending: false,
-    nullsFirst: false,
+  // Core Data Query (Approved Only for public marketplace)
+  const dataQuery = buildListingBaseQuery(admin, marketplaceListingSelect, {
+    statuses: ["approved"],
+    filters: { ...filters, page, limit },
   });
 
-  switch (sort) {
-    case "price_asc":
-      dataQuery = dataQuery
-        .order("price", { ascending: true })
-        .order("created_at", { ascending: false });
-      break;
-    case "price_desc":
-      dataQuery = dataQuery
-        .order("price", { ascending: false })
-        .order("created_at", { ascending: false });
-      break;
-    case "mileage_asc":
-      dataQuery = dataQuery
-        .order("mileage", { ascending: true })
-        .order("created_at", { ascending: false });
-      break;
-    case "year_desc":
-      dataQuery = dataQuery
-        .order("year", { ascending: false })
-        .order("created_at", { ascending: false });
-      break;
-    case "oldest":
-      dataQuery = dataQuery.order("created_at", { ascending: true });
-      break;
-    case "mileage_desc":
-      dataQuery = dataQuery
-        .order("mileage", { ascending: false })
-        .order("created_at", { ascending: false });
-      break;
-    case "year_asc":
-      dataQuery = dataQuery
-        .order("year", { ascending: true })
-        .order("created_at", { ascending: false });
-      break;
-    case "newest":
-    default:
-      dataQuery = dataQuery
-        .order("bumped_at", { ascending: false, nullsFirst: false })
-        .order("created_at", { ascending: false });
-      break;
-  }
-
-  if ("range" in dataQuery && typeof dataQuery.range === "function") {
-    dataQuery = dataQuery.range(from, to);
-  } else if ("limit" in dataQuery && typeof dataQuery.limit === "function") {
-    dataQuery = dataQuery.limit(limit);
-  }
-
+  // Count Query (Mirror the same filters for accurate pagination)
+  // HEAD only select for performance
   let countQuery = admin
     .from("listings")
     .select("id, profiles!inner!seller_id(is_banned)", { count: "exact", head: true })
     .eq("status", "approved")
-    // CRITICAL: Mirror the same banned-seller filter used in the data query.
-    // Without this, count and actual results diverge for banned sellers.
     .eq("profiles.is_banned", false);
+
   countQuery = applyListingFilterPredicates(countQuery, filters);
 
-  const executeDataQuery = dataQuery.returns<ListingRow[]>();
-
-  const [dataResult, countResult] = await Promise.all([executeDataQuery, countQuery]);
+  const [dataResult, countResult] = await Promise.all([dataQuery.returns(), countQuery]);
 
   if (dataResult.error) {
-    logger.db.error("Failed to fetch listings data", undefined, {
-      code: dataResult.error.code ?? undefined,
-      details: dataResult.error.details ?? undefined,
-      hint: dataResult.error.hint ?? undefined,
-      message: dataResult.error.message,
-    });
+    logger.db.error("Marketplace fetch failed", dataResult.error);
   }
   if (countResult.error) {
-    logger.db.error("Failed to count listings", undefined, {
-      code: countResult.error.code ?? undefined,
-      details: countResult.error.details ?? undefined,
-      hint: countResult.error.hint ?? undefined,
-      message: countResult.error.message,
-    });
+    logger.db.error("Marketplace count failed", countResult.error);
   }
 
   const listings = dataResult.data ? (dataResult.data as ListingRow[]).map(mapListingRow) : [];

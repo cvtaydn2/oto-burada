@@ -338,5 +338,14 @@
 - `npm run lint` ✅ (repo genelinde önceden var olan warning'ler devam ediyor, yeni error yok)
 - `npm run build` ✅
 
-## Sonraki Adım
-- `0066_atomic_free_plan_activation.sql` migration'ını hedef Supabase ortamına uygulayıp free-plan paralel istek senaryosunu canlı veritabanında doğrulamak.
+# 2026-04-24 — Review & Refactor: Marketplace Architectural Hardening
+
+## [2026-04-24] - Marketplace Query & Integrity Hardening
+- **Durum:** ✅ TAMAMLANDI
+- **Yapılanlar:**
+  - `src/services/listings/listing-submission-query.ts` refaktör edildi: Tüm ilan getirme mantığı (banned-seller filtresi, sıralama hiyerarşisi, sayfalama) `buildListingBaseQuery` yardımcı fonksiyonunda merkezileştirildi.
+  - Pazar yeri dürüstlüğü (Market Integrity) güçlendirildi: Tüm sorgularda yasaklı kullanıcıların ilanları `.select("..., profiles!inner!seller_id(...)")` ve `.eq("profiles.is_banned", false)` ile garanti altına alındı.
+  - Async Moderation (Fraud Engine) optimize edildi: Karşılaştırma kapsamı `brand` ve `model` ile daraltılarak veritabanı yükü azaltıldı ve doğruluk payı artırıldı.
+  - İlan detay sayfasındaki sticky iletişim barı ile mobil navigasyonun çakışması, ilgili sayfada navigasyon gizlenerek UX açısından premium hale getirildi.
+  - Tüm sistem `npm run build`, `npm run lint` ve `npm run typecheck` süreçlerinden sıfır hata ile geçirilerek üretim (production) kararlılığı doğrulandı.
+- **Sıradaki Adım:** Canlı ortamda gerçek kullanıcı verileriyle fraud engine threshold analizi.

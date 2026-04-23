@@ -137,10 +137,12 @@ export async function performAsyncModeration(listingId: string) {
     const listing = await getStoredListingById(listingId);
     if (!listing) return;
 
-    // 2. Fetch similar listings for market analysis (expensive part)
+    // 2. Fetch similar listings for market analysis (filtered for accuracy)
     const { data: existingListings } = await admin
       .from("listings")
       .select("id, slug, brand, model, year, mileage, price, vin, status")
+      .eq("brand", listing.brand)
+      .eq("model", listing.model)
       .neq("id", listingId)
       .limit(100);
 
