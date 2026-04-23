@@ -3,6 +3,8 @@ import { hasSupabaseAdminEnv } from "@/lib/supabase/env";
 import { sanitizeDescription } from "@/lib/utils/sanitize";
 import { Listing } from "@/types";
 
+import { mapListingRow } from "./listing-submission-types";
+
 type ListingPersistenceError =
   | "concurrent_update_detected"
   | "configuration_error"
@@ -419,4 +421,74 @@ export async function updateDatabaseListing(listing: Listing) {
   };
 
   return { listing: updatedListing };
+}
+
+/**
+ * Archives a listing by updating its status and incrementing its version.
+ */
+export async function archiveListing(
+  listingId: string,
+  sellerId: string
+): Promise<ListingPersistenceResult> {
+  if (!hasSupabaseAdminEnv()) return { error: "configuration_error" as const };
+  const admin = createSupabaseAdminClient();
+
+  // OCC: We need current version to perform safe update
+  const { data: current } = await admin
+    .from("listings")
+    .select("version, status")
+    .eq("id", listingId)
+    .eq("seller_id", sellerId)
+    .single();
+
+  if (!current) return { error: "database_error" as const };
+
+  const { error, data: updated } = await admin
+    .from("listings")
+    .update({
+      status: "archived" satisfies Listing["status"],
+      updated_at: new Date().toISOString(),
+      version: (current.version ?? 0) + 1,
+    })
+    .eq("id", listingId)
+    .eq("seller_id", sellerId)
+    .eq("version", current.version ?? 0)
+    .select()
+    .single();
+
+  if (error) {
+    return { error: classifyPersistenceError(error) };
+  }
+
+  return { listing: mapListingRow(updated as unknown as ListingRow) };
+}
+
+/**
+ * Deletes a listing and its associated data (images, favorites, reports).
+ * Physical storage cleanup should be handled by the caller or a side-effect.
+ */
+export async function deleteListing(
+  listingId: string,
+  version: number
+): Promise<{ success: boolean; error?: ListingPersistenceError }> {
+  if (!hasSupabaseAdminEnv()) return { success: false, error: "configuration_error" as const };
+  const admin = createSupabaseAdminClient();
+
+  // 1. Delete associated data first
+  await admin.from("listing_images").delete().eq("listing_id", listingId);
+  await admin.from("favorites").delete().eq("listing_id", listingId);
+  await admin.from("reports").delete().eq("listing_id", listingId);
+
+  // 2. Delete the listing with version check
+  const { error } = await admin
+    .from("listings")
+    .delete()
+    .eq("id", listingId)
+    .eq("version", version);
+
+  if (error) {
+    return { success: false, error: classifyPersistenceError(error) };
+  }
+
+  return { success: true };
 }

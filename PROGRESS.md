@@ -349,3 +349,13 @@
   - İlan detay sayfasındaki sticky iletişim barı ile mobil navigasyonun çakışması, ilgili sayfada navigasyon gizlenerek UX açısından premium hale getirildi.
   - Tüm sistem `npm run build`, `npm run lint` ve `npm run typecheck` süreçlerinden sıfır hata ile geçirilerek üretim (production) kararlılığı doğrulandı.
 - **Sıradaki Adım:** Canlı ortamda gerçek kullanıcı verileriyle fraud engine threshold analizi.
+
+## [2026-04-24] - Persistence & Domain Refactor (Kusursuzluk Aşaması)
+- **Durum:** ✅ TAMAMLANDI
+- **Yapılanlar:**
+  - **Persistence Hardening**: `archiveListing` ve `deleteListing` işlemleri `listing-submission-persistence.ts` içerisinde merkezileştirildi. Optimistic Concurrency Control (OCC) `version` bazlı kontrol ile veri tutarlılığı garanti altına alındı.
+  - **Service Delegation**: `listing-submissions.ts` üzerindeki karmaşık DB mantığı persistence katmanına delege edilerek servis katmanının sadece orkestrasyona odaklanması sağlandı.
+  - **Domain Decoupling**: `mapListingRow` fonksiyonu `listing-submission-types.ts` dosyasına taşınarak query ve persistence katmanları arasındaki dairesel bağımlılık (circular dependency) riskleri ortadan kaldırıldı.
+  - **Type Safety**: `getDatabaseListings` için açık dönüş tipleri tanımlandı ve silme işlemleri sırasında oluşan implicit `any` hataları giderildi.
+  - **Final Build**: Tüm mimari değişiklikler `npm run build` ile doğrulanarak sıfır hata ile üretim hazırlığı tamamlandı.
+- **Sıradaki Adım:** Moderasyon metriklerinin admin paneline entegrasyonu ve canlı ortam performansı takibi.

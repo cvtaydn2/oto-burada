@@ -4,7 +4,6 @@ import { cookies } from "next/headers";
 import { createListingEntity } from "@/domain/logic/listing-factory";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { hasSupabaseAdminEnv } from "@/lib/supabase/env";
-import { logger } from "@/lib/utils/logger";
 import { listingSchema } from "@/lib/validators";
 import type { Listing, ListingCreateInput } from "@/types";
 
@@ -14,7 +13,9 @@ import { calculateFraudScore } from "./listing-submission-moderation";
 
 export { buildListingSlug, calculateFraudScore };
 import {
+  archiveListing,
   createDatabaseListing,
+  deleteListing,
   mapListingImagesToDatabaseRows,
   mapListingToDatabaseRow,
   updateDatabaseListing,
@@ -48,51 +49,33 @@ export { getDatabaseListings, getFilteredDatabaseListings };
 export type { PaginatedListingsResult };
 
 export async function archiveDatabaseListing(listingId: string, sellerId: string) {
-  if (!hasSupabaseAdminEnv()) return null;
-  const admin = createSupabaseAdminClient();
+  const result = await archiveListing(listingId, sellerId);
 
-  // Fix 4: Concurrency Guard - Fetch current version before update
-  const { data: current } = await admin
-    .from("listings")
-    .select("version")
-    .eq("id", listingId)
-    .eq("seller_id", sellerId)
-    .single();
-
-  if (!current) return null;
-
-  const { error } = await admin
-    .from("listings")
-    .update({
-      status: "archived" satisfies Listing["status"],
-      updated_at: new Date().toISOString(),
-      version: (current.version ?? 0) + 1, // Increment version manually for non-upsert updates
-    })
-    .eq("id", listingId)
-    .eq("seller_id", sellerId)
-    .eq("version", current.version ?? 0);
-
-  if (error) {
-    logger.listings.warn("Concurrent archive attempt blocked or failed", { listingId, error });
-    return { error: "CONFLICT" as const };
+  if (result.error) {
+    if (result.error === "concurrent_update_detected") {
+      return { error: "CONFLICT" as const };
+    }
+    return null;
   }
-  return { data: (await getDatabaseListings({ listingId }))?.[0] ?? null };
+
+  // Map back to Listing entity (using the query layer to ensure full consistency)
+  const [listing] = (await getDatabaseListings({ listingId })) ?? [];
+  return { data: listing ?? null };
 }
 
 export async function deleteDatabaseListing(listingId: string, sellerId: string) {
-  if (!hasSupabaseAdminEnv()) return null;
-  const admin = createSupabaseAdminClient();
-
   // Fetch the listing to verify ownership, status, and VERSION
   const listing = (await getDatabaseListings({ listingId, sellerId }))?.[0];
 
   if (!listing) return null;
   if (listing.status !== "archived") return null;
 
+  // 1. Storage Cleanup (Side effect before deletion)
   if (listing.images.length > 0) {
-    const storagePaths = listing.images
-      .map((img: { storagePath: string }) => img.storagePath)
-      .filter((path: string) => path.length > 0);
+    const storagePaths = (listing.images as import("@/types").ListingImage[])
+      .map((img) => img.storagePath)
+      .filter((path) => path.length > 0);
+
     if (storagePaths.length > 0) {
       const bucketName = process.env.SUPABASE_STORAGE_BUCKET_LISTINGS ?? "listing-images";
       const { queueFileCleanup } = await import("@/lib/storage/registry");
@@ -100,19 +83,15 @@ export async function deleteDatabaseListing(listingId: string, sellerId: string)
     }
   }
 
-  await admin.from("listing_images").delete().eq("listing_id", listingId);
-  await admin.from("favorites").delete().eq("listing_id", listingId);
-  await admin.from("reports").delete().eq("listing_id", listingId);
+  // 2. Perform Atomic Deletion via persistence layer
+  const result = await deleteListing(listingId, listing.version ?? 0);
 
-  // Fix 4: Concurrency Guard - Version check for final delete
-  const { error } = await admin
-    .from("listings")
-    .delete()
-    .eq("id", listingId)
-    .eq("version", listing.version ?? 0);
-
-  if (error) {
+  if (result.error === "concurrent_update_detected") {
     return { error: "CONFLICT" as const };
+  }
+
+  if (!result.success) {
+    return null;
   }
 
   return { id: listingId, deleted: true };
@@ -234,7 +213,9 @@ export async function upsertDatabaseListingRecord(listing: Listing) {
 
 // Export persistence functions for direct use if needed
 export {
+  archiveListing,
   createDatabaseListing,
+  deleteListing,
   mapListingImagesToDatabaseRows,
   mapListingToDatabaseRow,
   updateDatabaseListing,
