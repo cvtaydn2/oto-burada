@@ -4,6 +4,13 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
 
+interface SupportResponse {
+  message?: string;
+  error?: {
+    message?: string;
+  };
+}
+
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import {
@@ -56,16 +63,33 @@ export function TicketForm() {
         }),
       });
 
-      if (!res.ok) throw new Error("Failed to create ticket");
+      let data: SupportResponse | null = null;
+      try {
+        data = (await res.json()) as SupportResponse;
+      } catch {
+        // Safe fallback for non-JSON
+      }
 
-      toast.success("Destek talebiniz oluşturuldu. En kısa sürede size dönüş yapacağız.");
+      if (!res.ok) {
+        const errorMsg =
+          data?.error?.message ||
+          data?.message ||
+          "Destek talebi oluşturulamadı. Lütfen tekrar deneyin.";
+        throw new Error(errorMsg);
+      }
+
+      toast.success(
+        data?.message || "Destek talebiniz oluşturuldu. En kısa sürede size dönüş yapacağız."
+      );
       setSubject("");
       setDescription("");
       setCategory("other");
       setPriority("medium");
       router.refresh();
-    } catch {
-      toast.error("Bir hata oluştu. Lütfen tekrar deneyin.");
+    } catch (err) {
+      const message =
+        err instanceof Error ? err.message : "Bir hata oluştu. Lütfen tekrar deneyin.";
+      toast.error(message);
     } finally {
       setLoading(false);
     }

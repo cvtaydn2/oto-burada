@@ -1,5 +1,11 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
+vi.mock("next/cache", () => ({
+  unstable_cache: vi.fn((fn) => fn),
+  revalidateTag: vi.fn(),
+  revalidatePath: vi.fn(),
+}));
+
 const eq = vi.fn();
 const order = vi.fn();
 const select = vi.fn();
@@ -15,6 +21,9 @@ vi.mock("@/lib/utils/logger", () => ({
   logger: {
     admin: {
       error: vi.fn(),
+    },
+    perf: {
+      debug: vi.fn(),
     },
   },
 }));

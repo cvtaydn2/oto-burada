@@ -14,8 +14,6 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
     <div className="flex-1 flex flex-col">
       <AuthForm
         action={loginAction}
-        title="Giriş"
-        description="Hesabına giriş yap"
         submitLabel="Giriş Yap"
         alternateHref="/register"
         alternateLabel="Kayıt Ol"

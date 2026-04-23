@@ -135,9 +135,9 @@ export async function archiveDatabaseListing(listingId: string, sellerId: string
 
   if (error) {
     logger.listings.warn("Concurrent archive attempt blocked or failed", { listingId, error });
-    return null;
+    return { error: "CONFLICT" as const };
   }
-  return (await getDatabaseListings({ listingId }))?.[0] ?? null;
+  return { data: (await getDatabaseListings({ listingId }))?.[0] ?? null };
 }
 
 export async function deleteDatabaseListing(listingId: string, sellerId: string) {
@@ -172,7 +172,11 @@ export async function deleteDatabaseListing(listingId: string, sellerId: string)
     .eq("id", listingId)
     .eq("version", listing.version ?? 0);
 
-  return error ? null : { id: listingId, deleted: true };
+  if (error) {
+    return { error: "CONFLICT" as const };
+  }
+
+  return { id: listingId, deleted: true };
 }
 
 // Cookie & Draft Logic

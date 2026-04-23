@@ -50,18 +50,18 @@ export async function applyDopingToListing(
       }
 
       const admin = createSupabaseAdminClient();
-      const { data: listing, error: listingError } = await admin
+      const listingResult = await admin
         .from("listings")
         .select("id, seller_id, status")
         .eq("id", listingId)
-        .single<{ id: string; seller_id: string; status: string }>();
+        .single();
 
-      if (
-        listingError ||
-        !listing ||
-        listing.seller_id !== userId ||
-        listing.status === "archived"
-      ) {
+      if (listingResult.error || !listingResult.data) {
+        return { success: false, message: "Doping uygulanabilir ilan bulunamadı." };
+      }
+
+      const listing = listingResult.data;
+      if (listing.seller_id !== userId || listing.status === "archived") {
         return { success: false, message: "Doping uygulanabilir ilan bulunamadı." };
       }
 
@@ -75,7 +75,7 @@ export async function applyDopingToListing(
         durationDays,
       };
 
-      const { data: existingPayment, error: existingPaymentError } = await admin
+      const paymentLookup = await admin
         .from("payments")
         .select("id, iyzico_token, status, fulfilled_at, created_at, metadata")
         .eq("user_id", userId)
@@ -86,9 +86,11 @@ export async function applyDopingToListing(
         .limit(1)
         .maybeSingle<ExistingPaymentState & { metadata: Record<string, unknown> }>();
 
-      if (existingPaymentError) {
+      if (paymentLookup.error) {
         return { success: false, message: "Bekleyen ödeme kontrol edilemedi." };
       }
+
+      const existingPayment = paymentLookup.data;
 
       // Fix 1 & 2: Deterministic reuse and reason codes
       if (existingPayment?.status === "success" || existingPayment?.fulfilled_at) {
@@ -123,17 +125,14 @@ export async function applyDopingToListing(
           success: true,
           message: "Mevcut ödeme işleminiz devam ediyor.",
           transactionId: existingPayment.iyzico_token,
-          // Explicit reuse of pending transaction
         };
       }
-
-      // Stale pending cleanup check
 
       let paymentRecord: { id: string } | null = null;
       if (existingPayment?.status === "pending" && !isStale) {
         paymentRecord = { id: existingPayment.id };
       } else {
-        const { data: newPayment, error: insertError } = await admin
+        const insertResult = await admin
           .from("payments")
           .insert({
             user_id: userId,
@@ -147,10 +146,10 @@ export async function applyDopingToListing(
           .select("id")
           .single<{ id: string }>();
 
-        if (insertError || !newPayment) {
+        if (insertResult.error || !insertResult.data) {
           return { success: false, message: "Ödeme kaydı oluşturulamadı." };
         }
-        paymentRecord = newPayment;
+        paymentRecord = insertResult.data;
       }
 
       // 2. Process Payment
@@ -211,6 +210,9 @@ export async function applyDopingToListing(
         durationDays,
         paymentRecord.id
       );
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : "Beklenmedik bir hata oluştu.";
+      return { success: false, message: `İşlem başarısız: ${errorMessage}` };
     } finally {
       pendingInits.delete(idempotencyKey);
     }

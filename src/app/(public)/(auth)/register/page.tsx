@@ -6,8 +6,6 @@ export default function RegisterPage() {
     <div className="flex-1 flex flex-col">
       <AuthForm
         action={registerAction}
-        title="Kayıt Ol"
-        description="Ücretsiz ilan vermeye başla"
         submitLabel="Hesap Oluştur"
         alternateHref="/login"
         alternateLabel="Giriş Yap"

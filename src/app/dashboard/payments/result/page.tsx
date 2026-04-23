@@ -28,6 +28,61 @@ type PaymentResultStatus =
   | "unverified"
   | "verification_error";
 
+interface PaymentStatusInfo {
+  title: string;
+  description: string;
+  icon: typeof CheckCircle2;
+  colorClass: string;
+  bgClass: string;
+}
+
+const PAYMENT_STATUS_MAP: Record<PaymentResultStatus, PaymentStatusInfo> = {
+  success: {
+    title: "Ödeme Başarılı!",
+    description:
+      "Hizmetiniz başarıyla tanımlandı. OtoBurada'yı tercih ettiğiniz için teşekkür ederiz.",
+    icon: CheckCircle2,
+    colorClass: "text-emerald-600",
+    bgClass: "bg-emerald-500",
+  },
+  failure: {
+    title: "Ödeme Başarısız",
+    description: "Ödeme işlemi sırasında bir hata oluştu veya bankanız tarafından reddedildi.",
+    icon: XCircle,
+    colorClass: "text-rose-600",
+    bgClass: "bg-rose-500",
+  },
+  pending: {
+    title: "Ödeme Doğrulanıyor",
+    description:
+      "Ödemeniz alındıysa doğrulama hâlâ sürüyor olabilir. Lütfen kısa süre sonra tekrar kontrol edin.",
+    icon: Loader2,
+    colorClass: "text-amber-600",
+    bgClass: "bg-amber-500",
+  },
+  invalid: {
+    title: "Geçersiz Bağlantı",
+    description: "Bu ödeme bağlantısı geçersiz veya eksik. Lütfen ödeme akışını yeniden başlatın.",
+    icon: XCircle,
+    colorClass: "text-rose-600",
+    bgClass: "bg-rose-500",
+  },
+  unverified: {
+    title: "Ödeme Henüz Doğrulanamadı",
+    description: "Ödeme sonucu şu an doğrulanamadı. Birkaç dakika sonra tekrar kontrol edin.",
+    icon: Loader2,
+    colorClass: "text-amber-600",
+    bgClass: "bg-amber-500",
+  },
+  verification_error: {
+    title: "Doğrulama Hatası",
+    description: "Ödeme doğrulaması sırasında geçici bir hata oluştu. Lütfen tekrar deneyin.",
+    icon: XCircle,
+    colorClass: "text-amber-600",
+    bgClass: "bg-amber-500",
+  },
+};
+
 function PaymentResultContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -82,7 +137,7 @@ function PaymentResultContent() {
         try {
           const { data, error } = await supabase
             .from("payments")
-            .select("id, amount, status, plan_name")
+            .select("id, amount, status, plan_name, fulfilled_at")
             .eq("iyzico_token", token)
             .eq("user_id", currentUser.id)
             .maybeSingle();
@@ -106,8 +161,6 @@ function PaymentResultContent() {
           if (data) {
             setPaymentData(data);
 
-            // Fix 3: Deterministic state mapping
-            // If DB status is success but not fulfilled yet, it's 'processing' or 'partially_completed'
             if (data.status === "success") {
               if (data.fulfilled_at) {
                 setStatus("success");
@@ -115,9 +168,7 @@ function PaymentResultContent() {
                 router.refresh();
                 return true;
               } else {
-                // Payment received but doping logic not yet finished (async worker or delay)
                 setStatus("pending");
-                // Continue polling
                 return false;
               }
             } else if (data.status === "failure" || data.status === "cancelled") {
@@ -142,7 +193,6 @@ function PaymentResultContent() {
 
         if (attempts < maxAttempts) {
           attempts++;
-          // Fix 1: Exponential backoff (1.5s, 2.25s, 3.375s, 5s, 7.5s)
           const delay = Math.min(1500 * Math.pow(1.5, attempts - 1), 10000);
           pollTimeout = setTimeout(() => {
             void poll();
@@ -159,7 +209,6 @@ function PaymentResultContent() {
       void poll();
     }
 
-    // Fix 2: Duplicate polling guard - ensure verifyPayment only runs once per effect cycle
     let verifyStarted = false;
     if (!verifyStarted) {
       verifyStarted = true;
@@ -199,73 +248,39 @@ function PaymentResultContent() {
     );
   }
 
-  const isFailure = status === "failure";
-  const isInvalid = status === "invalid";
-  const isPending = status === "pending";
+  const info = PAYMENT_STATUS_MAP[status];
+  const Icon = info.icon;
   const isSuccess = status === "success";
+  const isPending = status === "pending";
+  const isInvalid = status === "invalid";
+  const isFailure = status === "failure";
   const isUnverified = status === "unverified";
   const isVerificationError = status === "verification_error";
-  const isWarningState = isPending || isUnverified || isVerificationError;
 
   return (
     <div className="max-w-2xl mx-auto py-12 px-4 anime-in fade-in slide-in-from-bottom-8 duration-700">
       <Card className="overflow-hidden border-none shadow-sm bg-white/80 backdrop-blur-xl rounded-2xl">
-        <div
-          className={`h-3 w-full ${
-            isSuccess ? "bg-emerald-500" : isWarningState ? "bg-amber-500" : "bg-rose-500"
-          }`}
-        />
+        <div className={`h-3 w-full ${info.bgClass}`} />
 
         <CardContent className="pt-12 pb-10 px-8 text-center">
           <div className="mb-8 flex justify-center">
             <div
-              className={`relative h-24 w-24 flex items-center justify-center rounded-full animate-in zoom-in duration-500 ${
-                isSuccess
-                  ? "bg-emerald-50 text-emerald-600"
-                  : isWarningState
-                    ? "bg-amber-50 text-amber-600"
-                    : "bg-rose-50 text-rose-600"
-              }`}
+              className={`relative h-24 w-24 flex items-center justify-center rounded-full animate-in zoom-in duration-500 ${info.colorClass} bg-opacity-10`}
+              style={{ backgroundColor: "rgba(var(--primary), 0.1)" }}
             >
-              <div
-                className={`absolute inset-0 rounded-full blur-xl opacity-40 ${
-                  isSuccess ? "bg-emerald-500" : isWarningState ? "bg-amber-500" : "bg-rose-500"
-                }`}
-              />
-              {isSuccess ? (
-                <CheckCircle2 className="h-12 w-12 stroke-[2.5]" />
-              ) : (
-                <XCircle className="h-12 w-12 stroke-[2.5]" />
-              )}
+              <div className={`absolute inset-0 rounded-full blur-xl opacity-40 ${info.bgClass}`} />
+              <Icon className="h-12 w-12 stroke-[2.5]" />
             </div>
           </div>
 
           <h1 className="text-3xl lg:text-4xl font-bold text-slate-900 tracking-tight">
-            {isSuccess
-              ? "Ödeme Başarılı!"
-              : isInvalid
-                ? "Geçersiz Bağlantı"
-                : isPending
-                  ? "Ödeme Doğrulanıyor"
-                  : isUnverified
-                    ? "Ödeme Henüz Doğrulanamadı"
-                    : isVerificationError
-                      ? "Doğrulama Hatası"
-                      : "Ödeme Başarısız"}
+            {info.title}
           </h1>
 
           <p className="mt-4 text-lg font-bold text-slate-500 leading-relaxed max-w-md mx-auto">
-            {isSuccess
-              ? `${paymentData?.plan_name ? `${paymentData.plan_name} paketiniz` : "Hizmetiniz"} başarıyla tanımlandı. OtoBurada'yı tercih ettiğiniz için teşekkür ederiz.`
-              : isInvalid
-                ? "Bu ödeme bağlantısı geçersiz veya eksik. Lütfen ödeme akışını yeniden başlatın."
-                : isPending
-                  ? "Ödemeniz alındıysa doğrulama hâlâ sürüyor olabilir. Lütfen kısa süre sonra tekrar kontrol edin."
-                  : isUnverified
-                    ? "Ödeme sonucu şu an doğrulanamadı. Birkaç dakika sonra tekrar kontrol edin veya panelden durumunu inceleyin."
-                    : isVerificationError
-                      ? "Ödeme doğrulaması sırasında geçici bir hata oluştu. Lütfen tekrar deneyin."
-                      : "Ödeme işlemi sırasında bir hata oluştu veya bankanız tarafından reddedildi."}
+            {isSuccess && paymentData?.plan_name
+              ? `${paymentData.plan_name} paketiniz başarıyla tanımlandı. OtoBurada'yı tercih ettiğiniz için teşekkür ederiz.`
+              : info.description}
           </p>
 
           {paymentData && (

@@ -6,6 +6,7 @@ import {
   registerFileInRegistry,
   verifyAndUnregisterFile,
 } from "@/lib/storage/registry";
+import { UPLOAD_POLICY } from "@/lib/storage/upload-policy";
 import { getSupabaseStorageEnv, hasSupabaseStorageEnv } from "@/lib/supabase/env";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { API_ERROR_CODES, apiError, apiSuccess } from "@/lib/utils/api-response";
@@ -57,11 +58,11 @@ export async function POST(request: Request) {
   // ── 0. Guard against Vercel Payload Limit (4.5MB) ──────────────────────
   // request.formData() will crash the process if the stream is too large.
   const contentLength = request.headers.get("content-length");
-  const MAX_PAYLOAD_SIZE = 5 * 1024 * 1024; // 5MB limit
+  const MAX_PAYLOAD_SIZE = UPLOAD_POLICY.IMAGES.MAX_FILE_SIZE_BYTES;
   if (contentLength && parseInt(contentLength, 10) > MAX_PAYLOAD_SIZE) {
     return apiError(
       API_ERROR_CODES.BAD_REQUEST,
-      "Toplam dosya boyutu 5MB'dan küçük olmalıdır.",
+      `Toplam dosya boyutu ${MAX_PAYLOAD_SIZE / (1024 * 1024)}MB'dan küçük olmalıdır.`,
       413
     );
   }
@@ -77,7 +78,7 @@ export async function POST(request: Request) {
   const formData = await request.formData();
 
   // ── PILL: Issue 1 - Daily Upload Limit Protection ────────────────────
-  const DAILY_LIMIT = 50;
+  const DAILY_LIMIT = UPLOAD_POLICY.IMAGES.MAX_DAILY_UPLOADS;
   const currentUploadCount = await countDailyUserUploads(user.id);
   if (currentUploadCount >= DAILY_LIMIT) {
     return apiError(

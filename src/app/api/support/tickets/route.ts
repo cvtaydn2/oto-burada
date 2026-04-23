@@ -35,6 +35,10 @@ export async function POST(request: Request) {
     return apiError(API_ERROR_CODES.BAD_REQUEST, "İstek gövdesi okunamadı.", 400);
   }
 
+  if (!body || typeof body !== "object") {
+    return apiError(API_ERROR_CODES.BAD_REQUEST, "Geçersiz istek formatı.", 400);
+  }
+
   const { subject, description, category, priority, listingId } = body as Record<string, unknown>;
 
   if (!subject || typeof subject !== "string" || subject.trim().length < 3) {

@@ -53,7 +53,8 @@ describe("payment result page", () => {
     );
 
     expect(sourceCode).toContain("const maxAttempts = 5");
-    expect(sourceCode).toContain('? "Ödeme Doğrulanıyor"');
-    expect(sourceCode).not.toContain('setStatus("failure");');
+    expect(sourceCode).toContain("PAYMENT_STATUS_MAP");
+    expect(sourceCode).toContain('"Ödeme Doğrulanıyor"');
+    expect(sourceCode).toContain('setStatus("unverified")');
   });
 });

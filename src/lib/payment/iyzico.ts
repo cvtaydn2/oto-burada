@@ -60,7 +60,7 @@ export class IyzicoProvider implements PaymentProvider {
     return new Promise((resolve) => {
       const data = {
         locale: "TR",
-        conversationId: request.conversationId,
+        conversationId: request.conversationId || request.orderId,
         price: Number(request.amount).toFixed(2),
         paidPrice: Number(request.amount).toFixed(2),
         currency: "TRY",

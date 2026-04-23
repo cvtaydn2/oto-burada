@@ -5,13 +5,13 @@ import Link from "next/link";
 import { useActionState } from "react";
 
 import { AuthSubmitButton } from "@/components/forms/auth-submit-button";
-import { forgotPasswordAction } from "@/lib/auth/actions";
+import { type AuthActionState, forgotPasswordAction } from "@/lib/auth/actions";
 
-const initialState = {};
+const initialState: AuthActionState = null;
 
 export function ForgotPasswordForm() {
   const [state, formAction] = useActionState(forgotPasswordAction, initialState);
-  const submittedEmail = (state as { fields?: { email?: string } }).fields?.email;
+  const submittedEmail = state?.fields?.email;
 
   return (
     <div className="min-h-screen grid lg:grid-cols-2 bg-card">
@@ -56,11 +56,9 @@ export function ForgotPasswordForm() {
             </p>
           </div>
 
-          {(state as { success?: string }).success ? (
+          {state?.message ? (
             <div className="rounded-2xl border border-emerald-200 bg-emerald-50 p-6 space-y-2">
-              <p className="text-sm font-bold text-emerald-700">
-                ✅ {(state as { success: string }).success}
-              </p>
+              <p className="text-sm font-bold text-emerald-700">✅ {state.message}</p>
               {submittedEmail ? (
                 <p className="text-xs font-semibold text-emerald-700/80">
                   Gönderilen adres: {submittedEmail}
@@ -102,7 +100,7 @@ export function ForgotPasswordForm() {
                     id="forgot-email"
                     type="email"
                     name="email"
-                    defaultValue={(state as { fields?: { email?: string } }).fields?.email ?? ""}
+                    defaultValue={state?.fields?.email ?? ""}
                     placeholder="isim@mail.com"
                     className="h-16 w-full pl-14 pr-6 rounded-xl bg-card border-2 border-border/50 shadow-sm shadow-slate-200/40 focus:border-primary outline-none transition-all font-bold italic tracking-tighter text-foreground"
                     required
@@ -111,12 +109,12 @@ export function ForgotPasswordForm() {
                 </div>
               </div>
 
-              {(state as { error?: string }).error && (
+              {state?.error && (
                 <div
                   role="alert"
                   className="rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm font-semibold text-rose-600"
                 >
-                  {(state as { error: string }).error}
+                  {state.error}
                 </div>
               )}
 

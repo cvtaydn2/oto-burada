@@ -8,6 +8,7 @@ import { describe, expect, it, vi } from "vitest";
 vi.mock("@/lib/utils/logger", () => ({
   logger: {
     listings: { warn: vi.fn() },
+    perf: { debug: vi.fn() },
   },
 }));
 
@@ -136,8 +137,8 @@ describe("parseListingFiltersFromSearchParams — invalid query recovery", () =>
     });
 
     expect(logger.listings.warn).toHaveBeenCalledWith(
-      expect.stringContaining("Dropping invalid listing filters"),
-      expect.objectContaining({ droppedKeys: expect.arrayContaining(["minPrice"]) })
+      expect.stringContaining("Recovering from corrupted search params"),
+      expect.any(Object)
     );
   });
 

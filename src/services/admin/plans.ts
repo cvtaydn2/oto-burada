@@ -24,63 +24,68 @@ function mapPricingPlan(row: PricingPlan): PricingPlan {
   };
 }
 
-const getCachedPlans = unstable_cache(
-  async (includeInactive: boolean) => {
-    const start = Date.now();
-    const admin = createSupabaseAdminClient();
-    let query = admin.from("pricing_plans").select("*").order("price", { ascending: true });
+// ─── Cache Keys & Tags ────────────────────────────────────────────────────────
+const PRICING_TAGS = {
+  ALL: "pricing-plans",
+  PUBLIC: "pricing-plans-public",
+  ADMIN: "pricing-plans-admin",
+} as const;
 
-    if (!includeInactive) {
-      query = query.eq("is_active", true);
-    }
+// ─── Query Logic (Isolated) ────────────────────────────────────────────────────
+async function fetchPricingPlansFromDb(includeInactive: boolean): Promise<PricingPlan[]> {
+  const start = Date.now();
+  const admin = createSupabaseAdminClient();
+  let query = admin.from("pricing_plans").select("*").order("price", { ascending: true });
 
-    const { data, error } = await query;
+  if (!includeInactive) {
+    query = query.eq("is_active", true);
+  }
 
-    if (error) {
-      logger.admin.error("getPricingPlans query failed", error);
-      return [];
-    }
+  const { data, error } = await query;
 
-    const result = (data as PricingPlan[]).map(mapPricingPlan);
-    logger.perf.debug("getCachedPlans execution (DB fetch)", {
-      duration: Date.now() - start,
-      includeInactive,
-    });
-    return result;
-  },
-  ["pricing-plans"],
-  { revalidate: 3600, tags: ["pricing-plans"] }
+  if (error) {
+    logger.admin.error("getPricingPlans query failed", error);
+    return [];
+  }
+
+  const result = (data as PricingPlan[]).map(mapPricingPlan);
+  logger.perf.debug("fetchPricingPlansFromDb execution", {
+    duration: Date.now() - start,
+    includeInactive,
+  });
+  return result;
+}
+
+// ─── Public API ───────────────────────────────────────────────────────────────
+export const getPublicPricingPlans = unstable_cache(
+  () => fetchPricingPlansFromDb(false),
+  [PRICING_TAGS.PUBLIC],
+  {
+    revalidate: 3600,
+    tags: [PRICING_TAGS.ALL, PRICING_TAGS.PUBLIC],
+  }
 );
 
-// Explicit wrapper to ensure key differentiation if needed,
-// though unstable_cache usually handles arguments in the key automatically
-// in modern Next.js, it's safer to be explicit or use separate keys.
-// Given the risk of visibility drift, we'll use separate tags/keys.
-const getPublicPlansCached = unstable_cache(() => getCachedPlans(false), ["pricing-plans-public"], {
-  revalidate: 3600,
-  tags: ["pricing-plans", "pricing-plans-public"],
-});
+export const getAdminPricingPlans = unstable_cache(
+  () => fetchPricingPlansFromDb(true),
+  [PRICING_TAGS.ADMIN],
+  {
+    revalidate: 3600,
+    tags: [PRICING_TAGS.ALL, PRICING_TAGS.ADMIN],
+  }
+);
 
-const getAdminPlansCached = unstable_cache(() => getCachedPlans(true), ["pricing-plans-admin"], {
-  revalidate: 3600,
-  tags: ["pricing-plans", "pricing-plans-admin"],
-});
-
-export async function getPublicPricingPlans() {
-  return getPublicPlansCached();
-}
-
-export async function getAdminPricingPlans() {
-  return getAdminPlansCached();
-}
-
-/**
- * @deprecated Use getPublicPricingPlans() or getAdminPricingPlans() explicitly.
- * This generic function obscures access intent and risks leaking inactive plans
- * to public surfaces if the caller passes the wrong argument.
- */
+/** @deprecated Internal use fetchPricingPlansFromDb directly or use explicit public/admin methods. */
 export async function getPricingPlans(includeInactive = false) {
   return includeInactive ? getAdminPricingPlans() : getPublicPricingPlans();
+}
+
+// ─── Mutations ────────────────────────────────────────────────────────────────
+async function revalidatePricingCaches() {
+  // @ts-expect-error: Next.js 16 revalidateTag signature mismatch
+  await revalidateTag(PRICING_TAGS.ALL);
+  await revalidatePath("/admin/plans", "page");
+  await revalidatePath("/dashboard/pricing", "page");
 }
 
 export async function updatePricingPlan(id: string, updates: Partial<PricingPlan>) {
@@ -91,10 +96,7 @@ export async function updatePricingPlan(id: string, updates: Partial<PricingPlan
     throw new Error(error.message);
   }
 
-  // @ts-expect-error: Next.js 16 revalidateTag signature mismatch
-  await revalidateTag("pricing-plans");
-  await revalidatePath("/admin/plans", "page");
-  await revalidatePath("/dashboard/pricing", "page");
+  await revalidatePricingCaches();
   return { success: true };
 }
 
@@ -104,17 +106,13 @@ export async function togglePlanStatus(id: string, currentStatus: boolean) {
 
 export async function deletePricingPlan(id: string) {
   const admin = createSupabaseAdminClient();
-
   const { error } = await admin.from("pricing_plans").delete().eq("id", id);
 
   if (error) {
     throw new Error(error.message);
   }
 
-  // @ts-expect-error: Next.js 16 revalidateTag signature mismatch
-  await revalidateTag("pricing-plans");
-  await revalidatePath("/admin/plans", "page");
-  await revalidatePath("/dashboard/pricing", "page");
+  await revalidatePricingCaches();
   return { success: true };
 }
 
@@ -126,10 +124,7 @@ export async function createPricingPlan(plan: Omit<PricingPlan, "id">) {
     throw new Error(error.message);
   }
 
-  // @ts-expect-error: Next.js 16 revalidateTag signature mismatch
-  await revalidateTag("pricing-plans");
-  await revalidatePath("/admin/plans", "page");
-  await revalidatePath("/dashboard/pricing", "page");
+  await revalidatePricingCaches();
   return { success: true };
 }
 

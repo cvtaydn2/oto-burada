@@ -116,17 +116,30 @@ export async function withSecurity(
       }
     }
 
-    // Instance-level ban checks matter for normal user sessions.
-    // Admin and cron/admin flows are already separately authorized.
     if (!options.requireAdmin) {
-      const { createSupabaseAdminClient } = await import("@/lib/supabase/admin");
-      const admin = createSupabaseAdminClient();
-      const { data: isBanned } = await admin.rpc("is_user_banned", { p_user_id: user.id });
+      try {
+        const { createSupabaseAdminClient } = await import("@/lib/supabase/admin");
+        const admin = createSupabaseAdminClient();
+        const { data: isBanned, error: banError } = await admin.rpc("is_user_banned", {
+          p_user_id: user.id,
+        });
 
-      if (isBanned) {
+        if (banError) throw banError;
+
+        if (isBanned) {
+          return {
+            ok: false,
+            response: apiError(API_ERROR_CODES.FORBIDDEN, "Hesabınız askıya alınmıştır.", 403),
+          };
+        }
+      } catch {
         return {
           ok: false,
-          response: apiError(API_ERROR_CODES.FORBIDDEN, "Hesabınız askıya alınmıştır.", 403),
+          response: apiError(
+            API_ERROR_CODES.INTERNAL_ERROR,
+            "Güvenlik kontrolü başarısız oldu.",
+            500
+          ),
         };
       }
     }

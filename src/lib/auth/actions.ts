@@ -13,45 +13,43 @@ import { rateLimitProfiles } from "@/lib/utils/rate-limit";
 import { checkRateLimit } from "@/lib/utils/rate-limit-middleware";
 import { loginSchema, registerSchema } from "@/lib/validators";
 
-export interface AuthActionState {
+export interface AuthActionResponse {
+  success: boolean;
   error?: string;
-  success?: string;
+  message?: string;
   fields?: {
     email?: string;
     fullName?: string;
   };
+  reason?: string;
 }
 
-const initialState: AuthActionState = {};
+export type AuthActionState = AuthActionResponse | null;
+
+const initialState: AuthActionResponse = {
+  success: false,
+};
 
 // Shared safe-path validator — mirrors auth/callback/route.ts sanitizeNextParam.
 // Accepts only relative paths with safe characters; rejects open-redirect attempts.
 const ALLOWED_NEXT_PATHS = /^\/[a-zA-Z0-9\-_/?=&%#.]+$/;
 
+function buildAuthErrorState(message: string, reason = "error"): AuthActionResponse {
+  return {
+    success: false,
+    error: message,
+    reason,
+  };
+}
+
+// Helper functions will be deprecated in favor of direct returns for better DX
 function buildAuthFields(
   email?: string,
   fullName?: string
-): NonNullable<AuthActionState["fields"]> {
+): NonNullable<AuthActionResponse["fields"]> {
   return {
     email,
     ...(fullName !== undefined ? { fullName } : {}),
-  };
-}
-
-function buildAuthErrorState(error: string, fields?: AuthActionState["fields"]): AuthActionState {
-  return {
-    error,
-    ...(fields ? { fields } : {}),
-  };
-}
-
-function buildAuthSuccessState(
-  success: string,
-  fields?: AuthActionState["fields"]
-): AuthActionState {
-  return {
-    success,
-    ...(fields ? { fields } : {}),
   };
 }
 
@@ -106,17 +104,21 @@ export async function loginAction(
   const parsed = loginSchema.safeParse(values);
 
   if (!parsed.success) {
-    return buildAuthErrorState(
-      parsed.error.issues[0]?.message ?? "Bir hata oluştu. Lütfen tekrar dene.",
-      buildAuthFields(values.email)
-    );
+    return {
+      success: false,
+      error: parsed.error.issues[0]?.message ?? "Bir hata oluştu. Lütfen tekrar dene.",
+      fields: buildAuthFields(values.email),
+      reason: "validation_error",
+    };
   }
 
   if (!hasSupabaseEnv()) {
-    return buildAuthErrorState(
-      "Supabase ortam değişkenleri eksik. Giriş için .env.local dosyasını tamamlamalısın.",
-      buildAuthFields(values.email)
-    );
+    return {
+      success: false,
+      error: "Supabase ortam değişkenleri eksik. Giriş için .env.local dosyasını tamamlamalısın.",
+      fields: buildAuthFields(values.email),
+      reason: "env_missing",
+    };
   }
 
   const supabase = await createSupabaseServerClient();
@@ -124,10 +126,12 @@ export async function loginAction(
   const { data, error } = await supabase.auth.signInWithPassword(parsed.data);
 
   if (error) {
-    return buildAuthErrorState(
-      "Giriş yapılamadı. E-posta veya şifreyi kontrol et.",
-      buildAuthFields(values.email)
-    );
+    return {
+      success: false,
+      error: "Giriş yapılamadı. E-posta veya şifreyi kontrol et.",
+      fields: buildAuthFields(values.email),
+      reason: "invalid_credentials",
+    };
   }
 
   if (data.user) {
@@ -149,7 +153,6 @@ export async function loginAction(
   }
 
   const nextPath = sanitizeRedirectPath(values.next);
-
   redirect(nextPath);
 }
 
@@ -177,17 +180,21 @@ export async function registerAction(
   const parsed = registerSchema.safeParse(values);
 
   if (!parsed.success) {
-    return buildAuthErrorState(
-      parsed.error.issues[0]?.message ?? "Bir hata oluştu. Lütfen tekrar dene.",
-      buildAuthFields(values.email, values.fullName)
-    );
+    return {
+      success: false,
+      error: parsed.error.issues[0]?.message ?? "Bir hata oluştu. Lütfen tekrar dene.",
+      fields: buildAuthFields(values.email, values.fullName),
+      reason: "validation_error",
+    };
   }
 
   if (!hasSupabaseEnv()) {
-    return buildAuthErrorState(
-      "Supabase ortam değişkenleri eksik. Kayıt için .env.local dosyasını tamamlamalısın.",
-      buildAuthFields(values.email, values.fullName)
-    );
+    return {
+      success: false,
+      error: "Supabase ortam değişkenleri eksik. Kayıt için .env.local dosyasını tamamlamalısın.",
+      fields: buildAuthFields(values.email, values.fullName),
+      reason: "env_missing",
+    };
   }
 
   const supabase = await createSupabaseServerClient();
@@ -206,10 +213,12 @@ export async function registerAction(
   });
 
   if (error) {
-    return buildAuthErrorState(
-      "Kayıt oluşturulamadı. Lütfen tekrar dene.",
-      buildAuthFields(values.email, values.fullName)
-    );
+    return {
+      success: false,
+      error: "Kayıt oluşturulamadı. Lütfen tekrar dene.",
+      fields: buildAuthFields(values.email, values.fullName),
+      reason: "signup_error",
+    };
   }
 
   if (data.user) {
@@ -248,10 +257,11 @@ export async function registerAction(
     redirect("/dashboard");
   }
 
-  return buildAuthSuccessState(
-    "Hesabın oluşturuldu. E-posta doğrulaması açıksa gelen kutunu kontrol et.",
-    buildAuthFields(values.email, values.fullName)
-  );
+  return {
+    success: true,
+    message: "Hesabın oluşturuldu. E-posta doğrulaması açıksa gelen kutunu kontrol et.",
+    fields: buildAuthFields(values.email, values.fullName),
+  };
 }
 
 export async function forgotPasswordAction(
@@ -261,11 +271,21 @@ export async function forgotPasswordAction(
   const email = String(formData.get("email") ?? "").trim();
 
   if (!email || !email.includes("@")) {
-    return buildAuthErrorState("Geçerli bir e-posta adresi girin.", buildAuthFields(email));
+    return {
+      success: false,
+      error: "Geçerli bir e-posta adresi girin.",
+      fields: buildAuthFields(email),
+      reason: "invalid_input",
+    };
   }
 
   if (!hasSupabaseEnv()) {
-    return buildAuthErrorState("Servis şu anda kullanılamıyor.", buildAuthFields(email));
+    return {
+      success: false,
+      error: "Servis şu anda kullanılamıyor.",
+      fields: buildAuthFields(email),
+      reason: "env_missing",
+    };
   }
 
   const supabase = await createSupabaseServerClient();
@@ -299,19 +319,22 @@ export async function forgotPasswordAction(
     const isTemporaryFailure =
       error.status === 429 || /rate|limit|too many|temporar/i.test(error.message);
 
-    return buildAuthErrorState(
-      isTemporaryFailure
+    return {
+      success: false,
+      error: isTemporaryFailure
         ? "İşlem şu anda geçici olarak yavaşlatıldı. Lütfen biraz sonra tekrar dene."
         : "İşlem şu anda tamamlanamıyor. Lütfen biraz sonra tekrar dene.",
-      buildAuthFields(email)
-    );
+      fields: buildAuthFields(email),
+      reason: reasonCode,
+    };
   }
 
   // Güvenlik: hesap var/yok bilgisi verme — her zaman başarı mesajı göster
-  return buildAuthSuccessState(
-    "Sıfırlama bağlantısı e-posta adresinize gönderildi.",
-    buildAuthFields(email)
-  );
+  return {
+    success: true,
+    message: "Sıfırlama bağlantısı e-posta adresinize gönderildi.",
+    fields: buildAuthFields(email),
+  };
 }
 
 export async function logoutAction() {

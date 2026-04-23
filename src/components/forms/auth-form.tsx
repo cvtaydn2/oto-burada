@@ -18,21 +18,37 @@ interface AuthFormProps {
   next?: string;
 }
 
-const initialState: AuthActionState = {};
+const initialState: AuthActionState = null;
+
+const AUTH_MODE_CONFIG = {
+  login: {
+    title: "Giriş Yap",
+    description: "Hesabınıza erişmek için e-posta adresinizi girin.",
+    passwordHint: "Hesabınızı açmak için mevcut şifrenizi girin.",
+    passwordPlaceholder: "Şifrenizi girin",
+    passwordAutoComplete: "current-password",
+  },
+  register: {
+    title: "Hesap Oluştur",
+    description: "Ücretsiz ilan vermek için hemen kayıt olun.",
+    passwordHint: "Güvenli bir şifre seçin. En az 8 karakter kullanın.",
+    passwordPlaceholder: "En az 8 karakter",
+    passwordAutoComplete: "new-password",
+  },
+} as const;
 
 export function AuthForm({
   action,
-  title,
-  description,
-  submitLabel,
-  alternateHref,
-  alternateLabel,
   mode,
   next,
-}: AuthFormProps) {
+  alternateHref,
+  alternateLabel,
+  submitLabel,
+}: Omit<AuthFormProps, "title" | "description">) {
   const [state, formAction] = useActionState(action, initialState);
+  const config = AUTH_MODE_CONFIG[mode];
   const isLogin = mode === "login";
-  const passwordHintId = isLogin ? "login-password-hint" : "register-password-hint";
+  const passwordHintId = `${mode}-password-hint`;
   const fullNameHintId = "register-full-name-hint";
 
   return (
@@ -116,8 +132,8 @@ export function AuthForm({
           </div>
 
           <div className="space-y-1 text-center lg:text-left">
-            <h1 className="text-3xl font-bold tracking-tight text-foreground">{title}</h1>
-            <p className="text-sm font-medium text-muted-foreground">{description}</p>
+            <h1 className="text-3xl font-bold tracking-tight text-foreground">{config.title}</h1>
+            <p className="text-sm font-medium text-muted-foreground">{config.description}</p>
           </div>
 
           {/* Form Card */}
@@ -138,7 +154,7 @@ export function AuthForm({
                       id="fullName"
                       type="text"
                       name="fullName"
-                      defaultValue={state.fields?.fullName ?? ""}
+                      defaultValue={state?.fields?.fullName ?? ""}
                       autoComplete="name"
                       placeholder="Ad Soyad"
                       required
@@ -165,7 +181,7 @@ export function AuthForm({
                   id="email"
                   type="email"
                   name="email"
-                  defaultValue={state.fields?.email ?? ""}
+                  defaultValue={state?.fields?.email ?? ""}
                   autoComplete="email"
                   placeholder="isim@example.com"
                   required
@@ -191,8 +207,8 @@ export function AuthForm({
                   id="password"
                   type="password"
                   name="password"
-                  autoComplete={isLogin ? "current-password" : "new-password"}
-                  placeholder={isLogin ? "Şifrenizi girin" : "En az 8 karakter"}
+                  autoComplete={config.passwordAutoComplete}
+                  placeholder={config.passwordPlaceholder}
                   required
                   minLength={8}
                   title={
@@ -207,9 +223,7 @@ export function AuthForm({
                   id={passwordHintId}
                   className="px-1 text-[11px] font-medium text-muted-foreground"
                 >
-                  {isLogin
-                    ? "Hesabınızı açmak için mevcut şifrenizi girin."
-                    : "Güvenli bir şifre seçin. En az 8 karakter kullanın."}
+                  {config.passwordHint}
                 </p>
               </div>
 
@@ -229,21 +243,21 @@ export function AuthForm({
                 </label>
               )}
 
-              {state.error && (
+              {state?.error && (
                 <div
                   role="alert"
                   className="rounded-xl border border-destructive/20 bg-destructive/5 px-4 py-3 text-sm font-medium text-destructive"
                 >
-                  {state.error}
+                  {state?.error}
                 </div>
               )}
 
-              {state.success && (
+              {state?.message && (
                 <div
                   role="status"
                   className="rounded-xl border border-emerald-500/20 bg-emerald-500/5 px-4 py-3 text-sm font-medium text-emerald-600"
                 >
-                  {state.success}
+                  {state.message}
                 </div>
               )}
 

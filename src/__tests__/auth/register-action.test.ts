@@ -72,15 +72,15 @@ describe("registerAction — success path", () => {
       fullName: "Ahmet Yılmaz",
     });
 
-    const result = await registerAction(undefined, fd);
+    const result = await registerAction(null, fd);
 
     expect(mockSignUp).toHaveBeenCalledOnce();
     const callArgs = mockSignUp.mock.calls[0][0] as {
       options: { data: { full_name: string } };
     };
     expect(callArgs.options.data.full_name).toBe("Ahmet Yılmaz");
-    expect(result.success).toBeDefined();
-    expect(result.error).toBeUndefined();
+    expect(result?.success).toBe(true);
+    expect(result?.error).toBeUndefined();
   });
 
   it("returns success message when no session (email confirmation flow)", async () => {
@@ -95,11 +95,11 @@ describe("registerAction — success path", () => {
       fullName: "Fatma Kaya",
     });
 
-    const result = await registerAction(undefined, fd);
+    const result = await registerAction(null, fd);
 
-    expect(result.success).toContain("Hesabın oluşturuldu");
-    expect(result.fields?.email).toBe("test@example.com");
-    expect(result.fields?.fullName).toBe("Fatma Kaya");
+    expect(result?.message).toContain("Hesabın oluşturuldu");
+    expect(result?.fields?.email).toBe("test@example.com");
+    expect(result?.fields?.fullName).toBe("Fatma Kaya");
   });
 
   it("redirects to /dashboard when session is immediately available", async () => {
@@ -117,7 +117,7 @@ describe("registerAction — success path", () => {
       fullName: "Ali Demir",
     });
 
-    await expect(registerAction(undefined, fd)).rejects.toThrow("REDIRECT:/dashboard");
+    await expect(registerAction(null, fd)).rejects.toThrow("REDIRECT:/dashboard");
   });
 
   it("returns error state when Supabase signUp fails", async () => {
@@ -132,13 +132,13 @@ describe("registerAction — success path", () => {
       fullName: "Mevcut Kullanıcı",
     });
 
-    const result = await registerAction(undefined, fd);
+    const result = await registerAction(null, fd);
 
-    expect(result.error).toBeDefined();
-    expect(result.success).toBeUndefined();
+    expect(result?.error).toBeDefined();
+    expect(result?.success).toBe(false);
     // Fields should be preserved for form re-population
-    expect(result.fields?.email).toBe("existing@example.com");
-    expect(result.fields?.fullName).toBe("Mevcut Kullanıcı");
+    expect(result?.fields?.email).toBe("existing@example.com");
+    expect(result?.fields?.fullName).toBe("Mevcut Kullanıcı");
   });
 
   it("returns validation error when fullName is too short", async () => {
@@ -148,9 +148,9 @@ describe("registerAction — success path", () => {
       fullName: "Al",
     });
 
-    const result = await registerAction(undefined, fd);
+    const result = await registerAction(null, fd);
 
-    expect(result.error).toBeDefined();
+    expect(result?.error).toBeDefined();
     expect(mockSignUp).not.toHaveBeenCalled();
   });
 
@@ -169,9 +169,9 @@ describe("registerAction — success path", () => {
       fullName: "Test Kullanıcı",
     });
 
-    const result = await registerAction(undefined, fd);
+    const result = await registerAction(null, fd);
 
-    expect(result.error).toContain("Çok fazla kayıt denemesi");
+    expect(result?.error).toContain("Çok fazla kayıt denemesi");
     expect(mockSignUp).not.toHaveBeenCalled();
   });
 });

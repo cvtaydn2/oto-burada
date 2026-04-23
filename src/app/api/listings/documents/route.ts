@@ -1,5 +1,6 @@
 import { captureServerError } from "@/lib/monitoring/posthog-server";
 import { registerFileInRegistry, verifyAndUnregisterFile } from "@/lib/storage/registry";
+import { UPLOAD_POLICY } from "@/lib/storage/upload-policy";
 import { getSupabaseDocumentsStorageEnv, hasSupabaseDocumentsStorageEnv } from "@/lib/supabase/env";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { API_ERROR_CODES, apiError, apiSuccess } from "@/lib/utils/api-response";
@@ -9,7 +10,6 @@ import { rateLimitProfiles } from "@/lib/utils/rate-limit";
 import {
   buildExpertDocumentStoragePath,
   createExpertDocumentSignedUrl,
-  getExpertDocumentMaxUploadBytes,
   getVerifiedDocumentMimeType,
   validateExpertDocumentFile,
 } from "@/services/listings/listing-documents";
@@ -60,7 +60,7 @@ export async function POST(request: Request) {
     ipRateLimit: rateLimitProfiles.general,
     userRateLimit: rateLimitProfiles.imageUpload,
     rateLimitKey: "documents:upload",
-    maxBodySizeBytes: getExpertDocumentMaxUploadBytes(),
+    maxBodySizeBytes: UPLOAD_POLICY.DOCUMENTS.MAX_FILE_SIZE_BYTES,
   });
 
   if (!security.ok) return security.response;

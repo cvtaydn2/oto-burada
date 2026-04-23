@@ -25,7 +25,7 @@ exports[`Iyzico Payload Mapping > should match snapshot for payment init payload
     "email": "cevat@example.com",
     "gsmNumber": "+905321234567",
     "id": "USER-1",
-    "identityNumber": "11111111111",
+    "identityNumber": "12345678901",
     "ip": "192.168.1.1",
     "lastLoginDate": "2023-04-20 12:00:00",
     "name": "Cevat",
@@ -34,7 +34,7 @@ exports[`Iyzico Payload Mapping > should match snapshot for payment init payload
     "surname": "Aydin",
     "zipCode": "34000",
   },
-  "callbackUrl": "undefined/api/payments/webhook",
+  "callbackUrl": "http://localhost:3000/api/payments/webhook",
   "conversationId": "ORDER-1",
   "currency": "TRY",
   "enabledInstallments": [

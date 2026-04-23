@@ -138,50 +138,33 @@ export function parseListingFiltersFromSearchParams(
   const start = Date.now();
   const normalizedSearchParams = Object.fromEntries(
     Object.entries(searchParams ?? {}).flatMap(([key, value]) => {
-      if (typeof value === "string") {
-        return [[key, value]];
-      }
-
-      if (Array.isArray(value) && value.length > 0) {
-        return [[key, value[0]]];
-      }
-
-      return [];
+      const firstValue = Array.isArray(value) ? value[0] : value;
+      return firstValue !== undefined ? [[key, firstValue]] : [];
     })
   );
 
   const parsed = listingFiltersSchema.safeParse(normalizedSearchParams);
 
+  // If initial parse fails, we attempt a 'lossy' recovery by removing invalid keys
+  // This is safer than a hardcoded 'recovered' object because it still respects schema types
   const rawResult = parsed.success
-    ? ({
-        ...parsed.data,
-        sort: parsed.data.sort ?? "newest",
-      } satisfies ListingFilters)
+    ? parsed.data
     : (() => {
         const validData = { ...normalizedSearchParams };
-        const droppedKeys = new Set<string>();
-
-        for (const issue of parsed.error.issues) {
+        parsed.error.issues.forEach((issue) => {
           const field = issue.path[0];
           if (typeof field === "string") {
             delete (validData as Record<string, unknown>)[field];
-            droppedKeys.add(field);
           }
-        }
+        });
 
-        if (droppedKeys.size > 0) {
-          logger.listings.warn("Dropping invalid listing filters (corruption recovery)", {
-            droppedKeys: [...droppedKeys],
-          });
-        }
+        logger.listings.warn("Recovering from corrupted search params", {
+          original: normalizedSearchParams,
+          errors: parsed.error.issues.length,
+        });
 
         const recovered = listingFiltersSchema.safeParse(validData);
-        const data = recovered.success ? recovered.data : {};
-
-        return {
-          ...data,
-          sort: (data as Record<string, unknown>).sort ?? "newest",
-        } as ListingFilters;
+        return recovered.success ? recovered.data : {};
       })();
 
   logger.perf.debug("parseListingFiltersFromSearchParams execution", {
@@ -189,15 +172,15 @@ export function parseListingFiltersFromSearchParams(
     recovered: !parsed.success,
   });
 
-  // Fix 5: Canonicalization - ensure output matches what serializer would produce
-  // This prevents 'silent state corruption' where URL doesn't match internal state
-  const finalResult = {
+  // Canonicalization & Defaults
+  const result = {
     ...rawResult,
+    sort: (rawResult as Record<string, unknown>).sort ?? "newest",
     page: rawResult.page && rawResult.page > 0 ? rawResult.page : 1,
     limit: rawResult.limit && rawResult.limit > 0 ? rawResult.limit : 12,
-  };
+  } as ListingFilters;
 
-  return finalResult;
+  return result;
 }
 
 export function createSearchParamsFromListingFilters(filters: ListingFilters) {

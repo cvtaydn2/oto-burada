@@ -7,6 +7,7 @@ import { logger } from "@/lib/utils/logger";
 import { enforceRateLimit, getUserRateLimitKey } from "@/lib/utils/rate-limit-middleware";
 import { getDatabaseListings } from "@/services/listings/listing-submissions";
 import { applyDopingToListing, DopingType } from "@/services/market/doping-service";
+import { getIyzicoBuyerFromProfile } from "@/services/market/payment-helpers";
 import { getUserProfile } from "@/services/profile/profile-records";
 
 const VALID_DOPING_TYPES: DopingType[] = ["featured", "urgent", "highlighted"];
@@ -62,47 +63,8 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
     }
 
     const profile = await getUserProfile(user.id);
-    if (!profile || !profile.fullName || !user.email) {
-      return apiError(
-        API_ERROR_CODES.BAD_REQUEST,
-        "Ödeme için profil bilgileriniz (isim, e-posta) eksik.",
-        400
-      );
-    }
-
-    const identityNumber = profile.taxId && /^\d{11}$/.test(profile.taxId) ? profile.taxId : null;
-    if (!identityNumber) {
-      return apiError(
-        API_ERROR_CODES.BAD_REQUEST,
-        "Doping ödemesi için geçerli bir 11 haneli TC Kimlik Numarası gerekli.",
-        400
-      );
-    }
-
-    const gsmNumber = profile.phone?.trim() || null;
-    const address = profile.businessAddress?.trim() || null;
-    const city = profile.city?.trim() || null;
-    const zipCode = address?.match(/\b\d{5}\b/)?.[0] ?? null;
-
-    if (!gsmNumber || !address || !city || !zipCode) {
-      return apiError(
-        API_ERROR_CODES.BAD_REQUEST,
-        "Doping ödemesi için profil bilgileriniz (telefon, adres, şehir, posta kodu) eksik.",
-        400
-      );
-    }
-
-    const nameParts = profile.fullName.trim().split(" ");
-    // Fix 1: No placeholder fallback — require real name parts, fail-closed
-    const name = nameParts[0];
-    const surname = nameParts.length > 1 ? nameParts.slice(1).join(" ") : null;
-
-    if (!name || !surname) {
-      return apiError(
-        API_ERROR_CODES.BAD_REQUEST,
-        "Ödeme için profil bilgilerinizde hem ad hem soyad gereklidir.",
-        400
-      );
+    if (!profile || !user.email) {
+      return apiError(API_ERROR_CODES.BAD_REQUEST, "Profil bilgileri bulunamadı.", 400);
     }
 
     const headersList = await headers();
@@ -111,21 +73,20 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
       headersList.get("x-real-ip") ||
       "127.0.0.1";
 
-    const result = await applyDopingToListing(listingId, user.id, dopingTypes as DopingType[], {
-      id: user.id,
-      name,
-      surname,
-      email: user.email,
-      identityNumber,
-      gsmNumber,
-      address,
-      city,
-      country: "Turkey",
-      zipCode,
-      ip,
-      registrationDate: new Date(profile.createdAt).toISOString().slice(0, 19).replace("T", " "),
-      lastLoginDate: new Date().toISOString().slice(0, 19).replace("T", " "),
-    });
+    let buyer;
+    try {
+      buyer = getIyzicoBuyerFromProfile(profile, user.email, ip);
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : "Eksik profil bilgileri.";
+      return apiError(API_ERROR_CODES.BAD_REQUEST, message, 400);
+    }
+
+    const result = await applyDopingToListing(
+      listingId,
+      user.id,
+      dopingTypes as DopingType[],
+      buyer
+    );
 
     if (result.success) {
       captureServerEvent(

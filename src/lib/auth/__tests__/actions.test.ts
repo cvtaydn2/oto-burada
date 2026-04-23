@@ -64,10 +64,10 @@ describe("auth actions", () => {
     formData.set("fullName", "Test User");
     formData.set("password", "1234567");
 
-    const result = await registerAction(undefined, formData);
+    const result = await registerAction(null, formData);
 
-    expect(result.fields?.email).toBe("test@example.com");
-    expect(result.fields?.fullName).toBe("Test User");
+    expect(result?.fields?.email).toBe("test@example.com");
+    expect(result?.fields?.fullName).toBe("Test User");
   });
 
   it("uses the real reset-password route in forgot password flow", async () => {
@@ -83,12 +83,12 @@ describe("auth actions", () => {
     const formData = new FormData();
     formData.set("email", "test@example.com");
 
-    const result = await forgotPasswordAction(undefined, formData);
+    const result = await forgotPasswordAction(null, formData);
 
     expect(resetPasswordForEmail).toHaveBeenCalledWith("test@example.com", {
       redirectTo: "https://otoburada.test/reset-password",
     });
-    expect(result.success).toContain("Sıfırlama bağlantısı");
+    expect(result?.message).toContain("Sıfırlama bağlantısı");
   });
 
   it("returns a generic error and logs dispatch failures in forgot password flow", async () => {
@@ -104,10 +104,10 @@ describe("auth actions", () => {
     const formData = new FormData();
     formData.set("email", "test@example.com");
 
-    const result = await forgotPasswordAction(undefined, formData);
+    const result = await forgotPasswordAction(null, formData);
 
-    expect(result.error).toBe("İşlem şu anda tamamlanamıyor. Lütfen biraz sonra tekrar dene.");
-    expect(result.fields?.email).toBe("test@example.com");
+    expect(result?.error).toBe("İşlem şu anda tamamlanamıyor. Lütfen biraz sonra tekrar dene.");
+    expect(result?.fields?.email).toBe("test@example.com");
     // Fix 3: Log now uses sanitized reason code, not raw error or PII
     expect(mockAuthError).toHaveBeenCalledWith(
       "Forgot password email dispatch failed",
