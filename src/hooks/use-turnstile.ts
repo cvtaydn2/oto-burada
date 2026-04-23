@@ -71,6 +71,7 @@ export function useTurnstile(options: UseTurnstileOptions = {}): UseTurnstileRes
   const [widgetId, setWidgetId] = useState<string | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const scriptLoadedRef = useRef(false);
+  const widgetIdRef = useRef<string | null>(null);
 
   const isEnabled = Boolean(siteKey);
 
@@ -96,6 +97,12 @@ export function useTurnstile(options: UseTurnstileOptions = {}): UseTurnstileRes
     function renderWidget() {
       if (!window.turnstile || !containerRef.current || !siteKey) return;
 
+      // Cleanup previous widget if it exists to avoid double rendering
+      if (widgetIdRef.current) {
+        window.turnstile.remove(widgetIdRef.current);
+        widgetIdRef.current = null;
+      }
+
       const id = window.turnstile.render(containerRef.current, {
         sitekey: siteKey,
         callback: (responseToken: string) => {
@@ -112,19 +119,22 @@ export function useTurnstile(options: UseTurnstileOptions = {}): UseTurnstileRes
         action: options.action,
       });
 
+      widgetIdRef.current = id;
       setWidgetId(id);
     }
 
     return () => {
-      if (widgetId && window.turnstile) {
-        window.turnstile.remove(widgetId);
+      if (widgetIdRef.current && window.turnstile) {
+        window.turnstile.remove(widgetIdRef.current);
+        widgetIdRef.current = null;
       }
     };
-  }, [isEnabled, siteKey, options.theme, options.action, widgetId]);
+  }, [isEnabled, siteKey, options.theme, options.action]); // widgetId NOT in dependencies
 
   const reset = () => {
-    if (widgetId && window.turnstile) {
-      window.turnstile.reset(widgetId);
+    const currentId = widgetIdRef.current || widgetId;
+    if (currentId && window.turnstile) {
+      window.turnstile.reset(currentId);
       setToken(null);
     }
   };
