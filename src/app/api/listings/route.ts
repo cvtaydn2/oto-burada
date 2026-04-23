@@ -99,9 +99,26 @@ export async function POST(request: Request) {
   });
 
   if (!result.success) {
-    const statusCode = result.errorCode === "VALIDATION_ERROR" ? 400 : 403;
+    const errorCode = result.errorCode ?? "INTERNAL_ERROR";
+    let statusCode: number;
+    switch (errorCode) {
+      case "VALIDATION_ERROR":
+        statusCode = 400;
+        break;
+      case "SLUG_COLLISION":
+        statusCode = 409;
+        break;
+      case "QUOTA_EXCEEDED":
+      case "TRUST_GUARD_REJECTION":
+        statusCode = 403;
+        break;
+      case "DB_ERROR":
+      default:
+        statusCode = 500;
+        break;
+    }
     return apiError(
-      (result.errorCode as keyof typeof API_ERROR_CODES) || API_ERROR_CODES.INTERNAL_ERROR,
+      (errorCode as keyof typeof API_ERROR_CODES) || API_ERROR_CODES.INTERNAL_ERROR,
       result.error || "İlan oluşturulamadı.",
       statusCode
     );

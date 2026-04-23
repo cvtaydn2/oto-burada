@@ -16,7 +16,9 @@ export function getSecurityHeaders(nonce: string) {
     "https://*.posthog.com",
     "https://us-assets.i.posthog.com",
     "https://challenges.cloudflare.com",
-    "'unsafe-eval'", // Required by some Vercel/PostHog features in production
+    // NOTE: 'unsafe-eval' is intentionally NOT included in production.
+    // If a specific Vercel/PostHog feature requires it, gate it with an explicit
+    // env flag (e.g. NEXT_PUBLIC_ALLOW_UNSAFE_EVAL=true) and document the reason.
   ];
   const styleSrc = ["'self'", "https://fonts.googleapis.com", "https://unpkg.com"];
 

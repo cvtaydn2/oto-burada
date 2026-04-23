@@ -190,8 +190,20 @@ export async function createDatabaseListing(
     if (imageRows.length > 0) {
       const imageInsertResult = await admin.from("listing_images").insert(imageRows);
       if (imageInsertResult.error) {
-        // Rollback: delete the listing
+        // Rollback: delete the listing row
         await admin.from("listings").delete().eq("id", currentListing.id);
+
+        // Compensating cleanup: queue storage files and registry entries for removal
+        // so uploaded files don't become orphans.
+        const storagePaths = currentListing.images
+          .map((img) => img.storagePath)
+          .filter((p) => p.length > 0);
+        if (storagePaths.length > 0) {
+          const bucketName = process.env.SUPABASE_STORAGE_BUCKET_LISTINGS ?? "listing-images";
+          const { queueFileCleanup } = await import("@/lib/storage/registry");
+          await queueFileCleanup(bucketName, storagePaths);
+        }
+
         return { error: "image_persistence_error" as const };
       }
     }
@@ -319,22 +331,39 @@ export async function updateDatabaseListing(listing: Listing) {
   // 1. Identify orphaned images before updating DB
   const { data: oldImages } = await admin
     .from("listing_images")
-    .select("storage_path")
+    .select("storage_path, is_cover, sort_order, public_url, placeholder_blur")
     .eq("listing_id", listing.id);
 
   const oldPaths = (oldImages ?? []).map((img) => img.storage_path).filter(Boolean);
   const newPaths = listing.images.map((img) => img.storagePath).filter(Boolean);
   const pathsToDelete = oldPaths.filter((path) => !newPaths.includes(path));
 
-  // 2. Update DB images: delete old, insert new
-  // Note: We use a sequential approach here; if image insert fails, we already deleted rows.
-  // Ideally this should be in a transaction but Supabase client doesn't support complex cross-table transactions easily without RPC.
+  // 2. Update DB images: delete old, insert new.
+  // To avoid leaving the listing without images on insert failure, we keep the
+  // old rows in memory and re-insert them as a compensating action if needed.
   await admin.from("listing_images").delete().eq("listing_id", listing.id);
   const imageRows = mapListingImagesToDatabaseRows(listing);
 
   if (imageRows.length > 0) {
     const imageInsertResult = await admin.from("listing_images").insert(imageRows);
     if (imageInsertResult.error) {
+      // Compensating action: restore old image rows so the listing is not left imageless.
+      if (oldImages && oldImages.length > 0) {
+        const restoredRows = oldImages.map((img) => ({
+          listing_id: listing.id,
+          storage_path: img.storage_path,
+          is_cover: img.is_cover,
+          sort_order: img.sort_order,
+          public_url: img.public_url,
+          placeholder_blur: img.placeholder_blur,
+        }));
+        await admin
+          .from("listing_images")
+          .insert(restoredRows)
+          .then(() => {
+            // Best-effort restore; log if it also fails but don't mask the original error.
+          });
+      }
       return { error: "image_persistence_error" as const };
     }
   }

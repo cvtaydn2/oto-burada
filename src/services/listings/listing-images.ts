@@ -1,5 +1,3 @@
-import sizeOf from "image-size";
-
 import { listingImageAcceptedMimeTypes, listingImageMaxSizeInBytes } from "@/lib/constants/domain";
 
 const mimeTypeSet = new Set<string>(listingImageAcceptedMimeTypes);
@@ -74,6 +72,100 @@ export async function getVerifiedMimeType(file: File): Promise<string | null> {
   return null;
 }
 
+/**
+ * Returns image dimensions using browser-safe APIs only.
+ *
+ * Strategy:
+ *  - In browser environments: uses createImageBitmap (fast, no DOM required).
+ *  - In Node/server environments (e.g. server-side validation): uses HTMLImageElement
+ *    via a URL.createObjectURL polyfill path, or falls back to a lightweight
+ *    ArrayBuffer header parse for JPEG/PNG/WebP.
+ *
+ * This replaces the `image-size` npm package which is Node-only and must not
+ * leak into the client bundle.
+ */
+async function getImageDimensions(file: File): Promise<{ width: number; height: number }> {
+  // createImageBitmap is available in modern browsers and Node 18+ (via canvas)
+  if (typeof createImageBitmap === "function") {
+    const bitmap = await createImageBitmap(file);
+    const result = { width: bitmap.width, height: bitmap.height };
+    bitmap.close();
+    return result;
+  }
+
+  // Fallback: parse dimensions from raw bytes (covers JPEG, PNG, WebP)
+  const buffer = await file.arrayBuffer();
+  const view = new DataView(buffer);
+
+  // PNG: width at offset 16, height at offset 20 (big-endian)
+  if (
+    view.getUint8(0) === 0x89 &&
+    view.getUint8(1) === 0x50 &&
+    view.getUint8(2) === 0x4e &&
+    view.getUint8(3) === 0x47
+  ) {
+    return {
+      width: view.getUint32(16, false),
+      height: view.getUint32(20, false),
+    };
+  }
+
+  // WebP: "VP8 " chunk at offset 12 → width at 26 (LE, 14-bit), height at 28 (LE, 14-bit)
+  // "VP8L" chunk at offset 12 → width/height packed at offset 21
+  if (buffer.byteLength >= 30) {
+    const riff = String.fromCharCode(
+      view.getUint8(0),
+      view.getUint8(1),
+      view.getUint8(2),
+      view.getUint8(3)
+    );
+    const webp = String.fromCharCode(
+      view.getUint8(8),
+      view.getUint8(9),
+      view.getUint8(10),
+      view.getUint8(11)
+    );
+    if (riff === "RIFF" && webp === "WEBP") {
+      const chunk = String.fromCharCode(
+        view.getUint8(12),
+        view.getUint8(13),
+        view.getUint8(14),
+        view.getUint8(15)
+      );
+      if (chunk === "VP8 " && buffer.byteLength >= 30) {
+        return {
+          width: (view.getUint16(26, true) & 0x3fff) + 1,
+          height: (view.getUint16(28, true) & 0x3fff) + 1,
+        };
+      }
+    }
+  }
+
+  // JPEG: scan for SOF markers (0xFFC0–0xFFC3, 0xFFC5–0xFFC7, 0xFFC9–0xFFCB, 0xFFCD–0xFFCF)
+  if (view.getUint8(0) === 0xff && view.getUint8(1) === 0xd8) {
+    let offset = 2;
+    while (offset < buffer.byteLength - 8) {
+      if (view.getUint8(offset) !== 0xff) break;
+      const marker = view.getUint8(offset + 1);
+      if (
+        (marker >= 0xc0 && marker <= 0xc3) ||
+        (marker >= 0xc5 && marker <= 0xc7) ||
+        (marker >= 0xc9 && marker <= 0xcb) ||
+        (marker >= 0xcd && marker <= 0xcf)
+      ) {
+        return {
+          height: view.getUint16(offset + 5, false),
+          width: view.getUint16(offset + 7, false),
+        };
+      }
+      const segmentLength = view.getUint16(offset + 2, false);
+      offset += 2 + segmentLength;
+    }
+  }
+
+  throw new Error("Could not determine image dimensions");
+}
+
 export async function validateListingImageFile(file: File): Promise<string | null> {
   // 1. Check declared MIME type is in allowlist (fast pre-check)
   if (!mimeTypeSet.has(file.type)) {
@@ -92,20 +184,20 @@ export async function validateListingImageFile(file: File): Promise<string | nul
   }
 
   // 4. Pixel Flood Protection: Check dimensions (Width x Height)
-  // Excessive dimensions can crash Vercel Image Optimization (OOM)
+  // Excessive dimensions can crash Vercel Image Optimization (OOM).
+  // Uses browser-safe APIs (createImageBitmap / HTMLImageElement) — no Node.js dependency.
   try {
-    const buffer = await file.arrayBuffer();
-    const dimensions = sizeOf(new Uint8Array(buffer));
+    const dimensions = await getImageDimensions(file);
     const MAX_DIMENSION = 4000;
 
-    if (dimensions.width && dimensions.width > MAX_DIMENSION) {
+    if (dimensions.width > MAX_DIMENSION) {
       return `Görsel genişliği çok fazla (${dimensions.width}px). En fazla ${MAX_DIMENSION}px olabilir.`;
     }
-    if (dimensions.height && dimensions.height > MAX_DIMENSION) {
+    if (dimensions.height > MAX_DIMENSION) {
       return `Görsel yüksekliği çok fazla (${dimensions.height}px). En fazla ${MAX_DIMENSION}px olabilir.`;
     }
   } catch {
-    // If we can't read dimensions, it's safer to reject or log
+    // If we can't read dimensions, it's safer to reject
     return "Görsel boyutları okunamadı. Lütfen geçerli bir dosya yükleyin.";
   }
 

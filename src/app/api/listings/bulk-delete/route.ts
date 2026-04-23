@@ -40,7 +40,12 @@ export async function POST(req: Request) {
   // Process deletions (deleteDatabaseListing handles ownership and image cleanup)
   const results = await Promise.all(ids.map((id) => deleteDatabaseListing(id, user.id)));
 
-  const successCount = results.filter(Boolean).length;
+  // Count only genuine successes — null means not found/not archived,
+  // { error } means a conflict or DB failure (truthy but not a success).
+  const successCount = results.filter(
+    (r): r is { id: string; deleted: true } =>
+      r !== null && typeof r === "object" && "deleted" in r && r.deleted === true
+  ).length;
 
   logger.listings.info("Bulk delete attempt", {
     userId: user.id,

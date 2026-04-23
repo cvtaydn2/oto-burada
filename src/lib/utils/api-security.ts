@@ -114,9 +114,9 @@ export async function withSecurity(
           response: apiError(API_ERROR_CODES.FORBIDDEN, "Admin yetkisi gerekli.", 403),
         };
       }
-    }
-
-    if (!options.requireAdmin) {
+      // isSupabaseAdminUser already checks is_banned for admin users, so no
+      // separate ban check is needed here.
+    } else {
       try {
         const { createSupabaseAdminClient } = await import("@/lib/supabase/admin");
         const admin = createSupabaseAdminClient();

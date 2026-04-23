@@ -1,10 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { withAuthAndCsrf } from "@/lib/utils/api-security";
-
-import { POST as bulkArchivePOST } from "../bulk-archive/route";
 
 vi.mock("@/lib/utils/api-security", () => ({
   withAuthAndCsrf: vi.fn(),
@@ -17,6 +14,13 @@ vi.mock("@/lib/supabase/server", () => ({
 vi.mock("@/lib/monitoring/posthog-server", () => ({
   captureServerEvent: vi.fn(),
 }));
+
+const mockArchiveDatabaseListing = vi.fn();
+vi.mock("@/services/listings/listing-submissions", () => ({
+  archiveDatabaseListing: (...args: any[]) => mockArchiveDatabaseListing(...args),
+}));
+
+import { POST as bulkArchivePOST } from "../bulk-archive/route";
 
 describe("Bulk Listing Actions (Archive)", () => {
   const mockUser = { id: "user-123", email: "test@example.com" };
@@ -76,7 +80,7 @@ describe("Bulk Listing Actions (Archive)", () => {
     expect(data.error.message).toContain("format");
   });
 
-  it("should only affect owned IDs based on DB query filtering", async () => {
+  it("should only count successfully archived listings (uses OCC via archiveDatabaseListing)", async () => {
     const ownedId = crypto.randomUUID();
     const otherId = crypto.randomUUID();
 
@@ -85,15 +89,10 @@ describe("Bulk Listing Actions (Archive)", () => {
       user: mockUser,
     } as unknown as Awaited<ReturnType<typeof withAuthAndCsrf>>);
 
-    const mockUpdate = vi.fn().mockReturnValue({
-      in: vi.fn().mockReturnThis(),
-      eq: vi.fn().mockReturnThis(),
-      select: vi.fn().mockResolvedValue({ data: [{ id: ownedId }], error: null }),
-    });
-
-    vi.mocked(createSupabaseServerClient).mockResolvedValue({
-      from: vi.fn().mockReturnValue({ update: mockUpdate }),
-    } as unknown as any);
+    // ownedId succeeds, otherId returns null (not found / not owned)
+    mockArchiveDatabaseListing
+      .mockResolvedValueOnce({ data: { id: ownedId } })
+      .mockResolvedValueOnce(null);
 
     const req = new Request("http://localhost/api/listings/bulk-archive", {
       method: "POST",
@@ -106,9 +105,8 @@ describe("Bulk Listing Actions (Archive)", () => {
     expect(res.status).toBe(200);
     expect(data.data.count).toBe(1); // Only 1 was affected
 
-    // Verify query parameters
-    const updateCall = mockUpdate();
-    expect(updateCall.in).toHaveBeenCalledWith("id", [ownedId, otherId]);
-    expect(updateCall.eq).toHaveBeenCalledWith("seller_id", mockUser.id);
+    // Verify archiveDatabaseListing was called with correct args
+    expect(mockArchiveDatabaseListing).toHaveBeenCalledWith(ownedId, mockUser.id);
+    expect(mockArchiveDatabaseListing).toHaveBeenCalledWith(otherId, mockUser.id);
   });
 });

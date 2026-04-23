@@ -1,10 +1,10 @@
 import { captureServerEvent } from "@/lib/monitoring/posthog-server";
-import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { API_ERROR_CODES, apiError, apiSuccess } from "@/lib/utils/api-response";
 import { withAuthAndCsrf } from "@/lib/utils/api-security";
 import { logger } from "@/lib/utils/logger";
 import { rateLimitProfiles } from "@/lib/utils/rate-limit";
 import { bulkListingActionSchema } from "@/lib/validators";
+import { archiveDatabaseListing } from "@/services/listings/listing-submissions";
 
 // Bulk archive: 20 operations per hour per user
 const BULK_ARCHIVE_RATE_LIMIT = { limit: 20, windowMs: 60 * 60 * 1000 };
@@ -36,30 +36,25 @@ export async function POST(req: Request) {
   }
 
   const { ids } = validation.data;
-  const supabase = await createSupabaseServerClient();
 
-  // Bulk update filtered by seller_id for ownership
-  const { error, data } = await supabase
-    .from("listings")
-    .update({
-      status: "archived",
-      updated_at: new Date().toISOString(),
-    })
-    .in("id", ids)
-    .eq("seller_id", user.id)
-    .select("id");
+  // Archive each listing individually using the version-checked archiveDatabaseListing,
+  // which applies optimistic concurrency control (OCC) to prevent lost updates.
+  const results = await Promise.all(ids.map((id) => archiveDatabaseListing(id, user.id)));
 
-  if (error) {
-    logger.listings.error("Bulk archive DB error", error, { ids, userId: user.id });
-    return apiError(API_ERROR_CODES.INTERNAL_ERROR, "İşlem sırasında bir hata oluştu.", 500);
-  }
+  const affectedCount = results.filter(
+    (r): r is { data: NonNullable<typeof r extends { data: infer D } ? D : never> } =>
+      r !== null && typeof r === "object" && !("error" in r)
+  ).length;
 
-  const affectedCount = data?.length ?? 0;
+  const conflictCount = results.filter(
+    (r) => r !== null && typeof r === "object" && "error" in r && r.error === "CONFLICT"
+  ).length;
 
   logger.listings.info("Bulk archive success", {
     userId: user.id,
     requestedIds: ids,
     affectedCount,
+    conflictCount,
   });
 
   captureServerEvent(
@@ -72,5 +67,8 @@ export async function POST(req: Request) {
     user.id
   );
 
-  return apiSuccess({ count: affectedCount }, `${affectedCount} ilan başarıyla arşive kaldırıldı.`);
+  return apiSuccess(
+    { count: affectedCount, conflictCount },
+    `${affectedCount} ilan başarıyla arşive kaldırıldı.`
+  );
 }

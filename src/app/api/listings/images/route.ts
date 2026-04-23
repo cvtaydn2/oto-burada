@@ -4,7 +4,8 @@ import { captureServerError } from "@/lib/monitoring/posthog-server";
 import {
   countDailyUserUploads,
   registerFileInRegistry,
-  verifyAndUnregisterFile,
+  unregisterFileById,
+  verifyFileOwnership,
 } from "@/lib/storage/registry";
 import { UPLOAD_POLICY } from "@/lib/storage/upload-policy";
 import { getSupabaseStorageEnv, hasSupabaseStorageEnv } from "@/lib/supabase/env";
@@ -235,15 +236,15 @@ export async function DELETE(request: Request) {
   }
 
   const { listingsBucket } = getSupabaseStorageEnv();
-  // ── Verify Ownership via Registry ──────────────────────────────────────
-  const isOwner = await verifyAndUnregisterFile(
+  // ── Step 1: Verify Ownership via Registry (without unregistering yet) ──
+  const registryId = await verifyFileOwnership(
     user.id,
     listingsBucket ?? "listing-images",
     storagePath
   );
 
-  if (!isOwner) {
-    // Legacy fallback
+  if (registryId === null) {
+    // Legacy fallback: allow if path is prefixed with the user's id
     const isLegacyOwner = storagePath.startsWith(`listings/${user.id}/`);
     if (!isLegacyOwner) {
       return apiError(API_ERROR_CODES.FORBIDDEN, "Bu işlem için yetkiniz yok.", 403);
@@ -254,6 +255,7 @@ export async function DELETE(request: Request) {
     });
   }
 
+  // ── Step 2: Remove from Storage ────────────────────────────────────────
   const supabase = await createSupabaseServerClient();
   const removeResult = await supabase.storage
     .from(listingsBucket ?? "listing-images")
@@ -270,7 +272,13 @@ export async function DELETE(request: Request) {
       },
       user.id
     );
+    // Registry record is intentionally NOT removed — metadata is preserved for retry/audit.
     return apiError(API_ERROR_CODES.INTERNAL_ERROR, "Fotoğraf silinemedi.", 500);
+  }
+
+  // ── Step 3: Unregister from Registry (only after storage delete succeeds) ──
+  if (registryId !== null) {
+    await unregisterFileById(registryId);
   }
 
   return apiSuccess(null, "Fotoğraf kaldırıldı.");

@@ -45,7 +45,65 @@ export async function registerFileInRegistry(options: RegisterFileOptions) {
 }
 
 /**
+ * Verifies if a user owns a file WITHOUT removing it from the registry.
+ * Returns the registry record id if ownership is confirmed, null otherwise.
+ */
+export async function verifyFileOwnership(
+  userId: string,
+  bucketId: string,
+  storagePath: string
+): Promise<string | null> {
+  const admin = createSupabaseAdminClient();
+
+  const { data, error } = await admin
+    .from("storage_objects_registry")
+    .select("id, owner_id")
+    .eq("bucket_id", bucketId)
+    .eq("storage_path", storagePath)
+    .single();
+
+  if (error || !data) {
+    logger.storage.warn("File ownership verification failed: Record not found in registry", {
+      userId,
+      bucketId,
+      storagePath,
+    });
+    return null;
+  }
+
+  if (data.owner_id !== userId) {
+    logger.storage.error("Unauthorized file access attempt detected", {
+      userId,
+      actualOwnerId: data.owner_id,
+      storagePath,
+    });
+    return null;
+  }
+
+  return data.id as string;
+}
+
+/**
+ * Removes a file from the registry by its record id.
+ * Call this AFTER the storage delete has succeeded.
+ */
+export async function unregisterFileById(registryId: string): Promise<boolean> {
+  const admin = createSupabaseAdminClient();
+
+  const { error } = await admin.from("storage_objects_registry").delete().eq("id", registryId);
+
+  if (error) {
+    logger.storage.error("Failed to remove file from registry", error, { registryId });
+    return false;
+  }
+
+  return true;
+}
+
+/**
  * Verifies if a user owns a file and removes it from the registry.
+ * @deprecated Prefer verifyFileOwnership + unregisterFileById for correct
+ * ordering (verify → storage delete → unregister). Kept for backward compat.
  */
 export async function verifyAndUnregisterFile(
   userId: string,
