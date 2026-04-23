@@ -3,7 +3,7 @@ import { hasSupabaseAdminEnv } from "@/lib/supabase/env";
 import { sanitizeDescription } from "@/lib/utils/sanitize";
 import { Listing } from "@/types";
 
-import { mapListingRow } from "./listing-submission-types";
+import { ListingRow, mapListingRow } from "./listing-submission-types";
 
 type ListingPersistenceError =
   | "concurrent_update_detected"
