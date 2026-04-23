@@ -1,5 +1,5 @@
 import { maskPhoneNumber } from "@/lib/utils/listing-utils";
-import { ListingFilters } from "@/types";
+import { Listing, ListingFilters } from "@/types";
 
 import {
   getDatabaseListings,
@@ -52,7 +52,7 @@ export async function getAllApprovedListings() {
 
   if (!listings) return [];
 
-  return listings.map((l) => ({
+  return listings.map((l: Listing) => ({
     ...l,
     whatsappPhone: maskPhoneNumber(l.whatsappPhone),
   }));

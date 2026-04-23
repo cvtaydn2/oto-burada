@@ -240,8 +240,8 @@ export async function adminDeleteDatabaseListing(listingId: string) {
 
   if (listing.images.length > 0) {
     const storagePaths = listing.images
-      .map((img) => img.storagePath)
-      .filter((path) => path.length > 0);
+      .map((img: { storagePath: string }) => img.storagePath)
+      .filter((path: string) => path.length > 0);
 
     if (storagePaths.length > 0) {
       const bucketName = process.env.SUPABASE_STORAGE_BUCKET_LISTINGS ?? "listing-images";

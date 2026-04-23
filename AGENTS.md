@@ -138,6 +138,13 @@ src/
     listings/
     forms/
     layout/
+  domain/
+    usecases/
+    logic/
+  features/
+    admin-moderation/
+    listing-creation/
+    marketplace/
   lib/
     supabase/
     auth/

@@ -3,8 +3,6 @@
 import {
   Archive,
   CheckSquare,
-  ChevronLeft,
-  ChevronRight,
   FileSpreadsheet,
   Loader2,
   Plus,
@@ -12,7 +10,6 @@ import {
   Square,
   X,
 } from "lucide-react";
-import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 
 import {
@@ -27,10 +24,11 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
+import { useListingActions } from "@/hooks/use-listing-actions";
 import { type Listing } from "@/types";
 
 import { DashboardListingCard } from "./dashboard-listing-card";
+import { ListingPagination } from "./listing-pagination";
 
 interface MyListingsPanelProps {
   activeEditId?: string;
@@ -47,19 +45,28 @@ export function MyListingsPanel({
   listings,
   children,
 }: MyListingsPanelProps) {
-  const router = useRouter();
   const [showForm, setShowForm] = useState(Boolean(activeEditId) || initialShowForm);
-  const [archivingId, setArchivingId] = useState<string | null>(null);
-  const [archiveError, setArchiveError] = useState<string | null>(null);
-  const [bumpingId, setBumpingId] = useState<string | null>(null);
-  const [bumpMessage, setBumpMessage] = useState<string | null>(null);
   const [currentTime, setCurrentTime] = useState(() => Date.now());
-  const [selectedIds, setSelectedIds] = useState<string[]>([]);
-  const [isBulkArchiving, setIsBulkArchiving] = useState(false);
-
-  // Sayfalama
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState<number>(10);
+
+  const {
+    archivingId,
+    archiveError,
+    setArchiveError,
+    bumpingId,
+    bumpMessage,
+    setBumpMessage,
+    selectedIds,
+    setSelectedIds,
+    isBulkArchiving,
+    handleArchive,
+    handleBulkArchive,
+    handleBulkDelete,
+    handleBump,
+    toggleSelect,
+    clearSelection,
+  } = useListingActions(listings);
 
   const totalPages = Math.max(1, Math.ceil(listings.length / pageSize));
   const paginatedListings = useMemo(() => {
@@ -68,126 +75,24 @@ export function MyListingsPanel({
   }, [listings, currentPage, pageSize]);
 
   useEffect(() => {
-    setSelectedIds([]);
+    clearSelection();
   }, [currentPage, pageSize]);
+
   useEffect(() => {
-    if (currentPage > totalPages) setCurrentPage(totalPages);
+    if (currentPage > totalPages) setCurrentPage(totalPages); // eslint-disable-line react-hooks/set-state-in-effect
   }, [currentPage, totalPages]);
+
   useEffect(() => {
     const id = window.setInterval(() => setCurrentTime(Date.now()), 60_000);
     return () => window.clearInterval(id);
   }, []);
+
   useEffect(() => {
-    setShowForm(Boolean(activeEditId) || initialShowForm);
+    setShowForm(Boolean(activeEditId) || initialShowForm); // eslint-disable-line react-hooks/set-state-in-effect
   }, [activeEditId, initialShowForm]);
-
-  const handleArchive = async (listingId: string) => {
-    setArchivingId(listingId);
-    setArchiveError(null);
-    const listing = listings.find((l) => l.id === listingId);
-    const isCurrentlyArchived = listing?.status === "archived";
-
-    try {
-      if (isCurrentlyArchived) {
-        const res = await fetch("/api/listings/bulk-draft", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ ids: [listingId] }),
-        });
-        const payload = (await res.json().catch(() => null)) as {
-          success?: boolean;
-          message?: string;
-        } | null;
-        if (!res.ok || !payload?.success) {
-          setArchiveError(payload?.message ?? "İlan taslağa alınamadı.");
-          return;
-        }
-      } else {
-        const res = await fetch(`/api/listings/${listingId}/archive`, { method: "POST" });
-        const payload = (await res.json().catch(() => null)) as {
-          success?: boolean;
-          error?: { message: string };
-        } | null;
-        if (!res.ok || !payload?.success) {
-          setArchiveError(payload?.error?.message ?? "İlan arşive alınamadı.");
-          return;
-        }
-      }
-      router.refresh();
-    } finally {
-      setArchivingId(null);
-    }
-  };
-
-  const handleBulkArchive = async () => {
-    if (!selectedIds.length) return;
-    setIsBulkArchiving(true);
-    setArchiveError(null);
-    try {
-      const res = await fetch("/api/listings/bulk-archive", {
-        method: "POST",
-        body: JSON.stringify({ ids: selectedIds }),
-        headers: { "Content-Type": "application/json" },
-      });
-      const payload = await res.json();
-      if (payload.success) {
-        setSelectedIds([]);
-        router.refresh();
-      } else setArchiveError(payload.message || "Toplu arşivleme sırasında hata oluştu.");
-    } catch {
-      setArchiveError("Bir hata oluştu.");
-    } finally {
-      setIsBulkArchiving(false);
-    }
-  };
-
-  const handleBulkDelete = async () => {
-    if (!selectedIds.length) return;
-    setIsBulkArchiving(true);
-    try {
-      const res = await fetch("/api/listings/bulk-delete", {
-        method: "POST",
-        body: JSON.stringify({ ids: selectedIds }),
-        headers: { "Content-Type": "application/json" },
-      });
-      const payload = await res.json();
-      if (payload.success) {
-        setSelectedIds([]);
-        router.refresh();
-      } else setArchiveError(payload.message || "Toplu silme sırasında hata oluştu.");
-    } catch {
-      setArchiveError("Bir hata oluştu.");
-    } finally {
-      setIsBulkArchiving(false);
-    }
-  };
-
-  const handleBump = async (listingId: string) => {
-    setBumpingId(listingId);
-    setBumpMessage(null);
-    try {
-      const res = await fetch(`/api/listings/${listingId}/bump`, { method: "POST" });
-      const payload = (await res.json().catch(() => null)) as {
-        success?: boolean;
-        message?: string;
-        error?: { message: string };
-      } | null;
-      if (!res.ok || !payload?.success) {
-        setBumpMessage(payload?.error?.message ?? "İlan yenilenemedi.");
-        return;
-      }
-      setBumpMessage(payload.message ?? "İlan yenilendi!");
-      router.refresh();
-    } finally {
-      setBumpingId(null);
-    }
-  };
 
   const pageIds = paginatedListings.map((l) => l.id);
   const allPageSelected = pageIds.length > 0 && pageIds.every((id) => selectedIds.includes(id));
-
-  const toggleSelect = (id: string) =>
-    setSelectedIds((prev) => (prev.includes(id) ? prev.filter((i) => i !== id) : [...prev, id]));
 
   const toggleSelectAll = () => {
     if (allPageSelected) setSelectedIds((prev) => prev.filter((id) => !pageIds.includes(id)));
@@ -301,7 +206,6 @@ export function MyListingsPanel({
 
       {listings.length > 0 && (
         <div className="space-y-6">
-          {/* Enhanced Toolbar */}
           <div className="flex flex-col gap-4 bg-muted/30 p-2 rounded-2xl border border-border/40">
             <div className="flex flex-wrap items-center justify-between gap-4 px-3 py-2">
               <div className="flex items-center gap-4">
@@ -404,7 +308,6 @@ export function MyListingsPanel({
             </div>
           </div>
 
-          {/* İlan Listesi */}
           <div className="grid gap-4">
             {paginatedListings.map((listing) => (
               <DashboardListingCard
@@ -421,63 +324,13 @@ export function MyListingsPanel({
             ))}
           </div>
 
-          {/* Pagination */}
-          {totalPages > 1 && (
-            <div className="flex flex-col sm:flex-row items-center justify-between gap-6 rounded-2xl border border-border bg-card p-6 shadow-sm">
-              <p className="text-xs font-bold text-muted-foreground uppercase tracking-[0.1em]">
-                <span className="text-foreground">
-                  {(currentPage - 1) * pageSize + 1} –{" "}
-                  {Math.min(currentPage * pageSize, listings.length)}
-                </span>{" "}
-                / <span className="text-foreground">{listings.length}</span> İLAN
-              </p>
-              <div className="flex items-center gap-2">
-                <button
-                  onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-                  disabled={currentPage === 1}
-                  className="size-10 flex items-center justify-center rounded-xl border border-border bg-card text-muted-foreground transition hover:bg-primary/5 hover:text-primary disabled:opacity-30 shadow-sm"
-                >
-                  <ChevronLeft size={18} />
-                </button>
-                <div className="flex items-center gap-1.5 mx-2">
-                  {Array.from({ length: totalPages }, (_, i) => i + 1)
-                    .filter((p) => p === 1 || p === totalPages || Math.abs(p - currentPage) <= 1)
-                    .reduce<(number | "…")[]>((acc, p, i, arr) => {
-                      if (i > 0 && (p as number) - (arr[i - 1] as number) > 1) acc.push("…");
-                      acc.push(p);
-                      return acc;
-                    }, [])
-                    .map((item, idx) =>
-                      item === "…" ? (
-                        <span key={`e-${idx}`} className="px-2 text-muted-foreground/30 font-bold">
-                          ...
-                        </span>
-                      ) : (
-                        <button
-                          key={item}
-                          onClick={() => setCurrentPage(item as number)}
-                          className={cn(
-                            "size-10 flex items-center justify-center rounded-xl text-xs font-bold transition-all shadow-sm",
-                            item === currentPage
-                              ? "bg-primary text-primary-foreground shadow-primary/20 scale-110 z-10"
-                              : "bg-card border border-border text-muted-foreground hover:border-primary/30"
-                          )}
-                        >
-                          {item}
-                        </button>
-                      )
-                    )}
-                </div>
-                <button
-                  onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
-                  disabled={currentPage === totalPages}
-                  className="size-10 flex items-center justify-center rounded-xl border border-border bg-card text-muted-foreground transition hover:bg-primary/5 hover:text-primary disabled:opacity-30 shadow-sm"
-                >
-                  <ChevronRight size={18} />
-                </button>
-              </div>
-            </div>
-          )}
+          <ListingPagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            totalListings={listings.length}
+            pageSize={pageSize}
+            onPageChange={setCurrentPage}
+          />
         </div>
       )}
     </div>

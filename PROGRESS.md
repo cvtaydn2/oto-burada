@@ -1,4 +1,17 @@
-# 2026-04-22 — Hydration Fix & Homepage Brand Badge Correction
+# 2026-04-24 — Review & Refactor: Architectural Hardening & Type Safety
+
+## [2026-04-24] - Architecture & Hardening Sync
+- **Durum:** ✅ TAMAMLANDI
+- **Yapılanlar:**
+  - `AGENTS.md` klasör yapısı güncel mimariyle (`domain`, `features`) senkronize edildi.
+  - `src/services/listings/listing-submission-query.ts` içindeki `any` cast'leri temizlendi; `PostgrestFilterBuilder` ile tam tip güvenliği sağlandı.
+  - `listing-factory.ts` (Domain Logic) oluşturularak ilan oluşturma iş mantığı altyapıdan ayrıştırıldı.
+  - `MyListingsPanel.tsx` mega-bileşeni parçalandı: `useListingActions` hook'u ve `ListingPagination` bileşeni ile modüler hale getirildi.
+  - Tüm `SECURITY DEFINER` fonksiyonları için `SET search_path = public` denetimi yapıldı ve yetkiler (GRANT/REVOKE) sıkılaştırıldı.
+  - Marketplace filtreleme mantığı canonical hale getirildi; URL çakışmaları ve tip uyumsuzlukları giderildi.
+- **Sıradaki Adım:** Marketplace performans analizi ve LCP/INP optimizasyonları.
+
+# 2026-04-23 — Payment consistency & Pagination Hardening
 
 ## [2026-04-23] - Payment Consistency & Pagination Hardening
 - **Durum:** ✅ TAMAMLANDI

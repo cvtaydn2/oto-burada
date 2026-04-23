@@ -12,6 +12,7 @@ import {
   getLiveMarketplaceReferenceData,
   mergeCityOptions,
 } from "@/services/reference/live-reference-data";
+import { Listing } from "@/types";
 
 export const dynamic = "force-dynamic";
 // revalidate kaldırıldı — force-dynamic ile çakışıyor
@@ -44,7 +45,7 @@ export default async function DashboardListingsPage({ searchParams }: DashboardL
     getStoredProfileById(user.id),
   ]);
   const selectedListing = resolvedSearchParams?.edit
-    ? (storedListings.find((l) => l.id === resolvedSearchParams.edit) ?? null)
+    ? (storedListings.find((l: Listing) => l.id === resolvedSearchParams.edit) ?? null)
     : null;
   const mergedBrands = references.brands.some((item) => item.brand === selectedListing?.brand)
     ? references.brands
@@ -77,7 +78,7 @@ export default async function DashboardListingsPage({ searchParams }: DashboardL
           <h2 className="text-3xl font-bold text-foreground tracking-tight">İlanlarım</h2>
           <p className="mt-1 text-sm text-muted-foreground font-medium italic">
             Toplam {storedListings.length} ilandan{" "}
-            {storedListings.filter((l) => l.status === "approved").length} tanesi yayında.
+            {storedListings.filter((l: Listing) => l.status === "approved").length} tanesi yayında.
           </p>
         </div>
         <div className="flex items-center gap-4">

@@ -1,5 +1,7 @@
 import { cookies } from "next/headers";
 
+// Feature Modules
+import { createListingEntity } from "@/domain/logic/listing-factory";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { hasSupabaseAdminEnv } from "@/lib/supabase/env";
 import { logger } from "@/lib/utils/logger";
@@ -7,7 +9,6 @@ import { listingSchema } from "@/lib/validators";
 import type { Listing, ListingCreateInput } from "@/types";
 
 import { listingSubmissionsCookieName } from "./constants";
-// Feature Modules
 import { buildListingSlug } from "./listing-submission-helpers";
 import { calculateFraudScore } from "./listing-submission-moderation";
 
@@ -39,69 +40,7 @@ export function buildListingRecord(
     status?: Listing["status"];
   }
 ) {
-  const existingListing = options?.existingListing;
-  const id = existingListing?.id ?? options?.id ?? crypto.randomUUID();
-
-  // Base slug oluştur
-  let slug = buildListingSlug(
-    input,
-    existingListing
-      ? existingListings.filter((listing) => listing.id !== existingListing.id)
-      : existingListings
-  );
-
-  // YENİ: Race Condition (Çakışma) Koruması
-  // Eğer bu yeni bir ilansa, slug'ın sonuna eşsiz bir kısa ID ekle (Örn: renault-megane-1a2b3c4d)
-  if (!existingListing) {
-    const shortId = crypto.randomUUID().split("-")[0];
-    slug = `${slug}-${shortId}`;
-  }
-
-  const timestamp = new Date().toISOString();
-
-  return listingSchema.parse({
-    id,
-    slug,
-    sellerId,
-    viewCount: existingListing?.viewCount ?? 0,
-    version: existingListing?.version ?? 0,
-    title: input.title,
-    brand: input.brand,
-    model: input.model,
-    year: input.year,
-    mileage: input.mileage,
-    fuelType: input.fuelType,
-    transmission: input.transmission,
-    price: input.price,
-    city: input.city,
-    district: input.district,
-    description: input.description,
-    whatsappPhone: input.whatsappPhone,
-    vin: input.vin,
-    licensePlate: input.licensePlate ?? null,
-    tramerAmount: input.tramerAmount ?? null,
-    damageStatusJson: input.damageStatusJson ?? null,
-    fraudScore: 0,
-    fraudReason: null,
-    status: options?.status ?? existingListing?.status ?? "pending_ai_review",
-    featured: existingListing?.featured ?? false,
-    expertInspection: input.expertInspection,
-    bumpedAt: existingListing?.bumpedAt ?? null,
-    featuredUntil: existingListing?.featuredUntil ?? null,
-    urgentUntil: existingListing?.urgentUntil ?? null,
-    highlightedUntil: existingListing?.highlightedUntil ?? null,
-    marketPriceIndex: existingListing?.marketPriceIndex ?? null,
-    createdAt: existingListing?.createdAt ?? timestamp,
-    updatedAt: timestamp,
-    images: input.images.map((image, index) => ({
-      id: `${id}-image-${index + 1}`,
-      listingId: id,
-      storagePath: image.storagePath,
-      url: image.url,
-      order: index,
-      isCover: index === 0,
-    })),
-  });
+  return createListingEntity(input, sellerId, existingListings, options);
 }
 
 // Proxy exports for query logic
@@ -152,8 +91,8 @@ export async function deleteDatabaseListing(listingId: string, sellerId: string)
 
   if (listing.images.length > 0) {
     const storagePaths = listing.images
-      .map((img) => img.storagePath)
-      .filter((path) => path.length > 0);
+      .map((img: { storagePath: string }) => img.storagePath)
+      .filter((path: string) => path.length > 0);
     if (storagePaths.length > 0) {
       const bucketName = process.env.SUPABASE_STORAGE_BUCKET_LISTINGS ?? "listing-images";
       const { queueFileCleanup } = await import("@/lib/storage/registry");
@@ -198,7 +137,7 @@ export function serializeStoredListings(listings: Listing[]) {
 export async function getLegacyStoredListings() {
   const cookieStore = await cookies();
   return parseStoredListings(cookieStore.get(listingSubmissionsCookieName)?.value).sort(
-    (left, right) => Date.parse(right.updatedAt) - Date.parse(left.updatedAt)
+    (left: Listing, right: Listing) => Date.parse(right.updatedAt) - Date.parse(left.updatedAt)
   );
 }
 
@@ -247,7 +186,7 @@ export async function findEditableListingById(listingId: string, sellerId: strin
 export async function getStoredUserListings(sellerId: string) {
   const databaseListings = await getDatabaseListings({ sellerId });
   return (databaseListings ?? []).sort(
-    (left, right) => Date.parse(right.createdAt) - Date.parse(left.createdAt)
+    (left: Listing, right: Listing) => Date.parse(right.createdAt) - Date.parse(left.createdAt)
   );
 }
 

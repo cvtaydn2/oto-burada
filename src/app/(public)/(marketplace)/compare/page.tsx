@@ -97,7 +97,7 @@ export default async function ComparePage({ searchParams }: ComparePageProps) {
 
   // Best value heuristic: lowest (price / year)
   const bestValueIndex = cars.reduce(
-    (best, current, index, arr) =>
+    (best: number, current: Listing, index: number, arr: Listing[]) =>
       current.price / current.year < arr[best].price / arr[best].year ? index : best,
     0
   );
@@ -140,7 +140,7 @@ export default async function ComparePage({ searchParams }: ComparePageProps) {
             fiyat/performans dengesini sunar.
           </p>
           <div className="flex flex-wrap gap-2 pt-2">
-            {cars.map((car, idx) => {
+            {cars.map((car: Listing, idx: number) => {
               const colors = ["bg-primary", "bg-rose-500", "bg-emerald-500", "bg-slate-400"];
               return (
                 <div
@@ -165,7 +165,8 @@ export default async function ComparePage({ searchParams }: ComparePageProps) {
           aria-label="Araç karşılaştırma tablosu"
         >
           <caption className="sr-only">
-            {cars.map((c) => `${c.brand} ${c.model}`).join(", ")} araçlarının teknik karşılaştırması
+            {cars.map((c: Listing) => `${c.brand} ${c.model}`).join(", ")} araçlarının teknik
+            karşılaştırması
           </caption>
           <thead>
             <tr>
@@ -174,11 +175,11 @@ export default async function ComparePage({ searchParams }: ComparePageProps) {
                   Teknik Parametreler
                 </div>
               </th>
-              {cars.map((car) => {
-                const coverImage = car.images.find((img) => img.isCover) ?? car.images[0];
+              {cars.map((car: Listing) => {
+                const coverImage = car.images.find((img: any) => img.isCover) ?? car.images[0]; // eslint-disable-line @typescript-eslint/no-explicit-any
                 const otherIds = cars
-                  .filter((c) => c.id !== car.id)
-                  .map((c) => c.id)
+                  .filter((c: Listing) => c.id !== car.id)
+                  .map((c: Listing) => c.id)
                   .join(",");
 
                 return (
@@ -228,7 +229,7 @@ export default async function ComparePage({ searchParams }: ComparePageProps) {
                   Sistem Önerisi
                 </div>
               </td>
-              {cars.map((car, idx) => (
+              {cars.map((car: Listing, idx: number) => (
                 <td
                   key={`ai-${car.id}`}
                   className="border-b border-l border-border bg-emerald-50/20 p-5"
@@ -254,7 +255,7 @@ export default async function ComparePage({ searchParams }: ComparePageProps) {
                 <td className="border-b border-border p-5 text-[10px] font-bold text-muted-foreground uppercase tracking-wider transition-colors group-hover:text-foreground">
                   <span>{feature.label}</span>
                 </td>
-                {cars.map((car) => {
+                {cars.map((car: Listing) => {
                   const value = feature.render(car);
                   const isPositive = value.includes("✓");
                   return (
@@ -275,7 +276,7 @@ export default async function ComparePage({ searchParams }: ComparePageProps) {
             ))}
 
             {/* Tramer warning row */}
-            {cars.some((car) => car.tramerAmount != null && car.tramerAmount > 0) && (
+            {cars.some((car: Listing) => car.tramerAmount != null && car.tramerAmount > 0) && (
               <tr>
                 <td className="border-b border-border bg-rose-50/50 p-5">
                   <div className="flex items-center gap-2 text-xs font-bold text-rose-700 uppercase tracking-wider">
@@ -283,7 +284,7 @@ export default async function ComparePage({ searchParams }: ComparePageProps) {
                     Hasar Kaydı
                   </div>
                 </td>
-                {cars.map((car) => (
+                {cars.map((car: Listing) => (
                   <td
                     key={`tramer-warn-${car.id}`}
                     className="border-b border-l border-border bg-rose-50/20 p-5 text-xs font-semibold text-rose-700"
