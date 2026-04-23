@@ -35,6 +35,7 @@ describe("Iyzico Payload Mapping", () => {
       name: "Cevat",
       surname: "Aydin",
       email: "cevat@example.com",
+      identityNumber: "12345678901",
       gsmNumber: "+905321234567",
       address: "Test Adresi 123",
       city: "Istanbul",

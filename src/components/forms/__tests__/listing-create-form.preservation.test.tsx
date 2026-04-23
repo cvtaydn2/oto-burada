@@ -26,8 +26,8 @@ describe("Preservation — isEditing=true uses router.replace (baseline, must pa
   });
 
   it("should keep using isEditing to choose the correct endpoint", () => {
-    expect(sourceCode).toContain(
-      'fetch(isEditing ? `/api/listings/${initialListing?.id}` : "/api/listings"'
-    );
+    // fetch call is split across lines — check the key parts separately
+    expect(sourceCode).toContain("isEditing ? `/api/listings/${initialListing?.id}`");
+    expect(sourceCode).toContain('"/api/listings"');
   });
 });

@@ -1,9 +1,5 @@
 import { logger } from "@/lib/utils/logger";
-import {
-  listingFilterRecoveryFieldNames,
-  listingFilterRecoveryNumericFieldNames,
-  listingFiltersSchema,
-} from "@/lib/validators";
+import { listingFiltersSchema } from "@/lib/validators";
 import type {
   BrandCatalogItem,
   CityOption,
@@ -139,6 +135,7 @@ export function sortListings(listings: Listing[], sort: ListingSortOption = "new
 export function parseListingFiltersFromSearchParams(
   searchParams?: Record<string, string | string[] | undefined>
 ) {
+  const start = Date.now();
   const normalizedSearchParams = Object.fromEntries(
     Object.entries(searchParams ?? {}).flatMap(([key, value]) => {
       if (typeof value === "string") {
@@ -155,70 +152,52 @@ export function parseListingFiltersFromSearchParams(
 
   const parsed = listingFiltersSchema.safeParse(normalizedSearchParams);
 
-  if (!parsed.success) {
-    // Partial recovery: parse field-by-field, keep valid entries, drop invalid ones.
-    // This prevents a single bad URL param (e.g. "?minPrice=abc") from silently
-    // wiping out all other filters the user set.
-    const recovered: Record<string, unknown> = {};
+  const rawResult = parsed.success
+    ? ({
+        ...parsed.data,
+        sort: parsed.data.sort ?? "newest",
+      } satisfies ListingFilters)
+    : (() => {
+        const validData = { ...normalizedSearchParams };
+        const droppedKeys = new Set<string>();
 
-    // First pass: string/enum fields (safe to try individually)
-    for (const key of listingFilterRecoveryFieldNames) {
-      if (normalizedSearchParams[key] !== undefined) {
-        const singleResult = listingFiltersSchema.safeParse({ [key]: normalizedSearchParams[key] });
-        if (singleResult.success) {
-          const val = (singleResult.data as Record<string, unknown>)[key];
-          if (val !== undefined) recovered[key] = val;
+        for (const issue of parsed.error.issues) {
+          const field = issue.path[0];
+          if (typeof field === "string") {
+            delete (validData as Record<string, unknown>)[field];
+            droppedKeys.add(field);
+          }
         }
-      }
-    }
 
-    // Second pass: numeric range fields
-    for (const key of listingFilterRecoveryNumericFieldNames) {
-      if (normalizedSearchParams[key] !== undefined) {
-        const singleResult = listingFiltersSchema.safeParse({ [key]: normalizedSearchParams[key] });
-        if (singleResult.success) {
-          const val = (singleResult.data as Record<string, unknown>)[key];
-          if (val !== undefined) recovered[key] = val;
+        if (droppedKeys.size > 0) {
+          logger.listings.warn("Dropping invalid listing filters (corruption recovery)", {
+            droppedKeys: [...droppedKeys],
+          });
         }
-      }
-    }
 
-    const recoveredResult = listingFiltersSchema.safeParse(recovered);
-    const droppedKeys = new Set<string>();
+        const recovered = listingFiltersSchema.safeParse(validData);
+        const data = recovered.success ? recovered.data : {};
 
-    if (!recoveredResult.success) {
-      for (const issue of recoveredResult.error.issues) {
-        const pathKey = issue.path[0];
-        if (typeof pathKey === "string") {
-          delete recovered[pathKey];
-          droppedKeys.add(pathKey);
-        }
-      }
-    }
+        return {
+          ...data,
+          sort: (data as Record<string, unknown>).sort ?? "newest",
+        } as ListingFilters;
+      })();
 
-    for (const key of Object.keys(normalizedSearchParams)) {
-      if (!(key in recovered)) {
-        droppedKeys.add(key);
-      }
-    }
+  logger.perf.debug("parseListingFiltersFromSearchParams execution", {
+    duration: Date.now() - start,
+    recovered: !parsed.success,
+  });
 
-    if (droppedKeys.size > 0) {
-      logger.listings.warn("Dropping invalid listing filters during recovery", {
-        droppedKeys: [...droppedKeys],
-        searchParams: normalizedSearchParams,
-      });
-    }
+  // Fix 5: Canonicalization - ensure output matches what serializer would produce
+  // This prevents 'silent state corruption' where URL doesn't match internal state
+  const finalResult = {
+    ...rawResult,
+    page: rawResult.page && rawResult.page > 0 ? rawResult.page : 1,
+    limit: rawResult.limit && rawResult.limit > 0 ? rawResult.limit : 12,
+  };
 
-    return {
-      ...recovered,
-      sort: (recovered.sort as import("@/types").ListingSortOption | undefined) ?? "newest",
-    } satisfies import("@/types").ListingFilters;
-  }
-
-  return {
-    ...parsed.data,
-    sort: parsed.data.sort ?? "newest",
-  } satisfies import("@/types").ListingFilters;
+  return finalResult;
 }
 
 export function createSearchParamsFromListingFilters(filters: ListingFilters) {

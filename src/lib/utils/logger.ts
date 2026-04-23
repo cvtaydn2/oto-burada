@@ -165,4 +165,5 @@ export const logger = {
   api: createLogger("api"),
   security: createLogger("security"),
   system: createLogger("system"),
+  perf: createLogger("performance"),
 };

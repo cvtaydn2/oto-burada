@@ -1,6 +1,5 @@
 "use server";
-
-import { revalidatePath } from "next/cache";
+import { revalidatePath, revalidateTag, unstable_cache } from "next/cache";
 
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { logger } from "@/lib/utils/logger";
@@ -25,32 +24,61 @@ function mapPricingPlan(row: PricingPlan): PricingPlan {
   };
 }
 
-async function listPricingPlans(includeInactive: boolean) {
-  const admin = createSupabaseAdminClient();
-  let query = admin.from("pricing_plans").select("*").order("price", { ascending: true });
+const getCachedPlans = unstable_cache(
+  async (includeInactive: boolean) => {
+    const start = Date.now();
+    const admin = createSupabaseAdminClient();
+    let query = admin.from("pricing_plans").select("*").order("price", { ascending: true });
 
-  if (!includeInactive) {
-    query = query.eq("is_active", true);
-  }
+    if (!includeInactive) {
+      query = query.eq("is_active", true);
+    }
 
-  const { data, error } = await query;
+    const { data, error } = await query;
 
-  if (error) {
-    logger.admin.error("getPricingPlans query failed", error);
-    return [];
-  }
+    if (error) {
+      logger.admin.error("getPricingPlans query failed", error);
+      return [];
+    }
 
-  return (data as PricingPlan[]).map(mapPricingPlan);
-}
+    const result = (data as PricingPlan[]).map(mapPricingPlan);
+    logger.perf.debug("getCachedPlans execution (DB fetch)", {
+      duration: Date.now() - start,
+      includeInactive,
+    });
+    return result;
+  },
+  ["pricing-plans"],
+  { revalidate: 3600, tags: ["pricing-plans"] }
+);
+
+// Explicit wrapper to ensure key differentiation if needed,
+// though unstable_cache usually handles arguments in the key automatically
+// in modern Next.js, it's safer to be explicit or use separate keys.
+// Given the risk of visibility drift, we'll use separate tags/keys.
+const getPublicPlansCached = unstable_cache(() => getCachedPlans(false), ["pricing-plans-public"], {
+  revalidate: 3600,
+  tags: ["pricing-plans", "pricing-plans-public"],
+});
+
+const getAdminPlansCached = unstable_cache(() => getCachedPlans(true), ["pricing-plans-admin"], {
+  revalidate: 3600,
+  tags: ["pricing-plans", "pricing-plans-admin"],
+});
 
 export async function getPublicPricingPlans() {
-  return listPricingPlans(false);
+  return getPublicPlansCached();
 }
 
 export async function getAdminPricingPlans() {
-  return listPricingPlans(true);
+  return getAdminPlansCached();
 }
 
+/**
+ * @deprecated Use getPublicPricingPlans() or getAdminPricingPlans() explicitly.
+ * This generic function obscures access intent and risks leaking inactive plans
+ * to public surfaces if the caller passes the wrong argument.
+ */
 export async function getPricingPlans(includeInactive = false) {
   return includeInactive ? getAdminPricingPlans() : getPublicPricingPlans();
 }
@@ -63,8 +91,10 @@ export async function updatePricingPlan(id: string, updates: Partial<PricingPlan
     throw new Error(error.message);
   }
 
-  revalidatePath("/admin/plans");
-  revalidatePath("/dashboard/pricing");
+  // @ts-expect-error: Next.js 16 revalidateTag signature mismatch
+  await revalidateTag("pricing-plans");
+  await revalidatePath("/admin/plans", "page");
+  await revalidatePath("/dashboard/pricing", "page");
   return { success: true };
 }
 
@@ -81,8 +111,10 @@ export async function deletePricingPlan(id: string) {
     throw new Error(error.message);
   }
 
-  revalidatePath("/admin/plans");
-  revalidatePath("/dashboard/pricing");
+  // @ts-expect-error: Next.js 16 revalidateTag signature mismatch
+  await revalidateTag("pricing-plans");
+  await revalidatePath("/admin/plans", "page");
+  await revalidatePath("/dashboard/pricing", "page");
   return { success: true };
 }
 
@@ -94,8 +126,10 @@ export async function createPricingPlan(plan: Omit<PricingPlan, "id">) {
     throw new Error(error.message);
   }
 
-  revalidatePath("/admin/plans");
-  revalidatePath("/dashboard/pricing");
+  // @ts-expect-error: Next.js 16 revalidateTag signature mismatch
+  await revalidateTag("pricing-plans");
+  await revalidatePath("/admin/plans", "page");
+  await revalidatePath("/dashboard/pricing", "page");
   return { success: true };
 }
 

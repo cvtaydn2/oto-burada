@@ -18,6 +18,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { captureClientException } from "@/lib/monitoring/posthog-client";
 import { createSupabaseBrowserClient } from "@/lib/supabase/browser";
+import { logger } from "@/lib/utils/logger";
 
 type PaymentResultStatus =
   | "failure"
@@ -60,55 +61,92 @@ function PaymentResultContent() {
       let attempts = 0;
       const maxAttempts = 5;
 
+      const {
+        data: { user: currentUser },
+      } = await supabase.auth.getUser();
+      if (!currentUser) {
+        if (!cancelled) {
+          setStatus("invalid");
+          setLoading(false);
+        }
+        return;
+      }
+
       const checkStatus = async () => {
         if (requestInFlightRef.current) {
           return false;
         }
 
         requestInFlightRef.current = true;
-        const { data, error } = await supabase
-          .from("payments")
-          .select("*, plan_name")
-          .eq("iyzico_token", token)
-          .maybeSingle();
+        const startCheck = Date.now();
+        try {
+          const { data, error } = await supabase
+            .from("payments")
+            .select("id, amount, status, plan_name")
+            .eq("iyzico_token", token)
+            .eq("user_id", currentUser.id)
+            .maybeSingle();
 
-        requestInFlightRef.current = false;
-
-        if (cancelled) {
-          return true;
-        }
-
-        if (error) {
-          captureClientException(error, "payment_result_verification_query", { token });
-          setStatus("verification_error");
-          setLoading(false);
-          return true;
-        }
-
-        if (data && data.status !== "pending") {
-          setPaymentData(data);
-          setStatus(data.status === "success" ? "success" : "failure");
-          setLoading(false);
-          if (data.status === "success") {
-            router.refresh();
+          if (cancelled) {
+            return true;
           }
-          return true;
-        }
 
-        return false;
+          if (error) {
+            captureClientException(error, "payment_result_verification_query", { token });
+            setStatus("verification_error");
+            setLoading(false);
+            return true;
+          }
+
+          logger.perf.debug("Payment checkStatus direct DB execution", {
+            duration: Date.now() - startCheck,
+            status: data?.status,
+          });
+
+          if (data) {
+            setPaymentData(data);
+
+            // Fix 3: Deterministic state mapping
+            // If DB status is success but not fulfilled yet, it's 'processing' or 'partially_completed'
+            if (data.status === "success") {
+              if (data.fulfilled_at) {
+                setStatus("success");
+                setLoading(false);
+                router.refresh();
+                return true;
+              } else {
+                // Payment received but doping logic not yet finished (async worker or delay)
+                setStatus("pending");
+                // Continue polling
+                return false;
+              }
+            } else if (data.status === "failure" || data.status === "cancelled") {
+              setStatus("failure");
+              setLoading(false);
+              return true;
+            }
+          }
+
+          return false;
+        } finally {
+          requestInFlightRef.current = false;
+        }
       };
 
       const poll = async () => {
+        if (cancelled) return;
         const found = await checkStatus();
-        if (cancelled) {
+        if (cancelled || found) {
           return;
         }
 
-        if (!found && attempts < maxAttempts) {
+        if (attempts < maxAttempts) {
           attempts++;
+          // Fix 1: Exponential backoff (1.5s, 2.25s, 3.375s, 5s, 7.5s)
+          const delay = Math.min(1500 * Math.pow(1.5, attempts - 1), 10000);
           pollTimeout = setTimeout(() => {
             void poll();
-          }, 1500);
+          }, delay);
           return;
         }
 
@@ -121,11 +159,15 @@ function PaymentResultContent() {
       void poll();
     }
 
-    void verifyPayment();
+    // Fix 2: Duplicate polling guard - ensure verifyPayment only runs once per effect cycle
+    let verifyStarted = false;
+    if (!verifyStarted) {
+      verifyStarted = true;
+      void verifyPayment();
+    }
 
     return () => {
       cancelled = true;
-      requestInFlightRef.current = false;
       if (pollTimeout) {
         clearTimeout(pollTimeout);
       }

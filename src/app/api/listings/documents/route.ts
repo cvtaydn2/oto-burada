@@ -85,7 +85,15 @@ export async function POST(request: Request) {
   const { documentsBucket } = getSupabaseDocumentsStorageEnv();
 
   const verifiedMimeType = await getVerifiedDocumentMimeType(file);
-  const contentType = verifiedMimeType ?? file.type;
+  // Fix 5: Reject if magic bytes don't match an allowed MIME type — never fall back to declared type
+  if (!verifiedMimeType) {
+    return apiError(
+      API_ERROR_CODES.BAD_REQUEST,
+      "Dosya içeriği desteklenen bir belge formatıyla eşleşmiyor.",
+      415
+    );
+  }
+  const contentType = verifiedMimeType;
   const storagePath = buildExpertDocumentStoragePath(
     user.id,
     sanitizedFileName,
@@ -115,15 +123,30 @@ export async function POST(request: Request) {
   }
 
   // ── Register in Registry ──────────────────────────────────────────────
-  await registerFileInRegistry({
-    ownerId: user.id,
-    bucketId: documentsBucket,
-    storagePath,
-    sourceEntityType: "listing_document",
-    fileName: sanitizedFileName,
-    fileSize: file.size,
-    mimeType: contentType,
-  });
+  try {
+    await registerFileInRegistry({
+      ownerId: user.id,
+      bucketId: documentsBucket,
+      storagePath,
+      sourceEntityType: "listing_document",
+      fileName: sanitizedFileName,
+      fileSize: file.size,
+      mimeType: contentType,
+    });
+  } catch (regError) {
+    logger.storage.error("Failed to register document in registry, cleaning up storage", {
+      error: regError,
+      storagePath,
+      userId: user.id,
+    });
+    // Cleanup storage to prevent orphan files
+    await supabase.storage.from(documentsBucket).remove([storagePath]);
+    return apiError(
+      API_ERROR_CODES.INTERNAL_ERROR,
+      "Belge kaydı başarısız oldu. Lütfen tekrar dene.",
+      500
+    );
+  }
 
   const signedUrl = await createExpertDocumentSignedUrl(storagePath, {
     bucketName: documentsBucket,
@@ -133,8 +156,8 @@ export async function POST(request: Request) {
     {
       document: {
         fileName: sanitizedFileName,
-        mimeType: file.type,
-        size: file.size,
+        // Fix 6: Use verified MIME type — never echo user-declared file.type
+        mimeType: contentType,
         storagePath,
         url: signedUrl,
       },

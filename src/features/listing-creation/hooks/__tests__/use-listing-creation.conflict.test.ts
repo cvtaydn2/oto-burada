@@ -10,6 +10,7 @@ describe("useListingCreation conflict handling", () => {
 
   it("handles 409 responses with a dedicated refresh path", () => {
     expect(sourceCode).toContain("response.status === 409");
-    expect(sourceCode).toContain("router.refresh()");
+    // After conflict, user is prompted to reload — uses window.location.reload()
+    expect(sourceCode).toContain("window.location.reload()");
   });
 });

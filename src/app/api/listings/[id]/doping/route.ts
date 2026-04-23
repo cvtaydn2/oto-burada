@@ -93,8 +93,17 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
     }
 
     const nameParts = profile.fullName.trim().split(" ");
-    const name = nameParts[0] || "User";
-    const surname = nameParts.length > 1 ? nameParts.slice(1).join(" ") : "Kullanıcı";
+    // Fix 1: No placeholder fallback — require real name parts, fail-closed
+    const name = nameParts[0];
+    const surname = nameParts.length > 1 ? nameParts.slice(1).join(" ") : null;
+
+    if (!name || !surname) {
+      return apiError(
+        API_ERROR_CODES.BAD_REQUEST,
+        "Ödeme için profil bilgilerinizde hem ad hem soyad gereklidir.",
+        400
+      );
+    }
 
     const headersList = await headers();
     const ip =

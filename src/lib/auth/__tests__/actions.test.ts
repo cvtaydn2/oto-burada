@@ -108,10 +108,11 @@ describe("auth actions", () => {
 
     expect(result.error).toBe("İşlem şu anda tamamlanamıyor. Lütfen biraz sonra tekrar dene.");
     expect(result.fields?.email).toBe("test@example.com");
+    // Fix 3: Log now uses sanitized reason code, not raw error or PII
     expect(mockAuthError).toHaveBeenCalledWith(
       "Forgot password email dispatch failed",
-      providerError,
-      { email: "test@example.com" }
+      { reason: "provider_error" },
+      {}
     );
   });
 });

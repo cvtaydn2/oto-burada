@@ -2,6 +2,7 @@ import { cookies } from "next/headers";
 
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { hasSupabaseAdminEnv } from "@/lib/supabase/env";
+import { logger } from "@/lib/utils/logger";
 import { listingSchema } from "@/lib/validators";
 import type { Listing, ListingCreateInput } from "@/types";
 
@@ -110,16 +111,32 @@ export type { PaginatedListingsResult };
 export async function archiveDatabaseListing(listingId: string, sellerId: string) {
   if (!hasSupabaseAdminEnv()) return null;
   const admin = createSupabaseAdminClient();
+
+  // Fix 4: Concurrency Guard - Fetch current version before update
+  const { data: current } = await admin
+    .from("listings")
+    .select("version")
+    .eq("id", listingId)
+    .eq("seller_id", sellerId)
+    .single();
+
+  if (!current) return null;
+
   const { error } = await admin
     .from("listings")
     .update({
       status: "archived" satisfies Listing["status"],
       updated_at: new Date().toISOString(),
+      version: (current.version ?? 0) + 1, // Increment version manually for non-upsert updates
     })
     .eq("id", listingId)
-    .eq("seller_id", sellerId);
+    .eq("seller_id", sellerId)
+    .eq("version", current.version ?? 0);
 
-  if (error) return null;
+  if (error) {
+    logger.listings.warn("Concurrent archive attempt blocked or failed", { listingId, error });
+    return null;
+  }
   return (await getDatabaseListings({ listingId }))?.[0] ?? null;
 }
 
@@ -127,7 +144,7 @@ export async function deleteDatabaseListing(listingId: string, sellerId: string)
   if (!hasSupabaseAdminEnv()) return null;
   const admin = createSupabaseAdminClient();
 
-  // Fetch the listing to verify ownership and status
+  // Fetch the listing to verify ownership, status, and VERSION
   const listing = (await getDatabaseListings({ listingId, sellerId }))?.[0];
 
   if (!listing) return null;
@@ -139,8 +156,6 @@ export async function deleteDatabaseListing(listingId: string, sellerId: string)
       .filter((path) => path.length > 0);
     if (storagePaths.length > 0) {
       const bucketName = process.env.SUPABASE_STORAGE_BUCKET_LISTINGS ?? "listing-images";
-      // ── PILL: Issue 2 - Async File Cleanup ─────────────────────────
-      // Instead of manual removal which can fail or timeout, we queue it.
       const { queueFileCleanup } = await import("@/lib/storage/registry");
       await queueFileCleanup(bucketName, storagePaths);
     }
@@ -149,7 +164,13 @@ export async function deleteDatabaseListing(listingId: string, sellerId: string)
   await admin.from("listing_images").delete().eq("listing_id", listingId);
   await admin.from("favorites").delete().eq("listing_id", listingId);
   await admin.from("reports").delete().eq("listing_id", listingId);
-  const { error } = await admin.from("listings").delete().eq("id", listingId);
+
+  // Fix 4: Concurrency Guard - Version check for final delete
+  const { error } = await admin
+    .from("listings")
+    .delete()
+    .eq("id", listingId)
+    .eq("version", listing.version ?? 0);
 
   return error ? null : { id: listingId, deleted: true };
 }

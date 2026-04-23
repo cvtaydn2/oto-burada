@@ -102,7 +102,15 @@ export async function POST(request: Request) {
   const { listingsBucket } = getSupabaseStorageEnv();
 
   const verifiedMimeType = await getVerifiedMimeType(file);
-  const contentType = verifiedMimeType ?? file.type;
+  // Fix 5: Reject if magic bytes don't match an allowed MIME type — never fall back to declared type
+  if (!verifiedMimeType) {
+    return apiError(
+      API_ERROR_CODES.BAD_REQUEST,
+      "Dosya içeriği desteklenen bir görsel formatıyla eşleşmiyor.",
+      415
+    );
+  }
+  const contentType = verifiedMimeType;
   const storagePath = buildListingImageStoragePath(
     user.id,
     sanitizedFileName,
@@ -152,15 +160,30 @@ export async function POST(request: Request) {
   }
 
   // ── Register in Registry ──────────────────────────────────────────────
-  await registerFileInRegistry({
-    ownerId: user.id,
-    bucketId: listingsBucket,
-    storagePath,
-    sourceEntityType: "listing",
-    fileName: sanitizedFileName,
-    fileSize: imageBuffer.length,
-    mimeType: contentType,
-  });
+  try {
+    await registerFileInRegistry({
+      ownerId: user.id,
+      bucketId: listingsBucket,
+      storagePath,
+      sourceEntityType: "listing",
+      fileName: sanitizedFileName,
+      fileSize: imageBuffer.length,
+      mimeType: contentType,
+    });
+  } catch (regError) {
+    logger.storage.error("Failed to register image in registry, cleaning up storage", {
+      error: regError,
+      storagePath,
+      userId: user.id,
+    });
+    // Cleanup storage to prevent orphan files
+    await supabase.storage.from(listingsBucket).remove([storagePath]);
+    return apiError(
+      API_ERROR_CODES.INTERNAL_ERROR,
+      "Görsel kaydı başarısız oldu. Lütfen tekrar dene.",
+      500
+    );
+  }
 
   const {
     data: { publicUrl },
@@ -170,7 +193,8 @@ export async function POST(request: Request) {
     {
       image: {
         fileName: sanitizedFileName,
-        mimeType: file.type,
+        // Fix 6: Use verified MIME type — never echo user-declared file.type
+        mimeType: contentType,
         size: imageBuffer.length,
         storagePath,
         url: publicUrl,

@@ -18,19 +18,20 @@ vi.mock("@/lib/payment", () => ({
 }));
 
 vi.mock("@/lib/supabase/admin", () => ({
-  createSupabaseAdminClient: vi.fn(() => ({
-    from: vi.fn(() => ({
-      select: vi.fn(() => ({
-        eq: vi.fn(() => ({
-          eq: vi.fn(() => ({
-            neq: vi.fn(() => ({
-              maybeSingle,
-            })),
-          })),
-        })),
-      })),
-    })),
-  })),
+  createSupabaseAdminClient: vi.fn(() => {
+    // Fully chainable mock — supports any depth of .eq() calls
+    const chain: Record<string, unknown> = {};
+    const chainMethods = ["select", "eq", "order", "limit", "not", "neq"];
+    for (const method of chainMethods) {
+      chain[method] = vi.fn(() => chain);
+    }
+    // Terminal resolvers — listing lookup uses .single(), payment lookup uses .maybeSingle()
+    chain.single = vi.fn().mockResolvedValue({ data: null, error: { message: "not found" } });
+    chain.maybeSingle = maybeSingle;
+    return {
+      from: vi.fn(() => chain),
+    };
+  }),
 }));
 
 describe("doping service ownership hardening", () => {

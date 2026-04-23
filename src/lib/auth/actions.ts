@@ -140,8 +140,10 @@ export async function loginAction(
       data.user.id
     );
 
+    // Fix 4: Mask email domain only — never send full email to analytics
+    const maskedEmail = data.user.email ? data.user.email.replace(/^[^@]+/, "***") : undefined;
     identifyServerUser(data.user.id, {
-      email: data.user.email,
+      email: maskedEmail,
       role: (data.user.app_metadata as { role?: string } | undefined)?.role ?? "user",
     });
   }
@@ -220,8 +222,25 @@ export async function registerAction(
       data.user.id
     );
 
+    // Fix 8: Profile Bootstrap Verification
+    // Ensure the profile was created (either by trigger or manual).
+    // If we're in a race condition where trigger is slow, we log it for deterministic handling.
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("id")
+      .eq("id", data.user.id)
+      .single();
+
+    if (!profile) {
+      logger.auth.warn("Profile not found immediately after registration (bootstrap lag)", {
+        userId: data.user.id,
+      });
+    }
+
+    // Fix 4: Mask email domain only — never send full email to analytics
+    const maskedEmail = data.user.email ? data.user.email.replace(/^[^@]+/, "***") : undefined;
     identifyServerUser(data.user.id, {
-      email: data.user.email,
+      email: maskedEmail,
     });
   }
 
@@ -256,9 +275,30 @@ export async function forgotPasswordAction(
   });
 
   if (error) {
-    logger.auth.error("Forgot password email dispatch failed", error, { email });
+    // Fix 9: Deterministic operational reason visibility
+    // Map internal provider errors to safe, loggable reason codes for telemetry
+    const errorMsg = error.message.toLowerCase();
+    const reasonCode =
+      error.status === 429
+        ? "rate_limited"
+        : errorMsg.includes("invalid email")
+          ? "invalid_email"
+          : errorMsg.includes("network")
+            ? "network_error"
+            : "provider_error";
+
+    logger.auth.error(
+      "Forgot password email dispatch failed",
+      {
+        reason: reasonCode,
+        status: error.status,
+      },
+      {}
+    );
+
     const isTemporaryFailure =
       error.status === 429 || /rate|limit|too many|temporar/i.test(error.message);
+
     return buildAuthErrorState(
       isTemporaryFailure
         ? "İşlem şu anda geçici olarak yavaşlatıldı. Lütfen biraz sonra tekrar dene."

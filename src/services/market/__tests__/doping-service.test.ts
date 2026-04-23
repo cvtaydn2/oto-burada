@@ -4,37 +4,46 @@ import type { DopingResult } from "../doping-service";
 
 // Mock all external dependencies
 vi.mock("@/lib/supabase/admin", () => ({
-  createSupabaseAdminClient: vi.fn(() => ({
-    from: vi.fn(() => ({
-      select: vi.fn(() => ({
-        eq: vi.fn(() => ({
-          single: vi.fn().mockResolvedValue({
-            data: { seller_id: "user-123" },
-            error: null,
-          }),
-        })),
-      })),
-      update: vi.fn(() => ({
-        eq: vi.fn().mockResolvedValue({ error: null }),
-      })),
-      insert: vi.fn(() => ({
-        select: vi.fn(() => ({
-          single: vi.fn().mockResolvedValue({
-            data: { id: "payment-1" },
-            error: null,
-          }),
-        })),
-      })),
-      rpc: vi.fn().mockResolvedValue({
-        data: { applied_count: 1 },
-        error: null,
-      }),
-    })),
-    rpc: vi.fn().mockResolvedValue({
-      data: { applied_count: 1 },
+  createSupabaseAdminClient: vi.fn(() => {
+    // Build a fully chainable mock that supports any number of .eq() calls
+    const chain: Record<string, unknown> = {};
+    const chainMethods = [
+      "select",
+      "eq",
+      "order",
+      "limit",
+      "single",
+      "maybeSingle",
+      "insert",
+      "update",
+      "upsert",
+      "delete",
+    ];
+    for (const method of chainMethods) {
+      chain[method] = vi.fn(() => chain);
+    }
+    // Terminal resolvers
+    (chain.single as ReturnType<typeof vi.fn>).mockResolvedValue({
+      data: { id: "payment-1", seller_id: "user-123", status: "active" },
       error: null,
-    }),
-  })),
+    });
+    (chain.maybeSingle as ReturnType<typeof vi.fn>).mockResolvedValue({
+      data: null,
+      error: null,
+    });
+    (chain.insert as ReturnType<typeof vi.fn>).mockReturnValue({
+      select: vi.fn(() => ({
+        single: vi.fn().mockResolvedValue({ data: { id: "payment-1" }, error: null }),
+      })),
+    });
+    (chain.update as ReturnType<typeof vi.fn>).mockReturnValue({
+      eq: vi.fn().mockResolvedValue({ error: null }),
+    });
+    return {
+      from: vi.fn(() => chain),
+      rpc: vi.fn().mockResolvedValue({ data: { applied_count: 1 }, error: null }),
+    };
+  }),
 }));
 
 vi.mock("@/lib/supabase/env", () => ({

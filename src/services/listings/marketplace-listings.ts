@@ -208,7 +208,8 @@ export async function getMarketplaceSeller(sellerId: string): Promise<Profile | 
 export async function getPublicMarketplaceListings(
   filters: ListingFilters = { page: 1, limit: 12, sort: "newest" }
 ) {
-  return getFilteredMarketplaceListings(filters);
+  const cacheKey = `public-listings:${JSON.stringify(filters)}`;
+  return withNextCache([cacheKey], () => getFilteredMarketplaceListings(filters), 60);
 }
 
 export async function getAllKnownListings() {

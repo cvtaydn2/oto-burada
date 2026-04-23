@@ -33,6 +33,12 @@ const { mockMaybeSingle } = vi.hoisted(() => ({
 
 vi.mock("@/lib/supabase/browser", () => ({
   createSupabaseBrowserClient: vi.fn(() => ({
+    auth: {
+      getUser: vi.fn().mockResolvedValue({
+        data: { user: { id: "test-user-id" } },
+        error: null,
+      }),
+    },
     from: vi.fn(() => ({
       select: vi.fn().mockReturnThis(),
       eq: vi.fn().mockReturnThis(),
