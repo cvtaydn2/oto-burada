@@ -115,6 +115,58 @@ export const legacyListingSelect = `
   )
 `;
 
+/**
+ * OPTIMIZED select for marketplace list/grid display.
+ * Excludes heavy fields like description, damage_status_json, etc.
+ * Significant performance gain for LCP and memory usage.
+ */
+export const marketplaceListingSelect = `
+  id,
+  seller_id,
+  slug,
+  title,
+  brand,
+  model,
+  year,
+  mileage,
+  fuel_type,
+  transmission,
+  price,
+  city,
+  district,
+  whatsapp_phone,
+  status,
+  featured,
+  featured_until,
+  urgent_until,
+  highlighted_until,
+  market_price_index,
+  published_at,
+  bumped_at,
+  view_count,
+  created_at,
+  expert_inspection,
+  listing_images (
+    id,
+    listing_id,
+    public_url,
+    sort_order,
+    is_cover,
+    placeholder_blur
+  ),
+  profiles!inner!seller_id (
+    id,
+    full_name,
+    avatar_url,
+    role,
+    user_type,
+    business_name,
+    is_verified,
+    verification_status,
+    business_slug
+  )
+`;
+
 export function mapListingRow(row: ListingRow): Listing {
   return {
     brand: row.brand,
@@ -347,7 +399,7 @@ export async function getFilteredDatabaseListings(
     }
   }
 
-  let dataQuery = admin.from("listings").select(listingSelect).eq("status", "approved");
+  let dataQuery = admin.from("listings").select(marketplaceListingSelect).eq("status", "approved");
 
   // CRITICAL: Filter out listings from banned users
   dataQuery = dataQuery.eq("profiles.is_banned", false);

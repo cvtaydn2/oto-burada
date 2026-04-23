@@ -8,6 +8,8 @@ import { ModerationCard } from "@/features/admin-moderation/components/moderatio
 import { useModerationLogic } from "@/features/admin-moderation/hooks/use-moderation-logic";
 import { type Listing } from "@/types";
 
+import { ErrorBoundary } from "../shared/error-boundary";
+
 interface AdminListingsModerationProps {
   pendingListings: Listing[];
 }
@@ -123,22 +125,23 @@ export function AdminListingsModeration({ pendingListings }: AdminListingsModera
         )}
 
         {state.filteredListings.map((listing) => (
-          <ModerationCard
-            key={listing.id}
-            listing={listing}
-            selectedListingIds={state.selectedListingIds}
-            toggleListingSelection={actions.toggleListingSelection}
-            activeAction={state.activeAction}
-            handleModeration={actions.handleModeration}
-            editingListingId={state.editingListingId}
-            setEditingListingId={actions.setEditingListingId}
-            editValues={state.editValues}
-            setEditValues={actions.setEditValues}
-            handleSaveEdit={actions.handleSaveEdit}
-            isSavingEdit={state.isSavingEdit}
-            notesByListingId={state.notesByListingId}
-            setNotesByListingId={actions.setNotesByListingId}
-          />
+          <ErrorBoundary key={listing.id}>
+            <ModerationCard
+              listing={listing}
+              selectedListingIds={state.selectedListingIds}
+              toggleListingSelection={actions.toggleListingSelection}
+              activeAction={state.activeAction}
+              handleModeration={actions.handleModeration}
+              editingListingId={state.editingListingId}
+              setEditingListingId={actions.setEditingListingId}
+              editValues={state.editValues}
+              setEditValues={actions.setEditValues}
+              handleSaveEdit={actions.handleSaveEdit}
+              isSavingEdit={state.isSavingEdit}
+              notesByListingId={state.notesByListingId}
+              setNotesByListingId={actions.setNotesByListingId}
+            />
+          </ErrorBoundary>
         ))}
       </div>
     </section>

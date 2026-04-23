@@ -22,10 +22,15 @@ export function MobileNav({ searchSuggestions }: MobileNavProps) {
   // FAB sadece içerik keşif sayfalarında gösterilir.
   // Form, ödeme, mesaj ve işlem sayfalarında klavye/içerik üstüne binmemesi için gizlenir.
   const FAB_ALLOWED_PATHS = ["/", "/listings", "/favorites", "/compare"];
+  const isListingDetailPage = pathname.startsWith("/listing/");
   const showFAB =
     FAB_ALLOWED_PATHS.some((p) => pathname === p || (p !== "/" && pathname.startsWith(p + "/"))) &&
     !pathname.startsWith("/dashboard/listings/create") &&
-    !pathname.startsWith("/dashboard/listings/edit");
+    !pathname.startsWith("/dashboard/listings/edit") &&
+    !isListingDetailPage;
+
+  // İlan detay sayfasında global bottom nav'ı gizle, çünkü orada özel sticky contact bar var.
+  if (isListingDetailPage) return null;
 
   const mobileNavigationItems = getMobileNavigationItems(isReady ? isAuthenticated : true);
 
