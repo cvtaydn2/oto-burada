@@ -100,3 +100,27 @@ export function createListingEntity(
     })),
   });
 }
+
+/**
+ * Cleans markdown/formatting from listing description for better display.
+ */
+export function getCleanDescription(description: string): string {
+  return description
+    .split("\n")
+    .filter((line) => !/^#{1,6}\s*$/.test(line))
+    .map((line) => line.replace(/^#{1,6}\s+/, ""))
+    .join("\n")
+    .trim();
+}
+
+/**
+ * Generates breadcrumbs for a listing.
+ */
+export function getListingBreadcrumbs(listing: { brand: string; model: string; slug: string }) {
+  return [
+    { name: "Ana Sayfa", url: "/" },
+    { name: "Arabalar", url: "/listings" },
+    { name: listing.brand, url: `/listings?brand=${encodeURIComponent(listing.brand)}` },
+    { name: listing.model, url: `/listing/${listing.slug}` },
+  ];
+}

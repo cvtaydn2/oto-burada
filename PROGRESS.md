@@ -1,3 +1,26 @@
+# 2026-04-24 — Marketplace Filter Fragmentation & Modularization
+
+## [2026-04-24] - Marketplace Filter Fragmentation
+- **Durum:** ✅ TAMAMLANDI
+- **Yapılanlar:**
+  - `src/features/marketplace/components/filters/` dizini oluşturuldu.
+  - `FilterSelect`, `BrandFilter`, `ModelFilter`, `TrimFilter`, `LocationFilter`, `RangeFilter`, `TechnicalFilter` ve `TrustFilter` bileşenleri atomik parçalara ayrıldı.
+  - `filter-fields.tsx` (God Component) refaktör edilerek bu modüler bileşenleri kullanan bir namespace yapısına dönüştürüldü; dosya boyutu %80 azaltıldı.
+  - İlan detay sayfasındaki `memberSince` -> `membershipLabel` isimlendirme hatası giderildi.
+  - `lint` ve `typecheck` süreçleri başarıyla tamamlandı.
+- **Sıradaki Adım:** Marketplace performans analizi (LCP/INP) ve veri fetch optimizasyonları.
+
+# 2026-04-24 — Domain Expansion & Page Refactoring (Listing Detail)
+
+## [2026-04-24] - Domain Expansion & Listing Detail Modularization
+- **Durum:** ✅ TAMAMLANDI
+- **Yapılanlar:**
+  - `src/domain/logic/profile-logic.ts` oluşturuldu; satıcı üyelik etiketleri ve initials mantığı merkezi domain katmanına taşındı.
+  - `src/domain/logic/listing-factory.ts` genişletildi: İlan açıklama temizleme (`getCleanDescription`) ve breadcrumb oluşturma (`getListingBreadcrumbs`) mantığı eklendi.
+  - `ListingDetailPage` mega-bileşeni modüler hale getirildi: Teknik özellikler (`ListingSpecs`) ayrı bileşene çıkarıldı, inline iş mantığı domain fonksiyonlarıyla değiştirildi.
+  - Sayfa bazlı lint hataları giderildi ve import sıralaması standartlaştırıldı.
+- **Sıradaki Adım:** Marketplace performans analizi (LCP/INP) ve veri fetch optimizasyonları.
+
 # 2026-04-24 — Review & Refactor: Architectural Hardening & Type Safety
 
 ## [2026-04-24] - Architecture & Hardening Sync

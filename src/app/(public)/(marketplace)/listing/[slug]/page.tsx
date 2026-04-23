@@ -1,16 +1,12 @@
 import {
   AlertCircle,
   Calendar,
-  CalendarDays,
   CheckCircle2,
   ChevronRight,
-  CircleGauge,
   Eye,
   Flag,
-  Fuel,
   Hash,
   MapPin,
-  Settings2,
   ShieldCheck,
   Sparkles,
   Star,
@@ -39,13 +35,14 @@ import {
   ListingDetailStructuredData,
 } from "@/components/seo/structured-data";
 import { ListingCard } from "@/components/shared/listing-card";
+import { getCleanDescription, getListingBreadcrumbs } from "@/domain/logic/listing-factory";
+import { getProfileMembershipLabel } from "@/domain/logic/profile-logic";
+import { ListingSpecs } from "@/features/marketplace/components/listing-detail/listing-specs";
 import { ListingViewTracker } from "@/features/marketplace/components/listing-view-tracker";
 import { getCurrentUser } from "@/lib/auth/session";
-import { breadcrumbs as breadcrumbLabels } from "@/lib/constants/ui-strings";
 import { features } from "@/lib/features";
 import { buildAbsoluteUrl, buildListingDetailMetadata } from "@/lib/seo";
-import { cn, formatNumber, formatPrice } from "@/lib/utils";
-import { getMembershipYears, getMemberSinceYear } from "@/lib/utils/listing-utils";
+import { cn, formatPrice } from "@/lib/utils";
 import { getMarketValuation } from "@/services/listings/listing-price-history";
 import {
   getMarketplaceListingBySlug,
@@ -132,32 +129,13 @@ export default async function ListingDetailPage({ params }: ListingDetailPagePro
   const isOwner = currentUser?.id === listing.sellerId;
 
   // Seller membership
-  const memberSince = getMemberSinceYear(seller?.createdAt ?? null);
-  const membershipYears = getMembershipYears(memberSince);
-  const membershipLabel =
-    membershipYears === null
-      ? null
-      : membershipYears === 0
-        ? "Yeni Üye"
-        : membershipYears === 1
-          ? "1 Yıldır Üye"
-          : `${membershipYears} Yıldır Üye`;
+  const membershipLabel = getProfileMembershipLabel(seller?.createdAt ?? null);
 
   // Breadcrumbs
-  const pageBreadcrumbs = [
-    { name: breadcrumbLabels.home, url: "/" },
-    { name: breadcrumbLabels.cars, url: "/listings" },
-    { name: listing.brand, url: `/listings?brand=${encodeURIComponent(listing.brand)}` },
-    { name: listing.model, url: `/listing/${listing.slug}` },
-  ];
+  const pageBreadcrumbs = getListingBreadcrumbs(listing);
 
   // Description cleanup
-  const cleanDescription = listing.description
-    .split("\n")
-    .filter((line) => !/^#{1,6}\s*$/.test(line))
-    .map((line) => line.replace(/^#{1,6}\s+/, ""))
-    .join("\n")
-    .trim();
+  const cleanDescription = getCleanDescription(listing.description);
 
   return (
     <>
@@ -377,10 +355,10 @@ export default async function ListingDetailPage({ params }: ListingDetailPagePro
                     />
                     <span>{seller?.isVerified ? "Doğrulanmış Satıcı" : "Doğrulama Yok"}</span>
                   </div>
-                  {memberSince && (
+                  {membershipLabel && (
                     <div className="flex items-center gap-2 text-muted-foreground">
                       <Store size={13} className="text-primary" />
-                      <span>{memberSince}&apos;den beri üye</span>
+                      <span>{membershipLabel}&apos;den beri üye</span>
                     </div>
                   )}
                 </div>
@@ -422,31 +400,12 @@ export default async function ListingDetailPage({ params }: ListingDetailPagePro
           {/* ══════════════════════════════════════════════════════════════════
               ZONE 2 — SPECS: 4-column quick facts
           ══════════════════════════════════════════════════════════════════ */}
-          <div className="mb-6 sm:mb-8 grid grid-cols-2 gap-3 sm:grid-cols-4 sm:gap-4">
-            {[
-              { icon: CalendarDays, label: "Model Yılı", value: String(listing.year) },
-              {
-                icon: CircleGauge,
-                label: "Kilometre",
-                value: `${formatNumber(listing.mileage)} km`,
-              },
-              { icon: Fuel, label: "Yakıt", value: listing.fuelType },
-              { icon: Settings2, label: "Vites", value: listing.transmission },
-            ].map(({ icon: Icon, label, value }) => (
-              <div
-                key={label}
-                className="flex flex-col items-center justify-center rounded-2xl border border-border bg-card p-4 text-center shadow-sm"
-              >
-                <div className="mb-2 flex size-10 items-center justify-center rounded-xl bg-muted text-muted-foreground">
-                  <Icon size={18} />
-                </div>
-                <div className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
-                  {label}
-                </div>
-                <div className="mt-1 text-sm font-bold text-foreground">{value}</div>
-              </div>
-            ))}
-          </div>
+          <ListingSpecs
+            year={listing.year}
+            mileage={listing.mileage}
+            fuelType={listing.fuelType}
+            transmission={listing.transmission}
+          />
 
           {/* ══════════════════════════════════════════════════════════════════
               ZONE 3 — CONTENT: Description, Inspection, Damage, Analysis, Map
