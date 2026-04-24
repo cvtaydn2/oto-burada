@@ -3,13 +3,9 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
-import { features } from "@/lib/features";
 import { cn } from "@/lib/utils";
 
-const navItems = [
-  { href: "/listings", label: "İlanlar" },
-  ...(features.compare ? [{ href: "/compare", label: "Karşılaştır" }] : []),
-];
+const navItems = [{ href: "/listings", label: "İlanlar" }];
 
 export function DesktopNav() {
   const pathname = usePathname();

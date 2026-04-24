@@ -1,10 +1,9 @@
 "use client";
 
-import { Heart, MessageSquare, PlusCircle } from "lucide-react";
+import { Heart, PlusCircle } from "lucide-react";
 import Link from "next/link";
 
 import { useAuthUser } from "@/components/shared/auth-provider";
-import { features } from "@/lib/features";
 
 interface SiteHeaderAuthProps {
   favoritesHrefGuest: string;
@@ -32,16 +31,6 @@ export function SiteHeaderAuth({
         >
           <Heart size={22} strokeWidth={1.5} />
         </Link>
-        {features.chat && (
-          <Link
-            href="/dashboard/messages"
-            prefetch={false}
-            className="text-muted-foreground transition-colors hover:text-primary"
-            aria-label="Mesajlar"
-          >
-            <MessageSquare size={22} strokeWidth={1.5} />
-          </Link>
-        )}
       </div>
 
       <div className="flex items-center gap-2 sm:gap-4">

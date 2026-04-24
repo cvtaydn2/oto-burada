@@ -16,11 +16,9 @@ import {
 } from "@/components/ui/alert-dialog";
 import { trust } from "@/lib/constants/ui-strings";
 import { captureClientEvent } from "@/lib/monitoring/posthog-client";
-import { createSupabaseBrowserClient } from "@/lib/supabase/browser";
 import { cn } from "@/lib/utils";
 import { getSellerTrustUI } from "@/lib/utils/trust-ui";
 import { revealListingPhone } from "@/services/listings/listing-actions";
-import { getOrCreateChat } from "@/services/messages/chat-service";
 import type { Profile } from "@/types";
 
 interface ContactActionsProps {
@@ -40,12 +38,9 @@ export function ContactActions({
   currentUserId,
 }: ContactActionsProps) {
   const router = useRouter();
-  const supabase = createSupabaseBrowserClient();
   const [isRevealed, setIsRevealed] = useState(false);
   const [revealedPhone, setRevealedPhone] = useState<string | null>(null);
   const [isLogging, setIsLogging] = useState(false);
-  const [isChatting, setIsChatting] = useState(false);
-  const [error, setError] = useState<string | null>(null);
 
   const { isContactable, isTrusted } = getSellerTrustUI(seller);
 
@@ -101,52 +96,15 @@ export function ContactActions({
     if (isRevealed || isLogging) return;
 
     setIsLogging(true);
-    setError(null);
     try {
       const result = await revealListingPhone(listingId);
       setRevealedPhone(result.phone);
       setIsRevealed(true);
       captureClientEvent("contact_phone_revealed", { listingId, sellerId });
     } catch (err) {
-      const message = err instanceof Error ? err.message : "Bir hata oluştu";
-      setError(message);
+      // Silently fail or log to monitoring
     } finally {
       setIsLogging(false);
-    }
-  };
-
-  const handleStartChat = async () => {
-    setIsChatting(true);
-    try {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-      if (!user) {
-        const returnPath = listingSlug ? `/listing/${listingSlug}` : "/listings";
-        router.push(`/login?next=${encodeURIComponent(returnPath)}`);
-        return;
-      }
-
-      if (user.id === sellerId) {
-        setError("Kendi ilanınıza mesaj gönderemezsiniz.");
-        return;
-      }
-
-      const chat = await getOrCreateChat(listingId, user.id, sellerId);
-      if (chat) {
-        captureClientEvent("chat_started", {
-          chatId: chat.id,
-          listingId,
-          sellerId,
-        });
-        router.push(`/dashboard/messages?chatId=${chat.id}`);
-      } else {
-        setError("Sohbet başlatılırken bir sorun oluştu.");
-      }
-    } catch {
-      setError("Bağlantı hatası.");
-    } finally {
-      setIsChatting(false);
     }
   };
 
@@ -274,28 +232,6 @@ export function ContactActions({
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-
-      <button
-        onClick={handleStartChat}
-        disabled={isChatting}
-        className="flex w-full items-center justify-center gap-2 rounded-xl bg-muted h-12 px-4 text-sm font-bold text-foreground border border-border transition-all hover:bg-muted/80 active:scale-95 disabled:opacity-70"
-      >
-        {isChatting ? (
-          <Loader2 className="animate-spin size-5" />
-        ) : (
-          <>
-            <MessageCircle className="size-5 text-primary" />
-            Uygulama İçi Mesaj
-          </>
-        )}
-      </button>
-
-      {error && (
-        <div className="flex items-center gap-2 text-red-600 text-[13px] font-medium bg-red-50 p-3 rounded-lg border border-red-100 animate-in fade-in slide-in-from-top-1">
-          <AlertTriangle className="size-4 shrink-0" />
-          {error}
-        </div>
-      )}
     </div>
   );
 }

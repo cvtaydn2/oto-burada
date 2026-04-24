@@ -10,7 +10,7 @@ import {
 import Link from "next/link";
 
 import { ContactForm } from "@/components/shared/contact-form";
-import { features } from "@/lib/features";
+import { FEATURES } from "@/lib/features";
 
 export const metadata = {
   title: "İletişim | OtoBurada",
@@ -140,9 +140,9 @@ export default function ContactPage() {
         {/* Right: Contact Form */}
         <div className="p-10">
           <h2 className="text-2xl font-bold text-foreground mb-6">
-            {features.tickets ? "Mesaj Gönderin" : "İletişime Geçin"}
+            {FEATURES.tickets ? "Mesaj Gönderin" : "İletişime Geçin"}
           </h2>
-          {features.tickets ? (
+          {FEATURES.tickets ? (
             <ContactForm />
           ) : (
             <div className="space-y-4">

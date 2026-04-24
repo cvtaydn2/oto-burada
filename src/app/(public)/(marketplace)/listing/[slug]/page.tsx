@@ -20,7 +20,6 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
 
-import { CompareButton } from "@/components/listings/compare-button";
 import { DamageReportCard } from "@/components/listings/damage-report-card";
 import { ExpertInspectionCard } from "@/components/listings/expert-inspection-card";
 import { FavoriteButton } from "@/components/listings/favorite-button";
@@ -40,7 +39,6 @@ import { getProfileMembershipLabel } from "@/domain/logic/profile-logic";
 import { ListingSpecs } from "@/features/marketplace/components/listing-detail/listing-specs";
 import { ListingViewTracker } from "@/features/marketplace/components/listing-view-tracker";
 import { getCurrentUser } from "@/lib/auth/session";
-import { features } from "@/lib/features";
 import { buildAbsoluteUrl, buildListingDetailMetadata } from "@/lib/seo";
 import { cn, formatPrice } from "@/lib/utils";
 import { getMarketValuation } from "@/services/listings/listing-price-history";
@@ -257,12 +255,6 @@ export default async function ListingDetailPage({ params }: ListingDetailPagePro
                     price={listing.price}
                     className="flex h-9 items-center gap-1.5 rounded-lg border border-border bg-muted/30 px-3 text-xs font-bold text-muted-foreground transition hover:bg-muted"
                   />
-                  {features.compare && (
-                    <CompareButton
-                      listingId={listing.id}
-                      className="flex h-9 items-center gap-1.5 rounded-lg border border-border bg-muted/30 px-3 text-xs font-bold text-muted-foreground transition hover:bg-muted"
-                    />
-                  )}
                   <FavoriteButton
                     listingId={listing.id}
                     className="size-9 rounded-lg border border-border bg-muted/30 text-muted-foreground hover:bg-red-50 hover:text-red-500 hover:border-red-200 transition"

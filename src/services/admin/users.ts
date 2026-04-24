@@ -6,8 +6,6 @@
 export {
   banUser,
   deleteUser,
-  grantCreditsToUser,
-  grantDopingToListing,
   promoteUserToAdmin,
   toggleUserBan,
   updateUserRole,

@@ -5,21 +5,11 @@ import Image from "next/image";
 import Link from "next/link";
 
 import { Checkbox } from "@/components/ui/checkbox";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
 import { trust } from "@/lib/constants/ui-strings";
 import { formatCurrency, formatNumber, supabaseImageUrl } from "@/lib/utils";
 import { cn } from "@/lib/utils";
 import { getSellerTrustUI } from "@/lib/utils/trust-ui";
 import type { Listing } from "@/types";
-
-import { ListingDopingPanel } from "./listing-doping-panel";
 
 const statusLabelMap: Record<Listing["status"], string> = {
   approved: trust.admin.listingStatus.approved,
@@ -211,53 +201,6 @@ export function DashboardListingCard({
                 )}
               </button>
             ))}
-
-          {isApproved &&
-            (() => {
-              const trustUI = getSellerTrustUI(listing.seller);
-              const isEligible = trustUI.isPremiumVisible;
-
-              return (
-                <Dialog>
-                  <DialogTrigger asChild>
-                    <button
-                      type="button"
-                      className={cn(
-                        "flex items-center justify-center size-11 rounded-xl transition-all border shadow-sm",
-                        isEligible
-                          ? "bg-blue-50 text-blue-600 hover:bg-blue-600 hover:text-white border-blue-100"
-                          : "bg-amber-50 text-amber-600 border-amber-100 opacity-80"
-                      )}
-                      title={isEligible ? "Doping Uygula" : "Güven Skoru Gerekli"}
-                    >
-                      <Rocket className="size-4" />
-                    </button>
-                  </DialogTrigger>
-                  <DialogContent className="sm:max-w-xl rounded-3xl border-none shadow-2xl p-0 overflow-hidden">
-                    <div className="p-8">
-                      <DialogHeader className="mb-6">
-                        <DialogTitle className="text-3xl font-bold tracking-tight">
-                          {isEligible ? "İlanını " : "Premium "}
-                          <span className="text-primary">
-                            {isEligible ? "Öne Çıkar" : "İçin Doğrulanın"}
-                          </span>
-                        </DialogTitle>
-                        <DialogDescription className="text-sm font-medium text-muted-foreground mt-2">
-                          {isEligible
-                            ? `${listing.title} ilanınız için doping paketi seçerek satışı hızlandırın.`
-                            : "Doping ve öne çıkarma özelliklerini kullanabilmek için hesabınızı doğrulamanız gerekmektedir."}
-                        </DialogDescription>
-                      </DialogHeader>
-                      <ListingDopingPanel
-                        listingId={listing.id}
-                        listingTitle={listing.title}
-                        trustUI={trustUI}
-                      />
-                    </div>
-                  </DialogContent>
-                </Dialog>
-              );
-            })()}
 
           <button
             type="button"

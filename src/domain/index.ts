@@ -8,15 +8,12 @@
 // Core entity types
 export type {
   AdminModerationAction,
-  Chat,
-  ExpertInspection,
   Favorite,
   Listing,
   ListingCreateFormValues,
   ListingCreateInput,
   ListingFilters,
   ListingImage,
-  Message,
   Notification,
   Profile,
   Report,

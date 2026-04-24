@@ -1,11 +1,4 @@
-import {
-  Activity,
-  AlertTriangle,
-  ArrowUpRight,
-  Database,
-  Monitor,
-  ShieldCheck,
-} from "lucide-react";
+import { Activity, Database, Monitor, ShieldCheck } from "lucide-react";
 import { Suspense } from "react";
 
 import { AdminBroadcastPanel } from "@/components/admin/admin-broadcast-panel";
@@ -25,10 +18,9 @@ import {
 // Dashboard Components
 import { QuickSystemStat } from "@/components/admin/dashboard/quick-system-stat";
 import { requireAdminUser } from "@/lib/auth/session";
-import { features } from "@/lib/features";
 import { captureServerError } from "@/lib/monitoring/posthog-server";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
-import { type AdminAnalyticsData, getAdminAnalytics } from "@/services/admin/analytics";
+import { getAdminAnalytics } from "@/services/admin/analytics";
 import { getRecentAdminModerationActions } from "@/services/admin/moderation-actions";
 import { getPersistenceHealth } from "@/services/admin/persistence-health";
 import { getStoredReports } from "@/services/reports/report-submissions";
@@ -94,15 +86,6 @@ export default async function AdminOverviewPage() {
             </div>
 
             <div className="flex flex-wrap gap-3">
-              {features.adminAnalytics && (
-                <Suspense
-                  fallback={
-                    <div className="h-11 min-w-[120px] animate-pulse rounded-xl bg-muted" />
-                  }
-                >
-                  <AdminRevenueBadge analyticsPromise={analyticsPromise} />
-                </Suspense>
-              )}
               <AdminHeaderActions />
             </div>
           </div>
@@ -171,39 +154,5 @@ export default async function AdminOverviewPage() {
         </div>
       </div>
     </main>
-  );
-}
-
-async function AdminRevenueBadge({
-  analyticsPromise,
-}: {
-  analyticsPromise: Promise<AdminAnalyticsData | null | AsyncErrorResult>;
-}) {
-  const analyticsData = await analyticsPromise;
-
-  if (!analyticsData || "error" in analyticsData) {
-    return (
-      <div className="flex h-11 items-center px-4 rounded-xl bg-rose-50 text-rose-600 border border-rose-100 text-[10px] font-bold uppercase tracking-widest animate-in fade-in">
-        <AlertTriangle size={14} className="mr-2" />
-        HATA
-      </div>
-    );
-  }
-
-  return (
-    <div className="min-w-[180px] rounded-3xl border border-slate-200 bg-white p-6 shadow-sm relative group overflow-hidden transition-all hover:shadow-md">
-      <div className="absolute -right-4 -top-4 size-20 bg-emerald-500/5 rounded-full blur-2xl group-hover:scale-125 transition-transform" />
-      <span className="relative z-10 block text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-1">
-        Ciro Hacmi
-      </span>
-      <div className="relative z-10 flex items-center gap-2">
-        <span className="text-2xl font-bold tracking-tighter text-slate-900">
-          ₺{analyticsData.kpis.totalRevenue.toLocaleString("tr-TR")}
-        </span>
-        <div className="size-5 rounded-full bg-emerald-50 flex items-center justify-center">
-          <ArrowUpRight size={12} className="text-emerald-600" />
-        </div>
-      </div>
-    </div>
   );
 }

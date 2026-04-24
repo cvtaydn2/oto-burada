@@ -3,7 +3,6 @@
 import { Flag } from "lucide-react";
 
 import { ReportListingForm } from "@/components/forms/report-listing-form";
-import { CompareButton } from "@/components/listings/compare-button";
 import { FavoriteButton } from "@/components/listings/favorite-button";
 import { ShareButton } from "@/components/listings/share-button";
 import { useAuthUser } from "@/components/shared/auth-provider";
@@ -14,7 +13,6 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { features } from "@/lib/features";
 import { captureClientEvent } from "@/lib/monitoring/posthog-client";
 
 interface ListingDetailActionsProps {
@@ -39,12 +37,6 @@ export function ListingDetailActions({
         price={price}
         className="bg-card border border-border text-muted-foreground px-3 py-1.5 rounded-lg text-sm font-medium hover:bg-muted transition flex items-center shadow-sm"
       />
-      {features.compare && (
-        <CompareButton
-          listingId={listingId}
-          className="bg-card border border-border text-muted-foreground px-3 py-1.5 rounded-lg text-sm font-medium hover:bg-muted transition flex items-center shadow-sm gap-2"
-        />
-      )}
       <FavoriteButton
         listingId={listingId}
         className="bg-card border border-border text-muted-foreground w-11 h-11 rounded-lg flex items-center justify-center hover:bg-red-50 hover:text-red-500 hover:border-red-200 transition shadow-sm"

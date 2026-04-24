@@ -3,7 +3,7 @@
 import { Download, Share, X } from "lucide-react";
 import { useEffect, useState } from "react";
 
-import { features } from "@/lib/features";
+import { FEATURES } from "@/lib/features";
 
 export function PWAInstallPrompt() {
   const [isVisible, setIsVisible] = useState(false);
@@ -20,7 +20,7 @@ export function PWAInstallPrompt() {
 
   useEffect(() => {
     // If PWA feature is disabled, don't even start the logic
-    if (!features.pwa) return;
+    if (!FEATURES.PWA) return;
 
     // Check if already installed
     const isStandalone = window.matchMedia("(display-mode: standalone)").matches;
@@ -43,7 +43,7 @@ export function PWAInstallPrompt() {
   };
 
   // Only render if PWA feature is enabled AND prompt is visible
-  if (!features.pwa || !isVisible) return null;
+  if (!FEATURES.PWA || !isVisible) return null;
 
   return (
     <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 w-[92%] max-w-sm animate-in fade-in slide-in-from-bottom-5 duration-500">
