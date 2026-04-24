@@ -17,74 +17,22 @@ export async function GET(request: Request) {
   const now = new Date().toISOString();
 
   try {
-    // 1. Expire featured dopings
-    const { error: featuredError } = await admin
-      .from("listings")
-      .update({
-        featured: false,
-        is_featured: false,
-        featured_until: null,
-        updated_at: now,
-      })
-      .eq("featured", true)
-      .not("featured_until", "is", null)
-      .lt("featured_until", now);
+    // Call the atomic RPC function
+    const { data, error } = await admin.rpc("expire_dopings_atomic");
 
-    if (featuredError) {
-      logger.system.error("Failed to expire featured dopings", featuredError);
+    if (error) {
+      logger.system.error("Atomic doping expiry failed", error);
+      return apiError(API_ERROR_CODES.INTERNAL_ERROR, "Atomic doping expiry failed.", 500);
     }
 
-    // 2. Expire urgent dopings
-    const { error: urgentError } = await admin
-      .from("listings")
-      .update({
-        is_urgent: false,
-        urgent_until: null,
-        updated_at: now,
-      })
-      .eq("is_urgent", true)
-      .not("urgent_until", "is", null)
-      .lt("urgent_until", now);
-
-    if (urgentError) {
-      logger.system.error("Failed to expire urgent dopings", urgentError);
+    if (!data?.success) {
+      logger.system.error("Doping expiry logic failed", data?.error);
+      return apiError(API_ERROR_CODES.INTERNAL_ERROR, data?.error || "Expiry failed.", 500);
     }
 
-    // 3. Expire highlighted dopings
-    const { error: highlightedError } = await admin
-      .from("listings")
-      .update({
-        highlighted_until: null,
-        frame_color: null,
-        updated_at: now,
-      })
-      .not("highlighted_until", "is", null)
-      .lt("highlighted_until", now);
+    logger.system.info("Doping expiry cron completed via RPC", data);
 
-    if (highlightedError) {
-      logger.system.error("Failed to expire highlighted dopings", highlightedError);
-    }
-
-    // 4. Mark doping_purchases as expired
-    const { error: purchasesError } = await admin
-      .from("doping_purchases")
-      .update({ status: "expired" })
-      .eq("status", "active")
-      .not("expires_at", "is", null)
-      .lt("expires_at", now);
-
-    if (purchasesError) {
-      logger.system.error("Failed to expire doping purchases", purchasesError);
-    }
-
-    const summary = {
-      timestamp: now,
-      success: !featuredError && !urgentError && !highlightedError && !purchasesError,
-    };
-
-    logger.system.info("Doping expiry cron completed", summary);
-
-    return apiSuccess(summary, "Doping expiry completed.");
+    return apiSuccess(data, "Doping expiry completed.");
   } catch (error) {
     logger.system.error("Doping expiry cron failed", error);
     return apiError(API_ERROR_CODES.INTERNAL_ERROR, "Doping expiry failed.", 500);

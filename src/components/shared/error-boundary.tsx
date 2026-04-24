@@ -1,17 +1,19 @@
 "use client";
 
-import { AlertCircle, RotateCcw } from "lucide-react";
-import React, { Component, ErrorInfo, ReactNode } from "react";
+import { AlertTriangle, RefreshCcw } from "lucide-react";
+import React, { Component, type ReactNode } from "react";
 
 import { Button } from "@/components/ui/button";
-import { AppError, ErrorCode } from "@/types/errors";
+import { logger } from "@/lib/utils/logger";
 
 interface Props {
   children?: ReactNode;
   fallback?: ReactNode;
-  error?: Error;
+  name?: string;
+  error?: Error | null;
   reset?: () => void;
   title?: string;
+  description?: string;
 }
 
 interface State {
@@ -19,62 +21,59 @@ interface State {
   error: Error | null;
 }
 
-const ERROR_MESSAGES: Record<ErrorCode, string> = {
-  UNAUTHORIZED: "Bu işlemi yapmak için giriş yapmalısınız.",
-  FORBIDDEN: "Bu işlem için yetkiniz bulunmuyor.",
-  NOT_FOUND: "Aradığınız içerik bulunamadı.",
-  VALIDATION_ERROR: "Lütfen bilgileri kontrol edip tekrar deneyin.",
-  INTERNAL_ERROR: "Sunucu tarafında bir hata oluştu.",
-  NETWORK_ERROR: "Bağlantı hatası oluştu. İnternetinizi kontrol edin.",
-  UNKNOWN_ERROR: "Beklenmedik bir hata oluştu.",
-};
-
 export class AppErrorBoundary extends Component<Props, State> {
-  public state: State = {
-    hasError: false,
-    error: null,
-  };
+  constructor(props: Props) {
+    super(props);
+    this.state = {
+      hasError: !!props.error,
+      error: props.error || null,
+    };
+  }
 
-  public static getDerivedStateFromError(error: Error): State {
+  static getDerivedStateFromError(error: Error): State {
     return { hasError: true, error };
   }
 
-  public componentDidCatch(error: Error, errorInfo: ErrorInfo) {
-    console.error("Uncaught error:", error, errorInfo);
+  componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
+    logger.ui.error(`React Error Boundary [${this.props.name || "Unknown"}]:`, {
+      error: error.message,
+      stack: error.stack,
+      componentStack: errorInfo.componentStack,
+    });
   }
 
-  private handleReset = () => {
+  handleReset = () => {
+    if (this.props.reset) {
+      this.props.reset();
+    }
     this.setState({ hasError: false, error: null });
-    window.location.reload();
   };
 
-  public render() {
-    const hasError = this.state.hasError || !!this.props.error;
-
-    if (hasError) {
+  render() {
+    if (this.state.hasError) {
       if (this.props.fallback) {
         return this.props.fallback;
       }
 
-      const error = this.state.error || this.props.error;
-      const code: ErrorCode = error instanceof AppError ? error.code : "UNKNOWN_ERROR";
-      const message = ERROR_MESSAGES[code] || ERROR_MESSAGES.UNKNOWN_ERROR;
-
       return (
-        <div className="flex min-h-[400px] w-full flex-col items-center justify-center p-6 text-center">
-          <div className="mb-4 rounded-full bg-destructive/10 p-4 text-destructive">
-            <AlertCircle size={32} />
+        <div className="flex min-h-[200px] flex-col items-center justify-center rounded-lg border border-dashed border-red-200 bg-red-50 p-8 text-center dark:border-red-900/30 dark:bg-red-900/10">
+          <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-red-100 text-red-600 dark:bg-red-900/20 dark:text-red-500">
+            <AlertTriangle className="h-6 w-6" />
           </div>
-          <h2 className="mb-2 text-xl font-bold text-foreground">
-            {this.props.title || "Bir şeyler ters gitti"}
-          </h2>
-          <p className="mb-6 max-w-md text-sm text-muted-foreground">{message}</p>
+          <h3 className="mb-2 text-lg font-semibold text-red-900 dark:text-red-100">
+            {this.props.title || "Bir Şeyler Yanlış Gitti"}
+          </h3>
+          <p className="mb-6 max-w-md text-sm text-red-700 dark:text-red-400">
+            {this.props.description ||
+              "Bu bölüm yüklenirken bir hata oluştu. Lütfen tekrar deneyin veya sayfayı yenileyin."}
+          </p>
           <Button
-            onClick={this.props.reset || this.handleReset}
             variant="outline"
-            className="gap-2"
+            size="sm"
+            onClick={this.handleReset}
+            className="flex items-center gap-2 border-red-200 hover:bg-red-100 dark:border-red-900/50 dark:hover:bg-red-900/20"
           >
-            <RotateCcw size={16} />
+            <RefreshCcw className="h-4 w-4" />
             Tekrar Dene
           </Button>
         </div>

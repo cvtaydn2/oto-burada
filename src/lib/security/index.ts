@@ -32,6 +32,9 @@ export function isValidRequestOrigin(request: Request): boolean {
   // No Origin header → not a browser cross-origin request, allow.
   if (!origin) return true;
 
+  // Explicitly reject "null" origin (sandboxed iframe, file://, etc.)
+  if (origin === "null") return false;
+
   let originUrl: URL;
   try {
     originUrl = new URL(origin);

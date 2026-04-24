@@ -17,6 +17,7 @@
  * type safety at the API boundaries where it matters most.
  */
 
+import { PostgrestFilterBuilder } from "@supabase/postgrest-js";
 import type { SupabaseClient } from "@supabase/supabase-js";
 
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
@@ -197,10 +198,12 @@ export const marketplaceListingSelect = `
   )
 `;
 
+type ListingQuery = PostgrestFilterBuilder<any, any, any, any, any>;
+
 export function applyListingFilterPredicates(
-  query: any, // Using any for now due to complex Supabase query builder types
+  query: ListingQuery,
   filters: ListingFilters
-): any {
+): ListingQuery {
   let q = query;
 
   if (filters.sellerId) q = q.eq("seller_id", filters.sellerId);
@@ -256,9 +259,16 @@ function buildListingBaseQuery(
     slug?: string;
     statuses?: Listing["status"][];
     filters?: ListingFilters;
+    countOnly?: boolean;
+    cursor?: {
+      value: string | number;
+      column: string;
+    };
   }
-): any {
-  let query = client.from("listings").select(selectClause);
+): ListingQuery {
+  let query = client
+    .from("listings")
+    .select(selectClause, options?.countOnly ? { count: "exact", head: true } : undefined) as any;
 
   // 1. Primary Identifiers
   const sellerId = options?.sellerId ?? options?.filters?.sellerId;
@@ -266,15 +276,21 @@ function buildListingBaseQuery(
   if (options?.listingId) query = query.eq("id", options.listingId);
   if (options?.slug) query = query.eq("slug", options.slug);
   if (options?.ids?.length) query = query.in("id", options.ids);
-  if (options?.statuses?.length) query = query.in("status", options.statuses as readonly any[]);
+  if (options?.statuses?.length) query = query.in("status", options.statuses);
+
+  // 1.1 Keyset Pagination (Cursor)
+  if (options?.cursor) {
+    query = query.lt(options.cursor.column, options.cursor.value);
+  }
 
   // 2. Market Integrity: Filter out listings from banned users
-  // This depends on the !inner join being present in the selectClause
   query = query.eq("profiles.is_banned", false);
 
   // 3. Predicates (Price, Year, Mileage, etc.)
   const filters = options?.filters;
   if (filters) query = applyListingFilterPredicates(query, filters);
+
+  if (options?.countOnly) return query;
 
   // 4. Sorting Hierarchy
   const sort = filters?.sort ?? "newest";
@@ -437,16 +453,21 @@ export interface PaginatedListingsResult {
   nextCursor?: string;
 }
 
-export async function getFilteredDatabaseListings(
-  filters: ListingFilters
+/**
+ * INTERNAL: Core logic for filtered listing retrieval.
+ * Standardizes data fetching, count estimation, and pagination.
+ */
+async function getFilteredListingsInternal(
+  client: SupabaseClient<Database>,
+  filters: ListingFilters,
+  adminClient: SupabaseClient<Database> // Still needed for reference data like citySlug
 ): Promise<PaginatedListingsResult> {
   const page = filters.page ?? 1;
   const limit = filters.limit ?? 24;
-  const admin = createSupabaseAdminClient();
 
   // Resolve citySlug to city name if city is not provided
   if (filters.citySlug && !filters.city) {
-    const { data: cityData } = await admin
+    const { data: cityData } = await adminClient
       .from("cities")
       .select("name")
       .eq("slug", filters.citySlug)
@@ -457,16 +478,17 @@ export async function getFilteredDatabaseListings(
     }
   }
 
-  // Core Data Query (Approved Only for public marketplace)
-  const dataQuery = buildListingBaseQuery(admin, marketplaceListingSelect, {
+  // Core Data Query (Approved Only for marketplace)
+  const dataQuery = buildListingBaseQuery(client, marketplaceListingSelect, {
     statuses: ["approved"],
     filters: { ...filters, page, limit },
   });
 
-  // Count Query (Mirror the same filters for accurate pagination)
-  const countQuery = buildListingBaseQuery(admin, "id", {
+  // Count Query (Using Supabase count: 'exact' instead of fetching all IDs)
+  const countQuery = buildListingBaseQuery(client, "id", {
     statuses: ["approved"],
     filters: { ...filters, page: undefined, limit: undefined },
+    countOnly: true,
   });
 
   const [dataResult, countResult] = await Promise.all([dataQuery, countQuery]);
@@ -480,7 +502,7 @@ export async function getFilteredDatabaseListings(
   }
 
   const listings = (dataResult.data ?? []).map(mapListingRow);
-  const total = countResult.data?.length ?? 0;
+  const total = countResult.count ?? 0;
   const hasMore = page * limit < total;
 
   return {
@@ -494,63 +516,24 @@ export async function getFilteredDatabaseListings(
 }
 
 /**
- * SECURITY: Public filtered listings using RLS-enforced client
- * Use this for public marketplace queries that should respect RLS policies
+ * @deprecated Use getPublicFilteredDatabaseListings for marketplace queries.
+ * This function uses the admin client and bypasses RLS.
+ */
+export async function getFilteredDatabaseListings(
+  filters: ListingFilters
+): Promise<PaginatedListingsResult> {
+  const admin = createSupabaseAdminClient();
+  return getFilteredListingsInternal(admin, filters, admin);
+}
+
+/**
+ * SECURITY: Public filtered listings using RLS-enforced client.
+ * This is the preferred method for all marketplace listing queries.
  */
 export async function getPublicFilteredDatabaseListings(
   filters: ListingFilters
 ): Promise<PaginatedListingsResult> {
-  const page = filters.page ?? 1;
-  const limit = filters.limit ?? 24;
   const publicClient = createSupabasePublicServerClient();
-
-  // For city slug resolution, we still need admin client for reference data
-  // This is acceptable as it's just reference data lookup
-  if (filters.citySlug && !filters.city) {
-    const admin = createSupabaseAdminClient();
-    const { data: cityData } = await admin
-      .from("cities")
-      .select("name")
-      .eq("slug", filters.citySlug)
-      .maybeSingle();
-
-    if (cityData) {
-      filters = { ...filters, city: cityData.name };
-    }
-  }
-
-  // Core Data Query (Approved Only for public marketplace, RLS enforced)
-  const dataQuery = buildListingBaseQuery(publicClient, marketplaceListingSelect, {
-    statuses: ["approved"],
-    filters: { ...filters, page, limit },
-  });
-
-  // Count Query (Mirror the same filters for accurate pagination)
-  const countQuery = buildListingBaseQuery(publicClient, "id", {
-    statuses: ["approved"],
-    filters: { ...filters, page: undefined, limit: undefined },
-  });
-
-  const [dataResult, countResult] = await Promise.all([dataQuery, countQuery]);
-
-  if (dataResult.error) {
-    logger.db.error("Public filtered listing retrieval failed", {
-      error: dataResult.error,
-      filters,
-    });
-    return { listings: [], total: 0, page, limit, hasMore: false };
-  }
-
-  const listings = (dataResult.data ?? []).map(mapListingRow);
-  const total = countResult.data?.length ?? 0;
-  const hasMore = page * limit < total;
-
-  return {
-    listings,
-    total,
-    page,
-    limit,
-    hasMore,
-    nextCursor: hasMore ? String(page + 1) : undefined,
-  };
+  const admin = createSupabaseAdminClient(); // For reference data lookup
+  return getFilteredListingsInternal(publicClient, filters, admin);
 }

@@ -17,23 +17,17 @@ import { createClient } from "@supabase/supabase-js";
 import type { Database } from "@/types/supabase";
 
 let publicClient: ReturnType<typeof createClient<Database>> | null = null;
+let clientCreatedAt = 0;
+const CLIENT_MAX_AGE_MS = 5 * 60 * 1000; // 5 minutes
 
 /**
- * Creates a singleton public Supabase client for server-side operations.
- * This client uses the anon key and respects RLS policies.
- *
- * Use Cases:
- * - Public listing queries (marketplace, search, detail pages)
- * - Public profile views
- * - Any read operation that should respect RLS
- *
- * DO NOT USE FOR:
- * - Admin operations (use createSupabaseAdminClient)
- * - Cross-user queries (use createSupabaseAdminClient with explicit checks)
- * - Write operations (use createSupabaseServerClient with user context)
+ * Creates a public Supabase client for server-side operations.
+ * Uses lazy initialization with max-age to prevent stale connections in serverless environments.
  */
 export function createSupabasePublicServerClient() {
-  if (publicClient) {
+  const now = Date.now();
+
+  if (publicClient && now - clientCreatedAt < CLIENT_MAX_AGE_MS) {
     return publicClient;
   }
 
@@ -51,6 +45,7 @@ export function createSupabasePublicServerClient() {
     },
   });
 
+  clientCreatedAt = now;
   return publicClient;
 }
 

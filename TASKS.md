@@ -1,8 +1,3 @@
----
-
-# 2) `TASKS.md`
-
-```md
 # TASKS.md
 
 This file defines the execution order, acceptance criteria, and done conditions.
@@ -601,6 +596,28 @@ Automate "Search Result" notifications.
 
 ---
 
+## Phase 29 — Production Security & Performance Hardening (Complete)
+
+### Task 29.1 — Supabase Client Resilience
+- [x] Harden public client singleton with lazy initialization and max-age expiration.
+- [x] Prevent stale connections in serverless (Vercel) environments.
+
+### Task 29.2 — Query Efficiency & Marketplace Integrity
+- [x] Optimize COUNT queries to use Supabase head/count (Exact) instead of fetching all IDs.
+- [x] Enforce strict separation of public/admin clients to prevent accidental RLS bypass.
+- [x] Implement keyset (cursor-based) pagination support in query builder.
+
+### Task 29.3 — Atomic Domain Operations
+- [x] Refactor doping expiry into a single atomic PL/pgSQL RPC function.
+- [x] Eliminate race conditions in cron-based status updates.
+
+### Task 29.4 — Security Utilities Hardening
+- [x] Harden CSRF `isValidRequestOrigin` to explicitly reject "null" origins.
+- [x] Add in-memory fallback to distributed rate limiting for infrastructure outages.
+- [x] Implement robust `ErrorBoundary` with localization and retry support.
+
+---
+
 ## Final Definition of Done
 
 The MVP is complete when:
@@ -617,9 +634,3 @@ The MVP is complete when:
 - [x] documentation is aligned with code
 - [x] payment system is hardened and compliant
 - [x] marketplace integrity is secured (banned user filtering)
-
-## Phase 0 — Bug Fix & Cleanup (Complete)
-
-- [x] **SupabaseProvider Context.Provider Fix:** Context sarmalama hatası giderildi.
-- [x] **Domain Wiring:** `useListingActions` hook'u domain use-case'lerine bağlandı.
-- [x] **Bundle Cleanup:** `recharts` ve `leaflet` paketleri temizlendi.

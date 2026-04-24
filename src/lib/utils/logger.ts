@@ -163,6 +163,7 @@ export const logger = {
   settings: createLogger("settings"),
   market: createLogger("market"),
   api: createLogger("api"),
+  ui: createLogger("ui"),
   security: createLogger("security"),
   system: createLogger("system"),
   perf: createLogger("performance"),
