@@ -7,6 +7,7 @@ export const API_ROUTES = {
     DETAIL: (id: string) => `/api/listings/${id}`,
     ARCHIVE: (id: string) => `/api/listings/${id}/archive`,
     BUMP: (id: string) => `/api/listings/${id}/bump`,
+    DOPING: (id: string) => `/api/listings/${id}/doping`,
     BULK_ARCHIVE: "/api/listings/bulk-archive",
     BULK_DELETE: "/api/listings/bulk-delete",
     BULK_DRAFT: "/api/listings/bulk-draft",

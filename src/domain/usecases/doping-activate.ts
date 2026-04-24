@@ -21,7 +21,7 @@ export async function activateDopingUseCase(params: {
   }
 
   try {
-    // 2. Delegate to service
+    // 2. Delegate to service (uses activate_doping RPC)
     const purchase = await DopingService.applyDoping(params);
 
     return {

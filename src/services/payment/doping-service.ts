@@ -1,81 +1,46 @@
-import { DOPING_PACKAGES } from "@/lib/constants/doping";
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
+import { logger } from "@/lib/utils/logger";
 
 export class DopingService {
   /**
-   * Applies a doping package to a listing.
+   * Applies a doping package to a listing using the activate_doping RPC.
    * This is typically called after a successful payment.
    */
   static async applyDoping(params: {
     userId: string;
     listingId: string;
     packageId: string;
-    paymentId?: string;
+    paymentId: string;
   }) {
     const admin = createSupabaseAdminClient();
-    const pkg = DOPING_PACKAGES.find((p) => p.id === params.packageId);
 
-    if (!pkg) throw new Error("Invalid doping package");
-
-    const startsAt = new Date();
-    const expiresAt =
-      pkg.durationDays > 0
-        ? new Date(startsAt.getTime() + pkg.durationDays * 24 * 60 * 60 * 1000)
-        : null;
-
-    // 1. Create doping purchase record
-    const { data: purchase, error: purchaseError } = await admin
-      .from("doping_purchases")
-      .insert({
-        user_id: params.userId,
-        listing_id: params.listingId,
-        package_id: (await this.getDbPackageId(pkg.id)) || null, // We need to map slug to UUID
-        payment_id: params.paymentId,
-        status: "active",
-        starts_at: startsAt.toISOString(),
-        expires_at: expiresAt?.toISOString(),
-      })
-      .select()
-      .single();
-
-    if (purchaseError) throw new Error(`Doping purchase error: ${purchaseError.message}`);
-
-    // 2. Update listing columns based on doping type
-    const updateData: any = {
-      updated_at: new Date().toISOString(),
-    };
-
-    switch (pkg.type) {
-      case "featured":
-        updateData.featured = true;
-        updateData.is_featured = true;
-        updateData.featured_until = expiresAt?.toISOString();
-        break;
-      case "urgent":
-        updateData.is_urgent = true;
-        updateData.urgent_until = expiresAt?.toISOString();
-        break;
-      case "highlighted":
-        updateData.highlighted_until = expiresAt?.toISOString();
-        updateData.frame_color = "orange"; // Example
-        break;
-      case "gallery":
-        updateData.gallery_priority = 10;
-        break;
-      case "bump":
-        updateData.bumped_at = new Date().toISOString();
-        break;
+    // Map slug to DB UUID if needed
+    const dbPackageId = await this.getDbPackageId(params.packageId);
+    if (!dbPackageId) {
+      throw new Error(`Invalid doping package: ${params.packageId}`);
     }
 
-    const { error: listingError } = await admin
-      .from("listings")
-      .update(updateData)
-      .eq("id", params.listingId);
+    // Call the RPC function
+    const { data, error } = await admin.rpc("activate_doping", {
+      p_user_id: params.userId,
+      p_listing_id: params.listingId,
+      p_package_id: dbPackageId,
+      p_payment_id: params.paymentId,
+    });
 
-    if (listingError) throw new Error(`Listing update error: ${listingError.message}`);
+    if (error) {
+      logger.payments.error("Doping activation RPC failed", error);
+      throw new Error(`Doping activation failed: ${error.message}`);
+    }
 
-    return purchase;
+    if (!data?.success) {
+      throw new Error(data?.error || "Doping activation failed");
+    }
+
+    return {
+      purchaseId: data.purchaseId,
+      expiresAt: data.expiresAt,
+    };
   }
 
   /**
@@ -86,5 +51,22 @@ export class DopingService {
     const { data } = await admin.from("doping_packages").select("id").eq("slug", slug).single();
 
     return data?.id || null;
+  }
+
+  /**
+   * Get active dopings for a listing
+   */
+  static async getActiveDopings(listingId: string) {
+    const admin = createSupabaseAdminClient();
+    const { data, error } = await admin.rpc("get_active_dopings_for_listing", {
+      p_listing_id: listingId,
+    });
+
+    if (error) {
+      logger.payments.error("Failed to get active dopings", error);
+      return [];
+    }
+
+    return data || [];
   }
 }

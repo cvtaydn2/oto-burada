@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 
 import { HomeHero } from "@/components/layout/home-hero";
+import { FeaturedCarousel } from "@/components/listings/featured-carousel";
 import {
   OrganizationStructuredData,
   WebSiteStructuredData,
@@ -40,9 +41,20 @@ export default async function HomePage() {
   ]);
 
   const appUrl = getAppUrl();
+
+  // Separate listings by type
   const featuredListings = listingsResult.listings.filter((l) => l.featured).slice(0, 4);
+  const galleryListings = listingsResult.listings
+    .filter((l) => l.galleryPriority && l.galleryPriority > 0)
+    .sort((a, b) => (b.galleryPriority ?? 0) - (a.galleryPriority ?? 0))
+    .slice(0, 8);
+
   const featuredIds = new Set(featuredListings.map((l) => l.id));
-  const latestListings = listingsResult.listings.filter((l) => !featuredIds.has(l.id)).slice(0, 8);
+  const galleryIds = new Set(galleryListings.map((l) => l.id));
+  const latestListings = listingsResult.listings
+    .filter((l) => !featuredIds.has(l.id) && !galleryIds.has(l.id))
+    .slice(0, 8);
+
   const featuredBrands = references.brands.slice(0, 6);
   const featuredCities = references.cities.slice(0, 6);
 
@@ -163,6 +175,13 @@ export default async function HomePage() {
                 ))}
               </div>
             </div>
+          </section>
+        )}
+
+        {/* Gallery Carousel Section */}
+        {galleryListings.length > 0 && (
+          <section className="max-w-7xl mx-auto px-3 sm:px-4 md:px-6 py-8 sm:py-10 md:py-12">
+            <FeaturedCarousel listings={galleryListings} />
           </section>
         )}
 

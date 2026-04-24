@@ -53,6 +53,11 @@ export interface ListingBadges {
   featuredUntil?: string | null;
   urgentUntil?: string | null;
   highlightedUntil?: string | null;
+  // Doping-specific flags (set by activate_doping RPC)
+  isFeatured?: boolean | null;
+  isUrgent?: boolean | null;
+  frameColor?: string | null;
+  galleryPriority?: number | null;
 }
 
 export interface Listing

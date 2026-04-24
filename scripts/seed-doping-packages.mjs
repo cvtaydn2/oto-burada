@@ -19,33 +19,53 @@ const supabase = createSupabaseClient(supabaseUrl, supabaseKey);
 const DOPING_PACKAGES = [
   {
     slug: 'on_planda',
-    name: 'Ön Planda',
+    name: 'Ön Planda Göster',
     price: 49,
     duration_days: 7,
     type: 'featured',
-    features: ['İlan listenin en başında görünür', 'Mavi çerçeve ile dikkat çeker'],
+    features: ['Aramada üst sıralar', 'Renkli arka plan', '7 gün boyunca öne çıkar'],
     is_active: true,
     sort_order: 1
   },
   {
     slug: 'acil',
-    name: 'Acil Acil',
+    name: 'Acil İlan',
     price: 29,
-    duration_days: 3,
+    duration_days: 1,
     type: 'urgent',
-    features: ['Acil etiketi eklenir', 'Sarı renkli arkaplan'],
+    features: ['"Acil" rozeti', 'Özel sıralama', '24 saat boyunca acil etiketiyle gösterilir'],
     is_active: true,
     sort_order: 2
   },
   {
-    slug: 'bump',
-    name: 'Güncel Tut',
+    slug: 'renkli_cerceve',
+    name: 'Renkli Çerçeve',
     price: 19,
-    duration_days: 0,
-    type: 'bump',
-    features: ['İlan yayın tarihini günceller', 'Listenin en üstüne taşır'],
+    duration_days: 7,
+    type: 'highlighted',
+    features: ['Dikkat çekici kenarlık', 'Turuncu çerçeve ile öne çıkar', '7 gün boyunca aktif'],
     is_active: true,
     sort_order: 3
+  },
+  {
+    slug: 'galeri',
+    name: 'Galeri Highlight',
+    price: 39,
+    duration_days: 7,
+    type: 'gallery',
+    features: ['Anasayfa galeride gösterim', 'Carousel\'de öne çıkar', '7 gün boyunca vitrin alanında'],
+    is_active: true,
+    sort_order: 4
+  },
+  {
+    slug: 'bump',
+    name: 'Yenile (Bump)',
+    price: 15,
+    duration_days: 0,
+    type: 'bump',
+    features: ['İlanı en üste taşı', 'Yayın tarihini günceller', 'Anında etki'],
+    is_active: true,
+    sort_order: 5
   }
 ];
 

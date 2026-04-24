@@ -7,7 +7,7 @@ export const DOPING_PACKAGES: DopingPackage[] = [
     price: 49,
     durationDays: 7,
     type: "featured",
-    features: ["Aramada üst sıralar", "Renkli arka plan"],
+    features: ["Aramada üst sıralar", "Renkli arka plan", "7 gün boyunca öne çıkar"],
   },
   {
     id: "acil",
@@ -15,7 +15,7 @@ export const DOPING_PACKAGES: DopingPackage[] = [
     price: 29,
     durationDays: 1,
     type: "urgent",
-    features: ["'Acil' rozeti", "Özel sıralama"],
+    features: ['"Acil" rozeti', "Özel sıralama", "24 saat boyunca acil etiketiyle gösterilir"],
   },
   {
     id: "renkli_cerceve",
@@ -23,7 +23,7 @@ export const DOPING_PACKAGES: DopingPackage[] = [
     price: 19,
     durationDays: 7,
     type: "highlighted",
-    features: ["Dikkat çekici kenarlık"],
+    features: ["Dikkat çekici kenarlık", "Turuncu çerçeve ile öne çıkar", "7 gün boyunca aktif"],
   },
   {
     id: "galeri",
@@ -31,15 +31,19 @@ export const DOPING_PACKAGES: DopingPackage[] = [
     price: 39,
     durationDays: 7,
     type: "gallery",
-    features: ["Anasayfa galeride gösterim"],
+    features: [
+      "Anasayfa galeride gösterim",
+      "Carousel'de öne çıkar",
+      "7 gün boyunca vitrin alanında",
+    ],
   },
   {
     id: "bump",
-    name: "Yenile",
+    name: "Yenile (Bump)",
     price: 15,
     durationDays: 0,
     type: "bump",
-    features: ["İlanı en üste taşı"],
+    features: ["İlanı en üste taşı", "Yayın tarihini günceller", "Anında etki"],
   },
 ];
 

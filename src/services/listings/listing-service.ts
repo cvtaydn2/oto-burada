@@ -63,4 +63,18 @@ export class ListingService {
       schema: apiResponseSchemas.listingDetail,
     });
   }
+
+  /**
+   * Apply a doping package to a listing after successful payment.
+   * Calls the activate_doping RPC via the doping API route.
+   */
+  static async applyDoping(params: { listingId: string; packageId: string; paymentId: string }) {
+    return ApiClient.request(API_ROUTES.LISTINGS.DOPING(params.listingId), {
+      method: "POST",
+      body: JSON.stringify({
+        packageId: params.packageId,
+        paymentId: params.paymentId,
+      }),
+    });
+  }
 }

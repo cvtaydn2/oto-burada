@@ -24,6 +24,10 @@ export interface ListingRow {
   featured_until?: string | null;
   urgent_until?: string | null;
   highlighted_until?: string | null;
+  is_featured?: boolean | null;
+  is_urgent?: boolean | null;
+  frame_color?: string | null;
+  gallery_priority?: number | null;
   fraud_reason?: string | null;
   fraud_score?: number | null;
   fuel_type: Listing["fuelType"];
@@ -134,6 +138,10 @@ export function mapListingRow(row: ListingRow): Listing {
     featuredUntil: row.featured_until ?? null,
     urgentUntil: row.urgent_until ?? null,
     highlightedUntil: row.highlighted_until ?? null,
+    isFeatured: row.is_featured ?? null,
+    isUrgent: row.is_urgent ?? null,
+    frameColor: row.frame_color ?? null,
+    galleryPriority: row.gallery_priority ?? null,
     marketPriceIndex: row.market_price_index ? Number(row.market_price_index) : null,
     whatsappPhone: row.whatsapp_phone,
     vin: row.vin ?? null,

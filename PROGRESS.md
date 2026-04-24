@@ -1,3 +1,26 @@
+# 2026-04-24 — Phase 3: Doping Infrastructure & Featured Carousel
+
+## [2026-04-24] - Doping Activation & Gallery Carousel Implementation
+- **Durum:** ✅ TAMAMLANDI
+- **Yapılanlar:**
+  - **Task 3.1 - Doping Paketleri Seed Data**: `scripts/seed-doping-packages.mjs` güncellendi; 5 doping paketi (on_planda, acil, renkli_cerceve, galeri, bump) tam açıklamalarıyla eklendi.
+  - **Task 3.2 - Doping Aktifleştirme Logic**: `database/migrations/0069_doping_activation_functions.sql` oluşturuldu; `activate_doping()` RPC fonksiyonu, `get_active_dopings_for_listing()` helper fonksiyonu ve pg_cron tabanlı otomatik expiry job'u eklendi.
+  - **Task 3.2 - Cron Endpoint**: `src/app/api/cron/expire-dopings/route.ts` oluşturuldu; uygulama seviyesinde doping expiry fallback ve audit trail sağlandı.
+  - **Task 3.2 - Domain Logic**: `src/domain/logic/doping-status-machine.ts` oluşturuldu; doping state transitions, validation ve UI helper fonksiyonları eklendi.
+  - **Task 3.3 - Listing Doping Flag Güncelleme**: `DopingService.applyDoping()` metodu RPC tabanlı aktivasyona refaktör edildi; `ListingService.applyDoping()` API client metodu eklendi.
+  - **Task 3.3 - Type Updates**: `ListingBadges` interface'i `isFeatured`, `isUrgent`, `frameColor`, `galleryPriority` alanlarıyla genişletildi; `ListingRow` ve `mapListingRow` güncellendi.
+  - **Task 3.3 - Query Updates**: `listingSelect` ve `marketplaceListingSelect` sorguları yeni doping kolonlarını içerecek şekilde güncellendi; performans için `gallery_priority` index'i eklendi.
+  - **Task 3.3 - API Route**: `src/app/api/listings/[id]/doping/route.ts` oluşturuldu; ödeme doğrulaması ve doping aktivasyonu için güvenli endpoint sağlandı.
+  - **Task 3.4 - Featured Carousel**: `src/components/listings/featured-carousel.tsx` oluşturuldu; Embla Carousel tabanlı, mobil-first, gallery-priority ilanları gösteren premium carousel bileşeni eklendi.
+  - **Task 3.4 - Homepage Integration**: Anasayfa `galleryListings` filtresi ve `FeaturedCarousel` bileşeni ile güncellendi; vitrin galerisi bölümü eklendi.
+  - **Constants Sync**: `src/lib/constants/doping.ts` seed script ile senkronize edildi; tüm 5 paket tam feature açıklamalarıyla güncellendi.
+  - **Build Fix**: `next.config.ts` güncellendi; `iyzipay` paketi `serverExternalPackages`'a eklenerek Turbopack dynamic import hatası çözüldü.
+- **Doğrulama:**
+  - `npm run typecheck` ✅ (Tüm tip hataları giderildi)
+  - `npm run lint` ✅ (Sadece önceden var olan warning'ler, yeni hata yok)
+  - `npm run build` ✅ (57 route başarıyla build edildi, sıfır hata)
+- **Sıradaki Adım:** Migration'ı Supabase'e uygula (`npm run db:migrate`), doping paketlerini seed et (`node scripts/seed-doping-packages.mjs`), ve homepage'de gallery carousel'i test et.
+
 # 2026-04-24 — Marketplace Filter Fragmentation & Modularization
 
 ## [2026-04-24] - Marketplace Filter Fragmentation
