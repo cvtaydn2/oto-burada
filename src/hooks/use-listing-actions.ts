@@ -1,47 +1,116 @@
 "use client";
 
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import { useCallback, useState } from "react";
 
+import { queryKeys } from "@/lib/query-keys";
 import { ListingService } from "@/services/listings/listing-service";
 import type { Listing } from "@/types";
 
-export function useListingActions(listings: Listing[]) {
+export function useListingActions(listings: Listing[], userId?: string) {
   const router = useRouter();
-  const [archivingId, setArchivingId] = useState<string | null>(null);
+  const queryClient = useQueryClient();
   const [archiveError, setArchiveError] = useState<string | null>(null);
-  const [bumpingId, setBumpingId] = useState<string | null>(null);
   const [bumpMessage, setBumpMessage] = useState<string | null>(null);
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [isBulkArchiving, setIsBulkArchiving] = useState(false);
 
+  // --- Mutations ---
+
+  const archiveMutation = useMutation({
+    mutationFn: async ({ id, isArchived }: { id: string; isArchived: boolean }) => {
+      if (isArchived) {
+        return ListingService.bulkDraft([id]);
+      }
+      return ListingService.archiveListing(id);
+    },
+    onMutate: async ({ id, isArchived }) => {
+      // Cancel outgoing refetches
+      await queryClient.cancelQueries({ queryKey: queryKeys.listings.all });
+
+      // Snapshot previous value
+      const previousListings = queryClient.getQueryData<Listing[]>(queryKeys.listings.my(userId!));
+
+      // Optimistically update
+      if (previousListings && userId) {
+        queryClient.setQueryData<Listing[]>(
+          queryKeys.listings.my(userId),
+          previousListings.map((l) =>
+            l.id === id
+              ? { ...l, status: isArchived ? "draft" : ("archived" as Listing["status"]) }
+              : l
+          )
+        );
+      }
+
+      return { previousListings };
+    },
+    onError: (err, variables, context) => {
+      if (context?.previousListings && userId) {
+        queryClient.setQueryData(queryKeys.listings.my(userId), context.previousListings);
+      }
+      setArchiveError("İşlem sırasında bir hata oluştu.");
+    },
+    onSettled: () => {
+      if (userId) {
+        queryClient.invalidateQueries({ queryKey: queryKeys.listings.my(userId) });
+      }
+      router.refresh(); // Keep for server components sync
+    },
+  });
+
+  const bumpMutation = useMutation({
+    mutationFn: async (id: string) => {
+      return ListingService.bumpListing(id);
+    },
+    onMutate: async (id) => {
+      await queryClient.cancelQueries({ queryKey: queryKeys.listings.all });
+      const previousListings = queryClient.getQueryData<Listing[]>(queryKeys.listings.my(userId!));
+
+      if (previousListings && userId) {
+        queryClient.setQueryData<Listing[]>(
+          queryKeys.listings.my(userId),
+          previousListings.map((l) =>
+            l.id === id ? { ...l, bumpedAt: new Date().toISOString() } : l
+          )
+        );
+      }
+
+      return { previousListings };
+    },
+    onError: (err, variables, context) => {
+      if (context?.previousListings && userId) {
+        queryClient.setQueryData(queryKeys.listings.my(userId), context.previousListings);
+      }
+      setBumpMessage("Öne çıkarma başarısız oldu.");
+    },
+    onSuccess: (data) => {
+      setBumpMessage((data.data as { message?: string })?.message ?? "İlan yenilendi!");
+    },
+    onSettled: () => {
+      if (userId) {
+        queryClient.invalidateQueries({ queryKey: queryKeys.listings.my(userId) });
+      }
+      router.refresh();
+    },
+  });
+
   const handleArchive = async (listingId: string) => {
-    setArchivingId(listingId);
     setArchiveError(null);
     const listing = listings.find((l) => l.id === listingId);
     if (!listing) return;
 
     const isCurrentlyArchived = listing.status === "archived";
-
-    try {
-      if (isCurrentlyArchived) {
-        const { success, error } = await ListingService.bulkDraft([listingId]);
-        if (!success) {
-          setArchiveError(error?.message ?? "İlan taslağa alınamadı.");
-          return;
-        }
-      } else {
-        const { success, error } = await ListingService.archiveListing(listingId);
-        if (!success) {
-          setArchiveError(error?.message ?? "İlan arşive alınamadı.");
-          return;
-        }
-      }
-      router.refresh();
-    } finally {
-      setArchivingId(null);
-    }
+    archiveMutation.mutate({ id: listingId, isArchived: isCurrentlyArchived });
   };
+
+  const handleBump = async (listingId: string) => {
+    setBumpMessage(null);
+    bumpMutation.mutate(listingId);
+  };
+
+  // --- Bulk Actions (Still using basic loading for simplicity in MVP) ---
 
   const handleBulkArchive = async () => {
     if (!selectedIds.length) return;
@@ -51,6 +120,7 @@ export function useListingActions(listings: Listing[]) {
       const { success, error } = await ListingService.bulkArchive(selectedIds);
       if (success) {
         setSelectedIds([]);
+        if (userId) queryClient.invalidateQueries({ queryKey: queryKeys.listings.my(userId) });
         router.refresh();
       } else {
         setArchiveError(error?.message || "Toplu arşivleme sırasında hata oluştu.");
@@ -69,6 +139,7 @@ export function useListingActions(listings: Listing[]) {
       const { success, error } = await ListingService.bulkDelete(selectedIds);
       if (success) {
         setSelectedIds([]);
+        if (userId) queryClient.invalidateQueries({ queryKey: queryKeys.listings.my(userId) });
         router.refresh();
       } else {
         setArchiveError(error?.message || "Toplu silme sırasında hata oluştu.");
@@ -80,35 +151,16 @@ export function useListingActions(listings: Listing[]) {
     }
   };
 
-  const handleBump = async (listingId: string) => {
-    setBumpingId(listingId);
-    setBumpMessage(null);
-    const listing = listings.find((l) => l.id === listingId);
-    if (!listing) return;
-
-    try {
-      const { success, error, data } = await ListingService.bumpListing(listingId);
-      if (!success) {
-        setBumpMessage(error?.message ?? "İlan yenilenemedi.");
-        return;
-      }
-      setBumpMessage((data as { message?: string })?.message ?? "İlan yenilendi!");
-      router.refresh();
-    } finally {
-      setBumpingId(null);
-    }
-  };
-
   const toggleSelect = (id: string) =>
     setSelectedIds((prev) => (prev.includes(id) ? prev.filter((i) => i !== id) : [...prev, id]));
 
   const clearSelection = useCallback(() => setSelectedIds([]), []);
 
   return {
-    archivingId,
+    archivingId: archiveMutation.isPending ? archiveMutation.variables.id : null,
     archiveError,
     setArchiveError,
-    bumpingId,
+    bumpingId: bumpMutation.isPending ? bumpMutation.variables : null,
     bumpMessage,
     setBumpMessage,
     selectedIds,

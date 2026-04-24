@@ -18,8 +18,29 @@ import { createDatabaseNotification } from "@/services/notifications/notificatio
 import { ListingCreateInput } from "@/types";
 
 export async function GET(request: Request) {
-  const security = await withSecurity(request);
-  if (!security.ok) return security.response;
+  const { searchParams } = new URL(request.url);
+  const view = searchParams.get("view");
+
+  if (view === "my") {
+    const userSecurity = await withSecurity(request, { requireAuth: true });
+    if (!userSecurity.ok) return userSecurity.response;
+    const user = userSecurity.user!;
+
+    try {
+      const { getStoredUserListings } = await import("@/services/listings/listing-submissions");
+      const listings = await getStoredUserListings(user.id);
+      return apiSuccess(listings);
+    } catch (error) {
+      captureServerError("GET /api/listings?view=my failed", "listings", error, {
+        userId: user.id,
+      });
+      return apiError(
+        API_ERROR_CODES.INTERNAL_ERROR,
+        "İlanların yüklenirken bir hata oluştu.",
+        500
+      );
+    }
+  }
 
   // Rate limit public search — 120 requests per minute per IP
   const ipRateLimit = await enforceRateLimit(getRateLimitKey(request, "api:listings:search"), {
@@ -27,8 +48,6 @@ export async function GET(request: Request) {
     windowMs: 60 * 1000,
   });
   if (ipRateLimit) return ipRateLimit.response;
-
-  const { searchParams } = new URL(request.url);
 
   // Convert URLSearchParams to a key-value object
   const paramsObj: Record<string, string> = {};

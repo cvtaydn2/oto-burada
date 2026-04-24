@@ -4,7 +4,8 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect } from "react";
 
 import { useSupabase } from "@/components/providers/supabase-provider";
-import { ApiClient } from "@/services/api-client";
+import { queryKeys } from "@/lib/query-keys";
+import { NotificationService } from "@/services/api-client";
 import type { Notification } from "@/types";
 
 export function useNotifications(userId?: string) {
@@ -17,10 +18,10 @@ export function useNotifications(userId?: string) {
     isLoading,
     isError,
   } = useQuery<Notification[]>({
-    queryKey: ["notifications", userId],
+    queryKey: queryKeys.notifications.byUser(userId!),
     queryFn: async () => {
       if (!userId) return [];
-      const { success, data, error } = await ApiClient.notifications.getAll();
+      const { success, data, error } = await NotificationService.getAll();
       if (!success) {
         throw new Error(error?.message || "Bildirimler yüklenemedi");
       }
@@ -53,7 +54,7 @@ export function useNotifications(userId?: string) {
           if (processedIds.has(notificationId)) return;
           processedIds.add(notificationId);
 
-          queryClient.invalidateQueries({ queryKey: ["notifications", userId] });
+          queryClient.invalidateQueries({ queryKey: queryKeys.notifications.byUser(userId) });
 
           if (typeof window !== "undefined" && window.Notification?.permission === "granted") {
             const title = payload.new.title || "Bildirim";

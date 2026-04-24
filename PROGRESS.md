@@ -605,3 +605,26 @@
   - `npm run build` ✅
 - **Sıradaki Adım:** Canlı ortam performans izleme ve SEO metrik analizi.
 
+# 2026-04-24 — Marketplace Architecture Modernization & Hardening
+
+## [2026-04-24] - Optimistic UI & Type-Safe API Layer
+- **Durum:** ✅ TAMAMLANDI
+- **Yapılanlar:**
+  - **Optimistic UI (I1):** `use-listing-actions.ts` hook'u TanStack Query `useMutation` yapısına geçirilerek `archive` ve `bump` işlemleri için anlık UI feedback sağlandı. `router.refresh()` bağımlılığı minimuma indirildi.
+  - **Type-Safe API Client (I2 & I3):** `ApiClient` refaktör edilerek Zod şemaları ile runtime response validation eklendi. API çağrıları specialized servisler (`ListingService`, `AdminService`, `FavoriteService`) üzerinden yönetilecek şekilde merkezileştirildi.
+  - **Global Error Management (I4):** Functional `AppErrorBoundary` bileşeni oluşturuldu ve `app/error.tsx`, `(public)/error.tsx`, `admin/error.tsx`, `dashboard/error.tsx` dosyalarına entegre edilerek tutarlı bir hata deneyimi sağlandı.
+  - **Query Synchronization (I5):** `DashboardListingsPage` üzerinden `userId` prop'u `MyListingsPanel`'e aktarılarak TanStack Query cache invalidation işlemleri kullanıcı bazlı güvenli hale getirildi.
+  - **Testing Pattern (I7):** Domain katmanı için Vitest tabanlı test altyapısı kuruldu ve `listing-archive.test.ts` ile ilk unit test'ler başarıyla eklendi.
+- **Doğrulama:**
+  - `npm run typecheck` ✅
+  - `npm run lint` ✅
+  - `npm run build` ✅
+  - `npm run test:unit src/domain/__tests__/listing-archive.test.ts` ✅
+- **Sıradaki Adım:** Diğer domain use case'leri için test kapsama alanının genişletilmesi ve veritabanı RLS entegrasyon testlerinin kurgulanması.
+
+### Sistem Kararlılığı ve Build Raporu (24.04.2026)
+1. **Lint & Type Safety:** Tüm dosyalardaki `any` kullanımları temizlendi, dairesel bağımlılıklar giderildi. `simple-import-sort` kuralları uygulandı.
+2. **Mimari Sınırlar:** `ListingService` üzerindeki server-only (`next/headers`) bağımlılıkları temizlenerek "Client Component" güvenliği (boundary safety) sağlandı.
+3. **API Modernizasyonu:** `/api/listings?view=my` üzerinden kullanıcı ilanlarının dinamik ve güvenli (Authenticated) erişimi sağlandı.
+4. **Doğrulama:** `npm run build`, `npm run lint` ve `npm run typecheck` süreçleri **sıfır hata** ile tamamlandı.
+

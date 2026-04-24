@@ -12,6 +12,7 @@ import { trust } from "@/lib/constants/ui-strings";
 import { safeFormatDate } from "@/lib/utils";
 import { cn } from "@/lib/utils";
 import type { UserDetailData } from "@/services/admin/user-details";
+import { AdminService } from "@/services/api-client";
 
 import { AdminUserActionCards } from "./admin-user-action-cards";
 import { AdminUserHeader } from "./admin-user-header";
@@ -42,8 +43,7 @@ export function AdminUserDetailClient({ detail, userId }: AdminUserDetailClientP
   const [isActioning, setIsActioning] = useState(false);
 
   const handleGrantCredits = async (credits: number, note: string) => {
-    const { ApiClient } = await import("@/services/api-client");
-    const res = await ApiClient.admin.users.grantCredits(userId, credits, note);
+    const res = await AdminService.users.grantCredits(userId, credits, note);
     if (res.success) {
       toast.success(`${credits} kredi başarıyla tanımlandı.`);
       router.refresh();
@@ -53,8 +53,7 @@ export function AdminUserDetailClient({ detail, userId }: AdminUserDetailClientP
   };
 
   const handleGrantDoping = async (listingId: string, dopingTypes: string[]) => {
-    const { ApiClient } = await import("@/services/api-client");
-    const res = await ApiClient.admin.users.grantDoping(userId, listingId, dopingTypes);
+    const res = await AdminService.users.grantDoping(userId, listingId, dopingTypes);
     if (res.success) {
       toast.success("Doping başarıyla tanımlandı.");
       router.refresh();
@@ -65,8 +64,7 @@ export function AdminUserDetailClient({ detail, userId }: AdminUserDetailClientP
 
   const handleBanToggle = async () => {
     setIsActioning(true);
-    const { ApiClient } = await import("@/services/api-client");
-    const res = await ApiClient.admin.users.toggleBan(userId, profile.isBanned);
+    const res = await AdminService.users.toggleBan(userId, profile.isBanned);
     if (res.success) {
       toast.success(profile.isBanned ? "Yasak kaldırıldı." : "Kullanıcı yasaklandı.");
       router.refresh();

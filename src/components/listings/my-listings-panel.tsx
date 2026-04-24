@@ -34,6 +34,7 @@ interface MyListingsPanelProps {
   activeEditId?: string;
   initialShowForm?: boolean;
   listings: Listing[];
+  userId?: string;
   children?: React.ReactNode;
 }
 
@@ -43,6 +44,7 @@ export function MyListingsPanel({
   activeEditId,
   initialShowForm = false,
   listings,
+  userId,
   children,
 }: MyListingsPanelProps) {
   const [showForm, setShowForm] = useState(Boolean(activeEditId) || initialShowForm);
@@ -64,7 +66,7 @@ export function MyListingsPanel({
     handleBump,
     toggleSelect,
     clearSelection,
-  } = useListingActions(listings);
+  } = useListingActions(listings, userId);
 
   const totalPages = Math.max(1, Math.ceil(listings.length / pageSize));
   const paginatedListings = useMemo(() => {

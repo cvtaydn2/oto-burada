@@ -130,6 +130,7 @@ export default async function DashboardListingsPage({ searchParams }: DashboardL
         activeEditId={selectedListing?.id}
         initialShowForm={hasRequestedCreate && !isEditingExisting}
         listings={storedListings}
+        userId={user.id}
       >
         <div className="mt-8 bg-card rounded-2xl border border-border p-8 shadow-sm">
           <div className="mb-8 pb-6 border-b border-border/50">
