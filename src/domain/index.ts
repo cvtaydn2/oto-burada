@@ -22,6 +22,7 @@ export type {
 } from "@/types";
 
 // Use-cases
+export { activateDopingUseCase } from "@/domain/usecases/doping-activate";
 export { type FavoriteAddResult, favoriteAddUseCase } from "@/domain/usecases/favorite-add";
 export {
   type FavoriteRemoveResult,
@@ -37,8 +38,10 @@ export {
   type ListingCreationDependencies,
   type ListingCreationResult,
 } from "@/domain/usecases/listing-create";
+export { initiatePaymentUseCase } from "@/domain/usecases/payment-initiate";
 
 // Domain Logic
 export { createListingEntity } from "@/domain/logic/listing-factory";
 export { ListingStatusMachine } from "@/domain/logic/listing-status-machine";
+export { PaymentStatusMachine } from "@/domain/logic/payment-status-machine";
 export { TrustScoreCalculator } from "@/domain/logic/trust-score-calculator";

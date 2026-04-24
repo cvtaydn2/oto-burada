@@ -1,0 +1,33 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import { NextRequest, NextResponse } from "next/server";
+
+import { createSupabaseServerClient } from "@/lib/supabase/server";
+
+export async function GET(req: NextRequest, { params }: { params: Promise<{ token: string }> }) {
+  try {
+    const { token } = await params;
+    const supabase = await createSupabaseServerClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    if (!user) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const { data: payment, error } = await supabase
+      .from("payments")
+      .select("status, amount, created_at, listing_id")
+      .eq("iyzico_token", token)
+      .eq("user_id", user.id)
+      .single();
+
+    if (error || !payment) {
+      return NextResponse.json({ error: "Payment not found" }, { status: 404 });
+    }
+
+    return NextResponse.json({ data: payment });
+  } catch (error: any) {
+    return NextResponse.json({ error: error.message }, { status: 500 });
+  }
+}

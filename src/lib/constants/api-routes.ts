@@ -39,4 +39,10 @@ export const API_ROUTES = {
     BASE: "/api/favorites",
     DETAIL: (id: string) => `/api/favorites/${id}`,
   },
+  PAYMENTS: {
+    INITIALIZE: "/api/payments/initialize",
+    CALLBACK: "/api/payments/callback",
+    RETRIEVE: (id: string) => `/api/payments/retrieve/${id}`,
+    WEBHOOK: "/api/payments/webhook",
+  },
 } as const;

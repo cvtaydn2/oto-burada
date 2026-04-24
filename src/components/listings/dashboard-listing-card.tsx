@@ -1,10 +1,19 @@
 "use client";
 
-import { Archive, ArrowUpCircle, Loader2, Pencil, Rocket, RotateCcw } from "lucide-react";
+import { Archive, ArrowUpCircle, Loader2, Pencil, Rocket, RotateCcw, Zap } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 
+import { DopingStore } from "@/components/dashboard/doping-store";
 import { Checkbox } from "@/components/ui/checkbox";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 import { trust } from "@/lib/constants/ui-strings";
 import { formatCurrency, formatNumber, supabaseImageUrl } from "@/lib/utils";
 import { cn } from "@/lib/utils";
@@ -222,6 +231,31 @@ export function DashboardListingCard({
               <Archive className="size-4" />
             )}
           </button>
+
+          {isApproved && (
+            <Dialog>
+              <DialogTrigger asChild>
+                <button
+                  type="button"
+                  className="flex items-center justify-center size-11 rounded-xl bg-amber-50 border border-amber-100 text-amber-600 hover:bg-amber-600 hover:text-white transition-all shadow-sm"
+                  title="Doping Al"
+                >
+                  <Zap className="size-4" />
+                </button>
+              </DialogTrigger>
+              <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto rounded-3xl">
+                <DialogHeader>
+                  <DialogTitle className="text-2xl font-bold">Doping Mağazası</DialogTitle>
+                  <DialogDescription className="font-medium">
+                    İlanınızı öne çıkarmak ve daha hızlı satmak için bir doping seçin.
+                  </DialogDescription>
+                </DialogHeader>
+                <div className="py-6">
+                  <DopingStore listingId={listing.id} />
+                </div>
+              </DialogContent>
+            </Dialog>
+          )}
         </div>
       </div>
     </div>

@@ -654,3 +654,18 @@
   - `npm run build` ✅
   - `npm run typecheck` ✅
 - **Sıradaki Adım:** E2E testlerinin (Playwright) yaygınlaştırılması.
+## [2026-04-24] - Faz 1: Iyzico Ödeme ve Doping Altyapısı
+- **Durum:** ✅ TAMAMLANDI
+- **Yapılanlar:**
+  - **Iyzico SDK Entegrasyonu:** `iyzipay` paketi eklendi ve `getIyzicoClient` wrapper'ı ile sandbox/prod ortam desteği kuruldu.
+  - **Veritabanı (Migration 0067):** `doping_packages` ve `doping_purchases` tabloları oluşturuldu. `listings` tablosuna `is_featured`, `is_urgent` gibi doping flag'leri eklendi.
+  - **Service Katmanı:** `PaymentService` (Iyzico API orkestrasyonu) ve `DopingService` (Doping uygulama mantığı) geliştirildi.
+  - **Domain Use Case:** `initiatePaymentUseCase` ve `activateDopingUseCase` oluşturularak iş mantığı merkezi hale getirildi. `PaymentStatusMachine` ile ödeme durum geçişleri kontrol altına alındı.
+  - **API Routes:** `/api/payments/initialize`, `/api/payments/callback`, `/api/payments/retrieve/[token]` ve `/api/payments/webhook` endpoint'leri implemente edildi.
+  - **UI Geliştirme:** Dashboard'a `DopingStore` bileşeni eklendi. `DashboardListingCard` üzerinden doğrudan doping satın alma akışı (`Dialog` entegrasyonu) sağlandı.
+  - **Seed Data:** `seed-doping-packages.mjs` ile başlangıç doping paketleri (Ön Planda, Acil, Bump) veritabanına eklendi.
+- **Doğrulama:**
+  - `npm run typecheck` ✅
+  - `npm run lint` ✅
+  - `node scripts/seed-doping-packages.mjs` ✅
+- **Sıradaki Adım:** Canlı ortamda Iyzico callback/webhook akışlarının E2E testleri.
