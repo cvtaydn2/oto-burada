@@ -111,9 +111,17 @@ export function getListingBadgeStates(listing: Listing) {
   const now = new Date().toISOString();
 
   return {
-    isFeatured: listing.featured && (!listing.featuredUntil || listing.featuredUntil > now),
+    isFeatured:
+      (listing.featured && (!listing.featuredUntil || listing.featuredUntil > now)) ||
+      (!!listing.homepageShowcaseUntil && listing.homepageShowcaseUntil > now) ||
+      (!!listing.categoryShowcaseUntil && listing.categoryShowcaseUntil > now) ||
+      (!!listing.detailedSearchShowcaseUntil && listing.detailedSearchShowcaseUntil > now),
     isUrgent: !!listing.urgentUntil && listing.urgentUntil > now,
-    isHighlighted: !!listing.highlightedUntil && listing.highlightedUntil > now,
+    isHighlighted:
+      (!!listing.highlightedUntil && listing.highlightedUntil > now) ||
+      (!!listing.boldFrameUntil && listing.boldFrameUntil > now),
+    isSmallPhoto: !!listing.smallPhotoUntil && listing.smallPhotoUntil > now,
+    isTopRanked: !!listing.topRankUntil && listing.topRankUntil > now,
     isAdvantageous: (listing.marketPriceIndex ?? 1) < 0.95,
     hasInspection: !!listing.expertInspection?.hasInspection,
   };

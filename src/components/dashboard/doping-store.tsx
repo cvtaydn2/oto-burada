@@ -19,10 +19,9 @@ import { DopingPackage } from "@/types/payment";
 
 interface DopingStoreProps {
   listingId: string;
-  onSuccess?: () => void;
 }
 
-export function DopingStore({ listingId, onSuccess }: DopingStoreProps) {
+export function DopingStore({ listingId }: DopingStoreProps) {
   const [loading, setLoading] = useState<string | null>(null);
 
   const handlePurchase = async (pkg: DopingPackage) => {
@@ -36,7 +35,7 @@ export function DopingStore({ listingId, onSuccess }: DopingStoreProps) {
       } else {
         toast.error(res.error?.message || "Ödeme başlatılamadı.");
       }
-    } catch (error) {
+    } catch {
       toast.error("Bir hata oluştu. Lütfen tekrar deneyin.");
     } finally {
       setLoading(null);
@@ -44,13 +43,13 @@ export function DopingStore({ listingId, onSuccess }: DopingStoreProps) {
   };
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+    <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-5">
       {DOPING_PACKAGES.map((pkg) => (
         <Card
           key={pkg.id}
           className="relative overflow-hidden flex flex-col hover:border-blue-500/50 transition-all"
         >
-          {pkg.type === "featured" && (
+          {pkg.type === "top_rank" && (
             <div className="absolute top-0 right-0 bg-blue-600 text-white text-[10px] font-bold px-3 py-1 rounded-bl-lg uppercase tracking-wider z-10">
               Popüler
             </div>
@@ -61,7 +60,7 @@ export function DopingStore({ listingId, onSuccess }: DopingStoreProps) {
               {pkg.name}
             </CardTitle>
             <CardDescription className="font-medium">
-              {pkg.durationDays > 0 ? `${pkg.durationDays} Gün Boyunca` : "Anında Etki"}
+              {pkg.durationDays > 0 ? `${pkg.durationDays} Gün Boyunca` : "Tek Kullanım"}
             </CardDescription>
           </CardHeader>
           <CardContent className="flex-grow">

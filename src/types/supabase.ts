@@ -805,6 +805,8 @@ export type Database = {
           brand: string;
           bumped_at: string | null;
           car_trim: string | null;
+          category: string;
+          category_showcase_until: string | null;
           city: string;
           created_at: string;
           damage_status_json: Json | null;
@@ -819,7 +821,11 @@ export type Database = {
           fraud_score: number;
           fuel_type: Database["public"]["Enums"]["fuel_type"];
           highlighted_until: string | null;
+          homepage_showcase_until: string | null;
           id: string;
+          is_featured: boolean | null;
+          is_urgent: boolean | null;
+          frame_color: string | null;
           license_plate: string | null;
           locked_by: string | null;
           locked_until: string | null;
@@ -834,6 +840,9 @@ export type Database = {
           status: Database["public"]["Enums"]["listing_status"];
           status_updated_at: string | null;
           title: string;
+          small_photo_until: string | null;
+          top_rank_until: string | null;
+          detailed_search_showcase_until: string | null;
           tramer_amount: number | null;
           transmission: Database["public"]["Enums"]["transmission_type"];
           updated_at: string;
@@ -848,6 +857,8 @@ export type Database = {
           brand: string;
           bumped_at?: string | null;
           car_trim?: string | null;
+          category?: string;
+          category_showcase_until?: string | null;
           city: string;
           created_at?: string;
           damage_status_json?: Json | null;
@@ -862,7 +873,11 @@ export type Database = {
           fraud_score?: number;
           fuel_type: Database["public"]["Enums"]["fuel_type"];
           highlighted_until?: string | null;
+          homepage_showcase_until?: string | null;
           id?: string;
+          is_featured?: boolean | null;
+          is_urgent?: boolean | null;
+          frame_color?: string | null;
           license_plate?: string | null;
           locked_by?: string | null;
           locked_until?: string | null;
@@ -877,6 +892,9 @@ export type Database = {
           status?: Database["public"]["Enums"]["listing_status"];
           status_updated_at?: string | null;
           title: string;
+          small_photo_until?: string | null;
+          top_rank_until?: string | null;
+          detailed_search_showcase_until?: string | null;
           tramer_amount?: number | null;
           transmission: Database["public"]["Enums"]["transmission_type"];
           updated_at?: string;
@@ -891,6 +909,8 @@ export type Database = {
           brand?: string;
           bumped_at?: string | null;
           car_trim?: string | null;
+          category?: string;
+          category_showcase_until?: string | null;
           city?: string;
           created_at?: string;
           damage_status_json?: Json | null;
@@ -905,7 +925,11 @@ export type Database = {
           fraud_score?: number;
           fuel_type?: Database["public"]["Enums"]["fuel_type"];
           highlighted_until?: string | null;
+          homepage_showcase_until?: string | null;
           id?: string;
+          is_featured?: boolean | null;
+          is_urgent?: boolean | null;
+          frame_color?: string | null;
           license_plate?: string | null;
           locked_by?: string | null;
           locked_until?: string | null;
@@ -920,6 +944,9 @@ export type Database = {
           status?: Database["public"]["Enums"]["listing_status"];
           status_updated_at?: string | null;
           title?: string;
+          small_photo_until?: string | null;
+          top_rank_until?: string | null;
+          detailed_search_showcase_until?: string | null;
           tramer_amount?: number | null;
           transmission?: Database["public"]["Enums"]["transmission_type"];
           updated_at?: string;
@@ -1218,6 +1245,7 @@ export type Database = {
           listing_id: string | null;
           metadata: Json | null;
           notified_at: string | null;
+          package_id: string | null;
           plan_id: string | null;
           plan_name: string | null;
           processed_at: string | null;
@@ -1226,6 +1254,7 @@ export type Database = {
           updated_at: string;
           user_id: string | null;
           webhook_attempts: number | null;
+          webhook_processed_at: string | null;
         };
         Insert: {
           amount: number;
@@ -1240,6 +1269,7 @@ export type Database = {
           listing_id?: string | null;
           metadata?: Json | null;
           notified_at?: string | null;
+          package_id?: string | null;
           plan_id?: string | null;
           plan_name?: string | null;
           processed_at?: string | null;
@@ -1248,6 +1278,7 @@ export type Database = {
           updated_at?: string;
           user_id?: string | null;
           webhook_attempts?: number | null;
+          webhook_processed_at?: string | null;
         };
         Update: {
           amount?: number;
@@ -1262,6 +1293,7 @@ export type Database = {
           listing_id?: string | null;
           metadata?: Json | null;
           notified_at?: string | null;
+          package_id?: string | null;
           plan_id?: string | null;
           plan_name?: string | null;
           processed_at?: string | null;
@@ -1270,6 +1302,7 @@ export type Database = {
           updated_at?: string;
           user_id?: string | null;
           webhook_attempts?: number | null;
+          webhook_processed_at?: string | null;
         };
         Relationships: [
           {
@@ -1953,6 +1986,15 @@ export type Database = {
         };
         Returns: Json;
       };
+      activate_doping: {
+        Args: {
+          p_listing_id: string;
+          p_package_id: string;
+          p_payment_id: string;
+          p_user_id: string;
+        };
+        Returns: Json;
+      };
       apply_listing_doping: {
         Args: {
           p_doping_types: string[];
@@ -2011,6 +2053,10 @@ export type Database = {
           city_slug: string;
         }[];
       };
+      get_active_dopings_for_listing: {
+        Args: { p_listing_id: string };
+        Returns: Json;
+      };
       get_dead_letter_jobs: {
         Args: { p_limit?: number };
         Returns: {
@@ -2064,6 +2110,10 @@ export type Database = {
           target_viewer_id?: string;
           target_viewer_ip?: string;
         };
+        Returns: undefined;
+      };
+      increment_webhook_attempts: {
+        Args: { p_token: string };
         Returns: undefined;
       };
       increment_user_credits: {

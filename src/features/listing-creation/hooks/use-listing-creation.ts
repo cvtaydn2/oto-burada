@@ -154,7 +154,16 @@ export function useListingCreation({
   const handleNextStep = useCallback(async () => {
     let fieldsToValidate: FieldPath<ListingCreateFormValues>[] = [];
     if (currentStep === 0)
-      fieldsToValidate = ["brand", "model", "year", "mileage", "vin", "fuelType", "transmission"];
+      fieldsToValidate = [
+        "category",
+        "brand",
+        "model",
+        "year",
+        "mileage",
+        "vin",
+        "fuelType",
+        "transmission",
+      ];
     if (currentStep === 1)
       fieldsToValidate = ["city", "district", "title", "description", "price", "whatsappPhone"];
 

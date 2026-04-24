@@ -18,6 +18,9 @@ import { getFilteredMarketplaceListings } from "@/services/listings/marketplace-
 import { createDatabaseNotification } from "@/services/notifications/notification-records";
 import { ListingCreateInput } from "@/types";
 
+const MY_LISTINGS_DEFAULT_LIMIT = 50;
+const MY_LISTINGS_MAX_LIMIT = 100;
+
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const view = searchParams.get("view");
@@ -28,8 +31,12 @@ export async function GET(request: Request) {
     const user = userSecurity.user!;
 
     try {
-      const page = parseInt(searchParams.get("page") || "1", 10);
-      const limit = parseInt(searchParams.get("limit") || "50", 10);
+      const rawPage = parseInt(searchParams.get("page") || "1", 10);
+      const rawLimit = parseInt(searchParams.get("limit") || String(MY_LISTINGS_DEFAULT_LIMIT), 10);
+      const page = Number.isFinite(rawPage) ? Math.max(rawPage, 1) : 1;
+      const limit = Number.isFinite(rawLimit)
+        ? Math.min(Math.max(rawLimit, 1), MY_LISTINGS_MAX_LIMIT)
+        : MY_LISTINGS_DEFAULT_LIMIT;
 
       const { getStoredUserListings } = await import("@/services/listings/listing-submissions");
       const result = await getStoredUserListings(user.id, page, limit);

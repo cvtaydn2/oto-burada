@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { withCronOrAdmin } from "@/lib/utils/api-security";
 import { logger } from "@/lib/utils/logger";
+import { DopingService } from "@/services/payment/doping-service";
 
 /**
  * ── PILL: Issue 1 - Fulfillment Job Processor (DLQ & Retries) ──────
@@ -38,9 +39,32 @@ export async function GET(request: Request) {
           const { error: creditError } = await admin.rpc("adjust_user_credits_atomic", {
             p_user_id: job.payment_data.user_id,
             p_amount: job.payment_data.amount,
-            p_reference: `Payment:${job.payment_id}`,
+            p_type: "purchase",
+            p_description: "Ödeme sonrası kredi yükleme",
+            p_reference_id: `Payment:${job.payment_id}`,
           });
           if (creditError) throw creditError;
+        } else if (job.job_type === "doping_apply") {
+          const metadata = job.metadata as {
+            listing_id?: string;
+            package_id?: string;
+            user_id?: string;
+          };
+
+          const userId = metadata.user_id ?? job.payment_data.user_id;
+          const listingId = metadata.listing_id ?? job.payment_data.listing_id;
+          const packageId = metadata.package_id;
+
+          if (!userId || !listingId || !packageId) {
+            throw new Error("Doping fulfillment job metadata is incomplete");
+          }
+
+          await DopingService.applyDoping({
+            userId,
+            listingId,
+            packageId,
+            paymentId: job.payment_id,
+          });
         }
 
         // 4. Mark success

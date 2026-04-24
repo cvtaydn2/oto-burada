@@ -8,6 +8,7 @@ import {
   minimumCarYear,
   transmissionTypes,
 } from "@/lib/constants/domain";
+import { vehicleCategories } from "@/lib/constants/vehicle-categories";
 import type { ListingFilters } from "@/types";
 
 import {
@@ -16,8 +17,6 @@ import {
   nonNegativeNumberSchema,
   optionalTrimmedString,
 } from "./shared";
-
-const vehicleCategories = ["otomobil", "suv", "minivan", "ticari", "motosiklet"] as const;
 
 export const listingFilterRecoveryFieldNames = [
   "query",

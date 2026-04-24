@@ -3,7 +3,46 @@ import { Redis } from "@upstash/redis";
 
 import { logger } from "@/lib/utils/logger";
 
-let ratelimit: Ratelimit | null = null;
+type RatelimitState = Ratelimit | "MISSING_CONFIG" | "CONNECTION_ERROR" | null;
+
+interface LocalRateLimitEntry {
+  count: number;
+  reset: number;
+}
+
+const DEFAULT_LIMIT = 60;
+const DEFAULT_WINDOW_MS = 60_000;
+const REDIS_CIRCUIT_BREAKER_MS = 30_000;
+const localFallbackStore = new Map<string, LocalRateLimitEntry>();
+let ratelimit: RatelimitState = null;
+let redisCircuitOpenUntil = 0;
+
+function getLocalFallbackResult(key: string, options: { limit?: number; windowMs?: number } = {}) {
+  const now = Date.now();
+  const limit = options.limit ?? DEFAULT_LIMIT;
+  const windowMs = options.windowMs ?? DEFAULT_WINDOW_MS;
+  const existing = localFallbackStore.get(key);
+
+  if (!existing || existing.reset <= now) {
+    const reset = now + windowMs;
+    localFallbackStore.set(key, { count: 1, reset });
+    return { success: true, limit, remaining: limit - 1, reset };
+  }
+
+  existing.count += 1;
+
+  return {
+    success: existing.count <= limit,
+    limit,
+    remaining: Math.max(0, limit - existing.count),
+    reset: existing.reset,
+  };
+}
+
+function openRedisCircuit(reason: string, error?: unknown) {
+  redisCircuitOpenUntil = Date.now() + REDIS_CIRCUIT_BREAKER_MS;
+  logger.api.warn(reason, { redisCircuitOpenUntil }, error);
+}
 
 function getRatelimit() {
   if (ratelimit) return ratelimit;
@@ -32,7 +71,8 @@ function getRatelimit() {
     return ratelimit;
   } catch (error) {
     logger.security.error("Failed to initialize Upstash Ratelimit", error);
-    return isProduction ? "CONNECTION_ERROR" : null;
+    ratelimit = isProduction ? "CONNECTION_ERROR" : null;
+    return ratelimit;
   }
 }
 
@@ -43,30 +83,33 @@ export async function checkGlobalRateLimit(
   key: string,
   options: { limit?: number; windowMs?: number } = {}
 ) {
+  if (redisCircuitOpenUntil > Date.now()) {
+    return getLocalFallbackResult(key, options);
+  }
+
   const limiter = getRatelimit();
-  const isProduction = process.env.NODE_ENV === "production";
 
   if (limiter === "MISSING_CONFIG" || limiter === "CONNECTION_ERROR") {
-    return { success: false, limit: 0, remaining: 0, reset: 0 };
+    openRedisCircuit("Distributed rate limiter unavailable - using local fallback", {
+      limiter,
+    });
+    return getLocalFallbackResult(key, options);
   }
 
   if (!limiter) {
-    return { success: true, limit: 100, remaining: 100, reset: 0 };
+    return {
+      success: true,
+      limit: options.limit ?? 100,
+      remaining: options.limit ?? 100,
+      reset: 0,
+    };
   }
 
   try {
     const { success, limit, remaining, reset } = await limiter.limit(key);
     return { success, limit, remaining, reset };
   } catch (error) {
-    const isProduction = process.env.NODE_ENV === "production";
-    logger.api.error("Distributed Rate Limit Error - applying fail-closed policy", error);
-
-    if (isProduction) {
-      // FAIL-CLOSED in production to protect infrastructure
-      return { success: false, limit: 0, remaining: 0, reset: Date.now() + 60000 };
-    }
-
-    // Allow in development
-    return { success: true, limit: 100, remaining: 100, reset: 0 };
+    openRedisCircuit("Distributed Rate Limit Error - using local fallback", error);
+    return getLocalFallbackResult(key, options);
   }
 }

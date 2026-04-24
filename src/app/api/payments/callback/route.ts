@@ -63,34 +63,22 @@ async function handleCallback(token: string, req: NextRequest) {
   try {
     const admin = createSupabaseAdminClient();
 
-    // SECURITY: Atomic lock to prevent race conditions
-    // First, try to claim the fulfillment atomically
-    const { data: lockedPayment, error: lockError } = await admin
+    const { data: existingPayment, error: paymentError } = await admin
       .from("payments")
-      .update({ fulfilled_at: new Date().toISOString() })
-      .eq("iyzico_token", token)
-      .is("fulfilled_at", null) // Only update if not already fulfilled
       .select("id, status, user_id, listing_id, package_id, amount")
+      .eq("iyzico_token", token)
       .single();
 
-    if (lockError || !lockedPayment) {
-      if (lockError?.code === "PGRST116") {
-        // No rows updated - payment already fulfilled
-        logger.api.info("Payment callback for already fulfilled payment (idempotent)", { token });
-        return NextResponse.redirect(new URL("/dashboard/payments?status=success", req.url));
-      }
-      logger.api.error("Payment not found for callback", { token, error: lockError });
+    if (paymentError || !existingPayment) {
+      logger.api.error("Payment not found for callback", { token, error: paymentError });
       return NextResponse.redirect(new URL("/dashboard/payments?status=error", req.url));
     }
-
-    // Now we have exclusive lock on this payment - proceed with verification
-    const existingPayment = lockedPayment;
 
     // 1. SECURITY: Retrieve result directly from Iyzico API (not from request)
     // This is the critical security measure - we don't trust the callback data
     let result;
     try {
-      result = await PaymentService.retrieveCheckoutResult(token);
+      result = await PaymentService.retrieveCheckoutResult(token, existingPayment.user_id);
     } catch (error) {
       logger.api.error("Failed to retrieve payment from Iyzico", {
         token,
@@ -111,21 +99,7 @@ async function handleCallback(token: string, req: NextRequest) {
       return NextResponse.redirect(new URL("/dashboard/payments?status=failure", req.url));
     }
 
-    // 2. SECURITY: Validate payment status from database
-    if (existingPayment.status !== "success") {
-      logger.api.warn("Payment callback for non-success payment in DB", {
-        token,
-        status: existingPayment.status,
-        paymentId: existingPayment.id,
-      });
-
-      // F-04: Do NOT release the lock.
-      await admin.from("payments").update({ status: "failure" }).eq("id", existingPayment.id);
-
-      return NextResponse.redirect(new URL("/dashboard/payments?status=failure", req.url));
-    }
-
-    // 3. SECURITY: Extract package_id from database record (not metadata)
+    // 2. SECURITY: Extract package_id from database record (not metadata)
     const packageId = existingPayment.package_id;
 
     if (!packageId) {
@@ -133,7 +107,7 @@ async function handleCallback(token: string, req: NextRequest) {
       return NextResponse.redirect(new URL("/dashboard/payments?status=error", req.url));
     }
 
-    // 4. SECURITY: Verify package exists and price matches
+    // 3. SECURITY: Verify package exists and price matches
     const dopingPackage = DOPING_PACKAGES.find((p) => p.id === packageId);
 
     if (!dopingPackage) {
@@ -141,7 +115,7 @@ async function handleCallback(token: string, req: NextRequest) {
       return NextResponse.redirect(new URL("/dashboard/payments?status=error", req.url));
     }
 
-    // 5. SECURITY: Verify payment amount matches package price
+    // 4. SECURITY: Verify payment amount matches package price
     if (Math.abs(existingPayment.amount - dopingPackage.price) > 0.01) {
       logger.api.error("Payment amount mismatch", {
         paymentId: existingPayment.id,
@@ -152,7 +126,7 @@ async function handleCallback(token: string, req: NextRequest) {
       return NextResponse.redirect(new URL("/dashboard/payments?status=error", req.url));
     }
 
-    // 6. SECURITY: Verify listing belongs to the user who paid
+    // 5. SECURITY: Verify listing belongs to the user who paid
     if (existingPayment.listing_id) {
       const { data: listing } = await admin
         .from("listings")
@@ -174,7 +148,7 @@ async function handleCallback(token: string, req: NextRequest) {
         return NextResponse.redirect(new URL("/dashboard/payments?status=error", req.url));
       }
 
-      // 7. Apply doping (we already have the atomic lock)
+      // 6. Apply doping through the idempotent RPC. The RPC owns fulfilled_at.
       try {
         await DopingService.applyDoping({
           userId: existingPayment.user_id,

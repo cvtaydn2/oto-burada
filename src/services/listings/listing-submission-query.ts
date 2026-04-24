@@ -34,6 +34,7 @@ export const listingSelect = `
   seller_id,
   slug,
   title,
+  category,
   brand,
   model,
   year,
@@ -61,6 +62,12 @@ export const listingSelect = `
   is_urgent,
   frame_color,
   gallery_priority,
+  small_photo_until,
+  homepage_showcase_until,
+  category_showcase_until,
+  top_rank_until,
+  detailed_search_showcase_until,
+  bold_frame_until,
   market_price_index,
   expert_inspection,
   published_at,
@@ -139,6 +146,26 @@ export const legacyListingSelect = `
     sort_order,
     is_cover,
     placeholder_blur
+  ),
+  profiles!inner!seller_id (
+    id,
+    full_name,
+    phone,
+    city,
+    avatar_url,
+    role,
+    user_type,
+    business_name,
+    business_logo_url,
+    is_verified,
+    is_banned,
+    ban_reason,
+    verified_business,
+    verification_status,
+    trust_score,
+    business_slug,
+    created_at,
+    updated_at
   )
 `;
 
@@ -152,6 +179,7 @@ export const marketplaceListingSelect = `
   seller_id,
   slug,
   title,
+  category,
   brand,
   model,
   year,
@@ -171,6 +199,12 @@ export const marketplaceListingSelect = `
   is_urgent,
   frame_color,
   gallery_priority,
+  small_photo_until,
+  homepage_showcase_until,
+  category_showcase_until,
+  top_rank_until,
+  detailed_search_showcase_until,
+  bold_frame_until,
   market_price_index,
   published_at,
   bumped_at,
@@ -200,9 +234,21 @@ export const marketplaceListingSelect = `
 
 type ListingQuery = PostgrestFilterBuilder<any, any, any, any, any>;
 
+function isListingSchemaError(error: { code?: string; message?: string } | null | undefined) {
+  const message = error?.message ?? "";
+
+  return (
+    error?.code === "PGRST116" ||
+    message.includes("column") ||
+    message.includes("relation") ||
+    message.includes("does not exist")
+  );
+}
+
 export function applyListingFilterPredicates(
   query: ListingQuery,
-  filters: ListingFilters
+  filters: ListingFilters,
+  options?: { legacySchema?: boolean }
 ): ListingQuery {
   let q = query;
 
@@ -212,6 +258,7 @@ export function applyListingFilterPredicates(
   if (filters.carTrim) q = q.eq("car_trim", filters.carTrim);
   if (filters.city) q = q.eq("city", filters.city);
   if (filters.district) q = q.eq("district", filters.district);
+  if (filters.category && !options?.legacySchema) q = q.eq("category", filters.category);
   if (filters.fuelType) q = q.eq("fuel_type", filters.fuelType);
   if (filters.transmission) q = q.eq("transmission", filters.transmission);
   if (filters.minPrice !== undefined) q = q.gte("price", filters.minPrice);
@@ -259,6 +306,7 @@ export function buildListingBaseQuery(
     slug?: string;
     statuses?: Listing["status"][];
     filters?: ListingFilters;
+    legacySchema?: boolean;
     countOnly?: boolean;
     cursor?: {
       value: string | number;
@@ -288,7 +336,11 @@ export function buildListingBaseQuery(
 
   // 3. Predicates (Price, Year, Mileage, etc.)
   const filters = options?.filters;
-  if (filters) query = applyListingFilterPredicates(query, filters);
+  if (filters) {
+    query = applyListingFilterPredicates(query, filters, {
+      legacySchema: options?.legacySchema,
+    });
+  }
 
   if (options?.countOnly) return query;
 
@@ -297,6 +349,14 @@ export function buildListingBaseQuery(
 
   // PRIORITY 1: Featured (Paid) - Always top for default/newest sorting
   if (!filters?.sort || filters.sort === "newest") {
+    if (!options?.legacySchema) {
+      query = query
+        .order("top_rank_until", { ascending: false, nullsFirst: false })
+        .order("homepage_showcase_until", { ascending: false, nullsFirst: false })
+        .order("category_showcase_until", { ascending: false, nullsFirst: false })
+        .order("detailed_search_showcase_until", { ascending: false, nullsFirst: false });
+    }
+
     query = query.order("featured", { ascending: false });
   }
 
@@ -365,13 +425,7 @@ export async function getDatabaseListings(options?: {
   }
 
   // SECURITY: Only fallback for schema-related errors, not security/RLS errors
-  const isSchemaError =
-    primaryResult.error.code === "PGRST116" || // Column not found
-    primaryResult.error.message.includes("column") ||
-    primaryResult.error.message.includes("relation") ||
-    primaryResult.error.message.includes("does not exist");
-
-  if (!isSchemaError) {
+  if (!isListingSchemaError(primaryResult.error)) {
     // This could be a security/RLS error or other critical issue - fail loudly
     logger.db.error("Critical listing query error - not attempting fallback", {
       error: primaryResult.error,
@@ -387,7 +441,10 @@ export async function getDatabaseListings(options?: {
     errorCode: primaryResult.error.code,
   });
 
-  const fallbackQuery = buildListingBaseQuery(admin, legacyListingSelect, options);
+  const fallbackQuery = buildListingBaseQuery(admin, legacyListingSelect, {
+    ...options,
+    legacySchema: true,
+  });
   const fallbackResult = await fallbackQuery;
 
   if (fallbackResult.error) {
@@ -432,6 +489,18 @@ export async function getPublicDatabaseListings(options?: {
 
   const query = buildListingBaseQuery(publicClient, listingSelect, publicOptions);
   const result = await query;
+
+  if (result.error && isListingSchemaError(result.error)) {
+    const fallbackQuery = buildListingBaseQuery(publicClient, legacyListingSelect, {
+      ...publicOptions,
+      legacySchema: true,
+    });
+    const fallbackResult = await fallbackQuery;
+
+    if (!fallbackResult.error) {
+      return (fallbackResult.data ?? []).map(mapListingRow);
+    }
+  }
 
   if (result.error) {
     logger.db.error("Public listing retrieval failed", {
@@ -494,6 +563,45 @@ async function getFilteredListingsInternal(
   const [dataResult, countResult] = await Promise.all([dataQuery, countQuery]);
 
   if (dataResult.error) {
+    if (isListingSchemaError(dataResult.error)) {
+      logger.db.warn("Marketplace schema mismatch detected, attempting legacy fallback", {
+        error: dataResult.error.message,
+        errorCode: dataResult.error.code,
+        filters,
+      });
+
+      const legacyDataQuery = buildListingBaseQuery(client, legacyListingSelect, {
+        statuses: ["approved"],
+        filters: { ...filters, page, limit },
+        legacySchema: true,
+      });
+      const legacyCountQuery = buildListingBaseQuery(client, "id", {
+        statuses: ["approved"],
+        filters: { ...filters, page: undefined, limit: undefined },
+        countOnly: true,
+        legacySchema: true,
+      });
+      const [legacyDataResult, legacyCountResult] = await Promise.all([
+        legacyDataQuery,
+        legacyCountQuery,
+      ]);
+
+      if (!legacyDataResult.error) {
+        const listings = (legacyDataResult.data ?? []).map(mapListingRow);
+        const total = legacyCountResult.count ?? listings.length;
+        const hasMore = page * limit < total;
+
+        return {
+          listings,
+          total,
+          page,
+          limit,
+          hasMore,
+          nextCursor: hasMore ? String(page + 1) : undefined,
+        };
+      }
+    }
+
     logger.db.error("Filtered listing retrieval failed", {
       error: dataResult.error,
       filters,

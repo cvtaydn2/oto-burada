@@ -266,6 +266,7 @@ CREATE TABLE IF NOT EXISTS public.listings (
   seller_id uuid NOT NULL REFERENCES public.profiles (id) ON DELETE RESTRICT,
   slug text NOT NULL UNIQUE,
   title text NOT NULL,
+  category text NOT NULL DEFAULT 'otomobil',
   brand text NOT NULL,
   model text NOT NULL,
   year integer NOT NULL CHECK (year BETWEEN 1950 AND 2100),
@@ -289,6 +290,16 @@ CREATE TABLE IF NOT EXISTS public.listings (
   display_id bigint,
   market_price_index decimal(12,2),
   featured boolean NOT NULL DEFAULT false,
+  is_featured boolean DEFAULT false,
+  is_urgent boolean DEFAULT false,
+  frame_color text,
+  gallery_priority integer DEFAULT 0,
+  small_photo_until timestamptz,
+  homepage_showcase_until timestamptz,
+  category_showcase_until timestamptz,
+  top_rank_until timestamptz,
+  detailed_search_showcase_until timestamptz,
+  bold_frame_until timestamptz,
   expert_inspection jsonb,
   view_count integer NOT NULL DEFAULT 0,
   version integer NOT NULL DEFAULT 0,
@@ -458,10 +469,12 @@ CREATE TABLE IF NOT EXISTS public.payments (
   description text,
   metadata jsonb,
   listing_id uuid REFERENCES public.listings(id) ON DELETE SET NULL,
+  package_id text,
   iyzico_token text,
   iyzico_payment_id text,
   idempotency_key text,
   webhook_attempts integer NOT NULL DEFAULT 0,
+  webhook_processed_at timestamptz,
   processed_at timestamptz,
   fulfilled_at timestamptz,
   notified_at timestamptz,
@@ -608,6 +621,8 @@ CREATE INDEX IF NOT EXISTS reports_status_idx ON public.reports (status, updated
 CREATE INDEX IF NOT EXISTS listing_images_listing_idx ON public.listing_images (listing_id, sort_order);
 CREATE UNIQUE INDEX IF NOT EXISTS reports_active_per_user_listing_idx ON public.reports (listing_id, reporter_id) WHERE status IN ('open', 'reviewing');
 CREATE INDEX IF NOT EXISTS listings_search_vector_idx ON public.listings USING GIN (search_vector);
+CREATE INDEX IF NOT EXISTS listings_vin_trust_guard_idx ON public.listings (vin) WHERE vin IS NOT NULL AND status IN ('pending', 'pending_ai_review', 'approved', 'flagged');
+CREATE INDEX IF NOT EXISTS listings_license_plate_trust_guard_idx ON public.listings (license_plate) WHERE license_plate IS NOT NULL AND status IN ('pending', 'pending_ai_review', 'approved', 'flagged');
 CREATE INDEX IF NOT EXISTS listings_brand_idx ON public.listings (brand);
 CREATE INDEX IF NOT EXISTS listings_city_idx ON public.listings (city);
 CREATE INDEX IF NOT EXISTS listings_price_idx ON public.listings (price);
@@ -633,6 +648,7 @@ CREATE INDEX IF NOT EXISTS idx_chats_buyer_last_message_at ON public.chats (buye
 CREATE INDEX IF NOT EXISTS idx_chats_seller_last_message_at ON public.chats (seller_id, last_message_at DESC);
 CREATE INDEX IF NOT EXISTS idx_messages_chat_created_at ON public.messages (chat_id, created_at ASC);
 CREATE INDEX IF NOT EXISTS idx_phone_reveal_logs_ip ON public.phone_reveal_logs (viewer_ip, revealed_at DESC) WHERE viewer_ip IS NOT NULL;
+CREATE INDEX IF NOT EXISTS idx_payments_stale_cleanup ON public.payments (status, created_at) WHERE fulfilled_at IS NULL AND status IN ('pending', 'processing');
 
 -- 7. TRIGGERS
 CREATE TRIGGER profiles_set_updated_at BEFORE UPDATE ON public.profiles FOR EACH ROW EXECUTE FUNCTION public.set_updated_at();

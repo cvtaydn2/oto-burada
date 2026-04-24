@@ -133,37 +133,61 @@ export class PaymentService {
     };
 
     // 3. Call Iyzico with timeout (F-05)
-    return withTimeout(
-      new Promise<{ paymentPageUrl: string; token: string }>((resolve, reject) => {
-        iyzico.checkoutFormInitialize.create(request, async (err: any, result: any) => {
-          if (err || result.status !== "success") {
-            // Update payment record as failed
+    try {
+      return await withTimeout(
+        new Promise<{ paymentPageUrl: string; token: string }>((resolve, reject) => {
+          iyzico.checkoutFormInitialize.create(request, async (err: any, result: any) => {
+            if (err || result.status !== "success") {
+              // Update payment record as failed
+              await admin
+                .from("payments")
+                .update({
+                  status: "failure",
+                  metadata: { ...(payment.metadata ?? {}), error: err || result },
+                })
+                .eq("id", payment.id);
+
+              reject(new Error(result?.errorMessage || "Iyzico initialization failed"));
+              return;
+            }
+
+            // Update payment with token
             await admin
               .from("payments")
-              .update({ status: "failure", metadata: { error: err || result } })
+              .update({ iyzico_token: result.token })
               .eq("id", payment.id);
 
-            reject(new Error(result.errorMessage || "Iyzico initialization failed"));
-            return;
-          }
-
-          // Update payment with token
-          await admin.from("payments").update({ iyzico_token: result.token }).eq("id", payment.id);
-
-          resolve({
-            paymentPageUrl: result.paymentPageUrl,
-            token: result.token,
+            resolve({
+              paymentPageUrl: result.paymentPageUrl,
+              token: result.token,
+            });
           });
-        });
-      }),
-      15_000 // 15s timeout
-    );
+        }),
+        15_000 // 15s timeout
+      );
+    } catch (error) {
+      await admin
+        .from("payments")
+        .update({
+          status: "failure",
+          metadata: {
+            ...(payment.metadata ?? {}),
+            initialization_error: error instanceof Error ? error.message : String(error),
+          },
+          processed_at: new Date().toISOString(),
+        })
+        .eq("id", payment.id)
+        .eq("status", "pending");
+
+      throw error;
+    }
   }
 
   /**
    * Retrieves checkout result from Iyzico
+   * SECURITY: userId is required to ensure ownership (S-02)
    */
-  static async retrieveCheckoutResult(token: string) {
+  static async retrieveCheckoutResult(token: string, userId: string) {
     const iyzico = getIyzicoClient();
     const admin = createSupabaseAdminClient();
 
@@ -176,18 +200,33 @@ export class PaymentService {
               return;
             }
 
-            // Update DB record
+            // 1. SECURITY: Verify ownership before updating anything (S-02)
+            const { data: paymentRecord } = await admin
+              .from("payments")
+              .select("user_id, status")
+              .eq("iyzico_token", token)
+              .single();
+
+            if (!paymentRecord || paymentRecord.user_id !== userId) {
+              reject(new Error("Unauthorized payment retrieval"));
+              return;
+            }
+
+            // 2. SECURITY: Update DB record (S-01: UX only update)
             const status: PaymentStatus = result.paymentStatus === "SUCCESS" ? "paid" : "failed";
 
             await admin
               .from("payments")
               .update({
+                // Note: Actual fulfillment logic should depend on webhook
+                // but we update here for immediate UI feedback.
                 status: status === "paid" ? "success" : "failure",
                 iyzico_payment_id: result.paymentId,
                 processed_at: new Date().toISOString(),
                 metadata: result,
               })
               .eq("iyzico_token", token)
+              .eq("user_id", userId) // Extra safety
               .select()
               .single();
 

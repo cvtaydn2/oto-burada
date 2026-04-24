@@ -25,12 +25,15 @@ export function verifyIyzicoWebhook(
   }
 
   try {
-    const expected = crypto.createHmac("sha256", secretKey).update(body).digest("hex");
+    const expected = crypto.createHmac("sha512", secretKey).update(body).digest("base64");
+
+    if (!signature || signature.length !== expected.length) {
+      return false;
+    }
 
     // Use timing-safe comparison to prevent timing attacks
     return crypto.timingSafeEqual(Buffer.from(signature), Buffer.from(expected));
   } catch {
-    // If buffers are different lengths, timingSafeEqual throws
     return false;
   }
 }

@@ -12,6 +12,7 @@ import type {
   transmissionTypes,
   userRoles,
 } from "@/lib/constants/domain";
+import type { VehicleCategory } from "@/lib/constants/vehicle-categories";
 
 export type UserRole = (typeof userRoles)[number];
 export type ListingStatus = (typeof listingStatuses)[number];
@@ -24,6 +25,7 @@ export type ModerationTargetType = (typeof moderationTargetTypes)[number];
 export type ModerationAction = (typeof moderationActions)[number];
 export type VerificationStatus = "none" | "pending" | "approved" | "rejected";
 export type ListingSortOption = (typeof listingSortOptions)[number];
+export type { VehicleCategory };
 
 export type ExpertInspectionGrade = (typeof expertInspectionGrades)[number];
 export type ExpertInspectionStatus = (typeof expertInspectionStatuses)[number];

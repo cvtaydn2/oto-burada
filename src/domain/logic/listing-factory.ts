@@ -63,6 +63,7 @@ export function createListingEntity(
     viewCount: existingListing?.viewCount ?? 0,
     version: existingListing?.version ?? 0,
     title: input.title,
+    category: input.category ?? "otomobil",
     brand: input.brand,
     model: input.model,
     year: input.year,

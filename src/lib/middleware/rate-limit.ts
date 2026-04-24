@@ -21,16 +21,10 @@ export async function rateLimitMiddleware(request: NextRequest) {
 
   const ip = request.headers.get("x-forwarded-for")?.split(",")[0] || "127.0.0.1";
 
-  // Bypass for authorized IPs or secret header (F-07 Hardening)
+  // Allowlisted infrastructure IPs can bypass rate limiting.
   const bypassIps = process.env.RATE_LIMIT_BYPASS_IPS?.split(",") || [];
-  const bypassKey = process.env.RATE_LIMIT_BYPASS_KEY;
-  const requestBypassKey = request.headers.get("x-rate-limit-bypass");
 
-  if (
-    bypassIps.includes(ip) ||
-    (bypassKey && requestBypassKey === bypassKey) ||
-    process.env.NODE_ENV === "development"
-  ) {
+  if (bypassIps.includes(ip) || process.env.NODE_ENV === "development") {
     return null;
   }
 

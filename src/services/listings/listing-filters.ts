@@ -201,6 +201,7 @@ export function createSearchParamsFromListingFilters(filters: ListingFilters) {
   append("city", filters.city);
   // citySlug is an internal routing field — do not serialize to search params
   append("district", filters.district);
+  append("category", filters.category);
   append("minPrice", filters.minPrice);
   append("maxPrice", filters.maxPrice);
   append("minYear", filters.minYear);

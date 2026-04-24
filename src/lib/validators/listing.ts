@@ -13,6 +13,7 @@ import {
   minimumListingImages,
   transmissionTypes,
 } from "@/lib/constants/domain";
+import { vehicleCategories } from "@/lib/constants/vehicle-categories";
 import type { ExpertInspection, Listing, ListingImage } from "@/types";
 import type { ListingCreateFormValues } from "@/types";
 
@@ -68,6 +69,7 @@ export const expertInspectionSchema: z.ZodType<ExpertInspection> = z.object({
 
 export const listingCreateSchema = z.object({
   title: trimmedRequiredString.max(200, "Baslik en fazla 200 karakter olabilir"),
+  category: z.enum(vehicleCategories),
   brand: trimmedRequiredString,
   model: trimmedRequiredString,
   carTrim: z.string().trim().optional().nullable(),
@@ -112,6 +114,7 @@ export const listingCreateSchema = z.object({
 
 export const listingCreateFormSchema: z.ZodType<ListingCreateFormValues> = z.object({
   title: trimmedRequiredString.max(200, "Baslik en fazla 200 karakter olabilir"),
+  category: z.enum(vehicleCategories),
   brand: trimmedRequiredString,
   model: trimmedRequiredString,
   carTrim: z.string().trim().optional().nullable(),
@@ -219,6 +222,7 @@ export const listingSchema: z.ZodType<Listing> = z.object({
   slug: trimmedRequiredString,
   sellerId: trimmedRequiredString,
   title: trimmedRequiredString,
+  category: z.enum(vehicleCategories),
   brand: trimmedRequiredString,
   model: trimmedRequiredString,
   carTrim: z.string().trim().optional().nullable(),

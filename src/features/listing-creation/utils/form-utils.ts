@@ -97,6 +97,7 @@ export function buildDefaultValues(
 
   return {
     title: initialListing?.title ?? "",
+    category: initialListing?.category ?? "otomobil",
     brand: initialListing?.brand ?? "",
     model: initialListing?.model ?? "",
     carTrim: initialListing?.carTrim ?? null,

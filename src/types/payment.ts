@@ -1,6 +1,14 @@
 export type PaymentStatus = "pending" | "paid" | "failed" | "refunded";
 
-export type DopingType = "featured" | "urgent" | "highlighted" | "gallery" | "bump";
+export type DopingType =
+  | "small_photo"
+  | "urgent"
+  | "homepage_showcase"
+  | "category_showcase"
+  | "top_rank"
+  | "detailed_search_showcase"
+  | "bold_frame"
+  | "bump";
 
 export interface IyzicoConfig {
   apiKey: string;

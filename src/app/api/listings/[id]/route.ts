@@ -149,6 +149,7 @@ export async function PATCH(request: Request, context: { params: Promise<{ id: s
 
     if (!trustGuard.allowed) {
       const enforcement = await recordSellerTrustGuardRejection({
+        ipAddress: request.headers.get("x-forwarded-for")?.split(",")[0] ?? undefined,
         sellerId: user.id,
         reason: trustGuard.reason,
         source: "edit",

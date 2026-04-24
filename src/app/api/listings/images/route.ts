@@ -244,15 +244,11 @@ export async function DELETE(request: Request) {
   );
 
   if (registryId === null) {
-    // Legacy fallback: allow if path is prefixed with the user's id
-    const isLegacyOwner = storagePath.startsWith(`listings/${user.id}/`);
-    if (!isLegacyOwner) {
-      return apiError(API_ERROR_CODES.FORBIDDEN, "Bu işlem için yetkiniz yok.", 403);
-    }
-    logger.storage.warn("Falling back to legacy prefix check for image delete", {
+    logger.storage.warn("Image delete rejected because registry ownership verification failed", {
       storagePath,
       userId: user.id,
     });
+    return apiError(API_ERROR_CODES.FORBIDDEN, "Bu işlem için yetkiniz yok.", 403);
   }
 
   // ── Step 2: Remove from Storage ────────────────────────────────────────

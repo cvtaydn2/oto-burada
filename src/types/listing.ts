@@ -1,4 +1,10 @@
-import type { ExpertInspection, FuelType, ListingStatus, TransmissionType } from "./domain";
+import type {
+  ExpertInspection,
+  FuelType,
+  ListingStatus,
+  TransmissionType,
+  VehicleCategory,
+} from "./domain";
 import type { Profile } from "./profile";
 
 export interface ListingImage {
@@ -20,6 +26,7 @@ export interface ListingCore {
   title: string;
   brand: string;
   model: string;
+  category: VehicleCategory;
   carTrim?: string | null;
   year: number;
   price: number;
@@ -58,6 +65,12 @@ export interface ListingBadges {
   isUrgent?: boolean | null;
   frameColor?: string | null;
   galleryPriority?: number | null;
+  smallPhotoUntil?: string | null;
+  homepageShowcaseUntil?: string | null;
+  categoryShowcaseUntil?: string | null;
+  topRankUntil?: string | null;
+  detailedSearchShowcaseUntil?: string | null;
+  boldFrameUntil?: string | null;
 }
 
 export interface Listing
@@ -74,6 +87,7 @@ export interface ListingCreateInput {
   title: string;
   brand: string;
   model: string;
+  category?: VehicleCategory;
   carTrim?: string | null;
   year: number;
   price: number;

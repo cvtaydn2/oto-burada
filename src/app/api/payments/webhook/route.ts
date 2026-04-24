@@ -60,13 +60,36 @@ export async function POST(req: NextRequest) {
         })
         .eq("iyzico_token", token)
         .is("webhook_processed_at", null) // Atomic check
-        .select("id")
+        .select("id, user_id, listing_id, package_id")
         .single();
 
       if (lockError || !locked) {
         // Already processed or error — respond 200 for idempotency
         logger.api.info("Payment already processed or lock failed", { token });
         return NextResponse.json({ status: "already_processed" });
+      }
+
+      // 4. Queue fulfillment instead of doing side effects inside the webhook.
+      if (status === "success" && locked.listing_id && locked.package_id) {
+        const { error: jobError } = await admin.rpc("create_fulfillment_job", {
+          p_payment_id: locked.id,
+          p_job_type: "doping_apply",
+          p_metadata: {
+            listing_id: locked.listing_id,
+            package_id: locked.package_id,
+            user_id: locked.user_id,
+          },
+        });
+
+        if (jobError) {
+          await admin.from("payments").update({ webhook_processed_at: null }).eq("id", locked.id);
+
+          logger.api.error("Failed to queue doping fulfillment job", {
+            paymentId: locked.id,
+            error: jobError.message,
+          });
+          return NextResponse.json({ status: "queued_failed" }, { status: 500 });
+        }
       }
 
       // Increment attempt counter separately or as part of next steps if needed

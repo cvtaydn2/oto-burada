@@ -17,8 +17,7 @@
  * Returns true when the request origin is acceptable.
  *
  * Rules:
- *  - If no Origin header is present (same-origin form POST, server-to-server)
- *    we allow it — the browser always sends Origin on cross-origin requests.
+ *  - For mutations, Origin header is mandatory.
  *  - Otherwise the origin must match the configured APP_URL or the request Host
  *    using exact host + protocol comparison (not substring matching).
  *
@@ -28,16 +27,13 @@
  */
 export function isValidRequestOrigin(request: Request): boolean {
   const origin = request.headers.get("origin");
+  const method = request.method.toUpperCase();
+  const isMutation = method !== "GET" && method !== "HEAD" && method !== "OPTIONS";
 
-  // No Origin header → potentially same-origin form POST or server-to-server.
+  // Mutation requests must present an Origin header. Internal callers should
+  // use dedicated authenticated/secret-protected endpoints instead.
   if (!origin) {
-    // F-11: For mutations (non-GET), require at least a standard XHR header as a secondary defense
-    const method = request.method.toUpperCase();
-    if (method !== "GET" && method !== "HEAD" && method !== "OPTIONS") {
-      const xhrHeader = request.headers.get("x-requested-with");
-      return xhrHeader === "XMLHttpRequest";
-    }
-    return true;
+    return !isMutation;
   }
 
   // Explicitly reject "null" origin (sandboxed iframe, file://, etc.)

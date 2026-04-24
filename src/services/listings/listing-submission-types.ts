@@ -14,6 +14,7 @@ export interface ListingImageRow {
 /** DB row shape for a listing — used internally for mapping. */
 export interface ListingRow {
   brand: string;
+  category?: Listing["category"] | null;
   city: string;
   created_at: string;
   damage_status_json?: Record<string, unknown> | null;
@@ -28,6 +29,12 @@ export interface ListingRow {
   is_urgent?: boolean | null;
   frame_color?: string | null;
   gallery_priority?: number | null;
+  small_photo_until?: string | null;
+  homepage_showcase_until?: string | null;
+  category_showcase_until?: string | null;
+  top_rank_until?: string | null;
+  detailed_search_showcase_until?: string | null;
+  bold_frame_until?: string | null;
   fraud_reason?: string | null;
   fraud_score?: number | null;
   fuel_type: Listing["fuelType"];
@@ -78,6 +85,7 @@ export interface ListingRow {
 export function mapListingRow(row: ListingRow): Listing {
   return {
     brand: row.brand,
+    category: row.category ?? "otomobil",
     city: row.city,
     createdAt: row.created_at,
     damageStatusJson: (row.damage_status_json as Record<string, string> | null) ?? null,
@@ -142,6 +150,12 @@ export function mapListingRow(row: ListingRow): Listing {
     isUrgent: row.is_urgent ?? null,
     frameColor: row.frame_color ?? null,
     galleryPriority: row.gallery_priority ?? null,
+    smallPhotoUntil: row.small_photo_until ?? null,
+    homepageShowcaseUntil: row.homepage_showcase_until ?? null,
+    categoryShowcaseUntil: row.category_showcase_until ?? null,
+    topRankUntil: row.top_rank_until ?? null,
+    detailedSearchShowcaseUntil: row.detailed_search_showcase_until ?? null,
+    boldFrameUntil: row.bold_frame_until ?? null,
     marketPriceIndex: row.market_price_index ? Number(row.market_price_index) : null,
     whatsappPhone: row.whatsapp_phone,
     vin: row.vin ?? null,

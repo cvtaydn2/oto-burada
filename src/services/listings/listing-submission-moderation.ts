@@ -1,7 +1,9 @@
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { hasSupabaseAdminEnv } from "@/lib/supabase/env";
+import { withNextCache } from "@/lib/utils/cache";
 import { logger } from "@/lib/utils/logger";
 import { estimateVehiclePrice } from "@/services/market/price-estimation";
+import { createDatabaseNotification } from "@/services/notifications/notification-records";
 import { Listing, ListingCreateInput } from "@/types";
 
 const TRUST_GUARD_REJECTION_WINDOW_MS = 24 * 60 * 60 * 1000;
@@ -12,6 +14,7 @@ const TRACKED_TRUST_GUARD_REASONS = new Set([
   "duplicate_plate",
   "extreme_price_outlier",
 ]);
+const ASYNC_MODERATION_CACHE_TTL_SECONDS = 300;
 
 interface TrustGuardRejectionAttempt {
   at: string;
@@ -21,6 +24,33 @@ interface TrustGuardRejectionAttempt {
 
 interface TrustGuardRejectionMetadata {
   attempts: TrustGuardRejectionAttempt[];
+  reviewReason?: string;
+  reviewRequestedAt?: string;
+}
+
+async function getCachedFraudComparisonListings(params: {
+  brand: string;
+  listingId: string;
+  model: string;
+  year: number;
+}) {
+  const admin = createSupabaseAdminClient();
+
+  return withNextCache(
+    [`fraud-comparison:${params.brand}:${params.model}:${params.year}`],
+    async () => {
+      const { data } = await admin
+        .from("listings")
+        .select("id, slug, brand, model, year, mileage, price, vin, status")
+        .eq("brand", params.brand)
+        .eq("model", params.model)
+        .eq("year", params.year)
+        .limit(100);
+
+      return data ?? [];
+    },
+    ASYNC_MODERATION_CACHE_TTL_SECONDS
+  );
 }
 
 export function calculateFraudScore(
@@ -138,13 +168,12 @@ export async function performAsyncModeration(listingId: string) {
     if (!listing) return;
 
     // 2. Fetch similar listings for market analysis (filtered for accuracy)
-    const { data: existingListings } = await admin
-      .from("listings")
-      .select("id, slug, brand, model, year, mileage, price, vin, status")
-      .eq("brand", listing.brand)
-      .eq("model", listing.model)
-      .neq("id", listingId)
-      .limit(100);
+    const existingListings = await getCachedFraudComparisonListings({
+      brand: listing.brand,
+      listingId,
+      model: listing.model,
+      year: listing.year,
+    });
 
     // 3. Compute score — explicit map to match calculateFraudScore input shape
     const fraudInput: Parameters<typeof calculateFraudScore>[0] = {
@@ -168,17 +197,19 @@ export async function performAsyncModeration(listingId: string) {
       images: listing.images,
     };
 
-    const comparisonListings = (existingListings ?? []).map((item) => ({
-      id: item.id ?? "",
-      slug: item.slug ?? "",
-      brand: item.brand ?? undefined,
-      model: item.model ?? undefined,
-      year: item.year ?? undefined,
-      mileage: item.mileage ?? undefined,
-      price: item.price ?? undefined,
-      vin: item.vin ?? undefined,
-      status: item.status ?? undefined,
-    }));
+    const comparisonListings = existingListings
+      .filter((item) => item.id !== listingId)
+      .map((item) => ({
+        id: item.id ?? "",
+        slug: item.slug ?? "",
+        brand: item.brand ?? undefined,
+        model: item.model ?? undefined,
+        year: item.year ?? undefined,
+        mileage: item.mileage ?? undefined,
+        price: item.price ?? undefined,
+        vin: item.vin ?? undefined,
+        status: item.status ?? undefined,
+      }));
 
     const assessment = calculateFraudScore(fraudInput, comparisonListings);
 
@@ -224,7 +255,11 @@ function parseTrustGuardMetadata(
   }
 
   try {
-    const parsed = JSON.parse(serialized) as { attempts?: TrustGuardRejectionAttempt[] };
+    const parsed = JSON.parse(serialized) as {
+      attempts?: TrustGuardRejectionAttempt[];
+      reviewReason?: string;
+      reviewRequestedAt?: string;
+    };
     return {
       attempts: Array.isArray(parsed.attempts)
         ? parsed.attempts.filter(
@@ -235,6 +270,9 @@ function parseTrustGuardMetadata(
               TRACKED_TRUST_GUARD_REASONS.has(attempt.reason)
           )
         : [],
+      reviewReason: typeof parsed.reviewReason === "string" ? parsed.reviewReason : undefined,
+      reviewRequestedAt:
+        typeof parsed.reviewRequestedAt === "string" ? parsed.reviewRequestedAt : undefined,
     };
   } catch {
     return { attempts: [] };
@@ -276,6 +314,7 @@ function summarizeTrustGuardAttempts(attempts: TrustGuardRejectionAttempt[]) {
 }
 
 export async function recordSellerTrustGuardRejection(input: {
+  ipAddress?: string;
   sellerId: string;
   reason?: string;
   source: "create" | "edit";
@@ -314,14 +353,35 @@ export async function recordSellerTrustGuardRejection(input: {
 
   if (nextAttempts.length >= TRUST_GUARD_REJECTION_THRESHOLD) {
     const reviewReason = `Geçici güvenlik kısıtı: son 24 saatte tekrar eden trust-guard reddi (${summarizeTrustGuardAttempts(nextAttempts)}). Admin incelemesi gerekiyor.`;
+
     await admin
       .from("profiles")
       .update({
-        is_banned: true,
-        ban_reason: reviewReason,
+        ban_reason: buildTrustGuardMetadataBanReason(profile.ban_reason, {
+          attempts: nextAttempts,
+          reviewReason,
+          reviewRequestedAt: now.toISOString(),
+        }),
         updated_at: now.toISOString(),
       })
       .eq("id", input.sellerId);
+
+    logger.security.warn("Trust guard threshold reached - manual review requested", {
+      sellerId: input.sellerId,
+      ipAddress: input.ipAddress,
+      source: input.source,
+      attempts: nextAttempts.length,
+      reviewReason,
+    });
+
+    await createDatabaseNotification({
+      href: "/dashboard/listings",
+      message:
+        "Hesabındaki ilan hareketleri güvenlik kontrolüne alındı. İnceleme tamamlanana kadar bazı işlemler kısıtlanabilir.",
+      title: "Güvenlik incelemesi başlatıldı",
+      type: "moderation",
+      userId: input.sellerId,
+    });
 
     return {
       restricted: true,

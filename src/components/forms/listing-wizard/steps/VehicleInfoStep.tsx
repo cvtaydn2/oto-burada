@@ -7,6 +7,7 @@ import { ChoiceGroup } from "@/components/shared/design-system/ChoiceGroup";
 import { DesignInput } from "@/components/shared/design-system/DesignInput";
 import { FormSection } from "@/components/shared/design-system/FormSection";
 import { maximumCarYear, minimumCarYear } from "@/lib/constants/domain";
+import { vehicleCategories, vehicleCategoryLabels } from "@/lib/constants/vehicle-categories";
 import { BrandCatalogItem, ListingCreateFormValues } from "@/types";
 
 interface VehicleInfoStepProps {
@@ -30,6 +31,7 @@ export function VehicleInfoStep({
   } = form;
   const selectedBrand = watch("brand");
   const selectedModel = watch("model");
+  const selectedCategory = watch("category");
   const selectedTransmission = watch("transmission");
   const selectedFuelType = watch("fuelType");
 
@@ -90,6 +92,29 @@ export function VehicleInfoStep({
 
       {/* SECTION 2: BASIC INFO */}
       <FormSection number={2} title="Araç Temel Bilgileri">
+        <div className="mb-8 space-y-2">
+          <label className="block text-sm font-semibold text-foreground">
+            Vasıta Türü <span className="text-destructive">*</span>
+          </label>
+          <Controller
+            control={control}
+            name="category"
+            render={({ field }) => (
+              <ChoiceGroup
+                options={[...vehicleCategories]}
+                value={field.value ?? selectedCategory}
+                labels={vehicleCategoryLabels}
+                onChange={field.onChange}
+              />
+            )}
+          />
+          {errors.category && (
+            <p className="text-xs font-bold text-red-500 flex items-center gap-2">
+              <AlertCircle size={14} /> {errors.category?.message as string}
+            </p>
+          )}
+        </div>
+
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
           <DesignInput
             label="Marka"

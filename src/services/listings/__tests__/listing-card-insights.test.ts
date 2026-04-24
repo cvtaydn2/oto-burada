@@ -29,6 +29,7 @@ describe("Listing Card Insights Service", () => {
     updatedAt: "2024-01-01",
     version: 1,
     ...overrides,
+    category: overrides.category ?? "otomobil",
   });
 
   it("should return 'Akıllı Seçim' for budget-friendly low mileage listing", () => {

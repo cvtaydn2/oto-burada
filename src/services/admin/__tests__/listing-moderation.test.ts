@@ -61,6 +61,7 @@ describe("listing-moderation service", () => {
     sellerId: "seller-456",
     brand: "Fiat",
     model: "Egea",
+    category: "otomobil",
     year: 2022,
     mileage: 15000,
     fuelType: "benzin",
