@@ -20,6 +20,20 @@ export async function rateLimitMiddleware(request: NextRequest) {
   }
 
   const ip = request.headers.get("x-forwarded-for")?.split(",")[0] || "127.0.0.1";
+
+  // Bypass for authorized IPs or secret header (F-07 Hardening)
+  const bypassIps = process.env.RATE_LIMIT_BYPASS_IPS?.split(",") || [];
+  const bypassKey = process.env.RATE_LIMIT_BYPASS_KEY;
+  const requestBypassKey = request.headers.get("x-rate-limit-bypass");
+
+  if (
+    bypassIps.includes(ip) ||
+    (bypassKey && requestBypassKey === bypassKey) ||
+    process.env.NODE_ENV === "development"
+  ) {
+    return null;
+  }
+
   const { success, limit, remaining, reset } = await checkGlobalRateLimit(ip);
 
   if (!success) {

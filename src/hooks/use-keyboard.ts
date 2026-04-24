@@ -47,12 +47,14 @@ export function useKeyboard({
       // Handle shortcuts
       if (shortcuts.length > 0) {
         const key = event.key;
-        const matchingShortcut = shortcuts.find(
-          (shortcut) =>
+        const matchingShortcut = shortcuts.find((shortcut) => {
+          if (!shortcut || !shortcut.key || !key) return false;
+          return (
             shortcut.key.toLowerCase() === key.toLowerCase() &&
             (shortcut.ctrl ? event.ctrlKey || event.metaKey : true) &&
             (shortcut.shift ? event.shiftKey : !event.shiftKey)
-        );
+          );
+        });
 
         if (matchingShortcut) {
           event.preventDefault();
