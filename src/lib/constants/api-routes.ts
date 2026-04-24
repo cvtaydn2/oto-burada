@@ -45,4 +45,10 @@ export const API_ROUTES = {
     RETRIEVE: (id: string) => `/api/payments/retrieve/${id}`,
     WEBHOOK: "/api/payments/webhook",
   },
+  CHATS: {
+    BASE: "/api/chats",
+    DETAIL: (id: string) => `/api/chats/${id}`,
+    MESSAGES: (id: string) => `/api/chats/${id}/messages`,
+    MARK_READ: (id: string) => `/api/chats/${id}/read`,
+  },
 } as const;

@@ -12,6 +12,13 @@ export const queryKeys = {
     detail: (id: string) => [...queryKeys.listings.details(), id] as const,
     my: (userId: string) => [...queryKeys.listings.all, "my", userId] as const,
   },
+  chats: {
+    all: ["chats"] as const,
+    lists: () => [...queryKeys.chats.all, "list"] as const,
+    list: (userId: string) => [...queryKeys.chats.lists(), userId] as const,
+    detail: (id: string) => [...queryKeys.chats.all, "detail", id] as const,
+    messages: (chatId: string) => [...queryKeys.chats.all, "messages", chatId] as const,
+  },
   notifications: {
     all: ["notifications"] as const,
     byUser: (userId: string) => [...queryKeys.notifications.all, userId] as const,

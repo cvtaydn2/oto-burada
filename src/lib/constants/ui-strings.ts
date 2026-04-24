@@ -356,6 +356,14 @@ export const trust = {
   contactBlocked: "Geçici Kısıtlama",
   contactBlockedDesc:
     "Bu satıcı hesabı şu an hizmet standartları gereği inceleme altındadır. Lütfen daha sonra tekrar deneyin.",
+  chat: {
+    button: "Mesaj Gönder",
+    title: "Şifreli Chat",
+    subtitle: "Kimlikleriniz gizlidir, güvenli iletişim kurulur.",
+    emptyState: "Henüz mesajınız yok",
+    placeholder: "Mesajınızı yazın...",
+    systemMessage: "Chat başlatıldı",
+  },
 
   // Detailed Feedback (Seller facing)
   verificationRejected: "Doğrulama Tamamlanamadı",

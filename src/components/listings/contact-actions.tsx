@@ -1,6 +1,13 @@
 "use client";
 
-import { AlertTriangle, Loader2, MessageCircle, Phone, ShieldAlert } from "lucide-react";
+import {
+  AlertTriangle,
+  Loader2,
+  MessageCircle,
+  MessageSquare,
+  Phone,
+  ShieldAlert,
+} from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
@@ -114,6 +121,21 @@ export function ContactActions({
 
   return (
     <div className="space-y-3">
+      {/* In-App Chat Button (logged in, not owner) */}
+      {!isOwnListing && currentUserId && (
+        <button
+          onClick={() => {
+            router.push(`/dashboard/messages?new=${listingId}&seller=${sellerId}`);
+            captureClientEvent("contact_chat_clicked", { listingId, sellerId });
+          }}
+          className="flex w-full items-center justify-center gap-2 rounded-xl bg-blue-600 text-white h-12 px-4 text-sm font-bold border border-blue-600 transition-all hover:bg-blue-700 active:scale-95"
+        >
+          <MessageSquare className="size-5" />
+          Mesaj Gönder
+        </button>
+      )}
+
+      {/* WhatsApp Button with Safety Dialog */}
       {/* Trust Signal Reassurance */}
       {isTrusted && !isRevealed && (
         <div className="flex items-center gap-2 mb-2 p-3 rounded-xl bg-emerald-50/50 border border-emerald-100/50">

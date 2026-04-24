@@ -1,27 +1,5 @@
-/**
- * Domain layer public surface.
- *
- * Re-exports canonical domain types and use-cases so callers can import from
- * `@/domain` instead of reaching into `@/types` or `@/services` directly.
- */
-
-// Core entity types
-export type {
-  AdminModerationAction,
-  Favorite,
-  Listing,
-  ListingCreateFormValues,
-  ListingCreateInput,
-  ListingFilters,
-  ListingImage,
-  Notification,
-  Profile,
-  Report,
-  ReportCreateInput,
-  SavedSearch,
-} from "@/types";
-
-// Use-cases
+export { createChatUseCase } from "@/domain/usecases/chat-create";
+export { sendMessageUseCase } from "@/domain/usecases/chat-send-message";
 export { activateDopingUseCase } from "@/domain/usecases/doping-activate";
 export { type FavoriteAddResult, favoriteAddUseCase } from "@/domain/usecases/favorite-add";
 export {
@@ -39,9 +17,3 @@ export {
   type ListingCreationResult,
 } from "@/domain/usecases/listing-create";
 export { initiatePaymentUseCase } from "@/domain/usecases/payment-initiate";
-
-// Domain Logic
-export { createListingEntity } from "@/domain/logic/listing-factory";
-export { ListingStatusMachine } from "@/domain/logic/listing-status-machine";
-export { PaymentStatusMachine } from "@/domain/logic/payment-status-machine";
-export { TrustScoreCalculator } from "@/domain/logic/trust-score-calculator";
