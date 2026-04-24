@@ -26,6 +26,15 @@ export class PaymentService {
     const iyzico = getIyzicoClient();
     const admin = createSupabaseAdminClient();
 
+    // SECURITY: Validate required fields
+    if (!params.fullName || params.fullName.trim() === "") {
+      throw new Error("Ad Soyad bilgisi gereklidir");
+    }
+
+    if (!params.phone || params.phone.trim() === "") {
+      throw new Error("Telefon numarası gereklidir");
+    }
+
     // 1. Create a pending payment record in DB
     const { data: payment, error: dbError } = await admin
       .from("payments")
@@ -37,7 +46,11 @@ export class PaymentService {
         status: "pending",
         listing_id: params.listingId,
         plan_id: params.planId,
+        package_id: params.basketItems[0]?.id, // SECURITY: Store package_id directly
         description: params.basketItems.map((i) => i.name).join(", "),
+        metadata: {
+          basketItems: params.basketItems,
+        },
       })
       .select()
       .single();
@@ -62,29 +75,36 @@ export class PaymentService {
         id: params.userId,
         name: name || "İsim",
         surname: surname,
-        gsmNumber: params.phone || "+905000000000",
+        gsmNumber: params.phone,
         email: params.email,
-        identityNumber: "11111111111", // Placeholder or from profile
+        // SECURITY NOTE: identityNumber is required by Iyzico in production
+        // For MVP, we use a test value. In production, this MUST be collected
+        // from the user during profile setup and stored securely (masked).
+        // TODO: Add identity_number field to profiles table with proper encryption
+        identityNumber:
+          process.env.NODE_ENV === "production"
+            ? "99999999999" // Production placeholder - MUST be replaced with real data
+            : "11111111111", // Test environment
         lastLoginDate: new Date().toISOString().split(".")[0].replace("T", " "),
         registrationDate: new Date().toISOString().split(".")[0].replace("T", " "),
-        registrationAddress: params.address || "Adres bilgisi yok",
+        registrationAddress: params.address,
         ip: params.ip,
-        city: params.city || "Istanbul",
+        city: params.city,
         country: "Turkey",
         zipCode: "34000",
       },
       shippingAddress: {
         contactName: params.fullName,
-        city: params.city || "Istanbul",
+        city: params.city,
         country: "Turkey",
-        address: params.address || "Adres bilgisi yok",
+        address: params.address,
         zipCode: "34000",
       },
       billingAddress: {
         contactName: params.fullName,
-        city: params.city || "Istanbul",
+        city: params.city,
         country: "Turkey",
-        address: params.address || "Adres bilgisi yok",
+        address: params.address,
         zipCode: "34000",
       },
       basketItems: params.basketItems.map((item) => ({

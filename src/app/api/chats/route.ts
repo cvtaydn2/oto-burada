@@ -1,19 +1,23 @@
 import { NextRequest, NextResponse } from "next/server";
 
-import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { withUserAndCsrf, withUserRoute } from "@/lib/utils/api-security";
+import { rateLimitProfiles } from "@/lib/utils/rate-limit";
 import { ChatService } from "@/services/chat/chat-service";
 
 export async function GET(req: NextRequest) {
+  // SECURITY: Apply authentication and rate limiting for read operations
+  const security = await withUserRoute(req, {
+    userRateLimit: rateLimitProfiles.general,
+    rateLimitKey: "chats:list",
+  });
+
+  if (!security.ok) {
+    return security.response;
+  }
+
+  const user = security.user!;
+
   try {
-    const supabase = await createSupabaseServerClient();
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-
-    if (!user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
     const result = await ChatService.getChatsForUser(user.id);
     return NextResponse.json({ data: result });
   } catch (error: unknown) {
@@ -23,16 +27,19 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
+  // SECURITY: Apply authentication, CSRF protection, and rate limiting for mutations
+  const security = await withUserAndCsrf(req, {
+    userRateLimit: { limit: 20, windowMs: 60 * 60 * 1000 }, // 20 chats per hour
+    rateLimitKey: "chats:create",
+  });
+
+  if (!security.ok) {
+    return security.response;
+  }
+
+  const user = security.user!;
+
   try {
-    const supabase = await createSupabaseServerClient();
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-
-    if (!user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
     const body = await req.json();
     const { listingId, sellerId } = body;
 
@@ -40,11 +47,20 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Geçersiz istek." }, { status: 400 });
     }
 
+    // SECURITY: Prevent users from creating chats with themselves
+    if (sellerId === user.id) {
+      return NextResponse.json(
+        { error: "Kendi ilanınız için mesaj oluşturamazsınız." },
+        { status: 400 }
+      );
+    }
+
     const result = await ChatService.createChat({
       listingId: listingId,
       buyerId: user.id,
       sellerId: sellerId,
     });
+
     return NextResponse.json({ data: result });
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : "Chat oluşturulamadı.";

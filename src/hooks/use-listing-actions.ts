@@ -5,12 +5,12 @@ import { useRouter } from "next/navigation";
 import { useCallback, useState } from "react";
 
 import {
-  archiveListingAction,
   bulkArchiveListingAction,
   bulkDeleteListingAction,
-  bumpListingAction,
   publishListingAction,
 } from "@/app/dashboard/listings/actions";
+import { archiveListingUseCase } from "@/domain/usecases/listing-archive";
+import { bumpListingUseCase } from "@/domain/usecases/listing-bump";
 import { queryKeys } from "@/lib/query-keys";
 import type { Listing } from "@/types";
 
@@ -35,9 +35,12 @@ export function useListingActions(listings: Listing[], userId?: string) {
       currentStatus: Listing["status"];
     }) => {
       if (isArchived) {
+        // Unarchive (publish)
         return publishListingAction(id, currentStatus);
       }
-      return archiveListingAction(id, currentStatus);
+      // Archive using domain use case
+      if (!userId) throw new Error("User ID required");
+      return archiveListingUseCase(id, userId, currentStatus);
     },
     onMutate: async ({ id, isArchived }) => {
       // Cancel outgoing refetches
@@ -84,7 +87,9 @@ export function useListingActions(listings: Listing[], userId?: string) {
       status: Listing["status"];
       bumpedAt?: string | null;
     }) => {
-      return bumpListingAction(id, { status, bumpedAt });
+      // Use domain use case with status machine + cooldown validation
+      if (!userId) throw new Error("User ID required");
+      return bumpListingUseCase(id, userId, { status, bumpedAt });
     },
     onMutate: async (variables) => {
       await queryClient.cancelQueries({ queryKey: queryKeys.listings.all });

@@ -1,3 +1,17 @@
+# 2026-04-24 — Phase 0: Bug Fix & Cleanup (Complete)
+
+## [2026-04-24] - Bug Fix & Cleanup Sweep
+- **Durum:** ✅ TAMAMLANDI
+- **Yapılanlar:**
+  - **SupabaseProvider Context.Provider Fix**: Zaten düzeltilmiş durumda; `Context.Provider` doğru şekilde `value={{supabase}}` ile kullanılıyor.
+  - **use-listing-actions → Domain Use Case Wiring**: Hook refaktör edildi; `archiveListingUseCase()` ve `bumpListingUseCase()` domain use case'lerine bağlandı. Status machine validation ve 24-saat cooldown kontrolü artık hook seviyesinde aktif.
+  - **recharts + leaflet Bundle Cleanup**: Bu paketler zaten package.json'da yok; daha önce temizlenmiş. Bileşenler lean placeholder versiyonlarını kullanıyor.
+- **Doğrulama:**
+  - `npm run typecheck` ✅
+  - `npm run lint` ✅ (Sadece pre-existing warnings)
+  - `npm run build` ✅ (57 routes compiled successfully)
+- **Sıradaki Adım:** Phase 3 deployment (migration + seed).
+
 # 2026-04-24 — Phase 3: Doping Infrastructure & Featured Carousel
 
 ## [2026-04-24] - Doping Activation & Gallery Carousel Implementation

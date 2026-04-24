@@ -2,20 +2,28 @@ import { NextRequest, NextResponse } from "next/server";
 
 import { DOPING_PACKAGES } from "@/lib/constants/doping";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { withUserAndCsrf } from "@/lib/utils/api-security";
+import { getClientIp } from "@/lib/utils/ip";
+import { rateLimitProfiles } from "@/lib/utils/rate-limit";
 import { initiatePaymentSchema } from "@/lib/validators/payment";
 import { PaymentService } from "@/services/payment/payment-service";
 
 export async function POST(req: NextRequest) {
+  // SECURITY: Apply authentication, CSRF protection, and rate limiting
+  const security = await withUserAndCsrf(req, {
+    ipRateLimit: rateLimitProfiles.general,
+    userRateLimit: { limit: 10, windowMs: 60 * 60 * 1000, failClosed: true }, // 10 per hour
+    rateLimitKey: "payments:initialize",
+  });
+
+  if (!security.ok) {
+    return security.response;
+  }
+
+  const user = security.user!;
+
   try {
     const supabase = await createSupabaseServerClient();
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-
-    if (!user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
     const body = await req.json();
     const validated = initiatePaymentSchema.safeParse(body);
 
@@ -37,16 +45,34 @@ export async function POST(req: NextRequest) {
       .eq("id", user.id)
       .single();
 
+    // SECURITY: Validate required profile fields
+    if (!profile?.full_name || profile.full_name.trim() === "") {
+      return NextResponse.json(
+        { error: "Lütfen profil bilgilerinizi tamamlayın (Ad Soyad gerekli)" },
+        { status: 400 }
+      );
+    }
+
+    if (!profile?.phone || profile.phone.trim() === "") {
+      return NextResponse.json(
+        { error: "Lütfen profil bilgilerinizi tamamlayın (Telefon gerekli)" },
+        { status: 400 }
+      );
+    }
+
+    // SECURITY: Get normalized IP address
+    const clientIp = await getClientIp();
+
     const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
 
     const result = await PaymentService.initializeCheckoutForm({
       userId: user.id,
       email: user.email!,
-      fullName: profile?.full_name || "İsimsiz Kullanıcı",
-      phone: profile?.phone || "",
-      address: profile?.business_address || "",
-      city: profile?.city || "Istanbul",
-      ip: req.headers.get("x-forwarded-for") || "127.0.0.1",
+      fullName: profile.full_name,
+      phone: profile.phone,
+      address: profile.business_address || profile.city || "Türkiye",
+      city: profile.city || "Istanbul",
+      ip: clientIp,
       price: pkg.price,
       basketItems: [
         {
