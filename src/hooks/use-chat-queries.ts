@@ -1,18 +1,38 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
+import { API_ROUTES } from "@/lib/constants/api-routes";
 import { queryKeys } from "@/lib/query-keys";
-import { ChatService } from "@/services/chat/chat-service";
-import type { CreateChatInput, Message, SendMessageInput } from "@/types/chat";
+import type { ChatWithLastMessage, Message, SendMessageInput } from "@/types/chat";
+
+async function fetchChats(userId: string): Promise<ChatWithLastMessage[]> {
+  const res = await fetch(API_ROUTES.CHATS.BASE);
+  if (!res.ok) {
+    const json = await res.json().catch(() => ({}));
+    throw new Error(json.error || "Chat listesi alınamadı.");
+  }
+  const json = await res.json();
+  return json.data ?? [];
+}
+
+async function fetchMessages(chatId: string): Promise<Message[]> {
+  const res = await fetch(API_ROUTES.CHATS.MESSAGES(chatId));
+  if (!res.ok) {
+    const json = await res.json().catch(() => ({}));
+    throw new Error(json.error || "Mesajlar alınamadı.");
+  }
+  const json = await res.json();
+  return json.data ?? [];
+}
 
 /**
- * Get all chats for current user
+ * Get all chats for current user — calls /api/chats (server-side, RLS-aware)
  */
 export function useChats(userId: string) {
   return useQuery({
     queryKey: queryKeys.chats.list(userId),
-    queryFn: () => ChatService.getChatsForUser(userId),
+    queryFn: () => fetchChats(userId),
     enabled: !!userId,
-    staleTime: 5 * 60 * 1000, // 5 minutes
+    staleTime: 30 * 1000, // 30s — realtime keeps it fresh
   });
 }
 
@@ -22,9 +42,9 @@ export function useChats(userId: string) {
 export function useChatMessages(chatId: string, userId: string) {
   return useQuery({
     queryKey: queryKeys.chats.messages(chatId),
-    queryFn: () => ChatService.getMessages(chatId, userId),
+    queryFn: () => fetchMessages(chatId),
     enabled: !!chatId && !!userId,
-    staleTime: 2 * 60 * 1000, // 2 minutes
+    staleTime: 30 * 1000,
   });
 }
 
@@ -35,29 +55,41 @@ export function useCreateChat() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (input: CreateChatInput) => ChatService.createChat(input),
-    onSuccess: (data, variables) => {
-      // Invalidate chat list for the user
+    mutationFn: async (input: { listingId: string; sellerId: string; buyerId: string }) => {
+      const res = await fetch(API_ROUTES.CHATS.BASE, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ listingId: input.listingId, sellerId: input.sellerId }),
+      });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error || "Chat oluşturulamadı.");
+      return json.data;
+    },
+    onSuccess: (_, variables) => {
       queryClient.invalidateQueries({
         queryKey: queryKeys.chats.list(variables.buyerId),
-      });
-      // Also invalidate the specific chat if it exists
-      queryClient.invalidateQueries({
-        queryKey: queryKeys.chats.messages(variables.listingId),
       });
     },
   });
 }
 
 /**
- * Send a message (optimistic update support)
+ * Send a message with optimistic update
  */
 export function useSendMessage() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (input: SendMessageInput) => ChatService.sendMessage(input),
-    // Optimistic update
+    mutationFn: async (input: SendMessageInput) => {
+      const res = await fetch(API_ROUTES.CHATS.MESSAGES(input.chatId), {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ content: input.content, messageType: input.messageType ?? "text" }),
+      });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error || "Mesaj gönderilemedi.");
+      return json.data as Message;
+    },
     onMutate: async (newMessage) => {
       await queryClient.cancelQueries({
         queryKey: queryKeys.chats.messages(newMessage.chatId),
@@ -72,20 +104,19 @@ export function useSendMessage() {
         chatId: newMessage.chatId,
         senderId: newMessage.senderId,
         content: newMessage.content,
-        messageType: newMessage.messageType || "text",
+        messageType: newMessage.messageType ?? "text",
         isRead: false,
         createdAt: new Date().toISOString(),
       };
 
       queryClient.setQueryData<Message[]>(queryKeys.chats.messages(newMessage.chatId), (old) => [
-        ...(old || []),
+        ...(old ?? []),
         optimisticMessage,
       ]);
 
       return { previousMessages };
     },
-    onError: (err, newMessage, context) => {
-      // Rollback on error
+    onError: (_, newMessage, context) => {
       if (context?.previousMessages) {
         queryClient.setQueryData<Message[]>(
           queryKeys.chats.messages(newMessage.chatId),
@@ -93,12 +124,10 @@ export function useSendMessage() {
         );
       }
     },
-    onSettled: (data, error, variables) => {
-      // Always refetch after mutation completes
+    onSettled: (_, __, variables) => {
       queryClient.invalidateQueries({
         queryKey: queryKeys.chats.messages(variables.chatId),
       });
-      // Also invalidate chat list for last message update
       queryClient.invalidateQueries({
         queryKey: queryKeys.chats.all,
       });
@@ -113,8 +142,15 @@ export function useMarkAsRead() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: ({ chatId, userId }: { chatId: string; userId: string }) =>
-      ChatService.markAsRead(chatId, userId),
+    mutationFn: async ({ chatId }: { chatId: string; userId: string }) => {
+      const res = await fetch(API_ROUTES.CHATS.MARK_READ(chatId), {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+      });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error || "Okundu işaretlenemedi.");
+      return json.data;
+    },
     onSuccess: (_, { chatId }) => {
       queryClient.invalidateQueries({
         queryKey: queryKeys.chats.messages(chatId),

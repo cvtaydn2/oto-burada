@@ -1,6 +1,8 @@
 import type { RealtimeChannel, RealtimePostgresInsertPayload } from "@supabase/supabase-js";
+import { useQueryClient } from "@tanstack/react-query";
 import { useCallback, useEffect, useRef } from "react";
 
+import { queryKeys } from "@/lib/query-keys";
 import { useSupabase } from "@/lib/supabase/client";
 import type { Message, TypingIndicator } from "@/types/chat";
 
@@ -12,47 +14,24 @@ interface UseChatRealtimeOptions {
   onPresenceUpdate?: (count: number) => void;
 }
 
-/**
- * Real-time chat hook using Supabase Realtime
- * Features:
- * - Real-time message subscription
- * - Typing indicators
- * - Presence tracking (online users in chat)
- * - Automatic reconnection
- */
 export function useChatRealtime(options: UseChatRealtimeOptions) {
   const { chatId, userId, onMessage, onTypingChange, onPresenceUpdate } = options;
   const supabaseClient = useSupabase();
+  const queryClient = useQueryClient();
   const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const channelRef = useRef<RealtimeChannel | null>(null);
 
-  /**
-   * Send typing indicator
-   */
   const sendTyping = useCallback(
     (isTyping: boolean) => {
       if (!channelRef.current || !userId) return;
 
-      const typingData: TypingIndicator = {
-        chatId,
-        userId,
-        isTyping,
-      };
+      const typingData: TypingIndicator = { chatId, userId, isTyping };
 
       channelRef.current
-        .send({
-          type: "broadcast",
-          event: "typing",
-          payload: typingData,
-        })
-        .catch(() => {
-          // Ignore broadcast errors in realtime
-        });
+        .send({ type: "broadcast", event: "typing", payload: typingData })
+        .catch(() => {});
 
-      // Auto-disable typing after 3 seconds
-      if (typingTimeoutRef.current) {
-        clearTimeout(typingTimeoutRef.current);
-      }
+      if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
 
       if (isTyping) {
         typingTimeoutRef.current = setTimeout(() => {
@@ -71,35 +50,20 @@ export function useChatRealtime(options: UseChatRealtimeOptions) {
     [chatId, userId]
   );
 
-  /**
-   * Send presence state
-   */
   const sendPresence = useCallback(() => {
     if (!channelRef.current || !userId) return;
-
     channelRef.current
-      .track({
-        userId,
-        chatId,
-        onlineAt: new Date().toISOString(),
-      })
-      .catch(() => {
-        // Ignore presence tracking errors
-      });
+      .track({ userId, chatId, onlineAt: new Date().toISOString() })
+      .catch(() => {});
   }, [chatId, userId]);
 
-  /**
-   * Initialize realtime channel
-   */
   useEffect(() => {
     if (!chatId || !userId) return;
 
-    // Cleanup previous channel
     if (channelRef.current) {
       channelRef.current.unsubscribe();
     }
 
-    // Subscribe to chat messages
     channelRef.current = supabaseClient
       .channel(`chat:${chatId}`)
       .on(
@@ -111,18 +75,30 @@ export function useChatRealtime(options: UseChatRealtimeOptions) {
           filter: `chat_id=eq.${chatId}`,
         },
         (payload: RealtimePostgresInsertPayload<Record<string, unknown>>) => {
-          if (onMessage && payload.new) {
-            const newMessage: Message = {
-              id: payload.new.id as string,
-              chatId: payload.new.chat_id as string,
-              senderId: payload.new.sender_id as string,
-              content: payload.new.content as string,
-              messageType: (payload.new.message_type ?? "text") as "text" | "image" | "system",
-              isRead: payload.new.is_read as boolean,
-              createdAt: payload.new.created_at as string,
-            };
-            onMessage(newMessage);
+          if (!payload.new) return;
+
+          const newMessage: Message = {
+            id: payload.new.id as string,
+            chatId: payload.new.chat_id as string,
+            senderId: payload.new.sender_id as string,
+            content: payload.new.content as string,
+            messageType: (payload.new.message_type ?? "text") as "text" | "image" | "system",
+            isRead: payload.new.is_read as boolean,
+            createdAt: payload.new.created_at as string,
+          };
+
+          // Only add to cache if message is from the other user (own messages are handled by optimistic update)
+          if (newMessage.senderId !== userId) {
+            queryClient.setQueryData<Message[]>(queryKeys.chats.messages(chatId), (old) => [
+              ...(old ?? []),
+              newMessage,
+            ]);
           }
+
+          // Always invalidate the chat list to update last message preview
+          queryClient.invalidateQueries({ queryKey: queryKeys.chats.all });
+
+          onMessage?.(newMessage);
         }
       )
       .on(
@@ -136,10 +112,8 @@ export function useChatRealtime(options: UseChatRealtimeOptions) {
       )
       .on("presence", { event: "sync" }, () => {
         const state = channelRef.current?.presenceState();
-        const count = Object.keys(state || {}).length;
-        if (onPresenceUpdate) {
-          onPresenceUpdate(count);
-        }
+        const count = Object.keys(state ?? {}).length;
+        onPresenceUpdate?.(count);
       })
       .subscribe((status: string) => {
         if (status === "SUBSCRIBED") {
@@ -147,32 +121,22 @@ export function useChatRealtime(options: UseChatRealtimeOptions) {
         }
       });
 
-    // Send initial presence
     sendPresence();
 
-    // Reconnect logic: track connection state
     const connectionCheck = setInterval(() => {
       const ch = channelRef.current as { connectionState?: () => string };
-      if (ch && ch.connectionState && ch.connectionState() === "CLOSED") {
-        // Try to resubscribe
+      if (ch?.connectionState && ch.connectionState() === "CLOSED") {
         channelRef.current?.subscribe();
         sendPresence();
       }
     }, 5000);
 
     return () => {
-      if (typingTimeoutRef.current) {
-        clearTimeout(typingTimeoutRef.current);
-      }
-      if (channelRef.current) {
-        channelRef.current.unsubscribe();
-      }
+      if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
+      channelRef.current?.unsubscribe();
       clearInterval(connectionCheck);
     };
-  }, [chatId, userId, onMessage, onTypingChange, onPresenceUpdate, sendPresence]);
+  }, [chatId, userId, onMessage, onTypingChange, onPresenceUpdate, sendPresence, queryClient]);
 
-  return {
-    sendTyping,
-    sendPresence,
-  };
+  return { sendTyping, sendPresence };
 }

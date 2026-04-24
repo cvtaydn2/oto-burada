@@ -14,7 +14,7 @@ export class ChatService {
   static async getChatsForUser(userId: string): Promise<ChatWithLastMessage[]> {
     const admin = createSupabaseAdminClient();
 
-    // Check if user has permission via RLS
+    // Fetch chats — messages ordered desc so first result is the latest
     const { data: chats, error: chatsError } = await admin
       .from("chats")
       .select(
@@ -31,14 +31,15 @@ export class ChatService {
           chat_id,
           sender_id,
           content,
-          message_type,
           is_read,
           created_at
         )
       `
       )
       .or(`buyer_id.eq.${userId},seller_id.eq.${userId}`)
-      .order("last_message_at", { ascending: false });
+      .order("last_message_at", { ascending: false })
+      .order("created_at", { referencedTable: "messages", ascending: false })
+      .limit(1, { referencedTable: "messages" });
 
     if (chatsError) {
       throw new Error(`Chat listesi alınamadı: ${chatsError.message}`);
@@ -46,7 +47,7 @@ export class ChatService {
 
     return (chats || []).map((chat: Record<string, unknown>) => {
       const messages = (chat.messages as Record<string, unknown>[]) || [];
-      const lastMessage = messages.length > 0 ? messages[messages.length - 1] : null;
+      const lastMessage = messages.length > 0 ? messages[0] : null;
 
       return {
         id: chat.id as string,
@@ -62,12 +63,8 @@ export class ChatService {
               chatId: (lastMessage as Record<string, unknown>).chat_id as string,
               senderId: (lastMessage as Record<string, unknown>).sender_id as string,
               content: (lastMessage as Record<string, unknown>).content as string,
-              messageType: (lastMessage as Record<string, unknown>).message_type
-                ? ((lastMessage as Record<string, unknown>).message_type as
-                    | "text"
-                    | "image"
-                    | "system")
-                : "text",
+              // message_type was added in migration 0068 — default to "text" for schema safety
+              messageType: "text" as const,
               isRead: (lastMessage as Record<string, unknown>).is_read as boolean,
               createdAt: (lastMessage as Record<string, unknown>).created_at as string,
             }

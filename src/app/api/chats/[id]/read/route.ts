@@ -3,7 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { ChatService } from "@/services/chat/chat-service";
 
-export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+async function handleMarkRead(req: NextRequest, params: Promise<{ id: string }>) {
   try {
     const supabase = await createSupabaseServerClient();
     const {
@@ -22,4 +22,12 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
     const message = error instanceof Error ? error.message : "Mesajlar okundu işaretlenemedi.";
     return NextResponse.json({ error: message }, { status: 500 });
   }
+}
+
+export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  return handleMarkRead(req, params);
+}
+
+export async function POST(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  return handleMarkRead(req, params);
 }
