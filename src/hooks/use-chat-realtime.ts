@@ -21,6 +21,17 @@ export function useChatRealtime(options: UseChatRealtimeOptions) {
   const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const channelRef = useRef<RealtimeChannel | null>(null);
 
+  // Use refs for callbacks to avoid re-subscribing when parent re-renders
+  const onMessageRef = useRef(onMessage);
+  const onTypingChangeRef = useRef(onTypingChange);
+  const onPresenceUpdateRef = useRef(onPresenceUpdate);
+
+  useEffect(() => {
+    onMessageRef.current = onMessage;
+    onTypingChangeRef.current = onTypingChange;
+    onPresenceUpdateRef.current = onPresenceUpdate;
+  }, [onMessage, onTypingChange, onPresenceUpdate]);
+
   const sendTyping = useCallback(
     (isTyping: boolean) => {
       if (!channelRef.current || !userId) return;
@@ -60,12 +71,12 @@ export function useChatRealtime(options: UseChatRealtimeOptions) {
   useEffect(() => {
     if (!chatId || !userId) return;
 
-    if (channelRef.current) {
-      channelRef.current.unsubscribe();
-    }
+    // Only create channel if it doesn't exist or chatId changed
+    const channelName = `chat:${chatId}`;
+    const channel = supabaseClient.channel(channelName);
+    channelRef.current = channel;
 
-    channelRef.current = supabaseClient
-      .channel(`chat:${chatId}`)
+    channel
       .on(
         "postgres_changes",
         {
@@ -87,7 +98,6 @@ export function useChatRealtime(options: UseChatRealtimeOptions) {
             createdAt: payload.new.created_at as string,
           };
 
-          // Only add to cache if message is from the other user (own messages are handled by optimistic update)
           if (newMessage.senderId !== userId) {
             queryClient.setQueryData<Message[]>(queryKeys.chats.messages(chatId), (old) => [
               ...(old ?? []),
@@ -95,48 +105,45 @@ export function useChatRealtime(options: UseChatRealtimeOptions) {
             ]);
           }
 
-          // Always invalidate the chat lists to update last message preview
           queryClient.invalidateQueries({ queryKey: queryKeys.chats.lists() });
-
-          onMessage?.(newMessage);
+          onMessageRef.current?.(newMessage);
         }
       )
       .on(
         "broadcast",
         { event: "typing" },
         (payload: { payload: { userId: string; isTyping: boolean; chatId: string } }) => {
-          if (onTypingChange && payload.payload.userId !== userId) {
-            onTypingChange(payload.payload.isTyping);
+          if (onTypingChangeRef.current && payload.payload.userId !== userId) {
+            onTypingChangeRef.current(payload.payload.isTyping);
           }
         }
       )
       .on("presence", { event: "sync" }, () => {
-        const state = channelRef.current?.presenceState();
+        const state = channel.presenceState();
         const count = Object.keys(state ?? {}).length;
-        onPresenceUpdate?.(count);
+        onPresenceUpdateRef.current?.(count);
       })
       .subscribe((status: string) => {
         if (status === "SUBSCRIBED") {
-          sendPresence();
+          channel.track({ userId, chatId, onlineAt: new Date().toISOString() }).catch(() => {});
         }
       });
 
-    sendPresence();
-
     const connectionCheck = setInterval(() => {
-      const ch = channelRef.current as { connectionState?: () => string };
+      // Use type-safe check for connectionState if available in current version
+      const ch = channel as unknown as { connectionState?: () => string };
       if (ch?.connectionState && ch.connectionState() === "CLOSED") {
-        channelRef.current?.subscribe();
-        sendPresence();
+        channel.subscribe();
       }
     }, 5000);
 
     return () => {
       if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
-      channelRef.current?.unsubscribe();
+      channel.unsubscribe();
       clearInterval(connectionCheck);
+      channelRef.current = null;
     };
-  }, [chatId, userId, onMessage, onTypingChange, onPresenceUpdate, sendPresence, queryClient]);
+  }, [chatId, userId, supabaseClient, queryClient]); // Removed callbacks from deps
 
   return { sendTyping, sendPresence };
 }

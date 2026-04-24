@@ -1,7 +1,7 @@
 "use client";
 
 import { ArrowLeft, Car } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -31,29 +31,33 @@ export function ChatWindow({ chatId, userId, recipientName, onBack }: ChatWindow
   const sendMessageMutation = useSendMessage();
   const markAsReadMutation = useMarkAsRead();
 
+  // Memoize callbacks for realtime to prevent re-subscription loops
+  const handleMessage = useCallback(() => {
+    setTimeout(() => {
+      bottomRef.current?.scrollIntoView({ behavior: "smooth" });
+    }, 100);
+  }, []);
+
   // Realtime updates
   useChatRealtime({
     chatId,
     userId,
-    onMessage: () => {
-      // Scroll to bottom on new message
-      setTimeout(() => {
-        bottomRef.current?.scrollIntoView({ behavior: "smooth" });
-      }, 100);
-    },
+    onMessage: handleMessage,
     onTypingChange: setIsTyping,
   });
 
-  // Mark as read when opening chat
+  // Mark as read only when chatId changes OR when new messages arrive
+  // but avoid infinite loop by not depending on the mutation object itself
   useEffect(() => {
     if (chatId && userId) {
       markAsReadMutation.mutate({ chatId, userId });
     }
-  }, [chatId, userId, markAsReadMutation]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [chatId, userId]);
 
   // Auto-scroll to bottom
   useEffect(() => {
-    if (!isLoading && messages) {
+    if (!isLoading && messages && messages.length > 0) {
       setTimeout(() => {
         bottomRef.current?.scrollIntoView({ behavior: "smooth" });
       }, 100);
