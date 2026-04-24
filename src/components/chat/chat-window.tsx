@@ -35,7 +35,7 @@ export function ChatWindow({ chatId, userId, recipientName, onBack }: ChatWindow
   const { data: messages, isLoading, error } = useChatMessages(chatId, userId);
 
   const sendMessageMutation = useSendMessage();
-  const markAsReadMutation = useMarkAsRead();
+  const markAsReadMutation = useMarkAsRead(chatId);
   const archiveMutation = useArchiveChat();
   const deleteMessageMutation = useDeleteMessage();
 
@@ -54,13 +54,13 @@ export function ChatWindow({ chatId, userId, recipientName, onBack }: ChatWindow
     onTypingChange: setIsTyping,
   });
 
-  // Mark as read only when chatId changes OR when new messages arrive
+  // Mark as read when chatId changes OR when new unread messages arrive from other user
   useEffect(() => {
-    if (chatId && userId) {
-      markAsReadMutation.mutate({ chatId, userId });
+    const hasUnread = messages?.some((m) => !m.isRead && m.senderId !== userId);
+    if (chatId && userId && hasUnread && !markAsReadMutation.isPending) {
+      markAsReadMutation.mutate();
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [chatId, userId]);
+  }, [chatId, userId, messages, markAsReadMutation]);
 
   const handleArchive = async () => {
     if (!window.confirm("Bu sohbeti arşivlemek istediğinize emin misiniz?")) return;

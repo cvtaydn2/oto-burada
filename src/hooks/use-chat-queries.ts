@@ -137,11 +137,11 @@ export function useSendMessage() {
 /**
  * Mark messages as read
  */
-export function useMarkAsRead() {
+export function useMarkAsRead(chatId: string) {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async ({ chatId }: { chatId: string; userId: string }) => {
+    mutationFn: async () => {
       const res = await fetch(API_ROUTES.CHATS.MARK_READ(chatId), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -150,10 +150,14 @@ export function useMarkAsRead() {
       if (!res.ok) throw new Error(json.error || "Okundu işaretlenemedi.");
       return json.data;
     },
-    onSuccess: (_, { chatId }) => {
-      queryClient.invalidateQueries({
-        queryKey: queryKeys.chats.messages(chatId),
+    onSuccess: () => {
+      // Update local messages cache to mark all as read
+      queryClient.setQueryData<Message[]>(queryKeys.chats.messages(chatId), (old) => {
+        if (!old) return old;
+        return old.map((msg) => ({ ...msg, isRead: true }));
       });
+      // Also invalidate chat list to update unread counts
+      queryClient.invalidateQueries({ queryKey: queryKeys.chats.lists() });
     },
   });
 }
