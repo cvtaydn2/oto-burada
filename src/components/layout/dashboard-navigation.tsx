@@ -2,12 +2,14 @@
 
 import {
   Bell,
+  DollarSign,
   Heart,
   LayoutGrid,
   ListChecks,
   MessageSquare,
   Search,
   ShieldCheck,
+  Store,
   UserCircle2,
   Zap,
 } from "lucide-react";
@@ -19,11 +21,13 @@ import { cn } from "@/lib/utils";
 const dashboardNavItems = [
   { href: "/dashboard", label: "Özet Panel", icon: LayoutGrid, exact: true },
   { href: "/dashboard/listings", label: "İlanlarım", icon: ListChecks, exact: false },
+  { href: "/dashboard/stok", label: "Stok Yönetimi", icon: Store, exact: false },
   { href: "/dashboard/messages", label: "Mesajlar", icon: MessageSquare, exact: false },
   { href: "/dashboard/favorites", label: "Favoriler", icon: Heart, exact: false },
   { href: "/dashboard/notifications", label: "Bildirimler", icon: Bell, exact: false },
   { href: "/dashboard/saved-searches", label: "Kayıtlı Aramalar", icon: Search, exact: false },
   { href: "/dashboard/reservations", label: "Rezervasyonlar", icon: ShieldCheck, exact: false },
+  { href: "/dashboard/teklifler", label: "Teklifler", icon: DollarSign, exact: false },
   { href: "/dashboard/pricing", label: "Paketler", icon: Zap, exact: false },
   { href: "/dashboard/profile", label: "Hesap Ayarları", icon: UserCircle2, exact: false },
 ] as const;

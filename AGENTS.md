@@ -141,6 +141,8 @@ src/
     layout/
     reservations/
     reviews/
+    exchange/
+    expertiz/
   domain/
     usecases/
     logic/
@@ -163,6 +165,9 @@ src/
     reports/
     profile/
     reservations/
+    exchange/
+    gallery/
+    expertiz/
     admin/
 ```
 

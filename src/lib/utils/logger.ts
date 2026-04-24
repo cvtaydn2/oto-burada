@@ -174,4 +174,5 @@ export const logger = {
   system: createLogger("system"),
   perf: createLogger("performance"),
   reservation: createLogger("reservation"),
+  expert: createLogger("expert"),
 };

@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { toast } from "sonner";
 
-import { cancelReservationAction } from "@/actions/reservations";
+import { cancelReservationAction, confirmReservationAction } from "@/actions/reservations";
 import {
   AlertDialog,
   AlertDialogCancel,
@@ -90,6 +90,15 @@ function ReservationRow({
     toast.success("Rezervasyon iptal edildi.");
   }
 
+  async function handleConfirm() {
+    const result = await confirmReservationAction(reservation.id);
+    if (!result.ok) {
+      toast.error(result.error ?? "Onaylanamadı.");
+      return;
+    }
+    toast.success("Rezervasyon onaylandı.");
+  }
+
   return (
     <TableRow>
       <TableCell className="font-medium">
@@ -112,6 +121,14 @@ function ReservationRow({
       </TableCell>
       <TableCell className="text-right">
         <div className="flex items-center justify-end gap-2">
+          {canConfirm && (
+            <button
+              onClick={handleConfirm}
+              className="text-xs bg-green-600 text-white px-3 py-1 rounded-lg hover:bg-green-700"
+            >
+              Onayla
+            </button>
+          )}
           <Link
             href={`/listing/${reservation.listing_id}`}
             className="text-xs text-muted-foreground hover:text-foreground underline"

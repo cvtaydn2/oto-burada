@@ -24,7 +24,7 @@ export async function getExchangeOffersForListing(listingId: string) {
 
   const { data, error } = await supabase
     .from("exchange_offers")
-    .select("*")
+    .select(`*, listing:listings(id, title, slug)`)
     .eq("listing_id", listingId)
     .order("created_at", { ascending: false });
 
@@ -88,6 +88,8 @@ export async function createExchangeOffer(params: {
     throw new Error("Kendi ilanınıza takas teklifi yapamazsınız.");
   }
 
+  const expiresAt = new Date(Date.now() + 72 * 60 * 60 * 1000).toISOString();
+
   const { error } = await supabase.from("exchange_offers").insert({
     listing_id: params.listingId,
     offerer_id: user.id,
@@ -98,6 +100,7 @@ export async function createExchangeOffer(params: {
     target_year: params.targetYear ?? null,
     target_mileage: params.targetMileage ?? null,
     notes: params.notes ?? null,
+    expires_at: expiresAt,
   });
 
   if (error) {
@@ -121,12 +124,20 @@ export async function respondToExchangeOffer(offerId: string, response: "accepte
 
   const { data: offer, error: offerError } = await supabase
     .from("exchange_offers")
-    .select("id, listing_id, status")
+    .select("id, listing_id, status, expires_at")
     .eq("id", offerId)
     .single();
 
   if (offerError || !offer) {
     throw new Error("Teklif bulunamadı.");
+  }
+
+  if (offer.status !== "pending") {
+    throw new Error("Bu teklif zaten yanıtlandı.");
+  }
+
+  if (offer.expires_at && new Date(offer.expires_at) < new Date()) {
+    throw new Error("Bu teklifin süresi dolmuş.");
   }
 
   const { data: listing, error: listingError } = await supabase
