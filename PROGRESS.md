@@ -45,4 +45,17 @@
   - `npm run build` ✅
   - `npm run typecheck` ✅
   - `npm run lint` ✅
-- **Sıradaki Adım:** KVKK/GDPR uyumluluk metinlerinin ve çerez onay banner'ının eklenmesi.
+- **Sıradaki Adım:** Cloudflare Turnstile ve CSP entegrasyonu (Tamamlandı).
+
+## [2026-04-24] - Production Security Final Hardening
+- **Durum:** ✅ TAMAMLANDI
+- **Yapılanlar:**
+  - **Fail-Closed Rate Limiting**: `distributed-rate-limit.ts` güncellendi; üretim ortamında Redis yapılandırması eksikse sistem artık trafiği reddederek ("Fail-Closed") güvenliği önceliklendiriyor.
+  - **Bot Protection (Turnstile)**: İlan oluşturma formuna Cloudflare Turnstile entegre edildi. `BotProtection` bileşeni ve server-side `verifyBotToken` mantığı ile bot spamları engellendi.
+  - **Phone Reveal Privacy**: Telefon numaraları public ilanlarda artık maskeli (`maskPhoneNumber`) olarak servis ediliyor. Gerçek numara, yeni eklenen `revealListingPhone` server action'ı üzerinden, kullanıcı başına saatlik 15 reveal limiti ile güvenli şekilde gösteriliyor.
+  - **Strict Security Headers**: `next.config.ts` üzerinden Content Security Policy (CSP), HSTS, X-Frame-Options ve Referrer-Policy başlıkları en yüksek güvenlik seviyesine getirildi.
+  - **UI/UX Error Handling**: Numarayı gösterirken oluşan hatalar ve rate limit engellemeleri için `sonner` ile kullanıcıya bilgilendirici mesajlar sağlandı.
+- **Doğrulama:**
+  - `npm run build` ✅
+  - `npm run typecheck` ✅
+- **Sıradaki Adım:** Production deployment ve final testler.

@@ -1,8 +1,9 @@
 "use client";
-
 import { AlertCircle, Car, CheckCircle2, ChevronRight, LoaderCircle } from "lucide-react";
+import { useState } from "react";
 
 import { EmailVerificationDialog } from "@/components/auth/email-verification-dialog";
+import { BotProtection } from "@/components/shared/bot-protection";
 // Feature Hook
 import { useListingCreation } from "@/features/listing-creation/hooks/use-listing-creation";
 import { type BrandCatalogItem, type CityOption, type Listing } from "@/types";
@@ -50,12 +51,14 @@ export function ListingCreateForm({
     submitIntentRef,
   } = useListingCreation({ brands, cities, initialListing, initialValues, isEmailVerified });
 
+  const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
+
   const onSubmit = form.handleSubmit(async (values) => {
     if (!isEmailVerifiedLocally && !isEditing) {
       setIsVerifyDialogOpen(true);
       return;
     }
-    await submitListing(values);
+    await submitListing(values, turnstileToken || undefined);
   });
 
   const handleFormSubmit: React.FormEventHandler<HTMLFormElement> = (event) => {
@@ -138,13 +141,18 @@ export function ListingCreateForm({
                 {currentStep === 1 && <DetailsStep form={form} cities={cities} />}
                 {currentStep === 2 && <InspectionStep form={form} />}
                 {currentStep === 3 && (
-                  <PhotosStep
-                    form={form}
-                    fieldArray={fieldArray}
-                    uploadStates={uploadStates}
-                    onImageChange={handleImageChange}
-                    onRemoveImage={handleRemoveImage}
-                  />
+                  <>
+                    <PhotosStep
+                      form={form}
+                      fieldArray={fieldArray}
+                      uploadStates={uploadStates}
+                      onImageChange={handleImageChange}
+                      onRemoveImage={handleRemoveImage}
+                    />
+                    <div className="mt-8 flex justify-center">
+                      <BotProtection onVerify={setTurnstileToken} />
+                    </div>
+                  </>
                 )}
               </div>
 

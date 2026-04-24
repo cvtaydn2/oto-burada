@@ -90,6 +90,7 @@ export interface ListingCreateInput {
   damageStatusJson?: Record<string, string> | null;
   images: ListingImage[];
   expertInspection?: ExpertInspection;
+  turnstileToken?: string;
 }
 
 export interface ListingCreateFormImage {

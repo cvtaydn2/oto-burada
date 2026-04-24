@@ -313,13 +313,13 @@ export function useListingCreation({
     setValue(`images.${index}`, { fileName: "", storagePath: "", url: "" }, { shouldDirty: true });
   };
 
-  const submitListing = async (values: ListingCreateFormValues) => {
+  const submitListing = async (values: ListingCreateFormValues, turnstileToken?: string) => {
     setSubmitState({ status: "idle" });
     try {
       const response = await fetch(
         isEditing ? `/api/listings/${initialListing?.id}` : "/api/listings",
         {
-          body: JSON.stringify(values),
+          body: JSON.stringify({ ...values, turnstileToken }),
           headers: { "Content-Type": "application/json" },
           method: isEditing ? "PATCH" : "POST",
         }

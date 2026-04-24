@@ -10,6 +10,7 @@ import {
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { toast } from "sonner";
 
 import { revealListingPhone } from "@/app/dashboard/listings/actions";
 import {
@@ -108,8 +109,9 @@ export function ContactActions({
       setRevealedPhone(result.phone);
       setIsRevealed(true);
       captureClientEvent("contact_phone_revealed", { listingId, sellerId });
-    } catch {
-      // Silently fail or log to monitoring
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Numara gösterilirken bir hata oluştu.";
+      toast.error(message);
     } finally {
       setIsLogging(false);
     }

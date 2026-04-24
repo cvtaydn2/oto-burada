@@ -43,6 +43,17 @@ export async function revealListingPhone(listingId: string) {
   const user = await getCurrentUser();
   if (!user) throw new Error("Unauthorized");
 
+  // ── Distributed Rate Limit ──
+  const { checkGlobalRateLimit } = await import("@/lib/utils/distributed-rate-limit");
+  const rateLimitResult = await checkGlobalRateLimit(`reveal-phone:${user.id}`, {
+    limit: 15,
+    windowMs: 60 * 60 * 1000, // 15 reveals per hour per user
+  });
+
+  if (!rateLimitResult.success) {
+    throw new Error("Çok fazla numara görüntülediniz. Lütfen daha sonra tekrar deneyin.");
+  }
+
   const supabase = await createSupabaseServerClient();
   const { data } = await supabase
     .from("listings")

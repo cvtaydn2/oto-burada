@@ -2,6 +2,7 @@ import { waitUntil } from "@vercel/functions";
 
 import { AnalyticsEvent } from "@/lib/analytics/events";
 import { captureServerError, trackServerEvent } from "@/lib/monitoring/posthog-server";
+import { verifyTurnstileToken } from "@/lib/security/turnstile";
 import { API_ERROR_CODES, apiError, apiSuccess } from "@/lib/utils/api-response";
 import { withSecurity, withUserAndCsrf } from "@/lib/utils/api-security";
 import { rateLimitProfiles } from "@/lib/utils/rate-limit";
@@ -80,6 +81,17 @@ export async function POST(request: Request) {
     body = await request.json();
   } catch {
     return apiError(API_ERROR_CODES.BAD_REQUEST, "Geçersiz JSON verisi.", 400);
+  }
+
+  // 1. Bot Protection
+  const castBody = body as Partial<ListingCreateInput>;
+  const isHuman = await verifyTurnstileToken(castBody.turnstileToken || "");
+  if (!isHuman) {
+    return apiError(
+      API_ERROR_CODES.FORBIDDEN,
+      "Bot doğrulaması başarısız oldu. Lütfen tekrar deneyin.",
+      403
+    );
   }
 
   // Orchestrate via Domain Use Case (SOLID)
