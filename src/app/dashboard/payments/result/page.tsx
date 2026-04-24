@@ -92,7 +92,8 @@ function PaymentResultContent() {
     id: string;
     amount: number;
     status: string;
-    plan_name?: string;
+    plan_name: string | null;
+    fulfilled_at: string | null;
   } | null>(null);
   const [retryNonce, setRetryNonce] = useState(0);
   const requestInFlightRef = useRef(false);

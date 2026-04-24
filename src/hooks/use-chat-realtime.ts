@@ -1,7 +1,7 @@
 import type { REALTIME_SUBSCRIBE_STATES, RealtimeChannel } from "@supabase/supabase-js";
 import { useCallback, useEffect, useRef, useState } from "react";
 
-import { createSupabaseBrowserClient } from "@/lib/supabase/browser";
+import { useSupabase } from "@/components/providers/supabase-provider";
 import type { Message } from "@/types";
 
 interface RealtimeMessageRow {
@@ -34,20 +34,15 @@ export function useChatRealtime(chatId: string, currentUserId: string): UseChatR
   const [onlineUsers, setOnlineUsers] = useState<string[]>([]);
   const [connectionStatus, setConnectionStatus] = useState<ConnectionStatus>("connecting");
   const channelRef = useRef<RealtimeChannel | null>(null);
-  const supabaseRef = useRef<ReturnType<typeof createSupabaseBrowserClient> | null>(null);
+  const { supabase } = useSupabase();
   // Tracks whether we missed messages while offline so we can re-fetch on reconnect
   const missedMessagesRef = useRef(false);
   const retryTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const retryCountRef = useRef(0);
 
-  if (supabaseRef.current == null) {
-    supabaseRef.current = createSupabaseBrowserClient();
-  }
-
   // Re-fetch message history after a reconnect to fill any gaps
   const syncMissedMessages = useCallback(
     async (onSync?: (msgs: Message[]) => void) => {
-      const supabase = supabaseRef.current;
       if (!supabase || !chatId) return;
 
       const { data, error } = await supabase
@@ -70,14 +65,13 @@ export function useChatRealtime(chatId: string, currentUserId: string): UseChatR
       setMessages(fetched);
       onSync?.(fetched);
     },
-    [chatId]
+    [chatId, supabase]
   );
 
   // ── Subscribe helper (extracted so we can call it on reconnect) ──────────
   const subscribeRef = useRef<(() => void) | undefined>(undefined);
 
   const subscribe = useCallback(() => {
-    const supabase = supabaseRef.current;
     if (!supabase || !chatId) return;
 
     // Clean up any existing channel before re-subscribing
@@ -155,7 +149,7 @@ export function useChatRealtime(chatId: string, currentUserId: string): UseChatR
           }
         }
       });
-  }, [chatId, currentUserId, syncMissedMessages, setMessages]);
+  }, [chatId, currentUserId, syncMissedMessages, setMessages, supabase]);
 
   // Keep the ref updated so the timeout can call the latest version
   useEffect(() => {

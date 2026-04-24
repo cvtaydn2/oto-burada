@@ -4,7 +4,7 @@ import { Heart, LogIn } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 
-import { useFavorites } from "@/hooks/use-favorites";
+import { useFavorites } from "@/components/shared/favorites-provider";
 import { cn } from "@/lib/utils";
 
 interface FavoriteButtonProps {

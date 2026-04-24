@@ -22,12 +22,13 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { ExpertInspectionGrade, ExpertInspectionStatus } from "@/types";
 import {
+  ExpertInspectionGrade,
   expertInspectionGradeInfo,
+  ExpertInspectionStatus,
   expertInspectionStatusLabels,
   ListingCreateFormValues,
-} from "@/types/domain";
+} from "@/types";
 
 interface ExpertInspectionEditorProps {
   form: UseFormReturn<ListingCreateFormValues>;

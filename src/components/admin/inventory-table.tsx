@@ -19,7 +19,7 @@ import {
 import { trust } from "@/lib/constants/ui-strings";
 import { formatCurrency, formatNumber, supabaseImageUrl } from "@/lib/utils";
 import { forceActionOnListing } from "@/services/admin/inventory";
-import { Listing } from "@/types/domain";
+import { Listing } from "@/types";
 
 interface InventoryTableProps {
   listings: Listing[];

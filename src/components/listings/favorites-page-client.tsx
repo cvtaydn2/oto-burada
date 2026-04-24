@@ -22,7 +22,7 @@ import Link from "next/link";
 import { useMemo, useState } from "react";
 
 import { ListingsGridSkeleton } from "@/components/listings/listings-grid-skeleton";
-import { useFavorites } from "@/hooks/use-favorites";
+import { useFavorites } from "@/components/shared/favorites-provider";
 import { cn, formatCurrency, formatNumber, formatPrice, supabaseImageUrl } from "@/lib/utils";
 import type { Listing } from "@/types";
 

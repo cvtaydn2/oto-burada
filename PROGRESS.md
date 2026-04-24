@@ -358,4 +358,28 @@
   - **Domain Decoupling**: `mapListingRow` fonksiyonu `listing-submission-types.ts` dosyasına taşınarak query ve persistence katmanları arasındaki dairesel bağımlılık (circular dependency) riskleri ortadan kaldırıldı.
   - **Type Safety**: `getDatabaseListings` için açık dönüş tipleri tanımlandı ve silme işlemleri sırasında oluşan implicit `any` hataları giderildi.
   - **Final Build**: Tüm mimari değişiklikler `npm run build` ile doğrulanarak sıfır hata ile üretim hazırlığı tamamlandı.
-- **Sıradaki Adım:** Moderasyon metriklerinin admin paneline entegrasyonu ve canlı ortam performansı takibi.
+## [2026-04-24] - Architectural Refactoring Phase 2: Domain & Hook Consolidation
+- **Durum:** ✅ TAMAMLANDI
+- **Yapılanlar:**
+  - **Hook Consolidation (R4)**: `useKeyboard` ve `useKeyboardShortcuts` hook'ları tek bir robust `useKeyboard` hook'unda birleştirildi. `KeyboardShortcutHints` bileşeni modüler bir yapıya (`src/components/shared/`) taşındı. `useFavorites` wrapper hook'u kaldırılarak doğrudan provider kullanımı sağlandı.
+  - **Type Composition (R5)**: Monolitik `Listing` ve `Profile` tipleri composition pattern ile modüler dosyalara (`src/types/listing.ts`, `src/types/profile.ts`) parçalandı. Base, Trust, Corporate ve Detail interfaceleri ile tip hiyerarşisi netleştirildi.
+  - **Domain Use Cases (R6)**: İş mantığı hook'lardan ve API route'lardan bağımsız `src/domain/usecases/` klasörüne taşındı.
+    - `listing-archive.ts`, `listing-bump.ts`, `favorite-add.ts`, `favorite-remove.ts` use case'leri oluşturuldu.
+    - `ListingStatusMachine` ve `TrustScoreCalculator` domain logic sınıfları eklendi.
+  - **API Route Refactoring**: İlan arşivleme, öne çıkarma (bump) ve favori işlemleri API route'ları yeni domain use case'lerini kullanacak şekilde refaktör edildi. API route'lar sadece orkestrasyon ve güvenlik (CSRF/Auth) görevini üstlendi.
+  - **Persistence Layer Expansion**: `listing-submission-persistence.ts` dosyasına `bumpListing` metodu eklenerek veri erişim katmanı genişletildi.
+- **Doğrulama:**
+  - `npm run typecheck` ✅
+  - `npm run lint` ✅
+  - `npm run build` ✅
+- **Sıradaki Adım:** Faz 4: Performans optimizasyonu ve ileri düzey LRS (Long Running Socket) yönetimi.
+
+## [2026-04-24] - Faz 3: Optimizasyon ve Servis Katmanı Genişletme
+- **Durum:** ✅ TAMAMLANDI
+- **Yapılanlar:**
+  - **R7 (SSE Kaldırma):** `use-notifications.ts` içerisindeki SSE mekanizması kaldırıldı. Sadece Supabase Realtime kullanacak şekilde refaktör edildi ve duplicate notification önleme (Set-based tracking) eklendi. `src/app/api/notifications/stream/route.ts` dosyası silindi.
+  - **R8 (Service Layer):** `ApiClient` tüm endpoint'leri kapsayacak şekilde genişletildi. `ListingService` ve `FavoriteService` domain servisleri oluşturuldu. `use-listing-actions.ts` hook'u service katmanına bağlandı.
+  - **R9 (CSS Modularization):** `globals.css` parçalandı; `utilities.css`, `print.css` ve `a11y.css` dosyaları `src/lib/styles/` altına taşınarak `globals.css` üzerinden import edildi.
+- **Doğrulama:**
+  - `npm run typecheck` ✅ (Tertemiz)
+  - `npm run build` ✅

@@ -1,8 +1,9 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useCallback, useState } from "react";
 
+import { ListingService } from "@/services/listings/listing-service";
 import type { Listing } from "@/types";
 
 export function useListingActions(listings: Listing[]) {
@@ -22,27 +23,15 @@ export function useListingActions(listings: Listing[]) {
 
     try {
       if (isCurrentlyArchived) {
-        const res = await fetch("/api/listings/bulk-draft", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ ids: [listingId] }),
-        });
-        const payload = (await res.json().catch(() => null)) as {
-          success?: boolean;
-          message?: string;
-        } | null;
-        if (!res.ok || !payload?.success) {
-          setArchiveError(payload?.message ?? "İlan taslağa alınamadı.");
+        const { success, error } = await ListingService.bulkDraft([listingId]);
+        if (!success) {
+          setArchiveError(error?.message ?? "İlan taslağa alınamadı.");
           return;
         }
       } else {
-        const res = await fetch(`/api/listings/${listingId}/archive`, { method: "POST" });
-        const payload = (await res.json().catch(() => null)) as {
-          success?: boolean;
-          error?: { message: string };
-        } | null;
-        if (!res.ok || !payload?.success) {
-          setArchiveError(payload?.error?.message ?? "İlan arşive alınamadı.");
+        const { success, error } = await ListingService.archiveListing(listingId);
+        if (!success) {
+          setArchiveError(error?.message ?? "İlan arşive alınamadı.");
           return;
         }
       }
@@ -57,16 +46,13 @@ export function useListingActions(listings: Listing[]) {
     setIsBulkArchiving(true);
     setArchiveError(null);
     try {
-      const res = await fetch("/api/listings/bulk-archive", {
-        method: "POST",
-        body: JSON.stringify({ ids: selectedIds }),
-        headers: { "Content-Type": "application/json" },
-      });
-      const payload = await res.json();
-      if (payload.success) {
+      const { success, error } = await ListingService.bulkArchive(selectedIds);
+      if (success) {
         setSelectedIds([]);
         router.refresh();
-      } else setArchiveError(payload.message || "Toplu arşivleme sırasında hata oluştu.");
+      } else {
+        setArchiveError(error?.message || "Toplu arşivleme sırasında hata oluştu.");
+      }
     } catch {
       setArchiveError("Bir hata oluştu.");
     } finally {
@@ -78,16 +64,13 @@ export function useListingActions(listings: Listing[]) {
     if (!selectedIds.length) return;
     setIsBulkArchiving(true);
     try {
-      const res = await fetch("/api/listings/bulk-delete", {
-        method: "POST",
-        body: JSON.stringify({ ids: selectedIds }),
-        headers: { "Content-Type": "application/json" },
-      });
-      const payload = await res.json();
-      if (payload.success) {
+      const { success, error } = await ListingService.bulkDelete(selectedIds);
+      if (success) {
         setSelectedIds([]);
         router.refresh();
-      } else setArchiveError(payload.message || "Toplu silme sırasında hata oluştu.");
+      } else {
+        setArchiveError(error?.message || "Toplu silme sırasında hata oluştu.");
+      }
     } catch {
       setArchiveError("Bir hata oluştu.");
     } finally {
@@ -99,17 +82,12 @@ export function useListingActions(listings: Listing[]) {
     setBumpingId(listingId);
     setBumpMessage(null);
     try {
-      const res = await fetch(`/api/listings/${listingId}/bump`, { method: "POST" });
-      const payload = (await res.json().catch(() => null)) as {
-        success?: boolean;
-        message?: string;
-        error?: { message: string };
-      } | null;
-      if (!res.ok || !payload?.success) {
-        setBumpMessage(payload?.error?.message ?? "İlan yenilenemedi.");
+      const { success, data, error } = await ListingService.bumpListing(listingId);
+      if (!success) {
+        setBumpMessage(error?.message ?? "İlan yenilenemedi.");
         return;
       }
-      setBumpMessage(payload.message ?? "İlan yenilendi!");
+      setBumpMessage(data?.message ?? "İlan yenilendi!");
       router.refresh();
     } finally {
       setBumpingId(null);
@@ -119,7 +97,7 @@ export function useListingActions(listings: Listing[]) {
   const toggleSelect = (id: string) =>
     setSelectedIds((prev) => (prev.includes(id) ? prev.filter((i) => i !== id) : [...prev, id]));
 
-  const clearSelection = () => setSelectedIds([]);
+  const clearSelection = useCallback(() => setSelectedIds([]), []);
 
   return {
     archivingId,

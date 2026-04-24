@@ -4,7 +4,7 @@ import { ArrowRight, History, Search, TrendingUp, X } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useMemo, useRef, useState } from "react";
 
-import { useKeyboardShortcuts } from "@/hooks/use-keyboard-shortcuts";
+import { useKeyboard } from "@/hooks/use-keyboard";
 import { cn } from "@/lib/utils";
 import type { SearchSuggestionItem } from "@/types";
 
@@ -79,26 +79,22 @@ export function SearchWithSuggestions({
     }
   };
 
-  useKeyboardShortcuts([
-    {
-      key: "k",
-      ctrl: true,
-      action: () => inputRef.current?.focus(),
-      description: "Ara",
-    },
-    {
-      key: "Escape",
-      action: () => {
-        setQuery("");
-        setIsFocused(false);
-        inputRef.current?.blur();
+  useKeyboard({
+    shortcuts: [
+      {
+        key: "k",
+        ctrl: true,
+        action: () => inputRef.current?.focus(),
+        description: "Ara",
       },
+    ],
+    onEscape: () => {
+      setQuery("");
+      setIsFocused(false);
+      inputRef.current?.blur();
     },
-    {
-      key: "Enter",
-      action: () => handleSearch(query),
-    },
-  ]);
+    onEnter: () => handleSearch(query),
+  });
 
   return (
     <div className={cn("relative w-full max-w-2xl", className)}>

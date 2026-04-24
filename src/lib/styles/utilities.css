@@ -1,0 +1,94 @@
+@layer utilities {
+  .prevent-gesture-conflicts {
+    overscroll-behavior-y: contain;
+    touch-action: pan-y;
+  }
+
+  .min-h-screen-safe {
+    min-height: 100svh;
+  }
+
+  .glass {
+    @apply bg-white/60 dark:bg-black/60 backdrop-blur-2xl border border-white/20 dark:border-white/5 shadow-[0_8px_32px_rgba(0,0,0,0.04)] dark:shadow-[0_8px_32px_rgba(0,0,0,0.2)];
+  }
+
+  .focus-ring {
+    @apply outline-none ring-offset-2 focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none;
+  }
+
+  .text-gradient {
+    @apply bg-clip-text text-transparent bg-gradient-to-br from-foreground via-foreground to-foreground/70;
+  }
+
+  .showroom-card {
+    @apply bg-card border border-border/50 shadow-sm rounded-2xl transition-[border-color,box-shadow,transform] duration-300 ease-in-out hover:border-primary/20 hover:shadow-xl hover:shadow-primary/5;
+  }
+
+  .active-ring {
+    @apply ring-8 ring-primary/5 border-primary/20 transition-[ring,border-color] duration-300 ease-in-out;
+  }
+
+  .ui-press {
+    @apply active:scale-[0.97] transition-transform duration-150 ease-in-out;
+  }
+
+  .ui-hover {
+    @apply transition-transform duration-300 ease-in-out hover:scale-[1.02];
+  }
+
+  .bg-mesh {
+    background-image:
+      radial-gradient(at 0% 0%, oklch(0.58 0.16 255 / 0.03) 0px, transparent 50%),
+      radial-gradient(at 100% 0%, oklch(0.7 0.14 45 / 0.03) 0px, transparent 50%);
+  }
+
+  .shimmer {
+    @apply relative overflow-hidden before:absolute before:inset-0 before:-translate-x-full before:animate-[shimmer_2s_infinite] before:bg-gradient-to-r before:from-transparent before:via-white/20 dark:before:via-white/10 before:to-transparent bg-muted/20;
+  }
+
+  /* Mobile UX - Thumb-First & Safe Areas */
+  .pb-safe {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+  .pt-safe {
+    padding-top: env(safe-area-inset-top);
+  }
+  .min-h-dynamic {
+    min-height: 100dvh;
+  }
+  .h-dynamic {
+    height: 100dvh;
+  }
+  .touch-pressed {
+    @apply active:scale-[0.97] active:opacity-80 transition-all duration-150;
+  }
+
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  .no-scrollbar {
+    -ms-overflow-style: none; /* IE and Edge */
+    scrollbar-width: none; /* Firefox */
+  }
+
+  .custom-scrollbar::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  .custom-scrollbar::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  .custom-scrollbar::-webkit-scrollbar-thumb {
+    background: var(--border);
+    border-radius: 10px;
+  }
+  .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: var(--muted-foreground);
+  }
+}
+
+@keyframes shimmer {
+  100% {
+    transform: translateX(100%);
+  }
+}

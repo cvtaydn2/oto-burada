@@ -492,3 +492,31 @@ export async function deleteListing(
 
   return { success: true };
 }
+
+/**
+ * Bumps a listing by updating its bumped_at timestamp.
+ */
+export async function bumpListing(
+  listingId: string,
+  sellerId: string
+): Promise<ListingPersistenceResult> {
+  if (!hasSupabaseAdminEnv()) return { error: "configuration_error" as const };
+  const admin = createSupabaseAdminClient();
+
+  const { error, data: updated } = await admin
+    .from("listings")
+    .update({
+      bumped_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    })
+    .eq("id", listingId)
+    .eq("seller_id", sellerId)
+    .select()
+    .single();
+
+  if (error) {
+    return { error: classifyPersistenceError(error) };
+  }
+
+  return { listing: mapListingRow(updated as unknown as ListingRow) };
+}

@@ -48,7 +48,7 @@ export function AdminUserDetailClient({ detail, userId }: AdminUserDetailClientP
       toast.success(`${credits} kredi başarıyla tanımlandı.`);
       router.refresh();
     } else {
-      toast.error(res.error || "İşlem başarısız");
+      toast.error(res.error?.message || "İşlem başarısız");
     }
   };
 
@@ -59,7 +59,7 @@ export function AdminUserDetailClient({ detail, userId }: AdminUserDetailClientP
       toast.success("Doping başarıyla tanımlandı.");
       router.refresh();
     } else {
-      toast.error(res.error || "İşlem başarısız");
+      toast.error(res.error?.message || "İşlem başarısız");
     }
   };
 
@@ -71,7 +71,7 @@ export function AdminUserDetailClient({ detail, userId }: AdminUserDetailClientP
       toast.success(profile.isBanned ? "Yasak kaldırıldı." : "Kullanıcı yasaklandı.");
       router.refresh();
     } else {
-      toast.error(res.error || "İşlem başarısız.");
+      toast.error(res.error?.message || "İşlem başarısız.");
     }
     setIsActioning(false);
   };

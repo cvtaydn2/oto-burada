@@ -3,12 +3,13 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect } from "react";
 
-import { createSupabaseBrowserClient } from "@/lib/supabase/browser";
+import { useSupabase } from "@/components/providers/supabase-provider";
+import { ApiClient } from "@/services/api-client";
 import type { Notification } from "@/types";
 
 export function useNotifications(userId?: string) {
   const queryClient = useQueryClient();
-  const supabase = createSupabaseBrowserClient();
+  const { supabase } = useSupabase();
 
   // 1. Initial fetch using TanStack Query
   const {
@@ -19,31 +20,22 @@ export function useNotifications(userId?: string) {
     queryKey: ["notifications", userId],
     queryFn: async () => {
       if (!userId) return [];
-      try {
-        const response = await fetch("/api/notifications");
-        const payload = await response.json().catch(() => null);
-        if (!response.ok || !payload || typeof payload !== "object") {
-          throw new Error(`Notification fetch failed: ${response.status}`);
-        }
-        if (!payload.success) {
-          throw new Error(payload.error?.message || "Bildirimler yüklenemedi");
-        }
-        return payload.data?.notifications ?? [];
-      } catch (err) {
-        if (process.env.NODE_ENV !== "production") {
-          console.warn("[NOTIFICATIONS] Failed to load notifications:", err);
-        }
-        throw err;
+      const { success, data, error } = await ApiClient.notifications.getAll();
+      if (!success) {
+        throw new Error(error?.message || "Bildirimler yüklenemedi");
       }
+      return data?.notifications ?? [];
     },
     enabled: !!userId,
   });
 
-  // 2. Realtime subscriptions (Supabase + SSE)
+  // 2. Realtime subscriptions (Supabase)
   useEffect(() => {
     if (!userId) return;
 
-    // A. Supabase Postgres Realtime
+    // Tracker for processed notification IDs to prevent duplicate toasts
+    const processedIds = new Set<string>();
+
     const channel = supabase
       .channel(`notifications:${userId}`)
       .on(
@@ -54,60 +46,29 @@ export function useNotifications(userId?: string) {
           table: "notifications",
           filter: `user_id=eq.${userId}`,
         },
-        (payload: { new: { title: string; message: string } }) => {
+        (payload: { new: Notification }) => {
+          const notificationId = payload.new.id;
+          if (!notificationId) return;
+
+          // Prevent duplicate processing
+          if (processedIds.has(notificationId)) return;
+          processedIds.add(notificationId);
+
           queryClient.invalidateQueries({ queryKey: ["notifications", userId] });
 
           if (typeof window !== "undefined" && window.Notification?.permission === "granted") {
-            new window.Notification(payload.new.title, {
-              body: payload.new.message,
+            const title = payload.new.title || "Bildirim";
+            const message = payload.new.message || "";
+            new window.Notification(title, {
+              body: message,
             });
           }
         }
       )
       .subscribe();
 
-    // B. SSE Notification Stream (Redis-based)
-    let eventSource: EventSource | null = null;
-    try {
-      eventSource = new EventSource("/api/notifications/stream");
-
-      eventSource.onmessage = (event) => {
-        try {
-          const data = JSON.parse(event.data);
-          if (data.type === "connected") return;
-
-          // Invalidate to refresh the list
-          queryClient.invalidateQueries({ queryKey: ["notifications", userId] });
-
-          // Visual feedback
-          if (typeof window !== "undefined" && window.Notification?.permission === "granted") {
-            new window.Notification(data.title || "Yeni Bildirim", {
-              body: data.message,
-            });
-          }
-        } catch {
-          // SSE mesajı parse edilemedi — sessizce geç, stream devam eder
-        }
-      };
-
-      eventSource.onerror = () => {
-        // EventSource automatically retries — only log in dev to avoid noise
-        if (process.env.NODE_ENV !== "production") {
-          console.warn("[SSE] Connection interrupted, retrying...");
-        }
-      };
-    } catch {
-      // SSE stream başlatılamadı — bildirimler Supabase realtime üzerinden gelmeye devam eder
-      if (process.env.NODE_ENV !== "production") {
-        console.warn("[SSE] Failed to initialize stream, falling back to Supabase realtime.");
-      }
-    }
-
     return () => {
       void channel.unsubscribe();
-      if (eventSource) {
-        eventSource.close();
-      }
     };
   }, [userId, supabase, queryClient]);
 

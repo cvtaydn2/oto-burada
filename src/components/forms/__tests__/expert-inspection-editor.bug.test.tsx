@@ -12,7 +12,7 @@ import { render, screen } from "@testing-library/react";
 import { useForm } from "react-hook-form";
 import { describe, expect, it } from "vitest";
 
-import type { ListingCreateFormValues } from "@/types/domain";
+import type { ListingCreateFormValues } from "@/types";
 
 import { ExpertInspectionEditor } from "../expert-inspection-editor";
 

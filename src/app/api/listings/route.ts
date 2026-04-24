@@ -15,7 +15,7 @@ import {
 import { createDatabaseListing } from "@/services/listings/listing-submissions";
 import { getFilteredMarketplaceListings } from "@/services/listings/marketplace-listings";
 import { createDatabaseNotification } from "@/services/notifications/notification-records";
-import { ListingCreateInput } from "@/types/domain";
+import { ListingCreateInput } from "@/types";
 
 export async function GET(request: Request) {
   const security = await withSecurity(request);

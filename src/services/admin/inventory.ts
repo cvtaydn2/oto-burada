@@ -4,7 +4,7 @@ import { captureServerError, captureServerEvent } from "@/lib/monitoring/posthog
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { logger } from "@/lib/utils/logger";
 import { createDatabaseNotification } from "@/services/notifications/notification-records";
-import { Listing } from "@/types/domain";
+import { Listing } from "@/types";
 
 import { moderateListingWithSideEffects } from "./listing-moderation";
 import { createAdminModerationAction } from "./moderation-actions";

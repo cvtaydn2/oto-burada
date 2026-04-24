@@ -53,10 +53,8 @@ export function MyListingsPanel({
   const {
     archivingId,
     archiveError,
-    setArchiveError,
     bumpingId,
     bumpMessage,
-    setBumpMessage,
     selectedIds,
     setSelectedIds,
     isBulkArchiving,
@@ -76,7 +74,7 @@ export function MyListingsPanel({
 
   useEffect(() => {
     clearSelection();
-  }, [currentPage, pageSize]);
+  }, [currentPage, pageSize, clearSelection]);
 
   useEffect(() => {
     if (currentPage > totalPages) setCurrentPage(totalPages); // eslint-disable-line react-hooks/set-state-in-effect

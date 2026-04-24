@@ -4,6 +4,7 @@ import { API_ERROR_CODES, apiError, apiSuccess } from "@/lib/utils/api-response"
 import { withUserAndCsrf } from "@/lib/utils/api-security";
 import { logger } from "@/lib/utils/logger";
 import { enforceRateLimit, getUserRateLimitKey } from "@/lib/utils/rate-limit-middleware";
+import type { ListingStatus } from "@/types";
 
 export async function POST(request: Request, { params }: { params: Promise<{ id: string }> }) {
   const security = await withUserAndCsrf(request, {
@@ -37,20 +38,11 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
       );
     }
 
-    if (listing.status === "archived") {
-      return apiError(API_ERROR_CODES.BAD_REQUEST, "İlan zaten arşivlenmiş.", 400);
-    }
+    const { archiveListingUseCase } = await import("@/domain/usecases/listing-archive");
+    const result = await archiveListingUseCase(listingId, user.id, listing.status as ListingStatus);
 
-    const { error } = await supabase
-      .from("listings")
-      .update({ status: "archived", updated_at: new Date().toISOString() })
-      .eq("id", listingId)
-      .eq("seller_id", user.id);
-
-    if (error) {
-      logger.listings.error("Archive listing DB error", error, { listingId, userId: user.id });
-      captureServerError("Archive listing DB error", "listings", error, { listingId });
-      return apiError(API_ERROR_CODES.INTERNAL_ERROR, "İlan arşivlenirken bir hata oluştu.", 500);
+    if (!result.success) {
+      return apiError(API_ERROR_CODES.BAD_REQUEST, result.error || "İlan arşivlenemedi.", 400);
     }
 
     captureServerEvent(

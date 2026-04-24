@@ -1,16 +1,10 @@
 import { requireApiUser } from "@/lib/auth/api-user";
-import { captureServerError, captureServerEvent } from "@/lib/monitoring/posthog-server";
+import { captureServerEvent } from "@/lib/monitoring/posthog-server";
 import { hasSupabaseAdminEnv, hasSupabaseEnv } from "@/lib/supabase/env";
 import { API_ERROR_CODES, apiError, apiSuccess } from "@/lib/utils/api-response";
 import { withAuthAndCsrf } from "@/lib/utils/api-security";
-import {
-  addDatabaseFavorite,
-  getDatabaseFavoriteIds,
-  removeDatabaseFavorite,
-} from "@/services/favorites/favorite-records";
-import { getStoredListingById } from "@/services/listings/listing-submissions";
+import { getDatabaseFavoriteIds } from "@/services/favorites/favorite-records";
 import { createDatabaseNotification } from "@/services/notifications/notification-records";
-import { getStoredProfileById } from "@/services/profile/profile-records";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -40,7 +34,6 @@ export async function GET() {
 }
 
 export async function POST(request: Request) {
-  // Security checks: CSRF + Auth + Rate limiting
   const security = await withAuthAndCsrf(request, {
     ipRateLimit: { limit: 60, windowMs: 60 * 1000 },
     userRateLimit: { limit: 30, windowMs: 60 * 1000 },
@@ -48,8 +41,7 @@ export async function POST(request: Request) {
   });
 
   if (!security.ok) return security.response;
-
-  const user = security.user!; // Guaranteed by withAuthAndCsrf
+  const user = security.user!;
 
   if (!hasSupabaseEnv() || !hasSupabaseAdminEnv()) {
     return apiError(API_ERROR_CODES.SERVICE_UNAVAILABLE, "Servis kullanılamıyor.", 503);
@@ -67,62 +59,38 @@ export async function POST(request: Request) {
     return apiError(API_ERROR_CODES.BAD_REQUEST, "Geçerli bir ilan seçmelisin.", 400);
   }
 
-  const listing = await getStoredListingById(listingId);
-  if (!listing) {
-    return apiError(API_ERROR_CODES.NOT_FOUND, "Favoriye eklenecek ilan bulunamadı.", 404);
+  const { favoriteAddUseCase } = await import("@/domain/usecases/favorite-add");
+  const result = await favoriteAddUseCase(user.id, listingId);
+
+  if (!result.success) {
+    return apiError(API_ERROR_CODES.BAD_REQUEST, result.error || "Favori eklenemedi.", 400);
   }
 
-  // Only allow favoriting active (approved) listings
-  if (listing.status !== "approved") {
-    return apiError(
-      API_ERROR_CODES.BAD_REQUEST,
-      "Sadece yayındaki ilanlar favorilere eklenebilir.",
-      400
-    );
-  }
-
-  // P1 Security: Removed ensureProfileRecord() - no side effects in mutations
-  const favoriteIds = await addDatabaseFavorite(user.id, listingId);
-
-  if (!favoriteIds) {
-    captureServerError(
-      "Favorite add failed",
-      "favorites",
-      null,
-      { userId: user.id, listingId },
-      user.id
-    );
-    return apiError(API_ERROR_CODES.INTERNAL_ERROR, "Favori eklenemedi.", 500);
-  }
-
-  if (listing.sellerId !== user.id) {
-    const actorProfile = await getStoredProfileById(user.id);
+  // Side effects: Notifications & Analytics
+  if (result.metadata && result.metadata.sellerId !== user.id) {
     await createDatabaseNotification({
-      href: `/listing/${listing.slug}`,
-      message: `"${listing.title}" ilanını ${actorProfile?.fullName ?? "Bir kullanıcı"} favorilerine ekledi.`,
+      href: `/listing/${result.metadata.listingSlug}`,
+      message: `"${result.metadata.listingTitle}" ilanını ${result.metadata.actorName} favorilerine ekledi.`,
       title: "İlanın favorilere eklendi",
       type: "favorite",
-      userId: listing.sellerId,
+      userId: result.metadata.sellerId,
     });
   }
 
   captureServerEvent("favorite_added", {
     userId: user.id,
     listingId,
-    sellerId: listing.sellerId,
-    listingSlug: listing.slug,
+    sellerId: result.metadata?.sellerId,
+    listingSlug: result.metadata?.listingSlug,
   });
 
-  return apiSuccess({ favoriteIds }, "İlan favorilere eklendi.");
+  return apiSuccess({ favoriteIds: result.favoriteIds }, "İlan favorilere eklendi.");
 }
 
 export async function DELETE(request: Request) {
-  // Security checks: CSRF + Auth
   const security = await withAuthAndCsrf(request);
-
   if (!security.ok) return security.response;
-
-  const user = security.user!; // Guaranteed by withAuthAndCsrf
+  const user = security.user!;
 
   if (!hasSupabaseEnv() || !hasSupabaseAdminEnv()) {
     return apiError(API_ERROR_CODES.SERVICE_UNAVAILABLE, "Servis kullanılamıyor.", 503);
@@ -140,18 +108,11 @@ export async function DELETE(request: Request) {
     return apiError(API_ERROR_CODES.BAD_REQUEST, "Geçerli bir ilan seçmelisin.", 400);
   }
 
-  // P1 Security: Removed ensureProfileRecord() - no side effects in mutations
-  const favoriteIds = await removeDatabaseFavorite(user.id, listingId);
+  const { favoriteRemoveUseCase } = await import("@/domain/usecases/favorite-remove");
+  const result = await favoriteRemoveUseCase(user.id, listingId);
 
-  if (!favoriteIds) {
-    captureServerError(
-      "Favorite remove failed",
-      "favorites",
-      null,
-      { userId: user.id, listingId },
-      user.id
-    );
-    return apiError(API_ERROR_CODES.INTERNAL_ERROR, "Favori kaldırılamadı.", 500);
+  if (!result.success) {
+    return apiError(API_ERROR_CODES.BAD_REQUEST, result.error || "Favori kaldırılamadı.", 400);
   }
 
   captureServerEvent("favorite_removed", {
@@ -159,5 +120,5 @@ export async function DELETE(request: Request) {
     listingId,
   });
 
-  return apiSuccess({ favoriteIds }, "İlan favorilerden kaldırıldı.");
+  return apiSuccess({ favoriteIds: result.favoriteIds }, "İlan favorilerden kaldırıldı.");
 }
