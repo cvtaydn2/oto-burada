@@ -5,7 +5,7 @@ import { ContactActions } from "@/components/listings/contact-actions";
 import { Panel } from "@/components/shared/design-system/Panel";
 import { getMembershipYears, getMemberSinceYear } from "@/lib/utils/listing-utils";
 import { getSellerTrustUI } from "@/lib/utils/trust-ui";
-import { getSellerRatingSummary } from "@/services/profile/seller-reviews";
+import { getSellerReviewStats as getSellerRatingSummary } from "@/services/profile/seller-reviews";
 import type { Listing, Profile } from "@/types";
 
 interface ListingSellerSidebarProps {

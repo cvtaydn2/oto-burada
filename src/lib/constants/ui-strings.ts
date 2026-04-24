@@ -129,6 +129,7 @@ export const marketplace = {
     expert: "Ekspertizli",
     priceDrop: "Fiyatı Düşen",
     newest: "Yeni Eklenen",
+    exchange: "Takas",
   },
   sortOptions: {
     newest: "En Yeni",

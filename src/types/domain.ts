@@ -115,6 +115,7 @@ export interface ListingFilters {
   limit?: number;
   sellerId?: string;
   cursor?: string;
+  isExchange?: boolean;
 }
 
 export interface ExpertInspection {

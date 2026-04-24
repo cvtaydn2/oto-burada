@@ -21,28 +21,28 @@ export {
 };
 
 const SUPPORTED_MARKETPLACE_FILTER_KEYS = new Set<keyof ListingFilters>([
-  "query",
   "brand",
   "model",
   "carTrim",
   "city",
   "district",
-  "category",
+  "fuelType",
+  "transmission",
   "minPrice",
   "maxPrice",
   "minYear",
   "maxYear",
   "maxMileage",
-  "maxTramer",
   "hasExpertReport",
-  "fuelType",
-  "transmission",
+  "maxTramer",
+  "query",
   "sort",
   "page",
   "limit",
   "citySlug",
   "sellerId",
   "cursor",
+  "isExchange",
 ]);
 
 function sanitizeMarketplaceFilters(filters: ListingFilters): ListingFilters {

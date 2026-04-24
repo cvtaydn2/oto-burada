@@ -48,7 +48,7 @@ import {
   getSimilarMarketplaceListings,
   getStoredListingBySlug,
 } from "@/services/listings/marketplace-listings";
-import { getSellerRatingSummary } from "@/services/profile/seller-reviews";
+import { getSellerReviewStats as getSellerRatingSummary } from "@/services/profile/seller-reviews";
 
 const ListingMap = dynamic(
   () => import("@/components/shared/listing-map-wrapper").then((m) => m.ListingMapWrapper),
