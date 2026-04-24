@@ -136,7 +136,7 @@ export async function getAllTickets(options?: {
   const admin = createSupabaseAdminClient();
   let query = admin
     .from("tickets")
-    .select("*, profiles!tickets_user_id_fkey(full_name)")
+    .select("*, profiles(full_name)")
     .order("created_at", { ascending: false });
 
   if (options?.status) {

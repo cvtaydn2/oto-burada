@@ -26,6 +26,7 @@ const nextConfig: NextConfig = {
       { protocol: "https" as const, hostname: "images.unsplash.com" },
       { protocol: "https" as const, hostname: "plus.unsplash.com" },
       { protocol: "https" as const, hostname: "images.pexels.com" },
+      { protocol: "https" as const, hostname: "placehold.co" },
     ],
     formats: ["image/avif", "image/webp"],
     deviceSizes: [640, 750, 828, 1080, 1200, 1920],
@@ -62,7 +63,7 @@ const nextConfig: NextConfig = {
       default-src 'self';
       script-src 'self' 'unsafe-eval' 'unsafe-inline' https://challenges.cloudflare.com https://va.vercel-scripts.com;
       style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
-      img-src 'self' blob: data: ${supabaseDomain} https://*.unsplash.com https://*.pexels.com;
+      img-src 'self' blob: data: ${supabaseDomain} https://*.unsplash.com https://*.pexels.com https://placehold.co;
       font-src 'self' https://fonts.gstatic.com;
       connect-src 'self' ${supabaseUrl} https://challenges.cloudflare.com https://*.posthog.com https://vitals.vercel-insights.com;
       frame-src 'self' https://challenges.cloudflare.com;

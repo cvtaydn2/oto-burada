@@ -97,6 +97,12 @@ function createLogEntry(
       name: error.name,
       stack: isProduction ? undefined : error.stack,
     };
+  } else if (error && typeof error === "object" && "message" in error) {
+    const errObj = error as { message: string; name?: string; code?: string };
+    entry.error = {
+      message: sanitizeLogString(errObj.message),
+      name: errObj.name || errObj.code,
+    };
   } else if (error) {
     entry.error = { message: sanitizeLogString(String(error)) };
   }

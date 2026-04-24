@@ -83,6 +83,10 @@ export function resetPostHogUser() {
 }
 
 export function capturePostHogPageView(url: string) {
+  if (process.env.NODE_ENV === "development") {
+    return;
+  }
+
   if (!hasCookieConsent() || posthog.has_opted_out_capturing()) {
     return;
   }
