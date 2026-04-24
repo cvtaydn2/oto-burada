@@ -35,7 +35,14 @@ const nextConfig: NextConfig = {
     minimumCacheTTL: 86400,
   },
   experimental: {
-    optimizePackageImports: ["lucide-react", "date-fns"],
+    optimizePackageImports: [
+      "lucide-react",
+      "date-fns",
+      "recharts",
+      "framer-motion",
+      "clsx",
+      "tailwind-merge",
+    ],
     // Restore scroll position on back/forward navigation
     scrollRestoration: true,
   },
@@ -44,7 +51,7 @@ const nextConfig: NextConfig = {
   compress: true,
   poweredByHeader: false,
   generateEtags: true,
-  serverExternalPackages: ["iyzipay"],
+  serverExternalPackages: ["iyzipay", "googleapis", "posthog-node"],
   output: "standalone",
 };
 

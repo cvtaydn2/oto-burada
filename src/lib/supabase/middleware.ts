@@ -1,7 +1,6 @@
 import { createServerClient } from "@supabase/ssr";
 import { type NextRequest, NextResponse } from "next/server";
 
-import { checkApiSecurity } from "@/lib/middleware/api-security";
 import { handleAuthRedirects } from "@/lib/middleware/auth";
 import {
   applyRequestMetadata,
@@ -93,13 +92,7 @@ export async function updateSession(request: NextRequest) {
     return applySecurityHeaders(finalResponse, nonce);
   }
 
-  // 5. API SECURITY (CSRF/Origin)
-  const apiSecurity = checkApiSecurity(request);
-  if (!apiSecurity.isValid) {
-    return apiSecurity.response!;
-  }
-
-  // 6. FINAL ENRICHMENT (Headers & Metadata)
+  // 5. FINAL ENRICHMENT (Headers & Metadata)
   applySecurityHeaders(response, nonce);
   applyRequestMetadata(request, response, pathname);
 
