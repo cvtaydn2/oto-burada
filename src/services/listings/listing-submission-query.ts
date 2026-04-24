@@ -1,10 +1,10 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { hasSupabaseAdminEnv } from "@/lib/supabase/env";
+import { createSupabasePublicServerClient } from "@/lib/supabase/public-server";
 import { logger } from "@/lib/utils/logger";
 import { Listing, ListingFilters } from "@/types";
 
-import { ListingRow } from "./listing-submission-types";
 import { mapListingRow } from "./listing-submission-types";
 
 export const listingSelect = `
@@ -331,6 +331,40 @@ export async function getDatabaseListings(options?: {
   return fallbackResult.data.map(mapListingRow);
 }
 
+/**
+ * SECURITY: Public listings query using RLS-enforced client
+ * Use this for public marketplace data that should respect RLS policies
+ */
+export async function getPublicDatabaseListings(options?: {
+  ids?: string[];
+  listingId?: string;
+  sellerId?: string;
+  slug?: string;
+  statuses?: Listing["status"][];
+  filters?: ListingFilters;
+}): Promise<Listing[] | null> {
+  // For public data, use public client with RLS enforcement
+  const publicClient = createSupabasePublicServerClient();
+
+  const runQuery = async (query: any) => {
+    return (query as any)["returns"]();
+  };
+
+  // Only allow approved listings for public access
+  const publicOptions = {
+    ...options,
+    statuses: ["approved"] as Listing["status"][],
+  };
+
+  const result = await runQuery(buildListingBaseQuery(publicClient, listingSelect, publicOptions));
+  if (result.error) {
+    logger.db.error("Public listing retrieval failed", result.error);
+    return null;
+  }
+
+  return (result.data ?? []).map(mapListingRow);
+}
+
 export interface PaginatedListingsResult {
   listings: Listing[];
   total: number;
@@ -367,32 +401,93 @@ export async function getFilteredDatabaseListings(
   });
 
   // Count Query (Mirror the same filters for accurate pagination)
-  // HEAD only select for performance
-  let countQuery = admin
-    .from("listings")
-    .select("id, profiles!inner!seller_id(is_banned)", { count: "exact", head: true })
-    .eq("status", "approved")
-    .eq("profiles.is_banned", false);
+  const countQuery = buildListingBaseQuery(admin, "id", {
+    statuses: ["approved"],
+    filters: { ...filters, page: undefined, limit: undefined },
+  });
 
-  countQuery = applyListingFilterPredicates(countQuery, filters);
-
-  const [dataResult, countResult] = await Promise.all([dataQuery.returns(), countQuery]);
+  const [dataResult, countResult] = await Promise.all([
+    (dataQuery as any)["returns"](),
+    (countQuery as any)["returns"](),
+  ]);
 
   if (dataResult.error) {
-    logger.db.error("Marketplace fetch failed", dataResult.error);
-  }
-  if (countResult.error) {
-    logger.db.error("Marketplace count failed", countResult.error);
+    logger.db.error("Filtered listing retrieval failed", dataResult.error);
+    return { listings: [], total: 0, page, limit, hasMore: false };
   }
 
-  const listings = dataResult.data ? (dataResult.data as ListingRow[]).map(mapListingRow) : [];
-  const totalCount = countResult.count ?? 0;
+  const listings = (dataResult.data ?? []).map(mapListingRow);
+  const total = countResult.data?.length ?? 0;
+  const hasMore = page * limit < total;
 
   return {
     listings,
-    total: totalCount,
+    total,
     page,
     limit,
-    hasMore: page * limit < totalCount,
+    hasMore,
+    nextCursor: hasMore ? String(page + 1) : undefined,
+  };
+}
+
+/**
+ * SECURITY: Public filtered listings using RLS-enforced client
+ * Use this for public marketplace queries that should respect RLS policies
+ */
+export async function getPublicFilteredDatabaseListings(
+  filters: ListingFilters
+): Promise<PaginatedListingsResult> {
+  const page = filters.page ?? 1;
+  const limit = filters.limit ?? 24;
+  const publicClient = createSupabasePublicServerClient();
+
+  // For city slug resolution, we still need admin client for reference data
+  // This is acceptable as it's just reference data lookup
+  if (filters.citySlug && !filters.city) {
+    const admin = createSupabaseAdminClient();
+    const { data: cityData } = await admin
+      .from("cities")
+      .select("name")
+      .eq("slug", filters.citySlug)
+      .maybeSingle();
+
+    if (cityData) {
+      filters = { ...filters, city: cityData.name };
+    }
+  }
+
+  // Core Data Query (Approved Only for public marketplace, RLS enforced)
+  const dataQuery = buildListingBaseQuery(publicClient, marketplaceListingSelect, {
+    statuses: ["approved"],
+    filters: { ...filters, page, limit },
+  });
+
+  // Count Query (Mirror the same filters for accurate pagination)
+  const countQuery = buildListingBaseQuery(publicClient, "id", {
+    statuses: ["approved"],
+    filters: { ...filters, page: undefined, limit: undefined },
+  });
+
+  const [dataResult, countResult] = await Promise.all([
+    (dataQuery as any)["returns"](),
+    (countQuery as any)["returns"](),
+  ]);
+
+  if (dataResult.error) {
+    logger.db.error("Public filtered listing retrieval failed", dataResult.error);
+    return { listings: [], total: 0, page, limit, hasMore: false };
+  }
+
+  const listings = (dataResult.data ?? []).map(mapListingRow);
+  const total = countResult.data?.length ?? 0;
+  const hasMore = page * limit < total;
+
+  return {
+    listings,
+    total,
+    page,
+    limit,
+    hasMore,
+    nextCursor: hasMore ? String(page + 1) : undefined,
   };
 }

@@ -2,19 +2,21 @@ import { maskPhoneNumber } from "@/lib/utils/listing-utils";
 import { Listing, ListingFilters } from "@/types";
 
 import {
-  getDatabaseListings,
-  getFilteredDatabaseListings,
+  getPublicDatabaseListings,
+  getPublicFilteredDatabaseListings,
   PaginatedListingsResult,
 } from "../listing-submission-query";
 
 /**
  * Public catalog logic for marketplace display.
  * Focused on "read" operations with caching support.
+ *
+ * SECURITY: Uses RLS-enforced public client for public data
  */
 
 export async function getPublicListings(filters: ListingFilters): Promise<PaginatedListingsResult> {
-  // getFilteredDatabaseListings handles standard marketplace filters (approved status by default)
-  const result = await getFilteredDatabaseListings(filters);
+  // SECURITY: Use public client with RLS enforcement for marketplace data
+  const result = await getPublicFilteredDatabaseListings(filters);
 
   return {
     ...result,
@@ -26,7 +28,8 @@ export async function getPublicListings(filters: ListingFilters): Promise<Pagina
 }
 
 export async function getListingBySlug(slug: string) {
-  const listings = await getDatabaseListings({ slug });
+  // SECURITY: Use public client for public listing access
+  const listings = await getPublicDatabaseListings({ slug });
   if (!listings?.[0]) return null;
   return {
     ...listings[0],
@@ -35,7 +38,8 @@ export async function getListingBySlug(slug: string) {
 }
 
 export async function getListingById(id: string) {
-  const listings = await getDatabaseListings({ ids: [id] });
+  // SECURITY: Use public client for public listing access
+  const listings = await getPublicDatabaseListings({ ids: [id] });
   if (!listings?.[0]) return null;
   return {
     ...listings[0],
@@ -44,8 +48,8 @@ export async function getListingById(id: string) {
 }
 
 export async function getAllApprovedListings() {
-  // We can use getDatabaseListings with statuses or getFilteredDatabaseListings with defaults
-  const listings = await getDatabaseListings({
+  // SECURITY: Use public client with RLS enforcement
+  const listings = await getPublicDatabaseListings({
     statuses: ["approved"],
     filters: { limit: 100, page: 1 },
   });
