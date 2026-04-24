@@ -14,30 +14,39 @@ const DEFAULT_LIMIT = 60;
 const DEFAULT_WINDOW_MS = 60_000;
 const REDIS_CIRCUIT_BREAKER_MS = 30_000;
 const MAX_LOCAL_ENTRIES = 10_000;
-const localFallbackStore = new Map<string, LocalRateLimitEntry>();
-let ratelimit: RatelimitState = null;
-let redisCircuitOpenUntil = 0;
-let callCount = 0;
+// Evict a batch of the oldest-looking entries when the cap is hit.
+// Full-scan eviction on every 1000 calls is O(n) and causes CPU spikes.
+// Instead we evict on size breach using a probabilistic batch delete.
+const EVICT_BATCH_SIZE = 500;
 
-function evictExpiredEntries() {
+const localFallbackStore = new Map<string, LocalRateLimitEntry>();
+
+function evictIfNeeded() {
+  if (localFallbackStore.size < MAX_LOCAL_ENTRIES) return;
+
   const now = Date.now();
+  let deleted = 0;
+
+  // First pass: remove expired entries (cheap exit for most cases)
   for (const [key, entry] of localFallbackStore) {
     if (entry.reset <= now) {
       localFallbackStore.delete(key);
+      deleted++;
+      if (deleted >= EVICT_BATCH_SIZE) return;
+    }
+  }
+
+  // Second pass: if still over cap, evict oldest by reset time (batch only)
+  if (localFallbackStore.size >= MAX_LOCAL_ENTRIES) {
+    const sorted = [...localFallbackStore.entries()].sort((a, b) => a[1].reset - b[1].reset);
+    for (let i = 0; i < EVICT_BATCH_SIZE && i < sorted.length; i++) {
+      localFallbackStore.delete(sorted[i][0]);
     }
   }
 }
 
 function getLocalFallbackResult(key: string, options: { limit?: number; windowMs?: number } = {}) {
-  callCount++;
-  if (callCount >= 1000) {
-    evictExpiredEntries();
-    callCount = 0;
-  }
-
-  if (localFallbackStore.size > MAX_LOCAL_ENTRIES) {
-    evictExpiredEntries();
-  }
+  evictIfNeeded();
 
   const now = Date.now();
   const limit = options.limit ?? DEFAULT_LIMIT;
@@ -59,6 +68,9 @@ function getLocalFallbackResult(key: string, options: { limit?: number; windowMs
     reset: existing.reset,
   };
 }
+
+let ratelimit: RatelimitState = null;
+let redisCircuitOpenUntil = 0;
 
 function openRedisCircuit(reason: string, error?: unknown) {
   redisCircuitOpenUntil = Date.now() + REDIS_CIRCUIT_BREAKER_MS;

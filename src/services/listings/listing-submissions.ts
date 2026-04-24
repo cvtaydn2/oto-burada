@@ -72,20 +72,7 @@ export async function deleteDatabaseListing(listingId: string, sellerId: string)
   if (!listing) return null;
   if (listing.status !== "archived") return null;
 
-  // 1. Storage Cleanup (Side effect before deletion)
-  if (listing.images.length > 0) {
-    const storagePaths = (listing.images as import("@/types").ListingImage[])
-      .map((img) => img.storagePath)
-      .filter((path) => path.length > 0);
-
-    if (storagePaths.length > 0) {
-      const bucketName = process.env.SUPABASE_STORAGE_BUCKET_LISTINGS ?? "listing-images";
-      const { queueFileCleanup } = await import("@/lib/storage/registry");
-      await queueFileCleanup(bucketName, storagePaths);
-    }
-  }
-
-  // 2. Perform Atomic Deletion via persistence layer
+  // 1. Perform Atomic Deletion FIRST — storage cleanup only if this succeeds
   const result = await deleteListing(listingId, listing.version ?? 0);
 
   if (result.error === "concurrent_update_detected") {
@@ -94,6 +81,23 @@ export async function deleteDatabaseListing(listingId: string, sellerId: string)
 
   if (!result.success) {
     return null;
+  }
+
+  // 2. Storage Cleanup — fire-and-forget after confirmed DB deletion
+  // DB is already consistent; storage orphans are cleaned by a background job if this fails.
+  if (listing.images.length > 0) {
+    const storagePaths = (listing.images as import("@/types").ListingImage[])
+      .map((img) => img.storagePath)
+      .filter((path) => path.length > 0);
+
+    if (storagePaths.length > 0) {
+      const bucketName = process.env.SUPABASE_STORAGE_BUCKET_LISTINGS ?? "listing-images";
+      const { queueFileCleanup } = await import("@/lib/storage/registry");
+      // Non-blocking: DB is already consistent, log failure but don't throw
+      queueFileCleanup(bucketName, storagePaths).catch((err) => {
+        console.error("[deleteDatabaseListing] Storage cleanup failed:", err);
+      });
+    }
   }
 
   return { id: listingId, deleted: true };

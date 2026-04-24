@@ -5,14 +5,23 @@ import type { Database } from "@/types/supabase";
 
 import { getSupabaseEnv } from "./env";
 
-let client: SupabaseClient<Database> | undefined;
+// Browser-only singleton — safe because browser has a single user context.
+// SSR path always creates a new instance to prevent cross-request session leaks.
+let _browserClient: SupabaseClient<Database> | undefined;
 
 export function useSupabase(): SupabaseClient<Database> {
-  if (!client) {
-    const { url, anonKey } = getSupabaseEnv();
-    client = createBrowserClient<Database>(url, anonKey);
+  const { url, anonKey } = getSupabaseEnv();
+
+  // SSR: always create a new instance to prevent cross-request session leaks.
+  if (typeof window === "undefined") {
+    return createBrowserClient<Database>(url, anonKey);
   }
-  return client;
+
+  // Browser: reuse singleton — safe, single user context.
+  if (!_browserClient) {
+    _browserClient = createBrowserClient<Database>(url, anonKey);
+  }
+  return _browserClient;
 }
 
 export function useAuth() {

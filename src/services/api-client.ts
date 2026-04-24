@@ -10,6 +10,10 @@ import type { ApiResponse } from "@/types/errors";
  * Use specialized Service classes instead of calling this directly.
  * @internal
  */
+
+// Guard against multiple concurrent 401 responses causing a redirect storm.
+let _isRedirecting = false;
+
 class ApiClient {
   static async request<T>(
     path: string,
@@ -27,13 +31,19 @@ class ApiClient {
       const json = await res.json().catch(() => ({}));
 
       if (!res.ok) {
-        // Handle 401 Unauthorized globally - redirect to login
+        // Handle 401 Unauthorized globally - redirect to login (deduplicated)
         if (
           res.status === 401 &&
           typeof window !== "undefined" &&
-          !window.location.pathname.startsWith("/login")
+          !window.location.pathname.startsWith("/login") &&
+          !_isRedirecting
         ) {
+          _isRedirecting = true;
           window.location.href = `/login?returnTo=${encodeURIComponent(window.location.pathname)}`;
+          // Reset after navigation completes or fails
+          setTimeout(() => {
+            _isRedirecting = false;
+          }, 3000);
         }
 
         return {
