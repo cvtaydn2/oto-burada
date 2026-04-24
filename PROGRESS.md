@@ -730,3 +730,28 @@
   - Webhook güvenliği sıkılaştırıldı ✅
 - **Acil Deployment Gerekli:** Bu düzeltmeler derhal production'a alınmalı.
 - **Sıradaki Adım:** Production deployment ve güvenlik testleri.
+# 2026-04-24 — ARCHITECTURAL IMPROVEMENTS & TYPE SAFETY
+
+## [2026-04-24] - Code Quality & Architectural Hardening
+- **Durum:** ✅ TAMAMLANDI
+- **Seviye:** 🔧 ARCHITECTURAL - Kod kalitesi ve tip güvenliği
+- **Yapılanlar:**
+  - **#6 - Tip Güvenliği İyileştirmeleri**: `listing-submission-query.ts` dosyasındaki aşırı `any` kullanımı pragmatik yaklaşımla çözüldü. API sınırlarında katı tip güvenliği korunurken, karmaşık Supabase query builder'ları için stratejik `any` kullanımı belgelendi ve gerekçelendirildi.
+  - **#7 - Akıllı Hata Yönetimi**: Fallback şema mantığı güvenlik açıklarını kapatacak şekilde iyileştirildi. Artık sadece gerçek şema hataları (column not found, relation missing) için fallback yapılıyor, güvenlik/RLS hataları için gürültülü başarısızlık (fail-loud) uygulanıyor.
+  - **#13 - Feature Flag Sistemi**: Mevcut sistemin zaten doğru şekilde env variable'larla çalıştığı doğrulandı. Ek aksiyon gerekmedi.
+- **Mimari İyileştirmeler:**
+  - **Sınır Tip Güvenliği**: API giriş/çıkış noktalarında katı typing
+  - **Pragmatik İç Tipler**: Karmaşık generic tipler için stratejik `any` kullanımı
+  - **Runtime Doğrulama**: Supabase'in runtime tip kontrolünden yararlanma
+  - **Akıllı Hata Sınıflandırması**: Şema vs güvenlik hatalarının ayırt edilmesi
+- **Kod Kalitesi Faydaları:**
+  - Geliştirici deneyimi: Daha hızlı geliştirme ve güvenli refaktörleme
+  - Production güvenilirliği: Güvenlik öncelikli hata yönetimi
+  - Bakım kolaylığı: Belgelenmiş kararlar ve trade-off'lar
+- **Doğrulama:**
+  - `npm run typecheck` ✅ (Tip hataları yok)
+  - `npm run lint` ✅ (Sadece önceden var olan warning'ler)
+  - API sınırlarında tip güvenliği korundu ✅
+  - Akıllı hata yönetimi uygulandı ✅
+  - Feature flag sistemi doğrulandı ✅
+- **Sıradaki Adım:** Production'da hata log'larını izleme ve performans testleri.
