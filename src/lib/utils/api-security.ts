@@ -27,6 +27,7 @@ export interface SecurityOptions {
   userRateLimit?: RateLimitConfig;
   rateLimitKey?: string;
   maxBodySizeBytes?: number | false;
+  forceDbBanCheck?: boolean;
 }
 
 export interface SecurityResult {
@@ -48,9 +49,10 @@ export async function withSecurity(
   request: Request,
   options: SecurityOptions = {}
 ): Promise<SecurityCheckResult> {
-  // 1. CSRF Protection
+  // 1. CSRF Protection (Issue 20 Optimization)
   if (options.requireCsrf) {
-    if (!isValidRequestOrigin(request)) {
+    const isMutation = ["POST", "PUT", "PATCH", "DELETE"].includes(request.method);
+    if (isMutation && !isValidRequestOrigin(request)) {
       return {
         ok: false,
         response: apiError(API_ERROR_CODES.BAD_REQUEST, "Geçersiz istek kaynağı (CSRF).", 403),
@@ -107,7 +109,7 @@ export async function withSecurity(
     }
 
     if (options.requireAdmin) {
-      const isAdmin = await isSupabaseAdminUser();
+      const isAdmin = await isSupabaseAdminUser(user);
       if (!isAdmin) {
         return {
           ok: false,
@@ -125,29 +127,28 @@ export async function withSecurity(
       }
 
       // 3.2 Secondary Ban Check (DB fallback for critical mutations only)
-      // Mutations (POST/PUT/DELETE) or explicit opt-in should check DB
+      // Issue 18: Consolidate checks for better performance
       const isMutation = ["POST", "PUT", "DELETE", "PATCH"].includes(request.method);
-      const shouldCheckDb = isMutation || (options as Record<string, unknown>).forceDbBanCheck;
+      const shouldCheckDb = isMutation || options.forceDbBanCheck;
 
       if (shouldCheckDb) {
         try {
           const { createSupabaseAdminClient } = await import("@/lib/supabase/admin");
           const admin = createSupabaseAdminClient();
-          const { data: isBanned, error: banError } = await admin.rpc("is_user_banned", {
-            p_user_id: user.id,
-          });
+          // Single DB fetch for status instead of RPC call
+          const { data: profile } = await admin
+            .from("profiles")
+            .select("is_banned")
+            .eq("id", user.id)
+            .maybeSingle<{ is_banned: boolean }>();
 
-          if (banError) throw banError;
-
-          if (isBanned) {
+          if (profile?.is_banned) {
             return {
               ok: false,
               response: apiError(API_ERROR_CODES.FORBIDDEN, "Hesabınız askıya alınmıştır.", 403),
             };
           }
         } catch (error) {
-          // Log but continue if it's a transient DB error and JWT said they're okay?
-          // No, fail closed for security.
           return {
             ok: false,
             response: apiError(

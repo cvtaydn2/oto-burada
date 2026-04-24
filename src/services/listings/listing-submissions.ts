@@ -171,24 +171,18 @@ export async function getStoredUserListings(
 ): Promise<PaginatedListingsResult> {
   const admin = createSupabaseAdminClient();
 
-  const dataQuery = buildListingBaseQuery(admin, listingSelect, {
+  const { data, count, error } = await buildListingBaseQuery(admin, listingSelect, {
     sellerId,
     filters: { page, limit },
+    withCount: true,
   });
 
-  const countQuery = buildListingBaseQuery(admin, "id", {
-    sellerId,
-    countOnly: true,
-  });
-
-  const [dataResult, countResult] = await Promise.all([dataQuery, countQuery]);
-
-  if (dataResult.error) {
+  if (error) {
     return { listings: [], total: 0, page, limit, hasMore: false };
   }
 
-  const listings = (dataResult.data ?? []).map(mapListingRow);
-  const total = countResult.count ?? 0;
+  const listings = (data ?? []).map(mapListingRow);
+  const total = count ?? 0;
   const hasMore = page * limit < total;
 
   return {

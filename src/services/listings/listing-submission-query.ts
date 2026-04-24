@@ -308,15 +308,20 @@ export function buildListingBaseQuery(
     filters?: ListingFilters;
     legacySchema?: boolean;
     countOnly?: boolean;
+    withCount?: boolean;
     cursor?: {
       value: string | number;
       column: string;
     };
   }
-): ListingQuery {
+): any {
+  const countOption = options?.countOnly || options?.withCount ? "exact" : undefined;
   let query = client
     .from("listings")
-    .select(selectClause, options?.countOnly ? { count: "exact", head: true } : undefined) as any;
+    .select(
+      selectClause,
+      countOption ? { count: countOption, head: !!options?.countOnly } : undefined
+    ) as any;
 
   // 1. Primary Identifiers
   const sellerId = options?.sellerId ?? options?.filters?.sellerId;
@@ -548,19 +553,15 @@ async function getFilteredListingsInternal(
   }
 
   // Core Data Query (Approved Only for marketplace)
-  const dataQuery = buildListingBaseQuery(client, marketplaceListingSelect, {
+  // Issue 21 Optimization: Single query for data AND count
+  const { data, count, error } = await buildListingBaseQuery(client, marketplaceListingSelect, {
     statuses: ["approved"],
     filters: { ...filters, page, limit },
+    withCount: true,
   });
 
-  // Count Query (Using Supabase count: 'exact' instead of fetching all IDs)
-  const countQuery = buildListingBaseQuery(client, "id", {
-    statuses: ["approved"],
-    filters: { ...filters, page: undefined, limit: undefined },
-    countOnly: true,
-  });
-
-  const [dataResult, countResult] = await Promise.all([dataQuery, countQuery]);
+  const dataResult = { data, error };
+  const countResult = { count };
 
   if (dataResult.error) {
     if (isListingSchemaError(dataResult.error)) {

@@ -5,18 +5,22 @@ import { hasSupabaseAdminEnv, hasSupabaseEnv } from "@/lib/supabase/env";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { API_ERROR_CODES, apiError } from "@/lib/utils/api-response";
 
-export async function requireApiAdminUser(): Promise<User | Response> {
+export async function requireApiAdminUser(existingUser?: User): Promise<User | Response> {
   if (!hasSupabaseEnv()) {
     return apiError(API_ERROR_CODES.SERVICE_UNAVAILABLE, "Servis kullanılamıyor.", 503);
   }
 
-  const supabase = await createSupabaseServerClient();
-  const {
-    data: { user },
-    error,
-  } = await supabase.auth.getUser();
+  const user =
+    existingUser ??
+    (await (async () => {
+      const supabase = await createSupabaseServerClient();
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      return user;
+    })());
 
-  if (error || !user) {
+  if (!user) {
     return apiError(API_ERROR_CODES.UNAUTHORIZED, "Oturum doğrulanamadı.", 401);
   }
 
@@ -28,7 +32,6 @@ export async function requireApiAdminUser(): Promise<User | Response> {
   }
 
   // Secondary check: DB profiles.role (guards against stale JWT after demotion).
-  // Fail closed if admin env is unavailable — we cannot confirm the role is still valid.
   if (!hasSupabaseAdminEnv()) {
     return apiError(
       API_ERROR_CODES.SERVICE_UNAVAILABLE,
@@ -45,7 +48,6 @@ export async function requireApiAdminUser(): Promise<User | Response> {
     .maybeSingle<{ role: string; is_banned?: boolean }>();
 
   if (!profile || profile.role !== "admin") {
-    // DB must explicitly confirm admin role; null/missing profile fails closed.
     return apiError(API_ERROR_CODES.FORBIDDEN, "Admin yetkisi gerekli.", 403);
   }
 
@@ -62,20 +64,24 @@ export async function requireApiAdminUser(): Promise<User | Response> {
  * Returns boolean instead of Response.
  * Used in routes with multi-factor auth (e.g. Cron or Admin).
  */
-export async function isSupabaseAdminUser(): Promise<boolean> {
+export async function isSupabaseAdminUser(existingUser?: User): Promise<boolean> {
   if (!hasSupabaseEnv()) return false;
 
-  const supabase = await createSupabaseServerClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user =
+    existingUser ??
+    (await (async () => {
+      const supabase = await createSupabaseServerClient();
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      return user;
+    })());
 
   if (!user) return false;
 
   const jwtRole = (user.app_metadata as { role?: string })?.role ?? "user";
   if (jwtRole !== "admin") return false;
 
-  // Fail closed if admin env is unavailable — cannot confirm role is still valid.
   if (!hasSupabaseAdminEnv()) return false;
 
   const adminClient = createSupabaseAdminClient();

@@ -120,8 +120,24 @@ export async function getMarketplaceSeller(sellerId: string): Promise<Profile | 
 export async function getPublicMarketplaceListings(
   filters: ListingFilters = { page: 1, limit: 12, sort: "newest" }
 ) {
-  const cacheKey = `public-listings:${JSON.stringify(filters)}`;
-  return withNextCache([cacheKey], () => getFilteredMarketplaceListings(filters), 60);
+  // Issue 19 Optimization: Use stable key parts instead of expensive JSON.stringify
+  const keyParts = [
+    "public-listings",
+    `p:${filters.page ?? 1}`,
+    `l:${filters.limit ?? 12}`,
+    `s:${filters.sort ?? "newest"}`,
+    `b:${filters.brand ?? "all"}`,
+    `m:${filters.model ?? "all"}`,
+    `c:${filters.city ?? "all"}`,
+    `q:${filters.query ?? ""}`,
+    `f:${filters.fuelType ?? ""}`,
+    `t:${filters.transmission ?? ""}`,
+    `minP:${filters.minPrice ?? ""}`,
+    `maxP:${filters.maxPrice ?? ""}`,
+    `minY:${filters.minYear ?? ""}`,
+    `maxY:${filters.maxYear ?? ""}`,
+  ];
+  return withNextCache(keyParts, () => getFilteredMarketplaceListings(filters), 60);
 }
 
 export async function getRecentMarketplaceListings(limit = 100) {

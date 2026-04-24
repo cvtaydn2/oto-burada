@@ -67,7 +67,8 @@ export const expertInspectionSchema: z.ZodType<ExpertInspection> = z.object({
   documentPath: optionalTrimmedString,
 });
 
-export const listingCreateSchema = z.object({
+// Issue 23: Consolidate fields to avoid redundant schema compilation
+export const baseListingFields = {
   title: trimmedRequiredString.max(200, "Baslik en fazla 200 karakter olabilir"),
   category: z.enum(vehicleCategories),
   brand: trimmedRequiredString,
@@ -109,116 +110,92 @@ export const listingCreateSchema = z.object({
     .optional(),
   tramerAmount: nonNegativeNumberSchema.nullable().optional(),
   damageStatusJson: z.record(z.string(), z.string()).nullable().optional(),
+};
+
+export const listingCreateSchema = z.object({
+  ...baseListingFields,
   images: z.array(listingImageSchema).min(minimumListingImages, "En az 3 fotoğraf eklemelisin"),
   expertInspection: expertInspectionSchema.optional(),
   turnstileToken: z.string().trim().optional(),
 });
 
-export const listingCreateFormSchema: z.ZodType<ListingCreateFormValues> = z.object({
-  title: trimmedRequiredString.max(200, "Baslik en fazla 200 karakter olabilir"),
-  category: z.enum(vehicleCategories),
-  brand: trimmedRequiredString,
-  model: trimmedRequiredString,
-  carTrim: z.string().trim().optional().nullable(),
-  year: z.coerce
-    .number()
-    .int()
-    .min(minimumCarYear, invalidMessage)
-    .max(maximumCarYear, invalidMessage),
-  mileage: nonNegativeNumberSchema.max(maximumMileage, invalidMessage),
-  fuelType: z.enum(fuelTypes),
-  transmission: z.enum(transmissionTypes),
-  price: positiveCurrencySchema.max(
-    maximumListingPrice,
-    `Fiyat en fazla ${maximumListingPrice.toLocaleString("tr-TR")} TL olabilir`
-  ),
-  city: trimmedRequiredString,
-  district: trimmedRequiredString,
-  description: trimmedRequiredString
-    .min(20, "Açıklama en az 20 karakter olmalı")
-    .max(
-      maximumDescriptionLength,
-      `Açıklama en fazla ${maximumDescriptionLength} karakter olabilir`
-    ),
-  whatsappPhone: lenientPhoneSchema,
-  vin: z
-    .string()
-    .trim()
-    .toUpperCase()
-    .length(17, "Şasi numarası (VIN) tam olarak 17 karakter olmalıdır")
-    .regex(/^[A-HJ-NPR-Z0-9]+$/, "Geçersiz şasi numarası formatı (I, O, Q harfleri içermez)"),
-  licensePlate: z
-    .string()
-    .trim()
-    .min(5, "Geçerli bir plaka gir")
-    .max(12, "Gecersiz plaka")
-    .nullable()
-    .optional(),
-  tramerAmount: nonNegativeNumberSchema.nullable().optional(),
-  damageStatusJson: z.record(z.string(), z.string()).nullable().optional(),
-  expertInspection: expertInspectionSchema.optional(),
-  images: z
-    .array(
-      z.object({
-        fileName: z.string().trim().optional(),
-        mimeType: z.string().trim().optional(),
-        size: z.coerce.number().int().min(0).optional(),
-        storagePath: z.string().trim().optional(),
-        url: z.string().trim().optional(),
-        placeholderBlur: z.string().trim().nullable().optional(),
-        imageType: z.enum(["photo", "360"]).optional(),
-      })
-    )
-    .superRefine((images, context) => {
-      const populatedImages = images.filter(
-        (image) =>
-          image.url &&
-          image.url.trim().length > 0 &&
-          image.storagePath &&
-          image.storagePath.trim().length > 0
-      );
+// Lazy initialized schema for expensive superRefine blocks
+let _listingCreateFormSchema: z.ZodType<ListingCreateFormValues> | null = null;
+export const getListingCreateFormSchema = () => {
+  if (!_listingCreateFormSchema) {
+    _listingCreateFormSchema = z.object({
+      ...baseListingFields,
+      expertInspection: expertInspectionSchema.optional(),
+      images: z
+        .array(
+          z.object({
+            fileName: z.string().trim().optional(),
+            mimeType: z.string().trim().optional(),
+            size: z.coerce.number().int().min(0).optional(),
+            storagePath: z.string().trim().optional(),
+            url: z.string().trim().optional(),
+            placeholderBlur: z.string().trim().nullable().optional(),
+            imageType: z.enum(["photo", "360"]).optional(),
+          })
+        )
+        .superRefine((images, context) => {
+          const populatedImages = images.filter(
+            (image) =>
+              image.url &&
+              image.url.trim().length > 0 &&
+              image.storagePath &&
+              image.storagePath.trim().length > 0
+          );
 
-      if (populatedImages.length < minimumListingImages) {
-        context.addIssue({
-          code: z.ZodIssueCode.custom,
-          path: ["images"],
-          message: "En az 3 fotoğraf eklemelisin",
-        });
-      }
+          if (populatedImages.length < minimumListingImages) {
+            context.addIssue({
+              code: z.ZodIssueCode.custom,
+              path: ["images"],
+              message: "En az 3 fotoğraf eklemelisin",
+            });
+          }
 
-      images.forEach((image, index) => {
-        const hasUrl = Boolean(image.url && image.url.trim().length > 0);
-        const hasStoragePath = Boolean(image.storagePath && image.storagePath.trim().length > 0);
+          images.forEach((image, index) => {
+            const hasUrl = Boolean(image.url && image.url.trim().length > 0);
+            const hasStoragePath = Boolean(
+              image.storagePath && image.storagePath.trim().length > 0
+            );
 
-        if (!hasUrl && !hasStoragePath) {
-          return;
-        }
+            if (!hasUrl && !hasStoragePath) {
+              return;
+            }
 
-        if (!hasUrl || !hasStoragePath) {
-          context.addIssue({
-            code: z.ZodIssueCode.custom,
-            path: ["images", index, "url"],
-            message: "Fotografi once yuklemelisin",
+            if (!hasUrl || !hasStoragePath) {
+              context.addIssue({
+                code: z.ZodIssueCode.custom,
+                path: ["images", index, "url"],
+                message: "Fotografi once yuklemelisin",
+              });
+              return;
+            }
+
+            const parsedUrl = z
+              .string()
+              .trim()
+              .url("Geçerli bir fotoğraf bağlantısı gir")
+              .safeParse(image.url);
+
+            if (!parsedUrl.success) {
+              context.addIssue({
+                code: z.ZodIssueCode.custom,
+                path: ["images", index, "url"],
+                message: "Geçerli bir fotoğraf bağlantısı gir",
+              });
+            }
           });
-          return;
-        }
+        }),
+    });
+  }
+  return _listingCreateFormSchema;
+};
 
-        const parsedUrl = z
-          .string()
-          .trim()
-          .url("Geçerli bir fotoğraf bağlantısı gir")
-          .safeParse(image.url);
-
-        if (!parsedUrl.success) {
-          context.addIssue({
-            code: z.ZodIssueCode.custom,
-            path: ["images", index, "url"],
-            message: "Geçerli bir fotoğraf bağlantısı gir",
-          });
-        }
-      });
-    }),
-});
+// Maintain compatibility (deprecated)
+export const listingCreateFormSchema = z.lazy(() => getListingCreateFormSchema());
 
 export const listingSchema: z.ZodType<Listing> = z.object({
   id: trimmedRequiredString,

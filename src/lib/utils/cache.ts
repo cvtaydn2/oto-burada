@@ -25,6 +25,11 @@ class MemoryCache {
    * Get cached value if exists and not expired
    */
   get<T>(key: string): T | null {
+    // Probabilistic cleanup (1% of requests) to prevent stale entries leak in serverless
+    if (Math.random() < 0.01) {
+      this.cleanup();
+    }
+
     const entry = this.cache.get(key) as CacheEntry<T> | undefined;
 
     if (!entry) {
@@ -77,7 +82,7 @@ class MemoryCache {
   }
 
   /**
-   * Clean up expired entries (call periodically)
+   * Clean up expired entries (lazy cleanup during access or periodically)
    */
   cleanup(): void {
     const now = Date.now();
@@ -91,16 +96,6 @@ class MemoryCache {
 
 // Singleton instance
 export const serverCache = new MemoryCache();
-
-// Cleanup expired entries every 5 minutes
-if (typeof setInterval !== "undefined") {
-  setInterval(
-    () => {
-      serverCache.cleanup();
-    },
-    5 * 60 * 1000
-  );
-}
 
 /**
  * Helper to wrap expensive operations with caching
