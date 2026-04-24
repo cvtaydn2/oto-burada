@@ -1,6 +1,7 @@
 import { logger } from "@/lib/utils/logger";
 import { sanitizeDescription, sanitizeText } from "@/lib/utils/sanitize";
 import { listingCreateSchema } from "@/lib/validators";
+import { buildPendingListing } from "@/services/listings/listing-submissions";
 import type { Listing, ListingCreateInput } from "@/types";
 
 export interface ListingCreationResult {
@@ -12,9 +13,7 @@ export interface ListingCreationResult {
 
 export interface ListingCreationDependencies {
   checkQuota: (userId: string) => Promise<{ allowed: boolean; reason?: string }>;
-  getExistingListings: (
-    userId: string
-  ) => Promise<
+  getExistingListings: (userId: string) => Promise<
     {
       id: string;
       slug: string;
@@ -100,7 +99,6 @@ export async function executeListingCreation(
   }
 
   // 5. Build Domain Object
-  const { buildPendingListing } = await import("@/services/listings/listing-submissions");
   const existingListings = await deps.getExistingListings(userId);
   const listingRecord = buildPendingListing(validation.data, userId, existingListings);
 

@@ -2,8 +2,9 @@
 
 import { formatDistanceToNow } from "date-fns";
 import { tr } from "date-fns/locale";
-import { Car, MessageCircle } from "lucide-react";
+import { Archive, Car, Inbox, MessageCircle } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { useState } from "react";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -19,7 +20,8 @@ interface ChatListProps {
 }
 
 export function ChatList({ userId, onChatSelect, selectedChatId }: ChatListProps) {
-  const { data: chats, isLoading, error } = useChats(userId);
+  const [showArchived, setShowArchived] = useState(false);
+  const { data: chats, isLoading, error } = useChats(userId, showArchived);
   const router = useRouter();
 
   const formatTime = (date: string) => {
@@ -60,67 +62,92 @@ export function ChatList({ userId, onChatSelect, selectedChatId }: ChatListProps
     );
   }
 
-  if (!chats || chats.length === 0) {
-    return (
-      <Card className="p-8 text-center">
-        <div className="flex flex-col items-center gap-3 text-muted-foreground">
-          <MessageCircle className="h-12 w-12 opacity-50" />
-          <p className="text-sm">Henüz chat oluşturmadınız</p>
-          <p className="text-xs">
-            İlanlardaki &quot;Mesaj Gönder&quot; butonunu kullanarak sohbete başlayabilirsiniz
-          </p>
-        </div>
-      </Card>
-    );
-  }
-
   return (
-    <div className="space-y-3">
-      {chats.map((chat) => (
-        <Card
-          key={chat.id}
-          className={`p-4 cursor-pointer transition-colors hover:bg-accent ${selectedChatId === chat.id ? "ring-2 ring-primary" : ""}`}
-          onClick={() => handleChatClick(chat)}
+    <div className="space-y-4">
+      {/* Tabs */}
+      <div className="flex border-b">
+        <button
+          onClick={() => setShowArchived(false)}
+          className={`flex-1 py-2 text-sm font-medium flex items-center justify-center gap-2 border-b-2 transition-colors ${
+            !showArchived
+              ? "border-primary text-primary"
+              : "border-transparent text-muted-foreground hover:text-foreground"
+          }`}
         >
-          <div className="flex items-start gap-3">
-            <div className="relative">
-              <Avatar className="h-12 w-12">
-                <AvatarImage src="" alt="User avatar" />
-                <AvatarFallback>
-                  <Car className="h-6 w-6" />
-                </AvatarFallback>
-              </Avatar>
-              {chat.unreadCount && chat.unreadCount > 0 && (
-                <Badge
-                  variant="destructive"
-                  className="absolute -bottom-1 -right-1 h-5 w-5 rounded-full p-0 text-xs flex items-center justify-center"
-                >
-                  {chat.unreadCount}
-                </Badge>
-              )}
-            </div>
-            <div className="flex-1 min-w-0">
-              <div className="flex items-center justify-between">
-                <h3 className="font-medium text-sm truncate">
-                  {chat.listingId ? "İlan Mesajı" : "Chat"}
-                </h3>
-                {chat.lastMessageAt && (
-                  <span className="text-xs text-muted-foreground">
-                    {formatTime(chat.lastMessageAt)}
-                  </span>
-                )}
-              </div>
-              <p className="text-xs text-muted-foreground truncate">
-                {chat.lastMessage?.content || "Chat başlatıldı"}
-              </p>
-              <p className="text-xs text-muted-foreground/60">
-                {chat.lastMessage &&
-                  `Gönderen: ${chat.lastMessage.senderId === userId ? "Siz" : "Satıcı"}`}
-              </p>
-            </div>
+          <Inbox className="h-4 w-4" />
+          Gelen Kutusu
+        </button>
+        <button
+          onClick={() => setShowArchived(true)}
+          className={`flex-1 py-2 text-sm font-medium flex items-center justify-center gap-2 border-b-2 transition-colors ${
+            showArchived
+              ? "border-primary text-primary"
+              : "border-transparent text-muted-foreground hover:text-foreground"
+          }`}
+        >
+          <Archive className="h-4 w-4" />
+          Arşivlenmiş
+        </button>
+      </div>
+
+      {!chats || chats.length === 0 ? (
+        <Card className="p-8 text-center">
+          <div className="flex flex-col items-center gap-3 text-muted-foreground">
+            <MessageCircle className="h-12 w-12 opacity-50" />
+            <p className="text-sm">
+              {showArchived ? "Arşivlenmiş mesajınız yok" : "Henüz mesajınız yok"}
+            </p>
           </div>
         </Card>
-      ))}
+      ) : (
+        <div className="space-y-3">
+          {chats.map((chat) => (
+            <Card
+              key={chat.id}
+              className={`p-4 cursor-pointer transition-colors hover:bg-accent ${selectedChatId === chat.id ? "ring-2 ring-primary" : ""}`}
+              onClick={() => handleChatClick(chat)}
+            >
+              <div className="flex items-start gap-3">
+                <div className="relative">
+                  <Avatar className="h-12 w-12">
+                    <AvatarImage src="" alt="User avatar" />
+                    <AvatarFallback>
+                      <Car className="h-6 w-6" />
+                    </AvatarFallback>
+                  </Avatar>
+                  {chat.unreadCount && chat.unreadCount > 0 && (
+                    <Badge
+                      variant="destructive"
+                      className="absolute -bottom-1 -right-1 h-5 w-5 rounded-full p-0 text-xs flex items-center justify-center"
+                    >
+                      {chat.unreadCount}
+                    </Badge>
+                  )}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center justify-between">
+                    <h3 className="font-medium text-sm truncate">
+                      {chat.listingId ? "İlan Mesajı" : "Chat"}
+                    </h3>
+                    {chat.lastMessageAt && (
+                      <span className="text-xs text-muted-foreground">
+                        {formatTime(chat.lastMessageAt)}
+                      </span>
+                    )}
+                  </div>
+                  <p className="text-xs text-muted-foreground truncate">
+                    {chat.lastMessage?.content || "Chat başlatıldı"}
+                  </p>
+                  <p className="text-xs text-muted-foreground/60">
+                    {chat.lastMessage &&
+                      `Gönderen: ${chat.lastMessage.senderId === userId ? "Siz" : "Satıcı"}`}
+                  </p>
+                </div>
+              </div>
+            </Card>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

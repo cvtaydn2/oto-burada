@@ -4,8 +4,8 @@ import { API_ROUTES } from "@/lib/constants/api-routes";
 import { queryKeys } from "@/lib/query-keys";
 import type { ChatWithLastMessage, Message, SendMessageInput } from "@/types/chat";
 
-async function fetchChats(): Promise<ChatWithLastMessage[]> {
-  const res = await fetch(API_ROUTES.CHATS.BASE);
+async function fetchChats(archived = false): Promise<ChatWithLastMessage[]> {
+  const res = await fetch(`${API_ROUTES.CHATS.BASE}${archived ? "?archived=true" : ""}`);
   const json = await res.json().catch(() => ({}));
   if (!res.ok) {
     throw new Error(json.error || "Chat listesi alınamadı.");
@@ -25,10 +25,10 @@ async function fetchMessages(chatId: string): Promise<Message[]> {
 /**
  * Get all chats for current user — calls /api/chats (server-side, RLS-aware)
  */
-export function useChats(userId: string) {
+export function useChats(userId: string, archived = false) {
   return useQuery({
-    queryKey: queryKeys.chats.list(userId),
-    queryFn: () => fetchChats(),
+    queryKey: [...queryKeys.chats.list(userId), { archived }],
+    queryFn: () => fetchChats(archived),
     enabled: !!userId,
     staleTime: 30 * 1000, // 30s — realtime keeps it fresh
   });

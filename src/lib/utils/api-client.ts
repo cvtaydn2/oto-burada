@@ -1,85 +1,87 @@
-export interface ApiClientSuccessResponse<T = unknown> {
-  success: true;
-  data: T;
-  message?: string;
-}
+/**
+ * Internal API Client utility — the single fetch wrapper for all client-side API calls.
+ *
+ * Features:
+ * - Consistent JSON headers
+ * - Zod runtime response validation
+ * - Global 401 handling with redirect deduplication guard
+ * - Uniform error shape matching ApiResponse<T>
+ *
+ * Do NOT use this directly from components — import from the
+ * specific service module instead (e.g. `@/services/favorites/client-service`).
+ */
 
-export interface ApiClientErrorResponse {
-  success: false;
-  error: {
-    code: string;
-    message: string;
-    fieldErrors?: Record<string, string>;
-  };
-}
+import { z } from "zod";
 
-export type ApiClientResponse<T = unknown> = ApiClientSuccessResponse<T> | ApiClientErrorResponse;
+import { createApiResponseSchema } from "@/lib/validators/api-responses";
+import type { ApiResponse } from "@/types/errors";
 
-export async function fetchApi<T>(
-  url: string,
-  options?: RequestInit
-): Promise<{ data?: T; error?: string; fieldErrors?: Record<string, string> }> {
-  try {
-    const response = await fetch(url, {
-      ...options,
-      headers: {
-        "Content-Type": "application/json",
-        ...options?.headers,
-      },
-    });
+// Guard against multiple concurrent 401 responses causing a redirect storm.
+let _isRedirecting = false;
 
-    // 204 No Content veya boş body durumunda JSON parse etme
-    if (response.status === 204 || response.headers.get("content-length") === "0") {
-      if (!response.ok) {
-        return { error: `HTTP ${response.status}: ${response.statusText}` };
-      }
-      return {};
-    }
+export class ApiClient {
+  static async request<T>(
+    path: string,
+    options?: RequestInit & { schema?: z.ZodTypeAny }
+  ): Promise<ApiResponse<T>> {
+    try {
+      const res = await fetch(path, {
+        ...options,
+        headers: {
+          "Content-Type": "application/json",
+          ...(options?.headers || {}),
+        },
+      });
 
-    // Content-Type kontrolü — JSON değilse parse etme
-    const contentType = response.headers.get("content-type");
-    if (!contentType?.includes("application/json")) {
-      if (!response.ok) {
+      const json = await res.json().catch(() => ({}));
+
+      if (!res.ok) {
+        if (
+          res.status === 401 &&
+          typeof window !== "undefined" &&
+          !window.location.pathname.startsWith("/login") &&
+          !_isRedirecting
+        ) {
+          _isRedirecting = true;
+          window.location.href = `/login?returnTo=${encodeURIComponent(window.location.pathname)}`;
+          setTimeout(() => {
+            _isRedirecting = false;
+          }, 3000);
+        }
+
         return {
-          error: `HTTP ${response.status}: Beklenmeyen yanıt formatı (${contentType || "unknown"})`,
+          success: false,
+          error: {
+            message: json.error?.message || json.error || "Bir hata oluştu.",
+            code: json.error?.code || (res.status === 401 ? "UNAUTHORIZED" : "UNKNOWN_ERROR"),
+            details: json.error?.details,
+          },
         };
       }
-      return { error: "Sunucu JSON yanıt döndürmedi." };
-    }
 
-    let json: ApiClientResponse<T>;
-    try {
-      json = await response.json();
-    } catch {
-      return { error: "Sunucu yanıtı okunamadı (JSON parse hatası)." };
-    }
+      if (options?.schema) {
+        const wrappedSchema = createApiResponseSchema(options.schema);
+        const result = wrappedSchema.safeParse({ success: true, data: json.data });
+        if (!result.success) {
+          console.error("[ApiClient] Validation Error:", result.error);
+          return {
+            success: false,
+            error: {
+              message: "Sunucudan geçersiz veri geldi (Validation Error).",
+              code: "VALIDATION_ERROR",
+            },
+          };
+        }
+      }
 
-    if (!response.ok) {
+      return { success: true, data: json.data };
+    } catch (err) {
       return {
-        error:
-          json && typeof json === "object" && "error" in json && json.error?.message
-            ? json.error.message
-            : `HTTP ${response.status}: ${response.statusText}`,
-        fieldErrors:
-          json && typeof json === "object" && "error" in json ? json.error?.fieldErrors : undefined,
+        success: false,
+        error: {
+          message: err instanceof Error ? err.message : "Beklenmedik bir ağ hatası.",
+        },
       };
     }
-
-    if (!json.success) {
-      return {
-        error: json.error.message,
-        fieldErrors: json.error.fieldErrors,
-      };
-    }
-
-    return { data: json.data };
-  } catch (err) {
-    return {
-      error: err instanceof Error ? err.message : "Bir hata oluştu. Lütfen tekrar dene.",
-    };
   }
-}
-
-export function getApiErrorMessage(result: { error?: string }): string {
-  return result.error ?? "Bir hata oluştu. Lütfen tekrar dene.";
 }

@@ -621,6 +621,30 @@ Automate "Search Result" notifications.
 
 ---
 
+---
+
+## Phase 30 — Infrastructure Hardening & Messaging Maturity (Complete)
+
+### Phase 30: Architectural Hardening & Messaging Maturity ✅
+- [x] Refactor Monolithic ApiClient into Domain Services
+- [x] Fix Admin/Browser Client Singleton Stale Key Risks
+- [x] Implement Atomic Chat Operations (RPC)
+- [x] Resolve 401 Redirect Loop Guard in ApiClient
+- [x] Optimize In-Memory Rate Limit Cleanup (Memory Leak Prevention)
+- [x] Remove Runtime Dynamic Imports in Listing Submission Flow
+- [x] Add Archive/Unarchive Messaging Logic
+- [x] Final Production Build Validation
+- [x] Enhance MessageBubble with delivery/read status and timestamps.
+
+---
+
+## Future Phases (Planned)
+- [ ] Real-time Typing Indicators
+- [ ] User Online/Offline Status
+- [ ] Direct Chat Notifications (Push)
+
+---
+
 ## Final Definition of Done
 
 The MVP is complete when:

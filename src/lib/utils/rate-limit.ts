@@ -45,21 +45,33 @@ const inMemoryStore = new Map<string, RateLimitEntry>();
 let lastCleanup = Date.now();
 const CLEANUP_INTERVAL_MS = 60 * 1000; // 1 dakika
 const MAX_DELETIONS_PER_CLEANUP = 1000; // Event-loop bloklanmasını önlemek için limit
+const MAX_SCAN_PER_CLEANUP = 500; // Her temizlikte maksimum taranacak kayıt sayısı
 
 function cleanupInMemory() {
   const now = Date.now();
   if (now - lastCleanup < CLEANUP_INTERVAL_MS) return;
   lastCleanup = now;
 
+  let scannedCount = 0;
   let deletedCount = 0;
+
+  // Map iteration order is insertion order.
+  // For constant windows, this is mostly expiration order.
   for (const [key, entry] of inMemoryStore) {
+    scannedCount++;
     if (entry.resetAt <= now) {
       inMemoryStore.delete(key);
       deletedCount++;
     }
-    // Rate limit attack'lerinde bellekte milyonlarca key biriktiğinde
-    // garbage collection veya the loop bloklanmasın diye:
-    if (deletedCount >= MAX_DELETIONS_PER_CLEANUP) break;
+
+    // Stop if we've scanned enough or deleted enough to protect the event loop
+    if (scannedCount >= MAX_SCAN_PER_CLEANUP || deletedCount >= MAX_DELETIONS_PER_CLEANUP) {
+      break;
+    }
+  }
+
+  if (deletedCount > 0) {
+    logger.api.debug(`In-memory rate limit cleanup: deleted ${deletedCount} expired entries.`);
   }
 }
 

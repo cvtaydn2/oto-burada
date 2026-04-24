@@ -11,7 +11,10 @@ export class ChatService {
   /**
    * Get all chats for a user with last message preview
    */
-  static async getChatsForUser(userId: string): Promise<ChatWithLastMessage[]> {
+  static async getChatsForUser(
+    userId: string,
+    includeArchived = false
+  ): Promise<ChatWithLastMessage[]> {
     const admin = createSupabaseAdminClient();
 
     // Fetch chats — exclude archived ones for this user
@@ -50,10 +53,16 @@ export class ChatService {
 
     return (chats || [])
       .filter((chat) => {
-        // Only show chats that are NOT archived by this user
-        if (chat.buyer_id === userId) return !chat.buyer_archived;
-        if (chat.seller_id === userId) return !chat.seller_archived;
-        return true;
+        const isBuyer = chat.buyer_id === userId;
+        const isSeller = chat.seller_id === userId;
+
+        // If including archived, we ONLY show archived chats.
+        // If NOT including archived, we ONLY show active chats.
+        if (includeArchived) {
+          return (isBuyer && chat.buyer_archived) || (isSeller && chat.seller_archived);
+        } else {
+          return (isBuyer && !chat.buyer_archived) || (isSeller && !chat.seller_archived);
+        }
       })
       .map((chat: Record<string, unknown>) => {
         const messages = (chat.messages as Record<string, unknown>[]) || [];
@@ -92,60 +101,26 @@ export class ChatService {
   static async createChat(input: CreateChatInput): Promise<Chat> {
     const admin = createSupabaseAdminClient();
 
-    const { data: existingChat, error: searchError } = await admin
-      .from("chats")
-      .select("id, status, buyer_archived, seller_archived")
-      .eq("listing_id", input.listingId)
-      .eq("buyer_id", input.buyerId)
-      .eq("seller_id", input.sellerId)
-      .single();
-
-    if (searchError && searchError.code !== "PGRST116") {
-      throw new Error(`Chat aranırken hata oluştu: ${searchError.message}`);
-    }
-
-    if (existingChat) {
-      // Return existing chat if active
-      if (existingChat.status === "active") {
-        return {
-          id: existingChat.id,
-          listingId: input.listingId,
-          buyerId: input.buyerId,
-          sellerId: input.sellerId,
-          status: existingChat.status as "active" | "archived",
-          lastMessageAt: new Date().toISOString(),
-          createdAt: new Date().toISOString(),
-          buyerArchived:
-            (existingChat as unknown as { buyer_archived: boolean }).buyer_archived || false,
-          sellerArchived:
-            (existingChat as unknown as { seller_archived: boolean }).seller_archived || false,
-        };
-      }
-    }
-
-    const { data: chat, error: insertError } = await admin
-      .from("chats")
-      .insert({
-        listing_id: input.listingId,
-        buyer_id: input.buyerId,
-        seller_id: input.sellerId,
-        status: "active",
-      })
-      .select()
-      .single();
-
-    if (insertError) {
-      throw new Error(`Chat oluşturulamadı: ${insertError.message}`);
-    }
-
-    // Create a system message for chat start
-    await admin.from("messages").insert({
-      chat_id: chat.id,
-      sender_id: input.buyerId,
-      content: "Chat başlatıldı.",
-      message_type: "system",
-      is_read: true,
+    const { data: chatId, error } = await admin.rpc("create_chat_atomic", {
+      p_listing_id: input.listingId,
+      p_buyer_id: input.buyerId,
+      p_seller_id: input.sellerId,
+      p_system_message: "Chat başlatıldı.",
     });
+
+    if (error) {
+      throw new Error(`Chat oluşturulamadı: ${error.message}`);
+    }
+
+    const { data: chat, error: fetchError } = await admin
+      .from("chats")
+      .select("*")
+      .eq("id", chatId)
+      .single();
+
+    if (fetchError) {
+      throw new Error(`Chat bilgileri alınamadı: ${fetchError.message}`);
+    }
 
     return {
       id: chat.id,
@@ -255,11 +230,7 @@ export class ChatService {
       throw new Error(`Mesaj gönderilemedi: ${insertError.message}`);
     }
 
-    // Update chat's last_message_at
-    await admin
-      .from("chats")
-      .update({ last_message_at: new Date().toISOString() })
-      .eq("id", input.chatId);
+    // Redundant manual update removed — DB trigger 'messages_touch_chat_last_message_at' handles this atomically.
 
     return {
       id: message.id,
@@ -279,17 +250,16 @@ export class ChatService {
   static async deleteMessage(messageId: string, userId: string): Promise<boolean> {
     const admin = createSupabaseAdminClient();
 
-    const { error } = await admin
-      .from("messages")
-      .update({ deleted_at: new Date().toISOString() })
-      .eq("id", messageId)
-      .eq("sender_id", userId);
+    const { data: success, error } = await admin.rpc("soft_delete_message", {
+      p_message_id: messageId,
+      p_user_id: userId,
+    });
 
     if (error) {
       throw new Error(`Mesaj silinemedi: ${error.message}`);
     }
 
-    return true;
+    return !!success;
   }
 
   /**

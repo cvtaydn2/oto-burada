@@ -16,9 +16,11 @@ export async function GET(req: NextRequest) {
   }
 
   const user = security.user!;
+  const { searchParams } = new URL(req.url);
+  const archived = searchParams.get("archived") === "true";
 
   try {
-    const result = await ChatService.getChatsForUser(user.id);
+    const result = await ChatService.getChatsForUser(user.id, archived);
     return NextResponse.json({ data: result });
   } catch (error: unknown) {
     console.error("[API:CHATS:GET] Error:", error);

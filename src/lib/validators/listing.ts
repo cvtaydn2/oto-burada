@@ -110,6 +110,7 @@ export const listingCreateSchema = z.object({
   damageStatusJson: z.record(z.string(), z.string()).nullable().optional(),
   images: z.array(listingImageSchema).min(minimumListingImages, "En az 3 fotoğraf eklemelisin"),
   expertInspection: expertInspectionSchema.optional(),
+  turnstileToken: z.string().trim().optional(),
 });
 
 export const listingCreateFormSchema: z.ZodType<ListingCreateFormValues> = z.object({

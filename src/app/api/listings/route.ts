@@ -1,19 +1,26 @@
 import { waitUntil } from "@vercel/functions";
 
+import { executeListingCreation } from "@/domain/usecases/listing-create";
 import { AnalyticsEvent } from "@/lib/analytics/events";
+import { mapUseCaseError, validateRequestBody } from "@/lib/api/handler-utils";
 import { captureServerError, trackServerEvent } from "@/lib/monitoring/posthog-server";
 import { verifyTurnstileToken } from "@/lib/security/turnstile";
 import { API_ERROR_CODES, apiError, apiSuccess } from "@/lib/utils/api-response";
 import { withSecurity, withUserAndCsrf } from "@/lib/utils/api-security";
 import { rateLimitProfiles } from "@/lib/utils/rate-limit";
 import { enforceRateLimit, getRateLimitKey } from "@/lib/utils/rate-limit-middleware";
+import { listingCreateSchema } from "@/lib/validators/listing";
 import { parseListingFiltersFromSearchParams } from "@/services/listings/listing-filters";
 import { checkListingLimit } from "@/services/listings/listing-limits";
 import {
   performAsyncModeration,
   runListingTrustGuards,
 } from "@/services/listings/listing-submission-moderation";
-import { createDatabaseListing } from "@/services/listings/listing-submissions";
+import {
+  createDatabaseListing,
+  getDatabaseListings,
+  getStoredUserListings,
+} from "@/services/listings/listing-submissions";
 import { getFilteredMarketplaceListings } from "@/services/listings/marketplace-listings";
 import { createDatabaseNotification } from "@/services/notifications/notification-records";
 
@@ -37,7 +44,6 @@ export async function GET(request: Request) {
         ? Math.min(Math.max(rawLimit, 1), MY_LISTINGS_MAX_LIMIT)
         : MY_LISTINGS_DEFAULT_LIMIT;
 
-      const { getStoredUserListings } = await import("@/services/listings/listing-submissions");
       const result = await getStoredUserListings(user.id, page, limit);
       return apiSuccess(result);
     } catch (error) {
@@ -85,25 +91,13 @@ export async function POST(request: Request) {
   if (!security.ok) return security.response;
   const user = security.user!;
 
-  let body: unknown;
-  try {
-    body = await request.json();
-  } catch {
-    return apiError(API_ERROR_CODES.BAD_REQUEST, "Geçersiz JSON verisi.", 400);
-  }
-
   // 1. Structural Validation (F-14 Defense in Depth)
-  const { listingCreateSchema } = await import("@/lib/validators/listing");
-  const validation = listingCreateSchema.safeParse(body);
-
-  if (!validation.success) {
-    return apiError(API_ERROR_CODES.BAD_REQUEST, "Geçersiz ilan verisi formatı.", 400, {
-      errors: validation.error.flatten().fieldErrors,
-    });
-  }
+  const validation = await validateRequestBody(request, listingCreateSchema);
+  if (!validation.success) return validation.response;
+  const input = validation.data;
 
   // 2. Bot Protection
-  const turnstileToken = String((body as Record<string, unknown>).turnstileToken || "");
+  const turnstileToken = String((input as { turnstileToken?: string }).turnstileToken || "");
   const isHuman = await verifyTurnstileToken(turnstileToken);
   if (!isHuman) {
     return apiError(
@@ -114,12 +108,9 @@ export async function POST(request: Request) {
   }
 
   // Orchestrate via Domain Use Case (SOLID)
-  const { executeListingCreation } = await import("@/domain/usecases/listing-create");
-
-  const result = await executeListingCreation(validation.data, user.id, {
+  const result = await executeListingCreation(input, user.id, {
     checkQuota: (uid) => checkListingLimit(uid),
     getExistingListings: async (sellerId: string) => {
-      const { getDatabaseListings } = await import("@/services/listings/listing-submissions");
       const listings = await getDatabaseListings({
         sellerId,
         statuses: ["draft", "pending", "approved"],
@@ -167,29 +158,8 @@ export async function POST(request: Request) {
   });
 
   if (!result.success) {
-    const errorCode = result.errorCode ?? "INTERNAL_ERROR";
-    let statusCode: number;
-    switch (errorCode) {
-      case "VALIDATION_ERROR":
-        statusCode = 400;
-        break;
-      case "SLUG_COLLISION":
-        statusCode = 409;
-        break;
-      case "QUOTA_EXCEEDED":
-      case "TRUST_GUARD_REJECTION":
-        statusCode = 403;
-        break;
-      case "DB_ERROR":
-      default:
-        statusCode = 500;
-        break;
-    }
-    return apiError(
-      (errorCode as keyof typeof API_ERROR_CODES) || API_ERROR_CODES.INTERNAL_ERROR,
-      result.error || "İlan oluşturulamadı.",
-      statusCode
-    );
+    const { message, status, code } = mapUseCaseError(result.errorCode);
+    return apiError(code, message, status);
   }
 
   return apiSuccess(

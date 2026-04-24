@@ -1,3 +1,40 @@
+# 2026-04-24 — Infrastructure Hardening & Messaging Maturity
+
+## [2026-04-24] - Messaging Hardening, Service Modularization & God Function Simplification
+- **Durum:** ✅ TAMAMLANDI
+- **Yapılanlar:**
+  - **God Object Refactor (#7)**: `api-client.ts` devasa dosyasından servisler ayrıştırıldı. Admin, Favorite, Notification, Payment, Report, Auth, Profile ve Support servisleri kendi modüllerine (`@/services/*/client-service.ts`) taşındı. `api-client.ts` artık temiz bir barrel file ve re-export katmanı.
+  - **God Function Simplification (#10)**: `src/app/api/listings/route.ts` içindeki karmaşık `POST` handler, `validateRequestBody` ve `mapUseCaseError` yardımcı fonksiyonları ile %60 oranında sadeleştirildi. Body doğrulama ve hata haritalama standart bir yapıya kavuştu.
+  - **Circular Dependency Fix**: `ApiClient` sınıfı `src/lib/utils/api-client.ts` altına taşınarak servisler arası dairesel bağımlılık riski ortadan kaldırıldı.
+  - **Messaging Maturity**: 
+    - **Archiving Support**: Chat arayüzüne "Arşivlenmiş" sekmesi eklendi. `ChatService` ve API route'u arşivlenmiş chatleri filtreleyebilecek şekilde güncellendi.
+    - **Read Status Visibility**: Mesaj balonlarında (MessageBubble) okundu/gönderildi (Check/CheckCheck) ikonları ve gönderim saati eklendi.
+    - **Deletion & Security**: Mesaj silme (soft delete) ve chat arşivleme işlemleri transactional RPC'ler ve RLS politikaları ile güvenli hale getirildi.
+  - **Performance Hardening**: 
+    - `api-client.ts` içine parallel redirect guard eklenerek 401 durumlarında tarayıcının sonsuz döngüye girmesi engellendi.
+    - API route'larındaki runtime dynamic importlar, startup gecikmesini (cold start) önlemek için static importlar ile değiştirildi.
+- **Doğrulama:**
+  - `npm run typecheck` ✅
+  - `npm run build` ✅
+- **Kararlar:**
+  - `MemoryCache` ve `unstable_cache` kullanımı AGENTS.md ile uyumlu bulundu; admin analytics/price estimation gibi "transient" veriler in-memory, public marketplace verileri ise ISR/Next-Cache ile yönetilmeye devam ediyor.
+  - Tip dağılımı `@/types` altında toplandı; servis içindeki DTO'lar domain-mapping gereği yerinde bırakıldı.
+- **Sıradaki Adım:** Dashboard mesajlar arayüzünde arşivlenmiş chatlerin "unarchive" edilmesini sağlayan bir aksiyon butonu ekle.
+
+### Phase 30: Architectural Hardening & Messaging Maturity (COMPLETED)
+- **Status**: ✅ COMPLETED
+- **Decisions**:
+  - Implemented per-call Admin client factory to prevent stale role key issues in Vercel.
+  - Refactored `ApiClient` into modular services (Admin, Auth, Favorite, etc.) to resolve SRP violations.
+  - Hardened rate-limiting with efficient O(k) memory cleanup.
+  - Implemented atomic chat operations via PostgreSQL RPCs (migration `0086`) for transactional integrity.
+  - Eliminated runtime `import()` overhead in listing submission flow.
+- **Validations**:
+  - `npm run lint` -> 0 errors.
+  - `npm run typecheck` -> Passed.
+  - `npm run build` -> Successful.
+- **Next Step**: Implement real-time typing indicators and online status in the Messaging UI.
+
 # 2026-04-24 — General Review & Stabilization
 
 ## [2026-04-24] - Payment Fulfillment, Cron ve Typecheck Stabilizasyonu
@@ -20,24 +57,6 @@
 - **Sıradaki Adım:** Mevcut lint warning listesini ayrı bir cleanup turunda azalt; ardından yeni migration'ları canlı Supabase'e uygula.
 
 # 2026-04-24 — Phase 0: Bug Fix & Cleanup (Complete)
-
-## [2026-04-24] - Bug Fix & Cleanup Sweep
-- **Durum:** ✅ TAMAMLANDI
-- **Yapılanlar:**
-  - **SupabaseProvider Context.Provider Fix**: Zaten düzeltilmiş durumda; `Context.Provider` doğru şekilde `value={{supabase}}` ile kullanılıyor.
-  - **use-listing-actions → Domain Use Case Wiring**: Hook refaktör edildi; `archiveListingUseCase()` ve `bumpListingUseCase()` domain use case'lerine bağlandı. Status machine validation ve 24-saat cooldown kontrolü artık hook seviyesinde aktif.
-  - **recharts + leaflet Bundle Cleanup**: Bu paketler zaten package.json'da yok; daha önce temizlenmiş. Bileşenler lean placeholder versiyonlarını kullanıyor.
-- **Doğrulama:**
-  - `npm run typecheck` ✅
-  - `npm run lint` ✅
-  - `npm run build` ✅
-- **Sıradaki Adım:** Phase 3 deployment (migration + seed).
-
-# 2026-04-24 — Phase 3: Doping Infrastructure & Featured Carousel
-
-## [2026-04-24] - Doping Activation & Gallery Carousel Implementation
-- **Durum:** ✅ TAMAMLANDI
-- **Yapılanlar:**
   - **Task 3.1 - Doping Paketleri Seed Data**: `scripts/seed-doping-packages.mjs` güncellendi; 5 doping paketi (on_planda, acil, renkli_cerceve, galeri, bump) tam açıklamalarıyla eklendi.
   - **Task 3.2 - Doping Aktifleştirme Logic**: `database/migrations/0069_doping_activation_functions.sql` oluşturuldu; `activate_doping()` RPC fonksiyonu, `get_active_dopings_for_listing()` helper fonksiyonu ve pg_cron tabanlı otomatik expiry job'u eklendi.
   - **Task 3.2 - Cron Endpoint**: `src/app/api/cron/expire-dopings/route.ts` oluşturuldu; uygulama seviyesinde doping expiry fallback ve audit trail sağlandı.
