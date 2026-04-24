@@ -173,4 +173,5 @@ export const logger = {
   security: createLogger("security"),
   system: createLogger("system"),
   perf: createLogger("performance"),
+  reservation: createLogger("reservation"),
 };

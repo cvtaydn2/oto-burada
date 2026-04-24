@@ -7,6 +7,7 @@ import {
   ListChecks,
   MessageSquare,
   Search,
+  ShieldCheck,
   UserCircle2,
   Zap,
 } from "lucide-react";
@@ -22,6 +23,7 @@ const dashboardNavItems = [
   { href: "/dashboard/favorites", label: "Favoriler", icon: Heart, exact: false },
   { href: "/dashboard/notifications", label: "Bildirimler", icon: Bell, exact: false },
   { href: "/dashboard/saved-searches", label: "Kayıtlı Aramalar", icon: Search, exact: false },
+  { href: "/dashboard/reservations", label: "Rezervasyonlar", icon: ShieldCheck, exact: false },
   { href: "/dashboard/pricing", label: "Paketler", icon: Zap, exact: false },
   { href: "/dashboard/profile", label: "Hesap Ayarları", icon: UserCircle2, exact: false },
 ] as const;

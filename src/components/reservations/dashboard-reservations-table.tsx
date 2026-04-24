@@ -1,0 +1,151 @@
+"use client";
+
+import Link from "next/link";
+import { toast } from "sonner";
+
+import { cancelReservationAction } from "@/actions/reservations";
+import {
+  AlertDialog,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { reservation as copy } from "@/lib/constants/ui-strings";
+import { formatPrice } from "@/lib/utils";
+import type { Reservation } from "@/types";
+
+import { ReservationCountdown, ReservationStatusBadge } from "./reservation-countdown";
+
+interface DashboardReservationsTableProps {
+  reservations: Reservation[];
+  view: "buyer" | "seller";
+}
+
+export function DashboardReservationsTable({
+  reservations,
+  view,
+}: DashboardReservationsTableProps) {
+  if (reservations.length === 0) {
+    return (
+      <div className="rounded-xl border border-dashed border-border bg-muted/20 py-12 text-center">
+        <p className="text-sm text-muted-foreground">{copy.noReservations}</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="rounded-xl border border-border overflow-hidden">
+      <Table>
+        <TableHeader>
+          <TableRow className="bg-muted/30">
+            <TableHead className="text-xs">İlan</TableHead>
+            <TableHead className="text-xs text-right">{copy.depositAmount}</TableHead>
+            <TableHead className="text-xs">Durum</TableHead>
+            <TableHead className="text-xs">Süre</TableHead>
+            <TableHead className="text-xs text-right">İşlem</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {reservations.map((res) => (
+            <ReservationRow key={res.id} reservation={res} view={view} />
+          ))}
+        </TableBody>
+      </Table>
+    </div>
+  );
+}
+
+function ReservationRow({
+  reservation,
+  view,
+}: {
+  reservation: Reservation;
+  view: "buyer" | "seller";
+}) {
+  const canCancel =
+    view === "buyer"
+      ? reservation.status === "pending_payment" || reservation.status === "active"
+      : reservation.status === "pending_payment";
+
+  const canConfirm = view === "seller" && reservation.status === "pending_payment";
+
+  async function handleCancel() {
+    const result = await cancelReservationAction(reservation.id);
+    if (!result.ok) {
+      toast.error(result.error ?? "İptal edilemedi.");
+      return;
+    }
+    toast.success("Rezervasyon iptal edildi.");
+  }
+
+  return (
+    <TableRow>
+      <TableCell className="font-medium">
+        <Link href={`/listing/${reservation.listing_id}`} className="text-sm hover:underline">
+          #{reservation.listing_id.slice(0, 8)}
+        </Link>
+      </TableCell>
+      <TableCell className="text-right font-mono text-sm">
+        {formatPrice(reservation.amount_deposit)} TL
+      </TableCell>
+      <TableCell>
+        <ReservationStatusBadge status={reservation.status} />
+      </TableCell>
+      <TableCell>
+        {reservation.status === "pending_payment" ? (
+          <ReservationCountdown expiresAt={reservation.expires_at} />
+        ) : (
+          <span className="text-xs text-muted-foreground">—</span>
+        )}
+      </TableCell>
+      <TableCell className="text-right">
+        <div className="flex items-center justify-end gap-2">
+          <Link
+            href={`/listing/${reservation.listing_id}`}
+            className="text-xs text-muted-foreground hover:text-foreground underline"
+          >
+            Görüntüle
+          </Link>
+          {canCancel && (
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <button className="text-xs text-red-600 hover:text-red-700 underline">
+                  {copy.cancelButton}
+                </button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Rezervasyonu İptal Et</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    Bu rezervasyonu iptal etmek istediğinizden emin misiniz?
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Vazgeç</AlertDialogCancel>
+                  <button
+                    onClick={handleCancel}
+                    className="h-10 px-4 rounded-xl bg-red-600 text-white font-semibold hover:bg-red-700"
+                  >
+                    {copy.cancelButton}
+                  </button>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+          )}
+        </div>
+      </TableCell>
+    </TableRow>
+  );
+}

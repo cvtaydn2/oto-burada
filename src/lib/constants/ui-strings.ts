@@ -375,3 +375,29 @@ export const trust = {
   accountRestrictedDesc:
     "Kullanım politikası ihlali veya güvenlik taraması nedeniyle hesabınız kısıtlanmıştır. Destek hattından bilgi alabilirsiniz.",
 } as const;
+
+export const reservation = {
+  title: "Rezervasyonlarım",
+  activeBadge: "Rezerve Edildi",
+  pendingPayment: "Ödeme Bekliyor",
+  active: "Aktif",
+  completed: "Tamamlandı",
+  cancelled: "İptal Edildi",
+  expired: "Süresi Doldu",
+  depositAmount: "Kapora",
+  platformFee: "Platform Ücreti",
+  appointment: "Randevu",
+  expiresIn: "Kalan Süre",
+  noActiveReservation: "Bu ilan için aktif rezervasyon yok.",
+  reserveButton: "Aracı Rezerve Et",
+  reserveButtonBadge: "Kapora ile",
+  cancelButton: "İptal Et",
+  confirmButton: "Onayla",
+  setAppointment: "Randevu Belirle",
+  whatsappContact: "Satıcıya WhatsApp Mesajı Gönder",
+  buyerTitle: "Aldıklarım",
+  sellerTitle: "Sattıklarım",
+  countdownExpired: "Süre doldu",
+  noReservations: "Henüz rezervasyon yok.",
+  policyNote: "48 saat içinde ödeme yapılmazsa rezervasyon otomatik iptal olur.",
+} as const;

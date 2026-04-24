@@ -86,6 +86,9 @@ Primary success criteria:
 - **Parametric Indexing**: Keep all foreign keys indexed. Avoid `SELECT *` in hot paths.
 - **Modular Fulfillment**: Decouple payment from fulfillment logic via idempotent jobs.
 - **Market Integrity**: Banned users' listings must be filtered at the database level using `!inner` joins for performance and accuracy.
+- **Side Effects via Jobs**: Ödeme, e-posta, push bildirim — hiçbiri DB transaction içinde yapılmaz. Job kuyruğu üzerinden idempotent çalışır.
+- **AI Fallback**: OpenAI rate limit veya timeout durumunda form normal akışla devam eder. AI opsiyonel katman, kritik yol değil.
+- **UI via Bottom Sheet**: Yeni özellikler ayrı sayfa açmak yerine Vaul drawer içinde başlar. Ana sayfa kalabalığı korunmaz.
 
 ---
 
@@ -98,6 +101,9 @@ Primary success criteria:
 - Use RLS (Row Level Security) for all tables; never bypass RLS in client components.
 - Use `(SELECT auth.uid())` instead of just `auth.uid()` in policies for better performance.
 - Always set `search_path = public` for `SECURITY DEFINER` functions.
+- **RLS First**: Her yeni tablo için migration'da policy'ler birlikte yazılır. Schema ve güvenlik ayrılmaz.
+- **Service Role Yasak**: Client bileşenler `service_role` key kullanmaz. RLS her zaman `auth.uid()` üzerinden çalışır.
+- **Denormalized Aggregates**: `review_avg`, `reservation_count` gibi aggregateler trigger ile `profiles`'a yazılır. N+1 sorgu olmaz.
 
 ---
 
@@ -124,11 +130,6 @@ Use this structure unless there is a strong reason to improve it:
 src/
   app/
     (public)/
-      page.tsx
-      listings/
-      listing/[slug]/
-      login/
-      register/
     dashboard/
     admin/
     api/
@@ -138,6 +139,7 @@ src/
     listings/
     forms/
     layout/
+    reservations/
   domain/
     usecases/
     logic/
@@ -145,6 +147,8 @@ src/
     admin-moderation/
     listing-creation/
     marketplace/
+  hooks/
+  types/
   lib/
     supabase/
     auth/
@@ -156,46 +160,8 @@ src/
     favorites/
     reports/
     profile/
+    reservations/
     admin/
-  hooks/
-  types/
-  data/
+```
 
 ---
-
-## Brand Voice & Copy Rules
-
-### Tone
-- Clear, direct, calm, helpful
-- Avoid corporate language, exaggerated claims, complicated sentences
-
-### Copy Style
-- Short sentences, simple Turkish, no jargon, no unnecessary adjectives
-- Bad: "En gelişmiş ve üstün araba platformu deneyimini sunuyoruz"
-- Good: "Arabanı kolayca sat. Güvenle satın al."
-
-### Key Messages
-- "Ücretsiz ilan ver"
-- "Sade ve güvenli platform"
-- "Arabanı kolayca sat. Doğru arabayı hızlıca bul."
-
-### CTA Style
-- Primary: "İlan Ver"
-- Secondary: "İlanları İncele"
-- Detail: "WhatsApp ile İletişime Geç"
-
-### Trust Language
-- "Doğrulanmış satıcı", "İlan inceleniyor", "Şüpheli ilanı bildir"
-
-### Error Messages
-- Bad: "An error occurred"
-- Good: "Bir hata oluştu. Lütfen tekrar dene."
-
-### Empty States
-- Favorites: "Henüz favori ilan eklemedin."
-- Listings: "Aradığın kriterlere uygun ilan bulunamadı."
-
-### Seed Data Note
-- Seed script (`npm run db:seed-references`) tamamlandı. Gerçek Supabase DB'ye çalıştırıldı.
-- Minimum 50 ilan, 10 marka, 3+ şehir hedefi karşılandı.
-```
