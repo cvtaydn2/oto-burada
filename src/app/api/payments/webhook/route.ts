@@ -32,42 +32,45 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Invalid signature" }, { status: 403 });
     }
 
-    // 2. Log ONLY verified webhooks (after signature verification)
+    // 2. Log ONLY verified webhooks with safe headers (F-02)
+    const SAFE_HEADERS = ["content-type", "x-iyzi-event-type", "user-agent"] as const;
+    const safeHeaders = Object.fromEntries(
+      [...req.headers.entries()].filter(([key]) => SAFE_HEADERS.includes(key.toLowerCase() as any))
+    );
+
     await admin.from("payment_webhook_logs").insert({
       payload: body,
-      headers: Object.fromEntries(req.headers.entries()),
+      headers: safeHeaders,
       status: "received",
     });
 
-    // 3. Update payment status if needed
+    // 3. Update payment status with atomic lock for idempotency (F-01)
     if (body.iyziEventType === "PAYMENT_AUTH") {
       const token = body.token;
       const status = body.status === "SUCCESS" ? "success" : "failure";
 
-      // First, get current webhook_attempts
-      const { data: currentPayment } = await admin
-        .from("payments")
-        .select("webhook_attempts")
-        .eq("iyzico_token", token)
-        .single();
-
-      const { error: updateError } = await admin
+      // Atomic lock: Only one worker can set webhook_processed_at to non-null
+      const { data: locked, error: lockError } = await admin
         .from("payments")
         .update({
           status: status,
           iyzico_payment_id: body.paymentId,
           processed_at: new Date().toISOString(),
-          webhook_attempts: (currentPayment?.webhook_attempts || 0) + 1,
+          webhook_processed_at: new Date().toISOString(),
         })
-        .eq("iyzico_token", token);
+        .eq("iyzico_token", token)
+        .is("webhook_processed_at", null) // Atomic check
+        .select("id")
+        .single();
 
-      if (updateError) {
-        logger.api.error("Failed to update payment from webhook", {
-          token,
-          error: updateError.message,
-        });
-        throw updateError;
+      if (lockError || !locked) {
+        // Already processed or error — respond 200 for idempotency
+        logger.api.info("Payment already processed or lock failed", { token });
+        return NextResponse.json({ status: "already_processed" });
       }
+
+      // Increment attempt counter separately or as part of next steps if needed
+      await admin.rpc("increment_webhook_attempts", { p_token: token });
 
       // Update log status
       await admin
@@ -75,12 +78,16 @@ export async function POST(req: NextRequest) {
         .update({ status: "processed" })
         .eq("payload->token", token);
 
-      logger.api.info("Payment webhook processed", { token, status });
+      logger.api.info("Payment webhook processed successfully", { token, status });
     }
 
     return NextResponse.json({ status: "ok" });
   } catch (error: any) {
-    logger.api.error("Payment webhook error", {}, error);
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    logger.api.error("Payment webhook error", { message: error.message });
+    // F-08: Return generic message to prevent information disclosure
+    return NextResponse.json(
+      { status: "error", message: "Webhook processing failed" },
+      { status: 500 }
+    );
   }
 }

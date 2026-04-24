@@ -83,9 +83,25 @@ export async function POST(request: Request) {
     return apiError(API_ERROR_CODES.BAD_REQUEST, "Geçersiz JSON verisi.", 400);
   }
 
-  // 1. Bot Protection
-  const castBody = body as Partial<ListingCreateInput>;
-  const isHuman = await verifyTurnstileToken(castBody.turnstileToken || "");
+  // 1. Structural Validation (F-14 Defense in Depth)
+  const { listingCreateSchema } = await import("@/lib/validators/listing");
+  const validation = listingCreateSchema.partial().safeParse(body);
+
+  if (!validation.success) {
+    return apiError(API_ERROR_CODES.BAD_REQUEST, "Geçersiz ilan verisi formatı.", 400, undefined, {
+      errors: validation.error.flatten().fieldErrors,
+    });
+  }
+
+  const castBody = validation.data;
+
+  // 2. Bot Protection
+  const turnstileToken = String(
+    (body as Record<string, unknown>).turnstileToken ||
+      (castBody as Record<string, unknown>).turnstileToken ||
+      ""
+  );
+  const isHuman = await verifyTurnstileToken(turnstileToken);
   if (!isHuman) {
     return apiError(
       API_ERROR_CODES.FORBIDDEN,

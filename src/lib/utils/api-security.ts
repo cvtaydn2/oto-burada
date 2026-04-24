@@ -114,33 +114,49 @@ export async function withSecurity(
           response: apiError(API_ERROR_CODES.FORBIDDEN, "Admin yetkisi gerekli.", 403),
         };
       }
-      // isSupabaseAdminUser already checks is_banned for admin users, so no
-      // separate ban check is needed here.
     } else {
-      try {
-        const { createSupabaseAdminClient } = await import("@/lib/supabase/admin");
-        const admin = createSupabaseAdminClient();
-        const { data: isBanned, error: banError } = await admin.rpc("is_user_banned", {
-          p_user_id: user.id,
-        });
-
-        if (banError) throw banError;
-
-        if (isBanned) {
-          return {
-            ok: false,
-            response: apiError(API_ERROR_CODES.FORBIDDEN, "Hesabınız askıya alınmıştır.", 403),
-          };
-        }
-      } catch {
+      // 3.1 Lightweight Ban Check (JWT first - F-12 Optimization)
+      const isBannedInJwt = (user.app_metadata as { is_banned?: boolean })?.is_banned === true;
+      if (isBannedInJwt) {
         return {
           ok: false,
-          response: apiError(
-            API_ERROR_CODES.INTERNAL_ERROR,
-            "Güvenlik kontrolü başarısız oldu.",
-            500
-          ),
+          response: apiError(API_ERROR_CODES.FORBIDDEN, "Hesabınız askıya alınmıştır.", 403),
         };
+      }
+
+      // 3.2 Secondary Ban Check (DB fallback for critical mutations only)
+      // Mutations (POST/PUT/DELETE) or explicit opt-in should check DB
+      const isMutation = ["POST", "PUT", "DELETE", "PATCH"].includes(request.method);
+      const shouldCheckDb = isMutation || (options as Record<string, unknown>).forceDbBanCheck;
+
+      if (shouldCheckDb) {
+        try {
+          const { createSupabaseAdminClient } = await import("@/lib/supabase/admin");
+          const admin = createSupabaseAdminClient();
+          const { data: isBanned, error: banError } = await admin.rpc("is_user_banned", {
+            p_user_id: user.id,
+          });
+
+          if (banError) throw banError;
+
+          if (isBanned) {
+            return {
+              ok: false,
+              response: apiError(API_ERROR_CODES.FORBIDDEN, "Hesabınız askıya alınmıştır.", 403),
+            };
+          }
+        } catch (error) {
+          // Log but continue if it's a transient DB error and JWT said they're okay?
+          // No, fail closed for security.
+          return {
+            ok: false,
+            response: apiError(
+              API_ERROR_CODES.INTERNAL_ERROR,
+              "Güvenlik kontrolü başarısız oldu.",
+              500
+            ),
+          };
+        }
       }
     }
   }

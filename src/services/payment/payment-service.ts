@@ -132,29 +132,32 @@ export class PaymentService {
       })),
     };
 
-    // 3. Call Iyzico
-    return new Promise<{ paymentPageUrl: string; token: string }>((resolve, reject) => {
-      iyzico.checkoutFormInitialize.create(request, async (err: any, result: any) => {
-        if (err || result.status !== "success") {
-          // Update payment record as failed
-          await admin
-            .from("payments")
-            .update({ status: "failure", metadata: { error: err || result } })
-            .eq("id", payment.id);
+    // 3. Call Iyzico with timeout (F-05)
+    return withTimeout(
+      new Promise<{ paymentPageUrl: string; token: string }>((resolve, reject) => {
+        iyzico.checkoutFormInitialize.create(request, async (err: any, result: any) => {
+          if (err || result.status !== "success") {
+            // Update payment record as failed
+            await admin
+              .from("payments")
+              .update({ status: "failure", metadata: { error: err || result } })
+              .eq("id", payment.id);
 
-          reject(new Error(result.errorMessage || "Iyzico initialization failed"));
-          return;
-        }
+            reject(new Error(result.errorMessage || "Iyzico initialization failed"));
+            return;
+          }
 
-        // Update payment with token
-        await admin.from("payments").update({ iyzico_token: result.token }).eq("id", payment.id);
+          // Update payment with token
+          await admin.from("payments").update({ iyzico_token: result.token }).eq("id", payment.id);
 
-        resolve({
-          paymentPageUrl: result.paymentPageUrl,
-          token: result.token,
+          resolve({
+            paymentPageUrl: result.paymentPageUrl,
+            token: result.token,
+          });
         });
-      });
-    });
+      }),
+      15_000 // 15s timeout
+    );
   }
 
   /**
@@ -164,36 +167,51 @@ export class PaymentService {
     const iyzico = getIyzicoClient();
     const admin = createSupabaseAdminClient();
 
-    return new Promise<{ status: string; paymentId: string; conversationId: string }>(
-      (resolve, reject) => {
-        iyzico.checkoutForm.retrieve({ locale: "tr", token }, async (err: any, result: any) => {
-          if (err || result.status !== "success") {
-            reject(new Error(result.errorMessage || "Iyzico retrieval failed"));
-            return;
-          }
+    return withTimeout(
+      new Promise<{ status: string; paymentId: string; conversationId: string }>(
+        (resolve, reject) => {
+          iyzico.checkoutForm.retrieve({ locale: "tr", token }, async (err: any, result: any) => {
+            if (err || result.status !== "success") {
+              reject(new Error(result.errorMessage || "Iyzico retrieval failed"));
+              return;
+            }
 
-          // Update DB record
-          const status: PaymentStatus = result.paymentStatus === "SUCCESS" ? "paid" : "failed";
+            // Update DB record
+            const status: PaymentStatus = result.paymentStatus === "SUCCESS" ? "paid" : "failed";
 
-          await admin
-            .from("payments")
-            .update({
-              status: status === "paid" ? "success" : "failure",
-              iyzico_payment_id: result.paymentId,
-              processed_at: new Date().toISOString(),
-              metadata: result,
-            })
-            .eq("iyzico_token", token)
-            .select()
-            .single();
+            await admin
+              .from("payments")
+              .update({
+                status: status === "paid" ? "success" : "failure",
+                iyzico_payment_id: result.paymentId,
+                processed_at: new Date().toISOString(),
+                metadata: result,
+              })
+              .eq("iyzico_token", token)
+              .select()
+              .single();
 
-          resolve({
-            status: status,
-            paymentId: result.paymentId,
-            conversationId: result.conversationId,
+            resolve({
+              status: status,
+              paymentId: result.paymentId,
+              conversationId: result.conversationId,
+            });
           });
-        });
-      }
+        }
+      ),
+      15_000 // 15s timeout
     );
   }
+}
+
+/**
+ * Promise wrapper with timeout (F-05)
+ */
+function withTimeout<T>(promise: Promise<T>, ms: number): Promise<T> {
+  return Promise.race([
+    promise,
+    new Promise<never>((_, reject) =>
+      setTimeout(() => reject(new Error(`Iyzico API timeout after ${ms}ms`)), ms)
+    ),
+  ]);
 }

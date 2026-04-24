@@ -41,9 +41,31 @@ export async function POST(req: NextRequest) {
     // Get user profile for buyer info
     const { data: profile } = await supabase
       .from("profiles")
-      .select("*")
+      .select("full_name, phone, city, identity_number, business_address")
       .eq("id", user.id)
       .single();
+
+    // F-13: Check listing ownership and status
+    const { data: listing } = await supabase
+      .from("listings")
+      .select("seller_id, status")
+      .eq("id", listingId)
+      .single();
+
+    if (!listing) {
+      return NextResponse.json({ error: "İlan bulunamadı" }, { status: 404 });
+    }
+
+    if (listing.seller_id !== user.id) {
+      return NextResponse.json({ error: "Bu ilan size ait değil" }, { status: 403 });
+    }
+
+    if (listing.status !== "approved") {
+      return NextResponse.json(
+        { error: "Sadece onaylı ilanlara doping yapılabilir" },
+        { status: 400 }
+      );
+    }
 
     // SECURITY: Validate required profile fields
     if (!profile?.full_name || profile.full_name.trim() === "") {

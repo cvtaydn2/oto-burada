@@ -28,6 +28,11 @@ export async function toggleUserBan(userId: string, currentStatus: boolean) {
         await admin.from("listings").update({ status: "rejected" }).eq("seller_id", userId);
       }
 
+      // Sync to Auth App Metadata for lightweight middleware checks (F-12)
+      await admin.auth.admin.updateUserById(userId, {
+        app_metadata: { is_banned: !currentStatus },
+      });
+
       return { newStatus: !currentStatus };
     },
     {
@@ -48,6 +53,11 @@ export async function banUser(userId: string, reason: string) {
     .eq("id", userId);
 
   if (error) throw new Error(`Kullanıcı yasaklanamadı: ${error.message}`);
+
+  // Sync to Auth App Metadata (F-12)
+  await admin.auth.admin.updateUserById(userId, {
+    app_metadata: { is_banned: true },
+  });
 
   revalidatePath("/admin/users");
   revalidatePath(`/admin/users/${userId}`);

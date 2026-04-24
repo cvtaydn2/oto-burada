@@ -126,11 +126,15 @@ export function logEnvValidation(): void {
   const isProd = process.env.NODE_ENV === "production";
 
   if (result.missing.length > 0) {
-    // Use console.error directly here — logger context may not be initialized yet
-    // and this is a critical startup signal that must always surface.
-    console.error(
-      `[ENV] ❌ Missing ${result.missing.length} required variables${isProd ? " (CRITICAL)" : ""}: ${result.missing.join(", ")}`
-    );
+    const message = `[ENV] ❌ Missing ${result.missing.length} required variables: ${result.missing.join(", ")}`;
+
+    if (isProd) {
+      // F-09: Throw error in production to prevent silent failure
+      console.error(`${message} - SHUTTING DOWN DUE TO MISSING CONFIG`);
+      throw new Error(message);
+    } else {
+      console.error(message);
+    }
   }
 
   if (result.warnings.length > 0 && !isProd) {

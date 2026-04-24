@@ -10,12 +10,14 @@ export function getIyzicoClient() {
   const uri = process.env.IYZICO_BASE_URL || "https://sandbox-api.iyzipay.com";
 
   if (!apiKey || !secretKey) {
-    console.warn("Iyzico API keys are missing. Payment features will not work.");
+    throw new Error(
+      "[Iyzico] API keys missing. Set IYZICO_API_KEY and IYZICO_SECRET_KEY in environment variables."
+    );
   }
 
   return new iyzipay({
-    apiKey: apiKey!,
-    secretKey: secretKey!,
+    apiKey: apiKey,
+    secretKey: secretKey,
     uri: uri,
   });
 }

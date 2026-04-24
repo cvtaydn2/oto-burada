@@ -13,7 +13,7 @@ import {
   minimumListingImages,
   transmissionTypes,
 } from "@/lib/constants/domain";
-import type { ExpertInspection, Listing, ListingCreateInput, ListingImage } from "@/types";
+import type { ExpertInspection, Listing, ListingImage } from "@/types";
 import type { ListingCreateFormValues } from "@/types";
 
 import { profileSchema } from "./auth";
@@ -66,7 +66,7 @@ export const expertInspectionSchema: z.ZodType<ExpertInspection> = z.object({
   documentPath: optionalTrimmedString,
 });
 
-export const listingCreateSchema: z.ZodType<ListingCreateInput> = z.object({
+export const listingCreateSchema = z.object({
   title: trimmedRequiredString.max(200, "Baslik en fazla 200 karakter olabilir"),
   brand: trimmedRequiredString,
   model: trimmedRequiredString,

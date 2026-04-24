@@ -29,8 +29,16 @@
 export function isValidRequestOrigin(request: Request): boolean {
   const origin = request.headers.get("origin");
 
-  // No Origin header → not a browser cross-origin request, allow.
-  if (!origin) return true;
+  // No Origin header → potentially same-origin form POST or server-to-server.
+  if (!origin) {
+    // F-11: For mutations (non-GET), require at least a standard XHR header as a secondary defense
+    const method = request.method.toUpperCase();
+    if (method !== "GET" && method !== "HEAD" && method !== "OPTIONS") {
+      const xhrHeader = request.headers.get("x-requested-with");
+      return xhrHeader === "XMLHttpRequest";
+    }
+    return true;
+  }
 
   // Explicitly reject "null" origin (sandboxed iframe, file://, etc.)
   if (origin === "null") return false;

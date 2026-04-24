@@ -22,16 +22,45 @@ import { PaymentService } from "@/services/payment/payment-service";
  *
  * This endpoint is for UX only - actual payment confirmation happens via webhook.
  */
+/**
+ * GET handler for Iyzico redirect (if they use GET)
+ */
+export async function GET(req: NextRequest) {
+  const token = req.nextUrl.searchParams.get("token");
+  if (!token) {
+    logger.api.warn("Payment callback GET without token");
+    return NextResponse.redirect(new URL("/dashboard/payments?status=error", req.url));
+  }
+  return handleCallback(token, req);
+}
+
+/**
+ * POST handler for Iyzico redirect (if they use POST)
+ */
 export async function POST(req: NextRequest) {
   try {
     const formData = await req.formData();
     const token = formData.get("token") as string;
 
     if (!token) {
-      logger.api.warn("Payment callback without token");
+      logger.api.warn("Payment callback POST without token");
       return NextResponse.redirect(new URL("/dashboard/payments?status=error", req.url));
     }
 
+    return handleCallback(token, req);
+  } catch (error) {
+    logger.api.error("Payment callback POST parsing error", {
+      error: error instanceof Error ? error.message : String(error),
+    });
+    return NextResponse.redirect(new URL("/dashboard/payments?status=error", req.url));
+  }
+}
+
+/**
+ * Shared callback logic
+ */
+async function handleCallback(token: string, req: NextRequest) {
+  try {
     const admin = createSupabaseAdminClient();
 
     // SECURITY: Atomic lock to prevent race conditions
@@ -76,8 +105,8 @@ export async function POST(req: NextRequest) {
         status: result.status,
       });
 
-      // Release the lock since payment failed
-      await admin.from("payments").update({ fulfilled_at: null }).eq("id", existingPayment.id);
+      // F-04: Do NOT release the lock. Mark status as failure to prevent retry race conditions.
+      await admin.from("payments").update({ status: "failure" }).eq("id", existingPayment.id);
 
       return NextResponse.redirect(new URL("/dashboard/payments?status=failure", req.url));
     }
@@ -90,8 +119,8 @@ export async function POST(req: NextRequest) {
         paymentId: existingPayment.id,
       });
 
-      // Release the lock since payment is not successful
-      await admin.from("payments").update({ fulfilled_at: null }).eq("id", existingPayment.id);
+      // F-04: Do NOT release the lock.
+      await admin.from("payments").update({ status: "failure" }).eq("id", existingPayment.id);
 
       return NextResponse.redirect(new URL("/dashboard/payments?status=failure", req.url));
     }
@@ -139,8 +168,8 @@ export async function POST(req: NextRequest) {
           listingSellerId: listing?.seller_id, // FIXED: Use correct field name
         });
 
-        // Release the lock since ownership check failed
-        await admin.from("payments").update({ fulfilled_at: null }).eq("id", existingPayment.id);
+        // F-04: Do NOT release the lock.
+        await admin.from("payments").update({ status: "failure" }).eq("id", existingPayment.id);
 
         return NextResponse.redirect(new URL("/dashboard/payments?status=error", req.url));
       }

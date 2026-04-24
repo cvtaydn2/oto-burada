@@ -41,29 +41,60 @@ export async function bumpListingAction(
 
 export async function revealListingPhone(listingId: string) {
   const user = await getCurrentUser();
-  if (!user) throw new Error("Unauthorized");
+  const { headers } = await import("next/headers");
+  const headersList = await headers();
+  const clientIp =
+    headersList.get("x-forwarded-for")?.split(",")[0]?.trim() ||
+    headersList.get("x-real-ip") ||
+    "unknown";
 
-  // ── Distributed Rate Limit ──
+  // ── Distributed Rate Limit (F-03 Protection) ──
   const { checkGlobalRateLimit } = await import("@/lib/utils/distributed-rate-limit");
-  const rateLimitResult = await checkGlobalRateLimit(`reveal-phone:${user.id}`, {
-    limit: 15,
-    windowMs: 60 * 60 * 1000, // 15 reveals per hour per user
+
+  // Higher limit for authenticated users, stricter for guests
+  const limit = user ? 20 : 5;
+  const windowMs = 60 * 60 * 1000; // 1 hour
+  const rateLimitKey = user ? `reveal-phone:u:${user.id}` : `reveal-phone:ip:${clientIp}`;
+
+  const rateLimitResult = await checkGlobalRateLimit(rateLimitKey, {
+    limit,
+    windowMs,
   });
 
   if (!rateLimitResult.success) {
-    throw new Error("Çok fazla numara görüntülediniz. Lütfen daha sonra tekrar deneyin.");
+    throw new Error(
+      user
+        ? "Çok fazla numara görüntülediniz. Lütfen bir saat sonra tekrar deneyin."
+        : "Çok fazla numara görüntülediniz. Devam etmek için lütfen giriş yapın."
+    );
   }
 
-  const supabase = await createSupabaseServerClient();
-  const { data } = await supabase
+  const { createSupabaseAdminClient } = await import("@/lib/supabase/admin");
+  const admin = createSupabaseAdminClient();
+
+  // Fetch phone and verify status
+  const { data: listing, error: fetchErr } = await admin
     .from("listings")
-    .select("profiles(phone)")
+    .select("whatsapp_phone, status")
     .eq("id", listingId)
     .single();
 
-  const phone = (data?.profiles as unknown as { phone: string })?.phone || "";
+  if (fetchErr || !listing || listing.status !== "approved") {
+    throw new Error("İlan bulunamadı veya iletişim bilgileri kapalı.");
+  }
 
-  return { success: true, phone };
+  // ── Reveal Logging (Audit Trail) ──
+  const { error: logError } = await admin.from("phone_reveal_logs").insert({
+    listing_id: listingId,
+    user_id: user?.id || null,
+    viewer_ip: clientIp,
+  });
+
+  if (logError) {
+    console.error("Failed to log phone reveal", logError);
+  }
+
+  return { success: true, phone: listing.whatsapp_phone };
 }
 
 export async function publishListingAction(listingId: string, currentStatus: ListingStatus) {

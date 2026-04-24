@@ -36,9 +36,6 @@ function getRatelimit() {
   }
 }
 
-// Simple in-memory fallback for Edge/Middleware (per instance)
-const localFallbackStore = new Map<string, { count: number; reset: number }>();
-
 /**
  * Checks if a request is allowed based on a given key (IP, user ID, etc).
  */
@@ -61,28 +58,15 @@ export async function checkGlobalRateLimit(
     const { success, limit, remaining, reset } = await limiter.limit(key);
     return { success, limit, remaining, reset };
   } catch (error) {
-    logger.api.error("Distributed Rate Limit Error - using local fallback", error);
+    const isProduction = process.env.NODE_ENV === "production";
+    logger.api.error("Distributed Rate Limit Error - applying fail-closed policy", error);
 
-    // Local in-memory fallback
-    const now = Date.now();
-    const limit = options.limit ?? 60;
-    const windowMs = options.windowMs ?? 60 * 1000;
-    const entry = localFallbackStore.get(key);
-
-    if (!entry || entry.reset < now) {
-      const newReset = now + windowMs;
-      localFallbackStore.set(key, { count: 1, reset: newReset });
-      return { success: true, limit, remaining: limit - 1, reset: newReset };
+    if (isProduction) {
+      // FAIL-CLOSED in production to protect infrastructure
+      return { success: false, limit: 0, remaining: 0, reset: Date.now() + 60000 };
     }
 
-    entry.count += 1;
-    const isAllowed = entry.count <= limit;
-
-    return {
-      success: isAllowed,
-      limit,
-      remaining: Math.max(0, limit - entry.count),
-      reset: entry.reset,
-    };
+    // Allow in development
+    return { success: true, limit: 100, remaining: 100, reset: 0 };
   }
 }
