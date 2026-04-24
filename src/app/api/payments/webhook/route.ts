@@ -92,14 +92,14 @@ export async function POST(req: NextRequest) {
         }
       }
 
-      // Increment attempt counter separately or as part of next steps if needed
+      // Increment attempt counter (now that the RPC exists in DB)
       await admin.rpc("increment_webhook_attempts", { p_token: token });
 
-      // Update log status
+      // Update log status (use filter for jsonb column)
       await admin
         .from("payment_webhook_logs")
         .update({ status: "processed" })
-        .eq("payload->token", token);
+        .filter("payload->>token", "eq", token);
 
       logger.api.info("Payment webhook processed successfully", { token, status });
     }

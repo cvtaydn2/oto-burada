@@ -95,8 +95,8 @@ export function useChatRealtime(options: UseChatRealtimeOptions) {
             ]);
           }
 
-          // Always invalidate the chat list to update last message preview
-          queryClient.invalidateQueries({ queryKey: queryKeys.chats.all });
+          // Always invalidate the chat lists to update last message preview
+          queryClient.invalidateQueries({ queryKey: queryKeys.chats.lists() });
 
           onMessage?.(newMessage);
         }

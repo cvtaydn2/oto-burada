@@ -1,7 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
-import { PaymentStatus } from "@/types/payment";
 
 import { getIyzicoClient } from "./iyzico-client";
 
@@ -59,6 +58,7 @@ export class PaymentService {
     }
 
     // 1. Create a pending payment record in DB
+    // package_id stores the slug (e.g. "acil_acil") so callback can look it up
     const { data: payment, error: dbError } = await admin
       .from("payments")
       .insert({
@@ -69,7 +69,7 @@ export class PaymentService {
         status: "pending",
         listing_id: params.listingId,
         plan_id: params.planId,
-        package_id: params.basketItems[0]?.id, // SECURITY: Store package_id directly
+        package_id: params.basketItems[0]?.id, // slug — matched to doping_packages.slug
         description: params.basketItems.map((i) => i.name).join(", "),
         metadata: {
           basketItems: params.basketItems,
@@ -184,7 +184,8 @@ export class PaymentService {
   }
 
   /**
-   * Retrieves checkout result from Iyzico
+   * Retrieves checkout result from Iyzico and atomically updates payment status.
+   * Uses confirm_payment_success RPC to prevent race conditions with webhook.
    * SECURITY: userId is required to ensure ownership (S-02)
    */
   static async retrieveCheckoutResult(token: string, userId: string) {
@@ -200,38 +201,32 @@ export class PaymentService {
               return;
             }
 
-            // 1. SECURITY: Verify ownership before updating anything (S-02)
-            const { data: paymentRecord } = await admin
-              .from("payments")
-              .select("user_id, status")
-              .eq("iyzico_token", token)
-              .single();
+            const iyzicoStatus = result.paymentStatus;
 
-            if (!paymentRecord || paymentRecord.user_id !== userId) {
-              reject(new Error("Unauthorized payment retrieval"));
-              return;
+            if (iyzicoStatus === "SUCCESS") {
+              // Atomic update: only transitions from 'pending' → 'success'
+              // Safe to call multiple times (idempotent)
+              await admin.rpc("confirm_payment_success", {
+                p_iyzico_token: token,
+                p_user_id: userId,
+                p_iyzico_payment_id: result.paymentId,
+              });
+            } else {
+              // Failed/cancelled — mark as failure atomically
+              await admin
+                .from("payments")
+                .update({
+                  status: "failure",
+                  iyzico_payment_id: result.paymentId,
+                  processed_at: new Date().toISOString(),
+                })
+                .eq("iyzico_token", token)
+                .eq("user_id", userId)
+                .eq("status", "pending"); // Only update if still pending
             }
 
-            // 2. SECURITY: Update DB record (S-01: UX only update)
-            const status: PaymentStatus = result.paymentStatus === "SUCCESS" ? "paid" : "failed";
-
-            await admin
-              .from("payments")
-              .update({
-                // Note: Actual fulfillment logic should depend on webhook
-                // but we update here for immediate UI feedback.
-                status: status === "paid" ? "success" : "failure",
-                iyzico_payment_id: result.paymentId,
-                processed_at: new Date().toISOString(),
-                metadata: result,
-              })
-              .eq("iyzico_token", token)
-              .eq("user_id", userId) // Extra safety
-              .select()
-              .single();
-
             resolve({
-              status: status,
+              status: iyzicoStatus === "SUCCESS" ? "paid" : "failed",
               paymentId: result.paymentId,
               conversationId: result.conversationId,
             });

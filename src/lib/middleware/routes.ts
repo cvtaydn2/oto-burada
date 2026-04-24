@@ -3,7 +3,12 @@ export const adminPrefixes = ["/admin"];
 export const authRoutes = ["/login", "/register"];
 
 // API Security Config
-export const protectedApiPrefixes = ["/api/listings", "/api/dashboard", "/api/profile"];
+export const protectedApiPrefixes = [
+  "/api/listings",
+  "/api/dashboard",
+  "/api/profile",
+  "/api/chats",
+];
 export const adminApiPrefixes = ["/api/admin"];
 export const publicApiRoutes = ["/api/health", "/api/contact", "/api/market/estimate"];
 

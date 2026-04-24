@@ -4,23 +4,21 @@ import { API_ROUTES } from "@/lib/constants/api-routes";
 import { queryKeys } from "@/lib/query-keys";
 import type { ChatWithLastMessage, Message, SendMessageInput } from "@/types/chat";
 
-async function fetchChats(userId: string): Promise<ChatWithLastMessage[]> {
+async function fetchChats(): Promise<ChatWithLastMessage[]> {
   const res = await fetch(API_ROUTES.CHATS.BASE);
+  const json = await res.json().catch(() => ({}));
   if (!res.ok) {
-    const json = await res.json().catch(() => ({}));
     throw new Error(json.error || "Chat listesi alınamadı.");
   }
-  const json = await res.json();
   return json.data ?? [];
 }
 
 async function fetchMessages(chatId: string): Promise<Message[]> {
   const res = await fetch(API_ROUTES.CHATS.MESSAGES(chatId));
+  const json = await res.json().catch(() => ({}));
   if (!res.ok) {
-    const json = await res.json().catch(() => ({}));
     throw new Error(json.error || "Mesajlar alınamadı.");
   }
-  const json = await res.json();
   return json.data ?? [];
 }
 
@@ -30,7 +28,7 @@ async function fetchMessages(chatId: string): Promise<Message[]> {
 export function useChats(userId: string) {
   return useQuery({
     queryKey: queryKeys.chats.list(userId),
-    queryFn: () => fetchChats(userId),
+    queryFn: () => fetchChats(),
     enabled: !!userId,
     staleTime: 30 * 1000, // 30s — realtime keeps it fresh
   });
@@ -128,8 +126,9 @@ export function useSendMessage() {
       queryClient.invalidateQueries({
         queryKey: queryKeys.chats.messages(variables.chatId),
       });
+      // Invalidate lists to update last message preview
       queryClient.invalidateQueries({
-        queryKey: queryKeys.chats.all,
+        queryKey: queryKeys.chats.lists(),
       });
     },
   });

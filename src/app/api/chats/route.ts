@@ -21,6 +21,7 @@ export async function GET(req: NextRequest) {
     const result = await ChatService.getChatsForUser(user.id);
     return NextResponse.json({ data: result });
   } catch (error: unknown) {
+    console.error("[API:CHATS:GET] Error:", error);
     const message = error instanceof Error ? error.message : "Chat listesi alınamadı.";
     return NextResponse.json({ error: message }, { status: 500 });
   }
@@ -63,6 +64,7 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({ data: result });
   } catch (error: unknown) {
+    console.error("[API:CHATS:POST] Error:", error);
     const message = error instanceof Error ? error.message : "Chat oluşturulamadı.";
     return NextResponse.json({ error: message }, { status: 500 });
   }
