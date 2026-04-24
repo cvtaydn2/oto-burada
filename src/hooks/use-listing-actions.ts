@@ -4,14 +4,8 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import { useCallback, useState } from "react";
 
-import {
-  bulkArchiveListingAction,
-  bulkDeleteListingAction,
-  publishListingAction,
-} from "@/app/dashboard/listings/actions";
-import { archiveListingUseCase } from "@/domain/usecases/listing-archive";
-import { bumpListingUseCase } from "@/domain/usecases/listing-bump";
 import { queryKeys } from "@/lib/query-keys";
+import { ListingService } from "@/services/listings/listing-service";
 import type { Listing } from "@/types";
 
 export function useListingActions(listings: Listing[], userId?: string) {
@@ -27,20 +21,16 @@ export function useListingActions(listings: Listing[], userId?: string) {
   const archiveMutation = useMutation({
     mutationFn: async ({
       id,
-      isArchived,
-      currentStatus,
     }: {
       id: string;
       isArchived: boolean;
       currentStatus: Listing["status"];
     }) => {
-      if (isArchived) {
-        // Unarchive (publish)
-        return publishListingAction(id, currentStatus);
+      const response = await ListingService.archiveListing(id);
+      if (!response.success) {
+        throw new Error(response.error?.message || "İşlem başarısız.");
       }
-      // Archive using domain use case
-      if (!userId) throw new Error("User ID required");
-      return archiveListingUseCase(id, userId, currentStatus);
+      return response.data;
     },
     onMutate: async ({ id, isArchived }) => {
       // Cancel outgoing refetches
@@ -67,7 +57,7 @@ export function useListingActions(listings: Listing[], userId?: string) {
       if (context?.previousListings && userId) {
         queryClient.setQueryData(queryKeys.listings.my(userId), context.previousListings);
       }
-      setArchiveError("İşlem sırasında bir hata oluştu.");
+      setArchiveError(err instanceof Error ? err.message : "İşlem sırasında bir hata oluştu.");
     },
     onSettled: () => {
       if (userId) {
@@ -77,19 +67,18 @@ export function useListingActions(listings: Listing[], userId?: string) {
     },
   });
 
-  const bumpMutation = useMutation({
-    mutationFn: async ({
-      id,
-      status,
-      bumpedAt,
-    }: {
-      id: string;
-      status: Listing["status"];
-      bumpedAt?: string | null;
-    }) => {
-      // Use domain use case with status machine + cooldown validation
-      if (!userId) throw new Error("User ID required");
-      return bumpListingUseCase(id, userId, { status, bumpedAt });
+  const bumpMutation = useMutation<
+    { message: string },
+    Error,
+    { id: string; status: Listing["status"]; bumpedAt?: string | null },
+    { previousListings: Listing[] | undefined }
+  >({
+    mutationFn: async ({ id }) => {
+      const response = await ListingService.bumpListing(id);
+      if (!response.success || !response.data) {
+        throw new Error(response.error?.message || "Öne çıkarma başarısız.");
+      }
+      return response.data;
     },
     onMutate: async (variables) => {
       await queryClient.cancelQueries({ queryKey: queryKeys.listings.all });
@@ -110,14 +99,10 @@ export function useListingActions(listings: Listing[], userId?: string) {
       if (context?.previousListings && userId) {
         queryClient.setQueryData(queryKeys.listings.my(userId), context.previousListings);
       }
-      setBumpMessage("Öne çıkarma başarısız oldu.");
+      setBumpMessage(err instanceof Error ? err.message : "Öne çıkarma başarısız oldu.");
     },
-    onSuccess: (result) => {
-      if (result.success) {
-        setBumpMessage(result.message || "İlan yenilendi!");
-      } else {
-        setBumpMessage(result.error || "Öne çıkarma başarısız oldu.");
-      }
+    onSuccess: (data) => {
+      setBumpMessage(data.message || "İlan yenilendi!");
     },
     onSettled: () => {
       if (userId) {
@@ -159,15 +144,13 @@ export function useListingActions(listings: Listing[], userId?: string) {
     setIsBulkArchiving(true);
     setArchiveError(null);
     try {
-      const { success, error } = await bulkArchiveListingAction(selectedIds);
-      if (success) {
+      const response = await ListingService.bulkArchive(selectedIds);
+      if (response.success) {
         setSelectedIds([]);
         if (userId) queryClient.invalidateQueries({ queryKey: queryKeys.listings.my(userId) });
         router.refresh();
       } else {
-        setArchiveError(
-          typeof error === "string" ? error : "Toplu arşivleme sırasında hata oluştu."
-        );
+        setArchiveError(response.error?.message || "Toplu arşivleme sırasında hata oluştu.");
       }
     } catch {
       setArchiveError("Bir hata oluştu.");
@@ -180,13 +163,13 @@ export function useListingActions(listings: Listing[], userId?: string) {
     if (!selectedIds.length) return;
     setIsBulkArchiving(true);
     try {
-      const { success, error } = await bulkDeleteListingAction(selectedIds);
-      if (success) {
+      const response = await ListingService.bulkDelete(selectedIds);
+      if (response.success) {
         setSelectedIds([]);
         if (userId) queryClient.invalidateQueries({ queryKey: queryKeys.listings.my(userId) });
         router.refresh();
       } else {
-        setArchiveError(typeof error === "string" ? error : "Toplu silme sırasında hata oluştu.");
+        setArchiveError(response.error?.message || "Toplu silme sırasında hata oluştu.");
       }
     } catch {
       setArchiveError("Bir hata oluştu.");

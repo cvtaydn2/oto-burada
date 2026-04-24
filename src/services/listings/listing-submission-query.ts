@@ -249,7 +249,7 @@ export function applyListingFilterPredicates(
  * NOTE: Using 'any' type for query builder due to complex Supabase type inference.
  * The function is well-tested and type-safe at runtime.
  */
-function buildListingBaseQuery(
+export function buildListingBaseQuery(
   client: SupabaseClient<Database>,
   selectClause: string,
   options?: {

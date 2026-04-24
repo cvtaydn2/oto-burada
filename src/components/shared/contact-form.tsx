@@ -4,6 +4,8 @@ import { CheckCircle2, LoaderCircle, Send } from "lucide-react";
 import { useState } from "react";
 
 import { useTurnstile } from "@/hooks/use-turnstile";
+import { API_ROUTES } from "@/lib/constants/api-routes";
+import { ApiClient } from "@/services/api-client";
 
 const SUBJECTS = [
   "İlanımla ilgili sorun yaşıyorum",
@@ -50,9 +52,8 @@ export function ContactForm() {
     setStatus("loading");
     setErrorMessage("");
     try {
-      const res = await fetch("/api/contact", {
+      const response = await ApiClient.request(API_ROUTES.SUPPORT.CONTACT, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           email: form.email,
           name: form.name,
@@ -63,19 +64,19 @@ export function ContactForm() {
         }),
       });
 
-      const data = await res.json();
-
-      if (res.ok) {
+      if (response.success) {
         setStatus("success");
         resetTurnstile();
       } else {
         setStatus("error");
-        setErrorMessage(data.message || "Mesaj gönderilemedi. Lütfen tekrar deneyin.");
+        setErrorMessage(response.error?.message || "Mesaj gönderilemedi. Lütfen tekrar deneyin.");
         resetTurnstile();
       }
-    } catch {
+    } catch (err) {
       setStatus("error");
-      setErrorMessage("Bağlantı hatası. Lütfen tekrar deneyin.");
+      setErrorMessage(
+        err instanceof Error ? err.message : "Bağlantı hatası. Lütfen tekrar deneyin."
+      );
       resetTurnstile();
     }
   };

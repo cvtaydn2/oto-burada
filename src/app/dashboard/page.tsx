@@ -49,19 +49,21 @@ async function DashboardDataSection({
   user,
 }: {
   favoriteCountPromise: Promise<number>;
-  listingsPromise: Promise<Listing[]>;
+  listingsPromise: Promise<{ listings: Listing[]; total: number }>;
   profilePromise: Promise<Profile | null>;
   user: User;
 }) {
-  const [storedListings, storedProfile, favoriteCount] = await Promise.all([
+  const [listingsResult, storedProfile, favoriteCount] = await Promise.all([
     listingsPromise,
     profilePromise,
     favoriteCountPromise,
   ]);
 
+  const storedListings = (listingsResult.listings || []) as Listing[];
+
   const profile = storedProfile ?? buildProfileFromAuthUser(user);
-  const pendingCount = storedListings.filter((l) => l.status === "pending").length;
-  const approvedCount = storedListings.filter((l) => l.status === "approved").length;
+  const pendingCount = storedListings.filter((l: Listing) => l.status === "pending").length;
+  const approvedCount = storedListings.filter((l: Listing) => l.status === "approved").length;
   return (
     <div className="space-y-10">
       <DashboardVerificationAlert isEmailVerified={profile?.emailVerified} profile={profile} />

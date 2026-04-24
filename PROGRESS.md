@@ -58,4 +58,18 @@
 - **Doğrulama:**
   - `npm run build` ✅
   - `npm run typecheck` ✅
-- **Sıradaki Adım:** Production deployment ve final testler.
+- **Sıradaki Adım:** API Kontrat Standardizasyonu ve CSRF Sertleştirme (Tamamlandı).
+
+## [2026-04-24] - API Contract & Security Hardening
+- **Durum:** ✅ TAMAMLANDI
+- **Yapılanlar:**
+  - **API Contract Standardization**: `details` alanı üzerinden tam uyum sağlandı.
+  - **ErrorCode Synchronization**: Tüm hata kodları senkronize edildi.
+  - **CSRF Defense-in-Depth**: `X-Requested-With` header'ı standartlaştırıldı.
+  - **RESTful Pattern Adoption**: Favori kaldırma işlemi URL parametreli hale getirildi.
+  - **Pagination Infrastructure**: `getMyListings` servisine sayfalama desteği eklendi.
+  - **Auth & Session Sync**: Sign-out ve Profile API'leri oluşturuldu; global 401 redirect eklendi.
+- **Doğrulama:**
+  - `npm run build` ✅
+  - `npm run typecheck` ✅
+- **Sıradaki Adım:** Marketplace UX iyileştirmeleri.

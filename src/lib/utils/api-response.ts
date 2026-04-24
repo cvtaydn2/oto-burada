@@ -14,8 +14,7 @@ export interface ApiErrorResponse {
   error: {
     code: string;
     message: string;
-    fieldErrors?: Record<string, string>;
-    meta?: Record<string, unknown>;
+    details?: unknown;
   };
 }
 
@@ -37,24 +36,14 @@ export function apiSuccess<T>(data: T, message?: string, status = 200) {
 /**
  * Standard error response builder.
  */
-export function apiError(
-  code: string,
-  message: string,
-  status = 400,
-  fieldErrors?: Record<string, string>,
-  meta?: Record<string, unknown>
-) {
+export function apiError(code: string, message: string, status = 400, details?: unknown) {
   const body: ApiErrorResponse = {
     success: false,
     error: { code, message },
   };
 
-  if (fieldErrors) {
-    body.error.fieldErrors = fieldErrors;
-  }
-
-  if (meta) {
-    body.error.meta = meta;
+  if (details) {
+    body.error.details = details;
   }
 
   return NextResponse.json(body, { status });
@@ -71,6 +60,10 @@ export const API_ERROR_CODES = {
   RATE_LIMITED: "RATE_LIMITED",
   VALIDATION_ERROR: "VALIDATION_ERROR",
   SERVICE_UNAVAILABLE: "SERVICE_UNAVAILABLE",
+  SERVICE_UNAVAIL: "SERVICE_UNAVAIL",
   CONFLICT: "CONFLICT",
   INTERNAL_ERROR: "INTERNAL_ERROR",
+  SLUG_COLLISION: "SLUG_COLLISION",
+  QUOTA_EXCEEDED: "QUOTA_EXCEEDED",
+  TRUST_GUARD_REJECTION: "TRUST_GUARD_REJECTION",
 } as const;

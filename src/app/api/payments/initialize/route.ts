@@ -1,7 +1,8 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest } from "next/server";
 
 import { DOPING_PACKAGES } from "@/lib/constants/doping";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { API_ERROR_CODES, apiError, apiSuccess } from "@/lib/utils/api-response";
 import { withUserAndCsrf } from "@/lib/utils/api-security";
 import { getClientIp } from "@/lib/utils/ip";
 import { rateLimitProfiles } from "@/lib/utils/rate-limit";
@@ -28,14 +29,14 @@ export async function POST(req: NextRequest) {
     const validated = initiatePaymentSchema.safeParse(body);
 
     if (!validated.success) {
-      return NextResponse.json({ error: "Invalid request" }, { status: 400 });
+      return apiError(API_ERROR_CODES.BAD_REQUEST, "Geçersiz istek verisi.", 400);
     }
 
     const { listingId, packageId } = validated.data;
     const pkg = DOPING_PACKAGES.find((p) => p.id === packageId);
 
     if (!pkg) {
-      return NextResponse.json({ error: "Invalid package" }, { status: 400 });
+      return apiError(API_ERROR_CODES.BAD_REQUEST, "Geçersiz paket seçimi.", 400);
     }
 
     // Get user profile for buyer info
@@ -53,32 +54,35 @@ export async function POST(req: NextRequest) {
       .single();
 
     if (!listing) {
-      return NextResponse.json({ error: "İlan bulunamadı" }, { status: 404 });
+      return apiError(API_ERROR_CODES.NOT_FOUND, "İlan bulunamadı.", 404);
     }
 
     if (listing.seller_id !== user.id) {
-      return NextResponse.json({ error: "Bu ilan size ait değil" }, { status: 403 });
+      return apiError(API_ERROR_CODES.FORBIDDEN, "Bu ilan size ait değil.", 403);
     }
 
     if (listing.status !== "approved") {
-      return NextResponse.json(
-        { error: "Sadece onaylı ilanlara doping yapılabilir" },
-        { status: 400 }
+      return apiError(
+        API_ERROR_CODES.BAD_REQUEST,
+        "Sadece onaylı ilanlara doping yapılabilir.",
+        400
       );
     }
 
     // SECURITY: Validate required profile fields
     if (!profile?.full_name || profile.full_name.trim() === "") {
-      return NextResponse.json(
-        { error: "Lütfen profil bilgilerinizi tamamlayın (Ad Soyad gerekli)" },
-        { status: 400 }
+      return apiError(
+        API_ERROR_CODES.BAD_REQUEST,
+        "Lütfen profil bilgilerinizi tamamlayın (Ad Soyad gerekli).",
+        400
       );
     }
 
     if (!profile?.phone || profile.phone.trim() === "") {
-      return NextResponse.json(
-        { error: "Lütfen profil bilgilerinizi tamamlayın (Telefon gerekli)" },
-        { status: 400 }
+      return apiError(
+        API_ERROR_CODES.BAD_REQUEST,
+        "Lütfen profil bilgilerinizi tamamlayın (Telefon gerekli).",
+        400
       );
     }
 
@@ -108,10 +112,10 @@ export async function POST(req: NextRequest) {
       listingId,
     });
 
-    return NextResponse.json({ data: result });
+    return apiSuccess(result);
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : "Ödeme başlatılamadı.";
     console.error("[PaymentInitialize] Error:", error);
-    return NextResponse.json({ error: message }, { status: 500 });
+    return apiError(API_ERROR_CODES.INTERNAL_ERROR, message, 500);
   }
 }

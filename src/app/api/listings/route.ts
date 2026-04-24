@@ -28,9 +28,12 @@ export async function GET(request: Request) {
     const user = userSecurity.user!;
 
     try {
+      const page = parseInt(searchParams.get("page") || "1", 10);
+      const limit = parseInt(searchParams.get("limit") || "50", 10);
+
       const { getStoredUserListings } = await import("@/services/listings/listing-submissions");
-      const listings = await getStoredUserListings(user.id);
-      return apiSuccess(listings);
+      const result = await getStoredUserListings(user.id, page, limit);
+      return apiSuccess(result);
     } catch (error) {
       captureServerError("GET /api/listings?view=my failed", "listings", error, {
         userId: user.id,
@@ -88,7 +91,7 @@ export async function POST(request: Request) {
   const validation = listingCreateSchema.partial().safeParse(body);
 
   if (!validation.success) {
-    return apiError(API_ERROR_CODES.BAD_REQUEST, "Geçersiz ilan verisi formatı.", 400, undefined, {
+    return apiError(API_ERROR_CODES.BAD_REQUEST, "Geçersiz ilan verisi formatı.", 400, {
       errors: validation.error.flatten().fieldErrors,
     });
   }

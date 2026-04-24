@@ -9,6 +9,7 @@ import { useAnalytics } from "@/hooks/use-analytics";
 import { AnalyticsEvent } from "@/lib/analytics/events";
 import { listingCreateFormSchema } from "@/lib/validators";
 import { validateListingImageFile } from "@/services/listings/listing-images";
+import { ListingService } from "@/services/listings/listing-service";
 import { lookupVehicleByPlate } from "@/services/listings/plate-lookup";
 import {
   type BrandCatalogItem,
@@ -16,6 +17,7 @@ import {
   type Listing,
   type ListingCreateFormValues,
 } from "@/types";
+import { type ApiResponse } from "@/types/errors";
 
 import { buildDefaultValues } from "../utils/form-utils";
 
@@ -47,6 +49,7 @@ export function useListingCreation({
   const [submitState, setSubmitState] = useState<{
     status: "error" | "idle" | "success" | "warning";
     message?: string;
+    code?: string;
   }>({ status: "idle" });
   const [uploadStates, setUploadStates] = useState<
     Record<string, { status: string; progress: number; message: string; previewUrl?: string }>
@@ -58,61 +61,6 @@ export function useListingCreation({
   const stepStartTimeRef = useRef<number>(Date.now());
   const submitIntentRef = useRef(false);
   const pendingImageCleanupRef = useRef<Set<string>>(new Set());
-
-  const mapSubmitError = useCallback((response: Response, payload: unknown) => {
-    const apiError = (
-      payload as {
-        error?: { code?: string; message?: string; meta?: Record<string, unknown> };
-      } | null
-    )?.error;
-    const errorCode = apiError?.code;
-    const conflictType = apiError?.meta?.conflictType;
-    const resolution = apiError?.meta?.resolution;
-
-    if (response.status === 409 || errorCode === "CONFLICT") {
-      return {
-        status: "warning" as const,
-        message:
-          conflictType === "concurrent_update_detected" || resolution === "reload_required"
-            ? "İlan bu sırada başka bir yerde güncellendi. Formdaki verileriniz korundu. Kontrol edip sayfayı yenileyerek tekrar deneyin."
-            : (apiError?.message ?? "Çakışan bir güncelleme tespit edildi. Lütfen tekrar deneyin."),
-      };
-    }
-
-    if (errorCode === "VALIDATION_ERROR") {
-      return {
-        status: "warning" as const,
-        message: apiError?.message ?? "Bazı alanları kontrol edip yeniden deneyin.",
-      };
-    }
-
-    if (errorCode === "FORBIDDEN") {
-      return {
-        status: "error" as const,
-        message: apiError?.message ?? "Bu işlem şu anda güvenlik nedeniyle tamamlanamıyor.",
-      };
-    }
-
-    if (errorCode === "RATE_LIMITED") {
-      return {
-        status: "warning" as const,
-        message: apiError?.message ?? "Çok sık deneme yaptınız. Lütfen biraz sonra tekrar deneyin.",
-      };
-    }
-
-    if (errorCode === "SERVICE_UNAVAILABLE") {
-      return {
-        status: "error" as const,
-        message:
-          apiError?.message ?? "Servis şu anda kullanılamıyor. Lütfen daha sonra tekrar deneyin.",
-      };
-    }
-
-    return {
-      status: "error" as const,
-      message: apiError?.message ?? "Bir hata oluştu.",
-    };
-  }, []);
 
   const formDefaultValues = useMemo(
     () => buildDefaultValues(initialValues, initialListing),
@@ -126,6 +74,76 @@ export function useListingCreation({
   });
 
   const { control, trigger, getValues, setValue, setError, clearErrors } = form;
+
+  const mapSubmitError = useCallback(
+    (payload: ApiResponse<unknown>) => {
+      const apiError = payload.error;
+      const errorCode = apiError?.code;
+      const details = apiError?.details as Record<string, unknown> | undefined;
+
+      if (errorCode === "CONFLICT") {
+        const conflictType = details?.conflictType;
+        const resolution = details?.resolution;
+
+        return {
+          status: "warning" as const,
+          code: errorCode,
+          message:
+            conflictType === "concurrent_update_detected" || resolution === "reload_required"
+              ? "İlan bu sırada başka bir yerde güncellendi. Formdaki verileriniz korundu. Kontrol edip sayfayı yenileyerek tekrar deneyin."
+              : (apiError?.message ??
+                "Çakışan bir güncelleme tespit edildi. Lütfen tekrar deneyin."),
+        };
+      }
+
+      if (errorCode === "VALIDATION_ERROR") {
+        if (details) {
+          Object.entries(details).forEach(([key, messages]) => {
+            const fieldKey = key as FieldPath<ListingCreateFormValues>;
+            setError(fieldKey, { message: (messages as string[])[0] });
+          });
+        }
+        return {
+          status: "warning" as const,
+          code: errorCode,
+          message: apiError?.message ?? "Bazı alanları kontrol edip yeniden deneyin.",
+        };
+      }
+
+      if (errorCode === "FORBIDDEN") {
+        return {
+          status: "error" as const,
+          code: errorCode,
+          message: apiError?.message ?? "Bu işlem şu anda güvenlik nedeniyle tamamlanamıyor.",
+        };
+      }
+
+      if (errorCode === "RATE_LIMITED") {
+        return {
+          status: "warning" as const,
+          code: errorCode,
+          message:
+            apiError?.message ?? "Çok sık deneme yaptınız. Lütfen biraz sonra tekrar deneyin.",
+        };
+      }
+
+      if (errorCode === "SERVICE_UNAVAILABLE") {
+        return {
+          status: "error" as const,
+          code: errorCode,
+          message:
+            apiError?.message ?? "Servis şu anda kullanılamıyor. Lütfen daha sonra tekrar deneyin.",
+        };
+      }
+
+      return {
+        status: "error" as const,
+        code: errorCode || "UNKNOWN_ERROR",
+        message: apiError?.message ?? "Bir hata oluştu.",
+      };
+    },
+    [setError]
+  );
 
   const fieldArray = useFieldArray({ control, name: "images" });
   const { fields } = fieldArray;
@@ -315,41 +333,32 @@ export function useListingCreation({
 
   const submitListing = async (values: ListingCreateFormValues, turnstileToken?: string) => {
     setSubmitState({ status: "idle" });
-    try {
-      const response = await fetch(
-        isEditing ? `/api/listings/${initialListing?.id}` : "/api/listings",
-        {
-          body: JSON.stringify({ ...values, turnstileToken }),
-          headers: { "Content-Type": "application/json" },
-          method: isEditing ? "PATCH" : "POST",
-        }
-      );
-      const payload = await response.json();
-      if (!response.ok || !payload?.success) {
-        if (
-          response.status === 409 ||
-          (payload as { error?: { code?: string } } | null)?.error?.code === "CONFLICT"
-        ) {
-          const shouldReload = window.confirm(
-            "Bu ilan başka bir yerde güncellendi. Formdaki verileriniz korunuyor. En güncel halini görmek için sayfayı şimdi yenilemek ister misiniz?"
-          );
+    const payload = { ...values, turnstileToken } as Record<string, unknown>;
 
-          if (shouldReload) {
-            window.location.reload();
-            return;
-          }
+    const response = isEditing
+      ? await ListingService.updateListing(initialListing!.id, payload)
+      : await ListingService.createListing(payload);
+
+    if (!response.success) {
+      if (response.error?.code === "CONFLICT") {
+        const shouldReload = window.confirm(
+          "Bu ilan başka bir yerde güncellendi. Formdaki verileriniz korunuyor. En güncel halini görmek için sayfayı şimdi yenilemek ister misiniz?"
+        );
+
+        if (shouldReload) {
+          window.location.reload();
+          return;
         }
-        setSubmitState(mapSubmitError(response, payload));
-        return;
       }
-      setSubmitState({ status: "success", message: "İlan başarıyla kaydedildi." });
-      trackEvent(isEditing ? AnalyticsEvent.LISTING_UPDATED : AnalyticsEvent.LISTING_SUBMITTED, {
-        listingId: payload.data.listing.id,
-      });
-      router.push("/dashboard/listings?created=pending");
-    } catch {
-      setSubmitState({ status: "error", message: "Bağlantı hatası." });
+      setSubmitState(mapSubmitError(response));
+      return;
     }
+
+    setSubmitState({ status: "success", message: "İlan başarıyla kaydedildi." });
+    trackEvent(isEditing ? AnalyticsEvent.LISTING_UPDATED : AnalyticsEvent.LISTING_SUBMITTED, {
+      listingId: response.data!.listing.id,
+    });
+    router.push("/dashboard/listings?created=pending");
   };
 
   return {

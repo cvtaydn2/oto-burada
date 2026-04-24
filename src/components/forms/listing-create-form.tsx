@@ -119,13 +119,26 @@ export function ListingCreateForm({
               )}
 
               {submitState.status === "warning" && submitState.message && (
-                <div className="flex items-center gap-4 rounded-3xl bg-amber-50 p-6 border border-amber-100 shadow-sm animate-in fade-in zoom-in-95 duration-500">
-                  <div className="flex size-10 items-center justify-center rounded-2xl bg-amber-500 text-white shadow-sm shadow-amber-500/30">
-                    <AlertCircle size={24} strokeWidth={3} />
+                <div className="flex flex-col gap-4 rounded-3xl bg-amber-50 p-6 border border-amber-100 shadow-sm animate-in fade-in zoom-in-95 duration-500">
+                  <div className="flex items-center gap-4">
+                    <div className="flex size-10 items-center justify-center rounded-2xl bg-amber-500 text-white shadow-sm shadow-amber-500/30">
+                      <AlertCircle size={24} strokeWidth={3} />
+                    </div>
+                    <p className="text-base font-bold text-amber-900 tracking-tight">
+                      {submitState.message}
+                    </p>
                   </div>
-                  <p className="text-base font-bold text-amber-900 tracking-tight">
-                    {submitState.message}
-                  </p>
+                  {(submitState.code === "CONFLICT" || submitState.code === "RATE_LIMITED") && (
+                    <div className="flex justify-end px-2">
+                      <button
+                        type="button"
+                        onClick={() => window.location.reload()}
+                        className="text-xs font-bold uppercase tracking-widest text-amber-700 hover:text-amber-900 transition-colors underline decoration-2 underline-offset-4"
+                      >
+                        Sayfayı Yenile
+                      </button>
+                    </div>
+                  )}
                 </div>
               )}
 

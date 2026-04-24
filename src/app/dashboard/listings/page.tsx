@@ -39,11 +39,14 @@ export default async function DashboardListingsPage({ searchParams }: DashboardL
   const hasUpdatedListing = resolvedSearchParams?.updated === "true";
 
   // Paralel fetch
-  const [storedListings, references, profile] = await Promise.all([
+  const [listingsResult, references, profile] = await Promise.all([
     getStoredUserListings(user.id),
     getLiveMarketplaceReferenceData(),
     getStoredProfileById(user.id),
   ]);
+
+  const storedListings = listingsResult.listings;
+
   const selectedListing = resolvedSearchParams?.edit
     ? (storedListings.find((l: Listing) => l.id === resolvedSearchParams.edit) ?? null)
     : null;

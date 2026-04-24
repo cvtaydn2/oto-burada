@@ -25,6 +25,7 @@ export const API_ROUTES = {
   },
   SUPPORT: {
     TICKETS: "/api/support/tickets",
+    CONTACT: "/api/contact",
   },
   REPORTS: {
     BASE: "/api/reports",

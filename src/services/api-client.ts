@@ -20,6 +20,7 @@ class ApiClient {
         ...options,
         headers: {
           "Content-Type": "application/json",
+          "X-Requested-With": "XMLHttpRequest",
           ...(options?.headers || {}),
         },
       });
@@ -27,11 +28,21 @@ class ApiClient {
       const json = await res.json().catch(() => ({}));
 
       if (!res.ok) {
+        // Handle 401 Unauthorized globally - redirect to login
+        if (
+          res.status === 401 &&
+          typeof window !== "undefined" &&
+          !window.location.pathname.startsWith("/login")
+        ) {
+          window.location.href = `/login?returnTo=${encodeURIComponent(window.location.pathname)}`;
+        }
+
         return {
           success: false,
           error: {
             message: json.error?.message || json.error || "Bir hata oluştu.",
-            code: json.error?.code,
+            code: json.error?.code || (res.status === 401 ? "UNAUTHORIZED" : "UNKNOWN_ERROR"),
+            details: json.error?.details,
           },
         };
       }
@@ -105,9 +116,8 @@ export const FavoriteService = {
     }),
 
   remove: (listingId: string) =>
-    ApiClient.request<{ favoriteIds: string[] }>(API_ROUTES.FAVORITES.BASE, {
+    ApiClient.request<{ favoriteIds: string[] }>(API_ROUTES.FAVORITES.DETAIL(listingId), {
       method: "DELETE",
-      body: JSON.stringify({ listingId }),
     }),
 };
 
@@ -135,6 +145,30 @@ export const PaymentService = {
 
   retrieve: (token: string) =>
     ApiClient.request<{ status: string; paymentId: string }>(API_ROUTES.PAYMENTS.RETRIEVE(token)),
+};
+
+export const ReportService = {
+  create: (data: { listingId: string; reason: string; description?: string }) =>
+    ApiClient.request(API_ROUTES.REPORTS.BASE, {
+      method: "POST",
+      body: JSON.stringify(data),
+    }),
+};
+
+export const AuthService = {
+  signOut: () =>
+    ApiClient.request(API_ROUTES.AUTH.SIGN_OUT, {
+      method: "POST",
+    }),
+};
+
+export const ProfileService = {
+  get: () => ApiClient.request(API_ROUTES.PROFILE.BASE),
+  update: (data: Record<string, unknown>) =>
+    ApiClient.request(API_ROUTES.PROFILE.BASE, {
+      method: "PATCH",
+      body: JSON.stringify(data),
+    }),
 };
 
 // Re-export ApiClient logic for the ListingService to use

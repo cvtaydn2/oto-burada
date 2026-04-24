@@ -14,6 +14,7 @@ export function createApiResponseSchema<T extends z.ZodTypeAny>(dataSchema: T) {
       .object({
         message: z.string(),
         code: z.string().optional(),
+        details: z.any().optional(),
       })
       .optional(),
   });
@@ -30,6 +31,15 @@ export const apiResponseSchemas = {
   ),
   listingDetail: createApiResponseSchema(listingSchema),
   listingsList: createApiResponseSchema(z.array(listingSchema)),
+  paginatedListings: createApiResponseSchema(
+    z.object({
+      listings: z.array(listingSchema),
+      total: z.number(),
+      page: z.number(),
+      limit: z.number(),
+      hasMore: z.boolean(),
+    })
+  ),
   genericMessage: createApiResponseSchema(
     z.object({
       message: z.string(),
@@ -38,6 +48,16 @@ export const apiResponseSchemas = {
   favoriteIds: createApiResponseSchema(
     z.object({
       favoriteIds: z.array(z.string()),
+    })
+  ),
+  listingCreate: createApiResponseSchema(
+    z.object({
+      message: z.string(),
+      listing: z.object({
+        id: z.string(),
+        slug: z.string(),
+        status: z.string(),
+      }),
     })
   ),
 };

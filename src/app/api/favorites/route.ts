@@ -86,39 +86,3 @@ export async function POST(request: Request) {
 
   return apiSuccess({ favoriteIds: result.favoriteIds }, "İlan favorilere eklendi.");
 }
-
-export async function DELETE(request: Request) {
-  const security = await withAuthAndCsrf(request);
-  if (!security.ok) return security.response;
-  const user = security.user!;
-
-  if (!hasSupabaseEnv() || !hasSupabaseAdminEnv()) {
-    return apiError(API_ERROR_CODES.SERVICE_UNAVAILABLE, "Servis kullanılamıyor.", 503);
-  }
-
-  let body: unknown;
-  try {
-    body = await request.json();
-  } catch {
-    return apiError(API_ERROR_CODES.BAD_REQUEST, "Favori isteği okunamadı.", 400);
-  }
-
-  const listingId = getListingIdFromBody(body);
-  if (!listingId) {
-    return apiError(API_ERROR_CODES.BAD_REQUEST, "Geçerli bir ilan seçmelisin.", 400);
-  }
-
-  const { favoriteRemoveUseCase } = await import("@/domain/usecases/favorite-remove");
-  const result = await favoriteRemoveUseCase(user.id, listingId);
-
-  if (!result.success) {
-    return apiError(API_ERROR_CODES.BAD_REQUEST, result.error || "Favori kaldırılamadı.", 400);
-  }
-
-  captureServerEvent("favorite_removed", {
-    userId: user.id,
-    listingId,
-  });
-
-  return apiSuccess({ favoriteIds: result.favoriteIds }, "İlan favorilerden kaldırıldı.");
-}

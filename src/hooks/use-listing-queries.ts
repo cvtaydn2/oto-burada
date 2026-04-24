@@ -15,7 +15,7 @@ export function useMyListings(userId?: string) {
     queryFn: async () => {
       if (!userId) return [];
       const { success, data } = await ListingService.getMyListings();
-      return success ? data || [] : [];
+      return success ? data?.listings || [] : [];
     },
     enabled: !!userId,
   });

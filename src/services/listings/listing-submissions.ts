@@ -21,11 +21,13 @@ import {
   updateDatabaseListing,
 } from "./listing-submission-persistence";
 import {
+  buildListingBaseQuery,
   getDatabaseListings,
   getFilteredDatabaseListings,
+  listingSelect,
   PaginatedListingsResult,
 } from "./listing-submission-query";
-import { ListingImageRow, ListingRow } from "./listing-submission-types";
+import { ListingImageRow, ListingRow, mapListingRow } from "./listing-submission-types";
 
 // Re-export types for backward compatibility
 export type { ListingImageRow, ListingRow };
@@ -162,11 +164,40 @@ export async function findEditableListingById(listingId: string, sellerId: strin
   );
 }
 
-export async function getStoredUserListings(sellerId: string) {
-  const databaseListings = await getDatabaseListings({ sellerId });
-  return (databaseListings ?? []).sort(
-    (left: Listing, right: Listing) => Date.parse(right.createdAt) - Date.parse(left.createdAt)
-  );
+export async function getStoredUserListings(
+  sellerId: string,
+  page: number = 1,
+  limit: number = 50
+): Promise<PaginatedListingsResult> {
+  const admin = createSupabaseAdminClient();
+
+  const dataQuery = buildListingBaseQuery(admin, listingSelect, {
+    sellerId,
+    filters: { page, limit },
+  });
+
+  const countQuery = buildListingBaseQuery(admin, "id", {
+    sellerId,
+    countOnly: true,
+  });
+
+  const [dataResult, countResult] = await Promise.all([dataQuery, countQuery]);
+
+  if (dataResult.error) {
+    return { listings: [], total: 0, page, limit, hasMore: false };
+  }
+
+  const listings = (dataResult.data ?? []).map(mapListingRow);
+  const total = countResult.count ?? 0;
+  const hasMore = page * limit < total;
+
+  return {
+    listings,
+    total,
+    page,
+    limit,
+    hasMore,
+  };
 }
 
 export async function getExistingListingSlugs(): Promise<{ id: string; slug: string }[]> {
