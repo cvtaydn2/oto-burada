@@ -58,6 +58,11 @@ const ADMIN_NAV_ITEMS = [
     icon: KeyRound,
   },
   {
+    title: "Güvenlik & Abuse",
+    href: "/admin/security",
+    icon: ShieldCheck,
+  },
+  {
     title: "Kullanıcı Yönetimi",
     href: "/admin/users",
     icon: Users,
