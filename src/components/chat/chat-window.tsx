@@ -7,7 +7,13 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useChatMessages, useMarkAsRead, useSendMessage } from "@/hooks/use-chat-queries";
+import {
+  useArchiveChat,
+  useChatMessages,
+  useDeleteMessage,
+  useMarkAsRead,
+  useSendMessage,
+} from "@/hooks/use-chat-queries";
 import { useChatRealtime } from "@/hooks/use-chat-realtime";
 
 import { ChatInput } from "./chat-input";
@@ -30,6 +36,8 @@ export function ChatWindow({ chatId, userId, recipientName, onBack }: ChatWindow
 
   const sendMessageMutation = useSendMessage();
   const markAsReadMutation = useMarkAsRead();
+  const archiveMutation = useArchiveChat();
+  const deleteMessageMutation = useDeleteMessage();
 
   // Memoize callbacks for realtime to prevent re-subscription loops
   const handleMessage = useCallback(() => {
@@ -39,7 +47,7 @@ export function ChatWindow({ chatId, userId, recipientName, onBack }: ChatWindow
   }, []);
 
   // Realtime updates
-  useChatRealtime({
+  const { sendTyping } = useChatRealtime({
     chatId,
     userId,
     onMessage: handleMessage,
@@ -47,13 +55,23 @@ export function ChatWindow({ chatId, userId, recipientName, onBack }: ChatWindow
   });
 
   // Mark as read only when chatId changes OR when new messages arrive
-  // but avoid infinite loop by not depending on the mutation object itself
   useEffect(() => {
     if (chatId && userId) {
       markAsReadMutation.mutate({ chatId, userId });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [chatId, userId]);
+
+  const handleArchive = async () => {
+    if (!window.confirm("Bu sohbeti arşivlemek istediğinize emin misiniz?")) return;
+    await archiveMutation.mutateAsync({ chatId, archive: true });
+    if (onBack) onBack();
+  };
+
+  const handleDeleteMessage = async (messageId: string) => {
+    if (!window.confirm("Bu mesajı silmek istediğinize emin misiniz?")) return;
+    await deleteMessageMutation.mutateAsync({ chatId, messageId });
+  };
 
   // Auto-scroll to bottom
   useEffect(() => {
@@ -76,7 +94,7 @@ export function ChatWindow({ chatId, userId, recipientName, onBack }: ChatWindow
   };
 
   const handleTyping = (typing: boolean) => {
-    // Could emit typing indicator via realtime if needed
+    sendTyping(typing);
   };
 
   if (isLoading) {
@@ -115,7 +133,7 @@ export function ChatWindow({ chatId, userId, recipientName, onBack }: ChatWindow
   return (
     <div className="flex flex-col h-full">
       {/* Header */}
-      <div className="p-4 border-b bg-background">
+      <div className="p-4 border-b bg-background flex items-center justify-between">
         <div className="flex items-center gap-3">
           {onBack && (
             <Button variant="ghost" size="icon" onClick={onBack} className="md:hidden">
@@ -132,14 +150,28 @@ export function ChatWindow({ chatId, userId, recipientName, onBack }: ChatWindow
             <p className="text-xs text-muted-foreground">{isTyping ? "Yazıyor..." : "Çevrimiçi"}</p>
           </div>
         </div>
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={handleArchive}
+          disabled={archiveMutation.isPending}
+        >
+          Arşivle
+        </Button>
       </div>
 
       {/* Messages */}
       <ScrollArea className="flex-1 p-4" ref={scrollAreaRef}>
         <div className="space-y-4">
           {messages?.map((message) => (
-            <MessageBubble key={message.id} message={message} isOwn={message.senderId === userId} />
+            <MessageBubble
+              key={message.id}
+              message={message}
+              isOwn={message.senderId === userId}
+              onDelete={handleDeleteMessage}
+            />
           ))}
+
           {isTyping && <TypingIndicator />}
           <div ref={bottomRef} />
         </div>

@@ -6,6 +6,8 @@ export interface Chat {
   status: "active" | "archived";
   lastMessageAt: string;
   createdAt: string;
+  buyerArchived: boolean;
+  sellerArchived: boolean;
 }
 
 export interface Message {
@@ -16,6 +18,7 @@ export interface Message {
   messageType: "text" | "image" | "system";
   isRead: boolean;
   createdAt: string;
+  deletedAt?: string | null;
 }
 
 export interface CreateChatInput {

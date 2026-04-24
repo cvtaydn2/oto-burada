@@ -157,3 +157,51 @@ export function useMarkAsRead() {
     },
   });
 }
+
+/**
+ * Delete a message
+ */
+export function useDeleteMessage() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({ chatId, messageId }: { chatId: string; messageId: string }) => {
+      const res = await fetch(`${API_ROUTES.CHATS.MESSAGES(chatId)}?messageId=${messageId}`, {
+        method: "DELETE",
+      });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error || "Mesaj silinemedi.");
+      return json.data;
+    },
+    onSuccess: (_, { chatId }) => {
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.chats.messages(chatId),
+      });
+    },
+  });
+}
+
+/**
+ * Archive a chat
+ */
+export function useArchiveChat() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({ chatId, archive }: { chatId: string; archive: boolean }) => {
+      const res = await fetch(`${API_ROUTES.CHATS.BASE}/${chatId}/archive`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ archive }),
+      });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error || "Chat arşivlenemedi.");
+      return json.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.chats.lists(),
+      });
+    },
+  });
+}

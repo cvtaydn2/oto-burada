@@ -1,6 +1,6 @@
 "use client";
 
-import { Send, Smile } from "lucide-react";
+import { Loader2, Send, Smile } from "lucide-react";
 import React, { KeyboardEvent, useRef, useState } from "react";
 
 import { Button } from "@/components/ui/button";
@@ -85,7 +85,7 @@ export function ChatInput({ onSend, onTyping, disabled }: ChatInputProps) {
         onClick={handleSubmit}
         disabled={!content.trim() || disabled}
       >
-        <Send className="h-4 w-4" />
+        {disabled ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
       </Button>
     </div>
   );

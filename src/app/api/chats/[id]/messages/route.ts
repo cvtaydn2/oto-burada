@@ -55,3 +55,29 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
     return NextResponse.json({ error: message }, { status: 500 });
   }
 }
+
+export async function DELETE(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  try {
+    const supabase = await createSupabaseServerClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    if (!user) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const { searchParams } = new URL(req.url);
+    const messageId = searchParams.get("messageId");
+
+    if (!messageId) {
+      return NextResponse.json({ error: "Mesaj ID belirtilmedi." }, { status: 400 });
+    }
+
+    const result = await ChatService.deleteMessage(messageId, user.id);
+    return NextResponse.json({ data: result });
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : "Mesaj silinemedi.";
+    return NextResponse.json({ error: message }, { status: 500 });
+  }
+}

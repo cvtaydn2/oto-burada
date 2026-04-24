@@ -14,7 +14,7 @@ export class ChatService {
   static async getChatsForUser(userId: string): Promise<ChatWithLastMessage[]> {
     const admin = createSupabaseAdminClient();
 
-    // Fetch chats — messages ordered desc so first result is the latest
+    // Fetch chats — exclude archived ones for this user
     const { data: chats, error: chatsError } = await admin
       .from("chats")
       .select(
@@ -26,13 +26,16 @@ export class ChatService {
         status,
         last_message_at,
         created_at,
+        buyer_archived,
+        seller_archived,
         messages (
           id,
           chat_id,
           sender_id,
           content,
           is_read,
-          created_at
+          created_at,
+          deleted_at
         )
       `
       )
@@ -45,32 +48,42 @@ export class ChatService {
       throw new Error(`Chat listesi alınamadı: ${chatsError.message}`);
     }
 
-    return (chats || []).map((chat: Record<string, unknown>) => {
-      const messages = (chat.messages as Record<string, unknown>[]) || [];
-      const lastMessage = messages.length > 0 ? messages[0] : null;
+    return (chats || [])
+      .filter((chat) => {
+        // Only show chats that are NOT archived by this user
+        if (chat.buyer_id === userId) return !chat.buyer_archived;
+        if (chat.seller_id === userId) return !chat.seller_archived;
+        return true;
+      })
+      .map((chat: Record<string, unknown>) => {
+        const messages = (chat.messages as Record<string, unknown>[]) || [];
+        // Filter out deleted messages from last message preview
+        const lastMessage = messages.find((m) => !m.deleted_at) || null;
 
-      return {
-        id: chat.id as string,
-        listingId: chat.listing_id as string,
-        buyerId: chat.buyer_id as string,
-        sellerId: chat.seller_id as string,
-        status: (chat.status as string) === "archived" ? "archived" : "active",
-        lastMessageAt: chat.last_message_at as string,
-        createdAt: chat.created_at as string,
-        lastMessage: lastMessage
-          ? {
-              id: (lastMessage as Record<string, unknown>).id as string,
-              chatId: (lastMessage as Record<string, unknown>).chat_id as string,
-              senderId: (lastMessage as Record<string, unknown>).sender_id as string,
-              content: (lastMessage as Record<string, unknown>).content as string,
-              // message_type was added in migration 0068 — default to "text" for schema safety
-              messageType: "text" as const,
-              isRead: (lastMessage as Record<string, unknown>).is_read as boolean,
-              createdAt: (lastMessage as Record<string, unknown>).created_at as string,
-            }
-          : undefined,
-      };
-    });
+        return {
+          id: chat.id as string,
+          listingId: chat.listing_id as string,
+          buyerId: chat.buyer_id as string,
+          sellerId: chat.seller_id as string,
+          status: (chat.status as string) === "archived" ? "archived" : "active",
+          lastMessageAt: chat.last_message_at as string,
+          createdAt: chat.created_at as string,
+          buyerArchived: chat.buyer_archived as boolean,
+          sellerArchived: chat.seller_archived as boolean,
+          lastMessage: lastMessage
+            ? {
+                id: (lastMessage as Record<string, unknown>).id as string,
+                chatId: (lastMessage as Record<string, unknown>).chat_id as string,
+                senderId: (lastMessage as Record<string, unknown>).sender_id as string,
+                content: (lastMessage as Record<string, unknown>).content as string,
+                // message_type was added in migration 0068 — default to "text" for schema safety
+                messageType: "text" as const,
+                isRead: (lastMessage as Record<string, unknown>).is_read as boolean,
+                createdAt: (lastMessage as Record<string, unknown>).created_at as string,
+              }
+            : undefined,
+        };
+      });
   }
 
   /**
@@ -81,7 +94,7 @@ export class ChatService {
 
     const { data: existingChat, error: searchError } = await admin
       .from("chats")
-      .select("id, status")
+      .select("id, status, buyer_archived, seller_archived")
       .eq("listing_id", input.listingId)
       .eq("buyer_id", input.buyerId)
       .eq("seller_id", input.sellerId)
@@ -102,6 +115,10 @@ export class ChatService {
           status: existingChat.status as "active" | "archived",
           lastMessageAt: new Date().toISOString(),
           createdAt: new Date().toISOString(),
+          buyerArchived:
+            (existingChat as unknown as { buyer_archived: boolean }).buyer_archived || false,
+          sellerArchived:
+            (existingChat as unknown as { seller_archived: boolean }).seller_archived || false,
         };
       }
     }
@@ -138,6 +155,8 @@ export class ChatService {
       status: chat.status as "active" | "archived",
       lastMessageAt: chat.last_message_at || new Date().toISOString(),
       createdAt: chat.created_at,
+      buyerArchived: chat.buyer_archived || false,
+      sellerArchived: chat.seller_archived || false,
     };
   }
 
@@ -163,6 +182,7 @@ export class ChatService {
       .from("messages")
       .select("*")
       .eq("chat_id", chatId)
+      .is("deleted_at", null)
       .order("created_at", { ascending: true });
 
     if (messagesError) {
@@ -249,7 +269,46 @@ export class ChatService {
       messageType: message.message_type,
       isRead: message.is_read,
       createdAt: message.created_at,
+      deletedAt: message.deleted_at,
     };
+  }
+
+  /**
+   * Delete a message (soft delete)
+   */
+  static async deleteMessage(messageId: string, userId: string): Promise<boolean> {
+    const admin = createSupabaseAdminClient();
+
+    const { error } = await admin
+      .from("messages")
+      .update({ deleted_at: new Date().toISOString() })
+      .eq("id", messageId)
+      .eq("sender_id", userId);
+
+    if (error) {
+      throw new Error(`Mesaj silinemedi: ${error.message}`);
+    }
+
+    return true;
+  }
+
+  /**
+   * Archive or unarchive a chat for a specific user
+   */
+  static async archiveChat(chatId: string, userId: string, archive: boolean): Promise<boolean> {
+    const admin = createSupabaseAdminClient();
+
+    const { error } = await admin.rpc("toggle_chat_archive", {
+      p_chat_id: chatId,
+      p_user_id: userId,
+      p_archive: archive,
+    });
+
+    if (error) {
+      throw new Error(`Chat arşivlenemedi: ${error.message}`);
+    }
+
+    return true;
   }
 
   /**
