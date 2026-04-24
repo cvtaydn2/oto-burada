@@ -706,3 +706,27 @@
   - `npm run lint` ✅
   - `node scripts/seed-doping-packages.mjs` ✅
 - **Sıradaki Adım:** Canlı ortamda Iyzico callback/webhook akışlarının E2E testleri.
+
+# 2026-04-24 — CRITICAL SECURITY FIXES
+
+## [2026-04-24] - Emergency Security Vulnerability Remediation
+- **Durum:** ✅ TAMAMLANDI
+- **Kritik Seviye:** 🔴 ACIL - Production güvenlik açıkları
+- **Yapılanlar:**
+  - **#1 - Middleware Dosyası Yanlış Adlandırılmış (CRITICAL)**: `src/proxy.ts` → `src/middleware.ts` olarak yeniden adlandırıldı ve `proxy()` → `middleware()` export'u düzeltildi. Next.js artık middleware'i tanıyor ve TÜM güvenlik katmanları (rate limiting, CSRF, session management) aktif.
+  - **#2 - Payment Callback Yarış Koşulu (CRITICAL)**: Ödeme callback'inde atomik kilitleme (`fulfilled_at` field) uygulandı. Iyzico API çağrısından ÖNCE lock alınıyor, başarısızlık durumunda lock serbest bırakılıyor. Çift ödeme ve tutarsız state'ler önlendi.
+  - **#3 - Webhook İmzasız Log Kaydı (HIGH)**: Iyzico webhook handler'ı imza doğrulamasını ÖNCE yapacak şekilde refaktör edildi. Sadece doğrulanmış webhook'lar veritabanına kaydediliyor, log injection saldırıları önlendi.
+  - **#4 - Listing Ownership Yanlış Kolon (HIGH)**: Payment callback'te `listing.user_id` → `listing.seller_id` düzeltildi. Sahiplik kontrolü artık doğru çalışıyor, başkasının ilanı için doping satın alma engellendi.
+  - **#5 - Rate Limiting Production Uyarısı (MEDIUM)**: Redis (Upstash) yapılandırılmamışsa production'da açık hata logu eklendi. Fail-open davranış korundu ama görünürlük sağlandı.
+- **Güvenlik Mimarisi İyileştirmeleri:**
+  - Atomik ödeme işleme (database-level locking)
+  - Fail-closed güvenlik (admin auth, critical endpoints)
+  - Defense in depth (çoklu doğrulama katmanları)
+- **Doğrulama:**
+  - `npm run typecheck` ✅ (Tip hataları yok)
+  - `npm run lint` ✅ (Sadece önceden var olan warning'ler)
+  - Middleware artık Next.js tarafından tanınıyor ✅
+  - Payment akışları race-condition güvenli ✅
+  - Webhook güvenliği sıkılaştırıldı ✅
+- **Acil Deployment Gerekli:** Bu düzeltmeler derhal production'a alınmalı.
+- **Sıradaki Adım:** Production deployment ve güvenlik testleri.

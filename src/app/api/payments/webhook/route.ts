@@ -13,14 +13,7 @@ export async function POST(req: NextRequest) {
     const rawBody = await req.text();
     const body = JSON.parse(rawBody);
 
-    // 1. Log the webhook (before verification for audit trail)
-    await admin.from("payment_webhook_logs").insert({
-      payload: body,
-      headers: Object.fromEntries(req.headers.entries()),
-      status: "received",
-    });
-
-    // 2. SECURITY: Verify Iyzico webhook signature
+    // 1. SECURITY: Verify Iyzico webhook signature FIRST
     const signature = req.headers.get("x-iyzi-signature");
     const secretKey = process.env.IYZICO_SECRET_KEY;
 
@@ -36,15 +29,15 @@ export async function POST(req: NextRequest) {
         hasSignature: !!signature,
         eventType: body.iyziEventType,
       });
-
-      // Update log status
-      await admin
-        .from("payment_webhook_logs")
-        .update({ status: "invalid_signature" })
-        .eq("payload->token", body.token);
-
       return NextResponse.json({ error: "Invalid signature" }, { status: 403 });
     }
+
+    // 2. Log ONLY verified webhooks (after signature verification)
+    await admin.from("payment_webhook_logs").insert({
+      payload: body,
+      headers: Object.fromEntries(req.headers.entries()),
+      status: "received",
+    });
 
     // 3. Update payment status if needed
     if (body.iyziEventType === "PAYMENT_AUTH") {

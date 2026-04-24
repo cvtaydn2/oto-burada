@@ -12,9 +12,9 @@ import { updateSession } from "@/lib/supabase/middleware";
  * 2. CSRF Protection for API Mutations
  * 3. Auth Session Management & Route Guards
  *
- * Next.js 16+ uses `proxy.ts` as the middleware entry point.
+ * Next.js requires this file to be named `middleware.ts` and export `middleware` function.
  */
-export async function proxy(request: NextRequest) {
+export async function middleware(request: NextRequest) {
   return await runMiddlewarePipeline(request, [rateLimitMiddleware, csrfMiddleware, updateSession]);
 }
 

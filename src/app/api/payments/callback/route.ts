@@ -34,27 +34,28 @@ export async function POST(req: NextRequest) {
 
     const admin = createSupabaseAdminClient();
 
-    // SECURITY: Atomic check-and-update to prevent race conditions
-    // This query will only succeed once, even if callback is called multiple times
-    const { data: existingPayment } = await admin
+    // SECURITY: Atomic lock to prevent race conditions
+    // First, try to claim the fulfillment atomically
+    const { data: lockedPayment, error: lockError } = await admin
       .from("payments")
-      .select("id, status, fulfilled_at, user_id, listing_id, package_id, amount")
+      .update({ fulfilled_at: new Date().toISOString() })
       .eq("iyzico_token", token)
+      .is("fulfilled_at", null) // Only update if not already fulfilled
+      .select("id, status, user_id, listing_id, package_id, amount")
       .single();
 
-    if (!existingPayment) {
-      logger.api.error("Payment not found for callback", { token });
+    if (lockError || !lockedPayment) {
+      if (lockError?.code === "PGRST116") {
+        // No rows updated - payment already fulfilled
+        logger.api.info("Payment callback for already fulfilled payment (idempotent)", { token });
+        return NextResponse.redirect(new URL("/dashboard/payments?status=success", req.url));
+      }
+      logger.api.error("Payment not found for callback", { token, error: lockError });
       return NextResponse.redirect(new URL("/dashboard/payments?status=error", req.url));
     }
 
-    // IDEMPOTENCY: If already fulfilled, just redirect to success
-    if (existingPayment.fulfilled_at) {
-      logger.api.info("Payment callback for already fulfilled payment (idempotent)", {
-        paymentId: existingPayment.id,
-        token,
-      });
-      return NextResponse.redirect(new URL("/dashboard/payments?status=success", req.url));
-    }
+    // Now we have exclusive lock on this payment - proceed with verification
+    const existingPayment = lockedPayment;
 
     // 1. SECURITY: Retrieve result directly from Iyzico API (not from request)
     // This is the critical security measure - we don't trust the callback data
@@ -74,6 +75,10 @@ export async function POST(req: NextRequest) {
         token,
         status: result.status,
       });
+
+      // Release the lock since payment failed
+      await admin.from("payments").update({ fulfilled_at: null }).eq("id", existingPayment.id);
+
       return NextResponse.redirect(new URL("/dashboard/payments?status=failure", req.url));
     }
 
@@ -84,6 +89,10 @@ export async function POST(req: NextRequest) {
         status: existingPayment.status,
         paymentId: existingPayment.id,
       });
+
+      // Release the lock since payment is not successful
+      await admin.from("payments").update({ fulfilled_at: null }).eq("id", existingPayment.id);
+
       return NextResponse.redirect(new URL("/dashboard/payments?status=failure", req.url));
     }
 
@@ -118,42 +127,25 @@ export async function POST(req: NextRequest) {
     if (existingPayment.listing_id) {
       const { data: listing } = await admin
         .from("listings")
-        .select("user_id")
+        .select("seller_id") // FIXED: Use correct column name
         .eq("id", existingPayment.listing_id)
         .single();
 
-      if (!listing || listing.user_id !== existingPayment.user_id) {
+      if (!listing || listing.seller_id !== existingPayment.user_id) {
         logger.api.error("Listing ownership mismatch", {
           paymentId: existingPayment.id,
           listingId: existingPayment.listing_id,
           paymentUserId: existingPayment.user_id,
-          listingUserId: listing?.user_id,
+          listingSellerId: listing?.seller_id, // FIXED: Use correct field name
         });
+
+        // Release the lock since ownership check failed
+        await admin.from("payments").update({ fulfilled_at: null }).eq("id", existingPayment.id);
+
         return NextResponse.redirect(new URL("/dashboard/payments?status=error", req.url));
       }
 
-      // 7. ATOMIC FULFILLMENT: Update fulfilled_at ONLY if it's still NULL
-      // This prevents race conditions - only one callback will succeed
-      const { data: updatedPayment, error: updateError } = await admin
-        .from("payments")
-        .update({ fulfilled_at: new Date().toISOString() })
-        .eq("id", existingPayment.id)
-        .is("fulfilled_at", null) // CRITICAL: Only update if not already fulfilled
-        .select()
-        .single();
-
-      if (updateError || !updatedPayment) {
-        // Another callback already fulfilled this payment
-        logger.api.info(
-          "Payment already fulfilled by another callback (race condition prevented)",
-          {
-            paymentId: existingPayment.id,
-          }
-        );
-        return NextResponse.redirect(new URL("/dashboard/payments?status=success", req.url));
-      }
-
-      // 8. Apply doping (only if we successfully claimed the fulfillment)
+      // 7. Apply doping (we already have the atomic lock)
       try {
         await DopingService.applyDoping({
           userId: existingPayment.user_id,

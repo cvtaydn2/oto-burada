@@ -9,6 +9,14 @@ const getRedisConfig = () => {
       token: process.env.UPSTASH_REDIS_REST_TOKEN,
     };
   }
+
+  // SECURITY: Warn if Redis is not configured in production
+  if (process.env.NODE_ENV === "production") {
+    logger.db.error(
+      "CRITICAL: Redis (Upstash) is not configured for production! Rate limiting will be degraded."
+    );
+  }
+
   return null;
 };
 
