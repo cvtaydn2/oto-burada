@@ -13,6 +13,8 @@ import {
 import Link from "next/link";
 import { useMemo, useState } from "react";
 
+import { useAuthUser } from "@/components/shared/auth-provider";
+import { useRealtimeNotifications } from "@/hooks/use-realtime-notifications";
 import { cn, formatDate } from "@/lib/utils";
 
 interface NotificationItem {
@@ -30,10 +32,30 @@ interface NotificationsPanelProps {
 }
 
 export function NotificationsPanel({ initialNotifications }: NotificationsPanelProps) {
+  const { userId, isAuthenticated } = useAuthUser();
   const [items, setItems] = useState(initialNotifications);
   const [showUnreadOnly, setShowUnreadOnly] = useState(false);
   const [activeAction, setActiveAction] = useState<string | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+
+  // F03: Real-time notifications subscription
+  useRealtimeNotifications({
+    userId: userId || "",
+    onNotification: (notification) => {
+      setItems((prev) => [
+        {
+          id: notification.id,
+          title: notification.title,
+          message: notification.message,
+          href: notification.href,
+          read: false,
+          createdAt: notification.created_at,
+          type: notification.type as NotificationItem["type"],
+        },
+        ...prev,
+      ]);
+    },
+  });
 
   const filteredItems = useMemo(
     () => (showUnreadOnly ? items.filter((item) => !item.read) : items),

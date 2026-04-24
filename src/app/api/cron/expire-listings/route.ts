@@ -1,7 +1,10 @@
 /**
  * F05: Listing Auto-Archive Cron
- * Expires listings where expires_at < now
+ * Expires listings where published_at < 60 days ago
  * Run via Vercel Cron: vercel.json -> /api/cron/expire-listings
+ *
+ * NOTE: Uses published_at (migration 0007) - NOT expires_at
+ * pg_cron also manages this in migration 0007
  */
 import { NextResponse } from "next/server";
 
@@ -12,14 +15,16 @@ import { logger } from "@/lib/utils/logger";
 
 export const runtime = "nodejs";
 
+const SIXTY_DAYS_MS = 60 * 24 * 60 * 60 * 1000;
+
 async function expireListings(admin: ReturnType<typeof createSupabaseAdminClient>) {
-  const now = new Date().toISOString();
+  const cutoff = new Date(Date.now() - SIXTY_DAYS_MS).toISOString();
 
   const { data: expiredListings, error: fetchError } = await admin
     .from("listings")
-    .select("id, seller_id, status")
-    .is("expires_at", false)
-    .lt("expires_at", now)
+    .select("id, seller_id, status, version")
+    .not("published_at", "is", null)
+    .lt("published_at", cutoff)
     .eq("status", "approved");
 
   if (fetchError) {
@@ -31,21 +36,34 @@ async function expireListings(admin: ReturnType<typeof createSupabaseAdminClient
     return { processed: 0, errors: 0 };
   }
 
-  const listingIds = expiredListings.map((l) => l.id);
-  const { error: updateError } = await admin
-    .from("listings")
-    .update({ status: "archived", updated_at: now })
-    .in("id", listingIds)
-    .eq("status", "approved");
+  // B11 FIX: OCC-safe individual updates instead of bulk update
+  let archived = 0;
+  let conflicts = 0;
+  const now = new Date().toISOString();
 
-  if (updateError) {
-    logger.db.error("Failed to archive expired listings", updateError);
-    return { processed: 0, errors: 1 };
+  for (const listing of expiredListings) {
+    const { error: updateError } = await admin
+      .from("listings")
+      .update({
+        status: "archived",
+        updated_at: now,
+        version: (listing.version ?? 0) + 1,
+      })
+      .eq("id", listing.id)
+      .eq("version", listing.version ?? 0)
+      .eq("status", "approved");
+
+    if (updateError) {
+      conflicts++;
+      logger.db.warn("OCC conflict skipping listing", { id: listing.id, error: updateError });
+    } else {
+      archived++;
+    }
   }
 
-  logger.listings.info(`Archived ${listingIds.length} expired listings`);
+  logger.listings.info(`Archived ${archived} listings, ${conflicts} conflicts`);
 
-  return { processed: listingIds.length, errors: 0 };
+  return { processed: archived, errors: conflicts };
 }
 
 export async function GET(request: Request) {

@@ -112,24 +112,45 @@ export async function POST(request: Request) {
       415
     );
   }
-  const contentType = verifiedMimeType;
+  const contentType = "image/webp"; // F07: WebP conversion
   const storagePath = buildListingImageStoragePath(
     user.id,
-    sanitizedFileName,
-    verifiedMimeType ?? undefined
+    sanitizedFileName.replace(/\.[^.]+$/, ".webp"), // Change extension to webp
+    "image/webp"
   );
 
-  // ── PILL: Issue 3 - EXIF Metadata Stripping (Privacy/Stalking Prevention) ──
-  // Strip GPS coordinates and camera metadata before storage.
+  // F07: Image Optimization Pipeline
+  // - EXIF stripping (privacy)
+  // - WebP conversion (performance)
+  // - Resize to max 1200px (performance)
   let imageBuffer: Buffer;
+  let blurhashValue: string | null = null;
   try {
     const arrayBuffer = await file.arrayBuffer();
-    imageBuffer = await sharp(Buffer.from(arrayBuffer))
+    const sharpInstance = sharp(Buffer.from(arrayBuffer))
       .rotate() // Auto-rotate based on orientation tag
+      .resize(1200, 1200, {
+        fit: "inside",
+        withoutEnlargement: true,
+      });
+
+    // Convert to WebP for better compression
+    imageBuffer = await sharpInstance.webp({ quality: 80 }).toBuffer();
+
+    // Generate blurhash for placeholder (smaller image)
+    const blurImage = await sharp(Buffer.from(arrayBuffer))
+      .resize(32, 32, { fit: "cover" })
+      .blur(2)
       .toBuffer();
+
+    // Simple base64 placeholder instead of blurhash (no extra dependency)
+    blurhashValue = `data:image/jpeg;base64,${blurImage.toString("base64")}`;
   } catch (err) {
-    logger.storage.error("Image processing failed for EXIF strip", { error: err, userId: user.id });
-    // Fallback to original file if processing fails, though safer to error
+    logger.storage.error("Image processing failed for optimization", {
+      error: err,
+      userId: user.id,
+    });
+    // Fallback to original if processing fails
     return apiError(API_ERROR_CODES.BAD_REQUEST, "Görsel formatı desteklenmiyor veya bozuk.", 400);
   }
 
@@ -200,6 +221,7 @@ export async function POST(request: Request) {
         size: imageBuffer.length,
         storagePath,
         url: publicUrl,
+        placeholderBlur: blurhashValue, // F07: Blur placeholder
       },
     },
     "Fotoğraf yüklendi.",

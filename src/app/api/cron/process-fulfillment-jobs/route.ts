@@ -35,10 +35,39 @@ export async function GET(request: Request) {
 
         // 3. Logic based on job type
         if (job.job_type === "credit_add") {
+          // B14 FIX: Get credits from pricing_plan instead of using payment amount directly
+          const { data: payment } = await admin
+            .from("payments")
+            .select("plan_id, user_id")
+            .eq("id", job.payment_id)
+            .single();
+
+          let credits = 0;
+          if (payment?.plan_id) {
+            const { data: plan } = await admin
+              .from("pricing_plans")
+              .select("credits")
+              .eq("id", payment.plan_id)
+              .single();
+            credits = plan?.credits ?? 0;
+          }
+
+          // Fallback: use payment_data.amount if plan not found
+          if (!credits) {
+            credits =
+              typeof job.payment_data.amount === "number"
+                ? job.payment_data.amount
+                : parseInt(String(job.payment_data.amount), 10) || 0;
+          }
+
+          if (!credits) {
+            throw new Error(`No credits found for payment ${job.payment_id}`);
+          }
+
           // RPC for atomic credit add
           const { error: creditError } = await admin.rpc("adjust_user_credits_atomic", {
             p_user_id: job.payment_data.user_id,
-            p_amount: job.payment_data.amount,
+            p_amount: credits,
             p_type: "purchase",
             p_description: "Ödeme sonrası kredi yükleme",
             p_reference_id: `Payment:${job.payment_id}`,
