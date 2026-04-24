@@ -19,7 +19,9 @@ export function useListingActions(listings: Listing[]) {
     setArchivingId(listingId);
     setArchiveError(null);
     const listing = listings.find((l) => l.id === listingId);
-    const isCurrentlyArchived = listing?.status === "archived";
+    if (!listing) return;
+
+    const isCurrentlyArchived = listing.status === "archived";
 
     try {
       if (isCurrentlyArchived) {
@@ -81,13 +83,16 @@ export function useListingActions(listings: Listing[]) {
   const handleBump = async (listingId: string) => {
     setBumpingId(listingId);
     setBumpMessage(null);
+    const listing = listings.find((l) => l.id === listingId);
+    if (!listing) return;
+
     try {
-      const { success, data, error } = await ListingService.bumpListing(listingId);
+      const { success, error, data } = await ListingService.bumpListing(listingId);
       if (!success) {
         setBumpMessage(error?.message ?? "İlan yenilenemedi.");
         return;
       }
-      setBumpMessage(data?.message ?? "İlan yenilendi!");
+      setBumpMessage((data as { message?: string })?.message ?? "İlan yenilendi!");
       router.refresh();
     } finally {
       setBumpingId(null);

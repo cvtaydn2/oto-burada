@@ -51,7 +51,7 @@ const nextConfig: NextConfig = {
   compress: true,
   poweredByHeader: false,
   generateEtags: true,
-  serverExternalPackages: ["iyzipay", "googleapis", "posthog-node"],
+  serverExternalPackages: ["posthog-node", "sharp"],
   output: "standalone",
 };
 

@@ -101,7 +101,7 @@ export function ContactActions({
       setRevealedPhone(result.phone);
       setIsRevealed(true);
       captureClientEvent("contact_phone_revealed", { listingId, sellerId });
-    } catch (err) {
+    } catch {
       // Silently fail or log to monitoring
     } finally {
       setIsLogging(false);

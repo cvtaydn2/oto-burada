@@ -118,13 +118,13 @@ export class ApiClient {
 
   static favorites = {
     add: (listingId: string) =>
-      ApiClient.request<{ favoriteIds: string[] }>(API_ROUTES.FAVORITES, {
+      ApiClient.request<{ favoriteIds: string[] }>(API_ROUTES.FAVORITES.BASE, {
         method: "POST",
         body: JSON.stringify({ listingId }),
       }),
 
     remove: (listingId: string) =>
-      ApiClient.request<{ favoriteIds: string[] }>(API_ROUTES.FAVORITES, {
+      ApiClient.request<{ favoriteIds: string[] }>(API_ROUTES.FAVORITES.BASE, {
         method: "DELETE",
         body: JSON.stringify({ listingId }),
       }),

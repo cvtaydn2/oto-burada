@@ -21,7 +21,7 @@ import { getListingCardInsights } from "@/services/listings/listing-card-insight
 import { type Listing } from "@/types";
 
 const cardVariants = cva(
-  "group relative overflow-hidden transition-[border-color,box-shadow,transform] duration-normal ease-standard showroom-card",
+  "group relative overflow-hidden transition-[border-color,box-shadow,transform] duration-normal ease-standard bg-card border border-border/50 shadow-sm rounded-2xl hover:border-primary/20 hover:shadow-xl hover:shadow-primary/5",
   {
     variants: {
       variant: {

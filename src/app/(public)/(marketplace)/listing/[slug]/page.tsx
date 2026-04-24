@@ -27,7 +27,7 @@ import { FavoriteButton } from "@/components/listings/favorite-button";
 import { ListingGallery } from "@/components/listings/listing-gallery";
 import { ShareButton } from "@/components/listings/share-button";
 import { MarketValuationBadge } from "@/components/market/market-valuation-badge";
-import { PriceHistoryChart } from "@/components/market/price-history-chart";
+// import { PriceHistoryChart } from "@/components/market/price-history-chart";
 // SEO & Monitoring
 import {
   BreadcrumbStructuredData,
@@ -66,6 +66,11 @@ const MobileStickyActions = dynamic(() =>
 
 const ReportListingForm = dynamic(() =>
   import("@/components/forms/report-listing-form").then((m) => m.ReportListingForm)
+);
+
+const PriceHistoryChart = dynamic(
+  () => import("@/components/market/price-history-chart").then((m) => m.PriceHistoryChart),
+  { loading: () => <div className="h-64 animate-pulse rounded-xl bg-muted" /> }
 );
 
 interface ListingDetailPageProps {

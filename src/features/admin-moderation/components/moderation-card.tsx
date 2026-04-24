@@ -38,7 +38,7 @@ export function ModerationCard({
   setNotesByListingId,
 }: ModerationCardProps) {
   return (
-    <article className="showroom-card p-6 md:p-8">
+    <article className="bg-card border border-border/50 shadow-sm rounded-2xl transition-[border-color,box-shadow,transform] duration-300 ease-in-out hover:border-primary/20 hover:shadow-xl hover:shadow-primary/5 p-6 md:p-8">
       <div className="flex flex-col lg:flex-row gap-8">
         {/* ── Left: Image Context ── */}
         <div className="space-y-6 shrink-0">

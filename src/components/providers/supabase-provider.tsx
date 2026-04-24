@@ -10,7 +10,7 @@ type SupabaseContext = {
   supabase: SupabaseClient<Database>;
 };
 
-const Context = createContext<SupabaseContext | undefined>(undefined);
+const Context = createContext<SupabaseContext | null>(null);
 
 export function SupabaseProvider({ children }: { children: React.ReactNode }) {
   const [supabase] = useState(() => createSupabaseBrowserClient());
@@ -20,7 +20,7 @@ export function SupabaseProvider({ children }: { children: React.ReactNode }) {
 
 export const useSupabase = () => {
   const context = useContext(Context);
-  if (context === undefined) {
+  if (!context) {
     throw new Error("useSupabase must be used inside SupabaseProvider");
   }
   return context;

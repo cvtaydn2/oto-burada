@@ -588,4 +588,20 @@
   - `npm run build` ✅
   - `npm run lint` ✅
   - `npm run typecheck` ✅
-- **Sıradaki Adım:** Sistem genelinde performans analizi ve Core Web Vitals (LCP/INP) optimizasyonu.
+## [2026-04-24] - Architectural Hardening & Bug Fixes (Final Phase)
+- **Durum:** ✅ TAMAMLANDI
+- **Yapılanlar:**
+  - **B1 (Supabase Provider Fix):** `SupabaseProvider` içindeki context sarmalama hatası giderildi. Context type `SupabaseContext | null` olarak güncellendi ve `useSupabase` hook'u için explicit null check/error handling eklendi.
+  - **B2 & B3 (Domain Surface):** `use-listing-actions.ts` hook'u doğrudan servis katmanını bypass ederek domain use case'lerine (`archiveListingUseCase`, `bumpListingUseCase`) bağlandı. Domain layer public surface'ı (`src/domain/index.ts`) tüm kritik use case ve mantık sınıflarını dışa aktaracak şekilde genişletildi.
+  - **B4 & B11 (Bundle Optimization):** `next.config.ts` üzerinden `sharp` external package listesine eklendi. İlan detay sayfasındaki `PriceHistoryChart` bileşeni `next/dynamic` ile lazy-load edilerek başlangıç bundle boyutu optimize edildi.
+  - **B5 & B12 (Feature Flag Standardization):** `FEATURES` konfigürasyonu standartlaştırıldı. `features.tickets` -> `FEATURES.TICKETS` dönüşümü yapıldı ve uygulama genelinde (ContactPage vb.) isimlendirme tutarlılığı sağlandı.
+  - **B6 (API Routes):** `API_ROUTES` sabiti; `AUTH`, `REPORTS`, `PROFILE`, `MARKET` ve `FAVORITES` detay endpoint'lerini kapsayacak şekilde genişletildi. Sihirli stringler (magic strings) kod genelinden temizlendi.
+  - **B7 (Notification Integrity):** `Notification.id` alanı zorunlu hale getirildi. Realtime payload'da ID eksikliği durumunda `crypto.randomUUID()` fallback mekanizması eklenerek UI tutarlılığı ve duplicate prevention sağlandı.
+  - **B8 (CSS Cleanup):** `showroom-card` gibi bileşen bazlı utility sınıfları global CSS'ten temizlenerek ilgili bileşenlere (ListingCard, ModerationCard) Tailwind sınıfları olarak taşındı. `globals.css` sadece base + tokens seviyesinde bırakıldı.
+  - **B9 (Type Decoupling):** `ListingCreateInput` tipi `ListingDetails` inheritance'ından koparılarak bağımsız bir interface haline getirildi. Tip daireselliği ve kırılgan bağımlılıklar giderildi.
+- **Doğrulama:**
+  - `npm run typecheck` ✅
+  - `npm run lint` ✅
+  - `npm run build` ✅
+- **Sıradaki Adım:** Canlı ortam performans izleme ve SEO metrik analizi.
+

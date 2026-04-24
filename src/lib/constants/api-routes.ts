@@ -1,4 +1,7 @@
 export const API_ROUTES = {
+  AUTH: {
+    SIGN_OUT: "/api/auth/sign-out",
+  },
   LISTINGS: {
     BASE: "/api/listings",
     DETAIL: (id: string) => `/api/listings/${id}`,
@@ -22,5 +25,18 @@ export const API_ROUTES = {
   SUPPORT: {
     TICKETS: "/api/support/tickets",
   },
-  FAVORITES: "/api/favorites",
+  REPORTS: {
+    BASE: "/api/reports",
+  },
+  PROFILE: {
+    BASE: "/api/profile",
+  },
+  MARKET: {
+    VALUATION: "/api/market/valuation",
+    PRICE_HISTORY: (id: string) => `/api/market/price-history/${id}`,
+  },
+  FAVORITES: {
+    BASE: "/api/favorites",
+    DETAIL: (id: string) => `/api/favorites/${id}`,
+  },
 } as const;

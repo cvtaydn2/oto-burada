@@ -140,9 +140,9 @@ export default function ContactPage() {
         {/* Right: Contact Form */}
         <div className="p-10">
           <h2 className="text-2xl font-bold text-foreground mb-6">
-            {FEATURES.tickets ? "Mesaj Gönderin" : "İletişime Geçin"}
+            {FEATURES.TICKETS ? "Mesaj Gönderin" : "İletişime Geçin"}
           </h2>
-          {FEATURES.tickets ? (
+          {FEATURES.TICKETS ? (
             <ContactForm />
           ) : (
             <div className="space-y-4">

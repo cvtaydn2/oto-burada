@@ -13,7 +13,7 @@ import {
 } from "./shared";
 
 export const notificationSchema: z.ZodType<Notification> = z.object({
-  id: optionalTrimmedString,
+  id: trimmedRequiredString,
   userId: trimmedRequiredString,
   type: z.enum(notificationTypes),
   title: trimmedRequiredString.max(160, "Baslik en fazla 160 karakter olabilir"),

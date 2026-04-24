@@ -15,7 +15,7 @@ export const FEATURES = {
   COMPARE: process.env.NEXT_PUBLIC_ENABLE_COMPARE === "true",
   DOCUMENT_UPLOADS: process.env.NEXT_PUBLIC_ENABLE_DOCS === "true",
   PWA: process.env.NEXT_PUBLIC_ENABLE_PWA === "true",
-  tickets: true,
+  TICKETS: true,
 } as const;
 
 export type FeatureKey = keyof typeof FEATURES;

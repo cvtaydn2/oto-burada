@@ -47,8 +47,7 @@ export function useNotifications(userId?: string) {
           filter: `user_id=eq.${userId}`,
         },
         (payload: { new: Notification }) => {
-          const notificationId = payload.new.id;
-          if (!notificationId) return;
+          const notificationId = payload.new.id || crypto.randomUUID();
 
           // Prevent duplicate processing
           if (processedIds.has(notificationId)) return;

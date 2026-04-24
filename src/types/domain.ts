@@ -52,7 +52,7 @@ export interface SavedSearchCreateInput {
 }
 
 export interface Notification {
-  id?: string;
+  id: string;
   userId: string;
   type: NotificationType;
   title: string;

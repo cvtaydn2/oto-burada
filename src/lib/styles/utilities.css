@@ -20,10 +20,6 @@
     @apply bg-clip-text text-transparent bg-gradient-to-br from-foreground via-foreground to-foreground/70;
   }
 
-  .showroom-card {
-    @apply bg-card border border-border/50 shadow-sm rounded-2xl transition-[border-color,box-shadow,transform] duration-300 ease-in-out hover:border-primary/20 hover:shadow-xl hover:shadow-primary/5;
-  }
-
   .active-ring {
     @apply ring-8 ring-primary/5 border-primary/20 transition-[ring,border-color] duration-300 ease-in-out;
   }

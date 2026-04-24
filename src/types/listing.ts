@@ -65,13 +65,20 @@ export interface Listing
   updatedAt: string;
 }
 
-export interface ListingCreateInput extends Omit<ListingDetails, "id"> {
+export interface ListingCreateInput {
   title: string;
   brand: string;
   model: string;
   carTrim?: string | null;
   year: number;
   price: number;
+  mileage: number;
+  fuelType: FuelType;
+  transmission: TransmissionType;
+  city: string;
+  district: string;
+  description: string;
+  whatsappPhone: string;
   vin: string;
   licensePlate?: string | null;
   tramerAmount?: number | null;
