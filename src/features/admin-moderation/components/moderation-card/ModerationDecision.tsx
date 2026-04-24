@@ -3,6 +3,17 @@
 import { ArrowRight, CheckCircle2, LoaderCircle, MessageCircle, XCircle } from "lucide-react";
 import Link from "next/link";
 
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import { cn } from "@/lib/utils";
 import type { Listing } from "@/types";
 
@@ -97,30 +108,72 @@ export function ModerationDecision({
         </div>
 
         <div className="flex items-center gap-3">
-          <button
-            onClick={() => handleModeration(listing.id, "reject")}
-            disabled={actionBusy}
-            className="h-12 px-8 rounded-2xl border border-border text-xs font-bold uppercase tracking-widest hover:bg-rose-50 hover:text-rose-600 hover:border-rose-100 transition-all disabled:opacity-50 flex items-center justify-center gap-2"
-          >
-            {rejecting ? (
-              <LoaderCircle className="size-4 animate-spin" />
-            ) : (
-              <XCircle className="size-4" />
-            )}
-            REDDET
-          </button>
-          <button
-            onClick={() => handleModeration(listing.id, "approve")}
-            disabled={actionBusy}
-            className="h-12 px-8 rounded-2xl bg-primary text-white text-xs font-bold uppercase tracking-widest hover:shadow-xl hover:shadow-primary/20 transition-all disabled:opacity-50 flex items-center justify-center gap-2"
-          >
-            {approving ? (
-              <LoaderCircle className="size-4 animate-spin" />
-            ) : (
-              <CheckCircle2 className="size-4" />
-            )}
-            ONAYLA
-          </button>
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
+              <button
+                disabled={actionBusy}
+                className="h-12 px-8 rounded-2xl border border-border text-xs font-bold uppercase tracking-widest hover:bg-rose-50 hover:text-rose-600 hover:border-rose-100 transition-all disabled:opacity-50 flex items-center justify-center gap-2"
+              >
+                {rejecting ? (
+                  <LoaderCircle className="size-4 animate-spin" />
+                ) : (
+                  <XCircle className="size-4" />
+                )}
+                REDDET
+              </button>
+            </AlertDialogTrigger>
+            <AlertDialogContent className="bg-background border-border">
+              <AlertDialogHeader>
+                <AlertDialogTitle>İlanı reddetmek istediğine emin misin?</AlertDialogTitle>
+                <AlertDialogDescription className="text-muted-foreground">
+                  &quot;{listing.title}&quot; başlıklı ilan reddedilecek ve satıcıya bildirilecek.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel className="border-border">İptal</AlertDialogCancel>
+                <AlertDialogAction
+                  onClick={() => handleModeration(listing.id, "reject")}
+                  className="bg-red-600 hover:bg-red-500 text-white"
+                >
+                  Reddet
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
+
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
+              <button
+                disabled={actionBusy}
+                className="h-12 px-8 rounded-2xl bg-primary text-white text-xs font-bold uppercase tracking-widest hover:shadow-xl hover:shadow-primary/20 transition-all disabled:opacity-50 flex items-center justify-center gap-2"
+              >
+                {approving ? (
+                  <LoaderCircle className="size-4 animate-spin" />
+                ) : (
+                  <CheckCircle2 className="size-4" />
+                )}
+                ONAYLA
+              </button>
+            </AlertDialogTrigger>
+            <AlertDialogContent className="bg-background border-border">
+              <AlertDialogHeader>
+                <AlertDialogTitle>İlanı onaylamak istediğine emin misin?</AlertDialogTitle>
+                <AlertDialogDescription className="text-muted-foreground">
+                  &quot;{listing.title}&quot; başlıklı ilan onaylanacak ve tüm kullanıcılara görünür
+                  olacak.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel className="border-border">İptal</AlertDialogCancel>
+                <AlertDialogAction
+                  onClick={() => handleModeration(listing.id, "approve")}
+                  className="bg-primary hover:opacity-90"
+                >
+                  Onayla
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
         </div>
       </div>
     </div>
