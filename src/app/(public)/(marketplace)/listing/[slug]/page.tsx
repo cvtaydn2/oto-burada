@@ -25,6 +25,7 @@ import { ExpertInspectionCard } from "@/components/listings/expert-inspection-ca
 import { FavoriteButton } from "@/components/listings/favorite-button";
 // Components
 import { ListingGallery } from "@/components/listings/listing-gallery";
+import { SellerReviewForm } from "@/components/listings/seller-review-form";
 import { ShareButton } from "@/components/listings/share-button";
 import { MarketValuationBadge } from "@/components/market/market-valuation-badge";
 // import { PriceHistoryChart } from "@/components/market/price-history-chart";
@@ -391,6 +392,15 @@ export default async function ListingDetailPage({ params }: ListingDetailPagePro
                   </li>
                 </ul>
               </div>
+
+              {/* Seller Review Form */}
+              {!isOwner && currentUser && (
+                <SellerReviewForm
+                  sellerId={listing.sellerId}
+                  listingId={listing.id}
+                  sellerName={seller?.businessName || seller?.fullName || "Satıcı"}
+                />
+              )}
             </div>
           </div>
 

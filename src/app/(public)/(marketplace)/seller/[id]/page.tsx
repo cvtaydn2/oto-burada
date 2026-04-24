@@ -13,6 +13,7 @@ import Image from "next/image";
 import { notFound } from "next/navigation";
 
 import { SellerRatingInfo } from "@/components/profile/seller-rating-info";
+import { ReviewForm } from "@/components/reviews/review-form";
 import { ListingCard } from "@/components/shared/listing-card";
 import { TrustBadge } from "@/components/shared/trust-badge";
 import { Button } from "@/components/ui/button";
@@ -234,12 +235,24 @@ export default async function SellerProfilePage({ params }: SellerProfilePagePro
       </section>
 
       {/* Seller Reviews */}
-      {reviews.length > 0 && (
-        <section className="space-y-4">
+      <section className="space-y-4">
+        <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             <h2 className="text-xl font-bold text-foreground sm:text-2xl">Değerlendirmeler</h2>
-            <SellerRatingInfo average={ratingSummary.average} count={ratingSummary.count} />
+            {ratingSummary.count > 0 && (
+              <SellerRatingInfo average={ratingSummary.average} count={ratingSummary.count} />
+            )}
           </div>
+          {currentUser && currentUser.id !== sellerId && (
+            <ReviewForm sellerId={sellerId}>
+              <Button size="sm" variant="outline" className="gap-2">
+                <Star size={14} className="fill-amber-400 text-amber-400" />
+                Değerlendir
+              </Button>
+            </ReviewForm>
+          )}
+        </div>
+        {reviews.length > 0 ? (
           <div className="grid gap-4 sm:grid-cols-2">
             {reviews.map((review) => (
               <div
@@ -284,8 +297,14 @@ export default async function SellerProfilePage({ params }: SellerProfilePagePro
               </div>
             ))}
           </div>
-        </section>
-      )}
+        ) : (
+          <div className="rounded-xl border border-dashed border-border bg-muted/30 p-8 text-center">
+            <p className="text-sm text-muted-foreground">
+              Bu satıcı hakkında henüz değerlendirme yapılmamış.
+            </p>
+          </div>
+        )}
+      </section>
     </div>
   );
 }

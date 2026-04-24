@@ -5,6 +5,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { type PropsWithChildren, useState } from "react";
 
 import { PostHogProvider } from "@/components/providers/posthog-provider";
+import { PWAProvider } from "@/components/providers/pwa-provider";
 import { SupabaseProvider } from "@/components/providers/supabase-provider";
 import { AuthProvider } from "@/components/shared/auth-provider";
 import { ThemeProvider } from "@/components/shared/theme-provider";
@@ -41,7 +42,9 @@ export function RootProviders({ children, user, nonce }: RootProvidersProps) {
       <QueryClientProvider client={queryClient}>
         <SupabaseProvider>
           <AuthProvider initialUser={user}>
+            <PWAProvider>
             <PostHogProvider>{children}</PostHogProvider>
+          </PWAProvider>
           </AuthProvider>
         </SupabaseProvider>
       </QueryClientProvider>

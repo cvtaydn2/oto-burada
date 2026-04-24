@@ -423,6 +423,9 @@ Audit all pages for:
 - [x] Implement manifest.json and service worker for "Add to Home Screen"
 - [x] Offline caching for recently viewed listings
 - [x] Native-like transitions between pages
+- [x] Service worker (`public/sw.js`) with cache-first strategy for static assets and listing pages
+- [x] `useServiceWorker` hook for SW registration with update handling
+- [x] `PWAProvider` wrapping app to register SW and request notification permission
 
 ### Task 8.4 — Transparency & Market Price Indexing (Complete)
 
