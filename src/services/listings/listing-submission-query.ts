@@ -645,3 +645,52 @@ export async function getPublicFilteredDatabaseListings(
   const admin = createSupabaseAdminClient(); // For reference data lookup
   return getFilteredListingsInternal(publicClient, filters, admin);
 }
+/**
+ * SECURITY: Optimized similar listings query using single DB call.
+ */
+export async function getSimilarDatabaseListings(options: {
+  slug: string;
+  brand: string;
+  city: string;
+  limit?: number;
+}): Promise<Listing[]> {
+  const publicClient = createSupabasePublicServerClient();
+  const limit = options.limit ?? 12;
+
+  // Single query with .or() for brand OR city
+  // Exclude current listing, approved only, profiles not banned
+  const { data, error } = await (publicClient
+    .from("listings")
+    .select(marketplaceListingSelect)
+    .eq("status", "approved")
+    .neq("slug", options.slug)
+    .or(`brand.eq."${options.brand}",city.eq."${options.city}"`)
+    .order("featured", { ascending: false })
+    .order("created_at", { ascending: false })
+    .range(0, limit - 1) as any);
+
+  if (error) {
+    logger.db.error("Similar listing query failed", { error, options });
+    return [];
+  }
+
+  const listings = (data ?? []).map(mapListingRow);
+
+  // Application-side scoring:
+  // 2. Application-side relevance scoring
+  const listingsWithScore = listings.map((l: Listing) => {
+    let similarityScore = 0;
+    if (l.brand === options.brand) similarityScore += 2;
+    if (l.city === options.city) similarityScore += 1;
+    return { ...l, similarityScore };
+  });
+
+  // 3. Sort by score then take limit
+  return listingsWithScore
+    .sort((a: any, b: any) => b.similarityScore - a.similarityScore)
+    .map((l: any) => {
+      const { similarityScore: _, ...listing } = l;
+      return listing as Listing;
+    })
+    .slice(0, limit);
+}

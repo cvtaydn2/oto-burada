@@ -97,8 +97,9 @@ export const listingCreateSchema = z.object({
   vin: z
     .string()
     .trim()
+    .toUpperCase()
     .length(17, "Şasi numarası (VIN) tam olarak 17 karakter olmalıdır")
-    .regex(/^[A-HJ-NPR-Z0-9]+$/i, "Geçersiz şasi numarası formatı (I, O, Q harfleri içermez)"),
+    .regex(/^[A-HJ-NPR-Z0-9]+$/, "Geçersiz şasi numarası formatı (I, O, Q harfleri içermez)"),
   licensePlate: z
     .string()
     .trim()
@@ -143,8 +144,9 @@ export const listingCreateFormSchema: z.ZodType<ListingCreateFormValues> = z.obj
   vin: z
     .string()
     .trim()
+    .toUpperCase()
     .length(17, "Şasi numarası (VIN) tam olarak 17 karakter olmalıdır")
-    .regex(/^[A-HJ-NPR-Z0-9]+$/i, "Geçersiz şasi numarası formatı (I, O, Q harfleri içermez)"),
+    .regex(/^[A-HJ-NPR-Z0-9]+$/, "Geçersiz şasi numarası formatı (I, O, Q harfleri içermez)"),
   licensePlate: z
     .string()
     .trim()

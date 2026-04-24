@@ -3,12 +3,12 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { Listing, Profile } from "@/types";
 
 import {
-  getAllKnownListings,
   getFilteredMarketplaceListings,
   getMarketplaceListingBySlug,
   getMarketplaceListingsByIds,
   getMarketplaceSeller,
   getPublicMarketplaceListings,
+  getRecentMarketplaceListings,
   getSimilarMarketplaceListings,
 } from "../marketplace-listings";
 
@@ -126,7 +126,7 @@ describe("Marketplace Listings Service", () => {
     expect(result).toBeDefined();
   });
 
-  it("should get all known listings", async () => {
+  it("should get recent marketplace listings", async () => {
     const { getPublicListings } = await import("@/services/listings/catalog");
     vi.mocked(getPublicListings).mockResolvedValue({
       listings: [mockListing as Listing],
@@ -136,7 +136,7 @@ describe("Marketplace Listings Service", () => {
       hasMore: false,
     });
 
-    const result = await getAllKnownListings();
+    const result = await getRecentMarketplaceListings();
     expect(result).toHaveLength(1);
   });
 

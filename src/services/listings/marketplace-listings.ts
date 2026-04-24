@@ -5,6 +5,7 @@ import { logger } from "@/lib/utils/logger";
 import { getPublicListings } from "@/services/listings/catalog";
 import { createExpertDocumentSignedUrl } from "@/services/listings/listing-documents";
 import {
+  getSimilarDatabaseListings,
   getStoredListingById,
   getStoredListingBySlug,
   getStoredListingsByIds,
@@ -123,8 +124,8 @@ export async function getPublicMarketplaceListings(
   return withNextCache([cacheKey], () => getFilteredMarketplaceListings(filters), 60);
 }
 
-export async function getAllKnownListings() {
-  const result = await getPublicListings({ limit: 100, page: 1, sort: "newest" });
+export async function getRecentMarketplaceListings(limit = 100) {
+  const result = await getPublicListings({ limit, page: 1, sort: "newest" });
   return result.listings;
 }
 
@@ -135,19 +136,7 @@ export async function getSimilarMarketplaceListings(
 ): Promise<Listing[]> {
   return withNextCache(
     [`similar-marketplace-listings:${slug}:${brand}:${city}`],
-    async () => {
-      // Fetch by brand first; supplement with city listings if not enough results
-      const brandResult = await getPublicListings({ brand, limit: 10, page: 1, sort: "newest" });
-      const byBrand = brandResult.listings.filter((l) => l.slug !== slug);
-
-      if (byBrand.length >= 3) return byBrand.slice(0, 3);
-
-      const cityResult = await getPublicListings({ city, limit: 10, page: 1, sort: "newest" });
-      const brandIds = new Set(byBrand.map((l) => l.id));
-      const byCity = cityResult.listings.filter((l) => l.slug !== slug && !brandIds.has(l.id));
-
-      return [...byBrand, ...byCity].slice(0, 3);
-    },
+    () => getSimilarDatabaseListings({ slug, brand, city, limit: 12 }),
     120
   );
 }

@@ -61,7 +61,7 @@ export function createListingEntity(
     slug,
     sellerId,
     viewCount: existingListing?.viewCount ?? 0,
-    version: existingListing?.version ?? 0,
+    version: existingListing ? (existingListing.version ?? 0) + 1 : 0,
     title: input.title,
     category: input.category ?? "otomobil",
     brand: input.brand,

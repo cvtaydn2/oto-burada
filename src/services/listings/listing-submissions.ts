@@ -24,6 +24,7 @@ import {
   buildListingBaseQuery,
   getDatabaseListings,
   getFilteredDatabaseListings,
+  getSimilarDatabaseListings,
   listingSelect,
   PaginatedListingsResult,
 } from "./listing-submission-query";
@@ -47,7 +48,7 @@ export function buildListingRecord(
 }
 
 // Proxy exports for query logic
-export { getDatabaseListings, getFilteredDatabaseListings };
+export { getDatabaseListings, getFilteredDatabaseListings, getSimilarDatabaseListings };
 export type { PaginatedListingsResult };
 
 export async function archiveDatabaseListing(listingId: string, sellerId: string) {
@@ -119,9 +120,12 @@ export function serializeStoredListings(listings: Listing[]) {
   return JSON.stringify(listings);
 }
 
+/** @deprecated Use database status='draft' instead. Cookie storage is limited to 4KB and unreliable for full listing objects. */
 export async function getLegacyStoredListings() {
   const cookieStore = await cookies();
-  return parseStoredListings(cookieStore.get(listingSubmissionsCookieName)?.value).sort(
+  const value = cookieStore.get(listingSubmissionsCookieName)?.value;
+  if (!value) return [];
+  return parseStoredListings(value).sort(
     (left: Listing, right: Listing) => Date.parse(right.updatedAt) - Date.parse(left.updatedAt)
   );
 }
@@ -157,15 +161,7 @@ export async function findEditableListingById(listingId: string, sellerId: strin
     statuses: ["draft", "pending", "approved", "rejected"],
   });
   if (dbListings?.length) return dbListings[0];
-  const cookieListings = await getLegacyStoredListings();
-  return (
-    cookieListings.find(
-      (l) =>
-        l.id === listingId &&
-        l.sellerId === sellerId &&
-        (l.status === "draft" || l.status === "pending")
-    ) ?? null
-  );
+  return null;
 }
 
 export async function getStoredUserListings(
@@ -232,9 +228,9 @@ export async function getStoredListingsByIds(ids: string[]) {
   return databaseListings ?? [];
 }
 
-/** @deprecated LEGACY ONLY: Used by migration scripts. */
+/** @deprecated LEGACY ONLY: Used by migration scripts. Use database storage instead. */
 export async function getLegacyStoredUserListings(sellerId: string) {
-  return (await getLegacyStoredListings()).filter((listing) => listing.sellerId === sellerId);
+  return [];
 }
 
 export async function upsertDatabaseListingRecord(listing: Listing) {
