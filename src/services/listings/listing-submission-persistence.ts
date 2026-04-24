@@ -508,14 +508,25 @@ export async function bumpListing(
   if (!hasSupabaseAdminEnv()) return { error: "configuration_error" as const };
   const admin = createSupabaseAdminClient();
 
+  const { data: current } = await admin
+    .from("listings")
+    .select("version")
+    .eq("id", listingId)
+    .eq("seller_id", sellerId)
+    .single();
+
+  if (!current) return { error: "database_error" as const };
+
   const { error, data: updated } = await admin
     .from("listings")
     .update({
       bumped_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
+      version: (current.version ?? 0) + 1,
     })
     .eq("id", listingId)
     .eq("seller_id", sellerId)
+    .eq("version", current.version ?? 0)
     .select()
     .single();
 

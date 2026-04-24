@@ -13,11 +13,32 @@ interface LocalRateLimitEntry {
 const DEFAULT_LIMIT = 60;
 const DEFAULT_WINDOW_MS = 60_000;
 const REDIS_CIRCUIT_BREAKER_MS = 30_000;
+const MAX_LOCAL_ENTRIES = 10_000;
 const localFallbackStore = new Map<string, LocalRateLimitEntry>();
 let ratelimit: RatelimitState = null;
 let redisCircuitOpenUntil = 0;
+let callCount = 0;
+
+function evictExpiredEntries() {
+  const now = Date.now();
+  for (const [key, entry] of localFallbackStore) {
+    if (entry.reset <= now) {
+      localFallbackStore.delete(key);
+    }
+  }
+}
 
 function getLocalFallbackResult(key: string, options: { limit?: number; windowMs?: number } = {}) {
+  callCount++;
+  if (callCount >= 1000) {
+    evictExpiredEntries();
+    callCount = 0;
+  }
+
+  if (localFallbackStore.size > MAX_LOCAL_ENTRIES) {
+    evictExpiredEntries();
+  }
+
   const now = Date.now();
   const limit = options.limit ?? DEFAULT_LIMIT;
   const windowMs = options.windowMs ?? DEFAULT_WINDOW_MS;

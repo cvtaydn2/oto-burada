@@ -12,6 +12,21 @@ export interface ListingCreationResult {
 
 export interface ListingCreationDependencies {
   checkQuota: (userId: string) => Promise<{ allowed: boolean; reason?: string }>;
+  getExistingListings: (
+    userId: string
+  ) => Promise<
+    {
+      id: string;
+      slug: string;
+      brand?: string;
+      model?: string;
+      year?: number;
+      mileage?: number;
+      price?: number;
+      vin?: string | null;
+      status?: string;
+    }[]
+  >;
   runTrustGuards: (
     input: ListingCreateInput
   ) => Promise<{ allowed: boolean; reason?: string; message?: string }>;
@@ -86,7 +101,8 @@ export async function executeListingCreation(
 
   // 5. Build Domain Object
   const { buildPendingListing } = await import("@/services/listings/listing-submissions");
-  const listingRecord = buildPendingListing(validation.data, userId, []);
+  const existingListings = await deps.getExistingListings(userId);
+  const listingRecord = buildPendingListing(validation.data, userId, existingListings);
 
   // 6. Persistence
   const saveResult = await deps.saveListing(listingRecord);

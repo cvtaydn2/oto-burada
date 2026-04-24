@@ -16,7 +16,6 @@ import {
 import { createDatabaseListing } from "@/services/listings/listing-submissions";
 import { getFilteredMarketplaceListings } from "@/services/listings/marketplace-listings";
 import { createDatabaseNotification } from "@/services/notifications/notification-records";
-import { ListingCreateInput } from "@/types";
 
 const MY_LISTINGS_DEFAULT_LIMIT = 50;
 const MY_LISTINGS_MAX_LIMIT = 100;
@@ -95,7 +94,7 @@ export async function POST(request: Request) {
 
   // 1. Structural Validation (F-14 Defense in Depth)
   const { listingCreateSchema } = await import("@/lib/validators/listing");
-  const validation = listingCreateSchema.partial().safeParse(body);
+  const validation = listingCreateSchema.safeParse(body);
 
   if (!validation.success) {
     return apiError(API_ERROR_CODES.BAD_REQUEST, "Geçersiz ilan verisi formatı.", 400, {
@@ -103,14 +102,8 @@ export async function POST(request: Request) {
     });
   }
 
-  const castBody = validation.data;
-
   // 2. Bot Protection
-  const turnstileToken = String(
-    (body as Record<string, unknown>).turnstileToken ||
-      (castBody as Record<string, unknown>).turnstileToken ||
-      ""
-  );
+  const turnstileToken = String((body as Record<string, unknown>).turnstileToken || "");
   const isHuman = await verifyTurnstileToken(turnstileToken);
   if (!isHuman) {
     return apiError(
@@ -123,8 +116,26 @@ export async function POST(request: Request) {
   // Orchestrate via Domain Use Case (SOLID)
   const { executeListingCreation } = await import("@/domain/usecases/listing-create");
 
-  const result = await executeListingCreation(body as Partial<ListingCreateInput>, user.id, {
+  const result = await executeListingCreation(validation.data, user.id, {
     checkQuota: (uid) => checkListingLimit(uid),
+    getExistingListings: async (sellerId: string) => {
+      const { getDatabaseListings } = await import("@/services/listings/listing-submissions");
+      const listings = await getDatabaseListings({
+        sellerId,
+        statuses: ["draft", "pending", "approved"],
+      });
+      return (listings ?? []).map((l) => ({
+        id: l.id,
+        slug: l.slug,
+        brand: l.brand,
+        model: l.model,
+        year: l.year,
+        mileage: l.mileage,
+        price: l.price,
+        vin: l.vin,
+        status: l.status,
+      }));
+    },
     runTrustGuards: (input) => runListingTrustGuards(input),
     saveListing: (listing) => createDatabaseListing(listing),
     notifyUser: async (listing) => {
