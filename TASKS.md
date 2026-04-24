@@ -617,3 +617,9 @@ The MVP is complete when:
 - [x] documentation is aligned with code
 - [x] payment system is hardened and compliant
 - [x] marketplace integrity is secured (banned user filtering)
+
+## Phase 0 — Bug Fix & Cleanup (Complete)
+
+- [x] **SupabaseProvider Context.Provider Fix:** Context sarmalama hatası giderildi.
+- [x] **Domain Wiring:** `useListingActions` hook'u domain use-case'lerine bağlandı.
+- [x] **Bundle Cleanup:** `recharts` ve `leaflet` paketleri temizlendi.

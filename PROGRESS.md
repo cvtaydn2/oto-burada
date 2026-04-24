@@ -643,3 +643,14 @@
   - `npm run typecheck` ✅
   - `npm run lint` ✅
 - **Sıradaki Adım:** Playwright ile kritik kullanıcı akışlarının (listing creation, bump, contact reveal) E2E testlerinin tamamlanması.
+
+## [2026-04-24] - Phase 0: Bug Fix & Cleanup
+- **Durum:** ✅ TAMAMLANDI
+- **Yapılanlar:**
+  - **SupabaseProvider Fix:** `SupabaseProvider` bileşeninin `Context.Provider` ile doğru sarmalandığı doğrulandı.
+  - **Domain Wiring (use-listing-actions):** `useListingActions` hook'u doğrudan `ListingService` (API) çağırmak yerine, domain use-case'lerini kullanan server action'lara (`archiveListingAction`, `publishListingAction`, `bumpListingAction`, `bulkArchiveListingAction`, `bulkDeleteListingAction`) bağlandı.
+  - **Bundle Cleanup:** `recharts` ve `leaflet` paketlerinin `package.json` dosyasından kaldırıldığı ve projede kullanılmadığı doğrulandı. `npm run build` ile onaylandı.
+- **Doğrulama:**
+  - `npm run build` ✅
+  - `npm run typecheck` ✅
+- **Sıradaki Adım:** E2E testlerinin (Playwright) yaygınlaştırılması.

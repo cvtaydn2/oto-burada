@@ -520,3 +520,48 @@ export async function bumpListing(
 
   return { listing: mapListingRow(updated as unknown as ListingRow) };
 }
+
+/**
+ * Publishes a listing by updating its status.
+ * If archived, moves to approved (as per machine).
+ */
+export async function publishListing(
+  listingId: string,
+  sellerId: string
+): Promise<ListingPersistenceResult> {
+  if (!hasSupabaseAdminEnv()) return { error: "configuration_error" as const };
+  const admin = createSupabaseAdminClient();
+
+  // 1. Get current status to determine next status if needed
+  // (In our machine, archived -> approved)
+  const { data: current } = await admin
+    .from("listings")
+    .select("status, version")
+    .eq("id", listingId)
+    .eq("seller_id", sellerId)
+    .single();
+
+  if (!current) return { error: "database_error" as const };
+
+  const nextStatus: Listing["status"] = current.status === "archived" ? "approved" : "pending";
+
+  const { error, data: updated } = await admin
+    .from("listings")
+    .update({
+      status: nextStatus,
+      updated_at: new Date().toISOString(),
+      published_at: new Date().toISOString(),
+      version: (current.version ?? 0) + 1,
+    })
+    .eq("id", listingId)
+    .eq("seller_id", sellerId)
+    .eq("version", current.version ?? 0)
+    .select()
+    .single();
+
+  if (error) {
+    return { error: classifyPersistenceError(error) };
+  }
+
+  return { listing: mapListingRow(updated as unknown as ListingRow) };
+}

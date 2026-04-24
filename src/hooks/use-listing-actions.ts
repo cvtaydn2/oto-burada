@@ -4,9 +4,14 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import { useCallback, useState } from "react";
 
-import { archiveListingAction, bumpListingAction } from "@/app/dashboard/listings/actions";
+import {
+  archiveListingAction,
+  bulkArchiveListingAction,
+  bulkDeleteListingAction,
+  bumpListingAction,
+  publishListingAction,
+} from "@/app/dashboard/listings/actions";
 import { queryKeys } from "@/lib/query-keys";
-import { ListingService } from "@/services/listings/listing-service";
 import type { Listing } from "@/types";
 
 export function useListingActions(listings: Listing[], userId?: string) {
@@ -30,7 +35,7 @@ export function useListingActions(listings: Listing[], userId?: string) {
       currentStatus: Listing["status"];
     }) => {
       if (isArchived) {
-        return ListingService.bulkDraft([id]);
+        return publishListingAction(id, currentStatus);
       }
       return archiveListingAction(id, currentStatus);
     },
@@ -149,13 +154,15 @@ export function useListingActions(listings: Listing[], userId?: string) {
     setIsBulkArchiving(true);
     setArchiveError(null);
     try {
-      const { success, error } = await ListingService.bulkArchive(selectedIds);
+      const { success, error } = await bulkArchiveListingAction(selectedIds);
       if (success) {
         setSelectedIds([]);
         if (userId) queryClient.invalidateQueries({ queryKey: queryKeys.listings.my(userId) });
         router.refresh();
       } else {
-        setArchiveError(error?.message || "Toplu arşivleme sırasında hata oluştu.");
+        setArchiveError(
+          typeof error === "string" ? error : "Toplu arşivleme sırasında hata oluştu."
+        );
       }
     } catch {
       setArchiveError("Bir hata oluştu.");
@@ -168,13 +175,13 @@ export function useListingActions(listings: Listing[], userId?: string) {
     if (!selectedIds.length) return;
     setIsBulkArchiving(true);
     try {
-      const { success, error } = await ListingService.bulkDelete(selectedIds);
+      const { success, error } = await bulkDeleteListingAction(selectedIds);
       if (success) {
         setSelectedIds([]);
         if (userId) queryClient.invalidateQueries({ queryKey: queryKeys.listings.my(userId) });
         router.refresh();
       } else {
-        setArchiveError(error?.message || "Toplu silme sırasında hata oluştu.");
+        setArchiveError(typeof error === "string" ? error : "Toplu silme sırasında hata oluştu.");
       }
     } catch {
       setArchiveError("Bir hata oluştu.");
