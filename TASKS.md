@@ -572,6 +572,35 @@ Automate "Search Result" notifications.
 
 ---
 
+## Phase 28 — Hardening & Architectural Maturity
+
+### Task 28.1 — Domain Unit Testing (Complete)
+
+- [x] Implement unit tests for `archiveListingUseCase`
+- [x] Implement unit tests for `bumpListingUseCase`
+- [x] Implement unit tests for `ListingStatusMachine`
+- [x] Implement unit tests for `TrustScoreCalculator`
+
+### Task 28.2 — Centralized Error Handling (Complete)
+
+- [x] Create `AppErrorBoundary` with support for `AppError` codes
+- [x] Integrate boundary into `app/error.tsx` (Global)
+- [x] Integrate boundary into `AdminListingsModeration` (Feature)
+
+### Task 28.3 — RLS Integration Testing (Complete)
+
+- [x] Create integration test infrastructure for Supabase
+- [x] Verify RLS policies for Anonymous read/write
+- [x] Verify RLS policies for Draft listings privacy
+
+### Task 28.4 — Server Actions Migration (Complete)
+
+- [x] Consolidate listing actions into `app/dashboard/listings/actions.ts`
+- [x] Consolidate favorite actions into `app/dashboard/favorites/actions.ts`
+- [x] Remove legacy `listing-actions.ts` service
+
+---
+
 ## Final Definition of Done
 
 The MVP is complete when:

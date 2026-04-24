@@ -8,7 +8,7 @@ import { ModerationCard } from "@/features/admin-moderation/components/moderatio
 import { useModerationLogic } from "@/features/admin-moderation/hooks/use-moderation-logic";
 import { type Listing } from "@/types";
 
-import { ErrorBoundary } from "../shared/error-boundary";
+import { AppErrorBoundary } from "../shared/error-boundary";
 
 interface AdminListingsModerationProps {
   pendingListings: Listing[];
@@ -125,7 +125,7 @@ export function AdminListingsModeration({ pendingListings }: AdminListingsModera
         )}
 
         {state.filteredListings.map((listing) => (
-          <ErrorBoundary key={listing.id}>
+          <AppErrorBoundary key={listing.id}>
             <ModerationCard
               listing={listing}
               selectedListingIds={state.selectedListingIds}
@@ -141,7 +141,7 @@ export function AdminListingsModeration({ pendingListings }: AdminListingsModera
               notesByListingId={state.notesByListingId}
               setNotesByListingId={actions.setNotesByListingId}
             />
-          </ErrorBoundary>
+          </AppErrorBoundary>
         ))}
       </div>
     </section>

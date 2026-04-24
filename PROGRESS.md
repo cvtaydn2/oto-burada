@@ -628,3 +628,18 @@
 3. **API Modernizasyonu:** `/api/listings?view=my` üzerinden kullanıcı ilanlarının dinamik ve güvenli (Authenticated) erişimi sağlandı.
 4. **Doğrulama:** `npm run build`, `npm run lint` ve `npm run typecheck` süreçleri **sıfır hata** ile tamamlandı.
 
+# 2026-04-24 — Hardening Domain And RLS Architecture
+
+## [2026-04-24] - Domain Logic & RLS Hardening
+- **Durum:** ✅ TAMAMLANDI
+- **Yapılanlar:**
+  - **Domain Unit Testleri (D1):** `listing-archive`, `listing-bump`, `listing-status-machine` ve `trust-score` use-case'leri için Vitest birim testleri oluşturuldu ve doğrulandı.
+  - **Merkezi Hata Yönetimi (D2):** `AppErrorBoundary` bileşeni geliştirildi. `AppError` kodlarına göre lokalize mesaj gösterimi sağlandı ve uygulama genelinde (`app/error.tsx`, `admin-listings-moderation.tsx`) entegre edildi.
+  - **RLS Entegrasyon Testleri (D3):** Supabase `anon` ve `admin` client'ları kullanılarak gerçek veritabanı üzerinde RLS güvenlik testleri kurgulandı. Approved/Draft ilanların erişim yetkileri doğrulandı.
+  - **Server Actions Migration (D4):** Tüm listing ve favorite mutasyonları ilgili `app` dizinleri altındaki `actions.ts` dosyalarına taşınarak mimari standartlaştırıldı.
+- **Doğrulama:**
+  - `npm run test:unit` (Domain Tests) ✅
+  - `npm run test:int` (RLS Integration) ✅
+  - `npm run typecheck` ✅
+  - `npm run lint` ✅
+- **Sıradaki Adım:** Playwright ile kritik kullanıcı akışlarının (listing creation, bump, contact reveal) E2E testlerinin tamamlanması.

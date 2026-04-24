@@ -4,6 +4,7 @@ import { AlertTriangle, Loader2, MessageCircle, Phone, ShieldAlert } from "lucid
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
+import { revealListingPhone } from "@/app/dashboard/listings/actions";
 import {
   AlertDialog,
   AlertDialogCancel,
@@ -18,7 +19,6 @@ import { trust } from "@/lib/constants/ui-strings";
 import { captureClientEvent } from "@/lib/monitoring/posthog-client";
 import { cn } from "@/lib/utils";
 import { getSellerTrustUI } from "@/lib/utils/trust-ui";
-import { revealListingPhone } from "@/services/listings/listing-actions";
 import type { Profile } from "@/types";
 
 interface ContactActionsProps {

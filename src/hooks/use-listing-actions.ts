@@ -4,8 +4,8 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import { useCallback, useState } from "react";
 
+import { archiveListingAction, bumpListingAction } from "@/app/dashboard/listings/actions";
 import { queryKeys } from "@/lib/query-keys";
-import { archiveListingAction, bumpListingAction } from "@/services/listings/listing-actions";
 import { ListingService } from "@/services/listings/listing-service";
 import type { Listing } from "@/types";
 
