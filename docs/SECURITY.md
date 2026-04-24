@@ -35,16 +35,25 @@ IYZICO_SECRET_KEY=your_secret_key_here
 **Issue**: Hardcoded TC identity number (11111111111) used for all payments.
 
 **Fix**:
-- Required fields (full_name, phone) now validated before payment initialization
-- Test identity number used in development
-- Production placeholder with clear TODO for real implementation
-- Profile validation added to payment initialize endpoint
+- ✅ Added `identity_number` column to profiles table (migration 0063)
+- ✅ Production: Identity number **required** from user profile
+- ✅ Development: Uses test value (11111111111) if not provided
+- ✅ Clear error message if missing: "Ödeme yapabilmek için TC Kimlik Numaranızı profil ayarlarınızdan eklemeniz gerekmektedir."
+- ✅ RLS policies: users can only see/update their own identity number
 
-**Production TODO**: 
-- Add `identity_number` field to profiles table
-- Implement secure storage (encryption/masking)
-- Collect during user registration or before first payment
-- Validate format (11 digits, valid TC algorithm)
+**KVKK Compliance**:
+- Identity number is sensitive personal data (Hassas Kişisel Veri)
+- Stored in `profiles.identity_number` column
+- Consider pgcrypto encryption for production
+- Never logged in plain text
+- Never exposed in API responses (except to owner via RLS)
+
+**User Flow**:
+1. User attempts payment
+2. System checks `profiles.identity_number`
+3. If missing in production → Error with clear message
+4. User adds identity number in profile settings
+5. Retry payment
 
 ### 4. API Route Security
 
@@ -86,7 +95,38 @@ if (!security.ok) {
 
 **Fail-Closed**: When enabled, requests are blocked if rate limiting infrastructure (Redis/Supabase) is unavailable. Used for critical endpoints (auth, payments, admin).
 
-## Payment Security Checklist
+## Payment Callback Security
+
+### Architecture
+
+The payment callback endpoint (`/api/payments/callback`) is called by the **user's browser** after Iyzico redirects them back. This means:
+
+1. **We CANNOT verify Iyzico signature** - the request doesn't come from Iyzico servers
+2. **The token could be manipulated** - users can modify the URL before submitting
+
+### Defense Strategy
+
+We use a **defense-in-depth** approach:
+
+1. **Token Validation**: Token is validated against Iyzico API (server-to-server)
+2. **Authoritative Source**: Payment status fetched directly from Iyzico, not from request
+3. **Idempotency**: `fulfilled_at` timestamp prevents double-processing
+4. **Server-Side Validation**: All checks happen server-side (amount, ownership, package)
+5. **Webhook Authority**: Webhook (with signature) is the authoritative confirmation source
+
+### Flow
+
+```
+User Browser → Callback Endpoint → Iyzico API (verify token)
+                                 ↓
+                          Database (check fulfilled_at)
+                                 ↓
+                          Apply Doping (if not fulfilled)
+                                 ↓
+                          Mark as fulfilled
+```
+
+**Key Point**: Callback is for **UX only**. The webhook (with signature verification) is the authoritative source for payment confirmation.
 
 Before processing any payment:
 

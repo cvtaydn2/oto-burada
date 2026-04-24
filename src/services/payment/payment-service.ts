@@ -35,6 +35,29 @@ export class PaymentService {
       throw new Error("Telefon numarası gereklidir");
     }
 
+    // SECURITY: Get user's identity number from profile
+    const { data: profile } = await admin
+      .from("profiles")
+      .select("identity_number")
+      .eq("id", params.userId)
+      .single();
+
+    // KVKK Compliance: Identity number is required for Iyzico
+    let identityNumber: string;
+
+    if (process.env.NODE_ENV === "production") {
+      // Production: Require real identity number
+      if (!profile?.identity_number || profile.identity_number.length !== 11) {
+        throw new Error(
+          "Ödeme yapabilmek için TC Kimlik Numaranızı profil ayarlarınızdan eklemeniz gerekmektedir."
+        );
+      }
+      identityNumber = profile.identity_number;
+    } else {
+      // Development/Test: Use test identity number
+      identityNumber = profile?.identity_number || "11111111111";
+    }
+
     // 1. Create a pending payment record in DB
     const { data: payment, error: dbError } = await admin
       .from("payments")
@@ -77,14 +100,7 @@ export class PaymentService {
         surname: surname,
         gsmNumber: params.phone,
         email: params.email,
-        // SECURITY NOTE: identityNumber is required by Iyzico in production
-        // For MVP, we use a test value. In production, this MUST be collected
-        // from the user during profile setup and stored securely (masked).
-        // TODO: Add identity_number field to profiles table with proper encryption
-        identityNumber:
-          process.env.NODE_ENV === "production"
-            ? "99999999999" // Production placeholder - MUST be replaced with real data
-            : "11111111111", // Test environment
+        identityNumber: identityNumber, // KVKK compliant - from user profile
         lastLoginDate: new Date().toISOString().split(".")[0].replace("T", " "),
         registrationDate: new Date().toISOString().split(".")[0].replace("T", " "),
         registrationAddress: params.address,

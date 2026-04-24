@@ -183,8 +183,12 @@ export const rateLimitProfiles = {
   /** Auth attempts: 10 per 15 minutes per IP - FAIL-CLOSED */
   auth: { limit: 10, windowMs: 15 * 60 * 1000, failClosed: true } satisfies RateLimitConfig,
 
-  /** Listing creation: 10 per hour per user */
-  listingCreate: { limit: 10, windowMs: 60 * 60 * 1000 } satisfies RateLimitConfig,
+  /** Listing creation: 10 per hour per user - FAIL-CLOSED (prevent spam) */
+  listingCreate: {
+    limit: 10,
+    windowMs: 60 * 60 * 1000,
+    failClosed: true,
+  } satisfies RateLimitConfig,
 
   /** Image upload: 30 per hour per user */
   imageUpload: { limit: 30, windowMs: 60 * 60 * 1000 } satisfies RateLimitConfig,
@@ -195,8 +199,11 @@ export const rateLimitProfiles = {
   /** Admin moderate: 30 per minute per IP - FAIL-CLOSED */
   adminModerate: { limit: 30, windowMs: 60 * 1000, failClosed: true } satisfies RateLimitConfig,
 
-  /** General API: 60 per minute per IP */
-  general: { limit: 60, windowMs: 60 * 1000 } satisfies RateLimitConfig,
+  /** General API: 60 per minute per IP - FAIL-CLOSED (prevent scraping) */
+  general: { limit: 60, windowMs: 60 * 1000, failClosed: true } satisfies RateLimitConfig,
+
+  /** Doping apply: 5 per hour per user - FAIL-CLOSED (prevent abuse) */
+  dopingApply: { limit: 5, windowMs: 60 * 60 * 1000, failClosed: true } satisfies RateLimitConfig,
 
   /** Support ticket creation: 5 per hour per user */
   ticketCreate: { limit: 5, windowMs: 60 * 60 * 1000 } satisfies RateLimitConfig,
@@ -206,7 +213,4 @@ export const rateLimitProfiles = {
 
   /** Listing bump: 3 per day per user */
   listingBump: { limit: 3, windowMs: 24 * 60 * 60 * 1000 } satisfies RateLimitConfig,
-
-  /** Doping: 10 per day per user */
-  dopingApply: { limit: 10, windowMs: 24 * 60 * 60 * 1000 } satisfies RateLimitConfig,
-} as const;
+};
