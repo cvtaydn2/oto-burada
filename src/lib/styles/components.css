@@ -1,0 +1,27 @@
+@layer components {
+  .glass {
+    @apply bg-white/60 dark:bg-black/60 backdrop-blur-2xl border border-white/20 dark:border-white/5 shadow-[0_8px_32px_rgba(0,0,0,0.04)] dark:shadow-[0_8px_32px_rgba(0,0,0,0.2)];
+  }
+
+  .shimmer {
+    @apply relative overflow-hidden before:absolute before:inset-0 before:-translate-x-full before:animate-[shimmer_2s_infinite] before:bg-gradient-to-r before:from-transparent before:via-white/20 dark:before:via-white/10 before:to-transparent bg-muted/20;
+  }
+
+  .focus-ring {
+    @apply outline-none ring-offset-2 focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none;
+  }
+
+  .ui-press {
+    @apply active:scale-[0.97] transition-transform duration-150 ease-in-out;
+  }
+
+  .ui-hover {
+    @apply transition-transform duration-300 ease-in-out hover:scale-[1.02];
+  }
+}
+
+@keyframes shimmer {
+  100% {
+    transform: translateX(100%);
+  }
+}

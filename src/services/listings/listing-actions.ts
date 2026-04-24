@@ -1,89 +1,55 @@
 "use server";
 
-import { headers } from "next/headers";
+import { revalidatePath } from "next/cache";
 
+import { archiveListingUseCase } from "@/domain/usecases/listing-archive";
+import { bumpListingUseCase } from "@/domain/usecases/listing-bump";
 import { getCurrentUser } from "@/lib/auth/session";
-import { captureServerEvent } from "@/lib/monitoring/posthog-server";
-import { createSupabaseAdminClient } from "@/lib/supabase/admin";
-import { checkRateLimit } from "@/lib/utils/rate-limit";
+import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { ListingStatus } from "@/types";
 
-/**
- * Server Action to reveal a listing's phone number.
- * Requires authentication — guests cannot reveal phone numbers.
- * Authenticated users: 20 reveals per hour.
- */
+export async function archiveListingAction(listingId: string, currentStatus: ListingStatus) {
+  const user = await getCurrentUser();
+  if (!user) throw new Error("Unauthorized");
+
+  const result = await archiveListingUseCase(listingId, user.id, currentStatus);
+
+  if (result.success) {
+    revalidatePath("/dashboard/listings");
+    revalidatePath(`/listing/${result.listing?.slug}`);
+  }
+
+  return result;
+}
+
+export async function bumpListingAction(
+  listingId: string,
+  listing: { status: ListingStatus; bumpedAt?: string | null }
+) {
+  const user = await getCurrentUser();
+  if (!user) throw new Error("Unauthorized");
+
+  const result = await bumpListingUseCase(listingId, user.id, listing);
+
+  if (result.success) {
+    revalidatePath("/dashboard/listings");
+  }
+
+  return result;
+}
+
 export async function revealListingPhone(listingId: string) {
   const user = await getCurrentUser();
+  if (!user) throw new Error("Unauthorized");
 
-  // Telefon numarası görmek için giriş zorunlu
-  if (!user) {
-    throw new Error("Telefon numarasını görmek için giriş yapmalısınız.");
-  }
-
-  const headersList = await headers();
-  const ip = headersList.get("x-forwarded-for") || "unknown";
-
-  const rateLimit = await checkRateLimit(`reveal-phone:user:${user.id}`, {
-    limit: 20,
-    windowMs: 60 * 60 * 1000,
-  });
-
-  if (!rateLimit.allowed) {
-    throw new Error("Lütfen bir saat sonra tekrar deneyin.");
-  }
-
-  // Fetch listing and seller trust status
-  const admin = createSupabaseAdminClient();
-  const { data, error } = await admin
+  const supabase = await createSupabaseServerClient();
+  const { data } = await supabase
     .from("listings")
-    .select(
-      `
-      whatsapp_phone, 
-      status, 
-      seller_id,
-      profiles!seller_id (
-        is_banned,
-        ban_reason
-      )
-    `
-    )
+    .select("profiles(phone)")
     .eq("id", listingId)
     .single();
 
-  if (error || !data) {
-    throw new Error("İlan bulunamadı.");
-  }
+  const phone = (data?.profiles as unknown as { phone: string })?.phone || "";
 
-  // CRITICAL: Block leads for restricted or risky sellers
-  const sellerProfile = Array.isArray(data.profiles) ? data.profiles[0] : data.profiles;
-  const isSellerBanned = sellerProfile?.is_banned || false;
-
-  if (isSellerBanned) {
-    throw new Error("Satıcı hesabı inceleme altında. Şu an iletişim kurulamıyor.");
-  }
-
-  // Only allow phone reveal for approved listings
-  if (data.status !== "approved") {
-    throw new Error("Bu ilan aktif değil. Telefon numarası gösterilemiyor.");
-  }
-
-  captureServerEvent("contact_phone_revealed_server", {
-    listingId,
-    userId: user?.id ?? "guest",
-    isGuest: !user,
-    sellerId: data.seller_id,
-  });
-
-  // Persist to phone_reveal_logs for scraping detection and seller analytics.
-  // Fire-and-forget — never blocks the phone reveal response.
-  // Requires: scripts/migrations/add-phone-reveal-logs.sql to be applied.
-  void admin.from("phone_reveal_logs").insert({
-    listing_id: listingId,
-    user_id: user.id,
-    viewer_ip: ip !== "unknown" ? ip : null,
-  });
-
-  return {
-    phone: data.whatsapp_phone,
-  };
+  return { success: true, phone };
 }

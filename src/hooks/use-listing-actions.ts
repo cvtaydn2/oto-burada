@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useCallback, useState } from "react";
 
 import { queryKeys } from "@/lib/query-keys";
+import { archiveListingAction, bumpListingAction } from "@/services/listings/listing-actions";
 import { ListingService } from "@/services/listings/listing-service";
 import type { Listing } from "@/types";
 
@@ -19,11 +20,19 @@ export function useListingActions(listings: Listing[], userId?: string) {
   // --- Mutations ---
 
   const archiveMutation = useMutation({
-    mutationFn: async ({ id, isArchived }: { id: string; isArchived: boolean }) => {
+    mutationFn: async ({
+      id,
+      isArchived,
+      currentStatus,
+    }: {
+      id: string;
+      isArchived: boolean;
+      currentStatus: Listing["status"];
+    }) => {
       if (isArchived) {
         return ListingService.bulkDraft([id]);
       }
-      return ListingService.archiveListing(id);
+      return archiveListingAction(id, currentStatus);
     },
     onMutate: async ({ id, isArchived }) => {
       // Cancel outgoing refetches
@@ -54,17 +63,25 @@ export function useListingActions(listings: Listing[], userId?: string) {
     },
     onSettled: () => {
       if (userId) {
-        queryClient.invalidateQueries({ queryKey: queryKeys.listings.my(userId) });
+        queryClient.invalidateQueries({ queryKey: queryKeys.listings.all });
       }
       router.refresh(); // Keep for server components sync
     },
   });
 
   const bumpMutation = useMutation({
-    mutationFn: async (id: string) => {
-      return ListingService.bumpListing(id);
+    mutationFn: async ({
+      id,
+      status,
+      bumpedAt,
+    }: {
+      id: string;
+      status: Listing["status"];
+      bumpedAt?: string | null;
+    }) => {
+      return bumpListingAction(id, { status, bumpedAt });
     },
-    onMutate: async (id) => {
+    onMutate: async (variables) => {
       await queryClient.cancelQueries({ queryKey: queryKeys.listings.all });
       const previousListings = queryClient.getQueryData<Listing[]>(queryKeys.listings.my(userId!));
 
@@ -72,7 +89,7 @@ export function useListingActions(listings: Listing[], userId?: string) {
         queryClient.setQueryData<Listing[]>(
           queryKeys.listings.my(userId),
           previousListings.map((l) =>
-            l.id === id ? { ...l, bumpedAt: new Date().toISOString() } : l
+            l.id === variables.id ? { ...l, bumpedAt: new Date().toISOString() } : l
           )
         );
       }
@@ -85,8 +102,12 @@ export function useListingActions(listings: Listing[], userId?: string) {
       }
       setBumpMessage("Öne çıkarma başarısız oldu.");
     },
-    onSuccess: (data) => {
-      setBumpMessage((data.data as { message?: string })?.message ?? "İlan yenilendi!");
+    onSuccess: (result) => {
+      if (result.success) {
+        setBumpMessage(result.message || "İlan yenilendi!");
+      } else {
+        setBumpMessage(result.error || "Öne çıkarma başarısız oldu.");
+      }
     },
     onSettled: () => {
       if (userId) {
@@ -102,12 +123,23 @@ export function useListingActions(listings: Listing[], userId?: string) {
     if (!listing) return;
 
     const isCurrentlyArchived = listing.status === "archived";
-    archiveMutation.mutate({ id: listingId, isArchived: isCurrentlyArchived });
+    archiveMutation.mutate({
+      id: listingId,
+      isArchived: isCurrentlyArchived,
+      currentStatus: listing.status,
+    });
   };
 
   const handleBump = async (listingId: string) => {
     setBumpMessage(null);
-    bumpMutation.mutate(listingId);
+    const listing = listings.find((l) => l.id === listingId);
+    if (!listing) return;
+
+    bumpMutation.mutate({
+      id: listingId,
+      status: listing.status,
+      bumpedAt: listing.bumpedAt,
+    });
   };
 
   // --- Bulk Actions (Still using basic loading for simplicity in MVP) ---
@@ -160,7 +192,7 @@ export function useListingActions(listings: Listing[], userId?: string) {
     archivingId: archiveMutation.isPending ? archiveMutation.variables.id : null,
     archiveError,
     setArchiveError,
-    bumpingId: bumpMutation.isPending ? bumpMutation.variables : null,
+    bumpingId: bumpMutation.isPending ? bumpMutation.variables.id : null,
     bumpMessage,
     setBumpMessage,
     selectedIds,

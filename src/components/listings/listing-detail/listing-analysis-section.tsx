@@ -1,10 +1,9 @@
 import { LineChart } from "lucide-react";
 
-import { PriceHistoryChart } from "@/components/listings/price-history-chart";
+import { PriceHistoryChart } from "@/components/market/price-history-chart";
 import { Panel } from "@/components/shared/design-system/Panel";
 import { SectionHeader } from "@/components/shared/design-system/SectionHeader";
 import type { ListingCardInsight } from "@/services/listings/listing-card-insights";
-import { getListingPriceHistory } from "@/services/listings/listing-price-history";
 import type { Listing } from "@/types";
 
 interface ListingAnalysisSectionProps {
@@ -13,7 +12,6 @@ interface ListingAnalysisSectionProps {
 }
 
 export async function ListingAnalysisSection({ listing, insight }: ListingAnalysisSectionProps) {
-  const priceHistory = await getListingPriceHistory(listing.id);
   return (
     <Panel padding="xl">
       <SectionHeader title="Pazar Analizi & Fiyat Değişimi" icon={LineChart} />
@@ -33,7 +31,7 @@ export async function ListingAnalysisSection({ listing, insight }: ListingAnalys
           </p>
         </div>
         <div className="h-64">
-          <PriceHistoryChart history={priceHistory} currentPrice={listing.price} />
+          <PriceHistoryChart listingId={listing.id} currentPrice={listing.price} />
         </div>
       </div>
     </Panel>
