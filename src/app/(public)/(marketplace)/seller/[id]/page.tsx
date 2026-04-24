@@ -16,6 +16,7 @@ import { SellerRatingInfo } from "@/components/profile/seller-rating-info";
 import { ListingCard } from "@/components/shared/listing-card";
 import { TrustBadge } from "@/components/shared/trust-badge";
 import { Button } from "@/components/ui/button";
+import { getCurrentUser } from "@/lib/auth/session";
 import { cn } from "@/lib/utils";
 import { getSellerTrustUI } from "@/lib/utils/trust-ui";
 import {
@@ -23,7 +24,7 @@ import {
   getPublicMarketplaceListings,
 } from "@/services/listings/marketplace-listings";
 import { getSellerTrustSummary } from "@/services/profile/profile-trust";
-import { getSellerRatingSummary, getSellerReviews } from "@/services/profile/seller-reviews";
+import { getSellerReviews, getSellerReviewStats } from "@/services/profile/seller-reviews";
 import { type Listing } from "@/types";
 
 interface SellerProfilePageProps {
@@ -57,9 +58,10 @@ export default async function SellerProfilePage({ params }: SellerProfilePagePro
   const memberSinceYear =
     memberSinceDate && !isNaN(memberSinceDate.getTime()) ? memberSinceDate.getFullYear() : null;
   const [ratingSummary, reviews] = await Promise.all([
-    getSellerRatingSummary(sellerId),
+    getSellerReviewStats(sellerId),
     getSellerReviews(sellerId),
   ]);
+  const currentUser = await getCurrentUser();
 
   return (
     <div className="mx-auto max-w-[1280px] space-y-4 sm:space-y-6 md:space-y-8 px-3 sm:px-4 md:px-6 lg:px-8 py-4 sm:py-6 md:py-8">

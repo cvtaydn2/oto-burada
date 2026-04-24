@@ -140,6 +140,7 @@ src/
     forms/
     layout/
     reservations/
+    reviews/
   domain/
     usecases/
     logic/
@@ -147,6 +148,7 @@ src/
     admin-moderation/
     listing-creation/
     marketplace/
+    reviews/
   hooks/
   types/
   lib/
