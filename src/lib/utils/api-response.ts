@@ -43,7 +43,19 @@ export function apiError(code: string, message: string, status = 400, details?: 
   };
 
   if (details) {
-    body.error.details = details;
+    if (process.env.NODE_ENV === "production") {
+      // In production, only expose generic keys or nothing if it's too complex
+      // For validation errors, we can send field keys but strip internal messages
+      if (typeof details === "object" && details !== null) {
+        const sanitizedDetails: Record<string, string[]> = {};
+        for (const [key, _] of Object.entries(details as Record<string, unknown>)) {
+          sanitizedDetails[key] = ["Geçersiz değer"]; // Generic message
+        }
+        body.error.details = sanitizedDetails;
+      }
+    } else {
+      body.error.details = details;
+    }
   }
 
   return NextResponse.json(body, { status });

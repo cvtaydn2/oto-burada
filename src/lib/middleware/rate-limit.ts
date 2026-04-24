@@ -33,8 +33,12 @@ export async function rateLimitMiddleware(request: NextRequest) {
   if (!success) {
     return new NextResponse(
       JSON.stringify({
-        error: "Too many requests",
-        message: "Sistem güvenliği için geçici olarak sınırlandırıldınız.",
+        success: false,
+        error: {
+          code: "RATE_LIMITED",
+          message:
+            "Çok fazla istek yapıldı. Sistem güvenliği için geçici olarak sınırlandırıldınız.",
+        },
       }),
       {
         status: 429,

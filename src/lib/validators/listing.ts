@@ -69,7 +69,7 @@ export const expertInspectionSchema: z.ZodType<ExpertInspection> = z.object({
 
 // Issue 23: Consolidate fields to avoid redundant schema compilation
 export const baseListingFields = {
-  title: trimmedRequiredString.max(200, "Baslik en fazla 200 karakter olabilir"),
+  title: trimmedRequiredString.max(200, "Başlık en fazla 200 karakter olabilir"),
   category: z.enum(vehicleCategories),
   brand: trimmedRequiredString,
   model: trimmedRequiredString,
@@ -105,7 +105,7 @@ export const baseListingFields = {
     .string()
     .trim()
     .min(5, "Geçerli bir plaka gir")
-    .max(12, "Gecersiz plaka")
+    .max(12, "Geçersiz plaka")
     .nullable()
     .optional(),
   tramerAmount: nonNegativeNumberSchema.nullable().optional(),
@@ -169,7 +169,7 @@ export const getListingCreateFormSchema = () => {
               context.addIssue({
                 code: z.ZodIssueCode.custom,
                 path: ["images", index, "url"],
-                message: "Fotografi once yuklemelisin",
+                message: "Fotoğrafı önce yüklemelisin",
               });
               return;
             }
