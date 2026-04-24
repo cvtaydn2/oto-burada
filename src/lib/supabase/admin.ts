@@ -4,14 +4,18 @@ import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import { getSupabaseAdminEnv } from "@/lib/supabase/env";
 
 /**
- * Creates a fresh Supabase admin client per call.
+ * SECURITY CRITICAL: Creates a Supabase admin client using the SERVICE_ROLE_KEY.
+ *
+ * IMPORTANT RULES:
+ * 1. This client BYPASSES ALL Row Level Security (RLS) policies.
+ * 2. NEVER use this client to read/write data on behalf of a user in a user-facing route.
+ * 3. ONLY use this for administrative tasks, system-level background jobs, or migrations.
+ * 4. ALWAYS prefer createSupabaseServerClient() for user-authenticated requests.
  *
  * Rationale: Serverless functions (Vercel) can keep warm instances alive across
  * multiple invocations. If SUPABASE_SERVICE_ROLE_KEY is rotated while a warm
  * instance holds an old singleton, all admin requests will fail with 401/403.
  * Creating a new client per call is ~microseconds overhead and eliminates this risk.
- *
- * Note: @supabase/supabase-js internals share the underlying fetch (no TCP overhead).
  */
 export function createSupabaseAdminClient(): SupabaseClient<any> {
   const { serviceRoleKey, url } = getSupabaseAdminEnv();
@@ -22,6 +26,3 @@ export function createSupabaseAdminClient(): SupabaseClient<any> {
     },
   });
 }
-
-// Backward compatibility alias
-export const getSupabaseAdminClient = createSupabaseAdminClient;

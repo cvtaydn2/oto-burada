@@ -130,12 +130,13 @@ export async function checkGlobalRateLimit(
   }
 
   if (!limiter) {
-    return {
-      success: true,
-      limit: options.limit ?? 100,
-      remaining: options.limit ?? 100,
-      reset: 0,
+    // In development with missing config, we still want to test the logic
+    // but with much higher limits to avoid blocking workflow.
+    const devOptions = {
+      limit: options.limit ? options.limit * 10 : 1000,
+      windowMs: options.windowMs ?? 60_000,
     };
+    return getLocalFallbackResult(key, devOptions);
   }
 
   try {

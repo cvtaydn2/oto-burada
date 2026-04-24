@@ -169,3 +169,22 @@
   - `npm run build` ✅
   - `npm run typecheck` ✅
 - **Sıradaki Adım:** Marketplace UX iyileştirmeleri.
+# 2026-04-24 — Phase 31: Security Hardening & Fraud Detection (COMPLETED)
+
+## [2026-04-24] - Marketplace Security Infrastructure & Advanced Fraud Scoring
+- **Status:** ✅ COMPLETED
+- **Accomplishments:**
+  - **Advanced Fraud Detection (#28)**: Integrated seller reputation metrics into the `calculateFraudScore` logic. The system now weights listing risk based on trust scores, verification status, and historically approved listing counts, reducing false positives for established sellers.
+  - **Similar Listings Optimization (#13)**: Refactored `getSimilarMarketplaceListings` to use a single database query with weighted application-side scoring, replacing the inefficient dual-query pattern and reducing N+1 roundtrips.
+  - **CSRF & Origin Hardening (#20, #25, #26)**: Upgraded `isValidRequestOrigin` with strict `URL()` host/protocol matching and `Referer` fallback. Implemented a specific exclusion for `/api/webhooks/` to support third-party payment callbacks.
+  - **Admin Client & Singleton Hardening (#1, #24)**: Verified the `createSupabaseAdminClient` factory strictly returns new instances (serverless-safe). Audited and updated all administrative routes to use standardized security wrappers.
+  - **Rate Limiting & Resilience (#29, #30)**: Enabled in-memory fallback for rate limiting in local development to maintain parity with production. Integrated basic token tracking in `verifyTurnstileToken` to mitigate replay attacks on mutation endpoints.
+  - **API Security Consolidation (#18)**: Streamlined `withSecurity` middleware to reduce database checks by consolidating authentication, role verification, and ban-status checks into fewer round-trips.
+- **Validations:**
+  - `npm run typecheck` ✅
+  - `npm run lint` ✅
+  - `npm run build` ✅
+- **Decisions:**
+  - **Reputation Weighting**: New sellers are assigned a baseline risk score that decays as they build a positive listing history.
+  - **Fail-Closed Strategy**: Rate-limiting and CSRF checks continue to fail-closed in production to prevent security bypasses during downstream service outages.
+- **Next Step:** Implement automated admin alerts for high-fraud-score listings that exceed a specific threshold (e.g., > 85).

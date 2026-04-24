@@ -7,6 +7,7 @@
  * Docs: https://developers.cloudflare.com/turnstile/
  */
 
+import { redis } from "@/lib/redis";
 import { logger } from "@/lib/utils/logger";
 
 interface TurnstileVerifyResponse {
@@ -27,7 +28,7 @@ export async function verifyTurnstileToken(token: string, ip?: string): Promise<
   const isProd = process.env.NODE_ENV === "production";
   const secretKey = process.env.TURNSTILE_SECRET_KEY;
 
-  // If Turnstile is not configured
+  // 1. If Turnstile is not configured
   if (!secretKey) {
     if (isProd) {
       logger.security.error("CRITICAL: Turnstile secret key missing in production. REJECTING.");
@@ -40,6 +41,28 @@ export async function verifyTurnstileToken(token: string, ip?: string): Promise<
   if (!token || token.trim().length === 0) {
     logger.security.warn("Turnstile token missing");
     return false;
+  }
+
+  // 2. Token Deduplication (Issue 30 - Replay Attack Prevention)
+  // Check if this token has already been used in the last 15 minutes.
+  if (redis) {
+    try {
+      const redisKey = `turnstile:used:${token}`;
+      const isUsed = await redis.get(redisKey);
+      if (isUsed) {
+        logger.security.warn("Turnstile token replay detected", {
+          token: `${token.slice(0, 10)}...`,
+        });
+        return false;
+      }
+      // Mark as used before verification to prevent race conditions
+      // TTL matches Turnstile's own window
+      await redis.set(redisKey, "1", { ex: 15 * 60 });
+    } catch (error) {
+      logger.security.error("Redis token deduplication failed", error);
+      // In prod, if Redis fails, we might allow it (fail-open) to avoid blocking users
+      // but only if Turnstile itself passes later.
+    }
   }
 
   try {

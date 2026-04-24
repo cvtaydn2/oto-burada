@@ -66,12 +66,18 @@ export function calculateFraudScore(
     sellerId?: string;
     vin?: string | null;
     status?: string;
-  }[]
+  }[],
+  sellerStats?: {
+    trustScore?: number;
+    isVerified?: boolean;
+    approvedListingsCount?: number;
+  }
 ): { fraudScore: number; fraudReason: string | null; suggestedStatus?: Listing["status"] } {
   let score = 0;
   const reasons: string[] = [];
   let suggestedStatus: Listing["status"] | undefined = undefined;
 
+  // 1. Basic matching (potential duplicate)
   const isDuplicate = existingListings.some(
     (l) =>
       l.brand === input.brand &&
@@ -85,6 +91,7 @@ export function calculateFraudScore(
     reasons.push("Mükerrer ilan şüphesi");
   }
 
+  // 2. VIN Clone detection
   const vinDuplicate = input.vin
     ? existingListings.find(
         (l) => l.vin === input.vin && l.status !== "archived" && l.status !== "rejected"
@@ -95,7 +102,7 @@ export function calculateFraudScore(
     reasons.push("Aynı şasi numaralı başka bir aktif ilan mevcut (VIN clone)");
   }
 
-  // --- ANOMALY DETECTOR LOGIC ---
+  // 3. Price Anomaly detection
   const similarListings = existingListings.filter(
     (l) =>
       l.brand === input.brand &&
@@ -119,34 +126,50 @@ export function calculateFraudScore(
       reasons.push(`Fiyat ortalamanın %50 üzerinde (${Math.round(avgPrice)} TL)`);
       suggestedStatus = "flagged";
     }
-  } else {
-    if (input.year >= 2020 && input.price < 800_000) {
-      score += 60;
-      reasons.push("Pazar ortalamasının çok altında şüpheli fiyat");
-    }
   }
 
+  // 4. Mileage Anomaly
   const vehicleAge = new Date().getFullYear() - input.year;
   if (vehicleAge >= 10 && input.mileage < 10000) {
     score += 40;
-    reasons.push("mileage_anomaly");
+    reasons.push("Kilometre anomalisini (yaşa göre çok düşük)");
     suggestedStatus = suggestedStatus || "flagged";
   }
 
-  if (input.damageStatusJson && input.tramerAmount === 0) {
+  // 5. Tramer/Damage Discrepancy
+  if (input.damageStatusJson && (input.tramerAmount === 0 || !input.tramerAmount)) {
     const suspiciousStatuses = ["boyali", "lokal_boyali", "degisen"];
     const changedPartsCount = Object.values(input.damageStatusJson).filter((s) =>
       suspiciousStatuses.includes(s as string)
     ).length;
 
     if (changedPartsCount >= 3) {
-      score += 20;
-      reasons.push("Çoklu boya/değişen kaydına rağmen hasar kaydı 0");
+      score += 30;
+      reasons.push("Çoklu boya/değişen kaydına rağmen hasar kaydı beyan edilmemiş");
+    }
+  }
+
+  // 6. Seller Reputation adjustment (God-Tier Pillar)
+  if (sellerStats) {
+    // Verified sellers get a trust bonus
+    if (sellerStats.isVerified) {
+      score -= 30;
+    }
+
+    // High trust score (0-100 scale assumed)
+    if (sellerStats.trustScore && sellerStats.trustScore > 80) {
+      score -= 20;
+    }
+
+    // New sellers (0 approved listings) are more suspicious
+    if (sellerStats.approvedListingsCount === 0) {
+      score += 15;
+      reasons.push("Yeni satıcı hesabı");
     }
   }
 
   return {
-    fraudScore: Math.min(score, 100),
+    fraudScore: Math.max(0, Math.min(score, 100)),
     fraudReason: reasons.length > 0 ? reasons.join(", ") : null,
     suggestedStatus,
   };
@@ -168,12 +191,24 @@ export async function performAsyncModeration(listingId: string) {
     if (!listing) return;
 
     // 2. Fetch similar listings for market analysis (filtered for accuracy)
-    const existingListings = await getCachedFraudComparisonListings({
-      brand: listing.brand,
-      listingId,
-      model: listing.model,
-      year: listing.year,
-    });
+    const [existingListings, sellerProfile, approvedCountResult] = await Promise.all([
+      getCachedFraudComparisonListings({
+        brand: listing.brand,
+        listingId,
+        model: listing.model,
+        year: listing.year,
+      }),
+      admin
+        .from("profiles")
+        .select("trust_score, is_verified")
+        .eq("id", listing.sellerId)
+        .maybeSingle(),
+      admin
+        .from("listings")
+        .select("id", { count: "exact", head: true })
+        .eq("seller_id", listing.sellerId)
+        .eq("status", "approved"),
+    ]);
 
     // 3. Compute score — explicit map to match calculateFraudScore input shape
     const fraudInput: Parameters<typeof calculateFraudScore>[0] = {
@@ -197,7 +232,7 @@ export async function performAsyncModeration(listingId: string) {
       images: listing.images,
     };
 
-    const comparisonListings = existingListings
+    const comparisonListings = (existingListings ?? [])
       .filter((item) => item.id !== listingId)
       .map((item) => ({
         id: item.id ?? "",
@@ -211,7 +246,13 @@ export async function performAsyncModeration(listingId: string) {
         status: item.status ?? undefined,
       }));
 
-    const assessment = calculateFraudScore(fraudInput, comparisonListings);
+    const sellerStats = {
+      trustScore: sellerProfile.data?.trust_score ?? 0,
+      isVerified: sellerProfile.data?.is_verified ?? false,
+      approvedListingsCount: approvedCountResult.count ?? 0,
+    };
+
+    const assessment = calculateFraudScore(fraudInput, comparisonListings, sellerStats);
 
     // 4. Update the record
     await admin

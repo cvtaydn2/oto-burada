@@ -26,49 +26,67 @@
  * This version parses both sides with `new URL()` and compares hosts exactly.
  */
 export function isValidRequestOrigin(request: Request): boolean {
+  // Webhook exclusion: third-party services (like Iyzico) won't send valid browser origin/referer headers
+  const { pathname } = new URL(request.url);
+  if (pathname.startsWith("/api/webhooks/")) {
+    return true;
+  }
+
   const origin = request.headers.get("origin");
+  const referer = request.headers.get("referer");
   const method = request.method.toUpperCase();
   const isMutation = method !== "GET" && method !== "HEAD" && method !== "OPTIONS";
 
-  // Mutation requests must present an Origin header. Internal callers should
-  // use dedicated authenticated/secret-protected endpoints instead.
-  if (!origin) {
-    return !isMutation;
-  }
-
-  // Explicitly reject "null" origin (sandboxed iframe, file://, etc.)
-  if (origin === "null") return false;
-
-  let originUrl: URL;
-  try {
-    originUrl = new URL(origin);
-  } catch {
-    // Unparseable origin → reject.
+  // 1. Mandatory header check for mutations
+  if (isMutation && !origin && !referer) {
     return false;
   }
 
-  // 1. Match against NEXT_PUBLIC_APP_URL (exact host + protocol).
+  // 2. Validate Origin if present
+  if (origin && origin !== "null") {
+    try {
+      const originUrl = new URL(origin);
+      if (isAllowedOrigin(originUrl, request)) return true;
+    } catch {
+      return false;
+    }
+  }
+
+  // 3. Fallback to Referer for browsers/scenarios where Origin is missing
+  if (referer) {
+    try {
+      const refererUrl = new URL(referer);
+      if (isAllowedOrigin(refererUrl, request)) return true;
+    } catch {
+      // Ignore malformed referer
+    }
+  }
+
+  // Safe non-mutation requests with no headers are allowed
+  return !isMutation;
+}
+
+/** Internal helper for origin/referer validation */
+function isAllowedOrigin(targetUrl: URL, request: Request): boolean {
+  // Match against NEXT_PUBLIC_APP_URL
   const rawAppUrl = process.env.NEXT_PUBLIC_APP_URL;
   if (rawAppUrl) {
     try {
       const appUrl = new URL(rawAppUrl);
-      if (
-        originUrl.protocol === appUrl.protocol &&
-        originUrl.host === appUrl.host // host includes port when non-default
-      ) {
+      if (targetUrl.protocol === appUrl.protocol && targetUrl.host === appUrl.host) {
         return true;
       }
     } catch {
-      // Misconfigured APP_URL — fall through to host check.
+      /* ignore */
     }
   }
 
-  // 2. Match against the request Host header (exact equality).
+  // Match against request Host header
   const host = request.headers.get("host");
-  if (host && originUrl.host === host) return true;
+  if (host && targetUrl.host === host) return true;
 
-  // 3. Allow localhost in non-production environments only.
-  if (process.env.NODE_ENV !== "production" && originUrl.hostname === "localhost") {
+  // Allow localhost in non-production
+  if (process.env.NODE_ENV !== "production" && targetUrl.hostname === "localhost") {
     return true;
   }
 
