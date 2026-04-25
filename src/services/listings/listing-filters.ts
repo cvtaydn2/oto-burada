@@ -18,9 +18,15 @@ export function getDistrictsForCity(cities: CityOption[], city?: string) {
   return cities.find((item) => item.city === city)?.districts ?? [];
 }
 
+export const DEFAULT_LISTING_FILTERS: ListingFilters = {
+  sort: "newest",
+  page: 1,
+  limit: 12,
+};
+
 export function parseListingFiltersFromSearchParams(
   searchParams?: Record<string, string | string[] | undefined>
-) {
+): ListingFilters {
   const start = Date.now();
   const normalizedSearchParams = Object.fromEntries(
     Object.entries(searchParams ?? {}).flatMap(([key, value]) => {
@@ -37,27 +43,22 @@ export function parseListingFiltersFromSearchParams(
         path: i.path.join("."),
         message: i.message,
       })),
-      original: normalizedSearchParams,
+      keys: Object.keys(normalizedSearchParams),
     });
-  }
 
-  // Use parsed data if successful, otherwise empty object (defaults will be applied below)
-  const rawResult = parsed.success ? parsed.data : {};
+    return DEFAULT_LISTING_FILTERS;
+  }
 
   logger.perf.debug("parseListingFiltersFromSearchParams execution", {
     duration: Date.now() - start,
-    success: parsed.success,
+    success: true,
   });
 
-  // Canonicalization & Defaults
-  const result = {
-    ...rawResult,
-    sort: (rawResult as Record<string, unknown>).sort ?? "newest",
-    page: rawResult.page && rawResult.page > 0 ? rawResult.page : 1,
-    limit: rawResult.limit && rawResult.limit > 0 ? rawResult.limit : 12,
-  } as ListingFilters;
-
-  return result;
+  // Apply defaults to parsed data
+  return {
+    ...DEFAULT_LISTING_FILTERS,
+    ...parsed.data,
+  };
 }
 
 export function createSearchParamsFromListingFilters(filters: ListingFilters) {

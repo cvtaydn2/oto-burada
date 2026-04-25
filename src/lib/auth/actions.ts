@@ -82,7 +82,7 @@ async function getClientIp() {
 }
 
 export async function loginAction(
-  _previousState: AuthActionState = initialState,
+  previousState: AuthActionState = initialState,
   formData: FormData
 ): Promise<AuthActionState> {
   // Preserve fields from previous state
@@ -158,7 +158,7 @@ export async function loginAction(
 }
 
 export async function registerAction(
-  _previousState: AuthActionState = initialState,
+  previousState: AuthActionState = initialState,
   formData: FormData
 ): Promise<AuthActionState> {
   const clientIp = await getClientIp();
@@ -285,15 +285,18 @@ export async function registerAction(
 }
 
 export async function forgotPasswordAction(
-  _previousState: AuthActionState | undefined,
+  previousState: AuthActionState = initialState,
   formData: FormData
 ): Promise<AuthActionState> {
   const email = String(formData.get("email") ?? "").trim();
 
-  if (!email || !email.includes("@")) {
+  const { z } = await import("zod");
+  const parsed = z.string().email("Geçerli bir e-posta adresi girin.").safeParse(email);
+
+  if (!parsed.success) {
     return {
       success: false,
-      error: "Geçerli bir e-posta adresi girin.",
+      error: parsed.error.issues[0].message,
       fields: buildAuthFields(email),
       reason: "invalid_input",
     };

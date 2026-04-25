@@ -33,8 +33,6 @@ export async function updateProfileAction(
   previousState: ProfileActionState = initialState,
   formData: FormData
 ): Promise<ProfileActionState> {
-  void previousState;
-
   const values = {
     fullName: String(formData.get("fullName") ?? ""),
     phone: String(formData.get("phone") ?? ""),
@@ -107,7 +105,7 @@ export async function updateProfileAction(
 }
 
 export async function updateCorporateProfileAction(
-  _previousState: ProfileActionState | undefined,
+  previousState: ProfileActionState = initialState,
   formData: FormData
 ): Promise<ProfileActionState> {
   const values = {
@@ -186,9 +184,15 @@ export async function updateCorporateProfileAction(
 
   if (error) {
     if (error.code === "23505") {
+      if (oldSlug === parsed.data.businessSlug) {
+        return {
+          error: "Beklenmedik bir hata oluştu. Lütfen destek ekibiyle iletişime geçin.",
+          fields: values,
+        };
+      }
       return { error: "Bu mağaza URL'i (slug) zaten kullanımda.", fields: values };
     }
-    return { error: "Guncelleme sirasinda bir hata olustu.", fields: values };
+    return { error: "Güncelleme sırasında bir hata oluştu.", fields: values };
   }
 
   // Revalidate paths for the gallery
