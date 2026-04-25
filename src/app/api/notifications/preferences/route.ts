@@ -1,7 +1,7 @@
 import { z } from "zod";
 
-import { API_ERROR_CODES, apiError, apiSuccess } from "@/lib/utils/api-response";
-import { withUserAndCsrf, withUserRoute } from "@/lib/utils/api-security";
+import { API_ERROR_CODES, apiError, apiSuccess } from "@/lib/api/response";
+import { withUserAndCsrf, withUserRoute } from "@/lib/api/security";
 import {
   getNotificationPreferences,
   upsertNotificationPreferences,

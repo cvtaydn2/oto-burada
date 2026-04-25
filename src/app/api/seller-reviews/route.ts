@@ -11,11 +11,11 @@
 
 import { z } from "zod";
 
+import { API_ERROR_CODES, apiError, apiSuccess } from "@/lib/api/response";
+import { withAuthAndCsrf } from "@/lib/api/security";
+import { rateLimitProfiles } from "@/lib/rate-limiting/rate-limit";
+import { sanitizeText } from "@/lib/sanitization/sanitize";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
-import { API_ERROR_CODES, apiError, apiSuccess } from "@/lib/utils/api-response";
-import { withAuthAndCsrf } from "@/lib/utils/api-security";
-import { rateLimitProfiles } from "@/lib/utils/rate-limit";
-import { sanitizeText } from "@/lib/utils/sanitize";
 
 const reviewSchema = z.object({
   sellerId: z.string().uuid("Geçersiz satıcı ID."),

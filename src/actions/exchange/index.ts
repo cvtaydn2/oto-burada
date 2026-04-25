@@ -2,8 +2,8 @@
 
 import { revalidatePath } from "next/cache";
 
+import { logger } from "@/lib/logging/logger";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
-import { logger } from "@/lib/utils/logger";
 import { createExchangeOffer, respondToExchangeOffer } from "@/services/exchange/exchange-offers";
 
 export async function submitExchangeOfferAction(

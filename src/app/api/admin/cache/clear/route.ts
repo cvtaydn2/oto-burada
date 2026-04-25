@@ -1,8 +1,8 @@
 import { revalidatePath } from "next/cache";
 import { NextResponse } from "next/server";
 
+import { withAdminRoute } from "@/lib/api/security";
 import { captureServerError, captureServerEvent } from "@/lib/monitoring/posthog-server";
-import { withAdminRoute } from "@/lib/utils/api-security";
 
 export async function POST(request: Request) {
   const security = await withAdminRoute(request);

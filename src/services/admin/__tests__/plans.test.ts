@@ -17,7 +17,7 @@ vi.mock("@/lib/supabase/admin", () => ({
   })),
 }));
 
-vi.mock("@/lib/utils/logger", () => ({
+vi.mock("@/lib/logging/logger", () => ({
   logger: {
     admin: {
       error: vi.fn(),
@@ -28,7 +28,7 @@ vi.mock("@/lib/utils/logger", () => ({
   },
 }));
 
-describe("getPricingPlans", () => {
+describe("getPublicPricingPlans", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     eq.mockResolvedValue({ data: [], error: null });
@@ -37,10 +37,10 @@ describe("getPricingPlans", () => {
     from.mockReturnValue({ select });
   });
 
-  it("filters public plans to active ones by default", async () => {
-    const { getPricingPlans } = await import("../plans");
+  it("filters public plans to active ones", async () => {
+    const { getPublicPricingPlans } = await import("../plans");
 
-    await getPricingPlans();
+    await getPublicPricingPlans();
 
     expect(eq).toHaveBeenCalledWith("is_active", true);
   });

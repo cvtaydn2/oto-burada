@@ -1,9 +1,9 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import { withAuthAndCsrf } from "@/lib/utils/api-security";
+import { withAuthAndCsrf } from "@/lib/api/security";
 
-vi.mock("@/lib/utils/api-security", () => ({
+vi.mock("@/lib/api/security", () => ({
   withAuthAndCsrf: vi.fn(),
 }));
 

@@ -34,7 +34,7 @@ vi.mock("@/lib/supabase/admin", () => ({
 }));
 
 // Mock logger to avoid spam
-vi.mock("@/lib/utils/logger", () => ({
+vi.mock("@/lib/logging/logger", () => ({
   logger: {
     market: {
       error: vi.fn(),

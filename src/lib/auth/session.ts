@@ -1,9 +1,9 @@
 import { redirect } from "next/navigation";
 import { cache } from "react";
 
+import { logger } from "@/lib/logging/logger";
 import { hasSupabaseEnv } from "@/lib/supabase/env";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
-import { logger } from "@/lib/utils/logger";
 import type { UserRole } from "@/types";
 
 export const getCurrentUser = cache(async () => {
@@ -82,21 +82,31 @@ const getDBUserRole = cache(async (userId: string) => {
   }
 });
 
-export async function requireAdminUser() {
-  const user = await requireUser();
+/**
+ * Combined authentication context for the current request.
+ * Bundles both the JWT-based user and the database-verified role.
+ */
+export const getAuthContext = cache(async () => {
+  const user = await getCurrentUser();
+  if (!user) return { user: null, dbRole: null };
 
-  // 1. Check JWT claims (fast, covers 99% of cases)
+  const dbRole = await getDBUserRole(user.id);
+  return { user, dbRole };
+});
+
+export async function requireAdminUser() {
+  const { user, dbRole } = await getAuthContext();
+
+  if (!user) {
+    redirect("/login");
+  }
+
+  // 1. Primary check (JWT)
   if (getUserRole(user) !== "admin") {
     redirect("/dashboard");
   }
 
-  // 2. Secondary DB check to guard against stale JWT after demotion.
-  // Fails CLOSED — if the DB check throws or returns non-admin, deny access.
-  const dbRole = await getDBUserRole(user.id);
-
-  // dbRole null means either env missing or not found/error.
-  // We only allow if dbRole is explicitly "admin".
-  // If env is missing (local dev), we fallback to JWT check only (convenience).
+  // 2. Secondary DB check (Atomic consistency)
   if (process.env.SUPABASE_SERVICE_ROLE_KEY && dbRole !== "admin") {
     redirect("/dashboard");
   }
@@ -105,7 +115,7 @@ export async function requireAdminUser() {
 }
 
 export async function getAuthenticatedUserOrThrow() {
-  const user = await getCurrentUser();
+  const { user } = await getAuthContext();
   if (!user) {
     throw new Error("Authentication required");
   }

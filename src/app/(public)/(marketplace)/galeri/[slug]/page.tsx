@@ -7,7 +7,7 @@ import { GalleryHeader } from "@/components/layout/gallery-header";
 import { ListingCard } from "@/components/shared/listing-card";
 import { Badge } from "@/components/ui/badge";
 import { getCurrentUser } from "@/lib/auth/session";
-import { logger } from "@/lib/utils/logger";
+import { logger } from "@/lib/logging/logger";
 import { getGalleryBySlug, recordGalleryView } from "@/services/gallery";
 
 interface GalleryPageProps {

@@ -1,11 +1,11 @@
 import { headers } from "next/headers";
 
+import { API_ERROR_CODES, apiError, apiSuccess } from "@/lib/api/response";
+import { withAdminRoute } from "@/lib/api/security";
 import { captureServerEvent } from "@/lib/monitoring/posthog-server";
-import { API_ERROR_CODES, apiError, apiSuccess } from "@/lib/utils/api-response";
-import { withAdminRoute } from "@/lib/utils/api-security";
-import { rateLimitProfiles } from "@/lib/utils/rate-limit";
-import { checkRateLimit } from "@/lib/utils/rate-limit-middleware";
-import { sanitizeText } from "@/lib/utils/sanitize";
+import { rateLimitProfiles } from "@/lib/rate-limiting/rate-limit";
+import { checkRateLimit } from "@/lib/rate-limiting/rate-limit-middleware";
+import { sanitizeText } from "@/lib/sanitization/sanitize";
 import { createAdminModerationAction } from "@/services/admin/moderation-actions";
 import { getStoredListingById } from "@/services/listings/listing-submissions";
 import { createDatabaseNotification } from "@/services/notifications/notification-records";

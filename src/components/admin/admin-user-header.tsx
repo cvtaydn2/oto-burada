@@ -5,7 +5,7 @@ import Link from "next/link";
 
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { getTrustDotColor, getTrustToneClass } from "@/lib/utils/trust-helpers";
+import { getTrustDotColor, getTrustToneClass } from "@/lib/utils/trust-ui";
 import { getSellerTrustUI } from "@/lib/utils/trust-ui";
 import { type VerificationStatus } from "@/types";
 

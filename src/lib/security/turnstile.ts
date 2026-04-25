@@ -7,8 +7,8 @@
  * Docs: https://developers.cloudflare.com/turnstile/
  */
 
+import { logger } from "@/lib/logging/logger";
 import { redis } from "@/lib/redis";
-import { logger } from "@/lib/utils/logger";
 
 interface TurnstileVerifyResponse {
   success: boolean;

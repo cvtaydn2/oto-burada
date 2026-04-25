@@ -2,8 +2,8 @@
 
 import { revalidatePath } from "next/cache";
 
+import { logger } from "@/lib/logging/logger";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
-import { logger } from "@/lib/utils/logger";
 import { createReservation as createReservationSvc } from "@/services/reservations/reservation-service";
 import type { CreateReservationInput } from "@/types";
 

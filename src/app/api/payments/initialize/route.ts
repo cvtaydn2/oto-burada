@@ -1,11 +1,11 @@
 import { NextRequest } from "next/server";
 
+import { getClientIp } from "@/lib/api/ip";
+import { API_ERROR_CODES, apiError, apiSuccess } from "@/lib/api/response";
+import { withUserAndCsrf } from "@/lib/api/security";
 import { DOPING_PACKAGES } from "@/lib/constants/doping";
+import { rateLimitProfiles } from "@/lib/rate-limiting/rate-limit";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
-import { API_ERROR_CODES, apiError, apiSuccess } from "@/lib/utils/api-response";
-import { withUserAndCsrf } from "@/lib/utils/api-security";
-import { getClientIp } from "@/lib/utils/ip";
-import { rateLimitProfiles } from "@/lib/utils/rate-limit";
 import { initiatePaymentSchema } from "@/lib/validators/payment";
 import { PaymentService } from "@/services/payment/payment-service";
 

@@ -1,7 +1,7 @@
 "use server";
 
+import { logger } from "@/lib/logging/logger";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
-import { logger } from "@/lib/utils/logger";
 
 export async function aggregateMarketStats() {
   const supabaseAdmin = createSupabaseAdminClient();

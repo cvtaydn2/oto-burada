@@ -1,9 +1,9 @@
+import { API_ERROR_CODES, apiError, apiSuccess } from "@/lib/api/response";
+import { withUserAndCsrf } from "@/lib/api/security";
+import { logger } from "@/lib/logging/logger";
 import { captureServerError, captureServerEvent } from "@/lib/monitoring/posthog-server";
+import { enforceRateLimit, getUserRateLimitKey } from "@/lib/rate-limiting/rate-limit-middleware";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
-import { API_ERROR_CODES, apiError, apiSuccess } from "@/lib/utils/api-response";
-import { withUserAndCsrf } from "@/lib/utils/api-security";
-import { logger } from "@/lib/utils/logger";
-import { enforceRateLimit, getUserRateLimitKey } from "@/lib/utils/rate-limit-middleware";
 import type { ListingStatus } from "@/types";
 
 const BUMP_RATE_LIMIT = { limit: 3, windowMs: 24 * 60 * 60 * 1000 };

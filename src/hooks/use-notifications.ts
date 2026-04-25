@@ -5,7 +5,7 @@ import { useEffect } from "react";
 
 import { useSupabase } from "@/components/providers/supabase-provider";
 import { queryKeys } from "@/lib/query-keys";
-import { NotificationService } from "@/services/api-client";
+import { NotificationService } from "@/services/notifications/client-service";
 import type { Notification } from "@/types";
 
 export function useNotifications(userId?: string) {

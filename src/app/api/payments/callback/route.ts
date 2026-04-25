@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 
 import { DOPING_PACKAGES } from "@/lib/constants/doping";
+import { logger } from "@/lib/logging/logger";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
-import { logger } from "@/lib/utils/logger";
 import { DopingService } from "@/services/payment/doping-service";
 import { PaymentService } from "@/services/payment/payment-service";
 

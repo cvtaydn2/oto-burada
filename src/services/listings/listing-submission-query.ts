@@ -20,10 +20,10 @@
 import { PostgrestFilterBuilder } from "@supabase/postgrest-js";
 import type { SupabaseClient } from "@supabase/supabase-js";
 
+import { logger } from "@/lib/logging/logger";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { hasSupabaseAdminEnv } from "@/lib/supabase/env";
 import { createSupabasePublicServerClient } from "@/lib/supabase/public-server";
-import { logger } from "@/lib/utils/logger";
 import { Listing, ListingFilters } from "@/types";
 import type { Database } from "@/types/supabase";
 

@@ -1,7 +1,7 @@
 import { requireApiAdminUser } from "@/lib/auth/api-admin";
+import { logger } from "@/lib/logging/logger";
 import { captureServerError, captureServerEvent } from "@/lib/monitoring/posthog-server";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
-import { logger } from "@/lib/utils/logger";
 
 export async function GET() {
   const authResponse = await requireApiAdminUser();

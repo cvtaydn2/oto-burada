@@ -1,8 +1,8 @@
 import { NextResponse } from "next/server";
 
+import { withCronOrAdmin } from "@/lib/api/security";
+import { logger } from "@/lib/logging/logger";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
-import { withCronOrAdmin } from "@/lib/utils/api-security";
-import { logger } from "@/lib/utils/logger";
 
 /**
  * ── PILL: Issue 9 - Batch View Sync Cron ──────────────────────────────────

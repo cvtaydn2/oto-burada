@@ -1,11 +1,15 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
+import {
+  withAdminRoute,
+  withCronOrAdmin,
+  withUserAndCsrf,
+  withUserRoute,
+} from "@/lib/api/security";
 import { isSupabaseAdminUser } from "@/lib/auth/api-admin";
 import { getCurrentUser } from "@/lib/auth/session";
 import { isValidRequestOrigin } from "@/lib/security";
-
-import { withAdminRoute, withCronOrAdmin, withUserAndCsrf, withUserRoute } from "../api-security";
 
 vi.mock("@/lib/auth/session", () => ({
   getCurrentUser: vi.fn(),
@@ -19,7 +23,7 @@ vi.mock("@/lib/security", () => ({
   isValidRequestOrigin: vi.fn(),
 }));
 
-vi.mock("@/lib/utils/rate-limit-middleware", () => ({
+vi.mock("@/lib/rate-limiting/rate-limit-middleware", () => ({
   enforceRateLimit: vi.fn(() => null), // null means no limit hit
   getRateLimitKey: vi.fn(() => "test-key"),
   getUserRateLimitKey: vi.fn(() => "test-user-key"),

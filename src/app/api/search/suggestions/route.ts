@@ -1,7 +1,7 @@
+import { apiSuccess } from "@/lib/api/response";
+import { enforceRateLimit, getRateLimitKey } from "@/lib/rate-limiting/rate-limit-middleware";
 import { getCachedData, setCachedData } from "@/lib/redis/client";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
-import { apiSuccess } from "@/lib/utils/api-response";
-import { enforceRateLimit, getRateLimitKey } from "@/lib/utils/rate-limit-middleware";
 
 export const dynamic = "force-dynamic";
 

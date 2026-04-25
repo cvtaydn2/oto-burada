@@ -1,8 +1,8 @@
 import { redirect } from "next/navigation";
 import { NextResponse } from "next/server";
 
-import { withUserAndCsrf } from "@/lib/utils/api-security";
-import { logger } from "@/lib/utils/logger";
+import { withUserAndCsrf } from "@/lib/api/security";
+import { logger } from "@/lib/logging/logger";
 import { respondToOffer } from "@/services/offers/offer-service";
 
 export async function POST(request: Request) {

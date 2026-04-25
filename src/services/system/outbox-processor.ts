@@ -1,8 +1,8 @@
 import { type SupabaseClient } from "@supabase/supabase-js";
 
+import { resendBreaker } from "@/lib/api/resilience";
+import { logger } from "@/lib/logging/logger";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
-import { logger } from "@/lib/utils/logger";
-import { resendBreaker } from "@/lib/utils/resilience";
 
 /**
  * Hyper-Scale Transaction Outbox Processor (Item 10 - Reliability)

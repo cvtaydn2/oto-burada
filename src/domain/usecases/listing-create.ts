@@ -1,5 +1,5 @@
-import { logger } from "@/lib/utils/logger";
-import { sanitizeDescription, sanitizeText } from "@/lib/utils/sanitize";
+import { logger } from "@/lib/logging/logger";
+import { sanitizeDescription, sanitizeText } from "@/lib/sanitization/sanitize";
 import { listingCreateSchema } from "@/lib/validators";
 import { buildPendingListing } from "@/services/listings/listing-submissions";
 import type { Listing, ListingCreateInput } from "@/types";

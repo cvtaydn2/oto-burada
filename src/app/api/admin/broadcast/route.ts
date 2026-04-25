@@ -1,11 +1,11 @@
 import { NextResponse } from "next/server";
 
+import { withAdminRoute } from "@/lib/api/security";
+import { logger } from "@/lib/logging/logger";
 import { captureServerError, captureServerEvent } from "@/lib/monitoring/posthog-server";
+import { enforceRateLimit } from "@/lib/rate-limiting/rate-limit-middleware";
+import { sanitizeText } from "@/lib/sanitization/sanitize";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
-import { withAdminRoute } from "@/lib/utils/api-security";
-import { logger } from "@/lib/utils/logger";
-import { enforceRateLimit } from "@/lib/utils/rate-limit-middleware";
-import { sanitizeText } from "@/lib/utils/sanitize";
 import { createDatabaseNotificationsBulk } from "@/services/notifications/notification-records";
 
 // Broadcast: 5 per hour (admin-only, but still protect against accidents)

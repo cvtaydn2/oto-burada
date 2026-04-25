@@ -1,8 +1,8 @@
 "use server";
 
+import { logger } from "@/lib/logging/logger";
 import { captureServerError, captureServerWarning } from "@/lib/monitoring/posthog-server";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
-import { logger } from "@/lib/utils/logger";
 
 import type { PlatformSettings } from "./settings-types";
 import { defaultPlatformSettings } from "./settings-types";

@@ -1,9 +1,9 @@
 "use server";
 
 import { requireUser } from "@/lib/auth/session";
+import { logger } from "@/lib/logging/logger";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { hasSupabaseAdminEnv } from "@/lib/supabase/env";
-import { logger } from "@/lib/utils/logger";
 import {
   buildListingRecord,
   mapListingToDatabaseRow,

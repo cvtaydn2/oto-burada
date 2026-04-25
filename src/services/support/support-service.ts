@@ -1,5 +1,5 @@
+import { ApiClient } from "@/lib/api/client";
 import { API_ROUTES } from "@/lib/constants/api-routes";
-import { ApiClient } from "@/lib/utils/api-client";
 import { apiResponseSchemas } from "@/lib/validators/api-responses";
 import type { CreateTicketInput, Ticket } from "@/services/support/ticket-service";
 

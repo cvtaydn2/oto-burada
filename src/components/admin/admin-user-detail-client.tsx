@@ -11,8 +11,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { trust } from "@/lib/constants/ui-strings";
 import { safeFormatDate } from "@/lib/utils";
 import { cn } from "@/lib/utils";
+import { AdminService } from "@/services/admin/admin-service";
 import type { UserDetailData } from "@/services/admin/user-details";
-import { AdminService } from "@/services/api-client";
 
 import { AdminUserActionCards } from "./admin-user-action-cards";
 import { AdminUserHeader } from "./admin-user-header";

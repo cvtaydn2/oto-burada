@@ -7,18 +7,18 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import { withUserAndCsrf } from "@/lib/utils/api-security";
+import { withUserAndCsrf } from "@/lib/api/security";
 
-vi.mock("@/lib/utils/api-security", () => ({
+vi.mock("@/lib/api/security", () => ({
   withUserAndCsrf: vi.fn(),
   withSecurity: vi.fn(),
 }));
 
-vi.mock("@/lib/utils/rate-limit", () => ({
+vi.mock("@/lib/rate-limiting/rate-limit", () => ({
   rateLimitProfiles: { general: {}, listingCreate: {} },
 }));
 
-vi.mock("@/lib/utils/rate-limit-middleware", () => ({
+vi.mock("@/lib/rate-limiting/rate-limit-middleware", () => ({
   enforceRateLimit: vi.fn(() => null),
   getRateLimitKey: vi.fn(() => "key"),
 }));
@@ -28,7 +28,7 @@ vi.mock("@/lib/monitoring/posthog-server", () => ({
   trackServerEvent: vi.fn(),
 }));
 
-vi.mock("@/lib/utils/logger", () => ({
+vi.mock("@/lib/logging/logger", () => ({
   logger: { listings: { error: vi.fn(), info: vi.fn() }, system: { error: vi.fn() } },
 }));
 

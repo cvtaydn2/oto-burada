@@ -22,9 +22,9 @@
 
 import { NextResponse } from "next/server";
 
+import { withSecurity } from "@/lib/api/security";
 import { checkInfrastructureHealth } from "@/lib/monitoring/infrastructure-health";
 import { hasSupabaseAdminEnv, hasSupabaseEnv } from "@/lib/supabase/env";
-import { withSecurity } from "@/lib/utils/api-security";
 
 export const dynamic = "force-dynamic";
 // Short cache — health checks should reflect current state

@@ -35,10 +35,10 @@ interface RateLimitEntry {
   resetAt: number;
 }
 
+import { logger } from "@/lib/logging/logger";
 import { redis } from "@/lib/redis";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { hasSupabaseAdminEnv } from "@/lib/supabase/env";
-import { logger } from "@/lib/utils/logger";
 
 const inMemoryStore = new Map<string, RateLimitEntry>();
 

@@ -15,7 +15,7 @@ vi.mock("@/lib/supabase/env", () => ({
   hasSupabaseAdminEnv: vi.fn(() => true),
 }));
 
-vi.mock("@/lib/utils/sanitize", () => ({
+vi.mock("@/lib/sanitization/sanitize", () => ({
   sanitizeDescription: (s: string) => s,
 }));
 

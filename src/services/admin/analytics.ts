@@ -1,10 +1,10 @@
 "use server";
 
+import { withCache } from "@/lib/caching/cache";
+import { logger } from "@/lib/logging/logger";
 import { captureServerError } from "@/lib/monitoring/posthog-server";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { hasSupabaseAdminEnv } from "@/lib/supabase/env";
-import { withCache } from "@/lib/utils/cache";
-import { logger } from "@/lib/utils/logger";
 
 export interface AdminAnalyticsData {
   kpis: {

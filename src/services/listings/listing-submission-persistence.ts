@@ -1,6 +1,6 @@
+import { sanitizeDescription } from "@/lib/sanitization/sanitize";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { hasSupabaseAdminEnv } from "@/lib/supabase/env";
-import { sanitizeDescription } from "@/lib/utils/sanitize";
 import { Listing } from "@/types";
 
 import { ListingRow, mapListingRow } from "./listing-submission-types";

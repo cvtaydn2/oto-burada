@@ -1,7 +1,7 @@
+import { API_ERROR_CODES, apiError, apiSuccess } from "@/lib/api/response";
+import { withAuth, withAuthAndCsrf } from "@/lib/api/security";
 import { captureServerError } from "@/lib/monitoring/posthog-server";
-import { API_ERROR_CODES, apiError, apiSuccess } from "@/lib/utils/api-response";
-import { withAuth, withAuthAndCsrf } from "@/lib/utils/api-security";
-import { rateLimitProfiles } from "@/lib/utils/rate-limit";
+import { rateLimitProfiles } from "@/lib/rate-limiting/rate-limit";
 import {
   getStoredNotificationsByUser,
   markAllDatabaseNotificationsRead,

@@ -1,5 +1,5 @@
+import { logger } from "@/lib/logging/logger";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
-import { logger } from "@/lib/utils/logger";
 
 /**
  * World-Class Integrity: Reconciliation Worker (Issue 3)

@@ -1,5 +1,5 @@
+import { getClientIp } from "@/lib/api/ip";
 import { redis } from "@/lib/redis/client";
-import { getClientIp } from "@/lib/utils/ip";
 
 /**
  * Hyper-Scale Step-up Authentication (Item 4 - ATO Prevention)

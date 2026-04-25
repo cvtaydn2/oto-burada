@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 
-import { withCronOrAdmin } from "@/lib/utils/api-security";
-import { logger } from "@/lib/utils/logger";
+import { withCronOrAdmin } from "@/lib/api/security";
+import { logger } from "@/lib/logging/logger";
 import { expireReservations } from "@/services/reservations/reservation-service";
 
 export async function POST(request: Request) {

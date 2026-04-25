@@ -1,4 +1,4 @@
-import { logger } from "@/lib/utils/logger";
+import { logger } from "@/lib/logging/logger";
 import { listingFiltersSchema } from "@/lib/validators";
 import type { BrandCatalogItem, CityOption, ListingFilters } from "@/types";
 

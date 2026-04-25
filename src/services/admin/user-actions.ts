@@ -2,12 +2,12 @@
 
 import { revalidatePath } from "next/cache";
 
+import { logger } from "@/lib/logging/logger";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
-import { logger } from "@/lib/utils/logger";
 import { createDatabaseNotification } from "@/services/notifications/notification-records";
 
 export async function toggleUserBan(userId: string, currentStatus: boolean) {
-  const { executeServerAction } = await import("@/lib/utils/action-utils");
+  const { executeServerAction } = await import("@/lib/actions/action-utils");
 
   return executeServerAction(
     "toggleUserBan",

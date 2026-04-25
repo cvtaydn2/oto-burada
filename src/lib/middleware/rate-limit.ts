@@ -1,6 +1,6 @@
 import { type NextRequest, NextResponse } from "next/server";
 
-import { checkGlobalRateLimit } from "@/lib/utils/distributed-rate-limit";
+import { checkGlobalRateLimit } from "@/lib/rate-limiting/distributed-rate-limit";
 
 /**
  * Global Rate Limiting Middleware.

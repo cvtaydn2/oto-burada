@@ -1,5 +1,3 @@
-import { cookies } from "next/headers";
-
 // Feature Modules
 import { createListingEntity } from "@/domain/logic/listing-factory";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
@@ -7,7 +5,6 @@ import { hasSupabaseAdminEnv } from "@/lib/supabase/env";
 import { listingSchema } from "@/lib/validators";
 import type { Listing, ListingCreateInput } from "@/types";
 
-import { listingSubmissionsCookieName } from "./constants";
 import { buildListingSlug } from "./listing-submission-helpers";
 import { calculateFraudScore } from "./listing-submission-moderation";
 
@@ -120,16 +117,6 @@ export function serializeStoredListings(listings: Listing[]) {
   return JSON.stringify(listings);
 }
 
-/** @deprecated Use database status='draft' instead. Cookie storage is limited to 4KB and unreliable for full listing objects. */
-export async function getLegacyStoredListings() {
-  const cookieStore = await cookies();
-  const value = cookieStore.get(listingSubmissionsCookieName)?.value;
-  if (!value) return [];
-  return parseStoredListings(value).sort(
-    (left: Listing, right: Listing) => Date.parse(right.updatedAt) - Date.parse(left.updatedAt)
-  );
-}
-
 // Orchestration Helpers
 export function buildPendingListing(
   input: ListingCreateInput,
@@ -238,11 +225,6 @@ export async function getStoredListingsByIds(ids: string[], options?: { includeB
     includeBanned: options?.includeBanned,
   });
   return databaseListings ?? [];
-}
-
-/** @deprecated LEGACY ONLY: Used by migration scripts. Use database storage instead. */
-export async function getLegacyStoredUserListings() {
-  return [];
 }
 
 export async function upsertDatabaseListingRecord(listing: Listing) {

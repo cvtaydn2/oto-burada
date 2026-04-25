@@ -49,7 +49,7 @@ export async function revealListingPhone(listingId: string) {
     "unknown";
 
   // ── Distributed Rate Limit (F-03 Protection) ──
-  const { checkGlobalRateLimit } = await import("@/lib/utils/distributed-rate-limit");
+  const { checkGlobalRateLimit } = await import("@/lib/rate-limiting/distributed-rate-limit");
 
   // Higher limit for authenticated users, stricter for guests
   const limit = user ? 20 : 5;

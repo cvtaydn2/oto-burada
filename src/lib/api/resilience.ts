@@ -1,5 +1,5 @@
+import { logger } from "@/lib/logging/logger";
 import { redis } from "@/lib/redis/client";
-import { logger } from "@/lib/utils/logger";
 
 /**
  * Hyper-Scale Resilience Patterns

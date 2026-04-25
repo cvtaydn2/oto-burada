@@ -9,7 +9,7 @@
  * here because this file is used in both client and server contexts.
  *
  * Usage:
- *   import { logger } from "@/lib/utils/logger";
+ *   import { logger } from "@/lib/logging/logger";
  *   logger.db.error("Query failed", error, { table: "listings" });
  *
  * For PostHog reporting in server actions:

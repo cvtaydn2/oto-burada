@@ -17,11 +17,11 @@ vi.mock("@/lib/monitoring/posthog-server", () => ({
   identifyServerUser: vi.fn(),
 }));
 
-vi.mock("@/lib/utils/rate-limit-middleware", () => ({
+vi.mock("@/lib/rate-limiting/rate-limit-middleware", () => ({
   checkRateLimit: vi.fn().mockResolvedValue({ allowed: true }),
 }));
 
-vi.mock("@/lib/utils/rate-limit", () => ({
+vi.mock("@/lib/rate-limiting/rate-limit", () => ({
   rateLimitProfiles: { auth: {} },
 }));
 
@@ -155,7 +155,7 @@ describe("registerAction — success path", () => {
   });
 
   it("returns rate-limit error when rate limit is exceeded", async () => {
-    const { checkRateLimit } = await import("@/lib/utils/rate-limit-middleware");
+    const { checkRateLimit } = await import("@/lib/rate-limiting/rate-limit-middleware");
     vi.mocked(checkRateLimit).mockResolvedValueOnce({
       allowed: false,
       remaining: 0,

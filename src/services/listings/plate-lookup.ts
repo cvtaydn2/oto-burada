@@ -3,8 +3,8 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { headers } from "next/headers";
 
-import { logger } from "@/lib/utils/logger";
-import { checkRateLimit } from "@/lib/utils/rate-limit";
+import { logger } from "@/lib/logging/logger";
+import { checkRateLimit } from "@/lib/rate-limiting/rate-limit";
 
 export interface PlateLookupResult {
   brand: string;

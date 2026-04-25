@@ -1,8 +1,8 @@
 "use server";
 import { revalidatePath, revalidateTag, unstable_cache } from "next/cache";
 
+import { logger } from "@/lib/logging/logger";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
-import { logger } from "@/lib/utils/logger";
 
 export interface PricingPlan {
   id: string;
@@ -74,11 +74,6 @@ export const getAdminPricingPlans = unstable_cache(
     tags: [PRICING_TAGS.ALL, PRICING_TAGS.ADMIN],
   }
 );
-
-/** @deprecated Internal use fetchPricingPlansFromDb directly or use explicit public/admin methods. */
-export async function getPricingPlans(includeInactive = false) {
-  return includeInactive ? getAdminPricingPlans() : getPublicPricingPlans();
-}
 
 // ─── Mutations ────────────────────────────────────────────────────────────────
 async function revalidatePricingCaches() {

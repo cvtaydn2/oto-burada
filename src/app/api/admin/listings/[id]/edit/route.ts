@@ -1,11 +1,11 @@
 import { waitUntil } from "@vercel/functions";
 import { z } from "zod";
 
+import { API_ERROR_CODES, apiError, apiSuccess } from "@/lib/api/response";
+import { withAdminRoute } from "@/lib/api/security";
 import { captureServerError, captureServerEvent } from "@/lib/monitoring/posthog-server";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { hasSupabaseAdminEnv } from "@/lib/supabase/env";
-import { API_ERROR_CODES, apiError, apiSuccess } from "@/lib/utils/api-response";
-import { withAdminRoute } from "@/lib/utils/api-security";
 import { createAdminModerationAction } from "@/services/admin/moderation-actions";
 import {
   performAsyncModeration,

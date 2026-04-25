@@ -1,9 +1,9 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 
+import { withSecurity } from "@/lib/api/security";
 import { getCurrentUser } from "@/lib/auth/session";
-import { withSecurity } from "@/lib/utils/api-security";
-import { logger } from "@/lib/utils/logger";
+import { logger } from "@/lib/logging/logger";
 import { recordListingView } from "@/services/listings/listing-views";
 
 const viewSchema = z.object({

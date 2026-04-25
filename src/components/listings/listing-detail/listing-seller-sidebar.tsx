@@ -3,7 +3,7 @@ import { CalendarDays, ShieldCheck, Star, Store } from "lucide-react";
 
 import { ContactActions } from "@/components/listings/contact-actions";
 import { Panel } from "@/components/shared/design-system/Panel";
-import { getMembershipYears, getMemberSinceYear } from "@/lib/utils/listing-utils";
+import { getMembershipYears, getMemberSinceYear } from "@/lib/listings/utils";
 import { getSellerTrustUI } from "@/lib/utils/trust-ui";
 import { getSellerReviewStats as getSellerRatingSummary } from "@/services/profile/seller-reviews";
 import type { Listing, Profile } from "@/types";

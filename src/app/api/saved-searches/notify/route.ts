@@ -19,10 +19,10 @@
  * }
  */
 
+import { API_ERROR_CODES, apiError, apiSuccess } from "@/lib/api/response";
+import { logger } from "@/lib/logging/logger";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { hasSupabaseAdminEnv } from "@/lib/supabase/env";
-import { API_ERROR_CODES, apiError, apiSuccess } from "@/lib/utils/api-response";
-import { logger } from "@/lib/utils/logger";
 import { sendSavedSearchAlertEmail } from "@/services/email/email-service";
 import type { SavedSearchAlertListing } from "@/services/email/email-templates";
 import { createSearchParamsFromListingFilters } from "@/services/listings/listing-filters";
@@ -32,7 +32,7 @@ import type { ListingFilters } from "@/types";
 
 export const dynamic = "force-dynamic";
 
-import { getAppUrlWithFallback } from "@/lib/utils/env";
+import { getAppUrlWithFallback } from "@/lib/environment/env";
 
 // How far back to look for new listings (24 hours)
 const LOOKBACK_HOURS = 24;

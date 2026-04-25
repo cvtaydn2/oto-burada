@@ -22,7 +22,7 @@ export {
   sanitizeDescription,
   sanitizeForMeta,
   sanitizeText,
-} from "@/lib/utils/sanitize";
+} from "@/lib/sanitization/sanitize";
 
 // ── Rate limiting ─────────────────────────────────────────────────────────────
 
@@ -31,13 +31,13 @@ export {
   type RateLimitConfig,
   rateLimitProfiles,
   type RateLimitResult,
-} from "@/lib/utils/rate-limit";
+} from "@/lib/rate-limiting/rate-limit";
 export {
   enforceRateLimit,
   getRateLimitKey,
   getUserRateLimitKey,
-} from "@/lib/utils/rate-limit-middleware";
+} from "@/lib/rate-limiting/rate-limit-middleware";
 
 // ── IP extraction ─────────────────────────────────────────────────────────────
 
-export { getClientIp } from "@/lib/utils/ip";
+export { getClientIp } from "@/lib/api/ip";

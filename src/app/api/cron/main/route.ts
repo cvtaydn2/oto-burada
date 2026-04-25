@@ -1,8 +1,8 @@
 import { NextResponse } from "next/server";
 
+import { withCronOrAdmin } from "@/lib/api/security";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { hasSupabaseAdminEnv } from "@/lib/supabase/env";
-import { withCronOrAdmin } from "@/lib/utils/api-security";
 import { expireReservations } from "@/services/reservations/reservation-service";
 
 /**

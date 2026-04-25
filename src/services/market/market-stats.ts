@@ -1,6 +1,6 @@
+import { logger } from "@/lib/logging/logger";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { hasSupabaseAdminEnv } from "@/lib/supabase/env";
-import { logger } from "@/lib/utils/logger";
 
 export interface MarketStatUpdateResult {
   avgPrice: number;

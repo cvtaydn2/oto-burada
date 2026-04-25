@@ -17,7 +17,7 @@ vi.mock("@/lib/storage/registry", () => ({
   unregisterFileById: (...args: any[]) => mockUnregisterFileById(...args),
 }));
 
-vi.mock("@/lib/utils/api-security", () => ({
+vi.mock("@/lib/api/security", () => ({
   withAuthAndCsrf: vi.fn(),
 }));
 
@@ -39,7 +39,7 @@ vi.mock("@/lib/monitoring/posthog-server", () => ({
   captureServerError: vi.fn(),
 }));
 
-vi.mock("@/lib/utils/logger", () => ({
+vi.mock("@/lib/logging/logger", () => ({
   logger: { storage: { warn: vi.fn(), error: vi.fn() } },
 }));
 
@@ -53,7 +53,7 @@ vi.mock("@/lib/storage/upload-policy", () => ({
   UPLOAD_POLICY: { IMAGES: { MAX_FILE_SIZE_BYTES: 10 * 1024 * 1024, MAX_DAILY_UPLOADS: 50 } },
 }));
 
-import { withAuthAndCsrf } from "@/lib/utils/api-security";
+import { withAuthAndCsrf } from "@/lib/api/security";
 
 const mockUser = { id: "user-1" };
 

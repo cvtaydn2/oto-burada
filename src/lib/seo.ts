@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 
+import { sanitizeForMeta } from "@/lib/sanitization/sanitize";
 import { formatCurrency, formatNumber } from "@/lib/utils";
-import { sanitizeForMeta } from "@/lib/utils/sanitize";
 import type { Listing, ListingFilters } from "@/types";
 
 export function getAppUrl() {

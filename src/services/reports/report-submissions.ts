@@ -1,5 +1,3 @@
-import { cookies } from "next/headers";
-
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { hasSupabaseAdminEnv } from "@/lib/supabase/env";
 import { reportSchema } from "@/lib/validators";
@@ -191,16 +189,6 @@ export function serializeStoredReports(reports: Report[]) {
   return JSON.stringify(reports);
 }
 
-/** @deprecated Only used by legacy-sync migration endpoint. */
-export async function getLegacyStoredReports() {
-  const cookieStore = await cookies();
-
-  return parseStoredReports(cookieStore.get(reportsCookieName)?.value).sort(
-    (left, right) =>
-      Date.parse(right.updatedAt ?? right.createdAt) - Date.parse(left.updatedAt ?? left.createdAt)
-  );
-}
-
 export function buildReport(input: ReportCreateInput, reporterId: string, existingReport?: Report) {
   const timestamp = new Date().toISOString();
 
@@ -261,17 +249,6 @@ export async function getStoredReportsByReporter(reporterId: string) {
     (left, right) =>
       Date.parse(right.updatedAt ?? right.createdAt) - Date.parse(left.updatedAt ?? left.createdAt)
   );
-}
-
-/** @deprecated Only used by legacy-sync migration endpoint. */
-export async function getLegacyStoredReportsByReporter(reporterId: string) {
-  return (await getLegacyStoredReports())
-    .filter((report) => report.reporterId === reporterId)
-    .sort(
-      (left, right) =>
-        Date.parse(right.updatedAt ?? right.createdAt) -
-        Date.parse(left.updatedAt ?? left.createdAt)
-    );
 }
 
 export async function upsertDatabaseReportRecord(report: Report) {

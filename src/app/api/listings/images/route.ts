@@ -1,6 +1,10 @@
 import sharp from "sharp";
 
+import { API_ERROR_CODES, apiError, apiSuccess } from "@/lib/api/response";
+import { withAuthAndCsrf } from "@/lib/api/security";
+import { logger } from "@/lib/logging/logger";
 import { captureServerError } from "@/lib/monitoring/posthog-server";
+import { rateLimitProfiles } from "@/lib/rate-limiting/rate-limit";
 import {
   countDailyUserUploads,
   registerFileInRegistry,
@@ -10,10 +14,6 @@ import {
 import { UPLOAD_POLICY } from "@/lib/storage/upload-policy";
 import { getSupabaseStorageEnv, hasSupabaseStorageEnv } from "@/lib/supabase/env";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
-import { API_ERROR_CODES, apiError, apiSuccess } from "@/lib/utils/api-response";
-import { withAuthAndCsrf } from "@/lib/utils/api-security";
-import { logger } from "@/lib/utils/logger";
-import { rateLimitProfiles } from "@/lib/utils/rate-limit";
 import {
   buildListingImageStoragePath,
   getVerifiedMimeType,

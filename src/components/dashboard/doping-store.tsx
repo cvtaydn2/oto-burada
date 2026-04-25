@@ -14,7 +14,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { DOPING_PACKAGES } from "@/lib/constants/doping";
-import { PaymentService } from "@/services/api-client";
+import { PaymentService } from "@/services/payments/client-service";
 import { DopingPackage } from "@/types/payment";
 
 interface DopingStoreProps {

@@ -1,9 +1,9 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { NextRequest, NextResponse } from "next/server";
 
+import { logger } from "@/lib/logging/logger";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { verifyIyzicoWebhook } from "@/lib/utils/iyzico-webhook";
-import { logger } from "@/lib/utils/logger";
 
 export async function POST(req: NextRequest) {
   const admin = createSupabaseAdminClient();

@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 
+import { withUserAndCsrf } from "@/lib/api/security";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
-import { withUserAndCsrf } from "@/lib/utils/api-security";
 import { ChatService } from "@/services/chat/chat-service";
 
 const messageSchema = z.object({

@@ -1,12 +1,12 @@
 import { waitUntil } from "@vercel/functions";
 
+import { API_ERROR_CODES, apiError, apiSuccess } from "@/lib/api/response";
+import { withUserAndCsrf } from "@/lib/api/security";
 import { validateListingEdit } from "@/lib/listings/edit-guard";
+import { logger } from "@/lib/logging/logger";
 import { captureServerError, captureServerEvent } from "@/lib/monitoring/posthog-server";
+import { sanitizeDescription, sanitizeText } from "@/lib/sanitization/sanitize";
 import { hasSupabaseEnv } from "@/lib/supabase/env";
-import { API_ERROR_CODES, apiError, apiSuccess } from "@/lib/utils/api-response";
-import { withUserAndCsrf } from "@/lib/utils/api-security";
-import { logger } from "@/lib/utils/logger";
-import { sanitizeDescription, sanitizeText } from "@/lib/utils/sanitize";
 import { issuesToFieldErrors } from "@/lib/utils/validation-helpers";
 import { listingCreateFormSchema, listingCreateSchema } from "@/lib/validators";
 import {

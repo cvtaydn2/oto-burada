@@ -8,10 +8,10 @@
  */
 import { NextResponse } from "next/server";
 
+import { withCronOrAdmin } from "@/lib/api/security";
+import { logger } from "@/lib/logging/logger";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { hasSupabaseAdminEnv } from "@/lib/supabase/env";
-import { withCronOrAdmin } from "@/lib/utils/api-security";
-import { logger } from "@/lib/utils/logger";
 
 export const runtime = "nodejs";
 

@@ -1,7 +1,7 @@
+import { logger } from "@/lib/logging/logger";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { hasSupabaseAdminEnv } from "@/lib/supabase/env";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
-import { logger } from "@/lib/utils/logger";
 import { getProfileRestrictionState } from "@/services/profile/profile-restrictions";
 import { type Listing, type Profile } from "@/types";
 

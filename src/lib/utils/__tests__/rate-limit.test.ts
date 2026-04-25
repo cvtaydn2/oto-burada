@@ -16,14 +16,14 @@ vi.mock("@/lib/supabase/admin", () => ({
   createSupabaseAdminClient: vi.fn(),
 }));
 
-vi.mock("@/lib/utils/logger", () => ({
+vi.mock("@/lib/logging/logger", () => ({
   logger: {
     api: { warn: vi.fn(), error: vi.fn() },
     db: { warn: vi.fn() },
   },
 }));
 
-import { checkRateLimit } from "../rate-limit";
+import { checkRateLimit } from "@/lib/rate-limiting/rate-limit";
 
 describe("checkRateLimit — in-memory fallback", () => {
   beforeEach(() => {

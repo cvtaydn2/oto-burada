@@ -4,8 +4,8 @@ import { CheckCircle2, LoaderCircle, Send } from "lucide-react";
 import { useState } from "react";
 
 import { useTurnstile } from "@/hooks/use-turnstile";
+import { ApiClient } from "@/lib/api/client";
 import { API_ROUTES } from "@/lib/constants/api-routes";
-import { ApiClient } from "@/services/api-client";
 
 const SUBJECTS = [
   "İlanımla ilgili sorun yaşıyorum",

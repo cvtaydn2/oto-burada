@@ -1,4 +1,4 @@
-import { logger } from "@/lib/utils/logger";
+import { logger } from "@/lib/logging/logger";
 
 /**
  * World-Class Integrity: Bait-and-Switch Protection (Issue 2)

@@ -1,5 +1,5 @@
 import { cn } from "@/lib/utils";
-import { getTrustStyles, type TrustTone } from "@/lib/utils/trust-helpers";
+import { getTrustStyles, type TrustTone } from "@/lib/utils/trust-ui";
 
 interface TrustNoticeProps {
   title: string;

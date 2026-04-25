@@ -14,8 +14,8 @@ import Link from "next/link";
 
 import { FavoriteButton } from "@/components/listings/favorite-button";
 import { SafeImage } from "@/components/shared/safe-image";
+import { getListingBadgeStates, getListingCoverImage } from "@/lib/listings/utils";
 import { cn, formatNumber, formatPrice, supabaseImageUrl } from "@/lib/utils";
-import { getListingBadgeStates, getListingCoverImage } from "@/lib/utils/listing-utils";
 import { getSellerTrustUI } from "@/lib/utils/trust-ui";
 import { getListingCardInsights } from "@/services/listings/listing-card-insights";
 import { type Listing } from "@/types";

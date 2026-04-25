@@ -1,16 +1,16 @@
 import { NextResponse } from "next/server";
 
+import { API_ERROR_CODES, apiError, apiSuccess } from "@/lib/api/response";
+import { logger } from "@/lib/logging/logger";
 import { captureServerError, captureServerEvent } from "@/lib/monitoring/posthog-server";
+import { rateLimitProfiles } from "@/lib/rate-limiting/rate-limit";
+import { enforceRateLimit, getRateLimitKey } from "@/lib/rate-limiting/rate-limit-middleware";
+import { sanitizeDescription, sanitizeText } from "@/lib/sanitization/sanitize";
 import { isValidRequestOrigin } from "@/lib/security";
 import { getDisposableEmailMessage, isDisposableEmail } from "@/lib/security/email-validation";
 import { isTurnstileEnabled, verifyTurnstileToken } from "@/lib/security/turnstile";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { hasSupabaseAdminEnv } from "@/lib/supabase/env";
-import { API_ERROR_CODES, apiError, apiSuccess } from "@/lib/utils/api-response";
-import { logger } from "@/lib/utils/logger";
-import { rateLimitProfiles } from "@/lib/utils/rate-limit";
-import { enforceRateLimit, getRateLimitKey } from "@/lib/utils/rate-limit-middleware";
-import { sanitizeDescription, sanitizeText } from "@/lib/utils/sanitize";
 import { contactFormSchema } from "@/lib/validators/domain";
 import { createPublicTicket } from "@/services/support/ticket-service";
 

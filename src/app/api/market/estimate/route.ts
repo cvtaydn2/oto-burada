@@ -1,8 +1,8 @@
+import { API_ERROR_CODES, apiError, apiSuccess } from "@/lib/api/response";
+import { logger } from "@/lib/logging/logger";
 import { captureServerError } from "@/lib/monitoring/posthog-server";
+import { enforceRateLimit, getRateLimitKey } from "@/lib/rate-limiting/rate-limit-middleware";
 import { getCachedData, setCachedData } from "@/lib/redis/client";
-import { API_ERROR_CODES, apiError, apiSuccess } from "@/lib/utils/api-response";
-import { logger } from "@/lib/utils/logger";
-import { enforceRateLimit, getRateLimitKey } from "@/lib/utils/rate-limit-middleware";
 import { estimateVehiclePrice } from "@/services/market/price-estimation";
 
 // Rate limit: 30 per minute per IP

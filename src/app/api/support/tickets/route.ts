@@ -1,11 +1,11 @@
 import { z } from "zod";
 
+import { API_ERROR_CODES, apiError, apiSuccess } from "@/lib/api/response";
+import { withAuth, withAuthAndCsrf } from "@/lib/api/security";
+import { logger } from "@/lib/logging/logger";
 import { captureServerError, captureServerEvent } from "@/lib/monitoring/posthog-server";
-import { API_ERROR_CODES, apiError, apiSuccess } from "@/lib/utils/api-response";
-import { withAuth, withAuthAndCsrf } from "@/lib/utils/api-security";
-import { logger } from "@/lib/utils/logger";
-import { rateLimitProfiles } from "@/lib/utils/rate-limit";
-import { sanitizeDescription, sanitizeText } from "@/lib/utils/sanitize";
+import { rateLimitProfiles } from "@/lib/rate-limiting/rate-limit";
+import { sanitizeDescription, sanitizeText } from "@/lib/sanitization/sanitize";
 import type { TicketCategory, TicketPriority } from "@/services/support/ticket-service";
 import { createTicket } from "@/services/support/ticket-service";
 

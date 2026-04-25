@@ -1,8 +1,8 @@
 "use server";
 
+import { logger } from "@/lib/logging/logger";
 import { captureServerError } from "@/lib/monitoring/posthog-server";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
-import { logger } from "@/lib/utils/logger";
 import { Profile } from "@/types";
 
 export async function getAllUsers(query?: string, page = 1, limit = 20) {

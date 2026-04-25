@@ -1,4 +1,4 @@
-import { maskPhoneNumber } from "@/lib/utils/listing-utils";
+import { maskPhoneNumber } from "@/lib/listings/utils";
 import { Listing, ListingFilters } from "@/types";
 
 import {

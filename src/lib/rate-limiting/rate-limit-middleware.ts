@@ -1,7 +1,11 @@
 import { NextResponse } from "next/server";
 
-import { getNormalizedIp } from "@/lib/utils/ip";
-import { checkRateLimit, type RateLimitConfig, type RateLimitResult } from "@/lib/utils/rate-limit";
+import { getNormalizedIp } from "@/lib/api/ip";
+import {
+  checkRateLimit,
+  type RateLimitConfig,
+  type RateLimitResult,
+} from "@/lib/rate-limiting/rate-limit";
 
 export { checkRateLimit };
 

@@ -1,6 +1,6 @@
-import { API_ERROR_CODES, apiError, apiSuccess } from "@/lib/utils/api-response";
-import { withAuthAndCsrf } from "@/lib/utils/api-security";
-import { rateLimitProfiles } from "@/lib/utils/rate-limit";
+import { API_ERROR_CODES, apiError, apiSuccess } from "@/lib/api/response";
+import { withAuthAndCsrf } from "@/lib/api/security";
+import { rateLimitProfiles } from "@/lib/rate-limiting/rate-limit";
 import {
   deleteDatabaseNotification,
   markDatabaseNotificationRead,

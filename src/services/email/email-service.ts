@@ -6,8 +6,8 @@
 
 import { Resend } from "resend";
 
-import { getRequiredAppUrl } from "@/lib/utils/env";
-import { logger } from "@/lib/utils/logger";
+import { getRequiredAppUrl } from "@/lib/environment/env";
+import { logger } from "@/lib/logging/logger";
 
 import type { SavedSearchAlertListing } from "./email-templates";
 import * as templates from "./email-templates";

@@ -1,11 +1,11 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 
+import { withAdminRoute } from "@/lib/api/security";
+import { logger } from "@/lib/logging/logger";
 import { captureServerEvent } from "@/lib/monitoring/posthog-server";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { hasSupabaseAdminEnv } from "@/lib/supabase/env";
-import { withAdminRoute } from "@/lib/utils/api-security";
-import { logger } from "@/lib/utils/logger";
 
 const banSchema = z.object({
   ip: z.string().refine((val) => {

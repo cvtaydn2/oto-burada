@@ -32,7 +32,7 @@ vi.mock("@/lib/supabase/server", () => ({
   createSupabaseServerClient: mockCreateSupabaseServerClient,
 }));
 
-vi.mock("@/lib/utils/logger", () => ({
+vi.mock("@/lib/logging/logger", () => ({
   logger: {
     auth: {
       error: mockAuthError,
@@ -40,13 +40,13 @@ vi.mock("@/lib/utils/logger", () => ({
   },
 }));
 
-vi.mock("@/lib/utils/rate-limit", () => ({
+vi.mock("@/lib/rate-limiting/rate-limit", () => ({
   rateLimitProfiles: {
     auth: {},
   },
 }));
 
-vi.mock("@/lib/utils/rate-limit-middleware", () => ({
+vi.mock("@/lib/rate-limiting/rate-limit-middleware", () => ({
   checkRateLimit: mockCheckRateLimit,
 }));
 

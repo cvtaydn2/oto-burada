@@ -4,7 +4,7 @@ import { AlertTriangle, RefreshCcw } from "lucide-react";
 import React, { Component, type ReactNode } from "react";
 
 import { Button } from "@/components/ui/button";
-import { logger } from "@/lib/utils/logger";
+import { logger } from "@/lib/logging/logger";
 
 interface Props {
   children?: ReactNode;

@@ -7,17 +7,17 @@
 import type { User } from "@supabase/supabase-js";
 import { NextResponse } from "next/server";
 
+import { API_ERROR_CODES, apiError } from "@/lib/api/response";
 import { isSupabaseAdminUser } from "@/lib/auth/api-admin";
 import { getCurrentUser } from "@/lib/auth/session";
-import { isValidRequestOrigin } from "@/lib/security";
-import { validateCsrfToken } from "@/lib/security/csrf";
-import { API_ERROR_CODES, apiError } from "@/lib/utils/api-response";
-import type { RateLimitConfig } from "@/lib/utils/rate-limit";
+import type { RateLimitConfig } from "@/lib/rate-limiting/rate-limit";
 import {
   enforceRateLimit,
   getRateLimitKey,
   getUserRateLimitKey,
-} from "@/lib/utils/rate-limit-middleware";
+} from "@/lib/rate-limiting/rate-limit-middleware";
+import { isValidRequestOrigin } from "@/lib/security";
+import { validateCsrfToken } from "@/lib/security/csrf";
 
 export interface SecurityOptions {
   requireAuth?: boolean;

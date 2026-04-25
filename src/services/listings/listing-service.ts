@@ -1,8 +1,7 @@
+import { ApiClient } from "@/lib/api/client";
 import { API_ROUTES } from "@/lib/constants/api-routes";
 import { apiResponseSchemas } from "@/lib/validators/api-responses";
 import type { Listing } from "@/types";
-
-import { ApiClient } from "../api-client";
 
 export class ListingService {
   static async createListing(data: Record<string, unknown>) {

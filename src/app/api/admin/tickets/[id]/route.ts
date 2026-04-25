@@ -1,11 +1,11 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 
+import { API_ERROR_CODES, apiError, apiSuccess } from "@/lib/api/response";
+import { withAdminRoute } from "@/lib/api/security";
+import { logger } from "@/lib/logging/logger";
 import { captureServerError, captureServerEvent } from "@/lib/monitoring/posthog-server";
-import { API_ERROR_CODES, apiError, apiSuccess } from "@/lib/utils/api-response";
-import { withAdminRoute } from "@/lib/utils/api-security";
-import { logger } from "@/lib/utils/logger";
-import { sanitizeText } from "@/lib/utils/sanitize";
+import { sanitizeText } from "@/lib/sanitization/sanitize";
 import type { TicketStatus } from "@/services/support/ticket-service";
 import { updateTicketStatus } from "@/services/support/ticket-service";
 

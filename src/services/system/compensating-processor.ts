@@ -1,8 +1,8 @@
 import { type SupabaseClient } from "@supabase/supabase-js";
 
+import { iyzicoBreaker } from "@/lib/api/resilience";
+import { logger } from "@/lib/logging/logger";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
-import { logger } from "@/lib/utils/logger";
-import { iyzicoBreaker } from "@/lib/utils/resilience";
 
 /**
  * World-Class Reliability: Compensating Actions (Issue 9)

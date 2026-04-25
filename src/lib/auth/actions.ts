@@ -4,14 +4,14 @@ import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 
 import { AnalyticsEvent } from "@/lib/analytics/events";
+import { logger } from "@/lib/logging/logger";
 import { identifyServerUser, trackServerEvent } from "@/lib/monitoring/posthog-server";
+import { rateLimitProfiles } from "@/lib/rate-limiting/rate-limit";
+import { checkRateLimit } from "@/lib/rate-limiting/rate-limit-middleware";
 import { getAppUrl } from "@/lib/seo";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { hasSupabaseEnv } from "@/lib/supabase/env";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
-import { logger } from "@/lib/utils/logger";
-import { rateLimitProfiles } from "@/lib/utils/rate-limit";
-import { checkRateLimit } from "@/lib/utils/rate-limit-middleware";
 import { loginSchema, registerSchema } from "@/lib/validators";
 
 export interface AuthActionResponse {

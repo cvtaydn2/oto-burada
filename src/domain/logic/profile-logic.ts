@@ -1,4 +1,4 @@
-import { getMembershipYears, getMemberSinceYear } from "@/lib/utils/listing-utils";
+import { getMembershipYears, getMemberSinceYear } from "@/lib/listings/utils";
 
 /**
  * Domain logic for Profile/Seller entities.

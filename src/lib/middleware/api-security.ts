@@ -7,7 +7,7 @@ import { isValidRequestOrigin } from "@/lib/security";
  *
  * This runs in the global middleware (proxy.ts → updateSession) and operates
  * on NextRequest. It is intentionally separate from the route-handler security
- * helpers in `@/lib/utils/api-security`, which operate on the Web API Request
+ * helpers in `@/lib/api/security`, which operate on the Web API Request
  * object and run inside individual API routes.
  *
  * Responsibility: Reject cross-origin mutation requests before they reach any

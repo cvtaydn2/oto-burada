@@ -1,7 +1,7 @@
+import { getRequiredAppUrl } from "@/lib/environment/env";
+import { logger } from "@/lib/logging/logger";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
-import { getRequiredAppUrl } from "@/lib/utils/env";
-import { logger } from "@/lib/utils/logger";
 import { sendTicketCreatedEmail, sendTicketReplyEmail } from "@/services/email/email-service";
 
 export type TicketStatus = "open" | "in_progress" | "resolved" | "closed";

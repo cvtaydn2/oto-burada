@@ -35,10 +35,8 @@ vi.mock("@/lib/supabase/admin", () => ({
   })),
 }));
 
-vi.mock("@/lib/utils/api-response", async () => {
-  const actual = await vi.importActual<typeof import("@/lib/utils/api-response")>(
-    "@/lib/utils/api-response"
-  );
+vi.mock("@/lib/api/response", async () => {
+  const actual = await vi.importActual<typeof import("@/lib/api/response")>("@/lib/api/response");
   return actual;
 });
 

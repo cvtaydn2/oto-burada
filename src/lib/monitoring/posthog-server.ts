@@ -16,7 +16,7 @@ import {
   type EventPayload,
   type ServerAnalyticsEvent,
 } from "@/lib/analytics/events";
-import { logger } from "@/lib/utils/logger";
+import { logger } from "@/lib/logging/logger";
 
 // ─── Singleton PostHog Instance ─────────────────────────────────────────────────
 

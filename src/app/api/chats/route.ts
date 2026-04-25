@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 
-import { withUserAndCsrf, withUserRoute } from "@/lib/utils/api-security";
-import { rateLimitProfiles } from "@/lib/utils/rate-limit";
+import { withUserAndCsrf, withUserRoute } from "@/lib/api/security";
+import { rateLimitProfiles } from "@/lib/rate-limiting/rate-limit";
 import { ChatService } from "@/services/chat/chat-service";
 
 export async function GET(req: NextRequest) {

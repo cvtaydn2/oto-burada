@@ -1,7 +1,6 @@
+import { ApiClient } from "@/lib/api/client";
 import { API_ROUTES } from "@/lib/constants/api-routes";
 import { apiResponseSchemas } from "@/lib/validators/api-responses";
-
-import { ApiClient } from "../api-client";
 
 export class FavoriteService {
   static async addFavorite(listingId: string) {

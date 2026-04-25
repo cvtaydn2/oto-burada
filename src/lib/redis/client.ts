@@ -1,6 +1,6 @@
 import { Redis } from "@upstash/redis";
 
-import { logger } from "@/lib/utils/logger";
+import { logger } from "@/lib/logging/logger";
 
 const getRedisConfig = () => {
   if (process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN) {
