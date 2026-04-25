@@ -21,6 +21,8 @@ interface SellerCardProps {
   };
   isLoggedIn: boolean;
   listingId: string;
+  listingTitle?: string;
+  listingPrice?: number;
   loginUrl: string;
   ratingSummary?: { average: number; count: number };
 }
@@ -30,6 +32,8 @@ export function SellerCard({
   trustSummary,
   isLoggedIn,
   listingId,
+  listingTitle,
+  listingPrice,
   loginUrl,
   ratingSummary,
 }: SellerCardProps) {
@@ -110,7 +114,12 @@ export function SellerCard({
         {/* Contact Actions */}
         {isLoggedIn ? (
           <div className="mt-8">
-            <ContactActions listingId={listingId} sellerId={seller?.id || ""} />
+            <ContactActions
+              listingId={listingId}
+              sellerId={seller?.id || ""}
+              listingTitle={listingTitle}
+              listingPrice={listingPrice}
+            />
           </div>
         ) : (
           <div className="mt-8 space-y-4">

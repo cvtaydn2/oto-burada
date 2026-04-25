@@ -34,8 +34,8 @@ export async function submitOfferAction(
       message,
     });
 
-    revalidatePath(`/listing/`);
-    revalidatePath("/dashboard");
+    revalidatePath(`/listing/${listingId}`);
+    revalidatePath("/dashboard/teklifler");
 
     return { ok: true };
   } catch (err) {
@@ -78,6 +78,7 @@ async function respondToOfferAction(
 
   try {
     await respondToOffer(offerId, response, counterPrice, counterMessage);
+    revalidatePath("/dashboard/teklifler");
     revalidatePath("/dashboard");
 
     return { ok: true };

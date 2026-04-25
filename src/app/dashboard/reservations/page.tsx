@@ -25,7 +25,7 @@ export default async function DashboardReservationsPage() {
 
   return (
     <div className="mx-auto max-w-[1440px] px-3 sm:px-4 py-6 sm:py-8 md:py-10 lg:px-10 lg:py-12 bg-background min-h-screen">
-      <DashboardHeader />
+      <DashboardHeader userEmail={user.email} />
       <div className="mt-8 space-y-8">
         <section>
           <h2 className="text-lg font-bold text-foreground mb-4">{copy.buyerTitle}</h2>

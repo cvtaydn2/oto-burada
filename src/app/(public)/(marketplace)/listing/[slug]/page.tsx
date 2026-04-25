@@ -330,6 +330,8 @@ export default async function ListingDetailPage({ params }: ListingDetailPagePro
                       listingSlug={listing.slug}
                       sellerId={listing.sellerId}
                       seller={seller}
+                      listingTitle={listing.title}
+                      listingPrice={listing.price}
                       currentUserId={currentUser?.id}
                     />
                   </Suspense>
@@ -624,6 +626,7 @@ export default async function ListingDetailPage({ params }: ListingDetailPagePro
       <MobileStickyActions
         listingId={listing.id}
         listingSlug={listing.slug}
+        listingTitle={listing.title}
         sellerId={listing.sellerId}
         seller={seller}
         price={listing.price}

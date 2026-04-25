@@ -102,6 +102,8 @@ export async function ListingSellerSidebar({
               listingSlug={listing.slug}
               sellerId={listing.sellerId}
               seller={seller}
+              listingTitle={listing.title}
+              listingPrice={listing.price}
               currentUserId={currentUser?.id}
             />
           )}

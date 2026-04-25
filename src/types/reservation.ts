@@ -39,8 +39,8 @@ export interface ReservationWithListing extends Reservation {
     slug: string;
     title: string;
     price: number;
-    photos: string[];
-  };
+    photos: { public_url: string }[];
+  } | null;
 }
 
 export interface ReservationWithParties extends Reservation {

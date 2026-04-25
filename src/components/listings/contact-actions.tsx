@@ -13,6 +13,7 @@ import { useState } from "react";
 import { toast } from "sonner";
 
 import { revealListingPhone } from "@/app/dashboard/listings/actions";
+import { OfferPanel } from "@/components/offers/offer-panel";
 import {
   AlertDialog,
   AlertDialogCancel,
@@ -34,6 +35,8 @@ interface ContactActionsProps {
   listingSlug?: string;
   sellerId: string;
   seller?: Partial<Profile> | null;
+  listingTitle?: string;
+  listingPrice?: number;
   /** Pass the current user's ID to hide contact actions on own listing */
   currentUserId?: string | null;
 }
@@ -43,6 +46,8 @@ export function ContactActions({
   listingSlug,
   sellerId,
   seller,
+  listingTitle,
+  listingPrice,
   currentUserId,
 }: ContactActionsProps) {
   const router = useRouter();
@@ -256,6 +261,18 @@ export function ContactActions({
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Offer Panel — price negotiation */}
+      {listingTitle && listingPrice && listingSlug && (
+        <OfferPanel
+          listingId={listingId}
+          listingTitle={listingTitle}
+          listingSlug={listingSlug}
+          currentPrice={listingPrice}
+          currentUserId={currentUserId}
+          sellerId={sellerId}
+        />
+      )}
     </div>
   );
 }

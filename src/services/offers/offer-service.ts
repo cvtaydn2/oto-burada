@@ -59,10 +59,11 @@ export async function getOffersForUser(userId: string) {
 export async function getOffersReceived(userId: string) {
   const supabase = await createSupabaseServerClient();
 
+  // Use !inner join so the filter on seller_id works correctly via PostgREST
   const { data, error } = await supabase
     .from("offers")
     .select(
-      `*, listing:listings(id, title, slug, price, city, seller_id), buyer:profiles!offers_buyer_id_fkey(full_name, phone)`
+      `*, listing:listings!inner(id, title, slug, price, city, seller_id), buyer:profiles!offers_buyer_id_fkey(full_name, phone)`
     )
     .eq("listing.seller_id", userId)
     .order("created_at", { ascending: false });
@@ -145,7 +146,7 @@ export async function respondToOffer(
 
   const { data: offer, error: offerError } = await supabase
     .from("offers")
-    .select("id, listing_id, status, expires_at")
+    .select("id, listing_id, buyer_id, status, expires_at")
     .eq("id", offerId)
     .single();
 
@@ -153,7 +154,8 @@ export async function respondToOffer(
     throw new Error("Teklif bulunamadı.");
   }
 
-  if (offer.status !== "pending") {
+  // Check if offer is still actionable
+  if (!["pending", "counter_offer"].includes(offer.status)) {
     throw new Error("Bu teklif zaten yanıtlandı.");
   }
 
@@ -171,7 +173,19 @@ export async function respondToOffer(
     throw new Error("İlan bulunamadı.");
   }
 
-  if (listing.seller_id !== user.id) {
+  // Determine who can respond based on offer status
+  const isSeller = listing.seller_id === user.id;
+  const isBuyer = offer.buyer_id === user.id;
+
+  if (offer.status === "pending" && !isSeller) {
+    throw new Error("Sadece satıcı bekleyen tekliflere yanıt verebilir.");
+  }
+
+  if (offer.status === "counter_offer" && !isBuyer) {
+    throw new Error("Sadece alıcı karşı tekliflere yanıt verebilir.");
+  }
+
+  if (!isSeller && !isBuyer) {
     throw new Error("Bu teklifi yanıtlama yetkiniz yok.");
   }
 

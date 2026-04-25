@@ -24,12 +24,14 @@ import {
 } from "@/components/ui/table";
 import { reservation as copy } from "@/lib/constants/ui-strings";
 import { formatPrice } from "@/lib/utils";
-import type { Reservation } from "@/types";
+import type { Reservation, ReservationWithListing } from "@/types";
 
 import { ReservationCountdown, ReservationStatusBadge } from "./reservation-countdown";
 
+type ReservationRow = Reservation | ReservationWithListing;
+
 interface DashboardReservationsTableProps {
-  reservations: Reservation[];
+  reservations: ReservationRow[];
   view: "buyer" | "seller";
 }
 
@@ -59,7 +61,7 @@ export function DashboardReservationsTable({
         </TableHeader>
         <TableBody>
           {reservations.map((res) => (
-            <ReservationRow key={res.id} reservation={res} view={view} />
+            <ReservationTableRow key={res.id} reservation={res} view={view} />
           ))}
         </TableBody>
       </Table>
@@ -67,11 +69,18 @@ export function DashboardReservationsTable({
   );
 }
 
-function ReservationRow({
+function getListingLabel(reservation: ReservationRow): string {
+  if ("listing" in reservation && reservation.listing) {
+    return reservation.listing.title;
+  }
+  return `#${reservation.listing_id.slice(0, 8)}`;
+}
+
+function ReservationTableRow({
   reservation,
   view,
 }: {
-  reservation: Reservation;
+  reservation: ReservationRow;
   view: "buyer" | "seller";
 }) {
   const canCancel =
@@ -99,11 +108,16 @@ function ReservationRow({
     toast.success("Rezervasyon onaylandı.");
   }
 
+  const listingSlug =
+    "listing" in reservation && reservation.listing
+      ? reservation.listing.slug
+      : reservation.listing_id;
+
   return (
     <TableRow>
       <TableCell className="font-medium">
-        <Link href={`/listing/${reservation.listing_id}`} className="text-sm hover:underline">
-          #{reservation.listing_id.slice(0, 8)}
+        <Link href={`/listing/${listingSlug}`} className="text-sm hover:underline">
+          {getListingLabel(reservation)}
         </Link>
       </TableCell>
       <TableCell className="text-right font-mono text-sm">
@@ -130,7 +144,7 @@ function ReservationRow({
             </button>
           )}
           <Link
-            href={`/listing/${reservation.listing_id}`}
+            href={`/listing/${listingSlug}`}
             className="text-xs text-muted-foreground hover:text-foreground underline"
           >
             Görüntüle

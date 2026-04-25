@@ -16,6 +16,7 @@ const ContactActions = dynamic(
 interface MobileStickyActionsProps {
   listingId: string;
   listingSlug: string;
+  listingTitle?: string;
   sellerId: string;
   seller?: Partial<Profile> | null;
   price: number;
@@ -25,6 +26,7 @@ interface MobileStickyActionsProps {
 export function MobileStickyActions({
   listingId,
   listingSlug,
+  listingTitle,
   sellerId,
   seller,
   price,
@@ -39,8 +41,8 @@ export function MobileStickyActions({
   return (
     <div className="fixed bottom-0 left-0 right-0 z-30 lg:hidden pointer-events-none">
       <div className="px-4 pb-[calc(env(safe-area-inset-bottom)+1rem)] pt-4 pointer-events-auto">
-        <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 p-4 glass rounded-[24px] shadow-2xl">
-          <div className="flex flex-col">
+        <div className="mx-auto flex max-w-7xl items-center justify-between gap-3 p-3 glass rounded-[24px] shadow-2xl">
+          <div className="flex flex-col shrink-0">
             <span
               className="text-[10px] uppercase font-bold text-muted-foreground/70 tracking-wider"
               aria-hidden="true"
@@ -58,23 +60,28 @@ export function MobileStickyActions({
             </div>
           </div>
 
-          <div className="flex-1 max-w-[240px]">
-            {isAuthenticated ? (
-              <ContactActions
-                listingId={listingId}
-                listingSlug={listingSlug}
-                sellerId={sellerId}
-                seller={seller}
-                currentUserId={currentUserId}
-              />
-            ) : (
-              <a
-                href={loginUrl}
-                className="flex w-full items-center justify-center gap-2 rounded-xl bg-primary h-12 px-4 text-xs font-bold text-white shadow-lg active:scale-95 transition-all"
-              >
-                İletişim İçin Giriş Yap
-              </a>
-            )}
+          <div className="flex flex-1 items-center gap-2 min-w-0">
+            {/* Primary contact */}
+            <div className="flex-1 min-w-0">
+              {isAuthenticated ? (
+                <ContactActions
+                  listingId={listingId}
+                  listingSlug={listingSlug}
+                  sellerId={sellerId}
+                  seller={seller}
+                  listingTitle={listingTitle}
+                  listingPrice={price}
+                  currentUserId={currentUserId}
+                />
+              ) : (
+                <a
+                  href={loginUrl}
+                  className="flex w-full items-center justify-center gap-2 rounded-xl bg-primary h-12 px-4 text-xs font-bold text-white shadow-lg active:scale-95 transition-all"
+                >
+                  İletişim İçin Giriş Yap
+                </a>
+              )}
+            </div>
           </div>
         </div>
       </div>
