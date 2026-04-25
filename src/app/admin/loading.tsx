@@ -1,15 +1,12 @@
-export default function Loading() {
+import { Loader2 } from "lucide-react";
+
+export default function AdminLoading() {
   return (
-    <div className="space-y-8">
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-        {[1, 2, 3, 4].map((i) => (
-          <div key={i} className="h-32 animate-pulse rounded-2xl bg-slate-200" />
-        ))}
-      </div>
-      <div className="grid gap-6 lg:grid-cols-2">
-        <div className="h-96 animate-pulse rounded-2xl bg-slate-200" />
-        <div className="h-96 animate-pulse rounded-2xl bg-slate-200" />
-      </div>
+    <div className="flex min-h-[400px] w-full flex-col items-center justify-center gap-4 py-12">
+      <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      <p className="text-sm font-medium text-muted-foreground animate-pulse">
+        Yönetim paneli yükleniyor...
+      </p>
     </div>
   );
 }

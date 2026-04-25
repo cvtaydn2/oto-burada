@@ -166,9 +166,9 @@ export function AuthForm({
                       placeholder="Ad Soyad"
                       required
                       minLength={3}
-                      title="Ad soyad alanı en az 3 karakter olmalıdır."
-                      aria-describedby={fullNameHintId}
-                      className="h-12 w-full rounded-xl border border-input bg-muted/30 px-4 text-sm font-medium text-foreground outline-none transition-all placeholder:text-muted-foreground/50 focus:bg-background focus:border-primary focus:ring-2 focus:ring-primary/10"
+                      aria-invalid={!!state?.fieldErrors?.fullName}
+                      aria-describedby={`${fullNameHintId} ${state?.fieldErrors?.fullName ? "fullName-error" : ""}`}
+                      className="h-12 w-full rounded-xl border border-input bg-muted/30 px-4 text-sm font-medium text-foreground outline-none transition-all placeholder:text-muted-foreground/50 focus:bg-background focus:border-primary focus:ring-2 focus:ring-primary/10 aria-invalid:border-destructive aria-invalid:ring-destructive/10"
                     />
                     <p
                       id={fullNameHintId}
@@ -176,6 +176,15 @@ export function AuthForm({
                     >
                       İlan ve hesap işlemlerinde görünecek ad soyadınızı yazın.
                     </p>
+                    {state?.fieldErrors?.fullName && (
+                      <p
+                        id="fullName-error"
+                        role="alert"
+                        className="px-1 text-[11px] font-medium text-destructive"
+                      >
+                        {state.fieldErrors.fullName[0]}
+                      </p>
+                    )}
                   </>
                 )}
               </div>
@@ -192,10 +201,19 @@ export function AuthForm({
                   autoComplete="email"
                   placeholder="isim@example.com"
                   required
-                  aria-invalid={state?.error ? "true" : undefined}
-                  aria-describedby={state?.error ? "auth-error" : undefined}
-                  className="h-12 w-full rounded-xl border border-input bg-muted/30 px-4 text-sm font-medium text-foreground outline-none transition-all placeholder:text-muted-foreground/50 focus:bg-background focus:border-primary focus:ring-2 focus:ring-primary/10"
+                  aria-invalid={!!state?.fieldErrors?.email || !!state?.error}
+                  aria-describedby={`${state?.fieldErrors?.email ? "email-error" : ""} ${state?.error ? "auth-error" : ""}`}
+                  className="h-12 w-full rounded-xl border border-input bg-muted/30 px-4 text-sm font-medium text-foreground outline-none transition-all placeholder:text-muted-foreground/50 focus:bg-background focus:border-primary focus:ring-2 focus:ring-primary/10 aria-invalid:border-destructive aria-invalid:ring-destructive/10"
                 />
+                {state?.fieldErrors?.email && (
+                  <p
+                    id="email-error"
+                    role="alert"
+                    className="px-1 text-[11px] font-medium text-destructive"
+                  >
+                    {state.fieldErrors.email[0]}
+                  </p>
+                )}
               </div>
 
               <div className="space-y-2">
@@ -220,14 +238,9 @@ export function AuthForm({
                   placeholder={config.passwordPlaceholder}
                   required
                   minLength={8}
-                  title={
-                    isLogin
-                      ? "Lütfen hesabınıza ait şifreyi girin."
-                      : "Şifreniz en az 8 karakter olmalıdır."
-                  }
-                  aria-invalid={state?.error ? "true" : undefined}
-                  aria-describedby={`${passwordHintId} ${state?.error ? "auth-error" : ""}`}
-                  className="h-12 w-full rounded-xl border border-input bg-muted/30 px-4 text-sm font-medium text-foreground outline-none transition-all placeholder:text-muted-foreground/50 focus:bg-background focus:border-primary focus:ring-2 focus:ring-primary/10"
+                  aria-invalid={!!state?.fieldErrors?.password || !!state?.error}
+                  aria-describedby={`${passwordHintId} ${state?.fieldErrors?.password ? "password-error" : ""} ${state?.error ? "auth-error" : ""}`}
+                  className="h-12 w-full rounded-xl border border-input bg-muted/30 px-4 text-sm font-medium text-foreground outline-none transition-all placeholder:text-muted-foreground/50 focus:bg-background focus:border-primary focus:ring-2 focus:ring-primary/10 aria-invalid:border-destructive aria-invalid:ring-destructive/10"
                 />
                 <p
                   id={passwordHintId}
@@ -235,6 +248,15 @@ export function AuthForm({
                 >
                   {config.passwordHint}
                 </p>
+                {state?.fieldErrors?.password && (
+                  <p
+                    id="password-error"
+                    role="alert"
+                    className="px-1 text-[11px] font-medium text-destructive"
+                  >
+                    {state.fieldErrors.password[0]}
+                  </p>
+                )}
               </div>
 
               {isLogin && (

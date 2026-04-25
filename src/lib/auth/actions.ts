@@ -22,6 +22,7 @@ export interface AuthActionResponse {
     email?: string;
     fullName?: string;
   };
+  fieldErrors?: Record<string, string[] | undefined>;
   reason?: string;
 }
 
@@ -107,7 +108,8 @@ export async function loginAction(
   if (!parsed.success) {
     return {
       success: false,
-      error: parsed.error.issues[0]?.message ?? "Bir hata oluştu. Lütfen tekrar dene.",
+      error: "Lütfen formdaki hataları kontrol edin.",
+      fieldErrors: parsed.error.flatten().fieldErrors,
       fields: buildAuthFields(values.email),
       reason: "validation_error",
     };
@@ -181,7 +183,8 @@ export async function registerAction(
   if (!parsed.success) {
     return {
       success: false,
-      error: parsed.error.issues[0]?.message ?? "Bir hata oluştu. Lütfen tekrar dene.",
+      error: "Lütfen formdaki hataları kontrol edin.",
+      fieldErrors: parsed.error.flatten().fieldErrors,
       fields: buildAuthFields(values.email, values.fullName),
       reason: "validation_error",
     };
