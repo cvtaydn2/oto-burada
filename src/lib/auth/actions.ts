@@ -107,6 +107,7 @@ export async function loginAction(
 
   if (!parsed.success) {
     return {
+      ...previousState,
       success: false,
       error: "Lütfen formdaki hataları kontrol edin.",
       fieldErrors: parsed.error.flatten().fieldErrors,
@@ -117,6 +118,7 @@ export async function loginAction(
 
   if (!hasSupabaseEnv()) {
     return {
+      ...previousState,
       success: false,
       error: "Supabase ortam değişkenleri eksik. Giriş için .env.local dosyasını tamamlamalısın.",
       fields: buildAuthFields(values.email),
@@ -130,6 +132,7 @@ export async function loginAction(
 
   if (error) {
     return {
+      ...previousState,
       success: false,
       error: "Giriş yapılamadı. E-posta veya şifreyi kontrol et.",
       fields: buildAuthFields(values.email),
@@ -182,6 +185,7 @@ export async function registerAction(
 
   if (!parsed.success) {
     return {
+      ...previousState,
       success: false,
       error: "Lütfen formdaki hataları kontrol edin.",
       fieldErrors: parsed.error.flatten().fieldErrors,
@@ -192,6 +196,7 @@ export async function registerAction(
 
   if (!hasSupabaseEnv()) {
     return {
+      ...previousState,
       success: false,
       error: "Supabase ortam değişkenleri eksik. Kayıt için .env.local dosyasını tamamlamalısın.",
       fields: buildAuthFields(values.email, values.fullName),
@@ -216,6 +221,7 @@ export async function registerAction(
 
   if (error) {
     return {
+      ...previousState,
       success: false,
       error: "Kayıt oluşturulamadı. Lütfen tekrar dene.",
       fields: buildAuthFields(values.email, values.fullName),

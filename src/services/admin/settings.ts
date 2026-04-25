@@ -17,61 +17,70 @@ interface PlatformSettingRow {
   value: PlatformSettingsValue;
 }
 
-export async function getPlatformSettings(): Promise<PlatformSettings> {
-  try {
-    const supabase = createSupabaseAdminClient();
-    const { data, error } = await supabase.from("platform_settings").select("*");
+import { unstable_cache } from "next/cache";
 
-    // Table may not exist yet — return defaults gracefully
-    if (error) {
-      logger.settings.warn("platform_settings table not available, using defaults", {
-        message: error.message,
+export const getPlatformSettings = unstable_cache(
+  async (): Promise<PlatformSettings> => {
+    try {
+      const supabase = createSupabaseAdminClient();
+      const { data, error } = await supabase.from("platform_settings").select("*");
+
+      // Table may not exist yet — return defaults gracefully
+      if (error) {
+        logger.settings.warn("platform_settings table not available, using defaults", {
+          message: error.message,
+        });
+        captureServerWarning("platform_settings table not available", "settings", {
+          code: error.code,
+          message: error.message,
+        });
+        return defaultPlatformSettings;
+      }
+
+      const settings: Partial<PlatformSettings> = {};
+      (data as PlatformSettingRow[] | null)?.forEach((item) => {
+        if (item.key === "general_appearance") {
+          settings.general_appearance = item.value as PlatformSettings["general_appearance"];
+        }
+        if (item.key === "moderation_policies") {
+          settings.moderation_policies = item.value as PlatformSettings["moderation_policies"];
+        }
+        if (item.key === "notification_settings") {
+          settings.notification_settings = item.value as PlatformSettings["notification_settings"];
+        }
+        if (item.key === "performance") {
+          settings.performance = item.value as PlatformSettings["performance"];
+        }
       });
-      captureServerWarning("platform_settings table not available", "settings", {
-        code: error.code,
-        message: error.message,
-      });
+
+      return {
+        general_appearance: {
+          ...defaultPlatformSettings.general_appearance,
+          ...settings.general_appearance,
+        },
+        moderation_policies: {
+          ...defaultPlatformSettings.moderation_policies,
+          ...settings.moderation_policies,
+        },
+        notification_settings: {
+          ...defaultPlatformSettings.notification_settings,
+          ...settings.notification_settings,
+        },
+        performance: {
+          ...defaultPlatformSettings.performance,
+          ...settings.performance,
+        },
+      };
+    } catch {
       return defaultPlatformSettings;
     }
-
-    const settings: Partial<PlatformSettings> = {};
-    (data as PlatformSettingRow[] | null)?.forEach((item) => {
-      if (item.key === "general_appearance") {
-        settings.general_appearance = item.value as PlatformSettings["general_appearance"];
-      }
-      if (item.key === "moderation_policies") {
-        settings.moderation_policies = item.value as PlatformSettings["moderation_policies"];
-      }
-      if (item.key === "notification_settings") {
-        settings.notification_settings = item.value as PlatformSettings["notification_settings"];
-      }
-      if (item.key === "performance") {
-        settings.performance = item.value as PlatformSettings["performance"];
-      }
-    });
-
-    return {
-      general_appearance: {
-        ...defaultPlatformSettings.general_appearance,
-        ...settings.general_appearance,
-      },
-      moderation_policies: {
-        ...defaultPlatformSettings.moderation_policies,
-        ...settings.moderation_policies,
-      },
-      notification_settings: {
-        ...defaultPlatformSettings.notification_settings,
-        ...settings.notification_settings,
-      },
-      performance: {
-        ...defaultPlatformSettings.performance,
-        ...settings.performance,
-      },
-    };
-  } catch {
-    return defaultPlatformSettings;
+  },
+  ["platform-settings"],
+  {
+    revalidate: 60, // Cache for 60 seconds
+    tags: ["platform-settings"],
   }
-}
+);
 
 export async function updateAllPlatformSettings(
   settings: PlatformSettings

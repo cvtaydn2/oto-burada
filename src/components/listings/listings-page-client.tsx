@@ -144,6 +144,13 @@ export function ListingsPageClient({
           })}
         </div>
 
+        {filters.validationError && (
+          <div className="mt-4 rounded-xl border border-amber-100 bg-amber-50/50 p-4 text-xs text-amber-700 font-semibold flex items-center gap-3 animate-in fade-in slide-in-from-top-2 duration-300">
+            <Search size={14} className="shrink-0" />
+            {filters.validationError}
+          </div>
+        )}
+
         <ActiveFilterTags
           filters={filters}
           handleFilterChange={handleFilterChange}

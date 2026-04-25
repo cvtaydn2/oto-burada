@@ -38,6 +38,7 @@ export function parseListingFiltersFromSearchParams(
   const parsed = listingFiltersSchema.safeParse(normalizedSearchParams);
 
   if (!parsed.success) {
+    const errorMessages = parsed.error.issues.map((i) => i.message).join(", ");
     logger.listings.warn("Invalid search params, using safe defaults", {
       errors: parsed.error.issues.map((i) => ({
         path: i.path.join("."),
@@ -46,7 +47,10 @@ export function parseListingFiltersFromSearchParams(
       keys: Object.keys(normalizedSearchParams),
     });
 
-    return DEFAULT_LISTING_FILTERS;
+    return {
+      ...DEFAULT_LISTING_FILTERS,
+      validationError: `Geçersiz filtre parametreleri: ${errorMessages}`,
+    };
   }
 
   logger.perf.debug("parseListingFiltersFromSearchParams execution", {
