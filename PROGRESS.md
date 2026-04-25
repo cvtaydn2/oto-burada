@@ -1,3 +1,23 @@
+# 2026-04-26 — Runtime Issues & Critical Bug Resolution
+
+## [2026-04-26] - Critical Bug Fixes & Architecture Hardening
+- **Durum:** ✅ TAMAMLANDI
+- **Yapılanlar:**
+  - **Root Layout Verification**: `src/app/layout.tsx` dosyasının eksiksiz olduğu, `<html>` ve `<body>` taglerini barındırdığı ve Metadata/Viewport standartlarına uygun olduğu doğrulandı.
+  - **CSRF Consolidation**: `src/lib/middleware/csrf.ts` dosyası, `src/lib/security/csrf.ts` mantığını re-export edecek şekilde oluşturuldu ve `middleware.ts` bu birleşik yapıya bağlandı.
+  - **Rate Limiter Fail-Closed Fix**: `checkRateLimit` (rate-limit.ts) fonksiyonu, `failClosed` profillerde ve üretim ortamında altyapı hatası durumunda artık in-memory fallback'e düşmek yerine erkenden hata fırlatıyor.
+  - **Corporate Profile user_type Fix**: `updateCorporateProfileAction` (profile-actions.ts) içindeki `user_type` güncelleme mantığı düzeltildi; onay bekleyen veya onaylanmış professional kullanıcıların yanlışlıkla individual'a düşmesi engellendi.
+  - **Auth Profile Bootstrap Refinement**: `registerAction` (actions.ts) içindeki profil doğrulama mekanizması, önerilen exponential backoff (300ms, 600ms, 1200ms) ve admin manual insert fallback ile senkronize edildi.
+  - **ApiClient Redirect Guard Fix**: `ApiClient.request` (api-client.ts) içindeki 401 redirect döngüsü koruması, kırılgan `setTimeout` yerine `sessionStorage` tabanlı bir flag sistemine taşındı. `AuthForm` (auth-form.tsx) mount olduğunda bu flag artık temizleniyor.
+- **Doğrulama:**
+  - `npm run typecheck` ✅
+  - `npm run lint` ✅
+  - Dosya yapıları ve logic flow manuel olarak denetlendi.
+- **Kararlar:**
+  - Middleware katmanındaki CSRF exportları `src/lib/middleware/csrf.ts` üzerinden geçirilerek domain sınırı netleştirildi.
+  - `user_type` güncellemeleri, mevcut yetkileri koruyacak şekilde daha defansif hale getirildi.
+- **Sıradaki Adım:** Admin moderasyon alertleri için yüksek fraud skorlu ilanları takip eden job'un implementasyonu.
+
 # 2026-04-26 — Final Architectural & Security Resolution
 
 ## [2026-04-26] - Senior Audit Fixes & Codebase Refactoring

@@ -2,7 +2,7 @@
 
 import { BadgeCheck, CarFront, CreditCard, Lock, ShieldCheck } from "lucide-react";
 import Link from "next/link";
-import { useActionState } from "react";
+import { useActionState, useEffect } from "react";
 
 import { AuthSubmitButton } from "@/components/forms/auth-submit-button";
 import type { AuthActionState } from "@/lib/auth/actions";
@@ -50,6 +50,13 @@ export function AuthForm({
   const isLogin = mode === "login";
   const passwordHintId = `${mode}-password-hint`;
   const fullNameHintId = "register-full-name-hint";
+  const REDIRECT_FLAG_KEY = "__auth_redirect_pending";
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      sessionStorage.removeItem(REDIRECT_FLAG_KEY);
+    }
+  }, []);
 
   return (
     <div className="flex min-h-screen flex-1 overflow-hidden bg-[#F8FAFC]">

@@ -143,12 +143,13 @@ export async function updateCorporateProfileAction(
   const admin = createSupabaseAdminClient();
   const { data: existingProfile } = await admin
     .from("profiles")
-    .select("verification_status, is_banned, business_slug")
+    .select("verification_status, is_banned, business_slug, user_type")
     .eq("id", user.id)
     .maybeSingle<{
       verification_status: string | null;
       is_banned: boolean | null;
       business_slug: string | null;
+      user_type: string | null;
     }>();
 
   const oldSlug = existingProfile?.business_slug;
@@ -175,7 +176,11 @@ export async function updateCorporateProfileAction(
       tax_office: parsed.data.taxOffice,
       website_url: parsed.data.websiteUrl,
       business_logo_url: parsed.data.businessLogoUrl,
-      user_type: canActAsBusiness ? "professional" : "individual",
+      user_type: canActAsBusiness
+        ? "professional"
+        : existingProfile?.user_type === "professional"
+          ? "professional"
+          : "individual",
     })
     .eq("id", user.id);
 

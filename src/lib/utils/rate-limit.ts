@@ -104,7 +104,6 @@ export async function checkRateLimit(
 ): Promise<RateLimitResult> {
   const fullKey = `ratelimit:${key}`;
   const isProduction = process.env.NODE_ENV === "production";
-  let allTiersFailed = false;
 
   // 1. Redis Tier (Highly optimized)
   if (redis) {
@@ -148,29 +147,24 @@ export async function checkRateLimit(
   }
 
   // All distributed tiers failed or were skipped
-  allTiersFailed = true;
-
-  if (allTiersFailed) {
-    if (config.failClosed && isProduction) {
-      logger.api.error("Rate limiting infrastructure unavailable - failing closed", {
-        key,
-        limit: config.limit,
-        failClosed: true,
-      });
-      throw new Error(`Rate limiting service unavailable for key: ${fullKey}`);
-    }
-
-    // fail-open in development or for non-critical endpoints
-    if (isProduction) {
-      logger.api.warn("Rate limiting infrastructure unavailable - using in-memory fallback", {
-        key,
-        limit: config.limit,
-        failClosed: false,
-      });
-    }
+  // 3. Fallback to in-memory (Development or fail-open mode)
+  if (config.failClosed && isProduction) {
+    logger.api.error("Rate limiting infrastructure unavailable - failing closed", {
+      key,
+      limit: config.limit,
+      failClosed: true,
+    });
+    throw new Error(`[FAIL-CLOSED] Rate limiting service unavailable for key: ${fullKey}`);
   }
 
-  // 3. Fallback to in-memory (Development or fail-open mode)
+  if (isProduction) {
+    logger.api.warn("Rate limiting infrastructure unavailable - using in-memory fallback", {
+      key,
+      limit: config.limit,
+      failClosed: false,
+    });
+  }
+
   cleanupInMemory();
   const now = Date.now();
   const existing = inMemoryStore.get(key);

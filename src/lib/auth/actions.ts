@@ -233,24 +233,21 @@ export async function registerAction(
     // Fix 8: Profile Bootstrap Verification
     // Ensure the profile was created (either by trigger or manual).
     // If we're in a race condition where trigger is slow, we retry 3 times with exponential backoff.
-    let profileFound = false;
+    let profile = null;
     for (let attempt = 0; attempt < 3; attempt++) {
-      const { data: profile } = await supabase
+      const { data: found } = await supabase
         .from("profiles")
         .select("id")
         .eq("id", data.user.id)
         .single();
-
-      if (profile) {
-        profileFound = true;
+      if (found) {
+        profile = found;
         break;
       }
-
-      // Wait: 500ms, 1000ms, 1500ms
-      await new Promise((resolve) => setTimeout(resolve, 500 * (attempt + 1)));
+      await new Promise((r) => setTimeout(r, Math.pow(2, attempt) * 300));
     }
 
-    if (!profileFound) {
+    if (!profile) {
       logger.auth.warn("Profile not found after retries (trigger failure?), creating manually...", {
         userId: data.user.id,
       });

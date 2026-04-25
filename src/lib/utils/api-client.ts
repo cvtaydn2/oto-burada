@@ -16,9 +16,6 @@ import { z } from "zod";
 import { createApiResponseSchema } from "@/lib/validators/api-responses";
 import type { ApiResponse } from "@/types/errors";
 
-// Guard against multiple concurrent 401 responses causing a redirect storm.
-let _isRedirecting = false;
-
 export class ApiClient {
   static async request<T>(
     path: string,
@@ -36,17 +33,15 @@ export class ApiClient {
       const json = await res.json().catch(() => ({}));
 
       if (!res.ok) {
+        const REDIRECT_FLAG_KEY = "__auth_redirect_pending";
         if (
           res.status === 401 &&
           typeof window !== "undefined" &&
           !window.location.pathname.startsWith("/login") &&
-          !_isRedirecting
+          !sessionStorage.getItem(REDIRECT_FLAG_KEY)
         ) {
-          _isRedirecting = true;
+          sessionStorage.setItem(REDIRECT_FLAG_KEY, "1");
           window.location.href = `/login?returnTo=${encodeURIComponent(window.location.pathname)}`;
-          setTimeout(() => {
-            _isRedirecting = false;
-          }, 3000);
         }
 
         return {
