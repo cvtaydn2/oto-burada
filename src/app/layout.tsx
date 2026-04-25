@@ -27,7 +27,7 @@ const outfit = Outfit({
 });
 
 export const viewport: Viewport = {
-  themeColor: "#4f46e5",
+  themeColor: "#0f172a",
   width: "device-width",
   initialScale: 1,
   maximumScale: 5,
@@ -37,10 +37,10 @@ export const viewport: Viewport = {
 export const metadata: Metadata = {
   metadataBase: new URL(getAppUrl()),
   title: {
-    default: "Oto Burada | Sadece Arabalar",
-    template: "%s | Oto Burada",
+    default: "OtoBurada",
+    template: "%s | OtoBurada",
   },
-  description: "Türkiye'nin sadece arabalara özel, en hızlı ve güvenilir ilan platformu.",
+  description: "Arabanı kolayca sat. Doğru arabayı hızlıca bul.",
   alternates: {
     canonical: "/",
   },

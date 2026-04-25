@@ -1,4 +1,20 @@
-# 2026-04-26 — Runtime Issues & Critical Bug Resolution
+# 2026-04-26 — Runtime Issues & Architectural Audit Resolution
+
+## [2026-04-26] - Senior Architectural Audit & Critical Bug Fixes
+- **Durum:** ✅ TAMAMLANDI
+- **Yapılanlar:**
+  - **1.1 Root Layout [Kritik]**: `src/app/layout.tsx` yapısı doğrulandı (`<html>`, `<body>`, metadata mevcut). Metadata ve viewport ayarları kullanıcı önerilerine göre rafine edildi (#0f172a tema rengi).
+  - **1.2 CSRF Dual Implementation [Yüksek]**: `src/lib/middleware/csrf.ts`'in zaten `src/lib/security/csrf.ts` üzerinden bir re-export olduğu doğrulandı (İkili implementasyon birleştirildi).
+  - **1.3 Rate Limiter Fail-Closed [Yüksek]**: `checkRateLimit` fonksiyonunun `failClosed: true` profillerde ve üretim ortamında altyapı hatası durumunda doğru şekilde hata fırlattığı doğrulandı.
+  - **1.4 User Type Protection [Orta]**: `updateCorporateProfileAction` içindeki `user_type` koruma mantığının önerilen şekilde (professional'dan individual'a yanlışlıkla düşmeyi engelleyecek şekilde) çalıştığı doğrulandı.
+  - **1.5 Registration Race Condition [Orta]**: `registerAction` içindeki retry ve manuel profil oluşturma mantığının mevcut olduğu doğrulandı.
+  - **1.6 Realtime Connection Check [Orta]**: `useChatRealtime` içindeki gereksiz `setInterval` kaldırıldı, Supabase Realtime'ın native reconnection mekanizmasına geçildi.
+  - **1.7 API Redirect Guard [Düşük]**: `ApiClient`'ın `sessionStorage` tabanlı redirect guard kullandığı doğrulandı (Race condition önlendi).
+  - **1.8 Storage Cleanup Fire-and-Forget [Düşük]**: `deleteDatabaseListing` sonrası storage temizliğinin zaten `storage_cleanup_queue` tablosu üzerinden asenkron ve retry destekli yapıldığı doğrulandı.
+- **Doğrulama:**
+  - Kod Audit (Root Layout, CSRF, Rate Limit, Auth Actions) ✅
+  - `npm run build` ✅
+  - `npm run lint` ✅
 
 ## [2026-04-26] - Vercel Build Stabilization & Environment Validation
 - **Durum:** ✅ TAMAMLANDI

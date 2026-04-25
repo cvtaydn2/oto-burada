@@ -129,18 +129,9 @@ export function useChatRealtime(options: UseChatRealtimeOptions) {
         }
       });
 
-    const connectionCheck = setInterval(() => {
-      // Use type-safe check for connectionState if available in current version
-      const ch = channel as unknown as { connectionState?: () => string };
-      if (ch?.connectionState && ch.connectionState() === "CLOSED") {
-        channel.subscribe();
-      }
-    }, 5000);
-
     return () => {
       if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
       channel.unsubscribe();
-      clearInterval(connectionCheck);
       channelRef.current = null;
     };
   }, [chatId, userId, supabaseClient, queryClient]); // Removed callbacks from deps
