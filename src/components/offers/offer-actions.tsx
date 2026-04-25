@@ -118,18 +118,18 @@ export function OfferActions({ offerId, view, offeredPrice }: OfferActionsProps)
           </Button>
         </AlertDialogTrigger>
         <AlertDialogContent className="max-w-sm">
-          <form onSubmit={handleCounter}>
-            <AlertDialogHeader>
-              <AlertDialogTitle>Karşı Teklif Yap</AlertDialogTitle>
-              <AlertDialogDescription>
-                {offeredPrice && (
-                  <span>
-                    Alıcının teklifi: <strong>{formatPrice(offeredPrice)} TL</strong>
-                  </span>
-                )}
-              </AlertDialogDescription>
-            </AlertDialogHeader>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Karşı Teklif Yap</AlertDialogTitle>
+            <AlertDialogDescription>
+              {offeredPrice && (
+                <span>
+                  Alıcının teklifi: <strong>{formatPrice(offeredPrice)} TL</strong>
+                </span>
+              )}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
 
+          <form onSubmit={handleCounter}>
             <div className="space-y-4 py-4">
               <div>
                 <label className="mb-1.5 block text-sm font-medium">

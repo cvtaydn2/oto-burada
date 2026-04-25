@@ -30,6 +30,11 @@ self.addEventListener("fetch", (event) => {
   const { request } = event;
   const url = new URL(request.url);
 
+  // Skip non-GET requests (HEAD, POST, etc.) for caching
+  if (request.method !== "GET") {
+    return;
+  }
+
   if (url.pathname.startsWith("/listing/")) {
     event.respondWith(
       caches.match(request).then((cached) => {
@@ -47,9 +52,8 @@ self.addEventListener("fetch", (event) => {
   }
 
   if (
-    request.method === "GET" &&
-    (url.pathname.match(/\.(js|css|png|jpg|jpeg|webp|svg|woff2?)$/) ||
-      url.pathname.startsWith("/_next/static/"))
+    url.pathname.match(/\.(js|css|png|jpg|jpeg|webp|svg|woff2?)$/) ||
+    url.pathname.startsWith("/_next/static/")
   ) {
     event.respondWith(
       caches.match(request).then((cached) => {

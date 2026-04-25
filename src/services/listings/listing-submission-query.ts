@@ -704,10 +704,10 @@ export async function getSimilarDatabaseListings(options: {
         b.similarityScore - a.similarityScore
     )
     .map(
-      ({
-        similarityScore: _similarityScore,
-        ...listing
-      }: { similarityScore: number } & Record<string, unknown>) => listing as unknown as Listing
+      ({ similarityScore, ...listing }: { similarityScore: number } & Record<string, unknown>) => {
+        void similarityScore; // Explicitly mark as used to satisfy linter
+        return listing as unknown as Listing;
+      }
     )
     .slice(0, limit);
 }
