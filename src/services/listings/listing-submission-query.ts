@@ -707,7 +707,7 @@ export async function getSimilarDatabaseListings(options: {
       ({
         similarityScore: _similarityScore,
         ...listing
-      }: { similarityScore: number } & Record<string, unknown>) => listing as Listing
+      }: { similarityScore: number } & Record<string, unknown>) => listing as unknown as Listing
     )
     .slice(0, limit);
 }
