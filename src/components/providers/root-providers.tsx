@@ -34,8 +34,8 @@ export function RootProviders({ children, user, nonce }: RootProvidersProps) {
   return (
     <ThemeProvider
       attribute="class"
-      defaultTheme="light"
-      enableSystem={false}
+      defaultTheme="system"
+      enableSystem={true}
       disableTransitionOnChange
       nonce={nonce}
     >
@@ -43,8 +43,8 @@ export function RootProviders({ children, user, nonce }: RootProvidersProps) {
         <SupabaseProvider>
           <AuthProvider initialUser={user}>
             <PWAProvider>
-            <PostHogProvider>{children}</PostHogProvider>
-          </PWAProvider>
+              <PostHogProvider>{children}</PostHogProvider>
+            </PWAProvider>
           </AuthProvider>
         </SupabaseProvider>
       </QueryClientProvider>

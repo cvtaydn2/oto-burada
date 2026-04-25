@@ -132,7 +132,7 @@ export function ListingCard({
           <div className="absolute top-4 right-4 z-20">
             <FavoriteButton
               listingId={listing.id}
-              className="size-10 rounded-2xl bg-white/10 backdrop-blur-xl border border-white/20 text-white hover:bg-white hover:text-rose-500 transition-[background-color,color,transform] duration-normal ease-expressive shadow-xl active:scale-90 focus-ring"
+              className="size-11 rounded-2xl bg-white/10 backdrop-blur-xl border border-white/20 text-white hover:bg-white hover:text-rose-500 transition-[background-color,color,transform] duration-normal ease-expressive shadow-xl active:scale-90 focus-ring"
             />
           </div>
         )}

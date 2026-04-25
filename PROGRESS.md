@@ -24,6 +24,11 @@
     - `headers.ts`: CSP `style-src` için production ortamında `'unsafe-inline'` kaldırıldı, nonce-bazlı yapıya geçildi.
     - `csrf.ts`: Geliştirme ortamında (`localhost`) CSRF origin kontrolü sadece belirli portlara (`3000`) kısıtlanarak sıkılaştırıldı.
     - `schema.base.sql`: Temel şemaya RLS (Row Level Security) etkinleştirme komutları ve başlangıç politikaları (profiles, listings, images, favorites) eklendi.
+  - **UI/UX & Accessibility (Senior Review)**:
+    - **A11y**: `auth-form.tsx` ve `corporate-profile-form.tsx` formlarında `aria-invalid` ve `aria-describedby` (hata mesajı bağlantısı) özellikleri eklendi.
+    - **Touch Targets**: `Button` bileşeni (h-11) ve `FavoriteButton` (size-11) boyutları WCAG 44x44px standartlarına çıkarıldı.
+    - **Theme Support**: `layout.tsx` üzerindeki hardcoded `light` sınıfı kaldırıldı, `root-providers.tsx` üzerinden sistem teması desteği etkinleştirildi (FOUC ve hydration sorunları önlendi).
+    - **Loading States**: Marketplace için mevcut skeleton ve loading yapıları (`loading.tsx`) doğrulandı.
 - **Doğrulama:**
   - `npm run lint` ✅ (0 errors, 2 warnings)
   - `npm run typecheck` ✅

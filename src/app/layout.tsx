@@ -78,12 +78,7 @@ export default async function RootLayout({
   const nonce = (await headers()).get("x-nonce") ?? undefined;
 
   return (
-    <html
-      lang="tr"
-      className={`${inter.variable} ${outfit.variable} light`}
-      style={{ colorScheme: "light" }}
-      suppressHydrationWarning
-    >
+    <html lang="tr" className={`${inter.variable} ${outfit.variable}`} suppressHydrationWarning>
       <head>
         <link rel="preconnect" href="https://images.unsplash.com" />
       </head>

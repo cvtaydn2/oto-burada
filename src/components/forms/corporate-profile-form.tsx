@@ -79,6 +79,8 @@ export function CorporateProfileForm({
               defaultValue={values.businessName}
               required
               disabled={isReadOnly}
+              aria-invalid={state.error ? "true" : undefined}
+              aria-describedby={state.error ? "profile-error" : undefined}
               className="h-12 w-full rounded-xl border border-input bg-background px-4 text-sm outline-none transition-colors focus:border-indigo-500 disabled:bg-muted/50"
             />
           </label>
@@ -96,6 +98,8 @@ export function CorporateProfileForm({
                 defaultValue={values.businessSlug}
                 required
                 disabled={isReadOnly}
+                aria-invalid={state.error ? "true" : undefined}
+                aria-describedby={state.error ? "profile-error" : undefined}
                 className="h-12 w-full rounded-xl border border-input bg-background pl-[80px] pr-4 text-sm outline-none transition-colors focus:border-indigo-500 font-medium disabled:bg-muted/50"
               />
             </div>
@@ -109,6 +113,8 @@ export function CorporateProfileForm({
               defaultValue={values.businessDescription}
               rows={3}
               disabled={isReadOnly}
+              aria-invalid={state.error ? "true" : undefined}
+              aria-describedby={state.error ? "profile-error" : undefined}
               className="w-full rounded-xl border border-input bg-background p-4 text-sm outline-none transition-colors focus:border-indigo-500 resize-none disabled:bg-muted/50"
             />
           </label>
@@ -122,6 +128,8 @@ export function CorporateProfileForm({
                 placeholder="https://..."
                 defaultValue={values.businessLogoUrl}
                 disabled={isReadOnly}
+                aria-invalid={state.error ? "true" : undefined}
+                aria-describedby={state.error ? "profile-error" : undefined}
                 className="h-12 flex-1 rounded-xl border border-input bg-background px-4 text-sm outline-none transition-colors focus:border-indigo-500 disabled:bg-muted/50"
               />
               <div className="size-12 rounded-xl border border-border bg-muted/30 flex items-center justify-center shrink-0 overflow-hidden">
@@ -206,7 +214,11 @@ export function CorporateProfileForm({
       </section>
 
       {state.error && (
-        <p className="rounded-xl border border-destructive/30 bg-destructive/5 px-4 py-3 text-sm text-destructive font-bold">
+        <p
+          id="profile-error"
+          role="alert"
+          className="rounded-xl border border-destructive/30 bg-destructive/5 px-4 py-3 text-sm text-destructive font-bold"
+        >
           {state.error}
         </p>
       )}

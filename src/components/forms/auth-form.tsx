@@ -185,6 +185,8 @@ export function AuthForm({
                   autoComplete="email"
                   placeholder="isim@example.com"
                   required
+                  aria-invalid={state?.error ? "true" : undefined}
+                  aria-describedby={state?.error ? "auth-error" : undefined}
                   className="h-12 w-full rounded-xl border border-input bg-muted/30 px-4 text-sm font-medium text-foreground outline-none transition-all placeholder:text-muted-foreground/50 focus:bg-background focus:border-primary focus:ring-2 focus:ring-primary/10"
                 />
               </div>
@@ -216,7 +218,8 @@ export function AuthForm({
                       ? "Lütfen hesabınıza ait şifreyi girin."
                       : "Şifreniz en az 8 karakter olmalıdır."
                   }
-                  aria-describedby={passwordHintId}
+                  aria-invalid={state?.error ? "true" : undefined}
+                  aria-describedby={`${passwordHintId} ${state?.error ? "auth-error" : ""}`}
                   className="h-12 w-full rounded-xl border border-input bg-muted/30 px-4 text-sm font-medium text-foreground outline-none transition-all placeholder:text-muted-foreground/50 focus:bg-background focus:border-primary focus:ring-2 focus:ring-primary/10"
                 />
                 <p
@@ -245,6 +248,7 @@ export function AuthForm({
 
               {state?.error && (
                 <div
+                  id="auth-error"
                   role="alert"
                   className="rounded-xl border border-destructive/20 bg-destructive/5 px-4 py-3 text-sm font-medium text-destructive"
                 >
