@@ -1,5 +1,19 @@
 # 2026-04-26 — Runtime Issues & Critical Bug Resolution
 
+## [2026-04-26] - Vercel Build Stabilization & Environment Validation
+- **Durum:** ✅ TAMAMLANDI
+- **Yapılanlar:**
+  - **Redis Client Build-Time Lenience**: `src/lib/redis/client.ts` içinde production ortamında Redis yapılandırması eksikse fırlatılan kritik hata, `CI=true` (Vercel Build) durumunda artık sadece warning loglayıp build'in devam etmesine izin veriyor.
+  - **Env Validation Build-Time Lenience**: `src/lib/env-validation.ts` içindeki zorunlu değişken kontrolü, CI/Build ortamında artık fırlatmak yerine "SHUTTING DOWN" mesajı yerine "CONTINUING BUILD" mesajı vererek build'in tamamlanmasını sağlıyor.
+  - **Static Page Collection Fix**: Build sırasında `/api/admin/cache/clear` gibi route'ların data collection aşamasında patlaması önlendi.
+- **Doğrulama:**
+  - `npm run build` (lokal simülasyon) ✅
+  - Kod değişikliği Vercel build environment değişkenleri (`CI=true`) ile uyumlu hale getirildi.
+- **Kararlar:**
+  - Next.js build sırasında secrets (özellikle server-only olanlar) her zaman mevcut olmayabilir. Bu nedenle build aşamasında "fail-closed" yerine "log-and-proceed" stratejisi uygulandı. Runtime'da ise güvenlik için "fail-closed" yapısı korunmaya devam ediyor.
+- **Sıradaki Adım:** Vercel üzerinde başarılı build sonrası production testleri.
+
+
 ## [2026-04-26] - Critical Bug Fixes & Architecture Hardening
 - **Durum:** ✅ TAMAMLANDI
 - **Yapılanlar:**
