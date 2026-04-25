@@ -2,7 +2,7 @@ import "./globals.css";
 
 import { Analytics } from "@vercel/analytics/next";
 import { SpeedInsights } from "@vercel/speed-insights/next";
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Inter, Outfit } from "next/font/google";
 import { headers } from "next/headers";
 
@@ -26,17 +26,26 @@ const outfit = Outfit({
   preload: true,
 });
 
+export const viewport: Viewport = {
+  themeColor: "#4f46e5",
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 5,
+  userScalable: true,
+};
+
 export const metadata: Metadata = {
   metadataBase: new URL(getAppUrl()),
   title: {
-    default: "Oto Burada",
+    default: "Oto Burada | Sadece Arabalar",
     template: "%s | Oto Burada",
   },
-  description: "Sade, güvenilir ve mobil odaklı bir araba ilan pazaryeri deneyimi.",
+  description: "Türkiye'nin sadece arabalara özel, en hızlı ve güvenilir ilan platformu.",
   alternates: {
     canonical: "/",
   },
   openGraph: {
+    title: "Oto Burada",
     description: "Sade, güvenilir ve mobil odaklı bir araba ilan pazaryeri deneyimi.",
     locale: "tr_TR",
     siteName: "Oto Burada",
@@ -50,10 +59,13 @@ export const metadata: Metadata = {
     apple: [{ url: "/icons/icon-192x192.png", sizes: "192x192", type: "image/png" }],
   },
   manifest: "/manifest.webmanifest",
-  other: {
-    "theme-color": "#4f46e5",
-    "mobile-web-app-capable": "yes",
-    "apple-mobile-web-app-status-bar-style": "default",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "default",
+    title: "Oto Burada",
+  },
+  formatDetection: {
+    telephone: false,
   },
 };
 
@@ -75,7 +87,7 @@ export default async function RootLayout({
       <head>
         <link rel="preconnect" href="https://images.unsplash.com" />
       </head>
-      <body className="min-h-full bg-background text-foreground selection:bg-primary/10 selection:text-primary">
+      <body className="min-h-screen bg-background font-sans antialiased selection:bg-primary/10 selection:text-primary">
         <RootProviders user={user} nonce={nonce}>
           {children}
           <Analytics />

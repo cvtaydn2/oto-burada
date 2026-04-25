@@ -1,16 +1,6 @@
 import { logger } from "@/lib/utils/logger";
 import { listingFiltersSchema } from "@/lib/validators";
-import type {
-  BrandCatalogItem,
-  CityOption,
-  Listing,
-  ListingFilters,
-  ListingSortOption,
-} from "@/types";
-
-function normalizeText(value: string) {
-  return value.toLocaleLowerCase("tr-TR");
-}
+import type { BrandCatalogItem, CityOption, ListingFilters } from "@/types";
 
 export function getModelsForBrand(catalog: BrandCatalogItem[], brand?: string) {
   if (!brand) {
@@ -26,110 +16,6 @@ export function getDistrictsForCity(cities: CityOption[], city?: string) {
   }
 
   return cities.find((item) => item.city === city)?.districts ?? [];
-}
-
-/**
- * @deprecated Client-side filtering is no longer used.
- * All filtering is performed at the database level via `getFilteredDatabaseListings`.
- * This function remains for reference and potential unit testing only.
- */
-export function filterListings(listings: Listing[], filters: ListingFilters) {
-  const query = filters.query ? normalizeText(filters.query) : undefined;
-
-  const filtered = listings.filter((listing) => {
-    if (query) {
-      const searchTarget = normalizeText(
-        [listing.title, listing.brand, listing.model, listing.city, listing.district].join(" ")
-      );
-
-      if (!searchTarget.includes(query)) {
-        return false;
-      }
-    }
-
-    if (filters.brand && normalizeText(listing.brand) !== normalizeText(filters.brand)) {
-      return false;
-    }
-
-    if (filters.model && normalizeText(listing.model) !== normalizeText(filters.model)) {
-      return false;
-    }
-
-    if (filters.city && normalizeText(listing.city) !== normalizeText(filters.city)) {
-      return false;
-    }
-
-    if (filters.district && normalizeText(listing.district) !== normalizeText(filters.district)) {
-      return false;
-    }
-
-    if (filters.fuelType && normalizeText(listing.fuelType) !== normalizeText(filters.fuelType)) {
-      return false;
-    }
-
-    if (
-      filters.transmission &&
-      normalizeText(listing.transmission) !== normalizeText(filters.transmission)
-    ) {
-      return false;
-    }
-
-    if (filters.minPrice !== undefined && listing.price < filters.minPrice) {
-      return false;
-    }
-
-    if (filters.maxPrice !== undefined && listing.price > filters.maxPrice) {
-      return false;
-    }
-
-    if (filters.minYear !== undefined && listing.year < filters.minYear) {
-      return false;
-    }
-
-    if (filters.maxYear !== undefined && listing.year > filters.maxYear) {
-      return false;
-    }
-
-    if (filters.maxMileage !== undefined && listing.mileage > filters.maxMileage) {
-      return false;
-    }
-
-    return true;
-  });
-
-  return sortListings(filtered, filters.sort);
-}
-
-/**
- * @deprecated Used only by `filterListings` which is itself deprecated.
- * Sorting is handled at the database level.
- */
-export function sortListings(listings: Listing[], sort: ListingSortOption = "newest") {
-  const sorted = [...listings];
-
-  sorted.sort((left, right) => {
-    switch (sort) {
-      case "price_asc":
-        return left.price - right.price;
-      case "price_desc":
-        return right.price - left.price;
-      case "mileage_asc":
-        return left.mileage - right.mileage;
-      case "year_desc":
-        return right.year - left.year;
-      case "oldest":
-        return Date.parse(left.createdAt) - Date.parse(right.createdAt);
-      case "mileage_desc":
-        return right.mileage - left.mileage;
-      case "year_asc":
-        return left.year - right.year;
-      case "newest":
-      default:
-        return Date.parse(right.createdAt) - Date.parse(left.createdAt);
-    }
-  });
-
-  return sorted;
 }
 
 export function parseListingFiltersFromSearchParams(

@@ -1,8 +1,8 @@
 import { type NextRequest } from "next/server";
 
-import { csrfMiddleware } from "@/lib/middleware/csrf";
 import { runMiddlewarePipeline } from "@/lib/middleware/pipeline";
 import { rateLimitMiddleware } from "@/lib/middleware/rate-limit";
+import { csrfMiddleware } from "@/lib/security/csrf";
 import { updateSession } from "@/lib/supabase/middleware";
 
 /**

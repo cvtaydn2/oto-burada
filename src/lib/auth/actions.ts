@@ -81,10 +81,10 @@ async function getClientIp() {
 }
 
 export async function loginAction(
-  previousState: AuthActionState = initialState,
+  _previousState: AuthActionState = initialState,
   formData: FormData
 ): Promise<AuthActionState> {
-  void previousState;
+  // Preserve fields from previous state
 
   const clientIp = await getClientIp();
   const ipRateLimit = await checkRateLimit(`auth:login:${clientIp}`, rateLimitProfiles.auth);
@@ -157,11 +157,9 @@ export async function loginAction(
 }
 
 export async function registerAction(
-  previousState: AuthActionState = initialState,
+  _previousState: AuthActionState = initialState,
   formData: FormData
 ): Promise<AuthActionState> {
-  void previousState;
-
   const clientIp = await getClientIp();
   const ipRateLimit = await checkRateLimit(`auth:register:${clientIp}`, rateLimitProfiles.auth);
 

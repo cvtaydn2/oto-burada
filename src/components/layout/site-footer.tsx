@@ -2,7 +2,7 @@ import { CarFront, CheckCircle2, MessageCircle, Shield, Users } from "lucide-rea
 import Link from "next/link";
 
 import { FooterNavLink } from "@/components/layout/footer-nav-link";
-import { CURRENT_YEAR } from "@/lib/utils/date-utils";
+import { CURRENT_YEAR } from "@/lib/datetime/date-utils";
 import { getLiveMarketplaceReferenceData } from "@/services/reference/live-reference-data";
 
 const quickLinks = [

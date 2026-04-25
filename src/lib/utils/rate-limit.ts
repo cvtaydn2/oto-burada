@@ -43,9 +43,10 @@ import { logger } from "@/lib/utils/logger";
 const inMemoryStore = new Map<string, RateLimitEntry>();
 
 let lastCleanup = Date.now();
-const CLEANUP_INTERVAL_MS = 60 * 1000; // 1 dakika
-const MAX_DELETIONS_PER_CLEANUP = 1000; // Event-loop bloklanmasını önlemek için limit
-const MAX_SCAN_PER_CLEANUP = 500; // Her temizlikte maksimum taranacak kayıt sayısı
+const CLEANUP_INTERVAL_MS = 60 * 1000; // 1 minute
+const MAX_DELETIONS_PER_CLEANUP = 1000; // Protect event loop
+const MAX_SCAN_PER_CLEANUP = 500; // Max scan per tick
+const MAX_IN_MEMORY_ENTRIES = 10_000; // Prevent unbounded memory growth
 
 function cleanupInMemory() {
   const now = Date.now();
@@ -56,7 +57,6 @@ function cleanupInMemory() {
   let deletedCount = 0;
 
   // Map iteration order is insertion order.
-  // For constant windows, this is mostly expiration order.
   for (const [key, entry] of inMemoryStore) {
     scannedCount++;
     if (entry.resetAt <= now) {
@@ -64,10 +64,23 @@ function cleanupInMemory() {
       deletedCount++;
     }
 
-    // Stop if we've scanned enough or deleted enough to protect the event loop
     if (scannedCount >= MAX_SCAN_PER_CLEANUP || deletedCount >= MAX_DELETIONS_PER_CLEANUP) {
       break;
     }
+  }
+
+  // Hard cap enforcement: if still over capacity after cleanup, evict oldest entries
+  if (inMemoryStore.size > MAX_IN_MEMORY_ENTRIES) {
+    const toEvict = inMemoryStore.size - MAX_IN_MEMORY_ENTRIES;
+    const keys = inMemoryStore.keys();
+    for (let i = 0; i < toEvict; i++) {
+      const next = keys.next();
+      if (next.done) break;
+      inMemoryStore.delete(next.value);
+    }
+    logger.api.warn(
+      `In-memory rate limit store exceeded capacity. Evicted ${toEvict} oldest entries.`
+    );
   }
 
   if (deletedCount > 0) {

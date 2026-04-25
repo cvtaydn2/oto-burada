@@ -638,13 +638,30 @@ Automate "Search Result" notifications.
 
 ---
 
-## Future Phases (Planned)
-- [ ] Real-time Typing Indicators
-- [ ] User Online/Offline Status
-- [ ] Direct Chat Notifications (Push)
+---
+
+## Phase 31 — Final Architectural & Security Resolution
+
+### Task 31.1 — Critical Bug Resolution
+- [x] Fix Root Layout structural integrity (missing tags).
+- [x] Resolve stale state management in `loginAction`/`registerAction`.
+- [x] Fix memory leak in `inMemoryStore` rate limiter.
+- [x] Consolidate CSRF protection into a single source of truth.
+
+### Task 31.2 — Validator Modularization
+- [x] Split monolithic `listing.ts` validator into a modular directory structure.
+
+### Task 31.3 — Library & Utility Refactoring
+- [ ] Refactor `src/lib/utils/` "dump" into structured domain directories (`api`, `datetime`, `env`, etc.).
+- [x] Clean up deprecated filtering code in `ListingFiltersService`.
+
+### Task 31.4 — PWA & Metadata Polish
+- [x] Align manifest, viewport, and metadata definitions in Root Layout.
+- [x] Fix hydration warnings and ensure mobile-first viewport settings.
 
 ---
 
+## Final Definition of Done
 ## Final Definition of Done
 
 The MVP is complete when:

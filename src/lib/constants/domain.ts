@@ -1,4 +1,4 @@
-import { CURRENT_YEAR } from "../utils/date-utils";
+import { CURRENT_YEAR } from "../datetime/date-utils";
 
 export const userRoles = ["user", "admin"] as const;
 

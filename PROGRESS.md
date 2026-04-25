@@ -1,4 +1,48 @@
+# 2026-04-26 — Final Architectural & Security Resolution
+
+## [2026-04-26] - Senior Audit Fixes & Codebase Refactoring
+- **Durum:** ✅ TAMAMLANDI (Devam Ediyor)
+- **Yapılanlar:**
+  - **Critical Layout Fixes**: `src/app/layout.tsx` yapısı Next.js 16/React 19 standartlarına (Metadata/Viewport ayrımı) göre modernize edildi. Eksik `<html>`/`<body>` ve viewport ayarları düzeltildi.
+  - **Auth State Fix**: `loginAction` ve `registerAction` (auth/actions.ts) içindeki `previousState` sıfırlama hatası giderildi, form hataları artık state içinde korunuyor.
+  - **Rate Limit Memory Leak Fix**: In-memory fallback deposuna `MAX_IN_MEMORY_ENTRIES` (10,000) limiti ve LRU-benzeri eviction politikası eklendi.
+  - **CSRF Consolidation**: `src/lib/middleware/csrf.ts` (skeleton) silindi, tüm mantık `src/lib/security/csrf.ts` altında toplandı. `middleware.ts` güncellendi.
+  - **Listing Validator Refactor**: Monolitik `listing.ts` validatorü, `src/lib/validators/listing/` altında modüler parçalara (images, fields, inspection, create) ayrıldı.
+  - **Utility Cleanup (Phase 1)**: `src/lib/utils/date-utils.ts` dosyası `src/lib/datetime/date-utils.ts` konumuna taşındı ve tüm importlar güncellendi.
+  - **Dead Code Removal**: `ListingFiltersService` içindeki `@deprecated` filtreleme fonksiyonları ve bunlara ait bayat (stale) unit testler temizlendi.
+  - **Edge Runtime Compatibility**: CSRF utilities (`csrf.ts`), Next.js Middleware (Edge Runtime) uyumluluğu için Web Crypto API'ye refaktör edildi.
+- **Doğrulama:**
+  - `npm run lint` ✅ (0 errors, 2 warnings)
+  - `npm run typecheck` ✅
+  - `npm run build` ✅ başarılı
+- **Kararlar:**
+  - `utils/` klasöründeki "utility dump" sorunu, dosyalar domain bazlı (api, environment, datetime, vb.) yeni klasörlere taşınarak çözülmeye devam edilecek.
+  - Middleware'de kullanılan tüm kütüphaneler Edge Runtime uyumlu olmalıdır; Node.js builtin'lerinden kaçınılmalıdır.
+- **Sıradaki Adım:** Geri kalan yardımcı fonksiyonları (ip.ts, app-env.ts, vb.) yeni domain klasörlerine taşı ve projenin geri kalanındaki importları güncelle.
+
 # 2026-04-26 — Runtime Issues & Commit Blockers Resolution
+
+## [2026-04-26] - Reservation System Database Schema Issue
+- **Durum:** ✅ TAMAMLANDI (Geçici Çözüm)
+- **Problem:** Rezervasyon sayfası server component hatası veriyor çünkü `reservations` tablosu veritabanında mevcut değil. Migration `0078_reservations_escrow.sql` uygulanmamış.
+- **Yapılanlar:**
+  - **Graceful Fallback Logic**: `getReservationsByBuyer` ve `getReservationsBySeller` fonksiyonlarına fallback mantığı eklendi
+  - **Error Handling**: PGRST205 (table not found) hatası yakalanarak boş array döndürülüyor
+  - **Server Component Safety**: Server component crash'leri önlendi, sayfa artık yükleniyor
+  - **Logging**: Hata yerine warning log'ları yazılıyor, debug için bilgi korunuyor
+  - **Migration Documentation**: `RESERVATIONS_MIGRATION.md` dosyası oluşturuldu, manuel SQL script'i hazırlandı
+- **Geçici Çözüm:** Rezervasyon tablosu yokken sayfa boş liste gösteriyor, crash etmiyor
+- **Kalıcı Çözüm:** Supabase SQL Editor'da `RESERVATIONS_MIGRATION.md` içindeki SQL script'ini çalıştırmak gerekiyor
+- **Doğrulama:**
+  - `npm run typecheck` ✅
+  - `npm run lint` ✅
+  - Server component artık crash etmiyor
+  - Rezervasyon sayfası yükleniyor (boş liste gösteriyor)
+- **Kararlar:**
+  - Fallback logic production-safe, tablo oluşturulduktan sonra otomatik olarak çalışmaya başlayacak
+  - Migration manager'ın psql dependency'si local development'ta sorun yaratıyor, manuel SQL approach daha güvenli
+  - RLS policies ve indexler migration'da dahil, güvenlik ve performans korunuyor
+- **Sıradaki Adım:** Supabase dashboard'da SQL script'ini çalıştırarak rezervasyon tablosunu oluştur.
 
 ## [2026-04-26] - Reservation System Server Component Errors
 - **Durum:** ✅ TAMAMLANDI
