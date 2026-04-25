@@ -6,6 +6,7 @@ import { redirect } from "next/navigation";
 import { AnalyticsEvent } from "@/lib/analytics/events";
 import { identifyServerUser, trackServerEvent } from "@/lib/monitoring/posthog-server";
 import { getAppUrl } from "@/lib/seo";
+import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { hasSupabaseEnv } from "@/lib/supabase/env";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { logger } from "@/lib/utils/logger";
@@ -231,17 +232,41 @@ export async function registerAction(
 
     // Fix 8: Profile Bootstrap Verification
     // Ensure the profile was created (either by trigger or manual).
-    // If we're in a race condition where trigger is slow, we log it for deterministic handling.
-    const { data: profile } = await supabase
-      .from("profiles")
-      .select("id")
-      .eq("id", data.user.id)
-      .single();
+    // If we're in a race condition where trigger is slow, we retry 3 times with exponential backoff.
+    let profileFound = false;
+    for (let attempt = 0; attempt < 3; attempt++) {
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("id")
+        .eq("id", data.user.id)
+        .single();
 
-    if (!profile) {
-      logger.auth.warn("Profile not found immediately after registration (bootstrap lag)", {
+      if (profile) {
+        profileFound = true;
+        break;
+      }
+
+      // Wait: 500ms, 1000ms, 1500ms
+      await new Promise((resolve) => setTimeout(resolve, 500 * (attempt + 1)));
+    }
+
+    if (!profileFound) {
+      logger.auth.warn("Profile not found after retries (trigger failure?), creating manually...", {
         userId: data.user.id,
       });
+
+      const supabaseAdmin = createSupabaseAdminClient();
+      const { error: insertError } = await supabaseAdmin.from("profiles").insert({
+        id: data.user.id,
+        full_name: parsed.data.fullName,
+      });
+
+      if (insertError) {
+        logger.auth.error("Manual profile creation failed", {
+          userId: data.user.id,
+          error: insertError,
+        });
+      }
     }
 
     // Fix 4: Mask email domain only — never send full email to analytics

@@ -147,28 +147,30 @@ export async function checkRateLimit(
     }
   }
 
-  // All distributed tiers failed
+  // All distributed tiers failed or were skipped
   allTiersFailed = true;
 
-  // SECURITY: Fail-closed in production for critical endpoints
-  if (isProduction && config.failClosed) {
-    logger.api.error("Rate limiting infrastructure unavailable - failing closed", {
-      key,
-      limit: config.limit,
-      failClosed: true,
-    });
-    throw new Error("Rate limiting service unavailable");
+  if (allTiersFailed) {
+    if (config.failClosed && isProduction) {
+      logger.api.error("Rate limiting infrastructure unavailable - failing closed", {
+        key,
+        limit: config.limit,
+        failClosed: true,
+      });
+      throw new Error(`Rate limiting service unavailable for key: ${fullKey}`);
+    }
+
+    // fail-open in development or for non-critical endpoints
+    if (isProduction) {
+      logger.api.warn("Rate limiting infrastructure unavailable - using in-memory fallback", {
+        key,
+        limit: config.limit,
+        failClosed: false,
+      });
+    }
   }
 
   // 3. Fallback to in-memory (Development or fail-open mode)
-  if (allTiersFailed && isProduction) {
-    logger.api.warn("Rate limiting infrastructure unavailable - using in-memory fallback", {
-      key,
-      limit: config.limit,
-      failClosed: false,
-    });
-  }
-
   cleanupInMemory();
   const now = Date.now();
   const existing = inMemoryStore.get(key);

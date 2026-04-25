@@ -11,6 +11,10 @@
   - **Utility Cleanup (Phase 1)**: `src/lib/utils/date-utils.ts` dosyası `src/lib/datetime/date-utils.ts` konumuna taşındı ve tüm importlar güncellendi.
   - **Dead Code Removal**: `ListingFiltersService` içindeki `@deprecated` filtreleme fonksiyonları ve bunlara ait bayat (stale) unit testler temizlendi.
   - **Edge Runtime Compatibility**: CSRF utilities (`csrf.ts`), Next.js Middleware (Edge Runtime) uyumluluğu için Web Crypto API'ye refaktör edildi.
+  - **Logic Fixes (Senior Review)**:
+    - `parseListingFiltersFromSearchParams`: "Lossy recovery" kaldırıldı, artık geçersiz parametrelerde güvenli varsayılanlara dönülüyor ve hatalar detaylıca loglanıyor.
+    - `registerAction`: Profil oluşturma race condition sorunu için 3 denemeli retry mekanizması ve manuel admin fallback eklendi.
+    - `checkRateLimit`: Fail-closed profillerde (auth, admin, vb.) altyapı çökerse üretim ortamında artık kesinlikle hata fırlatılarak erişim engelleniyor.
 - **Doğrulama:**
   - `npm run lint` ✅ (0 errors, 2 warnings)
   - `npm run typecheck` ✅

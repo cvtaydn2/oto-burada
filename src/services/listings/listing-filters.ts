@@ -31,31 +31,22 @@ export function parseListingFiltersFromSearchParams(
 
   const parsed = listingFiltersSchema.safeParse(normalizedSearchParams);
 
-  // If initial parse fails, we attempt a 'lossy' recovery by removing invalid keys
-  // This is safer than a hardcoded 'recovered' object because it still respects schema types
-  const rawResult = parsed.success
-    ? parsed.data
-    : (() => {
-        const validData = { ...normalizedSearchParams };
-        parsed.error.issues.forEach((issue) => {
-          const field = issue.path[0];
-          if (typeof field === "string") {
-            delete (validData as Record<string, unknown>)[field];
-          }
-        });
+  if (!parsed.success) {
+    logger.listings.warn("Invalid search params, using safe defaults", {
+      errors: parsed.error.issues.map((i) => ({
+        path: i.path.join("."),
+        message: i.message,
+      })),
+      original: normalizedSearchParams,
+    });
+  }
 
-        logger.listings.warn("Recovering from corrupted search params", {
-          original: normalizedSearchParams,
-          errors: parsed.error.issues.length,
-        });
-
-        const recovered = listingFiltersSchema.safeParse(validData);
-        return recovered.success ? recovered.data : {};
-      })();
+  // Use parsed data if successful, otherwise empty object (defaults will be applied below)
+  const rawResult = parsed.success ? parsed.data : {};
 
   logger.perf.debug("parseListingFiltersFromSearchParams execution", {
     duration: Date.now() - start,
-    recovered: !parsed.success,
+    success: parsed.success,
   });
 
   // Canonicalization & Defaults
