@@ -31,7 +31,7 @@ export interface ProfileActionState {
 const initialState: ProfileActionState = {};
 
 export async function updateProfileAction(
-  previousState: ProfileActionState = initialState,
+  _previousState: ProfileActionState = initialState,
   formData: FormData
 ): Promise<ProfileActionState> {
   const values = {
@@ -127,7 +127,7 @@ export async function updateProfileAction(
 }
 
 export async function updateCorporateProfileAction(
-  previousState: ProfileActionState = initialState,
+  _previousState: ProfileActionState = initialState,
   formData: FormData
 ): Promise<ProfileActionState> {
   const values = {

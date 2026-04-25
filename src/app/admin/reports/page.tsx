@@ -1,6 +1,6 @@
 import { ShieldAlert } from "lucide-react";
 
-import { AdminReportsModeration } from "@/components/admin/admin-reports-moderation";
+import { ReportsModeration } from "@/features/admin-moderation/components/reports-moderation";
 import { requireAdminUser } from "@/lib/auth/session";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { getStoredReports } from "@/services/reports/report-submissions";
@@ -82,7 +82,7 @@ export default async function AdminReportsPage({
               </div>
             </div>
 
-            <AdminReportsModeration listingMetaById={listingMetaById} reports={actionableReports} />
+            <ReportsModeration listingMetaById={listingMetaById} reports={actionableReports} />
           </div>
         </div>
 

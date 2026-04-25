@@ -2,19 +2,18 @@
 
 import { TriangleAlert } from "lucide-react";
 
+import { AppErrorBoundary } from "@/components/shared/error-boundary";
 import { BulkActions } from "@/features/admin-moderation/components/bulk-actions";
 import { ModerationCard } from "@/features/admin-moderation/components/moderation-card";
 // Admin Moderation Feature Components/Hooks
 import { useModerationLogic } from "@/features/admin-moderation/hooks/use-moderation-logic";
 import { type Listing } from "@/types";
 
-import { AppErrorBoundary } from "../shared/error-boundary";
-
-interface AdminListingsModerationProps {
+interface ListingsModerationProps {
   pendingListings: Listing[];
 }
 
-export function AdminListingsModeration({ pendingListings }: AdminListingsModerationProps) {
+export function ListingsModeration({ pendingListings }: ListingsModerationProps) {
   const { state, actions } = useModerationLogic(pendingListings);
 
   if (pendingListings.length === 0) {

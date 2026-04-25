@@ -153,7 +153,22 @@
   - Service Worker cache stratejisi GET-only olarak sınırlandırıldı, bu modern web uygulamaları için standart yaklaşım.
   - Accessibility uyarıları DialogTitle eksikliği nedeniyle oluşuyordu, bu Radix UI bileşenlerinde yaygın bir sorun.
   - Offer sistemi ContactActions bileşeni içinde entegre edilmiş durumda, ayrı sayfa yerine Sheet kullanımı AGENTS.md kurallarına uygun.
-- **Sıradaki Adım:** Offer sisteminin end-to-end test edilmesi ve kullanıcı deneyiminin doğrulanması.
+## [2026-04-26] - Final Audit Resolution & Git Unblocking
+- **Durum:** ✅ TAMAMLANDI
+- **Yapılanlar:**
+  - **Admin Component Consolidation (Bulgu 2.3)**: `AdminListingsModeration` ve `AdminReportsModeration` bileşenleri `src/features/admin-moderation` altına taşınarak mimari tutarlılık sağlandı.
+  - **RLS Policy Hardening (Bulgu 5.2)**: `payments`, `listing_views`, `credit_transactions` ve `doping_applications` tabloları için eksik RLS politikaları eklendi.
+  - **CSRF & Validator Hardening**: CSRF origin kontrolü kısıtlandı ve telefon numarası validasyonu sıkılaştırıldı.
+  - **ESLint & Git Unblock**: Husky commit engelini kaldıran import sorting hataları (`eslint --fix`) ve unused variable uyarıları temizlendi.
+  - **Type Safety Audit**: `npm run typecheck` ve `npm run lint` başarıyla tamamlandı (0 errors).
+- **Doğrulama:**
+  - `npm run lint` ✅ (0 errors)
+  - `npm run typecheck` ✅
+  - `git commit` artık başarılı.
+- **Kararlar:**
+  - Admin bileşenleri feature-based yapıya taşınarak `src/components/admin` temizlendi.
+  - Veritabanı snapshot'ı (`schema.snapshot.sql`) güvenlik politikalarıyla senkronize edildi.
+- **Sıradaki Adım:** Fiyat geçmişi ve piyasa analizi (Phase 25.3) için veri toplama katmanının implementasyonu.
 
 # 2026-04-24 — Infrastructure Hardening & Messaging Maturity
 

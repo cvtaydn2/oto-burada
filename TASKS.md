@@ -652,7 +652,7 @@ Automate "Search Result" notifications.
 - [x] Split monolithic `listing.ts` validator into a modular directory structure.
 
 ### Task 31.3 — Library & Utility Refactoring
-- [ ] Refactor `src/lib/utils/` "dump" into structured domain directories (`api`, `datetime`, `env`, etc.).
+- [x] Refactor `src/lib/utils/` "dump" into structured domain directories (`api`, `datetime`, `env`, etc.).
 - [x] Clean up deprecated filtering code in `ListingFiltersService`.
 
 ### Task 31.4 — PWA & Metadata Polish

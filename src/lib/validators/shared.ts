@@ -25,6 +25,11 @@ export const timestampSchema = z.string().trim().min(1, "Geçerli bir tarih gir"
 export const lenientPhoneSchema = z
   .string()
   .trim()
-  .refine((val) => val === "" || /^\+?[0-9\s]{10,15}$/.test(val), {
-    message: "Geçerli bir telefon numarası gir",
-  });
+  .refine(
+    (val) => {
+      if (val === "") return true;
+      const digitsOnly = val.replace(/\D/g, "");
+      return digitsOnly.length >= 10 && digitsOnly.length <= 13;
+    },
+    { message: "Geçerli bir telefon numarası gir" }
+  );

@@ -1,11 +1,11 @@
 import { Search } from "lucide-react";
 
-import { AdminListingsModeration } from "@/components/admin/admin-listings-moderation";
 import { InventoryTable } from "@/components/admin/inventory-table";
 import { SimplePagination } from "@/components/admin/simple-pagination";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { ListingsModeration } from "@/features/admin-moderation/components/listings-moderation";
 import { requireAdminUser } from "@/lib/auth/session";
 import { getAdminInventory } from "@/services/admin/inventory";
 
@@ -123,7 +123,7 @@ export default async function AdminListingsPage({ searchParams }: AdminListingsP
           </div>
 
           <TabsContent value="pending" className="m-0 p-8 bg-muted/20">
-            <AdminListingsModeration pendingListings={listings} />
+            <ListingsModeration pendingListings={listings} />
           </TabsContent>
 
           <TabsContent value="approved" className="m-0">

@@ -698,6 +698,14 @@ ALTER TABLE public.seller_reviews ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.phone_reveal_logs ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.listing_views ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.api_rate_limits ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.storage_objects_registry ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.storage_cleanup_queue ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.pricing_plans ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.credit_transactions ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.doping_applications ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.transaction_outbox ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.compensating_actions ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.market_stats ENABLE ROW LEVEL SECURITY;
 
 -- Profiles
 CREATE POLICY "profiles_select_self_or_admin_or_chat" ON public.profiles FOR SELECT USING (
@@ -780,6 +788,30 @@ CREATE POLICY "market_stats_select_public" ON public.market_stats FOR SELECT USI
 -- Admin Only
 CREATE POLICY "admin_actions_all" ON public.admin_actions FOR ALL USING (public.is_admin());
 CREATE POLICY "api_rate_limits_admin" ON public.api_rate_limits FOR ALL USING (public.is_admin());
+
+-- Storage & Registry
+CREATE POLICY "storage_registry_owner_or_admin" ON public.storage_objects_registry 
+  FOR SELECT USING ((SELECT auth.uid()) = owner_id OR public.is_admin());
+CREATE POLICY "storage_cleanup_admin_only" ON public.storage_cleanup_queue 
+  FOR ALL USING (public.is_admin());
+
+-- Credits & Doping
+CREATE POLICY "credit_transactions_own_or_admin" ON public.credit_transactions 
+  FOR SELECT USING ((SELECT auth.uid()) = user_id OR public.is_admin());
+CREATE POLICY "doping_applications_own_or_admin" ON public.doping_applications 
+  FOR SELECT USING ((SELECT auth.uid()) = user_id OR public.is_admin());
+CREATE POLICY "payments_select_own_or_admin" ON public.payments 
+  FOR SELECT USING ((SELECT auth.uid()) = user_id OR public.is_admin());
+CREATE POLICY "listing_views_select_owner_or_admin" ON public.listing_views 
+  FOR SELECT USING (public.is_admin() OR EXISTS (
+    SELECT 1 FROM public.listings WHERE listings.id = listing_views.listing_id AND listings.seller_id = (SELECT auth.uid())
+  ));
+CREATE POLICY "listing_views_insert_public" ON public.listing_views 
+  FOR INSERT WITH CHECK (EXISTS (SELECT 1 FROM public.listings WHERE id = listing_id));
+
+-- Internal Engine (Admin Only)
+CREATE POLICY "transaction_outbox_admin" ON public.transaction_outbox FOR ALL USING (public.is_admin());
+CREATE POLICY "compensating_actions_admin" ON public.compensating_actions FOR ALL USING (public.is_admin());
 
 -- 9. CRON JOBS
 DO $$

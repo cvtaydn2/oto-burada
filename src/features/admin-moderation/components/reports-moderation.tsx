@@ -11,7 +11,7 @@ import { reportReasonLabels, reportStatusLabels } from "@/lib/constants/domain";
 import { formatDate } from "@/lib/utils";
 import type { Report, ReportStatus } from "@/types";
 
-interface AdminReportsModerationProps {
+interface ReportsModerationProps {
   listingMetaById: Record<string, { slug: string; title: string }>;
   reports: Report[];
 }
@@ -23,7 +23,7 @@ const statusClassMap: Record<ReportStatus, string> = {
   reviewing: "bg-sky-100 text-sky-700",
 };
 
-export function AdminReportsModeration({ listingMetaById, reports }: AdminReportsModerationProps) {
+export function ReportsModeration({ listingMetaById, reports }: ReportsModerationProps) {
   const { captureError } = useErrorCapture("admin-reports-moderation");
   const router = useRouter();
   const [activeAction, setActiveAction] = useState<string | null>(null);

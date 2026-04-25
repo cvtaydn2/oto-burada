@@ -294,7 +294,7 @@ export async function registerAction(
 }
 
 export async function forgotPasswordAction(
-  previousState: AuthActionState = initialState,
+  _previousState: AuthActionState = initialState,
   formData: FormData
 ): Promise<AuthActionState> {
   const email = String(formData.get("email") ?? "").trim();
