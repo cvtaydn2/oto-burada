@@ -142,7 +142,7 @@ export class ChatService {
     const supabase = await createSupabaseServerClient();
 
     // Verify user is participant
-    const { data: _chat, error: chatError } = await supabase
+    const { error: chatError } = await supabase
       .from("chats")
       .select("id")
       .eq("id", chatId)

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { withUserAndCsrf } from "@/lib/utils/api-security";
 import { ChatService } from "@/services/chat/chat-service";
 
 const messageSchema = z.object({
@@ -31,16 +32,11 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
 }
 
 export async function POST(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  const security = await withUserAndCsrf(req);
+  if (!security.ok) return security.response;
+  const user = security.user!;
+
   try {
-    const supabase = await createSupabaseServerClient();
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-
-    if (!user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
     const { id: chatId } = await params;
     const body = await req.json();
     const validated = messageSchema.parse(body);
@@ -62,16 +58,11 @@ export async function DELETE(
   req: NextRequest,
   { params: _params }: { params: Promise<{ id: string }> }
 ) {
+  const security = await withUserAndCsrf(req);
+  if (!security.ok) return security.response;
+  const user = security.user!;
+
   try {
-    const supabase = await createSupabaseServerClient();
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-
-    if (!user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
     const { searchParams } = new URL(req.url);
     const messageId = searchParams.get("messageId");
 

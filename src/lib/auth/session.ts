@@ -3,6 +3,7 @@ import { cache } from "react";
 
 import { hasSupabaseEnv } from "@/lib/supabase/env";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { logger } from "@/lib/utils/logger";
 import type { UserRole } from "@/types";
 
 export const getCurrentUser = cache(async () => {
@@ -18,6 +19,7 @@ export const getCurrentUser = cache(async () => {
       !supabase.auth ||
       typeof supabase.auth.getUser !== "function"
     ) {
+      logger.auth.warn("[Session] Supabase client initialization failed");
       return null;
     }
     const {
@@ -25,7 +27,8 @@ export const getCurrentUser = cache(async () => {
     } = await supabase.auth.getUser();
 
     return user;
-  } catch {
+  } catch (error) {
+    logger.auth.error("[Session] Failed to get current user", error);
     return null;
   }
 });
@@ -66,9 +69,15 @@ const getDBUserRole = cache(async (userId: string) => {
       .eq("id", userId)
       .maybeSingle<{ role: string }>();
 
-    if (error || !profile) return null;
+    if (error || !profile) {
+      if (error) {
+        logger.auth.warn("[Session] DB role check failed", { userId, error });
+      }
+      return null;
+    }
     return profile.role as UserRole;
-  } catch {
+  } catch (error) {
+    logger.auth.error("[Session] Exception during DB role check", error, { userId });
     return null;
   }
 });

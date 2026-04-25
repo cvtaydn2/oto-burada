@@ -32,7 +32,7 @@ interface NotificationsPanelProps {
 }
 
 export function NotificationsPanel({ initialNotifications }: NotificationsPanelProps) {
-  const { userId, isAuthenticated: _isAuthenticated } = useAuthUser();
+  const { userId } = useAuthUser();
   const [items, setItems] = useState(initialNotifications);
   const [showUnreadOnly, setShowUnreadOnly] = useState(false);
   const [activeAction, setActiveAction] = useState<string | null>(null);

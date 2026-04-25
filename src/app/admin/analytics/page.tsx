@@ -1,9 +1,23 @@
 import { TrendingUp } from "lucide-react";
+import dynamicImport from "next/dynamic";
 import { Suspense } from "react";
 
-import { AdminAnalyticsClient } from "@/components/admin/admin-analytics-client";
 import { requireAdminUser } from "@/lib/auth/session";
 import { getAdminAnalytics } from "@/services/admin/analytics";
+
+const AdminAnalyticsClient = dynamicImport(
+  () =>
+    import("@/components/admin/admin-analytics-client").then((mod) => ({
+      default: mod.AdminAnalyticsClient,
+    })),
+  {
+    loading: () => (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary" />
+      </div>
+    ),
+  }
+);
 
 export const dynamic = "force-dynamic";
 

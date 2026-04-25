@@ -687,17 +687,17 @@ export async function getSimilarDatabaseListings(options: {
   // Application-side scoring:
   // 2. Application-side relevance scoring
   const listingsWithScore = listings.map((l: Listing) => {
-    let similarityScore = 0;
-    if (l.brand === options.brand) similarityScore += 2;
-    if (l.city === options.city) similarityScore += 1;
-    return { ...l, similarityScore };
+    let _similarityScore = 0;
+    if (l.brand === options.brand) _similarityScore += 2;
+    if (l.city === options.city) _similarityScore += 1;
+    return { ...l, similarityScore: _similarityScore };
   });
 
   // 3. Sort by score then take limit
   return listingsWithScore
     .sort((a: any, b: any) => b.similarityScore - a.similarityScore)
     .map((l: any) => {
-      const { similarityScore: _, ...listing } = l;
+      const { similarityScore, ...listing } = l;
       return listing as Listing;
     })
     .slice(0, limit);

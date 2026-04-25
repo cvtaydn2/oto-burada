@@ -78,7 +78,7 @@ class MigrationConsolidator {
         });
       }
       console.log(`✅ ${this.appliedMigrations.size} migrations already applied`);
-    } catch (_error) {
+    } catch {
       console.log("ℹ️ No migration tracking table found (this is normal for first-time setup)");
     }
   }

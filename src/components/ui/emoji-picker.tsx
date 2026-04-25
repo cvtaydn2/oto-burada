@@ -165,7 +165,6 @@ interface EmojiPickerProps {
 
 export function EmojiPicker({ onSelect, onClose, className }: EmojiPickerProps) {
   const [search, setSearch] = useState("");
-  const [_selectedCategory, _setSelectedCategory] = useState("people");
 
   const filteredEmojis = search
     ? COMMON_EMOJIS.filter((emoji) => {

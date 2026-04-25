@@ -10,6 +10,7 @@ import { NextResponse } from "next/server";
 import { isSupabaseAdminUser } from "@/lib/auth/api-admin";
 import { getCurrentUser } from "@/lib/auth/session";
 import { isValidRequestOrigin } from "@/lib/security";
+import { validateCsrfToken } from "@/lib/security/csrf";
 import { API_ERROR_CODES, apiError } from "@/lib/utils/api-response";
 import type { RateLimitConfig } from "@/lib/utils/rate-limit";
 import {
@@ -22,6 +23,7 @@ export interface SecurityOptions {
   requireAuth?: boolean;
   requireAdmin?: boolean;
   requireCsrf?: boolean;
+  requireCsrfToken?: boolean; // New: requires CSRF token header validation
   requireCron?: boolean;
   ipRateLimit?: RateLimitConfig;
   userRateLimit?: RateLimitConfig;
@@ -49,13 +51,28 @@ export async function withSecurity(
   request: Request,
   options: SecurityOptions = {}
 ): Promise<SecurityCheckResult> {
-  // 1. CSRF Protection (Issue 20 Optimization)
+  // 1. CSRF Origin Protection
   if (options.requireCsrf) {
     const isMutation = ["POST", "PUT", "PATCH", "DELETE"].includes(request.method);
     if (isMutation && !isValidRequestOrigin(request)) {
       return {
         ok: false,
         response: apiError(API_ERROR_CODES.BAD_REQUEST, "Geçersiz istek kaynağı (CSRF).", 403),
+      };
+    }
+  }
+
+  // 1.1 CSRF Token Validation (Double Submit Cookie pattern)
+  if (options.requireCsrfToken) {
+    const isValid = await validateCsrfToken(request);
+    if (!isValid) {
+      return {
+        ok: false,
+        response: apiError(
+          API_ERROR_CODES.FORBIDDEN,
+          "Geçersiz CSRF token. Lütfen sayfayı yenileyin.",
+          403
+        ),
       };
     }
   }
@@ -148,7 +165,7 @@ export async function withSecurity(
               response: apiError(API_ERROR_CODES.FORBIDDEN, "Hesabınız askıya alınmıştır.", 403),
             };
           }
-        } catch (_error) {
+        } catch {
           return {
             ok: false,
             response: apiError(
@@ -196,6 +213,14 @@ export async function withUserAndCsrf(
   > = {}
 ) {
   return withSecurity(request, { ...options, requireAuth: true, requireCsrf: true });
+}
+
+/** withCsrfToken: CSRF token validation (Double Submit Cookie) */
+export async function withCsrfToken(
+  request: Request,
+  options: Omit<SecurityOptions, "requireCsrfToken"> = {}
+) {
+  return withSecurity(request, { ...options, requireCsrfToken: true });
 }
 
 /** withAdminRoute: Strictly for Admin-only operations */

@@ -43,7 +43,7 @@ export async function POST() {
   }
 
   // P1 Security: Removed ensureProfileRecord() - no side effects in migrations
-  const legacyListings = await getLegacyStoredUserListings(user.id);
+  const legacyListings = await getLegacyStoredUserListings();
   const legacyReports = await getLegacyStoredReportsByReporter(user.id);
   let migratedListings = 0;
   let migratedReports = 0;

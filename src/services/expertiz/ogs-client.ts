@@ -33,7 +33,7 @@ export function isOGSConfigured(): boolean {
   return Boolean(process.env.OGS_API_KEY);
 }
 
-export async function queryOGS(vin: string, _licensePlate?: string): Promise<OGSResponse> {
+export async function queryOGS(vin: string): Promise<OGSResponse> {
   const apiKey = getOGSApiKey();
 
   if (!apiKey) {

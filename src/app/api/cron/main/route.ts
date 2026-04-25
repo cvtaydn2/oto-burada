@@ -3,7 +3,6 @@ import { NextResponse } from "next/server";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { hasSupabaseAdminEnv } from "@/lib/supabase/env";
 import { withCronOrAdmin } from "@/lib/utils/api-security";
-import { logger } from "@/lib/utils/logger";
 import { expireReservations } from "@/services/reservations/reservation-service";
 
 /**
@@ -79,15 +78,14 @@ export async function GET(request: Request) {
           headers: { Authorization: `Bearer ${process.env.CRON_SECRET}` },
         });
         results.notificationsTriggered = true;
-      } catch (_error) {
+      } catch {
         results.notificationsTriggered = false;
       }
     }
 
     const duration = Date.now() - startTime;
     return NextResponse.json({ success: true, duration: `${duration}ms`, results });
-  } catch (error) {
-    logger.system.error("Master cron failed", error);
+  } catch {
     return NextResponse.json({ error: "Execution failed" }, { status: 500 });
   }
 }

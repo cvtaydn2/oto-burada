@@ -45,7 +45,7 @@ export async function POST(request: Request) {
   // Validate IP format
   try {
     banSchema.parse({ ip, reason });
-  } catch (error) {
+  } catch {
     return NextResponse.json({ error: "Invalid IP address or reason" }, { status: 400 });
   }
 

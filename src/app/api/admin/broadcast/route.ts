@@ -1,5 +1,4 @@
 import { NextResponse } from "next/server";
-import { z } from "zod";
 
 import { captureServerError, captureServerEvent } from "@/lib/monitoring/posthog-server";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
@@ -11,11 +10,6 @@ import { createDatabaseNotificationsBulk } from "@/services/notifications/notifi
 
 // Broadcast: 5 per hour (admin-only, but still protect against accidents)
 const BROADCAST_RATE_LIMIT = { limit: 5, windowMs: 60 * 60 * 1000 };
-
-const broadcastSchema = z.object({
-  title: z.string().min(3).max(200),
-  message: z.string().min(5).max(1000),
-});
 
 export async function POST(request: Request) {
   const security = await withAdminRoute(request);

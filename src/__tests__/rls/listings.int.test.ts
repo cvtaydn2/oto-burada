@@ -60,10 +60,7 @@ describe("Listings RLS Integration", () => {
   it("should not allow anonymous users to update listings", async () => {
     if (!testListingId) return;
 
-    const { error: _error } = await anon
-      .from("listings")
-      .update({ title: "Hacked Title" })
-      .eq("id", testListingId);
+    await anon.from("listings").update({ title: "Hacked Title" }).eq("id", testListingId);
 
     // Should fail or return 0 rows (RLS usually returns 0 rows, so error might be null but data empty)
     // For update, if not allowed, it will likely return { data: [], error: null } if using maybeSingle or similar.
@@ -96,11 +93,7 @@ describe("Listings RLS Integration", () => {
       .single();
 
     if (draft) {
-      const { data, error: _error } = await anon
-        .from("listings")
-        .select("id")
-        .eq("id", draft.id)
-        .maybeSingle();
+      const { data } = await anon.from("listings").select("id").eq("id", draft.id).maybeSingle();
 
       expect(data).toBeNull();
       // Clean up

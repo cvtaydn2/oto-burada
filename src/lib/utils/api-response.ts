@@ -48,7 +48,7 @@ export function apiError(code: string, message: string, status = 400, details?: 
       // For validation errors, we can send field keys but strip internal messages
       if (typeof details === "object" && details !== null) {
         const sanitizedDetails: Record<string, string[]> = {};
-        for (const [key, _] of Object.entries(details as Record<string, unknown>)) {
+        for (const key of Object.keys(details as Record<string, unknown>)) {
           sanitizedDetails[key] = ["Geçersiz değer"]; // Generic message
         }
         body.error.details = sanitizedDetails;

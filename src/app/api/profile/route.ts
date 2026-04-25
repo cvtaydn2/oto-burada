@@ -43,9 +43,8 @@ export async function GET(req: Request) {
       },
       profile,
     });
-  } catch (error) {
-    console.error("[ProfileGET] Error:", error);
-    return apiError(API_ERROR_CODES.INTERNAL_ERROR, "Profil bilgileri alınamadı.", 500);
+  } catch {
+    return apiError(API_ERROR_CODES.NOT_FOUND, "Profil bulunamadı.", 404);
   }
 }
 
@@ -57,12 +56,13 @@ export async function PATCH(req: Request) {
 
   try {
     const body = await req.json();
+    const validatedData = profileUpdateSchema.parse(body);
+
     const supabase = await createSupabaseServerClient();
 
-    // Basic sanitization/validation could happen here
     const { data, error } = await supabase
       .from("profiles")
-      .update(body)
+      .update(validatedData)
       .eq("id", user.id)
       .select()
       .single();
@@ -73,7 +73,9 @@ export async function PATCH(req: Request) {
 
     return apiSuccess(data, "Profil başarıyla güncellendi.");
   } catch (error) {
-    console.error("[ProfilePATCH] Error:", error);
+    if (error instanceof z.ZodError) {
+      return apiError(API_ERROR_CODES.VALIDATION_ERROR, "Geçersiz veriler.", 400);
+    }
     return apiError(API_ERROR_CODES.INTERNAL_ERROR, "Sunucu hatası.", 500);
   }
 }

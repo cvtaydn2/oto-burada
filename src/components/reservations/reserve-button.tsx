@@ -23,11 +23,7 @@ interface ReserveButtonProps {
   className?: string;
 }
 
-export function ReserveButton({
-  listingId,
-  sellerPhone: _sellerPhone,
-  className,
-}: ReserveButtonProps) {
+export function ReserveButton({ listingId, className }: ReserveButtonProps) {
   const [open, setOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [notes, setNotes] = useState("");

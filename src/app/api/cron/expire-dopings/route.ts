@@ -14,7 +14,6 @@ export async function GET(request: Request) {
   if (!security.ok) return security.response;
 
   const admin = createSupabaseAdminClient();
-  const _now = new Date().toISOString();
 
   try {
     // Call the atomic RPC function
