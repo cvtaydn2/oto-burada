@@ -2,8 +2,8 @@ import { API_ERROR_CODES, apiError, apiSuccess } from "@/lib/api/response";
 import { withAuth, withAuthAndCsrf } from "@/lib/api/security";
 import { captureServerEvent } from "@/lib/monitoring/posthog-server";
 import { rateLimitProfiles } from "@/lib/rate-limiting/rate-limit";
-import { issuesToFieldErrors } from "@/lib/utils/validation-helpers";
 import { savedSearchCreateSchema } from "@/lib/validators";
+import { issuesToFieldErrors } from "@/lib/validators/helpers";
 import {
   createOrUpdateDatabaseSavedSearch,
   getStoredSavedSearchesByUser,

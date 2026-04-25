@@ -1,15 +1,9 @@
 /**
- * Trust UI — single module for all seller trust rendering logic.
- *
- * Consolidates theme tokens (trust-helpers) and UI derivation (trust-ui)
- * into one cohesive module. All external imports from either file continue
- * to work via the re-exports at the bottom.
+ * Trust UI ?" single module for all seller trust rendering logic.
  */
 import { trust } from "@/lib/constants/ui-strings";
 import { getProfileRestrictionState } from "@/services/profile/profile-restrictions";
 import type { Profile } from "@/types";
-
-// ─── Theme Tokens (previously trust-helpers.ts) ──────────────────────────────
 
 export type RestrictionState = "active" | "restricted_review" | "banned";
 export type TrustTone = "emerald" | "amber" | "slate" | "blue" | "rose";
@@ -77,14 +71,7 @@ export function canContact(restrictionState: RestrictionState | undefined): bool
 }
 
 export function getTrustDotColor(tone: TrustTone): string {
-  const dotColors: Record<TrustTone, string> = {
-    emerald: "bg-emerald-500",
-    amber: "bg-amber-500",
-    slate: "bg-slate-500",
-    blue: "bg-blue-500",
-    rose: "bg-rose-500",
-  };
-  return dotColors[tone];
+  return trustThemes[tone].dot;
 }
 
 export function getTrustIconBg(tone: TrustTone): string {
@@ -132,11 +119,9 @@ export function getTrustToneClass(
   return tones[tone][variant];
 }
 
-// ─── UI Derivation ────────────────────────────────────────────────────────────
-
 /**
  * Derives all trust-related UI state for a seller profile.
- * Single source of truth — use this everywhere seller trust is displayed.
+ * Single source of truth ?" use this everywhere seller trust is displayed.
  */
 export function getSellerTrustUI(profile: Partial<Profile> | null | undefined) {
   const restrictionState = getProfileRestrictionState(profile);

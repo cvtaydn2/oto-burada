@@ -8,8 +8,8 @@ import { ContactActions } from "@/components/listings/contact-actions";
 import { SellerRatingInfo } from "@/components/profile/seller-rating-info";
 import { TrustBadge } from "@/components/shared/trust-badge";
 import { trust } from "@/lib/constants/ui-strings";
+import { getSellerTrustUI } from "@/lib/listings/trust-ui";
 import { cn } from "@/lib/utils";
-import { getSellerTrustUI } from "@/lib/utils/trust-ui";
 import type { Profile } from "@/types";
 
 interface SellerCardProps {

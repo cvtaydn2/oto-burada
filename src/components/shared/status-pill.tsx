@@ -1,5 +1,5 @@
+import { getTrustStyles, type TrustTone } from "@/lib/listings/trust-ui";
 import { cn } from "@/lib/utils";
-import { getTrustStyles, type TrustTone } from "@/lib/utils/trust-ui";
 
 interface StatusPillProps {
   label: string;

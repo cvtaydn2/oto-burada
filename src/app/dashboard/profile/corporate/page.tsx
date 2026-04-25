@@ -13,7 +13,7 @@ import { CorporateProfileForm } from "@/components/forms/corporate-profile-form"
 import { updateCorporateProfileAction } from "@/lib/auth/profile-actions";
 import { requireUser } from "@/lib/auth/session";
 import { trust } from "@/lib/constants/ui-strings";
-import { getSellerTrustUI } from "@/lib/utils/trust-ui";
+import { getSellerTrustUI } from "@/lib/listings/trust-ui";
 import { buildProfileFromAuthUser, getStoredProfileById } from "@/services/profile/profile-records";
 
 export const dynamic = "force-dynamic";

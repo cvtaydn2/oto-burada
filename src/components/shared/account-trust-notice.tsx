@@ -3,9 +3,9 @@
 import { AlertTriangle, ArrowRight, ShieldCheck } from "lucide-react";
 import Link from "next/link";
 
+import { getTrustIconBg, getTrustStyles, isBanned } from "@/lib/listings/trust-ui";
+import { getSellerTrustUI } from "@/lib/listings/trust-ui";
 import { cn } from "@/lib/utils";
-import { getTrustIconBg, getTrustStyles, isBanned } from "@/lib/utils/trust-ui";
-import { getSellerTrustUI } from "@/lib/utils/trust-ui";
 import { type Profile } from "@/types";
 
 interface AccountTrustNoticeProps {

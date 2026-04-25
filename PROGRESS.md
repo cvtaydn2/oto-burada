@@ -57,8 +57,13 @@
   - **Auth State Fix**: `loginAction` ve `registerAction` (auth/actions.ts) içindeki `previousState` sıfırlama hatası giderildi, form hataları artık state içinde korunuyor.
   - **Rate Limit Memory Leak Fix**: In-memory fallback deposuna `MAX_IN_MEMORY_ENTRIES` (10,000) limiti ve LRU-benzeri eviction politikası eklendi.
   - **CSRF Consolidation**: `src/lib/middleware/csrf.ts` (skeleton) silindi, tüm mantık `src/lib/security/csrf.ts` altında toplandı. `middleware.ts` güncellendi.
-  - **Listing Validator Refactor**: Monolitik `listing.ts` validatorü, `src/lib/validators/listing/` altında modüler parçalara (images, fields, inspection, create) ayrıldı.
-  - **Utility Cleanup (Phase 1)**: `src/lib/utils/date-utils.ts` dosyası `src/lib/datetime/date-utils.ts` konumuna taşındı ve tüm importlar güncellendi.
+  - **Architectural Hardening**:
+    - [x] **2.1 Utility SRP Refactor**: `src/lib/utils/` dizinindeki 6+ dosya sorumluluklarına göre `api/`, `seo/`, `listings/` ve `validators/` alt dizinlerine taşındı.
+    - [x] **2.2 Validator Modularization**: Monolitik `listing.ts` validatorü `src/lib/validators/listing/` altında modüler parçalara ayrıldı.
+    - [x] **2.3 Request-Scoped Session**: `AsyncLocalStorage` tabanlı `SessionContext` implemente edildi, Server Action'larda tutarlı auth state sağlandı.
+    - [x] **2.4 ApiClient Consolidation**: Duplicate client implementasyonları `src/lib/api/client.ts` altında birleştirildi.
+    - [x] **2.5 Dead Code Cleanup**: `filterListings` ve `sortListings` gibi @deprecated fonksiyonlar temizlendi.
+  - **Utility Cleanup**: `src/lib/utils/` dizini tamamen boşaltıldı ve SRP prensiplerine uygun olarak feature-bazlı dizinlere dağıtıldı.
   - **Dead Code Removal**: `ListingFiltersService` içindeki `@deprecated` filtreleme fonksiyonları ve bunlara ait bayat (stale) unit testler temizlendi.
   - **Edge Runtime Compatibility**: CSRF utilities (`csrf.ts`), Next.js Middleware (Edge Runtime) uyumluluğu için Web Crypto API'ye refaktör edildi.
   - **Logic Fixes (Senior Review)**:

@@ -7,8 +7,8 @@ import { logger } from "@/lib/logging/logger";
 import { captureServerError, captureServerEvent } from "@/lib/monitoring/posthog-server";
 import { sanitizeDescription, sanitizeText } from "@/lib/sanitization/sanitize";
 import { hasSupabaseEnv } from "@/lib/supabase/env";
-import { issuesToFieldErrors } from "@/lib/utils/validation-helpers";
 import { listingCreateFormSchema, listingCreateSchema } from "@/lib/validators";
+import { issuesToFieldErrors } from "@/lib/validators/helpers";
 import {
   performAsyncModeration,
   recordSellerTrustGuardRejection,

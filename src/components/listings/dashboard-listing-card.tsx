@@ -15,9 +15,9 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { trust } from "@/lib/constants/ui-strings";
+import { getSellerTrustUI } from "@/lib/listings/trust-ui";
 import { formatCurrency, formatNumber, supabaseImageUrl } from "@/lib/utils";
 import { cn } from "@/lib/utils";
-import { getSellerTrustUI } from "@/lib/utils/trust-ui";
 import type { Listing } from "@/types";
 
 const statusLabelMap: Record<Listing["status"], string> = {

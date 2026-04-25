@@ -6,6 +6,8 @@ import { hasSupabaseEnv } from "@/lib/supabase/env";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import type { UserRole } from "@/types";
 
+import { getSessionContext } from "./session-context";
+
 export const getCurrentUser = cache(async () => {
   if (!hasSupabaseEnv()) {
     return null;
@@ -98,6 +100,11 @@ const getDBProfile = cache(async (userId: string) => {
  * Bundles both the JWT-based user and the database-verified status.
  */
 export const getAuthContext = cache(async () => {
+  // 1. Try to get from AsyncLocalStorage (set by middleware or wrapper)
+  const context = getSessionContext();
+  if (context) return context;
+
+  // 2. Fallback to standard request-scoped cache
   const user = await getCurrentUser();
   if (!user) return { user: null, dbProfile: null };
 

@@ -3,9 +3,9 @@
 import { Shield, ShieldCheck, Sparkles, TriangleAlert } from "lucide-react";
 import Link from "next/link";
 
+import { getTrustToneClass } from "@/lib/listings/trust-ui";
+import { getSellerTrustUI } from "@/lib/listings/trust-ui";
 import { cn } from "@/lib/utils";
-import { getTrustToneClass } from "@/lib/utils/trust-ui";
-import { getSellerTrustUI } from "@/lib/utils/trust-ui";
 import { getListingCardInsights } from "@/services/listings/listing-card-insights";
 import type { Listing } from "@/types";
 

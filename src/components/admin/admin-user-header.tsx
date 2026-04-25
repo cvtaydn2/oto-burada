@@ -4,9 +4,9 @@ import { AlertTriangle, ArrowLeft, Shield, ShieldCheck, Store } from "lucide-rea
 import Link from "next/link";
 
 import { Button } from "@/components/ui/button";
+import { getTrustDotColor, getTrustToneClass } from "@/lib/listings/trust-ui";
+import { getSellerTrustUI } from "@/lib/listings/trust-ui";
 import { cn } from "@/lib/utils";
-import { getTrustDotColor, getTrustToneClass } from "@/lib/utils/trust-ui";
-import { getSellerTrustUI } from "@/lib/utils/trust-ui";
 import { type VerificationStatus } from "@/types";
 
 interface AdminUserHeaderProps {

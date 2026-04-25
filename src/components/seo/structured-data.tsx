@@ -1,7 +1,7 @@
 import { headers } from "next/headers";
 
 import { buildAbsoluteUrl } from "@/lib/seo";
-import { safeJsonLd } from "@/lib/utils/json-ld";
+import { safeJsonLd } from "@/lib/seo/json-ld";
 import type { Listing } from "@/types";
 
 async function getCspNonce() {

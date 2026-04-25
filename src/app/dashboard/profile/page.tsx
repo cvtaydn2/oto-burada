@@ -6,8 +6,8 @@ import { ProfileForm } from "@/components/forms/profile-form";
 import { updateProfileAction } from "@/lib/auth/profile-actions";
 import { requireUser } from "@/lib/auth/session";
 import { trust } from "@/lib/constants/ui-strings";
+import { getSellerTrustUI } from "@/lib/listings/trust-ui";
 import { cn } from "@/lib/utils";
-import { getSellerTrustUI } from "@/lib/utils/trust-ui";
 import { buildProfileFromAuthUser, getStoredProfileById } from "@/services/profile/profile-records";
 import {
   getLiveMarketplaceReferenceData,

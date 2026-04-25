@@ -18,8 +18,8 @@ import { ListingCard } from "@/components/shared/listing-card";
 import { TrustBadge } from "@/components/shared/trust-badge";
 import { Button } from "@/components/ui/button";
 import { getCurrentUser } from "@/lib/auth/session";
+import { getSellerTrustUI } from "@/lib/listings/trust-ui";
 import { cn } from "@/lib/utils";
-import { getSellerTrustUI } from "@/lib/utils/trust-ui";
 import {
   getMarketplaceSeller,
   getPublicMarketplaceListings,

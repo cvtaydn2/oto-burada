@@ -2,7 +2,7 @@ import { AlertCircle, Calendar, Globe, MapPin, Phone, ShieldCheck } from "lucide
 import Image from "next/image";
 
 import { Badge } from "@/components/ui/badge";
-import { getSellerTrustUI } from "@/lib/utils/trust-ui";
+import { getSellerTrustUI } from "@/lib/listings/trust-ui";
 import { type Profile } from "@/types";
 
 interface GalleryHeaderProps {

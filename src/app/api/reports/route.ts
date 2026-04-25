@@ -4,8 +4,8 @@ import { captureServerEvent } from "@/lib/monitoring/posthog-server";
 import { rateLimitProfiles } from "@/lib/rate-limiting/rate-limit";
 import { sanitizeDescription } from "@/lib/sanitization/sanitize";
 import { hasSupabaseEnv } from "@/lib/supabase/env";
-import { issuesToFieldErrors } from "@/lib/utils/validation-helpers";
 import { reportCreateSchema } from "@/lib/validators";
+import { issuesToFieldErrors } from "@/lib/validators/helpers";
 import { getStoredListingById } from "@/services/listings/listing-submissions";
 import {
   createOrUpdateDatabaseReport,

@@ -1,7 +1,7 @@
 import { ChevronRight, Eye, LayoutDashboard, ShieldCheck, Zap } from "lucide-react";
 import Link from "next/link";
 
-import { getSellerTrustUI } from "@/lib/utils/trust-ui";
+import { getSellerTrustUI } from "@/lib/listings/trust-ui";
 import type { Profile } from "@/types";
 
 interface DashboardProfessionalCardProps {
