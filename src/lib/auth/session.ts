@@ -55,7 +55,11 @@ export function getUserRole(user: Awaited<ReturnType<typeof requireUser>>): User
  * Verifies the user's role against the database as a final security measure.
  * Uses React cache to ensure this only hits the DB once per request.
  */
-const getDBUserRole = cache(async (userId: string) => {
+/**
+ * Verifies the user's role and status against the database as a final security measure.
+ * Uses React cache to ensure this only hits the DB once per request.
+ */
+const getDBProfile = cache(async (userId: string) => {
   if (!process.env.SUPABASE_SERVICE_ROLE_KEY) {
     return null;
   }
@@ -65,19 +69,22 @@ const getDBUserRole = cache(async (userId: string) => {
     const adminClient = createSupabaseAdminClient();
     const { data: profile, error } = await adminClient
       .from("profiles")
-      .select("role")
+      .select("role, is_banned")
       .eq("id", userId)
-      .maybeSingle<{ role: string }>();
+      .maybeSingle<{ role: string; is_banned: boolean }>();
 
     if (error || !profile) {
       if (error) {
-        logger.auth.warn("[Session] DB role check failed", { userId, error });
+        logger.auth.warn("[Session] DB profile check failed", { userId, error });
       }
       return null;
     }
-    return profile.role as UserRole;
+    return {
+      role: profile.role as UserRole,
+      isBanned: !!profile.is_banned,
+    };
   } catch (error) {
-    logger.auth.error("[Session] Exception during DB role check", error, { userId });
+    logger.auth.error("[Session] Exception during DB profile check", error, { userId });
     return null;
   }
 });
@@ -86,16 +93,20 @@ const getDBUserRole = cache(async (userId: string) => {
  * Combined authentication context for the current request.
  * Bundles both the JWT-based user and the database-verified role.
  */
+/**
+ * Combined authentication context for the current request.
+ * Bundles both the JWT-based user and the database-verified status.
+ */
 export const getAuthContext = cache(async () => {
   const user = await getCurrentUser();
-  if (!user) return { user: null, dbRole: null };
+  if (!user) return { user: null, dbProfile: null };
 
-  const dbRole = await getDBUserRole(user.id);
-  return { user, dbRole };
+  const dbProfile = await getDBProfile(user.id);
+  return { user, dbProfile };
 });
 
 export async function requireAdminUser() {
-  const { user, dbRole } = await getAuthContext();
+  const { user, dbProfile } = await getAuthContext();
 
   if (!user) {
     redirect("/login");
@@ -107,8 +118,10 @@ export async function requireAdminUser() {
   }
 
   // 2. Secondary DB check (Atomic consistency)
-  if (process.env.SUPABASE_SERVICE_ROLE_KEY && dbRole !== "admin") {
-    redirect("/dashboard");
+  if (process.env.SUPABASE_SERVICE_ROLE_KEY) {
+    if (!dbProfile || dbProfile.role !== "admin" || dbProfile.isBanned) {
+      redirect("/dashboard");
+    }
   }
 
   return user;

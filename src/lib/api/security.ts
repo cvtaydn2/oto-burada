@@ -8,8 +8,6 @@ import type { User } from "@supabase/supabase-js";
 import { NextResponse } from "next/server";
 
 import { API_ERROR_CODES, apiError } from "@/lib/api/response";
-import { isSupabaseAdminUser } from "@/lib/auth/api-admin";
-import { getCurrentUser } from "@/lib/auth/session";
 import type { RateLimitConfig } from "@/lib/rate-limiting/rate-limit";
 import {
   enforceRateLimit,
@@ -117,7 +115,10 @@ export async function withSecurity(
   }
 
   if (options.requireAuth || options.requireAdmin) {
-    user = await getCurrentUser();
+    const { getAuthContext } = await import("@/lib/auth/session");
+    const { user: authUser, dbProfile } = await getAuthContext();
+    user = authUser;
+
     if (!user) {
       return {
         ok: false,
@@ -126,15 +127,15 @@ export async function withSecurity(
     }
 
     if (options.requireAdmin) {
-      const isAdmin = await isSupabaseAdminUser(user);
-      if (!isAdmin) {
+      // Admin check: uses cached dbProfile from getAuthContext
+      if (!dbProfile || dbProfile.role !== "admin" || dbProfile.isBanned) {
         return {
           ok: false,
           response: apiError(API_ERROR_CODES.FORBIDDEN, "Admin yetkisi gerekli.", 403),
         };
       }
     } else {
-      // 3.1 Lightweight Ban Check (JWT first - F-12 Optimization)
+      // 3.1 Lightweight Ban Check (JWT first)
       const isBannedInJwt = (user.app_metadata as { is_banned?: boolean })?.is_banned === true;
       if (isBannedInJwt) {
         return {
@@ -143,36 +144,16 @@ export async function withSecurity(
         };
       }
 
-      // 3.2 Secondary Ban Check (DB fallback for critical mutations only)
-      // Issue 18: Consolidate checks for better performance
+      // 3.2 Secondary Ban Check (DB fallback for critical mutations)
       const isMutation = ["POST", "PUT", "DELETE", "PATCH"].includes(request.method);
       const shouldCheckDb = isMutation || options.forceDbBanCheck;
 
       if (shouldCheckDb) {
-        try {
-          const { createSupabaseAdminClient } = await import("@/lib/supabase/admin");
-          const admin = createSupabaseAdminClient();
-          // Single DB fetch for status instead of RPC call
-          const { data: profile } = await admin
-            .from("profiles")
-            .select("is_banned")
-            .eq("id", user.id)
-            .maybeSingle<{ is_banned: boolean }>();
-
-          if (profile?.is_banned) {
-            return {
-              ok: false,
-              response: apiError(API_ERROR_CODES.FORBIDDEN, "Hesabınız askıya alınmıştır.", 403),
-            };
-          }
-        } catch {
+        // Uses cached dbProfile from getAuthContext (single DB call per request)
+        if (dbProfile?.isBanned) {
           return {
             ok: false,
-            response: apiError(
-              API_ERROR_CODES.INTERNAL_ERROR,
-              "Güvenlik kontrolü başarısız oldu.",
-              500
-            ),
+            response: apiError(API_ERROR_CODES.FORBIDDEN, "Hesabınız askıya alınmıştır.", 403),
           };
         }
       }

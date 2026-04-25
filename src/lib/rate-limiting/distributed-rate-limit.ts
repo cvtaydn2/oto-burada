@@ -27,21 +27,22 @@ function evictIfNeeded() {
   const now = Date.now();
   let deleted = 0;
 
-  // First pass: remove expired entries (cheap exit for most cases)
+  // Aggressive eviction: Clear expired entries or oldest entries until we reach 80% capacity
+  const targetSize = MAX_LOCAL_ENTRIES * 0.8;
+
   for (const [key, entry] of localFallbackStore) {
-    if (entry.reset <= now) {
+    if (entry.reset <= now || localFallbackStore.size > targetSize) {
       localFallbackStore.delete(key);
       deleted++;
-      if (deleted >= EVICT_BATCH_SIZE) return;
     }
+
+    if (localFallbackStore.size <= targetSize) break;
   }
 
-  // Second pass: if still over cap, evict oldest by reset time (batch only)
-  if (localFallbackStore.size >= MAX_LOCAL_ENTRIES) {
-    const sorted = [...localFallbackStore.entries()].sort((a, b) => a[1].reset - b[1].reset);
-    for (let i = 0; i < EVICT_BATCH_SIZE && i < sorted.length; i++) {
-      localFallbackStore.delete(sorted[i][0]);
-    }
+  if (deleted > 0) {
+    logger.api.debug(`Rate limit local storage evicted ${deleted} entries`, {
+      currentSize: localFallbackStore.size,
+    });
   }
 }
 

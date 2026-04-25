@@ -424,6 +424,41 @@ export async function isUserBanned(userId: string): Promise<boolean> {
 }
 
 /**
+ * LIGHTWEIGHT PERFORMANCE OPTIMIZATION:
+ * Checks if a user is banned with minimal column selection.
+ * AGENTS.md: Avoid SELECT * in hot paths.
+ */
+export async function isUserBannedLight(userId: string): Promise<boolean> {
+  if (!hasSupabaseAdminEnv()) return false;
+
+  const admin = createSupabaseAdminClient();
+  const { data } = await admin
+    .from("profiles")
+    .select("is_banned")
+    .eq("id", userId)
+    .maybeSingle<{ is_banned: boolean }>();
+
+  return data?.is_banned ?? false;
+}
+
+/**
+ * LIGHTWEIGHT PERFORMANCE OPTIMIZATION:
+ * Gets user role with minimal column selection.
+ */
+export async function getUserRoleLight(userId: string): Promise<Profile["role"]> {
+  if (!hasSupabaseAdminEnv()) return "user";
+
+  const admin = createSupabaseAdminClient();
+  const { data } = await admin
+    .from("profiles")
+    .select("role")
+    .eq("id", userId)
+    .maybeSingle<{ role: Profile["role"] }>();
+
+  return data?.role ?? "user";
+}
+
+/**
  * Seller triggers verification request.
  * Moves state to 'pending' and stores timestamp.
  */
