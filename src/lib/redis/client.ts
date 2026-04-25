@@ -10,11 +10,12 @@ const getRedisConfig = () => {
     };
   }
 
-  // SECURITY: Warn if Redis is not configured in production
+  // SECURITY: Fail-closed in production if Redis is not configured
   if (process.env.NODE_ENV === "production") {
-    logger.db.error(
-      "CRITICAL: Redis (Upstash) is not configured for production! Rate limiting will be degraded."
-    );
+    const errorMsg =
+      "CRITICAL: Redis (Upstash) is not configured for production! Rate limiting and caching are required for security.";
+    logger.db.error(errorMsg);
+    throw new Error(errorMsg);
   }
 
   return null;

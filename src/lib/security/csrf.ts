@@ -41,8 +41,15 @@ export function isValidRequestOrigin(request: Request | NextRequest): boolean {
       const host = request.headers.get("host");
       if (host && targetUrl.host === host) return true;
       if (process.env.NODE_ENV !== "production") {
-        const allowedDevOrigins = ["localhost:3000", "127.0.0.1:3000", "[::1]:3000"];
-        if (allowedDevOrigins.includes(targetUrl.host)) return true;
+        const allowedDevHosts = ["localhost", "127.0.0.1", "[::1]", "::1"];
+        const allowedDevPorts = ["3000", "3001"];
+
+        const targetHost = targetUrl.hostname;
+        const targetPort = targetUrl.port || (targetUrl.protocol === "https:" ? "443" : "80");
+
+        if (allowedDevHosts.includes(targetHost) && allowedDevPorts.includes(targetPort)) {
+          return true;
+        }
       }
     } catch {
       return false;

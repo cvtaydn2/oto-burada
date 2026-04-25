@@ -1,5 +1,6 @@
 "use server";
 
+import { logger } from "@/lib/logging/logger";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { hasSupabaseEnv } from "@/lib/supabase/env";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
@@ -70,7 +71,24 @@ export async function updateProfileAction(
     };
   }
 
-  const { error } = await supabase.auth.updateUser({
+  // 1. Update Profile Table First (Primary DB Truth)
+  const profile = await updateProfileTable(user.id, {
+    fullName: parsed.data.fullName,
+    phone: parsed.data.phone,
+    city: parsed.data.city,
+    avatarUrl: parsed.data.avatarUrl ?? null,
+  });
+
+  if (!profile) {
+    logger.auth.error("[Profile] Table update failed (null result)", null, { userId: user.id });
+    return {
+      error: "Profil veritabanı güncellenemedi. Lütfen tekrar dene.",
+      fields: values,
+    };
+  }
+
+  // 2. Update Auth Metadata (Secondary Cache)
+  const { error: authError } = await supabase.auth.updateUser({
     data: {
       full_name: parsed.data.fullName,
       phone: parsed.data.phone,
@@ -79,19 +97,23 @@ export async function updateProfileAction(
     },
   });
 
-  if (error) {
+  if (authError) {
+    // DB is updated, but Auth metadata failed. Log and inform user.
+    logger.auth.warn(
+      "[Profile] Auth metadata update failed after DB update",
+      { userId: user.id },
+      authError
+    );
     return {
-      error: "Profil güncellenemedi. Lütfen tekrar dene.",
-      fields: values,
+      success: "Profil güncellendi (Auth metadata gecikmeli güncellenebilir).",
+      fields: {
+        fullName: parsed.data.fullName,
+        phone: parsed.data.phone,
+        city: parsed.data.city,
+        avatarUrl: parsed.data.avatarUrl ?? "",
+      },
     };
   }
-
-  await updateProfileTable(user.id, {
-    fullName: parsed.data.fullName,
-    phone: parsed.data.phone,
-    city: parsed.data.city,
-    avatarUrl: parsed.data.avatarUrl ?? null,
-  });
 
   return {
     success: "Profil bilgilerin güncellendi.",
