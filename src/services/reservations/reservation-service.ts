@@ -31,7 +31,7 @@ export async function getReservationsBySeller(sellerId: string): Promise<Reserva
     .select(
       `
       *,
-      listing:listings(
+      listing:listings!inner(
         id, slug, title, price,
         photos:listing_images(public_url)
       )

@@ -70,7 +70,7 @@ export function DashboardReservationsTable({
 }
 
 function getListingLabel(reservation: ReservationRow): string {
-  if ("listing" in reservation && reservation.listing) {
+  if ("listing" in reservation) {
     return reservation.listing.title;
   }
   return `#${reservation.listing_id.slice(0, 8)}`;
@@ -108,10 +108,7 @@ function ReservationTableRow({
     toast.success("Rezervasyon onaylandı.");
   }
 
-  const listingSlug =
-    "listing" in reservation && reservation.listing
-      ? reservation.listing.slug
-      : reservation.listing_id;
+  const listingSlug = "listing" in reservation ? reservation.listing.slug : reservation.listing_id;
 
   return (
     <TableRow>

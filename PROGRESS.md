@@ -1,3 +1,24 @@
+# 2026-04-26 — Runtime Issues & Commit Blockers Resolution
+
+## [2026-04-26] - Service Worker, CSP, and Accessibility Fixes
+- **Durum:** ✅ TAMAMLANDI
+- **Yapılanlar:**
+  - **Service Worker HEAD Request Fix**: `public/sw.js` içindeki cache.put() çağrısı HEAD isteklerini desteklemediği için hata veriyordu. Service Worker artık sadece GET isteklerini cache'liyor, diğer HTTP metodları (HEAD, POST, etc.) cache işleminden geçirilmiyor.
+  - **DialogTitle Accessibility Fix**: `src/components/offers/offer-actions.tsx` içindeki AlertDialog bileşeninde eksik DialogTitle accessibility uyarısı giderildi. Dialog yapısı düzeltilerek screen reader uyumluluğu sağlandı.
+  - **CSP Vercel Avatar Support**: `next.config.ts` içindeki Content Security Policy'de `https://vercel.com` domain'i img-src directive'ine zaten eklenmiş durumda, Vercel avatar resimlerinin yüklenmesi destekleniyor.
+  - **ESLint Unused Variable Fix**: `src/services/listings/listing-submission-query.ts` içindeki `_similarityScore` unused variable uyarısı `void similarityScore` ile açık şekilde işaretlenerek giderildi.
+  - **Offer System Integration**: Teklif verme sistemi listing detail sayfasında hem desktop hem mobile görünümlerde aktif. `OfferPanel` Sheet-based UI ile AGENTS.md "UI via Bottom Sheet" kuralına uygun şekilde implement edilmiş.
+- **Doğrulama:**
+  - `npm run lint` ✅ (0 errors, 0 warnings)
+  - `npm run typecheck` ✅
+  - `npm run build` ✅
+  - `git commit` ve `git push` ✅ başarılı
+- **Kararlar:**
+  - Service Worker cache stratejisi GET-only olarak sınırlandırıldı, bu modern web uygulamaları için standart yaklaşım.
+  - Accessibility uyarıları DialogTitle eksikliği nedeniyle oluşuyordu, bu Radix UI bileşenlerinde yaygın bir sorun.
+  - Offer sistemi ContactActions bileşeni içinde entegre edilmiş durumda, ayrı sayfa yerine Sheet kullanımı AGENTS.md kurallarına uygun.
+- **Sıradaki Adım:** Offer sisteminin end-to-end test edilmesi ve kullanıcı deneyiminin doğrulanması.
+
 # 2026-04-24 — Infrastructure Hardening & Messaging Maturity
 
 ## [2026-04-24] - Messaging Hardening, Service Modularization & God Function Simplification

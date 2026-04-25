@@ -40,7 +40,7 @@ export interface ReservationWithListing extends Reservation {
     title: string;
     price: number;
     photos: { public_url: string }[];
-  } | null;
+  };
 }
 
 export interface ReservationWithParties extends Reservation {
