@@ -1,7 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
+import { z } from "zod";
 
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { ChatService } from "@/services/chat/chat-service";
+
+const messageSchema = z.object({
+  content: z.string().trim().min(1).max(2000),
+  messageType: z.enum(["text", "image", "system"]),
+});
 
 export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
@@ -37,17 +43,13 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
 
     const { id: chatId } = await params;
     const body = await req.json();
-    const { content, messageType = "text" } = body;
-
-    if (!content || !content.trim()) {
-      return NextResponse.json({ error: "Mesaj içeriği boş olamaz." }, { status: 400 });
-    }
+    const validated = messageSchema.parse(body);
 
     const result = await ChatService.sendMessage({
       chatId: chatId,
       senderId: user.id,
-      content: content,
-      messageType: (messageType || "text") as "text" | "image" | "system",
+      content: validated.content,
+      messageType: validated.messageType,
     });
     return NextResponse.json({ data: result });
   } catch (error: unknown) {
@@ -56,7 +58,10 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
   }
 }
 
-export async function DELETE(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+export async function DELETE(
+  req: NextRequest,
+  { params: _params }: { params: Promise<{ id: string }> }
+) {
   try {
     const supabase = await createSupabaseServerClient();
     const {

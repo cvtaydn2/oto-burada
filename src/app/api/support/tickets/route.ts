@@ -1,3 +1,5 @@
+import { z } from "zod";
+
 import { captureServerError, captureServerEvent } from "@/lib/monitoring/posthog-server";
 import { API_ERROR_CODES, apiError, apiSuccess } from "@/lib/utils/api-response";
 import { withAuth, withAuthAndCsrf } from "@/lib/utils/api-security";
@@ -16,6 +18,14 @@ const VALID_CATEGORIES: TicketCategory[] = [
   "other",
 ];
 const VALID_PRIORITIES: TicketPriority[] = ["low", "medium", "high", "urgent"];
+
+const ticketCreateSchema = z.object({
+  subject: z.string().min(3).max(200),
+  description: z.string().min(10).max(5000),
+  category: z.enum(VALID_CATEGORIES).optional(),
+  priority: z.enum(VALID_PRIORITIES).optional(),
+  listingId: z.string().uuid().optional(),
+});
 
 export async function POST(request: Request) {
   // Security checks: CSRF + Auth + Rate limiting
@@ -39,28 +49,15 @@ export async function POST(request: Request) {
     return apiError(API_ERROR_CODES.BAD_REQUEST, "Geçersiz istek formatı.", 400);
   }
 
-  const { subject, description, category, priority, listingId } = body as Record<string, unknown>;
-
-  if (!subject || typeof subject !== "string" || subject.trim().length < 3) {
-    return apiError(API_ERROR_CODES.VALIDATION_ERROR, "Konu en az 3 karakter olmalıdır.", 400);
-  }
-  if (!description || typeof description !== "string" || description.trim().length < 10) {
-    return apiError(API_ERROR_CODES.VALIDATION_ERROR, "Açıklama en az 10 karakter olmalıdır.", 400);
-  }
-  if (category && !VALID_CATEGORIES.includes(category as TicketCategory)) {
-    return apiError(API_ERROR_CODES.VALIDATION_ERROR, "Geçersiz kategori.", 400);
-  }
-  if (priority && !VALID_PRIORITIES.includes(priority as TicketPriority)) {
-    return apiError(API_ERROR_CODES.VALIDATION_ERROR, "Geçersiz öncelik.", 400);
-  }
+  const validated = ticketCreateSchema.parse(body);
 
   try {
     const ticket = await createTicket(user.id, {
-      subject: sanitizeText(subject.trim()),
-      description: sanitizeDescription((description as string).trim()),
-      category: (category as TicketCategory) ?? "other",
-      priority: (priority as TicketPriority) ?? "medium",
-      listingId: typeof listingId === "string" ? listingId : undefined,
+      subject: sanitizeText(validated.subject),
+      description: sanitizeDescription(validated.description),
+      category: validated.category ?? "other",
+      priority: validated.priority ?? "medium",
+      listingId: validated.listingId,
     });
 
     captureServerEvent(
@@ -68,7 +65,7 @@ export async function POST(request: Request) {
       {
         userId: user.id,
         ticketId: ticket.id,
-        category: (category as TicketCategory) ?? "other",
+        category: validated.category ?? "other",
       },
       user.id
     );

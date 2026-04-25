@@ -60,7 +60,7 @@ describe("Listings RLS Integration", () => {
   it("should not allow anonymous users to update listings", async () => {
     if (!testListingId) return;
 
-    const { error } = await anon
+    const { error: _error } = await anon
       .from("listings")
       .update({ title: "Hacked Title" })
       .eq("id", testListingId);
@@ -96,7 +96,7 @@ describe("Listings RLS Integration", () => {
       .single();
 
     if (draft) {
-      const { data, error } = await anon
+      const { data, error: _error } = await anon
         .from("listings")
         .select("id")
         .eq("id", draft.id)

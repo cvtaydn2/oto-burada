@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { NextRequest, NextResponse } from "next/server";
 
 import { createSupabaseServerClient } from "@/lib/supabase/server";
@@ -27,7 +26,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ toke
     }
 
     return NextResponse.json({ data: payment });
-  } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+  } catch {
+    return NextResponse.json({ error: "Ödeme bilgileri alınamadı." }, { status: 500 });
   }
 }

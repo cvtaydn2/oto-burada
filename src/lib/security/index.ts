@@ -28,7 +28,7 @@
 export function isValidRequestOrigin(request: Request): boolean {
   // Webhook exclusion: third-party services (like Iyzico) won't send valid browser origin/referer headers
   const { pathname } = new URL(request.url);
-  if (pathname.startsWith("/api/webhooks/")) {
+  if (pathname.startsWith("/api/webhooks/") || pathname === "/api/payments/webhook") {
     return true;
   }
 

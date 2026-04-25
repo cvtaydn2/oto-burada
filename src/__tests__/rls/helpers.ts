@@ -25,8 +25,8 @@ export function getAnonClient() {
 /**
  * Simulates an authenticated user client
  */
-export async function getAuthenticatedClient(userId: string) {
-  const admin = getAdminClient();
+export async function getAuthenticatedClient(_userId: string) {
+  const _admin = getAdminClient();
 
   // In a real test environment, we would use admin.auth.admin.createServerSession
   // or similar, but for RLS testing we often just need to mock the JWT or use

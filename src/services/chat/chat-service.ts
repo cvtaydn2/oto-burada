@@ -1,4 +1,4 @@
-import { createSupabaseAdminClient } from "@/lib/supabase/admin";
+import { createSupabaseServerClient } from "@/lib/supabase/server";
 import {
   type Chat,
   type ChatWithLastMessage,
@@ -15,10 +15,10 @@ export class ChatService {
     userId: string,
     includeArchived = false
   ): Promise<ChatWithLastMessage[]> {
-    const admin = createSupabaseAdminClient();
+    const supabase = await createSupabaseServerClient();
 
     // Fetch chats — exclude archived ones for this user
-    const { data: chats, error: chatsError } = await admin
+    const { data: chats, error: chatsError } = await supabase
       .from("chats")
       .select(
         `
@@ -99,9 +99,9 @@ export class ChatService {
    * Create a new chat between buyer and seller for a listing
    */
   static async createChat(input: CreateChatInput): Promise<Chat> {
-    const admin = createSupabaseAdminClient();
+    const supabase = await createSupabaseServerClient();
 
-    const { data: chatId, error } = await admin.rpc("create_chat_atomic", {
+    const { data: chatId, error } = await supabase.rpc("create_chat_atomic", {
       p_listing_id: input.listingId,
       p_buyer_id: input.buyerId,
       p_seller_id: input.sellerId,
@@ -112,7 +112,7 @@ export class ChatService {
       throw new Error(`Chat oluşturulamadı: ${error.message}`);
     }
 
-    const { data: chat, error: fetchError } = await admin
+    const { data: chat, error: fetchError } = await supabase
       .from("chats")
       .select("*")
       .eq("id", chatId)
@@ -139,10 +139,10 @@ export class ChatService {
    * Get all messages for a chat
    */
   static async getMessages(chatId: string, userId: string): Promise<Message[]> {
-    const admin = createSupabaseAdminClient();
+    const supabase = await createSupabaseServerClient();
 
     // Verify user is participant
-    const { data: chat, error: chatError } = await admin
+    const { data: _chat, error: chatError } = await supabase
       .from("chats")
       .select("id")
       .eq("id", chatId)
@@ -153,7 +153,7 @@ export class ChatService {
       throw new Error("Chat bulunamadı veya erişim izniniz yok.");
     }
 
-    const { data: messages, error: messagesError } = await admin
+    const { data: messages, error: messagesError } = await supabase
       .from("messages")
       .select("*")
       .eq("chat_id", chatId)
@@ -179,10 +179,10 @@ export class ChatService {
    * Send a message to a chat
    */
   static async sendMessage(input: SendMessageInput): Promise<Message> {
-    const admin = createSupabaseAdminClient();
+    const supabase = await createSupabaseServerClient();
 
     // Verify chat exists and user is participant
-    const { data: chat, error: chatError } = await admin
+    const { data: chat, error: chatError } = await supabase
       .from("chats")
       .select("id, buyer_id, seller_id, status")
       .eq("id", input.chatId)
@@ -199,7 +199,7 @@ export class ChatService {
 
     // Simple rate limiting check: max 100 messages per chat in last hour
     const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000).toISOString();
-    const { count: recentMessageCount, error: countError } = await admin
+    const { count: recentMessageCount, error: countError } = await supabase
       .from("messages")
       .select("*", { count: "exact", head: true })
       .eq("chat_id", input.chatId)
@@ -214,7 +214,7 @@ export class ChatService {
       throw new Error("Çok fazla mesaj gönderdiniz. Lütfen biraz bekleyin.");
     }
 
-    const { data: message, error: insertError } = await admin
+    const { data: message, error: insertError } = await supabase
       .from("messages")
       .insert({
         chat_id: input.chatId,
@@ -248,9 +248,9 @@ export class ChatService {
    * Delete a message (soft delete)
    */
   static async deleteMessage(messageId: string, userId: string): Promise<boolean> {
-    const admin = createSupabaseAdminClient();
+    const supabase = await createSupabaseServerClient();
 
-    const { data: success, error } = await admin.rpc("soft_delete_message", {
+    const { data: success, error } = await supabase.rpc("soft_delete_message", {
       p_message_id: messageId,
       p_user_id: userId,
     });
@@ -266,9 +266,9 @@ export class ChatService {
    * Archive or unarchive a chat for a specific user
    */
   static async archiveChat(chatId: string, userId: string, archive: boolean): Promise<boolean> {
-    const admin = createSupabaseAdminClient();
+    const supabase = await createSupabaseServerClient();
 
-    const { error } = await admin.rpc("toggle_chat_archive", {
+    const { error } = await supabase.rpc("toggle_chat_archive", {
       p_chat_id: chatId,
       p_user_id: userId,
       p_archive: archive,
@@ -288,10 +288,10 @@ export class ChatService {
     chatId: string,
     userId: string
   ): Promise<{ success: boolean; updatedCount: number }> {
-    const admin = createSupabaseAdminClient();
+    const supabase = await createSupabaseServerClient();
 
     // Verify user is participant
-    const { data: chat, error: chatError } = await admin
+    const { data: chat, error: chatError } = await supabase
       .from("chats")
       .select("id, buyer_id, seller_id")
       .eq("id", chatId)
@@ -302,7 +302,7 @@ export class ChatService {
       throw new Error("Chat bulunamadı veya erişim izniniz yok.");
     }
 
-    const { data, error: updateError } = await admin
+    const { data, error: updateError } = await supabase
       .from("messages")
       .update({ is_read: true })
       .eq("chat_id", chatId)

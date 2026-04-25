@@ -1,10 +1,22 @@
 import { NextResponse } from "next/server";
+import { z } from "zod";
 
 import { captureServerEvent } from "@/lib/monitoring/posthog-server";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { hasSupabaseAdminEnv } from "@/lib/supabase/env";
 import { withAdminRoute } from "@/lib/utils/api-security";
 import { logger } from "@/lib/utils/logger";
+
+const banSchema = z.object({
+  ip: z.string().refine((val) => {
+    // IPv4 or IPv6 validation
+    const ipv4Regex =
+      /^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/;
+    const ipv6Regex = /^(?:[0-9a-fA-F]{1,4}:){7}[0-9a-fA-F]{1,4}$/;
+    return ipv4Regex.test(val) || ipv6Regex.test(val);
+  }, "Invalid IP address"),
+  reason: z.string().min(5).max(500),
+});
 
 export async function POST(request: Request) {
   const security = await withAdminRoute(request);
@@ -28,6 +40,13 @@ export async function POST(request: Request) {
 
   if (!ip || !reason) {
     return NextResponse.json({ error: "Missing ip or reason" }, { status: 400 });
+  }
+
+  // Validate IP format
+  try {
+    banSchema.parse({ ip, reason });
+  } catch (error) {
+    return NextResponse.json({ error: "Invalid IP address or reason" }, { status: 400 });
   }
 
   // 3. Insert into banlist

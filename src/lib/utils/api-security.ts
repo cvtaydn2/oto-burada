@@ -148,7 +148,7 @@ export async function withSecurity(
               response: apiError(API_ERROR_CODES.FORBIDDEN, "Hesabınız askıya alınmıştır.", 403),
             };
           }
-        } catch (error) {
+        } catch (_error) {
           return {
             ok: false,
             response: apiError(

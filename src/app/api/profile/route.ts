@@ -1,6 +1,21 @@
+import { z } from "zod";
+
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { API_ERROR_CODES, apiError, apiSuccess } from "@/lib/utils/api-response";
 import { withUserAndCsrf } from "@/lib/utils/api-security";
+
+const profileUpdateSchema = z.object({
+  full_name: z.string().min(2).max(100).optional(),
+  phone: z
+    .string()
+    .regex(/^9\d{10}$/)
+    .optional(),
+  city: z.string().optional(),
+  district: z.string().optional(),
+  avatar_url: z.string().url().optional(),
+  business_name: z.string().max(200).optional(),
+  business_logo_url: z.string().url().optional(),
+});
 
 export async function GET(req: Request) {
   const security = await withUserAndCsrf(req);

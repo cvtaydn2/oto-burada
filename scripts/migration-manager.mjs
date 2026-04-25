@@ -104,7 +104,7 @@ class MigrationManager {
     if (result) {
       result.split("\n").forEach(line => {
         if (line.trim()) {
-          const [name, checksum] = line.split("|");
+          const [name, _checksum] = line.split("|");
           this.appliedMigrations.add(name);
         }
       });

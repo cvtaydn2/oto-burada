@@ -8,7 +8,6 @@ import { logger } from "@/lib/utils/logger";
  * PII is encrypted with a per-user key. Deleting the key makes backups unreadable.
  */
 
-// const MASTER_KEY = process.env.ENCRYPTION_MASTER_KEY || 'default-master-key-32-chars-long!!';
 const ALGORITHM = "aes-256-gcm";
 
 export async function getOrCreateUserKey(userId: string): Promise<Buffer> {

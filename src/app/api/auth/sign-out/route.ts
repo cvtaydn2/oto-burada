@@ -1,7 +1,11 @@
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { API_ERROR_CODES, apiError, apiSuccess } from "@/lib/utils/api-response";
+import { withUserAndCsrf } from "@/lib/utils/api-security";
 
-export async function POST() {
+export async function POST(request: Request) {
+  const security = await withUserAndCsrf(request);
+  if (!security.ok) return security.response;
+
   try {
     const supabase = await createSupabaseServerClient();
 

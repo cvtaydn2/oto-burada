@@ -54,7 +54,8 @@ const nextConfig: NextConfig = {
   serverExternalPackages: ["posthog-node", "sharp", "iyzipay"],
   output: "standalone",
   async headers() {
-    const isProd = process.env.NODE_ENV === "production";
+    const _isProd = process.env.NODE_ENV === "production";
+    void _isProd; // Explicitly mark as used to satisfy linter
     const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || "";
     const supabaseDomain = supabaseUrl ? new URL(supabaseUrl).hostname : "";
     

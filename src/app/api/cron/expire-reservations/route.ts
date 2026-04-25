@@ -1,9 +1,13 @@
 import { NextResponse } from "next/server";
 
+import { withCronOrAdmin } from "@/lib/utils/api-security";
 import { logger } from "@/lib/utils/logger";
 import { expireReservations } from "@/services/reservations/reservation-service";
 
-export async function POST() {
+export async function POST(request: Request) {
+  const security = await withCronOrAdmin(request);
+  if (!security.ok) return security.response;
+
   try {
     const expired = await expireReservations();
 

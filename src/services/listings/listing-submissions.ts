@@ -223,7 +223,7 @@ export async function getStoredListingsByIds(ids: string[]) {
 }
 
 /** @deprecated LEGACY ONLY: Used by migration scripts. Use database storage instead. */
-export async function getLegacyStoredUserListings(sellerId: string) {
+export async function getLegacyStoredUserListings(_sellerId: string) {
   return [];
 }
 

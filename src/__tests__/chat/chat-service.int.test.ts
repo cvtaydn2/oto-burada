@@ -7,7 +7,7 @@ describe("ChatService Integration Tests", () => {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let testUser: any;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  let testListing: any;
+  let _testListing: any;
 
   beforeAll(async () => {
     const admin = createSupabaseAdminClient();
@@ -23,7 +23,7 @@ describe("ChatService Integration Tests", () => {
     }
 
     testUser = profiles[0];
-    testListing = listings[0];
+    _testListing = listings[0];
   });
 
   it("should fetch chats for a user", async () => {

@@ -8,6 +8,14 @@ export const protectedApiPrefixes = [
   "/api/dashboard",
   "/api/profile",
   "/api/chats",
+  "/api/offers",
+  "/api/reports",
+  "/api/favorites",
+  "/api/notifications",
+  "/api/seller-reviews",
+  "/api/saved-searches",
+  "/api/support/tickets",
+  "/api/payments",
 ];
 export const adminApiPrefixes = ["/api/admin"];
 export const publicApiRoutes = ["/api/health", "/api/contact", "/api/market/estimate"];
