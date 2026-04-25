@@ -15,6 +15,11 @@
     - `parseListingFiltersFromSearchParams`: "Lossy recovery" kaldırıldı, artık geçersiz parametrelerde güvenli varsayılanlara dönülüyor ve hatalar detaylıca loglanıyor.
     - `registerAction`: Profil oluşturma race condition sorunu için 3 denemeli retry mekanizması ve manuel admin fallback eklendi.
     - `checkRateLimit`: Fail-closed profillerde (auth, admin, vb.) altyapı çökerse üretim ortamında artık kesinlikle hata fırlatılarak erişim engelleniyor.
+  - **Performance Optimizations (Senior Review)**:
+    - `middleware.ts`: JWT claim'lerini cookie üzerinden decode eden (unverified) bir ön kontrol eklendi. Bu sayede `getUser()` network çağrısı yalnızca kritik durumlarda yapılıyor.
+    - `api-admin.ts`: Admin ve ban durumu kontrolleri için 30 saniyelik in-memory cache eklendi, her API isteğinde DB round-trip sayısı azaltıldı.
+    - `admin.ts`: Supabase admin client için 5 dakikalık TTL'e sahip singleton pattern uygulandı, connection pool verimliliği artırıldı.
+    - **Database Indexes**: Marketplace filtrelemeleri (brand, model, price, year) için yüksek performanslı kompozit ve partial index'ler eklendi (`0102_marketplace_composite_indexes.sql`).
 - **Doğrulama:**
   - `npm run lint` ✅ (0 errors, 2 warnings)
   - `npm run typecheck` ✅

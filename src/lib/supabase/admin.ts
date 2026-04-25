@@ -17,12 +17,31 @@ import { getSupabaseAdminEnv } from "@/lib/supabase/env";
  * instance holds an old singleton, all admin requests will fail with 401/403.
  * Creating a new client per call is ~microseconds overhead and eliminates this risk.
  */
+let cachedClient: SupabaseClient<any> | null = null;
+let clientCreatedAt = 0;
+const CLIENT_TTL_MS = 5 * 60 * 1000; // 5 minutes
+
+/**
+ * SECURITY CRITICAL: Creates a Supabase admin client using the SERVICE_ROLE_KEY.
+ *
+ * Implements a singleton pattern with TTL to optimize connection pooling while
+ * allowing for periodic key rotation/refresh.
+ */
 export function createSupabaseAdminClient(): SupabaseClient<any> {
+  const now = Date.now();
+
+  if (cachedClient && now - clientCreatedAt < CLIENT_TTL_MS) {
+    return cachedClient;
+  }
+
   const { serviceRoleKey, url } = getSupabaseAdminEnv();
-  return createClient<any>(url, serviceRoleKey, {
+  cachedClient = createClient<any>(url, serviceRoleKey, {
     auth: {
       autoRefreshToken: false,
       persistSession: false,
     },
   });
+
+  clientCreatedAt = now;
+  return cachedClient;
 }

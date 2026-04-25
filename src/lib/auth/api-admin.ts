@@ -5,6 +5,13 @@ import { hasSupabaseAdminEnv, hasSupabaseEnv } from "@/lib/supabase/env";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { API_ERROR_CODES, apiError } from "@/lib/utils/api-response";
 
+/**
+ * Short-lived cache to avoid redundant DB calls for admin checks within the same instance.
+ * Cache TTL: 30 seconds
+ */
+const adminCheckCache = new Map<string, { role: string; isBanned: boolean; ts: number }>();
+const CACHE_TTL_MS = 30 * 1000;
+
 export async function requireApiAdminUser(existingUser?: User): Promise<User | Response> {
   if (!hasSupabaseEnv()) {
     return apiError(API_ERROR_CODES.SERVICE_UNAVAILABLE, "Servis kullanılamıyor.", 503);
@@ -41,11 +48,29 @@ export async function requireApiAdminUser(existingUser?: User): Promise<User | R
   }
 
   const adminClient = createSupabaseAdminClient();
-  const { data: profile } = await adminClient
-    .from("profiles")
-    .select("role, is_banned")
-    .eq("id", user.id)
-    .maybeSingle<{ role: string; is_banned?: boolean }>();
+  const now = Date.now();
+  const cached = adminCheckCache.get(user.id);
+
+  let profile: { role: string; is_banned?: boolean } | null = null;
+
+  if (cached && now - cached.ts < CACHE_TTL_MS) {
+    profile = { role: cached.role, is_banned: cached.isBanned };
+  } else {
+    const { data } = await adminClient
+      .from("profiles")
+      .select("role, is_banned")
+      .eq("id", user.id)
+      .maybeSingle<{ role: string; is_banned?: boolean }>();
+
+    if (data) {
+      profile = data;
+      adminCheckCache.set(user.id, {
+        role: data.role,
+        isBanned: !!data.is_banned,
+        ts: now,
+      });
+    }
+  }
 
   if (!profile || profile.role !== "admin") {
     return apiError(API_ERROR_CODES.FORBIDDEN, "Admin yetkisi gerekli.", 403);
@@ -85,11 +110,29 @@ export async function isSupabaseAdminUser(existingUser?: User): Promise<boolean>
   if (!hasSupabaseAdminEnv()) return false;
 
   const adminClient = createSupabaseAdminClient();
-  const { data: profile } = await adminClient
-    .from("profiles")
-    .select("role, is_banned")
-    .eq("id", user.id)
-    .maybeSingle<{ role: string; is_banned?: boolean }>();
+  const now = Date.now();
+  const cached = adminCheckCache.get(user.id);
+
+  let profile: { role: string; is_banned?: boolean } | null = null;
+
+  if (cached && now - cached.ts < CACHE_TTL_MS) {
+    profile = { role: cached.role, is_banned: cached.isBanned };
+  } else {
+    const { data } = await adminClient
+      .from("profiles")
+      .select("role, is_banned")
+      .eq("id", user.id)
+      .maybeSingle<{ role: string; is_banned?: boolean }>();
+
+    if (data) {
+      profile = data;
+      adminCheckCache.set(user.id, {
+        role: data.role,
+        isBanned: !!data.is_banned,
+        ts: now,
+      });
+    }
+  }
 
   if (!profile || profile.role !== "admin") return false;
   if (profile.is_banned) return false;
