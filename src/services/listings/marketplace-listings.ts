@@ -106,7 +106,7 @@ export async function getMarketplaceListingBySlug(slug: string): Promise<Listing
 }
 
 export async function getListingById(id: string) {
-  return getStoredListingById(id);
+  return getStoredListingById(id, { includeBanned: true });
 }
 
 export async function getMarketplaceSeller(sellerId: string): Promise<Profile | null> {

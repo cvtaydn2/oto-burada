@@ -214,7 +214,7 @@ export function AdminUserDetailClient({ detail, userId }: AdminUserDetailClientP
                   {listings.map((l) => (
                     <Link
                       key={l.id}
-                      href={`/admin/listings?q=${l.slug || l.title}`}
+                      href={`/admin/listings?q=${l.slug || l.title}&status=all`}
                       className="block group"
                     >
                       <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm group-hover:shadow-md transition-all group-hover:-translate-y-1">

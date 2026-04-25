@@ -201,24 +201,42 @@ export async function getExistingListingSlugs(): Promise<{ id: string; slug: str
   return (data ?? []) as { id: string; slug: string }[];
 }
 
-export async function getStoredListingBySlug(slug: string) {
-  const databaseListings = await getDatabaseListings({ slug });
+export async function getStoredListingBySlug(slug: string, options?: { includeBanned?: boolean }) {
+  const databaseListings = await getDatabaseListings({
+    slug,
+    includeBanned: options?.includeBanned,
+  });
   return databaseListings?.[0] ?? null;
 }
 
-export async function checkListingExistsById(listingId: string) {
-  const databaseListings = await getDatabaseListings({ ids: [listingId] });
+export async function checkListingExistsById(
+  listingId: string,
+  options?: { includeBanned?: boolean }
+) {
+  const databaseListings = await getDatabaseListings({
+    ids: [listingId],
+    includeBanned: options?.includeBanned,
+  });
   return databaseListings && databaseListings.length > 0;
 }
 
-export async function getStoredListingById(listingId: string) {
-  const databaseListings = await getDatabaseListings({ ids: [listingId] });
+export async function getStoredListingById(
+  listingId: string,
+  options?: { includeBanned?: boolean }
+) {
+  const databaseListings = await getDatabaseListings({
+    ids: [listingId],
+    includeBanned: options?.includeBanned,
+  });
   return databaseListings?.[0] ?? null;
 }
 
-export async function getStoredListingsByIds(ids: string[]) {
+export async function getStoredListingsByIds(ids: string[], options?: { includeBanned?: boolean }) {
   if (ids.length === 0) return [];
-  const databaseListings = await getDatabaseListings({ ids });
+  const databaseListings = await getDatabaseListings({
+    ids,
+    includeBanned: options?.includeBanned,
+  });
   return databaseListings ?? [];
 }
 

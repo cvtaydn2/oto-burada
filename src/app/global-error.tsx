@@ -47,7 +47,7 @@ export default function GlobalError({
 
           <p className="text-xs text-gray-500">
             Sorun devam ederse lütfen{" "}
-            <Link href="/iletisim" className="text-blue-600 hover:underline">
+            <Link href="/contact" className="text-blue-600 hover:underline">
               destek ekibiyle iletişime geçin
             </Link>
             .

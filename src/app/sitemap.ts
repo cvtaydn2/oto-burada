@@ -92,7 +92,7 @@ export default async function sitemap({ id }: { id: number }): Promise<MetadataR
     const galleryPages: MetadataRoute.Sitemap = (sellers ?? [])
       .filter((s) => s.business_slug)
       .map((s) => ({
-        url: `${baseUrl}/gallery/${s.business_slug}`,
+        url: `${baseUrl}/galeri/${s.business_slug}`,
         lastModified: now,
         changeFrequency: "weekly" as const,
         priority: 0.6,

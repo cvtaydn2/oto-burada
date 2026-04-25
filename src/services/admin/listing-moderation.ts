@@ -88,12 +88,13 @@ async function createModerationSideEffects(
 
   // 2. Notification (Immediate)
   await createDatabaseNotification({
-    href: `/dashboard/listings?edit=${listing.id}`,
+    href:
+      action === "approve" ? `/listing/${listing.slug}` : `/dashboard/listings?edit=${listing.id}`,
     message:
       action === "approve"
-        ? `"${listing.title}" ilanin yayinlandi. Artik public listede gorunuyor.`
-        : `"${listing.title}" ilanin moderasyon tarafindan reddedildi. Notlari inceleyip guncelleyebilirsin.`,
-    title: action === "approve" ? "Ilanin onaylandi" : "Ilanin reddedildi",
+        ? `Tebrikler! "${listing.title}" ilanınız onaylandı ve yayına alındı.`
+        : `"${listing.title}" ilanınız moderasyon ekibimiz tarafından reddedildi. Notları inceleyip düzenleyebilirsiniz.`,
+    title: action === "approve" ? "İlanınız Yayında" : "İlan Reddedildi",
     type: "moderation",
     userId: listing.sellerId,
   });
@@ -122,6 +123,16 @@ async function createModerationSideEffects(
           err
         )
       );
+    }
+
+    // Always revalidate seller gallery if it exists
+    if (listing.seller?.businessSlug) {
+      const { revalidatePath } = await import("next/cache");
+      revalidatePath(`/galeri/${listing.seller.businessSlug}`);
+      logger.admin.info("Gallery cache revalidated after moderation", {
+        slug: listing.seller.businessSlug,
+        action,
+      });
     }
   } catch (err) {
     logger.admin.error("Moderation side-effects failed", err, { listingId: listing.id });
@@ -223,7 +234,7 @@ export async function moderateDatabaseListing(
     return null;
   }
 
-  return (await getDatabaseListings({ listingId }))?.[0] ?? null;
+  return (await getDatabaseListings({ listingId, includeBanned: true }))?.[0] ?? null;
 }
 
 export async function adminDeleteDatabaseListing(listingId: string) {
@@ -232,7 +243,7 @@ export async function adminDeleteDatabaseListing(listingId: string) {
   }
 
   const admin = createSupabaseAdminClient();
-  const listing = (await getDatabaseListings({ listingId }))?.[0];
+  const listing = (await getDatabaseListings({ listingId, includeBanned: true }))?.[0];
 
   if (!listing) {
     return null;

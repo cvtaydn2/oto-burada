@@ -82,44 +82,76 @@ export const revalidate = 60;
 
 export async function generateMetadata({ params }: ListingDetailPageProps): Promise<Metadata> {
   const { slug } = await params;
-  const listing = await getMarketplaceListingBySlug(slug);
+  // Try marketplace (approved) first
+  let listing = await getMarketplaceListingBySlug(slug);
+
+  // If not found in marketplace, try stored (admin/owner bypass)
+  if (!listing) {
+    listing = await getStoredListingBySlug(slug);
+  }
+
   if (!listing) return { title: "İlan Bulunamadı" };
-  return buildListingDetailMetadata(listing);
+
+  const metadata = buildListingDetailMetadata(listing);
+
+  // Prevent indexing of non-approved listings
+  if (listing.status !== "approved") {
+    return {
+      ...metadata,
+      robots: {
+        index: false,
+        follow: false,
+      },
+    };
+  }
+
+  return metadata;
 }
 
 export default async function ListingDetailPage({ params }: ListingDetailPageProps) {
   const { slug } = await params;
-  const listing = await getMarketplaceListingBySlug(slug);
 
-  // ── Not found / inactive ──────────────────────────────────────────────────
+  // ── Data fetching ─────────────────────────────────────────────────────────
+  const [currentUser, rawListing] = await Promise.all([
+    getCurrentUser(),
+    getMarketplaceListingBySlug(slug),
+  ]);
+
+  let listing = rawListing;
+
+  // ── Admin/Owner Bypass ──────────────────────────────────────────────────
   if (!listing) {
-    const listingFromDb = await getStoredListingBySlug(slug);
-    if (listingFromDb && listingFromDb.status !== "approved") {
+    const listingFromDb = await getStoredListingBySlug(slug, { includeBanned: true });
+    const isAdmin = currentUser?.user_metadata?.role === "admin";
+    const isOwner = currentUser?.id === listingFromDb?.sellerId;
+
+    if (listingFromDb && (isAdmin || isOwner)) {
+      listing = listingFromDb;
+    } else if (listingFromDb && listingFromDb.status !== "approved") {
       return (
         <main className="flex min-h-[70vh] flex-col items-center justify-center px-4 text-center">
           <div className="mb-6 flex size-20 items-center justify-center rounded-full bg-amber-100">
             <AlertCircle className="size-10 text-amber-600" />
           </div>
-          <h1 className="mb-2 text-2xl font-bold text-foreground">İlan Artık Aktif Değil</h1>
-          <p className="mb-8 max-w-md text-muted-foreground">
-            Bu ilan satışa kapatılmış veya süresi dolmuş olabilir.
+          <h1 className="mb-2 text-2xl font-bold text-foreground">İlan Yayında Değil</h1>
+          <p className="mb-8 max-w-md text-muted-foreground italic">
+            Bu ilan henüz onaylanmamış, reddedilmiş veya yayından kaldırılmış olabilir.
           </p>
           <Link
             href="/listings"
             className="inline-flex h-12 items-center justify-center rounded-xl bg-primary px-8 font-bold text-primary-foreground hover:bg-primary/90 transition"
           >
-            Diğer İlanları İncele
+            Piyasadaki Diğer İlanlar
           </Link>
         </main>
       );
+    } else {
+      notFound();
     }
-    notFound();
   }
 
-  // ── Data fetching ─────────────────────────────────────────────────────────
-  const [seller, currentUser, similarListings, sellerRating, marketValuation] = await Promise.all([
+  const [seller, similarListings, sellerRating, marketValuation] = await Promise.all([
     getMarketplaceSeller(listing.sellerId),
-    getCurrentUser(),
     getSimilarMarketplaceListings(listing.slug, listing.brand, listing.city),
     getSellerRatingSummary(listing.sellerId),
     getMarketValuation({
@@ -363,7 +395,7 @@ export default async function ListingDetailPage({ params }: ListingDetailPagePro
 
                 {seller?.businessSlug && (
                   <Link
-                    href={`/gallery/${seller.businessSlug}`}
+                    href={`/galeri/${seller.businessSlug}`}
                     className="mt-4 flex h-9 w-full items-center justify-center gap-2 rounded-xl bg-muted text-xs font-bold text-foreground transition hover:bg-muted/80"
                   >
                     Tüm İlanları Gör

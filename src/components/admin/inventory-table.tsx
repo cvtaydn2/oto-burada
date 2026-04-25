@@ -172,6 +172,20 @@ export function InventoryTable({ listings, adminUserId }: InventoryTableProps) {
                       </a>
                     </DropdownMenuItem>
 
+                    {listing.seller?.businessSlug && (
+                      <DropdownMenuItem asChild>
+                        <a
+                          href={`/galeri/${listing.seller.businessSlug}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="cursor-pointer gap-2 font-bold text-blue-600"
+                        >
+                          <Eye size={14} />
+                          Galeriyi Görüntüle
+                        </a>
+                      </DropdownMenuItem>
+                    )}
+
                     {listing.status !== "approved" && (
                       <DropdownMenuItem
                         onClick={() => handleAction(listing.id, "approve")}

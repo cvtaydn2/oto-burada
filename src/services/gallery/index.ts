@@ -1,25 +1,38 @@
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { hasSupabaseAdminEnv } from "@/lib/supabase/env";
+import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { logger } from "@/lib/utils/logger";
 import { getProfileRestrictionState } from "@/services/profile/profile-restrictions";
 import { type Listing, type Profile } from "@/types";
 
-export async function getGalleryBySlug(slug: string) {
+export async function getGalleryBySlug(
+  slug: string,
+  options?: { includeBanned?: boolean; includeUnverified?: boolean }
+) {
   if (!hasSupabaseAdminEnv()) return null;
   const supabase = createSupabaseAdminClient();
-  const { data: profile, error } = await supabase
+  let query = supabase
     .from("profiles")
     .select(
-      "id, full_name, phone, city, avatar_url, role, user_type, is_verified, is_banned, ban_reason, business_name, business_logo_url, business_slug, business_description, website_url, verified_business, created_at, updated_at"
+      "id, full_name, phone, city, avatar_url, role, user_type, is_verified, is_banned, ban_reason, business_name, business_logo_url, business_slug, business_description, website_url, verified_business, created_at, updated_at, verification_status"
     )
     .eq("business_slug", slug)
-    .eq("user_type", "professional")
-    .eq("verification_status", "approved")
-    .eq("is_banned", false)
-    .single();
+    .eq("user_type", "professional");
+
+  if (!options?.includeUnverified) {
+    query = query.eq("verification_status", "approved");
+  }
+
+  if (!options?.includeBanned) {
+    query = query.eq("is_banned", false);
+  }
+
+  const { data: profile, error } = await query.single();
 
   if (error || !profile) return null;
 
   if (
+    !options?.includeBanned &&
     getProfileRestrictionState({
       isBanned: profile.is_banned,
       banReason: profile.ban_reason,
@@ -29,13 +42,18 @@ export async function getGalleryBySlug(slug: string) {
   }
 
   // Fetch listings for this gallery (paginated)
-  const { data: listingsData } = await supabase
+  let listingQuery = supabase
     .from("listings")
     .select(
       "id, slug, title, brand, model, year, mileage, price, city, district, status, created_at, transmission, fuel_type, listing_images(id, public_url, is_cover, sort_order)"
     )
-    .eq("seller_id", profile.id)
-    .eq("status", "approved")
+    .eq("seller_id", profile.id);
+
+  if (!options?.includeUnverified) {
+    listingQuery = listingQuery.eq("status", "approved");
+  }
+
+  const { data: listingsData } = await listingQuery
     .order("created_at", { ascending: false })
     .limit(20);
 
@@ -135,4 +153,85 @@ export async function getGalleryById(id: string) {
   if (error || !profile) return null;
 
   return profile as unknown as Profile;
+}
+
+export interface GalleryListingItem {
+  id: string;
+  slug: string;
+  title: string;
+  brand: string;
+  model: string;
+  year: number;
+  price: number;
+  city: string;
+  status: string;
+  createdAt: string;
+  coverImage: string | null;
+}
+
+export async function getGalleryListings(
+  galleryId: string,
+  options?: { limit?: number; status?: string }
+): Promise<GalleryListingItem[]> {
+  const supabase = await createSupabaseServerClient();
+  const limit = options?.limit ?? 12;
+
+  const { data, error } = await supabase
+    .from("listings")
+    .select(
+      `id, slug, title, brand, model, year, price, city, status, created_at,
+      cover_image:listing_images(public_url)`
+    )
+    .eq("seller_id", galleryId)
+    .eq("status", options?.status ?? "approved")
+    .eq("listing_images.is_cover", true)
+    .order("created_at", { ascending: false })
+    .limit(limit);
+
+  if (error) {
+    logger.db.error("getGalleryListings failed", error, { galleryId });
+    return [];
+  }
+
+  return (data ?? []).map((row: unknown) => {
+    const r = row as Record<string, unknown>;
+    const coverImages = r.cover_image as { public_url: string }[] | undefined | null;
+    return {
+      id: r.id as string,
+      slug: r.slug as string,
+      title: r.title as string,
+      brand: r.brand as string,
+      model: r.model as string,
+      year: r.year as number,
+      price: r.price as number,
+      city: r.city as string,
+      status: r.status as string,
+      createdAt: r.created_at as string,
+      coverImage: coverImages?.[0]?.public_url ?? null,
+    };
+  });
+}
+
+export async function getGalleryStats(galleryId: string) {
+  const supabase = await createSupabaseServerClient();
+
+  const [listings, soldResult] = await Promise.all([
+    supabase.from("listings").select("id, status").eq("seller_id", galleryId),
+    supabase
+      .from("profiles")
+      .select("total_listings_count, total_sold_count")
+      .eq("id", galleryId)
+      .single(),
+  ]);
+
+  const active = listings.data?.filter((l) => l.status === "approved").length ?? 0;
+  const pending = listings.data?.filter((l) => l.status === "pending").length ?? 0;
+  const archived = listings.data?.filter((l) => l.status === "archived").length ?? 0;
+
+  return {
+    active,
+    pending,
+    archived,
+    totalSold: soldResult.data?.total_sold_count ?? 0,
+  };
 }

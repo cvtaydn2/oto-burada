@@ -116,6 +116,15 @@ const nextConfig: NextConfig = {
       },
     ];
   },
+  async redirects() {
+    return [
+      {
+        source: "/gallery/:slug",
+        destination: "/galeri/:slug",
+        permanent: true,
+      },
+    ];
+  },
 };
 
 export default nextConfig;

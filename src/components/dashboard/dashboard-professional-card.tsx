@@ -12,8 +12,8 @@ export function DashboardProfessionalCard({ profile }: DashboardProfessionalCard
   const { businessName, businessSlug } = profile;
   const trustUI = getSellerTrustUI(profile);
 
-  // Show upgrade card if not approved OR not premium visible
-  if (!businessSlug || !trustUI.isPremiumVisible) {
+  // Show upgrade card if not approved OR not premium visible OR slug is missing/invalid
+  if (!businessSlug || businessSlug === "null" || !trustUI.isPremiumVisible) {
     return (
       <section className="overflow-hidden rounded-2xl bg-slate-900 border border-slate-800 p-6 lg:p-10 shadow-xl relative group mb-8 text-white">
         <div className="relative flex flex-col lg:flex-row lg:items-center justify-between gap-8">
@@ -98,12 +98,12 @@ export function DashboardProfessionalCard({ profile }: DashboardProfessionalCard
               </span>
               <span className="text-xs font-bold text-muted-foreground truncate block tracking-tight">
                 {typeof window !== "undefined"
-                  ? `${window.location.host}/gallery/${businessSlug}`
-                  : `otoburada.com.tr/gallery/${businessSlug}`}
+                  ? `${window.location.host}/galeri/${businessSlug}`
+                  : `otoburada.com.tr/galeri/${businessSlug}`}
               </span>
             </div>
             <Link
-              href={`/gallery/${businessSlug}`}
+              href={`/galeri/${businessSlug}`}
               target="_blank"
               rel="noopener noreferrer"
               aria-label={`${businessName || "Mağaza"} sayfasını yeni sekmede aç`}
@@ -114,7 +114,7 @@ export function DashboardProfessionalCard({ profile }: DashboardProfessionalCard
           </div>
 
           <Link
-            href={`/gallery/${businessSlug}`}
+            href={`/galeri/${businessSlug}`}
             target="_blank"
             rel="noopener noreferrer"
             className="flex h-14 w-full sm:w-auto items-center gap-2 rounded-xl bg-primary px-10 text-[10px] font-bold uppercase tracking-widest text-primary-foreground shadow-sm hover:opacity-90 transition-all active:scale-95"

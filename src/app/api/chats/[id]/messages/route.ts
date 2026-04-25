@@ -54,10 +54,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
   }
 }
 
-export async function DELETE(
-  req: NextRequest,
-  { params: _params }: { params: Promise<{ id: string }> }
-) {
+export async function DELETE(req: NextRequest) {
   const security = await withUserAndCsrf(req);
   if (!security.ok) return security.response;
   const user = security.user!;

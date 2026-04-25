@@ -24,7 +24,9 @@ export async function getAdminInventory(filters?: {
   let query = admin
     .from("listings")
     .select(
-      "*, images:listing_images(id, listing_id, storage_path, public_url, sort_order, is_cover, placeholder_blur)",
+      `*, 
+       images:listing_images(id, listing_id, storage_path, public_url, sort_order, is_cover, placeholder_blur),
+       seller:profiles!seller_id(business_name, business_slug)`,
       { count: "exact" }
     )
     .order("created_at", { ascending: false });
@@ -105,6 +107,12 @@ export async function getAdminInventory(filters?: {
         storagePath: img.storage_path || "",
         placeholderBlur: img.placeholder_blur || null,
       })),
+      seller: listing.seller
+        ? {
+            businessName: (listing.seller as { business_name: string }).business_name,
+            businessSlug: (listing.seller as { business_slug: string }).business_slug,
+          }
+        : undefined,
     })
   );
 

@@ -5,7 +5,7 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { requireUser } from "@/lib/auth/session";
-import { getGalleryListings, getGalleryStats } from "@/services/gallery/gallery-service";
+import { getGalleryListings, getGalleryStats } from "@/services/gallery";
 
 export default async function StockDashboardPage() {
   const user = await requireUser();

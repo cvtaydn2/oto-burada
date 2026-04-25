@@ -29,59 +29,21 @@ export interface AdminAnalyticsData {
 import { SupabaseClient } from "@supabase/supabase-js";
 
 async function getBrandStats(admin: SupabaseClient) {
-  const { data } = await admin.rpc("get_listings_by_brand_count", { p_status: "approved" });
-  if (data && data.length > 0)
-    return (data as { brand: string; count: number }[])
-      .sort((a, b) => b.count - a.count)
-      .slice(0, 5);
-
-  const { data: raw } = await admin
-    .from("listings")
-    .select("brand")
-    .eq("status", "approved")
-    .limit(2000);
-  const map: Record<string, number> = {};
-  raw?.forEach((l: { brand: string }) => {
-    map[l.brand] = (map[l.brand] ?? 0) + 1;
-  });
-  return Object.entries(map)
-    .map(([brand, count]) => ({ brand, count }))
-    .sort((a, b) => b.count - a.count)
-    .slice(0, 5);
+  const { data, error } = await admin.rpc("get_listings_by_brand_count", { p_status: "approved" });
+  if (error || !data) return [];
+  return (data as { brand: string; count: number }[]).sort((a, b) => b.count - a.count).slice(0, 5);
 }
 
 async function getCityStats(admin: SupabaseClient) {
-  const { data } = await admin.rpc("get_listings_by_city_count", { p_status: "approved" });
-  if (data && data.length > 0)
-    return (data as { city: string; count: number }[])
-      .sort((a, b) => b.count - a.count)
-      .slice(0, 5);
-
-  const { data: raw } = await admin
-    .from("listings")
-    .select("city")
-    .eq("status", "approved")
-    .limit(2000);
-  const map: Record<string, number> = {};
-  raw?.forEach((l: { city: string }) => {
-    map[l.city] = (map[l.city] ?? 0) + 1;
-  });
-  return Object.entries(map)
-    .map(([city, count]) => ({ city, count }))
-    .sort((a, b) => b.count - a.count)
-    .slice(0, 5);
+  const { data, error } = await admin.rpc("get_listings_by_city_count", { p_status: "approved" });
+  if (error || !data) return [];
+  return (data as { city: string; count: number }[]).sort((a, b) => b.count - a.count).slice(0, 5);
 }
 
 async function getStatusStats(admin: SupabaseClient) {
-  const { data } = await admin.rpc("get_listings_by_status_count");
-  if (data && data.length > 0) return data as { status: string; count: number }[];
-
-  const { data: raw } = await admin.from("listings").select("status").limit(5000);
-  const map: Record<string, number> = {};
-  raw?.forEach((l: { status: string }) => {
-    map[l.status] = (map[l.status] ?? 0) + 1;
-  });
-  return Object.entries(map).map(([status, count]) => ({ status, count }));
+  const { data, error } = await admin.rpc("get_listings_by_status_count");
+  if (error || !data) return [];
+  return data as { status: string; count: number }[];
 }
 
 export async function getAdminAnalytics(range: string = "30d"): Promise<AdminAnalyticsData | null> {
@@ -104,14 +66,14 @@ export async function getAdminAnalytics(range: string = "30d"): Promise<AdminAna
           listingsByStatus,
           { count: userCount },
           { count: listingCount },
-          { data: payments },
+          { data: revenueData },
+          { data: prevRevenueData },
           { data: trendData },
           { count: newUsersRecent },
           { count: newListingsRecent },
           { data: marketStatsResult },
           { count: prevUserCount },
           { count: prevListingCount },
-          { data: prevPayments },
           { count: pendingApprovalCount },
           { count: professionalUserCount },
         ] = await Promise.all([
@@ -120,8 +82,12 @@ export async function getAdminAnalytics(range: string = "30d"): Promise<AdminAna
           getStatusStats(admin),
           admin.from("profiles").select("*", { count: "exact", head: true }),
           admin.from("listings").select("*", { count: "exact", head: true }),
-          admin.from("payments").select("amount").eq("status", "success"),
-          admin.from("listings").select("created_at").gte("created_at", rangeStart),
+          admin.rpc("get_revenue_stats", {
+            p_start_date: rangeStart,
+            p_end_date: now.toISOString(),
+          }),
+          admin.rpc("get_revenue_stats", { p_start_date: prevRangeStart, p_end_date: rangeStart }),
+          admin.rpc("get_daily_listing_trend", { p_days: days }),
           admin
             .from("profiles")
             .select("*", { count: "exact", head: true })
@@ -142,12 +108,6 @@ export async function getAdminAnalytics(range: string = "30d"): Promise<AdminAna
             .lt("created_at", rangeStart)
             .gte("created_at", prevRangeStart),
           admin
-            .from("payments")
-            .select("amount")
-            .eq("status", "success")
-            .lt("created_at", rangeStart)
-            .gte("created_at", prevRangeStart),
-          admin
             .from("listings")
             .select("*", { count: "exact", head: true })
             .eq("status", "pending"),
@@ -157,20 +117,22 @@ export async function getAdminAnalytics(range: string = "30d"): Promise<AdminAna
             .eq("user_type", "professional"),
         ]);
 
-        const totalRevenue = payments?.reduce((sum, p) => sum + Number(p.amount), 0) ?? 0;
-        const prevRevenue = prevPayments?.reduce((sum, p) => sum + Number(p.amount), 0) ?? 0;
+        const revenueDataTyped = revenueData as unknown as { total_amount: number }[];
+        const prevRevenueDataTyped = prevRevenueData as unknown as { total_amount: number }[];
+        const trendDataTyped = trendData as unknown as { day: string; count: number }[];
 
-        const trendMap = new Map<string, number>();
-        (trendData as { created_at: string }[])?.forEach((item) => {
-          const d = item.created_at.split("T")[0];
-          trendMap.set(d, (trendMap.get(d) ?? 0) + 1);
-        });
+        const totalRevenue = revenueDataTyped?.[0]?.total_amount ?? 0;
+        const prevRevenue = prevRevenueDataTyped?.[0]?.total_amount ?? 0;
 
-        const trends = Array.from({ length: 14 }, (_, i) => {
+        // Process daily trend from DB-aggregated results
+        const trendCount = Math.min(days, 30);
+        const dailyCounts = new Map(trendDataTyped?.map((d) => [d.day, Number(d.count)]));
+
+        const trends = Array.from({ length: trendCount }, (_, i) => {
           const d = new Date();
           d.setDate(d.getDate() - i);
           const ds = d.toISOString().split("T")[0];
-          return { date: ds, listings: trendMap.get(ds) ?? 0 };
+          return { date: ds, listings: dailyCounts.get(ds) ?? 0 };
         }).reverse();
 
         return {

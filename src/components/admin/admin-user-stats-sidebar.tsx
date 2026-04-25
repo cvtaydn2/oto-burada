@@ -7,10 +7,12 @@ import {
   Loader2,
   Package,
   Shield,
+  Store,
   TrendingUp,
   User,
   XCircle,
 } from "lucide-react";
+import Link from "next/link";
 import React from "react";
 
 import { Button } from "@/components/ui/button";
@@ -107,7 +109,19 @@ export function AdminUserStatsSidebar({
           <InfoRow label="Kayıt Tarihi" value={safeFormatDate(profile.createdAt, "dd MMMM yyyy")} />
         </div>
 
-        <div className="pt-6 border-t border-slate-50">
+        <div className="pt-6 border-t border-slate-50 space-y-3">
+          {profile.userType === "professional" && profile.businessSlug && (
+            <Link href={`/galeri/${profile.businessSlug}`} target="_blank">
+              <Button
+                variant="outline"
+                className="w-full rounded-2xl font-bold text-[10px] tracking-widest h-12 flex items-center gap-2 transition-all uppercase shadow-sm border-blue-100 text-blue-600 hover:bg-blue-50"
+              >
+                <Store size={16} />
+                Galeri Sayfasını Görüntüle
+              </Button>
+            </Link>
+          )}
+
           <Button
             onClick={onBanToggle}
             disabled={isActioning}

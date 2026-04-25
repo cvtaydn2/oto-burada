@@ -28,7 +28,9 @@ export async function GET(req: Request) {
 
     const { data: profile, error } = await supabase
       .from("profiles")
-      .select("*")
+      .select(
+        "id, full_name, phone, city, district, avatar_url, business_name, business_logo_url, user_type, is_verified, created_at"
+      )
       .eq("id", user.id)
       .single();
 

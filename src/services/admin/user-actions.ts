@@ -13,6 +13,12 @@ export async function toggleUserBan(userId: string, currentStatus: boolean) {
     "toggleUserBan",
     async () => {
       const admin = createSupabaseAdminClient();
+      const { data: profile } = await admin
+        .from("profiles")
+        .select("business_slug")
+        .eq("id", userId)
+        .single();
+
       const { error } = await admin
         .from("profiles")
         .update({
@@ -32,6 +38,10 @@ export async function toggleUserBan(userId: string, currentStatus: boolean) {
       await admin.auth.admin.updateUserById(userId, {
         app_metadata: { is_banned: !currentStatus },
       });
+
+      if (profile?.business_slug) {
+        revalidatePath(`/galeri/${profile.business_slug}`);
+      }
 
       return { newStatus: !currentStatus };
     },
@@ -117,7 +127,7 @@ export async function handleVerificationReview(
   // 1. Check restriction status
   const { data: profile, error: fetchError } = await admin
     .from("profiles")
-    .select("is_banned, verification_status")
+    .select("is_banned, verification_status, business_slug")
     .eq("id", userId)
     .single();
 
@@ -173,6 +183,9 @@ export async function handleVerificationReview(
   revalidatePath("/admin/users");
   revalidatePath(`/admin/users/${userId}`);
   revalidatePath("/galeriler"); // Revalidate gallery list
+  if (profile.business_slug) {
+    revalidatePath(`/galeri/${profile.business_slug}`);
+  }
 
   return { success: true };
 }

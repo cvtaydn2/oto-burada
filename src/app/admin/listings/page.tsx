@@ -71,7 +71,7 @@ export default async function AdminListingsPage({ searchParams }: AdminListingsP
           </form>
         </div>
 
-        <Tabs defaultValue={status} className="w-full">
+        <Tabs defaultValue={status === "all" ? "approved" : status} className="w-full">
           <div className="px-6 border-b border-border/50 bg-card overflow-x-auto">
             <TabsList className="h-20 bg-transparent gap-10 p-0 flex">
               <TabsTrigger
@@ -133,6 +133,15 @@ export default async function AdminListingsPage({ searchParams }: AdminListingsP
           <TabsContent value="history" className="m-0">
             <InventoryTable listings={listings} adminUserId={adminUser.id} />
           </TabsContent>
+
+          {status === "all" && (
+            <div className="p-8">
+              <div className="mb-6 flex items-center justify-between">
+                <h3 className="text-lg font-bold text-foreground">Arama Sonuçları ({total})</h3>
+              </div>
+              <InventoryTable listings={listings} adminUserId={adminUser.id} />
+            </div>
+          )}
 
           <div className="p-4 border-t border-border/50 bg-card">
             <SimplePagination currentPage={currentPage} totalPages={totalPages} />

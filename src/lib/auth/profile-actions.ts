@@ -143,10 +143,15 @@ export async function updateCorporateProfileAction(
   const admin = createSupabaseAdminClient();
   const { data: existingProfile } = await admin
     .from("profiles")
-    .select("verification_status, is_banned")
+    .select("verification_status, is_banned, business_slug")
     .eq("id", user.id)
-    .maybeSingle<{ verification_status: string | null; is_banned: boolean | null }>();
+    .maybeSingle<{
+      verification_status: string | null;
+      is_banned: boolean | null;
+      business_slug: string | null;
+    }>();
 
+  const oldSlug = existingProfile?.business_slug;
   const canActAsBusiness =
     existingProfile?.verification_status === "approved" && !existingProfile?.is_banned;
 
@@ -180,6 +185,11 @@ export async function updateCorporateProfileAction(
     }
     return { error: "Guncelleme sirasinda bir hata olustu.", fields: values };
   }
+
+  // Revalidate paths for the gallery
+  const { revalidatePath } = await import("next/cache");
+  if (oldSlug) revalidatePath(`/galeri/${oldSlug}`);
+  revalidatePath(`/galeri/${parsed.data.businessSlug}`);
 
   return {
     success: "Kurumsal bilgileriniz başarıyla güncellendi.",

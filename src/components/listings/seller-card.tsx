@@ -82,7 +82,7 @@ export function SellerCard({
               {/* Gallery link only for active professional sellers */}
               {seller?.businessSlug && trustUI.isPremiumVisible && (
                 <Link
-                  href={`/gallery/${seller.businessSlug}`}
+                  href={`/galeri/${seller.businessSlug}`}
                   className="text-[10px] font-bold uppercase text-primary hover:underline italic tracking-widest"
                 >
                   {"Profil ->"}

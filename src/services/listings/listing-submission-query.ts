@@ -313,6 +313,7 @@ export function buildListingBaseQuery(
       value: string | number;
       column: string;
     };
+    includeBanned?: boolean;
   }
 ): any {
   const countOption = options?.countOnly || options?.withCount ? "exact" : undefined;
@@ -336,8 +337,10 @@ export function buildListingBaseQuery(
     query = query.lt(options.cursor.column, options.cursor.value);
   }
 
-  // 2. Market Integrity: Filter out listings from banned users
-  query = query.eq("profiles.is_banned", false);
+  // 2. Market Integrity: Filter out listings from banned users (unless explicitly included for admin/owner)
+  if (!options?.includeBanned) {
+    query = query.eq("profiles.is_banned", false);
+  }
 
   // 3. Predicates (Price, Year, Mileage, etc.)
   const filters = options?.filters;
@@ -417,6 +420,7 @@ export async function getDatabaseListings(options?: {
   slug?: string;
   statuses?: Listing["status"][];
   filters?: ListingFilters;
+  includeBanned?: boolean;
 }): Promise<Listing[] | null> {
   if (!hasSupabaseAdminEnv()) return null;
   const admin = createSupabaseAdminClient();
@@ -695,10 +699,15 @@ export async function getSimilarDatabaseListings(options: {
 
   // 3. Sort by score then take limit
   return listingsWithScore
-    .sort((a: any, b: any) => b.similarityScore - a.similarityScore)
-    .map((l: any) => {
-      const { similarityScore, ...listing } = l;
-      return listing as Listing;
-    })
+    .sort(
+      (a: { similarityScore: number }, b: { similarityScore: number }) =>
+        b.similarityScore - a.similarityScore
+    )
+    .map(
+      ({
+        similarityScore: _similarityScore,
+        ...listing
+      }: { similarityScore: number } & Record<string, unknown>) => listing as Listing
+    )
     .slice(0, limit);
 }

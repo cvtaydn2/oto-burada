@@ -8,21 +8,6 @@ import { Profile } from "@/types";
 export async function getAllUsers(query?: string, page = 1, limit = 20) {
   const admin = createSupabaseAdminClient();
 
-  const { data: authData } = await admin.auth.admin.listUsers({ page, perPage: 1000 });
-  const authMap = Object.fromEntries(
-    (authData?.users ?? []).map((u) => [
-      u.id,
-      {
-        lastSignInAt: u.last_sign_in_at ?? null,
-        emailVerified: Boolean(u.email_confirmed_at ?? u.confirmed_at),
-        phoneVerified: Boolean((u as { phone_confirmed_at?: string }).phone_confirmed_at),
-        identityVerified: Boolean(
-          (u.app_metadata as { identity_verified?: boolean })?.identity_verified
-        ),
-      },
-    ])
-  );
-
   let rpc = admin
     .from("profiles")
     .select(
@@ -31,7 +16,7 @@ export async function getAllUsers(query?: string, page = 1, limit = 20) {
     );
 
   if (query) {
-    rpc = rpc.or(`full_name.ilike.%${query}%,phone.ilike.%${query}%,id.ilike.%${query}%`);
+    rpc = rpc.or(`full_name.ilike.%${query}%,phone.ilike.%${query}%,id::text.ilike.%${query}%`);
   }
 
   const from = (page - 1) * limit;
@@ -40,6 +25,38 @@ export async function getAllUsers(query?: string, page = 1, limit = 20) {
     error,
     count,
   } = await rpc.order("created_at", { ascending: false }).range(from, from + limit - 1);
+
+  if (error || !profiles) {
+    if (error) {
+      logger.admin.error("getAllUsers query failed", error, { query });
+      captureServerError("getAllUsers query failed", "admin", error, { query });
+    }
+    return { users: [] as Profile[], total: 0, page, limit };
+  }
+
+  // 2. Targeted Auth Fetch (Only for current page IDs)
+  const profileIds = profiles.map((p) => p.id);
+  const authResults = await Promise.all(profileIds.map((id) => admin.auth.admin.getUserById(id)));
+
+  const authMap = Object.fromEntries(
+    authResults
+      .filter((res) => !res.error && res.data?.user)
+      .map((res) => {
+        const u = res.data.user!;
+        const appMetadata = u.app_metadata as { identity_verified?: boolean };
+        const userWithPhone = u as typeof u & { phone_confirmed_at?: string };
+
+        return [
+          u.id,
+          {
+            lastSignInAt: u.last_sign_in_at ?? null,
+            emailVerified: Boolean(u.email_confirmed_at ?? u.confirmed_at),
+            phoneVerified: Boolean(userWithPhone.phone_confirmed_at),
+            identityVerified: Boolean(appMetadata.identity_verified),
+          },
+        ];
+      })
+  );
 
   if (error) {
     logger.admin.error("getAllUsers query failed", error, { query });

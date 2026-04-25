@@ -87,7 +87,7 @@ export function CorporateProfileForm({
             <span>Mağaza URL (Slug)</span>
             <div className="relative">
               <span className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground/70 text-xs font-medium">
-                /gallery/
+                /galeri/
               </span>
               <input
                 type="text"
