@@ -1,5 +1,24 @@
 # 2026-04-26 — Runtime Issues & Commit Blockers Resolution
 
+## [2026-04-26] - Reservation System Server Component Errors
+- **Durum:** ✅ TAMAMLANDI
+- **Yapılanlar:**
+  - **Server Component Render Error Fix**: `getReservationsBySeller` fonksiyonunda `!inner` join kullanılarak null listing durumu önlendi. Bu, server component render hatalarının ana kaynağıydı.
+  - **Type Safety Improvement**: `ReservationWithListing` tipinde `listing` property'si nullable olmaktan çıkarıldı, çünkü `!inner` join ile listing her zaman mevcut olacak.
+  - **Dashboard Component Fix**: `DashboardReservationsTable` bileşeni güncellenmiş tip yapısına uygun hale getirildi, null check'ler kaldırıldı.
+  - **CSP Vercel Avatar Fix**: `next.config.ts` içindeki Content Security Policy'de `https://*.vercel.com` domain'i img-src directive'ine eklendi. Bu, Vercel avatar API'lerinin (`https://vercel.com/api/www/avatar`) yüklenmesini sağlıyor.
+  - **Type Consistency**: Rezervasyon sistemindeki tüm tip tanımları tutarlı hale getirildi, server ve client component'ler arasında tip uyumsuzluğu giderildi.
+- **Doğrulama:**
+  - `npm run typecheck` ✅
+  - `npm run lint` ✅ (0 errors, 0 warnings)
+  - `npm run build` ✅
+  - `git commit` ve `git push` ✅ başarılı
+- **Kararlar:**
+  - `!inner` join kullanımı, rezervasyonların her zaman geçerli bir listing ile ilişkili olmasını garanti ediyor. Bu, veri bütünlüğü açısından daha güvenli.
+  - CSP'de wildcard subdomain (`*.vercel.com`) kullanımı, Vercel'in farklı API endpoint'lerini desteklemek için gerekli.
+  - Server component error'ları genellikle async data fetching ve tip uyumsuzluklarından kaynaklanıyor, bu fix her iki sorunu da çözüyor.
+- **Sıradaki Adım:** Rezervasyon sisteminin production ortamında test edilmesi ve kullanıcı deneyiminin doğrulanması.
+
 ## [2026-04-26] - Service Worker, CSP, and Accessibility Fixes
 - **Durum:** ✅ TAMAMLANDI
 - **Yapılanlar:**

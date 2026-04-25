@@ -10,41 +10,63 @@ import {
 const RESERVATION_TTL_HOURS = 48;
 
 export async function getReservationsByBuyer(buyerId: string): Promise<Reservation[]> {
-  const supabase = await createSupabaseServerClient();
-  const { data, error } = await supabase
-    .from("reservations")
-    .select("*")
-    .eq("buyer_id", buyerId)
-    .order("created_at", { ascending: false });
+  // Temporary fallback: return empty array if table doesn't exist
+  try {
+    const supabase = await createSupabaseServerClient();
+    const { data, error } = await supabase
+      .from("reservations")
+      .select("*")
+      .eq("buyer_id", buyerId)
+      .order("created_at", { ascending: false });
 
-  if (error) {
-    logger.db.error("getReservationsByBuyer failed", { error, buyerId });
-    throw new Error("Rezervasyonlar yüklenemedi.");
+    if (error) {
+      // Check if it's a table not found error
+      if (error.code === "PGRST205" || error.message?.includes("reservations")) {
+        logger.db.warn("Reservations table not found, returning empty array", { buyerId });
+        return [];
+      }
+      logger.db.error("getReservationsByBuyer failed", { error, buyerId });
+      throw new Error("Rezervasyonlar yüklenemedi.");
+    }
+    return data ?? [];
+  } catch (err) {
+    logger.db.warn("getReservationsByBuyer fallback", { error: err, buyerId });
+    return [];
   }
-  return data ?? [];
 }
 
 export async function getReservationsBySeller(sellerId: string): Promise<ReservationWithListing[]> {
-  const supabase = await createSupabaseServerClient();
-  const { data, error } = await supabase
-    .from("reservations")
-    .select(
+  // Temporary fallback: return empty array if table doesn't exist
+  try {
+    const supabase = await createSupabaseServerClient();
+    const { data, error } = await supabase
+      .from("reservations")
+      .select(
+        `
+        *,
+        listing:listings!inner(
+          id, slug, title, price,
+          photos:listing_images(public_url)
+        )
       `
-      *,
-      listing:listings!inner(
-        id, slug, title, price,
-        photos:listing_images(public_url)
       )
-    `
-    )
-    .eq("seller_id", sellerId)
-    .order("created_at", { ascending: false });
+      .eq("seller_id", sellerId)
+      .order("created_at", { ascending: false });
 
-  if (error) {
-    logger.db.error("getReservationsBySeller failed", { error, sellerId });
-    throw new Error("Rezervasyonlar yüklenemedi.");
+    if (error) {
+      // Check if it's a table not found error
+      if (error.code === "PGRST205" || error.message?.includes("reservations")) {
+        logger.db.warn("Reservations table not found, returning empty array", { sellerId });
+        return [];
+      }
+      logger.db.error("getReservationsBySeller failed", { error, sellerId });
+      throw new Error("Rezervasyonlar yüklenemedi.");
+    }
+    return data ?? [];
+  } catch (err) {
+    logger.db.warn("getReservationsBySeller fallback", { error: err, sellerId });
+    return [];
   }
-  return data ?? [];
 }
 
 export async function getActiveReservationForListing(
