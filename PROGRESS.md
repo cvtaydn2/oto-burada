@@ -20,6 +20,10 @@
     - `api-admin.ts`: Admin ve ban durumu kontrolleri için 30 saniyelik in-memory cache eklendi, her API isteğinde DB round-trip sayısı azaltıldı.
     - `admin.ts`: Supabase admin client için 5 dakikalık TTL'e sahip singleton pattern uygulandı, connection pool verimliliği artırıldı.
     - **Database Indexes**: Marketplace filtrelemeleri (brand, model, price, year) için yüksek performanslı kompozit ve partial index'ler eklendi (`0102_marketplace_composite_indexes.sql`).
+  - **Security Hardening (Senior Review)**:
+    - `headers.ts`: CSP `style-src` için production ortamında `'unsafe-inline'` kaldırıldı, nonce-bazlı yapıya geçildi.
+    - `csrf.ts`: Geliştirme ortamında (`localhost`) CSRF origin kontrolü sadece belirli portlara (`3000`) kısıtlanarak sıkılaştırıldı.
+    - `schema.base.sql`: Temel şemaya RLS (Row Level Security) etkinleştirme komutları ve başlangıç politikaları (profiles, listings, images, favorites) eklendi.
 - **Doğrulama:**
   - `npm run lint` ✅ (0 errors, 2 warnings)
   - `npm run typecheck` ✅

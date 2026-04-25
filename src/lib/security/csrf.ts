@@ -40,7 +40,10 @@ export function isValidRequestOrigin(request: Request | NextRequest): boolean {
       }
       const host = request.headers.get("host");
       if (host && targetUrl.host === host) return true;
-      if (process.env.NODE_ENV !== "production" && targetUrl.hostname === "localhost") return true;
+      if (process.env.NODE_ENV !== "production") {
+        const allowedDevOrigins = ["localhost:3000", "127.0.0.1:3000", "[::1]:3000"];
+        if (allowedDevOrigins.includes(targetUrl.host)) return true;
+      }
     } catch {
       return false;
     }

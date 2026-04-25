@@ -20,15 +20,17 @@ export function getSecurityHeaders(nonce: string) {
     // If a specific Vercel/PostHog feature requires it, gate it with an explicit
     // env flag (e.g. NEXT_PUBLIC_ALLOW_UNSAFE_EVAL=true) and document the reason.
   ];
-  const styleSrc = ["'self'", "https://fonts.googleapis.com", "https://unpkg.com"];
+  const styleSrc = [
+    "'self'",
+    `'nonce-${nonce}'`,
+    "https://fonts.googleapis.com",
+    "https://unpkg.com",
+  ];
 
   if (!isProduction) {
     scriptSrc.push("'unsafe-inline'", "'unsafe-eval'");
+    styleSrc.push("'unsafe-inline'");
   }
-
-  // The app currently relies on React style attributes and a few runtime style elements.
-  // Keep script CSP strict, but allow inline styles so the UI does not break under production CSP.
-  styleSrc.push("'unsafe-inline'");
 
   const csp = [
     "default-src 'self'",

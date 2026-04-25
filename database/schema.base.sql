@@ -74,3 +74,33 @@ CREATE TABLE public.favorites (
   created_at timestamptz NOT NULL DEFAULT now(),
   PRIMARY KEY (user_id, listing_id)
 );
+
+-- RLS Enablement
+ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.listings ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.listing_images ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.favorites ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.brands ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.models ENABLE ROW LEVEL SECURITY;
+
+-- Base Policies
+CREATE POLICY "Anyone can view approved listings" ON public.listings
+  FOR SELECT USING (status = 'approved' OR (SELECT auth.uid()) = seller_id);
+
+CREATE POLICY "Owners can manage own listings" ON public.listings
+  FOR ALL USING ((SELECT auth.uid()) = seller_id);
+
+CREATE POLICY "Anyone can view profiles" ON public.profiles
+  FOR SELECT USING (true);
+
+CREATE POLICY "Users can manage own profile" ON public.profiles
+  FOR ALL USING ((SELECT auth.uid()) = id);
+
+CREATE POLICY "Anyone can view listing images" ON public.listing_images
+  FOR SELECT USING (true);
+
+CREATE POLICY "Anyone can view brands and models" ON public.brands FOR SELECT USING (true);
+CREATE POLICY "Anyone can view models" ON public.models FOR SELECT USING (true);
+
+CREATE POLICY "Users can manage own favorites" ON public.favorites
+  FOR ALL USING ((SELECT auth.uid()) = user_id);
