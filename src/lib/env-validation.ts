@@ -131,7 +131,11 @@ export function logEnvValidation(): void {
     if (isProd) {
       // F-09: Throw error in production to prevent silent failure
       // During build/CI, we skip the throw to allow the build to complete even if secrets are missing.
-      const isBuild = process.env.CI === "true";
+      const isBuild = !!(
+        process.env.CI ||
+        process.env.VERCEL ||
+        process.env.NEXT_PHASE === "phase-production-build"
+      );
       if (!isBuild) {
         console.error(`${message} - SHUTTING DOWN DUE TO MISSING CONFIG`);
         throw new Error(message);

@@ -3,8 +3,8 @@
 ## [2026-04-26] - Vercel Build Stabilization & Environment Validation
 - **Durum:** ✅ TAMAMLANDI
 - **Yapılanlar:**
-  - **Redis Client Build-Time Lenience**: `src/lib/redis/client.ts` içinde production ortamında Redis yapılandırması eksikse fırlatılan kritik hata, `CI=true` (Vercel Build) durumunda artık sadece warning loglayıp build'in devam etmesine izin veriyor.
-  - **Env Validation Build-Time Lenience**: `src/lib/env-validation.ts` içindeki zorunlu değişken kontrolü, CI/Build ortamında artık fırlatmak yerine "SHUTTING DOWN" mesajı yerine "CONTINUING BUILD" mesajı vererek build'in tamamlanmasını sağlıyor.
+  - **Redis Client Build-Time Lenience**: `src/lib/redis/client.ts` içinde production ortamında Redis yapılandırması eksikse fırlatılan kritik hata; `CI`, `VERCEL` veya `NEXT_PHASE=phase-production-build` durumlarında artık sadece warning loglayıp build'in devam etmesine izin veriyor.
+  - **Env Validation Build-Time Lenience**: `src/lib/env-validation.ts` içindeki zorunlu değişken kontrolü, CI/Build ortamında artık fırlatmak yerine "SHUTTING DOWN" mesajı yerine "CONTINUING BUILD" mesajı vererek build'in tamamlanmasını sağlıyor. (Check mekanizması `CI || VERCEL` olarak genişletildi).
   - **Static Page Collection Fix**: Build sırasında `/api/admin/cache/clear` gibi route'ların data collection aşamasında patlaması önlendi.
 - **Doğrulama:**
   - `npm run build` (lokal simülasyon) ✅

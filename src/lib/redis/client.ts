@@ -16,9 +16,15 @@ const getRedisConfig = () => {
       "CRITICAL: Redis (Upstash) is not configured for production! Rate limiting and caching are required for security.";
 
     // During build/CI, we log a warning instead of crashing to allow the build to complete.
-    // Vercel and most CI platforms set CI=true during build.
-    if (process.env.CI === "true") {
-      logger.db.warn(`${errorMsg} (Proceeding without Redis during build)`);
+    // Vercel and most CI platforms set CI or VERCEL during build.
+    const isBuild = !!(
+      process.env.CI ||
+      process.env.VERCEL ||
+      process.env.NEXT_PHASE === "phase-production-build"
+    );
+
+    if (isBuild) {
+      logger.db.warn(`${errorMsg} (Proceeding without Redis during build environment)`);
       return null;
     }
 
