@@ -16,7 +16,6 @@ import { getLiveMarketplaceReferenceData } from "@/services/reference/live-refer
 const FeaturedCarousel = dynamic(
   () => import("@/components/listings/featured-carousel").then((mod) => mod.FeaturedCarousel),
   {
-    ssr: false,
     loading: () => <div className="h-[400px] w-full animate-pulse rounded-2xl bg-muted/20" />,
   }
 );

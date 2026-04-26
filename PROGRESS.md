@@ -4,9 +4,10 @@
 - **Durum:** ✅ TAMAMLANDI
 - **Yapılanlar:**
   - **SEO Metadata Genişletme (Bulgu 6.1)**: Root layout (`layout.tsx`) üzerindeki metadata yapısı; Twitter Cards, OpenGraph görselleri ve GoogleBot yönergelerini içerecek şekilde modernize edildi. Uygulama ismi "OtoBurada — Sadece Araba İlan Pazaryeri" olarak güncellendi.
-  - **Dynamic Import & Code Splitting (Bulgu 6.2)**: Ana sayfadaki `FeaturedCarousel` bileşeni (Embla Carousel bağımlılığı nedeniyle) `next/dynamic` ile lazy-load edildi. Bu sayede ilk yükleme (FCP) süresi iyileştirildi.
+  - **Dynamic Import & Code Splitting (Bulgu 6.2)**: Ana sayfadaki `FeaturedCarousel` bileşeni `next/dynamic` ile lazy-load edildi. (Not: Server Component kısıtlaması nedeniyle `ssr: false` kaldırıldı, derleme hatası giderildi).
   - **Touch Target Erişilebilirlik (Bulgu 6.3)**: Mobil cihazlarda tıklama kolaylığı sağlamak için `Input` ve `Select` bileşenlerinin varsayılan yüksekliği `h-9`'dan `h-11`'e (44px standardı) yükseltildi. `Checkbox` boyutu `size-5` (20px) yapılarak etkileşim alanı genişletildi.
 - **Doğrulama:**
+  - `npm run build` (Turbopack) ✅
   - `npm run typecheck` ✅
   - `npm run lint` ✅
 - **Kararlar:**
