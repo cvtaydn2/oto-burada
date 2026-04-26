@@ -27,7 +27,7 @@ import { createSupabasePublicServerClient } from "@/lib/supabase/public-server";
 import { Listing, ListingFilters } from "@/types";
 import type { Database } from "@/types/supabase";
 
-import { mapListingRow } from "./listing-submission-types";
+import { mapListingRow } from "./mappers/listing-row.mapper";
 
 export const listingSelect = `
 id,
@@ -667,6 +667,9 @@ export async function getSimilarDatabaseListings(options: {
   const publicClient = createSupabasePublicServerClient();
   const limit = options.limit ?? 12;
 
+  const safeBrand = options.brand.replace(/"/g, '\\"');
+  const safeCity = options.city.replace(/"/g, '\\"');
+
   // Single query with .or() for brand OR city
   // Exclude current listing, approved only, profiles not banned
   const { data, error } = await (publicClient
@@ -674,7 +677,7 @@ export async function getSimilarDatabaseListings(options: {
     .select(marketplaceListingSelect)
     .eq("status", "approved")
     .neq("slug", options.slug)
-    .or(`brand.eq."${options.brand}",city.eq."${options.city}"`)
+    .or(`brand.eq."${safeBrand}",city.eq."${safeCity}"`)
     .order("featured", { ascending: false })
     .order("created_at", { ascending: false })
     .range(0, limit - 1) as any);

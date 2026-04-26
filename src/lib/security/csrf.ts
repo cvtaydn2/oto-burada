@@ -156,14 +156,29 @@ export async function setCsrfTokenCookie(): Promise<string> {
   const cookieStore = await cookies();
 
   cookieStore.set(CSRF_COOKIE_NAME, token, {
-    httpOnly: true,
+    httpOnly: false, // Must be false for the client to read it and send in header
     secure: process.env.NODE_ENV === "production",
-    sameSite: "strict",
+    sameSite: "lax", // Changed to lax to allow token persistence across same-site navigations
     path: "/",
     maxAge: 60 * 60 * 24,
   });
 
   return token;
+}
+
+/**
+ * Sets CSRF cookie on a NextResponse object (Middleware-safe)
+ */
+export function applyCsrfCookieToResponse(response: NextResponse, token?: string) {
+  const finalToken = token || generateCsrfToken();
+  response.cookies.set(CSRF_COOKIE_NAME, finalToken, {
+    httpOnly: false,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "lax",
+    path: "/",
+    maxAge: 60 * 60 * 24,
+  });
+  return finalToken;
 }
 
 export async function getCsrfTokenFromCookie(): Promise<string | undefined> {

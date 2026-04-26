@@ -3,7 +3,7 @@ import { logger } from "@/lib/logging/logger";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { hasSupabaseAdminEnv } from "@/lib/supabase/env";
 import { listingSchema } from "@/lib/validators";
-import { getDatabaseListings } from "@/services/listings/listing-submissions";
+import { getDatabaseListings } from "@/services/listings/listing-submission-query";
 import { createDatabaseNotification } from "@/services/notifications/notification-records";
 import type { Listing } from "@/types";
 

@@ -150,6 +150,8 @@ export default async function ListingDetailPage({ params }: ListingDetailPagePro
     }
   }
 
+  if (!listing) return null;
+
   const [seller, similarListings, sellerRating, marketValuation] = await Promise.all([
     getMarketplaceSeller(listing.sellerId),
     getSimilarMarketplaceListings(listing.slug, listing.brand, listing.city),

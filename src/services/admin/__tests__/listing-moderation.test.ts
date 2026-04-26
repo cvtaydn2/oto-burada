@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import { getDatabaseListings } from "@/services/listings/listing-submissions";
+import { getDatabaseListings } from "@/services/listings/listing-submission-query";
 import * as notifications from "@/services/notifications/notification-records";
 import type { Listing } from "@/types";
 
@@ -33,7 +33,7 @@ vi.mock("@/lib/supabase/admin", () => ({
   })),
 }));
 
-vi.mock("@/services/listings/listing-submissions", () => ({
+vi.mock("@/services/listings/listing-submission-query", () => ({
   getDatabaseListings: vi.fn(),
 }));
 

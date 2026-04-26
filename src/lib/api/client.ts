@@ -22,10 +22,20 @@ export class ApiClient {
     options?: RequestInit & { schema?: z.ZodTypeAny }
   ): Promise<ApiResponse<T>> {
     try {
+      // Automatic CSRF Token Injection (Double Submit Cookie)
+      let csrfToken: string | undefined;
+      if (typeof document !== "undefined") {
+        csrfToken = document.cookie
+          .split("; ")
+          .find((row) => row.startsWith("csrf_token="))
+          ?.split("=")[1];
+      }
+
       const res = await fetch(path, {
         ...options,
         headers: {
           "Content-Type": "application/json",
+          ...(csrfToken ? { "x-csrf-token": csrfToken } : {}),
           ...(options?.headers || {}),
         },
       });

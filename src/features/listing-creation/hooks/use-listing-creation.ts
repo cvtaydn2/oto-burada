@@ -390,6 +390,7 @@ export function useListingCreation({
     handleImageChange,
     handleRemoveImage,
     submitListing,
+    setSubmitState, // Exported to allow manual state updates from the form
     submitIntentRef,
   };
 }

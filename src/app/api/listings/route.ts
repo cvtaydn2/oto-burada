@@ -4,7 +4,7 @@ import { executeListingCreation } from "@/domain/usecases/listing-create";
 import { AnalyticsEvent } from "@/lib/analytics/events";
 import { mapUseCaseError, validateRequestBody } from "@/lib/api/handler-utils";
 import { API_ERROR_CODES, apiError, apiSuccess } from "@/lib/api/response";
-import { withSecurity, withUserAndCsrf } from "@/lib/api/security";
+import { withSecurity, withUserAndCsrfToken } from "@/lib/api/security";
 import { captureServerError, trackServerEvent } from "@/lib/monitoring/posthog-server";
 import { rateLimitProfiles } from "@/lib/rate-limiting/rate-limit";
 import { enforceRateLimit, getRateLimitKey } from "@/lib/rate-limiting/rate-limit-middleware";
@@ -83,7 +83,7 @@ export async function GET(request: Request) {
 }
 
 export async function POST(request: Request) {
-  const security = await withUserAndCsrf(request, {
+  const security = await withUserAndCsrfToken(request, {
     ipRateLimit: rateLimitProfiles.general,
     userRateLimit: rateLimitProfiles.listingCreate,
     rateLimitKey: "listings:create",

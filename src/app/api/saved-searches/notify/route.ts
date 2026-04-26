@@ -169,9 +169,9 @@ async function handleCronRequest(request: Request) {
       } else {
         errorCount++;
       }
-    } catch (err) {
+    } catch (_e) {
       errorCount++;
-      logger.notifications.error("Failed to process saved search notification", err, {
+      logger.notifications.error("Failed to process saved search notification", _e, {
         searchId: savedSearch.id,
         userId: savedSearch.user_id,
       });

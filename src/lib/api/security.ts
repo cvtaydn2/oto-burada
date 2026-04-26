@@ -185,15 +185,31 @@ export async function withUserRoute(
   return withSecurity(request, { ...options, requireAuth: true });
 }
 
-/** withUserAndCsrf: Authenticated + CSRF check (Mutations) */
+/** withUserAndCsrf: Authenticated + CSRF check (Mutations - Token required) */
 export async function withUserAndCsrf(
   request: Request,
   options: Omit<
     SecurityOptions,
-    "requireAuth" | "requireCsrf" | "requireAdmin" | "requireCron"
+    "requireAuth" | "requireCsrf" | "requireCsrfToken" | "requireAdmin" | "requireCron"
   > = {}
 ) {
-  return withSecurity(request, { ...options, requireAuth: true, requireCsrf: true });
+  return withSecurity(request, {
+    ...options,
+    requireAuth: true,
+    requireCsrf: true,
+    requireCsrfToken: true,
+  });
+}
+
+/** withUserAndCsrfToken: Authenticated + CSRF check (Mutations - Token required) */
+export async function withUserAndCsrfToken(
+  request: Request,
+  options: Omit<
+    SecurityOptions,
+    "requireAuth" | "requireCsrfToken" | "requireAdmin" | "requireCron"
+  > = {}
+) {
+  return withSecurity(request, { ...options, requireAuth: true, requireCsrfToken: true });
 }
 
 /** withCsrfToken: CSRF token validation (Double Submit Cookie) */
@@ -204,12 +220,20 @@ export async function withCsrfToken(
   return withSecurity(request, { ...options, requireCsrfToken: true });
 }
 
-/** withAdminRoute: Strictly for Admin-only operations */
+/** withAdminRoute: Strictly for Admin-only operations (Token required) */
 export async function withAdminRoute(
   request: Request,
-  options: Omit<SecurityOptions, "requireAdmin" | "requireAuth" | "requireCron"> = {}
+  options: Omit<
+    SecurityOptions,
+    "requireAdmin" | "requireAuth" | "requireCsrfToken" | "requireCron"
+  > = {}
 ) {
-  return withSecurity(request, { ...options, requireAdmin: true, requireCsrf: true });
+  return withSecurity(request, {
+    ...options,
+    requireAdmin: true,
+    requireCsrf: true,
+    requireCsrfToken: true,
+  });
 }
 
 /** withCronOrAdmin: Shared tasks (Sync, Cleanup) triggered by Vercel Cron or Admin UI */
@@ -222,4 +246,4 @@ export async function withCronOrAdmin(
 
 // Backward compatibility (deprecate later)
 export const withAuth = withUserRoute;
-export const withAuthAndCsrf = withUserAndCsrf;
+export const withAuthAndCsrf = withUserAndCsrfToken; // Point withAuthAndCsrf to the stricter token-based check

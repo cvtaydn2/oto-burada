@@ -97,7 +97,7 @@ export async function checkListingLimit(
   try {
     const lockKey = parseInt(userId.replace(/-/g, "").slice(0, 8), 16);
     await admin.rpc("pg_advisory_xact_lock", { key: lockKey });
-  } catch (e) {
+  } catch (_e) {
     // Ignore if advisory lock RPC is not exposed/available
   }
 

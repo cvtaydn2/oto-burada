@@ -169,7 +169,6 @@ jobs:
 
       - name: npm audit (high severity only)
         run: npm audit --audit-level=high
-        continue-on-error: true # Don't fail CI on audit warnings — review manually
 
       - name: Check for secrets in code
         uses: trufflesecurity/trufflehog@main
@@ -178,4 +177,3 @@ jobs:
           base: ${{ github.event.repository.default_branch }}
           head: HEAD
           extra_args: --only-verified
-        continue-on-error: true

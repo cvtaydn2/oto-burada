@@ -20,30 +20,43 @@ const MAX_LOCAL_ENTRIES = 10_000;
 const EVICT_BATCH_SIZE = 500;
 
 const localFallbackStore = new Map<string, LocalRateLimitEntry>();
+let lastCleanup = 0;
+const CLEANUP_INTERVAL_MS = 30_000; // 30 seconds
 
 function evictIfNeeded() {
   const now = Date.now();
+
+  // 1. Throttle full scans to protect CPU
+  if (now - lastCleanup < CLEANUP_INTERVAL_MS && localFallbackStore.size < MAX_LOCAL_ENTRIES) {
+    return;
+  }
+  lastCleanup = now;
+
   let deleted = 0;
 
-  // 1. Mandatory cleanup of expired entries (always run to keep memory clean)
+  // 2. Mandatory cleanup of expired entries
   for (const [key, entry] of localFallbackStore) {
     if (entry.reset <= now) {
       localFallbackStore.delete(key);
       deleted++;
     }
+    // Limit scan per call to avoid blocking
+    if (deleted >= EVICT_BATCH_SIZE) break;
   }
 
-  // 2. Cap-based eviction: If still over limit, clear oldest entries until we reach 80% capacity
+  // 3. Hard cap eviction if still over capacity
   if (localFallbackStore.size >= MAX_LOCAL_ENTRIES) {
-    const targetSize = MAX_LOCAL_ENTRIES * 0.8;
+    const toDelete = localFallbackStore.size - Math.floor(MAX_LOCAL_ENTRIES * 0.8);
+    let count = 0;
     for (const [key] of localFallbackStore) {
       localFallbackStore.delete(key);
-      deleted++;
-      if (localFallbackStore.size <= targetSize) break;
+      count++;
+      if (count >= toDelete) break;
     }
+    deleted += count;
   }
 
-  if (deleted > 50) {
+  if (deleted > 0) {
     logger.api.debug(`Rate limit local storage evicted ${deleted} entries`, {
       currentSize: localFallbackStore.size,
     });
@@ -126,8 +139,17 @@ export async function checkGlobalRateLimit(
   }
 
   const limiter = getRatelimit();
+  const isProduction = process.env.NODE_ENV === "production";
 
   if (limiter === "MISSING_CONFIG" || limiter === "CONNECTION_ERROR") {
+    if (isProduction) {
+      return {
+        success: false,
+        limit: 0,
+        remaining: 0,
+        reset: Date.now() + 60_000,
+      };
+    }
     openRedisCircuit("Distributed rate limiter unavailable - using local fallback", {
       limiter,
     });
@@ -148,6 +170,15 @@ export async function checkGlobalRateLimit(
     const { success, limit, remaining, reset } = await limiter.limit(key);
     return { success, limit, remaining, reset };
   } catch (error) {
+    if (isProduction) {
+      logger.security.error("Redis rate limit fatal error in production - failing closed", error);
+      return {
+        success: false,
+        limit: 0,
+        remaining: 0,
+        reset: Date.now() + 60_000,
+      };
+    }
     openRedisCircuit("Distributed Rate Limit Error - using local fallback", error);
     return getLocalFallbackResult(key, options);
   }

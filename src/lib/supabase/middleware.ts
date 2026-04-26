@@ -17,7 +17,8 @@ import { getSupabaseEnv, hasSupabaseEnv } from "@/lib/supabase/env";
  */
 export async function updateSession(request: NextRequest) {
   if (!hasSupabaseEnv()) {
-    return NextResponse.next({ request });
+    const nonce = generateNonce();
+    return applySecurityHeaders(NextResponse.next({ request }), nonce);
   }
 
   const nonce = generateNonce();
@@ -101,6 +102,13 @@ export async function updateSession(request: NextRequest) {
   // 5. FINAL ENRICHMENT (Headers & Metadata)
   applySecurityHeaders(response, nonce);
   applyRequestMetadata(request, response, pathname);
+
+  // 6. CSRF TOKEN (Ensure every visitor has one)
+  const hasCsrfCookie = request.cookies.has("csrf_token");
+  if (!hasCsrfCookie && !route.isStaticAsset) {
+    const { applyCsrfCookieToResponse } = await import("@/lib/security/csrf");
+    applyCsrfCookieToResponse(response);
+  }
 
   // Ensure no caching for authenticated/dynamic views
   response.headers.set("Cache-Control", "private, max-age=0, no-cache");

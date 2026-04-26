@@ -48,6 +48,7 @@ export function ListingCreateForm({
     handleImageChange,
     handleRemoveImage,
     submitListing,
+    setSubmitState,
     submitIntentRef,
   } = useListingCreation({ brands, cities, initialListing, initialValues, isEmailVerified });
 
@@ -58,6 +59,16 @@ export function ListingCreateForm({
       setIsVerifyDialogOpen(true);
       return;
     }
+
+    if (!turnstileToken && !isEditing) {
+      setSubmitState({
+        status: "warning",
+        message: "Lütfen güvenlik doğrulamasını tamamlayın.",
+        code: "TURNSTILE_REQUIRED",
+      });
+      return;
+    }
+
     await submitListing(values, turnstileToken || undefined);
   });
 
@@ -128,7 +139,9 @@ export function ListingCreateForm({
                       {submitState.message}
                     </p>
                   </div>
-                  {(submitState.code === "CONFLICT" || submitState.code === "RATE_LIMITED") && (
+                  {(submitState.code === "CONFLICT" ||
+                    submitState.code === "RATE_LIMITED" ||
+                    submitState.code === "TURNSTILE_REQUIRED") && (
                     <div className="flex justify-end px-2">
                       <button
                         type="button"

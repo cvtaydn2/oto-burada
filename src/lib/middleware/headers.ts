@@ -6,9 +6,9 @@ export function generateNonce() {
 
 const STATIC_CSP_PARTS = [
   "default-src 'self'",
-  "font-src 'self' https://fonts.gstatic.com https://unpkg.com https://vercel.live",
-  "img-src 'self' data: blob: https://*.supabase.co https://images.unsplash.com https://*.tile.openstreetmap.org https://unpkg.com https://vercel.live https://*.vercel.live https://*.public.blob.vercel-storage.com",
-  "connect-src 'self' https://*.supabase.co https://*.posthog.com https://us-assets.i.posthog.com wss://*.supabase.co https://nominatim.openstreetmap.org https://*.upstash.io https://vercel.live wss://ws-us3.pusher.com https://challenges.cloudflare.com",
+  "font-src 'self' https://fonts.gstatic.com https://unpkg.com https://vercel.live data:",
+  "img-src 'self' data: blob: https://*.supabase.co https://images.unsplash.com https://*.unsplash.com https://*.pexels.com https://placehold.co https://*.tile.openstreetmap.org https://unpkg.com https://vercel.live https://*.vercel.live https://*.public.blob.vercel-storage.com",
+  "connect-src 'self' https://*.supabase.co https://*.posthog.com https://us-assets.i.posthog.com wss://*.supabase.co https://nominatim.openstreetmap.org https://*.upstash.io https://vercel.live wss://ws-us3.pusher.com https://challenges.cloudflare.com https://*.vercel-analytics.com https://*.vercel-insights.com",
   "worker-src 'self' blob:",
   "media-src 'self' blob: https://*.supabase.co",
   "object-src 'none'",
