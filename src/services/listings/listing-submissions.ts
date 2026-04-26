@@ -151,14 +151,16 @@ export async function findEditableListingById(listingId: string, sellerId: strin
   return null;
 }
 
+import { createSupabaseServerClient } from "@/lib/supabase/server";
+
 export async function getStoredUserListings(
   sellerId: string,
   page: number = 1,
   limit: number = 50
 ): Promise<PaginatedListingsResult> {
-  const admin = createSupabaseAdminClient();
+  const supabase = await createSupabaseServerClient();
 
-  const { data, count, error } = await buildListingBaseQuery(admin, listingSelect, {
+  const { data, count, error } = await buildListingBaseQuery(supabase, listingSelect, {
     sellerId,
     filters: { page, limit },
     withCount: true,
@@ -181,11 +183,21 @@ export async function getStoredUserListings(
   };
 }
 
-export async function getExistingListingSlugs(): Promise<{ id: string; slug: string }[]> {
-  if (!hasSupabaseAdminEnv()) return [];
+/**
+ * Checks if a slug already exists in the database.
+ * PERFORMANCE: Uses exact head-only select to minimize data transfer.
+ */
+export async function checkSlugCollision(slug: string): Promise<boolean> {
+  if (!hasSupabaseAdminEnv()) return false;
   const admin = createSupabaseAdminClient();
-  const { data } = await admin.from("listings").select("id, slug").neq("status", "archived");
-  return (data ?? []) as { id: string; slug: string }[];
+  const { count } = await admin
+    .from("listings")
+    .select("id", { count: "exact", head: true })
+    .eq("slug", slug)
+    .neq("status", "archived")
+    .limit(1);
+
+  return (count ?? 0) > 0;
 }
 
 export async function getStoredListingBySlug(slug: string, options?: { includeBanned?: boolean }) {

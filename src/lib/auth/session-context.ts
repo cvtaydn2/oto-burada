@@ -24,6 +24,6 @@ export function withSessionContext<T>(context: SessionContext, fn: () => T): T {
 /**
  * Retrieves the current session context if available.
  */
-export function getSessionContext(): SessionContext | undefined {
-  return sessionStore.getStore();
+export function getSessionContext(): SessionContext | null {
+  return sessionStore.getStore() || null;
 }

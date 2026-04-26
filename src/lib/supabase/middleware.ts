@@ -12,37 +12,6 @@ import { classifyRoute } from "@/lib/middleware/routes";
 import { getSupabaseEnv, hasSupabaseEnv } from "@/lib/supabase/env";
 
 /**
- * Fast JWT claim decoding (unverified) to avoid unnecessary network calls in Middleware.
- * Security is still enforced by RLS at the database level and in Server Components.
- */
-function getClaimsFromCookie(request: NextRequest): { role?: string; sub?: string } | null {
-  try {
-    // Supabase auth cookies usually follow 'sb-XXX-auth-token' pattern
-    const authCookie = request.cookies.getAll().find((c) => c.name.includes("-auth-token"))?.value;
-
-    if (!authCookie) return null;
-
-    // Parse the token part if it's a JSON string (Supabase SSR format)
-    let token = authCookie;
-    if (authCookie.startsWith("{")) {
-      const parsed = JSON.parse(authCookie);
-      token = parsed.access_token || parsed[0];
-    }
-
-    if (!token || !token.includes(".")) return null;
-
-    // Decode JWT payload (middle part)
-    const payload = JSON.parse(atob(token.split(".")[1]));
-    return {
-      role: payload.app_metadata?.role,
-      sub: payload.sub,
-    };
-  } catch {
-    return null;
-  }
-}
-
-/**
  * Global Middleware Orchestrator.
  * Handles Session Refresh, Routing Guards, and Security.
  */
@@ -102,33 +71,18 @@ export async function updateSession(request: NextRequest) {
     },
   });
 
-  // 3. AUTH / SESSION REFRESH (Performance-Optimized)
+  // 3. AUTH / SESSION REFRESH (Secure & Performance-Optimized)
   let user: User | null = null;
-  const claims = getClaimsFromCookie(request);
 
-  if (route.needsAuth) {
-    if (!claims) {
-      // Fast path: No cookie, no user. handleAuthRedirects will redirect to login.
-      user = null;
-    } else {
-      // Performance Optimization: Use JWT claims for non-admin routes to avoid HTTP round-trip.
-      // Admin routes still perform a full getUser() to verify role/ban status at the source.
-      const isCriticalCheck = route.isAdminRoute || route.isAdminApi;
+  // Optimization: Only verify user if we have a session cookie OR the route specifically requires auth.
+  // This avoids unnecessary network calls for anonymous visitors on public pages.
+  const hasSessionCookie = request.cookies.getAll().some((c) => c.name.includes("-auth-token"));
 
-      if (isCriticalCheck) {
-        const {
-          data: { user: fetchedUser },
-        } = await supabase.auth.getUser();
-        user = fetchedUser;
-      } else {
-        // Mock user object from claims for middleware redirect logic.
-        // Full verification happens in Server Components/Actions via getUser().
-        user = {
-          id: claims.sub,
-          app_metadata: { role: claims.role },
-        } as unknown as User;
-      }
-    }
+  if (hasSessionCookie || route.needsAuth || route.isAuthRoute) {
+    const {
+      data: { user: fetchedUser },
+    } = await supabase.auth.getUser();
+    user = fetchedUser;
   }
 
   // 4. ROUTE GUARDS (Redirects)

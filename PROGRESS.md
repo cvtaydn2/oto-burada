@@ -1,3 +1,86 @@
+# 2026-04-26 — UI/UX Hardening Resolution
+
+## [2026-04-26] - SEO Metadata, Code Splitting & Touch Target Optimization
+- **Durum:** ✅ TAMAMLANDI
+- **Yapılanlar:**
+  - **SEO Metadata Genişletme (Bulgu 6.1)**: Root layout (`layout.tsx`) üzerindeki metadata yapısı; Twitter Cards, OpenGraph görselleri ve GoogleBot yönergelerini içerecek şekilde modernize edildi. Uygulama ismi "OtoBurada — Sadece Araba İlan Pazaryeri" olarak güncellendi.
+  - **Dynamic Import & Code Splitting (Bulgu 6.2)**: Ana sayfadaki `FeaturedCarousel` bileşeni (Embla Carousel bağımlılığı nedeniyle) `next/dynamic` ile lazy-load edildi. Bu sayede ilk yükleme (FCP) süresi iyileştirildi.
+  - **Touch Target Erişilebilirlik (Bulgu 6.3)**: Mobil cihazlarda tıklama kolaylığı sağlamak için `Input` ve `Select` bileşenlerinin varsayılan yüksekliği `h-9`'dan `h-11`'e (44px standardı) yükseltildi. `Checkbox` boyutu `size-5` (20px) yapılarak etkileşim alanı genişletildi.
+- **Doğrulama:**
+  - `npm run typecheck` ✅
+  - `npm run lint` ✅
+- **Kararlar:**
+  - Mobil öncelikli (Mobile-first) vizyona sadık kalarak, tüm kritik form elemanları WCAG standartlarına uyumlu hale getirildi.
+  - SEO meta verileri, sosyal medya paylaşım kalitesini artıracak şekilde zenginleştirildi.
+- **Sıradaki Adım:** Admin moderasyon kuyruğu için gelişmiş filtreleme ve toplu işlem yetenekleri.
+
+# 2026-04-26 — Security Hardening Resolution
+
+## [2026-04-26] - CSRF httpOnly, CSP Consolidation & IP Spoofing Prevention
+- **Durum:** ✅ TAMAMLANDI
+- **Yapılanlar:**
+  - **CSRF httpOnly Cookie (Bulgu 5.1)**: `csrf_token` cookie'si artık `httpOnly: true` olarak ayarlanıyor. Bu, XSS durumunda token'ın çalınmasını engeller. Client'ın token'ı alabilmesi için `/api/auth/csrf` endpoint'i eklendi.
+  - **CSP Consolidation (Bulgu 5.2)**: `next.config.ts` içindeki statik ve güvensiz (`unsafe-eval` içeren) CSP tanımları kaldırıldı. Tüm güvenlik başlıkları merkezi `headers.ts` üzerinden (nonce destekli ve prod'da `unsafe-eval` içermeyecek şekilde) yönetilmeye başlandı.
+  - **Webhook Whitelisting (Bulgu 5.3)**: `isValidRequestOrigin` içindeki geniş `/api/webhooks/` prefix bypass'ı kaldırıldı. Yerine spesifik ve güvenli bir `WEBHOOK_PATHS` whitelist'i getirildi.
+  - **IP Spoofing Protection (Bulgu 5.4)**: Rate limiting IP tespiti `x-real-ip` ve `x-vercel-forwarded-for` header'larını önceliklendirecek şekilde güncellendi. `x-forwarded-for` kullanıldığında ise sondaki (güvenilir) IP adresi baz alınıyor.
+- **Doğrulama:**
+  - `npm run typecheck` ✅
+  - `npm run lint` ✅
+- **Kararlar:**
+  - Güvenlik başlıklarının yönetimini tek bir noktada (middleware pipeline) toplayarak "Inconsistent CSP" riski ortadan kaldırıldı.
+  - "Defense in Depth" prensibi gereği CSRF token'ı sadece server-side erişilebilir hale getirildi.
+- **Sıradaki Adım:** Admin moderasyon kuyruğu için filtreleme geliştirmeleri.
+
+# 2026-04-26 — Performance & Logic Hardening Resolution
+
+## [2026-04-26] - Atomic Quotas, Optimized Search & Header Polish
+- **Durum:** ✅ TAMAMLANDI
+- **Yapılanlar:**
+  - **Atomic Quota Protection (Bulgu 3.1)**: `check_and_reserve_listing_quota` RPC fonksiyonu eklendi (`0104_atomic_quota_and_performance_indexes.sql`). Bu fonksiyon `profiles` satırını `FOR UPDATE` ile kilitleyerek eşzamanlı isteklerde kota aşımını (race condition) veritabanı seviyesinde engelliyor.
+  - **Session Context Robustness (Bulgu 3.2)**: `getSessionContext()` artık `undefined` yerine `null` döndürüyor. `getAuthContext` (session.ts) içindeki fallback mantığı, ISR/revalidation senaryolarında tutarlı çalışması için güncellendi.
+  - **Marketplace Search Index (Bulgu 4.1)**: `idx_listings_marketplace_search` kompozit indeksi eklendi. `status`, `brand`, `model`, `year`, `price`, `city` alanlarını kapsayan bu indeks, `INCLUDE` (covering index) yapısı ile yaygın aramalarda heap lookup sayısını minimize ediyor.
+  - **Slug Collision Performance (Bulgu 4.2)**: Tüm slug'ları çeken `getExistingListingSlugs()` kaldırıldı. Yerine, yalnızca tek bir slug'ın varlığını `head: true` ile kontrol eden ultra-hızlı `checkSlugCollision()` fonksiyonu getirildi.
+  - **CSP Header Optimization (Bulgu 4.3)**: `getSecurityHeaders` (headers.ts) içindeki statik CSP direktifleri bir constant (`STATIC_CSP_PARTS`) altında toplandı. Her istekte tekrarlanan string join işlemleri azaltılarak middleware overhead'i düşürüldü.
+- **Doğrulama:**
+  - Database Migration (`0104_atomic_quota_and_performance_indexes.sql`) ✅
+  - `npm run typecheck` ✅
+  - `npm run lint` ✅
+- **Kararlar:**
+  - Kota kontrolünde "Serialization" (kilitleme) stratejisi seçilerek ücretsiz plan suiistimali tamamen önlendi.
+  - Marketplace performansında "Covering Index" stratejisi ile I/O maliyeti düşürüldü.
+- **Sıradaki Adım:** Admin paneli için moderasyon kuyruğuna öncelikli (yüksek fraud skorlu) ilanların filtrelenmesi.
+
+# 2026-04-26 — Security & Transactional Integrity Resolution
+
+## [2026-04-26] - Critical Security Hardening & Atomic Webhooks
+- **Durum:** ✅ TAMAMLANDI
+- **Yapılanlar:**
+  - **Admin Client Usage Fix (Bulgu 1.1)**: `getStoredUserListings()` (listing-submissions.ts) artık `service_role` (admin) yerine `createSupabaseServerClient()` kullanıyor. Bu sayede RLS politikaları devrede kalıyor ve sellerId filtresi auth.uid() ile güvenli şekilde eşleşiyor.
+  - **Rate Limit Dev Bypass Fix (Bulgu 1.3)**: Geliştirme ortamında rate limiting'i tamamen devre dışı bırakan mantık güncellendi. Artık 10x daha yüksek bir limit ile çalışıyor ve engellemek yerine warning log'luyor (test edilebilirliği artırıldı).
+  - **Atomic Webhook Processing (Bulgu 1.2)**: Ödeme webhook handler'ındaki çok adımlı asenkron işlemler tek bir PL/pgSQL RPC fonksiyonuna (`process_payment_webhook`) taşındı.
+    - Ödeme durumu güncellemesi, fulfillment job oluşturma, deneme sayacı artırımı ve log statüsü güncellemesi artık tek bir veritabanı transaction'ı içinde atomik olarak gerçekleşiyor.
+    - Kısmi başarısızlık (partial failure) riski ortadan kaldırıldı.
+- **Doğrulama:**
+  - Database Migration (`0103_atomic_payment_webhook_processing.sql`) ✅
+  - `npm run typecheck` ✅
+  - `npm run lint` ✅
+- **Kararlar:**
+  - "Service Role Yasak" kuralı gereği kullanıcı verilerine erişimde her zaman RLS-aware client tercih edildi.
+  - Webhook gibi kritik akışlarda "All-or-Nothing" prensibi için RPC kullanımı standartlaştırıldı.
+- **Sıradaki Adım:** Admin paneli için fraud skorlaması yüksek olan ilanları listeleyen özel bir görünümün eklenmesi.
+
+## [2026-04-26] - Architectural Audit & Maintenance Resolution
+- **Durum:** ✅ TAMAMLANDI
+- **Yapılanlar:**
+  - **Verified JWT Claims (Bulgu 2.1)**: Middleware'de (middleware.ts) unverified JWT decode işlemi kaldırıldı. Artık `isAdminRoute` veya `needsAuth` gerektiren tüm rotalarda `supabase.auth.getUser()` üzerinden tam imza doğrulaması yapılıyor.
+  - **Admin Client Resilience (Bulgu 2.2)**: `src/lib/supabase/admin.ts` içine `resetSupabaseAdminClient()` eklendi. Key rotation veya 401/403 hataları durumunda cache'lenmiş client artık temizlenebilir ve yeni anahtarla yeniden oluşturulabilir hale getirildi.
+  - **Barrel Exports & Discoverability (Bulgu 2.3)**: `src/lib/index.ts` oluşturuldu. Tüm domain utility'leri (api, security, seo, constants) tek bir yerden export edilerek kodun keşfedilebilirliği artırıldı ve import yolları sadeleştirildi.
+- **Kararlar:**
+  - Middleware'de performans için "unverified hint" (cookie varlığı kontrolü) korunurken, güvenlik için "verified source of truth" (`getUser`) standartlaştırıldı.
+- **Doğrulama:**
+  - `npm run lint` ✅
+  - `npm run typecheck` ✅
+
 # 2026-04-26 — Runtime Issues & Architectural Audit Resolution
 
 ## [2026-04-26] - Senior Architectural Audit & Critical Bug Fixes

@@ -19,18 +19,30 @@ export async function rateLimitMiddleware(request: NextRequest) {
     return null;
   }
 
-  const ip = request.headers.get("x-forwarded-for")?.split(",")[0] || "127.0.0.1";
+  const ip =
+    request.headers.get("x-real-ip") ||
+    request.headers.get("x-vercel-forwarded-for")?.split(",")[0] ||
+    request.headers.get("x-forwarded-for")?.split(",").pop()?.trim() ||
+    "127.0.0.1";
 
   // Allowlisted infrastructure IPs can bypass rate limiting.
   const bypassIps = process.env.RATE_LIMIT_BYPASS_IPS?.split(",") || [];
 
-  if (bypassIps.includes(ip) || process.env.NODE_ENV === "development") {
+  if (bypassIps.includes(ip)) {
     return null;
   }
 
-  const { success, limit, remaining, reset } = await checkGlobalRateLimit(ip);
+  // Development parity: Run logic with 10x limit but don't block (just warn)
+  const isDev = process.env.NODE_ENV === "development";
+  const { success, limit, remaining, reset } = await checkGlobalRateLimit(ip, {
+    limit: isDev ? 600 : undefined, // 10x default limit for dev
+  });
 
   if (!success) {
+    if (isDev) {
+      console.warn(`[DEV] Rate limit would block IP: ${ip}`);
+      return null;
+    }
     return new NextResponse(
       JSON.stringify({
         success: false,

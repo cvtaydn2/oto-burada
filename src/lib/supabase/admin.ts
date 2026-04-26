@@ -33,6 +33,16 @@ const ADMIN_CLIENT_TTL = 5 * 60 * 1000; // 5 minutes
  * 3. ONLY use this for administrative tasks, system-level background jobs, or migrations.
  * 4. ALWAYS prefer createSupabaseServerClient() for user-authenticated requests.
  */
+/**
+ * SECURITY CRITICAL: Forcefully resets the cached admin client.
+ * Use this when a 401/403 error is encountered during an admin operation
+ * to recover from potential key rotation/expiration.
+ */
+export function resetSupabaseAdminClient(): void {
+  cachedAdminClient = null;
+  adminClientCreatedAt = 0;
+}
+
 export function createSupabaseAdminClient(): SupabaseClient<any> {
   const now = Date.now();
 

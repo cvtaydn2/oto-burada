@@ -1,9 +1,9 @@
 import { CarFront, CheckCircle2, ChevronRight, MapPin, ShieldCheck, Zap } from "lucide-react";
 import type { Metadata } from "next";
+import dynamic from "next/dynamic";
 import Link from "next/link";
 
 import { HomeHero } from "@/components/layout/home-hero";
-import { FeaturedCarousel } from "@/components/listings/featured-carousel";
 import {
   OrganizationStructuredData,
   WebSiteStructuredData,
@@ -12,6 +12,14 @@ import { ListingCard } from "@/components/shared/listing-card";
 import { getAppUrl } from "@/lib/seo";
 import { getPublicMarketplaceListings } from "@/services/listings/marketplace-listings";
 import { getLiveMarketplaceReferenceData } from "@/services/reference/live-reference-data";
+
+const FeaturedCarousel = dynamic(
+  () => import("@/components/listings/featured-carousel").then((mod) => mod.FeaturedCarousel),
+  {
+    ssr: false,
+    loading: () => <div className="h-[400px] w-full animate-pulse rounded-2xl bg-muted/20" />,
+  }
+);
 
 export const revalidate = 60;
 

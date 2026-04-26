@@ -11,13 +11,11 @@ const CSRF_COOKIE_NAME = "csrf_token";
 const CSRF_HEADER_NAME = "x-csrf-token";
 const TOKEN_LENGTH = 32;
 
-/**
- * Returns true when the request origin is acceptable.
- */
 export function isValidRequestOrigin(request: Request | NextRequest): boolean {
   // Webhook exclusion: third-party services won't send valid browser origin/referer
   const url = new URL(request.url);
-  if (url.pathname.startsWith("/api/webhooks/") || url.pathname === "/api/payments/webhook") {
+  const WEBHOOK_PATHS = ["/api/payments/webhook", "/api/webhooks/iyzico", "/api/webhooks/posthog"];
+  if (WEBHOOK_PATHS.some((p) => url.pathname === p || url.pathname.startsWith(p))) {
     return true;
   }
 
@@ -158,7 +156,7 @@ export async function setCsrfTokenCookie(): Promise<string> {
   const cookieStore = await cookies();
 
   cookieStore.set(CSRF_COOKIE_NAME, token, {
-    httpOnly: false,
+    httpOnly: true,
     secure: process.env.NODE_ENV === "production",
     sameSite: "strict",
     path: "/",

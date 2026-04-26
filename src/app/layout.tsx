@@ -37,19 +37,45 @@ export const viewport: Viewport = {
 export const metadata: Metadata = {
   metadataBase: new URL(getAppUrl()),
   title: {
-    default: "OtoBurada",
+    default: "OtoBurada — Sadece Araba İlan Pazaryeri",
     template: "%s | OtoBurada",
   },
-  description: "Arabanı kolayca sat. Doğru arabayı hızlıca bul.",
+  description:
+    "Arabanı kolayca sat, doğru arabayı hızlıca bul. Türkiye'nin sadece arabalara özel, sade ve güvenilir ilan platformu.",
   alternates: {
     canonical: "/",
   },
   openGraph: {
-    title: "Oto Burada",
+    title: "OtoBurada — Araba Almanın ve Satmanın En Sade Yolu",
     description: "Sade, güvenilir ve mobil odaklı bir araba ilan pazaryeri deneyimi.",
     locale: "tr_TR",
-    siteName: "Oto Burada",
+    siteName: "OtoBurada",
     type: "website",
+    images: [
+      {
+        url: "/og-image.png",
+        width: 1200,
+        height: 630,
+        alt: "OtoBurada",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "OtoBurada — Araba İlan Pazaryeri",
+    description: "Arabanı kolayca sat, doğru arabayı hızlıca bul.",
+    images: ["/og-image.png"],
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      "max-video-preview": -1,
+      "max-image-preview": "large",
+      "max-snippet": -1,
+    },
   },
   icons: {
     icon: [
@@ -62,7 +88,7 @@ export const metadata: Metadata = {
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",
-    title: "Oto Burada",
+    title: "OtoBurada",
   },
   formatDetection: {
     telephone: false,

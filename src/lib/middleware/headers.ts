@@ -4,6 +4,21 @@ export function generateNonce() {
   return crypto.randomUUID();
 }
 
+const STATIC_CSP_PARTS = [
+  "default-src 'self'",
+  "font-src 'self' https://fonts.gstatic.com https://unpkg.com https://vercel.live",
+  "img-src 'self' data: blob: https://*.supabase.co https://images.unsplash.com https://*.tile.openstreetmap.org https://unpkg.com https://vercel.live https://*.vercel.live https://*.public.blob.vercel-storage.com",
+  "connect-src 'self' https://*.supabase.co https://*.posthog.com https://us-assets.i.posthog.com wss://*.supabase.co https://nominatim.openstreetmap.org https://*.upstash.io https://vercel.live wss://ws-us3.pusher.com https://challenges.cloudflare.com",
+  "worker-src 'self' blob:",
+  "media-src 'self' blob: https://*.supabase.co",
+  "object-src 'none'",
+  "base-uri 'self'",
+  "form-action 'self'",
+  "frame-src https://vercel.live https://challenges.cloudflare.com",
+  "frame-ancestors 'none'",
+  "upgrade-insecure-requests",
+].join("; ");
+
 export function getSecurityHeaders(nonce: string) {
   const isProduction = process.env.NODE_ENV === "production";
   const scriptSrc = [
@@ -16,9 +31,6 @@ export function getSecurityHeaders(nonce: string) {
     "https://*.posthog.com",
     "https://us-assets.i.posthog.com",
     "https://challenges.cloudflare.com",
-    // NOTE: 'unsafe-eval' is intentionally NOT included in production.
-    // If a specific Vercel/PostHog feature requires it, gate it with an explicit
-    // env flag (e.g. NEXT_PUBLIC_ALLOW_UNSAFE_EVAL=true) and document the reason.
   ];
   const styleSrc = [
     "'self'",
@@ -33,20 +45,9 @@ export function getSecurityHeaders(nonce: string) {
   }
 
   const csp = [
-    "default-src 'self'",
     `script-src ${scriptSrc.join(" ")}`,
     `style-src ${styleSrc.join(" ")}`,
-    "font-src 'self' https://fonts.gstatic.com https://unpkg.com https://vercel.live",
-    "img-src 'self' data: blob: https://*.supabase.co https://images.unsplash.com https://*.tile.openstreetmap.org https://unpkg.com https://vercel.live https://*.vercel.live https://*.public.blob.vercel-storage.com",
-    "connect-src 'self' https://*.supabase.co https://*.posthog.com https://us-assets.i.posthog.com wss://*.supabase.co https://nominatim.openstreetmap.org https://*.upstash.io https://vercel.live wss://ws-us3.pusher.com https://challenges.cloudflare.com",
-    "worker-src 'self' blob:",
-    "media-src 'self' blob: https://*.supabase.co",
-    "object-src 'none'",
-    "base-uri 'self'",
-    "form-action 'self'",
-    "frame-src https://vercel.live https://challenges.cloudflare.com",
-    "frame-ancestors 'none'",
-    "upgrade-insecure-requests",
+    STATIC_CSP_PARTS,
   ].join("; ");
 
   return {

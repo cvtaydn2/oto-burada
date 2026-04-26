@@ -49,59 +49,37 @@ export async function POST(req: NextRequest) {
       const token = body.token;
       const status = body.status === "SUCCESS" ? "success" : "failure";
 
-      // Atomic lock: Only one worker can set webhook_processed_at to non-null
-      const { data: locked, error: lockError } = await admin
-        .from("payments")
-        .update({
-          status: status,
-          iyzico_payment_id: body.paymentId,
-          processed_at: new Date().toISOString(),
-          webhook_processed_at: new Date().toISOString(),
-        })
-        .eq("iyzico_token", token)
-        .is("webhook_processed_at", null) // Atomic check
-        .select("id, user_id, listing_id, package_id")
-        .single();
+      // 3. Process payment with atomic RPC (F-01, F-04)
+      const { data: result, error: rpcError } = await admin.rpc("process_payment_webhook", {
+        p_token: token,
+        p_status: status,
+        p_iyzico_payment_id: body.paymentId,
+      });
 
-      if (lockError || !locked) {
-        // Already processed or error — respond 200 for idempotency
-        logger.api.info("Payment already processed or lock failed", { token });
+      if (rpcError) {
+        logger.api.error("RPC: process_payment_webhook failed", {
+          token,
+          error: rpcError.message,
+        });
+        return NextResponse.json({ status: "error", message: rpcError.message }, { status: 500 });
+      }
+
+      if (result?.status === "already_processed") {
+        logger.api.info("Payment already processed (idempotent)", { token });
         return NextResponse.json({ status: "already_processed" });
       }
 
-      // 4. Queue fulfillment instead of doing side effects inside the webhook.
-      if (status === "success" && locked.listing_id && locked.package_id) {
-        const { error: jobError } = await admin.rpc("create_fulfillment_job", {
-          p_payment_id: locked.id,
-          p_job_type: "doping_apply",
-          p_metadata: {
-            listing_id: locked.listing_id,
-            package_id: locked.package_id,
-            user_id: locked.user_id,
-          },
-        });
-
-        if (jobError) {
-          await admin.from("payments").update({ webhook_processed_at: null }).eq("id", locked.id);
-
-          logger.api.error("Failed to queue doping fulfillment job", {
-            paymentId: locked.id,
-            error: jobError.message,
-          });
-          return NextResponse.json({ status: "queued_failed" }, { status: 500 });
-        }
+      if (result?.status === "not_found") {
+        logger.api.warn("Payment record not found for webhook", { token });
+        return NextResponse.json({ status: "not_found" }, { status: 404 });
       }
 
-      // Increment attempt counter (now that the RPC exists in DB)
-      await admin.rpc("increment_webhook_attempts", { p_token: token });
-
-      // Update log status (use filter for jsonb column)
-      await admin
-        .from("payment_webhook_logs")
-        .update({ status: "processed" })
-        .filter("payload->>token", "eq", token);
-
-      logger.api.info("Payment webhook processed successfully", { token, status });
+      logger.api.info("Payment webhook processed atomically", {
+        token,
+        status,
+        paymentId: result?.payment_id,
+        jobId: result?.job_id,
+      });
     }
 
     return NextResponse.json({ status: "ok" });

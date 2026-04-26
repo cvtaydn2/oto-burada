@@ -104,7 +104,7 @@ export const getAuthContext = cache(async () => {
   const context = getSessionContext();
   if (context) return context;
 
-  // 2. Fallback to standard request-scoped cache
+  // 2. Fallback to standard request-scoped cache (e.g. for ISR/revalidation)
   const user = await getCurrentUser();
   if (!user) return { user: null, dbProfile: null };
 

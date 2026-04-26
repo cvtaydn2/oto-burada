@@ -656,8 +656,25 @@ Automate "Search Result" notifications.
 - [x] Clean up deprecated filtering code in `ListingFiltersService`.
 
 ### Task 31.4 — PWA & Metadata Polish
-- [x] Align manifest, viewport, and metadata definitions in Root Layout.
 - [x] Fix hydration warnings and ensure mobile-first viewport settings.
+
+---
+
+## Phase 32 — Critical Security & Transactional Integrity
+
+### Task 32.1 — Security & RLS Hardening
+- [x] Replace Admin Client with Server Client in user-facing `getStoredUserListings`.
+- [x] Implement Rate Limit development parity (higher thresholds vs total bypass).
+- [x] Strengthen middleware JWT validation using `supabase.auth.getUser()`.
+
+### Task 32.2 — Transactional Integrity & Resilience
+- [x] Implement atomic `process_payment_webhook` RPC to prevent partial failures.
+- [x] Update payment webhook handler to use centralized atomic logic.
+- [x] Implement proactive admin client reset mechanism for key rotation recovery.
+
+### Task 32.3 — Maintainability & Discoverability
+- [x] Consolidate utilities into domain directories.
+- [x] Implement barrel exports in `src/lib/index.ts` for better discoverability.
 
 ---
 

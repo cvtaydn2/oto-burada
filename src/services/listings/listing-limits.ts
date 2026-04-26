@@ -78,29 +78,24 @@ export async function checkListingLimit(
 
   const admin = createSupabaseAdminClient();
 
-  // Try the atomic RPC first (requires migration 0042_listing_quota_atomic_check.sql)
-  const { data: rpcResult, error: rpcError } = await admin.rpc("check_listing_quota_atomic", {
+  // Try the atomic RPC first (requires migration 0104_atomic_quota_and_performance_indexes.sql)
+  const { data: allowed, error: rpcError } = await admin.rpc("check_and_reserve_listing_quota", {
     p_user_id: userId,
-    p_monthly_limit: limits.monthly,
-    p_yearly_limit: limits.yearly,
   });
 
-  if (!rpcError && rpcResult !== null) {
-    // RPC returns: { allowed: boolean, reason: string | null, monthly_count: int, yearly_count: int }
-    const result = rpcResult as {
-      allowed: boolean;
-      reason: string | null;
-      monthly_count: number;
-      yearly_count: number;
-    };
-    return {
-      allowed: result.allowed,
-      reason: result.reason ?? undefined,
-      remaining: {
-        monthly: Math.max(0, limits.monthly - result.monthly_count),
-        yearly: Math.max(0, limits.yearly - result.yearly_count),
-      },
-    };
+  if (!rpcError && typeof allowed === "boolean") {
+    if (allowed) {
+      return {
+        allowed: true,
+        remaining: { monthly: limits.monthly, yearly: limits.yearly },
+      };
+    } else {
+      return {
+        allowed: false,
+        reason: "Listing quota exceeded. Professionals: 50, Standard: 3 active listings.",
+        remaining: { monthly: 0, yearly: 0 },
+      };
+    }
   }
 
   // Fallback: non-atomic count check (safe for low-traffic / dev environments)
