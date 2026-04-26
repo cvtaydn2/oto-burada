@@ -19,13 +19,13 @@ import { getSupabaseAdminEnv } from "@/lib/supabase/env";
  */
 let cachedAdminClient: SupabaseClient<any> | null = null;
 let adminClientCreatedAt = 0;
-const ADMIN_CLIENT_TTL = 5 * 60 * 1000; // 5 minutes
+const ADMIN_CLIENT_TTL = 1 * 60 * 1000; // 1 minute (reduced from 5m to minimize key rotation window)
 
 /**
  * SECURITY CRITICAL: Creates a Supabase admin client using the SERVICE_ROLE_KEY.
  *
- * Implements a TTL-based singleton pattern to optimize connection pooling (reuse HTTP connections)
- * while allowing for periodic key rotation/refresh every 5 minutes.
+ * Implements a short-lived TTL-based singleton pattern to optimize connection pooling
+ * while allowing for fast recovery after key rotation (within 60 seconds).
  *
  * IMPORTANT RULES:
  * 1. This client BYPASSES ALL Row Level Security (RLS) policies.

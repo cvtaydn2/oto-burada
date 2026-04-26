@@ -104,7 +104,11 @@ export default async function RootLayout({
   const nonce = (await headers()).get("x-nonce") ?? undefined;
 
   return (
-    <html lang="tr" className={`${inter.variable} ${outfit.variable}`} suppressHydrationWarning>
+    <html
+      lang="tr"
+      className={`${inter.variable} ${outfit.variable}`}
+      suppressHydrationWarning // Required by next-themes to avoid mismatch when injecting theme class on the client
+    >
       <head>
         <link rel="preconnect" href="https://images.unsplash.com" />
       </head>

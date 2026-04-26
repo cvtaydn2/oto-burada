@@ -72,7 +72,14 @@ function sanitizeRedirectPath(next: string | null | undefined): string {
 
 function getEmailRedirectUrl() {
   const appUrl = getAppUrl();
-  return `${appUrl.replace(/\/$/, "")}/auth/callback`;
+  try {
+    const url = new URL("/auth/callback", appUrl);
+    return url.toString();
+  } catch (error) {
+    logger.auth.error("Failed to build redirect URL", error, { appUrl });
+    // Fallback to relative path as a last resort, though Supabase usually requires absolute
+    return "/auth/callback";
+  }
 }
 
 async function getClientIp() {

@@ -44,7 +44,7 @@ export interface ListingRow {
   profiles?: {
     id: string;
     full_name: string;
-    phone: string | null;
+    phone?: string | null;
     city: string;
     avatar_url: string | null;
     role: string;

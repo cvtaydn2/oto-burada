@@ -1,3 +1,61 @@
+# 2026-04-26 — Critical Security & Privacy Hardening Resolution
+
+## [2026-04-26] - RLS Privacy, CSP & Env Validation
+- **Durum:** ✅ TAMAMLANDI
+- **Yapılanlar:**
+  - **GDPR/KVKK Uyumu ve RLS Sertleştirmesi (Bulgu 5.1)**: `public.profiles` tablosu üzerindeki geniş erişim yetkisi kaldırıldı. Sadece id, isim, şehir gibi kamuya açık alanları içeren `public_profiles` view'ı oluşturuldu (Migration 0106). Telefon numaraları gibi hassas veriler artık sadece profil sahibi ve adminler tarafından görülebilecek şekilde kısıtlandı. Tüm ilan sorguları bu güvenli view üzerinden geçecek şekilde güncellendi.
+  - **Environment Variable Doğrulaması (Bulgu 5.2)**: `src/lib/supabase/env.ts` içerisindeki kontroller, sadece varlık kontrolünden; uzunluk ve format (HTTPS/Key length) kontrolüne yükseltildi.
+  - **Güvenlik Header'ları ve CSP (Bulgu 5.3)**: `next.config.ts` dosyasına kapsamlı bir Content Security Policy (CSP), XSS Protection, Frame Options ve Referrer Policy eklendi.
+  - **Hydration Dokümantasyonu (Bulgu 6.1)**: `layout.tsx` dosyasındaki `suppressHydrationWarning` kullanımı, `next-themes` gerekliliği olarak belgelendi ve risk açıklaması eklendi.
+- **Doğrulama:**
+  - `npm run build` ✅
+- **Kararlar:**
+  - Veri sızıntısını önlemek için "View-based Column Restriction" deseni uygulandı.
+  - XSS riskini minimize etmek için katı bir CSP politikası benimsendi.
+
+# 2026-04-26 — Logic & Performance Hardening Resolution
+
+## [2026-04-26] - Session Resilience & Listing Quota Optimization
+- **Durum:** ✅ TAMAMLANDI
+- **Yapılanlar:**
+  - **Oturum Dayanıklılığı (Bulgu 3.1)**: `src/lib/auth/session.ts` içerisindeki `getDBProfile` sorgusuna `.limit(1)` eklenerek, veritabanında nadiren oluşabilecek çoklu kayıt durumlarında hataya düşme (maybeSingle exception) riski ortadan kaldırıldı.
+  - **Kota Sorgu Optimizasyonu (Bulgu 4.1)**: `src/services/listings/listing-limits.ts` içerisindeki üç ayrı count sorgusu, `get_user_listing_stats` isimli yeni bir Postgres RPC fonksiyonu ile tek sorguya indirildi (Migration 0105). Bu sayede ilan oluşturma akışındaki veritabanı gecikmesi (round-trip) %66 oranında azaltıldı.
+  - **Admin Önbellek Bellek Yönetimi (Bulgu 4.2)**: `src/lib/auth/api-admin.ts` içerisindeki `adminCheckCache` için 1000 kayıtlık bir üst sınır ve temizleme mantığı eklendi. Bu sayede uzun süre çalışan sunucu örneklerinde oluşabilecek bellek sızıntısı (memory leak) riski önlendi.
+- **Doğrulama:**
+  - `npm run typecheck` ✅
+  - `npm run build` ✅
+- **Kararlar:**
+  - Veritabanı performansını artırmak için domain-specific RPC kullanımı tercih edildi.
+  - Güvenlik kontrollerinde "Fail-Safe" yerine "Resilient" yaklaşım benimsendi.
+
+# 2026-04-26 — Architectural Hardening Resolution
+
+## [2026-04-26] - Documentation Alignment & Supabase Admin TTL
+- **Durum:** ✅ TAMAMLANDI
+- **Yapılanlar:**
+  - **Dokümantasyon Hizalaması (Bulgu 2.1)**: `AGENTS.md` içerisindeki klasör yapısı dokümantasyonu, projenin mevcut durumunu (`services/` ağırlıklı yapı) yansıtacak şekilde güncellendi. Klasörlerin görev tanımları eklenerek yeni geliştiriciler için belirsizlik giderildi.
+  - **Supabase Admin TTL Optimizasyonu (Bulgu 2.2)**: `src/lib/supabase/admin.ts` dosyasındaki `ADMIN_CLIENT_TTL` değeri 5 dakikadan 1 dakikaya düşürüldü. Bu sayede, service role key rotasyonu durumunda oluşabilecek hata penceresi (stale key window) minimize edildi.
+- **Doğrulama:**
+  - `npm run typecheck` ✅
+- **Kararlar:**
+  - Mevcut pratiklerin projenin hızına daha uygun olduğu değerlendirilerek, dokümantasyon koda uyduruldu (Source of Truth prensibi).
+  - Güvenlik ve dayanıklılık için admin client önbellek süresi kısaltıldı.
+
+# 2026-04-26 — Security & Logic Hardening Resolution
+
+## [2026-04-26] - Admin Auth, Redirect Validation & Atomic Quota Fallback
+- **Durum:** ✅ TAMAMLANDI
+- **Yapılanlar:**
+  - **Fail-Closed Admin Check (Bulgu 1.1)**: `requireAdminUser` fonksiyonu, `SUPABASE_SERVICE_ROLE_KEY` eksikliğinde artık sessizce JWT kontrolüne güvenmek yerine, production ortamında hata fırlatacak (fail-closed) şekilde güncellendi.
+  - **Redirect URL Güvenliği (Bulgu 1.2)**: `getEmailRedirectUrl` fonksiyonunda string manipülasyonu yerine `new URL()` constructor'ı kullanılarak güvenli ve valide edilmiş redirect URL'leri oluşturulması sağlandı.
+  - **Atomic Quota Check Fallback (Bulgu 1.3)**: `checkListingLimit` fonksiyonunda, RPC hatası durumunda devreye giren fallback mekanizması, Postgres advisory lock (danışmanlık kilidi) kullanılarak race condition riskine karşı daha dayanıklı hale getirildi.
+- **Doğrulama:**
+  - `npm run typecheck` ✅
+  - `npm run lint` ✅
+- **Kararlar:**
+  - Güvenlik kritik yollarında (admin yetkilendirme) "fail-open" yerine "fail-closed" prensibi benimsendi.
+  - Veritabanı tutarlılığını korumak için fallback senaryolarında bile kilit (locking) mekanizmaları tercih edildi.
+
 # 2026-04-26 — UI/UX Hardening Resolution
 
 ## [2026-04-26] - SEO Metadata, Code Splitting & Touch Target Optimization

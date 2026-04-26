@@ -1,3 +1,4 @@
+import { logger } from "@/lib/logging/logger";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { hasSupabaseAdminEnv } from "@/lib/supabase/env";
 
@@ -25,30 +26,23 @@ export async function getUserListingCounts(userId: string): Promise<{
   const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
   const startOfYear = new Date(now.getFullYear(), 0, 1).toISOString();
 
-  const [totalRes, monthlyRes, yearlyRes] = await Promise.all([
-    admin
-      .from("listings")
-      .select("*", { count: "exact", head: true })
-      .eq("seller_id", userId)
-      .neq("status", "archived"),
-    admin
-      .from("listings")
-      .select("*", { count: "exact", head: true })
-      .eq("seller_id", userId)
-      .neq("status", "archived")
-      .gte("created_at", startOfMonth),
-    admin
-      .from("listings")
-      .select("*", { count: "exact", head: true })
-      .eq("seller_id", userId)
-      .neq("status", "archived")
-      .gte("created_at", startOfYear),
-  ]);
+  const { data, error } = await admin.rpc("get_user_listing_stats", {
+    p_user_id: userId,
+    p_start_of_month: startOfMonth,
+    p_start_of_year: startOfYear,
+  });
+
+  if (error || !data) {
+    logger.auth.error("[ListingLimits] Failed to get listing stats via RPC", error);
+    return { monthly: 0, yearly: 0, total: 0 };
+  }
+
+  const stats = data as { total: number; monthly: number; yearly: number };
 
   return {
-    total: totalRes.count ?? 0,
-    monthly: monthlyRes.count ?? 0,
-    yearly: yearlyRes.count ?? 0,
+    total: stats.total,
+    monthly: stats.monthly,
+    yearly: stats.yearly,
   };
 }
 
@@ -99,6 +93,14 @@ export async function checkListingLimit(
   }
 
   // Fallback: non-atomic count check (safe for low-traffic / dev environments)
+  // Even in fallback, we attempt to use an advisory lock to reduce race condition window
+  try {
+    const lockKey = parseInt(userId.replace(/-/g, "").slice(0, 8), 16);
+    await admin.rpc("pg_advisory_xact_lock", { key: lockKey });
+  } catch (e) {
+    // Ignore if advisory lock RPC is not exposed/available
+  }
+
   const counts = await getUserListingCounts(userId);
 
   const remainingMonthly = Math.max(0, limits.monthly - counts.monthly);

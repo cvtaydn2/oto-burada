@@ -73,6 +73,7 @@ const getDBProfile = cache(async (userId: string) => {
       .from("profiles")
       .select("role, is_banned")
       .eq("id", userId)
+      .limit(1)
       .maybeSingle<{ role: string; is_banned: boolean }>();
 
     if (error || !profile) {
@@ -125,10 +126,15 @@ export async function requireAdminUser() {
   }
 
   // 2. Secondary DB check (Atomic consistency)
-  if (process.env.SUPABASE_SERVICE_ROLE_KEY) {
-    if (!dbProfile || dbProfile.role !== "admin" || dbProfile.isBanned) {
-      redirect("/dashboard");
+  if (!process.env.SUPABASE_SERVICE_ROLE_KEY) {
+    if (process.env.NODE_ENV === "production") {
+      throw new Error("SUPABASE_SERVICE_ROLE_KEY is required in production");
     }
+    redirect("/dashboard");
+  }
+
+  if (!dbProfile || dbProfile.role !== "admin" || dbProfile.isBanned) {
+    redirect("/dashboard");
   }
 
   return user;

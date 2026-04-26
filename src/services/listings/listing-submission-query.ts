@@ -85,10 +85,9 @@ listing_images (
   is_cover,
   placeholder_blur
 ),
-profiles!inner!seller_id (
+profiles:public_profiles!inner!seller_id (
   id,
   full_name,
-  phone,
   city,
   avatar_url,
   role,
@@ -147,10 +146,9 @@ listing_images (
   is_cover,
   placeholder_blur
 ),
-profiles!inner!seller_id (
+profiles:public_profiles!inner!seller_id (
   id,
   full_name,
-  phone,
   city,
   avatar_url,
   role,
@@ -219,7 +217,7 @@ listing_images (
   is_cover,
   placeholder_blur
 ),
-profiles!inner!seller_id (
+profiles:public_profiles!inner!seller_id (
   id,
   full_name,
   avatar_url,

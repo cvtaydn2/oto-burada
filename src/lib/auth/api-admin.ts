@@ -11,6 +11,7 @@ import { createSupabaseServerClient } from "@/lib/supabase/server";
  */
 const adminCheckCache = new Map<string, { role: string; isBanned: boolean; ts: number }>();
 const CACHE_TTL_MS = 30 * 1000;
+const MAX_CACHE_SIZE = 1000; // Prevent memory leaks by limiting cache growth
 
 export async function requireApiAdminUser(existingUser?: User): Promise<User | Response> {
   if (!hasSupabaseEnv()) {
@@ -64,6 +65,7 @@ export async function requireApiAdminUser(existingUser?: User): Promise<User | R
 
     if (data) {
       profile = data;
+      if (adminCheckCache.size >= MAX_CACHE_SIZE) adminCheckCache.clear();
       adminCheckCache.set(user.id, {
         role: data.role,
         isBanned: !!data.is_banned,
@@ -126,6 +128,7 @@ export async function isSupabaseAdminUser(existingUser?: User): Promise<boolean>
 
     if (data) {
       profile = data;
+      if (adminCheckCache.size >= MAX_CACHE_SIZE) adminCheckCache.clear();
       adminCheckCache.set(user.id, {
         role: data.role,
         isBanned: !!data.is_banned,

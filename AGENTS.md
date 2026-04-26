@@ -129,46 +129,42 @@ Use this structure unless there is a strong reason to improve it:
 ```txt
 src/
   app/
-    (public)/
-    dashboard/
-    admin/
-    api/
+    (public)/       # Public routes (marketplace, listings, static)
+    dashboard/      # Authenticated user dashboard
+    admin/          # Moderation and administrative tools
+    api/            # Route handlers
   components/
-    ui/
-    shared/
-    listings/
-    forms/
-    layout/
-    reservations/
-    reviews/
-    exchange/
-    expertiz/
-  domain/
-    usecases/
+    ui/             # Base shadcn components
+    shared/         # Reusable cross-feature components
+    listings/       # Listing-specific UI
+    forms/          # Shared form elements
+    layout/         # Navigation and shell
+    reservations/   # (Reserved for future)
+    reviews/        # (Reserved for future)
+  domain/           # Pure business logic and use cases
     logic/
-  features/
+    usecases/
+  features/         # High-level functional modules (Container/Logic/UI)
     admin-moderation/
     listing-creation/
     marketplace/
-    reviews/
-  hooks/
-  types/
-  lib/
+  hooks/            # Reusable React hooks
+  types/            # Global TypeScript definitions
+  lib/              # Shared infrastructure and utilities
     supabase/
     auth/
+    security/
     utils/
-    constants/
     validators/
-  services/
+  services/         # Domain-specific API and data layer services
     listings/
     favorites/
-    reports/
     profile/
     reservations/
     exchange/
-    gallery/
     expertiz/
     admin/
+    payment/
 ```
 
 ---
