@@ -17,6 +17,7 @@ interface PhotosStepProps {
   >;
   onImageChange: (index: number, file: File | null) => void;
   onRemoveImage: (index: number) => void;
+  isDisabled?: boolean;
 }
 
 const PHOTO_GUIDES = [
@@ -36,6 +37,7 @@ export function PhotosStep({
   uploadStates,
   onImageChange,
   onRemoveImage,
+  isDisabled = false,
 }: PhotosStepProps) {
   const { fields } = fieldArray;
   const { watch, setValue } = form;
@@ -87,36 +89,38 @@ export function PhotosStep({
                     />
 
                     {/* Hover overlay — delete + 360° toggle */}
-                    <div
-                      className="absolute inset-0 bg-black/50 opacity-0 hover:opacity-100 transition-opacity flex flex-col items-center justify-center gap-2"
-                      onClick={(e) => e.stopPropagation()}
-                    >
-                      <button
-                        type="button"
-                        onClick={() => toggle360(index)}
-                        title={is360 ? "Normal fotoğrafa dönüştür" : "360° olarak işaretle"}
-                        className={cn(
-                          "flex items-center gap-1 px-2 py-1 rounded-lg text-[10px] font-bold transition-colors",
-                          is360
-                            ? "bg-blue-500 text-white"
-                            : "bg-white/90 text-gray-700 hover:bg-blue-500 hover:text-white"
-                        )}
+                    {!isDisabled && (
+                      <div
+                        className="absolute inset-0 bg-black/50 opacity-0 hover:opacity-100 transition-opacity flex flex-col items-center justify-center gap-2"
+                        onClick={(e) => e.stopPropagation()}
                       >
-                        <Rotate3d size={13} />
-                        {is360 ? "360° Aktif" : "360° Ekle"}
-                      </button>
-                      <button
-                        type="button"
-                        onClick={(e) => {
-                          e.preventDefault();
-                          e.stopPropagation();
-                          onRemoveImage(index);
-                        }}
-                        className="p-2 bg-white rounded-lg text-red-500 hover:bg-red-500 hover:text-white transition-colors"
-                      >
-                        <Trash2 size={16} />
-                      </button>
-                    </div>
+                        <button
+                          type="button"
+                          onClick={() => toggle360(index)}
+                          title={is360 ? "Normal fotoğrafa dönüştür" : "360° olarak işaretle"}
+                          className={cn(
+                            "flex items-center gap-1 px-2 py-1 rounded-lg text-[10px] font-bold transition-colors",
+                            is360
+                              ? "bg-blue-500 text-white"
+                              : "bg-white/90 text-gray-700 hover:bg-blue-500 hover:text-white"
+                          )}
+                        >
+                          <Rotate3d size={13} />
+                          {is360 ? "360° Aktif" : "360° Ekle"}
+                        </button>
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            onRemoveImage(index);
+                          }}
+                          className="p-2 bg-white rounded-lg text-red-500 hover:bg-red-500 hover:text-white transition-colors"
+                        >
+                          <Trash2 size={16} />
+                        </button>
+                      </div>
+                    )}
 
                     {/* Cover badge */}
                     {index === 0 && (
@@ -134,7 +138,12 @@ export function PhotosStep({
                     )}
                   </>
                 ) : (
-                  <label className="absolute inset-0 cursor-pointer flex flex-col items-center justify-center gap-2">
+                  <label
+                    className={cn(
+                      "absolute inset-0 flex flex-col items-center justify-center gap-2",
+                      !isDisabled && "cursor-pointer"
+                    )}
+                  >
                     {uploadState?.status === "uploading" ? (
                       <div className="flex flex-col items-center gap-2">
                         <LoaderCircle className="size-6 text-blue-500 animate-spin" />
@@ -142,7 +151,7 @@ export function PhotosStep({
                           {uploadState.progress}%
                         </span>
                       </div>
-                    ) : uploadState?.status === "error" ? (
+                    ) : uploadState?.status === "error" && !isDisabled ? (
                       // Hata durumu: retry butonu göster
                       <div className="flex flex-col items-center gap-2 px-2 text-center">
                         <span className="text-[10px] font-bold text-red-500 leading-tight">
@@ -171,7 +180,7 @@ export function PhotosStep({
                         </span>
                       </>
                     )}
-                    {uploadState?.status !== "error" && (
+                    {uploadState?.status !== "error" && !isDisabled && (
                       <input
                         type="file"
                         accept="image/*"

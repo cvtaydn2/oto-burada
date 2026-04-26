@@ -9,6 +9,7 @@ import { headers } from "next/headers";
 import { RootProviders } from "@/components/providers/root-providers";
 import { CookieConsent } from "@/components/shared/cookie-consent";
 import { PWAInstallPrompt } from "@/components/shared/pwa-install-prompt";
+import { WhatsAppSupport } from "@/components/shared/whatsapp-support";
 import { getCurrentUser } from "@/lib/auth/session";
 import { getAppUrl } from "@/lib/seo";
 
@@ -119,6 +120,7 @@ export default async function RootLayout({
           <SpeedInsights />
           <CookieConsent />
           <PWAInstallPrompt />
+          <WhatsAppSupport />
         </RootProviders>
       </body>
     </html>

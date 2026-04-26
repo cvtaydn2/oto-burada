@@ -34,6 +34,7 @@ export async function updateProfileAction(
   _previousState: ProfileActionState = initialState,
   formData: FormData
 ): Promise<ProfileActionState> {
+  void _previousState;
   const values = {
     fullName: String(formData.get("fullName") ?? ""),
     phone: String(formData.get("phone") ?? ""),
@@ -130,6 +131,7 @@ export async function updateCorporateProfileAction(
   _previousState: ProfileActionState = initialState,
   formData: FormData
 ): Promise<ProfileActionState> {
+  void _previousState;
   const values = {
     businessName: String(formData.get("businessName") ?? ""),
     businessSlug: String(formData.get("businessSlug") ?? ""),

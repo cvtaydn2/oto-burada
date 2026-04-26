@@ -178,6 +178,7 @@ export const userRoleLabels: Record<(typeof userRoles)[number], string> = {
 
 export const userTypeLabels = {
   individual: "Bireysel",
-  professional: "Kurumsal",
+  professional: "Pro",
+  corporate: "Kurumsal Filo",
   staff: "Personel",
 } as const;

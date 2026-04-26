@@ -15,6 +15,7 @@ interface DamageSelectorProps {
   value: Record<string, string>;
   onChange: (value: Record<string, string>) => void;
   className?: string;
+  isDisabled?: boolean;
 }
 
 const statusColors: Record<string, { bg: string; border: string; text: string; fill: string }> = {
@@ -50,7 +51,7 @@ const statusColors: Record<string, { bg: string; border: string; text: string; f
   },
 };
 
-export function DamageSelector({ value, onChange, className }: DamageSelectorProps) {
+export function DamageSelector({ value, onChange, className, isDisabled }: DamageSelectorProps) {
   const [activePart, setActivePart] = useState<string | null>(null);
 
   const handleStatusChange = (part: string, status: string) => {
@@ -82,7 +83,7 @@ export function DamageSelector({ value, onChange, className }: DamageSelectorPro
           </p>
         </div>
 
-        {affectedPartsCount > 0 && (
+        {affectedPartsCount > 0 && !isDisabled && (
           <button
             type="button"
             onClick={clearAll}
@@ -114,7 +115,7 @@ export function DamageSelector({ value, onChange, className }: DamageSelectorPro
                   : "fill-white stroke-slate-300"
               )}
               strokeWidth="2"
-              onClick={() => setActivePart("kaput")}
+              onClick={() => !isDisabled && setActivePart("kaput")}
             />
 
             {/* Part: On Tampon */}
@@ -127,7 +128,7 @@ export function DamageSelector({ value, onChange, className }: DamageSelectorPro
                   : "fill-white stroke-slate-300"
               )}
               strokeWidth="2"
-              onClick={() => setActivePart("on_tampon")}
+              onClick={() => !isDisabled && setActivePart("on_tampon")}
             />
 
             {/* Side Mirrors (Aesthetics) */}
@@ -149,7 +150,7 @@ export function DamageSelector({ value, onChange, className }: DamageSelectorPro
                   : "fill-white stroke-slate-300"
               )}
               strokeWidth="2"
-              onClick={() => setActivePart("sol_on_camurluk")}
+              onClick={() => !isDisabled && setActivePart("sol_on_camurluk")}
             />
 
             {/* Part: Sag On Camurluk */}
@@ -162,7 +163,7 @@ export function DamageSelector({ value, onChange, className }: DamageSelectorPro
                   : "fill-white stroke-slate-300"
               )}
               strokeWidth="2"
-              onClick={() => setActivePart("sag_on_camurluk")}
+              onClick={() => !isDisabled && setActivePart("sag_on_camurluk")}
             />
 
             {/* Part: Sol On Kapi */}
@@ -175,7 +176,7 @@ export function DamageSelector({ value, onChange, className }: DamageSelectorPro
                   : "fill-white stroke-slate-300"
               )}
               strokeWidth="2"
-              onClick={() => setActivePart("sol_on_kapi")}
+              onClick={() => !isDisabled && setActivePart("sol_on_kapi")}
             />
 
             {/* Part: Sag On Kapi */}
@@ -188,7 +189,7 @@ export function DamageSelector({ value, onChange, className }: DamageSelectorPro
                   : "fill-white stroke-slate-300"
               )}
               strokeWidth="2"
-              onClick={() => setActivePart("sag_on_kapi")}
+              onClick={() => !isDisabled && setActivePart("sag_on_kapi")}
             />
 
             {/* Part: Sol Arka Kapi */}
@@ -201,7 +202,7 @@ export function DamageSelector({ value, onChange, className }: DamageSelectorPro
                   : "fill-white stroke-slate-300"
               )}
               strokeWidth="2"
-              onClick={() => setActivePart("sol_arka_kapi")}
+              onClick={() => !isDisabled && setActivePart("sol_arka_kapi")}
             />
 
             {/* Part: Sag Arka Kapi */}
@@ -214,7 +215,7 @@ export function DamageSelector({ value, onChange, className }: DamageSelectorPro
                   : "fill-white stroke-slate-300"
               )}
               strokeWidth="2"
-              onClick={() => setActivePart("sag_arka_kapi")}
+              onClick={() => !isDisabled && setActivePart("sag_arka_kapi")}
             />
 
             {/* Part: Sol Arka Camurluk */}
@@ -227,7 +228,7 @@ export function DamageSelector({ value, onChange, className }: DamageSelectorPro
                   : "fill-white stroke-slate-300"
               )}
               strokeWidth="2"
-              onClick={() => setActivePart("sol_arka_camurluk")}
+              onClick={() => !isDisabled && setActivePart("sol_arka_camurluk")}
             />
 
             {/* Part: Sag Arka Camurluk */}
@@ -240,7 +241,7 @@ export function DamageSelector({ value, onChange, className }: DamageSelectorPro
                   : "fill-white stroke-slate-300"
               )}
               strokeWidth="2"
-              onClick={() => setActivePart("sag_arka_camurluk")}
+              onClick={() => !isDisabled && setActivePart("sag_arka_camurluk")}
             />
 
             {/* Part: Tavan */}
@@ -257,7 +258,7 @@ export function DamageSelector({ value, onChange, className }: DamageSelectorPro
                   : "fill-white stroke-slate-300"
               )}
               strokeWidth="2"
-              onClick={() => setActivePart("tavan")}
+              onClick={() => !isDisabled && setActivePart("tavan")}
             />
 
             {/* Interior Details (Aesthetics) */}
@@ -274,7 +275,7 @@ export function DamageSelector({ value, onChange, className }: DamageSelectorPro
                   : "fill-white stroke-slate-300"
               )}
               strokeWidth="2"
-              onClick={() => setActivePart("bagaj")}
+              onClick={() => !isDisabled && setActivePart("bagaj")}
             />
 
             {/* Part: Arka Tampon */}
@@ -287,7 +288,7 @@ export function DamageSelector({ value, onChange, className }: DamageSelectorPro
                   : "fill-white stroke-slate-300"
               )}
               strokeWidth="2"
-              onClick={() => setActivePart("arka_tampon")}
+              onClick={() => !isDisabled && setActivePart("arka_tampon")}
             />
           </svg>
 
@@ -382,13 +383,15 @@ export function DamageSelector({ value, onChange, className }: DamageSelectorPro
                         }
                       </span>
                     </div>
-                    <button
-                      type="button"
-                      onClick={() => handleStatusChange(part, "orjinal")}
-                      className="text-muted-foreground/70 hover:text-red-500"
-                    >
-                      <RotateCcw size={14} />
-                    </button>
+                    {!isDisabled && (
+                      <button
+                        type="button"
+                        onClick={() => handleStatusChange(part, "orjinal")}
+                        className="text-muted-foreground/70 hover:text-red-500"
+                      >
+                        <RotateCcw size={14} />
+                      </button>
+                    )}
                   </div>
                 ))}
               </div>
@@ -397,22 +400,23 @@ export function DamageSelector({ value, onChange, className }: DamageSelectorPro
 
           <div className="mt-auto space-y-4">
             <div className="grid grid-cols-2 gap-2">
-              {carParts
-                .filter((p) => !value[p])
-                .slice(0, 4)
-                .map((part) => (
-                  <button
-                    key={part}
-                    type="button"
-                    onClick={() => setActivePart(part)}
-                    className="flex items-center justify-between rounded-xl border border-border bg-card p-3 text-left transition-all hover:border-indigo-300 hover:shadow-sm"
-                  >
-                    <span className="text-xs font-medium text-muted-foreground truncate">
-                      {carPartLabels[part]}
-                    </span>
-                    <ChevronDown size={14} className="text-muted-foreground/70" />
-                  </button>
-                ))}
+              {!isDisabled &&
+                carParts
+                  .filter((p) => !value[p])
+                  .slice(0, 4)
+                  .map((part) => (
+                    <button
+                      key={part}
+                      type="button"
+                      onClick={() => setActivePart(part)}
+                      className="flex items-center justify-between rounded-xl border border-border bg-card p-3 text-left transition-all hover:border-indigo-300 hover:shadow-sm"
+                    >
+                      <span className="text-xs font-medium text-muted-foreground truncate">
+                        {carPartLabels[part]}
+                      </span>
+                      <ChevronDown size={14} className="text-muted-foreground/70" />
+                    </button>
+                  ))}
             </div>
 
             <div className="rounded-2xl bg-indigo-600 p-4 text-white shadow-sm shadow-indigo-200">

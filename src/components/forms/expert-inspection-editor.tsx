@@ -32,6 +32,7 @@ import {
 
 interface ExpertInspectionEditorProps {
   form: UseFormReturn<ListingCreateFormValues>;
+  isDisabled?: boolean;
 }
 
 const INSPECTION_FIELDS = [
@@ -47,7 +48,7 @@ const INSPECTION_FIELDS = [
   { name: "acHeating", label: "Klima / Isıtma Sistemi" },
 ] as const;
 
-export function ExpertInspectionEditor({ form }: ExpertInspectionEditorProps) {
+export function ExpertInspectionEditor({ form, isDisabled = false }: ExpertInspectionEditorProps) {
   const { register, watch, setValue } = form;
 
   const hasInspection = watch("expertInspection.hasInspection");
@@ -70,32 +71,36 @@ export function ExpertInspectionEditor({ form }: ExpertInspectionEditorProps) {
           <button
             type="button"
             onClick={() =>
+              !isDisabled &&
               setValue("expertInspection.hasInspection", false, {
                 shouldDirty: true,
                 shouldValidate: true,
               })
             }
+            disabled={isDisabled}
             className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
               !hasInspection
                 ? "bg-slate-200 text-foreground/90 shadow-sm"
                 : "text-muted-foreground hover:bg-muted"
-            }`}
+            } ${isDisabled ? "opacity-50 cursor-not-allowed" : ""}`}
           >
             YOK
           </button>
           <button
             type="button"
             onClick={() =>
+              !isDisabled &&
               setValue("expertInspection.hasInspection", true, {
                 shouldDirty: true,
                 shouldValidate: true,
               })
             }
+            disabled={isDisabled}
             className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
               hasInspection
                 ? "bg-primary text-white shadow-sm"
                 : "text-muted-foreground hover:bg-muted"
-            }`}
+            } ${isDisabled ? "opacity-50 cursor-not-allowed" : ""}`}
           >
             VAR
           </button>
@@ -114,6 +119,7 @@ export function ExpertInspectionEditor({ form }: ExpertInspectionEditorProps) {
               <Input
                 type="date"
                 {...register("expertInspection.inspectionDate")}
+                disabled={isDisabled}
                 className="rounded-xl h-11 border-border focus:border-primary"
               />
             </div>
@@ -125,6 +131,7 @@ export function ExpertInspectionEditor({ form }: ExpertInspectionEditorProps) {
               <Input
                 placeholder="Örn: Dynomark, Pilot Garage..."
                 {...register("expertInspection.inspectedBy")}
+                disabled={isDisabled}
                 className="rounded-xl h-11 border-border focus:border-primary"
               />
             </div>
@@ -146,7 +153,10 @@ export function ExpertInspectionEditor({ form }: ExpertInspectionEditorProps) {
                 }
                 value={watch("expertInspection.overallGrade") ?? ""}
               >
-                <SelectTrigger className="rounded-xl h-11 border-border focus:border-primary">
+                <SelectTrigger
+                  disabled={isDisabled}
+                  className="rounded-xl h-11 border-border focus:border-primary"
+                >
                   <SelectValue placeholder="Not Seçin" />
                 </SelectTrigger>
                 <SelectContent className="rounded-xl">
@@ -172,6 +182,7 @@ export function ExpertInspectionEditor({ form }: ExpertInspectionEditorProps) {
                 max="100"
                 placeholder="Örn: 92"
                 {...register("expertInspection.totalScore", { valueAsNumber: true })}
+                disabled={isDisabled}
                 className="rounded-xl h-11 border-border focus:border-primary"
               />
             </div>
@@ -192,6 +203,7 @@ export function ExpertInspectionEditor({ form }: ExpertInspectionEditorProps) {
                         key={s.status}
                         type="button"
                         onClick={() =>
+                          !isDisabled &&
                           setValue(
                             `expertInspection.${field.name}` as "expertInspection.damageRecord",
                             s.status as ExpertInspectionStatus,
@@ -201,6 +213,7 @@ export function ExpertInspectionEditor({ form }: ExpertInspectionEditorProps) {
                             }
                           )
                         }
+                        disabled={isDisabled}
                         className={`flex-1 py-1 px-1.5 rounded-md text-[10px] font-bold transition-all flex items-center justify-center gap-1 ${
                           watch(
                             `expertInspection.${field.name}` as "expertInspection.damageRecord"
@@ -211,7 +224,7 @@ export function ExpertInspectionEditor({ form }: ExpertInspectionEditorProps) {
                                 ? "bg-rose-100 text-rose-700"
                                 : "bg-muted text-foreground/90"
                             : "text-muted-foreground/60 hover:text-muted-foreground"
-                        }`}
+                        } ${isDisabled ? "cursor-not-allowed" : ""}`}
                       >
                         {watch(
                           `expertInspection.${field.name}` as "expertInspection.damageRecord"
@@ -240,6 +253,7 @@ export function ExpertInspectionEditor({ form }: ExpertInspectionEditorProps) {
             <Textarea
               placeholder="Araçla ilgili eksperin vurguladığı özel durumları buraya yazabilirsiniz..."
               {...register("expertInspection.notes")}
+              disabled={isDisabled}
               className="rounded-2xl min-h-24 border-border focus:border-primary text-sm"
             />
           </div>

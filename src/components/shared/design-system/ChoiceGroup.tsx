@@ -8,6 +8,7 @@ interface ChoiceGroupProps<T extends string> {
   onChange: (value: T) => void;
   className?: string;
   labels?: Partial<Record<T, string>>;
+  disabled?: boolean;
 }
 
 /**
@@ -20,6 +21,7 @@ export function ChoiceGroup<T extends string>({
   onChange,
   className,
   labels,
+  disabled,
 }: ChoiceGroupProps<T>) {
   return (
     <div className={cn("flex flex-wrap gap-2", className)}>
@@ -29,12 +31,14 @@ export function ChoiceGroup<T extends string>({
           <button
             key={option}
             type="button"
+            disabled={disabled}
             onClick={() => onChange(option)}
             className={cn(
               "flex-1 py-3 px-4 rounded-xl text-sm font-semibold transition-all duration-200 border",
               isActive
                 ? "bg-primary text-primary-foreground border-primary shadow-sm"
-                : "bg-background border-border text-muted-foreground hover:bg-muted/50"
+                : "bg-background border-border text-muted-foreground hover:bg-muted/50",
+              disabled && "opacity-50 cursor-not-allowed grayscale-[0.5]"
             )}
           >
             {labels?.[option] ?? option}

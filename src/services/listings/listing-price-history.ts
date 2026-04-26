@@ -90,7 +90,7 @@ export async function getMarketValuation(params: {
 
   const { data: stats } = await admin
     .from("market_stats")
-    .select("avg_price, listing_count")
+    .select("avg_price, listing_count, min_price, max_price")
     .eq("brand", params.brand)
     .eq("model", params.model)
     .eq("year", params.year)
@@ -102,6 +102,8 @@ export async function getMarketValuation(params: {
   }
 
   const avgPrice = Number(stats.avg_price);
+  const minPrice = stats.min_price ? Number(stats.min_price) : avgPrice * 0.8;
+  const maxPrice = stats.max_price ? Number(stats.max_price) : avgPrice * 1.2;
   const diffPercent = ((params.price - avgPrice) / avgPrice) * 100;
 
   let status: "good" | "fair" | "high" = "fair";
@@ -112,6 +114,8 @@ export async function getMarketValuation(params: {
     status,
     diff: Math.abs(Math.round(diffPercent)),
     avgPrice,
+    minPrice,
+    maxPrice,
     listingCount: stats.listing_count,
   };
 }

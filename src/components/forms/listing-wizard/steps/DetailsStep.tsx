@@ -9,9 +9,10 @@ import { CityOption, ListingCreateFormValues } from "@/types";
 interface DetailsStepProps {
   form: UseFormReturn<ListingCreateFormValues, unknown, ListingCreateFormValues>;
   cities: CityOption[];
+  isPartialDisabled?: boolean;
 }
 
-export function DetailsStep({ form, cities }: DetailsStepProps) {
+export function DetailsStep({ form, cities, isPartialDisabled = false }: DetailsStepProps) {
   const {
     register,
     watch,
@@ -30,6 +31,7 @@ export function DetailsStep({ form, cities }: DetailsStepProps) {
             required
             as="select"
             {...register("city")}
+            disabled={isPartialDisabled}
             error={errors.city?.message as string}
           >
             <option value="">Seçiniz</option>
@@ -45,7 +47,7 @@ export function DetailsStep({ form, cities }: DetailsStepProps) {
             required
             as="select"
             {...register("district")}
-            disabled={!selectedCity}
+            disabled={!selectedCity || isPartialDisabled}
             error={errors.district?.message as string}
           >
             <option value="">Seçiniz</option>
@@ -65,6 +67,7 @@ export function DetailsStep({ form, cities }: DetailsStepProps) {
             label="İlan Başlığı"
             required
             {...register("title")}
+            disabled={isPartialDisabled}
             maxLength={200}
             showCounter
             currentLength={watch("title")?.length ?? 0}

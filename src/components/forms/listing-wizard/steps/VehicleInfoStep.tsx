@@ -15,6 +15,7 @@ interface VehicleInfoStepProps {
   brands: BrandCatalogItem[];
   isPlateLoading: boolean;
   onPlateLookup: () => void;
+  isDisabled?: boolean;
 }
 
 export function VehicleInfoStep({
@@ -22,6 +23,7 @@ export function VehicleInfoStep({
   brands,
   isPlateLoading,
   onPlateLookup,
+  isDisabled = false,
 }: VehicleInfoStepProps) {
   const {
     register,
@@ -55,13 +57,14 @@ export function VehicleInfoStep({
                 <input
                   {...register("licensePlate")}
                   placeholder="34 ABC 123"
-                  className="h-12 w-full border border-border rounded-lg pl-14 pr-4 text-sm font-semibold placeholder-muted-foreground/30 outline-none focus:ring-2 focus:ring-primary/20 transition-all uppercase"
+                  disabled={isDisabled}
+                  className="h-12 w-full border border-border rounded-lg pl-14 pr-4 text-sm font-semibold placeholder-muted-foreground/30 outline-none focus:ring-2 focus:ring-primary/20 transition-all uppercase disabled:opacity-50"
                 />
               </div>
               <button
                 type="button"
                 onClick={onPlateLookup}
-                disabled={isPlateLoading}
+                disabled={isPlateLoading || isDisabled}
                 className="inline-flex h-12 items-center justify-center gap-2 rounded-lg bg-primary px-6 text-sm font-semibold text-primary-foreground transition-all hover:opacity-90 disabled:opacity-50"
               >
                 {isPlateLoading ? (
@@ -83,6 +86,7 @@ export function VehicleInfoStep({
             label="Şasi Numarası (VIN)"
             {...register("vin")}
             placeholder="17 haneli şasi numarasını giriniz..."
+            disabled={isDisabled}
             error={errors.vin?.message as string}
             helperText="Güvenlik doğrulaması için zorunludur."
             className="uppercase tracking-wide font-mono"
@@ -105,6 +109,7 @@ export function VehicleInfoStep({
                 value={field.value ?? selectedCategory}
                 labels={vehicleCategoryLabels}
                 onChange={field.onChange}
+                disabled={isDisabled}
               />
             )}
           />
@@ -121,6 +126,7 @@ export function VehicleInfoStep({
             required
             as="select"
             {...register("brand")}
+            disabled={isDisabled}
             error={errors.brand?.message as string}
           >
             <option value="">Seçiniz</option>
@@ -136,7 +142,7 @@ export function VehicleInfoStep({
             required
             as="select"
             {...register("model")}
-            disabled={!selectedBrand}
+            disabled={!selectedBrand || isDisabled}
             error={errors.model?.message as string}
           >
             <option value="">Seçiniz</option>
@@ -159,6 +165,7 @@ export function VehicleInfoStep({
                 label="Paket / Donanım"
                 as="select"
                 {...register("carTrim")}
+                disabled={isDisabled}
                 error={errors.carTrim?.message as string}
               >
                 <option value="">Seçiniz (Opsiyonel)</option>
@@ -181,6 +188,7 @@ export function VehicleInfoStep({
             required
             type="number"
             {...register("year", { valueAsNumber: true })}
+            disabled={isDisabled}
             onInput={(e) => {
               const target = e.target as HTMLInputElement;
               if (target.value.length > 4) {
@@ -196,6 +204,7 @@ export function VehicleInfoStep({
             required
             type="number"
             {...register("mileage", { valueAsNumber: true })}
+            disabled={isDisabled}
             error={errors.mileage?.message as string}
           />
         </div>
@@ -213,6 +222,7 @@ export function VehicleInfoStep({
                   options={["benzin", "dizel", "lpg", "hibrit", "elektrik"]}
                   value={field.value ?? selectedFuelType}
                   onChange={field.onChange}
+                  disabled={isDisabled}
                 />
               )}
             />
@@ -235,6 +245,7 @@ export function VehicleInfoStep({
                     yari_otomatik: "Yarı Otomatik",
                   }}
                   onChange={field.onChange}
+                  disabled={isDisabled}
                 />
               )}
             />

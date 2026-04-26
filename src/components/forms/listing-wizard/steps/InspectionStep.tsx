@@ -11,9 +11,10 @@ import { ExpertInspectionEditor } from "../../expert-inspection-editor";
 
 interface InspectionStepProps {
   form: UseFormReturn<ListingCreateFormValues, unknown, ListingCreateFormValues>;
+  isDisabled?: boolean;
 }
 
-export function InspectionStep({ form }: InspectionStepProps) {
+export function InspectionStep({ form, isDisabled = false }: InspectionStepProps) {
   const {
     control,
     register,
@@ -53,6 +54,7 @@ export function InspectionStep({ form }: InspectionStepProps) {
               <DamageSelector
                 value={(field.value as Record<string, string>) || {}}
                 onChange={field.onChange}
+                isDisabled={isDisabled}
               />
             )}
           />
@@ -63,6 +65,7 @@ export function InspectionStep({ form }: InspectionStepProps) {
             label="Tramer Kaydı (TL) - İsteğe Bağlı"
             type="number"
             {...register("tramerAmount", { valueAsNumber: true })}
+            disabled={isDisabled}
             placeholder="0"
             error={errors.tramerAmount?.message as string}
             helperText="Hasar kaydı yoksa 0 (Sıfır) giriniz veya boş bırakınız."
@@ -77,7 +80,7 @@ export function InspectionStep({ form }: InspectionStepProps) {
           fazla güven aşılayın.
         </p>
 
-        <ExpertInspectionEditor form={form} />
+        <ExpertInspectionEditor form={form} isDisabled={isDisabled} />
       </FormSection>
     </div>
   );

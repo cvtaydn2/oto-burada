@@ -44,6 +44,7 @@ export function useListingCreation({
   const router = useRouter();
   const { trackEvent } = useAnalytics();
   const isEditing = Boolean(initialListing);
+  const isApprovedEditing = initialListing?.status === "approved";
 
   const [currentStep, setCurrentStep] = useState(0);
   const [submitState, setSubmitState] = useState<{
@@ -384,6 +385,7 @@ export function useListingCreation({
     isVerifyDialogOpen,
     setIsVerifyDialogOpen,
     isEditing,
+    isApprovedEditing,
     handleNextStep,
     handlePrevStep,
     handlePlateLookup,

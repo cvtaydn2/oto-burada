@@ -120,3 +120,19 @@ export interface ListingCreateFormImage {
 export interface ListingCreateFormValues extends Omit<ListingCreateInput, "images"> {
   images: ListingCreateFormImage[];
 }
+
+export interface ListingQuestion {
+  id: string;
+  listing_id: string;
+  user_id: string;
+  question: string;
+  answer?: string | null;
+  status: "pending" | "approved" | "rejected";
+  is_public: boolean;
+  created_at: string;
+  updated_at: string;
+  profiles?: {
+    full_name: string | null;
+    avatar_url: string | null;
+  };
+}

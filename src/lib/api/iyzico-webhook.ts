@@ -18,7 +18,7 @@ export function verifyIyzicoWebhook(
       Buffer.from(signature, "base64"),
       Buffer.from(expectedSignature, "base64")
     );
-  } catch (_error) {
+  } catch {
     return false;
   }
 }

@@ -41,6 +41,11 @@ Primary success criteria:
 
 - This marketplace is **only for cars**.
 - Individual listings are free.
+- **Monetization Model (Freemium + Doping)**:
+  - **Layer 1: Doping/Boosts**: Affordable visibility boosts (Homepage, Top Rank, Urgent) priced at ~1/10 of market incumbents to encourage high conversion.
+  - **Layer 2: Corporate Plans**: Subscription tiers for professional sellers (Galleries/Fleets) with higher listing limits and bundled doping.
+  - **Layer 3: Premium Services**: Value-add services like Expertise appointments, Vehicle History Reports, and AI-assisted listing creation.
+  - **Layer 4: Ecosystem Revenue**: Credits, ad space for automotive sectors (insurance, tires), and anonymized market data.
 - The MVP should prioritize speed, clarity, trust, and usability.
 - Avoid unnecessary complexity.
 - Admin moderation is mandatory.

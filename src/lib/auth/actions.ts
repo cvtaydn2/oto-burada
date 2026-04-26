@@ -304,6 +304,7 @@ export async function forgotPasswordAction(
   _previousState: AuthActionState = initialState,
   formData: FormData
 ): Promise<AuthActionState> {
+  void _previousState;
   const email = String(formData.get("email") ?? "").trim();
 
   const { z } = await import("zod");

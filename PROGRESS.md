@@ -1,3 +1,33 @@
+# 2026-04-26 — Sustainable Monetization & Professional Tiers (Phase 34)
+
+## [2026-04-26] - Phase 34 Initiation: Monetization Strategy Update
+- **Durum:** 🏗️ DEVAM EDİYOR
+- **Yapılanlar:**
+  - **Sürdürülebilir Gelir Modeli Tanımlandı**: Sahibinden'in yüksek maliyetli modeline karşı "Freemium + Doping" stratejisi projenin merkezine yerleştirildi. 
+  - **4 Katmanlı Gelir Yapısı**: Doping (Mevcut), Kurumsal Planlar (Yakında), Premium Hizmetler (Planlandı) ve Yan Gelirler (Planlandı) katmanları dokümante edildi.
+  - **AGENTS.md Güncellemesi**: "Bireysel ilanlar ücretsiz" sözü korundu ve gelir modeli stratejik kural olarak eklendi.
+  - **TASKS.md Güncellemesi**: Phase 34 kapsamında Kurumsal Planlar, Kredi Sistemi ve AI İlan Yazıcı görevleri tanımlandı.
+- **Sıradaki Adım:** Görev 34.1 — Kurumsal Planlar için quota ve limit mantığının implementasyonu.
+
+# 2026-04-26 — Competitor Advantage & Trust Hardening (Phase 33)
+
+## [2026-04-26] - Phase 33 Completion: Trust & Competitive Edge Hardening
+- **Durum:** ✅ TAMAMLANDI
+- **Yapılanlar:**
+  - **Güven ve Şeffaflık Katmanı (USP)**: Sahibinden ve Arabam.com gibi rakiplerden ayrışmak için "Ücretsiz ama Güvenli" vizyonu doğrultusunda trust-centric özellikler eklendi.
+  - **Dolandırıcılık Uyarı Sistemi (Görev 33.1)**: İlan detay sayfalarına, harici ödeme bağlantıları ve sahte WhatsApp dolandırıcılıklarına karşı kullanıcıyı uyaran dinamik banner eklendi (`fraud-warning-banner.tsx`).
+  - **İlan Düzenleme Güvenliği (Görev 33.2)**: Onaylanmış ilanlarda araç kimliğini belirleyen kritik alanlar (Marka, Model, Yıl, Plaka, Fotoğraf) kilitlendi. Sadece Fiyat ve Açıklama düzenlemesine izin verilerek "ilan kaydırma" (recycling) manipülasyonu önlendi.
+  - **WhatsApp Canlı Destek (Görev 33.3)**: Tüm pazaryeri sayfalarına ziyaretçilerin platform ekibine hızlıca ulaşabileceği yüzen WhatsApp destek butonu eklendi.
+  - **Topluluk Soru-Cevap Sistemi (Görev 33.4)**: İlan sayfalarına alıcıların soru sorabildiği, satıcıların cevaplayabildiği ve cevaplandığında herkese açık hale gelen SSS katmanı eklendi (`listing-questions.tsx`).
+  - **Akıllı Fiyat Analiz Aracı (Görev 33.5)**: İlanın piyasa değerine göre konumunu (Düşük/Ortalama/Yüksek) gösteren görsel bir sayaç ve `market_stats` tablosu üzerinden min/max fiyat analizi desteği eklendi.
+  - **Gizlilik ve Güven Rozetleri (Görev 33.6 & 33.7)**: İletişim butonları üzerine "Gizlilik Korunuyor" ibaresi ve satıcı profiline "Onaylı Profil", "Eski Üye", "Piyasa Uzmanı" gibi güven verici rozetler eklendi.
+- **Doğrulama:**
+  - `npm run typecheck` ✅
+  - `npm run build` ✅
+- **Kararlar:**
+  - İlan düzenlemede kritik alanların kilitlenmesi, pazar yeri dürüstlüğünü (Integrity) korumak için "Non-negotiable" olarak uygulandı.
+  - Soru-cevap sisteminde RLS politikaları ile sadece onaylı cevapların halka açık olması sağlandı.
+
 # 2026-04-26 — Critical Security & Privacy Hardening Resolution
 
 ## [2026-04-26] - RLS Privacy, CSP & Env Validation

@@ -42,6 +42,7 @@ export function ListingCreateForm({
     isVerifyDialogOpen,
     setIsVerifyDialogOpen,
     isEditing,
+    isApprovedEditing,
     handleNextStep,
     handlePrevStep,
     handlePlateLookup,
@@ -91,8 +92,18 @@ export function ListingCreateForm({
             {currentStep + 1} / {totalSteps}
           </div>
           <h1 className="text-4xl font-bold tracking-tight text-slate-900 lg:text-6xl">
-            {isEditing ? "İlanı Güncelle" : "İlan Ver"}
+            {isEditing
+              ? isApprovedEditing
+                ? "İlanı Güncelle (Kısıtlı Mod)"
+                : "İlanı Güncelle"
+              : "İlan Ver"}
           </h1>
+          {isApprovedEditing && (
+            <p className="mt-4 text-xs font-medium text-amber-600 bg-amber-50 py-2 px-4 rounded-full inline-block">
+              Yayındaki ilanlarda SEO yapısını korumak için sadece fiyat ve açıklama
+              değiştirilebilir.
+            </p>
+          )}
         </div>
 
         <StepIndicator currentStep={currentStep} />
@@ -162,10 +173,13 @@ export function ListingCreateForm({
                     brands={brands}
                     isPlateLoading={isPlateLoading}
                     onPlateLookup={handlePlateLookup}
+                    isDisabled={isApprovedEditing}
                   />
                 )}
-                {currentStep === 1 && <DetailsStep form={form} cities={cities} />}
-                {currentStep === 2 && <InspectionStep form={form} />}
+                {currentStep === 1 && (
+                  <DetailsStep form={form} cities={cities} isPartialDisabled={isApprovedEditing} />
+                )}
+                {currentStep === 2 && <InspectionStep form={form} isDisabled={isApprovedEditing} />}
                 {currentStep === 3 && (
                   <>
                     <PhotosStep
@@ -174,6 +188,7 @@ export function ListingCreateForm({
                       uploadStates={uploadStates}
                       onImageChange={handleImageChange}
                       onRemoveImage={handleRemoveImage}
+                      isDisabled={isApprovedEditing}
                     />
                     <div className="mt-8 flex justify-center">
                       <BotProtection onVerify={setTurnstileToken} />

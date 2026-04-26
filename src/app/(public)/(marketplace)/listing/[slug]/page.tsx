@@ -1,7 +1,6 @@
 import {
   AlertCircle,
   Calendar,
-  CheckCircle2,
   ChevronRight,
   Eye,
   Flag,
@@ -10,7 +9,6 @@ import {
   ShieldCheck,
   Sparkles,
   Star,
-  Store,
   TrendingDown,
   Zap,
 } from "lucide-react";
@@ -25,15 +23,19 @@ import { ExpertInspectionCard } from "@/components/listings/expert-inspection-ca
 import { FavoriteButton } from "@/components/listings/favorite-button";
 // Components
 import { ListingGallery } from "@/components/listings/listing-gallery";
+import { ListingQuestions } from "@/components/listings/listing-questions";
 import { SellerReviewForm } from "@/components/listings/seller-review-form";
+import { SellerTrustBadges } from "@/components/listings/seller-trust-badges";
 import { ShareButton } from "@/components/listings/share-button";
 import { MarketValuationBadge } from "@/components/market/market-valuation-badge";
+import { PriceAnalysisWidget } from "@/components/market/price-analysis-widget";
 // import { PriceHistoryChart } from "@/components/market/price-history-chart";
 // SEO & Monitoring
 import {
   BreadcrumbStructuredData,
   ListingDetailStructuredData,
 } from "@/components/seo/structured-data";
+import { FraudWarningBanner } from "@/components/shared/fraud-warning-banner";
 import { ListingCard } from "@/components/shared/listing-card";
 import { getCleanDescription, getListingBreadcrumbs } from "@/domain/logic/listing-factory";
 import { getProfileMembershipLabel } from "@/domain/logic/profile-logic";
@@ -222,6 +224,9 @@ export default async function ListingDetailPage({ params }: ListingDetailPagePro
             ))}
           </nav>
 
+          {/* ── Fraud Warning Banner ── */}
+          <FraudWarningBanner className="mb-6" />
+
           {/* ══════════════════════════════════════════════════════════════════
               ZONE 1 — HERO: Gallery + Price/Contact (above the fold)
           ══════════════════════════════════════════════════════════════════ */}
@@ -378,24 +383,8 @@ export default async function ListingDetailPage({ params }: ListingDetailPagePro
                   </div>
                 )}
 
-                {/* Trust signals */}
-                <div className="space-y-2 text-xs">
-                  <div className="flex items-center gap-2 text-muted-foreground">
-                    <CheckCircle2
-                      size={13}
-                      className={
-                        seller?.isVerified ? "text-emerald-500" : "text-muted-foreground/40"
-                      }
-                    />
-                    <span>{seller?.isVerified ? "Doğrulanmış Satıcı" : "Doğrulama Yok"}</span>
-                  </div>
-                  {membershipLabel && (
-                    <div className="flex items-center gap-2 text-muted-foreground">
-                      <Store size={13} className="text-primary" />
-                      <span>{membershipLabel}&apos;den beri üye</span>
-                    </div>
-                  )}
-                </div>
+                {/* Trust Badges */}
+                <SellerTrustBadges seller={seller} className="mt-4" />
 
                 {seller?.businessSlug && (
                   <Link
@@ -531,33 +520,38 @@ export default async function ListingDetailPage({ params }: ListingDetailPagePro
                 <PriceHistoryChart listingId={listing.id} currentPrice={listing.price} />
 
                 <div className="space-y-4">
-                  <div className="rounded-xl bg-muted/30 p-4">
-                    <div className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-1">
-                      Piyasa Ortalaması
-                    </div>
-                    <div className="text-lg font-bold">
-                      {marketValuation.avgPrice
-                        ? formatPrice(marketValuation.avgPrice)
-                        : "Veri Yok"}
-                    </div>
-                    <div className="text-[11px] text-muted-foreground mt-1">
-                      {marketValuation.listingCount
-                        ? `${marketValuation.listingCount} benzer ilan baz alındı`
-                        : "Benzer ilan bulunamadı"}
-                    </div>
-                  </div>
+                  <PriceAnalysisWidget
+                    currentPrice={listing.price}
+                    avgPrice={marketValuation.avgPrice!}
+                    minPrice={marketValuation.minPrice!}
+                    maxPrice={marketValuation.maxPrice!}
+                    status={marketValuation.status}
+                  />
 
                   <div className="rounded-xl bg-muted/30 p-4">
                     <div className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-1">
-                      Fiyat Durumu
+                      Veri Analizi
                     </div>
-                    <MarketValuationBadge
-                      status={marketValuation.status}
-                      diff={marketValuation.diff}
-                    />
+                    <div className="text-[11px] text-muted-foreground">
+                      {marketValuation.listingCount
+                        ? `${marketValuation.listingCount} benzer ilan baz alınarak hesaplanmıştır.`
+                        : "Henüz yeterli piyasa verisi bulunmamaktadır."}
+                    </div>
                   </div>
                 </div>
               </div>
+            </section>
+
+            {/* Questions Section */}
+            <section
+              id="sorular"
+              className="scroll-mt-24 rounded-2xl border border-border bg-card p-6"
+            >
+              <ListingQuestions
+                listingId={listing.id}
+                isOwner={isOwner}
+                currentUserId={currentUser?.id}
+              />
             </section>
 
             {/* Map */}

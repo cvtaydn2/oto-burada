@@ -128,6 +128,21 @@ export function ContactActions({
 
   return (
     <div className="space-y-3">
+      {/* Phone Privacy Badge */}
+      <div className="flex items-center gap-2.5 p-3 rounded-2xl bg-indigo-50/50 border border-indigo-100/50 group">
+        <div className="flex size-8 items-center justify-center rounded-xl bg-white shadow-sm text-indigo-600 transition-transform group-hover:scale-110">
+          <ShieldAlert className="size-4" />
+        </div>
+        <div>
+          <p className="text-[10px] font-bold text-indigo-700 uppercase tracking-widest leading-none mb-1">
+            Gizlilik Korunuyor
+          </p>
+          <p className="text-[9px] text-indigo-600/70 font-medium leading-none">
+            Numaranız spam korumalı & şifrelidir.
+          </p>
+        </div>
+      </div>
+
       {/* In-App Chat Button (logged in, not owner) */}
       {!isOwnListing && currentUserId && (
         <button

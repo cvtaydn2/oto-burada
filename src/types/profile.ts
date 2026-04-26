@@ -7,7 +7,7 @@ export interface ProfileBase {
   city: string;
   avatarUrl?: string | null;
   role: UserRole;
-  userType?: "individual" | "professional" | "staff";
+  userType?: "individual" | "professional" | "staff" | "corporate";
   createdAt: string;
   updatedAt: string;
 }
@@ -48,6 +48,6 @@ export interface Profile
 }
 
 export interface BusinessProfile extends Profile {
-  userType: "professional";
+  userType: "professional" | "corporate";
   businessName: string;
 }

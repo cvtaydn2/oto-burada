@@ -86,7 +86,7 @@ export async function checkListingLimit(
     } else {
       return {
         allowed: false,
-        reason: "Listing quota exceeded. Professionals: 50, Standard: 3 active listings.",
+        reason: "İlan verme sınırına ulaştınız. Kurumsal: 200, Pro: 50, Bireysel: 3 aktif ilan.",
         remaining: { monthly: 0, yearly: 0 },
       };
     }
@@ -97,7 +97,7 @@ export async function checkListingLimit(
   try {
     const lockKey = parseInt(userId.replace(/-/g, "").slice(0, 8), 16);
     await admin.rpc("pg_advisory_xact_lock", { key: lockKey });
-  } catch (_e) {
+  } catch {
     // Ignore if advisory lock RPC is not exposed/available
   }
 
