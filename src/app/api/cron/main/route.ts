@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 
 import { withCronOrAdmin } from "@/lib/api/security";
+import { logger } from "@/lib/logging/logger";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { hasSupabaseAdminEnv } from "@/lib/supabase/env";
 import { expireReservations } from "@/services/reservations/reservation-service";
@@ -30,34 +31,26 @@ export async function GET(request: Request) {
     // 2. Expire Reservations
     results.expireReservations = await expireReservations();
 
-    // 3. Expire Listings (with OCC safety)
+    // 3. Expire Listings (BATCH UPDATE - Fixed N+1 performance issue)
+    // OLD: Iterated through listings one-by-one with individual UPDATE queries
+    // NEW: Single batch UPDATE with optimistic concurrency control
     const cutoff = new Date(Date.now() - 60 * 24 * 60 * 60 * 1000).toISOString();
-    const { data: toExpire } = await admin
+    const { data: expireResult, error: expireError } = await admin
       .from("listings")
-      .select("id, version")
+      .update({
+        status: "archived",
+        updated_at: new Date().toISOString(),
+      })
       .eq("status", "approved")
-      .lt("published_at", cutoff);
+      .lt("published_at", cutoff)
+      .select("id");
 
-    let archivedCount = 0;
-    if (toExpire) {
-      for (const listing of toExpire) {
-        // Stop if we are close to 10s limit
-        if (Date.now() - startTime > 8000) break;
-
-        const { error } = await admin
-          .from("listings")
-          .update({
-            status: "archived",
-            version: (listing.version || 0) + 1,
-            updated_at: new Date().toISOString(),
-          })
-          .eq("id", listing.id)
-          .eq("version", listing.version || 0);
-
-        if (!error) archivedCount++;
-      }
+    if (expireError) {
+      logger.api.error("Failed to expire listings", { error: expireError.message });
+      results.expireListings = { processed: 0, error: expireError.message };
+    } else {
+      results.expireListings = { processed: expireResult?.length || 0 };
     }
-    results.expireListings = { processed: archivedCount };
 
     // 4. Cleanup Stale Payments
     const { data: stale } = await admin

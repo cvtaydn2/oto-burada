@@ -116,8 +116,18 @@ export async function validateCsrfToken(request: Request | NextRequest): Promise
     if (!isValidRequestOrigin(request)) return false;
 
     // 2. Token Check
-    const cookieStore = await cookies();
-    const cookieToken = cookieStore.get(CSRF_COOKIE_NAME)?.value;
+    // FIXED: Read cookies from request object in middleware context
+    // instead of using cookies() from next/headers which may not work in Edge runtime
+    let cookieToken: string | undefined;
+    if ("cookies" in request && typeof request.cookies.get === "function") {
+      // NextRequest (middleware context)
+      cookieToken = request.cookies.get(CSRF_COOKIE_NAME)?.value;
+    } else {
+      // Standard Request (route handler context)
+      const cookieStore = await cookies();
+      cookieToken = cookieStore.get(CSRF_COOKIE_NAME)?.value;
+    }
+
     const headerToken = request.headers.get(CSRF_HEADER_NAME);
 
     if (!cookieToken || !headerToken) return false;

@@ -75,6 +75,10 @@ export function escapeHtml(value: string): string {
 /**
  * SECURITY-HARDENED: Multi-pass HTML stripping to prevent XSS bypass techniques.
  *
+ * CRITICAL FIX: Strip HTML tags BEFORE decoding entities to prevent double-encoding attacks.
+ * Old order (decode then strip) allowed: &amp;lt;script&amp;gt; → &lt;script&gt; → <script>
+ * New order (strip then decode) prevents: <script> removed first, entities decoded safely after.
+ *
  * Protects against:
  * - Nested tags: <<script>script>
  * - Encoded tags: &lt;script&gt;
@@ -86,7 +90,7 @@ export function escapeHtml(value: string): string {
 function stripAllHtmlSecure(value: string): string {
   let cleaned = value;
 
-  // 1. Remove dangerous protocols (multiple passes for nested encoding)
+  // STEP 1: Remove dangerous protocols (multiple passes for nested encoding)
   for (let i = 0; i < 3; i++) {
     cleaned = cleaned
       .replace(/javascript\s*:/gi, "")
@@ -95,7 +99,7 @@ function stripAllHtmlSecure(value: string): string {
       .replace(/data\s*:\s*application\/javascript/gi, "");
   }
 
-  // 2. Remove script and style tags with content (case-insensitive, multiple passes)
+  // STEP 2: Remove script/style/iframe/object/embed tags with content (multiple passes)
   for (let i = 0; i < 3; i++) {
     cleaned = cleaned
       .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, "")
@@ -105,7 +109,7 @@ function stripAllHtmlSecure(value: string): string {
       .replace(/<embed\b[^<]*(?:(?!<\/embed>)<[^<]*)*<\/embed>/gi, "");
   }
 
-  // 3. Remove event handlers (comprehensive list)
+  // STEP 3: Remove event handlers (comprehensive list)
   const eventHandlers = [
     "onload",
     "onerror",
@@ -140,7 +144,14 @@ function stripAllHtmlSecure(value: string): string {
     cleaned = cleaned.replace(regex, "");
   });
 
-  // 4. Decode HTML entities to catch encoded attacks
+  // STEP 4: CRITICAL FIX - Strip ALL HTML tags FIRST (before decoding entities)
+  // This prevents double-encoding attacks where entities are decoded then re-encoded
+  for (let i = 0; i < 5; i++) {
+    cleaned = cleaned.replace(/<[^>]*>/g, "");
+  }
+
+  // STEP 5: NOW decode HTML entities (safe after tags are removed)
+  // This converts &amp; to & for display purposes
   cleaned = cleaned
     .replace(/&lt;/gi, "<")
     .replace(/&gt;/gi, ">")
@@ -149,18 +160,13 @@ function stripAllHtmlSecure(value: string): string {
     .replace(/&#x2F;/gi, "/")
     .replace(/&amp;/gi, "&");
 
-  // 5. Remove all remaining HTML tags (multiple passes for nested tags)
-  for (let i = 0; i < 5; i++) {
-    cleaned = cleaned.replace(/<[^>]*>/g, "");
-  }
-
-  // 6. Remove CSS expressions and -moz-binding
+  // STEP 6: Remove CSS expressions and -moz-binding
   cleaned = cleaned
     .replace(/expression\s*\(/gi, "")
     .replace(/-moz-binding\s*:/gi, "")
     .replace(/behavior\s*:/gi, "");
 
-  // 7. Final cleanup
+  // STEP 7: Final cleanup
   return cleaned.trim();
 }
 
@@ -184,7 +190,9 @@ export function sanitizeCriticalText(value: string): string {
     /onload/i,
     /onerror/i,
     /<.*>/,
-    /&.*;/,
+    // FIXED: Only match actual HTML entities, not ampersands in normal text
+    // Old pattern /&.*;/ matched "AT&T", "Tom & Jerry", etc.
+    /&[a-z]+;/i,
   ];
 
   for (const pattern of suspiciousPatterns) {

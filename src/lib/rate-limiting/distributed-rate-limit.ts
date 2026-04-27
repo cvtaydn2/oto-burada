@@ -148,12 +148,18 @@ export async function checkGlobalRateLimit(
 
   if (limiter === "MISSING_CONFIG" || limiter === "CONNECTION_ERROR") {
     if (isProduction) {
-      return {
-        success: false,
-        limit: 0,
-        remaining: 0,
-        reset: Date.now() + 60_000,
-      };
+      // ── CRITICAL FIX: Fail OPEN with monitoring instead of fail-closed
+      // Blocking all traffic when Redis is down causes self-inflicted DoS.
+      // We allow requests but log extensively for security monitoring.
+      logger.security.warn(
+        "Redis rate limiter unavailable - failing OPEN with elevated monitoring",
+        {
+          limiter,
+          key,
+          fallbackType: "local_memory",
+        }
+      );
+      return getLocalFallbackResult(key, options);
     }
     openRedisCircuit("Distributed rate limiter unavailable - using local fallback", {
       limiter,
@@ -178,13 +184,13 @@ export async function checkGlobalRateLimit(
     return { success, limit, remaining, reset };
   } catch (error) {
     if (isProduction) {
-      logger.security.error("Redis rate limit fatal error in production - failing closed", error);
-      return {
-        success: false,
-        limit: 0,
-        remaining: 0,
-        reset: Date.now() + 60_000,
-      };
+      // ── CRITICAL FIX: Fail OPEN on Redis errors instead of blocking all traffic
+      // Log the error for investigation but don't block legitimate users
+      logger.security.error("Redis rate limit error - failing OPEN with monitoring", {
+        error: error instanceof Error ? error.message : String(error),
+        key,
+      });
+      return getLocalFallbackResult(key, options);
     }
     openRedisCircuit("Distributed Rate Limit Error - using local fallback", error);
     return getLocalFallbackResult(key, options);

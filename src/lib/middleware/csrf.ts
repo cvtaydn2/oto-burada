@@ -12,9 +12,9 @@ export async function csrfMiddleware(request: NextRequest) {
   const isMutation = ["POST", "PUT", "PATCH", "DELETE"].includes(request.method.toUpperCase());
   const route = classifyRoute(pathname);
 
-  if (pathname.startsWith("/api/favorites")) {
-    return null;
-  }
+  // ── SECURITY FIX: Removed CSRF skip for /api/favorites
+  // Favorites are user-specific state-changing operations that require CSRF protection.
+  // Skipping CSRF allowed attackers to add/remove favorites via cross-site request forgery.
 
   // Protected/admin API routes already enforce CSRF in route handlers.
   // Skipping proxy-level rejection here preserves proper 401 responses for unauthenticated calls.

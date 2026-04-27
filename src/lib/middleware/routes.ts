@@ -15,6 +15,7 @@ export const protectedApiPrefixes = [
   "/api/saved-searches",
   "/api/support/tickets",
   "/api/payments",
+  "/api/favorites", // Added: Favorites require CSRF protection (security fix)
 ];
 export const adminApiPrefixes = ["/api/admin"];
 export const publicApiRoutes = ["/api/health", "/api/contact", "/api/market/estimate"];
