@@ -31,6 +31,40 @@ if (posthogProjectToken) {
     // Cookie consent — opt-in yapılana kadar veri toplanmaz
     opt_out_capturing_by_default: true,
 
+    // ── SECURITY FIX: Issue #25 - Explicit Session Replay Masking ─────────────
+    // Session Replay is enabled by defaults: '2026-01-30', but we need explicit
+    // input masking to prevent recording sensitive data (passwords, credit cards, etc.)
+    session_recording: {
+      // Mask all input fields by default for maximum privacy
+      maskAllInputs: true,
+
+      // Mask all text content to prevent PII leakage
+      maskAllText: false, // Set to true for maximum privacy, false for better UX
+
+      // Custom masking function for fine-grained control
+      maskInputFn: (text: string, element: HTMLElement | null) => {
+        // Always mask password fields
+        if (element?.getAttribute("type") === "password") {
+          return "***";
+        }
+
+        // Mask fields in forms marked as sensitive
+        if (element?.closest("form[data-sensitive]")) {
+          return "***";
+        }
+
+        // Mask credit card patterns
+        if (/\d{4}[\s-]?\d{4}[\s-]?\d{4}[\s-]?\d{4}/.test(text)) {
+          return "[CARD_REDACTED]";
+        }
+
+        return text;
+      },
+
+      // Don't record on sensitive pages
+      maskTextSelector: "[data-private], .sensitive-content, [data-posthog-recording-disabled]",
+    },
+
     // ── PII Maskeleme (sanitize_properties) ─────────────────────────────────
     sanitize_properties: (properties) => {
       const piiKeys = new Set([

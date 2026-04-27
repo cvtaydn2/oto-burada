@@ -35,7 +35,13 @@ export function getListingCardInsights(listing: Listing): ListingCardInsight {
   if (isAutomatic) highlights.push("Otomatik Sürüş");
   if (listing.expertInspection) highlights.push("Ekspertizli");
   if (analysis.riskScore === "low") highlights.push("Düşük Risk");
-  if (analysis.hasCriticalDamage) highlights.push("Detaylı İncele");
+
+  // ── UX FIX: Issue #28 - Honest Critical Damage Communication ─────────────
+  // Instead of vague "Detaylı İncele", explicitly communicate damage status.
+  // Transparency builds trust and prevents misleading buyers.
+  if (analysis.hasCriticalDamage) {
+    highlights.push("Hasar Kaydı");
+  }
 
   let badgeLabel = "İncelenebilir";
   let tone: ListingCardInsightTone = "indigo";

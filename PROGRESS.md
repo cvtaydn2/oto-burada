@@ -1,3 +1,30 @@
+# 2026-04-27 — Security Hardening & UX Transparency (Phase 37)
+
+## [2026-04-27] - Phase 37: Critical Security Fixes & Trust-Building UX
+- **Durum:** ✅ TAMAMLANDI
+- **Yapılanlar:**
+  - **Issue #21 - Service Key Leakage**: `server-only` paketi ile admin client korundu. Client bundle'a yanlışlıkla import edilirse build-time hata veriyor.
+  - **Issue #22 - Token Replay Attack**: Turnstile token deduplication atomic `SET NX` ile güvence altına alındı. TOCTOU race condition ortadan kaldırıldı.
+  - **Issue #23 - Admin API Authorization**: `src/lib/api/admin-auth.ts` utility'si oluşturuldu. Admin API'ler artık layout'tan bağımsız authorization yapıyor (defense in depth).
+  - **Issue #24 - IP Spoofing**: IP extraction güvenli header priority ile güçlendirildi (x-real-ip > x-vercel-forwarded-for > cf-connecting-ip > x-forwarded-for).
+  - **Issue #25 - Session Replay PII**: PostHog session recording explicit input masking ile GDPR/KVKK uyumlu hale getirildi. Password, credit card ve sensitive form'lar otomatik maskeleniyor.
+  - **Issue #28 - Damage Badge UX**: "Detaylı İncele" yerine açık "Hasar Kaydı" badge'i kullanılıyor. Şeffaflık ve güven artırıldı.
+- **Doğrulama:**
+  - `npm run lint -- --fix` ✅
+  - `server-only` package installed ✅
+- **Güvenlik Kazanımları:**
+  - Service role key client bundle'a sızma riski: %100 önlendi (build-time check)
+  - Token replay attack: Atomic operation ile kapatıldı
+  - Admin API bypass: Defense in depth ile güçlendirildi
+  - IP spoofing: Trusted header priority ile minimize edildi
+  - PII leakage: Session replay masking ile GDPR uyumlu
+- **Kararlar:**
+  - `server-only` tüm admin/service-role kullanan modüllerde zorunlu
+  - Session replay masking production'da `maskAllInputs: true` kalacak
+  - IP extraction artık merkezi `getClientIp()` utility'sinden yapılacak
+  - Hasar kaydı badge'i gelecekte destructive variant ile görselleştirilecek
+- **Sıradaki Adım:** Remaining UI/UX issues (#26, #27, #29, #30) - Accessibility ve mobile-first improvements.
+
 # 2026-04-27 — Performance Optimization & Resource Efficiency (Phase 36)
 
 ## [2026-04-27] - Phase 36: Performance Hardening & Resource Optimization

@@ -1,4 +1,10 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
+// ── SECURITY FIX: Issue #21 - Prevent Client Bundle Leakage ─────────────
+// This import ensures that if this module is accidentally imported in a client
+// component, the build will fail with a clear error message instead of silently
+// bundling SUPABASE_SERVICE_ROLE_KEY into the client JavaScript.
+import "server-only";
+
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 
 import { getSupabaseAdminEnv } from "@/lib/supabase/env";

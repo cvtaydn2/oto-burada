@@ -43,8 +43,11 @@ export async function verifyTurnstileToken(token: string, ip?: string): Promise<
     return false;
   }
 
-  // 2. Token Deduplication (Issue 30 - Replay Attack Prevention)
-  // Check if this token has already been used in the last 15 minutes.
+  // 2. Token Deduplication (Replay Attack Prevention)
+  // ── SECURITY FIX: Issue #22 - Atomic Token Deduplication ─────────────
+  // Use atomic SET NX (SET if Not eXists) to prevent TOCTOU race conditions.
+  // Two concurrent requests with the same token cannot both pass because SET NX
+  // is atomic - only one will succeed in setting the key.
   if (!redis) {
     if (isProd) {
       logger.security.error(
@@ -56,16 +59,22 @@ export async function verifyTurnstileToken(token: string, ip?: string): Promise<
   } else {
     try {
       const redisKey = `turnstile:used:${token}`;
-      const isUsed = await redis.get(redisKey);
-      if (isUsed) {
-        logger.security.warn("Turnstile token replay detected", {
+
+      // Atomic SET NX: Only succeeds if key doesn't exist
+      // Returns null if key already exists (token was already used)
+      const wasSet = await redis.set(redisKey, "1", {
+        ex: 15 * 60, // TTL matches Turnstile's own window
+        nx: true, // Only set if key doesn't exist (atomic check-and-set)
+      });
+
+      if (!wasSet) {
+        logger.security.warn("Turnstile token replay detected (atomic check)", {
           token: `${token.slice(0, 10)}...`,
         });
         return false;
       }
-      // Mark as used before verification to prevent race conditions
-      // TTL matches Turnstile's own window
-      await redis.set(redisKey, "1", { ex: 15 * 60 });
+
+      // Token successfully marked as used - continue to verification
     } catch (error) {
       logger.security.error("Redis token deduplication failed", error);
       if (isProd) {
