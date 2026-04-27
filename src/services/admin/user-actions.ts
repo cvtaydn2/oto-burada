@@ -2,11 +2,13 @@
 
 import { revalidatePath } from "next/cache";
 
+import { requireAdminUser } from "@/lib/auth/session";
 import { logger } from "@/lib/logging/logger";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { createDatabaseNotification } from "@/services/notifications/notification-records";
 
 export async function toggleUserBan(userId: string, currentStatus: boolean) {
+  await requireAdminUser();
   const { executeServerAction } = await import("@/lib/action-utils/action-utils");
 
   return executeServerAction(
@@ -53,6 +55,7 @@ export async function toggleUserBan(userId: string, currentStatus: boolean) {
 }
 
 export async function banUser(userId: string, reason: string) {
+  await requireAdminUser();
   const admin = createSupabaseAdminClient();
   const { error } = await admin
     .from("profiles")
@@ -75,6 +78,7 @@ export async function banUser(userId: string, reason: string) {
 }
 
 export async function promoteUserToAdmin(userId: string) {
+  await requireAdminUser();
   const admin = createSupabaseAdminClient();
   const { error: profileError } = await admin
     .from("profiles")
@@ -93,6 +97,7 @@ export async function promoteUserToAdmin(userId: string) {
 }
 
 export async function updateUserRole(userId: string, role: "user" | "admin" | "professional") {
+  await requireAdminUser();
   const admin = createSupabaseAdminClient();
   const nextRole = role === "admin" ? "admin" : "user";
   const nextUserType = role === "professional" ? "professional" : "individual";
@@ -122,6 +127,7 @@ export async function handleVerificationReview(
   feedback?: string,
   adminUserId?: string
 ): Promise<{ success: boolean; error?: string }> {
+  await requireAdminUser();
   const admin = createSupabaseAdminClient();
 
   // 1. Check restriction status
@@ -198,6 +204,7 @@ export async function verifyUserBusiness(userId: string) {
 }
 
 export async function deleteUser(userId: string) {
+  await requireAdminUser();
   const admin = createSupabaseAdminClient();
 
   try {

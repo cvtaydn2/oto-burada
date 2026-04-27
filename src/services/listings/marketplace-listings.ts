@@ -44,6 +44,8 @@ const SUPPORTED_MARKETPLACE_FILTER_KEYS = new Set<keyof ListingFilters>([
   "sellerId",
   "cursor",
   "isExchange",
+  "featured",
+  "galleryPriority",
 ]);
 
 function sanitizeMarketplaceFilters(filters: ListingFilters): ListingFilters {

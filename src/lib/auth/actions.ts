@@ -8,6 +8,7 @@ import { logger } from "@/lib/logging/logger";
 import { identifyServerUser, trackServerEvent } from "@/lib/monitoring/posthog-server";
 import { rateLimitProfiles } from "@/lib/rate-limiting/rate-limit";
 import { checkRateLimit } from "@/lib/rate-limiting/rate-limit-middleware";
+import { isTurnstileEnabled, verifyTurnstileToken } from "@/lib/security/turnstile";
 import { getAppUrl } from "@/lib/seo";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { hasSupabaseEnv } from "@/lib/supabase/env";
@@ -180,6 +181,18 @@ export async function registerAction(
     return buildAuthErrorState(
       "Çok fazla kayıt denemesi yaptın. Lütfen biraz bekle ve tekrar dene."
     );
+  }
+
+  // Verify Turnstile bot protection
+  const turnstileToken = String(formData.get("turnstile_token") ?? "");
+  if (isTurnstileEnabled()) {
+    const isBotChallengePassed = await verifyTurnstileToken(turnstileToken, clientIp);
+    if (!isBotChallengePassed) {
+      return buildAuthErrorState(
+        "Güvenlik doğrulaması başarısız oldu. Lütfen sayfayı yenileyip tekrar deneyin.",
+        "bot_detected"
+      );
+    }
   }
 
   const values = {

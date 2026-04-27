@@ -42,23 +42,23 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default async function HomePage() {
-  const [listingsResult, references] = await Promise.all([
+  const [featuredResult, galleryResult, latestResult, references] = await Promise.all([
+    getPublicMarketplaceListings({ limit: 4, featured: true, sort: "newest" }),
+    getPublicMarketplaceListings({ limit: 8, galleryPriority: 1, sort: "newest" }),
     getPublicMarketplaceListings({ limit: 12, sort: "newest" }),
     getLiveMarketplaceReferenceData(),
   ]);
 
   const appUrl = getAppUrl();
 
-  // Separate listings by type
-  const featuredListings = listingsResult.listings.filter((l) => l.featured).slice(0, 4);
-  const galleryListings = listingsResult.listings
-    .filter((l) => l.galleryPriority && l.galleryPriority > 0)
-    .sort((a, b) => (b.galleryPriority ?? 0) - (a.galleryPriority ?? 0))
-    .slice(0, 8);
+  const featuredListings = featuredResult.listings;
+  const galleryListings = galleryResult.listings;
 
   const featuredIds = new Set(featuredListings.map((l) => l.id));
   const galleryIds = new Set(galleryListings.map((l) => l.id));
-  const latestListings = listingsResult.listings
+
+  // Deduplicate: Don't show featured/gallery listings in the "Latest" section
+  const latestListings = latestResult.listings
     .filter((l) => !featuredIds.has(l.id) && !galleryIds.has(l.id))
     .slice(0, 8);
 

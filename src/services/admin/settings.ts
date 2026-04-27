@@ -1,5 +1,6 @@
 "use server";
 
+import { requireAdminUser } from "@/lib/auth/session";
 import { logger } from "@/lib/logging/logger";
 import { captureServerError, captureServerWarning } from "@/lib/monitoring/posthog-server";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
@@ -85,6 +86,7 @@ export const getPlatformSettings = unstable_cache(
 export async function updateAllPlatformSettings(
   settings: PlatformSettings
 ): Promise<{ success: boolean; error?: string }> {
+  await requireAdminUser();
   try {
     const supabase = createSupabaseAdminClient();
 

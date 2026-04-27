@@ -2,7 +2,7 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
-import { useCallback, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { type FieldPath, useFieldArray, useForm, useWatch } from "react-hook-form";
 
 import { useAnalytics } from "@/hooks/use-analytics";
@@ -37,6 +37,7 @@ const STEP_LABELS = [
   "Ekspertiz (İsteğe Bağlı)",
   "Fotoğraflar",
 ];
+const DRAFT_STORAGE_KEY = "oto_burada_listing_draft";
 
 export function useListingCreation({
   initialValues,
@@ -76,7 +77,65 @@ export function useListingCreation({
     resolver: zodResolver(listingCreateFormSchema as never),
   });
 
-  const { control, trigger, getValues, setValue, setError, clearErrors } = form;
+  const { control, trigger, getValues, setValue, setError, clearErrors, watch, reset } = form;
+
+  // ── DRAFT PERSISTENCE ──
+  // Load draft on mount
+  useEffect(() => {
+    if (isEditing) return;
+
+    try {
+      const savedDraft = localStorage.getItem(DRAFT_STORAGE_KEY);
+      if (savedDraft) {
+        const parsed = JSON.parse(savedDraft);
+        // Only restore if the draft isn't too old (e.g., < 24h)
+        const age = Date.now() - (parsed.timestamp || 0);
+        if (age < 24 * 60 * 60 * 1000) {
+          reset({ ...formDefaultValues, ...parsed.values });
+          setCurrentStep(parsed.step || 0);
+        }
+      }
+    } catch (err) {
+      console.warn("Failed to load listing draft", err);
+    }
+  }, [isEditing, reset, formDefaultValues]);
+
+  // Save draft on change
+  const watchedValues = watch();
+  useEffect(() => {
+    if (isEditing) return;
+
+    const timeoutId = setTimeout(() => {
+      try {
+        localStorage.setItem(
+          DRAFT_STORAGE_KEY,
+          JSON.stringify({
+            values: watchedValues,
+            step: currentStep,
+            timestamp: Date.now(),
+          })
+        );
+      } catch (err) {
+        console.warn("Failed to save listing draft", err);
+      }
+    }, 1000); // Debounce save
+
+    return () => clearTimeout(timeoutId);
+  }, [watchedValues, currentStep, isEditing]);
+
+  // ── STORAGE CLEANUP ──
+  useEffect(() => {
+    return () => {
+      // If unmounting without successful submit, cleanup orphaned images
+      if (!submitIntentRef.current && pendingImageCleanupRef.current.size > 0) {
+        const paths = Array.from(pendingImageCleanupRef.current);
+        ApiClient.request("/api/listings/images/cleanup", {
+          method: "POST",
+          body: JSON.stringify({ paths }),
+        }).catch((err) => console.warn("Background storage cleanup failed", err));
+      }
+    };
+  }, []);
 
   const mapSubmitError = useCallback(
     (payload: ApiResponse<unknown>) => {
@@ -379,6 +438,13 @@ export function useListingCreation({
     }
 
     setSubmitState({ status: "success", message: "İlan başarıyla kaydedildi." });
+    submitIntentRef.current = true; // Signal for cleanup effect
+
+    // Clear draft on success
+    if (!isEditing) {
+      localStorage.removeItem(DRAFT_STORAGE_KEY);
+    }
+
     trackEvent(isEditing ? AnalyticsEvent.LISTING_UPDATED : AnalyticsEvent.LISTING_SUBMITTED, {
       listingId: response.data!.listing.id,
     });

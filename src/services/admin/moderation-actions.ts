@@ -1,5 +1,6 @@
 "use server";
 
+import { requireAdminUser } from "@/lib/auth/session";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { hasSupabaseAdminEnv } from "@/lib/supabase/env";
 import { adminModerationActionSchema } from "@/lib/validators";
@@ -34,6 +35,7 @@ export async function createAdminModerationAction(input: {
   targetId: string;
   targetType: ModerationTargetType;
 }) {
+  await requireAdminUser();
   if (!hasSupabaseAdminEnv()) {
     return null;
   }
@@ -63,6 +65,7 @@ export async function createAdminModerationAction(input: {
 }
 
 export async function getRecentAdminModerationActions(limit = 8): Promise<AdminModerationAction[]> {
+  await requireAdminUser();
   if (!hasSupabaseAdminEnv()) {
     return [];
   }

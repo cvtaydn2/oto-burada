@@ -116,6 +116,8 @@ export interface ListingFilters {
   sellerId?: string;
   cursor?: string;
   isExchange?: boolean;
+  featured?: boolean;
+  galleryPriority?: number;
   validationError?: string;
 }
 

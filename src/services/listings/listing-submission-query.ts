@@ -145,6 +145,63 @@ seller:profiles!inner!seller_id(id, full_name, city, avatar_url, role, user_type
  * - No additional queries per listing
  * - Optimized with composite indexes (see migration 0107)
  */
+export const publicListingDetailSelect = `
+id,
+seller_id,
+slug,
+title,
+category,
+brand,
+model,
+year,
+mileage,
+fuel_type,
+transmission,
+price,
+city,
+district,
+description,
+whatsapp_phone,
+car_trim,
+tramer_amount,
+damage_status_json,
+status,
+featured,
+featured_until,
+urgent_until,
+highlighted_until,
+is_featured,
+is_urgent,
+frame_color,
+gallery_priority,
+small_photo_until,
+homepage_showcase_until,
+category_showcase_until,
+top_rank_until,
+detailed_search_showcase_until,
+bold_frame_until,
+market_price_index,
+expert_inspection,
+published_at,
+bumped_at,
+view_count,
+created_at,
+updated_at,
+listing_images (
+  id,
+  listing_id,
+  storage_path,
+  public_url,
+  sort_order,
+  is_cover,
+  placeholder_blur
+),
+seller:profiles!inner!seller_id(id, full_name, city, avatar_url, role, user_type, business_name, business_logo_url, is_verified, is_banned, ban_reason, verified_business, verification_status, trust_score, business_slug, created_at, updated_at)
+`;
+
+/**
+ * OPTIMIZED select for marketplace list/grid display.
+ */
 export const marketplaceListingSelect = `
 id,
 seller_id,
@@ -270,6 +327,10 @@ export function applyListingFilterPredicates(
   if (filters.hasExpertReport === true) {
     q = q.contains("expert_inspection", { hasInspection: true });
   }
+  if (filters.isExchange !== undefined) q = q.eq("is_exchange", filters.isExchange);
+  if (filters.featured !== undefined) q = q.eq("featured", filters.featured);
+  if (filters.galleryPriority !== undefined) q = q.gte("gallery_priority", filters.galleryPriority);
+
   if (filters.query) {
     const terms = filters.query.trim().split(/\s+/).filter(Boolean);
     if (terms.length > 0) {
@@ -495,7 +556,7 @@ export async function getPublicDatabaseListings(options?: {
     statuses: ["approved"] as Listing["status"][],
   };
 
-  const query = buildListingBaseQuery(publicClient, listingSelect, publicOptions);
+  const query = buildListingBaseQuery(publicClient, publicListingDetailSelect, publicOptions);
   const result = await query;
 
   if (result.error && isListingSchemaError(result.error)) {
@@ -535,6 +596,8 @@ export interface PaginatedListingsResult {
   };
 }
 
+const cityCache = new Map<string, string>();
+
 /**
  * INTERNAL: Core logic for filtered listing retrieval.
  * Standardizes data fetching, count estimation, and pagination.
@@ -553,15 +616,20 @@ async function getFilteredListingsInternal(
   // Resolve citySlug to city name if city is not provided
   // Use public client for reference data (cities table is public)
   if (filters.citySlug && !filters.city) {
-    const publicClient = createSupabasePublicServerClient();
-    const { data: cityData } = await publicClient
-      .from("cities")
-      .select("name")
-      .eq("slug", filters.citySlug)
-      .maybeSingle();
+    if (cityCache.has(filters.citySlug)) {
+      filters = { ...filters, city: cityCache.get(filters.citySlug) };
+    } else {
+      const publicClient = createSupabasePublicServerClient();
+      const { data: cityData } = await publicClient
+        .from("cities")
+        .select("name")
+        .eq("slug", filters.citySlug)
+        .maybeSingle();
 
-    if (cityData) {
-      filters = { ...filters, city: cityData.name };
+      if (cityData) {
+        cityCache.set(filters.citySlug, cityData.name);
+        filters = { ...filters, city: cityData.name };
+      }
     }
   }
 

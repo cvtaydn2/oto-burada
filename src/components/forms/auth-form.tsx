@@ -2,9 +2,10 @@
 
 import { BadgeCheck, CarFront, CreditCard, Lock, ShieldCheck } from "lucide-react";
 import Link from "next/link";
-import { useActionState, useEffect } from "react";
+import { useActionState, useEffect, useState } from "react";
 
 import { AuthSubmitButton } from "@/components/forms/auth-submit-button";
+import { BotProtection } from "@/components/shared/bot-protection";
 import type { AuthActionState } from "@/lib/auth/actions";
 
 interface AuthFormProps {
@@ -46,6 +47,7 @@ export function AuthForm({
   submitLabel,
 }: Omit<AuthFormProps, "title" | "description">) {
   const [state, formAction] = useActionState(action, initialState);
+  const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
   const config = AUTH_MODE_CONFIG[mode];
   const isLogin = mode === "login";
   const passwordHintId = `${mode}-password-hint`;
@@ -147,6 +149,7 @@ export function AuthForm({
           <div className="bg-card rounded-2xl p-8 border border-border shadow-sm relative">
             <form action={formAction} className="space-y-6">
               {next ? <input type="hidden" name="next" value={next} /> : null}
+              <input type="hidden" name="turnstile_token" value={turnstileToken || ""} />
 
               <div className="space-y-2">
                 {!isLogin && (
@@ -273,6 +276,12 @@ export function AuthForm({
                     Beni Hatırla
                   </span>
                 </label>
+              )}
+
+              {!isLogin && (
+                <div className="flex justify-center py-2">
+                  <BotProtection onVerify={setTurnstileToken} />
+                </div>
               )}
 
               {state?.error && (

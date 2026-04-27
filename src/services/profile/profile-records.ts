@@ -555,10 +555,16 @@ export async function getPublicSellerProfile(sellerId: string): Promise<Profile 
 
   if (error || !data) return null;
 
+  // SECURITY: Mask phone number for public display.
+  // Raw phone is only available via revealListingPhone action.
+  const maskedPhone = data.phone
+    ? data.phone.replace(/(\d{4})(\d{3})(\d{2})(\d{2})/, "$1*** ** $4")
+    : "";
+
   return {
     id: data.id,
     fullName: data.full_name,
-    phone: data.phone || "",
+    phone: maskedPhone,
     city: data.city,
     avatarUrl: data.avatar_url,
     emailVerified: false,

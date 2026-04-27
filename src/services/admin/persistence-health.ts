@@ -64,7 +64,14 @@ const tableDefinitions = [
   { key: "admin_actions", label: "Admin aksiyonlari" },
 ] as const;
 
+let healthCache: { data: PersistenceHealth; timestamp: number } | null = null;
+const CACHE_TTL_MS = 60 * 1000; // 60 seconds
+
 export async function getPersistenceHealth(): Promise<PersistenceHealth> {
+  const now = Date.now();
+  if (healthCache && now - healthCache.timestamp < CACHE_TTL_MS) {
+    return healthCache.data;
+  }
   const environment = {
     adminEnv: hasSupabaseAdminEnv(),
     databaseUrlEnv: Boolean(process.env.SUPABASE_DB_URL),
@@ -178,7 +185,7 @@ export async function getPersistenceHealth(): Promise<PersistenceHealth> {
   const healthScore = Math.round((successCount / checksCount) * 100);
   const failedTable = results.find((result) => result.error);
 
-  return {
+  const finalHealth: PersistenceHealth = {
     environment,
     healthScore,
     message: failedTable
@@ -193,4 +200,7 @@ export async function getPersistenceHealth(): Promise<PersistenceHealth> {
       label: result.label,
     })),
   };
+
+  healthCache = { data: finalHealth, timestamp: Date.now() };
+  return finalHealth;
 }
