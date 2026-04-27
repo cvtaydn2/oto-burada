@@ -7,18 +7,13 @@ import { classifyRoute } from "@/lib/middleware/routes";
 import { updateSession } from "@/lib/supabase/middleware";
 
 /**
- * Global Middleware for OtoBurada.
+ * Global Proxy (Next.js 16+ replacement for middleware.ts).
  * Order of operations:
  * 1. Global Rate Limiting (Edge/Redis)
  * 2. CSRF Protection for API Mutations
  * 3. Auth Session Management & Route Guards
- *
- * Next.js requires this file to be named `middleware.ts` and export `middleware` function.
- *
- * ── CRITICAL FIX: Issue Kritik-07 - Admin Path Protection ───
- * Admin routes require full authentication check at edge
  */
-export async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const { isApiRoute, isAuthRoute, isAdminRoute, isProtectedRoute } = classifyRoute(pathname);
 

@@ -284,6 +284,8 @@ seller:profiles!inner!seller_id(id, full_name, is_verified, business_name, busin
 `;
 
 type ListingQuery = PostgrestFilterBuilder<any, any, any, any, any>;
+let preferLegacyListingSchema = false;
+let preferLegacyMarketplaceSchema = false;
 
 function isListingSchemaError(error: { code?: string; message?: string } | null | undefined) {
   const message = error?.message ?? "";
@@ -485,8 +487,11 @@ export async function getDatabaseListings(options?: {
   if (!hasSupabaseAdminEnv()) return null;
   const admin = createSupabaseAdminClient();
 
-  // Try primary query with full schema
-  const primaryQuery = buildListingBaseQuery(admin, listingSelect, options);
+  const selectClause = preferLegacyListingSchema ? legacyListingSelect : listingSelect;
+  const primaryQuery = buildListingBaseQuery(admin, selectClause, {
+    ...options,
+    legacySchema: preferLegacyListingSchema,
+  });
   const primaryResult = await primaryQuery;
 
   if (!primaryResult.error) {
@@ -504,11 +509,8 @@ export async function getDatabaseListings(options?: {
     throw new Error(`Listing query failed: ${primaryResult.error.message}`);
   }
 
-  // Schema error detected - attempt graceful degradation
-  logger.db.warn("Schema mismatch detected, attempting legacy fallback", {
-    error: primaryResult.error.message,
-    errorCode: primaryResult.error.code,
-  });
+  // Schema error detected - switch process-local mode to legacy for this runtime.
+  preferLegacyListingSchema = true;
 
   const fallbackQuery = buildListingBaseQuery(admin, legacyListingSelect, {
     ...options,
@@ -635,10 +637,14 @@ async function getFilteredListingsInternal(
 
   // Core Data Query (Approved Only for marketplace)
   // Issue 21 Optimization: Single query for data AND count
-  const { data, count, error } = await buildListingBaseQuery(client, marketplaceListingSelect, {
+  const selectClause = preferLegacyMarketplaceSchema
+    ? legacyListingSelect
+    : marketplaceListingSelect;
+  const { data, count, error } = await buildListingBaseQuery(client, selectClause, {
     statuses: ["approved"],
     filters: { ...filters, page, limit },
     withCount: true,
+    legacySchema: preferLegacyMarketplaceSchema,
   });
 
   const dataResult = { data, error };
@@ -662,11 +668,9 @@ async function getFilteredListingsInternal(
 
   if (dataResult.error) {
     if (isListingSchemaError(dataResult.error)) {
-      logger.db.warn("Marketplace schema mismatch detected, attempting legacy fallback", {
-        error: dataResult.error.message,
-        errorCode: dataResult.error.code,
-        filters,
-      });
+      // Expected drift in free-tier/dev databases where newer columns may be missing.
+      // Flip to legacy mode for subsequent calls in this runtime to avoid repeated retries/log noise.
+      preferLegacyMarketplaceSchema = true;
 
       const legacyDataQuery = buildListingBaseQuery(client, legacyListingSelect, {
         statuses: ["approved"],
