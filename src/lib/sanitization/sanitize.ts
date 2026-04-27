@@ -160,6 +160,10 @@ function stripAllHtmlSecure(value: string): string {
     .replace(/&#x2F;/gi, "/")
     .replace(/&amp;/gi, "&");
 
+  // STEP 5.5: CRITICAL - Strip tags AGAIN after entity decoding
+  // This catches encoded tags like &lt;script&gt; that become <script> after decoding
+  cleaned = cleaned.replace(/<[^>]*>/g, "");
+
   // STEP 6: Remove CSS expressions and -moz-binding
   cleaned = cleaned
     .replace(/expression\s*\(/gi, "")

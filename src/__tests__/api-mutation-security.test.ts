@@ -28,33 +28,20 @@ const SECURITY_WRAPPERS = [
 ];
 
 // Allowlisted routes with documented reasons
+// NOTE: Only routes with POST/PUT/PATCH/DELETE should be here
+// GET-only routes (like cron, health checks) do NOT need allowlisting
 const ALLOWLISTED_ROUTES: Record<string, string> = {
-  // Webhook routes - have their own signature verification
-  "payments/webhook/route.ts": "Iyzico webhook signature verification",
+  // Webhook routes - have their own cryptographic signature verification
+  "payments/webhook/route.ts": "Iyzico webhook signature verification (x-iyzi-signature header)",
 
-  // Callback routes - handle external payment redirects
-  "payments/callback/route.ts": "Payment callback with token verification",
+  // Callback routes - validate token via Iyzico API, not trusting request data
+  "payments/callback/route.ts": "Payment callback with Iyzico API token verification",
 
-  // Public contact form - has Turnstile + rate limiting + spam detection
-  "contact/route.ts": "Public contact with Turnstile + rate limit",
+  // Public contact form - has Turnstile CAPTCHA + rate limiting
+  "contact/route.ts": "Public contact form with Turnstile + rate limit",
 
-  // Disabled endpoints - return 503 immediately
+  // Disabled endpoints - return 503 immediately, no processing
   "listings/[id]/verify-eids/route.ts": "Disabled endpoint - returns 503",
-
-  // Cron routes - protected by withCronOrAdmin or CRON_SECRET
-  "cron/main/route.ts": "Cron with CRON_SECRET verification",
-  "cron/cleanup-stale-payments/route.ts": "Cron with CRON_SECRET verification",
-  "cron/cleanup-storage/route.ts": "Cron with CRON_SECRET verification",
-  "cron/expire-dopings/route.ts": "Cron with CRON_SECRET verification",
-  "cron/expire-listings/route.ts": "Cron with CRON_SECRET verification",
-  "cron/expire-reservations/route.ts": "Cron with CRON_SECRET verification",
-  "cron/outbox/route.ts": "Cron with CRON_SECRET verification",
-  "cron/process-fulfillment-jobs/route.ts": "Cron with CRON_SECRET verification",
-  "cron/sync-listing-views/route.ts": "Cron with CRON_SECRET verification",
-  "saved-searches/notify/route.ts": "Cron with CRON_SECRET verification",
-
-  // Health check - public read endpoint
-  "health/route.ts": "Public health check (GET only)",
 };
 
 function findRouteFiles(dir: string): string[] {
@@ -80,9 +67,11 @@ function findRouteFiles(dir: string): string[] {
 }
 
 function extractRouteRelativePath(fullPath: string): string {
-  const apiIndex = fullPath.indexOf("/api/");
-  if (apiIndex === -1) return fullPath;
-  return fullPath.slice(apiIndex + 5); // Remove "/api/" prefix
+  // Normalize Windows paths (backslashes to forward slashes)
+  const normalizedPath = fullPath.replace(/\\/g, "/");
+  const apiIndex = normalizedPath.indexOf("/api/");
+  if (apiIndex === -1) return normalizedPath;
+  return normalizedPath.slice(apiIndex + 5); // Remove "/api/" prefix
 }
 
 describe("API Mutation Security Enforcement", () => {
