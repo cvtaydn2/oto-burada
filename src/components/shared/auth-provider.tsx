@@ -66,7 +66,12 @@ export function AuthProvider({ children, initialUser = null }: AuthProviderProps
 
       if (user?.id !== newUser?.id) {
         if (event === "SIGNED_OUT") {
-          authChannel.postMessage("SIGNOUT");
+          // UX FIX: Handle storage quota errors gracefully
+          try {
+            authChannel.postMessage("SIGNOUT");
+          } catch {
+            // BroadcastChannel failed (quota exceeded or blocked), continue silently
+          }
         }
         router.refresh();
       }

@@ -1,7 +1,7 @@
 "use client";
 
 import { useInfiniteQuery } from "@tanstack/react-query";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import { createSearchParamsFromListingFilters } from "@/services/listings/listing-filters";
 import { type Listing, type ListingFilters } from "@/types";
@@ -41,19 +41,33 @@ export function useMarketplaceLogic({ initialResult, initialFilters }: UseMarket
     return json.data as typeof initialResult;
   };
 
-  const { data, fetchNextPage, hasNextPage, isFetchingNextPage } = useInfiniteQuery({
-    queryKey,
-    queryFn: fetchListings,
-    initialPageParam: 1,
-    getNextPageParam: (lastPage) => (lastPage.hasMore ? lastPage.page + 1 : undefined),
-    initialData: {
-      pages: [initialResult],
-      pageParams: [1],
-    },
-  });
+  const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isError, error } = useInfiniteQuery(
+    {
+      queryKey,
+      queryFn: fetchListings,
+      initialPageParam: 1,
+      getNextPageParam: (lastPage) => (lastPage.hasMore ? lastPage.page + 1 : undefined),
+      initialData: {
+        pages: [initialResult],
+        pageParams: [1],
+      },
+      // UX FIX: Add retry logic for network failures
+      retry: 2,
+      retryDelay: 1000,
+    }
+  );
 
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   const [isSortOpen, setIsSortOpen] = useState(false);
+
+  // Stabilize fetchNextPage reference to prevent observer re-creation
+  const fetchNextPageRef = useRef(fetchNextPage);
+  useEffect(() => {
+    fetchNextPageRef.current = fetchNextPage;
+  }, [fetchNextPage]);
+  const stableFetchNextPage = () => {
+    fetchNextPageRef.current();
+  };
 
   const allListings = data?.pages.flatMap((p) => p.listings) ?? initialResult.listings;
   const total = data?.pages[0]?.total ?? initialResult.total;
@@ -71,9 +85,11 @@ export function useMarketplaceLogic({ initialResult, initialFilters }: UseMarket
     total,
     hasNextPage,
     isFetchingNextPage,
-    fetchNextPage,
+    fetchNextPage: stableFetchNextPage,
     handleFilterChange: updateFilter,
     handleReset: resetFilters,
     applyFilters,
+    isError,
+    error,
   };
 }

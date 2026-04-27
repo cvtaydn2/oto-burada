@@ -49,6 +49,15 @@ export function ReportListingForm({ listingId, sellerId, userId }: ReportListing
     setSubmitState({ status: "idle" });
 
     try {
+      // Get CSRF token from cookie (Double Submit Cookie pattern)
+      const csrfToken =
+        typeof document !== "undefined"
+          ? document.cookie
+              .split("; ")
+              .find((row) => row.startsWith("csrf_token="))
+              ?.split("=")[1]
+          : undefined;
+
       const response = await fetch("/api/reports", {
         body: JSON.stringify({
           description,
@@ -57,6 +66,7 @@ export function ReportListingForm({ listingId, sellerId, userId }: ReportListing
         }),
         headers: {
           "Content-Type": "application/json",
+          ...(csrfToken ? { "x-csrf-token": csrfToken } : {}),
         },
         method: "POST",
       });

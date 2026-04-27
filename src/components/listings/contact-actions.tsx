@@ -157,7 +157,6 @@ export function ContactActions({
         </button>
       )}
 
-      {/* WhatsApp Button with Safety Dialog */}
       {/* Trust Signal Reassurance */}
       {isTrusted && !isRevealed && (
         <div className="flex items-center gap-2 mb-2 p-3 rounded-xl bg-emerald-50/50 border border-emerald-100/50">
@@ -210,9 +209,12 @@ export function ContactActions({
       {/* WhatsApp Button with Safety Dialog */}
       <AlertDialog>
         <AlertDialogTrigger asChild>
-          <button className="flex w-full items-center justify-center gap-2 rounded-xl bg-[#25D366] text-white h-12 px-4 text-sm font-bold border border-[#25D366] transition-all hover:bg-[#1fb355] active:scale-95 shadow-sm">
+          <button
+            disabled={isLogging && !isRevealed}
+            className="flex w-full items-center justify-center gap-2 rounded-xl bg-[#25D366] text-white h-12 px-4 text-sm font-bold border border-[#25D366] transition-all hover:bg-[#1fb355] active:scale-95 shadow-sm disabled:opacity-70 disabled:cursor-not-allowed"
+          >
             <MessageCircle className="size-5" />
-            WhatsApp ile İletişime Geç
+            {isRevealed ? "WhatsApp ile İletişime Geç" : "Numarayı Gör ve WhatsApp&apos;tan Yaz"}
           </button>
         </AlertDialogTrigger>
         <AlertDialogContent className="max-w-md bg-card border border-border rounded-3xl">
@@ -259,17 +261,28 @@ export function ContactActions({
                 }
                 className="flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-green-500 to-emerald-600 w-full sm:flex-1 h-12 px-6 text-[15px] text-white font-bold shadow-sm"
               >
-                Mesaj Gönder
+                WhatsApp&apos;tan Yaz
                 <MessageCircle className="size-4" />
               </a>
             ) : (
               <button
                 type="button"
                 disabled={isLogging}
-                onClick={handleReveal}
+                onClick={() => {
+                  // If phone not revealed yet, reveal it first
+                  if (!isRevealed) {
+                    void handleReveal();
+                  }
+                }}
                 className="flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-green-500 to-emerald-600 w-full sm:flex-1 h-12 px-6 text-[15px] text-white font-bold shadow-sm disabled:opacity-70"
               >
-                {isLogging ? <Loader2 className="animate-spin size-4" /> : "Numarayı Gör ve İlerle"}
+                {isLogging ? (
+                  <Loader2 className="animate-spin size-4" />
+                ) : isRevealed ? (
+                  "WhatsApp'tan Yaz"
+                ) : (
+                  "Numarayı Gör"
+                )}
                 {!isLogging && <MessageCircle className="size-4" />}
               </button>
             )}

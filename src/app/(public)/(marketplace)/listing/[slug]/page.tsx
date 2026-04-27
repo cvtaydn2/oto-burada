@@ -353,7 +353,11 @@ export default async function ListingDetailPage({ params }: ListingDetailPagePro
               <div className="rounded-2xl border border-border bg-card p-5">
                 <div className="mb-4 flex items-center gap-3">
                   <div className="flex size-12 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-xl font-bold text-primary">
-                    {(seller?.businessName || seller?.fullName || "?")[0]}
+                    {(() => {
+                      const displayName = seller?.businessName || seller?.fullName || "?";
+                      const initial = displayName.charAt(0) || "?";
+                      return initial;
+                    })()}
                   </div>
                   <div className="min-w-0 flex-1">
                     <div className="truncate text-sm font-bold text-foreground">

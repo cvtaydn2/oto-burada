@@ -75,6 +75,12 @@ export function OfferPanel({
       return;
     }
 
+    // UX FIX: Prevent overflow for very large numbers
+    if (parsedPrice > 999_999_999_999) {
+      toast.error("Fiyat çok yüksek. Lütfen daha düşük bir tutar girin.");
+      return;
+    }
+
     setIsLoading(true);
     const formData = new FormData();
     formData.set("listingId", listingId);

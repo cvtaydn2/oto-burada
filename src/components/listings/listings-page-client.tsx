@@ -1,6 +1,6 @@
 "use client";
 
-import { BadgeCheck, Search, Star, TrendingDown } from "lucide-react";
+import { BadgeCheck, RefreshCcw, Search, Star, TrendingDown } from "lucide-react";
 import { useRef } from "react";
 import { useEffect } from "react";
 
@@ -63,6 +63,8 @@ export function ListingsPageClient({
     handleFilterChange,
     handleReset,
     applyFilters,
+    isError,
+    error,
   } = useMarketplaceLogic({ initialResult, initialFilters });
 
   const loadMoreRef = useRef<HTMLDivElement | null>(null);
@@ -172,7 +174,27 @@ export function ListingsPageClient({
         />
 
         <div className="flex-1 min-w-0">
-          {isPending ? (
+          {isError ? (
+            // UX FIX: Show recoverable error state instead of blank/loading
+            <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-border bg-card py-16 sm:py-24 px-4">
+              <div className="mb-4 flex size-12 sm:size-16 items-center justify-center rounded-full bg-red-50">
+                <RefreshCcw size={28} className="text-red-500" />
+              </div>
+              <h3 className="mb-2 text-base sm:text-lg font-bold text-foreground tracking-tight">
+                İlanlar yüklenirken hata oluştu
+              </h3>
+              <p className="mb-6 sm:mb-8 max-w-sm text-sm text-muted-foreground text-center">
+                {error instanceof Error ? error.message : "Bağlantı sırasında bir sorun oluştu."}
+              </p>
+              <button
+                onClick={() => window.location.reload()}
+                className="h-10 sm:h-12 rounded-xl bg-primary px-8 sm:px-10 text-xs sm:text-sm font-bold text-primary-foreground hover:opacity-90 transition-all shadow-sm uppercase tracking-widest flex items-center gap-2"
+              >
+                <RefreshCcw size={14} />
+                Sayfayı Yenile
+              </button>
+            </div>
+          ) : isPending ? (
             <div className="bg-card rounded-2xl p-6 sm:p-10 border border-border shadow-sm min-h-[400px] sm:min-h-[600px]">
               <ListingsGridSkeleton />
             </div>
