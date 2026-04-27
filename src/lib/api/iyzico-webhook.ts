@@ -1,3 +1,5 @@
+import "server-only";
+
 import crypto from "crypto";
 
 /**
@@ -11,7 +13,7 @@ export function verifyIyzicoWebhook(
   if (!signature || !secretKey) return false;
 
   try {
-    const expectedSignature = crypto.createHmac("sha512", secretKey).update(body).digest("base64");
+    const expectedSignature = crypto.createHmac("sha256", secretKey).update(body).digest("base64");
 
     // Use timing-safe comparison to prevent side-channel attacks
     return crypto.timingSafeEqual(

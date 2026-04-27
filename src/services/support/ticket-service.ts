@@ -2,7 +2,7 @@ import { getRequiredAppUrl } from "@/lib/environment/env";
 import { logger } from "@/lib/logging/logger";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
-import { sendTicketCreatedEmail, sendTicketReplyEmail } from "@/services/email/email-service";
+import { enqueueOutboxEvent } from "@/services/system/outbox-processor";
 
 export type TicketStatus = "open" | "in_progress" | "resolved" | "closed";
 export type TicketPriority = "low" | "medium" | "high" | "urgent";
@@ -64,20 +64,24 @@ export async function createTicket(userId: string, input: CreateTicketInput): Pr
 
   const ticket = data as unknown as Ticket;
 
-  // Kullanıcıya "talebiniz alındı" e-postası gönder (arka planda, hata olursa sessiz geç)
+  // Arka planda e-posta gönderimi için outbox'a ekle (Reliability Pill)
   if (userId) {
-    getUserEmailAndName(userId)
-      .then(({ email, name }) => {
-        if (email) {
-          sendTicketCreatedEmail({
+    try {
+      const { email, name } = await getUserEmailAndName(userId);
+      if (email) {
+        await enqueueOutboxEvent(supabase, "email_notification", {
+          template: "ticket_created",
+          params: {
             toEmail: email,
             toName: name ?? "Kullanıcı",
             ticketSubject: input.subject,
             ticketId: ticket.id,
-          }).catch((err) => logger.admin.warn("Ticket created email failed silently", err));
-        }
-      })
-      .catch(() => null);
+          },
+        });
+      }
+    } catch (err) {
+      logger.admin.warn("Ticket created email enqueue failed", undefined, err);
+    }
   }
 
   return ticket;
@@ -113,13 +117,18 @@ export async function createPublicTicket(
 
   const ticket = data as unknown as Ticket;
 
-  sendTicketCreatedEmail({
-    ticketId: ticket.id,
-    ticketSubject: input.subject,
-    ticketUrl: `${getRequiredAppUrl()}/contact`,
-    toEmail: input.contactEmail,
-    toName: input.contactName,
-  }).catch((err) => logger.admin.warn("Public ticket created email failed silently", err));
+  await enqueueOutboxEvent(supabase, "email_notification", {
+    template: "ticket_created",
+    params: {
+      ticketId: ticket.id,
+      ticketSubject: input.subject,
+      ticketUrl: `${getRequiredAppUrl()}/contact`,
+      toEmail: input.contactEmail,
+      toName: input.contactName,
+    },
+  }).catch((err) =>
+    logger.admin.warn("Public ticket created email enqueue failed", undefined, err)
+  );
 
   return ticket;
 }
@@ -189,21 +198,25 @@ export async function updateTicketStatus(
 
   const ticket = data as unknown as Ticket;
 
-  // Admin yanıt yazdıysa kullanıcıya e-posta gönder
+  // Admin yanıt yazdıysa kullanıcıya e-posta gönder (via Outbox)
   if (adminResponse && ticket.userId) {
-    getUserEmailAndName(ticket.userId)
-      .then(({ email, name }) => {
-        if (email) {
-          sendTicketReplyEmail({
+    try {
+      const { email, name } = await getUserEmailAndName(ticket.userId);
+      if (email) {
+        await enqueueOutboxEvent(supabase, "email_notification", {
+          template: "ticket_reply",
+          params: {
             toEmail: email,
             toName: name ?? "Kullanıcı",
             ticketSubject: ticket.subject,
             adminResponse,
             ticketId,
-          }).catch((err) => logger.admin.warn("Ticket reply email failed silently", err));
-        }
-      })
-      .catch(() => null);
+          },
+        });
+      }
+    } catch (err) {
+      logger.admin.warn("Ticket reply email enqueue failed", undefined, err);
+    }
   }
 
   return ticket;

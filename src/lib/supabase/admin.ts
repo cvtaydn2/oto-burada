@@ -25,7 +25,7 @@ import { getSupabaseAdminEnv } from "@/lib/supabase/env";
  */
 let cachedAdminClient: SupabaseClient<any> | null = null;
 let adminClientCreatedAt = 0;
-const ADMIN_CLIENT_TTL = 5 * 60 * 1000; // 5 minutes (balanced for connection pooling and key rotation)
+const ADMIN_CLIENT_TTL = 15 * 60 * 1000; // 15 minutes (balanced for connection pooling and key rotation)
 
 /**
  * Resets the cached admin client.

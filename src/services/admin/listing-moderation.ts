@@ -5,6 +5,7 @@ import { hasSupabaseAdminEnv } from "@/lib/supabase/env";
 import { listingSchema } from "@/lib/validators";
 import { getDatabaseListings } from "@/services/listings/listing-submission-query";
 import { createDatabaseNotification } from "@/services/notifications/notification-records";
+import { enqueueOutboxEvent } from "@/services/system/outbox-processor";
 import type { Listing } from "@/types";
 
 import { createAdminModerationAction } from "./moderation-actions";
@@ -37,7 +38,6 @@ async function sendModerationEmail(
   note?: string | null
 ) {
   try {
-    const { createSupabaseAdminClient } = await import("@/lib/supabase/admin");
     const admin = createSupabaseAdminClient();
     const { data: authUser } = await admin.auth.admin.getUserById(listing.sellerId);
     const sellerEmail = authUser?.user?.email;
@@ -48,26 +48,26 @@ async function sendModerationEmail(
 
     const appUrl = getRequiredAppUrl();
 
-    if (action === "approve") {
-      const { sendListingApprovedEmail } = await import("@/services/email/email-service");
-      await sendListingApprovedEmail({
-        toEmail: sellerEmail,
-        toName: sellerName,
-        listingTitle: listing.title,
-        listingUrl: `${appUrl}/listing/${listing.slug}`,
-      });
-    } else {
-      const { sendListingRejectedEmail } = await import("@/services/email/email-service");
-      await sendListingRejectedEmail({
-        toEmail: sellerEmail,
-        toName: sellerName,
-        listingTitle: listing.title,
-        reason: note ?? undefined,
-      });
-    }
+    await enqueueOutboxEvent(admin, "email_notification", {
+      template: action === "approve" ? "listing_approved" : "listing_rejected",
+      params:
+        action === "approve"
+          ? {
+              toEmail: sellerEmail,
+              toName: sellerName,
+              listingTitle: listing.title,
+              listingUrl: `${appUrl}/listing/${listing.slug}`,
+            }
+          : {
+              toEmail: sellerEmail,
+              toName: sellerName,
+              listingTitle: listing.title,
+              reason: note ?? undefined,
+            },
+    });
   } catch (err) {
-    // Non-critical — don't fail moderation if email fails
-    logger.admin.warn("Moderation email failed to send", { listingId: listing.id, action }, err);
+    // Non-critical — don't fail moderation if email enqueue fails
+    logger.admin.warn("Moderation email enqueue failed", { listingId: listing.id, action }, err);
   }
 }
 

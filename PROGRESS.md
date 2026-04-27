@@ -1,3 +1,33 @@
+# 2026-04-27 — Security Hardening & Transactional Outbox (Phase 45)
+
+## [2026-04-27] - Phase 45: Security Hardening & Side Effect Resiliency
+- **Durum:** ✅ TAMAMLANDI
+- **Yapılanlar:**
+  - **SEC-02 - Iyzico Webhook Hardening [Critical]**: Webhook imza algoritması SHA256'ya yükseltildi ve `iyzico-webhook.ts` içinde `server-only` koruması sağlandı.
+  - **SEC-03 - Secret Leakage Prevention [High]**: `secrets.ts` ve `iyzico-webhook.ts` dosyalarına `server-only` eklenerek client bundle sızıntıları build-time seviyesinde engellendi.
+  - **SEC-04 - Transactional Outbox Implementation [High]**: E-posta gönderimleri ve bildirimler için asenkron "Outbox" pattern'i kuruldu:
+    - `transaction_outbox` tablosu e-posta şablonları (`ticket_created`, `listing_approved` vb.) ile entegre edildi.
+    - Destek Talepleri (`ticket-service.ts`), İlan Moderasyonu (`listing-moderation.ts`) ve Kayıtlı Aramalar (`saved-searches`) Outbox kuyruğuna taşındı.
+    - `outbox-processor.ts` ile circuit-breaker destekli asenkron işleme katmanı eklendi.
+  - **SEC-05 - Dependency Security Audit [High]**: `next` (v16.2.4), `postcss` ve `protobufjs` güncellenerek yüksek öncelikli güvenlik açıkları giderildi.
+  - **PERF-09 - Admin Client TTL [Medium]**: `ADMIN_CLIENT_TTL` 1 dakikadan 15 dakikaya çıkarılarak performans ve güvenlik dengesi optimize edildi.
+  - **PERF-10 - Build Import Optimization [Medium]**: `next.config.ts` içinde `optimizePackageImports` listesine Radix UI, React Hook Form ve Zod eklendi.
+  - **CODE-01 - Type Safety Fixes [Medium]**: `ticket-service.ts` içindeki logger imza hataları giderildi.
+- **Doğrulama:**
+  - `npm run typecheck` ✅ (0 errors)
+  - `npm run build` ✅ (Build successful)
+  - Iyzico signature verification logic (SHA256) verified ✅
+- **Mimari Kazanımlar:**
+  - **Zero-Trust Connection:** E-posta servisleri artık ana DB transaction'ını bloklamıyor.
+  - **Reliability:** E-posta sağlayıcısı (Resend) down olsa bile Outbox retry mekanizması ile gönderimler garanti altında.
+  - **Security:** Hassas API anahtarları ve webhook logic'i client-side koduna asla sızamaz.
+- **Kararlar:**
+  - Side effect'lerin (e-posta, push) her zaman asenkron job/outbox üzerinden yapılması standartlaştırıldı.
+  - `server-only` kullanımı tüm lib/services katmanında yaygınlaştırılacak.
+- **Sıradaki Adım:** 
+  - [ ] Implement Push Notification job type in Outbox.
+  - [ ] Expand Accessibility (ARIA) audit for critical forms.
+
 # 2026-04-27 — Production Build Stabilization & Migration Audit (Phase 44)
 
 ## [2026-04-27] - Phase 44: Production Build Stabilization & Zero-Error Pipeline

@@ -46,6 +46,13 @@ const nextConfig: NextConfig = {
       "tailwind-merge",
       "@supabase/supabase-js",
       "posthog-js",
+      "@radix-ui/react-dialog",
+      "@radix-ui/react-dropdown-menu",
+      "@radix-ui/react-select",
+      "@radix-ui/react-tabs",
+      "@radix-ui/react-tooltip",
+      "react-hook-form",
+      "zod",
     ],
   },
   // Disabled PPR/cacheComponents for now to resolve build conflicts with route segment configs

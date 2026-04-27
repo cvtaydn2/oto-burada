@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 
 import { verifyIyzicoWebhook } from "@/lib/api/iyzico-webhook";
 import { logger } from "@/lib/logging/logger";
+import { secrets } from "@/lib/security/secrets";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 
 export async function POST(req: NextRequest) {
@@ -26,7 +27,7 @@ export async function POST(req: NextRequest) {
 
     // 1. SECURITY: Verify Iyzico webhook signature FIRST
     const signature = req.headers.get("x-iyzi-signature");
-    const secretKey = process.env.IYZICO_SECRET_KEY;
+    const secretKey = secrets.payments().secretKey;
 
     if (!secretKey) {
       logger.api.error("Iyzico secret key not configured");

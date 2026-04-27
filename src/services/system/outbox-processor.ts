@@ -3,6 +3,13 @@ import { type SupabaseClient } from "@supabase/supabase-js";
 import { resendBreaker } from "@/lib/api/resilience";
 import { logger } from "@/lib/logging/logger";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+import {
+  sendListingApprovedEmail,
+  sendListingRejectedEmail,
+  sendSavedSearchAlertEmail,
+  sendTicketCreatedEmail,
+  sendTicketReplyEmail,
+} from "@/services/email/email-service";
 
 /**
  * Hyper-Scale Transaction Outbox Processor (Item 10 - Reliability)
@@ -42,7 +49,7 @@ export async function processOutboxQueue() {
 
         switch (item.event_type) {
           case "email_notification":
-            await handleEmailNotification(item.payload);
+            await handleEmailNotification(item.payload as unknown as EmailNotificationPayload);
             break;
           case "audit_cleanup":
             break;
@@ -84,13 +91,48 @@ export async function processOutboxQueue() {
   }
 }
 
+interface EmailNotificationPayload {
+  template: string;
+  params: Record<string, unknown>;
+}
+
 /**
  * Specialized handler for email notifications with Circuit Breaker
  */
-async function handleEmailNotification(payload: unknown) {
+async function handleEmailNotification(payload: EmailNotificationPayload) {
+  if (!payload || !payload.template) {
+    throw new Error("Outbox: Email notification payload is missing template information");
+  }
+
   return await resendBreaker.execute(async () => {
-    // Logic to call Resend API with payload
-    logger.system.info("Outbox: Email notification sent successfully.", { payload });
+    logger.system.info(`Outbox: Processing email template '${payload.template}'`);
+
+    let result;
+    switch (payload.template) {
+      case "ticket_created":
+        result = await sendTicketCreatedEmail(payload.params);
+        break;
+      case "ticket_reply":
+        result = await sendTicketReplyEmail(payload.params);
+        break;
+      case "listing_approved":
+        result = await sendListingApprovedEmail(payload.params);
+        break;
+      case "listing_rejected":
+        result = await sendListingRejectedEmail(payload.params);
+        break;
+      case "saved_search_alert":
+        result = await sendSavedSearchAlertEmail(payload.params);
+        break;
+      default:
+        logger.system.error(`Outbox: Unsupported email template '${payload.template}'`);
+        throw new Error(`Unsupported email template: ${payload.template}`);
+    }
+
+    if (!result.success) {
+      throw new Error(`Email sending failed: ${result.error}`);
+    }
+
     return true;
   });
 }

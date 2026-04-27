@@ -1,3 +1,5 @@
+import "server-only";
+
 import { logger } from "@/lib/logging/logger";
 
 /**

@@ -23,11 +23,11 @@ import { API_ERROR_CODES, apiError, apiSuccess } from "@/lib/api/response";
 import { logger } from "@/lib/logging/logger";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { hasSupabaseAdminEnv } from "@/lib/supabase/env";
-import { sendSavedSearchAlertEmail } from "@/services/email/email-service";
 import type { SavedSearchAlertListing } from "@/services/email/email-templates";
 import { createSearchParamsFromListingFilters } from "@/services/listings/listing-filters";
 import { getFilteredDatabaseListings } from "@/services/listings/listing-submissions";
 import { normalizeSavedSearchFilters } from "@/services/saved-searches/saved-search-utils";
+import { enqueueOutboxEvent } from "@/services/system/outbox-processor";
 import type { ListingFilters } from "@/types";
 
 export const dynamic = "force-dynamic";
@@ -151,24 +151,23 @@ async function handleCronRequest(request: Request) {
         imageUrl: l.images.find((img) => img.isCover)?.url,
       }));
 
-      const emailResult = await sendSavedSearchAlertEmail({
-        toEmail: userInfo.email,
-        toName: userInfo.name,
-        searchTitle: savedSearch.title,
-        searchUrl,
-        newListings: alertListings,
+      await enqueueOutboxEvent(admin, "email_notification", {
+        template: "saved_search_alert",
+        params: {
+          toEmail: userInfo.email,
+          toName: userInfo.name,
+          searchTitle: savedSearch.title,
+          searchUrl,
+          newListings: alertListings,
+        },
       });
 
-      if (emailResult.success) {
-        notifiedCount++;
-        logger.notifications.info("Saved search alert sent", {
-          userId: savedSearch.user_id,
-          searchId: savedSearch.id,
-          listingCount: newListings.length,
-        });
-      } else {
-        errorCount++;
-      }
+      notifiedCount++;
+      logger.notifications.info("Saved search alert enqueued", {
+        userId: savedSearch.user_id,
+        searchId: savedSearch.id,
+        listingCount: newListings.length,
+      });
     } catch (_e) {
       errorCount++;
       logger.notifications.error("Failed to process saved search notification", _e, {
