@@ -31,18 +31,18 @@ export const notificationTypes = ["favorite", "moderation", "report", "system"] 
 
 export const reportReasonLabels = {
   fake_listing: "Sahte ilan",
-  wrong_info: "Yanlis bilgi",
+  wrong_info: "Yanlış bilgi",
   spam: "Spam veya tekrar",
   price_manipulation: "Fiyat manipülasyonu",
   invalid_verification: "Geçersiz kimlik/ilan",
-  other: "Diger",
+  other: "Diğer",
 } as const;
 
 export const reportStatusLabels = {
   open: "Yeni",
-  reviewing: "Inceleniyor",
-  resolved: "Cozuldu",
-  dismissed: "Kapatildi",
+  reviewing: "İnceleniyor",
+  resolved: "Çözüldü",
+  dismissed: "Kapatıldı",
 } as const;
 
 export const moderationTargetTypes = ["listing", "report", "user"] as const;
@@ -60,9 +60,9 @@ export const moderationActions = [
 export const moderationActionLabels = {
   approve: "Onay",
   reject: "Red",
-  archive: "Arsiv",
-  review: "Inceleme",
-  resolve: "Cozum",
+  archive: "Arşiv",
+  review: "İnceleme",
+  resolve: "Çözüm",
   dismiss: "Kapatma",
   edit: "Düzenleme",
 } as const;

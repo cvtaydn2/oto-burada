@@ -82,14 +82,14 @@ export async function PATCH(request: Request, context: { params: Promise<{ repor
   const relatedListing = await getStoredListingById(persistedReport.listingId);
   const reportHref = relatedListing?.slug ? `/listing/${relatedListing.slug}` : null;
   const reportStatusMessage =
-    status === "reviewing" ? "incelemeye alindi" : status === "resolved" ? "cozuldu" : "kapatildi";
+    status === "reviewing" ? "incelemeye alındı" : status === "resolved" ? "çözüldü" : "kapatıldı";
 
   await createDatabaseNotification({
     href: reportHref,
     message: relatedListing
-      ? `"${relatedListing.title}" ilanı icin gonderdigin rapor ${reportStatusMessage}.`
-      : `Gonderdigin rapor ${reportStatusMessage}.`,
-    title: "Rapor durumun guncellendi",
+      ? `"${relatedListing.title}" ilanı için gönderdiğin rapor ${reportStatusMessage}.`
+      : `Gönderdiğin rapor ${reportStatusMessage}.`,
+    title: "Rapor durumun güncellendi",
     type: "report",
     userId: persistedReport.reporterId,
   });

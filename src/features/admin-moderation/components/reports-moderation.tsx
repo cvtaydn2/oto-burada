@@ -34,9 +34,9 @@ export function ReportsModeration({ listingMetaById, reports }: ReportsModeratio
     return (
       <section className="rounded-2xl border border-border/80 bg-background p-6 shadow-sm sm:p-8">
         <p className="text-sm font-medium uppercase tracking-[0.18em] text-primary/80">Raporlar</p>
-        <h2 className="mt-3 text-2xl font-semibold tracking-tight">Incelenecek rapor yok</h2>
+        <h2 className="mt-3 text-2xl font-semibold tracking-tight">İncelenecek rapor yok</h2>
         <p className="mt-3 max-w-2xl text-sm leading-6 text-muted-foreground sm:text-base">
-          Kullanici raporlari geldikce burada durum degisikligi yapabileceksin.
+          Kullanıcı raporları geldikçe burada durum değişikliği yapabileceksin.
         </p>
       </section>
     );
@@ -89,9 +89,9 @@ export function ReportsModeration({ listingMetaById, reports }: ReportsModeratio
           <p className="text-sm font-medium uppercase tracking-[0.18em] text-primary/80">
             Raporlar
           </p>
-          <h2 className="mt-3 text-2xl font-semibold tracking-tight">Kullanici raporlari</h2>
+          <h2 className="mt-3 text-2xl font-semibold tracking-tight">Kullanıcı raporları</h2>
           <p className="mt-3 max-w-3xl text-sm leading-6 text-muted-foreground sm:text-base">
-            Acik ve incelemede olan raporlari durum guncelleyerek yonetebilirsin.
+            Açık ve incelemede olan raporları durum güncelleyerek yönetebilirsin.
           </p>
         </div>
         <div className="rounded-full border border-border bg-muted/40 px-4 py-2 text-sm font-medium text-muted-foreground">
@@ -120,10 +120,10 @@ export function ReportsModeration({ listingMetaById, reports }: ReportsModeratio
                 : "border-border/70 bg-gradient-to-r from-muted/30 to-background text-foreground";
           const summary =
             report.reason === "fake_listing"
-              ? "Kapora veya sahte ilan riski acisindan hizli onceliklendirme faydali olabilir."
+              ? "Kapora veya sahte ilan riski açısından hızlı önceliklendirme faydalı olabilir."
               : report.reason === "wrong_info"
-                ? "Ilandaki veri tutarliligini fiyat, kilometre ve aciklama bazinda kontrol et."
-                : "Tekrar, spam veya diger guvenlik sinyalleri icin aciklamayi gozden gecir.";
+                ? "İlandaki veri tutarlılığını fiyat, kilometre ve açıklama bazında kontrol et."
+                : "Tekrar, spam veya diğer güvenlik sinyalleri için açıklamayı gözden geçir.";
 
           return (
             <article
@@ -155,13 +155,13 @@ export function ReportsModeration({ listingMetaById, reports }: ReportsModeratio
                   <div className={`rounded-xl border p-4 ${severityTone}`}>
                     <div className="flex items-center gap-2 text-sm font-semibold">
                       <Sparkles className="size-4" />
-                      Hizli inceleme notu
+                      Hızlı inceleme notu
                     </div>
                     <p className="mt-2 text-sm leading-6 text-foreground/90">{summary}</p>
                   </div>
 
                   <div className="rounded-2xl border border-border/70 bg-muted/20 px-4 py-3 text-sm leading-6 text-muted-foreground">
-                    {report.description?.trim() ? report.description : "Ek aciklama girilmedi."}
+                    {report.description?.trim() ? report.description : "Ek açıklama girilmedi."}
                   </div>
 
                   <div className="rounded-2xl border border-border/70 bg-muted/20 px-4 py-3">
@@ -181,7 +181,7 @@ export function ReportsModeration({ listingMetaById, reports }: ReportsModeratio
                           [report.id!]: event.target.value,
                         }));
                       }}
-                      placeholder="Opsiyonel not: neden incelemeye alindi, cozuldu veya kapatildi?"
+                      placeholder="Opsiyonel not: neden incelemeye alındı, çözüldü veya kapatıldı?"
                       rows={3}
                       className="mt-2 min-h-24 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm text-foreground outline-none transition-colors placeholder:text-muted-foreground focus:border-primary"
                     />
@@ -196,7 +196,7 @@ export function ReportsModeration({ listingMetaById, reports }: ReportsModeratio
                       className="inline-flex h-11 items-center justify-center gap-2 self-start rounded-xl border border-border bg-background px-4 text-sm font-semibold text-foreground transition-colors hover:bg-muted"
                     >
                       <ArrowRight className="size-4" />
-                      Ilani ac
+                      İlanı aç
                     </Link>
                   ) : null}
                 </div>
@@ -213,7 +213,7 @@ export function ReportsModeration({ listingMetaById, reports }: ReportsModeratio
                     ) : (
                       <Eye className="size-4" />
                     )}
-                    Incelemeye Al
+                    İncelemeye Al
                   </button>
 
                   <button
@@ -227,7 +227,7 @@ export function ReportsModeration({ listingMetaById, reports }: ReportsModeratio
                     ) : (
                       <ShieldCheck className="size-4" />
                     )}
-                    Cozuldu
+                    Çözüldü
                   </button>
 
                   <button

@@ -30,7 +30,7 @@ export function ReportListingForm({ listingId, sellerId, userId }: ReportListing
         className="inline-flex h-12 w-full items-center justify-center gap-2 rounded-xl border border-destructive/30 bg-destructive/5 px-5 text-sm font-semibold text-destructive transition-colors hover:bg-destructive/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-destructive/40 focus-visible:ring-offset-2"
       >
         <AlertTriangle className="size-4" />
-        Supheli Ilani Bildir
+        Şüpheli İlanı Bildir
       </Link>
     );
   }
@@ -38,7 +38,7 @@ export function ReportListingForm({ listingId, sellerId, userId }: ReportListing
   if (userId === sellerId) {
     return (
       <div className="rounded-xl border border-border bg-muted/35 px-4 py-3 text-sm text-muted-foreground">
-        Kendi ilanini raporlayamazsin.
+        Kendi ilanını raporlayamazsın.
       </div>
     );
   }
@@ -97,11 +97,11 @@ export function ReportListingForm({ listingId, sellerId, userId }: ReportListing
     >
       <div className="flex items-center gap-2 text-sm font-semibold text-destructive">
         <AlertTriangle className="size-4" />
-        Supheli ilani bildir
+        Şüpheli ilanı bildir
       </div>
       <p className="text-sm leading-6 text-muted-foreground">
-        Kapora isteme, sahte ilan veya yanlis bilgi suphelerinde dogrudan moderasyon ekibine
-        bildirim gonderebilirsin.
+        Kapora isteme, sahte ilan veya yanlış bilgi şüphelerinde doğrudan moderasyon ekibine
+        bildirim gönderebilirsin.
       </p>
 
       <label className="block space-y-2 text-sm font-medium text-foreground">
@@ -120,12 +120,12 @@ export function ReportListingForm({ listingId, sellerId, userId }: ReportListing
       </label>
 
       <label className="block space-y-2 text-sm font-medium text-foreground">
-        <span>Aciklama (opsiyonel)</span>
+        <span>Açıklama (opsiyonel)</span>
         <textarea
           rows={4}
           value={description}
           onChange={(event) => setDescription(event.target.value)}
-          placeholder="Sorunu kisaca acikla. Aciklama girersen en az 5 karakter olmali."
+          placeholder="Sorunu kısaca açıkla. Açıklama girersen en az 5 karakter olmalı."
           className="w-full rounded-2xl border border-input bg-background px-4 py-3 text-sm outline-none transition-colors focus:border-primary focus-visible:ring-2 focus-visible:ring-primary/20"
         />
       </label>
@@ -152,7 +152,7 @@ export function ReportListingForm({ listingId, sellerId, userId }: ReportListing
         ) : (
           <AlertTriangle className="size-4" />
         )}
-        {isSubmitting ? "Rapor gonderiliyor..." : "Raporu gonder"}
+        {isSubmitting ? "Rapor gönderiliyor..." : "Raporu gönder"}
       </button>
     </form>
   );
