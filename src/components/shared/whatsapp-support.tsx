@@ -33,6 +33,7 @@ export function WhatsAppSupport() {
         <button
           onClick={() => setIsOpen(false)}
           className="absolute -top-2 -right-2 bg-gray-100 text-gray-500 rounded-full p-1 hover:bg-gray-200 transition-colors"
+          aria-label="Destek balonunu kapat"
         >
           <X size={12} />
         </button>

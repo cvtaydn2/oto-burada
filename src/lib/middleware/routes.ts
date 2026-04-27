@@ -10,7 +10,6 @@ export const protectedApiPrefixes = [
   "/api/chats",
   "/api/offers",
   "/api/reports",
-  "/api/favorites",
   "/api/notifications",
   "/api/seller-reviews",
   "/api/saved-searches",

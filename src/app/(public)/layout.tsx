@@ -4,6 +4,7 @@ import type { PropsWithChildren } from "react";
 import { PublicShell } from "@/components/layout/public-shell";
 import { MaintenanceScreen } from "@/components/shared/maintenance-screen";
 import { getCurrentUser, getUserRole } from "@/lib/auth/session";
+import { shouldShowMaintenanceScreen } from "@/lib/platform/maintenance";
 import { getPlatformSettings } from "@/services/admin/settings";
 
 export default async function PublicLayout({ children }: PropsWithChildren) {
@@ -19,7 +20,11 @@ export default async function PublicLayout({ children }: PropsWithChildren) {
     pathname.startsWith("/reset-password") ||
     pathname.startsWith("/auth");
 
-  if (isMaintenanceMode && !isAuthRoute && (!user || getUserRole(user) !== "admin")) {
+  if (
+    shouldShowMaintenanceScreen(isMaintenanceMode) &&
+    !isAuthRoute &&
+    (!user || getUserRole(user) !== "admin")
+  ) {
     return <MaintenanceScreen />;
   }
 

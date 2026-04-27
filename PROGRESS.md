@@ -1,3 +1,38 @@
+# 2026-04-28 — Frontend End-to-End Stabilization & Runtime Hardening (Phase 50)
+
+## [2026-04-28] - Phase 50: Frontend Flow Recovery, API Auth/CSRF Semantics, and E2E Rebaseline
+- **Durum:** ✅ TAMAMLANDI
+- **Yapılanlar:**
+  - **WEB-01 - Maintenance gate policy hardening [Critical]:**
+    - `src/lib/platform/maintenance.ts` eklendi.
+    - Production dışı ortamlarda maintenance ekranının tüm uygulamayı kilitlemesi engellendi.
+    - `src/app/(public)/layout.tsx` ve `src/app/dashboard/layout.tsx` yeni policy ile hizalandı.
+  - **WEB-02 - Missing compare route fixed [High]:**
+    - `src/app/(public)/(marketplace)/compare/page.tsx` eklendi.
+    - `ids` query param ile ilan karşılaştırma, paylaşım ve listeden çıkarma akışları aktif edildi.
+  - **A11Y-03 - Accessibility critical fixes [High]:**
+    - `src/components/shared/whatsapp-support.tsx` close butonuna `aria-label` eklendi.
+    - `src/components/shared/maintenance-screen.tsx` ana içerik semantiği (`main#main-content`) düzeltildi.
+    - `src/app/not-found.tsx` birincil başlık semantiği `h1` olarak düzeltildi.
+  - **SEC-13 - API auth/csrf semantics correction [Critical]:**
+    - `src/lib/api/security.ts` içinde auth zorunlu endpointlerde 401 önce, CSRF doğrulaması sonra olacak şekilde akış düzenlendi.
+    - `src/lib/middleware/csrf.ts` içinde protected/admin API mutation route’larda proxy-level CSRF blokajı bypass edilerek route-level güvenlik katmanına bırakıldı.
+    - `/api/favorites` için guest GET davranışı ile middleware auth guard çakışması giderildi (`src/lib/middleware/routes.ts` + csrf wrapper).
+  - **DB-16 - Optional table resilience for free/local setups [Medium]:**
+    - `src/services/listings/questions.ts` içinde `listing_questions` tablo eksikliği (`PGRST205/42P01`) için fail-soft fallback eklendi.
+  - **TEST-27 - Frontend & E2E rebaseline [High]:**
+    - `tests/e2e.spec.ts`, `tests/listing-wizard.spec.ts`, `e2e/listing-detail.spec.ts`, `e2e/accessibility.spec.ts`, `e2e/visual-regression.spec.ts` güncel UI davranışına göre stabilize edildi.
+    - Visual snapshot baseline’ları güncellendi (`e2e/visual-regression.spec.ts-snapshots/*`).
+- **Doğrulama:**
+  - `npm run lint` ✅
+  - `npm run typecheck` ✅
+  - `npm run test:e2e:chromium` ✅ (88 passed, 13 skipped, 0 failed)
+- **Notlar:**
+  - Chromium run sırasında gözlenen `LCP image loading` ve `scroll-behavior` mesajları uyarı seviyesinde; test sonucu kırmıyor.
+  - Bazı ortamlarda opsiyonel env eksikliği için `[ENV] optional variables not set` mesajı görülebilir; core akışlar çalışır durumda.
+
+---
+
 # 2026-04-28 — Proxy Migration & Schema Drift Guard (Phase 49)
 
 ## [2026-04-28] - Phase 49: Next.js Middleware Migration and Marketplace Drift Hardening

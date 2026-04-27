@@ -49,29 +49,40 @@ export async function withSecurity(
   request: Request,
   options: SecurityOptions = {}
 ): Promise<SecurityCheckResult> {
-  // 1. CSRF Origin Protection
-  if (options.requireCsrf) {
-    const isMutation = ["POST", "PUT", "PATCH", "DELETE"].includes(request.method);
-    if (isMutation && !isValidRequestOrigin(request)) {
-      return {
-        ok: false,
-        response: apiError(API_ERROR_CODES.BAD_REQUEST, "Geçersiz istek kaynağı (CSRF).", 403),
-      };
+  const requiresUserSession = options.requireAuth || options.requireAdmin;
+  const validateCsrfGuards = async (): Promise<SecurityError | null> => {
+    if (options.requireCsrf) {
+      const isMutation = ["POST", "PUT", "PATCH", "DELETE"].includes(request.method);
+      if (isMutation && !isValidRequestOrigin(request)) {
+        return {
+          ok: false,
+          response: apiError(API_ERROR_CODES.BAD_REQUEST, "Geçersiz istek kaynağı (CSRF).", 403),
+        };
+      }
     }
-  }
 
-  // 1.1 CSRF Token Validation (Double Submit Cookie pattern)
-  if (options.requireCsrfToken) {
-    const isValid = await validateCsrfToken(request);
-    if (!isValid) {
-      return {
-        ok: false,
-        response: apiError(
-          API_ERROR_CODES.FORBIDDEN,
-          "Geçersiz CSRF token. Lütfen sayfayı yenileyin.",
-          403
-        ),
-      };
+    if (options.requireCsrfToken) {
+      const isValid = await validateCsrfToken(request);
+      if (!isValid) {
+        return {
+          ok: false,
+          response: apiError(
+            API_ERROR_CODES.FORBIDDEN,
+            "Geçersiz CSRF token. Lütfen sayfayı yenileyin.",
+            403
+          ),
+        };
+      }
+    }
+
+    return null;
+  };
+
+  // Routes without auth requirement can apply CSRF checks immediately.
+  if (!requiresUserSession) {
+    const csrfError = await validateCsrfGuards();
+    if (csrfError) {
+      return csrfError;
     }
   }
 
@@ -120,7 +131,7 @@ export async function withSecurity(
     // This ensures cron endpoints with requireAdmin still verify admin status
   }
 
-  if (options.requireAuth || options.requireAdmin) {
+  if (requiresUserSession) {
     const { getAuthContext } = await import("@/lib/auth/session");
     const { user: authUser, dbProfile } = await getAuthContext();
     user = authUser;
@@ -163,6 +174,14 @@ export async function withSecurity(
           };
         }
       }
+    }
+  }
+
+  // For authenticated routes, return 401 first, then evaluate CSRF guards.
+  if (requiresUserSession) {
+    const csrfError = await validateCsrfGuards();
+    if (csrfError) {
+      return csrfError;
     }
   }
 

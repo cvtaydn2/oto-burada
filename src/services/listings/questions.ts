@@ -24,6 +24,10 @@ export async function getListingQuestions(listingId: string) {
     .order("created_at", { ascending: false });
 
   if (result.error) {
+    // Free/local environments may not have listing_questions migrated yet.
+    if (result.error.code === "PGRST205" || result.error.code === "42P01") {
+      return [];
+    }
     console.error("Error fetching listing questions:", result.error);
     return [];
   }
@@ -53,6 +57,9 @@ export async function getOwnerListingQuestions(listingId: string) {
     .order("created_at", { ascending: false });
 
   if (result.error) {
+    if (result.error.code === "PGRST205" || result.error.code === "42P01") {
+      return [];
+    }
     console.error("Error fetching owner listing questions:", result.error);
     return [];
   }
@@ -84,6 +91,9 @@ export async function askQuestion(listingId: string, question: string) {
     .single();
 
   if (result.error) {
+    if (result.error.code === "PGRST205" || result.error.code === "42P01") {
+      throw new Error("listing_questions table is not available in this environment");
+    }
     console.error("Error asking question:", result.error);
     throw result.error;
   }
@@ -110,6 +120,9 @@ export async function answerQuestion(questionId: string, answer: string) {
     .single();
 
   if (result.error) {
+    if (result.error.code === "PGRST205" || result.error.code === "42P01") {
+      throw new Error("listing_questions table is not available in this environment");
+    }
     console.error("Error answering question:", result.error);
     throw result.error;
   }

@@ -19,9 +19,9 @@ export default function NotFound() {
         </div>
       </div>
 
-      <h2 id="not-found-heading" className="mb-3 text-3xl font-extrabold text-foreground">
+      <h1 id="not-found-heading" className="mb-3 text-3xl font-extrabold text-foreground">
         Üzgünüz, Aradığınız Araç Yoldan Çıkmış!
-      </h2>
+      </h1>
       <p className="mb-10 max-w-md text-muted-foreground">
         Aradığınız ilan yayından kaldırılmış olabilir veya yanlış bir bağlantıya tıkladınız.
         Hayalinizdeki aracı bulmak için ana sayfaya dönebilirsiniz.

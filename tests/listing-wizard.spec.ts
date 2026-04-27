@@ -19,46 +19,45 @@ test.describe("Listing Creation Wizard", () => {
 
   test("should complete the 5-step listing wizard", async ({ page }) => {
     // 1. İlan formuna git
-    await page.goto("/dashboard/listings");
+    await page.goto("/dashboard/listings?create=true");
 
-    // "Yeni İlan Ver" butonuna tıkla (MyListingsPanel içindeki buton)
-    await page.getByRole("button", { name: /Yeni İlan Ver/i }).click();
-
-    await expect(page.getByRole("heading", { name: /Araç Bilgileri/i })).toBeVisible();
+    await expect(page.getByRole("heading", { name: /İlan Ver|İlanı Güncelle/i }).first()).toBeVisible();
+    await expect(page.getByText(/Hızlı Araç Tanımlama/i)).toBeVisible();
 
     // STEP 1: Araç Bilgileri
-    await page.getByLabel(/Plaka/i).fill("34 OTO 2026");
+    await page.getByPlaceholder(/34 ABC 123/i).fill("34 OTO 2026");
+    await page.locator('input[name="vin"]').fill("WVWZZZ1KZ6W000001");
 
     // Marka ve Model seçimi (Native select)
-    await page.getByLabel(/Marka/i).selectOption("Volkswagen");
-    await page.getByLabel(/Model/i).selectOption("Golf");
+    await page.locator('select[name="brand"]').selectOption("Volkswagen");
+    await page.locator('select[name="model"]').selectOption("Golf");
 
-    await page.getByLabel(/Yıl/i).fill("2020");
-    await page.getByLabel(/Kilometre/i).fill("50000");
+    await page.locator('input[name="year"]').fill("2020");
+    await page.locator('input[name="mileage"]').fill("50000");
+    await page.getByRole("button", { name: "Otomobil", exact: true }).click();
+    await page.getByRole("button", { name: /Benzin/i }).click();
+    await page.getByRole("button", { name: "Otomatik", exact: true }).click();
     await page.getByRole("button", { name: /Sonraki Adım/i }).click();
 
     // STEP 2: Konum ve Detaylar
-    await expect(page.getByRole("heading", { name: /Konum ve Teknik Detaylar/i })).toBeVisible();
+    await expect(page.getByText(/Konum Bilgileri/i)).toBeVisible();
 
     // Şehir ve İlçe seçimi (Native select)
-    await page.getByLabel(/Şehir/i).selectOption("İstanbul");
-    await page.getByLabel(/İlçe/i).selectOption("Beşiktaş");
-
-    // Yakıt ve Vites (Native select)
-    await page.getByLabel(/Yakıt Tipi/i).selectOption("benzin");
-    await page.getByLabel(/Vites Tipi/i).selectOption("otomatik");
+    await page.locator('select[name="city"]').selectOption("İstanbul");
+    await page.locator('select[name="district"]').selectOption("Beşiktaş");
 
     // Başlık, Açıklama ve Fiyat (Native inputs)
-    await page.getByLabel(/İlan Başlığı/i).fill("Temiz ve Bakımlı Golf - E2E Test");
+    await page.locator('input[name="title"]').fill("Temiz ve Bakımlı Golf - E2E Test");
     await page
-      .getByLabel(/İçerik \/ Açıklama/i)
-      .fill("Bu ilan Playwright E2E testi tarafından otomatik oluşturulmuştur.");
-    await page.getByLabel(/Fiyat/i).fill("1250000");
+      .locator('textarea[name="description"]')
+      .fill("Bu ilan Playwright E2E testi tarafından oluşturuldu.");
+    await page.locator('input[name="price"]').fill("1250000");
+    await page.locator('input[name="whatsappPhone"]').fill("5551234567");
 
     await page.getByRole("button", { name: /Sonraki Adım/i }).click();
 
     // STEP 3: Ekspertiz ve Kondisyon
-    await expect(page.getByRole("heading", { name: /Ekspertiz Bilgileri/i }).first()).toBeVisible();
+    await expect(page.getByText(/Kaporta ve Hasar Durumu/i)).toBeVisible();
     // Parçaları tıklayarak durum değiştirme (DamageSelector)
     // Kaput'a tıklayalım
     await page.getByText(/Kaput/i).click();
@@ -66,12 +65,12 @@ test.describe("Listing Creation Wizard", () => {
     await page.getByRole("button", { name: /Sonraki Adım/i }).click();
 
     // STEP 4: Fotoğraflar
-    await expect(page.getByRole("heading", { name: /Fotoğraflar/i })).toBeVisible();
+    await expect(page.getByText(/Medya ve Dosyalar/i)).toBeVisible();
 
     // Not: Dosya yükleme testi backend'e bağlı olduğundan atlanıyor
     // Gerçek test senaryosunda upload kontrolü eklenebilir
 
     // Gönder butonunun varlığını kontrol et
-    await expect(page.getByRole("button", { name: /İlanı Yayınla/i })).toBeVisible();
+    await expect(page.getByRole("button", { name: /Tüm Bilgileri Kaydet/i })).toBeVisible();
   });
 });

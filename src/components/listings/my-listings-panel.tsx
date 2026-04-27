@@ -184,6 +184,7 @@ export function MyListingsPanel({
         <button
           onClick={() => setShowForm(true)}
           className="flex w-full items-center justify-center gap-4 rounded-3xl border-2 border-dashed border-primary/20 bg-card py-10 text-lg font-bold text-primary transition-all hover:bg-primary/[0.02] hover:border-primary/40 active:scale-[0.99] group shadow-sm"
+          aria-label="Yeni İlan Ver"
         >
           <div className="size-12 rounded-2xl bg-primary/10 text-primary flex items-center justify-center group-hover:scale-110 transition-transform duration-500 shadow-inner">
             <Plus size={32} strokeWidth={3} />

@@ -2,7 +2,11 @@ import { ShieldAlert, Wrench } from "lucide-react";
 
 export function MaintenanceScreen() {
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-background p-6">
+    <main
+      id="main-content"
+      role="main"
+      className="min-h-screen flex flex-col items-center justify-center bg-background p-6"
+    >
       <div className="max-w-md w-full text-center space-y-6">
         <div className="mx-auto size-20 rounded-3xl bg-amber-50 border border-amber-100 flex items-center justify-center text-amber-600 shadow-sm relative">
           <Wrench size={32} className="animate-pulse" />
@@ -26,6 +30,6 @@ export function MaintenanceScreen() {
           </div>
         </div>
       </div>
-    </div>
+    </main>
   );
 }
