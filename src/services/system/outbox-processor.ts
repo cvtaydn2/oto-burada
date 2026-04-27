@@ -2,7 +2,7 @@ import { type SupabaseClient } from "@supabase/supabase-js";
 
 import { resendBreaker } from "@/lib/api/resilience";
 import { logger } from "@/lib/logging/logger";
-import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import {
   sendListingApprovedEmail,
   sendListingRejectedEmail,
@@ -14,9 +14,13 @@ import {
 /**
  * Hyper-Scale Transaction Outbox Processor (Item 10 - Reliability)
  * Processes events created during main transactions that might fail.
+ *
+ * ── SECURITY FIX: Issue OUTBOX-01 - System Context for Cron Jobs ──
+ * Uses admin client to bypass RLS since this runs in system/cron context,
+ * not user context. Server client would fail if RLS doesn't allow anon access.
  */
 export async function processOutboxQueue() {
-  const supabase = await createSupabaseServerClient();
+  const supabase = createSupabaseAdminClient();
 
   // 1. Fetch pending items
   const { data: queue, error: fetchError } = await supabase

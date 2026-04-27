@@ -60,7 +60,20 @@ export async function initializePaymentCheckout(params: {
 
   const identityNumber = profile.identity_number;
 
-  // 1. Create a pending payment record in DB
+  // 1. SECURITY: Cancel any recent pending payments for same user+listing+package
+  // This prevents duplicate pending records if user retries payment
+  // ── BUSINESS LOGIC FIX: Issue PAYMENT-IDEM-01 - Pending Payment Deduplication ──
+  const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000).toISOString();
+  await admin
+    .from("payments")
+    .update({ status: "cancelled", metadata: { reason: "superseded_by_new_payment" } })
+    .eq("user_id", params.userId)
+    .eq("listing_id", params.listingId)
+    .eq("package_id", params.basketItems[0]?.id)
+    .eq("status", "pending")
+    .gte("created_at", oneHourAgo);
+
+  // 2. Create a new pending payment record in DB
   // package_id stores the slug (e.g. "acil_acil") so callback can look it up
   const { data: payment, error: dbError } = await admin
     .from("payments")
@@ -86,7 +99,7 @@ export async function initializePaymentCheckout(params: {
   const [name, ...surnameParts] = params.fullName.split(" ");
   const surname = surnameParts.join(" ") || "Soyisim";
 
-  // 2. Prepare Iyzico request
+  // 3. Prepare Iyzico request
   const request = {
     locale: "tr",
     conversationId: payment.id,
@@ -135,7 +148,7 @@ export async function initializePaymentCheckout(params: {
     })),
   };
 
-  // 3. Call Iyzico with timeout (F-05)
+  // 4. Call Iyzico with timeout (F-05)
   try {
     return await withTimeout(
       new Promise<{ paymentPageUrl: string; token: string }>((resolve, reject) => {

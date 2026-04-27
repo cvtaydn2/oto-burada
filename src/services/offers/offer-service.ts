@@ -22,6 +22,54 @@ export interface Offer {
   };
 }
 
+/**
+ * SECURITY: Verify that a user owns the listing associated with an offer.
+ * Used as defense-in-depth before offer acceptance/rejection.
+ *
+ * @param offerId - The offer ID to check
+ * @param userId - The user ID claiming ownership
+ * @returns Object with isOwner flag and reason if not owner
+ */
+export async function verifyOfferOwnership(
+  offerId: string,
+  userId: string
+): Promise<{ isOwner: boolean; reason?: string }> {
+  const supabase = await createSupabaseServerClient();
+
+  // Fetch offer with listing info
+  const { data: offer, error: offerError } = await supabase
+    .from("offers")
+    .select("id, listing_id, status")
+    .eq("id", offerId)
+    .single();
+
+  if (offerError || !offer) {
+    return { isOwner: false, reason: "Teklif bulunamadı." };
+  }
+
+  // Check if offer is already in target state (idempotency)
+  if (offer.status === "accepted" || offer.status === "rejected") {
+    return { isOwner: true }; // Already processed, allow safe return
+  }
+
+  // Fetch listing to verify ownership
+  const { data: listing, error: listingError } = await supabase
+    .from("listings")
+    .select("seller_id")
+    .eq("id", offer.listing_id)
+    .single();
+
+  if (listingError || !listing) {
+    return { isOwner: false, reason: "İlan bulunamadı." };
+  }
+
+  if (listing.seller_id !== userId) {
+    return { isOwner: false, reason: "Sadece ilan sahibi tekliflere yanıt verebilir." };
+  }
+
+  return { isOwner: true };
+}
+
 export async function getOffersForListing(listingId: string) {
   const supabase = await createSupabaseServerClient();
 
@@ -152,6 +200,15 @@ export async function respondToOffer(
 
   if (offerError || !offer) {
     throw new Error("Teklif bulunamadı.");
+  }
+
+  // Check if offer is already in target state (idempotency)
+  if (offer.status === response) {
+    logger.db.info("Offer already in target state (idempotent)", {
+      offerId,
+      status: response,
+    });
+    return { ok: true }; // Safe to return success - no duplicate side effects
   }
 
   // Check if offer is still actionable
