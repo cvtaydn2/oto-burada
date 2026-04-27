@@ -19,7 +19,7 @@ interface DamageSelectorProps {
 }
 
 const statusColors: Record<string, { bg: string; border: string; text: string; fill: string }> = {
-  orjinal: {
+  orijinal: {
     bg: "bg-emerald-50",
     border: "border-emerald-200",
     text: "text-emerald-700",
@@ -56,14 +56,14 @@ export function DamageSelector({ value, onChange, className, isDisabled }: Damag
 
   const handleStatusChange = (part: string, status: string) => {
     const newValue = { ...value, [part]: status };
-    if (status === "orjinal") {
+    if (status === "orijinal") {
       delete newValue[part]; // Default to original by removing from record
     }
     onChange(newValue);
     setActivePart(null);
   };
 
-  const getStatus = (part: string) => value[part] || "orjinal";
+  const getStatus = (part: string) => value[part] || "orijinal";
 
   const clearAll = () => {
     onChange({});
@@ -110,7 +110,7 @@ export function DamageSelector({ value, onChange, className, isDisabled }: Damag
               d="M60,65 Q60,40 120,40 Q180,40 180,65 L185,130 Q120,135 55,130 Z"
               className={cn(
                 "cursor-pointer transition-all duration-300 hover:opacity-80",
-                getStatus("kaput") !== "orjinal"
+                getStatus("kaput") !== "orijinal"
                   ? statusColors[getStatus("kaput")].fill
                   : "fill-white stroke-slate-300"
               )}
@@ -123,7 +123,7 @@ export function DamageSelector({ value, onChange, className, isDisabled }: Damag
               d="M60,30 Q120,25 180,30 L185,45 Q120,40 55,45 Z"
               className={cn(
                 "cursor-pointer transition-all duration-300 hover:opacity-80",
-                getStatus("on_tampon") !== "orjinal"
+                getStatus("on_tampon") !== "orijinal"
                   ? statusColors[getStatus("on_tampon")].fill
                   : "fill-white stroke-slate-300"
               )}
@@ -145,7 +145,7 @@ export function DamageSelector({ value, onChange, className, isDisabled }: Damag
               d="M45,100 L55,100 L55,180 L45,180 Z"
               className={cn(
                 "cursor-pointer transition-all duration-300 hover:opacity-80",
-                getStatus("sol_on_camurluk") !== "orjinal"
+                getStatus("sol_on_camurluk") !== "orijinal"
                   ? statusColors[getStatus("sol_on_camurluk")].fill
                   : "fill-white stroke-slate-300"
               )}
@@ -158,7 +158,7 @@ export function DamageSelector({ value, onChange, className, isDisabled }: Damag
               d="M185,100 L195,100 L195,180 L185,180 Z"
               className={cn(
                 "cursor-pointer transition-all duration-300 hover:opacity-80",
-                getStatus("sag_on_camurluk") !== "orjinal"
+                getStatus("sag_on_camurluk") !== "orijinal"
                   ? statusColors[getStatus("sag_on_camurluk")].fill
                   : "fill-white stroke-slate-300"
               )}
@@ -171,7 +171,7 @@ export function DamageSelector({ value, onChange, className, isDisabled }: Damag
               d="M48,185 L58,185 L58,260 L48,260 Z"
               className={cn(
                 "cursor-pointer transition-all duration-300 hover:opacity-80",
-                getStatus("sol_on_kapi") !== "orjinal"
+                getStatus("sol_on_kapi") !== "orijinal"
                   ? statusColors[getStatus("sol_on_kapi")].fill
                   : "fill-white stroke-slate-300"
               )}
@@ -184,7 +184,7 @@ export function DamageSelector({ value, onChange, className, isDisabled }: Damag
               d="M182,185 L192,185 L192,260 L182,260 Z"
               className={cn(
                 "cursor-pointer transition-all duration-300 hover:opacity-80",
-                getStatus("sag_on_kapi") !== "orjinal"
+                getStatus("sag_on_kapi") !== "orijinal"
                   ? statusColors[getStatus("sag_on_kapi")].fill
                   : "fill-white stroke-slate-300"
               )}
@@ -197,7 +197,7 @@ export function DamageSelector({ value, onChange, className, isDisabled }: Damag
               d="M48,265 L58,265 L58,340 L48,340 Z"
               className={cn(
                 "cursor-pointer transition-all duration-300 hover:opacity-80",
-                getStatus("sol_arka_kapi") !== "orjinal"
+                getStatus("sol_arka_kapi") !== "orijinal"
                   ? statusColors[getStatus("sol_arka_kapi")].fill
                   : "fill-white stroke-slate-300"
               )}
@@ -210,7 +210,7 @@ export function DamageSelector({ value, onChange, className, isDisabled }: Damag
               d="M182,265 L192,265 L192,340 L182,340 Z"
               className={cn(
                 "cursor-pointer transition-all duration-300 hover:opacity-80",
-                getStatus("sag_arka_kapi") !== "orjinal"
+                getStatus("sag_arka_kapi") !== "orijinal"
                   ? statusColors[getStatus("sag_arka_kapi")].fill
                   : "fill-white stroke-slate-300"
               )}
@@ -223,7 +223,7 @@ export function DamageSelector({ value, onChange, className, isDisabled }: Damag
               d="M46,345 L56,345 L56,410 Q46,410 46,345 Z"
               className={cn(
                 "cursor-pointer transition-all duration-300 hover:opacity-80",
-                getStatus("sol_arka_camurluk") !== "orjinal"
+                getStatus("sol_arka_camurluk") !== "orijinal"
                   ? statusColors[getStatus("sol_arka_camurluk")].fill
                   : "fill-white stroke-slate-300"
               )}
@@ -236,7 +236,7 @@ export function DamageSelector({ value, onChange, className, isDisabled }: Damag
               d="M184,345 L194,345 L194,410 Q184,410 184,345 Z"
               className={cn(
                 "cursor-pointer transition-all duration-300 hover:opacity-80",
-                getStatus("sag_arka_camurluk") !== "orjinal"
+                getStatus("sag_arka_camurluk") !== "orijinal"
                   ? statusColors[getStatus("sag_arka_camurluk")].fill
                   : "fill-white stroke-slate-300"
               )}
@@ -253,7 +253,7 @@ export function DamageSelector({ value, onChange, className, isDisabled }: Damag
               rx="20"
               className={cn(
                 "cursor-pointer transition-all duration-300 hover:opacity-80",
-                getStatus("tavan") !== "orjinal"
+                getStatus("tavan") !== "orijinal"
                   ? statusColors[getStatus("tavan")].fill
                   : "fill-white stroke-slate-300"
               )}
@@ -270,7 +270,7 @@ export function DamageSelector({ value, onChange, className, isDisabled }: Damag
               d="M65,340 L175,340 L180,410 Q120,420 60,410 Z"
               className={cn(
                 "cursor-pointer transition-all duration-300 hover:opacity-80",
-                getStatus("bagaj") !== "orjinal"
+                getStatus("bagaj") !== "orijinal"
                   ? statusColors[getStatus("bagaj")].fill
                   : "fill-white stroke-slate-300"
               )}
@@ -283,7 +283,7 @@ export function DamageSelector({ value, onChange, className, isDisabled }: Damag
               d="M60,425 Q120,435 180,425 L185,440 Q120,450 55,440 Z"
               className={cn(
                 "cursor-pointer transition-all duration-300 hover:opacity-80",
-                getStatus("arka_tampon") !== "orjinal"
+                getStatus("arka_tampon") !== "orijinal"
                   ? statusColors[getStatus("arka_tampon")].fill
                   : "fill-white stroke-slate-300"
               )}
@@ -386,7 +386,7 @@ export function DamageSelector({ value, onChange, className, isDisabled }: Damag
                     {!isDisabled && (
                       <button
                         type="button"
-                        onClick={() => handleStatusChange(part, "orjinal")}
+                        onClick={() => handleStatusChange(part, "orijinal")}
                         className="text-muted-foreground/70 hover:text-red-500"
                       >
                         <RotateCcw size={14} />
@@ -435,7 +435,7 @@ export function DamageSelector({ value, onChange, className, isDisabled }: Damag
           Lejand:
         </span>
         {carPartDamageStatuses
-          .filter((s) => s !== "bilinmiyor" && s !== "orjinal")
+          .filter((s) => s !== "bilinmiyor" && s !== "orijinal")
           .map((status) => (
             <div
               key={status}

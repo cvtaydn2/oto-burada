@@ -52,7 +52,7 @@ export function analyzeListingValue(listing: Listing, baseMarketPrice?: number):
 
   if (listing.damageStatusJson) {
     Object.entries(listing.damageStatusJson).forEach(([part, status]) => {
-      if (!status || status === "orjinal" || status === "bilinmiyor") return;
+      if (!status || status === "orijinal" || status === "bilinmiyor") return;
 
       damageCount++;
       const isCritical = RISK_FACTORS.CRITICAL.includes(part);

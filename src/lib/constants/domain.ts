@@ -100,7 +100,7 @@ export const maximumDescriptionLength = 5000;
 export const maximumNoteLength = 1000;
 
 export const carPartDamageStatuses = [
-  "orjinal",
+  "orijinal",
   "boyali",
   "lokal_boyali",
   "degisen",
@@ -108,7 +108,7 @@ export const carPartDamageStatuses = [
 ] as const;
 
 export const carPartDamageStatusLabels: Record<(typeof carPartDamageStatuses)[number], string> = {
-  orjinal: "Orijinal",
+  orijinal: "Orijinal",
   boyali: "Boyalı",
   lokal_boyali: "Lokal Boyalı",
   degisen: "Değişen",

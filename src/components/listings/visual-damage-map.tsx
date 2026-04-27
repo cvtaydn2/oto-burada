@@ -9,7 +9,7 @@ interface VisualDamageMapProps {
 }
 
 const statusColors: Record<string, string> = {
-  orjinal: "fill-white stroke-slate-300",
+  orijinal: "fill-white stroke-slate-300",
   boyali: "fill-amber-400 stroke-amber-600",
   lokal_boyali: "fill-orange-400 stroke-orange-600",
   degisen: "fill-red-400 stroke-red-600",
@@ -17,7 +17,7 @@ const statusColors: Record<string, string> = {
 };
 
 export function VisualDamageMap({ damageStatus, className }: VisualDamageMapProps) {
-  const getStatus = (part: string) => damageStatus[part] || "orjinal";
+  const getStatus = (part: string) => damageStatus[part] || "orijinal";
 
   return (
     <div

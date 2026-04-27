@@ -17,7 +17,7 @@ export function VehicleDamageReport({ listing }: { listing: Listing }) {
 
   const getBadgeColor = (status: keyof typeof carPartDamageStatusLabels) => {
     switch (status) {
-      case "orjinal":
+      case "orijinal":
         return "bg-emerald-100 text-emerald-700 border-emerald-300";
       case "degisen":
         return "bg-rose-100 text-rose-700 border-rose-300";

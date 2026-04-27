@@ -39,7 +39,7 @@ export function DamageReportCard({ damageStatus, tramerAmount }: DamageReportCar
   }
 
   const statusCounts = {
-    orjinal: 0,
+    orijinal: 0,
     boyali: 0,
     lokal_boyali: 0,
     degisen: 0,
@@ -47,7 +47,7 @@ export function DamageReportCard({ damageStatus, tramerAmount }: DamageReportCar
   };
 
   carParts.forEach((part) => {
-    const status = (damageStatus[part] as keyof typeof statusCounts) || "orjinal";
+    const status = (damageStatus[part] as keyof typeof statusCounts) || "orijinal";
     statusCounts[status]++;
   });
 
@@ -88,7 +88,7 @@ export function DamageReportCard({ damageStatus, tramerAmount }: DamageReportCar
             <div className="grid grid-cols-2 gap-2 mb-4 text-[11px]">
               <div className="bg-emerald-50 rounded-xl p-3 border border-emerald-100 flex items-center justify-between">
                 <span className="font-bold text-gray-400 uppercase tracking-tighter">Orijinal</span>
-                <span className="text-lg font-bold text-emerald-600">{statusCounts.orjinal}</span>
+                <span className="text-lg font-bold text-emerald-600">{statusCounts.orijinal}</span>
               </div>
               <div className="bg-orange-50 rounded-xl p-3 border border-orange-100 flex items-center justify-between">
                 <span className="font-bold text-gray-400 uppercase tracking-tighter">Boyalı</span>
@@ -136,7 +136,7 @@ export function DamageReportCard({ damageStatus, tramerAmount }: DamageReportCar
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-2">
             {carParts.map((part) => {
               const status =
-                (damageStatus[part] as keyof typeof carPartDamageStatusLabels) || "orjinal";
+                (damageStatus[part] as keyof typeof carPartDamageStatusLabels) || "orijinal";
               return (
                 <div
                   key={part}
@@ -148,7 +148,7 @@ export function DamageReportCard({ damageStatus, tramerAmount }: DamageReportCar
                   <span
                     className={cn(
                       "text-[12px] font-bold px-2 py-0.5 rounded-md border",
-                      status === "orjinal"
+                      status === "orijinal"
                         ? "bg-emerald-50 text-emerald-700 border-emerald-100"
                         : status === "degisen"
                           ? "bg-red-50 text-red-700 border-red-100"

@@ -6,7 +6,7 @@ import {
 } from "@/lib/constants/domain";
 import { type Listing, type ListingCreateFormValues } from "@/types";
 
-const damageStatusAliases: Record<string, string> = { orijinal: "orjinal" };
+const damageStatusAliases: Record<string, string> = { orjinal: "orijinal" };
 const carPartAliases: Record<string, string> = {
   soloncamurluk: "sol_on_camurluk",
   sagoncamurluk: "sag_on_camurluk",
@@ -48,7 +48,7 @@ export function normalizeDamageStatusJson(raw?: Record<string, unknown> | null) 
       .map(([k, v]) => {
         const canonicalKey = normalizeDamagePartKey(k);
         const canonicalVal = normalizeDamageStatusValue(v);
-        return canonicalKey && canonicalVal && canonicalVal !== "orjinal"
+        return canonicalKey && canonicalVal && canonicalVal !== "orijinal"
           ? [canonicalKey, canonicalVal]
           : null;
       })
