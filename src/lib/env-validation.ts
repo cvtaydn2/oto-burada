@@ -54,6 +54,12 @@ const ENV_VARS: EnvVar[] = [
     productionOnly: true,
     description: "PostHog project token for analytics and error tracking",
   },
+  {
+    key: "POSTHOG_WEBHOOK_SECRET",
+    required: true,
+    productionOnly: true,
+    description: "Secret for PostHog webhook verification (openssl rand -hex 32)",
+  },
 
   // ── Optional but recommended ───────────────────────────────────────────────
   {

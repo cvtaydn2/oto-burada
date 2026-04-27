@@ -5,6 +5,7 @@ import { logger } from "@/lib/logging/logger";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { hasSupabaseAdminEnv } from "@/lib/supabase/env";
 import { expireReservations } from "@/services/reservations/reservation-service";
+import { triggerSavedSearchNotifications } from "@/services/system/saved-search-notifier";
 
 /**
  * MASTER CRON HANDLER for Vercel Hobby (Free) Plan.
@@ -61,17 +62,20 @@ export async function GET(request: Request) {
       .select("id");
     results.cleanupPayments = { count: stale?.length || 0 };
 
-    // 5. Trigger Saved Search Notifications (via internal request)
+    // 5. Trigger Saved Search Notifications (via shared server function)
     // We do this at the end because it's the most time-consuming
+    // ── SECURITY FIX: Issue SEC-CRON-01 - No HTTP Fetch with Cron Secret ──
+    // Use shared server function instead of internal HTTP fetch to avoid
+    // passing CRON_SECRET in headers (which could be logged).
     if (Date.now() - startTime < 7000) {
       try {
-        const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
-        // Use the absolute URL and pass the secret
-        await fetch(`${baseUrl}/api/saved-searches/notify`, {
-          headers: { Authorization: `Bearer ${process.env.CRON_SECRET}` },
-        });
-        results.notificationsTriggered = true;
-      } catch {
+        const result = await triggerSavedSearchNotifications();
+        results.notificationsTriggered = result.success;
+        if (result.error) {
+          logger.api.warn("Saved search notifications partially failed", { error: result.error });
+        }
+      } catch (e) {
+        logger.api.error("Saved search notification trigger failed", e);
         results.notificationsTriggered = false;
       }
     }

@@ -143,36 +143,34 @@ export async function withSecurity(
       };
     }
 
+    // ── SECURITY FIX: Issue SEC-BAN-01 - Always Check DB Ban Status ──
+    // JWT app_metadata.is_banned can be stale (up to 1 hour old).
+    // Always use fresh DB profile ban status when available from getAuthContext.
+    // This prevents banned users from accessing any authenticated endpoint
+    // using a JWT issued before the ban.
+    if (dbProfile?.isBanned) {
+      return {
+        ok: false,
+        response: apiError(API_ERROR_CODES.FORBIDDEN, "Hesabınız askıya alınmıştır.", 403),
+      };
+    }
+
     if (options.requireAdmin) {
       // Admin check: uses cached dbProfile from getAuthContext
-      if (!dbProfile || dbProfile.role !== "admin" || dbProfile.isBanned) {
+      if (!dbProfile || dbProfile.role !== "admin") {
         return {
           ok: false,
           response: apiError(API_ERROR_CODES.FORBIDDEN, "Admin yetkisi gerekli.", 403),
         };
       }
     } else {
-      // 3.1 Lightweight Ban Check (JWT first)
+      // Lightweight JWT ban check as fallback if DB profile unavailable
       const isBannedInJwt = (user.app_metadata as { is_banned?: boolean })?.is_banned === true;
       if (isBannedInJwt) {
         return {
           ok: false,
           response: apiError(API_ERROR_CODES.FORBIDDEN, "Hesabınız askıya alınmıştır.", 403),
         };
-      }
-
-      // 3.2 Secondary Ban Check (DB fallback for critical mutations)
-      const isMutation = ["POST", "PUT", "DELETE", "PATCH"].includes(request.method);
-      const shouldCheckDb = isMutation || options.forceDbBanCheck;
-
-      if (shouldCheckDb) {
-        // Uses cached dbProfile from getAuthContext (single DB call per request)
-        if (dbProfile?.isBanned) {
-          return {
-            ok: false,
-            response: apiError(API_ERROR_CODES.FORBIDDEN, "Hesabınız askıya alınmıştır.", 403),
-          };
-        }
       }
     }
   }

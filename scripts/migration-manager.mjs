@@ -134,6 +134,58 @@ class MigrationManager {
           downSql: this.extractDownSql(content)
         };
       });
+
+    // ── SECURITY FIX: Issue SEC-MIG-01 - Validate Migration Numbers ──
+    // Detect duplicate migration numbers that could cause non-deterministic execution
+    this.validateMigrationNumbers();
+  }
+
+  validateMigrationNumbers() {
+    const numberMap = new Map();
+    const duplicates = [];
+
+    for (const migration of this.migrationFiles) {
+      // Extract number from filename (e.g., "0026_add-plan-id" -> 26)
+      const match = migration.filename.match(/^(\d+)_/);
+      if (!match) {
+        console.warn(`⚠️  Migration missing number prefix: ${migration.filename}`);
+        continue;
+      }
+
+      const number = parseInt(match[1], 10);
+      
+      if (numberMap.has(number)) {
+        duplicates.push({
+          number,
+          files: [numberMap.get(number), migration.filename]
+        });
+      } else {
+        numberMap.set(number, migration.filename);
+      }
+    }
+
+    if (duplicates.length > 0) {
+      const dupList = duplicates.map(d => 
+        `  ${d.number}: ${d.files.join(" vs ")}`
+      ).join("\n");
+      
+      const errorMsg = [
+        `❌ Duplicate migration numbers detected:`,
+        dupList,
+        ``,
+        `This creates non-deterministic execution order and can cause:`,
+        `- RLS policies applied in wrong order (security gaps)`,
+        `- Indexes created before tables (migration failures)`,
+        `- Constraints referencing non-existent columns`,
+        ``,
+        `Fix: Renumber migrations sequentially (e.g., 0026a → 0027, 0026b → 0028)`,
+        `Note: If duplicates are already applied in production, consult DBA before renaming.`,
+      ].join("\n");
+
+      throw new Error(errorMsg);
+    }
+
+    console.log(`✅ Migration numbers validated (${this.migrationFiles.length} files, no duplicates)`);
   }
 
   extractUpSql(content) {

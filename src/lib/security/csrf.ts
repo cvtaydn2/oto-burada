@@ -8,6 +8,7 @@ import { cookies } from "next/headers";
 import { type NextRequest, NextResponse } from "next/server";
 
 import { getUserFacingError } from "@/config/user-messages";
+import { logger } from "@/lib/logging/logger";
 
 const CSRF_COOKIE_NAME = "csrf_token";
 const CSRF_HEADER_NAME = "x-csrf-token";
@@ -30,7 +31,35 @@ export function isValidRequestOrigin(request: Request | NextRequest): boolean {
   }
 
   if (isPosthog) {
-    return true; // Posthog webhooks often don't have a specific header we can check here easily without parsing body
+    // ── SECURITY FIX: Issue SEC-POSTHOG-01 - PostHog Webhook Verification ──
+    // PostHog webhooks must include a secret header to prevent fake event injection.
+    // In development, allow without secret for testing.
+    const isDev = process.env.NODE_ENV !== "production";
+    const posthogSecret = process.env.POSTHOG_WEBHOOK_SECRET;
+    const webhookSecret = request.headers.get("x-posthog-webhook-secret");
+
+    if (isDev && !posthogSecret) {
+      return true; // Allow in dev without secret
+    }
+
+    if (!posthogSecret) {
+      logger.security.error("PostHog webhook secret not configured in production");
+      return false; // Fail closed if secret missing in production
+    }
+
+    // Timing-safe comparison to prevent side-channel attacks
+    if (!webhookSecret || webhookSecret.length !== posthogSecret.length) {
+      return false;
+    }
+
+    let match = true;
+    for (let i = 0; i < posthogSecret.length; i++) {
+      if (webhookSecret.charCodeAt(i) !== posthogSecret.charCodeAt(i)) {
+        match = false;
+      }
+    }
+
+    return match;
   }
 
   const origin = request.headers.get("origin");

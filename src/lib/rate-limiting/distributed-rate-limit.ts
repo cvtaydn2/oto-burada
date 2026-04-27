@@ -148,9 +148,34 @@ export async function checkGlobalRateLimit(
 
   if (limiter === "MISSING_CONFIG" || limiter === "CONNECTION_ERROR") {
     if (isProduction) {
-      // ── CRITICAL FIX: Fail OPEN with monitoring instead of fail-closed
-      // Blocking all traffic when Redis is down causes self-inflicted DoS.
-      // We allow requests but log extensively for security monitoring.
+      // ── SECURITY FIX: Issue SEC-RATE-01 - Fail-Closed for Critical Endpoints ──
+      // When Redis is unavailable, fail CLOSED for critical endpoints to prevent
+      // brute-force attacks and abuse. Fail OPEN for non-critical reads with monitoring.
+      const isCriticalEndpoint =
+        key.startsWith("auth:") ||
+        key.startsWith("api:payments") ||
+        key.startsWith("api:admin") ||
+        key.startsWith("api:cron") ||
+        key.includes(":update") ||
+        key.includes(":create") ||
+        key.includes(":delete");
+
+      if (isCriticalEndpoint) {
+        logger.security.error("Rate limiter unavailable - FAILING CLOSED for critical endpoint", {
+          key,
+          limiter,
+          fallbackType: "fail_closed",
+        });
+        // Block request - return rate limited response
+        return {
+          success: false,
+          limit: 0,
+          remaining: 0,
+          reset: Date.now() + 60_000, // 1 minute cooldown
+        };
+      }
+
+      // Non-critical endpoints: fail OPEN with elevated monitoring
       logger.security.warn(
         "Redis rate limiter unavailable - failing OPEN with elevated monitoring",
         {
@@ -184,8 +209,28 @@ export async function checkGlobalRateLimit(
     return { success, limit, remaining, reset };
   } catch (error) {
     if (isProduction) {
-      // ── CRITICAL FIX: Fail OPEN on Redis errors instead of blocking all traffic
-      // Log the error for investigation but don't block legitimate users
+      // ── SECURITY FIX: Issue SEC-RATE-01 - Fail-Closed on Redis Errors ──
+      // Same logic as MISSING_CONFIG: fail closed for critical endpoints
+      const isCriticalEndpoint =
+        key.startsWith("auth:") ||
+        key.startsWith("api:payments") ||
+        key.startsWith("api:admin") ||
+        key.startsWith("api:cron");
+
+      if (isCriticalEndpoint) {
+        logger.security.error("Redis rate limit error - FAILING CLOSED for critical endpoint", {
+          error: error instanceof Error ? error.message : String(error),
+          key,
+          fallbackType: "fail_closed",
+        });
+        return {
+          success: false,
+          limit: 0,
+          remaining: 0,
+          reset: Date.now() + 60_000,
+        };
+      }
+
       logger.security.error("Redis rate limit error - failing OPEN with monitoring", {
         error: error instanceof Error ? error.message : String(error),
         key,
