@@ -3,7 +3,7 @@ import { NextResponse } from "next/server";
 import { withCronOrAdmin } from "@/lib/api/security";
 import { logger } from "@/lib/logging/logger";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
-import { DopingService } from "@/services/payments/doping-logic";
+import { applyDopingPackage } from "@/services/payments/doping-logic";
 
 /**
  * ── PILL: Issue 1 - Fulfillment Job Processor (DLQ & Retries) ──────
@@ -88,7 +88,7 @@ export async function GET(request: Request) {
             throw new Error("Doping fulfillment job metadata is incomplete");
           }
 
-          await DopingService.applyDoping({
+          await applyDopingPackage({
             userId,
             listingId,
             packageId,

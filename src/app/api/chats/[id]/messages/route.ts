@@ -3,7 +3,7 @@ import { z } from "zod";
 
 import { withUserAndCsrf } from "@/lib/api/security";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
-import { ChatService } from "@/services/chat/chat-service";
+import { deleteChatMessage, getChatMessages, sendChatMessage } from "@/services/chat/chat-logic";
 
 const messageSchema = z.object({
   content: z.string().trim().min(1).max(2000),
@@ -23,7 +23,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
 
     const { id: chatId } = await params;
 
-    const result = await ChatService.getMessages(chatId, user.id);
+    const result = await getChatMessages(chatId, user.id);
     return NextResponse.json({ data: result });
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : "Mesajlar alınamadı.";
@@ -41,7 +41,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
     const body = await req.json();
     const validated = messageSchema.parse(body);
 
-    const result = await ChatService.sendMessage({
+    const result = await sendChatMessage({
       chatId: chatId,
       senderId: user.id,
       content: validated.content,
@@ -67,7 +67,7 @@ export async function DELETE(req: NextRequest) {
       return NextResponse.json({ error: "Mesaj ID belirtilmedi." }, { status: 400 });
     }
 
-    const result = await ChatService.deleteMessage(messageId, user.id);
+    const result = await deleteChatMessage(messageId, user.id);
     return NextResponse.json({ data: result });
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : "Mesaj silinemedi.";

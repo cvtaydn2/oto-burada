@@ -1,5 +1,5 @@
 import { DOPING_PACKAGES } from "@/lib/constants/doping";
-import { PaymentService } from "@/services/payments/payment-logic";
+import { initializePaymentCheckout } from "@/services/payments/payment-logic";
 
 export async function initiatePaymentUseCase(params: {
   userId: string;
@@ -21,7 +21,7 @@ export async function initiatePaymentUseCase(params: {
 
   try {
     // 2. Delegate to service
-    const result = await PaymentService.initializeCheckoutForm({
+    const result = await initializePaymentCheckout({
       ...params,
       price: pkg.price,
       basketItems: [

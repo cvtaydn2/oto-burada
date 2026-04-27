@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 
 import { createSupabaseServerClient } from "@/lib/supabase/server";
-import { ChatService } from "@/services/chat/chat-service";
+import { markChatMessagesAsRead } from "@/services/chat/chat-logic";
 
 async function handleMarkRead(req: NextRequest, params: Promise<{ id: string }>) {
   try {
@@ -16,7 +16,7 @@ async function handleMarkRead(req: NextRequest, params: Promise<{ id: string }>)
 
     const { id: chatId } = await params;
 
-    const result = await ChatService.markAsRead(chatId, user.id);
+    const result = await markChatMessagesAsRead(chatId, user.id);
     return NextResponse.json({ data: result });
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : "Mesajlar okundu işaretlenemedi.";

@@ -7,7 +7,7 @@ import { DOPING_PACKAGES } from "@/lib/constants/doping";
 import { rateLimitProfiles } from "@/lib/rate-limiting/rate-limit";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { initiatePaymentSchema } from "@/lib/validators/payment";
-import { PaymentService } from "@/services/payments/payment-logic";
+import { initializePaymentCheckout } from "@/services/payments/payment-logic";
 
 export async function POST(req: NextRequest) {
   // SECURITY: Apply authentication, CSRF protection, and rate limiting
@@ -91,7 +91,7 @@ export async function POST(req: NextRequest) {
 
     const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
 
-    const result = await PaymentService.initializeCheckoutForm({
+    const result = await initializePaymentCheckout({
       userId: user.id,
       email: user.email!,
       fullName: profile.full_name,

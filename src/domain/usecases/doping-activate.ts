@@ -1,5 +1,5 @@
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
-import { DopingService } from "@/services/payments/doping-logic";
+import { applyDopingPackage } from "@/services/payments/doping-logic";
 
 export async function activateDopingUseCase(params: {
   userId: string;
@@ -22,7 +22,7 @@ export async function activateDopingUseCase(params: {
 
   try {
     // 2. Delegate to service (uses activate_doping RPC)
-    const purchase = await DopingService.applyDoping(params);
+    const purchase = await applyDopingPackage(params);
 
     return {
       success: true,

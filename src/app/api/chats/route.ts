@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 
 import { withUserAndCsrf, withUserRoute } from "@/lib/api/security";
 import { rateLimitProfiles } from "@/lib/rate-limiting/rate-limit";
-import { ChatService } from "@/services/chat/chat-service";
+import { createNewChat, getUserChats } from "@/services/chat/chat-logic";
 
 export async function GET(req: NextRequest) {
   // SECURITY: Apply authentication and rate limiting for read operations
@@ -20,7 +20,7 @@ export async function GET(req: NextRequest) {
   const archived = searchParams.get("archived") === "true";
 
   try {
-    const result = await ChatService.getChatsForUser(user.id, archived);
+    const result = await getUserChats(user.id, archived);
     return NextResponse.json({ data: result });
   } catch (error: unknown) {
     console.error("[API:CHATS:GET] Error:", error);
@@ -58,7 +58,7 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const result = await ChatService.createChat({
+    const result = await createNewChat({
       listingId: listingId,
       buyerId: user.id,
       sellerId: sellerId,

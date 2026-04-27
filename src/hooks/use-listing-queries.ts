@@ -2,8 +2,10 @@
 
 import { useQuery } from "@tanstack/react-query";
 
+import { ApiClient } from "@/lib/api/client";
+import { API_ROUTES } from "@/lib/constants/api-routes";
 import { queryKeys } from "@/lib/query-keys";
-import { ListingService } from "@/services/listings/listing-service";
+import { apiResponseSchemas } from "@/lib/validators/api-responses";
 import type { Listing } from "@/types";
 
 /**
@@ -14,7 +16,15 @@ export function useMyListings(userId?: string) {
     queryKey: userId ? queryKeys.listings.my(userId) : queryKeys.listings.all,
     queryFn: async () => {
       if (!userId) return [];
-      const { success, data } = await ListingService.getMyListings();
+      const { success, data } = await ApiClient.request<{
+        listings: Listing[];
+        total: number;
+        page: number;
+        limit: number;
+        hasMore: boolean;
+      }>(`${API_ROUTES.LISTINGS.BASE}?view=my&page=1&limit=50`, {
+        schema: apiResponseSchemas.paginatedListings,
+      });
       return success ? data?.listings || [] : [];
     },
     enabled: !!userId,
@@ -28,7 +38,9 @@ export function useListingDetail(id: string) {
   return useQuery<Listing | null>({
     queryKey: queryKeys.listings.detail(id),
     queryFn: async () => {
-      const { success, data } = await ListingService.getListingById(id);
+      const { success, data } = await ApiClient.request<Listing>(API_ROUTES.LISTINGS.DETAIL(id), {
+        schema: apiResponseSchemas.listingDetail,
+      });
       return success ? data || null : null;
     },
     enabled: !!id,

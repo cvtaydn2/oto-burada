@@ -3,8 +3,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { DOPING_PACKAGES } from "@/lib/constants/doping";
 import { logger } from "@/lib/logging/logger";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
-import { DopingService } from "@/services/payments/doping-logic";
-import { PaymentService } from "@/services/payments/payment-logic";
+import { applyDopingPackage } from "@/services/payments/doping-logic";
+import { retrievePaymentResult } from "@/services/payments/payment-logic";
 
 /**
  * Payment Callback Handler
@@ -78,7 +78,7 @@ async function handleCallback(token: string, req: NextRequest) {
     // This is the critical security measure - we don't trust the callback data
     let result;
     try {
-      result = await PaymentService.retrieveCheckoutResult(token, existingPayment.user_id);
+      result = await retrievePaymentResult(token, existingPayment.user_id);
     } catch (error) {
       logger.api.error("Failed to retrieve payment from Iyzico", {
         token,
@@ -150,7 +150,7 @@ async function handleCallback(token: string, req: NextRequest) {
 
       // 6. Apply doping through the idempotent RPC. The RPC owns fulfilled_at.
       try {
-        await DopingService.applyDoping({
+        await applyDopingPackage({
           userId: existingPayment.user_id,
           listingId: existingPayment.listing_id,
           packageId: packageId,

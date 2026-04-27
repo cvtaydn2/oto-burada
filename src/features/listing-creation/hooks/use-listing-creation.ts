@@ -7,9 +7,11 @@ import { type FieldPath, useFieldArray, useForm, useWatch } from "react-hook-for
 
 import { useAnalytics } from "@/hooks/use-analytics";
 import { AnalyticsEvent } from "@/lib/analytics/events";
+import { ApiClient } from "@/lib/api/client";
+import { API_ROUTES } from "@/lib/constants/api-routes";
 import { listingCreateFormSchema } from "@/lib/validators";
+import { apiResponseSchemas } from "@/lib/validators/api-responses";
 import { validateListingImageFile } from "@/services/listings/listing-images";
-import { ListingService } from "@/services/listings/listing-service";
 import { lookupVehicleByPlate } from "@/services/listings/plate-lookup";
 import {
   type BrandCatalogItem,
@@ -346,8 +348,20 @@ export function useListingCreation({
     const payload = { ...values, turnstileToken } as Record<string, unknown>;
 
     const response = isEditing
-      ? await ListingService.updateListing(initialListing!.id, payload)
-      : await ListingService.createListing(payload);
+      ? await ApiClient.request<{
+          listing: { id: string; slug: string; status: string; title: string };
+        }>(API_ROUTES.LISTINGS.DETAIL(initialListing!.id), {
+          method: "PATCH",
+          body: JSON.stringify(payload),
+        })
+      : await ApiClient.request<{
+          message: string;
+          listing: { id: string; slug: string; status: string };
+        }>(API_ROUTES.LISTINGS.BASE, {
+          method: "POST",
+          body: JSON.stringify(payload),
+          schema: apiResponseSchemas.listingCreate,
+        });
 
     if (!response.success) {
       if (response.error?.code === "CONFLICT") {

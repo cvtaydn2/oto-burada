@@ -4,8 +4,10 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import { useCallback, useState } from "react";
 
+import { ApiClient } from "@/lib/api/client";
+import { API_ROUTES } from "@/lib/constants/api-routes";
 import { queryKeys } from "@/lib/query-keys";
-import { ListingService } from "@/services/listings/listing-service";
+import { apiResponseSchemas } from "@/lib/validators/api-responses";
 import type { Listing } from "@/types";
 
 export function useListingActions(listings: Listing[], userId?: string) {
@@ -28,7 +30,13 @@ export function useListingActions(listings: Listing[], userId?: string) {
       isArchived: boolean;
       currentStatus: Listing["status"];
     }) => {
-      const response = await ListingService.archiveListing(id);
+      const response = await ApiClient.request<{ message: string }>(
+        API_ROUTES.LISTINGS.ARCHIVE(id),
+        {
+          method: "POST",
+          schema: apiResponseSchemas.genericMessage,
+        }
+      );
       if (!response.success) {
         throw new Error(response.error?.message || "İşlem başarısız.");
       }
@@ -76,7 +84,10 @@ export function useListingActions(listings: Listing[], userId?: string) {
     { previousListings: Listing[] | undefined }
   >({
     mutationFn: async ({ id }) => {
-      const response = await ListingService.bumpListing(id);
+      const response = await ApiClient.request<{ message: string }>(API_ROUTES.LISTINGS.BUMP(id), {
+        method: "POST",
+        schema: apiResponseSchemas.genericMessage,
+      });
       if (!response.success || !response.data) {
         throw new Error(response.error?.message || "Öne çıkarma başarısız.");
       }
@@ -146,7 +157,14 @@ export function useListingActions(listings: Listing[], userId?: string) {
     setIsBulkArchiving(true);
     setArchiveError(null);
     try {
-      const response = await ListingService.bulkArchive(selectedIds);
+      const response = await ApiClient.request<{ message: string }>(
+        API_ROUTES.LISTINGS.BULK_ARCHIVE,
+        {
+          method: "POST",
+          body: JSON.stringify({ ids: selectedIds }),
+          schema: apiResponseSchemas.genericMessage,
+        }
+      );
       if (response.success) {
         setSelectedIds([]);
         if (userId) queryClient.invalidateQueries({ queryKey: queryKeys.listings.my(userId) });
@@ -165,7 +183,14 @@ export function useListingActions(listings: Listing[], userId?: string) {
     if (!selectedIds.length) return;
     setIsBulkArchiving(true);
     try {
-      const response = await ListingService.bulkDelete(selectedIds);
+      const response = await ApiClient.request<{ message: string }>(
+        API_ROUTES.LISTINGS.BULK_DELETE,
+        {
+          method: "POST",
+          body: JSON.stringify({ ids: selectedIds }),
+          schema: apiResponseSchemas.genericMessage,
+        }
+      );
       if (response.success) {
         setSelectedIds([]);
         if (userId) queryClient.invalidateQueries({ queryKey: queryKeys.listings.my(userId) });
