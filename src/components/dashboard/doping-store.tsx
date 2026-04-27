@@ -14,7 +14,6 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { DOPING_PACKAGES } from "@/lib/constants/doping";
-import { PaymentService } from "@/services/payments/client-service";
 import { DopingPackage } from "@/types/payment";
 
 interface DopingStoreProps {
@@ -27,7 +26,15 @@ export function DopingStore({ listingId }: DopingStoreProps) {
   const handlePurchase = async (pkg: DopingPackage) => {
     try {
       setLoading(pkg.id);
-      const res = await PaymentService.initialize(listingId, pkg.id);
+
+      // Direct API call instead of client service
+      const response = await fetch("/api/payments/initialize", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ listingId, packageId: pkg.id }),
+      });
+
+      const res = await response.json();
 
       if (res.success && res.data?.paymentPageUrl) {
         // Redirect to Iyzico checkout page

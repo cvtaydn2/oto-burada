@@ -59,6 +59,31 @@ npm run db:seed-demo
 - `src/services`: Veri erişim, persistence ve dış servis entegrasyonları.
 - `database/`: SQL şemaları ve migration dosyaları.
 
+## 🏗️ Mimari
+
+OtoBurada, **Server Actions** pattern'ini kullanarak modern, tip-güvenli ve performanslı bir mimari benimser.
+
+### Servis Katmanı
+
+- **Server Actions** (`*-actions.ts`): API endpoints ve authentication
+- **Data Access** (`*-records.ts`): Database queries ve RLS-compliant operations
+- **Business Logic** (`*-logic.ts`): Pure functions ve domain rules
+- **External Clients** (`*-client.ts`): Third-party API integrations (Iyzico, OpenAI, etc.)
+
+### Detaylı Dokümantasyon
+
+- **[AGENTS.md](./AGENTS.md)**: Mimari standartlar ve kurallar
+- **[docs/SERVICE_ARCHITECTURE.md](./docs/SERVICE_ARCHITECTURE.md)**: Servis mimarisi migration guide
+- **[docs/SECURITY.md](./docs/SECURITY.md)**: Güvenlik politikaları
+
+### Temel Prensipler
+
+1. **Server-First**: Server components ve server actions öncelikli
+2. **Type Safety**: TypeScript strict mode ve Zod validation
+3. **RLS Compliance**: Tüm database işlemleri Row Level Security ile korunur
+4. **Functional Approach**: Class-based patterns yerine functional programming
+5. **Separation of Concerns**: Data, logic ve presentation katmanları ayrı
+
 ## 📖 Dokümantasyon Modeli
 
 - **AGENTS.md**: Ürün vizyonu, mimari kurallar ve temel yasalar (Source of Truth).

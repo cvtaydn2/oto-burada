@@ -1,5 +1,5 @@
 import { DOPING_PACKAGES } from "@/lib/constants/doping";
-import { PaymentService } from "@/services/payment/payment-service";
+import { PaymentService } from "@/services/payments/payment-logic";
 
 export async function initiatePaymentUseCase(params: {
   userId: string;

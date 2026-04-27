@@ -173,3 +173,103 @@ src/
 ```
 
 ---
+
+## Service Architecture
+
+**Established Pattern (Phase 28.4)**: Server Actions as the primary pattern for client-server communication.
+
+### Service Layer Structure
+
+The service layer follows a consistent naming convention and separation of concerns:
+
+- **`*-actions.ts`** - Server actions (API endpoints)
+  - Use `"use server"` directive
+  - Handle authentication and authorization
+  - Orchestrate business logic
+  - Return serializable data
+  - Example: `src/app/api/payments/actions.ts`, `src/app/dashboard/favorites/actions.ts`
+
+- **`*-records.ts`** - Data access layer (database queries)
+  - Direct Supabase client interactions
+  - CRUD operations
+  - Query builders
+  - RLS-compliant queries
+  - Example: `src/services/favorites/favorite-records.ts`
+
+- **`*-logic.ts`** - Business logic (pure functions)
+  - Domain-specific calculations
+  - Business rules
+  - Validation logic
+  - Stateless transformations
+  - Example: `src/services/payments/payment-logic.ts`, `src/services/payments/doping-logic.ts`
+
+- **`*-client.ts`** - External API clients
+  - Third-party service integrations
+  - API wrappers (Iyzico, OpenAI, Resend, etc.)
+  - HTTP clients
+  - Example: `src/services/payments/iyzico-client.ts`
+
+### Domain Layer Structure
+
+For complex business workflows and orchestration:
+
+- **`domain/usecases/*.ts`** - Business use cases (orchestration)
+  - Multi-step workflows
+  - Cross-service coordination
+  - Transaction management
+  - Example: `src/domain/usecases/payment-initiate.ts`
+
+- **`domain/logic/*.ts`** - Pure business logic
+  - Calculations
+  - Validations
+  - Business rules
+  - Domain models
+
+### Deprecated Patterns
+
+The following patterns are **deprecated** and should not be used in new code:
+
+- ❌ **Class-based services** (e.g., `export class FavoriteService`)
+  - Legacy pattern from earlier phases
+  - Replaced by functional approach with server actions
+  - Existing instances: `PaymentService`, `DopingService`, `ListingService`, `ChatService`, `SupportService`
+
+- ❌ **Client-side API wrappers** (e.g., `services/*/client-service.ts`)
+  - Deprecated in favor of server actions
+  - Creates unnecessary abstraction layer
+  - Existing instances: `profile/client-service.ts`, `reports/client-service.ts`, `auth/client-service.ts`, `notifications/client-service.ts`
+
+### Migration Path from Legacy Patterns
+
+When refactoring legacy code:
+
+1. **Identify the pattern**: Class-based service or client-service wrapper
+2. **Extract business logic**: Move to `*-logic.ts` files
+3. **Create server actions**: Move API endpoints to `*-actions.ts` with `"use server"`
+4. **Update imports**: Replace old imports with new server action imports
+5. **Remove legacy files**: Delete old class-based or client-service files
+6. **Update tests**: Ensure all tests pass with new structure
+
+**Example Migration** (Payment Service - Phase 28.4):
+- ✅ Renamed `src/services/payment/` → `src/services/payments/`
+- ✅ Renamed `payment-service.ts` → `payment-logic.ts`
+- ✅ Renamed `doping-service.ts` → `doping-logic.ts`
+- ✅ Deleted `client-service.ts`
+- ✅ Components now use direct API calls or server actions
+
+**Example Migration** (Favorites Service - Phase 28.4):
+- ✅ Deleted `favorite-service.ts` (legacy class-based)
+- ✅ Deleted `client-service.ts` (redundant wrapper)
+- ✅ Kept `favorite-records.ts` (data access layer)
+- ✅ Components use `src/app/dashboard/favorites/actions.ts`
+
+### Best Practices
+
+1. **Server Actions First**: Always prefer server actions for new features
+2. **Functional Over Classes**: Use pure functions instead of class methods
+3. **Separation of Concerns**: Keep data access, business logic, and API endpoints separate
+4. **Naming Consistency**: Follow the `*-actions.ts`, `*-records.ts`, `*-logic.ts` convention
+5. **RLS Compliance**: Never bypass RLS with service role keys in client code
+6. **Type Safety**: Use Zod schemas for validation and TypeScript for type safety
+
+---

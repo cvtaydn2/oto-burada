@@ -85,25 +85,7 @@ listing_images (
   is_cover,
   placeholder_blur
 ),
-profiles:public_profiles!inner!seller_id (
-  id,
-  full_name,
-  city,
-  avatar_url,
-  role,
-  user_type,
-  business_name,
-  business_logo_url,
-  is_verified,
-  is_banned,
-  ban_reason,
-  verified_business,
-  verification_status,
-  trust_score,
-  business_slug,
-  created_at,
-  updated_at
-)
+seller:profiles!inner!seller_id(id, full_name, city, avatar_url, role, user_type, business_name, business_logo_url, is_verified, is_banned, ban_reason, verified_business, verification_status, trust_score, business_slug, created_at, updated_at)
 `;
 
 export const legacyListingSelect = `
@@ -146,25 +128,7 @@ listing_images (
   is_cover,
   placeholder_blur
 ),
-profiles:public_profiles!inner!seller_id (
-  id,
-  full_name,
-  city,
-  avatar_url,
-  role,
-  user_type,
-  business_name,
-  business_logo_url,
-  is_verified,
-  is_banned,
-  ban_reason,
-  verified_business,
-  verification_status,
-  trust_score,
-  business_slug,
-  created_at,
-  updated_at
-)
+seller:profiles!inner!seller_id(id, full_name, city, avatar_url, role, user_type, business_name, business_logo_url, is_verified, is_banned, ban_reason, verified_business, verification_status, trust_score, business_slug, created_at, updated_at)
 `;
 
 /**
@@ -226,17 +190,7 @@ listing_images (
   is_cover,
   placeholder_blur
 ),
-profiles:public_profiles!inner!seller_id (
-  id,
-  full_name,
-  avatar_url,
-  role,
-  user_type,
-  business_name,
-  is_verified,
-  verification_status,
-  business_slug
-)
+seller:profiles!inner!seller_id(id, full_name, avatar_url, role, user_type, business_name, is_verified, verification_status, business_slug)
 `;
 
 /**
@@ -269,13 +223,7 @@ listing_images!inner (
   is_cover,
   placeholder_blur
 ),
-profiles:public_profiles!inner!seller_id (
-  id,
-  full_name,
-  is_verified,
-  business_name,
-  business_slug
-)
+seller:profiles!inner!seller_id(id, full_name, is_verified, business_name, business_slug)
 `;
 
 type ListingQuery = PostgrestFilterBuilder<any, any, any, any, any>;
@@ -385,7 +333,7 @@ export function buildListingBaseQuery(
 
   // 2. Market Integrity: Filter out listings from banned users (unless explicitly included for admin/owner)
   if (!options?.includeBanned) {
-    query = query.eq("profiles.is_banned", false);
+    query = query.eq("seller.is_banned", false);
   }
 
   // 3. Predicates (Price, Year, Mileage, etc.)
@@ -415,7 +363,7 @@ export function buildListingBaseQuery(
   }
 
   // PRIORITY 2: Trust-based priority (Verified sellers boost)
-  query = query.order("profiles(verification_status)", { ascending: false, nullsFirst: false });
+  query = query.order("seller(verification_status)", { ascending: false, nullsFirst: false });
 
   // PRIORITY 3: User Selected Sort
   switch (sort) {

@@ -3,7 +3,7 @@ import { NextResponse } from "next/server";
 import { withCronOrAdmin } from "@/lib/api/security";
 import { logger } from "@/lib/logging/logger";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
-import { DopingService } from "@/services/payment/doping-service";
+import { DopingService } from "@/services/payments/doping-logic";
 
 /**
  * ── PILL: Issue 1 - Fulfillment Job Processor (DLQ & Retries) ──────

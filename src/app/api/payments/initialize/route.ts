@@ -7,7 +7,7 @@ import { DOPING_PACKAGES } from "@/lib/constants/doping";
 import { rateLimitProfiles } from "@/lib/rate-limiting/rate-limit";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { initiatePaymentSchema } from "@/lib/validators/payment";
-import { PaymentService } from "@/services/payment/payment-service";
+import { PaymentService } from "@/services/payments/payment-logic";
 
 export async function POST(req: NextRequest) {
   // SECURITY: Apply authentication, CSRF protection, and rate limiting
