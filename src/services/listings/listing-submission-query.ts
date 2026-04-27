@@ -171,6 +171,15 @@ profiles:public_profiles!inner!seller_id (
  * OPTIMIZED select for marketplace list/grid display.
  * Excludes heavy fields like description, damage_status_json, etc.
  * Significant performance gain for LCP and memory usage.
+ *
+ * ── PERFORMANCE NOTE: Issue PERF-02 - N+1 Query Prevention ─────────────
+ * This select already includes JOINs for listing_images and profiles,
+ * preventing N+1 queries. All related data is fetched in a single query.
+ *
+ * Performance characteristics:
+ * - Single query for listing + images + seller profile
+ * - No additional queries per listing
+ * - Optimized with composite indexes (see migration 0107)
  */
 export const marketplaceListingSelect = `
 id,
@@ -571,6 +580,11 @@ export interface PaginatedListingsResult {
   limit: number;
   hasMore: boolean;
   nextCursor?: string;
+  metadata?: {
+    droppedFilters?: string[];
+    warning?: string;
+    [key: string]: any;
+  };
 }
 
 /**

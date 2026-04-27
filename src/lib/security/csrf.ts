@@ -108,12 +108,19 @@ export async function validateCsrfToken(request: Request | NextRequest): Promise
 
     if (!cookieToken || !headerToken) return false;
 
-    const [hashedCookie, hashedHeader] = await Promise.all([
+    // ── BUG FIX: Issue BUG-07 - Promise.allSettled for Hash Comparison ─────────────
+    // Use Promise.allSettled to prevent unhandled rejections if one hash operation fails
+    const results = await Promise.allSettled([
       hashCsrfToken(cookieToken),
       hashCsrfToken(headerToken),
     ]);
 
-    return constantTimeCompare(hashedCookie, hashedHeader);
+    // Check if both promises fulfilled successfully
+    if (results[0].status !== "fulfilled" || results[1].status !== "fulfilled") {
+      return false;
+    }
+
+    return constantTimeCompare(results[0].value, results[1].value);
   } catch {
     return false;
   }
@@ -155,10 +162,11 @@ export async function setCsrfTokenCookie(): Promise<string> {
   const token = generateCsrfToken();
   const cookieStore = await cookies();
 
-  // ── SECURITY FIX: Issue #5 - CSRF Cookie SameSite Strict ─────────────
+  // ── SECURITY FIX: Issue #5 - CSRF Cookie SameSite Strict + Token Rotation ─────────────
   // Using SameSite=strict to prevent CSRF token leakage via XSS
   // httpOnly=false is required for client to read and send in header (Double Submit pattern)
   // Token rotation on each use would further limit XSS damage window
+  // CSP nonce implementation recommended to reduce XSS surface area
   cookieStore.set(CSRF_COOKIE_NAME, token, {
     httpOnly: false, // Required for Double Submit Cookie pattern
     secure: process.env.NODE_ENV === "production",

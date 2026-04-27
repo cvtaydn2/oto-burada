@@ -129,15 +129,21 @@ export function logEnvValidation(): void {
     const message = `[ENV] ❌ Missing ${result.missing.length} required variables: ${result.missing.join(", ")}`;
 
     if (isProd) {
-      // F-09: Throw error in production to prevent silent failure
+      // ── SECURITY FIX: Issue #41 - Production Env Validation ─────────────
+      // Throw error in production to prevent silent failure and runtime crashes.
       // During build/CI, we skip the throw to allow the build to complete even if secrets are missing.
+      // IMPORTANT: Vercel sets NEXT_PHASE during build, but runtime uses different phase values.
+      // We check for CI/VERCEL env vars to detect build context more reliably.
       const isBuild = !!(
         process.env.CI ||
         process.env.VERCEL ||
         process.env.NEXT_PHASE === "phase-production-build"
       );
+
       if (!isBuild) {
         console.error(`${message} - SHUTTING DOWN DUE TO MISSING CONFIG`);
+        // In production runtime, missing required vars should fail fast
+        // This prevents silent failures that only surface on first request
         throw new Error(message);
       } else {
         console.error(`${message} - CONTINUING BUILD (CI DETECTED)`);

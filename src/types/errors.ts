@@ -13,6 +13,7 @@ export type ErrorCode =
   | "TRUST_GUARD_REJECTION"
   | "INTERNAL_ERROR"
   | "NETWORK_ERROR"
+  | "PARSE_ERROR"
   | "UNKNOWN_ERROR";
 
 export class AppError extends Error {

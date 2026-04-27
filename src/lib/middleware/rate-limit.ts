@@ -1,5 +1,6 @@
 import { type NextRequest, NextResponse } from "next/server";
 
+import { logger } from "@/lib/logging/logger";
 import { checkGlobalRateLimit } from "@/lib/rate-limiting/distributed-rate-limit";
 
 /**
@@ -25,10 +26,17 @@ export async function rateLimitMiddleware(request: NextRequest) {
     request.headers.get("x-forwarded-for")?.split(",").pop()?.trim() ||
     "127.0.0.1";
 
+  // ── LOGIC FIX: Issue LOGIC-04 - Validate and Log Bypass IPs ─────────────
   // Allowlisted infrastructure IPs can bypass rate limiting.
-  const bypassIps = process.env.RATE_LIMIT_BYPASS_IPS?.split(",") || [];
+  // SECURITY: Only use for trusted infrastructure (monitoring, health checks, CI/CD).
+  const bypassIps = process.env.RATE_LIMIT_BYPASS_IPS?.split(",").map((ip) => ip.trim()) || [];
 
-  if (bypassIps.includes(ip)) {
+  if (bypassIps.length > 0 && bypassIps.includes(ip)) {
+    logger.security.info("Rate limit bypassed for allowlisted IP", {
+      ip,
+      pathname,
+      bypassCount: bypassIps.length,
+    });
     return null;
   }
 

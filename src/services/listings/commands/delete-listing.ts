@@ -5,8 +5,18 @@ export async function deleteDatabaseListing(listingId: string, sellerId: string)
   // Fetch the listing to verify ownership, status, and VERSION
   const listing = await getStoredListingById(listingId);
 
-  if (!listing || listing.sellerId !== sellerId) return null;
-  if (listing.status !== "archived") return null;
+  // ── BUG FIX: Issue BUG-09 - Meaningful Error Returns ─────────────
+  // Return descriptive error objects instead of null to help callers understand failures
+  if (!listing || listing.sellerId !== sellerId) {
+    return { error: "NOT_FOUND" as const, message: "İlan bulunamadı veya size ait değil." };
+  }
+
+  if (listing.status !== "archived") {
+    return {
+      error: "NOT_ARCHIVED" as const,
+      message: "Sadece arşivlenmiş ilanlar silinebilir.",
+    };
+  }
 
   // 1. Perform Atomic Deletion FIRST
   const result = await deleteFromDb(listingId, listing.version ?? 0);

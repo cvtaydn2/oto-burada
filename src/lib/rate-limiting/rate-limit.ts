@@ -46,7 +46,10 @@ let lastCleanup = Date.now();
 const CLEANUP_INTERVAL_MS = 60 * 1000; // 1 minute
 const MAX_DELETIONS_PER_CLEANUP = 1000; // Protect event loop
 const MAX_SCAN_PER_CLEANUP = 500; // Max scan per tick
-const MAX_IN_MEMORY_ENTRIES = 10_000; // Prevent unbounded memory growth
+// ── PERFORMANCE FIX: Issue PERF-06 - Increase In-Memory Capacity ─────────────
+// Increased from 10,000 to 50,000 to handle high-traffic endpoints better.
+// Eviction is already optimized with setImmediate and batch processing.
+const MAX_IN_MEMORY_ENTRIES = 50_000; // Prevent unbounded memory growth
 
 /**
  * Clean up expired entries asynchronously to prevent event loop blocking.
@@ -118,10 +121,12 @@ export async function checkRateLimit(
   if (redis) {
     try {
       const now = Date.now();
-      const windowStart = now - config.windowMs;
 
       // Atomic sliding window using Lua script
       // This prevents race conditions between INCR and EXPIRE
+      // ── PERFORMANCE FIX: Issue PERF-05 - Redis TTL Memory Leak Prevention ─────
+      // TTL should be 2x window to ensure old entries are cleaned up even if
+      // requests stop coming. This prevents memory leaks in Redis.
       const luaScript = `
         local key = KEYS[1]
         local now = tonumber(ARGV[1])
@@ -138,12 +143,15 @@ export async function checkRateLimit(
         if count < limit then
           -- Add new entry with current timestamp as score
           redis.call('ZADD', key, now, now)
-          redis.call('EXPIRE', key, math.ceil(window / 1000))
+          -- Set TTL to 2x window to prevent memory leaks
+          redis.call('EXPIRE', key, math.ceil(window / 500))
           return {1, limit - count - 1, now + window}
         else
           -- Get oldest entry to calculate reset time
           local oldest = redis.call('ZRANGE', key, 0, 0, 'WITHSCORES')
           local resetAt = tonumber(oldest[2]) + window
+          -- Refresh TTL even on rate limit to ensure cleanup
+          redis.call('EXPIRE', key, math.ceil(window / 500))
           return {0, 0, resetAt}
         end
       `;

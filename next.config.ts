@@ -36,12 +36,17 @@ const nextConfig: NextConfig = {
     minimumCacheTTL: 86400,
   },
   experimental: {
+    // ── PERFORMANCE FIX: Issue PERF-08 - Optimize Large Package Imports ─────
+    // Added @supabase/supabase-js and posthog-js to reduce bundle size.
+    // These are large packages that benefit from tree-shaking optimization.
     optimizePackageImports: [
       "lucide-react",
       "date-fns",
       "framer-motion",
       "clsx",
       "tailwind-merge",
+      "@supabase/supabase-js",
+      "posthog-js",
     ],
     // Restore scroll position on back/forward navigation
     scrollRestoration: true,

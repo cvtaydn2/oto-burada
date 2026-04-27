@@ -36,6 +36,16 @@ import { getStoredListingById } from "./queries/get-listings";
 /**
  * Checks if a slug already exists in the database.
  * PERFORMANCE: Uses exact head-only select to minimize data transfer.
+ *
+ * ── BUG FIX: Issue BUG-11 - Race Condition Documentation ─────────────
+ * WARNING: This function has a race condition between check and INSERT.
+ * Two concurrent requests can both see the slug as available and attempt to insert.
+ *
+ * SOLUTION: Database has unique constraint on slug. Handle unique_violation error
+ * in createDatabaseListing and retry with a new slug suffix.
+ *
+ * This check is kept for optimization (avoid unnecessary INSERT attempts) but
+ * should not be relied upon for correctness.
  */
 export async function checkSlugCollision(slug: string): Promise<boolean> {
   if (!hasSupabaseAdminEnv()) return false;

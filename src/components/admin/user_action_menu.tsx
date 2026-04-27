@@ -23,7 +23,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { deleteUser, promoteUserToAdmin, toggleUserBan } from "@/services/admin/users";
+import { deleteUser, promoteUserToAdmin, toggleUserBan } from "@/services/admin/user-actions";
 
 interface UserActionMenuProps {
   userId: string;

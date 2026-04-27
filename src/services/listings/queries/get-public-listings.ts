@@ -39,7 +39,13 @@ const SUPPORTED_MARKETPLACE_FILTER_KEYS = new Set<keyof ListingFilters>([
   "isExchange",
 ]);
 
-function sanitizeMarketplaceFilters(filters: ListingFilters): ListingFilters {
+// ── LOGIC FIX: Issue LOGIC-02 - Communicate Dropped Filter Keys ─────────────
+// Return dropped keys in the response so frontend can inform users about
+// unsupported filters instead of silently ignoring them.
+function sanitizeMarketplaceFilters(filters: ListingFilters): {
+  sanitized: ListingFilters;
+  droppedKeys: string[];
+} {
   const sanitized = {} as ListingFilters;
   const droppedKeys: string[] = [];
 
@@ -56,13 +62,28 @@ function sanitizeMarketplaceFilters(filters: ListingFilters): ListingFilters {
     captureServerEvent("marketplace_filters_sanitized", { droppedKeys });
   }
 
-  return sanitized;
+  return { sanitized, droppedKeys };
 }
 
 export async function getFilteredMarketplaceListings(
   filters: ListingFilters
 ): Promise<PaginatedListingsResult> {
-  return getPublicListings(sanitizeMarketplaceFilters(filters));
+  const { sanitized, droppedKeys } = sanitizeMarketplaceFilters(filters);
+  const result = await getPublicListings(sanitized);
+
+  // Add dropped keys to response metadata if any were dropped
+  if (droppedKeys.length > 0) {
+    return {
+      ...result,
+      metadata: {
+        ...result.metadata,
+        droppedFilters: droppedKeys,
+        warning: "Bazı filtreler desteklenmiyor ve uygulanmadı.",
+      },
+    };
+  }
+
+  return result;
 }
 
 export async function getMarketplaceListingsByIds(ids: string[]): Promise<Listing[]> {
@@ -86,10 +107,14 @@ export async function getMarketplaceListingsByIds(ids: string[]): Promise<Listin
 }
 
 export async function getMarketplaceListingBySlug(slug: string): Promise<Listing | null> {
+  // ── PERFORMANCE FIX: Issue PERF-07 - Increase Cache Duration ─────────────
+  // Increased from 60s to 300s (5 minutes) for better performance.
+  // Use revalidateTag for immediate updates when listings change.
+  // Cache key includes 'marketplace-listing' prefix for easy invalidation.
   const storedListing = await withNextCache<Listing | null>(
     [`marketplace-listing:${slug}`],
     () => getListingBySlug(slug),
-    60
+    300 // 5 minutes cache
   );
 
   if (!storedListing) return null;

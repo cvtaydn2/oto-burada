@@ -40,7 +40,21 @@ export class ApiClient {
         },
       });
 
-      const json = await res.json().catch(() => ({}));
+      // ── BUG FIX: Issue BUG-04 - JSON Parse Error Handling ─────────────
+      // Catch JSON parse errors separately to provide meaningful error messages
+      // and prevent empty object from being validated by Zod
+      let json: Record<string, unknown> = {};
+      try {
+        json = await res.json();
+      } catch {
+        return {
+          success: false,
+          error: {
+            message: "Sunucudan geçersiz yanıt geldi (JSON parse hatası).",
+            code: "PARSE_ERROR",
+          },
+        };
+      }
 
       if (!res.ok) {
         const REDIRECT_FLAG_KEY = "__auth_redirect_pending";
@@ -54,12 +68,19 @@ export class ApiClient {
           window.location.href = `/login?returnTo=${encodeURIComponent(window.location.pathname)}`;
         }
 
+        const errorData = json.error as
+          | { message?: string; code?: string; details?: unknown }
+          | undefined;
         return {
           success: false,
           error: {
-            message: json.error?.message || json.error || "Bir hata oluştu.",
-            code: json.error?.code || (res.status === 401 ? "UNAUTHORIZED" : "UNKNOWN_ERROR"),
-            details: json.error?.details,
+            message:
+              errorData?.message ||
+              (typeof json.error === "string" ? json.error : "Bir hata oluştu."),
+            code:
+              (errorData?.code as import("@/types/errors").ErrorCode) ||
+              (res.status === 401 ? "UNAUTHORIZED" : "UNKNOWN_ERROR"),
+            details: errorData?.details,
           },
         };
       }
@@ -79,7 +100,7 @@ export class ApiClient {
         }
       }
 
-      return { success: true, data: json.data };
+      return { success: true, data: json.data as T };
     } catch (err) {
       return {
         success: false,

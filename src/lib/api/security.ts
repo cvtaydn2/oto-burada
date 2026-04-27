@@ -104,14 +104,20 @@ export async function withSecurity(
   // 3. Auth & Admin Checks
   let user: User | null = null;
 
-  // Special case: Cron Secret bypass
+  // ── BUG FIX: Issue BUG-06 - Cron Secret Bypass Admin Check ─────────────
+  // Cron secret validation should not bypass admin checks when requireAdmin is set.
+  // This prevents unauthorized access to admin-only cron endpoints.
   if (options.requireCron) {
     const cronSecret = process.env.CRON_SECRET;
     const authHeader = request.headers.get("authorization");
-    if (cronSecret && authHeader === `Bearer ${cronSecret}`) {
+
+    // If cron secret matches and admin is NOT required, allow immediately
+    if (cronSecret && authHeader === `Bearer ${cronSecret}` && !options.requireAdmin) {
       return { ok: true };
     }
-    // If not cron secret, fall back to admin check if requireAdmin is set
+
+    // If admin is required, continue to admin check even if cron secret is valid
+    // This ensures cron endpoints with requireAdmin still verify admin status
   }
 
   if (options.requireAuth || options.requireAdmin) {

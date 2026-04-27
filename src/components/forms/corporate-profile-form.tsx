@@ -173,7 +173,9 @@ export function CorporateProfileForm({
               name="taxOffice"
               defaultValue={values.taxOffice}
               disabled={isReadOnly}
-              className="h-12 w-full rounded-xl border border-input bg-background px-4 text-sm outline-none transition-colors focus:border-indigo-500 disabled:bg-muted/50"
+              aria-invalid={!!state.error}
+              aria-describedby={state.error ? "profile-error" : undefined}
+              className="h-12 w-full rounded-xl border border-input bg-background px-4 text-sm outline-none transition-colors focus:border-indigo-500 disabled:bg-muted/50 aria-invalid:border-destructive"
             />
           </label>
 
@@ -184,7 +186,9 @@ export function CorporateProfileForm({
               name="taxId"
               defaultValue={values.taxId}
               disabled={isReadOnly}
-              className="h-12 w-full rounded-xl border border-input bg-background px-4 text-sm outline-none transition-colors focus:border-indigo-500 disabled:bg-muted/50"
+              aria-invalid={!!state.error}
+              aria-describedby={state.error ? "profile-error" : undefined}
+              className="h-12 w-full rounded-xl border border-input bg-background px-4 text-sm outline-none transition-colors focus:border-indigo-500 disabled:bg-muted/50 aria-invalid:border-destructive"
             />
           </label>
 
@@ -224,7 +228,10 @@ export function CorporateProfileForm({
       )}
 
       {state.success && (
-        <p className="rounded-xl border border-emerald-500/20 bg-emerald-500/5 px-4 py-3 text-sm text-emerald-600 font-bold flex items-center gap-2">
+        <p
+          role="status"
+          className="rounded-xl border border-emerald-500/20 bg-emerald-500/5 px-4 py-3 text-sm text-emerald-600 font-bold flex items-center gap-2"
+        >
           <ShieldCheck className="size-4" />
           {state.success}
         </p>

@@ -99,6 +99,13 @@ const getDBProfile = cache(async (userId: string) => {
 /**
  * Combined authentication context for the current request.
  * Bundles both the JWT-based user and the database-verified status.
+ *
+ * ── BUG FIX: Issue BUG-12 - AsyncLocalStorage Context Fallback ─────────────
+ * The AsyncLocalStorage context should be set by middleware for all requests.
+ * If context is missing, we fall back to standard request-scoped cache.
+ *
+ * NOTE: If fallback is always triggered, verify that middleware is properly
+ * setting the context via setSessionContext() for all authenticated routes.
  */
 export const getAuthContext = cache(async () => {
   // 1. Try to get from AsyncLocalStorage (set by middleware or wrapper)

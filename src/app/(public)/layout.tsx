@@ -15,6 +15,8 @@ export default async function PublicLayout({ children }: PropsWithChildren) {
   const isAuthRoute =
     pathname.startsWith("/login") ||
     pathname.startsWith("/register") ||
+    pathname.startsWith("/forgot-password") ||
+    pathname.startsWith("/reset-password") ||
     pathname.startsWith("/auth");
 
   if (isMaintenanceMode && !isAuthRoute && (!user || getUserRole(user) !== "admin")) {

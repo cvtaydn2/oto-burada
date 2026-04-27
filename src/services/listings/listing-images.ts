@@ -165,11 +165,17 @@ async function getImageDimensions(file: File): Promise<{ width: number; height: 
         };
       }
 
+      // ── SECURITY FIX: Issue #1 - Enhanced Segment Length Validation ─────────────
+      // Protect against truncated/malformed segments and zero-length segments
+      if (offset + 2 >= buffer.byteLength) break; // Not enough bytes for segment length
+
       const segmentLength = view.getUint16(offset + 2, false);
 
-      // Protect against truncated/malformed segments
-      if (segmentLength < 2) break; // Invalid segment length
-      if (offset + 2 + segmentLength > buffer.byteLength) break; // Segment extends beyond file
+      // Invalid segment length (must be at least 2 bytes)
+      if (segmentLength < 2) break;
+
+      // Segment extends beyond file boundary
+      if (offset + 2 + segmentLength > buffer.byteLength) break;
 
       offset += 2 + segmentLength;
     }

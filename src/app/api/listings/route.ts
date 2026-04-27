@@ -4,7 +4,7 @@ import { executeListingCreation } from "@/domain/usecases/listing-create";
 import { AnalyticsEvent } from "@/lib/analytics/events";
 import { mapUseCaseError, validateRequestBody } from "@/lib/api/handler-utils";
 import { API_ERROR_CODES, apiError, apiSuccess } from "@/lib/api/response";
-import { withSecurity, withUserAndCsrfToken } from "@/lib/api/security";
+import { withUserAndCsrfToken } from "@/lib/api/security";
 import { logger } from "@/lib/logging/logger";
 import { captureServerError, trackServerEvent } from "@/lib/monitoring/posthog-server";
 import { rateLimitProfiles } from "@/lib/rate-limiting/rate-limit";
@@ -20,50 +20,34 @@ import {
 import {
   createDatabaseListing,
   getDatabaseListings,
-  getStoredUserListings,
 } from "@/services/listings/listing-submissions";
 import { getFilteredMarketplaceListings } from "@/services/listings/marketplace-listings";
 import { createDatabaseNotification } from "@/services/notifications/notification-records";
 
-const MY_LISTINGS_DEFAULT_LIMIT = 12; // Mobile-first: reduced from 50
-const MY_LISTINGS_MAX_LIMIT = 100;
+// This endpoint now handles ONLY public marketplace search.
 
+// Private user listings moved to /api/listings/mine
+//
+// Benefits:
+// - Clear separation of concerns
+// - Public data can be cached aggressively
+// - Simpler rate limiting strategy
+// - Better monitoring and metrics
+//
 // ── PERFORMANCE FIX: Issue #20 - Response Caching Configuration ─────
 // Enable Next.js ISR (Incremental Static Regeneration) for public marketplace listings.
 // This reduces database load and improves response times for high-traffic pages.
 // - revalidate: 30 seconds - Fresh data while reducing DB queries
-// - Authenticated routes (view=my) bypass cache automatically
 export const revalidate = 30; // Cache public listings for 30 seconds
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
+
+  // ── ARCHITECTURE FIX: Issue #8 - Redirect Legacy ?view=my Requests ─────
+  // For backward compatibility, redirect to new endpoint
   const view = searchParams.get("view");
-
   if (view === "my") {
-    const userSecurity = await withSecurity(request, { requireAuth: true });
-    if (!userSecurity.ok) return userSecurity.response;
-    const user = userSecurity.user!;
-
-    try {
-      const rawPage = parseInt(searchParams.get("page") || "1", 10);
-      const rawLimit = parseInt(searchParams.get("limit") || String(MY_LISTINGS_DEFAULT_LIMIT), 10);
-      const page = Number.isFinite(rawPage) ? Math.max(rawPage, 1) : 1;
-      const limit = Number.isFinite(rawLimit)
-        ? Math.min(Math.max(rawLimit, 1), MY_LISTINGS_MAX_LIMIT)
-        : MY_LISTINGS_DEFAULT_LIMIT;
-
-      const result = await getStoredUserListings(user.id, page, limit);
-      return apiSuccess(result);
-    } catch (error) {
-      captureServerError("GET /api/listings?view=my failed", "listings", error, {
-        userId: user.id,
-      });
-      return apiError(
-        API_ERROR_CODES.INTERNAL_ERROR,
-        "İlanların yüklenirken bir hata oluştu.",
-        500
-      );
-    }
+    return Response.redirect(new URL("/api/listings/mine", request.url), 308);
   }
 
   // Rate limit public search — 120 requests per minute per IP

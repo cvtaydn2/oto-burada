@@ -140,7 +140,9 @@ export function ProfileForm({
                 name="phone"
                 defaultValue={values.phone}
                 required
-                className="h-12 w-full rounded-xl border border-input bg-background px-4 text-sm outline-none transition-colors focus:border-primary"
+                aria-invalid={!!state.error}
+                aria-describedby={state.error ? "profile-error" : undefined}
+                className="h-12 w-full rounded-xl border border-input bg-background px-4 text-sm outline-none transition-colors focus:border-primary aria-invalid:border-destructive"
               />
             </div>
 
@@ -150,7 +152,9 @@ export function ProfileForm({
                 name="city"
                 defaultValue={values.city}
                 required
-                className="h-12 w-full rounded-xl border border-input bg-background px-4 text-sm outline-none transition-colors focus:border-primary"
+                aria-invalid={!!state.error}
+                aria-describedby={state.error ? "profile-error" : undefined}
+                className="h-12 w-full rounded-xl border border-input bg-background px-4 text-sm outline-none transition-colors focus:border-primary aria-invalid:border-destructive"
               >
                 <option value="">Şehir seç</option>
                 {cityOptions.map((city) => (
@@ -203,13 +207,20 @@ export function ProfileForm({
         </section>
 
         {state.error ? (
-          <p className="rounded-xl border border-destructive/30 bg-destructive/5 px-4 py-3 text-sm text-destructive">
+          <p
+            id="profile-error"
+            role="alert"
+            className="rounded-xl border border-destructive/30 bg-destructive/5 px-4 py-3 text-sm text-destructive font-bold"
+          >
             {state.error}
           </p>
         ) : null}
 
         {state.success ? (
-          <p className="rounded-xl border border-primary/20 bg-primary/5 px-4 py-3 text-sm text-primary">
+          <p
+            role="status"
+            className="rounded-xl border border-primary/20 bg-primary/5 px-4 py-3 text-sm text-primary font-bold"
+          >
             {state.success}
           </p>
         ) : null}

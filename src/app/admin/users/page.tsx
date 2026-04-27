@@ -10,7 +10,7 @@ import { Button } from "@/components/ui/button";
 import { requireAdminUser } from "@/lib/auth/session";
 import { trust } from "@/lib/constants/ui-strings";
 import { cn, safeFormatDate, safeFormatDistanceToNow } from "@/lib/utils";
-import { getAllUsers } from "@/services/admin/users";
+import { getAllUsers } from "@/services/admin/user-list";
 
 export const dynamic = "force-dynamic";
 

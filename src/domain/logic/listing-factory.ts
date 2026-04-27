@@ -23,7 +23,9 @@ export function buildBaseSlug(input: {
 
 /**
  * Build a unique slug with fallback suffix logic.
- * @deprecated Use generateUniqueSlug for new listings to ensure atomicity
+ * @deprecated Use atomic slug generation in database (unique constraint + retry) instead.
+ * This function has a race condition between check and insert.
+ * See: createDatabaseListing for proper atomic slug generation.
  */
 export function buildListingSlug(
   input: { brand: string; model: string; year: number; city: string; title: string },
@@ -71,7 +73,11 @@ export function createListingEntity(
     // Generate base slug
     slug = buildListingSlug(input, otherSlugs);
 
-    // Add unique suffix for new listings to prevent race conditions
+    // ── LOGIC FIX: Issue LOGIC-05 - Clarify Non-Deterministic Slug Generation ─────────────
+    // Add random suffix for new listings to prevent slug collisions.
+    // This is intentionally non-deterministic to ensure uniqueness across concurrent requests.
+    // The random suffix makes it extremely unlikely for two listings created simultaneously
+    // to generate the same slug, even with identical input data.
     if (!existingListing) {
       const shortId = crypto.randomUUID().split("-")[0];
       slug = `${slug}-${shortId}`;
@@ -140,12 +146,25 @@ export function getCleanDescription(description: string): string {
 
 /**
  * Generates breadcrumbs for a listing.
+ *
+ * ── LOGIC FIX: Issue LOGIC-08 - Use Listing Title in Breadcrumb ─────────────
+ * Last breadcrumb should show listing title since it links to the listing detail page.
+ * Model breadcrumb now links to model filter page for better navigation.
  */
-export function getListingBreadcrumbs(listing: { brand: string; model: string; slug: string }) {
+export function getListingBreadcrumbs(listing: {
+  brand: string;
+  model: string;
+  title: string;
+  slug: string;
+}) {
   return [
     { name: "Ana Sayfa", url: "/" },
     { name: "Arabalar", url: "/listings" },
     { name: listing.brand, url: `/listings?brand=${encodeURIComponent(listing.brand)}` },
-    { name: listing.model, url: `/listing/${listing.slug}` },
+    {
+      name: listing.model,
+      url: `/listings?brand=${encodeURIComponent(listing.brand)}&model=${encodeURIComponent(listing.model)}`,
+    },
+    { name: listing.title, url: `/listing/${listing.slug}` },
   ];
 }

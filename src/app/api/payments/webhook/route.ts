@@ -9,9 +9,20 @@ export async function POST(req: NextRequest) {
   const admin = createSupabaseAdminClient();
 
   try {
-    // Get raw body for signature verification
+    // ── BUG FIX: Issue BUG-08 - JSON Parse Error Handling ─────────────
+    // Catch JSON parse errors to prevent 500 errors on malformed payloads
+    // and avoid unnecessary Iyzico retries
     const rawBody = await req.text();
-    const body = JSON.parse(rawBody);
+    let body: any;
+
+    try {
+      body = JSON.parse(rawBody);
+    } catch (parseError) {
+      logger.api.warn("Invalid JSON in webhook payload", {
+        error: parseError instanceof Error ? parseError.message : "Unknown parse error",
+      });
+      return NextResponse.json({ error: "Invalid JSON payload" }, { status: 400 });
+    }
 
     // 1. SECURITY: Verify Iyzico webhook signature FIRST
     const signature = req.headers.get("x-iyzi-signature");

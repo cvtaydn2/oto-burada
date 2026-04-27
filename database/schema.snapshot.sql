@@ -650,6 +650,18 @@ CREATE INDEX IF NOT EXISTS idx_messages_chat_created_at ON public.messages (chat
 CREATE INDEX IF NOT EXISTS idx_phone_reveal_logs_ip ON public.phone_reveal_logs (viewer_ip, revealed_at DESC) WHERE viewer_ip IS NOT NULL;
 CREATE INDEX IF NOT EXISTS idx_payments_stale_cleanup ON public.payments (status, created_at) WHERE fulfilled_at IS NULL AND status IN ('pending', 'processing');
 
+-- ── PERFORMANCE FIX: Issue PERF-01 - Critical Marketplace Indexes (Migration 0107) ─────
+CREATE INDEX IF NOT EXISTS idx_listings_marketplace_default ON public.listings (status, created_at DESC) WHERE status = 'approved';
+CREATE INDEX IF NOT EXISTS idx_listings_brand_city_status ON public.listings (brand, city, status, created_at DESC) WHERE status = 'approved';
+CREATE INDEX IF NOT EXISTS idx_listings_price_range_status ON public.listings (status, price, created_at DESC) WHERE status = 'approved';
+CREATE INDEX IF NOT EXISTS idx_listings_year_range_status ON public.listings (status, year DESC, created_at DESC) WHERE status = 'approved';
+CREATE INDEX IF NOT EXISTS idx_listings_fuel_transmission_status ON public.listings (fuel_type, transmission, status, created_at DESC) WHERE status = 'approved';
+CREATE UNIQUE INDEX IF NOT EXISTS idx_listings_slug_unique ON public.listings (slug);
+CREATE INDEX IF NOT EXISTS idx_listings_seller_status ON public.listings (seller_id, status, updated_at DESC);
+CREATE INDEX IF NOT EXISTS idx_listings_featured_priority ON public.listings (status, featured, featured_until DESC, created_at DESC) WHERE status = 'approved' AND featured = true;
+CREATE INDEX IF NOT EXISTS idx_listings_gallery_priority ON public.listings (status, gallery_priority DESC, created_at DESC) WHERE status = 'approved' AND gallery_priority > 0;
+CREATE INDEX IF NOT EXISTS idx_listings_urgent_active ON public.listings (status, urgent_until DESC, created_at DESC) WHERE status = 'approved' AND urgent_until > NOW();
+
 -- 7. TRIGGERS
 CREATE TRIGGER profiles_set_updated_at BEFORE UPDATE ON public.profiles FOR EACH ROW EXECUTE FUNCTION public.set_updated_at();
 CREATE TRIGGER listings_set_updated_at BEFORE UPDATE ON public.listings FOR EACH ROW EXECUTE FUNCTION public.set_updated_at();

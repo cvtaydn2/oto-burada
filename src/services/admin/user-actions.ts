@@ -7,7 +7,7 @@ import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { createDatabaseNotification } from "@/services/notifications/notification-records";
 
 export async function toggleUserBan(userId: string, currentStatus: boolean) {
-  const { executeServerAction } = await import("@/lib/actions/action-utils");
+  const { executeServerAction } = await import("@/lib/action-utils/action-utils");
 
   return executeServerAction(
     "toggleUserBan",

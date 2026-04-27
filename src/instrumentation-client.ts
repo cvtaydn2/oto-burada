@@ -38,11 +38,8 @@ if (posthogProjectToken) {
       // Mask all input fields by default for maximum privacy
       maskAllInputs: true,
 
-      // Mask all text content to prevent PII leakage
-      maskAllText: false, // Set to true for maximum privacy, false for better UX
-
       // Custom masking function for fine-grained control
-      maskInputFn: (text: string, element: HTMLElement | null) => {
+      maskInputFn: (text: string, element?: HTMLElement | null) => {
         // Always mask password fields
         if (element?.getAttribute("type") === "password") {
           return "***";

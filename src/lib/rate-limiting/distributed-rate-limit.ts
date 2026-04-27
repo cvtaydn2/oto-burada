@@ -157,8 +157,10 @@ export async function checkGlobalRateLimit(
   }
 
   if (!limiter) {
+    // ── LOGIC FIX: Issue LOGIC-01 - Pass windowMs to Dev Fallback ─────────────
     // In development with missing config, we still want to test the logic
     // but with much higher limits to avoid blocking workflow.
+    // IMPORTANT: Pass windowMs to maintain consistent behavior with production.
     const devOptions = {
       limit: options.limit ? options.limit * 10 : 1000,
       windowMs: options.windowMs ?? 60_000,

@@ -10,17 +10,20 @@ import { getSupabaseEnv } from "./env";
 let _browserClient: SupabaseClient<Database> | undefined;
 
 /**
- * ── CRITICAL FIX: Issue Kritik-01 - SSR Client Type ───────────
+ * ── BUG FIX: Issue BUG-02 - SSR Client Type Safety ───────────
  * IMPORTANT: This hook should ONLY be used in Client Components.
  * For Server Components, use createSupabaseServerClient() instead.
  *
  * SSR Note: If called during SSR (which shouldn't happen), we throw an error
- * to prevent using browser client in server context.
+ * to prevent using browser client in server context, which would cause
+ * cross-request session leaks and authentication failures.
  */
 export function useSupabase(): SupabaseClient<Database> {
   const { url, anonKey } = getSupabaseEnv();
 
-  // SSR: This should never happen - throw error to catch misuse
+  // ── BUG FIX: Issue BUG-02 - Explicit SSR Guard ─────────────
+  // Throw error immediately if called in server context to prevent
+  // cross-request session leaks and authentication failures
   if (typeof window === "undefined") {
     throw new Error(
       "useSupabase() called in server context. Use createSupabaseServerClient() for Server Components."

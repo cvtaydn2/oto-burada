@@ -11,6 +11,8 @@ import type { Listing } from "@/types";
 export function useListingActions(listings: Listing[], userId?: string) {
   const router = useRouter();
   const queryClient = useQueryClient();
+  // ── BUG FIX: Issue BUG-01 - Explicit State Type Annotation ─────────────
+  // Prevents type inference from collapsing to `null` and losing type safety
   const [archiveError, setArchiveError] = useState<string | null>(null);
   const [bumpMessage, setBumpMessage] = useState<string | null>(null);
   const [selectedIds, setSelectedIds] = useState<string[]>([]);

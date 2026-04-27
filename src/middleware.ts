@@ -24,6 +24,15 @@ export async function middleware(request: NextRequest) {
   const isAdmin = pathname.startsWith("/admin");
   const isPublicPage = !isApi && !isAuth && !isAdmin && !pathname.startsWith("/dashboard");
 
+  // ── ARCHITECTURE FIX: Issue #12 - Explicit Dashboard Auth Check ─────
+  // Dashboard routes require authentication - handle explicitly
+  const isDashboard = pathname.startsWith("/dashboard");
+
+  if (isDashboard) {
+    // Dashboard requires full auth check
+    return await runMiddlewarePipeline(request, [updateSession]);
+  }
+
   // 1. Admin routes: Force full auth check at edge
   if (isAdmin) {
     // Full security pipeline with session validation

@@ -39,9 +39,14 @@ export function getSecurityHeaders(nonce: string) {
     "https://unpkg.com",
   ];
 
+  // ── PERFORMANCE FIX: Issue PERF-04 - Strict CSP in Development ─────────────
+  // Development should also use strict CSP to catch XSS issues early.
+  // Only add unsafe-eval for HMR (Hot Module Replacement) in development.
+  // unsafe-inline is never needed with nonce-based CSP.
   if (!isProduction) {
-    scriptSrc.push("'unsafe-inline'", "'unsafe-eval'");
-    styleSrc.push("'unsafe-inline'");
+    // HMR requires unsafe-eval in development
+    scriptSrc.push("'unsafe-eval'");
+    // Note: unsafe-inline removed - nonce-based CSP is sufficient
   }
 
   const csp = [

@@ -25,7 +25,12 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
-import { banUser, deleteUser, updateUserRole, verifyUserBusiness } from "@/services/admin/users";
+import {
+  banUser,
+  deleteUser,
+  updateUserRole,
+  verifyUserBusiness,
+} from "@/services/admin/user-actions";
 
 interface UserActionsProps {
   userId: string;
