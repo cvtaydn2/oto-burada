@@ -1,18 +1,16 @@
 import { NextRequest, NextResponse } from "next/server";
 
+import { withUserRoute } from "@/lib/api/security";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 
 export async function GET(req: NextRequest, { params }: { params: Promise<{ token: string }> }) {
   try {
+    const security = await withUserRoute(req);
+    if (!security.ok) return security.response;
+
+    const user = security.user!;
     const { token } = await params;
     const supabase = await createSupabaseServerClient();
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-
-    if (!user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
 
     const { data: payment, error } = await supabase
       .from("payments")

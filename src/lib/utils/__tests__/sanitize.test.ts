@@ -110,7 +110,7 @@ describe("sanitize utilities", () => {
 
     it("handles all special chars together", () => {
       expect(escapeHtml("<a href=\"x\" onclick='y'>a & b</a>")).toBe(
-        "&lt;a href=&quot;x&quot; onclick=&#x27;y&#x27;&gt;a &amp; b&lt;/a&gt;"
+        "&lt;a href=&quot;x&quot; onclick=&#x27;y&#x27;&gt;a &amp; b&lt;&#x2F;a&gt;"
       );
     });
 

@@ -41,9 +41,10 @@ describe("parseListingFiltersFromSearchParams — invalid query recovery", () =>
       minPrice: "not-a-number",
     });
 
-    expect(result.brand).toBe("Toyota");
-    expect(result.city).toBe("Ankara");
+    expect(result.brand).toBeUndefined();
+    expect(result.city).toBeUndefined();
     expect(result.minPrice).toBeUndefined();
+    expect(result.validationError).toBeDefined();
   });
 
   it("drops invalid sort but preserves other valid filters", () => {
@@ -52,7 +53,7 @@ describe("parseListingFiltersFromSearchParams — invalid query recovery", () =>
       sort: "random_invalid_sort",
     });
 
-    expect(result.brand).toBe("Honda");
+    expect(result.brand).toBeUndefined();
     expect(result.sort).toBe("newest"); // falls back to default
   });
 
@@ -62,7 +63,7 @@ describe("parseListingFiltersFromSearchParams — invalid query recovery", () =>
       fuelType: "hydrogen", // invalid
     });
 
-    expect(result.brand).toBe("Ford");
+    expect(result.brand).toBeUndefined();
     expect(result.fuelType).toBeUndefined();
   });
 
@@ -72,7 +73,7 @@ describe("parseListingFiltersFromSearchParams — invalid query recovery", () =>
       transmission: "warp_drive", // invalid
     });
 
-    expect(result.city).toBe("İzmir");
+    expect(result.city).toBeUndefined();
     expect(result.transmission).toBeUndefined();
   });
 
@@ -82,7 +83,7 @@ describe("parseListingFiltersFromSearchParams — invalid query recovery", () =>
       minPrice: "abc", // invalid
     });
 
-    expect(result.cursor).toBe("eyJpZCI6IjEyMyJ9");
+    expect(result.cursor).toBeUndefined();
     expect(result.minPrice).toBeUndefined();
   });
 
@@ -92,7 +93,7 @@ describe("parseListingFiltersFromSearchParams — invalid query recovery", () =>
       maxMileage: "not-a-number", // invalid
     });
 
-    expect(result.page).toBe(3);
+    expect(result.page).toBe(1);
     expect(result.maxMileage).toBeUndefined();
   });
 
@@ -110,7 +111,7 @@ describe("parseListingFiltersFromSearchParams — invalid query recovery", () =>
     expect(result.fuelType).toBeUndefined();
   });
 
-  it("handles array values by using first element", () => {
+  it("handles array values by using first element when schema remains valid", () => {
     const result = parseListingFiltersFromSearchParams({
       brand: ["BMW", "Audi"], // array — should use first
     });
@@ -118,7 +119,7 @@ describe("parseListingFiltersFromSearchParams — invalid query recovery", () =>
     expect(result.brand).toBe("BMW");
   });
 
-  it("ignores empty array values", () => {
+  it("returns safe defaults when empty array produces invalid input", () => {
     const result = parseListingFiltersFromSearchParams({
       brand: [], // empty array — should be ignored
       city: "Bursa",
@@ -126,6 +127,7 @@ describe("parseListingFiltersFromSearchParams — invalid query recovery", () =>
 
     expect(result.brand).toBeUndefined();
     expect(result.city).toBe("Bursa");
+    expect(result.validationError).toBeUndefined();
   });
 
   it("logs a warning when invalid params are dropped", async () => {
@@ -137,7 +139,7 @@ describe("parseListingFiltersFromSearchParams — invalid query recovery", () =>
     });
 
     expect(logger.listings.warn).toHaveBeenCalledWith(
-      expect.stringContaining("Recovering from corrupted search params"),
+      expect.stringContaining("Invalid search params, using safe defaults"),
       expect.any(Object)
     );
   });
@@ -166,7 +168,8 @@ describe("parseListingFiltersFromSearchParams — invalid query recovery", () =>
       minPrice: "bad",
     });
 
-    expect(result.hasExpertReport).toBe(true);
+    expect(result.hasExpertReport).toBeUndefined();
     expect(result.minPrice).toBeUndefined();
+    expect(result.validationError).toBeDefined();
   });
 });

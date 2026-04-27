@@ -48,6 +48,7 @@ const mockProfile: Partial<Profile> = {
 vi.mock("@/services/listings/listing-submissions", () => ({
   getStoredListingBySlug: vi.fn(),
   getStoredListingsByIds: vi.fn(),
+  getSimilarDatabaseListings: vi.fn(),
 }));
 
 vi.mock("@/services/listings/catalog", () => ({
@@ -55,7 +56,7 @@ vi.mock("@/services/listings/catalog", () => ({
 }));
 
 vi.mock("@/services/profile/profile-records", () => ({
-  getStoredProfileById: vi.fn(),
+  getPublicSellerProfile: vi.fn(),
 }));
 
 describe("Marketplace Listings Service", () => {
@@ -105,8 +106,8 @@ describe("Marketplace Listings Service", () => {
   });
 
   it("should get marketplace seller", async () => {
-    const { getStoredProfileById } = await import("@/services/profile/profile-records");
-    vi.mocked(getStoredProfileById).mockResolvedValue(mockProfile as unknown as Profile);
+    const { getPublicSellerProfile } = await import("@/services/profile/profile-records");
+    vi.mocked(getPublicSellerProfile).mockResolvedValue(mockProfile as unknown as Profile);
 
     const result = await getMarketplaceSeller("seller-1");
     expect(result).toBeDefined();
@@ -141,22 +142,8 @@ describe("Marketplace Listings Service", () => {
   });
 
   it("should get similar marketplace listings", async () => {
-    const { getPublicListings } = await import("@/services/listings/catalog");
-    vi.mocked(getPublicListings)
-      .mockResolvedValueOnce({
-        listings: [mockListing as Listing],
-        total: 1,
-        page: 1,
-        limit: 10,
-        hasMore: false,
-      })
-      .mockResolvedValueOnce({
-        listings: [mockListing as Listing],
-        total: 1,
-        page: 1,
-        limit: 10,
-        hasMore: false,
-      });
+    const { getSimilarDatabaseListings } = await import("@/services/listings/listing-submissions");
+    vi.mocked(getSimilarDatabaseListings).mockResolvedValue([mockListing as Listing]);
 
     const result = await getSimilarMarketplaceListings("current-slug", "BMW", "Istanbul");
     expect(result).toHaveLength(1);

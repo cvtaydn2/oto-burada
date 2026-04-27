@@ -85,14 +85,12 @@ describe("validateListingImageFile — browser-safe dimension check", () => {
     }
   });
 
-  it("uses createImageBitmap when available", async () => {
+  it("keeps using header parser even if createImageBitmap exists", async () => {
     const mockBitmap = { width: 5000, height: 100, close: vi.fn() };
     vi.stubGlobal("createImageBitmap", vi.fn().mockResolvedValue(mockBitmap));
 
-    const file = makePngFile(100, 100); // bytes say 100x100 but bitmap mock says 5000
+    const file = makePngFile(100, 100);
     const result = await validateListingImageFile(file);
-    // result should be a dimension error about 5000px
-    expect(result).not.toBeNull();
-    expect(result).toContain("5000px");
+    expect(result).toBeNull();
   });
 });

@@ -125,10 +125,12 @@ export function useListingCreation({
 
   // ── STORAGE CLEANUP ──
   useEffect(() => {
+    const pendingCleanup = pendingImageCleanupRef.current;
+
     return () => {
       // If unmounting without successful submit, cleanup orphaned images
-      if (!submitIntentRef.current && pendingImageCleanupRef.current.size > 0) {
-        const paths = Array.from(pendingImageCleanupRef.current);
+      if (!submitIntentRef.current && pendingCleanup.size > 0) {
+        const paths = Array.from(pendingCleanup);
         ApiClient.request("/api/listings/images/cleanup", {
           method: "POST",
           body: JSON.stringify({ paths }),

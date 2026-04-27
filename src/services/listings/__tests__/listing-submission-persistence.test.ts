@@ -81,12 +81,12 @@ function makeListing(overrides: Record<string, any> = {}) {
   };
 }
 
-describe("updateDatabaseListing — compensating image restore on insert failure", () => {
+describe("updateDatabaseListing — image persistence failure handling", () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
 
-  it("restores old image rows when new image insert fails", async () => {
+  it("returns image_persistence_error when image upsert fails", async () => {
     const oldImageRows = [
       {
         storage_path: "listings/seller-1/old.jpg",
@@ -97,8 +97,7 @@ describe("updateDatabaseListing — compensating image restore on insert failure
       },
     ];
 
-    // Track insert calls to verify restore attempt
-    const insertMock = vi.fn();
+    const upsertMock = vi.fn();
 
     mockFrom.mockImplementation((table: string) => {
       if (table === "listings") {
@@ -158,32 +157,27 @@ describe("updateDatabaseListing — compensating image restore on insert failure
             eq: vi.fn().mockResolvedValue({ data: oldImageRows, error: null }),
           }),
           delete: vi.fn().mockReturnValue({
-            eq: vi.fn().mockResolvedValue({ error: null }),
+            in: vi.fn().mockResolvedValue({ error: null }),
           }),
-          insert: insertMock,
+          upsert: upsertMock,
         };
       }
 
       return {};
     });
 
-    // First insert call (new images) → fails
-    // Second insert call (restore old images) → succeeds
-    insertMock
-      .mockResolvedValueOnce({ error: { message: "insert failed" } })
-      .mockResolvedValueOnce({ error: null });
+    upsertMock.mockResolvedValueOnce({ error: { message: "upsert failed" } });
 
     const { updateDatabaseListing } = await import("../listing-submission-persistence");
     const result = await updateDatabaseListing(makeListing() as any);
 
     expect(result.error).toBe("image_persistence_error");
 
-    // Verify restore was attempted with old image data
-    expect(insertMock).toHaveBeenCalledTimes(2);
-    const restoreCall = insertMock.mock.calls[1][0];
-    expect(restoreCall[0]).toMatchObject({
+    expect(upsertMock).toHaveBeenCalledTimes(1);
+    const upsertCall = upsertMock.mock.calls[0][0];
+    expect(upsertCall[0]).toMatchObject({
       listing_id: "listing-1",
-      storage_path: "listings/seller-1/old.jpg",
+      storage_path: "listings/seller-1/new.jpg",
     });
   });
 });

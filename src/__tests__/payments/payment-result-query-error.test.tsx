@@ -96,7 +96,13 @@ describe("PaymentResultPage — Supabase query error path", () => {
 
   it("shows success status when payment status is 'success'", async () => {
     mockMaybeSingle.mockResolvedValue({
-      data: { id: "pay-1", amount: 199, status: "success", plan_name: "Vitrin" },
+      data: {
+        id: "pay-1",
+        amount: 199,
+        status: "success",
+        plan_name: "Vitrin",
+        fulfilled_at: "2026-01-01T00:00:00Z",
+      },
       error: null,
     });
 
@@ -143,9 +149,9 @@ describe("PaymentResultPage — Supabase query error path", () => {
 
     render(<PaymentResultPage />);
 
-    // Advance past all 5 polling intervals (5 * 1500ms = 7500ms)
+    // Exponential backoff is used, so advance enough for all retries.
     await act(async () => {
-      await vi.advanceTimersByTimeAsync(10000);
+      await vi.advanceTimersByTimeAsync(30000);
     });
 
     await waitFor(

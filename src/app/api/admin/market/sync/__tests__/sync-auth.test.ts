@@ -1,18 +1,12 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import { isSupabaseAdminUser } from "@/lib/auth/api-admin";
-import { getCurrentUser } from "@/lib/auth/session";
+import { getAuthContext } from "@/lib/auth/session";
 import { hasSupabaseAdminEnv } from "@/lib/supabase/env";
 
 import { GET } from "../route";
 
-vi.mock("@/lib/auth/api-admin", () => ({
-  isSupabaseAdminUser: vi.fn(),
-  requireApiAdminUser: vi.fn(),
-}));
-
 vi.mock("@/lib/auth/session", () => ({
-  getCurrentUser: vi.fn(),
+  getAuthContext: vi.fn(),
 }));
 
 vi.mock("@/lib/supabase/env", () => ({
@@ -50,7 +44,7 @@ describe("Market Sync Auth", () => {
     vi.resetAllMocks();
     process.env.CRON_SECRET = CRON_SECRET;
     vi.mocked(hasSupabaseAdminEnv).mockReturnValue(true);
-    vi.mocked(getCurrentUser).mockResolvedValue(null);
+    vi.mocked(getAuthContext).mockResolvedValue({ user: null, dbProfile: null } as never);
   });
 
   it("should allow access with valid CRON_SECRET", async () => {
@@ -64,11 +58,10 @@ describe("Market Sync Auth", () => {
   });
 
   it("should allow access with valid Admin session", async () => {
-    vi.mocked(getCurrentUser).mockResolvedValue({
-      id: "admin-1",
-      app_metadata: { role: "admin" },
+    vi.mocked(getAuthContext).mockResolvedValue({
+      user: { id: "admin-1", app_metadata: { role: "admin" } },
+      dbProfile: { role: "admin", isBanned: false },
     } as never);
-    vi.mocked(isSupabaseAdminUser).mockResolvedValue(true);
 
     const req = new Request("http://localhost/api/admin/market/sync");
     const res = await GET(req);
@@ -77,8 +70,6 @@ describe("Market Sync Auth", () => {
   });
 
   it("should deny access with invalid secret and no session", async () => {
-    vi.mocked(isSupabaseAdminUser).mockResolvedValue(false);
-
     const req = new Request("http://localhost/api/admin/market/sync", {
       headers: { authorization: "Bearer wrong-secret" },
     });
@@ -88,17 +79,19 @@ describe("Market Sync Auth", () => {
   });
 
   it("should deny access for non-admin users without secret", async () => {
-    vi.mocked(isSupabaseAdminUser).mockResolvedValue(false);
+    vi.mocked(getAuthContext).mockResolvedValue({
+      user: { id: "user-1", app_metadata: { role: "user" } },
+      dbProfile: { role: "user", isBanned: false },
+    } as never);
 
     const req = new Request("http://localhost/api/admin/market/sync");
     const res = await GET(req);
 
-    expect(res.status).toBe(401);
+    expect(res.status).toBe(403);
   });
 
   it("should fail-closed if CRON_SECRET is not configured", async () => {
     delete process.env.CRON_SECRET;
-    vi.mocked(isSupabaseAdminUser).mockResolvedValue(false);
 
     const req = new Request("http://localhost/api/admin/market/sync", {
       headers: { authorization: "Bearer any-secret" },

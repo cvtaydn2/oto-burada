@@ -7,20 +7,20 @@ import {
   withUserAndCsrf,
   withUserRoute,
 } from "@/lib/api/security";
-import { isSupabaseAdminUser } from "@/lib/auth/api-admin";
-import { getCurrentUser } from "@/lib/auth/session";
+import { getAuthContext } from "@/lib/auth/session";
 import { isValidRequestOrigin } from "@/lib/security";
+import { validateCsrfToken } from "@/lib/security/csrf";
 
 vi.mock("@/lib/auth/session", () => ({
-  getCurrentUser: vi.fn(),
-}));
-
-vi.mock("@/lib/auth/api-admin", () => ({
-  isSupabaseAdminUser: vi.fn(),
+  getAuthContext: vi.fn(),
 }));
 
 vi.mock("@/lib/security", () => ({
   isValidRequestOrigin: vi.fn(),
+}));
+
+vi.mock("@/lib/security/csrf", () => ({
+  validateCsrfToken: vi.fn(() => true),
 }));
 
 vi.mock("@/lib/rate-limiting/rate-limit-middleware", () => ({
@@ -35,10 +35,11 @@ describe("API Security Wrappers", () => {
   beforeEach(() => {
     vi.resetAllMocks();
     vi.mocked(isValidRequestOrigin).mockReturnValue(true);
+    vi.mocked(validateCsrfToken).mockResolvedValue(true);
   });
 
   it("withUserRoute should require authentication", async () => {
-    vi.mocked(getCurrentUser).mockResolvedValue(null);
+    vi.mocked(getAuthContext).mockResolvedValue({ user: null, dbProfile: null } as never);
     const req = new Request("http://localhost/api/test");
     const result = await withUserRoute(req);
     expect(result.ok).toBe(false);
@@ -46,7 +47,10 @@ describe("API Security Wrappers", () => {
   });
 
   it("withUserAndCsrf should require both auth and valid origin", async () => {
-    vi.mocked(getCurrentUser).mockResolvedValue(mockUser);
+    vi.mocked(getAuthContext).mockResolvedValue({
+      user: mockUser,
+      dbProfile: { role: "user", isBanned: false },
+    } as never);
     vi.mocked(isValidRequestOrigin).mockReturnValue(false);
 
     const req = new Request("http://localhost/api/test", { method: "POST" });
@@ -57,8 +61,10 @@ describe("API Security Wrappers", () => {
   });
 
   it("withAdminRoute should require admin role", async () => {
-    vi.mocked(getCurrentUser).mockResolvedValue(mockUser);
-    vi.mocked(isSupabaseAdminUser).mockResolvedValue(false);
+    vi.mocked(getAuthContext).mockResolvedValue({
+      user: mockUser,
+      dbProfile: { role: "user", isBanned: false },
+    } as never);
 
     const req = new Request("http://localhost/api/admin/test");
     const result = await withAdminRoute(req);
@@ -79,8 +85,10 @@ describe("API Security Wrappers", () => {
 
   it("withCronOrAdmin should fall back to admin session if no secret", async () => {
     process.env.CRON_SECRET = "secret-123";
-    vi.mocked(getCurrentUser).mockResolvedValue(mockUser);
-    vi.mocked(isSupabaseAdminUser).mockResolvedValue(true);
+    vi.mocked(getAuthContext).mockResolvedValue({
+      user: mockUser,
+      dbProfile: { role: "admin", isBanned: false },
+    } as never);
 
     const req = new Request("http://localhost/api/sync");
     const result = await withCronOrAdmin(req);

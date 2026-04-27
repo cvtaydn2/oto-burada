@@ -48,7 +48,8 @@ describe("ForgotPasswordForm — success UI state", () => {
   it("hides the form and shows success panel when state.success is set", () => {
     mockUseActionState.mockReturnValue([
       {
-        success: "Sıfırlama bağlantısı e-posta adresinize gönderildi.",
+        success: true,
+        message: "Sıfırlama bağlantısı e-posta adresinize gönderildi.",
         fields: { email: "user@example.com" },
       },
       vi.fn(),
@@ -69,7 +70,8 @@ describe("ForgotPasswordForm — success UI state", () => {
   it("shows submitted email address in success panel", () => {
     mockUseActionState.mockReturnValue([
       {
-        success: "Sıfırlama bağlantısı e-posta adresinize gönderildi.",
+        success: true,
+        message: "Sıfırlama bağlantısı e-posta adresinize gönderildi.",
         fields: { email: "ahmet@example.com" },
       },
       vi.fn(),
@@ -84,7 +86,8 @@ describe("ForgotPasswordForm — success UI state", () => {
   it("shows 'Girişe Dön' link in success panel", () => {
     mockUseActionState.mockReturnValue([
       {
-        success: "Sıfırlama bağlantısı e-posta adresinize gönderildi.",
+        success: true,
+        message: "Sıfırlama bağlantısı e-posta adresinize gönderildi.",
         fields: { email: "user@example.com" },
       },
       vi.fn(),
@@ -100,7 +103,8 @@ describe("ForgotPasswordForm — success UI state", () => {
   it("shows 'Başka E-posta Dene' link in success panel", () => {
     mockUseActionState.mockReturnValue([
       {
-        success: "Sıfırlama bağlantısı e-posta adresinize gönderildi.",
+        success: true,
+        message: "Sıfırlama bağlantısı e-posta adresinize gönderildi.",
         fields: { email: "user@example.com" },
       },
       vi.fn(),

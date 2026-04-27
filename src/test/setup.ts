@@ -2,10 +2,14 @@ import "@testing-library/jest-dom";
 
 import { vi } from "vitest";
 
+// Prevent Next.js server boundary module from crashing Vitest module loading.
+vi.mock("server-only", () => ({}));
+
 // Mock Next.js headers
 vi.mock("next/headers", () => ({
   cookies: vi.fn(() => ({
     get: vi.fn(),
+    getAll: vi.fn(() => []),
     set: vi.fn(),
     delete: vi.fn(),
   })),

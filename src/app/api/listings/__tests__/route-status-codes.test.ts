@@ -7,12 +7,27 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import { withUserAndCsrf } from "@/lib/api/security";
+import { withUserAndCsrfToken } from "@/lib/api/security";
 
 vi.mock("@/lib/api/security", () => ({
-  withUserAndCsrf: vi.fn(),
+  withUserAndCsrfToken: vi.fn(),
   withSecurity: vi.fn(),
 }));
+
+vi.mock("@/lib/security/turnstile", () => ({
+  verifyTurnstileToken: vi.fn(() => Promise.resolve(true)),
+}));
+
+vi.mock("@/lib/api/handler-utils", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("@/lib/api/handler-utils")>();
+  return {
+    ...actual,
+    validateRequestBody: vi.fn(async () => ({
+      success: true,
+      data: { turnstileToken: "test-token" },
+    })),
+  };
+});
 
 vi.mock("@/lib/rate-limiting/rate-limit", () => ({
   rateLimitProfiles: { general: {}, listingCreate: {} },
@@ -77,7 +92,7 @@ function makePostRequest(body: unknown = {}) {
 describe("POST /api/listings — HTTP status mapping", () => {
   beforeEach(() => {
     vi.resetAllMocks();
-    vi.mocked(withUserAndCsrf).mockResolvedValue({ ok: true, user: mockUser } as any);
+    vi.mocked(withUserAndCsrfToken).mockResolvedValue({ ok: true, user: mockUser } as any);
   });
 
   it("returns 400 for VALIDATION_ERROR", async () => {

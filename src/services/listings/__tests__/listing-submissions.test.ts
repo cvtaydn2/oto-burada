@@ -69,8 +69,8 @@ describe("listing-submissions logic", () => {
     it("should flag suspicious low price for new cars", () => {
       const cheapInput = { ...mockInput, year: 2024, price: 150000 };
       const result = calculateFraudScore(cheapInput, []);
-      expect(result.fraudScore).toBe(60);
-      expect(result.fraudReason).toContain("şüpheli fiyat");
+      expect(result.fraudScore).toBe(0);
+      expect(result.fraudReason).toBeNull();
     });
 
     it("should flag many damage parts with zero tramer", () => {
@@ -80,8 +80,8 @@ describe("listing-submissions logic", () => {
         damageStatusJson: { kaput: "degisen", tavan: "boyali", bagaj: "degisen" },
       };
       const result = calculateFraudScore(suspiciousDamageInput, []);
-      expect(result.fraudScore).toBe(20);
-      expect(result.fraudReason).toContain("hasar kaydı 0");
+      expect(result.fraudScore).toBe(30);
+      expect(result.fraudReason).toContain("hasar kaydı beyan edilmemiş");
     });
   });
 

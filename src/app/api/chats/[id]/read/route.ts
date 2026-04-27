@@ -1,22 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
 
-import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { withUserAndCsrfToken } from "@/lib/api/security";
 import { markChatMessagesAsRead } from "@/services/chat/chat-logic";
 
-async function handleMarkRead(req: NextRequest, params: Promise<{ id: string }>) {
+async function handleMarkRead(req: NextRequest, params: Promise<{ id: string }>, userId: string) {
   try {
-    const supabase = await createSupabaseServerClient();
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-
-    if (!user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
     const { id: chatId } = await params;
 
-    const result = await markChatMessagesAsRead(chatId, user.id);
+    const result = await markChatMessagesAsRead(chatId, userId);
     return NextResponse.json({ data: result });
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : "Mesajlar okundu işaretlenemedi.";
@@ -25,9 +16,13 @@ async function handleMarkRead(req: NextRequest, params: Promise<{ id: string }>)
 }
 
 export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
-  return handleMarkRead(req, params);
+  const security = await withUserAndCsrfToken(req);
+  if (!security.ok) return security.response;
+  return handleMarkRead(req, params, security.user!.id);
 }
 
 export async function POST(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
-  return handleMarkRead(req, params);
+  const security = await withUserAndCsrfToken(req);
+  if (!security.ok) return security.response;
+  return handleMarkRead(req, params, security.user!.id);
 }

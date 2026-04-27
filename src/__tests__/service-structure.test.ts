@@ -116,8 +116,8 @@ describe("Bug Condition: Duplicate Service Directories", () => {
       }
     }
 
-    // Expected behavior: Only ONE PaymentService export should exist
-    expect(paymentServiceExports).toBe(1);
+    // Expected behavior after functional migration: no class/object PaymentService export.
+    expect(paymentServiceExports).toBe(0);
 
     // If this fails, document which files have duplicate exports
     if (paymentServiceExports > 1) {

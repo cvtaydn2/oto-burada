@@ -25,6 +25,11 @@ vi.mock("@/lib/rate-limiting/rate-limit", () => ({
   rateLimitProfiles: { auth: {} },
 }));
 
+vi.mock("@/lib/security/turnstile", () => ({
+  isTurnstileEnabled: vi.fn(() => false),
+  verifyTurnstileToken: vi.fn(),
+}));
+
 vi.mock("@/lib/seo", () => ({
   getAppUrl: vi.fn(() => "https://otoburada.com"),
 }));
@@ -39,6 +44,11 @@ vi.mock("@/lib/supabase/server", () => ({
         signUp: mockSignUp,
         getUser: mockGetUser,
       },
+      from: vi.fn(() => ({
+        select: vi.fn().mockReturnThis(),
+        eq: vi.fn().mockReturnThis(),
+        single: vi.fn().mockResolvedValue({ data: { id: "profile-1" }, error: null }),
+      })),
     })
   ),
 }));

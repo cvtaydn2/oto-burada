@@ -79,12 +79,12 @@ describe("AI AnomalyDetector (calculateFraudScore)", () => {
     expect(result.suggestedStatus).toBe("flagged");
   });
 
-  it("should use fallback price check when less than 3 comparable cars exist", () => {
+  it("should not apply market price anomaly when less than 3 comparable cars exist", () => {
     const input = { ...mockBaseInput, year: 2023, price: 600_000 } as ListingCreateInput;
     const result = calculateFraudScore(input, []);
 
-    expect(result.fraudScore).toBeGreaterThanOrEqual(60);
-    expect(result.fraudReason).toContain("Pazar ortalamasının çok altında şüpheli fiyat");
+    expect(result.fraudScore).toBe(0);
+    expect(result.fraudReason).toBeNull();
   });
 
   it("should flag mileage_anomaly for old vehicle with unrealistic low mileage", () => {
@@ -98,7 +98,7 @@ describe("AI AnomalyDetector (calculateFraudScore)", () => {
     const result = calculateFraudScore(input, []);
 
     expect(result.fraudScore).toBeGreaterThanOrEqual(40);
-    expect(result.fraudReason).toContain("mileage_anomaly");
+    expect(result.fraudReason).toContain("Kilometre anomalisini");
     expect(result.suggestedStatus).toBe("flagged");
   });
 
@@ -145,7 +145,9 @@ describe("AI AnomalyDetector (calculateFraudScore)", () => {
 
     const result = calculateFraudScore(inputObj as ListingCreateInput, []);
 
-    expect(result.fraudScore).toBeGreaterThanOrEqual(20);
-    expect(result.fraudReason).toContain("Çoklu boya/değişen kaydına rağmen hasar kaydı 0");
+    expect(result.fraudScore).toBeGreaterThanOrEqual(30);
+    expect(result.fraudReason).toContain(
+      "Çoklu boya/değişen kaydına rağmen hasar kaydı beyan edilmemiş"
+    );
   });
 });

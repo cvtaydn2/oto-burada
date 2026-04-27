@@ -1,92 +1,184 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import { createSupabaseAdminClient } from "@/lib/supabase/admin";
-import type { Listing } from "@/types";
-
 import { updateDatabaseListing } from "../listing-submission-persistence";
 
 const queueFileCleanup = vi.fn().mockResolvedValue(undefined);
-
-vi.mock("@/lib/supabase/admin", () => {
-  const chain = {
-    select: vi.fn().mockReturnThis(),
-    update: vi.fn().mockReturnThis(),
-    insert: vi.fn().mockReturnThis(),
-    delete: vi.fn().mockReturnThis(),
-    eq: vi.fn().mockReturnThis(),
-    single: vi.fn().mockImplementation(() => Promise.resolve({ data: { id: "1" }, error: null })),
-    then: vi.fn().mockImplementation((resolve) => {
-      // Default empty result for await
-      resolve({ data: [], error: null });
-    }),
-  };
-
-  const mockFrom = vi.fn().mockReturnValue(chain);
-
-  const mockStorage = {
-    from: vi.fn().mockReturnThis(),
-    remove: vi.fn().mockResolvedValue({ data: null, error: null }),
-  };
-
-  return {
-    createSupabaseAdminClient: vi.fn(() => ({
-      from: mockFrom,
-      storage: mockStorage,
-    })),
-  };
-});
+const fromMock = vi.fn();
 
 vi.mock("@/lib/supabase/env", () => ({
   hasSupabaseAdminEnv: vi.fn(() => true),
+}));
+
+vi.mock("@/lib/supabase/admin", () => ({
+  createSupabaseAdminClient: vi.fn(() => ({
+    from: fromMock,
+  })),
+}));
+
+vi.mock("@/lib/sanitization/sanitize", () => ({
+  sanitizeDescription: (s: string) => s,
 }));
 
 vi.mock("@/lib/storage/registry", () => ({
   queueFileCleanup,
 }));
 
-describe("Listing Storage Cleanup", () => {
-  const admin = createSupabaseAdminClient() as unknown as Record<string, any>;
+function createListingsChain() {
+  return {
+    update: vi.fn().mockReturnThis(),
+    eq: vi.fn().mockReturnThis(),
+    match: vi.fn().mockReturnThis(),
+    select: vi.fn().mockReturnValue({
+      single: vi.fn().mockResolvedValue({
+        data: {
+          id: "listing-1",
+          seller_id: "seller-1",
+          slug: "test-listing",
+          title: "Test",
+          category: "otomobil",
+          brand: "BMW",
+          model: "320i",
+          year: 2020,
+          mileage: 10000,
+          fuel_type: "benzin",
+          transmission: "otomatik",
+          price: 1000000,
+          city: "İstanbul",
+          district: "Kadıköy",
+          description: "desc",
+          whatsapp_phone: "905551234567",
+          vin: null,
+          license_plate: null,
+          car_trim: null,
+          tramer_amount: null,
+          damage_status_json: null,
+          fraud_score: 0,
+          fraud_reason: null,
+          status: "pending",
+          featured: false,
+          featured_until: null,
+          urgent_until: null,
+          highlighted_until: null,
+          market_price_index: null,
+          expert_inspection: null,
+          published_at: null,
+          bumped_at: null,
+          view_count: 0,
+          version: 2,
+          created_at: "2024-01-01T00:00:00Z",
+          updated_at: "2024-01-02T00:00:00Z",
+        },
+        error: null,
+      }),
+    }),
+  };
+}
 
+describe("Listing Storage Cleanup", () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
 
-  it("should identify and delete orphaned storage images during update", async () => {
-    // 1. Mock the identified orphans check (listing_images table)
-    (admin.from() as any).then.mockImplementationOnce((resolve: (val: any) => void) => {
-      resolve({
-        data: [{ storage_path: "old-1.jpg" }, { storage_path: "keep.jpg" }],
-        error: null,
-      });
+  it("should identify and queue orphaned storage images during update", async () => {
+    const oldImages = [
+      { storage_path: "old-1.jpg", is_cover: false, sort_order: 0, public_url: "x" },
+      { storage_path: "keep.jpg", is_cover: true, sort_order: 1, public_url: "y" },
+    ];
+
+    fromMock.mockImplementation((table: string) => {
+      if (table === "listings") return createListingsChain();
+      if (table === "listing_images") {
+        return {
+          select: vi.fn().mockReturnValue({
+            eq: vi.fn().mockResolvedValue({ data: oldImages, error: null }),
+          }),
+          delete: vi.fn().mockReturnValue({
+            in: vi.fn().mockResolvedValue({ error: null }),
+          }),
+          upsert: vi.fn().mockResolvedValue({ error: null }),
+        };
+      }
+      return {};
     });
 
-    // New listing state (only keep.jpg remains)
     const listing = {
       id: "listing-1",
-      images: [{ storagePath: "keep.jpg", url: "...", order: 0, isCover: true }],
-    } as unknown as Listing;
+      sellerId: "seller-1",
+      slug: "test-listing",
+      title: "Test",
+      category: "otomobil",
+      brand: "BMW",
+      model: "320i",
+      year: 2020,
+      mileage: 10000,
+      fuelType: "benzin",
+      transmission: "otomatik",
+      price: 1000000,
+      city: "İstanbul",
+      district: "Kadıköy",
+      description: "desc",
+      whatsappPhone: "905551234567",
+      status: "pending",
+      featured: false,
+      version: 1,
+      createdAt: "2024-01-01T00:00:00Z",
+      updatedAt: "2024-01-02T00:00:00Z",
+      images: [{ storagePath: "keep.jpg", url: "y", order: 0, isCover: true }],
+      viewCount: 0,
+    } as any;
 
     await updateDatabaseListing(listing);
-
     expect(queueFileCleanup).toHaveBeenCalledWith("listing-images", ["old-1.jpg"]);
   });
 
-  it("should not delete images that are still present", async () => {
-    (admin.from() as any).then.mockImplementationOnce((resolve: (val: any) => void) => {
-      resolve({
-        data: [{ storage_path: "keep.jpg" }],
-        error: null,
-      });
+  it("should not queue cleanup when all images are still present", async () => {
+    fromMock.mockImplementation((table: string) => {
+      if (table === "listings") return createListingsChain();
+      if (table === "listing_images") {
+        return {
+          select: vi.fn().mockReturnValue({
+            eq: vi.fn().mockResolvedValue({
+              data: [{ storage_path: "keep.jpg", is_cover: true, sort_order: 0, public_url: "y" }],
+              error: null,
+            }),
+          }),
+          delete: vi.fn().mockReturnValue({
+            in: vi.fn().mockResolvedValue({ error: null }),
+          }),
+          upsert: vi.fn().mockResolvedValue({ error: null }),
+        };
+      }
+      return {};
     });
 
     const listing = {
       id: "listing-1",
-      images: [{ storagePath: "keep.jpg", url: "...", order: 0, isCover: true }],
-    } as unknown as Listing;
+      sellerId: "seller-1",
+      slug: "test-listing",
+      title: "Test",
+      category: "otomobil",
+      brand: "BMW",
+      model: "320i",
+      year: 2020,
+      mileage: 10000,
+      fuelType: "benzin",
+      transmission: "otomatik",
+      price: 1000000,
+      city: "İstanbul",
+      district: "Kadıköy",
+      description: "desc",
+      whatsappPhone: "905551234567",
+      status: "pending",
+      featured: false,
+      version: 1,
+      createdAt: "2024-01-01T00:00:00Z",
+      updatedAt: "2024-01-02T00:00:00Z",
+      images: [{ storagePath: "keep.jpg", url: "y", order: 0, isCover: true }],
+      viewCount: 0,
+    } as any;
 
     await updateDatabaseListing(listing);
-
     expect(queueFileCleanup).not.toHaveBeenCalled();
   });
 });

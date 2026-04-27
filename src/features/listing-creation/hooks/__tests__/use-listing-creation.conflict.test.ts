@@ -8,8 +8,8 @@ describe("useListingCreation conflict handling", () => {
     "utf-8"
   );
 
-  it("handles 409 responses with a dedicated refresh path", () => {
-    expect(sourceCode).toContain("response.status === 409");
+  it("handles conflict responses with a dedicated refresh path", () => {
+    expect(sourceCode).toContain('response.error?.code === "CONFLICT"');
     // After conflict, user is prompted to reload — uses window.location.reload()
     expect(sourceCode).toContain("window.location.reload()");
   });

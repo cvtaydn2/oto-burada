@@ -104,7 +104,7 @@ describe("requireApiAdminUser — fail-closed behavior", () => {
   });
 
   it("returns the user when all checks pass", async () => {
-    const adminUser = { id: "admin-1", app_metadata: { role: "admin" } };
+    const adminUser = { id: "admin-ok-1", app_metadata: { role: "admin" } };
     mockGetUser.mockResolvedValue({ data: { user: adminUser }, error: null });
     mockProfileSelect.mockResolvedValue({ data: { role: "admin", is_banned: false }, error: null });
 
@@ -112,7 +112,7 @@ describe("requireApiAdminUser — fail-closed behavior", () => {
     const result = await requireApiAdminUser();
 
     expect(result).not.toBeInstanceOf(Response);
-    expect((result as any).id).toBe("admin-1");
+    expect((result as any).id).toBe("admin-ok-1");
   });
 });
 
@@ -149,7 +149,7 @@ describe("isSupabaseAdminUser — fail-closed behavior", () => {
 
   it("returns true when all checks pass", async () => {
     mockGetUser.mockResolvedValue({
-      data: { user: { id: "admin-1", app_metadata: { role: "admin" } } },
+      data: { user: { id: "admin-ok-2", app_metadata: { role: "admin" } } },
     });
     mockProfileSelect.mockResolvedValue({ data: { role: "admin", is_banned: false }, error: null });
 

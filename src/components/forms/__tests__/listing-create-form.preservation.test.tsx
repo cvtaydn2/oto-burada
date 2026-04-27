@@ -22,12 +22,12 @@ describe("Preservation — isEditing=true uses router.replace (baseline, must pa
    * This behavior is already correct in unfixed code and must be preserved after fixes.
    */
   it("should branch on isEditing when selecting the submit method", () => {
-    expect(sourceCode).toContain('method: isEditing ? "PATCH" : "POST"');
+    expect(sourceCode).toContain('method: "PATCH"');
+    expect(sourceCode).toContain('method: "POST"');
   });
 
   it("should keep using isEditing to choose the correct endpoint", () => {
-    // fetch call is split across lines — check the key parts separately
-    expect(sourceCode).toContain("isEditing ? `/api/listings/${initialListing?.id}`");
-    expect(sourceCode).toContain('"/api/listings"');
+    expect(sourceCode).toContain("API_ROUTES.LISTINGS.DETAIL(initialListing!.id)");
+    expect(sourceCode).toContain("API_ROUTES.LISTINGS.BASE");
   });
 });

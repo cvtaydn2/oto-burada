@@ -247,7 +247,17 @@ export async function withCronOrAdmin(
   request: Request,
   options: Omit<SecurityOptions, "requireCron" | "requireAdmin"> = {}
 ) {
-  return withSecurity(request, { ...options, requireCron: true, requireAdmin: true });
+  // OR semantics:
+  // 1) Allow trusted cron calls with a valid CRON_SECRET bearer token.
+  // 2) Otherwise require an authenticated admin session.
+  const cronSecret = process.env.CRON_SECRET;
+  const authHeader = request.headers.get("authorization");
+
+  if (cronSecret && authHeader === `Bearer ${cronSecret}`) {
+    return { ok: true } as SecurityResult;
+  }
+
+  return withSecurity(request, { ...options, requireAdmin: true });
 }
 
 // Backward compatibility (deprecate later)

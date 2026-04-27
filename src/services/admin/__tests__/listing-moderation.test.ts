@@ -103,7 +103,7 @@ describe("listing-moderation service", () => {
     expect(notifications.createDatabaseNotification).toHaveBeenCalledWith(
       expect.objectContaining({
         type: "moderation",
-        title: "Ilanin onaylandi",
+        title: "İlanınız Yayında",
       })
     );
   });

@@ -62,6 +62,8 @@ function hasSecurityMiddleware(
   hasWithSecurity: boolean;
   hasWithUserRoute: boolean;
   hasWithUserAndCsrf: boolean;
+  hasWithUserAndCsrfToken: boolean;
+  hasWithCsrfToken: boolean;
   hasWithAdminRoute: boolean;
   hasWithCronOrAdmin: boolean;
   hasRequireApiUser: boolean;
@@ -76,6 +78,8 @@ function hasSecurityMiddleware(
       hasWithSecurity: false,
       hasWithUserRoute: false,
       hasWithUserAndCsrf: false,
+      hasWithUserAndCsrfToken: false,
+      hasWithCsrfToken: false,
       hasWithAdminRoute: false,
       hasWithCronOrAdmin: false,
       hasRequireApiUser: false,
@@ -98,6 +102,8 @@ function hasSecurityMiddleware(
     hasWithSecurity: /await\s+withSecurity\s*\(/.test(scopedContent),
     hasWithUserRoute: /await\s+withUserRoute\s*\(/.test(scopedContent),
     hasWithUserAndCsrf: /await\s+withUserAndCsrf\s*\(/.test(scopedContent),
+    hasWithUserAndCsrfToken: /await\s+withUserAndCsrfToken\s*\(/.test(scopedContent),
+    hasWithCsrfToken: /await\s+withCsrfToken\s*\(/.test(scopedContent),
     hasWithAdminRoute: /await\s+withAdminRoute\s*\(/.test(scopedContent),
     hasWithCronOrAdmin: /await\s+withCronOrAdmin\s*\(/.test(scopedContent),
     hasRequireApiUser: /await\s+requireApiUser\s*\(/.test(scopedContent),
@@ -118,6 +124,8 @@ function isPublicEndpoint(filePath: string, content: string): boolean {
     "/api/market/estimate",
     "/api/search/suggestions",
     "/api/og/",
+    "/api/payments/callback",
+    "/api/payments/webhook",
     "/api/saved-searches/notify",
     "/api/listings/expiry-warnings",
     "/api/cron/process-fulfillments",
@@ -172,6 +180,8 @@ describe("API Security Audit", () => {
             !security.hasWithAuthAndCsrf &&
             !security.hasWithSecurity &&
             !security.hasWithUserAndCsrf &&
+            !security.hasWithUserAndCsrfToken &&
+            !security.hasWithCsrfToken &&
             !security.hasWithAdminRoute &&
             !security.hasWithCronOrAdmin &&
             !security.hasRequireApiAdminUser
@@ -233,6 +243,8 @@ describe("API Security Audit", () => {
           !security.hasWithSecurity &&
           !security.hasWithUserRoute &&
           !security.hasWithUserAndCsrf &&
+          !security.hasWithUserAndCsrfToken &&
+          !security.hasWithCsrfToken &&
           !security.hasWithAdminRoute &&
           !security.hasWithCronOrAdmin &&
           !security.hasRequireApiUser &&
@@ -277,7 +289,7 @@ describe("API Security Audit", () => {
       }
 
       // Check if file imports security middleware
-      const hasSecurityImport = /from\s+["']@\/lib\/utils\/api-security["']/.test(content);
+      const hasSecurityImport = /from\s+["']@\/lib\/api\/security["']/.test(content);
 
       if (!hasSecurityImport) {
         violations.push({

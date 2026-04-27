@@ -21,7 +21,7 @@ type MockQueryResult = {
 
 describe("admin analytics service", () => {
   const mockFrom = vi.fn();
-  const mockRpc = vi.fn().mockResolvedValue({ data: [], error: null });
+  const mockRpc = vi.fn();
   const mockAdminClient = {
     from: mockFrom,
     rpc: mockRpc,
@@ -33,41 +33,51 @@ describe("admin analytics service", () => {
   });
 
   it("should calculate correct KPIs and trends", async () => {
-    // Mock the chain for many different queries
-    // Promise.all in analytics.ts expects 16 results
+    mockRpc.mockImplementation((fn: string) => {
+      if (fn === "get_listings_by_brand_count") {
+        return Promise.resolve({
+          data: [
+            { brand: "BMW", count: 2 },
+            { brand: "Audi", count: 1 },
+          ],
+          error: null,
+        });
+      }
+      if (fn === "get_listings_by_city_count") {
+        return Promise.resolve({ data: [{ city: "İstanbul", count: 3 }], error: null });
+      }
+      if (fn === "get_listings_by_status_count") {
+        return Promise.resolve({ data: [{ status: "approved", count: 3 }], error: null });
+      }
+      if (fn === "get_revenue_stats") {
+        return Promise.resolve({ data: [{ total_amount: 1500 }], error: null });
+      }
+      if (fn === "get_daily_listing_trend") {
+        return Promise.resolve({
+          data: [{ day: new Date().toISOString().split("T")[0], count: 4 }],
+          error: null,
+        });
+      }
+      return Promise.resolve({ data: [], error: null });
+    });
+
     mockFrom.mockImplementation((table: string) => ({
-      select: vi.fn().mockImplementation((_col: string, opts?: { count?: string }) => {
+      select: vi.fn().mockImplementation(() => {
+        const result: MockQueryResult =
+          table === "profiles"
+            ? { count: 50, data: null, error: null }
+            : table === "listings"
+              ? { count: 100, data: null, error: null }
+              : table === "market_stats"
+                ? { data: [{ brand: "BMW", avg_price: 1500000 }], error: null }
+                : { data: [], error: null };
         const query = {
           limit: vi.fn().mockReturnThis(),
           eq: vi.fn().mockReturnThis(),
           gte: vi.fn().mockReturnThis(),
           lt: vi.fn().mockReturnThis(),
           order: vi.fn().mockReturnThis(),
-          then: (resolve: (value: MockQueryResult) => unknown) => {
-            // Return different data based on the table
-            if (table === "listings") {
-              if (opts?.count === "exact") resolve({ count: 100, data: null, error: null });
-              else
-                resolve({
-                  data: [
-                    { brand: "BMW", created_at: new Date().toISOString() },
-                    { brand: "BMW", created_at: new Date().toISOString() },
-                    { brand: "Audi", created_at: new Date().toISOString() },
-                  ],
-                  error: null,
-                });
-            } else if (table === "profiles") {
-              resolve({ count: 50, data: null, error: null });
-            } else if (table === "payments") {
-              resolve({ data: [{ amount: 1000 }, { amount: 500 }], error: null });
-            } else if (table === "reports") {
-              resolve({ count: 5, data: null, error: null });
-            } else if (table === "market_stats") {
-              resolve({ data: [{ brand: "BMW", avg_price: 1500000 }], error: null });
-            } else {
-              resolve({ data: [], error: null });
-            }
-          },
+          then: (resolve: (value: MockQueryResult) => unknown) => resolve(result),
         };
         return query;
       }),

@@ -13,6 +13,7 @@ export default defineConfig(({ mode }) => {
       environment: "node",
       globals: true,
       include: ["src/**/*.int.test.ts"],
+      setupFiles: ["./src/test/setup.int.ts"],
       testTimeout: 30000,
     },
   };

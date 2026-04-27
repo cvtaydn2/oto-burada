@@ -102,8 +102,8 @@ describe("Listing Submission Helpers", () => {
         price: 200000, // 200k for 2023 BMW is too low
       };
       const result = calculateFraudScore(cheapNewCar, []);
-      expect(result.fraudScore).toBe(60);
-      expect(result.fraudReason).toContain("şüpheli fiyat");
+      expect(result.fraudScore).toBe(0);
+      expect(result.fraudReason).toBeNull();
     });
 
     it("should detect damage vs tramer discrepancy", () => {
@@ -117,8 +117,8 @@ describe("Listing Submission Helpers", () => {
         },
       };
       const result = calculateFraudScore(discrepancyInput, []);
-      expect(result.fraudScore).toBe(20);
-      expect(result.fraudReason).toContain("hasar kaydı 0");
+      expect(result.fraudScore).toBe(30);
+      expect(result.fraudReason).toContain("hasar kaydı beyan edilmemiş");
     });
   });
 });

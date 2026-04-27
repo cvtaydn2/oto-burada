@@ -12,6 +12,7 @@ import {
 
 const validListingInput = {
   title: "BMW 320i Temiz Araç",
+  category: "otomobil",
   brand: "BMW",
   model: "320i",
   year: 2020,
