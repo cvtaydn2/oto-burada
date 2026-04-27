@@ -10,7 +10,7 @@ interface LocalRateLimitEntry {
   reset: number;
 }
 
-const DEFAULT_LIMIT = 60;
+const DEFAULT_LIMIT = 120;
 const DEFAULT_WINDOW_MS = 60_000;
 const REDIS_CIRCUIT_BREAKER_MS = 30_000;
 const MAX_LOCAL_ENTRIES = 10_000;
@@ -115,7 +115,7 @@ function getRatelimit() {
   try {
     ratelimit = new Ratelimit({
       redis: Redis.fromEnv(),
-      limiter: Ratelimit.slidingWindow(60, "60 s"),
+      limiter: Ratelimit.slidingWindow(120, "60 s"),
       analytics: true,
       prefix: "@upstash/ratelimit/oto-burada",
     });

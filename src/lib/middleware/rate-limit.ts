@@ -1,5 +1,6 @@
 import { type NextRequest, NextResponse } from "next/server";
 
+import { getNormalizedIp } from "@/lib/api/ip-utils";
 import { logger } from "@/lib/logging/logger";
 import { checkGlobalRateLimit } from "@/lib/rate-limiting/distributed-rate-limit";
 
@@ -20,11 +21,14 @@ export async function rateLimitMiddleware(request: NextRequest) {
     return null;
   }
 
-  const ip =
+  const rawIp =
     request.headers.get("x-real-ip") ||
     request.headers.get("x-vercel-forwarded-for")?.split(",")[0] ||
-    request.headers.get("x-forwarded-for")?.split(",").pop()?.trim() ||
+    request.headers.get("cf-connecting-ip") ||
+    request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ||
     "127.0.0.1";
+
+  const ip = getNormalizedIp(rawIp);
 
   // ── LOGIC FIX: Issue LOGIC-04 - Validate and Log Bypass IPs ─────────────
   // Allowlisted infrastructure IPs can bypass rate limiting.
