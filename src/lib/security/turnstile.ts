@@ -45,7 +45,15 @@ export async function verifyTurnstileToken(token: string, ip?: string): Promise<
 
   // 2. Token Deduplication (Issue 30 - Replay Attack Prevention)
   // Check if this token has already been used in the last 15 minutes.
-  if (redis) {
+  if (!redis) {
+    if (isProd) {
+      logger.security.error(
+        "CRITICAL: Redis unavailable for Turnstile deduplication in production"
+      );
+      return false; // Fail-closed in production - bot protection is mandatory
+    }
+    logger.security.warn("Turnstile deduplication skipped (no Redis in dev/test)");
+  } else {
     try {
       const redisKey = `turnstile:used:${token}`;
       const isUsed = await redis.get(redisKey);
@@ -60,8 +68,13 @@ export async function verifyTurnstileToken(token: string, ip?: string): Promise<
       await redis.set(redisKey, "1", { ex: 15 * 60 });
     } catch (error) {
       logger.security.error("Redis token deduplication failed", error);
-      // In prod, if Redis fails, we might allow it (fail-open) to avoid blocking users
-      // but only if Turnstile itself passes later.
+      if (isProd) {
+        logger.security.error(
+          "CRITICAL: Redis token dedup failed in production - rejecting request"
+        );
+        return false; // Fail-closed in production
+      }
+      // Fail-open in dev/test for better DX
     }
   }
 

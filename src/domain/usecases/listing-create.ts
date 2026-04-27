@@ -32,7 +32,7 @@ export interface ListingCreationDependencies {
   saveListing: (listing: Listing) => Promise<{ listing?: Listing; error?: string }>;
   notifyUser: (listing: Listing) => Promise<void>;
   trackEvent: (listing: Listing) => void;
-  runAsyncModeration: (listingId: string) => void;
+  runAsyncModeration: (listingId: string, listingSnapshot?: Listing) => void;
 }
 
 /**
@@ -120,7 +120,7 @@ export async function executeListingCreation(
   // 7. Side Effects (non-blocking)
   deps.notifyUser(listing).catch((e) => logger.system.error("Creation notification failed", e));
   deps.trackEvent(listing);
-  deps.runAsyncModeration(listing.id);
+  deps.runAsyncModeration(listing.id, listing);
 
   return { success: true, listing };
 }

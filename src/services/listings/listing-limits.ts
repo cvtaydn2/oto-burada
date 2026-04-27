@@ -94,11 +94,40 @@ export async function checkListingLimit(
 
   // Fallback: non-atomic count check (safe for low-traffic / dev environments)
   // Even in fallback, we attempt to use an advisory lock to reduce race condition window
+  let lockAcquired = false;
   try {
     const lockKey = parseInt(userId.replace(/-/g, "").slice(0, 8), 16);
-    await admin.rpc("pg_advisory_xact_lock", { key: lockKey });
-  } catch {
-    // Ignore if advisory lock RPC is not exposed/available
+    const { error: lockError } = await admin
+      .rpc("pg_advisory_xact_lock", { key: lockKey })
+      .abortSignal(AbortSignal.timeout(3000)); // 3 second timeout
+
+    if (lockError) {
+      logger.auth.warn("[ListingLimits] Advisory lock failed", { error: lockError, userId });
+      // In production, if we can't acquire lock, fail-closed to prevent race conditions
+      if (process.env.NODE_ENV === "production") {
+        return {
+          allowed: false,
+          reason: "Sistem meşgul. Lütfen biraz bekleyip tekrar deneyin.",
+          remaining: { monthly: 0, yearly: 0 },
+        };
+      }
+    } else {
+      lockAcquired = true;
+    }
+  } catch (error) {
+    logger.auth.error("[ListingLimits] Advisory lock exception", error);
+    // In production, fail-closed on lock acquisition failure
+    if (process.env.NODE_ENV === "production") {
+      return {
+        allowed: false,
+        reason: "Sistem meşgul. Lütfen biraz bekleyip tekrar deneyin.",
+        remaining: { monthly: 0, yearly: 0 },
+      };
+    }
+  }
+
+  if (!lockAcquired && process.env.NODE_ENV === "production") {
+    logger.auth.warn("[ListingLimits] Proceeding without lock in production (risky)");
   }
 
   const counts = await getUserListingCounts(userId);

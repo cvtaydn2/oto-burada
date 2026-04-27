@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 
+import { getUserFacingError } from "@/config/user-messages";
 import { API_ERROR_CODES, apiError } from "@/lib/api/response";
 
 /**
@@ -36,6 +37,7 @@ export async function validateRequestBody<T>(
 
 /**
  * Standard error response mapper for domain use case results.
+ * Maps internal error codes to user-friendly messages.
  */
 export function mapUseCaseError(errorCode: string | undefined): {
   message: string;
@@ -44,33 +46,50 @@ export function mapUseCaseError(errorCode: string | undefined): {
 } {
   switch (errorCode) {
     case "VALIDATION_ERROR":
-      return { message: "Doğrulama hatası.", status: 400, code: API_ERROR_CODES.BAD_REQUEST };
+      return {
+        message: getUserFacingError("VALIDATION_ERROR"),
+        status: 400,
+        code: API_ERROR_CODES.BAD_REQUEST,
+      };
     case "NOT_FOUND":
-      return { message: "Kayıt bulunamadı.", status: 404, code: API_ERROR_CODES.NOT_FOUND };
+      return {
+        message: getUserFacingError("NOT_FOUND"),
+        status: 404,
+        code: API_ERROR_CODES.NOT_FOUND,
+      };
     case "FORBIDDEN":
       return {
-        message: "Bu işlem için yetkiniz yok.",
+        message: getUserFacingError("FORBIDDEN"),
         status: 403,
         code: API_ERROR_CODES.FORBIDDEN,
       };
     case "QUOTA_EXCEEDED":
+      return {
+        message: getUserFacingError("QUOTA_EXCEEDED"),
+        status: 403,
+        code: API_ERROR_CODES.QUOTA_EXCEEDED,
+      };
     case "TRUST_GUARD_REJECTION":
       return {
-        message: "Bu işlem için sınırlarınız doldu veya güvenlik kısıtlamasına takıldınız.",
+        message: getUserFacingError("TRUST_GUARD_REJECTION"),
         status: 403,
-        code: API_ERROR_CODES.FORBIDDEN,
+        code: API_ERROR_CODES.TRUST_GUARD_REJECTION,
       };
     case "SLUG_COLLISION":
-      return { message: "Bu ilan zaten mevcut.", status: 409, code: API_ERROR_CODES.CONFLICT };
+      return {
+        message: getUserFacingError("SLUG_COLLISION"),
+        status: 409,
+        code: API_ERROR_CODES.CONFLICT,
+      };
     case "UNAUTHORIZED":
       return {
-        message: "Oturum açmanız gerekiyor.",
+        message: getUserFacingError("UNAUTHORIZED"),
         status: 401,
         code: API_ERROR_CODES.UNAUTHORIZED,
       };
     default:
       return {
-        message: "İşlem sırasında bir hata oluştu.",
+        message: getUserFacingError("INTERNAL_ERROR"),
         status: 500,
         code: API_ERROR_CODES.INTERNAL_ERROR,
       };

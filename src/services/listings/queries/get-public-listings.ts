@@ -129,7 +129,20 @@ export async function getListingById(id: string): Promise<Listing | null> {
     return null;
   }
 
-  return data ? mapListingRow(data) : null;
+  if (!data) {
+    return null;
+  }
+
+  // Ensure single result (maybeSingle should guarantee this, but defensive check)
+  if (Array.isArray(data)) {
+    if (data.length === 0) return null;
+    if (data.length > 1) {
+      logger.db.warn("Multiple listings returned for single ID", { id, count: data.length });
+    }
+    return mapListingRow(data[0]);
+  }
+
+  return mapListingRow(data);
 }
 
 export async function getMarketplaceSeller(sellerId: string): Promise<Profile | null> {

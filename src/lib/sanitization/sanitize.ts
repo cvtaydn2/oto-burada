@@ -3,11 +3,24 @@
  *
  * SECURITY: Multi-layered XSS protection with regex-based stripping
  * and proper HTML entity encoding. Designed to be XSS-bypass resistant.
+ *
+ * ── UI/UX: Issue #31 - Sanitization Safety Documentation ───────
+ * IMPORTANT RENDER CONTEXT SAFETY:
+ * - ✅ SAFE: JSX text rendering: <div>{sanitizedText}</div>
+ * - ✅ SAFE: textarea value: <textarea value={sanitizedText} />
+ * - ❌ UNSAFE: dangerouslySetInnerHTML (never use with user content)
+ * - ❌ UNSAFE: innerHTML DOM manipulation
+ *
+ * React automatically escapes text content, providing XSS protection.
+ * These sanitizers provide defense-in-depth by removing HTML before React sees it.
  */
 
 /**
  * Sanitize a user-provided string for safe storage and rendering.
  * Removes all HTML tags and returns plain text.
+ *
+ * @safe-for JSX text rendering only
+ * @NOT-SAFE-FOR dangerouslySetInnerHTML or innerHTML
  */
 export function sanitizeText(value: string): string {
   if (!value) return "";
@@ -17,6 +30,9 @@ export function sanitizeText(value: string): string {
 /**
  * Sanitize a multiline description field.
  * Allows only line breaks for readability, strips everything else.
+ *
+ * @safe-for JSX text rendering, textarea value
+ * @NOT-SAFE-FOR dangerouslySetInnerHTML or innerHTML
  */
 export function sanitizeDescription(value: string): string {
   if (!value) return "";
@@ -27,6 +43,8 @@ export function sanitizeDescription(value: string): string {
 /**
  * Sanitize a value for use in meta tags (title / description).
  * Strips all tags and collapses whitespace into single spaces.
+ *
+ * @safe-for meta tags, og:title, og:description
  */
 export function sanitizeForMeta(value: string): string {
   return sanitizeText(value)
@@ -38,6 +56,9 @@ export function sanitizeForMeta(value: string): string {
 /**
  * Escape the basic HTML-significant characters.
  * Essential for rendering untrusted content in non-JSX contexts.
+ *
+ * @safe-for HTML attributes, data attributes
+ * @use-case When you need to manually construct HTML strings (rare in React)
  */
 export function escapeHtml(value: string): string {
   const HTML_ENTITY_MAP: Record<string, string> = {

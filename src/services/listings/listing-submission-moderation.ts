@@ -1,3 +1,4 @@
+import { FRAUD_SCORE_WEIGHTS, PRICE_ANOMALY_THRESHOLDS } from "@/config/fraud-thresholds";
 import { withNextCache } from "@/lib/caching/cache";
 import { logger } from "@/lib/logging/logger";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
@@ -117,13 +118,17 @@ export function calculateFraudScore(
       similarListings.reduce((sum, current) => sum + (current.price || 0), 0) /
       similarListings.length;
 
-    if (input.price < avgPrice * 0.7) {
-      score += 70;
-      reasons.push(`Fiyat ortalamanın %30 altında (${Math.round(avgPrice)} TL)`);
+    if (input.price < avgPrice * PRICE_ANOMALY_THRESHOLDS.FRAUD_SCORE_LOW) {
+      score += FRAUD_SCORE_WEIGHTS.PRICE_TOO_LOW;
+      reasons.push(
+        `Fiyat ortalamanın %${Math.round((1 - PRICE_ANOMALY_THRESHOLDS.FRAUD_SCORE_LOW) * 100)} altında (${Math.round(avgPrice)} TL)`
+      );
       suggestedStatus = "flagged";
-    } else if (input.price > avgPrice * 1.5) {
-      score += 50;
-      reasons.push(`Fiyat ortalamanın %50 üzerinde (${Math.round(avgPrice)} TL)`);
+    } else if (input.price > avgPrice * PRICE_ANOMALY_THRESHOLDS.FRAUD_SCORE_HIGH) {
+      score += FRAUD_SCORE_WEIGHTS.PRICE_TOO_HIGH;
+      reasons.push(
+        `Fiyat ortalamanın %${Math.round((PRICE_ANOMALY_THRESHOLDS.FRAUD_SCORE_HIGH - 1) * 100)} üzerinde (${Math.round(avgPrice)} TL)`
+      );
       suggestedStatus = "flagged";
     }
   }
@@ -136,10 +141,15 @@ export function calculateFraudScore(
     suggestedStatus = suggestedStatus || "flagged";
   }
 
-  // 5. Tramer/Damage Discrepancy
+  // 5. Tramer/Damage Discrepancy (with normalized damage status)
   if (input.damageStatusJson && (input.tramerAmount === 0 || !input.tramerAmount)) {
+    // Normalize damage status values before checking
+    const normalizedDamageStatus = Object.fromEntries(
+      Object.entries(input.damageStatusJson).map(([k, v]) => [k, v === "orjinal" ? "orijinal" : v])
+    );
+
     const suspiciousStatuses = ["boyali", "lokal_boyali", "degisen"];
-    const changedPartsCount = Object.values(input.damageStatusJson).filter((s) =>
+    const changedPartsCount = Object.values(normalizedDamageStatus).filter((s) =>
       suspiciousStatuses.includes(s as string)
     ).length;
 
@@ -149,16 +159,19 @@ export function calculateFraudScore(
     }
   }
 
-  // 6. Seller Reputation adjustment (God-Tier Pillar)
+  // 6. Seller Reputation adjustment (Trust multiplier approach)
+  // Apply trust as a multiplier rather than subtraction to ensure it always has effect
+  let trustMultiplier = 1.0;
+
   if (sellerStats) {
-    // Verified sellers get a trust bonus
+    // Verified sellers get significant trust bonus (30% reduction)
     if (sellerStats.isVerified) {
-      score -= 30;
+      trustMultiplier *= 0.7;
     }
 
-    // High trust score (0-100 scale assumed)
+    // High trust score (0-100 scale assumed) - 20% reduction
     if (sellerStats.trustScore && sellerStats.trustScore > 80) {
-      score -= 20;
+      trustMultiplier *= 0.8;
     }
 
     // New sellers (0 approved listings) are more suspicious
@@ -168,8 +181,11 @@ export function calculateFraudScore(
     }
   }
 
+  // Apply trust multiplier to final score
+  const finalScore = Math.round(score * trustMultiplier);
+
   return {
-    fraudScore: Math.max(0, Math.min(score, 100)),
+    fraudScore: Math.max(0, Math.min(finalScore, 100)),
     fraudReason: reasons.length > 0 ? reasons.join(", ") : null,
     suggestedStatus,
   };
@@ -179,15 +195,19 @@ export function calculateFraudScore(
  * ── PILL: Issue 2 - Async AI Moderation Queue ──────────────────
  * Performs AI moderation and fraud analysis in the background.
  * Prevents blocking the main request and manages costs/retries.
+ *
+ * ── OPTIMIZATION: Issue #16 - N+1 Query Prevention ─────────────
+ * Accepts optional listingSnapshot to avoid redundant DB fetch.
+ * Caller should pass listing data when already available.
  */
-export async function performAsyncModeration(listingId: string) {
+export async function performAsyncModeration(listingId: string, listingSnapshot?: Listing) {
   const { createSupabaseAdminClient } = await import("@/lib/supabase/admin");
   const { getStoredListingById } = await import("./listing-submissions");
   const admin = createSupabaseAdminClient();
 
   try {
-    // 1. Fetch current listing
-    const listing = await getStoredListingById(listingId);
+    // 1. Use provided snapshot or fetch if not available
+    const listing = listingSnapshot ?? (await getStoredListingById(listingId));
     if (!listing) return;
 
     // 2. Fetch similar listings for market analysis (filtered for accuracy)
@@ -269,6 +289,27 @@ export async function performAsyncModeration(listingId: string) {
       .eq("id", listingId);
   } catch (error) {
     logger.listings.error("AsyncModeration failed", error, { listingId });
+
+    // Flag listing for manual review to prevent it from staying in limbo
+    try {
+      await admin
+        .from("listings")
+        .update({
+          status: "flagged",
+          fraud_reason: "Otomatik moderasyon sistemi hatası - manuel inceleme gerekiyor",
+          updated_at: new Date().toISOString(),
+        })
+        .eq("id", listingId)
+        .eq("status", "pending_ai_review"); // Only update if still in review
+
+      logger.listings.warn("Listing flagged for manual review due to moderation failure", {
+        listingId,
+      });
+    } catch (flagError) {
+      logger.listings.error("Failed to flag listing after moderation error", flagError, {
+        listingId,
+      });
+    }
   }
 }
 
@@ -276,6 +317,29 @@ export interface ListingTrustGuardResult {
   allowed: boolean;
   message?: string;
   reason?: string;
+}
+
+/**
+ * Validate trust guard rejection attempt structure.
+ */
+function isValidRejectionAttempt(attempt: unknown): attempt is TrustGuardRejectionAttempt {
+  if (typeof attempt !== "object" || attempt === null) return false;
+  const obj = attempt as Record<string, unknown>;
+  return (
+    typeof obj.at === "string" &&
+    (obj.source === "create" || obj.source === "edit") &&
+    typeof obj.reason === "string" &&
+    TRACKED_TRUST_GUARD_REASONS.has(obj.reason)
+  );
+}
+
+/**
+ * Validate trust guard metadata structure.
+ */
+function isValidTrustGuardMetadata(data: unknown): data is TrustGuardRejectionMetadata {
+  if (typeof data !== "object" || data === null) return false;
+  const obj = data as Record<string, unknown>;
+  return Array.isArray(obj.attempts) && obj.attempts.every(isValidRejectionAttempt);
 }
 
 function parseTrustGuardMetadata(
@@ -296,26 +360,26 @@ function parseTrustGuardMetadata(
   }
 
   try {
-    const parsed = JSON.parse(serialized) as {
-      attempts?: TrustGuardRejectionAttempt[];
-      reviewReason?: string;
-      reviewRequestedAt?: string;
-    };
+    const parsed = JSON.parse(serialized);
+
+    // Validate structure before using
+    if (!isValidTrustGuardMetadata(parsed)) {
+      logger.security.warn("Invalid trust guard metadata structure", {
+        serialized: serialized.slice(0, 100),
+      });
+      return { attempts: [] };
+    }
+
     return {
-      attempts: Array.isArray(parsed.attempts)
-        ? parsed.attempts.filter(
-            (attempt): attempt is TrustGuardRejectionAttempt =>
-              typeof attempt?.at === "string" &&
-              (attempt.source === "create" || attempt.source === "edit") &&
-              typeof attempt.reason === "string" &&
-              TRACKED_TRUST_GUARD_REASONS.has(attempt.reason)
-          )
-        : [],
+      attempts: parsed.attempts,
       reviewReason: typeof parsed.reviewReason === "string" ? parsed.reviewReason : undefined,
       reviewRequestedAt:
         typeof parsed.reviewRequestedAt === "string" ? parsed.reviewRequestedAt : undefined,
     };
-  } catch {
+  } catch (error) {
+    logger.security.error("Failed to parse trust guard metadata", error, {
+      serialized: serialized.slice(0, 100),
+    });
     return { attempts: [] };
   }
 }
@@ -456,31 +520,37 @@ export async function runListingTrustGuards(
 
   const admin = createSupabaseAdminClient();
 
-  const [vinDuplicateResult, plateDuplicateResult, priceEstimate] = await Promise.all([
-    admin
-      .from("listings")
-      .select("id", { head: true, count: "exact" })
-      .eq("vin", input.vin)
-      .neq("id", options?.excludeListingId ?? "")
-      .in("status", ["pending", "pending_ai_review", "approved", "flagged"]),
-    input.licensePlate
-      ? admin
-          .from("listings")
-          .select("id", { head: true, count: "exact" })
-          .eq("license_plate", input.licensePlate)
-          .neq("id", options?.excludeListingId ?? "")
-          .in("status", ["pending", "pending_ai_review", "approved", "flagged"])
-      : Promise.resolve(null),
-    estimateVehiclePrice({
-      brand: input.brand,
-      model: input.model,
-      year: input.year,
-      mileage: input.mileage,
-      carTrim: input.carTrim ?? null,
-      tramerAmount: input.tramerAmount ?? null,
-      damageStatusJson: input.damageStatusJson ?? null,
-    }),
-  ]);
+  // VIN validation: only check if VIN is valid (non-empty and >= 17 chars)
+  const shouldCheckVin = input.vin && input.vin.trim().length >= 17;
+  const vinDuplicateResult = shouldCheckVin
+    ? await admin
+        .from("listings")
+        .select("id", { head: true, count: "exact" })
+        .eq("vin", input.vin.trim())
+        .neq("id", options?.excludeListingId ?? "")
+        .in("status", ["pending", "pending_ai_review", "approved", "flagged"])
+    : { count: 0, error: null };
+
+  // License plate validation: only check if plate exists
+  const shouldCheckPlate = input.licensePlate && input.licensePlate.trim().length > 0;
+  const plateDuplicateResult = shouldCheckPlate
+    ? await admin
+        .from("listings")
+        .select("id", { head: true, count: "exact" })
+        .eq("license_plate", input.licensePlate!.trim()) // Non-null assertion safe here
+        .neq("id", options?.excludeListingId ?? "")
+        .in("status", ["pending", "pending_ai_review", "approved", "flagged"])
+    : { count: 0, error: null };
+
+  const priceEstimate = await estimateVehiclePrice({
+    brand: input.brand,
+    model: input.model,
+    year: input.year,
+    mileage: input.mileage,
+    carTrim: input.carTrim ?? null,
+    tramerAmount: input.tramerAmount ?? null,
+    damageStatusJson: input.damageStatusJson ?? null,
+  });
 
   if ((vinDuplicateResult.count ?? 0) > 0) {
     return {
@@ -490,7 +560,7 @@ export async function runListingTrustGuards(
     };
   }
 
-  if (input.licensePlate && (plateDuplicateResult?.count ?? 0) > 0) {
+  if ((plateDuplicateResult.count ?? 0) > 0) {
     return {
       allowed: false,
       reason: "duplicate_plate",
@@ -501,12 +571,26 @@ export async function runListingTrustGuards(
   if (priceEstimate && priceEstimate.listingCount >= 5 && priceEstimate.avg > 0) {
     const priceRatio = input.price / priceEstimate.avg;
 
-    if (priceRatio < 0.45 || priceRatio > 2.2) {
+    if (
+      priceRatio < PRICE_ANOMALY_THRESHOLDS.TRUST_GUARD_LOW ||
+      priceRatio > PRICE_ANOMALY_THRESHOLDS.TRUST_GUARD_HIGH
+    ) {
+      // Issue #30: Show expected price range to user
+      const minAcceptable = Math.round(
+        priceEstimate.avg * PRICE_ANOMALY_THRESHOLDS.TRUST_GUARD_LOW
+      );
+      const maxAcceptable = Math.round(
+        priceEstimate.avg * PRICE_ANOMALY_THRESHOLDS.TRUST_GUARD_HIGH
+      );
+      const avgPrice = Math.round(priceEstimate.avg);
+
       return {
         allowed: false,
         reason: "extreme_price_outlier",
         message:
-          "Girilen fiyat piyasa dengesinin aşırı dışında. Lütfen fiyatı kontrol edip tekrar gönder.",
+          `Girilen fiyat (${input.price.toLocaleString("tr-TR")} TL) piyasa ortalamasının (${avgPrice.toLocaleString("tr-TR")} TL) çok dışında. ` +
+          `Kabul edilen aralık: ${minAcceptable.toLocaleString("tr-TR")} - ${maxAcceptable.toLocaleString("tr-TR")} TL. ` +
+          `Fiyatınız doğruysa lütfen destek ekibiyle iletişime geçin.`,
       };
     }
   }

@@ -5,6 +5,7 @@ import { AnalyticsEvent } from "@/lib/analytics/events";
 import { mapUseCaseError, validateRequestBody } from "@/lib/api/handler-utils";
 import { API_ERROR_CODES, apiError, apiSuccess } from "@/lib/api/response";
 import { withSecurity, withUserAndCsrfToken } from "@/lib/api/security";
+import { logger } from "@/lib/logging/logger";
 import { captureServerError, trackServerEvent } from "@/lib/monitoring/posthog-server";
 import { rateLimitProfiles } from "@/lib/rate-limiting/rate-limit";
 import { enforceRateLimit, getRateLimitKey } from "@/lib/rate-limiting/rate-limit-middleware";
@@ -24,7 +25,7 @@ import {
 import { getFilteredMarketplaceListings } from "@/services/listings/marketplace-listings";
 import { createDatabaseNotification } from "@/services/notifications/notification-records";
 
-const MY_LISTINGS_DEFAULT_LIMIT = 50;
+const MY_LISTINGS_DEFAULT_LIMIT = 12; // Mobile-first: reduced from 50
 const MY_LISTINGS_MAX_LIMIT = 100;
 
 export async function GET(request: Request) {
@@ -102,7 +103,7 @@ export async function POST(request: Request) {
   if (!isHuman) {
     return apiError(
       API_ERROR_CODES.FORBIDDEN,
-      "Bot doğrulaması başarısız oldu. Lütfen tekrar deneyin.",
+      "Güvenlik doğrulaması başarısız oldu. Lütfen sayfayı yenileyip tekrar deneyin.",
       403
     );
   }
@@ -152,8 +153,17 @@ export async function POST(request: Request) {
         user.id
       );
     },
-    runAsyncModeration: (id) => {
-      waitUntil(performAsyncModeration(id));
+    runAsyncModeration: (id, listingSnapshot) => {
+      waitUntil(
+        performAsyncModeration(id, listingSnapshot).catch((error) => {
+          logger.listings.error("Async moderation failed in background", error, {
+            listingId: id,
+            userId: user.id,
+          });
+          // Error is logged but doesn't block the main request
+          return Promise.resolve();
+        })
+      );
     },
   });
 

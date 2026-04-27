@@ -48,44 +48,53 @@ const MAX_DELETIONS_PER_CLEANUP = 1000; // Protect event loop
 const MAX_SCAN_PER_CLEANUP = 500; // Max scan per tick
 const MAX_IN_MEMORY_ENTRIES = 10_000; // Prevent unbounded memory growth
 
+/**
+ * Clean up expired entries asynchronously to prevent event loop blocking.
+ * Uses setImmediate to yield to other operations.
+ *
+ * PERFORMANCE: Prevents blocking the event loop on large stores.
+ */
 function cleanupInMemory() {
   const now = Date.now();
   if (now - lastCleanup < CLEANUP_INTERVAL_MS) return;
   lastCleanup = now;
 
-  let scannedCount = 0;
-  let deletedCount = 0;
+  // Schedule cleanup as micro-task to avoid blocking event loop
+  setImmediate(() => {
+    let scannedCount = 0;
+    let deletedCount = 0;
 
-  // Map iteration order is insertion order.
-  for (const [key, entry] of inMemoryStore) {
-    scannedCount++;
-    if (entry.resetAt <= now) {
-      inMemoryStore.delete(key);
-      deletedCount++;
+    // Map iteration order is insertion order.
+    for (const [key, entry] of inMemoryStore) {
+      scannedCount++;
+      if (entry.resetAt <= now) {
+        inMemoryStore.delete(key);
+        deletedCount++;
+      }
+
+      if (scannedCount >= MAX_SCAN_PER_CLEANUP || deletedCount >= MAX_DELETIONS_PER_CLEANUP) {
+        break;
+      }
     }
 
-    if (scannedCount >= MAX_SCAN_PER_CLEANUP || deletedCount >= MAX_DELETIONS_PER_CLEANUP) {
-      break;
+    // Hard cap enforcement: if still over capacity after cleanup, evict oldest entries
+    if (inMemoryStore.size > MAX_IN_MEMORY_ENTRIES) {
+      const toEvict = inMemoryStore.size - MAX_IN_MEMORY_ENTRIES;
+      const keys = inMemoryStore.keys();
+      for (let i = 0; i < toEvict; i++) {
+        const next = keys.next();
+        if (next.done) break;
+        inMemoryStore.delete(next.value);
+      }
+      logger.api.warn(
+        `In-memory rate limit store exceeded capacity. Evicted ${toEvict} oldest entries.`
+      );
     }
-  }
 
-  // Hard cap enforcement: if still over capacity after cleanup, evict oldest entries
-  if (inMemoryStore.size > MAX_IN_MEMORY_ENTRIES) {
-    const toEvict = inMemoryStore.size - MAX_IN_MEMORY_ENTRIES;
-    const keys = inMemoryStore.keys();
-    for (let i = 0; i < toEvict; i++) {
-      const next = keys.next();
-      if (next.done) break;
-      inMemoryStore.delete(next.value);
+    if (deletedCount > 0) {
+      logger.api.debug(`In-memory rate limit cleanup: deleted ${deletedCount} expired entries.`);
     }
-    logger.api.warn(
-      `In-memory rate limit store exceeded capacity. Evicted ${toEvict} oldest entries.`
-    );
-  }
-
-  if (deletedCount > 0) {
-    logger.api.debug(`In-memory rate limit cleanup: deleted ${deletedCount} expired entries.`);
-  }
+  });
 }
 
 /**
@@ -105,21 +114,54 @@ export async function checkRateLimit(
   const fullKey = `ratelimit:${key}`;
   const isProduction = process.env.NODE_ENV === "production";
 
-  // 1. Redis Tier (Highly optimized)
+  // 1. Redis Tier (Atomic sliding window with Lua script)
   if (redis) {
     try {
       const now = Date.now();
-      const count = await redis.incr(fullKey);
-      await redis.expire(fullKey, Math.ceil(config.windowMs / 1000));
+      const windowStart = now - config.windowMs;
 
-      const ttl = await redis.ttl(fullKey);
-      const resetAt = now + (ttl > 0 ? ttl * 1000 : config.windowMs);
+      // Atomic sliding window using Lua script
+      // This prevents race conditions between INCR and EXPIRE
+      const luaScript = `
+        local key = KEYS[1]
+        local now = tonumber(ARGV[1])
+        local window = tonumber(ARGV[2])
+        local limit = tonumber(ARGV[3])
+        local windowStart = now - window
+        
+        -- Remove old entries outside the window
+        redis.call('ZREMRANGEBYSCORE', key, '-inf', windowStart)
+        
+        -- Count current entries in window
+        local count = redis.call('ZCARD', key)
+        
+        if count < limit then
+          -- Add new entry with current timestamp as score
+          redis.call('ZADD', key, now, now)
+          redis.call('EXPIRE', key, math.ceil(window / 1000))
+          return {1, limit - count - 1, now + window}
+        else
+          -- Get oldest entry to calculate reset time
+          local oldest = redis.call('ZRANGE', key, 0, 0, 'WITHSCORES')
+          local resetAt = tonumber(oldest[2]) + window
+          return {0, 0, resetAt}
+        end
+      `;
+
+      // Execute Lua script atomically
+      const result = (await redis.eval(
+        luaScript,
+        [fullKey],
+        [now.toString(), config.windowMs.toString(), config.limit.toString()]
+      )) as [number, number, number];
+
+      const [allowed, remaining, resetAt] = result;
 
       return {
-        allowed: count <= config.limit,
+        allowed: allowed === 1,
         limit: config.limit,
-        remaining: Math.max(0, config.limit - count),
-        resetAt,
+        remaining: Math.max(0, remaining),
+        resetAt: Math.floor(resetAt),
       };
     } catch (e) {
       logger.api.warn("Redis rate limit error, falling back", { key: fullKey }, e);

@@ -217,7 +217,15 @@ export async function PATCH(request: Request, context: { params: Promise<{ id: s
 
   if (result.listing) {
     if (criticalFieldsChanged) {
-      waitUntil(performAsyncModeration(result.listing.id));
+      waitUntil(
+        performAsyncModeration(result.listing.id, result.listing).catch((error) => {
+          logger.listings.error("Async moderation failed in background", error, {
+            listingId: result.listing!.id,
+            userId: user.id,
+          });
+          return Promise.resolve();
+        })
+      );
     }
 
     captureServerEvent("listing_updated", {

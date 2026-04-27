@@ -11,10 +11,18 @@ export { checkRateLimit };
 
 /**
  * Extract a request identifier for rate limiting.
- * Uses X-Forwarded-For, X-Real-IP, or falls back to a generic key.
+ * Uses Vercel-specific headers first, then X-Forwarded-For, X-Real-IP, or falls back to a generic key.
  * SECURITY: Normalizes IPv6 to /64 subnet to prevent lease-based bypass.
+ * SECURITY: Prioritizes x-vercel-forwarded-for to prevent header spoofing on Vercel platform.
  */
 export function getRateLimitKey(request: Request, prefix: string) {
+  // Vercel-specific: use x-vercel-forwarded-for first (more trustworthy)
+  const vercelForwarded = request.headers.get("x-vercel-forwarded-for");
+  if (vercelForwarded) {
+    const ip = getNormalizedIp(vercelForwarded.split(",")[0].trim());
+    return `${prefix}:${ip}`;
+  }
+
   const forwarded = request.headers.get("x-forwarded-for");
   const realIp = request.headers.get("x-real-ip");
   const rawIp = forwarded?.split(",")[0]?.trim() || realIp || "unknown";
@@ -65,11 +73,14 @@ export async function enforceRateLimit(
 
       return { response, result };
     }
-  } catch {
+  } catch (error) {
     // If checkRateLimit throws (infrastructure failure)
     // checkRateLimit itself handles failClosed logic, but we catch it here to
     // provide a clean fallback for any unexpected logic errors.
-    if (config.failClosed) {
+    const isProd = process.env.NODE_ENV === "production";
+    const shouldFailClosed = config.failClosed ?? isProd;
+
+    if (shouldFailClosed) {
       return {
         response: NextResponse.json(
           { message: "Güvenlik servisi şu an kullanılamıyor. Lütfen az sonra tekrar deneyin." },
@@ -78,7 +89,7 @@ export async function enforceRateLimit(
         result: { allowed: false, limit: config.limit, remaining: 0, resetAt: Date.now() + 60000 },
       };
     }
-    // Fail-open: proceed
+    // Fail-open in dev/test: proceed
   }
 
   return null;

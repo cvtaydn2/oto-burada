@@ -87,9 +87,21 @@ export function useTurnstile(options: UseTurnstileOptions = {}): UseTurnstileRes
         },
         "error-callback": () => {
           setToken(null);
+          // Issue #29: Better error feedback for Turnstile failures
+          console.error("[Turnstile] Verification failed. Widget will auto-reset.");
+          // Auto-reset on error to allow retry
+          setTimeout(() => {
+            if (widgetIdRef.current && window.turnstile) {
+              window.turnstile.reset(widgetIdRef.current);
+            }
+          }, 1000);
         },
         "expired-callback": () => {
           setToken(null);
+          // Auto-reset on expiration
+          if (widgetIdRef.current && window.turnstile) {
+            window.turnstile.reset(widgetIdRef.current);
+          }
         },
         theme: options.theme ?? "auto",
         size: "normal",

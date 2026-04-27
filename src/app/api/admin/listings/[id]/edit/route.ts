@@ -3,6 +3,7 @@ import { z } from "zod";
 
 import { API_ERROR_CODES, apiError, apiSuccess } from "@/lib/api/response";
 import { withAdminRoute } from "@/lib/api/security";
+import { logger } from "@/lib/logging/logger";
 import { captureServerError, captureServerEvent } from "@/lib/monitoring/posthog-server";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { hasSupabaseAdminEnv } from "@/lib/supabase/env";
@@ -187,7 +188,18 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
   );
 
   if (criticalFieldsChanged) {
-    waitUntil(performAsyncModeration(listingId));
+    // Fetch updated listing for async moderation
+    const updatedListingForModeration = await getStoredListingById(listingId);
+
+    waitUntil(
+      performAsyncModeration(listingId, updatedListingForModeration ?? undefined).catch((error) => {
+        logger.listings.error("Async moderation failed in background", error, {
+          listingId,
+          adminUserId: user.id,
+        });
+        return Promise.resolve();
+      })
+    );
   }
 
   return apiSuccess({ listingId }, "İlan başarıyla düzenlendi.");

@@ -33,16 +33,23 @@ export async function POST(req: NextRequest) {
     }
 
     // 2. Log ONLY verified webhooks with safe headers (F-02)
+    // Use upsert with token as unique key for idempotency
     const SAFE_HEADERS = ["content-type", "x-iyzi-event-type", "user-agent"] as const;
     const safeHeaders = Object.fromEntries(
       [...req.headers.entries()].filter(([key]) => SAFE_HEADERS.includes(key.toLowerCase() as any))
     );
 
-    await admin.from("payment_webhook_logs").insert({
-      payload: body,
-      headers: safeHeaders,
-      status: "received",
-    });
+    // Idempotent logging - prevent duplicate logs for retried webhooks
+    await admin.from("payment_webhook_logs").upsert(
+      {
+        token: body.token, // Unique identifier from Iyzico
+        payload: body,
+        headers: safeHeaders,
+        status: "received",
+        received_at: new Date().toISOString(),
+      },
+      { onConflict: "token", ignoreDuplicates: false }
+    );
 
     // 3. Update payment status with atomic lock for idempotency (F-01)
     if (body.iyziEventType === "PAYMENT_AUTH") {

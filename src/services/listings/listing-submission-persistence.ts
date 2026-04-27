@@ -1,3 +1,4 @@
+import { logger } from "@/lib/logging/logger";
 import { sanitizeDescription } from "@/lib/sanitization/sanitize";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { hasSupabaseAdminEnv } from "@/lib/supabase/env";
@@ -344,32 +345,33 @@ export async function updateDatabaseListing(listing: Listing) {
   const newPaths = listing.images.map((img) => img.storagePath).filter(Boolean);
   const pathsToDelete = oldPaths.filter((path) => !newPaths.includes(path));
 
-  // 2. Update DB images: delete old, insert new.
-  // To avoid leaving the listing without images on insert failure, we keep the
-  // old rows in memory and re-insert them as a compensating action if needed.
-  await admin.from("listing_images").delete().eq("listing_id", listing.id);
-  const imageRows = mapListingImagesToDatabaseRows(listing);
+  // 2. Update DB images using upsert pattern to minimize data loss window
+  // Instead of delete-all + insert-all, we:
+  // 1. Identify images to delete (not in new set)
+  // 2. Delete only those specific images
+  // 3. Upsert new images (insert or update)
 
+  const newPathSet = new Set(listing.images.map((img) => img.storagePath));
+  const imagesToDelete = (oldImages ?? []).filter((img) => !newPathSet.has(img.storage_path));
+
+  // Delete only orphaned images
+  if (imagesToDelete.length > 0) {
+    const pathsToDeleteNow = imagesToDelete.map((img) => img.storage_path);
+    await admin.from("listing_images").delete().in("storage_path", pathsToDeleteNow);
+  }
+
+  // Upsert new/updated images (insert or update based on storage_path)
+  const imageRows = mapListingImagesToDatabaseRows(listing);
   if (imageRows.length > 0) {
-    const imageInsertResult = await admin.from("listing_images").insert(imageRows);
-    if (imageInsertResult.error) {
-      // Compensating action: restore old image rows so the listing is not left imageless.
-      if (oldImages && oldImages.length > 0) {
-        const restoredRows = oldImages.map((img) => ({
-          listing_id: listing.id,
-          storage_path: img.storage_path,
-          is_cover: img.is_cover,
-          sort_order: img.sort_order,
-          public_url: img.public_url,
-          placeholder_blur: img.placeholder_blur,
-        }));
-        await admin
-          .from("listing_images")
-          .insert(restoredRows)
-          .then(() => {
-            // Best-effort restore; log if it also fails but don't mask the original error.
-          });
-      }
+    const imageUpsertResult = await admin.from("listing_images").upsert(imageRows, {
+      onConflict: "listing_id,storage_path",
+      ignoreDuplicates: false,
+    });
+
+    if (imageUpsertResult.error) {
+      logger.db.error("Image upsert failed during listing update", imageUpsertResult.error, {
+        listingId: listing.id,
+      });
       return { error: "image_persistence_error" as const };
     }
   }
@@ -469,7 +471,8 @@ export async function archiveListing(
 }
 
 /**
- * Deletes a listing and its associated data (images, favorites, reports).
+ * Deletes a listing and its associated data (images, favorites, reports) atomically.
+ * Uses RPC function for atomic transaction to prevent partial deletes.
  * Physical storage cleanup should be handled by the caller or a side-effect.
  */
 export async function deleteListing(
@@ -479,19 +482,17 @@ export async function deleteListing(
   if (!hasSupabaseAdminEnv()) return { success: false, error: "configuration_error" as const };
   const admin = createSupabaseAdminClient();
 
-  // 1. Delete associated data first
-  await admin.from("listing_images").delete().eq("listing_id", listingId);
-  await admin.from("favorites").delete().eq("listing_id", listingId);
-  await admin.from("reports").delete().eq("listing_id", listingId);
-
-  // 2. Delete the listing with version check
-  const { error } = await admin
-    .from("listings")
-    .delete()
-    .eq("id", listingId)
-    .eq("version", version);
+  // Use atomic RPC function for transactional delete
+  const { error } = await admin.rpc("delete_listing_atomic", {
+    p_listing_id: listingId,
+    p_version: version,
+  });
 
   if (error) {
+    // Check if it's a concurrent update (version mismatch)
+    if (error.message?.includes("concurrent_update_detected")) {
+      return { success: false, error: "concurrent_update_detected" as const };
+    }
     return { success: false, error: classifyPersistenceError(error) };
   }
 

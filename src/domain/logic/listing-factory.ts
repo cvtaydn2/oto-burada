@@ -7,13 +7,29 @@ import type { Listing, ListingCreateInput } from "@/types";
  * Centralizes the creation and transformation of Listing entities.
  */
 
+/**
+ * Build a base slug from listing input.
+ * This generates the human-readable part without uniqueness guarantees.
+ */
+export function buildBaseSlug(input: {
+  brand: string;
+  model: string;
+  year: number;
+  city: string;
+  title: string;
+}): string {
+  return toSlugSegment(`${input.brand} ${input.model} ${input.year} ${input.city} ${input.title}`);
+}
+
+/**
+ * Build a unique slug with fallback suffix logic.
+ * @deprecated Use generateUniqueSlug for new listings to ensure atomicity
+ */
 export function buildListingSlug(
   input: { brand: string; model: string; year: number; city: string; title: string },
   existingSlugs: Set<string>
 ) {
-  const baseSlug = toSlugSegment(
-    `${input.brand} ${input.model} ${input.year} ${input.city} ${input.title}`
-  );
+  const baseSlug = buildBaseSlug(input);
 
   if (!existingSlugs.has(baseSlug)) {
     return baseSlug;
@@ -35,23 +51,31 @@ export function createListingEntity(
     existingListing?: Listing;
     id?: string;
     status?: Listing["status"];
+    slug?: string; // Allow pre-generated slug for atomic operations
   }
 ): Listing {
   const existingListing = options?.existingListing;
   const id = existingListing?.id ?? options?.id ?? crypto.randomUUID();
 
-  // Create set of existing slugs for faster lookup
-  const otherSlugs = new Set(
-    existingListings.filter((l) => l.id !== existingListing?.id).map((l) => l.slug)
-  );
+  // Use pre-generated slug if provided (for atomic slug generation)
+  let slug: string;
+  if (options?.slug) {
+    slug = options.slug;
+  } else {
+    // Fallback to legacy slug generation
+    // Create set of existing slugs for faster lookup
+    const otherSlugs = new Set(
+      existingListings.filter((l) => l.id !== existingListing?.id).map((l) => l.slug)
+    );
 
-  // Generate base slug
-  let slug = buildListingSlug(input, otherSlugs);
+    // Generate base slug
+    slug = buildListingSlug(input, otherSlugs);
 
-  // Add unique suffix for new listings to prevent race conditions
-  if (!existingListing) {
-    const shortId = crypto.randomUUID().split("-")[0];
-    slug = `${slug}-${shortId}`;
+    // Add unique suffix for new listings to prevent race conditions
+    if (!existingListing) {
+      const shortId = crypto.randomUUID().split("-")[0];
+      slug = `${slug}-${shortId}`;
+    }
   }
 
   const timestamp = new Date().toISOString();
