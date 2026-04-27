@@ -107,6 +107,20 @@ export function validateEnv(): EnvValidationResult {
       } else {
         warnings.push(`${envVar.key} — ${envVar.description}`);
       }
+    } else {
+      // ── SECURITY FIX: Issue SEC-11 - Weak Secret Check ─────────────────────
+      // Prevent placeholder values or dangerously short secrets in production
+      const isSecretKey = envVar.key.includes("SECRET") || envVar.key.includes("KEY");
+      if (isProduction && isSecretKey) {
+        const valueStr = value || "";
+        const isPlaceholder = valueStr.includes("your-") || valueStr === "placeholder";
+        const tooShort = valueStr.length < 32;
+
+        if (isPlaceholder || tooShort) {
+          const reason = isPlaceholder ? "placeholder value detected" : "too short (min 32 chars)";
+          missing.push(`${envVar.key} (WEAK_SECRET: ${reason})`);
+        }
+      }
     }
   }
 

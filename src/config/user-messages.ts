@@ -19,6 +19,8 @@ export const USER_FACING_ERRORS: Record<string, string> = {
   // Authentication & Authorization
   UNAUTHORIZED: "Bu işlem için giriş yapmanız gerekiyor.",
   FORBIDDEN: "Bu işlem için yetkiniz bulunmuyor.",
+  CSRF_ERROR:
+    "Güvenlik doğrulaması başarısız oldu (CSRF). Lütfen sayfayı yenileyip tekrar deneyin.",
 
   // Validation
   BAD_REQUEST: "Gönderilen bilgiler geçersiz. Lütfen kontrol edip tekrar deneyin.",

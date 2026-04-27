@@ -137,8 +137,8 @@ export async function checkRateLimit(
         -- Remove old entries outside the window
         redis.call('ZREMRANGEBYSCORE', key, '-inf', windowStart)
         
-        -- Count current entries in window
-        local count = redis.call('ZCARD', key)
+        -- Count current entries in window precisely
+        local count = redis.call('ZCOUNT', key, windowStart, '+inf')
         
         if count < limit then
           -- Add new entry with current timestamp as score
@@ -283,5 +283,9 @@ export const rateLimitProfiles = {
   contactCreate: { limit: 3, windowMs: 60 * 60 * 1000, failClosed: true } satisfies RateLimitConfig,
 
   /** Listing bump: 3 per day per user */
-  listingBump: { limit: 3, windowMs: 24 * 60 * 60 * 1000 } satisfies RateLimitConfig,
+  listingBump: {
+    limit: 3,
+    windowMs: 24 * 60 * 60 * 1000,
+    failClosed: true,
+  } satisfies RateLimitConfig,
 };

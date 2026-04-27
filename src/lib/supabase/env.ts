@@ -53,3 +53,13 @@ export function getSupabaseDocumentsStorageEnv() {
   }
   return { documentsBucket, serviceRoleKey, url };
 }
+export function getSupabaseProjectRef() {
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  if (!url) return null;
+  try {
+    const hostname = new URL(url).hostname;
+    return hostname.split(".")[0] || null;
+  } catch {
+    return null;
+  }
+}

@@ -7,6 +7,8 @@
 import { cookies } from "next/headers";
 import { type NextRequest, NextResponse } from "next/server";
 
+import { getUserFacingError } from "@/config/user-messages";
+
 const CSRF_COOKIE_NAME = "csrf_token";
 const CSRF_HEADER_NAME = "x-csrf-token";
 const TOKEN_LENGTH = 32;
@@ -14,9 +16,21 @@ const TOKEN_LENGTH = 32;
 export function isValidRequestOrigin(request: Request | NextRequest): boolean {
   // Webhook exclusion: third-party services won't send valid browser origin/referer
   const url = new URL(request.url);
-  const WEBHOOK_PATHS = ["/api/payments/webhook", "/api/webhooks/iyzico", "/api/webhooks/posthog"];
-  if (WEBHOOK_PATHS.some((p) => url.pathname === p || url.pathname.startsWith(p))) {
-    return true;
+  const isIyzico =
+    url.pathname.startsWith("/api/payments/webhook") ||
+    url.pathname.startsWith("/api/webhooks/iyzico");
+  const isPosthog = url.pathname.startsWith("/api/webhooks/posthog");
+
+  if (isIyzico) {
+    // ── SECURITY FIX: Issue SEC-05 - Webhook Origin Guard ───────────────────
+    // Only bypass origin check if the expected signature header is present.
+    // The handler will still verify the signature itself, but this prevents
+    // browsers from being used as a vector for basic POST probes.
+    return request.headers.has("x-iyzi-signature");
+  }
+
+  if (isPosthog) {
+    return true; // Posthog webhooks often don't have a specific header we can check here easily without parsing body
   }
 
   const origin = request.headers.get("origin");
@@ -148,7 +162,7 @@ export async function csrfMiddleware(request: NextRequest) {
       return new NextResponse(
         JSON.stringify({
           error: "Forbidden",
-          message: "Geçersiz istek kaynağı veya CSRF token (CSRF koruması).",
+          message: getUserFacingError("CSRF_ERROR"),
         }),
         { status: 403, headers: { "Content-Type": "application/json" } }
       );

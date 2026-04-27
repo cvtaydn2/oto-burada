@@ -25,34 +25,27 @@ import { getSupabaseAdminEnv } from "@/lib/supabase/env";
  */
 let cachedAdminClient: SupabaseClient<any> | null = null;
 let adminClientCreatedAt = 0;
-const ADMIN_CLIENT_TTL = 1 * 60 * 1000; // 1 minute (reduced from 5m to minimize key rotation window)
+const ADMIN_CLIENT_TTL = 5 * 60 * 1000; // 5 minutes (balanced for connection pooling and key rotation)
 
 /**
- * SECURITY CRITICAL: Creates a Supabase admin client using the SERVICE_ROLE_KEY.
- *
- * Implements a short-lived TTL-based singleton pattern to optimize connection pooling
- * while allowing for fast recovery after key rotation (within 60 seconds).
- *
- * IMPORTANT RULES:
- * 1. This client BYPASSES ALL Row Level Security (RLS) policies.
- * 2. NEVER use this client to read/write data on behalf of a user in a user-facing route.
- * 3. ONLY use this for administrative tasks, system-level background jobs, or migrations.
- * 4. ALWAYS prefer createSupabaseServerClient() for user-authenticated requests.
+ * Resets the cached admin client.
+ * Use this when encountering auth errors (401/403) to force client recreation.
  */
-/**
- * SECURITY CRITICAL: Forcefully resets the cached admin client.
- * Use this when a 401/403 error is encountered during an admin operation
- * to recover from potential key rotation/expiration.
- */
-export function resetSupabaseAdminClient(): void {
+export function resetSupabaseAdminClient() {
   cachedAdminClient = null;
   adminClientCreatedAt = 0;
 }
 
-export function createSupabaseAdminClient(): SupabaseClient<any> {
+/**
+ * SECURITY CRITICAL: Creates a Supabase admin client using the SERVICE_ROLE_KEY.
+ * Implements a short-lived TTL-based singleton pattern to optimize connection pooling
+ * while allowing for fast recovery after key rotation.
+ */
+export function createSupabaseAdminClient() {
   const now = Date.now();
+  const isExpired = now - adminClientCreatedAt > ADMIN_CLIENT_TTL;
 
-  if (cachedAdminClient && now - adminClientCreatedAt < ADMIN_CLIENT_TTL) {
+  if (cachedAdminClient && !isExpired) {
     return cachedAdminClient;
   }
 

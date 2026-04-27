@@ -77,7 +77,12 @@ export async function updateSession(request: NextRequest) {
 
   // Optimization: Only verify user if we have a session cookie OR the route specifically requires auth.
   // This avoids unnecessary network calls for anonymous visitors on public pages.
-  const hasSessionCookie = request.cookies.getAll().some((c) => c.name.includes("-auth-token"));
+  // We use the project-specific cookie name for O(1) cookie lookup.
+  const { getSupabaseProjectRef } = await import("@/lib/supabase/env");
+  const projectRef = getSupabaseProjectRef();
+  const hasSessionCookie = projectRef
+    ? request.cookies.has(`sb-${projectRef}-auth-token`)
+    : request.cookies.getAll().length > 0;
 
   if (hasSessionCookie || route.needsAuth || route.isAuthRoute) {
     const {

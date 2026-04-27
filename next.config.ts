@@ -42,14 +42,11 @@ const nextConfig: NextConfig = {
     optimizePackageImports: [
       "lucide-react",
       "date-fns",
-      "framer-motion",
       "clsx",
       "tailwind-merge",
       "@supabase/supabase-js",
       "posthog-js",
     ],
-    // Restore scroll position on back/forward navigation
-    scrollRestoration: true,
   },
   // Disabled PPR/cacheComponents for now to resolve build conflicts with route segment configs
   cacheComponents: false,

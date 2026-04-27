@@ -46,11 +46,16 @@ function evictIfNeeded() {
 
   // 3. Hard cap eviction if still over capacity
   if (localFallbackStore.size >= MAX_LOCAL_ENTRIES) {
-    const toDelete = localFallbackStore.size - Math.floor(MAX_LOCAL_ENTRIES * 0.8);
+    // Probabilistic eviction: randomly delete a batch of entries
+    // This is much cheaper than a full scan or sorted eviction in serverless environments.
     let count = 0;
+    const toDelete = EVICT_BATCH_SIZE;
+
     for (const [key] of localFallbackStore) {
-      localFallbackStore.delete(key);
-      count++;
+      if (Math.random() < 0.2) {
+        localFallbackStore.delete(key);
+        count++;
+      }
       if (count >= toDelete) break;
     }
     deleted += count;

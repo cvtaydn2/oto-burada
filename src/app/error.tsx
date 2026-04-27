@@ -1,7 +1,6 @@
 "use client";
 
 import { AlertTriangle, Home, RefreshCcw } from "lucide-react";
-import Link from "next/link";
 import { useEffect } from "react";
 
 import { Button } from "@/components/ui/button";
@@ -35,14 +34,28 @@ export default function GlobalError({
         </p>
 
         {error.digest && (
-          <div className="mb-8 rounded-lg bg-slate-200/50 px-4 py-2 text-xs font-mono text-slate-500 dark:bg-slate-800/50 dark:text-slate-400">
-            Hata Kodu: {error.digest}
+          <div className="mb-8 w-full rounded-lg bg-slate-200/50 px-4 py-3 text-center dark:bg-slate-800/50">
+            <p className="mb-1 text-[10px] uppercase tracking-wider text-slate-500 dark:text-slate-500">
+              Hata Takip Kodu
+            </p>
+            <code className="text-sm font-mono font-bold text-slate-700 dark:text-slate-300">
+              {error.digest}
+            </code>
+            <p className="mt-2 text-[11px] text-slate-500 dark:text-slate-400">
+              Lütfen bu kodu destek ekibine iletin.
+            </p>
           </div>
         )}
 
         <div className="flex w-full flex-col gap-3 sm:flex-row sm:justify-center">
           <Button
-            onClick={() => reset()}
+            onClick={() => {
+              try {
+                reset();
+              } catch {
+                window.location.reload();
+              }
+            }}
             size="lg"
             className="flex w-full items-center gap-2 sm:w-auto"
           >
@@ -51,15 +64,13 @@ export default function GlobalError({
           </Button>
 
           <Button
-            asChild
+            onClick={() => (window.location.href = "/")}
             variant="outline"
             size="lg"
             className="flex w-full items-center gap-2 sm:w-auto"
           >
-            <Link href="/">
-              <Home className="size-4" />
-              Ana Sayfaya Dön
-            </Link>
+            <Home className="size-4" />
+            Ana Sayfaya Dön
           </Button>
         </div>
       </div>

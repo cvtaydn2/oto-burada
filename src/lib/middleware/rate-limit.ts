@@ -1,5 +1,6 @@
 import { type NextRequest, NextResponse } from "next/server";
 
+import { getUserFacingError } from "@/config/user-messages";
 import { getNormalizedIp } from "@/lib/api/ip-utils";
 import { logger } from "@/lib/logging/logger";
 import { checkGlobalRateLimit } from "@/lib/rate-limiting/distributed-rate-limit";
@@ -60,8 +61,7 @@ export async function rateLimitMiddleware(request: NextRequest) {
         success: false,
         error: {
           code: "RATE_LIMITED",
-          message:
-            "Çok fazla istek yapıldı. Sistem güvenliği için geçici olarak sınırlandırıldınız.",
+          message: getUserFacingError("RATE_LIMITED"),
         },
       }),
       {

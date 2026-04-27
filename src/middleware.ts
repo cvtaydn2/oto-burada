@@ -3,6 +3,7 @@ import { type NextRequest } from "next/server";
 import { csrfMiddleware } from "@/lib/middleware/csrf";
 import { runMiddlewarePipeline } from "@/lib/middleware/pipeline";
 import { rateLimitMiddleware } from "@/lib/middleware/rate-limit";
+import { classifyRoute } from "@/lib/middleware/routes";
 import { updateSession } from "@/lib/supabase/middleware";
 
 /**
@@ -19,23 +20,10 @@ import { updateSession } from "@/lib/supabase/middleware";
  */
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
-  const isApi = pathname.startsWith("/api");
-  const isAuth = pathname.startsWith("/login") || pathname.startsWith("/register");
-  const isAdmin = pathname.startsWith("/admin");
-  const isPublicPage = !isApi && !isAuth && !isAdmin && !pathname.startsWith("/dashboard");
+  const { isApiRoute, isAuthRoute, isAdminRoute, isProtectedRoute } = classifyRoute(pathname);
 
-  // ── ARCHITECTURE FIX: Issue #12 - Explicit Dashboard Auth Check ─────
-  // Dashboard routes require authentication - handle explicitly
-  const isDashboard = pathname.startsWith("/dashboard");
-
-  if (isDashboard) {
-    // Dashboard requires full auth check
-    return await runMiddlewarePipeline(request, [updateSession]);
-  }
-
-  // 1. Admin routes: Force full auth check at edge
-  if (isAdmin) {
-    // Full security pipeline with session validation
+  // 1. Admin & Dashboard: Force full security pipeline
+  if (isAdminRoute || isProtectedRoute) {
     return await runMiddlewarePipeline(request, [
       rateLimitMiddleware,
       csrfMiddleware,
@@ -43,14 +31,17 @@ export async function middleware(request: NextRequest) {
     ]);
   }
 
-  // 2. Light-weight pipeline for Public GET pages
-  if (isPublicPage && request.method === "GET") {
-    // Still need session update for user status, but we could skip CSRF (it already does for GET)
-    // and potentially use a more relaxed rate limit.
+  // 2. Auth routes: prevent brute force
+  if (isAuthRoute) {
+    return await runMiddlewarePipeline(request, [rateLimitMiddleware, updateSession]);
+  }
+
+  // 3. Public GET pages: lightweight pipeline
+  if (request.method === "GET" && !isApiRoute) {
     return await updateSession(request);
   }
 
-  // 3. Full security pipeline for API, Auth, and Dashboards
+  // 4. Default: Full security pipeline
   return await runMiddlewarePipeline(request, [rateLimitMiddleware, csrfMiddleware, updateSession]);
 }
 
