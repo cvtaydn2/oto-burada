@@ -9,12 +9,22 @@ import { getSupabaseEnv } from "./env";
 // SSR path always creates a new instance to prevent cross-request session leaks.
 let _browserClient: SupabaseClient<Database> | undefined;
 
+/**
+ * ── CRITICAL FIX: Issue Kritik-01 - SSR Client Type ───────────
+ * IMPORTANT: This hook should ONLY be used in Client Components.
+ * For Server Components, use createSupabaseServerClient() instead.
+ *
+ * SSR Note: If called during SSR (which shouldn't happen), we throw an error
+ * to prevent using browser client in server context.
+ */
 export function useSupabase(): SupabaseClient<Database> {
   const { url, anonKey } = getSupabaseEnv();
 
-  // SSR: always create a new instance to prevent cross-request session leaks.
+  // SSR: This should never happen - throw error to catch misuse
   if (typeof window === "undefined") {
-    return createBrowserClient<Database>(url, anonKey);
+    throw new Error(
+      "useSupabase() called in server context. Use createSupabaseServerClient() for Server Components."
+    );
   }
 
   // Browser: reuse singleton — safe, single user context.

@@ -13,22 +13,35 @@ import { updateSession } from "@/lib/supabase/middleware";
  * 3. Auth Session Management & Route Guards
  *
  * Next.js requires this file to be named `middleware.ts` and export `middleware` function.
+ *
+ * ── CRITICAL FIX: Issue Kritik-07 - Admin Path Protection ───
+ * Admin routes require full authentication check at edge
  */
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const isApi = pathname.startsWith("/api");
   const isAuth = pathname.startsWith("/login") || pathname.startsWith("/register");
-  const isPublicPage =
-    !isApi && !isAuth && !pathname.startsWith("/dashboard") && !pathname.startsWith("/admin");
+  const isAdmin = pathname.startsWith("/admin");
+  const isPublicPage = !isApi && !isAuth && !isAdmin && !pathname.startsWith("/dashboard");
 
-  // 1. Light-weight pipeline for Public GET pages
+  // 1. Admin routes: Force full auth check at edge
+  if (isAdmin) {
+    // Full security pipeline with session validation
+    return await runMiddlewarePipeline(request, [
+      rateLimitMiddleware,
+      csrfMiddleware,
+      updateSession,
+    ]);
+  }
+
+  // 2. Light-weight pipeline for Public GET pages
   if (isPublicPage && request.method === "GET") {
     // Still need session update for user status, but we could skip CSRF (it already does for GET)
     // and potentially use a more relaxed rate limit.
     return await updateSession(request);
   }
 
-  // 2. Full security pipeline for API, Auth, and Dashboards
+  // 3. Full security pipeline for API, Auth, and Dashboards
   return await runMiddlewarePipeline(request, [rateLimitMiddleware, csrfMiddleware, updateSession]);
 }
 

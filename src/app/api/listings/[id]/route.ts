@@ -115,10 +115,12 @@ export async function PATCH(request: Request, context: { params: Promise<{ id: s
     );
   }
 
+  // ── SECURITY FIX: Issue #4 - VIN Comparison Null Normalization ─────────────
+  // Normalize null values to empty string to prevent false positives when VIN is deleted
   const criticalFieldsChanged =
     parsedListingInput.data.price !== existingListing.price ||
-    parsedListingInput.data.vin !== (existingListing.vin ?? "") ||
-    (parsedListingInput.data.licensePlate ?? null) !== (existingListing.licensePlate ?? null) ||
+    (parsedListingInput.data.vin ?? "") !== (existingListing.vin ?? "") ||
+    (parsedListingInput.data.licensePlate ?? "") !== (existingListing.licensePlate ?? "") ||
     parsedListingInput.data.title !== existingListing.title ||
     parsedListingInput.data.description !== existingListing.description;
 

@@ -1,6 +1,4 @@
 import { logger } from "@/lib/logging/logger";
-import { sanitizeDescription, sanitizeText } from "@/lib/sanitization/sanitize";
-import { listingCreateSchema } from "@/lib/validators";
 import { buildPendingListing } from "@/services/listings/listing-submissions";
 import type { Listing, ListingCreateInput } from "@/types";
 
@@ -40,13 +38,18 @@ export interface ListingCreationDependencies {
  *
  * SRP: This function only knows the "process" of creation.
  * DIP: It depends on abstractions (deps), not concrete implementations.
+ *
+ * ── ARCHITECTURE FIX: Issue #9 - Type Safety in Use Case ─────────────
+ * Input is now fully typed (not Partial) for compile-time safety.
+ * Structural validation happens in route handler, not in use case.
+ * Use case focuses on business rules only (quota, trust guards).
  */
 export async function executeListingCreation(
-  input: Partial<ListingCreateInput>,
+  input: ListingCreateInput, // ✅ Full type, not Partial
   userId: string,
   deps: ListingCreationDependencies
 ): Promise<ListingCreationResult> {
-  // 1. Quota Check
+  // 1. Quota Check (business rule)
   const quota = await deps.checkQuota(userId);
   if (!quota.allowed) {
     return {
@@ -56,40 +59,8 @@ export async function executeListingCreation(
     };
   }
 
-  // 2. Normalization & Sanitization
-  const normalizedInput = {
-    ...input,
-    title: sanitizeText(input.title || ""),
-    description: sanitizeDescription(input.description || ""),
-    images: (input.images || []).map(
-      (
-        img: {
-          storagePath: string;
-          url: string;
-          placeholderBlur?: string | null;
-          type?: "photo" | "360" | "video";
-        },
-        idx: number
-      ) => ({
-        ...img,
-        order: idx,
-        isCover: idx === 0,
-      })
-    ),
-  };
-
-  // 3. Validation
-  const validation = listingCreateSchema.safeParse(normalizedInput);
-  if (!validation.success) {
-    return {
-      success: false,
-      error: validation.error.issues[0]?.message || "Geçersiz ilan verisi.",
-      errorCode: "VALIDATION_ERROR",
-    };
-  }
-
-  // 4. Trust Guards
-  const trust = await deps.runTrustGuards(validation.data);
+  // 2. Trust Guards (business rule)
+  const trust = await deps.runTrustGuards(input);
   if (!trust.allowed) {
     return {
       success: false,
@@ -98,11 +69,11 @@ export async function executeListingCreation(
     };
   }
 
-  // 5. Build Domain Object
+  // 3. Build Domain Object
   const existingListings = await deps.getExistingListings(userId);
-  const listingRecord = buildPendingListing(validation.data, userId, existingListings);
+  const listingRecord = buildPendingListing(input, userId, existingListings);
 
-  // 6. Persistence
+  // 4. Persistence
   const saveResult = await deps.saveListing(listingRecord);
   if (saveResult.error || !saveResult.listing) {
     return {
@@ -117,7 +88,7 @@ export async function executeListingCreation(
 
   const listing = saveResult.listing;
 
-  // 7. Side Effects (non-blocking)
+  // 5. Side Effects (non-blocking)
   deps.notifyUser(listing).catch((e) => logger.system.error("Creation notification failed", e));
   deps.trackEvent(listing);
   deps.runAsyncModeration(listing.id, listing);

@@ -52,14 +52,31 @@ async function validateMagicBytes(file: File): Promise<boolean> {
 /**
  * Returns the verified MIME type from magic bytes, or null if unrecognized.
  * Used to set the correct Content-Type on storage upload.
+ *
+ * ── SECURITY FIX: Issue #3 - WebP Secondary Signature Validation ─────
+ * Validates both RIFF header and WEBP signature at offset 8 to prevent
+ * false positives from other RIFF-based formats (.wav, .avi).
  */
 export async function getVerifiedDocumentMimeType(file: File): Promise<string | null> {
   const header = await readFileHeader(file);
+
   for (const [mimeType, magicBytes] of Object.entries(MAGIC_BYTES)) {
     if (matchesMagicBytes(header, magicBytes)) {
+      // WebP requires secondary validation at offset 8
+      if (mimeType === "image/webp") {
+        const secondaryBuffer = await file.slice(8, 12).arrayBuffer();
+        const secondaryBytes = Array.from(new Uint8Array(secondaryBuffer));
+        const webpSignature = [0x57, 0x45, 0x42, 0x50]; // "WEBP"
+
+        if (!matchesMagicBytes(secondaryBytes, webpSignature)) {
+          continue; // RIFF but not WebP (e.g., .wav, .avi)
+        }
+      }
+
       return mimeType;
     }
   }
+
   return null;
 }
 

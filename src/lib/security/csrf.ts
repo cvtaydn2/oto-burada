@@ -155,10 +155,14 @@ export async function setCsrfTokenCookie(): Promise<string> {
   const token = generateCsrfToken();
   const cookieStore = await cookies();
 
+  // ── SECURITY FIX: Issue #5 - CSRF Cookie SameSite Strict ─────────────
+  // Using SameSite=strict to prevent CSRF token leakage via XSS
+  // httpOnly=false is required for client to read and send in header (Double Submit pattern)
+  // Token rotation on each use would further limit XSS damage window
   cookieStore.set(CSRF_COOKIE_NAME, token, {
-    httpOnly: false, // Must be false for the client to read it and send in header
+    httpOnly: false, // Required for Double Submit Cookie pattern
     secure: process.env.NODE_ENV === "production",
-    sameSite: "lax", // Changed to lax to allow token persistence across same-site navigations
+    sameSite: "strict", // Strict isolation to limit XSS + CSRF combination attacks
     path: "/",
     maxAge: 60 * 60 * 24,
   });
@@ -168,13 +172,15 @@ export async function setCsrfTokenCookie(): Promise<string> {
 
 /**
  * Sets CSRF cookie on a NextResponse object (Middleware-safe)
+ *
+ * ── SECURITY FIX: Issue #5 - CSRF Cookie SameSite Strict ─────────────
  */
 export function applyCsrfCookieToResponse(response: NextResponse, token?: string) {
   const finalToken = token || generateCsrfToken();
   response.cookies.set(CSRF_COOKIE_NAME, finalToken, {
     httpOnly: false,
     secure: process.env.NODE_ENV === "production",
-    sameSite: "lax",
+    sameSite: "strict", // Strict isolation to limit XSS + CSRF attacks
     path: "/",
     maxAge: 60 * 60 * 24,
   });

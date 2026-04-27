@@ -54,6 +54,10 @@ export async function getUserListingCounts(userId: string): Promise<{
  *
  * Falls back to the non-atomic count check when the RPC is unavailable
  * (e.g. local dev without the migration applied).
+ *
+ * ── SECURITY FIX: Issue #2 - Advisory Lock Hash Collision Prevention ─────
+ * Uses full SHA-256 hash of userId to generate 64-bit lock key, preventing
+ * hash collisions that could cause DoS by blocking unrelated users.
  */
 export async function checkListingLimit(
   userId: string,
@@ -96,7 +100,10 @@ export async function checkListingLimit(
   // Even in fallback, we attempt to use an advisory lock to reduce race condition window
   let lockAcquired = false;
   try {
-    const lockKey = parseInt(userId.replace(/-/g, "").slice(0, 8), 16);
+    // ── SECURITY FIX: Issue #2 - Full SHA-256 Hash for Lock Key ─────
+    // Generate 64-bit lock key from full userId hash to prevent collisions
+    const lockKey = await hashUserIdToLockKey(userId);
+
     const { error: lockError } = await admin
       .rpc("pg_advisory_xact_lock", { key: lockKey })
       .abortSignal(AbortSignal.timeout(3000)); // 3 second timeout
@@ -155,4 +162,18 @@ export async function checkListingLimit(
     allowed: true,
     remaining: { monthly: remainingMonthly, yearly: remainingYearly },
   };
+}
+
+/**
+ * ── SECURITY FIX: Issue #2 - Hash Collision Prevention ─────────────
+ * Generates a 64-bit lock key from full SHA-256 hash of userId.
+ * Prevents hash collisions that could cause DoS by blocking unrelated users.
+ */
+async function hashUserIdToLockKey(userId: string): Promise<bigint> {
+  const encoder = new TextEncoder();
+  const data = encoder.encode(userId);
+  const hashBuffer = await crypto.subtle.digest("SHA-256", data);
+  const view = new DataView(hashBuffer);
+  // Use first 8 bytes of SHA-256 hash as 64-bit signed integer
+  return view.getBigInt64(0, false);
 }

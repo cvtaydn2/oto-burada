@@ -42,20 +42,21 @@ export class PaymentService {
       .single();
 
     // KVKK Compliance: Identity number is required for Iyzico
-    let identityNumber: string;
-
-    if (process.env.NODE_ENV === "production") {
-      // Production: Require real identity number
-      if (!profile?.identity_number || profile.identity_number.length !== 11) {
-        throw new Error(
-          "Ödeme yapabilmek için TC Kimlik Numaranızı profil ayarlarınızdan eklemeniz gerekmektedir."
-        );
-      }
-      identityNumber = profile.identity_number;
-    } else {
-      // Development/Test: Use test identity number
-      identityNumber = profile?.identity_number || "11111111111";
+    // ── CRITICAL FIX: Issue Kritik-03 - Identity Number Validation ───
+    // Always require real identity number, even in development
+    // Test users should have valid test identity numbers in their profiles
+    if (!profile?.identity_number || profile.identity_number.length !== 11) {
+      throw new Error(
+        "Ödeme yapabilmek için TC Kimlik Numaranızı profil ayarlarınızdan eklemeniz gerekmektedir."
+      );
     }
+
+    // Validate identity number format (basic check)
+    if (!/^\d{11}$/.test(profile.identity_number)) {
+      throw new Error("Geçersiz TC Kimlik Numarası formatı. 11 haneli sayı olmalıdır.");
+    }
+
+    const identityNumber = profile.identity_number;
 
     // 1. Create a pending payment record in DB
     // package_id stores the slug (e.g. "acil_acil") so callback can look it up

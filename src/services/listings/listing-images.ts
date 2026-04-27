@@ -142,11 +142,15 @@ async function getImageDimensions(file: File): Promise<{ width: number; height: 
   }
 
   // JPEG: scan for SOF markers (0xFFC0–0xFFC3, 0xFFC5–0xFFC7, 0xFFC9–0xFFCB, 0xFFCD–0xFFCF)
+  // ── SECURITY FIX: Issue #1 - Truncated JPEG Protection ─────────────
   if (view.getUint8(0) === 0xff && view.getUint8(1) === 0xd8) {
     let offset = 2;
-    while (offset < buffer.byteLength - 8) {
+    let maxIterations = 500; // Prevent infinite loop on malformed files
+
+    while (offset < buffer.byteLength - 8 && maxIterations-- > 0) {
       if (view.getUint8(offset) !== 0xff) break;
       const marker = view.getUint8(offset + 1);
+
       if (
         (marker >= 0xc0 && marker <= 0xc3) ||
         (marker >= 0xc5 && marker <= 0xc7) ||
@@ -158,7 +162,13 @@ async function getImageDimensions(file: File): Promise<{ width: number; height: 
           width: view.getUint16(offset + 7, false),
         };
       }
+
       const segmentLength = view.getUint16(offset + 2, false);
+
+      // Protect against truncated/malformed segments
+      if (segmentLength < 2) break; // Invalid segment length
+      if (offset + 2 + segmentLength > buffer.byteLength) break; // Segment extends beyond file
+
       offset += 2 + segmentLength;
     }
   }
