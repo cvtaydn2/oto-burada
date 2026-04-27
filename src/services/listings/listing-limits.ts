@@ -58,6 +58,11 @@ export async function getUserListingCounts(userId: string): Promise<{
  * ── SECURITY FIX: Issue #2 - Advisory Lock Hash Collision Prevention ─────
  * Uses full SHA-256 hash of userId to generate 64-bit lock key, preventing
  * hash collisions that could cause DoS by blocking unrelated users.
+ *
+ * ── PERFORMANCE NOTE: Issue #18 - Admin Client Caching ─────
+ * createSupabaseAdminClient() uses a singleton pattern with 1-minute TTL,
+ * so multiple calls within the same request/minute reuse the same client instance.
+ * No additional caching needed here.
  */
 export async function checkListingLimit(
   userId: string,
@@ -96,8 +101,25 @@ export async function checkListingLimit(
     }
   }
 
-  // Fallback: non-atomic count check (safe for low-traffic / dev environments)
+  // ── SECURITY FIX: Issue #11 - Fail-Closed in Production ─────────────
+  // In production, if the primary RPC fails, reject immediately to prevent race conditions.
+  // Fallback is only allowed in development where traffic is low and race conditions are unlikely.
+  if (process.env.NODE_ENV === "production") {
+    logger.auth.error("[ListingLimits] Primary quota RPC failed in production, rejecting", {
+      error: rpcError,
+      userId,
+    });
+    return {
+      allowed: false,
+      reason: "Sistem meşgul. Lütfen biraz bekleyip tekrar deneyin.",
+      remaining: { monthly: 0, yearly: 0 },
+    };
+  }
+
+  // Fallback: non-atomic count check (ONLY for development environments)
   // Even in fallback, we attempt to use an advisory lock to reduce race condition window
+  logger.auth.warn("[ListingLimits] Using fallback quota check (development only)", { userId });
+
   let lockAcquired = false;
   try {
     // ── SECURITY FIX: Issue #2 - Full SHA-256 Hash for Lock Key ─────
@@ -109,32 +131,19 @@ export async function checkListingLimit(
       .abortSignal(AbortSignal.timeout(3000)); // 3 second timeout
 
     if (lockError) {
-      logger.auth.warn("[ListingLimits] Advisory lock failed", { error: lockError, userId });
-      // In production, if we can't acquire lock, fail-closed to prevent race conditions
-      if (process.env.NODE_ENV === "production") {
-        return {
-          allowed: false,
-          reason: "Sistem meşgul. Lütfen biraz bekleyip tekrar deneyin.",
-          remaining: { monthly: 0, yearly: 0 },
-        };
-      }
+      logger.auth.warn("[ListingLimits] Advisory lock failed in fallback", {
+        error: lockError,
+        userId,
+      });
     } else {
       lockAcquired = true;
     }
   } catch (error) {
-    logger.auth.error("[ListingLimits] Advisory lock exception", error);
-    // In production, fail-closed on lock acquisition failure
-    if (process.env.NODE_ENV === "production") {
-      return {
-        allowed: false,
-        reason: "Sistem meşgul. Lütfen biraz bekleyip tekrar deneyin.",
-        remaining: { monthly: 0, yearly: 0 },
-      };
-    }
+    logger.auth.error("[ListingLimits] Advisory lock exception in fallback", error);
   }
 
-  if (!lockAcquired && process.env.NODE_ENV === "production") {
-    logger.auth.warn("[ListingLimits] Proceeding without lock in production (risky)");
+  if (!lockAcquired) {
+    logger.auth.warn("[ListingLimits] Proceeding without lock in development (risky)");
   }
 
   const counts = await getUserListingCounts(userId);

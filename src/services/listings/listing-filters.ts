@@ -27,7 +27,12 @@ export const DEFAULT_LISTING_FILTERS: ListingFilters = {
 export function parseListingFiltersFromSearchParams(
   searchParams?: Record<string, string | string[] | undefined>
 ): ListingFilters {
-  const start = Date.now();
+  // ── PERFORMANCE FIX: Issue #17 - Conditional Performance Logging ─────
+  // Performance logging only in development to avoid overhead in production.
+  // In high-traffic marketplace APIs, Date.now() + logger calls add unnecessary latency.
+  const shouldLogPerf = process.env.NODE_ENV === "development";
+  const start = shouldLogPerf ? Date.now() : 0;
+
   const normalizedSearchParams = Object.fromEntries(
     Object.entries(searchParams ?? {}).flatMap(([key, value]) => {
       const firstValue = Array.isArray(value) ? value[0] : value;
@@ -53,10 +58,12 @@ export function parseListingFiltersFromSearchParams(
     };
   }
 
-  logger.perf.debug("parseListingFiltersFromSearchParams execution", {
-    duration: Date.now() - start,
-    success: true,
-  });
+  if (shouldLogPerf) {
+    logger.perf.debug("parseListingFiltersFromSearchParams execution", {
+      duration: Date.now() - start,
+      success: true,
+    });
+  }
 
   // Apply defaults to parsed data
   return {

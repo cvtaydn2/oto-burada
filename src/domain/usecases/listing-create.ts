@@ -89,8 +89,17 @@ export async function executeListingCreation(
   const listing = saveResult.listing;
 
   // 5. Side Effects (non-blocking)
+  // ── ERROR HANDLING FIX: Issue #15 - Consistent Side Effect Error Handling ─────
+  // All fire-and-forget side effects must have consistent error handling to prevent
+  // unhandled promise rejections and ensure observability of failures.
   deps.notifyUser(listing).catch((e) => logger.system.error("Creation notification failed", e));
-  deps.trackEvent(listing);
+
+  try {
+    deps.trackEvent(listing);
+  } catch (e) {
+    logger.system.error("Analytics tracking failed", e);
+  }
+
   deps.runAsyncModeration(listing.id, listing);
 
   return { success: true, listing };

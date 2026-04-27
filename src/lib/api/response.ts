@@ -23,14 +23,14 @@ export type ApiResponse<T = unknown> = ApiSuccessResponse<T> | ApiErrorResponse;
 /**
  * Standard success response builder.
  */
-export function apiSuccess<T>(data: T, message?: string, status = 200) {
+export function apiSuccess<T>(data: T, message?: string, status = 200, headers?: HeadersInit) {
   const body: ApiSuccessResponse<T> = { success: true, data };
 
   if (message) {
     body.message = message;
   }
 
-  return NextResponse.json(body, { status });
+  return NextResponse.json(body, { status, headers });
 }
 
 /**

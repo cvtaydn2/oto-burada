@@ -1,3 +1,4 @@
+import { MARKET_THRESHOLDS } from "@/config/market-thresholds";
 import type { Listing } from "@/types";
 
 import { analyzeListingValue } from "./pricing-engine";
@@ -13,12 +14,18 @@ export interface ListingCardInsight {
   fairValue?: number;
 }
 
+// ── PERFORMANCE FIX: Issue #19 - Cache Current Year at Module Level ─────
+// Compute current year once at module load instead of on every card render.
+// In a page with 50 listings, this saves 49 Date object allocations.
+const CURRENT_YEAR = new Date().getFullYear();
+
 export function getListingCardInsights(listing: Listing): ListingCardInsight {
   const analysis = analyzeListingValue(listing);
-  const currentYear = new Date().getFullYear();
-  const isBudgetFriendly = listing.price <= 1_000_000;
-  const isLowMileage = listing.mileage <= 70_000;
-  const isCurrentModel = listing.year >= currentYear - 4;
+
+  // ── BUSINESS LOGIC FIX: Issue #12 - Use Centralized Thresholds ─────
+  const isBudgetFriendly = listing.price <= MARKET_THRESHOLDS.budgetFriendlyMaxPrice;
+  const isLowMileage = listing.mileage <= MARKET_THRESHOLDS.lowMileageMaxKm;
+  const isCurrentModel = listing.year >= CURRENT_YEAR - MARKET_THRESHOLDS.recentModelYears;
   const isAutomatic = listing.transmission === "otomatik";
 
   const highlights: string[] = [];

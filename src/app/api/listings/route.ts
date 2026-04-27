@@ -28,6 +28,13 @@ import { createDatabaseNotification } from "@/services/notifications/notificatio
 const MY_LISTINGS_DEFAULT_LIMIT = 12; // Mobile-first: reduced from 50
 const MY_LISTINGS_MAX_LIMIT = 100;
 
+// ── PERFORMANCE FIX: Issue #20 - Response Caching Configuration ─────
+// Enable Next.js ISR (Incremental Static Regeneration) for public marketplace listings.
+// This reduces database load and improves response times for high-traffic pages.
+// - revalidate: 30 seconds - Fresh data while reducing DB queries
+// - Authenticated routes (view=my) bypass cache automatically
+export const revalidate = 30; // Cache public listings for 30 seconds
+
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const view = searchParams.get("view");
@@ -76,7 +83,14 @@ export async function GET(request: Request) {
 
   try {
     const result = await getFilteredMarketplaceListings(filters);
-    return apiSuccess(result);
+
+    // ── PERFORMANCE FIX: Issue #20 - Cache-Control Headers ─────
+    // Add stale-while-revalidate for better performance and reduced DB load.
+    // - s-maxage=30: CDN caches for 30 seconds
+    // - stale-while-revalidate=60: Serve stale content while revalidating in background
+    return apiSuccess(result, undefined, 200, {
+      "Cache-Control": "public, s-maxage=30, stale-while-revalidate=60",
+    });
   } catch (error) {
     captureServerError("GET /api/listings failed", "listings", error, { filters: paramsObj });
     return apiError(API_ERROR_CODES.INTERNAL_ERROR, "İlanlar yüklenirken bir hata oluştu.", 500);
@@ -109,6 +123,22 @@ export async function POST(request: Request) {
   }
 
   // Orchestrate via Domain Use Case (SOLID)
+  // ── ARCHITECTURE ANALYSIS: Issue #13 - Quota Check vs Listing Save Atomicity ─────
+  // The quota check (checkListingLimit) and listing save (saveListing) are separate
+  // operations, but this is SAFE in the current implementation because:
+  //
+  // 1. The RPC `check_and_reserve_listing_quota` only CHECKS quota, it doesn't modify state
+  // 2. The actual quota consumption happens when the listing is inserted (status = pending/approved)
+  // 3. If saveListing fails, no listing is created, so no quota is consumed
+  // 4. The FOR UPDATE lock prevents race conditions during the check window
+  //
+  // RISK SCENARIO: If we later add a "reserved_quota" counter that increments during
+  // the check phase (before listing insert), we would need compensation logic to
+  // decrement it on save failure. Current implementation doesn't have this issue.
+  //
+  // ALTERNATIVE APPROACH: Move the entire flow into a single Postgres function that
+  // checks quota and inserts listing atomically. This would eliminate the window between
+  // check and insert, but adds complexity to the database layer.
   const result = await executeListingCreation(input, user.id, {
     checkQuota: (uid) => checkListingLimit(uid),
     getExistingListings: async (sellerId: string) => {

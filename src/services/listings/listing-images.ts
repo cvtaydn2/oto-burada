@@ -75,25 +75,27 @@ export async function getVerifiedMimeType(file: File): Promise<string | null> {
 /**
  * Returns image dimensions using browser-safe APIs only.
  *
+ * ── PERFORMANCE FIX: Issue #16 - Avoid Full File Decode in Server Context ─────
  * Strategy:
  *  - In browser environments: uses createImageBitmap (fast, no DOM required).
- *  - In Node/server environments (e.g. server-side validation): uses HTMLImageElement
- *    via a URL.createObjectURL polyfill path, or falls back to a lightweight
- *    ArrayBuffer header parse for JPEG/PNG/WebP.
+ *  - In Node/server environments: ALWAYS uses lightweight ArrayBuffer header parse
+ *    to avoid OOM on large files. A 4MB image decoded via createImageBitmap can
+ *    consume hundreds of MB of memory in serverless/edge runtime.
  *
  * This replaces the `image-size` npm package which is Node-only and must not
  * leak into the client bundle.
  */
 async function getImageDimensions(file: File): Promise<{ width: number; height: number }> {
-  // createImageBitmap is available in modern browsers and Node 18+ (via canvas)
-  if (typeof createImageBitmap === "function") {
-    const bitmap = await createImageBitmap(file);
-    const result = { width: bitmap.width, height: bitmap.height };
-    bitmap.close();
-    return result;
-  }
+  // ── PERFORMANCE FIX: Issue #16 - Server-Safe Header Parse Only ─────
+  // In server/edge runtime, always use header parsing to avoid memory explosion.
+  // createImageBitmap decodes the entire image into memory, which can cause OOM
+  // for large files (4MB file → 200MB+ memory usage).
+  //
+  // In browser context, createImageBitmap is safe and fast, but we already have
+  // file size limits (4MB) enforced before this function is called, so header
+  // parsing is sufficient for dimension validation in all contexts.
 
-  // Fallback: parse dimensions from raw bytes (covers JPEG, PNG, WebP)
+  // Parse dimensions from raw bytes (covers JPEG, PNG, WebP)
   const buffer = await file.arrayBuffer();
   const view = new DataView(buffer);
 
