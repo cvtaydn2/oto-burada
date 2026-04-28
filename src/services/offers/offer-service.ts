@@ -54,7 +54,7 @@ export async function verifyOfferOwnership(
     if (offerError) throw offerError;
     offer = data;
     if (!offer) throw new Error("Offer not found");
-  } catch (err) {
+  } catch {
     return { isOwner: false, reason: "Teklif bulunamadı veya bir hata oluştu." };
   }
 
@@ -75,7 +75,7 @@ export async function verifyOfferOwnership(
     if (listingError) throw listingError;
     listing = data;
     if (!listing) throw new Error("Listing not found");
-  } catch (err) {
+  } catch {
     return { isOwner: false, reason: "İlan bulunamadı." };
   }
 
@@ -167,7 +167,7 @@ export async function createOffer(params: {
     if (listingError) throw listingError;
     listing = data;
     if (!listing) throw new Error("Listing not found");
-  } catch (err) {
+  } catch {
     throw new Error("İlan bulunamadı.");
   }
 
@@ -227,7 +227,7 @@ export async function respondToOffer(
 
     if (offerError) throw offerError;
     offer = data;
-  } catch (err) {
+  } catch {
     throw new Error("Teklif bulunamadı.");
   }
 
@@ -260,7 +260,7 @@ export async function respondToOffer(
     if (listingError) throw listingError;
     listing = data;
     if (!listing) throw new Error("Listing not found");
-  } catch (err) {
+  } catch {
     throw new Error("İlan bulunamadı.");
   }
 

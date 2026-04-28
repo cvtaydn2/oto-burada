@@ -91,7 +91,71 @@ export async function updateSession(request: NextRequest) {
     user = fetchedUser;
   }
 
-  // 4. ROUTE GUARDS (Redirects)
+  // 4. MAINTENANCE MODE CHECK
+  // Skip check for maintenance page, static assets, and auth/admin routes
+  if (
+    !route.isStaticAsset &&
+    pathname !== "/maintenance" &&
+    !pathname.startsWith("/admin") &&
+    !pathname.startsWith("/api/auth") &&
+    !pathname.startsWith("/auth")
+  ) {
+    // Fetch maintenance mode setting
+    const { data: settings, error: settingsError } = await supabase
+      .from("platform_settings")
+      .select("value")
+      .eq("key", "general_appearance")
+      .single();
+
+    if (settingsError) {
+      console.error("[maintenanceCheck] Settings fetch error:", settingsError);
+    }
+
+    const isMaintenanceMode =
+      (settings?.value as { maintenance_mode?: boolean })?.maintenance_mode === true;
+    console.log(`[maintenanceCheck] Path: ${pathname}, Maintenance: ${isMaintenanceMode}`);
+
+    if (isMaintenanceMode) {
+      let isAdmin = false;
+      if (user) {
+        // Fetch role from profile
+        const { data: profile, error: profileError } = await supabase
+          .from("profiles")
+          .select("role")
+          .eq("id", user.id)
+          .single();
+
+        if (profileError) {
+          console.error("[maintenanceCheck] Profile fetch error:", profileError);
+        }
+
+        isAdmin = profile?.role === "admin";
+        console.log(`[maintenanceCheck] User: ${user.id}, Admin: ${isAdmin}`);
+      }
+
+      if (!isAdmin && pathname !== "/login") {
+        // For API routes, return a JSON error instead of a redirect
+        if (route.isApiRoute) {
+          return applySecurityHeaders(
+            NextResponse.json(
+              {
+                error: "Site bakım modundadır. Lütfen daha sonra tekrar deneyiniz.",
+                code: "MAINTENANCE_MODE",
+              },
+              { status: 503 }
+            ),
+            nonce
+          );
+        }
+
+        const url = request.nextUrl.clone();
+        url.pathname = "/maintenance";
+        return applySecurityHeaders(NextResponse.redirect(url), nonce);
+      }
+    }
+  }
+
+  // 5. ROUTE GUARDS (Redirects)
   const redirectResponse = handleAuthRedirects(request, user, route);
   if (redirectResponse) {
     // SECURITY: Ensure Supabase session cookies from the new response
@@ -104,11 +168,11 @@ export async function updateSession(request: NextRequest) {
     return applySecurityHeaders(finalResponse, nonce);
   }
 
-  // 5. FINAL ENRICHMENT (Headers & Metadata)
+  // 6. FINAL ENRICHMENT (Headers & Metadata)
   applySecurityHeaders(response, nonce);
   applyRequestMetadata(request, response, pathname);
 
-  // 6. CSRF TOKEN (Ensure every visitor has one)
+  // 7. CSRF TOKEN (Ensure every visitor has one)
   const hasCsrfCookie = request.cookies.has("csrf_token");
   if (!hasCsrfCookie && !route.isStaticAsset) {
     const { applyCsrfCookieToResponse } = await import("@/lib/security/csrf");

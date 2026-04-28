@@ -462,7 +462,7 @@ export async function archiveListing(
 
     if (fetchError) throw fetchError;
     current = data;
-  } catch (err) {
+  } catch (_err) {
     return { error: "database_error" as const };
   }
 
@@ -544,7 +544,7 @@ export async function bumpListing(
 
     if (fetchError) throw fetchError;
     current = data;
-  } catch (err) {
+  } catch (_err) {
     return { error: "database_error" as const };
   }
 
@@ -600,7 +600,7 @@ export async function publishListing(
 
     if (fetchError) throw fetchError;
     current = data;
-  } catch (err) {
+  } catch (_err) {
     return { error: "database_error" as const };
   }
 

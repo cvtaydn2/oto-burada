@@ -37,6 +37,7 @@ export function getSecurityHeaders(nonce: string) {
     `'nonce-${nonce}'`,
     "https://fonts.googleapis.com",
     "https://unpkg.com",
+    "'unsafe-inline'", // Required for PostHog inline styles and some UI components
   ];
 
   // ── PERFORMANCE FIX: Issue PERF-04 - Strict CSP in Development ─────────────

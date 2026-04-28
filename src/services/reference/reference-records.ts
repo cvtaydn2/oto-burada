@@ -44,11 +44,11 @@ async function fetchLiveMarketplaceReferenceData(): Promise<MarketplaceReference
   });
 
   const [
-    { data: brandsData },
-    { data: modelsData },
-    { data: trimsData },
-    { data: citiesData },
-    { data: districtsData },
+    { data: brandsData, error: brandsError },
+    { data: modelsData, error: modelsError },
+    { data: trimsData, error: trimsError },
+    { data: citiesData, error: citiesError },
+    { data: districtsData, error: districtsError },
   ] = await Promise.all([
     supabase
       .from("brands")
@@ -76,6 +76,16 @@ async function fetchLiveMarketplaceReferenceData(): Promise<MarketplaceReference
       .eq("is_active", true)
       .order("name", { ascending: true }),
   ]);
+
+  if (brandsError || modelsError || trimsError || citiesError || districtsError) {
+    console.error("[fetchLiveMarketplaceReferenceData] Supabase fetch failed:", {
+      brandsError,
+      modelsError,
+      trimsError,
+      citiesError,
+      districtsError,
+    });
+  }
 
   const safeBrandsData = Array.isArray(brandsData) ? (brandsData as DBBrand[]) : [];
   const safeModelsData = Array.isArray(modelsData) ? (modelsData as DBModel[]) : [];

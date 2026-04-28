@@ -62,16 +62,42 @@ function getHydrationSnapshot() {
   return SERVER_HYDRATED;
 }
 
+/**
+ * Fetches CSRF token from the API
+ */
+async function fetchCsrfToken(): Promise<string | null> {
+  try {
+    const response = await fetch("/api/auth/csrf");
+    if (response.status === 503) return null; // Maintenance mode
+    const payload = await response.json().catch(() => null);
+    return payload?.data?.token ?? null;
+  } catch {
+    return null;
+  }
+}
+
 async function requestFavoriteUpdate(method: "DELETE" | "POST", listingId: string) {
+  const csrfToken = await fetchCsrfToken();
+
+  const headers: Record<string, string> = {
+    "Content-Type": "application/json",
+  };
+
+  if (csrfToken) {
+    headers["x-csrf-token"] = csrfToken;
+  }
+
   const response = await fetch("/api/favorites", {
     body: JSON.stringify({ listingId }),
-    headers: {
-      "Content-Type": "application/json",
-    },
+    headers,
     method,
   });
 
   if (!response.ok) {
+    if (response.status === 403 || response.status === 401 || response.status === 503) {
+      // Unauthenticated, CSRF failure, or Maintenance - return empty list to prevent crash
+      return [];
+    }
     const payload = (await response.json().catch(() => null)) as { error?: { message: string } };
     throw new Error(payload?.error?.message ?? "Favori durumu güncellenemedi.");
   }
@@ -108,6 +134,15 @@ export function FavoritesProvider({ children }: PropsWithChildren) {
     const syncFavorites = async () => {
       try {
         const response = await fetch("/api/favorites", { method: "GET" });
+
+        // Handle 403 Forbidden (Guest user or CSRF issues) or 503 Service Unavailable (Maintenance)
+        if (response.status === 403 || response.status === 401 || response.status === 503) {
+          if (!cancelled) {
+            setRemoteFavoriteIds([]);
+          }
+          return;
+        }
+
         const payload = (await response.json().catch(() => null)) as {
           success?: boolean;
           data?: { favoriteIds?: string[] };
@@ -135,7 +170,6 @@ export function FavoritesProvider({ children }: PropsWithChildren) {
           );
 
           // After uploads, always do a final authoritative GET — server is source of truth.
-          // We do NOT merge local IDs ourselves; only confirmed server state is canonical.
           const finalResponse = await fetch("/api/favorites", { method: "GET" });
           const finalPayload = await finalResponse.json().catch(() => null);
           if (finalResponse.ok && finalPayload?.success) {
@@ -148,7 +182,7 @@ export function FavoritesProvider({ children }: PropsWithChildren) {
               return;
             }
           }
-          // Final GET failed — fall back to the initial server state (not local)
+          // Final GET failed — fall back to the initial server state
           if (!cancelled) {
             broadcastFavoritesUpdate(safeServerIds);
             setRemoteFavoriteIds(safeServerIds);
@@ -160,13 +194,10 @@ export function FavoritesProvider({ children }: PropsWithChildren) {
           broadcastFavoritesUpdate(safeServerIds);
           setRemoteFavoriteIds(safeServerIds);
         }
-      } catch {
+      } catch (_err) {
+        console.error("[FavoritesProvider] Sync error:", _err);
         if (!cancelled) {
           setRemoteFavoriteIds(readFavoriteIds());
-        }
-      } finally {
-        if (!cancelled) {
-          // Sync complete
         }
       }
     };
@@ -199,13 +230,10 @@ export function FavoritesProvider({ children }: PropsWithChildren) {
 
   const resolvedFavoriteIds = useMemo(() => {
     if (!userId) return localFavoriteIds;
-    // Login sonrası sync tamamlanana kadar local favorites'ı göster
-    // (boş array yerine) — kullanıcı anlık "kalp boşaldı" görmez
     if (remoteFavoriteIds === null) return localFavoriteIds;
     return remoteFavoriteIds;
   }, [localFavoriteIds, remoteFavoriteIds, userId]);
-  // hydrated = true only when sync is fully complete (remoteFavoriteIds set AND not mid-sync).
-  // This prevents consumers from seeing a "ready" state while an initial sync is still in flight.
+
   const resolvedHydrated = userId ? remoteFavoriteIds !== null : localHydrated;
 
   const value = useMemo<FavoritesContextValue>(
@@ -239,9 +267,6 @@ export function FavoritesProvider({ children }: PropsWithChildren) {
           .catch(() => {
             setRemoteFavoriteIds(previousIds);
             broadcastFavoritesUpdate(previousIds);
-          })
-          .finally(() => {
-            // Sync complete
           });
       },
     }),
