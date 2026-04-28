@@ -332,20 +332,22 @@ npm run diagnose
 
 Proje 3 katmanlı ücretsiz monitoring ile gelir:
 
-1. **GitHub Actions** (her 6 saatte)
+1. **GitHub Actions** (günde 1 kez)
    - Otomatik health check
    - Sorun varsa GitHub Issue oluşturur
    - Email bildirimi
 
-2. **Vercel Cron** (her 6 saatte)
+2. **Vercel Cron** (günde 1 kez - Hobby plan limiti)
    - `/api/health-check` endpoint'i
    - Environment, database, auth kontrolü
    - Vercel Dashboard'da sonuçlar
 
-3. **UptimeRobot** (manuel kurulum - 5 dakika)
+3. **UptimeRobot** (manuel kurulum - her 5 dakikada)
    - Her 5 dakikada uptime kontrolü
    - Email/SMS alerts
    - Public status page
+
+**Not:** Vercel Hobby plan'da cron job'lar günde 1 kez çalışabilir. Daha sık kontrol için UptimeRobot kullanın (ücretsiz, her 5 dakika).
 
 **Detaylı Kurulum:** [`docs/MONITORING_SETUP.md`](docs/MONITORING_SETUP.md) (15 dakika)
 

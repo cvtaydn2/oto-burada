@@ -181,7 +181,7 @@ cat docs/MONITORING_SETUP.md
 **Özet:**
 - GitHub Actions secrets ekle
 - UptimeRobot hesap aç
-- Health check test et
+- Health check test et (günde 1 kez - Hobby plan limiti)
 
 #### 2. Custom Domain Ekle (Opsiyonel - 10 dakika)
 1. Vercel Dashboard > Projen > **Settings** > **Domains**
