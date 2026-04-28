@@ -11,7 +11,7 @@ import { updateSession } from "@/lib/supabase/middleware";
  * 2. Security Headers (CSP, HSTS, etc.)
  * 3. Auth Redirection Logic
  */
-export async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const route = classifyRoute(pathname);
 

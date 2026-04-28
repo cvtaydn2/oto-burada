@@ -6,6 +6,7 @@ import {
   useContext,
   useEffect,
   useMemo,
+  useRef,
   useState,
   useSyncExternalStore,
 } from "react";
@@ -123,6 +124,7 @@ export function FavoritesProvider({ children }: PropsWithChildren) {
   const localFavoriteIds = useSyncExternalStore(subscribe, getFavoritesSnapshot, getServerSnapshot);
   const localHydrated = useSyncExternalStore(subscribe, () => true, getHydrationSnapshot);
   const [remoteFavoriteIds, setRemoteFavoriteIds] = useState<string[] | null>(null);
+  const isSyncing = useRef(false);
 
   useEffect(() => {
     if (!userId) {
@@ -132,14 +134,15 @@ export function FavoritesProvider({ children }: PropsWithChildren) {
     let cancelled = false;
 
     const syncFavorites = async () => {
+      // Eşzamanlı istekleri engelle
+      if (isSyncing.current) return;
+      isSyncing.current = true;
+
       try {
         const response = await fetch("/api/favorites", { method: "GET" });
 
-        // Handle 403 Forbidden (Guest user or CSRF issues) or 503 Service Unavailable (Maintenance)
         if (response.status === 403 || response.status === 401 || response.status === 503) {
-          if (!cancelled) {
-            setRemoteFavoriteIds([]);
-          }
+          if (!cancelled) setRemoteFavoriteIds([]);
           return;
         }
 
@@ -148,57 +151,45 @@ export function FavoritesProvider({ children }: PropsWithChildren) {
           data?: { favoriteIds?: string[] };
         };
 
-        // If the initial GET fails, fall back to local state — don't corrupt remote truth.
         if (!response.ok || !payload?.success) {
-          if (!cancelled) {
-            setRemoteFavoriteIds(readFavoriteIds());
-          }
+          if (!cancelled) setRemoteFavoriteIds(readFavoriteIds());
           return;
         }
 
         const serverFavoriteIds = payload?.data?.favoriteIds ?? [];
-
-        // Server is the source of truth for authenticated users.
         const safeServerIds = Array.isArray(serverFavoriteIds) ? serverFavoriteIds : [];
         const localIds = readFavoriteIds();
         const localOnlyIds = localIds.filter((id) => !safeServerIds.includes(id));
 
-        // Upload any local-only favorites
+        // Sadece yerelde yeni favoriler varsa POST at ve sonrasında bir kez daha doğrula
         if (localOnlyIds.length > 0) {
           await Promise.allSettled(
             localOnlyIds.map((listingId) => requestFavoriteUpdate("POST", listingId))
           );
 
-          // After uploads, always do a final authoritative GET — server is source of truth.
           const finalResponse = await fetch("/api/favorites", { method: "GET" });
           const finalPayload = await finalResponse.json().catch(() => null);
+
           if (finalResponse.ok && finalPayload?.success) {
             const finalIds = finalPayload.data?.favoriteIds;
-            if (Array.isArray(finalIds)) {
-              if (!cancelled) {
-                broadcastFavoritesUpdate(finalIds);
-                setRemoteFavoriteIds(finalIds);
-              }
+            if (Array.isArray(finalIds) && !cancelled) {
+              broadcastFavoritesUpdate(finalIds);
+              setRemoteFavoriteIds(finalIds);
               return;
             }
           }
-          // Final GET failed — fall back to the initial server state
-          if (!cancelled) {
-            broadcastFavoritesUpdate(safeServerIds);
-            setRemoteFavoriteIds(safeServerIds);
-          }
-          return;
         }
 
+        // Değişiklik yoksa veya sync bittiyse tek seferde güncelle
         if (!cancelled) {
           broadcastFavoritesUpdate(safeServerIds);
           setRemoteFavoriteIds(safeServerIds);
         }
       } catch (_err) {
         console.error("[FavoritesProvider] Sync error:", _err);
-        if (!cancelled) {
-          setRemoteFavoriteIds(readFavoriteIds());
-        }
+        if (!cancelled) setRemoteFavoriteIds(readFavoriteIds());
+      } finally {
+        isSyncing.current = false;
       }
     };
 
@@ -206,7 +197,6 @@ export function FavoritesProvider({ children }: PropsWithChildren) {
 
     // Real-time synchronization
     const supabase = createSupabaseBrowserClient();
-    // Use a unique channel name per effect run to avoid "already subscribed" errors
     const channelId = `favorites-realtime-${userId}-${Math.random().toString(36).slice(2, 9)}`;
     const channel = supabase
       .channel(channelId)

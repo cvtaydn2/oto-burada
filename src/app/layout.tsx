@@ -105,7 +105,6 @@ export default async function RootLayout({
   children: React.ReactNode;
 }>) {
   const user = await getCurrentUser();
-  console.log(`[RootLayout] Server-side user: ${user?.id || "None"}`);
   const nonce = (await headers()).get("x-nonce") ?? undefined;
 
   return (

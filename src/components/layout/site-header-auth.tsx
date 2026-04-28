@@ -3,7 +3,7 @@
 import { Heart, PlusCircle } from "lucide-react";
 import Link from "next/link";
 
-import { useAuthUser } from "@/components/shared/auth-provider";
+import { useNavigation } from "@/hooks/use-navigation";
 
 interface SiteHeaderAuthProps {
   favoritesHrefGuest: string;
@@ -14,12 +14,11 @@ export function SiteHeaderAuth({
   favoritesHrefGuest,
   postListingHrefAuthenticated,
 }: SiteHeaderAuthProps) {
-  const { isReady, userId, user } = useAuthUser();
-  const resolvedAuthenticated = Boolean(userId && user);
+  const { isReady, isAuthenticated, user } = useNavigation();
 
-  const accountHref = resolvedAuthenticated ? "/dashboard" : "/login";
-  const favoritesHref = resolvedAuthenticated ? "/dashboard/favorites" : favoritesHrefGuest;
-  const postListingHref = resolvedAuthenticated ? postListingHrefAuthenticated : "/login";
+  const accountHref = isAuthenticated ? "/dashboard" : "/login";
+  const favoritesHref = isAuthenticated ? "/dashboard/favorites" : favoritesHrefGuest;
+  const postListingHref = isAuthenticated ? postListingHrefAuthenticated : "/login";
 
   return (
     <div className="flex items-center gap-2 sm:gap-4">
@@ -40,7 +39,7 @@ export function SiteHeaderAuth({
           <div className="size-8 rounded-full bg-muted animate-pulse" />
         ) : (
           <Link href={accountHref} prefetch={false} className="flex items-center gap-2 group p-1">
-            {resolvedAuthenticated && user ? (
+            {isAuthenticated && user ? (
               <div className="size-10 overflow-hidden rounded-full border border-border bg-blue-500 flex items-center justify-center text-white text-xs font-bold select-none">
                 <span>{user.email?.charAt(0).toUpperCase() ?? "U"}</span>
               </div>

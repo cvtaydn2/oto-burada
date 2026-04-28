@@ -5,8 +5,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Drawer } from "vaul";
 
-import { getMobileNavigationItems } from "@/components/layout/public-navigation";
-import { useAuthUser } from "@/components/shared/auth-provider";
+import { useNavigation } from "@/hooks/use-navigation";
 import { cn } from "@/lib/utils";
 import type { SearchSuggestionItem } from "@/types";
 
@@ -18,10 +17,9 @@ interface MobileNavProps {
 
 export function MobileNav({ searchSuggestions }: MobileNavProps) {
   const pathname = usePathname();
-  const { isReady, userId, user } = useAuthUser();
-  const isAuthenticated = Boolean(userId && user);
+  const { bottomNavItems, isReady } = useNavigation();
+
   // FAB sadece içerik keşif sayfalarında gösterilir.
-  // Form, ödeme, mesaj ve işlem sayfalarında klavye/içerik üstüne binmemesi için gizlenir.
   const FAB_ALLOWED_PATHS = ["/", "/listings", "/favorites", "/compare"];
   const isListingDetailPage = pathname.startsWith("/listing/");
   const showFAB =
@@ -30,10 +28,8 @@ export function MobileNav({ searchSuggestions }: MobileNavProps) {
     !pathname.startsWith("/dashboard/listings/edit") &&
     !isListingDetailPage;
 
-  // İlan detay sayfasında global bottom nav'ı gizle, çünkü orada özel sticky contact bar var.
+  // İlan detay sayfasında global bottom nav'ı gizle
   if (isListingDetailPage) return null;
-
-  const mobileNavigationItems = getMobileNavigationItems(isReady ? isAuthenticated : true);
 
   return (
     <div className="lg:hidden">
@@ -53,7 +49,7 @@ export function MobileNav({ searchSuggestions }: MobileNavProps) {
         className="fixed inset-x-0 bottom-0 z-40 border-t border-border/60 bg-background/95 pb-safe backdrop-blur-xl lg:hidden"
       >
         <ul className="mx-auto flex max-w-2xl items-center justify-around px-2 py-2">
-          {mobileNavigationItems.map((item) => {
+          {bottomNavItems.map((item) => {
             const isActive = pathname === item.href;
             const Icon = item.icon;
 
@@ -82,13 +78,21 @@ export function MobileNav({ searchSuggestions }: MobileNavProps) {
                   className="flex w-full flex-col items-center justify-center gap-1 py-2.5 min-h-[44px] text-muted-foreground transition-all active:scale-95"
                   aria-label="Menüyü aç"
                 >
-                  <Menu className="size-5.5 stroke-2" />
+                  {!isReady ? (
+                    <div className="size-5.5 rounded-full bg-muted animate-pulse" />
+                  ) : (
+                    <Menu className="size-5.5 stroke-2" />
+                  )}
                   <span className="text-[10px] font-bold tracking-tight">Menü</span>
                 </button>
               </Drawer.Trigger>
               <Drawer.Portal>
                 <Drawer.Overlay className="fixed inset-0 z-[60] bg-black/40 backdrop-blur-sm" />
                 <Drawer.Content className="fixed inset-x-0 bottom-0 z-[70] mt-24 flex max-h-[85vh] flex-col rounded-t-[32px] bg-background shadow-2xl focus:outline-none">
+                  <Drawer.Title className="sr-only">Navigasyon Menüsü</Drawer.Title>
+                  <Drawer.Description className="sr-only">
+                    Hızlı erişim linkleri ve hesap yönetimi.
+                  </Drawer.Description>
                   <div className="sticky top-0 mx-auto mt-4 h-1.5 w-12 shrink-0 rounded-full bg-muted-foreground/20" />
                   <div className="flex-1 overflow-y-auto px-1 py-2 no-scrollbar">
                     <HeaderMobileNav searchSuggestions={searchSuggestions} />

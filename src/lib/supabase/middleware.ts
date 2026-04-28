@@ -131,8 +131,6 @@ export async function updateSession(request: NextRequest) {
       (settings?.value as { maintenance_mode?: boolean })?.maintenance_mode === true &&
       isMaintenanceGateActive();
 
-    console.log(`[maintenanceCheck] Path: ${pathname}, Maintenance: ${isMaintenanceMode}`);
-
     if (isMaintenanceMode) {
       let isAdmin = false;
       if (user) {

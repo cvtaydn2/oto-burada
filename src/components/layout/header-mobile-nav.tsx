@@ -1,11 +1,11 @@
 "use client";
 
-import { Heart, PlusCircle, User as UserIcon, UserPlus } from "lucide-react";
+import { PlusCircle } from "lucide-react";
 import Link from "next/link";
 
-import { useAuthUser } from "@/components/shared/auth-provider";
 import { ThemeToggle } from "@/components/shared/theme-toggle";
 import { SearchWithSuggestions } from "@/components/ui/search-with-suggestions";
+import { useNavigation } from "@/hooks/use-navigation";
 import type { SearchSuggestionItem } from "@/types";
 
 interface HeaderMobileNavProps {
@@ -20,10 +20,10 @@ const mobileQuickLinks = [
 ] as const;
 
 export function HeaderMobileNav({ searchSuggestions }: HeaderMobileNavProps) {
-  const { isAdmin, isReady, userId, user } = useAuthUser();
-  const isAuthenticated = Boolean(userId && user);
+  const { allItems, isReady, isAuthenticated, isLoading } = useNavigation();
+
+  // "Hesabım" veya "Giriş" için özel href
   const accountHref = isAuthenticated ? "/dashboard" : "/login";
-  const favoritesHref = isAuthenticated ? "/dashboard/favorites" : "/favorites";
   const postListingHref = isAuthenticated ? "/dashboard/listings" : "/login";
 
   return (
@@ -39,52 +39,36 @@ export function HeaderMobileNav({ searchSuggestions }: HeaderMobileNavProps) {
       />
 
       <div className="grid grid-cols-1 gap-2">
-        <Link
-          href={accountHref}
-          prefetch={false}
-          className="flex items-center h-14 px-4 rounded-2xl text-sm font-semibold text-foreground bg-muted/50 hover:bg-muted transition-all active:scale-[0.98]"
-        >
-          <UserIcon size={20} className="mr-3 text-muted-foreground" />
-          {!isReady ? (
-            <span className="h-4 w-16 rounded bg-muted animate-pulse inline-block" />
-          ) : isAuthenticated ? (
-            "Hesabım"
-          ) : (
-            "Giriş Yap"
-          )}
-        </Link>
-
-        {isReady && !isAuthenticated && (
-          <Link
-            href="/register"
-            prefetch={false}
-            className="flex items-center h-14 px-4 rounded-2xl text-sm font-semibold text-foreground bg-muted/50 hover:bg-muted transition-all active:scale-[0.98]"
-          >
-            <UserPlus size={20} className="mr-3 text-muted-foreground" />
-            Kayıt Ol
-          </Link>
+        {/* Auth Yükleniyor Durumu — Bu sırada Giriş/Kayıt listelenmemeli */}
+        {isLoading && (
+          <div className="space-y-2">
+            <div className="h-14 w-full rounded-2xl bg-muted animate-pulse" />
+            <div className="h-14 w-full rounded-2xl bg-muted animate-pulse opacity-50" />
+          </div>
         )}
 
-        <Link
-          href={favoritesHref}
-          prefetch={false}
-          className="flex items-center h-14 px-4 rounded-2xl text-sm font-semibold text-foreground bg-muted/50 hover:bg-muted transition-all active:scale-[0.98]"
-        >
-          <Heart size={20} className="mr-3 text-muted-foreground" />
-          Favoriler
-        </Link>
+        {/* Ana Aksiyonlar (Sadece durum netleşince) */}
+        {!isLoading &&
+          allItems.map((item) => {
+            const Icon = item.icon;
 
-        {isAdmin && (
-          <Link
-            href="/admin"
-            prefetch={false}
-            className="flex items-center h-14 px-4 rounded-2xl text-sm font-semibold text-foreground bg-muted/50 hover:bg-muted transition-all active:scale-[0.98]"
-          >
-            <PlusCircle size={20} className="mr-3 text-muted-foreground" />
-            Admin Panel
-          </Link>
-        )}
+            // Ana sayfayı ve ilanları burada göstermeyelim (bottom nav'da varlar)
+            if (["/", "/listings"].includes(item.href)) return null;
 
+            return (
+              <Link
+                key={item.href}
+                href={item.href}
+                prefetch={false}
+                className="flex items-center h-14 px-4 rounded-2xl text-sm font-semibold text-foreground bg-muted/50 hover:bg-muted transition-all active:scale-[0.98]"
+              >
+                <Icon size={20} className="mr-3 text-muted-foreground" />
+                {item.label}
+              </Link>
+            );
+          })}
+
+        {/* İlan Ver Butonu (Her zaman en altta ve belirgin) */}
         <Link
           href={postListingHref}
           prefetch={false}

@@ -51,17 +51,15 @@ export function AuthProvider({ children, initialUser = null }: AuthProviderProps
       }
     };
 
-    console.log("[AuthProvider] Initializing browser client check...");
     void supabase.auth
       .getUser()
       .then(({ data, error }: UserResponse) => {
         if (!mounted) return;
-        if (error) {
+        if (error && error.name !== "AuthSessionMissingError") {
           console.error("[AuthProvider] getUser error:", error);
         }
 
         const browserUser = data.user ?? null;
-        console.log("[AuthProvider] Found user:", browserUser?.id || "None");
 
         userIdRef.current = browserUser?.id ?? null;
         setUser(browserUser);
