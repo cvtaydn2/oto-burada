@@ -22,9 +22,9 @@ export default function NotFound() {
       <h1 id="not-found-heading" className="mb-3 text-3xl font-extrabold text-foreground">
         Üzgünüz, Aradığınız Araç Yoldan Çıkmış!
       </h1>
-      <p className="mb-10 max-w-md text-muted-foreground">
-        Aradığınız ilan yayından kaldırılmış olabilir veya yanlış bir bağlantıya tıkladınız.
-        Hayalinizdeki aracı bulmak için ana sayfaya dönebilirsiniz.
+      <p className="mb-10 max-w-md text-muted-foreground" aria-label="İlan bulunamadı açıklaması">
+        İlan bulunamadı. Aradığınız ilan yayından kaldırılmış olabilir veya yanlış bir bağlantıya
+        tıkladınız. Hayalinizdeki aracı bulmak için ana sayfaya dönebilirsiniz.
       </p>
 
       <div className="flex flex-col items-center gap-4 sm:flex-row">

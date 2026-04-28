@@ -127,12 +127,8 @@ export async function requireAdminUser() {
     redirect("/login");
   }
 
-  // 1. Primary check (JWT)
-  if (getUserRole(user) !== "admin") {
-    redirect("/dashboard");
-  }
-
-  // 2. Secondary DB check (Atomic consistency)
+  // 1. Primary auth check - must be signed in
+  // 2. Secondary DB check is the source of truth for admin role and ban status
   if (!process.env.SUPABASE_SERVICE_ROLE_KEY) {
     if (process.env.NODE_ENV === "production") {
       throw new Error("SUPABASE_SERVICE_ROLE_KEY is required in production");

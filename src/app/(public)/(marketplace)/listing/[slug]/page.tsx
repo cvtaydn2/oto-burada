@@ -145,7 +145,7 @@ export default async function ListingDetailPage({ params }: ListingDetailPagePro
           <div className="mb-6 flex size-20 items-center justify-center rounded-full bg-amber-100">
             <AlertCircle className="size-10 text-amber-600" />
           </div>
-          <h1 className="mb-2 text-2xl font-bold text-foreground">İlan Yayında Değil</h1>
+          <h1 className="mb-2 text-2xl font-bold text-foreground">İlan Aktif Değil</h1>
           <p className="mb-8 max-w-md text-muted-foreground italic">
             Bu ilan henüz onaylanmamış, reddedilmiş veya yayından kaldırılmış olabilir.
           </p>

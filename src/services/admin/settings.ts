@@ -1,5 +1,7 @@
 "use server";
 
+import { revalidatePath, revalidateTag, unstable_cache } from "next/cache";
+
 import { requireAdminUser } from "@/lib/auth/session";
 import { logger } from "@/lib/logging/logger";
 import { captureServerError, captureServerWarning } from "@/lib/monitoring/posthog-server";
@@ -17,8 +19,6 @@ interface PlatformSettingRow {
   key: PlatformSettingsKey;
   value: PlatformSettingsValue;
 }
-
-import { unstable_cache } from "next/cache";
 
 export const getPlatformSettings = unstable_cache(
   async (): Promise<PlatformSettings> => {
@@ -123,7 +123,11 @@ export async function updateAllPlatformSettings(
       return { success: false, error: error.message };
     }
 
-    const { revalidatePath } = await import("next/cache");
+    revalidateTag("platform-settings", "max");
+    revalidatePath("/");
+    revalidatePath("/favorites");
+    revalidatePath("/dashboard");
+    revalidatePath("/admin");
     revalidatePath("/admin/settings");
 
     return { success: true };

@@ -3,7 +3,6 @@
 import { Archive, ArrowUpCircle, Loader2, Pencil, Rocket, RotateCcw, Zap } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { useMemo } from "react";
 
 import { DopingStore } from "@/components/dashboard/doping-store";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -17,8 +16,7 @@ import {
 } from "@/components/ui/dialog";
 import { trust } from "@/lib/constants/ui-strings";
 import { getSellerTrustUI } from "@/lib/listings/trust-ui";
-import { formatCurrency, formatNumber, supabaseImageUrl } from "@/lib/utils";
-import { cn } from "@/lib/utils";
+import { cn, formatCurrency, formatNumber, supabaseImageUrl } from "@/lib/utils";
 import type { Listing } from "@/types";
 
 const statusLabelMap: Record<Listing["status"], string> = {
@@ -64,8 +62,7 @@ export function DashboardListingCard({
 }: DashboardListingCardProps) {
   const isArchived = listing.status === "archived";
   const isApproved = listing.status === "approved";
-  // eslint-disable-next-line react-hooks/purity
-  const now = useMemo(() => new Date(currentTime || Date.now()), [currentTime]);
+  const now = new Date(currentTime > 0 ? currentTime : 0);
 
   const canBump =
     isApproved &&
@@ -79,7 +76,7 @@ export function DashboardListingCard({
     ? Math.max(
         0,
         Math.ceil(
-          (new Date(listing.bumpedAt).getTime() + 7 * 24 * 60 * 60 * 1000 - currentTime) /
+          (new Date(listing.bumpedAt).getTime() + 7 * 24 * 60 * 60 * 1000 - now.getTime()) /
             (24 * 60 * 60 * 1000)
         )
       )
@@ -95,7 +92,6 @@ export function DashboardListingCard({
         isArchived && "opacity-70 grayscale-[0.5]"
       )}
     >
-      {/* ── Selection Area ── */}
       <div className="flex items-start pt-4 pl-4">
         <Checkbox
           checked={isSelected}
@@ -105,7 +101,6 @@ export function DashboardListingCard({
       </div>
 
       <div className="flex flex-1 flex-col sm:flex-row gap-4 p-4 pl-0">
-        {/* ── Thumbnail ── */}
         <div className="relative h-24 w-full sm:w-36 shrink-0 overflow-hidden rounded-xl bg-muted/30 border border-border/40 shadow-sm transition-transform duration-500 group-hover:shadow-md">
           {listing.images?.[0]?.url ? (
             <Image
@@ -129,7 +124,6 @@ export function DashboardListingCard({
           )}
         </div>
 
-        {/* ── Core Info ── */}
         <div className="min-w-0 flex-1 flex flex-col justify-center gap-1">
           <div className="flex items-center gap-2 mb-1">
             <span
@@ -165,7 +159,6 @@ export function DashboardListingCard({
               <span className="truncate">{listing.city}</span>
             </div>
 
-            {/* Contextual Funnel Nudge */}
             {listing.status === "approved" && !getSellerTrustUI(listing.seller).isTrusted && (
               <Link
                 href="/dashboard/profile"
@@ -180,7 +173,6 @@ export function DashboardListingCard({
           </div>
         </div>
 
-        {/* ── Actions ── */}
         <div className="flex sm:flex-col gap-2 justify-end sm:justify-center pt-2 sm:pt-0 sm:pl-4 sm:border-l sm:border-border/40">
           <Link
             href={`/dashboard/listings?edit=${listing.id}`}

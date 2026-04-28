@@ -8,6 +8,7 @@ import { PostHogProvider } from "@/components/providers/posthog-provider";
 import { PWAProvider } from "@/components/providers/pwa-provider";
 import { SupabaseProvider } from "@/components/providers/supabase-provider";
 import { AuthProvider } from "@/components/shared/auth-provider";
+import { FavoritesProvider } from "@/components/shared/favorites-provider";
 import { ThemeProvider } from "@/components/shared/theme-provider";
 
 interface RootProvidersProps extends PropsWithChildren {
@@ -42,9 +43,11 @@ export function RootProviders({ children, user, nonce }: RootProvidersProps) {
       <QueryClientProvider client={queryClient}>
         <SupabaseProvider>
           <AuthProvider initialUser={user}>
-            <PWAProvider>
-              <PostHogProvider>{children}</PostHogProvider>
-            </PWAProvider>
+            <FavoritesProvider>
+              <PWAProvider>
+                <PostHogProvider>{children}</PostHogProvider>
+              </PWAProvider>
+            </FavoritesProvider>
           </AuthProvider>
         </SupabaseProvider>
       </QueryClientProvider>

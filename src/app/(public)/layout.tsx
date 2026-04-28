@@ -1,9 +1,8 @@
-import { headers } from "next/headers";
 import type { PropsWithChildren } from "react";
 
 import { PublicShell } from "@/components/layout/public-shell";
 import { MaintenanceScreen } from "@/components/shared/maintenance-screen";
-import { getCurrentUser, getUserRole } from "@/lib/auth/session";
+import { getAuthContext } from "@/lib/auth/session";
 import { shouldShowMaintenanceScreen } from "@/lib/platform/maintenance";
 import { getPlatformSettings } from "@/services/admin/settings";
 
@@ -11,23 +10,12 @@ export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
 export default async function PublicLayout({ children }: PropsWithChildren) {
-  const user = await getCurrentUser();
+  const { dbProfile } = await getAuthContext();
   const settings = await getPlatformSettings();
   const isMaintenanceMode = settings.general_appearance?.maintenance_mode;
-  const pathname = (await headers()).get("x-pathname") ?? "";
+  const isAdmin = dbProfile?.role === "admin" && !dbProfile.isBanned;
 
-  const isAuthRoute =
-    pathname.startsWith("/login") ||
-    pathname.startsWith("/register") ||
-    pathname.startsWith("/forgot-password") ||
-    pathname.startsWith("/reset-password") ||
-    pathname.startsWith("/auth");
-
-  if (
-    shouldShowMaintenanceScreen(isMaintenanceMode) &&
-    !isAuthRoute &&
-    (!user || getUserRole(user) !== "admin")
-  ) {
+  if (shouldShowMaintenanceScreen(isMaintenanceMode) && !isAdmin) {
     return <MaintenanceScreen />;
   }
 

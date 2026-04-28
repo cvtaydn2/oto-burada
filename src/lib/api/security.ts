@@ -277,6 +277,16 @@ export async function withCronOrAdmin(
   return withSecurity(request, { ...options, requireAdmin: true });
 }
 
+/** withAuthAndCsrf: Backward-compatible alias with 401-before-CSRF semantics */
+export async function withAuthAndCsrf(
+  request: Request,
+  options: Omit<
+    SecurityOptions,
+    "requireAuth" | "requireCsrfToken" | "requireAdmin" | "requireCron"
+  > = {}
+) {
+  return withSecurity(request, { ...options, requireAuth: true, requireCsrfToken: true });
+}
+
 // Backward compatibility (deprecate later)
 export const withAuth = withUserRoute;
-export const withAuthAndCsrf = withUserAndCsrfToken; // Point withAuthAndCsrf to the stricter token-based check

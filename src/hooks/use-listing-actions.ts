@@ -128,7 +128,10 @@ export function useListingActions(listings: Listing[], userId?: string) {
   const handleArchive = async (listingId: string) => {
     setArchiveError(null);
     const listing = listings.find((l) => l.id === listingId);
-    if (!listing) return;
+    if (!listing) {
+      setArchiveError("İlan bulunamadı. Lütfen sayfayı yenileyip tekrar dene.");
+      return;
+    }
 
     const isCurrentlyArchived = listing.status === "archived";
     archiveMutation.mutate({
@@ -141,7 +144,10 @@ export function useListingActions(listings: Listing[], userId?: string) {
   const handleBump = async (listingId: string) => {
     setBumpMessage(null);
     const listing = listings.find((l) => l.id === listingId);
-    if (!listing) return;
+    if (!listing) {
+      setBumpMessage("İlan bulunamadı. Lütfen sayfayı yenileyip tekrar dene.");
+      return;
+    }
 
     bumpMutation.mutate({
       id: listingId,
