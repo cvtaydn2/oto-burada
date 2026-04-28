@@ -54,6 +54,7 @@ export function ListingCreateForm({
   } = useListingCreation({ brands, cities, initialListing, initialValues, isEmailVerified });
 
   const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
+  const isBotProtectionEnabled = Boolean(process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY);
 
   const onSubmit = form.handleSubmit(async (values) => {
     if (!isEmailVerifiedLocally && !isEditing) {
@@ -61,7 +62,7 @@ export function ListingCreateForm({
       return;
     }
 
-    if (!turnstileToken && !isEditing) {
+    if (isBotProtectionEnabled && !turnstileToken && !isEditing) {
       setSubmitState({
         status: "warning",
         message: "Lütfen güvenlik doğrulamasını tamamlayın.",

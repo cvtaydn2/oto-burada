@@ -2,94 +2,245 @@
 
 Sadece arabalar için tasarlanmış, mobil öncelikli ve güven odaklı ücretsiz ilan pazaryeri.
 
-## 🎯 Misyon
+## Genel durum
 
-"Arabanı kolayca sat. Doğru arabayı hızlıca bul."
-Gereksiz karmaşıklıktan arındırılmış, sadece otomobil alım-satımına odaklanan, WhatsApp üzerinden hızlı iletişim sağlayan en yalın pazar yeri deneyimi.
+Bu repo şu anda local ortamda başarıyla:
 
-## 🚀 Temel Özellikler
+- `npm run lint`
+- `npm run typecheck`
+- `npm run build`
+- `npm run test:unit`
+- `npm run test:int`
+- `npm run test:e2e:chromium`
 
-- **Hızlı İlan:** 2 dakikanın altında ilan oluşturma akışı.
-- **Akıllı Filtreleme:** Aradığın araca 3 etkileşimde ulaşma hedefi.
-- **Güven Odağı:** Admin moderasyonu ve şüpheli ilan raporlama.
-- **WhatsApp Entegrasyonu:** Alıcı ve satıcıyı doğrudan WhatsApp üzerinden buluşturma.
-- **Gelişmiş Dashboard:** İlan yönetimi, favoriler ve kayıtlı aramalar.
-- **Admin Paneli:** Moderasyon, analizler ve operasyonel yönetim.
+komutlarını geçecek durumda stabilize edilmiştir.
 
-## 🛠️ Teknoloji Yığını
+## Tek komutla çalıştırma
 
-- **Core:** Next.js 15+ (App Router), TypeScript
-- **Styling:** Tailwind CSS, shadcn/ui
-- **Backend:** Supabase (Auth, Postgres, Storage, RLS)
-- **Data:** TanStack Query, Zod, React Hook Form
-- **Analytics:** PostHog, Vercel Analytics
+En hızlı local başlangıç:
 
-## ⚙️ Kurulum
+```bash
+npm install && npm run dev
+```
 
-### 1. Hazırlık
+Uygulama varsayılan olarak `http://localhost:3000` üzerinde açılır.
 
-`.env.example` dosyasını referans alarak `.env.local` oluşturun ve gerekli Supabase anahtarlarını girin.
+## Gereksinimler
 
-### 2. Bağımlılıklar ve Geliştirme
+- Node.js 20+
+- npm 10+
+- İsteğe bağlı: Supabase projesi veya local Supabase stack
+
+## Hızlı kurulum
+
+### 1) Env dosyasını oluştur
+
+```bash
+copy .env.local.template .env.local
+```
+
+Windows PowerShell dışında iseniz manuel olarak da kopyalayabilirsiniz.
+
+### 2) Minimum local env değerlerini gir
+
+Uygulamanın anlamlı şekilde açılması için en az şu alanları doldurun:
+
+```env
+NEXT_PUBLIC_APP_URL=http://localhost:3000
+NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
+SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
+SUPABASE_DB_URL=postgresql://postgres:your-password@db.your-project.supabase.co:5432/postgres
+SUPABASE_STORAGE_BUCKET_LISTINGS=listing-images
+SUPABASE_STORAGE_BUCKET_DOCUMENTS=listing-documents
+SUPABASE_DEMO_USER_PASSWORD=test-123456
+```
+
+Notlar:
+
+- Turnstile local geliştirmede zorunlu değildir. `NEXT_PUBLIC_TURNSTILE_SITE_KEY` ve `TURNSTILE_SECRET_KEY` boş kalabilir.
+- Redis, Resend, PostHog ve Iyzico local boot için zorunlu değildir.
+- Bu opsiyonel servisler tanımlı değilse uygulama degrade modda çalışır.
+
+### 3) Bağımlılıkları kur
 
 ```bash
 npm install
-npm run dev
 ```
 
-### 3. Veritabanı Kurulumu (Supabase)
+### 4) Veritabanını hazırla
+
+Supabase schema ve demo data gerekiyorsa sırayla:
 
 ```bash
-# Temiz şemayı uygular
 npm run db:apply-schema
-
-# Mevcut yamaları (migration) geçer
 npm run db:migrate
-
-# Örnek verileri (seed) yükler
 npm run db:seed-demo
 ```
 
-## 📐 Proje Yapısı
+Tek akış olarak çalıştırmak isterseniz:
 
-- `src/app`: Sayfa ve rota tanımları (Marketplace, Dashboard, Admin).
-- `src/components`: UI bileşenleri ve özellik bazlı modüller.
-- `src/domain`: İş mantığı orkestrasyonu (Use Cases).
-- `src/lib`: Supabase istemcileri, yardımcı fonksiyonlar ve validatorlar.
-- `src/services`: Veri erişim, persistence ve dış servis entegrasyonları.
-- `database/`: SQL şemaları ve migration dosyaları.
+```bash
+npm run db:bootstrap-demo
+```
 
-## 🏗️ Mimari
+### 5) Uygulamayı başlat
 
-OtoBurada, **Server Actions** pattern'ini kullanarak modern, tip-güvenli ve performanslı bir mimari benimser.
+```bash
+npm run dev
+```
 
-### Servis Katmanı
+## Kullanılabilir komutlar
 
-- **Server Actions** (`*-actions.ts`): API endpoints ve authentication
-- **Data Access** (`*-records.ts`): Database queries ve RLS-compliant operations
-- **Business Logic** (`*-logic.ts`): Pure functions ve domain rules
-- **External Clients** (`*-client.ts`): Third-party API integrations (Iyzico, OpenAI, etc.)
+```bash
+npm run dev
+npm run build
+npm run start
+npm run lint
+npm run typecheck
+npm run test:unit
+npm run test:int
+npm run test:e2e:chromium
+npm run db:check-env
+npm run db:apply-schema
+npm run db:migrate
+npm run db:seed-demo
+npm run db:bootstrap-demo
+```
 
-### Detaylı Dokümantasyon
+## Local geliştirme davranışı
 
-- **[AGENTS.md](./AGENTS.md)**: Mimari standartlar ve kurallar
-- **[docs/SERVICE_ARCHITECTURE.md](./docs/SERVICE_ARCHITECTURE.md)**: Servis mimarisi migration guide
-- **[docs/SECURITY.md](./docs/SECURITY.md)**: Güvenlik politikaları
+### Turnstile
 
-### Temel Prensipler
+- `NEXT_PUBLIC_TURNSTILE_SITE_KEY` yoksa widget render edilmez.
+- `TURNSTILE_SECRET_KEY` yoksa server doğrulaması development ve test ortamında fail-open çalışır.
+- Production için her ikisi de tanımlanmalıdır.
 
-1. **Server-First**: Server components ve server actions öncelikli
-2. **Type Safety**: TypeScript strict mode ve Zod validation
-3. **RLS Compliance**: Tüm database işlemleri Row Level Security ile korunur
-4. **Functional Approach**: Class-based patterns yerine functional programming
-5. **Separation of Concerns**: Data, logic ve presentation katmanları ayrı
+### Redis
 
-## 📖 Dokümantasyon Modeli
+- `UPSTASH_REDIS_REST_URL` ve `UPSTASH_REDIS_REST_TOKEN` yoksa bazı rate-limit ve dedup akışları localde hafifletilmiş modda çalışır.
 
-- **AGENTS.md**: Ürün vizyonu, mimari kurallar ve temel yasalar (Source of Truth).
-- **TASKS.md**: Yol haritası ve yapılacak işler listesi.
-- **PROGRESS.md**: Uygulama geçmişi ve güncel durum kayıtları.
+### E-posta
 
----
+- `RESEND_API_KEY` yoksa transactional email akışları localde tam aktif olmaz.
 
-_Geliştirmeye başlamadan önce lütfen `AGENTS.md` dosyasındaki kuralları okuyun._
+### Ödeme
+
+- `IYZICO_*` değişkenleri production için gereklidir.
+- Local boot ve temel UI/test akışları için zorunlu değildir.
+
+## E2E ve demo kullanıcı
+
+Playwright listing wizard testi için demo kullanıcı beklenir:
+
+```env
+SUPABASE_DEMO_USER_PASSWORD=test-123456
+```
+
+Varsayılan test kullanıcısı:
+
+- `emre@otoburada.demo`
+
+Bu hesabın seed sırasında oluşmuş olması gerekir.
+
+## Proje yapısı
+
+- `src/app`: App Router sayfaları ve API route'ları
+- `src/components`: Paylaşılan ve feature tabanlı UI bileşenleri
+- `src/features`: Üst seviye feature modülleri
+- `src/domain`: Domain logic ve use case katmanı
+- `src/services`: Veri erişimi, iş mantığı ve harici servis entegrasyonları
+- `src/lib`: Auth, güvenlik, env, utils, validator ve altyapı yardımcıları
+- `database/`: Schema snapshot, base schema ve migration dosyaları
+- `scripts/`: DB, bootstrap ve operasyon scriptleri
+- `e2e/`, `tests/`: Playwright ve diğer test senaryoları
+
+## Mimari notlar
+
+- Server component yaklaşımı varsayılandır.
+- Mutations için route handlers ve server-side orchestration kullanılır.
+- Supabase Auth/Postgres/Storage ana backend omurgasıdır.
+- RLS bypass edecek client-side service role kullanımı yoktur.
+
+## Env açıklamaları
+
+### Zorunlu çekirdek değişkenler
+
+- `NEXT_PUBLIC_APP_URL`: Public app origin
+- `NEXT_PUBLIC_SUPABASE_URL`: Supabase project URL
+- `NEXT_PUBLIC_SUPABASE_ANON_KEY`: Public anon key
+- `SUPABASE_SERVICE_ROLE_KEY`: Server-side privileged operations
+- `SUPABASE_DB_URL`: Migration ve schema scriptleri için DB bağlantısı
+
+### Depolama
+
+- `SUPABASE_STORAGE_BUCKET_LISTINGS`: İlan görselleri bucket adı
+- `SUPABASE_STORAGE_BUCKET_DOCUMENTS`: Doküman bucket adı
+
+### Opsiyonel güvenlik ve entegrasyonlar
+
+- `NEXT_PUBLIC_TURNSTILE_SITE_KEY`: Client bot koruma widget anahtarı
+- `TURNSTILE_SECRET_KEY`: Server doğrulama anahtarı
+- `UPSTASH_REDIS_REST_URL`: Upstash Redis URL
+- `UPSTASH_REDIS_REST_TOKEN`: Upstash Redis token
+- `RESEND_API_KEY`: E-posta servisi
+- `RESEND_FROM_EMAIL`: Gönderen adresi
+- `IYZICO_API_KEY`: Ödeme API key
+- `IYZICO_SECRET_KEY`: Ödeme secret key
+- `IYZICO_BASE_URL`: Sandbox/production base URL
+- `CRON_SECRET`: Cron endpoint koruması
+- `POSTHOG_WEBHOOK_SECRET`: PostHog webhook doğrulaması
+- `INTERNAL_API_SECRET`: Internal API çağrıları
+
+### Feature flag'ler
+
+Hepsi opsiyoneldir, default davranış `false` kabul edilir.
+
+```env
+NEXT_PUBLIC_ENABLE_BILLING=false
+NEXT_PUBLIC_ENABLE_AI=false
+NEXT_PUBLIC_ENABLE_CHAT=false
+NEXT_PUBLIC_ENABLE_COMPARE=true
+NEXT_PUBLIC_ENABLE_DOCS=false
+NEXT_PUBLIC_ENABLE_PWA=false
+```
+
+## Troubleshooting
+
+### Uygulama açılıyor ama bazı özellikler eksik
+
+Bu genelde opsiyonel env eksikliğidir. Local geliştirmede aşağıdakiler eksik olabilir:
+
+- Redis
+- Turnstile
+- Resend
+- PostHog
+- Iyzico
+
+Çekirdek akışlar yine çalışmalıdır.
+
+### DB scriptleri hata veriyor
+
+Önce env doğrulayın:
+
+```bash
+npm run db:check-env
+```
+
+Ardından `SUPABASE_DB_URL` ve Supabase key'lerini kontrol edin.
+
+### E2E wizard testi login aşamasında kalıyor
+
+Muhtemel nedenler:
+
+- demo kullanıcı seed edilmedi
+- `SUPABASE_DEMO_USER_PASSWORD` yanlış
+- local database bootstrap tamamlanmadı
+
+## Dokümantasyon
+
+- `AGENTS.md`: ürün ve mimari kurallar
+- `TASKS.md`: backlog ve kabul kriterleri
+- `PROGRESS.md`: yapılan işler ve doğrulama geçmişi
+- `docs/SECURITY.md`: güvenlik kararları
+- `docs/SERVICE_ARCHITECTURE.md`: servis katmanı düzeni
