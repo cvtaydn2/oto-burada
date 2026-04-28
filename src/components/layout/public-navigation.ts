@@ -42,14 +42,14 @@ export const navigationConfig: NavigationItem[] = [
     label: "Giriş",
     icon: LogIn,
     requiresGuest: true,
-    showInBottomNav: false, // Bottom nav'dan kaldırıldı, sadece Menü'de olacak
+    showInBottomNav: true,
   },
   {
     href: "/register",
     label: "Kayıt Ol",
     icon: UserPlus,
     requiresGuest: true,
-    showInBottomNav: false, // Bottom nav'dan kaldırıldı, sadece Menü'de olacak
+    showInBottomNav: true,
   },
   {
     href: "/admin",
