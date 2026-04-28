@@ -19,7 +19,7 @@ jobs:
     name: TypeScript & Lint
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - uses: actions/setup-node@v4
         with:
@@ -40,7 +40,7 @@ jobs:
     name: Unit Tests
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - uses: actions/setup-node@v4
         with:
@@ -80,7 +80,7 @@ jobs:
       NEXT_PUBLIC_POSTHOG_PROJECT_TOKEN: "placeholder"
       NEXT_PUBLIC_POSTHOG_HOST: "https://us.i.posthog.com"
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - uses: actions/setup-node@v4
         with:
@@ -122,7 +122,7 @@ jobs:
       E2E_TEST_EMAIL: ${{ secrets.E2E_TEST_EMAIL }}
       E2E_TEST_PASSWORD: ${{ secrets.E2E_TEST_PASSWORD }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - uses: actions/setup-node@v4
         with:
@@ -157,7 +157,7 @@ jobs:
     name: Security Audit
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - uses: actions/setup-node@v4
         with:
@@ -194,7 +194,7 @@ jobs:
       IYZICO_API_KEY: ${{ secrets.IYZICO_API_KEY || 'placeholder-iyzico-key' }}
       IYZICO_SECRET_KEY: ${{ secrets.IYZICO_SECRET_KEY || 'placeholder-iyzico-secret' }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - uses: actions/setup-node@v4
         with:
