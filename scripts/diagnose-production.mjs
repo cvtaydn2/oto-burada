@@ -109,7 +109,7 @@ async function checkSupabaseConnection() {
 
   try {
     const supabase = createClient(url, anonKey);
-    const { data, error } = await supabase.from('profiles').select('count', { count: 'exact', head: true });
+    const { error } = await supabase.from('profiles').select('count', { count: 'exact', head: true });
 
     if (error) {
       fail(check, `Supabase bağlantı hatası: ${error.message}`, 'Supabase Dashboard > Settings > API kontrol edin');
@@ -235,7 +235,7 @@ async function checkRLSPolicies() {
     const supabase = createClient(url, anonKey);
     
     // Test anonymous read access to listings
-    const { data, error } = await supabase
+    const { error } = await supabase
       .from('listings')
       .select('id')
       .eq('status', 'approved')
@@ -282,7 +282,7 @@ async function checkStorageBuckets() {
 
   try {
     const supabase = createClient(url, serviceKey);
-    const { data, error } = await supabase.storage.getBucket(listingsBucket);
+    const { error } = await supabase.storage.getBucket(listingsBucket);
 
     if (error) {
       fail(

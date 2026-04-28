@@ -10,7 +10,7 @@ interface LocalRateLimitEntry {
   reset: number;
 }
 
-const DEFAULT_LIMIT = 120;
+const DEFAULT_LIMIT = 300; // 300 req/min (RSC requests skipped in middleware)
 const DEFAULT_WINDOW_MS = 60_000;
 const REDIS_CIRCUIT_BREAKER_MS = 30_000;
 const MAX_LOCAL_ENTRIES = 10_000;
@@ -120,7 +120,7 @@ function getRatelimit() {
   try {
     ratelimit = new Ratelimit({
       redis: Redis.fromEnv(),
-      limiter: Ratelimit.slidingWindow(120, "60 s"),
+      limiter: Ratelimit.slidingWindow(300, "60 s"), // 300 req/min per IP (RSC skipped in middleware)
       analytics: true,
       prefix: "@upstash/ratelimit/oto-burada",
     });
