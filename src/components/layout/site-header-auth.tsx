@@ -14,11 +14,12 @@ export function SiteHeaderAuth({
   favoritesHrefGuest,
   postListingHrefAuthenticated,
 }: SiteHeaderAuthProps) {
-  const { isAuthenticated, isReady, userId } = useAuthUser();
+  const { isReady, userId, user } = useAuthUser();
+  const resolvedAuthenticated = Boolean(userId && user);
 
-  const accountHref = isAuthenticated ? "/dashboard" : "/login";
-  const favoritesHref = isAuthenticated ? "/dashboard/favorites" : favoritesHrefGuest;
-  const postListingHref = isAuthenticated ? postListingHrefAuthenticated : "/login";
+  const accountHref = resolvedAuthenticated ? "/dashboard" : "/login";
+  const favoritesHref = resolvedAuthenticated ? "/dashboard/favorites" : favoritesHrefGuest;
+  const postListingHref = resolvedAuthenticated ? postListingHrefAuthenticated : "/login";
 
   return (
     <div className="flex items-center gap-2 sm:gap-4">
@@ -39,9 +40,9 @@ export function SiteHeaderAuth({
           <div className="size-8 rounded-full bg-muted animate-pulse" />
         ) : (
           <Link href={accountHref} prefetch={false} className="flex items-center gap-2 group p-1">
-            {isAuthenticated && userId ? (
+            {resolvedAuthenticated && user ? (
               <div className="size-10 overflow-hidden rounded-full border border-border bg-blue-500 flex items-center justify-center text-white text-xs font-bold select-none">
-                <span>U</span>
+                <span>{user.email?.charAt(0).toUpperCase() ?? "U"}</span>
               </div>
             ) : (
               <span className="text-sm font-medium text-muted-foreground transition-colors hover:text-primary">

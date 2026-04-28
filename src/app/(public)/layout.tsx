@@ -7,6 +7,9 @@ import { getCurrentUser, getUserRole } from "@/lib/auth/session";
 import { shouldShowMaintenanceScreen } from "@/lib/platform/maintenance";
 import { getPlatformSettings } from "@/services/admin/settings";
 
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 export default async function PublicLayout({ children }: PropsWithChildren) {
   const user = await getCurrentUser();
   const settings = await getPlatformSettings();

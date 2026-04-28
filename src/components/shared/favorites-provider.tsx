@@ -97,7 +97,6 @@ export function FavoritesProvider({ children }: PropsWithChildren) {
   const localFavoriteIds = useSyncExternalStore(subscribe, getFavoritesSnapshot, getServerSnapshot);
   const localHydrated = useSyncExternalStore(subscribe, () => true, getHydrationSnapshot);
   const [remoteFavoriteIds, setRemoteFavoriteIds] = useState<string[] | null>(null);
-  const [isSyncing, setIsSyncing] = useState(false);
 
   useEffect(() => {
     if (!userId) {
@@ -107,7 +106,6 @@ export function FavoritesProvider({ children }: PropsWithChildren) {
     let cancelled = false;
 
     const syncFavorites = async () => {
-      setIsSyncing(true);
       try {
         const response = await fetch("/api/favorites", { method: "GET" });
         const payload = (await response.json().catch(() => null)) as {
@@ -168,7 +166,7 @@ export function FavoritesProvider({ children }: PropsWithChildren) {
         }
       } finally {
         if (!cancelled) {
-          setIsSyncing(false);
+          // Sync complete
         }
       }
     };
@@ -208,7 +206,7 @@ export function FavoritesProvider({ children }: PropsWithChildren) {
   }, [localFavoriteIds, remoteFavoriteIds, userId]);
   // hydrated = true only when sync is fully complete (remoteFavoriteIds set AND not mid-sync).
   // This prevents consumers from seeing a "ready" state while an initial sync is still in flight.
-  const resolvedHydrated = userId ? remoteFavoriteIds !== null && !isSyncing : localHydrated;
+  const resolvedHydrated = userId ? remoteFavoriteIds !== null : localHydrated;
 
   const value = useMemo<FavoritesContextValue>(
     () => ({
@@ -231,7 +229,6 @@ export function FavoritesProvider({ children }: PropsWithChildren) {
         const previousIds = ids;
         setRemoteFavoriteIds(nextIds);
         broadcastFavoritesUpdate(nextIds);
-        setIsSyncing(true);
 
         void requestFavoriteUpdate(previousIds.includes(listingId) ? "DELETE" : "POST", listingId)
           .then((serverFavoriteIds) => {
@@ -244,7 +241,7 @@ export function FavoritesProvider({ children }: PropsWithChildren) {
             broadcastFavoritesUpdate(previousIds);
           })
           .finally(() => {
-            setIsSyncing(false);
+            // Sync complete
           });
       },
     }),

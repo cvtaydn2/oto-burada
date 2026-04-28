@@ -3,6 +3,7 @@
 import { Archive, ArrowUpCircle, Loader2, Pencil, Rocket, RotateCcw, Zap } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
+import { useMemo } from "react";
 
 import { DopingStore } from "@/components/dashboard/doping-store";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -63,13 +64,15 @@ export function DashboardListingCard({
 }: DashboardListingCardProps) {
   const isArchived = listing.status === "archived";
   const isApproved = listing.status === "approved";
+  // eslint-disable-next-line react-hooks/purity
+  const now = useMemo(() => new Date(currentTime || Date.now()), [currentTime]);
 
   const canBump =
     isApproved &&
     (() => {
       if (!listing.bumpedAt) return true;
       const cooldownEnd = new Date(new Date(listing.bumpedAt).getTime() + 7 * 24 * 60 * 60 * 1000);
-      return new Date() >= cooldownEnd;
+      return now >= cooldownEnd;
     })();
 
   const bumpCooldownDays = listing.bumpedAt
@@ -188,7 +191,7 @@ export function DashboardListingCard({
           </Link>
 
           {isApproved &&
-            (listing.bumpedAt ? (
+            (!canBump ? (
               <div
                 className="flex items-center justify-center size-11 rounded-xl bg-muted/40 text-slate-300 border border-border/30 cursor-help"
                 title={`${bumpCooldownDays} gün sonra tekrar öne çıkarılabilir`}
@@ -199,7 +202,7 @@ export function DashboardListingCard({
               <button
                 type="button"
                 onClick={() => onBump(listing.id)}
-                disabled={isBumping || !canBump}
+                disabled={isBumping}
                 className="flex items-center justify-center size-11 rounded-xl bg-emerald-50 text-emerald-600 hover:bg-emerald-600 hover:text-white transition-all disabled:opacity-30 border border-emerald-100 shadow-sm"
                 title="Üste Taşı"
               >

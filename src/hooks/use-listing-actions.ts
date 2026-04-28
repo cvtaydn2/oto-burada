@@ -55,7 +55,7 @@ export function useListingActions(listings: Listing[], userId?: string) {
           queryKeys.listings.my(userId),
           previousListings.map((l) =>
             l.id === id
-              ? { ...l, status: isArchived ? "draft" : ("archived" as Listing["status"]) }
+              ? { ...l, status: isArchived ? "approved" : ("archived" as Listing["status"]) }
               : l
           )
         );
@@ -211,10 +211,10 @@ export function useListingActions(listings: Listing[], userId?: string) {
   const clearSelection = useCallback(() => setSelectedIds([]), []);
 
   return {
-    archivingId: archiveMutation.isPending ? archiveMutation.variables.id : null,
+    archivingId: archiveMutation.isPending ? (archiveMutation.variables?.id ?? null) : null,
     archiveError,
     setArchiveError,
-    bumpingId: bumpMutation.isPending ? bumpMutation.variables.id : null,
+    bumpingId: bumpMutation.isPending ? (bumpMutation.variables?.id ?? null) : null,
     bumpMessage,
     setBumpMessage,
     selectedIds,

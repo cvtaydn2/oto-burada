@@ -87,7 +87,7 @@ export function DopingStore({ listingId }: DopingStoreProps) {
             <Button
               className="w-full h-12 rounded-xl font-bold uppercase tracking-widest text-xs"
               onClick={() => handlePurchase(pkg)}
-              disabled={!!loading}
+              disabled={loading === pkg.id}
             >
               {loading === pkg.id ? <Loader2 className="h-4 w-4 animate-spin" /> : "Satın Al"}
             </Button>

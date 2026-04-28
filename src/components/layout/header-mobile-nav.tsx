@@ -20,7 +20,8 @@ const mobileQuickLinks = [
 ] as const;
 
 export function HeaderMobileNav({ searchSuggestions }: HeaderMobileNavProps) {
-  const { isAdmin, isAuthenticated, isReady } = useAuthUser();
+  const { isAdmin, isReady, userId, user } = useAuthUser();
+  const isAuthenticated = Boolean(userId && user);
   const accountHref = isAuthenticated ? "/dashboard" : "/login";
   const favoritesHref = isAuthenticated ? "/dashboard/favorites" : "/favorites";
   const postListingHref = isAuthenticated ? "/dashboard/listings" : "/login";

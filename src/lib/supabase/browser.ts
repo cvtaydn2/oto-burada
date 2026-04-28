@@ -12,8 +12,9 @@ export function createSupabaseBrowserClient(): SupabaseClient<Database> {
   const { url, anonKey } = getSupabaseEnv();
   client = createClient<Database>(url, anonKey, {
     auth: {
-      autoRefreshToken: false,
+      autoRefreshToken: true,
       persistSession: true,
+      detectSessionInUrl: true,
     },
   });
 

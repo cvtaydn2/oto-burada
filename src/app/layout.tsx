@@ -13,6 +13,9 @@ import { WhatsAppSupport } from "@/components/shared/whatsapp-support";
 import { getCurrentUser } from "@/lib/auth/session";
 import { getAppUrl } from "@/lib/seo";
 
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 const inter = Inter({
   subsets: ["latin", "latin-ext"],
   variable: "--font-inter",

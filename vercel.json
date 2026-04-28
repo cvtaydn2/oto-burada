@@ -6,8 +6,7 @@
   "crons": [
     {
       "path": "/api/cron/main",
-      "schedule": "0 0 * * *",
-      "description": "MASTER CRON (Vercel Hobby Plan): Runs all critical periodic tasks daily at midnight. Includes: doping/listing/reservation expiry, stale payment cleanup, outbox processing, fulfillment jobs, listing views sync, saved-search notifications. Less-critical jobs can be manually triggered when needed."
+      "schedule": "0 0 * * *"
     }
   ],
   "headers": [

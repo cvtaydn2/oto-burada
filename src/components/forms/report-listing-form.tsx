@@ -10,6 +10,7 @@ interface ReportListingFormProps {
   listingId: string;
   sellerId: string;
   userId?: string | null;
+  onSuccess?: () => void;
 }
 
 interface SubmitState {
@@ -17,7 +18,12 @@ interface SubmitState {
   status: "error" | "idle" | "success";
 }
 
-export function ReportListingForm({ listingId, sellerId, userId }: ReportListingFormProps) {
+export function ReportListingForm({
+  listingId,
+  sellerId,
+  userId,
+  onSuccess,
+}: ReportListingFormProps) {
   const [reason, setReason] = useState<(typeof reportReasons)[number]>("fake_listing");
   const [description, setDescription] = useState("");
   const [submitState, setSubmitState] = useState<SubmitState>({ status: "idle" });
@@ -90,6 +96,9 @@ export function ReportListingForm({ listingId, sellerId, userId }: ReportListing
         message: payload?.message ?? "Raporun incelemeye alındı.",
         status: "success",
       });
+      if (onSuccess) {
+        setTimeout(onSuccess, 1500);
+      }
     } catch {
       setSubmitState({
         message: "Bağlantı sırasında bir hata oluştu. Lütfen tekrar dene.",

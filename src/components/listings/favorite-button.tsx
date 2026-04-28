@@ -26,6 +26,7 @@ export function FavoriteButton({
 
   const handleClick = () => {
     if (!isAuthenticated) {
+      toggleFavorite(listingId);
       setShowHint(true);
       if (timerRef.current) clearTimeout(timerRef.current);
       timerRef.current = setTimeout(() => setShowHint(false), 3000);

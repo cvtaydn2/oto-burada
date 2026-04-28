@@ -1,6 +1,7 @@
 "use client";
 
 import { Flag } from "lucide-react";
+import { useState } from "react";
 
 import { ReportListingForm } from "@/components/forms/report-listing-form";
 import { FavoriteButton } from "@/components/listings/favorite-button";
@@ -29,6 +30,7 @@ export function ListingDetailActions({
   title,
 }: ListingDetailActionsProps) {
   const { userId } = useAuthUser();
+  const [reportOpen, setReportOpen] = useState(false);
 
   return (
     <div className="flex items-center space-x-2">
@@ -41,7 +43,7 @@ export function ListingDetailActions({
         listingId={listingId}
         className="bg-card border border-border text-muted-foreground w-11 h-11 rounded-lg flex items-center justify-center hover:bg-red-50 hover:text-red-500 hover:border-red-200 transition shadow-sm"
       />
-      <Dialog>
+      <Dialog open={reportOpen} onOpenChange={setReportOpen}>
         <DialogTrigger asChild>
           <button
             type="button"
@@ -56,7 +58,12 @@ export function ListingDetailActions({
           <DialogHeader>
             <DialogTitle>İlanı Moderasyona Bildir</DialogTitle>
           </DialogHeader>
-          <ReportListingForm listingId={listingId} sellerId={sellerId} userId={userId} />
+          <ReportListingForm
+            listingId={listingId}
+            sellerId={sellerId}
+            userId={userId}
+            onSuccess={() => setReportOpen(false)}
+          />
         </DialogContent>
       </Dialog>
     </div>

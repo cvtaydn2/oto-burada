@@ -8,6 +8,7 @@ import {
   useContext,
   useEffect,
   useMemo,
+  useRef,
   useState,
 } from "react";
 
@@ -34,8 +35,9 @@ interface AuthProviderProps extends PropsWithChildren {
 
 export function AuthProvider({ children, initialUser = null }: AuthProviderProps) {
   const [user, setUser] = useState<User | null>(initialUser);
-  const [isReady, setIsReady] = useState(!!initialUser);
+  const [isReady, setIsReady] = useState(false);
   const router = useRouter();
+  const userIdRef = useRef<string | null>(initialUser?.id ?? null);
 
   useEffect(() => {
     const supabase = createSupabaseBrowserClient();
@@ -49,13 +51,14 @@ export function AuthProvider({ children, initialUser = null }: AuthProviderProps
       }
     };
 
-    if (!initialUser) {
-      void supabase.auth.getUser().then(({ data }: UserResponse) => {
-        if (!mounted) return;
-        setUser(data.user ?? null);
-        setIsReady(true);
-      });
-    }
+    void supabase.auth.getUser().then(({ data }: UserResponse) => {
+      if (!mounted) return;
+
+      const browserUser = data.user ?? null;
+      userIdRef.current = browserUser?.id ?? null;
+      setUser(browserUser);
+      setIsReady(true);
+    });
 
     const {
       data: { subscription },
@@ -63,8 +66,11 @@ export function AuthProvider({ children, initialUser = null }: AuthProviderProps
       if (!mounted) return;
 
       const newUser = session?.user ?? null;
+      const previousUserId = userIdRef.current;
 
-      if (user?.id !== newUser?.id) {
+      userIdRef.current = newUser?.id ?? null;
+
+      if (previousUserId !== newUser?.id) {
         if (event === "SIGNED_OUT") {
           // UX FIX: Handle storage quota errors gracefully
           try {
@@ -85,7 +91,7 @@ export function AuthProvider({ children, initialUser = null }: AuthProviderProps
       subscription.unsubscribe();
       authChannel.close();
     };
-  }, [initialUser, user?.id, router]);
+  }, [initialUser, router]);
 
   const value = useMemo<AuthContextValue>(
     () => ({

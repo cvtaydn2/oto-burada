@@ -18,7 +18,8 @@ interface MobileNavProps {
 
 export function MobileNav({ searchSuggestions }: MobileNavProps) {
   const pathname = usePathname();
-  const { isAuthenticated, isReady } = useAuthUser();
+  const { isReady, userId, user } = useAuthUser();
+  const isAuthenticated = Boolean(userId && user);
   // FAB sadece içerik keşif sayfalarında gösterilir.
   // Form, ödeme, mesaj ve işlem sayfalarında klavye/içerik üstüne binmemesi için gizlenir.
   const FAB_ALLOWED_PATHS = ["/", "/listings", "/favorites", "/compare"];
