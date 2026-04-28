@@ -19,7 +19,6 @@ import { cn } from "@/lib/utils";
 
 interface ReserveButtonProps {
   listingId: string;
-  sellerPhone: string | null;
   className?: string;
 }
 

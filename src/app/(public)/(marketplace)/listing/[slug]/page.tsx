@@ -77,6 +77,11 @@ const PriceHistoryChart = dynamic(
   { loading: () => <div className="h-64 animate-pulse rounded-xl bg-muted" /> }
 );
 
+const ReserveButton = dynamic(
+  () => import("@/components/reservations/reserve-button").then((m) => m.ReserveButton),
+  { loading: () => <div className="h-12 w-full animate-pulse rounded-xl bg-muted" /> }
+);
+
 interface ListingDetailPageProps {
   params: Promise<{ slug: string }>;
 }
@@ -352,6 +357,9 @@ export default async function ListingDetailPage({ params }: ListingDetailPagePro
                     Bu sizin ilanınız
                   </div>
                 )}
+
+                {/* Reserve Button */}
+                {!isOwner && <ReserveButton listingId={listing.id} />}
               </div>
 
               {/* Seller Card */}
