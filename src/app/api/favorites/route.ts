@@ -1,5 +1,5 @@
 import { API_ERROR_CODES, apiError, apiSuccess } from "@/lib/api/response";
-import { withAuthAndCsrf } from "@/lib/api/security";
+import { withUserAndCsrfToken } from "@/lib/api/security";
 import { requireApiUser } from "@/lib/auth/api-user";
 import { captureServerEvent } from "@/lib/monitoring/posthog-server";
 import { hasSupabaseAdminEnv, hasSupabaseEnv } from "@/lib/supabase/env";
@@ -34,7 +34,7 @@ export async function GET() {
 }
 
 export async function POST(request: Request) {
-  const security = await withAuthAndCsrf(request, {
+  const security = await withUserAndCsrfToken(request, {
     ipRateLimit: { limit: 60, windowMs: 60 * 1000 },
     userRateLimit: { limit: 30, windowMs: 60 * 1000 },
     rateLimitKey: "favorites:mutate",

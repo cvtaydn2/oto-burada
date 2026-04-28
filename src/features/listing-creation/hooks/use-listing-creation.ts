@@ -37,7 +37,7 @@ const STEP_LABELS = [
   "Ekspertiz (İsteğe Bağlı)",
   "Fotoğraflar",
 ];
-const DRAFT_STORAGE_KEY = "oto_burada_listing_draft";
+const DRAFT_STORAGE_KEY = "oto_burada_listing_draft_v2";
 
 export function useListingCreation({
   initialValues,
@@ -231,7 +231,11 @@ export function useListingCreation({
     if (currentStep === 1)
       fieldsToValidate = ["city", "district", "title", "description", "price", "whatsappPhone"];
 
-    const isValid = fieldsToValidate.length === 0 || (await trigger(fieldsToValidate));
+    const isValid =
+      fieldsToValidate.length === 0 ||
+      (await trigger(fieldsToValidate, {
+        shouldFocus: true,
+      }));
     if (isValid) {
       const timeSpentSeconds = Math.round((Date.now() - stepStartTimeRef.current) / 1000);
       trackEvent(AnalyticsEvent.LISTING_WIZARD_STEP_COMPLETED, {

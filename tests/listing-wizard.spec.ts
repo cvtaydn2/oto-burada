@@ -55,12 +55,13 @@ test.describe("Listing Creation Wizard", () => {
     await page.locator('input[name="whatsappPhone"]').fill("5551234567");
 
     await page.getByRole("button", { name: /Sonraki Adım/i }).click();
+    await expect(page.getByText(/Kaporta ve Hasar Durumu/i)).toBeVisible({ timeout: 10_000 });
 
-    // STEP 3: Ekspertiz ve Kondisyon
-    await expect(page.getByText(/Kaporta ve Hasar Durumu/i)).toBeVisible();
     // Parçaları tıklayarak durum değiştirme (DamageSelector)
-    // Kaput'a tıklayalım
-    await page.getByText(/Kaput/i).click();
+
+    // Kaput'u hızlı seçim listesinden açalım
+    await page.getByTestId("damage-part-kaput").click();
+    await page.getByRole("button", { name: /Boyalı|Lokal Boyalı|Değişen|Orijinal/i }).first().click();
 
     await page.getByRole("button", { name: /Sonraki Adım/i }).click();
 

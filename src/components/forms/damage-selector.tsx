@@ -409,6 +409,7 @@ export function DamageSelector({ value, onChange, className, isDisabled }: Damag
                       key={part}
                       type="button"
                       onClick={() => setActivePart(part)}
+                      data-testid={`damage-part-${part}`}
                       className="flex items-center justify-between rounded-xl border border-border bg-card p-3 text-left transition-all hover:border-indigo-300 hover:shadow-sm"
                     >
                       <span className="text-xs font-medium text-muted-foreground truncate">

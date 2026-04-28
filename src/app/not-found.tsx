@@ -22,7 +22,14 @@ export default function NotFound() {
       <h1 id="not-found-heading" className="mb-3 text-3xl font-extrabold text-foreground">
         Üzgünüz, Aradığınız Araç Yoldan Çıkmış!
       </h1>
-      <p className="mb-10 max-w-md text-muted-foreground" aria-label="İlan bulunamadı açıklaması">
+      <div className="sr-only" aria-live="polite" data-testid="listing-not-found-status">
+        İlan bulunamadı.
+      </div>
+      <p
+        className="mb-10 max-w-md text-muted-foreground"
+        aria-label="İlan bulunamadı açıklaması"
+        data-testid="listing-not-found-message"
+      >
         İlan bulunamadı. Aradığınız ilan yayından kaldırılmış olabilir veya yanlış bir bağlantıya
         tıkladınız. Hayalinizdeki aracı bulmak için ana sayfaya dönebilirsiniz.
       </p>

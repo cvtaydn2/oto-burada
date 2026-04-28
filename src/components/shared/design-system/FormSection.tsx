@@ -13,7 +13,7 @@ interface FormSectionProps {
  */
 export function FormSection({ number, title, children, className }: FormSectionProps) {
   return (
-    <div className={cn("animate-in fade-in slide-in-from-bottom-4 duration-500", className)}>
+    <section className={cn("animate-in fade-in slide-in-from-bottom-4 duration-500", className)}>
       <div className="flex items-center mb-6">
         <div className="size-8 rounded-full bg-primary/10 text-primary flex items-center justify-center font-bold mr-3 text-sm ring-1 ring-primary/20">
           {number}
@@ -24,6 +24,6 @@ export function FormSection({ number, title, children, className }: FormSectionP
       <div className="bg-card border border-border rounded-2xl p-6 lg:p-8 shadow-sm">
         {children}
       </div>
-    </div>
+    </section>
   );
 }

@@ -152,16 +152,15 @@ test.describe("İlan Detay Sayfası", () => {
 
   test("404 sayfası geçersiz slug için gösterilir", async ({ page }) => {
     await page.goto("/listing/bu-ilan-kesinlikle-mevcut-degil-xyz-123");
-    // not-found heading'i bekle
-    const notFoundContent = page.getByText(/bulunamadı|yoldan çıkmış|404/i).first();
-    await expect(notFoundContent).toBeVisible({ timeout: 8_000 });
+    await expect(page.getByTestId("listing-not-found-message")).toBeVisible({ timeout: 8_000 });
   });
 
   test("aktif olmayan ilan için bilgi mesajı gösterilir", async ({ page }) => {
     // Bu test sadece DB'de pending/archived ilan varsa anlamlı
-    // Genel olarak 404 veya "İlan Artık Aktif Değil" mesajı bekleniyor
+    // Genel olarak 404 veya "İlan Aktif Değil" mesajı bekleniyor
     await page.goto("/listing/bu-ilan-kesinlikle-mevcut-degil-xyz-123");
-    const notFound = page.getByText(/bulunamadı|aktif değil|yoldan çıkmış/i).first();
-    await expect(notFound).toBeVisible({ timeout: 8_000 });
+    const inactiveMessage = page.getByTestId("listing-inactive-message");
+    const notFoundMessage = page.getByTestId("listing-not-found-message");
+    await expect(inactiveMessage.or(notFoundMessage)).toBeVisible({ timeout: 8_000 });
   });
 });

@@ -16,6 +16,12 @@ import { updateSession } from "@/lib/supabase/middleware";
 export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const { isApiRoute, isAuthRoute, isAdminRoute, isProtectedRoute } = classifyRoute(pathname);
+  const isMutation = ["POST", "PUT", "PATCH", "DELETE"].includes(request.method.toUpperCase());
+  const isFavoritesMutation = pathname === "/api/favorites" && isMutation;
+
+  if (isFavoritesMutation) {
+    return await runMiddlewarePipeline(request, [rateLimitMiddleware, updateSession]);
+  }
 
   // 1. Admin & Dashboard: Force full security pipeline
   if (isAdminRoute || isProtectedRoute) {
