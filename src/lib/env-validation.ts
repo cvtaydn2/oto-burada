@@ -60,6 +60,18 @@ const ENV_VARS: EnvVar[] = [
     productionOnly: true,
     description: "Secret for PostHog webhook verification (openssl rand -hex 32)",
   },
+  {
+    key: "IYZICO_API_KEY",
+    required: true,
+    productionOnly: true,
+    description: "Iyzico payment gateway API key (required for production payments)",
+  },
+  {
+    key: "IYZICO_SECRET_KEY",
+    required: true,
+    productionOnly: true,
+    description: "Iyzico payment gateway secret key (required for webhook signature verification)",
+  },
 
   // ── Optional but recommended ───────────────────────────────────────────────
   {

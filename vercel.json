@@ -6,7 +6,23 @@
   "crons": [
     {
       "path": "/api/cron/main",
-      "schedule": "0 0 * * *"
+      "schedule": "0 0 * * *",
+      "description": "Master daily cron: expire dopings, listings, reservations, cleanup payments, saved-search notifications"
+    },
+    {
+      "path": "/api/cron/outbox",
+      "schedule": "* * * * *",
+      "description": "Outbox processor: email notifications, compliance, reconciliation (every minute)"
+    },
+    {
+      "path": "/api/cron/process-fulfillment-jobs",
+      "schedule": "* * * * *",
+      "description": "Fulfillment job processor: payment retries, doping activation, credit adjustments (every minute)"
+    },
+    {
+      "path": "/api/cron/sync-listing-views",
+      "schedule": "*/5 * * * *",
+      "description": "Sync listing view counts from cache to database (every 5 minutes)"
     }
   ],
   "headers": [
@@ -15,7 +31,6 @@
       "headers": [
         { "key": "X-Content-Type-Options", "value": "nosniff" },
         { "key": "X-Frame-Options", "value": "DENY" },
-        { "key": "X-XSS-Protection", "value": "1; mode=block" },
         { "key": "Referrer-Policy", "value": "strict-origin-when-cross-origin" },
         { "key": "Permissions-Policy", "value": "camera=(), microphone=(), geolocation=()" },
         {

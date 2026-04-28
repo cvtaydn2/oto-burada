@@ -30,7 +30,7 @@ jobs:
         run: npm ci
 
       - name: Type check
-        run: npx tsc --noEmit
+        run: npm run typecheck
 
       - name: Lint
         run: npm run lint
@@ -177,3 +177,66 @@ jobs:
           base: ${{ github.event.repository.default_branch }}
           head: HEAD
           extra_args: --only-verified
+
+  # ── 6. Production readiness check (main branch only) ───────────────────────
+  prod-readiness:
+    name: Production Readiness
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    env:
+      NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL || 'https://placeholder.supabase.co' }}
+      NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'placeholder-anon-key' }}
+      SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY || 'placeholder-service-key' }}
+      NEXT_PUBLIC_APP_URL: "https://oto-burada.vercel.app"
+      NEXT_PUBLIC_POSTHOG_PROJECT_TOKEN: ${{ secrets.NEXT_PUBLIC_POSTHOG_PROJECT_TOKEN || 'placeholder' }}
+      POSTHOG_WEBHOOK_SECRET: ${{ secrets.POSTHOG_WEBHOOK_SECRET || 'placeholder-webhook-secret' }}
+      CRON_SECRET: ${{ secrets.CRON_SECRET || 'placeholder-cron-secret' }}
+      IYZICO_API_KEY: ${{ secrets.IYZICO_API_KEY || 'placeholder-iyzico-key' }}
+      IYZICO_SECRET_KEY: ${{ secrets.IYZICO_SECRET_KEY || 'placeholder-iyzico-secret' }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Check for placeholder secrets
+        run: |
+          echo "🔍 Checking for placeholder secrets in production environment..."
+          FAILED=0
+          
+          # Check Iyzico keys (critical for payments)
+          if [[ "$IYZICO_API_KEY" == *"placeholder"* ]] || [[ "$IYZICO_API_KEY" == *"your-"* ]]; then
+            echo "❌ IYZICO_API_KEY is not set or contains placeholder value"
+            FAILED=1
+          fi
+          
+          if [[ "$IYZICO_SECRET_KEY" == *"placeholder"* ]] || [[ "$IYZICO_SECRET_KEY" == *"your-"* ]]; then
+            echo "❌ IYZICO_SECRET_KEY is not set or contains placeholder value"
+            FAILED=1
+          fi
+          
+          # Check CRON_SECRET
+          if [[ "$CRON_SECRET" == *"placeholder"* ]] || [[ "$CRON_SECRET" == *"your-"* ]]; then
+            echo "❌ CRON_SECRET is not set or contains placeholder value"
+            FAILED=1
+          fi
+          
+          # Check SUPABASE_SERVICE_ROLE_KEY
+          if [[ "$SUPABASE_SERVICE_ROLE_KEY" == *"placeholder"* ]] || [[ "$SUPABASE_SERVICE_ROLE_KEY" == *"your-"* ]]; then
+            echo "❌ SUPABASE_SERVICE_ROLE_KEY is not set or contains placeholder value"
+            FAILED=1
+          fi
+          
+          if [[ $FAILED -eq 1 ]]; then
+            echo ""
+            echo "🛑 Production readiness check FAILED!"
+            echo "Please set all required secrets in GitHub Repository Settings > Secrets > Actions"
+            exit 1
+          else
+            echo "✅ All critical production secrets are configured"
+          fi

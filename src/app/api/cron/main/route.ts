@@ -9,8 +9,27 @@ import { triggerSavedSearchNotifications } from "@/services/system/saved-search-
 
 /**
  * MASTER CRON HANDLER for Vercel Hobby (Free) Plan.
- * Rule: Hobby plan allows max 1 cron job with 1 day frequency.
- * Execution limit: 10 seconds.
+ * Schedule: Daily at midnight (0 0 * * *)
+ * Execution limit: 10 seconds (Vercel Hobby plan limit)
+ *
+ * ── TASKS EXECUTED BY THIS CRON ──────────────────────────────────────────────
+ * 1. Expire Dopings (atomic RPC)
+ * 2. Expire Reservations
+ * 3. Expire Listings (60+ days old, batch update)
+ * 4. Cleanup Stale Payments (24+ hours old, pending → failure)
+ * 5. Trigger Saved Search Notifications (if time budget allows)
+ *
+ * ── OTHER CRON JOBS (scheduled separately in vercel.json) ────────────────────
+ * - /api/cron/outbox: Every minute - email notifications, compliance, reconciliation
+ * - /api/cron/process-fulfillment-jobs: Every minute - payment retries, doping activation
+ * - /api/cron/sync-listing-views: Every 5 minutes - cache → database sync
+ *
+ * ── UNUSED CRON ENDPOINTS (kept for future scaling, not scheduled) ───────────
+ * - /api/cron/cleanup-stale-payments (consolidated into this master cron)
+ * - /api/cron/cleanup-storage (manual trigger only)
+ * - /api/cron/expire-dopings (consolidated into this master cron)
+ * - /api/cron/expire-listings (consolidated into this master cron)
+ * - /api/cron/expire-reservations (consolidated into this master cron)
  */
 export async function GET(request: Request) {
   const security = await withCronOrAdmin(request);

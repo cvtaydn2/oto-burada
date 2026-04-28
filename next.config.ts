@@ -61,6 +61,9 @@ const nextConfig: NextConfig = {
   poweredByHeader: false,
   generateEtags: true,
   serverExternalPackages: ["posthog-node", "sharp", "iyzipay"],
+  // ── DEPLOYMENT CONFIG: Standalone output for Docker/self-hosting ───────────
+  // Kept for future Docker deployment support. Vercel ignores this setting.
+  // If deploying to Vercel ONLY, this can be safely removed.
   output: "standalone",
   async redirects() {
     return [
