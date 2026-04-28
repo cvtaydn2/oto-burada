@@ -7,22 +7,7 @@
     {
       "path": "/api/cron/main",
       "schedule": "0 0 * * *",
-      "description": "Master daily cron: expire dopings, listings, reservations, cleanup payments, saved-search notifications"
-    },
-    {
-      "path": "/api/cron/outbox",
-      "schedule": "* * * * *",
-      "description": "Outbox processor: email notifications, compliance, reconciliation (every minute)"
-    },
-    {
-      "path": "/api/cron/process-fulfillment-jobs",
-      "schedule": "* * * * *",
-      "description": "Fulfillment job processor: payment retries, doping activation, credit adjustments (every minute)"
-    },
-    {
-      "path": "/api/cron/sync-listing-views",
-      "schedule": "*/5 * * * *",
-      "description": "Sync listing view counts from cache to database (every 5 minutes)"
+      "description": "MASTER CRON (Vercel Hobby Plan): Runs all critical periodic tasks daily at midnight. Includes: doping/listing/reservation expiry, stale payment cleanup, outbox processing, fulfillment jobs, listing views sync, saved-search notifications. Less-critical jobs can be manually triggered when needed."
     }
   ],
   "headers": [

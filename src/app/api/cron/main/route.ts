@@ -4,7 +4,12 @@ import { withCronOrAdmin } from "@/lib/api/security";
 import { logger } from "@/lib/logging/logger";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { hasSupabaseAdminEnv } from "@/lib/supabase/env";
+import { applyDopingPackage } from "@/services/payments/doping-logic";
 import { expireReservations } from "@/services/reservations/reservation-service";
+import { processCompensatingActions } from "@/services/system/compensating-processor";
+import { processComplianceVacuum } from "@/services/system/compliance-vacuum";
+import { processOutboxQueue } from "@/services/system/outbox-processor";
+import { processReconciliation } from "@/services/system/reconciliation-worker";
 import { triggerSavedSearchNotifications } from "@/services/system/saved-search-notifier";
 
 /**
@@ -12,17 +17,26 @@ import { triggerSavedSearchNotifications } from "@/services/system/saved-search-
  * Schedule: Daily at midnight (0 0 * * *)
  * Execution limit: 10 seconds (Vercel Hobby plan limit)
  *
- * ── TASKS EXECUTED BY THIS CRON ──────────────────────────────────────────────
- * 1. Expire Dopings (atomic RPC)
- * 2. Expire Reservations
- * 3. Expire Listings (60+ days old, batch update)
- * 4. Cleanup Stale Payments (24+ hours old, pending → failure)
- * 5. Trigger Saved Search Notifications (if time budget allows)
+ * ── VERCEL HOBBY PLAN LIMITATION ─────────────────────────────────────────────
+ * Hobby plan allows only 1 cron job with 1/day frequency.
+ * All critical periodic tasks are consolidated into this single endpoint.
+ * Less-critical jobs (outbox, fulfillment) run daily instead of every minute.
+ * For near-real-time background jobs, upgrade to Pro plan or use external worker.
  *
- * ── OTHER CRON JOBS (scheduled separately in vercel.json) ────────────────────
- * - /api/cron/outbox: Every minute - email notifications, compliance, reconciliation
- * - /api/cron/process-fulfillment-jobs: Every minute - payment retries, doping activation
- * - /api/cron/sync-listing-views: Every 5 minutes - cache → database sync
+ * ── TASKS EXECUTED BY THIS CRON (in priority order) ──────────────────────────
+ * 1. Expire Dopings (atomic RPC) - critical for billing accuracy
+ * 2. Expire Reservations - critical for inventory management
+ * 3. Expire Listings (60+ days old, batch update) - database hygiene
+ * 4. Cleanup Stale Payments (24+ hours old) - financial integrity
+ * 5. Process Outbox Queue (email notifications) - may be delayed up to 24h on Hobby
+ * 6. Process Fulfillment Jobs (payment retries, doping activation) - may be delayed
+ * 7. Process Compliance & Reconciliation - system integrity checks
+ * 8. Trigger Saved Search Notifications (if time budget allows)
+ *
+ * ── MANUAL TRIGGER (for less-critical jobs when needed) ──────────────────────
+ * curl -H "Authorization: Bearer $CRON_SECRET" https://your-app.vercel.app/api/cron/outbox
+ * curl -H "Authorization: Bearer $CRON_SECRET" https://your-app.vercel.app/api/cron/process-fulfillment-jobs
+ * curl -H "Authorization: Bearer $CRON_SECRET" https://your-app.vercel.app/api/cron/sync-listing-views
  *
  * ── UNUSED CRON ENDPOINTS (kept for future scaling, not scheduled) ───────────
  * - /api/cron/cleanup-stale-payments (consolidated into this master cron)
@@ -81,12 +95,101 @@ export async function GET(request: Request) {
       .select("id");
     results.cleanupPayments = { count: stale?.length || 0 };
 
-    // 5. Trigger Saved Search Notifications (via shared server function)
+    // 5. Process Outbox Queue (email notifications, compliance, reconciliation)
+    // HOBBY PLAN: Runs daily instead of every minute. Emails may be delayed up to 24h.
+    if (Date.now() - startTime < 6000) {
+      try {
+        await Promise.all([
+          processOutboxQueue(),
+          processCompensatingActions(),
+          processComplianceVacuum(),
+          processReconciliation(),
+        ]);
+        results.outboxProcessing = "success";
+      } catch (e) {
+        logger.system.error("Outbox processing failed in master cron", e);
+        results.outboxProcessing = "failed";
+      }
+    }
+
+    // 6. Process Fulfillment Jobs (payment retries, doping activation)
+    // HOBBY PLAN: Runs daily instead of every minute. Payment retries may be delayed.
+    if (Date.now() - startTime < 7000) {
+      try {
+        const { data: jobs, error: fetchError } = await admin.rpc("get_ready_fulfillment_jobs", {
+          p_limit: 5, // Conservative limit for daily run
+        });
+
+        if (!fetchError && jobs) {
+          let successCount = 0;
+          let failCount = 0;
+
+          for (const job of jobs.slice(0, 5)) {
+            try {
+              await admin.rpc("mark_job_processing", { p_job_id: job.id });
+
+              if (job.job_type === "doping_apply") {
+                const metadata = job.metadata as {
+                  listing_id?: string;
+                  package_id?: string;
+                  user_id?: string;
+                };
+                const userId = metadata.user_id ?? job.payment_data.user_id;
+                const listingId = metadata.listing_id ?? job.payment_data.listing_id;
+                const packageId = metadata.package_id;
+
+                if (userId && listingId && packageId) {
+                  await applyDopingPackage({
+                    userId,
+                    listingId,
+                    packageId,
+                    paymentId: job.payment_id,
+                  });
+                  await admin.rpc("mark_job_success", { p_job_id: job.id });
+                  successCount++;
+                } else {
+                  throw new Error("Incomplete metadata");
+                }
+              } else if (job.job_type === "credit_add") {
+                // Simplified credit add for daily run
+                const { error: creditError } = await admin.rpc("adjust_user_credits_atomic", {
+                  p_user_id: job.payment_data.user_id,
+                  p_amount: job.payment_data.amount || 0,
+                  p_type: "purchase",
+                  p_description: "Ödeme sonrası kredi yükleme (daily cron)",
+                  p_reference_id: `Payment:${job.payment_id}`,
+                });
+                if (!creditError) {
+                  await admin.rpc("mark_job_success", { p_job_id: job.id });
+                  successCount++;
+                } else {
+                  throw creditError;
+                }
+              }
+            } catch (err) {
+              const error = err as Error;
+              await admin.rpc("mark_job_failed", {
+                p_job_id: job.id,
+                p_error_message: error.message || "Unknown error",
+              });
+              failCount++;
+            }
+          }
+
+          results.fulfillmentJobs = { success: successCount, failed: failCount };
+        }
+      } catch (e) {
+        logger.system.error("Fulfillment processing failed in master cron", e);
+        results.fulfillmentJobs = "failed";
+      }
+    }
+
+    // 7. Trigger Saved Search Notifications (via shared server function)
     // We do this at the end because it's the most time-consuming
     // ── SECURITY FIX: Issue SEC-CRON-01 - No HTTP Fetch with Cron Secret ──
     // Use shared server function instead of internal HTTP fetch to avoid
     // passing CRON_SECRET in headers (which could be logged).
-    if (Date.now() - startTime < 7000) {
+    if (Date.now() - startTime < 8000) {
       try {
         const result = await triggerSavedSearchNotifications();
         results.notificationsTriggered = result.success;
