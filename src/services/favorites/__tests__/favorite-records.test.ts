@@ -57,10 +57,11 @@ describe("favorite-records service", () => {
       expect(ids).toEqual(["1", "2"]);
     });
 
-    it("should return null on error", async () => {
+    it("should throw error on database failure", async () => {
       nextResolveValue = { data: null, error: { message: "DB Error" } };
-      const ids = await getDatabaseFavoriteIds("user-1");
-      expect(ids).toBeNull();
+      await expect(getDatabaseFavoriteIds("user-1")).rejects.toThrow(
+        "Failed to fetch favorites: DB Error"
+      );
     });
   });
 

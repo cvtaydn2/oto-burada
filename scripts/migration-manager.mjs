@@ -470,7 +470,7 @@ const isMainModule = (url, argv1) => {
     const filePath = fileURLToPath(url);
     const scriptPath = path.resolve(argv1);
     return filePath === scriptPath;
-  } catch (e) {
+  } catch {
     return false;
   }
 };

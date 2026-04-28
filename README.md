@@ -237,6 +237,84 @@ Muhtemel nedenler:
 - `SUPABASE_DEMO_USER_PASSWORD` yanlış
 - local database bootstrap tamamlanmadı
 
+### Production'da kayıt/login çalışmıyor
+
+**Hızlı Tanı:**
+```bash
+npm run diagnose
+```
+
+Bu script otomatik olarak tüm production sorunlarını kontrol eder.
+
+**Detaylı Troubleshooting:**
+Detaylı çözümler için [`docs/PRODUCTION_TROUBLESHOOTING.md`](docs/PRODUCTION_TROUBLESHOOTING.md) dosyasına bakın.
+
+**Yaygın Sorunlar:**
+1. Supabase Email Provider kapalı
+2. Site URL/Redirect URLs yanlış yapılandırılmış
+3. Environment variables eksik veya yanlış
+4. Email rate limit (ücretsiz tier: 4 email/saat)
+5. Database migrations uygulanmamış
+6. Profile trigger çalışmıyor
+
+**Hızlı Çözüm Kontrol Listesi:**
+- [ ] Supabase Dashboard > Auth > Providers > Email **enabled**
+- [ ] Supabase Dashboard > Auth > URL Configuration doğru
+- [ ] Vercel Environment Variables tanımlı
+- [ ] `NEXT_PUBLIC_APP_URL` production domain'e ayarlı
+- [ ] Database migrations uygulanmış (`npm run db:migrate`)
+- [ ] Profile trigger mevcut (veya manuel profile creation aktif)
+
+## Monitoring (Ücretsiz Tier)
+
+### Hızlı Tanı
+
+```bash
+# Tüm sistemleri kontrol et
+npm run diagnose
+```
+
+### Otomatik Monitoring
+
+Proje 3 katmanlı ücretsiz monitoring ile gelir:
+
+1. **GitHub Actions** (her 6 saatte)
+   - Otomatik health check
+   - Sorun varsa GitHub Issue oluşturur
+   - Email bildirimi
+
+2. **Vercel Cron** (her 6 saatte)
+   - `/api/health-check` endpoint'i
+   - Environment, database, auth kontrolü
+   - Vercel Dashboard'da sonuçlar
+
+3. **UptimeRobot** (manuel kurulum - 5 dakika)
+   - Her 5 dakikada uptime kontrolü
+   - Email/SMS alerts
+   - Public status page
+
+**Detaylı Kurulum:** [`docs/MONITORING_SETUP.md`](docs/MONITORING_SETUP.md) (15 dakika)
+
+### Manuel Debug
+
+**Vercel Logs:**
+```bash
+vercel logs --follow          # Real-time
+vercel logs -n 100            # Son 100 log
+```
+
+**Supabase Logs:**
+- Dashboard > Logs > Auth Logs (login/signup)
+- Dashboard > Logs > API Logs (HTTP requests)
+- Dashboard > Logs > Database Logs (SQL queries)
+
+**Browser Console:**
+- F12 > Console (JavaScript errors)
+- F12 > Network (Failed requests)
+- F12 > Application > Storage (Auth tokens)
+
+**Detaylı Guide:** [`docs/FREE_TIER_MONITORING.md`](docs/FREE_TIER_MONITORING.md)
+
 ## Dokümantasyon
 
 - `AGENTS.md`: ürün ve mimari kurallar
@@ -244,3 +322,7 @@ Muhtemel nedenler:
 - `PROGRESS.md`: yapılan işler ve doğrulama geçmişi
 - `docs/SECURITY.md`: güvenlik kararları
 - `docs/SERVICE_ARCHITECTURE.md`: servis katmanı düzeni
+- `docs/PRODUCTION_TROUBLESHOOTING.md`: production sorun çözümleri (50+ sayfa)
+- `docs/PRODUCTION_QUICK_FIX.md`: 5 dakikada hızlı çözümler
+- `docs/FREE_TIER_MONITORING.md`: ücretsiz monitoring stratejisi
+- `docs/MONITORING_SETUP.md`: 15 dakikada monitoring kurulumu
