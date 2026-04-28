@@ -1,4 +1,4 @@
-import { ChevronRight, ClipboardList, Eye, Settings } from "lucide-react";
+import { CarFront, ChevronRight, ClipboardList, Eye, Settings } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 
@@ -77,13 +77,19 @@ export function DashboardListingsTable({ listings }: DashboardListingsTableProps
                 <td className="py-4 pr-4">
                   <Link href={`/listing/${listing.slug}`} className="flex items-center gap-3">
                     <div className="relative size-12 shrink-0 overflow-hidden rounded-xl border border-border bg-muted">
-                      <Image
-                        src={listing.images[0]?.url || "https://placehold.co/100x75?text=Ara%C3%A7"}
-                        alt={listing.title}
-                        fill
-                        sizes="48px"
-                        className="object-cover"
-                      />
+                      {listing.images?.[0]?.url ? (
+                        <Image
+                          src={listing.images[0].url}
+                          alt={listing.title}
+                          fill
+                          sizes="48px"
+                          className="object-cover"
+                        />
+                      ) : (
+                        <div className="flex size-full items-center justify-center bg-muted">
+                          <CarFront size={20} className="text-muted-foreground/30" />
+                        </div>
+                      )}
                     </div>
                     <div className="min-w-0">
                       <div className="truncate font-bold text-foreground text-sm leading-tight transition-colors group-hover:text-primary tracking-tight">

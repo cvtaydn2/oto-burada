@@ -119,13 +119,13 @@ export function AdminUserHeader({
         <div
           className={cn(
             "px-5 py-2.5 rounded-2xl font-bold text-[11px] uppercase tracking-[0.15em] shadow-sm border flex items-center gap-2",
-            role === "admin"
+            role === "admin" || role === "super_admin"
               ? "bg-indigo-600 text-white border-indigo-500"
               : "bg-white text-slate-600 border-slate-200"
           )}
         >
           <ShieldCheck size={14} strokeWidth={3} />
-          {role === "admin" ? "ADMİN" : "ÜYE"}
+          {role === "super_admin" ? "SÜPER ADMIN" : role === "admin" ? "ADMİN" : "ÜYE"}
         </div>
       </div>
     </div>

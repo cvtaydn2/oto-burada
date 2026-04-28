@@ -110,6 +110,8 @@ export function DamageReportCard({ damageStatus, tramerAmount }: DamageReportCar
 
             <button
               onClick={() => setIsExpanded(!isExpanded)}
+              aria-expanded={isExpanded}
+              aria-controls="damage-details"
               className="w-full flex items-center justify-center gap-2 py-3 rounded-2xl border border-blue-100 bg-blue-50/50 text-blue-600 text-xs font-bold uppercase tracking-wider hover:bg-blue-100 transition-all shadow-sm group"
             >
               {isExpanded ? "Detayları Gizle" : "Boya/Değişen Detayları"}
@@ -132,7 +134,10 @@ export function DamageReportCard({ damageStatus, tramerAmount }: DamageReportCar
       </div>
 
       {isExpanded && (
-        <div className="bg-muted/50 border-t border-border/50 p-5 animate-in slide-in-from-top-2 duration-300">
+        <div
+          id="damage-details"
+          className="bg-muted/50 border-t border-border/50 p-5 animate-in slide-in-from-top-2 duration-300"
+        >
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-2">
             {carParts.map((part) => {
               const status =

@@ -207,7 +207,8 @@ function FavoriteCard({
   priority: boolean;
   onRemove: () => void;
 }) {
-  const coverImage = listing.images.find((img) => img.isCover) ?? listing.images[0];
+  const images = listing.images ?? [];
+  const coverImage = images.find((img) => img.isCover) ?? images[0];
   const isAdvantageous = (listing.marketPriceIndex ?? 1) < 0.95;
   const hasExpert = listing.expertInspection?.hasInspection;
 
@@ -266,7 +267,7 @@ function FavoriteCard({
 
         {/* Photo count */}
         <div className="absolute bottom-3 right-3 rounded-lg bg-black/50 px-2 py-1 text-[10px] font-bold text-white backdrop-blur">
-          {listing.images.length} FOTO
+          {images.length} FOTO
         </div>
       </div>
 

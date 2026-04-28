@@ -36,6 +36,7 @@ interface ListingQuestionsProps {
 export function ListingQuestions({ listingId, isOwner, currentUserId }: ListingQuestionsProps) {
   const [questions, setQuestions] = useState<ListingQuestion[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [replyingTo, setReplyingTo] = useState<string | null>(null);
 
@@ -51,13 +52,15 @@ export function ListingQuestions({ listingId, isOwner, currentUserId }: ListingQ
 
   const fetchQuestions = useCallback(async () => {
     setLoading(true);
+    setError(null);
     try {
       const data = isOwner
         ? await getOwnerListingQuestions(listingId)
         : await getListingQuestions(listingId);
       setQuestions(data as ListingQuestion[]);
-    } catch (error) {
-      console.error("Error fetching questions:", error);
+    } catch (err) {
+      console.error("Error fetching questions:", err);
+      setError("Sorular yüklenirken bir hata oluştu");
     } finally {
       setLoading(false);
     }
@@ -164,6 +167,19 @@ export function ListingQuestions({ listingId, isOwner, currentUserId }: ListingQ
                 <div className="h-3 bg-muted rounded w-1/2" />
               </div>
             ))}
+          </div>
+        ) : error ? (
+          <div className="text-center py-8 px-4 rounded-2xl border border-red-200 bg-red-50">
+            <AlertCircle className="size-8 text-red-500 mx-auto mb-3" />
+            <p className="text-sm font-bold text-red-600">{error}</p>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={fetchQuestions}
+              className="mt-3 text-red-600 hover:text-red-700 hover:bg-red-100"
+            >
+              Tekrar Dene
+            </Button>
           </div>
         ) : questions.length > 0 ? (
           questions.map((q) => (

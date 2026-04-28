@@ -34,6 +34,7 @@ export function FavoriteButton({
     toggleFavorite(listingId);
   };
 
+  // Cleanup timer on unmount
   useEffect(() => {
     return () => {
       if (timerRef.current) clearTimeout(timerRef.current);

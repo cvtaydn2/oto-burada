@@ -1,6 +1,6 @@
-import { trust } from "@/lib/constants/ui-strings";
+import { listingDetail, trust } from "@/lib/constants/ui-strings";
 import { getSellerTrustUI } from "@/lib/listings/trust-ui";
-import { cn } from "@/lib/utils";
+import { cn, formatDate } from "@/lib/utils";
 import { type Profile } from "@/types";
 
 export function TrustCard({
@@ -62,11 +62,11 @@ export function TrustSummary({ listing, seller, updatedAt }: TrustSummaryProps) 
       value:
         listing.tramerAmount && listing.tramerAmount > 0
           ? `${new Intl.NumberFormat("tr-TR").format(listing.tramerAmount)} TL`
-          : "SIFIR",
+          : listingDetail.zeroTramer,
       description:
         listing.tramerAmount && listing.tramerAmount > 0
-          ? "Hasar kaydı detayları"
-          : "Hasar kaydı bulunmuyor",
+          ? listingDetail.hasTramerDesc
+          : listingDetail.tramerDesc,
       styles:
         listing.tramerAmount && listing.tramerAmount > 0
           ? { bg: "bg-amber-50", text: "text-amber-700", border: "border-amber-100" }
@@ -82,10 +82,8 @@ export function TrustSummary({ listing, seller, updatedAt }: TrustSummaryProps) 
     },
     {
       title: "Son Güncelleme",
-      value: Number.isFinite(lastUpdatedAt.getTime())
-        ? lastUpdatedAt.toLocaleDateString("tr-TR")
-        : "-",
-      description: `${lastUpdatedAt.toLocaleDateString("tr-TR")} güncellendi`,
+      value: Number.isFinite(lastUpdatedAt.getTime()) ? formatDate(updatedAt) : "-",
+      description: formatDate(updatedAt),
       styles: { bg: "bg-blue-50", text: "text-blue-700", border: "border-blue-100" },
     },
   ];
