@@ -1,95 +1,63 @@
-"use client";
+/**
+ * PostHog Client Shim.
+ * Routes all client-side monitoring to internal logger.
+ */
 
-import posthog from "posthog-js";
-
-export { posthog };
+import { logger } from "@/lib/logging/logger";
 
 export const COOKIE_CONSENT_STORAGE_KEY = "cookie-consent";
 
-export function getCookieConsent() {
-  if (typeof window === "undefined") {
-    return null;
-  }
-
-  const consent = window.localStorage.getItem(COOKIE_CONSENT_STORAGE_KEY);
-  return consent === "true" || consent === "false" ? consent : null;
-}
-
-export function hasCookieConsent() {
-  return getCookieConsent() === "true";
-}
-
-export function syncPostHogConsent() {
-  const consent = getCookieConsent();
-
-  if (consent === "true") {
-    if (posthog.has_opted_out_capturing()) {
-      posthog.opt_in_capturing();
+export const posthog = {
+  capture: (event: string, props?: Record<string, unknown>) => {
+    if (process.env.NODE_ENV === "development") {
+      logger.ui.info(`[Client Event] ${event}`, props);
     }
-    return;
-  }
+  },
+  identify: (id: string, props?: Record<string, unknown>) => {
+    if (process.env.NODE_ENV === "development") {
+      logger.ui.info(`[Client Identify] ${id}`, props);
+    }
+  },
+  reset: () => {},
+  opt_in_capturing: () => {},
+  opt_out_capturing: () => {},
+  has_opted_out_capturing: () => false,
+  captureException: (err: unknown, options?: { properties?: Record<string, unknown> }) => {
+    const error = err instanceof Error ? err : new Error(String(err));
+    logger.ui.error(`[Client Exception] ${error.message}`, error, options?.properties);
+  },
+};
 
-  if (consent === "false" && !posthog.has_opted_out_capturing()) {
-    posthog.opt_out_capturing();
-  }
+export function getCookieConsent() {
+  if (typeof window === "undefined") return null;
+  return window.localStorage.getItem(COOKIE_CONSENT_STORAGE_KEY);
 }
 
-export function setCookieConsent(consentGranted: boolean) {
-  if (typeof window === "undefined") {
-    return;
-  }
-
-  window.localStorage.setItem(COOKIE_CONSENT_STORAGE_KEY, consentGranted ? "true" : "false");
-  syncPostHogConsent();
+export function setCookieConsent(accepted: boolean) {
+  if (typeof window === "undefined") return;
+  window.localStorage.setItem(COOKIE_CONSENT_STORAGE_KEY, String(accepted));
 }
 
-export function captureClientEvent(eventName: string, properties?: Record<string, unknown>) {
-  if (typeof window !== "undefined") {
-    posthog.capture(eventName, properties);
-  }
+export function syncPostHogConsent() {}
+export function identifyPostHogUser(id: string, props?: Record<string, unknown>) {
+  posthog.identify(id, props);
 }
-
-export function captureClientException(
-  error: unknown,
-  context: string,
-  properties?: Record<string, unknown>
-) {
-  if (typeof window === "undefined") {
-    return;
-  }
-
-  const payload: Record<string, unknown> = {
-    context,
-    ...properties,
-  };
-
-  if (error instanceof Error) {
-    posthog.captureException(error, { properties: payload });
-    return;
-  }
-
-  posthog.capture("$exception", {
-    ...payload,
-    error_raw: String(error),
-  });
-}
-
-export function identifyPostHogUser(userId: string, properties?: Record<string, unknown>) {
-  posthog.identify(userId, properties);
-}
-
 export function resetPostHogUser() {
   posthog.reset();
 }
-
 export function capturePostHogPageView(url: string) {
   if (process.env.NODE_ENV === "development") {
-    return;
+    logger.ui.info(`[Page View] ${url}`);
   }
-
-  if (!hasCookieConsent() || posthog.has_opted_out_capturing()) {
-    return;
-  }
-
-  posthog.capture("$pageview", { $current_url: url });
+}
+export function captureClientEvent(event: string, props?: Record<string, unknown>) {
+  posthog.capture(event, props);
+}
+export function captureClientException(
+  err: unknown,
+  context: string,
+  props?: Record<string, unknown>
+) {
+  const error = err instanceof Error ? err : new Error(String(err));
+  logger.ui.error(`[${context}] Client error`, error, props);
 }

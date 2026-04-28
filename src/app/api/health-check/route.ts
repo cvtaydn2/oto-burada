@@ -16,6 +16,7 @@ interface HealthCheckResponse {
   status: "healthy" | "unhealthy" | "degraded";
   timestamp: string;
   checks: Record<string, HealthCheck>;
+  version?: string;
 }
 
 /**
@@ -216,6 +217,42 @@ export async function GET(request: Request) {
       message: String(error),
     };
     response.status = "unhealthy";
+  }
+
+  // 6. Migrations Check
+  try {
+    if (hasSupabaseEnv()) {
+      const supabase = createSupabaseAdminClient();
+      const { count, error } = await supabase
+        .from("_migrations")
+        .select("*", { count: "exact", head: true });
+
+      if (error) {
+        response.checks.migrations = {
+          status: "unhealthy",
+          message: `Migrations table check failed: ${error.message}`,
+        };
+        response.status = "unhealthy";
+      } else if (count === null || count === 0) {
+        response.checks.migrations = {
+          status: "degraded",
+          message: "Migrations table is empty. Synchronization required.",
+        };
+        if (response.status === "healthy") {
+          response.status = "degraded";
+        }
+      } else {
+        response.checks.migrations = {
+          status: "healthy",
+          message: `Detected ${count} applied migrations`,
+        };
+      }
+    }
+  } catch (error) {
+    response.checks.migrations = {
+      status: "degraded",
+      message: `Migration check error: ${String(error)}`,
+    };
   }
 
   // HTTP status code based on health

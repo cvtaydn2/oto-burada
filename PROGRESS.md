@@ -1,3 +1,73 @@
+# 2026-04-29 — PostHog Decommissioning & System Stabilization (Phase 58)
+
+## [2026-04-29] - Phase 58: PostHog Removal, Local Logging Transition & Auth Stabilization
+- **Durum:** ✅ TAMAMLANDI
+- **Yapılanlar:**
+  - **OBS-02 - PostHog Decommissioning [Critical]:**
+    - PostHog bağımlılıkları (`posthog-js`, `posthog-node`) projeden tamamen kaldırıldı.
+    - `PostHogProvider` ve tüm PostHog-specific initialization kodları temizlendi.
+    - `instrumentation.ts` yerel `logger` servisini kullanacak şekilde refaktör edildi.
+  - **OBS-03 - Monitoring Shims & Compatibility [High]:**
+    - `src/lib/monitoring/posthog-client.ts` ve `src/lib/monitoring/posthog-server.ts` shim'leri oluşturuldu.
+    - Mevcut kod tabanındaki yüzlerce takip çağrısı bozulmadan yerel `logger.ui` ve `logger.system` servislerine yönlendirildi.
+    - Polimorfik argüman yapısı ve tip uyumluluğu sağlandı.
+  - **SEC-18 - CSP & Environment Cleanup [Medium]:**
+    - Content Security Policy (CSP) içindeki PostHog domainleri kaldırıldı.
+    - Çevresel değişken doğrulama listesinden PostHog anahtarları temizlendi.
+  - **AUTH-01 - Authentication Synchronization [High]:**
+    - Middleware ve AuthProvider arasındaki senkronizasyon sorunları giderildi.
+    - Infinite refresh loop sorunu PostHog removal ve middleware optimizasyonu ile çözüldü.
+- **Doğrulama:**
+  - `npm run lint` ✅ (0 errors, 0 warnings)
+  - `npm run typecheck` ✅ (0 errors)
+  - `npm run build` ✅ (Successful production build)
+  - Browser console CSP hataları temizlendi ✅
+  - Auth state hydration (SiteHeaderAuth) doğrulandı ✅
+- **Mimari Kazanımlar:**
+  - **Privacy First:** Tüm kullanıcı verileri ve hata logları artık yerel altyapıda kalıyor.
+  - **Performance:** PostHog SDK yükü kaldırıldı, TTI (Time to Interactive) iyileştirildi.
+  - **Stability:** Harici bir servise olan bağımlılık azaltılarak sistem dayanıklılığı artırıldı.
+- **Sıradaki Adım:**
+  - [ ] Yerel logların persistence stratejisini (Vercel Logs storage vb.) gözden geçir.
+  - [ ] Custom analytics dashboard (internal) ihtiyacını değerlendir.
+
+---
+
+# 2026-04-28 — Production Stabilization & Diagnostic Recovery (Phase 57)
+
+## [2026-04-28] - Phase 57: Migration Sync, Observability Hardening & Security Remediation
+- **Durum:** 🛠️ DEVAM EDİYOR
+- **Yapılanlar:**
+  - **OPS-12 - Production Migration Synchronization [Critical]:**
+    - `public._migrations` tablosu production'da `checksum`, `execution_time_ms` ve `rollback_sql` kolonları ile güncellendi (ALTER TABLE).
+    - 0001-0121 arası tüm migrasyon kayıtları bulk-insert ile production DB'ye işlendi.
+    - Migration drift sorunu giderildi, artık `migration-manager.mjs` production'da doğru çalışacak.
+  - **OPS-13 - Health-Check Endpoint Observability [High]:**
+    - `api/health-check` endpoint'i migrasyon durumunu (migrations table count) izleyecek şekilde güncellendi.
+    - Kritik tabloların (profiles, listings, favorites) varlığı her kontrolde doğrulanıyor.
+    - Hata durumunda 530 yerine detaylı 503 Service Unavailable döndürülüyor.
+  - **SEC-17 - Production Security Hardening [High]:**
+    - `anon` rolüne açık kalan kritik SECURITY DEFINER fonksiyonları (`is_admin`, `activate_doping`, `process_payment_webhook` vb.) REVOKE ile kapatıldı.
+    - RLS policy verimliliği için `service_role_only` policy'leri `TO service_role USING (true)` pattern'ine taşındı.
+  - **OBS-01 - Server-Side Error Capturing [Medium]:**
+    - `instrumentation.ts` içinde `onRequestError` kancası optimize edildi.
+    - Sunucu hataları artık hem Vercel loglarına hem de PostHog'a (free tier) eksiksiz düşüyor.
+- **Doğrulama:**
+  - `public._migrations` tablo şeması doğrulandı ✅
+  - Bulk-insert migration sync başarılı ✅
+  - Security revocation (is_admin anon execute: false) doğrulandı ✅
+  - `api/health-check` 503 hatası (eksik migrasyon kaynaklı) giderildi (beklenen) 🛠️
+- **Kalan İşler:**
+  - [ ] Local `api/health-check` değişikliklerini production'a push et.
+  - [ ] UptimeRobot alert'lerini yeni health-check yapısına göre test et.
+  - [ ] Production logs üzerinden hata oranını izle.
+- **Mimari Kazanımlar:**
+  - **Reliable Deployment:** Migrasyon takibi sayesinde production-local uyumsuzlukları anında tespit edilebilir.
+  - **Zero-Cost Observability:** Ekstra ücret ödemeden Vercel + PostHog + Supabase ile tam izlenebilirlik.
+  - **Hardened Security:** Anonim kullanıcıların hassas fonksiyonları tetiklemesi engellendi.
+
+---
+
 # 2026-04-29 — Local Development Diagnostic Fix & Quick Start Guide (Phase 56)
 
 ## [2026-04-29] - Phase 56: Local Development Support & Comprehensive Quick Start

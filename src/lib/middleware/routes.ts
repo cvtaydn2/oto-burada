@@ -50,6 +50,6 @@ export function classifyRoute(pathname: string) {
     isProtectedApi,
     isAdminApi,
     isPublicApi,
-    needsAuth: isProtectedRoute || isAuthRoute || isProtectedApi || isAdminApi,
+    needsAuth: isProtectedRoute || isProtectedApi || isAdminApi,
   };
 }

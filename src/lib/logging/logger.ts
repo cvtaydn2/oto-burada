@@ -4,17 +4,12 @@
  * Dev:        all levels, human-readable format
  * Production: warn/error only, JSON-structured for Vercel log aggregation
  *
- * For server-side error reporting to PostHog, use captureServerError()
- * directly in server actions and API routes — do NOT import posthog-server
- * here because this file is used in both client and server contexts.
+ * For server-side error reporting, the logger automatically handles
+ * warn/error levels.
  *
  * Usage:
  *   import { logger } from "@/lib/logging/logger";
  *   logger.db.error("Query failed", error, { table: "listings" });
- *
- * For PostHog reporting in server actions:
- *   import { captureServerError } from "@/lib/monitoring/posthog-server";
- *   captureServerError("Query failed", "database", error, { table });
  */
 
 type LogLevel = "debug" | "info" | "warn" | "error";

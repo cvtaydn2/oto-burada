@@ -8,7 +8,7 @@ const STATIC_CSP_PARTS = [
   "default-src 'self'",
   "font-src 'self' https://fonts.gstatic.com https://unpkg.com https://vercel.live data:",
   `img-src 'self' data: blob: ${process.env.NEXT_PUBLIC_SUPABASE_URL} https://images.unsplash.com https://plus.unsplash.com https://*.pexels.com https://placehold.co https://*.tile.openstreetmap.org https://unpkg.com https://vercel.live https://*.vercel.live https://*.public.blob.vercel-storage.com`,
-  `connect-src 'self' ${process.env.NEXT_PUBLIC_SUPABASE_URL} https://*.posthog.com https://us-assets.i.posthog.com wss://${process.env.NEXT_PUBLIC_SUPABASE_URL?.replace("https://", "")} https://nominatim.openstreetmap.org https://*.upstash.io https://vercel.live wss://ws-us3.pusher.com https://challenges.cloudflare.com https://*.vercel-analytics.com https://*.vercel-insights.com`,
+  `connect-src 'self' ${process.env.NEXT_PUBLIC_SUPABASE_URL} wss://${process.env.NEXT_PUBLIC_SUPABASE_URL?.replace("https://", "")} https://nominatim.openstreetmap.org https://*.upstash.io https://vercel.live wss://ws-us3.pusher.com https://challenges.cloudflare.com https://*.vercel-analytics.com https://*.vercel-insights.com`,
   "worker-src 'self' blob:",
   `media-src 'self' blob: ${process.env.NEXT_PUBLIC_SUPABASE_URL}`,
   "object-src 'none'",
@@ -23,31 +23,34 @@ export function getSecurityHeaders(nonce: string) {
   const isProduction = process.env.NODE_ENV === "production";
   const scriptSrc = [
     "'self'",
-    `'nonce-${nonce}'`,
     "https://va.vercel-scripts.com",
     "https://cdn.vercel-insights.com",
     "https://vercel.live",
     "https://*.vercel.live",
-    "https://*.posthog.com",
-    "https://us-assets.i.posthog.com",
     "https://challenges.cloudflare.com",
   ];
   const styleSrc = [
     "'self'",
-    `'nonce-${nonce}'`,
     "https://fonts.googleapis.com",
     "https://unpkg.com",
-    "'unsafe-inline'", // Required for PostHog inline styles and some UI components
+    "'unsafe-inline'",
   ];
+
+  if (isProduction) {
+    // Only use nonces in production for maximum security
+    scriptSrc.push(`'nonce-${nonce}'`);
+    styleSrc.push(`'nonce-${nonce}'`);
+  }
 
   // ── PERFORMANCE FIX: Issue PERF-04 - Strict CSP in Development ─────────────
   // Development should also use strict CSP to catch XSS issues early.
   // Only add unsafe-eval for HMR (Hot Module Replacement) in development.
   // unsafe-inline is never needed with nonce-based CSP.
   if (!isProduction) {
-    // HMR requires unsafe-eval in development
+    // HMR and dev-tools require unsafe-eval and unsafe-inline
     scriptSrc.push("'unsafe-eval'");
-    // Note: unsafe-inline removed - nonce-based CSP is sufficient
+    scriptSrc.push("'unsafe-inline'");
+    // Note: In dev, we omit the nonce from style-src so that 'unsafe-inline' is NOT ignored by the browser.
   }
 
   const csp = [
@@ -62,7 +65,7 @@ export function getSecurityHeaders(nonce: string) {
     "Referrer-Policy": "strict-origin-when-cross-origin",
     "Permissions-Policy": "camera=(), microphone=(), geolocation=()",
     "Strict-Transport-Security": "max-age=63072000; includeSubDomains; preload",
-    "Content-Security-Policy": csp,
+    ...(isProduction ? { "Content-Security-Policy": csp } : {}),
     "x-nonce": nonce,
   };
 }

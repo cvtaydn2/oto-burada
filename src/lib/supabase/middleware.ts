@@ -55,16 +55,30 @@ export async function updateSession(request: NextRequest) {
         return request.cookies.getAll();
       },
       setAll(cookiesToSet) {
+        // Update request cookies for the current middleware execution
         cookiesToSet.forEach(({ name, value }) => {
           request.cookies.set(name, value);
         });
 
+        // Sync request headers so subsequent calls in this request see the new cookies
+        const newRequestHeaders = new Headers(request.headers);
+        const cookieString = cookiesToSet.map(({ name, value }) => `${name}=${value}`).join("; ");
+
+        // Append or replace cookie header
+        const existingCookie = newRequestHeaders.get("Cookie") || "";
+        newRequestHeaders.set(
+          "Cookie",
+          existingCookie ? `${existingCookie}; ${cookieString}` : cookieString
+        );
+
+        // Update the response with the new request headers to pass them forward
         response = NextResponse.next({
           request: {
-            headers: requestHeaders,
+            headers: newRequestHeaders,
           },
         });
 
+        // Set cookies on the response for the browser
         cookiesToSet.forEach(({ name, value, options }) => {
           response.cookies.set(name, value, options);
         });
@@ -76,13 +90,14 @@ export async function updateSession(request: NextRequest) {
   let user: User | null = null;
 
   // Optimization: Only verify user if we have a session cookie OR the route specifically requires auth.
-  // This avoids unnecessary network calls for anonymous visitors on public pages.
-  // We use the project-specific cookie name for O(1) cookie lookup.
   const { getSupabaseProjectRef } = await import("@/lib/supabase/env");
   const projectRef = getSupabaseProjectRef();
+
+  // Robust check for session cookies (including chunked ones)
+  const allCookies = request.cookies.getAll();
   const hasSessionCookie = projectRef
-    ? request.cookies.has(`sb-${projectRef}-auth-token`)
-    : request.cookies.getAll().length > 0;
+    ? allCookies.some((c) => c.name.startsWith(`sb-${projectRef}-auth-token`))
+    : allCookies.length > 0;
 
   if (hasSessionCookie || route.needsAuth || route.isAuthRoute) {
     const {
@@ -111,8 +126,11 @@ export async function updateSession(request: NextRequest) {
       console.error("[maintenanceCheck] Settings fetch error:", settingsError);
     }
 
+    const { isMaintenanceGateActive } = await import("@/lib/platform/maintenance");
     const isMaintenanceMode =
-      (settings?.value as { maintenance_mode?: boolean })?.maintenance_mode === true;
+      (settings?.value as { maintenance_mode?: boolean })?.maintenance_mode === true &&
+      isMaintenanceGateActive();
+
     console.log(`[maintenanceCheck] Path: ${pathname}, Maintenance: ${isMaintenanceMode}`);
 
     if (isMaintenanceMode) {

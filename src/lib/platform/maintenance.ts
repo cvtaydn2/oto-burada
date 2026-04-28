@@ -8,6 +8,11 @@
  * - MAINTENANCE_MODE_BYPASS=true  -> always bypass maintenance gate
  */
 export function isMaintenanceGateActive(): boolean {
+  // Always allow in development unless forced
+  if (process.env.NODE_ENV === "development" && process.env.MAINTENANCE_MODE_FORCE !== "true") {
+    return false;
+  }
+
   if (process.env.MAINTENANCE_MODE_FORCE === "true") {
     return true;
   }

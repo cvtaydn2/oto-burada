@@ -4,7 +4,6 @@ import { type User } from "@supabase/supabase-js";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { type PropsWithChildren, useState } from "react";
 
-import { PostHogProvider } from "@/components/providers/posthog-provider";
 import { PWAProvider } from "@/components/providers/pwa-provider";
 import { SupabaseProvider } from "@/components/providers/supabase-provider";
 import { AuthProvider } from "@/components/shared/auth-provider";
@@ -44,9 +43,7 @@ export function RootProviders({ children, user, nonce }: RootProvidersProps) {
         <SupabaseProvider>
           <AuthProvider initialUser={user}>
             <FavoritesProvider>
-              <PWAProvider>
-                <PostHogProvider>{children}</PostHogProvider>
-              </PWAProvider>
+              <PWAProvider>{children}</PWAProvider>
             </FavoritesProvider>
           </AuthProvider>
         </SupabaseProvider>

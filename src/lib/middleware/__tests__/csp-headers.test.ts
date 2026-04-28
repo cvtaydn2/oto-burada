@@ -18,8 +18,9 @@ describe("CSP Headers — unsafe-eval policy", () => {
 
     const headers = getSecurityHeaders("test-nonce");
     const csp = headers["Content-Security-Policy"];
+    expect(csp).toBeDefined();
 
-    const scriptSrcMatch = csp.match(/script-src ([^;]+)/);
+    const scriptSrcMatch = csp!.match(/script-src ([^;]+)/);
     expect(scriptSrcMatch).not.toBeNull();
     const scriptSrc = scriptSrcMatch![1];
 

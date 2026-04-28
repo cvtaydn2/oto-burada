@@ -206,8 +206,10 @@ export function FavoritesProvider({ children }: PropsWithChildren) {
 
     // Real-time synchronization
     const supabase = createSupabaseBrowserClient();
+    // Use a unique channel name per effect run to avoid "already subscribed" errors
+    const channelId = `favorites-realtime-${userId}-${Math.random().toString(36).slice(2, 9)}`;
     const channel = supabase
-      .channel(`favorites-realtime-${userId}`)
+      .channel(channelId)
       .on(
         "postgres_changes",
         {

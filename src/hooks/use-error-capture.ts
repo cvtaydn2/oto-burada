@@ -2,11 +2,11 @@
 
 import { useCallback } from "react";
 
-import { captureClientEvent, captureClientException } from "@/lib/monitoring/posthog-client";
+import { logger } from "@/lib/logging/logger";
 
 /**
  * Client-side error capture hook.
- * Sends errors to PostHog and returns them for local handling.
+ * Logs errors to our internal logger.
  *
  * Usage:
  *   const { captureError } = useErrorCapture("brands-manager");
@@ -17,18 +17,21 @@ export function useErrorCapture(context: string) {
     (error: unknown, action?: string, extra?: Record<string, unknown>) => {
       const properties: Record<string, unknown> = { context, ...extra };
       if (action) properties.action = action;
-      captureClientException(error, context, properties);
+
+      logger.ui.error(
+        `[${context}]${action ? ` ${action}` : ""} failed: ${error instanceof Error ? error.message : String(error)}`,
+        error,
+        properties
+      );
     },
     [context]
   );
 
   const captureFailure = useCallback(
     (event: string, message: string, extra?: Record<string, unknown>) => {
-      captureClientEvent(event, {
-        context,
-        message,
-        status: "failed",
+      logger.ui.warn(`[${context}] ${event} failed: ${message}`, {
         ...extra,
+        status: "failed",
       });
     },
     [context]
@@ -36,10 +39,9 @@ export function useErrorCapture(context: string) {
 
   const captureSuccess = useCallback(
     (event: string, extra?: Record<string, unknown>) => {
-      captureClientEvent(event, {
-        context,
-        status: "succeeded",
+      logger.ui.info(`[${context}] ${event} succeeded`, {
         ...extra,
+        status: "succeeded",
       });
     },
     [context]

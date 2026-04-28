@@ -26,12 +26,14 @@ export const getPlatformSettings = unstable_cache(
       const supabase = createSupabaseAdminClient();
       const { data, error } = await supabase
         .from("platform_settings")
-        .select("key, value, description, updated_at");
+        .select("key, value, updated_at");
 
       // Table may not exist yet — return defaults gracefully
       if (error) {
+        console.error(`[CRITICAL] platform_settings error: ${error.code} - ${error.message}`);
         logger.settings.warn("platform_settings table not available, using defaults", {
           message: error.message,
+          code: error.code,
         });
         captureServerWarning("platform_settings table not available", "settings", {
           code: error.code,

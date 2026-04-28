@@ -43,9 +43,7 @@ const nextConfig: NextConfig = {
       "lucide-react",
       "date-fns",
       "clsx",
-      "tailwind-merge",
       "@supabase/supabase-js",
-      "posthog-js",
       "@radix-ui/react-dialog",
       "@radix-ui/react-dropdown-menu",
       "@radix-ui/react-select",
@@ -60,7 +58,7 @@ const nextConfig: NextConfig = {
   compress: true,
   poweredByHeader: false,
   generateEtags: true,
-  serverExternalPackages: ["posthog-node", "sharp", "iyzipay"],
+  serverExternalPackages: ["sharp", "iyzipay"],
   // ── DEPLOYMENT CONFIG: Standalone output for Docker/self-hosting ───────────
   // Kept for future Docker deployment support. Vercel ignores this setting.
   // If deploying to Vercel ONLY, this can be safely removed.

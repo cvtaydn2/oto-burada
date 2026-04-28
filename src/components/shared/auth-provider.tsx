@@ -35,7 +35,7 @@ interface AuthProviderProps extends PropsWithChildren {
 
 export function AuthProvider({ children, initialUser = null }: AuthProviderProps) {
   const [user, setUser] = useState<User | null>(initialUser);
-  const [isReady, setIsReady] = useState(false);
+  const [isReady, setIsReady] = useState(Boolean(initialUser));
   const router = useRouter();
   const userIdRef = useRef<string | null>(initialUser?.id ?? null);
 
@@ -51,14 +51,26 @@ export function AuthProvider({ children, initialUser = null }: AuthProviderProps
       }
     };
 
-    void supabase.auth.getUser().then(({ data }: UserResponse) => {
-      if (!mounted) return;
+    console.log("[AuthProvider] Initializing browser client check...");
+    void supabase.auth
+      .getUser()
+      .then(({ data, error }: UserResponse) => {
+        if (!mounted) return;
+        if (error) {
+          console.error("[AuthProvider] getUser error:", error);
+        }
 
-      const browserUser = data.user ?? null;
-      userIdRef.current = browserUser?.id ?? null;
-      setUser(browserUser);
-      setIsReady(true);
-    });
+        const browserUser = data.user ?? null;
+        console.log("[AuthProvider] Found user:", browserUser?.id || "None");
+
+        userIdRef.current = browserUser?.id ?? null;
+        setUser(browserUser);
+        setIsReady(true);
+      })
+      .catch((err) => {
+        console.error("[AuthProvider] getUser unhandled catch:", err);
+        if (mounted) setIsReady(true); // Don't hang the UI even on error
+      });
 
     const {
       data: { subscription },
@@ -91,7 +103,7 @@ export function AuthProvider({ children, initialUser = null }: AuthProviderProps
       subscription.unsubscribe();
       authChannel.close();
     };
-  }, [initialUser, router]);
+  }, [router]); // Removed initialUser to break the refresh loop
 
   const value = useMemo<AuthContextValue>(
     () => ({

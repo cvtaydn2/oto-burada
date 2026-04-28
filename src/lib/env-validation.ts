@@ -48,18 +48,7 @@ const ENV_VARS: EnvVar[] = [
     productionOnly: true,
     description: "Secret for Vercel Cron job authentication (openssl rand -hex 32)",
   },
-  {
-    key: "NEXT_PUBLIC_POSTHOG_PROJECT_TOKEN",
-    required: true,
-    productionOnly: true,
-    description: "PostHog project token for analytics and error tracking",
-  },
-  {
-    key: "POSTHOG_WEBHOOK_SECRET",
-    required: true,
-    productionOnly: true,
-    description: "Secret for PostHog webhook verification (openssl rand -hex 32)",
-  },
+
   {
     key: "IYZICO_API_KEY",
     required: true,

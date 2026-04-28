@@ -782,3 +782,34 @@ The MVP is complete when:
 - [x] documentation is aligned with code
 - [x] payment system is hardened and compliant
 - [x] marketplace integrity is secured (banned user filtering)
+
+---
+
+## Phase 57 — Production Stabilization & Diagnostic Recovery
+
+### Task 57.1 — Migration Reconciliation
+- [x] Align `public._migrations` schema in production with local application requirements.
+- [x] Populate migration history with correct checksums to resolve tracking drift.
+- [x] Update `migration-manager.mjs` to handle production-specific column differences if any persist.
+
+### Task 57.2 — Server-Side Observability
+- [x] Enhance `api/health-check` to monitor migration status and critical table availability.
+- [x] Optimize `instrumentation.ts` for comprehensive server-side error capturing (Vercel Logs + Internal Logger).
+- [ ] Verify UptimeRobot integration with the enhanced health-check endpoint.
+
+### Task 57.4 — PostHog Decommissioning & Local Logging
+- [x] Completely remove `posthog-js` and `posthog-node` dependencies.
+- [x] Create monitoring shims (`posthog-client.ts`, `posthog-server.ts`) to route events to internal `logger`.
+- [x] Clean up CSP and environment validation logic.
+- [x] Stabilize authentication state synchronization without external tracking.
+
+### Task 57.3 — Production Security Hardening
+- [x] Revoke execution privileges on sensitive SECURITY DEFINER functions from the `anon` role.
+- [x] Optimize service-role policies for performance and security compliance.
+- [ ] Audit RLS policies for any lingering "anon" write access on sensitive tables.
+
+#### Acceptance Criteria
+- `/api/health-check` returns 200 Healthy in production.
+- Migration manager reports "All caught up" in production environment.
+- No SECURITY DEFINER functions are executable by anonymous users.
+- Server-side exceptions are visible in PostHog/Vercel logs.
