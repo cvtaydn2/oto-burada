@@ -265,6 +265,60 @@ Detaylı çözümler için [`docs/PRODUCTION_TROUBLESHOOTING.md`](docs/PRODUCTIO
 - [ ] Database migrations uygulanmış (`npm run db:migrate`)
 - [ ] Profile trigger mevcut (veya manuel profile creation aktif)
 
+### Runtime Errors (Production/Local)
+
+**Yaygın Runtime Hatalar:**
+- Maintenance mode aktif (admin bile etkileniyor)
+- Redis config eksik (rate limiting warning)
+- Database column eksik (migration uygulanmamış)
+
+**Hızlı Çözüm:**
+[`docs/RUNTIME_ERRORS_FIX.md`](docs/RUNTIME_ERRORS_FIX.md) - 10 dakikada çözüm
+
+**Örnek Çözümler:**
+```sql
+-- Maintenance mode'u kapat
+UPDATE platform_settings
+SET value = jsonb_set(value, '{maintenance_mode}', 'false')
+WHERE key = 'general_appearance';
+
+-- Eksik column ekle
+ALTER TABLE profiles 
+ADD COLUMN IF NOT EXISTS verification_requested_at TIMESTAMPTZ;
+```
+
+## Güvenlik
+
+### Security Audit
+
+Proje otomatik güvenlik taraması ile korunur:
+
+```bash
+# Local security audit
+npm audit
+
+# Sadece critical/high
+npm audit --audit-level=high
+```
+
+**GitHub Actions:**
+- Her push'ta otomatik security audit
+- Haftalık scheduled scan
+- Critical vulnerability'lerde warning (deployment engellenmez)
+
+**Bilinen Sorunlar:**
+- `iyzipay` transitive dependencies (mitigasyon uygulandı)
+- Detaylar: [`docs/KNOWN_SECURITY_ISSUES.md`](docs/KNOWN_SECURITY_ISSUES.md)
+
+### Güvenlik Katmanları
+
+- ✅ **Input Validation**: Zod schemas
+- ✅ **CSRF Protection**: Token-based
+- ✅ **Rate Limiting**: IP-based (Redis/in-memory)
+- ✅ **RLS**: Database-level access control
+- ✅ **Server-Only**: Hassas kod client'a sızmaz
+- ✅ **Webhook Verification**: Signature validation
+
 ## Monitoring (Ücretsiz Tier)
 
 ### Hızlı Tanı

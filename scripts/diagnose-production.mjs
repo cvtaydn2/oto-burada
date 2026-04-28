@@ -317,13 +317,20 @@ async function checkEmailSettings() {
     return false;
   }
 
-  if (!appUrl.startsWith('https://')) {
+  // Local development için özel kontrol
+  const isLocalDev = appUrl.includes('localhost') || appUrl.includes('127.0.0.1');
+
+  if (!appUrl.startsWith('https://') && !isLocalDev) {
     fail(
       check,
       'APP_URL https:// ile başlamalı',
       'Production için HTTPS zorunlu'
     );
     return false;
+  }
+
+  if (isLocalDev) {
+    warn(check, 'Local development ortamı tespit edildi (http://localhost OK)');
   }
 
   if (!resendKey) {
@@ -336,6 +343,10 @@ async function checkEmailSettings() {
   log('💡', `   Supabase Dashboard > Auth > URL Configuration kontrol edin:`);
   log('💡', `   - Site URL: ${appUrl}`);
   log('💡', `   - Redirect URLs: ${appUrl}/auth/callback`);
+
+  if (isLocalDev) {
+    log('💡', `   - Production için HTTPS URL ekleyin`);
+  }
 
   return true;
 }

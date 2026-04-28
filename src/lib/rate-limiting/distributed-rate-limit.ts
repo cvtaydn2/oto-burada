@@ -109,8 +109,8 @@ function getRatelimit() {
 
   if (!url || !token) {
     if (isProduction) {
-      logger.security.error(
-        "CRITICAL: Upstash Redis config missing in production. Rate limiting will FAIL CLOSED."
+      logger.security.warn(
+        "Upstash Redis config missing in production. Using in-memory fallback for rate limiting."
       );
       return "MISSING_CONFIG";
     }
