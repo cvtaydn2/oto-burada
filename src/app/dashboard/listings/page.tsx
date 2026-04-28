@@ -39,8 +39,9 @@ export default async function DashboardListingsPage({ searchParams }: DashboardL
   const hasUpdatedListing = resolvedSearchParams?.updated === "true";
 
   // Paralel fetch
+  // PERFORMANCE FIX: Explicit limit to avoid loading too many listings in dashboard overview
   const [listingsResult, references, profile] = await Promise.all([
-    getStoredUserListings(user.id),
+    getStoredUserListings(user.id, 1, 20), // Limit to 20 listings for dashboard
     getLiveMarketplaceReferenceData(),
     getStoredProfileById(user.id),
   ]);

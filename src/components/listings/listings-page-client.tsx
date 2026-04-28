@@ -68,14 +68,23 @@ export function ListingsPageClient({
   } = useMarketplaceLogic({ initialResult, initialFilters });
 
   const loadMoreRef = useRef<HTMLDivElement | null>(null);
+  const lastFetchRef = useRef<number>(0);
   useEffect(() => {
     if (!loadMoreRef.current || !hasNextPage || isFetchingNextPage) return;
 
     const observer = new IntersectionObserver(
       (entries) => {
-        if (entries[0].isIntersecting) fetchNextPage();
+        if (entries[0].isIntersecting) {
+          // PERFORMANCE FIX: Debounce fetchNextPage to prevent rapid duplicate fetches
+          const now = Date.now();
+          if (now - lastFetchRef.current > 2000) {
+            lastFetchRef.current = now;
+            fetchNextPage();
+          }
+        }
       },
-      { rootMargin: "200px" }
+      // PERFORMANCE FIX: Reduced from 200px to 50px to prevent premature fetches
+      { rootMargin: "50px" }
     );
 
     observer.observe(loadMoreRef.current);

@@ -45,9 +45,12 @@ export function FavoritesPageClient({ listings, userId }: FavoritesPageClientPro
   const [sort, setSort] = useState<SortKey>("newest");
   const isGuest = !userId;
 
+  // PERFORMANCE FIX: Convert to Set for O(1) lookup instead of O(n) array.includes
+  const favoriteIdSet = useMemo(() => new Set(favoriteIds), [favoriteIds]);
+
   const favoriteListings = useMemo(
-    () => listings.filter((l) => favoriteIds.includes(l.id)),
-    [listings, favoriteIds]
+    () => listings.filter((l) => favoriteIdSet.has(l.id)),
+    [listings, favoriteIdSet]
   );
 
   const sortedListings = useMemo(() => {

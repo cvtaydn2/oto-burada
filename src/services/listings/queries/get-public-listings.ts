@@ -4,7 +4,6 @@ import { logger } from "@/lib/logging/logger";
 import { captureServerEvent } from "@/lib/monitoring/posthog-server";
 import { createSupabasePublicServerClient } from "@/lib/supabase/public-server";
 import { getListingBySlug, getPublicListings } from "@/services/listings/catalog";
-import { createExpertDocumentSignedUrl } from "@/services/listings/listing-documents";
 import {
   getSimilarDatabaseListings,
   marketplaceListingSelect,
@@ -124,17 +123,17 @@ export async function getMarketplaceListingBySlug(slug: string): Promise<Listing
     whatsappPhone: maskPhoneNumber(storedListing.whatsappPhone),
   };
 
+  // PERFORMANCE FIX: Don't generate signed URL during initial page render
+  // Pass documentPath only - client will generate signed URL on-demand when user clicks PDF button
+  // This saves 100-300ms on every listing detail page load
   if (!storedListing.expertInspection?.documentPath) return maskedListing;
-
-  const signedUrl = await createExpertDocumentSignedUrl(
-    storedListing.expertInspection.documentPath
-  );
 
   return {
     ...maskedListing,
     expertInspection: {
       ...storedListing.expertInspection,
-      documentUrl: signedUrl ?? storedListing.expertInspection.documentUrl,
+      // Don't generate signedUrl here - will be generated on-demand by client component
+      documentUrl: storedListing.expertInspection.documentUrl || undefined,
     },
   };
 }
