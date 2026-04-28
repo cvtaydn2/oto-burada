@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
+import { logger } from "@/lib/logging/logger";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 
 import { getIyzicoClient } from "./iyzico-client";
@@ -37,11 +38,21 @@ export async function initializePaymentCheckout(params: {
   }
 
   // SECURITY: Get user's identity number from profile
-  const { data: profile } = await admin
-    .from("profiles")
-    .select("identity_number")
-    .eq("id", params.userId)
-    .single();
+  let profile;
+  try {
+    const { data } = await admin
+      .from("profiles")
+      .select("identity_number")
+      .eq("id", params.userId)
+      .single();
+    profile = data;
+  } catch (err) {
+    logger.db.error("Failed to fetch user profile for identity check", {
+      userId: params.userId,
+      error: err,
+    });
+    throw new Error("Kullanıcı profil bilgisi doğrulanamadı.");
+  }
 
   // KVKK Compliance: Identity number is required for Iyzico
   // ── CRITICAL FIX: Issue Kritik-03 - Identity Number Validation ───
@@ -91,7 +102,9 @@ export async function initializePaymentCheckout(params: {
         basketItems: params.basketItems,
       },
     })
-    .select()
+    .select(
+      "id, user_id, amount, currency, provider, status, listing_id, plan_id, package_id, description, metadata, iyzico_token, iyzico_payment_id, processed_at, webhook_processed_at, created_at, updated_at"
+    )
     .single();
 
   if (dbError) throw new Error(`Database error: ${dbError.message}`);

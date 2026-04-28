@@ -6,12 +6,7 @@
  *
  * Policy: FOR ALL USING ((SELECT auth.uid()) = user_id)
  *
- * This means:
- * - User can only SELECT their own favorites
- * - User can only INSERT favorites with their own user_id
- * - User can only UPDATE/DELETE their own favorites
- *
- * No need for explicit userId checks in this layer — RLS enforces it at DB level.
+ * No silent fallbacks - all errors are thrown for proper error handling.
  */
 
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
@@ -40,104 +35,105 @@ async function getFavoritesClient() {
 /**
  * Get all favorite listing IDs for the current authenticated user.
  * RLS automatically filters to auth.uid() = user_id.
+ * @throws Error if userId is invalid or database query fails
  */
-export async function getDatabaseFavoriteIds(userId: string) {
+export async function getDatabaseFavoriteIds(userId: string): Promise<string[]> {
   if (!userId) {
-    return null;
+    throw new Error("userId is required");
   }
 
-  try {
-    const supabase = await getFavoritesClient();
-    const query = supabase.from("favorites").select("listing_id").eq("user_id", userId);
-    const executor =
-      "returns" in query && typeof query.returns === "function"
-        ? query.returns<FavoriteRow[]>()
-        : query;
-    const { data, error } = await executor;
+  const supabase = await getFavoritesClient();
+  const query = supabase.from("favorites").select("listing_id").eq("user_id", userId);
+  const executor =
+    "returns" in query && typeof query.returns === "function"
+      ? query.returns<FavoriteRow[]>()
+      : query;
+  const { data, error } = await executor;
 
-    if (error || !data) {
-      return null;
-    }
-
-    return data.map((favorite) => favorite.listing_id);
-  } catch {
-    return null;
+  if (error) {
+    throw new Error(`Failed to fetch favorites: ${error.message}`);
   }
+
+  if (!data) {
+    return [];
+  }
+
+  return data.map((favorite) => favorite.listing_id);
 }
 
 /**
  * Get favorite count for the current authenticated user.
  * RLS automatically filters to auth.uid() = user_id.
+ * @throws Error if userId is invalid or database query fails
  */
-export async function getDatabaseFavoriteCount(userId: string) {
+export async function getDatabaseFavoriteCount(userId: string): Promise<number> {
   if (!userId) {
-    return 0;
+    throw new Error("userId is required");
   }
 
-  try {
-    const supabase = await getFavoritesClient();
-    const { count, error } = await supabase
-      .from("favorites")
-      .select("*", { count: "exact", head: true })
-      .eq("user_id", userId);
+  const supabase = await getFavoritesClient();
+  const { count, error } = await supabase
+    .from("favorites")
+    .select("*", { count: "exact", head: true })
+    .eq("user_id", userId);
 
-    if (error) return 0;
-    return count ?? 0;
-  } catch {
-    return 0;
+  if (error) {
+    throw new Error(`Failed to count favorites: ${error.message}`);
   }
+
+  return count ?? 0;
 }
 
 /**
  * Add a favorite for the current authenticated user.
  * RLS policy ensures user_id must match auth.uid().
- *
- * If userId doesn't match auth.uid(), RLS will reject the insert.
+ * @throws Error if userId or listingId is invalid, or database operation fails
  */
-export async function addDatabaseFavorite(userId: string, listingId: string) {
-  if (!userId || !listingId) {
-    return null;
+export async function addDatabaseFavorite(userId: string, listingId: string): Promise<string[]> {
+  if (!userId) {
+    throw new Error("userId is required");
   }
 
-  try {
-    const supabase = await getFavoritesClient();
-    const { error } = await supabase
-      .from("favorites")
-      .upsert({ listing_id: listingId, user_id: userId }, { onConflict: "user_id,listing_id" });
-
-    if (error) {
-      return null;
-    }
-
-    return getDatabaseFavoriteIds(userId);
-  } catch {
-    return null;
+  if (!listingId) {
+    throw new Error("listingId is required");
   }
+
+  const supabase = await getFavoritesClient();
+  const { error } = await supabase
+    .from("favorites")
+    .upsert({ listing_id: listingId, user_id: userId }, { onConflict: "user_id,listing_id" });
+
+  if (error) {
+    throw new Error(`Failed to add favorite: ${error.message}`);
+  }
+
+  return getDatabaseFavoriteIds(userId);
 }
 
 /**
  * Remove a favorite for the current authenticated user.
  * RLS policy ensures user can only delete their own favorites.
+ * @throws Error if userId or listingId is invalid, or database operation fails
  */
-export async function removeDatabaseFavorite(userId: string, listingId: string) {
-  if (!userId || !listingId) {
-    return null;
+export async function removeDatabaseFavorite(userId: string, listingId: string): Promise<string[]> {
+  if (!userId) {
+    throw new Error("userId is required");
   }
 
-  try {
-    const supabase = await getFavoritesClient();
-    const { error } = await supabase
-      .from("favorites")
-      .delete()
-      .eq("user_id", userId)
-      .eq("listing_id", listingId);
-
-    if (error) {
-      return null;
-    }
-
-    return getDatabaseFavoriteIds(userId);
-  } catch {
-    return null;
+  if (!listingId) {
+    throw new Error("listingId is required");
   }
+
+  const supabase = await getFavoritesClient();
+  const { error } = await supabase
+    .from("favorites")
+    .delete()
+    .eq("user_id", userId)
+    .eq("listing_id", listingId);
+
+  if (error) {
+    throw new Error(`Failed to remove favorite: ${error.message}`);
+  }
+
+  return getDatabaseFavoriteIds(userId);
 }

@@ -28,7 +28,7 @@ export async function GET() {
   }
 
   // No ensureProfileRecord here — GET should be read-only with no side effects.
-  const favoriteIds = (await getDatabaseFavoriteIds(userOrError.id)) ?? [];
+  const favoriteIds = await getDatabaseFavoriteIds(userOrError.id);
 
   return apiSuccess({ favoriteIds });
 }

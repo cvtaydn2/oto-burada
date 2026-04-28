@@ -17,32 +17,29 @@ const planSchema = z.object({
   name: z.string().min(2, "Paket adı en az 2 karakter olmalıdır"),
   price: z.coerce.number().min(0, "Fiyat 0'dan küçük olamaz"),
   credits: z.coerce.number().min(1, "En az 1 kredi olmalıdır"),
+  listing_quota: z.coerce.number().min(1, "En az 1 ilan hakkı olmalıdır"),
   is_active: z.boolean(),
-  features: z.object({
-    featured_listings: z.boolean(),
-    express_support: z.boolean(),
-    advanced_analytics: z.boolean(),
-    no_ads: z.boolean(),
-    custom_badge: z.boolean(),
-  }),
+  features: z.array(z.string()).default([]),
 });
 
 type PlanFormValues = z.infer<typeof planSchema>;
 type PlanFormInput = z.input<typeof planSchema>;
-type PlanFeatureKey = keyof PlanFormValues["features"];
+
+const PLAN_FEATURE_OPTIONS = [
+  { id: "featured_listings", label: "Öne Çıkan İlanlar" },
+  { id: "express_support", label: "Hızlı Destek" },
+  { id: "advanced_analytics", label: "Gelişmiş Analiz" },
+  { id: "no_ads", label: "Reklamsız Deneyim" },
+  { id: "custom_badge", label: "Özel Rozet" },
+] as const;
 
 const defaultPlanValues: PlanFormValues = {
   name: "",
   price: 0,
   credits: 5,
+  listing_quota: 3,
   is_active: true,
-  features: {
-    featured_listings: false,
-    express_support: false,
-    advanced_analytics: false,
-    no_ads: false,
-    custom_badge: false,
-  },
+  features: [],
 };
 
 function getPlanFormDefaults(initialData?: PricingPlan | null): PlanFormValues {
@@ -50,18 +47,28 @@ function getPlanFormDefaults(initialData?: PricingPlan | null): PlanFormValues {
     return defaultPlanValues;
   }
 
+  const enabledFeatures: string[] = [];
+  const featureFlags = initialData.features as unknown as
+    | Record<string, boolean | string>
+    | string[];
+
+  if (Array.isArray(featureFlags)) {
+    enabledFeatures.push(...featureFlags.filter((f): f is string => typeof f === "string"));
+  } else if (featureFlags && typeof featureFlags === "object") {
+    for (const [key, val] of Object.entries(featureFlags)) {
+      if (val === true || val === "true") {
+        enabledFeatures.push(key);
+      }
+    }
+  }
+
   return {
     name: initialData.name,
     price: initialData.price,
     credits: initialData.credits,
+    listing_quota: initialData.listing_quota,
     is_active: initialData.is_active,
-    features: {
-      featured_listings: Boolean(initialData.features?.featured_listings),
-      express_support: Boolean(initialData.features?.express_support),
-      advanced_analytics: Boolean(initialData.features?.advanced_analytics),
-      no_ads: Boolean(initialData.features?.no_ads),
-      custom_badge: Boolean(initialData.features?.custom_badge),
-    },
+    features: enabledFeatures,
   };
 }
 
@@ -82,11 +89,20 @@ export function PlanForm({ initialData, onSuccess, onCancel }: PlanFormProps) {
   const onSubmit = async (values: PlanFormValues) => {
     setLoading(true);
     try {
+      const submitData = {
+        name: values.name,
+        price: values.price,
+        credits: values.credits,
+        listing_quota: values.listing_quota,
+        is_active: values.is_active,
+        features: values.features as unknown as Record<string, boolean | number | string | null>,
+      };
+
       if (initialData) {
-        await updatePricingPlan(initialData.id, values);
+        await updatePricingPlan(initialData.id, submitData);
         toast.success("Paket başarıyla güncellendi");
       } else {
-        await createPricingPlan(values);
+        await createPricingPlan(submitData);
         toast.success("Yeni paket oluşturuldu");
       }
       onSuccess();
@@ -117,7 +133,7 @@ export function PlanForm({ initialData, onSuccess, onCancel }: PlanFormProps) {
             )}
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-3 gap-4">
             <div className="space-y-2">
               <Label className="text-xs font-bold uppercase tracking-widest text-muted-foreground">
                 Fiyat (TL)
@@ -130,6 +146,12 @@ export function PlanForm({ initialData, onSuccess, onCancel }: PlanFormProps) {
               </Label>
               <Input {...form.register("credits")} type="number" className="rounded-xl" />
             </div>
+            <div className="space-y-2">
+              <Label className="text-xs font-bold uppercase tracking-widest text-muted-foreground">
+                İlan Limiti
+              </Label>
+              <Input {...form.register("listing_quota")} type="number" className="rounded-xl" />
+            </div>
           </div>
 
           <div className="pt-2">
@@ -137,14 +159,11 @@ export function PlanForm({ initialData, onSuccess, onCancel }: PlanFormProps) {
               Paket Özellikleri
             </Label>
             <div className="grid grid-cols-2 gap-4">
-              {[
-                { id: "featured_listings", label: "Öne Çıkan İlanlar" },
-                { id: "express_support", label: "Hızlı Destek" },
-                { id: "advanced_analytics", label: "Gelişmiş Analiz" },
-                { id: "no_ads", label: "Reklamsız Deneyim" },
-                { id: "custom_badge", label: "Özel Rozet" },
-              ].map((feature) => {
-                const fieldName = `features.${feature.id as PlanFeatureKey}` as const;
+              {PLAN_FEATURE_OPTIONS.map((feature) => {
+                const fieldName = `features` as const;
+                const features = form.watch(fieldName) || [];
+                const isChecked = features.includes(feature.id);
+
                 return (
                   <div
                     key={feature.id}
@@ -152,8 +171,18 @@ export function PlanForm({ initialData, onSuccess, onCancel }: PlanFormProps) {
                   >
                     <Checkbox
                       id={feature.id}
-                      checked={form.watch(fieldName)}
-                      onCheckedChange={(checked) => form.setValue(fieldName, !!checked)}
+                      checked={isChecked}
+                      onCheckedChange={(checked) => {
+                        const current = form.getValues(fieldName) || [];
+                        if (checked) {
+                          form.setValue(fieldName, [...current, feature.id] as unknown as string[]);
+                        } else {
+                          form.setValue(
+                            fieldName,
+                            current.filter((f) => f !== feature.id) as unknown as string[]
+                          );
+                        }
+                      }}
                     />
                     <label
                       htmlFor={feature.id}

@@ -12,10 +12,6 @@ export async function favoriteRemoveUseCase(
 ): Promise<FavoriteRemoveResult> {
   const favoriteIds = await removeDatabaseFavorite(userId, listingId);
 
-  if (!favoriteIds) {
-    return { success: false, error: "Failed to remove favorite." };
-  }
-
   return {
     success: true,
     favoriteIds,

@@ -30,9 +30,6 @@ export async function favoriteAddUseCase(
 
   // 2. Perform persistence
   const favoriteIds = await addDatabaseFavorite(userId, listingId);
-  if (!favoriteIds) {
-    return { success: false, error: "Failed to add favorite." };
-  }
 
   // 3. Prepare Notification Metadata
   const actorProfile = await getStoredProfileById(userId);

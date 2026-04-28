@@ -11,9 +11,14 @@ CREATE EXTENSION IF NOT EXISTS unaccent;
 DO $$ 
 BEGIN
     IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'user_type') THEN
-        CREATE TYPE public.user_type AS ENUM ('individual', 'professional', 'staff');
+        CREATE TYPE public.user_type AS ENUM ('individual', 'professional', 'corporate', 'staff');
     ELSE
-        -- Ensure 'staff' exists if type was created earlier without it
+        -- Ensure all values exist if type was created earlier without them
+        BEGIN
+            ALTER TYPE public.user_type ADD VALUE 'corporate';
+        EXCEPTION
+            WHEN duplicate_object THEN NULL;
+        END;
         BEGIN
             ALTER TYPE public.user_type ADD VALUE 'staff';
         EXCEPTION
@@ -490,8 +495,35 @@ CREATE TABLE IF NOT EXISTS public.pricing_plans (
   name text NOT NULL,
   price decimal(12,2) NOT NULL,
   credits integer NOT NULL,
+  listing_quota integer NOT NULL DEFAULT 3,
   features jsonb,
   is_active boolean NOT NULL DEFAULT true
+);
+
+-- Doping Packages (for Boost/Visibility features)
+CREATE TABLE IF NOT EXISTS public.doping_packages (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  slug text NOT NULL UNIQUE,
+  name text NOT NULL,
+  price integer NOT NULL,
+  duration_days integer NOT NULL,
+  type text NOT NULL,
+  features jsonb NOT NULL DEFAULT '[]',
+  is_active boolean NOT NULL DEFAULT true,
+  sort_order integer NOT NULL DEFAULT 0
+);
+
+-- Doping Purchases
+CREATE TABLE IF NOT EXISTS public.doping_purchases (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id uuid NOT NULL REFERENCES public.profiles(id),
+  listing_id uuid NOT NULL REFERENCES public.listings(id),
+  package_id uuid NOT NULL REFERENCES public.doping_packages(id),
+  payment_id uuid REFERENCES public.payments(id),
+  status text NOT NULL DEFAULT 'pending',
+  starts_at timestamptz NOT NULL DEFAULT timezone('utc', now()),
+  expires_at timestamptz,
+  created_at timestamptz NOT NULL DEFAULT timezone('utc', now())
 );
 
 -- Credit Transactions (Append-only ledger)
@@ -528,6 +560,7 @@ CREATE TABLE IF NOT EXISTS public.transaction_outbox (
   status text NOT NULL DEFAULT 'pending',
   error_message text,
   retry_count integer NOT NULL DEFAULT 0,
+  next_attempt_at timestamptz,
   idempotency_key text,
   is_poison_pill boolean NOT NULL DEFAULT false,
   hard_deadline timestamptz,
@@ -662,6 +695,19 @@ CREATE INDEX IF NOT EXISTS idx_listings_featured_priority ON public.listings (st
 CREATE INDEX IF NOT EXISTS idx_listings_gallery_priority ON public.listings (status, gallery_priority DESC, created_at DESC) WHERE status = 'approved' AND gallery_priority > 0;
 CREATE INDEX IF NOT EXISTS idx_listings_urgent_active ON public.listings (status, urgent_until DESC, created_at DESC) WHERE status = 'approved' AND urgent_until > NOW();
 
+-- Doping Packages & Purchases Indexes
+CREATE INDEX IF NOT EXISTS idx_doping_packages_type ON public.doping_packages (type) WHERE is_active = true;
+CREATE INDEX IF NOT EXISTS idx_doping_packages_sort_order ON public.doping_packages (sort_order);
+CREATE INDEX IF NOT EXISTS idx_doping_purchases_user_id ON public.doping_purchases (user_id);
+CREATE INDEX IF NOT EXISTS idx_doping_purchases_listing_id ON public.doping_purchases (listing_id);
+CREATE INDEX IF NOT EXISTS idx_doping_purchases_status ON public.doping_purchases (status);
+
+-- Outbox Indexes
+CREATE INDEX IF NOT EXISTS idx_outbox_pending_next_attempt ON public.transaction_outbox (status, next_attempt_at) WHERE status = 'pending';
+
+-- Credit Transactions Indexes
+CREATE INDEX IF NOT EXISTS idx_credit_transactions_user_type ON public.credit_transactions (user_id, transaction_type);
+
 -- 7. TRIGGERS
 CREATE TRIGGER profiles_set_updated_at BEFORE UPDATE ON public.profiles FOR EACH ROW EXECUTE FUNCTION public.set_updated_at();
 CREATE TRIGGER listings_set_updated_at BEFORE UPDATE ON public.listings FOR EACH ROW EXECUTE FUNCTION public.set_updated_at();
@@ -715,6 +761,8 @@ ALTER TABLE public.storage_cleanup_queue ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.pricing_plans ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.credit_transactions ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.doping_applications ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.doping_packages ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.doping_purchases ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.transaction_outbox ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.compensating_actions ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.market_stats ENABLE ROW LEVEL SECURITY;
@@ -811,6 +859,10 @@ CREATE POLICY "storage_cleanup_admin_only" ON public.storage_cleanup_queue
 CREATE POLICY "credit_transactions_own_or_admin" ON public.credit_transactions 
   FOR SELECT USING ((SELECT auth.uid()) = user_id OR public.is_admin());
 CREATE POLICY "doping_applications_own_or_admin" ON public.doping_applications 
+  FOR SELECT USING ((SELECT auth.uid()) = user_id OR public.is_admin());
+CREATE POLICY "doping_packages_select_public" ON public.doping_packages 
+  FOR SELECT USING (true);
+CREATE POLICY "doping_purchases_own_or_admin" ON public.doping_purchases 
   FOR SELECT USING ((SELECT auth.uid()) = user_id OR public.is_admin());
 CREATE POLICY "payments_select_own_or_admin" ON public.payments 
   FOR SELECT USING ((SELECT auth.uid()) = user_id OR public.is_admin());

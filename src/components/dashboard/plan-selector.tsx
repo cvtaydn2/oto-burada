@@ -6,13 +6,17 @@ import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { SUBSCRIPTION_PLANS, SubscriptionPlan } from "@/lib/constants/plans";
 import { cn } from "@/lib/utils";
+import type { PricingPlan } from "@/services/admin/plans";
 
-export function PlanSelector() {
+interface PlanSelectorProps {
+  plans: PricingPlan[];
+}
+
+export function PlanSelector({ plans }: PlanSelectorProps) {
   const [loading, setLoading] = useState<string | null>(null);
 
-  const handleSelectPlan = async (plan: SubscriptionPlan) => {
+  const handleSelectPlan = async (plan: PricingPlan) => {
     if (plan.price === 0) {
       toast.info("Bu plan zaten tüm kullanıcılar için varsayılan olarak tanımlıdır.");
       return;
@@ -20,7 +24,6 @@ export function PlanSelector() {
 
     try {
       setLoading(plan.id);
-      // Plan selection logic will be implemented in the next step
       toast.success(`${plan.name} seçildi. Ödeme sistemine yönlendiriliyorsunuz...`);
     } catch {
       toast.error("Bir hata oluştu.");
@@ -31,7 +34,7 @@ export function PlanSelector() {
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-      {SUBSCRIPTION_PLANS.map((plan) => (
+      {plans.map((plan) => (
         <Card
           key={plan.id}
           className={cn(
@@ -49,7 +52,11 @@ export function PlanSelector() {
 
           <CardHeader className="pb-8">
             <div className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/60 mb-2">
-              {plan.type === "individual" ? "Bireysel" : "Kurumsal"}
+              {plan.type === "individual"
+                ? "Bireysel"
+                : plan.type === "corporate"
+                  ? "Kurumsal"
+                  : "Profesyonel"}
             </div>
             <CardTitle className="text-2xl font-black tracking-tight">{plan.name}</CardTitle>
             <div className="mt-4 flex items-baseline gap-1">
@@ -66,7 +73,7 @@ export function PlanSelector() {
             <div className="p-4 rounded-xl bg-muted/30 border border-border">
               <div className="flex items-center gap-3 mb-1">
                 <ShieldCheck size={18} className="text-primary" />
-                <span className="text-sm font-bold">{plan.listingQuota} Aktif İlan</span>
+                <span className="text-sm font-bold">{plan.listing_quota} Aktif İlan</span>
               </div>
               <p className="text-xs text-muted-foreground font-medium pl-7">
                 Aynı anda yayında olabilecek maksimum ilan sayısı.

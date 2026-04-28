@@ -4,6 +4,7 @@ import type { Metadata } from "next";
 import { DopingStore } from "@/components/dashboard/doping-store";
 import { PlanSelector } from "@/components/dashboard/plan-selector";
 import { requireUser } from "@/lib/auth/session";
+import { getPublicPricingPlans } from "@/services/admin/plans";
 import { getStoredUserListings } from "@/services/listings/listing-submissions";
 import type { Listing } from "@/types";
 
@@ -18,7 +19,11 @@ export const dynamic = "force-dynamic";
 export default async function PricingPage() {
   const user = await requireUser();
 
-  const { listings } = await getStoredUserListings(user.id);
+  const [plans, { listings }] = await Promise.all([
+    getPublicPricingPlans(),
+    getStoredUserListings(user.id),
+  ]);
+
   const approvedListings = (listings as Listing[]).filter((l) => l.status === "approved");
 
   return (
@@ -42,7 +47,7 @@ export default async function PricingPage() {
           </div>
         </div>
 
-        <PlanSelector />
+        <PlanSelector plans={plans} />
       </section>
 
       <hr className="border-border/50" />

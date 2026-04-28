@@ -9,19 +9,42 @@ export interface PricingPlan {
   name: string;
   price: number;
   credits: number;
-  features: Record<string, boolean | number | string | null>;
+  listing_quota: number;
+  features: string[];
   is_active: boolean;
+  type: "individual" | "professional" | "corporate";
 }
 
 function mapPricingPlan(row: PricingPlan): PricingPlan {
+  let features: string[] = [];
+  if (Array.isArray(row.features)) {
+    features = row.features as string[];
+  } else if (row.features && typeof row.features === "object") {
+    const obj = row.features as Record<string, boolean | number | string | null>;
+    features = Object.keys(obj).filter((k) => obj[k]);
+  }
+
   return {
     id: row.id,
     name: row.name,
     price: Number(row.price),
     credits: Number(row.credits),
-    features: row.features ?? {},
+    listing_quota: Number((row as { listing_quota?: number }).listing_quota) || 3,
+    features,
     is_active: Boolean(row.is_active),
+    type: determinePlanType(row.name),
   };
+}
+
+function determinePlanType(name: string): "individual" | "professional" | "corporate" {
+  const lower = name.toLowerCase();
+  if (lower.includes("kurumsal") || lower.includes("corporate") || lower.includes("filo")) {
+    return "corporate";
+  }
+  if (lower.includes("pro") || lower.includes("profesyonel") || lower.includes("professional")) {
+    return "professional";
+  }
+  return "individual";
 }
 
 // ─── Cache Keys & Tags ────────────────────────────────────────────────────────
@@ -35,7 +58,10 @@ const PRICING_TAGS = {
 async function fetchPricingPlansFromDb(includeInactive: boolean): Promise<PricingPlan[]> {
   const start = Date.now();
   const admin = createSupabaseAdminClient();
-  let query = admin.from("pricing_plans").select("*").order("price", { ascending: true });
+  let query = admin
+    .from("pricing_plans")
+    .select("id, name, price, credits, features, listing_quota, is_active")
+    .order("price", { ascending: true });
 
   if (!includeInactive) {
     query = query.eq("is_active", true);
@@ -83,7 +109,16 @@ async function revalidatePricingCaches() {
   await revalidatePath("/dashboard/pricing", "page");
 }
 
-export async function updatePricingPlan(id: string, updates: Partial<PricingPlan>) {
+export type PricingPlanInput = {
+  name: string;
+  price: number;
+  credits: number;
+  listing_quota: number;
+  is_active: boolean;
+  features: string[] | Record<string, boolean | number | string | null>;
+};
+
+export async function updatePricingPlan(id: string, updates: Partial<PricingPlanInput>) {
   const admin = createSupabaseAdminClient();
   const { error } = await admin.from("pricing_plans").update(updates).eq("id", id);
 
@@ -111,7 +146,7 @@ export async function deletePricingPlan(id: string) {
   return { success: true };
 }
 
-export async function createPricingPlan(plan: Omit<PricingPlan, "id">) {
+export async function createPricingPlan(plan: Omit<PricingPlanInput, never>) {
   const admin = createSupabaseAdminClient();
   const { error } = await admin.from("pricing_plans").insert(plan);
 

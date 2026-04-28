@@ -9,9 +9,28 @@ import { getPlatformSettings } from "@/services/admin/settings";
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
+async function getSafeAuthContext() {
+  try {
+    return await getAuthContext();
+  } catch {
+    return { dbProfile: null };
+  }
+}
+
+async function getSafePlatformSettings() {
+  try {
+    return await getPlatformSettings();
+  } catch {
+    return { general_appearance: { maintenance_mode: false } };
+  }
+}
+
 export default async function PublicLayout({ children }: PropsWithChildren) {
-  const { dbProfile } = await getAuthContext();
-  const settings = await getPlatformSettings();
+  const [{ dbProfile }, settings] = await Promise.all([
+    getSafeAuthContext(),
+    getSafePlatformSettings(),
+  ]);
+
   const isMaintenanceMode = settings.general_appearance?.maintenance_mode;
   const isAdmin = dbProfile?.role === "admin" && !dbProfile.isBanned;
 

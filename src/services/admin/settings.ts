@@ -24,7 +24,9 @@ export const getPlatformSettings = unstable_cache(
   async (): Promise<PlatformSettings> => {
     try {
       const supabase = createSupabaseAdminClient();
-      const { data, error } = await supabase.from("platform_settings").select("*");
+      const { data, error } = await supabase
+        .from("platform_settings")
+        .select("key, value, description, updated_at");
 
       // Table may not exist yet — return defaults gracefully
       if (error) {

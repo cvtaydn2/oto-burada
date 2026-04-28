@@ -18,7 +18,13 @@ export interface Offer {
     title: string;
     slug: string;
     price: number;
+    city: string;
     images: string[];
+    seller_id?: string;
+  };
+  buyer?: {
+    full_name: string;
+    phone: string;
   };
 }
 
@@ -37,14 +43,19 @@ export async function verifyOfferOwnership(
   const supabase = await createSupabaseServerClient();
 
   // Fetch offer with listing info
-  const { data: offer, error: offerError } = await supabase
-    .from("offers")
-    .select("id, listing_id, status")
-    .eq("id", offerId)
-    .single();
+  let offer;
+  try {
+    const { data, error: offerError } = await supabase
+      .from("offers")
+      .select("*")
+      .eq("id", offerId)
+      .single();
 
-  if (offerError || !offer) {
-    return { isOwner: false, reason: "Teklif bulunamadı." };
+    if (offerError) throw offerError;
+    offer = data;
+    if (!offer) throw new Error("Offer not found");
+  } catch (err) {
+    return { isOwner: false, reason: "Teklif bulunamadı veya bir hata oluştu." };
   }
 
   // Check if offer is already in target state (idempotency)
@@ -53,13 +64,18 @@ export async function verifyOfferOwnership(
   }
 
   // Fetch listing to verify ownership
-  const { data: listing, error: listingError } = await supabase
-    .from("listings")
-    .select("seller_id")
-    .eq("id", offer.listing_id)
-    .single();
+  let listing;
+  try {
+    const { data, error: listingError } = await supabase
+      .from("listings")
+      .select("seller_id")
+      .eq("id", offer.listing_id)
+      .single();
 
-  if (listingError || !listing) {
+    if (listingError) throw listingError;
+    listing = data;
+    if (!listing) throw new Error("Listing not found");
+  } catch (err) {
     return { isOwner: false, reason: "İlan bulunamadı." };
   }
 
@@ -70,12 +86,14 @@ export async function verifyOfferOwnership(
   return { isOwner: true };
 }
 
-export async function getOffersForListing(listingId: string) {
+export async function getOffersForListing(listingId: string): Promise<Offer[]> {
   const supabase = await createSupabaseServerClient();
 
   const { data, error } = await supabase
     .from("offers")
-    .select(`*, listing:listings(id, title, slug, price, city)`)
+    .select(
+      `id, listing_id, buyer_id, offered_price, message, status, counter_price, counter_message, expires_at, created_at, updated_at, listing:listings(id, title, slug, price, city, seller_id, images:listing_images(public_url))`
+    )
     .eq("listing_id", listingId)
     .order("created_at", { ascending: false });
 
@@ -84,15 +102,17 @@ export async function getOffersForListing(listingId: string) {
     return [];
   }
 
-  return data as Offer[];
+  return (data ?? []) as unknown as Offer[];
 }
 
-export async function getOffersForUser(userId: string) {
+export async function getOffersForUser(userId: string): Promise<Offer[]> {
   const supabase = await createSupabaseServerClient();
 
   const { data, error } = await supabase
     .from("offers")
-    .select(`*, listing:listings(id, title, slug, price, city)`)
+    .select(
+      `id, listing_id, buyer_id, offered_price, message, status, counter_price, counter_message, expires_at, created_at, updated_at, listing:listings(id, title, slug, price, city, seller_id, images:listing_images(public_url))`
+    )
     .eq("buyer_id", userId)
     .order("created_at", { ascending: false });
 
@@ -101,17 +121,17 @@ export async function getOffersForUser(userId: string) {
     return [];
   }
 
-  return data as Offer[];
+  return (data ?? []) as unknown as Offer[];
 }
 
-export async function getOffersReceived(userId: string) {
+export async function getOffersReceived(userId: string): Promise<Offer[]> {
   const supabase = await createSupabaseServerClient();
 
   // Use !inner join so the filter on seller_id works correctly via PostgREST
   const { data, error } = await supabase
     .from("offers")
     .select(
-      `*, listing:listings!inner(id, title, slug, price, city, seller_id), buyer:profiles!offers_buyer_id_fkey(full_name, phone)`
+      `id, listing_id, buyer_id, offered_price, message, status, counter_price, counter_message, expires_at, created_at, updated_at, listing:listings!inner(id, title, slug, price, city, seller_id, images:listing_images(public_url)), buyer:profiles!offers_buyer_id_fkey(full_name, phone)`
     )
     .eq("listing.seller_id", userId)
     .order("created_at", { ascending: false });
@@ -121,7 +141,7 @@ export async function getOffersReceived(userId: string) {
     return [];
   }
 
-  return data as Offer[];
+  return (data ?? []) as unknown as Offer[];
 }
 
 export async function createOffer(params: {
@@ -136,13 +156,18 @@ export async function createOffer(params: {
 
   if (!user) throw new Error("Giriş yapmalısınız.");
 
-  const { data: listing, error: listingError } = await supabase
-    .from("listings")
-    .select("id, seller_id, price, status")
-    .eq("id", params.listingId)
-    .single();
+  let listing;
+  try {
+    const { data, error: listingError } = await supabase
+      .from("listings")
+      .select("id, seller_id, price, status")
+      .eq("id", params.listingId)
+      .single();
 
-  if (listingError || !listing) {
+    if (listingError) throw listingError;
+    listing = data;
+    if (!listing) throw new Error("Listing not found");
+  } catch (err) {
     throw new Error("İlan bulunamadı.");
   }
 
@@ -192,13 +217,17 @@ export async function respondToOffer(
 
   if (!user) throw new Error("Giriş yapmalısınız.");
 
-  const { data: offer, error: offerError } = await supabase
-    .from("offers")
-    .select("id, listing_id, buyer_id, status, expires_at")
-    .eq("id", offerId)
-    .single();
+  let offer;
+  try {
+    const { data, error: offerError } = await supabase
+      .from("offers")
+      .select("id, listing_id, buyer_id, status, expires_at")
+      .eq("id", offerId)
+      .single();
 
-  if (offerError || !offer) {
+    if (offerError) throw offerError;
+    offer = data;
+  } catch (err) {
     throw new Error("Teklif bulunamadı.");
   }
 
@@ -220,13 +249,18 @@ export async function respondToOffer(
     throw new Error("Bu teklifin süresi dolmuş.");
   }
 
-  const { data: listing, error: listingError } = await supabase
-    .from("listings")
-    .select("seller_id")
-    .eq("id", offer.listing_id)
-    .single();
+  let listing;
+  try {
+    const { data, error: listingError } = await supabase
+      .from("listings")
+      .select("seller_id")
+      .eq("id", offer.listing_id)
+      .single();
 
-  if (listingError || !listing) {
+    if (listingError) throw listingError;
+    listing = data;
+    if (!listing) throw new Error("Listing not found");
+  } catch (err) {
     throw new Error("İlan bulunamadı.");
   }
 

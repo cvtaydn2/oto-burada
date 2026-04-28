@@ -15,7 +15,9 @@ export async function getReservationsByBuyer(buyerId: string): Promise<Reservati
     const supabase = await createSupabaseServerClient();
     const { data, error } = await supabase
       .from("reservations")
-      .select("*")
+      .select(
+        "id, listing_id, buyer_id, seller_id, amount_deposit, platform_fee, status, iyzico_payment_id, appointment_at, expires_at, notes, created_at, updated_at"
+      )
       .eq("buyer_id", buyerId)
       .order("created_at", { ascending: false });
 
@@ -43,7 +45,7 @@ export async function getReservationsBySeller(sellerId: string): Promise<Reserva
       .from("reservations")
       .select(
         `
-        *,
+        id, listing_id, buyer_id, seller_id, amount_deposit, platform_fee, status, iyzico_payment_id, appointment_at, expires_at, notes, created_at, updated_at,
         listing:listings!inner(
           id, slug, title, price,
           photos:listing_images(public_url)
@@ -62,7 +64,7 @@ export async function getReservationsBySeller(sellerId: string): Promise<Reserva
       logger.db.error("getReservationsBySeller failed", { error, sellerId });
       throw new Error("Rezervasyonlar yüklenemedi.");
     }
-    return data ?? [];
+    return (data ?? []) as unknown as ReservationWithListing[];
   } catch (err) {
     logger.db.warn("getReservationsBySeller fallback", { error: err, sellerId });
     return [];
@@ -77,20 +79,20 @@ export async function getActiveReservationForListing(
     .from("reservations")
     .select(
       `
-      *,
-      buyer:profiles!reservations_buyer_id_fkey(id, display_name, phone),
-      seller:profiles!reservations_seller_id_fkey(id, display_name, phone)
-    `
+        id, listing_id, buyer_id, seller_id, amount_deposit, platform_fee, status, iyzico_payment_id, appointment_at, expires_at, notes, created_at, updated_at,
+        buyer:profiles!reservations_buyer_id_fkey(id, display_name, phone),
+        seller:profiles!reservations_seller_id_fkey(id, display_name, phone)
+      `
     )
     .eq("listing_id", listingId)
     .eq("status", "active")
-    .single();
+    .maybeSingle();
 
   if (error && error.code !== "PGRST116") {
     logger.db.error("getActiveReservationForListing failed", { error, listingId });
     throw new Error("Rezervasyon bilgisi yüklenemedi.");
   }
-  return data ?? null;
+  return data as ReservationWithParties | null;
 }
 
 export async function createReservation(
@@ -132,7 +134,9 @@ export async function createReservation(
       expires_at: expiresAt,
       notes: input.notes ?? null,
     })
-    .select()
+    .select(
+      "id, listing_id, buyer_id, seller_id, amount_deposit, platform_fee, status, iyzico_payment_id, appointment_at, expires_at, notes, created_at, updated_at"
+    )
     .single();
 
   if (error) {
@@ -162,7 +166,9 @@ export async function confirmReservation(
     .eq("id", reservationId)
     .eq("seller_id", userId)
     .eq("status", "pending_payment")
-    .select()
+    .select(
+      "id, listing_id, buyer_id, seller_id, amount_deposit, platform_fee, status, iyzico_payment_id, appointment_at, expires_at, notes, created_at, updated_at"
+    )
     .single();
 
   if (error || !data) {
@@ -212,7 +218,9 @@ export async function cancelReservation(
     .from("reservations")
     .update({ status: newStatus })
     .eq("id", reservationId)
-    .select()
+    .select(
+      "id, listing_id, buyer_id, seller_id, amount_deposit, platform_fee, status, iyzico_payment_id, appointment_at, expires_at, notes, created_at, updated_at"
+    )
     .single();
 
   if (error || !data) {

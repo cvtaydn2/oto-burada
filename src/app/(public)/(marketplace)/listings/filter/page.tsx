@@ -1,9 +1,19 @@
 import type { Metadata } from "next";
 
 import { AdvancedFilterPage } from "@/components/listings/advanced-filter-page";
-import { parseListingFiltersFromSearchParams } from "@/services/listings/listing-filters";
 import { getFilteredMarketplaceListings } from "@/services/listings/marketplace-listings";
 import { getLiveMarketplaceReferenceData } from "@/services/reference/live-reference-data";
+import type { BrandCatalogItem, CityOption, ListingFilters } from "@/types";
+
+function resolveBrandSlugToName(brands: BrandCatalogItem[], slug: string): string | undefined {
+  const match = brands.find((b) => b.slug.toLowerCase() === slug.toLowerCase());
+  return match?.brand;
+}
+
+function resolveCitySlugToName(cities: CityOption[], slug: string): string | undefined {
+  const match = cities.find((c) => c.slug.toLowerCase() === slug.toLowerCase());
+  return match?.city;
+}
 
 export const metadata: Metadata = {
   title: "Gelişmiş Filtreleme | OtoBurada",
@@ -16,12 +26,30 @@ interface FilterPageProps {
 
 export default async function ListingsFilterPage({ searchParams }: FilterPageProps) {
   const resolvedParams = searchParams ? await searchParams : undefined;
-  const initialFilters = parseListingFiltersFromSearchParams(resolvedParams);
 
   const [references, result] = await Promise.all([
     getLiveMarketplaceReferenceData(),
-    getFilteredMarketplaceListings({ ...initialFilters, limit: 1 }), // sadece total için
+    getFilteredMarketplaceListings({ sort: "newest", page: 1, limit: 1 }),
   ]);
+
+  const brandSlug = resolvedParams?.brand;
+  const citySlug = resolvedParams?.city;
+  const initialFilters: ListingFilters = {
+    sort: "newest",
+    page: 1,
+    limit: 12,
+    ...(brandSlug ? { brand: resolveBrandSlugToName(references.brands, String(brandSlug)) } : {}),
+    ...(citySlug ? { city: resolveCitySlugToName(references.cities, String(citySlug)) } : {}),
+    ...(resolvedParams?.query ? { query: String(resolvedParams.query) } : {}),
+    ...(resolvedParams?.model ? { model: String(resolvedParams.model) } : {}),
+    ...(resolvedParams?.minPrice ? { minPrice: Number(resolvedParams.minPrice) } : {}),
+    ...(resolvedParams?.maxPrice ? { maxPrice: Number(resolvedParams.maxPrice) } : {}),
+    ...(resolvedParams?.minYear ? { minYear: Number(resolvedParams.minYear) } : {}),
+    ...(resolvedParams?.maxYear ? { maxYear: Number(resolvedParams.maxYear) } : {}),
+    ...(resolvedParams?.fuelType ? { fuelType: String(resolvedParams.fuelType) } : {}),
+    ...(resolvedParams?.transmission ? { transmission: String(resolvedParams.transmission) } : {}),
+    ...(resolvedParams?.hasExpertReport ? { hasExpertReport: true } : {}),
+  };
 
   return (
     <AdvancedFilterPage

@@ -120,50 +120,55 @@ export async function createDatabaseListing(
 
   for (let attempt = 0; attempt < maxRetries; attempt++) {
     // OPTIMIZATION: Use .select() to return inserted data in same query
-    const insertResult = await admin
-      .from("listings")
-      .insert(mapListingToDatabaseRow(currentListing))
-      .select(
+    let insertResult;
+    try {
+      insertResult = await admin
+        .from("listings")
+        .insert(mapListingToDatabaseRow(currentListing))
+        .select(
+          `
+          id,
+          seller_id,
+          slug,
+          title,
+          category,
+          brand,
+          model,
+          year,
+          mileage,
+          fuel_type,
+          transmission,
+          price,
+          city,
+          district,
+          description,
+          whatsapp_phone,
+          vin,
+          license_plate,
+          car_trim,
+          tramer_amount,
+          damage_status_json,
+          fraud_score,
+          fraud_reason,
+          status,
+          featured,
+          featured_until,
+          urgent_until,
+          highlighted_until,
+          market_price_index,
+          expert_inspection,
+          published_at,
+          bumped_at,
+          view_count,
+          version,
+          created_at,
+          updated_at
         `
-        id,
-        seller_id,
-        slug,
-        title,
-        category,
-        brand,
-        model,
-        year,
-        mileage,
-        fuel_type,
-        transmission,
-        price,
-        city,
-        district,
-        description,
-        whatsapp_phone,
-        vin,
-        license_plate,
-        car_trim,
-        tramer_amount,
-        damage_status_json,
-        fraud_score,
-        fraud_reason,
-        status,
-        featured,
-        featured_until,
-        urgent_until,
-        highlighted_until,
-        market_price_index,
-        expert_inspection,
-        published_at,
-        bumped_at,
-        view_count,
-        version,
-        created_at,
-        updated_at
-      `
-      )
-      .single();
+        )
+        .single();
+    } catch (err) {
+      insertResult = { data: null, error: err as { code?: string; message?: string } };
+    }
 
     if (insertResult.error) {
       // Check for unique constraint violation (slug collision)
@@ -283,48 +288,53 @@ export async function updateDatabaseListing(listing: Listing) {
       : updateQuery.eq("id", listing.id).eq("version", listing.version ?? 0);
 
   // OPTIMIZATION: Use .select() to return updated data in same query
-  const updateResult = await filteredUpdateQuery
-    .select(
+  let updateResult;
+  try {
+    updateResult = await filteredUpdateQuery
+      .select(
+        `
+        id,
+        seller_id,
+        slug,
+        title,
+        category,
+        brand,
+        model,
+        year,
+        mileage,
+        fuel_type,
+        transmission,
+        price,
+        city,
+        district,
+        description,
+        whatsapp_phone,
+        vin,
+        license_plate,
+        car_trim,
+        tramer_amount,
+        damage_status_json,
+        fraud_score,
+        fraud_reason,
+        status,
+        featured,
+        featured_until,
+        urgent_until,
+        highlighted_until,
+        market_price_index,
+        expert_inspection,
+        published_at,
+        bumped_at,
+        view_count,
+        version,
+        created_at,
+        updated_at
       `
-      id,
-      seller_id,
-      slug,
-      title,
-      category,
-      brand,
-      model,
-      year,
-      mileage,
-      fuel_type,
-      transmission,
-      price,
-      city,
-      district,
-      description,
-      whatsapp_phone,
-      vin,
-      license_plate,
-      car_trim,
-      tramer_amount,
-      damage_status_json,
-      fraud_score,
-      fraud_reason,
-      status,
-      featured,
-      featured_until,
-      urgent_until,
-      highlighted_until,
-      market_price_index,
-      expert_inspection,
-      published_at,
-      bumped_at,
-      view_count,
-      version,
-      created_at,
-      updated_at
-    `
-    )
-    .single();
+      )
+      .single();
+  } catch (err) {
+    updateResult = { data: null, error: err as { code?: string; message?: string } };
+  }
 
   if (updateResult.error) {
     return { error: classifyPersistenceError(updateResult.error) };
@@ -441,27 +451,41 @@ export async function archiveListing(
   const admin = createSupabaseAdminClient();
 
   // OCC: We need current version to perform safe update
-  const { data: current } = await admin
-    .from("listings")
-    .select("version, status")
-    .eq("id", listingId)
-    .eq("seller_id", sellerId)
-    .single();
+  let current;
+  try {
+    const { data, error: fetchError } = await admin
+      .from("listings")
+      .select("version, status")
+      .eq("id", listingId)
+      .eq("seller_id", sellerId)
+      .single();
+
+    if (fetchError) throw fetchError;
+    current = data;
+  } catch (err) {
+    return { error: "database_error" as const };
+  }
 
   if (!current) return { error: "database_error" as const };
 
-  const { error, data: updated } = await admin
-    .from("listings")
-    .update({
-      status: "archived" satisfies Listing["status"],
-      updated_at: new Date().toISOString(),
-      version: (current.version ?? 0) + 1,
-    })
-    .eq("id", listingId)
-    .eq("seller_id", sellerId)
-    .eq("version", current.version ?? 0)
-    .select()
-    .single();
+  let updateResult;
+  try {
+    updateResult = await admin
+      .from("listings")
+      .update({
+        status: "archived" satisfies Listing["status"],
+        updated_at: new Date().toISOString(),
+        version: (current.version ?? 0) + 1,
+      })
+      .eq("id", listingId)
+      .eq("seller_id", sellerId)
+      .eq("version", current.version ?? 0)
+      .select("id, seller_id, slug, title, status, version, updated_at")
+      .single();
+  } catch (err) {
+    updateResult = { data: null, error: err as { code?: string; message?: string } };
+  }
+  const { error, data: updated } = updateResult;
 
   if (error) {
     return { error: classifyPersistenceError(error) };
@@ -509,27 +533,41 @@ export async function bumpListing(
   if (!hasSupabaseAdminEnv()) return { error: "configuration_error" as const };
   const admin = createSupabaseAdminClient();
 
-  const { data: current } = await admin
-    .from("listings")
-    .select("version")
-    .eq("id", listingId)
-    .eq("seller_id", sellerId)
-    .single();
+  let current;
+  try {
+    const { data, error: fetchError } = await admin
+      .from("listings")
+      .select("version")
+      .eq("id", listingId)
+      .eq("seller_id", sellerId)
+      .single();
+
+    if (fetchError) throw fetchError;
+    current = data;
+  } catch (err) {
+    return { error: "database_error" as const };
+  }
 
   if (!current) return { error: "database_error" as const };
 
-  const { error, data: updated } = await admin
-    .from("listings")
-    .update({
-      bumped_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
-      version: (current.version ?? 0) + 1,
-    })
-    .eq("id", listingId)
-    .eq("seller_id", sellerId)
-    .eq("version", current.version ?? 0)
-    .select()
-    .single();
+  let updateResult;
+  try {
+    updateResult = await admin
+      .from("listings")
+      .update({
+        bumped_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+        version: (current.version ?? 0) + 1,
+      })
+      .eq("id", listingId)
+      .eq("seller_id", sellerId)
+      .eq("version", current.version ?? 0)
+      .select("id, seller_id, slug, title, status, version, updated_at, bumped_at")
+      .single();
+  } catch (err) {
+    updateResult = { data: null, error: err as { code?: string; message?: string } };
+  }
+  const { error, data: updated } = updateResult;
 
   if (error) {
     return { error: classifyPersistenceError(error) };
@@ -551,30 +589,44 @@ export async function publishListing(
 
   // 1. Get current status to determine next status if needed
   // (In our machine, archived -> approved)
-  const { data: current } = await admin
-    .from("listings")
-    .select("status, version")
-    .eq("id", listingId)
-    .eq("seller_id", sellerId)
-    .single();
+  let current;
+  try {
+    const { data, error: fetchError } = await admin
+      .from("listings")
+      .select("status, version")
+      .eq("id", listingId)
+      .eq("seller_id", sellerId)
+      .single();
+
+    if (fetchError) throw fetchError;
+    current = data;
+  } catch (err) {
+    return { error: "database_error" as const };
+  }
 
   if (!current) return { error: "database_error" as const };
 
   const nextStatus: Listing["status"] = current.status === "archived" ? "approved" : "pending";
 
-  const { error, data: updated } = await admin
-    .from("listings")
-    .update({
-      status: nextStatus,
-      updated_at: new Date().toISOString(),
-      published_at: new Date().toISOString(),
-      version: (current.version ?? 0) + 1,
-    })
-    .eq("id", listingId)
-    .eq("seller_id", sellerId)
-    .eq("version", current.version ?? 0)
-    .select()
-    .single();
+  let updateResult;
+  try {
+    updateResult = await admin
+      .from("listings")
+      .update({
+        status: nextStatus,
+        updated_at: new Date().toISOString(),
+        published_at: new Date().toISOString(),
+        version: (current.version ?? 0) + 1,
+      })
+      .eq("id", listingId)
+      .eq("seller_id", sellerId)
+      .eq("version", current.version ?? 0)
+      .select("id, seller_id, slug, title, status, version, updated_at, published_at")
+      .single();
+  } catch (err) {
+    updateResult = { data: null, error: err as { code?: string; message?: string } };
+  }
+  const { error, data: updated } = updateResult;
 
   if (error) {
     return { error: classifyPersistenceError(error) };

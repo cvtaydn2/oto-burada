@@ -1,5 +1,7 @@
 import process from "node:process";
+
 import { createClient } from "@supabase/supabase-js";
+
 import { loadLocalEnv } from "./load-local-env.mjs";
 
 loadLocalEnv();

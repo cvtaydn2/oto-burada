@@ -81,7 +81,7 @@ export function analyzeListingValue(listing: Listing, baseMarketPrice?: number):
   totalPenalty += kmPenaltyLine;
 
   const fairValue = Math.round(cleanMarketPrice * (1 - totalPenalty));
-  const priceRatio = listing.price / fairValue;
+  const priceRatio = fairValue > 0 ? listing.price / fairValue : 0;
   const priceDifference = listing.price - fairValue;
 
   // Decision Logic

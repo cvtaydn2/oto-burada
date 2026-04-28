@@ -112,14 +112,25 @@ export class ChatService {
       throw new Error(`Chat oluşturulamadı: ${error.message}`);
     }
 
-    const { data: chat, error: fetchError } = await supabase
-      .from("chats")
-      .select("*")
-      .eq("id", chatId)
-      .single();
+    let chat;
+    try {
+      const { data, error: fetchError } = await supabase
+        .from("chats")
+        .select(
+          "id, listing_id, buyer_id, seller_id, status, last_message_at, created_at, buyer_archived, seller_archived"
+        )
+        .eq("id", chatId)
+        .single();
 
-    if (fetchError) {
-      throw new Error(`Chat bilgileri alınamadı: ${fetchError.message}`);
+      if (fetchError) throw fetchError;
+      chat = data;
+
+      if (!chat) {
+        throw new Error("Chat not found");
+      }
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Unknown error";
+      throw new Error(`Chat bilgileri alınamadı: ${message}`);
     }
 
     return {
@@ -142,20 +153,23 @@ export class ChatService {
     const supabase = await createSupabaseServerClient();
 
     // Verify user is participant
-    const { error: chatError } = await supabase
-      .from("chats")
-      .select("id")
-      .eq("id", chatId)
-      .or(`buyer_id.eq.${userId},seller_id.eq.${userId}`)
-      .single();
+    try {
+      const { error: chatError } = await supabase
+        .from("chats")
+        .select("id")
+        .eq("id", chatId)
+        .or(`buyer_id.eq.${userId},seller_id.eq.${userId}`)
+        .single();
 
-    if (chatError) {
-      throw new Error("Chat bulunamadı veya erişim izniniz yok.");
+      if (chatError) throw chatError;
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Unknown error";
+      throw new Error(`Chat bulunamadı veya erişim izniniz yok: ${message}`);
     }
 
     const { data: messages, error: messagesError } = await supabase
       .from("messages")
-      .select("*")
+      .select("id, chat_id, sender_id, content, message_type, is_read, created_at, deleted_at")
       .eq("chat_id", chatId)
       .is("deleted_at", null)
       .order("created_at", { ascending: true });
@@ -182,15 +196,21 @@ export class ChatService {
     const supabase = await createSupabaseServerClient();
 
     // Verify chat exists and user is participant
-    const { data: chat, error: chatError } = await supabase
-      .from("chats")
-      .select("id, buyer_id, seller_id, status")
-      .eq("id", input.chatId)
-      .or(`buyer_id.eq.${input.senderId},seller_id.eq.${input.senderId}`)
-      .single();
+    let chat;
+    try {
+      const { data, error: chatError } = await supabase
+        .from("chats")
+        .select("id, buyer_id, seller_id, status")
+        .eq("id", input.chatId)
+        .or(`buyer_id.eq.${input.senderId},seller_id.eq.${input.senderId}`)
+        .single();
 
-    if (chatError) {
-      throw new Error("Chat bulunamadı veya erişim izniniz yok.");
+      if (chatError) throw chatError;
+      chat = data;
+      if (!chat) throw new Error("Chat not found");
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Unknown error";
+      throw new Error(`Chat bulunamadı veya erişim izniniz yok: ${message}`);
     }
 
     if (chat.status !== "active") {
@@ -223,7 +243,7 @@ export class ChatService {
         message_type: input.messageType || "text",
         is_read: false,
       })
-      .select()
+      .select("id, chat_id, sender_id, content, message_type, is_read, created_at, deleted_at")
       .single();
 
     if (insertError) {
@@ -291,15 +311,21 @@ export class ChatService {
     const supabase = await createSupabaseServerClient();
 
     // Verify user is participant
-    const { data: chat, error: chatError } = await supabase
-      .from("chats")
-      .select("id, buyer_id, seller_id")
-      .eq("id", chatId)
-      .or(`buyer_id.eq.${userId},seller_id.eq.${userId}`)
-      .single();
+    let chat;
+    try {
+      const { data, error: chatError } = await supabase
+        .from("chats")
+        .select("id, buyer_id, seller_id")
+        .eq("id", chatId)
+        .or(`buyer_id.eq.${userId},seller_id.eq.${userId}`)
+        .single();
 
-    if (chatError) {
-      throw new Error("Chat bulunamadı veya erişim izniniz yok.");
+      if (chatError) throw chatError;
+      chat = data;
+      if (!chat) throw new Error("Chat not found");
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Unknown error";
+      throw new Error(`Chat bulunamadı veya erişim izniniz yok: ${message}`);
     }
 
     const { data, error: updateError } = await supabase

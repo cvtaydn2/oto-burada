@@ -462,7 +462,20 @@ async function main() {
   }
 }
 
-if (import.meta.url === `file://${process.argv[1]}`) {
+import { fileURLToPath } from "node:url";
+
+const isMainModule = (url, argv1) => {
+  if (!url || !argv1) return false;
+  try {
+    const filePath = fileURLToPath(url);
+    const scriptPath = path.resolve(argv1);
+    return filePath === scriptPath;
+  } catch (e) {
+    return false;
+  }
+};
+
+if (isMainModule(import.meta.url, process.argv[1])) {
   main();
 }
 

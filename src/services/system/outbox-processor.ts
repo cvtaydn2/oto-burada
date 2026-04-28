@@ -25,7 +25,9 @@ export async function processOutboxQueue() {
   // 1. Fetch pending items
   const { data: queue, error: fetchError } = await supabase
     .from("transaction_outbox")
-    .select("*")
+    .select(
+      "id, event_type, payload, status, retry_count, next_attempt_at, is_poison_pill, last_error, processed_at, created_at"
+    )
     .eq("status", "pending")
     .eq("is_poison_pill", false) // ── PILL: Issue 2 - Skip toxic messages
     .gte("hard_deadline", new Date().toISOString()) // ── PILL: Issue 8 - Only process if not expired
@@ -72,11 +74,15 @@ export async function processOutboxQueue() {
         const retryCount = (item.retry_count || 0) + 1;
         const status = retryCount >= 5 ? "failed" : "pending";
 
+        const delayMs = Math.min(1000 * Math.pow(2, retryCount), 3600000);
+        const nextAttempt = new Date(Date.now() + delayMs);
+
         await supabase
           .from("transaction_outbox")
           .update({
             status,
             retry_count: retryCount,
+            next_attempt_at: nextAttempt.toISOString(),
             is_poison_pill: status === "failed",
             error_message: (err as Error).message,
           })

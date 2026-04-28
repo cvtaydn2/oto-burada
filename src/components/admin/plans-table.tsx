@@ -124,17 +124,26 @@ export function PlansTable({ initialPlans }: PlansTableProps) {
                 </td>
                 <td className="px-6 py-5">
                   <div className="flex gap-1.5 flex-wrap max-w-[200px]">
-                    {Object.entries(plan.features).map(
-                      ([key, val]) =>
-                        val === true && (
+                    {Array.isArray(plan.features)
+                      ? plan.features.map((feature) => (
                           <Badge
-                            key={key}
+                            key={feature}
                             className="bg-emerald-50 text-emerald-600 border-emerald-100 text-[8px] font-bold uppercase tracking-tighter"
                           >
-                            {key.replace("_", " ")}
+                            {String(feature).replace("_", " ")}
                           </Badge>
-                        )
-                    )}
+                        ))
+                      : Object.entries(plan.features as Record<string, boolean>).map(
+                          ([key, val]) =>
+                            val === true && (
+                              <Badge
+                                key={key}
+                                className="bg-emerald-50 text-emerald-600 border-emerald-100 text-[8px] font-bold uppercase tracking-tighter"
+                              >
+                                {key.replace("_", " ")}
+                              </Badge>
+                            )
+                        )}
                   </div>
                 </td>
                 <td className="px-6 py-5">

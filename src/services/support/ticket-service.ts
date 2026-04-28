@@ -38,7 +38,9 @@ export async function getUserTickets(userId: string): Promise<Ticket[]> {
   const supabase = await createSupabaseServerClient();
   const { data, error } = await supabase
     .from("tickets")
-    .select("*")
+    .select(
+      "id, user_id, subject, description, category, priority, status, listing_id, admin_response, resolved_at, created_at, updated_at"
+    )
     .eq("user_id", userId)
     .order("created_at", { ascending: false });
 
@@ -145,7 +147,9 @@ export async function getAllTickets(options?: {
   const admin = createSupabaseAdminClient();
   let query = admin
     .from("tickets")
-    .select("*, profiles(full_name)")
+    .select(
+      "id, user_id, subject, description, category, priority, status, listing_id, admin_response, resolved_at, created_at, updated_at, profiles(full_name)"
+    )
     .order("created_at", { ascending: false });
 
   if (options?.status) {
@@ -161,7 +165,9 @@ export async function getAllTickets(options?: {
     // Fallback: join olmadan dene
     const fallbackQuery = admin
       .from("tickets")
-      .select("*")
+      .select(
+        "id, user_id, subject, description, category, priority, status, listing_id, admin_response, resolved_at, created_at, updated_at"
+      )
       .order("created_at", { ascending: false });
 
     if (options?.status) {

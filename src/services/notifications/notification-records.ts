@@ -10,6 +10,8 @@
  * - createDatabaseNotification() uses admin client - ONLY call from system/admin contexts
  * - All user-facing operations use server client with RLS
  * - Never expose admin functions to user-facing routes
+ *
+ * No silent fallbacks - all errors are thrown for proper error handling.
  */
 
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
@@ -62,7 +64,7 @@ function mapNotificationRow(row: NotificationRow) {
 /**
  * Internal helper for fetching notifications.
  * Uses server client (authenticated role) to enforce RLS.
- * RLS policy: notifications_manage_own ensures user can only access their own notifications.
+ * @throws Error if database query fails
  */
 async function getDatabaseNotifications(options?: { notificationId?: string; userId?: string }) {
   const supabase = await getNotificationsClient();
@@ -88,15 +90,25 @@ async function getDatabaseNotifications(options?: { notificationId?: string; use
       : query;
   const { data, error } = await executor;
 
-  if (error || !data) {
-    return null;
+  if (error) {
+    throw new Error(`Failed to fetch notifications: ${error.message}`);
+  }
+
+  if (!data) {
+    return [];
   }
 
   return data.map(mapNotificationRow);
 }
 
+/**
+ * @throws Error if userId is invalid or database query fails
+ */
 export async function getStoredNotificationsByUser(userId: string) {
-  return (await getDatabaseNotifications({ userId })) ?? [];
+  if (!userId) {
+    throw new Error("userId is required");
+  }
+  return getDatabaseNotifications({ userId });
 }
 
 /**
@@ -110,8 +122,7 @@ export async function getStoredNotificationsByUser(userId: string) {
  *
  * NEVER call from user-facing API routes without proper admin authorization.
  *
- * @param input - Notification data
- * @returns Created notification or null on failure
+ * @throws Error if admin env unavailable or database insert fails
  */
 export async function createDatabaseNotification(input: {
   href?: string | null;
@@ -121,7 +132,9 @@ export async function createDatabaseNotification(input: {
   userId: string;
 }) {
   if (!hasSupabaseAdminEnv()) {
-    return null;
+    throw new Error(
+      "Supabase admin client unavailable - notifications require server configuration"
+    );
   }
 
   const admin = createSupabaseAdminClient();
@@ -137,8 +150,12 @@ export async function createDatabaseNotification(input: {
     .select("id, user_id, type, title, message, href, read, created_at, updated_at")
     .single<NotificationRow>();
 
-  if (error || !data) {
-    return null;
+  if (error) {
+    throw new Error(`Failed to create notification: ${error.message}`);
+  }
+
+  if (!data) {
+    throw new Error("Notification created but no data returned");
   }
 
   return mapNotificationRow(data);
@@ -148,15 +165,8 @@ export async function createDatabaseNotification(input: {
  * Create multiple system notifications in bulk (admin-only operation).
  *
  * ⚠️ SECURITY WARNING: This function uses admin client and bypasses RLS.
- * Only call from:
- * - System background jobs (cron, webhooks)
- * - Admin dashboard operations
- * - Internal service-to-service calls
  *
- * NEVER call from user-facing API routes without proper admin authorization.
- *
- * @param inputs - Array of notification data
- * @returns Array of created notifications
+ * @throws Error if admin env unavailable, inputs empty, or database insert fails
  */
 export async function createDatabaseNotificationsBulk(
   inputs: {
@@ -167,8 +177,14 @@ export async function createDatabaseNotificationsBulk(
     userId: string;
   }[]
 ) {
-  if (!hasSupabaseAdminEnv() || inputs.length === 0) {
-    return [];
+  if (!hasSupabaseAdminEnv()) {
+    throw new Error(
+      "Supabase admin client unavailable - notifications require server configuration"
+    );
+  }
+
+  if (inputs.length === 0) {
+    throw new Error("Cannot create bulk notifications with empty inputs");
   }
 
   const admin = createSupabaseAdminClient();
@@ -186,8 +202,12 @@ export async function createDatabaseNotificationsBulk(
     .select("id, user_id, type, title, message, href, read, created_at, updated_at")
     .returns<NotificationRow[]>();
 
-  if (error || !data) {
-    return [];
+  if (error) {
+    throw new Error(`Failed to create bulk notifications: ${error.message}`);
+  }
+
+  if (!data) {
+    throw new Error("Notifications created but no data returned");
   }
 
   return data.map(mapNotificationRow);
@@ -195,13 +215,14 @@ export async function createDatabaseNotificationsBulk(
 
 /**
  * Marks a notification as read for the current authenticated user.
- * Uses server client to enforce RLS - user can only update their own notifications.
+ * Uses server client to enforce RLS.
+ * @throws Error if database update fails
  */
 export async function markDatabaseNotificationRead(userId: string, notificationId: string) {
   const supabase = await getNotificationsClient();
   const table = supabase.from("notifications");
   if (!("update" in table) || typeof table.update !== "function") {
-    return null;
+    throw new Error("Notification update not supported");
   }
 
   const { error } = await table
@@ -213,17 +234,22 @@ export async function markDatabaseNotificationRead(userId: string, notificationI
     .eq("user_id", userId);
 
   if (error) {
-    return null;
+    throw new Error(`Failed to mark notification read: ${error.message}`);
   }
 
-  return (await getDatabaseNotifications({ notificationId, userId }))?.[0] ?? null;
+  const result = await getDatabaseNotifications({ notificationId, userId });
+  return result[0] ?? null;
 }
 
 /**
  * Marks all unread notifications as read for the current authenticated user.
- * Uses server client to enforce RLS - user can only update their own notifications.
+ * @throws Error if database update fails
  */
 export async function markAllDatabaseNotificationsRead(userId: string) {
+  if (!userId) {
+    throw new Error("userId is required");
+  }
+
   const supabase = await getNotificationsClient();
   const { error } = await supabase
     .from("notifications")
@@ -234,14 +260,26 @@ export async function markAllDatabaseNotificationsRead(userId: string) {
     .eq("user_id", userId)
     .eq("read", false);
 
-  return !error;
+  if (error) {
+    throw new Error(`Failed to mark all notifications read: ${error.message}`);
+  }
+
+  return true;
 }
 
 /**
  * Deletes a notification for the current authenticated user.
- * Uses server client to enforce RLS - user can only delete their own notifications.
+ * @throws Error if database delete fails
  */
 export async function deleteDatabaseNotification(userId: string, notificationId: string) {
+  if (!userId) {
+    throw new Error("userId is required");
+  }
+
+  if (!notificationId) {
+    throw new Error("notificationId is required");
+  }
+
   const supabase = await getNotificationsClient();
   const { error } = await supabase
     .from("notifications")
@@ -249,5 +287,9 @@ export async function deleteDatabaseNotification(userId: string, notificationId:
     .eq("id", notificationId)
     .eq("user_id", userId);
 
-  return !error;
+  if (error) {
+    throw new Error(`Failed to delete notification: ${error.message}`);
+  }
+
+  return true;
 }

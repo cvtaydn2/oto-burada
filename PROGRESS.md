@@ -1,4 +1,20 @@
-# 2026-04-28 — Frontend End-to-End Stabilization & Runtime Hardening (Phase 50)
+# 2026-04-28 — Database Resync & Migration Hardening (Phase 51)
+2: 
+3: ## [2026-04-28] - Phase 51: Database Resync, Migration Numbering Fix, and Windows Compatibility
+4: - **Durum:** ✅ TAMAMLANDI
+5: - **Yapılanlar:**
+6:   - **DB-17 - Migration Manager Windows Compatibility [High]:**
+7:     - `scripts/migration-manager.mjs` entry point'i Windows (backslash/URL mismatch) için düzeltildi.
+8:   - **DB-18 - Migration Numbering Conflict Resolution [Critical]:**
+9:     - Çakışan migration numaraları (0026, 0042, 0043, 0062, 0063, 0073) `0090-0095` aralığına taşınarak `migration-manager.mjs` validasyonu düzeltildi.
+10:   - **DB-19 - Manual Migration Application [High]:**
+11:     - `psql` eksikliği nedeniyle bekleyen `0108`'den `0116`'ya kadar olan kritik migrasyonlar (Listing Quota, Secure Profiles, Listing Questions vb.) manuel olarak uygulandı.
+12:   - **DB-20 - Data Integrity Verification [Medium]:**
+13:     - `pricing_plans` tablosundaki `listing_quota` alanları plan tiplerine göre (Pro: 50, Corporate: 200, Bireysel: 3) güncellendi ve doğrulandı.
+14: - **Doğrulama:**
+15:   - `npm run db:migrate:status` (Entry point fix verified) ✅
+16:   - `pricing_plans` table scan (Listing quotas verified) ✅
+23: # 2026-04-28 — Frontend End-to-End Stabilization & Runtime Hardening (Phase 50)
 
 ## [2026-04-28] - Phase 50: Frontend Flow Recovery, API Auth/CSRF Semantics, and E2E Rebaseline
 - **Durum:** ✅ TAMAMLANDI
