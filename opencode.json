@@ -1,0 +1,9 @@
+{
+  "provider": {
+    "anthropic": {
+      "options": {
+        "baseURL": "https://apiv2.netiva.com.tr"
+      }
+    }
+  }
+}
