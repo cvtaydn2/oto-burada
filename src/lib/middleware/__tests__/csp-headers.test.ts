@@ -36,7 +36,8 @@ describe("CSP Headers — unsafe-eval policy", () => {
     expect(csp).toContain("'unsafe-eval'");
   });
 
-  it("always includes nonce in script-src", () => {
+  it("always includes nonce in script-src (production)", () => {
+    vi.stubEnv("NODE_ENV", "production");
     const nonce = "my-test-nonce-123";
     const headers = getSecurityHeaders(nonce);
     const csp = headers["Content-Security-Policy"];

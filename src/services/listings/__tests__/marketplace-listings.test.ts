@@ -48,15 +48,32 @@ const mockProfile: Partial<Profile> = {
 vi.mock("@/services/listings/listing-submissions", () => ({
   getStoredListingBySlug: vi.fn(),
   getStoredListingsByIds: vi.fn(),
+}));
+
+vi.mock("@/services/listings/listing-submission-query", () => ({
   getSimilarDatabaseListings: vi.fn(),
+  marketplaceListingSelect: "*",
 }));
 
 vi.mock("@/services/listings/catalog", () => ({
   getPublicListings: vi.fn(),
+  getListingBySlug: vi.fn(),
 }));
 
 vi.mock("@/services/profile/profile-records", () => ({
   getPublicSellerProfile: vi.fn(),
+}));
+
+vi.mock("@/lib/supabase/public-server", () => ({
+  createSupabasePublicServerClient: vi.fn(() => ({
+    from: vi.fn(() => ({
+      select: vi.fn(() => ({
+        in: vi.fn(() => ({
+          eq: vi.fn().mockResolvedValue({ data: [], error: null }),
+        })),
+      })),
+    })),
+  })),
 }));
 
 describe("Marketplace Listings Service", () => {
@@ -87,16 +104,16 @@ describe("Marketplace Listings Service", () => {
   });
 
   it("should get marketplace listing by slug", async () => {
-    const { getStoredListingBySlug } = await import("@/services/listings/listing-submissions");
-    vi.mocked(getStoredListingBySlug).mockResolvedValue(mockListing as unknown as Listing);
+    const { getListingBySlug } = await import("@/services/listings/catalog");
+    vi.mocked(getListingBySlug).mockResolvedValue(mockListing as unknown as Listing);
 
     const result = await getMarketplaceListingBySlug("test-listing");
     expect(result).toBeDefined();
   });
 
   it("should return null for non-approved listing", async () => {
-    const { getStoredListingBySlug } = await import("@/services/listings/listing-submissions");
-    vi.mocked(getStoredListingBySlug).mockResolvedValue({
+    const { getListingBySlug } = await import("@/services/listings/catalog");
+    vi.mocked(getListingBySlug).mockResolvedValue({
       ...mockListing,
       status: "pending",
     } as unknown as Listing);
@@ -142,7 +159,8 @@ describe("Marketplace Listings Service", () => {
   });
 
   it("should get similar marketplace listings", async () => {
-    const { getSimilarDatabaseListings } = await import("@/services/listings/listing-submissions");
+    const { getSimilarDatabaseListings } =
+      await import("@/services/listings/listing-submission-query");
     vi.mocked(getSimilarDatabaseListings).mockResolvedValue([mockListing as Listing]);
 
     const result = await getSimilarMarketplaceListings("current-slug", "BMW", "Istanbul");

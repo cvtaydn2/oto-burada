@@ -79,7 +79,7 @@ test.describe("Listing Detail", () => {
     await page.goto(listingHref!);
 
     // Find the reveal button (ContactActions)
-    const revealButton = page.locator("button:has-text('Telefon Numarasını Göster'), button:has-text('WP Mesaj At')");
+    const revealButton = page.locator("button:has-text('Numarayı Göster'), button:has-text('Numarayı Gör ve WhatsApp')");
     await expect(revealButton.first()).toBeVisible({ timeout: 10000 });
 
     // Note: The actual reveal might require clicking the button
