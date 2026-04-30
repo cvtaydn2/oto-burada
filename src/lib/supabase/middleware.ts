@@ -115,21 +115,9 @@ export async function updateSession(request: NextRequest) {
     !pathname.startsWith("/api/auth") &&
     !pathname.startsWith("/auth")
   ) {
-    // Fetch maintenance mode setting
-    const { data: settings, error: settingsError } = await supabase
-      .from("platform_settings")
-      .select("value")
-      .eq("key", "general_appearance")
-      .single();
-
-    if (settingsError) {
-      console.error("[maintenanceCheck] Settings fetch error:", settingsError);
-    }
-
-    const { isMaintenanceGateActive } = await import("@/lib/platform/maintenance");
-    const isMaintenanceMode =
-      (settings?.value as { maintenance_mode?: boolean })?.maintenance_mode === true &&
-      isMaintenanceGateActive();
+    // PERFORMANCE BUG-K07 FIX: Do not query DB on every request.
+    // Rely strictly on Environment Variables (MAINTENANCE_MODE_FORCE=true) to toggle maintenance.
+    const isMaintenanceMode = process.env.MAINTENANCE_MODE_FORCE === "true";
 
     if (isMaintenanceMode) {
       let isAdmin = false;

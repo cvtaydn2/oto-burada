@@ -12,6 +12,8 @@ import { processOutboxQueue } from "@/services/system/outbox-processor";
 import { processReconciliation } from "@/services/system/reconciliation-worker";
 import { triggerSavedSearchNotifications } from "@/services/system/saved-search-notifier";
 
+import { expireListings } from "../expire-listings/route";
+
 /**
  * MASTER CRON HANDLER for Vercel Hobby (Free) Plan.
  * Schedule: Daily at midnight (0 0 * * *)
@@ -65,25 +67,14 @@ export async function GET(request: Request) {
     // 2. Expire Reservations
     results.expireReservations = await expireReservations();
 
-    // 3. Expire Listings (BATCH UPDATE - Fixed N+1 performance issue)
-    // OLD: Iterated through listings one-by-one with individual UPDATE queries
-    // NEW: Single batch UPDATE with optimistic concurrency control
-    const cutoff = new Date(Date.now() - 60 * 24 * 60 * 60 * 1000).toISOString();
-    const { data: expireResult, error: expireError } = await admin
-      .from("listings")
-      .update({
-        status: "archived",
-        updated_at: new Date().toISOString(),
-      })
-      .eq("status", "approved")
-      .lt("published_at", cutoff)
-      .select("id");
-
-    if (expireError) {
-      logger.api.error("Failed to expire listings", { error: expireError.message });
-      results.expireListings = { processed: 0, error: expireError.message };
-    } else {
-      results.expireListings = { processed: expireResult?.length || 0 };
+    // 3. Expire Listings (30+ days old, uses OCC-safe approach)
+    try {
+      const expireResult = await expireListings(admin);
+      results.expireListings = expireResult;
+    } catch (expireError) {
+      const errorMessage = expireError instanceof Error ? expireError.message : String(expireError);
+      logger.api.error("Failed to expire listings", { error: errorMessage });
+      results.expireListings = { processed: 0, error: errorMessage };
     }
 
     // 4. Cleanup Stale Payments

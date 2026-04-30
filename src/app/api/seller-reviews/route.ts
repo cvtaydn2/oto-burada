@@ -75,7 +75,7 @@ export async function POST(request: Request) {
         rating,
         comment: sanitizedComment,
       },
-      { onConflict: "seller_id,reviewer_id" }
+      { onConflict: "reviewer_id,listing_id" }
     )
     .select("id, rating, comment, created_at")
     .single();

@@ -5,7 +5,7 @@ import { setCsrfTokenCookie } from "@/lib/security/csrf";
 /**
  * GET /api/auth/csrf
  * Returns a valid CSRF token.
- * Since the cookie is now httpOnly (security hardening), the client must fetch the token
+ * Double Submit Cookie pattern requires the client to fetch the token
  * via this endpoint and include it in the X-CSRF-Token header for mutations.
  */
 export async function GET() {

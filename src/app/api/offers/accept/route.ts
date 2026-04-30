@@ -33,7 +33,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: ownership.reason || "Yetkiniz yok." }, { status: 403 });
     }
 
-    await respondToOffer(offerId, "accepted");
+    await respondToOffer(offerId, user.id, "accepted");
     redirect("/dashboard/teklifler");
   } catch (error) {
     logger.reservation.error("Accept offer failed", error);

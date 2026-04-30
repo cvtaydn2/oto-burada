@@ -32,6 +32,7 @@ export async function submitOfferAction(
       listingId,
       offeredPrice,
       message,
+      userId: user.id,
     });
 
     revalidatePath(`/listing/${listingId}`);
@@ -77,7 +78,7 @@ async function respondToOfferAction(
   }
 
   try {
-    await respondToOffer(offerId, response, counterPrice, counterMessage);
+    await respondToOffer(offerId, user.id, response, counterPrice, counterMessage);
     revalidatePath("/dashboard/teklifler");
     revalidatePath("/dashboard");
 

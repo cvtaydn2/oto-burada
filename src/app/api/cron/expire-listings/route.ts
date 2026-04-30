@@ -15,10 +15,10 @@ import { hasSupabaseAdminEnv } from "@/lib/supabase/env";
 
 export const runtime = "nodejs";
 
-const SIXTY_DAYS_MS = 60 * 24 * 60 * 60 * 1000;
+const THIRTY_DAYS_MS = 30 * 24 * 60 * 60 * 1000;
 
-async function expireListings(admin: ReturnType<typeof createSupabaseAdminClient>) {
-  const cutoff = new Date(Date.now() - SIXTY_DAYS_MS).toISOString();
+export async function expireListings(admin: ReturnType<typeof createSupabaseAdminClient>) {
+  const cutoff = new Date(Date.now() - THIRTY_DAYS_MS).toISOString();
 
   const { data: expiredListings, error: fetchError } = await admin
     .from("listings")

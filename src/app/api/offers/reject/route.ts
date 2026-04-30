@@ -8,11 +8,12 @@ import { respondToOffer } from "@/services/offers/offer-service";
 export async function POST(request: Request) {
   const security = await withUserAndCsrfToken(request);
   if (!security.ok) return security.response;
+  const user = security.user!;
 
   try {
     const formData = await request.formData();
     const offerId = formData.get("offerId") as string;
-    await respondToOffer(offerId, "rejected");
+    await respondToOffer(offerId, user.id, "rejected");
     redirect("/dashboard/teklifler");
   } catch (error) {
     logger.reservation.error("Reject offer failed", error);

@@ -148,13 +148,9 @@ export async function createOffer(params: {
   listingId: string;
   offeredPrice: number;
   message?: string;
+  userId: string;
 }) {
   const supabase = await createSupabaseServerClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) throw new Error("Giriş yapmalısınız.");
 
   let listing;
   try {
@@ -175,7 +171,7 @@ export async function createOffer(params: {
     throw new Error("Sadece onaylı ilanlara teklif verebilirsiniz.");
   }
 
-  if (listing.seller_id === user.id) {
+  if (listing.seller_id === params.userId) {
     throw new Error("Kendi ilanınıza teklif veremezsiniz.");
   }
 
@@ -187,7 +183,7 @@ export async function createOffer(params: {
 
   const { error } = await supabase.from("offers").insert({
     listing_id: params.listingId,
-    buyer_id: user.id,
+    buyer_id: params.userId,
     offered_price: params.offeredPrice,
     message: params.message ?? null,
     expires_at: expiresAt,
@@ -196,7 +192,7 @@ export async function createOffer(params: {
   if (error) {
     logger.db.error("createOffer failed", error, {
       listingId: params.listingId,
-      userId: user.id,
+      userId: params.userId,
     });
     throw new Error("Teklif gönderilemedi.");
   }
@@ -206,16 +202,12 @@ export async function createOffer(params: {
 
 export async function respondToOffer(
   offerId: string,
+  userId: string,
   response: "accepted" | "rejected" | "counter_offer",
   counterPrice?: number,
   counterMessage?: string
 ) {
   const supabase = await createSupabaseServerClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) throw new Error("Giriş yapmalısınız.");
 
   let offer;
   try {
@@ -265,8 +257,8 @@ export async function respondToOffer(
   }
 
   // Determine who can respond based on offer status
-  const isSeller = listing.seller_id === user.id;
-  const isBuyer = offer.buyer_id === user.id;
+  const isSeller = listing.seller_id === userId;
+  const isBuyer = offer.buyer_id === userId;
 
   if (offer.status === "pending" && !isSeller) {
     throw new Error("Sadece satıcı bekleyen tekliflere yanıt verebilir.");

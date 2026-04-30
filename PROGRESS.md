@@ -1,3 +1,34 @@
+# 2026-04-30 — Database Schema Infrastructure Fixes (Phase 63)
+
+## [2026-04-30] - Phase 63: Resolving Schema Inconsistencies & Cron Alignment
+- **Status:** ✅ COMPLETED
+- **Actions:**
+  - **DB-22 - Schema Snapshot Synchronization [Critical]:**
+    - Added missing columns to `schema.snapshot.sql`: `messages.message_type`, `messages.deleted_at`, `chats.status`, `profiles.identity_number`.
+    - Added missing tables to `schema.snapshot.sql`: `platform_settings`, `payment_webhook_logs`, `offers`, `fulfillment_jobs`.
+    - Added `offer_status` ENUM and all related Row Level Security (RLS) policies for the new tables.
+  - **API-03 - Seller Reviews Upsert Fix [High]:**
+    - Fixed `onConflict` constraint in `/api/seller-reviews` to match the actual database constraint (`reviewer_id,listing_id` instead of `seller_id,reviewer_id`).
+  - **CRON-02 - Listing Expiry Period Harmonization [High]:**
+    - Fixed inconsistency between 30 days (DB) and 60 days (API). Standardized the application code to 30 days.
+    - Updated Master Cron (`main/route.ts`) to use the OCC-safe update logic from `expire-listings/route.ts` instead of an unsafe bulk update.
+  - **PERF-23 - Middleware DB Check Bottleneck Fix [Critical]:**
+    - Removed the heavy `platform_settings` database query in the main middleware.
+    - Switched to using `process.env.MAINTENANCE_MODE_FORCE` exclusively for toggling maintenance mode, ensuring high concurrency safety.
+  - **CODE-04 - Offer Routes User Object Clean-up [Medium]:**
+    - Refactored `respondToOffer` and `createOffer` service functions to accept `userId` as an argument.
+    - Removed redundant `supabase.auth.getUser()` calls in the service layer, passing the auth context explicitly from the route handlers.
+    - Updated `CSRF` endpoint comments to accurately reflect the Double Submit Cookie pattern.
+- **Verification:**
+  - `npm run typecheck` ✅ (0 errors)
+  - `npm run lint` ✅ (0 errors)
+- **Architectural Gains:**
+  - **Schema Fidelity:** `schema.snapshot.sql` is perfectly synced with actual migration state.
+  - **Scale & Speed:** Next.js Middleware now operates independently of database latency for maintenance checks.
+  - **Correctness:** Master Cron runs safely via OCC, and Reviews now successfully upsert without DB errors.
+
+---
+
 # 2026-04-30 — Pre-Launch Polish & Deployment Execution (Phase 62)
 
 ## [2026-04-30] - Phase 62: Finalizing Marketplace Deployment Infrastructure

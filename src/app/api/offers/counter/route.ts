@@ -12,6 +12,7 @@ export async function POST(request: Request) {
     ipRateLimit: { limit: 20, windowMs: 60000 },
   });
   if (!security.ok) return security.response;
+  const user = security.user!;
 
   try {
     const formData = await request.formData();
@@ -23,7 +24,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Geçerli bir karşı teklif girin." }, { status: 400 });
     }
 
-    await respondToOffer(offerId, "counter_offer", counterPrice, counterMessage);
+    await respondToOffer(offerId, user.id, "counter_offer", counterPrice, counterMessage);
     redirect("/dashboard/teklifler");
   } catch (error) {
     logger.reservation.error("Counter offer failed", error);

@@ -73,6 +73,10 @@ BEGIN
     IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'ticket_category') THEN
         CREATE TYPE public.ticket_category AS ENUM ('listing', 'account', 'payment', 'technical', 'feedback', 'other');
     END IF;
+
+    IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'offer_status') THEN
+        CREATE TYPE public.offer_status AS ENUM ('pending','accepted','rejected','counter_offer','expired','completed');
+    END IF;
 END $$;
 
 -- 3. FUNCTIONS
@@ -202,6 +206,7 @@ CREATE TABLE IF NOT EXISTS public.profiles (
   tax_id text,
   tax_office text,
   website_url text,
+  identity_number text,
   verified_business boolean NOT NULL DEFAULT false,
   business_slug text,
   is_banned boolean NOT NULL DEFAULT false,
@@ -434,6 +439,7 @@ CREATE TABLE IF NOT EXISTS public.chats (
   listing_id uuid NOT NULL REFERENCES public.listings(id) ON DELETE CASCADE,
   buyer_id uuid NOT NULL REFERENCES public.profiles(id) ON DELETE CASCADE,
   seller_id uuid NOT NULL REFERENCES public.profiles(id) ON DELETE CASCADE,
+  status text NOT NULL DEFAULT 'active',
   last_message_at timestamptz NOT NULL DEFAULT timezone('utc', now()),
   created_at timestamptz NOT NULL DEFAULT timezone('utc', now()),
   CONSTRAINT chats_distinct_participants CHECK (buyer_id <> seller_id),
@@ -446,6 +452,8 @@ CREATE TABLE IF NOT EXISTS public.messages (
   sender_id uuid NOT NULL REFERENCES public.profiles(id) ON DELETE CASCADE,
   content text NOT NULL CHECK (char_length(trim(content)) > 0),
   is_read boolean NOT NULL DEFAULT false,
+  message_type text NOT NULL DEFAULT 'text',
+  deleted_at timestamptz,
   created_at timestamptz NOT NULL DEFAULT timezone('utc', now())
 );
 
@@ -632,6 +640,55 @@ CREATE TABLE IF NOT EXISTS public.api_rate_limits (
   PRIMARY KEY (key)
 );
 
+CREATE TABLE IF NOT EXISTS public.platform_settings (
+  key text PRIMARY KEY,
+  value jsonb NOT NULL,
+  updated_at timestamptz NOT NULL DEFAULT timezone('utc', now())
+);
+
+CREATE TABLE IF NOT EXISTS public.payment_webhook_logs (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  provider text NOT NULL DEFAULT 'iyzico',
+  token text,
+  payload jsonb NOT NULL,
+  headers jsonb NOT NULL,
+  status text NOT NULL,
+  error_message text,
+  processing_ms integer,
+  ip_address text,
+  created_at timestamptz NOT NULL DEFAULT timezone('utc', now())
+);
+
+CREATE TABLE IF NOT EXISTS public.offers (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  listing_id uuid NOT NULL REFERENCES public.listings(id) ON DELETE CASCADE,
+  buyer_id uuid NOT NULL REFERENCES public.profiles(id),
+  offered_price bigint NOT NULL CHECK (offered_price > 0),
+  message text,
+  status public.offer_status NOT NULL DEFAULT 'pending',
+  counter_price bigint,
+  counter_message text,
+  expires_at timestamptz,
+  created_at timestamptz NOT NULL DEFAULT timezone('utc', now()),
+  updated_at timestamptz NOT NULL DEFAULT timezone('utc', now())
+);
+
+CREATE TABLE IF NOT EXISTS public.fulfillment_jobs (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  payment_id uuid NOT NULL REFERENCES public.payments(id) ON DELETE CASCADE,
+  job_type text NOT NULL CHECK (job_type IN ('credit_add', 'doping_apply', 'notification_send')),
+  status text NOT NULL DEFAULT 'pending' CHECK (status IN ('pending', 'processing', 'success', 'failed', 'dead_letter')),
+  attempts integer NOT NULL DEFAULT 0,
+  max_attempts integer NOT NULL DEFAULT 3,
+  last_error text,
+  error_details jsonb,
+  scheduled_at timestamptz NOT NULL DEFAULT timezone('utc', now()),
+  processed_at timestamptz,
+  created_at timestamptz NOT NULL DEFAULT timezone('utc', now()),
+  updated_at timestamptz NOT NULL DEFAULT timezone('utc', now()),
+  metadata jsonb DEFAULT '{}'::jsonb
+);
+
 -- 5. SEARCH VECTOR
 DO $$ 
 BEGIN
@@ -779,6 +836,10 @@ ALTER TABLE public.doping_purchases ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.transaction_outbox ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.compensating_actions ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.market_stats ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.platform_settings ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.payment_webhook_logs ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.offers ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.fulfillment_jobs ENABLE ROW LEVEL SECURITY;
 
 -- Profiles
 CREATE POLICY "profiles_select_self_or_admin_or_chat" ON public.profiles FOR SELECT USING (
@@ -906,6 +967,21 @@ CREATE POLICY "listing_views_insert_public" ON public.listing_views
 -- Internal Engine (Admin Only)
 CREATE POLICY "transaction_outbox_admin" ON public.transaction_outbox FOR ALL USING (public.is_admin());
 CREATE POLICY "compensating_actions_admin" ON public.compensating_actions FOR ALL USING (public.is_admin());
+
+-- Platform Settings
+CREATE POLICY "platform_settings_select_all" ON public.platform_settings FOR SELECT USING (true);
+CREATE POLICY "platform_settings_admin_write" ON public.platform_settings FOR ALL USING (public.is_admin()) WITH CHECK (public.is_admin());
+
+-- Webhook Logs
+CREATE POLICY "admin_all_webhook_logs" ON public.payment_webhook_logs FOR ALL USING (public.is_admin());
+
+-- Offers
+CREATE POLICY "offers_select" ON public.offers FOR SELECT USING (buyer_id = (SELECT auth.uid()) OR EXISTS (SELECT 1 FROM public.listings l WHERE l.id = listing_id AND l.seller_id = (SELECT auth.uid())) OR public.is_admin());
+CREATE POLICY "offers_insert" ON public.offers FOR INSERT WITH CHECK (buyer_id = (SELECT auth.uid()) AND EXISTS (SELECT 1 FROM public.listings l WHERE l.id = listing_id AND l.seller_id <> (SELECT auth.uid())));
+CREATE POLICY "offers_update_buyer" ON public.offers FOR UPDATE USING (buyer_id = (SELECT auth.uid()) OR EXISTS (SELECT 1 FROM public.listings l WHERE l.id = listing_id AND l.seller_id = (SELECT auth.uid())) OR public.is_admin());
+
+-- Fulfillment Jobs
+CREATE POLICY "fulfillment_jobs_admin" ON public.fulfillment_jobs FOR ALL USING (public.is_admin());
 
 -- 9. CRON JOBS
 DO $$
