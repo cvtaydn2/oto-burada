@@ -13,25 +13,22 @@ import { isValidRequestOrigin } from "@/lib/security";
  * Responsibility: Reject cross-origin mutation requests before they reach any
  * route handler.
  */
-export function checkApiSecurity(request: NextRequest) {
+export function checkApiSecurity(request: NextRequest): NextResponse | null {
   const pathname = request.nextUrl.pathname;
 
   if (pathname.startsWith("/api")) {
     const isMutation = ["POST", "PUT", "PATCH", "DELETE"].includes(request.method);
 
     if (isMutation && !isValidRequestOrigin(request)) {
-      return {
-        isValid: false,
-        response: new NextResponse(
-          JSON.stringify({
-            error: "Forbidden",
-            message: "Geçersiz istek kaynağı (CSRF koruması).",
-          }),
-          { status: 403, headers: { "Content-Type": "application/json" } }
-        ),
-      };
+      return new NextResponse(
+        JSON.stringify({
+          error: "Forbidden",
+          message: "Geçersiz istek kaynağı (CSRF koruması).",
+        }),
+        { status: 403, headers: { "Content-Type": "application/json" } }
+      );
     }
   }
 
-  return { isValid: true, response: null };
+  return null;
 }

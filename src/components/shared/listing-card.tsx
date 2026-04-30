@@ -11,6 +11,7 @@ import {
   Zap,
 } from "lucide-react";
 import Link from "next/link";
+import { memo } from "react";
 
 import { FavoriteButton } from "@/components/listings/favorite-button";
 import { SafeImage } from "@/components/shared/safe-image";
@@ -49,7 +50,7 @@ interface ListingCardProps extends VariantProps<typeof cardVariants> {
   className?: string;
 }
 
-export function ListingCard({
+export const ListingCard = memo(function ListingCard({
   listing,
   variant = "grid",
   priority = false,
@@ -262,7 +263,7 @@ export function ListingCard({
       </div>
     </div>
   );
-}
+});
 
 function Badge({
   icon: Icon,

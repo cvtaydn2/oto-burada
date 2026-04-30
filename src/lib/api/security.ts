@@ -28,6 +28,7 @@ export interface SecurityOptions {
   rateLimitKey?: string;
   maxBodySizeBytes?: number | false;
   forceDbBanCheck?: boolean;
+  requireStepUp?: boolean; // New: Forces extra verification for critical actions
 }
 
 export interface SecurityResult {
@@ -171,6 +172,29 @@ export async function withSecurity(
           ok: false,
           response: apiError(API_ERROR_CODES.FORBIDDEN, "Hesabınız askıya alınmıştır.", 403),
         };
+      }
+    }
+
+    // 3.1 Step-up Authentication check (SEC-ATO-01)
+    if (options.requireStepUp && user) {
+      const { checkStepUpRequired, isSecuritySessionActive } =
+        await import("@/lib/security/step-up-auth");
+
+      // Skip check if user already has an active security session (e.g. just verified)
+      const isVerified = await isSecuritySessionActive(user.id);
+
+      if (!isVerified) {
+        const isSuspicious = await checkStepUpRequired(user.id, request);
+        if (isSuspicious) {
+          return {
+            ok: false,
+            response: apiError(
+              API_ERROR_CODES.STEP_UP_REQUIRED,
+              "Güvenlik doğrulaması gerekiyor. Lütfen kimliğinizi doğrulayın.",
+              403
+            ),
+          };
+        }
       }
     }
   }

@@ -764,25 +764,13 @@ export async function getSimilarDatabaseListings(options: {
 
   const listings = (data ?? []).map(mapListingRow);
 
-  // Application-side relevance scoring
-  const listingsWithScore = listings.map((l: Listing) => {
-    let _similarityScore = 0;
-    if (l.brand === options.brand) _similarityScore += 2;
-    if (l.city === options.city) _similarityScore += 1;
-    return { ...l, similarityScore: _similarityScore };
-  });
-
   // 3. Sort by score then take limit
-  return listingsWithScore
-    .sort(
-      (a: { similarityScore: number }, b: { similarityScore: number }) =>
-        b.similarityScore - a.similarityScore
-    )
-    .map(
-      ({ similarityScore, ...listing }: { similarityScore: number } & Record<string, unknown>) => {
-        void similarityScore; // Explicitly mark as used to satisfy linter
-        return listing as unknown as Listing;
-      }
-    )
+  // ── PERFORMANCE FIX: Issue PERF-01 - Avoid full object cloning in sort ──
+  return listings
+    .sort((a: Listing, b: Listing) => {
+      const scoreA = (a.brand === options.brand ? 2 : 0) + (a.city === options.city ? 1 : 0);
+      const scoreB = (b.brand === options.brand ? 2 : 0) + (b.city === options.city ? 1 : 0);
+      return scoreB - scoreA;
+    })
     .slice(0, limit);
 }

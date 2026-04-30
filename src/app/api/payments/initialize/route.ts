@@ -91,6 +91,10 @@ export async function POST(req: NextRequest) {
 
     const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
 
+    // SECURITY: Generate idempotency key to prevent double processing
+    // PILL: Issue C-1 - Idempotency
+    const idempotencyKey = `pay_${user.id}_${listingId}_${packageId}_${Math.floor(Date.now() / 300000)}`; // 5-minute window
+
     const result = await initializePaymentCheckout({
       userId: user.id,
       email: user.email!,
@@ -110,6 +114,7 @@ export async function POST(req: NextRequest) {
       ],
       callbackUrl: `${baseUrl}/api/payments/callback`,
       listingId,
+      idempotencyKey,
     });
 
     return apiSuccess(result);

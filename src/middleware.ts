@@ -1,5 +1,9 @@
 import { type NextRequest, NextResponse } from "next/server";
 
+import { checkApiSecurity } from "@/lib/middleware/api-security";
+import { csrfMiddleware } from "@/lib/middleware/csrf";
+import { runMiddlewarePipeline } from "@/lib/middleware/pipeline";
+import { rateLimitMiddleware } from "@/lib/middleware/rate-limit";
 import { classifyRoute } from "@/lib/middleware/routes";
 import { updateSession } from "@/lib/supabase/middleware";
 
@@ -7,11 +11,13 @@ import { updateSession } from "@/lib/supabase/middleware";
  * Primary Middleware Entry Point.
  *
  * Orchestrates:
- * 1. Supabase Session Management (Server-side & Cookies)
- * 2. Security Headers (CSP, HSTS, etc.)
- * 3. Auth Redirection Logic
+ * 1. Rate Limiting (DDoS & Brute Force)
+ * 2. API Security (Origin Checks)
+ * 3. CSRF Protection (Double Submit Cookie)
+ * 4. Supabase Session Management & Auth Redirection
+ * 5. Security Headers (CSP, HSTS, etc.)
  */
-export async function proxy(request: NextRequest) {
+export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const route = classifyRoute(pathname);
 
@@ -20,9 +26,13 @@ export async function proxy(request: NextRequest) {
     return NextResponse.next();
   }
 
-  // 2. Heavy Lifting (Session, RLS, Redir)
-  // updateSession already applies security headers and handles auth redirects
-  return await updateSession(request);
+  // 2. Run Security Pipeline
+  return await runMiddlewarePipeline(request, [
+    rateLimitMiddleware,
+    checkApiSecurity,
+    csrfMiddleware,
+    updateSession,
+  ]);
 }
 
 export const config = {

@@ -1,5 +1,7 @@
 "use client";
 
+import React from "react";
+
 import { cn } from "@/lib/utils";
 
 interface ChoiceGroupProps<T extends string> {
@@ -29,20 +31,29 @@ export function ChoiceGroup<T extends string>({
   required,
   error,
 }: ChoiceGroupProps<T>) {
+  const id = React.useId();
+
   return (
-    <div className={cn("space-y-1.5", className)}>
+    <div className={cn("space-y-1.5", className)} role="radiogroup" aria-labelledby={`${id}-label`}>
       {label && (
-        <label className="block text-sm font-bold text-foreground uppercase tracking-wider mb-0.5">
+        <label
+          id={`${id}-label`}
+          className="block text-sm font-bold text-foreground uppercase tracking-wider mb-0.5"
+        >
           {label} {required && <span className="text-destructive">*</span>}
         </label>
       )}
       <div className="flex flex-wrap gap-2">
         {options.map((option) => {
           const isActive = value === option;
+          const optionId = `${id}-${option}`;
           return (
             <button
               key={option}
+              id={optionId}
               type="button"
+              role="radio"
+              aria-checked={isActive}
               disabled={disabled}
               onClick={() => onChange(option)}
               className={cn(
@@ -59,7 +70,10 @@ export function ChoiceGroup<T extends string>({
         })}
       </div>
       {error && (
-        <p className="text-[11px] font-semibold text-destructive mt-1.5 ml-1 animate-in fade-in slide-in-from-top-1">
+        <p
+          role="alert"
+          className="text-[11px] font-semibold text-destructive mt-1.5 ml-1 animate-in fade-in slide-in-from-top-1"
+        >
           {error}
         </p>
       )}

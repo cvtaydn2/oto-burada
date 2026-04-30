@@ -1,7 +1,6 @@
-"use client";
-
-import { MousePointerClick, Smartphone, X } from "lucide-react";
-import { useCallback, useEffect, useRef } from "react";
+import * as Dialog from "@radix-ui/react-dialog";
+import { AlertCircle, MousePointerClick, Smartphone, X } from "lucide-react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 interface Listing360ViewProps {
   isOpen: boolean;
@@ -11,9 +10,7 @@ interface Listing360ViewProps {
 
 /**
  * Lightweight equirectangular (360°) panorama viewer.
- *
- * All image loading and canvas drawing is handled imperatively via refs
- * to avoid ESLint's setState-in-effect restrictions.
+ * Refactored with Radix Dialog for focus trap and accessibility.
  */
 export function Listing360View({ isOpen, imageUrl, onClose }: Listing360ViewProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -24,6 +21,8 @@ export function Listing360View({ isOpen, imageUrl, onClose }: Listing360ViewProp
   const offsetRef = useRef(0);
   const animFrameRef = useRef<number | null>(null);
   const hintRef = useRef<HTMLDivElement | null>(null);
+
+  const [status, setStatus] = useState<"idle" | "loading" | "error" | "ready">("idle");
 
   // Draw the current horizontal slice of the equirectangular panorama
   const draw = useCallback(() => {
@@ -55,15 +54,20 @@ export function Listing360View({ isOpen, imageUrl, onClose }: Listing360ViewProp
     }
   }, []);
 
-  // Load image — fully imperative, no setState
+  // Load image
   useEffect(() => {
-    if (!isOpen || !imageUrl) return;
-
-    const canvas = canvasRef.current;
-    if (canvas) {
-      const ctx = canvas.getContext("2d");
-      ctx?.clearRect(0, 0, canvas.width, canvas.height);
+    if (!isOpen) return;
+    if (!imageUrl) {
+      Promise.resolve().then(() => {
+        if (status !== "error") setStatus("error");
+      });
+      return;
     }
+
+    if (status !== "loading" && !loadedRef.current) {
+      Promise.resolve().then(() => setStatus("loading"));
+    }
+
     loadedRef.current = false;
     imgRef.current = null;
     offsetRef.current = 0;
@@ -71,35 +75,32 @@ export function Listing360View({ isOpen, imageUrl, onClose }: Listing360ViewProp
     const img = new window.Image();
     img.crossOrigin = "anonymous";
     img.src = imageUrl;
+
     img.onload = () => {
       imgRef.current = img;
       loadedRef.current = true;
-      draw();
-      // Show canvas, hide spinner
-      if (canvasRef.current) canvasRef.current.style.opacity = "1";
-      const spinner = canvasRef.current?.previousElementSibling as HTMLElement | null;
-      if (spinner) spinner.style.display = "none";
+      setStatus("ready");
+      requestAnimationFrame(draw);
+
       // Hide hint after 3s
-      if (hintRef.current) {
-        hintRef.current.style.opacity = "1";
-        setTimeout(() => {
-          if (hintRef.current) hintRef.current.style.opacity = "0";
-        }, 3000);
-      }
+      setTimeout(() => {
+        if (hintRef.current) hintRef.current.style.opacity = "0";
+      }, 3000);
     };
-  }, [isOpen, imageUrl, draw]);
 
-  // Keyboard escape
-  useEffect(() => {
-    if (!isOpen) return;
-    const handler = (e: KeyboardEvent) => {
-      if (e.key === "Escape") onClose();
+    img.onerror = () => {
+      Promise.resolve().then(() => {
+        if (status !== "error") setStatus("error");
+      });
     };
-    window.addEventListener("keydown", handler);
-    return () => window.removeEventListener("keydown", handler);
-  }, [isOpen, onClose]);
 
-  // Mouse events
+    return () => {
+      img.onload = null;
+      img.onerror = null;
+    };
+  }, [isOpen, imageUrl, draw, status]);
+
+  // Mouse/Touch Handlers
   const onMouseDown = useCallback((e: React.MouseEvent) => {
     dragging.current = true;
     lastX.current = e.clientX;
@@ -123,7 +124,6 @@ export function Listing360View({ isOpen, imageUrl, onClose }: Listing360ViewProp
     dragging.current = false;
   }, []);
 
-  // Touch events
   const onTouchStart = useCallback((e: React.TouchEvent) => {
     dragging.current = true;
     lastX.current = e.touches[0]?.clientX ?? 0;
@@ -145,68 +145,92 @@ export function Listing360View({ isOpen, imageUrl, onClose }: Listing360ViewProp
     [draw]
   );
 
-  const onTouchEnd = useCallback(() => {
-    dragging.current = false;
-  }, []);
-
-  if (!isOpen) return null;
-
   return (
-    <div
-      className="fixed inset-0 z-[100] flex flex-col bg-black/95 backdrop-blur-sm"
-      role="dialog"
-      aria-modal="true"
-      aria-label="360° Panorama Görüntüleyici"
-    >
-      {/* Header */}
-      <div className="flex items-center justify-between px-6 py-4 flex-shrink-0">
-        <div className="flex items-center gap-2">
-          <div className="flex items-center gap-1.5 bg-blue-600 px-3 py-1 rounded-full text-white text-xs font-bold uppercase tracking-widest">
-            360° Panorama
+    <Dialog.Root open={isOpen} onOpenChange={(open) => !open && onClose()}>
+      <Dialog.Portal>
+        <Dialog.Overlay className="fixed inset-0 z-[100] bg-black/95 backdrop-blur-sm animate-in fade-in duration-300" />
+        <Dialog.Content
+          className="fixed inset-0 z-[101] flex flex-col focus:outline-none"
+          aria-label="360° Panorama Görüntüleyici"
+        >
+          {/* Header */}
+          <div className="flex items-center justify-between px-6 py-4 flex-shrink-0">
+            <div className="flex items-center gap-2">
+              <div className="flex items-center gap-1.5 bg-blue-600 px-3 py-1 rounded-full text-white text-xs font-bold uppercase tracking-widest">
+                360° Panorama
+              </div>
+            </div>
+            <Dialog.Close asChild>
+              <button
+                aria-label="Kapat"
+                className="flex size-11 items-center justify-center rounded-full bg-white/10 text-white hover:bg-white/20 transition-all focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-black"
+              >
+                <X size={22} />
+              </button>
+            </Dialog.Close>
           </div>
-        </div>
-        <button
-          onClick={onClose}
-          aria-label="Kapat"
-          className="flex size-10 items-center justify-center rounded-full bg-card/10 text-white hover:bg-card/20 transition-all"
-        >
-          <X size={20} />
-        </button>
-      </div>
 
-      {/* Canvas container */}
-      <div className="flex-1 flex items-center justify-center relative select-none px-4 pb-4">
-        {/* Spinner — hidden imperatively after image loads */}
-        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-          <div className="size-10 border-4 border-white/20 border-t-white rounded-full animate-spin" />
-        </div>
+          {/* Viewer Area */}
+          <div className="flex-1 flex items-center justify-center relative select-none px-4 pb-4">
+            {status === "loading" && (
+              <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                <div
+                  className="size-10 border-4 border-white/20 border-t-white rounded-full animate-spin"
+                  role="status"
+                  aria-label="360° görüntü yükleniyor"
+                />
+              </div>
+            )}
 
-        <canvas
-          ref={canvasRef}
-          width={1200}
-          height={600}
-          style={{ opacity: 0 }}
-          className="w-full max-h-[70vh] rounded-2xl object-contain cursor-grab active:cursor-grabbing touch-none transition-opacity duration-300"
-          onMouseDown={onMouseDown}
-          onMouseMove={onMouseMove}
-          onMouseUp={onMouseUp}
-          onMouseLeave={onMouseUp}
-          onTouchStart={onTouchStart}
-          onTouchMove={onTouchMove}
-          onTouchEnd={onTouchEnd}
-        />
+            {status === "error" && (
+              <div className="flex flex-col items-center gap-4 text-white text-center">
+                <AlertCircle size={48} className="text-red-500" />
+                <div>
+                  <p className="font-bold text-lg">Görüntü Yüklenemedi</p>
+                  <p className="text-white/60 text-sm">
+                    360° panorama dosyası şu anda kullanılamıyor.
+                  </p>
+                </div>
+                <button
+                  onClick={onClose}
+                  className="mt-2 px-6 py-2 bg-white/10 hover:bg-white/20 rounded-full text-sm font-semibold transition-all"
+                >
+                  Geri Dön
+                </button>
+              </div>
+            )}
 
-        {/* Drag hint — shown imperatively after image loads, fades after 3s */}
-        <div
-          ref={hintRef}
-          style={{ opacity: 0, transition: "opacity 0.5s" }}
-          className="absolute bottom-10 left-1/2 -translate-x-1/2 flex items-center gap-3 bg-black/60 backdrop-blur text-white text-xs font-bold px-4 py-2.5 rounded-full pointer-events-none"
-        >
-          <MousePointerClick size={16} className="hidden sm:block" />
-          <Smartphone size={16} className="sm:hidden" />
-          <span>Sürükleyerek 360° gezdirin</span>
-        </div>
-      </div>
-    </div>
+            {status === "ready" && (
+              <>
+                <canvas
+                  ref={canvasRef}
+                  width={1200}
+                  height={600}
+                  className="w-full max-h-[70vh] rounded-2xl object-contain cursor-grab active:cursor-grabbing touch-none animate-in fade-in duration-500"
+                  onMouseDown={onMouseDown}
+                  onMouseMove={onMouseMove}
+                  onMouseUp={onMouseUp}
+                  onMouseLeave={onMouseUp}
+                  onTouchStart={onTouchStart}
+                  onTouchMove={onTouchMove}
+                  onTouchEnd={onMouseUp}
+                  role="img"
+                  aria-label="Etkileşimli 360 derece araç iç görünümü"
+                />
+
+                <div
+                  ref={hintRef}
+                  className="absolute bottom-10 left-1/2 -translate-x-1/2 flex items-center gap-3 bg-black/60 backdrop-blur text-white text-xs font-bold px-4 py-2.5 rounded-full pointer-events-none transition-opacity duration-500"
+                >
+                  <MousePointerClick size={16} className="hidden sm:block" />
+                  <Smartphone size={16} className="sm:hidden" />
+                  <span>Sürükleyerek 360° gezdirin</span>
+                </div>
+              </>
+            )}
+          </div>
+        </Dialog.Content>
+      </Dialog.Portal>
+    </Dialog.Root>
   );
 }

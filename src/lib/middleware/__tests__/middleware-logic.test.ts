@@ -81,8 +81,8 @@ describe("Middleware Logic - API Security", () => {
     });
 
     const result = checkApiSecurity(req);
-    expect(result.isValid).toBe(false);
-    expect(result.response?.status).toBe(403);
+    expect(result).not.toBeNull();
+    expect(result?.status).toBe(403);
 
     vi.unstubAllEnvs();
   });
@@ -97,7 +97,7 @@ describe("Middleware Logic - API Security", () => {
     });
 
     const result = checkApiSecurity(req);
-    expect(result.isValid).toBe(true);
+    expect(result).toBeNull();
 
     vi.unstubAllEnvs();
   });

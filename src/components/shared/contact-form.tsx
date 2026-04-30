@@ -108,34 +108,43 @@ export function ContactForm() {
     <form onSubmit={handleSubmit} className="space-y-5">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
         <div>
-          <label className="block text-xs font-bold text-gray-700 mb-2">Adınız Soyadınız *</label>
+          <label htmlFor="contact-name" className="block text-xs font-bold text-gray-700 mb-2">
+            Adınız Soyadınız *
+          </label>
           <input
+            id="contact-name"
             type="text"
             required
             value={form.name}
             onChange={(e) => setForm((p) => ({ ...p, name: e.target.value }))}
-            className="w-full border border-gray-200 rounded-xl p-3 text-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-100 outline-none transition"
+            className="w-full border border-gray-200 rounded-xl p-3 text-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-100 outline-none transition focus-visible:ring-2 focus-visible:ring-blue-500"
             placeholder="Adınız Soyadınız"
           />
         </div>
         <div>
-          <label className="block text-xs font-bold text-gray-700 mb-2">E-posta Adresiniz *</label>
+          <label htmlFor="contact-email" className="block text-xs font-bold text-gray-700 mb-2">
+            E-posta Adresiniz *
+          </label>
           <input
+            id="contact-email"
             type="email"
             required
             value={form.email}
             onChange={(e) => setForm((p) => ({ ...p, email: e.target.value }))}
-            className="w-full border border-gray-200 rounded-xl p-3 text-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-100 outline-none transition"
+            className="w-full border border-gray-200 rounded-xl p-3 text-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-100 outline-none transition focus-visible:ring-2 focus-visible:ring-blue-500"
             placeholder="ornek@email.com"
           />
         </div>
       </div>
       <div>
-        <label className="block text-xs font-bold text-gray-700 mb-2">Konu</label>
+        <label htmlFor="contact-subject" className="block text-xs font-bold text-gray-700 mb-2">
+          Konu
+        </label>
         <select
+          id="contact-subject"
           value={form.subject}
           onChange={(e) => setForm((p) => ({ ...p, subject: e.target.value as Subject }))}
-          className="w-full border border-gray-200 rounded-xl p-3 text-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-100 outline-none bg-card transition"
+          className="w-full border border-gray-200 rounded-xl p-3 text-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-100 outline-none bg-card transition focus-visible:ring-2 focus-visible:ring-blue-500"
         >
           {SUBJECTS.map((s) => (
             <option key={s}>{s}</option>
@@ -143,13 +152,16 @@ export function ContactForm() {
         </select>
       </div>
       <div>
-        <label className="block text-xs font-bold text-gray-700 mb-2">Mesajınız *</label>
+        <label htmlFor="contact-message" className="block text-xs font-bold text-gray-700 mb-2">
+          Mesajınız *
+        </label>
         <textarea
+          id="contact-message"
           rows={4}
           required
           value={form.message}
           onChange={(e) => setForm((p) => ({ ...p, message: e.target.value }))}
-          className="w-full border border-gray-200 rounded-xl p-3 text-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-100 outline-none resize-none transition"
+          className="w-full border border-gray-200 rounded-xl p-3 text-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-100 outline-none resize-none transition focus-visible:ring-2 focus-visible:ring-blue-500"
           placeholder="Mesajınızı buraya yazın..."
         />
       </div>
@@ -175,7 +187,7 @@ export function ContactForm() {
       <button
         type="submit"
         disabled={status === "loading"}
-        className="w-full bg-blue-500 hover:bg-blue-600 disabled:opacity-60 text-white font-bold py-3.5 rounded-xl transition shadow-md flex items-center justify-center gap-2"
+        className="w-full bg-blue-500 hover:bg-blue-600 disabled:opacity-60 text-white font-bold py-3.5 rounded-xl transition shadow-md flex items-center justify-center gap-2 focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
       >
         {status === "loading" ? (
           <>
@@ -188,7 +200,10 @@ export function ContactForm() {
         )}
       </button>
       {status === "error" && (
-        <p className="text-sm text-red-600 font-medium text-center">
+        <p
+          role="alert"
+          className="text-sm text-red-600 font-medium text-center animate-in fade-in slide-in-from-top-1"
+        >
           {errorMessage ||
             "Mesaj gönderilemedi. Lütfen tekrar deneyin veya doğrudan e-posta ile ulaşın."}
         </p>

@@ -37,11 +37,11 @@ export function ShareButton({ title, price, className }: ShareButtonProps) {
       onClick={handleShare}
       className={
         className ||
-        "h-11 rounded-xl border border-border bg-card shadow-sm px-5 hover:bg-muted/30 font-medium text-sm gap-2 text-foreground/90 flex items-center transition-all"
+        "h-11 rounded-xl border border-border bg-card shadow-sm px-5 hover:bg-muted/30 font-medium text-sm gap-2 text-foreground/90 flex items-center transition-all focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 outline-none"
       }
     >
-      <Share2 size={18} />
-      {copied ? "Kopyalandı!" : "Paylaş"}
+      <Share2 size={18} aria-hidden="true" />
+      <span aria-live="polite">{copied ? "Kopyalandı!" : "Paylaş"}</span>
     </button>
   );
 }

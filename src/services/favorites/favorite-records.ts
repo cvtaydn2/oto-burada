@@ -9,8 +9,6 @@
  * No silent fallbacks - all errors are thrown for proper error handling.
  */
 
-import { createSupabaseAdminClient } from "@/lib/supabase/admin";
-import { hasSupabaseAdminEnv } from "@/lib/supabase/env";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 
 interface FavoriteRow {
@@ -18,18 +16,7 @@ interface FavoriteRow {
 }
 
 async function getFavoritesClient() {
-  if (process.env.NODE_ENV === "test" && hasSupabaseAdminEnv()) {
-    return createSupabaseAdminClient();
-  }
-
-  try {
-    return await createSupabaseServerClient();
-  } catch {
-    if (!hasSupabaseAdminEnv()) {
-      throw new Error("Supabase admin client unavailable");
-    }
-    return createSupabaseAdminClient();
-  }
+  return await createSupabaseServerClient();
 }
 
 /**

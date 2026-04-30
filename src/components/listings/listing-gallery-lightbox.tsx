@@ -1,7 +1,6 @@
-"use client";
-
+import * as Dialog from "@radix-ui/react-dialog";
 import { ChevronLeft, ChevronRight, GripVertical, X } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 
 import { SafeImage } from "@/components/shared/safe-image";
 import { supabaseImageUrl } from "@/lib/utils";
@@ -32,26 +31,6 @@ export function ListingGalleryLightbox({
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
   const [touchStart, setTouchStart] = useState<{ x: number; y: number } | null>(null);
   const imageRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    document.body.style.overflow = isOpen ? "hidden" : "";
-    return () => {
-      document.body.style.overflow = "";
-    };
-  }, [isOpen]);
-
-  useEffect(() => {
-    if (!isOpen) return;
-
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "ArrowRight") onNext();
-      else if (e.key === "ArrowLeft") onPrev();
-      else if (e.key === "Escape") onClose();
-    };
-
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [isOpen, onNext, onPrev, onClose]);
 
   const handleWheel = (e: React.WheelEvent) => {
     e.preventDefault();
@@ -122,155 +101,139 @@ export function ListingGalleryLightbox({
     }
   };
 
-  if (!isOpen) {
-    return null;
-  }
-
   const currentImage = images[currentIndex];
 
   return (
-    <div
-      className="fixed inset-0 z-[100] flex flex-col bg-black/98 backdrop-blur-2xl touch-none"
-      onClick={onClose}
-      role="dialog"
-      aria-modal="true"
-      aria-label={`${title} - Fotoğraf görüntüleyici`}
-    >
-      <div className="flex items-center justify-between p-4 sm:p-6">
-        <div className="text-xs sm:text-sm font-bold uppercase tracking-widest text-white truncate max-w-[60%] sm:max-w-none">
-          {title}
-          <span className="ml-2 text-white/40 hidden sm:inline">
-            ({currentIndex + 1} / {images.length})
-          </span>
-        </div>
-        <button
-          onClick={onClose}
-          aria-label="Kapat"
-          className="flex size-12 items-center justify-center rounded-full bg-card/10 text-white shadow-sm transition-all hover:bg-card/20"
+    <Dialog.Root open={isOpen} onOpenChange={(open) => !open && onClose()}>
+      <Dialog.Portal>
+        <Dialog.Overlay className="fixed inset-0 z-[100] bg-black/98 backdrop-blur-2xl animate-in fade-in duration-300" />
+        <Dialog.Content
+          className="fixed inset-0 z-[101] flex flex-col focus:outline-none"
+          aria-label={`${title} - Fotoğraf görüntüleyici`}
         >
-          <X size={24} />
-        </button>
-      </div>
-
-      {/* Only render the current image — not all images at once */}
-      <div
-        className="relative flex flex-1 items-center justify-center overflow-hidden p-2 sm:p-4"
-        onClick={(e) => e.stopPropagation()}
-        onTouchStart={handleTouchStart}
-        onTouchMove={handleTouchMove}
-        onTouchEnd={handleTouchEnd}
-        onWheel={handleWheel}
-      >
-        {currentImage && (
-          <div
-            ref={imageRef}
-            className="relative h-full w-full max-w-7xl"
-            style={{
-              cursor: scale > 1 ? (isDragging ? "grabbing" : "grab") : "zoom-in",
-              transform: `scale(${scale}) translate(${position.x / scale}px, ${position.y / scale}px)`,
-              transition: isDragging ? "none" : "transform 0.2s ease-out",
-            }}
-            onMouseDown={handleMouseDown}
-            onMouseMove={handleMouseMove}
-            onMouseUp={handleMouseUp}
-            onMouseLeave={handleMouseUp}
-            onClick={handleImageClick}
-          >
-            <SafeImage
-              key={`${currentImage.url}-${currentIndex}`}
-              src={supabaseImageUrl(currentImage.url, 1600, 85)}
-              alt={`${title} - ${currentIndex + 1}`}
-              fill
-              className="object-contain select-none"
-              sizes="100vw"
-              priority
-              placeholder={currentImage.placeholderBlur ? "blur" : "empty"}
-              blurDataURL={currentImage.placeholderBlur ?? undefined}
-              draggable={false}
-            />
+          {/* Header */}
+          <div className="flex items-center justify-between p-4 sm:p-6 flex-shrink-0">
+            <div className="text-xs sm:text-sm font-bold uppercase tracking-widest text-white truncate max-w-[60%] sm:max-w-none">
+              {title}
+              <span className="ml-2 text-white/40 hidden sm:inline">
+                ({currentIndex + 1} / {images.length})
+              </span>
+            </div>
+            <Dialog.Close asChild>
+              <button
+                aria-label="Kapat"
+                className="flex size-12 items-center justify-center rounded-full bg-white/10 text-white shadow-sm transition-all hover:bg-white/20 focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-black"
+              >
+                <X size={24} />
+              </button>
+            </Dialog.Close>
           </div>
-        )}
 
-        {images.length > 1 && (
-          <>
-            {/* Desktop arrows */}
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                onPrev();
-              }}
-              aria-label="Önceki fotoğraf"
-              className="absolute left-4 sm:left-6 size-12 sm:size-16 items-center justify-center rounded-full bg-card/5 text-white transition-all hover:bg-card/20 hidden sm:flex"
-            >
-              <ChevronLeft size={28} className="sm:size-32" />
-            </button>
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                onNext();
-              }}
-              aria-label="Sonraki fotoğraf"
-              className="absolute right-4 sm:right-6 size-12 sm:size-16 items-center justify-center rounded-full bg-card/5 text-white transition-all hover:bg-card/20 hidden sm:flex"
-            >
-              <ChevronRight size={28} className="sm:size-32" />
-            </button>
-
-            {/* Mobile swipe zones */}
-            <div
-              className="absolute left-0 top-0 bottom-0 w-1/4 flex items-center justify-start pl-2 sm:hidden"
-              onClick={(e) => {
-                e.stopPropagation();
-                onPrev();
-              }}
-            >
-              <div className="size-14 items-center justify-center rounded-full bg-card/20 text-white/60 flex">
-                <ChevronLeft size={24} />
+          {/* Main Content Area */}
+          <div
+            className="relative flex flex-1 items-center justify-center overflow-hidden p-2 sm:p-4"
+            onTouchStart={handleTouchStart}
+            onTouchMove={handleTouchMove}
+            onTouchEnd={handleTouchEnd}
+            onWheel={handleWheel}
+          >
+            {currentImage && (
+              <div
+                ref={imageRef}
+                className="relative h-full w-full max-w-7xl"
+                style={{
+                  cursor: scale > 1 ? (isDragging ? "grabbing" : "grab") : "zoom-in",
+                  transform: `scale(${scale}) translate(${position.x / scale}px, ${position.y / scale}px)`,
+                  transition: isDragging ? "none" : "transform 0.2s ease-out",
+                }}
+                onMouseDown={handleMouseDown}
+                onMouseMove={handleMouseMove}
+                onMouseUp={handleMouseUp}
+                onMouseLeave={handleMouseUp}
+                onClick={handleImageClick}
+              >
+                <SafeImage
+                  key={`${currentImage.url}-${currentIndex}`}
+                  src={supabaseImageUrl(currentImage.url, 1600, 85)}
+                  alt={`${title} - ${currentIndex + 1}`}
+                  fill
+                  className="object-contain select-none"
+                  sizes="100vw"
+                  priority
+                  placeholder={currentImage.placeholderBlur ? "blur" : "empty"}
+                  blurDataURL={currentImage.placeholderBlur ?? undefined}
+                  draggable={false}
+                />
               </div>
+            )}
+
+            {images.length > 1 && (
+              <>
+                {/* Previous Button */}
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onPrev();
+                  }}
+                  aria-label="Önceki fotoğraf"
+                  className="absolute left-4 sm:left-6 z-10 size-12 sm:size-16 flex items-center justify-center rounded-full bg-white/5 text-white transition-all hover:bg-white/20 focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-black"
+                >
+                  <ChevronLeft className="size-7 sm:size-8" />
+                </button>
+
+                {/* Next Button */}
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onNext();
+                  }}
+                  aria-label="Sonraki fotoğraf"
+                  className="absolute right-4 sm:right-6 z-10 size-12 sm:size-16 flex items-center justify-center rounded-full bg-white/5 text-white transition-all hover:bg-white/20 focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-black"
+                >
+                  <ChevronRight className="size-7 sm:size-8" />
+                </button>
+              </>
+            )}
+
+            {/* Zoom indicator */}
+            <div className="absolute bottom-20 sm:bottom-4 left-1/2 -translate-x-1/2 text-white/40 text-xs flex items-center gap-2 pointer-events-none">
+              <GripVertical size={14} />
+              <span className="hidden sm:inline">Kaydır / Scroll ile büyüt</span>
+              <span className="sm:hidden">Dokun / Kaydır</span>
             </div>
-            <div
-              className="absolute right-0 top-0 bottom-0 w-1/4 flex items-center justify-end pr-2 sm:hidden"
-              onClick={(e) => {
-                e.stopPropagation();
-                onNext();
-              }}
-            >
-              <div className="size-14 items-center justify-center rounded-full bg-card/20 text-white/60 flex">
-                <ChevronRight size={24} />
-              </div>
+          </div>
+
+          {/* Footer Navigation */}
+          <div className="flex flex-col items-center gap-4 p-4 sm:p-8 flex-shrink-0">
+            {/* Dot navigation */}
+            <div className="flex justify-center gap-2 overflow-x-auto max-w-full no-scrollbar px-4">
+              {images.map((_, index) => (
+                <button
+                  key={index}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    // Custom implementation for direct dot navigation could go here
+                  }}
+                  aria-label={`Fotoğraf ${index + 1}'e git`}
+                  aria-current={index === currentIndex ? "true" : "false"}
+                  className="group p-2" // 44px touch target via padding
+                >
+                  <div
+                    className={`h-2 sm:h-1.5 rounded-full transition-all ${
+                      index === currentIndex ? "w-6 sm:w-8 bg-primary" : "w-2 sm:w-1.5 bg-white/40"
+                    } group-hover:bg-white/60 group-focus-visible:ring-2 group-focus-visible:ring-white`}
+                  />
+                </button>
+              ))}
             </div>
-          </>
-        )}
 
-        {/* Zoom indicator */}
-        <div className="absolute bottom-20 sm:bottom-4 left-1/2 -translate-x-1/2 text-white/40 text-xs flex items-center gap-2">
-          <GripVertical size={14} />
-          <span className="hidden sm:inline">Kaydır / Scroll ile büyüt</span>
-          <span className="sm:hidden">Dokun / Kaydır</span>
-        </div>
-      </div>
-
-      {/* Dot navigation */}
-      <div
-        className="flex justify-center gap-2 overflow-x-auto p-4 sm:p-8"
-        onClick={(e) => e.stopPropagation()}
-      >
-        {images.map((_, index) => (
-          <button
-            key={index}
-            onClick={(e) => {
-              e.stopPropagation();
-            }}
-            className={`h-2 sm:h-1.5 rounded-full transition-all ${
-              index === currentIndex ? "w-6 sm:w-8 bg-primary" : "w-2 sm:w-1.5 bg-card/40"
-            }`}
-          />
-        ))}
-      </div>
-
-      {/* Mobile counter */}
-      <div className="sm:hidden text-center text-white/60 text-xs pb-2">
-        {currentIndex + 1} / {images.length}
-      </div>
-    </div>
+            {/* Mobile counter */}
+            <div className="sm:hidden text-center text-white/60 text-xs font-medium">
+              {currentIndex + 1} / {images.length}
+            </div>
+          </div>
+        </Dialog.Content>
+      </Dialog.Portal>
+    </Dialog.Root>
   );
 }

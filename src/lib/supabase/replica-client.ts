@@ -20,7 +20,7 @@ export async function getReadSupabaseClient() {
 
   // Production'da SUPABASE_READ_REPLICA_URL tanımlıysa ona bağlanır
   if (process.env.SUPABASE_READ_REPLICA_URL) {
-    return await createSupabaseServerClient();
+    return await createSupabaseServerClient(process.env.SUPABASE_READ_REPLICA_URL);
   }
 
   return await createSupabaseServerClient();

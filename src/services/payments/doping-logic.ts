@@ -1,5 +1,5 @@
 import { logger } from "@/lib/logging/logger";
-import { createSupabaseAdminClient } from "@/lib/supabase/admin";
+import { createSupabaseServerClient } from "@/lib/supabase/server";
 
 /**
  * Applies a doping package to a listing using the activate_doping RPC.
@@ -14,7 +14,7 @@ export async function applyDopingPackage(params: {
   packageId: string;
   paymentId: string;
 }) {
-  const admin = createSupabaseAdminClient();
+  const supabase = await createSupabaseServerClient();
 
   // Map slug to DB UUID if needed
   const dbPackageId = await getDbPackageId(params.packageId);
@@ -23,7 +23,8 @@ export async function applyDopingPackage(params: {
   }
 
   // Call the RPC function
-  const { data, error } = await admin.rpc("activate_doping", {
+  // USE SERVER CLIENT: Enforce RLS and auth context on RPC call
+  const { data, error } = await supabase.rpc("activate_doping", {
     p_user_id: params.userId,
     p_listing_id: params.listingId,
     p_package_id: dbPackageId,
@@ -50,8 +51,8 @@ export async function applyDopingPackage(params: {
  * Private helper function
  */
 async function getDbPackageId(slug: string): Promise<string | null> {
-  const admin = createSupabaseAdminClient();
-  const { data } = await admin.from("doping_packages").select("id").eq("slug", slug).single();
+  const supabase = await createSupabaseServerClient();
+  const { data } = await supabase.from("doping_packages").select("id").eq("slug", slug).single();
 
   return data?.id || null;
 }
@@ -63,8 +64,8 @@ async function getDbPackageId(slug: string): Promise<string | null> {
  * Migration: Phase 28.5 - Legacy Service Patterns Migration
  */
 export async function getActiveDopingsForListing(listingId: string) {
-  const admin = createSupabaseAdminClient();
-  const { data, error } = await admin.rpc("get_active_dopings_for_listing", {
+  const supabase = await createSupabaseServerClient();
+  const { data, error } = await supabase.rpc("get_active_dopings_for_listing", {
     p_listing_id: listingId,
   });
 

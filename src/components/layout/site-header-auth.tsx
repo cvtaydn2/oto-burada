@@ -1,6 +1,6 @@
 "use client";
 
-import { Heart, PlusCircle } from "lucide-react";
+import { Heart, PlusCircle, User } from "lucide-react";
 import Link from "next/link";
 
 import { useNavigation } from "@/hooks/use-navigation";
@@ -26,27 +26,30 @@ export function SiteHeaderAuth({
         <Link
           href={favoritesHref}
           prefetch={false}
-          className="text-muted-foreground transition-colors hover:text-red-500"
+          className="flex size-11 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-muted hover:text-red-500 focus-visible:ring-2 focus-visible:ring-primary outline-none"
           aria-label="Favoriler"
         >
-          <Heart size={22} strokeWidth={1.5} />
+          <Heart size={22} strokeWidth={1.5} aria-hidden="true" />
         </Link>
       </div>
 
       <div className="flex items-center gap-2 sm:gap-4">
         {/* Auth state yüklenene kadar skeleton göster — "Giriş Yap" flash'ını önler */}
         {!isReady ? (
-          <div className="size-8 rounded-full bg-muted animate-pulse" />
+          <div className="size-11 rounded-full bg-muted animate-pulse" />
         ) : (
-          <Link href={accountHref} prefetch={false} className="flex items-center gap-2 group p-1">
+          <Link
+            href={accountHref}
+            prefetch={false}
+            className="flex size-11 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-muted hover:text-primary focus-visible:ring-2 focus-visible:ring-primary outline-none"
+            aria-label={isAuthenticated ? "Hesabım" : "Giriş Yap"}
+          >
             {isAuthenticated && user ? (
-              <div className="size-10 overflow-hidden rounded-full border border-border bg-blue-500 flex items-center justify-center text-white text-xs font-bold select-none">
+              <div className="size-9 overflow-hidden rounded-full border border-border bg-blue-500 flex items-center justify-center text-white text-xs font-bold select-none">
                 <span>{user.email?.charAt(0).toUpperCase() ?? "U"}</span>
               </div>
             ) : (
-              <span className="text-sm font-medium text-muted-foreground transition-colors hover:text-primary">
-                Giriş Yap
-              </span>
+              <User size={22} strokeWidth={1.5} aria-hidden="true" />
             )}
           </Link>
         )}

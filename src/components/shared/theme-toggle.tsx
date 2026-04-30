@@ -22,7 +22,7 @@ export function ThemeToggle() {
   return (
     <button
       onClick={() => setTheme(resolvedTheme === "light" ? "dark" : "light")}
-      className="inline-flex size-10 items-center justify-center rounded-xl border border-border bg-background transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+      className="inline-flex size-11 items-center justify-center rounded-xl border border-border bg-background transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
       aria-label={resolvedTheme === "light" ? "Karanlık temaya geç" : "Aydınlık temaya geç"}
     >
       {resolvedTheme === "light" ? (

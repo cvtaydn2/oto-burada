@@ -1,4 +1,4 @@
-import { ChatService } from "@/services/chat/chat-service";
+import { sendChatMessage } from "@/services/chat/chat-logic";
 import type { SendMessageInput } from "@/types/chat";
 
 /**
@@ -24,7 +24,7 @@ export async function sendMessageUseCase(input: SendMessageInput) {
   }
 
   try {
-    const message = await ChatService.sendMessage(input);
+    const message = await sendChatMessage(input);
 
     return {
       success: true as const,

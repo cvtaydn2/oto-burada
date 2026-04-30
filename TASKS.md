@@ -792,18 +792,6 @@ The MVP is complete when:
 - [x] Populate migration history with correct checksums to resolve tracking drift.
 - [x] Update `migration-manager.mjs` to handle production-specific column differences if any persist.
 
-### Task 57.2 — Server-Side Observability
-- [x] Enhance `api/health-check` to monitor migration status and critical table availability.
-- [x] Optimize `instrumentation.ts` for comprehensive server-side error capturing (Vercel Logs + Internal Logger).
-- [ ] Verify UptimeRobot integration with the enhanced health-check endpoint.
-
-### Task 57.4 — PostHog Decommissioning & Local Logging
-- [x] Completely remove `posthog-js` and `posthog-node` dependencies.
-- [x] Create monitoring shims (`posthog-client.ts`, `posthog-server.ts`) to route events to internal `logger`.
-- [x] Clean up CSP and environment validation logic.
-- [x] Stabilize authentication state synchronization without external tracking.
-
-### Task 57.3 — Production Security Hardening
 - [x] Audit all `SECURITY DEFINER` functions for public execution risks.
 - [x] Revoke `EXECUTE` on sensitive functions from `anon` and `authenticated` roles.
 - [x] Resolve lint warnings in `header-mobile-nav.tsx`.
@@ -888,3 +876,53 @@ The MVP is complete when:
 - [x] Ensure all Vercel and Supabase production environment variables are documented and set.
 - [x] Validate Vercel deployment builds successfully.
 - [x] Confirm error tracking mechanisms are active.
+
+---
+
+## Phase 63 — UI/UX Hardening & Accessibility ✅
+
+### Task 63.1 — Global Accessibility (A11y) Remediation ✅
+- [x] Implement focus trapping and keyboard navigation for all modals using Radix UI.
+- [x] Fix orphaned form labels and ensure proper input associations in all shared forms.
+- [x] Add ARIA live regions for dynamic result updates and status feedback.
+- [x] Ensure all interactive icons have accessible names and correct ARIA roles.
+
+### Task 63.2 — Touch Target Optimization ✅
+- [x] Standardize all interactive controls to a minimum 44x44px hit area per WCAG.
+- [x] Increase touch targets for mobile navigation, header icons, and gallery controls.
+
+### Task 63.3 — PWA & UX Stabilization ✅
+- [x] Stabilize PWA installation flow using native `beforeinstallprompt` events.
+- [x] Implement robust loading states and success/error announcements.
+
+#### Acceptance Criteria
+- [x] Platform passes basic accessibility audits (Lighthouse A11y > 95).
+- [x] All critical forms are navigable and usable by screen readers.
+- [x] PWA installation works reliably on supported mobile browsers.
+
+---
+
+## Phase 63 — Accessibility & Codebase Quality Hardening ✅
+
+### Task 63.1 — Accessibility (A11y) Implementation
+- [x] Standardize touch targets to 44x44px minimum across all navigation and gallery controls.
+- [x] Implement Radix-based focus management for all modals and lightboxes.
+- [x] Add dynamic ARIA labels and live regions for user feedback (copy actions, filters).
+- [x] Ensure strict label-input association using `useId` in design system components.
+
+### Task 63.2 — PWA Stability & Performance
+- [x] Stabilize PWA installation flow with native `beforeinstallprompt` handling.
+- [x] Implement platform-specific installation instructions (iOS Safari).
+- [x] Optimize asset delivery for mobile network conditions.
+
+### Task 63.3 — Codebase Sanitization
+- [x] Eliminate all ESLint warnings and errors across the project.
+- [x] Achieve zero-warning production build (`npm run build`).
+- [x] Refactor explicit 'any' types in critical service layers (`listing-submission-persistence`).
+- [x] Fix synchronous `setState` warnings in effects (`Listing360View`).
+
+#### Acceptance Criteria
+- [x] `npm run build` passes with zero warnings.
+- [x] Lighthouse Accessibility score > 95.
+- [x] PWA installation prompt triggers reliably on supported browsers.
+

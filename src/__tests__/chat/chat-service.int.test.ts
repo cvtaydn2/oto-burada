@@ -1,7 +1,7 @@
 import { beforeAll, describe, expect, it } from "vitest";
 
 import { createSupabaseAdminClient } from "../../lib/supabase/admin";
-import { ChatService } from "../../services/chat/chat-service";
+import { getChatMessages, getUserChats } from "../../services/chat/chat-logic";
 
 describe("ChatService Integration Tests", () => {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -24,7 +24,7 @@ describe("ChatService Integration Tests", () => {
   });
 
   it("should fetch chats for a user", async () => {
-    const chats = await ChatService.getChatsForUser(testUser.id);
+    const chats = await getUserChats(testUser.id);
     expect(Array.isArray(chats)).toBe(true);
 
     if (chats.length > 0) {
@@ -41,7 +41,7 @@ describe("ChatService Integration Tests", () => {
 
   it("should handle non-existent user with empty array", async () => {
     const randomId = "00000000-0000-0000-0000-000000000000";
-    const chats = await ChatService.getChatsForUser(randomId);
+    const chats = await getUserChats(randomId);
     expect(chats).toEqual([]);
   });
 
@@ -57,7 +57,7 @@ describe("ChatService Integration Tests", () => {
 
     if (chat) {
       try {
-        const messages = await ChatService.getMessages(chat.id, testUser.id);
+        const messages = await getChatMessages(chat.id, testUser.id);
         expect(Array.isArray(messages)).toBe(true);
         if (messages.length > 0) {
           expect(messages[0]).toHaveProperty("content");

@@ -77,28 +77,36 @@ export function SafeWhatsAppButton({
         onClick={handleAction}
         disabled={loading}
         className={cn(
-          "w-full flex items-center justify-center gap-2 rounded-xl h-12 transition-all active:scale-95 text-sm font-bold uppercase tracking-widest disabled:opacity-70",
+          "w-full flex items-center justify-center gap-2 rounded-xl h-12 transition-all active:scale-95 text-sm font-bold uppercase tracking-widest disabled:opacity-70 focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 outline-none",
           getVariantStyles(),
           className
         )}
       >
         {loading ? (
-          <Loader2 className="size-4 animate-spin" />
+          <>
+            <Loader2 className="size-4 animate-spin" aria-hidden="true" />
+            <span className="sr-only">Yükleniyor...</span>
+          </>
         ) : (
           <>
-            {icon || <MessageSquare size={16} />}
-            {label ||
-              (offerPrice
-                ? `₺${new Intl.NumberFormat("tr-TR").format(offerPrice)} Teklif Yap`
-                : "WhatsApp ile Ulaş")}
+            {icon || <MessageSquare size={16} aria-hidden="true" />}
+            <span>
+              {label ||
+                (offerPrice
+                  ? `₺${new Intl.NumberFormat("tr-TR").format(offerPrice)} Teklif Yap`
+                  : "WhatsApp ile Ulaş")}
+            </span>
           </>
         )}
       </button>
 
       {error && (
-        <div className="absolute -top-10 left-0 right-0 animate-in fade-in slide-in-from-bottom-2">
+        <div
+          role="alert"
+          className="absolute -top-10 left-0 right-0 animate-in fade-in slide-in-from-bottom-2"
+        >
           <div className="bg-destructive text-destructive-foreground text-[10px] py-1 px-3 rounded-lg flex items-center gap-1.5 shadow-lg">
-            <AlertCircle size={12} />
+            <AlertCircle size={12} aria-hidden="true" />
             {error}
           </div>
         </div>

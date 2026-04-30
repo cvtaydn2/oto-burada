@@ -48,13 +48,18 @@ export const DesignInput = React.forwardRef<
     },
     ref
   ) => {
+    const generatedId = React.useId();
+    const id = props.id || generatedId;
     const Component = as as React.ElementType;
 
     return (
       <div className={cn("space-y-1.5", hideLabel && "space-y-0")}>
         {!hideLabel && (
           <div className="flex items-center justify-between mb-0.5">
-            <label className="block text-sm font-bold text-foreground uppercase tracking-wider">
+            <label
+              htmlFor={id}
+              className="block text-sm font-bold text-foreground uppercase tracking-wider"
+            >
               {label} {required && <span className="text-destructive">*</span>}
             </label>
             {labelExtra && <div className="flex items-center">{labelExtra}</div>}
@@ -81,6 +86,9 @@ export const DesignInput = React.forwardRef<
           )}
           <Component
             ref={ref}
+            id={id}
+            aria-invalid={!!error}
+            aria-describedby={error ? `${id}-error` : helperText ? `${id}-helper` : undefined}
             className={cn(
               "w-full border rounded-xl p-3 text-sm focus:ring-2 focus:ring-primary/20 outline-none transition-all",
               "placeholder:text-muted-foreground/40 text-foreground",
@@ -102,11 +110,17 @@ export const DesignInput = React.forwardRef<
         </div>
 
         {error ? (
-          <p className="text-[11px] font-semibold text-destructive mt-1.5 ml-1 animate-in fade-in slide-in-from-top-1">
+          <p
+            id={`${id}-error`}
+            role="alert"
+            className="text-[11px] font-semibold text-destructive mt-1.5 ml-1 animate-in fade-in slide-in-from-top-1"
+          >
             {error}
           </p>
         ) : helperText ? (
-          <p className="text-[10px] text-muted-foreground mt-1.5 ml-1">{helperText}</p>
+          <p id={`${id}-helper`} className="text-[10px] text-muted-foreground mt-1.5 ml-1">
+            {helperText}
+          </p>
         ) : null}
       </div>
     );

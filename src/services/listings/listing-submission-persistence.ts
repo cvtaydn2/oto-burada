@@ -1,9 +1,9 @@
 import { logger } from "@/lib/logging/logger";
 import { sanitizeDescription } from "@/lib/sanitization/sanitize";
-import { createSupabaseAdminClient } from "@/lib/supabase/admin";
-import { hasSupabaseAdminEnv } from "@/lib/supabase/env";
+import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { Listing } from "@/types";
 
+import { listingSelect } from "./listing-submission-query";
 import { ListingRow, mapListingRow } from "./mappers/listing-row.mapper";
 
 type ListingPersistenceError =
@@ -39,7 +39,7 @@ export function mapListingToDatabaseRow(listing: Listing) {
     mileage: listing.mileage,
     fuel_type: listing.fuelType,
     transmission: listing.transmission,
-    price: listing.price,
+    price: Math.round(listing.price * 100), // PILL: Store as kurus (bigint) for precision
     city: listing.city,
     district: listing.district,
     description: sanitizeDescription(listing.description),
@@ -63,9 +63,9 @@ export function mapListingToDatabaseRow(listing: Listing) {
     bumped_at: listing.bumpedAt ?? null,
     car_trim: listing.carTrim ?? null,
     expert_inspection: listing.expertInspection ?? null,
-    // ── PILL: Issue 5 - OCC Increment ──────────
-    // We increment version on every database level update.
-    version: (listing.version ?? 0) + 1,
+    // PILL: Issue C-5 - Pass current version, don't increment here.
+    // The increment is handled by the database RPCs.
+    version: listing.version ?? 0,
   };
 }
 
@@ -99,153 +99,46 @@ export async function createDatabaseListing(
   listing: Listing,
   maxRetries: number = 3
 ): Promise<ListingPersistenceResult> {
-  if (!hasSupabaseAdminEnv()) return { error: "configuration_error" as const };
-
-  const admin = createSupabaseAdminClient();
+  const supabase = await createSupabaseServerClient();
   let currentListing = listing;
 
   for (let attempt = 0; attempt < maxRetries; attempt++) {
-    // OPTIMIZATION: Use .select() to return inserted data in same query
-    let insertResult;
-    try {
-      insertResult = await admin
-        .from("listings")
-        .insert(mapListingToDatabaseRow(currentListing))
-        .select(
-          `
-          id,
-          seller_id,
-          slug,
-          title,
-          category,
-          brand,
-          model,
-          year,
-          mileage,
-          fuel_type,
-          transmission,
-          price,
-          city,
-          district,
-          description,
-          whatsapp_phone,
-          vin,
-          license_plate,
-          car_trim,
-          tramer_amount,
-          damage_status_json,
-          fraud_score,
-          fraud_reason,
-          status,
-          featured,
-          featured_until,
-          urgent_until,
-          highlighted_until,
-          market_price_index,
-          expert_inspection,
-          published_at,
-          bumped_at,
-          view_count,
-          version,
-          created_at,
-          updated_at
-        `
-        )
-        .single();
-    } catch (err) {
-      insertResult = { data: null, error: err as { code?: string; message?: string } };
-    }
+    // PILL: Issue C-4 / H-3 - Atomic creation & quota check via RPC
+    const imagesToUpsert = currentListing.images.map((img) => ({
+      storage_path: img.storagePath,
+      public_url: img.url,
+      is_cover: img.isCover,
+      sort_order: img.order,
+      placeholder_blur: img.placeholderBlur ?? null,
+    }));
 
-    if (insertResult.error) {
-      // Check for unique constraint violation (slug collision)
-      const classifiedError = classifyPersistenceError(insertResult.error);
-      const isSlugCollision = classifiedError === "slug_collision";
+    const { data: createdListingRow, error: rpcError } = await supabase.rpc(
+      "create_listing_with_images",
+      {
+        p_listing_data: mapListingToDatabaseRow(currentListing),
+        p_images_to_upsert: imagesToUpsert,
+      }
+    );
 
-      if (isSlugCollision && attempt < maxRetries - 1) {
-        // Generate new slug with suffix and retry
-        const baseSlug = listing.slug.replace(/-\d+$/, ""); // Remove existing suffix
-        const newSlug = `${baseSlug}-${attempt + 2}`; // Start from -2, -3, etc.
-
-        currentListing = {
-          ...currentListing,
-          slug: newSlug,
-        };
-
-        continue; // Retry with new slug
+    if (rpcError) {
+      if (rpcError.message === "quota_exceeded") {
+        return { error: "database_error" as const };
       }
 
-      // Max retries reached or other error
-      if (isSlugCollision) {
-        return { error: "slug_collision" as const };
+      const classifiedError = classifyPersistenceError(rpcError);
+      if (classifiedError === "slug_collision" && attempt < maxRetries - 1) {
+        const baseSlug = currentListing.slug.replace(/-\d+$/, "");
+        const newSlug = `${baseSlug}-${attempt + 2}`;
+        currentListing = { ...currentListing, slug: newSlug };
+        continue;
       }
       return { error: classifiedError };
     }
 
-    // Listing inserted successfully, now insert images
-    const imageRows = mapListingImagesToDatabaseRows(currentListing);
-    if (imageRows.length > 0) {
-      const imageInsertResult = await admin.from("listing_images").insert(imageRows);
-      if (imageInsertResult.error) {
-        // Rollback: delete the listing row
-        await admin.from("listings").delete().eq("id", currentListing.id);
-
-        // Compensating cleanup: queue storage files and registry entries for removal
-        // so uploaded files don't become orphans.
-        const storagePaths = currentListing.images
-          .map((img) => img.storagePath)
-          .filter((p) => p.length > 0);
-        if (storagePaths.length > 0) {
-          const bucketName = process.env.SUPABASE_STORAGE_BUCKET_LISTINGS ?? "listing-images";
-          const { queueFileCleanup } = await import("@/lib/storage/registry");
-          await queueFileCleanup(bucketName, storagePaths);
-        }
-
-        return { error: "image_persistence_error" as const };
-      }
-    }
-
-    // OPTIMIZATION: Construct listing from insert result + images (no extra fetch)
+    const listingRow = createdListingRow as ListingRow;
     const createdListing: Listing = {
-      id: insertResult.data.id,
-      sellerId: insertResult.data.seller_id,
-      slug: insertResult.data.slug,
-      title: insertResult.data.title,
-      category: insertResult.data.category ?? "otomobil",
-      brand: insertResult.data.brand,
-      model: insertResult.data.model,
-      year: insertResult.data.year,
-      mileage: insertResult.data.mileage,
-      fuelType: insertResult.data.fuel_type,
-      transmission: insertResult.data.transmission,
-      price: Number(insertResult.data.price),
-      city: insertResult.data.city,
-      district: insertResult.data.district,
-      description: insertResult.data.description,
-      whatsappPhone: insertResult.data.whatsapp_phone,
-      licensePlate: insertResult.data.license_plate ?? null,
-      vin: insertResult.data.vin ?? null,
-      carTrim: insertResult.data.car_trim ?? null,
-      tramerAmount:
-        insertResult.data.tramer_amount != null ? Number(insertResult.data.tramer_amount) : null,
-      damageStatusJson:
-        (insertResult.data.damage_status_json as Record<string, string> | null) ?? null,
-      fraudScore: insertResult.data.fraud_score ?? 0,
-      fraudReason: insertResult.data.fraud_reason ?? null,
-      status: insertResult.data.status,
-      featured: insertResult.data.featured,
-      featuredUntil: insertResult.data.featured_until ?? null,
-      urgentUntil: insertResult.data.urgent_until ?? null,
-      highlightedUntil: insertResult.data.highlighted_until ?? null,
-      marketPriceIndex: insertResult.data.market_price_index
-        ? Number(insertResult.data.market_price_index)
-        : null,
-      expertInspection: insertResult.data.expert_inspection ?? undefined,
-      bumpedAt: insertResult.data.bumped_at ?? null,
-      viewCount: insertResult.data.view_count ?? 0,
-      version: insertResult.data.version ?? 0,
-      createdAt: insertResult.data.created_at,
-      updatedAt: insertResult.data.updated_at,
-      images: currentListing.images, // Use the images we just inserted
+      ...mapListingRow(listingRow),
+      images: currentListing.images, // Keep rich image objects if needed, or trust mapListingRow
     };
 
     return { listing: createdListing };
@@ -263,167 +156,63 @@ export async function createDatabaseListing(
  * - Eliminates getDatabaseListings() calls before/after update
  * - Reduces latency by ~100-200ms per listing update
  */
-export async function updateDatabaseListing(listing: Listing) {
-  if (!hasSupabaseAdminEnv()) return { error: "configuration_error" as const };
-  const admin = createSupabaseAdminClient();
-  const listingsTable = admin.from("listings");
-  const updateQuery = listingsTable.update(mapListingToDatabaseRow(listing));
-  const filteredUpdateQuery =
-    "match" in updateQuery && typeof updateQuery.match === "function"
-      ? updateQuery.match({ id: listing.id, version: listing.version ?? 0 })
-      : updateQuery.eq("id", listing.id).eq("version", listing.version ?? 0);
+export async function updateDatabaseListing(listing: Listing): Promise<ListingPersistenceResult> {
+  const supabase = await createSupabaseServerClient();
 
-  // OPTIMIZATION: Use .select() to return updated data in same query
-  let updateResult;
-  try {
-    updateResult = await filteredUpdateQuery
-      .select(
-        `
-        id,
-        seller_id,
-        slug,
-        title,
-        category,
-        brand,
-        model,
-        year,
-        mileage,
-        fuel_type,
-        transmission,
-        price,
-        city,
-        district,
-        description,
-        whatsapp_phone,
-        vin,
-        license_plate,
-        car_trim,
-        tramer_amount,
-        damage_status_json,
-        fraud_score,
-        fraud_reason,
-        status,
-        featured,
-        featured_until,
-        urgent_until,
-        highlighted_until,
-        market_price_index,
-        expert_inspection,
-        published_at,
-        bumped_at,
-        view_count,
-        version,
-        created_at,
-        updated_at
-      `
-      )
-      .single();
-  } catch (err) {
-    updateResult = { data: null, error: err as { code?: string; message?: string } };
-  }
-
-  if (updateResult.error) {
-    return { error: classifyPersistenceError(updateResult.error) };
-  }
-
-  // Check if zero rows were updated (meaning version mismatch)
-  if (!updateResult.data) {
-    return { error: "concurrent_update_detected" as const };
-  }
-
-  // 1. Identify orphaned images before updating DB
-  const { data: oldImages } = await admin
+  // 1. Identify orphaned images before updating DB (to handle physical storage cleanup later)
+  const { data: oldImages } = await supabase
     .from("listing_images")
-    .select("storage_path, is_cover, sort_order, public_url, placeholder_blur")
+    .select("storage_path")
     .eq("listing_id", listing.id);
 
   const oldPaths = (oldImages ?? []).map((img) => img.storage_path).filter(Boolean);
   const newPaths = listing.images.map((img) => img.storagePath).filter(Boolean);
   const pathsToDelete = oldPaths.filter((path) => !newPaths.includes(path));
 
-  // 2. Update DB images using upsert pattern to minimize data loss window
-  // Instead of delete-all + insert-all, we:
-  // 1. Identify images to delete (not in new set)
-  // 2. Delete only those specific images
-  // 3. Upsert new images (insert or update)
-
-  const newPathSet = new Set(listing.images.map((img) => img.storagePath));
-  const imagesToDelete = (oldImages ?? []).filter((img) => !newPathSet.has(img.storage_path));
-
-  // Delete only orphaned images
-  if (imagesToDelete.length > 0) {
-    const pathsToDeleteNow = imagesToDelete.map((img) => img.storage_path);
-    await admin.from("listing_images").delete().in("storage_path", pathsToDeleteNow);
-  }
-
-  // Upsert new/updated images (insert or update based on storage_path)
-  const imageRows = mapListingImagesToDatabaseRows(listing);
-  if (imageRows.length > 0) {
-    const imageUpsertResult = await admin.from("listing_images").upsert(imageRows, {
-      onConflict: "listing_id,storage_path",
-      ignoreDuplicates: false,
-    });
-
-    if (imageUpsertResult.error) {
-      logger.db.error("Image upsert failed during listing update", imageUpsertResult.error, {
-        listingId: listing.id,
-      });
-      return { error: "image_persistence_error" as const };
-    }
-  }
-
-  // 3. Physical Storage Cleanup (Async Queue)
-  if (pathsToDelete.length > 0) {
-    const bucketName = process.env.SUPABASE_STORAGE_BUCKET_LISTINGS ?? "listing-images";
-    const { queueFileCleanup } = await import("@/lib/storage/registry");
-    await queueFileCleanup(bucketName, pathsToDelete);
-  }
-
-  // OPTIMIZATION: Construct listing from update result + images (no extra fetch)
-  const updatedListing: Listing = {
-    id: updateResult.data.id,
-    sellerId: updateResult.data.seller_id,
-    slug: updateResult.data.slug,
-    title: updateResult.data.title,
-    category: updateResult.data.category ?? "otomobil",
-    brand: updateResult.data.brand,
-    model: updateResult.data.model,
-    year: updateResult.data.year,
-    mileage: updateResult.data.mileage,
-    fuelType: updateResult.data.fuel_type,
-    transmission: updateResult.data.transmission,
-    price: Number(updateResult.data.price),
-    city: updateResult.data.city,
-    district: updateResult.data.district,
-    description: updateResult.data.description,
-    whatsappPhone: updateResult.data.whatsapp_phone,
-    licensePlate: updateResult.data.license_plate ?? null,
-    vin: updateResult.data.vin ?? null,
-    carTrim: updateResult.data.car_trim ?? null,
-    tramerAmount:
-      updateResult.data.tramer_amount != null ? Number(updateResult.data.tramer_amount) : null,
-    damageStatusJson:
-      (updateResult.data.damage_status_json as Record<string, string> | null) ?? null,
-    fraudScore: updateResult.data.fraud_score ?? 0,
-    fraudReason: updateResult.data.fraud_reason ?? null,
-    status: updateResult.data.status,
-    featured: updateResult.data.featured,
-    featuredUntil: updateResult.data.featured_until ?? null,
-    urgentUntil: updateResult.data.urgent_until ?? null,
-    highlightedUntil: updateResult.data.highlighted_until ?? null,
-    marketPriceIndex: updateResult.data.market_price_index
-      ? Number(updateResult.data.market_price_index)
-      : null,
-    expertInspection: updateResult.data.expert_inspection ?? undefined,
-    bumpedAt: updateResult.data.bumped_at ?? null,
-    viewCount: updateResult.data.view_count ?? 0,
-    version: updateResult.data.version ?? 0,
-    createdAt: updateResult.data.created_at,
-    updatedAt: updateResult.data.updated_at,
-    images: listing.images, // Use the images we just inserted
+  // 2. Prepare RPC payload
+  const listingData = {
+    ...mapListingToDatabaseRow(listing),
+    old_version: listing.version ?? 0, // Used for OCC check in RPC
   };
 
-  return { listing: updatedListing };
+  const imagesToUpsert = listing.images.map((img) => ({
+    storage_path: img.storagePath,
+    public_url: img.url,
+    is_cover: img.isCover,
+    sort_order: img.order,
+    placeholder_blur: img.placeholderBlur ?? null,
+  }));
+
+  // 3. Execute Consolidated RPC
+  // PERFORMANCE FIX: Issue PERF-05 - Consolidate round-trips into 1 RPC
+  const { data: updatedData, error: rpcError } = await supabase.rpc("upsert_listing_with_images", {
+    p_listing_data: listingData,
+    p_images_to_delete: pathsToDelete,
+    p_images_to_upsert: imagesToUpsert,
+  });
+
+  if (rpcError) {
+    if (rpcError.message?.includes("concurrent_update_detected")) {
+      return { error: "concurrent_update_detected" as const };
+    }
+    logger.db.error("Consolidated listing update failed", rpcError, {
+      listingId: listing.id,
+    });
+    return { error: classifyPersistenceError(rpcError) };
+  }
+
+  // 4. Physical Storage Cleanup (Async Queue) - Non-blocking
+  if (pathsToDelete.length > 0) {
+    const bucketName = process.env.SUPABASE_STORAGE_BUCKET_LISTINGS ?? "listing-images";
+    import("@/lib/storage/registry").then(({ queueFileCleanup }) => {
+      queueFileCleanup(bucketName, pathsToDelete).catch((err) =>
+        logger.db.error("Failed to queue orphaned images for cleanup", err)
+      );
+    });
+  }
+
+  // Map result back to Domain Model
+  return { listing: mapListingRow(updatedData as unknown as ListingRow) };
 }
 
 /**
@@ -433,51 +222,36 @@ export async function archiveListing(
   listingId: string,
   sellerId: string
 ): Promise<ListingPersistenceResult> {
-  if (!hasSupabaseAdminEnv()) return { error: "configuration_error" as const };
-  const admin = createSupabaseAdminClient();
+  const supabase = await createSupabaseServerClient();
 
-  // OCC: We need current version to perform safe update
-  let current;
-  try {
-    const { data, error: fetchError } = await admin
-      .from("listings")
-      .select("version, status")
-      .eq("id", listingId)
-      .eq("seller_id", sellerId)
-      .single();
+  // PERFORMANCE OPTIMIZATION: Fetch current version first for atomic-like update without .raw()
+  const { data: current, error: fetchError } = await supabase
+    .from("listings")
+    .select("version")
+    .eq("id", listingId)
+    .eq("seller_id", sellerId)
+    .single();
 
-    if (fetchError) throw fetchError;
-    current = data;
-  } catch {
-    return { error: "database_error" as const };
-  }
+  if (fetchError) return { error: "database_error" as const };
 
-  if (!current) return { error: "database_error" as const };
-
-  let updateResult;
-  try {
-    updateResult = await admin
-      .from("listings")
-      .update({
-        status: "archived" satisfies Listing["status"],
-        updated_at: new Date().toISOString(),
-        version: (current.version ?? 0) + 1,
-      })
-      .eq("id", listingId)
-      .eq("seller_id", sellerId)
-      .eq("version", current.version ?? 0)
-      .select("id, seller_id, slug, title, status, version, updated_at")
-      .single();
-  } catch (err) {
-    updateResult = { data: null, error: err as { code?: string; message?: string } };
-  }
-  const { error, data: updated } = updateResult;
+  const { data, error } = await supabase
+    .from("listings")
+    .update({
+      status: "archived" satisfies Listing["status"],
+      updated_at: new Date().toISOString(),
+      version: (current?.version ?? 0) + 1,
+    })
+    .eq("id", listingId)
+    .eq("seller_id", sellerId)
+    .eq("version", current?.version ?? 0)
+    .select(listingSelect)
+    .single();
 
   if (error) {
     return { error: classifyPersistenceError(error) };
   }
 
-  return { listing: mapListingRow(updated as unknown as ListingRow) };
+  return { listing: mapListingRow(data as unknown as ListingRow) };
 }
 
 /**
@@ -489,11 +263,10 @@ export async function deleteListing(
   listingId: string,
   version: number
 ): Promise<{ success: boolean; error?: ListingPersistenceError }> {
-  if (!hasSupabaseAdminEnv()) return { success: false, error: "configuration_error" as const };
-  const admin = createSupabaseAdminClient();
+  const supabase = await createSupabaseServerClient();
 
   // Use atomic RPC function for transactional delete
-  const { error } = await admin.rpc("delete_listing_atomic", {
+  const { error } = await supabase.rpc("delete_listing_atomic", {
     p_listing_id: listingId,
     p_version: version,
   });
@@ -516,50 +289,36 @@ export async function bumpListing(
   listingId: string,
   sellerId: string
 ): Promise<ListingPersistenceResult> {
-  if (!hasSupabaseAdminEnv()) return { error: "configuration_error" as const };
-  const admin = createSupabaseAdminClient();
+  const supabase = await createSupabaseServerClient();
 
-  let current;
-  try {
-    const { data, error: fetchError } = await admin
-      .from("listings")
-      .select("version")
-      .eq("id", listingId)
-      .eq("seller_id", sellerId)
-      .single();
+  // PERFORMANCE OPTIMIZATION: Fetch current version first for atomic-like update without .raw()
+  const { data: current, error: fetchError } = await supabase
+    .from("listings")
+    .select("version")
+    .eq("id", listingId)
+    .eq("seller_id", sellerId)
+    .single();
 
-    if (fetchError) throw fetchError;
-    current = data;
-  } catch {
-    return { error: "database_error" as const };
-  }
+  if (fetchError) return { error: "database_error" as const };
 
-  if (!current) return { error: "database_error" as const };
-
-  let updateResult;
-  try {
-    updateResult = await admin
-      .from("listings")
-      .update({
-        bumped_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
-        version: (current.version ?? 0) + 1,
-      })
-      .eq("id", listingId)
-      .eq("seller_id", sellerId)
-      .eq("version", current.version ?? 0)
-      .select("id, seller_id, slug, title, status, version, updated_at, bumped_at")
-      .single();
-  } catch (err) {
-    updateResult = { data: null, error: err as { code?: string; message?: string } };
-  }
-  const { error, data: updated } = updateResult;
+  const { data, error } = await supabase
+    .from("listings")
+    .update({
+      bumped_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+      version: (current?.version ?? 0) + 1,
+    })
+    .eq("id", listingId)
+    .eq("seller_id", sellerId)
+    .eq("version", current?.version ?? 0)
+    .select(listingSelect)
+    .single();
 
   if (error) {
     return { error: classifyPersistenceError(error) };
   }
 
-  return { listing: mapListingRow(updated as unknown as ListingRow) };
+  return { listing: mapListingRow(data as unknown as ListingRow) };
 }
 
 /**
@@ -570,14 +329,13 @@ export async function publishListing(
   listingId: string,
   sellerId: string
 ): Promise<ListingPersistenceResult> {
-  if (!hasSupabaseAdminEnv()) return { error: "configuration_error" as const };
-  const admin = createSupabaseAdminClient();
+  const supabase = await createSupabaseServerClient();
 
   // 1. Get current status to determine next status if needed
   // (In our machine, archived -> approved)
   let current;
   try {
-    const { data, error: fetchError } = await admin
+    const { data, error: fetchError } = await supabase
       .from("listings")
       .select("status, version")
       .eq("id", listingId)
@@ -596,7 +354,7 @@ export async function publishListing(
 
   let updateResult;
   try {
-    updateResult = await admin
+    updateResult = await supabase
       .from("listings")
       .update({
         status: nextStatus,

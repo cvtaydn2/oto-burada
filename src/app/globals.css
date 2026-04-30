@@ -107,19 +107,19 @@
   --card-foreground: oklch(0.12 0.01 240);
   --popover: oklch(1 0 0);
   --popover-foreground: oklch(0.12 0.01 240);
-  --primary: oklch(0.58 0.16 255);
+  --primary: oklch(0.52 0.16 255);
   --primary-foreground: oklch(1 0 0);
   --secondary: oklch(0.97 0.005 240);
   --secondary-foreground: oklch(0.2 0.02 240);
   --muted: oklch(0.96 0.004 240);
   --muted-foreground: oklch(0.45 0.02 240);
-  --accent: oklch(0.7 0.14 45);
-  --accent-foreground: oklch(0.1 0.02 45);
+  --accent: oklch(0.53 0.14 45);
+  --accent-foreground: oklch(1 0 0);
   --destructive: oklch(0.6 0.18 28);
   --destructive-foreground: oklch(1 0 0);
   --border: oklch(0.93 0.005 240);
   --input: oklch(0.93 0.005 240);
-  --ring: oklch(0.58 0.16 255 / 0.3);
+  --ring: oklch(0.52 0.16 255);
   --radius: 0.85rem;
 }
 
@@ -130,17 +130,17 @@
   --card-foreground: oklch(0.98 0.005 255);
   --popover: oklch(0.11 0.01 255);
   --popover-foreground: oklch(0.98 0.005 255);
-  --primary: oklch(0.65 0.18 260);
+  --primary: oklch(0.6 0.18 260);
   --primary-foreground: oklch(0.05 0.01 255);
   --secondary: oklch(0.16 0.015 255);
   --secondary-foreground: oklch(0.98 0.005 255);
   --muted: oklch(0.15 0.01 255);
   --muted-foreground: oklch(0.65 0.02 255);
-  --accent: oklch(0.78 0.14 45);
-  --accent-foreground: oklch(0.08 0.02 45);
+  --accent: oklch(0.7 0.14 45);
+  --accent-foreground: oklch(0.05 0.01 45);
   --border: oklch(0.2 0.012 255);
   --input: oklch(0.2 0.012 255);
-  --ring: oklch(0.65 0.18 260 / 0.4);
+  --ring: oklch(0.6 0.18 260);
 }
 
 @layer base {
@@ -151,7 +151,20 @@
     @apply min-h-svh bg-background text-foreground selection:bg-primary/20;
   }
   * {
-    @apply border-border/80 outline-ring/30;
+    @apply border-border/80 outline-none;
+  }
+  *:focus-visible {
+    @apply outline-2 outline-ring outline-offset-2;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    ::before,
+    ::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
   }
 }
 

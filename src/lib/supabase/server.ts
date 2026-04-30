@@ -4,8 +4,9 @@ import { cookies } from "next/headers";
 import { isRequestContext } from "@/lib/next-context";
 import { getSupabaseEnv } from "@/lib/supabase/env";
 
-export async function createSupabaseServerClient() {
-  const { url, anonKey } = getSupabaseEnv();
+export async function createSupabaseServerClient(overrideUrl?: string) {
+  const { url: defaultUrl, anonKey } = getSupabaseEnv();
+  const url = overrideUrl || defaultUrl;
   let cookieStore: Awaited<ReturnType<typeof cookies>> | null = null;
 
   const canAccessCookies = isRequestContext();

@@ -110,7 +110,7 @@ export function mapListingRow(row: ListingRow): Listing {
       .sort((left, right) => left.order - right.order),
     mileage: row.mileage,
     model: row.model,
-    price: Number(row.price),
+    price: Number(row.price) / 100, // DB stores kurus/cents, app uses Lira for display/logic
     carTrim: row.car_trim ?? null,
     sellerId: row.seller_id,
     viewCount: row.view_count ?? 0,

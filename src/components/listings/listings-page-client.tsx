@@ -209,7 +209,10 @@ export function ListingsPageClient({
             </div>
           ) : allListings.length > 0 ? (
             <div className="space-y-6 sm:space-y-8">
-              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between rounded-2xl border border-border bg-muted/30 p-4 sm:p-6">
+              <div
+                className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between rounded-2xl border border-border bg-muted/30 p-4 sm:p-6"
+                aria-live="polite"
+              >
                 <p className="text-sm font-medium text-muted-foreground">
                   <span className="text-foreground font-bold">{total.toLocaleString("tr-TR")}</span>{" "}
                   {total === 1 ? "ilan" : "ilan"} arasından{" "}

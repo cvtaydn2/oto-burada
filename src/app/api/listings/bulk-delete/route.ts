@@ -14,6 +14,7 @@ export async function POST(req: Request) {
     ipRateLimit: rateLimitProfiles.general,
     userRateLimit: BULK_DELETE_RATE_LIMIT,
     rateLimitKey: "listings:bulk-delete",
+    requireStepUp: true,
   });
 
   if (!security.ok) return security.response;

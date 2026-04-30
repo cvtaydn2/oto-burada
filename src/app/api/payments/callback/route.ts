@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 
 import { DOPING_PACKAGES } from "@/lib/constants/doping";
 import { logger } from "@/lib/logging/logger";
-import { createSupabaseAdminClient } from "@/lib/supabase/admin";
+import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { applyDopingPackage } from "@/services/payments/doping-logic";
 import { retrievePaymentResult } from "@/services/payments/payment-logic";
 
@@ -61,16 +61,20 @@ export async function POST(req: NextRequest) {
  */
 async function handleCallback(token: string, req: NextRequest) {
   try {
-    const admin = createSupabaseAdminClient();
+    const supabase = await createSupabaseServerClient();
 
-    const { data: existingPayment, error: paymentError } = await admin
+    // 1. Get the payment record using the USER client to enforce RLS
+    const { data: existingPayment, error: paymentError } = await supabase
       .from("payments")
       .select("id, status, user_id, listing_id, package_id, amount")
       .eq("iyzico_token", token)
       .single();
 
     if (paymentError || !existingPayment) {
-      logger.api.error("Payment not found for callback", { token, error: paymentError });
+      logger.api.error("Payment not found or access denied in callback", {
+        token,
+        error: paymentError,
+      });
       return NextResponse.redirect(new URL("/dashboard/payments?status=error", req.url));
     }
 
@@ -94,7 +98,7 @@ async function handleCallback(token: string, req: NextRequest) {
       });
 
       // F-04: Do NOT release the lock. Mark status as failure to prevent retry race conditions.
-      await admin.from("payments").update({ status: "failure" }).eq("id", existingPayment.id);
+      await supabase.from("payments").update({ status: "failure" }).eq("id", existingPayment.id);
 
       return NextResponse.redirect(new URL("/dashboard/payments?status=failure", req.url));
     }
@@ -128,9 +132,10 @@ async function handleCallback(token: string, req: NextRequest) {
 
     // 5. SECURITY: Verify listing belongs to the user who paid
     if (existingPayment.listing_id) {
-      const { data: listing } = await admin
+      // Use user-authenticated client for listing check to enforce RLS
+      const { data: listing } = await supabase
         .from("listings")
-        .select("seller_id") // FIXED: Use correct column name
+        .select("seller_id")
         .eq("id", existingPayment.listing_id)
         .single();
 
@@ -139,11 +144,11 @@ async function handleCallback(token: string, req: NextRequest) {
           paymentId: existingPayment.id,
           listingId: existingPayment.listing_id,
           paymentUserId: existingPayment.user_id,
-          listingSellerId: listing?.seller_id, // FIXED: Use correct field name
+          listingSellerId: listing?.seller_id,
         });
 
         // F-04: Do NOT release the lock.
-        await admin.from("payments").update({ status: "failure" }).eq("id", existingPayment.id);
+        await supabase.from("payments").update({ status: "failure" }).eq("id", existingPayment.id);
 
         return NextResponse.redirect(new URL("/dashboard/payments?status=error", req.url));
       }

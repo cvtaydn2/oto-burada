@@ -5,8 +5,18 @@ import { useEffect, useState } from "react";
 
 import { FEATURES } from "@/lib/features";
 
+interface BeforeInstallPromptEvent extends Event {
+  readonly platforms: string[];
+  readonly userChoice: Promise<{
+    outcome: "accepted" | "dismissed";
+    platform: string;
+  }>;
+  prompt(): Promise<void>;
+}
+
 export function PWAInstallPrompt() {
   const [isVisible, setIsVisible] = useState(false);
+  const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
   const [platform] = useState<"ios" | "android" | "other">(() => {
     if (typeof window === "undefined") {
       return "other";
@@ -22,24 +32,58 @@ export function PWAInstallPrompt() {
     // If PWA feature is disabled, don't even start the logic
     if (!FEATURES.PWA) return;
 
-    // Check if already installed
-    const isStandalone = window.matchMedia("(display-mode: standalone)").matches;
-    if (isStandalone) return;
+    const handleBeforeInstallPrompt = (e: Event) => {
+      // Prevent Chrome 67 and earlier from automatically showing the prompt
+      e.preventDefault();
+      // Stash the event so it can be triggered later.
+      setDeferredPrompt(e as BeforeInstallPromptEvent);
 
-    // Delay showing the prompt
-    const timer = setTimeout(() => {
       const dismissed = localStorage.getItem("pwa_prompt_dismissed");
       if (!dismissed) {
         setIsVisible(true);
       }
-    }, 5000);
+    };
 
-    return () => clearTimeout(timer);
-  }, []);
+    window.addEventListener("beforeinstallprompt", handleBeforeInstallPrompt);
+
+    // Check if already installed
+    const isStandalone = window.matchMedia("(display-mode: standalone)").matches;
+    if (isStandalone) return;
+
+    // For iOS, there's no beforeinstallprompt, so we use a timer
+    if (platform === "ios") {
+      const timer = setTimeout(() => {
+        const dismissed = localStorage.getItem("pwa_prompt_dismissed");
+        if (!dismissed) {
+          setIsVisible(true);
+        }
+      }, 5000);
+      return () => clearTimeout(timer);
+    }
+
+    return () => window.removeEventListener("beforeinstallprompt", handleBeforeInstallPrompt);
+  }, [platform]);
 
   const handleDismiss = () => {
     setIsVisible(false);
     localStorage.setItem("pwa_prompt_dismissed", "true");
+  };
+
+  const handleInstallClick = async () => {
+    if (!deferredPrompt) return;
+
+    // Show the prompt
+    deferredPrompt.prompt();
+
+    // Wait for the user to respond to the prompt
+    const { outcome } = await deferredPrompt.userChoice;
+
+    if (outcome === "accepted") {
+      setIsVisible(false);
+    }
+
+    // We've used the prompt, and can't use it again, throw it away
+    setDeferredPrompt(null);
   };
 
   // Only render if PWA feature is enabled AND prompt is visible
@@ -50,13 +94,14 @@ export function PWAInstallPrompt() {
       <div className="bg-card/95 backdrop-blur-xl border border-border shadow-sm rounded-2xl p-4 overflow-hidden">
         <button
           onClick={handleDismiss}
+          aria-label="Kapat"
           className="absolute top-2 right-2 p-1 text-muted-foreground hover:bg-muted rounded-full transition-colors"
         >
           <X size={14} />
         </button>
 
         <div className="flex items-center gap-3">
-          <div className="size-11 bg-gradient-to-br from-indigo-600 to-emerald-600 rounded-xl flex items-center justify-center shadow-sm shrink-0">
+          <div className="size-11 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-xl flex items-center justify-center shadow-sm shrink-0">
             <Download className="text-white" size={20} />
           </div>
           <div className="flex-1 pr-4">
@@ -80,10 +125,9 @@ export function PWAInstallPrompt() {
             </div>
           ) : (
             <button
-              onClick={() => {
-                window.location.reload();
-              }}
-              className="w-full h-9 bg-slate-900 text-white rounded-lg font-bold text-xs hover:bg-slate-800 transition-colors"
+              onClick={handleInstallClick}
+              disabled={!deferredPrompt}
+              className="w-full h-9 bg-primary text-primary-foreground rounded-lg font-bold text-xs hover:opacity-90 transition-opacity disabled:opacity-50"
             >
               Uygulamayı Kur
             </button>

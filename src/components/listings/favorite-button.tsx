@@ -56,7 +56,10 @@ export function FavoriteButton({
           className
         )}
       >
-        <Heart className={cn("size-4", active && "fill-current")} />
+        <Heart className={cn("size-4", active && "fill-current")} aria-hidden="true" />
+        <span className="sr-only" aria-live="polite">
+          {active ? "Favorilere eklendi" : "Favorilerden çıkarıldı"}
+        </span>
       </button>
       {showGuestHint && !isAuthenticated && showHint && (
         <div

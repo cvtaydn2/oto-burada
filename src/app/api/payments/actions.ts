@@ -9,6 +9,7 @@
  * Migration: Phase 28.5 - Legacy Service Patterns Migration
  */
 
+import { getAuthContext } from "@/lib/auth/session";
 import {
   initializePaymentCheckout,
   retrievePaymentResult,
@@ -17,11 +18,10 @@ import {
 /**
  * Initialize a payment checkout form with Iyzico
  *
- * @param params - Payment initialization parameters
+ * @param params - Payment initialization parameters (excluding userId which is resolved server-side)
  * @returns Payment page URL and token
  */
 export async function initializeCheckoutFormAction(params: {
-  userId: string;
   email: string;
   fullName: string;
   phone: string;
@@ -34,16 +34,30 @@ export async function initializeCheckoutFormAction(params: {
   listingId?: string;
   planId?: string;
 }) {
-  return initializePaymentCheckout(params);
+  const { user } = await getAuthContext();
+
+  if (!user) {
+    throw new Error("Ödeme başlatmak için giriş yapmalısınız.");
+  }
+
+  return initializePaymentCheckout({
+    ...params,
+    userId: user.id,
+  });
 }
 
 /**
  * Retrieve checkout result from Iyzico
  *
  * @param token - Iyzico checkout token
- * @param userId - User ID for ownership verification
  * @returns Payment status and details
  */
-export async function retrieveCheckoutResultAction(token: string, userId: string) {
-  return retrievePaymentResult(token, userId);
+export async function retrieveCheckoutResultAction(token: string) {
+  const { user } = await getAuthContext();
+
+  if (!user) {
+    throw new Error("Oturum süreniz dolmuş olabilir. Lütfen tekrar giriş yapın.");
+  }
+
+  return retrievePaymentResult(token, user.id);
 }
