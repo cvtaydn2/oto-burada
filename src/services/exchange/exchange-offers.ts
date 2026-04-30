@@ -154,10 +154,36 @@ export async function respondToExchangeOffer(offerId: string, response: "accepte
     throw new Error("Bu teklifi yanıtlama yetkiniz yok.");
   }
 
-  const { error } = await supabase
+  // ── RACE CONDITION FIX: Include status check in WHERE clause ──
+  const { data: updateResult, error } = await supabase
     .from("exchange_offers")
     .update({ status: response })
-    .eq("id", offerId);
+    .eq("id", offerId)
+    .eq("status", "pending") // Only update if still pending
+    .select("id");
+
+  if (error) {
+    logger.db.error("respondToExchangeOffer failed", error, { offerId });
+    throw new Error("Yanıt gönderilemedi.");
+  }
+
+  // Verify the update actually happened (race condition protection)
+  if (!updateResult || updateResult.length === 0) {
+    // Either offer doesn't exist, is not pending, or was already updated
+    // Re-fetch to determine which
+    const { data: currentOffer } = await supabase
+      .from("exchange_offers")
+      .select("status")
+      .eq("id", offerId)
+      .single();
+
+    if (!currentOffer) {
+      throw new Error("Teklif bulunamadı.");
+    }
+    if (currentOffer.status !== "pending") {
+      throw new Error("Bu teklif zaten yanıtlandı.");
+    }
+  }
 
   if (error) {
     logger.db.error("respondToExchangeOffer failed", error, { offerId });

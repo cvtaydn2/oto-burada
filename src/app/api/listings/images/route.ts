@@ -60,12 +60,16 @@ export async function POST(request: Request) {
   // request.formData() will crash the process if the stream is too large.
   const contentLength = request.headers.get("content-length");
   const MAX_PAYLOAD_SIZE = UPLOAD_POLICY.IMAGES.MAX_FILE_SIZE_BYTES;
-  if (contentLength && parseInt(contentLength, 10) > MAX_PAYLOAD_SIZE) {
-    return apiError(
-      API_ERROR_CODES.BAD_REQUEST,
-      `Toplam dosya boyutu ${MAX_PAYLOAD_SIZE / (1024 * 1024)}MB'dan küçük olmalıdır.`,
-      413
-    );
+  if (contentLength) {
+    const parsedLength = parseInt(contentLength, 10);
+    // ── BUG FIX: Handle NaN from invalid content-length header ──
+    if (Number.isNaN(parsedLength) || parsedLength > MAX_PAYLOAD_SIZE) {
+      return apiError(
+        API_ERROR_CODES.BAD_REQUEST,
+        `Toplam dosya boyutu ${MAX_PAYLOAD_SIZE / (1024 * 1024)}MB'dan küçük olmalıdır.`,
+        413
+      );
+    }
   }
 
   if (!hasSupabaseStorageEnv()) {

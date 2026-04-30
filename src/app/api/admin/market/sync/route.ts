@@ -26,7 +26,8 @@ export async function POST(request: Request) {
 }
 
 async function handleSync(request: Request) {
-  const security = await withCronOrAdmin(request);
+  // ── SECURITY FIX: requireAdmin set to prevent cron secret bypass
+  const security = await withCronOrAdmin(request, { requireAdmin: true });
   if (!security.ok) return security.response;
 
   if (!hasSupabaseAdminEnv()) {

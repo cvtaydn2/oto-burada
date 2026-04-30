@@ -282,7 +282,16 @@ export async function respondToOffer(
     update.counter_message = counterMessage ?? null;
   }
 
-  const { error } = await supabase.from("offers").update(update).eq("id", offerId);
+  // ── RACE CONDITION FIX: Include status check in WHERE clause ──
+  // This prevents race conditions by only updating if offer is in expected state
+  const allowedStatuses = response === "counter_offer" ? ["pending", "counter_offer"] : ["pending"];
+
+  const { error } = await supabase
+    .from("offers")
+    .update(update)
+    .eq("id", offerId)
+    .in("status", allowedStatuses)
+    .select("id"); // Only fetch ID to verify update happened
 
   if (error) {
     logger.db.error("respondToOffer failed", error, { offerId });
