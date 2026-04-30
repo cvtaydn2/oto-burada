@@ -2,14 +2,11 @@ import type { PropsWithChildren } from "react";
 
 import { DashboardShell } from "@/components/layout/dashboard-shell";
 import { getAuthContext, requireUser } from "@/lib/auth/session";
-import { getPlatformSettings } from "@/services/admin/settings";
 import { getStoredProfileById } from "@/services/profile/profile-records";
 
 export default async function DashboardLayout({ children }: PropsWithChildren) {
   const user = await requireUser();
   const { dbProfile } = await getAuthContext();
-  const settings = await getPlatformSettings();
-  const isMaintenanceMode = settings.general_appearance?.maintenance_mode;
   const isAdmin = dbProfile?.role === "admin" && !dbProfile.isBanned;
 
   const profile = await getStoredProfileById(user.id);
