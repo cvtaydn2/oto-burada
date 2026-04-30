@@ -20,7 +20,10 @@ export async function POST(request: Request) {
 
     const currentUser = await getCurrentUser();
     const headersList = request.headers;
-    const viewerIp = headersList.get("x-forwarded-for")?.split(",")[0]?.trim() || undefined;
+    const viewerIp =
+      headersList.get("x-vercel-forwarded-for")?.split(",")[0]?.trim() ||
+      headersList.get("x-forwarded-for")?.split(",")[0]?.trim() ||
+      undefined;
 
     // Fire and forget recording
     recordListingView(validated.listingId, {

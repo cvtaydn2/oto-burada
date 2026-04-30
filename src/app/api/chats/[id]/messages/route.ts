@@ -1,8 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 
-import { withUserAndCsrf } from "@/lib/api/security";
-import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { withUserAndCsrf, withUserRoute } from "@/lib/api/security";
 import { deleteChatMessage, getChatMessages, sendChatMessage } from "@/services/chat/chat-logic";
 
 const messageSchema = z.object({
@@ -11,16 +10,11 @@ const messageSchema = z.object({
 });
 
 export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  const security = await withUserRoute(req);
+  if (!security.ok) return security.response;
+  const user = security.user!;
+
   try {
-    const supabase = await createSupabaseServerClient();
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-
-    if (!user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
     const { id: chatId } = await params;
 
     const result = await getChatMessages(chatId, user.id);

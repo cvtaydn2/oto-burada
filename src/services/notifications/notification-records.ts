@@ -80,15 +80,9 @@ async function getDatabaseNotifications(options?: { notificationId?: string; use
     query = query.eq("id", options.notificationId);
   }
 
-  if ("order" in query && typeof query.order === "function") {
-    query = query.order("created_at", { ascending: false });
-  }
-
-  const executor =
-    "returns" in query && typeof query.returns === "function"
-      ? query.returns<NotificationRow[]>()
-      : query;
-  const { data, error } = await executor;
+  const { data, error } = await query
+    .order("created_at", { ascending: false })
+    .returns<NotificationRow[]>();
 
   if (error) {
     throw new Error(`Failed to fetch notifications: ${error.message}`);

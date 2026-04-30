@@ -19,13 +19,26 @@
     - Refactored `respondToOffer` and `createOffer` service functions to accept `userId` as an argument.
     - Removed redundant `supabase.auth.getUser()` calls in the service layer, passing the auth context explicitly from the route handlers.
     - Updated `CSRF` endpoint comments to accurately reflect the Double Submit Cookie pattern.
+  - **SEC-10 - View Endpoint IP Spoofing Fix [Medium]:**
+    - Updated `x-forwarded-for` to properly prefer `x-vercel-forwarded-for` in `api/listings/view/route.ts` to prevent IP spoofing for view deduping.
+  - **SEC-11 - Chat Messages Auth Fix [Medium]:**
+    - Added `withUserRoute` wrapper to `api/chats/[id]/messages/route.ts` GET endpoint to enforce auth, ban-status, and rate-limiting.
+  - **STORAGE-03 - Media Upload Edge Cases Fix [Medium]:**
+    - Repaired `useMediaUpload` hook to properly remove uncommitted files from Supabase Storage instead of just cleaning up URLs.
+    - Ensured `useMediaUpload` uploads to `listings/${userId}/temp/` to pass strict RLS checks instead of a generic `/temp/` directory.
+  - **UX-14 - Offer Accept Redirect Fix [Medium]:**
+    - Repositioned the `redirect()` call out of the `try/catch` block in `offers/accept` so it correctly halts the Next.js process instead of catching the `NEXT_REDIRECT` exception as a 400 error.
+  - **CODE-05 - Admin OCC Enforcement [Low]:**
+    - Restored `version` check missing in admin listing update handler.
+  - **CODE-06 - Defensive Query Builder Fix [Low]:**
+    - Stripped runtime `"returns" in query` method checks in `notification-records.ts` in favor of strong static typing.
 - **Verification:**
   - `npm run typecheck` ✅ (0 errors)
   - `npm run lint` ✅ (0 errors)
 - **Architectural Gains:**
   - **Schema Fidelity:** `schema.snapshot.sql` is perfectly synced with actual migration state.
   - **Scale & Speed:** Next.js Middleware now operates independently of database latency for maintenance checks.
-  - **Correctness:** Master Cron runs safely via OCC, and Reviews now successfully upsert without DB errors.
+  - **Correctness:** Master Cron runs safely via OCC, Reviews now successfully upsert without DB errors, and background uploads correctly sync and garbage collect via Supabase storage.
 
 ---
 

@@ -137,6 +137,7 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
     .from("listings")
     .update(dbUpdates)
     .eq("id", listingId)
+    .eq("version", existingListing.version ?? 0)
     .select("id")
     .maybeSingle<{ id: string }>();
 

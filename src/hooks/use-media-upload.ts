@@ -19,6 +19,7 @@ interface UploadedFile {
   preview: string;
   status: "idle" | "uploading" | "success" | "error";
   progress: number;
+  filePath?: string;
 }
 
 /**
@@ -43,7 +44,14 @@ export function useMediaUpload(bucket: string = "listings") {
       const fileExt = fileObj.file.name.split(".").pop();
       const randomId = createClientId();
       const fileName = `${randomId}-${Date.now()}.${fileExt}`;
-      const filePath = `temp/${fileName}`;
+
+      const { data: authData } = await supabase.auth.getUser();
+      const userId = authData.user?.id;
+      if (!userId) {
+        toast.error("Oturum açık değil.");
+        return;
+      }
+      const filePath = `listings/${userId}/temp/${fileName}`;
 
       const { error } = await supabase.storage.from(bucket).upload(filePath, fileObj.file, {
         cacheControl: "3600",
@@ -63,10 +71,12 @@ export function useMediaUpload(bucket: string = "listings") {
       } = supabase.storage.from(bucket).getPublicUrl(filePath);
 
       setFiles((prev) =>
-        prev.map((f) => (f.id === fileObj.id ? { ...f, status: "success", url: publicUrl } : f))
+        prev.map((f) =>
+          f.id === fileObj.id ? { ...f, status: "success", url: publicUrl, filePath } : f
+        )
       );
     },
-    [bucket, supabase.storage]
+    [bucket, supabase.storage, supabase.auth]
   );
 
   const onFilesSelected = useCallback(
@@ -90,15 +100,23 @@ export function useMediaUpload(bucket: string = "listings") {
     [uploadFile]
   );
 
-  const removeFile = useCallback((id: string) => {
-    setFiles((prev) => {
-      const fileToRemove = prev.find((f) => f.id === id);
-      if (fileToRemove?.preview) {
-        URL.revokeObjectURL(fileToRemove.preview);
-      }
-      return prev.filter((f) => f.id !== id);
-    });
-  }, []);
+  const removeFile = useCallback(
+    (id: string) => {
+      setFiles((prev) => {
+        const fileToRemove = prev.find((f) => f.id === id);
+        if (fileToRemove?.preview) {
+          URL.revokeObjectURL(fileToRemove.preview);
+        }
+
+        if (fileToRemove?.filePath) {
+          supabase.storage.from(bucket).remove([fileToRemove.filePath]).catch(console.error);
+        }
+
+        return prev.filter((f) => f.id !== id);
+      });
+    },
+    [bucket, supabase.storage]
+  );
 
   const filesRef = useRef<UploadedFile[]>(files);
 

@@ -34,9 +34,10 @@ export async function POST(request: Request) {
     }
 
     await respondToOffer(offerId, user.id, "accepted");
-    redirect("/dashboard/teklifler");
   } catch (error) {
     logger.reservation.error("Accept offer failed", error);
     return NextResponse.json({ error: "Teklif kabul edilemedi." }, { status: 400 });
   }
+
+  redirect("/dashboard/teklifler");
 }
