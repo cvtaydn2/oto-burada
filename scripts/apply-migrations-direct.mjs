@@ -28,15 +28,16 @@ const supabase = createClient(SUPABASE_URL, SERVICE_ROLE_KEY, {
   db: { schema: "public" }
 });
 
-async function _executeSql(sql) {
-  const { data, error } = await supabase.rpc("exec_sql", { sql_text: sql });
-  
-  if (error) {
-    throw new Error(`SQL execution failed: ${error.message}`);
-  }
-  
-  return data;
-}
+// Unused helper function - kept for future use
+// async function _executeSql(sql) {
+//   const { data, error } = await supabase.rpc("exec_sql", { sql_text: sql });
+//   
+//   if (error) {
+//     throw new Error(`SQL execution failed: ${error.message}`);
+//   }
+//   
+//   return data;
+// }
 
 async function initMigrationTable() {
   console.log("🔧 Initializing migration tracking table...");
@@ -69,8 +70,8 @@ async function initMigrationTable() {
     
     console.log("✅ Migration tracking table exists");
     return true;
-  } catch (_err) {
-    console.error("❌ Error checking migration table:", _err.message);
+  } catch (err) {
+    console.error("❌ Error checking migration table:", err.message);
     return false;
   }
 }
@@ -144,7 +145,7 @@ async function applyMigration(sqlFile) {
       // Execute via raw SQL query
       const { error } = await supabase.rpc("exec", { 
         sql: statement + ";" 
-      }).catch(async (_err) => {
+      }).catch(async (err) => {
         // Fallback: try direct query if RPC doesn't exist
         console.log("⚠️  RPC not available, using alternative method...");
         
@@ -159,7 +160,7 @@ async function applyMigration(sqlFile) {
         console.log("3. Click 'Run' to execute");
         console.log("4. After successful execution, run this script again to record the migration");
         
-        throw new Error("Manual migration required");
+        throw new Error(`Manual migration required: ${err.message}`);
       });
       
       if (error) {
