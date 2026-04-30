@@ -1,237 +1,317 @@
-# 🚀 Production Deployment Checklist
+# Deployment Checklist - Security Audit Fixes
 
-**Project**: OtoBurada  
-**Date**: April 24, 2026  
-**Version**: Security Fixes Release
+**Date**: 2026-04-30  
+**Version**: Phase 28.5  
+**Status**: Ready for Deployment ✅
 
 ---
 
-## ⚠️ CRITICAL - Do Not Deploy Without These
+## Pre-Deployment Verification
 
-### 1. Database Migration
+### ✅ Code Quality
+- [x] TypeScript compilation: `npm run typecheck` - **PASSED**
+- [x] ESLint validation: `npm run lint` - **PASSED**
+- [x] Production build: `npm run build` - **PASSED**
+- [x] All tests passing (if applicable)
+
+### ✅ Documentation
+- [x] `CRITICAL_FIXES_APPLIED.md` - Comprehensive fix documentation
+- [x] `AUDIT_SUMMARY.md` - Executive summary
+- [x] `PROGRESS.md` - Updated with Phase 28.5
+- [x] `DEPLOYMENT_CHECKLIST.md` - This file
+
+### ✅ Database Migrations
+- [ ] **REQUIRED**: Apply migration 0134 (Chat Rate Limit)
+- [ ] **REQUIRED**: Apply migration 0135 (Atomic Ban User)
+
+---
+
+## Deployment Steps
+
+### Step 1: Backup Current State
 ```bash
-# On staging first
+# Backup database
+pg_dump $DATABASE_URL > backup_$(date +%Y%m%d_%H%M%S).sql
+
+# Tag current commit
+git tag -a v28.4-pre-audit -m "Pre-security-audit state"
+git push origin v28.4-pre-audit
+```
+
+### Step 2: Apply Database Migrations
+```bash
+# Apply migrations
 npm run db:migrate
 
-# Verify
-psql $DATABASE_URL -c "SELECT column_name FROM information_schema.columns WHERE table_name='payments' AND column_name='package_id';"
+# Verify migrations applied
+psql $DATABASE_URL -c "SELECT * FROM schema_migrations ORDER BY version DESC LIMIT 5;"
 ```
-- [ ] Migration applied to staging
-- [ ] Migration verified on staging
-- [ ] Migration applied to production
-- [ ] Backfill completed (check existing payments have package_id)
 
-### 2. Environment Variables
+**Expected Output**:
+```
+version | applied_at
+--------|------------
+0135    | 2026-04-30 ...
+0134    | 2026-04-30 ...
+```
+
+### Step 3: Verify Migration Success
+
+#### Test Chat Rate Limit
 ```bash
-# Generate new secrets
-openssl rand -hex 32  # For CRON_SECRET
-openssl rand -hex 32  # For INTERNAL_API_SECRET
+# Should succeed (under limit)
+for i in {1..50}; do
+  curl -X POST https://your-staging.vercel.app/api/chats/TEST_CHAT/messages \
+    -H "Authorization: Bearer $TEST_TOKEN" \
+    -d '{"content":"test"}' &
+done
+
+# Should fail (over limit)
+for i in {1..101}; do
+  curl -X POST https://your-staging.vercel.app/api/chats/TEST_CHAT/messages \
+    -H "Authorization: Bearer $TEST_TOKEN" \
+    -d '{"content":"test"}' &
+done
 ```
 
-**Required in Production**:
-- [ ] `IYZICO_SECRET_KEY` (from Iyzico dashboard)
-- [ ] `IYZICO_API_KEY` (production key, not sandbox)
-- [ ] `IYZICO_BASE_URL=https://api.iyzipay.com`
-- [ ] `CRON_SECRET` (newly generated)
-- [ ] `INTERNAL_API_SECRET` (newly generated)
-- [ ] `NODE_ENV=production`
+**Expected**: 101st message returns `rate_limit_exceeded` error
 
-### 3. Pre-Deployment Testing
-- [ ] `npm run build` succeeds
-- [ ] `npm run test` passes
-- [ ] `npm run test:e2e` passes
-- [ ] Manual smoke test on staging
+#### Test Atomic Ban
+```bash
+# Create test user with listings
+# Ban user
+curl -X POST https://your-staging.vercel.app/api/admin/users/TEST_USER/ban \
+  -H "Authorization: Bearer $ADMIN_TOKEN" \
+  -d '{"reason":"Test ban"}'
 
----
+# Verify listings rejected
+curl https://your-staging.vercel.app/api/listings?sellerId=TEST_USER
 
-## 🧪 Testing Checklist
+# Expected: All listings have status="rejected"
+```
 
-### Payment Flow
-- [ ] Complete a test doping purchase on staging
-- [ ] Verify payment record created with `package_id`
-- [ ] Verify doping applied to listing
-- [ ] Check `payment_webhook_logs` for proper logging
+### Step 4: Deploy to Staging
+```bash
+# Push to staging branch
+git checkout staging
+git merge main
+git push origin staging
 
-### Security Validation
-- [ ] Test webhook with invalid signature (should return 403)
-- [ ] Test payment with incomplete profile (should fail with clear error)
-- [ ] Test chat creation rate limit (21st request should fail)
-- [ ] Test payment initialize rate limit (11th request should fail)
+# Wait for Vercel deployment
+# Verify deployment URL
+```
 
-### Error Handling
-- [ ] Trigger an error and verify global error UI displays
-- [ ] Verify error is logged to monitoring
-- [ ] Test "Sayfayı Yenile" button works
-- [ ] Test "Ana Sayfaya Dön" link works
+### Step 5: Staging Smoke Tests
 
----
+#### Critical Path Tests
+- [ ] User login/logout
+- [ ] Create listing (verify async moderation doesn't crash)
+- [ ] Favorite/unfavorite listing (verify CSRF handling)
+- [ ] Admin ban user (verify atomic operation)
+- [ ] Send chat messages (verify rate limit)
+- [ ] Payment flow (verify null listing_id handling)
+- [ ] Webhook callback (verify token handling)
 
-## 📊 Monitoring Setup
+#### Monitoring Checks
+- [ ] Sentry: No new errors
+- [ ] Vercel Logs: No "CRITICAL" errors
+- [ ] Supabase: RPC execution times < 100ms
+- [ ] Database: Trigger execution counts look normal
 
-### Alerts to Configure
-- [ ] Payment webhook signature failures
-- [ ] Payment amount mismatches
-- [ ] Rate limit violations (429 responses)
-- [ ] Global error boundary triggers
-- [ ] Database connection errors
+### Step 6: Deploy to Production
+```bash
+# Tag release
+git tag -a v28.5-security-audit -m "Security audit fixes - 16 critical issues resolved"
+git push origin v28.5-security-audit
 
-### Dashboards to Create
-- [ ] Payment success/failure rates
-- [ ] Webhook processing times
-- [ ] API rate limit metrics
-- [ ] Error rates by endpoint
+# Deploy to production
+git checkout main
+git push origin main
 
----
+# Wait for Vercel deployment
+```
 
-## 🔒 Security Verification
+### Step 7: Post-Deployment Verification
 
-### Iyzico Configuration
-- [ ] Webhook URL configured in Iyzico dashboard
-- [ ] Webhook IP whitelist documented
-- [ ] Production API keys active
-- [ ] Sandbox mode disabled
+#### Immediate Checks (First 5 Minutes)
+- [ ] Homepage loads correctly
+- [ ] User authentication works
+- [ ] Listing creation works
+- [ ] No Sentry alerts
+- [ ] No Vercel errors
 
-### Rate Limiting
-- [ ] Redis (Upstash) connection verified
-- [ ] Supabase RPC fallback tested
-- [ ] Fail-closed endpoints identified (auth, payments)
+#### Short-term Monitoring (First Hour)
+- [ ] Error rate stable or decreased
+- [ ] Response times normal
+- [ ] Database CPU/memory normal
+- [ ] No user complaints
 
-### CSRF Protection
-- [ ] All mutation endpoints use `withUserAndCsrf`
-- [ ] Origin validation enabled
-- [ ] CSP headers configured
-
----
-
-## 📝 Documentation Review
-
-- [ ] `docs/SECURITY.md` reviewed by team
-- [ ] `docs/SECURITY_FIXES_2026-04.md` reviewed
-- [ ] `SECURITY_AUDIT_RESOLUTION.md` approved
-- [ ] Runbook created for payment fraud incidents
+#### Long-term Monitoring (First 24 Hours)
+- [ ] Chat rate limit effectiveness
+- [ ] Admin ban operations successful
+- [ ] Payment flow integrity
+- [ ] No data loss incidents
 
 ---
 
-## 🚦 Deployment Steps
+## Rollback Procedures
 
-### Staging Deployment
-1. [ ] Deploy code to staging
-2. [ ] Run database migration
-3. [ ] Set environment variables
-4. [ ] Smoke test payment flow
-5. [ ] Test webhook with Iyzico sandbox
-6. [ ] Monitor logs for 1 hour
+### If Critical Issues Arise
 
-### Production Deployment
-1. [ ] Backup production database
-2. [ ] Deploy code to production
-3. [ ] Run database migration
-4. [ ] Set environment variables
-5. [ ] Smoke test payment flow (small amount)
-6. [ ] Monitor logs for 24 hours
+#### Option 1: Quick Rollback (Vercel)
+```bash
+# Rollback to previous deployment via Vercel dashboard
+# Or via CLI:
+vercel rollback
+```
 
-### Rollback Plan
-- [ ] Database backup location documented
-- [ ] Previous deployment version tagged
-- [ ] Rollback procedure tested on staging
+#### Option 2: Git Revert
+```bash
+# Revert to pre-audit state
+git revert <commit-range>
+git push origin main
+```
 
----
+#### Option 3: Database Rollback
+```bash
+# Drop new triggers/functions
+psql $DATABASE_URL << EOF
+DROP TRIGGER IF EXISTS enforce_message_rate_limit ON messages;
+DROP FUNCTION IF EXISTS check_message_rate_limit();
+DROP FUNCTION IF EXISTS ban_user_atomic(uuid, text, boolean);
+EOF
 
-## 📞 On-Call & Support
-
-### Team Contacts
-- [ ] Backend Lead: _______________
-- [ ] DevOps: _______________
-- [ ] Security Team: _______________
-- [ ] On-Call Engineer: _______________
-
-### Escalation Path
-1. On-Call Engineer (immediate issues)
-2. Backend Lead (payment/security issues)
-3. CTO (critical incidents)
-
-### Incident Response
-- [ ] Payment fraud procedure documented
-- [ ] Webhook failure procedure documented
-- [ ] Database rollback procedure documented
+# Restore from backup
+psql $DATABASE_URL < backup_YYYYMMDD_HHMMSS.sql
+```
 
 ---
 
-## ✅ Post-Deployment Verification
+## Monitoring Dashboard Setup
 
-### First Hour
-- [ ] No errors in application logs
-- [ ] Webhook endpoint responding correctly
-- [ ] Rate limiting working as expected
-- [ ] No spike in error rates
+### Sentry Alerts
+- [ ] Configure alert for error rate > 5%
+- [ ] Configure alert for new error types
+- [ ] Configure alert for performance degradation
 
-### First 24 Hours
-- [ ] Payment success rate normal
-- [ ] No invalid webhook signatures
-- [ ] No amount mismatch errors
-- [ ] User feedback positive
+### Supabase Monitoring
+- [ ] Monitor RPC execution times
+- [ ] Monitor trigger execution counts
+- [ ] Monitor database CPU/memory
+- [ ] Set up alerts for slow queries
 
-### First Week
-- [ ] Review all payment transactions
-- [ ] Check for unusual patterns
-- [ ] Verify doping activations correct
-- [ ] Monitor rate limit violations
+### Vercel Monitoring
+- [ ] Monitor function execution times
+- [ ] Monitor function error rates
+- [ ] Set up log alerts for "CRITICAL" keyword
 
----
-
-## 🎯 Success Criteria
-
-### Technical
-- ✅ All critical security issues resolved
-- ✅ Build succeeds without errors
-- ✅ All tests passing
-- ✅ Rate limiting functional
-- ✅ CSRF protection active
-
-### Business
-- ✅ Payment fraud risk eliminated
-- ✅ User experience improved (error handling)
-- ✅ Compliance requirements met
-- ✅ Monitoring and alerting in place
+### Custom Metrics
+- [ ] Chat rate limit trigger count
+- [ ] Atomic ban operation success rate
+- [ ] Admin client creation frequency
+- [ ] CSRF token failure rate
 
 ---
 
-## 📋 Sign-Off
+## Success Criteria
 
-### Technical Review
-- [ ] Backend Lead: _____________ Date: _______
-- [ ] DevOps: _____________ Date: _______
-- [ ] Security Team: _____________ Date: _______
+### Deployment Successful If:
+- ✅ All smoke tests pass
+- ✅ Error rate stable or decreased
+- ✅ No data loss incidents
+- ✅ No user-facing issues
+- ✅ Monitoring shows healthy metrics
 
-### Business Approval
-- [ ] Product Owner: _____________ Date: _______
-- [ ] CTO: _____________ Date: _______
-
----
-
-## 🔗 Related Documents
-
-- [SECURITY_AUDIT_RESOLUTION.md](./SECURITY_AUDIT_RESOLUTION.md) - Executive summary
-- [docs/SECURITY.md](./docs/SECURITY.md) - Comprehensive security documentation
-- [docs/SECURITY_FIXES_2026-04.md](./docs/SECURITY_FIXES_2026-04.md) - Detailed fix documentation
+### Deployment Failed If:
+- ❌ Error rate increased > 10%
+- ❌ Data loss or corruption
+- ❌ Critical features broken
+- ❌ User complaints spike
+- ❌ Database performance degraded
 
 ---
 
-## 📌 Notes
+## Communication Plan
 
-### Known Issues (Non-Blocking)
-- 23 ESLint warnings (unused variables in tests)
-- Doping column duplication (medium priority fix)
-- Connection pooling optimization (medium priority)
+### Before Deployment
+- [ ] Notify team of deployment window
+- [ ] Schedule maintenance window (if needed)
+- [ ] Prepare rollback plan
 
-### Future Improvements
-- TC identity number collection
-- SMS OTP verification
-- 2FA for admin panel
-- Virus scanning for uploads
+### During Deployment
+- [ ] Post status updates in team chat
+- [ ] Monitor metrics in real-time
+- [ ] Be ready to rollback if needed
+
+### After Deployment
+- [ ] Announce successful deployment
+- [ ] Share monitoring dashboard
+- [ ] Document any issues encountered
 
 ---
 
-**Last Updated**: April 24, 2026  
-**Next Review**: After production deployment  
-**Status**: ✅ Ready for Deployment
+## Post-Deployment Tasks
+
+### Immediate (Day 1)
+- [ ] Monitor error rates
+- [ ] Verify all fixes working
+- [ ] Check user feedback
+- [ ] Update status page
+
+### Short-term (Week 1)
+- [ ] Review Sentry reports
+- [ ] Analyze performance metrics
+- [ ] Gather user feedback
+- [ ] Document lessons learned
+
+### Long-term (Month 1)
+- [ ] Implement reconciliation worker (RECON-01)
+- [ ] Review and optimize RPC performance
+- [ ] Consider additional security hardening
+- [ ] Update security documentation
+
+---
+
+## Contact Information
+
+### On-Call Rotation
+- **Primary**: [Your Name]
+- **Secondary**: [Backup Name]
+- **Escalation**: [Manager Name]
+
+### Emergency Contacts
+- **Sentry**: [Dashboard URL]
+- **Vercel**: [Dashboard URL]
+- **Supabase**: [Dashboard URL]
+- **Team Chat**: [Slack/Discord Channel]
+
+---
+
+## Appendix: Migration Files
+
+### Migration 0134: Chat Rate Limit Trigger
+**File**: `database/migrations/0134_chat_rate_limit_trigger.sql`
+
+Creates database-level rate limiting for chat messages (100/hour per chat).
+
+### Migration 0135: Atomic Ban User RPC
+**File**: `database/migrations/0135_atomic_ban_user.sql`
+
+Creates atomic user ban function with automatic listing rejection.
+
+---
+
+## Sign-Off
+
+- [ ] **Developer**: Code reviewed and tested
+- [ ] **Tech Lead**: Architecture approved
+- [ ] **Security**: Security fixes verified
+- [ ] **DevOps**: Deployment plan approved
+- [ ] **Product**: User impact assessed
+
+---
+
+**Prepared By**: Kiro AI (Claude Sonnet 4.5)  
+**Date**: 2026-04-30  
+**Version**: Phase 28.5  
+**Status**: READY FOR DEPLOYMENT ✅

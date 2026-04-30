@@ -1,17 +1,19 @@
-import { type SupabaseClient } from "@supabase/supabase-js";
-
 import { iyzicoBreaker } from "@/lib/api/resilience";
 import { logger } from "@/lib/logging/logger";
-import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { getIyzicoClient } from "@/services/payments/iyzico-client";
 
 /**
  * World-Class Reliability: Compensating Actions (Issue 9)
  * Gerekirse günlerce denenecek, asla kaybolmaması gereken telafi işlemleri (örn. İade).
+ *
+ * ── SECURITY FIX: Issue COMP-01 - Use Admin Client for Cron Context ──────────
+ * Compensating actions run in cron/system context without user session.
+ * Must use admin client to bypass RLS, matching outbox-processor pattern.
  */
 
 export async function processCompensatingActions() {
-  const supabase = await createSupabaseServerClient();
+  const supabase = createSupabaseAdminClient();
 
   const { data: actions, error } = await supabase
     .from("compensating_actions")
@@ -113,12 +115,13 @@ async function handleRefundAction(payload: Record<string, unknown>) {
  * Enqueues a compensating action during a failure in a Saga
  */
 export async function enqueueCompensatingAction(
-  supabaseClient: SupabaseClient,
+  supabaseClient: unknown,
   type: "refund" | "revert_credits",
   transactionId: string,
   payload: Record<string, unknown>
 ) {
-  await supabaseClient.from("compensating_actions").insert({
+  const admin = createSupabaseAdminClient();
+  await admin.from("compensating_actions").insert({
     transaction_id: transactionId,
     action_type: type,
     payload,

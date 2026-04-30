@@ -218,6 +218,10 @@ export async function sendChatMessage(input: SendMessageInput): Promise<Message>
   }
 
   // Simple rate limiting check: max 100 messages per chat in last hour
+  // ── NOTE: Issue CHAT-01 - Rate Limit Now Enforced at Database Level ──────
+  // Database trigger 'enforce_message_rate_limit' provides atomic protection.
+  // This application-level check is kept as a fast-fail optimization to avoid
+  // unnecessary database round-trips, but the trigger is the authoritative control.
   const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000).toISOString();
   const { count: recentMessageCount, error: countError } = await supabase
     .from("messages")
@@ -234,20 +238,37 @@ export async function sendChatMessage(input: SendMessageInput): Promise<Message>
     throw new Error("Çok fazla mesaj gönderdiniz. Lütfen biraz bekleyin.");
   }
 
-  const { data: message, error: insertError } = await supabase
-    .from("messages")
-    .insert({
-      chat_id: input.chatId,
-      sender_id: input.senderId,
-      content: input.content.trim(),
-      message_type: input.messageType || "text",
-      is_read: false,
-    })
-    .select()
-    .single();
+  // ── BUG FIX: Issue CHAT-02 - Handle Rate Limit Exception from Trigger ──
+  // Database trigger will throw 'rate_limit_exceeded' exception if limit is hit
+  let message;
+  try {
+    const { data, error: insertError } = await supabase
+      .from("messages")
+      .insert({
+        chat_id: input.chatId,
+        sender_id: input.senderId,
+        content: input.content.trim(),
+        message_type: input.messageType || "text",
+        is_read: false,
+      })
+      .select()
+      .single();
 
-  if (insertError) {
-    throw new Error(`Mesaj gönderilemedi: ${insertError.message}`);
+    if (insertError) {
+      // Check if it's a rate limit error from trigger
+      if (insertError.message?.includes("rate_limit_exceeded")) {
+        throw new Error("Çok fazla mesaj gönderdiniz. Lütfen biraz bekleyin.");
+      }
+      throw new Error(`Mesaj gönderilemedi: ${insertError.message}`);
+    }
+
+    message = data;
+  } catch (err) {
+    const error = err as Error;
+    if (error.message?.includes("rate_limit_exceeded")) {
+      throw new Error("Çok fazla mesaj gönderdiniz. Lütfen biraz bekleyin.");
+    }
+    throw error;
   }
 
   // Redundant manual update removed — DB trigger 'messages_touch_chat_last_message_at' handles this atomically.

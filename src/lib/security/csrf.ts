@@ -24,10 +24,14 @@ export function isValidRequestOrigin(request: Request | NextRequest): boolean {
 
   if (isIyzico) {
     // ── SECURITY FIX: Issue SEC-05 - Webhook Origin Guard ───────────────────
-    // Only bypass origin check if the expected signature header is present.
+    // Only bypass origin check for the specific webhook endpoint, not all payment routes.
     // The handler will still verify the signature itself, but this prevents
     // browsers from being used as a vector for basic POST probes.
-    return request.headers.has("x-iyzi-signature");
+    if (url.pathname === "/api/payments/webhook" || url.pathname === "/api/webhooks/iyzico") {
+      return request.headers.has("x-iyzi-signature");
+    }
+    // Other payment endpoints require normal CSRF validation
+    return false;
   }
 
   if (isPosthog) {

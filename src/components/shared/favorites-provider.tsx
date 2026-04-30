@@ -64,12 +64,14 @@ function getHydrationSnapshot() {
 }
 
 /**
- * Fetches CSRF token from the API
+ * Fetches CSRF token from the API with error handling
+ * ── BUG FIX: Issue FAV-01 - Graceful CSRF Token Failure ──────────────
+ * Returns null on any error instead of throwing, allowing fallback behavior
  */
 async function fetchCsrfToken(): Promise<string | null> {
   try {
     const response = await fetch("/api/auth/csrf");
-    if (response.status === 503) return null; // Maintenance mode
+    if (!response.ok) return null; // Any non-2xx status
     const payload = await response.json().catch(() => null);
     return payload?.data?.token ?? null;
   } catch {
@@ -80,13 +82,17 @@ async function fetchCsrfToken(): Promise<string | null> {
 async function requestFavoriteUpdate(method: "DELETE" | "POST", listingId: string) {
   const csrfToken = await fetchCsrfToken();
 
+  // ── BUG FIX: Issue FAV-02 - Fail Fast on Missing CSRF Token ──────────────
+  // If CSRF token is unavailable, throw immediately instead of sending request
+  // that will be rejected. This prevents clearing user's favorites on transient errors.
+  if (!csrfToken) {
+    throw new Error("CSRF token alınamadı. Lütfen sayfayı yenileyin.");
+  }
+
   const headers: Record<string, string> = {
     "Content-Type": "application/json",
+    "x-csrf-token": csrfToken,
   };
-
-  if (csrfToken) {
-    headers["x-csrf-token"] = csrfToken;
-  }
 
   const response = await fetch("/api/favorites", {
     body: JSON.stringify({ listingId }),
@@ -95,9 +101,14 @@ async function requestFavoriteUpdate(method: "DELETE" | "POST", listingId: strin
   });
 
   if (!response.ok) {
-    if (response.status === 403 || response.status === 401 || response.status === 503) {
-      // Unauthenticated, CSRF failure, or Maintenance - return empty list to prevent crash
-      return [];
+    if (response.status === 503) {
+      throw new Error("Sistem bakımda. Lütfen daha sonra tekrar deneyin.");
+    }
+    if (response.status === 401) {
+      throw new Error("Oturum süreniz dolmuş. Lütfen tekrar giriş yapın.");
+    }
+    if (response.status === 403) {
+      throw new Error("İşlem reddedildi. Lütfen sayfayı yenileyin.");
     }
     const payload = (await response.json().catch(() => null)) as { error?: { message: string } };
     throw new Error(payload?.error?.message ?? "Favori durumu güncellenemedi.");

@@ -32,19 +32,34 @@ export async function processComplianceVacuum() {
   // marked as 'archived' in Issue 7's lifecycle.
 
   // 3. User PII Key Shredding (Issue 4)
-  // Check for users marked as deleted more than 30 days ago and delete their encryption keys
+  // ── CRITICAL FIX: Issue COMP-VAC-01 - Only Delete Keys for Deleted Users ──────
+  // Previous implementation deleted keys based solely on age, risking active user data loss.
+  // Now only deletes keys for users who are marked as deleted (is_banned = true AND ban_reason contains 'Deleted').
   const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
 
-  const { data: shreddedKeys, error: keyError } = await supabase
-    .from("user_encryption_keys")
-    .delete()
-    .lte("created_at", thirtyDaysAgo)
-    // .filter('user_id', 'not.in', supabase.from('profiles').select('id')) // Subquery trick or join
-    .select("user_id");
+  // First, get list of deleted user IDs
+  const { data: deletedUsers } = await supabase
+    .from("profiles")
+    .select("id")
+    .eq("is_banned", true)
+    .ilike("ban_reason", "%Account Deleted%");
 
-  if (keyError) {
-    logger.system.error("Compliance: Failed to shred keys", keyError);
-  } else if (shreddedKeys && shreddedKeys.length > 0) {
-    logger.system.info(`Compliance: Shredded keys for ${shreddedKeys.length} users.`);
+  if (deletedUsers && deletedUsers.length > 0) {
+    const deletedUserIds = deletedUsers.map((u) => u.id);
+
+    const { data: shreddedKeys, error: keyError } = await supabase
+      .from("user_encryption_keys")
+      .delete()
+      .in("user_id", deletedUserIds)
+      .lte("created_at", thirtyDaysAgo)
+      .select("user_id");
+
+    if (keyError) {
+      logger.system.error("Compliance: Failed to shred keys", keyError);
+    } else if (shreddedKeys && shreddedKeys.length > 0) {
+      logger.system.info(`Compliance: Shredded keys for ${shreddedKeys.length} deleted users.`);
+    }
+  } else {
+    logger.system.info("Compliance: No deleted users found for key shredding.");
   }
 }

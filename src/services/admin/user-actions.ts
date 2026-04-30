@@ -15,37 +15,37 @@ export async function toggleUserBan(userId: string, currentStatus: boolean) {
     "toggleUserBan",
     async () => {
       const admin = createSupabaseAdminClient();
-      const { data: profile } = await admin
-        .from("profiles")
-        .select("business_slug")
-        .eq("id", userId)
-        .single();
 
-      const { error } = await admin
-        .from("profiles")
-        .update({
-          is_banned: !currentStatus,
-          ban_reason: !currentStatus ? "Admin tarafından yasaklandı" : null,
-        })
-        .eq("id", userId);
+      // ── SECURITY FIX: Issue ADMIN-02 - Atomic Ban with Listing Rejection ──
+      // Use atomic RPC to ensure profile update and listing rejection happen together
+      const { data: result, error: rpcError } = await admin.rpc("ban_user_atomic", {
+        p_user_id: userId,
+        p_reason: !currentStatus ? "Admin tarafından yasaklandı" : null,
+        p_preserve_metadata: true,
+      });
 
-      if (error) throw new Error(error.message);
-
-      // If banned, cancel all active listings (Side Effect)
-      if (!currentStatus) {
-        await admin.from("listings").update({ status: "rejected" }).eq("seller_id", userId);
-      }
+      if (rpcError) throw new Error(rpcError.message);
 
       // Sync to Auth App Metadata for lightweight middleware checks (F-12)
       await admin.auth.admin.updateUserById(userId, {
         app_metadata: { is_banned: !currentStatus },
       });
 
+      // Get business slug for revalidation
+      const { data: profile } = await admin
+        .from("profiles")
+        .select("business_slug")
+        .eq("id", userId)
+        .single();
+
       if (profile?.business_slug) {
         revalidatePath(`/galeri/${profile.business_slug}`);
       }
 
-      return { newStatus: !currentStatus };
+      return {
+        newStatus: !currentStatus,
+        listingsRejected: result?.listings_rejected || 0,
+      };
     },
     {
       revalidatePaths: ["/admin/users", `/admin/users/${userId}`],

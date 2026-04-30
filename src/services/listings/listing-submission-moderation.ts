@@ -15,7 +15,6 @@ const TRACKED_TRUST_GUARD_REASONS = new Set([
   "duplicate_plate",
   "extreme_price_outlier",
 ]);
-const ASYNC_MODERATION_CACHE_TTL_SECONDS = 300;
 
 interface TrustGuardRejectionAttempt {
   at: string;
@@ -37,6 +36,9 @@ async function getCachedFraudComparisonListings(params: {
 }) {
   const admin = createSupabaseAdminClient();
 
+  // ── PERFORMANCE FIX: Issue FRAUD-01 - Reduced Cache TTL for Fraud Detection ──
+  // Previous 300s TTL could allow VIN duplicates to slip through for 5 minutes.
+  // Reduced to 60s to balance performance with fraud detection accuracy.
   return withNextCache(
     [`fraud-comparison:${params.brand}:${params.model}:${params.year}`],
     async () => {
@@ -50,7 +52,7 @@ async function getCachedFraudComparisonListings(params: {
 
       return data ?? [];
     },
-    ASYNC_MODERATION_CACHE_TTL_SECONDS
+    60 // Reduced from 300 to 60 seconds
   );
 }
 

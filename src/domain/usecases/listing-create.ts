@@ -100,7 +100,11 @@ export async function executeListingCreation(
     logger.system.error("Analytics tracking failed", e);
   }
 
-  deps.runAsyncModeration(listing.id, listing);
+  // ── BUG FIX: Issue LISTING-01 - Async Moderation Error Handling ──────────
+  // Wrap async moderation in Promise.resolve().catch() to prevent unhandled rejections
+  Promise.resolve(deps.runAsyncModeration(listing.id, listing)).catch((e) =>
+    logger.system.error("Async moderation failed", e)
+  );
 
   return { success: true, listing };
 }

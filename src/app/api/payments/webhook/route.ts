@@ -51,17 +51,28 @@ export async function POST(req: NextRequest) {
       [...req.headers.entries()].filter(([key]) => SAFE_HEADERS.includes(key.toLowerCase() as any))
     );
 
+    // ── BUG FIX: Issue WEBHOOK-01 - Handle Missing Token in Webhook Payload ──
     // Idempotent logging - prevent duplicate logs for retried webhooks
-    await admin.from("payment_webhook_logs").upsert(
-      {
-        token: body.token, // Unique identifier from Iyzico
+    // Only upsert if token exists, otherwise insert without conflict check
+    if (body.token) {
+      await admin.from("payment_webhook_logs").upsert(
+        {
+          token: body.token,
+          payload: body,
+          headers: safeHeaders,
+          status: "received",
+          received_at: new Date().toISOString(),
+        },
+        { onConflict: "token", ignoreDuplicates: false }
+      );
+    } else {
+      await admin.from("payment_webhook_logs").insert({
         payload: body,
         headers: safeHeaders,
         status: "received",
         received_at: new Date().toISOString(),
-      },
-      { onConflict: "token", ignoreDuplicates: false }
-    );
+      });
+    }
 
     // 3. Update payment status with atomic lock for idempotency (F-01)
     if (body.iyziEventType === "PAYMENT_AUTH") {

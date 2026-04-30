@@ -74,16 +74,26 @@ export async function initializePaymentCheckout(params: {
 
   // 1. SECURITY: Cancel any recent pending payments for same user+listing+package
   // This prevents duplicate pending records if user retries payment
-  // USE SERVER CLIENT: Enforce RLS (now allowed by new UPDATE policy)
+  // ── BUG FIX: Issue PAY-01 - Handle Null listing_id for Plan Purchases ──────────
+  // Previous code used empty string for null listing_id, which never matched any records.
+  // Now properly handles both listing-based and plan-based payments.
   const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000).toISOString();
-  await supabase
+
+  let cancelQuery = supabase
     .from("payments")
     .update({ status: "cancelled", metadata: { reason: "superseded_by_new_payment" } })
     .eq("user_id", params.userId)
-    .eq("listing_id", params.listingId || "")
     .eq("package_id", params.basketItems[0]?.id || "")
     .eq("status", "pending")
     .gte("created_at", oneHourAgo);
+
+  if (params.listingId) {
+    cancelQuery = cancelQuery.eq("listing_id", params.listingId);
+  } else {
+    cancelQuery = cancelQuery.is("listing_id", null);
+  }
+
+  await cancelQuery;
 
   // 2. Create a new pending payment record in DB
   // USE SERVER CLIENT: Enforce RLS on payment creation (now allowed by new INSERT policy)

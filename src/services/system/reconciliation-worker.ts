@@ -53,6 +53,15 @@ export async function processReconciliation() {
 }
 
 async function simulateExternalStatusCheck(): Promise<"active" | "expired"> {
-  // In real life: await iyzico.subscription.get(userId);
-  return "active";
+  // ── CRITICAL TODO: Issue RECON-01 - Implement Real External Subscription Check ──
+  // This stub always returns "active", preventing detection of expired subscriptions.
+  // Until real Iyzico/Stripe integration is implemented, this reconciliation is ineffective.
+  //
+  // TODO: Implement real subscription status check:
+  // const iyzico = getIyzicoClient();
+  // const result = await iyzico.subscription.retrieve({ subscriptionReferenceCode: userId });
+  // return result.subscriptionStatus === "ACTIVE" ? "active" : "expired";
+
+  logger.system.warn("Reconciliation: Using stub - external subscription check not implemented");
+  return "active"; // Safe default: false positive less harmful than false negative
 }

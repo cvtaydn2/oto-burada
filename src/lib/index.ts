@@ -24,5 +24,5 @@ export { DOPING_PACKAGES } from "./constants/doping";
 export * from "./constants/ui-strings";
 
 // Supabase
-export { createSupabaseAdminClient, resetSupabaseAdminClient } from "./supabase/admin";
+export { createSupabaseAdminClient } from "./supabase/admin";
 export { getSupabaseEnv, getSupabaseProjectRef, hasSupabaseEnv } from "./supabase/env";

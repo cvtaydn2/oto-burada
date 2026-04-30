@@ -2,7 +2,12 @@ import { defineConfig, devices } from "@playwright/test";
 
 export default defineConfig({
   testDir: ".",
-  testMatch: ["e2e/**/*.spec.ts", "tests/**/*.spec.ts"],
+  // API tests run separately and faster (no browser needed)
+  testMatch: [
+    "e2e/**/*.spec.ts", 
+    "tests/**/*.spec.ts",
+    "tests/api/**/*.spec.ts"
+  ],
   fullyParallel: true,
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 2 : 0,

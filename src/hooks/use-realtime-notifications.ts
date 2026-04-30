@@ -1,5 +1,5 @@
-import type { RealtimeChannel, RealtimePostgresInsertPayload } from "@supabase/supabase-js";
-import { useCallback, useEffect, useRef } from "react";
+import type { RealtimePostgresInsertPayload } from "@supabase/supabase-js";
+import { useEffect, useRef } from "react";
 
 import { useSupabase } from "@/lib/supabase/client";
 
@@ -22,21 +22,19 @@ interface UseRealtimeNotificationsOptions {
 export function useRealtimeNotifications(options: UseRealtimeNotificationsOptions) {
   const { userId, onNotification } = options;
   const supabaseClient = useSupabase();
-  const channelRef = useRef<RealtimeChannel | null>(null);
   const onNotificationRef = useRef(onNotification);
 
   useEffect(() => {
     onNotificationRef.current = onNotification;
   }, [onNotification]);
 
-  const subscribe = useCallback(() => {
+  // ── BUG FIX: Issue REALTIME-01 - Simplified Subscription Management ──────
+  // Removed unnecessary subscribe callback that caused double subscriptions in Strict Mode.
+  // Now manages channel lifecycle directly in useEffect for cleaner cleanup.
+  useEffect(() => {
     if (!userId) return;
 
-    if (channelRef.current) {
-      channelRef.current.unsubscribe();
-    }
-
-    channelRef.current = supabaseClient
+    const channel = supabaseClient
       .channel(`notifications:${userId}`)
       .on(
         "postgres_changes",
@@ -68,20 +66,12 @@ export function useRealtimeNotifications(options: UseRealtimeNotificationsOption
         }
       });
 
-    return channelRef.current;
+    return () => {
+      channel.unsubscribe();
+    };
   }, [userId, supabaseClient]);
 
-  useEffect(() => {
-    void subscribe();
-
-    return () => {
-      if (channelRef.current) {
-        channelRef.current.unsubscribe();
-      }
-    };
-  }, [subscribe]);
-
   return {
-    subscribe,
+    // Removed subscribe function - no longer needed
   };
 }
