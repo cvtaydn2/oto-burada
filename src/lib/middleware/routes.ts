@@ -17,7 +17,13 @@ export const protectedApiPrefixes = [
   "/api/payments",
 ];
 export const adminApiPrefixes = ["/api/admin"];
-export const publicApiRoutes = ["/api/health", "/api/contact", "/api/market/estimate"];
+export const publicApiRoutes = [
+  "/api/health",
+  "/api/health-check",
+  "/api/contact",
+  "/api/market/estimate",
+  "/api/listings/view",
+];
 
 export function classifyRoute(pathname: string) {
   const isStaticAsset =

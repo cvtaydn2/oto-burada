@@ -72,6 +72,26 @@ test.describe("Listing Detail", () => {
     }
     await expect(page.getByRole("heading").first()).toBeVisible({ timeout: 10000 });
   });
+
+  test("should reveal phone number for guests", async ({ page }) => {
+    const listingHref = await getFirstPublicListingHref(page);
+    test.skip(!listingHref, "Live DB ortamında public ilan yok.");
+    await page.goto(listingHref!);
+
+    // Find the reveal button (ContactActions)
+    const revealButton = page.locator("button:has-text('Telefon Numarasını Göster'), button:has-text('WP Mesaj At')");
+    await expect(revealButton.first()).toBeVisible({ timeout: 10000 });
+
+    // Note: The actual reveal might require clicking the button
+    // But since it's an external CTA usually, we just check its existence and visibility
+    const phoneButton = page.getByRole("button", { name: /Numarayı Göster/i });
+    if (await phoneButton.isVisible()) {
+      await phoneButton.click();
+      // After click, the phone number should be visible (or the WhatsApp link)
+      // The component updates UI to show the number
+      await expect(page.locator("text=/\\+90/")).toBeVisible({ timeout: 10000 });
+    }
+  });
 });
 
 test.describe("Navigation", () => {

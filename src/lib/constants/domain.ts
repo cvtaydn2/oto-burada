@@ -27,7 +27,13 @@ export const reportReasons = [
 
 export const reportStatuses = ["open", "reviewing", "resolved", "dismissed"] as const;
 
-export const notificationTypes = ["favorite", "moderation", "report", "system"] as const;
+export const notificationTypes = [
+  "favorite",
+  "moderation",
+  "report",
+  "system",
+  "question",
+] as const;
 
 export const reportReasonLabels = {
   fake_listing: "Sahte ilan",

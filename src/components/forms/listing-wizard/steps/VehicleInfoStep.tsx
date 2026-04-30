@@ -1,6 +1,6 @@
 "use client";
 
-import { AlertCircle, LoaderCircle, Search } from "lucide-react";
+import { LoaderCircle, Search } from "lucide-react";
 import { Controller, UseFormReturn } from "react-hook-form";
 
 import { ChoiceGroup } from "@/components/shared/design-system/ChoiceGroup";
@@ -47,39 +47,33 @@ export function VehicleInfoStep({
         </p>
 
         <div className="grid gap-8">
-          <div className="space-y-3">
-            <label className="block text-sm font-bold text-gray-700">Plakadan Öneri Al</label>
-            <div className="flex gap-3">
-              <div className="relative flex-1">
-                <div className="absolute inset-y-0 left-0 w-10 flex items-center justify-center border-r border-border bg-muted/30 rounded-l-lg">
-                  <span className="text-[10px] font-bold text-primary">TR</span>
-                </div>
-                <input
+          <div className="flex flex-col gap-3">
+            <div className="flex gap-3 items-end">
+              <div className="flex-1">
+                <DesignInput
+                  label="Plakadan Öneri Al"
+                  leftAddon={<span className="text-[10px] font-bold text-primary">TR</span>}
                   {...register("licensePlate")}
                   placeholder="34 ABC 123"
                   disabled={isDisabled}
-                  className="h-12 w-full border border-border rounded-lg pl-14 pr-4 text-sm font-semibold placeholder-muted-foreground/30 outline-none focus:ring-2 focus:ring-primary/20 transition-all uppercase disabled:opacity-50"
+                  error={errors.licensePlate?.message as string}
+                  className="uppercase tracking-wide font-bold"
                 />
               </div>
               <button
                 type="button"
                 onClick={onPlateLookup}
                 disabled={isPlateLoading || isDisabled}
-                className="inline-flex h-12 items-center justify-center gap-2 rounded-lg bg-primary px-6 text-sm font-semibold text-primary-foreground transition-all hover:opacity-90 disabled:opacity-50"
+                className="inline-flex h-[46px] mb-[1.5px] items-center justify-center gap-2 rounded-xl bg-slate-900 px-6 text-xs font-bold uppercase tracking-widest text-white shadow-sm transition-all hover:bg-slate-800 disabled:opacity-50"
               >
                 {isPlateLoading ? (
                   <LoaderCircle className="size-4 animate-spin" />
                 ) : (
-                  <Search size={18} />
+                  <Search size={16} strokeWidth={3} />
                 )}
                 Öneri Getir
               </button>
             </div>
-            {errors.licensePlate && (
-              <p className="text-xs font-bold text-red-500 flex items-center gap-2">
-                <AlertCircle size={14} /> {errors.licensePlate?.message as string}
-              </p>
-            )}
           </div>
 
           <DesignInput
@@ -96,28 +90,23 @@ export function VehicleInfoStep({
 
       {/* SECTION 2: BASIC INFO */}
       <FormSection number={2} title="Araç Temel Bilgileri">
-        <div className="mb-8 space-y-2">
-          <label className="block text-sm font-semibold text-foreground">
-            Vasıta Türü <span className="text-destructive">*</span>
-          </label>
+        <div className="mb-8">
           <Controller
             control={control}
             name="category"
             render={({ field }) => (
               <ChoiceGroup
+                label="Vasıta Türü"
+                required
                 options={[...vehicleCategories]}
                 value={field.value ?? selectedCategory}
                 labels={vehicleCategoryLabels}
                 onChange={field.onChange}
                 disabled={isDisabled}
+                error={errors.category?.message as string}
               />
             )}
           />
-          {errors.category && (
-            <p className="text-xs font-bold text-red-500 flex items-center gap-2">
-              <AlertCircle size={14} /> {errors.category?.message as string}
-            </p>
-          )}
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
@@ -210,46 +199,42 @@ export function VehicleInfoStep({
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-          <div className="space-y-2">
-            <label className="block text-sm font-semibold text-foreground">
-              Yakıt Tipi <span className="text-destructive">*</span>
-            </label>
-            <Controller
-              control={control}
-              name="fuelType"
-              render={({ field }) => (
-                <ChoiceGroup
-                  options={["benzin", "dizel", "lpg", "hibrit", "elektrik"]}
-                  value={field.value ?? selectedFuelType}
-                  onChange={field.onChange}
-                  disabled={isDisabled}
-                />
-              )}
-            />
-          </div>
+          <Controller
+            control={control}
+            name="fuelType"
+            render={({ field }) => (
+              <ChoiceGroup
+                label="Yakıt Tipi"
+                required
+                options={["benzin", "dizel", "lpg", "hibrit", "elektrik"]}
+                value={field.value ?? selectedFuelType}
+                onChange={field.onChange}
+                disabled={isDisabled}
+                error={errors.fuelType?.message as string}
+              />
+            )}
+          />
 
-          <div className="space-y-2">
-            <label className="block text-sm font-semibold text-foreground">
-              Vites Tipi <span className="text-destructive">*</span>
-            </label>
-            <Controller
-              control={control}
-              name="transmission"
-              render={({ field }) => (
-                <ChoiceGroup
-                  options={["manuel", "yari_otomatik", "otomatik"]}
-                  value={field.value ?? selectedTransmission}
-                  labels={{
-                    manuel: "Manuel",
-                    otomatik: "Otomatik",
-                    yari_otomatik: "Yarı Otomatik",
-                  }}
-                  onChange={field.onChange}
-                  disabled={isDisabled}
-                />
-              )}
-            />
-          </div>
+          <Controller
+            control={control}
+            name="transmission"
+            render={({ field }) => (
+              <ChoiceGroup
+                label="Vites Tipi"
+                required
+                options={["manuel", "yari_otomatik", "otomatik"]}
+                value={field.value ?? selectedTransmission}
+                labels={{
+                  manuel: "Manuel",
+                  otomatik: "Otomatik",
+                  yari_otomatik: "Yarı Otomatik",
+                }}
+                onChange={field.onChange}
+                disabled={isDisabled}
+                error={errors.transmission?.message as string}
+              />
+            )}
+          />
         </div>
       </FormSection>
     </div>

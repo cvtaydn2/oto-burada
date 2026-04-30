@@ -20,10 +20,9 @@ const mobileQuickLinks = [
 ] as const;
 
 export function HeaderMobileNav({ searchSuggestions }: HeaderMobileNavProps) {
-  const { allItems, isReady, isAuthenticated, isLoading } = useNavigation();
+  const { allItems, isAuthenticated, isLoading } = useNavigation();
 
-  // "Hesabım" veya "Giriş" için özel href
-  const accountHref = isAuthenticated ? "/dashboard" : "/login";
+  // "İlan Ver" için özel href
   const postListingHref = isAuthenticated ? "/dashboard/listings" : "/login";
 
   return (

@@ -7,6 +7,7 @@ import {
   CreditCard,
   Database,
   Flag,
+  HelpCircle,
   History,
   KeyRound,
   LayoutDashboard,
@@ -41,6 +42,11 @@ const ADMIN_NAV_ITEMS = [
     title: "Araç Veritabanı",
     href: "/admin/reference",
     icon: Database,
+  },
+  {
+    title: "Soru Moderasyonu",
+    href: "/admin/questions",
+    icon: HelpCircle,
   },
   {
     title: "Şikayet Yönetimi",

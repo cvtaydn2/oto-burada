@@ -88,6 +88,16 @@ const ENV_VARS: EnvVar[] = [
     required: false,
     description: "Supabase Storage bucket name for private documents (signed URLs)",
   },
+  {
+    key: "OPENAI_API_KEY",
+    required: false,
+    description: "OpenAI API key for AI-driven listing assistant",
+  },
+  {
+    key: "GEMINI_API_KEY",
+    required: false,
+    description: "Google Gemini API key (Free Tier) for AI-driven listing assistant",
+  },
 ];
 
 export interface EnvValidationResult {

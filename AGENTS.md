@@ -53,6 +53,7 @@ Primary success criteria:
 - SEO-friendly public listing pages are mandatory.
 - The initial user-to-seller contact method is **WhatsApp CTA**, not internal chat.
 - **In-App Chat**: While basic infrastructure might exist for future scaling, it is **Secondary** and should not be prioritized or featured as a main USP for the MVP.
+- **Zero-Cost / Free-Tier Only**: The project must exclusively use free tiers of third-party services (Vercel, Supabase, Upstash, Resend, etc.). No paid subscriptions are allowed. All features, including AI and payments, must be designed to work within these free limits or fail gracefully.
 - **Out of Scope (MVP)**: EİDS (E-Devlet), SMS OTP, and Phone Verification are strictly out of scope to maintain simplicity and speed.
 
 ---

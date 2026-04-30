@@ -198,26 +198,35 @@ export function PhotosStep({
           })}
         </div>
 
-        <div className="mt-8 space-y-3">
-          <div className="p-4 bg-blue-50 rounded-xl border border-blue-100 flex gap-3">
-            <Info className="size-5 text-blue-500 shrink-0 mt-0.5" />
-            <div>
-              <p className="text-sm font-bold text-blue-800 mb-1">Püf Noktası</p>
-              <p className="text-xs text-blue-600 leading-relaxed">
-                Aracı temizleyin ve iyi aydınlatılmış bir alanda çekim yapın.
-              </p>
+        <div className="mt-12 grid gap-4">
+          <div className="rounded-3xl bg-blue-50/50 border border-blue-100 p-6 animate-in fade-in slide-in-from-top-2 duration-700">
+            <div className="flex items-start gap-4">
+              <div className="flex size-10 items-center justify-center rounded-2xl bg-blue-500 text-white shadow-sm shadow-blue-500/30 flex-shrink-0">
+                <Info size={20} strokeWidth={3} />
+              </div>
+              <div>
+                <p className="text-sm font-bold text-blue-900 tracking-tight">Profesyonel İpucu</p>
+                <p className="text-xs text-blue-700/80 font-medium leading-relaxed mt-1">
+                  Aracı temizleyin, plakayı gizleyin ve gün ışığında çekim yapın. Kaliteli
+                  fotoğraflar ilanınızın %40 daha hızlı satılmasını sağlar.
+                </p>
+              </div>
             </div>
           </div>
 
-          <div className="p-4 bg-indigo-50 rounded-xl border border-indigo-100 flex gap-3">
-            <Rotate3d className="size-5 text-indigo-500 shrink-0 mt-0.5" />
-            <div>
-              <p className="text-sm font-bold text-indigo-800 mb-1">360° Panoramik Fotoğraf</p>
-              <p className="text-xs text-indigo-600 leading-relaxed">
-                Equirectangular (2:1 oran) panoramik fotoğraf yüklediyseniz, fotoğrafın üzerine
-                gelip <strong>360° Ekle</strong> butonuna tıklayın. Alıcılar ilanı görüntülerken
-                360° tur yapabilecek.
-              </p>
+          <div className="rounded-3xl bg-indigo-50/50 border border-indigo-100 p-6 animate-in fade-in slide-in-from-top-4 duration-1000">
+            <div className="flex items-start gap-4">
+              <div className="flex size-10 items-center justify-center rounded-2xl bg-indigo-500 text-white shadow-sm shadow-indigo-500/30 flex-shrink-0">
+                <Rotate3d size={20} strokeWidth={3} />
+              </div>
+              <div>
+                <p className="text-sm font-bold text-indigo-900 tracking-tight">360° Deneyimi</p>
+                <p className="text-xs text-indigo-700/80 font-medium leading-relaxed mt-1">
+                  Equirectangular panoramik fotoğraf yüklediyseniz, üzerine gelip
+                  <strong> 360° Ekle</strong> butonuna tıklayın. Alıcılar aracınızın içinde sanal
+                  tur yapabilir.
+                </p>
+              </div>
             </div>
           </div>
         </div>

@@ -9,7 +9,6 @@ export * from "./commands/delete-listing";
 export * from "./commands/update-listing";
 
 // Queries
-export * from "./queries/get-listings";
 export {
   getFilteredMarketplaceListings,
   getListingById,
@@ -18,7 +17,8 @@ export {
   getPublicMarketplaceListings,
   getRecentMarketplaceListings,
   getSimilarMarketplaceListings,
-} from "./queries/get-public-listings";
+} from "./marketplace-listings";
+export * from "./queries/get-listings";
 
 // Mappers & Types
 export * from "./listing-submission-query";

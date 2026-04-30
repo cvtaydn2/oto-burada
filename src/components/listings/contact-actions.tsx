@@ -98,11 +98,17 @@ export function ContactActions({
   }
 
   // Guest kullanıcı — telefon numarası için giriş yönlendirmesi
-  const isGuest = !currentUserId;
-  const returnPath = listingSlug ? `/listing/${listingSlug}` : "/listings";
 
   const formatPhone = (p: string) => {
-    return p.replace(/(\d{4})(\d{3})(\d{2})(\d{2})/, "$1 $2 $3 $4");
+    // Robust formatting for +90 5XX XXX XX XX or 05XX XXX XX XX
+    const clean = p.replace(/\D/g, "");
+    if (clean.length === 12 && clean.startsWith("90")) {
+      return `+90 ${clean.slice(2, 5)} ${clean.slice(5, 8)} ${clean.slice(8, 10)} ${clean.slice(10, 12)}`;
+    }
+    if (clean.length === 10) {
+      return `0${clean.slice(0, 3)} ${clean.slice(3, 6)} ${clean.slice(6, 8)} ${clean.slice(8, 10)}`;
+    }
+    return p;
   };
 
   const handleReveal = async () => {
@@ -170,31 +176,20 @@ export function ContactActions({
       {/* Phone Number Reveal */}
       <div className="relative">
         {!isRevealed ? (
-          isGuest ? (
-            // Guest: giriş yap butonu göster
-            <button
-              onClick={() => router.push(`/login?next=${encodeURIComponent(returnPath)}`)}
-              className="flex w-full items-center justify-center gap-2 rounded-xl bg-card border border-border h-12 px-4 text-sm font-bold text-foreground hover:bg-muted transition-all active:scale-95"
-            >
-              <Phone className="size-5 text-primary" />
-              Numarayı Görmek İçin Giriş Yap
-            </button>
-          ) : (
-            <button
-              onClick={handleReveal}
-              disabled={isLogging}
-              className="flex w-full items-center justify-center gap-2 rounded-xl bg-card border border-border h-12 px-4 text-sm font-bold text-foreground hover:bg-muted transition-all active:scale-95 disabled:opacity-70"
-            >
-              {isLogging ? (
-                <Loader2 className="animate-spin size-5" />
-              ) : (
-                <>
-                  <Phone className="size-5 text-primary" />
-                  Numarayı Göster
-                </>
-              )}
-            </button>
-          )
+          <button
+            onClick={handleReveal}
+            disabled={isLogging}
+            className="flex w-full items-center justify-center gap-2 rounded-xl bg-card border border-border h-12 px-4 text-sm font-bold text-foreground hover:bg-muted transition-all active:scale-95 disabled:opacity-70"
+          >
+            {isLogging ? (
+              <Loader2 className="animate-spin size-5" />
+            ) : (
+              <>
+                <Phone className="size-5 text-primary" />
+                Numarayı Göster
+              </>
+            )}
+          </button>
         ) : (
           <a
             href={`tel:${revealedPhone}`}

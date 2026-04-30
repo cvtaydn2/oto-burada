@@ -2,24 +2,24 @@ import { withNextCache } from "@/lib/caching/cache";
 import { maskPhoneNumber } from "@/lib/listings/utils";
 import { logger } from "@/lib/logging/logger";
 import { captureServerEvent } from "@/lib/monitoring/posthog-server";
-import { getPublicListings } from "@/services/listings/catalog";
-import { createExpertDocumentSignedUrl } from "@/services/listings/listing-documents";
+import { createSupabasePublicServerClient } from "@/lib/supabase/public-server";
+import { getListingBySlug, getPublicListings } from "@/services/listings/catalog";
 import {
   getSimilarDatabaseListings,
-  getStoredListingById,
-  getStoredListingBySlug,
-  getStoredListingsByIds,
+  marketplaceListingSelect,
   type PaginatedListingsResult,
-} from "@/services/listings/listing-submissions";
+} from "@/services/listings/listing-submission-query";
+import { mapListingRow } from "@/services/listings/mappers/listing-row.mapper";
 import { getPublicSellerProfile } from "@/services/profile/profile-records";
 import type { Listing, ListingFilters, Profile } from "@/types";
 
-export {
+import {
   getStoredListingById,
   getStoredListingBySlug,
   getStoredListingsByIds,
-  type PaginatedListingsResult,
-};
+} from "./listing-submissions";
+
+export { getStoredListingById, getStoredListingBySlug, getStoredListingsByIds };
 
 const SUPPORTED_MARKETPLACE_FILTER_KEYS = new Set<keyof ListingFilters>([
   "brand",
@@ -48,7 +48,13 @@ const SUPPORTED_MARKETPLACE_FILTER_KEYS = new Set<keyof ListingFilters>([
   "galleryPriority",
 ]);
 
-function sanitizeMarketplaceFilters(filters: ListingFilters): ListingFilters {
+/**
+ * Sanitizes filters and identifies dropped keys for feedback.
+ */
+function sanitizeMarketplaceFilters(filters: ListingFilters): {
+  sanitized: ListingFilters;
+  droppedKeys: string[];
+} {
   const sanitized = {} as ListingFilters;
   const droppedKeys: string[] = [];
 
@@ -65,24 +71,54 @@ function sanitizeMarketplaceFilters(filters: ListingFilters): ListingFilters {
     captureServerEvent("marketplace_filters_sanitized", { droppedKeys });
   }
 
-  return sanitized;
+  return { sanitized, droppedKeys };
 }
 
 export async function getFilteredMarketplaceListings(
   filters: ListingFilters
 ): Promise<PaginatedListingsResult> {
-  return getPublicListings(sanitizeMarketplaceFilters(filters));
+  const { sanitized, droppedKeys } = sanitizeMarketplaceFilters(filters);
+  const result = await getPublicListings(sanitized);
+
+  if (droppedKeys.length > 0) {
+    return {
+      ...result,
+      metadata: {
+        ...result.metadata,
+        droppedFilters: droppedKeys,
+        warning: "Bazı filtreler desteklenmiyor ve uygulanmadı.",
+      },
+    };
+  }
+
+  return result;
 }
 
-export async function getMarketplaceListingsByIds(ids: string[]) {
-  return getStoredListingsByIds(ids);
+export async function getMarketplaceListingsByIds(ids: string[]): Promise<Listing[]> {
+  if (ids.length === 0) return [];
+
+  const publicClient = createSupabasePublicServerClient();
+  /* eslint-disable @typescript-eslint/no-explicit-any */
+  const { data, error } = await (publicClient
+    .from("listings")
+    .select(marketplaceListingSelect)
+    .in("id", ids)
+    .eq("status", "approved") as any);
+  /* eslint-enable @typescript-eslint/no-explicit-any */
+
+  if (error) {
+    logger.db.error("Marketplace listings by IDs retrieval failed", { error, ids });
+    return [];
+  }
+
+  return (data ?? []).map(mapListingRow);
 }
 
 export async function getMarketplaceListingBySlug(slug: string): Promise<Listing | null> {
   const storedListing = await withNextCache<Listing | null>(
     [`marketplace-listing:${slug}`],
-    () => getStoredListingBySlug(slug),
-    60
+    () => getListingBySlug(slug),
+    300 // 5 minutes cache (PERF-07)
   );
 
   if (!storedListing || storedListing.status !== "approved") return null;
@@ -92,23 +128,41 @@ export async function getMarketplaceListingBySlug(slug: string): Promise<Listing
     whatsappPhone: maskPhoneNumber(storedListing.whatsappPhone),
   };
 
+  // PERFORMANCE: Don't generate signed URL on server (PERF-08)
+  // Client component ExpertPdfButton handles this on-demand
   if (!storedListing.expertInspection?.documentPath) return maskedListing;
-
-  const signedUrl = await createExpertDocumentSignedUrl(
-    storedListing.expertInspection.documentPath
-  );
 
   return {
     ...maskedListing,
     expertInspection: {
       ...storedListing.expertInspection,
-      documentUrl: signedUrl ?? storedListing.expertInspection.documentUrl,
+      documentUrl: storedListing.expertInspection.documentUrl || undefined,
     },
   };
 }
 
-export async function getListingById(id: string) {
-  return getStoredListingById(id, { includeBanned: true });
+export async function getListingById(id: string): Promise<Listing | null> {
+  const publicClient = createSupabasePublicServerClient();
+  /* eslint-disable @typescript-eslint/no-explicit-any */
+  const { data, error } = await (publicClient
+    .from("listings")
+    .select(marketplaceListingSelect)
+    .eq("id", id)
+    .maybeSingle() as any);
+  /* eslint-enable @typescript-eslint/no-explicit-any */
+
+  if (error) {
+    logger.db.error("Public listing by ID retrieval failed", { error, id });
+    return null;
+  }
+
+  if (!data) return null;
+
+  if (Array.isArray(data)) {
+    return data.length > 0 ? mapListingRow(data[0]) : null;
+  }
+
+  return mapListingRow(data);
 }
 
 export async function getMarketplaceSeller(sellerId: string): Promise<Profile | null> {
@@ -122,7 +176,6 @@ export async function getMarketplaceSeller(sellerId: string): Promise<Profile | 
 export async function getPublicMarketplaceListings(
   filters: ListingFilters = { page: 1, limit: 12, sort: "newest" }
 ) {
-  // Issue 19 Optimization: Use stable key parts instead of expensive JSON.stringify
   const keyParts = [
     "public-listings",
     `p:${filters.page ?? 1}`,

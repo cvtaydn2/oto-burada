@@ -9,6 +9,7 @@ import { SupabaseProvider } from "@/components/providers/supabase-provider";
 import { AuthProvider } from "@/components/shared/auth-provider";
 import { FavoritesProvider } from "@/components/shared/favorites-provider";
 import { ThemeProvider } from "@/components/shared/theme-provider";
+import { Toaster } from "@/components/ui/sonner";
 
 interface RootProvidersProps extends PropsWithChildren {
   user: User | null;
@@ -43,7 +44,10 @@ export function RootProviders({ children, user, nonce }: RootProvidersProps) {
         <SupabaseProvider>
           <AuthProvider initialUser={user}>
             <FavoritesProvider>
-              <PWAProvider>{children}</PWAProvider>
+              <PWAProvider>
+                {children}
+                <Toaster />
+              </PWAProvider>
             </FavoritesProvider>
           </AuthProvider>
         </SupabaseProvider>

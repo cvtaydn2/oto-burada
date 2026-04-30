@@ -7,6 +7,7 @@ import {
   CheckCircle2,
   Heart,
   LoaderCircle,
+  MessageCircle,
   ShieldCheck,
   Trash2,
 } from "lucide-react";
@@ -24,7 +25,7 @@ interface NotificationItem {
   message: string;
   read: boolean;
   title: string;
-  type: "favorite" | "moderation" | "report" | "system";
+  type: "favorite" | "moderation" | "report" | "system" | "question";
 }
 
 interface NotificationsPanelProps {
@@ -71,6 +72,8 @@ export function NotificationsPanel({ initialNotifications }: NotificationsPanelP
         return <ShieldCheck className="size-5" />;
       case "report":
         return <AlertCircle className="size-5" />;
+      case "question":
+        return <MessageCircle className="size-5" />;
       case "system":
       default:
         return <CheckCircle2 className="size-5" />;
@@ -85,6 +88,8 @@ export function NotificationsPanel({ initialNotifications }: NotificationsPanelP
         return "bg-emerald-100 text-emerald-600";
       case "report":
         return "bg-amber-100 text-amber-600";
+      case "question":
+        return "bg-blue-100 text-blue-600";
       case "system":
       default:
         return "bg-indigo-100 text-indigo-600";

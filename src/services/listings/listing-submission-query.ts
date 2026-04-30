@@ -501,9 +501,7 @@ export async function getDatabaseListings(options?: {
   // SECURITY: Only fallback for schema-related errors, not security/RLS errors
   if (!isListingSchemaError(primaryResult.error)) {
     // This could be a security/RLS error or other critical issue - fail loudly
-    logger.db.error("Critical listing query error - not attempting fallback", {
-      error: primaryResult.error,
-      errorCode: primaryResult.error.code,
+    logger.db.error("Critical listing query error - not attempting fallback", primaryResult.error, {
       options,
     });
     throw new Error(`Listing query failed: ${primaryResult.error.message}`);
@@ -519,9 +517,8 @@ export async function getDatabaseListings(options?: {
   const fallbackResult = await fallbackQuery;
 
   if (fallbackResult.error) {
-    logger.db.error("Listing retrieval failed even with legacy fallback", {
-      primaryError: primaryResult.error,
-      fallbackError: fallbackResult.error,
+    logger.db.error("Listing retrieval failed even with legacy fallback", fallbackResult.error, {
+      primaryError: primaryResult.error.message,
       options,
     });
     throw new Error(
@@ -574,8 +571,7 @@ export async function getPublicDatabaseListings(options?: {
   }
 
   if (result.error) {
-    logger.db.error("Public listing retrieval failed", {
-      error: result.error,
+    logger.db.error("Public listing retrieval failed", result.error, {
       options: publicOptions,
     });
     return null;
@@ -704,8 +700,7 @@ async function getFilteredListingsInternal(
       }
     }
 
-    logger.db.error("Filtered listing retrieval failed", {
-      error: dataResult.error,
+    logger.db.error("Filtered listing retrieval failed", dataResult.error, {
       filters,
     });
     return { listings: [], total: 0, page, limit, hasMore: false };

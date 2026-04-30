@@ -14,6 +14,10 @@ interface DesignInputProps extends React.InputHTMLAttributes<
   showCounter?: boolean;
   maxLength?: number;
   currentLength?: number;
+  hideLabel?: boolean;
+  labelExtra?: React.ReactNode;
+  leftAddon?: React.ReactNode;
+  rightAddon?: React.ReactNode;
 }
 
 /**
@@ -36,6 +40,10 @@ export const DesignInput = React.forwardRef<
       showCounter,
       maxLength,
       currentLength,
+      hideLabel,
+      labelExtra,
+      leftAddon,
+      rightAddon,
       ...props
     },
     ref
@@ -43,32 +51,42 @@ export const DesignInput = React.forwardRef<
     const Component = as as React.ElementType;
 
     return (
-      <div className="space-y-1.5">
-        <div className="flex items-center justify-between">
-          <label className="block text-sm font-semibold text-foreground">
-            {label} {required && <span className="text-destructive">*</span>}
-          </label>
-          {showCounter && maxLength !== undefined && (
-            <span
-              className={cn(
-                "text-[10px] font-mono",
-                (currentLength ?? 0) > maxLength * 0.9
-                  ? "text-destructive"
-                  : "text-muted-foreground"
-              )}
-            >
-              {currentLength ?? 0}/{maxLength}
-            </span>
-          )}
-        </div>
+      <div className={cn("space-y-1.5", hideLabel && "space-y-0")}>
+        {!hideLabel && (
+          <div className="flex items-center justify-between mb-0.5">
+            <label className="block text-sm font-bold text-foreground uppercase tracking-wider">
+              {label} {required && <span className="text-destructive">*</span>}
+            </label>
+            {labelExtra && <div className="flex items-center">{labelExtra}</div>}
+            {!labelExtra && showCounter && maxLength !== undefined && (
+              <span
+                className={cn(
+                  "text-[10px] font-mono",
+                  (currentLength ?? 0) > maxLength * 0.9
+                    ? "text-destructive"
+                    : "text-muted-foreground"
+                )}
+              >
+                {currentLength ?? 0}/{maxLength}
+              </span>
+            )}
+          </div>
+        )}
 
-        <div className="relative">
+        <div className="relative flex items-center">
+          {leftAddon && (
+            <div className="absolute left-0 inset-y-0 flex items-center justify-center border-r border-border bg-muted/30 rounded-l-xl px-3 z-10">
+              {leftAddon}
+            </div>
+          )}
           <Component
             ref={ref}
             className={cn(
               "w-full border rounded-xl p-3 text-sm focus:ring-2 focus:ring-primary/20 outline-none transition-all",
               "placeholder:text-muted-foreground/40 text-foreground",
               error ? "border-destructive bg-destructive/5" : "border-border bg-card",
+              leftAddon && "pl-14",
+              rightAddon && "pr-14",
               className
             )}
             maxLength={maxLength}
@@ -76,6 +94,11 @@ export const DesignInput = React.forwardRef<
           >
             {children}
           </Component>
+          {rightAddon && (
+            <div className="absolute right-0 inset-y-0 flex items-center justify-center border-l border-border bg-muted/30 rounded-r-xl px-3 z-10">
+              {rightAddon}
+            </div>
+          )}
         </div>
 
         {error ? (

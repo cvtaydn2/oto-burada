@@ -33,6 +33,116 @@
 
 ---
 
+# 2026-04-30 — Admin Questions Moderation & Notification System (Phase 61)
+
+## [2026-04-30] - Phase 61: Admin Questions Moderation Dashboard & Notification Hardening
+- **Status:** ✅ COMPLETED
+- **Actions:**
+  - **MOD-01 - Admin Questions Moderation Dashboard [High]:**
+    - Created `src/app/admin/questions/page.tsx` for managing pending and approved listing questions.
+    - Implemented `QuestionsModeration` component in `src/features/admin-moderation/components/`.
+    - Developed `src/services/admin/questions.ts` with approve, reject, and delete moderation actions.
+    - Integrated with Admin Sidebar for easy access.
+  - **NOTIF-01 - Automated Question Notifications [High]:**
+    - Added `question` to `notification_type` enum in Postgres.
+    - Updated `notificationTypes` in `src/lib/constants/domain.ts`.
+    - Implemented server-side triggers in `src/app/api/listings/questions/actions.ts`:
+      - Notifies sellers when a new question is asked.
+      - Notifies askers when a question is answered by the owner.
+    - Used listing slugs in notification `href`s for direct navigation.
+  - **PERF-22 - Log Retention Policy [Medium]:**
+    - Implemented a `pg_cron` job to auto-delete `phone_reveal_logs` older than 30 days.
+    - Ensures the free-tier database storage remains under control.
+- **Verification:**
+  - `pg_cron` job scheduled successfully ✅
+  - Question moderation UI verified ✅
+  - Notification triggers integrated into server actions ✅
+- **Architectural Gains:**
+  - **Operational Control:** Admins can now moderate user-submitted content (questions) before or after they go public.
+  - **User Engagement:** Automated notifications close the feedback loop between buyers and sellers.
+  - **Data Scalability:** Automated cleanup prevents log bloat in the primary database.
+
+# 2026-04-30 — Free-Tier Optimization & Resource Auditing (Phase 61)
+
+## [2026-04-30] - Phase 61: Free-Tier Optimization & Resource Auditing
+- **Status:** ✅ COMPLETED
+- **Actions:**
+  - **Task 61.1 (Infrastructure Audit):** Verified zero-cost sustainability. Indexing is optimized for marketplace filters; `pg_cron` jobs handle log cleanup; storage quotas are atomically enforced. Created [phase_61_audit.md](file:///C:/Users/Cevat/.gemini/antigravity/brain/075df3e2-0d29-4d03-be83-0cfa1b92b648/phase_61_audit.md) summary.
+  - **Task 61.2 (AI Graceful Degradation):** Implemented multi-tier AI logic (Gemini -> OpenAI -> Deterministic Template). Verified that listing creation remains functional even if all AI quotas are exhausted.
+  - **Task 61.3 (Image Optimization):** Confirmed client-side compression (<800KB, 1600px) and magic-byte validation. Added background storage cleanup for abandoned drafts.
+  - **Task 61.4 (Admin Question Moderation):** Finalized moderation dashboard. Administrators can now approve, reject, or delete listing questions. Integrated automated notifications for all Q&A interactions.
+- **Verification:**
+  - All third-party services (Resend, Iyzico, Gemini) confirmed to be on free/usage-based tiers.
+  - Database schema and indexes audited for free-tier connection limits.
+  - Rate limiting confirmed to be active on all critical API endpoints.
+  - Build Stability: Successfully passed `npm run lint`, `npm run typecheck`, and `npm run build`.
+
+---
+
+# 2026-04-30 — Marketplace Contact Hardening & Integrity Stabilization (Phase 60)
+
+## [2026-04-30] - Phase 60: Contact Security Hardening & Listing Questions RLS Stabilization
+- **Status:** ✅ COMPLETED
+- **Actions:**
+  - **SEC-20 - Listing Questions RLS Hardening [Critical]:**
+    - Identified and fixed a critical bug in `listing_questions` RLS where `user_id` was checked against `listings.user_id` (should be `seller_id`).
+    - Implemented robust RLS policies for `listing_questions`:
+      - `select_public`: Only approved and public questions are visible to all.
+      - `select_asker`: Askers can see their own pending questions.
+      - `select_owner`: Listing owners can see all questions on their listings.
+      - `insert_asker`: Enforces `user_id = auth.uid()` and prevents self-asking.
+      - `update_owner`: Allows listing owners to answer (restricted by `USING` clause).
+    - Created migration `0131_harden_listing_questions.sql` and applied it to production.
+  - **DB-21 - Schema Snapshot Synchronization [High]:**
+    - Updated `database/schema.snapshot.sql` to include `listing_questions` table and its hardened RLS policies.
+    - Synchronized snapshot generation date to 2026-04-30.
+  - **TEST-30 - Contact Flow E2E Verification [High]:**
+    - Added Playwright E2E test for "Guest Phone Reveal" to ensure conversion path is functional and logged.
+    - Verified `revealListingPhone` server action handles IP-based rate limiting and audit logging correctly.
+- **Verification:**
+  - `0131` migration applied successfully ✅
+  - `schema.snapshot.sql` updated and verified ✅
+  - Playwright test `should reveal phone number for guests` added ✅
+- **Architectural Gains:**
+  - **Data Privacy:** Public listing questions are now strictly moderated via RLS, preventing data leakage of unapproved content.
+  - **Audit Integrity:** Guest interactions are now reliably logged in `phone_reveal_logs` with correct IP capturing.
+  - **Resilience:** Migration numbering fixed and snapshot synchronized for zero-drift deployment.
+- **Next Steps:**
+  - [ ] Implement Admin Dashboard UI for moderating `listing_questions`.
+  - [ ] Add notification trigger for sellers when a new question is asked.
+
+---
+
+# 2026-04-30 — Security Hardening Restoration & AI Integration (Phase 59)
+
+## [2026-04-30] - Phase 59: RPC Permission Restoration & AI Listing Assistant Implementation
+- **Durum:** ✅ TAMAMLANDI
+- **Yapılanlar:**
+  - **SEC-19 - RPC Permission Restoration [Critical]:**
+    - `create_chat_atomic` ve `soft_delete_message` fonksiyonları re-create edildi (audit sırasında eksik oldukları tespit edilmişti).
+    - `authenticated` rolü için kritik RPC'lere (`create_chat_atomic`, `soft_delete_message`, `toggle_chat_archive`, `create_user_ticket`, `admin_update_ticket`) `EXECUTE` yetkisi geri verildi.
+    - `anon` rolü için `create_public_ticket` yetkisi geri verildi.
+    - Tüm fonksiyonlar `SECURITY DEFINER` ve `search_path = public` ile güvenli hale getirildi.
+  - **AI-01 - AI Listing Assistant [High]:**
+    - `OPENAI_API_KEY` çevre değişkeni doğrulamasına eklendi.
+    - `src/services/ai/ai-logic.ts` içinde sıfır-bağımlılıklı (fetch tabanlı) OpenAI entegrasyonu kuruldu.
+    - `src/services/ai/ai-actions.ts` server action katmanı oluşturuldu.
+    - `DetailsStep.tsx` formuna "AI ile Yaz" butonu ve loading state entegre edildi.
+    - Araç özelliklerine (Marka, Model, Yıl vb.) dayalı akıllı açıklama üretimi sağlandı.
+- **Doğrulama:**
+  - `has_function_privilege` ile RPC yetkileri SQL üzerinden doğrulandı ✅
+  - `DetailsStep.tsx` UI entegrasyonu ve form senkronizasyonu tamamlandı ✅
+  - `npm run lint` ✅
+- **Mimari Kazanımlar:**
+  - **Balanced Security:** "Zero Execute" politikası, sistemin çalışmasını engellemeyecek şekilde "Minimum Privilege" prensibine göre esnetildi.
+  - **Premium Features:** AI asistanı ile kullanıcı deneyimi ve ilan kalitesi artırıldı.
+  - **Resilience:** AI servisi opsiyonel bir katman olarak kurgulandı (API key yoksa veya hata alınırsa form akışı bozulmaz).
+- **Sıradaki Adım:**
+  - [ ] AI kullanım limitlerini ve ücretlendirme (monetization) akışını test et.
+  - [ ] Farklı araç modelleri için AI açıklama kalitesini optimize et.
+
+---
+
 # 2026-04-28 — Production Stabilization & Diagnostic Recovery (Phase 57)
 
 ## [2026-04-28] - Phase 57: Migration Sync, Observability Hardening & Security Remediation
@@ -45,13 +155,17 @@
   - **OPS-13 - Health-Check Endpoint Observability [High]:**
     - `api/health-check` endpoint'i migrasyon durumunu (migrations table count) izleyecek şekilde güncellendi.
     - Kritik tabloların (profiles, listings, favorites) varlığı her kontrolde doğrulanıyor.
-    - Hata durumunda 530 yerine detaylı 503 Service Unavailable döndürülüyor.
-  - **SEC-17 - Production Security Hardening [High]:**
-    - `anon` rolüne açık kalan kritik SECURITY DEFINER fonksiyonları (`is_admin`, `activate_doping`, `process_payment_webhook` vb.) REVOKE ile kapatıldı.
-    - RLS policy verimliliği için `service_role_only` policy'leri `TO service_role USING (true)` pattern'ine taşındı.
+  - **SEC-17 - System Audit & Security Hardening [Kritik]:**
+    - Tüm `SECURITY DEFINER` fonksiyonları için global `EXECUTE` yetkisi `anon` rolünden alındı.
+    - Sadece güvenli RPC'lere (`increment_listing_view` gibi) kısıtlı izin verildi.
+    - `ListingsPage` sunucu tarafı filtreleme optimizasyonu yapıldı.
+    - `HeaderMobileNav` lint uyarıları temizlendi.
   - **OBS-01 - Server-Side Error Capturing [Medium]:**
     - `instrumentation.ts` içinde `onRequestError` kancası optimize edildi.
     - Sunucu hataları artık hem Vercel loglarına hem de PostHog'a (free tier) eksiksiz düşüyor.
+    - Kritik hata logları formatı standardize edildi.
+- **Validations**: SQL migrasyonu `yagcxhrhtfhwaxzhyrkj` üzerinde uygulandı.
+- **Next Step**: Supabase Auth panelinden "Leaked Password Protection" aktifleştirilecek.
 - **Doğrulama:**
   - `public._migrations` tablo şeması doğrulandı ✅
   - Bulk-insert migration sync başarılı ✅

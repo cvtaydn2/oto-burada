@@ -9,9 +9,9 @@ import {
 import { buildAbsoluteUrl, buildListingsMetadata } from "@/lib/seo";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { parseListingFiltersFromSearchParams } from "@/services/listings/listing-filters";
-import { getFilteredMarketplaceListings } from "@/services/listings/marketplace-listings";
+import { getPublicMarketplaceListings } from "@/services/listings/marketplace-listings";
 import { getLiveMarketplaceReferenceData } from "@/services/reference/live-reference-data";
-import type { BrandCatalogItem, CityOption, ListingFilters } from "@/types";
+import type { BrandCatalogItem, CityOption, ListingFilters, ListingSortOption } from "@/types";
 
 function resolveBrandSlugToName(brands: BrandCatalogItem[], slug: string): string | undefined {
   const match = brands.find((b) => b.slug.toLowerCase() === slug.toLowerCase());
@@ -37,21 +37,18 @@ export async function generateMetadata({ searchParams }: ListingsPageProps): Pro
 
 export default async function ListingsPage({ searchParams }: ListingsPageProps) {
   const resolvedSearchParams = searchParams ? await searchParams : undefined;
-  const supabase = await createSupabaseServerClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  const [references, result] = await Promise.all([
-    getLiveMarketplaceReferenceData(),
-    getFilteredMarketplaceListings({ sort: "newest", page: 1, limit: 12 }),
-  ]);
-
   const brandSlug = resolvedSearchParams?.brand;
   const citySlug = resolvedSearchParams?.city;
+
+  const [references, { data: authData }] = await Promise.all([
+    getLiveMarketplaceReferenceData(),
+    (await createSupabaseServerClient()).auth.getUser(),
+  ]);
+  const user = authData?.user;
+
   const initialFilters: ListingFilters = {
-    sort: "newest",
-    page: 1,
+    sort: (resolvedSearchParams?.sort as ListingSortOption) || "newest",
+    page: Number(resolvedSearchParams?.page) || 1,
     limit: 12,
     ...(brandSlug ? { brand: resolveBrandSlugToName(references.brands, String(brandSlug)) } : {}),
     ...(citySlug ? { city: resolveCitySlugToName(references.cities, String(citySlug)) } : {}),
@@ -67,6 +64,8 @@ export default async function ListingsPage({ searchParams }: ListingsPageProps) 
       : {}),
     ...(resolvedSearchParams?.hasExpertReport ? { hasExpertReport: true } : {}),
   };
+
+  const result = await getPublicMarketplaceListings(initialFilters);
 
   const breadcrumbs = [{ name: "Tüm İlanlar", url: "/listings" }];
 

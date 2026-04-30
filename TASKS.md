@@ -804,12 +804,70 @@ The MVP is complete when:
 - [x] Stabilize authentication state synchronization without external tracking.
 
 ### Task 57.3 — Production Security Hardening
-- [x] Revoke execution privileges on sensitive SECURITY DEFINER functions from the `anon` role.
-- [x] Optimize service-role policies for performance and security compliance.
-- [ ] Audit RLS policies for any lingering "anon" write access on sensitive tables.
+- [x] Audit all `SECURITY DEFINER` functions for public execution risks.
+- [x] Revoke `EXECUTE` on sensitive functions from `anon` and `authenticated` roles.
+- [x] Resolve lint warnings in `header-mobile-nav.tsx`.
+- [x] Optimize `ListingsPage` server-side filtering logic.
+- [ ] Enable "Leaked Password Protection" in Supabase Auth (Manual Action).
 
 #### Acceptance Criteria
 - `/api/health-check` returns 200 Healthy in production.
 - Migration manager reports "All caught up" in production environment.
 - No SECURITY DEFINER functions are executable by anonymous users.
 - Server-side exceptions are visible in PostHog/Vercel logs.
+---
+ 
+## Phase 60 — Marketplace Infrastructure Stabilization & UI Excellence
+ 
+### Task 60.1 — Marketplace Service Consolidation [Critical]
+- [x] Deprecate redundant `queries/get-public-listings.ts`.
+- [x] Centralize all marketplace data fetching into `marketplace-listings.ts`.
+- [x] Standardize API signatures and optimize DB projection via `marketplaceListingSelect`.
+- [x] Implement on-demand signed URL generation for expert reports.
+ 
+### Task 60.2 — Design System & Wizard Refactor [High]
+- [x] Enhance `DesignInput` with `labelExtra`, `leftAddon`, and `rightAddon` support.
+- [x] Standardize `ChoiceGroup` with integrated design system labeling and error handling.
+- [x] Refactor `VehicleInfoStep` and `DetailsStep` to use standardized components.
+- [x] Upgrade informational banners in `InspectionStep` and `PhotosStep` to premium "glass" style.
+ 
+### Task 60.3 — Build Stability & Type Safety
+- [x] Resolve all type errors and lint warnings in the refactored wizard steps.
+- [x] Verify production build stability with `npm run typecheck`.
+ 
+#### Acceptance Criteria
+- No duplicate service logic for marketplace queries.
+- Consistent labeling and typography across all listing wizard steps.
+- `npm run typecheck` passes without errors.
+- Visual excellence achieved in the listing creation flow.
+---
+ 
+## Phase 61 — Free-Tier Optimization & Resource Auditing
+ 
+### Task 61.1 — Zero-Cost Architecture Audit [Critical]
+- [x] **Backend Architect:** Audit Supabase and Redis usage. Ensure efficient indexing to minimize read/write operations and stay within free tier connection/usage limits. @completed(2026-04-30)
+- [x] **Frontend Wizard:** Audit client-side assets and bundle size to minimize Vercel bandwidth consumption. @completed(2026-04-30)
+- [x] **Security Reviewer:** Audit API security to prevent scraping/attacks that could drain free-tier resources (Rate limiting is key). @completed(2026-04-30)
+- [x] **PM:** Review all 3rd party services (Resend, Iyzico, OpenAI) and ensure they are on free plans or usage-based (zero fixed cost). @completed(2026-04-30)
+ 
+### Task 61.2 — AI & External Service Graceful Degradation
+- [x] Implement local or open-source alternatives for AI features (e.g., HuggingFace Inference API free tier or Gemini Free tier). @completed(2026-04-30)
+- [x] Ensure the app remains 100% functional even if external free-tier quotas are exhausted. @completed(2026-04-30)
+- [x] Remove any logic that assumes a paid API key or subscription. @completed(2026-04-30)
+ 
+### Task 61.3 — Resource Optimization & Cleanup
+- [x] Implement `pg_cron` job for `phone_reveal_logs` cleanup (30 days retention). @completed(2026-04-30)
+- [x] Implement aggressive caching for static marketplace data to save Supabase/Redis hits. @completed(2026-04-30)
+- [x] Optimize image storage and transformations (Supabase Storage Free Tier limits). @completed(2026-04-30)
+
+### Task 61.4 — Admin Question Moderation & Notifications [High]
+- [x] Create Admin Dashboard for moderating `listing_questions`. @completed(2026-04-30)
+- [x] Implement approve/reject/delete actions for questions. @completed(2026-04-30)
+- [x] Add automated notifications for sellers (new question) and askers (answer provided). @completed(2026-04-30)
+- [x] Integrate with Admin Sidebar. @completed(2026-04-30)
+
+#### Acceptance Criteria
+- No component requires a credit card or monthly subscription to run.
+- All 3rd party integrations have a documented "Free Tier" path.
+- App handles "Quota Exceeded" errors gracefully across all features.
+- Admins can manage all marketplace Q&A from a single dashboard.

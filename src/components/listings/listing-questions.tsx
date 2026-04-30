@@ -8,15 +8,11 @@ import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import * as z from "zod";
 
+import { answerQuestionAction, askQuestionAction } from "@/app/api/listings/questions/actions";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { formatDate } from "@/lib/utils";
-import {
-  answerQuestion,
-  askQuestion,
-  getListingQuestions,
-  getOwnerListingQuestions,
-} from "@/services/listings/questions";
+import { getListingQuestions, getOwnerListingQuestions } from "@/services/listings/questions";
 import { ListingQuestion } from "@/types";
 
 const questionSchema = z.object({
@@ -78,10 +74,14 @@ export function ListingQuestions({ listingId, isOwner, currentUserId }: ListingQ
 
     setIsSubmitting(true);
     try {
-      await askQuestion(listingId, values.question);
-      toast.success("Sorunuz gönderildi. Onaylandıktan sonra yayınlanacaktır.");
-      questionForm.reset();
-      fetchQuestions();
+      const result = await askQuestionAction(listingId, values.question);
+      if (result.success) {
+        toast.success("Sorunuz gönderildi. Onaylandıktan sonra yayınlanacaktır.");
+        questionForm.reset();
+        fetchQuestions();
+      } else {
+        toast.error(result.error || "Soru gönderilemedi");
+      }
     } catch {
       toast.error("Soru gönderilemedi");
     } finally {
@@ -94,11 +94,15 @@ export function ListingQuestions({ listingId, isOwner, currentUserId }: ListingQ
 
     setIsSubmitting(true);
     try {
-      await answerQuestion(replyingTo, values.answer);
-      toast.success("Cevabınız yayınlandı");
-      setReplyingTo(null);
-      answerForm.reset();
-      fetchQuestions();
+      const result = await answerQuestionAction(replyingTo, values.answer);
+      if (result.success) {
+        toast.success("Cevabınız yayınlandı");
+        setReplyingTo(null);
+        answerForm.reset();
+        fetchQuestions();
+      } else {
+        toast.error(result.error || "Cevap gönderilemedi");
+      }
     } catch {
       toast.error("Cevap gönderilemedi");
     } finally {

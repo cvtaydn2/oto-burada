@@ -1,6 +1,6 @@
 -- Oto Burada - Full Schema Snapshot
 -- This file represents the complete, clean state of the database.
--- Generated: 2026-04-18
+-- Generated: 2026-04-30
 
 -- 1. EXTENSIONS
 CREATE EXTENSION IF NOT EXISTS pgcrypto;
@@ -613,6 +613,18 @@ CREATE TABLE IF NOT EXISTS public.listing_views (
   created_at timestamptz NOT NULL DEFAULT timezone('utc', now())
 );
 
+CREATE TABLE IF NOT EXISTS public.listing_questions (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  listing_id uuid NOT NULL REFERENCES public.listings (id) ON DELETE CASCADE,
+  user_id uuid NOT NULL REFERENCES public.profiles (id) ON DELETE CASCADE,
+  question text NOT NULL CHECK (char_length(question) >= 5 AND char_length(question) <= 1000),
+  answer text CHECK (answer IS NULL OR (char_length(answer) >= 2 AND char_length(answer) <= 2000)),
+  status text NOT NULL DEFAULT 'pending' CHECK (status IN ('pending', 'approved', 'rejected')),
+  is_public boolean NOT NULL DEFAULT true,
+  created_at timestamptz NOT NULL DEFAULT now(),
+  updated_at timestamptz NOT NULL DEFAULT now()
+);
+
 CREATE TABLE IF NOT EXISTS public.api_rate_limits (
   key text NOT NULL,
   count integer NOT NULL DEFAULT 1,
@@ -755,6 +767,7 @@ ALTER TABLE public.messages ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.seller_reviews ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.phone_reveal_logs ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.listing_views ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.listing_questions ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.api_rate_limits ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.storage_objects_registry ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.storage_cleanup_queue ENABLE ROW LEVEL SECURITY;
@@ -835,6 +848,23 @@ CREATE POLICY "phone_reveal_logs_select_owner_or_admin" ON public.phone_reveal_l
 CREATE POLICY "phone_reveal_logs_insert_approved" ON public.phone_reveal_logs FOR INSERT WITH CHECK (EXISTS (
   SELECT 1 FROM public.listings WHERE listings.id = phone_reveal_logs.listing_id AND listings.status = 'approved'
 ));
+
+-- Listing Questions
+CREATE POLICY "listing_questions_select_public" ON public.listing_questions FOR SELECT USING (status = 'approved' AND is_public = true);
+CREATE POLICY "listing_questions_select_asker" ON public.listing_questions FOR SELECT USING ((SELECT auth.uid()) = user_id);
+CREATE POLICY "listing_questions_select_owner" ON public.listing_questions FOR SELECT USING (EXISTS (
+    SELECT 1 FROM public.listings WHERE listings.id = listing_questions.listing_id AND listings.seller_id = (SELECT auth.uid())
+));
+CREATE POLICY "listing_questions_insert_asker" ON public.listing_questions FOR INSERT WITH CHECK (
+    (SELECT auth.uid()) = user_id AND EXISTS (
+        SELECT 1 FROM public.listings WHERE listings.id = listing_questions.listing_id 
+        AND listings.seller_id != (SELECT auth.uid()) AND listings.status = 'approved'
+    )
+);
+CREATE POLICY "listing_questions_update_owner" ON public.listing_questions FOR UPDATE USING (EXISTS (
+    SELECT 1 FROM public.listings WHERE listings.id = listing_questions.listing_id AND listings.seller_id = (SELECT auth.uid())
+));
+CREATE POLICY "listing_questions_admin_all" ON public.listing_questions FOR ALL USING (public.is_admin());
 
 -- Public Data
 CREATE POLICY "brands_select_public" ON public.brands FOR SELECT USING (true);

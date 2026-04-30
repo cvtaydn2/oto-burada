@@ -1,5 +1,6 @@
 "use client";
 
+import { Info } from "lucide-react";
 import { Controller, UseFormReturn } from "react-hook-form";
 
 import { DesignInput } from "@/components/shared/design-system/DesignInput";
@@ -24,14 +25,14 @@ export function InspectionStep({ form, isDisabled = false }: InspectionStepProps
   return (
     <div className="space-y-10">
       {/* OPTIONAL STEP INDICATOR */}
-      <div className="rounded-2xl bg-blue-50 border border-blue-100 p-6">
-        <div className="flex items-start gap-3">
-          <div className="flex size-10 items-center justify-center rounded-xl bg-blue-500 text-white font-bold text-sm flex-shrink-0">
-            ℹ️
+      <div className="rounded-3xl bg-blue-50/50 border border-blue-100 p-6 sm:p-8 animate-in fade-in slide-in-from-top-4 duration-700">
+        <div className="flex items-start gap-4">
+          <div className="flex size-12 items-center justify-center rounded-2xl bg-blue-500 text-white shadow-sm shadow-blue-500/30 flex-shrink-0">
+            <Info size={24} strokeWidth={3} />
           </div>
           <div>
-            <h3 className="font-bold text-blue-900 mb-1">Bu Adım İsteğe Bağlı</h3>
-            <p className="text-sm text-blue-700">
+            <h3 className="text-lg font-bold text-blue-900 tracking-tight">Bu Adım İsteğe Bağlı</h3>
+            <p className="text-sm text-blue-700/80 font-medium leading-relaxed mt-1">
               Ekspertiz ve hasar bilgilerini eklemek ilanınızın güvenilirliğini artırır, ancak
               zorunlu değildir. Temel bilgilerle de ilan verebilirsiniz.
             </p>

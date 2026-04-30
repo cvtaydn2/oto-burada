@@ -1,5 +1,6 @@
 import type { User } from "@supabase/supabase-js";
 
+import { maskPhoneNumber } from "@/lib/listings/utils";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { hasSupabaseAdminEnv } from "@/lib/supabase/env";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
@@ -557,9 +558,7 @@ export async function getPublicSellerProfile(sellerId: string): Promise<Profile 
 
   // SECURITY: Mask phone number for public display.
   // Raw phone is only available via revealListingPhone action.
-  const maskedPhone = data.phone
-    ? data.phone.replace(/(\d{4})(\d{3})(\d{2})(\d{2})/, "$1*** ** $4")
-    : "";
+  const maskedPhone = maskPhoneNumber(data.phone);
 
   return {
     id: data.id,
