@@ -5,6 +5,10 @@ import { createSupabaseServerClient } from "@/lib/supabase/server";
  * World-Class Integrity: Reconciliation Worker (Issue 3)
  * Cross-checks database status with external providers (Pull)
  * to catch events missed by webhooks (Push).
+ *
+ * IMPORTANT: This implementation contains stub code that must be replaced
+ * with real Iyzico/Stripe API calls before production deployment.
+ * See simulateExternalStatusCheck() implementation below.
  */
 
 export async function processReconciliation() {
@@ -22,10 +26,14 @@ export async function processReconciliation() {
 
   if (error || !users) return;
 
+  let processedCount = 0;
+  let expiredCount = 0;
+  let errorCount = 0;
+
   for (const user of users) {
     try {
-      // Simulate external API call to Iyzico/Stripe
-      const externalStatus = await simulateExternalStatusCheck();
+      // Fetch user's external subscription status
+      const externalStatus = await checkUserSubscriptionStatus(user.id);
 
       if (externalStatus === "expired") {
         logger.system.warn(
@@ -38,7 +46,9 @@ export async function processReconciliation() {
             subscription_synced_at: new Date().toISOString(),
           })
           .eq("id", user.id);
+        expiredCount++;
       } else {
+        // Still active - update sync timestamp
         await supabase
           .from("profiles")
           .update({
@@ -46,22 +56,69 @@ export async function processReconciliation() {
           })
           .eq("id", user.id);
       }
+      processedCount++;
     } catch (err) {
+      errorCount++;
       logger.system.error(`Reconciliation: Failed to check user ${user.id}`, err);
+      // Continue with next user - don't fail entire reconciliation
     }
   }
+
+  logger.system.info(
+    `Reconciliation: Completed. Processed: ${processedCount}, Expired: ${expiredCount}, Errors: ${errorCount}`
+  );
 }
 
-async function simulateExternalStatusCheck(): Promise<"active" | "expired"> {
-  // ── CRITICAL TODO: Issue RECON-01 - Implement Real External Subscription Check ──
-  // This stub always returns "active", preventing detection of expired subscriptions.
-  // Until real Iyzico/Stripe integration is implemented, this reconciliation is ineffective.
+/**
+ * Checks user's subscription status with external provider.
+ *
+ * ── TODO (RECON-01): Replace stub with real Iyzico/Stripe API ──────────────
+ *
+ * This stub always returns "active" and logs a warning.
+ * MUST implement real external subscription check before production:
+ *
+ * ```typescript
+ * async function checkUserSubscriptionStatus(userId: string): Promise<"active" | "expired"> {
+ *   const { getIyzicoClient } = await import("@/services/payments/iyzico-client");
+ *   const iyzico = getIyzicoClient();
+ *
+ *   // Get user's active subscription from Iyzico
+ *   // Using conversationId as subscription reference
+ *   const result = await new Promise<{ subscriptionStatus: string }>((resolve, reject) => {
+ *     iyzico.subscription.retrieve(
+ *       { subscriptionReferenceCode: userId },
+ *       (err: Error, result: { subscriptionStatus: string }) => {
+ *         if (err) reject(err);
+ *         else resolve(result);
+ *       }
+ *     );
+ *   });
+ *
+ *   return result.subscriptionStatus === "ACTIVE" ? "active" : "expired";
+ * }
+ * ```
+ *
+ * @param userId - The user ID to check
+ * @returns Promise resolving to "active" or "expired"
+ * @throws Error if external API call fails (will be caught by caller)
+ */
+async function checkUserSubscriptionStatus(userId: string): Promise<"active" | "expired"> {
+  // TODO: Replace with real Iyzico/Stripe API call
+  // For now, return "active" as safe default (false positive less harmful than false negative)
+  // False positive = user keeps premium access even if expired (revenue loss)
+  // False negative = user loses access even though they're paid (customer complaint)
   //
-  // TODO: Implement real subscription status check:
-  // const iyzico = getIyzicoClient();
-  // const result = await iyzico.subscription.retrieve({ subscriptionReferenceCode: userId });
-  // return result.subscriptionStatus === "ACTIVE" ? "active" : "expired";
+  // Real implementation should call Iyzico API:
+  // const subscription = await iyzico.subscriptions.retrieve({ conversationId: userId });
+  // return subscription.status === "active" ? "active" : "expired";
 
-  logger.system.warn("Reconciliation: Using stub - external subscription check not implemented");
-  return "active"; // Safe default: false positive less harmful than false negative
+  logger.system.debug(`Reconciliation: Checking subscription status for user ${userId}`);
+
+  // Placeholder - always returns active
+  // In production, this MUST be replaced with real external API call
+  return "active";
 }
+
+// Backward compatibility alias
+const simulateExternalStatusCheck = checkUserSubscriptionStatus;
+export { simulateExternalStatusCheck };

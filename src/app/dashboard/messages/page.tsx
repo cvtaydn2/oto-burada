@@ -1,7 +1,7 @@
 "use client";
 
 import { ArrowLeft, MessageCircle } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 import { ChatList } from "@/components/chat/chat-list";
 import { ChatWindow } from "@/components/chat/chat-window";
@@ -12,16 +12,44 @@ import { useSupabase } from "@/lib/supabase/client";
 
 export default function MessagesPage() {
   const supabase = useSupabase();
+  // Use ref to keep supabase instance stable across renders
+  // This prevents infinite loops in useEffect when useSupabase() returns same instance
+  const supabaseRef = useRef(supabase);
+  supabaseRef.current = supabase;
+
   const [user, setUser] = useState<{ id: string } | null>(null);
   const [selectedChatId, setSelectedChatId] = useState<string | null>(null);
   const isMobile = useMediaQuery("(max-width: 768px)");
 
+  // Stable callback for chat selection - prevents unnecessary re-renders of ChatList
+  const handleChatSelect = useCallback((chatId: string) => {
+    setSelectedChatId(chatId);
+  }, []);
+
+  // Stable callback for back navigation
+  const handleBack = useCallback(() => {
+    setSelectedChatId(null);
+  }, []);
+
   useEffect(() => {
-    supabase.auth
-      .getUser()
-      .then(({ data }: { data: { user: { id: string } | null } }) => setUser(data.user))
-      .catch(() => setUser(null));
-  }, [supabase]);
+    // Use ref to ensure stable supabase reference
+    const client = supabaseRef.current;
+
+    // Fetch user on mount
+    const fetchUser = async () => {
+      try {
+        const {
+          data: { user: authUser },
+        } = await client.auth.getUser();
+        setUser(authUser ? { id: authUser.id } : null);
+      } catch {
+        setUser(null);
+      }
+    };
+
+    void fetchUser();
+  }, []); // Empty deps - only run on mount
+
   // Show chat list on desktop, or when no chat selected on mobile
   const showChatList = !isMobile || !selectedChatId;
   const showChatWindow = !isMobile || selectedChatId;
@@ -49,7 +77,7 @@ export default function MessagesPage() {
           <div className="h-[calc(100vh-14rem)] overflow-hidden">
             <ChatList
               userId={user.id}
-              onChatSelect={setSelectedChatId}
+              onChatSelect={handleChatSelect}
               selectedChatId={selectedChatId || undefined}
             />
           </div>
@@ -62,7 +90,7 @@ export default function MessagesPage() {
         >
           {isMobile && selectedChatId && (
             <div className="p-4 border-b">
-              <Button variant="ghost" size="icon" onClick={() => setSelectedChatId(null)}>
+              <Button variant="ghost" size="icon" onClick={handleBack}>
                 <ArrowLeft className="h-4 w-4" />
               </Button>
             </div>
@@ -71,7 +99,7 @@ export default function MessagesPage() {
             <ChatWindow
               chatId={selectedChatId}
               userId={user.id}
-              onBack={() => setSelectedChatId(null)}
+              onBack={handleBack}
             />
           ) : (
             <div className="flex items-center justify-center h-full text-center p-4">

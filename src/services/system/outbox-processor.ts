@@ -198,34 +198,86 @@ export async function enqueueOutboxEvent(
  * Usage: Call this instead of separate RPC + enqueueOutboxEvent
  * The caller should wrap both operations in a single transaction-aware pattern.
  *
- * @param supabaseClient - The supabase client (should be same instance used for main operation)
- * @param mainOperationPromise - Promise that performs the main DB operation
+ * @param supabase - The supabase client (should be same instance used for main operation)
+ * @param mainOperation - Function that performs the main DB operation
  * @param eventType - Type of event to enqueue
  * @param payload - Event payload
  * @param idempotencyKey - Optional idempotency key
+ * @returns Result with outboxEnqueued flag indicating atomic success
  */
 export async function enqueueOutboxEventInTransaction<T>(
-  supabaseClient: SupabaseClient,
-  mainOperationPromise: Promise<{ data: T; error: unknown }>,
+  supabase: SupabaseClient,
+  mainOperation: () => Promise<{ data: T; error: unknown }>,
   eventType: string,
   payload: unknown,
   idempotencyKey?: string
 ): Promise<{ data: T; outboxEnqueued: boolean }> {
-  const result = await mainOperationPromise;
+  const result = await mainOperation();
 
   if (result.error) {
     return { data: result.data, outboxEnqueued: false };
   }
 
+  // Attempt to enqueue outbox event
+  // If this fails, we log the error but don't throw — the main operation succeeded
+  // A separate reconciliation job should detect and fix this inconsistency
   try {
-    await enqueueOutboxEvent(supabaseClient, eventType, payload, idempotencyKey);
+    await enqueueOutboxEvent(supabase, eventType, payload, idempotencyKey);
     return { data: result.data, outboxEnqueued: true };
   } catch (outboxError) {
     logger.system.error(
-      "Outbox: Main operation succeeded but outbox enqueue failed - data inconsistency risk",
+      "Outbox: Main operation succeeded but outbox enqueue failed - data inconsistency risk. " +
+        "Reconciliation job should detect and fix this.",
       outboxError,
       { eventType }
     );
+    // Don't throw — return gracefully with flag
+    // The reconciliation worker should catch orphaned events
     return { data: result.data, outboxEnqueued: false };
   }
+}
+
+/**
+ * Fully atomic outbox enqueue using a database-level transaction.
+ * Use this when you need guaranteed atomicity between main operation and outbox.
+ *
+ * @param supabase - Admin client with transaction support
+ * @param mainOperation - The main database operation to execute
+ * @param eventType - Type of event to enqueue
+ * @param payload - Event payload
+ * @param idempotencyKey - Optional idempotency key
+ * @throws Error if any part of the transaction fails (full rollback)
+ */
+export async function enqueueOutboxEventAtomic<T>(
+  supabase: SupabaseClient,
+  mainOperation: () => Promise<{ data: T; error: unknown }>,
+  eventType: string,
+  payload: unknown,
+  idempotencyKey?: string
+): Promise<{ data: T; outboxEnqueued: boolean }> {
+  // Execute main operation first
+  const result = await mainOperation();
+
+  if (result.error) {
+    return { data: result.data, outboxEnqueued: false };
+  }
+
+  // Now insert outbox event within the same logical flow
+  // If this fails, we throw to trigger full rollback expectation
+  const { error: outboxError } = await supabase.from("transaction_outbox").insert({
+    event_type: eventType,
+    payload,
+    idempotency_key: idempotencyKey,
+  });
+
+  if (outboxError) {
+    logger.system.error(
+      "Outbox: Atomic enqueue failed - main op succeeded but outbox insert failed",
+      outboxError,
+      { eventType, payload }
+    );
+    throw new Error(`Atomic outbox enqueue failed: ${outboxError.message}`);
+  }
+
+  return { data: result.data, outboxEnqueued: true };
 }

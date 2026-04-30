@@ -36,7 +36,7 @@ export async function processCompensatingActions() {
           await handleRefundAction(action.payload);
           break;
         case "revert_credits":
-          // User credit rollback logic
+          await handleRevertCreditsAction(action.payload, action.transaction_id);
           break;
         default:
           throw new Error(`Unknown action_type: ${action.action_type}`);
@@ -108,6 +108,64 @@ async function handleRefundAction(payload: Record<string, unknown>) {
         resolve(true);
       });
     });
+  });
+}
+
+/**
+ * Handles user credit rollback in compensating transaction scenario.
+ * Called when a payment fails or is cancelled after credits were consumed.
+ */
+async function handleRevertCreditsAction(
+  payload: Record<string, unknown>,
+  transactionId: string
+): Promise<void> {
+  const userId = payload.userId as string;
+  const amount = payload.amount as number;
+  const reason = (payload.reason as string) || "compensating_transaction";
+
+  if (!userId || typeof userId !== "string") {
+    throw new Error("Invalid revert_credits payload: userId is required");
+  }
+
+  if (!amount || typeof amount !== "number" || amount <= 0) {
+    throw new Error("Invalid revert_credits payload: amount must be a positive number");
+  }
+
+  const admin = createSupabaseAdminClient();
+
+  // Option 1: Update wallet balance if wallet table exists
+  const { error: walletError } = await admin
+    .from("wallets")
+    .update({
+      balance: admin.rpc("add_balance", { p_amount: amount }).then(({ data }) => data),
+      updated_at: new Date().toISOString(),
+    })
+    .eq("user_id", userId);
+
+  // If wallet table doesn't have the RPC, fallback to direct update
+  if (walletError) {
+    const { error: directError } = await admin.rpc("add_user_credits", {
+      p_user_id: userId,
+      p_amount: amount,
+      p_reason: reason,
+      p_transaction_id: transactionId,
+    });
+
+    if (directError) {
+      logger.payments.error("Failed to revert credits via RPC", directError, {
+        userId,
+        amount,
+        transactionId,
+      });
+      throw new Error(`Credit revert failed: ${directError.message}`);
+    }
+  }
+
+  logger.payments.info("Credits reverted via compensating action", {
+    userId,
+    amount,
+    reason,
+    transactionId,
   });
 }
 

@@ -56,6 +56,14 @@ export async function moderateListingWithSideEffects({
   const sellerName =
     (authUser?.user?.user_metadata as { full_name?: string } | undefined)?.full_name ?? "Satıcı";
 
+  // Log warning if email not found - in-app notification will still work but email will be skipped
+  if (!sellerEmail) {
+    logger.admin.warn("Moderation: seller email not found, in-app notification will be sent but email skipped", {
+      listingId,
+      sellerId: listing.seller_id,
+    });
+  }
+
   // 3. Prepare payloads
   const outboxPayload = {
     template: action === "approve" ? "listing_approved" : "listing_rejected",

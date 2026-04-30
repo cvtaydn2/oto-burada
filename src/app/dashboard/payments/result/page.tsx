@@ -413,9 +413,8 @@ function PaymentResultContent() {
             ) : isFailure ? (
               <>
                 <Button
-                  asChild
                   className="h-14 rounded-2xl bg-rose-600 text-white font-bold uppercase tracking-widest shadow-sm shadow-rose-500/20 hover:bg-rose-700 hover:scale-[1.02] active:scale-[0.98] transition-all"
-                  onClick={() => window.history.back()}
+                  onClick={retryVerification}
                 >
                   <span className="inline-flex items-center">
                     Tekrar Dene
