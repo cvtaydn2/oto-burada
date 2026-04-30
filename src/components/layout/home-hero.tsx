@@ -11,34 +11,25 @@ export function HomeHero({ cities }: HomeHeroProps) {
     <section className="relative flex items-center justify-center overflow-hidden pt-14 pb-8 sm:pt-16 sm:pb-10 md:py-0 md:min-h-[520px] lg:min-h-[580px]">
       <div className="absolute inset-0 bg-background" />
 
-      <div className="absolute inset-0 z-0 lg:hidden">
+      <div className="absolute inset-0 z-0">
         <Image
           src="/images/hero_bg.png"
           alt="Satılık araba ilanları"
           fill
-          loading="eager"
-          sizes="(max-width: 1024px) 100vw, 100vw"
+          priority
+          sizes="(max-width: 1024px) 100vw, (max-width: 1280px) 42vw, 560px"
           quality={80}
           className="object-cover object-center"
         />
-        <div className="absolute inset-0 bg-gradient-to-b from-background/80 via-background/40 to-background/90" />
+        <div className="absolute inset-0 bg-gradient-to-b from-background/80 via-background/40 to-background/90 lg:hidden" />
+        <div className="absolute inset-0 bg-gradient-to-r from-background/5 via-transparent to-background/50 hidden lg:block" />
         <div className="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-background to-transparent" />
       </div>
 
       <div className="max-w-7xl mx-auto px-3 sm:px-4 md:px-6 w-full relative z-10">
         <div className="lg:grid lg:grid-cols-[minmax(0,1fr)_minmax(0,1.05fr)] lg:items-center lg:gap-8 xl:gap-12">
-          <div className="relative hidden min-h-[380px] overflow-hidden rounded-[2.5rem] lg:block lg:mr-2 xl:mr-4">
-            <Image
-              src="/images/hero_bg.png"
-              alt="Satılık araba ilanları"
-              fill
-              priority
-              sizes="(max-width: 1280px) 42vw, 560px"
-              quality={80}
-              className="object-cover object-center"
-            />
-            <div className="absolute inset-0 bg-gradient-to-r from-background/5 via-transparent to-background/50" />
-            <div className="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-background to-transparent" />
+          <div className="relative hidden min-h-[380px] lg:block lg:mr-2 xl:mr-4">
+            {/* The image is handled by the shared background Image above for better performance and preload alignment */}
           </div>
 
           <div className="max-w-2xl text-left space-y-5 sm:space-y-6 lg:max-w-none lg:pl-2 xl:pl-4">
