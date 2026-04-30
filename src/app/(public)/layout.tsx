@@ -1,9 +1,7 @@
 import type { PropsWithChildren } from "react";
 
 import { PublicShell } from "@/components/layout/public-shell";
-import { MaintenanceScreen } from "@/components/shared/maintenance-screen";
 import { getAuthContext } from "@/lib/auth/session";
-import { shouldShowMaintenanceScreen } from "@/lib/platform/maintenance";
 import { getPlatformSettings } from "@/services/admin/settings";
 
 export const dynamic = "force-dynamic";
@@ -31,12 +29,9 @@ export default async function PublicLayout({ children }: PropsWithChildren) {
     getSafePlatformSettings(),
   ]);
 
-  const isMaintenanceMode = settings.general_appearance?.maintenance_mode;
-  const isAdmin = dbProfile?.role === "admin" && !dbProfile.isBanned;
-
-  if (shouldShowMaintenanceScreen(isMaintenanceMode) && !isAdmin) {
-    return <MaintenanceScreen />;
-  }
+  // We intentionally do not block rendering here for maintenance mode.
+  // The middleware.ts is responsible for redirecting non-admins to /maintenance
+  // while explicitly allowing access to the /login page.
 
   return <PublicShell>{children}</PublicShell>;
 }
