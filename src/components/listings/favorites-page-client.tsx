@@ -1,5 +1,6 @@
 "use client";
 
+import { useQueryClient } from "@tanstack/react-query";
 import {
   ArrowRight,
   CarFront,
@@ -9,6 +10,7 @@ import {
   Heart,
   LogIn,
   MapPin,
+  RefreshCw,
   Settings2,
   ShieldCheck,
   SortAsc,
@@ -24,6 +26,7 @@ import { useMemo, useState } from "react";
 import { ListingsGridSkeleton } from "@/components/listings/listings-grid-skeleton";
 import { EmptyState } from "@/components/shared/empty-state";
 import { useFavorites } from "@/components/shared/favorites-provider";
+import { usePullToRefresh } from "@/hooks/use-pull-to-refresh";
 import { cn, formatCurrency, formatNumber, formatPrice, supabaseImageUrl } from "@/lib/utils";
 import type { Listing } from "@/types";
 
@@ -45,6 +48,18 @@ export function FavoritesPageClient({ listings, userId }: FavoritesPageClientPro
   const { favoriteIds, hydrated, toggleFavorite } = useFavorites();
   const [sort, setSort] = useState<SortKey>("newest");
   const isGuest = !userId;
+  const queryClient = useQueryClient();
+
+  // Pull-to-refresh integration
+  const { refreshing, pullDistance, isActive } = usePullToRefresh({
+    threshold: 80,
+    onRefresh: async () => {
+      // Invalidate favorites query to trigger refetch
+      await queryClient.invalidateQueries({ queryKey: ["favorites"] });
+      // Also reload the page to ensure fresh data
+      window.location.reload();
+    },
+  });
 
   // PERFORMANCE FIX: Convert to Set for O(1) lookup instead of O(n) array.includes
   const favoriteIdSet = useMemo(() => new Set(favoriteIds), [favoriteIds]);
@@ -103,7 +118,30 @@ export function FavoritesPageClient({ listings, userId }: FavoritesPageClientPro
   }
 
   return (
-    <div className="space-y-6">
+    <div className="relative space-y-6">
+      {/* Pull-to-refresh indicator */}
+      {isActive && (
+        <div
+          className="fixed top-0 left-0 right-0 z-50 flex items-center justify-center py-4 bg-background/95 backdrop-blur-sm transition-transform"
+          style={{
+            transform: `translateY(${Math.min(pullDistance, 80)}px)`,
+          }}
+          aria-live="polite"
+          aria-label={refreshing ? "Yenileniyor..." : "Yenilemek için çekin"}
+        >
+          <RefreshCw
+            className={cn(
+              "size-6 text-primary transition-transform",
+              refreshing && "animate-spin",
+              pullDistance >= 80 && !refreshing && "rotate-180"
+            )}
+            aria-hidden="true"
+          />
+          <span className="sr-only">
+            {refreshing ? "Favoriler yenileniyor" : "Yenilemek için aşağı çekin"}
+          </span>
+        </div>
+      )}
       {/* Guest sync banner */}
       {isGuest && <GuestBanner compact />}
 
