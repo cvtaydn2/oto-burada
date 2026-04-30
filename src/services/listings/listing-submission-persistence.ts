@@ -51,21 +51,7 @@ export function mapListingToDatabaseRow(listing: Listing) {
     tramer_amount: listing.tramerAmount ?? null,
     damage_status_json:
       listing.damageStatusJson && Object.keys(listing.damageStatusJson).length > 0
-        ? Object.fromEntries(
-            Object.entries(listing.damageStatusJson)
-              .map(([k, v]) => [k, v === "orjinal" ? "orijinal" : v])
-              .filter(([, v]) =>
-                [
-                  "orijinal",
-                  "boyali",
-                  "lokal_boyali",
-                  "degisen",
-                  "hasarli",
-                  "belirtilmemis",
-                  "bilinmiyor",
-                ].includes(v as string)
-              )
-          )
+        ? listing.damageStatusJson
         : null,
     fraud_score: listing.fraudScore ?? 0,
     fraud_reason: listing.fraudReason ?? null,

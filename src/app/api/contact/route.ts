@@ -107,8 +107,7 @@ export async function POST(request: Request): Promise<NextResponse> {
     return apiError(API_ERROR_CODES.VALIDATION_ERROR, firstMessage, 400);
   }
 
-  const { name, email, subject, message, _hp } = parsed.data;
-  const turnstileToken = (rawBody as Record<string, unknown>).turnstileToken as string | undefined;
+  const { name, email, subject, message, _hp, turnstileToken } = parsed.data;
 
   // 5. Honeypot check — bots fill the hidden field, humans don't
   if (_hp && _hp.length > 0) {

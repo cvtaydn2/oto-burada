@@ -56,21 +56,31 @@ export const listingSchema: z.ZodType<Listing> = z.object({
   tramerAmount: z.coerce.number().int().min(0).nullable().optional(),
   // ── SECURITY FIX: Issue #7 - Damage Status Enum Validation ─────────────
   // Restrict damage status values to valid enums at schema level
-  damageStatusJson: z
-    .record(
-      z.string(),
-      z.enum([
-        "orijinal",
-        "boyali",
-        "lokal_boyali",
-        "degisen",
-        "hasarli",
-        "belirtilmemis",
-        "bilinmiyor",
-      ])
-    )
-    .nullable()
-    .optional(),
+  damageStatusJson: z.preprocess(
+    (val) => {
+      if (typeof val === "object" && val !== null) {
+        return Object.fromEntries(
+          Object.entries(val).map(([k, v]) => [k, v === "orjinal" ? "orijinal" : v])
+        );
+      }
+      return val;
+    },
+    z
+      .record(
+        z.string(),
+        z.enum([
+          "orijinal",
+          "boyali",
+          "lokal_boyali",
+          "degisen",
+          "hasarli",
+          "belirtilmemis",
+          "bilinmiyor",
+        ])
+      )
+      .nullable()
+      .optional()
+  ),
   fraudScore: z.coerce.number().int().min(0).max(100).optional(),
   fraudReason: z.string().nullable().optional(),
   viewCount: z.coerce.number().int().min(0).optional().default(0),

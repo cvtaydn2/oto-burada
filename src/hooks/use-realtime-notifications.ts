@@ -23,6 +23,11 @@ export function useRealtimeNotifications(options: UseRealtimeNotificationsOption
   const { userId, onNotification } = options;
   const supabaseClient = useSupabase();
   const channelRef = useRef<RealtimeChannel | null>(null);
+  const onNotificationRef = useRef(onNotification);
+
+  useEffect(() => {
+    onNotificationRef.current = onNotification;
+  }, [onNotification]);
 
   const subscribe = useCallback(() => {
     if (!userId) return;
@@ -42,7 +47,7 @@ export function useRealtimeNotifications(options: UseRealtimeNotificationsOption
           filter: `user_id=eq.${userId}`,
         },
         (payload: RealtimePostgresInsertPayload<Record<string, unknown>>) => {
-          if (onNotification && payload.new) {
+          if (onNotificationRef.current && payload.new) {
             const notification: NotificationPayload = {
               id: payload.new.id as string,
               user_id: payload.new.user_id as string,
@@ -53,7 +58,7 @@ export function useRealtimeNotifications(options: UseRealtimeNotificationsOption
               read: payload.new.read as boolean,
               created_at: payload.new.created_at as string,
             };
-            onNotification(notification);
+            onNotificationRef.current(notification);
           }
         }
       )
@@ -64,7 +69,7 @@ export function useRealtimeNotifications(options: UseRealtimeNotificationsOption
       });
 
     return channelRef.current;
-  }, [userId, onNotification, supabaseClient]);
+  }, [userId, supabaseClient]);
 
   useEffect(() => {
     void subscribe();

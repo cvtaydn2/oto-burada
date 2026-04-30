@@ -61,6 +61,7 @@ export const contactFormSchema = z.object({
     .max(2000, "Mesaj en fazla 2000 karakter olabilir."),
   /** Honeypot — must be empty. Bots fill this; humans don't see it. */
   _hp: z.string().max(0, "Bot detected").optional(),
+  turnstileToken: z.string().optional(),
 });
 
 export type ContactFormValues = z.infer<typeof contactFormSchema>;

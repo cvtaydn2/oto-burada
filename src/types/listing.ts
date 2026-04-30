@@ -29,6 +29,11 @@ export interface ListingCore {
   category: VehicleCategory;
   carTrim?: string | null;
   year: number;
+  /**
+   * BUG-L01 Resolution:
+   * Postgres uses `bigint` for price, but we map it to `number` in TS.
+   * Number.MAX_SAFE_INTEGER is ~9 quadrillion, safely covering max car prices in TL.
+   */
   price: number;
   status: ListingStatus;
 }

@@ -143,10 +143,7 @@ export function calculateFraudScore(
 
   // 5. Tramer/Damage Discrepancy (with normalized damage status)
   if (input.damageStatusJson && (input.tramerAmount === 0 || !input.tramerAmount)) {
-    // Normalize damage status values before checking
-    const normalizedDamageStatus = Object.fromEntries(
-      Object.entries(input.damageStatusJson).map(([k, v]) => [k, v === "orjinal" ? "orijinal" : v])
-    );
+    const normalizedDamageStatus = input.damageStatusJson;
 
     const suspiciousStatuses = ["boyali", "lokal_boyali", "degisen"];
     const changedPartsCount = Object.values(normalizedDamageStatus).filter((s) =>

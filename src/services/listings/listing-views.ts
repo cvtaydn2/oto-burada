@@ -74,16 +74,17 @@ export async function getListingViewCount(listingId: string): Promise<number> {
   }
 
   const admin = createSupabaseAdminClient();
-  const { count, error } = await admin
-    .from("listing_views")
-    .select("id", { count: "exact", head: true })
-    .eq("listing_id", listingId);
+  const { data, error } = await admin
+    .from("listings")
+    .select("view_count")
+    .eq("id", listingId)
+    .single();
 
-  if (error) {
+  if (error || !data) {
     return 0;
   }
 
-  return count ?? 0;
+  return (data.view_count as number) ?? 0;
 }
 
 /**
