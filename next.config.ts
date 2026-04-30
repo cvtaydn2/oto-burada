@@ -18,6 +18,7 @@ const supabaseHostname = getSupabaseHostname();
 
 const nextConfig: NextConfig = {
   images: {
+    unoptimized: true, // VITAL FOR FREE TIER: Prevents Vercel 1000 image optimization quota exhaustion
     remotePatterns: [
       // Only add Supabase pattern when the env var is configured
       ...(supabaseHostname
