@@ -212,3 +212,11 @@
   white-space: nowrap;
   border-width: 0;
 }
+
+@utility touch-target {
+  @apply min-h-[44px] min-w-[44px];
+}
+
+@utility touch-spacing {
+  @apply gap-2;
+}

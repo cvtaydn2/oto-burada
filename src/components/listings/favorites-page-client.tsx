@@ -22,6 +22,7 @@ import Link from "next/link";
 import { useMemo, useState } from "react";
 
 import { ListingsGridSkeleton } from "@/components/listings/listings-grid-skeleton";
+import { EmptyState } from "@/components/shared/empty-state";
 import { useFavorites } from "@/components/shared/favorites-provider";
 import { cn, formatCurrency, formatNumber, formatPrice, supabaseImageUrl } from "@/lib/utils";
 import type { Listing } from "@/types";
@@ -87,22 +88,16 @@ export function FavoritesPageClient({ listings, userId }: FavoritesPageClientPro
     return (
       <div className="space-y-6">
         {isGuest && <GuestBanner />}
-        <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-border bg-card py-20 text-center">
-          <div className="mb-5 flex size-20 items-center justify-center rounded-2xl border border-border/50 bg-muted/30">
-            <Heart size={36} className="text-muted-foreground/50" />
-          </div>
-          <h2 className="text-xl font-bold text-foreground">Henüz favori ilan yok</h2>
-          <p className="mt-2 max-w-xs text-sm text-muted-foreground leading-relaxed">
-            İlanları gezerken kalp ikonuna tıklayarak buraya ekleyebilirsin.
-          </p>
-          <Link
-            href="/listings"
-            className="mt-6 inline-flex items-center gap-2 rounded-xl bg-primary px-6 py-2.5 text-sm font-bold text-primary-foreground shadow-sm hover:opacity-90 transition-all"
-          >
-            İlanları Keşfet
-            <ArrowRight size={15} />
-          </Link>
-        </div>
+        <EmptyState
+          title="Henüz Favori İlan Yok"
+          description="İlanları gezerken kalp ikonuna tıklayarak buraya ekleyebilirsin. Favorilerin tüm cihazlarda senkronize olur."
+          icon={<Heart size={40} />}
+          primaryAction={{
+            label: "İlanları Keşfet",
+            onClick: () => {},
+            href: "/listings",
+          }}
+        />
       </div>
     );
   }

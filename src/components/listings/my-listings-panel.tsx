@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 
+import { EmptyState } from "@/components/shared/empty-state";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -199,15 +200,20 @@ export function MyListingsPanel({
       )}
 
       {listings.length === 0 && !showForm && (
-        <div className="rounded-3xl border border-border/80 p-20 text-center bg-card shadow-sm mt-8 border-dashed">
-          <div className="size-24 bg-muted/30 rounded-[2rem] flex items-center justify-center mx-auto mb-8 text-slate-300 rotate-[-10deg] animate-pulse">
-            <Rocket size={48} />
-          </div>
-          <h3 className="text-2xl font-bold text-foreground tracking-tight">Henüz İlanınız Yok</h3>
-          <p className="mt-3 text-muted-foreground font-medium max-w-sm mx-auto leading-relaxed">
-            Hayalindeki arabayı satmak ya da yenisini almak için hemen ilk adımını at.
-          </p>
-        </div>
+        <EmptyState
+          title="Henüz İlanınız Yok"
+          description="Hayalindeki arabayı satmak ya da yenisini almak için hemen ilk adımını at. İlan vermek tamamen ücretsiz!"
+          icon={<Rocket size={48} className="text-primary" />}
+          primaryAction={{
+            label: "Ücretsiz İlan Ver",
+            onClick: () => setShowForm(true),
+          }}
+          secondaryAction={{
+            label: "İlanları İncele",
+            onClick: () => {},
+            href: "/listings",
+          }}
+        />
       )}
 
       {listings.length > 0 && (

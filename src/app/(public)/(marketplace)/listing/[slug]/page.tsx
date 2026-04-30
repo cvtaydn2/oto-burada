@@ -318,7 +318,7 @@ export default async function ListingDetailPage({ params }: ListingDetailPagePro
                   <ShareButton
                     title={listing.title}
                     price={listing.price}
-                    className="flex h-9 items-center gap-1.5 rounded-lg border border-border bg-muted/30 px-3 text-xs font-bold text-muted-foreground transition hover:bg-muted"
+                    className="flex h-11 items-center gap-1.5 rounded-lg border border-border bg-muted/30 px-3 text-xs font-bold text-muted-foreground transition hover:bg-muted"
                   />
                   <FavoriteButton
                     listingId={listing.id}

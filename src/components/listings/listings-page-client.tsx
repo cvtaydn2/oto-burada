@@ -5,6 +5,7 @@ import { useRef } from "react";
 import { useEffect } from "react";
 
 import { ListingsGridSkeleton } from "@/components/listings/listings-grid-skeleton";
+import { EmptyState } from "@/components/shared/empty-state";
 import { ListingCard } from "@/components/shared/listing-card";
 import { ActiveFilterTags } from "@/features/marketplace/components/active-filter-tags";
 import { MarketplaceControls } from "@/features/marketplace/components/marketplace-controls";
@@ -284,23 +285,22 @@ export function ListingsPageClient({
               </div>
             </div>
           ) : (
-            <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-border bg-card py-16 sm:py-24 px-4">
-              <div className="mb-4 flex size-12 sm:size-16 items-center justify-center rounded-full bg-muted/40">
-                <Search size={28} className="text-muted-foreground/50" />
-              </div>
-              <h3 className="mb-2 text-base sm:text-lg font-bold text-foreground tracking-tight">
-                Sonuç bulunamadı
-              </h3>
-              <p className="mb-6 sm:mb-8 max-w-sm text-sm text-muted-foreground">
-                Aradığınız kriterlere uygun araç bulunamadı.
-              </p>
-              <button
-                onClick={handleReset}
-                className="h-10 sm:h-12 rounded-xl bg-primary px-8 sm:px-10 text-xs sm:text-sm font-bold text-primary-foreground hover:opacity-90 transition-all shadow-sm uppercase tracking-widest"
-              >
-                Filtreleri Temizle
-              </button>
-            </div>
+            <EmptyState
+              title="Sonuç Bulunamadı"
+              description="Arama kriterlerinizi değiştirerek tekrar deneyin veya popüler aramalara göz atın."
+              icon={<Search size={40} />}
+              primaryAction={{
+                label: "Filtreleri Temizle",
+                onClick: () => {
+                  handleReset();
+                },
+              }}
+              secondaryAction={{
+                label: "Tüm İlanlar",
+                onClick: () => {},
+                href: "/listings",
+              }}
+            />
           )}
         </div>
       </div>

@@ -52,11 +52,15 @@ export function FavoriteButton({
         onClick={handleClick}
         className={cn(
           "flex items-center justify-center rounded-full border border-border/70 bg-background/95 text-foreground shadow-sm transition-colors hover:bg-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60",
+          "size-11",
           active && "border-primary/30 bg-primary/10 text-primary",
           className
         )}
       >
-        <Heart className={cn("size-4", active && "fill-current")} aria-hidden="true" />
+        <Heart
+          className={cn("size-4 transition-all duration-300", active && "fill-current scale-110")}
+          aria-hidden="true"
+        />
         <span className="sr-only" aria-live="polite">
           {active ? "Favorilere eklendi" : "Favorilerden çıkarıldı"}
         </span>
