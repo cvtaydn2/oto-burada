@@ -458,3 +458,254 @@ git checkout -b task-68-mobile-ux-polish
 **Program Activated By**: Kiro AI (Claude Sonnet 4.5)  
 **Activation Date**: 2026-04-30  
 **Status**: READY FOR AGENT DEPLOYMENT 🚀
+
+
+---
+
+## 6. PRODUCTION DEPLOYMENT & MONITORING (Phase 28.5 - TASK-65)
+
+**Date**: 2026-04-30  
+**Status**: 🟡 IN PROGRESS  
+**Agent**: DevOps Automator
+
+### 6.1 PRE-DEPLOYMENT VERIFICATION ✅
+
+#### Code Quality Checks
+- [x] **TypeScript Compilation**: `npm run typecheck` - PASSED ✅
+- [x] **ESLint Validation**: `npm run lint` - PASSED ✅ (0 errors, 0 warnings)
+- [x] **Production Build**: `npm run build` - PASSED ✅
+  - Compile time: 7.0s (Turbopack)
+  - TypeScript check: 13.5s
+  - Static pages: 48 pages generated
+  - Routes: 130+ routes configured
+
+#### Database Migrations
+- [x] **Migration 0134**: Chat Rate Limit Trigger - APPLIED ✅ (TASK-64)
+- [x] **Migration 0135**: Atomic Ban User RPC - APPLIED ✅ (TASK-64)
+
+#### Git Status
+- [x] **ESLint Fixes**: Committed (unused variables in migration script)
+- [x] **Release Tag**: v28.5-security-audit (already exists)
+- [x] **Branch**: main (clean, ready for deployment)
+
+### 6.2 DOCUMENTATION CREATED ✅
+
+#### Deployment Documentation
+1. **DEPLOYMENT_REPORT_v28.5.md**
+   - Pre-deployment verification checklist
+   - Changes deployed (16 critical fixes)
+   - Deployment plan (6 phases)
+   - Environment variables checklist
+   - Testing plan (smoke, performance, security)
+   - Success criteria
+   - Rollback procedures
+
+2. **INCIDENT_RESPONSE_RUNBOOK.md**
+   - Emergency contacts
+   - Monitoring dashboards
+   - Incident response procedures (P0-P3 severity levels)
+   - Common incidents & solutions:
+     - High error rate
+     - Database performance issues
+     - Payment system failure
+     - Rate limiting issues
+     - Chat rate limit trigger issues
+     - Atomic ban operation failures
+     - Deployment failures
+   - Rollback procedures
+   - Post-incident checklist
+
+3. **MONITORING_SETUP_GUIDE.md**
+   - Sentry configuration (error tracking, performance)
+   - Vercel monitoring (analytics, functions, logs)
+   - Supabase monitoring (database, RPC performance)
+   - Custom metrics dashboard
+   - Alert configuration
+   - Alert testing procedures
+   - Best practices
+
+#### Scripts Created
+4. **scripts/verify-production-env.mjs**
+   - Verifies all required environment variables
+   - Checks Supabase, Redis, Iyzico, Resend, Sentry
+   - Color-coded output (green/red/yellow)
+   - Exit codes for CI/CD integration
+
+### 6.3 DEPLOYMENT PHASES
+
+#### Phase 1: Pre-Deployment ✅
+- [x] Code quality verification
+- [x] Database migrations verified
+- [x] Release tag created
+- [ ] Environment variables audit (script created, needs execution)
+- [ ] Backup verification
+
+#### Phase 2: Staging Deployment 🔄
+- [ ] Deploy to staging
+- [ ] Run smoke tests:
+  - [ ] Health check
+  - [ ] User authentication
+  - [ ] Listing creation
+  - [ ] Favorites (CSRF handling)
+  - [ ] Admin operations (atomic ban)
+  - [ ] Chat rate limit
+  - [ ] Payment flow
+- [ ] Performance tests (Lighthouse audit)
+- [ ] Security tests (CSRF, rate limiting)
+
+#### Phase 3: Production Deployment ⏳
+- [ ] Pre-production checklist
+- [ ] Deploy to production
+- [ ] Post-deployment verification:
+  - [ ] Immediate checks (first 5 minutes)
+  - [ ] Short-term monitoring (first hour)
+  - [ ] Long-term monitoring (first 24 hours)
+
+#### Phase 4: Monitoring Setup ⏳
+- [ ] Sentry configuration:
+  - [ ] Error rate alert (> 5%)
+  - [ ] New error type alert
+  - [ ] Performance degradation alert (p95 > 1s)
+- [ ] Vercel monitoring:
+  - [ ] Enable Web Analytics
+  - [ ] Enable Speed Insights
+  - [ ] Configure function error alerts
+  - [ ] Configure build failure alerts
+- [ ] Supabase monitoring:
+  - [ ] Enable Database Insights
+  - [ ] Configure CPU alert (> 80%)
+  - [ ] Configure connection pool alert (> 90%)
+  - [ ] Configure slow query alert (> 1s)
+- [ ] Custom metrics dashboard:
+  - [ ] Application metrics (request rate, error rate, response time)
+  - [ ] Business metrics (registrations, listings, favorites, payments)
+  - [ ] Security metrics (rate limits, CSRF failures, bans)
+
+#### Phase 5: Alert Testing ⏳
+- [ ] Test Sentry alerts
+- [ ] Test Vercel alerts
+- [ ] Test Supabase alerts
+- [ ] Test rate limit alerts
+- [ ] Verify alert delivery (email, Slack)
+
+#### Phase 6: Documentation ⏳
+- [x] Create incident response runbook
+- [ ] Update PROGRESS.md (this file)
+- [ ] Update README.md (monitoring section)
+
+### 6.4 ENVIRONMENT VARIABLES REQUIRED
+
+#### Critical (Must be set)
+- `NEXT_PUBLIC_SUPABASE_URL`
+- `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+- `SUPABASE_SERVICE_ROLE_KEY`
+- `SUPABASE_DB_URL`
+- `UPSTASH_REDIS_REST_URL`
+- `UPSTASH_REDIS_REST_TOKEN`
+- `IYZICO_API_KEY`
+- `IYZICO_SECRET_KEY`
+- `IYZICO_BASE_URL`
+- `RESEND_API_KEY`
+- `RESEND_FROM_EMAIL`
+- `NEXT_PUBLIC_SENTRY_DSN`
+- `SENTRY_AUTH_TOKEN`
+- `INTERNAL_API_SECRET`
+- `CRON_SECRET`
+
+#### Optional
+- `NEXT_PUBLIC_TURNSTILE_SITE_KEY`
+- `TURNSTILE_SECRET_KEY`
+- `NEXT_PUBLIC_APP_URL`
+- `NEXT_PUBLIC_ENABLE_BILLING`
+- `NEXT_PUBLIC_ENABLE_AI`
+- `NEXT_PUBLIC_ENABLE_CHAT`
+
+### 6.5 SUCCESS CRITERIA
+
+#### Deployment Successful If:
+- ✅ All smoke tests pass
+- ✅ Error rate stable or decreased
+- ✅ No data loss incidents
+- ✅ No user-facing issues
+- ✅ Monitoring shows healthy metrics
+
+#### Deployment Failed If:
+- ❌ Error rate increased > 10%
+- ❌ Data loss or corruption
+- ❌ Critical features broken
+- ❌ User complaints spike
+- ❌ Database performance degraded
+
+### 6.6 ROLLBACK PROCEDURES
+
+#### Quick Rollback (Vercel)
+```bash
+vercel rollback
+```
+
+#### Git Rollback
+```bash
+git checkout v28.4-pre-audit
+git push origin main --force
+```
+
+#### Database Rollback
+```sql
+-- Drop Migration 0134
+DROP TRIGGER IF EXISTS enforce_message_rate_limit ON messages;
+DROP FUNCTION IF EXISTS check_message_rate_limit();
+
+-- Drop Migration 0135
+DROP FUNCTION IF EXISTS ban_user_atomic(uuid, text, boolean);
+```
+
+### 6.7 NEXT IMMEDIATE ACTIONS
+
+1. **Verify Environment Variables**
+   ```bash
+   node scripts/verify-production-env.mjs
+   ```
+
+2. **Deploy to Staging**
+   ```bash
+   git checkout staging
+   git merge main
+   git push origin staging
+   ```
+
+3. **Run Smoke Tests** (manual or automated)
+
+4. **Deploy to Production** (if staging passes)
+   ```bash
+   git checkout main
+   git push origin main
+   ```
+
+5. **Configure Monitoring** (Sentry, Vercel, Supabase)
+
+6. **Test Alerts** (trigger test errors, verify delivery)
+
+### 6.8 MONITORING DASHBOARDS
+
+#### Sentry (Error Tracking)
+- **URL**: https://sentry.io/organizations/your-org/projects/oto-burada/
+- **Purpose**: Application errors, performance issues
+- **Key Metrics**: Error rate, new errors, performance degradation
+
+#### Vercel (Deployment & Functions)
+- **URL**: https://vercel.com/your-team/oto-burada
+- **Purpose**: Deployment status, function execution, logs
+- **Key Metrics**: Function errors, build status, response times
+
+#### Supabase (Database & Backend)
+- **URL**: https://app.supabase.com/project/your-project
+- **Purpose**: Database performance, RPC execution, storage
+- **Key Metrics**: Database CPU, connections, query times
+
+---
+
+**Phase 28.5 Status**: 🟡 IN PROGRESS  
+**Completion**: ~40% (Pre-deployment verification complete, documentation ready)  
+**Next Step**: Environment variables audit and staging deployment  
+**Blocker**: None (ready to proceed)
+
