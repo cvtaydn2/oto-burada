@@ -3,6 +3,7 @@ import { type SupabaseClient } from "@supabase/supabase-js";
 import { iyzicoBreaker } from "@/lib/api/resilience";
 import { logger } from "@/lib/logging/logger";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { getIyzicoClient } from "@/services/payments/iyzico-client";
 
 /**
  * World-Class Reliability: Compensating Actions (Issue 9)
@@ -71,9 +72,40 @@ export async function processCompensatingActions() {
 
 async function handleRefundAction(payload: Record<string, unknown>) {
   return await iyzicoBreaker.execute(async () => {
-    // Call Iyzico Refund API with payload
-    logger.payments.info("Refund processed successfully via Compensating Action.", { payload });
-    return true;
+    const iyzico = getIyzicoClient();
+    const paymentId = payload.paymentId as string;
+    const conversationId = payload.conversationId as string;
+    const price = payload.price as number;
+
+    if (!paymentId || !conversationId || !price) {
+      throw new Error("Invalid refund payload: missing required fields");
+    }
+
+    const refundRequest = {
+      locale: "tr",
+      conversationId,
+      paymentId,
+      price: (price / 100).toFixed(2), // Convert from kurus to lira
+      currency: "TRY",
+      reason: (payload.reason as string) || "other",
+    };
+
+    return new Promise<boolean>((resolve, reject) => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      iyzico.payment.refund.create(refundRequest, (err: any, result: any) => {
+        if (err || result.status !== "success") {
+          logger.payments.error("Refund API call failed", { err, result });
+          reject(new Error(result?.errorMessage || err?.message || "Refund failed"));
+          return;
+        }
+        logger.payments.info("Refund processed successfully via Compensating Action.", {
+          paymentId,
+          conversationId,
+          refundId: result?.refundId,
+        });
+        resolve(true);
+      });
+    });
   });
 }
 

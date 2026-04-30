@@ -54,6 +54,7 @@ export function useListingCreation({
     status: "error" | "idle" | "success" | "warning";
     message?: string;
     code?: string;
+    showReloadPrompt?: boolean;
   }>({ status: "idle" });
   const [uploadStates, setUploadStates] = useState<
     Record<string, { status: string; progress: number; message: string; previewUrl?: string }>
@@ -80,6 +81,19 @@ export function useListingCreation({
   const { control, trigger, getValues, setValue, setError, clearErrors, watch, reset } = form;
 
   // ── DRAFT PERSISTENCE ──
+  // Draft schema for validation (memoized to avoid lint warning)
+  const draftSchema = useMemo(
+    () => ({
+      timestamp: (val: unknown): val is number =>
+        typeof val === "number" && Number.isFinite(val) && val > 0,
+      step: (val: unknown): val is number =>
+        typeof val === "number" && Number.isInteger(val) && val >= 0 && val <= 3,
+      values: (val: unknown): val is Record<string, unknown> =>
+        typeof val === "object" && val !== null && !Array.isArray(val),
+    }),
+    []
+  );
+
   // Load draft on mount
   useEffect(() => {
     if (isEditing) return;
@@ -88,17 +102,37 @@ export function useListingCreation({
       const savedDraft = localStorage.getItem(DRAFT_STORAGE_KEY);
       if (savedDraft) {
         const parsed = JSON.parse(savedDraft);
-        // Only restore if the draft isn't too old (e.g., < 24h)
-        const age = Date.now() - (parsed.timestamp || 0);
-        if (age < 24 * 60 * 60 * 1000) {
-          reset({ ...formDefaultValues, ...parsed.values });
-          setCurrentStep(parsed.step || 0);
+
+        // Validate draft structure
+        if (
+          draftSchema.timestamp(parsed.timestamp) &&
+          draftSchema.step(parsed.step) &&
+          draftSchema.values(parsed.values)
+        ) {
+          // Only restore if the draft isn't too old (e.g., < 24h)
+          const age = Date.now() - parsed.timestamp;
+          if (age < 24 * 60 * 60 * 1000) {
+            reset({ ...formDefaultValues, ...parsed.values });
+            setCurrentStep(parsed.step || 0);
+          } else {
+            // Expired draft - clean up
+            localStorage.removeItem(DRAFT_STORAGE_KEY);
+          }
+        } else {
+          // Invalid draft structure - clean up to prevent future issues
+          localStorage.removeItem(DRAFT_STORAGE_KEY);
         }
       }
     } catch (err) {
       console.warn("Failed to load listing draft", err);
+      // Corrupted draft - clean up
+      try {
+        localStorage.removeItem(DRAFT_STORAGE_KEY);
+      } catch {
+        // Ignore cleanup errors
+      }
     }
-  }, [isEditing, reset, formDefaultValues]);
+  }, [isEditing, reset, formDefaultValues, draftSchema]);
 
   // Save draft on change
   const watchedValues = watch();
@@ -127,15 +161,28 @@ export function useListingCreation({
   useEffect(() => {
     const pendingCleanup = pendingImageCleanupRef.current;
 
-    return () => {
-      // If unmounting without successful submit, cleanup orphaned images
+    const cleanupOrphanedImages = () => {
       if (!submitIntentRef.current && pendingCleanup.size > 0) {
         const paths = Array.from(pendingCleanup);
-        ApiClient.request("/api/listings/images/cleanup", {
-          method: "POST",
-          body: JSON.stringify({ paths }),
-        }).catch((err) => console.warn("Background storage cleanup failed", err));
+        // Use sendBeacon for reliable cleanup on page unload
+        if (navigator.sendBeacon) {
+          const blob = new Blob([JSON.stringify({ paths })], { type: "application/json" });
+          navigator.sendBeacon("/api/listings/images/cleanup", blob);
+        } else {
+          // Fallback to fetch
+          ApiClient.request("/api/listings/images/cleanup", {
+            method: "POST",
+            body: JSON.stringify({ paths }),
+          }).catch((err) => console.warn("Background storage cleanup failed", err));
+        }
       }
+    };
+
+    // Cleanup on component unmount and page navigation/close
+    window.addEventListener("unload", cleanupOrphanedImages);
+    return () => {
+      cleanupOrphanedImages();
+      window.removeEventListener("unload", cleanupOrphanedImages);
     };
   }, []);
 
@@ -430,14 +477,13 @@ export function useListingCreation({
 
     if (!response.success) {
       if (response.error?.code === "CONFLICT") {
-        const shouldReload = window.confirm(
-          "Bu ilan başka bir yerde güncellendi. Formdaki verileriniz korunuyor. En güncel halini görmek için sayfayı şimdi yenilemek ister misiniz?"
-        );
-
-        if (shouldReload) {
-          window.location.reload();
-          return;
-        }
+        setSubmitState({
+          status: "warning",
+          code: "CONFLICT",
+          message: "Bu ilan başka bir yerde güncellendi. Formdaki verileriniz korunuyor.",
+          showReloadPrompt: true,
+        });
+        return;
       }
       setSubmitState(mapSubmitError(response));
       return;

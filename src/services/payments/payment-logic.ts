@@ -262,12 +262,31 @@ export async function retrievePaymentResult(token: string, userId: string) {
 
           if (iyzicoStatus === "SUCCESS") {
             // Atomic update: only transitions from 'pending' → 'success'
-            // USE SERVER CLIENT: Enforce RLS on RPC call (now permitted for authenticated users)
-            await supabase.rpc("confirm_payment_success", {
-              p_iyzico_token: token,
-              p_user_id: userId,
-              p_iyzico_payment_id: result.paymentId,
-            });
+            // ── BUG FIX: Add proper error handling for RPC failure
+            const { data: confirmResult, error: rpcError } = await supabase.rpc(
+              "confirm_payment_success",
+              {
+                p_iyzico_token: token,
+                p_user_id: userId,
+                p_iyzico_payment_id: result.paymentId,
+              }
+            );
+
+            if (rpcError || !confirmResult?.success) {
+              logger.payments.error("Payment confirmation RPC failed", {
+                rpcError,
+                confirmResult,
+                token,
+                userId,
+              });
+              reject(
+                new Error(
+                  confirmResult?.error ||
+                    "Ödeme onaylanamadı. Lütfen destek ekibiyle iletişime geçin."
+                )
+              );
+              return;
+            }
           } else {
             // Failed/cancelled — mark as failure atomically
             await supabase

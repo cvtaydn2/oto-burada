@@ -34,23 +34,34 @@ export default async function DashboardListingsPage({ searchParams }: DashboardL
   };
   const resolvedSearchParams = searchParams ? await searchParams : undefined;
   const hasRequestedCreate = resolvedSearchParams?.create === "true";
-  const hasRequestedEdit = Boolean(resolvedSearchParams?.edit);
+  const editId = resolvedSearchParams?.edit;
+  const hasRequestedEdit = Boolean(editId);
   const hasCreatedPendingListing = resolvedSearchParams?.created === "pending";
   const hasUpdatedListing = resolvedSearchParams?.updated === "true";
 
   // Paralel fetch
   // PERFORMANCE FIX: Explicit limit to avoid loading too many listings in dashboard overview
-  const [listingsResult, references, profile] = await Promise.all([
+  // UX FIX: Explicitly fetch the listing being edited to avoid state loss if it's not in the first 20.
+  const [listingsResult, references, profile, specificListing] = await Promise.all([
     getStoredUserListings(user.id, 1, 20), // Limit to 20 listings for dashboard
     getLiveMarketplaceReferenceData(),
     getStoredProfileById(user.id),
+    editId
+      ? import("@/services/listings/queries/get-listings").then((m) =>
+          m.getStoredListingById(editId)
+        )
+      : Promise.resolve(null),
   ]);
 
   const storedListings = listingsResult.listings;
 
-  const selectedListing = resolvedSearchParams?.edit
-    ? (storedListings.find((l: Listing) => l.id === resolvedSearchParams.edit) ?? null)
-    : null;
+  // UX FIX: Priority given to specificListing if it belongs to the user
+  const selectedListing =
+    specificListing && specificListing.sellerId === user.id
+      ? specificListing
+      : editId
+        ? (storedListings.find((l: Listing) => l.id === editId) ?? null)
+        : null;
   const mergedBrands = references.brands.some((item) => item.brand === selectedListing?.brand)
     ? references.brands
     : selectedListing?.brand

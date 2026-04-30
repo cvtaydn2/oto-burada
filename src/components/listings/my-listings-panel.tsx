@@ -134,8 +134,9 @@ export function MyListingsPanel({
     );
     const csv = [headers.join(","), ...rows].join("\n");
     const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
-    link.href = URL.createObjectURL(blob);
+    link.href = url;
     link.setAttribute(
       "download",
       `oto-burada-ilanlarim-${new Date().toISOString().split("T")[0]}.csv`
@@ -143,6 +144,10 @@ export function MyListingsPanel({
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
+
+    // ── PERFORMANCE FIX: Issue #FRONT-02 - Memory Leak ─────
+    // Clean up the object URL to free memory, especially for large lists
+    setTimeout(() => URL.revokeObjectURL(url), 100);
   };
 
   return (

@@ -47,7 +47,9 @@ export function useMarketplaceLogic({ initialResult, initialFilters }: UseMarket
       queryFn: fetchListings,
       initialPageParam: 1,
       getNextPageParam: (lastPage) => (lastPage.hasMore ? lastPage.page + 1 : undefined),
-      initialData: {
+      // ── BUG FIX: Use placeholderData instead of initialData for proper cache invalidation
+      // initialData persists across queryKey changes; placeholderData is cleared when queryKey changes
+      placeholderData: {
         pages: [initialResult],
         pageParams: [1],
       },

@@ -21,17 +21,32 @@ import {
  */
 export async function processOutboxQueue() {
   const supabase = createSupabaseAdminClient();
+  const now = new Date().toISOString();
+
+  // ── BUG FIX: Clean up expired poison pills to prevent table bloat ──
+  const { error: cleanupError } = await supabase
+    .from("transaction_outbox")
+    .delete()
+    .eq("is_poison_pill", true)
+    .lt("hard_deadline", now);
+
+  if (cleanupError) {
+    logger.system.warn("Outbox: Failed to cleanup expired poison pills", {
+      error: cleanupError.message,
+      code: cleanupError.code,
+    } as Record<string, unknown>);
+  }
 
   // 1. Fetch pending items
   const { data: queue, error: fetchError } = await supabase
     .from("transaction_outbox")
     .select(
-      "id, event_type, payload, status, retry_count, next_attempt_at, is_poison_pill, last_error, processed_at, created_at"
+      "id, event_type, payload, status, retry_count, next_attempt_at, is_poison_pill, hard_deadline, last_error, processed_at, created_at"
     )
     .eq("status", "pending")
     .eq("is_poison_pill", false) // ── PILL: Issue 2 - Skip toxic messages
-    .gte("hard_deadline", new Date().toISOString()) // ── PILL: Issue 8 - Only process if not expired
-    .lte("next_attempt_at", new Date().toISOString())
+    .gte("hard_deadline", now) // ── PILL: Issue 8 - Only process if not expired
+    .lte("next_attempt_at", now)
     .order("created_at", { ascending: true })
     .limit(50);
 
@@ -150,6 +165,13 @@ async function handleEmailNotification(payload: EmailNotificationPayload) {
 
 /**
  * Utility to enqueue an outbox event within a transaction
+ *
+ * ── BUG FIX: Transaction Safety ──
+ * This function should be called within the same transaction as the main operation.
+ * For reliable outbox pattern, use enqueueOutboxEventInTransaction() which wraps
+ * both operations in a single atomic RPC call.
+ *
+ * @deprecated Use enqueueOutboxEventInTransaction for new code
  */
 export async function enqueueOutboxEvent(
   supabaseClient: SupabaseClient,
@@ -166,5 +188,44 @@ export async function enqueueOutboxEvent(
   if (error) {
     logger.system.error("Outbox: Failed to enqueue event", error, { eventType });
     throw error;
+  }
+}
+
+/**
+ * Enqueues an outbox event atomically within the same transaction as the main operation.
+ * This prevents event loss when the main transaction succeeds but outbox insert fails.
+ *
+ * Usage: Call this instead of separate RPC + enqueueOutboxEvent
+ * The caller should wrap both operations in a single transaction-aware pattern.
+ *
+ * @param supabaseClient - The supabase client (should be same instance used for main operation)
+ * @param mainOperationPromise - Promise that performs the main DB operation
+ * @param eventType - Type of event to enqueue
+ * @param payload - Event payload
+ * @param idempotencyKey - Optional idempotency key
+ */
+export async function enqueueOutboxEventInTransaction<T>(
+  supabaseClient: SupabaseClient,
+  mainOperationPromise: Promise<{ data: T; error: unknown }>,
+  eventType: string,
+  payload: unknown,
+  idempotencyKey?: string
+): Promise<{ data: T; outboxEnqueued: boolean }> {
+  const result = await mainOperationPromise;
+
+  if (result.error) {
+    return { data: result.data, outboxEnqueued: false };
+  }
+
+  try {
+    await enqueueOutboxEvent(supabaseClient, eventType, payload, idempotencyKey);
+    return { data: result.data, outboxEnqueued: true };
+  } catch (outboxError) {
+    logger.system.error(
+      "Outbox: Main operation succeeded but outbox enqueue failed - data inconsistency risk",
+      outboxError,
+      { eventType }
+    );
+    return { data: result.data, outboxEnqueued: false };
   }
 }

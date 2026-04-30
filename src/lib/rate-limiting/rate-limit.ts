@@ -62,8 +62,10 @@ function cleanupInMemory() {
   if (now - lastCleanup < CLEANUP_INTERVAL_MS) return;
   lastCleanup = now;
 
-  // Schedule cleanup as micro-task to avoid blocking event loop
-  setImmediate(() => {
+  // ── ARCHITECTURE FIX: Issue #EDGE-01 - Edge Compatibility ─────
+  // Schedule cleanup using setTimeout(..., 0) which is supported in both
+  // Node.js and Edge Runtime. setImmediate is not available in Edge.
+  setTimeout(() => {
     let scannedCount = 0;
     let deletedCount = 0;
 
@@ -97,7 +99,7 @@ function cleanupInMemory() {
     if (deletedCount > 0) {
       logger.api.debug(`In-memory rate limit cleanup: deleted ${deletedCount} expired entries.`);
     }
-  });
+  }, 0);
 }
 
 /**

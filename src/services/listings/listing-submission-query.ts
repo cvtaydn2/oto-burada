@@ -745,14 +745,20 @@ export async function getSimilarDatabaseListings(options: {
   const publicClient = createSupabasePublicServerClient();
   const limit = Math.min(Math.max(options.limit ?? 12, 1), 100); // Sanitize limit
 
-  // Use parameterized query builder - NO string interpolation
+  // SECURITY: Issue #REST-01 - PostgREST Injection Prevention
+  // Escape double quotes and wrap in quotes to ensure special characters (like commas)
+  // don't break the PostgREST filter structure.
+  const safeBrand = `"${options.brand.replace(/"/g, '""')}"`;
+  const safeCity = `"${options.city.replace(/"/g, '""')}"`;
+
+  // Use parameterized query builder - NO string interpolation for raw filters
   // Query for brand match OR city match
   const { data, error } = await (publicClient
     .from("listings")
     .select(marketplaceListingSelect)
     .eq("status", "approved")
     .neq("slug", options.slug)
-    .or(`brand.eq.${options.brand},city.eq.${options.city}`) // PostgREST handles escaping
+    .or(`brand.eq.${safeBrand},city.eq.${safeCity}`)
     .order("featured", { ascending: false })
     .order("created_at", { ascending: false })
     .range(0, limit - 1) as any);

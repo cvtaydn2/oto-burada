@@ -64,7 +64,10 @@ export async function POST(request: Request) {
       // Duplicate key error (IP already banned)
       if (error.code === "23505") {
         logger.admin.warn("IP already banned", { ip, adminId: user.id });
-        return NextResponse.redirect(new URL("/admin/security", request.url));
+        return NextResponse.json(
+          { error: "Bu IP adresi zaten yasaklı", alreadyBanned: true },
+          { status: 409 }
+        );
       }
       throw error;
     }
