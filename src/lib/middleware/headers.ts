@@ -37,9 +37,11 @@ export function getSecurityHeaders(nonce: string) {
   ];
 
   if (isProduction) {
-    // Only use nonces in production for maximum security
+    // Only use nonces in production for maximum security on scripts
     scriptSrc.push(`'nonce-${nonce}'`);
-    styleSrc.push(`'nonce-${nonce}'`);
+    // We intentionally DO NOT add nonce to styleSrc.
+    // Adding nonce to styleSrc causes modern browsers to ignore 'unsafe-inline',
+    // which breaks Next.js App Router, Radix UI, and inline React styles.
   }
 
   // ── PERFORMANCE FIX: Issue PERF-04 - Strict CSP in Development ─────────────
