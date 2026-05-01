@@ -1,3 +1,4 @@
+import { waitUntil } from "@vercel/functions";
 import { headers } from "next/headers";
 import { z } from "zod";
 
@@ -101,71 +102,47 @@ export async function POST(request: Request) {
     );
   }
 
-  let result;
-  try {
-    result = await moderateListingsWithSideEffects({
-      action: parsed.data.action,
-      adminUserId: adminUser.id,
-      listingIds: parsed.data.listingIds,
-      note,
-    });
-  } catch (error) {
-    captureServerError(
-      "Admin bulk moderation failed",
-      "admin",
-      error,
-      {
-        adminUserId: adminUser.id,
-        action: parsed.data.action,
-        listingCount: parsed.data.listingIds.length,
-      },
-      adminUser.id
-    );
-    return apiError(
-      API_ERROR_CODES.INTERNAL_ERROR,
-      "Toplu moderasyon sırasında bir hata oluştu.",
-      500
-    );
-  }
+  waitUntil(
+    (async () => {
+      try {
+        await moderateListingsWithSideEffects({
+          action: parsed.data.action,
+          adminUserId: adminUser.id,
+          listingIds: parsed.data.listingIds,
+          note,
+        });
 
-  if (result.moderatedListings.length === 0) {
-    captureServerEvent(
-      "admin_bulk_moderation_failed",
-      {
-        reason: "no_matching_pending_listings",
-        adminUserId: adminUser.id,
-        action: parsed.data.action,
-        listingCount: parsed.data.listingIds.length,
-        responseStatus: 404,
-      },
-      adminUser.id
-    );
-    return apiError(
-      API_ERROR_CODES.NOT_FOUND,
-      "Toplu moderasyon için uygun bekleyen ilan bulunamadı.",
-      404
-    );
-  }
-
-  captureServerEvent(
-    "admin_bulk_moderation_completed",
-    {
-      adminUserId: adminUser.id,
-      action: parsed.data.action,
-      moderatedCount: result.moderatedListings.length,
-      skippedCount: result.skippedListingIds.length,
-    },
-    adminUser.id
+        captureServerEvent(
+          "admin_bulk_moderation_completed",
+          {
+            adminUserId: adminUser.id,
+            action: parsed.data.action,
+            attemptedCount: parsed.data.listingIds.length,
+          },
+          adminUser.id
+        );
+      } catch (error) {
+        captureServerError(
+          "Admin bulk moderation failed",
+          "admin",
+          error,
+          {
+            adminUserId: adminUser.id,
+            action: parsed.data.action,
+            listingCount: parsed.data.listingIds.length,
+          },
+          adminUser.id
+        );
+      }
+    })()
   );
 
   return apiSuccess(
     {
       action: parsed.data.action,
-      moderatedListingIds: result.moderatedListings.map((listing) => listing.id),
-      skippedListingIds: result.skippedListingIds,
+      moderatedListingIds: parsed.data.listingIds,
+      skippedListingIds: [],
     },
-    parsed.data.action === "approve"
-      ? `${result.moderatedListings.length} ilan onaylandı.`
-      : `${result.moderatedListings.length} ilan reddedildi.`
+    `${parsed.data.listingIds.length} ilan işlenmek üzere sıraya alındı.`
   );
 }

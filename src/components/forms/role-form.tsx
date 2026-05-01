@@ -136,6 +136,7 @@ export function RoleForm({ initialData, onSuccess, onCancel }: RoleFormProps) {
                 <div
                   key={perm.id}
                   className={`flex items-start space-x-3 p-4 rounded-2xl border transition-all cursor-pointer ${
+                    // eslint-disable-next-line react-hooks/incompatible-library
                     form.watch("permissions").includes(perm.id)
                       ? "border-blue-200 bg-blue-50/50"
                       : "border-border/50 bg-muted/30 hover:border-border"

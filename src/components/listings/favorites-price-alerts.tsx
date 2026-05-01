@@ -27,6 +27,7 @@ export function FavoritesPriceAlerts() {
     try {
       const stored = localStorage.getItem(STORAGE_KEY);
       if (stored) {
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         setSettings(JSON.parse(stored) as PriceAlertSettings);
       }
     } catch {

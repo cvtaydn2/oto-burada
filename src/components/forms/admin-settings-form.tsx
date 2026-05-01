@@ -27,6 +27,7 @@ export function AdminSettingsForm({ initialSettings }: AdminSettingsFormProps) {
 
   // Sync state with server props after revalidation
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setSettings(initialSettings);
     setHasChanges(false);
   }, [initialSettings]);

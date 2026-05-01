@@ -29,7 +29,26 @@ export function initSentry() {
     // Environment
     environment: process.env.NODE_ENV,
     // Filter out non-errors in logs
-    beforeSend(event) {
+    beforeSend(event, hint) {
+      const error = hint?.originalException;
+
+      // Do not capture validation errors or 4xx errors
+      if (error && typeof error === "object") {
+        const errObj = error as Record<string, unknown>;
+        const status = errObj.status || errObj.statusCode;
+        if (typeof status === "number" && status >= 400 && status < 500) {
+          return null;
+        }
+
+        if (
+          errObj.name === "ZodError" ||
+          errObj.name === "NotFoundError" ||
+          errObj.digest === "NEXT_NOT_FOUND"
+        ) {
+          return null;
+        }
+      }
+
       // Only send errors and transactions
       if (event.type === "transaction") {
         // Skip transactions shorter than 100ms (noise)
@@ -44,6 +63,8 @@ export function initSentry() {
       "ResizeObserver loop limit exceeded",
       "ResizeObserver loop completed with undelivered notifications",
       /Loading chunk \d+ failed/,
+      "Network Error",
+      "Failed to fetch",
     ],
   });
 

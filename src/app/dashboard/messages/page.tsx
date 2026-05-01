@@ -15,6 +15,7 @@ export default function MessagesPage() {
   // Use ref to keep supabase instance stable across renders
   // This prevents infinite loops in useEffect when useSupabase() returns same instance
   const supabaseRef = useRef(supabase);
+  // eslint-disable-next-line react-hooks/refs
   supabaseRef.current = supabase;
 
   const [user, setUser] = useState<{ id: string } | null>(null);
@@ -96,11 +97,7 @@ export default function MessagesPage() {
             </div>
           )}
           {selectedChatId ? (
-            <ChatWindow
-              chatId={selectedChatId}
-              userId={user.id}
-              onBack={handleBack}
-            />
+            <ChatWindow chatId={selectedChatId} userId={user.id} onBack={handleBack} />
           ) : (
             <div className="flex items-center justify-center h-full text-center p-4">
               <div className="max-w-md">

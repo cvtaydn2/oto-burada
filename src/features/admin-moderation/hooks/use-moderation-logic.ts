@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useOptimistic, useState } from "react";
 
 import { useErrorCapture } from "@/hooks/use-error-capture";
 import { type Listing } from "@/types";
@@ -31,14 +31,19 @@ export function useModerationLogic(pendingListings: Listing[]) {
 
   const [activeTab, setActiveTab] = useState<"all" | "ai_flagged">("all");
 
+  const [optimisticListings, addOptimisticAction] = useOptimistic(
+    pendingListings,
+    (state, idToRemove: string) => state.filter((l) => l.id !== idToRemove)
+  );
+
   // Filtering
   const filteredListings =
     activeTab === "ai_flagged"
-      ? pendingListings.filter(
+      ? optimisticListings.filter(
           (l) =>
             l.status === "flagged" || l.status === "pending_ai_review" || (l.fraudScore ?? 0) > 0
         )
-      : pendingListings;
+      : optimisticListings;
 
   const allPendingListingIds = filteredListings.map((listing) => listing.id);
   const allSelected =
@@ -49,6 +54,8 @@ export function useModerationLogic(pendingListings: Listing[]) {
     setActiveAction(`${listingId}:${action}`);
     setErrorMessage(null);
     setSuccessMessage(null);
+
+    addOptimisticAction(listingId);
 
     try {
       const response = await fetch(`/api/admin/listings/${listingId}/moderate`, {
@@ -97,6 +104,8 @@ export function useModerationLogic(pendingListings: Listing[]) {
     setActiveBulkAction(action);
     setErrorMessage(null);
     setSuccessMessage(null);
+
+    uniqueListingIds.forEach((id) => addOptimisticAction(id));
 
     try {
       const response = await fetch("/api/admin/listings/bulk-moderate", {

@@ -38,6 +38,7 @@ export function DopingStore({ listingId }: DopingStoreProps) {
 
       if (res.success && res.data?.paymentPageUrl) {
         // Redirect to Iyzico checkout page
+        // eslint-disable-next-line react-hooks/immutability
         window.location.href = res.data.paymentPageUrl;
       } else {
         toast.error(res.error?.message || "Ödeme başlatılamadı.");

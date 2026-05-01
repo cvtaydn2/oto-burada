@@ -1,4 +1,4 @@
-import { API_ERROR_CODES, apiError, apiSuccess } from "@/lib/api/response";
+import { apiSuccess } from "@/lib/api/response";
 import { withCronOrAdmin } from "@/lib/api/security";
 import { logger } from "@/lib/logging/logger";
 import { processCompensatingActions } from "@/services/system/compensating-processor";
@@ -25,13 +25,19 @@ export async function GET(request: Request) {
   ]);
 
   const failures = results.filter(
-    (r) => r.status === "rejected" || (r.status === "fulfilled" && "ok" in r.value && !r.value.ok)
+    (r) =>
+      r.status === "rejected" ||
+      (r.status === "fulfilled" &&
+        r.value &&
+        typeof r.value === "object" &&
+        "ok" in r.value &&
+        !r.value.ok)
   );
 
   if (failures.length > 0) {
     const failureDetails = failures.map((f, i) => {
       if (f.status === "rejected") return `Worker ${i}: Promise rejected`;
-      return `Worker ${i}: ${(f as PromiseFulfilledResult<{ok: boolean; error?: unknown>}).value.error}`;
+      return `Worker ${i}: ${(f as PromiseFulfilledResult<{ ok: boolean; error?: unknown }>).value.error}`;
     });
     logger.system.error(`Cron: ${failures.length}/4 workers failed`, {
       failures: failureDetails,

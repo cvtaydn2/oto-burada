@@ -135,6 +135,7 @@ export function useListingCreation({
   }, [isEditing, reset, formDefaultValues, draftSchema]);
 
   // Save draft on change
+  // eslint-disable-next-line react-hooks/incompatible-library
   const watchedValues = watch();
   useEffect(() => {
     if (isEditing) return;

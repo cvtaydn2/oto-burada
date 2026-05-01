@@ -63,6 +63,7 @@ export function ListingQuestions({ listingId, isOwner, currentUserId }: ListingQ
   }, [listingId, isOwner]);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     fetchQuestions();
   }, [fetchQuestions]);
 

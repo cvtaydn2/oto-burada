@@ -58,10 +58,13 @@ export async function moderateListingWithSideEffects({
 
   // Log warning if email not found - in-app notification will still work but email will be skipped
   if (!sellerEmail) {
-    logger.admin.warn("Moderation: seller email not found, in-app notification will be sent but email skipped", {
-      listingId,
-      sellerId: listing.seller_id,
-    });
+    logger.admin.warn(
+      "Moderation: seller email not found, in-app notification will be sent but email skipped",
+      {
+        listingId,
+        sellerId: listing.seller_id,
+      }
+    );
   }
 
   // 3. Prepare payloads
@@ -112,14 +115,27 @@ export async function moderateListingWithSideEffects({
 
   // 5. Non-atomic secondary side-effects (Cache/Market Stats)
   if (action === "approve") {
-    const { invalidateCache } = await import("@/lib/redis/client");
-    await invalidateCache("listings:approved").catch((err) =>
-      logger.admin.warn("Cache invalidation failed after approval", { listingId }, err)
-    );
+    const { waitUntil } = await import("@vercel/functions");
+    waitUntil(
+      (async () => {
+        try {
+          const { invalidateCache } = await import("@/lib/redis/client");
+          await invalidateCache("listings:approved");
+        } catch (err) {
+          logger.admin.error(
+            "CRITICAL: Cache invalidation failed! System state inconsistent",
+            err,
+            { listingId }
+          );
+        }
 
-    const { updateMarketStats } = await import("@/services/market/market-stats");
-    await updateMarketStats(listing.brand, listing.model, listing.year).catch((err) =>
-      logger.market.warn("Market stats update failed after approval", { listingId }, err)
+        try {
+          const { updateMarketStats } = await import("@/services/market/market-stats");
+          await updateMarketStats(listing.brand, listing.model, listing.year);
+        } catch (err) {
+          logger.market.warn("Market stats update failed after approval", { listingId }, err);
+        }
+      })()
     );
   }
 

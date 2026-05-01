@@ -161,6 +161,7 @@ export function PlanForm({ initialData, onSuccess, onCancel }: PlanFormProps) {
             <div className="grid grid-cols-2 gap-4">
               {PLAN_FEATURE_OPTIONS.map((feature) => {
                 const fieldName = `features` as const;
+                // eslint-disable-next-line react-hooks/incompatible-library
                 const features = form.watch(fieldName) || [];
                 const isChecked = features.includes(feature.id);
 

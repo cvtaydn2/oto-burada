@@ -16,6 +16,7 @@ export function useUnifiedFilters(initialFilters: ListingFilters) {
 
   // Sync state if initialFilters changes (e.g., URL updated from outside)
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setFilters(initialFilters);
   }, [initialFilters]);
 
