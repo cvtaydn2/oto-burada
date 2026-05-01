@@ -1,4 +1,5 @@
 import type { NextConfig } from "next";
+import { withSentryConfig } from "@sentry/nextjs";
 
 /**
  * Extracts the Supabase project hostname from the NEXT_PUBLIC_SUPABASE_URL env var.
@@ -79,4 +80,40 @@ const nextConfig: NextConfig = {
   },
 };
 
-export default nextConfig;
+export default withSentryConfig(nextConfig, {
+  // For all available options, see:
+  // https://github.com/getsentry/sentry-webpack-plugin#options
+
+  // Suppresses source map uploading logs during bundling
+  silent: true,
+  org: "product-jx",
+  project: "oto-burada",
+
+  // For all available options, see:
+  // https://docs.sentry.io/platforms/javascript/guides/nextjs/manual-setup/
+
+  // Upload a larger set of source maps for prettier stack traces (increases build time)
+  widenClientFileUpload: true,
+
+  // Routes browser requests to Sentry through a Next.js rewrite to circumvent ad-blockers (increases server load)
+  tunnelRoute: "/monitoring",
+
+  // Hides source maps from visitors
+  // Note: sourcemaps.deleteSourcemapsAfterUpload defaults to true
+  sourcemaps: {
+    deleteSourcemapsAfterUpload: true,
+  },
+
+  webpack: {
+    // Automatically tree-shake Sentry logger statements to reduce bundle size
+    treeshake: {
+      removeDebugLogging: true,
+    },
+
+    // Enables automatic instrumentation of Vercel Cron Monitors.
+    // See the following for more information:
+    // https://docs.sentry.io/product/crons/
+    // https://vercel.com/docs/cron-jobs
+    automaticVercelMonitors: true,
+  },
+});
