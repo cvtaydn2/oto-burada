@@ -40,6 +40,7 @@ const eslintConfig = [
       "playwright-report/**",
       "test-results/**",
       "src/types/supabase.ts",
+      "lib/ruflo/**",
     ],
   },
 ];

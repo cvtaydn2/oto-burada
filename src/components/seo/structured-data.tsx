@@ -14,7 +14,6 @@ function JsonLdScript({ nonce, schema }: { nonce?: string; schema: Record<string
       suppressHydrationWarning
       nonce={nonce}
       type="application/ld+json"
-      // eslint-disable-next-line react/no-danger -- JSON-LD structured data requires dangerouslySetInnerHTML, content is sanitized via safeJsonLd()
       dangerouslySetInnerHTML={{ __html: safeJsonLd(schema) }}
     />
   );

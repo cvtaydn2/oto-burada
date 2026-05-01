@@ -13,7 +13,7 @@ export function HomeHero({ cities }: HomeHeroProps) {
 
       <div className="absolute inset-0 z-0">
         <Image
-          src="/images/hero_bg.png"
+          src="/images/hero_bg.webp"
           alt="Satılık araba ilanları"
           fill
           priority
