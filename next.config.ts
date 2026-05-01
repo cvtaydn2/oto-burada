@@ -53,6 +53,7 @@ const nextConfig: NextConfig = {
       "@radix-ui/react-tooltip",
       "react-hook-form",
       "zod",
+      "lucide-react",
     ],
   },
   // Disabled PPR/cacheComponents for now to resolve build conflicts with route segment configs
@@ -61,6 +62,7 @@ const nextConfig: NextConfig = {
   poweredByHeader: false,
   generateEtags: true,
   serverExternalPackages: ["sharp", "iyzipay"],
+  transpilePackages: ["lucide-react"],
   // ── DEPLOYMENT CONFIG: Standalone output for Docker/self-hosting ───────────
   // Kept for future Docker deployment support. Vercel ignores this setting.
   // If deploying to Vercel ONLY, this can be safely removed.

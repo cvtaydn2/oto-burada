@@ -28,9 +28,20 @@ export function ListingViewTracker({
   useEffect(() => {
     const recordView = async () => {
       try {
+        const csrfToken =
+          typeof document !== "undefined"
+            ? document.cookie
+                .split("; ")
+                .find((row) => row.startsWith("csrf_token="))
+                ?.split("=")[1]
+            : undefined;
+
         const response = await fetch("/api/listings/view", {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers: {
+            "Content-Type": "application/json",
+            ...(csrfToken ? { "x-csrf-token": csrfToken } : {}),
+          },
           body: JSON.stringify({ listingId }),
         });
 

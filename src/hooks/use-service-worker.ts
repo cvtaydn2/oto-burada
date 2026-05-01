@@ -24,6 +24,17 @@ export function useServiceWorker(): UseServiceWorkerReturn {
   useEffect(() => {
     if (!isSupported) return;
 
+    // In development, we actively unregister any existing service worker
+    // to prevent stale cache issues (like Turbopack module factory errors)
+    if (process.env.NODE_ENV === "development") {
+      navigator.serviceWorker.getRegistrations().then((registrations) => {
+        for (const registration of registrations) {
+          registration.unregister();
+        }
+      });
+      return;
+    }
+
     let ignore = false;
 
     navigator.serviceWorker

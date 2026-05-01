@@ -54,51 +54,67 @@ export const listingFiltersSchema: z.ZodType<ListingFilters> = z
     carTrim: optionalTrimmedString,
     city: optionalTrimmedString,
     district: optionalTrimmedString,
-    category: z.preprocess(emptyStringToUndefined, z.enum(vehicleCategories).optional()),
-    minPrice: z.preprocess(
-      emptyStringToUndefined,
-      z.coerce.number().finite().min(0, invalidMessage).optional()
-    ),
-    maxPrice: z.preprocess(
-      emptyStringToUndefined,
-      z.coerce.number().finite().min(0, invalidMessage).optional()
-    ),
-    minYear: z.preprocess(
-      emptyStringToUndefined,
-      z.coerce
-        .number()
-        .int()
-        .min(minimumCarYear, invalidMessage)
-        .max(maximumCarYear, invalidMessage)
-        .optional()
-    ),
-    maxYear: z.preprocess(
-      emptyStringToUndefined,
-      z.coerce
-        .number()
-        .int()
-        .min(minimumCarYear, invalidMessage)
-        .max(maximumCarYear, invalidMessage)
-        .optional()
-    ),
-    maxMileage: z.preprocess(
-      emptyStringToUndefined,
-      nonNegativeNumberSchema.max(maximumMileage, invalidMessage).optional()
-    ),
-    maxTramer: z.preprocess(emptyStringToUndefined, nonNegativeNumberSchema.optional()),
-    hasExpertReport: z.preprocess(
-      (value) =>
-        value === "true" || value === true
-          ? true
-          : value === "false" || value === false
-            ? false
-            : undefined,
-      z.boolean().optional()
-    ),
-    fuelType: z.preprocess(emptyStringToUndefined, z.enum(fuelTypes).optional()),
-    transmission: z.preprocess(emptyStringToUndefined, z.enum(transmissionTypes).optional()),
-    sort: z.preprocess(emptyStringToUndefined, z.enum(listingSortOptions).optional()),
-    page: z.preprocess(emptyStringToUndefined, z.coerce.number().int().min(1).optional()),
+    category: z.preprocess(emptyStringToUndefined, z.enum(vehicleCategories).optional()).optional(),
+    minPrice: z
+      .preprocess(
+        emptyStringToUndefined,
+        z.coerce.number().finite().min(0, invalidMessage).optional()
+      )
+      .optional(),
+    maxPrice: z
+      .preprocess(
+        emptyStringToUndefined,
+        z.coerce.number().finite().min(0, invalidMessage).optional()
+      )
+      .optional(),
+    minYear: z
+      .preprocess(
+        emptyStringToUndefined,
+        z.coerce
+          .number()
+          .int()
+          .min(minimumCarYear, invalidMessage)
+          .max(maximumCarYear, invalidMessage)
+          .optional()
+      )
+      .optional(),
+    maxYear: z
+      .preprocess(
+        emptyStringToUndefined,
+        z.coerce
+          .number()
+          .int()
+          .min(minimumCarYear, invalidMessage)
+          .max(maximumCarYear, invalidMessage)
+          .optional()
+      )
+      .optional(),
+    maxMileage: z
+      .preprocess(
+        emptyStringToUndefined,
+        nonNegativeNumberSchema.max(maximumMileage, invalidMessage).optional()
+      )
+      .optional(),
+    maxTramer: z.preprocess(emptyStringToUndefined, nonNegativeNumberSchema.optional()).optional(),
+    hasExpertReport: z
+      .preprocess(
+        (value) =>
+          value === "true" || value === true
+            ? true
+            : value === "false" || value === false
+              ? false
+              : undefined,
+        z.boolean().optional()
+      )
+      .optional(),
+    fuelType: z.preprocess(emptyStringToUndefined, z.enum(fuelTypes).optional()).optional(),
+    transmission: z
+      .preprocess(emptyStringToUndefined, z.enum(transmissionTypes).optional())
+      .optional(),
+    sort: z.preprocess(emptyStringToUndefined, z.enum(listingSortOptions).optional()).optional(),
+    page: z
+      .preprocess(emptyStringToUndefined, z.coerce.number().int().min(1).optional())
+      .optional(),
     // ── VALIDATION FIX: Issue #14 - Enforce Limit Bounds with Default ─────
     // Ensures limit is always between 1-100, with a default of 12 if not provided.
     // This prevents malicious or accidental override of DEFAULT_LISTING_FILTERS.limit
