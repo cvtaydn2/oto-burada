@@ -1232,3 +1232,46 @@ DROP FUNCTION IF EXISTS ban_user_atomic(uuid, text, boolean);
 ### 8.5 NEXT STEPS
 1. **Enable "Leaked Password Protection"**: This is a manual toggle in the Supabase Dashboard > Auth > Security settings.
 2. **Post-Deployment Monitoring**: Observe Sentry logs for any unexpected 403 errors on edge-case function calls.
+
+---
+
+## 8. PRODUCTION BUILD STABILIZATION (Phase 28.7)
+
+**Date**: 2026-05-01  
+**Status**: ? COMPLETED  
+**Scope**: Final resolution of build-blocking lint errors, type mismatches, and server-only module leaks.
+
+### 8.1 BUILD & PERFORMANCE FIXES ?
+
+#### ? BUILD-01: Server Component Dynamic Import Restriction
+- **Issue**: Used ssr: false in next/dynamic imports inside src/app/layout.tsx (a Server Component). Next.js prohibits this as it violates the server-first rendering model.
+- **Fix**: Created LazyClientWidgets.tsx (Client Component) to wrap CookieConsent, PWAInstallPrompt, and WhatsAppSupport.
+- **Impact**: Resolved build failure while maintaining performance benefits of client-side lazy loading.
+
+#### ? BUILD-02: Server-Only Module Leakage (next/headers)
+- **Issue**: src/lib/supabase/client-factory.ts imported src/lib/supabase/server.ts at the top level. Since server.ts uses next/headers, any client component importing the factory (even indirectly) triggered a " module not found\ or \illegal import\ error during build.
+- **Fix**: 
+ 1. Added \use server\ to src/services/listings/questions.ts to establish a clean Server Action boundary.
+ 2. Updated the service to use createSupabaseServerClient directly, bypassing the problematic factory.
+ 3. Refactored the factory to use dynamic import() for the server client to further prevent leakage.
+- **Impact**: Eliminated build-time errors caused by server-side code leaking into the client bundle.
+
+#### ? TECH-04: Linting & Import Hygiene
+- **Fix**: Removed unused dynamicImport and Suspense from layout.tsx.
+- **Fix**: Synchronized import sorting via simple-import-sort.
+- **Impact**: achieved **zero warnings/errors** in final production linting.
+
+### 8.2 VERIFICATION RESULTS ?
+
+- ? **ESLint**: npm run lint - 0 Errors, 0 Warnings
+- ? **TypeScript**: npm run typecheck - 0 Errors
+- ? **Production Build**: npm run build - SUCCESS ??
+- ? **Bundle Size**: Optimized via dynamic imports and server actions.
+
+### 8.3 FINAL DEPLOYMENT READINESS
+
+The codebase is now in a \Zero-Error\ state. All architectural boundaries (Server vs Client) are strictly enforced, and the production build is verified stable.
+
+**Final Recommendation**: Proceed with Vercel Production Deployment.
+
+---

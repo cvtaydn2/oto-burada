@@ -1,5 +1,4 @@
 import { createSupabaseBrowserClient } from "./browser";
-import { createSupabaseServerClient } from "./server";
 
 /**
  * Universal Supabase client factory that works in both server and browser contexts.
@@ -9,6 +8,7 @@ import { createSupabaseServerClient } from "./server";
  */
 export async function getSupabaseClient() {
   if (typeof window === "undefined") {
+    const { createSupabaseServerClient } = await import("./server");
     return await createSupabaseServerClient();
   }
   return createSupabaseBrowserClient();

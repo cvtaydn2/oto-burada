@@ -3,36 +3,13 @@ import "./globals.css";
 import { Analytics } from "@vercel/analytics/next";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import type { Metadata, Viewport } from "next";
-import dynamicImport from "next/dynamic";
 import { Inter, Outfit } from "next/font/google";
 import { headers } from "next/headers";
-import { Suspense } from "react";
 
 import { RootProviders } from "@/components/providers/root-providers";
+import { LazyClientWidgets } from "@/components/shared/lazy-client-widgets";
 import { getCurrentUser } from "@/lib/auth/session";
 import { getAppUrl } from "@/lib/seo";
-
-// ── PERFORMANCE OPTIMIZATION: Issue #28.5 ────────────────────────────────────
-// Dynamically import non-critical client components to reduce initial bundle size
-// and improve LCP/TBT scores.
-const CookieConsent = dynamicImport(
-  () => import("@/components/shared/cookie-consent").then((m) => m.CookieConsent),
-  {
-    ssr: false,
-  }
-);
-const PWAInstallPrompt = dynamicImport(
-  () => import("@/components/shared/pwa-install-prompt").then((m) => m.PWAInstallPrompt),
-  {
-    ssr: false,
-  }
-);
-const WhatsAppSupport = dynamicImport(
-  () => import("@/components/shared/whatsapp-support").then((m) => m.WhatsAppSupport),
-  {
-    ssr: false,
-  }
-);
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -138,11 +115,7 @@ export default async function RootLayout({
           {children}
           <Analytics />
           <SpeedInsights />
-          <Suspense fallback={null}>
-            <CookieConsent />
-            <PWAInstallPrompt />
-            <WhatsAppSupport />
-          </Suspense>
+          <LazyClientWidgets />
         </RootProviders>
       </body>
     </html>
