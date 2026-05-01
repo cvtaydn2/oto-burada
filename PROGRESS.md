@@ -1190,3 +1190,45 @@ DROP FUNCTION IF EXISTS ban_user_atomic(uuid, text, boolean);
 **Status**: ✅ COORDINATION COMPLETE  
 **Next Review**: After environment variables configured
 
+
+## 8. INFRASTRUCTURE SECURITY & PERFORMANCE AUDIT (Phase 57 - TASK-57.1)
+
+**Date**: 2026-05-01  
+**Status**: ✅ COMPLETED  
+**Scope**: Database hardening, performance optimization, and RLS consolidation.
+
+### 8.1 SECURITY HARDENING ✅
+- **[SEC-01] Function Privilege Audit**: Audited all 50+ `SECURITY DEFINER` functions in the `public` schema.
+- **[SEC-02] Public Permission Revocation**: Revoked default `EXECUTE` privileges from `PUBLIC` for all functions in the `public` schema.
+- **[SEC-03] Selective Granting**:
+    - **Service Role**: Granted full access for system operations.
+    - **Authenticated**: Granted access to domain-specific logic functions.
+    - **Anonymous**: Restricted to only essential public functions (Rate limiting, Contact abuse logging, Listing view increment, etc.).
+- **[SEC-04] Admin Restriction**: Explicitly revoked execute permissions from `authenticated` for critical admin-only functions (`ban_user_atomic`, `admin_update_ticket`, `recalibrate_all_market_stats`).
+
+### 8.2 PERFORMANCE OPTIMIZATION ✅
+- **[PERF-01] Missing Index Coverage**: Added B-tree indexes for unindexed foreign keys identified by Supabase Performance Audit:
+    - `doping_purchases(package_id)`
+    - `doping_purchases(payment_id)`
+    - `listing_questions(listing_id)`
+    - `listings(seller_id)`
+- **[PERF-02] RLS Policy Consolidation**: Refactored the `listing_questions` table RLS policies to eliminate "Multiple Permissive Policies" overhead.
+    - Consolidated 4 separate `SELECT` policies into a single optimized policy using `OR` logic.
+    - Standardized admin access via a single global policy.
+- **[PERF-03] Unused Index Cleanup**: Removed redundant/low-utility indexes to reduce write-time overhead:
+    - `listings_vin_idx`
+    - `idx_profiles_identity_number`
+
+### 8.3 ARCHITECTURAL STABILITY ✅
+- **[ARCH-01] Migration Integration**: Successfully applied migration `0136_infrastructure_security_performance.sql` via Supabase MCP.
+- **[ARCH-02] Build Verification**: Verified that the changes do not impact the Next.js build or client-side functionality.
+
+### 8.4 VERIFICATION STATUS
+- ✅ Database Linter: Security warnings resolved.
+- ✅ Database Linter: Performance warnings (unindexed FKs) resolved.
+- ✅ Function Access: Verified restricted access for `anon` users.
+- ✅ Build: `npm run build` PASS.
+
+### 8.5 NEXT STEPS
+1. **Enable "Leaked Password Protection"**: This is a manual toggle in the Supabase Dashboard > Auth > Security settings.
+2. **Post-Deployment Monitoring**: Observe Sentry logs for any unexpected 403 errors on edge-case function calls.
