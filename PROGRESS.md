@@ -119,6 +119,35 @@
 - ✅ `npm run typecheck`
 - ✅ `npm run build`
 
+## 15. Production Readiness Gate & Documentation Consolidation
+
+**Date**: 2026-05-01  
+**Status**: ✅ PARTIALLY COMPLETED (Gate identified)  
+**Scope**: Smoke validation + documentation cleanup.
+
+### 15.1 Smoke Validation
+- Executed: `npm run test:e2e:chromium`
+- Outcome: ❌ not fully green (121-test run contains failures)
+- Main blockers identified:
+  - 404 heading selector mismatch (`#not-found-heading`)
+  - Listing detail route timeouts
+  - Repeated listing data fetch failures (`TypeError: fetch failed`) under E2E load
+- Report added:
+  - `docs/SMOKE_REPORT_2026-05-01.md`
+
+### 15.2 Documentation Consolidation
+- Root markdown files reduced to core set:
+  - `AGENTS.md`, `README.md`, `TASKS.md`, `PROGRESS.md`, `RUNBOOK.md`
+- Historical reports moved to:
+  - `docs/archive/`
+- New navigation entrypoint added:
+  - `docs/INDEX.md`
+- README updated to remove invalid claim that all E2E always pass and to point to docs index.
+
+### 15.3 Validation
+- ✅ `npm run lint`
+- ✅ `npm run typecheck`
+
 ## 1. COMPLETED TASKS
 
 ### 1.1 ACCESSIBILITY (A11Y) HARDENING
@@ -1394,3 +1423,49 @@ The codebase is now in a \Zero-Error\ state. All architectural boundaries (Serve
 **Final Recommendation**: Proceed with Vercel Production Deployment.
 
 ---
+
+## 16. External Module Integration
+
+**Date**: 2026-05-02  
+**Status**: ✅ COMPLETED  
+**Scope**: Adding ruflo as a git submodule.
+
+### 16.1 Completed
+- Added `https://github.com/ruvnet/ruflo` as a git submodule in the root directory.
+
+### 16.2 Validation
+- ✅ Submodule cloned and tracked in `.gitmodules`.
+
+## 17. Production Readiness Audit Stabilization (Phase 28.8)
+
+**Date**: 2026-05-02  
+**Status**: ✅ COMPLETED  
+**Scope**: Resolution of critical blockers identified in the smoke report and stabilization of production configurations.
+
+### 17.1 Completed
+- **404/A11y Contract Fix**:
+  - Updated `src/components/shared/error-state.tsx` to include `not-found-heading` ID and `listing-not-found-message` test ID.
+  - Synchronized E2E tests with these new identifiers.
+- **Transient Network Resilience**:
+  - Added `runQueryWithTransientRetry` to `src/services/listings/listing-submission-query.ts`.
+  - Implemented automated retries for transient "fetch failed" errors in listing data retrieval.
+- **Critical Path Timeout & Graceful Failure**:
+  - Hardened `src/services/listings/questions.ts` with `AbortController` timeouts (2.5s).
+  - Implemented empty-result fallbacks for transient network failures on the listing detail critical path.
+- **Sentry Production Isolation**:
+  - Updated `sentry.client.config.ts`, `sentry.server.config.ts`, and `sentry.edge.config.ts` to disable Sentry in non-production environments by default.
+  - Added `NEXT_PUBLIC_ENABLE_SENTRY_IN_DEV` toggle for debugging.
+- **E2E Stability**:
+  - Refactored `e2e/listing-detail.spec.ts` to remove flakey `networkidle` dependencies.
+  - Standardized page-load verification via `h1` visibility.
+
+### 17.2 Validation
+- ✅ `npm run build` PASS
+- ✅ `npm run typecheck` PASS
+- ✅ `npm run lint` PASS
+- ✅ Smoke E2E (Chromium) PASS
+
+### 17.3 Next Steps
+- Execute environment variables audit via `node scripts/verify-production-env.mjs`.
+- Proceed with Staging/Production deployment (TASK-65).
+- Complete Mobile UX Phase 3 (Integrations).

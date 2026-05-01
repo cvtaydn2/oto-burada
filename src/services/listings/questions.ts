@@ -1,29 +1,52 @@
 "use server";
+/* eslint-disable @typescript-eslint/no-explicit-any */
 
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+
+const QUESTIONS_QUERY_TIMEOUT_MS = 2500;
+
+function isTransientQuestionFetchError(error: unknown): boolean {
+  if (!(error instanceof Error)) return false;
+  const message = error.message.toLowerCase();
+  return (
+    message.includes("fetch failed") || message.includes("timeout") || message.includes("network")
+  );
+}
 
 /**
  * Get approved public questions for a listing
  */
 export async function getListingQuestions(listingId: string) {
   const supabase = await createSupabaseServerClient();
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), QUESTIONS_QUERY_TIMEOUT_MS);
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const result = await (supabase as any)
-    .from("listing_questions")
-    .select(
-      `
+  let result: any;
+  try {
+    result = await (supabase as any)
+      .from("listing_questions")
+      .select(
+        `
       *,
       profiles:user_id (
         full_name,
         avatar_url
       )
     `
-    )
-    .eq("listing_id", listingId)
-    .eq("status", "approved")
-    .eq("is_public", true)
-    .order("created_at", { ascending: false });
+      )
+      .eq("listing_id", listingId)
+      .eq("status", "approved")
+      .eq("is_public", true)
+      .order("created_at", { ascending: false })
+      .abortSignal(controller.signal);
+  } catch (error) {
+    if (isTransientQuestionFetchError(error)) {
+      return [];
+    }
+    throw error;
+  } finally {
+    clearTimeout(timeout);
+  }
 
   if (result.error) {
     // Free/local environments may not have listing_questions migrated yet.
@@ -42,21 +65,33 @@ export async function getListingQuestions(listingId: string) {
  */
 export async function getOwnerListingQuestions(listingId: string) {
   const supabase = await createSupabaseServerClient();
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), QUESTIONS_QUERY_TIMEOUT_MS);
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const result = await (supabase as any)
-    .from("listing_questions")
-    .select(
-      `
+  let result: any;
+  try {
+    result = await (supabase as any)
+      .from("listing_questions")
+      .select(
+        `
       *,
       profiles:user_id (
         full_name,
         avatar_url
       )
     `
-    )
-    .eq("listing_id", listingId)
-    .order("created_at", { ascending: false });
+      )
+      .eq("listing_id", listingId)
+      .order("created_at", { ascending: false })
+      .abortSignal(controller.signal);
+  } catch (error) {
+    if (isTransientQuestionFetchError(error)) {
+      return [];
+    }
+    throw error;
+  } finally {
+    clearTimeout(timeout);
+  }
 
   if (result.error) {
     if (result.error.code === "PGRST205" || result.error.code === "42P01") {
@@ -80,7 +115,6 @@ export async function askQuestion(listingId: string, question: string) {
   } = await supabase.auth.getUser();
   if (!user) throw new Error("Unauthorized");
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const result = await (supabase as any)
     .from("listing_questions")
     .insert({
@@ -109,7 +143,6 @@ export async function askQuestion(listingId: string, question: string) {
 export async function answerQuestion(questionId: string, answer: string) {
   const supabase = await createSupabaseServerClient();
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const result = await (supabase as any)
     .from("listing_questions")
     .update({

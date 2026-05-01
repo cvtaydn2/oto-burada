@@ -9,9 +9,11 @@ Bu repo şu anda local ortamda başarıyla:
 - `npm run lint`
 - `npm run typecheck`
 - `npm run build`
-- `npm run test:unit`
-- `npm run test:int`
-- `npm run test:e2e:chromium`
+- `npm run test:unit` (ortam izinlerine bağlı)
+- `npm run test:int` (ortam izinlerine bağlı)
+
+Not: E2E testleri çevresel bağımlılıklara (Supabase erişimi, test data, local network) duyarlıdır.
+Production readiness için her release öncesi smoke koşusu önerilir.
 
 komutlarını geçecek durumda stabilize edilmiştir.
 
@@ -373,6 +375,7 @@ vercel logs -n 100            # Son 100 log
 
 ## Dokümantasyon
 
+- `docs/INDEX.md`: dokümantasyon navigasyon başlangıç noktası
 - `AGENTS.md`: ürün ve mimari kurallar
 - `TASKS.md`: backlog ve kabul kriterleri
 - `PROGRESS.md`: yapılan işler ve doğrulama geçmişi

@@ -8,6 +8,8 @@ import { cn } from "@/lib/utils";
 
 export interface ErrorStateProps {
   title?: string;
+  titleId?: string;
+  messageTestId?: string;
   message?: string;
   icon?: React.ElementType;
   iconColor?: string;
@@ -22,6 +24,8 @@ export interface ErrorStateProps {
 
 export function ErrorState({
   title = "Bir Hata Oluştu",
+  titleId,
+  messageTestId,
   message = "Beklenmedik bir sorun oluştu. Lütfen tekrar deneyin.",
   icon: Icon = AlertCircle,
   iconColor = "text-rose-600",
@@ -42,10 +46,17 @@ export function ErrorState({
       </div>
 
       {/* Title */}
-      <h3 className="mb-3 text-xl font-bold text-foreground tracking-tight">{title}</h3>
+      <h3 id={titleId} className="mb-3 text-xl font-bold text-foreground tracking-tight">
+        {title}
+      </h3>
 
       {/* Message */}
-      <p className="mb-8 max-w-md text-sm text-muted-foreground leading-relaxed">{message}</p>
+      <p
+        data-testid={messageTestId}
+        className="mb-8 max-w-md text-sm text-muted-foreground leading-relaxed"
+      >
+        {message}
+      </p>
 
       {/* Actions */}
       <div className="flex flex-col sm:flex-row gap-3 w-full max-w-sm">
@@ -106,6 +117,8 @@ export function NotFoundError() {
   return (
     <ErrorState
       title="Sayfa Bulunamadı"
+      titleId="not-found-heading"
+      messageTestId="listing-not-found-message"
       message="Aradığınız sayfa mevcut değil veya taşınmış olabilir."
       icon={AlertCircle}
       iconColor="text-slate-600"

@@ -298,6 +298,39 @@ function isListingSchemaError(error: { code?: string; message?: string } | null 
   );
 }
 
+function isTransientFetchError(error: unknown): boolean {
+  if (!(error instanceof Error)) return false;
+  const message = error.message.toLowerCase();
+  return message.includes("fetch failed") || message.includes("network");
+}
+
+async function runQueryWithTransientRetry<T>(
+  operation: () => Promise<T>,
+  context: string,
+  retries = 2
+): Promise<T> {
+  let lastError: unknown;
+
+  for (let attempt = 0; attempt <= retries; attempt += 1) {
+    try {
+      return await operation();
+    } catch (error) {
+      lastError = error;
+      if (!isTransientFetchError(error) || attempt === retries) {
+        throw error;
+      }
+      logger.db.warn(`${context} transient network error, retrying`, {
+        attempt: attempt + 1,
+        retries,
+        message: error instanceof Error ? error.message : String(error),
+      });
+      await new Promise((resolve) => setTimeout(resolve, 150 * (attempt + 1)));
+    }
+  }
+
+  throw lastError instanceof Error ? lastError : new Error(`${context} failed`);
+}
+
 export function applyListingFilterPredicates(
   query: ListingQuery,
   filters: ListingFilters,
@@ -492,7 +525,10 @@ export async function getDatabaseListings(options?: {
     ...options,
     legacySchema: preferLegacyListingSchema,
   });
-  const primaryResult = await primaryQuery;
+  const primaryResult: any = await runQueryWithTransientRetry(
+    () => primaryQuery,
+    "getDatabaseListings.primaryQuery"
+  );
 
   if (!primaryResult.error) {
     return (primaryResult.data ?? []).map(mapListingRow);
@@ -500,6 +536,14 @@ export async function getDatabaseListings(options?: {
 
   // SECURITY: Only fallback for schema-related errors, not security/RLS errors
   if (!isListingSchemaError(primaryResult.error)) {
+    if (isTransientFetchError(new Error(primaryResult.error.message ?? ""))) {
+      logger.db.warn("Transient listing query error in admin path; returning null", {
+        options,
+        message: primaryResult.error.message,
+      });
+      return null;
+    }
+
     // This could be a security/RLS error or other critical issue - fail loudly
     logger.db.error("Critical listing query error - not attempting fallback", primaryResult.error, {
       options,
@@ -514,7 +558,10 @@ export async function getDatabaseListings(options?: {
     ...options,
     legacySchema: true,
   });
-  const fallbackResult = await fallbackQuery;
+  const fallbackResult: any = await runQueryWithTransientRetry(
+    () => fallbackQuery,
+    "getDatabaseListings.fallbackQuery"
+  );
 
   if (fallbackResult.error) {
     logger.db.error("Listing retrieval failed even with legacy fallback", fallbackResult.error, {
@@ -556,14 +603,20 @@ export async function getPublicDatabaseListings(options?: {
   };
 
   const query = buildListingBaseQuery(publicClient, publicListingDetailSelect, publicOptions);
-  const result = await query;
+  const result: any = await runQueryWithTransientRetry(
+    () => query,
+    "getPublicDatabaseListings.query"
+  );
 
   if (result.error && isListingSchemaError(result.error)) {
     const fallbackQuery = buildListingBaseQuery(publicClient, legacyListingSelect, {
       ...publicOptions,
       legacySchema: true,
     });
-    const fallbackResult = await fallbackQuery;
+    const fallbackResult: any = await runQueryWithTransientRetry(
+      () => fallbackQuery,
+      "getPublicDatabaseListings.fallbackQuery"
+    );
 
     if (!fallbackResult.error) {
       return (fallbackResult.data ?? []).map(mapListingRow);
@@ -636,12 +689,16 @@ async function getFilteredListingsInternal(
   const selectClause = preferLegacyMarketplaceSchema
     ? legacyListingSelect
     : marketplaceListingSelect;
-  const { data, count, error } = await buildListingBaseQuery(client, selectClause, {
-    statuses: ["approved"],
-    filters: { ...filters, page, limit },
-    withCount: true,
-    legacySchema: preferLegacyMarketplaceSchema,
-  });
+  const { data, count, error }: any = await runQueryWithTransientRetry(
+    () =>
+      buildListingBaseQuery(client, selectClause, {
+        statuses: ["approved"],
+        filters: { ...filters, page, limit },
+        withCount: true,
+        legacySchema: preferLegacyMarketplaceSchema,
+      }),
+    "getFilteredListingsInternal.primaryQuery"
+  );
 
   const dataResult = { data, error };
   const countResult = { count };
@@ -679,9 +736,15 @@ async function getFilteredListingsInternal(
         countOnly: true,
         legacySchema: true,
       });
-      const [legacyDataResult, legacyCountResult] = await Promise.all([
-        legacyDataQuery,
-        legacyCountQuery,
+      const [legacyDataResult, legacyCountResult]: [any, any] = await Promise.all([
+        runQueryWithTransientRetry(
+          () => legacyDataQuery,
+          "getFilteredListingsInternal.legacyDataQuery"
+        ),
+        runQueryWithTransientRetry(
+          () => legacyCountQuery,
+          "getFilteredListingsInternal.legacyCountQuery"
+        ),
       ]);
 
       if (!legacyDataResult.error) {
@@ -753,15 +816,19 @@ export async function getSimilarDatabaseListings(options: {
 
   // Use parameterized query builder - NO string interpolation for raw filters
   // Query for brand match OR city match
-  const { data, error } = await (publicClient
-    .from("listings")
-    .select(marketplaceListingSelect)
-    .eq("status", "approved")
-    .neq("slug", options.slug)
-    .or(`brand.eq.${safeBrand},city.eq.${safeCity}`)
-    .order("featured", { ascending: false })
-    .order("created_at", { ascending: false })
-    .range(0, limit - 1) as any);
+  const { data, error }: any = await runQueryWithTransientRetry(
+    () =>
+      publicClient
+        .from("listings")
+        .select(marketplaceListingSelect)
+        .eq("status", "approved")
+        .neq("slug", options.slug)
+        .or(`brand.eq.${safeBrand},city.eq.${safeCity}`)
+        .order("featured", { ascending: false })
+        .order("created_at", { ascending: false })
+        .range(0, limit - 1) as any,
+    "getSimilarDatabaseListings.query"
+  );
 
   if (error) {
     logger.db.error("Similar listing query failed", { error, options });

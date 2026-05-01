@@ -15,7 +15,7 @@ test.describe("İlan Detay Sayfası", () => {
   test.beforeAll(async ({ browser }) => {
     const page = await browser.newPage();
     await page.goto("/listings");
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("domcontentloaded");
 
     const firstLink = page.locator('a[href^="/listing/"]').first();
     if ((await firstLink.count()) > 0) {
@@ -28,14 +28,13 @@ test.describe("İlan Detay Sayfası", () => {
   test("ilan detay sayfası yüklenir", async ({ page }) => {
     test.skip(!listingSlug, "DB'de ilan yok");
     await page.goto(`/listing/${listingSlug}`);
-    await page.waitForLoadState("networkidle");
     await expect(page.locator("h1")).toBeVisible();
   });
 
   test("JSON-LD Vehicle schema mevcut", async ({ page }) => {
     test.skip(!listingSlug, "DB'de ilan yok");
     await page.goto(`/listing/${listingSlug}`);
-    await page.waitForLoadState("networkidle");
+    await expect(page.locator("h1")).toBeVisible();
 
     // JSON-LD script'leri DOM'da script tag olarak bulunur
     // Playwright'ın locator'ı script tag'leri görmeyebilir — evaluate ile kontrol et
@@ -62,7 +61,7 @@ test.describe("İlan Detay Sayfası", () => {
   test("breadcrumb navigasyonu görünür", async ({ page }) => {
     test.skip(!listingSlug, "DB'de ilan yok");
     await page.goto(`/listing/${listingSlug}`);
-    await page.waitForLoadState("networkidle");
+    await expect(page.locator("h1")).toBeVisible();
 
     // Breadcrumb bazı şablonlarda opsiyonel olabilir
     const breadcrumbNav = page.locator('nav[aria-label="Breadcrumb"]');
@@ -77,7 +76,7 @@ test.describe("İlan Detay Sayfası", () => {
   test("teknik özellikler (specs grid) görünür", async ({ page }) => {
     test.skip(!listingSlug, "DB'de ilan yok");
     await page.goto(`/listing/${listingSlug}`);
-    await page.waitForLoadState("networkidle");
+    await expect(page.locator("h1")).toBeVisible();
 
     const hasClassicSpecs = await page.getByText("Model Yılı").count();
     if (hasClassicSpecs > 0) {
@@ -94,7 +93,7 @@ test.describe("İlan Detay Sayfası", () => {
   test("fiyat görünür", async ({ page }) => {
     test.skip(!listingSlug, "DB'de ilan yok");
     await page.goto(`/listing/${listingSlug}`);
-    await page.waitForLoadState("networkidle");
+    await expect(page.locator("h1")).toBeVisible();
 
     const priceLabel = page.getByText("Satış Fiyatı");
     if ((await priceLabel.count()) > 0) {
@@ -108,7 +107,7 @@ test.describe("İlan Detay Sayfası", () => {
   test("iletişim aksiyonları görünür (giriş yapılmamış)", async ({ page }) => {
     test.skip(!listingSlug, "DB'de ilan yok");
     await page.goto(`/listing/${listingSlug}`);
-    await page.waitForLoadState("networkidle");
+    await expect(page.locator("h1")).toBeVisible();
 
     const contactCta = page
       .locator("a,button")
@@ -126,8 +125,6 @@ test.describe("İlan Detay Sayfası", () => {
     test.skip(!listingSlug, "DB'de ilan yok");
     await page.setViewportSize({ width: 390, height: 844 });
     await page.goto(`/listing/${listingSlug}`);
-    await page.waitForLoadState("networkidle");
-
     await expect(page.locator("h1")).toBeVisible();
     const mainContent = page.locator("#main-content");
     if ((await mainContent.count()) > 0) {
@@ -140,7 +137,7 @@ test.describe("İlan Detay Sayfası", () => {
   test("benzer ilanlar bölümü (varsa) görünür", async ({ page }) => {
     test.skip(!listingSlug, "DB'de ilan yok");
     await page.goto(`/listing/${listingSlug}`);
-    await page.waitForLoadState("networkidle");
+    await expect(page.locator("h1")).toBeVisible();
 
     // Benzer ilanlar opsiyonel — varsa görünür olmalı
     const similarSection = page.getByText("Benzer İlanlar");
