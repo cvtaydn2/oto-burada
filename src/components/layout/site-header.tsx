@@ -35,12 +35,12 @@ export async function SiteHeader() {
             aria-label="OtoBurada - Ana Sayfa"
           >
             <div
-              className="flex size-9 items-center justify-center rounded-lg bg-blue-500 text-white"
+              className="flex size-9 items-center justify-center rounded-xl bg-gradient-to-br from-primary to-primary/80 text-primary-foreground shadow-sm transition-transform duration-300 group-hover:scale-105 group-hover:rotate-[-5deg]"
               aria-hidden="true"
             >
               <CarFront size={18} className="stroke-[2.5]" />
             </div>
-            <span className="text-xl font-bold tracking-tight text-blue-500">
+            <span className="text-xl font-extrabold tracking-tight text-primary transition-colors duration-300 group-hover:text-primary/90">
               Oto<span className="text-foreground">Burada</span>
             </span>
           </Link>

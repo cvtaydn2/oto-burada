@@ -32,56 +32,69 @@ export function HomeHero({ cities }: HomeHeroProps) {
             {/* The image is handled by the shared background Image above for better performance and preload alignment */}
           </div>
 
-          <div className="max-w-2xl text-left space-y-5 sm:space-y-6 lg:max-w-none lg:pl-2 xl:pl-4">
-            <div className="inline-flex items-center gap-2 bg-primary/10 border border-primary/20 rounded-full px-3 py-1.5 sm:py-2 text-primary text-[10px] font-bold uppercase tracking-widest backdrop-blur-md">
+          <div className="max-w-2xl text-left space-y-6 sm:space-y-8 lg:max-w-none lg:pl-2 xl:pl-4">
+            <div className="animate-in fade-in slide-in-from-bottom-4 duration-700 inline-flex items-center gap-2 bg-primary/10 border border-primary/20 rounded-full px-4 py-1.5 sm:py-2 text-primary text-xs font-bold uppercase tracking-widest backdrop-blur-md shadow-sm">
+              <span className="relative flex h-2 w-2">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-primary"></span>
+              </span>
               Sade Araç Pazaryeri
             </div>
 
-            <div className="space-y-2 sm:space-y-3">
-              <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-4xl xl:text-5xl font-bold text-foreground tracking-tight leading-[1.15]">
-                Arabanı <span className="text-primary">Kolayca</span> Sat. <br />
-                Doğruyu <span className="text-primary">Hızlıca</span> Bul.
+            <div className="space-y-4 animate-in fade-in slide-in-from-bottom-4 duration-700 delay-150 fill-mode-both">
+              <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-5xl xl:text-6xl font-extrabold text-foreground tracking-tight leading-[1.15]">
+                Arabanı{" "}
+                <span className="bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
+                  Kolayca
+                </span>{" "}
+                Sat. <br />
+                Doğruyu{" "}
+                <span className="bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
+                  Hızlıca
+                </span>{" "}
+                Bul.
               </h1>
-              <p className="text-sm sm:text-base text-muted-foreground max-w-lg font-medium leading-relaxed">
-                Türkiye&apos;nin en güvenilir, şeffaf ve sade otomobil pazarı.
+              <p className="text-base sm:text-lg text-muted-foreground max-w-xl font-medium leading-relaxed">
+                Türkiye&apos;nin en güvenilir, şeffaf ve sade otomobil pazarı. Dakikalar içinde ilan
+                ver veya aradığın aracı anında bul.
               </p>
             </div>
 
             <form
               action="/listings"
               method="GET"
-              className="bg-card/90 p-1.5 rounded-xl sm:rounded-2xl border border-border shadow-lg max-w-2xl backdrop-blur-xl"
+              className="animate-in fade-in slide-in-from-bottom-4 duration-700 delay-300 fill-mode-both bg-card/95 p-2 rounded-2xl border border-border shadow-2xl max-w-2xl backdrop-blur-xl transition-all focus-within:ring-2 focus-within:ring-primary/20 focus-within:border-primary/30"
             >
-              <div className="flex flex-col sm:flex-row gap-1.5 sm:gap-2">
-                <div className="flex-1 relative">
+              <div className="flex flex-col sm:flex-row gap-2">
+                <div className="flex-1 relative group">
                   <label htmlFor="hero-query" className="sr-only">
                     Marka veya model ara
                   </label>
                   <CarFront
-                    size={16}
-                    className="absolute left-3 sm:left-4 top-1/2 -translate-y-1/2 text-muted-foreground"
+                    size={18}
+                    className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground transition-colors group-focus-within:text-primary"
                   />
                   <input
                     id="hero-query"
                     type="text"
                     name="query"
                     placeholder="Marka, model ara..."
-                    className="w-full bg-muted/40 border-none text-foreground placeholder:text-muted-foreground/50 rounded-lg sm:rounded-xl pl-10 sm:pl-12 pr-3 sm:pr-4 h-12 sm:h-14 outline-none transition focus:bg-muted font-medium text-sm"
+                    className="w-full bg-muted/50 border border-transparent text-foreground placeholder:text-muted-foreground/60 rounded-xl pl-12 pr-4 h-14 outline-none transition-all focus:bg-background focus:border-border font-medium text-base"
                   />
                 </div>
 
-                <div className="w-full sm:w-44 lg:w-48 relative">
+                <div className="w-full sm:w-48 lg:w-56 relative group">
                   <label htmlFor="hero-city" className="sr-only">
                     Şehir seç
                   </label>
                   <MapPin
-                    size={16}
-                    className="absolute left-3 sm:left-4 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none"
+                    size={18}
+                    className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none transition-colors group-focus-within:text-primary"
                   />
                   <select
                     id="hero-city"
                     name="city"
-                    className="w-full bg-muted/40 border-none text-foreground rounded-lg sm:rounded-xl pl-10 sm:pl-12 pr-8 sm:pr-10 h-12 sm:h-14 outline-none appearance-none cursor-pointer focus:bg-muted font-medium text-sm"
+                    className="w-full bg-muted/50 border border-transparent text-foreground rounded-xl pl-12 pr-10 h-14 outline-none appearance-none cursor-pointer transition-all focus:bg-background focus:border-border font-medium text-base"
                   >
                     <option value="">Tüm Şehirler</option>
                     {cities.map((city) => (
@@ -90,36 +103,48 @@ export function HomeHero({ cities }: HomeHeroProps) {
                       </option>
                     ))}
                   </select>
-                  <div className="absolute right-3 sm:right-4 top-1/2 -translate-y-1/2 pointer-events-none">
-                    <ChevronRight size={14} className="rotate-90 text-muted-foreground" />
+                  <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none">
+                    <ChevronRight
+                      size={16}
+                      className="rotate-90 text-muted-foreground transition-transform group-focus-within:rotate-[-90deg] group-focus-within:text-primary"
+                    />
                   </div>
                 </div>
 
                 <button
                   type="submit"
-                  className="w-full sm:w-auto bg-primary text-primary-foreground font-bold rounded-lg sm:rounded-xl px-5 sm:px-6 h-12 sm:h-14 transition-all hover:opacity-90 active:scale-[0.98] flex items-center justify-center gap-2 text-sm tracking-wide"
+                  className="w-full sm:w-auto bg-primary text-primary-foreground font-bold rounded-xl px-8 h-14 transition-all hover:bg-primary/90 hover:shadow-lg hover:shadow-primary/20 active:scale-[0.98] flex items-center justify-center gap-2 text-base tracking-wide group"
                 >
-                  <Search size={16} strokeWidth={2.5} />
+                  <Search
+                    size={18}
+                    strokeWidth={2.5}
+                    className="transition-transform group-hover:scale-110"
+                  />
                   <span className="hidden sm:inline">Keşfet</span>
                   <span className="sm:hidden">Ara</span>
                 </button>
               </div>
             </form>
 
-            <div className="flex flex-wrap items-center gap-4 sm:gap-6 pt-2 sm:pt-3">
+            <div className="animate-in fade-in slide-in-from-bottom-4 duration-700 delay-500 fill-mode-both flex flex-wrap items-center gap-4 sm:gap-6 pt-2">
               <Link
                 href="/dashboard/listings/create"
-                className="text-sm font-semibold text-primary hover:underline underline-offset-4 transition"
+                className="text-sm font-semibold text-primary flex items-center gap-1 hover:underline underline-offset-4 transition group"
               >
-                Ücretsiz İlan Ver →
+                Ücretsiz İlan Ver
+                <ChevronRight
+                  size={14}
+                  className="transition-transform group-hover:translate-x-1"
+                />
               </Link>
-              <div className="flex items-center gap-3 text-xs text-muted-foreground">
-                <span className="flex items-center gap-1.5">
-                  <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
+              <div className="flex items-center gap-3 text-xs sm:text-sm text-muted-foreground font-medium">
+                <span className="flex items-center gap-1.5 bg-muted/50 px-2.5 py-1 rounded-full border border-border/50">
+                  <span className="w-2 h-2 rounded-full bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.6)] animate-pulse" />
                   7/24 Destek
                 </span>
-                <span className="hidden sm:inline">•</span>
-                <span className="hidden sm:inline">Moderasyonlu</span>
+                <span className="flex items-center gap-1.5 bg-muted/50 px-2.5 py-1 rounded-full border border-border/50">
+                  Moderasyonlu
+                </span>
               </div>
             </div>
           </div>

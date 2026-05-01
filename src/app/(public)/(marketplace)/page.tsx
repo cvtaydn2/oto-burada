@@ -81,17 +81,23 @@ export default async function HomePage() {
         <section className="max-w-7xl mx-auto px-3 sm:px-4 md:px-6 py-8 sm:py-10 md:py-12">
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 sm:gap-4 mb-6 sm:mb-8">
             <div>
-              <h2 className="text-xl sm:text-2xl font-bold text-foreground">Hızlı Keşfet</h2>
-              <p className="mt-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground/75">
+              <h2 className="text-2xl sm:text-3xl font-extrabold tracking-tight bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text text-transparent">
+                Hızlı Keşfet
+              </h2>
+              <p className="mt-2 text-xs font-bold uppercase tracking-[0.2em] text-primary/80">
                 Aradığın araca giden en kısa yol
               </p>
             </div>
             <Link
               href="/listings"
               prefetch={false}
-              className="text-sm font-medium text-primary hover:underline flex items-center gap-1 transition"
+              className="text-sm font-semibold text-primary hover:text-primary/80 flex items-center gap-1.5 transition-all group/link"
             >
-              Tümünü İncele <ChevronRight size={14} />
+              Tümünü İncele{" "}
+              <ChevronRight
+                size={16}
+                className="transition-transform group-hover/link:translate-x-1"
+              />
             </Link>
           </div>
 
@@ -109,16 +115,16 @@ export default async function HomePage() {
                     key={brand.slug}
                     href={`/satilik/${brand.slug}`}
                     prefetch={false}
-                    className="group flex items-center gap-3 rounded-2xl border border-border bg-card px-3 py-3 shadow-sm transition-colors hover:border-primary/20 hover:bg-muted/30"
+                    className="group flex items-center gap-4 rounded-2xl border border-border bg-card p-3 sm:p-4 shadow-sm transition-all duration-300 hover:border-primary/30 hover:bg-gradient-to-br hover:from-primary/5 hover:to-transparent hover:shadow-md hover:-translate-y-1"
                   >
-                    <div className="flex size-11 shrink-0 items-center justify-center rounded-xl bg-muted/70 text-muted-foreground transition-colors group-hover:bg-primary/10 group-hover:text-primary">
-                      <CarFront size={18} strokeWidth={1.9} />
+                    <div className="flex size-12 shrink-0 items-center justify-center rounded-xl bg-muted/70 text-muted-foreground transition-all duration-300 group-hover:bg-primary/10 group-hover:text-primary group-hover:scale-110">
+                      <CarFront size={20} strokeWidth={2} />
                     </div>
                     <div className="min-w-0">
-                      <h4 className="text-sm font-semibold text-foreground truncate">
+                      <h4 className="text-sm font-bold text-foreground truncate transition-colors group-hover:text-primary">
                         {brand.brand}
                       </h4>
-                      <p className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
+                      <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/80 mt-0.5">
                         {brand.models.length} model
                       </p>
                     </div>
@@ -140,16 +146,16 @@ export default async function HomePage() {
                     key={city.slug}
                     href={`/satilik-araba/${city.slug}`}
                     prefetch={false}
-                    className="group flex items-center gap-3 rounded-2xl border border-border bg-card px-3 py-3 shadow-sm transition-colors hover:border-primary/20 hover:bg-muted/30"
+                    className="group flex items-center gap-4 rounded-2xl border border-border bg-card p-3 sm:p-4 shadow-sm transition-all duration-300 hover:border-primary/30 hover:bg-gradient-to-br hover:from-primary/5 hover:to-transparent hover:shadow-md hover:-translate-y-1"
                   >
-                    <div className="flex size-10 items-center justify-center rounded-xl bg-muted text-muted-foreground transition-colors group-hover:bg-primary/10 group-hover:text-primary">
-                      <MapPin size={18} />
+                    <div className="flex size-12 shrink-0 items-center justify-center rounded-xl bg-muted/70 text-muted-foreground transition-all duration-300 group-hover:bg-primary/10 group-hover:text-primary group-hover:scale-110">
+                      <MapPin size={20} strokeWidth={2} />
                     </div>
                     <div className="min-w-0">
-                      <h4 className="text-sm font-semibold text-foreground truncate">
+                      <h4 className="text-sm font-bold text-foreground truncate transition-colors group-hover:text-primary">
                         {city.city}
                       </h4>
-                      <p className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
+                      <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/80 mt-0.5">
                         {city.districts.length} ilçe
                       </p>
                     </div>
@@ -164,16 +170,20 @@ export default async function HomePage() {
         {featuredListings.length > 0 && (
           <section className="bg-muted/30 py-8 sm:py-10 md:py-12">
             <div className="max-w-7xl mx-auto px-3 sm:px-4 md:px-6">
-              <div className="flex justify-between items-center mb-6">
-                <h2 className="text-xl sm:text-2xl font-bold text-foreground">
+              <div className="flex justify-between items-center mb-8">
+                <h2 className="text-2xl sm:text-3xl font-extrabold tracking-tight bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text text-transparent">
                   Vitrindeki İlanlar
                 </h2>
                 <Link
                   href="/listings"
                   prefetch={false}
-                  className="text-sm font-medium text-primary hover:underline flex items-center"
+                  className="text-sm font-semibold text-primary hover:text-primary/80 flex items-center gap-1.5 transition-all group/link"
                 >
-                  Tüm İlanlara Git <ChevronRight size={14} />
+                  Tüm İlanlara Git{" "}
+                  <ChevronRight
+                    size={16}
+                    className="transition-transform group-hover/link:translate-x-1"
+                  />
                 </Link>
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">
@@ -194,14 +204,20 @@ export default async function HomePage() {
 
         {/* Latest Listings */}
         <section className="max-w-7xl mx-auto px-3 sm:px-4 md:px-6 py-8 sm:py-10 md:py-12">
-          <div className="flex justify-between items-center mb-6">
-            <h2 className="text-xl sm:text-2xl font-bold text-foreground">Yeni İlanlar</h2>
+          <div className="flex justify-between items-center mb-8">
+            <h2 className="text-2xl sm:text-3xl font-extrabold tracking-tight bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text text-transparent">
+              Yeni İlanlar
+            </h2>
             <Link
               href="/listings"
               prefetch={false}
-              className="text-sm font-medium text-primary hover:underline flex items-center"
+              className="text-sm font-semibold text-primary hover:text-primary/80 flex items-center gap-1.5 transition-all group/link"
             >
-              Tümünü Gör <ChevronRight size={14} />
+              Tümünü Gör{" "}
+              <ChevronRight
+                size={16}
+                className="transition-transform group-hover/link:translate-x-1"
+              />
             </Link>
           </div>
           {latestListings.length > 0 ? (
@@ -240,12 +256,13 @@ export default async function HomePage() {
         {/* Trust Section */}
         <section className="bg-muted/30 py-10 sm:py-12 md:py-16 border-y border-border">
           <div className="max-w-7xl mx-auto px-3 sm:px-4 md:px-6">
-            <div className="text-center mb-8 sm:mb-10">
-              <h2 className="text-xl sm:text-2xl md:text-3xl font-bold text-foreground mb-2">
+            <div className="text-center mb-10 sm:mb-14">
+              <h2 className="text-2xl sm:text-3xl md:text-4xl font-extrabold tracking-tight bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text text-transparent mb-4">
                 Güvenilir Araç Pazarı
               </h2>
-              <p className="text-sm text-muted-foreground">
-                Tüm ilanlar moderasyondan geçer ve şeffaf fiyatlandırma ile sunulur.
+              <p className="text-base text-muted-foreground max-w-2xl mx-auto">
+                Tüm ilanlar moderasyondan geçer ve şeffaf fiyatlandırma ile sunulur. Hayalindeki
+                araca güvenle ulaş.
               </p>
             </div>
 
@@ -269,13 +286,13 @@ export default async function HomePage() {
               ].map((item, i) => (
                 <div
                   key={i}
-                  className="bg-card border border-border p-5 sm:p-6 rounded-2xl transition-colors hover:bg-muted/50"
+                  className="bg-card border border-border p-6 sm:p-8 rounded-2xl transition-all duration-500 hover:border-primary/20 hover:shadow-xl hover:shadow-primary/5 hover:-translate-y-1.5 group"
                 >
-                  <div className="size-12 rounded-xl bg-primary/10 text-primary flex items-center justify-center mb-4">
+                  <div className="size-14 rounded-2xl bg-primary/10 text-primary flex items-center justify-center mb-6 transition-transform duration-500 group-hover:scale-110 group-hover:rotate-3">
                     {item.icon}
                   </div>
-                  <h3 className="text-base font-bold text-card-foreground mb-2">{item.title}</h3>
-                  <p className="text-sm text-muted-foreground">{item.desc}</p>
+                  <h3 className="text-lg font-bold text-card-foreground mb-3">{item.title}</h3>
+                  <p className="text-sm text-muted-foreground leading-relaxed">{item.desc}</p>
                 </div>
               ))}
             </div>
@@ -286,27 +303,27 @@ export default async function HomePage() {
         <section className="bg-background py-10 sm:py-12 md:py-16">
           <div className="max-w-7xl mx-auto px-3 sm:px-4 md:px-6">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 sm:gap-10">
-              <div>
-                <h2 className="text-xl sm:text-2xl font-bold text-foreground mb-4">
+              <div className="flex flex-col justify-center">
+                <h2 className="text-2xl sm:text-3xl font-extrabold tracking-tight bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text text-transparent mb-6">
                   Neden OtoBurada?
                 </h2>
-                <p className="text-muted-foreground mb-6">
-                  OtoBurada ile ikinci el araba alım satım işlemlerinizi hızlı ve güvenli şekilde
-                  gerçekleştirin.
+                <p className="text-base text-muted-foreground mb-8">
+                  OtoBurada ile ikinci el araba alım satım işlemlerinizi hızlı, şeffaf ve güvenli
+                  bir şekilde gerçekleştirin. Sizi anlayan, modern bir pazaryeri deneyimi sunuyoruz.
                 </p>
-                <ul className="space-y-3">
+                <ul className="space-y-4">
                   {[
-                    "Ücretsiz ilan verme ve hızlı satış imkanı",
-                    "Moderasyondan geçen ilanlar ve güvenilir satıcı profilleri",
-                    "Gelişmiş filtreleme ile doğru araca 3 adımda ulaşım",
-                    "WhatsApp üzerinden doğrudan satıcı iletişimi",
-                    "Mobil uyumlu, hızlı ve sade kullanıcı deneyimi",
+                    "Ücretsiz ilan verme ve anında onaya sunma imkanı",
+                    "Uzman moderasyon ekibi ile güvenilir satıcı profilleri",
+                    "Gelişmiş filtreleme ile doğru araca 3 adımda hızlı ulaşım",
+                    "WhatsApp üzerinden anında, kesintisiz satıcı iletişimi",
+                    "Mobil uyumlu, yüksek performanslı premium kullanıcı deneyimi",
                   ].map((benefit, index) => (
-                    <li key={index} className="flex items-center gap-3 text-sm">
-                      <div className="size-5 rounded-full bg-primary/10 text-primary flex items-center justify-center shrink-0">
-                        <CheckCircle2 size={12} />
+                    <li key={index} className="flex items-center gap-4 text-sm font-medium">
+                      <div className="size-6 rounded-full bg-primary/10 text-primary flex items-center justify-center shrink-0 shadow-sm">
+                        <CheckCircle2 size={14} strokeWidth={3} />
                       </div>
-                      <span className="text-foreground/80">{benefit}</span>
+                      <span className="text-foreground/90 leading-snug">{benefit}</span>
                     </li>
                   ))}
                 </ul>
