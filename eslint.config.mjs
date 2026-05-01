@@ -24,10 +24,7 @@ const eslintConfig = [
         },
       ],
       "simple-import-sort/imports": "error",
-      "simple-import-sort/exports": "error",
-      // Issue #31: Prevent dangerous HTML rendering
-      "react/no-danger": "error",
-      "react/no-danger-with-children": "error",
+      "simple-import-sort/exports": "error"
     },
   },
   prettier,

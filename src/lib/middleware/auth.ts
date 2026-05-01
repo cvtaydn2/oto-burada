@@ -41,16 +41,9 @@ export function handleAuthRedirects(
     return NextResponse.redirect(redirectUrl);
   }
 
-  // Non-admin users -> /dashboard
-  if (user && routeInfo.isAdminRoute) {
-    const isAdmin = (user.app_metadata as { role?: string })?.role === "admin";
-    if (!isAdmin) {
-      const redirectUrl = request.nextUrl.clone();
-      redirectUrl.pathname = "/dashboard";
-      redirectUrl.search = "";
-      return NextResponse.redirect(redirectUrl);
-    }
-  }
+  // Admin route check is handled by server components (requireAdminUser)
+  // to support database-based role verification which is more reliable than JWT metadata.
+  // We allow the request to proceed here.
 
   // Authenticated users on auth routes -> /dashboard
   if (user && routeInfo.isAuthRoute) {

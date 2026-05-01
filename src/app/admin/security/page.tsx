@@ -1,10 +1,10 @@
 import { AlertTriangle, Ban, Shield, TrendingUp } from "lucide-react";
-import { redirect } from "next/navigation";
+import Link from "next/link";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { getCurrentUser } from "@/lib/auth/session";
+import { logger } from "@/lib/logging/logger";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { hasSupabaseAdminEnv } from "@/lib/supabase/env";
 
@@ -27,7 +27,11 @@ interface BannedIP {
 }
 
 async function getAbuseData() {
-  if (!hasSupabaseAdminEnv()) return { logs: [], bannedIPs: [], stats: null };
+  if (!hasSupabaseAdminEnv()) {
+    throw new Error(
+      "Kritik Yapılandırma Hatası: SUPABASE_SERVICE_ROLE_KEY eksik. Güvenlik verilerine erişilemiyor."
+    );
+  }
 
   const admin = createSupabaseAdminClient();
 
@@ -68,12 +72,36 @@ async function getAbuseData() {
 }
 
 export default async function SecurityPage() {
-  const user = await getCurrentUser();
-  if (!user || user.role !== "admin") {
-    redirect("/");
+  // Redundant: AdminLayout already calls requireAdminUser()
+  // But we keep a try-catch for the data fetching which requires service role key
+
+  let data;
+  try {
+    data = await getAbuseData();
+  } catch (error) {
+    logger.security.error("[SecurityPage] Failed to fetch abuse data", error);
+    return (
+      <div className="p-8 bg-destructive/10 border border-destructive/20 rounded-2xl text-destructive">
+        <h2 className="text-xl font-bold mb-2 flex items-center gap-2">
+          <AlertTriangle className="w-6 h-6" />
+          Veri Erişim Hatası
+        </h2>
+        <p className="text-sm opacity-90">
+          {(error as Error).message ||
+            "Güvenlik verileri alınırken bir hata oluştu. Lütfen ortam değişkenlerini (SUPABASE_SERVICE_ROLE_KEY) kontrol edin."}
+        </p>
+        <Button
+          variant="outline"
+          className="mt-4 border-destructive/30 hover:bg-destructive/10"
+          asChild
+        >
+          <Link href="/admin">Geri Dön</Link>
+        </Button>
+      </div>
+    );
   }
 
-  const { logs, bannedIPs, stats } = await getAbuseData();
+  const { logs, bannedIPs, stats } = data;
 
   const reasonColors: Record<string, string> = {
     honeypot: "bg-red-100 text-red-800",

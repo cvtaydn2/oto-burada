@@ -2,8 +2,7 @@ import type { PropsWithChildren } from "react";
 
 import { PublicShell } from "@/components/layout/public-shell";
 
-export const dynamic = "force-dynamic";
-export const revalidate = 0;
+export const revalidate = 60;
 
 export default async function PublicLayout({ children }: PropsWithChildren) {
   // We intentionally do not block rendering here for maintenance mode.

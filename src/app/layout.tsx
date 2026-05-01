@@ -11,8 +11,8 @@ import { LazyClientWidgets } from "@/components/shared/lazy-client-widgets";
 import { getCurrentUser } from "@/lib/auth/session";
 import { getAppUrl } from "@/lib/seo";
 
-export const dynamic = "force-dynamic";
-export const revalidate = 0;
+// Default behavior is preferred for better performance and Speed Insights
+// Individual pages should define their dynamic behavior if needed
 
 const inter = Inter({
   subsets: ["latin", "latin-ext"],
@@ -112,6 +112,9 @@ export default async function RootLayout({
     <html lang="tr" className={`${inter.variable} ${outfit.variable}`} suppressHydrationWarning>
       <head>
         <link rel="preconnect" href="https://images.unsplash.com" />
+        {process.env.NEXT_PUBLIC_SUPABASE_URL && (
+          <link rel="preconnect" href={new URL(process.env.NEXT_PUBLIC_SUPABASE_URL).origin} />
+        )}
       </head>
       <body className="min-h-screen bg-background font-sans antialiased selection:bg-primary/10 selection:text-primary">
         <RootProviders user={user} nonce={nonce}>

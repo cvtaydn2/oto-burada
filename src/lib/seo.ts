@@ -13,13 +13,14 @@ export function getAppUrl() {
     return "https://www.otoburada.com.tr";
   }
 
-  // Priority 2: Explicit override via env variable (can be used for testing)
+  // Priority 2: Explicit override via env variable
   if (process.env.NEXT_PUBLIC_APP_URL) {
     return process.env.NEXT_PUBLIC_APP_URL;
   }
 
   // Priority 3: Vercel preview domain
-  if (process.env.NEXT_PUBLIC_VERCEL_URL) {
+  // BUG FIX: Ensure VERCEL_URL is actually present before prepending https://
+  if (process.env.NEXT_PUBLIC_VERCEL_URL && process.env.NEXT_PUBLIC_VERCEL_URL.trim() !== "") {
     return `https://${process.env.NEXT_PUBLIC_VERCEL_URL}`;
   }
 
@@ -28,7 +29,16 @@ export function getAppUrl() {
 }
 
 export function buildAbsoluteUrl(path: string) {
-  return new URL(path, getAppUrl()).toString();
+  try {
+    const baseUrl = getAppUrl();
+    // Ensure path starts with / if it's not an absolute URL
+    const safePath = path.startsWith("http") ? path : path.startsWith("/") ? path : `/${path}`;
+    return new URL(safePath, baseUrl).toString();
+  } catch (error) {
+    console.error("[SEO] Failed to build absolute URL:", { path, error });
+    // Emergency fallback to avoid crashing the entire page/metadata generation
+    return path;
+  }
 }
 
 export function buildListingsMetadata(filters: ListingFilters): Metadata {

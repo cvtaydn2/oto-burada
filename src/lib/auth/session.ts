@@ -124,23 +124,63 @@ export async function requireAdminUser() {
   const { user, dbProfile } = await getAuthContext();
 
   if (!user) {
+    logger.auth.info("[requireAdminUser] No user session found. Redirecting to login.");
     redirect("/login");
   }
 
-  // 1. Primary auth check - must be signed in
-  // 2. Secondary DB check is the source of truth for admin role and ban status
-  if (!process.env.SUPABASE_SERVICE_ROLE_KEY) {
-    if (process.env.NODE_ENV === "production") {
-      throw new Error("SUPABASE_SERVICE_ROLE_KEY is required in production");
+  const isProd = process.env.NODE_ENV === "production";
+  const hasServiceKey = !!process.env.SUPABASE_SERVICE_ROLE_KEY;
+  const isJwtAdmin = (user.app_metadata as { role?: string })?.role === "admin";
+  const isVerifiedAdmin = dbProfile?.role === "admin" && !dbProfile.isBanned;
+
+  // 1. If verified admin, allow access immediately
+  if (isVerifiedAdmin) {
+    return user;
+  }
+
+  // 2. Handle cases where they are NOT a verified admin
+
+  // Development fallback: If no service key and not in production, trust JWT
+  if (!isProd && !hasServiceKey && isJwtAdmin) {
+    logger.auth.info(
+      "[requireAdminUser] Development fallback: Admin access granted via JWT metadata (DB check skipped due to missing service key)"
+    );
+    return user;
+  }
+
+  // 3. Deny access with specific reasons for admins vs regular users
+  logger.auth.warn("[requireAdminUser] Access denied.", {
+    userId: user.id,
+    email: user.email,
+    dbRole: dbProfile?.role,
+    jwtRole: isJwtAdmin ? "admin" : "user",
+    hasServiceKey,
+    isProd,
+  });
+
+  // If they are an admin in JWT but failed verification
+  if (isJwtAdmin) {
+    if (!hasServiceKey) {
+      logger.auth.error(
+        "[requireAdminUser] CRITICAL: SUPABASE_SERVICE_ROLE_KEY is missing in production. Admin verification impossible."
+      );
+      throw new Error("Kritik Yapılandırma Hatası: Admin yetkisi doğrulanamadı.");
     }
-    redirect("/dashboard");
+    if (dbProfile?.isBanned) {
+      throw new Error("Hesabınız askıya alınmıştır.");
+    }
+    if (!dbProfile) {
+      logger.auth.error(
+        "[requireAdminUser] Admin profile not found in DB for user with admin JWT claim",
+        { userId: user.id }
+      );
+      throw new Error("Admin profili bulunamadı. Lütfen tekrar giriş yapın.");
+    }
+    throw new Error("Bu alana erişim yetkiniz bulunmamaktadır.");
   }
 
-  if (!dbProfile || dbProfile.role !== "admin" || dbProfile.isBanned) {
-    redirect("/dashboard");
-  }
-
-  return user;
+  // Regular users get redirected to home
+  redirect("/");
 }
 
 export async function getAuthenticatedUserOrThrow() {
