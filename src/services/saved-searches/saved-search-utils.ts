@@ -5,7 +5,13 @@ import type { ListingFilters } from "@/types";
 type NormalizedSavedSearchFilters = Omit<ListingFilters, "limit" | "page">;
 
 export function normalizeSavedSearchFilters(filters: ListingFilters): NormalizedSavedSearchFilters {
-  const parsed = listingFiltersSchema.parse(filters);
+  const parsedResult = listingFiltersSchema.safeParse(filters);
+  const parsed = parsedResult.success
+    ? parsedResult.data
+    : {
+        ...filters,
+        sort: filters.sort ?? "newest",
+      };
 
   return {
     query: parsed.query,

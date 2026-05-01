@@ -42,7 +42,7 @@ export async function POST(req: NextRequest) {
     // Get user profile for buyer info
     const { data: profile } = await supabase
       .from("profiles")
-      .select("full_name, phone, city, identity_number, business_address")
+      .select("full_name, phone, city, business_address")
       .eq("id", user.id)
       .single();
 

@@ -1,6 +1,5 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-
 import { logger } from "@/lib/logging/logger";
+import { decryptIdentityNumber, encryptIdentityNumber } from "@/lib/security/identity-number";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 
 import { getIyzicoClient } from "./iyzico-client";
@@ -39,7 +38,7 @@ export async function initializePaymentCheckout(params: {
   }
 
   // SECURITY: Get user's identity number from profile
-  let profile;
+  let profile: { identity_number: string | null } | null = null;
   try {
     // USE SERVER CLIENT: Enforce RLS on profile access
     const { data, error: profileError } = await supabase
@@ -59,18 +58,26 @@ export async function initializePaymentCheckout(params: {
   }
 
   // KVKK Compliance: Identity number is required for Iyzico
-  if (!profile?.identity_number || profile.identity_number.length !== 11) {
+  const identityNumber = decryptIdentityNumber(profile?.identity_number);
+
+  if (!identityNumber || identityNumber.length !== 11) {
     throw new Error(
       "Ödeme yapabilmek için TC Kimlik Numaranızı profil ayarlarınızdan eklemeniz gerekmektedir."
     );
   }
 
   // Validate identity number format (basic check)
-  if (!/^\d{11}$/.test(profile.identity_number)) {
+  if (!/^\d{11}$/.test(identityNumber)) {
     throw new Error("Geçersiz TC Kimlik Numarası formatı. 11 haneli sayı olmalıdır.");
   }
 
-  const identityNumber = profile.identity_number;
+  // Migrate legacy plaintext values on first secure read.
+  if (profile?.identity_number && !profile.identity_number.startsWith("enc:v1:")) {
+    await supabase
+      .from("profiles")
+      .update({ identity_number: encryptIdentityNumber(identityNumber) })
+      .eq("id", params.userId);
+  }
 
   // 1. SECURITY: Cancel any recent pending payments for same user+listing+package
   // This prevents duplicate pending records if user retries payment
@@ -198,32 +205,35 @@ export async function initializePaymentCheckout(params: {
   try {
     return await withTimeout(
       new Promise<{ paymentPageUrl: string; token: string }>((resolve, reject) => {
-        iyzico.checkoutFormInitialize.create(request, async (err: any, result: any) => {
-          if (err || result.status !== "success") {
-            // Update payment record as failed
+        iyzico.checkoutFormInitialize.create(
+          request,
+          async (err: IyzicoError | null, result: IyzicoInitResult) => {
+            if (err || result.status !== "success") {
+              // Update payment record as failed
+              await supabase
+                .from("payments")
+                .update({
+                  status: "failure",
+                  metadata: { ...(payment.metadata ?? {}), error: err || result },
+                })
+                .eq("id", payment.id);
+
+              reject(new Error(result?.errorMessage || "Iyzico initialization failed"));
+              return;
+            }
+
+            // Update payment with token
             await supabase
               .from("payments")
-              .update({
-                status: "failure",
-                metadata: { ...(payment.metadata ?? {}), error: err || result },
-              })
+              .update({ iyzico_token: result.token })
               .eq("id", payment.id);
 
-            reject(new Error(result?.errorMessage || "Iyzico initialization failed"));
-            return;
+            resolve({
+              paymentPageUrl: result.paymentPageUrl ?? "",
+              token: result.token ?? "",
+            });
           }
-
-          // Update payment with token
-          await supabase
-            .from("payments")
-            .update({ iyzico_token: result.token })
-            .eq("id", payment.id);
-
-          resolve({
-            paymentPageUrl: result.paymentPageUrl,
-            token: result.token,
-          });
-        });
+        );
       }),
       15_000
     );
@@ -262,61 +272,64 @@ export async function retrievePaymentResult(token: string, userId: string) {
   return withTimeout(
     new Promise<{ status: string; paymentId: string; conversationId: string }>(
       (resolve, reject) => {
-        iyzico.checkoutForm.retrieve({ locale: "tr", token }, async (err: any, result: any) => {
-          if (err || result.status !== "success") {
-            reject(new Error(result.errorMessage || "Iyzico retrieval failed"));
-            return;
-          }
-
-          const iyzicoStatus = result.paymentStatus;
-
-          if (iyzicoStatus === "SUCCESS") {
-            // Atomic update: only transitions from 'pending' → 'success'
-            // ── BUG FIX: Add proper error handling for RPC failure
-            const { data: confirmResult, error: rpcError } = await supabase.rpc(
-              "confirm_payment_success",
-              {
-                p_iyzico_token: token,
-                p_user_id: userId,
-                p_iyzico_payment_id: result.paymentId,
-              }
-            );
-
-            if (rpcError || !confirmResult?.success) {
-              logger.payments.error("Payment confirmation RPC failed", {
-                rpcError,
-                confirmResult,
-                token,
-                userId,
-              });
-              reject(
-                new Error(
-                  confirmResult?.error ||
-                    "Ödeme onaylanamadı. Lütfen destek ekibiyle iletişime geçin."
-                )
-              );
+        iyzico.checkoutForm.retrieve(
+          { locale: "tr", token },
+          async (err: IyzicoError | null, result: IyzicoRetrieveResult) => {
+            if (err || result.status !== "success") {
+              reject(new Error(result.errorMessage || "Iyzico retrieval failed"));
               return;
             }
-          } else {
-            // Failed/cancelled — mark as failure atomically
-            await supabase
-              .from("payments")
-              .update({
-                status: "failure",
-                iyzico_payment_id: result.paymentId,
-                processed_at: new Date().toISOString(),
-              })
-              .eq("iyzico_token", token)
-              .eq("user_id", userId)
-              .eq("status", "pending"); // Only update if still pending
-          }
 
-          resolve({
-            status: iyzicoStatus === "SUCCESS" ? "paid" : "failed",
-            paymentId: result.paymentId,
-            conversationId: result.conversationId,
-          });
-        });
+            const iyzicoStatus = result.paymentStatus;
+
+            if (iyzicoStatus === "SUCCESS") {
+              // Atomic update: only transitions from 'pending' → 'success'
+              // ── BUG FIX: Add proper error handling for RPC failure
+              const { data: confirmResult, error: rpcError } = await supabase.rpc(
+                "confirm_payment_success",
+                {
+                  p_iyzico_token: token,
+                  p_user_id: userId,
+                  p_iyzico_payment_id: result.paymentId,
+                }
+              );
+
+              if (rpcError || !confirmResult?.success) {
+                logger.payments.error("Payment confirmation RPC failed", {
+                  rpcError,
+                  confirmResult,
+                  token,
+                  userId,
+                });
+                reject(
+                  new Error(
+                    confirmResult?.error ||
+                      "Ödeme onaylanamadı. Lütfen destek ekibiyle iletişime geçin."
+                  )
+                );
+                return;
+              }
+            } else {
+              // Failed/cancelled — mark as failure atomically
+              await supabase
+                .from("payments")
+                .update({
+                  status: "failure",
+                  iyzico_payment_id: result.paymentId,
+                  processed_at: new Date().toISOString(),
+                })
+                .eq("iyzico_token", token)
+                .eq("user_id", userId)
+                .eq("status", "pending"); // Only update if still pending
+            }
+
+            resolve({
+              status: iyzicoStatus === "SUCCESS" ? "paid" : "failed",
+              paymentId: result.paymentId,
+              conversationId: result.conversationId,
+            });
+          }
+        );
       }
     ),
     15_000 // 15s timeout
@@ -335,4 +348,23 @@ function withTimeout<T>(promise: Promise<T>, ms: number): Promise<T> {
   return Promise.race([promise, timeoutPromise]).finally(() => {
     clearTimeout(timeoutId);
   });
+}
+interface IyzicoInitResult {
+  status: "success" | "failure";
+  token?: string;
+  paymentPageUrl?: string;
+  errorMessage?: string;
+}
+
+interface IyzicoRetrieveResult {
+  status: "success" | "failure";
+  paymentStatus?: string;
+  paymentId: string;
+  conversationId: string;
+  errorMessage?: string;
+}
+
+interface IyzicoError {
+  errorCode?: string;
+  errorMessage?: string;
 }

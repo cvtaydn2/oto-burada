@@ -1,3 +1,4 @@
+import { decryptIdentityNumber, maskIdentityNumber } from "@/lib/security/identity-number";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 
 export interface UserPaymentRecord {
@@ -75,6 +76,7 @@ export interface UserDetailData {
 }
 
 export function mapProfile(p: Record<string, unknown>, email = ""): UserProfile {
+  const decryptedIdentity = decryptIdentityNumber((p.identity_number as string | null) ?? null);
   return {
     id: p.id as string,
     email,
@@ -95,7 +97,7 @@ export function mapProfile(p: Record<string, unknown>, email = ""): UserProfile 
     trustScore: (p.trust_score as number) || 0,
     verificationStatus: (p.verification_status as UserProfile["verificationStatus"]) || "none",
     emailVerified: (p.email_verified as boolean) || false,
-    identityNumber: p.identity_number as string | null,
+    identityNumber: maskIdentityNumber(decryptedIdentity),
   };
 }
 

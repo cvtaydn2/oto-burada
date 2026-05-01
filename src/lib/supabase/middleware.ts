@@ -107,8 +107,12 @@ export async function updateSession(request: NextRequest) {
       } = await supabase.auth.getUser();
 
       if (authError) {
-        // Log error but don't throw - user will be treated as guest
-        console.error("[updateSession] Auth error:", authError.message);
+        // Missing session is expected for guest users; avoid noisy error-level logs.
+        if (authError.message?.toLowerCase().includes("auth session missing")) {
+          console.warn("[updateSession] Guest session:", authError.message);
+        } else {
+          console.error("[updateSession] Auth error:", authError.message);
+        }
       } else {
         user = fetchedUser;
       }

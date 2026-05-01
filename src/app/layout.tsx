@@ -104,6 +104,9 @@ export default async function RootLayout({
 }>) {
   const user = await getCurrentUser();
   const nonce = (await headers()).get("x-nonce") ?? undefined;
+  const isProd = process.env.NODE_ENV === "production";
+  const analyticsEnabled = process.env.NEXT_PUBLIC_ENABLE_VERCEL_ANALYTICS !== "false";
+  const speedInsightsEnabled = process.env.NEXT_PUBLIC_ENABLE_VERCEL_SPEED_INSIGHTS !== "false";
 
   return (
     <html lang="tr" className={`${inter.variable} ${outfit.variable}`} suppressHydrationWarning>
@@ -113,8 +116,8 @@ export default async function RootLayout({
       <body className="min-h-screen bg-background font-sans antialiased selection:bg-primary/10 selection:text-primary">
         <RootProviders user={user} nonce={nonce}>
           {children}
-          <Analytics />
-          <SpeedInsights />
+          {isProd && analyticsEnabled ? <Analytics /> : null}
+          {isProd && speedInsightsEnabled ? <SpeedInsights /> : null}
           <LazyClientWidgets />
         </RootProviders>
       </body>

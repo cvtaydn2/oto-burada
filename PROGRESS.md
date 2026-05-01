@@ -1,5 +1,124 @@
 # PROGRESS — OtoBurada Production Readiness ✅
 
+## 10. KVKK & Payment Security Hardening (Phase 63 Follow-up)
+
+**Date**: 2026-05-01  
+**Status**: ✅ COMPLETED  
+**Scope**: Identity number data minimization, masking, and payment service type safety.
+
+### 10.1 Completed
+- Added `src/lib/security/identity-number.ts` for:
+  - deterministic masking (`*******1234` format),
+  - AES-GCM encryption/decryption helpers (`enc:v1:` payload format),
+  - backward-compatible plaintext fallback.
+- Hardened `src/services/payments/payment-logic.ts`:
+  - removed `any` callback typing in Iyzico flow,
+  - switched identity number read path to decrypted value,
+  - added lazy migration of legacy plaintext identity values to encrypted format on first secure read.
+- Hardened `src/services/admin/user-details.ts`:
+  - stopped returning raw `identity_number`,
+  - now returns masked identity only.
+- Data minimization fix in `src/app/api/payments/initialize/route.ts`:
+  - removed unnecessary `identity_number` selection from profile pre-check query.
+- Dependency stability:
+  - pinned `next` to exact `16.2.4` (removed caret),
+  - aligned `eslint-config-next` to `16.2.4`.
+
+### 10.2 Validation
+- ✅ `npm run typecheck`
+- ✅ `npm run lint`
+
+### 10.3 Next Step
+- Add dedicated DB migration for `identity_number_encrypted` column + controlled read/write RPC, then migrate all existing records in one-shot to fully remove plaintext column usage.
+
+## 11. Migration Collision Cleanup & MCP Setup
+
+**Date**: 2026-05-01  
+**Status**: ✅ COMPLETED  
+**Scope**: Duplicate migration number cleanup + Supabase/Vercel MCP installation.
+
+### 11.1 Completed
+- Resolved duplicate migration numbers by renaming:
+  - `0024_fix-storage-bucket-policies.sql` → `0029_fix-storage-bucket-policies.sql`
+  - `0121_harden_payment_and_doping_security.sql` → `0124_harden_payment_and_doping_security.sql`
+  - `0122_restore_essential_rpc_permissions.sql` → `0125_restore_essential_rpc_permissions.sql`
+- Verified migration numbering has no duplicates via filesystem check.
+- Installed official MCP servers into project config:
+  - Supabase MCP: `https://mcp.supabase.com/mcp`
+  - Vercel MCP: `https://mcp.vercel.com`
+- Confirmed installation in:
+  - `.mcp.json`
+  - `.vscode/mcp.json`
+  - `opencode.json` (installer output confirmation)
+
+### 11.2 Validation
+- ✅ `npm run lint`
+- ✅ `npm run typecheck`
+
+## 12. Migration Governance & Vercel Telemetry Hardening
+
+**Date**: 2026-05-01  
+**Status**: ✅ COMPLETED  
+**Scope**: Non-destructive migration cleanup strategy + production-focused Vercel telemetry controls.
+
+### 12.1 Completed
+- Migration manager enhanced with active-list support:
+  - Added `database/migrations/.active-migrations.txt` support in `scripts/migration-manager.mjs`.
+  - Added new command: `node scripts/migration-manager.mjs sync-active-list`.
+  - Migration execution now supports deterministic subset control without deleting history.
+- Generated active list for current repository (`115` migration files).
+- Added migration governance doc:
+  - `database/migrations/README.md`
+- Hardened consolidation workflow:
+  - `scripts/consolidate-migrations.mjs` converted to non-destructive mode.
+  - Removed dangerous behavior that could wipe `_migrations` tracking or remove historical files.
+- Vercel telemetry optimization:
+  - `src/app/layout.tsx` now renders `Analytics` and `SpeedInsights` only in production and only when enabled via env flags.
+- Env contract updates:
+  - Added `NEXT_PUBLIC_ENABLE_VERCEL_ANALYTICS`
+  - Added `NEXT_PUBLIC_ENABLE_VERCEL_SPEED_INSIGHTS`
+  - Added `IDENTITY_ENCRYPTION_KEY`
+
+### 12.2 Validation
+- ✅ `npm run lint`
+- ✅ `npm run typecheck`
+
+## 13. Migration Status Resilience (No-DB Mode)
+
+**Date**: 2026-05-01  
+**Status**: ✅ COMPLETED  
+**Scope**: Prevent migration status command from failing hard when `psql`/DB access is unavailable.
+
+### 13.1 Completed
+- Updated `scripts/migration-manager.mjs`:
+  - `loadAppliedMigrations()` now fails gracefully and returns connection state.
+  - `getStatus()` now includes `databaseConnected` + `databaseError`.
+  - `status` command now reports local-only mode when DB connection is not available instead of exiting with fatal error.
+
+### 13.2 Validation
+- ✅ `npm run db:migrate:status` now exits successfully even when `psql` is blocked (`EPERM`), with explicit warning and reason.
+
+## 14. Vercel Runtime Error Remediation
+
+**Date**: 2026-05-01  
+**Status**: ✅ COMPLETED  
+**Scope**: Fix production log noise and Zod crash path discovered via Vercel log analysis.
+
+### 14.1 Findings from Vercel Logs
+- `Auth session missing` messages were logged at error level for guest requests on `/login`, `/register`, and protected redirects.
+- `ZodError` was thrown on `/satilik-araba/[city]` path through saved-search filter normalization path when partial filter objects were parsed strictly.
+
+### 14.2 Fixes Applied
+- Updated `src/lib/supabase/middleware.ts`:
+  - Treat expected guest session absence as warning-level signal instead of error-level noise.
+- Updated `src/services/saved-searches/saved-search-utils.ts`:
+  - Replaced `listingFiltersSchema.parse()` with `safeParse()` fallback logic to prevent runtime throw on partial/legacy filter payloads.
+
+### 14.3 Validation
+- ✅ `npm run lint`
+- ✅ `npm run typecheck`
+- ✅ `npm run build`
+
 ## 1. COMPLETED TASKS
 
 ### 1.1 ACCESSIBILITY (A11Y) HARDENING
