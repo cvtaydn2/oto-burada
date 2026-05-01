@@ -1,10 +1,10 @@
-import { createSupabaseBrowserClient } from "@/lib/supabase/browser";
+import { getSupabaseClient } from "@/lib/supabase/client-factory";
 
 /**
  * Get approved public questions for a listing
  */
 export async function getListingQuestions(listingId: string) {
-  const supabase = createSupabaseBrowserClient();
+  const supabase = await getSupabaseClient();
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const result = await (supabase as any)
@@ -39,7 +39,7 @@ export async function getListingQuestions(listingId: string) {
  * Get all questions for a listing (for the listing owner)
  */
 export async function getOwnerListingQuestions(listingId: string) {
-  const supabase = createSupabaseBrowserClient();
+  const supabase = await getSupabaseClient();
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const result = await (supabase as any)
@@ -71,7 +71,7 @@ export async function getOwnerListingQuestions(listingId: string) {
  * Ask a question
  */
 export async function askQuestion(listingId: string, question: string) {
-  const supabase = createSupabaseBrowserClient();
+  const supabase = await getSupabaseClient();
 
   const {
     data: { user },
@@ -105,7 +105,7 @@ export async function askQuestion(listingId: string, question: string) {
  * Answer a question (Listing Owner only)
  */
 export async function answerQuestion(questionId: string, answer: string) {
-  const supabase = createSupabaseBrowserClient();
+  const supabase = await getSupabaseClient();
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const result = await (supabase as any)

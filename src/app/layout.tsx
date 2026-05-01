@@ -3,15 +3,36 @@ import "./globals.css";
 import { Analytics } from "@vercel/analytics/next";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import type { Metadata, Viewport } from "next";
+import dynamicImport from "next/dynamic";
 import { Inter, Outfit } from "next/font/google";
 import { headers } from "next/headers";
+import { Suspense } from "react";
 
 import { RootProviders } from "@/components/providers/root-providers";
-import { CookieConsent } from "@/components/shared/cookie-consent";
-import { PWAInstallPrompt } from "@/components/shared/pwa-install-prompt";
-import { WhatsAppSupport } from "@/components/shared/whatsapp-support";
 import { getCurrentUser } from "@/lib/auth/session";
 import { getAppUrl } from "@/lib/seo";
+
+// ── PERFORMANCE OPTIMIZATION: Issue #28.5 ────────────────────────────────────
+// Dynamically import non-critical client components to reduce initial bundle size
+// and improve LCP/TBT scores.
+const CookieConsent = dynamicImport(
+  () => import("@/components/shared/cookie-consent").then((m) => m.CookieConsent),
+  {
+    ssr: false,
+  }
+);
+const PWAInstallPrompt = dynamicImport(
+  () => import("@/components/shared/pwa-install-prompt").then((m) => m.PWAInstallPrompt),
+  {
+    ssr: false,
+  }
+);
+const WhatsAppSupport = dynamicImport(
+  () => import("@/components/shared/whatsapp-support").then((m) => m.WhatsAppSupport),
+  {
+    ssr: false,
+  }
+);
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -108,11 +129,7 @@ export default async function RootLayout({
   const nonce = (await headers()).get("x-nonce") ?? undefined;
 
   return (
-    <html
-      lang="tr"
-      className={`${inter.variable} ${outfit.variable}`}
-      suppressHydrationWarning // Required by next-themes to avoid mismatch when injecting theme class on the client
-    >
+    <html lang="tr" className={`${inter.variable} ${outfit.variable}`} suppressHydrationWarning>
       <head>
         <link rel="preconnect" href="https://images.unsplash.com" />
       </head>
@@ -121,9 +138,11 @@ export default async function RootLayout({
           {children}
           <Analytics />
           <SpeedInsights />
-          <CookieConsent />
-          <PWAInstallPrompt />
-          <WhatsAppSupport />
+          <Suspense fallback={null}>
+            <CookieConsent />
+            <PWAInstallPrompt />
+            <WhatsAppSupport />
+          </Suspense>
         </RootProviders>
       </body>
     </html>

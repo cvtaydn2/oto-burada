@@ -1,3 +1,5 @@
+"use client";
+
 import { LucideIcon } from "lucide-react";
 import { BarChart3, PieChart, TrendingDown, TrendingUp } from "lucide-react";
 

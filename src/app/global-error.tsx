@@ -1,5 +1,6 @@
 "use client";
 
+import * as Sentry from "@sentry/nextjs";
 import { AlertTriangle, Home, RefreshCcw } from "lucide-react";
 import Link from "next/link";
 import { useEffect } from "react";
@@ -15,6 +16,10 @@ export default function GlobalError({
   reset: () => void;
 }) {
   useEffect(() => {
+    // Capture error in Sentry
+    Sentry.captureException(error);
+
+    // Capture error in PostHog
     captureClientException(error, "global-error", { digest: error.digest });
   }, [error, error.digest]);
 

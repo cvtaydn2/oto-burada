@@ -1,5 +1,6 @@
 "use client";
 
+import imageCompression from "browser-image-compression";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 
@@ -10,6 +11,7 @@ import { createSupabaseBrowserClient } from "@/lib/supabase/browser";
  * - Uses URL.createObjectURL for instant local previews (No Main Thread Lock).
  * - Uploads immediately after selection, not on form submit.
  * - Robust error handling per-file.
+ * - NEW: Client-side compression to optimize LCP and save on storage.
  */
 
 interface UploadedFile {
@@ -24,8 +26,6 @@ interface UploadedFile {
 
 /**
  * Generates a collision-resistant client-side ID.
- * This hook is "use client" — crypto.randomUUID() is always available in modern browsers.
- * Fail-fast is intentional: if this throws, the environment is fundamentally broken.
  */
 function createClientId(): string {
   return crypto.randomUUID();
@@ -41,40 +41,55 @@ export function useMediaUpload(bucket: string = "listings") {
         prev.map((f) => (f.id === fileObj.id ? { ...f, status: "uploading" } : f))
       );
 
-      const fileExt = fileObj.file.name.split(".").pop();
-      const randomId = createClientId();
-      const fileName = `${randomId}-${Date.now()}.${fileExt}`;
+      try {
+        // ── PILL: Issue 28.5 - Client-Side Image Compression ─────────────
+        // We compress here before upload to keep our free-tier storage clean
+        // and ensure visitors don't download 10MB raw JPEGs.
+        const compressionOptions = {
+          maxSizeMB: 1,
+          maxWidthOrHeight: 1920,
+          useWebWorker: true,
+          initialQuality: 0.8,
+        };
 
-      const { data: authData } = await supabase.auth.getUser();
-      const userId = authData.user?.id;
-      if (!userId) {
-        toast.error("Oturum açık değil.");
-        return;
-      }
-      const filePath = `listings/${userId}/temp/${fileName}`;
+        const compressedFile = await imageCompression(fileObj.file, compressionOptions);
 
-      const { error } = await supabase.storage.from(bucket).upload(filePath, fileObj.file, {
-        cacheControl: "3600",
-        upsert: false,
-      });
+        const fileExt = fileObj.file.name.split(".").pop();
+        const randomId = createClientId();
+        const fileName = `${randomId}-${Date.now()}.${fileExt}`;
 
-      if (error) {
+        const { data: authData } = await supabase.auth.getUser();
+        const userId = authData.user?.id;
+
+        if (!userId) {
+          throw new Error("Oturum açık değil.");
+        }
+
+        const filePath = `listings/${userId}/temp/${fileName}`;
+
+        const { error } = await supabase.storage.from(bucket).upload(filePath, compressedFile, {
+          cacheControl: "3600",
+          upsert: false,
+          contentType: fileObj.file.type, // Maintain original content type
+        });
+
+        if (error) throw error;
+
+        const {
+          data: { publicUrl },
+        } = supabase.storage.from(bucket).getPublicUrl(filePath);
+
+        setFiles((prev) =>
+          prev.map((f) =>
+            f.id === fileObj.id ? { ...f, status: "success", url: publicUrl, filePath } : f
+          )
+        );
+      } catch (err) {
+        console.error("[MediaUpload] Failed:", err);
         toast.error(`Yükleme hatası: ${fileObj.file.name}`);
-        // Remove the file from state so the user doesn't stay with a "stuck" preview
         setFiles((prev) => prev.filter((f) => f.id !== fileObj.id));
         if (fileObj.preview) URL.revokeObjectURL(fileObj.preview);
-        return;
       }
-
-      const {
-        data: { publicUrl },
-      } = supabase.storage.from(bucket).getPublicUrl(filePath);
-
-      setFiles((prev) =>
-        prev.map((f) =>
-          f.id === fileObj.id ? { ...f, status: "success", url: publicUrl, filePath } : f
-        )
-      );
     },
     [bucket, supabase.storage, supabase.auth]
   );

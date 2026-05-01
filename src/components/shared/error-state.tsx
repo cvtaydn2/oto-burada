@@ -1,3 +1,5 @@
+"use client";
+
 import { AlertCircle, ArrowLeft, Home, RefreshCw } from "lucide-react";
 import Link from "next/link";
 

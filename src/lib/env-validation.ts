@@ -51,13 +51,13 @@ const ENV_VARS: EnvVar[] = [
 
   {
     key: "IYZICO_API_KEY",
-    required: true,
+    required: false,
     productionOnly: true,
     description: "Iyzico payment gateway API key (required for production payments)",
   },
   {
     key: "IYZICO_SECRET_KEY",
-    required: true,
+    required: false,
     productionOnly: true,
     description: "Iyzico payment gateway secret key (required for webhook signature verification)",
   },

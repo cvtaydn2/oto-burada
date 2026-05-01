@@ -1,5 +1,5 @@
-import type { NextConfig } from "next";
 import { withSentryConfig } from "@sentry/nextjs";
+import type { NextConfig } from "next";
 
 /**
  * Extracts the Supabase project hostname from the NEXT_PUBLIC_SUPABASE_URL env var.
@@ -42,7 +42,7 @@ const nextConfig: NextConfig = {
     // Added @supabase/supabase-js and posthog-js to reduce bundle size.
     // These are large packages that benefit from tree-shaking optimization.
     optimizePackageImports: [
-      "lucide-react",
+
       "date-fns",
       "clsx",
       "@supabase/supabase-js",
@@ -81,39 +81,39 @@ const nextConfig: NextConfig = {
 };
 
 export default withSentryConfig(nextConfig, {
-  // For all available options, see:
-  // https://github.com/getsentry/sentry-webpack-plugin#options
+ // For all available options, see:
+ // https://www.npmjs.com/package/@sentry/webpack-plugin#options
 
-  // Suppresses source map uploading logs during bundling
-  silent: true,
-  org: "product-jx",
-  project: "oto-burada",
+ org: "product-jx",
 
-  // For all available options, see:
-  // https://docs.sentry.io/platforms/javascript/guides/nextjs/manual-setup/
+ project: "oto-burada",
 
-  // Upload a larger set of source maps for prettier stack traces (increases build time)
-  widenClientFileUpload: true,
+ // Only print logs for uploading source maps in CI
+ silent: !process.env.CI,
 
-  // Routes browser requests to Sentry through a Next.js rewrite to circumvent ad-blockers (increases server load)
-  tunnelRoute: "/monitoring",
+ // For all available options, see:
+ // https://docs.sentry.io/platforms/javascript/guides/nextjs/manual-setup/
 
-  // Hides source maps from visitors
-  // Note: sourcemaps.deleteSourcemapsAfterUpload defaults to true
-  sourcemaps: {
-    deleteSourcemapsAfterUpload: true,
-  },
+ // Upload a larger set of source maps for prettier stack traces (increases build time)
+ widenClientFileUpload: true,
 
-  webpack: {
-    // Automatically tree-shake Sentry logger statements to reduce bundle size
-    treeshake: {
-      removeDebugLogging: true,
-    },
+ // Route browser requests to Sentry through a Next.js rewrite to circumvent ad-blockers.
+ // This can increase your server load as well as your hosting bill.
+ // Note: Check that the configured route will not match with your Next.js middleware, otherwise reporting of client-
+ // side errors will fail.
+ tunnelRoute: "/monitoring",
 
-    // Enables automatic instrumentation of Vercel Cron Monitors.
-    // See the following for more information:
-    // https://docs.sentry.io/product/crons/
-    // https://vercel.com/docs/cron-jobs
-    automaticVercelMonitors: true,
-  },
+ webpack: {
+   // Enables automatic instrumentation of Vercel Cron Monitors. (Does not yet work with App Router route handlers.)
+   // See the following for more information:
+   // https://docs.sentry.io/product/crons/
+   // https://vercel.com/docs/cron-jobs
+   automaticVercelMonitors: true,
+
+   // Tree-shaking options for reducing bundle size
+   treeshake: {
+     // Automatically tree-shake Sentry logger statements to reduce bundle size
+     removeDebugLogging: true,
+   },
+ },
 });

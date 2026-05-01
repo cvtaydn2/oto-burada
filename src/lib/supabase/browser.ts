@@ -7,19 +7,18 @@ import type { Database } from "@/types/supabase";
 let client: SupabaseClient<Database> | undefined;
 
 export function createSupabaseBrowserClient(): SupabaseClient<Database> {
-  // ── SECURITY FIX: Issue BROWSER-01 - SSR Guard for Browser Client ──────────
-  // Prevent browser client from being used in server context, which could cause
-  // session leakage across different user requests in serverless environments.
+  const { url, anonKey } = getSupabaseEnv();
+
+  // ── SSR SAFETY: Issue BROWSER-01 ──────────────────────────────────────────
+  // On server, always return a new client to avoid state leakage across requests.
+  // Client Components are rendered once on the server for initial HTML.
   if (typeof window === "undefined") {
-    throw new Error(
-      "createSupabaseBrowserClient() called in server context. Use createSupabaseServerClient() instead."
-    );
+    return createBrowserClient<Database>(url, anonKey);
   }
 
+  // On client, use singleton for performance and to keep single connection.
   if (client) return client;
 
-  const { url, anonKey } = getSupabaseEnv();
   client = createBrowserClient<Database>(url, anonKey);
-
   return client;
 }

@@ -100,10 +100,21 @@ export async function updateSession(request: NextRequest) {
     : allCookies.length > 0;
 
   if (hasSessionCookie || route.needsAuth || route.isAuthRoute) {
-    const {
-      data: { user: fetchedUser },
-    } = await supabase.auth.getUser();
-    user = fetchedUser;
+    try {
+      const {
+        data: { user: fetchedUser },
+        error: authError,
+      } = await supabase.auth.getUser();
+
+      if (authError) {
+        // Log error but don't throw - user will be treated as guest
+        console.error("[updateSession] Auth error:", authError.message);
+      } else {
+        user = fetchedUser;
+      }
+    } catch (error) {
+      console.error("[updateSession] Critical auth error:", error);
+    }
   }
 
   // 4. MAINTENANCE MODE CHECK

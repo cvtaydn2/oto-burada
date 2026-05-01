@@ -12,9 +12,8 @@ interface ViewCounterProps {
 
 export function ViewCounter({ listingId, initialCount }: ViewCounterProps) {
   const [count, setCount] = useState(initialCount);
-  const supabase = createSupabaseBrowserClient();
-
   useEffect(() => {
+    const supabase = createSupabaseBrowserClient();
     // channelRef ile cleanup garantisi — setup() async olsa bile
     // unmount öncesi oluşturulan channel temizlenir
     const channelName = `lv_${listingId.slice(0, 8)}`;
@@ -44,7 +43,7 @@ export function ViewCounter({ listingId, initialCount }: ViewCounterProps) {
       mounted = false;
       void channel.unsubscribe();
     };
-  }, [listingId, supabase]);
+  }, [listingId]);
 
   return (
     <div
