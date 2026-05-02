@@ -132,7 +132,29 @@ export async function updateSession(request: NextRequest) {
   ) {
     // PERFORMANCE BUG-K07 FIX: Do not query DB on every request.
     // Rely strictly on Environment Variables (MAINTENANCE_MODE_FORCE=true) to toggle maintenance.
-    const isMaintenanceMode = process.env.MAINTENANCE_MODE_FORCE === "true";
+    let isMaintenanceMode = process.env.MAINTENANCE_MODE_FORCE === "true";
+
+    // Check database for maintenance mode if not forced via env
+    if (!isMaintenanceMode) {
+      try {
+        const { data } = await supabase
+          .from("platform_settings")
+          .select("value")
+          .eq("key", "general_appearance")
+          .single();
+
+        if (
+          data &&
+          data.value &&
+          typeof data.value === "object" &&
+          "maintenance_mode" in data.value
+        ) {
+          isMaintenanceMode = Boolean((data.value as Record<string, unknown>).maintenance_mode);
+        }
+      } catch (err) {
+        console.error("[maintenanceCheck] Settings fetch error:", err);
+      }
+    }
 
     if (isMaintenanceMode) {
       let isAdmin = false;
