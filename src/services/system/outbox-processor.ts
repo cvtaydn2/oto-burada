@@ -57,56 +57,64 @@ export async function processOutboxQueue() {
   logger.system.info(`Outbox: Processing ${queue.length} events concurrently...`);
 
   // ── PILL: Issue 3 - Concurrent Processing (Avoid HOL Blocking) ──
-  // We process messages in parallel to ensure one slow external API (e.g. Email)
-  // doesn't block other successful operations.
-  const results = await Promise.allSettled(
-    queue.map(async (item) => {
-      try {
-        // Mark as processing
-        await supabase
-          .from("transaction_outbox")
-          .update({ status: "processing" })
-          .eq("id", item.id);
+  // We process messages in parallel chunks to ensure one slow external API (e.g. Email)
+  // doesn't block others, while avoiding rate limits on external services like Resend.
+  const CONCURRENCY = 5;
+  const results: PromiseSettledResult<void>[] = [];
 
-        switch (item.event_type) {
-          case "email_notification":
-            await handleEmailNotification(item.payload as unknown as EmailNotificationPayload);
-            break;
-          case "audit_cleanup":
-            break;
-          default:
-            logger.system.warn(`Outbox: Unknown event type ${item.event_type}`);
+  for (let i = 0; i < queue.length; i += CONCURRENCY) {
+    const chunk = queue.slice(i, i + CONCURRENCY);
+    const chunkResults = await Promise.allSettled(
+      chunk.map(async (item) => {
+        try {
+          // Mark as processing
+          await supabase
+            .from("transaction_outbox")
+            .update({ status: "processing" })
+            .eq("id", item.id);
+
+          switch (item.event_type) {
+            case "email_notification":
+              await handleEmailNotification(item.payload as unknown as EmailNotificationPayload);
+              break;
+            case "audit_cleanup":
+              break;
+            default:
+              logger.system.warn(`Outbox: Unknown event type ${item.event_type}`);
+          }
+
+          await supabase
+            .from("transaction_outbox")
+            .update({
+              status: "completed",
+              processed_at: new Date().toISOString(),
+            })
+            .eq("id", item.id);
+        } catch (err) {
+          const retryCount = (item.retry_count || 0) + 1;
+          const status = retryCount >= 5 ? "failed" : "pending";
+
+          const delayMs = Math.min(1000 * Math.pow(2, retryCount), 3600000);
+          const nextAttempt = new Date(Date.now() + delayMs);
+
+          await supabase
+            .from("transaction_outbox")
+            .update({
+              status,
+              retry_count: retryCount,
+              next_attempt_at: nextAttempt.toISOString(),
+              is_poison_pill: status === "failed",
+              error_message: (err as Error).message,
+            })
+            .eq("id", item.id);
+
+          logger.system.error(`Outbox: Failed item ${item.id}. Status: ${status}`, err);
+          throw err;
         }
-
-        await supabase
-          .from("transaction_outbox")
-          .update({
-            status: "completed",
-            processed_at: new Date().toISOString(),
-          })
-          .eq("id", item.id);
-      } catch (err) {
-        const retryCount = (item.retry_count || 0) + 1;
-        const status = retryCount >= 5 ? "failed" : "pending";
-
-        const delayMs = Math.min(1000 * Math.pow(2, retryCount), 3600000);
-        const nextAttempt = new Date(Date.now() + delayMs);
-
-        await supabase
-          .from("transaction_outbox")
-          .update({
-            status,
-            retry_count: retryCount,
-            next_attempt_at: nextAttempt.toISOString(),
-            is_poison_pill: status === "failed",
-            error_message: (err as Error).message,
-          })
-          .eq("id", item.id);
-
-        logger.system.error(`Outbox: Failed item ${item.id}. Status: ${status}`, err);
-      }
-    })
-  );
+      })
+    );
+    results.push(...chunkResults);
+  }
 
   const failedCount = results.filter((r) => r.status === "rejected").length;
   if (failedCount > 0) {

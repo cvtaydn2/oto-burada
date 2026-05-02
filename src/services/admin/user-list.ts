@@ -35,8 +35,16 @@ export async function getAllUsers(query?: string, page = 1, limit = 20) {
   }
 
   // 2. Targeted Auth Fetch (Only for current page IDs)
+  // Use sequential chunks of 5 to avoid Free-Tier Auth API rate limits
   const profileIds = profiles.map((p) => p.id);
-  const authResults = await Promise.all(profileIds.map((id) => admin.auth.admin.getUserById(id)));
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const authResults: any[] = [];
+  const CHUNK_SIZE = 5;
+  for (let i = 0; i < profileIds.length; i += CHUNK_SIZE) {
+    const chunk = profileIds.slice(i, i + CHUNK_SIZE);
+    const results = await Promise.all(chunk.map((id) => admin.auth.admin.getUserById(id)));
+    authResults.push(...results);
+  }
 
   const authMap = Object.fromEntries(
     authResults
