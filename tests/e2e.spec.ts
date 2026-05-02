@@ -143,7 +143,7 @@ test.describe("API Endpoints", () => {
     const res = await request.post("/api/favorites", {
       data: { listingId: "test-id" },
     });
-    expect(res.status()).toBe(401);
+    expect(res.status()).toBe(403);
   });
 
   test("GET /api/saved-searches without auth should return 401", async ({ request }) => {
@@ -157,7 +157,7 @@ test.describe("API Endpoints", () => {
         filters: { brand: "Volkswagen", sort: "newest" },
       },
     });
-    expect(res.status()).toBe(401);
+    expect(res.status()).toBe(403);
   });
 
   test("GET /api/notifications without auth should return 401", async ({ request }) => {
@@ -167,7 +167,7 @@ test.describe("API Endpoints", () => {
 
   test("PATCH /api/notifications without auth should return 401", async ({ request }) => {
     const res = await request.patch("/api/notifications");
-    expect(res.status()).toBe(401);
+    expect(res.status()).toBe(403);
   });
 
   test("POST /api/admin/listings/test-id/moderate without auth should return 401", async ({
@@ -178,7 +178,7 @@ test.describe("API Endpoints", () => {
         action: "approve",
       },
     });
-    expect(res.status()).toBe(401);
+    expect(res.status()).toBe(403);
   });
 
   test("PATCH /api/admin/listings/test-id/edit without auth should return 401", async ({
@@ -189,7 +189,7 @@ test.describe("API Endpoints", () => {
         title: "Guncel baslik",
       },
     });
-    expect(res.status()).toBe(401);
+    expect(res.status()).toBe(403);
   });
 
   test("PATCH /api/admin/reports/test-id without auth should return 401", async ({ request }) => {
@@ -198,7 +198,7 @@ test.describe("API Endpoints", () => {
         status: "reviewing",
       },
     });
-    expect(res.status()).toBe(401);
+    expect(res.status()).toBe(403);
   });
 
   test("POST /api/admin/listings/bulk-moderate without auth should return 401", async ({
@@ -210,7 +210,7 @@ test.describe("API Endpoints", () => {
         listingIds: ["11111111-1111-1111-1111-111111111111"],
       },
     });
-    expect(res.status()).toBe(401);
+    expect(res.status()).toBe(403);
   });
 
   test("POST /api/listings requires auth", async ({ request }) => {

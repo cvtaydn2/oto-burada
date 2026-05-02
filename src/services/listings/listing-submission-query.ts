@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
+﻿/* eslint-disable @typescript-eslint/no-explicit-any */
 /**
  * TYPE SAFETY NOTE:
  *
@@ -335,7 +335,7 @@ export function applyListingFilterPredicates(
   query: ListingQuery,
   filters: ListingFilters,
   options?: { legacySchema?: boolean }
-): ListingQuery {
+): any {
   let q = query;
 
   if (filters.sellerId) q = q.eq("seller_id", filters.sellerId);
@@ -412,7 +412,7 @@ export function buildListingBaseQuery(
     .select(
       selectClause,
       countOption ? { count: countOption, head: !!options?.countOnly } : undefined
-    ) as any;
+    );
 
   // 1. Primary Identifiers
   const sellerId = options?.sellerId ?? options?.filters?.sellerId;
@@ -420,7 +420,7 @@ export function buildListingBaseQuery(
   if (options?.listingId) query = query.eq("id", options.listingId);
   if (options?.slug) query = query.eq("slug", options.slug);
   if (options?.ids?.length) query = query.in("id", options.ids);
-  if (options?.statuses?.length) query = query.in("status", options.statuses);
+  if (options?.statuses?.length) query = query.in("status", options.statuses as any);
 
   // 1.1 Keyset Pagination (Cursor)
   if (options?.cursor) {
@@ -817,8 +817,8 @@ export async function getSimilarDatabaseListings(options: {
   // Use parameterized query builder - NO string interpolation for raw filters
   // Query for brand match OR city match
   const { data, error }: any = await runQueryWithTransientRetry(
-    () =>
-      publicClient
+    async () =>
+      (await publicClient
         .from("listings")
         .select(marketplaceListingSelect)
         .eq("status", "approved")
@@ -826,7 +826,7 @@ export async function getSimilarDatabaseListings(options: {
         .or(`brand.eq.${safeBrand},city.eq.${safeCity}`)
         .order("featured", { ascending: false })
         .order("created_at", { ascending: false })
-        .range(0, limit - 1) as any,
+        .range(0, limit - 1)) as any,
     "getSimilarDatabaseListings.query"
   );
 

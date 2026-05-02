@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-describe.skip("Gallery Service", () => {
+describe("Gallery Service", () => {
   it("should get gallery by slug", async () => {
     const { getGalleryBySlug } = await import("../index");
     expect(getGalleryBySlug).toBeDefined();

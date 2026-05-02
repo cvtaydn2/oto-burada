@@ -1,4 +1,4 @@
-import { withNextCache } from "@/lib/caching/cache";
+﻿import { withNextCache } from "@/lib/caching/cache";
 import { maskPhoneNumber } from "@/lib/listings/utils";
 import { logger } from "@/lib/logging/logger";
 import { captureServerEvent } from "@/lib/monitoring/posthog-server";
@@ -98,20 +98,20 @@ export async function getMarketplaceListingsByIds(ids: string[]): Promise<Listin
   if (ids.length === 0) return [];
 
   const publicClient = createSupabasePublicServerClient();
-  /* eslint-disable @typescript-eslint/no-explicit-any */
+  // PostgREST complex join syntax cannot be typed statically
+
   const { data, error } = await (publicClient
     .from("listings")
     .select(marketplaceListingSelect)
     .in("id", ids)
     .eq("status", "approved") as any);
-  /* eslint-enable @typescript-eslint/no-explicit-any */
 
   if (error) {
     logger.db.error("Marketplace listings by IDs retrieval failed", { error, ids });
     return [];
   }
 
-  return (data ?? []).map(mapListingRow);
+  return ((data as any[]) ?? []).map(mapListingRow);
 }
 
 export async function getMarketplaceListingBySlug(slug: string): Promise<Listing | null> {
@@ -143,13 +143,13 @@ export async function getMarketplaceListingBySlug(slug: string): Promise<Listing
 
 export async function getListingById(id: string): Promise<Listing | null> {
   const publicClient = createSupabasePublicServerClient();
-  /* eslint-disable @typescript-eslint/no-explicit-any */
+  // PostgREST complex join syntax cannot be typed statically
+
   const { data, error } = await (publicClient
     .from("listings")
     .select(marketplaceListingSelect)
     .eq("id", id)
     .maybeSingle() as any);
-  /* eslint-enable @typescript-eslint/no-explicit-any */
 
   if (error) {
     logger.db.error("Public listing by ID retrieval failed", { error, id });
@@ -158,11 +158,12 @@ export async function getListingById(id: string): Promise<Listing | null> {
 
   if (!data) return null;
 
-  if (Array.isArray(data)) {
-    return data.length > 0 ? mapListingRow(data[0]) : null;
+  const row = data as any;
+  if (Array.isArray(row)) {
+    return row.length > 0 ? mapListingRow(row[0]) : null;
   }
 
-  return mapListingRow(data);
+  return mapListingRow(row);
 }
 
 export async function getMarketplaceSeller(sellerId: string): Promise<Profile | null> {

@@ -1,18 +1,18 @@
-"use client";
+﻿"use client";
 
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect } from "react";
 
 import { useSupabase } from "@/components/providers/supabase-provider";
+import { ApiClient } from "@/lib/api/client";
 import { queryKeys } from "@/lib/query-keys";
-import { NotificationService } from "@/services/notifications/client-service";
 import type { Notification } from "@/types";
 
 export function useNotifications(userId?: string) {
   const queryClient = useQueryClient();
   const { supabase } = useSupabase();
 
-  // 1. Initial fetch using TanStack Query
+  // 1. Initial fetch using TanStack Query - Direct API call
   const {
     data: notifications = [],
     isLoading,
@@ -21,11 +21,14 @@ export function useNotifications(userId?: string) {
     queryKey: queryKeys.notifications.byUser(userId!),
     queryFn: async () => {
       if (!userId) return [];
-      const { success, data, error } = await NotificationService.getAll();
-      if (!success) {
-        throw new Error(error?.message || "Bildirimler yüklenemedi");
+      // Direct API call to /api/notifications
+      const response = await ApiClient.request<{ notifications: Notification[] }>(
+        "/api/notifications"
+      );
+      if (!response.success) {
+        throw new Error(response.error?.message || "Bildirimler yüklenemedi");
       }
-      return data?.notifications ?? [];
+      return response.data?.notifications ?? [];
     },
     enabled: !!userId,
   });

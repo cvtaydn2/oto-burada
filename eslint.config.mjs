@@ -27,6 +27,12 @@ const eslintConfig = [
       "simple-import-sort/exports": "error"
     },
   },
+  {
+    files: ["src/services/listings/marketplace-listings.ts"],
+    rules: {
+      "@typescript-eslint/no-explicit-any": "off",
+    },
+  },
   prettier,
   {
     ignores: [

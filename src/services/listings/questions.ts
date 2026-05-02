@@ -1,5 +1,4 @@
-"use server";
-/* eslint-disable @typescript-eslint/no-explicit-any */
+﻿"use server";
 
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 
@@ -13,6 +12,21 @@ function isTransientQuestionFetchError(error: unknown): boolean {
   );
 }
 
+// Type guard for Supabase response
+function isSupabaseResponse(
+  value: unknown
+): value is { data: unknown; error: { code: string; message: string } | null } {
+  return typeof value === "object" && value !== null && "data" in value && "error" in value;
+}
+
+// Type guard for Supabase single response
+function isSupabaseSingleResponse(value: unknown): value is {
+  data: unknown;
+  error: { code: string; message: string } | null;
+} {
+  return typeof value === "object" && value !== null && "data" in value && "error" in value;
+}
+
 /**
  * Get approved public questions for a listing
  */
@@ -21,9 +35,9 @@ export async function getListingQuestions(listingId: string) {
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), QUESTIONS_QUERY_TIMEOUT_MS);
 
-  let result: any;
+  let result: unknown;
   try {
-    result = await (supabase as any)
+    result = await supabase
       .from("listing_questions")
       .select(
         `
@@ -48,6 +62,10 @@ export async function getListingQuestions(listingId: string) {
     clearTimeout(timeout);
   }
 
+  if (!isSupabaseResponse(result)) {
+    return [];
+  }
+
   if (result.error) {
     // Free/local environments may not have listing_questions migrated yet.
     if (result.error.code === "PGRST205" || result.error.code === "42P01") {
@@ -68,9 +86,9 @@ export async function getOwnerListingQuestions(listingId: string) {
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), QUESTIONS_QUERY_TIMEOUT_MS);
 
-  let result: any;
+  let result: unknown;
   try {
-    result = await (supabase as any)
+    result = await supabase
       .from("listing_questions")
       .select(
         `
@@ -91,6 +109,10 @@ export async function getOwnerListingQuestions(listingId: string) {
     throw error;
   } finally {
     clearTimeout(timeout);
+  }
+
+  if (!isSupabaseResponse(result)) {
+    return [];
   }
 
   if (result.error) {
@@ -115,16 +137,20 @@ export async function askQuestion(listingId: string, question: string) {
   } = await supabase.auth.getUser();
   if (!user) throw new Error("Unauthorized");
 
-  const result = await (supabase as any)
+  const result = await supabase
     .from("listing_questions")
     .insert({
       listing_id: listingId,
       user_id: user.id,
       question,
-      status: "pending", // Requires moderation
+      status: "pending",
     })
     .select()
     .single();
+
+  if (!isSupabaseSingleResponse(result)) {
+    throw new Error("Invalid response from database");
+  }
 
   if (result.error) {
     if (result.error.code === "PGRST205" || result.error.code === "42P01") {
@@ -143,16 +169,20 @@ export async function askQuestion(listingId: string, question: string) {
 export async function answerQuestion(questionId: string, answer: string) {
   const supabase = await createSupabaseServerClient();
 
-  const result = await (supabase as any)
+  const result = await supabase
     .from("listing_questions")
     .update({
       answer,
       updated_at: new Date().toISOString(),
-      status: "approved", // Auto-approve when answered by owner
+      status: "approved",
     })
     .eq("id", questionId)
     .select()
     .single();
+
+  if (!isSupabaseSingleResponse(result)) {
+    throw new Error("Invalid response from database");
+  }
 
   if (result.error) {
     if (result.error.code === "PGRST205" || result.error.code === "42P01") {
