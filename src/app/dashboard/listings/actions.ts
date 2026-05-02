@@ -51,10 +51,12 @@ export async function revealListingPhone(listingId: string) {
   // ── Distributed Rate Limit (F-03 Protection) ──
   const { checkGlobalRateLimit } = await import("@/lib/rate-limiting/distributed-rate-limit");
 
-  // Higher limit for authenticated users, stricter for guests
+  // Combined IP + UserID protection: prevents bypassing by switching IPs or accounts
   const limit = user ? 20 : 5;
   const windowMs = 60 * 60 * 1000; // 1 hour
-  const rateLimitKey = user ? `reveal-phone:u:${user.id}` : `reveal-phone:ip:${clientIp}`;
+  const rateLimitKey = user
+    ? `reveal-phone:ip:${clientIp}:u:${user.id}`
+    : `reveal-phone:ip:${clientIp}:guest`;
 
   const rateLimitResult = await checkGlobalRateLimit(rateLimitKey, {
     limit,

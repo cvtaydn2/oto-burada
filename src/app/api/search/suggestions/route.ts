@@ -21,7 +21,7 @@ export async function GET(request: Request) {
     getRateLimitKey(request, "api:search:suggestions"),
     SUGGESTIONS_RATE_LIMIT
   );
-  if (rateLimit) return rateLimit.response;
+  if (rateLimit.response) return rateLimit.response;
 
   const { searchParams } = new URL(request.url);
   const rawQ = searchParams.get("q") ?? "";

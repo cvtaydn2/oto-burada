@@ -87,7 +87,7 @@ export async function POST(request: Request): Promise<NextResponse> {
     getRateLimitKey(request, "api:contact:create"),
     rateLimitProfiles.contactCreate
   );
-  if (ipLimit) {
+  if (ipLimit.response) {
     await logAbuse("", clientIp, "rate_limit", userAgent);
     return ipLimit.response;
   }

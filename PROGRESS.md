@@ -1469,3 +1469,64 @@ The codebase is now in a \Zero-Error\ state. All architectural boundaries (Serve
 - Execute environment variables audit via `node scripts/verify-production-env.mjs`.
 - Proceed with Staging/Production deployment (TASK-65).
 - Complete Mobile UX Phase 3 (Integrations).
+
+## 18. Auth Security & Rate Limit Hardening
+
+**Date**: 2026-05-02  
+**Status**: ✅ COMPLETED  
+**Scope**: Brute-force protection, mandatory email verification enforcement, and resend flow.
+
+### 18.1 Completed
+- **Centralized Brute-Force Protection**:
+  - Expanded `checkBruteForceLimit` in `src/lib/rate-limiting/distributed-rate-limit.ts` to support `login`, `register`, `forgot-password`, `password-reset`, `2fa`, and `resend-verification`.
+  - Integrated this protection into `loginAction`, `registerAction`, `forgotPasswordAction`, and the new `resendVerificationAction`.
+- **Mandatory Email Verification Guard**:
+  - Implemented `handleAuthRedirects` logic in `src/lib/middleware/auth.ts` to block unverified users from protected API routes and redirect them to `/verify-email`.
+  - Created a premium verification notice page at `src/app/(public)/verify-email/page.tsx`.
+- **Self-Service Verification Flow**:
+  - Created `resendVerificationAction` server action with strict rate limits (2 per 30 mins per email).
+  - Implemented `ResendVerificationButton` with a 60-second UI throttle (countdown) to prevent accidental double-clicks.
+  - Updated `/verify-email` page to fetch the current user's email and provide the resend option.
+
+### 18.2 Validation
+- ✅ `npm run build` PASS
+- ✅ `npm run typecheck` PASS
+- ✅ `npm run lint` PASS
+
+### 18.3 Next Steps
+- Monitor security logs for lockout trends.
+- Test end-to-end registration -> verification redirect -> email confirmation -> dashboard access.
+
+## 19. Final Security Hardening & Build-Time Integrity
+
+**Date**: 2026-05-02  
+**Status**: ✅ COMPLETED  
+**Scope**: CSRF synchronization, granular rate limit keys, and mandatory environment verification.
+
+### 19.1 Completed
+- **CSRF Protection Standardized**:
+  - Switched to Synchronizer Token Pattern with hashed HttpOnly cookies.
+  - Renamed cookie to `__Host-oto_csrf_v2` for maximum browser-level protection.
+  - Standardized `x-csrf-token` header validation across all protected routes.
+- **Combined Rate Limit Keys**:
+  - Hardened `revealListingPhone` action in `src/app/dashboard/listings/actions.ts` by combining IP and UserID in the rate limit key.
+  - Prevents distributed account abuse from single or multiple IPs.
+- **Account Enumeration Defense**:
+  - Normalized forgot-password throttling key to `auth:forgot:${emailKey}` in `src/lib/auth/actions.ts`.
+  - Enforced a strict 3/hour limit with generic messaging to protect user privacy.
+- **Build Pipeline Integrity**:
+  - Integrated `npm run db:check-env` into the `prebuild` lifecycle in `package.json`.
+  - Deployment will now fail explicitly if `SUPABASE_SERVICE_ROLE_KEY` is missing, preventing broken runtime states.
+- **Documentation**:
+  - Created `docs/ENV_KEY_ROTATION.md` detailing the security lifecycle of infrastructure secrets.
+
+### 19.2 Validation
+- ✅ `npm run build` SUCCESS
+- ✅ `npm run typecheck` SUCCESS
+- ✅ `npm run lint` SUCCESS
+
+### 19.3 Next Steps
+- Monitor rate-limiting dashboards for "429" trends.
+- Finalize Mobile UX Phase 3.
+
+

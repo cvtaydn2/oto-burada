@@ -18,7 +18,7 @@ import { getSupabaseEnv, hasSupabaseEnv } from "@/lib/supabase/env";
 export async function updateSession(request: NextRequest) {
   if (!hasSupabaseEnv()) {
     const nonce = generateNonce();
-    return applySecurityHeaders(NextResponse.next({ request }), nonce);
+    return applySecurityHeaders(NextResponse.next({ request }), nonce, request);
   }
 
   const nonce = generateNonce();
@@ -28,6 +28,14 @@ export async function updateSession(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
   const route = classifyRoute(pathname);
 
+  // Pre-generate CSRF token for the layout to pick up via headers
+  let csrfToken: string | undefined;
+  if (!route.isStaticAsset) {
+    const { generateCsrfToken } = await import("@/lib/security/csrf");
+    csrfToken = generateCsrfToken();
+    requestHeaders.set("x-csrf-token", csrfToken);
+  }
+
   // 1. PERFORMANCE: Skip heavy processing for static assets
   if (route.isStaticAsset) {
     return applySecurityHeaders(
@@ -36,7 +44,8 @@ export async function updateSession(request: NextRequest) {
           headers: requestHeaders,
         },
       }),
-      nonce
+      nonce,
+      request
     );
   }
 
@@ -185,13 +194,14 @@ export async function updateSession(request: NextRequest) {
               },
               { status: 503 }
             ),
-            nonce
+            nonce,
+            request
           );
         }
 
         const url = request.nextUrl.clone();
         url.pathname = "/maintenance";
-        return applySecurityHeaders(NextResponse.redirect(url), nonce);
+        return applySecurityHeaders(NextResponse.redirect(url), nonce, request);
       }
     }
   }
@@ -206,18 +216,19 @@ export async function updateSession(request: NextRequest) {
       finalResponse.cookies.set(cookie.name, cookie.value);
     });
 
-    return applySecurityHeaders(finalResponse, nonce);
+    return applySecurityHeaders(finalResponse, nonce, request);
   }
 
   // 6. FINAL ENRICHMENT (Headers & Metadata)
-  applySecurityHeaders(response, nonce);
+  applySecurityHeaders(response, nonce, request);
   applyRequestMetadata(request, response, pathname);
 
-  // 7. CSRF TOKEN (Ensure every visitor has one)
-  const hasCsrfCookie = request.cookies.has("csrf_token");
-  if (!hasCsrfCookie && !route.isStaticAsset) {
+  // 7. CSRF TOKEN (Synchronizer Token Pattern)
+  // Ensure every visitor has a CSRF token hash in an HttpOnly cookie.
+  // The raw token was already set in request headers for the layout.
+  if (csrfToken) {
     const { applyCsrfCookieToResponse } = await import("@/lib/security/csrf");
-    applyCsrfCookieToResponse(response);
+    await applyCsrfCookieToResponse(response, csrfToken);
   }
 
   // Ensure no caching for authenticated/dynamic views

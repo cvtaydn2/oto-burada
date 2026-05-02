@@ -1,10 +1,7 @@
-import { headers } from "next/headers";
-
 import { API_ERROR_CODES, apiError, apiSuccess } from "@/lib/api/response";
 import { withAdminRoute } from "@/lib/api/security";
 import { captureServerEvent } from "@/lib/monitoring/posthog-server";
 import { rateLimitProfiles } from "@/lib/rate-limiting/rate-limit";
-import { checkRateLimit } from "@/lib/rate-limiting/rate-limit-middleware";
 import { sanitizeText } from "@/lib/sanitization/sanitize";
 import { createAdminModerationAction } from "@/services/admin/moderation-actions";
 import { getStoredListingById } from "@/services/listings/listing-submissions";
@@ -12,29 +9,15 @@ import { createDatabaseNotification } from "@/services/notifications/notificatio
 import { updateDatabaseReportStatus } from "@/services/reports/report-submissions";
 import type { ReportStatus } from "@/types";
 
-async function getClientIp() {
-  const headersList = await headers();
-  const forwarded = headersList.get("x-forwarded-for");
-  const realIp = headersList.get("x-real-ip");
-  return forwarded?.split(",")[0]?.trim() || realIp || "unknown";
-}
-
 const allowedStatuses: ReportStatus[] = ["reviewing", "resolved", "dismissed"];
 
 export async function PATCH(request: Request, context: { params: Promise<{ reportId: string }> }) {
-  const security = await withAdminRoute(request);
+  const security = await withAdminRoute(request, {
+    ipRateLimit: rateLimitProfiles.adminModerate,
+    rateLimitKey: "admin:reports",
+  });
   if (!security.ok) return security.response;
   const adminUser = security.user!;
-
-  const clientIp = await getClientIp();
-  const ipRateLimit = await checkRateLimit(
-    `admin:reports:${clientIp}`,
-    rateLimitProfiles.adminModerate
-  );
-
-  if (!ipRateLimit.allowed) {
-    return apiError(API_ERROR_CODES.RATE_LIMITED, "Çok fazla rapor isteği. Lütfen bekle.", 429);
-  }
 
   let body: unknown;
 

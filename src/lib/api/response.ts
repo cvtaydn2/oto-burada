@@ -36,7 +36,13 @@ export function apiSuccess<T>(data: T, message?: string, status = 200, headers?:
 /**
  * Standard error response builder.
  */
-export function apiError(code: string, message: string, status = 400, details?: unknown) {
+export function apiError(
+  code: string,
+  message: string,
+  status = 400,
+  details?: unknown,
+  headers?: HeadersInit
+) {
   const body: ApiErrorResponse = {
     success: false,
     error: { code, message },
@@ -58,7 +64,7 @@ export function apiError(code: string, message: string, status = 400, details?: 
     }
   }
 
-  return NextResponse.json(body, { status });
+  return NextResponse.json(body, { status, headers });
 }
 
 /**

@@ -1,7 +1,16 @@
 /**
  * CSRF Token Protection
  *
- * Implements Double Submit Cookie pattern and Origin/Referer validation.
+ * Implements a Secure Synchronizer Token Pattern using Hashed Cookies.
+ *
+ * 1. Server generates a RAW token.
+ * 2. Server stores SHA-256(RAW token) in an HttpOnly, Secure, SameSite=Strict cookie.
+ * 3. Server provides the RAW token to the client (via X-CSRF-Token header or metadata).
+ * 4. Client sends the RAW token back in the X-CSRF-Token header.
+ * 5. Server hashes the incoming header token and compares it with the cookie hash.
+ *
+ * This prevents XSS from stealing the validation token (cookie is HttpOnly)
+ * and prevents CSRF (attacker can't read the header token due to SOP).
  */
 
 import { cookies } from "next/headers";
@@ -10,59 +19,46 @@ import { type NextRequest, NextResponse } from "next/server";
 import { getUserFacingError } from "@/config/user-messages";
 import { logger } from "@/lib/logging/logger";
 
-const CSRF_COOKIE_NAME = "csrf_token";
+const CSRF_COOKIE_HASH_NAME = "__Host-oto_csrf_v2";
 const CSRF_HEADER_NAME = "x-csrf-token";
 const TOKEN_LENGTH = 32;
 
+/**
+ * Validates the request origin and referer.
+ */
 export function isValidRequestOrigin(request: Request | NextRequest): boolean {
-  // Webhook exclusion: third-party services won't send valid browser origin/referer
   const url = new URL(request.url);
+
+  // Webhook exclusion: third-party services won't send valid browser origin/referer
   const isIyzico =
     url.pathname.startsWith("/api/payments/webhook") ||
     url.pathname.startsWith("/api/webhooks/iyzico");
   const isPosthog = url.pathname.startsWith("/api/webhooks/posthog");
 
   if (isIyzico) {
-    // ── SECURITY FIX: Issue SEC-05 - Webhook Origin Guard ───────────────────
-    // Only bypass origin check for the specific webhook endpoint, not all payment routes.
-    // The handler will still verify the signature itself, but this prevents
-    // browsers from being used as a vector for basic POST probes.
     if (url.pathname === "/api/payments/webhook" || url.pathname === "/api/webhooks/iyzico") {
       return request.headers.has("x-iyzi-signature");
     }
-    // Other payment endpoints require normal CSRF validation
     return false;
   }
 
   if (isPosthog) {
-    // ── SECURITY FIX: Issue SEC-POSTHOG-01 - PostHog Webhook Verification ──
-    // PostHog webhooks must include a secret header to prevent fake event injection.
-    // In development, allow without secret for testing.
     const isDev = process.env.NODE_ENV !== "production";
     const posthogSecret = process.env.POSTHOG_WEBHOOK_SECRET;
     const webhookSecret = request.headers.get("x-posthog-webhook-secret");
 
-    if (isDev && !posthogSecret) {
-      return true; // Allow in dev without secret
-    }
-
+    if (isDev && !posthogSecret) return true;
     if (!posthogSecret) {
       logger.security.error("PostHog webhook secret not configured in production");
-      return false; // Fail closed if secret missing in production
-    }
-
-    // Timing-safe comparison to prevent side-channel attacks
-    if (!webhookSecret || webhookSecret.length !== posthogSecret.length) {
       return false;
     }
 
+    if (!webhookSecret || webhookSecret.length !== posthogSecret.length) return false;
+
     let match = true;
     for (let i = 0; i < posthogSecret.length; i++) {
-      if (webhookSecret.charCodeAt(i) !== posthogSecret.charCodeAt(i)) {
-        match = false;
-      }
+      if (webhookSecret.charCodeAt(i) !== posthogSecret.charCodeAt(i)) match = false;
     }
-
     return match;
   }
 
@@ -71,9 +67,7 @@ export function isValidRequestOrigin(request: Request | NextRequest): boolean {
   const method = request.method.toUpperCase();
   const isMutation = ["POST", "PUT", "PATCH", "DELETE"].includes(method);
 
-  if (isMutation && !origin && !referer) {
-    return false;
-  }
+  if (isMutation && !origin && !referer) return false;
 
   const appUrl = process.env.NEXT_PUBLIC_APP_URL;
   const checkUrl = (target: string) => {
@@ -85,19 +79,15 @@ export function isValidRequestOrigin(request: Request | NextRequest): boolean {
       }
       const host = request.headers.get("host");
       if (host && targetUrl.host === host) return true;
+
       if (process.env.NODE_ENV !== "production") {
         const allowedDevOrigins = [
           "http://localhost:3000",
           "http://localhost:3001",
           "http://127.0.0.1:3000",
           "http://127.0.0.1:3001",
-          "http://[::1]:3000",
-          "http://[::1]:3001",
         ];
-
-        if (allowedDevOrigins.includes(targetUrl.origin)) {
-          return true;
-        }
+        if (allowedDevOrigins.includes(targetUrl.origin)) return true;
       }
     } catch {
       return false;
@@ -105,29 +95,18 @@ export function isValidRequestOrigin(request: Request | NextRequest): boolean {
     return false;
   };
 
-  if (origin && origin !== "null") {
-    if (checkUrl(origin)) return true;
-  }
-
-  if (referer) {
-    if (checkUrl(referer)) return true;
-  }
+  if (origin && origin !== "null" && checkUrl(origin)) return true;
+  if (referer && checkUrl(referer)) return true;
 
   return !isMutation;
 }
 
-/**
- * Generates a cryptographically secure random CSRF token
- */
 export function generateCsrfToken(): string {
   const array = new Uint8Array(TOKEN_LENGTH / 2);
   crypto.getRandomValues(array);
   return Array.from(array, (byte) => byte.toString(16).padStart(2, "0")).join("");
 }
 
-/**
- * Creates a CSRF token hash for storage
- */
 export async function hashCsrfToken(token: string): Promise<string> {
   const msgUint8 = new TextEncoder().encode(token);
   const hashBuffer = await crypto.subtle.digest("SHA-256", msgUint8);
@@ -136,7 +115,8 @@ export async function hashCsrfToken(token: string): Promise<string> {
 }
 
 /**
- * Validates CSRF token from request
+ * Validates CSRF token from request.
+ * Compares the hashed header token with the hash stored in the HttpOnly cookie.
  */
 export async function validateCsrfToken(request: Request | NextRequest): Promise<boolean> {
   try {
@@ -144,40 +124,22 @@ export async function validateCsrfToken(request: Request | NextRequest): Promise
     const isMutation = ["POST", "PUT", "PATCH", "DELETE"].includes(method);
 
     if (!isMutation) return true;
-
-    // 1. Origin Check
     if (!isValidRequestOrigin(request)) return false;
 
-    // 2. Token Check
-    // FIXED: Read cookies from request object in middleware context
-    // instead of using cookies() from next/headers which may not work in Edge runtime
-    let cookieToken: string | undefined;
+    let cookieHash: string | undefined;
     if ("cookies" in request && typeof request.cookies.get === "function") {
-      // NextRequest (middleware context)
-      cookieToken = request.cookies.get(CSRF_COOKIE_NAME)?.value;
+      cookieHash = request.cookies.get(CSRF_COOKIE_HASH_NAME)?.value;
     } else {
-      // Standard Request (route handler context)
       const cookieStore = await cookies();
-      cookieToken = cookieStore.get(CSRF_COOKIE_NAME)?.value;
+      cookieHash = cookieStore.get(CSRF_COOKIE_HASH_NAME)?.value;
     }
 
     const headerToken = request.headers.get(CSRF_HEADER_NAME);
+    if (!cookieHash || !headerToken) return false;
 
-    if (!cookieToken || !headerToken) return false;
-
-    // ── BUG FIX: Issue BUG-07 - Promise.allSettled for Hash Comparison ─────────────
-    // Use Promise.allSettled to prevent unhandled rejections if one hash operation fails
-    const results = await Promise.allSettled([
-      hashCsrfToken(cookieToken),
-      hashCsrfToken(headerToken),
-    ]);
-
-    // Check if both promises fulfilled successfully
-    if (results[0].status !== "fulfilled" || results[1].status !== "fulfilled") {
-      return false;
-    }
-
-    return constantTimeCompare(results[0].value, results[1].value);
+    // Hash the incoming header token and compare it with the stored hash
+    const incomingHash = await hashCsrfToken(headerToken);
+    return constantTimeCompare(cookieHash, incomingHash);
   } catch {
     return false;
   }
@@ -193,22 +155,26 @@ function constantTimeCompare(a: string, b: string): boolean {
 }
 
 /**
- * Middleware function for Next.js middleware pipeline
+ * Middleware entry point for CSRF protection.
  */
 export async function csrfMiddleware(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
 
+  // Protect all API routes except public webhooks
   if (pathname.startsWith("/api")) {
     const isValid = await validateCsrfToken(request);
 
     if (!isValid) {
-      return new NextResponse(
+      const response = new NextResponse(
         JSON.stringify({
           error: "Forbidden",
           message: getUserFacingError("CSRF_ERROR"),
         }),
         { status: 403, headers: { "Content-Type": "application/json" } }
       );
+
+      const { applySecurityHeaders } = await import("@/lib/middleware/headers");
+      return applySecurityHeaders(response, undefined, request);
     }
   }
 
@@ -217,45 +183,61 @@ export async function csrfMiddleware(request: NextRequest) {
 
 export async function setCsrfTokenCookie(): Promise<string> {
   const token = generateCsrfToken();
+  const hash = await hashCsrfToken(token);
   const cookieStore = await cookies();
 
-  // ── SECURITY FIX: Issue #5 - CSRF Cookie SameSite Strict + Token Rotation ─────────────
-  // Using SameSite=strict to prevent CSRF token leakage via XSS
-  // httpOnly=false is required for client to read and send in header (Double Submit pattern)
-  // Token rotation on each use would further limit XSS damage window
-  // CSP nonce implementation recommended to reduce XSS surface area
-  cookieStore.set(CSRF_COOKIE_NAME, token, {
-    httpOnly: false, // Required for Double Submit Cookie pattern
-    secure: process.env.NODE_ENV === "production",
-    sameSite: "strict", // Strict isolation to limit XSS + CSRF combination attacks
+  const isProd = process.env.NODE_ENV === "production";
+
+  // Set the HASH in an HttpOnly cookie (Server-side source of truth)
+  cookieStore.set(CSRF_COOKIE_HASH_NAME, hash, {
+    httpOnly: true,
+    secure: isProd,
+    sameSite: "strict",
     path: "/",
-    maxAge: 60 * 60 * 24,
+    maxAge: 60 * 60 * 24, // 24 hours
   });
 
   return token;
 }
 
 /**
- * Sets CSRF cookie on a NextResponse object (Middleware-safe)
- *
- * ── SECURITY FIX: Issue #5 - CSRF Cookie SameSite Strict ─────────────
+ * Rotates the CSRF token. Used upon login/logout.
  */
-export function applyCsrfCookieToResponse(response: NextResponse, token?: string) {
+export async function rotateCsrfToken(): Promise<string> {
+  return setCsrfTokenCookie();
+}
+
+/**
+ * Attaches CSRF cookie and header to a response.
+ */
+export async function applyCsrfCookieToResponse(response: NextResponse, token?: string) {
   const finalToken = token || generateCsrfToken();
-  response.cookies.set(CSRF_COOKIE_NAME, finalToken, {
-    httpOnly: false,
-    secure: process.env.NODE_ENV === "production",
-    sameSite: "strict", // Strict isolation to limit XSS + CSRF attacks
+  const hash = await hashCsrfToken(finalToken);
+  const isProd = process.env.NODE_ENV === "production";
+
+  // Set the HASH in an HttpOnly cookie
+  response.cookies.set(CSRF_COOKIE_HASH_NAME, hash, {
+    httpOnly: true,
+    secure: isProd,
+    sameSite: "strict",
     path: "/",
     maxAge: 60 * 60 * 24,
   });
+
+  // Set raw token in header for the client to pick up
+  response.headers.set(CSRF_HEADER_NAME, finalToken);
+
   return finalToken;
 }
 
-export async function getCsrfTokenFromCookie(): Promise<string | undefined> {
+/**
+ * Gets the current CSRF token hash from cookies.
+ * NOTE: This returns the HASH, not the raw token.
+ */
+export async function getCsrfHashFromCookie(): Promise<string | undefined> {
   const cookieStore = await cookies();
-  return cookieStore.get(CSRF_COOKIE_NAME)?.value;
+  return cookieStore.get(CSRF_COOKIE_HASH_NAME)?.value;
 }
 
 export const CSRF_HEADER_NAME_CLIENT = CSRF_HEADER_NAME;
-export const CSRF_COOKIE_NAME_CLIENT = CSRF_COOKIE_NAME;
+export const CSRF_COOKIE_HASH_NAME_CLIENT = CSRF_COOKIE_HASH_NAME;

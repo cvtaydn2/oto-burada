@@ -32,12 +32,36 @@ export function handleAuthRedirects(
     }
   }
 
+  // 1b. Email Verification Guard (API)
+  if (user && !user.email_confirmed_at && (routeInfo.isProtectedApi || routeInfo.isAdminApi)) {
+    return new NextResponse(
+      JSON.stringify({
+        error: "Forbidden",
+        message: "Devam etmek için e-posta adresinizi doğrulamanız gerekiyor.",
+        code: "EMAIL_NOT_CONFIRMED",
+      }),
+      { status: 403, headers: { "Content-Type": "application/json" } }
+    );
+  }
+
   // 2. Page Security Guards (Redirects)
-  // Unauthenticated users -> /login
+  // 2a. Unauthenticated users -> /login
   if (!user && routeInfo.isProtectedRoute) {
     const redirectUrl = request.nextUrl.clone();
     redirectUrl.pathname = "/login";
     redirectUrl.searchParams.set("next", pathname);
+    return NextResponse.redirect(redirectUrl);
+  }
+
+  // 2b. Unconfirmed users -> /verify-email
+  if (
+    user &&
+    !user.email_confirmed_at &&
+    routeInfo.isProtectedRoute &&
+    pathname !== "/verify-email"
+  ) {
+    const redirectUrl = request.nextUrl.clone();
+    redirectUrl.pathname = "/verify-email";
     return NextResponse.redirect(redirectUrl);
   }
 

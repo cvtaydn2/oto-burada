@@ -26,9 +26,9 @@ export async function POST(request: Request) {
 }
 
 async function handleSync(request: Request) {
-  // ── SECURITY FIX: requireAdmin set to prevent cron secret bypass
-  const security = await withCronOrAdmin(request, { requireAdmin: true });
+  const security = await withCronOrAdmin(request);
   if (!security.ok) return security.response;
+  const adminUser = security.user; // Might be null if it's a cron job
 
   if (!hasSupabaseAdminEnv()) {
     return apiError(API_ERROR_CODES.SERVICE_UNAVAILABLE, "Servis kullanılamıyor.", 503);
@@ -123,11 +123,16 @@ async function handleSync(request: Request) {
     }
   }
 
-  captureServerEvent("market_stats_synced", {
-    totalSegments: uniqueSegments.size,
-    updated,
-    failed,
-  });
+  captureServerEvent(
+    "market_stats_synced",
+    {
+      adminUserId: adminUser?.id ?? "cron",
+      totalSegments: uniqueSegments.size,
+      updated,
+      failed,
+    },
+    adminUser?.id ?? "server"
+  );
 
   return apiSuccess(
     { totalSegments: uniqueSegments.size, updated, failed },

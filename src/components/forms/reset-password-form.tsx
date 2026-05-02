@@ -2,52 +2,23 @@
 
 import { LoaderCircle, Lock, ShieldCheck } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useActionState, useEffect } from "react";
+import { useFormStatus } from "react-dom";
 
-import { captureClientException } from "@/lib/monitoring/posthog-client";
-import { createSupabaseBrowserClient } from "@/lib/supabase/browser";
+import { updatePasswordAction } from "@/lib/auth/actions";
+
+const initialState = null;
 
 export function ResetPasswordForm() {
   const router = useRouter();
-  const [password, setPassword] = useState("");
-  const [confirm, setConfirm] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState("");
-  const [success, setSuccess] = useState(false);
+  const [state, formAction] = useActionState(updatePasswordAction, initialState);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError("");
-
-    if (password.length < 8) {
-      setError("Şifre en az 8 karakter olmalıdır.");
-      return;
+  useEffect(() => {
+    if (state?.success) {
+      const timer = setTimeout(() => router.push("/dashboard"), 2000);
+      return () => clearTimeout(timer);
     }
-    if (password !== confirm) {
-      setError("Şifreler eşleşmiyor.");
-      return;
-    }
-
-    setIsLoading(true);
-    try {
-      const supabase = createSupabaseBrowserClient();
-      const { error: updateError } = await supabase.auth.updateUser({ password });
-
-      if (updateError) {
-        setError("Şifre güncellenemedi. Lütfen tekrar deneyin.");
-        captureClientException(updateError, "reset_password_update_user");
-        return;
-      }
-
-      setSuccess(true);
-      setTimeout(() => router.push("/dashboard"), 2000);
-    } catch (err) {
-      setError("Beklenmedik bir hata oluştu.");
-      captureClientException(err, "reset_password_submit");
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  }, [state?.success, router]);
 
   return (
     <div className="min-h-screen grid lg:grid-cols-2 bg-card">
@@ -86,14 +57,14 @@ export function ResetPasswordForm() {
             </p>
           </div>
 
-          {success ? (
+          {state?.success ? (
             <div className="rounded-2xl border border-emerald-200 bg-emerald-50 p-6 text-center space-y-2">
               <ShieldCheck className="mx-auto text-emerald-500" size={40} />
               <p className="font-bold text-emerald-700">Şifreniz başarıyla güncellendi!</p>
               <p className="text-xs text-emerald-600">Panele yönlendiriliyorsunuz...</p>
             </div>
           ) : (
-            <form onSubmit={handleSubmit} className="space-y-6">
+            <form action={formAction} className="space-y-6">
               <div className="space-y-2 group">
                 <label
                   htmlFor="new-password"
@@ -107,17 +78,22 @@ export function ResetPasswordForm() {
                     size={20}
                   />
                   <input
-                    id="new-password"
+                    id="password"
+                    name="password"
                     type="password"
                     placeholder="••••••••"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
                     minLength={8}
                     required
                     autoComplete="new-password"
-                    className="h-16 w-full pl-14 pr-6 rounded-xl bg-card border-2 border-border/50 shadow-sm shadow-slate-200/40 focus:border-primary outline-none transition-all font-bold italic tracking-tighter text-foreground"
+                    aria-invalid={!!state?.fieldErrors?.password}
+                    className="h-16 w-full pl-14 pr-6 rounded-xl bg-card border-2 border-border/50 shadow-sm shadow-slate-200/40 focus:border-primary outline-none transition-all font-bold italic tracking-tighter text-foreground aria-invalid:border-rose-300"
                   />
                 </div>
+                {state?.fieldErrors?.password && (
+                  <p className="text-[10px] font-bold text-rose-500 px-1 uppercase tracking-wider">
+                    {state.fieldErrors.password[0]}
+                  </p>
+                )}
               </div>
 
               <div className="space-y-2 group">
@@ -133,42 +109,34 @@ export function ResetPasswordForm() {
                     size={20}
                   />
                   <input
-                    id="confirm-password"
+                    id="confirm"
+                    name="confirm"
                     type="password"
                     placeholder="••••••••"
-                    value={confirm}
-                    onChange={(e) => setConfirm(e.target.value)}
                     minLength={8}
                     required
                     autoComplete="new-password"
-                    className="h-16 w-full pl-14 pr-6 rounded-xl bg-card border-2 border-border/50 shadow-sm shadow-slate-200/40 focus:border-primary outline-none transition-all font-bold italic tracking-tighter text-foreground"
+                    aria-invalid={!!state?.fieldErrors?.confirm}
+                    className="h-16 w-full pl-14 pr-6 rounded-xl bg-card border-2 border-border/50 shadow-sm shadow-slate-200/40 focus:border-primary outline-none transition-all font-bold italic tracking-tighter text-foreground aria-invalid:border-rose-300"
                   />
                 </div>
+                {state?.fieldErrors?.confirm && (
+                  <p className="text-[10px] font-bold text-rose-500 px-1 uppercase tracking-wider">
+                    {state.fieldErrors.confirm[0]}
+                  </p>
+                )}
               </div>
 
-              {error && (
+              {state?.error && (
                 <div
                   role="alert"
                   className="rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm font-semibold text-rose-600"
                 >
-                  {error}
+                  {state.error}
                 </div>
               )}
 
-              <button
-                type="submit"
-                disabled={isLoading}
-                className="h-16 w-full rounded-xl bg-slate-900 text-white flex items-center justify-center gap-3 text-sm font-bold uppercase tracking-widest hover:bg-black transition-all shadow-sm shadow-slate-900/20 italic disabled:opacity-60 disabled:cursor-not-allowed"
-              >
-                {isLoading ? (
-                  <LoaderCircle size={20} className="animate-spin" />
-                ) : (
-                  <>
-                    ŞİFREYİ GÜNCELLE
-                    <ShieldCheck size={20} />
-                  </>
-                )}
-              </button>
+              <SubmitButton />
             </form>
           )}
 
@@ -188,5 +156,26 @@ export function ResetPasswordForm() {
         </div>
       </div>
     </div>
+  );
+}
+
+function SubmitButton() {
+  const { pending } = useFormStatus();
+
+  return (
+    <button
+      type="submit"
+      disabled={pending}
+      className="h-16 w-full rounded-xl bg-slate-900 text-white flex items-center justify-center gap-3 text-sm font-bold uppercase tracking-widest hover:bg-black transition-all shadow-sm shadow-slate-900/20 italic disabled:opacity-60 disabled:cursor-not-allowed"
+    >
+      {pending ? (
+        <LoaderCircle size={20} className="animate-spin" />
+      ) : (
+        <>
+          ŞİFREYİ GÜNCELLE
+          <ShieldCheck size={20} />
+        </>
+      )}
+    </button>
   );
 }

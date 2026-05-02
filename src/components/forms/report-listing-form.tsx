@@ -4,6 +4,7 @@ import { AlertTriangle, LoaderCircle } from "lucide-react";
 import Link from "next/link";
 import { type FormEvent, useState } from "react";
 
+import { useCsrfToken } from "@/components/providers/csrf-provider";
 import { reportReasonLabels, reportReasons } from "@/lib/constants/domain";
 
 interface ReportListingFormProps {
@@ -24,6 +25,7 @@ export function ReportListingForm({
   userId,
   onSuccess,
 }: ReportListingFormProps) {
+  const { token: csrfToken } = useCsrfToken();
   const [reason, setReason] = useState<(typeof reportReasons)[number]>("fake_listing");
   const [description, setDescription] = useState("");
   const [submitState, setSubmitState] = useState<SubmitState>({ status: "idle" });
@@ -55,15 +57,6 @@ export function ReportListingForm({
     setSubmitState({ status: "idle" });
 
     try {
-      // Get CSRF token from cookie (Double Submit Cookie pattern)
-      const csrfToken =
-        typeof document !== "undefined"
-          ? document.cookie
-              .split("; ")
-              .find((row) => row.startsWith("csrf_token="))
-              ?.split("=")[1]
-          : undefined;
-
       const response = await fetch("/api/reports", {
         body: JSON.stringify({
           description,

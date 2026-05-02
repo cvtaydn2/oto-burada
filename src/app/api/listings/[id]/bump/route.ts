@@ -19,10 +19,10 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
   const supabase = await createSupabaseServerClient();
 
   const rateLimit = await enforceRateLimit(
-    getUserRateLimitKey(user.id, "api:listings:bump"),
+    getUserRateLimitKey(request, user.id, "api:listings:bump"),
     BUMP_RATE_LIMIT
   );
-  if (rateLimit) return rateLimit.response;
+  if (rateLimit.response) return rateLimit.response;
 
   try {
     const { data: listing, error: fetchError } = await supabase

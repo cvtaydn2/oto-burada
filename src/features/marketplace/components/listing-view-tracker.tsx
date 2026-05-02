@@ -2,6 +2,7 @@
 
 import { useEffect } from "react";
 
+import { useCsrfToken } from "@/components/providers/csrf-provider";
 import { captureClientEvent, captureClientException } from "@/lib/monitoring/posthog-client";
 
 interface ListingViewTrackerProps {
@@ -25,17 +26,11 @@ export function ListingViewTracker({
   year,
   status,
 }: ListingViewTrackerProps) {
+  const { token: csrfToken } = useCsrfToken();
+
   useEffect(() => {
     const recordView = async () => {
       try {
-        const csrfToken =
-          typeof document !== "undefined"
-            ? document.cookie
-                .split("; ")
-                .find((row) => row.startsWith("csrf_token="))
-                ?.split("=")[1]
-            : undefined;
-
         const response = await fetch("/api/listings/view", {
           method: "POST",
           headers: {
@@ -68,7 +63,7 @@ export function ListingViewTracker({
       year,
       status,
     });
-  }, [listingId, listingSlug, brand, model, city, price, year, status]);
+  }, [listingId, listingSlug, brand, model, city, price, year, status, csrfToken]);
 
   return null;
 }

@@ -7,7 +7,7 @@ import { captureServerError, captureServerEvent } from "@/lib/monitoring/posthog
 export async function POST(request: Request) {
   const security = await withAdminRoute(request);
   if (!security.ok) return security.response;
-  const authResponse = security.user!;
+  const adminUser = security.user!;
 
   try {
     revalidatePath("/", "layout");
@@ -17,9 +17,9 @@ export async function POST(request: Request) {
     captureServerEvent(
       "admin_cache_cleared",
       {
-        adminUserId: authResponse.id,
+        adminUserId: adminUser.id,
       },
-      authResponse.id
+      adminUser.id
     );
 
     return NextResponse.json({ success: true, message: "Önbellek başarıyla temizlendi." });
@@ -30,9 +30,9 @@ export async function POST(request: Request) {
       "admin",
       error,
       {
-        adminUserId: authResponse.id,
+        adminUserId: adminUser.id,
       },
-      authResponse.id
+      adminUser.id
     );
     return NextResponse.json({ success: false, error: message }, { status: 500 });
   }

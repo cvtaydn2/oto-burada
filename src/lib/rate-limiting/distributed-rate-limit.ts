@@ -5,6 +5,13 @@ import { logger } from "@/lib/logging/logger";
 
 type RatelimitState = Ratelimit | "MISSING_CONFIG" | "CONNECTION_ERROR" | null;
 
+export interface RateLimitResult {
+  success: boolean;
+  limit: number;
+  remaining: number;
+  reset: number;
+}
+
 interface LocalRateLimitEntry {
   count: number;
   reset: number;
@@ -240,4 +247,72 @@ export async function checkGlobalRateLimit(
     openRedisCircuit("Distributed Rate Limit Error - using local fallback", error);
     return getLocalFallbackResult(key, options);
   }
+}
+
+/**
+ * Specialized brute-force protection for sensitive endpoints.
+ * Prevents volumetric attacks by tracking specific identifiers (IP, Email, UserID).
+ *
+ * @param mode 'check' only verifies if the user is already blocked. 'increment' records a failure.
+ */
+export async function checkBruteForceLimit(
+  identifier: string,
+  type:
+    | "login"
+    | "register"
+    | "forgot-password"
+    | "password-reset"
+    | "2fa"
+    | "resend-verification" = "login",
+  options: {
+    limit?: number;
+    windowMs?: number;
+    userId?: string;
+    mode?: "check" | "increment";
+  } = {}
+) {
+  const mode = options.mode ?? "increment";
+
+  // Standardized format: bruteforce:TYPE:ip:IDENTIFIER[:user:USERID]
+  let key = `bruteforce:${type}:ip:${identifier}`;
+  if (options.userId) {
+    key = `${key}:user:${options.userId}`;
+  }
+
+  // If mode is 'check', we want to see if they are already over the limit without incrementing.
+  // Upstash Ratelimit doesn't have a perfect 'peek' that returns everything,
+  // so we use a very high limit with a short window for 'check' OR we check the raw Redis value.
+  if (mode === "check") {
+    const isProd = process.env.NODE_ENV === "production";
+    const redisClient = Redis.fromEnv();
+
+    try {
+      // We check if the ZSET for this key has more than 'limit' entries.
+      // prefix is added by the Ratelimit constructor, but we need to match it here.
+      const fullKey = `@upstash/ratelimit/oto-burada:${key}`;
+      const count = await redisClient.zcount(
+        fullKey,
+        Date.now() - (options.windowMs ?? 15 * 60 * 1000),
+        "+inf"
+      );
+
+      const limit = options.limit ?? 5;
+      if (count >= limit) {
+        return { success: false, limit, remaining: 0, reset: Date.now() + 60_000 };
+      }
+      return { success: true, limit, remaining: limit - count, reset: Date.now() };
+    } catch (error) {
+      if (isProd) {
+        logger.security.error("Brute-force check error - FAILING CLOSED", { error, key });
+        return { success: false, limit: 0, remaining: 0, reset: Date.now() + 60_000 };
+      }
+      return { success: true, limit: 1, remaining: 1, reset: Date.now() };
+    }
+  }
+
+  // mode === 'increment'
+  return await checkGlobalRateLimit(key, {
+    limit: options.limit ?? 5,
+    windowMs: options.windowMs ?? 15 * 60 * 1000,
+  });
 }

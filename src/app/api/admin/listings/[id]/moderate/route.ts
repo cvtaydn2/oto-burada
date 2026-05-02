@@ -2,30 +2,18 @@ import { API_ERROR_CODES, apiError, apiSuccess } from "@/lib/api/response";
 import { withAdminRoute } from "@/lib/api/security";
 import { captureServerError, captureServerEvent } from "@/lib/monitoring/posthog-server";
 import { rateLimitProfiles } from "@/lib/rate-limiting/rate-limit";
-import { enforceRateLimit, getRateLimitKey } from "@/lib/rate-limiting/rate-limit-middleware";
 import { sanitizeText } from "@/lib/sanitization/sanitize";
 import { moderateListingWithSideEffects } from "@/services/admin/listing-moderation";
 
 export async function POST(request: Request, context: { params: Promise<{ id: string }> }) {
-  const security = await withAdminRoute(request);
+  const security = await withAdminRoute(request, {
+    ipRateLimit: rateLimitProfiles.adminModerate,
+    rateLimitKey: "admin:moderate",
+  });
   if (!security.ok) return security.response;
   const adminUser = security.user!;
 
   const { id: listingId } = await context.params;
-  const limitKey = getRateLimitKey(request, "admin:moderate");
-  const ipRateLimit = await enforceRateLimit(limitKey, rateLimitProfiles.adminModerate);
-
-  if (ipRateLimit) {
-    captureServerEvent(
-      "admin_listing_moderation_failed",
-      {
-        reason: "rate_limited",
-        responseStatus: 429,
-      },
-      "server"
-    );
-    return ipRateLimit.response;
-  }
 
   let body: unknown;
 

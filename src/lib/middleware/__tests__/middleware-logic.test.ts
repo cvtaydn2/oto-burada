@@ -71,7 +71,7 @@ describe("Middleware Logic - Auth Redirects", () => {
 });
 
 describe("Middleware Logic - API Security", () => {
-  it("should block POST requests with origin mismatch in production", () => {
+  it("should block POST requests with origin mismatch in production", async () => {
     vi.stubEnv("NODE_ENV", "production");
     vi.stubEnv("NEXT_PUBLIC_APP_URL", "https://otoburada.com");
 
@@ -80,14 +80,14 @@ describe("Middleware Logic - API Security", () => {
       headers: { origin: "https://evil.com" },
     });
 
-    const result = checkApiSecurity(req);
+    const result = await checkApiSecurity(req);
     expect(result).not.toBeNull();
     expect(result?.status).toBe(403);
 
     vi.unstubAllEnvs();
   });
 
-  it("should allow matching origins in production", () => {
+  it("should allow matching origins in production", async () => {
     vi.stubEnv("NODE_ENV", "production");
     vi.stubEnv("NEXT_PUBLIC_APP_URL", "https://otoburada.com");
 
@@ -96,7 +96,7 @@ describe("Middleware Logic - API Security", () => {
       headers: { origin: "https://otoburada.com" },
     });
 
-    const result = checkApiSecurity(req);
+    const result = await checkApiSecurity(req);
     expect(result).toBeNull();
 
     vi.unstubAllEnvs();

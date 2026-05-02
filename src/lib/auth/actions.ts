@@ -6,14 +6,16 @@ import { redirect } from "next/navigation";
 import { AnalyticsEvent } from "@/lib/analytics/events";
 import { logger } from "@/lib/logging/logger";
 import { identifyServerUser, trackServerEvent } from "@/lib/monitoring/posthog-server";
+import { checkBruteForceLimit } from "@/lib/rate-limiting/distributed-rate-limit";
 import { rateLimitProfiles } from "@/lib/rate-limiting/rate-limit";
 import { checkRateLimit } from "@/lib/rate-limiting/rate-limit-middleware";
+import { rotateCsrfToken } from "@/lib/security/csrf";
 import { isTurnstileEnabled, verifyTurnstileToken } from "@/lib/security/turnstile";
 import { getAppUrl } from "@/lib/seo";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { hasSupabaseEnv } from "@/lib/supabase/env";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
-import { loginSchema, registerSchema } from "@/lib/validators";
+import { loginSchema, registerSchema, resetPasswordSchema } from "@/lib/validators";
 
 export interface AuthActionResponse {
   success: boolean;
@@ -97,11 +99,20 @@ export async function loginAction(
   // Preserve fields from previous state
 
   const clientIp = await getClientIp();
-  const ipRateLimit = await checkRateLimit(`auth:login:${clientIp}`, rateLimitProfiles.auth);
 
+  // 1. General IP rate limit (prevents massive volumetric attacks)
+  const ipRateLimit = await checkRateLimit(`auth:login:${clientIp}`, rateLimitProfiles.auth);
   if (!ipRateLimit.allowed) {
     return buildAuthErrorState(
       "Çok fazla giriş denemesi yaptın. Lütfen biraz bekle ve tekrar dene."
+    );
+  }
+
+  // 2. Brute-force protection: check if IP is currently locked out (PEEK ONLY)
+  const bruteForce = await checkBruteForceLimit(clientIp, "login", { mode: "check" });
+  if (!bruteForce.success) {
+    return buildAuthErrorState(
+      "Çok fazla deneme yaptınız. Güvenliğiniz için 15 dakika kısıtlandınız."
     );
   }
 
@@ -110,6 +121,21 @@ export async function loginAction(
     next: String(formData.get("next") ?? ""),
     password: String(formData.get("password") ?? ""),
   };
+
+  // 3. Email-scoped rate limit: prevents credential stuffing on a single account
+  const emailKey = values.email.toLowerCase().trim();
+  if (emailKey) {
+    const emailRateLimit = await checkRateLimit(`auth:login:email:${emailKey}`, {
+      limit: 5,
+      windowMs: 15 * 60 * 1000,
+      failClosed: true,
+    });
+    if (!emailRateLimit.allowed) {
+      return buildAuthErrorState(
+        "Bu hesap için çok fazla giriş denemesi yapıldı. Lütfen biraz bekle."
+      );
+    }
+  }
 
   const parsed = loginSchema.safeParse(values);
 
@@ -138,13 +164,34 @@ export async function loginAction(
 
   const { data, error } = await supabase.auth.signInWithPassword(parsed.data);
 
+  // ── SECURITY FIX: Issue SEC-CSRF-01 - CSRF Token Rotation on Login ──────
+  // Always rotate CSRF token upon successful authentication to prevent
+  // session fixation attacks.
+  if (!error) {
+    await rotateCsrfToken();
+  }
+
   if (error) {
+    // Record failure for brute-force protection
+    await checkBruteForceLimit(clientIp, "login", { mode: "increment" });
+
     return {
       ...previousState,
       success: false,
       error: "Giriş yapılamadı. E-posta veya şifreyi kontrol et.",
       fields: buildAuthFields(values.email),
       reason: "invalid_credentials",
+    };
+  }
+
+  // 3. Enforce Email Verification (SEC-EMAIL-01)
+  if (data.user && !data.user.email_confirmed_at) {
+    return {
+      ...previousState,
+      success: false,
+      error: "Lütfen devam etmeden önce e-posta adresinizi doğrulayın.",
+      fields: buildAuthFields(values.email),
+      reason: "email_not_confirmed",
     };
   }
 
@@ -175,11 +222,20 @@ export async function registerAction(
   formData: FormData
 ): Promise<AuthActionState> {
   const clientIp = await getClientIp();
-  const ipRateLimit = await checkRateLimit(`auth:register:${clientIp}`, rateLimitProfiles.auth);
 
+  // 1. General IP rate limit
+  const ipRateLimit = await checkRateLimit(`auth:register:${clientIp}`, rateLimitProfiles.auth);
   if (!ipRateLimit.allowed) {
     return buildAuthErrorState(
       "Çok fazla kayıt denemesi yaptın. Lütfen biraz bekle ve tekrar dene."
+    );
+  }
+
+  // 2. Brute-force protection: check if IP is currently locked out (PEEK ONLY)
+  const bruteForce = await checkBruteForceLimit(clientIp, "register", { mode: "check" });
+  if (!bruteForce.success) {
+    return buildAuthErrorState(
+      "Çok fazla deneme yaptınız. Güvenliğiniz için 15 dakika kısıtlandınız."
     );
   }
 
@@ -200,6 +256,21 @@ export async function registerAction(
     fullName: String(formData.get("fullName") ?? ""),
     password: String(formData.get("password") ?? ""),
   };
+
+  // 3. Email-scoped rate limit: prevents spam registrations for the same account
+  const emailKey = values.email.toLowerCase().trim();
+  if (emailKey) {
+    const emailRateLimit = await checkRateLimit(`auth:register:email:${emailKey}`, {
+      limit: 3,
+      windowMs: 30 * 60 * 1000,
+      failClosed: true,
+    });
+    if (!emailRateLimit.allowed) {
+      return buildAuthErrorState(
+        "Bu e-posta adresi ile çok fazla kayıt denemesi yapıldı. Lütfen biraz bekleyin."
+      );
+    }
+  }
 
   const parsed = registerSchema.safeParse(values);
 
@@ -239,7 +310,15 @@ export async function registerAction(
     },
   });
 
+  // ── SECURITY FIX: Issue SEC-CSRF-01 - CSRF Token Rotation on Register ───
+  if (!error) {
+    await rotateCsrfToken();
+  }
+
   if (error) {
+    // Record failure
+    await checkBruteForceLimit(clientIp, "register", { mode: "increment" });
+
     return {
       ...previousState,
       success: false,
@@ -332,6 +411,31 @@ export async function forgotPasswordAction(
     };
   }
 
+  // 1. IP-based brute-force protection (PEEK ONLY)
+  const clientIp = await getClientIp();
+  const ipRateLimit = await checkBruteForceLimit(clientIp, "forgot-password", { mode: "check" });
+
+  if (!ipRateLimit.success) {
+    return buildAuthErrorState("Çok fazla şifre sıfırlama denemesi yaptın. Lütfen biraz bekle.");
+  }
+
+  // 2. Email-based brute-force protection (enumeration/targeted attack prevention)
+  const emailKey = email.toLowerCase();
+  const emailRateLimit = await checkRateLimit(
+    `auth:forgot:${emailKey}`,
+    rateLimitProfiles.forgotPassword
+  );
+
+  if (!emailRateLimit.allowed) {
+    // SECURITY: Return generic success message even when rate limited by email
+    // to prevent an attacker from knowing if an account exists or is locked.
+    return {
+      success: true,
+      message: "Sıfırlama bağlantısı e-posta adresinize gönderildi.",
+      fields: buildAuthFields(email),
+    };
+  }
+
   if (!hasSupabaseEnv()) {
     return {
       success: false,
@@ -372,6 +476,9 @@ export async function forgotPasswordAction(
     const isTemporaryFailure =
       error.status === 429 || /rate|limit|too many|temporar/i.test(error.message);
 
+    // Record failure
+    await checkBruteForceLimit(clientIp, "forgot-password", { mode: "increment" });
+
     return {
       success: false,
       error: isTemporaryFailure
@@ -404,9 +511,171 @@ export async function logoutAction() {
     trackServerEvent(AnalyticsEvent.SERVER_AUTH_LOGOUT, { userId: user.id }, user.id);
   }
 
-  // scope: 'global' invalidates all sessions across devices/browsers,
   // not just the current cookie. This prevents sessions lingering on
   // other tabs or devices after an explicit logout.
   await supabase.auth.signOut({ scope: "global" });
+
+  // ── SECURITY FIX: Issue SEC-CSRF-01 - CSRF Token Rotation on Logout ─────
+  await rotateCsrfToken();
+
   redirect("/");
+}
+
+export async function resendVerificationAction(
+  _state: AuthActionState = initialState,
+  formData: FormData
+): Promise<AuthActionState> {
+  const email = String(formData.get("email") ?? "").trim();
+  const clientIp = await getClientIp();
+  const supabase = await createSupabaseServerClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  // 1. IP-based brute-force protection (PEEK ONLY)
+  // If user is logged in, we combine IP + userId for stricter protection
+  const bruteForceIp = await checkBruteForceLimit(clientIp, "resend-verification", {
+    limit: 3,
+    windowMs: 60 * 60 * 1000, // 3 per hour
+    userId: user?.id,
+    mode: "check",
+  });
+
+  if (!bruteForceIp.success) {
+    return buildAuthErrorState(
+      "Çok fazla doğrulama isteği gönderildi. Lütfen bir saat sonra tekrar deneyin."
+    );
+  }
+
+  // 2. Email-based brute-force protection
+  if (email) {
+    const emailKey = email.toLowerCase();
+    const bruteForceEmail = await checkBruteForceLimit(emailKey, "resend-verification", {
+      limit: 2,
+      windowMs: 30 * 60 * 1000, // 2 per 30 mins
+    });
+
+    if (!bruteForceEmail.success) {
+      return buildAuthErrorState(
+        "Bu e-posta adresi için çok sık istek yapılıyor. Lütfen 30 dakika bekleyin."
+      );
+    }
+  }
+
+  if (!hasSupabaseEnv()) {
+    return buildAuthErrorState("Servis şu anda kullanılamıyor.", "env_missing");
+  }
+
+  // If email is not provided, try to get it from current session
+  let targetEmail = email;
+  if (!targetEmail) {
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    targetEmail = user?.email ?? "";
+  }
+
+  if (!targetEmail) {
+    return buildAuthErrorState("E-posta adresi bulunamadı.", "invalid_input");
+  }
+
+  const { error } = await supabase.auth.resend({
+    type: "signup",
+    email: targetEmail,
+    options: {
+      emailRedirectTo: getEmailRedirectUrl(),
+    },
+  });
+
+  if (error) {
+    // Record failure for brute-force protection
+    await checkBruteForceLimit(clientIp, "resend-verification", {
+      mode: "increment",
+      userId: user?.id,
+    });
+
+    logger.auth.error("Resend verification failed", { error: error.message, email: targetEmail });
+    return buildAuthErrorState(
+      "Doğrulama e-postası gönderilemedi. Lütfen daha sonra tekrar deneyin.",
+      "provider_error"
+    );
+  }
+
+  return {
+    success: true,
+    message: "Doğrulama bağlantısı tekrar gönderildi. Lütfen gelen kutunuzu kontrol edin.",
+  };
+}
+
+export async function updatePasswordAction(
+  previousState: AuthActionState = initialState,
+  formData: FormData
+): Promise<AuthActionState> {
+  const clientIp = await getClientIp();
+  const supabase = await createSupabaseServerClient();
+
+  // 1. Check authentication state
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) {
+    return buildAuthErrorState("Bu işlemi yapabilmek için giriş yapmalısınız.", "unauthorized");
+  }
+
+  // 2. Combined IP + UserID brute-force protection (PEEK ONLY)
+  const bruteForce = await checkBruteForceLimit(clientIp, "password-reset", {
+    userId: user.id,
+    limit: 5,
+    windowMs: 15 * 60 * 1000, // 5 per 15 mins
+    mode: "check",
+  });
+
+  if (!bruteForce.success) {
+    return buildAuthErrorState(
+      "Çok fazla deneme yaptınız. Lütfen 15 dakika sonra tekrar deneyin.",
+      "rate_limited"
+    );
+  }
+
+  const values = {
+    password: String(formData.get("password") ?? ""),
+    confirm: String(formData.get("confirm") ?? ""),
+  };
+
+  const parsed = resetPasswordSchema.safeParse(values);
+
+  if (!parsed.success) {
+    return {
+      ...previousState,
+      success: false,
+      error: "Lütfen formdaki hataları kontrol edin.",
+      fieldErrors: parsed.error.flatten().fieldErrors,
+      reason: "validation_error",
+    };
+  }
+
+  const { error } = await supabase.auth.updateUser({
+    password: parsed.data.password,
+  });
+
+  if (error) {
+    // Record failure for brute-force protection
+    await checkBruteForceLimit(clientIp, "password-reset", {
+      mode: "increment",
+      userId: user.id,
+    });
+
+    logger.auth.error("Password update failed", { error: error.message, userId: user.id });
+    return buildAuthErrorState("Şifre güncellenemedi. Lütfen tekrar deneyin.", "update_error");
+  }
+
+  // 3. Security: Rotate CSRF token on privilege change
+  await rotateCsrfToken();
+
+  trackServerEvent(AnalyticsEvent.SERVER_AUTH_PASSWORD_RESET, { userId: user.id }, user.id);
+
+  return {
+    success: true,
+    message: "Şifreniz başarıyla güncellendi.",
+  };
 }

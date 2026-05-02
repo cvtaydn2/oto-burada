@@ -22,13 +22,11 @@ export class ApiClient {
     options?: RequestInit & { schema?: z.ZodTypeAny }
   ): Promise<ApiResponse<T>> {
     try {
-      // Automatic CSRF Token Injection (Double Submit Cookie)
+      // Automatic CSRF Token Injection (Synchronizer Token Pattern)
       let csrfToken: string | undefined;
       if (typeof document !== "undefined") {
-        csrfToken = document.cookie
-          .split("; ")
-          .find((row) => row.startsWith("csrf_token="))
-          ?.split("=")[1];
+        csrfToken =
+          document.querySelector('meta[name="csrf-token"]')?.getAttribute("content") || undefined;
       }
 
       const res = await fetch(path, {
@@ -39,6 +37,15 @@ export class ApiClient {
           ...(options?.headers || {}),
         },
       });
+
+      // Update CSRF token if a new one is provided in the response headers (Rotation)
+      const newToken = res.headers.get("x-csrf-token");
+      if (newToken && typeof document !== "undefined") {
+        const meta = document.querySelector('meta[name="csrf-token"]');
+        if (meta) {
+          meta.setAttribute("content", newToken);
+        }
+      }
 
       // ── BUG FIX: Issue BUG-04 - JSON Parse Error Handling ─────────────
       // Catch JSON parse errors separately to provide meaningful error messages

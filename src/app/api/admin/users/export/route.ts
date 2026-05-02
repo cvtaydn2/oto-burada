@@ -1,11 +1,12 @@
-import { requireApiAdminUser } from "@/lib/auth/api-admin";
+import { withAdminRoute } from "@/lib/api/security";
 import { logger } from "@/lib/logging/logger";
 import { captureServerError, captureServerEvent } from "@/lib/monitoring/posthog-server";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 
-export async function GET() {
-  const authResponse = await requireApiAdminUser();
-  if (authResponse instanceof Response) return authResponse;
+export async function GET(request: Request) {
+  const security = await withAdminRoute(request);
+  if (!security.ok) return security.response;
+  const adminUser = security.user!;
 
   try {
     const admin = createSupabaseAdminClient();
@@ -21,9 +22,9 @@ export async function GET() {
         "admin",
         error,
         {
-          adminUserId: authResponse.id,
+          adminUserId: adminUser.id,
         },
-        authResponse.id
+        adminUser.id
       );
       return new Response("Export başarısız", { status: 500 });
     }
@@ -31,10 +32,10 @@ export async function GET() {
     captureServerEvent(
       "admin_users_exported",
       {
-        adminUserId: authResponse.id,
+        adminUserId: adminUser.id,
         count: profiles?.length ?? 0,
       },
-      authResponse.id
+      adminUser.id
     );
 
     const headers = [
@@ -73,13 +74,13 @@ export async function GET() {
   } catch (err) {
     logger.admin.error("User export unexpected error", err);
     captureServerError(
-      "User export unexpected error",
+      "admin_users_unexpected_error",
       "admin",
       err,
       {
-        adminUserId: authResponse.id,
+        adminUserId: adminUser.id,
       },
-      authResponse.id
+      adminUser.id
     );
     return new Response("Sunucu hatası", { status: 500 });
   }

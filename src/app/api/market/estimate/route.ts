@@ -13,7 +13,7 @@ export async function GET(request: Request) {
     getRateLimitKey(request, "api:market:estimate"),
     ESTIMATE_RATE_LIMIT
   );
-  if (rateLimit) return rateLimit.response;
+  if (rateLimit.response) return rateLimit.response;
 
   const { searchParams } = new URL(request.url);
   const brand = searchParams.get("brand");

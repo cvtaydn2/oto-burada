@@ -62,6 +62,8 @@ export enum AnalyticsEvent {
   SERVER_AUTH_LOGOUT = "server_auth_logout",
   /** Fired on server when a listing report is submitted. */
   SERVER_LISTING_REPORTED = "server_listing_reported",
+  /** Fired on server on successful password reset/update. */
+  SERVER_AUTH_PASSWORD_RESET = "server_auth_password_reset",
 }
 
 // ─── Event Property Tanımları ───────────────────────────────────────────────────
@@ -196,6 +198,9 @@ export interface EventProperties {
     reporterId: string;
     reason: string;
   };
+  [AnalyticsEvent.SERVER_AUTH_PASSWORD_RESET]: {
+    userId: string;
+  };
 }
 
 // ─── Yardımcı Tipler ────────────────────────────────────────────────────────────
@@ -213,6 +218,7 @@ export type ClientAnalyticsEvent = Exclude<
   | AnalyticsEvent.SERVER_AUTH_REGISTER
   | AnalyticsEvent.SERVER_AUTH_LOGOUT
   | AnalyticsEvent.SERVER_LISTING_REPORTED
+  | AnalyticsEvent.SERVER_AUTH_PASSWORD_RESET
 >;
 
 /** Sadece server-side event'leri. */
@@ -225,6 +231,7 @@ export type ServerAnalyticsEvent = Extract<
   | AnalyticsEvent.SERVER_AUTH_REGISTER
   | AnalyticsEvent.SERVER_AUTH_LOGOUT
   | AnalyticsEvent.SERVER_LISTING_REPORTED
+  | AnalyticsEvent.SERVER_AUTH_PASSWORD_RESET
 >;
 
 /** Listing Wizard adım isimleri — PostHog funnel'larında tutarlılık sağlar. */

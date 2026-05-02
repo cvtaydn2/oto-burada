@@ -1,3 +1,4 @@
+import * as Sentry from "@sentry/nextjs";
 import { waitUntil } from "@vercel/functions";
 
 import { executeListingCreation } from "@/domain/usecases/listing-create";
@@ -55,7 +56,7 @@ export async function GET(request: Request) {
     limit: 120,
     windowMs: 60 * 1000,
   });
-  if (ipRateLimit) return ipRateLimit.response;
+  if (ipRateLimit.response) return ipRateLimit.response;
 
   // Convert URLSearchParams to a key-value object
   const paramsObj: Record<string, string> = {};
@@ -192,7 +193,11 @@ export async function POST(request: Request) {
               listingId: id,
               userId: user.id,
             });
-            // Error is logged but doesn't block the main request
+            Sentry.captureException(error, {
+              tags: { feature: "async-moderation", listingId: id },
+              extra: { userId: user.id },
+            });
+            // Error is logged + tracked but doesn't block the main request
             return Promise.resolve();
           })
         );

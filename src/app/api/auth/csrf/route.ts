@@ -11,10 +11,20 @@ import { setCsrfTokenCookie } from "@/lib/security/csrf";
 export async function GET() {
   const token = await setCsrfTokenCookie();
 
-  return NextResponse.json({
+  const response = NextResponse.json({
     success: true,
     data: {
       token,
     },
   });
+
+  // Apply security headers to this sensitive endpoint
+  const { applySecurityHeaders } = await import("@/lib/middleware/headers");
+  applySecurityHeaders(response);
+
+  // Also return token in header as requested for improved security pattern
+  const { CSRF_HEADER_NAME_CLIENT } = await import("@/lib/security/csrf");
+  response.headers.set(CSRF_HEADER_NAME_CLIENT, token);
+
+  return response;
 }

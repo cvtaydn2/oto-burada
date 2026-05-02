@@ -34,11 +34,13 @@ export interface SecurityOptions {
 export interface SecurityResult {
   ok: true;
   user?: User;
+  rateLimitHeaders?: Record<string, string>;
 }
 
 export interface SecurityError {
   ok: false;
   response: NextResponse;
+  rateLimitHeaders?: Record<string, string>;
 }
 
 export type SecurityCheckResult = SecurityResult | SecurityError;
@@ -107,10 +109,18 @@ export async function withSecurity(
   }
 
   // 2. IP-based Rate Limiting
+  let allRateLimitHeaders: Record<string, string> = {};
+
   if (options.ipRateLimit) {
     const key = options.rateLimitKey ? `api:${options.rateLimitKey}` : "api:general";
     const ipLimit = await enforceRateLimit(getRateLimitKey(request, key), options.ipRateLimit);
-    if (ipLimit) return { ok: false, response: ipLimit.response };
+
+    // Always collect headers
+    allRateLimitHeaders = { ...allRateLimitHeaders, ...ipLimit.headers };
+
+    if (ipLimit.response) {
+      return { ok: false, response: ipLimit.response, rateLimitHeaders: ipLimit.headers };
+    }
   }
 
   // 3. Auth & Admin Checks
@@ -211,13 +221,19 @@ export async function withSecurity(
   if (options.userRateLimit && user) {
     const key = options.rateLimitKey ?? "general";
     const userLimit = await enforceRateLimit(
-      getUserRateLimitKey(user.id, key),
+      getUserRateLimitKey(request, user.id, key),
       options.userRateLimit
     );
-    if (userLimit) return { ok: false, response: userLimit.response };
+
+    // Merge user headers
+    allRateLimitHeaders = { ...allRateLimitHeaders, ...userLimit.headers };
+
+    if (userLimit.response) {
+      return { ok: false, response: userLimit.response, rateLimitHeaders: userLimit.headers };
+    }
   }
 
-  return { ok: true, user: user ?? undefined };
+  return { ok: true, user: user ?? undefined, rateLimitHeaders: allRateLimitHeaders };
 }
 
 /**
@@ -267,7 +283,7 @@ export async function withCsrfToken(
   return withSecurity(request, { ...options, requireCsrfToken: true });
 }
 
-/** withAdminRoute: Strictly for Admin-only operations (Token required) */
+/** withAdminRoute: Strictly for Admin-only operations (Token + Step-Up required) */
 export async function withAdminRoute(
   request: Request,
   options: Omit<
@@ -280,6 +296,7 @@ export async function withAdminRoute(
     requireAdmin: true,
     requireCsrf: true,
     requireCsrfToken: true,
+    requireStepUp: true,
   });
 }
 
@@ -300,7 +317,7 @@ export async function withCronOrAdmin(
     return { ok: true } as SecurityResult;
   }
 
-  return withSecurity(request, { ...options, requireAdmin: true });
+  return withSecurity(request, { ...options, requireAdmin: true, requireStepUp: true });
 }
 
 /** withAuthAndCsrf: Backward-compatible alias with 401-before-CSRF semantics */

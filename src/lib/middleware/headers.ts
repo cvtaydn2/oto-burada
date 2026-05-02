@@ -64,20 +64,42 @@ export function getSecurityHeaders(nonce: string) {
   return {
     "X-Content-Type-Options": "nosniff",
     "X-Frame-Options": "DENY",
+    "X-XSS-Protection": "1; mode=block",
     "Referrer-Policy": "strict-origin-when-cross-origin",
     "Permissions-Policy": "camera=(), microphone=(), geolocation=()",
     "Strict-Transport-Security": "max-age=63072000; includeSubDomains; preload",
     "Content-Security-Policy": csp,
+    "Cross-Origin-Opener-Policy": "same-origin",
+    "Cross-Origin-Embedder-Policy": "require-corp",
+    "Cross-Origin-Resource-Policy": "same-origin",
     "x-nonce": nonce,
   };
 }
 
-export function applySecurityHeaders(response: NextResponse, nonce?: string) {
+export function applySecurityHeaders(response: NextResponse, nonce?: string, request?: Request) {
   const activeNonce = nonce || generateNonce();
   const headers = getSecurityHeaders(activeNonce);
 
   for (const [key, value] of Object.entries(headers)) {
     response.headers.set(key, value);
+  }
+
+  // ── RATE-LIMIT HEADERS: Forward stored rate-limit info if request is provided ──
+  if (request) {
+    const rlLimit = request.headers.get("x-ratelimit-limit");
+    const rlRemaining = request.headers.get("x-ratelimit-remaining");
+    const rlReset = request.headers.get("x-ratelimit-reset");
+
+    if (rlLimit) {
+      response.headers.set("X-RateLimit-Limit", rlLimit);
+      response.headers.set("X-RateLimit-Remaining", rlRemaining ?? "0");
+
+      // Convert reset timestamp from ms to seconds for standard compliance
+      if (rlReset) {
+        const resetSeconds = Math.ceil(parseInt(rlReset) / 1000);
+        response.headers.set("X-RateLimit-Reset", resetSeconds.toString());
+      }
+    }
   }
 
   return response;

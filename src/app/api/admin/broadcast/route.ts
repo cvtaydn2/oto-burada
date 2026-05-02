@@ -3,7 +3,6 @@ import { NextResponse } from "next/server";
 import { withAdminRoute } from "@/lib/api/security";
 import { logger } from "@/lib/logging/logger";
 import { captureServerError, captureServerEvent } from "@/lib/monitoring/posthog-server";
-import { enforceRateLimit } from "@/lib/rate-limiting/rate-limit-middleware";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { createDatabaseNotificationsBulk } from "@/services/notifications/notification-records";
 
@@ -85,14 +84,12 @@ function sanitizeBroadcastText(input: string): string {
 }
 
 export async function POST(request: Request) {
-  const security = await withAdminRoute(request);
+  const security = await withAdminRoute(request, {
+    ipRateLimit: BROADCAST_RATE_LIMIT,
+    rateLimitKey: "admin:broadcast",
+  });
   if (!security.ok) return security.response;
-  const authResponse = security.user!;
-
-  // Rate limit even for admins
-  const ip = request.headers.get("x-forwarded-for")?.split(",")?.[0]?.trim() ?? "unknown";
-  const rateLimit = await enforceRateLimit(`admin:broadcast:${ip}`, BROADCAST_RATE_LIMIT);
-  if (rateLimit) return rateLimit.response;
+  const adminUser = security.user!;
 
   let body: unknown;
   try {
@@ -204,12 +201,12 @@ export async function POST(request: Request) {
     captureServerEvent(
       "admin_broadcast_sent",
       {
-        adminUserId: authResponse.id,
+        adminUserId: adminUser.id,
         successCount,
         failCount,
         title: title.substring(0, 50), // Truncate for event size limit
       },
-      authResponse.id
+      adminUser.id
     );
 
     return NextResponse.json({

@@ -92,5 +92,16 @@ export const registerSchema = z.object({
   fullName: z.string().min(3, "Ad soyad en az 3 karakter olmalıdır"),
 });
 
+export const resetPasswordSchema = z
+  .object({
+    password: z.string().min(8, "Şifre en az 8 karakter olmalıdır"),
+    confirm: z.string().min(8, "Şifre en az 8 karakter olmalıdır"),
+  })
+  .refine((data) => data.password === data.confirm, {
+    message: "Şifreler eşleşmiyor",
+    path: ["confirm"],
+  });
+
 export type LoginInput = z.infer<typeof loginSchema>;
 export type RegisterInput = z.infer<typeof registerSchema>;
+export type ResetPasswordInput = z.infer<typeof resetPasswordSchema>;

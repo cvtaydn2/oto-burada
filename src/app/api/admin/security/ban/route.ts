@@ -21,7 +21,7 @@ const banSchema = z.object({
 export async function POST(request: Request) {
   const security = await withAdminRoute(request);
   if (!security.ok) return security.response;
-  const user = security.user!;
+  const adminUser = security.user!;
 
   if (!hasSupabaseAdminEnv()) {
     return NextResponse.json({ error: "Service unavailable" }, { status: 503 });
@@ -55,7 +55,7 @@ export async function POST(request: Request) {
     const { error } = await admin.from("ip_banlist").insert({
       ip_address: ip,
       reason,
-      banned_by: user.id,
+      banned_by: adminUser.id,
       banned_at: new Date().toISOString(),
       expires_at: null, // Permanent ban
     });
@@ -63,7 +63,7 @@ export async function POST(request: Request) {
     if (error) {
       // Duplicate key error (IP already banned)
       if (error.code === "23505") {
-        logger.admin.warn("IP already banned", { ip, adminId: user.id });
+        logger.admin.warn("IP already banned", { ip, adminId: adminUser.id });
         return NextResponse.json(
           { error: "Bu IP adresi zaten yasaklı", alreadyBanned: true },
           { status: 409 }
@@ -72,13 +72,13 @@ export async function POST(request: Request) {
       throw error;
     }
 
-    logger.admin.info("IP banned", { ip, reason, adminId: user.id });
-    captureServerEvent("ip_banned", { ip, reason }, user.id);
+    logger.admin.info("IP banned", { ip, reason, adminId: adminUser.id });
+    captureServerEvent("ip_banned", { ip, reason }, adminUser.id);
 
     // Redirect back to security page
     return NextResponse.redirect(new URL("/admin/security", request.url));
   } catch (error) {
-    logger.admin.error("Failed to ban IP", error, { ip, adminId: user.id });
+    logger.admin.error("Failed to ban IP", error, { ip, adminId: adminUser.id });
     return NextResponse.json({ error: "Failed to ban IP" }, { status: 500 });
   }
 }

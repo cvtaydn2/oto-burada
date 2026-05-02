@@ -4,6 +4,7 @@ import { type User } from "@supabase/supabase-js";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { type PropsWithChildren, useState } from "react";
 
+import { CsrfProvider } from "@/components/providers/csrf-provider";
 import { PWAProvider } from "@/components/providers/pwa-provider";
 import { SupabaseProvider } from "@/components/providers/supabase-provider";
 import { AuthProvider } from "@/components/shared/auth-provider";
@@ -14,9 +15,10 @@ import { Toaster } from "@/components/ui/sonner";
 interface RootProvidersProps extends PropsWithChildren {
   user: User | null;
   nonce?: string;
+  csrfToken?: string;
 }
 
-export function RootProviders({ children, user, nonce }: RootProvidersProps) {
+export function RootProviders({ children, user, nonce, csrfToken }: RootProvidersProps) {
   const [queryClient] = useState(
     () =>
       new QueryClient({
@@ -42,14 +44,16 @@ export function RootProviders({ children, user, nonce }: RootProvidersProps) {
     >
       <QueryClientProvider client={queryClient}>
         <SupabaseProvider>
-          <AuthProvider initialUser={user}>
-            <FavoritesProvider>
-              <PWAProvider>
-                {children}
-                <Toaster />
-              </PWAProvider>
-            </FavoritesProvider>
-          </AuthProvider>
+          <CsrfProvider initialToken={csrfToken}>
+            <AuthProvider initialUser={user}>
+              <FavoritesProvider>
+                <PWAProvider>
+                  {children}
+                  <Toaster />
+                </PWAProvider>
+              </FavoritesProvider>
+            </AuthProvider>
+          </CsrfProvider>
         </SupabaseProvider>
       </QueryClientProvider>
     </ThemeProvider>

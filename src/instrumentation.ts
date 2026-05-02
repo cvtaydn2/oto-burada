@@ -10,19 +10,32 @@ import { logger } from "@/lib/logging/logger";
 export async function register() {
   // Validate required environment variables at server startup.
   if (process.env.NEXT_RUNTIME === "nodejs") {
-    await import("../sentry.server.config");
+    // Only run full instrumentation in production to save dev resources
+    if (
+      process.env.NODE_ENV === "production" ||
+      process.env.ENABLE_INSTRUMENTATION_IN_DEV === "true"
+    ) {
+      await import("../sentry.server.config");
 
-    import("./lib/env-validation")
-      .then(({ logEnvValidation }) => {
-        logEnvValidation();
-      })
-      .catch((err) => {
-        console.error("[Instrumentation] Env validation failed to load", err);
-      });
+      import("./lib/env-validation")
+        .then(({ logEnvValidation }) => {
+          logEnvValidation();
+        })
+        .catch((err) => {
+          console.error("[Instrumentation] Env validation failed to load", err);
+        });
+    } else {
+      console.log("[Instrumentation] Skipping server-side instrumentation in development");
+    }
   }
 
   if (process.env.NEXT_RUNTIME === "edge") {
-    await import("../sentry.edge.config");
+    if (
+      process.env.NODE_ENV === "production" ||
+      process.env.ENABLE_INSTRUMENTATION_IN_DEV === "true"
+    ) {
+      await import("../sentry.edge.config");
+    }
   }
 }
 

@@ -256,6 +256,16 @@ export const rateLimitProfiles = {
   /** Auth attempts: 10 per 15 minutes per IP - FAIL-CLOSED */
   auth: { limit: 10, windowMs: 15 * 60 * 1000, failClosed: true } satisfies RateLimitConfig,
 
+  /** Forgot password: 3 per hour per email - FAIL-CLOSED (prevent enumeration) */
+  forgotPassword: {
+    limit: 3,
+    windowMs: 60 * 60 * 1000,
+    failClosed: true,
+  } satisfies RateLimitConfig,
+
+  /** Auth failures: 5 failures per 15 minutes per IP - FAIL-CLOSED (brute-force protection) */
+  authFailure: { limit: 5, windowMs: 15 * 60 * 1000, failClosed: true } satisfies RateLimitConfig,
+
   /** Listing creation: 10 per hour per user - FAIL-CLOSED (prevent spam) */
   listingCreate: {
     limit: 10,
